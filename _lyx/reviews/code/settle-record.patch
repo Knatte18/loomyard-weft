@@ -1,0 +1,2119 @@
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/claude-findings.tsv b/docs/research/codex-review-bench-2026-10-25/data/claude-findings.tsv
+new file mode 100644
+index 000000000..dfc0fa6fa
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/claude-findings.tsv
+@@ -0,0 +1,135 @@
++input	claude_finding	severity	found_by
++D1	F1	BLOCKING	astra-medium,sol-medium
++D1	F2	MEDIUM	
++D1	F3	MEDIUM	
++D1	F4	MEDIUM	
++D1	F5	MEDIUM	luna-medium
++D1	F6	MEDIUM	
++D1	F7	MEDIUM	
++D1	F8	MEDIUM	
++D1	F9	LOW	
++D1	F10	LOW	
++D1	F11	LOW	
++D1	F12	LOW	
++D1	F13	LOW	
++D1	F14	LOW	
++D1	F15	LOW	
++D1	F16	LOW	
++D1	F17	NIT	
++D2	F1	BLOCKING	
++D2	F2	MEDIUM	astra-medium,sol-medium
++D2	F3	MEDIUM	
++D2	F4	MEDIUM	
++D2	F5	MEDIUM	
++D2	F6	MEDIUM	
++D2	F7	MEDIUM	astra-medium,sol-medium
++D2	F8	MEDIUM	luna-medium
++D2	F9	LOW	
++D2	F10	LOW	
++D2	F11	LOW	
++D2	F12	LOW	
++D2	F13	LOW	
++D2	F14	NIT	
++D3	F1	MEDIUM	
++D3	F2	MEDIUM	astra-medium,sol-medium
++D3	F3	MEDIUM	
++D3	F4	MEDIUM	
++D3	F5	MEDIUM	
++D3	F6	MEDIUM	
++D3	F7	MEDIUM	luna-medium
++D3	F8	MEDIUM	astra-medium,luna-medium,sol-medium
++D3	F9	MEDIUM	luna-medium
++D3	F10	MEDIUM	astra-medium
++D3	F11	MEDIUM	
++D3	F12	LOW	
++D3	F13	LOW	
++D3	F14	LOW	
++D3	F15	LOW	
++D4	F1	BLOCKING	
++D4	F2	BLOCKING	
++D4	F3	BLOCKING	
++D4	F4	BLOCKING	
++D4	F5	MEDIUM	
++D4	F6	MEDIUM	
++D4	F7	MEDIUM	astra-medium,luna-medium,sol-medium
++D4	F8	MEDIUM	
++D4	F9	MEDIUM	astra-medium,sol-medium
++D4	F10	MEDIUM	
++D4	F11	MEDIUM	
++D4	F12	MEDIUM	
++D4	F13	LOW	luna-medium
++D4	F14	LOW	
++D4	F15	LOW	
++D5	F1	BLOCKING	astra-medium,sol-medium
++D5	F2	MEDIUM	
++D5	F3	MEDIUM	
++D5	F4	MEDIUM	astra-medium,sol-medium
++D5	F5	MEDIUM	
++D5	F6	LOW	
++D5	F7	LOW	
++D5	F8	LOW	
++D5	F9	LOW	luna-medium,sol-medium
++D5	F10	LOW	
++D5	F11	NIT	
++D5	F12	NIT	
++D6	F1	BLOCKING	
++D6	F2	BLOCKING	luna-medium,sol-medium
++D6	F3	BLOCKING	
++D6	F4	BLOCKING	sol-medium
++D6	F5	BLOCKING	sol-medium
++D6	F6	MEDIUM	
++D6	F7	MEDIUM	
++D6	F8	MEDIUM	luna-medium,sol-medium
++D6	F9	MEDIUM	
++D6	F10	LOW	
++D6	F11	LOW	luna-medium,sol-medium
++D6	F12	LOW	
++D6	F13	LOW	
++D6	F14	LOW	
++D6	F15	LOW	luna-medium,sol-medium
++D6	F16	NIT	
++P1	F1	BLOCKING	
++P1	F2	BLOCKING	
++P1	F3	MEDIUM	sol-medium
++P1	F4	MEDIUM	sol-medium
++P1	F5	MEDIUM	
++P1	F6	MEDIUM	
++P1	F7	LOW	
++P1	F8	LOW	
++P1	F9	LOW	
++P1	F10	LOW	
++P1	F11	LOW	
++P1	F12	LOW	
++P2	F1	BLOCKING	sol-medium
++P2	F2	BLOCKING	
++P2	F3	BLOCKING	
++P2	F4	MEDIUM	
++P2	F5	MEDIUM	
++P2	F6	MEDIUM	
++P2	F7	MEDIUM	
++P2	F8	MEDIUM	
++P2	F9	LOW	
++P2	F10	LOW	
++P2	F11	LOW	
++P2	F12	LOW	
++P2	F13	NIT	
++P3	F1	BLOCKING	sol-medium
++P3	F2	MEDIUM	
++P3	F3	MEDIUM	
++P3	F4	MEDIUM	
++P3	F5	LOW	
++P3	F6	LOW	
++P3	F7	LOW	
++P3	F8	NIT	
++P3	F9	NIT	
++P4	F1	BLOCKING	
++P4	F2	BLOCKING	
++P4	F3	BLOCKING	
++P4	F4	MEDIUM	
++P4	F5	MEDIUM	
++P4	F6	MEDIUM	
++P4	F7	MEDIUM	
++P4	F8	LOW	sol-medium
++P4	F9	LOW	sol-medium
++P4	F10	LOW	
++P4	F11	LOW	
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/claude-usage.tsv b/docs/research/codex-review-bench-2026-10-25/data/claude-usage.tsv
+new file mode 100644
+index 000000000..019a5d2fa
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/claude-usage.tsv
+@@ -0,0 +1,11 @@
++input	wall_seconds	fresh_tokens	forks	fork_fresh_tokens
++D1	580	262448	4	48331
++D2	472	280728	4	76034
++D3	548	289018	4	64093
++D4	451	264445	4	63669
++D5	383	236527	4	21485
++D6	488	243615	4	67683
++P1	604	384339	3	91847
++P2	609	358728	3	71402
++P3	545	378190	3	65628
++P4	735	489074	3	78849
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/harness/build.sh b/docs/research/codex-review-bench-2026-10-25/data/harness/build.sh
+new file mode 100644
+index 000000000..34b475577
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/harness/build.sh
+@@ -0,0 +1,89 @@
++#!/usr/bin/env bash
++# Stage one bench input: code snapshot, artifacts, era stencils and the assembled reviewer prompt.
++# usage: build.sh <id> <kind: discussion|plan> <weft-commit>
++set -euo pipefail
++ROOT=/home/knatte/Code/loomyard-LYXHUB/codex-review-bench
++WEFT=/home/knatte/Code/loomyard-LYXHUB/loomyard-weft
++id=$1 kind=$2 wc=$3
++dir=$ROOT/.scratch/bench/inputs/$id
++rm -rf "$dir"
++mkdir -p "$dir/work"
++
++start=$(git -C $WEFT show $wc:_lyx/reviews/$kind/round-1-usage.yaml | grep -m1 'start:' | tr -s ' ' | cut -d' ' -f3)
++code=$(git -C $ROOT rev-list -1 --before="$start" main)
++echo "$id $kind weft=$wc start=$start code=$code" > "$dir/meta.txt"
++
++git -C $ROOT archive "$code" | tar -x -C "$dir/work"
++mkdir -p "$dir/work/_lyx/discussion"
++if [ "$kind" = discussion ]; then
++  for f in $(git -C $WEFT ls-tree --name-only $wc _lyx/discussion/ | grep -vE 'support-log\.lens-'); do
++    git -C $WEFT show $wc:$f > "$dir/work/$f"
++  done
++else
++  git -C $WEFT show $wc:_lyx/discussion/decision-record.md > "$dir/work/_lyx/discussion/decision-record.md"
++  mkdir -p "$dir/work/_lyx/plan"
++  for f in $(git -C $WEFT ls-tree -r --name-only $wc _lyx/plan/ | grep -v '/archive-'); do
++    mkdir -p "$dir/work/$(dirname $f)"
++    git -C $WEFT show $wc:$f > "$dir/work/$f"
++  done
++fi
++
++# Hub-style specs and stencils dirs, from the snapshot's own era.
++bench=$dir/work/.bench
++mkdir -p "$bench/specs/loom" "$bench/stencils" "$bench/instr" "$bench/out"
++cp "$dir"/work/contracts/specs/*.md "$bench/specs/" 2>/dev/null || true
++for f in "$dir"/work/contracts/specs/loom-*.md; do cp "$f" "$bench/specs/loom/${f##*/loom-}"; cp "$f" "$bench/specs/loom/$(basename $f)"; done
++cp -r "$dir"/work/contracts/stencils/* "$bench/stencils/"
++
++strip() { local s; s=$(<"$1"); [ "${s:0:4}" = '<!--' ] && s=${s#*-->}; printf '%s\n' "${s#"${s%%[![:space:]]*}"}"; }
++fill() { # fill <text> key=value...
++  local t=$1; shift
++  for kv in "$@"; do t=${t//"{{.${kv%%=*}}}"/"${kv#*=}"}; done
++  printf '%s' "$t"
++}
++
++W=$dir/work
++review_path=$W/.bench/out/review.md
++rubric=$(strip "$bench/stencils/loom/loom-rubric-$kind-review.md")
++rubric=$(fill "$rubric" "specs_dir=$bench/specs" "stencils_dir=$bench/stencils" "amendment=none" "webster_record=none" "gate_tiers=none")
++
++if [ "$kind" = discussion ]; then
++  target="- \`$W/_lyx/discussion/decision-record.md\`
++- \`$W/_lyx/discussion/support-log.md\`"
++  fasit="The authority for this round is the rubric supplied in the prompt. The mechanical section contract over the discussion artifact pair is already enforced by this round's own gate over this round's own output, so re-deriving it here is duplicated work."
++else
++  target="- \`$W/_lyx/plan\` (a directory — everything under it)"
++  fasit="- \`$W/_lyx/discussion/decision-record.md\`
++
++The decision record named above is the answer key: the plan's job is to implement the decisions and constraints it settles. With no rework generation, the decision record alone is the answer key. The format authority is $bench/specs/loom/loom-plan-spec.md, and the mechanical checks over that format are already enforced by this round's own gate over this round's own output, so re-deriving them here is duplicated work. This round may never write the approved: key in the plan's overview file."
++fi
++
++focus=""
++if git -C $WEFT cat-file -e $wc:_lyx/reviews/$kind/round-1-focus.md 2>/dev/null; then
++  git -C $WEFT show $wc:_lyx/reviews/$kind/round-1-focus.md > "$W/.bench/instr/focus.md"
++  focus=$(fill "$(strip "$bench/stencils/burler/burler-focus-directive.md")" "focus_path=$W/.bench/instr/focus.md")
++  echo focus=yes >> "$dir/meta.txt"
++else
++  echo focus=no >> "$dir/meta.txt"
++fi
++
++explore=$(strip "$bench/stencils/burler/burler-step-1-explore.md")
++explore=$(fill "$explore" "pattern_directive=" "focus_directive=$focus" "target=$target" "fasit=$fasit" "rubric=$rubric" \
++  "tool_use_rules=Read-only analysis in the explore and review steps: read files, run nothing." "fork_reading=")
++printf '%s\n' "$explore" > "$W/.bench/instr/step-1-explore.md"
++
++review=$(strip "$bench/stencils/burler/burler-step-review.md")
++review=$(fill "$review" "cluster_rules=$(strip "$bench/stencils/burler/burler-cluster-solo.md")" "review_path=$review_path" \
++  "review_format_path=$W/.bench/instr/review-format.md" "prior_rounds=This is the first round — no prior round files exist.")
++printf '%s\n' "$review" > "$W/.bench/instr/step-2-review.md"
++strip "$bench/stencils/burler/burler-review-format.md" > "$W/.bench/instr/review-format.md"
++
++prompt=$(strip "$bench/stencils/burler/burler-template-reviewer.md")
++prompt=$(fill "$prompt" "parent_directive=" "edit_directive=" "review_path=$review_path" \
++  "instruction_1_path=$W/.bench/instr/step-1-explore.md" "instruction_2_path=$W/.bench/instr/step-2-review.md")
++printf '%s\n' "$prompt" > "$dir/prompt.md"
++cat "$dir/meta.txt"
++if grep -l '{{' "$dir/prompt.md" "$W"/.bench/instr/*.md; then
++  echo "leftover placeholder in the files above" >&2
++  exit 1
++fi
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/harness/claude-reference.sh b/docs/research/codex-review-bench-2026-10-25/data/harness/claude-reference.sh
+new file mode 100644
+index 000000000..49637d014
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/harness/claude-reference.sh
+@@ -0,0 +1,47 @@
++#!/usr/bin/env bash
++# claude-reference.sh: print data/claude-findings.tsv and data/claude-usage.tsv from the weft history.
++# usage: claude-reference.sh findings|usage
++# findings: every Claude round-1 finding of the ten inputs with its severity and the Codex settings whose shared rows in match.tsv name it.
++# usage: the round-1 review's wall time and fresh tokens, and its lens forks' fresh tokens, from the round's usage file.
++set -euo pipefail
++ROOT=/home/knatte/Code/loomyard-LYXHUB/codex-review-bench
++WEFT=/home/knatte/Code/loomyard-LYXHUB/loomyard-weft
++DATA=$ROOT/docs/research/codex-review-bench-2026-10-25/data
++case $1 in
++findings)
++  printf 'input\tclaude_finding\tseverity\tfound_by\n'
++  while read -r id kind weft _; do
++    commit=${weft#weft=}
++    review=$(mktemp)
++    git -C $WEFT show "$commit:_lyx/reviews/$kind/round-1-review.md" > "$review"
++    while read -r fid severity _; do
++      found_by=$(while IFS=$'\t' read -r m_input m_setting _ m_label m_claude _; do
++        [ "$m_input" = "$id" ] && [ "$m_label" = shared ] && [ "$m_claude" = "$fid" ] && echo "$m_setting"
++      done < <(tail -n +2 "$DATA/match.tsv") | sort -u | paste -sd, -) || true
++      printf '%s\t%s\t%s\t%s\n' "$id" "$fid" "$severity" "$found_by"
++    done < <(bash "$DATA/harness/dump.sh" "$review")
++    rm "$review"
++  done < "$DATA/inputs.txt"
++  ;;
++usage)
++  printf 'input\twall_seconds\tfresh_tokens\tforks\tfork_fresh_tokens\n'
++  while read -r id kind weft _; do
++    commit=${weft#weft=}
++    git -C $WEFT show "$commit:_lyx/reviews/$kind/round-1-usage.yaml" | {
++      # The first wall_seconds and fresh_tokens after the top-level review: key are the round's own; the seed block comes later.
++      in_review=
++      while IFS= read -r line; do
++        case "$line" in
++          "review:") in_review=1;;
++          "seed:"*|"fix:"*) in_review=;;
++          "    wall_seconds: "*) [ -n "$in_review" ] && wall=${line#    wall_seconds: };;
++          "    fresh_tokens: "*) [ -n "$in_review" ] && fresh=${line#    fresh_tokens: };;
++          "    forks: "*) [ -n "$in_review" ] && forks=${line#    forks: };;
++          "    fork_fresh_tokens: "*) [ -n "$in_review" ] && fork_fresh=${line#    fork_fresh_tokens: };;
++        esac
++      done
++      printf '%s\t%.0f\t%s\t%s\t%s\n' "$id" "$wall" "$fresh" "$forks" "$fork_fresh"
++    }
++  done < "$DATA/inputs.txt"
++  ;;
++esac
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/harness/dump.sh b/docs/research/codex-review-bench-2026-10-25/data/harness/dump.sh
+new file mode 100644
+index 000000000..e2a00ec74
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/harness/dump.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++# dump.sh <file>: one line per finding from the frontmatter.
++id= sev= cls= loc= 
++while IFS= read -r line; do
++  case "$line" in
++    "  - id: "*) [ -n "$id" ] && echo "$id $sev $cls $loc | $sum"; id=${line#  - id: }; sev=;cls=;loc=;sum=;;
++    "    severity: "*) sev=${line#    severity: };;
++    "    class: "*) cls=${line#    class: };;
++    "    location: "*) loc=${line#    location: };;
++    "    summary: "*) sum=${line#    summary: };;
++    "---") [ -n "$id" ] && [ -n "$sum" ] && { echo "$id $sev $cls $loc | $sum"; id=; }; ;;
++  esac
++done < "$1"
++[ -n "$id" ] && echo "$id $sev $cls $loc | $sum"
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/harness/grid.sh b/docs/research/codex-review-bench-2026-10-25/data/harness/grid.sh
+new file mode 100644
+index 000000000..16a8d6aeb
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/harness/grid.sh
+@@ -0,0 +1,29 @@
++#!/usr/bin/env bash
++# grid.sh <effort> <rep> <models...>: run every input for each model at one effort.
++# A cell that finished with rc=0 is skipped; a failed or refused cell runs again.
++# After each run the plan windows' used percentages go into the cell's result.txt,
++# and the grid stops once either window shows STOP_PERCENT or more used.
++ROOT=/home/knatte/Code/loomyard-LYXHUB/codex-review-bench
++here=$(cd "$(dirname "$0")" && pwd)
++STOP_PERCENT=70
++marker=$ROOT/.scratch/bench/grid-start
++effort=$1 rep=$2; shift 2
++for model in "$@"; do
++  for id in D1 D2 D3 D4 D5 D6 P1 P2 P3 P4; do
++    cell=$ROOT/.scratch/bench/runs/$id/$model-$effort-r$rep
++    grep -q '^rc=0' "$cell/result.txt" 2>/dev/null && continue
++    echo "== $id $model $effort r$rep $(date +%T)"
++    touch "$marker"
++    bash "$here/run.sh" $id $model $effort $rep
++    # Only a rollout written since the marker belongs to this run; a refused run may write none.
++    rollout=$(find "$ROOT/.scratch/codex-home/sessions" -name 'rollout-*.jsonl' -newer "$marker" | sort | tail -1)
++    [ -n "$rollout" ] || continue
++    read -r five weekly < <(bash "$here/windows.sh" "$rollout")
++    [ -n "${five:-}" ] || continue
++    echo "five_hour_used_percent=$five weekly_used_percent=$weekly" | tee -a "$cell/result.txt"
++    if [ "${five%.*}" -ge $STOP_PERCENT ] || [ "${weekly%.*}" -ge $STOP_PERCENT ]; then
++      echo "stop: a plan window shows $STOP_PERCENT percent or more used" >&2
++      exit 1
++    fi
++  done
++done
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/harness/run.sh b/docs/research/codex-review-bench-2026-10-25/data/harness/run.sh
+new file mode 100644
+index 000000000..31d48a6b8
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/harness/run.sh
+@@ -0,0 +1,27 @@
++#!/usr/bin/env bash
++# Run one Codex review: run.sh <input-id> <model> <effort> <rep>
++set -uo pipefail
++ROOT=/home/knatte/Code/loomyard-LYXHUB/codex-review-bench
++id=$1 model=$2 effort=$3 rep=${4:-1}
++in=$ROOT/.scratch/bench/inputs/$id
++cell=$ROOT/.scratch/bench/runs/$id/$model-$effort-r$rep
++mkdir -p "$cell"
++# Fresh work copy per run so a run never sees another run's output.
++rm -rf "$cell/work"; cp -a "$in/work" "$cell/work"
++prompt=$(<"$in/prompt.md")
++# Re-point the prompt's paths from the input dir to the per-run copy.
++prompt=${prompt//"$in/work"/"$cell/work"}
++for f in "$cell"/work/.bench/instr/*.md; do
++  c=$(<"$f"); printf '%s\n' "${c//"$in/work"/"$cell/work"}" > "$f"
++done
++start=$(date +%s)
++CODEX_HOME=$ROOT/.scratch/codex-home timeout 3000 codex exec \
++  -m "$model" -c "model_reasoning_effort=\"$effort\"" \
++  -s workspace-write -C "$cell/work" --skip-git-repo-check --json \
++  -o "$cell/last-message.txt" - <<<"$prompt" > "$cell/events.jsonl" 2> "$cell/stderr.txt"
++rc=$?
++end=$(date +%s)
++echo "rc=$rc wall_seconds=$((end-start))" > "$cell/result.txt"
++cp "$cell/work/.bench/out/review.md" "$cell/review.md" 2>/dev/null || echo "no review file" >> "$cell/result.txt"
++rm -rf "$cell/work"
++cat "$cell/result.txt"
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/harness/setup-codex-home.sh b/docs/research/codex-review-bench-2026-10-25/data/harness/setup-codex-home.sh
+new file mode 100644
+index 000000000..8c8e0ce01
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/harness/setup-codex-home.sh
+@@ -0,0 +1,7 @@
++#!/usr/bin/env bash
++# setup-codex-home.sh: create the scratch CODEX_HOME the bench runs use, holding a symlink to the operator's auth.json.
++# The link is writable through to ~/.codex/auth.json, so a token refresh by Codex would change the operator's file.
++# An existing auth.json in the scratch directory, link or file, is replaced.
++ROOT=/home/knatte/Code/loomyard-LYXHUB/codex-review-bench
++mkdir -p "$ROOT/.scratch/codex-home"
++ln -sfn "$HOME/.codex/auth.json" "$ROOT/.scratch/codex-home/auth.json"
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/harness/usage.sh b/docs/research/codex-review-bench-2026-10-25/data/harness/usage.sh
+new file mode 100644
+index 000000000..84211fd32
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/harness/usage.sh
+@@ -0,0 +1,23 @@
++#!/usr/bin/env bash
++# usage.sh: print data/usage.txt, one line per finished cell under .scratch/bench/runs.
++# Return code and wall time come from the cell's result.txt, tokens from its turn.completed event,
++# verdict and finding count from its review file, and the window percentages from the cell's rollout.
++ROOT=/home/knatte/Code/loomyard-LYXHUB/codex-review-bench
++here=$(cd "$(dirname "$0")" && pwd)
++for id in D1 D2 D3 D4 D5 D6 P1 P2 P3 P4; do
++  for name in gpt-6.1-sol-medium gpt-6-astra-medium gpt-6-luna-low gpt-6-luna-medium; do
++    cell=$ROOT/.scratch/bench/runs/$id/$name-r1
++    [ -f "$cell/result.txt" ] || continue
++    read -r rc wall < <(sed 's/wall_seconds=/wall=/' "$cell/result.txt" | head -1)
++    done_line=$(grep '"turn.completed"' "$cell/events.jsonl" | tail -1)
++    tokens() { grep -o "\"$1\":[0-9]*" <<<"$done_line" | cut -d: -f2; }
++    verdict=none n=
++    if [ -f "$cell/review.md" ]; then
++      verdict=$(grep -m1 '^verdict:' "$cell/review.md" | cut -d' ' -f2)
++      n=$(bash "$here/dump.sh" "$cell/review.md" | wc -l)
++    fi
++    rollout=$(grep -l "runs/$id/$name-r1/work\"" "$ROOT"/.scratch/codex-home/sessions/*/*/*/rollout-*.jsonl | tail -1)
++    read -r five weekly < <(bash "$here/windows.sh" "$rollout")
++    echo "$id $name-r1 $rc $wall in=$(tokens input_tokens) cached=$(tokens cached_input_tokens) out=$(tokens output_tokens) reason=$(tokens reasoning_output_tokens) verdict=$verdict n=$n five_hour_used_percent=${five:-} weekly_used_percent=${weekly:-}"
++  done
++done
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/harness/windows.sh b/docs/research/codex-review-bench-2026-10-25/data/harness/windows.sh
+new file mode 100644
+index 000000000..c66e3a986
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/harness/windows.sh
+@@ -0,0 +1,6 @@
++#!/usr/bin/env bash
++# windows.sh <rollout-file>: print the 5-hour and weekly used_percent of the rollout's last token_count event, space-separated.
++# Prints nothing when the rollout has no token_count event, as for a run the plan refused.
++grep '"token_count"' "$1" | tail -1 | grep -o '"primary":{[^}]*}\|"secondary":{[^}]*}' \
++  | grep -o '"used_percent":[0-9.]*' | cut -d: -f2 | tr '\n' ' ' | sed 's/ $//'
++echo
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/inputs.txt b/docs/research/codex-review-bench-2026-10-25/data/inputs.txt
+new file mode 100644
+index 000000000..6eb7ce994
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/inputs.txt
+@@ -0,0 +1,10 @@
++D1 discussion weft=c3afefc21 start=2026-10-22T17:36:02Z code=e634efb9060e4d49a9b7c66339d46e91cbeef10a
++D2 discussion weft=868ea6dbb start=2026-10-24T06:45:17Z code=7e4a041b905fe4a6a3aec681b6f7fb79236287a9
++D3 discussion weft=988770777 start=2026-10-24T15:00:41Z code=fed963ec571cad71a01ce06865dd2b65fe57e090
++D4 discussion weft=27038d064 start=2026-10-22T17:33:54Z code=e634efb9060e4d49a9b7c66339d46e91cbeef10a
++D5 discussion weft=5216fd218 start=2026-10-22T10:42:28Z code=0d953f140081e003dc3621e82ba05c1e1869a92f
++D6 discussion weft=13d617b64 start=2026-10-22T10:51:02Z code=0d953f140081e003dc3621e82ba05c1e1869a92f
++P1 plan weft=c36025a89 start=2026-10-24T07:58:30Z code=ab038b4e87e16c57c9ed4824ba88221ff92c1a76
++P2 plan weft=394715f7f start=2026-10-22T07:07:00Z code=750903aef1b7474b06597cdd2d6e0aecfd85d251
++P3 plan weft=cd1719863 start=2026-10-22T16:03:01Z code=c8785677a599bd3f32ad40b803655df83abd820d
++P4 plan weft=045707759 start=2026-10-22T07:32:19Z code=750903aef1b7474b06597cdd2d6e0aecfd85d251
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/match.tsv b/docs/research/codex-review-bench-2026-10-25/data/match.tsv
+new file mode 100644
+index 000000000..1ed4c9093
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/match.tsv
+@@ -0,0 +1,69 @@
++input	setting	codex_finding	label	claude_finding	claude_severity	note
++D1	luna-medium	F1	shared	F5	MEDIUM	repeated re-entry of Plan-Review has no cap
++D1	sol-medium	F1	shared	F1	BLOCKING	amendment record atomicity on failure; Codex adds that a failed later call erases earlier pending amendments
++D1	sol-medium	F2	codex-only real			whole-second timestamp cannot order an amendment after a settle in the same second; the record states whole-second UTC
++D1	sol-medium	F3	codex-only real			the wrong-label bound claims a wrong Extends never surfaces silently; a wrong label can merge cleanly
++D1	astra-medium	F1	shared	F1	BLOCKING	same as sol F1
++D1	astra-medium	F2	codex-only real			same as sol F3
++D1	astra-medium	F3	codex-only real			all documentation work under Extends against the label's review rule; D6 tells the plan writer to write a card's docs under Extends while the rubric check flags an Extends on a ref the card rewrites, and a doc update often rewrites existing text; the round's fixer report and bouncer verdict do not touch it
++D1	astra-medium	F4	codex-only real			root-first path resolution can attribute a package test failure to a root file; D9 step 1 places a path that already exists at Head as written before it tries the package directory, so a bare name existing at the root wins; the fixer report does not touch it
++D2	luna-medium	F1	codex-only real			green-record retention rule undefined; D4 keeps "recent" whole-green commits with no count, and the round's fixer report (Claude F2) then fixed it by keeping each tier's 20 newest
++D2	luna-medium	F2	false			--window routing edge has no stated bound; D10 already limits --window to the value Env.Setting answers for batten.open_window, and a criterion states the effect, which is the bound the finding asks to add
++D2	luna-medium	F3	shared	F8	MEDIUM	D13's discovery check is left to the first retagging card
++D2	sol-medium	F1	shared	F2	MEDIUM	whole-green base taken from an incompatible or filtered run
++D2	sol-medium	F2	codex-only real			exact args matching makes a repeated -count=1 request carry instead of rerun
++D2	sol-medium	F3	shared	F7	MEDIUM	zero-tests refusal rejects filtered runs
++D2	astra-medium	F1	shared	F2	MEDIUM	same as sol F1
++D2	astra-medium	F2	shared	F7	MEDIUM	same as sol F3
++D2	astra-medium	F3	codex-only real			same as sol F2
++D3	luna-medium	F1	shared	F9	MEDIUM	MTP unmatched-filter behaviour left as a risk
++D3	luna-medium	F2	shared	F8	MEDIUM	VSTest exit behaviour assumed without evidence
++D3	luna-medium	F3	shared	F7	MEDIUM	carry-false guarantee broken by explicit targets
++D3	sol-medium	F1	shared	F8	MEDIUM	runner exit behaviour unsupported
++D3	sol-medium	F2	shared	F2	MEDIUM	empty test scope omits the shared-build opt-in
++D3	sol-medium	F3	codex-only real			a narrowed PATTERN background line is declared as no PATTERN change; arguable, minor
++D3	astra-medium	F1	shared	F8	MEDIUM	same as sol F1
++D3	astra-medium	F2	shared	F10	MEDIUM	inert-scope skip contradicts forced whole runs
++D3	astra-medium	F3	shared	F2	MEDIUM	same as sol F2
++D4	luna-medium	F1	shared	F13	LOW	step 2 and step 5 run-lock wait; Codex overstates it as a self-deadlock
++D4	luna-medium	F2	shared	F7	MEDIUM	stale local board read under an unreachable origin
++D4	luna-medium	F3	codex-only unchecked			several premises left as risks for Plan to discover; not graded: the finding bundles four premises and asks for research before Plan rather than naming a defect in the text, and its one checkable part, the older-binary risk, is the Sol F4 row
++D4	luna-medium	F4	codex-only real			support-log Turn 3 picks refusal on an unreachable origin while D2 proceeds
++D4	sol-medium	F1	codex-only real			landed-work refusal goes stale while cancel waits; step 3 of D3 reads the landed state once, D4 step 1 then waits for the write locks before End, and no recheck is stated; the fixer report and bouncer verdict do not touch it
++D4	sol-medium	F2	shared	F7	MEDIUM	offline escape hatch states no bound
++D4	sol-medium	F3	shared	F9	MEDIUM	claim cleared before final cleanup, retry impossible
++D4	sol-medium	F4	codex-only real			tender reap cannot recover older-binary processes; checked against internal/tenderengine/processes.go
++D4	astra-medium	F1	shared	F7	MEDIUM	same as sol F2
++D4	astra-medium	F2	shared	F9	MEDIUM	same as sol F3
++D4	astra-medium	F3	codex-only real			same as sol F4
++D5	luna-medium	F1	shared	F9	LOW	linked layout premise has no recorded evidence
++D5	sol-medium	F1	shared	F1	BLOCKING	fabric commit does not commit the code checkout dirt
++D5	sol-medium	F2	shared	F4	MEDIUM	merge-record admit still permits cleanup advice
++D5	sol-medium	F3	shared	F9	LOW	directory-link premise lacks its source
++D5	astra-medium	F1	shared	F4	MEDIUM	same as sol F2
++D5	astra-medium	F2	shared	F1	BLOCKING	same as sol F1
++D6	luna-medium	F1	shared	F2	BLOCKING	network-gate holder state has no source
++D6	luna-medium	F2	shared	F8	MEDIUM	unregistered-orphan reading not established
++D6	luna-medium	F3	false			no lyx run process handles SIGTERM, stated without source; the support log states it as a fact, and at the code commit only orchcli, creelcli and gatecli install a SIGTERM handler
++D6	luna-medium	F4	shared	F11	LOW	sixty-minute bound has no evidence
++D6	luna-medium	F5	shared	F15	LOW	support-log decision numbers are stale
++D6	sol-medium	F1	shared	F2	BLOCKING	same as luna F1
++D6	sol-medium	F2	shared	F4	BLOCKING	children in separate process groups survive End
++D6	sol-medium	F3	shared	F8	MEDIUM	orphan fallback does not enforce the reap bound
++D6	sol-medium	F4	shared	F5	BLOCKING	reed down authorization and lock policy ambiguous
++D6	sol-medium	F5	shared	F11	LOW	same as luna F4
++D6	sol-medium	F6	shared	F15	LOW	same as luna F5
++P1	sol-medium	F1	shared	F3	MEDIUM	retag cards use Custom on a false premise
++P1	sol-medium	F2	codex-only real			transitional hub check can pass without checking any tier command; card 24's awk Verify tests only lines matching an eight-space command key, so a tier with no such line passes; the fixer report does not touch card 24
++P1	sol-medium	F3	codex-only real			retag leaves the tree-sitter link guard on retired tags; cmd/lyx/treesitterlink_integration_test.go lists under -tags integration,tmux,llm at the code commit, and no plan file mentions the guard or tree-sitter
++P1	sol-medium	F4	codex-only real			card 20 removes the Command switch key, and internal/shedbuild/build_engines_test.go still sets it, with no card to migrate it
++P1	sol-medium	F5	shared	F4	MEDIUM	card 4 changes a signature before its test callers migrate
++P1	sol-medium	F6	shared	F4	MEDIUM	result-signature changes lack re-sign arrows
++P1	sol-medium	F7	shared	F3	MEDIUM	scan-after-last-retag departs from D5
++P2	sol-medium	F1	shared	F1	BLOCKING	generic qualifier defeats the declared-name fallback
++P3	sol-medium	F1	codex-only real			dead non-leaf holders keep the canonical name; card 6 exempts a holder with children, which the decision record settles nowhere, though the card states the exemption and its reason, so Sol's "silently" and its BLOCKING severity overstate it
++P3	sol-medium	F2	shared	F1	BLOCKING	static handoff wording pinned by tests
++P3	sol-medium	F3	codex-only real			package documentation coverage incomplete; no card edits internal/loomcli/doc.go or internal/shuttleengine/claudeengine/doc.go, though cards 4 and 3 change behavior of those packages and both doc.go files describe the touched areas
++P4	luna-medium	F1	false			takeover not bounded to adopt; the overview and cards 3, 8 and 16 already say only lyx adopt sets Takeover and every other writer leaves it false
++P4	sol-medium	F1	shared	F8	LOW	owner checks vanish without a batten record
++P4	sol-medium	F2	shared	F9	LOW	exported prerequisites bundled into the adopt CLI card
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/operator-codex-home.txt b/docs/research/codex-review-bench-2026-10-25/data/operator-codex-home.txt
+new file mode 100644
+index 000000000..66b214af0
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/operator-codex-home.txt
+@@ -0,0 +1,63 @@
++State of the operator's ~/.codex after the bench, read during the round-1 fix on 2026-10-25 (timezone +0100). The bench itself ran 11:45 to 12:34.
++
++config.toml, first read, before 12:48:18
++  sha256 3854c50af63b0bb5f00bd71c68a69de6efd2e1c88a63562f0d1af8f2e08980f0
++  size 540 bytes, mtime 2026-10-24 16:52:27 +0200
++  No hash was taken before the bench, so this hash matches the pre-bench file only as far as the unchanged mtime shows.
++
++config.toml, read again at 12:48:49
++  sha256 e04ddb6669f7da459f7a999e872ef3c55a35911ae2946a9cb42aedec4ec5ae1b
++  size 675 bytes, mtime 2026-10-25 12:48:18 +0100
++  Rewritten 14 minutes after the last bench run ended. An interactive operator `codex` session (pid 2687811, started 2026-10-24 11:49:02, with its app-server daemon pid 2687877) was running and was writing history.jsonl, the state and log databases and shell_snapshots at the same minute; no bench process was alive.
++
++auth.json
++  mtime 2026-10-24 11:16:39 +0200, size 4145 bytes.
++  .scratch/codex-home/auth.json is a symlink to it, created 2026-10-25 11:42, writable through to the target.
++  The target's mtime predates the link, so no token refresh wrote through it.
++
++~/.codex directory mtime
++  2026-10-25 12:15:56 at the first read; 2026-10-25 12:48:27 at the second.
++  No entry of the directory carries the 12:15 time, and the 12:15 change stays unexplained.
++  The live operator session above was writing into the directory throughout, so it is the likely writer, but nothing recorded ties it to 12:15.
++
++ls -lA of ~/.codex at 12:48:49 (names and mtimes)
++2026-10-24 11:16:44 .sandbox_migration
++2026-10-24 11:17:21 .sqlite-maintenance.lock
++2026-10-24 11:16:24 .tmp
++2026-10-24 11:49:04 app-server-control
++2026-10-24 11:49:04 app-server-daemon
++2026-10-24 11:16:39 auth.json
++2026-10-24 11:17:05 cache
++2026-10-25 12:48:18 config.toml
++2026-10-24 11:36:21 goals_1.sqlite
++2026-10-25 12:48:06 goals_1.sqlite-shm
++2026-10-24 12:17:55 goals_1.sqlite-wal
++2026-10-25 12:48:27 history.jsonl
++2026-10-24 11:16:21 installation_id
++2026-10-25 12:48:06 logs_2.sqlite
++2026-10-25 12:48:36 logs_2.sqlite-shm
++2026-10-25 12:48:46 logs_2.sqlite-wal
++2026-10-24 11:36:21 memories_1.sqlite
++2026-10-25 12:48:06 memories_1.sqlite-shm
++2026-10-24 12:17:55 memories_1.sqlite-wal
++2026-10-25 12:48:49 models_cache.json
++2026-10-24 11:49:03 packages
++2026-10-24 11:17:08 plugins
++2026-10-24 11:16:21 queue_1.sqlite
++2026-10-24 11:49:04 queue_1.sqlite-shm
++2026-10-24 11:16:21 queue_1.sqlite-wal
++2026-10-24 11:57:14 rules
++2026-10-24 12:05:57 session_index.jsonl
++2026-10-24 11:16:58 sessions
++2026-10-25 12:48:18 shell_snapshots
++2026-10-24 11:16:21 skills
++2026-10-24 12:09:04 state_5.sqlite
++2026-10-25 12:48:27 state_5.sqlite-shm
++2026-10-25 12:48:28 state_5.sqlite-wal
++2026-10-25 12:48:18 thread-writer-locks
++2026-10-24 12:09:04 thread_history_1.sqlite
++2026-10-25 12:48:27 thread_history_1.sqlite-shm
++2026-10-25 12:48:27 thread_history_1.sqlite-wal
++2026-10-24 11:15:57 tmp
++2026-10-24 12:18:25 tui-thread-reference-capabilities
++2026-10-25 12:48:06 version.json
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/reviews/D1/gpt-6-astra-medium-r1.md b/docs/research/codex-review-bench-2026-10-25/data/reviews/D1/gpt-6-astra-medium-r1.md
+new file mode 100644
+index 000000000..97f6539f2
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/reviews/D1/gpt-6-astra-medium-r1.md
+@@ -0,0 +1,61 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: BLOCKING
++    class: design
++    location: _lyx/discussion/decision-record.md:100
++    summary: A failed later amendment deletes the record of earlier committed amendments
++    fix: In D7, require failure rollback to restore the amendment record to its pre-call contents and timestamp, removing it only when this call created it. Update the acceptance criterion at line 178 to distinguish a failed first call from a failed append to an existing record, and require that an earlier committed amendment remains routable after the latter failure.
++  - id: F2
++    severity: MEDIUM
++    class: design
++    location: _lyx/discussion/decision-record.md:80
++    summary: The wrong-label bound promises detection that merge and verify cannot guarantee
++    fix: Replace D4's never-silently guarantee with the actual bound: current execution retains card order, D6 supplies semantic label review, and a missed wrong label can silently lose an ordering requirement in a future parallel consumer. Keep parallel execution outside scope and state that merge conflicts and verification catch only some such errors.
++  - id: F3
++    severity: MEDIUM
++    class: consistency
++    location: _lyx/discussion/decision-record.md:93
++    summary: Requiring all documentation work under Extends contradicts the label's own review rule
++    fix: In D6, keep documentation on the code-writing card but require its label to reflect the operation: Extends for additions to existing refs, Edit for rewriting existing documentation, and Create for new refs. Add an acceptance criterion covering a code card that updates existing documentation without receiving a false Extends label.
++  - id: F4
++    severity: MEDIUM
++    class: design
++    location: _lyx/discussion/decision-record.md:128
++    summary: Root-first path resolution can attribute a package test failure to an unrelated root file
++    fix: In D9 step 1, resolve bare and dot-relative test locations through the failure identity's package before considering root-relative paths; reserve root-first resolution for locations whose output context establishes that meaning. State that unresolved ambiguity produces no card attribution. Add an acceptance scenario with identically named root and package test files, requiring the package file to win for a package test failure.
++---
++
++### [BLOCKING] Preserve previously pending amendments on rollback
++
++**Location:** _lyx/discussion/decision-record.md:100
++
++**Issue:** D7 combines an accumulating record with unconditional removal on append or commit failure. If amendment A commits successfully and amendment B then fails, following the specified cleanup deletes A's pending title and admission timestamp too. A remains in the committed decision record, but the settled-segment guard now refuses the route that was supposed to apply it. The acceptance criterion that a failed commit leaves neither repeats the problem instead of preserving the previous successful transaction. This breaks the amendment-owner goal on an explicitly supported second call.
++
++### [MEDIUM] State the actual limit of wrong-label detection
++
++**Location:** _lyx/discussion/decision-record.md:80
++
++**Issue:** A missing dependency does not necessarily produce overlapping textual edits or a failing verification. For example, two edits to different paragraphs of the same document can merge cleanly while leaving contradictory instructions; verification need not inspect that meaning. The current sequential execution and D6's review are meaningful bounds, but they do not establish the claimed future guarantee. The attack-surface statement must acknowledge what a missed semantic mislabel can let through, without adding parallel machinery to this task.
++
++### [MEDIUM] Documentation must use the label its operation permits
++
++**Location:** _lyx/discussion/decision-record.md:93
++
++**Issue:** D3 permits Extends only for additions to existing refs that change nothing already there. D6 immediately makes rewriting, reordering, or removing content under that label a finding, then instructs every code-writing card to write its docs under Extends. Scope includes changes to the existing plan specification and package documentation, which can require replacing existing statements. Following the unconditional stencil instruction would therefore create a plan-review finding. Keeping docs on the same card is compatible with choosing the correct label.
++
++### [MEDIUM] Package context must beat an unrelated basename match
++
++**Location:** _lyx/discussion/decision-record.md:128
++
++**Issue:** D9 first accepts any path that exists at Head as written, before its package-relative rule. With both `a_test.go` and `internal/p/a_test.go` present, a test failure in package `internal/p` reported as `a_test.go:5` therefore resolves to the root file. This can produce a confident but wrong card attribution rather than an untraced location. `internal/websterengine/verifyparse.go` retains the failure identity's package, and quarry v0.4.0's `quarry/enclose.go` explicitly interprets relative paths as repository-root-relative; quarry cannot repair the mistaken choice after normalization.
++
++## Rejected
++
++- D7/D8 do state meaningful routing bounds: only Plan-Review is reopened, the amendment must postdate the settle, done cards remain frozen, judgment retains the spent budget, and scope widening is handed on. The existing arbiter also has a persisted per-run spawn limit in `internal/loomcli/arbiter.go`. There is no evidence here for an additional unbounded-autonomy finding.
++- D1 and D2 use fenced lines as prescriptions consistently. D2 explicitly allows an already-changed worktree bullet to satisfy a declaration and records the remaining undeclared-prose escape and its downstream headroom guards. The stated rework exception is not itself a missing prescription.
++- D4's any-other-type-label rule covers Edit, Create and delete pairings; Uses is explicitly covered, and D3 preserves delete-order validation. Missing separate enumerations of those pairs are not findings.
++- D9 supplies a location-mapping choice, an explicit matching rule and a pinned quarry source rather than leaving those facts for Plan to discover. The installed v0.4.0 facade confirms revision-based EncloseAt and per-location rejection behavior. F4 concerns the chosen normalization precedence, not missing plan-level interface research.
++- D5's estimate explains the actionable decision that measurement comes first without gating the label build. Its short rationale belongs with that decision. The Open risks describe operational limits and recovery consequences, not an interview transcript; moving them would remove useful context from the plan writer. No relocation is required.
++- No decision changes this task's own board entry. The absent PATTERN changes section agrees with the explicit constraint that no overview entry is added.
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/reviews/D1/gpt-6-luna-medium-r1.md b/docs/research/codex-review-bench-2026-10-25/data/reviews/D1/gpt-6-luna-medium-r1.md
+new file mode 100644
+index 000000000..aa930ff1f
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/reviews/D1/gpt-6-luna-medium-r1.md
+@@ -0,0 +1,16 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: BLOCKING
++    class: design
++    location: _lyx/discussion/decision-record.md:102
++    summary: The amendment admission has no bound on repeated arbiter re-entry
++    fix: In D7 and D8, bound arbiter-authored admissions to one amendment review per Plan-Review settle episode and require a parent resume before another arbiter amendment can reopen the row; specify how the admission state is consumed and reset.
++---
++
++### [BLOCKING] Arbiter amendments can repeatedly reopen Plan-Review
++
++**Location:** `_lyx/discussion/decision-record.md:102`
++
++**Issue:** D7 admits a goto whenever a fresh amendment record is newer than the latest Plan-Review settle, and removes the record after a later judged round. D8 lets the arbiter create another such record and resume to the target. The stated bounds constrain each route to Plan-Review and require the plan gate and Plan-Bouncer judgment, but nothing limits repeated arbiter-created records after successive settles. The arbiter can therefore reopen the review loop repeatedly without a parent resume, leaving the new routing edge unbounded in frequency.
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/reviews/D1/gpt-6.1-sol-medium-r1.md b/docs/research/codex-review-bench-2026-10-25/data/reviews/D1/gpt-6.1-sol-medium-r1.md
+new file mode 100644
+index 000000000..03dc6eeca
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/reviews/D1/gpt-6.1-sol-medium-r1.md
+@@ -0,0 +1,48 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: BLOCKING
++    class: design
++    location: _lyx/discussion/decision-record.md:100
++    summary: Failure of a later amendment deletes earlier pending amendments
++    fix: In D7, replace unconditional amendment-record removal on append or commit failure with restoration of the pre-call record, including its pending titles and write time; remove the file only when none existed before the call. State that the failed call also restores its decision-record append, consistently with the promised all-or-nothing outcome. Add acceptance scenarios where amendment A succeeds and amendment B fails during append or commit, preserving A and its routing eligibility while leaving no B entry.
++  - id: F2
++    severity: MEDIUM
++    class: design
++    location: _lyx/discussion/decision-record.md:101
++    summary: Whole-second timestamps cannot order an amendment after a settle in the same second
++    fix: Replace D7's whole-second ordering with an explicit causal identity. Record the current Plan-Review settle generation and round with each pending amendment, admit it against that settle, and consume it only after a later review round has judged that amendment. Retain timestamps for diagnostics. Update the acceptance criteria to cover a settle, amendment write and subsequent judged round occurring within one wall-clock second, plus refusal to reuse an amendment against a later settled round.
++  - id: F3
++    severity: MEDIUM
++    class: design
++    location: _lyx/discussion/decision-record.md:80
++    summary: The wrong-label bound incorrectly guarantees detection by merge or verification
++    fix: Rewrite D4's bound to name D6's plan-review check as the present protection against an incorrect Extends label, retain the current sequential-execution bound, and state that a missed label can produce a clean but semantically wrong merge under future parallel execution. Remove the never-silently guarantee and record that residual risk under Open risks. Add an acceptance criterion that plan review flags a card labelled Extends whose intent rewrites, reorders or removes existing content.
++---
++
++### [BLOCKING] A failed second amendment erases the first amendment's route
++
++**Location:** _lyx/discussion/decision-record.md:100
++
++**Issue:** D7 explicitly removes the amendment record when an append or commit fails, but the next sentence makes that record an accumulator of all pending amendments. After a successful amendment A, a failed amendment B therefore removes A's pending title and write time as well. A remains committed in the decision record, but the settled-segment guard has lost the admission needed to send it to the fixer. This silently loses an already accepted amendment from the owned route. The acceptance criterion that a failed commit leaves neither also needs to distinguish the failing call from previously committed amendments. The existing verb's commit-failure path in `internal/loomcli/decision.go` leaves the decision append in place, so the promised transaction must explicitly cover that restoration too.
++
++### [MEDIUM] Same-second events make the amendment route refuse valid work
++
++**Location:** _lyx/discussion/decision-record.md:101
++
++**Issue:** D7 stores whole-second UTC and requires the amendment to be strictly after the settle. The existing Bouncer also stores `SettledAt` and `JudgeAt` with `time.RFC3339` in `internal/shedadapters/bouncer.go`. A settle followed by an amendment within the same second compares equal, so the new admission refuses a legitimately later amendment. Retrying the goto cannot change that stored ordering. The consumption rule has the same ambiguity if the judged round follows the amendment in that second. Simply admitting equality would instead admit events that preceded a settle in the same second; a causal round identity avoids both errors.
++
++### [MEDIUM] A clean merge and passing verification do not prove an additive label was sound
++
++**Location:** _lyx/discussion/decision-record.md:80
++
++**Issue:** D4 says an incorrectly labelled dependency will surface as a merge conflict or verify failure, never silently. Two cards can change different lines of a shared function or document, merge cleanly, and leave an inconsistent behavior or statement that verification does not exercise. D6 supplies a useful review check, but neither that judgment nor merged-tree verification guarantees detection. The attack-surface bound must identify the actual protection and its residual risk rather than rest on this false guarantee. This does not require building parallel batches in this task.
++
++## Rejected
++
++- D7/D8 do state bounds on the new routing edge: only Plan-Review is reopened, existing review budget remains spent, done cards remain guarded, and the arbiter hands on scope widening or an unresolved operator choice. No additional finding asserts that this route is wholly unbounded.
++- D1 and D2 agree that fenced entry lines count as prescriptions. D2 explicitly identifies its changed-bullet exemption and the remaining per-card and verify guards for undeclared prose edits; those escapes are stated rather than omitted.
++- D3/D4 give an outcome for Extends against Edit, Uses, Create and deletion labels. No separate pair-enumeration finding is warranted.
++- D9 specifies the location-to-package mapping, the matching rule and the pinned quarry API source/version. It does not instruct Plan or the implementer to research those facts later. Exact signatures and exhaustive call-site lists are excluded by writer/reviewer symmetry.
++- D5's estimate explains the decision to order measurement before implementation without gating the label build. That is decision rationale. The Open risks retain operational constraints or limitations the plan writer needs; relocation would not improve the actionable record without preserving those same requirements.
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/reviews/D2/gpt-6-astra-medium-r1.md b/docs/research/codex-review-bench-2026-10-25/data/reviews/D2/gpt-6-astra-medium-r1.md
+new file mode 100644
+index 000000000..5846d1c50
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/reviews/D2/gpt-6-astra-medium-r1.md
+@@ -0,0 +1,49 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: BLOCKING
++    class: design
++    location: _lyx/discussion/decision-record.md, D2 and D4
++    summary: Ancestor green selection does not require compatible commands and test arguments
++    fix: In D2 require every candidate ancestor whole-green entry to match the current tier fingerprint and module and to cover the current invocation's test arguments under D4's directional coverage rule. Explicitly exclude filtered passes as bases for unfiltered requests. Apply the parent-merge-base fallback when no compatible ancestor exists. Add acceptance scenarios for an ancestor tested with an old tier command and for an ancestor tested only with a -run filter.
++  - id: F2
++    severity: MEDIUM
++    class: design
++    location: _lyx/discussion/decision-record.md, D7
++    summary: The zero-test refusal also rejects intentionally filtered runs
++    fix: In D7 restrict the missing-tag check to invocations expected to execute tests in the package, accounting for explicit test selection and benchmark-only requests. State how intentional zero-match requests are distinguished from missing-tag commands, preserving D3's manual invocation behavior. Add acceptance coverage for a correctly tagged package with an explicit -run filter matching no tests and for a benchmark-only invocation.
++  - id: F3
++    severity: LOW
++    class: consistency
++    location: _lyx/discussion/decision-record.md, D4; _lyx/discussion/support-log.md, Turn 3 and Rejected alternatives
++    summary: Exact argument matching does not make -count=1 a repeatable force-rerun mechanism
++    fix: Resolve the override policy explicitly in D4. If -count=1 is to force execution as the support log claims, make such requests bypass green-record reads on every invocation and state their write policy. Otherwise remove the force-rerun claim from D4 and the support log and explicitly state that repeated identical -count=1 requests can carry. Align the argument acceptance criterion with the selected policy.
++---
++
++### [BLOCKING] Ancestor inheritance needs its own compatibility bound
++
++**Location:** `_lyx/discussion/decision-record.md`, D2 and D4.
++
++**Issue:** D2 selects an ancestor by ancestry, tier and whole-green tree. D4's same-tree carry has command and argument compatibility rules, but D2 does not apply those rules to its different-tree base selection. A whole-target pass with a narrow `-run` argument, or a pass under the previous tier command, can therefore become the base for a new unfiltered or changed-command run. Packages unchanged since that ancestor are omitted even though the required tests have never passed there. D2's statement that a narrowed green never becomes a base addresses package coverage, but does not distinguish whole-package coverage from filtered test execution. This is an inherited-green escape hatch whose required compatibility bound is missing.
++
++### [MEDIUM] Intentional zero-test runs are classified as configuration failures
++
++**Location:** `_lyx/discussion/decision-record.md`, D7.
++
++**Issue:** D7 fails whenever a package emits zero test executions and contains a test function eligible under the tier tag. D3 retains manual flags and D4 explicitly models test arguments and `-run` filtering. A correctly tagged package with `-run` selecting no tests meets D7's failure condition, as can a benchmark-only request using `-run=^$`. Neither indicates a missing tier tag. The stated diagnostic and refusal therefore reject valid retained usage; the design needs to distinguish selection from accidental non-compilation.
++
++### [LOW] The stated rerun mechanism stops working after its first pass
++
++**Location:** `_lyx/discussion/decision-record.md`, D4; `_lyx/discussion/support-log.md`, Turn 3 and Rejected alternatives.
++
++**Issue:** D4 stores arguments and permits an exact match for nonempty arguments, while saying that `-- -count=1` reruns. The support log explicitly presents this as the override and the reason to reject a new rerun flag. After one successful request with those arguments, the next identical request matches the saved entry and runs nothing. Argument identity only separates the first such request from an empty-argument pass; it does not provide the described reusable override.
++
++## Rejected
++
++- D1 bounds `gate_key` to hub-defined tiers and scopes. D8 bounds entry-gate reads, skip routing, resume behavior and the operator's goto bypass. D10 identifies the single setting forced by `--window` and the zero-budget behavior; these edges are sufficiently bounded.
++- D6 identifies which guard tiers remain permitted and skips groups only after whole execution or whole carry. D13 limits the legacy tag allowance to guard-marked files and assigns its removal to a follow-up after deployment. The transitional overlap is stated rather than an unbounded permanent guard downgrade.
++- D13's discovered-test check is a rollout validation of a stated configuration prerequisite, not a deferred question about an unknown design fact. D7 specifies the count source, and D11 records its event-semantics evidence and the measurement's inclusion of setup time.
++- D4's imprecise retention horizon may reduce ancestor-cache hits, but D2 already supplies a fallback when no retained ancestor is available. No unsupported guarantee of indefinite retention is needed for correctness.
++- The rationale, assumptions and risks contain relevant design reasons, operational ownership or constraints. Their presence alone does not justify relocation; no substantive deliberation-only passage needs moving in this review.
++- D13 asks for a different board entry. The Out list describes scope and asks for no mutation of this task's own entry.
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/reviews/D2/gpt-6-luna-medium-r1.md b/docs/research/codex-review-bench-2026-10-25/data/reviews/D2/gpt-6-luna-medium-r1.md
+new file mode 100644
+index 000000000..a722023dd
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/reviews/D2/gpt-6-luna-medium-r1.md
+@@ -0,0 +1,37 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: MEDIUM
++    class: design
++    location: _lyx/discussion/decision-record.md: D4
++    summary: The green-record pruning policy does not define which recent whole-green commits are retained, although D2 depends on the newest retained ancestor as its diff base.
++    fix: Specify in D4 an objective retention rule for whole-green commits that guarantees the intended ancestor search, and align D2's base selection and the acceptance criteria with that rule.
++  - id: F2
++    severity: MEDIUM
++    class: design
++    location: _lyx/discussion/decision-record.md: D10
++    summary: The --window override introduces a routing edge without stating what it can skip or the bound on that effect in the introducing Decision.
++    fix: State in D10 that --window only forces the batten.open_window lookup for the current run, allowing only Open-Window's entry gate to pass, and does not affect Seed-IDE or Open-IDE or any other row.
++  - id: F3
++    severity: BLOCKING
++    class: design
++    location: _lyx/discussion/decision-record.md: D13
++    summary: D13 relies on a later first-retagging-card check to learn whether the installed gate discovered the retagged packages' tests, leaving a design-critical fact to the implementation run.
++    fix: Resolve before planning, with evidence from the installed lyx version and its gate behavior, whether the proposed transitional build constraints and hub commands make those tests discoverable; record the answer and change D13's transition accordingly rather than delegating discovery to the first retagging card.
++---
++
++### [MEDIUM] Define whole-green pruning
++
++**Location:** _lyx/discussion/decision-record.md: D4
++**Issue:** D4 says pruning keeps each tier's recent whole-green commits but gives no definition of recent or retention bound. D2 then relies on the newest ancestor whole-green commit to choose a diff base. Without a retention rule, the retained records may omit the ancestor D2 expects and change the scope from the specified base.
++
++### [MEDIUM] Bound the window override
++
++**Location:** _lyx/discussion/decision-record.md: D10
++**Issue:** D10 makes `--window` a forced setting value and thereby lets the Open-Window gate pass when the setting is off, but does not state in that Decision the exact row the override can route through or its scope. The general bound in D8 does not describe this override's effect.
++
++### [BLOCKING] Resolve the transition's discovered-test premise
++
++**Location:** _lyx/discussion/decision-record.md: D13
++**Issue:** D13 says the installed lyx lacks D7 and makes a first retagging card's discovered-test count the only catch for vacuous passes. Whether the installed gate discovers the tests under the transitional constraints and hub commands is a fact on which this transition rests. Deferring its resolution to the implementation card violates the requirement to settle factual design premises before Plan.
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/reviews/D2/gpt-6.1-sol-medium-r1.md b/docs/research/codex-review-bench-2026-10-25/data/reviews/D2/gpt-6.1-sol-medium-r1.md
+new file mode 100644
+index 000000000..9125be96e
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/reviews/D2/gpt-6.1-sol-medium-r1.md
+@@ -0,0 +1,49 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: BLOCKING
++    class: design
++    location: _lyx/discussion/decision-record.md:51
++    summary: D2 can inherit a whole-green base from an incompatible or filtered run
++    fix: In D2, require an ancestor base to have a whole-green entry for the current module and tier fingerprint with compatible unfiltered test args. Explicitly exclude guard-only and user-filtered passes from whole-suite base eligibility, and fall back to the parent merge base or whole run when no eligible entry exists. Add acceptance scenarios for a changed tier command and a filtered whole-target pass followed by an unfiltered diff request.
++  - id: F2
++    severity: MEDIUM
++    class: consistency
++    location: _lyx/discussion/decision-record.md:80
++    summary: Exact args matching defeats the promised count=1 rerun override
++    fix: In D4, specify that an explicit -count=1 request bypasses green-record reads on every invocation, rather than merely using a different args key. Update the acceptance criteria and the support log carry discussion to cover two consecutive identical -count=1 invocations on the same clean tree, both executing tests.
++  - id: F3
++    severity: MEDIUM
++    class: design
++    location: _lyx/discussion/decision-record.md:110
++    summary: D7 rejects valid filtered runs as missing-tier-tag failures
++    fix: Amend D7 so zero execution is a missing-tag failure only when the effective test-selection arguments should select at least one host-eligible test for that tier. Explicitly allow zero execution when user filters exclude every eligible test, and add acceptance coverage for a correct tier command with a nonmatching -run filter alongside the missing-tag scenario.
++---
++
++### [BLOCKING] Ancestor inheritance lacks the green record's compatibility bounds
++
++**Location:** _lyx/discussion/decision-record.md:51
++
++**Issue:** D2 selects an ancestor using only ancestry and whole-green status for the tier. D4 stores module, fingerprint and args separately, but its same-tree carry bound does not state how these constrain D2's ancestor search. A whole-target run restricted to one test can therefore supply a base for an unfiltered diff request; likewise an old-command pass can supply a base after the tier command changes. When that base is HEAD, the diff is empty and tests outside the guard set can be skipped without ever passing under the requested conditions. The Decision introducing inherited green needs its own eligibility bound.
++
++### [MEDIUM] The stated force mechanism only works until its first pass is cached
++
++**Location:** _lyx/discussion/decision-record.md:80
++
++**Issue:** D4 says nonempty args need an exact match and concludes that `-- -count=1` reruns. After the first such invocation passes, its entry contains exactly those args; a second identical invocation matches and carries. The support log's Turn 3 and rejected-alternatives section explicitly rely on this flag as the override in place of a new rerun flag. Exact args matching alone does not deliver that behavior.
++
++### [MEDIUM] Zero execution does not establish a missing build tag
++
++**Location:** _lyx/discussion/decision-record.md:110
++
++**Issue:** D7 fails any package with a host-eligible tagged test but zero executed tests, and attributes that failure to the command lacking its tag. D3 preserves manual flags and D4 explicitly supports args after `--`; the existing CLI also advertises `-run` filtering in internal/gatecli/cli.go. A correctly tagged package containing only TestA legitimately executes zero tests under `-- -run '^TestB$'`. The proposed rule turns that valid request into a configuration failure. Its expected count must account for test selection.
++
++## Rejected
++
++- D4's clean-tree rule, end-of-run cleanliness check, same-tree fingerprint bound and local storage are stated; their mere existence does not warrant a finding. The ancestor eligibility omission is separately identified in F1.
++- D1 bounds gate_key to selecting a hub-defined gate. D8 bounds entry gates to their own row, identifies goto as the operator bypass, and specifies resume and relaunch behavior. D10 confines the window force to one setting for one run and states the zero-budget Describe behavior.
++- D6 states the replacement guard-marker restriction and runs out-of-scope guards under their own tier. D13 limits the transitional integration term to guard-marked files and assigns its removal to a dependent entry after deploy. The temporary exception is explicit.
++- D13's first-card discovery check verifies the prescribed hub configuration was applied; it does not defer an unknown tool capability to Plan. D11 records its test2json evidence. D4's pruning policy leaves retention mechanics to implementation rather than asking downstream to research a factual premise.
++- The rationale paragraphs explain the selected architecture and deliberate operator-view departures. The assumptions and risks carry operational constraints or consequences. No relocation is necessary merely because these sections exist; moving them wholesale would risk losing plan input.
++- D13 files another board entry, which the rubric expressly permits. The Out list does not direct a write to this task's own entry.
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/reviews/D3/gpt-6-astra-medium-r1.md b/docs/research/codex-review-bench-2026-10-25/data/reviews/D3/gpt-6-astra-medium-r1.md
+new file mode 100644
+index 000000000..a4148f180
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/reviews/D3/gpt-6-astra-medium-r1.md
+@@ -0,0 +1,48 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: BLOCKING
++    class: design
++    location: _lyx/discussion/decision-record.md:173
++    summary: Runner behavior needed for narrowed runs remains an unsupported factual assumption
++    fix: Resolve the gated-project and zero-match runner behavior during Discussion using available upstream or repository evidence, recording sources and applicable versions in Decisions or Constraints. Correct the Open risks claim that an existing selected class prevents zero matches to account for the intersection with the tier filter. State the resulting supported runner behavior and any compatibility boundary without assigning this research to Plan or requiring access to the excluded Models checkout.
++  - id: F2
++    severity: MEDIUM
++    class: consistency
++    location: _lyx/discussion/decision-record.md:86
++    summary: The unconditional inert-scope skip contradicts forced whole runs and the green-only constraint
++    fix: Qualify Decision 5 and the inert acceptance criterion to exclude selected carry-false tiers explicitly, with Decision 8 taking precedence before deciding whether commands or the shared build run. Qualify the Scope bullet so whole gates require an eligible ancestor green entry. In the first Constraint and Decision 5 rationale, distinguish omission through an empty narrowed scope from carrying a tier through a green record; retain the clean-tree and record requirements for carrying.
++  - id: F3
++    severity: MEDIUM
++    class: consistency
++    location: _lyx/discussion/decision-record.md:62
++    summary: The no-class compile guarantee omits the shared-build opt-in required by Decision 6
++    fix: Align Decision 3 and its no-class acceptance criterion with Decision 6 by requiring a declared build and an opted-in selected tier for the compile guarantee, and state the outcome when no selected tier opts in. Update the general build acceptance criterion to include a non-empty-seed no-class tier as a build trigger even though its test command does not run, and explicitly preserve the empty-seed and inert-only exclusions after carry-false scope overrides.
++---
++
++### [BLOCKING] Resolve the runner facts the design relies on
++
++**Location:** _lyx/discussion/decision-record.md:173; Open risks at line 178; support-log.md, Turn 2.
++
++**Issue:** The record assumes that naming a gated Models project without its MSBuild property succeeds under VSTest, and relies on that assumption when selecting projects independently of the tier. Neither artifact records evidence or applicable versions for this behavior. The support log's researched facts cover filter grammar, build processes and restore, not this premise. Calling it an auto-mode assumption leaves a design-dependent fact for downstream discovery, which the rubric expressly disallows. Moreover, the risk's stated bound is internally unsound: Decision 4 intersects the class terms with the tier filter, so an existing selected class whose tests are all excluded by that filter can still yield zero matches in an otherwise enabled project. The recorded MTP risk therefore does not cover the design's own filter composition.
++
++### [MEDIUM] Make inert skipping and forced execution agree
++
++**Location:** _lyx/discussion/decision-record.md:86; lines 15, 94, 133, 158 and 191.
++
++**Issue:** Decision 5 says no listed command runs for an inert-only computed or base scope, and the acceptance criterion repeats this for all three scopers. Decision 8 expressly requires a carry-false tier to run on that same diff. The exception is specified for ancestor carrying but omitted from the empty-scope rule. This is particularly material for capture and timing tiers, whose execution is the reason for Decision 8. Separately, the Scope bullet promises no tests at whole gates without the ancestor-record qualification in Decision 5, while the first Constraint and Decision 5 rationale say every skip requires a clean tree and a green record even though the narrowed empty-scope rule requires neither. These statements should describe one execution policy.
++
++### [MEDIUM] State the conditions on the no-class build guarantee
++
++**Location:** _lyx/discussion/decision-record.md:62; lines 102, 104, 190 and 197.
++
++**Issue:** Decision 3 promises a build whenever a non-empty seed selects no class and the hub declares a build. Decision 6 instead triggers it only through an opted-in tier. A valid configuration can declare a build while the selected tier has shared_build unset; the former promises compile validation and the latter schedules none. The no-class acceptance criterion drops even the declared-build qualification. Conversely, the general build criterion describes the trigger as the first opted-in tier that runs, omitting Decision 6's explicit trigger when no test command runs. The distinction matters because the compile guarantee is the stated protection against an empty test selection hiding a broken change.
++
++## Rejected
++
++- Decision 5's ancestor carry is not unbounded: it names the whole entry, current fingerprint, empty arguments, module directory, ancestry, inert-only diff, clean tree, carry eligibility and bounded history. The hub's ability to declare test inputs inert is also expressly acknowledged. Decision 8 states both the scope override and the explicit-target exception; its slot-exclusivity bound excludes raw commands. The consistency problem above does not justify inventing an additional missing-bound finding.
++- The filtered-green rule and Decision 10 agree for ordinary carry-eligible tiers: Merge-In runs at whole scope, so it can write the whole entry Finalize needs. A configured tier filter is distinct from the scope filter terms that prohibit recording. No change to this rule is warranted.
++- The final Constraint changes background guidance about Go builds, not a PATTERN overview entry. The supplied PATTERN-changes contract covers entry additions, changes and removals; the background clarification alone does not require such a declaration.
++- The Scope documentation bullet and Decision 9 contain requirements for the documentation and the hub lens. Moving those requirements solely to the support log would hide them from Plan-Write. Their specificity is useful design input, not surrounding deliberation that should be relocated.
++- Q2 in the support log still names Webster among whole gates, but Q12 and Decision 10 explicitly record the subsequent scope choice. This historical ledger wording does not leave the final plan-facing decision open.
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/reviews/D3/gpt-6-luna-medium-r1.md b/docs/research/codex-review-bench-2026-10-25/data/reviews/D3/gpt-6-luna-medium-r1.md
+new file mode 100644
+index 000000000..c1e81cf8e
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/reviews/D3/gpt-6-luna-medium-r1.md
+@@ -0,0 +1,40 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: BLOCKING
++    class: design
++    location: _lyx/discussion/decision-record.md: Open risks
++    summary: The MTP unmatched-filter behavior is left as an unresolved risk instead of being researched and recorded as a design fact.
++    fix: Research the relevant Microsoft.Testing.Platform and dotnet test behavior for an unmatched filter at the supported versions, then replace the Open risks entry with the result and its source/version evidence in Decisions or Constraints.
++  - id: F2
++    severity: BLOCKING
++    class: design
++    location: _lyx/discussion/decision-record.md: Auto-mode assumptions
++    summary: The VSTest behavior for a gated project that skips discovery is treated as an assumption without recorded research evidence.
++    fix: Verify the Models gated-project behavior and its VSTest exit code at the relevant versions, then record the result with source/version evidence in Decisions or Constraints and remove it from Auto-mode assumptions.
++  - id: F3
++    severity: MEDIUM
++    class: design
++    location: _lyx/discussion/decision-record.md: Decision 8
++    summary: The carry false guarantee has an explicit-target exception but gives no bound on how explicit targets can narrow or skip the timing work.
++    fix: State in Decision 8 what explicit-target invocations can omit and how that exception is bounded, or remove the exception so carry false runs the tier whole for explicit-target scopes too.
++---
++
++### [BLOCKING] Research unmatched-filter behavior before accepting MTP risk
++
++**Location:** _lyx/discussion/decision-record.md: Open risks
++
++**Issue:** The entry says MTP may fail when a narrowed filter matches no tests and leaves that behavior as an open risk. The discussion stencil requires factual questions the design rests on to be settled during Discussion, with evidence named by source and version. The support log records VSTest filter grammar research, but no research of unmatched-filter behavior under MTP. This matters to whether a narrowed test project can fail merely because it has no matching test.
++
++### [BLOCKING] Verify gated-project VSTest exit behavior
++
++**Location:** _lyx/discussion/decision-record.md: Auto-mode assumptions
++
++**Issue:** The assumption says Models gated projects skip discovery and exit 0 under VSTest, and Decision 4 relies on this to characterize narrowed runs. The record supplies no evidence/version for this fact, and the support log's research summary does not cover it. The stencil requires this kind of fact to be researched and recorded rather than left as an assumption.
++
++### [MEDIUM] Bound the explicit-target exception to carry false
++
++**Location:** _lyx/discussion/decision-record.md: Decision 8
++
++**Issue:** Decision 8 says a carry-false tier runs whole for every scope form except explicit targets. For the timing tier, that exception allows an explicit-target invocation to avoid the whole-work guarantee, but the Decision does not say what it can skip or how that path is bounded. The stated bound only concerns raw builds outside lyx gate test.
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/reviews/D3/gpt-6.1-sol-medium-r1.md b/docs/research/codex-review-bench-2026-10-25/data/reviews/D3/gpt-6.1-sol-medium-r1.md
+new file mode 100644
+index 000000000..bbfe7b0ae
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/reviews/D3/gpt-6.1-sol-medium-r1.md
+@@ -0,0 +1,46 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: BLOCKING
++    class: design
++    location: _lyx/discussion/decision-record.md:173
++    summary: Runner exit behaviour remains an unsupported design assumption
++    fix: Research the gated-project VSTest behaviour and unmatched-filter MTP behaviour at the SDK and runner versions the design supports. Record the answers and named versioned evidence in Decisions or Constraints, replace the factual auto-mode assumption, and revise the MTP risk and filtering policy to account for the intersection of a selected class filter with the tier filter being empty even in a real test project. Settle the intended handling of that case in the discussion rather than leaving it to Plan or implementation.
++  - id: F2
++    severity: MEDIUM
++    class: consistency
++    location: _lyx/discussion/decision-record.md:62
++    summary: The empty-test-scope build promise omits the shared-build opt-in condition
++    fix: Align Decision 3 and the empty-closure acceptance criterion with Decision 6 by specifying that the declared build runs for an empty test scope from a non-empty seed only when a listed tier opts in with shared_build. State that no opted-in tier means no shared build. Update the build scheduling acceptance criterion to include the non-empty-seed empty-test-scope trigger and the empty-seed exclusion, as well as the existing carried and inert-only exclusions.
++  - id: F3
++    severity: MEDIUM
++    class: consistency
++    location: _lyx/discussion/decision-record.md:168
++    summary: A prescribed PATTERN background change is declared to be no PATTERN change
++    fix: Remove the no-PATTERN-changes assertion. Add a PATTERN changes section after Acceptance criteria with a changes bullet for PATTERN-gate-slot, retaining its existing overview requirement about held slots and green-record carry. Keep the instruction to narrow the background trimpath rule to Go builds as the detailed requirement associated with that entry, with the edit landing in the build-step card.
++---
++
++### [BLOCKING] Runner facts have not been settled with evidence
++
++**Location:** _lyx/discussion/decision-record.md:173; _lyx/discussion/decision-record.md:178
++
++**Issue:** The design relies on a gated Models project returning success without discovery, but records this as an auto-mode assumption. The support log's researched facts cover filter grammar, node reuse and restore, not this exit behaviour or the MTP claim. Neither claim names the applicable SDK/runner version and supporting evidence. These are facts on which project selection rests, not operator choices, so the rubric requires their resolution in the decision record. The MTP risk also says an unmatched filter arises only in a project not running as a test project. Decision 4 composes a tier filter with the class terms: a selected class can exist while all its tests are excluded by the tier filter. The stated bound therefore does not cover an ordinary supported filtering case.
++
++### [MEDIUM] Empty-scope build scheduling has two contracts
++
++**Location:** _lyx/discussion/decision-record.md:62; _lyx/discussion/decision-record.md:102; _lyx/discussion/decision-record.md:190; _lyx/discussion/decision-record.md:197
++
++**Issue:** Decision 3 promises a build whenever the hub declares one and a non-empty seed selects no class. Decision 6 instead schedules it through the first listed opted-in tier. A hub declaring a build while the listed tiers do not opt in is valid under the stated load rules, but receives incompatible instructions for this case. The dedicated empty-closure acceptance criterion repeats the unconditional promise, while the general build criterion mentions only a tier that runs and omits the special empty-test-scope trigger. The plan writer should receive one explicit scheduling rule.
++
++### [MEDIUM] The PATTERN edit is not recorded as a change
++
++**Location:** _lyx/discussion/decision-record.md:168
++
++**Issue:** The last Constraint both denies any PATTERN changes and directs an edit to the PATTERN-gate-slot background. The existing background actually says every gate build keeps trimpath, so limiting it to Go changes that entry's requirement. The discussion spec requires every PATTERN entry the design changes to be listed under PATTERN changes; putting this edit only in Constraints contradicts that declaration and bypasses the intended change record.
++
++## Rejected
++
++- Decision 5 and Decision 8 state substantive bounds: inert patterns are hub-only, opt-in and fingerprinted; ancestor carry requires a matching whole record on a clean tree; Decision 8 explicitly overrides inert and no-class narrowing for carry-disabled tiers. The broader no-tier wording in Scope and the inert acceptance criterion should be read with that explicit exception, not treated as a separate missing guard.
++- The filtered-pass green-record rule does not prevent Finalize carrying a genuinely whole Merge-In pass. Scope filter terms differ from the tier's own declared filter, which is fingerprinted. Decision 10 and that Constraint can hold together.
++- The documentation inventory and Decision 9's repo-rule text prescribe deliverables the plan writer needs. Moving those requirements to the support log would lose design input because Plan does not read it. No relocation finding is warranted.
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/reviews/D4/gpt-6-astra-medium-r1.md b/docs/research/codex-review-bench-2026-10-25/data/reviews/D4/gpt-6-astra-medium-r1.md
+new file mode 100644
+index 000000000..bff0c1f63
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/reviews/D4/gpt-6-astra-medium-r1.md
+@@ -0,0 +1,49 @@
++---
++verdict: APPROVED
++findings:
++  - id: F1
++    severity: MEDIUM
++    class: design
++    location: _lyx/discussion/decision-record.md:55
++    summary: The offline path promises ownership protection that a stale local board cannot provide
++    fix: Amend D2 to state that an unreachable origin skips fresh ownership and stopped-branch judgments and can therefore cancel local remnants of a remotely owned or stopped run. Bound this explicitly to the named slug's local processes and artifacts, retain refusal for locally known foreign ownership and landed work, and qualify the absolute ownership guarantee accordingly. Add an acceptance scenario with stale local ownership and unavailable origin.
++  - id: F2
++    severity: MEDIUM
++    class: design
++    location: _lyx/discussion/decision-record.md:68
++    summary: An interruption after the claim clear makes the remaining cancel steps unreachable on retry
++    fix: Revise D2 and D3 to permit completion of pending finalization after records, pair and claim are gone. Specify durable pending-finalization state that survives D6, is considered by the nothing-left refusal, and is cleared only after the pause lift and records-push scheduling have completed; define notice retry behavior. Add an acceptance case interrupted between D3 steps 7 and 8 with --remove and a live slug pause.
++  - id: F3
++    severity: MEDIUM
++    class: design
++    location: _lyx/discussion/decision-record.md:171
++    summary: The older-process recovery advice relies on reap handling processes it explicitly excludes
++    fix: Replace the older-binary risk's generic tender reap remedy with the researched boundary from internal/tenderengine/doc.go. Record in D4 that unregistered surviving processes in a kept pair and replaced-binary processes require explicit inspection and manual termination through tender status and platform process tools, and qualify the no-process guarantee for these cases. Keep reap advice only for processes its orphan rules actually admit.
++---
++
++### [MEDIUM] Offline cancellation lacks an accurate bound
++
++**Location:** _lyx/discussion/decision-record.md:55
++
++**Issue:** D2 permits proceeding when origin is unreachable, using the local board for ownership, but concludes that the verb cannot end a run owned elsewhere. A local board can predate a remote ownership change; the stopped-branch refusal likewise depends on a reconcile verdict unavailable on this path. A warning and failed-push reporting bound neither missed judgment. The existing resume precedent acknowledges proceeding without judging against origin (`internal/battencli/resumereconcile.go`); it does not make local ownership fresh. The attack-surface rule requires this Decision to acknowledge what the fallback lets through and state its actual local bound.
++
++### [MEDIUM] Finalization cannot always resume
++
++**Location:** _lyx/discussion/decision-record.md:68
++
++**Issue:** With `--remove`, after step 7 there can be no pair, records directory, run-form claim or registered live process. If interrupted there, step 8 has not lifted the slug pause or scheduled the records push. On retry, D2's nothing-left refusal fires before either action. This contradicts D3's anywhere-retry promise and the corresponding acceptance criterion; the stale pause can hold the next run at InnerRun, exactly as D8 explains. Merely making each operation idempotent does not make the remaining operations reachable.
++
++### [MEDIUM] Reap does not cover the stated older-binary risk
++
++**Location:** _lyx/discussion/decision-record.md:171
++
++**Issue:** The risk says unregistered older processes not caught by driver/run locks remain for `lyx tender reap`. The current `internal/tenderengine/doc.go` states that reap never ends a process working inside a registered worktree or a pair that exists. Its unregistered-orphan listing also excludes processes whose executable is deleted, which are reported separately as replaced-binary processes. Thus a detached older process in the default kept pair is not repaired by the named remedy. `internal/runproc/doc.go` confirms that End reaches registered roots and their descendants, not every unrelated unregistered process. This is a false recovery premise, not a demand for exhaustive process enumeration.
++
++## Rejected
++
++- D3/D4 lock sequence: no self-deadlock established. D4 step 2 expressly takes batten's prime-side locks, whereas step 5 belongs to the pairteardown phase. The existing `awaitPairRunLock` in `internal/pairteardown/teardown.go` waits on the task location's self-run lock, distinct from the prime slug lock used by batten cleanup. D3 correctly retains the latter. The survivor rule refers to surviving external holders, not the cancel's own acquired locks.
++- D1, D4 and D11 attack surface: the prime/slug restriction, explicit mid-turn termination, survivor refusal, preserved-work bound and typed-error-only hand-back state the relevant limits. Skipping a pre-end quiet wait is the chosen cancellation behavior, not by itself a defect.
++- D5 snapshot and claim mode: current `RemovePair` snapshots only in Local mode and normally settles the claim. However, Scope explicitly adds a caller-owned-claim removal mode, and D5 explicitly requires snapshot preservation alongside ordinary origin steps. These are requirements for new behavior, not a claim that today's implementation already provides that combination. No missing API-shape finding is warranted.
++- Deferred research: D10 names its tracked-only probe and source; D8 names Lift, whose current `sendResumeLine` checks liveness before sending. The index.lock risk is an acknowledged failure mode, not an instruction for Plan to discover whether the design works. The older-process recovery premise is addressed in F3 rather than demanding broad additional research or citations.
++- Relocation: Scope, Constraints, Auto-mode assumptions and Open risks are compact exclusions, requirements, choice pointers and operational limitations. No surrounding deliberation warrants relocation at the cost of losing plan input.
++- Support-log Turn 3: the historical unreachable-origin refusal is expressly revised in Turn 5, Q10 and Rejected alternatives. The chronology does not misrepresent the final D2 choice.
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/reviews/D4/gpt-6-luna-medium-r1.md b/docs/research/codex-review-bench-2026-10-25/data/reviews/D4/gpt-6-luna-medium-r1.md
+new file mode 100644
+index 000000000..9eb86726c
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/reviews/D4/gpt-6-luna-medium-r1.md
+@@ -0,0 +1,44 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: BLOCKING
++    class: design
++    location: _lyx/discussion/decision-record.md: D4 steps 2 and 5
++    summary: The cancel acquires and holds batten's run lock in step 2, then waits for the run lock again in step 5, so the stated sequence can deadlock on its own lock.
++    fix: Clarify which lock step 5 waits for and ensure it is not batten's run lock acquired in step 2; revise the acquisition, release, and survivor rules in D3 and D4 so the sequence is executable without self-waiting.
++  - id: F2
++    severity: BLOCKING
++    class: design
++    location: _lyx/discussion/decision-record.md: D2 unreachable-origin bullet and Bound
++    summary: When the origin is unreachable the verb proceeds using local board ownership, which can be stale, so it can end a run owned by another machine despite the stated bound.
++    fix: Define a verifiable ownership condition for proceeding while the origin is unreachable and refuse when ownership cannot be established, or change the behavior and explicitly bound the risk of ending another machine's run; make the matching D2 refusal and acceptance criterion consistent.
++  - id: F3
++    severity: MEDIUM
++    class: design
++    location: _lyx/discussion/decision-record.md: D4, D5, D8, and Open risks
++    summary: Several design premises are left as risks or unsupported assertions for Plan or implementation to discover, including index.lock behavior, older-binary process registration, Lift behavior with no sessions, and removal mode leaving the claim to its caller.
++    fix: Research each premise now and record the answer with source and version evidence in the relevant Decision or Constraint; resolve the index.lock and older-binary risks instead of handing their behavior downstream.
++  - id: F4
++    severity: MEDIUM
++    class: consistency
++    location: _lyx/discussion/support-log.md: Interview Turn 3 and Question ledger Q10
++    summary: Interview Turn 3 records refusal on an unreachable origin as the pick, while D2 and Q10's revised answer proceed with a Warn, leaving the log's account of the final design misleading.
++    fix: Amend Turn 3 to identify refusal as the initial pick and state that it was revised to proceed with a Warn, consistent with D2 and Q10.
++---
++
++### [BLOCKING] Cancel waits on a lock it already holds
++**Location:** _lyx/discussion/decision-record.md: D4 steps 2 and 5
++**Issue:** D3 says the cancel holds batten's driver, run, and status locks from step 4 through step 8. D4 step 2 takes those locks, then step 5 waits for the run lock after the end. As written, the cancel can wait on its own held run lock, preventing it from reaching the release in step 8.
++
++### [BLOCKING] Unreachable origin does not establish ownership
++**Location:** _lyx/discussion/decision-record.md: D2 unreachable-origin bullet and Bound
++**Issue:** The verb continues when origin is unreachable and relies on local board ownership, which may be stale. That permits ending a run owned by another machine, contrary to D2's stated bound that the verb cannot end work owned elsewhere.
++
++### [MEDIUM] Research unresolved factual premises
++**Location:** _lyx/discussion/decision-record.md: D4, D5, D8, and Open risks
++**Issue:** The record leaves index.lock behavior and older-binary process registration as open risks. It also asserts that Lift sends no resume line when no sessions remain and that the removal mode leaves the claim to its caller without recording the research and evidence behind those facts. The discussion stencil requires factual premises the design rests on to be settled here with source and version evidence, not left for Plan or an implementer.
++
++### [MEDIUM] Interview log conflicts with the final origin decision
++**Location:** _lyx/discussion/support-log.md: Interview Turn 3 and Question ledger Q10
++**Issue:** Interview Turn 3 says the pick was to refuse the whole verb when origin is unreachable. D2 and the revised Q10 instead say the verb proceeds with a Warn. The support log therefore misstates the final design.
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/reviews/D4/gpt-6.1-sol-medium-r1.md b/docs/research/codex-review-bench-2026-10-25/data/reviews/D4/gpt-6.1-sol-medium-r1.md
+new file mode 100644
+index 000000000..a1b778240
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/reviews/D4/gpt-6.1-sol-medium-r1.md
+@@ -0,0 +1,61 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: BLOCKING
++    class: design
++    location: _lyx/discussion/decision-record.md:78
++    summary: The landed-work refusal can become stale while cancel waits to end the run
++    fix: In D3 and D4, require the landed-work refusal to be re-evaluated after acquiring the records write locks and immediately before every End pass, with serialization that prevents a parent merge between that check and the end. Refuse without ending or clearing anything when the recheck finds landed work. Add an acceptance scenario where Finalize lands while cancel is waiting for the write lock.
++  - id: F2
++    severity: MEDIUM
++    class: design
++    location: _lyx/discussion/decision-record.md:55
++    summary: The offline escape hatch does not state the origin checks it bypasses
++    fix: In D2, explicitly state that unreachable origin skips authoritative ownership and stopped-branch verification, that local ownership may be stale, and that the fallback requires a successful local ownership read and refuses a locally recorded foreign owner. Bound cancellation to the named local run and describe the deferred board and records publication through failed-push handling. Replace the unconditional claim that it cannot end a run owned elsewhere with the actual online and offline guarantees.
++  - id: F3
++    severity: MEDIUM
++    class: design
++    location: _lyx/discussion/decision-record.md:68
++    summary: A completed claim clear makes interrupted final cleanup impossible to resume
++    fix: In D2 and D3, preserve a durable indication of unfinished cancellation through pause lifting and records-push scheduling, and let that indication bypass the nothing-left refusal on re-entry. Remove it only after those steps finish. Include interruption after step 7 with --remove and a live slug pause in the acceptance criteria, requiring the retry to lift the pause and schedule the records push.
++  - id: F4
++    severity: MEDIUM
++    class: design
++    location: _lyx/discussion/decision-record.md:171
++    summary: Tender reap cannot recover the older-binary processes the risk delegates to it
++    fix: Replace the older-binary risk with the researched limits of tender reap from internal/tenderengine/processes.go and reap.go. In D4, specify a refusal before records removal and claim clearing when a positively identified unregistered process belonging to the slug survives; name manual termination and retry as its way forward. State the supported detection boundary instead of promising reap will handle arbitrary older processes, and add a kept-pair older-binary survivor scenario.
++---
++
++### [BLOCKING] Recheck landed work under the end's serialization
++
++**Location:** `_lyx/discussion/decision-record.md:78`
++
++**Issue:** D3 reads the landed refusal before D4 waits for the combined write locks. A running Finalize can merge into the parent during that interval, release the write lock, and then be killed by cancel using the earlier not-landed reading. D4 has no landed recheck after acquiring the locks. The subsequent path can remove its records and clear its claim despite D2's promise to refuse landed work with nothing changed. This is supported by `internal/battenshed/innerrun_owner.go`, where `FinalizePastMerge` reads the parent's current holdings, and `internal/fabricengine/merge.go`, where Merge serializes its mutation with the records write lock. Merely checking before waiting does not protect that boundary; D5's later removal refusal also cannot restore an ended landing.
++
++### [MEDIUM] State the offline bypass and its actual bound
++
++**Location:** `_lyx/discussion/decision-record.md:55`
++
++**Issue:** The Warn path proceeds without an origin verdict, so it cannot discover a stopped branch or an ownership change absent from the local board. D2 names the local fallback but does not acknowledge these skipped protections, and its final bound still says a run owned elsewhere cannot be ended. `internal/battencli/resumereconcile.go` explicitly describes its analogous offline resume as proceeding without judging the run against origin. Referencing that precedent does not establish the stronger cancellation guarantee. The rubric requires the Decision introducing this bypass to state what it lets through and its bounds.
++
++### [MEDIUM] Preserve re-entry through the final cancellation steps
++
++**Location:** `_lyx/discussion/decision-record.md:68`
++
++**Issue:** With `--remove`, after step 7 there can be no pair, records directory, run-form claim or registered live process. If cancellation is interrupted there, D2's nothing-left refusal rejects the retry before step 8 can lift the slug pause or spawn the records push. This directly contradicts the acceptance criterion that interruption after any completed step is recoverable. A live pause is not among D2's evidence that cancellation remains unfinished.
++
++### [MEDIUM] The older-process recovery premise is false
++
++**Location:** `_lyx/discussion/decision-record.md:171`
++
++**Issue:** The risk leaves unregistered older processes to `lyx tender reap`, but `internal/tenderengine/processes.go` only includes unregistered processes with the executable's filename in a deleted working directory outside registered worktrees, and explicitly excludes deleted executables. `internal/tenderengine/reap.go` acts only on that orphan report. An older detached push in a kept pair therefore need not be reached by End, hold either checked driver/run lock, or qualify for reap. The cancel can report completion and clear its records while such a process remains alive. The claimed recovery is not merely an unresolved implementation detail; it rests on behavior the existing recovery verb does not provide.
++
++## Rejected
++
++- D3/D4 lock ordering is coherent when read with the existing teardown boundary: D4 step 2 acquires batten's prime-side per-slug locks; step 5 waits for the child's self-run lock. `internal/pairteardown/teardown.go` derives the latter from the task location and `shedrun.SelfRunID`. D3 can retain the former through claim clearing without waiting on its own lock. The survivor wording is broad, but the distinct contexts do not justify a deadlock finding.
++- D1 bounds orch access through the prime guard and named slug. D4 explicitly permits ending live work and bounds the skipped quiet wait with process, strand and lock checks; F1 addresses the separate landed-work hole. D5 states forced removal's snapshot and landed-work bounds. D11 limits the hand-back route to the precondition prefix and typed dirty-source error. No additional generic attack-surface finding is warranted.
++- D8's no-resume-line premise is supported by `internal/tenderengine/doc.go` and `resume.go`: a dead strand gets no line. D10 names the actual tracked-only probe, confirmed by `internal/fabricengine/dirtiness.go`. D5 prescribes a new claim-preserving removal mode rather than leaving its existence to downstream research; the current `RemovePair` implementation settles the claim and restricts snapshots to local mode, so implementing the specified mode must change that behavior. Those are design requirements, not unanswered research questions.
++- The index.lock item states a residual risk for raw git outside the combined lock, rather than assigning a factual question to Plan. It does not warrant a deferred-research finding by itself. The older-binary recovery assertion is addressed separately in F4.
++- Scope, Constraints, Auto-mode assumptions and the remaining risk prose are sufficiently distilled and carry exclusions, requirements or accepted limitations. No relocation would improve the record enough to justify a finding, and no required constraint should be moved out of the plan writer's input.
++- Interview Turn 3 is historical. Turn 5 explicitly revises the offline pick, the rejected alternatives explain its rejection, and Q10 explicitly records the revision. Read as a turn-by-turn log, it does not misrepresent the final design.
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/reviews/D5/gpt-6-astra-medium-r1.md b/docs/research/codex-review-bench-2026-10-25/data/reviews/D5/gpt-6-astra-medium-r1.md
+new file mode 100644
+index 000000000..b3057c329
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/reviews/D5/gpt-6-astra-medium-r1.md
+@@ -0,0 +1,35 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: BLOCKING
++    class: design
++    location: _lyx/discussion/decision-record.md:75
++    summary: The merge-record exception still permits a cleanup instruction for another merge's staged changes
++    fix: Amend D2 and D4 to give an in-progress merge reason precedence over the ordinary dirty-parent cleanup guidance at Finalize. Preserve the aggregated error and typed dirty-path details, but suppress commit-or-discard guidance when the error also reports a merge in progress; direct the recipient to the parent merge's owner to finish its recovery before retrying. Record the aggregation evidence from fabricengine's current Merge and MergeGuardError implementation, and add an acceptance scenario with both an existing parent merge record and tracked staged changes that verifies neither the goto response nor the subsequent Finalize halt recommends discarding those changes.
++  - id: F2
++    severity: MEDIUM
++    class: design
++    location: _lyx/discussion/decision-record.md:43
++    summary: The suggested fabric commit does not clean the parent's code checkout
++    fix: Replace the lyx fabric commit example in D2's shared D2/D4 recovery text with instructions to commit or intentionally discard the listed changes in the named parent code checkout. For the commit example use ordinary code-side git add -- <paths> followed by git commit -m <message>, with the parent operator performing it when the receiving task session cannot modify that checkout, then retain the task-worktree goto and resume commands. Record that fabric commit synchronizes the configured records pathspec, and require the recovery acceptance scenario to demonstrate that the named code path becomes clean before goto is retried.
++---
++
++### [BLOCKING] An in-progress merge can receive the ordinary discard advice
++
++**Location:** `_lyx/discussion/decision-record.md:75`, together with D2 at lines 40–45.
++
++**Issue:** D4's exception rests on Finalize refusing with the in-progress reason without telling the recipient to discard the staged merge. The current `internal/fabricengine/merge.go` explicitly aggregates `mergeInProgressReason` and `pairDirtyReason` before returning. `MergeGuardError.WorktreeDirty()` in `internal/fabricengine/mergeerrors.go` tests membership, not exclusivity. Consequently, when that combined error reaches Finalize's steps 6–7, it enters the dirty arm that D2 instructs Plan to decorate with commit-or-discard advice. Admitting the goto does not provide the promised protection. This is a concrete unsafe recovery instruction for the very staged changes D4 intends to protect, not a request to change the closed error vocabulary.
++
++### [MEDIUM] The recovery example commits the wrong side
++
++**Location:** `_lyx/discussion/decision-record.md:43`.
++
++**Issue:** `internal/fabriccli/weft_verbs.go` builds the CLI commit pathspec from Fabric's routing names and describes the command as committing weft changes. It takes no file arguments and invokes `fab.Commit` with that records pathspec. Thus, for the support log's example of dirty code-side `docs/overview.md`, the suggested command can succeed while leaving the actual blocker untouched; D4 will refuse the following goto again. In addition, `internal/fabriccli/roleguard.go` refuses this mutating fabric verb from sandboxed task roles, so changing directory to the parent does not make it a usable task-agent recovery. The named goto and resume commands themselves exist; the defect is the proposed cleanup step.
++
++## Rejected
++
++- D4's unreadable-parent admission and advisory-at-goto-time limitation are explicitly bounded by Finalize's authoritative checks. No additional finding for those choices. The inspected goto wiring passes the recipe guard through CLI/driver goto, tackler and arbiter validation, and their consume paths; no bypass of those guarded targets was established.
++- D1 states a researched answer, names the dirty guard and parent-record commit step, and does not assign the factual question to Plan. The current `fabricengine/mergeguards.go` and `fabricengine/junction.go` support the code-only guard and linked records topology. No missing exclusion finding.
++- D3 explicitly retains recognition and skipping of the legacy parent-status section, names the removed writer seam, and describes the affected task-side surface in Scope. No necessary constraint was found only in the support log; removal of test references is Plan's enumeration work.
++- The Decisions contain actionable requirements and short rationales; the Notes carry path-conversion and parent-opening hints. No deliberation-only passage warranted relocation after applying completeness-before-leanness.
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/reviews/D5/gpt-6-luna-medium-r1.md b/docs/research/codex-review-bench-2026-10-25/data/reviews/D5/gpt-6-luna-medium-r1.md
+new file mode 100644
+index 000000000..f4eba7a9d
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/reviews/D5/gpt-6-luna-medium-r1.md
+@@ -0,0 +1,16 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: BLOCKING
++    class: design
++    location: _lyx/discussion/decision-record.md: Decisions — D1
++    summary: D1 treats the linked _lyx layout as settled without recording evidence for the premise that run records are invisible to code-checkout git status
++    fix: Add to D1 the concrete evidence establishing that the code checkout's _lyx is a directory link into the records checkout and that git status from the code checkout does not report _lyx/shed paths; cite the repository source or test that establishes each fact, so Plan does not have to discover whether this foundational premise holds.
++---
++
++### [BLOCKING] D1 leaves its foundational checkout-layout fact unevidenced
++
++**Location:** _lyx/discussion/decision-record.md: Decisions — D1
++
++**Issue:** D1 relies on the claim that the code checkout's `_lyx` is a directory link into the records checkout, and concludes from it that `_lyx/shed/**` cannot appear in the code checkout's `git status`. The decision records the conclusion but gives no source, version, or test evidence for either part of that premise. The support log's Turn 1 repeats the claim as a traced fact but likewise names no evidence. Since the no-change decision and acceptance criterion depend on this behavior, the plan writer is left to find out a fact the discussion process was required to settle.
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/reviews/D5/gpt-6.1-sol-medium-r1.md b/docs/research/codex-review-bench-2026-10-25/data/reviews/D5/gpt-6.1-sol-medium-r1.md
+new file mode 100644
+index 000000000..8e06cf3ce
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/reviews/D5/gpt-6.1-sol-medium-r1.md
+@@ -0,0 +1,48 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: MEDIUM
++    class: design
++    location: _lyx/discussion/decision-record.md:43
++    summary: The proposed commit command does not commit the code checkout dirt
++    fix: Replace the lyx fabric commit example in D2 with commands that actually stage and commit the named tracked paths in the parent code checkout, such as git add -- <paths> followed by git commit -m <message>. Keep the guarded goto and resume sequence. Record the CLI evidence that fabric commit commits the configured records pathspec, and require the recovery scenario to demonstrate that the parent code dirt is cleared before goto.
++  - id: F2
++    severity: BLOCKING
++    class: design
++    location: _lyx/discussion/decision-record.md:75
++    summary: Admitting an in-flight merge does not prevent the cleanup advice from targeting its staged paths
++    fix: Amend D2 and D4 to give an in-progress merge precedence over the dirty-path cleanup remedy, including aggregated guard failures and a merge record appearing after the goto check. Require Finalize to preserve the other merge and report an in-progress remedy without recommending commit or discard of its staged paths. Add this concurrent-record scenario to Acceptance criteria and correct D4's claim that the existing guard alone guarantees the safe remedy.
++  - id: F3
++    severity: LOW
++    class: design
++    location: _lyx/discussion/decision-record.md:31
++    summary: The directory-link premise lacks its supporting source in the decision record
++    fix: Add a short evidence clause to D1 naming internal/fabricengine/junction.go and internal/fabricengine/junctionnames.go at the reviewed repository revision as the sources establishing the structural _lyx link into the records checkout. Connect that evidence to pairDirtyReason's code-only tracked-status read. Keep the resolved no-exclusion decision; no signatures, line citations or exhaustive dependency list are needed.
++---
++
++### [MEDIUM] Recovery commits the wrong checkout
++
++**Location:** _lyx/discussion/decision-record.md:43
++
++**Issue:** D2 explicitly promises a way to clear tracked dirt in the parent's code checkout, but `internal/fabriccli/weft_verbs.go` defines `lyx fabric commit` as a no-argument records commit using the configured pathspec. Its help says it stages the durable structural directory and optional configured additions. It does not stage an ordinary code path such as the support log's `docs/overview.md`. Following this example can succeed while leaving the exact dirt that D4 refuses. The named commands are not denied by the settings read; the defect is the commit command's behavior.
++
++### [BLOCKING] The merge-record admission's safety claim is false
++
++**Location:** _lyx/discussion/decision-record.md:75
++
++**Issue:** D4 says Finalize's guard will report an in-progress merge without telling the operator to discard another run's staged merge. However, `internal/fabricengine/merge.go` aggregates `mergeInProgressReason` and `pairDirtyReason` in `Merge`; a recorded merge with tracked staged changes can therefore carry both reasons. Finalize's steps 6–7 select any guard error whose `WorktreeDirty()` is true, and D2 gives that arm the unconditional commit-or-discard remedy. A record appearing after Finalize's parent-record commit and before its parent-side `Merge` reaches precisely this case, even if the goto-time probe saw a clean parent. An existing record may instead stop earlier at `commitParentRecords`, whose commit refuses recorded merges, so the asserted downstream behavior is not established there either. The advisory timing bound preserves merge safety, but does not bound the destructive cleanup advice.
++
++### [LOW] Record the evidence for the no-exclusion premise
++
++**Location:** _lyx/discussion/decision-record.md:31
++
++**Issue:** D1 names the dirty guard and parent-record commit as sources for those behaviors, but states the separate directory-link premise without naming its evidence. The support log repeats the assertion as an exploration result. `internal/fabricengine/junction.go` actually constructs the code-to-records junctions, and `internal/fabricengine/junctionnames.go` includes `_lyx` in the structural committed directories. The premise is supported by the source inspected in this review, but the rubric requires the load-bearing factual answer and its evidence to be recorded for Plan, which does not read the support log.
++
++## Rejected
++
++- D4's unreadable-parent admission and goto-time advisory bound are stated explicitly and retain Finalize's authoritative merge checks. Neither is an unbounded escape hatch.
++- No goto bypass was established. `loomcli.specFor` installs the recipe guard; generic `lyx shed goto` arms loom and darn through `loomcli.ArmAt`; `shedverbs.RunGoto` passes it into `shedengine.Goto`. Tackler and arbiter validation and consume paths also receive the guard. D4 covers both Finalize and its direct routed-from row.
++- The goto-then-resume sequence itself exists: Goto leaves the target paused, and the resume implementation wakes the parked driver or starts a Go driver for a halted Go-seeded run. The existing settled-guard message alone would be weak evidence, but the implementation supports the intended sequence for the normal halted run.
++- D3 retains tolerant parsing explicitly, and Scope names the fabric CLI and task-side MergeIn surfaces that keep bare errors and lose the old parent section. No necessary constraint was found only in the support log.
++- No relocation finding is warranted. The remaining rationale explains requirements or bounds the plan writer needs, and the optional notes carry actionable design hints rather than interview narrative.
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/reviews/D6/gpt-6-luna-medium-r1.md b/docs/research/codex-review-bench-2026-10-25/data/reviews/D6/gpt-6-luna-medium-r1.md
+new file mode 100644
+index 000000000..44f9f11c5
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/reviews/D6/gpt-6-luna-medium-r1.md
+@@ -0,0 +1,64 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: BLOCKING
++    class: design
++    location: _lyx/discussion/decision-record.md: D5
++    summary: D5 makes the run-lock holder's network-gate state a prerequisite for ending it but does not say how that state is determined.
++    fix: Research how the engine can reliably identify a step waiting at the network gate, then record the observable signal and its evidence in D5; specify what happens when the state cannot be established.
++  - id: F2
++    severity: BLOCKING
++    class: design
++    location: _lyx/discussion/decision-record.md: D8
++    summary: D8 relies on detecting an unregistered lyx process whose working directory is a deleted directory inside the hub without establishing how those facts are read.
++    fix: Research the process and filesystem readings available for identifying a deleted in-hub working directory, then state the detection method and evidence in D8; also state how the no-registered-linked-task-worktree and batten-record conditions are read.
++  - id: F3
++    severity: BLOCKING
++    class: design
++    location: _lyx/discussion/decision-record.md: Constraints, no lyx run process handles SIGTERM
++    summary: The claim that no lyx run process handles SIGTERM supports D4's immediate-exit and no-stop-notice behavior but has no source or evidence.
++    fix: Verify the SIGTERM behavior of the affected lyx run processes and record the source or code evidence in Constraints, including the relevant version where applicable.
++  - id: F4
++    severity: BLOCKING
++    class: design
++    location: _lyx/discussion/decision-record.md: D10
++    summary: The sixty-minute bound is justified by the unsupported claim that it covers the longest fork seen.
++    fix: Record the evidence for the longest observed fork duration that supports the sixty-minute bound, or revise the bound and rationale to an evidenced value.
++  - id: F5
++    severity: MEDIUM
++    class: consistency
++    location: _lyx/discussion/support-log.md: Rejected alternatives, process-table scan bullet
++    summary: The fallback for finding unregistered orphans is cross-referenced as D7, but the process-table fallback is in D8.
++    fix: Change the parenthetical reference from D7 to D8 in the process-table scan bullet.
++---
++
++### [BLOCKING] D5 leaves gate-state detection to downstream
++
++**Location:** _lyx/discussion/decision-record.md: D5
++
++**Issue:** D5 allows ending a run-lock holder only when it is a step waiting at the network gate, but does not specify how to determine that state. Plan or implementation would have to discover a design-critical fact later.
++
++### [BLOCKING] D8 leaves orphan-detection readings unresolved
++
++**Location:** _lyx/discussion/decision-record.md: D8
++
++**Issue:** The orphan rule depends on whether a slug has a registered linked task worktree, whether its batten record reads running, and whether an unregistered process has a deleted working directory inside the hub. The record provides no method for reading these conditions, leaving research to downstream.
++
++### [BLOCKING] D4's SIGTERM premise has no evidence
++
++**Location:** _lyx/discussion/decision-record.md: Constraints, no lyx run process handles SIGTERM
++
++**Issue:** D4 relies on this premise to say ended processes exit at once without writing a drive report or posting a stop notice. The constraint states it as fact but gives no evidence for it.
++
++### [BLOCKING] D10's sixty-minute rationale is unsupported
++
++**Location:** _lyx/discussion/decision-record.md: D10
++
++**Issue:** The chosen bound rests on the claim that it covers the longest fork seen, but no evidence for that observation is recorded.
++
++### [MEDIUM] Support-log cross-reference points to the wrong decision
++
++**Location:** _lyx/discussion/support-log.md: Rejected alternatives, process-table scan bullet
++
++**Issue:** D7 is the owned-elsewhere pause decision; the process-table fallback appears in D8, so the reference is inconsistent with the final numbering.
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/reviews/D6/gpt-6.1-sol-medium-r1.md b/docs/research/codex-review-bench-2026-10-25/data/reviews/D6/gpt-6.1-sol-medium-r1.md
+new file mode 100644
+index 000000000..2bdea20b4
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/reviews/D6/gpt-6.1-sol-medium-r1.md
+@@ -0,0 +1,84 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: BLOCKING
++    class: design
++    location: _lyx/discussion/decision-record.md:91
++    summary: The exception for a run-lock holder waiting at the network gate has no observable predicate
++    fix: In D5, settle and record how the actual run-lock holder and its current gate-wait state are identified. Record the evidence from the existing lock and pause mechanisms, decide any additional observable state this requires, and require a matching live process identity and current wait state before ending the holder. Keep refusal for unknown or local-working holders and add acceptance coverage distinguishing those cases.
++  - id: F2
++    severity: BLOCKING
++    class: design
++    location: _lyx/discussion/decision-record.md:59
++    summary: Ending a recorded group leader misses its children in separate process groups
++    fix: Change D3 to snapshot descendants with start times for recorded group leaders as well as non-leaders before signalling. End the identified descendants and their separate groups within the shared grace period, retaining the caller and ancestor exclusions and identity checks. Record the separate-group behavior of gitexec remote commands and StartTied as evidence, and add an acceptance scenario for an owned detached push with a live remote git child in another group.
++  - id: F3
++    severity: MEDIUM
++    class: design
++    location: _lyx/discussion/decision-record.md:124
++    summary: The unregistered orphan fallback does not enforce the protections promised by the reap bound
++    fix: In D8, require the unregistered-process fallback to establish a task owner and apply the same absent-pair and non-running-batten checks as the registered path. Define how that owner is recovered from the deleted working-directory path and exclude hub-level or unclassifiable processes from automatic reaping. Align the Bound and acceptance criteria with that predicate.
++  - id: F4
++    severity: MEDIUM
++    class: decision
++    location: _lyx/discussion/decision-record.md:75
++    summary: The reed down authorization and run-lock policy are ambiguous
++    fix: Replace D4's shorthand reference to D5 with an explicit reed-down policy. Define the source and meaning of not running, whether reed down performs origin reconciliation and how stopped or unreachable-origin outcomes are handled, and whether D5's run-lock protection must precede End on this path. Preserve the local-working-step protection explicitly and add acceptance criteria for a paused step doing local work and Finalize Done while batten is still running.
++  - id: F5
++    severity: LOW
++    class: design
++    location: _lyx/discussion/decision-record.md:145
++    summary: The empirical justification for the sixty-minute fork bound has no recorded evidence
++    fix: Research the fork-duration observation D10 relies on and record the observed duration and its identifiable source in D10 or Constraints. If sixty minutes is instead an autonomous policy choice, state that choice and its rationale explicitly and remove the unsupported claim that it covers the longest fork seen.
++  - id: F6
++    severity: LOW
++    class: consistency
++    location: _lyx/discussion/support-log.md:77
++    summary: Two rejected alternatives cite decision numbers from before renumbering
++    fix: In support-log.md Rejected alternatives, change the process-table fallback reference from D7 to D8 and the shuttle arrival-rule reference from D10 to D11.
++---
++
++### [BLOCKING] The gate-wait exception cannot yet be evaluated safely
++
++**Location:** _lyx/discussion/decision-record.md:91
++
++**Issue:** D5 permits ending a held run lock only when its holder is a step waiting at the network gate. This distinction protects a paused merge or other local work, so it is a fact the design rests on. The record does not establish how it is read. In the actual code, `pairteardown/loop.go` infers a possible holder from the newest unfinished step record, otherwise reporting an unknown process. `pauserecord/hold.go` writes its network-operation marker only after `WaitUncovered` returns; that marker describes an operation in flight, not a process waiting at the gate. Pause coverage alone cannot distinguish the protected local-working case. Leaving this detection to Plan would defer the research that determines whether the exception is safe.
++
++### [BLOCKING] Separate child groups escape End
++
++**Location:** _lyx/discussion/decision-record.md:59
++
++**Issue:** D3 snapshots descendants only for a non-leader record and signals only the recorded group for a leader. D2 explicitly records detached pushes, which lead their own groups. However, `gitexec/gitexec.go` configures remote git commands through `proc.ConfigureGroupKill`, and `proc/procgroup_linux.go` gives that child a separate group with `Setpgid`. `proc.StartTied` also creates a separate group in `proc/tied_linux.go`. Thus ending the recorded parent's group does not reach these children. D4 states the parent exits immediately on SIGTERM, and D1 then prunes its record; re-reading owner records cannot recover an unregistered git child. A push can continue after pair teardown despite the central ownership guarantee.
++
++### [MEDIUM] The fallback can reap a process whose pair still exists
++
++**Location:** _lyx/discussion/decision-record.md:124
++
++**Issue:** The registered orphan rule requires an absent pair and no running batten record, and the Bound promises these protections for reap generally. The separate unregistered rule requires only a lyx executable and a deleted working directory inside the hub. A process can retain a deleted subdirectory of an existing pair, including one whose batten still runs; a deleted hub subdirectory also establishes no task ownership. The proposed fresh reading and start-time match establish process identity but do not establish orphanhood. The fallback therefore admits processes the Bound says reap never ends.
++
++### [MEDIUM] Reed down does not have an actionable equivalent of D5
++
++**Location:** _lyx/discussion/decision-record.md:75
++
++**Issue:** D4 says reed down uses the same readings as D5 but also introduces not running without defining it. D5 obtains authoritative ended and owned-elsewhere verdicts by reconciling first, handles stopped, distinguishes Finalize Done from a still-running batten, and protects a local-working run-lock holder before ending processes. D4 does not say which of those operations and protections reed down inherits, while saying it ends paused processes at once. D6 expressly allows local work to continue under a pause. One plausible implementation therefore kills that work immediately, while another waits or refuses. These are materially different authorization policies, not missing signatures or call-site enumeration.
++
++### [LOW] The fork-duration premise is unsupported
++
++**Location:** _lyx/discussion/decision-record.md:145
++
++**Issue:** D10 justifies sixty minutes by saying it covers the longest fork seen, without identifying that observation or recording its duration. The operator-view date and commit cited in the same rationale support the no-interruption and next-batch rules, not that empirical maximum. The support log repeats the chosen sixty-minute bound without supplying the evidence. By contrast, D11's claim that the driver never enters Wait is supported directly by the named `internal/loomcli/driverspec.go`, which explicitly documents that behavior; it does not need additional interface research.
++
++### [LOW] Rejected-alternative references point to different decisions
++
++**Location:** _lyx/discussion/support-log.md:77
++
++**Issue:** The process-table fallback points to D7, which now concerns the owned-elsewhere pause; the fallback is in D8. The stopped-background-shell alternative at line 86 points to D10's arrival rule, but D10 now concerns hibernate confirmation and the arrival rule is in D11. The remaining decision-number references in the two reviewed files match their named subjects.
++
++## Rejected
++
++- D5's remove gate exemption, D6's hidden no-wait marker, and D9's pane-descendant kill each state what they bypass or kill and their process or session limits. No additional unbounded-edge finding is warranted for those decisions.
++- D8's registered-worktree predicate and deleted-directory observation have existing substrates in `pairteardown.taskWorktreeGone` and `proc.ListProcesses`; D6's ahead-of-upstream predicate also has `gitrepo.HasUnpushed`. Requiring exact signatures or a complete call-site inventory would cross the writer/reviewer symmetry fence. F1 differs because the existing gate does not expose the required waiting state.
++- D2 and D6 state departures from the board entry, rather than requesting edits to its body or scope. The Auto-mode assumptions likewise describe the interpretation chosen. No own-board-entry-edit finding applies.
++- D2's departure rationale, D3's signalling rationale, and D6's parked-driver and records-replay rationale explain requirements and bounds the plan writer needs. D3 does not carry the named incident-history narrative, and moving these compact rationales would not improve the decision record. The e610f9250 scope exclusion and D5's #741 explanation also identify a settled boundary and the reason local removal must avoid stale remote writes.
++- The record explicitly bounds the Windows implementation, the pane-snapshot race and the possibility of already-reparented descendants. These are stated design limits, not facts handed downstream for later discovery.
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/reviews/P1/gpt-6-luna-medium-r1.md b/docs/research/codex-review-bench-2026-10-25/data/reviews/P1/gpt-6-luna-medium-r1.md
+new file mode 100644
+index 000000000..cc4aa436f
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/reviews/P1/gpt-6-luna-medium-r1.md
+@@ -0,0 +1,4 @@
++---
++verdict: APPROVED
++findings: []
++---
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/reviews/P1/gpt-6.1-sol-medium-r1.md b/docs/research/codex-review-bench-2026-10-25/data/reviews/P1/gpt-6.1-sol-medium-r1.md
+new file mode 100644
+index 000000000..8d1062c46
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/reviews/P1/gpt-6.1-sol-medium-r1.md
+@@ -0,0 +1,100 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: MEDIUM
++    class: design
++    location: _lyx/plan/00-overview.md:62
++    summary: The retag cards use Custom even though Edit fits their existing package targets
++    fix: In cards 24 through 32, replace Custom with Edit and add a concrete ImpactSummary for each package group. Update the retag-rules shared decision to describe these as Edit cards over the same package self glyphs; no target additions or pairings are needed.
++  - id: F2
++    severity: BLOCKING
++    class: design
++    location: _lyx/plan/24-retag-cmd-contracts-tools.md:31
++    summary: The transitional hub check can pass without checking any tier command
++    fix: The check must examine the command value of every declared tier regardless of YAML block or flow style, require an actual go test step with the exact corresponding tier tag, and reject a missing command as well as covers. A replacement Verify command is withheld because the rubric requires overlay validation before proposing one and this round explicitly permits file reads only.
++  - id: F3
++    severity: BLOCKING
++    class: scope
++    location: _lyx/plan/24-retag-cmd-contracts-tools.md:22
++    summary: The retag leaves the tree-sitter link guard enumerating only retired tags
++    fix: Extend card 24 Intent to update TestTreeSitterLink_OnlyAllowedTestBinariesLinkIt in cmd/lyx/treesitterlink_integration_test.go to enumerate tier0,tier1,tier2,tier3,integration,tmux,llm. Its existing cmd/lyx package target already covers this edit. Include this remaining old-tag enumeration in the follow-up scope stated by card 33.
++  - id: F4
++    severity: BLOCKING
++    class: scope
++    location: _lyx/plan/20-batten-switch-entry-gate.md:30
++    summary: Removing the Command switch key leaves the registered-engine fixture invalid
++    fix: Card 20 must also remove the switch entry from the Command fixture returned by engineMinimalConfig in internal/shedbuild/build_engines_test.go, in the same commit that refuses that key. Keep TestBuild_EveryRegisteredEngineBuilds as the existing coverage. The required target-list expansion is withheld pending the mandatory overlay check, which the round's read-only tool rule forbids running.
++  - id: F5
++    severity: BLOCKING
++    class: design
++    location: _lyx/plan/04-verify-gate-site-key.md:69
++    summary: Card 4 changes the tree-scope reader signature before its test callers migrate
++    fix: In card 4 Intent, retain darnTreeScope's existing no-argument reader result until card 6 and adapt it to Env.VerifyTreeScope with a keyed wrapper that ignores the key and calls the existing reader. Make card 6 the point where the reader itself becomes keyed, alongside its already planned TestDarnTreeScope_ClassifiesAtEachCall updates.
++  - id: F6
++    severity: MEDIUM
++    class: consistency
++    location: _lyx/plan/14-guard-step-per-tier.md:24
++    summary: Planned result-signature changes lack re-sign annotations
++    fix: Mark guardRunOf's transition from a single guard pointer to all guard runs with a re-sign annotation, and mark darnTreeScope's transition to a keyed reader on the card where that change lands. The intended heads are func guardRunOf(plan []tierRun) []tierRun and func darnTreeScope(l *lyxcwd.Location) func(gateKey string) (string, bool, error). Concrete arrow and caller-target edits are withheld until overlay validation is permitted; caller-uncovered must be satisfied on the same card.
++  - id: F7
++    severity: MEDIUM
++    class: design
++    location: _lyx/plan/00-overview.md:68
++    summary: The scan-after-last-retag decision contradicts D5's required landing point
++    fix: After correcting the Custom typing, combine cards 32 and 33 into one final retag-and-scan card, retaining the scan's fixtures, PATTERN updates and D13 board follow-up. Remove the superseded card through lyx loom remove-card and update the shared decision to put the scan on the last retag card. This is a card-removal fix, which the rubric exempts from overlay validation.
++---
++
++### [MEDIUM] Retagging does not require Custom
++
++**Location:** _lyx/plan/00-overview.md:62 and cards 24 through 32.
++
++**Issue:** The shared decision justifies Custom by the absence of a member for a header and by edit-test-file. However, the actual targets are existing package self glyphs. The format's edit-test-file check applies to test-file self glyphs, not package self glyphs, so these same targets can carry Edit. Header edits and helper splits are edits to existing packages. The last-resort rule therefore does not admit Custom here.
++
++### [BLOCKING] The only transitional tag check can pass vacuously
++
++**Location:** _lyx/plan/24-retag-cmd-contracts-tools.md:28–31.
++
++**Issue:** The awk program sets seen when it encounters a tier header, but checks commands only on separate lines beginning with eight spaces and command:. A legal flow mapping such as tier0: {command: "go test -json {targets} {args}", all_targets: ./..., timeout_min: 60, counter: go-json} sets seen and never reaches the command check. With covers absent, it succeeds even though tier0 lacks its tag. This shape is supported by yamlengine's node-based merge and annotation, which preserve a supplied flow node; configengine.Provenance does not normalize every tier into block form. Even in block form, a tier without a command never sets bad. D13 and the Constraints require failure for a missing tier tag because the installed binary has no empty-tier safeguard. The current check can therefore authorize retagging while tests silently disappear from the gates. This is a semantic check failure, not a raw-test-command finding.
++
++### [BLOCKING] The tree-sitter guard loses the retagged test binaries
++
++**Location:** _lyx/plan/24-retag-cmd-contracts-tools.md:22–25; _lyx/plan/11-package-load-tags.md:15–21.
++
++**Issue:** Card 11 updates the production package loads, but card 24 only changes test headers and helper placement. The existing TestTreeSitterLink_OnlyAllowedTestBinariesLinkIt still runs go list -test -deps with integration,tmux,llm in cmd/lyx/treesitterlink_integration_test.go:40. After retagging, that enumeration omits tier0, tier2 and tier3 tests and non-guard tier1 tests. The guard retains its 100-test-binary floor and stale-allowlist checks, so it can fail as packages disappear from its view, and it no longer enforces the background's requirement to inspect binaries from every tier. D5's all-package-loads rule and PATTERN-test-speed's Tree-sitter links section require this load to migrate too. Retagging the guard's own header does not change the tags it passes to go list.
++
++### [BLOCKING] The Command fixture still supplies the removed key
++
++**Location:** _lyx/plan/20-batten-switch-entry-gate.md:30 and 39–43.
++
++**Issue:** The card makes switch an unknown Command config key, but no card carries the corresponding fixture update. internal/shedbuild/build_engines_test.go:48–51 supplies switch: batten.open_window in engineMinimalConfig. TestBuild_EveryRegisteredEngineBuilds feeds that config through Build and requires success for every registered engine. Executing card 20 as scoped makes its Command case fail. The later shedbuild retag in card 29 changes headers, not this config value. This is a missing migration of test data, rather than an incomplete Uses dependency list.
++
++### [BLOCKING] The keyed reader lands before the caller update
++
++**Location:** _lyx/plan/04-verify-gate-site-key.md:57–69; _lyx/plan/06-darn-tree-scope-key.md:51–55.
++
++**Issue:** Card 4 says darnTreeScope takes the key so its result can fill the keyed Env.VerifyTreeScope. Its current result is func() (string, bool, error). TestDarnTreeScope_ClassifiesAtEachCall explicitly declares locate and its assertion helpers with that old function type and returns darnTreeScope directly at internal/loomcli/darntreescope_integration_test.go:53–55. That test is absent from card 4. Card 5 updates its landing VerifyCommand call, while card 6 finally updates its tree-scope calls and per-key assertions. Consequently card 4 cannot compile the integration test while waiting for card 6. The plan's interim adapter must cover this caller too; merely ignoring the new key inside a re-signed reader does not preserve the old function type.
++
++### [MEDIUM] Two result changes are not declared as re-signs
++
++**Location:** _lyx/plan/14-guard-step-per-tier.md:24 and 61; _lyx/plan/04-verify-gate-site-key.md:19 and 69.
++
++**Issue:** guardRunOf currently returns *tierRun (internal/gatecli/run.go:202), whereas card 14 says it returns every guard run. The target has no re-sign arrow. Likewise darnTreeScope currently returns a no-argument closure, while the planned keyed closure changes that result type without an arrow in card 4 or card 6. Both are function result changes, not the struct-field changes that the rubric exempts. The missing annotations also conceal the same-card caller obligations; in particular the tree-scope test is scheduled after card 4.
++
++### [MEDIUM] The final retag commit lacks its required scan
++
++**Location:** _lyx/plan/00-overview.md:66–70; cards 32 and 33.
++
++**Issue:** D5 expressly requires the one-tag scan test to land with the last retag card. The shared decision instead places it in the following commit and justifies this by Custom's prohibition on mixed labels. No Added after Discussion entry authorizes that departure. A plan-level shared decision cannot override the answer key, and the reason disappears when the retag cards use the applicable Edit type. Immediate adjacency still leaves the last retag commit without the coverage D5 required on that commit.
++
++## Rejected
++
++- Cards 24–32 prescribe no raw test invocation. Card 24's Verify command inspects configuration; its defect is its incomplete inspection, recorded above. The remaining retag cards inherit the gates without adding a raw command.
++- Cards 1–3 explicitly retain the old rendering until the --gate parser lands. The first retag follows cards 11, 12, 14, 15 and 16. No contrary ordering finding is raised for those transitions.
++- Card 23's nineteen shortenings are licensed by the Added after Discussion entries. Card 33 files a different board entry, with the required dependency, and does not edit this task's own body or scope.
++- Cards 2, 7, 15, 17 and 19 state their skip or bypass bounds and name reachable refusal inputs and tests. The skip-cycle and nil-wiring branches are explicitly wiring guards. No additional missing-bound or unreachable-refusal finding is raised for them.
++- Card 33's one-tag scan covers behavior that the existing spawn-purity, LLM and tmux-isolation guards do not enforce. No duplicate-test finding is raised against that scan.
++
++## Review limits
++
++The round allows file reads and forbids running analysis programs. No tests, quarry commands or plan-validator commands were executed. For findings requiring a replacement Verify command or target/arrow changes, the mandatory validate-plan --overlay check could not be performed; those concrete edits are withheld rather than represented as validated proposals. The other fixes change intent or type labels over existing targets.
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/reviews/P2/gpt-6-luna-medium-r1.md b/docs/research/codex-review-bench-2026-10-25/data/reviews/P2/gpt-6-luna-medium-r1.md
+new file mode 100644
+index 000000000..6239c355e
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/reviews/P2/gpt-6-luna-medium-r1.md
+@@ -0,0 +1,3 @@
++---
++verdict: APPROVED
++---
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/reviews/P2/gpt-6.1-sol-medium-r1.md b/docs/research/codex-review-bench-2026-10-25/data/reviews/P2/gpt-6.1-sol-medium-r1.md
+new file mode 100644
+index 000000000..5c3502553
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/reviews/P2/gpt-6.1-sol-medium-r1.md
+@@ -0,0 +1,44 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: BLOCKING
++    class: consistency
++    location: _lyx/plan/09-csharp-create-handles.md:24
++    summary: The fallback declared-name scan selects a generic interface qualifier instead of the member
++    fix: >-
++      Correct card 9's fallback declaredNameIndex rule so it skips generic type and
++      explicit-interface qualifier components and finds the declaration's member
++      token when the draft name is absent. In particular, the already planned
++      draft-to-Count row must select Count in int IProvider<int>.Count { get; },
++      remove IProvider<int> from Owner, and bind with Owner Renderer. Keep D7's
++      specified matching-name rule and generic-return-type bound unchanged.
++---
++
++### [BLOCKING] Generic qualifiers defeat draft-name canonicalization
++
++**Location:** _lyx/plan/09-csharp-create-handles.md:24
++
++**Issue:** The fallback selects the first identifier followed by any listed token,
++including `<`. For the card's own `Renderer.IProvider<int>.draft` example, the
++head has no `draft`, so this selects `IProvider`, before `Count`. Consequently
++`csharpOwner` cannot find the qualifier immediately before the selected token
++and retains `Renderer.IProvider<int>`. Quarry rejects that generic owner, as
++the card itself explains. This contradicts both the expected clean row at line
++35 and D7's required interface-qualifier removal.
++
++## Rejected
++
++- Cards 9–13 otherwise carry D7's three collision variants, parameter-list
++  presence bound, shared record/recover completion check, plan-wide rewrite,
++  fingerprint restamp, refreshed drift input, scope union and batching boundary.
++- Card 6 names both language-mismatch halves and reaching tests. Card 7 reads
++  disk existence rather than extensions and preserves completed-card filtering.
++  The Go-parsable property used by card 6's resolve test is a member, so
++  `diskPathForRef` does not subject it to `path-missing`.
++- The specified ParseRef, GoToolchain, plan-aware ScopeGuard and nameDeclarations
++  introductions precede their planned consumers. The focused Edit targets use
++  member glyphs and state their specified signature changes with arrows.
++- The focused cards leave no quarry fact as a research step. Cards 14–15 carry
++  the required documentation and chokepoint changes, add no static-prose tests,
++  and prescribe no raw Verify command.
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/reviews/P3/gpt-6-luna-medium-r1.md b/docs/research/codex-review-bench-2026-10-25/data/reviews/P3/gpt-6-luna-medium-r1.md
+new file mode 100644
+index 000000000..cc4aa436f
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/reviews/P3/gpt-6-luna-medium-r1.md
+@@ -0,0 +1,4 @@
++---
++verdict: APPROVED
++findings: []
++---
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/reviews/P3/gpt-6.1-sol-medium-r1.md b/docs/research/codex-review-bench-2026-10-25/data/reviews/P3/gpt-6.1-sol-medium-r1.md
+new file mode 100644
+index 000000000..cb13094f1
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/reviews/P3/gpt-6.1-sol-medium-r1.md
+@@ -0,0 +1,47 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: BLOCKING
++    class: consistency
++    location: _lyx/plan/06-reed-reclaim-dead-name.md:32
++    summary: Reclaim silently exempts dead holders with children without a recorded decision
++    fix: In card 6, remove the children condition from the successful no-op cases and the childless qualification from ImpactSummary. Attempt the specified ordinary nonrecursive removal for an otherwise eligible holder and propagate its existing children refusal; change the planned child-holder test row to expect that refusal and no new strand, rather than successful numbering. Do not introduce recursive teardown.
++  - id: F2
++    severity: MEDIUM
++    class: design
++    location: _lyx/plan/10-orch-note-gate-no-reply.md:62
++    summary: The note-request test still prescribes assertions on static stencil prose
++    fix: In card 10's TestWatcher_NoteRequestRendersTemplateFileBeforeTyping instructions, remove the new assertion that the hard request contains no --reply and remove the retained assertion of the soft stencil's literal defer command. Keep assertions on the rendered note and template paths and template-file existence; cover no-reply progression and defer behavior through the already planned watcher gate tests.
++  - id: F3
++    severity: MEDIUM
++    class: scope
++    location: _lyx/plan/00-overview.md:14
++    summary: Two changed packages have no card carrying the required package documentation
++    fix: Use lyx loom insert-card to append a documentation card after the current card 13, with a Prosa group containing only internal/loomcli/doc.go and internal/shuttleengine/claudeengine/doc.go. Its Intent must document landing's removal of present shell-only conflict strands in loomcli and the engine-or-exec requirement for the binary configuration in claudeengine. Include no prose assertions or new tests.
++---
++
++### [BLOCKING] Dead non-leaf holders silently retain the canonical name
++
++**Location:** _lyx/plan/06-reed-reclaim-dead-name.md:32
++
++**Issue:** D6 identifies live holders, hidden holders and paused pairs as the cases that keep a requested name. Card 6 adds a successful no-op for a dead holder with children, explicitly tests it, and restricts its impact to childless holders. Consequently a role add can succeed under a numbered name even though the canonical holder meets D6's reclaim conditions. The existing `removeStrandLocked` in `internal/reedengine/strand.go` already refuses nonrecursive removal of a non-leaf; that refusal does not justify silently falling through to numbering. The decision record contains no amendment licensing this extra successful fallback.
++
++### [MEDIUM] Static handoff wording is still pinned by tests
++
++**Location:** _lyx/plan/10-orch-note-gate-no-reply.md:62
++
++**Issue:** Card 10 removes obsolete wording assertions but explicitly adds a negative assertion for `--reply` and keeps the literal soft-request `lyx creel post --reply <id> defer` assertion. These are fixed stencil text, not Go-filled values or a family-wide rule. `PATTERN-test-economy` and the rubric forbid such assertions. The existing `TestWatcher_NoteRequestRendersTemplateFileBeforeTyping` can continue checking the paths Go fills and file-rendering order, while the planned `TestWatcher_NoteReplyGate` and existing soft-defer behavior test verify the actual cycle contract.
++
++### [MEDIUM] Package documentation coverage is incomplete
++
++**Location:** _lyx/plan/00-overview.md:14
++
++**Issue:** The decision record's in-scope documentation explicitly includes the `doc.go` of each changed package. Card 4 changes loomcli's conflict-stop behavior but carries neither its package documentation nor a later documentation update. Card 3 changes claudeengine's binary template comment, but its package documentation also has no owning card. Both files exist: loomcli's package overview describes its lifecycle, and claudeengine's configuration paragraph lists `binary`. Other changed packages have their documentation carried explicitly, so these two omissions leave the settled documentation scope incomplete.
++
++## Rejected
++
++- The focused order concern is not a defect: card 1 supplies both pane command fields before card 3; card 2 supplies the age probe before card 3; card 5 supplies Elsewhere before card 13; and card 8 supplies WithdrawCycleRequest before card 12. The status work in cards 12 and 13 follows those prerequisites.
++- Cards 6, 12 and 13 state their mutation bounds: exact-name reclamation with session-limited pane removal, marker-only withdrawal without changing a started cycle, and watcher restart only for a live tracked strand under start.lock with watch.lock arbitrating duplicate spawns.
++- The principal focused refusal/skip branches have concrete test inputs: present shell-only versus absent conflict strands in card 4, live/hidden/paused/grace holders in card 6, an empty .git directory and teardown during wire/status in card 7, marker replacement during Hold in card 8, and withdraw/clear failures in card 11. ResolveWorktree has no acting-cwd gate, and the existing TestHubDelivery already reaches the empty-.git-directory resolve failure, so that skip fixture is reachable.
++- Source implementation edits name member glyphs; the specified directoryRows and planReconcile signature changes carry re-sign arrows. No card carries a Verify line naming a raw test command.
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/reviews/P4/gpt-6-luna-medium-r1.md b/docs/research/codex-review-bench-2026-10-25/data/reviews/P4/gpt-6-luna-medium-r1.md
+new file mode 100644
+index 000000000..3834e22c2
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/reviews/P4/gpt-6-luna-medium-r1.md
+@@ -0,0 +1,16 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: MEDIUM
++    class: design
++    location: _lyx/plan/03-board-owner-writes.md
++    summary: OwnerRequest.Takeover lets any SetOwners caller bypass the effective-owner refusal, but the plan does not bound this escape hatch to lyx adopt.
++    fix: In card 3 Intent, constrain Takeover to the adopt flow and specify that ordinary boardengine callers cannot set it; enforce that boundary in SetOwners rather than relying on callers to choose false.
++---
++
++### [MEDIUM] Takeover is not bounded to adopt
++
++**Location:** _lyx/plan/03-board-owner-writes.md, OwnerRequest and SetOwners Intent
++
++**Issue:** The plan says that `OwnerRequest` carries a `Takeover` flag and that setting it bypasses the rule that skips a slug owned by another machine. It then claims only `lyx adopt` moves an owner, but the exported `boardengine.SetOwners` API accepts this flag and the plan does not enforce or otherwise bound which callers may use it. Any future caller can therefore take ownership without the adopt flow's reconcile, local-commit decision, and pause handling. State and enforce the boundary for this bypass in the plan.
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/reviews/P4/gpt-6.1-sol-medium-r1.md b/docs/research/codex-review-bench-2026-10-25/data/reviews/P4/gpt-6.1-sol-medium-r1.md
+new file mode 100644
+index 000000000..7a6008439
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/reviews/P4/gpt-6.1-sol-medium-r1.md
+@@ -0,0 +1,38 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: BLOCKING
++    class: scope
++    location: _lyx/plan/05-reconcile-owner-outcome.md:36
++    summary: Owner judgment excludes pairs without a prime-side batten run record
++    fix: In card 5's Intent, derive owner candidates from all local pairs in the selected scope, including the run-scope slug even when it has no prime-side batten status. Pass their owner outcomes to the mover and emit owned_elsewhere entries for such pairs without broadening the existing ended-run teardown candidates. Extend the already-targeted TestReconcileOrigin_Moves with a pair owned elsewhere that has no prime-side batten record, covering both judge-only run scope and a moving hub reconcile. In card 9's existing TestRunOwnerVerdict description, include an existing task-worktree shed status with no prime-side batten status and require the other owner's verdict.
++  - id: F2
++    severity: MEDIUM
++    class: design
++    location: _lyx/plan/16-adopt-module.md:16
++    summary: The adopt card bundles three separate exported module surfaces into its CLI implementation
++    fix: Use lyx loom insert-card to introduce prerequisite cards before adopt-module for battencli.ResumeInWindow, fabricengine.DropLocal with DropLocalResult, and hubforge.CloneSecond. Move each surface's implementation intent and its associated coverage into its own prerequisite card; keep DropLocal's destroy.go header, mutation-result contract, destruction-guard registrations and TestDropLocal together. Keep adopt's private request, outcome, dependency and orchestration helpers with its CLI surface. Update the Card Index and adopt's references through the insertion workflow so the consumer follows all three prerequisites.
++---
++
++### [BLOCKING] Owner checks silently disappear without a batten record
++
++**Location:** _lyx/plan/05-reconcile-owner-outcome.md:36
++
++**Issue:** Card 5 explicitly reads owners only over the recorded pairs. In the current implementation, `recordedPairs` in `internal/fabricengine/originreconcilemoves.go` includes a pair only when `shedrun.StatusFile(prime, slug)` exists; `classifyEntries` likewise iterates that restricted list. A task worktree can have an existing loom/darn status without that separate prime-side batten record, and D5 explicitly permits owning a task without a batten run. With origin reachable and Bolt naming another owner, card 9's judge-only reconcile then returns no owned_elsewhere entry, so `runOwnerVerdict` permits the shed resume. The same omission leaves that pair outside card 5's no-replay map and card 16's report-based local-commit stop. D3's existing-shed resume guard and D4/D5's ownership rules do not have a batten-record prerequisite. This is one candidate-enumeration gap affecting all those consumers.
++
++### [MEDIUM] Separate the exported prerequisites from the adopt CLI
++
++**Location:** _lyx/plan/16-adopt-module.md:16
++
++**Issue:** The card creates the adopt module while also introducing public APIs in battencli, fabricengine and hubforge. In particular, DropLocal is a destructive fabric primitive with its own mutation contract, guard registrations and integration test, independently reviewable from adopt's selection, ownership writes and resume flow. ResumeInWindow and CloneSecond are also exported across package boundaries. The rubric and the plan spec's Card granularity section require such public surfaces to have their own cards even when this CLI is their only initial consumer; these are not private supporting helpers inseparable from adopt's type.
++
++## Rejected
++
++- Card order: the owner reader, OwnerRequest, owner-pause label, PauseOwnedElsewhere and InstallOwnerPause are introduced before their named consumers. No additional ordering defect was established beyond checks already owned by the mechanical gate.
++- Attack surface: Takeover explicitly permits adoption over another owner and is reserved to adopt; the Finalize carve-out names the parent-holds-work bound and InnerRun's status/restep limits. The nil seam rules describe their compatibility behavior and production wiring. No separate missing-bound finding is warranted.
++- Guard reachability: the prescribed tests name owned-elsewhere inputs, unreachable-origin inputs, pause transitions and seam failures that reach the intended branches. The missing owner candidate in F1 is the concrete exception; no additional upstream rejection was established.
++- Fidelity and PATTERN: cards 15 and 16 implement D8 and D5. Card 17's background text, shortening of the overview, byte-neutral edits and trailer are licensed by the added-after-Discussion decision. No own-board-entry edit or unsupported scope addition was established.
++- Test economy and signatures: card 7 extends existing tests; cards 10 and 14 cover new owner behavior, and card 16 adds takeover and destructive-operation coverage. No existing test was found to cover those same owner behaviors already. The signature changes reviewed do not establish another missing re-sign arrow, and private supporting types remain with their surfaces.
++
++Review used file reads only. No target files were changed, and no tests or plan validator were run. F1 changes intent and existing coverage descriptions only; F2 requires card insertion, which the rubric exempts from overlay validation.
+diff --git a/docs/research/codex-review-bench-2026-10-25/data/usage.txt b/docs/research/codex-review-bench-2026-10-25/data/usage.txt
+new file mode 100644
+index 000000000..206d19539
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/data/usage.txt
+@@ -0,0 +1,31 @@
++D1 gpt-6.1-sol-medium-r1 rc=0 wall=103 in=635806 cached=583296 out=3273 reason=1132 verdict=BLOCKING n=3 five_hour_used_percent=4.0 weekly_used_percent=1.0
++D1 gpt-6-astra-medium-r1 rc=0 wall=156 in=510469 cached=427904 out=3375 reason=796 verdict=BLOCKING n=4 five_hour_used_percent=57.0 weekly_used_percent=9.0
++D1 gpt-6-luna-medium-r1 rc=0 wall=32 in=238231 cached=205696 out=2708 reason=1955 verdict=BLOCKING n=1 five_hour_used_percent=0.0 weekly_used_percent=0.0
++D2 gpt-6.1-sol-medium-r1 rc=0 wall=104 in=394595 cached=348160 out=3260 reason=1599 verdict=BLOCKING n=3 five_hour_used_percent=6.0 weekly_used_percent=1.0
++D2 gpt-6-astra-medium-r1 rc=0 wall=93 in=197281 cached=173824 out=1963 reason=502 verdict=BLOCKING n=3 five_hour_used_percent=62.0 weekly_used_percent=10.0
++D2 gpt-6-luna-low-r1 rc=0 wall=18 in=146335 cached=107008 out=851 reason=516 verdict=none n= five_hour_used_percent=0.0 weekly_used_percent=0.0
++D2 gpt-6-luna-medium-r1 rc=0 wall=24 in=182211 cached=140288 out=1685 reason=587 verdict=BLOCKING n=3 five_hour_used_percent=0.0 weekly_used_percent=0.0
++D3 gpt-6.1-sol-medium-r1 rc=0 wall=103 in=385030 cached=341376 out=2685 reason=963 verdict=BLOCKING n=3 five_hour_used_percent=8.0 weekly_used_percent=1.0
++D3 gpt-6-astra-medium-r1 rc=0 wall=100 in=244817 cached=214400 out=2083 reason=350 verdict=BLOCKING n=3 five_hour_used_percent=68.0 weekly_used_percent=11.0
++D3 gpt-6-luna-medium-r1 rc=0 wall=28 in=219748 cached=191744 out=2575 reason=1508 verdict=BLOCKING n=3 five_hour_used_percent=1.0 weekly_used_percent=0.0
++D4 gpt-6.1-sol-medium-r1 rc=0 wall=158 in=602013 cached=534400 out=4433 reason=1475 verdict=BLOCKING n=4 five_hour_used_percent=11.0 weekly_used_percent=2.0
++D4 gpt-6-astra-medium-r1 rc=0 wall=124 in=439628 cached=387072 out=2531 reason=411 verdict=APPROVED n=3 five_hour_used_percent=79.0 weekly_used_percent=12.0
++D4 gpt-6-luna-medium-r1 rc=0 wall=25 in=207132 cached=187136 out=2227 reason=724 verdict=BLOCKING n=4 five_hour_used_percent=1.0 weekly_used_percent=0.0
++D5 gpt-6.1-sol-medium-r1 rc=0 wall=112 in=757721 cached=672384 out=3039 reason=615 verdict=BLOCKING n=3 five_hour_used_percent=15.0 weekly_used_percent=2.0
++D5 gpt-6-astra-medium-r1 rc=0 wall=155 in=811705 cached=727424 out=3214 reason=574 verdict=BLOCKING n=2 five_hour_used_percent=96.0 weekly_used_percent=15.0
++D5 gpt-6-luna-medium-r1 rc=0 wall=26 in=365381 cached=307456 out=1862 reason=617 verdict=BLOCKING n=1 five_hour_used_percent=1.0 weekly_used_percent=0.0
++D6 gpt-6.1-sol-medium-r1 rc=0 wall=168 in=526584 cached=464256 out=4331 reason=1128 verdict=BLOCKING n=6 five_hour_used_percent=17.0 weekly_used_percent=3.0
++D6 gpt-6-astra-medium-r1 rc=1 wall=18 in= cached= out= reason= verdict=none n= five_hour_used_percent= weekly_used_percent=
++D6 gpt-6-luna-medium-r1 rc=0 wall=21 in=155126 cached=132352 out=1871 reason=609 verdict=BLOCKING n=5 five_hour_used_percent=1.0 weekly_used_percent=0.0
++P1 gpt-6.1-sol-medium-r1 rc=0 wall=491 in=2894509 cached=2738432 out=13602 reason=6683 verdict=BLOCKING n=7 five_hour_used_percent=27.0 weekly_used_percent=4.0
++P1 gpt-6-astra-medium-r1 rc=1 wall=2 in= cached= out= reason= verdict=none n= five_hour_used_percent= weekly_used_percent=
++P1 gpt-6-luna-medium-r1 rc=0 wall=28 in=458935 cached=410112 out=1376 reason=743 verdict=APPROVED n=0 five_hour_used_percent=1.0 weekly_used_percent=0.0
++P2 gpt-6.1-sol-medium-r1 rc=0 wall=224 in=888905 cached=801024 out=5790 reason=3498 verdict=BLOCKING n=1 five_hour_used_percent=31.0 weekly_used_percent=5.0
++P2 gpt-6-astra-medium-r1 rc=1 wall=2 in= cached= out= reason= verdict=none n= five_hour_used_percent= weekly_used_percent=
++P2 gpt-6-luna-medium-r1 rc=0 wall=39 in=422472 cached=372224 out=3004 reason=2191 verdict=APPROVED n=0 five_hour_used_percent=1.0 weekly_used_percent=0.0
++P3 gpt-6.1-sol-medium-r1 rc=0 wall=181 in=1098472 cached=990976 out=5461 reason=2127 verdict=BLOCKING n=3 five_hour_used_percent=36.0 weekly_used_percent=6.0
++P3 gpt-6-astra-medium-r1 rc=1 wall=2 in= cached= out= reason= verdict=none n= five_hour_used_percent= weekly_used_percent=
++P3 gpt-6-luna-medium-r1 rc=0 wall=32 in=504956 cached=459264 out=1958 reason=1098 verdict=APPROVED n=0 five_hour_used_percent=0.0 weekly_used_percent=0.0
++P4 gpt-6.1-sol-medium-r1 rc=0 wall=292 in=2091872 cached=1939584 out=7210 reason=3952 verdict=BLOCKING n=2 five_hour_used_percent=43.0 weekly_used_percent=7.0
++P4 gpt-6-astra-medium-r1 rc=1 wall=2 in= cached= out= reason= verdict=none n= five_hour_used_percent= weekly_used_percent=
++P4 gpt-6-luna-medium-r1 rc=0 wall=29 in=401845 cached=349440 out=2305 reason=1411 verdict=BLOCKING n=1 five_hour_used_percent=1.0 weekly_used_percent=0.0
+diff --git a/docs/research/codex-review-bench-2026-10-25/report.md b/docs/research/codex-review-bench-2026-10-25/report.md
+new file mode 100644
+index 000000000..5ae4887ca
+--- /dev/null
++++ b/docs/research/codex-review-bench-2026-10-25/report.md
+@@ -0,0 +1,267 @@
++# Codex as a Burler reviewer: bench against Claude reviews
++
++Bench of 2026-10-25, a precursor to note `codex-engine`.
++Codex CLI 0.164.0, ChatGPT sign-in (plan `plus`), Linux.
++Nothing was built: the bench is shell scripts under `data/harness/`, Codex's own output and a hand grading.
++
++## Conclusion
++
++On this sample Codex does not reach the Claude reviewers' coverage,
++and the bench stopped early on the plan's 5-hour limit.
++Measured at medium effort, one run per cell, solo against Claude's lens fan:
++
++- `gpt-6.1-sol` is the only setting worth a second look.
++  It reproduced 22 of the 134 Claude findings (16 percent) and 7 of the 21 `BLOCKING` ones, returned the verdict Claude gave on 9 of 10 inputs, and added 11 findings Claude's round did not raise that held up on reading, 4 of them against the code.
++  It took about 4 points of the 5-hour window per input, 10 on the largest plan.
++- `gpt-6-luna` is fast (28 s a run) and cheap (about 1 point of the window for 10 runs) but reviews too shallowly: 1 of 21 `BLOCKING` findings, and an approval of 3 of the 4 plans Claude blocked.
++- `gpt-6-astra` matched Sol's coverage on the five inputs it finished, at about 4 times Sol's plan cost,
++  and the limit stopped it before the plans.
++- 3 of the 68 Codex findings were graded false, all of them Luna's,
++  and 1 of Luna's stays unchecked.
++  Sol's 35 and Astra's 15 held up on reading.
++  One grader read each finding,
++  so these rates are not validated.
++
++A Codex seat could earn a place as an extra, non-gating reviewer beside the Claude fan at `gpt-6.1-sol`, where it adds findings the fan misses.
++As a replacement for the Claude fan the sample says no.
++Effort above medium, repeat runs for noise and Astra on the plans stay unmeasured.
++The table below says which cells ran.
++The operator's `~/.codex/config.toml` stayed unchanged through the bench only as far as its file time shows, not as hashed; see `Codex runs`.
++
++## Summary table
++
++Medium effort, one run per cell.
++Claude's reference over the same 10 inputs is 134 findings, 21 of them `BLOCKING`, from `opus` at medium effort with 3 or 4 lens forks.
++"Found" counts distinct Claude findings that a Codex finding of the setting matched.
++The reference figures, and every "found" and `BLOCKING` count, follow from `data/claude-findings.tsv` and `data/claude-usage.tsv`.
++
++| Setting | Inputs run | Findings | Shared with Claude | Codex-only real | Codex-only unchecked | False | Claude findings found | `BLOCKING` found | Verdict as Claude's | Fresh input tokens | Wall time | 5-hour window |
++|---|---|---|---|---|---|---|---|---|---|---|---|---|
++| `gpt-6-luna` medium | 10 of 10 | 18 | 12 | 2 | 1 | 3 | 12 of 134 | 1 of 21 | 6 of 10 | 400k | 284 s | about 1 point |
++| `gpt-6.1-sol` medium | 10 of 10 | 35 | 24 | 11 | 0 | 0 | 22 of 134 | 7 of 21 | 9 of 10 | 862k | 1936 s | about 42 points |
++| `gpt-6-astra` medium | 5 of 10 | 15 | 10 | 5 | 0 | 0 | 10 of 73 | 2 of 7 | 3 of 5 | 273k | 628 s | about 53 points |
++| `gpt-6-luna` low | 1 of 10 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | no review written | 39k | 18 s | under 1 point |
++| Claude `opus` medium, fan | 10 of 10 | 134 | | | | | | | | 236k to 489k, plus 21k to 92k in forks | 383 s to 735 s | |
++
++The three medium settings on the five inputs Astra finished, `D1` to `D5`: Luna found 8 of 73 Claude findings, Sol 10 of 73 and Astra 10 of 73.
++Sol's cost on those five inputs was about 14 points of the window, Astra's about 53.
++
++Fresh input tokens are `input_tokens` less `cached_input_tokens` from each run's `turn.completed` event.
++Cached reads are 73 to 95 percent of input in every run and are in `data/usage.txt`.
++The window percentages are the difference of the integer `used_percent` the rollout files report, so a single run is known to about one point.
++`data/usage.txt` carries each run's reading, the last `token_count` event of its rollout,
++and the per-run points in `Billing and rate limits` are the differences between consecutive readings.
++Verdict agreement counts a Codex `APPROVED` or `BLOCKING` against Claude's round-1 verdict.
++Claude approved only `D3` (15 findings, none `BLOCKING`),
++and every Codex setting blocked it.
++
++## Method
++
++### Inputs
++
++Ten finished loom runs from the history of `loomyard-weft`, each with the round-1 review of Claude's Discussion-Review or Plan-Review perch.
++The artifact reviewed is the decision record and support log, or the plan, from the weft tree at the commit that wrote the round-1 review.
++
++| Id | Kind | Run | Weft commit | Code commit | Claude verdict | Claude findings |
++|---|---|---|---|---|---|---|
++| `D1` | discussion | `plan-card-rules` | `c3afefc21` | `e634efb90` | `BLOCKING` | 17 |
++| `D2` | discussion | `gate-runs-once` | `868ea6dbb` | `7e4a041b9` | `BLOCKING` | 14 |
++| `D3` | discussion | `dotnet-scoped-verify` | `988770777` | `fed963ec5` | `APPROVED` | 15 |
++| `D4` | discussion | `batten-cancel-verb` | `27038d064` | `e634efb90` | `BLOCKING` | 15 |
++| `D5` | discussion | `finalize-dirty-names-paths` | `5216fd218` | `0d953f140` | `BLOCKING` | 12 |
++| `D6` | discussion | `run-process-ownership` | `13d617b64` | `0d953f140` | `BLOCKING` | 16 |
++| `P1` | plan | `gate-runs-once` | `c36025a89` | `ab038b4e8` | `BLOCKING` | 12 |
++| `P2` | plan | `quarry-csharp` | `394715f7f` | `750903aef` | `BLOCKING` | 13 |
++| `P3` | plan | `orch-strand-cycle` | `cd1719863` | `c8785677a` | `BLOCKING` | 9 |
++| `P4` | plan | `machine-handover` | `045707759` | `750903aef` | `BLOCKING` | 11 |
++
++The runs are the recent ones with a recoverable tree, picked to span verdicts and finding counts.
++`data/inputs.txt` carries the full commits and each round's recorded start time.
++The code commit is the last commit of `main` before that start time, the nearest recoverable stand-in for what the Claude reviewers read.
++Each snapshot is a `git archive` extracted under `.scratch/`, with no `.git`.
++
++### Prompt
++
++The prompt is the burler reviewer chain over that snapshot: `burler-template-reviewer.md`, its two instruction files with the explore step, the review-file format, the Discussion or Plan rubric of the same commit with amendment `none`, the round's focus directive where the Claude round had one, and the solo cluster rule.
++The target and fasit text are the ones `contracts/recipes/loom-recipe.yaml` gives the two segments.
++The hub-style `specs` and `stencils` directories the rubrics point at are copied from the snapshot's own `contracts/`.
++Left out: the inlined PATTERN overview, the parent and edit directives, and prior rounds (round 1 has none).
++Codex's work directory held the snapshot, the artifact and none of Claude's review files.
++The sandbox does not confine reads, as `Codex runs` says.
++
++### Codex runs
++
++```text
++CODEX_HOME=<scratch>/codex-home codex exec -m <model> -c model_reasoning_effort="<effort>" \
++  -s workspace-write -C <work> --skip-git-repo-check --json -o <last-message> - < prompt
++```
++
++Each run got a fresh copy of the work directory.
++The review file is read from the copy afterwards.
++`CODEX_HOME` sits under the worktree's `.scratch/` and holds a symlink to `~/.codex/auth.json`, made by hand before the bench; `data/harness/setup-codex-home.sh` reproduces it.
++The link is writable through to the operator's file.
++The target's mtime, 2026-10-24 11:16, predates the link, so no token refresh wrote through it.
++Codex wrote one trust entry into that scratch `config.toml`,
++and the bench's sessions are under the scratch directory only.
++
++The acceptance criterion that the operator's `~/.codex/config.toml` is byte-identical before and after is met only as far as the file time shows, not as hashed.
++No hash was taken before the bench.
++A read after the bench gave sha256 `3854c50a…` and an mtime of 2026-10-24 16:52, before the bench started.
++A second read at 12:48 on 2026-10-25 found the file rewritten, 675 bytes with a new hash, 14 minutes after the last bench run.
++An interactive operator `codex` session, started 2026-10-24 11:49 and still running, was writing into `~/.codex` at that minute,
++and no bench process was alive.
++The directory `~/.codex` showed an mtime of 12:15 on 2026-10-25 at the first read, inside the bench window.
++No entry of the directory carries that time, so the change stays unexplained.
++The live operator session is the likely writer,
++but nothing recorded ties it to 12:15.
++`data/operator-codex-home.txt` holds both hashes, the entry names with their mtimes and the `auth.json` facts.
++
++`-s workspace-write` confines writes to the work directory.
++Reads are not confined.
++Input blinding rests on the copied work directory holding none of Claude's review files, not on the sandbox, since `build.sh` reads the artifacts from the weft checkout and a run could have opened that checkout.
++Whether any run did was checked on the scratch `events.jsonl` of all 31 runs, which hold every command and its output:
++
++```text
++grep -l 'loomyard-weft\|bench/inputs' .scratch/bench/runs/*/*/events.jsonl
++```
++
++The command matches no file.
++One run read outside its work directory beyond the Go module cache: Astra on `D1` ran `rg` for `EncloseAt` over `/home/knatte/Code` with `-g enclose.go`, a search that spans the weft checkout but returns only files named `enclose.go`,
++and its output lists only `quarry` paths.
++`.scratch/` is not committed, so a reader of the repository cannot rerun the check.
++
++### Grading
++
++One Claude session graded all findings, by reading the Codex finding against the Claude findings of the same round and, for a Codex finding with no match, against the cited lines of the artifact and sometimes the snapshot's code.
++Labels:
++
++- `shared`: the Codex finding names the same defect as a Claude finding, or the same decision's same flaw from another side.
++  A `shared` finding may be sharper or weaker than its Claude match.
++  Luna's `D4` F1 reads a lock-name ambiguity Claude filed as a `LOW` consistency finding as a deadlock.
++- `codex-only real`: the claim holds against the artifact text, or against code where it cites code, and no Claude finding of the round covers it.
++- `codex-only unchecked`: not gradable.
++  The row's `note` says why.
++- `false`: the claim does not hold.
++
++Every label is in `data/match.tsv`, one row per Codex finding, with the Claude finding it matched, that finding's severity and a note.
++Each `codex-only` row was read against the cited artifact lines and, where the claim concerns code, the snapshot's code.
++The fixer report and bouncer verdict of the rounds holding `codex-only` rows (`D1`, `D2`, `D3`, `D4`, `D6`, `P1`, `P3`, `P4`) were searched by keyword for each finding's topic, not read line by line.
++None touches a `codex-only` finding except that `D2`'s fixer report fixed Luna's retention gap as a side effect of a Claude finding,
++so that evidence confirms or refutes none of the labels.
++The grading did not test whether the Claude findings themselves are valid.
++"Claude findings found" is therefore a recall against Claude's list, not against the truth: Claude's `LOW` and `NIT` findings are in the 134 and most of the ones no Codex run reproduced.
++
++## What Codex found that Claude's round did not
++
++The `codex-only real` findings of Sol, with the Astra and Luna duplicates, are:
++
++- `D1`: a whole-second write time cannot order an amendment after a settle in the same second (Sol F2).
++- `D1`: a wrongly labelled `Extends` can merge cleanly and break the code silently, against the record's "never silently" bound (Sol F3, Astra F2).
++- `D2`: exact args matching makes a repeated `-- -count=1` request carry the earlier green instead of rerunning (Sol F2, Astra F3).
++- `D3`: a PATTERN background line is narrowed while the record says no PATTERN entry changes (Sol F3); arguable and minor.
++- `D4`: `lyx tender reap` cannot reach the older-binary processes the open risk leaves to it, checked against `internal/tenderengine/processes.go` (Sol F4, Astra F3).
++- `D4`: the landed-work refusal is read once, before the cancel waits for the write locks, and is not rechecked before the end (Sol F1).
++- `P1`: card 20 removes the `Command` switch key while `internal/shedbuild/build_engines_test.go` still sets it,
++  and no card migrates the fixture, checked against the snapshot (Sol F4).
++- `P1`: card 24's `awk` Verify line tests only lines that start with a command key, so a tier with no such line passes (Sol F2).
++- `P1`: the retag leaves `cmd/lyx/treesitterlink_integration_test.go` listing under `integration,tmux,llm`, checked against the snapshot,
++  and no card mentions the guard (Sol F3).
++- `P3`: card 6 exempts a dead holder with children, which the decision record settles nowhere.
++  The card states the exemption, so Sol's `BLOCKING` overstates it (Sol F1).
++- `P3`: no card edits `internal/loomcli/doc.go` or `internal/shuttleengine/claudeengine/doc.go`, though cards 4 and 3 change behavior in those packages, checked against the snapshot's two files (Sol F3).
++
++Astra's `codex-only real` findings beyond the duplicates above are two `D1` claims:
++D6 tells the plan writer to write a card's docs under `Extends` while the rubric flags an `Extends` on a ref the card rewrites (F3),
++and D9 places a path that exists at the root before it tries the package directory, so a bare name at the root wins (F4).
++
++Luna's two `codex-only real` findings are a support-log inconsistency in `D4`, where Turn 3 picks refusal on an unreachable origin while D2 proceeds, and the undefined "recent" in `D2`'s green-record pruning, which the round's fixer report then fixed as a side effect of a Claude finding.
++
++The three findings graded `false` are Luna's: `D2` F2 (`--window` already bounded to `batten.open_window`), `D6` F3 (the SIGTERM fact is stated and holds at the code commit) and `P4` F1 (the plan already confines `Takeover` to `lyx adopt`).
++Luna's `D4` F3 stays unchecked: it bundles four premises and asks for research rather than naming a defect.
++
++## What Codex missed
++
++Of the 21 Claude `BLOCKING` findings Sol found 7, Luna 1 and Astra 2 of the 7 on `D1` to `D5`.
++Sol missed all four `BLOCKING` findings of `D4` and all three of `P4`: code-reading defects such as `RemovePair` taking a snapshot only when two flags are both set, `runproc.End` killing a step mid-merge before the run-lock wait, and an owner guard that reads origin's Bolt.
++Codex's findings are mostly about the artifact's own text and a few cited functions.
++Claude's lens forks read more code and raise more claims about what existing code does.
++The three Luna approvals of `P1`, `P2` and `P3` read the plan and its decision record and ended with `APPROVED` and no findings in 28 to 39 s.
++
++## `codex exec` itself
++
++- A headless run with the ChatGPT login works: `codex exec` read the prompt from stdin, ran its shell commands in the `workspace-write` sandbox and wrote the review file.
++  `exec` takes no approval flag.
++  None was needed.
++- `--json` prints one JSON event per line.
++  The closing `turn.completed` event carries `input_tokens`, `cached_input_tokens`, `output_tokens` and `reasoning_output_tokens`.
++  `-o` writes only the final message.
++- Each run also writes a rollout under `CODEX_HOME/sessions/`.
++  Its `token_count` events carry `rate_limits` with the `used_percent` and window length of both windows.
++- A scratch `CODEX_HOME` with only a linked `auth.json` was enough.
++  No trust prompt blocked `exec`.
++- Wall time per run: Luna 18 to 39 s, Sol 103 to 491 s, Astra 93 to 156 s on the runs that finished.
++  The largest plan (`P1`, 33 cards) took Sol 491 s and 2.9M input tokens.
++- `gpt-6-luna` at `low` read the instruction files and the artifact, then ended its turn with an empty final message and no review file.
++  The bench has no retry for that and counts it as no review.
++- The model cache lists efforts `low` to `ultra` for the Sol and Astra slugs and `low` to `max` for Luna.
++  Only `low` and `medium` were used.
++
++## Billing and rate limits
++
++The plan reports two windows in every rollout: 300 minutes and 10080 minutes.
++Across the bench the 5-hour window went from 0 to 96 percent in about 50 minutes of runs and the weekly window from 0 to 15 percent.
++
++- Luna: about 1 point of the 5-hour window for 10 runs.
++- Sol: 1 to 43 points over 10 runs, 2 to 5 points each except `P1` (10) and `P4` (7).
++- Astra: 43 to 96 points over 5 runs, 5 to 17 points each, about 4 times Sol's cost for the same discussion inputs.
++
++The sixth Astra run (`D6`) was cut off by the limit after 18 s,
++and the four Astra plan runs were refused within 2 s with "You've hit your usage limit ... try again at 4:45 PM".
++Those five cells are unmeasured, as is everything at effort `high`, `xhigh`, `max` and `ultra`, and every repeat.
++
++The decision record set a stop at 70 percent used on either window.
++The grid script did not enforce it during the bench: the window read 68 percent after `D3` on Astra and 79 after `D4`,
++and the bench stopped only when runs started failing.
++A check between runs would have stopped the grid after Astra's `D4`, before the 17 points `D5` cost.
++The committed `data/harness/grid.sh` now reads both windows after each run, writes them into the cell's `result.txt` and exits once either shows 70 percent used.
++It also skips only cells that finished with `rc=0`,
++so the refused Astra cells run again on a rerun.
++The stop is checked after a run, never before the first, and a refused run writes no reading, so a rerun started while a window is still at 70 or more spends its first cell before the grid can stop, and refused cells loop on without stopping it.
++The script was syntax-checked and its window reader run on a bench rollout, but not run as a whole, since a run spends plan limits.
++
++Under the ChatGPT login `codex exec` bills against plan rate limits and shows no per-run price.
++A token count and a window percent are the only cost signals.
++The 5-hour window of a Plus plan did not hold the full medium-effort grid of three models over ten inputs.
++Astra was the part that did not fit.
++
++## Limits of this comparison
++
++- One run per cell: no variance is measured,
++  so Sol and Astra, which tie on the five shared inputs, cannot be ranked.
++- Solo against a fan: Claude's round used 3 or 4 lens forks on top of a handler, which Codex's solo reviewer does not have.
++  A Codex fan would cost several times the window figures above.
++- Recall against Claude's list, not against ground truth.
++  1 Codex finding is unchecked, and Claude's own false findings were not looked for.
++- The code commit is the main branch at the round's start, not the run's fork point.
++- A single grader, the Claude session that drove the bench.
++  `data/match.tsv` is the audit trail.
++- The prompt omits the PATTERN overview a production reviewer is given, which may lower Codex's findings on PATTERN rules.
++- Ten inputs from one repository over two weeks.
++  The plan inputs are 4.
++
++## Data
++
++`data/` holds the following:
++
++- `inputs.txt`: the inputs with weft commit, round start time and code commit.
++- `usage.txt`: one line per run with return code, wall seconds, tokens, verdict, finding count and the 5-hour and weekly `used_percent` after the run, read from the run's rollout.
++  The lines of runs the plan refused carry no percentages.
++- `match.tsv`: the grading of every Codex finding, with the matched Claude finding, its severity and a note.
++- `claude-findings.tsv`: every Claude round-1 finding of the ten inputs with its severity and the Codex settings that matched it.
++- `claude-usage.tsv`: the Claude round-1 review's wall seconds and fresh tokens per input, and its lens forks' fresh tokens, from the weft round usage files.
++- `operator-codex-home.txt`: the state of the operator's `~/.codex` read after the bench.
++- `reviews/<input>/<setting>.md`: every review file Codex wrote.
++- `harness/`: the scripts that staged the inputs (`build.sh`), ran the grid (`grid.sh`, `run.sh`, `windows.sh`), listed findings (`dump.sh`) and produced `usage.txt` (`usage.sh`) and the Claude reference files (`claude-reference.sh`), plus `setup-codex-home.sh`, which creates the scratch `CODEX_HOME` and links `auth.json`.
++  The original `usage.txt` was built by hand from the same files, and `usage.sh`, `claude-reference.sh` and `setup-codex-home.sh` were written afterwards and reproduce the committed old columns exactly.
++  The scripts work on `.scratch/bench/` and `.scratch/codex-home/`, which are not committed.
++  `build.sh` and `run.sh` take their paths from the worktree this bench ran in.
