@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-25 15:14 UTC; every age below is as of then.
+Rendered 2026-10-25 15:15 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -31,7 +31,7 @@ grouping
 | T1 | **Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch** | Task | Plan-Write |
 | E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
 
-## Tasks (5)
+## Tasks (4)
 
 Concrete and claimable; only a task can run.
 
@@ -58,15 +58,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **One lyx beam start brings a beam up: dobby and orch together, with lyx s**<br>• lyx beam start starts dobby and the orch, resuming its session; orch start, prime, start and the long-form shortcuts go<br>• `profile: solid` | [`beam-start-verbs`](design-beam-start-verbs.md) | darn | `umbrella-anchor` | 34m<br>1m | orch, workspaces |
-
-### Layer B (1)
-
-Starts when every entry it names under After is done.
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T5 | **The overview window becomes the beam window: dobby and orch, each run once**<br>• Rename the overview window to beam: <slug>, with a dobby and an orch section, and show each run once<br>• `profile: light` | [`beam-window`](design-beam-window.md) | darn | `beam-start-verbs` | 7m<br>1m | batten, orch, reed, workspaces |
+| T4 | **One lyx beam start brings a beam up, dobby and orch together, and the overview window becomes the beam window**<br>• lyx beam start starts dobby and the orch, resuming its session; orch start, prime, start and the long-form shortcuts go; the overview window becomes beam: <slug>, each run once<br>• `profile: light` | [`beam-start-verbs`](design-beam-start-verbs.md) | loom | `umbrella-anchor` | 34m<br>0m | orch, workspaces, batten, reed |
 
 ## Notes (35)
 

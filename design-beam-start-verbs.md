@@ -1,6 +1,6 @@
-# One lyx beam start brings a beam up: dobby and orch together, with lyx s
+# One lyx beam start brings a beam up, dobby and orch together, and the overview window becomes the beam window
 
-`beam-start-verbs` · Task · enhancement, orch, workspaces
+`beam-start-verbs` · Task · enhancement, orch, workspaces, batten, reed
 
 Depends on: [`umbrella-anchor`](design-umbrella-anchor.md)
 
@@ -10,6 +10,7 @@ Depends on: [`umbrella-anchor`](design-umbrella-anchor.md)
 Dobby's own verbs sit under `lyx beam` (`lyx beam start`, `lyx beam status`), and `lyx prime` names the top beam although the verb runs in any beam.
 `--handoff` and `--adopt` are never used; `--continue` is used often and is long to type.
 The command surface carries long-form shortcuts beside the short ones and a top-level `lyx start` for `lyx loom start`, which nobody runs since batten starts every loom run.
+The overview window, the `runs` strand running `lyx batten overview`, shows the orch's context line, the runs in flight, and since `dobby-overview-window` the worktree's dobby with its runs, so the runs show in two places; its name says neither that it belongs to a beam nor what it covers.
 
 ## Design (operator, 2026-10-25)
 
@@ -17,17 +18,21 @@ A beam, the prime included, is one unit of two parts that always run together: i
 Dobby already sends its notices to the orch, and an idle orch spends nothing until a message wakes it.
 Both run on the machine that owns the beam.
 
-- `lyx beam start [slug]` brings a beam up, the current worktree's beam with no slug: it starts the dobby, reconciles the branches, ensures the overview window, and starts the orch with its watcher.
+### Starting a beam
+
+- `lyx beam start [slug]` brings a beam up, the current worktree's beam with no slug: it starts the dobby, reconciles the branches, ensures the beam window, and starts the orch with its watcher.
   The orch resumes its recorded session when one exists, else starts fresh from the last handoff note, else from the start stencil.
   A recorded session that cannot be resumed falls back to a fresh start from the note, never to an error.
 - It starts only that beam; `lyx beam start --all` starts every beam this machine owns, such as after a restart, so the prime behaves like any other beam.
 - It refuses in a folder that is no beam, a task worktree naming the beam it belongs to and its path, and on a beam another machine owns, naming `lyx adopt`.
 - It is idempotent: a live dobby or orch is left alone, and only a missing part is started, a new orch resuming its recorded session.
-- `lyx s` attaches at once, so the operator never sees its output on success: what runs shows in the overview window, and a refusal attaches nothing and leaves its error on the terminal.
+- `lyx s` attaches at once, so the operator never sees its output on success: what runs shows in the beam window, and a refusal attaches nothing and leaves its error on the terminal.
 - `lyx beam stop [slug]` stops both, and `lyx beam status` shows both.
 - A fresh orch comes from `lyx orch refresh`.
 - `lyx orch` keeps `stop`, `status`, `distill`, `refresh`, `withdraw` and `rules`.
 - Removed: `lyx orch start` with `--continue`, `--handoff` and `--adopt`; `lyx orch cleanup`, since `lyx cleanup` already removes old handoffs; `lyx prime`; `lyx start`.
+
+### Shortcuts
 
 Shortcuts are short forms only:
 
@@ -39,3 +44,12 @@ Shortcuts are short forms only:
 | `lyx r` | `lyx tender resume` |
 
 The long forms `lyx attach`, `lyx pause` and `lyx resume` are removed.
+
+### The beam window
+
+The overview window becomes the beam's own window, named `beam: <slug>`, `beam: prime` in the prime, with one section per part of the beam:
+
+- Dobby: alive, `max_runs`, each run it drives with its state and stage, and each released task it has not started with what it waits on.
+- Orch: its context reading against the soft threshold and the hard cap, and its cycle state, as the context line shows today.
+
+Each run shows once, in the dobby section.
