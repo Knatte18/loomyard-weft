@@ -1,6 +1,6 @@
 # Audit the twill and lens review setup: worth per perch, recurring finding classes, writer quality
 
-`review-setup-audit` · Note · audit, burler, loom, report, stencil, shed
+`review-setup-audit` · Note · research, burler, loom, report, stencil, shed
 
 ## Questions
 

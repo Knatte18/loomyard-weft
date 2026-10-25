@@ -1,6 +1,6 @@
 # Trial: batcher profile wide (budget 300k)
 
-`batch-budget-300k-trial` · Note · audit, webster
+`batch-budget-300k-trial` · Note · research, webster
 
 ## Seen
 

@@ -1,6 +1,6 @@
 # Lens overlap audit: which lenses find the same defects, and a smaller set
 
-`lens-overlap-audit` · Note · audit, burler, loom
+`lens-overlap-audit` · Note · research, burler, loom
 
 ## Question (operator, 2026-10-22)
 
