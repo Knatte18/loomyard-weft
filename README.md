@@ -18,7 +18,7 @@ grouping
 
 | # | Member | Kind | Standing |
 | --- | --- | --- | --- |
-| T3 | **An anchor per beam** | Task | Code-Bouncer |
+| T3 | **An anchor per beam** | Task | Code-Burler-Review |
 
 ### P2 .NET: LoomYard for C# repositories
 
@@ -42,7 +42,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **The overview window becomes the beam window**<br>• Rename the overview window to beam: <slug>, with one dobby and one orch section, each run shown once | [`beam-overview-window`](design-beam-overview-window.md) | darn | Code-Burler-Fix | neve | 39m<br>39m | batten, orch, reed |
 | T2 | **Bench Codex Astra against solo Opus as a plan reviewer, four runs**<br>• `profile: docs` | [`codex-astra-solo-bench`](design-codex-astra-solo-bench.md) | darn | Darn-Write | neve | 6h<br>6h | codex, burler |
-| T3 | **An anchor per beam**<br>• Let each worktree carry its own anchor through a .lyx-anchor marker at its weft branch root, inherited by its tasks, with a verb that changes it<br>• `profile: solid` | [`umbrella-anchor`](design-umbrella-anchor.md) | loom | Code-Bouncer | neve | 7d<br>6h | fabric, config, workspaces |
+| T3 | **An anchor per beam**<br>• Let each worktree carry its own anchor through a .lyx-anchor marker at its weft branch root, inherited by its tasks, with a verb that changes it<br>• `profile: solid` | [`umbrella-anchor`](design-umbrella-anchor.md) | loom | Code-Burler-Review | neve | 7d<br>6h | fabric, config, workspaces |
 
 ### Ready (0)
 
