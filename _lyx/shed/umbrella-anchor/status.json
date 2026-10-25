@@ -1,11 +1,11 @@
 {
-  "current_producer": "Drift-Verify",
+  "current_producer": "Describe",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Drift-Verify",
-    "last": "Code-Bouncer → done",
+    "now": "Describe",
+    "last": "Drift-Verify → skipped",
     "wait": ""
   },
   "history": [
@@ -661,6 +661,13 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYXHUB/umbrella-anchor/_lyx/reviews/code/round-1-bouncer-ledger.md",
       "at": "2026-10-25T19:31:59Z"
+    },
+    {
+      "producer": "Drift-Verify",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-10-25T19:31:59Z",
+      "reason": "drift.enabled = false"
     }
   ],
   "product": {
