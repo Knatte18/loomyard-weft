@@ -19,13 +19,13 @@
 - `plan:internal/fabricengine_test#TestAnchorChange` -> `func TestAnchorChange(t *testing.T)`
 
 **Uses:**
-- `plan:internal/fabricengine#MoveRecord`
-- `plan:internal/fabricengine#MoveRecordPath`
-- `plan:internal/fabricengine#ReadMoveRecord`
-- `plan:internal/fabricengine#RemoveMoveRecord`
-- `plan:internal/fabricengine#MoveInProgress`
-- `plan:internal/fabricengine#moveLockPath`
-- `plan:internal/fabricengine#integrateWeft`
+- `internal/fabricengine#MoveRecord`
+- `internal/fabricengine#MoveRecordPath`
+- `internal/fabricengine#ReadMoveRecord`
+- `internal/fabricengine#RemoveMoveRecord`
+- `internal/fabricengine#MoveInProgress`
+- `internal/fabricengine#moveLockPath`
+- `internal/fabricengine#integrateWeft`
 - `internal/fabricengine#treeAnchor`
 - `internal/fabricengine#committedMarker`
 - `internal/fabricengine#refuseEmptyOwnMarker`

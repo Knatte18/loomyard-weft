@@ -27,10 +27,10 @@
 - `plan:internal/fabricengine#AnchorChange.Finish`
 - `plan:internal/fabricengine#AnchorChange.Close`
 - `plan:internal/fabricengine#moveWeftContent`
-- `plan:internal/fabricengine#MoveRecord`
-- `plan:internal/fabricengine#moveLockPath`
-- `plan:internal/fabricengine#MoveRecordPath`
-- `plan:internal/fabricengine#RemoveMoveRecord`
+- `internal/fabricengine#MoveRecord`
+- `internal/fabricengine#moveLockPath`
+- `internal/fabricengine#MoveRecordPath`
+- `internal/fabricengine#RemoveMoveRecord`
 - `internal/lyxcwd#NamedWorktree`
 
 **Intent:**

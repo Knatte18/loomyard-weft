@@ -19,9 +19,9 @@
 - `plan:internal/fabricengine#AnchorChange.Apply`
 - `plan:internal/fabricengine#AnchorChange.Finish`
 - `plan:internal/fabricengine#AnchorChange.Close`
-- `plan:internal/fabricengine#MoveInProgress`
+- `internal/fabricengine#MoveInProgress`
 - `plan:internal/fabricengine#UpstreamRunUnfinished`
-- `plan:internal/fabricengine#ReadMoveRecord`
+- `internal/fabricengine#ReadMoveRecord`
 - `internal/shedrun#StatusFile`
 - `internal/shedrun#SelfRunID`
 - `internal/fabricengine#ErrAnchorChange`

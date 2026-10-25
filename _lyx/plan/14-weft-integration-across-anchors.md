@@ -6,13 +6,13 @@
 - `internal/gitexec_test#TestCheckFloor`
 
 **Create:**
-- `plan:internal/fabricengine#ErrIntegrateConflict` -> `var ErrIntegrateConflict error`
-- `plan:internal/fabricengine#IntegrateOutcome` -> `type IntegrateOutcome struct`
-- `plan:internal/fabricengine#integrateWeft` -> `func integrateWeft(rec *Mutations, weftPath, upstream, target string, names []string, fallback string) (IntegrateOutcome, error)`
-- `plan:internal/fabricengine#resetWeftToIntegrated` -> `func resetWeftToIntegrated(rec *Mutations, weftPath, onto string) error`
-- `plan:internal/fabricengine#IntegrateWeftForTest` -> `func IntegrateWeftForTest(weftPath, upstream, target string, names []string, fallback string) (IntegrateOutcome, error)`
-- `plan:internal/fabricengine_test#TestIntegrateWeft` -> `func TestIntegrateWeft(t *testing.T)`
-- `plan:internal/gitexec#RunWithEnv` -> `func RunWithEnv(args []string, cwd string, extraEnv []string) (string, error)`
+- `internal/fabricengine#ErrIntegrateConflict`
+- `internal/fabricengine#IntegrateOutcome`
+- `internal/fabricengine#integrateWeft`
+- `internal/fabricengine#resetWeftToIntegrated`
+- `internal/fabricengine#IntegrateWeftForTest`
+- `internal/fabricengine_test#TestIntegrateWeft`
+- `internal/gitexec#RunWithEnv`
 
 **Uses:**
 - `internal/fabricengine#treeAnchor`

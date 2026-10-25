@@ -20,12 +20,12 @@
 - `cmd/lyx#destructiveGuardAllowlist`
 
 **Create:**
-- `plan:internal/fabricengine#MoveRecord` -> `type MoveRecord struct`
-- `plan:internal/fabricengine#MoveRecordPath` -> `func MoveRecordPath(weftPath string) string`
-- `plan:internal/fabricengine#ReadMoveRecord` -> `func ReadMoveRecord(weftPath string) (MoveRecord, bool, error)`
-- `plan:internal/fabricengine#RemoveMoveRecord` -> `func RemoveMoveRecord(weftPath string) error`
-- `plan:internal/fabricengine#MoveInProgress` -> `func MoveInProgress(slug, weftPath string) (wayForward string, standing bool, err error)`
-- `plan:internal/fabricengine#moveLockPath` -> `func moveLockPath(weftPath string) string`
+- `internal/fabricengine#MoveRecord`
+- `internal/fabricengine#MoveRecordPath`
+- `internal/fabricengine#ReadMoveRecord`
+- `internal/fabricengine#RemoveMoveRecord`
+- `internal/fabricengine#MoveInProgress`
+- `internal/fabricengine#moveLockPath`
 
 **Uses:**
 - `internal/fabricengine#BranchAnchorStopped`

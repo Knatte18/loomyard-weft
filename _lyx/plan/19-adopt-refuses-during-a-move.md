@@ -9,7 +9,7 @@
 - `internal/adoptcli#world.deps`
 
 **Uses:**
-- `plan:internal/fabricengine#MoveInProgress`
+- `internal/fabricengine#MoveInProgress`
 - `internal/lyxcwd#NamedWorktree`
 
 **Intent:**
