@@ -1,20 +1,20 @@
 # Card 12 — bouncer-decision-escalation
 
 **Create:**
-- `plan:internal/shedadapters#EscalationDecision` -> `const EscalationDecision EscalationCause = "decision"`
-- `plan:internal/shedadapters#Bouncer.routeDecisions` -> `func (b *Bouncer) routeDecisions(ctx context.Context, round int, verdict bouncerVerdict, ledger ledgerFile, spawned bool) (shedengine.Outcome, shedengine.OutputPointer, error, bool)`
-- `plan:internal/shedadapters#Bouncer.decisionFindings` -> `func (b *Bouncer) decisionFindings(round int) ([]burlerengine.Finding, error)`
-- `plan:internal/shedadapters#Bouncer.decisionRefusal` -> `func (b *Bouncer) decisionRefusal(round int, verdict bouncerVerdict, ledger ledgerFile, decision CirclingDecision) string`
-- `plan:internal/shedadapters#Bouncer.escalateWith` -> `func (b *Bouncer) escalateWith(round int, cause EscalationCause, detail string, ptr shedengine.OutputPointer) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/shedadapters#Bouncer.renderDecisionDetail` -> `func (b *Bouncer) renderDecisionDetail(round int, refusal string, held bool) (string, error)`
-- `plan:internal/shedadapters#DecisionHaltPrefix` -> `const DecisionHaltPrefix = "decision halt: "`
-- `plan:internal/shedadapters#decisionSnapshotPath` -> `func decisionSnapshotPath(runDir string, round int) string`
-- `plan:internal/shedadapters#writeDecisionSnapshot` -> `func writeDecisionSnapshot(runDir string, round int, decisionRecordPath string) error`
-- `plan:internal/shedadapters#addedSinceSnapshot` -> `func addedSinceSnapshot(runDir string, round int, decisionRecordPath string) ([]string, error)`
-- `plan:contracts/stencils#BouncerFragmentDecision` -> `var BouncerFragmentDecision []byte`
+- `internal/shedadapters#EscalationDecision`
+- `internal/shedadapters#Bouncer.routeDecisions`
+- `internal/shedadapters#Bouncer.decisionFindings`
+- `internal/shedadapters#Bouncer.decisionRefusal`
+- `internal/shedadapters#Bouncer.escalateWith`
+- `internal/shedadapters#Bouncer.renderDecisionDetail`
+- `internal/shedadapters#DecisionHaltPrefix`
+- `internal/shedadapters#decisionSnapshotPath`
+- `internal/shedadapters#writeDecisionSnapshot`
+- `internal/shedadapters#addedSinceSnapshot`
+- `contracts/stencils#BouncerFragmentDecision`
 - `contracts/stencils/bouncer/bouncer-fragment-decision.md`
-- `plan:internal/shedadapters#decisionBouncer` -> `func decisionBouncer(t *testing.T, verdict, review, ledger string, tweak func(*BouncerConfig)) (*Bouncer, *BouncerConfig, *shedfake.Shuttle)`
-- `plan:internal/shedadapters#TestBouncer_DecisionEscalation` -> `func TestBouncer_DecisionEscalation(t *testing.T)`
+- `internal/shedadapters#decisionBouncer`
+- `internal/shedadapters#TestBouncer_DecisionEscalation`
 
 **Edit:**
 - `internal/shedadapters#EscalationCause.valid`

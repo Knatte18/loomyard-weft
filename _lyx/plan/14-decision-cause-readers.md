@@ -16,7 +16,7 @@
 - `internal/loomcli/circling.go`
 
 **Uses:**
-- `plan:internal/shedadapters#DecisionHaltPrefix`
+- `internal/shedadapters#DecisionHaltPrefix`
 
 **Intent:** D8: the arbiter refuses a `decision` escalation and hands it back to the parent, a decision halt stays the parent's, and the `circling` verbs name the new cause.
 
