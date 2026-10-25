@@ -55,6 +55,14 @@
       "at": "2026-10-25T07:13:24Z",
       "budget_exempt": true,
       "routed_to": "Run-Shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → done at Friction-Reflect",
+      "at": "2026-10-25T11:55:46Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
     }
   ]
 }
