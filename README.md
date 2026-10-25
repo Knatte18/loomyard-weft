@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-25 15:15 UTC; every age below is as of then.
+Rendered 2026-10-25 15:19 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -18,7 +18,7 @@ grouping
 
 | # | Member | Kind | Standing |
 | --- | --- | --- | --- |
-| T3 | **An anchor per beam** | Task | Plan-Burler-Fix |
+| T3 | **An anchor per beam** | Task | Plan-Bouncer |
 
 ### P2 .NET: LoomYard for C# repositories
 
@@ -42,7 +42,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift.<br>• `profile: light` | [`regression-baseline-verify`](design-regression-baseline-verify.md) | loom | Plan-Write | neve | 8d<br>1h | shed, webster, batten, config, dotnet |
-| T3 | **An anchor per beam**<br>• Let each worktree carry its own anchor through a .lyx-anchor marker at its weft branch root, inherited by its tasks, with a verb that changes it<br>• `profile: solid` | [`umbrella-anchor`](design-umbrella-anchor.md) | loom | Plan-Burler-Fix | neve | 7d<br>2h | fabric, config, workspaces |
+| T3 | **An anchor per beam**<br>• Let each worktree carry its own anchor through a .lyx-anchor marker at its weft branch root, inherited by its tasks, with a verb that changes it<br>• `profile: solid` | [`umbrella-anchor`](design-umbrella-anchor.md) | loom | Plan-Bouncer | neve | 7d<br>2h | fabric, config, workspaces |
 
 ### Ready (1)
 
@@ -50,7 +50,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **Bench Codex Astra against solo Opus as a plan reviewer, four runs**<br>• `profile: docs` | [`codex-astra-solo-bench`](design-codex-astra-solo-bench.md) | darn |  | 2h<br>2h | codex, burler |
+| T2 | `draft` **Bench Codex Astra against solo Opus as a plan reviewer, four runs**<br>• `profile: docs` | [`codex-astra-solo-bench`](design-codex-astra-solo-bench.md) | darn |  | 3h<br>3h | codex, burler |
 
 ### Layer A (1)
 
@@ -58,7 +58,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **One lyx beam start brings a beam up, dobby and orch together, and the overview window becomes the beam window**<br>• lyx beam start starts dobby and the orch, resuming its session; orch start, prime, start and the long-form shortcuts go; the overview window becomes beam: <slug>, each run once<br>• `profile: light` | [`beam-start-and-window`](design-beam-start-and-window.md) | loom | `umbrella-anchor` | 34m<br>0m | orch, workspaces, batten, reed |
+| T4 | `draft` **One lyx beam start brings a beam up, dobby and orch together, and the overview window becomes the beam window**<br>• lyx beam start starts dobby and the orch, resuming its session; orch start, prime, start and the long-form shortcuts go; the overview window becomes beam: <slug>, each run once<br>• `profile: light` | [`beam-start-and-window`](design-beam-start-and-window.md) | loom | `umbrella-anchor` | 39m<br>4m | orch, workspaces, batten, reed |
 
 ## Notes (35)
 
