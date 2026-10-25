@@ -1,15 +1,9 @@
 {
-  "number": 2,
+  "number": 3,
   "amendment": true,
-  "base": "fb5c10c3a482e07f22eb2417aabcd8a9a9b7c932",
+  "base": "afd030a47517b245aff3688d84ebdc69aac1a2f3",
   "review_input": "/home/knatte/Code/loomyard-LYXHUB/umbrella-anchor/.lyx/loom/Parent-Align-fixer-report.md",
   "judge_subject": {
-    "kind": "code",
-    "merge_base": "afd030a47517b245aff3688d84ebdc69aac1a2f3",
-    "head": "4999d4dc5dbf6acc582db38aafab688c6317852c",
-    "full_hash": "68cec3e0f6a05b497ca808805f987bed35429b421d89ed7b8f30ecaa1b21b9d7",
-    "patch_id": "3b3a643e9ccfdffabea190e92c2a0446057d7ec2"
-  },
-  "judge_base": "afd030a47517b245aff3688d84ebdc69aac1a2f3",
-  "judge_at": "2026-10-25T19:23:39Z"
+    "kind": ""
+  }
 }
