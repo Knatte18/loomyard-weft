@@ -196,6 +196,12 @@ A dobby wakes on an `internal/fswatch` event and on its probe timer, and coalesc
 With no run in flight, its timer backs off by doubling up to sixty seconds, and any event resets it.
 Where fswatch fails to open, as on WSL or through a junction, the timer alone drives it at the probe cadence.
 
+### Added after Discussion (parent, 2026-10-25): The prime is the root beam, on the same code path as every other beam
+
+Decision: The prime worktree is a beam like every other beam: dobby and the beam code treat it as the root beam, with no special path for it. The only differences: it has no parent, so `lyx beam land` never lands it; it needs no project entry or beam mark, being a beam by being the top worktree; and the hub-wide duties stay with it (the board on Bolt, hub config, the landing deploy and the hub's prime owner).
+
+Rationale: Operator, 2026-10-25: the top worktree is equivalent to every other beam except that it has no parent.
+
 ## Constraints
 
 - `PATTERN-shed-driver`: the step loop stays in `internal/sheddriver`, and dobby calls no step body; it starts `lyx batten run` processes, registered in `internal/runproc` and logged through `internal/logger`, a yield at Debug.
