@@ -1,15 +1,15 @@
 {
   "runGuid": "0a9cd41e763cda08c3e817c3e3774513",
-  "planFingerprint": "c9527b1575abdd2e041c6c95edcf27c81ed3573bf3f8bc79bb8457eb35ef7960",
+  "planFingerprint": "aed15674b96aa218f9856e86f5ab5c3943affe31b95aad9abc4e0b55fb776383",
   "planFileHashes": {
     "00-overview.md": "dad2e8dedbf9d5391b1a83850b1f6f2a07dc064acca0a99fa5d735955a4c3338",
-    "01-agentname-scoped-program.md": "4817b10ab82d3a24d9481fe050cd67e86edae66657ba500b2c650a9db70885e6",
-    "02-scoped-program-notice.md": "5a223967e760d485f48cd3b885909450cd9b4e961d2c13484fa29cd1cdbd2627",
-    "03-runproc-dobby-role.md": "99977d8a4fbf96a50ee43dc2b321c69c7403e42660a61bb4ea057464175e52af",
-    "04-dobby-records.md": "eff99f691ef8a4aeb834e99c07c9c3d9c8b3789201b6aacf63b3147a0f9628f8",
-    "05-board-draft-rule.md": "45bcb7a75986caaa4770fda4eb5358e27e263f4c7e4f6955c89f8a58e70414ab",
-    "06-board-draft-migration.md": "ceb3f5610a6ff50df0de387adb7af8a49c4fe90b68f608e3c448fb3c9d7b7735",
-    "07-draft-writers.md": "900711b8217ec762c9701b8874a9d7e1790d138e4da339ee71d9b212c27d89e9",
+    "01-agentname-scoped-program.md": "469f85082d8aeeadd27955255db010ba9dd2c769051fbf76e5914caab34e888f",
+    "02-scoped-program-notice.md": "7c8f43bca36778c7f1557e060ba214456fe92e77063987d1e06d3ad123426e1b",
+    "03-runproc-dobby-role.md": "93d364c5203901d62ec0ff755c8162b4da70af283d827a1cc028fc0765333020",
+    "04-dobby-records.md": "4f51344c2c969650987c71533ffc15ce512456ef2bbc3244f9a503f8264a1880",
+    "05-board-draft-rule.md": "6aca1c3cc0473832f0a7815f9d1083f1e173978f0fbb6a430f73eb122202b53b",
+    "06-board-draft-migration.md": "b9009323c38eabb41cb8f85f33872ea01552cdc0dd6e0606033ce9a611db910e",
+    "07-draft-writers.md": "39b70908b9f87a489e6244ad83cdec1354c22204c1100d1d3dbd33559204b020",
     "08-shed-yield.md": "bfe41c09ff92bf3cf20826db7d330dd4733617afa8c15c461301b9284cb3825d",
     "09-step-envelope-yield.md": "a5c84047a5c57a194965fa8a7362765a848031730b4055c97f5ca44a0b9a940a",
     "10-driver-yield-exit.md": "35dc74dc58547e149163ebb1bc43b1e3e749ad1681f8a98a30497c78084c5268",
@@ -28,21 +28,21 @@
     "23-loomcli-arbiter-delegates.md": "b85f5e27cf35d20321d94ff9beb6d5d92b07c9803267ece60d72fd0c3b749253",
     "24-arbiterstop-batten-rule.md": "fb59f5171a4d36ccf3a80c42bae1a9742721f6010a9c02c22a3ce7134e0427f4",
     "25-batten-arbiter-wiring.md": "64a6d0b642c5b1d5b083a093fcbfb2d8356fdf78dc43b48c0d5c4e6f74f263b3",
-    "26-batten-pass-exit-codes.md": "52fe3d21f7c31b1d7644f1eab1324d52465f56bd0e1684065168eab81256d453",
-    "27-dobby-start.md": "85250d57ed9c8d181479a7b75f77436727c8a6a716b07e9351ff577e84dd0bdc",
+    "26-batten-pass-exit-codes.md": "c9cae0b862ef0bc974a718c3b912a085acb6e204f9c147db1c830130e06d56c9",
+    "27-dobby-start.md": "2a0b549fb2c7c37ed58e1df9f91be7514e8d256abb9033b2bb939bdf1d975f2d",
     "28-batten-first-pass.md": "32a8be418b1e2e48c2d0f56bbc170660eff42c31324674da6d7ab785597e50e6",
     "29-origin-owed-marker.md": "3ce9f7533338afaead805b6975c173389f78bc4e67835f47dda00c8b9a1e64bf",
-    "30-batten-continue-pass.md": "177199254810f8dc8f5380113af4e2bc4465e7b8ab9c6dd695b10a32b4b486e0",
-    "31-batten-pass-wiring.md": "54d50b40530d7857d8a8c2717bdd95beb02c479ab328669e22099af7266c7d54",
-    "32-dobby-loop.md": "e4353c725b563b9914c3f0586cea6f7add6eee21c4d4491bbd442cd1f19504cc",
-    "33-dobby-passes.md": "69e796b80ea1d63025615766bd4c9b621c34d2de45ec7d62a0f8a20a52edb19f",
+    "30-batten-continue-pass.md": "dd62cd577dc27c8b6eff2d9d2664a11f7613492179ea92dea999647ef0b1082a",
+    "31-batten-pass-wiring.md": "44a4ac6705b5443446598e110aa23990e20374a22a2ff74f33f7215af4b494ee",
+    "32-dobby-loop.md": "837b1ae373f6770cb07538b4a07f1d98a60a88d8b09c70d00a7afa240870811a",
+    "33-dobby-passes.md": "707c2b60803ad8e944d99351baee86411575c1beef563bbf8d5e724f7a3b8136",
     "34-dobby-owned-elsewhere.md": "92a4a25ca1d2db63e21e6a90f949f8780517adac358fed0503bea855e8b4ec0e",
-    "35-dobby-ready-starts.md": "2b2eae53bee3285012e3aba65295bbc20b1f32ddc06f24db8aee31652ac0a9b9",
-    "36-dobby-board-tidy.md": "24219ba3a1ae01fd687e7154448ee5287a0dd6a51a180f3d35d0a34db12a7ca2",
-    "37-beam-verbs.md": "d9541e8d283980480ad7fe1e3614f5522cb273c8f1b1cce85272a43cf6dd7af5",
+    "35-dobby-ready-starts.md": "cc64ad4e54ab23dc2105f13dfbc4e791dd1085aab35c23dfe2171ecb544439ed",
+    "36-dobby-board-tidy.md": "8c350012e83a2e20d906234ea0e66c578b31718e1ccbc33c5aefff74830eb1de",
+    "37-beam-verbs.md": "7d62ebc2e955406b99decef5011e9e59e3d764d60c6c970da5e18237098af31d",
     "38-orch-start-dobbies.md": "6bc1e446f7e0e9690c74046003ac12a1ec70ad2c2dbcca47b11102936dc45be8",
     "39-adopt-refusals.md": "dbfb5bbbbf1306e7ae611a2c9bf120baf57c9e6dc1c38fda30e0a135644844cd",
-    "40-teardown-dobby-liveness.md": "d8ca695e02bb2fdf3675d80d23d745a3a6c39a0635c4bb48680a72651651caef",
+    "40-teardown-dobby-liveness.md": "59afae810c6ef5078dfade906853829f63464411d09e52c28e45308afc8caf00",
     "41-finalize-key-notice.md": "21e9a6e51f7658c719ec5a22b9a60c0c04f1bf8420e5f893aaf56d4f566a785f",
     "42-orch-role-stencil.md": "f6678fbe8da2a3e1edc9a013c9bd00b1a45e18388645d01c5e526d1b7c9e6b1a"
   },
@@ -972,7 +972,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "b72a3cc08101d22a4e8fe62d611ae08b",
   "masterSessionId": "6e5b1004-7b3f-4552-94de-e0b6630533f5",
   "masterEngine": "claude",
@@ -988,20 +988,49 @@
         "06-board-draft-migration"
       ],
       "cardHashes": {
-        "01-agentname-scoped-program": "4817b10ab82d3a24d9481fe050cd67e86edae66657ba500b2c650a9db70885e6",
-        "02-scoped-program-notice": "5a223967e760d485f48cd3b885909450cd9b4e961d2c13484fa29cd1cdbd2627",
-        "03-runproc-dobby-role": "99977d8a4fbf96a50ee43dc2b321c69c7403e42660a61bb4ea057464175e52af",
-        "04-dobby-records": "eff99f691ef8a4aeb834e99c07c9c3d9c8b3789201b6aacf63b3147a0f9628f8",
-        "05-board-draft-rule": "45bcb7a75986caaa4770fda4eb5358e27e263f4c7e4f6955c89f8a58e70414ab",
-        "06-board-draft-migration": "ceb3f5610a6ff50df0de387adb7af8a49c4fe90b68f608e3c448fb3c9d7b7735"
+        "01-agentname-scoped-program": "469f85082d8aeeadd27955255db010ba9dd2c769051fbf76e5914caab34e888f",
+        "02-scoped-program-notice": "7c8f43bca36778c7f1557e060ba214456fe92e77063987d1e06d3ad123426e1b",
+        "03-runproc-dobby-role": "93d364c5203901d62ec0ff755c8162b4da70af283d827a1cc028fc0765333020",
+        "04-dobby-records": "4f51344c2c969650987c71533ffc15ce512456ef2bbc3244f9a503f8264a1880",
+        "05-board-draft-rule": "6aca1c3cc0473832f0a7815f9d1083f1e173978f0fbb6a430f73eb122202b53b",
+        "06-board-draft-migration": "b9009323c38eabb41cb8f85f33872ea01552cdc0dd6e0606033ce9a611db910e"
       },
       "startSha": "dd11ab09f1bf269b1c6f4319cdb43ecd6b411f46",
       "kind": "fork",
       "spawnedAt": "2026-10-25T09:08:45Z",
       "sessionId": "6e5b1004-7b3f-4552-94de-e0b6630533f5",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-agentname-scoped-program",
+        "status": "done",
+        "head_sha": "3b623d187b171f4fcde2308290029fa78c769128",
+        "deviations": [
+          "internal/boardengine/ownerset_integration_test.go",
+          "internal/boardengine/render.go",
+          "internal/boardengine/render_test.go",
+          "internal/boardengine/replay.go",
+          "internal/boardengine/replay_test.go",
+          "internal/dobbyengine/config.go",
+          "internal/dobbyengine/config_test.go",
+          "internal/dobbyengine/seam_enforcement_test.go",
+          "internal/dobbyengine/state.go",
+          "internal/dobbyengine/testmain_test.go"
+        ]
+      },
+      "cardShas": [
+        "3b623d187b171f4fcde2308290029fa78c769128"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-ac27179692d1cfb44.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-ac27179692d1cfb44.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-ac27179692d1cfb44.jsonl"
+  ]
 }

@@ -3,8 +3,8 @@
 **Edit:**
 - `plan:internal/dobbyengine#Deps`
 - `plan:internal/dobbyengine#daemon.tick`
-- `plan:internal/dobbyengine#StartState`
-- `plan:internal/dobbyengine#dobbyengineAllowedImports`
+- `internal/dobbyengine#StartState`
+- `internal/dobbyengine#dobbyengineAllowedImports`
 - `internal/dobbyengine/doc.go`
 
 **Create:**
@@ -16,8 +16,8 @@
 - `plan:internal/dobbyengine#TestStartReady_RefusalsAndBackoff` -> `func TestStartReady_RefusalsAndBackoff(t *testing.T)`
 
 **Uses:**
-- `plan:internal/boardengine#IsEmptyStatus`
-- `plan:internal/dobbyengine#Config`
+- `internal/boardengine#IsEmptyStatus`
+- `internal/dobbyengine#Config`
 
 **Intent:**
 Start the beam's ready tasks from the board (D5): a task waits as `draft` until released, and dobby starts it from an empty status.

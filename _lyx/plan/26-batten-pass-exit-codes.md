@@ -18,8 +18,8 @@
 - `plan:internal/battencli#TestPassExitCode` -> `func TestPassExitCode(t *testing.T)`
 
 **Uses:**
-- `plan:internal/dobbyengine#PassExitOwnedElsewhere`
-- `plan:internal/dobbyengine#PassExitCovered`
+- `internal/dobbyengine#PassExitOwnedElsewhere`
+- `internal/dobbyengine#PassExitCovered`
 
 **Intent:**
 Give each refusal of a pass that dobby reads by code an exit code of its own (D4).

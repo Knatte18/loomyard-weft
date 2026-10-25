@@ -3,24 +3,24 @@
 **Create:**
 - `internal/dobbyengine/doc.go`
 - `internal/dobbyengine/template.yaml`
-- `plan:internal/lyxdirs#BeamDirName` -> `const BeamDirName = "beam"`
-- `plan:internal/dobbyengine#Geometry` -> `type Geometry struct`
-- `plan:internal/dobbyengine#State` -> `type State struct`
-- `plan:internal/dobbyengine#RunState` -> `type RunState struct`
-- `plan:internal/dobbyengine#StartState` -> `type StartState struct`
-- `plan:internal/dobbyengine#ReadState` -> `func ReadState(path string) (State, bool, error)`
-- `plan:internal/dobbyengine#UpdateState` -> `func UpdateState(path string, mutate func(*State) error) error`
-- `plan:internal/dobbyengine#PassExitOwnedElsewhere` -> `const PassExitOwnedElsewhere = 77`
-- `plan:internal/dobbyengine#PassExitCovered` -> `const PassExitCovered = 78`
-- `plan:internal/dobbyengine#PassExitContinueRefused` -> `const PassExitContinueRefused = 79`
-- `plan:internal/dobbyengine#Config` -> `type Config struct`
-- `plan:internal/dobbyengine#ConfigTemplate` -> `func ConfigTemplate() string`
-- `plan:internal/dobbyengine#ConfigSpec` -> `func ConfigSpec() configengine.Spec`
-- `plan:internal/dobbyengine#LoadConfig` -> `func LoadConfig(dirs configengine.Dirs) (Config, error)`
-- `plan:internal/dobbyengine#TestState_RoundTripKeepsUnknownKeys` -> `func TestState_RoundTripKeepsUnknownKeys(t *testing.T)`
-- `plan:internal/dobbyengine#TestLoadConfig` -> `func TestLoadConfig(t *testing.T)`
-- `plan:internal/dobbyengine#TestToldGeometryInvariant_AllowlistOnly` -> `func TestToldGeometryInvariant_AllowlistOnly(t *testing.T)`
-- `plan:internal/dobbyengine#dobbyengineAllowedImports` -> `var dobbyengineAllowedImports []string`
+- `internal/lyxdirs#BeamDirName`
+- `internal/dobbyengine#Geometry`
+- `internal/dobbyengine#State`
+- `internal/dobbyengine#RunState`
+- `internal/dobbyengine#StartState`
+- `internal/dobbyengine#ReadState`
+- `internal/dobbyengine#UpdateState`
+- `internal/dobbyengine#PassExitOwnedElsewhere`
+- `internal/dobbyengine#PassExitCovered`
+- `internal/dobbyengine#PassExitContinueRefused`
+- `internal/dobbyengine#Config`
+- `internal/dobbyengine#ConfigTemplate`
+- `internal/dobbyengine#ConfigSpec`
+- `internal/dobbyengine#LoadConfig`
+- `internal/dobbyengine#TestState_RoundTripKeepsUnknownKeys`
+- `internal/dobbyengine#TestLoadConfig`
+- `internal/dobbyengine#TestToldGeometryInvariant_AllowlistOnly`
+- `internal/dobbyengine#dobbyengineAllowedImports`
 
 **Edit:**
 - `internal/configreg#Modules`

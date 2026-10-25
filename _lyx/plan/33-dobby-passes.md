@@ -4,7 +4,7 @@
 - `plan:internal/dobbyengine#Deps`
 - `plan:internal/dobbyengine#daemon`
 - `plan:internal/dobbyengine#daemon.tick`
-- `plan:internal/dobbyengine#RunState`
+- `internal/dobbyengine#RunState`
 - `internal/dobbyengine/doc.go`
 
 **Create:**
@@ -19,9 +19,9 @@
 - `plan:internal/dobbyengine#TestDrivePasses_ExitHandling` -> `func TestDrivePasses_ExitHandling(t *testing.T)`
 
 **Uses:**
-- `plan:internal/dobbyengine#PassExitCovered`
-- `plan:internal/dobbyengine#PassExitContinueRefused`
-- `plan:internal/dobbyengine#PassExitOwnedElsewhere`
+- `internal/dobbyengine#PassExitCovered`
+- `internal/dobbyengine#PassExitContinueRefused`
+- `internal/dobbyengine#PassExitOwnedElsewhere`
 
 **Intent:**
 Schedule batten passes for every run whose parent worktree is the dobby's own (D3, D4, D7, D12).

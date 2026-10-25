@@ -17,9 +17,9 @@
 - `pattern/PATTERN-daemon-wakeups.md`
 
 **Uses:**
-- `plan:internal/dobbyengine#Geometry`
-- `plan:internal/dobbyengine#State`
-- `plan:internal/dobbyengine#UpdateState`
+- `internal/dobbyengine#Geometry`
+- `internal/dobbyengine#State`
+- `internal/dobbyengine#UpdateState`
 
 **Intent:**
 Build dobby's daemon loop: one per beam worktree, waking cheaply, exiting when it is not its own (D1, D13).

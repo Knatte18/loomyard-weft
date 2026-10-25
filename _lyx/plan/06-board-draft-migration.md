@@ -17,12 +17,12 @@
 - `internal/boardengine/doc.go`
 
 **Create:**
-- `plan:internal/boardengine#migrateDraftStatus` -> `func migrateDraftStatus(store *Store) bool`
-- `plan:internal/boardengine_test#TestDraftMigration` -> `func TestDraftMigration(t *testing.T)`
+- `internal/boardengine#migrateDraftStatus`
+- `internal/boardengine_test#TestDraftMigration`
 
 **Uses:**
-- `plan:internal/boardengine#StatusDraft`
-- `plan:internal/boardengine#IsEmptyStatus`
+- `internal/boardengine#StatusDraft`
+- `internal/boardengine#IsEmptyStatus`
 
 **Intent:**
 Migrate an existing board once, keep the mark across replays and older binaries, and show a draft task in the README (D5).

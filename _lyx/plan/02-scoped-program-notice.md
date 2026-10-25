@@ -9,13 +9,13 @@
 - `internal/orchcli#NotifyOrchAt`
 
 **Create:**
-- `plan:internal/creelcli#programClaim` -> `func programClaim(slug, program string) func(shortname string) (creelengine.Claim, error)`
-- `plan:internal/creelcli#NewScopedProgramClient` -> `func NewScopedProgramClient(location *lyxcwd.Location, slug, program string) (*GoClient, error)`
-- `plan:internal/orchcli#NotifyFromScoped` -> `func NotifyFromScoped(from *lyxcwd.Location, slug, program, line string) (posted bool, err error)`
-- `plan:internal/creelcli#TestProgramClaim` -> `func TestProgramClaim(t *testing.T)`
+- `internal/creelcli#programClaim`
+- `internal/creelcli#NewScopedProgramClient`
+- `internal/orchcli#NotifyFromScoped`
+- `internal/creelcli#TestProgramClaim`
 
 **Uses:**
-- `plan:internal/agentname#FormatScopedProgram`
+- `internal/agentname#FormatScopedProgram`
 
 **Intent:**
 Give a program sender a beam scope end to end, so dobby's notices to the nearest live orch come from `ly:<slug>:DOBBY` (D1).
