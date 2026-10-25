@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-25 09:07 UTC; every age below is as of then.
+Rendered 2026-10-25 09:08 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -42,7 +42,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Discussion scope check into the perch lenses, outdated entries to the parent, Merge-In renamed Parent-Align**<br>• Drop the alignment agent at the discussion point; board-fit escalates outdated entries and operator-only questions to the parent; darn checks its entry first; rename Merge-In to Parent-Align<br>• `profile: solid` | [`discussion-scope-in-lenses`](design-discussion-scope-in-lenses.md) | loom | Webster | neve | 2d<br>3h | loom, burler, shed, stencil |
-| T2 | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement<br>• `profile: solid`<br>• `loom: discussion_hard_max_bounces 4`<br>• `loom: discussion_max_bounces 3` | [`umbrella-daemon`](design-umbrella-daemon.md) | loom | Plan-Bouncer | neve | 12d<br>3h | batten, orch, shed, workspaces, loom, board |
+| T2 | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement<br>• `profile: solid`<br>• `loom: discussion_hard_max_bounces 4`<br>• `loom: discussion_max_bounces 3` | [`umbrella-daemon`](design-umbrella-daemon.md) | loom | Webster | neve | 12d<br>3h | batten, orch, shed, workspaces, loom, board |
 
 ### Ready (0)
 
