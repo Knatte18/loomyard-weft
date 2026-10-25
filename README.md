@@ -42,7 +42,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **An anchor per beam**<br>• Let each worktree carry its own anchor through a .lyx-anchor marker at its weft branch root, inherited by its tasks, with a verb that changes it<br>• `profile: solid` | [`umbrella-anchor`](design-umbrella-anchor.md) | loom | Discussion-Burler-Fix | neve | 6d<br>35m | fabric, config, workspaces |
-| T4 | **The overview window shows its worktree dobby: alive, runs driven, tasks waiting and why**<br>• The existing overview window of the prime and every beam gains the dobby view, no extra window<br>• `profile: light` | [`dobby-overview-window`](design-dobby-overview-window.md) | darn | Code-Bouncer | neve | 31m<br>22m | reed, batten, workspaces |
+| T4 | **The overview window shows its worktree dobby: alive, runs driven, tasks waiting and why**<br>• The existing overview window of the prime and every beam gains the dobby view, no extra window<br>• `profile: light` | [`dobby-overview-window`](design-dobby-overview-window.md) | darn | Code-Burler-Review | neve | 31m<br>22m | reed, batten, workspaces |
 
 ### Ready (1)
 
@@ -50,7 +50,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **Bench Codex Astra against solo Opus as a plan reviewer, four runs**<br>• `profile: docs` | [`codex-astra-solo-bench`](design-codex-astra-solo-bench.md) | darn |  | 52m<br>52m | codex, burler |
+| T2 | `draft` **Bench Codex Astra against solo Opus as a plan reviewer, four runs**<br>• `profile: docs` | [`codex-astra-solo-bench`](design-codex-astra-solo-bench.md) | darn |  | 53m<br>53m | codex, burler |
 
 ## Notes (35)
 
