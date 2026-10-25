@@ -15,4 +15,5 @@ The notes are grouped by type label in file order, so after the `audit` label be
 - Every project sits under another project, except the root project at the top.
 - The split is rendering only: every entry stays in the one board store, and handles stay numbered across the whole hub, so a project's file shows gaps in its numbering and a handle names one entry whichever file shows it.
 - A task's After column names its dependencies by handle instead of by slug, one handle per line within the cell.
+- A draft task is not ready, so it never shows under Ready: drafts get a subsection of their own after the ready and layered tasks.
 - README.md is the root project's file: the projects under root first, each linked with its short description, then every task and note that belongs to no other project.
