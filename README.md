@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-25 08:12 UTC; every age below is as of then.
+Rendered 2026-10-25 08:17 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -41,7 +41,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Discussion scope check into the perch lenses, outdated entries to the parent, Merge-In renamed Parent-Align**<br>• Drop the alignment agent at the discussion point; board-fit escalates outdated entries and operator-only questions to the parent; darn checks its entry first; rename Merge-In to Parent-Align<br>• `profile: solid` | [`discussion-scope-in-lenses`](design-discussion-scope-in-lenses.md) | loom | Plan-Burler-Fix | neve | 2d<br>2h | loom, burler, shed, stencil |
+| T1 | **Discussion scope check into the perch lenses, outdated entries to the parent, Merge-In renamed Parent-Align**<br>• Drop the alignment agent at the discussion point; board-fit escalates outdated entries and operator-only questions to the parent; darn checks its entry first; rename Merge-In to Parent-Align<br>• `profile: solid` | [`discussion-scope-in-lenses`](design-discussion-scope-in-lenses.md) | loom | Plan-Bouncer | neve | 2d<br>2h | loom, burler, shed, stencil |
 | T2 | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement<br>• `profile: solid`<br>• `loom: discussion_hard_max_bounces 4`<br>• `loom: discussion_max_bounces 3` | [`umbrella-daemon`](design-umbrella-daemon.md) | loom | Plan-Burler-Review | neve | 12d<br>2h | batten, orch, shed, workspaces, loom, board |
 
 ### Ready (0)
@@ -62,7 +62,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | A3 |  | **Audit the twill and lens review setup: worth per perch, recurring finding classes, writer quality**<br>• One audit over the review records once about ten loom runs with the current setup land on Neve | [`review-setup-audit`](design-review-setup-audit.md) | 9d<br>17h | burler, loom, report, stencil, shed |
 | A5 |  | **Sweep go_parallel on OSL-1046 with Cortex XDR**<br>• Time both gate tiers on the work laptop on a quiet machine and log them in docs beside the Neve numbers, with full hardware info | [`bench-osl1046-xdr`](design-bench-osl1046-xdr.md) | 5d<br>4d |  |
 | A6 |  | **Lens overlap audit: which lenses find the same defects, and a smaller set**<br>• twill-plan 8 to 5 lenses recommended; twill-discussion 7 to 4 and review-code 4 to 3 at low confidence | [`lens-overlap-audit`](design-lens-overlap-audit.md) | 2d<br>1d | burler, loom |
-| A7 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 2d<br>22h | webster |
+| A7 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 2d<br>23h | webster |
 | A8 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 2d<br>22h | loom, stencil |
 
 ### Bugs (1)
