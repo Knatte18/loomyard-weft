@@ -983,7 +983,7 @@
       "isolated": false,
       "brief": "Remove lyx attach, lyx pause, lyx resume and the top-level lyx start",
       "body": "## Seen (operator, 2026-10-25)\n\nThe command surface carries long-form shortcuts beside the short ones: `lyx attach` beside `lyx a`, `lyx pause` beside `lyx p`, `lyx resume` beside `lyx r`.\nA top-level `lyx start` runs `lyx loom start`, which nobody runs since batten starts every loom run.\n\n## Design (operator, 2026-10-25)\n\nShortcuts are short forms only:\n\n| Shortcut | Runs |\n|---|---|\n| `lyx a` | `lyx reed attach` |\n| `lyx p` | `lyx tender pause` |\n| `lyx r` | `lyx tender resume` |\n\n- The long forms `lyx attach`, `lyx pause` and `lyx resume` are removed.\n- The top-level `lyx start` is removed; `lyx loom start` stays.\n- Docs, stencils and the command index stop naming the removed forms.\n",
-      "status": "running · Drift-Baseline",
+      "status": "running · Darn-Write",
       "created": "2026-10-25T18:14:24Z",
       "revised": "2026-10-25T18:16:10Z",
       "owner_machine": "neve"

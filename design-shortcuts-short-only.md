@@ -1,6 +1,6 @@
 # Shortcuts are short forms only
 
-`shortcuts-short-only` · Task · enhancement, shortcut, loom, reed · running · Drift-Baseline
+`shortcuts-short-only` · Task · enhancement, shortcut, loom, reed · running · Darn-Write
 
 ## Seen (operator, 2026-10-25)
 
