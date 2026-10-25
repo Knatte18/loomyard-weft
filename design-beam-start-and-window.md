@@ -1,6 +1,6 @@
 # Beams: one lyx beam start for dobby and orch, the beam window, and machine ownership by project
 
-`beam-start-and-window` · Task · enhancement, orch, workspaces, batten, reed, board
+`beam-start-and-window` · Task · enhancement, orch, workspaces, batten, reed, board · draft
 
 Depends on: [`umbrella-anchor`](design-umbrella-anchor.md)
 
