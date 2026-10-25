@@ -60,11 +60,11 @@ Waits only on Running or Ready entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **Beams: one lyx beam start for dobby and orch, the beam window, and machine ownership by project**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-window`](design-beam-start-and-window.md) | loom | `umbrella-anchor` | 1h<br>47m | orch, workspaces, batten, reed, board |
 
-## Notes (40)
+## Notes (41)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Bugs (6)
+### Bugs (7)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -74,6 +74,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B4 |  | **Board README lists draft tasks under Ready** | [`readme-draft-not-ready`](design-readme-draft-not-ready.md) | 0m<br>0m | board |
 | B5 |  | **Darn-Write seat start dies: provider pane drops to a shell prompt after the prompt text** | [`seat-start-long-prompt-dies`](design-seat-start-long-prompt-dies.md) | 0m<br>0m | shuttle |
 | B6 |  | **shuttle start fails on transient tmux fork/exec EAGAIN and leaves the strand behind** | [`shuttle-retry-tmux-eagain`](design-shuttle-retry-tmux-eagain.md) | 0m<br>0m | shuttle, reed |
+| B7 |  | **gate tier1 fails on a stale Go vet cache entry naming a torn-down worktree** | [`gate-stale-vet-cache-path`](design-gate-stale-vet-cache-path.md) | 0m<br>0m | gate |
 
 ### Enhancements (16)
 
@@ -122,4 +123,4 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Sweep go_parallel on OSL-1046 with Cortex XDR**<br>• Time both gate tiers on the work laptop on a quiet machine and log them in docs beside the Neve numbers, with full hardware info | [`bench-osl1046-xdr`](design-bench-osl1046-xdr.md) | 5d<br>37m |  |
 | R4 |  | **Lens overlap audit: which lenses find the same defects, and a smaller set**<br>• twill-plan 8 to 5 lenses recommended; twill-discussion 7 to 4 and review-code 4 to 3 at low confidence | [`lens-overlap-audit`](design-lens-overlap-audit.md) | 3d<br>37m | burler, loom |
 | R5 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 3d<br>37m | webster |
-| R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 3d<br>8m | loom, stencil |
+| R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 3d<br>9m | loom, stencil |
