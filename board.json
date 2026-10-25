@@ -492,26 +492,6 @@
       "revised": "2026-10-18T17:16:22Z"
     },
     {
-      "id": 676,
-      "handle": "E22",
-      "slug": "batten-window-default",
-      "title": "lyx batten run starts in its own window by default",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "batten",
-        "reed",
-        "orch"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Every batten run is started with --window, so the window should be the default and foreground the opt-in.",
-      "body": "## Seen\n\nThe orch starts every run with `lyx batten run \u003cslug\u003e --window`, and the operator confirms that this is always how runs are started.\nWithout the flag the whole lifecycle runs in the caller's foreground for hours, which blocks the orch session and can be killed by the shell timeout.\n\n## Idea\n\nMake the window the default for `lyx batten run`: start the run in its own tmux window of the prime's reed session, return at once, and run the Open-Window row.\nKeep the foreground as an explicit opt-in flag for the cases that need it, such as the window's own inner invocation and tests.\nUpdate the orch role and the `lyx batten run` help to drop `--window` from the normal path.",
-      "created": "2026-10-19T11:00:53Z",
-      "revised": "2026-10-19T11:00:53Z"
-    },
-    {
       "id": 703,
       "handle": "A5",
       "slug": "bench-osl1046-xdr",
