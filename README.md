@@ -60,11 +60,11 @@ Waits only on Running or Ready entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **Beams: one lyx beam start for dobby and orch, the beam window, and machine ownership by project**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-window`](design-beam-start-and-window.md) | loom | `umbrella-anchor` | 1h<br>47m | orch, workspaces, batten, reed, board |
 
-## Notes (39)
+## Notes (40)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Bugs (5)
+### Bugs (6)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -73,6 +73,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B3 |  | **Webster audit: a card slug ending in -weft makes every gate test --card command a fabric reference** | [`weft-suffix-card-slug-audit`](design-weft-suffix-card-slug-audit.md) | 0m<br>0m | webster, fabric |
 | B4 |  | **Board README lists draft tasks under Ready** | [`readme-draft-not-ready`](design-readme-draft-not-ready.md) | 0m<br>0m | board |
 | B5 |  | **Darn-Write seat start dies: provider pane drops to a shell prompt after the prompt text** | [`seat-start-long-prompt-dies`](design-seat-start-long-prompt-dies.md) | 0m<br>0m | shuttle |
+| B6 |  | **shuttle start fails on transient tmux fork/exec EAGAIN and leaves the strand behind** | [`shuttle-retry-tmux-eagain`](design-shuttle-retry-tmux-eagain.md) | 0m<br>0m | shuttle, reed |
 
 ### Enhancements (16)
 
