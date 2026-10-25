@@ -368,6 +368,13 @@ Rationale: Parent, 2026-10-25: follows D2's 'as a batten resume does'.
   - forced-edits-outside-cards (class design, severity MEDIUM, open in rounds 1, 2)
 <!-- /lyx:carry-over Plan-Review -->
 
+<!-- lyx:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/code/round-1-review.md; fixer report: _lyx/reviews/code/round-1-fixer-report.md.
+  - draft-migration-after-mutation (class design, severity MEDIUM, open in rounds 1)
+  - lift-full-pass-unreachable (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - `lyx beam start` starts a dobby for the prime and each owned beam and reports live ones as found; a second start changes nothing; it starts no prime dobby where another machine is the prime owner; `lyx orch start` runs it first and still starts when it fails.
