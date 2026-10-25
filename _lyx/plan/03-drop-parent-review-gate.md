@@ -49,7 +49,6 @@
 
 **Create:**
 - `plan:internal/shedrecipe#TestResolveGateSpec_UnknownNameListsTheLegalValues` -> `func TestResolveGateSpec_UnknownNameListsTheLegalValues(t *testing.T)`
-- `plan:internal/loomcli#TestDiscussionWriteRow_GateListIsDiscussionAlone` -> `func TestDiscussionWriteRow_GateListIsDiscussionAlone(t *testing.T)`
 
 **Intent:** D1 and D2: Discussion-Write hands a passing discussion straight to Discussion-Bouncer, with no parent-review round, alignment spawn or parent message.
 
@@ -63,7 +62,7 @@
 - `internal/loomcli`: `wire` builds no parent-review config or aligner and sets no `Env.ParentReview`; delete the helpers listed and `alignmentwiring.go`, whose `alignment` use is the last outside the package bar `orchengine`'s, moved by card 1.
   `discussionCommitPathspec` stages the discussion directory and the amendment record only, since nothing writes a parent-review round any more; an existing round directory stays committed as it is.
   The package doc's `# Parent-review alignment` section goes.
-  `TestDiscussionWriteRow_GateListIsDiscussionAlone` reads the embedded recipe's Discussion-Write row and asserts its `gates` list is exactly one `discussion` entry with attempts 3, the criterion "Discussion-Write's only gate is `discussion`"; the deleted parentreview wiring, integration and smoke tests pinned the removed gate.
+  The criterion "Discussion-Write's only gate is `discussion`" is pinned by `TestSequence_FullRunBlocksAtMergeIn`'s existing table-gate assertion, which now wants `[]string{"discussion"}`; the deleted parentreview wiring, integration and smoke tests pinned the removed gate.
 - `internal/loomengine/discussion.go`: delete `DiscussionWriterRole`, whose one caller was the keep-alive lifetime, and its header sentence; `TestDiscussionTable` checks the chair's role against `"discussion"` alone.
 - Test fixtures: `buildSequenceFixture`, `testEnv` and `envkit`'s `nilLegal` table drop their `ParentReview` entries.
 - In-flight criterion: `buildSequenceFixture` also lays out, under the anchor, an open parent-review round as an older binary left it (`_lyx/reviews/parent-review/round-1/request.json` with `state: open` and no `verdict.json`), and `TestSequence_FullRunBlocksAtMergeIn` asserts Discussion-Write's history entry is Done to Discussion-Bouncer and the round directory is still on disk unchanged, so a run waiting in a parent-review round passes Discussion-Write on its next gate evaluation.

@@ -94,6 +94,22 @@
 - `internal/loomrecipe#TestZeroBudget_BouncerSettlesAtOnce`
 - `internal/loomrecipe#wantProducerTable`
 - `internal/reportengine#darnRowPhases`
+- `internal/landingshed#fixedGateTierLists`
+- `internal/landingshed#fixerTestRow`
+- `internal/landingshed#newFixerRunFixture`
+- `internal/loomcli#TestLandingDeps_VerifyCommandReadsPlanAtCallTime`
+- `internal/webstercli#verifyGateConfig`
+- `internal/websterengine_test#gateScenario.restart`
+- `internal/battenshed#TestClassifyRecords`
+- `internal/battenshed#TestInnerRun_HaltedStatesWaitExemptWithoutSpawning`
+- `internal/loomcli#TestRowEntry`
+- `internal/loomcli#TestSettledSegmentGuard`
+- `internal/loomcli#TestFinalizeDirtGuard`
+- `internal/loomcli#TestParentLockWaiting`
+- `internal/gateslot#TestWriteRunRecord`
+- `internal/gateslot#TestLoadConfig`
+- `internal/loomshed#roundGateConfig`
+- `internal/websterengine#verifyGateConfig`
 
 **Intent:** D11: loom's `Merge-In` row becomes `Parent-Align`, with everything exclusive to that row, and in-flight runs are carried across.
 fabric's own merge-in (`lyx fabric merge-in`, `fabricengine.MergeIn`, `MergeInAt`, `MergeInOnly`, `MergeInProgress`, `MergeVerbMergeIn`) and the prose "merge-in" for any git merge of the parent keep their names.
@@ -120,6 +136,7 @@ The hub has no `rename_tools`, so every rename below is a hand edit.
 - **Code-Perch input.** `fixerReportInput` reads `Parent-Align-fixer-report.md`, and the old `Merge-In-fixer-report.md` when the new one is absent, so a run past the row at upgrade still gives the Code-Perch its latest fixer report; `TestReviewInputSeams` gains the old-name row and a row holding both reports, where the new one wins.
 - **Reports.** `retiredMergeInRow` joins `retiredRowNames` in the merge phase, `recipePhaseTables` keeps the `Merge` family beside the `Parent` one, and `classifyBatten`'s verify rows hold `NameParentAlign` and `retiredMergeInRow`, so archived `Merge-In` rows are filed in the merge phase and among the verify rows, as `retiredPublishRow` is; `TestComputeTiming` and `loomRowPhases` gain an archived `Merge-In` row beside the new one.
 - **Strings naming the row.** `AmendmentNote`'s sentence and fabricengine's two way-forward lines name `Parent-Align`; `liveWayForward` follows.
-- The remaining test members that name `loomshed.NameMergeIn`, `landingshed.MergeIn` or `NewMergeIn` take the new names.
+- The remaining test members that name `loomshed.NameMergeIn`, `landingshed.MergeIn` or `NewMergeIn` take the new names, and test fixtures that hold the row name `Merge-In` or the gate key `merge-in` as a string literal take `Parent-Align` and `parent-align`: `fixedGateTierLists`' landing key, `fixerTestRow` and `newFixerRunFixture`'s gate key, `VerifyCommand`'s key and want in `TestLandingDeps_VerifyCommandReadsPlanAtCallTime`, the gate.yaml fixtures of webstercli's `verifyGateConfig` and `gateScenario.restart`, the row names of `TestClassifyRecords`, `TestInnerRun_HaltedStatesWaitExemptWithoutSpawning`, `TestRowEntry`, `TestSettledSegmentGuard`, `TestFinalizeDirtGuard` and `TestParentLockWaiting`, `TestWriteRunRecord`'s gate key, `TestLoadConfig`'s two scope-refusal rows keyed `merge-in` with the `gates.merge-in` key in their want text, the `gates` block of `roundGateConfig` and of websterengine's `verifyGateConfig`, and, in the renamed `parentalign_test.go`, `newMergeInFixture`'s gate key, `TestMergeIn_PlanVerifyFailureRecord`'s fixed tier list key and wanted failure kind, and `TestMergeIn_VerifyGate`'s wanted site label.
+  This list is the result of a search of the test files for the literals `Merge-In` and `merge-in`, each hit mapped to its enclosing declaration; a hit that names fabric's `merge-in` verb or a git merge, or a free-form row-name argument such as `TestFixerAttempts`' `FixerAttemptsPath` argument, keeps its literal.
 
 **ImpactSummary:** One recipe row, engine key, producer, fixer mode, gate key and row constant renamed across landingshed, loomshed, shedrecipe, gateslot, loomrecipe, loomcli and reportengine, with read-time fallbacks for the old attempt record, fixer report and status rows.

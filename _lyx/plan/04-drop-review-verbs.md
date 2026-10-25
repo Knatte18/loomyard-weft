@@ -56,7 +56,7 @@
 - `reviewstatus.go`: `reviewWaiting` and `reviewWaitPrefix` go, and `reviewWaitingFor`'s chain ends in a step that reports no wait, so a gate wait, a parent lock wait, a verify and a shuttle wait are reported as before; its header and doc drop the reviewer.
   `TestShuttleWaiting` and `TestVerifyWaiting` give the chain a fake next step returning a fixed note in place of the review store, keeping every row's assertion on which wait wins.
 - Batten: `InnerRunDeps` loses `ReviewWait`, `childWait` its `reviewNote`, and `runningStep` its reviewer-wait reason, so a running child's reason is always the plain wait line; `battenCLI.wire` stops building the seam over the parent-review store.
-- Docs: `loom-status-spec.md` drops the parent-review wait from the waiting order and its `parent review: ` note form; `docs/overview.md` drops `review notify|delivered|approve|reject` from loom's verb list and `internal/parentreview` from loom's package list.
+- Docs: `loom-status-spec.md` drops the parent-review wait from the waiting order and its `parent review: ` note form; `docs/overview.md` drops `review notify|delivered|approve|reject` from loom's verb list and `internal/parentreview` from loom's package list, and its `status` waiting-note sentence names a verify and a shuttle wait, no longer Discussion-Write's parent-review gate.
 
 A run halted `blocked` at the old parent-review reject cap resumes with `lyx loom resume`, and its stored stop text still names the removed `lyx loom review approve`, as D2 records.
 

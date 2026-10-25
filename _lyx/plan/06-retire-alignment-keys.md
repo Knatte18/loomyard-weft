@@ -14,6 +14,9 @@
 - `internal/webstercli#seedLoomConfigWithFriction`
 - `pattern/PATTERN-shuttle-provider-seam.md`
 
+**Prosa:**
+- `docs/overview.md`
+
 **Delete:**
 - `internal/loomengine#alignmentDefaultModelSpec`
 - `internal/loomengine#alignmentDefaultTimeoutMin`
@@ -33,5 +36,6 @@
   `TestModules_EveryTemplateKeyClassified` drops the three guard keys from loom's expected guard list, and `TestPrepareRunSettings` replaces its three alignment rows with one row whose loom object holds `skip_alignment: true` and `plan_max_bounces: 2`, wanting no refusal and a `loom` document holding `plan_max_bounces: 2` alone, the read-time migration of a retired key; its existing "each migration line is logged at Warn" subtest already asserts the Warn every migrated line takes.
   loomcli's `seedLoomConfigWithFriction` and `seedLoomConfigWithInteractive`, and webstercli's `seedLoomConfigWithFriction`, stop writing the retired keys, since a strict load refuses them.
 - `PATTERN-shuttle-provider-seam.md`'s resolver list drops the alignment settings.
+- `docs/overview.md`: the loom config module paragraph (`✅ Implemented. loom's config module`) drops `parent_review_wait_min` from the keys it lists, and the reconcile paragraph after it names `alignment`, `alignment_timeout_min`, `skip_alignment` and `parent_review_wait_min` among the keys it drops.
 
-**ImpactSummary:** Four config keys and the alignment resolver go; the readers are loomengine and its tests, configreg's tests and three loomcli and webstercli test seeds.
+**ImpactSummary:** Four config keys and the alignment resolver go; the readers are loomengine and its tests, configreg's tests and three loomcli and webstercli test seeds, and `docs/overview.md`'s loom config and reconcile paragraphs follow.
