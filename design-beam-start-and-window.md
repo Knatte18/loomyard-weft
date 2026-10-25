@@ -31,7 +31,6 @@ Both run on the machine that owns the beam.
 - `lyx beam stop [slug]` stops both, and `lyx beam status` shows both.
 - A fresh orch comes from `lyx orch refresh`.
 - `lyx orch` keeps `stop`, `status`, `distill`, `refresh`, `withdraw` and `rules`.
-- `lyx beam create <slug>` starts the new beam's orch together with its dobby, as `lyx beam start` does.
 - Removed: `lyx orch start` with `--continue`, `--handoff` and `--adopt`; `lyx orch cleanup`, since `lyx cleanup` already removes old handoffs; `lyx prime`; `lyx start`; `lyx beam promote`, since a beam is made from its project, never from a running task.
 
 ### Shortcuts
@@ -73,8 +72,21 @@ The board itself has no owner: ownership sits on projects.
 - Landing a beam into its parent is the parent beam's job: the parent's dobby runs the landing and cleans up after it, so a machine lands a project only while it owns the parent as well.
   Example: with G and H beam projects under root and everything on Neve, OSL-1046 adopts G and finishes it, then adopts root to land G; H stays on Neve throughout.
 
-### Landing a beam
+### A beam's life is a batten run
 
-- `lyx beam land <slug>` stops the beam's orch and its watcher itself instead of refusing while they live; its teardown already ends the beam's dobby.
-- When a beam's last member lands, its dobby sends its orch a notice that the beam can land, naming `lyx beam land <slug>` in the parent worktree; when another machine owns the parent project, the notice says so and names `lyx adopt` of the parent.
-- `lyx beam land` refuses on a machine that does not own the parent project, with the same way forward, so no landing starts that no dobby drives.
+A beam is made, landed and torn down by an ordinary batten run over its project entry, the same batten as for loom and darn: Worktree-Create, Run-Shed, Land, Worktree-Teardown.
+Only the recipe Run-Shed runs differs: the `beam` recipe.
+
+| Row | Does |
+|---|---|
+| Beam-Up | marks the worktree as a beam, then starts its dobby and orch |
+| Beam-Await | waits while the beam's own dobby runs its members, until `lyx beam land` ends it |
+| Beam-Describe | writes the landing description, as today |
+| Finalize | merges the beam into its parent from inside, as for loom and darn |
+| Beam-Down | stops the beam's orch, its watcher and its dobby |
+
+- `lyx beam create <slug>`, run from the parent worktree, marks the project entry a beam with its owner and starts its batten run at once; it no longer makes the worktree itself.
+- `lyx beam land <slug>` ends Beam-Await; it refuses while the beam has open members or member worktrees, and on a machine that does not own the parent project, naming `lyx adopt` of the parent.
+- The separate landing run of today's `lyx beam land` goes.
+- Batten's start guard lets a beam project start, where it now refuses every project entry but a beam ready to land.
+- When a beam's last member lands, its dobby sends its orch a notice that the beam can land, naming `lyx beam land <slug>`; when another machine owns the parent project, the notice says so and names `lyx adopt` of the parent.
