@@ -1,0 +1,16 @@
+verdict: resume
+reason: |-
+  Round 3 of Plan-Bouncer escalated at cause hard-cap. Its one open design-wrong finding is F2, gate-halt-cleared-before-gate-runs; the other five open findings are tagged mechanical.
+  The round-3 fixer applied all six findings and lists none as Disputed or Deferred.
+  The fix in place answers F2. Step 7 of _lyx/plan/11-drift-verify-producer.md now keeps gate_halt_at set while the dirty check and the told verify gate run.
+  It clears the field in one UpdateScope call, and only after the dirty check passed and the gate either passed or was not due.
+  So a gate that ends in a context error, a transient stop or an interrupt leaves the next entry still the resume, and that entry runs the gate again before any compare.
+  That rests on a fact I checked in the code. In internal/shedengine/run.go, appendHistory (line 314) records no history entry for an empty outcome, so the earlier Stuck stays the last history entry.
+  The self-check also changed the halts to write gate_halt_at only when it is unset. A resume therefore keeps the time it read, and the new Stuck, stamped later, keeps the next resume true. A goto still clears the field through the non-resume branch.
+  A TestDriftVerify row now covers the context-error case.
+  F1 is mechanical and fixed. Card 2 now formats halt_named_at and gate_halt_at as RFC 3339 from Deps.Now().UTC(), which matches nowRFC3339 at run.go:593, and compares them at second precision.
+  F3 was settled by the parent's recorded decision in the decision record, that the dirty check reads the code checkout's tracked paths only, and that decision is applied in cards 11 and 14.
+  The round is at the hard cap, so accept is the one option. I recorded it, and the run resumes at Plan-Bouncer without a goto.
+verbs:
+  - |-
+    lyx loom circling accept regression-baseline-verify
