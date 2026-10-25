@@ -1,11 +1,11 @@
 {
-  "current_producer": "Finalize",
+  "current_producer": "Parent-Align",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Finalize",
-    "last": "PR-Review → done",
+    "now": "Parent-Align",
+    "last": "Finalize → rerouted to Parent-Align",
     "wait": ""
   },
   "history": [
@@ -609,6 +609,13 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-25T19:24:30Z"
+    },
+    {
+      "producer": "Finalize",
+      "outcome": "reroute",
+      "output": "",
+      "at": "2026-10-25T19:28:34Z",
+      "routed_to": "Parent-Align"
     }
   ],
   "product": {
