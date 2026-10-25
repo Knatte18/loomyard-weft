@@ -1,7 +1,7 @@
 # Card 1 — decision-note-title
 
 **Create:**
-- `plan:internal/orchengine#DecisionNoteTitle` -> `func DecisionNoteTitle(slug string) string`
+- `internal/orchengine#DecisionNoteTitle`
 
 **Edit:**
 - `internal/orchengine#RenderRoleFile`
