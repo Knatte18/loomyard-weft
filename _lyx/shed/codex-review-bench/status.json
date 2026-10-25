@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "Code-Bouncer",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,33 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-25T10:41:17Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/codex-review-bench/_lyx/landing/summary.md",
+      "at": "2026-10-25T11:39:30Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-25T11:39:21.219310533Z",
+          "end": "2026-10-25T11:39:29.783251058Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-25T11:39:29.834581875Z",
+          "end": "2026-10-25T11:39:29.993643097Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-25T11:39:30.033833825Z",
+          "end": "2026-10-25T11:39:30.033884049Z"
+        }
+      ]
     }
   ],
   "product": {
