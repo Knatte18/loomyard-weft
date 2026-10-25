@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-25 07:40 UTC; every age below is as of then.
+Rendered 2026-10-25 07:54 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -41,7 +41,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Discussion scope check into the perch lenses, outdated entries to the parent, Merge-In renamed Parent-Align**<br>• Drop the alignment agent at the discussion point; board-fit escalates outdated entries and operator-only questions to the parent; darn checks its entry first; rename Merge-In to Parent-Align<br>• `profile: solid` | [`discussion-scope-in-lenses`](design-discussion-scope-in-lenses.md) | loom | Plan-Burler-Review | neve | 2d<br>1h | loom, burler, shed, stencil |
+| T1 | **Discussion scope check into the perch lenses, outdated entries to the parent, Merge-In renamed Parent-Align**<br>• Drop the alignment agent at the discussion point; board-fit escalates outdated entries and operator-only questions to the parent; darn checks its entry first; rename Merge-In to Parent-Align<br>• `profile: solid` | [`discussion-scope-in-lenses`](design-discussion-scope-in-lenses.md) | loom | Plan-Burler-Fix | neve | 2d<br>1h | loom, burler, shed, stencil |
 | T2 | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement<br>• `profile: solid`<br>• `loom: discussion_hard_max_bounces 4`<br>• `loom: discussion_max_bounces 3` | [`umbrella-daemon`](design-umbrella-daemon.md) | loom | Plan-Write | neve | 12d<br>1h | batten, orch, shed, workspaces, loom, board |
 
 ### Ready (0)
@@ -63,7 +63,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | A5 |  | **Sweep go_parallel on OSL-1046 with Cortex XDR**<br>• Time both gate tiers on the work laptop on a quiet machine and log them in docs beside the Neve numbers, with full hardware info | [`bench-osl1046-xdr`](design-bench-osl1046-xdr.md) | 5d<br>4d |  |
 | A6 |  | **Lens overlap audit: which lenses find the same defects, and a smaller set**<br>• twill-plan 8 to 5 lenses recommended; twill-discussion 7 to 4 and review-code 4 to 3 at low confidence | [`lens-overlap-audit`](design-lens-overlap-audit.md) | 2d<br>23h | burler, loom |
 | A7 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 2d<br>22h | webster |
-| A8 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 2d<br>21h | loom, stencil |
+| A8 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 2d<br>22h | loom, stencil |
 
 ### Bugs (1)
 
@@ -76,7 +76,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Plan conflict from a moved tree: a small fixer before the Plan perch**<br>• A tree_moved plan conflict naming exact glyphs goes to a small card fixer, not a full Plan review round | [`plan-conflict-small-fixer`](design-plan-conflict-small-fixer.md) | 21h<br>21h | webster, loom |
-| E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>18h | shuttle, codex |
+| E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>19h | shuttle, codex |
 | E3 |  | **insert-card and remove-card could rewrite prose card references they now only report**<br>• Renumber verbs list prose mentions of moved cards; a hand fix of every reference is costly when a renumber spans many cards | [`renumber-rewrites-card-refs`](design-renumber-rewrites-card-refs.md) | 14h<br>14h |  |
 | E4 |  | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 2w<br>2w | fabric, loom |
 | E5 |  | **Decide the layout of projects in the board README**<br>• The operator is not satisfied with how the README renders projects and their members; the layout is to be decided | [`board-projects-layout`](design-board-projects-layout.md) | 1h<br>1h | board |
@@ -107,8 +107,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F8 |  | **fabric: two-sided reset-to-SHA verb**<br>• The post-conclude undo the merge surface does not ship: reset to a warp SHA, resolve the paired weft SHA through the correspondence index, gate both sides | [`fabric-reset-to-sha`](design-fabric-reset-to-sha.md) | 2w<br>2w | fabric |
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 2w<br>16h | board, ide, orch |
 | F12 |  | **Spawn audit log: every process lyx starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | 2w<br>12d | reed, shuttle, config |
-| F13 | H | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 13d<br>12h | webster |
-| F15 |  | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 9d<br>22h | reed, config, batten |
+| F13 | H | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 2w<br>12h | webster |
+| F15 |  | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 9d<br>23h | reed, config, batten |
 | F16 | H | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | 9d<br>20h | creel, shuttle, loom, stencil, report |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 9d<br>22h | burler, shed, orch, quarry, report |
 | F18 |  | **Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 7d<br>1h | shed, webster, batten, config, dotnet |
