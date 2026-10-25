@@ -863,6 +863,24 @@
         "regression-baseline-verify",
         "csharp-sandbox-hub"
       ]
+    },
+    {
+      "id": 810,
+      "handle": "E5",
+      "slug": "board-projects-layout",
+      "title": "Decide the layout of projects in the board README",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "board"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The operator is not satisfied with how the README renders projects and their members; the layout is to be decided",
+      "body": "## Seen (operator, 2026-10-25)\n\nProject entries (P handles) and their members render in the README's Projects section since dd11ab09f.\nAfter the first two projects, `workspaces` and `dotnet`, were made, the operator was not satisfied with that layout.\n\n## Idea\n\nDecide with the operator how projects and their members are shown on the board, then change the README rendering to match.\nThe layout is not yet discussed.",
+      "created": "2026-10-25T06:20:53Z",
+      "revised": "2026-10-25T06:20:53Z"
     }
   ],
   "prime_owner": "neve"
