@@ -1,6 +1,6 @@
 # Shortcuts are short forms only
 
-`shortcuts-short-only` · Task · enhancement, shortcut, loom, reed · running · Code-Burler-Review
+`shortcuts-short-only` · Task · enhancement, shortcut, loom, reed · running · Code-Burler-Fix
 
 ## Seen (operator, 2026-10-25)
 
