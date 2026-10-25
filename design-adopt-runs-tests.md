@@ -1,6 +1,6 @@
 # An adopt runs the test suite on the adopting machine
 
-`adopt-runs-tests` · Task · enhancement, fabric, gate · running · Code-Burler-Fix
+`adopt-runs-tests` · Task · enhancement, fabric, gate · running · Code-Bouncer
 
 ## Seen (2026-10-24)
 
