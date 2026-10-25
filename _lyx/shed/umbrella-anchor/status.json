@@ -1,13 +1,13 @@
 {
   "current_producer": "Webster",
-  "state": "blocked",
-  "error": "Batch 06 (clone-records-marker-on-prime-weft): recover-batch refused needs_fresh on fabric-reference findings (false positives, #874) and accept-audit refused, since its only way forward is lyx webster reset --to batch-start --batch 06, which the parent runs after the run stops.",
+  "state": "running",
+  "error": "",
   "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": "Batch 06 (clone-records-marker-on-prime-weft): recover-batch refused needs_fresh on fabric-reference findings (false positives, #874) and accept-audit refused, since its only way forward is lyx webster reset --to batch-start --batch 06, which the parent runs after the run stops."
+    "wait": ""
   },
   "history": [
     {
