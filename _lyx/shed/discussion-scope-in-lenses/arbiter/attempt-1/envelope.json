@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Cause hard-cap at round 3, with two open design-wrong findings, F1 (d8-next-fixer-carrier-does-not-exist) and F2 (d8-hard-cap-refusal-has-no-exit). The round-3 fixer ran after the review, and the fix now in the decision record answers both.\nF1: D8 no longer claims a `continue` sends the BLOCKING findings to a fixer. The brief bullet now says a listed finding reaches the next round's fixer only if that round's fresh reviewers raise it again. \"What bounds it\" states that no carrier exists (the fixer runs before the judge, the CONVERGED focus is empty, the decision file carries no text) and why the bound is accepted. The re-escalation acceptance criterion pins the empty focus file and that the fixer gets only its own review. This is the \"accept the bound\" branch the finding offered.\nF2: retire-and-re-escalate is now limited to rounds below the hard cap. At or past it, a held refusal blocks the run at Discussion-Bouncer with a budget-exempt `OutputPointer.Halt` Stuck, whose Reason names the refusal's cause and `lyx loom resume`. A new acceptance criterion pins the halt and the absence of a re-escalation.\nI checked the code claims these fixes rest on. `internal/shedengine/doc.go` says a budget halt persists ReasonBounceBudgetExhausted regardless of the producer's Reason (line 29). The same file says a Stuck with OutputPointer.Halt keeps the producer's Reason and is budget-exempt (line 98). `approved_focus_lists` is an empty focus in `internal/shedadapters/bouncerprompt.go`. `retireContinue`, `softCapRule`, `standsAsRecorded` and `settledGeneration` exist in `internal/shedadapters/bouncer.go`. The Discussion ring order is in `contracts/recipes/loom-recipe.yaml`.\nThe accept is recorded. The driver resumes the run.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lyx loom circling accept discussion-scope-in-lenses"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/discussion-scope-in-lenses/_lyx/shed/discussion-scope-in-lenses/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/discussion-scope-in-lenses/_lyx/shed/discussion-scope-in-lenses/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lyx shed step discussion-scope-in-lenses --until-stop --arbiter-attempt 1"
+}
