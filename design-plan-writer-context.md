@@ -73,3 +73,4 @@ Plan writer plus its lens forks, means per run (API list price):
 - File-level only: directory greps, globs and `lyx quarry` reads are not counted, and a file is the same file by path, not by the lines read.
 - The Discussion phase total holds its review rounds and fixers, which is most of its cost beyond the writer; the segment figures come from the 10-24 tokencount reports, so runs landed since are priced as of then.
 - Rerun: `.scratch/discussion-overlap/reads2.sh <slug> plan|discussion` per run, then `analyze.sh`; both stay in `.scratch` and are not committed.
+- Decision (operator, 2026-10-25): Discussion stays a separate step; folding it into the Plan writer would add turns to the costliest session.
