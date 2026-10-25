@@ -11,10 +11,10 @@
 - `internal/sheddriver/doc.go`
 
 **Create:**
-- `plan:internal/sheddriver#ExitYield` -> `const ExitYield Exit = "yield"`
+- `internal/sheddriver#ExitYield`
 
 **Uses:**
-- `plan:internal/shedengine#Yield`
+- `internal/shedengine#Yield`
 
 **Intent:**
 Make the Go driver read a yield as no stop (D4): no rule-table row, no stop report, no repair, bounce or tackler budget, and the pass exits 0.

@@ -1,9 +1,9 @@
 # Card 11 — idlewatch-snapshot
 
 **Create:**
-- `plan:internal/parentlock#IdleWatch.Waiting` -> `func (w *IdleWatch) Waiting() map[string]time.Duration`
-- `plan:internal/parentlock#RestoreIdleWatch` -> `func RestoreIdleWatch(bound time.Duration, waiting map[string]time.Duration) *IdleWatch`
-- `plan:internal/parentlock#TestIdleWatch_RestoreKeepsTheWait` -> `func TestIdleWatch_RestoreKeepsTheWait(t *testing.T)`
+- `internal/parentlock#IdleWatch.Waiting`
+- `internal/parentlock#RestoreIdleWatch`
+- `internal/parentlock#TestIdleWatch_RestoreKeepsTheWait`
 
 **Intent:**
 Let the idle rule's watch be saved and restored, so batten's short passes keep the parent lock's idle bound across processes (D4's `lockWatch` inventory item).

@@ -6,7 +6,7 @@
 - `internal/shedverbs#TestLoop_RunsUntilStopAndPrintsOneEnvelope`
 
 **Uses:**
-- `plan:internal/shedengine#Yield`
+- `internal/shedengine#Yield`
 
 **Intent:**
 Carry a yield through `lyx shed step` and its `--until-stop` loop as a stop that is no halt (D4).

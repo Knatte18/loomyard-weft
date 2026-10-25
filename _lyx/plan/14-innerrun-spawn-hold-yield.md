@@ -29,7 +29,7 @@
 - `plan:internal/battenshed#TestInnerRun_SpawnHoldYields` -> `func TestInnerRun_SpawnHoldYields(t *testing.T)`
 
 **Uses:**
-- `plan:internal/shedengine#Yield`
+- `internal/shedengine#Yield`
 
 **Intent:**
 Make the spawn hold yield instead of sleeping (D4): a pass at Run-Shed under a covering pause or a standing owner ends at once with the hold reason.

@@ -7,9 +7,9 @@
 - `internal/shedengine/doc.go`
 
 **Create:**
-- `plan:internal/shedengine#Yield` -> `const Yield Outcome = "yield"`
-- `plan:internal/shedengine#RunYielded` -> `const RunYielded RunOutcome = "yielded"`
-- `plan:internal/shedengine#TestStep_YieldPersistsNothing` -> `func TestStep_YieldPersistsNothing(t *testing.T)`
+- `internal/shedengine#Yield`
+- `internal/shedengine#RunYielded`
+- `internal/shedengine#TestStep_YieldPersistsNothing`
 
 **Intent:**
 Add `Yield`, the shed outcome of a producer at a wait its own next call re-checks (D4).
