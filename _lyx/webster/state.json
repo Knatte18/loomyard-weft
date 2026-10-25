@@ -1,11 +1,11 @@
 {
   "runGuid": "1e8ff560c6529bdf936a0c51cb6b8d91",
-  "planFingerprint": "dcbf8b97099eecaddac037b0396ec25baac307a38062f8fa0b2d1912dcee4c53",
+  "planFingerprint": "08ac3dd54ecc17164b4f1251cd2b228b1aabb467eb593d197839816d123f6cbb",
   "planFileHashes": {
     "00-overview.md": "4ddeac0914ad24e6f809c4078c7621a6673521242b6950bf7ada182bf45528ea",
     "01-decision-note-title.md": "c881794520a933dd7f9d7b96b9bc32465db3ee1938aebb239c12b7c489bbc771",
     "02-report-archived-records.md": "e2911cd35e275ed8948337b9812f20f93ad6c7acf1941bc433e80ecf66192a33",
-    "03-drop-parent-review-gate.md": "5fbb6170b2010476e16914dc8d0f1657bcccf6ede8be37add5887528798c2fc9",
+    "03-drop-parent-review-gate.md": "616f4bccf2b6e61559ab51ba2428502b223e982e962e054a08570aed3d576ced",
     "04-drop-review-verbs.md": "3fe2d6d750ebcfc15d895955dd2eac0b814460ee5d2a667e17683d847f62c827",
     "05-delete-alignment-and-parent-review.md": "7e522de053a044906a190eec5ebcde6eb0486941a4282a249027f6219ec49d6d",
     "06-retire-alignment-keys.md": "cc0daf86ae245f9478b4dddc518cbffca3241a32d22e90ed9f1cfcc9f58b7817",
@@ -681,7 +681,7 @@
       }
     }
   ],
-  "currentBatch": 3,
+  "currentBatch": 0,
   "masterStrand": "ac2243e5870c8bfb94eaa402812b5721",
   "masterSessionId": "dde85386-5954-4b01-bdc1-fcf75b3d6577",
   "masterEngine": "claude",
@@ -727,18 +727,37 @@
         "03-drop-parent-review-gate"
       ],
       "cardHashes": {
-        "03-drop-parent-review-gate": "5fbb6170b2010476e16914dc8d0f1657bcccf6ede8be37add5887528798c2fc9"
+        "03-drop-parent-review-gate": "616f4bccf2b6e61559ab51ba2428502b223e982e962e054a08570aed3d576ced"
       },
       "startSha": "119d1f59350796fd6a514e3be719e91027b76687",
       "kind": "fork",
       "spawnedAt": "2026-10-25T08:21:28Z",
       "sessionId": "dde85386-5954-4b01-bdc1-fcf75b3d6577",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "03-drop-parent-review-gate",
+        "status": "done",
+        "head_sha": "7308196774606ef461172362642e0448645d408e",
+        "deviations": [
+          "internal/loomrecipe/fixture_test.go",
+          "internal/shedrecipe/entries_discussionwrite_test.go"
+        ]
+      },
+      "cardShas": [
+        "7308196774606ef461172362642e0448645d408e"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-discussion-scope-in-lenses/dde85386-5954-4b01-bdc1-fcf75b3d6577/subagents/agent-a3f5433ff246cdcda.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-discussion-scope-in-lenses/dde85386-5954-4b01-bdc1-fcf75b3d6577/subagents/agent-a3f5433ff246cdcda.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-discussion-scope-in-lenses/dde85386-5954-4b01-bdc1-fcf75b3d6577/subagents/agent-a6941caa08b5d2cdd.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-discussion-scope-in-lenses/dde85386-5954-4b01-bdc1-fcf75b3d6577/subagents/agent-a6941caa08b5d2cdd.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-discussion-scope-in-lenses/dde85386-5954-4b01-bdc1-fcf75b3d6577/subagents/agent-a3f5433ff246cdcda.jsonl"
   ]
 }
