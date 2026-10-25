@@ -972,7 +972,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 14,
   "masterStrand": "b72a3cc08101d22a4e8fe62d611ae08b",
   "masterSessionId": "6e5b1004-7b3f-4552-94de-e0b6630533f5",
   "masterEngine": "claude",
@@ -1071,6 +1071,28 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-a755814902d9a18cc.jsonl"
       ]
+    },
+    "14": {
+      "slug": "innerrun-spawn-hold-yield",
+      "cards": [
+        "14-innerrun-spawn-hold-yield",
+        "15-innerrun-respawn-cap",
+        "16-innerrun-api-error-revive",
+        "17-land-drops-ready"
+      ],
+      "cardHashes": {
+        "14-innerrun-spawn-hold-yield": "e4e8fcefad7ee9b99a5f5018b1389981a5a267aa0798230ceda3a6afa2209975",
+        "15-innerrun-respawn-cap": "debdec8feb5b99197ce085d61cae6d4045903a810d74b0d2f1ffcfe68dfdb04b",
+        "16-innerrun-api-error-revive": "74285e4e44f4b0cb9143fb1fbf42a3a36d01de774c9e0e736ff5e7e05ad915a6",
+        "17-land-drops-ready": "429c0f8bb1cf038ceaa495764577f55d5588259625aa642909dd5f2f12826bec"
+      },
+      "startSha": "56fa9a83de0ff80b34334e6cc8eb859c70c53daa",
+      "kind": "fork",
+      "spawnedAt": "2026-10-25T09:52:23Z",
+      "sessionId": "6e5b1004-7b3f-4552-94de-e0b6630533f5",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "draft-writers",
