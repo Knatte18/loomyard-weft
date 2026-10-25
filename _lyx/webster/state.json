@@ -328,7 +328,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "fa06c5879ed38ce88c7219deaa6de4cf",
   "masterSessionId": "6b74923a-78fd-41c6-8504-f637e840efcb",
   "masterEngine": "claude",
@@ -387,6 +387,30 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-regression-baseline-verify/6b74923a-78fd-41c6-8504-f637e840efcb/subagents/agent-a16acca756a142be4.jsonl"
       ]
+    },
+    "7": {
+      "slug": "drift-verbs-cli",
+      "cards": [
+        "07-drift-verbs-cli",
+        "08-drift-stencils-tables",
+        "09-drift-baseline-producer",
+        "10-drift-await-producer",
+        "11-drift-verify-producer"
+      ],
+      "cardHashes": {
+        "07-drift-verbs-cli": "41ab04a107682e4e9c90b4e7443bd75a3dc64640fadc242ca51822a9ecf895ec",
+        "08-drift-stencils-tables": "775d98d5df4328d323c85969ac7ea2d3acd2aa294f0177dc2249511bca4f0632",
+        "09-drift-baseline-producer": "d167bee35d2d9784f45bad29400b1fead6f011933b053a59b9f63987b51acfcd",
+        "10-drift-await-producer": "4405711a9074a7703f2e8badac1f42e285063172fb4ca56b52a11965eb005e5d",
+        "11-drift-verify-producer": "eab65a8deb4cd1ba265abce0ff74ab16b6bff35b437b67e54be8b026cb571d97"
+      },
+      "startSha": "76e4c93d371b1bbe32e7fea59e0d4e3dab0afea1",
+      "kind": "fork",
+      "spawnedAt": "2026-10-25T16:31:46Z",
+      "sessionId": "6b74923a-78fd-41c6-8504-f637e840efcb",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
