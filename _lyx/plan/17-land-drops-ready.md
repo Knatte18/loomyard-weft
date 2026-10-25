@@ -39,7 +39,7 @@
 - `internal/battencli#TestReadyRoutes`
 
 **Create:**
-- `plan:internal/battenshed#rowNotifier.recordsStopped` -> `func (n rowNotifier) recordsStopped(ctx context.Context, landed, recordsStop string)`
+- `internal/battenshed#rowNotifier.recordsStopped`
 
 **Intent:**
 Drop the landing notice's ready part and the `landed` notice itself (D6, D9): a landing that succeeds needs nothing from the orch, and dobby computes readiness from the board.
