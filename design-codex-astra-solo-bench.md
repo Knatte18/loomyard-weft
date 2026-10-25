@@ -1,6 +1,6 @@
 # Bench Codex Astra against solo Opus as a plan reviewer, four runs
 
-`codex-astra-solo-bench` · Task · feature, codex, burler · running · Drift-Verify
+`codex-astra-solo-bench` · Task · feature, codex, burler · running · Finalize
 
 ## Goal (operator, 2026-10-25)
 
