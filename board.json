@@ -903,6 +903,27 @@
       "body": "Imported from [issue #870](https://github.com/Knatte18/loomyard/issues/870).\n\n`lyx loom` halted `failed` at the `Darn-Write` producer (anomaly `producer-hard-failure`) after only the Preflight history entry.\n\nThe error chain was `shedadapters: Darn-Write (seats): seat run: seatengine: seat \"\": start: shuttle: start: shuttle: the provider never became ready`, with outcome `died`.\nThe saved pane capture (`startup-capture.txt` in the shuttle run dir) ends with the tail of the long agent system prompt, wrapped mid-word at the pane width, followed by a closing single quote and a bare shell prompt.\nSo the provider process was gone and the shell was back in control before the readiness check passed; the strand was then removed.\n\nWhy it is abnormal: the provider should come up or fail with its own error.\nHere the shell appears to have echoed or choked on the long, quote-containing prompt text instead, which hints at the launch command line (the system prompt passed inline) breaking shell quoting or length handling in the tmux pane.\nThe failure is not retried, so one launch hiccup halts the whole run.\n\nWhat to do:\n- Inspect `startup-capture.txt` of the named run dir to see the start of the launch command and the first error line, which the note's tail does not show.\n- Check how the shuttle start composes the provider command for a long system prompt (quoting of embedded single quotes, command length); prefer passing the prompt through a file.\n- Consider a bounded retry of the start when the outcome is `died`, and keep the head of the pane capture in the halt note, not only its tail.\n\nProvenance: task slug `gate-runs-past-failing-tier`; notes: `loom-halt.md`.\n",
       "created": "2026-10-25T16:17:01Z",
       "revised": "2026-10-25T16:17:01Z"
+    },
+    {
+      "id": 821,
+      "handle": "B6",
+      "slug": "shuttle-retry-tmux-eagain",
+      "title": "shuttle start fails on transient tmux fork/exec EAGAIN and leaves the strand behind",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shuttle",
+        "reed"
+      ],
+      "issues": [
+        869
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #869](https://github.com/Knatte18/loomyard/issues/869).\n\nWhat happened: a `lyx loom` run halted as `failed` (anomaly `producer-hard-failure`) at the `Darn-Write` seat producer.\nThe shuttle start reported \"the provider never became ready\" with outcome \"died\", then could not remove the strand because the liveness check failed with `fork/exec /usr/bin/tmux: resource temporarily unavailable`.\nThe error chain ended in \"deliver the prompt after loading skills: check strand liveness: check session\".\nThe halt message told the operator to remove the strand by hand with `lyx reed status` / `lyx reed remove`.\n\nWhy it is abnormal: `resource temporarily unavailable` (EAGAIN) on fork/exec is a transient host condition, yet it was treated as the provider dying.\nThe first tmux failure appears to have been read as a dead provider, so the run hard-failed on a recoverable condition, and the cleanup hit the same error and left an orphan strand.\n\nWhat to do: retry tmux invocations on EAGAIN with a short backoff in the shuttle liveness and removal paths, and do not classify an unverifiable liveness check as \"died\".\nAlso retry or defer strand removal so a failed start does not leave a strand needing manual cleanup.\n\nProvenance: task `webster-reset-reopens-dead-batch`, note `loom-halt.md`.\n",
+      "created": "2026-10-25T16:17:03Z",
+      "revised": "2026-10-25T16:17:03Z"
     }
   ],
   "prime_owner": "neve",
