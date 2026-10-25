@@ -773,7 +773,7 @@
     {
       "id": 816,
       "handle": "T4",
-      "slug": "beam-start-and-window",
+      "slug": "beam-start-and-ownership",
       "title": "Beams: one lyx beam start, machine ownership by project, and a beam's life as a pawl run",
       "kind": "task",
       "labels": [
