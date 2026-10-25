@@ -27,7 +27,7 @@
 
 Tests:
 
-- `TestConfigTemplate_DecodesAndIsSelfConsistent` wants `review-discussion` at six entries in the order above; its sentence check gains, for `goal-scope`, `Decision for <slug>:` and `class \`decision\``, and for `board-fit`, `lyx loom peers` and `spends one of its four reads on a note`, so a rewrite that drops the parent route or the read bound fails.
+- `TestConfigTemplate_DecodesAndIsSelfConsistent` wants `review-discussion` at six entries in the order above.
   The emphasis-line exemption already follows from the lenses joining a `review-` fan.
 - `TestLoad` gains a case whose hub `lenses.yaml` defines `goal-scope` with its own text and asserts `ResolveFan` over `review-discussion` returns that text for `goal-scope` and the template's for `board-fit`, the criterion that a tuned lens keeps its own text.
   Reconcile reports nothing for a name the template holds, so such a hub runs its old text unreported until it drops the entry, as D5 records.

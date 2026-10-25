@@ -34,5 +34,7 @@
 - Docs: the shedadapters doc's fix-row paragraph and `shed-recipe-spec.md`'s Bouncer key list name both keys.
 
 What it can skip or let through: a fix row so switched sends no notice of its own; the bound is the Bouncer's escalation of the same findings, which the recipe test pins set together with it.
+On card 12's handled-false paths, a round carrying an escalation record or a decision file of another cause, which only an older binary or a flipped switch leaves, the round's `decision` findings reach neither the fixer nor a parent notice.
+Over an escalation record or a parent-recorded decision of another cause, that cause's escalation brief points the parent at the round's review; over an automatic `budget` decision file no brief is written, so the findings reach the parent only through the round's review in the run records.
 
 **ImpactSummary:** Two optional row keys and one fix-row field; only loom's two Discussion-Review rows set them.
