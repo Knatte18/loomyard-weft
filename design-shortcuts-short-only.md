@@ -1,6 +1,6 @@
 # Shortcuts are short forms only
 
-`shortcuts-short-only` · Task · enhancement, shortcut, loom, reed · running · Drift-Verify
+`shortcuts-short-only` · Task · enhancement, shortcut, loom, reed · running · Code-Bouncer
 
 ## Seen (operator, 2026-10-25)
 
