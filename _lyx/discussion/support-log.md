@@ -103,7 +103,56 @@ Checked: before the edits, `lyx batten cancel` keeps the pair by default and cle
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+Every finding's premise was checked against the code and held; all were fixed.
+The fixer's self-check forks then corrected the fixes to F4, F8, F9 and F11, and added the owed full pass's clearing, the `--continue-pass` refusal's handling in dobby and the orch stencil's resume wording.
+
+- F1, BLOCKING, continue passes skip the reconcile on a false premise: fixed, dobby holds the sleep watch and owes every run a full pass after a wake; D3's owner-check claim rewritten (D3, D4).
+- F2, BLOCKING, pair teardown clears a removed task's status: fixed, the claim settlement leaves `draft` (D5).
+- F3, BLOCKING, memory inventory deferred: fixed, D4 lists every persisted field and its rule; the Open risk is gone and the notice-marker Constraint names the in-memory latches.
+- F4, MEDIUM, a pass stays in flight through in-process waits: fixed differently, the spawn hold yields, while the Go driver's pause hold stays, since it sits inside stop handling and ending the pass there would strand the stop; every other wait has its bound stated, and D12 says how the lift reaches a pass in flight.
+- F5, MEDIUM, `lyx reed down` ends a beam's dobby: fixed, `EndBeforeSessionDown` spares a `RoleDobby` record (D1).
+- F6, MEDIUM, `--continue-pass` unbounded: fixed, the pass refuses it off Run-Shed or off its dobby's record (D4).
+- F7, MEDIUM, who resumes a halted run: fixed, a hand pass by the operator or the orch (Goal, D4, D6).
+- F8, LOW, respawn cap spent in gaps: fixed differently, the count resets on a write of the child's status file since the last respawn, since a reset on liveness alone lets a driver that dies minutes after each respawn escape the cap (D4).
+- F9, LOW, a third live-batten reader: fixed, the rule sits on `battenAlive` (D4).
+- F10, LOW, darn's copy covers the hub layer only: fixed, D8 states that only hub-layer values carry over.
+- F11, LOW, landings outside dobby passes: fixed, counted from batten history on each tick (D10).
+- F12, LOW, older binaries create statusless tasks: fixed, an accepted bound in D5; this replaces Turn 4's rejection, which reasoned about the starter's binary.
+- F13, LOW, re-exec versus start: fixed, a re-exec is not a start (D4).
+- F14, LOW, two dedup keys for dobby's notices: fixed, D7 uses D4's and D5's keys and says when each clears.
+- F15, LOW, backoff with only halted runs: fixed, D13 defines in flight for the backoff.
+- F16, LOW, late fswatch event after a pass: fixed, a write no later than the last pass exit triggers nothing (D4).
+- F17, LOW, D11 rationale-by-rejection: fixed, sentence deleted; this supersedes Turn 4's goal-scope fix that added it.
+
+### Round 2
+
+Every finding's premise was checked against the code and held; all were fixed.
+The fixer's self-check forks then widened F1 to every owned-elsewhere refusal, kept the full pass owed while a run is marked owned elsewhere, kept such a run out of `max_runs` and the backoff, retried a failed owner pause, limited the Open-Window re-run in F6's owed episode, and added the beam-side refusal to F7's.
+
+- F1, BLOCKING, a takeover found by a full pass loops as a failing pass: fixed, the owned-elsewhere refusal has its own exit code, and dobby pauses the run under the owner, releases its parent lock, sends the owner notice once and passes it no more until a full pass at the lift or from `lyx adopt` exits 0 (D3, D4, D7).
+- F2, BLOCKING, the spawn hold yields before the owner re-check: fixed, the hold runs the owner check on a due probe before yielding (D4).
+- F3, BLOCKING, continue passes skip the origin verdict without a PATTERN change: fixed, a `PATTERN-owner-machine` change says a continue pass is not a resume (D4, PATTERN changes).
+- F4, MEDIUM, a pass's one check is unnamed: fixed, it is `check()`'s full body, and `ownerSleep` is replaced by dobby's sleeps and the owed full pass (D4).
+- F5, MEDIUM, the new counters have no home: fixed, an inventory bullet names them (D4).
+- F6, MEDIUM, an unreachable origin clears an owed full pass: fixed, the pass reports it and the full pass stays owed until one reaches origin (D4).
+- F7, MEDIUM, an adopted member of a beam owned elsewhere has no dobby: fixed, `lyx adopt` of such a member refuses unless the same call adopts the beam (D2); picked over driving it from an ancestor's dobby, which would break D3's one-parent rule.
+- F8, MEDIUM, a note upserted to a task stays statusless: fixed, it gets `draft`, and a null status upsert or nil merge `set_status` is a release (D5).
+- F9, LOW, D4's list of in-pass waits is incomplete: fixed, Land's deploy and the spawn's `lyx loom start` bootstrap are named (D4).
+- F10, LOW, cleanup can remove a landing before dobby counts it: fixed, an accepted bound (D10).
+
+### Round 3
+
+Every finding's premise was checked against the code and held; all were fixed.
+The fixer's self-check forks then let continue passes run under a covering pause, so an idle owner's parent lock is still released, moved D2's refusals ahead of the owner write with one combined way forward, kept a start refused for a pause out of D5's refused-start path, and aligned D3, D13 and the criteria.
+
+- F1, BLOCKING, a pass under a covering pause is refused at pre-run, not yielded: fixed differently, `--continue-pass` skips the pre-run pause refusal so continue passes run under a pause, dobby runs no full pass of a covered run bar the lift's, and a full pass refused for a pause has its own exit code read as covered (D4, D5, D7, D13).
+- F2, MEDIUM, the owed full pass of an unreachable-origin resume is invisible to a hand pass: fixed, the pass writes a per-run origin-owed marker that dobby reads, replacing the output line (D4).
+- F3, MEDIUM, a failed owner pause is retried on a stale verdict: fixed, dobby runs a full pass on the probe tick instead of a blind retry (D4).
+- F4, MEDIUM, the adopt refusal omits a beam whose parent is owned elsewhere: fixed, the refusal covers a task or a beam, is decided before the owner write against the entries that passed step 1, and names one call that meets both refusals (D2, Q21).
+- F5, MEDIUM, the release command fails as written: fixed, it names the explicit null payload (D5, Q6).
+- F6, MEDIUM, the draft-giving writes are not a closed set: fixed differently, one rule at the store's commit point, with empty meaning nil or an empty string, which also spares a released task's later edits, and no lyx code path writes a null task status (D5).
 
 ## Question ledger
 
@@ -112,7 +161,7 @@ _No rounds yet._
 - Q3 Whether a stop verb is needed: no (D1). Auto-pick, YAGNI.
 - Q4 Concurrency cap: `beam.yaml` `max_runs`, default 3, halted runs counted (D5). Auto-pick.
 - Q5 What a new task's status is: `draft`, for every creating write and a promoted note (D5). Auto-pick, from the operator's 2026-10-18 "a new task is a draft by default" carried over to the status form.
-- Q6 How a draft is released: `lyx board set-status <slug>` with no status, an existing verb (D5). Auto-pick.
+- Q6 How a draft is released: the existing verb with an explicit null status, `lyx board set-status '{"slug":"<slug>","status":null}'`, since it refuses an absent `status` key (D5). Auto-pick, over changing `set-status` to accept a missing status, which would let a typo clear a status.
 - Q7 Draft mark in the README: `draft` before the title (D5). Auto-pick.
 - Q8 Which batten notices stay (D9). Auto-pick, keeping every notice that needs judgement.
 - Q9 Where the arbiter code moves: a shed-layer package batten imports without tree-sitter (D8). Auto-pick within the parent's decision.
@@ -123,3 +172,10 @@ _No rounds yet._
 - Q14 What a cancel leaves: `draft` (D5). Auto-pick, so a cancel is never undone by dobby.
 - Q15 Existing statusless tasks: a one-time migration to `draft` keyed on a board key (D5). Auto-pick, so nothing made before this lands starts unreleased.
 - Q16 Where dobby finds its runs: local batten status files (D3). Auto-pick: the board loses a run once Land prunes it.
+- Q17 How a wake reaches the runs: dobby's own sleep watch owes every run a full pass (D4). Auto-pick: an awake clock reading is only meaningful inside the process that holds it, and dobby lives across the passes.
+- Q18 What `lyx reed down` does to a beam's dobby: spares it (D1). Auto-pick: dobby runs outside the session, and the operator decided a run's parent always has a running dobby.
+- Q19 Which layers D8's darn copy covers: the hub layer only (D8). Auto-pick: the other layers belong to one worktree or one task, and a task's `run_settings` names the module it targets.
+- Q20 Who resumes a halted or paused run: a hand pass by the operator, or the orch on the operator's word or after judging the stop (D4). Auto-pick.
+- Q21 Who drives a run whose parent another machine owns, a member task's run or a beam's landing run: nobody, so `lyx adopt` refuses to split a task or beam from its parent, and a beam from its members, either way (D2). Auto-pick: driving it from an ancestor's dobby would break D3's one-parent rule.
+- Q22 How continue passes fit `PATTERN-owner-machine`: a PATTERN change saying a continue pass is not a resume, over dropping the reconcile skip (D4). Auto-pick: a reconcile per probe tick per run would put a network round trip on every pass.
+- Q23 What a full pass refused as owned elsewhere leaves: a mark in dobby's state record, an owed full pass and today's owner pause, passed again only at the pause's lift, or on each probe tick while the owner pause failed (D4). Auto-pick: the lift is the one event an adopt back and an operator's resume share, and a full pass re-judges the owner where a blind pause retry would not.
