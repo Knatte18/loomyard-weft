@@ -972,7 +972,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 25,
   "masterStrand": "b72a3cc08101d22a4e8fe62d611ae08b",
   "masterSessionId": "6e5b1004-7b3f-4552-94de-e0b6630533f5",
   "masterEngine": "claude",
@@ -1246,6 +1246,26 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-aa344f16e9da14f44.jsonl"
       ]
+    },
+    "25": {
+      "slug": "batten-arbiter-wiring",
+      "cards": [
+        "25-batten-arbiter-wiring",
+        "26-batten-pass-exit-codes",
+        "27-dobby-start"
+      ],
+      "cardHashes": {
+        "25-batten-arbiter-wiring": "4db18df72da50992bfe1cccea6b83c97f662b2cad1254acc1b368d57998089e3",
+        "26-batten-pass-exit-codes": "c9cae0b862ef0bc974a718c3b912a085acb6e204f9c147db1c830130e06d56c9",
+        "27-dobby-start": "2a0b549fb2c7c37ed58e1df9f91be7514e8d256abb9033b2bb939bdf1d975f2d"
+      },
+      "startSha": "7babc2018e90a9cc7750622ae7733d1355e71a87",
+      "kind": "fork",
+      "spawnedAt": "2026-10-25T10:24:19Z",
+      "sessionId": "6e5b1004-7b3f-4552-94de-e0b6630533f5",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "draft-writers",
