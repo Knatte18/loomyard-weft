@@ -18,7 +18,7 @@ grouping
 
 | # | Member | Kind | Standing |
 | --- | --- | --- | --- |
-| T3 | **An anchor per beam** | Task | Layer A |
+| T3 | **An anchor per beam** | Task | Ready |
 
 ### P2 .NET: LoomYard for C# repositories
 
@@ -31,33 +31,18 @@ grouping
 | F18 | **Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch** | Note | Note |
 | E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
 
-## Tasks (3)
+## Tasks (2)
 
 Concrete and claimable; only a task can run.
 
-### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **An adopt runs the test suite on the adopting machine**<br>• Catch breaks from a machine change (Ubuntu 26.04, 24.04, Windows 11) at adopt time<br>• `profile: light` | [`adopt-runs-tests`](design-adopt-runs-tests.md) | darn | Finalize | neve | 1d<br>18m | fabric, gate |
-
-### Ready (1)
+### Ready (2)
 
 Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | `draft` **Bench Codex Astra against solo Opus as a plan reviewer, four runs**<br>• `profile: docs` | [`codex-astra-solo-bench`](design-codex-astra-solo-bench.md) | darn |  | 18m<br>18m | codex, burler |
-
-### Layer A (1)
-
-Waits only on Running or Ready entries.
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T3 | **An anchor per beam**<br>• Let each worktree carry its own anchor through a .lyx-anchor marker at its weft branch root, inherited by its tasks, with a verb that changes it<br>• `profile: solid` | [`umbrella-anchor`](design-umbrella-anchor.md) | loom | `adopt-runs-tests` | 6d<br>0m | fabric, config, workspaces |
+| T3 | **An anchor per beam**<br>• Let each worktree carry its own anchor through a .lyx-anchor marker at its weft branch root, inherited by its tasks, with a verb that changes it<br>• `profile: solid` | [`umbrella-anchor`](design-umbrella-anchor.md) | loom |  | 6d<br>1m | fabric, config, workspaces |
 
 ## Notes (34)
 
@@ -114,5 +99,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F15 |  | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 10d<br>1d | reed, config, batten |
 | F16 | H | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | 10d<br>35m | creel, shuttle, loom, stencil, report |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 9d<br>1d | burler, shed, orch, quarry, report |
-| F18 |  | **Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 8d<br>16m | shed, webster, batten, config, dotnet |
+| F18 |  | **Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 8d<br>17m | shed, webster, batten, config, dotnet |
 | F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 2d<br>35m | loom, shed, batten, workspaces, burler |
+
+## Done (1)
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T1 | **An adopt runs the test suite on the adopting machine**<br>• Catch breaks from a machine change (Ubuntu 26.04, 24.04, Windows 11) at adopt time<br>• `profile: light` | [`adopt-runs-tests`](design-adopt-runs-tests.md) | 1d<br>19m | fabric, gate |
