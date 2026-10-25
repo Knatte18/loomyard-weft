@@ -944,6 +944,27 @@
       "body": "Imported from [issue #868](https://github.com/Knatte18/loomyard/issues/868).\n\nSeen (2026-10-24): after gate-runs-once landed and its worktree was torn down, and the hub's tier commands moved from '-tags tier1,integration' etc. to single tags, every 'lyx gate test --tier 1' in another worktree (drop-transitional-tag-spellings) failed before any test with: internal/reedengine: can't parse raw cgo file: open /home/knatte/Code/loomyard-LYXHUB/gate-runs-once/internal/reedengine/proctree_linux.go: no such file or directory. Likely cause: under GOFLAGS=-trimpath a go vet cache entry for reedengine's cgo pass recorded the absolute path of the worktree it was built in, and a later vet under the same tag set matched that entry. Workaround: the orch ran 'go clean -cache' while no gate slot was held. Expected: a gate run never depends on another worktree's paths; lyx could key or isolate the Go cache per worktree, or detect the error and retry with a cleaned vet cache.",
       "created": "2026-10-25T16:17:05Z",
       "revised": "2026-10-25T16:17:05Z"
+    },
+    {
+      "id": 823,
+      "handle": "B8",
+      "slug": "no-hold-notice-on-bg-wait",
+      "title": "Shuttle hold notices fire while Merriam waits on its own background recovery",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shuttle",
+        "webster"
+      ],
+      "issues": [
+        876
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #876](https://github.com/Knatte18/loomyard/issues/876).\n\nSeen (umbrella-anchor, 2026-10-25): Merriam started `lyx webster recover-batch 06` in the background and ended its turn to wait for it, as its stencil allows. Each such turn produced a shuttle notice to the parent, 'ended a turn without its output files and is held' (#310, #311, #315, #317), although Merriam was waiting by design and needed nothing from the parent.\n\nExpected: a turn that ends while the session's own background job runs (the RequirementBackgroundWake case) is not reported to the parent as held; only a turn that ends with no background job and no output files is.",
+      "created": "2026-10-25T16:17:10Z",
+      "revised": "2026-10-25T16:17:10Z"
     }
   ],
   "prime_owner": "neve",
