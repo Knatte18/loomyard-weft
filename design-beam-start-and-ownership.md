@@ -2,7 +2,7 @@
 
 `beam-start-and-ownership` · Task · enhancement, orch, workspaces, batten, reed, board · draft
 
-Depends on: [`umbrella-anchor`](design-umbrella-anchor.md), [`beam-overview-window`](design-beam-overview-window.md)
+Depends on: [`umbrella-anchor`](design-umbrella-anchor.md)
 
 ## Seen (operator, 2026-10-25)
 
