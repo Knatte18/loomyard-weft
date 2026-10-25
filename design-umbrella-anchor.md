@@ -1,6 +1,6 @@
 # An anchor per beam
 
-`umbrella-anchor` · Task · enhancement, fabric, config, workspaces · running · Worktree-Create
+`umbrella-anchor` · Task · enhancement, fabric, config, workspaces · running · Loom-Preflight
 
 ## Seen (2026-10-18)
 
