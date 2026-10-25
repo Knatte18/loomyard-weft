@@ -362,6 +362,12 @@ Rationale: Parent, 2026-10-25: follows D2's 'as a batten resume does'.
   - note-upsert-to-task-leaves-statusless (class decision, severity MEDIUM, open in rounds 2, 3, 4)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - forced-edits-outside-cards (class design, severity MEDIUM, open in rounds 1, 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - `lyx beam start` starts a dobby for the prime and each owned beam and reports live ones as found; a second start changes nothing; it starts no prime dobby where another machine is the prime owner; `lyx orch start` runs it first and still starts when it fails.
