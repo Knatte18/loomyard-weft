@@ -100,11 +100,11 @@
 - `plan:internal/battenshed#TestInnerRun_MemoryOutlivesTheProcess` -> `func TestInnerRun_MemoryOutlivesTheProcess(t *testing.T)`
 
 **Uses:**
-- `plan:internal/shedengine#Yield`
-- `plan:internal/parentlock#IdleWatch.Waiting`
-- `plan:internal/parentlock#RestoreIdleWatch`
-- `plan:internal/logger#EpisodeSet.Ticks`
-- `plan:internal/logger#EpisodeSet.Restore`
+- `internal/shedengine#Yield`
+- `internal/parentlock#IdleWatch.Waiting`
+- `internal/parentlock#RestoreIdleWatch`
+- `internal/logger#EpisodeSet.Ticks`
+- `internal/logger#EpisodeSet.Restore`
 
 **Intent:**
 Turn the Run-Shed row's in-call wait into one check per Call, with its memory across checks in a per-run record, so `lyx batten run` becomes one short pass that dobby schedules (D4).

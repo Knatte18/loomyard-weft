@@ -1,9 +1,9 @@
 # Card 12 — episodeset-snapshot
 
 **Create:**
-- `plan:internal/logger#EpisodeSet.Ticks` -> `func (s *EpisodeSet) Ticks() map[string]int`
-- `plan:internal/logger#EpisodeSet.Restore` -> `func (s *EpisodeSet) Restore(ticks map[string]int)`
-- `plan:internal/logger#TestEpisodeSet_RestoreContinuesTheEpisode` -> `func TestEpisodeSet_RestoreContinuesTheEpisode(t *testing.T)`
+- `internal/logger#EpisodeSet.Ticks`
+- `internal/logger#EpisodeSet.Restore`
+- `internal/logger#TestEpisodeSet_RestoreContinuesTheEpisode`
 
 **Intent:**
 Let a failure-episode set be saved and restored, so a seam that keeps failing across batten's short passes warns once per episode and logs one recovery (D4's `failures` inventory item).
