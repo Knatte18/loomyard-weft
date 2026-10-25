@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-25 11:53 UTC; every age below is as of then.
+Rendered 2026-10-25 11:54 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -42,7 +42,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Bench Codex as a Burler reviewer against Claude reviews of finished runs**<br>• `profile: docs` | [`codex-review-bench`](design-codex-review-bench.md) | darn | Code-Burler-Fix | neve | 1h<br>1h | codex, burler |
-| T2 | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement<br>• `profile: solid`<br>• `loom: discussion_hard_max_bounces 4`<br>• `loom: discussion_max_bounces 3` | [`umbrella-daemon`](design-umbrella-daemon.md) | loom | Code-Burler-Fix | neve | 13d<br>5h | batten, orch, shed, workspaces, loom, board |
+| T2 | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement<br>• `profile: solid`<br>• `loom: discussion_hard_max_bounces 4`<br>• `loom: discussion_max_bounces 3` | [`umbrella-daemon`](design-umbrella-daemon.md) | loom | Code-Bouncer | neve | 13d<br>5h | batten, orch, shed, workspaces, loom, board |
 | T3 | **Test creel mail delivery through a tool-boundary hook, for Claude and Codex**<br>• `profile: docs` | [`creel-hook-delivery-test`](design-creel-hook-delivery-test.md) | darn | Code-Burler-Fix | neve | 19m<br>19m | creel, claude, codex |
 
 ### Ready (0)
