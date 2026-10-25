@@ -1,0 +1,10 @@
+verdict: resume
+reason: |-
+  Cause circling at round 3; the Discussion perch's hard cap is 4 (.lyx/config/loom.local.yaml discussion_hard_max_bounces: 4), so the round is below it.
+  The fix is converging: findings fell from 10 (3 BLOCKING) in round 2 to 6 (1 BLOCKING) in round 3, and each of the four recurring keys is a narrower residue of the previous round's fix rather than the same defect returning.
+  F1 is a new premise (battenPreRun's refuseCovered) under the spawn-hold key, F2 and F6 extend the round-2 fixes to paths those fixes missed, and F4 extends the member-task refusal to a beam.
+  The round-3 fixer report confirms each premise against the code (internal/battencli/arm.go:644, internal/boardcli/cli.go:642), applies every finding with nothing disputed or deferred, and the decision record's D4 now carries the covered-pass exit code, the origin-owed marker and the reachable spawn-hold path.
+  No finding is wrong, so accept does not apply; one more round verifies the round-3 fixes, and round-4 focus is already written for it.
+verbs:
+  - |-
+    lyx loom circling continue umbrella-daemon
