@@ -1,12 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Parent-Align",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Webster → stuck",
+    "now": "Parent-Align",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -388,6 +387,34 @@
       "budget_exempt": true,
       "repeats": 1,
       "last_at": "2026-10-25T16:12:01Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/umbrella-anchor/_lyx/webster/summary.md",
+      "at": "2026-10-25T18:43:39Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-25T18:34:43.031893536Z",
+          "end": "2026-10-25T18:39:24.350250714Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-25T18:39:24.738555609Z",
+          "end": "2026-10-25T18:42:37.279967341Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-25T18:42:37.306025697Z",
+          "end": "2026-10-25T18:43:38.679919695Z"
+        }
+      ],
+      "by": "shed"
     }
   ],
   "product": {
