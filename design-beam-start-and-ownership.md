@@ -57,12 +57,15 @@ A pawl is the catch that holds a loom's warp beam until the weaver releases it, 
 |---|---|
 | Beam-Up | marks the worktree as a beam, then starts its dobby and orch |
 | Beam-Await | waits while the beam's own dobby runs its members, until `lyx beam land` ends it |
+| Parent-Align | merges the parent into the beam, as loom's row does |
+| Code-Review perch | Code-Bouncer, Code-Burler-Review and Code-Burler-Fix, loom's perch, reviewing the beam's diff after the merge |
 | Beam-Describe | writes the landing description, as today |
-| Finalize | merges the beam into its parent from inside, as for loom and darn |
+| Finalize | merges the beam into its parent from inside, as for loom and darn; the conflict session resolves a conflict and an overlapping merge goes on to the landing gate, with no reroute |
 | Beam-Down | stops the beam's orch, its watcher and its dobby |
 
 - `lyx beam create <slug>`, run from the parent worktree, marks the project entry a beam with its owner and starts its batten run at once; it no longer makes the worktree itself.
 - `lyx beam land <slug>` ends Beam-Await; it refuses while the beam has open members or member worktrees, and on a machine that does not own the parent project, naming `lyx adopt` of the parent.
 - The separate landing run of today's `lyx beam land` goes.
+- A beam's landing is the heaviest of the three recipes, since a project is large: where loom and darn only resolve a moved parent in Finalize, pawl aligns with the parent and reviews the result before it lands.
 - Batten's start guard lets a beam project start, where it now refuses every project entry but a beam ready to land.
 - When a beam's last member lands, its dobby sends its orch a notice that the beam can land, naming `lyx beam land <slug>`; when another machine owns the parent project, the notice says so and names `lyx adopt` of the parent.
