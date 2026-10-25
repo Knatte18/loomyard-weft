@@ -18,6 +18,10 @@ Both run on the machine that owns the beam.
 - `lyx beam start [slug]` brings a beam up, the current worktree's beam with no slug: it starts the dobby, reconciles the branches, ensures the overview window, and starts the orch with its watcher.
   The orch resumes its recorded session when one exists, else starts fresh from the last handoff note, else from the start stencil.
   A recorded session that cannot be resumed falls back to a fresh start from the note, never to an error.
+- It starts only that beam; `lyx beam start --all` starts every beam this machine owns, such as after a restart, so the prime behaves like any other beam.
+- It refuses in a folder that is no beam, a task worktree naming the beam it belongs to and its path, and on a beam another machine owns, naming `lyx adopt`.
+- It is idempotent: a live dobby or orch is left alone, and only a missing part is started, a new orch resuming its recorded session.
+- `lyx s` attaches at once, so the operator never sees its output on success: what runs shows in the overview window, and a refusal attaches nothing and leaves its error on the terminal.
 - `lyx beam stop [slug]` stops both, and `lyx beam status` shows both.
 - A fresh orch comes from `lyx orch refresh`.
 - `lyx orch` keeps `stop`, `status`, `distill`, `refresh`, `withdraw` and `rules`.
