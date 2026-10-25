@@ -1,6 +1,6 @@
-# One lyx beam start brings a beam up, dobby and orch together, and the overview window becomes the beam window
+# Beams: one lyx beam start for dobby and orch, the beam window, and machine ownership by project
 
-`beam-start-and-window` · Task · enhancement, orch, workspaces, batten, reed · draft
+`beam-start-and-window` · Task · enhancement, orch, workspaces, batten, reed, board · draft
 
 Depends on: [`umbrella-anchor`](design-umbrella-anchor.md)
 
@@ -11,6 +11,7 @@ Dobby's own verbs sit under `lyx beam` (`lyx beam start`, `lyx beam status`), an
 `--handoff` and `--adopt` are never used; `--continue` is used often and is long to type.
 The command surface carries long-form shortcuts beside the short ones and a top-level `lyx start` for `lyx loom start`, which nobody runs since batten starts every loom run.
 The overview window, the `runs` strand running `lyx batten overview`, shows the orch's context line, the runs in flight, and since `dobby-overview-window` the worktree's dobby with its runs, so the runs show in two places; its name says neither that it belongs to a beam nor what it covers.
+Ownership is recorded per task and for the prime (`lyx adopt <slug>`, `lyx adopt --prime`), although the prime is a worktree, local to one machine like every beam.
 
 ## Design (operator, 2026-10-25)
 
@@ -24,7 +25,7 @@ Both run on the machine that owns the beam.
   The orch resumes its recorded session when one exists, else starts fresh from the last handoff note, else from the start stencil.
   A recorded session that cannot be resumed falls back to a fresh start from the note, never to an error.
 - It starts only that beam; `lyx beam start --all` starts every beam this machine owns, such as after a restart, so the prime behaves like any other beam.
-- It refuses in a folder that is no beam, a task worktree naming the beam it belongs to and its path, and on a beam another machine owns, naming `lyx adopt`.
+- It refuses in a folder that is no beam, a task worktree naming the beam it belongs to and its path; Ownership below says when it refuses on another machine's project.
 - It is idempotent: a live dobby or orch is left alone, and only a missing part is started, a new orch resuming its recorded session.
 - `lyx s` attaches at once, so the operator never sees its output on success: what runs shows in the beam window, and a refusal attaches nothing and leaves its error on the terminal.
 - `lyx beam stop [slug]` stops both, and `lyx beam status` shows both.
@@ -53,3 +54,17 @@ The overview window becomes the beam's own window, named `beam: <slug>`, `beam: 
 - Orch: its context reading against the soft threshold and the hard cap, and its cycle state, as the context line shows today.
 
 Each run shows once, in the dobby section.
+A beam's window shows its own orch and the orchs of every beam below it.
+
+### Ownership
+
+A worktree, and so a beam, belongs to one machine; the branches are shared, and the board's entries are common to every machine.
+The board itself has no owner: ownership sits on projects.
+
+- The top level of the board is a project of its own, the root project, driven by the owner machine's prime.
+- Each project is owned by one machine and driven by its beam there; two machines can work at once on projects they each own, each with only its own project checked out.
+- A task has no owner of its own: it follows its project, whose owner's dobby starts and drives it.
+- `lyx adopt <project>` moves a project to this machine with its tasks and runs in flight, and `lyx adopt root` replaces `lyx adopt --prime`; only projects are adopted, never a single task.
+- There is no adopt of a beam.
+- `lyx beam start` refuses on a beam whose project another machine owns, naming `lyx adopt`.
+- `lyx adopt` of a project starts its beam, dobby and orch, on the adopting machine.
