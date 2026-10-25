@@ -6,13 +6,13 @@
 - `internal/fabricengine_test#TestDropLocal`
 
 **Create:**
-- `plan:internal/fabricengine_test#TestCheckout_RefusesAnotherAnchor` -> `func TestCheckout_RefusesAnotherAnchor(t *testing.T)`
+- `internal/fabricengine_test#TestCheckout_RefusesAnotherAnchor`
 
 **Uses:**
-- `plan:internal/fabricengine#treeAnchor`
-- `plan:internal/fabricengine#weftAnchorStop`
+- `internal/fabricengine#treeAnchor`
+- `internal/fabricengine#weftAnchorStop`
 - `internal/fabricengine#refuseEmptyOwnMarker`
-- `plan:internal/fabricengine#ErrAnchorChange`
+- `internal/fabricengine#ErrAnchorChange`
 - `internal/lyxcwd#NamedWorktree`
 - `internal/hubforge#ReanchorPair`
 - `internal/fabricengine#Topology.switchOrForkWeft`

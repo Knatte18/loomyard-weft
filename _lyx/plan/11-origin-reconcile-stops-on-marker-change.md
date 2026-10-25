@@ -21,7 +21,7 @@
 - `plan:internal/fabricengine#BranchAnchorStopped` -> `const BranchAnchorStopped BranchState = "anchor_stopped"`
 
 **Uses:**
-- `plan:internal/fabricengine#weftAnchorStop`
+- `internal/fabricengine#weftAnchorStop`
 - `internal/fabricengine#refuseEmptyOwnMarker`
 - `internal/lyxcwd#NamedWorktree`
 - `internal/fabricengine#reconcileRecordsBranch`
