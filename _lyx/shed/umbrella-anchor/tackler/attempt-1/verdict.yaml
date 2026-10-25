@@ -1,0 +1,5 @@
+verdict: resume
+reason: |-
+  Webster is blocked at batch 06 (clone-records-marker-on-prime-weft). recover-batch refused with needs_fresh because the fork's `lyx gate test` runs were flagged as fabric-reference audit findings that recovery cannot check. The stop names its own fix: `lyx webster reset --to batch-start --batch 06`. This is the first stop of this kind in the run, so no earlier resume returned unchanged. A re-run of Webster moved back to batch 06's start clears the refusal without a scope or design choice. I did not choose `accept-audit`: accepting the audit's findings bypasses the check, and that is the parent's call.
+  Hypothesis, not verified: if the Webster re-run again refuses recover-batch, the next stop should go to hand-back, since the parent then has to pick between reset and accept-audit.
+goto: Webster
