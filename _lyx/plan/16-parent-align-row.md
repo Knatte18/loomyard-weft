@@ -6,18 +6,18 @@
 - `//internal/landingshed/mergein_fixer_test.go` -> `//internal/landingshed/parentalign_fixer_test.go`
 
 **Create:**
-- `plan:internal/landingshed#ParentAlign` -> `type ParentAlign struct`
-- `plan:internal/landingshed#NewParentAlign` -> `func NewParentAlign(deps Deps) (*ParentAlign, error)`
-- `plan:internal/landingshed#parentAlignName` -> `const parentAlignName = "Parent-Align"`
-- `plan:internal/landingshed#retiredMergeInName` -> `const retiredMergeInName = "Merge-In"`
-- `plan:internal/landingshed#FixerModeParentAlign` -> `const FixerModeParentAlign FixerMode = "parent-align"`
-- `plan:internal/loomshed#NameParentAlign` -> `const NameParentAlign = "Parent-Align"`
-- `plan:internal/shedrecipe#parentAlignEntry` -> `func parentAlignEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error)`
-- `plan:internal/gateslot#renameGateKeys` -> `func renameGateKeys(gates *yaml.Node) []string`
-- `plan:internal/loomrecipe#LoomRetiredRows` -> `func LoomRetiredRows() map[string]string`
-- `plan:internal/loomcli#loomCLI.renameRetiredRows` -> `func (c *loomCLI) renameRetiredRows(renames map[string]string) error`
-- `plan:internal/loomcli#TestRenameRetiredRows` -> `func TestRenameRetiredRows(t *testing.T)`
-- `plan:internal/reportengine#retiredMergeInRow` -> `const retiredMergeInRow = "Merge-In"`
+- `internal/landingshed#ParentAlign`
+- `internal/landingshed#NewParentAlign`
+- `internal/landingshed#parentAlignName`
+- `internal/landingshed#retiredMergeInName`
+- `internal/landingshed#FixerModeParentAlign`
+- `internal/loomshed#NameParentAlign`
+- `internal/shedrecipe#parentAlignEntry`
+- `internal/gateslot#renameGateKeys`
+- `internal/loomrecipe#LoomRetiredRows`
+- `internal/loomcli#loomCLI.renameRetiredRows`
+- `internal/loomcli#TestRenameRetiredRows`
+- `internal/reportengine#retiredMergeInRow`
 
 **Delete:**
 - `internal/loomshed#NameMergeIn`
