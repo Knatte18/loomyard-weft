@@ -1,6 +1,6 @@
 # Plan references follow renames and renumbers mechanically
 
-`plan-refs-auto-rewrite` · Task · enhancement, webster, loom · running · Worktree-Create
+`plan-refs-auto-rewrite` · Task · enhancement, webster, loom · running · Darn-Write
 
 Two places where a plan's references go stale and are fixed by hand or by a full review, though the change is mechanical.
 Both are rewritten mechanically here.
