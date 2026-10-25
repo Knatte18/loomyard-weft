@@ -10,15 +10,15 @@
 
 **Create:**
 - `contracts/stencils/beam/beam-template-board-tidy.md`
-- `plan:contracts/stencils#BeamTemplateBoardTidy` -> `var BeamTemplateBoardTidy []byte`
-- `plan:internal/dobbyengine#BoardTidyRole` -> `const BoardTidyRole = "board-tidy"`
-- `plan:internal/dobbyengine#TidyPromptInput` -> `type TidyPromptInput struct`
-- `plan:internal/dobbyengine#TidyPrompt` -> `func TidyPrompt(stencilsDir string, in TidyPromptInput) (string, error)`
-- `plan:internal/dobbyengine#TidySpec` -> `func TidySpec(prompt, reportPath string, model shuttleengine.ModelChoice, timeout time.Duration) shuttleengine.Spec`
-- `plan:internal/dobbyengine#daemon.countLandings` -> `func (d *daemon) countLandings(now time.Time) error`
-- `plan:internal/dobbyengine#daemon.tidyStep` -> `func (d *daemon) tidyStep(ctx context.Context, now time.Time) error`
-- `plan:internal/dobbyengine#TestCountLandingsAndTidy` -> `func TestCountLandingsAndTidy(t *testing.T)`
-- `plan:internal/dobbyengine#TestTidyPrompt` -> `func TestTidyPrompt(t *testing.T)`
+- `contracts/stencils#BeamTemplateBoardTidy`
+- `internal/dobbyengine#BoardTidyRole`
+- `internal/dobbyengine#TidyPromptInput`
+- `internal/dobbyengine#TidyPrompt`
+- `internal/dobbyengine#TidySpec`
+- `internal/dobbyengine#daemon.countLandings`
+- `internal/dobbyengine#daemon.tidyStep`
+- `internal/dobbyengine#TestCountLandingsAndTidy`
+- `internal/dobbyengine#TestTidyPrompt`
 
 **Uses:**
 - `internal/dobbyengine#Config`

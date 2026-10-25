@@ -10,8 +10,8 @@
 - `internal/adoptcli/doc.go`
 
 **Create:**
-- `plan:internal/adoptcli#wouldStop` -> `func wouldStop(deps adoptDeps, req request, report fabricengine.OriginReport, slug string) (bool, error)`
-- `plan:internal/adoptcli#adoptRefusal` -> `func adoptRefusal(deps adoptDeps, here string, owners boardengine.Owners, going []string, prime bool) error`
+- `internal/adoptcli#wouldStop`
+- `internal/adoptcli#adoptRefusal`
 
 **Intent:**
 Refuse an adopt that would leave no dobby here to drive what it takes over, and end every adopt by starting the dobbies (D2, and the Added-after-Discussion entry deciding the refusals before any mutation).

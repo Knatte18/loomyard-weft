@@ -18,13 +18,13 @@
 - `PATTERN.md`
 
 **Create:**
-- `plan:internal/beamcli#dobbyProgram` -> `const dobbyProgram = "DOBBY"`
-- `plan:internal/beamcli#startCmd` -> `func startCmd() *cobra.Command`
-- `plan:internal/beamcli#dobbyCmd` -> `func dobbyCmd() *cobra.Command`
-- `plan:internal/beamcli#hubDobbyDeps` -> `func hubDobbyDeps(prime *lyxcwd.Location, geom dobbyengine.Geometry) (dobbyengine.Deps, error)`
-- `plan:internal/beamcli#registerDobby` -> `func registerDobby(runProcDir string, geom dobbyengine.Geometry) error`
-- `plan:internal/beamcli#TestRegisterDobby` -> `func TestRegisterDobby(t *testing.T)`
-- `plan:internal/beamcli#TestDobbyCmd_RefusesAPathItCannotPlace` -> `func TestDobbyCmd_RefusesAPathItCannotPlace(t *testing.T)`
+- `internal/beamcli#dobbyProgram`
+- `internal/beamcli#startCmd`
+- `internal/beamcli#dobbyCmd`
+- `internal/beamcli#hubDobbyDeps`
+- `internal/beamcli#registerDobby`
+- `internal/beamcli#TestRegisterDobby`
+- `internal/beamcli_test#TestDobbyCmd_RefusesAPathItCannotPlace`
 
 **Uses:**
 - `internal/dobbyengine#Run`
