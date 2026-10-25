@@ -1,6 +1,6 @@
 # [WS 005] One dobby daemon per beam owns and drives its runs
 
-`umbrella-daemon` · Task · enhancement, batten, orch, shed, workspaces, loom, board · running · Discussion-Bouncer
+`umbrella-daemon` · Task · enhancement, batten, orch, shed, workspaces, loom, board · running · Discussion-Burler-Review
 
 ## Built so far (dd11ab09f)
 
