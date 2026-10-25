@@ -1,0 +1,811 @@
+diff --git a/docs/research/codex-astra-solo-bench-2026-10-25/data/harness/build.sh b/docs/research/codex-astra-solo-bench-2026-10-25/data/harness/build.sh
+new file mode 100644
+index 000000000..2538d32bc
+--- /dev/null
++++ b/docs/research/codex-astra-solo-bench-2026-10-25/data/harness/build.sh
+@@ -0,0 +1,89 @@
++#!/usr/bin/env bash
++# Stage one bench input: code snapshot, artifacts, era stencils and the assembled reviewer prompt.
++# usage: build.sh <id> <kind: discussion|plan> <weft-commit>
++set -euo pipefail
++ROOT=/home/knatte/Code/loomyard-LYXHUB/codex-astra-solo-bench
++WEFT=/home/knatte/Code/loomyard-LYXHUB/loomyard-weft
++id=$1 kind=$2 wc=$3
++dir=$ROOT/.scratch/bench/inputs/$id
++rm -rf "$dir"
++mkdir -p "$dir/work"
++
++start=$(git -C $WEFT show $wc:_lyx/reviews/$kind/round-1-usage.yaml | grep -m1 'start:' | tr -s ' ' | cut -d' ' -f3)
++code=$(git -C $ROOT rev-list -1 --before="$start" main)
++echo "$id $kind weft=$wc start=$start code=$code" > "$dir/meta.txt"
++
++git -C $ROOT archive "$code" | tar -x -C "$dir/work"
++mkdir -p "$dir/work/_lyx/discussion"
++if [ "$kind" = discussion ]; then
++  for f in $(git -C $WEFT ls-tree --name-only $wc _lyx/discussion/ | grep -vE 'support-log\.lens-'); do
++    git -C $WEFT show $wc:$f > "$dir/work/$f"
++  done
++else
++  git -C $WEFT show $wc:_lyx/discussion/decision-record.md > "$dir/work/_lyx/discussion/decision-record.md"
++  mkdir -p "$dir/work/_lyx/plan"
++  for f in $(git -C $WEFT ls-tree -r --name-only $wc _lyx/plan/ | grep -v '/archive-'); do
++    mkdir -p "$dir/work/$(dirname $f)"
++    git -C $WEFT show $wc:$f > "$dir/work/$f"
++  done
++fi
++
++# Hub-style specs and stencils dirs, from the snapshot's own era.
++bench=$dir/work/.bench
++mkdir -p "$bench/specs/loom" "$bench/stencils" "$bench/instr" "$bench/out"
++cp "$dir"/work/contracts/specs/*.md "$bench/specs/" 2>/dev/null || true
++for f in "$dir"/work/contracts/specs/loom-*.md; do cp "$f" "$bench/specs/loom/${f##*/loom-}"; cp "$f" "$bench/specs/loom/$(basename $f)"; done
++cp -r "$dir"/work/contracts/stencils/* "$bench/stencils/"
++
++strip() { local s; s=$(<"$1"); [ "${s:0:4}" = '<!--' ] && s=${s#*-->}; printf '%s\n' "${s#"${s%%[![:space:]]*}"}"; }
++fill() { # fill <text> key=value...
++  local t=$1; shift
++  for kv in "$@"; do t=${t//"{{.${kv%%=*}}}"/"${kv#*=}"}; done
++  printf '%s' "$t"
++}
++
++W=$dir/work
++review_path=$W/.bench/out/review.md
++rubric=$(strip "$bench/stencils/loom/loom-rubric-$kind-review.md")
++rubric=$(fill "$rubric" "specs_dir=$bench/specs" "stencils_dir=$bench/stencils" "amendment=none" "webster_record=none" "gate_tiers=none")
++
++if [ "$kind" = discussion ]; then
++  target="- \`$W/_lyx/discussion/decision-record.md\`
++- \`$W/_lyx/discussion/support-log.md\`"
++  fasit="The authority for this round is the rubric supplied in the prompt. The mechanical section contract over the discussion artifact pair is already enforced by this round's own gate over this round's own output, so re-deriving it here is duplicated work."
++else
++  target="- \`$W/_lyx/plan\` (a directory — everything under it)"
++  fasit="- \`$W/_lyx/discussion/decision-record.md\`
++
++The decision record named above is the answer key: the plan's job is to implement the decisions and constraints it settles. With no rework generation, the decision record alone is the answer key. The format authority is $bench/specs/loom/loom-plan-spec.md, and the mechanical checks over that format are already enforced by this round's own gate over this round's own output, so re-deriving them here is duplicated work. This round may never write the approved: key in the plan's overview file."
++fi
++
++focus=""
++if git -C $WEFT cat-file -e $wc:_lyx/reviews/$kind/round-1-focus.md 2>/dev/null; then
++  git -C $WEFT show $wc:_lyx/reviews/$kind/round-1-focus.md > "$W/.bench/instr/focus.md"
++  focus=$(fill "$(strip "$bench/stencils/burler/burler-focus-directive.md")" "focus_path=$W/.bench/instr/focus.md")
++  echo focus=yes >> "$dir/meta.txt"
++else
++  echo focus=no >> "$dir/meta.txt"
++fi
++
++explore=$(strip "$bench/stencils/burler/burler-step-1-explore.md")
++explore=$(fill "$explore" "pattern_directive=" "focus_directive=$focus" "target=$target" "fasit=$fasit" "rubric=$rubric" \
++  "tool_use_rules=Read-only analysis in the explore and review steps: read files, run nothing." "fork_reading=")
++printf '%s\n' "$explore" > "$W/.bench/instr/step-1-explore.md"
++
++review=$(strip "$bench/stencils/burler/burler-step-review.md")
++review=$(fill "$review" "cluster_rules=$(strip "$bench/stencils/burler/burler-cluster-solo.md")" "review_path=$review_path" \
++  "review_format_path=$W/.bench/instr/review-format.md" "prior_rounds=This is the first round — no prior round files exist.")
++printf '%s\n' "$review" > "$W/.bench/instr/step-2-review.md"
++strip "$bench/stencils/burler/burler-review-format.md" > "$W/.bench/instr/review-format.md"
++
++prompt=$(strip "$bench/stencils/burler/burler-template-reviewer.md")
++prompt=$(fill "$prompt" "parent_directive=" "edit_directive=" "review_path=$review_path" \
++  "instruction_1_path=$W/.bench/instr/step-1-explore.md" "instruction_2_path=$W/.bench/instr/step-2-review.md")
++printf '%s\n' "$prompt" > "$dir/prompt.md"
++cat "$dir/meta.txt"
++if grep -l '{{' "$dir/prompt.md" "$W"/.bench/instr/*.md; then
++  echo "leftover placeholder in the files above" >&2
++  exit 1
++fi
+diff --git a/docs/research/codex-astra-solo-bench-2026-10-25/data/harness/dump.sh b/docs/research/codex-astra-solo-bench-2026-10-25/data/harness/dump.sh
+new file mode 100644
+index 000000000..e2a00ec74
+--- /dev/null
++++ b/docs/research/codex-astra-solo-bench-2026-10-25/data/harness/dump.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++# dump.sh <file>: one line per finding from the frontmatter.
++id= sev= cls= loc= 
++while IFS= read -r line; do
++  case "$line" in
++    "  - id: "*) [ -n "$id" ] && echo "$id $sev $cls $loc | $sum"; id=${line#  - id: }; sev=;cls=;loc=;sum=;;
++    "    severity: "*) sev=${line#    severity: };;
++    "    class: "*) cls=${line#    class: };;
++    "    location: "*) loc=${line#    location: };;
++    "    summary: "*) sum=${line#    summary: };;
++    "---") [ -n "$id" ] && [ -n "$sum" ] && { echo "$id $sev $cls $loc | $sum"; id=; }; ;;
++  esac
++done < "$1"
++[ -n "$id" ] && echo "$id $sev $cls $loc | $sum"
+diff --git a/docs/research/codex-astra-solo-bench-2026-10-25/data/harness/run-opus.sh b/docs/research/codex-astra-solo-bench-2026-10-25/data/harness/run-opus.sh
+new file mode 100644
+index 000000000..267d73d53
+--- /dev/null
++++ b/docs/research/codex-astra-solo-bench-2026-10-25/data/harness/run-opus.sh
+@@ -0,0 +1,25 @@
++#!/usr/bin/env bash
++# Run one solo Opus review as an interactive shuttle session: run-opus.sh <input-id> <effort> <rep>
++# The cell layout and path re-pointing match run.sh, so Opus reads the same prompt over the same snapshot.
++set -uo pipefail
++ROOT=/home/knatte/Code/loomyard-LYXHUB/codex-astra-solo-bench
++id=$1 effort=$2 rep=${3:-1}
++in=$ROOT/.scratch/bench/inputs/$id
++cell=$ROOT/.scratch/bench/runs/$id/opus-$effort-r$rep
++mkdir -p "$cell"
++rm -rf "$cell/work"; cp -a "$in/work" "$cell/work"
++prompt=$(<"$in/prompt.md")
++prompt=${prompt//"$in/work"/"$cell/work"}
++printf '%s\n' "$prompt" > "$cell/prompt.md"
++for f in "$cell"/work/.bench/instr/*.md; do
++  c=$(<"$f"); printf '%s\n' "${c//"$in/work"/"$cell/work"}" > "$f"
++done
++start=$(date +%s)
++lyx shuttle run --model opus --effort "$effort" --prompt-file "$cell/prompt.md" \
++  --output-file "$cell/work/.bench/out/review.md" --timeout 50m --role bench --round "$id" \
++  > "$cell/outcome.json" 2> "$cell/stderr.txt"
++rc=$?
++end=$(date +%s)
++echo "rc=$rc wall_seconds=$((end-start))" > "$cell/result.txt"
++cp "$cell/work/.bench/out/review.md" "$cell/review.md" 2>/dev/null || echo "no review file" >> "$cell/result.txt"
++cat "$cell/result.txt" "$cell/outcome.json"
+diff --git a/docs/research/codex-astra-solo-bench-2026-10-25/data/harness/run.sh b/docs/research/codex-astra-solo-bench-2026-10-25/data/harness/run.sh
+new file mode 100644
+index 000000000..d332208ee
+--- /dev/null
++++ b/docs/research/codex-astra-solo-bench-2026-10-25/data/harness/run.sh
+@@ -0,0 +1,27 @@
++#!/usr/bin/env bash
++# Run one Codex review: run.sh <input-id> <model> <effort> <rep>
++set -uo pipefail
++ROOT=/home/knatte/Code/loomyard-LYXHUB/codex-astra-solo-bench
++id=$1 model=$2 effort=$3 rep=${4:-1}
++in=$ROOT/.scratch/bench/inputs/$id
++cell=$ROOT/.scratch/bench/runs/$id/$model-$effort-r$rep
++mkdir -p "$cell"
++# Fresh work copy per run so a run never sees another run's output.
++rm -rf "$cell/work"; cp -a "$in/work" "$cell/work"
++prompt=$(<"$in/prompt.md")
++# Re-point the prompt's paths from the input dir to the per-run copy.
++prompt=${prompt//"$in/work"/"$cell/work"}
++for f in "$cell"/work/.bench/instr/*.md; do
++  c=$(<"$f"); printf '%s\n' "${c//"$in/work"/"$cell/work"}" > "$f"
++done
++start=$(date +%s)
++CODEX_HOME=$ROOT/.scratch/codex-home timeout 3000 codex exec \
++  -m "$model" -c "model_reasoning_effort=\"$effort\"" \
++  -s workspace-write -C "$cell/work" --skip-git-repo-check --json \
++  -o "$cell/last-message.txt" - <<<"$prompt" > "$cell/events.jsonl" 2> "$cell/stderr.txt"
++rc=$?
++end=$(date +%s)
++echo "rc=$rc wall_seconds=$((end-start))" > "$cell/result.txt"
++cp "$cell/work/.bench/out/review.md" "$cell/review.md" 2>/dev/null || echo "no review file" >> "$cell/result.txt"
++rm -rf "$cell/work"
++cat "$cell/result.txt"
+diff --git a/docs/research/codex-astra-solo-bench-2026-10-25/data/harness/setup-codex-home.sh b/docs/research/codex-astra-solo-bench-2026-10-25/data/harness/setup-codex-home.sh
+new file mode 100644
+index 000000000..d89c2be1d
+--- /dev/null
++++ b/docs/research/codex-astra-solo-bench-2026-10-25/data/harness/setup-codex-home.sh
+@@ -0,0 +1,7 @@
++#!/usr/bin/env bash
++# setup-codex-home.sh: create the scratch CODEX_HOME the bench runs use, holding a symlink to the operator's auth.json.
++# The link is writable through to ~/.codex/auth.json, so a token refresh by Codex would change the operator's file.
++# An existing auth.json in the scratch directory, link or file, is replaced.
++ROOT=/home/knatte/Code/loomyard-LYXHUB/codex-astra-solo-bench
++mkdir -p "$ROOT/.scratch/codex-home"
++ln -sfn "$HOME/.codex/auth.json" "$ROOT/.scratch/codex-home/auth.json"
+diff --git a/docs/research/codex-astra-solo-bench-2026-10-25/data/harness/windows.sh b/docs/research/codex-astra-solo-bench-2026-10-25/data/harness/windows.sh
+new file mode 100644
+index 000000000..c66e3a986
+--- /dev/null
++++ b/docs/research/codex-astra-solo-bench-2026-10-25/data/harness/windows.sh
+@@ -0,0 +1,6 @@
++#!/usr/bin/env bash
++# windows.sh <rollout-file>: print the 5-hour and weekly used_percent of the rollout's last token_count event, space-separated.
++# Prints nothing when the rollout has no token_count event, as for a run the plan refused.
++grep '"token_count"' "$1" | tail -1 | grep -o '"primary":{[^}]*}\|"secondary":{[^}]*}' \
++  | grep -o '"used_percent":[0-9.]*' | cut -d: -f2 | tr '\n' ' ' | sed 's/ $//'
++echo
+diff --git a/docs/research/codex-astra-solo-bench-2026-10-25/data/inputs.txt b/docs/research/codex-astra-solo-bench-2026-10-25/data/inputs.txt
+new file mode 100644
+index 000000000..df6433ec9
+--- /dev/null
++++ b/docs/research/codex-astra-solo-bench-2026-10-25/data/inputs.txt
+@@ -0,0 +1,2 @@
++P1 plan weft=c36025a89 start=2026-10-24T07:58:30Z code=ab038b4e87e16c57c9ed4824ba88221ff92c1a76
++P4 plan weft=045707759 start=2026-10-22T07:32:19Z code=750903aef1b7474b06597cdd2d6e0aecfd85d251
+diff --git a/docs/research/codex-astra-solo-bench-2026-10-25/data/match.tsv b/docs/research/codex-astra-solo-bench-2026-10-25/data/match.tsv
+new file mode 100644
+index 000000000..d69a54940
+--- /dev/null
++++ b/docs/research/codex-astra-solo-bench-2026-10-25/data/match.tsv
+@@ -0,0 +1,19 @@
++input	setting	finding	own_severity	label	claude_finding	claude_severity	note
++P1	astra-medium	F1	BLOCKING	shared	F3	MEDIUM	retag cards use Custom though Edit applies; Astra rates it BLOCKING, Claude MEDIUM
++P1	astra-medium	F2	MEDIUM	shared	F4	MEDIUM	missing re-sign arrows on two changed function results; Astra names no caller consequence
++P1	opus-medium	F1	BLOCKING	shared	F1	BLOCKING	PATTERN.md grows in cards 3, 7, 19 and 33 while above its headroom line; Opus also finds card 33 still crossing after card 23
++P1	opus-medium	F2	MEDIUM	shared	F4	MEDIUM	card 4 darnTreeScope result change without re-sign arrow; adds the uncovered caller TestDarnTreeScope_ClassifiesAtEachCall
++P1	opus-medium	F3	MEDIUM	shared	F4	MEDIUM	card 14 guardRunOf result change without re-sign arrow
++P1	opus-medium	F4	LOW	unique-real			card 20 adds TestWireSetting_OpenTerminalForcesOpenWindow while its own rewritten tests already force the open-window answer; holds on the card text, against PATTERN-test-economy; whether the assertions are identical was not run
++P1	opus-medium	F5	LOW	unique-real			WaitDir is called with AnchorPath at gatecli/run.go:346 and cardverify.go:100 and with WorktreePath at run.go:95; card 7 says WaitDir(anchor) for a per-worktree record
++P1	opus-medium	F6	LOW	unique-real			card 7 names no internal/state write for green.json; PATTERN-tolerant-records requires it and the card never mentions internal/state
++P4	astra-medium	F1	BLOCKING	unique-real			card 3 reads BOARD_SKIP_GIT and BOARD_SKIP_PUSH owner writes as recorded without a push; ApplySkipEnv reads ordinary environment variables; whether the decision record treats them as test-only is not stated
++P4	astra-medium	F2	BLOCKING	unique-real			card 3's no-Takeover guard covers slugs only, so a prime claim can replace another machine's prime owner; same defect as Opus F1, which Opus rates MEDIUM
++P4	astra-medium	F3	MEDIUM	shared	F5	MEDIUM	prime claimed before reconcile in card 8 collides with the offline legacy-run resume
++P4	astra-medium	F4	MEDIUM	shared	F9	LOW	adopt card bundles public APIs of several packages; Claude names the same bundling across cards 3, 11, 12 and 16
++P4	opus-medium	F1	MEDIUM	unique-real			same defect as Astra F2
++P4	opus-medium	F2	MEDIUM	unique-real			card 12's past-merge carve-out skips both owner checks and the unreachable-origin halt without stating the bound D6 and D7 give it; the card text states the skip and no bound
++P4	opus-medium	F3	MEDIUM	shared	F6	MEDIUM	card 17's short PATTERN line drops the past-merge exception; Opus adds the consequence for the local-Bolt reads of cards 8, 12 and 14
++P4	opus-medium	F4	LOW	unique-real			card 17 plans a Pattern-Departure trailer for a commit that departs from nothing; loom-plan-spec limits the trailer to a fork that departs from its card
++P4	opus-medium	F5	LOW	unique-real			SeamOptions.ParentOf is func(slug string) in card 6 line 25 while the OwnerReader builder takes func(hubPath, slug string) at line 12, and no adapter is named
++P4	opus-medium	F6	LOW	shared	F9	LOW	bundled public symbols in consumer cards; Opus lists six symbols across cards 3, 11, 12, 15 and 16
+diff --git a/docs/research/codex-astra-solo-bench-2026-10-25/data/reviews/P1/gpt-6-astra-medium-r1.md b/docs/research/codex-astra-solo-bench-2026-10-25/data/reviews/P1/gpt-6-astra-medium-r1.md
+new file mode 100644
+index 000000000..772ec6282
+--- /dev/null
++++ b/docs/research/codex-astra-solo-bench-2026-10-25/data/reviews/P1/gpt-6-astra-medium-r1.md
+@@ -0,0 +1,36 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: BLOCKING
++    class: design
++    location: _lyx/plan/00-overview.md:63
++    summary: The retag cards use Custom despite an applicable Edit representation
++    fix: In cards 24 through 32, change Custom to Edit, retaining the existing package self targets without adding member or file targets beside them, and add an ImpactSummary describing the affected packages and their test compilation boundaries. Rewrite retag-rules to remove the claim that header edits require Custom. Remove the Custom-based rationale from scan-after-last-retag; carry the D5 scan with the last retagging operation when restructuring that boundary through the prescribed card insertion/removal tools.
++  - id: F2
++    severity: MEDIUM
++    class: design
++    location: _lyx/plan/04-verify-gate-site-key.md:19
++    summary: Two planned function result changes omit their re-sign arrows
++    fix: Give internal/loomcli#darnTreeScope in card 4 the arrow head func darnTreeScope(l *lyxcwd.Location) func(gateKey string) (string, bool, error). Give internal/gatecli#guardRunOf in card 14 the arrow head func guardRunOf(plan []tierRun) []tierRun, matching the intent to return every guard run. Keep these as changes to the existing member bullets.
++---
++
++### [BLOCKING] Retagging does not require the Custom escape hatch
++
++**Location:** _lyx/plan/00-overview.md, Shared Decisions retag-rules and scan-after-last-retag; cards 24–32.
++
++**Issue:** The stated reason for Custom is that build constraints have no member to name and `edit-test-file` refuses test file edits. The format explicitly provides a header-edit representation: its `edit-test-file` row says to name every member of the file. It also explicitly limits that check to test-file self glyphs, excluding extensionless package targets such as those these cards already use. Thus this is ordinary editing with an available representation, not work for which none of the seven other types fits. The number of files does not satisfy the rubric's last-resort condition. Retaining the existing package targets while changing the label avoids both test-file self targets and package/member redundancy. This also removes the stated justification for separating card 33 from the last retag card, whereas D5 requires the scan to land with that last operation.
++
++### [MEDIUM] Signature changes are not declared consistently
++
++**Location:** _lyx/plan/04-verify-gate-site-key.md:19 and _lyx/plan/14-guard-step-per-tier.md:24.
++
++**Issue:** Card 4 changes the tree-scope reader into a keyed function and explicitly says `darnTreeScope` takes the key. The existing declaration at `internal/loomcli/darnwiring.go:76` returns `func() (string, bool, error)`, so the planned keyed closure changes its result type. Card 14 says `guardRunOf` returns every guard run, whereas `internal/gatecli/run.go:202` returns one `*tierRun`. Both member bullets omit the required re-sign arrow. These are ordinary functions, not the exempt interface methods or struct fields. This repeated signature-enumeration gap is reported together.
++
++## Rejected
++
++- Cards 24–32 do not prescribe raw test execution. Card 24's Verify inspects resolved configuration; the remaining retag cards rely on the gates. The command's occurrence of `go test` is an awk match, not an executed test command.
++- Cards 1–6 introduce the configuration keys, then the flag, then its rendering and per-row wiring. Card 1 explicitly retains the old rendering until card 3. Retagging follows cards 11, 12, 14, 15 and 16.
++- Card 23's shortened PATTERN lines are licensed by the Added after Discussion entries. Card 33's board follow-up is licensed by D13 and writes another entry, not this task's body or scope. Card 24 expressly checks for retained covers entries.
++- The new one-tag scan enforces a different property from the existing tier-purity and LLM reachability guards; their shared repository traversal alone does not make it redundant.
++- The focused flag, carry, empty-tier and entry-gate changes state their bounds and name reaching coverage. No research halt or own-board-entry edit was found in their intents.
+diff --git a/docs/research/codex-astra-solo-bench-2026-10-25/data/reviews/P1/opus-medium-r1.md b/docs/research/codex-astra-solo-bench-2026-10-25/data/reviews/P1/opus-medium-r1.md
+new file mode 100644
+index 000000000..952e39f9c
+--- /dev/null
++++ b/docs/research/codex-astra-solo-bench-2026-10-25/data/reviews/P1/opus-medium-r1.md
+@@ -0,0 +1,157 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: BLOCKING
++    class: design
++    location: _lyx/plan/23-pattern-shorten.md
++    summary: Cards 3, 7, 19 and 33 each grow PATTERN.md while it sits above its headroom line, so the card gate's lyx loom lint-pattern step fails on each; card 23's trim lands too late for 3, 7 and 19, and card 33 still crosses the line after it.
++    fix: Give each PATTERN-growing card enough of card 23's nineteen shortenings to cover its own growth, so no card grows PATTERN.md, then remove card 23 with lyx loom remove-card 23. Move each fenced line verbatim from card 23 into the card named here (each already lists PATTERN.md under Edit). Card 3 (grows +69 bytes) takes PATTERN-shed-producer-seam, PATTERN-pane-binary-resolution, PATTERN-parent-lock, PATTERN-hub-store-gc and PATTERN-recipe-owns-failures (-83). Card 7 (+122) takes PATTERN-command-row, PATTERN-origin-reconcile, PATTERN-fabric-write-containment, PATTERN-role-skills-typed, PATTERN-lyxdirs-single-declarer and PATTERN-owner-machine (-123). Card 19 (+133) takes PATTERN-binary-change-reconcile, PATTERN-shell-guard-table, PATTERN-never-force-add and PATTERN-shed-recipe-registry (-138). Card 33 (+137) takes PATTERN-trimpath-safe-root, PATTERN-template-overlay, PATTERN-agent-filed-issues and PATTERN-treadle-runner-seam (-138). Each card's Intent then says its gate's lint-pattern step passes because the card's shortenings cover its added bytes. The constraining check is pattern-headroom, whose whole-plan projection this fix leaves unchanged.
++  - id: F2
++    severity: MEDIUM
++    class: scope
++    location: _lyx/plan/04-verify-gate-site-key.md
++    summary: Card 4 changes darnTreeScope's result to a reader keyed by gate key (Env.VerifyTreeScope becomes func(gateKey string)) but lists it without the re-sign arrow and omits its caller TestDarnTreeScope_ClassifiesAtEachCall, which calls darnTreeScope(...)() and stops compiling until card 5 lists it.
++    fix: "On card 4, write the Edit bullet as `internal/loomcli#darnTreeScope` -> `func darnTreeScope(l *lyxcwd.Location) func(gateKey string) (string, bool, error)`, add `internal/loomcli#TestDarnTreeScope_ClassifiesAtEachCall` under Edit, and state in Intent that the test passes a key such as code-burler-fix to the returned reader."
++  - id: F3
++    severity: MEDIUM
++    class: consistency
++    location: _lyx/plan/14-guard-step-per-tier.md
++    summary: Card 14's Intent says guardRunOf returns every guard run instead of the one *tierRun it returns today, but the Edit bullet carries no re-sign arrow.
++    fix: "On card 14, replace the bullet `internal/gatecli#guardRunOf` with `internal/gatecli#guardRunOf` -> `func guardRunOf(plan []tierRun) []tierRun`; its only caller, runTest, is already on the card."
++  - id: F4
++    severity: LOW
++    class: scope
++    location: _lyx/plan/20-batten-switch-entry-gate.md
++    summary: Card 20 creates a new hubforge integration test, TestWireSetting_OpenTerminalForcesOpenWindow, for the forced Open-Window answer. The same card already makes stepCommandRows_FollowTheTasksLocalSwitch (hubforge, open_window false in the task's local layer, forced through --open-terminal) and TestWire_MarkerAndReportSeamsRefuseAnAbsentTaskWorktree (the forced Env.Setting answer) cover it, against PATTERN-test-economy.
++    fix: "On card 20, drop the Create bullet `plan:internal/battencli#TestWireSetting_OpenTerminalForcesOpenWindow` and the Intent sentence that describes it. Instead, state that stepCommandRows_FollowTheTasksLocalSwitch, already under Edit, also steps Seed-IDE under --open-terminal with seed_ide off and asserts no Seed-IDE marker is written, so the force touches only Open-Window's setting."
++  - id: F5
++    severity: LOW
++    class: consistency
++    location: _lyx/plan/07-green-record.md
++    summary: Card 7 places green.json at gateslot.WaitDir(anchor), but gatecli calls WaitDir with both location.AnchorPath() (wait records) and location.WorktreePath() (run log outside a hub), and D4 asks for a per-worktree record, so the card leaves the record's home ambiguous.
++    fix: On card 7, replace gateslot.WaitDir(anchor) with gateslot.WaitDir(location.WorktreePath()), the per-worktree gate directory run.go already uses for the run log outside a hub, and say the record and its lock file live there in a hub too.
++  - id: F6
++    severity: LOW
++    class: consistency
++    location: _lyx/plan/07-green-record.md
++    summary: Card 7 says how green.json is read (tolerantly) and locked (internal/lock), but not that it is rewritten through internal/state, which PATTERN-tolerant-records requires for a Go-written JSON record and which the decision record's Constraints apply to the green record.
++    fix: On card 7, state in Intent that recordGreen rewrites green.json through internal/state's locked JSON write, keeping keys it does not know, with the lock beside the record, and drop the separate internal/lock wording, or keep it only where state's write takes the lock path.
++---
++
++### [BLOCKING] PATTERN headroom lint fails the card gate of four cards
++
++**Location:** `_lyx/plan/23-pattern-shorten.md`, with `_lyx/plan/03-gate-call-renders-key.md`, `_lyx/plan/07-green-record.md`, `_lyx/plan/19-recipe-entry-gate.md` and `_lyx/plan/33-tier-tags-scan.md`
++
++**Issue:**
++Every card gate's last step is `lyx loom lint-pattern` (`internal/websterengine/cardgate.go:22`).
++The implementer runs it before committing (`contracts/stencils/webster/webster-body-implementer.md`, step 3 before step 4).
++Without `--base` it compares the working tree's `PATTERN.md` with HEAD's (`internal/loomcli/lintpattern.go`).
++`pattern.Headroom` (`internal/pattern/headroom.go:12`) reports a finding whenever the head is longer than the base and also longer than `HeadroomBytes`, which is 16384 × 95 / 100 = 15564 bytes.
++`PATTERN.md` is 15651 bytes today, so it is already above the line, as the decision record says.
++I measured each card's growth against the current lines:
++
++- Card 3 rewrites `PATTERN-test-tiers` from 133 to 202 bytes: +69.
++- Card 7 adds `PATTERN-gate-carry`: +122.
++- Card 19 adds `PATTERN-row-entry-gate`: +133.
++- Card 33 adds `PATTERN-tier-tags`: +137.
++- Card 23's nineteen shortenings save 482 bytes.
++
++Cards 3, 7 and 19 each grow an overview that is above the line, so each card's own gate fails.
++Card 23 then brings the file to 15493 bytes, and card 33 grows it to 15630, again above 15564, so card 33 fails too.
++Moving card 23 first does not fix it either: the final size is 15630 bytes, above the line, so whichever card adds the last bytes still crosses it.
++The plan-level `pattern-headroom` check projects the whole plan against the base (15630 < 15651), so it passes and cannot see the per-card failures.
++The only order that works has no card grow the file, which means pairing each added byte with shortening bytes on the same card.
++That is possible because 482 ≥ 461; the `fix` gives one such split.
++I did not overlay the fix with `lyx loom validate-plan --overlay`, because this round's tool-use rules allow reading only (see Notes).
++The fix moves fenced lines between cards that already list `PATTERN.md` under `**Edit:**`, and removes card 23 through `lyx loom remove-card`, which the rubric exempts from the overlay.
++
++### [MEDIUM] Card 4 re-signs darnTreeScope with no arrow and misses its test caller
++
++**Location:** `_lyx/plan/04-verify-gate-site-key.md`
++
++**Issue:**
++Card 4 changes `Env.VerifyTreeScope` to `func(gateKey string) (string, bool, error)`, and `loomCLI.wireDarn` sets it to `darnTreeScope(location)` (`internal/loomcli/darnwiring.go:223`).
++The card says `darnTreeScope` "takes the key and, until card 6, ignores it".
++That changes its result type from `func() (string, bool, error)` (`internal/loomcli/darnwiring.go:76`), but the bullet carries no re-sign arrow.
++`TestDarnTreeScope_ClassifiesAtEachCall` (`internal/loomcli/darntreescope_integration_test.go:28`, `//go:build integration`) calls the reader with no argument at lines 55 and 90.
++Card 4 does not list it; cards 5 and 6 do.
++So the test package stops compiling under the `integration` tag from card 4 until card 5.
++Because the arrow is missing, `caller-uncovered` cannot see this.
++
++### [MEDIUM] Card 14 re-signs guardRunOf with no arrow
++
++**Location:** `_lyx/plan/14-guard-step-per-tier.md`
++
++**Issue:**
++`guardRunOf` is `func guardRunOf(plan []tierRun) *tierRun` today (`internal/gatecli/run.go:202`).
++Card 14's Intent says it "returns every guard run" and that `runTest` runs them in tier order.
++That is a result change, but the `**Edit:**` bullet has no re-sign arrow, while the card does give `runGuardStep`, `FindGuardTests` and the other re-signed members their arrows.
++
++### [LOW] Card 20's new integration test repeats tests the same card already rewrites
++
++**Location:** `_lyx/plan/20-batten-switch-entry-gate.md`
++
++**Issue:**
++After card 20, `stepCommandRows_FollowTheTasksLocalSwitch` (`internal/battencli/lifecycle_integration_test.go:1254`) forces Open-Window through `--open-terminal`, in a hubforge fixture whose task-local layer sets `open_window: false`.
++That is the behavior the new `TestWireSetting_OpenTerminalForcesOpenWindow` pins.
++`TestWire_MarkerAndReportSeamsRefuseAnAbsentTaskWorktree` (`internal/battencli/wire_seams_test.go:229`) asserts the forced `Env.Setting` answer with and without `--open-terminal` and needs no hub.
++The only new assertion is that `seed_ide` is unchanged, and an existing test can carry that (`PATTERN-test-economy`).
++A further hubforge test also runs against `PATTERN-hubforge-fixtures`, since a fake already tests the seam.
++
++### [LOW] Card 7's green record path is ambiguous
++
++**Location:** `_lyx/plan/07-green-record.md`
++
++**Issue:**
++The card says the record lives at `gateslot.WaitDir(anchor)`.
++In `internal/gatecli/run.go`, `WaitDir` takes `location.AnchorPath()` for wait records (line 346) and `location.WorktreePath()` for the run log outside a hub (line 95).
++D4 asks for a per-worktree record under the worktree's never-tracked `.lyx` gate directory.
++The card should name which root it means.
++
++### [LOW] Card 7 does not route the green record's rewrite through internal/state
++
++**Location:** `_lyx/plan/07-green-record.md`
++
++**Issue:**
++The Constraints apply `PATTERN-tolerant-records` to the green record.
++That entry says a Go-written JSON record is rewritten via `internal/state`.
++The card names a tolerant read and an `internal/lock` lock but no `internal/state` write, which leaves room for a hand-rolled write that drops unknown keys.
++
++## Focus verdicts
++
++- Cards 24–32, `Custom` over package self glyphs: justified, not a defect.
++  A header-only retag has no member to name, and `edit-test-file` refuses a `_test.go` file self glyph under `Edit` and `Extends`, so no combination of the other seven labels fits.
++  The only Verify line among them, card 24's, runs `lyx config gate --resolved` through awk.
++  It is no raw test command.
++  It reads block-style tiers, which is how `lyx config gate --set` writes a tier (`internal/yamlengine/set.go`, `openMapEntryNode` sets `entry.Style = 0`).
++  It fails on an empty read, so it cannot pass vacuously.
++  Cards 24–32 together cover every directory holding a `_test.go` file outside testdata; I diffed the two lists and found no gap.
++- Card order across 1–6 and 24–33: no card uses a symbol, flag or key a later card creates.
++  Cards 11, 12, 14, 15 and 16 all come before card 24, as D5 requires.
++  The interim keys of the `interim-keys` decision keep every site on a key that exists.
++  The one order defect is the PATTERN headroom one in F1.
++- Decision-record fidelity: every Decision D1–D14, every `Added after Discussion` shortening (cards 3 and 23), every Constraint and every PATTERN change is carried by some card.
++  Card 23's scope is licensed by the twenty `Added after Discussion` entries.
++  Card 33's D13 board follow-up writes another entry, as D13 asks.
++  Card 24's `covers` check is D13's own requirement.
++  No card adds scope the record does not license, and none edits this task's own board entry.
++- New refusals, skips and bypasses: each states its bound.
++  These are card 2's `--gate` combinations, card 7's carry with its fail-open on any record error, card 15's empty-tier failure with its filtered-run exemption, and card 17's goto bypass.
++  Each prescribed refusal names an input and a reaching test.
++  Card 14's guard-group refusal of a command lacking `{targets}` or `{args}` already exists today (`internal/gatecli/doc.go:56`).
++- Card 5's `Deps.BaseCommand` set to the `code-burler-fix` call only keeps that site's own verified-tree entry from being pruned (`internal/verifytree/verify.go:65`).
++  It keeps D3's own lint base and is not a defect.
++- Card 17 carries a pending caller label past skips to the next verdict, which matches D8 and the `pending_by` contract in `internal/shedengine/doc.go`.
++- Test economy: apart from F4, I found no test duplicating an existing one and no per-symbol test.
++- Member glyphs and re-sign arrows on the source `Edit` cards: complete apart from F2 and F3.
++- No card leaves a design fact to be found out at run time.
++  Card 5's "no production code reads `LandingFailure.Kind`" and the `planparser-loads-nothing` decision are recorded findings, not research steps.
++
++## Notes
++
++- I proposed no fix as an overlay and did not run `lyx loom validate-plan --overlay`.
++  This round's tool-use rules say "read files, run nothing", and I kept to read-only `grep`, `sed -n`, `awk`, `find` and `comm` reads of the plan, the decision record and the source.
++  None of F2, F3, F5 or F6 adds, drops, moves or pairs a target in a way the `redundant-*` checks govern.
++  F2 adds one test member glyph, and F4 drops one `Create` handle no other card references.
++- `_lyx/plan/lens-review.md` is neither the overview nor a card the Card Index names, so it is outside this rubric's subject, and I did not read it.
+diff --git a/docs/research/codex-astra-solo-bench-2026-10-25/data/reviews/P4/gpt-6-astra-medium-r1.md b/docs/research/codex-astra-solo-bench-2026-10-25/data/reviews/P4/gpt-6-astra-medium-r1.md
+new file mode 100644
+index 000000000..a01e0668e
+--- /dev/null
++++ b/docs/research/codex-astra-solo-bench-2026-10-25/data/reviews/P4/gpt-6-astra-medium-r1.md
+@@ -0,0 +1,63 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: BLOCKING
++    class: consistency
++    location: _lyx/plan/03-board-owner-writes.md:52
++    summary: Skip environment variables turn an unpublished owner write into a successful claim or adoption
++    fix: In card 3's Intent, require SetOwners to complete the owner pull and push regardless of ordinary board-write skip settings, and report Recorded only after that succeeds. Replace the planned TestSetOwners skip-success row with rows proving these settings cannot return an unpublished owner as recorded. In card 8's existing claim-test instructions, use the fake Set seam for the isolated claim test instead of requiring a successful real owner write under BOARD_SKIP_GIT.
++  - id: F2
++    severity: BLOCKING
++    class: scope
++    location: _lyx/plan/03-board-owner-writes.md:47
++    summary: The non-takeover guard protects task slugs but leaves the prime claim able to replace another owner
++    fix: Extend card 3's Intent so a non-Takeover prime claim checks prime_owner inside the pull-first locked write and preserves any existing other owner, reporting it under Lost for prime. Only Takeover may replace an existing prime owner. Extend the already-planned TestSetOwners table with a stale local unowned prime whose pull discovers another machine's claim, asserting that claim remains and no takeover is committed.
++  - id: F3
++    severity: MEDIUM
++    class: consistency
++    location: _lyx/plan/08-batten-owner-check.md:50
++    summary: Claiming an unowned prime before reconcile prevents the promised offline legacy-run resume
++    fix: In card 8's Intent, perform the resume reconcile before attempting a first-act prime claim. On an unreachable report, apply the stated local-owner warning/refusal rule without any prime or task owner write; on a reachable report, perform the required claims and re-reads before driving the run. Extend the existing TestRunCmd_ResumeDispositions instructions with the combined case of no prime owner, an unowned run-held task, and unreachable origin, asserting warning and resume with no setter call.
++  - id: F4
++    severity: MEDIUM
++    class: design
++    location: _lyx/plan/16-adopt-module.md:1
++    summary: The adopt card combines independently reviewable public APIs from multiple packages
++    fix: Use lyx loom insert-card to put separate prerequisite cards before adopt for fabricengine.DropLocal with its result type, destruction registration and TestDropLocal, for hubforge.CloneSecond, and for battencli.ResumeInWindow. Keep their inseparable supporting implementation and coverage with each surface, and retain the adopt CLI, private orchestration helpers and adoption tests together in the adopt card. Update numbering and references through the insertion command.
++---
++
++### [BLOCKING] Owner publication can be bypassed by ordinary board skip settings
++
++**Location:** _lyx/plan/03-board-owner-writes.md:52
++
++**Issue:** Card 3 explicitly treats locally written owners as recorded under both BOARD_SKIP_GIT and BOARD_SKIP_PUSH, despite performing no push. Cards 8 and 16 consume that successful setter result to create or resume runs. Thus, for example, an adoption with BOARD_SKIP_PUSH records this machine locally and resumes while origin still names the old owner. D3 requires an owner write's push before starting or resuming, and D5 step 3 requires publication before any adoption resume. Neither licenses this bypass. The existing ApplySkipEnv implementation reads ordinary process environment variables (internal/boardengine/skipenv.go), and Bolt.PushRecorded deliberately returns without pushing under either skip option (internal/fabricengine/bolt.go); these are not intrinsically test-only settings. The new owner setter needs to preserve the stronger decision-record contract.
++
++### [BLOCKING] A first-act prime claim can silently take over an existing prime
++
++**Location:** _lyx/plan/03-board-owner-writes.md:47
++
++**Issue:** The setter unconditionally sets the prime owner when Prime is requested; its next sentence restricts only a slug owned elsewhere when Takeover is false. Cards 8 and 13 decide whether to claim from their local board before the setter's pull. A machine with stale, unowned local prime data can therefore request a first-act claim, pull a previously published claim by another machine, and overwrite it in a fresh commit. This does not require simultaneous drivers. Because the new commit is based on the freshly pulled owner, the origin-wins replay rule does not undo that overwrite. D2's first-claim behavior and D5's explicit prime adoption require preserving that owner unless adoption requested takeover.
++
++### [MEDIUM] The offline resume exception is unreachable for an unowned legacy hub
++
++**Location:** _lyx/plan/08-batten-owner-check.md:50
++
++**Issue:** The card says reconcileResume claims the prime when none is recorded, but the claim uses the setter that refuses an unreachable origin. A legacy hub with neither a prime owner nor a task owner therefore fails at this initial claim before reaching the card's later unreachable-reconcile branch, which promises Warn and resume with no owner write for a run-held unowned task. D3 explicitly preserves that behavior. The planned separate tests for first-act prime claiming and offline unowned-task resume do not settle their intersection.
++
++### [MEDIUM] Adoption bundles separate public surfaces into one commit
++
++**Location:** _lyx/plan/16-adopt-module.md:1
++
++**Issue:** Besides the new adopt CLI, this card creates fabricengine.DropLocal and its public result, hubforge.CloneSecond, and battencli.ResumeInWindow. DropLocal has its own destructive-operation contract, registrations and integration coverage; CloneSecond is shared fixture infrastructure; ResumeInWindow exposes batten's existing resume behavior. These are separate package surfaces, not private helpers inseparable from adopt's implementation. The rubric explicitly requires a public or cross-package surface to have its own card even when only one card consumes it. Their current placement makes all of those surfaces and the complete adoption workflow one review and rollback unit.
++
++## Rejected
++
++- Card-order concern: the owner records and effective reader are introduced in card 2, OwnerRequest and ParentSlug in card 3, fabric's reader type in card 5, its production builder in card 6, the owner label in card 7, the shed refusal kind in card 9, InnerRun's owner types in card 10, and PauseOwnedElsewhere in card 11 before card 13 consumes it. InstallOwnerPause is introduced and used on card 13 itself. Later wiring described by earlier cards does not itself require those earlier commits to reference a later symbol.
++- The Takeover escape hatch is explicitly limited to adoption; the prime omission is F2, rather than a claim that the flag has no stated purpose or bound. Cards 9, 10 and 12 describe absent seams and production wiring, and cards 10–12 describe the Finalize carve-out's status and parent-work checks. Card 13 explicitly warns and continues on an unwired or failed pause, consistent with D4's non-refusing orch start.
++- Refusal reachability: cards 8, 9, 10, 12 and 13 name owner verdicts, errors, pause states or spawn errors and tests that drive the corresponding paths. No demonstrated upstream rejection invalidates those inputs; F3 identifies the concrete ordering conflict for the combined offline legacy-hub input. Raw read errors are not separately flagged.
++- Cards 15, 16 and 17 are licensed by D8, D5 and D9 respectively. The per-machine window rule includes same-machine detach intentionally. The second-clone fixture supports the required adoption scenario. Card 17's short PATTERN entry, verbatim background text and compensating wording cuts are expressly authorized by the Added after Discussion entry; the trailer does not by itself introduce additional scope.
++- Test economy: card 7 extends TestCoverageOf and TestPause rather than adding per-symbol tests; card 14 extends TestStatus for the report seam. The owner behavior planned for InnerRun and the adopt workflow is new, so overlap in existing harnesses alone is not evidence of redundant behavior coverage. No static-prose assertion is prescribed.
++- Re-sign/member concern: the inspected cards predominantly name members; card 5 expressly re-signs classifyEntries. The changes to existing receiver structs and dependency fields do not require re-sign arrows, and the reviewed Intents do not prescribe another demonstrated parameter/result/receiver change to an existing method. Mechanical target checks were not re-derived.
++
++Review was read-only apart from this file. No build, tests, quarry commands, or plan validator were run under the round's read-files-only evidence rule. The proposed nonstructural fixes change Intent and already-planned test cases, not target lists or verify commands; F4 uses the explicitly exempt card-insertion route.
+diff --git a/docs/research/codex-astra-solo-bench-2026-10-25/data/reviews/P4/opus-medium-r1.md b/docs/research/codex-astra-solo-bench-2026-10-25/data/reviews/P4/opus-medium-r1.md
+new file mode 100644
+index 000000000..14caa69a7
+--- /dev/null
++++ b/docs/research/codex-astra-solo-bench-2026-10-25/data/reviews/P4/opus-medium-r1.md
+@@ -0,0 +1,124 @@
++---
++verdict: APPROVED
++findings:
++  - id: F1
++    severity: MEDIUM
++    class: design
++    location: _lyx/plan/03-board-owner-writes.md:48
++    summary: The Takeover guard covers named slugs only; a Prime request without Takeover overwrites a prime owner another machine recorded between the caller's read and SetOwners' pull, so batten's, orch's and adopt's first-act prime claim can take the prime with no lyx adopt, against D2.
++    fix: In card 3's Intent, after the sentence opening "Without `Takeover` a slug whose effective owner", add that without `Takeover` a `Prime` request whose prime owner, read after the pull, is already recorded as another machine writes no prime owner and reports `prime` in `Lost` with that owner, so a first-act claim never replaces a recorded prime owner. Add a `TestSetOwners` row for it, a second clone that pushed a prime owner after this clone's last read, then a `Prime` write here without `Takeover` that leaves origin's prime owner and reports it in `Lost`. Card 8's `claimPrimeOwner`, card 13's `claimPrime` and card 16's step 3 already read `Lost`, so they need no change.
++  - id: F2
++    severity: MEDIUM
++    class: design
++    location: _lyx/plan/12-finalize-owner-checks.md:42
++    summary: Card 12's past-merge carve-out skips both owner checks and the unreachable-origin halt, but its Intent never states the bound D6 and D7 give it (only the board-done mark, the parent push and, after a pushed landing, the PR close get through, and a re-entry through InnerRun's Spawn seam meets D3's refusal instead).
++    fix: In card 12's Intent, after "skipping both owner checks and the unreachable halt.", add a Bound sentence. Past the parent-side merge the skip lets through only Finalize's board-done mark, its parent push and, after a pushed landing, its close of the pull request, nothing that merges. It is reached only by the shed driver's in-process re-step, because a re-entry through InnerRun's `Spawn` seam meets card 9's owner refusal first and is paused by card 10 with no past-merge exemption. A `ParentHoldsTaskWork` read error never takes the skip.
++  - id: F3
++    severity: MEDIUM
++    class: consistency
++    location: _lyx/plan/17-orch-role-and-pattern.md:18
++    summary: Card 17's short PATTERN.md line for PATTERN-owner-machine drops the declared exception for a Finalize already past its parent-side merge, and says the owner is judged against origin in ReconcileOrigin with no qualifier. The overview every spawned agent reads as binding therefore forbids the carve-out cards 10 and 12 build, and implies that the local-Bolt reads of cards 8, 12 and 14 break the rule.
++    fix: Replace the entry line in card 17's fenced block with a short form that keeps the exception and limits the ReconcileOrigin clause to the gating verdict, staying under pattern.MaxEntryLineChars. For example, Starting, resuming or landing a run (bar a Finalize past its parent-side merge), or acting on it after a wake, only where no other machine owns its entry; owner set only by `boardengine`'s owner setter; the verdict gating a resume, wake or landing judged in `ReconcileOrigin`; machine name only from `internal/machinename`. — [background](pattern/PATTERN-owner-machine.md). Count any added bytes into the cuts card 17 already plans.
++  - id: F4
++    severity: LOW
++    class: consistency
++    location: _lyx/plan/17-orch-role-and-pattern.md:23
++    summary: Card 17 plans a Pattern-Departure trailer for its own planned short form, but loom-plan-spec's trailer is only for a fork that departs from its card because a PATTERN entry forbids the card's way. Card 17 departs from nothing, so the trailer would put a false departure into the batch digest that Webster-Review reads. The overview's matching sentence also sits indented under the unrelated weft-push-retry bullet.
++    fix: Delete the sentence at 17-orch-role-and-pattern.md:23, which opens "The commit carries a `Pattern-Departure:` trailer", and the continuation line at 00-overview.md:42, which opens "Card 17's commit carries a `Pattern-Departure:` trailer". The reason for the short form already stands in the Shared Decisions bullet at 00-overview.md:39 and in the decision record's Added-after-Discussion entry.
++  - id: F5
++    severity: LOW
++    class: consistency
++    location: _lyx/plan/06-owner-seam-wiring.md:25
++    summary: "SeamOptions.ParentOf is func(slug string) (string, error), but card 6's OwnerReader builder takes parentOf as func(hubPath, slug string) (string, error), and Teardown.OriginSeams is said to pass the options' ParentOf straight to it, so the two types disagree and no adapter is named."
++    fix: "In card 6's Intent, either declare `SeamOptions.ParentOf` as `func(hubPath, slug string) (string, error)` with `HubSeamOptions` filling it as `fabricengine.ParentSlug` over the location `hubPath` resolves to, or keep `func(slug string)` and say `Teardown.OriginSeams` wraps it as `func(_, slug string) (string, error) { return o.ParentOf(slug) }` when it builds `OwnerOf`. Then align the TestTeardown_OriginSeams fake ParentOf rows with the chosen type."
++  - id: F6
++    severity: LOW
++    class: design
++    location: _lyx/plan/16-adopt-module.md:18
++    summary: "Several new exported symbols, each public surface of another package and reviewable on its own, are bundled into a consumer card instead of getting their own card: fabricengine.ParentSlug (card 3, used by cards 6, 8, 9, 12, 14 and 16), Fabric.LocalOnlyCommits (card 12), tendercli.PauseOwnedElsewhere (card 11, also used by card 13), reedengine.Engine.ClientAttached (card 15), and fabricengine.DropLocal with DropLocalResult, a new destruction primitive behind PATTERN-fabric-destruction-chokepoint (card 16), plus battencli.ResumeInWindow (card 16)."
++    fix: "With `lyx loom insert-card`, give each of these its own card ahead of its first consumer, carrying its Create glyph, its test (TestParentSlug, TestLocalOnlyCommits, TestClientAttached, TestDropLocal) and the Intent sentences that describe it. Put ParentSlug before card 3, PauseOwnedElsewhere before card 11, LocalOnlyCommits before card 12, ClientAttached before card 15, and DropLocal with its destroy.go header and destruction-guard table edits, plus ResumeInWindow, before card 16. Then remove those glyphs and sentences from the consumer cards and leave a Uses line in their place. Put the destroy.go and cmd/lyx destructive-guard edits on the DropLocal card."
++---
++
++# Review: machine-handover plan, round 1
++
++I read every card and the overview, and held them against D1 to D9, the Added-after-Discussion entry and the Constraints.
++On fidelity, every Decision step has a card.
++That covers D1 on card 1, D2 on cards 2, 3, 8, 13 and 16, D3 on cards 8 and 9, D4 on cards 5, 6, 7 and 13, D5 on card 16, D6 on cards 10, 11 and 12, D7 on card 12, D8 on card 15, D9 on cards 4, 8, 14 and 17, and the PATTERN entry on card 17.
++None of cards 15, 16 or 17 adds scope the record does not license.
++Card 5's guard on `retryWeftPush` is new, but the record already says the old machine's pushes are refused and recorded as failed pushes, which only holds with that guard, so I count it as licensed.
++None of these findings is BLOCKING.
++
++### [MEDIUM] Takeover guard leaves the prime path open
++
++**Location:** `_lyx/plan/03-board-owner-writes.md:48`
++
++**Issue:** `SetOwners` pulls, then writes "the prime owner when `Prime` is set".
++The guard against moving another machine's owner without `Takeover` is worded only for slugs.
++`claimPrimeOwner` (card 8), `claimPrime` (card 13) and adopt's step 3 (card 16) each decide to claim from a local read made before `SetOwners`' own pull.
++If another machine's prime claim reaches origin in that window, the pull brings it in, the commit overwrites it, and the push fast-forwards, so no replay reports anything `Lost`.
++That breaks D2: "a machine whose write the replay reports lost reads the other's claim".
++It also means the overview's Shared Decision, "An owner write never takes an entry another machine owns unless `lyx adopt` asks for it", does not hold for the prime.
++
++### [MEDIUM] Finalize past-merge skip has no stated bound
++
++**Location:** `_lyx/plan/12-finalize-owner-checks.md:42`
++
++**Issue:** The focus asked whether this carve-out states what it lets through and what bounds it.
++Card 12 states what it skips: both owner checks and the unreachable halt.
++It does not state what it lets through, or that it is limited to the in-process re-step.
++D6 lists exactly what gets through ("Finalize's board-done mark, its parent push and, after a pushed landing, its close of the pull request, and nothing else").
++D7's Bound names the `Spawn` re-entry as the case the carve-out does not cover.
++Card 10's Bound covers the InnerRun side, but the guard bypass is introduced in card 12, so its bound belongs there.
++
++### [MEDIUM] Short PATTERN line drops the Finalize exception
++
++**Location:** `_lyx/plan/17-orch-role-and-pattern.md:18`
++
++**Issue:** The Added-after-Discussion entry allows a short form, but a short form must not state a different rule.
++The declared text includes "bar the rest of a Finalize already past its parent-side merge", and the short line leaves it out.
++The short line also says the owner is "judged against origin in `ReconcileOrigin`" for every case, while the declared text names local-Bolt reads for a start, the post-push re-reads, Finalize's parent-owner read and a resume with origin unreachable.
++`PATTERN.md`'s overview is inlined into every spawned agent's prompt, and the implementer directive says its constraints win over the card.
++So a Webster fork building card 10's `keepsLockForFinalize` or card 12's past-merge skip would read its own card as a violation.
++The planned line is 358 characters, so a reword like the one in the fix is needed rather than an append.
++
++### [LOW] Pattern-Departure trailer misused for a planned change
++
++**Location:** `_lyx/plan/17-orch-role-and-pattern.md:23`
++
++**Issue:** `loom-plan-spec.md`'s `## Pattern-Departure trailer` section says the trailer is for "A Webster fork, the recovery strand or the verify-fix fork that departs from its card because a PATTERN entry forbids the card's way".
++Card 17 builds exactly what it prescribes, and the decision record licenses the short form, so nothing departs.
++`record-batch` would still read the trailer into the digest's `departures`, which Webster-Review then reads as a real departure.
++The overview's matching sentence (`00-overview.md:42`) is also indented as a continuation of the weft-push-retry bullet, which it has nothing to do with.
++
++### [LOW] Two types for ParentOf in card 6
++
++**Location:** `_lyx/plan/06-owner-seam-wiring.md:25`
++
++**Issue:** The `OwnerReader` builder's signature takes `parentOf func(hubPath, slug string)`, while `SeamOptions.ParentOf` is `func(slug string)`.
++Line 26 says `Teardown.OriginSeams` fills `OwnerOf` "with `OwnerReader` over the options' `Machine` and `ParentOf`", which does not type-check as written.
++
++### [LOW] Public helpers bundled into consumer cards
++
++**Location:** `_lyx/plan/16-adopt-module.md:18`
++
++**Issue:** The rubric's granularity rule says a symbol that is part of a package's public surface, or reused across packages, gets its own card.
++The symbols listed in the finding are each exported from a package other than the card's subject, and each has its own test.
++`DropLocal` matters most here: it is a new destructive primitive in `destroy.go` behind the destruction chokepoint, and it sits inside the 77-line adopt card.
++I raise this once as a method finding rather than once per symbol.
++Exporting `ParentHoldsTaskWork` on card 5 is left out: it is a one-line export of an existing function, in the same package as that card's own work.
++
++## Rejected
++
++- Card order across cards 2 to 6 and 8 to 13: every planned symbol is created before its first user. The owner reader comes from cards 5 and 6, `OwnerRequest` and `SetOwners` from card 3, `OwnerCaller` from card 7, `StartOwnedElsewhereKind` from card 9, `ChildOwnedElsewhereError` from card 10, `PauseOwnedElsewhere` from card 11 (used by card 13), `ParentHoldsTaskWork` from card 5 (used by cards 11 and 12), and `OwnerHaltPrefix` from card 12 (used by card 16). Not a defect.
++- `OwnerRequest.Takeover` on named slugs: card 3 states that without it a slug owned elsewhere is skipped and reported `Lost`, and that only adopt sets it. That is a stated bound. The prime gap is F1.
++- The nil-seam-is-absent rules on cards 9, 12 and 13: each card states what nil does. `newLoomCLI` (`internal/loomcli/cli.go:179`) is the only production constructor of `loomCLI`, `loomcli.landingDeps` (`internal/loomcli/landingdeps.go:70`) is the only production builder of `landingshed.Deps` and is pinned by `TestLandingDeps_EveryFieldPopulated`, and orch's nil `pauseOwned` is reported under warnings. Not a defect.
++- Reachability: every prescribed refusal or owner-pause branch on cards 8, 9, 10, 12 and 13 names an input and a test row. Loom's `refuseCovered` (`internal/loomcli/pausehold.go:40`) runs before the owner refusal, but InnerRun holds every spawn under coverage, so no reaching input is rejected first. Not a defect.
++- Card 5 leaving only `needs_replay` unmoved: `originMover.needsMove` (`internal/fabricengine/originreconcilemoves.go:305`) moves only `fast_forward` and `needs_replay` branches, so `ahead`, `rewound`, `rewritten` and `diverged` already stay where they are. That covers D4.
++- Member glyphs and re-sign arrows on cards 3, 5, 6, 10, 12 and 16: the one signature change, `classifyEntries`, carries its arrow. `resumeRefusal(slug, report)`, `reconcileVerdict`, `pushParent` and `childSpawnError` keep their signatures. Not a defect.
++- Test economy on cards 7, 10, 14 and 16: cards 7 and 14 add rows to existing tests. `TestInnerRun_OwnerCheck`, `TestPairOwners` and `TestHubOnlyPaused` cover branches no existing test reaches. Not a defect.
++- Card 1's sole-source scan: no production file calls `os.Hostname(` today, so the scan forces no other edit.
++
++## Focus departures
++
++- "PATTERN fit of card 17 and the cards touching `pattern/` files: settle whether the `Pattern-Departure:` trailer and the shortened entry line obey the PATTERN rules the plan names." I settled it against `loom-plan-spec.md`'s trailer section and the decision record rather than against a PATTERN.md entry, because no PATTERN.md entry or `pattern/` file governs the trailer (F3, F4).
++- The rubric's step of checking target-changing fixes with `lyx loom validate-plan --overlay` was not run, because this round's tool-use rule allows reading only. F1 to F5 add, drop, move or pair no targets. F6 inserts cards, which the rubric excludes from the overlay, so no proposed fix needed one.
+diff --git a/docs/research/codex-astra-solo-bench-2026-10-25/data/usage.txt b/docs/research/codex-astra-solo-bench-2026-10-25/data/usage.txt
+new file mode 100644
+index 000000000..c3dd620e1
+--- /dev/null
++++ b/docs/research/codex-astra-solo-bench-2026-10-25/data/usage.txt
+@@ -0,0 +1,4 @@
++P4 gpt-6-astra-medium-r1 rc=0 wall=166 in=729620 cached=652800 out=4086 reason=988 verdict=BLOCKING n=4 five_hour_used_percent=15 weekly_used_percent=18
++P1 gpt-6-astra-medium-r1 rc=0 wall=184 in=1097777 cached=1005056 out=4400 reason=1989 verdict=BLOCKING n=2 five_hour_used_percent=37 weekly_used_percent=21
++P4 opus-medium-r1 rc=0 wall=389 fresh=128230 cache_read=2468332 out=30436 verdict=APPROVED n=6
++P1 opus-medium-r1 rc=0 wall=563 fresh=206429 cache_read=6482958 out=49293 verdict=BLOCKING n=6
+diff --git a/docs/research/codex-astra-solo-bench-2026-10-25/report.md b/docs/research/codex-astra-solo-bench-2026-10-25/report.md
+new file mode 100644
+index 000000000..e359ccf0b
+--- /dev/null
++++ b/docs/research/codex-astra-solo-bench-2026-10-25/report.md
+@@ -0,0 +1,154 @@
++# Codex Astra against solo Opus as a plan reviewer
++
++Bench of 2026-10-25, a follow-up to `docs/research/codex-review-bench-2026-10-25/report.md`.
++Codex CLI 0.164.0, ChatGPT sign-in (plan `plus`), Linux.
++Four reviews in all, one run each: `gpt-6-astra` and Claude `opus`, both at medium effort and solo with no lens forks, on the plans `P1` (`gate-runs-once`) and `P4` (`machine-handover`).
++Nothing was built: the bench is shell scripts under `data/harness/`, the reviewers' own output and a hand grading.
++
++## Conclusion
++
++On these two plans Astra and solo Opus reproduced the same share of what the Claude fan found, and both fell well short of its `BLOCKING` findings.
++Each reproduced 4 of the fan's 23 findings; Opus reproduced 1 of its 5 `BLOCKING` ones and Astra none.
++Both added findings that hold up on reading: 7 of Opus's 12 findings and 2 of Astra's 6 are real and absent from the fan's list.
++No finding of either was graded false.
++
++- Astra is about 2.3 to 3 times faster (166 s and 184 s against 389 s and 563 s) and writes fewer findings: 6 against 12.
++- Astra returned the fan's verdict on both plans (`BLOCKING`); Opus returned `APPROVED` on `P4`, where the fan blocked on three `BLOCKING` findings.
++- Astra's two `P4` `BLOCKING` findings are real on reading, and Opus filed the second as `MEDIUM`.
++  The `P4` finding on the skip variables is Astra's alone.
++- Astra's two runs took 22 points of the 5-hour window on `P1` and at most 15 on `P4`.
++  Opus took none of it.
++- Astra's findings are thin on `P1`: two, both already in the fan's list, against Opus's six.
++
++With two inputs, one run per cell and one grader, the sample cannot rank the two.
++It does not show that Astra reviews at a lower level than solo Opus, and it does not show that either replaces the fan: both missed the fan's `BLOCKING` findings about code-reading defects on `P4`.
++
++## Summary table
++
++Medium effort, one run per cell.
++The fan reference over `P1` and `P4` is 23 findings, 5 of them `BLOCKING`, from `opus` at medium effort with 3 lens forks per input, as the earlier bench recorded in `claude-findings.tsv` and `claude-usage.tsv`.
++"Found" counts distinct fan findings that a finding of the setting matched.
++
++| Setting | Inputs | Findings | Shared with fan | Unique real | False | Fan findings found | `BLOCKING` found | Verdict as fan's | Fresh input tokens | Wall time | 5-hour window |
++|---|---|---|---|---|---|---|---|---|---|---|---|
++| `gpt-6-astra` medium | 2 of 2 | 6 | 4 | 2 | 0 | 4 of 23 | 0 of 5 | 2 of 2 | 169k | 350 s | 22 points on `P1`, at most 15 on `P4` |
++| Claude `opus` medium, solo | 2 of 2 | 12 | 5 | 7 | 0 | 4 of 23 | 1 of 5 | 1 of 2 | 335k | 952 s | none |
++| Claude `opus` medium, fan | 2 of 2 | 23 | | | | | | | 873k, plus 171k in forks | 1339 s | none |
++
++Fresh input tokens: for Astra `input_tokens` less `cached_input_tokens` of the `turn.completed` event; for Opus `input_tokens` plus `cache_creation_input_tokens` summed over the session transcript's assistant messages, once per message id.
++The two figures count different things, since Codex reports no cache-creation figure.
++Cached reads are 90 percent of Astra's input and 95 to 97 percent of Opus's.
++The Opus transcript's `output_tokens` is 30k and 49k; Astra's is 4k for both runs, with 1k and 2k of reasoning.
++
++## Per input
++
++### `P1`, `gate-runs-once` plan, 33 cards
++
++The fan found 12 findings, 2 of them `BLOCKING`, and blocked.
++
++| Setting | Findings | Verdict | Shared with fan | Unique real | False | Wall time | Fresh input tokens | 5-hour window |
++|---|---|---|---|---|---|---|---|---|
++| Astra | 2 | `BLOCKING` | 2 | 0 | 0 | 184 s | 93k | 22 points |
++| Opus solo | 6 | `BLOCKING` | 3 | 3 | 0 | 563 s | 206k | none |
++| Fan | 12 | `BLOCKING` | | | | 604 s | 384k, plus 92k in forks | none |
++
++- Shared, both: the missing re-sign arrows on card 4 and card 14 (fan `F4`, `MEDIUM`).
++  Opus names both cards and adds the test caller of `darnTreeScope`, which the fan's text gives as a consequence of the missing arrow.
++- Shared, Astra only: the retag cards use `Custom` on a premise that `Edit` rules out (fan `F3`, `MEDIUM`).
++  Astra rates it `BLOCKING`, so its verdict rests on a finding the fan rated `MEDIUM`.
++- Shared, Opus only: card 23 shortens `PATTERN.md` after cards 3, 7 and 19 have grown it, so their card gates fail the pattern lint (fan `F1`, `BLOCKING`).
++  Opus finds in addition that card 33 grows the file past the line again after card 23.
++  Astra did not find this.
++- Unique real, Opus: card 20's new integration test repeats what its own rewritten tests cover (`LOW`); card 7 puts `green.json` at `WaitDir(anchor)` while `gatecli` calls `WaitDir` with both the anchor and the worktree path (`LOW`); card 7 omits the write through `internal/state` that `PATTERN-tolerant-records` requires (`LOW`).
++- Neither found the fan's second `BLOCKING` finding, the hand-enumerated readers of the retirement cards (`F2`), nor the fan's `MEDIUM` findings `F5` and `F6` about code facts.
++
++### `P4`, `machine-handover` plan, 17 cards
++
++The fan found 11 findings, 3 of them `BLOCKING`, and blocked.
++
++| Setting | Findings | Verdict | Shared with fan | Unique real | False | Wall time | Fresh input tokens | 5-hour window |
++|---|---|---|---|---|---|---|---|---|
++| Astra | 4 | `BLOCKING` | 2 | 2 | 0 | 166 s | 77k | at most 15 points |
++| Opus solo | 6 | `APPROVED` | 2 | 4 | 0 | 389 s | 128k | none |
++| Fan | 11 | `BLOCKING` | | | | 735 s | 489k, plus 79k in forks | none |
++
++- Shared with the fan: card 8's prime claim against the offline legacy-run resume (Astra, fan `F5`, `MEDIUM`); the bundling of public symbols into consumer cards (both, fan `F9`, `LOW`); card 17's short `PATTERN.md` line dropping the past-merge exception (Opus, fan `F6`, `MEDIUM`).
++- Found by both and absent from the fan's list: card 3's no-`Takeover` guard covers slugs only, so a prime claim can replace another machine's prime owner.
++  Astra rates it `BLOCKING`, Opus `MEDIUM`.
++- Unique real, Astra: card 3 reads an owner write under `BOARD_SKIP_GIT` or `BOARD_SKIP_PUSH` as recorded, though nothing was pushed, and the decision record requires a push before a start or resume (`BLOCKING`).
++  `ApplySkipEnv` reads ordinary environment variables, so the case is reachable outside tests.
++  The decision record does not say whether the skip variables count as test-only.
++- Unique real, Opus: card 12 states its past-merge carve-out without the bound the decision record gives it (`MEDIUM`); card 17 plans a `Pattern-Departure` trailer for a commit that departs from nothing (`LOW`); the `ParentOf` type of card 6's `SeamOptions` disagrees with its `OwnerReader` builder (`LOW`).
++- Neither found the fan's three `BLOCKING` findings: the owner guard on `retryWeftPush` reading origin's Bolt outside `ReconcileOrigin`, the missing `adoptcli` entry in `PATTERN-cli-cobra`'s background, and the one-second production wait in `TestSetOwners`.
++  All three need a read of code or of a PATTERN background file that neither reviewer opened in its explore step.
++- Opus approved `P4` with six findings and no `BLOCKING`, including one the fan rated `MEDIUM` and Astra `BLOCKING` for the same defect.
++  The rubric's rating of that defect is not settled by this sample.
++
++## What the two found that the fan did not
++
++Astra: the skip-variable bypass of the publish-before-start rule on `P4`.
++Opus: card 7's `green.json` location and its missing `internal/state` write on `P1`, card 12's unstated bound, card 17's trailer and card 6's type mismatch on `P4`, card 20's redundant test on `P1`.
++Both: the prime claim without `Takeover` on `P4`.
++All were read against the cited card text, and where a claim concerns code against the snapshot's code.
++`data/match.tsv` holds the reading of each.
++
++## Method
++
++### Inputs and prompt
++
++`P1` and `P4` are the earlier bench's inputs, rebuilt with `data/harness/build.sh`, whose paths now point at this worktree.
++The weft commits and code commits equal the earlier bench's `data/inputs.txt` (`c36025a89` over `ab038b4e8` and `045707759` over `750903aef`), copied into `data/inputs.txt`.
++Each snapshot is a `git archive` of the code commit extracted under `.scratch/`, with the plan, the decision record, the era's rubric and stencils, and the reviewer prompt of the earlier bench: round 1, the solo cluster rule and the round's focus directive, without the inlined PATTERN overview.
++Both reviewers read the same `prompt.md` over a fresh copy of the same snapshot.
++
++### Astra
++
++```text
++CODEX_HOME=<scratch>/codex-home codex exec -m gpt-6-astra -c model_reasoning_effort="medium" \
++  -s workspace-write -C <work> --skip-git-repo-check --json -o <last-message> - < prompt
++```
++
++`data/harness/run.sh` runs it, with the scratch `CODEX_HOME` that `setup-codex-home.sh` makes and links to the operator's `auth.json`.
++The 5-hour and weekly `used_percent` come from the last `token_count` event of each run's rollout (`windows.sh`).
++
++### Opus solo
++
++`data/harness/run-opus.sh` copies the snapshot as `run.sh` does and runs `lyx shuttle run --model opus --effort medium --prompt-file <prompt> --output-file <work>/.bench/out/review.md`: an interactive tmux session, never `claude -p`.
++The solo cluster rule in the prompt spawns no forks.
++Wall time is the script's wall clock, which includes the session's start and its wait for the output file.
++Tokens come from the session transcript, once per assistant message id.
++
++### Grading
++
++One Claude session graded every finding, in the earlier bench's way: a finding against the fan's round-1 findings of the same input, and an unmatched finding against the cited card lines and, where it concerns code, the snapshot.
++`shared` means the finding names the same defect as a fan finding; `unique-real` means the claim holds and the fan's round has no finding of it; `false` means it does not hold.
++A unique finding shared by Astra and Opus counts once for each.
++Every label is in `data/match.tsv`, with the reviewer's own severity beside the fan finding's.
++
++## Deviations and limits
++
++- The 5-hour window was not read before the first Astra run, as the task asked: no reading exists without a run, since only a rollout holds one, and the newest rollout with a reading was over a day old.
++  The first reading is the 15 percent after the `P4` run, so that run cost at most 15 points; the `P1` run cost 22 (15 to 37).
++  The weekly window read 18 and then 21 percent.
++  No run was refused or cut off, and the stop at 70 percent was not reached.
++- Two inputs and one run per cell: no variance is measured.
++  Differences of one or two findings, and Astra's 2 findings on `P1` against Opus's 6, are within what a repeat could change.
++- The grader is a Claude session, which grades Opus findings and Astra findings alike but may favour its own family's phrasing.
++  One grader read each finding, and the rates are not validated.
++  Card 20's redundant test (Opus `P1` `F4`) was graded on the card text without running the tests, and Astra's skip-variable finding stays arguable on whether the decision record treats the variables as test-only.
++- The Opus session runs in this worktree and so has its `CLAUDE.md` and plugin skills loaded, which the Codex run does not.
++  Its prompt points at the snapshot only.
++- Opus's token figure counts cache creation as fresh input; Codex reports none, so the two figures are not the same measure.
++  The transcript's `output_tokens` per message may undercount streamed output.
++- Recall is against the fan's list, not against the truth: the fan's `LOW` findings are in the 23.
++- The operator's `~/.codex/config.toml` was not hashed before or after this bench.
++
++## Data
++
++`data/` holds:
++
++- `inputs.txt`: the two inputs with weft commit, round start time and code commit.
++- `usage.txt`: one line per run, with return code, wall seconds, tokens, verdict, finding count and, for Astra, the 5-hour and weekly `used_percent` after the run.
++- `match.tsv`: the grading of every finding.
++- `reviews/<input>/<setting>.md`: the four review files.
++- `harness/`: `build.sh`, `run.sh`, `run-opus.sh`, `setup-codex-home.sh`, `windows.sh` and `dump.sh`, working on `.scratch/bench/`, which is not committed.
