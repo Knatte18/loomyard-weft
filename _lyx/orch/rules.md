@@ -90,3 +90,9 @@ Always offer the cheaper path beside it: record the blocking fixes as decisions 
 ## Discussion rounds are not cut for a full body
 
 Discussion explores the code, bounds the scope and weighs the impact; a full board body does not do that work, so it is no reason to lower a task's Discussion rounds (operator, 2026-10-25).
+
+## A card slug ending in -weft (#874)
+
+Webster's fabric-reference audit flags every unquoted word ending in `-weft`, so a card whose slug ends that way fails its batch audit whenever a fork names the card in a command.
+Judge such a finding false when the matched commands only name the card, have Merriam run `lyx webster accept-audit --batch <n>` and `recover-batch <n>`, and have later forks quote the slug.
+Remove this section once #874 is fixed.
