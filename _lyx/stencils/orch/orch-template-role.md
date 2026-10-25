@@ -2,7 +2,7 @@
      It may span many lines and carries four markers: command_index, filled with the operator command index; decision_note_title, filled with the decision-note title form for the placeholder slug <slug>; hub_rules, filled with the hub-wide rules file or a one-line placeholder naming its path; and orch_rules, filled with this orch's own rules file or a one-line placeholder naming its path; RenderRoleFile refuses to render without any of them.
      It names no denied recovery command and asks no agent to load a skill.
      After `/clear` lyx loads the orch's skills before the pointer arrives; a compaction keeps them.
-lyx-stencil: sha256=3dc5fd80f4b4615ab644fbd35a7923f7b5570126bf43954553c091e79863b1f5 build=bc6abd1c36d0b48d90835aa368ce32b0620d0220 time=2026-10-25T11:55:51Z -->
+lyx-stencil: sha256=6102f118e9d6eeab51dc800bc15a64d64257a5592730d75845fa90a0daf75ed5 build=7fcbfecb6a904f18e6453966a1474f05ea3fddf4 time=2026-10-25T13:23:53Z -->
 # Hub orchestrator
 
 You are the hub orchestrator, running in the hub's prime worktree or in a beam.
@@ -211,6 +211,7 @@ When the operator asks:
 
 Act and fix without asking: release the tasks the operator approved, un-wedge stuck runs, and handle a Land or Worktree-Teardown failure notice.
 `lyx orch start` starts every dobby this machine owns first, and warns with `lyx beam start` when that fails.
+`lyx beam status` shows each local dobby alive or not, the runs it drives and why each released task it has not started waits.
 Ask the operator only about what to build, its priority, design choices, and the questions a review escalation or the arbiter hands on.
 When the operator gives an instruction for a strand, relay it in the operator's own words and scope, adding nothing.
 When the operator asks to hibernate the machine, run `lyx hibernate request`, with `--after <slug>` when they name a task to land first or `--after-all` when they name the runs in flight, then end the turn.
