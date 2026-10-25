@@ -1,16 +1,16 @@
 # Card 10 — drift-await-producer
 
 **Create:**
-- `plan:internal/driftengine#DriftAwait` -> `type DriftAwait struct`
-- `plan:internal/driftengine#NewDriftAwait` -> `func NewDriftAwait(name string, deps Deps) *DriftAwait`
-- `plan:internal/driftengine#DriftAwait.Call` -> `func (p *DriftAwait) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/driftengine#TestDriftAwait` -> `func TestDriftAwait(t *testing.T)`
+- `internal/driftengine#DriftAwait`
+- `internal/driftengine#NewDriftAwait`
+- `internal/driftengine#DriftAwait.Call`
+- `internal/driftengine#TestDriftAwait`
 
 **Extends:**
 - `internal/driftengine/doc.go`
 
 **Uses:**
-- `plan:internal/driftengine#awaitCaptureEnd`
+- `internal/driftengine#awaitCaptureEnd`
 - `internal/driftengine#ReadScope`
 - `internal/driftengine#ReadCapture`
 - `internal/driftengine#UpdateScope`

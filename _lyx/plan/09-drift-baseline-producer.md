@@ -1,13 +1,13 @@
 # Card 9 — drift-baseline-producer
 
 **Create:**
-- `plan:internal/driftengine#Deps` -> `type Deps struct`
-- `plan:internal/driftengine#Row` -> `type Row struct`
-- `plan:internal/driftengine#DriftBaseline` -> `type DriftBaseline struct`
-- `plan:internal/driftengine#NewDriftBaseline` -> `func NewDriftBaseline(name string, row Row, deps Deps) *DriftBaseline`
-- `plan:internal/driftengine#DriftBaseline.Call` -> `func (p *DriftBaseline) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/driftengine#awaitCaptureEnd` -> `func awaitCaptureEnd(ctx context.Context, p Paths, sleep func(context.Context, time.Duration) error) error`
-- `plan:internal/driftengine#TestDriftBaseline` -> `func TestDriftBaseline(t *testing.T)`
+- `internal/driftengine#Deps`
+- `internal/driftengine#Row`
+- `internal/driftengine#DriftBaseline`
+- `internal/driftengine#NewDriftBaseline`
+- `internal/driftengine#DriftBaseline.Call`
+- `internal/driftengine#awaitCaptureEnd`
+- `internal/driftengine#TestDriftBaseline`
 
 **Edit:**
 - `cmd/lyx#unboundedWaitFiles`
@@ -17,7 +17,7 @@
 - `pattern/PATTERN-daemon-wakeups.md`
 
 **Uses:**
-- `plan:internal/driftengine#BaselineTable`
+- `internal/driftengine#BaselineTable`
 - `internal/driftengine#CheckMainCapture`
 - `internal/driftengine#StartCapture`
 - `internal/driftengine#RunCapture`

@@ -3,13 +3,13 @@
 **Create:**
 - `contracts/stencils/drift/drift-template-baseline.md`
 - `contracts/stencils/drift/drift-template-verify.md`
-- `plan:contracts/stencils#DriftTemplateBaseline` -> `var DriftTemplateBaseline []byte`
-- `plan:contracts/stencils#DriftTemplateVerify` -> `var DriftTemplateVerify []byte`
-- `plan:internal/driftengine#BaselineInputs` -> `type BaselineInputs struct`
-- `plan:internal/driftengine#BaselineTable` -> `func BaselineTable(in BaselineInputs, cfg Config, reg modelspec.Registry) (seatengine.Table, error)`
-- `plan:internal/driftengine#VerifyInputs` -> `type VerifyInputs struct`
-- `plan:internal/driftengine#VerifyTable` -> `func VerifyTable(in VerifyInputs, cfg Config, reg modelspec.Registry) (seatengine.Table, error)`
-- `plan:internal/driftengine#TestSeatTables` -> `func TestSeatTables(t *testing.T)`
+- `contracts/stencils#DriftTemplateBaseline`
+- `contracts/stencils#DriftTemplateVerify`
+- `internal/driftengine#BaselineInputs`
+- `internal/driftengine#BaselineTable`
+- `internal/driftengine#VerifyInputs`
+- `internal/driftengine#VerifyTable`
+- `internal/driftengine#TestSeatTables`
 
 **Edit:**
 - `contracts/stencils#entries`
