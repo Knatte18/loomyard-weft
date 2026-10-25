@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-25 13:31 UTC; every age below is as of then.
+Rendered 2026-10-25 13:38 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -18,7 +18,7 @@ grouping
 
 | # | Member | Kind | Standing |
 | --- | --- | --- | --- |
-| T3 | **An anchor per beam** | Task | Discussion-Burler-Fix |
+| T3 | **An anchor per beam** | Task | Discussion-Bouncer |
 
 ### P2 .NET: LoomYard for C# repositories
 
@@ -41,7 +41,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **An anchor per beam**<br>• Let each worktree carry its own anchor through a .lyx-anchor marker at its weft branch root, inherited by its tasks, with a verb that changes it<br>• `profile: solid` | [`umbrella-anchor`](design-umbrella-anchor.md) | loom | Discussion-Burler-Fix | neve | 6d<br>57m | fabric, config, workspaces |
+| T3 | **An anchor per beam**<br>• Let each worktree carry its own anchor through a .lyx-anchor marker at its weft branch root, inherited by its tasks, with a verb that changes it<br>• `profile: solid` | [`umbrella-anchor`](design-umbrella-anchor.md) | loom | Discussion-Bouncer | neve | 6d<br>1h | fabric, config, workspaces |
 
 ### Ready (1)
 
@@ -76,7 +76,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **Beam promote keeps the Discussion record as part of the beam**<br>• When Discussion finds a task should be a project, promote carries its decision record into the beam instead of dropping it | [`beam-promote-keeps-discussion`](design-beam-promote-keeps-discussion.md) | 45m<br>45m | workspaces, batten, loom |
+| E1 |  | **Beam promote keeps the Discussion record as part of the beam**<br>• When Discussion finds a task should be a project, promote carries its decision record into the beam instead of dropping it | [`beam-promote-keeps-discussion`](design-beam-promote-keeps-discussion.md) | 52m<br>52m | workspaces, batten, loom |
 | E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>1h | shuttle, codex |
 | E4 |  | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 3w<br>2w | fabric, loom |
 | E5 |  | **Decide the layout of projects in the board README**<br>• The operator is not satisfied with how the README renders projects and their members; the layout is to be decided | [`board-projects-layout`](design-board-projects-layout.md) | 7h<br>7h | board |
