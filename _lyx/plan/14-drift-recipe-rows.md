@@ -1,16 +1,16 @@
 # Card 14 — drift-recipe-rows
 
 **Create:**
-- `plan:internal/loomshed#NameDriftBaseline` -> `const NameDriftBaseline = "Drift-Baseline"`
-- `plan:internal/loomshed#NameDriftAwait` -> `const NameDriftAwait = "Drift-Await"`
-- `plan:internal/loomshed#NameDriftVerify` -> `const NameDriftVerify = "Drift-Verify"`
-- `plan:internal/shedrecipe#driftBaselineEntry` -> `func driftBaselineEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error)`
-- `plan:internal/shedrecipe#driftAwaitEntry` -> `func driftAwaitEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error)`
-- `plan:internal/shedrecipe#driftVerifyEntry` -> `func driftVerifyEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error)`
-- `plan:internal/shedrecipe#TestDriftEntries` -> `func TestDriftEntries(t *testing.T)`
-- `plan:internal/loomcli#driftDeps` -> `func driftDeps(location *lyxcwd.Location, statusPath, statusLockPath string, awaitRow bool, tables driftTables) driftengine.Deps`
-- `plan:internal/loomcli#driftTables` -> `type driftTables struct`
-- `plan:internal/loomrecipe#TestDriftRows_EntryGate` -> `func TestDriftRows_EntryGate(t *testing.T)`
+- `internal/loomshed#NameDriftBaseline`
+- `internal/loomshed#NameDriftAwait`
+- `internal/loomshed#NameDriftVerify`
+- `internal/shedrecipe#driftBaselineEntry`
+- `internal/shedrecipe#driftAwaitEntry`
+- `internal/shedrecipe#driftVerifyEntry`
+- `internal/shedrecipe#TestDriftEntries`
+- `internal/loomcli#driftDeps`
+- `internal/loomcli#driftTables`
+- `internal/loomrecipe#TestDriftRows_EntryGate`
 
 **Edit:**
 - `contracts/recipes/loom-recipe.yaml`

@@ -1,7 +1,7 @@
 # Card 13 — capture-teardown
 
 **Create:**
-- `plan:internal/pairteardown#Teardown.killPairCapture` -> `func (t *Teardown) killPairCapture(slug string) (bool, error)`
+- `internal/pairteardown#Teardown.killPairCapture`
 
 **Edit:**
 - `internal/pairteardown#Teardown`
