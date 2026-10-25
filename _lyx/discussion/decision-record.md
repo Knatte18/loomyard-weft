@@ -238,6 +238,12 @@ Decision: Drift-Await gets entry_gate: drift.enabled like the other Drift rows, 
 
 Rationale: Operator ruling, 2026-10-25: with the flag off the Drift rows skip, and the entry gate is the mechanism for that.
 
+### Added after Discussion (parent, 2026-10-25): Drift-Verify's dirty check reads the code checkout's tracked paths only
+
+Decision: driftDeps' dirty-paths seam is fabricengine.SourceDirtyPaths(location), the code worktree's tracked dirt, never Fabric.DirtyPaths, which also lists the records checkout. In 11-drift-verify-producer.md step 7 and its dirty gate entry, the dirty tree is the code checkout's tracked paths, and records-side paths such as _lyx/drift/scope.json never count. TestDriftVerify gains a row with only a records-side path dirty, asserting no dirty Stuck.
+
+Rationale: An agent's lyx drift accept and steps 2 and 3 write records-side files before the check, so counting the records checkout would make every run Stuck; SourceDirtyPaths already reads only the code worktree's tracked paths.
+
 ## Constraints
 
 - The design departs from no PATTERN entry.
