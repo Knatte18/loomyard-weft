@@ -6,13 +6,21 @@ Prime owner: `neve`.
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Projects (1)
+## Projects (2)
 
 Groups of entries; a beam spawns its members from its own worktree.
 
 ### P1 Workspaces: beams, pairs from a parent pair, dobby
 
 Beams that develop a project in their own worktree, driven by a dobby daemon
+
+grouping
+
+_None._
+
+### P2 .NET: LoomYard for C# repositories
+
+Running LoomYard on C#/.NET repositories such as Models: scoped gates, regression, a sandbox hub
 
 grouping
 
