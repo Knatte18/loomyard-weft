@@ -60,11 +60,11 @@ Waits only on Running or Ready entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **Beams: one lyx beam start for dobby and orch, the beam window, and machine ownership by project**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-window`](design-beam-start-and-window.md) | loom | `umbrella-anchor` | 1h<br>47m | orch, workspaces, batten, reed, board |
 
-## Notes (41)
+## Notes (42)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Bugs (7)
+### Bugs (8)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -75,6 +75,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B5 |  | **Darn-Write seat start dies: provider pane drops to a shell prompt after the prompt text** | [`seat-start-long-prompt-dies`](design-seat-start-long-prompt-dies.md) | 0m<br>0m | shuttle |
 | B6 |  | **shuttle start fails on transient tmux fork/exec EAGAIN and leaves the strand behind** | [`shuttle-retry-tmux-eagain`](design-shuttle-retry-tmux-eagain.md) | 0m<br>0m | shuttle, reed |
 | B7 |  | **gate tier1 fails on a stale Go vet cache entry naming a torn-down worktree** | [`gate-stale-vet-cache-path`](design-gate-stale-vet-cache-path.md) | 0m<br>0m | gate |
+| B8 |  | **Shuttle hold notices fire while Merriam waits on its own background recovery** | [`no-hold-notice-on-bg-wait`](design-no-hold-notice-on-bg-wait.md) | 0m<br>0m | shuttle, webster |
 
 ### Enhancements (16)
 
