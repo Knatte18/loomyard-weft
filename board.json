@@ -924,6 +924,26 @@
       "body": "Imported from [issue #869](https://github.com/Knatte18/loomyard/issues/869).\n\nWhat happened: a `lyx loom` run halted as `failed` (anomaly `producer-hard-failure`) at the `Darn-Write` seat producer.\nThe shuttle start reported \"the provider never became ready\" with outcome \"died\", then could not remove the strand because the liveness check failed with `fork/exec /usr/bin/tmux: resource temporarily unavailable`.\nThe error chain ended in \"deliver the prompt after loading skills: check strand liveness: check session\".\nThe halt message told the operator to remove the strand by hand with `lyx reed status` / `lyx reed remove`.\n\nWhy it is abnormal: `resource temporarily unavailable` (EAGAIN) on fork/exec is a transient host condition, yet it was treated as the provider dying.\nThe first tmux failure appears to have been read as a dead provider, so the run hard-failed on a recoverable condition, and the cleanup hit the same error and left an orphan strand.\n\nWhat to do: retry tmux invocations on EAGAIN with a short backoff in the shuttle liveness and removal paths, and do not classify an unverifiable liveness check as \"died\".\nAlso retry or defer strand removal so a failed start does not leave a strand needing manual cleanup.\n\nProvenance: task `webster-reset-reopens-dead-batch`, note `loom-halt.md`.\n",
       "created": "2026-10-25T16:17:03Z",
       "revised": "2026-10-25T16:17:03Z"
+    },
+    {
+      "id": 822,
+      "handle": "B7",
+      "slug": "gate-stale-vet-cache-path",
+      "title": "gate tier1 fails on a stale Go vet cache entry naming a torn-down worktree",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "gate"
+      ],
+      "issues": [
+        868
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #868](https://github.com/Knatte18/loomyard/issues/868).\n\nSeen (2026-10-24): after gate-runs-once landed and its worktree was torn down, and the hub's tier commands moved from '-tags tier1,integration' etc. to single tags, every 'lyx gate test --tier 1' in another worktree (drop-transitional-tag-spellings) failed before any test with: internal/reedengine: can't parse raw cgo file: open /home/knatte/Code/loomyard-LYXHUB/gate-runs-once/internal/reedengine/proctree_linux.go: no such file or directory. Likely cause: under GOFLAGS=-trimpath a go vet cache entry for reedengine's cgo pass recorded the absolute path of the worktree it was built in, and a later vet under the same tag set matched that entry. Workaround: the orch ran 'go clean -cache' while no gate slot was held. Expected: a gate run never depends on another worktree's paths; lyx could key or isolate the Go cache per worktree, or detect the error and retry with a cleaned vet cache.",
+      "created": "2026-10-25T16:17:05Z",
+      "revised": "2026-10-25T16:17:05Z"
     }
   ],
   "prime_owner": "neve",
