@@ -9,8 +9,6 @@
 - `internal/pairteardown#Teardown.EndSession`
 - `internal/pairteardown#fakeSubstrates.teardown`
 - `internal/pairteardown#TestTeardown_CallSequence`
-
-**Extends:**
 - `internal/pairteardown/doc.go`
 
 **Uses:**
@@ -25,6 +23,7 @@ On Windows that end signals nothing, so the capture's named job must be terminat
 `Teardown` gains the seam `killCapture func(slug string) (bool, error)`, wired by `New` to `killPairCapture`, which calls `proc.TerminateNamedJob(driftengine.CaptureJobName(fabricengine.WorktreePath(t.prime, slug)))`, logging what it ended; the name is computed from the pair's path, so it needs no present worktree; on Linux the call reports false and ends nothing.
 `EndSession` calls it for a present and a gone task worktree alike, right after the owned-process end and before the loop seize, so an error is returned with no loop lock taken and nothing to release, as the owned-process end's own error is.
 A job name lives in one machine's object namespace, so this reaches only a capture of this machine's own pair; the adopt's end of a local pair runs the same sequence.
+Only the detached `capture-child` holds the named job (card 7-drift-verbs-cli); a foreground capture runs in the row's step process with no named job, in the step's `StartTied` job tree, and ends with the step.
 
 `pairteardown`'s `doc.go` sequence step 3 names the capture's job beside the registered processes.
 

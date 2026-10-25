@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -42,9 +42,9 @@ A new `internal/driftengine` owns the hub-wide `drift` config, the records, the 
 
 ### Decision: run status decides the caller
 
-- **Decision:** a `lyx drift` verb tells the row's live agent session from a caller at a halt by the run status at `Drift-Verify`: `running` is the agent session, `blocked` a halt, and a decision halt a `blocked` status whose error opens with `shedadapters.DecisionHaltPrefix`.
-- **Rationale:** the status is the one Go-written truth every verb can read; no token is handed to the agent.
-- **Applies to:** 7-drift-verbs-cli, 11-drift-verify-producer
+- **Decision:** a `lyx drift` verb tells the row's live agent session from a caller at a halt by the run status at `Drift-Verify` and the agent-session mark in `runs.json`: `running` with the mark open is the agent session, `blocked` a halt, and a decision halt a `blocked` status whose error opens with `shedadapters.DecisionHaltPrefix`; `running` with the mark closed is the row's own mechanical work, where no caller is the agent.
+- **Rationale:** the status and the mark are Go-written truths every verb can read, the mark opened by `Drift-Verify` at its agent's fresh spawn, kept by an entry that reattaches to the live agent, and closed by an entry that finds no live agent and at the agent's end; no token is handed to the agent.
+- **Applies to:** 2-drift-records, 7-drift-verbs-cli, 11-drift-verify-producer
 
 ### Decision: the verify gate reuses the row verify gate
 
@@ -56,12 +56,12 @@ A new `internal/driftengine` owns the hub-wide `drift` config, the records, the 
 
 - **Decision:** the breakaway limit (4-job-breakaway) and the capture job's termination (13-capture-teardown) run only on Windows; this hub's gates run Linux, so their tier0 tests pin the seams and the call order, the cross-compile test builds the Windows files, and the end-to-end proof is the sandbox hub's run under board note `csharp-sandbox-hub` (Scope, Out).
 - **Rationale:** no gate of this hub can run a Windows job object.
-- **Applies to:** 4-job-breakaway, 5-capture-run, 13-capture-teardown
+- **Applies to:** 4-job-breakaway, 5-capture-run, 7-drift-verbs-cli, 13-capture-teardown
 
 ### Decision: a dirty capture halt names cleaning
 
-- **Decision:** a capture refused on a dirty tree with HEAD on the branch point names cleaning the listed paths (removing or stashing them) and `lyx loom resume`, which captures again, beside `lyx drift defer`; it does not name committing, which D3 lists.
-- **Rationale:** the branch point is HEAD's merge base with the parent, so a commit moves HEAD off it and the resume halts naming only `lyx drift defer`; PATTERN-refusal-way-forward requires a named way forward to progress, and that constraint wins over D3's wording.
+- **Decision:** a capture refused on a dirty tree with HEAD on the branch point names restoring the listed paths to HEAD or stashing them, then, at `Drift-Baseline`, `lyx loom resume`, which captures again, and at a `Drift-Await` halt `lyx drift capture` again followed by `lyx loom resume`, beside `lyx drift defer` followed by `lyx loom resume`; it names neither removing them nor committing them, which D3 lists.
+- **Rationale:** the branch point is HEAD's merge base with the parent, so a commit moves HEAD off it and the resume halts naming only `lyx drift defer`; removing a tracked path leaves a tracked deletion, still dirty; a resumed `Drift-Await` only reads the records, so only a new capture progresses from its halt; PATTERN-refusal-way-forward requires a named way forward to progress, and that constraint wins over D3's wording.
 - **Applies to:** 5-capture-run, 9-drift-baseline-producer
 
 ### Decision: seat outputs, segments and timeouts

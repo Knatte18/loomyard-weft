@@ -4,12 +4,13 @@
 - `internal/gateslot#goReadGates`
 - `internal/gateslot#templateDefaults`
 - `internal/testkit/envkit#fixedGateLists`
-
-**Extends:**
 - `internal/gateslot/template.yaml`
 - `internal/gateslot/doc.go`
+
+**Extends:**
 - `pattern/PATTERN-test-speed.md`
 - `docs/dotnet-hub.md`
+- `internal/gatecli/doc.go`
 
 **Intent:**
 Add the gate key `drift-verify`, the test gate over `Drift-Verify`'s own code changes (Scope, D6).
@@ -23,7 +24,8 @@ Add the gate key `drift-verify`, the test gate over `Drift-Verify`'s own code ch
 `internal/gateslot/doc.go`'s key lists gain `drift-verify` with scope `diff`, and its tier plan table gains the line `loom, darn  Drift-Verify  drift-verify  diff`.
 `pattern/PATTERN-test-speed.md`'s gate key table gains the row `` `drift-verify` | `Drift-Verify`'s test gate over its agent's fixes | `diff` ``.
 `docs/dotnet-hub.md`'s example `gates` block gains the key.
+`internal/gatecli/doc.go`'s package-doc example `gates` block gains the line `drift-verify: {tiers: [0, 1], scope: diff}`.
 
 No new behavior beyond a template value: the existing template-load test and `TestRecipeEngines`-style kit consumers cover it through the edited rows.
 
-**ImpactSummary:** One template key and its mirrors in two test tables and three docs; no site reads it until card 14-drift-recipe-rows.
+**ImpactSummary:** One template key and its mirrors in two test tables and the docs listing the keys; no site reads it until card 14-drift-recipe-rows.
