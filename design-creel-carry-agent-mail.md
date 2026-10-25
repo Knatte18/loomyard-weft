@@ -21,7 +21,9 @@ Claude Code's SendMessage reached the same writer mid-turn, at its next tool bou
 
 ## Operator decisions (2026-10-25)
 
-- Creel delivers at the receiver's next tool boundary, as SendMessage does, for example through a `PostToolUse` hook that hands the strand its unread mail; interrupt stays for stopping an agent.
+- Creel delivers at the receiver's next tool boundary, as SendMessage does; interrupt stays for stopping an agent.
+- Shape: creel stays the one router, with no separate post hub. It sets a flag file per strand while that strand has unread mail, and a `PostToolUse` hook tests the file and exits at once when it is absent, so a call with no mail costs a file test and no tokens; only when the flag stands does the hook hand over the mail.
+- A strand that is idle fires no hook, so creel's delivery into an idle pane stays for that case; a turn with no tool call ends idle and is reached the same way. Each message is delivered once, by whichever path comes first.
 - If feasible: a config key chooses whether Claude agents message each other through SendMessage or through creel.
   While only Claude runs, SendMessage is the better path; creel is needed where a non-Claude engine takes a role (note `creel-agents`).
   Programs, which cannot use SendMessage, go on posting through creel.
