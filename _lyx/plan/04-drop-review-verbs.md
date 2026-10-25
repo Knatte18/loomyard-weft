@@ -43,7 +43,7 @@
 - `internal/loomcli#TestResolvePersistentPreRun_SkipsReviewGroup`
 
 **Create:**
-- `plan:internal/loomcli#TestResolvePersistentPreRun_SkipsSlugGroups` -> `func TestResolvePersistentPreRun_SkipsSlugGroups(t *testing.T)`
+- `internal/loomcli#TestResolvePersistentPreRun_SkipsSlugGroups`
 
 **Intent:** D2: the `lyx loom review` verb tree (`notify`, `delivered`, `approve`, `reject`), `lyx loom status`'s parent-review waiting note and batten's `ReviewWait` seam go.
 
