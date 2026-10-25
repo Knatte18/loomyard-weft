@@ -8,6 +8,12 @@ lenses:
     - bound-breaker
     - walkthrough
     - goal-scope
+fix_lenses:
+    - fix-consistency
+    - fix-claims
+    - fix-proposal
+    - fix-way-forward
+fix_forks: 4
 review:
     engine: claude
     model: opus
@@ -22,3 +28,13 @@ review:
     fork_fresh_tokens: 56461
     fork_cache_read_tokens: 1624654
     fork_fresh_share: 0.2073523200940157
+fix:
+    engine: claude
+    model: opus
+    effort: medium
+    start: 2026-10-25T13:31:38Z
+    end: 2026-10-25T14:38:32.662944064+01:00
+    wall_seconds: 414.662944064
+    tokens_known: true
+    fresh_tokens: 189236
+    cache_read_tokens: 3398747
