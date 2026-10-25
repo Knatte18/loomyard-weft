@@ -1,6 +1,8 @@
 # The overview window becomes the beam window: dobby and orch, each run once
 
-`beam-window` · Note · enhancement, batten, orch, reed, workspaces
+`beam-window` · Task · enhancement, batten, orch, reed, workspaces · draft
+
+Depends on: [`beam-start-verbs`](design-beam-start-verbs.md)
 
 ## Seen (operator, 2026-10-25)
 
