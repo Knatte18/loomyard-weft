@@ -1,6 +1,6 @@
 # An anchor per beam
 
-`umbrella-anchor` · Task · enhancement, fabric, config, workspaces · draft
+`umbrella-anchor` · Task · enhancement, fabric, config, workspaces
 
 Depends on: [`adopt-runs-tests`](design-adopt-runs-tests.md)
 
