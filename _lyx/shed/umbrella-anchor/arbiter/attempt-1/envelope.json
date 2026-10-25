@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Cause hard-cap at round 3. The two open design-wrong findings are answered by the fix already in the decision record.\nF1 (origin-reconcile-moves-weft-past-d10, BLOCKING): its premise holds against internal/fabricengine/originreconcilemoves.go (reconcileRecordsBranch, ffWorktree) and replay.go (replayWeft), which test no marker and no move record. D10 now has the origin reconcile apply the pull's marker test, the D7 move-record check and the empty-marker stop before moving a prime's or pair's weft, leaving it unmoved and reporting the way forward without failing its caller. One fabricengine function holds the comparison. D7 step 1's refuser list, D5's list, Scope, Open risks, D10's rationale and the Acceptance criteria (the second-machine hub-scope reconcile and the standing-record criterion) name it.\nF2 (checkout-refusal-set-target-untracked, LOW): D10's checkout refusal now names a hand warp update first when the current warp checkout does not track the target's anchor, along with that update's cost. The justification sentence moved to the support log.\nThe mechanical F3 to F5 are fixed too: D5 lists a replayed commit's parent tree and the integration reads D5's value for it, D7 step 1 writes the holder's pid and start time into the move record, and the --set criterion names the live dobby's pass and task gate and EnsureLive's report.\nAt the hard cap the only option is accept, and no open finding stands unanswered.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lyx loom circling accept umbrella-anchor"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/umbrella-anchor/_lyx/shed/umbrella-anchor/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/umbrella-anchor/_lyx/shed/umbrella-anchor/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lyx shed step umbrella-anchor --until-stop --arbiter-attempt 1"
+}
