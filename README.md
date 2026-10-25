@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-25 17:00 UTC; every age below is as of then.
+Rendered 2026-10-25 17:12 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -69,21 +69,21 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Find why a running run shows a dead waiter in the activity reader** | [`idle-notice-dead-waiter-cause`](design-idle-notice-dead-waiter-cause.md) | 1d<br>1d | batten, shuttle |
-| B2 |  | **A webster stop reaches the parent twice: Merriam asks directly and the driver escalates the same question** | [`webster-stop-asked-once`](design-webster-stop-asked-once.md) | 44m<br>44m | webster, loom |
-| B3 |  | **Webster audit: a card slug ending in -weft makes every gate test --card command a fabric reference** | [`weft-suffix-card-slug-audit`](design-weft-suffix-card-slug-audit.md) | 44m<br>44m | webster, fabric |
-| B4 |  | **Board README lists draft tasks under Ready** | [`readme-draft-not-ready`](design-readme-draft-not-ready.md) | 43m<br>43m | board |
-| B5 |  | **Darn-Write seat start dies: provider pane drops to a shell prompt after the prompt text** | [`seat-start-long-prompt-dies`](design-seat-start-long-prompt-dies.md) | 43m<br>43m | shuttle |
-| B6 |  | **shuttle start fails on transient tmux fork/exec EAGAIN and leaves the strand behind** | [`shuttle-retry-tmux-eagain`](design-shuttle-retry-tmux-eagain.md) | 43m<br>43m | shuttle, reed |
-| B7 |  | **gate tier1 fails on a stale Go vet cache entry naming a torn-down worktree** | [`gate-stale-vet-cache-path`](design-gate-stale-vet-cache-path.md) | 43m<br>43m | gate |
-| B8 |  | **Shuttle hold notices fire while Merriam waits on its own background recovery** | [`no-hold-notice-on-bg-wait`](design-no-hold-notice-on-bg-wait.md) | 43m<br>43m | shuttle, webster |
+| B2 |  | **A webster stop reaches the parent twice: Merriam asks directly and the driver escalates the same question** | [`webster-stop-asked-once`](design-webster-stop-asked-once.md) | 55m<br>55m | webster, loom |
+| B3 |  | **Webster audit: a card slug ending in -weft makes every gate test --card command a fabric reference** | [`weft-suffix-card-slug-audit`](design-weft-suffix-card-slug-audit.md) | 55m<br>55m | webster, fabric |
+| B4 |  | **Board README lists draft tasks under Ready** | [`readme-draft-not-ready`](design-readme-draft-not-ready.md) | 55m<br>55m | board |
+| B5 |  | **Darn-Write seat start dies: provider pane drops to a shell prompt after the prompt text** | [`seat-start-long-prompt-dies`](design-seat-start-long-prompt-dies.md) | 55m<br>55m | shuttle |
+| B6 |  | **shuttle start fails on transient tmux fork/exec EAGAIN and leaves the strand behind** | [`shuttle-retry-tmux-eagain`](design-shuttle-retry-tmux-eagain.md) | 55m<br>55m | shuttle, reed |
+| B7 |  | **gate tier1 fails on a stale Go vet cache entry naming a torn-down worktree** | [`gate-stale-vet-cache-path`](design-gate-stale-vet-cache-path.md) | 55m<br>55m | gate |
+| B8 |  | **Shuttle hold notices fire while Merriam waits on its own background recovery** | [`no-hold-notice-on-bg-wait`](design-no-hold-notice-on-bg-wait.md) | 55m<br>55m | shuttle, webster |
 
 ### Enhancements (16)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Beam promote keeps the Discussion record as part of the beam**<br>• When Discussion finds a task should be a project, promote carries its decision record into the beam instead of dropping it | [`beam-promote-keeps-discussion`](design-beam-promote-keeps-discussion.md) | 4h<br>4h | workspaces, batten, loom |
-| E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>4h | shuttle, codex |
-| E3 |  | **PATTERN line cap counts the rule text only, not the name and link**<br>• MaxEntryLineChars counts the whole entry line, so the room left for the rule text shrinks with the entry name and link | [`pattern-line-cap-text-only`](design-pattern-line-cap-text-only.md) | 2h<br>2h | pattern |
+| E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>5h | shuttle, codex |
+| E3 |  | **PATTERN line cap counts the rule text only, not the name and link**<br>• MaxEntryLineChars counts the whole entry line, so the room left for the rule text shrinks with the entry name and link | [`pattern-line-cap-text-only`](design-pattern-line-cap-text-only.md) | 3h<br>3h | pattern |
 | E4 |  | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 3w<br>2w | fabric, loom |
 | E5 |  | **Decide the layout of projects in the board README**<br>• The operator is not satisfied with how the README renders projects and their members; the layout is to be decided | [`board-projects-layout`](design-board-projects-layout.md) | 10h<br>10h | board |
 | E7 |  | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 10d<br>5h | shed, loom |
@@ -94,7 +94,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 6d<br>6d | fabric, batten |
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 3d<br>3d | burler, claude |
 | E27 | L | **Creel delivers agent mail in full at the receiver's next tool boundary**<br>• A reminder plus lyx creel read costs the receiver an extra turn per agent message | [`creel-carry-agent-mail`](design-creel-carry-agent-mail.md) | 2d<br>5h | creel |
-| E28 |  | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 3d<br>2h | dotnet |
+| E28 |  | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 3d<br>3h | dotnet |
 | E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 3d<br>1d | stencil, board, loom |
 | E35 |  | **A landing fixer escalation goes to the arbiter before the orch**<br>• Merge-In and Finalize fixer escalate reports reach the arbiter first | [`landing-escalate-arbiter`](design-landing-escalate-arbiter.md) | 1d<br>5h | shed, loom |
 
@@ -124,4 +124,4 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Sweep go_parallel on OSL-1046 with Cortex XDR**<br>• Time both gate tiers on the work laptop on a quiet machine and log them in docs beside the Neve numbers, with full hardware info | [`bench-osl1046-xdr`](design-bench-osl1046-xdr.md) | 5d<br>1h |  |
 | R4 |  | **Lens overlap audit: which lenses find the same defects, and a smaller set**<br>• twill-plan 8 to 5 lenses recommended; twill-discussion 7 to 4 and review-code 4 to 3 at low confidence | [`lens-overlap-audit`](design-lens-overlap-audit.md) | 3d<br>1h | burler, loom |
 | R5 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 3d<br>1h | webster |
-| R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 3d<br>52m | loom, stencil |
+| R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 3d<br>1h | loom, stencil |
