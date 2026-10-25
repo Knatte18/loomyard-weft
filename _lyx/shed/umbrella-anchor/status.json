@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Bouncer",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Bouncer",
-    "last": "Code-Burler-Fix → bounced to Code-Bouncer",
+    "now": "Drift-Verify",
+    "last": "Code-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -655,6 +655,12 @@
       "at": "2026-10-25T19:31:41Z",
       "budget_exempt": true,
       "routed_to": "Code-Bouncer"
+    },
+    {
+      "producer": "Code-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/umbrella-anchor/_lyx/reviews/code/round-1-bouncer-ledger.md",
+      "at": "2026-10-25T19:31:59Z"
     }
   ],
   "product": {
