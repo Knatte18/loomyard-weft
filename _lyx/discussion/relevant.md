@@ -1,0 +1,32 @@
+# Relevant code — umbrella-anchor
+
+- `internal/lyxcwd/anchor.go` `readRecordedAnchor`, `ValidateAnchorRel`, `AnchorFileName`, `StaleAnchorFileName` — today's Bolt marker read, which moves to the weft root
+- `internal/lyxcwd/lyxcwd.go` `resolveCore`, `ResolveWorktree`, `ResolveWithAnchor`, `buildLocation` — where the per-worktree anchor read lands
+- `internal/lyxcwd/leaf_enforcement_test.go` — pins `lyxcwd`'s import cap that admits `weftname`
+- `internal/weftname/weftname.go` `SiblingPath` — the one declarer of the weft sibling name
+- `pattern/PATTERN-cwd-resolution.md` — the background the PATTERN change edits
+- `internal/fabricengine/doc.go` — the anchor, wiring, scratch and merge-surface sections to rewrite
+- `internal/fabricengine/clone.go` `CloneHub` — writes and adopts the marker on Bolt today
+- `internal/fabricengine/codebinding.go` — the fresh-bind test that reads the marker
+- `internal/fabricengine/reconcile.go` `refuseEmptyAnchorMarker` — the pass-wide empty-marker refusal made per pair
+- `internal/fabricengine/unwire.go` — leaves repo-wide records and must leave the per-weft marker
+- `internal/fabricengine/junction.go` `WarpJunctions`, `unseedGitExclude`, `namesWiredInSiblingWorktrees`, `excludePatternFor` — sibling paths and the exclude census at the acting anchor
+- `internal/fabricengine/weftwiring.go` `RecordsWorktreePath`, `WeftLyxDirFor` — sibling weft paths built from the acting anchor
+- `internal/fabricengine/warplayout.go` `warpLayoutFor` — copies the acting anchor onto hub siblings
+- `internal/fabricengine/forkrecords.go` `createWeftWorktreeDroppingRuns` — scopes the run-records drop under the acting anchor
+- `internal/fabricengine/add.go` `Topology.add` — the fork, origin record and wiring of a new pair
+- `internal/fabricengine/addparent.go` `resolveAddParent` — the `--parent` fork point's Location
+- `internal/fabricengine/checkout.go` `Topology.Checkout` — re-points junctions at the acting anchor on a branch switch
+- `internal/fabricengine/destroy.go` `replaceRecordsContent` — promote's reset to the parent's records tree
+- `internal/fabricengine/launchers.go` `LauncherDir`, `menuLauncherPath`, `launcherSpawnRel`, `menuLauncherRel` — launchers keyed by one anchor
+- `internal/fabricengine/portals.go` — retired-portal sweep keyed by one anchor
+- `internal/fabricengine/hubworkspace.go` `RegenerateHubWorkspace` — workspace folders at each pair's anchor dir
+- `internal/fabricengine/mergepaths.go` `resolveMergeGeometry` — merge geometry from the acting worktree's anchor
+- `internal/fabricengine/remove.go` — sibling weft paths and record commits at the acting anchor
+- `internal/pairteardown/teardown.go` `taskAnchor` — task paths from the prime's anchor
+- `internal/hubgeom/dobbygeom.go` `DobbyGeometry` — a beam's dobby directory at the prime's anchor
+- `internal/beamcli/create.go` `create`, `createSteps` — the beam create sequence `--anchor` joins
+- `internal/beamcli/cli.go` `createCmd` — the beam create command and its help
+- `internal/beamcli/dobbydeps.go` `pairLocation` — pair Locations from the prime's anchor
+- `internal/ideengine/spawn.go` — a pair's open dir from the acting anchor
+- `internal/fabriccli/fabric.go` — the prime base dir from the acting anchor
