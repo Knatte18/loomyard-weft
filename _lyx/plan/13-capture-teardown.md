@@ -12,7 +12,7 @@
 - `internal/pairteardown/doc.go`
 
 **Uses:**
-- `plan:internal/driftengine#CaptureJobName`
+- `internal/driftengine#CaptureJobName`
 - `internal/proc#TerminateNamedJob`
 
 **Intent:**

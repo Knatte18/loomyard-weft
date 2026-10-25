@@ -26,22 +26,22 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/driftengine#UpdateScope`
-- `plan:internal/driftengine#CountedCapture`
-- `plan:internal/driftengine#TakeRun`
-- `plan:internal/driftengine#CheckMainCapture`
-- `plan:internal/driftengine#StartCapture`
-- `plan:internal/driftengine#RunCapture`
-- `plan:internal/driftengine#RunSideCapture`
-- `plan:internal/driftengine#RunCompare`
-- `plan:internal/driftengine#ProbeLock`
+- `internal/driftengine#UpdateScope`
+- `internal/driftengine#CountedCapture`
+- `internal/driftengine#TakeRun`
+- `internal/driftengine#CheckMainCapture`
+- `internal/driftengine#StartCapture`
+- `internal/driftengine#RunCapture`
+- `internal/driftengine#RunSideCapture`
+- `internal/driftengine#RunCompare`
+- `internal/driftengine#ProbeLock`
 - `internal/testkit/lyxbin#Build`
 - `internal/hubforge#NewHub`
 - `internal/hibernatecli#RunCLIIn`
 - `internal/runproc#End`
-- `plan:internal/driftengine#ErrRunsSpent`
-- `plan:internal/driftengine#AgentSessionOpen`
-- `plan:internal/driftengine#CaptureJobName`
+- `internal/driftengine#ErrRunsSpent`
+- `internal/driftengine#AgentSessionOpen`
+- `internal/driftengine#CaptureJobName`
 - `internal/proc#HoldNamedJob`
 
 **Intent:**

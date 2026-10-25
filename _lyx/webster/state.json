@@ -1,22 +1,22 @@
 {
   "runGuid": "2296f03adbfc9b5b6c4ac227639f851c",
-  "planFingerprint": "21d510ee6758af0b1e16a70639f6a7a90b56ca71d36509f550932472abdcec8d",
+  "planFingerprint": "0b18f62e755121f57e3b99d1cdfe26b14ce41ff8378f8dc4547f2b52b4baf3bf",
   "planFileHashes": {
     "00-overview.md": "2fb88d04f73d16d2c7cad26e91f386f18cb7b04f23f762b8fadfc19b4cb73612",
-    "01-drift-config.md": "47da041e655dffa3b7d411a76765399b67281b9d3a556d36e43d1a4ebbeab048",
-    "02-drift-records.md": "f61f309067ae250c896e991ec35d50eea698c88b479ebdf42d3308e93141f072",
+    "01-drift-config.md": "d35e7cd4305029bd8e0a834a57b15b3d5b81c04f17de1a4ed620e313364e84a6",
+    "02-drift-records.md": "e99faed80b2908c4ce8900caabe2d8d8dd085b017f0ab366b94b92f0545912d5",
     "03-drift-verify-gate-key.md": "de6ca8d59d751be75a4e298b7c5c0cf1162a544d0c144e722e0aa71e12cdaa1c",
     "04-job-breakaway.md": "abf20d40c8f793785cbc235b084f68d56983452cb3532e1c9161ff9c801fd759",
-    "05-capture-run.md": "9c9b63c82b65078098569103b293cc3253f992c51c5bbe5ebca15749381e99cd",
-    "06-compare-run.md": "7afa83fd23ec415d6787438ab60066e64f1d632f12768aaa9b63d664e7221e8c",
-    "07-drift-verbs-cli.md": "4dd9782035b6caa4ea5302857479f2ed226a1917d81a233241cd543f06644d01",
-    "08-drift-stencils-tables.md": "20dc57b860d429bf6620493017b8b1d4ced4ac2da2cb3de015298b0e6d37dfcf",
-    "09-drift-baseline-producer.md": "30ec7218f6dcb4d917f9c5e10a422a63774d659ab7266e6f756bb1549c94e91b",
-    "10-drift-await-producer.md": "5bd21961187e966c423ef576810fc180984892267bf978611cb4f28a9fe98349",
-    "11-drift-verify-producer.md": "5248bc2d4a75357dafe3b47e1c306cbc5c3967736c130965ce6ba7b67b18d7fe",
-    "12-drift-activity.md": "24f0cf7e88e7fbe47620bb0beb7c3a717fbf3c0fec6635bc07fd7c61c367ffda",
-    "13-capture-teardown.md": "6ec3ac40480cc6adde7cf5dfdf935adcc2894eae3e8507bb933870ace328d80b",
-    "14-drift-recipe-rows.md": "95380379e32b3f79bea468a3b8dc055dc12ddef5d4946e2c276980cb49408a5f"
+    "05-capture-run.md": "7e6f62d50f4ee960da08219f640c2bf19341276d3a5b7021c0391de37c383b75",
+    "06-compare-run.md": "1f92424481f1c8e1e265b7e930c43ce5fc32c9c7063f96c79c3ef0c4db4100ce",
+    "07-drift-verbs-cli.md": "41ab04a107682e4e9c90b4e7443bd75a3dc64640fadc242ca51822a9ecf895ec",
+    "08-drift-stencils-tables.md": "775d98d5df4328d323c85969ac7ea2d3acd2aa294f0177dc2249511bca4f0632",
+    "09-drift-baseline-producer.md": "d167bee35d2d9784f45bad29400b1fead6f011933b053a59b9f63987b51acfcd",
+    "10-drift-await-producer.md": "4405711a9074a7703f2e8badac1f42e285063172fb4ca56b52a11965eb005e5d",
+    "11-drift-verify-producer.md": "eab65a8deb4cd1ba265abce0ff74ab16b6bff35b437b67e54be8b026cb571d97",
+    "12-drift-activity.md": "13bb511b5629e08dce29199ef89a6a9b850e2b2728a3de03fa5cbca3f5bced68",
+    "13-capture-teardown.md": "5e52e6f5b17789442375c93d2d096a3967834a26725ea33406f4fddb371ce39f",
+    "14-drift-recipe-rows.md": "e38c00e565d8ceab6feaf707535d0f7916e8ce910f1fb25353db70d463460ea5"
   },
   "planOverviewFrameHash": "463ddaa713858a34876301bc07a4b66edc063ce7460c5e5031c54595a9113acd",
   "partition": [
@@ -328,7 +328,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "fa06c5879ed38ce88c7219deaa6de4cf",
   "masterSessionId": "6b74923a-78fd-41c6-8504-f637e840efcb",
   "masterEngine": "claude",
@@ -344,20 +344,52 @@
         "06-compare-run"
       ],
       "cardHashes": {
-        "01-drift-config": "47da041e655dffa3b7d411a76765399b67281b9d3a556d36e43d1a4ebbeab048",
-        "02-drift-records": "f61f309067ae250c896e991ec35d50eea698c88b479ebdf42d3308e93141f072",
+        "01-drift-config": "d35e7cd4305029bd8e0a834a57b15b3d5b81c04f17de1a4ed620e313364e84a6",
+        "02-drift-records": "e99faed80b2908c4ce8900caabe2d8d8dd085b017f0ab366b94b92f0545912d5",
         "03-drift-verify-gate-key": "de6ca8d59d751be75a4e298b7c5c0cf1162a544d0c144e722e0aa71e12cdaa1c",
         "04-job-breakaway": "abf20d40c8f793785cbc235b084f68d56983452cb3532e1c9161ff9c801fd759",
-        "05-capture-run": "9c9b63c82b65078098569103b293cc3253f992c51c5bbe5ebca15749381e99cd",
-        "06-compare-run": "7afa83fd23ec415d6787438ab60066e64f1d632f12768aaa9b63d664e7221e8c"
+        "05-capture-run": "7e6f62d50f4ee960da08219f640c2bf19341276d3a5b7021c0391de37c383b75",
+        "06-compare-run": "1f92424481f1c8e1e265b7e930c43ce5fc32c9c7063f96c79c3ef0c4db4100ce"
       },
       "startSha": "7fcbfecb6a904f18e6453966a1474f05ea3fddf4",
       "kind": "fork",
       "spawnedAt": "2026-10-25T16:19:31Z",
       "sessionId": "6b74923a-78fd-41c6-8504-f637e840efcb",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-drift-config",
+        "status": "done",
+        "head_sha": "76e4c93d371b1bbe32e7fea59e0d4e3dab0afea1",
+        "deviations": [
+          "internal/configcli/configcli.go",
+          "internal/configreg/configreg_test.go",
+          "internal/driftengine/capture.go",
+          "internal/driftengine/capture_test.go",
+          "internal/driftengine/checkmain.go",
+          "internal/driftengine/compare_test.go",
+          "internal/driftengine/config.go",
+          "internal/driftengine/config_test.go",
+          "internal/driftengine/paths.go",
+          "internal/driftengine/records.go",
+          "internal/driftengine/spawn.go",
+          "internal/driftengine/spawn_test.go",
+          "internal/driftengine/steprun.go"
+        ]
+      },
+      "cardShas": [
+        "76e4c93d371b1bbe32e7fea59e0d4e3dab0afea1"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-regression-baseline-verify/6b74923a-78fd-41c6-8504-f637e840efcb/subagents/agent-a16acca756a142be4.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-regression-baseline-verify/6b74923a-78fd-41c6-8504-f637e840efcb/subagents/agent-a16acca756a142be4.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-regression-baseline-verify/6b74923a-78fd-41c6-8504-f637e840efcb/subagents/agent-a16acca756a142be4.jsonl"
+  ]
 }

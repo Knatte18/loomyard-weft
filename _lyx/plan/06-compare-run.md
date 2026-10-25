@@ -1,12 +1,12 @@
 # Card 6 — compare-run
 
 **Create:**
-- `plan:internal/driftengine#CompareRequest` -> `type CompareRequest struct`
-- `plan:internal/driftengine#CompareResult` -> `type CompareResult struct`
-- `plan:internal/driftengine#RunCompare` -> `func RunCompare(ctx context.Context, req CompareRequest) (CompareResult, error)`
-- `plan:internal/driftengine#SkipList` -> `func SkipList(scope ScopeRecord) []string`
-- `plan:internal/driftengine#TestRunCompare` -> `func TestRunCompare(t *testing.T)`
-- `plan:internal/driftengine#TestSkipList` -> `func TestSkipList(t *testing.T)`
+- `internal/driftengine#CompareRequest`
+- `internal/driftengine#CompareResult`
+- `internal/driftengine#RunCompare`
+- `internal/driftengine#SkipList`
+- `internal/driftengine#TestRunCompare`
+- `internal/driftengine#TestSkipList`
 
 **Edit:**
 - `internal/gateslot/doc.go`
@@ -15,9 +15,9 @@
 - `internal/driftengine/doc.go`
 
 **Uses:**
-- `plan:internal/driftengine#RunCapture`
-- `plan:internal/driftengine#ProbeLock`
-- `plan:internal/driftengine#ScopeRecord`
+- `internal/driftengine#RunCapture`
+- `internal/driftengine#ProbeLock`
+- `internal/driftengine#ScopeRecord`
 
 **Intent:**
 Build the compare run (D6) on the runner `RunCapture` uses: the mechanical compare `Drift-Verify` runs itself and the one `lyx drift compare` runs for its agent.

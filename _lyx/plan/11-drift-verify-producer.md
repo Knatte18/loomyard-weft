@@ -20,15 +20,15 @@
 
 **Uses:**
 - `plan:internal/driftengine#VerifyTable`
-- `plan:internal/driftengine#RunCompare`
-- `plan:internal/driftengine#CountedCapture`
-- `plan:internal/driftengine#ResetRuns`
-- `plan:internal/driftengine#AttemptHead`
-- `plan:internal/driftengine#AgentSessionOpen`
-- `plan:internal/driftengine#CloseAgentSession`
-- `plan:internal/driftengine#DirRel`
-- `plan:internal/driftengine#ScopeRecord.Unruled`
-- `plan:internal/driftengine#UpdateScope`
+- `internal/driftengine#RunCompare`
+- `internal/driftengine#CountedCapture`
+- `internal/driftengine#ResetRuns`
+- `internal/driftengine#AttemptHead`
+- `internal/driftengine#AgentSessionOpen`
+- `internal/driftengine#CloseAgentSession`
+- `internal/driftengine#DirRel`
+- `internal/driftengine#ScopeRecord.Unruled`
+- `internal/driftengine#UpdateScope`
 - `internal/shedadapters#NewMultiLLMProducerSourced`
 - `internal/loomshed#NewVerifyGate`
 - `internal/testkit/shedfake#SeatRunner`

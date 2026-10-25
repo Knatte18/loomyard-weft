@@ -11,10 +11,10 @@
 
 **Uses:**
 - `plan:internal/driftengine#awaitCaptureEnd`
-- `plan:internal/driftengine#ReadScope`
-- `plan:internal/driftengine#ReadCapture`
-- `plan:internal/driftengine#UpdateScope`
-- `plan:internal/driftengine#DirRel`
+- `internal/driftengine#ReadScope`
+- `internal/driftengine#ReadCapture`
+- `internal/driftengine#UpdateScope`
+- `internal/driftengine#DirRel`
 
 **Intent:**
 Add `Drift-Await`, the mechanical row that holds `Webster` until the baseline exists (D5); it spawns nothing.
