@@ -21,8 +21,8 @@
 - `internal/shedarbiter#Seam`
 - `internal/shedarbiter#ConsumeAttempt`
 - `internal/sheddriver#ResolveArbiter`
-- `plan:internal/arbiterstop#NewBattenReaders`
-- `plan:internal/arbiterstop#BattenHandBackWayForward`
+- `internal/arbiterstop#NewBattenReaders`
+- `internal/arbiterstop#BattenHandBackWayForward`
 
 **Intent:**
 Wire the arbiter into batten's Go driver, so every shed-driven recipe's stop chain is the rule table, the tackler, the arbiter and then the parent (D8).

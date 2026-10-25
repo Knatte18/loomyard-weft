@@ -8,9 +8,9 @@
 - `internal/arbiterstop/doc.go`
 
 **Create:**
-- `plan:internal/arbiterstop#NewBattenReaders` -> `func NewBattenReaders() Readers`
-- `plan:internal/arbiterstop#BattenHandBackWayForward` -> `const BattenHandBackWayForward = ""`
-- `plan:internal/arbiterstop#TestEligibility_BattenRule` -> `func TestEligibility_BattenRule(t *testing.T)`
+- `internal/arbiterstop#NewBattenReaders`
+- `internal/arbiterstop#BattenHandBackWayForward`
+- `internal/arbiterstop#TestEligibility_BattenRule`
 
 **Intent:**
 Give the arbiter's eligibility a rule per recipe (D8): for batten, a stop the tackler escalated is eligible unless it is a hand-back, which goes to the run's parent as today; loom's and darn's rules are unchanged.
