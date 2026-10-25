@@ -246,6 +246,12 @@ Decision: D7 step 1's list of writers a standing move record stops gains checkou
 
 Rationale: Recovery acts on the branch the record was written on, so a checkout while the record stands would point recovery at the wrong branch.
 
+### Added after Discussion (parent, 2026-10-25): Batch 06: accept the false fabric-reference audit findings
+
+Decision: Webster runs 'lyx webster accept-audit --batch 6', then 'recover-batch 6' on a clean worktree; no reset of batch 06. Card 7's commit made by the batch 06 fork stays as card 7's existing work, which card 7's own batch verifies through its gate. Later forks quote the card 6 slug in commands.
+
+Rationale: The findings are false: the card slug 6-clone-records-marker-on-prime-weft ends in the weft suffix, and the refscanner's bare-word rule flags any unquoted word ending in -weft, so every 'lyx gate test --card 6-...' matched (#874); the fork touched no fabric repo. A reset would re-run the same commands into the same finding.
+
 ## Constraints
 
 - The weft is never a merge participant (`fabricengine/doc.go`, "The merge surface"), so landing never touches the parent's weft or its marker; the entry's "kept out of the merge as raddle is" needs no mechanism.
