@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-25 19:30 UTC; every age below is as of then.
+Rendered 2026-10-25 19:31 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -18,7 +18,7 @@ grouping
 
 | # | Member | Kind | Standing |
 | --- | --- | --- | --- |
-| T3 | **An anchor per beam** | Task | Code-Burler-Review |
+| T3 | **An anchor per beam** | Task | Code-Burler-Fix |
 
 ### P2 .NET: LoomYard for C# repositories
 
@@ -40,7 +40,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **An anchor per beam**<br>• Let each worktree carry its own anchor through a .lyx-anchor marker at its weft branch root, inherited by its tasks, with a verb that changes it<br>• `profile: solid` | [`umbrella-anchor`](design-umbrella-anchor.md) | loom | Code-Burler-Review | neve | 7d<br>6h | fabric, config, workspaces |
+| T3 | **An anchor per beam**<br>• Let each worktree carry its own anchor through a .lyx-anchor marker at its weft branch root, inherited by its tasks, with a verb that changes it<br>• `profile: solid` | [`umbrella-anchor`](design-umbrella-anchor.md) | loom | Code-Burler-Fix | neve | 7d<br>6h | fabric, config, workspaces |
 
 ### Ready (0)
 
@@ -71,7 +71,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B5 |  | **Darn-Write seat start dies: provider pane drops to a shell prompt after the prompt text** | [`seat-start-long-prompt-dies`](design-seat-start-long-prompt-dies.md) | 3h<br>3h | shuttle |
 | B6 |  | **shuttle start fails on transient tmux fork/exec EAGAIN and leaves the strand behind** | [`shuttle-retry-tmux-eagain`](design-shuttle-retry-tmux-eagain.md) | 3h<br>3h | shuttle, reed |
 | B7 |  | **gate tier1 fails on a stale Go vet cache entry naming a torn-down worktree** | [`gate-stale-vet-cache-path`](design-gate-stale-vet-cache-path.md) | 3h<br>3h | gate |
-| B8 |  | **Shuttle hold notices fire while Merriam waits on its own background recovery** | [`no-hold-notice-on-bg-wait`](design-no-hold-notice-on-bg-wait.md) | 3h<br>25m | shuttle, webster |
+| B8 |  | **Shuttle hold notices fire while Merriam waits on its own background recovery** | [`no-hold-notice-on-bg-wait`](design-no-hold-notice-on-bg-wait.md) | 3h<br>27m | shuttle, webster |
 
 ### Enhancements (19)
 
@@ -84,16 +84,16 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E5 |  | **Decide the layout of projects in the board README**<br>• The operator is not satisfied with how the README renders projects and their members; the layout is to be decided | [`board-projects-layout`](design-board-projects-layout.md) | 13h<br>13h | board |
 | E6 |  | **Board README: one rendered file per project, research notes first**<br>• Each project renders its own file linked from its parent; README.md is the root project; research notes come right after tasks | [`readme-per-project-files`](design-readme-per-project-files.md) | 1h<br>1h | board |
 | E7 |  | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 11d<br>7h | shed, loom |
-| E8 |  | **Darn runs Drift-Await after Drift-Baseline instead of a waiting capture** | [`darn-drift-await-row`](design-darn-drift-await-row.md) | 16m<br>16m | shed, loom |
+| E8 |  | **Darn runs Drift-Await after Drift-Baseline instead of a waiting capture** | [`darn-drift-await-row`](design-darn-drift-await-row.md) | 17m<br>17m | shed, loom |
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 2w<br>1d | burler, stencil |
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 10d<br>10d | board, loom |
-| E11 |  | **Loom and darn Finalize resolve a moved parent themselves instead of rerouting** | [`loom-finalize-merges-itself`](design-loom-finalize-merges-itself.md) | 5m<br>0m | loom, batten |
+| E11 |  | **Loom and darn Finalize resolve a moved parent themselves instead of rerouting** | [`loom-finalize-merges-itself`](design-loom-finalize-merges-itself.md) | 6m<br>1m | loom, batten |
 | E13 |  | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 9d<br>3d | stencil, shuttle |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 7d<br>7d | webster, fabric, loom |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 7d<br>7d | fabric, batten |
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 3d<br>3d | burler, claude |
 | E27 | L | **Creel delivers agent mail in full at the receiver's next tool boundary**<br>• A reminder plus lyx creel read costs the receiver an extra turn per agent message | [`creel-carry-agent-mail`](design-creel-carry-agent-mail.md) | 2d<br>7h | creel |
-| E28 |  | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 3d<br>51m | dotnet |
+| E28 |  | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 3d<br>53m | dotnet |
 | E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 3d<br>1d | stencil, board, loom |
 | E35 |  | **A landing fixer escalation goes to the arbiter before the orch**<br>• Merge-In and Finalize fixer escalate reports reach the arbiter first | [`landing-escalate-arbiter`](design-landing-escalate-arbiter.md) | 1d<br>7h | shed, loom |
 
