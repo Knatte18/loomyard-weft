@@ -1,0 +1,39 @@
+# Relevant files
+
+- `contracts/recipes/loom-recipe.yaml` — Discussion-Write's `parent-review` gate, the `Merge-In` row and its edges, the retired-row restart rule
+- `contracts/recipes/darn-recipe.yaml` — comments naming Merge-In; darn has no Discussion perch
+- `internal/alignment/doc.go` `DecisionNoteTitle` — the agent's single `parent-review` point and the decision-note title form
+- `internal/parentreview/doc.go` — the round store and gate closures the task removes
+- `internal/shedrecipe/entries_gate.go` — registers the `parent-review` gate kind
+- `internal/shedrecipe/recipe.go` `Env.ParentReview` — the gate's config passthrough
+- `internal/loomengine/template.yaml` — alignment and parent-review keys, `discussion_reviewer_fan` and `discussion_lenses` defaults
+- `internal/loomengine/config.go` `LoomParentReviewDir`, `LoomParentReviewLockDir` — parent-review paths and alignment config fields
+- `internal/loomcli/decision.go` `decisionWayNoRecord` — uses `DecisionNoteTitle`; refuses a darn run before its record
+- `internal/orchengine/prompt.go` — renders the decision-note title into the orch role
+- `internal/battencli/wire.go` `ReviewWait` — batten reads the parent-review wait note
+- `internal/reportengine/wakes.go` — counts parent-review deliveries and alignment attempts from archived records
+- `internal/reportengine/runs.go` — holds parent rounds and alignment attempts per run
+- `internal/reportengine/timingstops.go` — reads applied alignment attempts against stops
+- `internal/lenses/template.yaml` — `goal-scope`, `board-fit`, `review-discussion` and `twill-discussion`
+- `internal/burlerengine/verdict.go` `ClassDecision`, `GatingClass` — the `decision` class does not gate a loop
+- `internal/shedadapters/doc.go` — the Bouncer's verdict, escalation causes, soft-cap rule, auto-accept and the fix row's decision notice
+- `internal/shedadapters/burlerfix.go` — ties withholding `decision` findings to a told notifier
+- `internal/arbiterstop/doc.go` — which escalation causes the arbiter may settle
+- `contracts/stencils/loom/loom-template-alignment.md` — the alignment agent's escalation rules `board-fit` takes over
+- `contracts/stencils/loom/loom-template-discussion.md` — the Discussion writer's parent-review sections and carve-outs
+- `contracts/stencils/darn/darn-template-write.md` — the darn writer's steps and parent-correction rules
+- `contracts/stencils/parent/parent-directive-parent.md` — how a role asks its parent and trusts decision notices
+- `contracts/stencils/orch/orch-template-role.md` — the orch's Parent-review section, decision-note rule and Merge-In landing text
+- `contracts/stencils/burler/burler-review-format.md` — the generic finding-class meanings
+- `internal/shuttleengine/doc.go` — a turn end without every output file is held with a hold notice
+- `internal/landingshed/mergein.go` `MergeIn`, `NewMergeIn` — the Merge-In producer the rename covers
+- `internal/landingshed/fixer.go` `FixerModeMergeIn` — the fixer mode string
+- `internal/landingshed/template.yaml` — `merge_fix_attempts`
+- `internal/loomshed/loomshed.go` `NameMergeIn` — the row-name constant
+- `internal/shedrecipe/registry.go` — the `MergeIn` engine key
+- `internal/gateslot/config.go` — the `merge-in` gate key of the `landing` call
+- `internal/fabricengine/taskpatch.go` `MergeInOnly` — fabric's git-level merge-in, out of the rename
+- `internal/loomcli/peers.go` — `lyx loom peers`, the in-flight runs and parent commits `board-fit` and the darn writer read
+- `internal/shedengine/doc.go` `RenameProducers` — carries in-flight runs across a row rename
+- `internal/loomrecipe/darnrecipe.go` `DarnRetiredRows` — the precedent rename table for `Darn` to `Darn-Write`
+- `internal/loomcli/darnwiring.go` — wires darn's row renames into the run
