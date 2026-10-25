@@ -960,7 +960,7 @@
       "isolated": false,
       "brief": "Rename the overview window to beam: \u003cslug\u003e, with one dobby and one orch section, each run shown once",
       "body": "## Seen (operator, 2026-10-25)\n\nThe overview window, the `runs` strand running `lyx batten overview`, shows the orch's context line, the runs in flight, and since `dobby-overview-window` the worktree's dobby with its runs, so the runs show in two places.\nIts name, overview, says neither that it belongs to a beam nor what it covers.\n\n## Design (operator, 2026-10-25)\n\nThe overview window becomes the beam's own window, named `beam: \u003cslug\u003e`, `beam: prime` in the prime, with one section per part of the beam:\n\n- Dobby: alive, `max_runs`, each run it drives with its state and stage, and each released task it has not started with what it waits on.\n- Orch: its context reading against the soft threshold and the hard cap, and its cycle state, as the context line shows today.\n\nEach run shows once, in the dobby section.\nA beam's window shows its own orch and the orchs of every beam below it.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Describe",
       "created": "2026-10-25T18:14:24Z",
       "revised": "2026-10-25T18:14:24Z",
       "owner_machine": "neve"
