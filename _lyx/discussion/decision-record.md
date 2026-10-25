@@ -280,6 +280,12 @@ Rationale: Recovery acts on the branch the record was written on, so a checkout 
   - origin-reconcile-moves-weft-past-d10 (class design, severity BLOCKING, open in rounds 3)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 3: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-3-review.md; fixer report: _lyx/reviews/plan/round-3-fixer-report.md.
+  - card14-temp-index-no-gitexec-seam (class scope, severity MEDIUM, open in rounds 3)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - Two pairs in one hub with different markers each resolve their own `AnchorRel`, and the cwd gate refuses each at the other's anchor.
