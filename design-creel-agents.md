@@ -14,12 +14,11 @@ Creel is a prerequisite for Codex; the Codex-readiness plan's interim `neutral-p
 
 ## Scope (stage 3 of the creel design, plus the Codex-readiness findings)
 
-- The parent-review gate (`internal/parentreview/gate.go`, which today prompts Discussion-Write to `SendMessage` the parent) posts itself.
 - Drivers' stop reports post instead of duplicating batten's notices over `SendMessage`.
 - `lyx shuttle send` and `lyx shuttle interrupt` move behind creel.
 - The parent directive (`contracts/stencils/parent/parent-directive-parent.md`), rendered for every role with a parent, says to ask through creel, not "by `SendMessage`".
 - `shuttleengine/hold.go`'s hold notice names creel, not `SendMessage`.
-- The other stencils that name `SendMessage` (`seat-directive-{chair,advisor}`, `loom-template-discussion-advisor.md`, `shed-template-driver-notify{,-watched}.md`, `loom-template-parent-review-delivery.md`, `webster-template-master.md`, the orch role) move to creel where the Discussion finds it fits; what stays Claude-only is declared through `Spec.Requires`.
+- The other stencils that name `SendMessage` (`seat-directive-{chair,advisor}`, `loom-template-discussion-advisor.md`, `shed-template-driver-notify{,-watched}.md`, `webster-template-master.md`, the orch role) move to creel where the Discussion finds it fits; what stays Claude-only is declared through `Spec.Requires`.
 
 Block 7 (`message-agent`) of the stencil audit (`docs/research/stencil-engine-audit-2026-10-24/report.md`) is the full site list, stencils, specs and Go sites.
 

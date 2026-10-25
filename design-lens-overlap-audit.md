@@ -32,6 +32,8 @@ Merging `guard-reach` and `way-forward` as well is not supported by the data.
 
 ### `twill-discussion` (7 lenses), low confidence
 
+Since 5e449651f `goal-scope` and `board-fit` are rewritten procedure lenses that also run in the `review-discussion` fan.
+
 No lens-review file exists for the Discussion writer; one run's fork reports were read in full.
 Agent recommendation, not a decision: 4 lenses, `decision-chain` (`interactions` + `walkthrough`, keeping the case-based procedure), `code-claims` (`bound-breaker` + `existing-paths`), `board-scope` (`goal-scope` + `board-fit`), `leanness`.
 In the review fan, `bound-breaker` is the strongest lens (11 of 15 lens BLOCKING findings), `walkthrough` raised no BLOCKING.

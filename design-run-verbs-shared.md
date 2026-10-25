@@ -17,7 +17,7 @@ For now the verbs stay under `lyx loom` (operator, 2026-10-14).
 
 ## Open
 
-- The shared namespace's name, and which module owns it: the layer above shed that both recipes share (decision record, parent review, approve and reject) has no module of its own today; `internal/loomcli` serves darn runs too.
+- The shared namespace's name, and which module owns it: the layer above shed that both recipes share (the decision record) has no module of its own today; `internal/loomcli` serves darn runs too.
 - Which verbs are recipe-neutral and which are loom's own.
 - Every stencil, way-forward text and doc that names `lyx loom <verb>` for a darn run changes with it.
 - Relates to `perch-budget-arbiter`, which gives darn and loom one config shape for review budgets.
