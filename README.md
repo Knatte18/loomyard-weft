@@ -41,7 +41,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **An adopt runs the test suite on the adopting machine**<br>• Catch breaks from a machine change (Ubuntu 26.04, 24.04, Windows 11) at adopt time<br>• `profile: light` | [`adopt-runs-tests`](design-adopt-runs-tests.md) | darn | PR-Review | neve | 1d<br>18m | fabric, gate |
+| T1 | **An adopt runs the test suite on the adopting machine**<br>• Catch breaks from a machine change (Ubuntu 26.04, 24.04, Windows 11) at adopt time<br>• `profile: light` | [`adopt-runs-tests`](design-adopt-runs-tests.md) | darn | Finalize | neve | 1d<br>18m | fabric, gate |
 
 ### Ready (1)
 
