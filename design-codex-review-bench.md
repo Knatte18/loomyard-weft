@@ -1,6 +1,6 @@
 # Bench Codex as a Burler reviewer against Claude reviews of finished runs
 
-`codex-review-bench` · Task · feature, codex, burler · running · Describe
+`codex-review-bench` · Task · feature, codex, burler · running · Finalize
 
 ## Goal (operator, 2026-10-25)
 
