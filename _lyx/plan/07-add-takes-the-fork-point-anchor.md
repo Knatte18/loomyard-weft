@@ -9,7 +9,7 @@
 - `plan:internal/fabricengine#refuseEmptyOwnMarker` -> `func refuseEmptyOwnMarker(weftPath string) error`
 
 **Uses:**
-- `plan:internal/hubforge#ReanchorPair`
+- `internal/hubforge#ReanchorPair`
 - `internal/fabricengine#resolveAddParent`
 - `internal/fabricengine#createWeftWorktreeDroppingRuns`
 - `internal/fabricengine#writeLaunchers`

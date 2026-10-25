@@ -17,11 +17,11 @@
 - `internal/pairteardown_test#TestRun_TeardownScenario`
 
 **Create:**
-- `plan:internal/fabriccli_test#TestRunCLI_ReconcileFromAPairAtAnotherAnchor` -> `func TestRunCLI_ReconcileFromAPairAtAnotherAnchor(t *testing.T)`
+- `internal/fabriccli_test#TestRunCLI_ReconcileFromAPairAtAnotherAnchor`
 
 **Uses:**
 - `internal/lyxcwd#NamedWorktree`
-- `plan:internal/hubforge#ReanchorPair`
+- `internal/hubforge#ReanchorPair`
 - `internal/ideengine#resolveSpawnTarget`
 
 **Intent:**

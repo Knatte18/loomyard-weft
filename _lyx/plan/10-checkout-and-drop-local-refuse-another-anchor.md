@@ -14,7 +14,7 @@
 - `plan:internal/fabricengine#refuseEmptyOwnMarker`
 - `plan:internal/fabricengine#ErrAnchorChange`
 - `internal/lyxcwd#NamedWorktree`
-- `plan:internal/hubforge#ReanchorPair`
+- `internal/hubforge#ReanchorPair`
 - `internal/fabricengine#Topology.switchOrForkWeft`
 - `internal/fabricengine#resolveWeftBranch`
 - `internal/hubforge#CloneSecond`

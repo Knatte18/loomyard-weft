@@ -7,7 +7,7 @@
 
 **Uses:**
 - `internal/lyxcwd#NamedWorktree`
-- `plan:internal/hubforge#ReanchorPair`
+- `internal/hubforge#ReanchorPair`
 - `internal/fabricengine#excludePatternFor`
 
 **Intent:**

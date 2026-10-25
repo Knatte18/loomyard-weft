@@ -19,7 +19,7 @@
 - `internal/fabricengine_test#TestReconcile_SweepsRetiredHubArtifacts`
 
 **Create:**
-- `plan:internal/hubforge#ReanchorPair` -> `func ReanchorPair(tb testing.TB, h *Hub, slug, anchor string)`
+- `internal/hubforge#ReanchorPair`
 
 **Uses:**
 - `internal/lyxcwd#NamedWorktree`
