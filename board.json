@@ -775,6 +775,30 @@
       "body": "## Seen (2026-10-25)\n\nNothing shows what a dobby does or whether it lives.\nIts log, `\u003cweft\u003e/.lyx/beam/markers/dobby.log`, stays empty unless a tick fails, and its `state.json` records only pass times, plus every run it ever saw, long-landed ones marked `full_pass_owed`.\n`lyx beam` has no status verb.\nA released task with no dependencies (`umbrella-anchor`) sat unstarted for minutes beside a live dobby, and nothing said why.\n\n## Idea (operator, 2026-10-25)\n\nEvery beam, the prime included, gets its own reed window, a dobby overview: whether its dobby is alive, the runs it drives with their row and last pass, and each task that waits, with what it waits on (dependencies, `max_runs`, a pause, a refused start and its backoff).\nThe same view is printable once, such as by `lyx beam status`, and dobby writes one log line each time it starts a task or gives a run a pass.\n",
       "created": "2026-10-25T12:38:03Z",
       "revised": "2026-10-25T12:38:03Z"
+    },
+    {
+      "id": 813,
+      "handle": "T1",
+      "slug": "dobby-skip-done-runs",
+      "title": "Dobby counts no done run against max_runs",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "batten",
+        "workspaces"
+      ],
+      "issues": [
+        872
+      ],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Done batten runs neither count as in flight nor stay in dobby state, so released tasks start",
+      "body": "## Seen (2026-10-25, issue #872)\n\nThe prime's dobby started no released, ready task (`umbrella-anchor`, `max_runs` 3).\n`parentRuns` (`internal/beamcli/dobbydeps.go`) lists every batten status file under the prime's `_lyx/shed/` without reading its state, and `runsInFlight` (`internal/dobbyengine/starts.go`) counts them all, so 74 records in state `done` counted as in flight and `startReady` stopped at `max_runs`.\nDobby's `state.json` also kept a `full_pass_owed` entry for every one of them.\nWorkaround used: `lyx batten cleanup --apply` in the prime.\n\n## Fix (operator, 2026-10-25)\n\n- A run whose batten state is `done` never counts against `max_runs` and is never planned a pass.\n- Dobby's state record drops its entry for a done run once nothing more is owed it, so `state.json` holds only live runs.\n- The board tidy's landing count still reads done runs' history as it does now; only the in-flight count and the pass planning skip them.\n- A test pins it: done records beside a released ready task, and dobby starts the task.\n",
+      "status": "draft",
+      "created": "2026-10-25T12:41:18Z",
+      "revised": "2026-10-25T12:41:18Z",
+      "profile": "light"
     }
   ],
   "prime_owner": "neve",
