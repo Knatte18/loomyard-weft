@@ -1,6 +1,6 @@
 # One lyx beam start brings a beam up: dobby and orch together, with lyx s
 
-`beam-start-verbs` · Task · enhancement, orch, workspaces · draft
+`beam-start-verbs` · Task · enhancement, orch, workspaces
 
 Depends on: [`umbrella-anchor`](design-umbrella-anchor.md)
 
