@@ -1,10 +1,10 @@
 ---
 round: 1
 focus:
-  - "Amendment scope: the Parent-Align merge of afd030a47 (beam window, `orchcli.HubOrchs`, `orchcli.PrimePaths`, moved `DobbyRunCells`). Check that the merged code resolves each worktree through `lyxcwd.ResolveWorktree` and reads that pair's own marker, as the decision record's anchor decisions (D2, D3, D7) require."
-  - "Check the merged parent code for any `lyxcwd.Location` literal or hand-built path the anchor change forbids in production code; verify the claim in the fixer report that the only new literal is in `overview_test.go`."
-  - "Check that the text-only overlaps (`docs/overview.md`, `internal/beamcli/cli.go`, `internal/beamcli/doc.go`) keep both the parent's beam-window text and the task's anchor changes, with no dropped or contradictory sentence."
-  - "Check that the fixer report's claims about what it changed under `## Fixes` are borne out by the diff since the settle, and that nothing outside the amendment is touched."
+  - "Amendment scope: compare the working-tree diff against `settle-record.patch` and review only what changed since the settle; settled code is out of scope."
+  - "Parent-Align report: check that commit 9c167c500 (research record under `docs/research/codex-astra-solo-bench-2026-10-25/`) leaves the task's `lyxcwd`, `fabricengine`, `fabriccli` and `beamcli` changes consistent with the answer key, as the report claims."
+  - "The allowlist for the quoted PATTERN link in the `P4/opus-medium-r1.md` review record (commit 015a8b14e): settle whether the `lyxcwd` markdown-link enforcement test still rejects genuinely broken links, or whether the allowlist is wider than that one record."
+  - "The report's claim that `TestEnforcement_MarkdownLinks` and the D3 Location literal scan are green: settle whether the allowlist change weakens either scan for files outside the research record."
 ---
 
-Seed focus for an amendment round: the review input is the Parent-Align fixer report, so the question is whether the alignment keeps the merged tree consistent with the decision record.
+Seed focus for an amendment round; the alignment brought only additions under `docs/research/`, so the risk sits in the allowlist edit.
