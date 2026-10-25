@@ -6,7 +6,7 @@
 - `internal/fabricengine_test#TestAdd_DropsParentRunRecords_SubpathAnchor`
 
 **Create:**
-- `plan:internal/fabricengine#refuseEmptyOwnMarker` -> `func refuseEmptyOwnMarker(weftPath string) error`
+- `internal/fabricengine#refuseEmptyOwnMarker`
 
 **Uses:**
 - `internal/hubforge#ReanchorPair`

@@ -29,7 +29,7 @@
 - `internal/fabricengine_test#TestCloneHub_OldOrderInvocationIsRefused`
 
 **Create:**
-- `plan:internal/fabricengine#commitAnchorMarker` -> `func commitAnchorMarker(rec *Mutations, weftPath, anchor, subject string) (string, error)`
+- `internal/fabricengine#commitAnchorMarker`
 
 **Uses:**
 - `internal/fabricengine#RecordsBranchName`

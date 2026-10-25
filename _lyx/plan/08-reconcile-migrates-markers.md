@@ -20,8 +20,8 @@
 - `plan:internal/fabricengine_test#TestTreeAnchor` -> `func TestTreeAnchor(t *testing.T)`
 
 **Uses:**
-- `plan:internal/fabricengine#refuseEmptyOwnMarker`
-- `plan:internal/fabricengine#commitAnchorMarker`
+- `internal/fabricengine#refuseEmptyOwnMarker`
+- `internal/fabricengine#commitAnchorMarker`
 - `internal/lyxcwd#NamedWorktree`
 - `internal/hubforge#ReanchorPair`
 - `internal/fabricengine#ReconcilePairResult`
