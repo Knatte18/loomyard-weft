@@ -31,7 +31,7 @@
 - `plan:internal/fabricengine#moveLockPath`
 - `plan:internal/fabricengine#MoveRecordPath`
 - `plan:internal/fabricengine#RemoveMoveRecord`
-- `plan:internal/lyxcwd#NamedWorktree`
+- `internal/lyxcwd#NamedWorktree`
 
 **Intent:**
 D6. The flag reaches only the pair being created: `AddOptions` gains `Anchor string`, set only by `lyx beam create --anchor`; `lyx fabric add` and `lyx beam promote` take no such flag.

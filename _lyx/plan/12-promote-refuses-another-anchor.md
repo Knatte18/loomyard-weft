@@ -12,7 +12,7 @@
 - `plan:internal/fabricengine_test#TestParentRecordsAnchor` -> `func TestParentRecordsAnchor(t *testing.T)`
 
 **Uses:**
-- `plan:internal/lyxcwd#NamedWorktree`
+- `internal/lyxcwd#NamedWorktree`
 - `plan:internal/fabricengine#treeAnchor`
 - `plan:internal/hubforge#ReanchorPair`
 - `internal/fabricengine#recordsBranchTip`

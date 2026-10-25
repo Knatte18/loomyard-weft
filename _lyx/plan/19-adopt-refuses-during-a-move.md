@@ -10,7 +10,7 @@
 
 **Uses:**
 - `plan:internal/fabricengine#MoveInProgress`
-- `plan:internal/lyxcwd#NamedWorktree`
+- `internal/lyxcwd#NamedWorktree`
 
 **Intent:**
 D7's adopt refusal.

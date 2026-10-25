@@ -22,7 +22,7 @@
 - `plan:internal/hubforge#ReanchorPair` -> `func ReanchorPair(tb testing.TB, h *Hub, slug, anchor string)`
 
 **Uses:**
-- `plan:internal/lyxcwd#NamedWorktree`
+- `internal/lyxcwd#NamedWorktree`
 - `internal/fabricengine#OriginRecordPathFor`
 - `internal/fabricengine#LauncherDir`
 - `internal/fabricengine#removeLaunchers`

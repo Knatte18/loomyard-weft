@@ -20,7 +20,7 @@
 - `plan:internal/fabriccli_test#TestRunCLI_ReconcileFromAPairAtAnotherAnchor` -> `func TestRunCLI_ReconcileFromAPairAtAnotherAnchor(t *testing.T)`
 
 **Uses:**
-- `plan:internal/lyxcwd#NamedWorktree`
+- `internal/lyxcwd#NamedWorktree`
 - `plan:internal/hubforge#ReanchorPair`
 - `internal/ideengine#resolveSpawnTarget`
 

@@ -22,7 +22,7 @@
 **Uses:**
 - `plan:internal/fabricengine#refuseEmptyOwnMarker`
 - `plan:internal/fabricengine#commitAnchorMarker`
-- `plan:internal/lyxcwd#NamedWorktree`
+- `internal/lyxcwd#NamedWorktree`
 - `plan:internal/hubforge#ReanchorPair`
 - `internal/fabricengine#ReconcilePairResult`
 - `internal/fabricengine#Topology.repairPairWiring`

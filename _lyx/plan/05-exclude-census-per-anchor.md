@@ -6,7 +6,7 @@
 - `internal/fabricengine_test#TestUnwire_LeavesSiblingWorktreeUndirtied`
 
 **Uses:**
-- `plan:internal/lyxcwd#NamedWorktree`
+- `internal/lyxcwd#NamedWorktree`
 - `plan:internal/hubforge#ReanchorPair`
 - `internal/fabricengine#excludePatternFor`
 

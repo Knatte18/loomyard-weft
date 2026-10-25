@@ -23,7 +23,7 @@
 **Uses:**
 - `plan:internal/fabricengine#weftAnchorStop`
 - `plan:internal/fabricengine#refuseEmptyOwnMarker`
-- `plan:internal/lyxcwd#NamedWorktree`
+- `internal/lyxcwd#NamedWorktree`
 - `internal/fabricengine#reconcileRecordsBranch`
 - `internal/fabricengine#ReconcileOrigin`
 
