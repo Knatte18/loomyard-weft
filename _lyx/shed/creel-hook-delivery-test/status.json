@@ -1,11 +1,12 @@
 {
-  "current_producer": "Code-Burler-Review",
-  "state": "running",
+  "current_producer": "Code-Burler-Fix",
+  "state": "paused",
   "error": "",
   "pause_requested": false,
+  "pause_reason": "paused after Code-Burler-Review, as requested",
   "activity": {
-    "now": "Code-Burler-Review",
-    "last": "Code-Bouncer → bounced to Code-Burler-Review",
+    "now": "Code-Burler-Fix",
+    "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -48,6 +49,23 @@
       "output": "",
       "at": "2026-10-25T11:51:33Z",
       "routed_to": "Code-Burler-Review"
+    },
+    {
+      "producer": "Code-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/creel-hook-delivery-test/_lyx/reviews/code/round-1-review.md",
+      "at": "2026-10-25T11:53:27Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-10-25T11:53:26.708111766Z",
+          "end": "2026-10-25T11:53:26.708570243Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Code-Burler-Fix"
     }
   ],
   "product": {
