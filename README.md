@@ -28,7 +28,7 @@ grouping
 
 | # | Member | Kind | Standing |
 | --- | --- | --- | --- |
-| T1 | **Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch** | Task | Discussion-Bouncer |
+| T1 | **Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch** | Task | Discussion-Burler-Review |
 | E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
 
 ## Tasks (3)
@@ -41,7 +41,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift.<br>• `profile: light` | [`regression-baseline-verify`](design-regression-baseline-verify.md) | loom | Discussion-Bouncer | neve | 8d<br>37m | shed, webster, batten, config, dotnet |
+| T1 | **Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift.<br>• `profile: light` | [`regression-baseline-verify`](design-regression-baseline-verify.md) | loom | Discussion-Burler-Review | neve | 8d<br>37m | shed, webster, batten, config, dotnet |
 | T3 | **An anchor per beam**<br>• Let each worktree carry its own anchor through a .lyx-anchor marker at its weft branch root, inherited by its tasks, with a verb that changes it<br>• `profile: solid` | [`umbrella-anchor`](design-umbrella-anchor.md) | loom | Plan-Write | neve | 7d<br>1h | fabric, config, workspaces |
 
 ### Ready (1)
