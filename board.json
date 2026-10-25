@@ -987,6 +987,24 @@
       "created": "2026-10-25T18:14:24Z",
       "revised": "2026-10-25T18:16:10Z",
       "owner_machine": "neve"
+    },
+    {
+      "id": 826,
+      "handle": "E6",
+      "slug": "readme-per-project-files",
+      "title": "Board README: one rendered file per project, research notes first",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "board"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Each project renders its own file linked from its parent; README.md is the root project; research notes come right after tasks",
+      "body": "## Seen (operator, 2026-10-25)\n\nThe board renders one README.md holding every project, task and note of the hub.\nThe notes are grouped by type label in file order, so after the `audit` label became `research` the research notes moved from first under Notes to last, under the heading `Researchs`.\n\n## Idea (operator, 2026-10-25)\n\n- Research notes come first under Notes, right after the tasks, where the audits stood; the heading reads `Research`.\n- Each project gets its own rendered file.\n  It opens with the projects directly under it, each a link to its file with its short description, then holds the tasks and notes that belong to the project itself.\n- Every project sits under another project, except the root project at the top.\n- README.md is the root project's file: the projects under root first, each linked with its short description, then every task and note that belongs to no other project.\n",
+      "created": "2026-10-25T18:24:12Z",
+      "revised": "2026-10-25T18:24:12Z"
     }
   ],
   "prime_owner": "neve",
