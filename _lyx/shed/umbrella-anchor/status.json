@@ -1,12 +1,13 @@
 {
   "current_producer": "Webster",
-  "state": "blocked",
-  "error": "Batch 06-clone-records-marker-on-prime-weft: recover-batch refused with needs_fresh; the fork's `lyx gate test` runs were flagged as fabric-reference audit findings recovery cannot check (way forward: lyx webster reset --to batch-start --batch 06, or accept-audit then recover-batch, or reset --to start).",
+  "state": "paused",
+  "error": "",
   "pause_requested": false,
+  "pause_reason": "re-launched onto Webster",
   "activity": {
     "now": "Webster",
-    "last": "Webster → stuck",
-    "wait": "Batch 06-clone-records-marker-on-prime-weft: recover-batch refused with needs_fresh; the fork's `lyx gate test` runs were flagged as fabric-reference audit findings recovery cannot check (way forward: lyx webster reset --to batch-start --batch 06, or accept-audit then recover-batch, or reset --to start)."
+    "last": "Webster → goto",
+    "wait": ""
   },
   "history": [
     {
@@ -357,6 +358,12 @@
         }
       ],
       "budget_exempt": true
+    },
+    {
+      "producer": "Webster",
+      "outcome": "goto",
+      "output": "",
+      "at": "2026-10-25T16:09:07Z"
     }
   ],
   "product": {
