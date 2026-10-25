@@ -70,12 +70,6 @@ A darn writer works in one long turn, and creel delivers the notice `lyx loom de
 After recording a decision for a darn run whose writer is working, also send the decision's content by `SendMessage` to `<shortname>:<slug>:darn`.
 Remove this section once #871 is fixed.
 
-## Dobby starts no task while done runs linger (#872)
-
-Dobby counts every batten record under the prime's `_lyx/shed/`, done runs included, against `max_runs`, so it starts no released task once three done records stand.
-When a released, ready task stays unstarted, run `lyx batten cleanup --apply` in the prime; dobby's next tick starts it.
-Remove this section once #872 is fixed.
-
 ## A board body holds the current design only
 
 When a newer design, decision or answer replaces part of an entry's body, rewrite the body so it holds only what stands now: remove the replaced drafts, recommendations and open questions in the same write, never keep them under a "this replaces everything above" line (operator, 2026-10-25).
