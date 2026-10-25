@@ -1,4 +1,4 @@
-# [WS 007] An anchor per umbrella
+# An anchor per beam
 
 `umbrella-anchor` · Note · enhancement, fabric, config, workspaces
 
