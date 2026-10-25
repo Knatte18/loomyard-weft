@@ -796,6 +796,25 @@
       "body": "## Seen (umbrella-anchor Plan-Write, 2026-10-25)\n\n`pattern.MaxEntryLineChars` (360) caps the whole overview line: the bullet, the entry name, the rule text, `(test)` and the background link.\nThe fixed parts took 79 characters for `PATTERN-cwd-resolution`, so its rule text had room for about 281, and a 331-character text recorded at Discussion failed the cap only at Plan-Write and needed a parent decision to shorten it.\nThe room for the text changes with the name length and with whether the entry has a link, which no writer sees when wording a rule.\n\n## Idea\n\nThe cap counts the rule text alone, the part between the name and `(test)` or the link, so the limit a writer works against is one number whatever the name.\n`lyx loom decision add --pattern-text` and the Discussion check measure the text against it when the decision is recorded, not at Plan-Write.",
       "created": "2026-10-25T14:04:12Z",
       "revised": "2026-10-25T14:04:12Z"
+    },
+    {
+      "id": 816,
+      "handle": "E6",
+      "slug": "dobby-own-verbs",
+      "title": "Dobby gets its own lyx dobby verbs, and lyx orch start stops starting it",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "orch",
+        "workspaces"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Split dobby and orch start-up: lyx dobby start|status|stop, orch start starts only the orch, lyx prime starts both",
+      "body": "## Seen (operator, 2026-10-25)\n\n`lyx orch start` starts every dobby this machine owns before the orch session, and dobby's own verbs sit under `lyx beam` (`lyx beam start`, `lyx beam status`), whose names say beam where they mean dobby.\nA hub without a running orch gets no dobby unless someone runs `lyx beam start`, and restarting the orch is mixed up with bringing the hub up.\n\n## Idea\n\nThe two are tied but separate, and each gets its own verbs:\n\n| | dobby | orch |\n|---|---|---|\n| What it is | a program, no LLM, one per worktree (the prime and each beam) | an LLM session, one per worktree thread |\n| What it does | starts released ready tasks, drives their batten passes, lands them and cleans up | answers escalations and notices, carries the operator's answers, keeps the board |\n| Without the other | runs start and land; a stop that needs a decision waits | nothing starts; the orch can still talk and write the board |\n| Talks to the other | sends notices to the orch | never drives dobby |\n\n- `lyx dobby start|status|stop` replace `lyx beam start` and `lyx beam status`; `lyx beam` keeps only what concerns beams: `create`, `promote`, `land`.\n- `lyx orch start` starts only the orch session, and warns when the worktree's dobby is not running, naming `lyx dobby start`.\n- `lyx prime`, the verb that brings the hub up, runs `lyx dobby start` and then `lyx orch start`, then attaches.\n\n## Open\n\n- Whether `lyx dobby start` starts every dobby this machine owns, as `lyx beam start` does, or only the current worktree's by default.\n",
+      "created": "2026-10-25T14:40:13Z",
+      "revised": "2026-10-25T14:40:13Z"
     }
   ],
   "prime_owner": "neve",
