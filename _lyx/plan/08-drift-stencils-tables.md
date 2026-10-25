@@ -21,7 +21,7 @@
 
 **Uses:**
 - `internal/darnengine#DarnTable`
-- `plan:internal/driftengine#Config`
+- `internal/driftengine#Config`
 
 **Intent:**
 Add the two agent stencils (Scope) and the seat tables that spawn them, read at call time through `internal/stencilstore` by the seat engine (PATTERN-stencil-ownership), with the parent and edit directives rendered and skills and models on the launch spec (PATTERN-parent-directive, PATTERN-shuttle-provider-seam).

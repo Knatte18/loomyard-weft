@@ -44,11 +44,11 @@
 - `plan:internal/driftengine#Deps`
 - `plan:internal/driftengine#BaselineTable`
 - `plan:internal/driftengine#VerifyTable`
-- `plan:internal/driftengine#StartCapture`
-- `plan:internal/driftengine#RunCapture`
-- `plan:internal/driftengine#RunCompare`
-- `plan:internal/driftengine#SkipList`
-- `plan:internal/driftengine#CheckMainCapture`
+- `internal/driftengine#StartCapture`
+- `internal/driftengine#RunCapture`
+- `internal/driftengine#RunCompare`
+- `internal/driftengine#SkipList`
+- `internal/driftengine#CheckMainCapture`
 - `internal/shedrecipe#resolveRowGateSpec`
 - `internal/loomcli#pairMergeBase`
 - `internal/loomcli#commitDiscussion`

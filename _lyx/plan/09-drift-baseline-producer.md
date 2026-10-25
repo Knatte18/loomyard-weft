@@ -18,13 +18,13 @@
 
 **Uses:**
 - `plan:internal/driftengine#BaselineTable`
-- `plan:internal/driftengine#CheckMainCapture`
-- `plan:internal/driftengine#StartCapture`
-- `plan:internal/driftengine#RunCapture`
-- `plan:internal/driftengine#ErrBreakawayRefused`
-- `plan:internal/driftengine#CaptureHaltPrefix`
-- `plan:internal/driftengine#ProbeLock`
-- `plan:internal/driftengine#DirRel`
+- `internal/driftengine#CheckMainCapture`
+- `internal/driftengine#StartCapture`
+- `internal/driftengine#RunCapture`
+- `internal/driftengine#ErrBreakawayRefused`
+- `internal/driftengine#CaptureHaltPrefix`
+- `internal/driftengine#ProbeLock`
+- `internal/driftengine#DirRel`
 - `internal/shedadapters#NewMultiLLMProducerSourced`
 - `internal/testkit/shedfake#SeatRunner`
 

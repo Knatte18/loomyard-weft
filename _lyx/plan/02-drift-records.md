@@ -1,29 +1,29 @@
 # Card 2 — drift-records
 
 **Create:**
-- `plan:internal/driftengine#ScopeRecord` -> `type ScopeRecord struct`
-- `plan:internal/driftengine#Acceptance` -> `type Acceptance struct`
-- `plan:internal/driftengine#CaptureRecord` -> `type CaptureRecord struct`
-- `plan:internal/driftengine#ReadScope` -> `func ReadScope(p Paths) (ScopeRecord, bool, error)`
-- `plan:internal/driftengine#UpdateScope` -> `func UpdateScope(p Paths, mutate func(cur ScopeRecord, found bool) (ScopeRecord, error)) error`
-- `plan:internal/driftengine#ReadCapture` -> `func ReadCapture(p Paths) (CaptureRecord, bool, error)`
-- `plan:internal/driftengine#WriteCapture` -> `func WriteCapture(p Paths, rec CaptureRecord) error`
-- `plan:internal/driftengine#CountedCapture` -> `func CountedCapture(scope ScopeRecord, capture CaptureRecord, found bool, awaitRow bool) bool`
-- `plan:internal/driftengine#ErrRunsSpent` -> `var ErrRunsSpent = errors.New("drift: the run budget is spent")`
-- `plan:internal/driftengine#TakeRun` -> `func TakeRun(p Paths, max int) (int, error)`
-- `plan:internal/driftengine#ResetRuns` -> `func ResetRuns(p Paths, head string) error`
-- `plan:internal/driftengine#AttemptHead` -> `func AttemptHead(p Paths) (string, bool, error)`
-- `plan:internal/driftengine#CloseAgentSession` -> `func CloseAgentSession(p Paths) error`
-- `plan:internal/driftengine#AgentSessionOpen` -> `func AgentSessionOpen(p Paths) (bool, error)`
-- `plan:internal/driftengine#TestCountedCapture` -> `func TestCountedCapture(t *testing.T)`
-- `plan:internal/driftengine#TestTakeRun` -> `func TestTakeRun(t *testing.T)`
-- `plan:internal/driftengine#ScopeRecord.Unruled` -> `func (s ScopeRecord) Unruled() []Acceptance`
+- `internal/driftengine#ScopeRecord`
+- `internal/driftengine#Acceptance`
+- `internal/driftengine#CaptureRecord`
+- `internal/driftengine#ReadScope`
+- `internal/driftengine#UpdateScope`
+- `internal/driftengine#ReadCapture`
+- `internal/driftengine#WriteCapture`
+- `internal/driftengine#CountedCapture`
+- `internal/driftengine#ErrRunsSpent`
+- `internal/driftengine#TakeRun`
+- `internal/driftengine#ResetRuns`
+- `internal/driftengine#AttemptHead`
+- `internal/driftengine#CloseAgentSession`
+- `internal/driftengine#AgentSessionOpen`
+- `internal/driftengine#TestCountedCapture`
+- `internal/driftengine#TestTakeRun`
+- `internal/driftengine#ScopeRecord.Unruled`
 
 **Extends:**
 - `internal/driftengine/doc.go`
 
 **Uses:**
-- `plan:internal/driftengine#Paths`
+- `internal/driftengine#Paths`
 
 **Intent:**
 Add the Go-owned records every Drift row and verb reads and writes, all through `internal/state` so an unknown key survives a rewrite (PATTERN-tolerant-records).

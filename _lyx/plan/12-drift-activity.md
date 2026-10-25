@@ -5,8 +5,8 @@
 - `internal/loomcli#TestAgentActivity_LiveLockWaitReadsAsActivity`
 
 **Uses:**
-- `plan:internal/driftengine#Active`
-- `plan:internal/driftengine#NewPaths`
+- `internal/driftengine#Active`
+- `internal/driftengine#NewPaths`
 
 **Intent:**
 Make a held capture lock or compare marker read as activity now to the loop's step idle watchdog (D4), so `step_idle_timeout_min` never kills `Drift-Await`'s wait, darn's foreground capture or a mechanical compare.

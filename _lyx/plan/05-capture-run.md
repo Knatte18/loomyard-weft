@@ -1,22 +1,22 @@
 # Card 5 — capture-run
 
 **Create:**
-- `plan:internal/runproc#RoleCapture` -> `const RoleCapture = "capture"`
-- `plan:internal/driftengine#CaptureHaltPrefix` -> `const CaptureHaltPrefix = "drift capture halt: "`
-- `plan:internal/driftengine#CaptureRequest` -> `type CaptureRequest struct`
-- `plan:internal/driftengine#RunCapture` -> `func RunCapture(ctx context.Context, req CaptureRequest) (CaptureRecord, error)`
-- `plan:internal/driftengine#SideResult` -> `type SideResult struct`
-- `plan:internal/driftengine#RunSideCapture` -> `func RunSideCapture(ctx context.Context, req CaptureRequest) (SideResult, error)`
-- `plan:internal/driftengine#CheckMainCapture` -> `func CheckMainCapture(status shedengine.Status, head, branchPoint string, dirty []string) error`
-- `plan:internal/driftengine#SpawnRequest` -> `type SpawnRequest struct`
-- `plan:internal/driftengine#ErrBreakawayRefused` -> `var ErrBreakawayRefused = errors.New("drift: the capture start was refused breakaway")`
-- `plan:internal/driftengine#StartCapture` -> `func StartCapture(req SpawnRequest) (int, error)`
-- `plan:internal/driftengine#CaptureJobName` -> `func CaptureJobName(worktreeRoot string) string`
-- `plan:internal/driftengine#ProbeLock` -> `func ProbeLock(path string) (bool, error)`
-- `plan:internal/driftengine#Active` -> `func Active(p Paths) (bool, error)`
-- `plan:internal/driftengine#TestRunCapture` -> `func TestRunCapture(t *testing.T)`
-- `plan:internal/driftengine#TestCheckMainCapture` -> `func TestCheckMainCapture(t *testing.T)`
-- `plan:internal/driftengine#TestStartCapture` -> `func TestStartCapture(t *testing.T)`
+- `internal/runproc#RoleCapture`
+- `internal/driftengine#CaptureHaltPrefix`
+- `internal/driftengine#CaptureRequest`
+- `internal/driftengine#RunCapture`
+- `internal/driftengine#SideResult`
+- `internal/driftengine#RunSideCapture`
+- `internal/driftengine#CheckMainCapture`
+- `internal/driftengine#SpawnRequest`
+- `internal/driftengine#ErrBreakawayRefused`
+- `internal/driftengine#StartCapture`
+- `internal/driftengine#CaptureJobName`
+- `internal/driftengine#ProbeLock`
+- `internal/driftengine#Active`
+- `internal/driftengine#TestRunCapture`
+- `internal/driftengine#TestCheckMainCapture`
+- `internal/driftengine#TestStartCapture`
 
 **Edit:**
 - `internal/runproc/doc.go`
@@ -35,9 +35,9 @@
 - `internal/gateslot#Pool.Acquire`
 - `internal/gateslot#HolderEnv`
 - `internal/gatecli#runTiedChild`
-- `plan:internal/driftengine#WriteCapture`
-- `plan:internal/driftengine#ReadCapture`
-- `plan:internal/driftengine#Config.Step`
+- `internal/driftengine#WriteCapture`
+- `internal/driftengine#ReadCapture`
+- `internal/driftengine#Config.Step`
 
 **Intent:**
 Build the capture run (D4): the body the detached `lyx drift capture-child` runs, the side capture, the spawn of the detached child, and the lock probe every reader uses.

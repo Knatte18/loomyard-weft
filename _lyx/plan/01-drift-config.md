@@ -4,17 +4,17 @@
 - `internal/driftengine/doc.go`
 - `internal/driftengine/template.yaml`
 - `internal/driftengine/testmain_test.go`
-- `plan:internal/driftengine#Config` -> `type Config struct`
-- `plan:internal/driftengine#CommandStep` -> `type CommandStep struct`
-- `plan:internal/driftengine#ConfigTemplate` -> `func ConfigTemplate() string`
-- `plan:internal/driftengine#ConfigOpenMaps` -> `func ConfigOpenMaps() []string`
-- `plan:internal/driftengine#ConfigSpec` -> `func ConfigSpec() configengine.Spec`
-- `plan:internal/driftengine#LoadConfig` -> `func LoadConfig(dirs configengine.Dirs) (Config, error)`
-- `plan:internal/driftengine#Config.Step` -> `func (c Config) Step(name string) (CommandStep, error)`
-- `plan:internal/driftengine#Paths` -> `type Paths struct`
-- `plan:internal/driftengine#NewPaths` -> `func NewPaths(anchorRoot string) Paths`
-- `plan:internal/driftengine#DirRel` -> `func DirRel() string`
-- `plan:internal/driftengine#TestLoadConfig` -> `func TestLoadConfig(t *testing.T)`
+- `internal/driftengine#Config`
+- `internal/driftengine#CommandStep`
+- `internal/driftengine#ConfigTemplate`
+- `internal/driftengine#ConfigOpenMaps`
+- `internal/driftengine#ConfigSpec`
+- `internal/driftengine#LoadConfig`
+- `internal/driftengine#Config.Step`
+- `internal/driftengine#Paths`
+- `internal/driftengine#NewPaths`
+- `internal/driftengine#DirRel`
+- `internal/driftengine#TestLoadConfig`
 
 **Edit:**
 - `internal/configreg#Modules`
