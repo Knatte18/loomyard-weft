@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-25 11:16 UTC; every age below is as of then.
+Rendered 2026-10-25 11:17 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -41,9 +41,9 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Bench Codex as a Burler reviewer against Claude reviews of finished runs**<br>• `profile: docs` | [`codex-review-bench`](design-codex-review-bench.md) | darn | Darn-Write | neve | 38m<br>35m | codex, burler |
+| T1 | **Bench Codex as a Burler reviewer against Claude reviews of finished runs**<br>• `profile: docs` | [`codex-review-bench`](design-codex-review-bench.md) | darn | Darn-Write | neve | 39m<br>36m | codex, burler |
 | T2 | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement<br>• `profile: solid`<br>• `loom: discussion_hard_max_bounces 4`<br>• `loom: discussion_max_bounces 3` | [`umbrella-daemon`](design-umbrella-daemon.md) | loom | Webster | neve | 13d<br>5h | batten, orch, shed, workspaces, loom, board |
-| T3 | **Plan references follow renames and renumbers mechanically**<br>• `profile: light` | [`plan-refs-auto-rewrite`](design-plan-refs-auto-rewrite.md) | darn | Describe | neve | 1d<br>26m | webster, loom |
+| T3 | **Plan references follow renames and renumbers mechanically**<br>• `profile: light` | [`plan-refs-auto-rewrite`](design-plan-refs-auto-rewrite.md) | darn | PR-Review | neve | 1d<br>26m | webster, loom |
 
 ### Ready (0)
 
