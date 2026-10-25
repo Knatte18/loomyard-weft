@@ -787,8 +787,7 @@
       ],
       "issues": [],
       "depends_on": [
-        "umbrella-anchor",
-        "beam-overview-window"
+        "umbrella-anchor"
       ],
       "isolated": false,
       "brief": "lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: \u003cslug\u003e; projects, the root included, carry the owner machine and lyx adopt moves a project",
@@ -941,29 +940,6 @@
       "body": "Imported from [issue #876](https://github.com/Knatte18/loomyard/issues/876).\n\nSeen (umbrella-anchor, 2026-10-25): Merriam started `lyx webster recover-batch 06` in the background and ended its turn to wait for it, as its stencil allows. Each such turn produced a shuttle notice to the parent, 'ended a turn without its output files and is held' (#310, #311, #315, #317), although Merriam was waiting by design and needed nothing from the parent.\n\nExpected: a turn that ends while the session's own background job runs (the RequirementBackgroundWake case) is not reported to the parent as held; only a turn that ends with no background job and no output files is.",
       "created": "2026-10-25T16:17:10Z",
       "revised": "2026-10-25T16:17:10Z"
-    },
-    {
-      "id": 824,
-      "handle": "T1",
-      "slug": "beam-overview-window",
-      "title": "The overview window becomes the beam window",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "batten",
-        "orch",
-        "reed"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Rename the overview window to beam: \u003cslug\u003e, with one dobby and one orch section, each run shown once",
-      "body": "## Seen (operator, 2026-10-25)\n\nThe overview window, the `runs` strand running `lyx batten overview`, shows the orch's context line, the runs in flight, and since `dobby-overview-window` the worktree's dobby with its runs, so the runs show in two places.\nIts name, overview, says neither that it belongs to a beam nor what it covers.\n\n## Design (operator, 2026-10-25)\n\nThe overview window becomes the beam's own window, named `beam: \u003cslug\u003e`, `beam: prime` in the prime, with one section per part of the beam:\n\n- Dobby: alive, `max_runs`, each run it drives with its state and stage, and each released task it has not started with what it waits on.\n- Orch: its context reading against the soft threshold and the hard cap, and its cycle state, as the context line shows today.\n\nEach run shows once, in the dobby section.\nA beam's window shows its own orch and the orchs of every beam below it.\n",
-      "status": "done",
-      "created": "2026-10-25T18:14:24Z",
-      "revised": "2026-10-25T18:14:24Z",
-      "owner_machine": "neve"
     },
     {
       "id": 826,
