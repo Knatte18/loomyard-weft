@@ -31,7 +31,7 @@ grouping
 | F18 | **Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch** | Note | Note |
 | E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
 
-## Tasks (3)
+## Tasks (4)
 
 Concrete and claimable; only a task can run.
 
@@ -42,17 +42,18 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Dobby counts no done run against max_runs**<br>• Done batten runs neither count as in flight nor stay in dobby state, so released tasks start<br>• `profile: light` | [`dobby-skip-done-runs`](design-dobby-skip-done-runs.md) | darn | Darn-Write | neve | 5m<br>5m | batten, workspaces |
-| T3 | **An anchor per beam**<br>• Let each worktree carry its own anchor through a .lyx-anchor marker at its weft branch root, inherited by its tasks, with a verb that changes it<br>• `profile: solid` | [`umbrella-anchor`](design-umbrella-anchor.md) | loom | Discussion-Write | neve | 6d<br>12m | fabric, config, workspaces |
+| T3 | **An anchor per beam**<br>• Let each worktree carry its own anchor through a .lyx-anchor marker at its weft branch root, inherited by its tasks, with a verb that changes it<br>• `profile: solid` | [`umbrella-anchor`](design-umbrella-anchor.md) | loom | Discussion-Write | neve | 6d<br>13m | fabric, config, workspaces |
 
-### Ready (1)
+### Ready (2)
 
 Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | `draft` **Bench Codex Astra against solo Opus as a plan reviewer, four runs**<br>• `profile: docs` | [`codex-astra-solo-bench`](design-codex-astra-solo-bench.md) | darn |  | 30m<br>30m | codex, burler |
+| T4 | `draft` **The overview window shows its worktree dobby: alive, runs driven, tasks waiting and why**<br>• The existing overview window of the prime and every beam gains the dobby view, no extra window | [`dobby-overview-window`](design-dobby-overview-window.md) | loom |  | 8m<br>3m | reed, batten, workspaces |
 
-## Notes (36)
+## Notes (35)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -93,13 +94,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 3d<br>19h | stencil, board, loom |
 | E35 |  | **A landing fixer escalation goes to the arbiter before the orch**<br>• Merge-In and Finalize fixer escalate reports reach the arbiter first | [`landing-escalate-arbiter`](design-landing-escalate-arbiter.md) | 1d<br>47m | shed, loom |
 
-### Features (14)
+### Features (13)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 3w<br>9d | burler |
 | F2 | L | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 3w<br>1d | ide, fabric |
-| F3 | H | **The overview window shows its worktree dobby: alive, runs driven, tasks waiting and why**<br>• The existing overview window of the prime and every beam gains the dobby view, no extra window | [`dobby-overview-window`](design-dobby-overview-window.md) | 8m<br>3m | reed, batten, workspaces |
 | F5 |  | **Fabric's ordinary-monorepo verb surface**<br>• Against plain git, fabric still lacks log, show, branch, tag, stash, revert, restore, rm/mv, rebase, cherry-pick and blame | [`fabric-monorepo-verbs`](design-fabric-monorepo-verbs.md) | 3w<br>2w | fabric |
 | F6 |  | **Talk to the orch through Slack**<br>• A Slack relay so the operator can reach the orch from a phone where Claude's own app is not allowed | [`reed-slack-relay`](design-reed-slack-relay.md) | 3w<br> | reed |
 | F8 |  | **fabric: two-sided reset-to-SHA verb**<br>• The post-conclude undo the merge surface does not ship: reset to a warp SHA, resolve the paired weft SHA through the correspondence index, gate both sides | [`fabric-reset-to-sha`](design-fabric-reset-to-sha.md) | 3w<br>2w | fabric |

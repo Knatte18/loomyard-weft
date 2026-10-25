@@ -1,6 +1,6 @@
 # The overview window shows its worktree dobby: alive, runs driven, tasks waiting and why
 
-`dobby-overview-window` · Note · feature, reed, batten, workspaces
+`dobby-overview-window` · Task · feature, reed, batten, workspaces · draft
 
 ## Seen (2026-10-25)
 
