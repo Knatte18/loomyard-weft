@@ -228,6 +228,12 @@ Way forward: tag the local tip by hand (`git -C <weft> tag archive/<slug>/<tip> 
 
 Rationale: every path that can change a checked-out marker outside D7, checkout, a weft pull, a replaying weft push, the origin reconcile's weft moves, adopt's drop-local reset and promote, refuses or stops before changing anything, so none leaves a half-rewired pair; the integration changes the checked-out marker only inside D7, whose move record recovers it, and D8 and an adopt of a markerless branch write only D5's value, which names where the content already sits.
 
+### Added after Discussion (parent, 2026-10-25): Shorter PATTERN-cwd-resolution text
+
+Decision: The PATTERN-cwd-resolution entry text is shortened to fit pattern.MaxEntryLineChars with its background link, keeping every clause of the earlier text: one worktree's anchor only, fabricengine alone writes or git-reads it, engines never import lyxcwd, hub containers and workspace files hub-reachable only.
+
+Rationale: The recorded text made the overview line 410 characters against the 360 cap, and dropping the background link orphans pattern/PATTERN-cwd-resolution.md.
+
 ## Constraints
 
 - The weft is never a merge participant (`fabricengine/doc.go`, "The merge surface"), so landing never touches the parent's weft or its marker; the entry's "kept out of the merge as raddle is" needs no mechanism.
@@ -285,7 +291,7 @@ Rationale: every path that can change a checked-out marker outside D7, checkout,
 
 ## PATTERN changes
 
-- `PATTERN-cwd-resolution` — changes: Resolving a cwd, worktree root or anchor: only `internal/lyxcwd`, a worktree's anchor from its own weft-root `.lyx-anchor`, never another Location's; only `fabricengine` writes it or reads it from git; an engine is handed absolute paths and never imports it; hub-level containers and workspace files stay hub-reachable only. (test)
+- `PATTERN-cwd-resolution` — changes: Resolving a cwd, worktree root or anchor: only `internal/lyxcwd`, from the worktree's own weft-root `.lyx-anchor`; only `fabricengine` writes or git-reads it; engines get absolute paths, never import lyxcwd; hub containers and workspace files stay hub-reachable only. (test) — added after Discussion (parent, 2026-10-25)
 
 ## Notes for the plan writer
 
