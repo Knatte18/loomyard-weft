@@ -1,0 +1,1 @@
+Review segment of task `umbrella-daemon` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYXHUB/umbrella-daemon/_lyx/reviews/discussion/round-3-escalation.md` with a one-shot fork.
