@@ -2,8 +2,6 @@
 
 `beam-start-and-ownership` · Task · enhancement, orch, workspaces, batten, reed, board · draft
 
-Depends on: [`umbrella-anchor`](design-umbrella-anchor.md)
-
 ## Seen (operator, 2026-10-25)
 
 `lyx orch start` does four jobs: it starts every dobby this machine owns, reconciles the hub's branches against origin, ensures the overview window, and only then starts the orch session and its watcher.
