@@ -1,0 +1,1007 @@
+{
+  "runGuid": "0a9cd41e763cda08c3e817c3e3774513",
+  "planFingerprint": "c9527b1575abdd2e041c6c95edcf27c81ed3573bf3f8bc79bb8457eb35ef7960",
+  "planFileHashes": {
+    "00-overview.md": "dad2e8dedbf9d5391b1a83850b1f6f2a07dc064acca0a99fa5d735955a4c3338",
+    "01-agentname-scoped-program.md": "4817b10ab82d3a24d9481fe050cd67e86edae66657ba500b2c650a9db70885e6",
+    "02-scoped-program-notice.md": "5a223967e760d485f48cd3b885909450cd9b4e961d2c13484fa29cd1cdbd2627",
+    "03-runproc-dobby-role.md": "99977d8a4fbf96a50ee43dc2b321c69c7403e42660a61bb4ea057464175e52af",
+    "04-dobby-records.md": "eff99f691ef8a4aeb834e99c07c9c3d9c8b3789201b6aacf63b3147a0f9628f8",
+    "05-board-draft-rule.md": "45bcb7a75986caaa4770fda4eb5358e27e263f4c7e4f6955c89f8a58e70414ab",
+    "06-board-draft-migration.md": "ceb3f5610a6ff50df0de387adb7af8a49c4fe90b68f608e3c448fb3c9d7b7735",
+    "07-draft-writers.md": "900711b8217ec762c9701b8874a9d7e1790d138e4da339ee71d9b212c27d89e9",
+    "08-shed-yield.md": "bfe41c09ff92bf3cf20826db7d330dd4733617afa8c15c461301b9284cb3825d",
+    "09-step-envelope-yield.md": "a5c84047a5c57a194965fa8a7362765a848031730b4055c97f5ca44a0b9a940a",
+    "10-driver-yield-exit.md": "35dc74dc58547e149163ebb1bc43b1e3e749ad1681f8a98a30497c78084c5268",
+    "11-idlewatch-snapshot.md": "c6e17365f882edb496ca1f51983251f97894f5666fea4f0cd4c56d8386ed5af0",
+    "12-episodeset-snapshot.md": "65a17bfcebc0eca735eea4d3a6963dcb5c5e4978c10c8c3075a5aba8b58283fb",
+    "13-innerrun-short-check.md": "d4fed4f9f44227f861ace72acd2f3aa0d7436e4d6c65cdf0539fbc87881461c2",
+    "14-innerrun-spawn-hold-yield.md": "a7a265c2c95ef4a3d4e3facfcada59e717f27122820e28ab89d2e77f6b5c1de1",
+    "15-innerrun-respawn-cap.md": "a87bc267b4a783543c5b907ab050b097e881ca6a3149a5166b253510819ddfd8",
+    "16-innerrun-api-error-revive.md": "994b51c4258359c4f7765d77d23a49ee0e4c55ddaa190c46347432f6dd87990f",
+    "17-land-drops-ready.md": "429c0f8bb1cf038ceaa495764577f55d5588259625aa642909dd5f2f12826bec",
+    "18-row-notices-after-chain.md": "331c3b642abaa6ce79643b55f7ccaf5ff56c247588b720f070a7ddcd2357440d",
+    "19-shed-arbiter-config.md": "7537f84e1d18e5c6c3ec8d577223767e4d9f60b449a0a67446b518eba6a76828",
+    "20-module-arbiter-overrides.md": "cc40b477c3431de1765c48ba3d49055458649e460a0fe0b956854950186e0471",
+    "21-arbiter-key-copy.md": "c0bfa0f615336e0016aaa875e368de63f4d949b8d04c837a87f9d2f87ef44429",
+    "22-shedarbiter-package.md": "da1130510dd869502a7e017622105f875eac3aa555a7cb75e4d01fb5d3aa3fce",
+    "23-loomcli-arbiter-delegates.md": "b85f5e27cf35d20321d94ff9beb6d5d92b07c9803267ece60d72fd0c3b749253",
+    "24-arbiterstop-batten-rule.md": "fb59f5171a4d36ccf3a80c42bae1a9742721f6010a9c02c22a3ce7134e0427f4",
+    "25-batten-arbiter-wiring.md": "64a6d0b642c5b1d5b083a093fcbfb2d8356fdf78dc43b48c0d5c4e6f74f263b3",
+    "26-batten-pass-exit-codes.md": "52fe3d21f7c31b1d7644f1eab1324d52465f56bd0e1684065168eab81256d453",
+    "27-dobby-start.md": "85250d57ed9c8d181479a7b75f77436727c8a6a716b07e9351ff577e84dd0bdc",
+    "28-batten-first-pass.md": "32a8be418b1e2e48c2d0f56bbc170660eff42c31324674da6d7ab785597e50e6",
+    "29-origin-owed-marker.md": "3ce9f7533338afaead805b6975c173389f78bc4e67835f47dda00c8b9a1e64bf",
+    "30-batten-continue-pass.md": "177199254810f8dc8f5380113af4e2bc4465e7b8ab9c6dd695b10a32b4b486e0",
+    "31-batten-pass-wiring.md": "54d50b40530d7857d8a8c2717bdd95beb02c479ab328669e22099af7266c7d54",
+    "32-dobby-loop.md": "e4353c725b563b9914c3f0586cea6f7add6eee21c4d4491bbd442cd1f19504cc",
+    "33-dobby-passes.md": "69e796b80ea1d63025615766bd4c9b621c34d2de45ec7d62a0f8a20a52edb19f",
+    "34-dobby-owned-elsewhere.md": "92a4a25ca1d2db63e21e6a90f949f8780517adac358fed0503bea855e8b4ec0e",
+    "35-dobby-ready-starts.md": "2b2eae53bee3285012e3aba65295bbc20b1f32ddc06f24db8aee31652ac0a9b9",
+    "36-dobby-board-tidy.md": "24219ba3a1ae01fd687e7154448ee5287a0dd6a51a180f3d35d0a34db12a7ca2",
+    "37-beam-verbs.md": "d9541e8d283980480ad7fe1e3614f5522cb273c8f1b1cce85272a43cf6dd7af5",
+    "38-orch-start-dobbies.md": "6bc1e446f7e0e9690c74046003ac12a1ec70ad2c2dbcca47b11102936dc45be8",
+    "39-adopt-refusals.md": "dbfb5bbbbf1306e7ae611a2c9bf120baf57c9e6dc1c38fda30e0a135644844cd",
+    "40-teardown-dobby-liveness.md": "d8ca695e02bb2fdf3675d80d23d745a3a6c39a0635c4bb48680a72651651caef",
+    "41-finalize-key-notice.md": "21e9a6e51f7658c719ec5a22b9a60c0c04f1bf8420e5f893aaf56d4f566a785f",
+    "42-orch-role-stencil.md": "f6678fbe8da2a3e1edc9a013c9bd00b1a45e18388645d01c5e526d1b7c9e6b1a"
+  },
+  "planOverviewFrameHash": "74263f910135067b4f8c14b24075c12c609893c1fbde8335d70c66f47feed9fb",
+  "partition": [
+    {
+      "cards": [
+        "01-agentname-scoped-program",
+        "02-scoped-program-notice",
+        "03-runproc-dobby-role",
+        "04-dobby-records",
+        "05-board-draft-rule",
+        "06-board-draft-migration"
+      ],
+      "profile": "wide",
+      "estimate": 261148,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54880,
+        "read_union": 56832,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 216,
+            "reads": {
+              "package:internal/agentname": 2000,
+              "tests:internal/agentname": 2000
+            },
+            "messages": 25.5,
+            "written": 7866
+          },
+          {
+            "card": 2,
+            "card_text": 324,
+            "reads": {
+              "package:internal/creelcli": 2000,
+              "package:internal/orchcli": 2000,
+              "tests:internal/creelcli": 2000,
+              "tests:internal/orchcli": 2000
+            },
+            "messages": 75,
+            "written": 22824
+          },
+          {
+            "card": 3,
+            "card_text": 252,
+            "reads": {
+              "file:internal/runproc/doc.go": 324,
+              "package:internal/runproc": 2000,
+              "tests:internal/runproc": 2000
+            },
+            "messages": 38,
+            "written": 11652
+          },
+          {
+            "card": 4,
+            "card_text": 552,
+            "reads": {
+              "file:internal/lyxdirs/dirs.go": 384,
+              "file:pattern/PATTERN-cwd-resolution.md": 516,
+              "package:cmd/lyx": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/dobbyengine": 2000,
+              "package:internal/lyxdirs": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/dobbyengine": 2000,
+              "tests:internal/lyxdirs": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 173.5,
+            "written": 52602
+          },
+          {
+            "card": 5,
+            "card_text": 312,
+            "reads": {
+              "file:internal/boardengine/doc.go": 3444,
+              "file:plugins/ly/skills/board/SKILL.md": 2028,
+              "package:internal/boardcli": 2000,
+              "package:internal/boardengine": 2000,
+              "package:plugins/ly/skills/board": 2000,
+              "tests:internal/boardcli": 2000,
+              "tests:internal/boardengine": 2000,
+              "tests:plugins/ly/skills/board": 2000
+            },
+            "messages": 66,
+            "written": 20112
+          },
+          {
+            "card": 6,
+            "card_text": 480,
+            "reads": {
+              "file:internal/boardengine/doc.go": 3444,
+              "package:internal/boardengine": 2000,
+              "tests:internal/boardengine": 2000
+            },
+            "messages": 113,
+            "written": 34380
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-draft-writers",
+        "08-shed-yield",
+        "09-step-envelope-yield",
+        "10-driver-yield-exit",
+        "11-idlewatch-snapshot",
+        "12-episodeset-snapshot"
+      ],
+      "profile": "wide",
+      "estimate": 235232,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61880,
+        "read_union": 58092,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 480,
+            "reads": {
+              "file:docs/overview.md": 9972,
+              "file:internal/battencli/cli.go": 6984,
+              "package:docs": 2000,
+              "package:internal/adoptcli": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/pairteardown": 2000,
+              "tests:docs": 2000,
+              "tests:internal/adoptcli": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/pairteardown": 2000
+            },
+            "messages": 164.5,
+            "written": 49830
+          },
+          {
+            "card": 8,
+            "card_text": 276,
+            "reads": {
+              "file:internal/shedengine/doc.go": 2424,
+              "package:internal/shedengine": 2000,
+              "tests:internal/shedengine": 2000
+            },
+            "messages": 55,
+            "written": 16776
+          },
+          {
+            "card": 9,
+            "card_text": 204,
+            "reads": {
+              "package:internal/shedverbs": 2000,
+              "tests:internal/shedverbs": 2000
+            },
+            "messages": 29,
+            "written": 8904
+          },
+          {
+            "card": 10,
+            "card_text": 324,
+            "reads": {
+              "file:internal/sheddriver/doc.go": 1152,
+              "package:internal/battencli": 2000,
+              "package:internal/sheddriver": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/sheddriver": 2000
+            },
+            "messages": 88,
+            "written": 26724
+          },
+          {
+            "card": 11,
+            "card_text": 144,
+            "reads": {
+              "package:internal/parentlock": 2000,
+              "tests:internal/parentlock": 2000
+            },
+            "messages": 20,
+            "written": 6144
+          },
+          {
+            "card": 12,
+            "card_text": 132,
+            "reads": {
+              "package:internal/logger": 2000,
+              "tests:internal/logger": 2000
+            },
+            "messages": 22.5,
+            "written": 6882
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "13-innerrun-short-check"
+      ],
+      "profile": "wide",
+      "estimate": 292572,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68880,
+        "read_union": 40248,
+        "cards": [
+          {
+            "card": 13,
+            "card_text": 1644,
+            "reads": {
+              "file:contracts/recipes/batten-recipe.yaml": 1020,
+              "file:docs/overview.md": 9972,
+              "file:internal/battenshed/doc.go": 2472,
+              "file:pattern/PATTERN-shed-driver.md": 1140,
+              "package:contracts/recipes": 2000,
+              "package:docs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/battenshed": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "package:pattern": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:docs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenshed": 2000,
+              "tests:internal/testkit/envkit": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 606,
+            "written": 183444
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "14-innerrun-spawn-hold-yield",
+        "15-innerrun-respawn-cap",
+        "16-innerrun-api-error-revive",
+        "17-land-drops-ready"
+      ],
+      "profile": "wide",
+      "estimate": 281920,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75880,
+        "read_union": 39252,
+        "cards": [
+          {
+            "card": 14,
+            "card_text": 612,
+            "reads": {
+              "package:internal/battencli": 2000,
+              "package:internal/battenshed": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenshed": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 183.5,
+            "written": 55662
+          },
+          {
+            "card": 15,
+            "card_text": 288,
+            "reads": {
+              "package:internal/battenshed": 2000,
+              "tests:internal/battenshed": 2000
+            },
+            "messages": 53,
+            "written": 16188
+          },
+          {
+            "card": 16,
+            "card_text": 252,
+            "reads": {
+              "file:internal/battenshed/doc.go": 2472,
+              "package:internal/battenshed": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:internal/battenshed": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 54,
+            "written": 16452
+          },
+          {
+            "card": 17,
+            "card_text": 636,
+            "reads": {
+              "file:contracts/recipes/batten-recipe.yaml": 1020,
+              "file:docs/overview.md": 9972,
+              "file:internal/battenshed/doc.go": 2472,
+              "package:contracts/recipes": 2000,
+              "package:docs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/battenshed": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:docs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenshed": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 259.5,
+            "written": 78486
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "18-row-notices-after-chain",
+        "19-shed-arbiter-config",
+        "20-module-arbiter-overrides"
+      ],
+      "profile": "wide",
+      "estimate": 272568,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82880,
+        "read_union": 37636,
+        "cards": [
+          {
+            "card": 18,
+            "card_text": 444,
+            "reads": {
+              "file:internal/battenshed/doc.go": 2472,
+              "package:internal/battencli": 2000,
+              "package:internal/battenshed": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenshed": 2000
+            },
+            "messages": 139,
+            "written": 42144
+          },
+          {
+            "card": 19,
+            "card_text": 360,
+            "reads": {
+              "file:internal/sheddriver/doc.go": 1152,
+              "file:internal/sheddriver/template.yaml": 48,
+              "package:internal/sheddriver": 2000,
+              "tests:internal/sheddriver": 2000
+            },
+            "messages": 90,
+            "written": 27360
+          },
+          {
+            "card": 20,
+            "card_text": 648,
+            "reads": {
+              "file:internal/battenshed/template.yaml": 108,
+              "file:internal/darnengine/template.yaml": 108,
+              "file:internal/loomcli/doc.go": 3564,
+              "file:internal/loomengine/template.yaml": 732,
+              "package:internal/arbiterstop": 2000,
+              "package:internal/battenshed": 2000,
+              "package:internal/darnengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:internal/arbiterstop": 2000,
+              "tests:internal/battenshed": 2000,
+              "tests:internal/darnengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 273,
+            "written": 82548
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "21-arbiter-key-copy",
+        "22-shedarbiter-package"
+      ],
+      "profile": "wide",
+      "estimate": 207302,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 89880,
+        "read_union": 34772,
+        "cards": [
+          {
+            "card": 21,
+            "card_text": 300,
+            "reads": {
+              "file:internal/configreg/doc.go": 144,
+              "package:internal/configcli": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/configsync": 2000,
+              "package:internal/hubreconcile": 2000,
+              "tests:internal/configcli": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/configsync": 2000,
+              "tests:internal/hubreconcile": 2000
+            },
+            "messages": 63.5,
+            "written": 19350
+          },
+          {
+            "card": 22,
+            "card_text": 600,
+            "reads": {
+              "file:contracts/stencils/loom/loom-template-arbiter.md": 1212,
+              "file:pattern/PATTERN-cwd-resolution.md": 516,
+              "package:contracts/stencils/loom": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedarbiter": 2000,
+              "package:pattern": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedarbiter": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 209,
+            "written": 63300
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "23-loomcli-arbiter-delegates",
+        "24-arbiterstop-batten-rule"
+      ],
+      "profile": "wide",
+      "estimate": 257274,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 7,
+        "startup": 96880,
+        "read_union": 13088,
+        "cards": [
+          {
+            "card": 23,
+            "card_text": 1032,
+            "reads": {
+              "file:internal/loomcli/doc.go": 3564,
+              "package:internal/loomcli": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 437,
+            "written": 132132
+          },
+          {
+            "card": 24,
+            "card_text": 324,
+            "reads": {
+              "file:internal/arbiterstop/doc.go": 168,
+              "package:internal/arbiterstop": 2000,
+              "tests:internal/arbiterstop": 2000
+            },
+            "messages": 49.5,
+            "written": 15174
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "25-batten-arbiter-wiring",
+        "26-batten-pass-exit-codes",
+        "27-dobby-start"
+      ],
+      "profile": "wide",
+      "estimate": 230078,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 8,
+        "startup": 103880,
+        "read_union": 37140,
+        "cards": [
+          {
+            "card": 25,
+            "card_text": 516,
+            "reads": {
+              "file:PATTERN.md": 708,
+              "file:docs/overview.md": 9972,
+              "file:internal/sheddriver/doc.go": 1152,
+              "package:.": 2000,
+              "package:docs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/sheddriver": 2000,
+              "tests:.": 2000,
+              "tests:docs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/sheddriver": 2000
+            },
+            "messages": 116,
+            "written": 35316
+          },
+          {
+            "card": 26,
+            "card_text": 396,
+            "reads": {
+              "package:internal/battencli": 2000,
+              "tests:internal/battencli": 2000
+            },
+            "messages": 108,
+            "written": 32796
+          },
+          {
+            "card": 27,
+            "card_text": 396,
+            "reads": {
+              "package:internal/dobbyengine": 2000,
+              "package:internal/hubgeom": 2000,
+              "tests:internal/dobbyengine": 2000,
+              "tests:internal/hubgeom": 2000
+            },
+            "messages": 68.5,
+            "written": 20946
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "28-batten-first-pass",
+        "29-origin-owed-marker",
+        "30-batten-continue-pass"
+      ],
+      "profile": "wide",
+      "estimate": 287936,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 9,
+        "startup": 110880,
+        "read_union": 48644,
+        "cards": [
+          {
+            "card": 28,
+            "card_text": 756,
+            "reads": {
+              "file:docs/overview.md": 9972,
+              "file:internal/adoptcli/doc.go": 732,
+              "file:internal/battenshed/doc.go": 2472,
+              "file:internal/battenshed/template.yaml": 108,
+              "file:internal/beamcli/doc.go": 852,
+              "package:docs": 2000,
+              "package:internal/adoptcli": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/battenshed": 2000,
+              "package:internal/beamcli": 2000,
+              "tests:docs": 2000,
+              "tests:internal/adoptcli": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenshed": 2000,
+              "tests:internal/beamcli": 2000
+            },
+            "messages": 252,
+            "written": 76356
+          },
+          {
+            "card": 29,
+            "card_text": 288,
+            "reads": {
+              "package:internal/battencli": 2000,
+              "package:internal/shedrun": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/shedrun": 2000
+            },
+            "messages": 71,
+            "written": 21588
+          },
+          {
+            "card": 30,
+            "card_text": 468,
+            "reads": {
+              "file:PATTERN.md": 708,
+              "file:pattern/PATTERN-owner-machine.md": 288,
+              "package:.": 2000,
+              "package:internal/battencli": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 100,
+            "written": 30468
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "31-batten-pass-wiring",
+        "32-dobby-loop",
+        "33-dobby-passes",
+        "34-dobby-owned-elsewhere",
+        "35-dobby-ready-starts"
+      ],
+      "profile": "wide",
+      "estimate": 260688,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 10,
+        "startup": 117880,
+        "read_union": 22616,
+        "cards": [
+          {
+            "card": 31,
+            "card_text": 348,
+            "reads": {
+              "package:internal/battencli": 2000,
+              "package:internal/tendercli": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/tendercli": 2000
+            },
+            "messages": 87.5,
+            "written": 26598
+          },
+          {
+            "card": 32,
+            "card_text": 432,
+            "reads": {
+              "file:pattern/PATTERN-daemon-wakeups.md": 624,
+              "package:cmd/lyx": 2000,
+              "package:internal/dobbyengine": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:internal/dobbyengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 104.5,
+            "written": 31782
+          },
+          {
+            "card": 33,
+            "card_text": 468,
+            "reads": {
+              "package:internal/dobbyengine": 2000,
+              "tests:internal/dobbyengine": 2000
+            },
+            "messages": 90,
+            "written": 27468
+          },
+          {
+            "card": 34,
+            "card_text": 324,
+            "reads": {
+              "package:internal/dobbyengine": 2000,
+              "tests:internal/dobbyengine": 2000
+            },
+            "messages": 42,
+            "written": 12924
+          },
+          {
+            "card": 35,
+            "card_text": 420,
+            "reads": {
+              "package:internal/dobbyengine": 2000,
+              "tests:internal/dobbyengine": 2000
+            },
+            "messages": 70,
+            "written": 21420
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "36-dobby-board-tidy",
+        "37-beam-verbs",
+        "38-orch-start-dobbies",
+        "39-adopt-refusals"
+      ],
+      "profile": "wide",
+      "estimate": 279490,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 11,
+        "startup": 124880,
+        "read_union": 47732,
+        "cards": [
+          {
+            "card": 36,
+            "card_text": 468,
+            "reads": {
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/beam": 2000,
+              "package:internal/dobbyengine": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/beam": 2000,
+              "tests:internal/dobbyengine": 2000
+            },
+            "messages": 102,
+            "written": 31068
+          },
+          {
+            "card": 37,
+            "card_text": 672,
+            "reads": {
+              "file:PATTERN.md": 708,
+              "file:docs/overview.md": 9972,
+              "file:internal/beamcli/doc.go": 852,
+              "package:.": 2000,
+              "package:docs": 2000,
+              "package:internal/beamcli": 2000,
+              "tests:.": 2000,
+              "tests:docs": 2000,
+              "tests:internal/beamcli": 2000
+            },
+            "messages": 148.5,
+            "written": 45222
+          },
+          {
+            "card": 38,
+            "card_text": 264,
+            "reads": {
+              "file:internal/orchcli/doc.go": 1740,
+              "package:internal/orchcli": 2000,
+              "tests:internal/orchcli": 2000
+            },
+            "messages": 43.5,
+            "written": 13314
+          },
+          {
+            "card": 39,
+            "card_text": 324,
+            "reads": {
+              "file:internal/adoptcli/doc.go": 732,
+              "package:internal/adoptcli": 2000,
+              "tests:internal/adoptcli": 2000
+            },
+            "messages": 56.5,
+            "written": 17274
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "40-teardown-dobby-liveness",
+        "41-finalize-key-notice",
+        "42-orch-role-stencil"
+      ],
+      "profile": "wide",
+      "estimate": 254618,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 12,
+        "startup": 131880,
+        "read_union": 45860,
+        "cards": [
+          {
+            "card": 40,
+            "card_text": 372,
+            "reads": {
+              "file:internal/pairteardown/doc.go": 1896,
+              "package:internal/pairteardown": 2000,
+              "tests:internal/pairteardown": 2000
+            },
+            "messages": 72,
+            "written": 21972
+          },
+          {
+            "card": 41,
+            "card_text": 300,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 19860,
+              "package:internal/configengine": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/landingshed": 2000,
+              "tests:internal/configengine": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/landingshed": 2000
+            },
+            "messages": 175.5,
+            "written": 52950
+          },
+          {
+            "card": 42,
+            "card_text": 156,
+            "reads": {
+              "file:contracts/stencils/orch/orch-template-role.md": 3276,
+              "package:contracts/stencils/orch": 2000,
+              "tests:contracts/stencils/orch": 2000
+            },
+            "messages": 6,
+            "written": 1956
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "b72a3cc08101d22a4e8fe62d611ae08b",
+  "masterSessionId": "6e5b1004-7b3f-4552-94de-e0b6630533f5",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "agentname-scoped-program",
+      "cards": [
+        "01-agentname-scoped-program",
+        "02-scoped-program-notice",
+        "03-runproc-dobby-role",
+        "04-dobby-records",
+        "05-board-draft-rule",
+        "06-board-draft-migration"
+      ],
+      "cardHashes": {
+        "01-agentname-scoped-program": "4817b10ab82d3a24d9481fe050cd67e86edae66657ba500b2c650a9db70885e6",
+        "02-scoped-program-notice": "5a223967e760d485f48cd3b885909450cd9b4e961d2c13484fa29cd1cdbd2627",
+        "03-runproc-dobby-role": "99977d8a4fbf96a50ee43dc2b321c69c7403e42660a61bb4ea057464175e52af",
+        "04-dobby-records": "eff99f691ef8a4aeb834e99c07c9c3d9c8b3789201b6aacf63b3147a0f9628f8",
+        "05-board-draft-rule": "45bcb7a75986caaa4770fda4eb5358e27e263f4c7e4f6955c89f8a58e70414ab",
+        "06-board-draft-migration": "ceb3f5610a6ff50df0de387adb7af8a49c4fe90b68f608e3c448fb3c9d7b7735"
+      },
+      "startSha": "dd11ab09f1bf269b1c6f4319cdb43ecd6b411f46",
+      "kind": "fork",
+      "spawnedAt": "2026-10-25T09:08:45Z",
+      "sessionId": "6e5b1004-7b3f-4552-94de-e0b6630533f5",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
