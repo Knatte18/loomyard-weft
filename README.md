@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-25 18:16 UTC; every age below is as of then.
+Rendered 2026-10-25 18:17 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -48,9 +48,9 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **The overview window becomes the beam window**<br>• Rename the overview window to beam: <slug>, with one dobby and one orch section, each run shown once | [`beam-overview-window`](design-beam-overview-window.md) | darn |  | 1m<br>1m | batten, orch, reed |
-| T2 | `draft` **Bench Codex Astra against solo Opus as a plan reviewer, four runs**<br>• `profile: docs` | [`codex-astra-solo-bench`](design-codex-astra-solo-bench.md) | darn |  | 5h<br>5h | codex, burler |
-| T5 | `draft` **Shortcuts are short forms only**<br>• Remove lyx attach, lyx pause, lyx resume and the top-level lyx start | [`shortcuts-short-only`](design-shortcuts-short-only.md) | darn |  | 1m<br>0m | shortcut, loom, reed |
+| T1 | **The overview window becomes the beam window**<br>• Rename the overview window to beam: <slug>, with one dobby and one orch section, each run shown once | [`beam-overview-window`](design-beam-overview-window.md) | darn |  | 2m<br>2m | batten, orch, reed |
+| T2 | `draft` **Bench Codex Astra against solo Opus as a plan reviewer, four runs**<br>• `profile: docs` | [`codex-astra-solo-bench`](design-codex-astra-solo-bench.md) | darn |  | 6h<br>6h | codex, burler |
+| T5 | `draft` **Shortcuts are short forms only**<br>• Remove lyx attach, lyx pause, lyx resume and the top-level lyx start | [`shortcuts-short-only`](design-shortcuts-short-only.md) | darn |  | 2m<br>1m | shortcut, loom, reed |
 
 ### Layer A (1)
 
@@ -58,7 +58,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Beams: one lyx beam start, machine ownership by project, and a beam's life as a pawl run**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-ownership`](design-beam-start-and-ownership.md) | loom | `umbrella-anchor`, `beam-overview-window`, `shortcuts-short-only` | 3h<br>0m | orch, workspaces, batten, reed, board |
+| T4 | `draft` **Beams: one lyx beam start, machine ownership by project, and a beam's life as a pawl run**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-ownership`](design-beam-start-and-ownership.md) | loom | `umbrella-anchor`, `beam-overview-window`, `shortcuts-short-only` | 3h<br>1m | orch, workspaces, batten, reed, board |
 
 ## Notes (42)
 
@@ -69,13 +69,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Find why a running run shows a dead waiter in the activity reader** | [`idle-notice-dead-waiter-cause`](design-idle-notice-dead-waiter-cause.md) | 1d<br>1d | batten, shuttle |
-| B2 |  | **A webster stop reaches the parent twice: Merriam asks directly and the driver escalates the same question** | [`webster-stop-asked-once`](design-webster-stop-asked-once.md) | 1h<br>1h | webster, loom |
-| B3 |  | **Webster audit: a card slug ending in -weft makes every gate test --card command a fabric reference** | [`weft-suffix-card-slug-audit`](design-weft-suffix-card-slug-audit.md) | 1h<br>1h | webster, fabric |
-| B4 |  | **Board README lists draft tasks under Ready** | [`readme-draft-not-ready`](design-readme-draft-not-ready.md) | 1h<br>1h | board |
-| B5 |  | **Darn-Write seat start dies: provider pane drops to a shell prompt after the prompt text** | [`seat-start-long-prompt-dies`](design-seat-start-long-prompt-dies.md) | 1h<br>1h | shuttle |
-| B6 |  | **shuttle start fails on transient tmux fork/exec EAGAIN and leaves the strand behind** | [`shuttle-retry-tmux-eagain`](design-shuttle-retry-tmux-eagain.md) | 1h<br>1h | shuttle, reed |
-| B7 |  | **gate tier1 fails on a stale Go vet cache entry naming a torn-down worktree** | [`gate-stale-vet-cache-path`](design-gate-stale-vet-cache-path.md) | 1h<br>1h | gate |
-| B8 |  | **Shuttle hold notices fire while Merriam waits on its own background recovery** | [`no-hold-notice-on-bg-wait`](design-no-hold-notice-on-bg-wait.md) | 1h<br>1h | shuttle, webster |
+| B2 |  | **A webster stop reaches the parent twice: Merriam asks directly and the driver escalates the same question** | [`webster-stop-asked-once`](design-webster-stop-asked-once.md) | 2h<br>2h | webster, loom |
+| B3 |  | **Webster audit: a card slug ending in -weft makes every gate test --card command a fabric reference** | [`weft-suffix-card-slug-audit`](design-weft-suffix-card-slug-audit.md) | 2h<br>2h | webster, fabric |
+| B4 |  | **Board README lists draft tasks under Ready** | [`readme-draft-not-ready`](design-readme-draft-not-ready.md) | 2h<br>2h | board |
+| B5 |  | **Darn-Write seat start dies: provider pane drops to a shell prompt after the prompt text** | [`seat-start-long-prompt-dies`](design-seat-start-long-prompt-dies.md) | 2h<br>2h | shuttle |
+| B6 |  | **shuttle start fails on transient tmux fork/exec EAGAIN and leaves the strand behind** | [`shuttle-retry-tmux-eagain`](design-shuttle-retry-tmux-eagain.md) | 2h<br>2h | shuttle, reed |
+| B7 |  | **gate tier1 fails on a stale Go vet cache entry naming a torn-down worktree** | [`gate-stale-vet-cache-path`](design-gate-stale-vet-cache-path.md) | 2h<br>2h | gate |
+| B8 |  | **Shuttle hold notices fire while Merriam waits on its own background recovery** | [`no-hold-notice-on-bg-wait`](design-no-hold-notice-on-bg-wait.md) | 2h<br>2h | shuttle, webster |
 
 ### Enhancements (16)
 
