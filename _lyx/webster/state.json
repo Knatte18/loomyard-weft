@@ -513,7 +513,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 18,
   "masterStrand": "78050100d96dc3d016a719d88a437aa8",
   "masterSessionId": "f14f6a6a-13a7-4ddf-b2b8-70425a7da22b",
   "masterEngine": "claude",
@@ -689,6 +689,24 @@
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-ac2e144f6f073aec3.jsonl",
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-abb960a0646181047.jsonl"
       ]
+    },
+    "18": {
+      "slug": "beam-create-at-an-anchor",
+      "cards": [
+        "18-beam-create-at-an-anchor",
+        "19-adopt-refuses-during-a-move"
+      ],
+      "cardHashes": {
+        "18-beam-create-at-an-anchor": "093f4a5b75bc039d06d3177a68eff5ba60366a740d2c194d7238699b0fbd806e",
+        "19-adopt-refuses-during-a-move": "133262ba7786b676d0d83d61d8c2761d21cccd755e7e56e785fb7c96d477ed33"
+      },
+      "startSha": "7a3fa1748fec4fd47fdd216c9eac65cfd2ed2bcc",
+      "kind": "fork",
+      "spawnedAt": "2026-10-25T18:17:42Z",
+      "sessionId": "f14f6a6a-13a7-4ddf-b2b8-70425a7da22b",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "3": {
       "slug": "fabric-target-locations",
