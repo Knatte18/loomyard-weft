@@ -6,7 +6,7 @@
      It is a marker VALUE, never a template -- it carries no top-level stencil markers of its own, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=b750e15982562029e73ac3dbc2108d33107712bea754d77816bc90958f347457 build=f4a897b8596ca46981eff2f75c951026df02121b time=2026-10-24T06:21:39Z -->
+lyx-stencil: sha256=e353df55cb8d4f728b32f058283c22d45c0c4bcfe407e153b6f969e179f6b6d5 build=5e449651fc9099cf3c0ec513ef579c464138a703 time=2026-10-25T09:35:58Z -->
 
 # Code-Review rubric
 
@@ -116,7 +116,7 @@ When the note above is not `none`, this round reviews an amendment: review only 
 
 ## Review input
 
-When the amendment note names a review input, that file is a report written after this perch last settled: the merge fixer's report of the latest Merge-In, or the overlap note of a Finalize reroute.
+When the amendment note names a review input, that file is a report written after this perch last settled: the merge fixer's report of the latest Parent-Align, or the overlap note of a Finalize reroute.
 Read it as an input besides the diff: judge from it whether the alignment it reports, and the parent changes it names, keep the code consistent with the answer key.
 A finding about the report itself is never raised; each finding is about the code.
 
