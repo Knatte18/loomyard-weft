@@ -41,7 +41,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Dobby counts no done run against max_runs**<br>• Done batten runs neither count as in flight nor stay in dobby state, so released tasks start<br>• `profile: light` | [`dobby-skip-done-runs`](design-dobby-skip-done-runs.md) | darn | Code-Burler-Fix | neve | 7m<br>7m | batten, workspaces |
+| T1 | **Dobby counts no done run against max_runs**<br>• Done batten runs neither count as in flight nor stay in dobby state, so released tasks start<br>• `profile: light` | [`dobby-skip-done-runs`](design-dobby-skip-done-runs.md) | darn | Code-Bouncer | neve | 8m<br>8m | batten, workspaces |
 | T3 | **An anchor per beam**<br>• Let each worktree carry its own anchor through a .lyx-anchor marker at its weft branch root, inherited by its tasks, with a verb that changes it<br>• `profile: solid` | [`umbrella-anchor`](design-umbrella-anchor.md) | loom | Discussion-Write | neve | 6d<br>15m | fabric, config, workspaces |
 
 ### Ready (1)
@@ -50,7 +50,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **Bench Codex Astra against solo Opus as a plan reviewer, four runs**<br>• `profile: docs` | [`codex-astra-solo-bench`](design-codex-astra-solo-bench.md) | darn |  | 32m<br>32m | codex, burler |
+| T2 | `draft` **Bench Codex Astra against solo Opus as a plan reviewer, four runs**<br>• `profile: docs` | [`codex-astra-solo-bench`](design-codex-astra-solo-bench.md) | darn |  | 33m<br>33m | codex, burler |
 
 ### Layer A (1)
 
