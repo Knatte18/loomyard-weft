@@ -76,6 +76,15 @@ A nil seam logs nothing.
 - The pane now reads the board, the owners and beam.yaml on every poll; on a large board that adds file reads per second at most, with no git call once each parent is cached.
 - A parent cached in a long-lived pane can go stale if a released task's project changes before its pair exists; dobby itself has the same cache.
 
+<!-- lyx:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/code/round-1-review.md; fixer report: _lyx/reviews/code/round-1-fixer-report.md.
+  - dobbytasks-change-untested (class design, severity MEDIUM, open in rounds 1)
+  - overview-dobby-section-in-task-pair (class design, severity BLOCKING, open in rounds 1)
+  - overview-poll-takes-dobby-and-driver-locks (class design, severity MEDIUM, open in rounds 1)
+  - refusal-clearing-unasserted (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - A dobby whose lock is held shows alive; a free lock shows not running with `lyx beam start` as the way forward.
