@@ -6,6 +6,12 @@
 - `internal/fabricengine#warpProbeResult`
 - `internal/fabriccli#CloneAndWire`
 - `internal/fabricengine/doc.go`
+- `internal/fabricengine/codebinding.go`
+- `internal/fabricengine#Unwire`
+- `internal/fabriccli#Command`
+- `internal/fabriccli/doc.go`
+- `internal/fabricengine#staleFabricAnchorName`
+- `cmd/lyx#uncontainedWriteAllowlist`
 - `internal/hubforge#assertRealHub`
 - `internal/fabricengine_test#TestCloneHub_AnchorCreatePath`
 - `internal/fabricengine_test#TestCloneHub_AnchorRootDefaultPath`
@@ -33,6 +39,8 @@
 **Intent:**
 D4.
 `commitAnchorMarker` writes `anchor` plus a newline into `<weftPath>/.lyx-anchor` and commits that one path on the branch checked out at `weftPath`, under the weft write lock (`.weft/weft.write.lock`, through `ensureWeftLockDirAt`), recording `KindFileWritten` and `KindCommitCreated`; it pushes nothing, and it is the one writer of a marker commit outside the D7 move (Shared Decisions).
+It lives in a new `internal/fabricengine/anchormarker.go` and writes the file through an `os.Root` opened at `weftPath` (`root.WriteFile`), as `writeLaunchers` writes through one at the hub, so it carries no raw write primitive and needs no entry in `cmd/lyx`'s `uncontainedWriteAllowlist`, whose doc comment admits a new raw write only into a git-owned path or a directory a contained minter made in the same call, and a reconcile's or an adopt's weft is neither.
+`CloneHub` no longer writes the marker itself, so the allowlist's `clone.go` entry drops the marker from its reason and keeps the hub scratch directory.
 
 `CloneHub`, after the weft primary is on main-weft (`RecordsBranchName` of the warp branch) and the board exists:
 it adopts the marker checked out at the root of the prime's weft worktree when present, validated with `ValidateAnchorRel`;
@@ -46,6 +54,8 @@ An adopt writes nothing: a hub whose main-weft is markerless keeps resolving thr
 So the fresh-bind test (`freshBind`) and the bootstrap guard's evidence count a marker on either branch, and the guard's message names `.lyx-anchor` on `weft:main` or main-weft.
 
 `internal/fabricengine/doc.go`'s anchor section says the marker is recorded per worktree at its weft root, first on main-weft by clone, with the Bolt marker read only as the migration fallback.
+The text that records the anchor on `weft:main` now places the marker at each worktree's weft root: `codebinding.go`'s file header; `unwire.go`'s file header, `Unwire`'s doc and the unwire help in `Command`'s `Long` text, each of which still says unwire leaves every marker in place; `CloneAndWire`'s doc, whose `weft:main` commit carries config and no anchor; and `internal/fabriccli/doc.go`'s clone paragraphs, which say the re-clone compares `--subpath` with the main-weft marker first and the Bolt marker as the fallback.
+`staleFabricAnchorName`'s doc says clone's guard runs on the Bolt fallback read only.
 
 Tests:
 `TestCloneHub_AnchorCreatePath` and `TestCloneHub_AnchorRootDefaultPath` assert the marker is committed at the prime weft's `HEAD` (`git show HEAD:.lyx-anchor` in it) and absent from the board.
