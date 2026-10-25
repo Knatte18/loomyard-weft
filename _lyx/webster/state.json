@@ -972,7 +972,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 13,
   "masterStrand": "b72a3cc08101d22a4e8fe62d611ae08b",
   "masterSessionId": "6e5b1004-7b3f-4552-94de-e0b6630533f5",
   "masterEngine": "claude",
@@ -1028,6 +1028,22 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-ac27179692d1cfb44.jsonl"
       ]
+    },
+    "13": {
+      "slug": "innerrun-short-check",
+      "cards": [
+        "13-innerrun-short-check"
+      ],
+      "cardHashes": {
+        "13-innerrun-short-check": "26024cfd0d290d02ff1ce405ec44e102301e95431054572cb0fdeb5749b3ee39"
+      },
+      "startSha": "5e7c35b6d2f46321a1ecf9646a975246c25a5082",
+      "kind": "fork",
+      "spawnedAt": "2026-10-25T09:27:06Z",
+      "sessionId": "6e5b1004-7b3f-4552-94de-e0b6630533f5",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "draft-writers",
