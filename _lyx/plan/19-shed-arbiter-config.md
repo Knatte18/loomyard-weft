@@ -13,10 +13,10 @@
 - `internal/sheddriver/doc.go`
 
 **Create:**
-- `plan:internal/sheddriver#ArbiterSettings` -> `type ArbiterSettings struct`
-- `plan:internal/sheddriver#ResolveArbiter` -> `func ResolveArbiter(cfg Config, o Override, reg modelspec.Registry) (ArbiterSettings, error)`
-- `plan:internal/sheddriver#ArbiterLimits` -> `func ArbiterLimits(cfg Config, o Override) (timeout time.Duration, maxSpawns int)`
-- `plan:internal/sheddriver#TestResolveArbiter` -> `func TestResolveArbiter(t *testing.T)`
+- `internal/sheddriver#ArbiterSettings`
+- `internal/sheddriver#ResolveArbiter`
+- `internal/sheddriver#ArbiterLimits`
+- `internal/sheddriver#TestResolveArbiter`
 
 **Intent:**
 Move the arbiter's keys into `shed.yaml` beside the tackler's, with today's loom defaults (D8).

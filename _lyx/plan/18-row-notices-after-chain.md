@@ -17,11 +17,11 @@
 - `internal/battenshed#TestWorktreeTeardown_FailureNoticeOncePerEpisode`
 
 **Create:**
-- `plan:internal/battenshed#RowStopNotice` -> `func RowStopNotice(ctx context.Context, deps RowNoticeDeps, slug, scratchDir, producer, reason, reportPath string, historyLen int) bool`
-- `plan:internal/battenshed#TestRowStopNotice` -> `func TestRowStopNotice(t *testing.T)`
-- `plan:internal/battenshed#PauseHonouredPrefix` -> `const PauseHonouredPrefix = "pause honoured"`
-- `plan:internal/battencli#battenHandBackNotice` -> `func battenHandBackNotice(deps battenshed.RowNoticeDeps, slug, scratchDir string, stop sheddriver.Stop, line, reportPath string) bool`
-- `plan:internal/battencli#TestBattenHandBackNotice` -> `func TestBattenHandBackNotice(t *testing.T)`
+- `internal/battenshed#RowStopNotice`
+- `internal/battenshed#TestRowStopNotice`
+- `internal/battenshed#PauseHonouredPrefix`
+- `internal/battencli#battenHandBackNotice`
+- `internal/battencli#TestBattenHandBackNotice`
 
 **Intent:**
 Hold the Land and Worktree-Teardown failure notices until the stop chain gives the stop back (D8): the orch is told only what the rule table, the tackler and the arbiter did not settle.

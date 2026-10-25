@@ -20,7 +20,7 @@
 - `plan:internal/shedarbiter#Deps`
 - `plan:internal/shedarbiter#Seam`
 - `plan:internal/shedarbiter#ConsumeAttempt`
-- `plan:internal/sheddriver#ResolveArbiter`
+- `internal/sheddriver#ResolveArbiter`
 - `plan:internal/arbiterstop#NewBattenReaders`
 - `plan:internal/arbiterstop#BattenHandBackWayForward`
 
