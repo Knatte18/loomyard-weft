@@ -1,6 +1,6 @@
 # Shortcuts are short forms only
 
-`shortcuts-short-only` · Task · enhancement, shortcut, loom, reed
+`shortcuts-short-only` · Task · enhancement, shortcut, loom, reed · running · Worktree-Create
 
 ## Seen (operator, 2026-10-25)
 

@@ -34,7 +34,7 @@ grouping
 
 Concrete and claimable; only a task can run.
 
-### Running (2)
+### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -42,15 +42,15 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **The overview window becomes the beam window**<br>• Rename the overview window to beam: <slug>, with one dobby and one orch section, each run shown once | [`beam-overview-window`](design-beam-overview-window.md) | darn | Worktree-Create | neve | 2m<br>2m | batten, orch, reed |
 | T3 | **An anchor per beam**<br>• Let each worktree carry its own anchor through a .lyx-anchor marker at its weft branch root, inherited by its tasks, with a verb that changes it<br>• `profile: solid` | [`umbrella-anchor`](design-umbrella-anchor.md) | loom | Webster | neve | 7d<br>5h | fabric, config, workspaces |
+| T5 | **Shortcuts are short forms only**<br>• Remove lyx attach, lyx pause, lyx resume and the top-level lyx start | [`shortcuts-short-only`](design-shortcuts-short-only.md) | darn | Worktree-Create | neve | 2m<br>1m | shortcut, loom, reed |
 
-### Ready (2)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | `draft` **Bench Codex Astra against solo Opus as a plan reviewer, four runs**<br>• `profile: docs` | [`codex-astra-solo-bench`](design-codex-astra-solo-bench.md) | darn |  | 6h<br>6h | codex, burler |
-| T5 | **Shortcuts are short forms only**<br>• Remove lyx attach, lyx pause, lyx resume and the top-level lyx start | [`shortcuts-short-only`](design-shortcuts-short-only.md) | darn |  | 2m<br>1m | shortcut, loom, reed |
 
 ### Layer A (1)
 
