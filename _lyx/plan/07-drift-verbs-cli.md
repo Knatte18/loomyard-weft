@@ -1,22 +1,22 @@
 # Card 7 — drift-verbs-cli
 
 **Create:**
-- `plan:internal/driftengine#VerbStatus` -> `type VerbStatus struct`
-- `plan:internal/driftengine#RecordScope` -> `func RecordScope(p Paths, st VerbStatus, scope string, skip []string) error`
-- `plan:internal/driftengine#Accept` -> `func Accept(p Paths, st VerbStatus, test, reason string) error`
-- `plan:internal/driftengine#Withdraw` -> `func Withdraw(p Paths, st VerbStatus, test string) error`
-- `plan:internal/driftengine#Defer` -> `func Defer(p Paths, st VerbStatus) error`
-- `plan:internal/driftengine#Waive` -> `func Waive(p Paths, st VerbStatus, reason string) error`
-- `plan:internal/driftengine#CheckVerifyRow` -> `func CheckVerifyRow(st VerbStatus, verb string) error`
-- `plan:internal/driftengine#TestRecordScope` -> `func TestRecordScope(t *testing.T)`
-- `plan:internal/driftengine#TestAcceptWithdraw` -> `func TestAcceptWithdraw(t *testing.T)`
-- `plan:internal/driftengine#TestDeferWaive` -> `func TestDeferWaive(t *testing.T)`
+- `internal/driftengine#VerbStatus`
+- `internal/driftengine#RecordScope`
+- `internal/driftengine#Accept`
+- `internal/driftengine#Withdraw`
+- `internal/driftengine#Defer`
+- `internal/driftengine#Waive`
+- `internal/driftengine#CheckVerifyRow`
+- `internal/driftengine#TestRecordScope`
+- `internal/driftengine#TestAcceptWithdraw`
+- `internal/driftengine#TestDeferWaive`
 - `internal/driftcli/doc.go`
 - `internal/driftcli/testmain_test.go`
-- `plan:internal/driftcli#Command` -> `func Command() *cobra.Command`
-- `plan:internal/driftcli#RunCLI` -> `func RunCLI(out io.Writer, args []string) int`
-- `plan:internal/driftcli#RunCLIIn` -> `func RunCLIIn(cwd string, out io.Writer, args []string) int`
-- `plan:internal/driftcli#TestCapture_OutlivesCaller` -> `func TestCapture_OutlivesCaller(t *testing.T)`
+- `internal/driftcli#Command`
+- `internal/driftcli#RunCLI`
+- `internal/driftcli#RunCLIIn`
+- `internal/driftcli_test#TestCapture_OutlivesCaller`
 
 **Edit:**
 - `cmd/lyx#newRoot`

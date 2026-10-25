@@ -38,12 +38,12 @@
 - `internal/shedrecipe/doc.go`
 
 **Uses:**
-- `plan:internal/driftengine#NewDriftBaseline`
-- `plan:internal/driftengine#NewDriftAwait`
-- `plan:internal/driftengine#NewDriftVerify`
-- `plan:internal/driftengine#Deps`
-- `plan:internal/driftengine#BaselineTable`
-- `plan:internal/driftengine#VerifyTable`
+- `internal/driftengine#NewDriftBaseline`
+- `internal/driftengine#NewDriftAwait`
+- `internal/driftengine#NewDriftVerify`
+- `internal/driftengine#Deps`
+- `internal/driftengine#BaselineTable`
+- `internal/driftengine#VerifyTable`
 - `internal/driftengine#StartCapture`
 - `internal/driftengine#RunCapture`
 - `internal/driftengine#RunCompare`

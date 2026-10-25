@@ -1,15 +1,15 @@
 # Card 11 — drift-verify-producer
 
 **Create:**
-- `plan:internal/driftengine#VerifyTold` -> `type VerifyTold struct`
-- `plan:internal/driftengine#DriftVerify` -> `type DriftVerify struct`
-- `plan:internal/driftengine#NewDriftVerify` -> `func NewDriftVerify(name string, row Row, verify shuttleengine.GateEntry, deps Deps) *DriftVerify`
-- `plan:internal/driftengine#DriftVerify.Call` -> `func (p *DriftVerify) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/driftengine#TestDriftVerify` -> `func TestDriftVerify(t *testing.T)`
-- `plan:internal/driftengine#gateLoopSeats` -> `func gateLoopSeats(t *testing.T, actions []func()) *shedfake.SeatRunner`
+- `internal/driftengine#VerifyTold`
+- `internal/driftengine#DriftVerify`
+- `internal/driftengine#NewDriftVerify`
+- `internal/driftengine#DriftVerify.Call`
+- `internal/driftengine#TestDriftVerify`
+- `internal/driftengine#gateLoopSeats`
 
 **Edit:**
-- `plan:internal/driftengine#Deps`
+- `internal/driftengine#Deps`
 - `internal/shedadapters#DecisionHaltPrefix`
 - `pattern/PATTERN-gate-slot.md`
 - `internal/shedadapters/doc.go`
@@ -19,7 +19,7 @@
 - `internal/driftengine/doc.go`
 
 **Uses:**
-- `plan:internal/driftengine#VerifyTable`
+- `internal/driftengine#VerifyTable`
 - `internal/driftengine#RunCompare`
 - `internal/driftengine#CountedCapture`
 - `internal/driftengine#ResetRuns`
