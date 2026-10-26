@@ -1,14 +1,14 @@
 # Card 11 — beam-start-stop-status
 
 **Create:**
-- `plan:internal/beamcli#beamTarget` -> `type beamTarget struct`
-- `plan:internal/beamcli#resolveBeamTarget` -> `func resolveBeamTarget(location *lyxcwd.Location, slug string) (beamTarget, error)`
-- `plan:internal/beamcli#startBeams` -> `func startBeams(targets []beamTarget, up func(target beamTarget, prepare bool) (orchcli.BeamUpReport, error)) (startResult, error)`
-- `plan:internal/beamcli#stopCmd` -> `func stopCmd() *cobra.Command`
-- `plan:internal/beamcli#orchView` -> `type orchView struct`
-- `plan:internal/beamcli#readOrchView` -> `func readOrchView(prime *lyxcwd.Location, worktree string) (orchView, error)`
-- `plan:internal/beamcli#TestStartBeams` -> `func TestStartBeams(t *testing.T)`
-- `plan:internal/beamcli_test#TestStart_RefusesBeforeTheReconcile` -> `func TestStart_RefusesBeforeTheReconcile(t *testing.T)`
+- `internal/beamcli#beamTarget`
+- `internal/beamcli#resolveBeamTarget`
+- `internal/beamcli#startBeams`
+- `internal/beamcli#stopCmd`
+- `internal/beamcli#orchView`
+- `internal/beamcli#readOrchView`
+- `internal/beamcli#TestStartBeams`
+- `internal/beamcli_test#TestStart_RefusesBeforeTheReconcile`
 
 **Edit:**
 - `internal/beamcli#startCmd`

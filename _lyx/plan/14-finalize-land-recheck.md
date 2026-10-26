@@ -1,11 +1,11 @@
 # Card 14 — finalize-land-recheck
 
 **Create:**
-- `plan:internal/landingshed#LandBlocker` -> `type LandBlocker struct`
-- `plan:internal/landingshed#LandHaltPrefix` -> `const LandHaltPrefix = "land check: "`
-- `plan:internal/landingshed#Finalize.landCheck` -> `func (fz *Finalize) landCheck(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error, bool)`
-- `plan:internal/landingshed#landHaltReason` -> `func landHaltReason(beam, parentWorktree string, blockers []LandBlocker) string`
-- `plan:internal/landingshed#TestFinalize_LandCheck` -> `func TestFinalize_LandCheck(t *testing.T)`
+- `internal/landingshed#LandBlocker`
+- `internal/landingshed#LandHaltPrefix`
+- `internal/landingshed#Finalize.landCheck`
+- `internal/landingshed#landHaltReason`
+- `internal/landingshed#TestFinalize_LandCheck`
 
 **Edit:**
 - `internal/landingshed#Deps`
