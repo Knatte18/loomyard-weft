@@ -1,15 +1,15 @@
 {
   "subject": {
     "kind": "code",
-    "merge_base": "6865efbaa1f021128b4ae3391b18f7ffbe52e4c2",
-    "head": "5bc18b766e7632bc0eeb0a0ae35381d66304dc4e",
-    "full_hash": "7ee456fb489573a8b2c67cdaae75340cb872612991cd901059a1df43789c17f1",
+    "merge_base": "af9b98e16a972ad9840b01f9e4d28294d279e477",
+    "head": "4283c7f7873014e61702141b1fe627d1dfa7c66d",
+    "full_hash": "6e0cc7bd2cff163dc65b6a15c43d49fa67bc9d2abba006fa60ac26a3cc8d17f6",
     "patch_id": "8df2f1cae284ea23e7b9f54ce7fbb8d20f8ddee8"
   },
-  "base": "6865efbaa1f021128b4ae3391b18f7ffbe52e4c2",
-  "generation": 1,
+  "base": "af9b98e16a972ad9840b01f9e4d28294d279e477",
+  "generation": 2,
   "round": 1,
-  "settled_at": "2026-10-26T12:42:23Z",
-  "round_started_at": "2026-10-26T12:37:11Z",
+  "settled_at": "2026-10-26T12:52:18Z",
+  "round_started_at": "2026-10-26T12:43:14Z",
   "settled": true
 }
