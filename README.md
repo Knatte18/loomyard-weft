@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-26 10:35 UTC; every age below is as of then.
+Rendered 2026-10-26 10:38 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -38,10 +38,10 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **gate tier1 fails on a stale Go vet cache entry naming a torn-down worktree**<br>• `profile: light` | [`gate-stale-vet-cache-path`](design-gate-stale-vet-cache-path.md) | darn | Finalize | osl-1046 | 18h<br>28m | gate |
-| T3 | **Shuttle: seat start survives long prompts and tmux EAGAIN, and no held notice for a turn waiting by design**<br>• Three shuttleengine bugs: a long prompt kills the seat start, EAGAIN reads as a dead provider, and a by-design wait raises a held notice<br>• `profile: solid` | [`shuttle-start-hardening`](design-shuttle-start-hardening.md) | darn | Darn-Write | osl-1046 | 18h<br>27m | shuttle, reed, webster |
+| T2 | **gate tier1 fails on a stale Go vet cache entry naming a torn-down worktree**<br>• `profile: light` | [`gate-stale-vet-cache-path`](design-gate-stale-vet-cache-path.md) | darn | Finalize | osl-1046 | 18h<br>32m | gate |
+| T3 | **Shuttle: seat start survives long prompts and tmux EAGAIN, and no held notice for a turn waiting by design**<br>• Three shuttleengine bugs: a long prompt kills the seat start, EAGAIN reads as a dead provider, and a by-design wait raises a held notice<br>• `profile: solid` | [`shuttle-start-hardening`](design-shuttle-start-hardening.md) | darn | Darn-Write | osl-1046 | 18h<br>30m | shuttle, reed, webster |
 | T4 | **Beams: one lyx beam start, machine ownership by project, and a beam's life as a pawl run**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-ownership`](design-beam-start-and-ownership.md) | loom | Plan-Write | osl-1046 | 19h<br>15h | orch, workspaces, batten, reed, board |
-| T5 | **PATTERN line cap counts the rule text only, not the name and link**<br>• MaxEntryLineChars counts the whole entry line, so the room left for the rule text shrinks with the entry name and link<br>• `profile: light` | [`pattern-line-cap-text-only`](design-pattern-line-cap-text-only.md) | darn | Darn-Write | osl-1046 | 20h<br>25m | pattern, loom |
+| T5 | **PATTERN line cap counts the rule text only, not the name and link**<br>• MaxEntryLineChars counts the whole entry line, so the room left for the rule text shrinks with the entry name and link<br>• `profile: light` | [`pattern-line-cap-text-only`](design-pattern-line-cap-text-only.md) | darn | Drift-Verify | osl-1046 | 20h<br>29m | pattern, loom |
 
 ### Ready (0)
 
@@ -58,7 +58,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Find why a running run shows a dead waiter in the activity reader** | [`idle-notice-dead-waiter-cause`](design-idle-notice-dead-waiter-cause.md) | 2d<br>2d | batten, shuttle |
-| B2 |  | **A webster stop reaches the parent twice: Merriam asks directly and the driver escalates the same question** | [`webster-stop-asked-once`](design-webster-stop-asked-once.md) | 18h<br>15m | webster, loom |
+| B2 |  | **A webster stop reaches the parent twice: Merriam asks directly and the driver escalates the same question** | [`webster-stop-asked-once`](design-webster-stop-asked-once.md) | 18h<br>19m | webster, loom |
 | B4 |  | **Board README lists draft tasks under Ready** | [`readme-draft-not-ready`](design-readme-draft-not-ready.md) | 18h<br>18h | board |
 
 ### Enhancements (20)
@@ -69,7 +69,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>22h | shuttle, codex |
 | E4 |  | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 3w<br>3w | fabric, loom |
 | E5 |  | **Decide the layout of projects in the board README**<br>• The operator is not satisfied with how the README renders projects and their members; the layout is to be decided | [`board-projects-layout`](design-board-projects-layout.md) | 1d<br>1d | board |
-| E6 |  | **Board README: one rendered file per project, research notes first**<br>• Each project renders its own file linked from its parent; README.md is the root project; research notes come right after tasks | [`readme-per-project-files`](design-readme-per-project-files.md) | 16h<br>14h | board |
+| E6 |  | **Board README: one rendered file per project, research notes first**<br>• Each project renders its own file linked from its parent; README.md is the root project; research notes come right after tasks | [`readme-per-project-files`](design-readme-per-project-files.md) | 16h<br>15h | board |
 | E7 |  | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 11d<br>22h | shed, loom |
 | E8 |  | **Darn runs Drift-Await after Drift-Baseline instead of a waiting capture** | [`darn-drift-await-row`](design-darn-drift-await-row.md) | 15h<br>15h | shed, loom |
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 2w<br>2d | burler, stencil |
@@ -77,12 +77,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E11 |  | **Loom and darn Finalize resolve a moved parent themselves instead of rerouting** | [`loom-finalize-merges-itself`](design-loom-finalize-merges-itself.md) | 15h<br>15h | loom, batten |
 | E12 |  | **Adopt machine check: a gate key of its own, and visible while it runs**<br>• Adopt runs its machine check silently in the background under the finalize gate key | [`adopt-check-visible`](design-adopt-check-visible.md) | 1h<br>1h | gate, board |
 | E13 |  | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 10d<br>4d | stencil, shuttle |
-| E14 |  | **No test is skipped by design**<br>• Windows-only tests count as skips on Linux, and TestBuildLoomShed_OutputShape skips on every machine | [`test-skips-os-tags`](design-test-skips-os-tags.md) | 1h<br>15m | testkit, reed, loom, fabric, gate |
+| E14 |  | **No test is skipped by design**<br>• Windows-only tests count as skips on Linux, and TestBuildLoomShed_OutputShape skips on every machine | [`test-skips-os-tags`](design-test-skips-os-tags.md) | 1h<br>19m | testkit, reed, loom, fabric, gate |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 8d<br>8d | webster, fabric, loom |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 7d<br>7d | fabric, batten |
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 3d<br>3d | burler, claude |
 | E27 | L | **Creel delivers agent mail in full at the receiver's next tool boundary**<br>• A reminder plus lyx creel read costs the receiver an extra turn per agent message | [`creel-carry-agent-mail`](design-creel-carry-agent-mail.md) | 3d<br>22h | creel |
-| E28 |  | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 4d<br>15h | dotnet |
+| E28 |  | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 4d<br>16h | dotnet |
 | E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 3d<br>1d | stencil, board, loom |
 | E35 |  | **A landing fixer escalation goes to the arbiter before the orch**<br>• Merge-In and Finalize fixer escalate reports reach the arbiter first | [`landing-escalate-arbiter`](design-landing-escalate-arbiter.md) | 2d<br>22h | shed, loom |
 
