@@ -10,9 +10,9 @@ LyX is common among researchers, so the clash is likely for other users too.
 
 ## Name
 
-The new name is open: `lyd` and `lyr` are the candidates, and the operator has not chosen.
-Neither is an Ubuntu package name (checked 2026-10-17 and 2026-10-26).
-Rejected: `ly`, since the binary and the `ly` plugin must not share a name (operator, 2026-10-26); `warp` and `ply` are Ubuntu packages, `weft` and `warp` are already fabric terms here, and the four-letter weaving names (`pirn`, `sley`) are longer to type.
+The new name is open, and the operator has not chosen.
+The note `binary-name-candidates` holds the clash-checked candidates: short, preferably three letters, ideally rooted in weaving, with `vef` ranked first and `vev` close behind.
+Rejected: `ly`, since the binary and the `ly` plugin must not share a name; `loy`, too close to `ly`; and `lyd` (operator, 2026-10-26).
 
 ## Priority (operator, 2026-10-26)
 
