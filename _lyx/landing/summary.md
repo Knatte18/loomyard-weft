@@ -1,34 +1,37 @@
-# No cgo in the module, so go vet never opens another worktree's files
+# Drop the module's cgo use so gate vet never reads another worktree
 
-`lyx gate test --tier 1` failed in one worktree with `can't parse raw cgo file: open <other worktree>/internal/reedengine/proctree_linux.go: no such file or directory` after that other worktree was torn down (issue #868).
+`lyx gate test --tier 1` could fail before any test with `can't parse raw cgo file: open <other worktree>/internal/reedengine/proctree_linux.go: no such file or directory` once the worktree that first built `internal/reedengine` was torn down.
+Under `-trimpath` the shared Go build cache keys a build independently of the checkout directory, but the cgo-generated files it keeps carry `//line` directives with the absolute path of the checkout that built them.
+A later `go vet` in another worktree reloads those files, and its `cgocall` analyzer opens the raw source each directive names.
+Only a cgo package in a checkout-dependent directory triggers this; a cgo package in the module cache sits at the same path in every worktree.
 
-## Cause
+Closes #868
 
-Under `-trimpath`, cmd/go keys a package's build action independently of the checkout directory, so every worktree of the hub shares one cache entry.
-For a cgo package that entry includes the cgo-generated Go files, and their `//line` directives name the source by the absolute path of the checkout that first built it: cmd/go gives cgo no `-trimpath` rewrite outside overlays.
-On a cache hit `go vet` reloads those files, and its `cgocall` analyzer opens the raw source each directive names.
-So a tier1 `go vet` read `proctree_linux.go` from whichever worktree had seeded the entry, and failed once that worktree was gone.
-A scratch module built in one directory and vetted in a copy, with a scratch `GOCACHE`, reproduces it.
-A cgo dependency in the module cache is unaffected, since its path is the same in every worktree.
+## Changes
 
-## Change
-
-- `internal/reedengine`: `paneProcessAge` took the unit of a `/proc/<pid>/stat` start time from `sysconf(_SC_CLK_TCK)`, the module's only cgo use.
-  It now reads the auxiliary vector's `AT_CLKTCK` entry through `golang.org/x/sys/unix.Auxv`, an existing direct dependency, and falls back to 100 when the entry is absent or the vector unreadable, as glibc's `sysconf` does.
-  The pure `clockTicksFromAuxv` lives in `proctree.go` with a table test; the existing `PlatformProbe` subtest still checks a real age on Linux.
-- `cmd/lyx/nocgo_test.go`: a `tier0` `//lyx:guard` scan fails for every Go file of the module that imports `"C"`, naming the way forward of reaching the C code through a module-cache dependency, with fixture rows for a plain, grouped and test-file import and for mentions in a comment or string.
-- `pattern/PATTERN-gate-slot.md` and `internal/gateslot`'s doc state the rule beside the `-trimpath` bullet; the `PATTERN.md` overview line is unchanged.
-
-The tree-sitter grammars still link through cgo from the module cache, so a build still needs `CGO_ENABLED=1`.
+- `internal/reedengine`: `paneProcessAge` no longer calls `sysconf(_SC_CLK_TCK)` through cgo.
+  It reads the clock tick rate from the ELF auxiliary vector's `AT_CLKTCK` entry through `golang.org/x/sys/unix.Auxv`, via the new `clockTicksFromAuxv`, and falls back to 100 when the entry is absent or not positive, as glibc does.
+  With that call gone, no package of the module uses cgo.
+- `cmd/lyx/nocgo_test.go`: a `tier0` guard fails for every Go file of the module that imports `"C"`, naming the file and the way forward.
+  It scans the module's own files only, so cgo dependencies such as the tree-sitter grammars stay allowed.
+- `pattern/PATTERN-gate-slot.md` and the `internal/gateslot` package doc state the no-cgo rule beside the `-trimpath` rule.
 
 ## Design decisions
 
-- The fix removes the trigger rather than working around the cache: it keeps the shared cache `-trimpath` exists for and keeps `go vet`'s `cgocall` analyzer on, and it needs no change to the hub's `gate.yaml`.
-- A per-worktree `GOCACHE` was not taken, since every fresh worktree would build cold.
-- Detect-and-retry in `gatecli` was not taken: `go clean -cache` under other held slots breaks their builds, a `-a` retry rebuilds everything and only moves the poisoned path to the retrying worktree, and the error comes back after each teardown.
-- `go vet -cgocall=false` would also avoid it, but the tier commands are the hub's, and `GOFLAGS` cannot carry the flag because `go build` and `go list` refuse it.
-  Another Go hub with cgo in its own module can still hit the failure; that hub's way out is `-cgocall=false` on its tier's `go vet`.
+- Removing the trigger was chosen over per-worktree Go caches or detect-and-retry in `gatecli`.
+  It keeps the shared `-trimpath` build cache and keeps `go vet`'s `cgocall` analyzer on, and it fixes every tier and every worktree.
+- The hub's `gate.yaml` tier commands are untouched.
+- `AT_CLKTCK` is taken as 17 on every Linux architecture, per the kernel's `auxvec.h`.
+- `golang.org/x/sys/unix` is already a direct dependency, and `internal/reedengine` is no leaf package, so the import is allowed.
 
-## Verification
+## To check by hand
 
-`lyx gate test --wait --gate darn-write` over the diff passed tier0, tier1, with its `go build` and `go vet` steps under every tag, and tier2.
+- Cache entries already poisoned for `internal/reedengine` stop mattering once the package has no cgo, since its action ID changes.
+  A worktree still on an older commit keeps the old ID until it merges, so it can still hit the stale entry; `go clean -cache` while no gate slot is held clears it.
+- `paneProcessAge` returning the same age as before was covered by unit tests of `clockTicksFromAuxv` and the host-vector test, not by a run against a live tmux pane.
+
+## Tests
+
+- `clockTicksFromAuxv` is tested for a declared rate, a missing entry, a zero rate and a nil vector, and a Linux test checks that the host's real vector yields its `AT_CLKTCK` value.
+- The guard is tested on fixture trees: it fails on a plain, grouped and test-file `import "C"`, and passes on a mention in a comment or string.
+- The guard also runs over the real tree.
