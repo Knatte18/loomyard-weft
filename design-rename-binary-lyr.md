@@ -12,7 +12,7 @@ LyX is common among researchers, so the clash is likely for other users too.
 
 The new name is open: `lyd` and `lyr` are the candidates, and the operator has not chosen.
 Neither is an Ubuntu package name (checked 2026-10-17 and 2026-10-26).
-Rejected: `warp` and `ply` are Ubuntu packages, `weft` and `warp` are already fabric terms here, and the four-letter weaving names (`pirn`, `sley`) are longer to type.
+Rejected: `ly`, since the binary and the `ly` plugin must not share a name (operator, 2026-10-26); `warp` and `ply` are Ubuntu packages, `weft` and `warp` are already fabric terms here, and the four-letter weaving names (`pirn`, `sley`) are longer to type.
 
 ## Priority (operator, 2026-10-26)
 
@@ -22,6 +22,11 @@ The rename lands before LoomYard is taken into use on other repositories, since 
 
 - The binary: the `cmd/lyx` build target and `binaryName()` in `tools/deploy`, docs and README, stencils and skills in the `ly` plugin that invoke `lyx`, and any scripts or launchers that call it.
 - The hub directory suffix `-LYXHUB`, such as `loomyard-LYXHUB`, which the new name replaces (operator, 2026-10-26).
+
+## Done mechanically (operator, 2026-10-26)
+
+The rename is done by a script, never by hand edits file by file.
+Agent sessions refuse scripted in-place edits, so the script is a Go program under `tools/` that the run writes, reviews and then runs once.
 
 ## Runs alone (operator, 2026-10-22)
 
