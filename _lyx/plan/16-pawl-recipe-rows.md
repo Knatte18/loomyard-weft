@@ -15,8 +15,8 @@
 - `internal/shedrecipe#zeroEnvField`
 - `internal/shedrecipe#TestNames`
 - `internal/loomrecipe#TestRecipeEngines_ReportsExactlyLoomsOwnEngineSet`
-- `plan:internal/loomrecipe#NewPawl`
-- `plan:internal/loomrecipe#PawlRouting`
+- `internal/loomrecipe#NewPawl`
+- `internal/loomrecipe#PawlRouting`
 - `internal/loomrecipe#TestNewBeam`
 - `internal/loomrecipe#TestBeamRouting`
 - `internal/loomrecipe#TestRecipe_StructuralCheckHasNoFindings`
