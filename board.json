@@ -298,7 +298,7 @@
       "id": 622,
       "handle": "E13",
       "slug": "rename-binary-lyr",
-      "title": "Rename the lyx binary to lyr (name clash with LyX)",
+      "title": "Rename the lyx binary and the LYXHUB suffix (name clash with LyX)",
       "kind": "note",
       "labels": [
         "enhancement",
@@ -308,12 +308,13 @@
       "issues": [
         670
       ],
+      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "Imported from [issue #670](https://github.com/Knatte18/loomyard/issues/670).\n\n`lyx` collides with LyX, the LaTeX editor, which ships as the `lyx` package in Ubuntu/Debian and installs `/usr/bin/lyx`.\nOn a machine with both, whichever comes first on PATH wins: a shell where `~/go/bin` is not yet on PATH starts the LaTeX editor instead of LoomYard.\nLyX is common among researchers, so the clash is likely for other users too.\n\nOperator decision 2026-10-17: rename the binary to `lyr` (LoomYard Runner), replacing the first proposal `lyd`.\nChecked 2026-10-17: `lyr` is no Ubuntu package name, is not installed on the operator's machine, and a web search found no CLI tool whose binary is named `lyr`.\nRejected: `warp` and `ply` are Ubuntu packages, `weft` and `warp` are already fabric terms here, and the four-letter weaving names (`pirn`, `sley`) are longer to type.\n\nScope: the `cmd/lyx` build target and `binaryName()` in `tools/deploy`, docs and README, stencils and skills in the `ly` plugin that invoke `lyx`, and any scripts or launchers that call it.\n\n## Operator decision (2026-10-22)\n\nThe rename runs alone, with no other run in flight, since it touches nearly every file; it is promoted and started only then.\n\n## Name reopened (operator, 2026-10-22)\n\nThe operator has not settled the new name: `lyd` or `lyr` is open again, so the 2026-10-17 choice of `lyr` no longer stands until the operator decides.\n",
+      "body": "Imported from [issue #670](https://github.com/Knatte18/loomyard/issues/670).\n\n`lyx` collides with LyX, the LaTeX editor, which ships as the `lyx` package in Ubuntu/Debian and installs `/usr/bin/lyx`.\nOn a machine with both, whichever comes first on PATH wins: a shell where `~/go/bin` is not yet on PATH starts the LaTeX editor instead of LoomYard.\nLyX is common among researchers, so the clash is likely for other users too.\n\n## Name\n\nThe new name is open: `lyd` and `lyr` are the candidates, and the operator has not chosen.\nNeither is an Ubuntu package name (checked 2026-10-17 and 2026-10-26).\nRejected: `warp` and `ply` are Ubuntu packages, `weft` and `warp` are already fabric terms here, and the four-letter weaving names (`pirn`, `sley`) are longer to type.\n\n## Priority (operator, 2026-10-26)\n\nThe rename lands before LoomYard is taken into use on other repositories, since renaming hubs and records already in use elsewhere is far more work.\n\n## Scope\n\n- The binary: the `cmd/lyx` build target and `binaryName()` in `tools/deploy`, docs and README, stencils and skills in the `ly` plugin that invoke `lyx`, and any scripts or launchers that call it.\n- The hub directory suffix `-LYXHUB`, such as `loomyard-LYXHUB`, which the new name replaces (operator, 2026-10-26).\n\n## Runs alone (operator, 2026-10-22)\n\nThe rename runs alone, with no other run in flight, since it touches nearly every file; it is promoted and started only then.\n",
       "created": "2026-10-16T06:49:28Z",
-      "revised": "2026-10-22T10:24:16Z"
+      "revised": "2026-10-26T12:02:50Z"
     },
     {
       "id": 646,
