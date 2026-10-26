@@ -1,7 +1,7 @@
 # Card 25 — adopt-subject-ways-forward
 
 **Create:**
-- `plan:internal/battencli#ownedElsewhereFor` -> `func ownedElsewhereFor(slug, owner, subject string) error`
+- `internal/battencli#ownedElsewhereFor`
 
 **Edit:**
 - `internal/fabricengine#OwnerReader`
