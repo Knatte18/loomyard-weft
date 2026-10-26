@@ -2,34 +2,34 @@
 
 **Create:**
 - `internal/pawlengine/doc.go`
-- `plan:internal/pawlengine#NameBeamUp` -> `const NameBeamUp = "Beam-Up"`
-- `plan:internal/pawlengine#NameBeamAwait` -> `const NameBeamAwait = "Beam-Await"`
-- `plan:internal/pawlengine#NameBeamDown` -> `const NameBeamDown = "Beam-Down"`
-- `plan:internal/pawlengine#LandRequestFileName` -> `const LandRequestFileName = "land-request.json"`
-- `plan:internal/pawlengine#DobbyStopMarkerName` -> `const DobbyStopMarkerName = "dobby-stop"`
-- `plan:internal/pawlengine#AwaitMarkerName` -> `const AwaitMarkerName = "await-entered"`
-- `plan:internal/pawlengine#Paths` -> `type Paths struct`
-- `plan:internal/pawlengine#LandRequest` -> `type LandRequest struct`
-- `plan:internal/pawlengine#WriteLandRequest` -> `func WriteLandRequest(paths Paths, req LandRequest) error`
-- `plan:internal/pawlengine#ReadLandRequest` -> `func ReadLandRequest(paths Paths) (LandRequest, bool, error)`
-- `plan:internal/pawlengine#RemoveLandRequest` -> `func RemoveLandRequest(paths Paths) error`
-- `plan:internal/pawlengine#Deps` -> `type Deps struct`
-- `plan:internal/pawlengine#BeamUp` -> `type BeamUp struct`
-- `plan:internal/pawlengine#NewBeamUp` -> `func NewBeamUp(name string, deps Deps) (*BeamUp, error)`
-- `plan:internal/pawlengine#BeamUp.Call` -> `func (p *BeamUp) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/pawlengine#BeamAwait` -> `type BeamAwait struct`
-- `plan:internal/pawlengine#NewBeamAwait` -> `func NewBeamAwait(name string, deps Deps) (*BeamAwait, error)`
-- `plan:internal/pawlengine#BeamAwait.Call` -> `func (p *BeamAwait) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/pawlengine#BeamDown` -> `type BeamDown struct`
-- `plan:internal/pawlengine#NewBeamDown` -> `func NewBeamDown(name string, deps Deps) (*BeamDown, error)`
-- `plan:internal/pawlengine#BeamDown.Call` -> `func (p *BeamDown) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/pawlengine#nextAwaitWait` -> `func nextAwaitWait(current time.Duration, event bool) time.Duration`
-- `plan:internal/pawlengine#TestLandRequest` -> `func TestLandRequest(t *testing.T)`
-- `plan:internal/pawlengine#TestBeamUp` -> `func TestBeamUp(t *testing.T)`
-- `plan:internal/pawlengine#TestBeamAwait` -> `func TestBeamAwait(t *testing.T)`
-- `plan:internal/pawlengine#TestBeamDown` -> `func TestBeamDown(t *testing.T)`
-- `plan:internal/pawlengine#TestNextAwaitWait` -> `func TestNextAwaitWait(t *testing.T)`
-- `plan:internal/pawlengine#TestMain` -> `func TestMain(m *testing.M)`
+- `internal/pawlengine#NameBeamUp`
+- `internal/pawlengine#NameBeamAwait`
+- `internal/pawlengine#NameBeamDown`
+- `internal/pawlengine#LandRequestFileName`
+- `internal/pawlengine#DobbyStopMarkerName`
+- `internal/pawlengine#AwaitMarkerName`
+- `internal/pawlengine#Paths`
+- `internal/pawlengine#LandRequest`
+- `internal/pawlengine#WriteLandRequest`
+- `internal/pawlengine#ReadLandRequest`
+- `internal/pawlengine#RemoveLandRequest`
+- `internal/pawlengine#Deps`
+- `internal/pawlengine#BeamUp`
+- `internal/pawlengine#NewBeamUp`
+- `internal/pawlengine#BeamUp.Call`
+- `internal/pawlengine#BeamAwait`
+- `internal/pawlengine#NewBeamAwait`
+- `internal/pawlengine#BeamAwait.Call`
+- `internal/pawlengine#BeamDown`
+- `internal/pawlengine#NewBeamDown`
+- `internal/pawlengine#BeamDown.Call`
+- `internal/pawlengine#nextAwaitWait`
+- `internal/pawlengine_test#TestLandRequest`
+- `internal/pawlengine_test#TestBeamUp`
+- `internal/pawlengine_test#TestBeamAwait`
+- `internal/pawlengine_test#TestBeamDown`
+- `internal/pawlengine_test#TestNextAwaitWait`
+- `internal/pawlengine_test#TestMain`
 
 **Edit:**
 - `cmd/lyx#unboundedWaitFiles`
