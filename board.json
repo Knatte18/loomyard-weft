@@ -877,21 +877,21 @@
     },
     {
       "id": 832,
-      "handle": "E3",
+      "handle": "T3",
       "slug": "scripted-edits-allowed",
       "title": "Drop the ban on scripted edits: the sed -i and redirect-write guard rows and the edit directive",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "shuttle",
         "stencil"
       ],
       "issues": [],
-      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## Seen (operator, 2026-10-26)\n\nEvery agent session lyx spawns, the orch included, still refuses scripted edits, although the operator has said more than once that the ban is no longer needed.\nThe refusals come from shell guard rows in `internal/shellguard`, installed on every run with no config key (see `internal/shuttleengine/claudeengine/doc.go`):\n- the in-place edit row, which denies `sed -i` and `perl -i`;\n- the redirect-write row, which denies a shell redirect into a project file outside `.scratch/`.\nThe edit directive in the agent prompts says the same: change files only with Edit or Write, never with a script.\n\n## Idea\n\n- Remove the in-place edit row and the redirect-write row, and the edit directive's ban on scripted edits, so an agent may edit with `sed`, a heredoc or a script where that is simpler.\n- This is the way the rename in `rename-binary-lyr` is meant to be done: mechanically, by script.\n",
+      "status": "draft",
       "created": "2026-10-26T12:13:33Z",
       "revised": "2026-10-26T12:13:33Z"
     }
