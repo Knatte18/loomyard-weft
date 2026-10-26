@@ -1,29 +1,30 @@
-# Refuse a card id ending in the fabric suffix at the plan gate
+# Refuse a card slug ending in the weft suffix at the plan gate
 
-Fixes #874.
+A card whose slug ends in the fabric suffix, such as `6-clone-records-marker-on-prime-weft`, made every command naming the card a fabric reference to the implementer audit.
+The fork's own `lyx gate test --card <card>` run was enough to mark its batch failed, although it touched no fabric repo.
 
-A card slug ending in `-weft`, such as `6-clone-records-marker-on-prime-weft`, made every command naming the card a fabric reference to the implementer audit.
-`ReferenceRule`'s bare-word pattern reads any unquoted word ending in the suffix as a weft sibling worktree, so a fork's own `lyx gate test --card <card>` failed the batch with a fabric-reference finding, and `recover-batch` then refused with `needs_fresh`.
+`CheckCardFabricReference` in `internal/planparser` now also runs the matcher's path rule over each card id (`N-<slug>`).
+A match is a `card-fabric-reference` finding naming the card and the matched text.
+Its way forward is to rename the card in the Card Index and its file name so the slug no longer ends in the suffix.
+A slug that only contains `weft` without ending in the suffix, such as `weft-prime-marker`, passes.
+`contracts/specs/loom-plan-spec.md` and the `internal/planparser` package doc describe the new hit.
 
-## What changes
-
-- `planparser.CheckCardFabricReference` now runs the matcher's path rule over each card id (`N-<slug>`).
-  A hit is a `card-fabric-reference` finding naming the card and the matched id, with the way forward: rename the card in the Card Index and its file name so its slug no longer ends in the fabric suffix.
-- `contracts/specs/loom-plan-spec.md`'s `card-fabric-reference` entry and the `internal/planparser` package doc describe the new hit.
-- `TestCheckCardFabricReference` gains two rows: a slug ending in the suffix fails naming the card and the rename, and a slug holding the suffix mid-name passes.
+Closes #874
 
 ## Design decisions
 
-- **Refuse at the plan gate, leave the audit alone.**
-  A card id appears in many commands a fork runs besides `--card`: paths under webster's state, commit messages, grep patterns.
-  Refusing the name once covers every spelling, and the audit keeps every guard it has, without learning one CLI's flag grammar.
-- **Same check ID.**
-  The hit uses the same matcher and the same fix site as the existing `card-fabric-reference` scan, so it adds no row to the spec's ordered check list.
-- **No fabric naming in planparser.**
-  The check reaches the suffix only through the `FabricReferenceMatcher` it already receives.
-  The test derives the suffix from `fabricengine.RecordsWorktree` rather than importing `weftname`, which the fabric-vocabulary scan forbids outside its owner set.
+- The name is refused once at the plan gate, not handled in the audit.
+  A card id appears in many commands besides `--card` (state paths, commit messages, grep patterns), and the audit reads every one, so refusing the name covers every spelling.
+  `internal/fabricengine/refscanner.go` is unchanged and keeps every guard it has.
+- The hit reuses the `card-fabric-reference` check ID, since it is the same rule with the same matcher and the fix lives in the same place; no row is added to the spec's ordered check list.
+- `internal/planparser` reaches the suffix only through the `FabricReferenceMatcher` it already receives, so it still imports no weft naming.
 
-## Risk
+## To know
 
-`CheckCardFabricReference` takes no done set, so a rework of a plan approved before this change whose done card carries a `-weft` slug is refused too.
-Such a plan predates the check and is expected to be rare.
+- The check takes no done set, so a rework of an already approved plan whose done card has a `-weft` slug is now refused.
+  The operator renames the card or accepts the batch audit by hand.
+
+## Tests
+
+`TestCheckCardFabricReference` gains two tier0 rows: a slug ending in the suffix fails naming the card and the rename, and one holding the suffix mid-name passes.
+The test was not run by hand outside the gate.
