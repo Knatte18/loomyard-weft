@@ -9,7 +9,7 @@
      twill_directive is a fourth optional marker, rendered by internal/twilldirective through internal/loomengine;
      it sits on the line that would otherwise be blank, so an empty value leaves the blank line and the prompt's bytes unchanged.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=7e534b5c001ed14fbaa599cf0fb1b7e103f24b6bb4b7e826ffb26567de1cf41e build=c0532436a73f330fdde44ad3bbd570f1f9d1c6cc time=2026-10-26T10:52:00Z -->
+lyx-stencil: sha256=0edb99acfe3be12223592426e2fe55b0fd7ba155f97e6ed9a7e8883da4c158f9 build=5cf5057d9d422b6b18f5064b4c80a2acc51bafd4 time=2026-10-26T13:19:34Z -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -151,6 +151,9 @@ The left-hand token is the handle you just invented; the right-hand token is the
 - The receiver belongs to a method's head: `func (c *Cache) Get(k string) (Row, bool)`.
 
 On a `**Rename:**` pair renaming an existing symbol, the grammar is asymmetric: the `Old` side is always a real glyph (looked up via `lyx quarry`, exactly like any other target), and the `New` side is always a `plan:` handle you invent for the renamed name — never a glyph, since the symbol under its new name does not exist until the rename lands. A file-rename pair (old and new both plain file paths) is unaffected by this rule.
+
+A card that renames a symbol also renames the tests named after it, `Test<Name>` and `Test<Name>_<case>` (`Test<Type>_<Method>` for a method), as `**Rename:**` pairs on the same card, since the implementer renames them with the symbol and a later card naming the old test would no longer match the tree.
+The plan gate refuses a renamed symbol whose same-named test a card still lists under `**Edit:**` with no pair of its own (`rename-leaves-test`).
 
 Every new member a card creates is declared as a `plan:` handle, whether or not a later card references it.
 A handle referenced but never declared, or two `Create:` bullets declaring the same handle, are each hard findings (`handle-dangling`, `handle-collision`) — every handle you invent must be declared exactly once.

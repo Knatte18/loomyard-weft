@@ -3,7 +3,7 @@
      It is filled by `run`'s engine core via internal/stencil and handed to the shuttle as the Master session's entire instruction set for one whole plan run: the long-lived session that reads the plan's overview and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool, subagent_type "fork").
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires every marker but pattern_directive and friction_directive non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). plan_dir renders hub-relative ("_lyx/plan") in hub mode and absolute (the derived state directory's plan dir) in standalone, added when the standalone Master proved unable to see a plan it was told about only in hub-relative terms. verify_fix_prompt_path is the Go-rendered verify-gate fixer fork prompt file. parent_decisions is every added-decision entry of the task's decision record, verbatim, or the literal `none`. pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive. parent_directive is a third optional marker, rendered by internal/parentdirective. edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=1c5f58b6509d87810466d0fc1570dbee979fe50e7b4f977c94c3008675410c5f build=af9b98e16a972ad9840b01f9e4d28294d279e477 time=2026-10-26T12:38:46Z -->
+lyx-stencil: sha256=418454fc2951ad9905398575a7b7a4200e27b200b00debdef4f7ba2c65481392 build=5cf5057d9d422b6b18f5064b4c80a2acc51bafd4 time=2026-10-26T13:19:34Z -->
 
 # Webster Master — read once, fork per batch, judge only the minimal report
 
@@ -168,6 +168,10 @@ You message your parent only on the `waiting` rung below and under "A parent dec
   A refusal of the reset, a second head mismatch, or a way forward that also needs a parent merge-in redone ends the run: write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` quoting the refusal's message, and stop, since a merge-in is not Master's to redo.
   Run `reset --to report-head` for a batch at most once, and no other reset.
 - `record-batch` refuses with `{"report_archived": true}` → the report could not be attributed and was archived: call `lyx webster begin-batch <NN>` and re-fork that batch from its fresh prompt.
+- `record-batch <NN>` refuses with `{"later_target_removed": true}` → the batch removed a symbol a later card names, and the batch is still open with its report in place.
+  Send the refusal's message verbatim to that batch's fork by `SendMessage`, addressed by the agent id its completion notification carried, and end your turn; on the fork's next completion notification, call `lyx webster record-batch <NN>` again.
+  When the fork cannot be reached, such as after a resume, call `lyx webster record-batch <NN>` again at once: the refusal comes once per batch, so the second call records the batch.
+  Never begin a later batch, re-fork, or call `recover-batch` for this refusal.
 - `begin-batch <NN>` refuses because the batch **already has a report** (a resumed run found a crashed session's leftover) → do NOT fork;
   the refusal names the batch's recorded state and the one remedy that state calls for, and you follow exactly that remedy:
   `record-batch` or `recover-batch` for the batch (the latter backgrounded, per the rung above), or, for a finished batch, beginning the next one.
@@ -242,7 +246,8 @@ Standalone, the operator edits the plan and runs `lyx webster rebaseline --card 
 
 The batch's own mechanical done-checks run against the worktree's real post-batch tree, immediately before the digest would have been persisted.
 They find declared work missing: a Create target that still does not resolve, a Delete target that still does, or a `plan:` handle that bound to nothing.
-A finding about a later card (drift, or a symbol this batch deleted that a later card still references) comes back on the envelope's `warnings` and the batch still records;
+A symbol the batch removed that a later card names, with no rename in the report, first comes back once as `{"later_target_removed": true}`, handled by its rung of the failure ladder above.
+Every other finding about a later card (drift, a symbol this batch's cards delete that a later card still references, or a removal still unanswered after the hand-back) comes back on the envelope's `warnings` and the batch still records;
 that later card's own `begin-batch` refuses it, naming "edit the plan so the named cards match the tree, run "lyx webster rebaseline --card NN" naming each card you edited, then begin-batch NN again".
 A done-check failure comes back as `{"batch_failed": true}`, handled by the `batch_failed` rung of the failure ladder above.
 The batch is already terminal-failed and its report archived, so you never retry `record-batch` and never edit a target file yourself (see "What you never do" below).
