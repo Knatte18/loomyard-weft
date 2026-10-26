@@ -1,6 +1,6 @@
 # Checklist marks a row skipped by its entry gate as [-], not open
 
-`checklist-skipped-row-box` · Task · enhancement, loom, shed · running · Worktree-Create
+`checklist-skipped-row-box` · Task · enhancement, loom, shed · running · Drift-Baseline
 
 ## Seen (operator, 2026-10-26)
 
