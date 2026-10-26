@@ -1,4 +1,4 @@
-# A hub-wide reader creates a real _lyx in a half-built pair, so Worktree-Create refuses
+# A read creates directories: state.ReadJSON mkdirs, so a hub reader leaves a real _lyx in a half-built pair
 
 `hub-reader-creates-lyx` · Note · bug, fabric, orch, batten
 
@@ -18,7 +18,9 @@ It can recur on any `lyx fabric add` while an overview window or the tender runs
 
 ## Idea
 
-- A read never creates a directory: `HubOrchs` calls `ReadOriginFor`, which creates none and seeds no exclude, or `ReadOrigin` reads through `state.ReadJSONNoMkdir`.
+- A read never creates a directory, anywhere: `state.ReadJSON` drops its `os.MkdirAll`, so only writes create directories, and a missing directory reads as a missing file (operator, 2026-10-26).
+  Every caller that leaned on the read's mkdir, such as one whose lock file sits in the same directory, is found and fixed in the same change, and `ReadJSONNoMkdir` folds into `ReadJSON`.
+- `ReadOrigin` and every other reader that seeds an exclude or a lock directory before reading stop doing so for a read.
 - `HubOrchs` skips a worktree whose `_lyx` is not yet a link and every path under `.fabric-wt-staging-*`.
 - `Topology.Add` wires the junctions right after the weft worktree is created, before writing the launchers.
 - A test holds `Add` between weft creation and wiring, runs `HubOrchs`, and asserts no `<warp>/_lyx` appears.
