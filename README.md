@@ -28,7 +28,7 @@ grouping
 | --- | --- | --- | --- |
 | E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
 
-## Tasks (1)
+## Tasks (2)
 
 Concrete and claimable; only a task can run.
 
@@ -40,13 +40,15 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **Beams: one lyx beam start, machine ownership by project, and a beam's life as a pawl run**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-ownership`](design-beam-start-and-ownership.md) | loom | Webster | osl-1046 | 21h<br>16h | orch, workspaces, batten, reed, board |
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T1 | `draft` **Checklist marks a row skipped by its entry gate as [-], not open**<br>• Rows passed on a false entry gate, such as disabled Drift rows, show [ ] in the overview; give them [-]<br>• `profile: light` | [`checklist-skipped-row-box`](design-checklist-skipped-row-box.md) | darn |  | 30m<br>0m | loom, shed |
 
-## Notes (42)
+## Notes (41)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -58,13 +60,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B2 |  | **A webster stop reaches the parent twice: Merriam asks directly and the driver escalates the same question** | [`webster-stop-asked-once`](design-webster-stop-asked-once.md) | 19h<br>1h | webster, loom |
 | B4 |  | **Board README lists draft tasks under Ready** | [`readme-draft-not-ready`](design-readme-draft-not-ready.md) | 19h<br>19h | board |
 
-### Enhancements (21)
+### Enhancements (20)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Beam promote keeps the Discussion record as part of the beam**<br>• When Discussion finds a task should be a project, promote carries its decision record into the beam instead of dropping it | [`beam-promote-keeps-discussion`](design-beam-promote-keeps-discussion.md) | 23h<br>23h | workspaces, batten, loom |
 | E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>23h | shuttle, codex |
-| E3 |  | **Checklist marks a row skipped by its entry gate as [-], not open**<br>• Rows passed on a false entry gate, such as disabled Drift rows, show [ ] in the overview; give them [-]<br>• `profile: light` | [`checklist-skipped-row-box`](design-checklist-skipped-row-box.md) | 30m<br>0m | loom, shed |
 | E4 |  | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 3w<br>3w | fabric, loom |
 | E5 |  | **Decide the layout of projects in the board README**<br>• The operator is not satisfied with how the README renders projects and their members; the layout is to be decided | [`board-projects-layout`](design-board-projects-layout.md) | 1d<br>1d | board |
 | E6 |  | **Board README: one rendered file per project, research notes first**<br>• Each project renders its own file linked from its parent; README.md is the root project; research notes come right after tasks | [`readme-per-project-files`](design-readme-per-project-files.md) | 17h<br>16h | board |
