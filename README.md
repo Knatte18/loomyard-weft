@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-26 12:52 UTC; every age below is as of then.
+Rendered 2026-10-26 12:53 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -28,19 +28,18 @@ grouping
 | --- | --- | --- | --- |
 | E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
 
-## Tasks (4)
+## Tasks (3)
 
 Concrete and claimable; only a task can run.
 
-### Running (3)
+### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Drop the ban on scripted edits: the sed -i and redirect-write guard rows and the edit directive**<br>• `profile: light` | [`scripted-edits-allowed`](design-scripted-edits-allowed.md) | darn | Finalize | osl-1046 | 39m<br>37m | shuttle, stencil |
 | T4 | **Beams: one lyx beam start, machine ownership by project, and a beam's life as a pawl run**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-ownership`](design-beam-start-and-ownership.md) | loom | Webster | osl-1046 | 22h<br>17h | orch, workspaces, batten, reed, board |
-| T5 | **Catch a renamed symbol a later card targets: in the plan writer, plan validation and a blocking batch-end check**<br>• `profile: light` | [`rename-target-checks`](design-rename-target-checks.md) | darn | Darn-Write | osl-1046 | 17m<br>17m | webster, loom, stencil |
+| T5 | **Catch a renamed symbol a later card targets: in the plan writer, plan validation and a blocking batch-end check**<br>• `profile: light` | [`rename-target-checks`](design-rename-target-checks.md) | darn | Darn-Write | osl-1046 | 18m<br>18m | webster, loom, stencil |
 
 ### Ready (0)
 
@@ -54,7 +53,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **A mechanical plan conflict is fixed in Webster by a small fixer agent, not by a plan reroute**<br>• `profile: solid` | [`webster-tree-moved-fixer`](design-webster-tree-moved-fixer.md) | darn | `rename-target-checks` | 27m<br>17m | webster, loom, stencil |
+| T1 | **A mechanical plan conflict is fixed in Webster by a small fixer agent, not by a plan reroute**<br>• `profile: solid` | [`webster-tree-moved-fixer`](design-webster-tree-moved-fixer.md) | darn | `rename-target-checks` | 29m<br>18m | webster, loom, stencil |
 
 ## Notes (40)
 
@@ -65,7 +64,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Find why a running run shows a dead waiter in the activity reader** | [`idle-notice-dead-waiter-cause`](design-idle-notice-dead-waiter-cause.md) | 2d<br>2d | batten, shuttle |
-| B2 |  | **A read creates directories: state.ReadJSON mkdirs, so a hub reader leaves a real _lyx in a half-built pair** | [`hub-reader-creates-lyx`](design-hub-reader-creates-lyx.md) | 31m<br>29m | fabric, orch, batten |
+| B2 |  | **A read creates directories: state.ReadJSON mkdirs, so a hub reader leaves a real _lyx in a half-built pair** | [`hub-reader-creates-lyx`](design-hub-reader-creates-lyx.md) | 33m<br>30m | fabric, orch, batten |
 | B4 |  | **Board README lists draft tasks under Ready** | [`readme-draft-not-ready`](design-readme-draft-not-ready.md) | 20h<br>20h | board |
 
 ### Enhancements (19)
@@ -81,8 +80,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 2w<br>2d | burler, stencil |
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 11d<br>11d | board, loom |
 | E11 |  | **Loom and darn Finalize resolve a moved parent themselves instead of rerouting** | [`loom-finalize-merges-itself`](design-loom-finalize-merges-itself.md) | 17h<br>17h | loom, batten |
-| E12 |  | **Adopt machine check: a gate key of its own, and visible while it runs**<br>• Adopt runs its machine check silently in the background under the finalize gate key | [`adopt-check-visible`](design-adopt-check-visible.md) | 3h<br>3h | gate, board |
-| E13 | H | **Rename the lyx binary and the LYXHUB suffix (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 10d<br>39m | stencil, shuttle |
+| E12 |  | **Adopt machine check: a gate key of its own, and visible while it runs**<br>• Adopt runs its machine check silently in the background under the finalize gate key | [`adopt-check-visible`](design-adopt-check-visible.md) | 4h<br>4h | gate, board |
+| E13 | H | **Rename the lyx binary and the LYXHUB suffix (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 10d<br>40m | stencil, shuttle |
 | E14 |  | **No test is skipped by design**<br>• Windows-only tests count as skips on Linux, and TestBuildLoomShed_OutputShape skips on every machine | [`test-skips-os-tags`](design-test-skips-os-tags.md) | 3h<br>2h | testkit, reed, loom, fabric, gate |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 8d<br>8d | webster, fabric, loom |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 7d<br>7d | fabric, batten |
@@ -119,3 +118,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R4 |  | **Lens overlap audit: which lenses find the same defects, and a smaller set**<br>• twill-plan 8 to 5 lenses recommended; twill-discussion 7 to 4 and review-code 4 to 3 at low confidence | [`lens-overlap-audit`](design-lens-overlap-audit.md) | 3d<br>21h | burler, loom |
 | R5 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 3d<br>21h | webster |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 3d<br>20h | loom, stencil |
+
+## Done (1)
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T3 | **Drop the ban on scripted edits: the sed -i and redirect-write guard rows and the edit directive**<br>• `profile: light` | [`scripted-edits-allowed`](design-scripted-edits-allowed.md) | 40m<br>38m | shuttle, stencil |
