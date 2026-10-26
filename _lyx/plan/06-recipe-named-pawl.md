@@ -4,11 +4,11 @@
 - `contracts/recipes/beam-recipe.yaml` -> `contracts/recipes/pawl-recipe.yaml`
 
 **Create:**
-- `plan:internal/shedrun#RecipePawl` -> `const RecipePawl = "pawl"`
-- `plan:contracts/recipes#PawlRecipe` -> `var PawlRecipe []byte`
-- `plan:internal/loomrecipe#NewPawl` -> `func NewPawl(env shedrecipe.Env, paths shedbuild.ShedPaths) (*shedengine.Shed, error)`
-- `plan:internal/loomrecipe#PawlRouting` -> `func PawlRouting(budgets map[string]int) (shedengine.Routing, error)`
-- `plan:internal/loomcli#pawlTacklerRecipe` -> `const pawlTacklerRecipe = "pawl: a beam's life (its orch and dobby, the wait for its landing, its merge, review, description and Finalize into its parent)"`
+- `internal/shedrun#RecipePawl`
+- `contracts/recipes#PawlRecipe`
+- `internal/loomrecipe#NewPawl`
+- `internal/loomrecipe#PawlRouting`
+- `internal/loomcli#pawlTacklerRecipe`
 
 **Delete:**
 - `internal/shedrun#RecipeBeam`
