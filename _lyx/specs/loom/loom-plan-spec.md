@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=14e03281fe18924f674b907c9189a17a68ede04086db1fa5bc6536859c211f1f build=19a31ca3c033671ab08b7fa4476a4fb1eb682251 time=2026-10-26T10:23:52Z -->
+<!-- lyx-stencil: sha256=a0bdaef7b8ab63fe2ff53d5bbeaf76a093cb9d76fa46988bf608a9e582532c57 build=c0532436a73f330fdde44ad3bbd570f1f9d1c6cc time=2026-10-26T10:52:00Z -->
 
 # Loom plan-spec — flat card list
 
@@ -545,7 +545,7 @@ The rows below stay in one fixed order regardless of which entry point runs them
     Its way forward is `lyx gate test --wait --tier <n> --card <id>` over the card's own scope, run in the foreground under the gate rule in the agent's system prompt.
     Runs under any `language:` and is reported by both plan gates, `lyx loom validate-plan` and dispatch through `ValidateFormat`.
     It only refuses: it misses a command built from a variable or behind `bash -c`.
-39. `pattern-entry-line-cap` — a card that prescribes a verbatim `PATTERN.md` entry line over the cap: a line inside a fenced code block of the card file that opens with ``- `PATTERN-`` and exceeds `pattern.MaxEntryLineChars` runes.
+39. `pattern-entry-line-cap` — a card that prescribes a verbatim `PATTERN.md` entry line whose rule text is over the cap: a line inside a fenced code block of the card file that opens with ``- `PATTERN-`` and whose rule text, the part between the name and a trailing `(test)` or background link, exceeds `pattern.MaxEntryTextChars` runes.
     It scans fenced blocks only, whatever the fence's info string and including an unclosed fence; inline spans and prose are never scanned, since an entry line carries backticks of its own.
     One finding per line, attributed to the card, naming the entry, the length and the cap; its way forward is to shorten the line or move the detail to the entry's background file.
     Runs under any `language:` and is reported by both plan gates, `lyx loom validate-plan` and dispatch through `ValidateFormat`.
