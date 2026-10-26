@@ -1,0 +1,487 @@
+diff --git a/contracts/specs/loom-discussion-spec.md b/contracts/specs/loom-discussion-spec.md
+index c85e9c78..b7f0cd64 100644
+--- a/contracts/specs/loom-discussion-spec.md
++++ b/contracts/specs/loom-discussion-spec.md
+@@ -35,7 +35,8 @@ Each entry is one bullet, with `<id>` matching `[a-z0-9-]+`:
+ 
+ An entry ID is listed at most once.
+ An `adds` or `changes` bullet prescribes the overview line `` - `PATTERN-<id>` — <new entry text> ``.
+-The discussion check refuses that line, as a `pattern-change-over-cap` finding, when it is longer, in characters, than the PATTERN entry line cap the plan gate's `pattern-entry-line-cap` applies;
++The discussion check refuses that line, as a `pattern-change-over-cap` finding, when its rule text, the new entry text without a trailing `(test)` or background link, is longer, in characters, than the PATTERN rule-text cap the plan gate's `pattern-entry-line-cap` applies;
++the cap is the same number whatever the entry's name, and `lyx loom decision add --pattern-text` applies it when the decision is recorded;
+ detail that does not fit belongs in the entry's background file.
+ `lyx loom decision add` appends a bullet with the suffix ` — added after Discussion (<by>, <date>)`.
+ A record without the section is valid.
+diff --git a/contracts/specs/loom-plan-spec.md b/contracts/specs/loom-plan-spec.md
+index 663fb81b..e2aad262 100644
+--- a/contracts/specs/loom-plan-spec.md
++++ b/contracts/specs/loom-plan-spec.md
+@@ -543,7 +543,7 @@ The rows below stay in one fixed order regardless of which entry point runs them
+     Its way forward is `lyx gate test --wait --tier <n> --card <id>` over the card's own scope, run in the foreground under the gate rule in the agent's system prompt.
+     Runs under any `language:` and is reported by both plan gates, `lyx loom validate-plan` and dispatch through `ValidateFormat`.
+     It only refuses: it misses a command built from a variable or behind `bash -c`.
+-39. `pattern-entry-line-cap` — a card that prescribes a verbatim `PATTERN.md` entry line over the cap: a line inside a fenced code block of the card file that opens with ``- `PATTERN-`` and exceeds `pattern.MaxEntryLineChars` runes.
++39. `pattern-entry-line-cap` — a card that prescribes a verbatim `PATTERN.md` entry line whose rule text is over the cap: a line inside a fenced code block of the card file that opens with ``- `PATTERN-`` and whose rule text, the part between the name and a trailing `(test)` or background link, exceeds `pattern.MaxEntryTextChars` runes.
+     It scans fenced blocks only, whatever the fence's info string and including an unclosed fence; inline spans and prose are never scanned, since an entry line carries backticks of its own.
+     One finding per line, attributed to the card, naming the entry, the length and the cap; its way forward is to shorten the line or move the detail to the entry's background file.
+     Runs under any `language:` and is reported by both plan gates, `lyx loom validate-plan` and dispatch through `ValidateFormat`.
+diff --git a/contracts/stencils/loom/loom-template-plan.md b/contracts/stencils/loom/loom-template-plan.md
+index f402e158..1a224303 100644
+--- a/contracts/stencils/loom/loom-template-plan.md
++++ b/contracts/stencils/loom/loom-template-plan.md
+@@ -94,7 +94,7 @@ The plan runs strictly in card order, and the Card Index lists the cards in that
+ A card that needs a corpus or a fixture takes it from committed test data in the tree, created by an earlier card where it does not exist yet, never from the live files of other worktrees or the fabric repo.
+ `card-fabric-reference` in `{{.specs_dir}}/loom/loom-plan-spec.md` names what the plan gate refuses.
+ 
+-A card that prescribes an addition to a `PATTERN.md` entry line leaves the line under the cap, `pattern-entry-line-cap` in the same spec: the gate fails a fenced verbatim entry line over it.
++A card that prescribes an addition to a `PATTERN.md` entry line leaves the line's rule text under the cap, `pattern-entry-line-cap` in the same spec: the gate fails a fenced verbatim entry line whose rule text is over it.
+ A declared `adds` or `changes` entry is prescribed verbatim as its whole overview line in a fenced block on a card that edits `PATTERN.md`.
+ A card fences only the new line, never the old one or an example, since the gate reads every fenced line that opens like an entry.
+ The plan gate measures the overview those lines project against the headroom line, so a line that grows `PATTERN.md` past it is refused.
+diff --git a/internal/discussionparser/append_test.go b/internal/discussionparser/append_test.go
+index 33106d90..742890a3 100644
+--- a/internal/discussionparser/append_test.go
++++ b/internal/discussionparser/append_test.go
+@@ -225,7 +225,7 @@ func TestAppendDecision_FindingRestoresRecord(t *testing.T) {
+ 	}{
+ 		{"MissingSection", strings.Replace(allSectionsContent(), "## Goal", "## Aim", 1), nil, checkSectionMissing},
+ 		{"UnknownPatternAction", allSectionsContent(), &PatternChange{ID: "PATTERN-new", Action: "renames", Text: "x"}, checkPatternChangeMalformed},
+-		{"PatternTextOverCap", allSectionsContent(), &PatternChange{ID: "PATTERN-new", Action: "changes", Text: strings.Repeat("x", patternEntryLineCap)}, checkPatternChangeOverCap},
++		{"PatternTextOverCap", allSectionsContent(), &PatternChange{ID: "PATTERN-new", Action: "changes", Text: strings.Repeat("x", patternEntryTextCap+1)}, checkPatternChangeOverCap},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/discussionparser/doc.go b/internal/discussionparser/doc.go
+index 2076c230..5a1a1e32 100644
+--- a/internal/discussionparser/doc.go
++++ b/internal/discussionparser/doc.go
+@@ -8,7 +8,8 @@
+ // IdentityText returns the record without the carry-over blocks and added-decision entries those two paths write, so a review segment's re-entry tells a changed record from one that only gained them.
+ // CheckAddedDecisionsKept reports the added-decision entries and appended PATTERN change bullets a record dropped that any earlier version of it held, read from told bytes.
+ // The record may carry an optional `## PATTERN changes` section listing the PATTERN entries the task adds, changes or removes.
+-// Validate checks its bullets through ParsePatternChanges and refuses an `adds` or `changes` bullet whose PATTERN.md entry line would run past the PATTERN format checker's line cap, so the overrun fails at Discussion and at `lyx loom decision add` rather than first at the plan gate.
++// Validate checks its bullets through ParsePatternChanges and refuses an `adds` or `changes` bullet whose rule text, the entry text without a trailing `(test)` or background link, would run past the PATTERN format checker's rule-text cap,
++// so the overrun fails at Discussion and at `lyx loom decision add` rather than first at the plan gate.
+ // DeclaredPatternChanges returns them rendered for the directives that show them to an agent.
+ // It takes told absolute paths and declares no on-disk location of its own.
+ // loomengine's DiscussionDecisionRecord, DiscussionSupportLog and DiscussionRelevant accessors remain the sole declarers of where `_lyx/discussion/` is.
+diff --git a/internal/discussionparser/patternchanges.go b/internal/discussionparser/patternchanges.go
+index 0a9fc749..5591ef79 100644
+--- a/internal/discussionparser/patternchanges.go
++++ b/internal/discussionparser/patternchanges.go
+@@ -1,5 +1,5 @@
+ // patternchanges.go implements the decision record's optional `## PATTERN changes` section:
+-// ParsePatternChanges reads and checks its bullets, patternOverCapFindings measures the entry lines they prescribe, and DeclaredPatternChanges hands the rendered bullets to the callers that put them in front of an agent.
++// ParsePatternChanges reads and checks its bullets, patternOverCapFindings measures the rule texts they prescribe, and DeclaredPatternChanges hands the rendered bullets to the callers that put them in front of an agent.
+ 
+ package discussionparser
+ 
+@@ -146,15 +146,23 @@ func parsePatternBullet(line string) (PatternChange, string) {
+ 	return change, ""
+ }
+ 
+-// checkPatternChangeOverCap names a Finding produced when an `adds` or `changes` bullet prescribes an overview line longer than a PATTERN.md entry line may be.
++// checkPatternChangeOverCap names a Finding produced when an `adds` or `changes` bullet prescribes a rule text longer than a PATTERN.md entry's rule text may be.
+ const checkPatternChangeOverCap = "pattern-change-over-cap"
+ 
+-// patternEntryLineCap is the longest a PATTERN.md entry line may be, in runes.
++// patternEntryTextCap is the longest a PATTERN.md entry's rule text may be, in runes.
+ // It equals the PATTERN format checker's cap, which this stdlib-only package may not import.
+-const patternEntryLineCap = 360
++const patternEntryTextCap = 280
+ 
+-// patternOverCapFindings returns one pattern-change-over-cap finding per `adds` or `changes` change in changes whose overview line, "- `<ID>` — <text>", runs past patternEntryLineCap runes, in order.
+-// A bullet `lyx loom decision add` appended is measured like any other, since the overview line it prescribes is the same.
++// patternLinkTailRe matches the background link that may close a prescribed entry text, with its separator.
++var patternLinkTailRe = regexp.MustCompile(` — \[background\]\([^)]*\)$`)
++
++// patternRuleText returns text without a trailing background link and then a trailing " (test)" marker, the part of an entry line the cap measures.
++func patternRuleText(text string) string {
++	return strings.TrimSuffix(patternLinkTailRe.ReplaceAllString(text, ""), " (test)")
++}
++
++// patternOverCapFindings returns one pattern-change-over-cap finding per `adds` or `changes` change in changes whose rule text runs past patternEntryTextCap runes, in order.
++// A bullet `lyx loom decision add` appended is measured like any other, since the entry text it prescribes is the same.
+ // A finding's Path is left empty for the caller to set.
+ func patternOverCapFindings(changes []PatternChange) []Finding {
+ 	var findings []Finding
+@@ -162,8 +170,8 @@ func patternOverCapFindings(changes []PatternChange) []Finding {
+ 		if c.Action == patternActionRemoves {
+ 			continue
+ 		}
+-		length := len([]rune("- `" + c.ID + "` — " + c.Text))
+-		if length <= patternEntryLineCap {
++		length := len([]rune(patternRuleText(c.Text)))
++		if length <= patternEntryTextCap {
+ 			continue
+ 		}
+ 		wayForward := "shorten the text or move its detail to the entry's background file"
+@@ -172,7 +180,7 @@ func patternOverCapFindings(changes []PatternChange) []Finding {
+ 		}
+ 		findings = append(findings, Finding{
+ 			Check:  checkPatternChangeOverCap,
+-			Detail: fmt.Sprintf("`%s` %s an overview line of %d characters, over the %d cap of a PATTERN.md entry line; way forward: %s", c.ID, c.Action, length, patternEntryLineCap, wayForward),
++			Detail: fmt.Sprintf("`%s` %s a rule text of %d characters, over the %d cap of a PATTERN.md entry's rule text; way forward: %s", c.ID, c.Action, length, patternEntryTextCap, wayForward),
+ 		})
+ 	}
+ 	return findings
+diff --git a/internal/discussionparser/validate.go b/internal/discussionparser/validate.go
+index 6fb5485f..1fd5a4b7 100644
+--- a/internal/discussionparser/validate.go
++++ b/internal/discussionparser/validate.go
+@@ -58,7 +58,7 @@ var requiredDiscussionSections = []string{
+ // supportLogPath -- a not-exist yields exactly one Finding and a nil error, any other stat error
+ // returns immediately as a returned error with a nil findings slice.
+ // Then os.ReadFile decisionRecordPath, with the identical two-way split.
+-// Only then do the checks that accumulate findings run: the heading check, one Finding per missing heading, and then the optional `## PATTERN changes` section's shape check, one Finding per malformed bullet, and its length check, one Finding per `adds` or `changes` bullet whose overview line is longer than a PATTERN.md entry line may be.
++// Only then do the checks that accumulate findings run: the heading check, one Finding per missing heading, and then the optional `## PATTERN changes` section's shape check, one Finding per malformed bullet, and its length check, one Finding per `adds` or `changes` bullet whose rule text is longer than a PATTERN.md entry's rule text may be.
+ // A record without that section passes it.
+ //
+ // A clean run returns a nil (or empty) slice and a nil error. Validate never returns a non-empty
+diff --git a/internal/discussionparser/validate_test.go b/internal/discussionparser/validate_test.go
+index 8c532b22..6ed6c22a 100644
+--- a/internal/discussionparser/validate_test.go
++++ b/internal/discussionparser/validate_test.go
+@@ -4,6 +4,7 @@ package discussionparser
+ 
+ import (
+ 	"errors"
++	"fmt"
+ 	"os"
+ 	"path/filepath"
+ 	"slices"
+@@ -87,30 +88,35 @@ func TestValidate_PatternChanges(t *testing.T) {
+ 	}
+ }
+ 
+-// TestValidate_PatternChangeOverCap asserts an `adds` or `changes` bullet whose overview line runs past the PATTERN entry line cap in runes yields one pattern-change-over-cap finding with its way forward, and a line at the cap yields none.
++// TestValidate_PatternChangeOverCap asserts an `adds` or `changes` bullet whose rule text runs past the PATTERN entry text cap in runes yields one pattern-change-over-cap finding with its way forward.
++// A text at the cap yields none whatever the entry's name length and a trailing "(test)" or background link.
+ func TestValidate_PatternChangeOverCap(t *testing.T) {
+ 	t.Parallel()
+ 
+-	// textFor returns a text of filler runes that makes id's overview line extra runes longer than the cap.
+-	textFor := func(id, filler string, extra int) string {
+-		head := len([]rune("- `" + id + "` — "))
+-		return strings.Repeat(filler, patternEntryLineCap-head+extra)
++	// textFor returns a rule text of filler runes extra runes longer than the cap.
++	textFor := func(filler string, extra int) string {
++		return strings.Repeat(filler, patternEntryTextCap+extra)
+ 	}
+ 	const appended = " — added after Discussion (parent, 2026-10-24)"
++	const tail = " (test) — [background](pattern/PATTERN-a.md)"
++	over := fmt.Sprintf("%d characters", patternEntryTextCap+1)
++	longID := "PATTERN-" + strings.Repeat("n", 60)
+ 
+ 	tests := []struct {
+ 		name       string
+ 		bullet     string
+ 		wantDetail []string
+ 	}{
+-		{"AddsOverCap", "- `PATTERN-a` — adds: " + textFor("PATTERN-a", "x", 1), []string{"`PATTERN-a` adds", "361 characters", "360 cap", "background file"}},
+-		{"ChangesOverCap", "- `PATTERN-a` — changes: " + textFor("PATTERN-a", "x", 1), []string{"`PATTERN-a` changes", "361 characters"}},
+-		{"AppendedOverCap", "- `PATTERN-a` — changes: " + textFor("PATTERN-a", "x", 1) + appended, []string{"361 characters", "`lyx loom decision add`"}},
+-		{"MultiByteOverCap", "- `PATTERN-a` — adds: " + textFor("PATTERN-a", "é", 1), []string{"361 characters"}},
+-		{"AtCap", "- `PATTERN-a` — adds: " + textFor("PATTERN-a", "x", 0), nil},
+-		{"MultiByteAtCap", "- `PATTERN-a` — adds: " + textFor("PATTERN-a", "é", 0), nil},
+-		{"AppendedAtCap", "- `PATTERN-a` — adds: " + textFor("PATTERN-a", "x", 0) + appended, nil},
+-		{"RemovesNeverMeasured", "- `PATTERN-" + strings.Repeat("a", patternEntryLineCap) + "` — removes", nil},
++		{"AddsOverCap", "- `PATTERN-a` — adds: " + textFor("x", 1), []string{"`PATTERN-a` adds", over, fmt.Sprintf("%d cap", patternEntryTextCap), "background file"}},
++		{"ChangesOverCap", "- `PATTERN-a` — changes: " + textFor("x", 1), []string{"`PATTERN-a` changes", over}},
++		{"AppendedOverCap", "- `PATTERN-a` — changes: " + textFor("x", 1) + appended, []string{over, "`lyx loom decision add`"}},
++		{"MultiByteOverCap", "- `PATTERN-a` — adds: " + textFor("é", 1), []string{over}},
++		{"OverCapBeforeTail", "- `PATTERN-a` — adds: " + textFor("x", 1) + tail, []string{over}},
++		{"AtCap", "- `PATTERN-a` — adds: " + textFor("x", 0), nil},
++		{"MultiByteAtCap", "- `PATTERN-a` — adds: " + textFor("é", 0), nil},
++		{"AppendedAtCap", "- `PATTERN-a` — adds: " + textFor("x", 0) + appended, nil},
++		{"AtCapWithLongNameAndTail", "- `" + longID + "` — adds: " + textFor("x", 0) + tail, nil},
++		{"RemovesNeverMeasured", "- `PATTERN-" + strings.Repeat("a", patternEntryTextCap) + "` — removes", nil},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -143,11 +149,22 @@ func TestValidate_PatternChangeOverCap(t *testing.T) {
+ 	}
+ }
+ 
+-// TestPatternEntryLineCap_EqualsThePatternCap asserts the package's cap is the PATTERN format checker's, so the discussion check and the plan gate refuse the same lines.
+-func TestPatternEntryLineCap_EqualsThePatternCap(t *testing.T) {
++// TestPatternEntryTextCap_EqualsThePatternCap asserts the package's cap and rule-text cut are the PATTERN format checker's, so the discussion check and the plan gate refuse the same texts.
++func TestPatternEntryTextCap_EqualsThePatternCap(t *testing.T) {
+ 	t.Parallel()
+-	if patternEntryLineCap != pattern.MaxEntryLineChars {
+-		t.Errorf("patternEntryLineCap = %d; want pattern.MaxEntryLineChars = %d", patternEntryLineCap, pattern.MaxEntryLineChars)
++	if patternEntryTextCap != pattern.MaxEntryTextChars {
++		t.Errorf("patternEntryTextCap = %d; want pattern.MaxEntryTextChars = %d", patternEntryTextCap, pattern.MaxEntryTextChars)
++	}
++	for _, text := range []string{
++		"When: the rule.",
++		"When: the rule. (test)",
++		"When: the rule. — [background](pattern/PATTERN-a.md)",
++		"When: the rule. (test) — [background](pattern/PATTERN-a.md)",
++		"A (test) mid-text stays.",
++	} {
++		if got, want := patternRuleText(text), pattern.EntryRuleText("- `PATTERN-a` — "+text); got != want {
++			t.Errorf("patternRuleText(%q) = %q; want pattern.EntryRuleText's %q", text, got, want)
++		}
+ 	}
+ }
+ 
+diff --git a/internal/loomcli/parity_test.go b/internal/loomcli/parity_test.go
+index 7aaaf16c..feefbf87 100644
+--- a/internal/loomcli/parity_test.go
++++ b/internal/loomcli/parity_test.go
+@@ -412,7 +412,7 @@ func TestGateParity_PlanGate(t *testing.T) {
+ 				if err != nil {
+ 					t.Fatalf("read card file: %v", err)
+ 				}
+-				overCap := "- `PATTERN-x` — " + strings.Repeat("x", pattern.MaxEntryLineChars)
++				overCap := "- `PATTERN-x` — " + strings.Repeat("x", pattern.MaxEntryTextChars+1)
+ 				if err := os.WriteFile(cardFile, append(data, []byte("\n```\n"+overCap+"\n```\n")...), 0o644); err != nil {
+ 					t.Fatalf("write card file: %v", err)
+ 				}
+diff --git a/internal/pattern/check.go b/internal/pattern/check.go
+index 68547348..4ec327c6 100644
+--- a/internal/pattern/check.go
++++ b/internal/pattern/check.go
+@@ -23,8 +23,9 @@ const (
+ 	// HeadroomBytes is the line a branch's own growth of the overview must not cross, 5% below the cap.
+ 	HeadroomBytes = MaxOverviewBytes * 95 / 100
+ 
+-	// MaxEntryLineChars caps one entry line's length in characters.
+-	MaxEntryLineChars = 360
++	// MaxEntryTextChars caps the length in characters of one entry line's rule text, the part EntryRuleText returns.
++	// The room a writer has for the wording is then the same whatever the entry's name and tail.
++	MaxEntryTextChars = 280
+ 
+ 	// entryBulletPrefix opens every entry line.
+ 	entryBulletPrefix = "- "
+@@ -57,8 +58,13 @@ var (
+ 	entryHeadRe = regexp.MustCompile("^- `([^`]*)`")
+ 	// backgroundLinkRe matches the `[background](target)` link of an entry line.
+ 	backgroundLinkRe = regexp.MustCompile(`\[background\]\(([^)]*)\)`)
++	// entryLinkTailRe matches the background link closing an entry line, with its separator.
++	entryLinkTailRe = regexp.MustCompile(` — \[background\]\([^)]*\)$`)
+ )
+ 
++// entryTestMarker closes the rule text of an entry a test enforces.
++const entryTestMarker = " (test)"
++
+ // Finding is one format violation.
+ // Subject is the entry name or file it concerns; Line is the overview line number, or 0 where none applies.
+ type Finding struct {
+@@ -114,8 +120,8 @@ func Check(root fs.FS) []Finding {
+ 		}
+ 		seen[name] = true
+ 
+-		if n := len([]rune(line)); n > MaxEntryLineChars {
+-			add(KindLongLine, subject, lineNo, "entry line is %d characters, over the %d cap", n, MaxEntryLineChars)
++		if n := len([]rune(EntryRuleText(line))); n > MaxEntryTextChars {
++			add(KindLongLine, subject, lineNo, "entry rule text is %d characters, over the %d cap", n, MaxEntryTextChars)
+ 		}
+ 		if i+1 < len(lines) && continues(lines[i+1]) {
+ 			add(KindContinuedEntry, subject, lineNo, "entry continues onto the next line")
+@@ -138,6 +144,18 @@ func Check(root fs.FS) []Finding {
+ 	return append(findings, orphans(root, named)...)
+ }
+ 
++// EntryRuleText returns the rule text of the entry line line: what follows the backticked name and its " — " separator.
++// A trailing " — [background](...)" link and then a trailing " (test)" marker are cut off.
++// A line that does not open with a backticked name keeps everything after its bullet.
++func EntryRuleText(line string) string {
++	text := strings.TrimPrefix(line, entryBulletPrefix)
++	if m := entryHeadRe.FindString(line); m != "" {
++		text = strings.TrimPrefix(strings.TrimPrefix(line, m), " — ")
++	}
++	text = entryLinkTailRe.ReplaceAllString(text, "")
++	return strings.TrimSuffix(text, entryTestMarker)
++}
++
+ // continues reports whether line continues the entry bullet above it:
+ // a non-blank line that opens neither a new bullet nor a heading.
+ func continues(line string) bool {
+diff --git a/internal/pattern/check_test.go b/internal/pattern/check_test.go
+index 4bbd564b..a684c7d5 100644
+--- a/internal/pattern/check_test.go
++++ b/internal/pattern/check_test.go
+@@ -26,7 +26,10 @@ func overview(lines ...string) *fstest.MapFile {
+ func TestCheck(t *testing.T) {
+ 	t.Parallel()
+ 	bg := &fstest.MapFile{Data: []byte("background\n")}
+-	longLine := entryLine("PATTERN-long", "") + strings.Repeat("x", MaxEntryLineChars)
++	// A long name, "(test)" and a link put this line past the old 360-character whole-line cap while its rule text sits at the cap.
++	longName := "PATTERN-" + strings.Repeat("n", 60)
++	textAtCap := "- `" + longName + "` — " + strings.Repeat("x", MaxEntryTextChars) + " (test) — [background](pattern/" + longName + ".md)"
++	textOverCap := "- `PATTERN-long` — " + strings.Repeat("x", MaxEntryTextChars+1)
+ 
+ 	tests := []struct {
+ 		name string
+@@ -54,9 +57,17 @@ func TestCheck(t *testing.T) {
+ 			want: []string{KindContinuedEntry + ":PATTERN-a"},
+ 		},
+ 		{
+-			name: "over-long line",
+-			fsys: fstest.MapFS{"PATTERN.md": overview(longLine)},
+-			want: []string{KindLongLine + ":PATTERN-long"},
++			name:        "rule text over the cap",
++			fsys:        fstest.MapFS{"PATTERN.md": overview(textOverCap)},
++			want:        []string{KindLongLine + ":PATTERN-long"},
++			wantMessage: fmt.Sprintf("entry rule text is %d characters, over the %d cap", MaxEntryTextChars+1, MaxEntryTextChars),
++		},
++		{
++			name: "rule text at the cap behind a long name, marker and link",
++			fsys: fstest.MapFS{
++				"PATTERN.md":                  overview(textAtCap),
++				"pattern/" + longName + ".md": bg,
++			},
+ 		},
+ 		{
+ 			name: "oversize overview",
+@@ -133,3 +144,27 @@ func TestCheck(t *testing.T) {
+ 		})
+ 	}
+ }
++
++func TestEntryRuleText(t *testing.T) {
++	t.Parallel()
++	tests := []struct {
++		name string
++		line string
++		want string
++	}{
++		{"BareText", "- `PATTERN-a` — When: the rule.", "When: the rule."},
++		{"TestMarker", "- `PATTERN-a` — When: the rule. (test)", "When: the rule."},
++		{"Link", "- `PATTERN-a` — When: the rule. — [background](pattern/PATTERN-a.md)", "When: the rule."},
++		{"TestMarkerAndLink", "- `PATTERN-a` — When: the rule. (test) — [background](pattern/PATTERN-a.md)", "When: the rule."},
++		{"MarkerInsideTextKept", "- `PATTERN-a` — A (test) mid-text stays.", "A (test) mid-text stays."},
++		{"NoBacktickedName", "- loose text (test)", "loose text"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := EntryRuleText(tt.line); got != tt.want {
++				t.Errorf("EntryRuleText(%q) = %q; want %q", tt.line, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/pattern/doc.go b/internal/pattern/doc.go
+index d58bdc15..a6dbc35d 100644
+--- a/internal/pattern/doc.go
++++ b/internal/pattern/doc.go
+@@ -74,8 +74,9 @@
+ // Every file under `pattern/` is named by exactly one entry.
+ //
+ // Check enforces the shape on an fs.FS holding the root, and the real file is checked under `go test`.
+-// It caps the overview at MaxOverviewBytes and an entry line at MaxEntryLineChars,
+-// and reports an entry that continues onto a second line, an empty overview and an overview with no entry.
++// It caps the overview at MaxOverviewBytes and an entry's rule text at MaxEntryTextChars.
++// The rule text, as EntryRuleText cuts it, is the line without its bullet, name, `(test)` and background link, so the room for the wording does not depend on the entry's name or tail.
++// Check also reports an entry that continues onto a second line, an empty overview and an overview with no entry.
+ // MaxOverviewBytes is a hard cap that Check enforces on any tree, and its finding names the bytes over it.
+ // HeadroomBytes is a line 5% below the cap, and Headroom binds growth to it:
+ // Given the overview at a base and at the head, it fails when the head is longer than both the base and the line.
+diff --git a/internal/planparser/doc.go b/internal/planparser/doc.go
+index 97045f32..197414cb 100644
+--- a/internal/planparser/doc.go
++++ b/internal/planparser/doc.go
+@@ -148,7 +148,7 @@
+ //
+ // # Entry-line cap
+ //
+-// pattern-entry-line-cap fails a card whose fenced code block holds a line opening like a PATTERN.md entry line, "- `PATTERN-", longer than pattern.MaxEntryLineChars runes.
++// pattern-entry-line-cap fails a card whose fenced code block holds a line opening like a PATTERN.md entry line, "- `PATTERN-", whose rule text, as pattern.EntryRuleText cuts it, is longer than pattern.MaxEntryTextChars runes.
+ // It reads Card.Text alone and scans fenced blocks only, never inline spans or prose.
+ //
+ // # Verify chains
+diff --git a/internal/planparser/patternentry.go b/internal/planparser/patternentry.go
+index 618334f4..467c8bbf 100644
+--- a/internal/planparser/patternentry.go
++++ b/internal/planparser/patternentry.go
+@@ -1,4 +1,4 @@
+-// patternentry.go implements the pattern-entry-line-cap check: a card that prescribes a verbatim PATTERN.md entry line over the cap fails the plan gate, before an implementer writes a line the pattern check would refuse.
++// patternentry.go implements the pattern-entry-line-cap check: a card that prescribes a verbatim PATTERN.md entry line whose rule text is over the cap fails the plan gate, before an implementer writes a line the pattern check would refuse.
+ // It scans only the raw text the parse step recorded, so planparser stays the sole parser of the plan files.
+ 
+ package planparser
+@@ -15,7 +15,7 @@ const patternEntryLineCapCheck = "pattern-entry-line-cap"
+ // patternEntryLinePrefix opens a PATTERN.md entry line.
+ const patternEntryLinePrefix = "- `PATTERN-"
+ 
+-// checkPatternEntryLineCap implements pattern-entry-line-cap: every line inside a card's fenced code block that opens like a PATTERN.md entry line must stay within pattern.MaxEntryLineChars characters.
++// checkPatternEntryLineCap implements pattern-entry-line-cap: every line inside a card's fenced code block that opens like a PATTERN.md entry line must keep its rule text, the part between the name and a trailing "(test)" or background link, within pattern.MaxEntryTextChars characters.
+ // Inline code spans are never scanned, since an entry line carries backticks of its own and no span can hold one whole.
+ // It measures verbatim lines only; a prose instruction to append a sentence to an entry is outside it.
+ func checkPatternEntryLineCap(plan *Plan) []ValidationError {
+@@ -23,16 +23,16 @@ func checkPatternEntryLineCap(plan *Plan) []ValidationError {
+ 
+ 	for _, c := range plan.Cards {
+ 		for _, entry := range CardPatternEntries(c) {
+-			length := len([]rune(entry.Line))
+-			if length <= pattern.MaxEntryLineChars {
++			length := len([]rune(pattern.EntryRuleText(entry.Line)))
++			if length <= pattern.MaxEntryTextChars {
+ 				continue
+ 			}
+ 			findings = append(findings, ValidationError{
+ 				Check: patternEntryLineCapCheck,
+ 				Card:  cardID(c),
+ 				Detail: fmt.Sprintf(
+-					"card %d prescribes the entry line for `%s` at %d characters, over the %d cap; shorten the line or move the detail to the entry's background file",
+-					c.Number, entry.ID, length, pattern.MaxEntryLineChars,
++					"card %d prescribes the entry line for `%s` with a rule text at %d characters, over the %d cap; shorten the text or move the detail to the entry's background file",
++					c.Number, entry.ID, length, pattern.MaxEntryTextChars,
+ 				),
+ 			})
+ 		}
+diff --git a/internal/planparser/validate_test.go b/internal/planparser/validate_test.go
+index 738675a4..afd6c113 100644
+--- a/internal/planparser/validate_test.go
++++ b/internal/planparser/validate_test.go
+@@ -2410,16 +2410,17 @@ func TestValidate_IndexFileMismatch_FirstCard(t *testing.T) {
+ 	}
+ }
+ 
+-// TestValidate_PatternEntryLineCap covers pattern-entry-line-cap: a PATTERN.md entry line a card prescribes in a fenced code block must stay within the cap in runes, whatever the fence's info string, and prose or an unfenced line is never scanned.
++// TestValidate_PatternEntryLineCap covers pattern-entry-line-cap: the rule text of a PATTERN.md entry line a card prescribes in a fenced code block must stay within the cap in runes, whatever the fence's info string, the entry's name or its tail, and prose or an unfenced line is never scanned.
+ func TestValidate_PatternEntryLineCap(t *testing.T) {
+ 	t.Parallel()
+ 
+-	// entryLine returns an entry line of exactly length runes, padded with filler.
++	// entryLine returns an entry line whose rule text is exactly length runes of filler.
+ 	entryLine := func(length int, filler string) string {
+-		line := "- `PATTERN-x` — "
+-		return line + strings.Repeat(filler, length-len([]rune(line)))
++		return "- `PATTERN-x` — " + strings.Repeat(filler, length)
+ 	}
+-	limit := pattern.MaxEntryLineChars
++	limit := pattern.MaxEntryTextChars
++	longName := "PATTERN-x" + strings.Repeat("n", 60)
++	longTail := " (test) — [background](pattern/" + longName + ".md)"
+ 
+ 	tests := []struct {
+ 		name string
+@@ -2429,6 +2430,15 @@ func TestValidate_PatternEntryLineCap(t *testing.T) {
+ 	}{
+ 		{name: "one rune over the cap fails", text: "```\n" + entryLine(limit+1, "x") + "\n```\n", want: []int{limit + 1}},
+ 		{name: "exactly the cap passes", text: "```\n" + entryLine(limit, "x") + "\n```\n"},
++		{
++			name: "text at the cap behind a long name, marker and link passes",
++			text: "```\n- `" + longName + "` — " + strings.Repeat("x", limit) + longTail + "\n```\n",
++		},
++		{
++			name: "text over the cap behind a marker and link fails",
++			text: "```\n" + entryLine(limit+1, "x") + " (test) — [background](pattern/PATTERN-x.md)\n```\n",
++			want: []int{limit + 1},
++		},
+ 		{name: "multibyte runes under the rune cap pass", text: "```\n" + entryLine(limit, "é") + "\n```\n"},
+ 		{name: "over-cap line outside a fence passes", text: entryLine(limit+1, "x") + "\n"},
+ 		{name: "over-cap line in an inline span passes", text: "`" + entryLine(limit+1, "x") + "`\n"},
+@@ -2453,7 +2463,7 @@ func TestValidate_PatternEntryLineCap(t *testing.T) {
+ 					continue
+ 				}
+ 				var length int
+-				if _, err := fmt.Sscanf(f.Detail[strings.Index(f.Detail, "` at ")+len("` at "):], "%d", &length); err != nil {
++				if _, err := fmt.Sscanf(f.Detail[strings.Index(f.Detail, "rule text at ")+len("rule text at "):], "%d", &length); err != nil {
+ 					t.Fatalf("finding %q does not name its length: %v", f.Detail, err)
+ 				}
+ 				for _, want := range []string{"`PATTERN-x`", fmt.Sprintf("over the %d cap", limit), "1-a"} {
