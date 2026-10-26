@@ -1,0 +1,15 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Discussion-Bouncer",
+    "history_length": 13,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-10-26T10:55:38.246527646+01:00",
+  "deadline": "2026-10-26T11:25:38.246527646+01:00",
+  "strand_guid": "bae5658488c0e5bbd3d198d9f9157566",
+  "envelope_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/beam-start-and-ownership/_lyx/shed/beam-start-and-ownership/drive-reports/drive-envelope-20261026-105538-2267.json",
+  "report_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/beam-start-and-ownership/_lyx/shed/beam-start-and-ownership/drive-reports/drive-report-20261026-105538-e315.md"
+}

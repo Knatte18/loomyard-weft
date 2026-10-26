@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Hard-cap at round 3 with two open design-wrong findings, F1 and F2; the round-3 fix in the decision record answers both.\nThe fixer ran after the review (review 10:51, decision record 10:54:36, fixer report 10:54:50).\nF1: D9 no longer suppresses the driver-dead notice below respawnCap (decision-record.md lines 159-162).\nIt now states that InnerRun's existing driver-dead notice applies at Beam-Await, once per state episode, and that the cap changes only the text.\nThis matches internal/battenshed/notice.go: noticeCondition returns noticeDriverDead for any dead driver, keyed on the episode's since, and only at respawns \u003e= respawnCap does it switch to the loomStartRemedy text.\nThe acceptance criterion at line 265 covers a driver that dies after re-entering and writing its status.\nF2: line 149 now states that a failed dobby restart leaves the marker standing, still removes the request, names the blockers and `lyx beam start \u003cslug\u003e`, and lets the next accepted request retry the restart.\nThe criterion at line 264 covers this case.\nF3 is mechanical and LOW, and line 92-93 now narrows the older build's failing writes to the normalizeTask paths.\nNo BLOCKING finding remains.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lyx loom circling accept beam-start-and-ownership"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/beam-start-and-ownership/_lyx/shed/beam-start-and-ownership/arbiter/attempt-1",
+  "verdict_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/beam-start-and-ownership/_lyx/shed/beam-start-and-ownership/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lyx shed step beam-start-and-ownership --until-stop --arbiter-attempt 1"
+}

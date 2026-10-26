@@ -1,0 +1,15 @@
+verdict: resume
+reason: |-
+  Hard-cap at round 3 with two open design-wrong findings, F1 and F2; the round-3 fix in the decision record answers both.
+  The fixer ran after the review (review 10:51, decision record 10:54:36, fixer report 10:54:50).
+  F1: D9 no longer suppresses the driver-dead notice below respawnCap (decision-record.md lines 159-162).
+  It now states that InnerRun's existing driver-dead notice applies at Beam-Await, once per state episode, and that the cap changes only the text.
+  This matches internal/battenshed/notice.go: noticeCondition returns noticeDriverDead for any dead driver, keyed on the episode's since, and only at respawns >= respawnCap does it switch to the loomStartRemedy text.
+  The acceptance criterion at line 265 covers a driver that dies after re-entering and writing its status.
+  F2: line 149 now states that a failed dobby restart leaves the marker standing, still removes the request, names the blockers and `lyx beam start <slug>`, and lets the next accepted request retry the restart.
+  The criterion at line 264 covers this case.
+  F3 is mechanical and LOW, and line 92-93 now narrows the older build's failing writes to the normalizeTask paths.
+  No BLOCKING finding remains.
+verbs:
+  - |-
+    lyx loom circling accept beam-start-and-ownership
