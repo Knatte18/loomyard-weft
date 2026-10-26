@@ -1,0 +1,251 @@
+diff --git a/cmd/lyx/nocgo_test.go b/cmd/lyx/nocgo_test.go
+new file mode 100644
+index 00000000..747c2fb8
+--- /dev/null
++++ b/cmd/lyx/nocgo_test.go
+@@ -0,0 +1,84 @@
++//go:build tier0
++
++// nocgo_test.go enforces that no Go file of the module imports "C".
++// Under `-trimpath` the Go build cache shares a cgo package's generated files between worktrees, and those files name the source by the absolute path of the checkout that first built it,
++// so `go vet` in another worktree opens that path and fails once the first worktree is torn down.
++// A cgo dependency in the module cache sits at the same path in every worktree and stays allowed; see `PATTERN-gate-slot`.
++
++package main
++
++import (
++	"fmt"
++	"go/parser"
++	"os"
++	"path/filepath"
++	"sort"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/scankit"
++)
++
++// cgoImportFailures walks the Go files under opts and returns one failure line per file that imports "C", with the number of files scanned.
++func cgoImportFailures(t *testing.T, opts scankit.Options) (failures []string, scanned int) {
++	t.Helper()
++	opts.Filter = scankit.All
++	scanned = scankit.Walk(t, opts, func(f *scankit.File) {
++		file := f.AST(t, parser.ImportsOnly)
++		for _, imp := range file.Imports {
++			if imp.Path.Value != `"C"` {
++				continue
++			}
++			rel := filepath.ToSlash(f.Rel)
++			failures = append(failures, fmt.Sprintf("%s:%d: imports \"C\"; reach the C code through a dependency in the module cache, since a cgo package in the module makes `go vet` in one worktree open another worktree's files", rel, f.FileSet().Position(imp.Pos()).Line))
++		}
++	})
++	sort.Strings(failures)
++	return failures, scanned
++}
++
++// TestNoCgo_NoFileOfTheModuleImportsC fails for every Go file of the module that imports "C".
++//
++//lyx:guard
++func TestNoCgo_NoFileOfTheModuleImportsC(t *testing.T) {
++	t.Parallel()
++	failures, scanned := cgoImportFailures(t, scankit.Options{})
++	scankit.RequireFloor(t, scanned, 1, "cgo import scan")
++	if len(failures) > 0 {
++		t.Errorf("`PATTERN-gate-slot` violated:\n%s", strings.Join(failures, "\n"))
++	}
++}
++
++func TestNoCgo_FixtureTrees(t *testing.T) {
++	t.Parallel()
++	tests := []struct {
++		name     string
++		files    map[string]string
++		wantFail int
++	}{
++		{"CgoImport", map[string]string{"p/a.go": "package p\n\n// int f(void) { return 1; }\nimport \"C\"\n"}, 1},
++		{"CgoImportInGroup", map[string]string{"p/a.go": "package p\n\nimport (\n\t\"C\"\n\t\"os\"\n)\n\nvar _ = os.Args\n"}, 1},
++		{"CgoImportInTestFile", map[string]string{"p/a_test.go": "package p\n\nimport \"C\"\n"}, 1},
++		{"MentionInComment", map[string]string{"p/a.go": "package p\n\n// import \"C\" is refused.\nimport \"os\"\n\nvar _ = os.Args\n"}, 0},
++		{"MentionInString", map[string]string{"p/a.go": "package p\n\nvar s = `import \"C\"`\n"}, 0},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			base := t.TempDir()
++			for rel, body := range tt.files {
++				path := filepath.Join(base, filepath.FromSlash(rel))
++				if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++					t.Fatal(err)
++				}
++				if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
++					t.Fatal(err)
++				}
++			}
++			failures, _ := cgoImportFailures(t, scankit.Options{Base: base})
++			if len(failures) != tt.wantFail {
++				t.Errorf("cgoImportFailures() = %v; want %d failures", failures, tt.wantFail)
++			}
++		})
++	}
++}
+diff --git a/internal/gateslot/doc.go b/internal/gateslot/doc.go
+index d0f558ec..ff5d70e9 100644
+--- a/internal/gateslot/doc.go
++++ b/internal/gateslot/doc.go
+@@ -28,6 +28,8 @@
+ // `-trimpath` makes builds from two checkouts byte-identical and their cache keys independent of the checkout's directory,
+ // so a fresh worktree hits the build and test cache and a host scanner that holds each unseen executable sees known hashes.
+ // It also makes `runtime.Caller` report module-relative file paths, so no code a gate run builds locates the repo root from them alone.
++// It does not reach the cgo-generated files the cache keeps, which name their source by the absolute path of the checkout that first built them,
++// so no package of the module imports "C", and `go vet` never opens another worktree's files.
+ // Lease.InheritEnv returns the environment of a tier run: only InheritEnv is set, naming the lease's first slot's lock path, and no GOFLAGS is appended, since a tier's command and env set its own parallelism.
+ // HolderEnv returns the environment of a non-tier slot holder's child: GOFLAGS gets `-trimpath` and, when the holder passes a tier0 parallel above 0, `-p=<n>`, and a non-nil lease sets InheritEnv.
+ // Limits.Tier0Parallel carries `tier0`'s effective parallel, this machine's override included, and is 0 when the hub declares no `tier0`, so a holder reads it from the pool's Limits at its acquire.
+diff --git a/internal/reedengine/proctree.go b/internal/reedengine/proctree.go
+index 68670c81..3c262685 100644
+--- a/internal/reedengine/proctree.go
++++ b/internal/reedengine/proctree.go
+@@ -81,6 +81,24 @@ func processAge(uptime, stat string, ticksPerSecond int64) (time.Duration, error
+ 	return time.Duration((uptimeSeconds - startSeconds) * float64(time.Second)), nil
+ }
+ 
++// auxvClockTicksKey is the ELF auxiliary vector key AT_CLKTCK, the kernel's clock tick rate.
++const auxvClockTicksKey = 17
++
++// defaultClockTicksPerSecond is the rate a C library reports when the auxiliary vector holds no AT_CLKTCK entry.
++const defaultClockTicksPerSecond = 100
++
++// clockTicksFromAuxv returns the clock tick rate the auxiliary vector auxv declares, the unit of a /proc/<pid>/stat start time.
++// It reads the rate without cgo, so the package builds no cgo file whose cached output names the checkout it was built in,
++// and it returns defaultClockTicksPerSecond when auxv holds no positive AT_CLKTCK entry, as sysconf(_SC_CLK_TCK) does.
++func clockTicksFromAuxv(auxv [][2]uintptr) int64 {
++	for _, entry := range auxv {
++		if entry[0] == auxvClockTicksKey && entry[1] > 0 {
++			return int64(entry[1])
++		}
++	}
++	return defaultClockTicksPerSecond
++}
++
+ // descendantClosure returns roots plus every transitive descendant.
+ // Repeatedly absorbs pids whose parent is already accepted (fixed-point walk).
+ func descendantClosure(pidToPPID map[int]int, roots []int) []int {
+diff --git a/internal/reedengine/proctree_linux.go b/internal/reedengine/proctree_linux.go
+index 112737f4..5505db29 100644
+--- a/internal/reedengine/proctree_linux.go
++++ b/internal/reedengine/proctree_linux.go
+@@ -7,17 +7,14 @@
+ 
+ package reedengine
+ 
+-/*
+-#include <unistd.h>
+-*/
+-import "C"
+-
+ import (
+ 	"os"
+ 	"path/filepath"
+ 	"strconv"
+ 	"strings"
+ 	"time"
++
++	"golang.org/x/sys/unix"
+ )
+ 
+ // paneProcessAge returns the elapsed time of the process pid, read from /proc/uptime and /proc/<pid>/stat.
+@@ -35,7 +32,9 @@ func paneProcessAge(pid int) (time.Duration, bool) {
+ 	if err != nil {
+ 		return 0, false
+ 	}
+-	age, err := processAge(string(uptime), string(stat), int64(C.sysconf(C._SC_CLK_TCK)))
++	// An unreadable auxiliary vector leaves the default rate, as it does for sysconf.
++	auxv, _ := unix.Auxv()
++	age, err := processAge(string(uptime), string(stat), clockTicksFromAuxv(auxv))
+ 	if err != nil {
+ 		return 0, false
+ 	}
+diff --git a/internal/reedengine/proctree_linux_test.go b/internal/reedengine/proctree_linux_test.go
+new file mode 100644
+index 00000000..54cc94a2
+--- /dev/null
++++ b/internal/reedengine/proctree_linux_test.go
+@@ -0,0 +1,31 @@
++//go:build tier0
++
++// proctree_linux_test.go pins the Linux wiring of the clock tick rate: the host's real auxiliary vector holds an AT_CLKTCK entry that clockTicksFromAuxv picks up.
++
++package reedengine
++
++import (
++	"testing"
++
++	"golang.org/x/sys/unix"
++)
++
++func TestClockTicksFromAuxvReadsHostVector(t *testing.T) {
++	t.Parallel()
++	auxv, err := unix.Auxv()
++	if err != nil {
++		t.Fatalf("unix.Auxv() error = %v; want nil", err)
++	}
++	var declared uintptr
++	for _, entry := range auxv {
++		if entry[0] == 17 {
++			declared = entry[1]
++		}
++	}
++	if declared == 0 {
++		t.Fatalf("host auxiliary vector holds no positive entry for key 17: %v", auxv)
++	}
++	if got := clockTicksFromAuxv(auxv); got != int64(declared) {
++		t.Errorf("clockTicksFromAuxv(host vector) = %d; want %d", got, declared)
++	}
++}
+diff --git a/internal/reedengine/proctree_test.go b/internal/reedengine/proctree_test.go
+index ff0cba9f..4d6c82f0 100644
+--- a/internal/reedengine/proctree_test.go
++++ b/internal/reedengine/proctree_test.go
+@@ -15,6 +15,28 @@ import (
+ 	"time"
+ )
+ 
++func TestClockTicksFromAuxv(t *testing.T) {
++	t.Parallel()
++	tests := []struct {
++		name string
++		auxv [][2]uintptr
++		want int64
++	}{
++		{"DeclaredRate", [][2]uintptr{{6, 4096}, {17, 250}, {0, 0}}, 250},
++		{"NoEntry", [][2]uintptr{{6, 4096}, {0, 0}}, 100},
++		{"ZeroRate", [][2]uintptr{{17, 0}}, 100},
++		{"NilVector", nil, 100},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := clockTicksFromAuxv(tt.auxv); got != tt.want {
++				t.Errorf("clockTicksFromAuxv(%v) = %d; want %d", tt.auxv, got, tt.want)
++			}
++		})
++	}
++}
++
+ func TestProcessAge(t *testing.T) {
+ 	t.Parallel()
+ 	// statWithStart builds a stat line whose field 22 is start, after a comm holding a space and a paren.
+diff --git a/pattern/PATTERN-gate-slot.md b/pattern/PATTERN-gate-slot.md
+index c51c2b08..43c08842 100644
+--- a/pattern/PATTERN-gate-slot.md
++++ b/pattern/PATTERN-gate-slot.md
+@@ -6,6 +6,9 @@ Running a gate build or test holds `internal/gateslot` slots, so the hub never r
+ - Inside a `lyx gate test` tier run, holding the slots its tier asks for, with the tier's config setting its parallelism and environment.
+ - In one of the non-tier holders `internal/gateslot`'s doc lists, holding one slot and setting its own `-trimpath` Go flag, plus `-p` from `tier0`'s parallel when the hub declares `tier0`.
+ - Every Go gate build keeps `-trimpath`, so a fresh worktree reuses the build and test cache; a `dotnet` build takes no Go flags.
++- No Go file of the module imports `"C"`: the shared cache keeps a cgo package's generated files naming the source by the absolute path of the checkout that first built it, so `go vet` in another worktree opens that checkout's files.
++  A cgo dependency in the module cache sits at the same path in every worktree and stays allowed.
++  Enforced by `cmd/lyx/nocgo_test.go`.
+ - The hub's shared build step runs once per `lyx gate test` call, inside the slots of the first tier that opts into it.
+ 
+ ## Trimpath-safe root
