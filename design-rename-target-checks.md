@@ -1,6 +1,6 @@
 # Catch a renamed symbol a later card targets: in the plan writer, plan validation and a blocking batch-end check
 
-`rename-target-checks` · Task · enhancement, webster, loom, stencil · running · Finalize
+`rename-target-checks` · Task · enhancement, webster, loom, stencil · done
 
 ## Seen (beam-start-and-ownership, 2026-10-26)
 
