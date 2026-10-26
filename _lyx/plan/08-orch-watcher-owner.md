@@ -1,10 +1,10 @@
 # Card 8 — orch-watcher-owner
 
 **Create:**
-- `plan:internal/orchengine#OwnerWatch` -> `type OwnerWatch struct`
-- `plan:internal/orchengine#Watcher.WatchOwner` -> `func (w *Watcher) WatchOwner(o OwnerWatch)`
-- `plan:internal/orchengine#TestWatcher_StopsTheOrchOfABeamOwnedElsewhere` -> `func TestWatcher_StopsTheOrchOfABeamOwnedElsewhere(t *testing.T)`
-- `plan:internal/orchcli#beamOwnerElsewhere` -> `func beamOwnerElsewhere(location *lyxcwd.Location) (owner string, elsewhere bool, err error)`
+- `internal/orchengine#OwnerWatch`
+- `internal/orchengine#Watcher.WatchOwner`
+- `internal/orchengine#TestWatcher_StopsTheOrchOfABeamOwnedElsewhere`
+- `internal/orchcli#beamOwnerElsewhere`
 
 **Edit:**
 - `internal/orchengine#Watcher`

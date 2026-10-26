@@ -1,6 +1,6 @@
 {
   "runGuid": "759672efeead4a3f4b326a0be5dbdc8e",
-  "planFingerprint": "f91d2463477b7794b3bd45d66f6cc514c634e5016e3dfa3f094a5c6fef275f70",
+  "planFingerprint": "8218ad1a1a458b5ad0593bbe08fe476a119a7708e34c22d5dad76d806e43651f",
   "planFileHashes": {
     "00-overview.md": "3e4fd1e589b19dc1fca1eb52d2d29a4bdb4bd50aebe4edf5e6a3039bf9c4c9fc",
     "01-remove-beam-promote.md": "9998b4908b450a16617fde571fd849a526d09439304590b86abcdfaa80ae005c",
@@ -9,8 +9,8 @@
     "04-adopt-projects.md": "38c1093468f69973c0062371cf35d409ec71cda80ede5ede2e7998e67142aa26",
     "05-landing-hold.md": "9cb8d257cde9549bac2661190c7d710f37fa431cebcc95cadc34af1d782892a3",
     "06-recipe-named-pawl.md": "58de528ea67bf69462fbf5a06c673a0ab1fdad05afd0daa5c018982646896ee6",
-    "07-dobby-start-named-beams.md": "0ca43b80dec223c3051b0e3fc7f8d14f28aa1be6c6aa8948f9a8e446a4bfced1",
-    "08-orch-watcher-owner.md": "322905188a6f096e737d32ff13c537eb29ea29828f1d9f69a338832126b6d5c4",
+    "07-dobby-start-named-beams.md": "29d976e613ecbae8ad812adcfcb4bc4f683fb56e3499a54e4c537eba75384cda",
+    "08-orch-watcher-owner.md": "38a7936b298ead8cb8a9fb8b4316f67e56146b019d8051bb6200602ca735a05e",
     "09-remove-orch-cleanup.md": "987b85809e61a39169f01a553863b05ad4d06deb91ca14fe03a009d696fddbdd",
     "10-orch-beam-up.md": "04a64b41733ea20c4a73191ab14bbd52cf9c4fea29f7c81e2275d05a36165565",
     "11-beam-start-stop-status.md": "b6cc43cab97d5ba4fd7f4e11e9a1b2a1cd09b4cdddebe3b2e583c0722651fce1",
@@ -913,7 +913,7 @@
       }
     }
   ],
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "7efddbc29cb40e67f586e1bd558110f5",
   "masterSessionId": "3401e80d-03a0-4f92-84bd-f457164076a9",
   "masterEngine": "claude",
@@ -1075,22 +1075,45 @@
         "08-orch-watcher-owner"
       ],
       "cardHashes": {
-        "07-dobby-start-named-beams": "0ca43b80dec223c3051b0e3fc7f8d14f28aa1be6c6aa8948f9a8e446a4bfced1",
-        "08-orch-watcher-owner": "322905188a6f096e737d32ff13c537eb29ea29828f1d9f69a338832126b6d5c4"
+        "07-dobby-start-named-beams": "29d976e613ecbae8ad812adcfcb4bc4f683fb56e3499a54e4c537eba75384cda",
+        "08-orch-watcher-owner": "38a7936b298ead8cb8a9fb8b4316f67e56146b019d8051bb6200602ca735a05e"
       },
       "startSha": "e3b50d7eb17c61396b1e55cf4a89a3a6a6ce75ba",
       "kind": "fork",
       "spawnedAt": "2026-10-26T12:39:23Z",
       "sessionId": "3401e80d-03a0-4f92-84bd-f457164076a9",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-dobby-start-named-beams",
+        "status": "done",
+        "head_sha": "91b77c1a3b8870ed3cbc694507fbd4115e6f88fe",
+        "deviations": [
+          "internal/adoptcli/adopt_test.go",
+          "internal/dobbyengine/start_test.go",
+          "internal/fabriccli/anchor.go",
+          "internal/fabriccli/anchor_test.go",
+          "internal/hubgeom/dobbygeom.go",
+          "internal/orchengine/owner.go"
+        ]
+      },
+      "cardShas": [
+        "91b77c1a3b8870ed3cbc694507fbd4115e6f88fe"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-beam-start-and-ownership/3401e80d-03a0-4f92-84bd-f457164076a9/subagents/agent-a822ee5d2e9976331.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-beam-start-and-ownership/3401e80d-03a0-4f92-84bd-f457164076a9/subagents/agent-a822ee5d2e9976331.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-beam-start-and-ownership/510c8418-2bb7-40bc-8b89-289445a317b5/subagents/agent-a23e880b3925d30c1.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-beam-start-and-ownership/510c8418-2bb7-40bc-8b89-289445a317b5/subagents/agent-a1d3415a50f75b5f0.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-beam-start-and-ownership/510c8418-2bb7-40bc-8b89-289445a317b5/subagents/agent-ab250bee7ec3dfc7a.jsonl",
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-beam-start-and-ownership/510c8418-2bb7-40bc-8b89-289445a317b5/subagents/agent-aeda37b95a3d1b5cf.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-beam-start-and-ownership/510c8418-2bb7-40bc-8b89-289445a317b5/subagents/agent-aeda37b95a3d1b5cf.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-beam-start-and-ownership/3401e80d-03a0-4f92-84bd-f457164076a9/subagents/agent-a822ee5d2e9976331.jsonl"
   ]
 }
