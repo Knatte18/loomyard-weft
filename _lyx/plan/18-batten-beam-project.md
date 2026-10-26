@@ -1,9 +1,9 @@
 # Card 18 — batten-beam-project
 
 **Create:**
-- `plan:internal/battencli#FirstPassOptions` -> `type FirstPassOptions struct`
-- `plan:internal/battencli#anchorParam` -> `const anchorParam = "anchor"`
-- `plan:internal/battencli#memberHoldRefusal` -> `func memberHoldRefusal(slug, beam, status string) error`
+- `internal/battencli#FirstPassOptions`
+- `internal/battencli#anchorParam`
+- `internal/battencli#memberHoldRefusal`
 
 **Edit:**
 - `internal/battencli#StartFirstPass` -> `func StartFirstPass(location *lyxcwd.Location, slug string, opts FirstPassOptions) (map[string]any, error)`
