@@ -1,12 +1,11 @@
 {
-  "current_producer": "Plan-Bouncer",
+  "current_producer": "Drift-Await",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Bouncer",
-    "last": "Plan-Bouncer → awaiting",
+    "now": "Drift-Await",
+    "last": "Plan-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -358,6 +357,13 @@
       "outcome": "awaiting",
       "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/beam-start-and-ownership/_lyx/reviews/plan/round-3-bouncer-ledger.md",
       "at": "2026-10-26T12:37:51Z"
+    },
+    {
+      "producer": "Plan-Bouncer",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/beam-start-and-ownership/_lyx/reviews/plan/round-3-bouncer-ledger.md",
+      "at": "2026-10-26T12:39:03Z",
+      "by": "shed"
     }
   ],
   "product": {

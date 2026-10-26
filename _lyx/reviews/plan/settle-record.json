@@ -1,12 +1,12 @@
 {
   "subject": {
     "kind": "document",
-    "hash": "5dff0574b040d203760a85fc232377508f729c18dc844b5d0611598549c565d9"
+    "hash": "a3263013284b7f704cc5e768387047e79f76382a641913d8bb28783687e2cc41"
   },
-  "base": "48c9377e4f4d58cd909e62eb08cee0a71548f512",
+  "base": "f4da486fcb77baa04a4db2a9e7e9ceed7f478e0a",
   "generation": 1,
-  "round": 2,
-  "settled_at": "2026-10-26T11:25:12Z",
-  "round_started_at": "2026-10-26T11:09:45Z",
+  "round": 3,
+  "settled_at": "2026-10-26T12:39:03Z",
+  "round_started_at": "2026-10-26T12:15:57Z",
   "settled": true
 }
