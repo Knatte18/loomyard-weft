@@ -26,7 +26,7 @@ The rename lands before LoomYard is taken into use on other repositories, since 
 ## Done mechanically (operator, 2026-10-26)
 
 The rename is done by a script, never by hand edits file by file.
-Agent sessions refuse scripted in-place edits, so the script is a Go program under `tools/` that the run writes, reviews and then runs once.
+It needs agents to be allowed scripted edits, which `scripted-edits-allowed` brings.
 
 ## Runs alone (operator, 2026-10-22)
 
