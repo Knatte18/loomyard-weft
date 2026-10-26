@@ -59,6 +59,12 @@ The turn end is still held, shown in the wait marker and logged; only the parent
 Bound: it applies only to a held turn end built from a waiting turn end (the gated plain-turn-end judgment and the ungated shell expiry) and only on an engine that meets `RequirementBackgroundWake`; a held turn end with nothing outstanding is notified as before.
 A turn the operator prompted with no background work outstanding is still notified, because shuttle holds no record that tells an operator's typed text from a parent's SendMessage answer, and silencing the parent's answer turns would hide a real follow-up question.
 
+### Added after Discussion (parent, 2026-10-26): Operator-typed turns stay notified
+
+Decision: The held-notice rule withholds the notice only for a turn that ends with the session's own background work outstanding; a turn that answers a prompt the operator typed, with no background work, is still notified as held. The board entry's operator-typed clause is dropped from this run's scope.
+
+Rationale: Shuttle holds no record that tells an operator's typed text from a parent's answer, so withholding those turns would hide a real follow-up question; both reported cases had a background shell running, which the background rule covers.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: the background-wake check goes through the engine's `RequirementSupporter`, never a concrete engine; every negative startup verdict still consults `allOutputFilesExist` first, and the completion-signal scan's pinned sites are updated only where a site moves.
