@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-26 10:22 UTC; every age below is as of then.
+Rendered 2026-10-26 10:23 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -28,34 +28,27 @@ grouping
 | --- | --- | --- | --- |
 | E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
 
-## Tasks (5)
+## Tasks (4)
 
 Concrete and claimable; only a task can run.
 
-### Running (4)
+### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Webster audit: a card slug ending in -weft makes every gate test --card command a fabric reference**<br>• `profile: light` | [`weft-suffix-card-slug-audit`](design-weft-suffix-card-slug-audit.md) | darn | Finalize | osl-1046 | 18h<br>15m | webster, fabric |
-| T2 | **gate tier1 fails on a stale Go vet cache entry naming a torn-down worktree**<br>• `profile: light` | [`gate-stale-vet-cache-path`](design-gate-stale-vet-cache-path.md) | darn | Darn-Write | osl-1046 | 18h<br>15m | gate |
-| T3 | **Shuttle: seat start survives long prompts and tmux EAGAIN, and no held notice for a turn waiting by design**<br>• Three shuttleengine bugs: a long prompt kills the seat start, EAGAIN reads as a dead provider, and a by-design wait raises a held notice<br>• `profile: solid` | [`shuttle-start-hardening`](design-shuttle-start-hardening.md) | darn | Darn-Write | osl-1046 | 18h<br>14m | shuttle, reed, webster |
+| T2 | **gate tier1 fails on a stale Go vet cache entry naming a torn-down worktree**<br>• `profile: light` | [`gate-stale-vet-cache-path`](design-gate-stale-vet-cache-path.md) | darn | Darn-Write | osl-1046 | 18h<br>17m | gate |
+| T3 | **Shuttle: seat start survives long prompts and tmux EAGAIN, and no held notice for a turn waiting by design**<br>• Three shuttleengine bugs: a long prompt kills the seat start, EAGAIN reads as a dead provider, and a by-design wait raises a held notice<br>• `profile: solid` | [`shuttle-start-hardening`](design-shuttle-start-hardening.md) | darn | Darn-Write | osl-1046 | 18h<br>15m | shuttle, reed, webster |
 | T4 | **Beams: one lyx beam start, machine ownership by project, and a beam's life as a pawl run**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-ownership`](design-beam-start-and-ownership.md) | loom | Plan-Write | osl-1046 | 19h<br>14h | orch, workspaces, batten, reed, board |
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
-
-### Layer A (1)
-
-Waits only on Running or Ready entries.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **PATTERN line cap counts the rule text only, not the name and link**<br>• MaxEntryLineChars counts the whole entry line, so the room left for the rule text shrinks with the entry name and link<br>• `profile: light` | [`pattern-line-cap-text-only`](design-pattern-line-cap-text-only.md) | darn | `weft-suffix-card-slug-audit` | 20h<br>12m | pattern, loom |
+| T5 | **PATTERN line cap counts the rule text only, not the name and link**<br>• MaxEntryLineChars counts the whole entry line, so the room left for the rule text shrinks with the entry name and link<br>• `profile: light` | [`pattern-line-cap-text-only`](design-pattern-line-cap-text-only.md) | darn |  | 20h<br>14m | pattern, loom |
 
 ## Notes (41)
 
@@ -66,7 +59,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Find why a running run shows a dead waiter in the activity reader** | [`idle-notice-dead-waiter-cause`](design-idle-notice-dead-waiter-cause.md) | 2d<br>2d | batten, shuttle |
-| B2 |  | **A webster stop reaches the parent twice: Merriam asks directly and the driver escalates the same question** | [`webster-stop-asked-once`](design-webster-stop-asked-once.md) | 18h<br>3m | webster, loom |
+| B2 |  | **A webster stop reaches the parent twice: Merriam asks directly and the driver escalates the same question** | [`webster-stop-asked-once`](design-webster-stop-asked-once.md) | 18h<br>4m | webster, loom |
 | B4 |  | **Board README lists draft tasks under Ready** | [`readme-draft-not-ready`](design-readme-draft-not-ready.md) | 18h<br>18h | board |
 
 ### Enhancements (20)
@@ -85,7 +78,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E11 |  | **Loom and darn Finalize resolve a moved parent themselves instead of rerouting** | [`loom-finalize-merges-itself`](design-loom-finalize-merges-itself.md) | 14h<br>14h | loom, batten |
 | E12 |  | **Adopt machine check: a gate key of its own, and visible while it runs**<br>• Adopt runs its machine check silently in the background under the finalize gate key | [`adopt-check-visible`](design-adopt-check-visible.md) | 1h<br>1h | gate, board |
 | E13 |  | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 10d<br>3d | stencil, shuttle |
-| E14 |  | **No test is skipped by design**<br>• Windows-only tests count as skips on Linux, and TestBuildLoomShed_OutputShape skips on every machine | [`test-skips-os-tags`](design-test-skips-os-tags.md) | 1h<br>3m | testkit, reed, loom, fabric, gate |
+| E14 |  | **No test is skipped by design**<br>• Windows-only tests count as skips on Linux, and TestBuildLoomShed_OutputShape skips on every machine | [`test-skips-os-tags`](design-test-skips-os-tags.md) | 1h<br>4m | testkit, reed, loom, fabric, gate |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 8d<br>8d | webster, fabric, loom |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 7d<br>7d | fabric, batten |
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 3d<br>3d | burler, claude |
@@ -121,3 +114,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R4 |  | **Lens overlap audit: which lenses find the same defects, and a smaller set**<br>• twill-plan 8 to 5 lenses recommended; twill-discussion 7 to 4 and review-code 4 to 3 at low confidence | [`lens-overlap-audit`](design-lens-overlap-audit.md) | 3d<br>18h | burler, loom |
 | R5 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 3d<br>18h | webster |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 3d<br>18h | loom, stencil |
+
+## Done (1)
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T1 | **Webster audit: a card slug ending in -weft makes every gate test --card command a fabric reference**<br>• `profile: light` | [`weft-suffix-card-slug-audit`](design-weft-suffix-card-slug-audit.md) | 18h<br>17m | webster, fabric |
