@@ -298,7 +298,7 @@
       "id": 622,
       "handle": "E13",
       "slug": "rename-binary-lym",
-      "title": "Rename the lyx binary and the LYXHUB suffix (name clash with LyX)",
+      "title": "Rename lyx to lym (LoomYard Mill): binary, LYXHUB suffix, LYX_ variables and _lyx/.lyx directories",
       "kind": "note",
       "labels": [
         "enhancement",
@@ -312,9 +312,9 @@
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "Imported from [issue #670](https://github.com/Knatte18/loomyard/issues/670).\n\n`lyx` collides with LyX, the LaTeX editor, which ships as the `lyx` package in Ubuntu/Debian and installs `/usr/bin/lyx`.\nOn a machine with both, whichever comes first on PATH wins: a shell where `~/go/bin` is not yet on PATH starts the LaTeX editor instead of LoomYard.\nLyX is common among researchers, so the clash is likely for other users too.\n\n## Name\n\nThe new name is open, and the operator has not chosen.\nThe note `binary-name-candidates` holds the clash-checked candidates: short, preferably three letters, ideally rooted in weaving, with `vef` ranked first and `vev` close behind.\nRejected: `ly`, since the binary and the `ly` plugin must not share a name; `loy`, too close to `ly`; and `lyd` (operator, 2026-10-26).\n\n## Priority (operator, 2026-10-26)\n\nThe rename lands before LoomYard is taken into use on other repositories, since renaming hubs and records already in use elsewhere is far more work.\n\n## Scope\n\n- The binary: the `cmd/lyx` build target and `binaryName()` in `tools/deploy`, docs and README, stencils and skills in the `ly` plugin that invoke `lyx`, and any scripts or launchers that call it.\n- The hub directory suffix `-LYXHUB`, such as `loomyard-LYXHUB`, which the new name replaces (operator, 2026-10-26).\n\n## Done mechanically (operator, 2026-10-26)\n\nThe rename is done by a script, never by hand edits file by file.\nIt needs agents to be allowed scripted edits, which `scripted-edits-allowed` brings.\n\n## Runs alone (operator, 2026-10-22)\n\nThe rename runs alone, with no other run in flight, since it touches nearly every file; it is promoted and started only then.\n",
+      "body": "Imported from [issue #670](https://github.com/Knatte18/loomyard/issues/670).\n\n`lyx` collides with LyX, the LaTeX editor, which ships as the `lyx` package in Ubuntu/Debian and installs `/usr/bin/lyx`.\nOn a machine with both, whichever comes first on PATH wins: a shell where `~/go/bin` is not yet on PATH starts the LaTeX editor instead of LoomYard.\nLyX is common among researchers, so the clash is likely for other users too.\n\n## Name\n\nThe new name is `lym`, for LoomYard Mill, after LoomYard's forerunner millhouse and its Mill plugin (operator, 2026-10-26).\nIt clashes with no installable command in apt, Homebrew, winget, Scoop, Chocolatey or AUR; the note `binary-name-candidates` holds the check.\n\n## Priority (operator, 2026-10-26)\n\nThe rename lands before LoomYard is taken into use on other repositories, since renaming hubs and records already in use elsewhere is far more work.\n\n## Scope\n\n- The binary: the `cmd/lyx` build target and `binaryName()` in `tools/deploy`, docs and README, stencils and skills in the `ly` plugin that invoke `lyx`, and any scripts or launchers that call it.\n- The hub directory suffix `-LYXHUB`, such as `loomyard-LYXHUB`, which becomes `-LYMHUB` (operator, 2026-10-26).\n- The `LYX_*` environment variables, which become `LYM_*`, and the `_lyx/` and `.lyx/` directories, which become `_lym/` and `.lym/` (operator, 2026-10-26).\n  Existing hubs need a migration of their records and machine-local state.\n\n## Done mechanically (operator, 2026-10-26)\n\nThe rename is done by a script, never by hand edits file by file.\nIt needs agents to be allowed scripted edits, which `scripted-edits-allowed` brings.\n\n## Runs alone (operator, 2026-10-22)\n\nThe rename runs alone, with no other run in flight, since it touches nearly every file; it is promoted and started only then.\n",
       "created": "2026-10-16T06:49:28Z",
-      "revised": "2026-10-26T14:50:42Z"
+      "revised": "2026-10-26T15:16:05Z"
     },
     {
       "id": 646,
