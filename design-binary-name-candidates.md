@@ -1,8 +1,252 @@
-# Candidate names for the lyx binary: weaving-rooted, clash-checked (research, 2026-10-26)
+# Candidate names for the lyx binary: three letters, clash-checked (research, 2026-10-26)
 
 `binary-name-candidates` · Note · research
 
-# Binary name research: replacing `lyx`
+# Binary name research, round 2: three letters that sound like `lyx`
+
+Researched 2026-10-26.
+The clash rule is narrower than in round 1: only an installable command of the same name in apt (Debian or Ubuntu), Homebrew, winget, Scoop, Chocolatey or AUR counts.
+Library packages on npm, PyPI and crates.io, and small GitHub repositories, are ignored, though a few are mentioned for context.
+"AUR" is marked on every clash that comes only from AUR, the user-uploaded and uncurated Arch repository.
+92 names were checked: the 25 `ly?` names, 14 earlier three-letter names, and 53 new names in the l/r/m/n pattern.
+
+## Ranked shortlist
+
+### 1. `lys`
+
+- Sound: one syllable, "leess" in Norwegian, "liss" or "lease" in English; it opens on soft l, has y and closes on soft s.
+- Meaning: Norwegian, Danish and Swedish for "light", "candle" and "bright"; it has no English meaning.
+- Weaving link: none; as a LoomYard abbreviation it can read "LoomYard System".
+- Command clashes: none in any repository checked, AUR included.
+  The nearest names on the web are `lyscripts` (PyPI) and the `ly` LilyPond tool, neither of which is named `lys`.
+
+### 2. `lyd`
+
+- Sound: "lyd" with a soft d, almost "lee" in Norwegian, where the d is nearly silent; "lid" in English.
+- Meaning: Norwegian and Danish for "sound"; it has no English meaning.
+- Weaving link: none, but it is the cleanest abbreviation of LoomYarD.
+- Command clashes: none in any repository checked; it is not in the winget index at all.
+  The nearest name on the web is `lydia-cli` (PyPI), a local AI coding agent, which is named differently.
+- Note: the word is very common in Norwegian, so it is weak as a search term.
+
+### 3. `lyn`
+
+- Sound: "lyn" in Norwegian, "lin" or "Lynn" in English; one soft syllable.
+- Meaning: Norwegian and Danish for "lightning", the Welsh *llyn* "lake", and the English given name Lynn; the lightning sense suits a fast tool.
+- Weaving link: none.
+- Command clashes: AUR only: [`lyn-git`](https://aur.archlinux.org/packages/lyn-git), a weather CLI using the Norwegian Meteorological Institute ([src.timharek.no/tim/lyn](https://src.timharek.no/tim/lyn)), with 0 votes.
+  The Homebrew cask [`lyn`](https://formulae.brew.sh/cask/lyn) is a macOS media viewer app; it installs `Lyn.app` and no command.
+
+### 4. `lom`
+
+- Sound: "lomm" in Norwegian, "lom" in English; one soft syllable with a round vowel.
+- Meaning: Norwegian for the loon bird, and a Norwegian municipality; in Slavic languages it means "break" or "scrap", which is harmless here.
+- Weaving link: the strongest on this list, since it is *loom* with one o.
+- Command clashes: none in apt, Homebrew, winget, Scoop, Chocolatey or AUR.
+  It falls outside the rule but is worth knowing: [LackOfMorals/lom](https://github.com/LackOfMorals/lom) is a 0-star Go `lom` binary for Neo4j, shipped as a PyPI package.
+
+### 5. `lur`
+
+- Sound: "lür" in Norwegian, "lure" in English; one soft syllable.
+- Meaning: in Norwegian, *lur* means "clever, sly", "a nap", and the long wooden lur horn; the English sound "lure" is neutral.
+- Weaving link: none.
+- Command clashes: none.
+  Debian's `lur-command` package (a Logitech receiver tool) installs `/usr/bin/lur-command`, not `lur` ([file list](https://packages.debian.org/sid/amd64/lur-command/filelist)).
+
+### 6. `lyr`
+
+- Sound: "lyr" in Norwegian, "leer" or "lure" in English.
+- Meaning: the Norwegian name of the pollock fish; it echoes "lyre" and "lyric".
+- Weaving link: none; as an abbreviation it reads "LoomYaRd".
+- Command clashes: AUR only, two of them: [`lyr-bin`](https://aur.archlinux.org/packages/lyr-bin), a Wayland/Windows/macOS status bar ([kryptic-sh/lyr](https://github.com/kryptic-sh/lyr)), and [`lyr-git`](https://aur.archlinux.org/packages/lyr-git), a genius.com lyrics scraper; both have 0 votes.
+  A crates.io `lyr` lyrics tool exists too, which the rule ignores.
+
+### 7. `lun`
+
+- Sound: "lün" in Norwegian, "loon" in English.
+- Meaning: Norwegian for "cosy, warm, sheltered", and for warm, dry humour; the English sound "loon" (a crazy person) is mild.
+- Weaving link: none.
+- Command clashes: none.
+
+### 8. `nyl`
+
+- Sound: "nyl" in Norwegian, "nil" or "nile" in English; it opens on soft n.
+- Meaning: none in Norwegian; in English it is the start of "nylon".
+- Weaving link: nylon, a textile fibre.
+- Command clashes: none; it appears in the winget index only inside a longer string, not as a value of its own.
+
+### 9. `lyt`
+
+- Sound: "lyt" in Norwegian, "lit" in English.
+- Meaning: Danish *lyt*, Norwegian *lytt*, "listen"; in English it reads as "lit", which is mildly positive slang.
+- Weaving link: none.
+- Command clashes: none.
+
+### 10. `lod`
+
+- Sound: "lodd" in Norwegian, "lod" in English.
+- Meaning: Norwegian *lodd* is a weight or plumb, and a lottery ticket; in English, LOD is "level of detail".
+- Weaving link: weak; loom weights, *kljåstein*, hold the warp taut on the upright Norwegian loom.
+- Command clashes: none.
+
+### 11. `lym`
+
+- Sound: "lym" in Norwegian, "lim" in English.
+- Meaning: none of its own; it echoes "lymph" and the Norwegian *lim* "glue".
+- Weaving link: none; as an abbreviation it reads "LoomYard Manager".
+- Command clashes: none.
+
+### 12. `rya`
+
+- Sound: "RY-ah"; two syllables in both languages, so a step away from the pattern.
+- Meaning: the Scandinavian rya rug; it has no other meaning.
+- Weaving link: strong; rya is a knotted-pile weave.
+- Command clashes: none (Apache Rya and the PyPI `rya` package are not commands in any repository checked).
+
+### 13. `liv`
+
+- Sound: "leev" in Norwegian, "liv" in English.
+- Meaning: Norwegian for "life" and "waist"; also a given name.
+- Weaving link: none.
+- Command clashes: none.
+
+### 14. `myr`
+
+- Sound: "myr" in Norwegian, "meer" or "myrrh" in English; it opens on soft m.
+- Meaning: Norwegian for "bog, marsh", which is slightly bleak; in English it echoes "myrrh".
+- Weaving link: none.
+- Command clashes: none.
+
+### 15. `ull`
+
+- Sound: "ull" in Norwegian, "ool" or "ull" in English; it opens on a vowel, so it is off the pattern.
+- Meaning: Norwegian for "wool".
+- Weaving link: a textile word.
+- Command clashes: none; it appears in the winget index only inside a longer string.
+
+## The `ly?` names
+
+`lyx` is excluded.
+"No clash" means no installable command in apt, Homebrew, winget, Scoop, Chocolatey or AUR.
+
+| Name | How it sounds | Meaning in English and Norwegian | As a LoomYard abbreviation | Command clashes |
+| --- | --- | --- | --- | --- |
+| `lya` | "LEE-ah", two syllables | none; Lyα is the astronomers' Lyman-alpha line | LoomYard Agent | none (in winget only as a publisher name, not a command) |
+| `lyb` | "lib" | none | LoomYard Build | none |
+| `lyc` | "lick" or "lyk" | none; it echoes "lycée"; the English reading "lick" is a little awkward | LoomYard CLI or Core | none (in winget only as a publisher name) |
+| `lyd` | "lee" or "lid" | Norwegian "sound" | LoomYarD | none |
+| `lye` | "lie" | English lye, caustic soda, and a homophone of "lie"; awkward for a tool | LoomYard Engine | none |
+| `lyf` | "liff" or "life" | none | LoomYard Flow | none |
+| `lyg` | "lyg" | Norwegian "lie!" (from *lyve*) | | none; rejected for its meaning |
+| `lyh` | hard to say | none | | none; rejected as unpronounceable |
+| `lyi` | hard to say | none | | none; rejected as unpronounceable |
+| `lyj` | hard to say | none | | none; rejected as unpronounceable |
+| `lyk` | "lick" or "lük" | none; it echoes Norwegian *lykke* "luck" | LoomYard Kit | none |
+| `lyl` | "lil" | none; it reads as "lil" | | none; weak sound |
+| `lym` | "lim" | none; it echoes "lymph" and Norwegian *lim* "glue" | LoomYard Manager | none |
+| `lyn` | "lin" or "Lynn" | Norwegian "lightning"; the given name Lynn | | AUR only: `lyn-git` weather CLI, 0 votes; the Homebrew `lyn` cask is a GUI app with no command |
+| `lyo` | "LEE-oh", two syllables | none; it echoes Lyon | | none |
+| `lyp` | "lip" | none; it reads as "lip" | | none |
+| `lyq` | hard to say | none | | none; rejected as awkward to say and type |
+| `lyr` | "leer" or "lure" | Norwegian "pollock" (a fish) | LoomYaRd | AUR only: `lyr-bin` status bar and `lyr-git` lyrics scraper, both 0 votes |
+| `lys` | "leess" or "liss" | Norwegian "light", "candle", "bright" | LoomYard System | none |
+| `lyt` | "lit" | Danish "listen", Norwegian *lytt* "listen" | LoomYard Tool | none |
+| `lyu` | "LEE-oo", two syllables | none | | none |
+| `lyv` | "lyv" | Norwegian "lie!" (from *lyve*) | | none; rejected for its meaning |
+| `lyw` | hard to say | none | | none; rejected as unpronounceable |
+| `lyy` | "lee" | none | | none; it looks like a typo |
+| `lyz` | "lies" | none, but it sounds like "lies" | | none; rejected for its sound |
+
+The best two `ly?` names are `lys` and `lyd`: both have no clash at all and one clean syllable, and `lyn` comes third with only an AUR clash.
+
+## Verdicts on every other name
+
+| Name | Verdict | Reason |
+| --- | --- | --- |
+| `lon` | clear | No clash; no meaning beyond the given name Lon and the LON abbreviation for London; fits the sound but is bland. |
+| `lor` | clear | No clash (in winget only as a tag, for *Legends of Runeterra*); it reads "lore". |
+| `lox` | clear | No clash; English lox (smoked salmon) and LOX (liquid oxygen) are harmless; a good sound. |
+| `lov` | clear | No clash; Norwegian "law" and "permission", and it echoes "love"; a good sound. |
+| `lok` | AUR clash | AUR `lok`, a line-of-code counter with 0 votes ([wyhaya/lok](https://github.com/wyhaya/lok)); Norwegian *lokk* means lid. |
+| `lub` | clear | No clash; it reads "lub" (lubricant, heartbeat), which is unattractive. |
+| `lud` | clear | No clash; English "m'lud" and the echo of "Luddite" are an odd fit for an automation tool. |
+| `lux` | clash | Homebrew formula `lux`, Scoop Main `lux`, Chocolatey `lux`, and AUR `lux`. |
+| `lum` | clear | No clash (in winget only inside a longer string); no meaning. |
+| `lut` | clash | Debian `tracetuner` ships `/usr/bin/lut`; LUT also means "lookup table", and Norwegian *lut* means lye. |
+| `luv` | clear | No command clash: the Homebrew `luv` formula is a Lua binding library with no executable; but "luv" is cutesy slang. |
+| `lin` | clash | Homebrew `linode-cli` installs a `lin` command; it is a pity, since Norwegian *lin* means flax and linen. |
+| `lim` | clear | No clash; Norwegian "glue", English "limit"; it sounds fine. |
+| `lix` | AUR clash | AUR `lix`, a Lemmings-like game (4 votes); LIX is also a readability index, and Lix is a Nix fork. |
+| `lid` | clash | Debian `id-utils` ships `/usr/bin/lid`, Debian `libuser` ships `/usr/sbin/lid`, and Homebrew `idutils` ships `lid`. |
+| `lir` | clear | No clash; no meaning, and bland. |
+| `lis` | clash | Homebrew `lisette` installs a `lis` command; AUR `lis` is a solver library. |
+| `ryn` | clear | No clash; it echoes Norwegian *rynke* "wrinkle". |
+| `rym` | clear | No clash; Swedish *rymma* "to escape"; it sounds a bit flat. |
+| `ryk` | clear | No clash; Norwegian *rykk* means "jerk"; a hard sound. |
+| `rok` | unclear | It is in the winget index as a value in a moniker-like list; without sqlite I could not confirm whether it is a moniker, a command or a tag, so it is not called clear. |
+| `rom` | rejected | ROM is too generic, and *Rom* is the Romani people's own name for themselves, which is best avoided; it is also a winget tag. |
+| `ron` | clear | No clash; it is just the given name Ron. |
+| `rov` | rejected | Norwegian *rov* means plunder or prey. |
+| `rox` | clash | Debian `rox-filer` ships `/usr/bin/rox`; AUR `rox`. |
+| `run` | clash | Homebrew `run`, AUR `run-git`; far too generic. |
+| `rud` | clear | No clash; it reads close to "rude". |
+| `rum` | AUR clash | AUR `rum`, a game library manager (1 vote); English "rum", Danish "room". |
+| `rin` | clear | No clash (in winget only inside a longer string); no meaning. |
+| `rid` | AUR clash | AUR `rid-git`, a Reddit image downloader (1 vote); English "rid" is neutral. |
+| `rim` | clash | Chocolatey `rim` is the R installation manager ([r-lib/rim](https://github.com/r-lib/rim)). |
+| `rio` | clash | apt `rio`, Homebrew cask `rio`, Scoop Extras `rio` (the Rio terminal), Chocolatey and Arch `rio`. |
+| `myk` | clear | No clash; Norwegian "soft"; it reads "mick". |
+| `mur` | clear | No clash; Norwegian "wall"; a dull sound. |
+| `mul` | clear | No clash; it reads as "mule" or "multiply". |
+| `mun` | clear | No clash; it echoes Norwegian *munn* "mouth". |
+| `mox` | clash | Homebrew `mox` and AUR `mox`, a mail server. |
+| `mod` | clash | Debian `mono-devel` ships `/usr/bin/mod`, as does Homebrew `mono`; too generic anyway. |
+| `moy` | clear | No clash; no meaning. |
+| `myn` | clear | No clash; no meaning. |
+| `nyx` | clash | apt, Homebrew and Arch `nyx`, the Tor status monitor. |
+| `nor` | clear | No clash; the logical NOR, and an abbreviation for Norway. |
+| `nok` | clear | No clash; Norwegian "enough", and the currency code NOK; a little comic. |
+| `nul` | rejected | NUL is a reserved device name on Windows, so files and binaries with this name misbehave there. |
+| `nub` | clash | Homebrew `nub`, AUR `nub`, and Chocolatey `nub`. |
+| `nyr` | clear | No clash (in winget only inside a longer string); no meaning. |
+| `noy` | clear | No clash; it reads like "annoy". |
+| `nur` | clear | No clash; German "only", Arabic "light". |
+| `kud` | clear | No clash; but it does not fit the sound pattern ("kood"). |
+| `vef` | clear | No clash; but the operator found it unpleasant to say. |
+| `wvn` | clear | No clash; but it has no vowel and does not fit the sound pattern. |
+| `lmy` | clear | No clash; but it has no vowel sound of its own. |
+| `wov` | clear | No clash; off the sound pattern. |
+| `hed` | AUR clash | AUR `hed-git`, a hex editor (1 vote); off the sound pattern. |
+| `vov` | clear | No command clash (winget lists only "VOV" product names, and Altair VOV is not in any repository); off the sound pattern. |
+| `hov` | clear | No clash; off the sound pattern; Norwegian "pagan temple". |
+| `bur` | clear | No clash; off the sound pattern; Norwegian "cage". |
+| `loi` | clear | No clash; French "law"; it reads as two vowels, "lwah" or "loy", and `loy` was rejected for being too close to `ly`. |
+| `vev` | rejected | Ruled out by the operator. |
+
+## How the checks were made
+
+Every name went through the same checks, using a bash loop and `curl`:
+
+- **Local:** `command -v` and `apt-cache search --names-only '^name$'` on this Ubuntu machine.
+- **Debian:** the [packages.debian.org contents search](https://packages.debian.org/) for an exact file name in sid, keeping hits under `/bin`, `/sbin`, `/usr/bin`, `/usr/sbin` and `/usr/games`.
+  This catches commands shipped by a package of a different name, such as `lid` in `id-utils`.
+  The Ubuntu contents search at packages.ubuntu.com returned HTTP 500, so Ubuntu is covered only by the local apt package-name search; a command that only Ubuntu ships under another package name could be missed.
+- **Homebrew:** Homebrew's own executables index ([formulae.brew.sh/api/internal/executables.txt](https://formulae.brew.sh/api/internal/executables.txt)), which maps each formula to the commands it installs, plus the formula and cask JSON APIs.
+  Cask hits were then read by hand: the `lyn` cask installs only an app.
+- **winget:** the official source index (`source.msix` from cdn.winget.microsoft.com, `Public/index.db`), searched byte-wise, since there is no sqlite3 on this machine.
+  A name was counted as present when it appears as a whole SQLite text value.
+  Which table a value is in (command, moniker, tag, publisher) was inferred from the neighbouring values, so that column is less certain than the others; that is why `rok` is marked unclear.
+- **Scoop:** whether a manifest of that name exists in the official Main, Extras, Versions, Java and Games buckets; third-party buckets and manifests whose `bin` differs from their name were not searched.
+- **Chocolatey:** the community feed `FindPackagesById`, which matches package IDs only, not the commands a package installs.
+- **Arch and AUR:** the Arch package search by name, and the AUR RPC by name and by `provides`.
+  Commands in official Arch packages of a different name are not covered, since Arch has no web file search.
+- **Web:** searches for "<name> command line tool github" for `lys`, `lyd` and `lur`; they found no command of the same name.
+
+Meanings in English and Norwegian are from my own knowledge, with no native-speaker review.
+
+
+# Round 1 (any registry hit counted as a clash)
+
 
 Researched 2026-10-26.
 About 85 candidates were checked; 11 are classed as clear.
