@@ -1,0 +1,30 @@
+attempt: 1
+cap: 2
+failures:
+    - id: github.com/Knatte18/loomyard/cmd/lyx
+      kind: package
+      package: github.com/Knatte18/loomyard/cmd/lyx
+      tail: |-
+        === CONT  TestGofmt_ModuleFilesAreFormatted/unformatted_source_names_file,_line,_current_and_formatted_text
+        --- PASS: TestGofmt_ModuleFilesAreFormatted/unformatted_source_names_file,_line,_current_and_formatted_text (0.00s)
+        === CONT  TestGofmt_ModuleFilesAreFormatted/import_order_alone_still_fails_with_that_line
+        === CONT  TestGofmt_ModuleFilesAreFormatted/formatted_source_passes
+        --- PASS: TestGofmt_ModuleFilesAreFormatted/import_order_alone_still_fails_with_that_line (0.00s)
+        === CONT  TestGofmt_ModuleFilesAreFormatted/unparseable_source_names_the_file
+        --- PASS: TestGofmt_ModuleFilesAreFormatted/unparseable_source_names_the_file (0.00s)
+        --- PASS: TestGofmt_ModuleFilesAreFormatted/formatted_source_passes (0.00s)
+        --- PASS: TestGofmt_ModuleFilesAreFormatted (1.70s)
+        FAIL
+        FAIL	github.com/Knatte18/loomyard/cmd/lyx	5.311s
+    - id: github.com/Knatte18/loomyard/internal/boardcli.TestCLI/Profiles
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/boardcli
+      tail: ""
+log_path: /home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/beam-start-and-ownership/.lyx/verify/verify-2.log
+hint:
+    - 01-remove-beam-promote
+    - 02-end-processes-by-role
+    - 10-orch-beam-up
+    - 15-pawl-engine
+    - 26-name-beam-start-everywhere
+fixer: fork
