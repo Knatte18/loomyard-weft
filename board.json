@@ -865,7 +865,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (beam-start-and-ownership, 2026-10-26)\n\n`begin-batch 07` refused with `plan_conflict: tree_moved`, since card 16 still named two tests batch 06 had renamed.\nLoom rerouted the whole run to Plan-Burler-Review: a new plan writer round and its perch, to fix two names in one card.\n\n## Design\n\n- A mechanical plan conflict such as `tree_moved` or `glyph-not-found` never reroutes to Plan-Burler-Review.\n- A small dedicated fixer agent under the Webster run edits the named cards to match the tree, runs `lyx webster rebaseline --card NN` naming each card it edited, and Webster goes on.\n- Only a conflict that changes what a card does goes back to the plan writer.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Describe",
       "created": "2026-10-26T12:24:54Z",
       "revised": "2026-10-26T12:35:29Z",
       "profile": "solid",
