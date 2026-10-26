@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Baseline → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -21,6 +21,33 @@
       "output": "",
       "at": "2026-10-26T12:01:07Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/webster-stop-asked-once/_lyx/landing/summary.md",
+      "at": "2026-10-26T12:18:24Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-26T12:10:42.226253667Z",
+          "end": "2026-10-26T12:10:58.97453237Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-26T12:10:59.024927913Z",
+          "end": "2026-10-26T12:18:24.337201097Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-26T12:18:24.390000301Z",
+          "end": "2026-10-26T12:18:24.390132957Z"
+        }
+      ]
     }
   ],
   "product": {
