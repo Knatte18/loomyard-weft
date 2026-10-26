@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-26 12:00 UTC; every age below is as of then.
+Rendered 2026-10-26 12:01 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -39,7 +39,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Checklist marks a row skipped by its entry gate as [-], not open**<br>• Rows passed on a false entry gate, such as disabled Drift rows, show [ ] in the overview; give them [-]<br>• `profile: light` | [`checklist-skipped-row-box`](design-checklist-skipped-row-box.md) | darn | Darn-Write | osl-1046 | 32m<br>2m | loom, shed |
-| T2 | **A webster stop reaches the parent twice: Merriam asks directly and the driver escalates the same question**<br>• `profile: solid` | [`webster-stop-asked-once`](design-webster-stop-asked-once.md) | darn | Worktree-Create | osl-1046 | 19h<br>0m | webster, loom |
+| T2 | **A webster stop reaches the parent twice: Merriam asks directly and the driver escalates the same question**<br>• `profile: solid` | [`webster-stop-asked-once`](design-webster-stop-asked-once.md) | darn | Drift-Baseline | osl-1046 | 19h<br>0m | webster, loom |
 | T4 | **Beams: one lyx beam start, machine ownership by project, and a beam's life as a pawl run**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-ownership`](design-beam-start-and-ownership.md) | loom | Webster | osl-1046 | 21h<br>16h | orch, workspaces, batten, reed, board |
 
 ### Ready (0)
