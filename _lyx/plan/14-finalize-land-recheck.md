@@ -9,6 +9,8 @@
 
 **Edit:**
 - `internal/landingshed#Deps`
+- `internal/testkit/envkit#nilLegal`
+- `internal/loomcli#TestLandingDeps_EveryFieldPopulated`
 - `internal/landingshed#Finalize.Call`
 - `internal/landingshed/doc.go`
 
@@ -17,6 +19,8 @@ D9: pawl's Finalize re-runs `BeamLandRefusal`'s facts under the parent lock and,
 It is a backstop for an open member the re-check missed, such as one a stale Bolt on another machine added.
 
 - `Deps` gains `LandBlockers func() ([]LandBlocker, error)`, nil on every recipe but pawl, and `ParentWorktree string`, the beam's parent worktree name its ways forward name.
+  `envkit`'s `nilLegal` gains `Landing.LandBlockers`, a documented nil default, so `TestFullEnv_FillsEverySeam` and both wire tests keep passing,
+  and `TestLandingDeps_EveryFieldPopulated`'s `unfilled` map gains `LandBlockers` and `ParentWorktree`, which a loom run leaves unset.
   `LandBlocker` holds the blocker's slug and what it is: `Pair` for a pair forked from the beam, else a member with `HasPair` and `Running`.
 - `Finalize.Call` runs `landCheck` right after the owner checks, under the lock: a nil seam passes; a read error is a halting Stuck behind `LandHaltPrefix` naming the cause and `lyx loom resume` in the beam worktree; an empty list passes; otherwise a halting Stuck whose reason is `LandHaltPrefix` plus `landHaltReason`.
 - `landHaltReason` names, per blocker: for a member with a pair or a run in flight, and for a forked pair, `lyx batten cancel <slug> --remove`, run in the beam's parent worktree, or, when the run is in flight and its pair is not here, on the machine holding the pair, which `lyx batten status <slug>` there shows; for a member, the cancel is followed in the same halt by moving its `project` off the beam with `lyx board upsert`, since the cancel leaves it a `draft` member, which still blocks the landing, as `memberHoldRefusal` (card 18) words it; for a member with no run status, that board move alone; and then `lyx loom resume` in the beam worktree.
