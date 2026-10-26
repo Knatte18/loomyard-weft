@@ -1,0 +1,652 @@
+diff --git a/PATTERN.md b/PATTERN.md
+index 0bc0e803..5e2f0f2d 100644
+--- a/PATTERN.md
++++ b/PATTERN.md
+@@ -31,7 +31,7 @@
+ 
+ - `PATTERN-shed-recipe-registry` — Adding producer or recipe row: one `Constructor` map in `internal/shedrecipe`, bar `Implementer`'s; a row's value looked up by key, a side action a `Command` row, a config-off row its `entry_gate`. — [background](pattern/PATTERN-shed-recipe-registry.md)
+ - `PATTERN-shed-driver` — Driving a shed run: generic verb bodies only in `internal/shedverbs`, the step-until-stop loop only in `internal/sheddriver`, run paths, ids and `Seed` only in `internal/shedrun`. (test) — [background](pattern/PATTERN-shed-driver.md)
+-- `PATTERN-shed-stop-chain` — A shed run's stop: rule table, tackler, arbiter, then parent, for every recipe; arbiter keys in shed.yaml with module overrides.
++- `PATTERN-shed-stop-chain` — A shed run's stop: rule table, tackler, arbiter, then parent, for every recipe; a blocked stop at a row the driver's arbiter seam marks as judged first goes rule table, arbiter, then parent; arbiter keys in shed.yaml with module overrides.
+ - `PATTERN-dobby-starts-runs` — Starting or driving a board task's run: its parent's dobby, from an empty status, in batten passes; a hand `lyx batten run` is one pass.
+ - `PATTERN-transient-stop` — Marking a failure transient: only `internal/shedengine`'s mark, translated by `internal/shedtransient` at a producer or step-bootstrap boundary; never on a gate verdict.
+ - `PATTERN-friction-capture` — Halting or crash-resuming a loom run, or refusing in webster: Go writes a note via `internal/friction`; none is archived before a reflection covers it. (test)
+diff --git a/contracts/stencils/webster/webster-template-master.md b/contracts/stencils/webster/webster-template-master.md
+index 64c3e460..7dd3a2ee 100644
+--- a/contracts/stencils/webster/webster-template-master.md
++++ b/contracts/stencils/webster/webster-template-master.md
+@@ -2,7 +2,7 @@
+      list).
+      It is filled by `run`'s engine core via internal/stencil and handed to the shuttle as the Master session's entire instruction set for one whole plan run: the long-lived session that reads the plan's overview and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool, subagent_type "fork").
+      Every marker below is a top-level {{.X}} substitution;
+-     stencil.FillOptional requires every marker but pattern_directive and friction_directive non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). plan_dir renders hub-relative ("_lyx/plan") in hub mode and absolute (the derived state directory's plan dir) in standalone, added when the standalone Master proved unable to see a plan it was told about only in hub-relative terms. verify_fix_prompt_path is the Go-rendered verify-gate fixer fork prompt file. pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive. parent_directive is a third optional marker, rendered by internal/parentdirective. edit_directive is a required marker, rendered unconditionally by internal/editdirective. -->
++     stencil.FillOptional requires every marker but pattern_directive and friction_directive non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). plan_dir renders hub-relative ("_lyx/plan") in hub mode and absolute (the derived state directory's plan dir) in standalone, added when the standalone Master proved unable to see a plan it was told about only in hub-relative terms. verify_fix_prompt_path is the Go-rendered verify-gate fixer fork prompt file. parent_decisions is every added-decision entry of the task's decision record, verbatim, or the literal `none`. pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive. parent_directive is a third optional marker, rendered by internal/parentdirective. edit_directive is a required marker, rendered unconditionally by internal/editdirective. -->
+ 
+ # Webster Master — read once, fork per batch, judge only the minimal report
+ 
+@@ -114,6 +114,11 @@ You never read raw fork output beyond its own turn, and you never open a file to
+ 
+ ## The failure ladder
+ 
++A stop of your run is never a question to your parent.
++Every rung below that ends your run writes `outcome: stuck` and stops, with no message to your parent:
++the run's driver hands your `stuck_reason` to an arbiter, and only a question the arbiter cannot settle reaches your parent, once.
++You message your parent only on the `waiting` rung below and under "A parent decision reaches the code through your forks".
++
+ - Report present, `status: done` → `record-batch` already ran above;
+   move on to the next batch.
+ - Report present, `status: stuck` → run `lyx webster recover-batch <NN>` (below).
+@@ -215,6 +220,11 @@ You read no decision record for it, and you edit no source, so the decision reac
+ - With a batch still to begin, go on with the loop: the next fork carries the decision.
+ - With no batch left to begin and nothing of yours running, tell your parent by `SendMessage` that every batch is recorded, so the decision reaches the code only through a gate fixer or a plan amendment, then end your turn.
+ 
++The decisions your parent recorded for this run before this session started are below, `none` when there is none.
++They are answers your parent already gave, often to an earlier stop of this run: follow each like a decision notice, so every fork you spawn inherits it, and never raise a question one of them answers.
++
++{{.parent_decisions}}
++
+ ## A plan-drift or plan-conflict refusal ends your run as stuck — do not retry the verb
+ 
+ If `begin-batch` refuses with `{"plan_conflict": "<cause>"}`, the cause being `plan_defect` or `tree_moved`, that means `begin-batch`'s own re-resolution of the plan against the current tree — run immediately before it would have written the fork prompt — found that the plan contradicts the tree.
+diff --git a/internal/discussionparser/append.go b/internal/discussionparser/append.go
+index f2bbb159..f0c58194 100644
+--- a/internal/discussionparser/append.go
++++ b/internal/discussionparser/append.go
+@@ -168,6 +168,29 @@ func ParseAddedDecisions(record []byte) ([]AddedDecision, error) {
+ 	return decisions, nil
+ }
+ 
++// AddedDecisionTexts returns every `### Added after Discussion` entry of the decision record at recordPath, heading and body verbatim, in record order, for a caller to render into an agent's prompt.
++// An entry runs from its heading to its last non-blank line before the next heading of any level, and a heading inside a fenced block starts none.
++// An empty recordPath, a record that does not exist and a record without an entry return nil and no error; a read error is returned.
++func AddedDecisionTexts(recordPath string) ([]string, error) {
++	if recordPath == "" {
++		return nil, nil
++	}
++	data, err := os.ReadFile(recordPath)
++	if err != nil {
++		if errors.Is(err, os.ErrNotExist) {
++			return nil, nil
++		}
++		return nil, err
++	}
++	lines := strings.Split(string(data), "\n")
++	_, spans := addedDecisionSpans(lines, fencedLines(lines))
++	var texts []string
++	for _, span := range spans {
++		texts = append(texts, strings.TrimRight(strings.Join(lines[span.first:span.last+1], "\n"), " \t\r"))
++	}
++	return texts, nil
++}
++
+ // checkAddedDecisionDropped names a Finding produced when a record lacks an added-decision entry an earlier version of it held.
+ const checkAddedDecisionDropped = "added-decision-dropped"
+ 
+diff --git a/internal/discussionparser/append_test.go b/internal/discussionparser/append_test.go
+index 742890a3..7cbae269 100644
+--- a/internal/discussionparser/append_test.go
++++ b/internal/discussionparser/append_test.go
+@@ -6,6 +6,7 @@ import (
+ 	"errors"
+ 	"os"
+ 	"path/filepath"
++	"slices"
+ 	"strings"
+ 	"testing"
+ 	"time"
+@@ -353,6 +354,56 @@ func TestParseAddedDecisions(t *testing.T) {
+ 	}
+ }
+ 
++// TestAddedDecisionTexts asserts each added entry comes back whole, heading and body up to the next heading, in record order, that a fenced heading starts no entry, and that a record with no entry, a missing record and an empty path read as none.
++func TestAddedDecisionTexts(t *testing.T) {
++	t.Parallel()
++
++	first := "### Added after Discussion (parent, 2026-03-01): Keep the cache\n\nDecision: keep it.\n\nRationale: it is warm."
++	second := "### Added after Discussion (arbiter, 2026-03-02): Drop the flag\n\nDecision: drop it.\n\n```\n### Added after Discussion (x, 2026-03-03): fenced\n```\n\nRationale: unused."
++
++	tests := []struct {
++		name   string
++		record string
++		// path, when set, replaces the written record's path.
++		path string
++		want []string
++	}{
++		{
++			name:   "entries in order, each up to the next heading",
++			record: "# Record\n\n## Decisions\n\n### Discussion call\n\nDecision: a.\n\n" + first + "\n\n" + second + "\n\n## Constraints\n\n- none\n",
++			want:   []string{first, second},
++		},
++		{name: "a record with no entry", record: "## Decisions\n\n### Discussion call\n\nDecision: a.\n", want: nil},
++		{name: "a missing record", path: "missing.md", want: nil},
++		{name: "an empty path", path: "-", want: nil},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dir := t.TempDir()
++			path := filepath.Join(dir, "decision-record.md")
++			if err := os.WriteFile(path, []byte(tt.record), 0o644); err != nil {
++				t.Fatalf("write record: %v", err)
++			}
++			switch tt.path {
++			case "":
++			case "-":
++				path = ""
++			default:
++				path = filepath.Join(dir, tt.path)
++			}
++
++			got, err := AddedDecisionTexts(path)
++			if err != nil {
++				t.Fatalf("AddedDecisionTexts() error = %v; want nil", err)
++			}
++			if !slices.Equal(got, tt.want) {
++				t.Errorf("AddedDecisionTexts() = %q; want %q", got, tt.want)
++			}
++		})
++	}
++}
++
+ // TestCheckAddedDecisionsKept asserts a record is held to every added entry its history held: each dropped entry is one finding naming its heading, an entry with the same title on another date is distinct, an unparseable heading in the record is a finding, and one in a history version contributes nothing.
+ // An appended PATTERN bullet counts as kept while the record holds an appended bullet for its ID.
+ func TestCheckAddedDecisionsKept(t *testing.T) {
+diff --git a/internal/discussionparser/identity.go b/internal/discussionparser/identity.go
+index 7124ac20..0dc9d0e6 100644
+--- a/internal/discussionparser/identity.go
++++ b/internal/discussionparser/identity.go
+@@ -50,8 +50,24 @@ func dropCarryOverBlocks(lines []string, drop []bool) {
+ }
+ 
+ // dropAddedDecisionEntries marks every added-decision entry of the `## Decisions` section, and the blank line above it, in drop.
+-// An entry runs from its heading to its last non-blank line before the next heading of any level.
+ func dropAddedDecisionEntries(lines []string, fenced, drop []bool) {
++	head, spans := addedDecisionSpans(lines, fenced)
++	for _, span := range spans {
++		for j := span.first; j <= span.last; j++ {
++			drop[j] = true
++		}
++		dropBlankAbove(lines, drop, span.first, head)
++	}
++}
++
++// lineSpan is an inclusive range of line indexes.
++type lineSpan struct {
++	first, last int
++}
++
++// addedDecisionSpans returns the line index of the `## Decisions` heading, -1 when the record has none, and the span of every added-decision entry of that section, in order.
++// An entry runs from its heading to its last non-blank line before the next heading of any level.
++func addedDecisionSpans(lines []string, fenced []bool) (head int, spans []lineSpan) {
+ 	head, end := -1, len(lines)
+ 	for i, line := range lines {
+ 		if fenced[i] {
+@@ -70,7 +86,7 @@ func dropAddedDecisionEntries(lines []string, fenced, drop []bool) {
+ 		}
+ 	}
+ 	if head < 0 {
+-		return
++		return head, nil
+ 	}
+ 
+ 	for i := head + 1; i < end; i++ {
+@@ -85,12 +101,10 @@ func dropAddedDecisionEntries(lines []string, fenced, drop []bool) {
+ 		for last > i && strings.TrimSpace(lines[last]) == "" {
+ 			last--
+ 		}
+-		for j := i; j <= last; j++ {
+-			drop[j] = true
+-		}
+-		dropBlankAbove(lines, drop, i, head)
++		spans = append(spans, lineSpan{first: i, last: last})
+ 		i = last
+ 	}
++	return head, spans
+ }
+ 
+ // dropBlankAbove marks the line above first in drop when it is blank and below the section's heading line.
+diff --git a/internal/loomcli/drivewiring.go b/internal/loomcli/drivewiring.go
+index 4cbffb3e..6bcca242 100644
+--- a/internal/loomcli/drivewiring.go
++++ b/internal/loomcli/drivewiring.go
+@@ -27,6 +27,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
++	"github.com/Knatte18/loomyard/internal/loomshed"
+ 	"github.com/Knatte18/loomyard/internal/lyxcwd"
+ 	"github.com/Knatte18/loomyard/internal/modelspec"
+ 	"github.com/Knatte18/loomyard/internal/orchcli"
+@@ -123,6 +124,16 @@ func tacklerFor(dirs configengine.Dirs, recipe string, reg modelspec.Registry) (
+ 	return settings, loomTacklerRecipe, nil
+ }
+ 
++// loomArbiterSeam builds the arbiter seam loom hands the shed driver.
++// Merriam reports a batch it cannot carry on only as a stuck outcome, so the arbiter, not the tackler, is the first to judge a blocked stop at the Webster row before it reaches the parent; no other row is marked.
++func loomArbiterSeam(arbiterDeps shedarbiter.Deps, runID string) *sheddriver.ArbiterSeam {
++	seam := shedarbiter.Seam(arbiterDeps, runID, func(producer string) bool {
++		return arbiterstop.EscalationEligible(producer, arbiterDeps.Stop)
++	})
++	seam.JudgesFirst = func(producer string) bool { return producer == loomshed.NameWebster }
++	return seam
++}
++
+ // goDriverDepsFor assembles the Go driver's seams for the run the pre-run armed.
+ // release is the driver lock's early release, which the hand-over calls before it spawns its successor.
+ // Every closure reads on demand, and the on-disk lyx path is resolved once, here.
+@@ -147,6 +158,7 @@ func (c *loomCLI) goDriverDepsFor(release func() error) (sheddriver.Deps, error)
+ 	readStatus := circlingStatusReader(c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
+ 	gotoGuard := c.settledGuard()
+ 	pauseGeometry := func() (pauserecord.Geometry, error) { return hubgeom.PauseGeometry(location) }
++	arbiterSeam := loomArbiterSeam(arbiterDeps, runID)
+ 
+ 	tacklerDeps := sheddriver.TacklerDeps{
+ 		Closed: func(key sheddriver.StopKey, spawned time.Time) (bool, error) {
+@@ -265,9 +277,7 @@ func (c *loomCLI) goDriverDepsFor(release func() error) (sheddriver.Deps, error)
+ 			_, alive := readBattenWatch(shedrun.BattenWatchedMarker(location, c.runID), proc.IsAlive)
+ 			return alive
+ 		},
+-		Arbiter: shedarbiter.Seam(arbiterDeps, runID, func(producer string) bool {
+-			return arbiterstop.EscalationEligible(producer, arbiterDeps.Stop)
+-		}),
++		Arbiter: arbiterSeam,
+ 		HandOver: &sheddriver.HandOverSeam{
+ 			OnDiskBuild: func() (buildvcs.Identity, error) { return buildvcs.OfFile(executable) },
+ 			BuildChanged: func(onDisk buildvcs.Identity) bool {
+diff --git a/internal/loomcli/drivewiring_test.go b/internal/loomcli/drivewiring_test.go
+index cd624090..6150514e 100644
+--- a/internal/loomcli/drivewiring_test.go
++++ b/internal/loomcli/drivewiring_test.go
+@@ -11,6 +11,8 @@ import (
+ 	"strings"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/loomshed"
++	"github.com/Knatte18/loomyard/internal/shedarbiter"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedverbs"
+ 	"github.com/Knatte18/loomyard/internal/state"
+@@ -69,6 +71,33 @@ func TestLoomPark(t *testing.T) {
+ 	}
+ }
+ 
++// TestLoomArbiterSeam_JudgesFirst covers the arbiter seam loom hands the driver: its arbiter-first marking is set, the Webster row is marked, and no other producer is.
++func TestLoomArbiterSeam_JudgesFirst(t *testing.T) {
++	t.Parallel()
++
++	tests := []struct {
++		producer string
++		want     bool
++	}{
++		{loomshed.NameWebster, true},
++		{loomshed.NameDarnWrite, false},
++		{loomshed.NameFinalize, false},
++		{"", false},
++	}
++	seam := loomArbiterSeam(shedarbiter.Deps{}, "run-1")
++	if seam.JudgesFirst == nil {
++		t.Fatal("loomArbiterSeam().JudgesFirst = nil; want the arbiter-first marking")
++	}
++	for _, tt := range tests {
++		t.Run(tt.producer, func(t *testing.T) {
++			t.Parallel()
++			if got := seam.JudgesFirst(tt.producer); got != tt.want {
++				t.Errorf("JudgesFirst(%q) = %v; want %v", tt.producer, got, tt.want)
++			}
++		})
++	}
++}
++
+ // TestGoDriverSeams_LabelShed covers the Go driver's goto and step seams: each records the shed label, the goto on the entry it appends and the step as the pending label before the loop is spawned.
+ func TestGoDriverSeams_LabelShed(t *testing.T) {
+ 	t.Parallel()
+diff --git a/internal/sheddriver/doc.go b/internal/sheddriver/doc.go
+index 69a670a5..a97f0c22 100644
+--- a/internal/sheddriver/doc.go
++++ b/internal/sheddriver/doc.go
+@@ -35,6 +35,7 @@
+ //   - any other awaiting stop: hand back;
+ //   - a stop the on-disk build could change, after the last step ran another build: hand over to a fresh driver of the on-disk build, once per build;
+ //   - a stop an applied tackler resume returned to: the arbiter decides;
++//   - a blocked stop at a row the told `ArbiterSeam.JudgesFirst` marks: the arbiter decides, with no tackler call;
+ //   - a transient error that outlived its re-step: the tackler decides;
+ //   - an interrupted step under the re-invoke policy, below the repair cap: re-step;
+ //   - an interrupted step under the hand-back policy: hand back;
+@@ -56,6 +57,7 @@
+ // The rest are optional, and an unwired one only removes rows or agents from the table:
+ //
+ //   - no `Arbiter`: an escalation to it hands back, relaying the parent notice at an awaiting stop;
++//   - no `Arbiter.JudgesFirst`: every blocked stop meets the tackler before the arbiter;
+ //   - no `HandOver`: the driver reads no build and never hands over;
+ //   - no `Tamper`: a tackler verdict is acted on without comparing the worktree with its snapshot;
+ //   - no `StartCheck`: a driver starting at a blocked stop steps it unchecked;
+@@ -67,6 +69,7 @@
+ // A stop a removed row would have caught meets the later rows unchanged, so it ends in the tackler under its spawn budget, a re-step under the repair cap, or a hand-back.
+ // No unwired seam adds a resume path: a tackler escalation with no arbiter hands back, naming the tackler's case brief.
+ // Loom's, darn's and batten's drivers all wire the arbiter after the tackler, batten's with `batten.yaml`'s arbiter overrides of `shed.yaml`.
++// The loom CLI's wiring, which loom and darn share, marks one row the arbiter judges first: the Webster row, whose blocked stop is Merriam's stuck outcome.
+ //
+ // # The hand-back
+ //
+diff --git a/internal/sheddriver/drive.go b/internal/sheddriver/drive.go
+index 5b05c842..f39fae1c 100644
+--- a/internal/sheddriver/drive.go
++++ b/internal/sheddriver/drive.go
+@@ -108,6 +108,8 @@ type ArbiterSeam struct {
+ 	Judge func(envelopePath, reportPath, caseBriefPath string) (ArbiterOutcome, error)
+ 	// AttemptEnvelope returns the stop envelope the arbiter attempt in attemptDir recorded, for the restart read of an open attempt.
+ 	AttemptEnvelope func(attemptDir string) (envelopePath string, err error)
++	// JudgesFirst reports whether a blocked stop at producer goes to the arbiter without the tackler judging it first; nil marks no row.
++	JudgesFirst func(producer string) bool
+ }
+ 
+ // ArbiterOutcome is what the driver reads off the arbiter's verdict envelope.
+@@ -708,6 +710,9 @@ func (d *goDriver) facts(stop Stop) (driveFacts, error) {
+ 		}
+ 		facts.EscalationPending = pending
+ 	}
++	if key.State == string(shedengine.StateBlocked) && d.deps.Arbiter != nil && d.deps.Arbiter.JudgesFirst != nil {
++		facts.ArbiterFirst = d.deps.Arbiter.JudgesFirst(key.CurrentProducer)
++	}
+ 
+ 	records, err := ReadSettleRecords(d.deps.SettlePath)
+ 	if err != nil {
+diff --git a/internal/sheddriver/drive_test.go b/internal/sheddriver/drive_test.go
+index b30a091e..12ee297a 100644
+--- a/internal/sheddriver/drive_test.go
++++ b/internal/sheddriver/drive_test.go
+@@ -160,9 +160,11 @@ func TestGoDriver_Settle(t *testing.T) {
+ 		// initialStatus is what the status read before the first step returns; without it the run has no status file.
+ 		initialStatus *shedengine.Status
+ 		// settleSeed holds the settle records an earlier process left.
+-		settleSeed   []SettleRecord
+-		runLockHeld  bool
+-		escalation   bool
++		settleSeed  []SettleRecord
++		runLockHeld bool
++		escalation  bool
++		// judgesFirst, when set, is the one row the arbiter seam judges before the tackler.
++		judgesFirst  string
+ 		pauseCovered []bool
+ 		orchRecorded bool
+ 
+@@ -331,6 +333,20 @@ func TestGoDriver_Settle(t *testing.T) {
+ 			wantActions: []string{shedrun.SettleSpawn, shedrun.SettleHandBack}, wantSettlers: []string{shedrun.SettlerArbiter, shedrun.SettlerParent},
+ 			wantReports: 2, wantParked: true, wantHandBack: true, wantExit: ExitHandBack, wantReportHas: map[int][]string{2: {"which way?", "arbiter attempt 1: verdict hand-on"}},
+ 		},
++		{
++			name:  "a blocked stop at a row the arbiter judges first goes to the arbiter with no tackler call, and its hand-on asks the parent once",
++			steps: []func(*testing.T) []byte{blocked}, judgesFirst: "Build", orchRecorded: true, arbiterReturns: arbiterOutcome("hand-on", 1),
++			wantCalls:   []string{"step", "arbiter:"},
++			wantActions: []string{shedrun.SettleSpawn, shedrun.SettleHandBack}, wantSettlers: []string{shedrun.SettlerArbiter, shedrun.SettlerParent},
++			wantReports: 2, wantParked: true, wantNotifies: 1, wantHandBack: true, wantExit: ExitHandBack, wantReportHas: map[int][]string{2: {"a row the arbiter judges first", "which way?"}},
++		},
++		{
++			name:  "a blocked stop at a row the arbiter does not judge first goes to the tackler",
++			steps: []func(*testing.T) []byte{blocked}, judgesFirst: "Review", tacklerReturns: tacklerOutcome(TacklerVerdictHandBack, 1),
++			wantCalls:   []string{"step", "tackler", "snapshot", "snapshot"},
++			wantActions: []string{shedrun.SettleSpawn, shedrun.SettleHandBack}, wantSettlers: []string{shedrun.SettlerTackler, shedrun.SettlerParent},
++			wantReports: 2, wantParked: true, wantHandBack: true, wantExit: ExitHandBack,
++		},
+ 		{
+ 			name:  "a status moved to an awaiting stop with a pending escalation calls the arbiter with a readable envelope",
+ 			steps: []func(*testing.T) []byte{blocked}, statusSeq: []shedengine.Status{awaitingStatus}, escalation: true, arbiterReturns: arbiterOutcome("hand-on", 1),
+@@ -716,6 +732,9 @@ func TestGoDriver_Settle(t *testing.T) {
+ 					},
+ 				},
+ 			}
++			if tt.judgesFirst != "" {
++				deps.Arbiter.JudgesFirst = func(producer string) bool { return producer == tt.judgesFirst }
++			}
+ 			if tt.noArbiter {
+ 				deps.Arbiter = nil
+ 			}
+diff --git a/internal/sheddriver/driverules.go b/internal/sheddriver/driverules.go
+index 0753ce2f..4498b97d 100644
+--- a/internal/sheddriver/driverules.go
++++ b/internal/sheddriver/driverules.go
+@@ -149,6 +149,8 @@ type driveFacts struct {
+ 	RepairCount int
+ 	// ResumeReturned is true when an applied tackler resume exists for this stop key.
+ 	ResumeReturned bool
++	// ArbiterFirst is true when the stop is blocked at a row the arbiter judges before the tackler.
++	ArbiterFirst bool
+ }
+ 
+ // driveAction is what the loop does for a decision.
+@@ -229,6 +231,8 @@ func decideDrive(stop Stop, facts driveFacts) driveDecision {
+ 		return driveDecision{Action: driveActionHandOver, Rule: "the on-disk build changed since the last step: hand over to a fresh driver"}
+ 	case facts.ResumeReturned:
+ 		return driveDecision{Action: driveActionArbiter, Rule: "a tackler resume returned to the same stop: the arbiter decides"}
++	case state == string(shedengine.StateBlocked) && facts.ArbiterFirst:
++		return driveDecision{Action: driveActionArbiter, Rule: "a blocked stop at a row the arbiter judges first: the arbiter decides"}
+ 	case !stop.OK && stop.Transient != "":
+ 		return driveDecision{Action: driveActionTackler, Rule: "a transient error that outlived its re-step: the tackler decides"}
+ 	case stop.Kind == shedverbs.KindInterrupted && stop.InterruptPolicy == shedverbs.InterruptPolicyReinvoke && facts.RepairCount < driveRepairCap:
+diff --git a/internal/sheddriver/driverules_test.go b/internal/sheddriver/driverules_test.go
+index 03d6cced..d02f03c1 100644
+--- a/internal/sheddriver/driverules_test.go
++++ b/internal/sheddriver/driverules_test.go
+@@ -75,6 +75,11 @@ func TestDecideDrive(t *testing.T) {
+ 		{name: "hand-over already made for this build goes on to the next row", stop: blockedStop, facts: driveFacts{BuildChanged: true, HandedOver: true}, want: driveActionTackler},
+ 		{name: "changed build at a stop no build could change", stop: awaitingStop(""), facts: driveFacts{BuildChanged: true}, want: driveActionHandBack},
+ 		{name: "tackler resume returned to the same stop goes to the arbiter", stop: blockedStop, facts: driveFacts{ResumeReturned: true}, want: driveActionArbiter},
++		{name: "blocked stop at a row the arbiter judges first goes to the arbiter", stop: blockedStop, facts: driveFacts{ArbiterFirst: true}, want: driveActionArbiter},
++		{name: "blocked stop the arbiter judges first on a changed build hands over", stop: blockedStop, facts: driveFacts{ArbiterFirst: true, BuildChanged: true}, want: driveActionHandOver},
++		{name: "landing halt at a row the arbiter judges first still hands back", stop: landingHaltStop, facts: driveFacts{ArbiterFirst: true}, want: driveActionHandBack},
++		{name: "budget halt at a row the arbiter judges first still hands back", stop: budgetHaltStop, facts: driveFacts{ArbiterFirst: true}, want: driveActionHandBack},
++		{name: "precondition halt at a row the arbiter judges first still hands back", stop: preconditionHaltStop, facts: driveFacts{ArbiterFirst: true}, want: driveActionHandBack},
+ 		{name: "transient error goes to the tackler", stop: errorStop(shedverbs.KindProducer, "network"), want: driveActionTackler},
+ 		{name: "interrupted under reinvoke re-steps", stop: interruptedStop(shedverbs.InterruptPolicyReinvoke), want: driveActionRestep},
+ 		{name: "second reinvoke failure re-steps", stop: interruptedStop(shedverbs.InterruptPolicyReinvoke), facts: driveFacts{RepairCount: 1}, want: driveActionRestep},
+diff --git a/internal/websterengine/doc.go b/internal/websterengine/doc.go
+index 72e1fac9..e9a061ff 100644
+--- a/internal/websterengine/doc.go
++++ b/internal/websterengine/doc.go
+@@ -243,6 +243,8 @@
+ // `lyx loom decision add` for the record, the card edit (or a follow-up card with its index line), then `lyx webster rebaseline --card NN`.
+ // The verb's notice reaches Master with the decision's text inline, since Master reads no decision record;
+ // Master hands it on through the forks it spawns afterwards, whose implementer and verify-fix bodies let a parent decision win over a card, and with no batch left it tells its parent the decision reaches the code only through a gate fixer or a plan amendment.
++// The notice reaches only a Master already running, so Run also renders every `Added after Discussion` entry of the decision record, verbatim, into the master prompt's `parent_decisions` marker (`none` without one):
++// a Master that a re-step starts after its parent answered an earlier stop is told that answer, and never asks it again.
+ // No refusal or prompt text names a loom verb.
+ //
+ // validate, record-batch and recovery refuse a plan that changed before their own rewrites, instead of adopting it:
+@@ -460,6 +462,10 @@
+ // record-batch on a waiting batch refuses naming that resume verb, and the progress trail lists a waiting batch with its need and the resume verb, so a fresh Master re-drives it.
+ // recover-batch exits 0 on a waiting digest.
+ //
++// The waiting rung and a decision with no batch left are the only times Merriam messages its parent.
++// Every other dead end of the run is an `outcome: stuck` with no message, so the stop reaches the parent on one channel:
++// the loom driver hands a blocked Webster stop to the arbiter before any tackler, and only a question the arbiter hands on reaches the parent.
++//
+ // # digest persistence carries batch context forward
+ //
+ // webster persists its distilled Digest into BatchState.Digest at terminal
+diff --git a/internal/websterengine/geometry.go b/internal/websterengine/geometry.go
+index d13b527a..1e5c401e 100644
+--- a/internal/websterengine/geometry.go
++++ b/internal/websterengine/geometry.go
+@@ -76,8 +76,8 @@ type Geometry struct {
+ 	// ParentName is the told parent agent name the master and recovery prompts render their parent directive from.
+ 	// Empty means no parent, which renders the no-parent variant.
+ 	ParentName string
+-	// DecisionRecordPath is the told decision record the master and recovery prompts read the task's declared PATTERN changes from.
+-	// Empty means none, which renders no declared changes; standalone mode leaves it empty.
++	// DecisionRecordPath is the told decision record the master and recovery prompts read the task's declared PATTERN changes from, and the master prompt the parent's added decisions.
++	// Empty means none, which renders no declared changes and no parent decision; standalone mode leaves it empty.
+ 	DecisionRecordPath string
+ 	// Git is the git surface every worktree read goes through, such as the head-SHA capture and the dirty check.
+ 	// Nil means the real repository on disk, which is what every constructor leaves.
+diff --git a/internal/websterengine/render.go b/internal/websterengine/render.go
+index 7f7c19b8..29d6857d 100644
+--- a/internal/websterengine/render.go
++++ b/internal/websterengine/render.go
+@@ -435,13 +435,14 @@ func masterPlanDirDisplay(paneCwd, planDir string) string {
+ // pattern_directive is injected via pattern.RoleOrchestrator if PATTERN is active (Master never
+ // edits code, only forks).
+ // patternChanges is the task's declared PATTERN changes as rendered bullet lines, passed to the pattern directive; nil renders none.
++// parentDecisions is every decision the run's parent recorded after the Discussion, each entry's text verbatim, rendered into {{.parent_decisions}} so a fresh Master knows answers its parent already gave; nil renders `none`.
+ // parentName is the told parent agent name; an empty one renders parentdirective's no-parent variant.
+ // notePath is the caller-composed friction note path (friction.NotePath), or "" when Tier 2 is off;
+ // friction_directive is injected via friction.RoleOrchestrator when Tier 2 is on — Master never
+ // edits code, only forks — with a friction.Directive error swallowed as a Warn rather than
+ // propagated, deliberately unlike the pattern.Directive call immediately above, which does
+ // propagate.
+-func RenderMasterPrompt(batches []batcher.Batch, st *State, outcomePath, summaryPath, verifyFixPromptPath, planDir string, selfFixCap int, worktreeRoot, repoRoot, stencilsDir string, patternChanges []string, notePath, parentName string) ([]byte, error) {
++func RenderMasterPrompt(batches []batcher.Batch, st *State, outcomePath, summaryPath, verifyFixPromptPath, planDir string, selfFixCap int, worktreeRoot, repoRoot, stencilsDir string, patternChanges, parentDecisions []string, notePath, parentName string) ([]byte, error) {
+ 	directive, err := pattern.Directive(repoRoot, stencilsDir, pattern.RoleOrchestrator, patternChanges)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("webster: master prompt directive: %w", err)
+@@ -472,6 +473,7 @@ func RenderMasterPrompt(batches []batcher.Batch, st *State, outcomePath, summary
+ 		"verify_fix_prompt_path": verifyFixPromptPath,
+ 		"plan_dir":               masterPlanDirDisplay(worktreeRoot, planDir),
+ 		"self_fix_cap":           fmt.Sprintf("%d", selfFixCap),
++		"parent_decisions":       renderParentDecisions(parentDecisions),
+ 		"pattern_directive":      directive,
+ 		friction.MarkerName:      frictionDirective,
+ 
+@@ -490,6 +492,14 @@ func RenderMasterPrompt(batches []batcher.Batch, st *State, outcomePath, summary
+ 	return prompt, nil
+ }
+ 
++// renderParentDecisions renders decisions for {{.parent_decisions}}: the entries in order, a blank line between two, or `none` when there is none.
++func renderParentDecisions(decisions []string) string {
++	if len(decisions) == 0 {
++		return "none"
++	}
++	return strings.Join(decisions, "\n\n")
++}
++
+ // RenderBatchIndex renders batches into ordered-list text for {{.batch_index}}, one line per
+ // batch in the slice's own order — the caller is responsible for handing it a sequenced slice.
+ // The rendered order is the execution order; the number on each line is the batch's identity,
+diff --git a/internal/websterengine/runlevel.go b/internal/websterengine/runlevel.go
+index 91175a45..ade3e063 100644
+--- a/internal/websterengine/runlevel.go
++++ b/internal/websterengine/runlevel.go
+@@ -733,12 +733,16 @@ func Run(deps RunDeps, opts RunOptions) (_ RunResult, err error) {
+ 		return RunResult{}, fmt.Errorf("webster: write verify-fix prompt %s: %w", verifyFixPromptPath, err)
+ 	}
+ 
++	parentDecisions, err := discussionparser.AddedDecisionTexts(deps.Geom.DecisionRecordPath)
++	if err != nil {
++		return RunResult{}, fmt.Errorf("webster: read the parent decisions from %s: %w; way forward: transient, %s", deps.Geom.DecisionRecordPath, err, deps.reentryStep())
++	}
+ 	patternChanges, err := discussionparser.DeclaredPatternChanges(deps.Geom.DecisionRecordPath)
+ 	if err != nil {
+ 		return RunResult{}, fmt.Errorf("%w %s", err, deps.reentryStep())
+ 	}
+ 	masterNotePath := friction.NotePath(deps.FrictionDir, "webster-master")
+-	prompt, err := RenderMasterPrompt(batches, st, outcomePath, summaryPath, verifyFixPromptPath, deps.Geom.PlanDir, deps.Config.SelfFixCap, deps.Geom.WorktreeRoot, deps.Geom.RepoRoot, deps.Geom.StencilsDir, patternChanges, masterNotePath, deps.Geom.ParentName)
++	prompt, err := RenderMasterPrompt(batches, st, outcomePath, summaryPath, verifyFixPromptPath, deps.Geom.PlanDir, deps.Config.SelfFixCap, deps.Geom.WorktreeRoot, deps.Geom.RepoRoot, deps.Geom.StencilsDir, patternChanges, parentDecisions, masterNotePath, deps.Geom.ParentName)
+ 	if err != nil {
+ 		return RunResult{}, err
+ 	}
+diff --git a/internal/websterengine/runlevel_test.go b/internal/websterengine/runlevel_test.go
+index 49beb0b9..c8962dbf 100644
+--- a/internal/websterengine/runlevel_test.go
++++ b/internal/websterengine/runlevel_test.go
+@@ -638,6 +638,15 @@ func TestRun_RefusesBeforeSpawn(t *testing.T) {
+ 			errIs:      discussionparser.ErrPatternChangesInvalid,
+ 			wayForward: []string{"lyx loom validate-discussion", "lyx webster run"},
+ 		},
++		{
++			name:  "a decision record that cannot be read",
++			cards: 1,
++			setup: func(t *testing.T, fx *runFixture) func() {
++				fx.Deps.Geom.DecisionRecordPath = fx.Worktree
++				return nil
++			},
++			wayForward: []string{"transient", "lyx webster run"},
++		},
+ 		{
+ 			name:  "the provider does not come up",
+ 			cards: 1,
+@@ -1686,6 +1695,20 @@ func TestRun_MasterSpawn(t *testing.T) {
+ 				}
+ 			},
+ 		},
++		{
++			name:  "the prompt carries each entry the decision record added after Discussion",
++			cards: 1,
++			prepare: func(t *testing.T, fx *runFixture) {
++				fx.Deps.Geom.DecisionRecordPath = filepath.Join(fx.Worktree, "decision-record.md")
++				writeWorktreeFile(t, fx.Worktree, "decision-record.md", "## Decisions\n\n### Added after Discussion (parent, 2026-10-26): Reset the batch\n\nDecision: reset batch 06 to its start.\n")
++			},
++			check: func(t *testing.T, fx *runFixture) {
++				prompt := fx.Starter.startCalls[0].Prompt
++				if want := "### Added after Discussion (parent, 2026-10-26): Reset the batch\n\nDecision: reset batch 06 to its start."; !strings.Contains(prompt, want) {
++					t.Errorf("Spec.Prompt = %q; want it to carry the parent decision %q", prompt, want)
++				}
++			},
++		},
+ 		{
+ 			name:  "the prompt is the rendered Master prompt and no master.md is written",
+ 			cards: 1,
+diff --git a/internal/websterengine/template_test.go b/internal/websterengine/template_test.go
+index fc402e96..ce7ea669 100644
+--- a/internal/websterengine/template_test.go
++++ b/internal/websterengine/template_test.go
+@@ -245,6 +245,7 @@ func masterTemplateMarkerValues() map[string]string {
+ 		"verify_fix_prompt_path": "/lyx/webster/prompts/verify-fix.md",
+ 		"plan_dir":               "_lyx/plan",
+ 		"self_fix_cap":           "2",
++		"parent_decisions":       "none",
+ 		"pattern_directive":      "## Constraints — do this before you fork anything\n\n- Read the overview.",
+ 		"friction_directive":     "## Friction note — optional, only if something went wrong\n\nWrite it to /lyx/webster/friction/webster-master.md.",
+ 		"parent_directive":       "## Your parent\n\nNo parent is recorded for this run.",
+@@ -357,7 +358,12 @@ func renderRecoveryWithUncommitted(batch batcher.Batch, repoRoot, anchorRoot, st
+ 
+ // renderMaster renders Merriam's prompt for batches with a nil state, the shared placeholder paths and the declared PATTERN changes.
+ func renderMaster(batches []batcher.Batch, anchorRoot, repoRoot, stencilsDir, notePath, parent string, patternChanges []string) (string, error) {
+-	got, err := websterengine.RenderMasterPrompt(batches, nil, testOutcomePath, testSummaryPath, testVerifyFixPromptPath, filepath.Join(anchorRoot, "_lyx", "plan"), 2, anchorRoot, repoRoot, stencilsDir, patternChanges, notePath, parent)
++	return renderMasterWithDecisions(batches, anchorRoot, repoRoot, stencilsDir, notePath, parent, patternChanges, nil)
++}
++
++// renderMasterWithDecisions is renderMaster with the parent's added decisions.
++func renderMasterWithDecisions(batches []batcher.Batch, anchorRoot, repoRoot, stencilsDir, notePath, parent string, patternChanges, parentDecisions []string) (string, error) {
++	got, err := websterengine.RenderMasterPrompt(batches, nil, testOutcomePath, testSummaryPath, testVerifyFixPromptPath, filepath.Join(anchorRoot, "_lyx", "plan"), 2, anchorRoot, repoRoot, stencilsDir, patternChanges, parentDecisions, notePath, parent)
+ 	return string(got), err
+ }
+ 
+@@ -471,7 +477,7 @@ func TestTemplates_FillRequiresEveryRequiredMarker(t *testing.T) {
+ 			template: mustMasterTemplate,
+ 			values:   masterTemplateMarkerValues,
+ 			optional: []string{"pattern_directive", "friction_directive", "parent_directive"},
+-			required: []string{"batch_index", "progress", "outcome_path", "summary_path", "verify_fix_prompt_path", "plan_dir", "self_fix_cap", "edit_directive"},
++			required: []string{"batch_index", "progress", "outcome_path", "summary_path", "verify_fix_prompt_path", "plan_dir", "self_fix_cap", "parent_decisions", "edit_directive"},
+ 		},
+ 		{
+ 			name:     "fork",
+@@ -821,6 +827,30 @@ func TestRenderPrompts(t *testing.T) {
+ 			text, err := renderMaster(seamBatches, root, root, stencilsDir, "", "", nil)
+ 			return promptCheck{text: text, err: err, notContains: []string{"worktree_root", root}}
+ 		}},
++		{"master renders each parent decision in order", func(t *testing.T) promptCheck {
++			root, stencilsDir := testLayout(t)
++			first := "### Added after Discussion (parent, 2026-10-26): Reset the batch\n\nDecision: reset batch 06 to its start.\n\nRationale: the finding is unrecoverable."
++			second := "### Added after Discussion (arbiter, 2026-10-26): Keep the seam\n\nDecision: keep it.\n\nRationale: two callers."
++			text, err := renderMasterWithDecisions(seamBatches, root, root, stencilsDir, "", "", nil, []string{first, second})
++			return promptCheck{text: text, err: err,
++				inOrder:     []string{first + "\n\n" + second},
++				notContains: []string{"{{.parent_decisions}}"}}
++		}},
++		{"master renders none for no parent decision", func(t *testing.T) promptCheck {
++			root, stencilsDir := testLayout(t)
++			text, err := renderMaster(seamBatches, root, root, stencilsDir, "", "", nil)
++			if err != nil {
++				return promptCheck{err: err}
++			}
++			withNone, err := renderMasterWithDecisions(seamBatches, root, root, stencilsDir, "", "", nil, []string{"none"})
++			if err != nil {
++				return promptCheck{err: err}
++			}
++			if text != withNone {
++				t.Error("master prompt with no parent decision differs from the one rendered with the decision none")
++			}
++			return promptCheck{text: text, notContains: []string{"{{.parent_decisions}}"}}
++		}},
+ 		{"master names the fixer prompt", func(t *testing.T) promptCheck {
+ 			root, stencilsDir := testLayout(t)
+ 			text, err := renderMaster(seamBatches, root, root, stencilsDir, "", "", nil)
