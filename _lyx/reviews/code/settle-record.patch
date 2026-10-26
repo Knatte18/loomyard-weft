@@ -1,0 +1,96 @@
+diff --git a/contracts/specs/loom-plan-spec.md b/contracts/specs/loom-plan-spec.md
+index f1d129e2..663fb81b 100644
+--- a/contracts/specs/loom-plan-spec.md
++++ b/contracts/specs/loom-plan-spec.md
+@@ -532,6 +532,8 @@ The rows below stay in one fixed order regardless of which entry point runs them
+     Each span is matched on its own, with the same rule the implementer audit uses.
+     The finding names the card, or for the overview the section the hit is in, and the matched text.
+     Its way forward is to take the data from committed test data an earlier card creates, or to drop the command.
++    The path rule also runs over each card id, since a slug ending in the fabric suffix makes every command naming the card, its own `lyx gate test --card` run included, a fabric reference to the implementer audit.
++    That finding names the card and the matched id, and its way forward is to rename the card in the Card Index and its file name.
+     The plan index runs it in its format validation, so both plan gates and `lyx loom validate-plan`'s default and `--rework` modes report it; `--require-approved`, webster's own `validate` verb and dispatch validation do not run it.
+     It only refuses and removes no guard: it misses a spelling in `bash -c "…"` or built from a variable, the rest of a span after an unterminated quote, a spelling in an inline span or prose, and a fabric-repo path not spelled as a name ending in the suffix, and the implementer audit stays the guard for those.
+ 38. `verify-module-wide` — a raw Go test, build or vet command in a card's `**Verify:**` value whose package argument holds `...` or equals `all`, or a raw Go test command whose `-tags` value names `tmux`, `llm`, `tier2` or `tier3`.
+diff --git a/internal/planparser/doc.go b/internal/planparser/doc.go
+index f7e2865e..97045f32 100644
+--- a/internal/planparser/doc.go
++++ b/internal/planparser/doc.go
+@@ -144,6 +144,7 @@
+ // CheckFabricVocabularyName needs no told input, but the plan index appends it beside CheckCardFabricReference.
+ // CheckEditTestFile is appended by the plan index at format and rework validation, and takes the done set so format validation skips a completed card.
+ // CheckCardFabricReference scans the raw text the parse step records in Plan.OverviewText and Card.Text, so it reads no file and planparser stays the sole parser.
++// It also runs the path rule over each card id, since an id ending in the fabric suffix would turn every command naming the card into a fabric reference to the implementer audit.
+ //
+ // # Entry-line cap
+ //
+diff --git a/internal/planparser/fabricref.go b/internal/planparser/fabricref.go
+index f611f3f9..e2331d40 100644
+--- a/internal/planparser/fabricref.go
++++ b/internal/planparser/fabricref.go
+@@ -28,7 +28,8 @@ type scanSpan struct {
+ 	spelling bool
+ }
+ 
+-// CheckCardFabricReference reports one card-fabric-reference finding per distinct command a plan carries that reaches the fabric repo.
++// CheckCardFabricReference reports one card-fabric-reference finding per distinct command a plan carries that reaches the fabric repo, and one per card whose card id the path rule matches.
++// Such a card id would make every command naming the card, its own gate run included, a fabric reference to the implementer audit; its way forward is renaming the card.
+ // The spans scanned are a card's `**Verify:**` value and the overview's `## verify:` section body (path rule and spelling rule), every fenced code block of every plan file whatever its info string (both rules), and every inline code span of every plan file (path rule only, because a span documenting a command opens with the spelling).
+ // Prose outside code is never scanned.
+ // A finding names the card, or for a hit in the overview the section it is in, and the matched text; its way forward is committed test data an earlier card creates, or dropping the command.
+@@ -69,11 +70,16 @@ func CheckCardFabricReference(plan *Plan, matcher FabricReferenceMatcher) []Vali
+ 
+ 	scan("", overviewSpans(plan.OverviewText))
+ 	for _, card := range plan.Cards {
++		id := cardID(card)
++		if matched, ok := matcher.MatchPath(id); ok {
++			detail := fmt.Sprintf("card %s has an id the implementer audit reads as a fabric-repo worktree name: %q, so every command naming the card fails the audit; rename the card in the Card Index and its file name so its slug no longer ends in the fabric suffix", id, matched)
++			findings = append(findings, ValidationError{Check: cardFabricReferenceCheck, Card: id, Detail: detail})
++		}
+ 		spans := codeSpans(card.Text)
+ 		if card.Verify != "" {
+ 			spans = append(spans, scanSpan{text: card.Verify, spelling: true})
+ 		}
+-		scan(cardID(card), spans)
++		scan(id, spans)
+ 	}
+ 	return findings
+ }
+diff --git a/internal/planparser/fabricref_test.go b/internal/planparser/fabricref_test.go
+index 52b247fd..4bb9d17e 100644
+--- a/internal/planparser/fabricref_test.go
++++ b/internal/planparser/fabricref_test.go
+@@ -16,11 +16,13 @@ import (
+ )
+ 
+ // TestCheckCardFabricReference covers the spans scanned and the ones that are not: each span kind carrying a sibling path or a spelling fails naming its place and the matched text, while inline code and prose carrying a spelling, a quoted search pattern and a plan without either pass.
++// A card slug ending in the fabric suffix fails naming the card and the rename, while one holding the suffix mid-name passes.
+ func TestCheckCardFabricReference(t *testing.T) {
+ 	t.Parallel()
+ 
+ 	siblingPath := fabricengine.RecordsWorktree(&lyxcwd.Location{HubPath: "/hub", WorktreeName: "task"})
+ 	siblingName := "/" + filepath.Base(siblingPath)
++	fabricSuffix := strings.TrimPrefix(filepath.Base(siblingPath), "task")
+ 	pathCommand := "cat " + siblingPath + "/_lyx/plan.md"
+ 	spellingCommand := "lyx fabric sync"
+ 
+@@ -49,6 +51,11 @@ func TestCheckCardFabricReference(t *testing.T) {
+ 	cardVerify.Cards[0].Verify = pathCommand
+ 	cardVerifySpelling := parsed("", "alpha", "")
+ 	cardVerifySpelling.Cards[0].Verify = spellingCommand
++	withSlug := func(slug string) *planparser.Plan {
++		plan := parsed("", "alpha", "")
++		plan.Cards[0].Slug = slug
++		return plan
++	}
+ 
+ 	tests := []struct {
+ 		name string
+@@ -69,6 +76,8 @@ func TestCheckCardFabricReference(t *testing.T) {
+ 		{"exempt spelling in a fenced block fails", parsed("", fenced("lyx.exe fabric push"), ""), []string{"lyx.exe"}},
+ 		{"quoted search pattern in a fenced block passes", parsed("", fenced(`grep -n "lyx fabric" docs/overview.md`), ""), nil},
+ 		{"plan without either passes", parsed("", fenced("go test ./..."), "go build ./..."), nil},
++		{"card slug ending in the fabric suffix fails", withSlug("prime" + fabricSuffix), []string{"card 1-prime" + fabricSuffix, "rename the card"}},
++		{"card slug holding the fabric suffix mid-name passes", withSlug("prime" + fabricSuffix + "-marker"), nil},
+ 	}
+ 
+ 	matcher := fabricengine.NewReferenceRule()
