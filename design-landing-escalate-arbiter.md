@@ -11,3 +11,9 @@ The fixer escalates when a decision in the task collides with work the parent br
 
 A fixer's `escalate` at a landing row goes to the arbiter first, as other stops do: the arbiter is a strong agent that can likely settle a decision collision against the decision record and what landed, and only its hand-on reaches the orch.
 A spent cap, a failed or unusable fixer turn and an over-cap change stay as they are.
+
+## Landed since (webster-stop-asked-once)
+
+`ArbiterSeam` has an optional `JudgesFirst func(producer string) bool`; a blocked stop at a row it marks goes to the arbiter, skipping the tackler.
+Only the Webster row is marked today.
+A landing fixer's escalate would be one more row for the seam, not a new mechanism; the landing-halt rule row still precedes it and would need to yield.

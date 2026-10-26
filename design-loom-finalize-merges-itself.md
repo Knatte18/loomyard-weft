@@ -12,11 +12,11 @@ Loom, darn and beam run the same Finalize (`landingshed.Finalize`), with its con
 |---|---|---|
 | loom | aborts and reroutes to Parent-Align (`ConflictReroutes`) | reroutes to Parent-Align and the whole perch |
 | darn | the conflict session resolves it in Finalize | reroutes to Code-Bouncer, whose perch reviews the overlap note |
-| beam | the conflict session resolves it in Finalize | lands through the gate (`LargeMergeLands`) |
+| beam (now `pawl`) | the conflict session resolves it in Finalize | lands through the gate (`LargeMergeLands`) |
 
 ## Idea (operator, 2026-10-25)
 
 - Loom and darn handle a moved parent in Finalize itself: the conflict session resolves a conflict under the parent lock, and an overlapping merge goes on to the landing gate, whose merge fixer fixes what fails.
 - A conflict or overlap in Finalize no longer reroutes, so neither recipe re-runs its Code-Review perch for it.
 - Parent-Align, before Code-Review, stays the loom row that catches the bulk of the parent's drift; Finalize takes only what moved since.
-- A beam's landing is the opposite case and gets the full treatment instead; that belongs to the beam lifecycle task's `pawl` recipe.
+- A beam's landing is the opposite case and gets the full treatment instead; that is the `pawl` recipe, landed in e6fbc14c (`beam-start-and-ownership`), whose rows are Beam-Up, Beam-Await, Parent-Align, the Code-Review perch, Beam-Describe, Finalize and Beam-Down.
