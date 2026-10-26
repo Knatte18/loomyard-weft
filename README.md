@@ -48,7 +48,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **Drop the ban on scripted edits: the sed -i and redirect-write guard rows and the edit directive** | [`scripted-edits-allowed`](design-scripted-edits-allowed.md) | loom |  | 1m<br>1m | shuttle, stencil |
+| T3 | **Drop the ban on scripted edits: the sed -i and redirect-write guard rows and the edit directive**<br>• `profile: light` | [`scripted-edits-allowed`](design-scripted-edits-allowed.md) | darn |  | 1m<br>0m | shuttle, stencil |
 
 ## Notes (39)
 
