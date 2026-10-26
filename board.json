@@ -716,9 +716,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "weft-suffix-card-slug-audit"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "MaxEntryLineChars counts the whole entry line, so the room left for the rule text shrinks with the entry name and link",
       "body": "## Seen (umbrella-anchor Plan-Write, 2026-10-25)\n\n`pattern.MaxEntryLineChars` (360) caps the whole overview line: the bullet, the entry name, the rule text, `(test)` and the background link.\nThe fixed parts took 79 characters for `PATTERN-cwd-resolution`, so its rule text had room for about 281, and a 331-character text recorded at Discussion failed the cap only at Plan-Write and needed a parent decision to shorten it.\nThe room for the text changes with the name length and with whether the entry has a link, which no writer sees when wording a rule.\n\n## Idea\n\nThe cap counts the rule text alone, the part between the name and `(test)` or the link, so the limit a writer works against is one number whatever the name.\n`lyx loom decision add --pattern-text` and the Discussion check measure the text against it when the decision is recorded, not at Plan-Write.",
@@ -773,31 +771,6 @@
       "body": "Imported from [issue #875](https://github.com/Knatte18/loomyard/issues/875).\n\nSeen (umbrella-anchor, batch 06, 2026-10-25): a batch Merriam could not recover (recover-batch needs_fresh, accept-audit refused) reached the orch on two channels at once. Merriam sent its question by direct message and held, and when Webster ended, the Go driver stopped the run with the same question as a creel stop question (#312, then again #318). Each resumed Webster started a fresh Merriam session that did not know the parent's earlier answer, so one decision took three rounds of messages.\n\n## Decided (operator, 2026-10-26)\n\n- One stop, one question: a question that needs an answer reaches the parent once.\n- The arbiter tries first: a stop Merriam cannot settle goes to the arbiter, and only a question the arbiter hands on reaches the parent.\n- The driver never re-asks a question the parent already answered, and a fresh Merriam after a parent answer is told that answer (see #849).\n",
       "created": "2026-10-25T16:16:54Z",
       "revised": "2026-10-26T10:19:37Z"
-    },
-    {
-      "id": 818,
-      "handle": "T1",
-      "slug": "weft-suffix-card-slug-audit",
-      "title": "Webster audit: a card slug ending in -weft makes every gate test --card command a fabric reference",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "webster",
-        "fabric"
-      ],
-      "issues": [
-        874
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #874](https://github.com/Knatte18/loomyard/issues/874).\n\nSeen (umbrella-anchor, batch 06, 2026-10-25): the implementer fork for card `6-clone-records-marker-on-prime-weft` ran `lyx gate test --wait --gate card --card 6-clone-records-marker-on-prime-weft`, and record-batch marked the batch failed with a fabric-reference finding. The fork touched no fabric repo.\n\nCause: ReferenceRule's barePattern in internal/fabricengine/refscanner.go flags any unquoted word ending in the weft suffix, so a card slug ending in `-weft` turns every command naming the card into a fabric reference. recover-batch then refused with needs_fresh.\n\nWorkaround: the parent judged the finding false and had Merriam run `lyx webster accept-audit --batch 6` and `recover-batch 6`; later forks quote the slug.\n\nExpected: a card slug is never read as a weft sibling worktree; either the plan validator refuses a card slug ending in the weft suffix, or the audit does not read a `--card` value as a path.",
-      "status": "done",
-      "created": "2026-10-25T16:16:56Z",
-      "revised": "2026-10-26T10:06:47Z",
-      "profile": "light",
-      "owner_machine": "osl-1046"
     },
     {
       "id": 819,

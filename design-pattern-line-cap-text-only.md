@@ -2,8 +2,6 @@
 
 `pattern-line-cap-text-only` · Task · enhancement, pattern, loom · running · Darn-Write
 
-Depends on: [`weft-suffix-card-slug-audit`](design-weft-suffix-card-slug-audit.md)
-
 ## Seen (umbrella-anchor Plan-Write, 2026-10-25)
 
 `pattern.MaxEntryLineChars` (360) caps the whole overview line: the bullet, the entry name, the rule text, `(test)` and the background link.
