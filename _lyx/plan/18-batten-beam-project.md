@@ -48,6 +48,7 @@ Tests: `TestStartGuard_Refuse` gains a fresh beam project with no pair passing o
 `TestBeamLanding_ReachesWorktreeCreateSkip` keeps its guard and skip cases without the land refusal at Worktree-Create.
 
 What it lets through, bounded: a beam project now starts a run from no pair, bounded by the claim's owner check, the guard's dirty-source and left-parts checks and the beam flag `lyx beam create` writes first; the land refusal moves from the start to the landing, where it runs three times.
+A draft beam project now starts too, past the start guard's draft check, bounded by the beam flag, which only the owner setter's `Beam` write sets and only `lyx beam create` makes; the dobby still starts tasks only (`dobbyengine`'s `released`), so only `lyx beam create`, a hand pass or adopt's `ResumeRun` of a pawl run whose record is not done starts or resumes a beam project's run, and a grouping or unflagged project still refuses at `refuseProject`.
 
 **ImpactSummary:** batten's guard and Worktree-Create gain the beam project path and the member hold read; `StartFirstPass`'s re-sign has two production callers and one test, all listed.
 

@@ -7,7 +7,7 @@
 - `plan:internal/battencli#BeamLandMember` -> `type BeamLandMember struct`
 
 **Edit:**
-- `internal/battencli#beamMembers`
+- `internal/battencli#beamMembers` -> `func beamMembers(prime *lyxcwd.Location, slug string) ([]BeamLandMember, error)`
 - `internal/battencli#BeamLandRefusal`
 - `internal/battencli#beamLandRefusal` -> `func beamLandRefusal(slug string, blockers BeamLandBlockers) error`
 - `internal/battencli#TestBeamLandRefusal`
