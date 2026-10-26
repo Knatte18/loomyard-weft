@@ -1,6 +1,6 @@
 # Checklist marks a row skipped by its entry gate as [-], not open
 
-`checklist-skipped-row-box` · Note · enhancement, loom, shed
+`checklist-skipped-row-box` · Task · enhancement, loom, shed · draft
 
 ## Seen (operator, 2026-10-26)
 
