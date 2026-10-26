@@ -1,7 +1,7 @@
 # Card 20 — batten-cancel-beam
 
 **Create:**
-- `plan:internal/battencli#refuseBeamCancel` -> `func refuseBeamCancel(slug, rerun string, deps cancelDeps) error`
+- `internal/battencli#refuseBeamCancel`
 
 **Edit:**
 - `internal/battencli#cancelDeps`

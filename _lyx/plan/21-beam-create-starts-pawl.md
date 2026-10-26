@@ -1,7 +1,7 @@
 # Card 21 — beam-create-starts-pawl
 
 **Create:**
-- `plan:internal/beamcli#refuseCreateHere` -> `func refuseCreateHere(deps createDeps, acting, slug string) error`
+- `internal/beamcli#refuseCreateHere`
 
 **Edit:**
 - `internal/beamcli#createDeps`
