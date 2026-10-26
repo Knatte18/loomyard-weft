@@ -1,0 +1,20 @@
+{
+  "current_producer": "Worktree-Create",
+  "state": "blocked",
+  "error": "battencli: claim the board entry of \"shuttle-start-hardening\": board: origin is unreachable, so the owner write was not pushed: fetching origin for the board at /home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/_board failed (gitrepo: fetch in /home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/_board: git exited 1 (run `git -C /home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/_board fetch` for git's own diagnosis)); re-run the command once the remote is reachable",
+  "pause_requested": false,
+  "activity": {
+    "now": "Worktree-Create",
+    "last": "Worktree-Create → stuck",
+    "wait": "battencli: claim the board entry of \"shuttle-start-hardening\": board: origin is unreachable, so the owner write was not pushed: fetching origin for the board at /home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/_board failed (gitrepo: fetch in /home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/_board: git exited 1 (run `git -C /home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/_board fetch` for git's own diagnosis)); re-run the command once the remote is reachable"
+  },
+  "history": [
+    {
+      "producer": "Worktree-Create",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-26T10:08:26Z",
+      "budget_exempt": true
+    }
+  ]
+}
