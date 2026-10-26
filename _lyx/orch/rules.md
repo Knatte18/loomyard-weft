@@ -47,6 +47,7 @@ Remove this section once #799 is fixed.
 
 Never propose one note alone as a loom task: a loom run has a fixed cost of about half its spend whatever its size (`docs/research/token-audit-2026-10-22`).
 Fold related notes into one loom task, or propose darn for a small change, and let the operator name darn (operator, 2026-10-22).
+Never propose splitting a piece out of a darn task as a loom run of its own: a part that looks large raises the darn's profile, it never becomes a loom (operator, 2026-10-26).
 
 ## Board tidy after a landing
 
