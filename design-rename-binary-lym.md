@@ -1,6 +1,6 @@
 # Rename the lyx binary and the LYXHUB suffix (name clash with LyX)
 
-`rename-binary-lyr` · Note · enhancement, stencil, shuttle
+`rename-binary-lym` · Note · enhancement, stencil, shuttle
 
 Imported from [issue #670](https://github.com/Knatte18/loomyard/issues/670).
 

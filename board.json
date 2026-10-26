@@ -297,7 +297,7 @@
     {
       "id": 622,
       "handle": "E13",
-      "slug": "rename-binary-lyr",
+      "slug": "rename-binary-lym",
       "title": "Rename the lyx binary and the LYXHUB suffix (name clash with LyX)",
       "kind": "note",
       "labels": [
