@@ -56,7 +56,7 @@ Seven forks returned; reports in `support-log.lens-<lens>.md`.
 - interactions 3, walkthrough 4 (runs in flight at the upgrade): fixed, D5's upgrade bullet and an acceptance criterion.
 - interactions 4 (owner setter vs recipe write): fixed, D5 and D10 say the setter's beam write sets `recipe: pawl`.
 - interactions 5 (adopt root resuming a nested pawl run owned elsewhere): fixed, D6 reports it as owned elsewhere.
-- walkthrough 1 (BLOCKING, batten records on the prime's records branch): rejected, run directories are per slug and the records push replays a rejected push (`fabricengine` doc), as two machines owning different tasks already do; D11 states it.
+- walkthrough 1 (BLOCKING, batten records on the prime's records branch): rejected, run directories are per slug, so two machines driving runs of different projects write different paths of one records branch, and the records push replays a rejected push (`fabricengine` doc), as two machines owning different tasks already do; D11 keeps only the requirement that records stay put.
 - walkthrough 2 (BLOCKING, `runproc.End` of the slug kills the pawl driver): fixed, D4 ends the dobby by its role alone.
 - walkthrough 3 (late member after Beam-Await): fixed, Beam-Await stops the dobby and the rebased hold refuses the member's Worktree-Create.
 - walkthrough 5 (re-spawn churn while owned elsewhere): fixed, D9's bound.
