@@ -49,6 +49,10 @@ Never propose one note alone as a loom task: a loom run has a fixed cost of abou
 Fold related notes into one loom task, or propose darn for a small change, and let the operator name darn (operator, 2026-10-22).
 Never propose splitting a piece out of a darn task as a loom run of its own: a part that looks large raises the darn's profile, it never becomes a loom (operator, 2026-10-26).
 
+## Release only on a named go-ahead
+
+Release a task, or take any other step that starts work, only on the operator's explicit go-ahead naming that step; never infer it from a rejected alternative or an answer to another question (operator, 2026-10-26).
+
 ## Board tidy after a landing
 
 Dobby spawns the board tidy agent itself after landings; you never spawn it, count landings for it or edit the board for a tidy yourself (operator, 2026-10-26).
