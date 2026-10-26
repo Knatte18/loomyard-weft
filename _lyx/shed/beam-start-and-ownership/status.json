@@ -63,6 +63,14 @@
       "at": "2026-10-26T12:37:51Z",
       "budget_exempt": true,
       "routed_to": "Run-Shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → running at Drift-Await",
+      "at": "2026-10-26T12:39:04Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
     }
   ]
 }
