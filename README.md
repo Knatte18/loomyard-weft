@@ -38,7 +38,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Checklist marks a row skipped by its entry gate as [-], not open**<br>• Rows passed on a false entry gate, such as disabled Drift rows, show [ ] in the overview; give them [-]<br>• `profile: light` | [`checklist-skipped-row-box`](design-checklist-skipped-row-box.md) | darn | PR-Review | osl-1046 | 41m<br>10m | loom, shed |
+| T1 | **Checklist marks a row skipped by its entry gate as [-], not open**<br>• Rows passed on a false entry gate, such as disabled Drift rows, show [ ] in the overview; give them [-]<br>• `profile: light` | [`checklist-skipped-row-box`](design-checklist-skipped-row-box.md) | darn | Finalize | osl-1046 | 41m<br>11m | loom, shed |
 | T2 | **A webster stop reaches the parent twice: Merriam asks directly and the driver escalates the same question**<br>• `profile: solid` | [`webster-stop-asked-once`](design-webster-stop-asked-once.md) | darn | Darn-Write | osl-1046 | 19h<br>8m | webster, loom |
 | T4 | **Beams: one lyx beam start, machine ownership by project, and a beam's life as a pawl run**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-ownership`](design-beam-start-and-ownership.md) | loom | Webster | osl-1046 | 21h<br>16h | orch, workspaces, batten, reed, board |
 
