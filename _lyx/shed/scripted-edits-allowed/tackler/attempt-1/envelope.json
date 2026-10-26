@@ -1,0 +1,11 @@
+{
+  "verdict": "resume",
+  "reason": "Worktree-Create blocked on a real _lyx directory at loomyard-LYXHUB/scripted-edits-allowed/_lyx that predates weft.\nThe rollback that followed the stop (trace 5e434edaeaaa7f94, drive-report lines 50-65) already removed the worktree and its branch, and the directory no longer exists.\nNothing in the trace shows what created the real _lyx, so a re-launch may hit the same block again; if it does, the next stop should be escalated.\nmain does not track _lyx, and sibling worktrees link _lyx to their weft worktree, which is the layout the junction step expects.\n",
+  "question": "",
+  "goto": "Worktree-Create",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/loomyard/_lyx/shed/scripted-edits-allowed/tackler/attempt-1",
+  "verdict_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/loomyard/_lyx/shed/scripted-edits-allowed/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": ""
+}

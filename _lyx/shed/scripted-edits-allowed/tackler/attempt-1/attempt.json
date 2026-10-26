@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Worktree-Create",
+    "history_length": 1,
+    "state": "blocked"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "",
+    "branch": "",
+    "dirty": null
+  },
+  "spawned_at": "2026-10-26T13:15:21.948088087+01:00",
+  "deadline": "2026-10-26T13:25:21.948088087+01:00",
+  "envelope_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/loomyard/_lyx/shed/scripted-edits-allowed/drive-reports/drive-envelope-20261026-131521-8640.json",
+  "report_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/loomyard/_lyx/shed/scripted-edits-allowed/drive-reports/drive-report-20261026-131521-0768.md",
+  "strand_guid": "b4f847b028af89a0de3cca40169302e8"
+}
