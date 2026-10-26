@@ -720,7 +720,7 @@
       "isolated": false,
       "brief": "MaxEntryLineChars counts the whole entry line, so the room left for the rule text shrinks with the entry name and link",
       "body": "## Seen (umbrella-anchor Plan-Write, 2026-10-25)\n\n`pattern.MaxEntryLineChars` (360) caps the whole overview line: the bullet, the entry name, the rule text, `(test)` and the background link.\nThe fixed parts took 79 characters for `PATTERN-cwd-resolution`, so its rule text had room for about 281, and a 331-character text recorded at Discussion failed the cap only at Plan-Write and needed a parent decision to shorten it.\nThe room for the text changes with the name length and with whether the entry has a link, which no writer sees when wording a rule.\n\n## Idea\n\nThe cap counts the rule text alone, the part between the name and `(test)` or the link, so the limit a writer works against is one number whatever the name.\n`lyx loom decision add --pattern-text` and the Discussion check measure the text against it when the decision is recorded, not at Plan-Write.",
-      "status": "running · Darn-Write",
+      "status": "running · Drift-Verify",
       "created": "2026-10-25T14:04:12Z",
       "revised": "2026-10-26T10:09:44Z",
       "profile": "light",
