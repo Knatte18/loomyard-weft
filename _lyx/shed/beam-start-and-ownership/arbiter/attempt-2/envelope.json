@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Hard-cap at Plan-Bouncer round 3 with two open design-wrong ledger keys; the round-3 fix in place answers both.\nThe fixer ran after the review (review 13:33:37, fixer report 13:37:04).\nF1 (orch-start-removal-breaks-prime-shortcut): card 10 (orch-beam-up) now lists internal/shortcutcli/shortcuts.yaml, TestMount_File and TestShortcuts_FileAndRootListing under Edit, and its Intent repoints the shipped `prime` shortcut from `orch start` to `beam start`.\n`beam start` exists today (internal/beamcli/cli.go:144), so the shortcut resolves at card 10's gate.\nCard 12 (shortcut-s) now says `s` replaces the `prime` card 10 already repointed.\nF5 (await-marker-reentry-not-in-decision-record, LOW): the finding's own fix is a decision-record entry, and it now stands at decision-record.md lines 219-223 (committed 13:34:11), adding under D9 the dobby-down notice on a Beam-Await re-entry and narrowing the acceptance criterion's `posts none` to the interrupted-landing notice.\nCard 15 (pawl-engine) lines 58-61 and its TestBeamAwait rows match that entry.\nThe mechanism stays within the task's Beam-Await scope and was added in round 1 to close the dobby-down gap that round accepted.\nThe mechanical findings are fixed too: F2's tier0 tag (card 15 line 71), F3 and F4's nil-seam fixtures (cards 16 and 14), F6's orphaned helpers and F7's test names.\n`lyx loom validate-plan` reports informational findings only.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lyx loom circling accept beam-start-and-ownership"
+  ],
+  "cause": "",
+  "attempt": 2,
+  "attempt_dir": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/beam-start-and-ownership/_lyx/shed/beam-start-and-ownership/arbiter/attempt-2",
+  "verdict_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/beam-start-and-ownership/_lyx/shed/beam-start-and-ownership/arbiter/attempt-2/verdict.yaml",
+  "relaunch": "lyx shed step beam-start-and-ownership --until-stop --arbiter-attempt 2"
+}
