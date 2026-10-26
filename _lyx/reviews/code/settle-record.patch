@@ -120,7 +120,7 @@ index 13c0fab8..b23803ca 100644
  //
  // # Who renders it
 diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
-index a6765eb8..1d69b6af 100644
+index 0c9fada7..f053b248 100644
 --- a/internal/loomcli/doc.go
 +++ b/internal/loomcli/doc.go
 @@ -100,7 +100,7 @@
