@@ -1,0 +1,15 @@
+{
+  "number": 2,
+  "stop_key": {
+    "current_producer": "Plan-Bouncer",
+    "history_length": 28,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-10-26T13:37:51.153026947+01:00",
+  "deadline": "2026-10-26T14:07:51.153026947+01:00",
+  "strand_guid": "0135cd008d3424fe2e5dabf6a3006067",
+  "envelope_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/beam-start-and-ownership/_lyx/shed/beam-start-and-ownership/drive-reports/drive-envelope-20261026-133751-64a7.json",
+  "report_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/beam-start-and-ownership/_lyx/shed/beam-start-and-ownership/drive-reports/drive-report-20261026-133751-3193.md"
+}
