@@ -1,6 +1,8 @@
 # PATTERN line cap counts the rule text only, not the name and link
 
-`pattern-line-cap-text-only` · Task · enhancement, pattern · draft
+`pattern-line-cap-text-only` · Task · enhancement, pattern, loom
+
+Depends on: [`weft-suffix-card-slug-audit`](design-weft-suffix-card-slug-audit.md)
 
 ## Seen (umbrella-anchor Plan-Write, 2026-10-25)
 

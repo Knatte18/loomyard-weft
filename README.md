@@ -43,13 +43,19 @@ Held by a run; its scope is locked until the run ends.
 | T3 | **Shuttle: seat start survives long prompts and tmux EAGAIN, and no held notice for a turn waiting by design**<br>• Three shuttleengine bugs: a long prompt kills the seat start, EAGAIN reads as a dead provider, and a by-design wait raises a held notice<br>• `profile: solid` | [`shuttle-start-hardening`](design-shuttle-start-hardening.md) | darn | Darn-Write | osl-1046 | 17h<br>1m | shuttle, reed, webster |
 | T4 | **Beams: one lyx beam start, machine ownership by project, and a beam's life as a pawl run**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-ownership`](design-beam-start-and-ownership.md) | loom | Plan-Write | osl-1046 | 19h<br>14h | orch, workspaces, batten, reed, board |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
+_None._
+
+### Layer A (1)
+
+Waits only on Running or Ready entries.
+
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | `draft` **PATTERN line cap counts the rule text only, not the name and link**<br>• MaxEntryLineChars counts the whole entry line, so the room left for the rule text shrinks with the entry name and link | [`pattern-line-cap-text-only`](design-pattern-line-cap-text-only.md) | loom |  | 20h<br>20h | pattern |
+| T5 | **PATTERN line cap counts the rule text only, not the name and link**<br>• MaxEntryLineChars counts the whole entry line, so the room left for the rule text shrinks with the entry name and link<br>• `profile: light` | [`pattern-line-cap-text-only`](design-pattern-line-cap-text-only.md) | darn | `weft-suffix-card-slug-audit` | 20h<br>0m | pattern, loom |
 
 ## Notes (41)
 
