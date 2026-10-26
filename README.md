@@ -28,7 +28,7 @@ grouping
 | --- | --- | --- | --- |
 | E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
 
-## Tasks (4)
+## Tasks (5)
 
 Concrete and claimable; only a task can run.
 
@@ -40,16 +40,18 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Webster audit: a card slug ending in -weft makes every gate test --card command a fabric reference**<br>• `profile: light` | [`weft-suffix-card-slug-audit`](design-weft-suffix-card-slug-audit.md) | darn | Darn-Write | osl-1046 | 17h<br>2m | webster, fabric |
 | T2 | **gate tier1 fails on a stale Go vet cache entry naming a torn-down worktree**<br>• `profile: light` | [`gate-stale-vet-cache-path`](design-gate-stale-vet-cache-path.md) | darn | Darn-Write | osl-1046 | 17h<br>2m | gate |
-| T3 | **Shuttle: seat start survives long prompts and tmux EAGAIN, and no held notice for a turn waiting by design**<br>• Three shuttleengine bugs: a long prompt kills the seat start, EAGAIN reads as a dead provider, and a by-design wait raises a held notice<br>• `profile: solid` | [`shuttle-start-hardening`](design-shuttle-start-hardening.md) | darn | Darn-Write | osl-1046 | 17h<br>0m | shuttle, reed, webster |
+| T3 | **Shuttle: seat start survives long prompts and tmux EAGAIN, and no held notice for a turn waiting by design**<br>• Three shuttleengine bugs: a long prompt kills the seat start, EAGAIN reads as a dead provider, and a by-design wait raises a held notice<br>• `profile: solid` | [`shuttle-start-hardening`](design-shuttle-start-hardening.md) | darn | Darn-Write | osl-1046 | 17h<br>1m | shuttle, reed, webster |
 | T4 | **Beams: one lyx beam start, machine ownership by project, and a beam's life as a pawl run**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-ownership`](design-beam-start-and-ownership.md) | loom | Plan-Write | osl-1046 | 19h<br>14h | orch, workspaces, batten, reed, board |
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T5 | `draft` **PATTERN line cap counts the rule text only, not the name and link**<br>• MaxEntryLineChars counts the whole entry line, so the room left for the rule text shrinks with the entry name and link | [`pattern-line-cap-text-only`](design-pattern-line-cap-text-only.md) | loom |  | 20h<br>20h | pattern |
 
-## Notes (42)
+## Notes (41)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -61,13 +63,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B2 |  | **A webster stop reaches the parent twice: Merriam asks directly and the driver escalates the same question** | [`webster-stop-asked-once`](design-webster-stop-asked-once.md) | 17h<br>17h | webster, loom |
 | B4 |  | **Board README lists draft tasks under Ready** | [`readme-draft-not-ready`](design-readme-draft-not-ready.md) | 17h<br>17h | board |
 
-### Enhancements (21)
+### Enhancements (20)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Beam promote keeps the Discussion record as part of the beam**<br>• When Discussion finds a task should be a project, promote carries its decision record into the beam instead of dropping it | [`beam-promote-keeps-discussion`](design-beam-promote-keeps-discussion.md) | 21h<br>21h | workspaces, batten, loom |
 | E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>22h | shuttle, codex |
-| E3 |  | **PATTERN line cap counts the rule text only, not the name and link**<br>• MaxEntryLineChars counts the whole entry line, so the room left for the rule text shrinks with the entry name and link | [`pattern-line-cap-text-only`](design-pattern-line-cap-text-only.md) | 20h<br>20h | pattern |
 | E4 |  | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 3w<br>3w | fabric, loom |
 | E5 |  | **Decide the layout of projects in the board README**<br>• The operator is not satisfied with how the README renders projects and their members; the layout is to be decided | [`board-projects-layout`](design-board-projects-layout.md) | 1d<br>1d | board |
 | E6 |  | **Board README: one rendered file per project, research notes first**<br>• Each project renders its own file linked from its parent; README.md is the root project; research notes come right after tasks | [`readme-per-project-files`](design-readme-per-project-files.md) | 15h<br>14h | board |
