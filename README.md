@@ -42,13 +42,19 @@ Held by a run; its scope is locked until the run ends.
 | T3 | **Drop the ban on scripted edits: the sed -i and redirect-write guard rows and the edit directive**<br>• `profile: light` | [`scripted-edits-allowed`](design-scripted-edits-allowed.md) | darn | Darn-Write | osl-1046 | 19m<br>17m | shuttle, stencil |
 | T4 | **Beams: one lyx beam start, machine ownership by project, and a beam's life as a pawl run**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-ownership`](design-beam-start-and-ownership.md) | loom | Plan-Burler-Review | osl-1046 | 21h<br>16h | orch, workspaces, batten, reed, board |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
+_None._
+
+### Layer A (1)
+
+Waits only on Running or Ready entries.
+
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **A renamed symbol a later card targets: catch it at plan and batch end, and fix it in Webster, not by a plan reroute** | [`webster-tree-moved-fixer`](design-webster-tree-moved-fixer.md) | loom |  | 7m<br>7m | webster, loom, stencil |
+| T1 | **A renamed symbol a later card targets: catch it at plan and batch end, and fix it in Webster, not by a plan reroute**<br>• `profile: solid` | [`webster-tree-moved-fixer`](design-webster-tree-moved-fixer.md) | darn | `webster-stop-asked-once` | 7m<br>0m | webster, loom, stencil |
 
 ## Notes (40)
 
