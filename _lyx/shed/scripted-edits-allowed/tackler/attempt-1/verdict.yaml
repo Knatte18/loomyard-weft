@@ -1,0 +1,7 @@
+verdict: resume
+reason: |
+  Worktree-Create blocked on a real _lyx directory at loomyard-LYXHUB/scripted-edits-allowed/_lyx that predates weft.
+  The rollback that followed the stop (trace 5e434edaeaaa7f94, drive-report lines 50-65) already removed the worktree and its branch, and the directory no longer exists.
+  Nothing in the trace shows what created the real _lyx, so a re-launch may hit the same block again; if it does, the next stop should be escalated.
+  main does not track _lyx, and sibling worktrees link _lyx to their weft worktree, which is the layout the junction step expects.
+goto: Worktree-Create
