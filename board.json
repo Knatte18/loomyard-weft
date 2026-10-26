@@ -791,7 +791,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #874](https://github.com/Knatte18/loomyard/issues/874).\n\nSeen (umbrella-anchor, batch 06, 2026-10-25): the implementer fork for card `6-clone-records-marker-on-prime-weft` ran `lyx gate test --wait --gate card --card 6-clone-records-marker-on-prime-weft`, and record-batch marked the batch failed with a fabric-reference finding. The fork touched no fabric repo.\n\nCause: ReferenceRule's barePattern in internal/fabricengine/refscanner.go flags any unquoted word ending in the weft suffix, so a card slug ending in `-weft` turns every command naming the card into a fabric reference. recover-batch then refused with needs_fresh.\n\nWorkaround: the parent judged the finding false and had Merriam run `lyx webster accept-audit --batch 6` and `recover-batch 6`; later forks quote the slug.\n\nExpected: a card slug is never read as a weft sibling worktree; either the plan validator refuses a card slug ending in the weft suffix, or the audit does not read a `--card` value as a path.",
-      "status": "running · Code-Burler-Review",
+      "status": "running · Code-Burler-Fix",
       "created": "2026-10-25T16:16:56Z",
       "revised": "2026-10-26T10:06:47Z",
       "profile": "light",
