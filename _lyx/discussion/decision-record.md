@@ -83,6 +83,13 @@ Rationale: Shuttle holds no record that tells an operator's typed text from a pa
 - A provider that dies at once for a persistent reason now costs one extra launch and its startup window before the start fails.
 - A host whose EAGAIN outlasts the tmux retry still surfaces it; the start retry and the shed's re-step are the remaining guards.
 
+<!-- lyx:carry-over Code-Review -->
+- Code-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/code/round-1-review.md; fixer report: _lyx/reviews/code/round-1-fixer-report.md.
+  - operator-typed-prompt-turn-held-notice-omitted (class decision, severity MEDIUM, open in rounds 1)
+  - smoke-fixtures-launch-failing-start-twice (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - A tmux exec that fails with EAGAIN and then succeeds returns the success; one that fails with EAGAIN on every attempt returns the error after the bounded attempts; a tmux that ran and exited nonzero is run once.
