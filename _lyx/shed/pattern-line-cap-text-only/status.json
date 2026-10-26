@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Baseline → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -21,6 +21,51 @@
       "output": "",
       "at": "2026-10-26T10:24:23Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/pattern-line-cap-text-only/_lyx/landing/summary.md",
+      "at": "2026-10-26T10:38:59Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-26T10:30:26.801310106Z",
+          "end": "2026-10-26T10:30:44.512208983Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-26T10:31:24.340253619Z",
+          "end": "2026-10-26T10:31:41.829197567Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-26T10:30:44.654417339Z",
+          "end": "2026-10-26T10:30:45.090081194Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-26T10:30:45.596905919Z",
+          "end": "2026-10-26T10:31:24.237063942Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-26T10:31:41.891003554Z",
+          "end": "2026-10-26T10:38:58.601892241Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-26T10:38:58.658605016Z",
+          "end": "2026-10-26T10:38:58.658756483Z"
+        }
+      ]
     }
   ],
   "product": {
