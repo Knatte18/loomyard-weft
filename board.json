@@ -112,25 +112,6 @@
       "revised": "2026-10-05T18:09:48Z"
     },
     {
-      "id": 84,
-      "handle": "E4",
-      "slug": "finalize-discrepancy-doc",
-      "title": "finalize: the discrepancy-document conflict shape",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "fabric",
-        "loom"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers",
-      "body": "From `manifest/roadmap.md` Someday.\nSome divergences cannot be expressed as a git conflict at all, so there are no markers to hand a resolving agent; the answer is a precomputed document describing the disagreement instead.\nOnly the ordinary-git-conflict shape shipped (`internal/mergeresolve`).\n`PullResult.PatternResidue` was this shape for the history-rewrite case; `pattern-init` retired it on 2026-10-04, so design the document once for every such case, whenever this is picked up.",
-      "created": "2026-10-04T12:45:43Z",
-      "revised": "2026-10-05T06:27:22Z"
-    },
-    {
       "id": 97,
       "handle": "F11",
       "slug": "board-viewer",
@@ -883,7 +864,6 @@
       "isolated": false,
       "brief": "Rows passed on a false entry gate, such as disabled Drift rows, show [ ] in the overview; give them [-]",
       "body": "## Seen (operator, 2026-10-26)\n\nWith the Drift rows switched off in loom, a run's checklist in the overview leaves the Drift rows open, `[ ]`, after the run has passed them.\nThe rows did run: each row's entry gate came out false and shed moved on, so an open box reads as not yet reached when it was settled.\nThe boxes come from `internal/loomcli/checklist.go`, which knows only done (`[x]`) and not reached (`[ ]`).\n\n## Idea\n\n- A row the run passed because its entry gate was false gets its own box, `[-]`, marking it skipped rather than open.\n- This holds for every row skipped by its entry gate, not only the Drift rows.\n",
-      "status": "draft",
       "created": "2026-10-26T11:28:20Z",
       "revised": "2026-10-26T11:58:42Z",
       "profile": "light"
