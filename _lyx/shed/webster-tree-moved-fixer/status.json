@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Bouncer",
+  "current_producer": "Code-Burler-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Bouncer",
-    "last": "Code-Burler-Fix → bounced to Code-Bouncer",
+    "now": "Code-Burler-Review",
+    "last": "Code-Bouncer → bounced to Code-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -96,6 +96,13 @@
       ],
       "budget_exempt": true,
       "routed_to": "Code-Bouncer"
+    },
+    {
+      "producer": "Code-Bouncer",
+      "outcome": "stuck",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/webster-tree-moved-fixer/_lyx/reviews/code/round-1-bouncer-ledger.md",
+      "at": "2026-10-26T14:00:03Z",
+      "routed_to": "Code-Burler-Review"
     }
   ],
   "product": {
