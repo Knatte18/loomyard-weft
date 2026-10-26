@@ -1,6 +1,6 @@
 # gate tier1 fails on a stale Go vet cache entry naming a torn-down worktree
 
-`gate-stale-vet-cache-path` · Task · bug, gate · running · Code-Bouncer
+`gate-stale-vet-cache-path` · Task · bug, gate · running · Describe
 
 Imported from [issue #868](https://github.com/Knatte18/loomyard/issues/868).
 
