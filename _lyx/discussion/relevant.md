@@ -1,0 +1,30 @@
+# Relevant
+
+- `internal/beamcli/doc.go` — create, promote, land, start, status and the dobby verb as they stand
+- `internal/adoptcli/doc.go` — adopt's steps and the parent and member owner refusals that go
+- `internal/orchcli/doc.go` — `lyx orch start`'s steps that move to `lyx beam start`, and the verbs orch keeps
+- `internal/orchcli/cleanup.go` — the `lyx orch cleanup` verb that goes
+- `internal/cleanupcli/segments.go` — `lyx cleanup` already cleans every orch's handoffs
+- `internal/orchengine/doc.go` — `--continue` and the recorded session id
+- `internal/shortcutcli/doc.go` — shortcut word routing to the last argv
+- `internal/shortcutcli/shortcuts.yaml` — `prime` shortcut to drop, `s` to add
+- `internal/boardengine/owners.go` `Owners.Effective`, `ownersOf`, `checkOwnerPayload` — the effective-owner rule that changes
+- `internal/boardengine/ownerset.go` `SetOwners`, `turnIntoProject` — the one owner writer
+- `internal/boardengine/migrate.go` `storedEntry` — the load-time drop idiom for a retired task key
+- `internal/boardengine/parentbeam.go` `ParentBeam` — nearest open beam of an entry
+- `internal/hubgeom/parentof.go` `ParentOf` — the owner readers' parent resolver
+- `internal/battencli/owner.go` — batten's owner seams and claim
+- `internal/battencli/startguard.go` `refuse`, `refuseProject` — the project start guard that changes
+- `internal/battencli/cli.go` `StartFirstPass` — detached first pass used by create and adopt
+- `internal/battenshed/doc.go` — InnerRun's quiet and driver-dead notices and child driver respawn
+- `internal/dobbyengine/doc.go` — EnsureLive, the owner exit, task starts and the landing count
+- `contracts/recipes/beam-recipe.yaml` — the recipe that becomes pawl
+- `contracts/recipes/batten-recipe.yaml` — the batten rows a pawl run goes through
+- `contracts/recipes/loom-recipe.yaml` — Parent-Align and the Code-Review perch rows
+- `contracts/recipes/darn-recipe.yaml` — perch rows with a board-entry snapshot as answer key
+- `internal/loomcli/landingdeps.go` — per-recipe Finalize flags
+- `internal/sheddriver/drive.go` `ExitYield` — a yield ends the child driver's pass
+- `internal/driftengine/doc.go` — Drift-Await's in-process wait
+- `internal/landingshed/finalize_owner.go` — owner halt ways forward naming `lyx adopt --prime`
+- `internal/hibernateengine/wake.go` — wake messages naming `lyx orch start` and task adopt
+- `pattern/PATTERN-owner-machine.md` — background of the entry that changes
