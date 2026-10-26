@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Code-Bouncer → done",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -143,6 +143,21 @@
       "outcome": "done",
       "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/webster-stop-asked-once/_lyx/reviews/code/round-2-bouncer-ledger.md",
       "at": "2026-10-26T12:35:20Z"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/webster-stop-asked-once/_lyx/landing/summary.md",
+      "at": "2026-10-26T12:35:45Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-26T12:35:45.130083282Z",
+          "end": "2026-10-26T12:35:45.130146129Z"
+        }
+      ]
     }
   ],
   "product": {
