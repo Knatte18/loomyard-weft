@@ -1,12 +1,11 @@
 {
-  "current_producer": "Discussion-Bouncer",
+  "current_producer": "Drift-Baseline",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Bouncer",
-    "last": "Discussion-Bouncer → awaiting",
+    "now": "Drift-Baseline",
+    "last": "Discussion-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -178,6 +177,13 @@
       "outcome": "awaiting",
       "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/beam-start-and-ownership/_lyx/reviews/discussion/round-3-bouncer-ledger.md",
       "at": "2026-10-26T09:55:38Z"
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/beam-start-and-ownership/_lyx/reviews/discussion/round-3-bouncer-ledger.md",
+      "at": "2026-10-26T09:56:16Z",
+      "by": "shed"
     }
   ],
   "product": {
