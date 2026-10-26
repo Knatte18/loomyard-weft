@@ -28,7 +28,7 @@ grouping
 | --- | --- | --- | --- |
 | E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
 
-## Tasks (4)
+## Tasks (5)
 
 Concrete and claimable; only a task can run.
 
@@ -48,13 +48,14 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Layer A (1)
+### Layer A (2)
 
 Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **A renamed symbol a later card targets: catch it at plan and batch end, and fix it in Webster, not by a plan reroute**<br>• `profile: solid` | [`webster-tree-moved-fixer`](design-webster-tree-moved-fixer.md) | darn | `webster-stop-asked-once` | 10m<br>2m | webster, loom, stencil |
+| T5 | `draft` **Catch a renamed symbol a later card targets: in the plan writer, plan validation and a blocking batch-end check**<br>• `profile: light` | [`rename-target-checks`](design-rename-target-checks.md) | darn | `webster-stop-asked-once` | 0m<br>0m | webster, loom, stencil |
 
 ## Notes (40)
 
