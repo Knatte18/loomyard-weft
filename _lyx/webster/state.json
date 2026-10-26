@@ -876,7 +876,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 2,
   "masterStrand": "ee0610d82e87ed3173adc5d01f35b932",
   "masterSessionId": "510c8418-2bb7-40bc-8b89-289445a317b5",
   "masterEngine": "claude",
@@ -915,6 +915,24 @@
       "bracketTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-beam-start-and-ownership/510c8418-2bb7-40bc-8b89-289445a317b5/subagents/agent-a23e880b3925d30c1.jsonl"
       ]
+    },
+    "2": {
+      "slug": "end-processes-by-role",
+      "cards": [
+        "02-end-processes-by-role",
+        "03-owners-on-projects"
+      ],
+      "cardHashes": {
+        "02-end-processes-by-role": "304730b0e3ac7d1f83f957965310fb34084d3aa0305e2e391d35bdca5f10dd12",
+        "03-owners-on-projects": "edcaedf6e6afc0a39098f637fbab730878daefb6d65d075a17f86733a84bf8cc"
+      },
+      "startSha": "30f5bf8751de868c10640aece8972b52db34c264",
+      "kind": "fork",
+      "spawnedAt": "2026-10-26T11:34:59Z",
+      "sessionId": "510c8418-2bb7-40bc-8b89-289445a317b5",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
