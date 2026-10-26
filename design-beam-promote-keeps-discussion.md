@@ -16,3 +16,8 @@ Note `loom-beam-darns` is a related shape, where a large loom task turns its own
 ## Until then (operator, 2026-10-25)
 
 Beams are made with `lyx beam create` on a project entry only; `lyx beam promote` is not used.
+
+## Landed since (beam-start-and-ownership)
+
+`lyx beam promote` is removed, so the Seen and Until-then sections above describe a verb that no longer exists.
+A beam's life is now one batten run over its project entry with the `pawl` recipe; the idea here, keeping Discussion's record as a beam's starting design, still stands but needs a new route.

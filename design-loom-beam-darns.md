@@ -24,7 +24,7 @@ It came out of discussing sub-planners for the Plan writer (note `plan-writer-co
 
 ## Depends on
 
-The beam setup: `orch-any-worktree` is landed (dd11ab09f: beams, pairs from a parent pair, `lyx beam create`, `promote`, `land`), and `umbrella-daemon` is landed too (c2a03a885: dobby, a per-beam daemon that drives runs).
+The beam setup: `orch-any-worktree` is landed (dd11ab09f: beams, pairs from a parent pair, `lyx beam create`, `land`; its `promote` was removed by `beam-start-and-ownership`, which also added `lyx beam start` and the `pawl` recipe), and `umbrella-daemon` is landed too (c2a03a885: dobby, a per-beam daemon that drives runs).
 Earlier wording: `orch-any-worktree` (umbrella tasks spawning and landing from their own worktree) and `umbrella-daemon` (a daemon per beam that drives its runs).
 
 ## Open

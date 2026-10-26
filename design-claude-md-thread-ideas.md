@@ -4,7 +4,9 @@
 
 # r/ClaudeCode "What's the one line in your CLAUDE.md that made the biggest difference?" — review for LoomYard
 
-Source: the 17-page PDF export in `.scratch/`.
+Status: the operator decides whether a research task with a bench is drafted from section 1; nothing is promoted yet (2026-10-26).
+
+Source: the r/ClaudeCode thread named in the title, read from a 17-page PDF export kept only on OSL-1046.
 The post shows 887 votes and 187 comments.
 The export shows no per-comment vote counts, so "prominence" below means position under Best sort, reply count, or the OP's own endorsement.
 Paths below are repository-relative unless they start with `~/.claude`, which stands for `/home/AD.NORCERESEARCH.NO/hanf/.claude/plugins/cache/scribe/scribe/1.1.0/skills`.
