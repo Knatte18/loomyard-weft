@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-26 13:59 UTC; every age below is as of then.
+Rendered 2026-10-26 14:00 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -38,7 +38,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **A mechanical plan conflict is fixed in Webster by a small fixer agent, not by a plan reroute**<br>• `profile: solid` | [`webster-tree-moved-fixer`](design-webster-tree-moved-fixer.md) | darn | Code-Bouncer | osl-1046 | 1h<br>1h | webster, loom, stencil |
+| T1 | **A mechanical plan conflict is fixed in Webster by a small fixer agent, not by a plan reroute**<br>• `profile: solid` | [`webster-tree-moved-fixer`](design-webster-tree-moved-fixer.md) | darn | Code-Burler-Review | osl-1046 | 1h<br>1h | webster, loom, stencil |
 | T4 | **Beams: one lyx beam start, machine ownership by project, and a beam's life as a pawl run**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-ownership`](design-beam-start-and-ownership.md) | loom | Webster | osl-1046 | 23h<br>18h | orch, workspaces, batten, reed, board |
 
 ### Ready (0)
