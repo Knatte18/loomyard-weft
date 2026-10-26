@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-26 12:18 UTC; every age below is as of then.
+Rendered 2026-10-26 12:19 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -38,8 +38,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **A webster stop reaches the parent twice: Merriam asks directly and the driver escalates the same question**<br>• `profile: solid` | [`webster-stop-asked-once`](design-webster-stop-asked-once.md) | darn | Code-Burler-Review | osl-1046 | 20h<br>17m | webster, loom |
-| T3 | **Drop the ban on scripted edits: the sed -i and redirect-write guard rows and the edit directive**<br>• `profile: light` | [`scripted-edits-allowed`](design-scripted-edits-allowed.md) | darn | Darn-Write | osl-1046 | 5m<br>3m | shuttle, stencil |
+| T2 | **A webster stop reaches the parent twice: Merriam asks directly and the driver escalates the same question**<br>• `profile: solid` | [`webster-stop-asked-once`](design-webster-stop-asked-once.md) | darn | Code-Burler-Review | osl-1046 | 20h<br>18m | webster, loom |
+| T3 | **Drop the ban on scripted edits: the sed -i and redirect-write guard rows and the edit directive**<br>• `profile: light` | [`scripted-edits-allowed`](design-scripted-edits-allowed.md) | darn | Darn-Write | osl-1046 | 5m<br>4m | shuttle, stencil |
 | T4 | **Beams: one lyx beam start, machine ownership by project, and a beam's life as a pawl run**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-ownership`](design-beam-start-and-ownership.md) | loom | Plan-Burler-Review | osl-1046 | 21h<br>16h | orch, workspaces, batten, reed, board |
 
 ### Ready (0)
@@ -110,11 +110,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R4 |  | **Lens overlap audit: which lenses find the same defects, and a smaller set**<br>• twill-plan 8 to 5 lenses recommended; twill-discussion 7 to 4 and review-code 4 to 3 at low confidence | [`lens-overlap-audit`](design-lens-overlap-audit.md) | 3d<br>20h | burler, loom |
 | R5 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 3d<br>20h | webster |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 3d<br>20h | loom, stencil |
-
-## Done (1)
-
-Finished, awaiting `lyx board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T1 | **Checklist marks a row skipped by its entry gate as [-], not open**<br>• Rows passed on a false entry gate, such as disabled Drift rows, show [ ] in the overview; give them [-]<br>• `profile: light` | [`checklist-skipped-row-box`](design-checklist-skipped-row-box.md) | 50m<br>20m | loom, shed |
