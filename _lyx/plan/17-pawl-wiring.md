@@ -1,12 +1,12 @@
 # Card 17 — pawl-wiring
 
 **Create:**
-- `plan:internal/hubgeom#PawlPaths` -> `func PawlPaths(beam *lyxcwd.Location) pawlengine.Paths`
-- `plan:internal/loomcli#pawlDeps` -> `func pawlDeps(location *lyxcwd.Location, slug string) (pawlengine.Deps, error)`
-- `plan:internal/loomcli#pawlRecheckLines` -> `func pawlRecheckLines(slug string, blockers battencli.BeamLandBlockers, refusal error, here, beamOwner, parentOwner, parentSubject string) []string`
-- `plan:internal/loomcli#pawlLandBlockers` -> `func pawlLandBlockers(prime *lyxcwd.Location, slug string) func() ([]landingshed.LandBlocker, error)`
-- `plan:internal/loomcli#stopBeamDobby` -> `func stopBeamDobby(prime *lyxcwd.Location, slug string) error`
-- `plan:internal/loomcli#TestPawlRecheckLines` -> `func TestPawlRecheckLines(t *testing.T)`
+- `internal/hubgeom#PawlPaths`
+- `internal/loomcli#pawlDeps`
+- `internal/loomcli#pawlRecheckLines`
+- `internal/loomcli#pawlLandBlockers`
+- `internal/loomcli#stopBeamDobby`
+- `internal/loomcli#TestPawlRecheckLines`
 
 **Edit:**
 - `internal/loomcli#loomCLI.wire`
