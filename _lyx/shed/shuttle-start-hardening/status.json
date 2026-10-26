@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Burler-Review",
+  "current_producer": "Code-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Burler-Review",
-    "last": "Code-Bouncer → bounced to Code-Burler-Review",
+    "now": "Code-Burler-Fix",
+    "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -80,6 +80,35 @@
       "output": "",
       "at": "2026-10-26T10:43:31Z",
       "routed_to": "Code-Burler-Review"
+    },
+    {
+      "producer": "Code-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/shuttle-start-hardening/_lyx/reviews/code/round-1-review.md",
+      "at": "2026-10-26T10:46:09Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-10-26T10:45:47.139545216Z",
+          "end": "2026-10-26T10:45:47.140006374Z"
+        },
+        {
+          "gate": "review",
+          "kind": "rework",
+          "start": "2026-10-26T10:45:48.356655135Z",
+          "end": "2026-10-26T10:46:08.699017341Z"
+        },
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-10-26T10:46:08.730950523Z",
+          "end": "2026-10-26T10:46:08.731253561Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Code-Burler-Fix"
     }
   ],
   "product": {
