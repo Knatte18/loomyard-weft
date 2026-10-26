@@ -963,6 +963,26 @@
       "body": "## Seen (operator, 2026-10-26, OSL-1046)\n\n`lyx adopt --prime` on OSL-1046 started the machine check in the background (`lyx gate test --gate finalize --wait`) and printed only its pid and a log path, `_board/.lyx/adopt/suite.log`, inside the JSON.\nNothing on screen showed that a test run had started, how far it had come or how it ended.\nThe check exists to find what a move between machines breaks, here from Neve on Ubuntu 26 to OSL-1046 on Ubuntu 24.\nThe operator dislikes the gate key `finalize` for it: the run is the adopting machine's check, not a Finalize.\n\n## Idea\n\n- The adopt check runs under a gate key of its own, such as `adopt`, by the rule one gate key per producer, named after it.\n- Its progress and result are visible from where the operator works: a window or strand of its own, or a line per tier to the orch and in `lyx beam status`, and a notice when it ends, failed or green.\n",
       "created": "2026-10-26T08:52:54Z",
       "revised": "2026-10-26T08:52:54Z"
+    },
+    {
+      "id": 830,
+      "handle": "E14",
+      "slug": "test-skips-os-tags",
+      "title": "OS-only tests behind build tags, and no test that skips on its own failed setup",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "testkit",
+        "reed",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Windows-only tests count as skips on Linux, and TestBuildLoomShed_OutputShape skips on every machine",
+      "body": "## Seen (operator, 2026-10-26, OSL-1046)\n\nThe adopt check's tier0 run on Linux reported three skipped tests.\n`TestUp_BootValidation/TmuxConfUnvalidatedOnWindows` (`internal/reedengine/lifecycle_test.go`) skips itself on every machine but Windows, so a Linux run counts it as a skip.\n`TestBuildLoomShed_OutputShape` (`internal/loomcli/sharedbootstrap_test.go`) skips itself whenever `buildLoomShed` fails, which it does because the test sets up no real fabric, so it most likely tests nothing on any machine.\nThe third, `TestClaude/neither_skips/inner` in `internal/testkit/llmkit`, is the skip helper's own test and stays.\n\n## Idea\n\n- A test that only means something on one OS moves into a file behind a `//go:build` tag for that OS, so other machines never compile it and a skip in the gate log is always worth reading.\n- `TestBuildLoomShed_OutputShape` either builds the real fabric it needs and fails when `buildLoomShed` fails, or is deleted.\n- The same sweep covers the tier1 skips of the same kinds.\n",
+      "created": "2026-10-26T09:00:27Z",
+      "revised": "2026-10-26T09:00:27Z"
     }
   ],
   "prime_owner": "osl-1046",
