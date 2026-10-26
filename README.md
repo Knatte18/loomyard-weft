@@ -28,7 +28,7 @@ grouping
 | --- | --- | --- | --- |
 | E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
 
-## Tasks (2)
+## Tasks (3)
 
 Concrete and claimable; only a task can run.
 
@@ -40,19 +40,20 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **Beams: one lyx beam start, machine ownership by project, and a beam's life as a pawl run**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-ownership`](design-beam-start-and-ownership.md) | loom | Plan-Write | osl-1046 | 19h<br>14h | orch, workspaces, batten, reed, board |
 
-### Ready (1)
+### Ready (2)
 
 Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Webster audit: a card slug ending in -weft makes every gate test --card command a fabric reference** | [`weft-suffix-card-slug-audit`](design-weft-suffix-card-slug-audit.md) | loom |  | 17h<br>17h | webster, fabric |
+| T1 | `draft` **Webster audit: a card slug ending in -weft makes every gate test --card command a fabric reference**<br>• `profile: light` | [`weft-suffix-card-slug-audit`](design-weft-suffix-card-slug-audit.md) | darn |  | 17h<br>0m | webster, fabric |
+| T2 | `draft` **gate tier1 fails on a stale Go vet cache entry naming a torn-down worktree**<br>• `profile: light` | [`gate-stale-vet-cache-path`](design-gate-stale-vet-cache-path.md) | darn |  | 17h<br>0m | gate |
 
-## Notes (46)
+## Notes (45)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Bugs (7)
+### Bugs (6)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -61,7 +62,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B4 |  | **Board README lists draft tasks under Ready** | [`readme-draft-not-ready`](design-readme-draft-not-ready.md) | 17h<br>17h | board |
 | B5 |  | **Darn-Write seat start dies: provider pane drops to a shell prompt after the prompt text** | [`seat-start-long-prompt-dies`](design-seat-start-long-prompt-dies.md) | 17h<br>17h | shuttle |
 | B6 |  | **shuttle start fails on transient tmux fork/exec EAGAIN and leaves the strand behind** | [`shuttle-retry-tmux-eagain`](design-shuttle-retry-tmux-eagain.md) | 17h<br>17h | shuttle, reed |
-| B7 |  | **gate tier1 fails on a stale Go vet cache entry naming a torn-down worktree** | [`gate-stale-vet-cache-path`](design-gate-stale-vet-cache-path.md) | 17h<br>17h | gate |
 | B8 |  | **Shuttle hold notices fire while Merriam waits on its own background recovery** | [`no-hold-notice-on-bg-wait`](design-no-hold-notice-on-bg-wait.md) | 17h<br>15h | shuttle, webster |
 
 ### Enhancements (21)
