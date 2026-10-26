@@ -50,13 +50,8 @@ Fold related notes into one loom task, or propose darn for a small change, and l
 
 ## Board tidy after a landing
 
-Once `loom-tail-review` has landed, PR-Align no longer names the board entries a run superseded, so at every fifth `landed` notice you spawn one fresh Sonnet agent, never a fork, with the operator's standing go-ahead (operator, 2026-10-23; every fifth, 2026-10-24).
-Keep the landings since the last tidy in the orch note, and give the agent all of them at once.
-It runs as `model: sonnet` with effort `medium`, never Opus and never a higher effort: the job is cheap reading (operator, 2026-10-24).
-Its brief: read each landed commit and its run's decision record against the board's notes, through `lyx board` only; make each obvious amendment itself, such as dropping a sentence the landing made stale or noting that part of a note is now built (body drafts only in `<prime>/.scratch/`); and report what it changed, plus each note the landing superseded whole or changed in scope or design, with why.
-You never edit the board for a tidy yourself: the agent does it (operator, 2026-10-24).
-A note removed whole, or a change of its scope or design, you put to the operator first, and have the agent carry out the operator's answer.
-This job moves to the orch's Go driver once there is one, which spawns the same agent every N landings, N a config key with 5 as its default.
+Dobby spawns the board tidy agent itself after landings; you never spawn it, count landings for it or edit the board for a tidy yourself (operator, 2026-10-26).
+Dobby's line names the tidy's report path: a note removed whole, or a change of its scope or design, the report proposes, and you put it to the operator first.
 
 ## A decision for a run at Webster (#849)
 
@@ -90,10 +85,3 @@ Always offer the cheaper path beside it: record the blocking fixes as decisions 
 ## Discussion rounds are not cut for a full body
 
 Discussion explores the code, bounds the scope and weighs the impact; a full board body does not do that work, so it is no reason to lower a task's Discussion rounds (operator, 2026-10-25).
-
-## A card slug ending in -weft (#874)
-
-Webster's fabric-reference audit flags every unquoted word ending in `-weft`, so a card whose slug ends that way fails its batch audit whenever a fork names the card in a command.
-Judge such a finding false when the matched commands only name the card, have Merriam run `lyx webster accept-audit --batch <n>` and `recover-batch <n>`, and have later forks quote the slug.
-`accept-audit` refuses when a flagged command also writes, such as a chained `git commit`; then have Merriam write outcome stuck, run `lyx webster reset --to batch-start --batch <n>` yourself once the run has stopped, and `lyx loom resume`.
-Remove this section once #874 is fixed.
