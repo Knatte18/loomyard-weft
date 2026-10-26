@@ -24,6 +24,13 @@ The hub exists on Neve at `/home/knatte/Code/lyx-csharp-LYXHUB` (shortname `cs`)
 No run has gone through it yet; the first run there is the end-to-end proof this note asks for.
 The first `tier1` gate run died with "Internal CLR error (0x80131506)" after 900 s and passed on a rerun; cause unknown.
 
+## Order before Models (2026-10-26)
+
+1. `beam-start-and-ownership` lands (done 2026-10-26).
+2. `rename-binary-lym` runs alone.
+3. One darn run on this sandbox hub proves the whole C# path, with the hub anchored in a subdirectory (anchor not `.`) so the per-worktree `.lyx-anchor` path is proved end to end in the same run.
+4. Models, on OSL-1046; nothing is done there until the operator names what to test.
+
 ## Regression harness (operator, 2026-10-25)
 
 The sandbox gets a small capture/compare regression harness on the pattern of Models' `NORCE.Models.NumericalBaseline`: a capture writes scrubbed output into a gitignored baseline directory, and a compare mode fails on the first deviation.
