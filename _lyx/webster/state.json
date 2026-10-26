@@ -913,7 +913,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 18,
   "masterStrand": "7efddbc29cb40e67f586e1bd558110f5",
   "masterSessionId": "3401e80d-03a0-4f92-84bd-f457164076a9",
   "masterEngine": "claude",
@@ -1115,6 +1115,28 @@
       "bracketTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-beam-start-and-ownership/3401e80d-03a0-4f92-84bd-f457164076a9/subagents/agent-a90816d545691d5f2.jsonl"
       ]
+    },
+    "18": {
+      "slug": "batten-beam-project",
+      "cards": [
+        "18-batten-beam-project",
+        "19-batten-quiet-at-beam-await",
+        "20-batten-cancel-beam",
+        "21-beam-create-starts-pawl"
+      ],
+      "cardHashes": {
+        "18-batten-beam-project": "7d010c43251ee17b7d3a4008e042142036984f3b12898afd410ebc53d5dee194",
+        "19-batten-quiet-at-beam-await": "37c644e3888bd22853c86c79a4994ad6ed84c799b51d7b11d6351eabd51a0f2a",
+        "20-batten-cancel-beam": "d2a1933b8a496fb52e7d7d4f99eca0e2616b613429ca3fe80f65f74696b76aea",
+        "21-beam-create-starts-pawl": "1c68bd230884870a72a1fcc994ed65589803e03f648b771f6633d84908133279"
+      },
+      "startSha": "4254ddd685ed0c9e00b7c7a3a69bd0718c48ecf8",
+      "kind": "fork",
+      "spawnedAt": "2026-10-26T13:41:11Z",
+      "sessionId": "3401e80d-03a0-4f92-84bd-f457164076a9",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "2": {
       "slug": "end-processes-by-role",
