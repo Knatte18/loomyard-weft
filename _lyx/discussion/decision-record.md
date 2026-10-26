@@ -49,6 +49,12 @@ Rationale: the names are stable identifiers in specs, stencils and run records, 
 
 - A discussion bullet whose text itself ends in a ` (test)` written as prose would have it stripped before measuring; the effect is a few characters of slack, never a false refusal.
 
+<!-- lyx:carry-over Code-Review -->
+- Code-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/code/round-1-review.md; fixer report: _lyx/reviews/code/round-1-fixer-report.md.
+  - discussionparser-doc-names-old-line-cap (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - Check reports `long-line` for an entry whose rule text exceeds `MaxEntryTextChars`, and none for a line longer than the old whole-line cap whose rule text fits, with and without `(test)` and a link.
