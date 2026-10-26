@@ -24,7 +24,7 @@
 - `docs/overview.md`
 
 **Create:**
-- `plan:internal/adoptcli#movedRuns` -> `func movedRuns(deps adoptDeps, owners boardengine.Owners, adopted []string, rootAdopted bool) ([]string, error)`
+- `internal/adoptcli#movedRuns`
 
 **Delete:**
 - `internal/adoptcli#primeSubject`

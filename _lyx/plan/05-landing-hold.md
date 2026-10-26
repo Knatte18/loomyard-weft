@@ -1,12 +1,12 @@
 # Card 5 — landing-hold
 
 **Create:**
-- `plan:internal/boardengine#RunHolds` -> `func RunHolds(task Task) bool`
-- `plan:internal/boardengine#holdFreeProducers` -> `var holdFreeProducers []string`
-- `plan:internal/boardengine#BeamRunLockedError` -> `type BeamRunLockedError struct`
-- `plan:internal/boardengine#BeamRunLockedError.Error` -> `func (e *BeamRunLockedError) Error() string`
-- `plan:internal/boardengine#BeamRunLockedError.Is` -> `func (e *BeamRunLockedError) Is(target error) bool`
-- `plan:internal/boardengine_test#TestRunHolds` -> `func TestRunHolds(t *testing.T)`
+- `internal/boardengine#RunHolds`
+- `internal/boardengine#holdFreeProducers`
+- `internal/boardengine#BeamRunLockedError`
+- `internal/boardengine#BeamRunLockedError.Error`
+- `internal/boardengine#BeamRunLockedError.Is`
+- `internal/boardengine_test#TestRunHolds`
 
 **Edit:**
 - `internal/boardengine#checkRunLocks`
