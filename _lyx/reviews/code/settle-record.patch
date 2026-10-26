@@ -1,0 +1,303 @@
+diff --git a/internal/loomcli/checklist.go b/internal/loomcli/checklist.go
+index ca9ea9dc..5c93b251 100644
+--- a/internal/loomcli/checklist.go
++++ b/internal/loomcli/checklist.go
+@@ -36,7 +36,8 @@ const (
+ 	checklistBoxDone       = "[x]"
+ 	checklistBoxRunning    = "[>]"
+ 	checklistBoxFailed     = "[!]"
+-	checklistBoxHalted     = "[-]"
++	checklistBoxHalted     = "[=]"
++	checklistBoxSkipped    = "[-]"
+ 	checklistBoxNotReached = "[ ]"
+ 	checklistWaitNothing   = "waiting on nothing"
+ 	checklistOpenOutcome   = "running"
+@@ -256,6 +257,7 @@ func renderChecklist(in checklistInput, now time.Time) statuspane.Frame {
+ 		perched[row.Name] = reviewSegment[row.Segment]
+ 	}
+ 	rework := checklistRework(history, perched)
++	skipped := checklistSkippedRows(status)
+ 
+ 	var lines []string
+ 	drawnSegment := map[string]bool{}
+@@ -263,11 +265,11 @@ func renderChecklist(in checklistInput, now time.Time) statuspane.Frame {
+ 		if row, ok := recipeRow[name]; ok && reviewSegment[row.Segment] {
+ 			if !drawnSegment[row.Segment] {
+ 				drawnSegment[row.Segment] = true
+-				lines = append(lines, checklistReviewBlock(row.Segment, numbers[name], in.rows, history, status, arbiters)...)
++				lines = append(lines, checklistReviewBlock(row.Segment, numbers[name], in.rows, history, skipped, status, arbiters)...)
+ 			}
+ 			continue
+ 		}
+-		line := checklistBox(name, visits[name], status) + " " + checklistEntryName(numbers[name], name)
++		line := checklistBox(name, visits[name], skipped[name], status) + " " + checklistEntryName(numbers[name], name)
+ 		if v := visits[name]; v.visits > 0 {
+ 			line += " " + checklistTime(v.spent, slices.ContainsFunc(v.log, checklistVisitIsOpen))
+ 			if v.visits > 1 {
+@@ -373,7 +375,7 @@ func checklistTime(spent time.Duration, includesOpen bool) string {
+ }
+ 
+ // checklistReviewBlock renders a review segment, a recipe segment holding a Bouncer row, as one block from the history-order visits.
+-// The heading reads "<box> <number>. <segment> <time> rounds <n>"; an unvisited segment is the single line "[ ] <number>. <segment>".
++// The heading reads "<box> <number>. <segment> <time> rounds <n>"; an unvisited segment is the single line "<box> <number>. <segment>", boxed skipped when skipped holds one of its rows and not reached otherwise.
+ // number is the segment's entry number, which its rounds and their lines do not carry.
+ // Under it come the lines placed before any round opened, then each opened round in the order opened as "  round <n> <time>", the sum of its lines' time, with its lines, and last a Bouncer done that ends the segment.
+ // A time that includes the open visit is drawn in whole minutes and every other time to the second.
+@@ -382,7 +384,7 @@ func checklistTime(spent time.Duration, includesOpen bool) string {
+ // A fix-row entry, a goto into the segment, a reroute into the segment and a Bouncer entry that routes nowhere stand as the last line of the round in progress, or before round 1.
+ // The open visit of a segment row opens the round after the last when a bounced Bouncer line waits, and otherwise joins the round in progress.
+ // Each line is followed by its gate lines and then the arbiter lines placed after its history entry.
+-func checklistReviewBlock(segment string, number int, rows []loomrecipe.RecipeRow, visits []checklistVisit, status shedengine.Status, arbiters *checklistArbiterPlacement) []string {
++func checklistReviewBlock(segment string, number int, rows []loomrecipe.RecipeRow, visits []checklistVisit, skipped map[string]bool, status shedengine.Status, arbiters *checklistArbiterPlacement) []string {
+ 	inSegment := map[string]bool{}
+ 	bouncers := map[string]bool{}
+ 	reviewRows := map[string]bool{}
+@@ -408,14 +410,22 @@ func checklistReviewBlock(segment string, number int, rows []loomrecipe.RecipeRo
+ 		}
+ 	}
+ 	if len(visitCount) == 0 {
+-		return []string{checklistBoxNotReached + " " + checklistEntryName(number, segment)}
++		box := checklistBoxNotReached
++		for _, row := range rows {
++			if row.Segment == segment && skipped[row.Name] {
++				box = checklistBoxSkipped
++				break
++			}
++		}
++		return []string{box + " " + checklistEntryName(number, segment)}
+ 	}
+ 	box := checklistBoxDone
+ 	for _, row := range rows {
+ 		if row.Segment != segment {
+ 			continue
+ 		}
+-		if current := checklistBox(row.Name, checklistVisits{visits: visitCount[row.Name]}, status); current != checklistBoxDone && current != checklistBoxNotReached {
++		// A visited segment takes only a current producer's state box, so a skipped row of it never boxes the heading.
++		if current := checklistBox(row.Name, checklistVisits{visits: visitCount[row.Name]}, false, status); current != checklistBoxDone && current != checklistBoxNotReached {
+ 			box = current
+ 			break
+ 		}
+@@ -853,8 +863,8 @@ func parseChecklistTime(value string) (time.Time, bool) {
+ 	return parsed, err == nil
+ }
+ 
+-// checklistBox is the box of the row name: the current producer's by the run's state, otherwise done when the row has a visit and not reached when it has none.
+-func checklistBox(name string, v checklistVisits, status shedengine.Status) string {
++// checklistBox is the box of the row name: the current producer's by the run's state, otherwise done when the row has a visit, skipped when it has none and skipped is true, and not reached otherwise.
++func checklistBox(name string, v checklistVisits, skipped bool, status shedengine.Status) string {
+ 	if name == status.CurrentProducer {
+ 		switch status.State {
+ 		case shedengine.StateRunning:
+@@ -868,5 +878,19 @@ func checklistBox(name string, v checklistVisits, status shedengine.Status) stri
+ 	if v.visits > 0 {
+ 		return checklistBoxDone
+ 	}
++	if skipped {
++		return checklistBoxSkipped
++	}
+ 	return checklistBoxNotReached
+ }
++
++// checklistSkippedRows returns the rows the status history records as skipped by their entry gate.
++func checklistSkippedRows(status shedengine.Status) map[string]bool {
++	skipped := map[string]bool{}
++	for _, entry := range status.History {
++		if entry.Outcome == shedengine.OutcomeSkipped {
++			skipped[entry.Producer] = true
++		}
++	}
++	return skipped
++}
+diff --git a/internal/loomcli/checklist_test.go b/internal/loomcli/checklist_test.go
+index 35220130..19883397 100644
+--- a/internal/loomcli/checklist_test.go
++++ b/internal/loomcli/checklist_test.go
+@@ -74,6 +74,11 @@ func stuckEntry(producer string, atMinute int, routedTo string) shedengine.Histo
+ 	return shedengine.HistoryEntry{Producer: producer, Outcome: shedengine.Stuck, At: minuteMark(atMinute), RoutedTo: routedTo}
+ }
+ 
++// skippedEntry is the history entry of producer's row skipped by its entry gate at the given minute.
++func skippedEntry(producer string, atMinute int) shedengine.HistoryEntry {
++	return shedengine.HistoryEntry{Producer: producer, Outcome: shedengine.OutcomeSkipped, At: minuteMark(atMinute), Reason: "review budget is 0"}
++}
++
+ // awaitingEntry is an Awaiting history entry of producer at the given minute.
+ func awaitingEntry(producer string, atMinute int) shedengine.HistoryEntry {
+ 	return shedengine.HistoryEntry{Producer: producer, Outcome: shedengine.Awaiting, At: minuteMark(atMinute)}
+@@ -311,18 +316,31 @@ func TestRenderChecklist(t *testing.T) {
+ 			},
+ 		},
+ 		{
+-			name: "a skipped row is passed through: no visit, no time, and the next visit starts at the skip",
++			name: "a skipped row is boxed skipped with no visit and no time, and the next visit starts at the skip",
+ 			rows: recipe,
+ 			poll: checklistStatus(shedengine.StateDone, "",
+-				doneEntry("Plan", 5), shedengine.HistoryEntry{Producer: "Review", Outcome: shedengine.OutcomeSkipped, At: minuteMark(5), Reason: "review budget is 0"}, doneEntry("Build", 12)),
++				doneEntry("Plan", 5), skippedEntry("Review", 5), doneEntry("Build", 12)),
+ 			nowMin: 20,
+ 			want: []string{
+ 				"[x] 1. Plan 5m00s", "  10:00 5m00s done",
+-				"[ ] 2. Review",
++				"[-] 2. Review",
+ 				"[x] 3. Build 7m00s", "  10:05 7m00s done",
+ 				"loom done | now working", "waiting on nothing",
+ 			},
+ 		},
++		{
++			name: "a row skipped and also visited is boxed done",
++			rows: recipe,
++			poll: checklistStatus(shedengine.StateDone, "",
++				doneEntry("Plan", 5), skippedEntry("Review", 5), gotoEntry("Review", 6), doneEntry("Review", 9), doneEntry("Build", 12)),
++			nowMin: 20,
++			want: []string{
++				"[x] 1. Plan 5m00s", "  10:00 5m00s done",
++				"[x] 2. Review 3m00s", "  10:06 3m00s done",
++				"[x] 3. Build 3m00s", "  10:09 3m00s done",
++				"loom done | now working", "waiting on nothing",
++			},
++		},
+ 		{
+ 			name:   "a row resumed after a failed call counts the halt in its time",
+ 			rows:   recipe,
+@@ -368,7 +386,7 @@ func TestRenderChecklist(t *testing.T) {
+ 			nowMin: 6,
+ 			want: []string{
+ 				"[ ] 1. Plan",
+-				"[-] 2. Review 6m x2", "  10:00 5m00s escalated", "  10:05 1m running",
++				"[=] 2. Review 6m x2", "  10:00 5m00s escalated", "  10:05 1m running",
+ 				"[ ] 3. Build",
+ 				"loom awaiting | now working", "waiting on the parent: escalation from Review",
+ 			},
+@@ -380,7 +398,7 @@ func TestRenderChecklist(t *testing.T) {
+ 			nowMin: 35,
+ 			want: []string{
+ 				"[x] 1. Plan 5m00s", "  10:00 5m00s done",
+-				"[-] 2. Review 30m", "  10:05 30m running",
++				"[=] 2. Review 30m", "  10:05 30m running",
+ 				"[ ] 3. Build",
+ 				"loom blocked | now working", "waiting on nothing",
+ 			},
+@@ -392,7 +410,7 @@ func TestRenderChecklist(t *testing.T) {
+ 			nowMin: 1,
+ 			want: []string{
+ 				"[ ] 1. Plan",
+-				"[-] 2. Review 1m", "  10:00 1m running",
++				"[=] 2. Review 1m", "  10:00 1m running",
+ 				"[ ] 3. Build",
+ 				"loom blocked | now working", "wait " + longReason,
+ 			},
+@@ -404,7 +422,7 @@ func TestRenderChecklist(t *testing.T) {
+ 			nowMin: 6,
+ 			want: []string{
+ 				"[x] 1. Plan 5m00s", "  10:00 5m00s done",
+-				"[-] 2. Review 1m", "  10:05 1m running",
++				"[=] 2. Review 1m", "  10:05 1m running",
+ 				"[ ] 3. Build",
+ 				"loom awaiting | now working", "waiting on the parent: escalation from Review",
+ 			},
+@@ -415,7 +433,7 @@ func TestRenderChecklist(t *testing.T) {
+ 			poll:   awaitingPlanBouncer,
+ 			nowMin: 2,
+ 			want: []string{
+-				"[-] 1. Plan-Bouncer 2m", "  10:00 2m running",
++				"[=] 1. Plan-Bouncer 2m", "  10:00 2m running",
+ 				"loom awaiting | now working",
+ 				"waiting on the parent: escalation from Plan-Bouncer: the plan needs a decision | waiting for the parent",
+ 			},
+@@ -854,7 +872,7 @@ func TestRenderChecklist(t *testing.T) {
+ 			nowMin: 17,
+ 			want: []string{
+ 				"[x] 1. Build 5m00s", "  10:00 5m00s done",
+-				"[-] 2. Rev 12m rounds 1",
++				"[=] 2. Rev 12m rounds 1",
+ 				"  round 1 12m",
+ 				"    10:05 1m00s Rev-Bouncer bounced",
+ 				"    10:06 4m00s Rev-Review done",
+@@ -880,6 +898,74 @@ func TestRenderChecklist(t *testing.T) {
+ 				"loom running | now working", "waiting on nothing",
+ 			},
+ 		},
++		{
++			name: "a review segment whose row was skipped and never visited is one skipped bare line",
++			rows: reviewRecipe,
++			poll: checklistStatus(shedengine.StateRunning, "Publish",
++				doneEntry("Build", 5), skippedEntry("Rev-Bouncer", 5)),
++			nowMin: 7,
++			want: []string{
++				"[x] 1. Build 5m00s", "  10:00 5m00s done",
++				"[-] 2. Rev",
++				"[>] 3. Publish 2m", "  10:05 2m running",
++				"[ ] 4. PR-Review", "[ ] 5. PR-Rework",
++				"loom running | now working", "waiting on nothing",
++			},
++		},
++		{
++			name: "a skipped row of a visited review segment leaves the heading done",
++			rows: reviewRecipe,
++			poll: checklistStatus(shedengine.StateRunning, "Publish",
++				doneEntry("Build", 5), doneEntry("Rev-Bouncer", 6), skippedEntry("Rev-Fix", 6)),
++			nowMin: 8,
++			want: []string{
++				"[x] 1. Build 5m00s", "  10:00 5m00s done",
++				"[x] 2. Rev 1m00s rounds 0",
++				"  10:05 1m00s Rev-Bouncer done",
++				"[>] 3. Publish 2m", "  10:06 2m running",
++				"[ ] 4. PR-Review", "[ ] 5. PR-Rework",
++				"loom running | now working", "waiting on nothing",
++			},
++		},
++		{
++			name: "a running current producer with a skip entry keeps its running box",
++			rows: recipe,
++			poll: checklistStatus(shedengine.StateRunning, "Review",
++				doneEntry("Plan", 5), skippedEntry("Review", 5)),
++			nowMin: 7,
++			want: []string{
++				"[x] 1. Plan 5m00s", "  10:00 5m00s done",
++				"[>] 2. Review 2m", "  10:05 2m running",
++				"[ ] 3. Build",
++				"loom running | now working", "waiting on nothing",
++			},
++		},
++		{
++			name: "a failed current producer with a skip entry keeps its failed box",
++			rows: recipe,
++			poll: checklistStatus(shedengine.StateFailed, "Review",
++				doneEntry("Plan", 5), skippedEntry("Review", 5)),
++			nowMin: 7,
++			want: []string{
++				"[x] 1. Plan 5m00s", "  10:00 5m00s done",
++				"[!] 2. Review 2m", "  10:05 2m running",
++				"[ ] 3. Build",
++				"loom failed | now working", "waiting on nothing",
++			},
++		},
++		{
++			name: "a halted current producer with a skip entry keeps its halted box",
++			rows: recipe,
++			poll: checklistStatus(shedengine.StatePaused, "Review",
++				doneEntry("Plan", 5), skippedEntry("Review", 5)),
++			nowMin: 7,
++			want: []string{
++				"[x] 1. Plan 5m00s", "  10:00 5m00s done",
++				"[=] 2. Review 2m", "  10:05 2m running",
++				"[ ] 3. Build",
++				"loom paused | now working", "waiting on nothing",
++			},
++		},
+ 		{
+ 			name: "a round-3 escalation and its arbiter attempt stand in round 3 and round 4 opens after them",
+ 			rows: reviewRecipe,
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index a6765eb8..0c9fada7 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -18,7 +18,7 @@
+ // a seeded run keeps its recorded driver whatever the key says later.
+ // It brings up the worktree's tmux session;
+ // it ensures the status strand on either driver, and the per-hub watchdog daemon is spawned best-effort.
+-// The status strand runs the hidden `lyx loom checklist` verb: the session's overview window, drawing the checklist frame: the recipe's rows in order, each entry numbered after its box and a review segment taking one number, each with its box, the time spent in it, its visit count and its visit lines under it, each carrying no output path, a gate line per gate entry under a visit that recorded gate spans, opening with the UTC clock time its gate entry started, the visit after a gate row's refusal marked as rework for it and its time added to the gate row's line, a review segment's rounds each carrying their total, every closed time drawn to the second and every time that includes the open visit in whole minutes, then the run's state line, with the note of what a running run waits on (the same note `lyx loom status` reports), and the wait line.
++// The status strand runs the hidden `lyx loom checklist` verb: the session's overview window, drawing the checklist frame: the recipe's rows in order, each entry numbered after its box and a review segment taking one number, each with its box, a row the run passed on a false entry gate and never visited boxed `[-]` apart from one not reached, the time spent in it, its visit count and its visit lines under it, each carrying no output path, a gate line per gate entry under a visit that recorded gate spans, opening with the UTC clock time its gate entry started, the visit after a gate row's refusal marked as rework for it and its time added to the gate row's line, a review segment's rounds each carrying their total, every closed time drawn to the second and every time that includes the open visit in whole minutes, then the run's state line, with the note of what a running run waits on (the same note `lyx loom status` reports), and the wait line.
+ // A Stuck visit whose status entry records where Shed routed it reads `bounced` and an awaiting one reads `escalated`, in this window only.
+ // The verb reads the status file and the seed without arming a run, and reports no content size to reed.
+ // Right after ensuring the status strand, every start entry, a fresh run, a re-entrant start on a live run and a resume of a parked run, turns the session's follow state on and selects the run's relevant window;
