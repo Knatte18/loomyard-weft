@@ -1,7 +1,7 @@
 # Card 2 — end-processes-by-role
 
 **Create:**
-- `plan:internal/runproc#EndRole` -> `func EndRole(dir, owner, role string, callerPID int) ([]Ended, error)`
+- `internal/runproc#EndRole`
 
 **Edit:**
 - `internal/runproc#ender.end` -> `func (e ender) end(dir, owner string, callerPID int, ends func(role string) bool) ([]Ended, error)`
