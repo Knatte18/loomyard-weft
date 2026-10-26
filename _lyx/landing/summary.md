@@ -1,56 +1,53 @@
-# Catch a renamed symbol a later card targets, at plan and batch end
+# Catch a renamed symbol a later card targets before begin-batch refuses
 
-A batch could rename or remove a symbol that a later card still names and record cleanly.
-The next `begin-batch` then refused with `plan_conflict: tree_moved`, after the context that could have answered was gone.
-In the case that prompted this, a card renamed `NewBeam` to `NewPawl` while its tests `TestNewBeam` and `TestBeamRouting` were listed under `Edit` only.
-The implementer renamed the tests anyway, and quarry could offer the rename only as an evidence-tier candidate, which was an informational warning.
+A batch that renames or removes a symbol a later card still targets used to surface only at the next `begin-batch`, as `plan_conflict: tree_moved`.
+Seen in a past run: a card renamed `NewBeam` and `BeamRouting` as Rename pairs but left `TestNewBeam` and `TestBeamRouting` under `Edit`.
+The implementer renamed the tests too and reported no departures, and the next batch's `begin-batch` refused because a later card still named the old tests.
+Three layers now catch it, from plan writing to batch end.
 
-Three layers now catch it.
+## What changes
 
-## Plan writer and plan check
-
-The plan writer stencil asks a card that renames a symbol to declare, as `Rename` pairs on the same card, the renames of the tests named after it: `Test<Name>` and `Test<Name>_<case>`, or `Test<Type>_<Method>` for a method.
-
-The new plan-format check `rename-leaves-test` (`internal/planparser`, row 53 of `loom-plan-spec.md`) enforces it under `language: go`.
-A symbol `Rename` pair draws one blocking finding for each same-unit `Edit` ref naming a test after the symbol that no `Rename` pair of the plan renames.
-The finding goes on the renaming card, where the missing pair belongs, and names the card that edits the test.
-`TestNameX` is not `Name`'s test, since the base must be followed by nothing or `_`.
-
-## Batch-end hand-back
-
-`planindex.Delta` gains `RemovedTargets`, implemented in `internal/planglyph` as the read-only, blocking `later-target-removed` finding.
-It reports a symbol the batch's delta deleted that a pending card targets or uses.
-A symbol is exempt when quarry renamed it exactly, when the report lists it under `renames`, or when one of the batch's own cards declares it as a `Delete` target or a `Rename` old side.
-Its finding names any evidence-tier rename candidates.
-
-`postBatchChecks` runs it right after the shared delta and before handle binding, so on a refusal the only plan rewrite already made is the C# re-sign rebind, which a retried record-batch already re-ran before this change.
-Only `RecordBatch` turns the check on, for an OK report.
-The refusal is `*LaterTargetRemovedError` (`ErrLaterTargetRemoved`).
-It leaves the batch open with its report in place and sets the new `BatchState.LaterTargetsReturned`.
-The CLI saves the whole state, syncs fabric, and exits non-zero with `{"later_target_removed": true, "batch": "NN-<slug>"}`.
-
-The Master stencil gains the ladder rung: send the refusal verbatim to the batch's fork by `SendMessage`, and call `record-batch` again on its completion notification.
-If the fork cannot be reached, call `record-batch` again at once.
-The implementer body gains "A batch handed back": restore the name in a commit or list the rename under `renames`, then rewrite the report with a fresh `head_sha`.
-It also says that a test named after a renamed symbol is renamed only when the plan declares its pair.
+- **Plan writer.**
+  The stencil `contracts/stencils/loom/loom-template-plan.md` tells a card that renames a symbol to declare, as Rename pairs on the same card, the renames of the tests named after it.
+- **Plan validation.**
+  A new blocking check `rename-leaves-test` in `internal/planparser` flags a Rename pair whose symbol has same-named tests left under `Edit`.
+  It is attributed to the renaming card, names the card that edits the test, and its way forward is to add the test's rename as a Rename pair.
+  It is documented in `contracts/specs/loom-plan-spec.md` and the package doc.
+- **Batch end.**
+  `lyx webster record-batch` refuses an OK fork report whose batch removed a symbol a pending card targets or uses, with `ErrLaterTargetRemoved`.
+  The batch stays non-terminal, its report stays in place and its bracket stays open.
+  The CLI saves the run state, syncs fabric and exits non-zero with `{"later_target_removed": true, "batch": "NN-<slug>"}`.
+  The Master stencil gains a failure-ladder rung that sends the refusal to the batch's fork by `SendMessage` and calls `record-batch` again on the fork's completion.
+  The implementer body says how a fork answers: restore the name, or list the rename under `renames`, commit any restore and rewrite its report with the new head.
+  It also says a renamed test a card names is a rename the fork reports.
 
 ## Design decisions
 
-- The hand-back fires once per bracket.
-  A second `record-batch` records the batch exactly as before, with DetectDrift's later-card warning and the later card's own `begin-batch` refusal, so a fork that cannot be reached, such as after a Master resume, never wedges the batch.
-  The worst case is one extra fork turn per batch.
-- recover-batch never hands back, since a recovery strand has ended by the time its report is read.
-  A FAILED or NEEDS_PARENT report never hands back either.
-- A declared removal that a later card still names stays out of the hand-back.
-  It is a plan defect, owned by plan validation, `LaterDeleteReferences` and the existing warning.
-- The board entry's "the batch gets a departure" is read as handing the batch back to its fork with the finding, not as a `Pattern-Departure:` trailer.
-- `rename-leaves-test` runs under `go` only, since it reads Go's test naming convention, and it is listed with the other Go-only checks in the spec.
+- **`rename-leaves-test` is Go-only.**
+  A Rename pair whose old side is `unit#Name` names the test base `Name`, and `unit#T.M` names `T_M`.
+  An `Edit` ref to `Test<base>` or `Test<base>_<suffix>` that no Rename pair renames is a finding; `TestNewBeamer` is not in `NewBeam`'s set.
+  The unit match accepts the external test package (`<dir>_test`) as well as the symbol's own unit.
+  The check is silent under `csharp` and `none`, whose test naming differs.
+- **The batch-end check is read-only and runs before handle binding.**
+  `planindex.Delta` gains `RemovedTargets`, implemented in `internal/planglyph` as the blocking finding `later-target-removed`, one per card, naming any evidence-tier rename candidates quarry offered.
+  It runs right after the shared delta in `postBatchChecks` and before `BindHandles`, so a refusal leaves the plan unrewritten and a retried record-batch sees no half-applied bind.
+  A symbol draws no finding when quarry renamed it exactly, when the report lists it under `renames`, or when one of the batch's own cards declares it as a Delete target or a Rename pair's old side.
+- **The hand-back happens once per batch.**
+  A new additive field on `BatchState` records that the batch was returned, read tolerantly.
+  A second `record-batch` on a returned batch records it as today, with the later-card warning and the later card's own `begin-batch` refusal, so a fork that cannot be reached cannot block the batch.
+  It never fires on a FAILED or NEEDS_PARENT report, and `recover-batch` never refuses on it.
+- "A later card targets" includes `Uses:` refs, matching the reference index drift detection already reads.
+- "The batch gets a departure" is read as handing the batch back to its fork with the finding, not as a `Pattern-Departure:` trailer.
+- Out of scope: `recover-batch`, `begin-batch`'s own refusal and the plan-review rubric.
 
-## Tests
+Docs updated: `internal/websterengine/doc.go`, `internal/planglyph/doc.go`, `internal/planparser/doc.go` and the `record-batch` help text.
 
-- `TestValidate_RenameLeavesTest` covers exact and `_case` test names, a method test, a longer name, another unit, a declared test pair and a `csharp` plan.
-- `TestRemovedTargets` covers later-card findings, candidate naming, a reported rename, a declared delete or rename, and an unreferenced removal.
-- `TestRecordBatch_PostBatchChecks` now covers the hand-back for a plain removal and for an evidence-tier candidate, followed by the second call that records with the warning.
-  Its fingerprint-restamp step starts past the hand-back.
-- A recover-batch row checks that an unreported removal records the recovered batch with the warning.
-- `TestRecordBatchCmd_LaterTargetRemovedEnvelope` checks the envelope and the saved `laterTargetsReturned` flag.
+## Check by hand
+
+- Nothing was run end to end against a real plan and fork; the layers are covered by unit and engine tests only.
+  Run a plan whose card renames a symbol with same-named tests and watch the plan check and the hand-back.
+- `internal/planparser/validate.go` `checkRenameLeavesTest`: confirm a test in the external test package (`foo_test#TestX` beside a renamed `foo#X`) is flagged.
+- `internal/websterengine/recordbatch_git_test.go` `TestRecordBatch_PostBatchChecks`: confirm a FAILED report is never handed back over a removed later target.
+- `internal/websterengine/recordbatch_git_test.go` near the mixed rename/delete subtest: confirm an exact quarry rename draws no hand-back.
+- `internal/planparser/validate_test.go` `TestValidate_RenameLeavesTest`: confirm a plan with language `none` draws no finding.
+- Quarry may report a symbol deleted whose file moved between packages; the later card then sees the refusal once and the existing warning after.
