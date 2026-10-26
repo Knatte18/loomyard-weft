@@ -1,21 +1,21 @@
 # Card 10 — orch-beam-up
 
 **Create:**
-- `plan:internal/orchcli#BeamUpOptions` -> `type BeamUpOptions struct`
-- `plan:internal/orchcli#BeamUpReport` -> `type BeamUpReport struct`
-- `plan:internal/orchcli#BeamUp` -> `func BeamUp(location *lyxcwd.Location, opts BeamUpOptions) (BeamUpReport, error)`
-- `plan:internal/orchcli#BeamDownReport` -> `type BeamDownReport struct`
-- `plan:internal/orchcli#BeamDown` -> `func BeamDown(location *lyxcwd.Location) (BeamDownReport, error)`
-- `plan:internal/orchcli#wireCLI` -> `func wireCLI(c *orchCLI, location *lyxcwd.Location) error`
-- `plan:internal/orchcli#orchCLI.beamUp` -> `func (c *orchCLI) beamUp(opts BeamUpOptions) (BeamUpReport, error)`
-- `plan:internal/orchcli#orchCLI.startOrch` -> `func (c *orchCLI) startOrch(index func() (string, error), note string) (BeamUpReport, error)`
-- `plan:internal/orchcli#orchCLI.stopOrch` -> `func (c *orchCLI) stopOrch() (removed bool, strand string, err error)`
-- `plan:internal/orchcli#beamUpRefusal` -> `func beamUpRefusal(slug, here, owner string, moveWayForward string, held bool, status string) error`
-- `plan:internal/orchcli#TestStart_ResumesTheRecordedSession` -> `func TestStart_ResumesTheRecordedSession(t *testing.T)`
-- `plan:internal/orchcli#TestBeamDown_StopsOrchThenTheDobbyByRole` -> `func TestBeamDown_StopsOrchThenTheDobbyByRole(t *testing.T)`
-- `plan:internal/orchcli#beamFacts` -> `type beamFacts struct`
-- `plan:internal/orchcli#orchCLI.beamDown` -> `func (c *orchCLI) beamDown() (BeamDownReport, error)`
-- `plan:internal/orchengine#SourceResume` -> `const SourceResume = "resume"`
+- `internal/orchcli#BeamUpOptions`
+- `internal/orchcli#BeamUpReport`
+- `internal/orchcli#BeamUp`
+- `internal/orchcli#BeamDownReport`
+- `internal/orchcli#BeamDown`
+- `internal/orchcli#wireCLI`
+- `internal/orchcli#orchCLI.beamUp`
+- `internal/orchcli#orchCLI.startOrch`
+- `internal/orchcli#orchCLI.stopOrch`
+- `internal/orchcli#beamUpRefusal`
+- `internal/orchcli#TestStart_ResumesTheRecordedSession`
+- `internal/orchcli#TestBeamDown_StopsOrchThenTheDobbyByRole`
+- `internal/orchcli#beamFacts`
+- `internal/orchcli#orchCLI.beamDown`
+- `internal/orchengine#SourceResume`
 
 **Delete:**
 - `internal/orchcli#orchCLI.startCmd`
