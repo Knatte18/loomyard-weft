@@ -1,10 +1,10 @@
 # Card 13 — land-blockers
 
 **Create:**
-- `plan:internal/battencli#BeamLandBlockers` -> `type BeamLandBlockers struct`
-- `plan:internal/battencli#BeamLandBlockers.Empty` -> `func (b BeamLandBlockers) Empty() bool`
-- `plan:internal/battencli#ReadBeamLandBlockers` -> `func ReadBeamLandBlockers(prime *lyxcwd.Location, slug string) (BeamLandBlockers, error)`
-- `plan:internal/battencli#BeamLandMember` -> `type BeamLandMember struct`
+- `internal/battencli#BeamLandBlockers`
+- `internal/battencli#BeamLandBlockers.Empty`
+- `internal/battencli#ReadBeamLandBlockers`
+- `internal/battencli#BeamLandMember`
 
 **Edit:**
 - `internal/battencli#beamMembers` -> `func beamMembers(prime *lyxcwd.Location, slug string) ([]BeamLandMember, error)`
