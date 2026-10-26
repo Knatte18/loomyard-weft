@@ -869,7 +869,7 @@
       "isolated": false,
       "brief": "Rows passed on a false entry gate, such as disabled Drift rows, show [ ] in the overview; give them [-]",
       "body": "## Seen (operator, 2026-10-26)\n\nWith the Drift rows switched off in loom, a run's checklist in the overview leaves the Drift rows open, `[ ]`, after the run has passed them.\nThe rows did run: each row's entry gate came out false and shed moved on, so an open box reads as not yet reached when it was settled.\nThe boxes come from `internal/loomcli/checklist.go`, which knows only done (`[x]`) and not reached (`[ ]`).\n\n## Idea\n\n- A row the run passed because its entry gate was false gets its own box, `[-]`, marking it skipped rather than open.\n- This holds for every row skipped by its entry gate, not only the Drift rows.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Code-Burler-Review",
       "created": "2026-10-26T11:28:20Z",
       "revised": "2026-10-26T11:58:42Z",
       "profile": "light",
