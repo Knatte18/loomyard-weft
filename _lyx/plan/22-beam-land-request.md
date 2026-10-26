@@ -1,7 +1,7 @@
 # Card 22 — beam-land-request
 
 **Create:**
-- `plan:internal/beamcli_test#TestLand_RunsFromATaskPair` -> `func TestLand_RunsFromATaskPair(t *testing.T)`
+- `internal/beamcli_test#TestLand_RunsFromATaskPair`
 
 **Edit:**
 - `internal/beamcli#landDeps`
