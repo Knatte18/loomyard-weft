@@ -2,7 +2,7 @@
 
 `webster-tree-moved-fixer` · Task · enhancement, webster, loom, stencil
 
-Depends on: [`webster-stop-asked-once`](design-webster-stop-asked-once.md), [`rename-target-checks`](design-rename-target-checks.md)
+Depends on: [`rename-target-checks`](design-rename-target-checks.md)
 
 ## Seen (beam-start-and-ownership, 2026-10-26)
 
