@@ -1,0 +1,1860 @@
+diff --git a/contracts/specs/llm-model-spec.md b/contracts/specs/llm-model-spec.md
+index 1ac5cd54..b9dc4a9f 100644
+--- a/contracts/specs/llm-model-spec.md
++++ b/contracts/specs/llm-model-spec.md
+@@ -116,7 +116,7 @@ Everything provider-*specific* — CLI flags, `version` id translation, large-wi
+ ## Roles that use this notation
+ 
+ webster.yaml holds two roles, each a model-spec: `master` (the long-lived Master session;
+-its in-session forks always inherit Master's current model, so there are no per-fork roles) and `recovery` (the cold recovery strand `recover-batch` spawns, and the cold verify-gate fixer `fix-verify` spawns).
++its in-session forks always inherit Master's current model, so there are no per-fork roles, and the cold plan fixer `fix-plan` spawns runs on it too) and `recovery` (the cold recovery strand `recover-batch` spawns, and the cold verify-gate fixer `fix-verify` spawns).
+ Stack-wide roles elsewhere (burler reviewers, Bouncer judges, loom producers) use the same notation in their own config sections;
+ loom's config section overrides per role when loom drives the module.
+ 
+diff --git a/contracts/stencils/markers_test.go b/contracts/stencils/markers_test.go
+index da3f1e7a..192ba28d 100644
+--- a/contracts/stencils/markers_test.go
++++ b/contracts/stencils/markers_test.go
+@@ -48,6 +48,7 @@ func TestStencils_TopLevelMarkers(t *testing.T) {
+ 		{"webster-body-verify-fix", WebsterBodyVerifyFix, []string{"fix_gate", "outcome_path", "plan_dir", "report_path", "summary_path", "worktree_root"}},
+ 		{"webster-prefix-verify-fix-fork", WebsterPrefixVerifyFixFork, []string{"friction_directive"}},
+ 		{"webster-prefix-verify-fix-cold", WebsterPrefixVerifyFixCold, []string{"edit_directive", "friction_directive", "parent_directive", "pattern_directive", "reply_path"}},
++		{"webster-template-plan-fix", WebsterTemplatePlanFix, []string{"edit_directive", "friction_directive", "parent_directive", "plan_dir", "record_path", "reply_path", "specs_dir", "worktree_root"}},
+ 		{"bouncer-template-escalation", BouncerTemplateEscalation, []string{"cause", "cause_detail", "decide_options", "decision_record_path", "judge_stencil_path", "ledger_path", "review_path", "round", "segment", "slug", "verdict_path", "worktree"}},
+ 		{"bouncer-fragment-decide-capped", BouncerFragmentDecideCapped, []string{"slug"}},
+ 		{"bouncer-fragment-decision", BouncerFragmentDecision, []string{"blocking_findings", "decide_verbs", "decision_findings", "refusal", "slug"}},
+diff --git a/contracts/stencils/stencils.go b/contracts/stencils/stencils.go
+index dce29522..06dc15d5 100644
+--- a/contracts/stencils/stencils.go
++++ b/contracts/stencils/stencils.go
+@@ -228,6 +228,11 @@ var WebsterPrefixVerifyFixFork []byte
+ //go:embed webster/webster-prefix-verify-fix-cold.md
+ var WebsterPrefixVerifyFixCold []byte
+ 
++// WebsterTemplatePlanFix is webster's shipped-default cold plan fixer prompt, which matches a plan-conflict's cards to the tree.
++//
++//go:embed webster/webster-template-plan-fix.md
++var WebsterTemplatePlanFix []byte
++
+ // WebsterPrefixFork is webster's shipped-default in-session fork prompt prefix, joined ahead of
+ // WebsterBodyImplementer to compose the fork prompt.
+ //
+@@ -482,6 +487,7 @@ var entries = []registryEntry{
+ 	{"webster-body-verify-fix", &WebsterBodyVerifyFix},
+ 	{"webster-prefix-verify-fix-fork", &WebsterPrefixVerifyFixFork},
+ 	{"webster-prefix-verify-fix-cold", &WebsterPrefixVerifyFixCold},
++	{"webster-template-plan-fix", &WebsterTemplatePlanFix},
+ 	{"webster-prefix-fork", &WebsterPrefixFork},
+ 	{"webster-prefix-recovery", &WebsterPrefixRecovery},
+ 	{"webster-body-implementer", &WebsterBodyImplementer},
+@@ -537,6 +543,7 @@ var roleOpeningStencils = map[string][]string{
+ 	"webster-master":     {"webster-template-master"},
+ 	"webster-recovery":   {"webster-prefix-recovery"},
+ 	"verify-fixer":       {"webster-prefix-verify-fix-cold"},
++	"plan-fixer":         {"webster-template-plan-fix"},
+ 	"burler-review":      {"burler-template-reviewer"},
+ 	"burler-fix":         {"burler-template-fixer"},
+ 	"conflict":           {"landing-template-conflict"},
+diff --git a/contracts/stencils/webster/webster-template-master.md b/contracts/stencils/webster/webster-template-master.md
+index 336f78c0..deefe024 100644
+--- a/contracts/stencils/webster/webster-template-master.md
++++ b/contracts/stencils/webster/webster-template-master.md
+@@ -6,7 +6,7 @@
+ 
+ # Webster Master — read once, fork per batch, judge only the minimal report
+ 
+-> **FIRST, get your bearings against the real state on disk.** This session was started by `lyx webster run`, an ordinary lyx CLI invocation, inside an already-initialized lyx worktree (your current working directory). `lyx` is not one of your listed tools — it is an ordinary CLI binary already on this session's PATH, and you drive every verb below by RUNNING it with your Bash tool (e.g. `lyx webster begin-batch 1`). Orient yourself first: run `lyx webster status` (Bash) and `ls {{.plan_dir}}/` as your very first two actions. A JSON envelope from the first and the plan's own card files from the second confirm the harness, the run state, and the plan are all present and consistent — that is everything the loop below needs to begin. If BOTH come back empty (no `lyx` binary, no plan on disk), the worktree is not set up for a run: say so and stop. No operator answers a question here: a turn end with no running background work and no outcome file is held, with a hold notice to your parent, until a later message starts your next turn or the run's timeout, liveness check or idle kill ends it (the safe turn ends are while your own backgrounded fork or backgrounded `recover-batch` or `fix-verify` call runs, per the loop, the failure ladder and the gate-failure section below, and after you have told your parent of a batch waiting on it, per the waiting rung), so those two read-only checks, run at the start, are how you settle any uncertainty before driving the loop.
++> **FIRST, get your bearings against the real state on disk.** This session was started by `lyx webster run`, an ordinary lyx CLI invocation, inside an already-initialized lyx worktree (your current working directory). `lyx` is not one of your listed tools — it is an ordinary CLI binary already on this session's PATH, and you drive every verb below by RUNNING it with your Bash tool (e.g. `lyx webster begin-batch 1`). Orient yourself first: run `lyx webster status` (Bash) and `ls {{.plan_dir}}/` as your very first two actions. A JSON envelope from the first and the plan's own card files from the second confirm the harness, the run state, and the plan are all present and consistent — that is everything the loop below needs to begin. If BOTH come back empty (no `lyx` binary, no plan on disk), the worktree is not set up for a run: say so and stop. No operator answers a question here: a turn end with no running background work and no outcome file is held, with a hold notice to your parent, until a later message starts your next turn or the run's timeout, liveness check or idle kill ends it (the safe turn ends are while your own backgrounded fork or backgrounded `recover-batch`, `fix-verify` or `fix-plan` call runs, per the loop, the failure ladder and the gate-failure section below, and after you have told your parent of a batch waiting on it, per the waiting rung), so those two read-only checks, run at the start, are how you settle any uncertainty before driving the loop.
+ 
+ > **SECOND, disambiguate who you are.** This prompt is inherited by every fork you spawn, so it can reach you in one of two roles:
+ > - If your most recent instruction opens **`You are an implementer fork`** (you were just spawned via the Agent tool), you are an **IMPLEMENTER FORK**, NOT the Master. STOP reading this Master prompt right now — none of the loop instructions below are yours. Go read the file that instruction names and do exactly what it says (implement your batch's cards, write its report). NEVER run any `lyx webster` command; those are the Master's.
+@@ -220,7 +220,7 @@ A `Gate findings recorded at …` message that arrives while an earlier fixer fo
+ A decision notice, the `[creel]` line "Your parent" above admits, carries a decision recorded for this run, its text inline.
+ You read no decision record for it, and you edit no source, so the decision reaches the code only through the forks you spawn after it: each inherits it, and its job file tells it to follow the decision over its card where they differ.
+ 
+-- While your own fork, fixer fork, backgrounded `recover-batch` or backgrounded `fix-verify` runs, end your turn with no tool call; the decision reaches the next fork you spawn.
++- While your own fork, fixer fork, backgrounded `recover-batch`, backgrounded `fix-verify` or backgrounded `fix-plan` runs, end your turn with no tool call; the decision reaches the next fork you spawn.
+ - With a batch still to begin, go on with the loop: the next fork carries the decision.
+ - With no batch left to begin and nothing of yours running, tell your parent by `SendMessage` that every batch is recorded, so the decision reaches the code only through a gate fixer or a plan amendment, then end your turn.
+ 
+@@ -229,15 +229,25 @@ They are answers your parent already gave, often to an earlier stop of this run:
+ 
+ {{.parent_decisions}}
+ 
+-## A plan-drift or plan-conflict refusal ends your run as stuck — do not retry the verb
++## A plan conflict goes to the plan fixer first; a plan drift ends your run as stuck
+ 
+ If `begin-batch` refuses with `{"plan_conflict": "<cause>"}`, the cause being `plan_defect` or `tree_moved`, that means `begin-batch`'s own re-resolution of the plan against the current tree — run immediately before it would have written the fork prompt — found that the plan contradicts the tree.
+-Under loom the stuck run is routed to plan review; a standalone run's way forward is the refusal's own.
+-`record-batch` and `recover-batch` also refuse with `{"plan_drifted": true}` when the plan changed since the run recorded it or since the batch began,
+-and the same rung applies.
+-This is NOT a batch outcome for you to work around: you never edit the plan yourself (see "What you never do" below), so there is nothing for you to fix.
+-Do not retry the verb and do not try another batch: write `outcome: stuck` to `{{.outcome_path}}` right away, with a `stuck_reason` quoting the refusal's own message verbatim, then stop.
+-The run resumes with `lyx webster run` once the plan is fixed — retrying the call yourself only re-runs the same re-resolution against the same tree and refuses the same way.
++Most often an earlier batch renamed or moved a target a later card still names, and a small plan fixer matches the cards to the tree:
++
++1. Keep the refusal's message: a stuck run quotes it.
++2. Run `lyx webster fix-plan` as a **backgrounded** Bash command and end your turn, exactly as after a backgrounded `recover-batch`: no polling, no `sleep`, no file checks while it runs.
++   It spawns a cold plan fixer strand that edits the named cards and rebaselines them, and blocks until it ends.
++3. On its completion notification, read its envelope:
++   - `{"status": "done", "verdict": "fixed"}` → call `lyx webster begin-batch <NN>` again for the same batch and go on with the loop.
++     When that call refuses with `plan_conflict` again, run this rung again from step 1.
++   - Any other verdict, a `dead` status or a refusal → write `outcome: stuck` to `{{.outcome_path}}` right away, with a `stuck_reason` quoting the `begin-batch` refusal's message verbatim, then stop.
++   - `{"status": "running"}` → run `lyx webster fix-plan` again, backgrounded, and end your turn.
++
++`record-batch` and `recover-batch` refuse with `{"plan_drifted": true}` when the plan changed since the run recorded it or since the batch began.
++No fixer runs for that: write `outcome: stuck` to `{{.outcome_path}}` right away, with a `stuck_reason` quoting the refusal's own message verbatim, then stop.
++
++Neither is a batch outcome for you to work around: you never edit the plan yourself (see "What you never do" below), and you never retry a refused verb beyond the steps above, since a retry only re-runs the same re-resolution against the same tree and refuses the same way.
++The run resumes with `lyx webster run` once the plan is fixed.
+ Under loom the stuck run is routed to plan review, which edits the plan.
+ Standalone, the operator edits the plan and runs `lyx webster rebaseline --card NN` naming each card they edited, or `lyx webster restore-plan` to restore the plan the run recorded, before re-running.
+ 
+diff --git a/contracts/stencils/webster/webster-template-plan-fix.md b/contracts/stencils/webster/webster-template-plan-fix.md
+new file mode 100644
+index 00000000..0de74f9d
+--- /dev/null
++++ b/contracts/stencils/webster/webster-template-plan-fix.md
+@@ -0,0 +1,53 @@
++<!-- This is the cold plan fixer's prompt, filled by RenderPlanFixPrompt (render.go) via internal/stencil and handed to the separate strand `lyx webster fix-plan` spawns at the master role after begin-batch refuses with plan_conflict.
++     {{.record_path}}, {{.reply_path}}, {{.worktree_root}}, {{.plan_dir}} and {{.specs_dir}} are required markers.
++     {{.friction_directive}} and parent_directive are optional (filled via stencil.FillOptional) and render as nothing when inactive.
++     edit_directive is a required marker, rendered unconditionally by internal/editdirective.
++     There are no {{if}}/{{range}} conditionals anywhere in this file. -->
++
++# Webster plan fixer — match the named cards to the tree
++
++You are the plan fixer for this plan run, spawned as a separate process by `lyx webster fix-plan`.
++Webster's `begin-batch` re-resolved the plan against the current tree and refused, because some cards name targets the tree no longer holds as written, most often since an earlier batch renamed or moved them.
++Your one job is to edit those cards so they match the tree, when that leaves what each card does unchanged, and to report your verdict.
++
++{{.parent_directive}}
++{{.edit_directive}}
++{{.friction_directive}}
++## Orient yourself
++
++Your session's working directory is the worktree root, `{{.worktree_root}}`: run every Bash command from there.
++Paths you pass to the Read, Write and Edit tools stay absolute.
++You never run a Bash call in the background.
++
++1. Read the plan-conflict record `{{.record_path}}` in full: its heading names the batch, and each `- ` line is one blocking finding, naming its check, its card and the target the tree does not hold.
++2. Read `{{.plan_dir}}/00-overview.md` and each card file a finding names, under `{{.plan_dir}}`.
++3. The card format is the plan spec's, at `{{.specs_dir}}/loom/loom-plan-spec.md`; read the parts that cover the targets you edit.
++4. Find where each named target is in the tree now: `lyx quarry`, `grep` and `git log` on the worktree's own code are yours to use.
++
++## Decide: mechanical or for the plan writer
++
++A finding is mechanical when the card's work is still the same work and only how it names its target is stale: a symbol or test renamed, a file moved, a glyph spelled for the old name.
++A finding is for the plan writer when answering it changes what the card does: the target was removed rather than renamed, the work the card describes is already done or no longer fits, or the fix would add, drop or reshape the card's work.
++
++## When every finding is mechanical
++
++1. Edit only the cards the findings name, and in them only the target names, paths and glyphs the findings name, together with the same name where the card's text repeats it.
++2. Run `lyx webster rebaseline --card NN`, with one `--card` for every card you edited.
++3. When `rebaseline` refuses, run `lyx webster restore-plan`, so the plan is again the one the run recorded, and report the conflict as one for the plan writer.
++
++## When any finding is for the plan writer
++
++Edit no card.
++If you already edited one, run `lyx webster restore-plan`.
++
++## What you never do
++
++- Never edit a source, test or doc file, the overview, a card no finding names, or any file outside `{{.plan_dir}}` besides your reply.
++- Never run git commands that change anything, and never commit: `rebaseline` records the plan.
++- Never run a `lyx webster` command other than `rebaseline` and `restore-plan`.
++
++## Your final action
++
++Write your reply to `{{.reply_path}}` with Write, then end your turn.
++Its first line is exactly `verdict: fixed` when `rebaseline` accepted every card you edited and every finding was mechanical, and exactly `verdict: plan_writer` otherwise.
++Below it, one line per finding: the card, the old and new target for a fix, or why it needs the plan writer.
+diff --git a/docs/overview.md b/docs/overview.md
+index 3bcffcf9..98ea7c6e 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -417,7 +417,8 @@ User-facing modules each get one `lyx <module>` namespace:
+   `run` refuses a `--plan-dir` override that moves the plan off the mode's own default, in BOTH modes: Master's in-pane verb invocations are typed flagless from its stencil, so they resolve the default and would refuse against a plan they cannot see. Every other verb keeps honouring the override.
+   In standalone mode (`lyx webster run --target-dir <repo>`, a plain git checkout with no hub), `run` boots its own private reed session in-process (`lyx reed up` is hub-only and cannot reach standalone's derived geometry), requires the plan at the derived state directory's own `_lyx/plan`, and renders every prompt's plan-directory references as the absolute state-directory paths the panes can actually read.
+   The target is normalized to its repository root before anything derives from it, so running from a subdirectory drives the same state directory, reed session and plan as running from the root — the derivation hashes one spelling of the repository, never the directory the operator happened to stand in.
+-  `recover-batch` and `fix-verify` boot the same private reed session `run` does, because each spawns a cold strand of its own; the read-only verbs still boot nothing.
++  A `begin-batch` refusal with `plan_conflict` goes first to the cold plan fixer `lyx webster fix-plan` spawns at the master role, which matches the cards the conflict names to the tree and rebaselines them, and only a conflict whose fix would change what a card does ends the run stuck.
++  `recover-batch`, `fix-verify` and `fix-plan` boot the same private reed session `run` does, because each spawns a cold strand of its own; the read-only verbs still boot nothing.
+   Loom's `Webster` row runs webster when `loom.yaml`'s `implementer` key, settable per task through `run_settings`, names `webster`, its only value; the row's `Implementer` engine reads the key, and webster partitions the plan itself at the row's start.
+   See [webster-spec.md](../contracts/specs/webster-spec.md) and [implementer-spec.md](../contracts/specs/implementer-spec.md), the contract every implementer of that row keeps.
+ - **planparser** — the sole parser of the on-disk flat card-list plan format (`_lyx/plan/`, see [loom-plan-spec.md](../contracts/specs/loom-plan-spec.md));
+@@ -563,7 +564,7 @@ User-facing modules each get one `lyx <module>` namespace:
+   `PR-Review` is a stub for the human pull-request review that is not built: it always returns Done, and logs one line when its flag is on.
+   `Finalize` takes the parent lock first, merges the parent into the task again and reroutes to `Parent-Align` on a loom conflict or a merge too large to land; it runs the `finalize` gate key and the merge fixer in finalize mode, lands on the parent with the task trailer and releases the lock on every exit.
+   A halt at `Parent-Align` or `Finalize` (a spent or over-cap fixer, an escalation, a reroute-cap stop) is handed back to the orch through every driver, and the status marks it `hand_back`.
+-  `Webster` reroutes to `Plan-Burler-Review` when begin-batch left a new plan conflict.
++  `Webster` reroutes to `Plan-Burler-Review` when begin-batch left a new plan conflict that the plan fixer `lyx webster fix-plan` could not clear.
+   `Describe` writes the change description at `_lyx/landing/summary.md`, the single source for the landing commit, whose message ends in the trailer block Go appends: `landing.yaml`'s `trailer_text`, then the `engine_trailers` text of each engine that ran a session in the task, each copied verbatim and each switchable off by an empty value.
+   `Finalize` tolerates an already-landed parent and marks the board task `done` after the parent merge.
+   Every run transition before that writes the board task's status as `<state> · <producer>` (for example `awaiting · Code-Bouncer`), so the board README shows where each run stands; a failed board write only warns.
+diff --git a/internal/webstercli/batchpause.go b/internal/webstercli/batchpause.go
+index 9582df60..037351c3 100644
+--- a/internal/webstercli/batchpause.go
++++ b/internal/webstercli/batchpause.go
+@@ -1,4 +1,4 @@
+-// batchpause.go holds the up-front refusal begin-batch, recover-batch and fix-verify make under a pause, and the lookup of Master's own strand that refusal claims into the pause.
++// batchpause.go holds the up-front refusal begin-batch, recover-batch, fix-verify and fix-plan make under a pause, and the lookup of Master's own strand that refusal claims into the pause.
+ 
+ package webstercli
+ 
+diff --git a/internal/webstercli/batchpause_test.go b/internal/webstercli/batchpause_test.go
+index ac342cd3..053f7f5b 100644
+--- a/internal/webstercli/batchpause_test.go
++++ b/internal/webstercli/batchpause_test.go
+@@ -1,6 +1,6 @@
+ //go:build tier1
+ 
+-// batchpause_test.go covers the pause refusal begin-batch, recover-batch and fix-verify make before they read or change any state, and the lookup of Master's strand it claims.
++// batchpause_test.go covers the pause refusal begin-batch, recover-batch, fix-verify and fix-plan make before they read or change any state, and the lookup of Master's strand it claims.
+ 
+ package webstercli
+ 
+@@ -73,6 +73,10 @@ func TestBatchVerbs_RefuseUnderAPause(t *testing.T) {
+ 			name: "fix-verify claims Master and refuses", verb: "fix-verify", masterStrand: okStrand, wantExit: 1, wantSessions: claimedMaster, stateKept: true,
+ 			wantText: []string{"a hub-wide pause holds this pair, so fix-verify spawns no cold fixer; way forward: end your turn now; once the resume line arrives run \"lyx webster fix-verify\" again"},
+ 		},
++		{
++			name: "fix-plan claims Master and refuses", verb: "fix-plan", masterStrand: okStrand, wantExit: 1, wantSessions: claimedMaster, stateKept: true,
++			wantText: []string{"a hub-wide pause holds this pair, so fix-plan spawns no plan fixer; way forward: end your turn now; once the resume line arrives run \"lyx webster fix-plan\" again"},
++		},
+ 		{name: "begin-batch refuses without a claim when Master's strand is unknown", verb: "begin-batch", masterStrand: failingStrand, wantExit: 1, wantText: refusedNoLine("begin-batch"), wantWarn: "Master could not be claimed", stateKept: true},
+ 		{name: "recover-batch refuses without a claim when Master's strand is unknown", verb: "recover-batch", masterStrand: failingStrand, wantExit: 1, wantText: refusedNoLine("recover-batch"), wantWarn: "Master could not be claimed", stateKept: true},
+ 		{
+@@ -141,6 +145,8 @@ func TestBatchVerbs_RefuseUnderAPause(t *testing.T) {
+ 				cmd = fx.CLI.recoverBatchCmd()
+ 			case "fix-verify":
+ 				cmd, args = fx.CLI.fixVerifyCmd(), nil
++			case "fix-plan":
++				cmd, args = fx.CLI.fixPlanCmd(), nil
+ 			}
+ 			var out strings.Builder
+ 			exitCode := clihelp.Execute(cmd, &out, args)
+diff --git a/internal/webstercli/cli.go b/internal/webstercli/cli.go
+index 7da60640..d238eb02 100644
+--- a/internal/webstercli/cli.go
++++ b/internal/webstercli/cli.go
+@@ -14,7 +14,7 @@
+ // standalone has no fabric repo by construction, and the closure is never called during wiring in
+ // either mode.
+ //
+-// websterCLI stores TWO adapted views of the one constructed Runner: starter (websterengine.Starter, webster's own local copy of the spawn seam, consumed by the cold-strand spawns of recover-batch and fix-verify) and masterStarter (websterengine.MasterStarter, behind the runnerMasterStarter adapter, consumed by run's Master spawn) -- because the two verbs each need a distinct narrow seam onto the same underlying *shuttleengine.Runner, neither of which the other exposes.
++// websterCLI stores TWO adapted views of the one constructed Runner: starter (websterengine.Starter, webster's own local copy of the spawn seam, consumed by the cold-strand spawns of recover-batch, fix-verify and fix-plan) and masterStarter (websterengine.MasterStarter, behind the runnerMasterStarter adapter, consumed by run's Master spawn) -- because the two verbs each need a distinct narrow seam onto the same underlying *shuttleengine.Runner, neither of which the other exposes.
+ 
+ package webstercli
+ 
+@@ -248,8 +248,9 @@ and drives it through a long-lived Master session that reads the plan once
+ and forks one implementer per batch in-session, bracketing each fork with
+ begin-batch and record-batch, until the plan is built or the run reports
+ stuck. A fork that reports stuck, or never reports, is escalated
+-to a cold recovery strand with recover-batch, and a verify-gate failure the
+-gate escalates goes to a cold fixer strand with fix-verify.
++to a cold recovery strand with recover-batch, a verify-gate failure the gate
++escalates goes to a cold fixer strand with fix-verify, and a begin-batch plan
++conflict goes to a cold plan fixer strand with fix-plan.
+ 
+ Reach for "lyx webster run" to build an approved plan, "lyx webster validate"
+ to lint one first, and "lyx webster status" to see where a run stands.
+@@ -322,6 +323,7 @@ func (c *websterCLI) addVerbs(parent *cobra.Command) {
+ 		c.recordBatchCmd(),
+ 		c.recoverBatchCmd(),
+ 		c.fixVerifyCmd(),
++		c.fixPlanCmd(),
+ 		c.rebaselineCmd(),
+ 		c.acceptAuditCmd(),
+ 		c.restorePlanCmd(),
+diff --git a/internal/webstercli/doc.go b/internal/webstercli/doc.go
+index a6c84947..c1ede7fa 100644
+--- a/internal/webstercli/doc.go
++++ b/internal/webstercli/doc.go
+@@ -56,4 +56,11 @@
+ // fix-verify runs the cold verify-gate fixer the verify gate escalates a failure to, spawning or attaching as recover-batch does, and boots the standalone reed session the same way.
+ // Its envelope carries status, elapsed_s and warnings, with reply on done and dead_reason on dead;
+ // a dead fixer exits non-zero with a message whose way forward is the same as for done: Master rewrites its contract files and ends its turn, and the gate judges the fix.
++//
++// # Fix-plan
++//
++// fix-plan runs the cold plan fixer after begin-batch refuses with `plan_conflict`, spawning or attaching as fix-verify does, and boots the standalone reed session the same way.
++// It releases the state-mutation lease while it waits, so the fixer's own `rebaseline` can take it.
++// Its envelope carries status, elapsed_s and warnings, with verdict and reply on done and dead_reason on dead;
++// a dead fixer, and a refusal for findings a fixer already had or for a batch out of fixers, exits non-zero with a message whose way forward is ending the run stuck quoting the begin-batch refusal, so the conflict goes to the plan writer.
+ package webstercli
+diff --git a/internal/webstercli/fixplan.go b/internal/webstercli/fixplan.go
+new file mode 100644
+index 00000000..8703640f
+--- /dev/null
++++ b/internal/webstercli/fixplan.go
+@@ -0,0 +1,205 @@
++// fixplan.go implements the `fix-plan` webster verb: the re-entrant, blocking call Master makes, backgrounded, after begin-batch refuses with a plan conflict.
++// It drives websterengine's plan-fixer phases with a real, wall-clock Clock.
++// FixPlanSpawnOrAttach runs under the state-mutation lease, and a spawn is saved and fabric-committed "fix-plan spawn".
++// FixPlanAwait runs with the lease released, so the fixer's own rebaseline can take it.
++// A terminal result is recorded by RecordPlanFixerTerminal into a freshly reloaded state under a re-acquired lease, saved and committed "fix-plan <status>".
++package webstercli
++
++import (
++	"errors"
++	"fmt"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/output"
++	"github.com/Knatte18/loomyard/internal/websterengine"
++	"github.com/spf13/cobra"
++)
++
++// fixPlanDeps builds the websterengine.FixPlanDeps for this CLI's current wiring.
++func (c *websterCLI) fixPlanDeps() websterengine.FixPlanDeps {
++	return websterengine.FixPlanDeps{
++		Starter:     c.starter,
++		Roles:       c.roles,
++		Config:      c.cfg,
++		Engines:     c.engines,
++		Reed:        c.reed,
++		Stopper:     c.runner,
++		ShuttleCfg:  c.shuttleCfg,
++		Geom:        c.geom,
++		FrictionDir: c.frictionDir,
++	}
++}
++
++// fixPlanNotDoneMessage is the error of a fix-plan call whose fixer ended dead for reason.
++func fixPlanNotDoneMessage(reason string) string {
++	return fmt.Sprintf("webster: the plan fixer ended dead (%s); way forward: write outcome: stuck to your outcome file, with a stuck_reason quoting begin-batch's plan_conflict refusal verbatim, so the conflict goes to the plan writer", reason)
++}
++
++// fixPlanCmd builds the `fix-plan` subcommand.
++func (c *websterCLI) fixPlanCmd() *cobra.Command {
++	var wait time.Duration
++
++	cmd := &cobra.Command{
++		Use:         "fix-plan",
++		Short:       "hand a begin-batch plan conflict to a cold plan fixer strand and long-poll it until it ends",
++		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceRole},
++		Long: `fix-plan spawns a cold plan fixer strand at the master role for the
++plan-conflict record the latest begin-batch refusal left -- or, on a
++re-entrant call, attaches to the fixer a prior call spawned and has not yet
++seen end. The fixer edits the cards the conflict names so they match the
++tree, runs "lyx webster rebaseline" naming them, and writes a reply whose
++first line is its verdict: "fixed" when every finding was a stale name, path
++or glyph, "plan_writer" when a fix would change what a card does, in which
++case it leaves the plan as the run recorded it. A call that spawns first
++waits for its provider to come up, and every call then blocks for up to
++--wait watching it.
++
++A terminal call fabric-commits state.json and returns {"status": "done",
++"verdict": "...", "reply": "..."} once the fixer wrote its reply. A reply
++without a known verdict reads as "plan_writer", and so does a "fixed" reply
++from a fixer that moved HEAD or left a new uncommitted change, with a
++warning.
++On "fixed", Master calls begin-batch again; on "plan_writer" it ends its run
++stuck, so the conflict goes to the plan writer. A fixer whose turn ended
++without a reply, whose strand is gone or that outlived recovery_timeout_min
++returns {"status": "dead", "dead_reason": "..."} and exits non-zero. If
++--wait elapses first it returns {"status": "running", "elapsed_s": N}.
++
++It refuses, spawning nothing, when no plan-conflict record names a finding,
++when an earlier plan fixer of the run was given the same findings, when the
++conflict's batch already had two plan fixers, and when the master role's
++engine cannot audit forks. A call that spawns fabric-commits state.json at
++once, so the strand survives a crash. Under a pause that covers the pair it
++refuses first, claiming Master into it.
++
++Example:
++  lyx webster fix-plan
++  lyx webster fix-plan --wait 8m`,
++		Args: cobra.NoArgs,
++		RunE: func(cmd *cobra.Command, args []string) error {
++			out := cmd.OutOrStdout()
++
++			if clihelp.ShouldAbort(cmd.Context()) {
++				return nil
++			}
++
++			if refusal := c.refuseCovered("fix-plan", "fix-plan spawns no plan fixer", ""); refusal != "" {
++				clihelp.SetExit(cmd.Context(), output.Err(out, refusal))
++				return nil
++			}
++
++			mutateLock, err := websterengine.AcquireStateMutation(c.geom.ScratchDir)
++			if err != nil {
++				clihelp.SetExit(cmd.Context(), output.Err(out, err.Error()))
++				return nil
++			}
++			mutateHeld := true
++			defer func() {
++				if mutateHeld {
++					_ = mutateLock.Release()
++				}
++			}()
++
++			st, err := websterengine.LoadState(c.geom.WebsterDir, c.geom.ScratchDir)
++			if err != nil {
++				clihelp.SetExit(cmd.Context(), output.Err(out, err.Error()))
++				return nil
++			}
++			if st == nil {
++				clihelp.SetExit(cmd.Context(), output.Err(out, `webster: no run in progress; run "lyx webster run" first`))
++				return nil
++			}
++
++			waitBudget := wait
++			if waitBudget == 0 {
++				waitBudget = websterengine.RecoveryWaitBudget(c.cfg)
++			}
++
++			// Standalone mode boots its own reed session here, as fix-verify does, since nothing else can reach standalone geometry.
++			if c.reedUp != nil {
++				if err := c.reedUp(); err != nil {
++					clihelp.SetExit(cmd.Context(), output.Err(out, fmt.Sprintf("webster: bring up the standalone reed session: %v; way forward: transient, re-run `lyx webster fix-plan`", err)))
++					return nil
++				}
++			}
++
++			deps := c.fixPlanDeps()
++			rec, spawned, err := websterengine.FixPlanSpawnOrAttach(deps, st, recoverRealClock{})
++			if err == nil && spawned {
++				if err = websterengine.SaveState(c.geom.WebsterDir, c.geom.ScratchDir, st); err != nil {
++					// The strand is live but unrecorded, so nothing later could stop it.
++					err = errors.Join(err, deps.Stopper.StopStrand(rec.StrandGUID))
++				}
++			}
++			_ = mutateLock.Release()
++			mutateHeld = false
++			if err != nil {
++				clihelp.SetExit(cmd.Context(), output.Err(out, err.Error()))
++				return nil
++			}
++
++			if spawned {
++				if _, syncErr := fabricSync(c.openFabric, c.anchorRel, "fix-plan spawn"); syncErr != nil {
++					clihelp.SetExit(cmd.Context(), output.Err(out, fmt.Sprintf("webster: the plan fixer spawned but the fabric sync failed: %v; %s", syncErr, fabricSyncWayForward)))
++					return nil
++				}
++			}
++
++			result, err := websterengine.FixPlanAwait(deps, rec, waitBudget, recoverRealClock{})
++			if err != nil {
++				clihelp.SetExit(cmd.Context(), output.Err(out, err.Error()))
++				return nil
++			}
++
++			fields := map[string]any{"status": result.Status, "elapsed_s": result.ElapsedS}
++			if result.Status == websterengine.DigestStatusRunning {
++				fields["warnings"] = ownerlessRunWarnings(c.geom.ScratchDir, result.Warnings)
++				clihelp.SetExit(cmd.Context(), output.Ok(out, fields))
++				return nil
++			}
++
++			if err := c.persistFixPlanTerminal(rec.StrandGUID, result); err != nil {
++				clihelp.SetExit(cmd.Context(), output.Err(out, err.Error()))
++				return nil
++			}
++			if _, syncErr := fabricSync(c.openFabric, c.anchorRel, "fix-plan "+result.Status); syncErr != nil {
++				clihelp.SetExit(cmd.Context(), output.Err(out, fmt.Sprintf("webster: the plan fixer ended %s but the fabric sync failed: %v; %s", result.Status, syncErr, fabricSyncWayForward)))
++				return nil
++			}
++
++			fields["warnings"] = ownerlessRunWarnings(c.geom.ScratchDir, result.Warnings)
++			if result.Status != websterengine.DigestStatusDone {
++				fields["dead_reason"] = result.DeadReason
++				clihelp.SetExit(cmd.Context(), output.ErrFields(out, fixPlanNotDoneMessage(result.DeadReason), fields))
++				return nil
++			}
++			fields["verdict"] = result.Verdict
++			fields["reply"] = result.Reply
++			clihelp.SetExit(cmd.Context(), output.Ok(out, fields))
++			return nil
++		},
++	}
++
++	cmd.Flags().DurationVar(&wait, "wait", 0, "operator override of the wait budget; a shorter wait can return a running snapshot; 0 blocks until the fixer ends or recovery_timeout_min")
++
++	return cmd
++}
++
++// persistFixPlanTerminal records result as the terminal status of the plan fixer strandGUID names, in a state reloaded under a fresh state-mutation lease.
++// A state that no longer records the fixer, which a reset leaves, is left unsaved.
++func (c *websterCLI) persistFixPlanTerminal(strandGUID string, result *websterengine.FixPlanResult) error {
++	lease, err := websterengine.AcquireStateMutation(c.geom.ScratchDir)
++	if err != nil {
++		return err
++	}
++	defer func() { _ = lease.Release() }()
++	st, err := websterengine.LoadState(c.geom.WebsterDir, c.geom.ScratchDir)
++	if err != nil {
++		return err
++	}
++	if st == nil || !websterengine.RecordPlanFixerTerminal(st, strandGUID, result) {
++		return nil
++	}
++	return websterengine.SaveState(c.geom.WebsterDir, c.geom.ScratchDir, st)
++}
+diff --git a/internal/webstercli/fixplan_test.go b/internal/webstercli/fixplan_test.go
+new file mode 100644
+index 00000000..a63640a3
+--- /dev/null
++++ b/internal/webstercli/fixplan_test.go
+@@ -0,0 +1,116 @@
++//go:build tier1
++
++// fixplan_test.go covers the `fix-plan` verb's envelopes and state persistence over the verbs fixture: the no-record refusal, a running snapshot, a done verdict and a dead fixer, each driven through clihelp.Execute.
++
++package webstercli
++
++import (
++	"os"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/websterengine"
++)
++
++// TestFixPlanCmd drives the verb's first call, which spawns the plan fixer and returns a running snapshot, then the second call that attaches to it and reaches a terminal result.
++func TestFixPlanCmd(t *testing.T) {
++	// spawnWait makes the spawn call return its running snapshot at once.
++	const spawnWait = "1ns"
++
++	tests := []struct {
++		name string
++		// arrange acts on the fixture after the spawn call and before the attaching call.
++		arrange     func(t *testing.T, fx *verbsFixture)
++		wantExit    int
++		wantStatus  string
++		wantVerdict string
++		wantReason  string
++		wantRecord  string
++	}{
++		{
++			name: "a fixed reply is done and saves the fixer's verdict",
++			arrange: func(t *testing.T, fx *verbsFixture) {
++				if err := os.WriteFile(websterengine.PlanFixReplyPath(fx.CLI.geom.ScratchDir), []byte("verdict: fixed\n- 02: Old -> New\n"), 0o644); err != nil {
++					t.Fatalf("write reply: %v", err)
++				}
++			},
++			wantExit:    0,
++			wantStatus:  websterengine.DigestStatusDone,
++			wantVerdict: websterengine.PlanFixVerdictFixed,
++			wantRecord:  websterengine.DigestStatusDone,
++		},
++		{
++			name:       "a gone strand is dead, exits non-zero naming the stuck way forward",
++			arrange:    func(_ *testing.T, fx *verbsFixture) { fx.Reed.Strands = nil },
++			wantExit:   1,
++			wantStatus: websterengine.DigestStatusDead,
++			wantReason: websterengine.DeadReasonDied,
++			wantRecord: websterengine.DigestStatusDead,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Setenv("FABRIC_SKIP_GIT", "1")
++			fx := newVerbsFixture(t)
++			fx.initState(t)
++			if err := os.MkdirAll(fx.CLI.geom.ScratchDir, 0o755); err != nil {
++				t.Fatalf("mkdir scratch dir: %v", err)
++			}
++			conflict := &websterengine.PlanConflictError{Batch: 2, Cause: websterengine.ConflictCauseTreeMoved, Findings: []string{"glyph-not-found/02: base.go#Old"}}
++			if err := websterengine.WriteConflictRecord(fx.CLI.geom.ScratchDir, conflict); err != nil {
++				t.Fatalf("WriteConflictRecord() = %v", err)
++			}
++
++			var spawnOut strings.Builder
++			if exitCode := clihelp.Execute(fx.CLI.fixPlanCmd(), &spawnOut, []string{"--wait", spawnWait}); exitCode != 0 {
++				t.Fatalf("fix-plan (spawn) = %d; want 0, output: %s", exitCode, spawnOut.String())
++			}
++			if got := decodeEnvelope(t, spawnOut.String())["status"]; got != websterengine.DigestStatusRunning {
++				t.Fatalf("fix-plan (spawn) status = %v; want %q, output: %s", got, websterengine.DigestStatusRunning, spawnOut.String())
++			}
++			tt.arrange(t, fx)
++
++			var out strings.Builder
++			exitCode := clihelp.Execute(fx.CLI.fixPlanCmd(), &out, nil)
++			if exitCode != tt.wantExit {
++				t.Fatalf("fix-plan (attach) = %d; want %d, output: %s", exitCode, tt.wantExit, out.String())
++			}
++			envelope := decodeEnvelope(t, out.String())
++			if envelope["status"] != tt.wantStatus {
++				t.Errorf("status = %v; want %q, output: %s", envelope["status"], tt.wantStatus, out.String())
++			}
++			if got, _ := envelope["verdict"].(string); got != tt.wantVerdict {
++				t.Errorf("verdict = %q; want %q, output: %s", got, tt.wantVerdict, out.String())
++			}
++			if got, _ := envelope["dead_reason"].(string); got != tt.wantReason {
++				t.Errorf("dead_reason = %q; want %q", got, tt.wantReason)
++			}
++			if tt.wantExit != 0 && !strings.Contains(out.String(), "way forward: write outcome: stuck") {
++				t.Errorf("output = %s; want the stuck way forward", out.String())
++			}
++
++			loaded, err := websterengine.LoadState(fx.CLI.geom.WebsterDir, fx.CLI.geom.ScratchDir)
++			if err != nil || loaded == nil || len(loaded.PlanFixers) != 1 {
++				t.Fatalf("LoadState() = %+v, %v; want a state with the one plan fixer record", loaded, err)
++			}
++			if rec := loaded.PlanFixers[0]; rec.Status != tt.wantRecord || rec.DeadReason != tt.wantReason || rec.Verdict != tt.wantVerdict {
++				t.Errorf("saved plan fixer record status %q, dead reason %q, verdict %q; want %q, %q, %q", rec.Status, rec.DeadReason, rec.Verdict, tt.wantRecord, tt.wantReason, tt.wantVerdict)
++			}
++		})
++	}
++
++	t.Run("no plan-conflict record refuses with its way forward and spawns nothing", func(t *testing.T) {
++		t.Setenv("FABRIC_SKIP_GIT", "1")
++		fx := newVerbsFixture(t)
++		fx.initState(t)
++		var out strings.Builder
++		exitCode := clihelp.Execute(fx.CLI.fixPlanCmd(), &out, nil)
++		if exitCode != 1 || !strings.Contains(out.String(), "only right after begin-batch refuses with plan_conflict") {
++			t.Errorf("fix-plan = %d, output %s; want exit 1 naming the way forward", exitCode, out.String())
++		}
++		if len(fx.Reed.AddedSpecs) != 0 {
++			t.Errorf("AddStrand calls = %d; want no spawn", len(fx.Reed.AddedSpecs))
++		}
++	})
++}
+diff --git a/internal/webstercli/restoreplan.go b/internal/webstercli/restoreplan.go
+index d6c889a4..b1370ff3 100644
+--- a/internal/webstercli/restoreplan.go
++++ b/internal/webstercli/restoreplan.go
+@@ -16,7 +16,7 @@ func (c *websterCLI) restorePlanCmd() *cobra.Command {
+ 	return &cobra.Command{
+ 		Use:         "restore-plan",
+ 		Short:       "restore every plan file that differs from the plan the run recorded",
+-		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
++		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceRole},
+ 		Long: `restore-plan writes back each plan file from the copy webster kept when it
+ recorded the plan's hashes, and removes a plan file the run never recorded.
+ It never changes state.json or the task worktree.
+diff --git a/internal/webstercli/wiring.go b/internal/webstercli/wiring.go
+index af864637..d0023d4b 100644
+--- a/internal/webstercli/wiring.go
++++ b/internal/webstercli/wiring.go
+@@ -341,7 +341,7 @@ func (c *websterCLI) wireStandalone(cwd, stencilsDir, planDir, targetDirFlag str
+ 	// Standalone's reed session lives on its own derived geometry, which no CLI verb can reach —
+ 	// `lyx reed up` is hub-only — so the verbs that need one boot it in-process through this seam
+ 	// (see the field's own doc comment).
+-	// Assigned here, executed by the verbs that spawn an agent themselves, run, recover-batch and fix-verify:
++	// Assigned here, executed by the verbs that spawn an agent themselves, run, recover-batch, fix-verify and fix-plan:
+ 	// wiring runs for EVERY verb, and validate, status and await-batch must boot no tmux server at all.
+ 	//
+ 	// Standalone reed is never booted by `lyx reed up` — that verb is hub-only — it is booted
+diff --git a/internal/websterengine/coldfixer.go b/internal/websterengine/coldfixer.go
+new file mode 100644
+index 00000000..ee493670
+--- /dev/null
++++ b/internal/websterengine/coldfixer.go
+@@ -0,0 +1,108 @@
++// coldfixer.go implements the bounded wait the cold fixer strands share: a strand that is done once its reply file exists, and dead when its turn ends without one, its timeout passes or its strand is gone.
++
++package websterengine
++
++import (
++	"errors"
++	"fmt"
++	"os"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++)
++
++// coldFixerStrand is what the wait reads of one cold fixer strand's record.
++type coldFixerStrand struct {
++	// label names the fixer's verb in warnings, such as "fix-verify".
++	label         string
++	strandGUID    string
++	sessionID     string
++	engine        string
++	spawnedAt     string
++	shuttleRunDir string
++	eventsPath    string
++	eventsOffset  int64
++	replyPath     string
++}
++
++// coldFixerWait is one bounded wait's outcome.
++type coldFixerWait struct {
++	// Status is DigestStatusRunning when the wait elapsed first, else DigestStatusDone or DigestStatusDead.
++	Status string
++	// DeadReason is set only when Status is DigestStatusDead.
++	DeadReason string
++	// Reply is the reply file's content, set only when Status is DigestStatusDone.
++	Reply string
++	// ElapsedS is the seconds since the spawn.
++	ElapsedS int
++	// Warnings are cleanup failures that change no status.
++	Warnings []string
++}
++
++// awaitColdFixer blocks up to wait for strand to reach a terminal classification, polling on the shared tick.
++// The fixer is done once its reply file exists.
++// It is dead when its newest turn ended without one (DeadReasonAsking), when timeout has passed since the spawn (DeadReasonTimeout), or when its strand is gone (DeadReasonDied), checked in that order.
++// Every terminal result stops the strand; only done also reads the reply and removes the run dir.
++// A failed stop, reply read or removal is a warning.
++func awaitColdFixer(engines AuditEngines, reed shuttleengine.ReedOps, stopper StrandStopper, strand coldFixerStrand, timeout, wait time.Duration, clk Clock) (*coldFixerWait, error) {
++	spawnedAt, err := time.Parse(time.RFC3339, strand.spawnedAt)
++	if err != nil {
++		return nil, fmt.Errorf("webster: parse the %s fixer's recorded spawnedAt %q: %w", strand.label, strand.spawnedAt, err)
++	}
++	engine, err := sessionAuditEngine(engines, strand.sessionID, strand.engine)
++	if err != nil {
++		return nil, err
++	}
++
++	gather := func() (Digest, bool, error) {
++		if _, err := os.Stat(strand.replyPath); err == nil {
++			return Digest{Status: DigestStatusDone}, true, nil
++		} else if !errors.Is(err, os.ErrNotExist) {
++			return Digest{}, false, fmt.Errorf("webster: stat %s fixer reply %s: %w", strand.label, strand.replyPath, err)
++		}
++		turnEnded, err := TurnEndedAfter(strand.eventsPath, strand.eventsOffset, engine, TurnEndRead{Now: clk.Now()})
++		if err != nil {
++			return Digest{}, false, err
++		}
++		if turnEnded {
++			return Digest{Status: DigestStatusDead, DeadReason: DeadReasonAsking}, true, nil
++		}
++		if clk.Now().Sub(spawnedAt) > timeout {
++			return Digest{Status: DigestStatusDead, DeadReason: DeadReasonTimeout}, true, nil
++		}
++		live, err := StrandLive(reed, strand.strandGUID)
++		if err != nil {
++			return Digest{}, false, err
++		}
++		if !live {
++			return Digest{Status: DigestStatusDead, DeadReason: DeadReasonDied}, true, nil
++		}
++		return Digest{Status: DigestStatusRunning}, false, nil
++	}
++
++	digest, err := PollUntilTerminal(gather, wait, clk)
++	if err != nil {
++		return nil, err
++	}
++	result := &coldFixerWait{Status: digest.Status, DeadReason: digest.DeadReason, ElapsedS: int(clk.Now().Sub(spawnedAt).Seconds())}
++	if digest.Status == DigestStatusRunning {
++		return result, nil
++	}
++
++	if err := stopper.StopStrand(strand.strandGUID); err != nil {
++		result.Warnings = append(result.Warnings, fmt.Sprintf("%s: stop strand %s: %v", strand.label, strand.strandGUID, err))
++	}
++	if digest.Status == DigestStatusDone {
++		reply, err := os.ReadFile(strand.replyPath)
++		if err != nil {
++			result.Warnings = append(result.Warnings, fmt.Sprintf("%s: read reply %s: %v", strand.label, strand.replyPath, err))
++		}
++		result.Reply = string(reply)
++		if strand.shuttleRunDir != "" {
++			if err := os.RemoveAll(strand.shuttleRunDir); err != nil {
++				result.Warnings = append(result.Warnings, fmt.Sprintf("%s: remove run dir %s: %v", strand.label, strand.shuttleRunDir, err))
++			}
++		}
++	}
++	return result, nil
++}
+diff --git a/internal/websterengine/conflictrecord.go b/internal/websterengine/conflictrecord.go
+index 354fc2f1..528d45cc 100644
+--- a/internal/websterengine/conflictrecord.go
++++ b/internal/websterengine/conflictrecord.go
+@@ -1,4 +1,4 @@
+-// conflictrecord.go declares the never-tracked plan-conflict record begin-batch leaves in webster's scratch directory, and its writers and removers.
++// conflictrecord.go declares the never-tracked plan-conflict record begin-batch leaves in webster's scratch directory, and its writers, readers and removers.
+ package websterengine
+ 
+ import (
+@@ -7,6 +7,7 @@ import (
+ 	"path"
+ 	"path/filepath"
+ 	"slices"
++	"strconv"
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/lyxdirs"
+@@ -48,6 +49,33 @@ func WriteConflictRecord(scratchDir string, conflict *PlanConflictError) error {
+ 	return nil
+ }
+ 
++// ConflictRecord is the conflict record as read back from disk.
++// Batch is 0 when the header names none.
++type ConflictRecord struct {
++	Batch    int
++	Findings []string
++}
++
++// ReadConflictRecord reads the conflict record under scratchDir.
++// An absent record reads as a ConflictRecord with no findings.
++func ReadConflictRecord(scratchDir string) (ConflictRecord, error) {
++	recordPath := ConflictRecordPath(scratchDir)
++	data, err := os.ReadFile(recordPath)
++	if os.IsNotExist(err) {
++		return ConflictRecord{}, nil
++	}
++	if err != nil {
++		return ConflictRecord{}, fmt.Errorf("webster: read %s: %w", recordPath, err)
++	}
++	record := ConflictRecord{Findings: findingLines(string(data))}
++	for _, line := range strings.Split(string(data), "\n") {
++		if number, ok := strings.CutPrefix(line, "# Plan conflict at begin-batch "); ok {
++			record.Batch, _ = strconv.Atoi(number)
++		}
++	}
++	return record, nil
++}
++
+ // RemoveConflictRecord removes the conflict record, and is a no-op when it is absent.
+ func RemoveConflictRecord(scratchDir string) error {
+ 	return removeIfPresent(ConflictRecordPath(scratchDir))
+@@ -117,13 +145,18 @@ func readFindingLines(filePath string) ([]string, error) {
+ 	if err != nil {
+ 		return nil, fmt.Errorf("webster: read %s: %w", filePath, err)
+ 	}
++	return findingLines(string(data)), nil
++}
++
++// findingLines returns the text after "- " of every finding line in a conflict record's or routed file's text.
++func findingLines(text string) []string {
+ 	var findings []string
+-	for _, line := range strings.Split(string(data), "\n") {
++	for _, line := range strings.Split(text, "\n") {
+ 		if finding, ok := strings.CutPrefix(line, "- "); ok {
+ 			findings = append(findings, finding)
+ 		}
+ 	}
+-	return findings, nil
++	return findings
+ }
+ 
+ // sameFindingSet reports whether a and b hold the same findings, order ignored.
+diff --git a/internal/websterengine/doc.go b/internal/websterengine/doc.go
+index f5da2a7c..f345c38a 100644
+--- a/internal/websterengine/doc.go
++++ b/internal/websterengine/doc.go
+@@ -584,6 +584,21 @@
+ // The run-exit audit reads the forks of Master's session only, so a cold fixer's own writes are checked only through the contract-file evidence loadRunWrites collects, as a recovery strand's are.
+ // Each fixer session joins the run's write evidence (loadRunWrites) beside the recovery sessions, run entry stops a fixer recorded not terminal and saves its record dead/died, so the next fix-verify spawns a fresh fixer instead of attaching to the stopped strand, and `reset --to start` stops every recorded fixer strand.
+ //
++// # The plan fixer
++//
++// A `plan_conflict` refusal of begin-batch goes to a cold plan fixer before Master ends stuck:
++// Merriam runs `lyx webster fix-plan` backgrounded, ends its turn, and on the verb's completion calls begin-batch again for the same batch on verdict `fixed`, and otherwise writes `outcome: stuck` quoting the begin-batch refusal, so a loom run still reroutes to plan review through the conflict record, which nothing but the next begin-batch removes.
++// A `plan_drifted` refusal gets no fixer.
++// FixPlanSpawnOrAttach reads the conflict record (ReadConflictRecord) and spawns the fixer as its own strand, role `plan-fixer`, at RoleMaster's model choice with recovery_timeout_min as its timeout, with RenderPlanFixPrompt's prompt carrying the parent, edit and friction directives.
++// The fixer edits only the target names, paths and glyphs the findings name in the cards they name, runs `lyx webster rebaseline --card NN` for them, runs `lyx webster restore-plan` when rebaseline refuses or a finding would change what a card does, and writes its reply (PlanFixReplyPath), whose first line is `verdict: fixed` or `verdict: plan_writer`.
++// Each spawn appends a PlanFixerState, holding the conflict's batch and findings and the worktree's HEAD and uncommitted paths, to State.PlanFixers, which the verb saves and fabric-commits at once;
++// a call that finds the last record not terminal attaches to it.
++// FixPlanAwait waits as FixVerifyAwait does and reads the verdict from the reply, a reply without a known one reading `plan_writer`.
++// Bound: the verb refuses when an earlier plan fixer of the run was given the same findings, compared as a set, and once the conflict's batch had planFixersPerBatch fixers, so a fixer that cannot clear a conflict leaves it to the plan writer after at most that many extra begin-batch calls.
++// The fixer's session is not in the run's write evidence, since its one legitimate write, to the plan directory, is a correctness violation for every session there;
++// instead a `fixed` verdict from a fixer that moved HEAD or left an uncommitted change on a path that was clean at the spawn is overruled to `plan_writer` with a warning, and its plan edits are bounded by rebaseline's acceptance rules and begin-batch's re-resolution.
++// Run entry stops a plan fixer recorded not terminal and saves its record dead/died, and `reset --to start` stops every recorded plan fixer strand.
++//
+ // # The verify gate
+ //
+ // Run hands Merriam's spawn the hub's `webster` gate as one must-pass gate entry named `verify` (NewVerifyGate), beside any entry the caller's RunDeps.Gate carries;
+@@ -629,8 +644,8 @@
+ //
+ // # Background shells in Master's wait
+ //
+-// Master's spawn declares two awaited shell prefixes, `masterAwaitedShellPrefixes`: the backgrounded recovery verb of the failure ladder and the backgrounded cold fixer verb of the gate-failure section;
+-// recovery_timeout_min already bounds both verbs, so the prefixes keep them out of the background-shell wait marker and are what keeps them holding a gated turn end.
++// Master's spawn declares its awaited shell prefixes, `masterAwaitedShellPrefixes`: the backgrounded recovery verb of the failure ladder, the backgrounded cold fixer verb of the gate-failure section and the backgrounded plan fixer verb of the plan-conflict rung;
++// recovery_timeout_min already bounds each verb, so the prefixes keep them out of the background-shell wait marker and are what keeps them holding a gated turn end.
+ // A gated turn end waiting only on non-awaited shells is judged as a plain turn end: done when Master's output files exist, held when one is missing.
+ // A gated turn end waiting on an awaited verb or on a fork is never an arrival, and neither expires.
+ // The run ends on the next turn end with nothing outstanding, the run deadline, the liveness check or a stop;
+diff --git a/internal/websterengine/planfixer.go b/internal/websterengine/planfixer.go
+new file mode 100644
+index 00000000..11c41cad
+--- /dev/null
++++ b/internal/websterengine/planfixer.go
+@@ -0,0 +1,272 @@
++// planfixer.go implements the cold plan fixer `lyx webster fix-plan` drives after begin-batch refuses with a plan conflict:
++// the bounded spawn-or-attach of a strand at the master role with the plan-fix prompt, the wait that reads its verdict, and its terminal record.
++
++package websterengine
++
++import (
++	"errors"
++	"fmt"
++	"os"
++	"path/filepath"
++	"slices"
++	"strings"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/friction"
++	"github.com/Knatte18/loomyard/internal/segmentcolor"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++)
++
++// fixPlanCommand is the verb that runs the plan fixer, as Master runs it.
++const fixPlanCommand = "lyx webster fix-plan"
++
++// planFixerStrandRole is the reed strand role the plan fixer runs under.
++const planFixerStrandRole = "plan-fixer"
++
++// planFixReplyFileName is the plan fixer's reply file name inside the webster scratch dir.
++const planFixReplyFileName = "plan-fix-reply.md"
++
++// planFixersPerBatch is the most plan fixers fix-plan spawns for one batch's conflicts in a run.
++const planFixersPerBatch = 2
++
++// The plan fixer's verdicts, the values its reply's first line names after "verdict: ".
++const (
++	// PlanFixVerdictFixed is a fix that edited and rebaselined the named cards without changing what any card does.
++	PlanFixVerdictFixed = "fixed"
++	// PlanFixVerdictPlanWriter is a conflict only the plan writer can answer, with the plan left as the run recorded it.
++	PlanFixVerdictPlanWriter = "plan_writer"
++)
++
++// planFixRefusalWayForward is the way forward of every fix-plan refusal and of a fixer that ends dead: the conflict goes on to the plan writer.
++const planFixRefusalWayForward = "way forward: write outcome: stuck to your outcome file, with a stuck_reason quoting begin-batch's plan_conflict refusal verbatim, so the conflict goes to the plan writer"
++
++// PlanFixReplyPath returns the path of the reply file the plan fixer writes as its final action, inside scratchDir.
++func PlanFixReplyPath(scratchDir string) string {
++	return filepath.Join(scratchDir, planFixReplyFileName)
++}
++
++// FixPlanDeps carries the seams the plan fixer's spawn and wait need.
++// Geom is the told Geometry every path is read from;
++// Reed answers the liveness read, and Stopper is the seam every stop goes through.
++type FixPlanDeps struct {
++	Starter    Starter
++	Roles      map[Role]shuttleengine.ModelChoice
++	Config     Config
++	Engines    AuditEngines
++	Reed       shuttleengine.ReedOps
++	Stopper    StrandStopper
++	ShuttleCfg shuttleengine.Config
++	Geom       Geometry
++
++	// FrictionDir is the told absolute friction directory, empty when Tier 2 is off.
++	FrictionDir string
++}
++
++// FixPlanResult is what one FixPlanAwait call hands back.
++type FixPlanResult struct {
++	// Status is DigestStatusRunning when the wait elapsed first, else DigestStatusDone or DigestStatusDead.
++	Status string
++	// DeadReason is set only when Status is DigestStatusDead.
++	DeadReason string
++	// Verdict is set only when Status is DigestStatusDone: PlanFixVerdictFixed or PlanFixVerdictPlanWriter.
++	Verdict string
++	// Reply is the fixer's reply file content, set only when Status is DigestStatusDone.
++	Reply string
++	// ElapsedS is the seconds since the spawn.
++	ElapsedS int
++	// Warnings are cleanup failures and the reason a fixed verdict was overruled, none of which changes the status.
++	Warnings []string
++}
++
++// FixPlanSpawnOrAttach returns the plan fixer fix-plan waits on, and whether this call spawned it into st.
++// A last record of st.PlanFixers that is not terminal is attached to as it stands.
++// Otherwise it spawns a strand at the master role with the plan-fix prompt, whose shuttle output file is the reply file, and appends its record to st.PlanFixers, holding the conflict's batch and findings and the worktree's HEAD and uncommitted paths;
++// the caller saves st.
++// It refuses, spawning nothing, when no plan-conflict record names a finding, when an earlier plan fixer of the run was given the same findings, when the record's batch already had planFixersPerBatch fixers, and when the master role's engine cannot audit forks.
++// A stale reply file is removed before the spawn.
++// A spawned strand whose run cannot be resolved is stopped, since no record of it will be saved.
++func FixPlanSpawnOrAttach(deps FixPlanDeps, st *State, clk Clock) (*PlanFixerState, bool, error) {
++	if n := len(st.PlanFixers); n > 0 && st.PlanFixers[n-1].Status == "" {
++		return st.PlanFixers[n-1], false, nil
++	}
++
++	record, err := ReadConflictRecord(deps.Geom.ScratchDir)
++	if err != nil {
++		return nil, false, fmt.Errorf("%w; way forward: transient, re-run `%s`", err, fixPlanCommand)
++	}
++	if len(record.Findings) == 0 {
++		return nil, false, fmt.Errorf("webster: no plan-conflict record names a finding, so no begin-batch refusal is waiting for the plan fixer; way forward: run `%s` only right after begin-batch refuses with plan_conflict", fixPlanCommand)
++	}
++	fixersForBatch := 0
++	for _, earlier := range st.PlanFixers {
++		if sameFindingSet(earlier.Findings, record.Findings) {
++			return nil, false, fmt.Errorf("webster: a plan fixer was already given these plan-conflict findings and did not clear them; %s", planFixRefusalWayForward)
++		}
++		if earlier.Batch == record.Batch {
++			fixersForBatch++
++		}
++	}
++	if fixersForBatch >= planFixersPerBatch {
++		return nil, false, fmt.Errorf("webster: batch %02d already had %d plan fixers this run; %s", record.Batch, fixersForBatch, planFixRefusalWayForward)
++	}
++
++	choice, ok := deps.Roles[RoleMaster]
++	if !ok {
++		return nil, false, fmt.Errorf("webster: no resolved model-spec for role %q; way forward: set %s in webster.yaml with lyx config webster, then re-run `%s`", RoleMaster, RoleMaster, fixPlanCommand)
++	}
++	if err := roleAuditEngine(deps.Engines, RoleMaster, choice); err != nil {
++		return nil, false, err
++	}
++	git := deps.Geom.git()
++	head, err := git.HeadSHA(deps.Geom.WorktreeRoot)
++	if err != nil {
++		return nil, false, fmt.Errorf("webster: read HEAD before the plan fixer: %w; way forward: transient, re-run `%s`", err, fixPlanCommand)
++	}
++	dirtyAtSpawn, err := git.DirtyPaths(deps.Geom.WorktreeRoot)
++	if err != nil {
++		return nil, false, fmt.Errorf("webster: read the worktree status before the plan fixer: %w; way forward: transient, re-run `%s`", err, fixPlanCommand)
++	}
++
++	replyPath, err := filepath.Abs(PlanFixReplyPath(deps.Geom.ScratchDir))
++	if err != nil {
++		return nil, false, fmt.Errorf("webster: resolve plan fixer reply path: %w", err)
++	}
++	recordPath, err := filepath.Abs(ConflictRecordPath(deps.Geom.ScratchDir))
++	if err != nil {
++		return nil, false, fmt.Errorf("webster: resolve plan-conflict record path: %w", err)
++	}
++	notePath := friction.NotePath(deps.FrictionDir, "webster-plan-fix")
++	prompt, err := RenderPlanFixPrompt(recordPath, replyPath, deps.Geom.WorktreeRoot, deps.Geom.PlanDir, deps.Geom.StencilsDir, deps.Geom.SpecsDir, notePath, deps.Geom.ParentName)
++	if err != nil {
++		return nil, false, err
++	}
++
++	if err := os.Remove(replyPath); err != nil && !errors.Is(err, os.ErrNotExist) {
++		return nil, false, fmt.Errorf("webster: remove stale plan fixer reply %s: %w", replyPath, err)
++	}
++
++	spec := shuttleengine.Spec{
++		Prompt:      string(prompt),
++		OutputFiles: []string{replyPath},
++		ModelChoice: choice,
++		Skills:      roleSkills,
++		Role:        planFixerStrandRole,
++		Segment:     segmentcolor.Webster,
++		Timeout:     time.Duration(deps.Config.RecoveryTimeoutMin) * time.Minute,
++	}
++	run, err := deps.Starter.Start(spec)
++	if err != nil {
++		return nil, false, fmt.Errorf("webster: start the plan fixer: %w; way forward: transient, re-run `%s`", shuttleengine.ModelKey{Module: "webster", Key: string(RoleMaster)}.Wrap(err), fixPlanCommand)
++	}
++	runState, runDir, err := shuttleengine.FindRun(deps.ShuttleCfg, deps.Geom.AnchorRoot, run.StrandGUID())
++	if err != nil {
++		// The strand is live but no record of it will be saved, so nothing later could stop it.
++		stopErr := deps.Stopper.StopStrand(run.StrandGUID())
++		return nil, false, errors.Join(fmt.Errorf("webster: resolve spawned plan fixer run: %w; way forward: transient, re-run `%s`", err, fixPlanCommand), stopErr)
++	}
++
++	rec := &PlanFixerState{
++		StrandGUID:    run.StrandGUID(),
++		SessionID:     runState.SessionID,
++		Engine:        runState.Engine,
++		SpawnedAt:     clk.Now().UTC().Format(time.RFC3339),
++		ShuttleRunDir: runDir,
++		EventsPath:    runState.EventsPath,
++		EventsOffset:  runState.PromptOffset,
++		Batch:         record.Batch,
++		Findings:      record.Findings,
++		HeadAtSpawn:   head,
++		DirtyAtSpawn:  dirtyAtSpawn,
++	}
++	st.PlanFixers = append(st.PlanFixers, rec)
++	return rec, true, nil
++}
++
++// FixPlanAwait blocks up to wait for rec's plan fixer to reach a terminal classification, as the cold fixers' shared wait classifies it, with recovery_timeout_min as its timeout.
++// On done, the verdict is the reply's first line after "verdict: ", and a reply without a known verdict reads as PlanFixVerdictPlanWriter.
++// A fixed verdict from a fixer that moved HEAD or left an uncommitted change on a path that was clean at the spawn is overruled to PlanFixVerdictPlanWriter, with a warning naming why, since the fixer's one job is the plan.
++// The caller holds no state-mutation lease across it.
++func FixPlanAwait(deps FixPlanDeps, rec *PlanFixerState, wait time.Duration, clk Clock) (*FixPlanResult, error) {
++	strand := coldFixerStrand{
++		label:         "fix-plan",
++		strandGUID:    rec.StrandGUID,
++		sessionID:     rec.SessionID,
++		engine:        rec.Engine,
++		spawnedAt:     rec.SpawnedAt,
++		shuttleRunDir: rec.ShuttleRunDir,
++		eventsPath:    rec.EventsPath,
++		eventsOffset:  rec.EventsOffset,
++		replyPath:     PlanFixReplyPath(deps.Geom.ScratchDir),
++	}
++	waited, err := awaitColdFixer(deps.Engines, deps.Reed, deps.Stopper, strand, time.Duration(deps.Config.RecoveryTimeoutMin)*time.Minute, wait, clk)
++	if err != nil {
++		return nil, err
++	}
++	result := &FixPlanResult{Status: waited.Status, DeadReason: waited.DeadReason, Reply: waited.Reply, ElapsedS: waited.ElapsedS, Warnings: waited.Warnings}
++	if result.Status != DigestStatusDone {
++		return result, nil
++	}
++
++	result.Verdict = replyVerdict(result.Reply)
++	if result.Verdict != PlanFixVerdictFixed {
++		return result, nil
++	}
++	if reason, err := codeTouchedSince(deps.Geom, rec.HeadAtSpawn, rec.DirtyAtSpawn); err != nil {
++		return nil, err
++	} else if reason != "" {
++		result.Verdict = PlanFixVerdictPlanWriter
++		result.Warnings = append(result.Warnings, "fix-plan: the fixer's fixed verdict is overruled, since "+reason)
++	}
++	return result, nil
++}
++
++// replyVerdict returns the verdict reply's first line names, and PlanFixVerdictPlanWriter when it names no known one.
++func replyVerdict(reply string) string {
++	firstLine, _, _ := strings.Cut(reply, "\n")
++	verdict, _ := strings.CutPrefix(strings.TrimSpace(firstLine), "verdict: ")
++	if verdict == PlanFixVerdictFixed {
++		return PlanFixVerdictFixed
++	}
++	return PlanFixVerdictPlanWriter
++}
++
++// codeTouchedSince returns why the task worktree is no longer as the plan fixer found it: HEAD moved from headAtSpawn, or a path not among dirtyAtSpawn is uncommitted.
++// It returns "" when neither holds.
++func codeTouchedSince(geom Geometry, headAtSpawn string, dirtyAtSpawn []string) (string, error) {
++	git := geom.git()
++	head, err := git.HeadSHA(geom.WorktreeRoot)
++	if err != nil {
++		return "", fmt.Errorf("webster: read HEAD after the plan fixer: %w; way forward: transient, re-run `%s`", err, fixPlanCommand)
++	}
++	if head != headAtSpawn {
++		return fmt.Sprintf("HEAD moved from %s to %s while it ran", headAtSpawn, head), nil
++	}
++	dirty, err := git.DirtyPaths(geom.WorktreeRoot)
++	if err != nil {
++		return "", fmt.Errorf("webster: read the worktree status after the plan fixer: %w; way forward: transient, re-run `%s`", err, fixPlanCommand)
++	}
++	var added []string
++	for _, path := range dirty {
++		if !slices.Contains(dirtyAtSpawn, path) {
++			added = append(added, path)
++		}
++	}
++	if len(added) > 0 {
++		return "it left uncommitted changes in " + strings.Join(added, ", "), nil
++	}
++	return "", nil
++}
++
++// RecordPlanFixerTerminal sets the terminal status and verdict of the record in st whose strand is strandGUID, from result.
++// It reports false when st records no such fixer, which a reset that archived the state leaves.
++func RecordPlanFixerTerminal(st *State, strandGUID string, result *FixPlanResult) bool {
++	for _, rec := range st.PlanFixers {
++		if rec.StrandGUID == strandGUID {
++			rec.Status = result.Status
++			rec.DeadReason = result.DeadReason
++			rec.Verdict = result.Verdict
++			return true
++		}
++	}
++	return false
++}
+diff --git a/internal/websterengine/planfixer_test.go b/internal/websterengine/planfixer_test.go
+new file mode 100644
+index 00000000..ca3fa79b
+--- /dev/null
++++ b/internal/websterengine/planfixer_test.go
+@@ -0,0 +1,299 @@
++//go:build tier0
++
++// planfixer_test.go exercises the plan fixer's bounded spawn-or-attach and its verdict-reading wait over the recover-batch fixture: a real *shuttleengine.Runner over the shuttlefake Reed and Engine, a fake git and a fake Clock.
++
++package websterengine_test
++
++import (
++	"errors"
++	"os"
++	"path/filepath"
++	"slices"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/testkit/shuttlefake"
++	"github.com/Knatte18/loomyard/internal/websterengine"
++)
++
++// testConflictFindings are the findings the fixture's plan-conflict record names.
++var testConflictFindings = []string{"glyph-not-found/03: base.go#OldName", "glyph-not-found/04: base.go#OldTest"}
++
++// newFixPlanFixture returns the recover-batch fixture with a scratch dir and a parent, and the FixPlanDeps over its seams.
++// findings, when non-empty, are written as begin-batch 02's tree_moved conflict record.
++func newFixPlanFixture(t *testing.T, findings []string) (*recoverFixture, websterengine.FixPlanDeps) {
++	t.Helper()
++	fx := newRecoverFixture(t)
++	fx.Deps.Geom.ScratchDir = t.TempDir()
++	fx.Deps.Geom.ParentName = "ly:orch"
++	fx.Git.head = "head-at-spawn"
++	fx.Git.dirtyPaths = []string{"dirty-before.txt"}
++	if len(findings) > 0 {
++		conflict := &websterengine.PlanConflictError{Batch: 2, Cause: websterengine.ConflictCauseTreeMoved, Findings: findings}
++		if err := websterengine.WriteConflictRecord(fx.Deps.Geom.ScratchDir, conflict); err != nil {
++			t.Fatalf("WriteConflictRecord() = %v", err)
++		}
++	}
++	return fx, websterengine.FixPlanDeps{
++		Starter:    fx.Deps.Starter,
++		Roles:      fx.Deps.Roles,
++		Config:     fx.Deps.Config,
++		Engines:    fx.Deps.Engines,
++		Reed:       fx.Deps.Reed,
++		Stopper:    fx.Deps.Stopper,
++		ShuttleCfg: fx.Deps.ShuttleCfg,
++		Geom:       fx.Deps.Geom,
++	}
++}
++
++// TestFixPlanSpawnOrAttach pins the refusals and their bounds, the spawn's spec, prompt and record, and the attach to a running fixer.
++func TestFixPlanSpawnOrAttach(t *testing.T) {
++	t.Parallel()
++
++	t.Run("a refusal names its way forward and spawns nothing", func(t *testing.T) {
++		t.Parallel()
++		tests := []struct {
++			name     string
++			findings []string
++			earlier  []*websterengine.PlanFixerState
++			arrange  func(fx *recoverFixture, deps *websterengine.FixPlanDeps)
++			// wantAdded is the number of AddStrand calls reed saw before the refusal.
++			wantAdded int
++			wantText  []string
++		}{
++			{
++				name:     "no plan-conflict record",
++				wantText: []string{"no plan-conflict record names a finding", "way forward: run `lyx webster fix-plan` only right after begin-batch refuses with plan_conflict"},
++			},
++			{
++				name:     "an earlier fixer was given the same findings",
++				findings: testConflictFindings,
++				earlier:  []*websterengine.PlanFixerState{{StrandGUID: "old", Batch: 2, Findings: []string{testConflictFindings[1], testConflictFindings[0]}, Status: websterengine.DigestStatusDone}},
++				wantText: []string{"already given these plan-conflict findings", "way forward: write outcome: stuck", "goes to the plan writer"},
++			},
++			{
++				name:     "the batch already had two fixers",
++				findings: testConflictFindings,
++				earlier: []*websterengine.PlanFixerState{
++					{StrandGUID: "a", Batch: 2, Findings: []string{"path-missing/03: a.go"}, Status: websterengine.DigestStatusDone},
++					{StrandGUID: "b", Batch: 2, Findings: []string{"path-missing/03: b.go"}, Status: websterengine.DigestStatusDead},
++				},
++				wantText: []string{"batch 02 already had 2 plan fixers", "way forward: write outcome: stuck"},
++			},
++			{
++				name:     "no resolved model-spec for the master role",
++				findings: testConflictFindings,
++				arrange: func(_ *recoverFixture, deps *websterengine.FixPlanDeps) {
++					deps.Roles = map[websterengine.Role]shuttleengine.ModelChoice{}
++				},
++				wantText: []string{"no resolved model-spec", "way forward: set master in webster.yaml"},
++			},
++			{
++				name:     "master engine cannot audit forks",
++				findings: testConflictFindings,
++				arrange: func(_ *recoverFixture, deps *websterengine.FixPlanDeps) {
++					deps.Engines = noAuditEngines{engine: &shuttlefake.Engine{}}
++				},
++				wantText: []string{"cannot audit forks", "way forward: set master in webster.yaml"},
++			},
++			{
++				name:     "HEAD cannot be read",
++				findings: testConflictFindings,
++				arrange:  func(fx *recoverFixture, _ *websterengine.FixPlanDeps) { fx.Git.headErr = errors.New("head boom") },
++				wantText: []string{"head boom", "way forward: transient, re-run `lyx webster fix-plan`"},
++			},
++			{
++				name:     "the worktree status cannot be read",
++				findings: testConflictFindings,
++				arrange: func(fx *recoverFixture, _ *websterengine.FixPlanDeps) {
++					fx.Git.dirtyPathsErr = errors.New("status boom")
++				},
++				wantText: []string{"status boom", "way forward: transient, re-run `lyx webster fix-plan`"},
++			},
++			{
++				name:      "the strand cannot be started",
++				findings:  testConflictFindings,
++				arrange:   func(fx *recoverFixture, _ *websterengine.FixPlanDeps) { fx.Reed.AddErr = errors.New("add boom") },
++				wantText:  []string{"add boom", "way forward: transient, re-run `lyx webster fix-plan`"},
++				wantAdded: 1,
++			},
++			{
++				name:     "the spawned run cannot be found",
++				findings: testConflictFindings,
++				arrange: func(_ *recoverFixture, deps *websterengine.FixPlanDeps) {
++					deps.ShuttleCfg.RunDir = filepath.Join(deps.Geom.ScratchDir, "elsewhere")
++				},
++				wantText:  []string{"resolve spawned plan fixer run", "way forward: transient, re-run `lyx webster fix-plan`"},
++				wantAdded: 1,
++			},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				fx, deps := newFixPlanFixture(t, tt.findings)
++				if tt.arrange != nil {
++					tt.arrange(fx, &deps)
++				}
++				st := &websterengine.State{PlanFixers: tt.earlier}
++				_, spawned, err := websterengine.FixPlanSpawnOrAttach(deps, st, &recoverFakeClock{now: time.Unix(0, 0)})
++				if err == nil {
++					t.Fatal("FixPlanSpawnOrAttach() error = nil; want the refusal")
++				}
++				for _, want := range tt.wantText {
++					if !strings.Contains(err.Error(), want) {
++						t.Errorf("FixPlanSpawnOrAttach() error = %q; want it to contain %q", err, want)
++					}
++				}
++				if spawned || len(fx.Reed.AddedSpecs) != tt.wantAdded || len(st.PlanFixers) != len(tt.earlier) {
++					t.Errorf("spawned = %v, AddStrand calls = %d, records = %d; want no spawn, %d AddStrand calls and no new record", spawned, len(fx.Reed.AddedSpecs), len(st.PlanFixers), tt.wantAdded)
++				}
++			})
++		}
++	})
++
++	t.Run("spawns at the master role, records the conflict and attaches on the next call", func(t *testing.T) {
++		t.Parallel()
++		fx, deps := newFixPlanFixture(t, testConflictFindings)
++		replyPath := websterengine.PlanFixReplyPath(deps.Geom.ScratchDir)
++		if err := os.WriteFile(replyPath, []byte("stale"), 0o644); err != nil {
++			t.Fatalf("seed stale reply: %v", err)
++		}
++		st := &websterengine.State{PlanFixers: []*websterengine.PlanFixerState{{StrandGUID: "other-batch", Batch: 1, Findings: []string{"path-missing/01: x.go"}, Status: websterengine.DigestStatusDone}}}
++		clk := &recoverFakeClock{now: time.Unix(0, 0)}
++
++		rec, spawned, err := websterengine.FixPlanSpawnOrAttach(deps, st, clk)
++		if err != nil || !spawned {
++			t.Fatalf("FixPlanSpawnOrAttach() = _, %v, %v; want a spawn", spawned, err)
++		}
++		if _, err := os.Stat(replyPath); !os.IsNotExist(err) {
++			t.Errorf("stat stale reply = %v; want it removed before the spawn", err)
++		}
++		spec := fx.Engine.LastSpec
++		if spec.Role != "plan-fixer" || spec.ModelChoice.Model != "master-model" || !slices.Equal(spec.OutputFiles, []string{replyPath}) {
++			t.Errorf("spec role %q, model %q, output files %v; want plan-fixer, master-model, [%s]", spec.Role, spec.ModelChoice.Model, spec.OutputFiles, replyPath)
++		}
++		if !slices.Contains(spec.Skills, "scribe:prose") {
++			t.Errorf("spec skills = %v; want the role skills", spec.Skills)
++		}
++		for _, want := range []string{websterengine.ConflictRecordPath(deps.Geom.ScratchDir), replyPath, deps.Geom.SpecsDir + "/loom/loom-plan-spec.md", "ly:orch"} {
++			if !strings.Contains(fx.Engine.LastPrompt, want) {
++				t.Errorf("prompt lacks %q", want)
++			}
++		}
++		if len(st.PlanFixers) != 2 || st.PlanFixers[1] != rec {
++			t.Fatalf("records = %+v; want the spawned record appended", st.PlanFixers)
++		}
++		if rec.StrandGUID == "" || rec.ShuttleRunDir == "" || rec.EventsPath == "" || rec.SpawnedAt != "1970-01-01T00:00:00Z" || rec.Status != "" {
++			t.Errorf("record = %+v; want the strand, run dir, events, the clock's spawn time and no status", rec)
++		}
++		if rec.Batch != 2 || !slices.Equal(rec.Findings, testConflictFindings) || rec.HeadAtSpawn != "head-at-spawn" || !slices.Equal(rec.DirtyAtSpawn, []string{"dirty-before.txt"}) {
++			t.Errorf("record batch %d, findings %v, head %q, dirty %v; want 2, %v, head-at-spawn, [dirty-before.txt]", rec.Batch, rec.Findings, rec.HeadAtSpawn, rec.DirtyAtSpawn, testConflictFindings)
++		}
++
++		again, spawned, err := websterengine.FixPlanSpawnOrAttach(deps, st, clk)
++		if err != nil || spawned || again != rec || len(fx.Reed.AddedSpecs) != 1 {
++			t.Errorf("second call = %p, %v, %v with %d AddStrand calls; want an attach to %p and no second spawn", again, spawned, err, len(fx.Reed.AddedSpecs), rec)
++		}
++	})
++}
++
++// TestFixPlanAwait pins the verdict a terminal wait reads, the overrule of a fixed verdict that touched code, and the terminal record.
++func TestFixPlanAwait(t *testing.T) {
++	t.Parallel()
++	tests := []struct {
++		name string
++		// reply, when non-empty, is written as the fixer's reply before the wait.
++		reply string
++		// arrange acts on the fixture after the spawn and before the wait.
++		arrange     func(fx *recoverFixture)
++		wantStatus  string
++		wantReason  string
++		wantVerdict string
++		wantWarning string
++	}{
++		{
++			name:        "a fixed reply is fixed",
++			reply:       "verdict: fixed\n- 03: OldName -> NewName\n",
++			wantStatus:  websterengine.DigestStatusDone,
++			wantVerdict: websterengine.PlanFixVerdictFixed,
++		},
++		{
++			name:        "a plan_writer reply is plan_writer",
++			reply:       "verdict: plan_writer\n- 04: the test was removed\n",
++			wantStatus:  websterengine.DigestStatusDone,
++			wantVerdict: websterengine.PlanFixVerdictPlanWriter,
++		},
++		{
++			name:        "a reply without a verdict line is plan_writer",
++			reply:       "fixed both cards\n",
++			wantStatus:  websterengine.DigestStatusDone,
++			wantVerdict: websterengine.PlanFixVerdictPlanWriter,
++		},
++		{
++			name:        "a fixed reply after HEAD moved is overruled",
++			reply:       "verdict: fixed\n",
++			arrange:     func(fx *recoverFixture) { fx.Git.head = "moved-head" },
++			wantStatus:  websterengine.DigestStatusDone,
++			wantVerdict: websterengine.PlanFixVerdictPlanWriter,
++			wantWarning: "HEAD moved from head-at-spawn to moved-head",
++		},
++		{
++			name:        "a fixed reply that left a new uncommitted path is overruled",
++			reply:       "verdict: fixed\n",
++			arrange:     func(fx *recoverFixture) { fx.Git.dirtyPaths = []string{"dirty-before.txt", "base.go"} },
++			wantStatus:  websterengine.DigestStatusDone,
++			wantVerdict: websterengine.PlanFixVerdictPlanWriter,
++			wantWarning: "it left uncommitted changes in base.go",
++		},
++		{
++			name:       "a gone strand is dead with no verdict",
++			arrange:    func(fx *recoverFixture) { fx.Reed.Strands = nil },
++			wantStatus: websterengine.DigestStatusDead,
++			wantReason: websterengine.DeadReasonDied,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			fx, deps := newFixPlanFixture(t, testConflictFindings)
++			st := &websterengine.State{}
++			clk := &recoverFakeClock{now: time.Unix(0, 0)}
++			rec, _, err := websterengine.FixPlanSpawnOrAttach(deps, st, clk)
++			if err != nil {
++				t.Fatalf("FixPlanSpawnOrAttach() = %v", err)
++			}
++			if tt.reply != "" {
++				if err := os.WriteFile(websterengine.PlanFixReplyPath(deps.Geom.ScratchDir), []byte(tt.reply), 0o644); err != nil {
++					t.Fatalf("write reply: %v", err)
++				}
++			}
++			if tt.arrange != nil {
++				tt.arrange(fx)
++			}
++
++			result, err := websterengine.FixPlanAwait(deps, rec, websterengine.RecoveryWaitBudget(deps.Config), clk)
++			if err != nil {
++				t.Fatalf("FixPlanAwait() = %v", err)
++			}
++			if result.Status != tt.wantStatus || result.DeadReason != tt.wantReason || result.Verdict != tt.wantVerdict || result.Reply != tt.reply {
++				t.Errorf("FixPlanAwait() = %+v; want status %q, reason %q, verdict %q, reply %q", result, tt.wantStatus, tt.wantReason, tt.wantVerdict, tt.reply)
++			}
++			warned := slices.ContainsFunc(result.Warnings, func(w string) bool { return strings.Contains(w, "overruled") })
++			if tt.wantWarning == "" && warned || tt.wantWarning != "" && !slices.ContainsFunc(result.Warnings, func(w string) bool { return strings.Contains(w, tt.wantWarning) }) {
++				t.Errorf("warnings = %v; want an overrule warning containing %q only when one is expected", result.Warnings, tt.wantWarning)
++			}
++			if !slices.Contains(fx.Reed.RemovedGUIDs, rec.StrandGUID) && tt.wantStatus == websterengine.DigestStatusDone {
++				t.Error("strand not stopped; want every done fixer stopped")
++			}
++			if !websterengine.RecordPlanFixerTerminal(st, rec.StrandGUID, result) || rec.Status != tt.wantStatus || rec.DeadReason != tt.wantReason || rec.Verdict != tt.wantVerdict {
++				t.Errorf("record after RecordPlanFixerTerminal = %+v; want status %q, reason %q, verdict %q", rec, tt.wantStatus, tt.wantReason, tt.wantVerdict)
++			}
++		})
++	}
++
++	if websterengine.RecordPlanFixerTerminal(&websterengine.State{}, "absent", &websterengine.FixPlanResult{Status: websterengine.DigestStatusDone}) {
++		t.Error("RecordPlanFixerTerminal() over a state without the fixer = true; want false")
++	}
++}
+diff --git a/internal/websterengine/render.go b/internal/websterengine/render.go
+index 29d6857d..4948edd0 100644
+--- a/internal/websterengine/render.go
++++ b/internal/websterengine/render.go
+@@ -1,7 +1,8 @@
+-// render.go implements the producer prompt assets webster composes and renders (webster-prefix-fork.md, webster-prefix-recovery.md, webster-body-implementer.md, webster-template-master.md, webster-prefix-verify-fix-fork.md, webster-prefix-verify-fix-cold.md, webster-body-verify-fix.md),
++// render.go implements the producer prompt assets webster composes and renders (webster-prefix-fork.md, webster-prefix-recovery.md, webster-body-implementer.md, webster-template-master.md, webster-prefix-verify-fix-fork.md, webster-prefix-verify-fix-cold.md, webster-body-verify-fix.md, webster-template-plan-fix.md),
+ // and the rendering functions that fill them.
+ // RenderForkPrompt is called by begin-batch immediately before each in-session fork, RenderRecoveryPrompt by recover-batch immediately before spawning the separate cold recovery strand, and RenderMasterPrompt by run at Master's own spawn.
+ // RenderVerifyFixPrompt is called by run for the verify-gate fixer fork Merriam spawns on a gate failure, and RenderVerifyFixColdPrompt by fix-verify for the cold verify-gate fixer strand.
++// RenderPlanFixPrompt is called by fix-plan for the cold plan fixer strand.
+ // The file also holds the two sequenced-execution-order renderers those prompts embed (RenderBatchIndex, RenderProgress).
+ // Every asset ships as an embedded default in the top-level stencils package and is read from a
+ // told stencils directory at call time via stencilstore.Read, per the runtime-read-not-embed Shared
+@@ -408,6 +409,54 @@ func RenderVerifyFixColdPrompt(reportPath, replyPath, worktreeRoot, repoRoot, pl
+ 	return prompt, nil
+ }
+ 
++// RenderPlanFixPrompt fills webster-template-plan-fix for the cold plan fixer strand, read from stencilsDir.
++// recordPath is the plan-conflict record the fixer reads, and replyPath the reply file it writes as its final action; both must be non-empty.
++// planDir is rendered in the display form masterPlanDirDisplay gives it, relative to worktreeRoot when it sits inside it, and specsDir points the fixer at the plan spec.
++// parentName renders the parent directive, an empty one its no-parent variant.
++// notePath is the caller-composed friction note path (friction.NotePath), or "" when Tier 2 is off;
++// friction_directive is injected via friction.RoleImplementer when Tier 2 is on, with a friction.Directive error swallowed as a Warn rather than propagated.
++func RenderPlanFixPrompt(recordPath, replyPath, worktreeRoot, planDir, stencilsDir, specsDir, notePath, parentName string) ([]byte, error) {
++	const stencilName = "webster-template-plan-fix"
++	if strings.TrimSpace(recordPath) == "" || strings.TrimSpace(replyPath) == "" {
++		return nil, fmt.Errorf("webster: render %s prompt: record path %q or reply path %q is empty", stencilName, recordPath, replyPath)
++	}
++
++	frictionDirective, err := friction.Directive(notePath, stencilsDir, friction.RoleImplementer)
++	if err != nil {
++		logger.Warn("webster: friction directive failed, continuing without one", "role", "implementer", "stencil", stencilName, "error", err)
++		frictionDirective = ""
++	}
++	parentDirective, err := parentdirective.Directive(stencilsDir, parentName, false)
++	if err != nil {
++		return nil, fmt.Errorf("webster: plan fixer prompt parent directive: %w", err)
++	}
++	editDirective, err := editdirective.Directive(stencilsDir)
++	if err != nil {
++		return nil, fmt.Errorf("webster: plan fixer prompt edit directive: %w", err)
++	}
++	values := map[string]string{
++		"record_path":              recordPath,
++		"reply_path":               replyPath,
++		"worktree_root":            worktreeRoot,
++		"plan_dir":                 masterPlanDirDisplay(worktreeRoot, planDir),
++		"specs_dir":                specsDir,
++		friction.MarkerName:        frictionDirective,
++		parentdirective.MarkerName: parentDirective,
++		editdirective.MarkerName:   editDirective,
++	}
++
++	template, err := stencilstore.Read(stencilsDir, stencilName)
++	if err != nil {
++		return nil, fmt.Errorf("webster: read plan fixer template: %w", err)
++	}
++	friction.WarnIfMarkerAbsent(template, stencilName, frictionDirective)
++	prompt, err := stencil.FillOptional(template, values, []string{friction.MarkerName, parentdirective.MarkerName})
++	if err != nil {
++		return nil, fmt.Errorf("webster: fill plan fixer template: %w", err)
++	}
++	return prompt, nil
++}
++
+ // masterPlanDirDisplay returns the plan-directory spelling the rendered prompts carry: planDir
+ // relative to paneCwd when it sits inside it — hub geometry, whose pane runs at the anchor the
+ // plan's `_lyx/plan` junction hangs off, so the byte-exact "_lyx/plan" keeps the prompt's own
+diff --git a/internal/websterengine/runlevel.go b/internal/websterengine/runlevel.go
+index ade3e063..f6bc5741 100644
+--- a/internal/websterengine/runlevel.go
++++ b/internal/websterengine/runlevel.go
+@@ -34,10 +34,10 @@ import (
+ // Master spawn at once.
+ const runLockName = "run.lock"
+ 
+-// masterAwaitedShellPrefixes are Master's two backgrounded, blocking verbs: the failure ladder's recovery verb and the verify gate's cold fixer verb.
++// masterAwaitedShellPrefixes are Master's backgrounded, blocking verbs: the failure ladder's recovery verb, the verify gate's cold fixer verb and the plan-conflict rung's plan fixer verb.
+ // A prefix keeps its verb out of the background-shell wait marker;
+ // it is also what keeps the verb holding a gated turn end, which one waiting only on non-awaited shells is judged as a plain turn end.
+-var masterAwaitedShellPrefixes = []string{"lyx webster recover-batch", fixVerifyCommand}
++var masterAwaitedShellPrefixes = []string{"lyx webster recover-batch", fixVerifyCommand, fixPlanCommand}
+ 
+ // ErrRunBusy marks Run's fail-fast refusal when another invocation already holds scratchDir's
+ // run.lock.
+@@ -298,13 +298,13 @@ func clearRenderedPrompts(promptsDir string) error {
+ }
+ 
+ // reclaimEntryTimeStrands stops the only substrates a crashed or killed `run` process can ever leave live behind it:
+-// Master's own recorded strand, any recorded, non-terminal recovery-batch strand and any non-terminal cold verify-gate fixer strand.
++// Master's own recorded strand, any recorded, non-terminal recovery-batch strand and any non-terminal cold verify-gate fixer or plan fixer strand.
+ // Forks die WITH Master (same process) — there is never an orphaned
+ // in-flight fork implementer to reclaim, which is what keeps webster's own
+ // entry-time reclaim simple, per
+ // discussion.md's crash-resume-re-drive-first-unreported decision. A nil st
+ // (no run has ever started) is a no-op.
+-// A stopped cold fixer's record turns terminal dead/died, so the next fix-verify spawns a fresh fixer instead of attaching to the stopped strand;
++// A stopped cold fixer's or plan fixer's record turns terminal dead/died, so the next fix-verify or fix-plan spawns a fresh fixer instead of attaching to the stopped strand;
+ // stateChanged reports whether any record changed, so the caller saves st.
+ func reclaimEntryTimeStrands(stopper StrandStopper, st *State) (stateChanged bool, err error) {
+ 	if st == nil {
+@@ -336,6 +336,17 @@ func reclaimEntryTimeStrands(stopper StrandStopper, st *State) (stateChanged boo
+ 		}
+ 	}
+ 
++	for _, rec := range st.PlanFixers {
++		if rec.Status == "" {
++			if err := stopper.StopStrand(rec.StrandGUID); err != nil {
++				return stateChanged, fmt.Errorf("websterengine: stop leftover plan fixer strand %s before respawn: %w", rec.StrandGUID, err)
++			}
++			rec.Status = DigestStatusDead
++			rec.DeadReason = DeadReasonDied
++			stateChanged = true
++		}
++	}
++
+ 	return stateChanged, nil
+ }
+ 
+@@ -761,9 +772,9 @@ func Run(deps RunDeps, opts RunOptions) (_ RunResult, err error) {
+ 		ModelChoice:   choice,
+ 		Skills:        languageconfig.AppendSkills(roleSkills, deps.LanguageSkills),
+ 		ForkSubagents: true,
+-		// The Master stencil ends its turn after each backgrounded fork and backgrounded recover-batch and wakes on their completion.
++		// The Master stencil ends its turn after each backgrounded fork and backgrounded recover-batch, fix-verify and fix-plan and wakes on their completion.
+ 		Requires: []shuttleengine.Requirement{shuttleengine.RequirementBackgroundWake},
+-		// Master backgrounds recover-batch and fix-verify and recovery_timeout_min bounds both, so the wait marker leaves them out.
++		// Master backgrounds recover-batch, fix-verify and fix-plan and recovery_timeout_min bounds each, so the wait marker leaves them out.
+ 		AwaitedShellPrefixes: slices.Clone(masterAwaitedShellPrefixes),
+ 		Role:                 MerriamStrandRole,
+ 		Segment:              segmentcolor.Webster,
+diff --git a/internal/websterengine/runlevel_test.go b/internal/websterengine/runlevel_test.go
+index c8962dbf..433a71cf 100644
+--- a/internal/websterengine/runlevel_test.go
++++ b/internal/websterengine/runlevel_test.go
+@@ -1394,9 +1394,9 @@ func TestRun_EntryHousekeeping(t *testing.T) {
+ 			},
+ 		},
+ 		{
+-			// The recorded Master strand and each recorded, non-terminal recovery-batch and cold fixer strand are stopped through the stopper.
++			// The recorded Master strand and each recorded, non-terminal recovery-batch, cold fixer and plan fixer strand are stopped through the stopper.
+ 			// A terminal recovery batch's strand and a terminal fixer's are not.
+-			name: "the Master and non-terminal recovery and cold fixer strands are stopped",
++			name: "the Master and non-terminal recovery, cold fixer and plan fixer strands are stopped",
+ 			setup: func(t *testing.T, fx *runFixture) func(t *testing.T) {
+ 				seedMatchingState(t, fx, &websterengine.State{
+ 					MasterStrand: "prior-master-strand",
+@@ -1408,10 +1408,14 @@ func TestRun_EntryHousekeeping(t *testing.T) {
+ 						{StrandGUID: "terminal-fixer-strand", Status: websterengine.DigestStatusDone},
+ 						{StrandGUID: "prior-fixer-strand"},
+ 					},
++					PlanFixers: []*websterengine.PlanFixerState{
++						{StrandGUID: "terminal-plan-fixer-strand", Status: websterengine.DigestStatusDone, Verdict: websterengine.PlanFixVerdictFixed},
++						{StrandGUID: "prior-plan-fixer-strand"},
++					},
+ 				})
+ 
+ 				return func(t *testing.T) {
+-					if want := []string{"prior-master-strand", "prior-recovery-strand", "prior-fixer-strand"}; !slices.Equal(fx.Stopper.Stopped, want) {
++					if want := []string{"prior-master-strand", "prior-recovery-strand", "prior-fixer-strand", "prior-plan-fixer-strand"}; !slices.Equal(fx.Stopper.Stopped, want) {
+ 						t.Errorf("stopped = %v; want %v", fx.Stopper.Stopped, want)
+ 					}
+ 					// A stopped fixer's record is saved terminal, so the next fix-verify spawns instead of attaching; a terminal fixer's record is left as it was.
+@@ -1425,6 +1429,10 @@ func TestRun_EntryHousekeeping(t *testing.T) {
+ 					if fixers[1].Status != websterengine.DigestStatusDead || fixers[1].DeadReason != websterengine.DeadReasonDied {
+ 						t.Errorf("stopped fixer record = %q/%q; want dead/died", fixers[1].Status, fixers[1].DeadReason)
+ 					}
++					planFixers := loadRunState(t, fx).PlanFixers
++					if len(planFixers) != 2 || planFixers[0].Status != websterengine.DigestStatusDone || planFixers[1].Status != websterengine.DigestStatusDead || planFixers[1].DeadReason != websterengine.DeadReasonDied {
++						t.Errorf("saved PlanFixers = %+v; want the terminal one left done and the stopped one dead/died", planFixers)
++					}
+ 				}
+ 			},
+ 		},
+@@ -1582,11 +1590,11 @@ func TestRun_MasterSpawn(t *testing.T) {
+ 			},
+ 		},
+ 		{
+-			name:  "the recover-batch and fix-verify shells are declared awaited",
++			name:  "the recover-batch, fix-verify and fix-plan shells are declared awaited",
+ 			cards: 1,
+ 			check: func(t *testing.T, fx *runFixture) {
+ 				got := fx.Starter.startCalls[0].AwaitedShellPrefixes
+-				if want := []string{"lyx webster recover-batch", "lyx webster fix-verify"}; !slices.Equal(got, want) {
++				if want := []string{"lyx webster recover-batch", "lyx webster fix-verify", "lyx webster fix-plan"}; !slices.Equal(got, want) {
+ 					t.Errorf("Spec.AwaitedShellPrefixes = %q; want %q", got, want)
+ 				}
+ 			},
+diff --git a/internal/websterengine/runwrites_test.go b/internal/websterengine/runwrites_test.go
+index e43542c9..8652921f 100644
+--- a/internal/websterengine/runwrites_test.go
++++ b/internal/websterengine/runwrites_test.go
+@@ -60,7 +60,7 @@ func TestLoadRunWrites(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("recovery and cold fixer sessions are audited after the Master sessions, once each", func(t *testing.T) {
++	t.Run("recovery and cold verify fixer sessions are audited after the Master sessions, once each, and plan fixer sessions never", func(t *testing.T) {
+ 		t.Parallel()
+ 
+ 		st := &State{
+@@ -70,6 +70,7 @@ func TestLoadRunWrites(t *testing.T) {
+ 				2: {SessionID: "s2", RecoverySessions: []string{"r2", "s1"}},
+ 			},
+ 			VerifyFixers: []*VerifyFixerState{{SessionID: "v1"}, {SessionID: "r1"}},
++			PlanFixers:   []*PlanFixerState{{SessionID: "p1"}},
+ 		}
+ 		var audited []string
+ 		engine := &shuttlefake.Engine{AuditForksFn: func(session, _ string) (shuttleengine.ForkAudit, error) {
+diff --git a/internal/websterengine/state.go b/internal/websterengine/state.go
+index 09c687eb..51d612e3 100644
+--- a/internal/websterengine/state.go
++++ b/internal/websterengine/state.go
+@@ -176,6 +176,9 @@ type State struct {
+ 	// VerifyFixers records every cold verify-gate fixer strand fix-verify spawned, in spawn order; only the last can be running.
+ 	// A state written before this field existed loads with it nil.
+ 	VerifyFixers []*VerifyFixerState `json:"verifyFixers,omitempty"`
++	// PlanFixers records every cold plan-fixer strand fix-plan spawned, in spawn order; only the last can be running.
++	// A state written before this field existed loads with it nil.
++	PlanFixers []*PlanFixerState `json:"planFixers,omitempty"`
+ }
+ 
+ // VerifyFixerState is one cold verify-gate fixer strand's record.
+@@ -198,6 +201,36 @@ type VerifyFixerState struct {
+ 	DeadReason string `json:"deadReason,omitempty"`
+ }
+ 
++// PlanFixerState is one cold plan-fixer strand's record.
++type PlanFixerState struct {
++	// StrandGUID identifies the reed strand the fixer runs in.
++	StrandGUID string `json:"strandGuid"`
++	// SessionID and Engine identify the fixer's session and the engine it ran under, so the wait reads its turn ends.
++	SessionID string `json:"sessionId,omitempty"`
++	Engine    string `json:"engine,omitempty"`
++	// SpawnedAt is the spawn time in RFC 3339, from which the recovery timeout runs.
++	SpawnedAt string `json:"spawnedAt"`
++	// ShuttleRunDir is the fixer's shuttle run directory, removed once the fixer reaches done.
++	ShuttleRunDir string `json:"shuttleRunDir,omitempty"`
++	// EventsPath and EventsOffset locate the fixer's turn events after its skill-load turns.
++	EventsPath   string `json:"eventsPath,omitempty"`
++	EventsOffset int64  `json:"eventsOffset,omitempty"`
++	// Batch is the batch whose begin-batch refused with the conflict the fixer was given.
++	Batch int `json:"batch"`
++	// Findings are the conflict record's findings the fixer was given.
++	Findings []string `json:"findings,omitempty"`
++	// HeadAtSpawn is the worktree's HEAD when the fixer spawned, which a fix must leave unmoved.
++	HeadAtSpawn string `json:"headAtSpawn,omitempty"`
++	// DirtyAtSpawn are the worktree-relative paths uncommitted when the fixer spawned; a fix must add none.
++	DirtyAtSpawn []string `json:"dirtyAtSpawn,omitempty"`
++	// Status is empty while the fixer runs, then DigestStatusDone or DigestStatusDead.
++	Status string `json:"status,omitempty"`
++	// DeadReason is set only when Status is DigestStatusDead.
++	DeadReason string `json:"deadReason,omitempty"`
++	// Verdict is set only when Status is DigestStatusDone: PlanFixVerdictFixed or PlanFixVerdictPlanWriter.
++	Verdict string `json:"verdict,omitempty"`
++}
++
+ // PendingAuditFinding is one run-exit correctness finding that stays pending until accepted.
+ type PendingAuditFinding struct {
+ 	// ID is the finding's ledger identity (findingIdentity).
+diff --git a/internal/websterengine/stopper_test.go b/internal/websterengine/stopper_test.go
+index 28393e6d..2e82dd73 100644
+--- a/internal/websterengine/stopper_test.go
++++ b/internal/websterengine/stopper_test.go
+@@ -25,15 +25,16 @@ func TestRemoveRecoveryStrands(t *testing.T) {
+ 			4: {Kind: "recovery"},
+ 		},
+ 		VerifyFixers: []*websterengine.VerifyFixerState{{StrandGUID: "fixer-1", Status: websterengine.DigestStatusDead}, {StrandGUID: "fixer-2"}},
++		PlanFixers:   []*websterengine.PlanFixerState{{StrandGUID: "plan-fixer-1"}},
+ 	}
+ 
+-	t.Run("stops every recorded recovery strand in batch order, then every cold fixer strand", func(t *testing.T) {
++	t.Run("stops every recorded recovery strand in batch order, then every cold fixer and plan fixer strand", func(t *testing.T) {
+ 		t.Parallel()
+ 		stopper := &recordingStopper{}
+ 		if err := websterengine.RemoveRecoveryStrands(stopper, st); err != nil {
+ 			t.Fatalf("RemoveRecoveryStrands() error = %v; want nil", err)
+ 		}
+-		if want := []string{"recovery-1", "recovery-3", "fixer-1", "fixer-2"}; !reflect.DeepEqual(stopper.Stopped, want) {
++		if want := []string{"recovery-1", "recovery-3", "fixer-1", "fixer-2", "plan-fixer-1"}; !reflect.DeepEqual(stopper.Stopped, want) {
+ 			t.Errorf("stopped = %v; want %v", stopper.Stopped, want)
+ 		}
+ 	})
+diff --git a/internal/websterengine/strand.go b/internal/websterengine/strand.go
+index 7dd30c51..f01434cc 100644
+--- a/internal/websterengine/strand.go
++++ b/internal/websterengine/strand.go
+@@ -131,7 +131,7 @@ type StrandStopper interface {
+ 	StopStrand(guid string) error
+ }
+ 
+-// RemoveRecoveryStrands stops every live recovery strand the state records, in batch-number order, then every cold verify-gate fixer strand in spawn order.
++// RemoveRecoveryStrands stops every live recovery strand the state records, in batch-number order, then every cold verify-gate fixer strand and every plan fixer strand, each in spawn order.
+ // Only a batch of Kind "recovery" with a StrandGUID names a batch's one;
+ // implementer forks and the Master have no recorded strand.
+ // The first failure returns a *RecoveryStrandRemoveError naming the strand guid.
+@@ -159,5 +159,10 @@ func RemoveRecoveryStrands(stopper StrandStopper, st *State) error {
+ 			return &RecoveryStrandRemoveError{GUID: rec.StrandGUID, Err: err}
+ 		}
+ 	}
++	for _, rec := range st.PlanFixers {
++		if err := stopper.StopStrand(rec.StrandGUID); err != nil {
++			return &RecoveryStrandRemoveError{GUID: rec.StrandGUID, Err: err}
++		}
++	}
+ 	return nil
+ }
+diff --git a/internal/websterengine/template_test.go b/internal/websterengine/template_test.go
+index ce7ea669..812c6dab 100644
+--- a/internal/websterengine/template_test.go
++++ b/internal/websterengine/template_test.go
+@@ -968,6 +968,10 @@ func TestRenderPrompts_FrictionDirective(t *testing.T) {
+ 		{"verify-fix-cold", "webster-prefix-verify-fix-cold", "webster-verify-fix-cold.md", func(anchorRoot, stencilsDir, notePath string) (string, error) {
+ 			return renderVerifyFixCold("/reports/verify-gate.yaml", anchorRoot, anchorRoot, stencilsDir, notePath, "", nil)
+ 		}},
++		{"plan-fix", "webster-template-plan-fix", "webster-plan-fix.md", func(anchorRoot, stencilsDir, notePath string) (string, error) {
++			got, err := websterengine.RenderPlanFixPrompt("/lyx/webster/plan-conflict.md", testReplyPath, anchorRoot, filepath.Join(anchorRoot, "_lyx", "plan"), stencilsDir, filepath.Join(anchorRoot, "specs"), notePath, "")
++			return string(got), err
++		}},
+ 	}
+ 	for _, tc := range cases {
+ 		t.Run(tc.name, func(t *testing.T) {
+diff --git a/internal/websterengine/verifyfixer.go b/internal/websterengine/verifyfixer.go
+index 35454c79..d4bfad0e 100644
+--- a/internal/websterengine/verifyfixer.go
++++ b/internal/websterengine/verifyfixer.go
+@@ -175,68 +175,22 @@ func FixVerifySpawnOrAttach(deps FixVerifyDeps, st *State, clk Clock) (*VerifyFi
+ // A failed stop, reply read or removal is a warning.
+ // The caller holds no state-mutation lease across it.
+ func FixVerifyAwait(deps FixVerifyDeps, rec *VerifyFixerState, wait time.Duration, clk Clock) (*FixVerifyResult, error) {
+-	spawnedAt, err := time.Parse(time.RFC3339, rec.SpawnedAt)
+-	if err != nil {
+-		return nil, fmt.Errorf("webster: parse the cold fixer's recorded spawnedAt %q: %w", rec.SpawnedAt, err)
+-	}
+-	engine, err := sessionAuditEngine(deps.Engines, rec.SessionID, rec.Engine)
+-	if err != nil {
+-		return nil, err
+-	}
+-	replyPath := VerifyFixReplyPath(deps.Geom.ScratchDir)
+-	timeout := time.Duration(deps.Config.RecoveryTimeoutMin) * time.Minute
+-
+-	gather := func() (Digest, bool, error) {
+-		if _, err := os.Stat(replyPath); err == nil {
+-			return Digest{Status: DigestStatusDone}, true, nil
+-		} else if !errors.Is(err, os.ErrNotExist) {
+-			return Digest{}, false, fmt.Errorf("webster: stat cold fixer reply %s: %w", replyPath, err)
+-		}
+-		turnEnded, err := TurnEndedAfter(rec.EventsPath, rec.EventsOffset, engine, TurnEndRead{Now: clk.Now()})
+-		if err != nil {
+-			return Digest{}, false, err
+-		}
+-		if turnEnded {
+-			return Digest{Status: DigestStatusDead, DeadReason: DeadReasonAsking}, true, nil
+-		}
+-		if clk.Now().Sub(spawnedAt) > timeout {
+-			return Digest{Status: DigestStatusDead, DeadReason: DeadReasonTimeout}, true, nil
+-		}
+-		live, err := StrandLive(deps.Reed, rec.StrandGUID)
+-		if err != nil {
+-			return Digest{}, false, err
+-		}
+-		if !live {
+-			return Digest{Status: DigestStatusDead, DeadReason: DeadReasonDied}, true, nil
+-		}
+-		return Digest{Status: DigestStatusRunning}, false, nil
+-	}
+-
+-	digest, err := PollUntilTerminal(gather, wait, clk)
++	strand := coldFixerStrand{
++		label:         "fix-verify",
++		strandGUID:    rec.StrandGUID,
++		sessionID:     rec.SessionID,
++		engine:        rec.Engine,
++		spawnedAt:     rec.SpawnedAt,
++		shuttleRunDir: rec.ShuttleRunDir,
++		eventsPath:    rec.EventsPath,
++		eventsOffset:  rec.EventsOffset,
++		replyPath:     VerifyFixReplyPath(deps.Geom.ScratchDir),
++	}
++	waited, err := awaitColdFixer(deps.Engines, deps.Reed, deps.Stopper, strand, time.Duration(deps.Config.RecoveryTimeoutMin)*time.Minute, wait, clk)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	result := &FixVerifyResult{Status: digest.Status, DeadReason: digest.DeadReason, ElapsedS: int(clk.Now().Sub(spawnedAt).Seconds())}
+-	if digest.Status == DigestStatusRunning {
+-		return result, nil
+-	}
+-
+-	if err := deps.Stopper.StopStrand(rec.StrandGUID); err != nil {
+-		result.Warnings = append(result.Warnings, fmt.Sprintf("fix-verify: stop strand %s: %v", rec.StrandGUID, err))
+-	}
+-	if digest.Status == DigestStatusDone {
+-		reply, err := os.ReadFile(replyPath)
+-		if err != nil {
+-			result.Warnings = append(result.Warnings, fmt.Sprintf("fix-verify: read reply %s: %v", replyPath, err))
+-		}
+-		result.Reply = string(reply)
+-		if rec.ShuttleRunDir != "" {
+-			if err := os.RemoveAll(rec.ShuttleRunDir); err != nil {
+-				result.Warnings = append(result.Warnings, fmt.Sprintf("fix-verify: remove run dir %s: %v", rec.ShuttleRunDir, err))
+-			}
+-		}
+-	}
+-	return result, nil
++	return &FixVerifyResult{Status: waited.Status, DeadReason: waited.DeadReason, Reply: waited.Reply, ElapsedS: waited.ElapsedS, Warnings: waited.Warnings}, nil
+ }
+ 
+ // RecordVerifyFixerTerminal sets the terminal status of the record in st whose strand is strandGUID, from result.
