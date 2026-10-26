@@ -894,6 +894,27 @@
       "body": "## Seen (scripted-edits-allowed, 2026-10-26)\n\nWorktree-Create stopped with \"warp repo already contains a real _lyx … it predates weft\" on a brand-new task worktree.\nThe shed's tackler sent it back to Worktree-Create without finding the cause, and the second attempt passed by luck, about 40 seconds later.\n\n## Cause\n\nA hub-wide reader wrote into the half-built pair.\nThe `lyx batten overview` window refreshes through `orchcli.HubOrchs` (`internal/battencli/overview.go`), which walks every git worktree, a pair still being created included, and calls `fabricengine.ReadOrigin` (`internal/orchcli/live.go`).\n`ReadOrigin` reads `\u003cwarp\u003e/_lyx/fabric/origin.json` through `state.ReadJSON`, which runs `os.MkdirAll` on the file's directory (`internal/state/state.go`), so the read creates a real `\u003cwarp\u003e/_lyx/fabric`.\nIn `Topology.Add` the weft worktree exists about 150 ms before `WireJunctionsWith` runs, and a poll in that gap leaves a real `_lyx` the junction check refuses.\nThe tender's `hubOrchs` (`internal/tendercli/deps.go`) takes the same path, and a read during staging also leaves a stray `.weft` directory under `.fabric-wt-staging-*`.\nIt can recur on any `lyx fabric add` while an overview window or the tender runs.\n\n## Idea\n\n- A read never creates a directory, anywhere: `state.ReadJSON` drops its `os.MkdirAll`, so only writes create directories, and a missing directory reads as a missing file (operator, 2026-10-26).\n  Every caller that leaned on the read's mkdir, such as one whose lock file sits in the same directory, is found and fixed in the same change, and `ReadJSONNoMkdir` folds into `ReadJSON`.\n- `ReadOrigin` and every other reader that seeds an exclude or a lock directory before reading stop doing so for a read.\n- `HubOrchs` skips a worktree whose `_lyx` is not yet a link and every path under `.fabric-wt-staging-*`.\n- `Topology.Add` wires the junctions right after the weft worktree is created, before writing the launchers.\n- A test holds `Add` between weft creation and wiring, runs `HubOrchs`, and asserts no `\u003cwarp\u003e/_lyx` appears.\n",
       "created": "2026-10-26T12:20:46Z",
       "revised": "2026-10-26T12:23:32Z"
+    },
+    {
+      "id": 834,
+      "handle": "E3",
+      "slug": "webster-tree-moved-fixer",
+      "title": "A renamed symbol a later card targets: catch it at plan and batch end, and fix it in Webster, not by a plan reroute",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "webster",
+        "loom",
+        "stencil"
+      ],
+      "issues": [],
+      "priority": "high",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (beam-start-and-ownership, 2026-10-26)\n\nCard 6 (`recipe-named-pawl`) declared the function renames `NewBeam` -\u003e `NewPawl` and `BeamRouting` -\u003e `PawlRouting` as Rename pairs, but listed the tests `TestNewBeam` and `TestBeamRouting` under Edit only.\nBatch 06's implementer renamed the tests too, and its report said \"No departures\".\nWebster warned after batch 06 that card 16 had rename candidates, but only as information.\n`begin-batch 07` then refused with `plan_conflict: tree_moved`, since card 16 still named the old tests, and loom rerouted the whole run to Plan-Burler-Review: a new plan writer round and its perch, to fix two names in one card.\n\n## Idea\n\n- The plan writer handles it from the start: a card that renames a symbol also declares the rename of the tests named after it, and plan validation flags a Rename pair whose symbol has same-named tests left under Edit.\n- The batch-end check is blocking: when a batch removes or renames a symbol a later card targets, the batch gets a departure while its context is fresh, and the implementer either keeps the name or declares the rename.\n- A mechanical plan conflict such as `tree_moved` or `glyph-not-found` never reroutes to Plan-Burler-Review: a small dedicated fixer agent under the Webster run edits the named cards to match the tree, runs `lyx webster rebaseline --card NN`, and Webster goes on.\n  Only a conflict that changes what a card does goes back to the plan writer.\n",
+      "created": "2026-10-26T12:24:54Z",
+      "revised": "2026-10-26T12:24:54Z"
     }
   ],
   "prime_owner": "osl-1046",
