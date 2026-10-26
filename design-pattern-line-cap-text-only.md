@@ -1,6 +1,6 @@
 # PATTERN line cap counts the rule text only, not the name and link
 
-`pattern-line-cap-text-only` · Task · enhancement, pattern, loom · running · Code-Burler-Fix
+`pattern-line-cap-text-only` · Task · enhancement, pattern, loom · running · Code-Bouncer
 
 ## Seen (umbrella-anchor Plan-Write, 2026-10-25)
 
