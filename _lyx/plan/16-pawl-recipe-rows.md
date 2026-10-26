@@ -1,10 +1,10 @@
 # Card 16 — pawl-recipe-rows
 
 **Create:**
-- `plan:internal/shedrecipe#beamUpEntry` -> `func beamUpEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error)`
-- `plan:internal/shedrecipe#beamAwaitEntry` -> `func beamAwaitEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error)`
-- `plan:internal/shedrecipe#beamDownEntry` -> `func beamDownEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error)`
-- `plan:internal/loomrecipe#TestPawlRecipe_HoldLiftsOnlyBeforeParentAlign` -> `func TestPawlRecipe_HoldLiftsOnlyBeforeParentAlign(t *testing.T)`
+- `internal/shedrecipe#beamUpEntry`
+- `internal/shedrecipe#beamAwaitEntry`
+- `internal/shedrecipe#beamDownEntry`
+- `internal/loomrecipe#TestPawlRecipe_HoldLiftsOnlyBeforeParentAlign`
 
 **Edit:**
 - `contracts/recipes/pawl-recipe.yaml`
