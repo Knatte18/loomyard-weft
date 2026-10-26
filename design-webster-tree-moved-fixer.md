@@ -1,6 +1,6 @@
 # A renamed symbol a later card targets: catch it at plan and batch end, and fix it in Webster, not by a plan reroute
 
-`webster-tree-moved-fixer` · Task · enhancement, webster, loom, stencil
+`webster-tree-moved-fixer` · Task · enhancement, webster, loom, stencil · draft
 
 Depends on: [`webster-stop-asked-once`](design-webster-stop-asked-once.md)
 
