@@ -1,35 +1,35 @@
-# Allow scripted edits in every agent session
+# Allow scripted edits: drop the in-place and redirect-write guard rows
 
-Every agent session lyx spawns, the orch included, may now edit files by script (`sed -i`, `perl -i`, `awk`, or a shell heredoc or redirect) wherever that is simpler than Edit or Write.
-A mechanical change across many sites, such as the `rename-binary-lyr` rename, can be done by script instead of one Edit per site.
+Every agent session lyx spawns, the orch included, could not edit a file by script.
+The shell guard denied `sed -i`, `perl -i` and a shell redirect into a project file, and the edit directive told agents to use only Edit or Write.
+The ban is no longer wanted, and the `rename-binary-lyr` rename is meant to be done mechanically by script.
+After this change an agent may edit with `sed -i`, `perl -i`, `awk`, a heredoc or a redirect wherever a script is simpler.
 
 ## What changes
 
-- `internal/shellguard` no longer has the `in-place-edit` and `redirect-write` rows.
-  Their patterns, steers and notices go with them, as do the helpers only they used.
-  The `python` (on its switch), `raw-go`, `refuse-raw`, `computed-rm` and `machine-sleep` rows deny as before.
-- The `edit-directive` stencil permits scripted edits instead of banning them.
-  It keeps the `lyx loom fmt` formatting route and the `.scratch/` rule for scratch files.
-  It drops the `Rename`-card exception, which only existed to carve a hole in the ban.
-- The Claude engine renders two fewer Bash hooks and two fewer deny-notice sentences, so `settings-golden.json` and the settings tests' counts move with the rows.
-- The no-denied-recovery scan no longer lists `sed -i` as a denied way forward, and its self-check asserts that.
-- Docs that described the rows or the ban now describe the edit rule: `docs/overview.md`, the `claudeengine`, `editdirective` and `loomcli` package docs, `docs/research/codex-feasibility.md`, and the `PATTERN-parent-directive` and `PATTERN-refusal-way-forward` background files.
-  The `PATTERN.md` overview line is unchanged, since it names the edit directive and not the ban.
-
-## Closes
-
-No issue.
+- `internal/shellguard`: the `in-place-edit` and `redirect-write` rows are gone from `Rows`, with their patterns and the helpers only they used.
+  Their steers, deny-notice sentences and integration-test rows go with them.
+- `edit-directive` stencil: it now permits scripted edits instead of banning them.
+  Its `Rename`-card exception is dropped, since it only carved a hole in the ban.
+  The `lyx loom fmt` route for Go files and the `.scratch/` rule for scratch files stay.
+- The Claude settings document, its deny notice and `testdata/settings-golden.json` no longer carry either row's hook or sentence.
+  The golden diff is large because the hook entries are renumbered, not because the rest of the settings changed.
+- The no-denied-recovery scan no longer lists `sed -i` and `perl -i` as denied ways forward, because it reads the rows' `Forms`.
+- Docs that described the removed rows or the ban are updated: the `claudeengine`, `editdirective` and `loomcli` package docs, `docs/overview.md`, `docs/research/codex-feasibility.md`, and the `PATTERN-parent-directive` and `PATTERN-refusal-way-forward` background files.
 
 ## Design decisions
 
-- The rows are removed outright, with no config switch: the request was to drop the ban, not to make it optional.
-  The removal lets every in-place `sed`/`perl` edit and every shell redirect into a project file through, in every session.
-- The edit directive stays the one statement of the edit rule, now permissive.
+- Both rows are removed outright, with no config switch.
+  Nothing asked for a knob, and the removal applies to every session.
+- The edit directive stays the one statement of the edit rule, and every opening stencil still renders it.
   `TestStencils_NoEditRuleRestatement` and `editRulePhrases` stay, reworded from the no-script rule to the edit rule.
-- The directive names `sed`, `perl`, `awk` and a shell heredoc rather than any script, so it does not steer an agent into the `python` row where that row's switch is on.
-- The rename-tool route a Webster implementer follows for a symbol `Rename` card is untouched.
+- The directive names `sed`, `perl`, `awk` and a shell heredoc or redirect, not "any script".
+  A general wording could steer an agent into the `python` row where its switch is on.
+- The `python`, `raw-go`, `refuse-raw`, `computed-rm` and `machine-sleep` rows are untouched, as are Claude Code's own permission settings.
+  The `python` row's steer still suggests Edit or Write; it offers alternatives and states no ban.
+- The `PATTERN-parent-directive` overview line is unchanged, since it names the edit directive and not the ban.
 
-## To check by hand
+## Check by hand
 
 - A session started before this lands keeps the old rows and directive until it is relaunched.
-- Neither a `sed -i` nor a redirect into a project file was run in a live agent session; the coverage is the row table's tests and the pinned settings golden.
+- Run `lyx gate test --upto 2` on `main` before pushing; it was not run as part of this description.
