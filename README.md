@@ -39,7 +39,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **Beams: one lyx beam start, machine ownership by project, and a beam's life as a pawl run**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-ownership`](design-beam-start-and-ownership.md) | loom | Webster | osl-1046 | 22h<br>17h | orch, workspaces, batten, reed, board |
-| T5 | **Catch a renamed symbol a later card targets: in the plan writer, plan validation and a blocking batch-end check**<br>• `profile: light` | [`rename-target-checks`](design-rename-target-checks.md) | darn | Code-Bouncer | osl-1046 | 26m<br>26m | webster, loom, stencil |
+| T5 | **Catch a renamed symbol a later card targets: in the plan writer, plan validation and a blocking batch-end check**<br>• `profile: light` | [`rename-target-checks`](design-rename-target-checks.md) | darn | Code-Burler-Review | osl-1046 | 27m<br>27m | webster, loom, stencil |
 
 ### Ready (0)
 
@@ -53,7 +53,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **A mechanical plan conflict is fixed in Webster by a small fixer agent, not by a plan reroute**<br>• `profile: solid` | [`webster-tree-moved-fixer`](design-webster-tree-moved-fixer.md) | darn | `rename-target-checks` | 37m<br>26m | webster, loom, stencil |
+| T1 | **A mechanical plan conflict is fixed in Webster by a small fixer agent, not by a plan reroute**<br>• `profile: solid` | [`webster-tree-moved-fixer`](design-webster-tree-moved-fixer.md) | darn | `rename-target-checks` | 37m<br>27m | webster, loom, stencil |
 
 ## Notes (40)
 
@@ -64,7 +64,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Find why a running run shows a dead waiter in the activity reader** | [`idle-notice-dead-waiter-cause`](design-idle-notice-dead-waiter-cause.md) | 2d<br>2d | batten, shuttle |
-| B2 |  | **A read creates directories: state.ReadJSON mkdirs, so a hub reader leaves a real _lyx in a half-built pair** | [`hub-reader-creates-lyx`](design-hub-reader-creates-lyx.md) | 41m<br>38m | fabric, orch, batten |
+| B2 |  | **A read creates directories: state.ReadJSON mkdirs, so a hub reader leaves a real _lyx in a half-built pair** | [`hub-reader-creates-lyx`](design-hub-reader-creates-lyx.md) | 41m<br>39m | fabric, orch, batten |
 | B4 |  | **Board README lists draft tasks under Ready** | [`readme-draft-not-ready`](design-readme-draft-not-ready.md) | 20h<br>20h | board |
 
 ### Enhancements (19)
