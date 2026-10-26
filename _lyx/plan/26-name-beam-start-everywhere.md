@@ -1,7 +1,7 @@
 # Card 26 — name-beam-start-everywhere
 
 **Create:**
-- `plan:cmd/lyx#TestRemovedVerbs_NamedNowhere` -> `func TestRemovedVerbs_NamedNowhere(t *testing.T)`
+- `cmd/lyx#TestRemovedVerbs_NamedNowhere`
 
 **Edit:**
 - `internal/orchengine/launch.go`
