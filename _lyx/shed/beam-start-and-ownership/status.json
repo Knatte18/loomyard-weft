@@ -1,11 +1,11 @@
 {
-  "current_producer": "Drift-Await",
+  "current_producer": "Webster",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Drift-Await",
-    "last": "Plan-Bouncer → done",
+    "now": "Webster",
+    "last": "Drift-Await → skipped",
     "wait": ""
   },
   "history": [
@@ -364,6 +364,13 @@
       "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/beam-start-and-ownership/_lyx/reviews/plan/round-3-bouncer-ledger.md",
       "at": "2026-10-26T12:39:03Z",
       "by": "shed"
+    },
+    {
+      "producer": "Drift-Await",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-10-26T12:39:04Z",
+      "reason": "drift.enabled = false"
     }
   ],
   "product": {
