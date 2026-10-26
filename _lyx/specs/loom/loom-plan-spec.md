@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=fb7789c804f431e561627c9f4131e0610b3e3e63fd4e9e14cacd1eac361e82f9 build=dd86d742f01827d6f110e133320d1d8ee1342784 time=2026-10-25T11:17:48Z -->
+<!-- lyx-stencil: sha256=14e03281fe18924f674b907c9189a17a68ede04086db1fa5bc6536859c211f1f build=19a31ca3c033671ab08b7fa4476a4fb1eb682251 time=2026-10-26T10:23:52Z -->
 
 # Loom plan-spec — flat card list
 
@@ -534,6 +534,8 @@ The rows below stay in one fixed order regardless of which entry point runs them
     Each span is matched on its own, with the same rule the implementer audit uses.
     The finding names the card, or for the overview the section the hit is in, and the matched text.
     Its way forward is to take the data from committed test data an earlier card creates, or to drop the command.
+    The path rule also runs over each card id, since a slug ending in the fabric suffix makes every command naming the card, its own `lyx gate test --card` run included, a fabric reference to the implementer audit.
+    That finding names the card and the matched id, and its way forward is to rename the card in the Card Index and its file name.
     The plan index runs it in its format validation, so both plan gates and `lyx loom validate-plan`'s default and `--rework` modes report it; `--require-approved`, webster's own `validate` verb and dispatch validation do not run it.
     It only refuses and removes no guard: it misses a spelling in `bash -c "…"` or built from a variable, the rest of a span after an unterminated quote, a spelling in an inline span or prose, and a fabric-repo path not spelled as a name ending in the suffix, and the implementer audit stays the guard for those.
 38. `verify-module-wide` — a raw Go test, build or vet command in a card's `**Verify:**` value whose package argument holds `...` or equals `all`, or a raw Go test command whose `-tags` value names `tmux`, `llm`, `tier2` or `tier3`.
