@@ -46,7 +46,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (41)
+## Notes (42)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -99,7 +99,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 10d<br>2d | burler, shed, orch, quarry, report |
 | F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 3d<br>1d | loom, shed, batten, workspaces, burler |
 
-### Researchs (7)
+### Researchs (8)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -110,3 +110,4 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R5 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 4d<br>23h | webster |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 3d<br>22h | loom, stencil |
 | R7 |  | **Candidate names for the lyx binary: weaving-rooted, clash-checked (research, 2026-10-26)**<br>• About 85 candidates checked against package registries, GitHub and the web; 11 clear, vef ranked first | [`binary-name-candidates`](design-binary-name-candidates.md) | 0m<br>0m |  |
+| R8 |  | **Ideas from r/ClaudeCode "one line in your CLAUDE.md": fit for LoomYard and bench measures**<br>• About 30 ideas judged against our stencils and rules; top 8 ranked for a bench, a few cheap enough without one | [`claude-md-thread-ideas`](design-claude-md-thread-ideas.md) | 0m<br>0m | stencil, loom, burler |
