@@ -2,8 +2,6 @@
 
 `webster-tree-moved-fixer` · Task · enhancement, webster, loom, stencil · running · Darn-Write
 
-Depends on: [`rename-target-checks`](design-rename-target-checks.md)
-
 ## Seen (beam-start-and-ownership, 2026-10-26)
 
 `begin-batch 07` refused with `plan_conflict: tree_moved`, since card 16 still named two tests batch 06 had renamed.
