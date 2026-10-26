@@ -1,6 +1,6 @@
 # Drop the ban on scripted edits: the sed -i and redirect-write guard rows and the edit directive
 
-`scripted-edits-allowed` · Task · enhancement, shuttle, stencil · running · Finalize
+`scripted-edits-allowed` · Task · enhancement, shuttle, stencil · done
 
 ## Seen (operator, 2026-10-26)
 
