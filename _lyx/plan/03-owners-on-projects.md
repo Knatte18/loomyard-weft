@@ -1,9 +1,9 @@
 # Card 3 — owners-on-projects
 
 **Create:**
-- `plan:internal/boardengine#RootSubject` -> `const RootSubject = "root"`
-- `plan:internal/boardengine#ProjectRecipe` -> `const ProjectRecipe = "pawl"`
-- `plan:internal/boardengine#Owners.AdoptSubject` -> `func (o Owners) AdoptSubject(slug string, parentOf func(slug string) (string, error)) (string, error)`
+- `internal/boardengine#RootSubject`
+- `internal/boardengine#ProjectRecipe`
+- `internal/boardengine#Owners.AdoptSubject`
 
 **Edit:**
 - `internal/boardengine#Owners.Effective`
