@@ -876,7 +876,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "ee0610d82e87ed3173adc5d01f35b932",
   "masterSessionId": "510c8418-2bb7-40bc-8b89-289445a317b5",
   "masterEngine": "claude",
@@ -894,8 +894,30 @@
       "spawnedAt": "2026-10-26T11:25:37Z",
       "sessionId": "510c8418-2bb7-40bc-8b89-289445a317b5",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-remove-beam-promote",
+        "status": "done",
+        "head_sha": "30f5bf8751de868c10640aece8972b52db34c264",
+        "deviations": [
+          "internal/beamcli/create.go",
+          "internal/boardengine/ownerset_integration_test.go",
+          "internal/fabricengine/destroy.go"
+        ]
+      },
+      "cardShas": [
+        "30f5bf8751de868c10640aece8972b52db34c264"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-beam-start-and-ownership/510c8418-2bb7-40bc-8b89-289445a317b5/subagents/agent-a23e880b3925d30c1.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-beam-start-and-ownership/510c8418-2bb7-40bc-8b89-289445a317b5/subagents/agent-a23e880b3925d30c1.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-beam-start-and-ownership/510c8418-2bb7-40bc-8b89-289445a317b5/subagents/agent-a23e880b3925d30c1.jsonl"
+  ]
 }
