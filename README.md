@@ -38,7 +38,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Drop the ban on scripted edits: the sed -i and redirect-write guard rows and the edit directive**<br>• `profile: light` | [`scripted-edits-allowed`](design-scripted-edits-allowed.md) | darn | Finalize | osl-1046 | 29m<br>27m | shuttle, stencil |
+| T3 | **Drop the ban on scripted edits: the sed -i and redirect-write guard rows and the edit directive**<br>• `profile: light` | [`scripted-edits-allowed`](design-scripted-edits-allowed.md) | darn | Code-Bouncer | osl-1046 | 29m<br>27m | shuttle, stencil |
 | T4 | **Beams: one lyx beam start, machine ownership by project, and a beam's life as a pawl run**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-ownership`](design-beam-start-and-ownership.md) | loom | Webster | osl-1046 | 22h<br>17h | orch, workspaces, batten, reed, board |
 | T5 | **Catch a renamed symbol a later card targets: in the plan writer, plan validation and a blocking batch-end check**<br>• `profile: light` | [`rename-target-checks`](design-rename-target-checks.md) | darn | Darn-Write | osl-1046 | 7m<br>7m | webster, loom, stencil |
 
@@ -54,7 +54,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **A mechanical plan conflict is fixed in Webster by a small fixer agent, not by a plan reroute**<br>• `profile: solid` | [`webster-tree-moved-fixer`](design-webster-tree-moved-fixer.md) | darn | `rename-target-checks` | 17m<br>7m | webster, loom, stencil |
+| T1 | **A mechanical plan conflict is fixed in Webster by a small fixer agent, not by a plan reroute**<br>• `profile: solid` | [`webster-tree-moved-fixer`](design-webster-tree-moved-fixer.md) | darn | `rename-target-checks` | 18m<br>7m | webster, loom, stencil |
 
 ## Notes (40)
 
