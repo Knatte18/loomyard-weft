@@ -1,6 +1,6 @@
 # Checklist marks a row skipped by its entry gate as [-], not open
 
-`checklist-skipped-row-box` · Task · enhancement, loom, shed · running · Code-Burler-Review
+`checklist-skipped-row-box` · Task · enhancement, loom, shed · running · Code-Burler-Fix
 
 ## Seen (operator, 2026-10-26)
 
