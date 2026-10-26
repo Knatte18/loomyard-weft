@@ -1,53 +1,41 @@
-# A Webster stop reaches the parent once, after the arbiter
+# Webster stop reaches the parent once, after the arbiter
 
-A batch Merriam could not recover reached the orch on two channels at once.
-Merriam asked its parent by message and held, and when Webster ended, the Go driver escalated the same stuck reason as a stop question.
-Each re-stepped Webster then started a fresh Merriam that did not know the parent's earlier answer, so one decision took three rounds of messages (issue #875).
+A Webster stop that needs an answer now reaches the run's parent through one channel, the driver's stop chain, after the arbiter had its turn.
+Before, Merriam sent its question to the parent by direct message and the driver then escalated the same stuck reason as a stop question, so one decision took several rounds.
+A fresh Merriam started after a parent answer also did not know that answer.
 
-## What changes
+Closes #875
 
-**Merriam asks nothing about a stop.**
-The Master stencil's failure ladder now opens with one rule: every rung that ends the run writes `outcome: stuck` and stops, with no message to the parent.
-The run's driver carries the `stuck_reason` on.
-Merriam messages its parent only on the `waiting` rung (a `NEEDS_PARENT` step) and when a decision arrives with no batch left.
+## Changes
 
-**The arbiter judges a Webster stop first.**
-`sheddriver.ArbiterSeam` gains an optional `JudgesFirst func(producer string) bool`.
-The rule table gains one row: a blocked stop at a row `JudgesFirst` marks goes to the arbiter with no tackler call.
-The row sits after the hand-over and tackler-resume-returned rows.
-The landing-halt, budget-exhausted, precondition-unmet and pause rows still come before it, and the arbiter's own eligibility check still applies.
-The loom CLI's driver wiring, which loom and darn share, marks `loomshed.NameWebster`; batten leaves the seam unset.
-Before this change, the tackler handed a Webster stuck stop straight back with its own question, which skipped the arbiter.
-Now a question reaches the parent only when the arbiter hands it on, as the orch role already assumes.
-
-**A fresh Merriam is told the parent's answers.**
-`discussionparser.AddedDecisionTexts` returns every `### Added after Discussion` entry of the decision record, heading and body verbatim.
-It shares its entry extents with `IdentityText` through `addedDecisionSpans`.
-`RenderMasterPrompt` takes the entries and fills a new required marker, `parent_decisions`, or `none` when there are none, under the stencil's parent-decision section.
-The stencil tells Merriam that these are answers its parent already gave: it follows them like a decision notice, its forks inherit them, and it never raises a question one of them answers.
-`lyx loom decision add`'s live notice still reaches a Merriam that is already running.
-The prompt covers a Merriam that a re-step starts after the parent answered.
+- **Master stencil** (`contracts/stencils/webster/webster-template-master.md`): every stuck rung of Merriam's failure ladder ends in `outcome: stuck` alone.
+  The stencil states once that a batch Merriam cannot carry on, a refusal it cannot act on, or any stop of its run is never sent to its parent as a message; the driver carries the stuck reason to the arbiter and on to the parent.
+  Merriam still messages its parent on the waiting rung and the decision rung.
+- **Parent decisions in the Master prompt** (`internal/websterengine`, `internal/discussionparser`): `RenderMasterPrompt` fills a new required marker `parent_decisions` with each `Added after Discussion` entry of the decision record, heading and body verbatim, in record order, or `none` when the record has none or no record is named.
+  The stencil tells Merriam these are answers its parent already gave: act on them like a decision notice, hand them to every fork, never ask about them again.
+  `discussionparser`, the record's sole parser, gains `AddedDecisionTexts`, which reuses the span helper `dropAddedDecisionEntries` already used.
+- **Arbiter first for Webster** (`internal/sheddriver`, `internal/loomcli`): `ArbiterSeam` gains an optional `JudgesFirst func(producer string) bool`, and the rule table a row after the hand-over and tackler-resume-returned rows.
+  A blocked stop at a row `JudgesFirst` marks goes to the arbiter, skipping the tackler.
+  `loomArbiterSeam` in `internal/loomcli` marks the Webster row only; darn and batten leave `JudgesFirst` nil, so their stops behave as before.
+- **Docs**: `internal/websterengine/doc.go`, `internal/sheddriver/doc.go`, and `PATTERN-shed-stop-chain` in `PATTERN.md` describe the new path.
 
 ## Design decisions
 
-- The driver does not dedupe questions by their text.
-  The two deciders that could raise the question again, a fresh Merriam and the arbiter, now both see the recorded answer: the arbiter already reads the decision record.
-  A text match would misfire on a new stop whose wording repeats an old one.
-- Only the Webster row is marked.
-  Sending every tackler hand-back to the arbiter would change batten's and darn's stop chains too, which is wider than the entry.
-- The recovery and cold verify-fixer prompts get no decisions.
-  The entry names Merriam, and Merriam passes decisions on through its forks.
-- The orch role stencil needed no edit.
-  It already says the driver hands a stop to the arbiter first, and this change makes that true for Webster.
+- The driver's channel is the one kept, because it runs the arbiter first; Merriam's direct question is the one removed.
+- The new row only skips the tackler.
+  The landing-halt, budget-exhausted, precondition-unmet and pause rows still precede it, the arbiter's own eligibility check still applies, and an arbiter hand-on or refusal still hands back to the parent as an escalated stop does.
+  The rule table stays recipe-blind: the Webster row name enters only through the seam.
+- No question-text dedupe in the driver.
+  A re-stepped Webster's Merriam now sees the recorded answer through `parent_decisions`, and the arbiter reads the decision record and hands on only a call no recorded decision settles, so the question does not recur.
+  A text match would misfire on a new stop whose wording repeats.
+- `Run` reads the added decisions before the declared PATTERN changes, so an unreadable decision record reaches its own refusal, which names `transient` and `lyx webster run` as the way forward.
 
-## Docs
+## Out of scope
 
-The `internal/sheddriver` package doc lists the new rule row and seam, and the `internal/websterengine` package doc states the single-channel rule and the `parent_decisions` rendering.
-The `Geometry.DecisionRecordPath` comment names its new reader.
+Stops of any row but Webster, the tackler's hand-back path for other rows, the recovery and cold verify-fixer prompts, and batten's driver.
 
-## Tests
+## To check by hand
 
-- `TestDecideDrive`: the new row, the hand-over before it, and landing, budget and precondition halts at a marked row still handing back.
-- `TestGoDriver_Settle`: a blocked stop at a marked row calls the arbiter with no tackler call, and its hand-on parks with one notice. An unmarked row still meets the tackler.
-- `TestAddedDecisionTexts`: entry extents, order, a fenced heading, and a record with no entries, a missing record and an empty path.
-- `TestRenderPrompts` and `TestTemplates_FillRequiresEveryRequiredMarker`: the decisions render in order under their section, `none` renders without decisions, and the marker is required.
+- Not run: a live Webster run that ends stuck.
+  Confirm the orch receives one question, after an arbiter turn, and that a re-stepped Merriam's prompt lists the decision the orch recorded with `lyx loom decision add`.
+- An arbiter that resumes Webster with a goto to its own row relaunches Merriam; a stuck reason no decision answers then stops again and costs a second arbiter spawn before the hand-on, bounded by `arbiter_max_spawns`.
