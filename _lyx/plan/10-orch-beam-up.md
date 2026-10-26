@@ -28,6 +28,9 @@
 - `internal/orchcli#TestStart_ResumesFromHandoffFile`
 - `internal/orchcli#TestStart_AdoptLaunchesResumeSpec`
 - `internal/orchcli#TestSmokeOrch_Adopt`
+- `internal/orchcli#liveFixture.startPlainRun`
+- `internal/orchcli#killTreeProcs`
+- `internal/orchcli#tailString`
 - `internal/orchcli/smoke_adopt_large_test.go`
 - `internal/orchengine#RenderAdoptPrompt`
 - `internal/orchengine#adoptStencilName`
@@ -82,6 +85,9 @@
 - `contracts/stencils#entries`
 - `cmd/lyx#TestExitCode_HelpPaths`
 - `cmd/lyx#newRoot`
+- `internal/shortcutcli/shortcuts.yaml`
+- `internal/shortcutcli#TestMount_File`
+- `cmd/lyx#TestShortcuts_FileAndRootListing`
 - `contracts/stencils/orch/orch-template-start.md`
 - `contracts/stencils/orch/orch-template-role.md`
 - `internal/orchcli/doc.go`
@@ -114,6 +120,8 @@ D1–D4's orch half: `lyx orch start`, with `--continue`, `--handoff` and `--ado
   `stopCmd` keeps its envelope over `stopOrch`.
 - Every message naming `lyx orch start` names `lyx beam start` instead (`stoppingWatcherHint`, `withdrawWayForward`, `orchReceiver`, `pauseOwnedRuns`, `startLockHeldHint`, `statusCmd`'s help and restart failure, `indexWayForward`, `watchCmd`'s no-strand refusal, `stopCmd`'s lock refusal), under fb5c10c3's rule that messages name the full command; `newRoot`'s comment on the installed owner pause names `lyx beam start`.
   `beamcli.createSteps`' way forward, which card 1 kept, names `lyx beam start` in the beam's worktree, which card 11 makes bring up the orch, and `TestCreate`'s assertion of it follows; card 21 then rewrites create.
+- The shipped `prime` shortcut's first argv moves from `orch start` to `beam start`, which exists until card 11 reworks it, so the shipped file still resolves once `lyx orch start` is gone;
+  `TestMount_File`'s `prime` row and `TestShortcuts_FileAndRootListing`'s operator-index line read `shortcut: lyx beam start, then lyx reed attach`.
 - The start stencil's comment and the role stencil's line on starting dobbies name `lyx beam start`, which brings up the worktree's dobby and orch.
 
 Tests, over the start harness, whose `run` now calls `beamUp` with `Prepare` and decodes the report instead of executing a cobra verb:
@@ -124,7 +132,7 @@ Tests, over the start harness, whose `run` now calls `beamUp` with `Prepare` and
 - `TestBeamDown_StopsOrchThenTheDobbyByRole` drives `beamDown` over the start harness with fake `dobbyLive` and `endDobby`: it removes the recorded strand, then ends the dobby once; a dead dobby is not ended; a second call stops nothing. That `EndRole` ends the dobby record and spares a driver record of the same slug is card 2's `TestEnd` row.
 - `TestStatus_RestartsADeadWatcher`'s failing-spawn row and `TestWatcherIndexSource` assert `lyx beam start` where they asserted `lyx orch start`.
 - `TestOrchIntegration_Refusals` drops `start` from its verb loop, and its start case calls `BeamUp` from the same non-prime worktree and asserts the same prime-or-beam refusal; `TestSmokeOrch_OneFullCycle` starts its orch through `BeamUp` instead of `orch start --no-attach`.
-- The other `TestStart_*` tests, `TestStop`, `TestChooseStartPrompt`, the two render tests and `TestExitCode_HelpPaths` (its `orch start --help` row now `beam start --help`) follow the removed flags and verb; `TestSmokeOrch_Adopt` and the large-session adopt smoke file test `--adopt` and go; `liveFixture.startOrch` calls `BeamUp`.
+- The other `TestStart_*` tests, `TestStop`, `TestChooseStartPrompt`, the two render tests and `TestExitCode_HelpPaths` (its `orch start --help` row now `beam start --help`) follow the removed flags and verb; `TestSmokeOrch_Adopt` and the large-session adopt smoke file test `--adopt` and go, with `startPlainRun`, `killTreeProcs` and `tailString`, which only the adopt smoke calls, while `waitForDiag` stays for `TestSmokeOrch_CompactCycle`; `liveFixture.startOrch` calls `BeamUp`.
 
 The docs: `orchcli/doc.go` replaces `start` with `BeamUp` and `BeamDown` and drops `--continue`; `orchengine/doc.go`'s "Adopting a running session" section goes and "Continuing after a reboot" says a start resumes the recorded session or falls back to the note; `docs/overview.md`'s orch line lists `stop|status|refresh|distill|withdraw|rules`.
 
