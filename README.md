@@ -38,7 +38,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Webster audit: a card slug ending in -weft makes every gate test --card command a fabric reference**<br>• `profile: light` | [`weft-suffix-card-slug-audit`](design-weft-suffix-card-slug-audit.md) | darn | Worktree-Create | osl-1046 | 17h<br>0m | webster, fabric |
+| T1 | **Webster audit: a card slug ending in -weft makes every gate test --card command a fabric reference**<br>• `profile: light` | [`weft-suffix-card-slug-audit`](design-weft-suffix-card-slug-audit.md) | darn | Drift-Baseline | osl-1046 | 17h<br>0m | webster, fabric |
 | T2 | **gate tier1 fails on a stale Go vet cache entry naming a torn-down worktree**<br>• `profile: light` | [`gate-stale-vet-cache-path`](design-gate-stale-vet-cache-path.md) | darn | Worktree-Create | osl-1046 | 17h<br>0m | gate |
 | T4 | **Beams: one lyx beam start, machine ownership by project, and a beam's life as a pawl run**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-ownership`](design-beam-start-and-ownership.md) | loom | Plan-Write | osl-1046 | 19h<br>14h | orch, workspaces, batten, reed, board |
 

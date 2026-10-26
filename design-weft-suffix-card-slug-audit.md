@@ -1,6 +1,6 @@
 # Webster audit: a card slug ending in -weft makes every gate test --card command a fabric reference
 
-`weft-suffix-card-slug-audit` · Task · bug, webster, fabric · running · Worktree-Create
+`weft-suffix-card-slug-audit` · Task · bug, webster, fabric · running · Drift-Baseline
 
 Imported from [issue #874](https://github.com/Knatte18/loomyard/issues/874).
 
