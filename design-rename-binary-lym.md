@@ -23,6 +23,8 @@ The rename lands before LoomYard is taken into use on other repositories, since 
 - The hub directory suffix `-LYXHUB`, such as `loomyard-LYXHUB`, which becomes `-LYMHUB` (operator, 2026-10-26).
 - The `LYX_*` environment variables, which become `LYM_*`, and the `_lyx/` and `.lyx/` directories, which become `_lym/` and `.lym/` (operator, 2026-10-26).
   Existing hubs need a migration of their records and machine-local state.
+- Dobby's misnamed `markers` directory goes in the same change, since it holds no marker files (operator, 2026-10-26): `dobby.log` moves up beside `state.json` and `dobby.lock` as `.lym/beam/dobby.log`, and the board-tidy reports move to `.lym/beam/tidy/`, named by their timestamp alone, such as `20261026T151739Z.md`.
+  `MarkerDirName` in `internal/dobbyengine/geometry.go` goes with it.
 
 ## Done mechanically (operator, 2026-10-26)
 
