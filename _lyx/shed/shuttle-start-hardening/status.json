@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Baseline → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -21,6 +21,51 @@
       "output": "",
       "at": "2026-10-26T10:09:03Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/shuttle-start-hardening/_lyx/landing/summary.md",
+      "at": "2026-10-26T10:43:11Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-26T10:32:56.863028302Z",
+          "end": "2026-10-26T10:33:14.720309881Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-26T10:34:05.957630915Z",
+          "end": "2026-10-26T10:34:23.845633681Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-26T10:33:14.780986915Z",
+          "end": "2026-10-26T10:33:15.053301556Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-26T10:33:15.485525608Z",
+          "end": "2026-10-26T10:34:05.890984233Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-26T10:34:23.899654243Z",
+          "end": "2026-10-26T10:43:10.884321447Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-26T10:43:10.946062969Z",
+          "end": "2026-10-26T10:43:10.946238772Z"
+        }
+      ]
     }
   ],
   "product": {
