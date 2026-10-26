@@ -1,0 +1,20 @@
+{
+  "current_producer": "Worktree-Create",
+  "state": "blocked",
+  "error": "wire junctions: warp repo already contains a real _lyx at /home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/scripted-edits-allowed/_lyx; it predates weft — move its content into the paired weft worktree's own _lyx, or remove this directory, then re-run `lyx fabric reconcile` to create the junction",
+  "pause_requested": false,
+  "activity": {
+    "now": "Worktree-Create",
+    "last": "Worktree-Create → stuck",
+    "wait": "wire junctions: warp repo already contains a real _lyx at /home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/scripted-edits-allowed/_lyx; it predates weft — move its content into the paired weft worktree's own _lyx, or remove this directory, then re-run `lyx fabric reconcile` to create the junction"
+  },
+  "history": [
+    {
+      "producer": "Worktree-Create",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-26T12:15:21Z",
+      "budget_exempt": true
+    }
+  ]
+}
