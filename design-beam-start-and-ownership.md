@@ -1,6 +1,6 @@
 # Beams: one lyx beam start, machine ownership by project, and a beam's life as a pawl run
 
-`beam-start-and-ownership` · Task · enhancement, orch, workspaces, batten, reed, board · draft
+`beam-start-and-ownership` · Task · enhancement, orch, workspaces, batten, reed, board
 
 ## Seen (operator, 2026-10-25)
 
