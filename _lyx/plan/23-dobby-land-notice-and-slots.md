@@ -1,13 +1,13 @@
 # Card 23 — dobby-land-notice-and-slots
 
 **Create:**
-- `plan:internal/dobbyengine#LandReading` -> `type LandReading struct`
-- `plan:internal/dobbyengine#LandNoticeState` -> `type LandNoticeState struct`
-- `plan:internal/dobbyengine#daemon.landNotice` -> `func (d *daemon) landNotice(ctx context.Context) error`
-- `plan:internal/dobbyengine#TestLandNotice` -> `func TestLandNotice(t *testing.T)`
-- `plan:internal/beamcli#beamLandReading` -> `func beamLandReading(prime *lyxcwd.Location, slug string) (dobbyengine.LandReading, error)`
-- `plan:internal/battencli#runTakesNoSlot` -> `func runTakesNoSlot(task boardengine.Task) bool`
-- `plan:internal/battencli#TestRunTakesNoSlot` -> `func TestRunTakesNoSlot(t *testing.T)`
+- `internal/dobbyengine#LandReading`
+- `internal/dobbyengine#LandNoticeState`
+- `internal/dobbyengine#daemon.landNotice`
+- `internal/dobbyengine#TestLandNotice`
+- `internal/beamcli#beamLandReading`
+- `internal/battencli#runTakesNoSlot`
+- `internal/battencli#TestRunTakesNoSlot`
 
 **Edit:**
 - `internal/dobbyengine#Deps`
