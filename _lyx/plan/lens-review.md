@@ -1,0 +1,48 @@
+# Lens review
+
+Every lens returned a report; duplicates across lenses are merged into one line naming each lens.
+
+- row-validity, MEDIUM — card 10 `TestBeamDown` needs live processes in a tier0 file and has no seam: fixed as proposed; `beamDown` runs over new `dobbyLive` and `endDobby` receiver fields, and the row (`TestBeamDown_StopsOrchThenTheDobbyByRole`) drives fakes, leaving the role selection to card 2's `TestEnd`.
+- row-validity, MEDIUM — card 10 resume fallback unreachable with one `fakeStarter.err`: fixed as proposed; `fakeStarter` gains `resumeErr` for a resuming spec and joins the card's targets.
+- row-validity, MEDIUM — card 10 refusal rows and the dobby-first row have no seam: fixed as proposed; `readBeamFacts` (nil refuses nothing) and `startDobby` (nil starts none) receiver fields, which `wireCLI` fills and the harness scripts.
+- row-validity, MEDIUM — card 7 `TestStartFirstPass` held-parent row has no field: fixed as proposed; `battenCLI` gains `landingHeld`, nil reading the board, and joins the card's targets.
+- row-validity, MEDIUM — card 24 hold cannot be judged from `ReadOwners`: fixed as proposed; a new `adoptDeps.LandingHeld` seam over `ReadTasks` and `RunHolds`, nil reading no hold.
+- row-validity, LOW — card 23 `NoSlot` assertion does not fit the tier1 anchor test: fixed differently; the proposal named a row of an existing battencli dobby-reading test, but none reads run entries' statuses, so the mapping became the helper `runTakesNoSlot` with its own tier0 table `TestRunTakesNoSlot`, and `TestDobbyRuns_PairAtItsOwnAnchor` left the card.
+- row-validity, LOW — card 19 `TestNotice_DeadDriverWhileRunning` row repeats existing coverage: fixed as proposed; the row and target dropped, the Intent cites the existing tests.
+- row-validity, LOW — card 13 "orch would be live" row is inexpressible: fixed as proposed; the existing passing row runs over empty blockers and reaches `Empty`.
+- row-validity, LOW — card 17 `TestPawlPaths` should be a row of `TestDobbyGeometry`: fixed as proposed.
+- row-validity LOW and coverage MEDIUM — card 11 refusals (outside hub, branch on origin, slug with `--all`) and card 7's no-local-beam refusal have no rows: fixed as proposed; rows added to `TestStart_RefusesBeforeTheReconcile` and `TestEnsureLive`.
+- row-validity LOW and forced-edits LOW — stale cross-card numbers in cards 1, 3, 4, 6, 7, 10, 17, 18: fixed as proposed; each reference corrected.
+- way-forward, BLOCKING — card 18 `memberHoldRefusal` names steps that cannot progress: fixed as proposed; it names `lyx batten cancel <member>` then the board move, or `lyx batten run <member>` once `lyx batten status <beam>` shows Beam-Await.
+- way-forward, BLOCKING — card 4 stop way forward names the refused task slug: fixed as proposed; `takeOverSlug` takes the adopted project (re-signed) and names `lyx adopt <project> --keep-local|--drop-local`, with a `TestAdopt` row.
+- way-forward, MEDIUM — card 15 `Recheck` error and `StopDobby` failure unspecified: fixed as proposed; both are a failed re-check whose blocker is the error, with rows.
+- way-forward, MEDIUM — card 20 cancel leaves a beam `draft`, which the guard refuses at the re-create: fixed as proposed; card 18 exempts a beam project from the draft check, with a row.
+- way-forward, MEDIUM — card 21 names a parent worktree path absent on this machine: fixed as proposed; `refuseCreateHere` names `lyx beam create <parent>` or `lyx adopt <parent>`, with rows.
+- way-forward, LOW — card 14 promises to name a machine `LandBlocker` cannot carry: fixed differently; the proposal implied carrying the machine, which no local read knows, so the halt names the cancel on the machine holding the pair and `lyx batten status <slug>` there to find it.
+- way-forward, LOW — card 15 failed `Notify` unspecified: fixed as proposed; logged at Warn, with the bound and a row.
+- coverage MEDIUM and guard-reach MEDIUM — card 15 failed Beam-Await write after a failed re-check: fixed as proposed; it keeps request and marker, posts nothing, and the next wake retries the accept, with a row.
+- coverage, MEDIUM — card 22 `lyx beam land` refused from a task pair by `runVerb`: fixed as proposed; `landCmd` resolves its own location, with `TestLand_RunsFromATaskPair`.
+- coverage, MEDIUM — `--all` untested in card 4: fixed as proposed; `TestAdopt` row.
+- coverage, MEDIUM — card 3 list view and project render untested: fixed as proposed; rows in `TestListTasksBriefLayerAndProposal` (added target) and `TestRenderReadmeGolden`.
+- coverage, MEDIUM — card 11 status only asserts a never-started orch: fixed as proposed; a row with a recorded session and a held watch lock.
+- coverage, MEDIUM — the removed-verbs criterion is argued, not tested, and `orchengine/launch.go`'s comment is unlisted: fixed as proposed; card 26 adds `TestRemovedVerbs_NamedNowhere` and the file comment.
+- coverage, MEDIUM — card 18 parent-beam-absent refusal has no row: fixed as proposed; row in `TestWire_CreateWorktreeClaimsTheBoardEntry`.
+- coverage, LOW — card 5 `kind` and `recipe` changes untested: fixed as proposed; added to the `TestRunLock` rows.
+- coverage, LOW — card 7 `LandingHeld` error and nil branches untested: fixed as proposed; `TestEnsureLive` rows.
+- coverage, LOW — card 21 lost owner write and lost root claim untested: fixed as proposed; `TestCreate` rows.
+- coverage, LOW — card 25 slug fallbacks untested: fixed as proposed; rows in `TestOwnedElsewhere`, `TestReconcileOrigin_Moves` and `TestInnerRun_OwnerCheck`.
+- coverage, LOW — card 15 nil `Watch` and cancelled context untested: fixed as proposed; `TestBeamAwait` rows.
+- forced-edits, BLOCKING — card 16 `minimalEntries` lacks the new entries: fixed as proposed; added, and `TestPawlEntries_RefuseNilSeams` keeps only the nil-seam half the conformance test does not reach.
+- forced-edits, BLOCKING — card 16 `TestNames` unlisted: fixed as proposed.
+- forced-edits, BLOCKING — card 16 `TestRecipeEngines_ReportsExactlyLoomsOwnEngineSet` unlisted: fixed as proposed.
+- forced-edits, BLOCKING — card 10 `TestStatus_RestartsADeadWatcher` asserts the old text: fixed as proposed.
+- forced-edits, BLOCKING — card 10 `TestWatcherIndexSource` asserts the old text: fixed as proposed.
+- forced-edits, BLOCKING — card 10 `TestOrchIntegration_Refusals` runs the removed verb: fixed as proposed; its start case calls `BeamUp`.
+- forced-edits, MEDIUM — card 10 `TestSmokeOrch_OneFullCycle` runs the removed verb: fixed as proposed.
+- forced-edits, MEDIUM — card 17 `TestWriteBoardEntrySnapshot` unlisted: fixed as proposed; a pawl row.
+- forced-edits, LOW — `createSteps` names `lyx orch start` from card 10 to card 21: fixed as proposed; card 10 rewords it to `lyx beam start` and takes `TestCreate`.
+- forced-edits, LOW — card 13 exported struct holds the unexported `beamMember`: fixed as proposed; the exported `BeamLandMember` replaces it.
+- guard-reach, MEDIUM — card 18 hold read skipped on a resumed complete pair: fixed as proposed; the read also runs on the complete-pair branch, with a row.
+- guard-reach, LOW — card 15 interrupted-landing notice missed after a halt or pause: fixed differently; the proposed mark beside the request would itself be removed before Done in the same crash window, so the card states the bound instead: the hold is lifted and the run re-enters as an ordinary wait.
+- guard-reach, LOW — card 11 verbs must bypass `runVerb`: fixed as proposed; the card states it.
+- guard-reach, LOW — card 7 anchor move's beam branch restarts a held beam's dobby: fixed as proposed; `startDobby` names the beam to `EnsureDobbies`, and the `StartDobby` seam goes.
