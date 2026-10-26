@@ -32,13 +32,19 @@ grouping
 
 Concrete and claimable; only a task can run.
 
-### Ready (1)
+### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T4 | **Beams: one lyx beam start, machine ownership by project, and a beam's life as a pawl run**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-ownership`](design-beam-start-and-ownership.md) | loom | Worktree-Create | osl-1046 | 18h<br>13h | orch, workspaces, batten, reed, board |
+
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Beams: one lyx beam start, machine ownership by project, and a beam's life as a pawl run**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-ownership`](design-beam-start-and-ownership.md) | loom |  | 18h<br>13h | orch, workspaces, batten, reed, board |
+_None._
 
 ## Notes (47)
 
