@@ -1,6 +1,6 @@
 {
   "runGuid": "759672efeead4a3f4b326a0be5dbdc8e",
-  "planFingerprint": "e5704c33854d63ce78d510a45a3dd0a1d117d1184d553cf1f4e05fd707baa9e7",
+  "planFingerprint": "a729ad28ffd3c471b73b44d129aa44934b04e677edb753c1ad1702c372aca65b",
   "planFileHashes": {
     "00-overview.md": "3e4fd1e589b19dc1fca1eb52d2d29a4bdb4bd50aebe4edf5e6a3039bf9c4c9fc",
     "01-remove-beam-promote.md": "9998b4908b450a16617fde571fd849a526d09439304590b86abcdfaa80ae005c",
@@ -17,7 +17,7 @@
     "12-shortcut-s.md": "2f52ac94396eab6d0aca2506817ed2afc6042a98d0fb9cbcc2f8f3a7b45338fc",
     "13-land-blockers.md": "be44b3049c0a62bbfcc4c732a8c6b52008ba7069db315cae2850f17e87924c73",
     "14-finalize-land-recheck.md": "8c4feb5250689ea95d77e3ac3ebd8d21a10a11cc555c235ee255ff62da43766f",
-    "15-pawl-engine.md": "102deb6970de5aa3c3c450d7ac4f49e8abbe2a538799aa5fe776c1a3bf9ecbb0",
+    "15-pawl-engine.md": "9be8b750f614b69d7eb05fd863d9a418037cd3bd4f67b0e25d5b4142ed69f798",
     "16-pawl-recipe-rows.md": "cb4d1477ccfe8b847f512df285369f51c4e54c2ba31a20cd1e4fc2eb0e3c36fb",
     "17-pawl-wiring.md": "c34ca31b0fa732b55fc4e4ad55220113006f3f716e390c1d3d0dbe133391d304",
     "18-batten-beam-project.md": "7d010c43251ee17b7d3a4008e042142036984f3b12898afd410ebc53d5dee194",
@@ -913,7 +913,7 @@
       }
     }
   ],
-  "currentBatch": 15,
+  "currentBatch": 0,
   "masterStrand": "7efddbc29cb40e67f586e1bd558110f5",
   "masterSessionId": "3401e80d-03a0-4f92-84bd-f457164076a9",
   "masterEngine": "claude",
@@ -1040,15 +1040,40 @@
         "15-pawl-engine"
       ],
       "cardHashes": {
-        "15-pawl-engine": "102deb6970de5aa3c3c450d7ac4f49e8abbe2a538799aa5fe776c1a3bf9ecbb0"
+        "15-pawl-engine": "9be8b750f614b69d7eb05fd863d9a418037cd3bd4f67b0e25d5b4142ed69f798"
       },
       "startSha": "c02278b33eac98b30e259644d4882a7d7d85965d",
       "kind": "fork",
       "spawnedAt": "2026-10-26T13:19:55Z",
       "sessionId": "3401e80d-03a0-4f92-84bd-f457164076a9",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "15-pawl-engine",
+        "status": "done",
+        "head_sha": "3dc0cb4bfafe2e50949df63a9330618c71be287c",
+        "deviations": [
+          "internal/pawlengine/beamawait.go",
+          "internal/pawlengine/beamawait_test.go",
+          "internal/pawlengine/beamup_test.go",
+          "internal/pawlengine/deps.go",
+          "internal/pawlengine/export_test.go",
+          "internal/pawlengine/landrequest.go",
+          "internal/pawlengine/landrequest_test.go",
+          "internal/pawlengine/testmain_test.go",
+          "internal/pawlengine/world_test.go"
+        ]
+      },
+      "cardShas": [
+        "3dc0cb4bfafe2e50949df63a9330618c71be287c"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-beam-start-and-ownership/3401e80d-03a0-4f92-84bd-f457164076a9/subagents/agent-affd63ee1d01316bd.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-beam-start-and-ownership/3401e80d-03a0-4f92-84bd-f457164076a9/subagents/agent-affd63ee1d01316bd.jsonl"
+      ]
     },
     "2": {
       "slug": "end-processes-by-role",
@@ -1244,6 +1269,7 @@
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-beam-start-and-ownership/3401e80d-03a0-4f92-84bd-f457164076a9/subagents/agent-a822ee5d2e9976331.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-beam-start-and-ownership/3401e80d-03a0-4f92-84bd-f457164076a9/subagents/agent-a98f264fbb6a756f4.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-beam-start-and-ownership/3401e80d-03a0-4f92-84bd-f457164076a9/subagents/agent-a8a9ca104d964360b.jsonl",
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-beam-start-and-ownership/3401e80d-03a0-4f92-84bd-f457164076a9/subagents/agent-a72b723e7e3dac152.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-beam-start-and-ownership/3401e80d-03a0-4f92-84bd-f457164076a9/subagents/agent-a72b723e7e3dac152.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-beam-start-and-ownership/3401e80d-03a0-4f92-84bd-f457164076a9/subagents/agent-affd63ee1d01316bd.jsonl"
   ]
 }
