@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Baseline → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -21,6 +21,33 @@
       "output": "",
       "at": "2026-10-26T11:59:08Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/checklist-skipped-row-box/_lyx/landing/summary.md",
+      "at": "2026-10-26T12:04:55Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-26T12:02:50.980560605Z",
+          "end": "2026-10-26T12:03:07.204507693Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-26T12:03:07.256318364Z",
+          "end": "2026-10-26T12:04:54.560741503Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-26T12:04:54.609157196Z",
+          "end": "2026-10-26T12:04:54.60919986Z"
+        }
+      ]
     }
   ],
   "product": {
