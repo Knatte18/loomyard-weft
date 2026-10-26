@@ -1,6 +1,6 @@
 # A webster stop reaches the parent twice: Merriam asks directly and the driver escalates the same question
 
-`webster-stop-asked-once` · Task · bug, webster, loom · running · Code-Burler-Review
+`webster-stop-asked-once` · Task · bug, webster, loom · running · Code-Burler-Fix
 
 Imported from [issue #875](https://github.com/Knatte18/loomyard/issues/875).
 
