@@ -1,6 +1,6 @@
 # A mechanical plan conflict is fixed in Webster by a small fixer agent, not by a plan reroute
 
-`webster-tree-moved-fixer` · Task · enhancement, webster, loom, stencil · running · Finalize
+`webster-tree-moved-fixer` · Task · enhancement, webster, loom, stencil · done
 
 ## Seen (beam-start-and-ownership, 2026-10-26)
 
