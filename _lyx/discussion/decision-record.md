@@ -54,12 +54,6 @@ Naming the shell tools rather than any script keeps the directive from steering 
 
 - A session started before the change lands keeps the old rows and directive until it is relaunched.
 
-<!-- lyx:carry-over Code-Review -->
-- Code-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
-  Review: _lyx/reviews/code/round-1-review.md; fixer report: _lyx/reviews/code/round-1-fixer-report.md.
-  - refusal-way-forward-background-names-removed-denies (class consistency, severity MEDIUM, open in rounds 1)
-<!-- /lyx:carry-over Code-Review -->
-
 ## Acceptance criteria
 
 - `shellguard.Rows` returns no `in-place-edit` or `redirect-write` row, and a `sed -i` or a redirect into a project file passes every remaining row.
