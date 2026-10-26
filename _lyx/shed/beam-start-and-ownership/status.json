@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Plan-Burler-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Drift-Await → skipped",
+    "now": "Plan-Burler-Review",
+    "last": "Webster → rerouted to Plan-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -301,6 +301,22 @@
       "output": "",
       "at": "2026-10-26T11:25:12Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "reroute",
+      "output": "",
+      "at": "2026-10-26T12:15:54Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-26T12:15:52.481855006Z",
+          "end": "2026-10-26T12:15:52.482139159Z"
+        }
+      ],
+      "routed_to": "Plan-Burler-Review"
     }
   ],
   "product": {
