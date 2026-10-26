@@ -1,0 +1,998 @@
+diff --git a/contracts/specs/loom-plan-spec.md b/contracts/specs/loom-plan-spec.md
+index e2aad262..b0ff35c0 100644
+--- a/contracts/specs/loom-plan-spec.md
++++ b/contracts/specs/loom-plan-spec.md
+@@ -615,11 +615,16 @@ The rows below stay in one fixed order regardless of which entry point runs them
+     An `Extends` ref that is also under `Uses:` is `card-field-overlap`, since the card's flat targets hold it.
+ 52. `extends-resign` — an arrow sub-bullet in an `Extends` group.
+     One blocking finding per arrow, naming the card and the member; its way forward is to move that ref under `**Edit:**`, since a re-sign changes what is already there.
++53. `rename-leaves-test` — under `language: go`, a symbol `Rename` pair renaming `unit#Name`, or the method `unit#T.M`, while a card lists a test named after it under `Edit` in the same unit and no `Rename` pair renames that test.
++    A test is named after the symbol when it is `Test<base>` or `Test<base>_<case>`, with base `Name`, or `T_M` for a method; `TestNameX` is not.
++    An implementer renames such a test with its symbol, so a later card still naming the old test refuses at its `begin-batch`.
++    One blocking finding per test ref, attributed to the renaming card and naming the card that edits the test; its way forward is to add the test's rename as a `Rename` pair on the renaming card.
+ 
+ `plan-language-mismatch` and `rename-namespace-pair` run in the position of their own place in the order, not of their numbers: the first right after `plan-language-unrecognized`, the second right after `path-missing`.
+ `extends-overlap` and `extends-resign` run right after `card-field-overlap`, in that order.
++`rename-leaves-test` runs right after `rename-mechanic-missing`.
+ 
+-A plan under `language: csharp` skips the checks that read Go source or Go toolchain semantics: `verify-nested-module`, `verify-module-wide`, `verify-package-missing`, the `.go` file-unit half of `handle-malformed`, `delete-before-reference`, `caller-uncovered`, and the Go package-directory mapping of a unit.
++A plan under `language: csharp` skips the checks that read Go source or Go toolchain semantics: `verify-nested-module`, `verify-module-wide`, `verify-package-missing`, the `.go` file-unit half of `handle-malformed`, `delete-before-reference`, `caller-uncovered`, `rename-leaves-test`, and the Go package-directory mapping of a unit.
+ The remaining checks run under it as they do under `go`.
+ 
+ One further check, `rework-first-card`, is outside both entry points and has no row above.
+diff --git a/contracts/stencils/loom/loom-template-plan.md b/contracts/stencils/loom/loom-template-plan.md
+index 1a224303..955d5417 100644
+--- a/contracts/stencils/loom/loom-template-plan.md
++++ b/contracts/stencils/loom/loom-template-plan.md
+@@ -151,6 +151,9 @@ The left-hand token is the handle you just invented; the right-hand token is the
+ 
+ On a `**Rename:**` pair renaming an existing symbol, the grammar is asymmetric: the `Old` side is always a real glyph (looked up via `lyx quarry`, exactly like any other target), and the `New` side is always a `plan:` handle you invent for the renamed name — never a glyph, since the symbol under its new name does not exist until the rename lands. A file-rename pair (old and new both plain file paths) is unaffected by this rule.
+ 
++A card that renames a symbol also renames the tests named after it, `Test<Name>` and `Test<Name>_<case>` (`Test<Type>_<Method>` for a method), as `**Rename:**` pairs on the same card, since the implementer renames them with the symbol and a later card naming the old test would no longer match the tree.
++The plan gate refuses a renamed symbol whose same-named test a card still lists under `**Edit:**` with no pair of its own (`rename-leaves-test`).
++
+ Every new member a card creates is declared as a `plan:` handle, whether or not a later card references it.
+ A handle referenced but never declared, or two `Create:` bullets declaring the same handle, are each hard findings (`handle-dangling`, `handle-collision`) — every handle you invent must be declared exactly once.
+ 
+diff --git a/contracts/stencils/webster/webster-body-implementer.md b/contracts/stencils/webster/webster-body-implementer.md
+index 057e7a7a..221cc331 100644
+--- a/contracts/stencils/webster/webster-body-implementer.md
++++ b/contracts/stencils/webster/webster-body-implementer.md
+@@ -44,6 +44,7 @@ Make exactly the changes the card describes, in exactly the targets its type lab
+    No other change outside the targets is made.
+    The scope guard records every deviation, sanctioned ones included; you list, compare and report none, and a deviation alone never makes the report `FAILED`.
+    The plan's glyph names are the contract: keep every name a card gives a symbol, and rename nothing the plan does not declare.
++   That covers a test named after a symbol a `Rename` card renames: rename the test only when the plan declares its pair, since a later card may name it.
+    The one exception is a planned name that collides with an existing symbol or breaks a language or lint rule: pick the nearest name that does not, and list the rename under the report's `renames` with that reason.
+    For each symbol pair of a `Rename` card, run the hub's rename tool from the list below, then grep for zero references to the old name and update the doc-comment opening; a file pair is `git mv` plus surgical Edits.
+ 
+@@ -131,7 +132,7 @@ Once your parent has taken the step, the batch resumes from your commits.
+ ## Your final action: the minimal batch-report
+ 
+ Your LAST action of this session — after every card above is committed (or you have given up per the bound above, or stopped on a step only your parent can take) — is writing the batch-report YAML file to `{{.report_path}}`.
+-Nothing you do after this file exists is read by anyone: write it last, and write it exactly once.
++Nothing you do after this file exists is read by anyone: write it last, and write it exactly once, unless your parent hands the batch back (see "A batch handed back" below).
+ The report is deliberately minimal — `record-batch` reads ONLY these fields:
+ 
+ ```yaml
+@@ -148,6 +149,13 @@ renames:
+ Each `old` and `new` is the glyph a card would name the symbol by, such as `internal/gatecli#runGuardStep`.
+ Record-batch rewrites every later card that still names an `old` glyph to its `new` one, so list a rename even when you also changed the symbol's body or signature.
+ 
++### A batch handed back
++
++Your parent may send you a `record-batch` refusal naming symbols your batch removed that a later card still names, with no rename in your report.
++For each named symbol, either restore its name in a new commit, when the plan did not ask for the change, or list the rename under `renames` with its reason, when the new name is needed.
++Then rewrite the report at the same path with `head_sha` read again by `git rev-parse HEAD`, and end your turn.
++Change nothing else.
++
+ `status` is `OK` when every card above is committed and every gate it ran, the batch gate included, passed;
+ `FAILED` when you stopped after exhausting the self-fix bound on some card or on the batch gate, whether its gate failed or a test the card broke did;
+ `NEEDS_PARENT` when you stopped on a step only your parent can take, which `need` names.
+diff --git a/contracts/stencils/webster/webster-template-master.md b/contracts/stencils/webster/webster-template-master.md
+index 7dd3a2ee..336f78c0 100644
+--- a/contracts/stencils/webster/webster-template-master.md
++++ b/contracts/stencils/webster/webster-template-master.md
+@@ -167,6 +167,10 @@ You message your parent only on the `waiting` rung below and under "A parent dec
+   A refusal of the reset, a second head mismatch, or a way forward that also needs a parent merge-in redone ends the run: write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` quoting the refusal's message, and stop, since a merge-in is not Master's to redo.
+   Run `reset --to report-head` for a batch at most once, and no other reset.
+ - `record-batch` refuses with `{"report_archived": true}` → the report could not be attributed and was archived: call `lyx webster begin-batch <NN>` and re-fork that batch from its fresh prompt.
++- `record-batch <NN>` refuses with `{"later_target_removed": true}` → the batch removed a symbol a later card names, and the batch is still open with its report in place.
++  Send the refusal's message verbatim to that batch's fork by `SendMessage`, addressed by the agent id its completion notification carried, and end your turn; on the fork's next completion notification, call `lyx webster record-batch <NN>` again.
++  When the fork cannot be reached, such as after a resume, call `lyx webster record-batch <NN>` again at once: the refusal comes once per batch, so the second call records the batch.
++  Never begin a later batch, re-fork, or call `recover-batch` for this refusal.
+ - `begin-batch <NN>` refuses because the batch **already has a report** (a resumed run found a crashed session's leftover) → do NOT fork;
+   the refusal names the batch's recorded state and the one remedy that state calls for, and you follow exactly that remedy:
+   `record-batch` or `recover-batch` for the batch (the latter backgrounded, per the rung above), or, for a finished batch, beginning the next one.
+@@ -241,7 +245,8 @@ Standalone, the operator edits the plan and runs `lyx webster rebaseline --card
+ 
+ The batch's own mechanical done-checks run against the worktree's real post-batch tree, immediately before the digest would have been persisted.
+ They find declared work missing: a Create target that still does not resolve, a Delete target that still does, or a `plan:` handle that bound to nothing.
+-A finding about a later card (drift, or a symbol this batch deleted that a later card still references) comes back on the envelope's `warnings` and the batch still records;
++A symbol the batch removed that a later card names, with no rename in the report, first comes back once as `{"later_target_removed": true}`, handled by its rung of the failure ladder above.
++Every other finding about a later card (drift, a symbol this batch's cards delete that a later card still references, or a removal still unanswered after the hand-back) comes back on the envelope's `warnings` and the batch still records;
+ that later card's own `begin-batch` refuses it, naming "edit the plan so the named cards match the tree, run "lyx webster rebaseline --card NN" naming each card you edited, then begin-batch NN again".
+ A done-check failure comes back as `{"batch_failed": true}`, handled by the `batch_failed` rung of the failure ladder above.
+ The batch is already terminal-failed and its report archived, so you never retry `record-batch` and never edit a target file yourself (see "What you never do" below).
+diff --git a/internal/planglyph/doc.go b/internal/planglyph/doc.go
+index e20b780c..38d427ec 100644
+--- a/internal/planglyph/doc.go
++++ b/internal/planglyph/doc.go
+@@ -118,6 +118,9 @@
+ //     (drift.go), the exact-tier and evidence-tier halves of drift detection.
+ //     A rename the batch's implementer reports is repaired as an exact-tier one is, under the amendment tier `reported`, and its old glyph gets neither finding;
+ //     a reported new glyph that does not resolve is the post-repair resolve's blocking finding.
++//   - later-target-removed (blocking) — RemovedTargets (drift.go), a symbol a batch's delta deleted that a pending card targets or uses,
++//     unless quarry renamed it exactly, the batch's implementer reported its rename, or a card of the batch declares it as a Delete target or a Rename pair's old side.
++//     It reads and writes nothing, and its finding names any evidence-tier rename candidates.
+ //   - scope-outside-plan (informational) — ScopeGuard (scope.go), a symbol a completed batch's
+ //     delta touched outside its own cards' targets (a file target covers every symbol in that
+ //     file, a package target every symbol in a file directly in its directory), and a changed file
+diff --git a/internal/planglyph/drift.go b/internal/planglyph/drift.go
+index 12bc3731..d21f901f 100644
+--- a/internal/planglyph/drift.go
++++ b/internal/planglyph/drift.go
+@@ -292,6 +292,59 @@ func DetectDrift(fullPlan, pending *planparser.Plan, planDir, worktreeRoot strin
+ 	return findings, nil
+ }
+ 
++// RemovedTargets reports every symbol delta deleted that a card of pending targets or uses, as one blocking later-target-removed finding per card and symbol.
++// It is the batch-end check that hands a batch back to its implementer while the implementer still holds the batch's context, to keep the name or report the rename.
++// A symbol quarry renamed exactly is no finding, since quarry drops it from the deleted list, and neither is one reported lists as an old glyph.
++// Nor is a symbol a card of own declares as a Delete target or a Rename pair's old side: a declared removal a later card still names is the plan's defect, not the implementer's.
++// A finding names the evidence-tier rename candidates quarry offered for its symbol.
++// It reads and writes nothing, so a caller may refuse on its findings before any plan rewrite.
++func RemovedTargets(pending *planparser.Plan, own []planparser.Card, delta quarry.GitDeltaAnswer, reported []planindex.Rename) []Finding {
++	declared := make(map[string]bool)
++	for _, c := range own {
++		for _, g := range c.TargetGroups {
++			if g.Type == planparser.CardTypeDelete {
++				for _, ref := range g.Refs {
++					declared[ref] = true
++				}
++			}
++		}
++		for _, p := range c.Pairs {
++			declared[p.Old] = true
++		}
++	}
++	for _, r := range reported {
++		declared[r.Old] = true
++	}
++
++	candidates := make(map[string][]string, len(delta.RenameCandidates))
++	for _, entry := range delta.RenameCandidates {
++		for _, cand := range entry.Candidates {
++			candidates[entry.ID] = append(candidates[entry.ID], cand.ID)
++		}
++	}
++
++	refCards := targetCards(pending)
++	var findings []Finding
++	for _, s := range delta.Deleted {
++		if declared[s.ID] {
++			continue
++		}
++		offered := ""
++		if ids := candidates[s.ID]; len(ids) > 0 {
++			offered = fmt.Sprintf(" (quarry's rename candidates: %s)", strings.Join(ids, ", "))
++		}
++		for _, c := range sortedCards(refCards[s.ID]) {
++			findings = append(findings, Finding{
++				Check:    "later-target-removed",
++				Card:     c.ID(),
++				Detail:   fmt.Sprintf("card %d names %q, which the batch removed without reporting a rename%s; keep the name, or list the rename under the report's renames", c.Number, s.ID, offered),
++				Severity: SeverityBlocking,
++			})
++		}
++	}
++	return findings
++}
++
+ // ensurePostRepairCoverage reports the ErrQuarryUnavailable-wrapped infrastructure error DetectDrift
+ // returns when results does not carry an answer for every entry of targets: the per-key answer
+ // coverage guard for DetectDrift's post-repair resolve, mirroring doneCheckVerdicts' own per-key
+diff --git a/internal/planglyph/drift_test.go b/internal/planglyph/drift_test.go
+index 9f7cb5b3..a04fae42 100644
+--- a/internal/planglyph/drift_test.go
++++ b/internal/planglyph/drift_test.go
+@@ -285,6 +285,63 @@ func TestDetectDrift_HandBuiltDelta(t *testing.T) {
+ 	}
+ }
+ 
++// TestRemovedTargets covers the batch-end check: a deleted symbol a pending card names is one blocking finding per card.
++// No finding comes when the batch's own cards declare its removal or its implementer reported the rename, and a finding names quarry's rename candidates.
++// Card 1 is the recorded batch's own card, out of the pending view.
++func TestRemovedTargets(t *testing.T) {
++	t.Parallel()
++	const pendingNamesGone = "**Edit:**\n- `sub#Gone`\n\n**Intent:** two\n\n**ImpactSummary:** none\n"
++	const pendingUsesGone = "**Uses:**\n- `sub#Gone`\n\n**Edit:**\n- `sub/other.go`\n\n**Intent:** three\n\n**ImpactSummary:** none\n"
++	const ownEdit = "**Edit:**\n- `sub/a.go`\n\n**Intent:** one\n\n**ImpactSummary:** none\n"
++	gone := quarry.DeltaAnswer{Deleted: []quarry.Symbol{{ID: "sub#Gone"}}}
++
++	tests := []struct {
++		name           string
++		ownCard        string
++		delta          quarry.DeltaAnswer
++		reported       []planindex.Rename
++		wantCards      []string
++		detailContains string
++	}{
++		{"a removed target of later cards", ownEdit, gone, nil, []string{"2-card2", "3-card3"}, `"sub#Gone"`},
++		{
++			"a removed target with rename candidates names them", ownEdit,
++			quarry.DeltaAnswer{
++				Deleted:          []quarry.Symbol{{ID: "sub#Gone"}},
++				RenameCandidates: []quarry.RenameCandidateEntry{{ID: "sub#Gone", Candidates: []quarry.RenameCandidate{{ID: "sub#Moved"}}}},
++			},
++			nil, []string{"2-card2", "3-card3"}, "sub#Moved",
++		},
++		{"a reported rename", ownEdit, gone, []planindex.Rename{{Old: "sub#Gone", New: "sub#Moved"}}, nil, ""},
++		{"a declared delete of the batch's own card", "**Delete:**\n- `sub#Gone`\n\n**Intent:** one\n\n**ImpactSummary:** none\n", gone, nil, nil, ""},
++		{"a declared rename of the batch's own card", "**Rename:**\n- `sub#Gone` -> `plan:sub#Moved`\n\n**Intent:** one\n", gone, nil, nil, ""},
++		{"a removed symbol no later card names", ownEdit, quarry.DeltaAnswer{Deleted: []quarry.Symbol{{ID: "sub#Unnamed"}}}, nil, nil, ""},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			_, plan := writePlanFixture(t, map[int]string{1: tt.ownCard, 2: pendingNamesGone, 3: pendingUsesGone})
++			own := plan.Cards[:1]
++
++			findings := RemovedTargets(PendingPlan(plan, own), own, quarry.GitDeltaAnswer{DeltaAnswer: tt.delta}, tt.reported)
++
++			var cards []string
++			for _, f := range findings {
++				cards = append(cards, f.Card)
++				if f.Check != "later-target-removed" || f.Severity != SeverityBlocking {
++					t.Errorf("RemovedTargets() finding = %+v; want a blocking later-target-removed", f)
++				}
++				if !strings.Contains(f.Detail, tt.detailContains) {
++					t.Errorf("RemovedTargets() detail = %q; want it to contain %q", f.Detail, tt.detailContains)
++				}
++			}
++			if strings.Join(cards, ",") != strings.Join(tt.wantCards, ",") {
++				t.Errorf("RemovedTargets() cards = %v; want %v", cards, tt.wantCards)
++			}
++		})
++	}
++}
++
+ // TestDetectDrift_RepairIntoAnUnresolvableGlyphIsReported pins R6-11: the post-repair resolve's
+ // ANSWERS are read, not just its transport error. Before this, a repair that rewrote a ref into a
+ // glyph quarry answers not_found for passed the step described as "revalidated" in silence, and the
+diff --git a/internal/planglyph/index.go b/internal/planglyph/index.go
+index de3e4936..e359ab0b 100644
+--- a/internal/planglyph/index.go
++++ b/internal/planglyph/index.go
+@@ -109,6 +109,11 @@ func (d batchDelta) ScopeGuard(plan *planparser.Plan, cards []planparser.Card) [
+ 	return ScopeGuard(plan, cards, d.answer)
+ }
+ 
++// RemovedTargets checks the plan pending after completed, the same view PendingPlan builds.
++func (d batchDelta) RemovedTargets(fullPlan *planparser.Plan, completed, own []planparser.Card, reported []planindex.Rename) []Finding {
++	return RemovedTargets(PendingPlan(fullPlan, completed), own, d.answer, reported)
++}
++
+ // DetectDrift checks the plan pending after completed, the same view PendingPlan builds.
+ func (d batchDelta) DetectDrift(fullPlan *planparser.Plan, completed []planparser.Card, reported []planindex.Rename, planDir, worktreeRoot, sha, now string) ([]Finding, error) {
+ 	return DetectDrift(fullPlan, PendingPlan(fullPlan, completed), planDir, worktreeRoot, d.answer, reported, sha, now)
+diff --git a/internal/planindex/planindex.go b/internal/planindex/planindex.go
+index 5812df0d..01c54c28 100644
+--- a/internal/planindex/planindex.go
++++ b/internal/planindex/planindex.go
+@@ -108,6 +108,9 @@ type Delta interface {
+ 	BindHandles(plan *planparser.Plan, planDir string, cards []planparser.Card) ([]Finding, []BindOutcome, error)
+ 	// ScopeGuard reports the delta's changes outside the targets the cards declare.
+ 	ScopeGuard(plan *planparser.Plan, cards []planparser.Card) []Finding
++	// RemovedTargets reports the symbols the delta deleted that a card not in completed targets or uses, read-only.
++	// A symbol own declares as a Delete target or a Rename pair's old side, or that reported lists as an old glyph, is no finding.
++	RemovedTargets(fullPlan *planparser.Plan, completed, own []planparser.Card, reported []Rename) []Finding
+ 	// DetectDrift reports the plan references the delta invalidates among the cards not in completed.
+ 	// It repairs a rename quarry proves and each of reported, the renames the batch's implementer reported.
+ 	DetectDrift(fullPlan *planparser.Plan, completed []planparser.Card, reported []Rename, planDir, worktreeRoot, sha, now string) ([]Finding, error)
+diff --git a/internal/planparser/doc.go b/internal/planparser/doc.go
+index 197414cb..70c9453d 100644
+--- a/internal/planparser/doc.go
++++ b/internal/planparser/doc.go
+@@ -180,10 +180,11 @@
+ //
+ // Plan.GlyphLanguage answers only whether the plan is glyph-enabled.
+ // Plan.GoToolchain is true under go or an absent language and is the one test for the checks that read Go source or Go toolchain semantics:
+-// the verify-chain checks verify-nested-module, verify-module-wide and verify-package-missing, the Go package-directory mapping of a unit in CardTargetDirs and RefScope, the external-test pseudo-unit reading in CheckFabricVocabularyName, and the delete-order and caller-coverage checks in internal/planglyph.
++// the verify-chain checks verify-nested-module, verify-module-wide and verify-package-missing, rename-leaves-test, the Go package-directory mapping of a unit in CardTargetDirs and RefScope, the external-test pseudo-unit reading in CheckFabricVocabularyName, and the delete-order and caller-coverage checks in internal/planglyph.
+ // Each of them leaves a csharp or none plan alone.
+ //
+ // plan-language-mismatch refuses a plan whose Targets name only the other language's files, a `.cs` file under go or a `.go` file under csharp, unless a member glyph, a `plan:` handle or an extensionless self glyph shows the plan may name code of its own language.
+ // Its resolve-backed half, in internal/planglyph, judges a go plan whose targets resolve only into `.cs` files.
+ // rename-namespace-pair refuses, under csharp, a Rename pair of two self glyphs whose old side is slash-free and names nothing on disk, since such a pair is a file pair that runs `git mv` and a namespace is no path.
++// rename-leaves-test refuses a symbol Rename pair while a card lists a test named after the symbol under Edit with no Rename pair of its own, since an implementer renames the test with its symbol.
+ package planparser
+diff --git a/internal/planparser/validate.go b/internal/planparser/validate.go
+index 7b1e3642..a81e6206 100644
+--- a/internal/planparser/validate.go
++++ b/internal/planparser/validate.go
+@@ -1,6 +1,6 @@
+ // validate.go implements ValidateFormat and Validate, format-5 plan-format's machine check sets
+ // (contracts/specs/loom-plan-spec.md), run in this fixed order.
+-// ValidateFormat emits every one of the following distinct ValidationError.Check IDs but plan-unapproved; Validate emits them all: format-unrecognized (checkFormatRecognized), plan-language-unrecognized (checkLanguageRecognized), plan-language-mismatch (checkLanguageMismatch), plan-unapproved (checkApproved), index-file-mismatch (checkIndexFileConsistency), card-type-missing (checkCardTypeMissing), card-custom-not-alone (checkCustomNotAlone), card-retired-label (checkCardRetiredLabel), card-path-malformed (checkCardPathMalformed), bare-symbol-target (checkBareSymbolTarget), directory-target (checkDirectoryTarget), glyph-malformed (checkGlyphMalformed), rename-format (checkRenameFormat), handle-dangling, handle-collision (both checkHandleConsistency), handle-malformed (checkHandleMalformed), resign-not-member (checkResignNotMember), rename-to-not-handle, rename-from-not-glyph (both checkRenamePairShape), rename-mechanic-missing (checkRenameMechanicMissing), card-missing-field (checkCardMissingField), card-field-empty (checkCardFieldEmpty), card-field-overlap (checkCardFieldOverlap), extends-overlap (checkExtendsOverlap, extends.go), extends-resign (checkExtendsResign, extends.go),uses-later-target (checkUsesLaterTarget), redundant-package-target (checkRedundantPackageTarget, redundancy.go), impact-summary-multiline (checkImpactSummaryMultiline), prosa-symbol-target (checkProsaSymbolTarget), card-numbering (checkCardNumbering), path-missing (checkPathMissing), rename-namespace-pair (checkRenameNamespacePair), commit-subject-mismatch (checkCommitSubjectMismatch), verify-nested-module (checkVerifyNestedModule, verifymodule.go), verify-module-wide (checkVerifyModuleWide, verifymodule.go), verify-package-missing (checkVerifyPackageMissing, verifypackage.go), and pattern-entry-line-cap (checkPatternEntryLineCap, patternentry.go).
++// ValidateFormat emits every one of the following distinct ValidationError.Check IDs but plan-unapproved; Validate emits them all: format-unrecognized (checkFormatRecognized), plan-language-unrecognized (checkLanguageRecognized), plan-language-mismatch (checkLanguageMismatch), plan-unapproved (checkApproved), index-file-mismatch (checkIndexFileConsistency), card-type-missing (checkCardTypeMissing), card-custom-not-alone (checkCustomNotAlone), card-retired-label (checkCardRetiredLabel), card-path-malformed (checkCardPathMalformed), bare-symbol-target (checkBareSymbolTarget), directory-target (checkDirectoryTarget), glyph-malformed (checkGlyphMalformed), rename-format (checkRenameFormat), handle-dangling, handle-collision (both checkHandleConsistency), handle-malformed (checkHandleMalformed), resign-not-member (checkResignNotMember), rename-to-not-handle, rename-from-not-glyph (both checkRenamePairShape), rename-mechanic-missing (checkRenameMechanicMissing), rename-leaves-test (checkRenameLeavesTest), card-missing-field (checkCardMissingField), card-field-empty (checkCardFieldEmpty), card-field-overlap (checkCardFieldOverlap), extends-overlap (checkExtendsOverlap, extends.go), extends-resign (checkExtendsResign, extends.go),uses-later-target (checkUsesLaterTarget), redundant-package-target (checkRedundantPackageTarget, redundancy.go), impact-summary-multiline (checkImpactSummaryMultiline), prosa-symbol-target (checkProsaSymbolTarget), card-numbering (checkCardNumbering), path-missing (checkPathMissing), rename-namespace-pair (checkRenameNamespacePair), commit-subject-mismatch (checkCommitSubjectMismatch), verify-nested-module (checkVerifyNestedModule, verifymodule.go), verify-module-wide (checkVerifyModuleWide, verifymodule.go), verify-package-missing (checkVerifyPackageMissing, verifypackage.go), and pattern-entry-line-cap (checkPatternEntryLineCap, patternentry.go).
+ // The plan gate's context checks verify-raw-command, verify-gate-no-wait and plan-verify-retired are appended by loomshed outside both entry points, over VerifyCommands.
+ // Findings are keyed by card (flat `N-<slug>`), not batch: the format has no batch concept,
+ // and there is no ValidateCaps because there is no oversized-batch cap to configure.
+@@ -88,6 +88,7 @@ func validate(plan *Plan, worktreeRoot string, requireApproved bool) []Validatio
+ 	findings = append(findings, checkResignNotMember(plan)...)
+ 	findings = append(findings, checkRenamePairShape(plan)...)
+ 	findings = append(findings, checkRenameMechanicMissing(plan)...)
++	findings = append(findings, checkRenameLeavesTest(plan)...)
+ 	findings = append(findings, checkCardMissingField(plan)...)
+ 	findings = append(findings, checkCardFieldEmpty(plan)...)
+ 	findings = append(findings, checkCardFieldOverlap(plan)...)
+@@ -900,6 +901,73 @@ func checkRenameMechanicMissing(plan *Plan) []ValidationError {
+ 	return findings
+ }
+ 
++// checkRenameLeavesTest implements rename-leaves-test, under go only, since it reads Go's test naming:
++// a symbol Rename pair renaming `unit#Name`, or the method `unit#T.M`, while a card lists a test named after it, `Test<base>` or `Test<base>_<case>` with base Name or T_M, under Edit in the same unit or its external test package and no Rename pair renames that test.
++// An implementer renames such a test along with its symbol, so a later card still naming the old test refuses at its begin-batch.
++// The finding is attributed to the renaming card, where the test's own Rename pair belongs.
++func checkRenameLeavesTest(plan *Plan) []ValidationError {
++	var findings []ValidationError
++	if !plan.GoToolchain() {
++		return findings
++	}
++
++	renamed := make(map[string]bool)
++	for _, c := range plan.Cards {
++		for _, p := range c.Pairs {
++			renamed[p.Old] = true
++		}
++	}
++
++	for _, c := range plan.Cards {
++		for _, p := range c.Pairs {
++			if isFileRenamePair(plan, p) {
++				continue
++			}
++			old, err := ParseRef(plan, p.Old)
++			if err != nil || old.IsSelf() || len(old.Owner) > 1 {
++				continue
++			}
++			base := old.Name
++			if len(old.Owner) == 1 {
++				base = old.Owner[0] + "_" + old.Name
++			}
++			for _, editor := range plan.Cards {
++				for _, g := range editor.TargetGroups {
++					if g.Type != CardTypeEdit {
++						continue
++					}
++					for _, ref := range g.Refs {
++						if renamed[ref] {
++							continue
++						}
++						test, err := ParseRef(plan, ref)
++						if err != nil || goPackageDir(test.Unit) != goPackageDir(old.Unit) || len(test.Owner) != 0 || !namesTestOf(test.Name, base) {
++							continue
++						}
++						findings = append(findings, ValidationError{
++							Check: "rename-leaves-test",
++							Card:  cardID(c),
++							Ref:   ref,
++							Detail: fmt.Sprintf(
++								"card %d renames %q, but card %d lists its test %q under Edit and no Rename pair renames the test; an implementer renames the test with its symbol, so add the test's rename as a Rename pair on card %d",
++								c.Number, p.Old, editor.Number, ref, c.Number,
++							),
++						})
++					}
++				}
++			}
++		}
++	}
++
++	return findings
++}
++
++// namesTestOf reports whether name is a Go test function named after base: `Test<base>`, or `Test<base>_<case>`.
++func namesTestOf(name, base string) bool {
++	rest, ok := strings.CutPrefix(name, "Test"+base)
++	return ok && (rest == "" || strings.HasPrefix(rest, "_"))
++}
++
+ // cardFieldLabel pairs a card field's Has-presence bool with its bold label.
+ type cardFieldLabel struct {
+ 	present bool
+diff --git a/internal/planparser/validate_test.go b/internal/planparser/validate_test.go
+index afd6c113..fa6e725e 100644
+--- a/internal/planparser/validate_test.go
++++ b/internal/planparser/validate_test.go
+@@ -841,6 +841,54 @@ func TestValidate_RenameMechanicMissing(t *testing.T) {
+ 	})
+ }
+ 
++// TestValidate_RenameLeavesTest covers rename-leaves-test: under go, a symbol Rename pair whose same-named tests a card still lists under Edit, with no Rename pair of their own, is one finding per test ref, attributed to the renaming card.
++func TestValidate_RenameLeavesTest(t *testing.T) {
++	t.Parallel()
++	tests := []struct {
++		name      string
++		language  string
++		oldSide   string
++		testPairs []planparser.MovePair
++		edited    []string
++		want      int
++	}{
++		{"test named after the symbol", "go", "internal/foo#Old", nil, []string{"internal/foo#TestOld"}, 1},
++		{"test case named after the symbol", "go", "internal/foo#Old", nil, []string{"internal/foo#TestOld_Empty", "internal/foo#TestOld"}, 2},
++		{"method test named after the type and method", "go", "internal/foo#Cache.Get", nil, []string{"internal/foo#TestCache_Get"}, 1},
++		{"test of a longer name is not the symbol's", "go", "internal/foo#Old", nil, []string{"internal/foo#TestOldest"}, 0},
++		{"test in another unit is not the symbol's", "go", "internal/foo#Old", nil, []string{"internal/bar#TestOld"}, 0},
++		{"test in the external test package is the symbol's", "go", "internal/foo#Old", nil, []string{"internal/foo_test#TestOld"}, 1},
++		{"test renamed by its own pair", "go", "internal/foo#Old", []planparser.MovePair{{Old: "internal/foo#TestOld", New: "plan:internal/foo#TestNew"}}, []string{"internal/foo#TestOld"}, 0},
++		{"csharp plan is not checked", "csharp", "Foo.Bar#Old", nil, []string{"Foo.Bar#TestOld"}, 0},
++		{"none plan is not checked", "none", "internal/foo#Old", nil, []string{"internal/foo#TestOld"}, 0},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			renaming := renameCard(1, "rename", tt.oldSide, "plan:internal/foo#New")
++			renaming.Pairs = append(renaming.Pairs, tt.testPairs...)
++			renaming.TargetGroups[0].Pairs = renaming.Pairs
++			editing := cardOfType(2, "edit", planparser.CardTypeEdit, tt.edited)
++			plan := &planparser.Plan{Format: 5, Approved: true, Language: tt.language, RenameMechanic: "mechanic", Cards: []planparser.Card{renaming, editing}}
++
++			var got []planparser.ValidationError
++			for _, f := range planparser.Validate(plan, t.TempDir()) {
++				if f.Check == "rename-leaves-test" {
++					got = append(got, f)
++				}
++			}
++			if len(got) != tt.want {
++				t.Fatalf("Validate() rename-leaves-test findings = %v; want %d", got, tt.want)
++			}
++			for _, f := range got {
++				if f.Card != "1-rename" {
++					t.Errorf("Validate() rename-leaves-test card = %q; want the renaming card 1-rename", f.Card)
++				}
++			}
++		})
++	}
++}
++
+ // TestValidate_CardMissingField covers card-missing-field: every card must carry Intent:, and a card of type Edit or Delete must also carry ImpactSummary: — a Create, Rename, Move, Prosa, or Custom card without ImpactSummary produces no finding.
+ //
+ //testtiming:keep pins the card-missing-field finding per card type, which its covering tests do not assert
+diff --git a/internal/webstercli/cli_test.go b/internal/webstercli/cli_test.go
+index 6db9b657..4075d8fe 100644
+--- a/internal/webstercli/cli_test.go
++++ b/internal/webstercli/cli_test.go
+@@ -758,8 +758,8 @@ func TestBringUpDisposition_RecoverAndRun(t *testing.T) {
+ var singleFlagEnvelope = regexp.MustCompile(`map\[string\]any\{"([a-z_]+)": true\}`)
+ 
+ // TestMasterStencilCoversEverySingleFlagRefusal is R4-34's direct regression test. record-batch emitted {"card_not_done": true} on an ErrCardNotDone refusal, but the Master stencil's failure ladder carried no rung for it, so Master fell through to generic error handling on a refusal with a specific meaning and a specific disposition.
+-// record-batch's own flags today are batch_failed and report_archived, which ride in multi-field envelopes (with batch, and warnings on the first) and so are outside this regexp's shape;
+-// the master stencil's ladder names both all the same.
++// record-batch's own flags ride in multi-field envelopes (with batch, and warnings on batch_failed) and so are outside this regexp's shape;
++// the master stencil's ladder names each all the same.
+ //
+ // The flag set is read out of this package's own source rather than pinned as a list, because a hand-maintained list is forgotten by exactly the change that adds a new flag -- which is how this gap arose.
+ // What the regexp deliberately does NOT cover is a flag riding along inside a multi-field envelope (status's own report fields, for instance): those are state a caller reads, not refusals a ladder must answer.
+diff --git a/internal/webstercli/recordbatch.go b/internal/webstercli/recordbatch.go
+index 419ffd23..543e1b1d 100644
+--- a/internal/webstercli/recordbatch.go
++++ b/internal/webstercli/recordbatch.go
+@@ -84,6 +84,10 @@ batch failed whatever its report says. A report that cannot be attributed to a
+ fork of this bracket is archived and committed, and the call exits non-zero
+ with {"report_archived": true, "batch": "NN-<slug>"}; the error names
+ "lyx webster begin-batch NN", which re-drives the batch.
++A batch that removed a symbol a later card names, with no rename
++reported, is handed back to its fork once: it stays open and the call
++exits non-zero with {"later_target_removed": true, "batch": "NN-<slug>"};
++the next record-batch records it.
+ 
+ Example:
+   lyx webster record-batch 3`,
+@@ -174,6 +178,26 @@ Example:
+ 				clihelp.SetExit(cmd.Context(), output.ErrFields(out, msg, c.batchFailedFields(batchName, resultWarnings, err)))
+ 				return nil
+ 			}
++			if errors.Is(err, websterengine.ErrLaterTargetRemoved) {
++				// The batch stays open for its fork, and the record notes the hand-back, so the whole state is saved.
++				batchName := fmt.Sprintf("%02d-%s", batchNumber, st.Batches[batchNumber].Slug)
++				saveErr := websterengine.SaveState(c.geom.WebsterDir, c.geom.ScratchDir, st)
++				_ = mutateLock.Release()
++				mutateHeld = false
++				if saveErr != nil {
++					clihelp.SetExit(cmd.Context(), output.Err(out, fmt.Sprintf("%s; additionally, persisting the hand-back failed: %v; re-run `lyx webster record-batch %02d`", err.Error(), saveErr, batchNumber)))
++					return nil
++				}
++				msg := err.Error()
++				if _, syncErr := fabricSync(c.openFabric, c.anchorRel, fmt.Sprintf("record-batch %s handed back", batchName)); syncErr != nil {
++					msg = fmt.Sprintf("%s; additionally, the fabric sync failed: %v; %s", msg, syncErr, fabricSyncWayForward)
++				}
++				clihelp.SetExit(cmd.Context(), output.ErrFields(out, msg, map[string]any{
++					"later_target_removed": true,
++					"batch":                batchName,
++				}))
++				return nil
++			}
+ 			if errors.Is(err, websterengine.ErrReportArchived) {
+ 				// Nothing in state changed;
+ 				// the archive move is what the fabric sync commits.
+diff --git a/internal/webstercli/verbs_test.go b/internal/webstercli/verbs_test.go
+index 8b796d40..a36b81c5 100644
+--- a/internal/webstercli/verbs_test.go
++++ b/internal/webstercli/verbs_test.go
+@@ -824,6 +824,60 @@ func TestRecordBatchCmd_DeleteReferencedByLaterCard(t *testing.T) {
+ 	}
+ }
+ 
++// TestRecordBatchCmd_LaterTargetRemovedEnvelope proves a batch that removed a symbol a later card names exits non-zero with later_target_removed naming the symbol and card.
++// The open batch is saved marked handed back.
++func TestRecordBatchCmd_LaterTargetRemovedEnvelope(t *testing.T) {
++	t.Setenv("FABRIC_SKIP_GIT", "1")
++	fx := newVerbsFixture(t)
++	root := fx.CLI.geom.WorktreeRoot
++	// The fixture's own single-card plan is replaced, so its card file goes too.
++	if err := os.Remove(filepath.Join(fx.CLI.geom.PlanDir, "01-only.md")); err != nil {
++		t.Fatalf("remove the fixture's card file: %v", err)
++	}
++	plankit.Write(t, fx.CLI.geom.PlanDir, plankit.Plan{
++		Approved: true,
++		Language: "go",
++		Framing:  "Framing.",
++		Cards: []plankit.Card{
++			{Number: 1, Slug: "first", Summary: "edits a.go", Groups: []plankit.Group{{Label: "Edit", Targets: []string{"sub/a.go"}}}, Intent: "edit it.", ImpactSummary: "Edits a.go."},
++			{Number: 2, Slug: "second", Summary: "edits Gone", Groups: []plankit.Group{{Label: "Edit", Targets: []string{"sub#Gone"}}}, Intent: "edit it.", ImpactSummary: "Edits Gone."},
++		},
++	})
++	st := fx.initState(t)
++	startSHA := gitkit.CommitFile(t, root, "sub/a.go", "package sub\n\nfunc Gone() {}\n", "01.1: add the target")
++	headSHA := gitkit.CommitFile(t, root, "sub/a.go", "package sub\n", "01.2: remove the target")
++	st.Batches[1] = &websterengine.BatchState{Slug: "first", StartSHA: startSHA, Kind: "fork"}
++	st.CurrentBatch = 1
++	if err := websterengine.SaveState(fx.CLI.geom.WebsterDir, fx.CLI.geom.ScratchDir, st); err != nil {
++		t.Fatalf("SaveState() error = %v", err)
++	}
++	fx.Engine.Audit = shuttleengine.ForkAudit{Forks: []shuttleengine.ForkReport{{TranscriptPath: "subagents/fork1.jsonl", ReportReturned: true}}}
++	if err := os.MkdirAll(fx.CLI.geom.ReportsDir, 0o755); err != nil {
++		t.Fatalf("mkdir reports dir: %v", err)
++	}
++	report := &websterengine.Report{Status: websterengine.ReportStatusOK, HeadSHA: headSHA}
++	if err := websterengine.WriteReport(filepath.Join(fx.CLI.geom.ReportsDir, websterengine.ReportFileName(1, "first")), report); err != nil {
++		t.Fatalf("write batch report: %v", err)
++	}
++
++	var out strings.Builder
++	if code := clihelp.Execute(fx.CLI.recordBatchCmd(), &out, []string{"1"}); code == 0 {
++		t.Fatalf("record-batch 1 = 0; want non-zero, output: %s", out.String())
++	}
++	for _, want := range []string{`"later_target_removed":true`, `"batch":"01-first"`, "2-second", "sub#Gone", "way forward:"} {
++		if !strings.Contains(out.String(), want) {
++			t.Errorf("record-batch output missing %q; got %q", want, out.String())
++		}
++	}
++	loaded, err := websterengine.LoadState(fx.CLI.geom.WebsterDir, fx.CLI.geom.ScratchDir)
++	if err != nil {
++		t.Fatalf("LoadState() error = %v", err)
++	}
++	if bs := loaded.Batches[1]; bs.Terminal || !bs.LaterTargetsReturned {
++		t.Errorf("saved batch record: terminal %v, LaterTargetsReturned %v; want an open batch marked handed back", bs.Terminal, bs.LaterTargetsReturned)
++	}
++}
++
+ // TestRecordBatchCmd_ReportArchivedEnvelope proves a report with no begin record is archived, the call exits non-zero with report_archived, and the report is gone from its live path.
+ func TestRecordBatchCmd_ReportArchivedEnvelope(t *testing.T) {
+ 	t.Setenv("FABRIC_SKIP_GIT", "1")
+diff --git a/internal/websterengine/doc.go b/internal/websterengine/doc.go
+index e9a061ff..f5da2a7c 100644
+--- a/internal/websterengine/doc.go
++++ b/internal/websterengine/doc.go
+@@ -312,6 +312,13 @@
+ // begin-batch and recover-batch open an empty bracket list, so a transcript of an earlier bracket never counts.
+ // A report that cannot be attributed to a begun batch, or to any counted fork transcript, is archived and returned as *ReportArchivedError naming `lyx webster begin-batch`, which re-drives the batch.
+ // The post-batch done-checks fail the batch the same way when a card's own declared work is missing, while drift that concerns only a later card is recorded as a warning rather than blocking this batch.
++// One kind of later-card drift is first handed back to the fork, while the fork still holds the batch's context.
++// It is a symbol the delta deleted that a later card targets or uses, with no exact rename, no rename in the report, and no Delete target or Rename old side on the batch's own cards declaring it (planindex.Delta.RemovedTargets).
++// On an OK report, record-batch checks it right after the shared delta and before handle binding, so the only plan rewrite it can follow is the re-sign rebind.
++// It returns *LaterTargetRemovedError, the CLI's `later_target_removed` flag, leaving the batch open with its report in place and BatchState.LaterTargetsReturned set.
++// Master sends the refusal to the fork, which restores the name or reports the rename and rewrites its report, and calls record-batch again.
++// The hand-back comes once per bracket: the next record-batch records the batch with the later-card warning even when the fork could not be reached.
++// recover-batch never hands back, since a recovery strand has ended when its report is read.
+ // A delete-not-done finding gets one more check, planindex.Index.LaterDeleteReferences over the batch's own cards and the cards of every batch with no record:
+ // when an unbegun later card's Edit code still references the target, the failure's reasons name that card and the reference,
+ // and the BatchFailedError's way forward is the plan edit (move the delete after that card, rebaseline, then recover-batch), or the reset-to-start steps when the record also lists uncheckable entries, since recover-batch would repeat the same failure.
+diff --git a/internal/websterengine/gitfake_test.go b/internal/websterengine/gitfake_test.go
+index f4c39bd7..c720dcc1 100644
+--- a/internal/websterengine/gitfake_test.go
++++ b/internal/websterengine/gitfake_test.go
+@@ -130,6 +130,10 @@ func (d fakeDelta) ScopeGuard(plan *planparser.Plan, cards []planparser.Card) []
+ 	return planglyph.ScopeGuard(plan, cards, d.answer)
+ }
+ 
++func (d fakeDelta) RemovedTargets(fullPlan *planparser.Plan, completed, own []planparser.Card, reported []planindex.Rename) []planindex.Finding {
++	return planglyph.RemovedTargets(planglyph.PendingPlan(fullPlan, completed), own, d.answer, reported)
++}
++
+ func (d fakeDelta) DetectDrift(fullPlan *planparser.Plan, completed []planparser.Card, reported []planindex.Rename, planDir, worktreeRoot, sha, now string) ([]planindex.Finding, error) {
+ 	return planglyph.DetectDrift(fullPlan, planglyph.PendingPlan(fullPlan, completed), planDir, worktreeRoot, d.answer, reported, sha, now)
+ }
+diff --git a/internal/websterengine/recordbatch.go b/internal/websterengine/recordbatch.go
+index 234f69a9..ad903d07 100644
+--- a/internal/websterengine/recordbatch.go
++++ b/internal/websterengine/recordbatch.go
+@@ -56,6 +56,30 @@ func (e *ReportArchivedError) Unwrap() []error { return []error{ErrReportArchive
+ // webster's own sentinel, per the webster-owns-its-own-domain-types decision.
+ var ErrCardNotDone = errors.New("webster: record-batch's done-checks reported a blocking finding")
+ 
++// ErrLaterTargetRemoved is the sentinel record-batch returns when a fork batch's OK report left a symbol removed that a later card names.
++// It hands the batch back to its fork once, while the fork still holds the batch's context.
++var ErrLaterTargetRemoved = errors.New("webster: the batch removed a symbol a later card names")
++
++// LaterTargetRemovedError is the refusal record-batch returns, once per bracket, for a fork batch that removed a symbol a later card names without reporting a rename.
++// The batch stays non-terminal with its report in place, and the record notes the hand-back, so the next record-batch records the batch.
++type LaterTargetRemovedError struct {
++	// Batch names the batch as NN-<slug>.
++	Batch string
++	// Number is the batch's number.
++	Number int
++	// Reasons holds one line per later card and removed symbol.
++	Reasons []string
++}
++
++// Error names each removed symbol and the later card naming it, and the way forward through the batch's fork.
++func (e *LaterTargetRemovedError) Error() string {
++	return fmt.Sprintf("%s: batch %s: %s; way forward: send this message to the batch's fork, which either restores each name and commits, or lists each rename under its report's renames, and then rewrites its report with its head; then run `lyx webster record-batch %02d` again, which records the batch without handing it back a second time",
++		ErrLaterTargetRemoved, e.Batch, strings.Join(e.Reasons, "; "), e.Number)
++}
++
++// Unwrap returns ErrLaterTargetRemoved, so errors.Is matches it.
++func (e *LaterTargetRemovedError) Unwrap() error { return ErrLaterTargetRemoved }
++
+ // cardNotDoneError is the error the post-batch done-checks return: it unwraps to ErrCardNotDone and its message carries the findings' text.
+ // deleteNotDone is set when a finding is a Delete target that still resolves, and glyphRejected when quarry rejected a card's target before resolving it.
+ type cardNotDoneError struct {
+@@ -266,6 +290,7 @@ func archiveUnattributable(deps RecordDeps, number int, slug string, cause error
+ // Each audit finding is dispositioned once per run: a policy finding is recorded as a warning (after its batch's card verify commands pass, when the report is OK),
+ // and a correctness finding, or a policy finding whose evidence re-run fails, fails the batch and returns a *BatchFailedError naming `lyx webster recover-batch`, alongside a RecordResult carrying the failed digest.
+ // A NEEDS_PARENT report records the batch waiting with its need and archives the report, and a call on a waiting batch refuses naming the resume step.
++// An OK report whose batch removed a symbol a later card names, with no rename reported for it, returns *LaterTargetRemovedError once per bracket, leaving the batch open for its fork.
+ // The caller persists deps.State via SaveState once RecordBatch returns, whether or not it returned a *BatchFailedError.
+ func RecordBatch(deps RecordDeps, batchNumber int) (*RecordResult, error) {
+ 	// The plan is a hard precondition, refused loudly rather than dereferenced several frames down
+@@ -542,6 +567,8 @@ func RecordBatch(deps RecordDeps, batchNumber int) (*RecordResult, error) {
+ 		HeadSHA:   report.HeadSHA,
+ 		Label:     polledID,
+ 		Renames:   report.Renames,
++		// Only an OK report's fork is waiting to be told: a FAILED one goes to a recovery strand instead.
++		HandBackRemovedTargets: report.Status == ReportStatusOK,
+ 	})
+ 	warnings = append(warnings, postWarnings...)
+ 	if err != nil {
+@@ -782,19 +809,21 @@ func failFromFindings(deps RecordDeps, bs *BatchState, number int, slug, headSHA
+ // StartSHA is the bracket record's captured start SHA and HeadSHA the reconciled report head;
+ // Label names the batch in warnings;
+ // Batch is the record being finished, which later-card drift warnings are recorded onto;
+-// Renames are the glyph renames the batch's report lists, which drift detection repairs in the cards not yet begun.
++// Renames are the glyph renames the batch's report lists, which drift detection repairs in the cards not yet begun;
++// HandBackRemovedTargets asks the pass to refuse with *LaterTargetRemovedError, before any plan rewrite past the re-sign rebind, when the batch removed a symbol a later card names.
+ type postBatchInputs struct {
+-	Plan      *planparser.Plan
+-	State     *State
+-	Batch     *BatchState
+-	Geom      Geometry
+-	Number    int
+-	Cards     []planparser.Card
+-	Completed []planparser.Card
+-	StartSHA  string
+-	HeadSHA   string
+-	Label     string
+-	Renames   []ReportRename
++	Plan                   *planparser.Plan
++	State                  *State
++	Batch                  *BatchState
++	Geom                   Geometry
++	Number                 int
++	Cards                  []planparser.Card
++	Completed              []planparser.Card
++	StartSHA               string
++	HeadSHA                string
++	Label                  string
++	Renames                []ReportRename
++	HandBackRemovedTargets bool
+ }
+ 
+ // The bind reasons postBatchChecks decides itself, beside the two the index reports.
+@@ -952,6 +981,24 @@ func postBatchChecks(in postBatchInputs) (deviations, warnings []string, err err
+ 		return nil, nil, deltaErr
+ 	}
+ 
++	// The report's renames are what drift detection repairs further down, so a removal the fork reported is no hand-back.
++	reported := make([]planindex.Rename, len(in.Renames))
++	for i, r := range in.Renames {
++		reported[i] = planindex.Rename{Old: r.Old, New: r.New}
++	}
++
++	// A removed later target is handed back before binding, so the plan carries no bind or drift rewrite of a batch its fork is still to change.
++	if in.HandBackRemovedTargets && deltaErr == nil && !in.Batch.LaterTargetsReturned {
++		if removed := delta.RemovedTargets(in.Plan, in.Completed, in.Cards, reported); len(removed) > 0 {
++			reasons := make([]string, len(removed))
++			for i, f := range removed {
++				reasons[i] = f.Error()
++			}
++			in.Batch.LaterTargetsReturned = true
++			return nil, nil, &LaterTargetRemovedError{Batch: in.Label, Number: in.Number, Reasons: reasons}
++		}
++	}
++
+ 	// Binding runs after the done-checks above, so a card that already failed create-not-done is
+ 	// never bound, and applies its whole batch of substitutions in this one RewriteRefs call.
+ 	bindFindings, bindOutcomes, bindErr := delta.BindHandles(in.Plan, in.Geom.PlanDir, in.Cards)
+@@ -1016,10 +1063,6 @@ func postBatchChecks(in postBatchInputs) (deviations, warnings []string, err err
+ 	// declared Rename outcome — the pending view excludes exactly the cards whose renames the
+ 	// delta reports.
+ 	// The report's renames ride along, so a later card naming a glyph the batch renamed is rewritten even where quarry cannot prove the rename.
+-	reported := make([]planindex.Rename, len(in.Renames))
+-	for i, r := range in.Renames {
+-		reported[i] = planindex.Rename{Old: r.Old, New: r.New}
+-	}
+ 	driftFindings, driftErr := delta.DetectDrift(in.Plan, in.Completed, reported, in.Geom.PlanDir, in.Geom.WorktreeRoot, in.HeadSHA, time.Now().UTC().Format(time.RFC3339))
+ 	// The exact-tier repair's own RewriteRefs lands on disk before this call reports anything, and
+ 	// its blocking plan-references-deleted-symbol finding is computed from a different part of the
+diff --git a/internal/websterengine/recordbatch_git_test.go b/internal/websterengine/recordbatch_git_test.go
+index 0d9d03c8..c984d512 100644
+--- a/internal/websterengine/recordbatch_git_test.go
++++ b/internal/websterengine/recordbatch_git_test.go
+@@ -60,6 +60,14 @@ func forkReturned() []shuttleengine.ForkAudit {
+ 	}
+ }
+ 
++// forkRewroteReport scripts the next audits as the handed-back fork resumed: its bracket transcript wrote the batch's report again.
++func forkRewroteReport(fx *recordFixture) {
++	report := filepath.Join(fx.ReportsDir, websterengine.ReportFileName(1, "json-flag"))
++	fx.Audit.scripted = []shuttleengine.ForkAudit{
++		{Forks: []shuttleengine.ForkReport{{TranscriptPath: "subagents/f1.jsonl", WritePaths: []string{report}, ReportReturned: true}}},
++	}
++}
++
+ // seedDriftPlanDir writes a real, parseable two-card plan directory whose second card's Uses field
+ // names every ref in uses. RecordBatch's own drift repair calls planparser.RewriteRefs against this
+ // directory, which re-parses it from disk rather than reading RecordDeps.Plan, so a repair scenario
+@@ -158,9 +166,9 @@ func TestRecordBatch_PostBatchChecks(t *testing.T) {
+ 		}
+ 	})
+ 
+-	// A symbol the delta reports deleted, with no corresponding rename, that the plan still references
+-	// warns about the later card and persists a terminal digest.
+-	t.Run("drift on a deleted still-referenced symbol warns about the later card", func(t *testing.T) {
++	// A symbol the delta reports deleted with no corresponding rename, that the plan still references, hands the batch back to its fork once, leaving the batch open and its report in place;
++	// the next call warns about the later card and persists a terminal digest.
++	t.Run("drift on a deleted still-referenced symbol hands back once, then warns about the later card", func(t *testing.T) {
+ 		fx := s.restart(t, forkReturned())
+ 		// A symbol must exist at the delta's START side to be reported deleted — the fixture's own
+ 		// StartSHA (base.txt only) predates internal/foo entirely, so the batch's own start boundary is
+@@ -176,9 +184,25 @@ func TestRecordBatch_PostBatchChecks(t *testing.T) {
+ 		writeReport(t, fx.ReportsDir, validReport(headSHA))
+ 		addPendingCard(fx, []string{"internal/foo#WillGoAway"})
+ 
++		_, err := websterengine.RecordBatch(fx.Deps, 1)
++		var handBack *websterengine.LaterTargetRemovedError
++		if !errors.As(err, &handBack) {
++			t.Fatalf("RecordBatch() error = %v; want a *LaterTargetRemovedError", err)
++		}
++		if !strings.Contains(err.Error(), "internal/foo#WillGoAway") || !strings.Contains(err.Error(), "way forward:") || !strings.Contains(err.Error(), "lyx webster record-batch 01") {
++			t.Errorf("RecordBatch() error = %q; want the removed symbol and the record-batch way forward", err)
++		}
++		if bs := fx.Deps.State.Batches[1]; bs.Terminal || !bs.LaterTargetsReturned {
++			t.Errorf("batch record after the hand-back: terminal %v, LaterTargetsReturned %v; want an open batch marked handed back", bs.Terminal, bs.LaterTargetsReturned)
++		}
++		if _, statErr := os.Stat(filepath.Join(fx.ReportsDir, websterengine.ReportFileName(1, fx.Deps.State.Batches[1].Slug))); statErr != nil {
++			t.Errorf("stat the batch report after the hand-back: %v; want the report left in place", statErr)
++		}
++
++		forkRewroteReport(fx)
+ 		result, err := websterengine.RecordBatch(fx.Deps, 1)
+ 		if err != nil {
+-			t.Fatalf("RecordBatch() error = %v; want nil — drift about a later card warns, it does not fail this batch", err)
++			t.Fatalf("RecordBatch() second call error = %v; want nil — after the one hand-back, drift about a later card warns, it does not fail this batch", err)
+ 		}
+ 		if result.Digest == nil || result.Digest.Status != websterengine.DigestStatusDone {
+ 			t.Fatalf("RecordBatch() digest = %+v; want a terminal done digest", result.Digest)
+@@ -203,11 +227,10 @@ func TestRecordBatch_PostBatchChecks(t *testing.T) {
+ 		}
+ 	})
+ 
+-	// DetectDrift's mixed severity set is split rather than blanket-blocked: an inexact rename quarry classifies as an evidence-tier
+-	// candidate rather than an exact pair produces an informational rename-candidate finding, which
+-	// must ride out on Warnings and let the batch terminate — a finding that kills the batch never
+-	// reaches the reviewer whose decision the tier exists to inform.
+-	t.Run("an evidence-tier rename candidate warns and does not block", func(t *testing.T) {
++	// An inexact rename quarry classifies as an evidence-tier candidate hands the batch back once, naming the candidate.
++	// The next call lets the batch terminate with the informational rename-candidate finding on Warnings:
++	// a finding that kills the batch never reaches the reviewer whose decision the tier exists to inform.
++	t.Run("an evidence-tier rename candidate hands back once, then warns and does not block", func(t *testing.T) {
+ 		fx := s.restart(t, forkReturned())
+ 		// The symbol must exist at the delta's start side to be reported deleted, so the batch's own
+ 		// start boundary moves to a commit that already carries it.
+@@ -219,9 +242,14 @@ func TestRecordBatch_PostBatchChecks(t *testing.T) {
+ 		writeReport(t, fx.ReportsDir, validReport(headSHA))
+ 		addPendingCard(fx, []string{"internal/foo#WillMove"})
+ 
++		if _, err := websterengine.RecordBatch(fx.Deps, 1); !errors.Is(err, websterengine.ErrLaterTargetRemoved) || !strings.Contains(err.Error(), "internal/foo#Moved") {
++			t.Fatalf("RecordBatch() error = %v; want ErrLaterTargetRemoved naming the candidate internal/foo#Moved", err)
++		}
++
++		forkRewroteReport(fx)
+ 		result, err := websterengine.RecordBatch(fx.Deps, 1)
+ 		if err != nil {
+-			t.Fatalf("RecordBatch() error = %v; want nil — an informational rename-candidate must never fail the batch", err)
++			t.Fatalf("RecordBatch() second call error = %v; want nil — an informational rename-candidate must never fail the batch", err)
+ 		}
+ 		if result.Digest == nil || result.Digest.Status != websterengine.DigestStatusDone {
+ 			t.Fatalf("RecordBatch() digest = %+v; want a terminal done digest", result.Digest)
+@@ -275,6 +303,29 @@ func TestRecordBatch_PostBatchChecks(t *testing.T) {
+ 		}
+ 	})
+ 
++	// A FAILED report goes to a recovery strand, so its batch is never handed back to its fork over a removed later target.
++	t.Run("a failed report is never handed back over a removed later target", func(t *testing.T) {
++		fx := s.restart(t, forkReturned())
++		withSymbol := gitkit.CommitFile(t, fx.Worktree, "internal/foo/impl.go", "package foo\n\nfunc WillGoAway() {}\n", "01.2: add WillGoAway")
++		fx.Deps.State.Batches[1].StartSHA = withSymbol
++		if err := os.Remove(filepath.Join(fx.Worktree, "internal/foo/impl.go")); err != nil {
++			t.Fatalf("remove impl.go: %v", err)
++		}
++		gitkit.Git(t, fx.Worktree, "add", "-A")
++		gitkit.Git(t, fx.Worktree, "commit", "-m", "01.3: remove WillGoAway")
++		headSHA := gitkit.RevParse(t, fx.Worktree, "HEAD")
++		writeReport(t, fx.ReportsDir, "status: FAILED\nhead_sha: "+headSHA+"\n")
++		addPendingCard(fx, []string{"internal/foo#WillGoAway"})
++
++		_, err := websterengine.RecordBatch(fx.Deps, 1)
++		if err != nil {
++			t.Fatalf("RecordBatch() error = %v; want nil: a FAILED report is recorded, never handed back over a removed later target", err)
++		}
++		if fx.Deps.State.Batches[1].LaterTargetsReturned {
++			t.Error("LaterTargetsReturned is set after a FAILED report; want it unset")
++		}
++	})
++
+ 	// The batch being recorded is excluded from drift detection. Its work is exactly what the delta reports, so a Delete card
+ 	// referencing the symbol it just deleted was reporting its own success as
+ 	// plan-references-deleted-symbol — and no Delete card could ever be recorded at all.
+@@ -356,6 +407,17 @@ func TestRecordBatch_PostBatchChecks(t *testing.T) {
+ 		writeReport(t, fx.ReportsDir, validReport(headSHA))
+ 		addPendingCard(fx, []string{"internal/foo#WillMove", "internal/foo#WillGoAway"})
+ 
++		// The first call hands back the plain deletion only: the exact-tier rename is quarry's own pair, never a removed target.
++		_, err := websterengine.RecordBatch(fx.Deps, 1)
++		var handBack *websterengine.LaterTargetRemovedError
++		if !errors.As(err, &handBack) {
++			t.Fatalf("RecordBatch() error = %v; want a *LaterTargetRemovedError for the deletion", err)
++		}
++		if !strings.Contains(err.Error(), "internal/foo#WillGoAway") || strings.Contains(err.Error(), "internal/foo#WillMove") {
++			t.Errorf("RecordBatch() error = %q; want the deleted symbol named and the exact-renamed one absent", err)
++		}
++
++		forkRewroteReport(fx)
+ 		if _, err := websterengine.RecordBatch(fx.Deps, 1); err != nil {
+ 			t.Fatalf("RecordBatch() error = %v; want nil — the deleted-and-still-referenced symbol warns about a later card", err)
+ 		}
+diff --git a/internal/websterengine/recoverbatch_test.go b/internal/websterengine/recoverbatch_test.go
+index a665ca3c..c57c0ded 100644
+--- a/internal/websterengine/recoverbatch_test.go
++++ b/internal/websterengine/recoverbatch_test.go
+@@ -777,54 +777,76 @@ func TestRecoverBatch_TerminalRunsTheSamePostBatchChecksAsRecordBatch(t *testing
+ 	})
+ 
+ 	// A recovery's reported rename is repaired exactly as a fork's is, even where the delta only reports the old glyph deleted.
+-	t.Run("a recovered reported rename rewrites the pending card", func(t *testing.T) {
+-		fx := newRecoverFixture(t)
+-		clk := &recoverFakeClock{now: time.Unix(0, 0)}
+-		writeWorktreeFile(t, fx.Worktree, "internal/foo/impl.go", "package foo\n\nfunc Moved() int { return 1 }\n")
+-		fx.Index.delta = quarry.GitDeltaAnswer{DeltaAnswer: quarry.DeltaAnswer{Deleted: []quarry.Symbol{{ID: "internal/foo#WillMove"}}}}
+-
+-		planDir := t.TempDir()
+-		base := []plankit.Group{{Label: "Prosa", Targets: []string{"//base.txt"}}}
+-		plankit.Write(t, planDir, plankit.Plan{
+-			Approved: true,
+-			Language: "go",
+-			Framing:  "A two-card fixture whose second card names a glyph the first card's batch renamed.",
+-			Cards: []plankit.Card{
+-				{Number: 1, Slug: "json-flag", Summary: "the recovered card", Groups: base, Intent: "The recovered card."},
+-				{Number: 2, Slug: "pending", Summary: "the not-yet-built card", Groups: base, Uses: []string{"internal/foo#WillMove"}, Intent: "The pending card."},
+-			},
++	// An unreported one records the batch with the later-card warning: a recovery strand has ended, so nothing is handed back.
++	for _, tt := range []struct {
++		name        string
++		renames     string
++		wantPending string
++	}{
++		{"a recovered reported rename rewrites the pending card", "renames:\n  - old: internal/foo#WillMove\n    new: internal/foo#Moved\n    reason: WillMove collides with an existing symbol\n", "internal/foo#Moved"},
++		{"a recovered unreported removal records the batch and warns about the later card", "", "internal/foo#WillMove"},
++	} {
++		t.Run(tt.name, func(t *testing.T) {
++			recoverRemovedLaterTarget(t, tt.renames, tt.wantPending)
+ 		})
+-		plan, err := planparser.ParsePlan(planDir)
+-		if err != nil {
+-			t.Fatalf("ParsePlan(%q) returned error: %v", planDir, err)
+-		}
+-		fx.Deps.Geom.PlanDir = planDir
+-		fx.Deps.Plan = plan
+-		fx.Deps.Batches = []batcher.Batch{{Cards: plan.Cards[:1]}, {Cards: plan.Cards[1:]}}
+-		if err := websterengine.RestampPlanBaseline(fx.Deps.State, planDir, fx.Deps.Geom.WebsterDir); err != nil {
+-			t.Fatalf("RestampPlanBaseline() error = %v", err)
+-		}
+-
+-		if first, err := driveRecoverBatch(fx.Deps, 1, 2*time.Second, clk); err != nil || !first.Spawned || !first.Running {
+-			t.Fatalf("RecoverBatch() first call = %+v, %v; want a running spawned recovery", first, err)
+-		}
+-		writeRecoverReport(t, fx.ReportsDir, "status: OK\nhead_sha: "+fx.Git.head+"\nrenames:\n  - old: internal/foo#WillMove\n    new: internal/foo#Moved\n    reason: WillMove collides with an existing symbol\n")
+-		recovered, err := driveRecoverBatch(fx.Deps, 1, 2*time.Second, clk)
+-		if err != nil {
+-			t.Fatalf("RecoverBatch() second call error = %v; want nil", err)
+-		}
+-		if recovered.Digest == nil || recovered.Digest.Status != websterengine.DigestStatusDone {
+-			t.Fatalf("recovered Digest = %+v; want a terminal done digest", recovered.Digest)
+-		}
++	}
++}
+ 
+-		pending, readErr := os.ReadFile(filepath.Join(planDir, "02-pending.md"))
+-		if readErr != nil {
+-			t.Fatalf("read 02-pending.md: %v", readErr)
+-		}
+-		if !strings.Contains(string(pending), "internal/foo#Moved") || strings.Contains(string(pending), "internal/foo#WillMove") {
+-			t.Errorf("02-pending.md = %q; want the reported new glyph in place of the old one", pending)
+-		}
++// recoverRemovedLaterTarget drives one recovery whose delta deletes a glyph a pending card uses, with renames as the report's renames block.
++// It checks the batch recorded done with the pending card naming wantPending, warned about when it still names the removed glyph.
++func recoverRemovedLaterTarget(t *testing.T, renames, wantPending string) {
++	t.Helper()
++	fx := newRecoverFixture(t)
++	clk := &recoverFakeClock{now: time.Unix(0, 0)}
++	writeWorktreeFile(t, fx.Worktree, "internal/foo/impl.go", "package foo\n\nfunc Moved() int { return 1 }\n")
++	fx.Index.delta = quarry.GitDeltaAnswer{DeltaAnswer: quarry.DeltaAnswer{Deleted: []quarry.Symbol{{ID: "internal/foo#WillMove"}}}}
++
++	planDir := t.TempDir()
++	base := []plankit.Group{{Label: "Prosa", Targets: []string{"//base.txt"}}}
++	plankit.Write(t, planDir, plankit.Plan{
++		Approved: true,
++		Language: "go",
++		Framing:  "A two-card fixture whose second card names a glyph the first card's batch renamed.",
++		Cards: []plankit.Card{
++			{Number: 1, Slug: "json-flag", Summary: "the recovered card", Groups: base, Intent: "The recovered card."},
++			{Number: 2, Slug: "pending", Summary: "the not-yet-built card", Groups: base, Uses: []string{"internal/foo#WillMove"}, Intent: "The pending card."},
++		},
+ 	})
++	plan, err := planparser.ParsePlan(planDir)
++	if err != nil {
++		t.Fatalf("ParsePlan(%q) returned error: %v", planDir, err)
++	}
++	fx.Deps.Geom.PlanDir = planDir
++	fx.Deps.Plan = plan
++	fx.Deps.Batches = []batcher.Batch{{Cards: plan.Cards[:1]}, {Cards: plan.Cards[1:]}}
++	if err := websterengine.RestampPlanBaseline(fx.Deps.State, planDir, fx.Deps.Geom.WebsterDir); err != nil {
++		t.Fatalf("RestampPlanBaseline() error = %v", err)
++	}
++
++	if first, err := driveRecoverBatch(fx.Deps, 1, 2*time.Second, clk); err != nil || !first.Spawned || !first.Running {
++		t.Fatalf("RecoverBatch() first call = %+v, %v; want a running spawned recovery", first, err)
++	}
++	writeRecoverReport(t, fx.ReportsDir, "status: OK\nhead_sha: "+fx.Git.head+"\n"+renames)
++	recovered, err := driveRecoverBatch(fx.Deps, 1, 2*time.Second, clk)
++	if err != nil {
++		t.Fatalf("RecoverBatch() second call error = %v; want nil", err)
++	}
++	if recovered.Digest == nil || recovered.Digest.Status != websterengine.DigestStatusDone {
++		t.Fatalf("recovered Digest = %+v; want a terminal done digest", recovered.Digest)
++	}
++
++	pending, readErr := os.ReadFile(filepath.Join(planDir, "02-pending.md"))
++	if readErr != nil {
++		t.Fatalf("read 02-pending.md: %v", readErr)
++	}
++	removedKept := wantPending == "internal/foo#WillMove"
++	if !strings.Contains(string(pending), wantPending) || (!removedKept && strings.Contains(string(pending), "internal/foo#WillMove")) {
++		t.Errorf("02-pending.md = %q; want it naming %s alone", pending, wantPending)
++	}
++	warned := slices.ContainsFunc(recovered.Warnings, func(w string) bool { return strings.Contains(w, "later card:") })
++	if warned != removedKept {
++		t.Errorf("recovered Warnings = %v; want a later card: warning %v", recovered.Warnings, removedKept)
++	}
+ }
+ 
+ // TestRecoverBatch_AmendedCards walks one batch's amendment through its recoveries.
+diff --git a/internal/websterengine/state.go b/internal/websterengine/state.go
+index 86d80926..09c687eb 100644
+--- a/internal/websterengine/state.go
++++ b/internal/websterengine/state.go
+@@ -300,6 +300,9 @@ type BatchState struct {
+ 	// the path, or "<class>: <detail>" for a finding with no path.
+ 	// recover-batch refuses a failed batch carrying any, toward the reset-to-start route.
+ 	Uncheckable []string `json:"uncheckable,omitempty"`
++	// LaterTargetsReturned is set once record-batch has handed the batch back to its fork over a symbol the batch removed that a later card names,
++	// so a later record-batch of the same bracket records the batch without handing it back again.
++	LaterTargetsReturned bool `json:"laterTargetsReturned,omitempty"`
+ 
+ 	// The following three fields are populated only for a recovery batch
+ 	// (Kind == "recovery"); a fork batch carries no strand fields, since
