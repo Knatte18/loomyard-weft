@@ -2,8 +2,6 @@
 
 `rename-target-checks` · Task · enhancement, webster, loom, stencil · running · Darn-Write
 
-Depends on: [`webster-stop-asked-once`](design-webster-stop-asked-once.md)
-
 ## Seen (beam-start-and-ownership, 2026-10-26)
 
 Card 6 (`recipe-named-pawl`) declared the function renames `NewBeam` -> `NewPawl` and `BeamRouting` -> `PawlRouting` as Rename pairs, but listed the tests `TestNewBeam` and `TestBeamRouting` under Edit only.
