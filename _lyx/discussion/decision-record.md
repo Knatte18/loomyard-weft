@@ -210,6 +210,12 @@ The verb, its `battencli` helpers (`EndRunForPromote`, `ClearRunForPromote`) and
 `fabricengine.ResetRecordsToParent` goes with it when nothing else calls it.
 Rationale: a beam is made from its project, never from a running task.
 
+### Added after Discussion (parent, 2026-10-26): runproc's End family ends a run's processes
+
+Decision: PATTERN-run-process-owner changes so ending a dobby through the new runproc.EndRole is within the invariant; the background file's opening sentence changes with it.
+
+Rationale: EndSparing already exists beside End, and the plan's EndRole is the same family; the invariant is that runproc alone ends a run's processes, not one function.
+
 ## Constraints
 
 - `PATTERN-owner-machine`: changed (see PATTERN changes); this machine's name only from `internal/machinename`, owners written only by `boardengine`'s owner setter, the start's owner read from the Bolt it just pulled.
@@ -285,6 +291,7 @@ None.
 ## PATTERN changes
 
 - `PATTERN-owner-machine` — changes: Starting, resuming or landing a run: only where its entry is not owned elsewhere; owners only on root and beam projects, set only by `boardengine`'s owner setter; any other entry reads its `hubgeom.ParentOf` owner; a dobby continue pass is no resume. — [background](pattern/PATTERN-owner-machine.md)
+- `PATTERN-run-process-owner` — changes: A run's processes: registered in `internal/runproc`, ended only via `runproc`'s `End`, `EndSparing` or `EndRole`. — added after Discussion (parent, 2026-10-26)
 
 ## Notes for the plan writer
 
