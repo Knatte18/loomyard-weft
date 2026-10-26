@@ -1,6 +1,6 @@
 # Shuttle: seat start survives long prompts and tmux EAGAIN, and no held notice for a turn waiting by design
 
-`shuttle-start-hardening` · Task · bug, shuttle, reed, webster · running · Worktree-Create
+`shuttle-start-hardening` · Task · bug, shuttle, reed, webster · running · Drift-Baseline
 
 Three shuttle defects in `internal/shuttleengine`, bundled into one darn run: two in the seat start path and one in the held-turn notice.
 
