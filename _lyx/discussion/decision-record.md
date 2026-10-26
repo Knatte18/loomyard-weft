@@ -78,6 +78,12 @@ Rationale: Master already continues forks it spawned only through their completi
 - A fork renaming a symbol for a reason of its own and then reporting the rename moves the later card's ref through the reported-rename repair, which trusts the fork's new glyph; the post-repair resolve still blocks a new glyph that does not resolve.
 - quarry may report a symbol deleted whose file moved between packages; the later card then sees the refusal once and the existing warning after.
 
+<!-- lyx:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/code/round-1-review.md; fixer report: _lyx/reviews/code/round-1-fixer-report.md.
+  - rename-leaves-test-misses-external-test-package (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - A Go plan whose Rename pair renames `X` while a card lists `TestX` or `TestX_Case` under `Edit` with no Rename pair for it draws one blocking `rename-leaves-test` finding on the renaming card; with the test's pair declared, or under `csharp`, it draws none; `TestXY` draws none.
