@@ -216,6 +216,12 @@ Decision: PATTERN-run-process-owner changes so ending a dobby through the new ru
 
 Rationale: EndSparing already exists beside End, and the plan's EndRole is the same family; the invariant is that runproc alone ends a run's processes, not one function.
 
+### Added after Discussion (parent, 2026-10-26): D9 addition: a re-entered Beam-Await with the dobby down posts one notice
+
+Decision: Added after Discussion, under D9: a Beam-Await re-entered with its status naming Beam-Await, no request standing, the await marker written and the dobby not live posts one notice naming `lyx beam start <slug>` and `lyx beam land <slug>`. The acceptance criterion's 'posts none' for a Beam-Await re-entered at Beam-Await with no request covers the interrupted-landing notice only. The plan keeps card 15's await marker, DobbyLive and the dobby-down row as written.
+
+Rationale: An earlier plan round added the marker to close the window between the accept's dobby stop and Done; dropping it would reopen that window, and a beam left waiting with no dobby must tell the operator how to go on.
+
 ## Constraints
 
 - `PATTERN-owner-machine`: changed (see PATTERN changes); this machine's name only from `internal/machinename`, owners written only by `boardengine`'s owner setter, the start's owner read from the Bolt it just pulled.
