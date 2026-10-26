@@ -21,15 +21,24 @@
 - `internal/boardengine#Store.ListTasksBrief`
 - `internal/boardengine#TestOwnersEffective`
 - `internal/boardengine#TestSetOwners`
+- `internal/boardengine#newOwnerFixture`
+- `internal/boardengine#setOwnerOnOther`
 - `internal/boardengine_test#TestLoad`
 - `internal/boardengine_test#TestNewTask`
 - `internal/boardengine_test#TestRenderReadmeGolden`
 - `internal/boardengine_test#TestListTasksBriefLayerAndProposal`
+- `internal/boardengine#TestFabricReplay`
+- `internal/boardengine_test#TestRunLock`
+- `internal/boardcli_test#stepOwners`
+- `internal/pairteardown#TestTeardown_OriginSeams`
 - `internal/battencli#battenCLI.reconcileResume`
 - `internal/battencli#TestPassExitCode`
 - `internal/battencli#ownedBy`
 - `internal/battencli#fakeOwners.seams`
 - `internal/battencli#TestArmAt_RunOwnedElsewhereWritesNoSeed`
+- `internal/battencli#TestRunCmd_ResumeDispositions`
+- `internal/battencli#TestWire_CreateWorktreeClaimsTheBoardEntry`
+- `internal/loomcli_test#TestRunOwnerVerdict`
 - `internal/tendercli#TestPairOwners`
 - `internal/boardcli#storeVerbs`
 - `internal/boardengine/doc.go`
@@ -59,12 +68,18 @@ The root project's owner is the board's `prime_owner`, and a beam project's owne
   `SetOwners`' re-read judges a claimed slug by its effective owner, `""` and the request's machine both standing as recorded, and an owner-written slug by its recorded owner, as today.
   `OwnerRequest`'s field docs say so.
 - Batten's resume claim writes no owner: `resumeOwnerClaim` goes and `reconcileResume` ends with the owner verdict of `resumeRefusal`; `TestPassExitCode` drops its `LostResumeOwnerClaim` row.
+  `TestRunCmd_ResumeDispositions` drops the three rows that fail `resumeOwnerClaim`'s write (`owner_write_with_origin_unreachable_refuses_naming_the_rerun`, `refused_owner_push_refuses_naming_its_way_forward`, `lost_owner_write_refuses_naming_the_other_owner`), and keeps `unowned_run_held_entry_is_recorded_before_the_resume` with no `wantSets`, renamed to say a run-held entry with no owner resumes writing no owner; its doc comment's clause that such an entry is recorded as this machine's and each failure of that write refuses becomes that the resume writes no owner.
+  Since `Claim` writes no owner, `TestWire_CreateWorktreeClaimsTheBoardEntry`'s `RealSetterRecordsTheOwnerBesideTheClaim` row asserts the Worktree-Create status written and no recorded owner (`wantOwner` empty), renamed to say the claim records the status alone.
 - The views: `Store.ListTasksBrief` carries `Effective` for every task and project, never a recorded task owner; `renderReadme`'s Running Owner column shows the effective owner, and `renderProjects` shows a beam's effective owner, both resolving parents through `ParentBeam` over the rendered tasks with the passed prime owner as root's.
 - Test fixtures that gave a task an owner of its own now give it through its parent: `ownedBy` puts `owner` on a beam project `some-beam` holding `some-slug`, and `fakeOwners.seams`' `ParentOf` answers `some-beam` for `some-slug` when the owners hold that beam; `TestArmAt_RunOwnedElsewhereWritesNoSeed` records the other machine as the prime owner; `TestPairOwners` moves its task owners onto the prime or a parent beam.
+  The tests that seed or assert a task's own `owner_machine` directly move it onto a beam project or the prime: `TestTeardown_OriginSeams`' owner-seam subtest seeds `mine` and `theirs` as beam projects carrying their owners; `TestFabricReplay`'s two owner rows replay the owner change on a beam project entry; `TestRunLock`'s row upserting the held entry's own effective owner splices no `owner_machine` into the held task and records `box` as the prime owner, so `box` is the task's effective owner through root; `stepOwners` seeds the `box` owner on a beam project holding `owned`, so `get` and `list` report `box` for both.
+  `TestRunOwnerVerdict`'s run-held row goes, since the run-held rule goes: `RunHeldEntryWithNoOwnerReadsOwnedHere` would read the prime's owner `there`, the case `OriginRecordingAnotherOwnerReadsOwnedElsewhere` covers, and its no-owner-written assertion can no longer fail; the `runHeld` field and its assertion go with it, and the `ownEntry` field and its comment clause go too, since a write naming the root task records no owner and every row reads its owner through the prime.
 
 Tests, each a row of the named test:
 - `TestOwnersEffective`: a task reads its beam's owner, and root's when it has no beam; a task's recorded owner is ignored; a run-held task with no owner reads its parent's owner; a beam owner holds on a board with no prime owner for the beam and its members, and a root task there reads `""`; a grouping project reads its parent's owner; `AdoptSubject` gives the beam for a member through a grouping project, `root` for a root task and the slug for a beam.
 - `TestSetOwners`: a write naming a task records no owner and reports no `Recorded` slug; a claim on a task writes the status alone and a claim on a task whose beam another machine owns is `Lost` with no status written; a `Beam` write sets the flag, the owner and `recipe: pawl` in one commit.
+  Its existing owner writes move from tasks onto beam projects, request and assertions alike, since a write naming a task records nothing and `ownersOf` reads no task owner: `newOwnerFixture` seeds `away` and `held` as members of a beam project owned by `box` instead of tasks carrying `box` as their own owner, and the rows that wrote `held`'s or `away`'s owner (`TakeoverChangesTheOwnerOfARunHeldEntry`, `OwnedElsewhereIsSkippedWithoutTakeover`) name that beam project, its takeover recorded and its loss to `box` reported; the rows and subtests that wrote `alpha`'s owner (`RecordedAndPushed`, `OwnedElsewhereIsSkippedWithoutTakeover`, `CompetingWriteLosesToOrigins`, the `DeferredPush_` subtests, `SkipGitWritesTheOwnerWithNoCommit`) name the unowned beam project `beamer` instead, and `setOwnerOnOther` records its owner on that beam project for the lost race, whose origin read asserts `beamer`'s owner.
+  `ClaimStatusLandsInTheSameCommit` becomes the row that a claim on a task writes the status alone, and `ClaimOnAProjectThatIsNotABeamRecordsTheOwnerAndNoStatus` asserts no owner and no status on the grouping project, renamed to say so.
 - `TestLoad`: a task and a grouping project carrying `owner_machine` load with none, and a write after the load leaves no `owner_machine` on them while a beam project keeps its own.
 - `TestNewTask`: `recipe: pawl` on a project is accepted, another recipe on a project and `pawl` on a task are refused naming the fix.
 - `TestRenderReadmeGolden`: a running member of a beam shows the beam's owner in the Running Owner column, and a beam with a recorded owner on a board with no prime owner shows that owner in its project section.

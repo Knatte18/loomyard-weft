@@ -63,6 +63,7 @@
 - `internal/orchcli#TestStart_ReconcilesTheHubFirst`
 - `internal/orchcli#TestStart_StarterErrorFailsAndSavesNoState`
 - `internal/orchcli#TestStart_StartsTheDobbiesFirst`
+- `internal/orchcli#TestCLI_OrchRunnerReadsNoPause`
 - `internal/orchcli#TestStop`
 - `internal/orchcli#fakeStarter`
 - `internal/orchcli#fakeStarter.StartSession`
@@ -119,7 +120,7 @@ Tests, over the start harness, whose `run` now calls `beamUp` with `Prepare` and
 - `TestStart_ResumesTheRecordedSession`: a recorded session id is resumed with the reload pointer and source `resume`; a resume whose start fails falls back to a fresh launch from the last note, reports the abandoned id and leaves no error; with no id recorded and no note it launches the start stencil.
   `fakeStarter` gains `resumeErr`, returned only for a spec whose `ResumeSessionID` is set, so the resume fails and the fresh launch after it succeeds.
 - `TestStart_Refusals` drops the flag rows and gains, through the harness's `readBeamFacts`, a beam another machine owns refused naming `lyx adopt`, the prime owned elsewhere naming `lyx adopt root`, a standing anchor move naming its way forward and a held beam naming `lyx batten status`, each with no dobby, window or orch started.
-- `TestStart_StartsTheDobbiesFirst` drives the harness's `startDobby` field and asserts it runs once, before the window and the orch; `TestStart_ReconcilesTheHubFirst` keeps its reconcile, claim and pause assertions under `Prepare` and gains a row with `Prepare` false that reconciles, claims and pauses nothing.
+- `TestStart_StartsTheDobbiesFirst` drives the harness's `startDobby` field and asserts it runs once, before the window and the orch, and its file header, `startdobbies_test.go`'s, names `lyx beam start` where it named `lyx orch start`; `TestCLI_OrchRunnerReadsNoPause`'s doc comment names `lyx beam start` typing its start lines; `smoke_cycle_test.go`'s file header names `lyx beam start` where it names `lyx orch start` spawning the watcher; `TestStart_ReconcilesTheHubFirst` keeps its reconcile, claim and pause assertions under `Prepare` and gains a row with `Prepare` false that reconciles, claims and pauses nothing.
 - `TestBeamDown_StopsOrchThenTheDobbyByRole` drives `beamDown` over the start harness with fake `dobbyLive` and `endDobby`: it removes the recorded strand, then ends the dobby once; a dead dobby is not ended; a second call stops nothing. That `EndRole` ends the dobby record and spares a driver record of the same slug is card 2's `TestEnd` row.
 - `TestStatus_RestartsADeadWatcher`'s failing-spawn row and `TestWatcherIndexSource` assert `lyx beam start` where they asserted `lyx orch start`.
 - `TestOrchIntegration_Refusals` drops `start` from its verb loop, and its start case calls `BeamUp` from the same non-prime worktree and asserts the same prime-or-beam refusal; `TestSmokeOrch_OneFullCycle` starts its orch through `BeamUp` instead of `orch start --no-attach`.

@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -47,11 +47,12 @@ The cards first remove what goes (`lyx beam promote`, the task owner, the orch's
 - A resumed orch session is launched with the reload pointer, the one-line "read the role file and continue" stencil, since the adopt stencil goes with `--adopt`.
 - The pawl run's seed id, which a land request names, is its child seed's `started_at`: a re-created pawl run writes a new seed with a new one, so a request left from an earlier run is dropped.
 - Pawl's Finalize declares no `on_reroute` (D8), so its `RerouteReviewed` seam stays nil and a spent or over-cap fixer halts for the orch; its perch carries no `carry_over`, since a pawl run has no decision record to file open findings into.
-- The land request and the dobby-stop marker sit under the beam worktree's `.lyx/beam/` beside the dobby's files, composed by `hubgeom.PawlPaths` from `lyxdirs`, so dobby, `lyx beam land` and Beam-Await read one directory.
+- The land request, the dobby-stop marker and Beam-Await's await marker sit under the beam worktree's `.lyx/beam/` beside the dobby's files, composed by `hubgeom.PawlPaths` from `lyxdirs`, so dobby, `lyx beam land` and Beam-Await read one directory.
 
 ## PATTERN changes
 
 - `PATTERN-owner-machine` — changes: Starting, resuming or landing a run: only where its entry is not owned elsewhere; owners only on root and beam projects, set only by `boardengine`'s owner setter; any other entry reads its `hubgeom.ParentOf` owner; a dobby continue pass is no resume. — [background](pattern/PATTERN-owner-machine.md)
+- `PATTERN-run-process-owner` — changes: A run's processes: registered in `internal/runproc`, ended only via `runproc`'s `End`, `EndSparing` or `EndRole`.
 
 ## Rename mechanic
 
