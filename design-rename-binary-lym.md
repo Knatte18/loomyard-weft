@@ -1,4 +1,4 @@
-# Rename the lyx binary and the LYXHUB suffix (name clash with LyX)
+# Rename lyx to lym (LoomYard Mill): binary, LYXHUB suffix, LYX_ variables and _lyx/.lyx directories
 
 `rename-binary-lym` · Note · enhancement, stencil, shuttle
 
@@ -10,9 +10,8 @@ LyX is common among researchers, so the clash is likely for other users too.
 
 ## Name
 
-The new name is open, and the operator has not chosen.
-The note `binary-name-candidates` holds the clash-checked candidates: short, preferably three letters, ideally rooted in weaving, with `vef` ranked first and `vev` close behind.
-Rejected: `ly`, since the binary and the `ly` plugin must not share a name; `loy`, too close to `ly`; and `lyd` (operator, 2026-10-26).
+The new name is `lym`, for LoomYard Mill, after LoomYard's forerunner millhouse and its Mill plugin (operator, 2026-10-26).
+It clashes with no installable command in apt, Homebrew, winget, Scoop, Chocolatey or AUR; the note `binary-name-candidates` holds the check.
 
 ## Priority (operator, 2026-10-26)
 
@@ -21,7 +20,9 @@ The rename lands before LoomYard is taken into use on other repositories, since 
 ## Scope
 
 - The binary: the `cmd/lyx` build target and `binaryName()` in `tools/deploy`, docs and README, stencils and skills in the `ly` plugin that invoke `lyx`, and any scripts or launchers that call it.
-- The hub directory suffix `-LYXHUB`, such as `loomyard-LYXHUB`, which the new name replaces (operator, 2026-10-26).
+- The hub directory suffix `-LYXHUB`, such as `loomyard-LYXHUB`, which becomes `-LYMHUB` (operator, 2026-10-26).
+- The `LYX_*` environment variables, which become `LYM_*`, and the `_lyx/` and `.lyx/` directories, which become `_lym/` and `.lym/` (operator, 2026-10-26).
+  Existing hubs need a migration of their records and machine-local state.
 
 ## Done mechanically (operator, 2026-10-26)
 
