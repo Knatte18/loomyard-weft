@@ -1,0 +1,999 @@
+diff --git a/internal/loomcli/smoke_helpers_test.go b/internal/loomcli/smoke_helpers_test.go
+index bb7ee1b3..fdd59774 100644
+--- a/internal/loomcli/smoke_helpers_test.go
++++ b/internal/loomcli/smoke_helpers_test.go
+@@ -85,8 +85,9 @@ func newWiredPairFixture(t *testing.T) (h *hubforge.Hub, loc *lyxcwd.Location, w
+ 	return h, loc, worktree, slug
+ }
+ 
+-// providerlessShuttleConfig returns shuttle's shipped config template with the startup window shortened.
++// providerlessShuttleConfig returns shuttle's shipped config template with the startup window shortened and the start retry off.
+ // A launch failure from the unreachable provider binary that providerlessBinary seeds into claude.yaml is then classified within a test's own patience rather than ninety seconds later.
++// The fixtures take one launch only: a died start would otherwise be launched a second time after a wait.
+ //
+ // This is a correction, not a convenience. The suite's own header used to assert that every fixture
+ // here "bounces before a real spawn", and the campaign's cost model was written on that claim. It
+@@ -98,7 +99,12 @@ func newWiredPairFixture(t *testing.T) (h *hubforge.Hub, loc *lyxcwd.Location, w
+ // zero-subprocess claim true by construction instead of by hope.
+ func providerlessShuttleConfig() string {
+ 	cfg := shuttleengine.ConfigTemplate()
+-	return strings.Replace(cfg, "startup_timeout_s: 90", "startup_timeout_s: 2", 1)
++	const retriesValue = "start_retries: 1"
++	if !strings.Contains(cfg, retriesValue) {
++		panic("shuttle config template drift: " + retriesValue + " not found")
++	}
++	cfg = strings.Replace(cfg, "startup_timeout_s: 90", "startup_timeout_s: 2", 1)
++	return strings.Replace(cfg, "start_retries: 1", "start_retries: 0", 1)
+ }
+ 
+ // providerlessBinary is a provider path that cannot exist, which keeps a fixture from starting a real session.
+diff --git a/internal/reedengine/doc.go b/internal/reedengine/doc.go
+index 705b0021..afb0028e 100644
+--- a/internal/reedengine/doc.go
++++ b/internal/reedengine/doc.go
+@@ -290,6 +290,10 @@
+ // The bound: such a session is hidden from reed and lives until the server ends.
+ // Windows parses the key and does none of it: psmux reads its own config at start, and the filter flag is never passed to its `list-sessions`.
+ //
++// Every tmux call goes through TmuxCmd's run, runStdin or output (overlay.go), and a tmux the host could not start for EAGAIN is retried there: four tries in all, waiting 250 ms before the first retry and doubling the wait each time, each retry logged at Warn.
++// A fork or exec failure means tmux never ran, so a retry repeats no side effect; a tmux that ran and exited nonzero, and every other start failure, returns at once.
++// So a transient process-table shortage never reads to a liveness check, a capture or a strand removal as a dead pane or a failed command.
++//
+ // Pane enumeration: listPanes (overlay.go) always runs
+ //
+ //	list-panes -t <strand window> -F "#{pane_id} #{pane_dead} #{pane_top} #{pane_width} #{pane_height} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
+diff --git a/internal/reedengine/overlay.go b/internal/reedengine/overlay.go
+index 36ad04b6..793a4c2b 100644
+--- a/internal/reedengine/overlay.go
++++ b/internal/reedengine/overlay.go
+@@ -3,6 +3,7 @@
+ // Add/Remove/reconcile/apply/up.
+ // Every invocation is traced via logger.Debug so that -vv reveals the exact tmux command line for
+ // diagnosis, while a normal run (default Warn threshold) stays silent.
++// A tmux the host could not start for EAGAIN is retried a few times with a short doubling wait, so a transient process-table shortage never reads as a tmux failure.
+ // This file is domain-free: it knows nothing about Claude, review panes, or any caller vocabulary,
+ // only tmux session/pane primitives.
+ 
+@@ -16,6 +17,7 @@ import (
+ 	"os/exec"
+ 	"runtime"
+ 	"strings"
++	"syscall"
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/logger"
+@@ -47,6 +49,41 @@ type TmuxCmd struct {
+ 	// floorLine is the `tmux -V` line a hook-driven command's floor check reads, and is read only when execHook is set.
+ 	// Empty admits.
+ 	floorLine string
++	// pause, when non-nil, replaces time.Sleep between the attempts of a tmux exec that failed with EAGAIN, so a test retries without waiting.
++	pause func(time.Duration)
++}
++
++const (
++	// execAgainAttempts is how many times a tmux exec that fails with EAGAIN is tried in all.
++	execAgainAttempts = 4
++	// execAgainFirstDelay is the wait before the first retry of such an exec; each later wait doubles it.
++	execAgainFirstDelay = 250 * time.Millisecond
++)
++
++// isExecAgain reports whether err is a failure to start tmux because the host was temporarily out of a resource, EAGAIN from fork or exec.
++// A tmux that started and exited nonzero never matches, so a retry never repeats a tmux command that ran.
++func isExecAgain(err error) bool {
++	return errors.Is(err, syscall.EAGAIN)
++}
++
++// retryExecAgain calls attempt, and calls it again after a doubling wait while it fails with EAGAIN, up to execAgainAttempts calls in all.
++// It returns the first result that is not an EAGAIN failure, or the last attempt's.
++// Each retry is logged at Warn with the tmux argv.
++func retryExecAgain[T any](p TmuxCmd, args []string, attempt func() (T, error)) (T, error) {
++	delay := execAgainFirstDelay
++	for try := 1; ; try++ {
++		value, err := attempt()
++		if err == nil || try == execAgainAttempts || !isExecAgain(err) {
++			return value, err
++		}
++		logger.Warn("reed: tmux could not be started, retrying", "args", args, "attempt", try, "delay", delay, "err", err)
++		if p.pause != nil {
++			p.pause(delay)
++		} else {
++			time.Sleep(delay)
++		}
++		delay *= 2
++	}
+ }
+ 
+ // NewTmuxCmd builds a TmuxCmd bound to the given binary and -L socket.
+@@ -73,62 +110,57 @@ func (p TmuxCmd) serverArgs() []string {
+ 
+ // run builds and runs a command with the server flags prepended,
+ // folding stderr into the returned error.
++// A tmux that could not be started for EAGAIN is retried as retryExecAgain says.
+ func (p TmuxCmd) run(args ...string) error {
+-	if err := p.checkFloor(); err != nil {
+-		return err
+-	}
+-	if p.execHook != nil {
+-		_, err := p.execHook(false, nil, args...)
+-		return err
+-	}
+-	fullArgs := append(p.serverArgs(), args...)
+-	logger.Debug("tmux", "args", fullArgs)
+-	cmd := exec.Command(p.tmuxPath, fullArgs...)
+-	var stderr bytes.Buffer
+-	cmd.Stdout = io.Discard
+-	cmd.Stderr = &stderr
+-	err := cmd.Run()
+-	return wrapTmuxError(err, stderr.Bytes())
++	return p.runStdin(nil, args...)
+ }
+ 
+-// runStdin is run with stdin written to the command's standard input.
++// runStdin is run with stdin written to the command's standard input; a nil stdin leaves the command's standard input empty.
+ // The bytes are never logged.
+ func (p TmuxCmd) runStdin(stdin []byte, args ...string) error {
+ 	if err := p.checkFloor(); err != nil {
+ 		return err
+ 	}
+-	if p.execHook != nil {
+-		_, err := p.execHook(false, stdin, args...)
+-		return err
+-	}
+-	fullArgs := append(p.serverArgs(), args...)
+-	logger.Debug("tmux", "args", fullArgs)
+-	cmd := exec.Command(p.tmuxPath, fullArgs...)
+-	var stderr bytes.Buffer
+-	cmd.Stdin = bytes.NewReader(stdin)
+-	cmd.Stdout = io.Discard
+-	cmd.Stderr = &stderr
+-	err := cmd.Run()
+-	return wrapTmuxError(err, stderr.Bytes())
++	_, err := retryExecAgain(p, args, func() (struct{}, error) {
++		if p.execHook != nil {
++			_, err := p.execHook(false, stdin, args...)
++			return struct{}{}, err
++		}
++		fullArgs := append(p.serverArgs(), args...)
++		logger.Debug("tmux", "args", fullArgs)
++		cmd := exec.Command(p.tmuxPath, fullArgs...)
++		var stderr bytes.Buffer
++		if stdin != nil {
++			cmd.Stdin = bytes.NewReader(stdin)
++		}
++		cmd.Stdout = io.Discard
++		cmd.Stderr = &stderr
++		err := cmd.Run()
++		return struct{}{}, wrapTmuxError(err, stderr.Bytes())
++	})
++	return err
+ }
+ 
+ // output builds and runs a command with the server flags prepended,
+ // capturing stdout and folding stderr into the error.
++// A tmux that could not be started for EAGAIN is retried as retryExecAgain says.
+ func (p TmuxCmd) output(args ...string) (string, error) {
+ 	if err := p.checkFloor(); err != nil {
+ 		return "", err
+ 	}
+-	if p.execHook != nil {
+-		return p.execHook(true, nil, args...)
+-	}
+-	fullArgs := append(p.serverArgs(), args...)
+-	logger.Debug("tmux", "args", fullArgs)
+-	cmd := exec.Command(p.tmuxPath, fullArgs...)
+-	out, err := cmd.Output()
+-	if exitErr, ok := err.(*exec.ExitError); ok {
+-		return string(out), wrapTmuxError(err, exitErr.Stderr)
+-	}
+-	return string(out), err
++	return retryExecAgain(p, args, func() (string, error) {
++		if p.execHook != nil {
++			return p.execHook(true, nil, args...)
++		}
++		fullArgs := append(p.serverArgs(), args...)
++		logger.Debug("tmux", "args", fullArgs)
++		cmd := exec.Command(p.tmuxPath, fullArgs...)
++		out, err := cmd.Output()
++		if exitErr, ok := err.(*exec.ExitError); ok {
++			return string(out), wrapTmuxError(err, exitErr.Stderr)
++		}
++		return string(out), err
++	})
+ }
+ 
+ // wrapTmuxError attaches tmux's stderr to err so failures surface
+diff --git a/internal/reedengine/overlay_test.go b/internal/reedengine/overlay_test.go
+index d887e38a..da9646e3 100644
+--- a/internal/reedengine/overlay_test.go
++++ b/internal/reedengine/overlay_test.go
+@@ -10,9 +10,13 @@ package reedengine
+ 
+ import (
+ 	"errors"
++	"fmt"
++	"os"
+ 	"runtime"
+ 	"slices"
++	"syscall"
+ 	"testing"
++	"time"
+ )
+ 
+ func TestListSessions(t *testing.T) {
+@@ -259,3 +263,86 @@ func TestReapSession_CallOrdering(t *testing.T) {
+ 		})
+ 	}
+ }
++
++// TestTmuxExecRetriesEAGAIN pins the exec seam's retry: a tmux the host could not start for EAGAIN is tried again after a doubling wait, up to execAgainAttempts tries.
++// Any other failure, a tmux that ran and exited nonzero included, is returned at once.
++func TestTmuxExecRetriesEAGAIN(t *testing.T) {
++	t.Parallel()
++	forkAgain := &os.PathError{Op: "fork/exec", Path: "/usr/bin/tmux", Err: syscall.EAGAIN}
++	exited := errors.New("exit status 1: can't find pane: %9")
++	tests := []struct {
++		name string
++		// failures are the errors the first calls return, in order; every later call succeeds.
++		failures   []error
++		wantCalls  int
++		wantErr    error
++		wantPauses []time.Duration
++	}{
++		{"succeeds at once", nil, 1, nil, nil},
++		{"EAGAIN then success", []error{forkAgain, forkAgain}, 3, nil, []time.Duration{execAgainFirstDelay, 2 * execAgainFirstDelay}},
++		{"EAGAIN on every attempt", []error{forkAgain, forkAgain, forkAgain, forkAgain, forkAgain}, execAgainAttempts, forkAgain, []time.Duration{execAgainFirstDelay, 2 * execAgainFirstDelay, 4 * execAgainFirstDelay}},
++		{"nonzero exit is not retried", []error{exited}, 1, exited, nil},
++	}
++	for _, tt := range tests {
++		for _, capture := range []bool{false, true} {
++			t.Run(fmt.Sprintf("%s/capture=%v", tt.name, capture), func(t *testing.T) {
++				t.Parallel()
++				cmd := TmuxCmd{tmuxPath: "tmux", socket: "test-socket"}
++				var pauses []time.Duration
++				cmd.pause = func(d time.Duration) { pauses = append(pauses, d) }
++				fake := installFakeTmuxOn(t, &cmd)
++				calls := 0
++				fake.answerFunc("kill-pane", func([]string) (string, error) {
++					calls++
++					if calls <= len(tt.failures) {
++						return "", tt.failures[calls-1]
++					}
++					return "", nil
++				})
++
++				var err error
++				if capture {
++					_, err = cmd.output("kill-pane", "-t", "%9")
++				} else {
++					err = cmd.run("kill-pane", "-t", "%9")
++				}
++				if !errors.Is(err, tt.wantErr) {
++					t.Errorf("tmux kill-pane error = %v; want %v", err, tt.wantErr)
++				}
++				if calls != tt.wantCalls {
++					t.Errorf("tmux kill-pane calls = %d; want %d", calls, tt.wantCalls)
++				}
++				if !slices.Equal(pauses, tt.wantPauses) {
++					t.Errorf("pauses = %v; want %v", pauses, tt.wantPauses)
++				}
++			})
++		}
++	}
++
++	// This pins the hook seam only: the real exec path rebuilds its reader per attempt, and a test cannot make a real fork fail with EAGAIN.
++	t.Run("runStdin hands a retry the same stdin", func(t *testing.T) {
++		t.Parallel()
++		wantStdin := []byte("pasted text")
++		var seen [][]byte
++		cmd := TmuxCmd{tmuxPath: "tmux", socket: "test-socket"}
++		cmd.pause = func(time.Duration) {}
++		cmd.execHook = func(_ bool, stdin []byte, _ ...string) (string, error) {
++			seen = append(seen, stdin)
++			if len(seen) == 1 {
++				return "", forkAgain
++			}
++			return "", nil
++		}
++		if err := cmd.runStdin(wantStdin, "load-buffer", "-"); err != nil {
++			t.Fatalf("runStdin() error = %v; want nil", err)
++		}
++		if len(seen) != 2 {
++			t.Fatalf("exec calls = %d; want 2", len(seen))
++		}
++		for i, got := range seen {
++			if !slices.Equal(got, wantStdin) {
++				t.Errorf("stdin of call %d = %q; want %q", i+1, got, wantStdin)
++			}
++		}
++	})
++}
+diff --git a/internal/shuttleengine/config.go b/internal/shuttleengine/config.go
+index d3796ef3..ff2b3146 100644
+--- a/internal/shuttleengine/config.go
++++ b/internal/shuttleengine/config.go
+@@ -29,6 +29,9 @@ type Config struct {
+ 
+ 	StartupTimeoutS int `yaml:"startup_timeout_s"` // Startup probe timeout; 0 fast-fails as died and zeroes orphan sweep's protection window.
+ 
++	// StartRetries is how many extra launches a start gets after an attempt whose provider died before it took its first input and whose strand was removed; 0 turns the retry off, and LoadConfig refuses negative.
++	StartRetries int `yaml:"start_retries"`
++
+ 	BackgroundShellWaitMin int `yaml:"background_shell_wait_min"` // Minutes an outstanding background shell of either signal may run before the wait logs it and shows it in the wait marker; it also expires an ungated waiting turn end whose every outstanding task is a non-awaited shell into a held turn end. LoadConfig refuses non-positive.
+ 
+ 	SubmitSettleMS int `yaml:"submit_settle_ms"` // Interval between the two input-box reads that must agree before a verified send's Enter; 0 reads back to back, LoadConfig refuses negative.
+@@ -63,6 +66,7 @@ func ConfigSpec() configengine.Spec {
+ 			"liveness_every_n_polls":    configengine.CategoryNone,
+ 			"run_timeout_min":           configengine.CategoryNone,
+ 			"startup_timeout_s":         configengine.CategoryNone,
++			"start_retries":             configengine.CategoryNone,
+ 			"background_shell_wait_min": configengine.CategoryNone,
+ 			"send_ready_timeout_s":      configengine.CategoryNone,
+ 			"submit_confirm_timeout_s":  configengine.CategoryNone,
+@@ -107,6 +111,10 @@ func LoadConfig(dirs configengine.Dirs, module string) (Config, error) {
+ 		return Config{}, fmt.Errorf("shuttle config: engine must name a registered engine, got an empty value")
+ 	}
+ 
++	if cfg.StartRetries < 0 {
++		return Config{}, fmt.Errorf("shuttle config: start_retries must not be negative, got %d", cfg.StartRetries)
++	}
++
+ 	if cfg.BackgroundShellWaitMin <= 0 {
+ 		return Config{}, fmt.Errorf("shuttle config: background_shell_wait_min must be positive, got %d", cfg.BackgroundShellWaitMin)
+ 	}
+diff --git a/internal/shuttleengine/config_test.go b/internal/shuttleengine/config_test.go
+index 6d11622e..21a0f8f0 100644
+--- a/internal/shuttleengine/config_test.go
++++ b/internal/shuttleengine/config_test.go
+@@ -368,6 +368,9 @@ func TestLoadConfig_SubmitSettleKeys(t *testing.T) {
+ 		{name: "submit confirm timeout positive override loads", key: "submit_confirm_timeout_s", def: "30", value: "5", want: 5, got: func(c shuttleengine.Config) int { return c.SubmitConfirmTimeoutS }},
+ 		{name: "submit confirm timeout zero refused", key: "submit_confirm_timeout_s", def: "30", value: "0", wantErr: true},
+ 		{name: "submit confirm timeout negative refused", key: "submit_confirm_timeout_s", def: "30", value: "-1", wantErr: true},
++		{name: "start retries template default loads", key: "start_retries", def: "1", value: "1", want: 1, got: func(c shuttleengine.Config) int { return c.StartRetries }},
++		{name: "start retries zero loads", key: "start_retries", def: "1", value: "0", want: 0, got: func(c shuttleengine.Config) int { return c.StartRetries }},
++		{name: "start retries negative refused", key: "start_retries", def: "1", value: "-1", wantErr: true},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index 444c42eb..1b686f73 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -104,6 +104,9 @@
+ // A held turn end the engine's optional UsageLimitReader reads as stopped by the provider's usage limit, at the turn end or in a fork during its turn, sends no notice, defers none and leaves RunState.NotifiedOffset alone.
+ // The parent cannot act while the account is limited, and a notice would reach it only as stale clutter after the reset.
+ // The hold, the wait mark and the deadline are unchanged, and the next held turn end it does not read limited is notified as any other.
++// A held turn end built from a waiting turn end, one the gated run judged plain on un-awaited shells or one the ungated shell wait expired, sends no notice, defers none and leaves RunState.NotifiedOffset alone when the engine meets RequirementBackgroundWake.
++// The session wakes when its own background work completes, so the parent has nothing to answer; the hold, the wait mark and the deadline are unchanged, and an Info line records the skip.
++// A held turn end with nothing outstanding is notified as before, whoever typed the prompt that began its turn, since shuttle cannot tell an operator's typed text from a parent's answer.
+ // A held turn end that is an API error across a detected sleep of at least pauserecord.SleepTolerance is first given one automatic continue line, typed through the guarded paste-submit, and sends no notice and defers none:
+ // no pause covers the run, the session state names the newest turn end an API error, and the sleep lies after the latest turn start Wait read.
+ // RunState.APIContinued is persisted before typing and cleared by the next held turn end that is not an API error, so a turn gets at most one continue.
+@@ -482,6 +485,11 @@
+ // startup gate, through the Engine seam's startup classification and trust-dismiss sequence) before
+ // issuing a handle, so no caller outside this package probes readiness or plays gate keys.
+ // A not-ready provider is torn down (strand removed, run dir and startup-capture.txt kept, Outcome persisted) and reported as ErrNotStarted from StartGated and as OutcomeDied/OutcomeTimeout from RunGated.
++// The teardown tries the strand removal three times, waiting one and then two seconds on the run clock, before its error tells the operator to remove the strand by hand.
++// Its error ends with the capture's last lines, and with its first lines before them when the capture is longer than one tail, so the first error line of a launch that scrolled away stays visible.
++// A start whose teardown ended died with the strand removed, a provider that exited or a start-time send that failed before the first input, is launched again after five seconds in a fresh run directory, up to shuttle.yaml's start_retries extra times.
++// A timed-out start, one whose strand could not be removed, so two agents never run for one start, and any failure before the strand registered are never launched again;
++// the error a start returns is the last attempt's, and every failed attempt keeps its run directory and capture.
+ // RunGated's not-ready result carries the start error's text in Result.StartError.
+ // The startup probe starts at the poll interval and backs off to the dismissal gap (the poll interval times liveness_every_n_polls) while the pane does not change.
+ // Startup-gate dismissals are at least one dismissal gap apart.
+diff --git a/internal/shuttleengine/fakes_test.go b/internal/shuttleengine/fakes_test.go
+index 6e165bdd..8404feab 100644
+--- a/internal/shuttleengine/fakes_test.go
++++ b/internal/shuttleengine/fakes_test.go
+@@ -39,6 +39,8 @@ type fakeReed struct {
+ 		Recursive bool
+ 	}
+ 	RemoveStrandErr error
++	// RemoveStrandErrQueue is consumed FIFO by RemoveStrand, one entry per call, ahead of RemoveStrandErr; a nil entry succeeds.
++	RemoveStrandErrQueue []error
+ 
+ 	StatusQueue []reedengine.StatusResult // Consumed FIFO by Status; last value sticks once drained.
+ 	StatusErr   error
+@@ -139,6 +141,11 @@ func (m *fakeReed) RemoveStrand(guid string, recursive bool) (reedengine.Removed
+ 		GUID      string
+ 		Recursive bool
+ 	}{guid, recursive})
++	if len(m.RemoveStrandErrQueue) > 0 {
++		err := m.RemoveStrandErrQueue[0]
++		m.RemoveStrandErrQueue = m.RemoveStrandErrQueue[1:]
++		return reedengine.Removed{}, err
++	}
+ 	if m.RemoveStrandErr != nil {
+ 		return reedengine.Removed{}, m.RemoveStrandErr
+ 	}
+diff --git a/internal/shuttleengine/hold.go b/internal/shuttleengine/hold.go
+index e8bfb847..dae8f47f 100644
+--- a/internal/shuttleengine/hold.go
++++ b/internal/shuttleengine/hold.go
+@@ -1,5 +1,6 @@
+ // hold.go builds the notice an autonomous run's held turn end sends its parent, and sends it once per held turn end through the runner's notifier.
+ // It also declares the optional capability that tells a held turn end the provider's usage limit caused, which sends no notice.
++// Its background-wake check sends none for a held turn end left waiting on background work a session wakes from.
+ 
+ package shuttleengine
+ 
+@@ -102,6 +103,11 @@ func (run *Run) usageLimited(held *heldTurnEnd) bool {
+ 	return ok && reader.TurnEndUsageLimited(Event{Raw: held.raw})
+ }
+ 
++// wakesOnBackground reports whether held left background work running on an engine whose sessions wake when their own background work completes.
++func (run *Run) wakesOnBackground(held *heldTurnEnd) bool {
++	return held.background && meetsAll(run.engine, []Requirement{RequirementBackgroundWake})
++}
++
+ // apiErrorContinueLine is the one line an agent whose turn ended on an API error across a machine sleep is given to carry on.
+ const apiErrorContinueLine = "[lyx] Your last turn ended on an API error while the machine slept; it is awake again. Carry on with your task where you stopped."
+ 
+diff --git a/internal/shuttleengine/hold_test.go b/internal/shuttleengine/hold_test.go
+index 432fa463..d7855467 100644
+--- a/internal/shuttleengine/hold_test.go
++++ b/internal/shuttleengine/hold_test.go
+@@ -51,6 +51,11 @@ func (r *echoReed) SendText(guid, text string, submit bool) error {
+ 	return nil
+ }
+ 
++// backgroundWakeEngine is Engine meeting RequirementBackgroundWake and no other requirement.
++type backgroundWakeEngine struct{ Engine }
++
++func (backgroundWakeEngine) Supports(req Requirement) bool { return req == RequirementBackgroundWake }
++
+ // apiErrorAfterSleep is a script: the machine sleeps for three hours while an API-error turn end lands.
+ func apiErrorAfterSleep(appendLine func(string), asleep func(time.Duration)) []func() {
+ 	return []func(){func() {
+@@ -90,7 +95,10 @@ func TestWait_HeldTurnEndNotice(t *testing.T) {
+ 		coveredSleeps int
+ 		// deferral builds the run's Spec.HoldDeferral from the time elapsed since Wait began, nil for a run that notifies at once.
+ 		deferral func(t *testing.T, elapsed func() time.Duration) func() bool
+-		check    func(t *testing.T, got heldRun)
++		// backgroundWake makes the engine meet RequirementBackgroundWake, and gated gives the run a gate entry that always passes.
++		backgroundWake bool
++		gated          bool
++		check          func(t *testing.T, got heldRun)
+ 	}{
+ 		{
+ 			name: "a stop with outputs missing notifies once with prefix, strand, tail and message start", events: "STOP:which approach?\n", strand: strandName,
+@@ -263,6 +271,45 @@ func TestWait_HeldTurnEndNotice(t *testing.T) {
+ 				}
+ 			},
+ 		},
++		{
++			name: "a shell outstanding past the bound on an engine that wakes on background work holds without a notice", events: "WAIT:background work\n", strand: strandName,
++			outstand:  []BackgroundTask{{Kind: BackgroundShell, ID: "sh-1", Label: "sleep 9999", Signal: SignalPayload}},
++			sleepJump: 6 * time.Minute, timeout: time.Hour, backgroundWake: true,
++			check: func(t *testing.T, got heldRun) {
++				if len(got.notices) != 0 || got.notifiedOffset != 0 || got.result.Outcome != OutcomeTimeout {
++					t.Errorf("notices = %q, NotifiedOffset = %d, outcome = %q; want none, 0 and a wait to the run's deadline", got.notices, got.notifiedOffset, got.result.Outcome)
++				}
++			},
++		},
++		{
++			name: "a gated turn end on an unawaited shell on an engine that wakes on background work holds without a notice", events: "WAIT:answered the operator\n", strand: strandName,
++			outstand:       []BackgroundTask{{Kind: BackgroundShell, ID: "sh-1", Label: "go test ./...", Signal: SignalPayload}},
++			backgroundWake: true, gated: true,
++			check: func(t *testing.T, got heldRun) {
++				if len(got.notices) != 0 || got.result.Outcome != OutcomeTimeout {
++					t.Errorf("notices = %q, outcome = %q; want none and a hold to the deadline", got.notices, got.result.Outcome)
++				}
++			},
++		},
++		{
++			name: "a gated turn end on an unawaited shell on an engine that does not wake on background work is notified", events: "WAIT:answered the operator\n", strand: strandName,
++			outstand: []BackgroundTask{{Kind: BackgroundShell, ID: "sh-1", Label: "go test ./...", Signal: SignalPayload}},
++			gated:    true,
++			check: func(t *testing.T, got heldRun) {
++				if len(got.notices) != 1 || !strings.HasSuffix(got.notices[0], "«answered the operator»") {
++					t.Errorf("notices = %q; want one for the held turn end", got.notices)
++				}
++			},
++		},
++		{
++			name: "a plain stop on an engine that wakes on background work is notified", events: "STOP:which approach?\n", strand: strandName,
++			backgroundWake: true,
++			check: func(t *testing.T, got heldRun) {
++				if len(got.notices) != 1 || !strings.HasSuffix(got.notices[0], "«which approach?»") {
++					t.Errorf("notices = %q; want one for the held turn end", got.notices)
++				}
++			},
++		},
+ 		{
+ 			name: "a stray stop before the prompt's turn start sends no notice, and the stop after it sends one", events: skillLoadEvents + "STOP:stray\n",
+ 			session: true, promptOffset: skillLoadOffset,
+@@ -384,6 +431,9 @@ func TestWait_HeldTurnEndNotice(t *testing.T) {
+ 				}
+ 				reed = paneReed
+ 			}
++			if tt.backgroundWake {
++				engine = backgroundWakeEngine{Engine: engine}
++			}
+ 			fx := newFixture(t, reed, engine, withConfig(gateConfig))
+ 			timeout := cmp.Or(tt.timeout, heldTestTimeout)
+ 			fc := newFakeClock(time.Now())
+@@ -410,11 +460,16 @@ func TestWait_HeldTurnEndNotice(t *testing.T) {
+ 			if tt.deferral != nil {
+ 				holdDeferral = tt.deferral(t, elapsed)
+ 			}
+-			run := fx.newRun(Spec{OutputFiles: []string{filepath.Join(t.TempDir(), "out.md")}, Timeout: timeout, Interactive: tt.interact, QuietHold: tt.quiet, HoldDeferral: holdDeferral},
++			runOpts := []runOpt{
+ 				withRunState(RunState{StrandGUID: "strand-1", StrandName: tt.strand, SessionID: "session-1", PromptOffset: tt.promptOffset}),
+ 				withRunEvents(tt.events),
+ 				withRunOffset(tt.promptOffset),
+-				withRunClock(clk, fc.Now().Add(timeout)))
++				withRunClock(clk, fc.Now().Add(timeout)),
++			}
++			if tt.gated {
++				runOpts = append(runOpts, withRunGate(GateSpec{{Name: "check", Gate: func() (GateResult, error) { return GateResult{Passed: true}, nil }}}))
++			}
++			run := fx.newRun(Spec{OutputFiles: []string{filepath.Join(t.TempDir(), "out.md")}, Timeout: timeout, Interactive: tt.interact, QuietHold: tt.quiet, HoldDeferral: holdDeferral}, runOpts...)
+ 			if setSteps != nil {
+ 				setSteps(tt.script(func(line string) { appendEventsLine(t, run.state.EventsPath, line) }, fc.asleep))
+ 			}
+diff --git a/internal/shuttleengine/run.go b/internal/shuttleengine/run.go
+index da9e1e28..ceed4e07 100644
+--- a/internal/shuttleengine/run.go
++++ b/internal/shuttleengine/run.go
+@@ -360,6 +360,8 @@ type Run struct {
+ 	// not-ready teardown (abandonStartup) it is saved to startupCaptureFileName inside the run
+ 	// directory as the diagnosis artifact a later operator or attach reads.
+ 	lastStartupCapture string
++	// startupStrandRemoved is true once abandonStartup has removed the strand, which is what lets start launch the run again.
++	startupStrandRemoved bool
+ 	// sessionLiveness is the per-wait state of sessionGone, reset at the entry of Wait and awaitStartup.
+ 	sessionLiveness sessionLivenessState
+ 	// startupHookReason is why the latest startup probe held a ready pane back for want of a session-start line, empty when it held nothing back.
+@@ -505,6 +507,8 @@ func (r *Runner) StartGated(spec Spec, gate GateSpec) (*Run, error) {
+ // not-ready Result.Outcome and an err for which errors.Is(err, ErrNotStarted) holds on a genuine
+ // not-ready teardown — or (run, Result{}, nil) once the provider is confirmed past its startup
+ // gates.
++// An attempt whose provider died before it took its first input and whose strand the teardown removed is launched again after startRetryDelay, in a fresh run directory, up to Config.StartRetries extra times;
++// every other failure, and the last attempt's, returns as above, and each failed attempt keeps its own run directory and capture.
+ func (r *Runner) start(spec Spec, gate GateSpec) (*Run, Result, error) {
+ 	if r.toldErr != nil {
+ 		return nil, Result{}, r.toldErr
+@@ -536,6 +540,34 @@ func (r *Runner) start(spec Spec, gate GateSpec) (*Run, Result, error) {
+ 
+ 	r.sweepOrphansOpportunistic()
+ 
++	attempts := 1 + r.cfg.StartRetries
++	for attempt := 1; ; attempt++ {
++		run, result, err := r.launch(spec, gate, engine, engineName, resumeWarning)
++		if err == nil {
++			return run, Result{}, nil
++		}
++		if run == nil || !run.startRetryable(result) || attempt >= attempts {
++			return nil, result, err
++		}
++		logger.Warn("shuttle: start failed before the provider took its first input; launching again", "attempt", attempt, "attempts", attempts, "runDir", run.runDir, "delay", startRetryDelay, "error", err)
++		r.clock.Sleep(startRetryDelay)
++	}
++}
++
++// startRetryDelay is the wait between a start attempt start gave up on and the next launch, so a transient host condition has a moment to clear.
++const startRetryDelay = 5 * time.Second
++
++// startRetryable reports whether a start attempt that ended with result may be launched again:
++// its provider died before it took its first input and the teardown removed its strand, so a fresh launch never leaves two agents for one start.
++func (run *Run) startRetryable(result Result) bool {
++	return result.Outcome == OutcomeDied && run.startupStrandRemoved
++}
++
++// launch is one attempt of start past its checks: it creates a run directory, prepares the engine's launch, registers the strand with reed, persists run.json, and blocks on the new *Run's awaitStartup and, for a deferred prompt, its skill loading and prompt delivery.
++// It returns (run, Result{}, nil) once the provider is past its startup gates.
++// A failure before the strand registered returns (nil, Result{}, err).
++// A failure after it returns the torn-down run beside the result and error abandonStartup gave, so start can judge whether to launch again.
++func (r *Runner) launch(spec Spec, gate GateSpec, engine Engine, engineName, resumeWarning string) (*Run, Result, error) {
+ 	root := runDirRoot(r.cfg, r.anchorPath)
+ 	runID, runDir, err := createRunDir(root)
+ 	if err != nil {
+@@ -663,7 +695,7 @@ func (r *Runner) start(spec Spec, gate GateSpec) (*Run, Result, error) {
+ 
+ 	result, err := run.awaitStartup()
+ 	if err != nil {
+-		return nil, result, err
++		return run, result, err
+ 	}
+ 	var color segmentcolor.Color
+ 	if !spec.ColorByCaller {
+@@ -674,7 +706,7 @@ func (r *Runner) start(spec Spec, gate GateSpec) (*Run, Result, error) {
+ 		return run, Result{}, nil
+ 	}
+ 	if result, err := run.loadSkillsThenPrompt(launch.PromptLine, color); err != nil {
+-		return nil, result, err
++		return run, result, err
+ 	}
+ 	return run, Result{}, nil
+ }
+diff --git a/internal/shuttleengine/send.go b/internal/shuttleengine/send.go
+index d073e270..1c152f39 100644
+--- a/internal/shuttleengine/send.go
++++ b/internal/shuttleengine/send.go
+@@ -443,16 +443,22 @@ func paneTail(reed ReedOps, guid string) string {
+ 
+ // captureTail returns the last paneTailLines non-blank lines of capture, each right-trimmed and joined by newlines.
+ func captureTail(capture string) string {
++	lines := nonBlankLines(capture)
++	if len(lines) > paneTailLines {
++		lines = lines[len(lines)-paneTailLines:]
++	}
++	return strings.Join(lines, "\n")
++}
++
++// nonBlankLines returns the lines of capture that hold more than whitespace, each right-trimmed, in order.
++func nonBlankLines(capture string) []string {
+ 	var lines []string
+ 	for _, line := range strings.Split(capture, "\n") {
+ 		if strings.TrimSpace(line) != "" {
+ 			lines = append(lines, strings.TrimRight(line, " \t\r"))
+ 		}
+ 	}
+-	if len(lines) > paneTailLines {
+-		lines = lines[len(lines)-paneTailLines:]
+-	}
+-	return strings.Join(lines, "\n")
++	return lines
+ }
+ 
+ // ErrSubmissionNotLanded marks a verified send whose text was never seen to be submitted: the submit window closed before typing began, the typed text did not appear, its input box did not settle, or the box still held it when the window closed.
+diff --git a/internal/shuttleengine/startup_test.go b/internal/shuttleengine/startup_test.go
+index 13f7cee9..08b882dc 100644
+--- a/internal/shuttleengine/startup_test.go
++++ b/internal/shuttleengine/startup_test.go
+@@ -341,7 +341,8 @@ func TestStartup_ReadyProbeTiming(t *testing.T) {
+ // torn down as ErrNotStarted, the strand is removed, run.json's Outcome is died, the run directory is
+ // kept, and startup-capture.txt holds the last successful capture.
+ //
+-// Two variants share that teardown. A teardown whose own strand removal fails still reports
++// Further variants share that teardown. A removal that fails is tried again on the run clock, and one that succeeds on a later try reports the strand removed.
++// A teardown whose every removal try fails still reports
+ // ErrNotStarted, says the strand could not be removed and carries reed's own error text, with the
+ // Outcome still persisted. Spec.KeepPane is irrelevant to the not-ready teardown: the strand is
+ // removed whatever KeepPane says, since KeepPane governs a COMPLETED run's pane retention, not a
+@@ -352,15 +353,23 @@ func TestStartup_PaneNotLiveMidStartup(t *testing.T) {
+ 	tests := []struct {
+ 		name            string
+ 		removeStrandErr error
+-		keepPane        bool
++		// removeStrandErrs are the errors the first removal tries return, ahead of removeStrandErr.
++		removeStrandErrs []error
++		keepPane         bool
++		wantRemoveCalls  int
++		// wantSleeps is every sleep of the run clock: the one poll before the pane is seen dead, then the waits between removal tries.
++		wantSleeps []time.Duration
+ 		// wantCapture asserts startup-capture.txt holds the last successful capture.
+ 		wantCapture bool
+ 		// wantTail asserts the error ends with the last capture's lines.
+ 		wantTail bool
+ 	}{
+-		{name: "pane goes not-live", wantCapture: true, wantTail: true},
+-		{name: "a failing strand removal is reported", removeStrandErr: removeErr},
+-		{name: "KeepPane does not apply", keepPane: true},
++		{name: "pane goes not-live", wantRemoveCalls: 1, wantCapture: true, wantTail: true},
++		{name: "a failing strand removal is retried and then reported", removeStrandErr: removeErr, wantRemoveCalls: startupRemoveAttempts,
++			wantSleeps: []time.Duration{time.Second, startupRemoveFirstDelay, 2 * startupRemoveFirstDelay}},
++		{name: "a strand removal that succeeds on a retry reports the strand removed", removeStrandErrs: []error{removeErr}, wantRemoveCalls: 2,
++			wantSleeps: []time.Duration{time.Second, startupRemoveFirstDelay}},
++		{name: "KeepPane does not apply", keepPane: true, wantRemoveCalls: 1},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -369,11 +378,12 @@ func TestStartup_PaneNotLiveMidStartup(t *testing.T) {
+ 					{Strands: []reedengine.StrandStatus{{GUID: "strand-1", PaneID: "%1", Live: true}}},
+ 					{Strands: []reedengine.StrandStatus{{GUID: "strand-1", PaneID: "%1", Live: false}}},
+ 				},
+-				CaptureQueue:    []string{lastCapture},
+-				RemoveStrandErr: tt.removeStrandErr,
++				CaptureQueue:         []string{lastCapture},
++				RemoveStrandErr:      tt.removeStrandErr,
++				RemoveStrandErrQueue: tt.removeStrandErrs,
+ 			}
+ 			engine := &fakeEngine{StartupScript: []StartupState{StartupPending}}
+-			fc := newFakeClock(time.Now())
++			fc := &awaitClock{fakeClock: newFakeClock(time.Now())}
+ 			cfg := fastConfig
+ 			seedStartupFakes(reed, engine)
+ 			fx := newFixture(t, reed, engine, withConfig(cfg), withClock(fc))
+@@ -390,9 +400,20 @@ func TestStartup_PaneNotLiveMidStartup(t *testing.T) {
+ 			if tt.removeStrandErr != nil && (!strings.Contains(err.Error(), "could NOT be removed") || !strings.Contains(err.Error(), removeErr.Error())) {
+ 				t.Errorf("StartGated() error = %v; want it to say the strand could not be removed and carry %q", err, removeErr.Error())
+ 			}
++			if tt.removeStrandErr == nil && !strings.Contains(err.Error(), "the strand was removed") {
++				t.Errorf("StartGated() error = %v; want it to say the strand was removed", err)
++			}
+ 
+-			if len(reed.RemoveStrandCalls) != 1 || reed.RemoveStrandCalls[0].GUID != "strand-1" {
+-				t.Errorf("RemoveStrandCalls = %+v; want exactly one for strand-1", reed.RemoveStrandCalls)
++			if len(reed.RemoveStrandCalls) != tt.wantRemoveCalls {
++				t.Errorf("RemoveStrand calls = %d; want %d", len(reed.RemoveStrandCalls), tt.wantRemoveCalls)
++			}
++			for _, call := range reed.RemoveStrandCalls {
++				if call.GUID != "strand-1" {
++					t.Errorf("RemoveStrandCalls = %+v; want every call for strand-1", reed.RemoveStrandCalls)
++				}
++			}
++			if tt.wantSleeps != nil && !reflect.DeepEqual(fc.sleeps, tt.wantSleeps) {
++				t.Errorf("run clock sleeps = %v; want %v", fc.sleeps, tt.wantSleeps)
+ 			}
+ 
+ 			runDir := soleStartupRunDir(t, cfg, anchorPath)
+@@ -422,6 +443,150 @@ func TestStartup_PaneNotLiveMidStartup(t *testing.T) {
+ 	}
+ }
+ 
++// TestStartup_DiedStartLaunchesAgain covers Config.StartRetries: a start whose provider died before it was ready, and whose strand the teardown removed, is launched again in a fresh run directory;
++// with the retry off, a timed-out start, or a strand the teardown could not remove, the start fails after one launch.
++// When every launch fails, the returned error is the last attempt's.
++// The waits run on the run clock: startRetryDelay between launches, and 1 s then 2 s between the removal tries of a strand that will not go.
++func TestStartup_DiedStartLaunchesAgain(t *testing.T) {
++	t.Parallel()
++	removeErr := errors.New("tmux: kill-pane failed")
++	live := reedengine.StatusResult{Strands: []reedengine.StrandStatus{{GUID: "strand-1", PaneID: "%1", Live: true}}}
++	dead := reedengine.StatusResult{Strands: []reedengine.StrandStatus{{GUID: "strand-1", PaneID: "%1", Live: false}}}
++	tests := []struct {
++		name            string
++		retries         int
++		startupTimeoutS int
++		statusQueue     []reedengine.StatusResult
++		script          []StartupState
++		removeStrandErr error
++		wantErr         bool
++		wantLaunches    int
++		wantDied        int
++		// wantRetryWaits is how many startRetryDelay sleeps the run clock sees.
++		wantRetryWaits int
++		// wantRemoveWaits is the end of the run clock's sleeps, the waits between removal tries.
++		wantRemoveWaits []time.Duration
++	}{
++		{name: "a died start launches again and returns the ready run", retries: 1, statusQueue: []reedengine.StatusResult{live, dead, live},
++			script: []StartupState{StartupPending, StartupReady}, wantLaunches: 2, wantDied: 1, wantRetryWaits: 1},
++		{name: "with the retry off a died start fails after one launch", retries: 0, statusQueue: []reedengine.StatusResult{live, dead, live},
++			script: []StartupState{StartupPending, StartupReady}, wantErr: true, wantLaunches: 1, wantDied: 1},
++		{name: "a died start whose strand was not removed is not launched again", retries: 1, statusQueue: []reedengine.StatusResult{live, dead, live},
++			script: []StartupState{StartupPending, StartupReady}, removeStrandErr: removeErr, wantErr: true, wantLaunches: 1, wantDied: 1,
++			wantRemoveWaits: []time.Duration{startupRemoveFirstDelay, 2 * startupRemoveFirstDelay}},
++		// The run's own deadline, five minutes, expires inside the hour-long startup window.
++		{name: "a start that timed out is not launched again", retries: 1, startupTimeoutS: 3600, statusQueue: []reedengine.StatusResult{live},
++			script: []StartupState{StartupPending}, wantErr: true, wantLaunches: 1},
++		{name: "a start that dies on every launch fails with the last attempt's error", retries: 1, statusQueue: []reedengine.StatusResult{live, dead, live, dead},
++			script: []StartupState{StartupPending}, wantErr: true, wantLaunches: 2, wantDied: 2, wantRetryWaits: 1},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			reed := &fakeReed{
++				StatusQueue:     tt.statusQueue,
++				CaptureQueue:    []string{"$ claude ...", "❯ "},
++				RemoveStrandErr: tt.removeStrandErr,
++			}
++			engine := &fakeEngine{StartupScript: tt.script}
++			seedStartupFakes(reed, engine)
++			cfg := fastConfig
++			cfg.StartRetries = tt.retries
++			if tt.startupTimeoutS > 0 {
++				cfg.StartupTimeoutS = tt.startupTimeoutS
++			}
++			clock := &awaitClock{fakeClock: newFakeClock(time.Now())}
++			fx := newFixture(t, reed, engine, withConfig(cfg), withClock(clock))
++
++			run, err := fx.Runner.StartGated(Spec{Prompt: "x", OutputFiles: []string{filepath.Join(t.TempDir(), "out.md")}}, GateSpec{})
++			if tt.wantErr {
++				if run != nil || !errors.Is(err, ErrNotStarted) {
++					t.Errorf("StartGated() = %v, %v; want a nil run and an error wrapping ErrNotStarted", run, err)
++				}
++			} else if err != nil || run == nil {
++				t.Fatalf("StartGated() = %v, %v; want the ready run", run, err)
++			}
++			if got := len(reed.AddStrandCalls); got != tt.wantLaunches {
++				t.Errorf("AddStrand calls = %d; want %d", got, tt.wantLaunches)
++			}
++			dirs := runDirsUnder(t, runDirRoot(cfg, fx.Anchor))
++			if len(dirs) != tt.wantLaunches {
++				t.Fatalf("run directories = %d; want one per launch, %d", len(dirs), tt.wantLaunches)
++			}
++			outcomes := map[string]int{}
++			for _, dir := range dirs {
++				state, found, err := loadRunState(dir)
++				if err != nil || !found {
++					t.Fatalf("loadRunState(%s): found=%v err=%v", dir, found, err)
++				}
++				outcomes[state.Outcome]++
++			}
++			if outcomes[string(OutcomeDied)] != tt.wantDied {
++				t.Errorf("run outcomes = %v; want %d died attempts", outcomes, tt.wantDied)
++			}
++			if tt.wantErr {
++				named := 0
++				for _, dir := range dirs {
++					if strings.Contains(err.Error(), dir) {
++						named++
++					}
++				}
++				if named != 1 {
++					t.Errorf("StartGated() error = %v; want it to name exactly one run directory, the last attempt's", err)
++				}
++			}
++			retryWaits := 0
++			for _, d := range clock.sleeps {
++				if d == startRetryDelay {
++					retryWaits++
++				}
++			}
++			if retryWaits != tt.wantRetryWaits {
++				t.Errorf("run clock sleeps of %s = %d; want %d (all sleeps %v)", startRetryDelay, retryWaits, tt.wantRetryWaits, clock.sleeps)
++			}
++			if wait := len(tt.wantRemoveWaits); wait > 0 {
++				if len(clock.sleeps) < wait || !reflect.DeepEqual(clock.sleeps[len(clock.sleeps)-wait:], tt.wantRemoveWaits) {
++					t.Errorf("run clock sleeps = %v; want them to end with the removal waits %v", clock.sleeps, tt.wantRemoveWaits)
++				}
++			}
++		})
++	}
++}
++
++// TestStartupCaptureExcerpt pins the pane lines a not-ready error ends with: a capture that fits one tail is shown whole as the last lines.
++// A longer one shows its first lines, never one the tail repeats, before its last paneTailLines lines.
++func TestStartupCaptureExcerpt(t *testing.T) {
++	t.Parallel()
++	numbered := func(from, to int) []string {
++		var lines []string
++		for i := from; i <= to; i++ {
++			lines = append(lines, fmt.Sprintf("line %d", i))
++		}
++		return lines
++	}
++	capture := func(count int) string { return strings.Join(numbered(1, count), "\n  \n") + "\n" }
++	tests := []struct {
++		name  string
++		lines int
++		want  string
++	}{
++		{"a short capture shows once", 3, "The pane's last lines:\n" + strings.Join(numbered(1, 3), "\n")},
++		{"a capture of one tail shows once", paneTailLines, "The pane's last lines:\n" + strings.Join(numbered(1, paneTailLines), "\n")},
++		{"a capture a little past one tail shows only the lines the tail leaves out first", paneTailLines + 4,
++			"The pane's first lines:\n" + strings.Join(numbered(1, 4), "\n") + "\nThe pane's last lines:\n" + strings.Join(numbered(5, paneTailLines+4), "\n")},
++		{"a long capture shows its head and its tail", 3 * paneTailLines,
++			"The pane's first lines:\n" + strings.Join(numbered(1, paneTailLines), "\n") + "\nThe pane's last lines:\n" + strings.Join(numbered(2*paneTailLines+1, 3*paneTailLines), "\n")},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := startupCaptureExcerpt(capture(tt.lines)); got != tt.want {
++				t.Errorf("startupCaptureExcerpt(%d lines) = %q; want %q", tt.lines, got, tt.want)
++			}
++		})
++	}
++}
++
+ // keyTimesReed records the clock time of every SendKey call and fails the calls whose key is failKey, after recording them.
+ type keyTimesReed struct {
+ 	*fakeReed
+diff --git a/internal/shuttleengine/template.yaml b/internal/shuttleengine/template.yaml
+index 822951e7..77ea6d8b 100644
+--- a/internal/shuttleengine/template.yaml
++++ b/internal/shuttleengine/template.yaml
+@@ -3,6 +3,7 @@ poll_interval_ms: 1000  # milliseconds between polls of a run's completion state
+ liveness_every_n_polls: 10  # how often (in polls) to check pane liveness alongside the completion file; the same multiple of poll_interval_ms also spaces startup-gate dismissals and caps the startup probe's backoff
+ run_timeout_min: 30  # minutes before an in-progress run is classified as timed out; 0 is NOT "unlimited" — it times out immediately
+ startup_timeout_s: 90  # seconds allowed for the claude process to start and reach a live pane; 0 is NOT "unlimited" or "disabled" — it fast-fails startup as died immediately AND zeroes the orphan-sweep age guard (minAge = 2x this value)
++start_retries: 1  # extra launches of a start whose provider died before it took its first input and whose strand the teardown removed, each in a fresh run directory; a timed-out start and one whose strand could not be removed are never retried; 0 turns the retry off, negative is a config error
+ background_shell_wait_min: 10  # minutes an outstanding background shell of either signal may run before the wait logs it once and shows it in the wait marker; it also expires an ungated waiting turn end with an output file missing, whose every outstanding task is a non-awaited shell, into a held turn end, while a fork or an awaited shell never expires; 0 or negative is a config error, not "unlimited"
+ send_ready_timeout_s: 60  # seconds a verified send (the start prompt, a skill-load message and every injected prompt) waits for an idle session before it fails as busy, ending at the run's deadline for a gate send; binds only an engine that reads session idleness, any other keeps a ready-pane check with no wait; 0 or negative is a config error
+ submit_confirm_timeout_s: 30  # seconds from the moment a verified send begins typing within which it must be seen to land before it fails as not landed, ending at the run's deadline for a gate send; binds only an engine that reads its input box, any other has no window; 0 or negative is a config error
+diff --git a/internal/shuttleengine/wait.go b/internal/shuttleengine/wait.go
+index 4812befd..61ed6b9d 100644
+--- a/internal/shuttleengine/wait.go
++++ b/internal/shuttleengine/wait.go
+@@ -327,6 +327,9 @@ func (run *Run) Wait() (Result, error) {
+ 				case run.holdNoticePending() && run.usageLimited(held):
+ 					// The parent cannot act while the account is limited, and a notice sent now lands in its context as stale clutter after the reset.
+ 					logger.Info("shuttle: held turn end stopped on the usage limit; no hold notice", "strandGUID", run.state.StrandGUID, "offset", held.offset)
++				case run.holdNoticePending() && run.wakesOnBackground(held):
++					// The session wakes when its own background work completes, so the parent has nothing to answer.
++					logger.Info("shuttle: held turn end left background work running; no hold notice", "strandGUID", run.state.StrandGUID, "offset", held.offset)
+ 				case run.spec.HoldDeferral == nil:
+ 					run.notifyHeld(held)
+ 				case !run.turnStartRead:
+@@ -731,7 +734,7 @@ func (run *Run) awaitStartup() (Result, error) {
+ // In order: any capture checkLivenessTick recorded is saved to startupCaptureFileName (a write
+ // failure is a Warn, and the returned error then says no capture was saved); run.finalize(outcome)
+ // persists RunState.Outcome and logs "run finished", skipping the gate and cleanup since outcome is
+-// never OutcomeDone here; the strand is removed whatever Spec.KeepPane says — KeepPane governs a
++// never OutcomeDone here; the strand is removed, tried up to startupRemoveAttempts times with a doubling run-clock wait, whatever Spec.KeepPane says — KeepPane governs a
+ // COMPLETED run's pane retention, not a startup failure's, and a provider that never came up leaves
+ // nothing worth keeping the pane around for; the run directory is left in place either way, so the
+ // capture file (and prompt.md/settings.json/events.jsonl) are findable; and a Warn names the run dir,
+@@ -743,7 +746,7 @@ func (run *Run) awaitStartup() (Result, error) {
+ // one residual an operator must clear by hand.
+ //
+ // When cause is nil and the run never started, the error also carries the reason the last startup probe held a ready pane back for want of a session-start line, if it recorded one.
+-// The error ends with ". The pane's last lines:" and the last startup capture's tail when all three hold:
++// The error ends with the last startup capture's excerpt, its last lines and, for a capture longer than one tail, its first lines before them, when all three hold:
+ // cause is nil, the provider never reached StartupReady (run.state.Started is false), and a startup capture was recorded.
+ // Every other teardown reports a cause that already carries its own screen or a mechanism failure with none,
+ // or a pane that died after it was ready, whose last capture is the ready screen from before the death.
+@@ -761,9 +764,11 @@ func (run *Run) abandonStartup(outcome Outcome, cause error) (Result, error) {
+ 	result, _ := run.finalize(outcome)
+ 
+ 	removeNote := "the strand was removed"
+-	if _, rerr := run.runner.reed.RemoveStrand(run.state.StrandGUID, false); rerr != nil {
+-		logger.Warn("shuttle: startup: remove strand after not-ready teardown failed", "strandGUID", run.state.StrandGUID, "error", rerr)
+-		removeNote = fmt.Sprintf("the strand could NOT be removed (%v); remove it by hand (\"lyx reed status\" / \"lyx reed remove\")", rerr)
++	if rerr := run.removeStartupStrand(); rerr != nil {
++		logger.Warn("shuttle: startup: remove strand after not-ready teardown failed", "strandGUID", run.state.StrandGUID, "attempts", startupRemoveAttempts, "error", rerr)
++		removeNote = fmt.Sprintf("the strand could NOT be removed after %d attempts (%v); remove it by hand (\"lyx reed status\" / \"lyx reed remove\")", startupRemoveAttempts, rerr)
++	} else {
++		run.startupStrandRemoved = true
+ 	}
+ 
+ 	format := "shuttle: start: %w — run dir %s, strand %q, outcome %q; %s; %s"
+@@ -780,13 +785,48 @@ func (run *Run) abandonStartup(outcome Outcome, cause error) (Result, error) {
+ 		args = append(args, run.startupHookReason)
+ 	}
+ 	if cause == nil && !run.state.Started && run.lastStartupCapture != "" {
+-		format += ". The pane's last lines:\n%s"
+-		args = append(args, captureTail(run.lastStartupCapture))
++		format += ". %s"
++		args = append(args, startupCaptureExcerpt(run.lastStartupCapture))
+ 	}
+ 
+ 	return result, fmt.Errorf(format, args...)
+ }
+ 
++const (
++	// startupRemoveAttempts is how many times the startup teardown tries to remove the run's strand in all.
++	startupRemoveAttempts = 3
++	// startupRemoveFirstDelay is the run-clock wait before the teardown's first removal retry; each later wait doubles it.
++	startupRemoveFirstDelay = time.Second
++)
++
++// removeStartupStrand removes the run's strand, and tries again after a doubling wait on the run clock while the removal fails, up to startupRemoveAttempts tries.
++// It returns nil once a removal succeeds, and the last removal's error otherwise.
++func (run *Run) removeStartupStrand() error {
++	delay := startupRemoveFirstDelay
++	for attempt := 1; ; attempt++ {
++		_, err := run.runner.reed.RemoveStrand(run.state.StrandGUID, false)
++		if err == nil || attempt == startupRemoveAttempts {
++			return err
++		}
++		logger.Warn("shuttle: startup: remove strand failed, retrying", "strandGUID", run.state.StrandGUID, "attempt", attempt, "delay", delay, "error", err)
++		run.clock.Sleep(delay)
++		delay *= 2
++	}
++}
++
++// startupCaptureExcerpt returns the pane lines the not-ready error ends with, each block under its own heading.
++// A capture whose non-blank lines fit in paneTailLines is shown whole as the last lines.
++// A longer one shows its first lines, up to paneTailLines of them and none the tail repeats, and then its last paneTailLines lines.
++// So the first error line of a launch that scrolled away is not lost.
++func startupCaptureExcerpt(capture string) string {
++	lines := nonBlankLines(capture)
++	if len(lines) <= paneTailLines {
++		return "The pane's last lines:\n" + strings.Join(lines, "\n")
++	}
++	head := lines[:min(paneTailLines, len(lines)-paneTailLines)]
++	return "The pane's first lines:\n" + strings.Join(head, "\n") + "\nThe pane's last lines:\n" + strings.Join(lines[len(lines)-paneTailLines:], "\n")
++}
++
+ // pollEventsTick reads any events.jsonl bytes appended since run.offset and
+ // parses them via the engine. run.offset only advances past what it read
+ // AFTER ParseEvents succeeds: if ParseEvents errors, the bytes stay
+@@ -848,7 +888,7 @@ func (run *Run) pollEventsTick() (Outcome, *heldTurnEnd, error) {
+ 	last := events[len(events)-1]
+ 	if last.Kind == EventWaiting {
+ 		run.recordWaiting(last)
+-		run.waitingTurnEnd = &heldTurnEnd{message: last.Message, offset: offsetPastEvent(data, startOffset, newOffset, last), raw: last.Raw}
++		run.waitingTurnEnd = &heldTurnEnd{message: last.Message, offset: offsetPastEvent(data, startOffset, newOffset, last), raw: last.Raw, background: len(last.Outstanding) > 0}
+ 		if len(run.waitingTasks) == 0 && len(run.gate) == 0 && allOutputFilesExist(run.spec.OutputFiles) {
+ 			return OutcomeDone, nil, nil
+ 		}
+@@ -943,6 +983,8 @@ type heldTurnEnd struct {
+ 	offset int64
+ 	// raw is the turn end's events-file line.
+ 	raw []byte
++	// background is true when the turn end left background work of the session's own running.
++	background bool
+ }
+ 
+ // offsetPastEvent returns the events-file offset just past the line ev was parsed from.
