@@ -1,7 +1,7 @@
 # Card 7 — dobby-start-named-beams
 
 **Create:**
-- `plan:internal/dobbyengine#OwnedWorktrees` -> `func OwnedWorktrees(deps StartDeps) ([]string, error)`
+- `internal/dobbyengine#OwnedWorktrees`
 
 **Edit:**
 - `internal/dobbyengine#EnsureLive` -> `func EnsureLive(deps StartDeps, worktrees []string) (StartReport, error)`
