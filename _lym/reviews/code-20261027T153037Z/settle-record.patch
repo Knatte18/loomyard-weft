@@ -1,0 +1,836 @@
+diff --git a/contracts/recipes/darn-recipe.yaml b/contracts/recipes/darn-recipe.yaml
+index 1e4b5a46..c130383a 100644
+--- a/contracts/recipes/darn-recipe.yaml
++++ b/contracts/recipes/darn-recipe.yaml
+@@ -1,8 +1,9 @@
+-# darn-recipe.yaml is the darn task recipe: Drift-Baseline records the regression scope and captures
+-# the baseline, one gated writer reads the board entry, edits, tests and commits, Drift-Verify
++# darn-recipe.yaml is the darn task recipe: Drift-Baseline records the regression scope and starts
++# the baseline capture, Drift-Await holds the run until the capture passed or the parent deferred it,
++# one gated writer reads the board entry, edits, tests and commits, Drift-Verify
+ # compares the writer's code with the baseline, the Code-Review perch reviews the committed diff,
+ # Describe rewrites the change description from the final diff, then PR-Review and Finalize land it.
+-# The two Drift rows carry entry_gate: drift.enabled, so a hub that leaves regression off records
++# The three Drift rows carry entry_gate: drift.enabled, so a hub that leaves regression off records
+ # each of them Skipped and spawns or runs nothing for them. It is
+ # embedded into the binary by the sibling recipes.go rather than read from disk. The row names below are the
+ # durable on-disk identities pinned against internal/loomshed's Name* constants -- a rename here
+@@ -17,7 +18,7 @@
+ # gates, so a human is the only thing that can fix them.
+ # Finalize fixes its own merge and test failures in its merge fixer, and a failure the fixer cannot
+ # fix halts the run for the orch.
+-# Drift-Baseline, Darn-Write, Drift-Verify and Describe carry none either:
++# Drift-Baseline, Drift-Await, Darn-Write, Drift-Verify and Describe carry none either:
+ # an exhausted writer gate halts the run for the parent, which resumes it with a fresh budget,
+ # and a Stuck of a Drift row halts it with the ways forward in its reason.
+ # Drift-Verify compares the code the writer committed, and the Code-Review perch reviews its fixes.
+@@ -47,6 +48,8 @@
+ # An in-flight run parked on a row this recipe removed -- Merge-In, Publish, PR-Align, PR-Gate -- or
+ # on a row whose edges changed with them, or on the retired Darn-Burler, Darn-Bouncer,
+ # Darn-Burler-Review or Darn-Burler-Fix row, is restarted, not migrated.
++# A run that passed Drift-Baseline before Drift-Await joined the recipe has no awaited_at, halts at
++# Drift-Verify with no counted baseline, and is settled by hand with lym drift waive.
+ #
+ # Describe follows the perch because Code-Burler-Fix can change the code after the writer described it.
+ # Its entry gate budget.Code-Review skips it when the perch is off.
+@@ -61,15 +64,21 @@ producers:
+     engine: Preflight
+     on_done: Drift-Baseline
+ 
+-  # Drift-Baseline has an agent record the task's regression scope, then takes the baseline capture
+-  # in its own process and waits for it, since the writer starts at once and edits the code.
++  # Drift-Baseline has an agent record the task's regression scope and starts the baseline capture.
++  # Its Stuck halts the run, with the ways forward in its reason.
+   - name: Drift-Baseline
+     engine: DriftBaseline
+     entry_gate: drift.enabled
+-    on_done: Darn-Write
++    on_done: Drift-Await
+     config:
+       subject: board-entry
+-      capture: wait
++
++  # Drift-Await is mechanical and spawns nothing: it holds the run until the baseline capture passed
++  # on the branch point, or the parent deferred it, since the writer edits the code the capture reads.
++  - name: Drift-Await
++    engine: DriftAwait
++    entry_gate: drift.enabled
++    on_done: Darn-Write
+ 
+   - name: Darn-Write
+     engine: DarnWrite
+diff --git a/docs/overview.md b/docs/overview.md
+index f71a3183..0a254574 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -495,7 +495,7 @@ User-facing modules each get one `lym <module>` namespace:
+ - **loom** — phased orchestrator: drives its flat, ordered producer list (`contracts/recipes/loom-recipe.yaml`, assembled by `internal/loomrecipe`), each gated by a `Bouncer` review segment (`internal/loomcli` + `internal/loomengine` + `internal/loomshed` + `internal/loomrecipe` + `internal/shedverbs`; `lym loom start|resume|run|step|status|pause|commit-records|validate-discussion|validate-plan|insert-card|remove-card|restore-renumber|validate-description|lint-comments|lint-pattern|fmt|circling accept|continue|decision add|peers|peers show`).
+   `internal/shedverbs` owns the generic `run`/`step`/`status`/`pause` verb bodies loomcli arms; `internal/loomcli` hosts only `start` and the arming glue.
+   `insert-card`, `remove-card` and `restore-renumber` are the plan-editing verbs: they add or drop one card and renumber the cards after it through `internal/planparser` under a journal that makes an interrupted call restorable, refuse a position at or before the last card webster has begun, and hold webster's state-mutation lease while they run.
+-  A second embedded recipe, `contracts/recipes/darn-recipe.yaml`, drives a darn run: one gated `Darn-Write` writer that writes and validates the decision record first and, once its `discussion` gate passes, commits it, then reads the board entry, edits, tests and commits, after a `Drift-Baseline` row that records the regression scope and captures the baseline and before a `Drift-Verify` row that compares the writer's code with it, then the `Code-Review` perch (`Code-Bouncer`, `Code-Burler-Review` and `Code-Burler-Fix`) reviews the committed diff and carries its open findings into the record, then `Describe` rewrites the change description from the final diff, then PR-Review and Finalize, with no discussion, plan, webster or Parent-Align rows.
++  A second embedded recipe, `contracts/recipes/darn-recipe.yaml`, drives a darn run: one gated `Darn-Write` writer that writes and validates the decision record first and, once its `discussion` gate passes, commits it, then reads the board entry, edits, tests and commits, after a `Drift-Baseline` row that records the regression scope and starts the baseline capture and a `Drift-Await` row that holds the run until the capture passed or the parent deferred it, and before a `Drift-Verify` row that compares the writer's code with it, then the `Code-Review` perch (`Code-Bouncer`, `Code-Burler-Review` and `Code-Burler-Fix`) reviews the committed diff and carries its open findings into the record, then `Describe` rewrites the change description from the final diff, then PR-Review and Finalize, with no discussion, plan, webster or Parent-Align rows.
+   The perch is loom's own, with the same rows, rubric and `loom.yaml` `code_*` keys for models, fans, budget, hard cap and auto-accept; only its answer key differs.
+   In darn the answer key is the task's board entry, which the discussion gate's commit snapshots into `_lym/discussion/board-entry.md`, as amended by the record's `Added after Discussion` entries; the record's other sections are the writer's own claim, checked against the snapshot.
+   A `code_max_bounces` of `0` makes `Code-Bouncer` settle approved at once and `Describe`'s entry gate skip it, so the writer's own description stands.
+@@ -561,7 +561,7 @@ User-facing modules each get one `lym <module>` namespace:
+   `lym loom start` writes a handoff voucher right before it spawns a driver, so a deliberate resume never reads as a crash.
+   A loom run's tail is `Webster → Parent-Align → Code-Review → Drift-Verify → Describe → PR-Review → Finalize`, where `Code-Review` is the Code-Perch of `Code-Bouncer`, `Code-Burler-Review` and `Code-Burler-Fix`;
+   a darn run's tail is `Darn-Write → Drift-Verify → Code-Review → Describe → PR-Review → Finalize`, with no `Parent-Align`.
+-  The three regression rows, `Drift-Baseline` before `Plan-Write` in loom and before `Darn-Write` in darn, `Drift-Await` before `Webster` and `Drift-Verify` as above, each carry the entry gate `drift.enabled` of the hub-wide `drift.yaml`, so a hub that leaves it off records each of them skipped and spawns or runs nothing for them.
++  The three regression rows, `Drift-Baseline` before `Plan-Write` in loom and before `Drift-Await` in darn, `Drift-Await` before `Webster` in loom and before `Darn-Write` in darn, and `Drift-Verify` as above, each carry the entry gate `drift.enabled` of the hub-wide `drift.yaml`, so a hub that leaves it off records each of them skipped and spawns or runs nothing for them.
+   `Parent-Align` merges the parent's upstream tip into the task with no parent lock, verifies the merged tree through the `parent-align` gate key and runs the merge fixer in parent-align mode, which settles a conflict or a failing tree and aligns the task to what the parent brought in; it writes the merge record with the aligned tip, and the Code-Perch then reviews the task's code against that.
+   `PR-Review` is a stub for the human pull-request review that is not built: it always returns Done, and logs one line when its flag is on.
+   `Finalize` takes the parent lock first, merges the parent into the task again and reroutes to `Parent-Align` on a loom conflict or a merge too large to land; it runs the `finalize` gate key and the merge fixer in finalize mode, lands on the parent with the task trailer and releases the lock on every exit.
+diff --git a/internal/driftcli/doc.go b/internal/driftcli/doc.go
+index 53ceec45..1889cbf9 100644
+--- a/internal/driftcli/doc.go
++++ b/internal/driftcli/doc.go
+@@ -8,7 +8,7 @@
+ //
+ // # Wiring
+ //
+-// The run status is read under its lock from the self run, the recipe from the run's seed, and the agent-session mark from the run counter, which together tell the Drift-Verify agent session from a caller at a halt.
++// The run status is read under its lock from the self run, and the agent-session mark from the run counter; together they tell the Drift-Verify agent session from a caller at a halt.
+ // HEAD, the branch point and the tracked dirty paths come from the worktree's fabric: the branch point is the merge base of HEAD with the parent branch the origin record names.
+ // The gate slots come from hubgeom.GateSlots, and the capture child is registered under the run-process directory with the worktree name as owner.
+ //
+diff --git a/internal/driftcli/wiring.go b/internal/driftcli/wiring.go
+index fc991b6d..bc170e82 100644
+--- a/internal/driftcli/wiring.go
++++ b/internal/driftcli/wiring.go
+@@ -49,7 +49,7 @@ func (w *worktree) config() (driftengine.Config, error) {
+ 	return driftengine.LoadConfig(fabricengine.ConfigDirs(w.location))
+ }
+ 
+-// verbStatus reads the run status under its lock, the recipe from the run's seed, the capture lock and the agent-session mark.
++// verbStatus reads the run status under its lock, the capture lock and the agent-session mark.
+ func (w *worktree) verbStatus() (driftengine.VerbStatus, error) {
+ 	status, found, err := state.ReadJSONNoMkdir[shedengine.Status](shedrun.StatusFile(w.location, shedrun.SelfRunID), shedrun.StatusLock(w.location, shedrun.SelfRunID))
+ 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+@@ -58,13 +58,6 @@ func (w *worktree) verbStatus() (driftengine.VerbStatus, error) {
+ 	if !found {
+ 		return driftengine.VerbStatus{}, errors.New("drift: this worktree has no run status; way forward: lym drift verbs run inside a loom or darn run's worktree")
+ 	}
+-	seed, seedFound, err := shedrun.ReadSeed(w.location, shedrun.SelfRunID)
+-	if err != nil {
+-		return driftengine.VerbStatus{}, err
+-	}
+-	if !seedFound {
+-		return driftengine.VerbStatus{}, errors.New("drift: this worktree's run has no seed; way forward: lym drift verbs run inside a loom or darn run's worktree")
+-	}
+ 	captureHeld, err := driftengine.ProbeLock(w.paths.CaptureLock)
+ 	if err != nil {
+ 		return driftengine.VerbStatus{}, err
+@@ -75,7 +68,6 @@ func (w *worktree) verbStatus() (driftengine.VerbStatus, error) {
+ 	}
+ 	return driftengine.VerbStatus{
+ 		Status:       status,
+-		AwaitRow:     seed.Recipe == shedrun.RecipeLoom,
+ 		CaptureHeld:  captureHeld,
+ 		AgentSession: agentSession,
+ 	}, nil
+diff --git a/internal/driftengine/baseline.go b/internal/driftengine/baseline.go
+index 33cc3db7..ece10d3f 100644
+--- a/internal/driftengine/baseline.go
++++ b/internal/driftengine/baseline.go
+@@ -31,9 +31,9 @@ func NewDriftBaseline(name string, row Row, deps Deps) *DriftBaseline {
+ 
+ // Call runs one Drift-Baseline pass and commits the drift records on every way out.
+ // It has the baseline agent record the scope and write baseline.md when either is missing, then, by the recorded scope, takes the baseline capture:
+-// scope off, a set awaited_at and a passed capture take none, and a capture that holds the lock is waited on under WaitCapture and left running otherwise.
+-// Without WaitCapture the capture is a detached child and the pass returns once the child's record exists;
+-// with WaitCapture, and when a detached start is refused breakaway, the capture runs in this process.
++// scope off, a set awaited_at and a passed capture take none, and a capture that holds the lock is left running.
++// Otherwise the capture is a detached child and the pass returns once the child's record exists;
++// when a detached start is refused breakaway, the capture runs in this process.
+ // A failed or refused capture is a Stuck whose reason opens with CaptureHaltPrefix and names its ways forward.
+ // Only the scope record and baseline.md are committed while a detached capture may still write its logs; all of the durable drift directory is committed once a capture has ended in this process.
+ func (p *DriftBaseline) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error) {
+@@ -49,13 +49,12 @@ func (p *DriftBaseline) Call(ctx context.Context) (shedengine.Outcome, shedengin
+ 		seam{"BaselineTable", d.BaselineTable != nil},
+ 		seam{"StartCapture", d.StartCapture != nil},
+ 		seam{"RunCapture", d.RunCapture != nil},
+-		seam{"Sleep", d.Sleep != nil || !p.row.WaitCapture},
+ 	)
+ 	if err != nil {
+ 		return "", shedengine.OutputPointer{}, err
+ 	}
+ 
+-	commitAll := p.row.WaitCapture
++	var commitAll bool
+ 	outcome, pointer, err := p.drive(ctx, &commitAll)
+ 
+ 	paths := []string{
+@@ -104,13 +103,8 @@ func (p *DriftBaseline) drive(ctx context.Context, commitAll *bool) (shedengine.
+ 	if err != nil {
+ 		return "", shedengine.OutputPointer{}, err
+ 	}
+-	if held && !p.row.WaitCapture {
+-		return shedengine.Done, done, nil
+-	}
+ 	if held {
+-		if err := awaitCaptureEnd(ctx, d.Paths, d.Sleep); err != nil {
+-			return "", shedengine.OutputPointer{}, err
+-		}
++		return shedengine.Done, done, nil
+ 	}
+ 	capture, captureFound, err := ReadCapture(d.Paths)
+ 	if err != nil {
+@@ -142,14 +136,12 @@ func (p *DriftBaseline) captureAgain(ctx context.Context, commitAll *bool) (shed
+ 		return shedengine.Stuck, shedengine.OutputPointer{Reason: CaptureHaltPrefix + refusal.Error()}, nil
+ 	}
+ 
+-	if !p.row.WaitCapture {
+-		startErr := d.StartCapture()
+-		switch {
+-		case startErr == nil:
+-			return shedengine.Done, done, nil
+-		case !errors.Is(startErr, ErrBreakawayRefused):
+-			return "", shedengine.OutputPointer{}, fmt.Errorf("drift: %s: start the baseline capture: %w", p.name, startErr)
+-		}
++	startErr := d.StartCapture()
++	switch {
++	case startErr == nil:
++		return shedengine.Done, done, nil
++	case !errors.Is(startErr, ErrBreakawayRefused):
++		return "", shedengine.OutputPointer{}, fmt.Errorf("drift: %s: start the baseline capture: %w", p.name, startErr)
+ 	}
+ 
+ 	*commitAll = true
+diff --git a/internal/driftengine/baseline_test.go b/internal/driftengine/baseline_test.go
+index fec4961f..5c261460 100644
+--- a/internal/driftengine/baseline_test.go
++++ b/internal/driftengine/baseline_test.go
+@@ -84,7 +84,6 @@ func newBaselineFixture(t *testing.T) *baselineFixture {
+ 		Status: func() (shedengine.Status, error) {
+ 			return shedengine.Status{CurrentProducer: "Drift-Baseline", State: shedengine.StateRunning}, nil
+ 		},
+-		AwaitRow:    true,
+ 		Head:        func() (string, error) { return f.head, nil },
+ 		BranchPoint: func() (string, error) { return f.branchPoint, nil },
+ 		DirtyPaths:  func() ([]string, error) { return f.dirty, nil },
+@@ -158,7 +157,7 @@ func (f *baselineFixture) holdCaptureLock() (release func()) {
+ 	return release
+ }
+ 
+-// TestDriftBaseline covers the producer's way through each scope, capture mode and refusal, and the paths it commits on every way out.
++// TestDriftBaseline covers the producer's way through each scope, capture start and refusal, and the paths it commits on every way out.
+ func TestDriftBaseline(t *testing.T) {
+ 	t.Parallel()
+ 
+@@ -168,7 +167,6 @@ func TestDriftBaseline(t *testing.T) {
+ 
+ 	tests := []struct {
+ 		name       string
+-		row        Row
+ 		setup      func(f *baselineFixture)
+ 		want       shedengine.Outcome
+ 		wantErr    string
+@@ -194,26 +192,6 @@ func TestDriftBaseline(t *testing.T) {
+ 			wantStarts: 1,
+ 			wantCommit: scopeAndReport,
+ 		},
+-		{
+-			name:       "a waited capture that passes is Done",
+-			row:        Row{WaitCapture: true},
+-			want:       shedengine.Done,
+-			wantAgents: 1,
+-			wantRuns:   1,
+-			wantCommit: whole,
+-		},
+-		{
+-			name: "a waited capture that fails is Stuck naming capture and defer",
+-			row:  Row{WaitCapture: true},
+-			setup: func(f *baselineFixture) {
+-				f.runRecord = CaptureRecord{State: CaptureFailed, Reason: "exit 1", Log: "capture.log"}
+-			},
+-			want:       shedengine.Stuck,
+-			wantReason: append([]string{"capture.log"}, haltWays...),
+-			wantAgents: 1,
+-			wantRuns:   1,
+-			wantCommit: whole,
+-		},
+ 		{
+ 			name: "a scope record without baseline.md spawns the agent with the scope note",
+ 			setup: func(f *baselineFixture) {
+@@ -247,30 +225,7 @@ func TestDriftBaseline(t *testing.T) {
+ 			wantCommit: scopeAndReport,
+ 		},
+ 		{
+-			name: "a held lock is waited on under WaitCapture until released, then the passed record is left alone",
+-			row:  Row{WaitCapture: true},
+-			setup: func(f *baselineFixture) {
+-				f.seedScopeRecord(ScopeRecord{Scope: ScopeFull}, true)
+-				release := f.holdCaptureLock()
+-				f.onSleep = func(call int) {
+-					if call == 3 {
+-						if err := WriteCapture(f.paths, CaptureRecord{State: CapturePassed}); err != nil {
+-							f.t.Fatal(err)
+-						}
+-						release()
+-					}
+-				}
+-			},
+-			want:       shedengine.Done,
+-			wantCommit: whole,
+-			check: func(t *testing.T, f *baselineFixture) {
+-				if want := []time.Duration{time.Second, 2 * time.Second, 4 * time.Second}; !slices.Equal(f.sleeps, want) {
+-					t.Errorf("sleeps = %v; want %v, doubling from one second", f.sleeps, want)
+-				}
+-			},
+-		},
+-		{
+-			name: "a held lock is left running without WaitCapture",
++			name: "a held lock is left running",
+ 			setup: func(f *baselineFixture) {
+ 				f.seedScopeRecord(ScopeRecord{Scope: ScopeFull}, true)
+ 				f.holdCaptureLock()
+@@ -389,7 +344,7 @@ func TestDriftBaseline(t *testing.T) {
+ 				tt.setup(f)
+ 			}
+ 
+-			outcome, pointer, err := NewDriftBaseline("Drift-Baseline", tt.row, f.deps).Call(context.Background())
++			outcome, pointer, err := NewDriftBaseline("Drift-Baseline", Row{}, f.deps).Call(context.Background())
+ 			if tt.wantErr != "" {
+ 				if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
+ 					t.Fatalf("Call() error = %v; want one naming %q", err, tt.wantErr)
+diff --git a/internal/driftengine/deps.go b/internal/driftengine/deps.go
+index 50563a22..746abf1a 100644
+--- a/internal/driftengine/deps.go
++++ b/internal/driftengine/deps.go
+@@ -25,8 +25,6 @@ type Deps struct {
+ 	Config func() (Config, error)
+ 	// Status reads the run's status.
+ 	Status func() (shedengine.Status, error)
+-	// AwaitRow is true for the loom recipe, which has a Drift-Await row.
+-	AwaitRow bool
+ 	// Head, BranchPoint and DirtyPaths read the code checkout's HEAD, its branch point and its tracked dirty paths.
+ 	Head        func() (string, error)
+ 	BranchPoint func() (string, error)
+@@ -56,8 +54,6 @@ type Deps struct {
+ type Row struct {
+ 	// Subject is SubjectDecisionRecord or SubjectBoardEntry.
+ 	Subject string
+-	// WaitCapture makes Drift-Baseline run the capture in its own process and wait for it, which darn's `capture: wait` asks for.
+-	WaitCapture bool
+ }
+ 
+ // commitOnExit commits relPaths through commit after a producer pass and returns the pass's result.
+diff --git a/internal/driftengine/doc.go b/internal/driftengine/doc.go
+index 05263adb..8eb3b026 100644
+--- a/internal/driftengine/doc.go
++++ b/internal/driftengine/doc.go
+@@ -13,7 +13,7 @@
+ // Every record is JSON written through `internal/state`, so an unknown key survives a rewrite.
+ // The scope record (`scope.json`) holds the recorded scope (`off`, `partial` or `full`) and its skipped tests, when the baseline was awaited or deferred, a waiver, the accepted and withdrawn tests, the unruled tests the last decision halt named and the time of the last gate halt.
+ // The capture record (`capture.json`) holds the state of the latest main capture (`running`, `passed` or `failed`) with its pid, HEAD, times, exit code, reason and log.
+-// CountedCapture decides whether a capture counts as the baseline: a passed record, and under a recipe with an await row also an `awaited_at` in the scope record.
++// CountedCapture decides whether a capture counts as the baseline: a passed record with an `awaited_at` in the scope record.
+ // The run counter (`runs.json`) holds how many compare or side-capture runs the current Drift-Verify agent session took, the commit its attempt started at and whether the agent-session mark is open.
+ // TakeRun refuses once the budget is spent, ResetRuns starts a fresh attempt with the whole budget, and CloseAgentSession closes the mark while keeping the count and the attempt's head.
+ // A verb reads the mark with AgentSessionOpen to tell the agent session from the row's own mechanical work.
+@@ -41,7 +41,7 @@
+ //
+ // # Verbs
+ //
+-// The `lym drift` verbs' rules are functions over a VerbStatus: the run status's row, state and error, whether the recipe has a Drift-Await row, whether the capture lock is held and whether the agent-session mark is open.
++// The `lym drift` verbs' rules are functions over a VerbStatus: the run status's row, state and error, whether the capture lock is held and whether the agent-session mark is open.
+ // The agent session is a running status at Drift-Verify with the mark open; a caller at a halt is a blocked status, and a decision halt is one whose error opens with shedadapters.DecisionHaltPrefix.
+ // A verb run at a row it does not admit refuses naming that row and `lym loom status`, and a refused verb writes nothing.
+ // RecordScope writes the scope record once, at Drift-Baseline, and refuses a skip list outside scope partial and a partial scope without one.
+@@ -64,12 +64,12 @@
+ // # Drift-Baseline
+ //
+ // Deps holds the seams the three Drift producers share, and a producer fails loudly naming the field when a seam it reads is nil.
+-// Row holds a row's portable config: the subject its agent reads the task from and WaitCapture, darn's `capture: wait`.
++// Row holds a row's portable config: the subject its agent reads the task from.
+ // DriftBaseline has the baseline agent record the scope and write baseline.md when either is missing, the agent spawned with a note that the scope is already recorded when it is, and a Done agent with no scope record is a Stuck.
+-// Scope off, a set awaited_at and a passed capture take no capture; a capture holding the lock is waited on under WaitCapture, by awaitCaptureEnd from one second doubling to thirty, and left running otherwise.
++// Scope off, a set awaited_at and a passed capture take no capture; a capture holding the lock is left running.
+ // Otherwise it captures again: an undeclared capture command is a Stuck naming `lym config drift`, and a refusal of the capture's precondition is a Stuck whose reason opens with CaptureHaltPrefix and names `lym drift defer` with `lym loom resume`, and on a dirty tree restoring or stashing the listed paths.
+-// Without WaitCapture the capture is the detached child, and the pass returns Done once the child's record exists, so the plan is written meanwhile;
+-// with WaitCapture, and when Windows refuses the detached start breakaway, the capture runs in the step's own process, so its command dies with the step.
++// The capture is the detached child: the pass returns Done once the child's record exists, and the recipe's Drift-Await row waits for the capture to end;
++// when Windows refuses the detached start breakaway, the capture runs in the step's own process, so its command dies with the step.
+ // A failed capture is a Stuck opening with CaptureHaltPrefix and naming the log, `lym drift capture` with `lym loom resume`, and `lym drift defer` with `lym loom resume`; the row carries no on_stuck, so each Stuck halts the run.
+ // Every pass commits through Deps.Commit on its way out: the scope record and baseline.md while a detached capture may still write its logs, and all of the durable drift directory once a capture has ended in this process.
+ //
+diff --git a/internal/driftengine/records.go b/internal/driftengine/records.go
+index ddb769f8..7869ede8 100644
+--- a/internal/driftengine/records.go
++++ b/internal/driftengine/records.go
+@@ -185,13 +185,9 @@ func WriteCapture(p Paths, rec CaptureRecord) error {
+ }
+ 
+ // CountedCapture reports whether the capture record counts as the baseline the compare reads.
+-// It counts when found and passed and, with awaitRow set, when the scope record also holds awaited_at;
+-// without an await row a passed record alone counts.
+-func CountedCapture(scope ScopeRecord, capture CaptureRecord, found bool, awaitRow bool) bool {
+-	if !found || capture.State != CapturePassed {
+-		return false
+-	}
+-	return !awaitRow || scope.AwaitedAt != ""
++// It counts when found and passed and the scope record holds awaited_at, which Drift-Await sets once it saw the capture pass.
++func CountedCapture(scope ScopeRecord, capture CaptureRecord, found bool) bool {
++	return found && capture.State == CapturePassed && scope.AwaitedAt != ""
+ }
+ 
+ // updateRuns applies mutate to the run counter under its lock.
+diff --git a/internal/driftengine/records_test.go b/internal/driftengine/records_test.go
+index 7276b141..20f6cf15 100644
+--- a/internal/driftengine/records_test.go
++++ b/internal/driftengine/records_test.go
+@@ -9,25 +9,22 @@ import (
+ 	"testing"
+ )
+ 
+-// TestCountedCapture covers a found and an absent capture, each state, awaited_at set or not, and a loom (await row) and a darn recipe.
++// TestCountedCapture covers a found and an absent capture, each state, and awaited_at set or not.
+ func TestCountedCapture(t *testing.T) {
+ 	t.Parallel()
+ 
+ 	tests := []struct {
+-		name     string
+-		state    string
+-		found    bool
+-		awaited  bool
+-		awaitRow bool
+-		want     bool
++		name    string
++		state   string
++		found   bool
++		awaited bool
++		want    bool
+ 	}{
+-		{"absent", CapturePassed, false, true, true, false},
+-		{"running", CaptureRunning, true, true, true, false},
+-		{"failed", CaptureFailed, true, true, true, false},
+-		{"passed and awaited under an await row", CapturePassed, true, true, true, true},
+-		{"passed but not awaited under an await row", CapturePassed, true, false, true, false},
+-		{"passed and not awaited without an await row", CapturePassed, true, false, false, true},
+-		{"failed without an await row", CaptureFailed, true, false, false, false},
++		{"absent", CapturePassed, false, true, false},
++		{"running", CaptureRunning, true, true, false},
++		{"failed", CaptureFailed, true, true, false},
++		{"passed and awaited", CapturePassed, true, true, true},
++		{"passed but not awaited", CapturePassed, true, false, false},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -36,7 +33,7 @@ func TestCountedCapture(t *testing.T) {
+ 			if tt.awaited {
+ 				scope.AwaitedAt = "2026-01-01T00:00:00Z"
+ 			}
+-			got := CountedCapture(scope, CaptureRecord{State: tt.state}, tt.found, tt.awaitRow)
++			got := CountedCapture(scope, CaptureRecord{State: tt.state}, tt.found)
+ 			if got != tt.want {
+ 				t.Errorf("CountedCapture() = %v; want %v", got, tt.want)
+ 			}
+diff --git a/internal/driftengine/verbs.go b/internal/driftengine/verbs.go
+index 52599311..652c55b8 100644
+--- a/internal/driftengine/verbs.go
++++ b/internal/driftengine/verbs.go
+@@ -24,8 +24,6 @@ const verifyRow = "Drift-Verify"
+ type VerbStatus struct {
+ 	// Status is the run's status file.
+ 	Status shedengine.Status
+-	// AwaitRow is true when the run's recipe has a Drift-Await row.
+-	AwaitRow bool
+ 	// CaptureHeld is true when the capture lock is held.
+ 	CaptureHeld bool
+ 	// AgentSession is true when the agent-session mark reads open.
+@@ -172,7 +170,7 @@ func Waive(p Paths, st VerbStatus, reason string) error {
+ 		if !found {
+ 			return cur, errNoScope
+ 		}
+-		if CountedCapture(cur, capture, captureFound, st.AwaitRow) {
++		if CountedCapture(cur, capture, captureFound) {
+ 			return cur, fmt.Errorf("drift waive refused: a counted capture exists, so this %s halt is no missing baseline; way forward: lym loom resume, or the halt's own ways forward in lym loom status", verifyRow)
+ 		}
+ 		cur.WaivedReason, cur.WaivedAt = reason, stamp(time.Now())
+diff --git a/internal/driftengine/verbs_test.go b/internal/driftengine/verbs_test.go
+index 852b5315..8bc715b4 100644
+--- a/internal/driftengine/verbs_test.go
++++ b/internal/driftengine/verbs_test.go
+@@ -18,7 +18,6 @@ import (
+ func statusAt(row string, state shedengine.State, errText string, agentSession bool) VerbStatus {
+ 	return VerbStatus{
+ 		Status:       shedengine.Status{CurrentProducer: row, State: state, Error: errText},
+-		AwaitRow:     true,
+ 		AgentSession: agentSession,
+ 	}
+ }
+diff --git a/internal/driftengine/verify.go b/internal/driftengine/verify.go
+index 9ea33dce..262ded39 100644
+--- a/internal/driftengine/verify.go
++++ b/internal/driftengine/verify.go
+@@ -161,7 +161,7 @@ func (p *DriftVerify) pass(ctx context.Context) (shedengine.Outcome, shedengine.
+ 	if err != nil {
+ 		return "", shedengine.OutputPointer{}, err
+ 	}
+-	if !CountedCapture(scope, capture, captureFound, d.AwaitRow) {
++	if !CountedCapture(scope, capture, captureFound) {
+ 		return p.halt(true, generalHaltOpening, "no baseline capture counts, so there is nothing to compare against; way forward: lym drift waive --reason <text> followed by lym loom resume")
+ 	}
+ 
+diff --git a/internal/driftengine/verify_test.go b/internal/driftengine/verify_test.go
+index 2cb144ce..bcd12938 100644
+--- a/internal/driftengine/verify_test.go
++++ b/internal/driftengine/verify_test.go
+@@ -115,7 +115,7 @@ var (
+ 	failingCompare = CompareResult{ExitCode: 1, Log: "compare-1.log", Reason: "exit 1; log compare-1.log"}
+ )
+ 
+-// newVerifyFixture returns a fixture in a loom run with a counted capture at HEAD, a declared compare and a scope record of scope.
++// newVerifyFixture returns a fixture with a counted capture at HEAD, a declared compare and a scope record of scope.
+ func newVerifyFixture(t *testing.T, scope ScopeRecord, actions []func()) *verifyFixture {
+ 	t.Helper()
+ 	f := &verifyFixture{baselineFixture: newBaselineFixture(t), compares: []CompareResult{passingCompare}}
+@@ -262,25 +262,23 @@ func TestDriftVerify(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("no counted capture is a decision halt naming the waiver under every scope, in loom and darn", func(t *testing.T) {
++	t.Run("no counted capture is a decision halt naming the waiver under every scope", func(t *testing.T) {
+ 		t.Parallel()
+ 		rows := []struct {
+ 			name    string
+ 			scope   ScopeRecord
+ 			arrange func(f *verifyFixture)
+ 		}{
+-			{"partial in loom, passed but not awaited", partial, func(f *verifyFixture) {
++			{"partial, passed but not awaited", partial, func(f *verifyFixture) {
+ 				f.seedScopeRecord(ScopeRecord{Scope: ScopePartial, Skip: []string{"slow"}}, false)
+ 			}},
+-			{"full in loom, passed but not awaited", full, func(f *verifyFixture) { f.seedScopeRecord(ScopeRecord{Scope: ScopeFull}, false) }},
+-			{"partial in darn, no record", partial, func(f *verifyFixture) {
+-				f.deps.AwaitRow = false
++			{"full, passed but not awaited", full, func(f *verifyFixture) { f.seedScopeRecord(ScopeRecord{Scope: ScopeFull}, false) }},
++			{"partial, no record", partial, func(f *verifyFixture) {
+ 				if err := os.Remove(f.paths.Capture); err != nil {
+ 					f.t.Fatal(err)
+ 				}
+ 			}},
+-			{"full in darn, no record", full, func(f *verifyFixture) {
+-				f.deps.AwaitRow = false
++			{"full, no record", full, func(f *verifyFixture) {
+ 				if err := os.Remove(f.paths.Capture); err != nil {
+ 					f.t.Fatal(err)
+ 				}
+@@ -576,7 +574,6 @@ func TestDriftVerify(t *testing.T) {
+ 			f := newVerifyFixture(t, ScopeRecord{}, nil)
+ 			seed(f, "aaa", "bbb")
+ 			f.history = []shedengine.HistoryEntry{{Producer: "Plan-Write", Outcome: shedengine.Stuck, At: markedAt}}
+-			f.deps.AwaitRow = true
+ 			f.writeCapture(CaptureRecord{State: CaptureRunning})
+ 			outcome, pointer, err := f.call()
+ 			requireStuck(t, outcome, pointer, err, true, "lym drift waive")
+diff --git a/internal/loomcli/checklist_test.go b/internal/loomcli/checklist_test.go
+index 19883397..bd0075f3 100644
+--- a/internal/loomcli/checklist_test.go
++++ b/internal/loomcli/checklist_test.go
+@@ -487,11 +487,12 @@ func TestRenderChecklist(t *testing.T) {
+ 			want: []string{
+ 				"[x] 1. Preflight 5m00s", "  10:00 5m00s done",
+ 				"[ ] 2. Drift-Baseline",
+-				"[x] 3. Darn-Write 5m00s", "  10:05 5m00s done",
+-				"[ ] 4. Drift-Verify",
+-				"[>] 5. Code-Review 2m rounds 0",
++				"[ ] 3. Drift-Await",
++				"[x] 4. Darn-Write 5m00s", "  10:05 5m00s done",
++				"[ ] 5. Drift-Verify",
++				"[>] 6. Code-Review 2m rounds 0",
+ 				"  10:10 2m Code-Bouncer running",
+-				"[ ] 6. Describe", "[ ] 7. PR-Review", "[ ] 8. Finalize", "[ ] 9. Friction-Reflect",
++				"[ ] 7. Describe", "[ ] 8. PR-Review", "[ ] 9. Finalize", "[ ] 10. Friction-Reflect",
+ 				"loom running | now working", "waiting on nothing",
+ 			},
+ 		},
+diff --git a/internal/loomcli/driftwiring.go b/internal/loomcli/driftwiring.go
+index 7ee87bc6..d08ceb8d 100644
+--- a/internal/loomcli/driftwiring.go
++++ b/internal/loomcli/driftwiring.go
+@@ -49,9 +49,9 @@ type driftTables struct {
+ }
+ 
+ // driftDeps builds the seams the Drift rows read over location's worktree.
+-// statusPath and statusLockPath locate the run status; awaitRow is true for the recipe that has a Drift-Await row.
++// statusPath and statusLockPath locate the run status.
+ // The seat runner, clock and gate findings file are left unset, since the registry entries fill them from the recipe's environment.
+-func driftDeps(location *lymcwd.Location, statusPath, statusLockPath string, awaitRow bool, tables driftTables) driftengine.Deps {
++func driftDeps(location *lymcwd.Location, statusPath, statusLockPath string, tables driftTables) driftengine.Deps {
+ 	paths := driftengine.NewPaths(location.AnchorPath())
+ 	pool, waitDir := hubgeom.GateSlots(location), gateslot.WaitDir(location.AnchorPath())
+ 	config := func() (driftengine.Config, error) {
+@@ -111,7 +111,6 @@ func driftDeps(location *lymcwd.Location, statusPath, statusLockPath string, awa
+ 		WorktreeRoot: location.WorktreePath(),
+ 		Config:       config,
+ 		Status:       status,
+-		AwaitRow:     awaitRow,
+ 		Head:         head,
+ 		BranchPoint:  branchPoint,
+ 		DirtyPaths:   dirtyPaths,
+diff --git a/internal/loomcli/wiring.go b/internal/loomcli/wiring.go
+index 987fb59b..933aace2 100644
+--- a/internal/loomcli/wiring.go
++++ b/internal/loomcli/wiring.go
+@@ -777,7 +777,7 @@ func (c *loomCLI) wire(location *lymcwd.Location, cwd string) error {
+ 	if c.recipe == shedrun.RecipeDarn {
+ 		driftSubject = driftengine.SubjectBoardEntry
+ 	}
+-	c.env.Drift = driftDeps(location, statusPath, statusLockPath, c.recipe == shedrun.RecipeLoom, driftTables{
++	c.env.Drift = driftDeps(location, statusPath, statusLockPath, driftTables{
+ 		stencilsDir:        websterGeom.StencilsDir,
+ 		registry:           registry,
+ 		subject:            driftSubject,
+diff --git a/internal/loomrecipe/darnrecipe_test.go b/internal/loomrecipe/darnrecipe_test.go
+index 15d47eed..4b36cb86 100644
+--- a/internal/loomrecipe/darnrecipe_test.go
++++ b/internal/loomrecipe/darnrecipe_test.go
+@@ -22,6 +22,7 @@ import (
+ var wantDarnProducerTable = []wantProducerRow{
+ 	{loomshed.NamePreflight, "Preflight", reflect.TypeOf(preflightshed.NewPreflight("", ""))},
+ 	{loomshed.NameDriftBaseline, "DriftBaseline", driftBaselineType},
++	{loomshed.NameDriftAwait, "DriftAwait", driftAwaitType},
+ 	{loomshed.NameDarnWrite, "DarnWrite", reflect.TypeOf(loomshed.NewDarnWrite("", nil, loomshed.DarnDeps{}))},
+ 	{loomshed.NameDriftVerify, "DriftVerify", driftVerifyType},
+ 	{loomshed.NameCodeBouncer, "Bouncer", bouncerType},
+@@ -143,13 +144,16 @@ func TestNewDarn_Routing(t *testing.T) {
+ 		return rows
+ 	}
+ 
+-	t.Run("Drift-Baseline follows Preflight, Drift-Verify and the perch follow Darn-Write, and Finalize reroutes to the perch", func(t *testing.T) {
++	t.Run("Drift-Baseline follows Preflight and Drift-Await follows it, Darn-Write follows Drift-Await, Drift-Verify and the perch follow Darn-Write, and Finalize reroutes to the perch", func(t *testing.T) {
+ 		rows := build(t, 4)
+ 		if preflight := rows[loomshed.NamePreflight]; preflight.OnDone != loomshed.NameDriftBaseline {
+ 			t.Errorf("Preflight OnDone = %q; want %q", preflight.OnDone, loomshed.NameDriftBaseline)
+ 		}
+-		if baseline := rows[loomshed.NameDriftBaseline]; baseline.OnDone != loomshed.NameDarnWrite || baseline.OnStuck != "" || baseline.Segment != "" {
+-			t.Errorf("Drift-Baseline OnDone/OnStuck/Segment = %q/%q/%q; want %q/empty/empty", baseline.OnDone, baseline.OnStuck, baseline.Segment, loomshed.NameDarnWrite)
++		if baseline := rows[loomshed.NameDriftBaseline]; baseline.OnDone != loomshed.NameDriftAwait || baseline.OnStuck != "" || baseline.Segment != "" {
++			t.Errorf("Drift-Baseline OnDone/OnStuck/Segment = %q/%q/%q; want %q/empty/empty", baseline.OnDone, baseline.OnStuck, baseline.Segment, loomshed.NameDriftAwait)
++		}
++		if await := rows[loomshed.NameDriftAwait]; await.OnDone != loomshed.NameDarnWrite || await.OnStuck != "" || await.Segment != "" {
++			t.Errorf("Drift-Await OnDone/OnStuck/Segment = %q/%q/%q; want %q/empty/empty", await.OnDone, await.OnStuck, await.Segment, loomshed.NameDarnWrite)
+ 		}
+ 		darn := rows[loomshed.NameDarnWrite]
+ 		if darn.OnDone != loomshed.NameDriftVerify || darn.OnStuck != "" || darn.OnReroute != "" || darn.Segment != "" {
+diff --git a/internal/loomrecipe/doc.go b/internal/loomrecipe/doc.go
+index 067cdcd6..16f9eb14 100644
+--- a/internal/loomrecipe/doc.go
++++ b/internal/loomrecipe/doc.go
+@@ -14,7 +14,7 @@
+ // The loom recipe's tail after Webster reads `Parent-Align → Code-Review → Drift-Verify → Describe → PR-Review → Finalize → Friction-Reflect`.
+ // Drift-Baseline sits between the Discussion-Review ring and Plan-Write, and Drift-Await between the Plan-Review ring and Webster.
+ // PR-Review always ends Done, so it carries no on_stuck, and Finalize's reroute names Parent-Align.
+-// The darn recipe reads `Preflight → Drift-Baseline → Darn-Write → Drift-Verify → Code-Review → Describe → PR-Review → Finalize → Friction-Reflect`, with no Parent-Align, and Finalize's reroute names Code-Bouncer.
++// The darn recipe reads `Preflight → Drift-Baseline → Drift-Await → Darn-Write → Drift-Verify → Code-Review → Describe → PR-Review → Finalize → Friction-Reflect`, with no Parent-Align, and Finalize's reroute names Code-Bouncer.
+ // Every Drift row carries the entry gate `drift.enabled`, so a hub that leaves regression off records each of them skipped.
+ // Its Code-Review rows are loom's, with the same names, segment, rubric and `loom.yaml` keys; only their answer key differs, the board entry snapshot and the decision record in place of the record and the plan.
+ //
+diff --git a/internal/loomrecipe/drift_test.go b/internal/loomrecipe/drift_test.go
+index df77280b..16abdd78 100644
+--- a/internal/loomrecipe/drift_test.go
++++ b/internal/loomrecipe/drift_test.go
+@@ -26,7 +26,7 @@ func TestDriftRows_EntryGate(t *testing.T) {
+ 		rows  []string
+ 	}{
+ 		{"loom", New, []string{loomshed.NameDriftBaseline, loomshed.NameDriftAwait, loomshed.NameDriftVerify}},
+-		{"darn", NewDarn, []string{loomshed.NameDriftBaseline, loomshed.NameDriftVerify}},
++		{"darn", NewDarn, []string{loomshed.NameDriftBaseline, loomshed.NameDriftAwait, loomshed.NameDriftVerify}},
+ 	}
+ 	for _, recipe := range recipes {
+ 		t.Run(recipe.name, func(t *testing.T) {
+diff --git a/internal/loomrecipe/recipe_test.go b/internal/loomrecipe/recipe_test.go
+index 2f22431d..b7517530 100644
+--- a/internal/loomrecipe/recipe_test.go
++++ b/internal/loomrecipe/recipe_test.go
+@@ -359,7 +359,7 @@ func TestEntryNumbers(t *testing.T) {
+ 			"Describe":     13, "PR-Review": 14, "Finalize": 15, "Friction-Reflect": 16,
+ 		}},
+ 		{"batten", shedrun.RecipeBatten, map[string]int{"Run-Shed": 6, "Land": 7}},
+-		{"darn", shedrun.RecipeDarn, map[string]int{"Drift-Baseline": 2, "Drift-Verify": 4, "Code-Bouncer": 5, "Code-Burler-Review": 5, "Code-Burler-Fix": 5}},
++		{"darn", shedrun.RecipeDarn, map[string]int{"Drift-Baseline": 2, "Drift-Await": 3, "Drift-Verify": 5, "Code-Bouncer": 6, "Code-Burler-Review": 6, "Code-Burler-Fix": 6}},
+ 	} {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			got := numbersOf(t, tt.recipe)
+diff --git a/internal/loomrecipe/shape_test.go b/internal/loomrecipe/shape_test.go
+index 83f40394..77d537a3 100644
+--- a/internal/loomrecipe/shape_test.go
++++ b/internal/loomrecipe/shape_test.go
+@@ -52,6 +52,7 @@ var (
+ 	burlerFixType    = reflect.TypeOf(&shedadapters.BurlerFixProducer{})
+ 
+ 	driftBaselineType = reflect.TypeOf(&driftengine.DriftBaseline{})
++	driftAwaitType    = reflect.TypeOf(&driftengine.DriftAwait{})
+ 	driftVerifyType   = reflect.TypeOf(&driftengine.DriftVerify{})
+ )
+ 
+@@ -77,7 +78,7 @@ var wantProducerTable = []wantProducerRow{
+ 	{loomshed.NamePlanBouncer, "Bouncer", bouncerType},
+ 	{loomshed.NamePlanBurlerReview, "BurlerReview", burlerReviewType},
+ 	{loomshed.NamePlanBurlerFix, "BurlerFix", burlerFixType},
+-	{loomshed.NameDriftAwait, "DriftAwait", reflect.TypeOf(&driftengine.DriftAwait{})},
++	{loomshed.NameDriftAwait, "DriftAwait", driftAwaitType},
+ 	{loomshed.NameWebster, "Implementer", reflect.TypeOf(loomshed.NewWebsterProducer("", configengine.Dirs{}, nil, websterengine.RunDeps{}, nil))},
+ 	{loomshed.NameParentAlign, "ParentAlign", reflect.TypeOf(&landingshed.ParentAlign{})},
+ 	{loomshed.NameCodeBouncer, "Bouncer", bouncerType},
+diff --git a/internal/reportengine/doc.go b/internal/reportengine/doc.go
+index 6d7930b4..ed0bc22a 100644
+--- a/internal/reportengine/doc.go
++++ b/internal/reportengine/doc.go
+@@ -128,7 +128,7 @@
+ // paused every Run-Shed entry whose change is from paused, so the time the child stood paused at a producer boundary counts apart from the row it paused at.
+ // A loom run's setup also holds Preflight and Loom-Preflight; discussion every Discussion row; plan every Plan row, Drift-Baseline and Drift-Await; webster every Webster row, every Code row (Code-Bouncer, Code-Burler-Review, Code-Burler-Fix), Drift-Verify, Describe and the retired Batchifier row, whose batching the implementer now does; merge Parent-Align and every Merge row; publish-finalize PR-Review, Finalize and Friction-Reflect.
+ // The table also keeps the rows a past run's history holds and the recipes no longer do, by the literals the report declares: Publish, PR-Align, PR-Gate and PR-Rework count under publish-finalize, the Merge-In, Merge-Bouncer and Merge-Burler rows under merge, and the Webster-Bouncer and Webster-Burler rows under webster.
+-// A darn run's setup also holds Preflight and Drift-Baseline; write Darn-Write, its retired name Darn, and Describe; review every Code-Review row (Code-Bouncer, Code-Burler-Review, Code-Burler-Fix), Drift-Verify and a past run's retired Darn-Bouncer, Darn-Burler-Review and Darn-Burler-Fix; merge a past run's retired Merge-In; publish-finalize PR-Review, Finalize and Friction-Reflect, and a past run's Publish, PR-Align and PR-Gate.
++// A darn run's setup also holds Preflight, Drift-Baseline and Drift-Await; write Darn-Write, its retired name Darn, and Describe; review every Code-Review row (Code-Bouncer, Code-Burler-Review, Code-Burler-Fix), Drift-Verify and a past run's retired Darn-Bouncer, Darn-Burler-Review and Darn-Burler-Fix; merge a past run's retired Merge-In; publish-finalize PR-Review, Finalize and Friction-Reflect, and a past run's Publish, PR-Align and PR-Gate.
+ // Any other Run-Shed entry records a change of the child's state and counts under the phase the run's recipe table gives the producer its change names, else the latest child row before it, else under setup.
+ // Any other row counts under other and adds a finding, so a row a recipe gains before its table does shows up rather than vanishing.
+ // Without the batten source land is nil and setup holds the loom rows alone.
+diff --git a/internal/reportengine/timing_test.go b/internal/reportengine/timing_test.go
+index 6deda61e..3e8ec3ba 100644
+--- a/internal/reportengine/timing_test.go
++++ b/internal/reportengine/timing_test.go
+@@ -309,8 +309,11 @@ var loomRowPhases = []struct{ row, phase string }{
+ // darnRowPhases lists every darn row, the retired writer and perch row names included, with the phase it counts under, in the order the rows run.
+ var darnRowPhases = []struct{ row, phase string }{
+ 	{loomshed.NamePreflight, PhaseSetup},
++	{loomshed.NameDriftBaseline, PhaseSetup},
++	{loomshed.NameDriftAwait, PhaseSetup},
+ 	{"Darn", PhaseWrite},
+ 	{loomshed.NameDarnWrite, PhaseWrite},
++	{loomshed.NameDriftVerify, PhaseReview},
+ 	{retiredDarnBouncerRow, PhaseReview},
+ 	{retiredDarnBurlerReviewRow, PhaseReview},
+ 	{retiredDarnBurlerFixRow, PhaseReview},
+@@ -598,7 +601,7 @@ func TestComputeTiming(t *testing.T) {
+ 				// its 30s counts under review and not under write, the phase of the Darn-Write row before it.
+ 				batten := battenRecordOf(
+ 					entryAt(battenrecipe.NameWorktreeCreate, run),
+-					changeAt("child running → running at "+loomshed.NameCodeBurlerReview, secondsAfter(run, 750)),
++					changeAt("child running → running at "+loomshed.NameCodeBurlerReview, secondsAfter(run, 870)),
+ 				)
+ 				landedRun(w, "darned", "t1", 3, fmt.Sprintf(`{"recipe":"darn","driver":"go","started_at":%q}`, run.Format(time.RFC3339)), darn, batten)
+ 				landedRun(w, "loomed", "t2", 14, seedStartedAt(at(10)), []shedengine.HistoryEntry{entryAt(loomshed.NameFinalize, secondsAfter(at(10), 900))})
+@@ -615,7 +618,7 @@ func TestComputeTiming(t *testing.T) {
+ 				if darned.Recipe != shedrun.RecipeDarn || runOf(t, got, "loomed").Recipe != shedrun.RecipeLoom {
+ 					t.Errorf("recipes = %s, %s; want darn and loom", darned.Recipe, runOf(t, got, "loomed").Recipe)
+ 				}
+-				wantPhases(t, darned, map[string]int64{PhaseSetup: 600, PhaseWrite: 180, PhaseReview: 360, PhaseMerge: 60, PhasePublishFinalize: 360})
++				wantPhases(t, darned, map[string]int64{PhaseSetup: 720, PhaseWrite: 180, PhaseReview: 420, PhaseMerge: 60, PhasePublishFinalize: 360})
+ 				flight := runOf(t, got, "darn-flight")
+ 				if flight.Recipe != shedrun.RecipeDarn || flight.State != RunStateInFlight {
+ 					t.Errorf("run in flight = %s %s; want a darn run in flight", flight.Recipe, flight.State)
+diff --git a/internal/reportengine/timingspans.go b/internal/reportengine/timingspans.go
+index 35ca9784..73f73067 100644
+--- a/internal/reportengine/timingspans.go
++++ b/internal/reportengine/timingspans.go
+@@ -103,6 +103,7 @@ func darnPhases() map[string]string {
+ 	phases := map[string]string{
+ 		loomshed.NamePreflight:        PhaseSetup,
+ 		loomshed.NameDriftBaseline:    PhaseSetup,
++		loomshed.NameDriftAwait:       PhaseSetup,
+ 		loomshed.NameDarnWrite:        PhaseWrite,
+ 		loomshed.NameDriftVerify:      PhaseReview,
+ 		loomshed.NameDescribe:         PhaseWrite,
+diff --git a/internal/shedrecipe/doc.go b/internal/shedrecipe/doc.go
+index af930ce0..7a04bc79 100644
+--- a/internal/shedrecipe/doc.go
++++ b/internal/shedrecipe/doc.go
+@@ -72,10 +72,10 @@
+ // Each reads Env.Drift, a whole-struct passthrough to the producers, and fills its Seats and Now from Env.Seats and Env.Now, and DriftVerify its GateFindingsFile from Env.GateFindingsFile for the row, so a caller leaves those three unset.
+ // Each checks the Env.Drift seams its producer reads, and Env.Seats for the two agent rows, and refuses a nil one naming the field.
+ // None has a switch of its own: the recipe leaves a row out through its `entry_gate: drift.enabled`.
+-// DriftBaseline takes a required "subject", `decision-record` or `board-entry`, and an optional "capture", `detach` (the default) or `wait`.
++// DriftBaseline takes a required "subject", `decision-record` or `board-entry`.
+ // DriftAwait takes no key.
+ // DriftVerify takes a required "subject", the optional "gate_key" and a "gates" list of exactly one entry, named `verify`, which the agent's table runs once the session committed code.
+-// An unknown key, a missing or unknown subject, a capture outside the two and a gates list of another shape are refused naming the way forward.
++// An unknown key, a missing or unknown subject and a gates list of another shape are refused naming the way forward.
+ //
+ // # Segment settings and row settings
+ //
+diff --git a/internal/shedrecipe/entries_drift.go b/internal/shedrecipe/entries_drift.go
+index d1419314..d2c9c2cc 100644
+--- a/internal/shedrecipe/entries_drift.go
++++ b/internal/shedrecipe/entries_drift.go
+@@ -13,9 +13,6 @@ import (
+ const (
+ 	driftSubjectWayForward = "way forward: set subject to decision-record or board-entry in the row's config"
+ 	driftKeyWayForward     = "way forward: remove the key; the on and off switch of a Drift row is its entry_gate"
+-
+-	driftCaptureDetach = "detach"
+-	driftCaptureWait   = "wait"
+ )
+ 
+ // driftSeams are the Env.Drift seams a Drift entry checks before it builds its producer.
+@@ -55,24 +52,17 @@ func driftSubject(entry string, row RowIdentity, cfg Config) (string, error) {
+ }
+ 
+ // driftBaselineEntry is the Constructor for the "DriftBaseline" registry row.
+-// The row's required "subject" is decision-record or board-entry, and its optional "capture" is detach (the default) or wait.
++// The row's required "subject" is decision-record or board-entry.
+ // It checks Env.Seats and the Env.Drift seams the producer reads, and fills the producer's seat runner and clock from Env.
+ func driftBaselineEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error) {
+ 	const entry = "DriftBaseline"
+-	if err := configRejectUnknown(cfg, "subject", "capture"); err != nil {
++	if err := configRejectUnknown(cfg, "subject"); err != nil {
+ 		return nil, fmt.Errorf("%w; row %q: %s", err, row.Name, driftKeyWayForward)
+ 	}
+ 	subject, err := driftSubject(entry, row, cfg)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	capture, err := configString(cfg, "capture", false)
+-	if err != nil {
+-		return nil, fmt.Errorf("shedrecipe: %s: row %q: %w; way forward: set capture to %s or %s", entry, row.Name, err, driftCaptureDetach, driftCaptureWait)
+-	}
+-	if capture != "" && capture != driftCaptureDetach && capture != driftCaptureWait {
+-		return nil, fmt.Errorf("shedrecipe: %s: row %q: config key %q must be %q or %q, got %q; way forward: set capture to %s or %s", entry, row.Name, "capture", driftCaptureDetach, driftCaptureWait, capture, driftCaptureDetach, driftCaptureWait)
+-	}
+ 	if err := requireSeam(entry, "Seats", env.Seats); err != nil {
+ 		return nil, err
+ 	}
+@@ -87,12 +77,11 @@ func driftBaselineEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedPr
+ 		{"Drift.BaselineTable", d.BaselineTable},
+ 		{"Drift.StartCapture", d.StartCapture},
+ 		{"Drift.RunCapture", d.RunCapture},
+-		{"Drift.Sleep", d.Sleep},
+ 	})
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	return driftengine.NewDriftBaseline(row.Name, driftengine.Row{Subject: subject, WaitCapture: capture == driftCaptureWait}, driftDepsFrom(env)), nil
++	return driftengine.NewDriftBaseline(row.Name, driftengine.Row{Subject: subject}, driftDepsFrom(env)), nil
+ }
+ 
+ // driftAwaitEntry is the Constructor for the "DriftAwait" registry row.
+diff --git a/internal/shedrecipe/entries_drift_test.go b/internal/shedrecipe/entries_drift_test.go
+index c8ff4ac6..eb0f989d 100644
+--- a/internal/shedrecipe/entries_drift_test.go
++++ b/internal/shedrecipe/entries_drift_test.go
+@@ -42,7 +42,7 @@ func driftTestEnv(t *testing.T) Env {
+ 	return env
+ }
+ 
+-// TestDriftEntries asserts each Drift entry builds its producer with the kit's Env, and refuses an unknown key, a bad subject or capture, a wrong gates list and a nil seam, each naming the way forward.
++// TestDriftEntries asserts each Drift entry builds its producer with the kit's Env, and refuses an unknown key, a bad subject, a wrong gates list and a nil seam, each naming the way forward.
+ func TestDriftEntries(t *testing.T) {
+ 	t.Parallel()
+ 
+@@ -60,12 +60,10 @@ func TestDriftEntries(t *testing.T) {
+ 		wantErr  string
+ 	}{
+ 		{"BaselineDecisionRecord", driftBaselineEntry, Config{"subject": "decision-record"}, nil, reflect.TypeOf(&driftengine.DriftBaseline{}), ""},
+-		{"BaselineBoardEntryWait", driftBaselineEntry, Config{"subject": "board-entry", "capture": "wait"}, nil, reflect.TypeOf(&driftengine.DriftBaseline{}), ""},
+-		{"BaselineDetach", driftBaselineEntry, Config{"subject": "board-entry", "capture": "detach"}, nil, reflect.TypeOf(&driftengine.DriftBaseline{}), ""},
+-		{"BaselineUnknownKey", driftBaselineEntry, Config{"subject": "decision-record", "enabled": true}, nil, nil, "entry_gate"},
++		{"BaselineBoardEntry", driftBaselineEntry, Config{"subject": "board-entry"}, nil, reflect.TypeOf(&driftengine.DriftBaseline{}), ""},
++		{"BaselineCaptureKey", driftBaselineEntry, Config{"subject": "board-entry", "capture": "wait"}, nil, nil, "entry_gate"},
+ 		{"BaselineMissingSubject", driftBaselineEntry, Config{}, nil, nil, "way forward: set subject"},
+ 		{"BaselineUnknownSubject", driftBaselineEntry, Config{"subject": "issue"}, nil, nil, "way forward: set subject"},
+-		{"BaselineUnknownCapture", driftBaselineEntry, Config{"subject": "decision-record", "capture": "sometimes"}, nil, nil, "way forward: set capture"},
+ 		{"BaselineNilSeats", driftBaselineEntry, Config{"subject": "decision-record"}, func(e *Env) { e.Seats = nil }, nil, "Seats"},
+ 		{"BaselineNilStartCapture", driftBaselineEntry, Config{"subject": "decision-record"}, func(e *Env) { e.Drift.StartCapture = nil }, nil, "Drift.StartCapture"},
+ 		{"AwaitBuilds", driftAwaitEntry, Config{}, nil, reflect.TypeOf(&driftengine.DriftAwait{}), ""},
