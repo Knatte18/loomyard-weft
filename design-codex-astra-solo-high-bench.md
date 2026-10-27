@@ -1,6 +1,6 @@
 # Bench solo Codex Astra at high effort on one plan
 
-`codex-astra-solo-high-bench` · Task · research, codex, burler · draft
+`codex-astra-solo-high-bench` · Task · research, codex, burler
 
 ## Question
 
