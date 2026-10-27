@@ -1,0 +1,24 @@
+attempt: 1
+cap: 2
+failures:
+    - id: github.com/Knatte18/loomyard/internal/lymcwd
+      kind: package
+      package: github.com/Knatte18/loomyard/internal/lymcwd
+      tail: "FAIL\tgithub.com/Knatte18/loomyard/internal/lymcwd\t1.408s"
+    - id: github.com/Knatte18/loomyard/cmd/lym
+      kind: package
+      package: github.com/Knatte18/loomyard/cmd/lym
+      tail: |-
+        === CONT  TestGofmt_ModuleFilesAreFormatted/unformatted_source_names_file,_line,_current_and_formatted_text
+        === CONT  TestGofmt_ModuleFilesAreFormatted/formatted_source_passes
+        === CONT  TestGofmt_ModuleFilesAreFormatted/import_order_alone_still_fails_with_that_line
+        --- PASS: TestGofmt_ModuleFilesAreFormatted/unformatted_source_names_file,_line,_current_and_formatted_text (0.00s)
+        === CONT  TestGofmt_ModuleFilesAreFormatted/unparseable_source_names_the_file
+        --- PASS: TestGofmt_ModuleFilesAreFormatted/formatted_source_passes (0.00s)
+        --- PASS: TestGofmt_ModuleFilesAreFormatted/unparseable_source_names_the_file (0.00s)
+        --- PASS: TestGofmt_ModuleFilesAreFormatted/import_order_alone_still_fails_with_that_line (0.00s)
+        --- PASS: TestGofmt_ModuleFilesAreFormatted (1.54s)
+        FAIL
+        FAIL	github.com/Knatte18/loomyard/cmd/lym	4.690s
+log_path: /home/knatte/Code/loomyard-LYMHUB/dobby-and-adopt-hardening/.lym/verify/verify-2.log
+fixer: fork
