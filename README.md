@@ -38,7 +38,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Rename lyx to lym (LoomYard Mill): binary, LYXHUB suffix, LYX_ variables and _lyx/.lyx directories** | [`rename-binary-lym`](design-rename-binary-lym.md) | darn |  | 11d<br>0m | stencil, shuttle |
+| T1 | **Rename lyx to lym (LoomYard Mill): binary, LYXHUB suffix, LYX_ variables and _lyx/.lyx directories** | [`rename-binary-lym`](design-rename-binary-lym.md) | darn |  | 11d<br>0m | stencil, shuttle |
 
 ## Notes (44)
 

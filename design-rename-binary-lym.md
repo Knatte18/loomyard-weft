@@ -1,6 +1,6 @@
 # Rename lyx to lym (LoomYard Mill): binary, LYXHUB suffix, LYX_ variables and _lyx/.lyx directories
 
-`rename-binary-lym` · Task · enhancement, stencil, shuttle · draft
+`rename-binary-lym` · Task · enhancement, stencil, shuttle
 
 Imported from [issue #670](https://github.com/Knatte18/loomyard/issues/670).
 
