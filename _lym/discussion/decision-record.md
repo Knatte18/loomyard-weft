@@ -49,6 +49,12 @@ Decision: in `Topology.Add`, the junction wiring moves to directly after the wef
 
 Rationale: it shortens the window in which the warp worktree exists without its junction, and neither the marks nor the launchers depend on the order.
 
+### Added after Discussion (parent, 2026-10-27): Leave the bench link breaks to main
+
+Decision: Way (c): do not touch the docs/research bench files or the docs link allowlist in this run. Task docs-link-skip-bench-data fixes TestEnforcement_MarkdownLinks on main by skipping docs/research/*/data/; once it lands, the orch resumes this run and it takes main in through its normal path.
+
+Rationale: The breaks come from main's bench commits, not this change; one fix on main serves every run.
+
 ## Constraints
 
 - `PATTERN-fabric-git`: the new predicates live in `internal/fabricengine`; orchcli runs no git and builds no fabric path.
