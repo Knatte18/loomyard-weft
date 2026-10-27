@@ -9,7 +9,7 @@ Models, the target repo, is proprietary and is never cloned outside OSL-1046 (op
 
 ## Idea
 
-A small public NUnit repo of our own as a C# sandbox hub, beside `lyx-test-LYXHUB`, with NUnit tests, built with SDK 10 like Models.
+A small public NUnit repo of our own as a C# sandbox hub, beside `lym-test-LYMHUB`, with NUnit tests, built with SDK 10 like Models.
 Its projects target `net10.0`, not Models' `net9.0`: what the sandbox proves (build, `dotnet test`, filters, incremental builds) depends on the SDK, not the target runtime, and Neve then needs no 9.0 runtime (operator, 2026-10-22).
 Runs on it prove the whole C# path on Neve before OSL-1046.
 
@@ -20,7 +20,7 @@ Runs on it prove the whole C# path on Neve before OSL-1046.
 
 ## Set up (2026-10-22)
 
-The hub exists on Neve at `/home/knatte/Code/lyx-csharp-LYXHUB` (shortname `cs`), over the public repos `Knatte18/lyx-csharp` and `Knatte18/lyx-csharp-weft`: `LyxCsharp.sln` with three libraries and two NUnit test projects, `lens_set: csharp`, gate `tier0` running `dotnet test` without `Category=Slow` and `tier1` with it.
+The hub exists on Neve at `/home/knatte/Code/lym-csharp-LYMHUB` (shortname `cs`), over the public repos `Knatte18/lym-csharp` and `Knatte18/lym-csharp-weft`: `LymCsharp.sln` with three libraries and two NUnit test projects, `lens_set: csharp`, gate `tier0` running `dotnet test` without `Category=Slow` and `tier1` with it.
 No run has gone through it yet; the first run there is the end-to-end proof this note asks for.
 The first `tier1` gate run died with "Internal CLR error (0x80131506)" after 900 s and passed on a rerun; cause unknown.
 
@@ -28,7 +28,7 @@ The first `tier1` gate run died with "Internal CLR error (0x80131506)" after 900
 
 1. `beam-start-and-ownership` lands (done 2026-10-26).
 2. `rename-binary-lym` runs alone.
-3. One darn run on this sandbox hub proves the whole C# path, with the hub anchored in a subdirectory (anchor not `.`) so the per-worktree `.lyx-anchor` path is proved end to end in the same run.
+3. One darn run on this sandbox hub proves the whole C# path, with the hub anchored in a subdirectory (anchor not `.`) so the per-worktree `.lym-anchor` path is proved end to end in the same run.
 4. Models, on OSL-1046; nothing is done there until the operator names what to test.
 
 ## Regression harness (operator, 2026-10-25)

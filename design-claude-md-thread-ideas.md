@@ -18,7 +18,7 @@ Paths below are repository-relative unless they start with `~/.claude`, which st
 2. **Never weaken, skip or delete a test or assertion to make a change pass** (NamerekDev, namrog84).
    Measure: per run, a diff scan of the task branch for removed `t.Run` cases, removed assertions, added `t.Skip` and deleted test functions, plus a planted task whose correct fix needs a test that is hard to satisfy.
 3. **Read every file you need in one pass, then edit, then test once** (the post itself, 887 votes).
-   Measure: on darn runs, token spend per run, `lyx gate test` calls per run, Reads issued after the first Edit, and Code-Review findings of class `consistency` naming a missed sibling site.
+   Measure: on darn runs, token spend per run, `lym gate test` calls per run, Reads issued after the first Edit, and Code-Review findings of class `consistency` naming a missed sibling site.
 4. **Before writing "we do X" or "we don't have X", reopen the code and cite `file:line`** (Stunning-Sherbet1853; OP said "stealing it").
    Measure: sample the factual claims about the codebase in change descriptions, decision records and board notes, check each against the code, and count false claims per run.
 5. **Mutation check after writing tests** (namrog84: break one behavior on purpose and confirm a test fails).
@@ -38,7 +38,7 @@ Paths below are repository-relative unless they start with `~/.claude`, which st
 A reply (page 15) adds: keep one test run before the edits, so a failure at the end is attributable.
 
 - Verdict: partly.
-- Have: webster's FRESH-READ rule, `contracts/stencils/webster/webster-body-implementer.md:5-7`, and span reads via `lyx quarry resolve` at `:53`; burler's pre-read for fork reviewers, `contracts/stencils/burler/burler-fork-reading.md:9-16`; twill's writer fork, `contracts/stencils/twill/twill-writer-fork.md:9`.
+- Have: webster's FRESH-READ rule, `contracts/stencils/webster/webster-body-implementer.md:5-7`, and span reads via `lym quarry resolve` at `:53`; burler's pre-read for fork reviewers, `contracts/stencils/burler/burler-fork-reading.md:9-16`; twill's writer fork, `contracts/stencils/twill/twill-writer-fork.md:9`.
   The baseline half exists as webster's "a failure the card did not cause" test, `webster-body-implementer.md:113-122`, and drift's baseline, `contracts/stencils/drift/drift-template-baseline.md`.
 - Missing: the darn writer gets no read-first rule and is told "Test as you work", `contracts/stencils/darn/darn-template-write.md:72-74`, the opposite of "test once".
 - Where: `darn-template-write.md` Step 4.
@@ -47,12 +47,12 @@ A reply (page 15) adds: keep one test run before the edits, so a failure at the 
 ### Treat corrections as a queue, do not drop current work (pixxelkick, top comment)
 
 - Verdict: does not fit as written; the orch analogue is already in place.
-- Why: spawned agents take no mid-run operator corrections except recorded decisions (`lyx loom decision add`, `.lyx/orch/role.md:284`), and the orch puts every proposal "on the board as a note at once, never held in your head", `.lyx/orch/role.md:324`.
+- Why: spawned agents take no mid-run operator corrections except recorded decisions (`lym loom decision add`, `.lym/orch/role.md:284`), and the orch puts every proposal "on the board as a note at once, never held in your head", `.lym/orch/role.md:324`.
 
 ### A mistake names its instruction cause; no apology (pixxelkick; Classic-Asparagus's `_observations/` folder and session reflection)
 
 - Verdict: partly.
-- Have: friction notes, `contracts/stencils/friction/friction-directive-implementer.md:14-27`, filed by the reflection agent as issues, `contracts/stencils/friction/friction-template-reflection.md:122-163`; the no-apology tone rule, `~/.claude/conversation/SKILL.md:33`; orch workarounds go into the rules file with the issue number, `.lyx/orch/role.md:353`.
+- Have: friction notes, `contracts/stencils/friction/friction-directive-implementer.md:14-27`, filed by the reflection agent as issues, `contracts/stencils/friction/friction-template-reflection.md:122-163`; the no-apology tone rule, `~/.claude/conversation/SKILL.md:33`; orch workarounds go into the rules file with the issue number, `.lym/orch/role.md:353`.
 - Missing: the friction directive asks what went wrong, not which instruction caused it (missing, ambiguous, conflicting, or clear but not followed), and the reflection agent does not classify by that.
 - Where: the four `friction-directive-*.md` files and the reflection template.
 - Bench: yes, see rank 6.
@@ -89,7 +89,7 @@ NamerekDev: "it stopped editing them. it deletes them now!"; a hook added for it
 - Verdict: partly.
 - Have: RED-before-GREEN, but only "when TDD is specified", `~/.claude/testing/SKILL.md:49-57`.
 - Missing: no stencil or plan card asks for it.
-- Where: the plan spec's test-card rules or the implementer stencil, or a `lyx gate` step.
+- Where: the plan spec's test-card rules or the implementer stencil, or a `lym gate` step.
 - Bench: yes, see rank 5.
 
 ### Review your work for creeping complexity and propose a workflow change (sammcj, partly cut off in the export); "keep it succinct" (es-ganso)
@@ -105,7 +105,7 @@ NamerekDev: "it stopped editing them. it deletes them now!"; a hook added for it
 ### The agent you talk to never writes code; it supervises sub-agents (maniac56)
 
 - Verdict: have it.
-- Where: "You diagnose; the run's own agents change the run", `.lyx/orch/role.md:281`; webster's Master never reads code, `contracts/stencils/webster/webster-template-master.md:19`.
+- Where: "You diagnose; the run's own agents change the run", `.lym/orch/role.md:281`; webster's Master never reads code, `contracts/stencils/webster/webster-template-master.md:19`.
 
 ### Simplified Technical English; ban "load-bearing", em dashes, slop words (basskittens, bigtime_porgrammer, Icy-Excitement-467)
 
@@ -124,7 +124,7 @@ The OP replied that banning em dashes made the model use " - " instead: "swapped
 ### "Do not guess"; prefer official docs; say when an answer rests only on training data (Whiteshovel66, TalShar)
 
 - Verdict: partly.
-- Have: "Read the index below before guessing a `lyx` command", `plugins/ly/skills/cli/SKILL.md:8`; Discussion reads code before asking, `loom-template-discussion.md:52-53`.
+- Have: "Read the index below before guessing a `lym` command", `plugins/ly/skills/cli/SKILL.md:8`; Discussion reads code before asking, `loom-template-discussion.md:52-53`.
 - Missing: nothing asks an agent to flag a claim about an external library or tool that it did not verify (go-git, cobra, tree-sitter, tmux, Claude Code flags).
 - Where: `~/.claude/code-quality/SKILL.md` or the implementer stencil.
 - Bench: possible but weak: count first-gate compile failures on undefined symbols of external packages.
@@ -140,12 +140,12 @@ The OP replied that banning em dashes made the model use " - " instead: "swapped
 ### "Clearly call out the next action" (4bitfocus)
 
 - Verdict: does not fit.
-- Why: aimed at a solo chat loop where the human approves each step; runs are autonomous, and orch status reports already carry the attach command, `.lyx/orch/role.md:393`.
+- Why: aimed at a solo chat loop where the human approves each step; runs are autonomous, and orch status reports already carry the attach command, `.lym/orch/role.md:393`.
 
 ### A repo map: one-line description per file, kept current (No_Dig_7017)
 
 - Verdict: partly.
-- Have: `lyx quarry toc`, `contracts/stencils/loom/loom-template-plan.md:65`, fed by file headers and doc comments written to that bar, `~/.claude/code-quality/SKILL.md:113-120`.
+- Have: `lym quarry toc`, `contracts/stencils/loom/loom-template-plan.md:65`, fed by file headers and doc comments written to that bar, `~/.claude/code-quality/SKILL.md:113-120`.
 - Missing: only the planner is pointed at it; the darn writer and burler reviewers are not.
 - Where: `darn-template-write.md` Step 4 and `burler-step-1-explore.md`'s tool-use rules.
 - Bench: possible: darn token spend and Reads before the first Edit, with and without the pointer; fold into the rank-3 bench rather than running it alone.
@@ -179,7 +179,7 @@ The OP replied that banning em dashes made the model use " - " instead: "swapped
 
 - Verdict: worth adopting, if transcripts show it happens.
 - Have: the plan spec scopes grep to a package, `contracts/specs/loom-plan-spec.md:370`.
-- Where: a `internal/shellguard` row denying a recursive `grep`/`find`/`rg` rooted at `/` or `~`, since many parallel lyx sessions share one machine.
+- Where: a `internal/shellguard` row denying a recursive `grep`/`find`/`rg` rooted at `/` or `~`, since many parallel lym sessions share one machine.
 - Bench: not needed; grep a sample of strand transcripts for such calls first.
 
 ### Replace CLAUDE.md lines with hooks and gates; a hook flags comments that will go stale (Neat-Culture9983 and parent)
@@ -226,7 +226,7 @@ The OP replied that banning em dashes made the model use " - " instead: "swapped
 ### Every mistake becomes a rule or, better, a pre-work check (Weekly_Cat6537)
 
 - Verdict: have it.
-- Where: `CLAUDE.md:10` (a new invariant goes into PATTERN with its code), PATTERN entries marked `(test)`, and the orch workaround rule, `.lyx/orch/role.md:353`.
+- Where: `CLAUDE.md:10` (a new invariant goes into PATTERN with its code), PATTERN entries marked `(test)`, and the orch workaround rule, `.lym/orch/role.md:353`.
 
 ### Keep CLAUDE.md under a page or it gets ignored (OP)
 
@@ -264,6 +264,6 @@ The OP replied that banning em dashes made the model use " - " instead: "swapped
 - One shared "never delete, skip or weaken a test or assertion to make it pass" rule for every editing role, copied from `webster-body-verify-fix.md:26-27`, plus a Code-Review rubric line flagging it.
   A bench is still worth running to see whether a prose rule suffices or a diff scan is needed.
 - One line in the editing stencils: report each doc/code disagreement you meet in the change description or a friction note, trusting the code for what happens and naming the side it believes is wrong.
-- Point the darn writer at `lyx quarry toc` and at reading the tests of the code it changes, in `darn-template-write.md` Step 4.
+- Point the darn writer at `lym quarry toc` and at reading the tests of the code it changes, in `darn-template-write.md` Step 4.
 - A friction-note prompt line asking for the instruction cause: missing, ambiguous, conflicting, or clear but not followed.
 - A `shellguard` row against recursive searches rooted at `/` or the home directory, once a transcript sample shows they happen.

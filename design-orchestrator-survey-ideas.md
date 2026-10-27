@@ -64,11 +64,11 @@ Nothing here is a commitment; these are leads to triage.
   For LoomYard: an "unrequested" lens in Webster review against the decision record, to catch scope creep.
 - **Risk tier by changed paths** — [yylo](https://github.com/yylo-dev/yylo) (`src/templates/config/risk-policy.json`).
   Globs over auth, migrations, lockfiles and CI pick the reviewer count and whether the full suite runs.
-  For LoomYard: choose a segment's review depth and `lyx gate test` scope from the diff.
+  For LoomYard: choose a segment's review depth and `lym gate test` scope from the diff.
   yylo has since marked this queue as retired (`docs/lifecycle-simplification-migration.md`), so treat it as an idea only.
 - **Pre-existing failure baseline** — oh-my-claudecode `ralph verify --write-baseline`.
   Gates fail only on new failures; baseline failures become warnings.
-  For LoomYard: `lyx gate test` and the webster verify gate could record a base-commit baseline, so implementers stop chasing failures that were already red.
+  For LoomYard: `lym gate test` and the webster verify gate could record a base-commit baseline, so implementers stop chasing failures that were already red.
   Counterpoint: LoomYard holds that main is always green, so a baseline would legitimize a red main, and it costs an extra full suite run before work starts.
 - **Typed completion signals** — [Bernstein](https://github.com/sipyourdrink-ltd/bernstein) janitor (`src/bernstein/core/quality/janitor.py`).
   A task declares `path_exists`, `test_passes` or `file_contains`; an LLM judge runs only once those pass.
@@ -93,13 +93,13 @@ Nothing here is a commitment; these are leads to triage.
   A retry resumes or forks the native session only if the workspace hash has not changed, and otherwise falls back to a cold restart.
   For LoomYard: webster's fork recovery.
 - **Per-run pinning of prompts** — Conductor `bundle build`; Bernstein refuses to resume after its spec digest changes.
-  For LoomYard: record the stencil digests a run started with in weft and have resume warn on drift, complementing `lyx stencil diff`.
+  For LoomYard: record the stencil digests a run started with in weft and have resume warn on drift, complementing `lym stencil diff`.
 - **Evidence reuse by input identity** — yylo (`risk_policy.py` `semantic_reuse_decision`).
   Earlier test or review evidence is reused only if its inputs and prompt identity are unchanged; a changed review prompt reruns only the review.
   For LoomYard: shed resume and the gate after a rework.
 - **Recipe validator and non-LLM step types** — Conductor `conductor validate` and its script/set steps.
   It catches unreachable steps, bad route targets and undeclared inputs offline, and script steps route on exit code or stdout JSON.
-  For LoomYard: extend the shed recipe validator with reachability and stencil output-name checks; a generic script producer could route on `lyx gate test`.
+  For LoomYard: extend the shed recipe validator with reachability and stencil output-name checks; a generic script producer could route on `lym gate test`.
 - **Mid-run guidance at the next step boundary** — Conductor `conductor guide --text`.
   For LoomYard: creel injects into a live pane today; this would queue guidance for the next producer's prompt instead.
 - **Batched operator questions with recorded assumptions** — Conductor `questions` step and Spec Kit `/clarify`.
@@ -157,12 +157,12 @@ Nothing here is a commitment; these are leads to triage.
   For LoomYard: a hash chain over producer outputs in weft would make an archived `archive/<slug>/<tip>` tag self-verifying.
 - **Unverified-completion rate** — Bernstein (`docs/operations/verification-tracking.md`).
   It alerts when more than 30% of completions in a window had no test, gate or signal check.
-  For LoomYard: a new `lyx report` view.
+  For LoomYard: a new `lym report` view.
 - **Commit-to-record links via git notes** — [AgentNote](https://github.com/wasabeef/AgentNote).
   It attaches the session record behind each commit as a git note on a dedicated ref, plus a commit trailer.
   For LoomYard: a trailer or note on each warp batch commit pointing at its weft record path, so `git log` on the code leads to the run.
 - **Run diff** — ccswarm `run diff <a> <b>`.
-  For LoomYard: `lyx report` comparing two archived runs' timelines and token use.
+  For LoomYard: `lym report` comparing two archived runs' timelines and token use.
 - **OpenTelemetry tracing** — Conductor.
   For LoomYard: optional spans per producer, alongside `report timing`.
 

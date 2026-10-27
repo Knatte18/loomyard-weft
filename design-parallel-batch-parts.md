@@ -21,8 +21,8 @@ The pieces parallel batches need are the same whether a batch starts as a Webste
 
 ## Open
 
-How a fork is kept inside its batch's worktree: it inherits the master's working directory and a context full of paths into the task worktree, and `lyx` commands find their anchor from the working directory.
+How a fork is kept inside its batch's worktree: it inherits the master's working directory and a context full of paths into the task worktree, and `lym` commands find their anchor from the working directory.
 
 ### Orch recommendation
 
-Bench before build: a small proof of concept in which one fork is told to work in a worktree Go created, with absolute paths, and a PreToolUse hook refuses its Edit and Write calls outside that worktree, so a slip is refused instead of landing in the wrong tree; measure whether the fork stays inside and what `lyx` commands it needs a directory flag for.
+Bench before build: a small proof of concept in which one fork is told to work in a worktree Go created, with absolute paths, and a PreToolUse hook refuses its Edit and Write calls outside that worktree, so a slip is refused instead of landing in the wrong tree; measure whether the fork stays inside and what `lym` commands it needs a directory flag for.

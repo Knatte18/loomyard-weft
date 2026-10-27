@@ -15,7 +15,7 @@ Creel is a prerequisite for Codex; the Codex-readiness plan's interim `neutral-p
 ## Scope (stage 3 of the creel design, plus the Codex-readiness findings)
 
 - Drivers' stop reports post instead of duplicating batten's notices over `SendMessage`.
-- `lyx shuttle send` and `lyx shuttle interrupt` move behind creel.
+- `lym shuttle send` and `lym shuttle interrupt` move behind creel.
 - The parent directive (`contracts/stencils/parent/parent-directive-parent.md`), rendered for every role with a parent, says to ask through creel, not "by `SendMessage`".
 - `shuttleengine/hold.go`'s hold notice names creel, not `SendMessage`.
 - The other stencils that name `SendMessage` (`seat-directive-{chair,advisor}`, `loom-template-discussion-advisor.md`, `shed-template-driver-notify{,-watched}.md`, `webster-template-master.md`, the orch role) move to creel where the Discussion finds it fits; what stays Claude-only is declared through `Spec.Requires`.
@@ -38,11 +38,11 @@ The operator decided on 2026-10-17 that this belongs in stage 3.
 
 ### Seen (orch, 2026-10-17)
 
-In a demo, `ly:orch` posted #3 to a fresh Claude strand `ly:demo`, whose body asked for a reply by `lyx creel post --reply`; the agent read it and replied as #4.
+In a demo, `ly:orch` posted #3 to a fresh Claude strand `ly:demo`, whose body asked for a reply by `lym creel post --reply`; the agent read it and replied as #4.
 It replied by post only because the body told it how.
 An inject (#5) asking for `PONG` was answered in the receiver's own pane, to the operator, and never reached the sender: an inject is typed as a user line and has no reply path.
-`lyx creel read` prints the message with its id but says nothing about answering by `post --reply`.
-Creel already limits inject: only EXTERNAL callers, programs and orch strands may inject into another strand (`lyx creel inject --help`).
+`lym creel read` prints the message with its id but says nothing about answering by `post --reply`.
+Creel already limits inject: only EXTERNAL callers, programs and orch strands may inject into another strand (`lym creel inject --help`).
 
 ### Operator view, not a decision (2026-10-17)
 
@@ -54,11 +54,11 @@ A post takes an active step by the receiver to fetch it, and that step should te
 ### Orch view on that
 
 The split holds, but the agent should be told rather than left to infer it: the reminder that starts its turn is itself typed into the pane like an operator line, and a model answers in its pane by default.
-One line in `lyx creel read`'s output (the sender is another strand, not the operator; answer with `lyx creel post --reply <id> <text>`) makes it explicit at the moment it matters.
+One line in `lym creel read`'s output (the sender is another strand, not the operator; answer with `lym creel post --reply <id> <text>`) makes it explicit at the moment it matters.
 
 ### Idea (orch recommendation)
 
-- `lyx creel read` prints, with each message, the command that answers it (`lyx creel post --reply <id> <text>`), and says when the sender waits on the reply (`--wait-reply`).
+- `lym creel read` prints, with each message, the command that answers it (`lym creel post --reply <id> <text>`), and says when the sender waits on the reply (`--wait-reply`).
 - The agent stencils state the rule once, in a shared block: a creel message is answered by `post --reply`, never in the pane; a line in the pane is for the operator.
 - An inject never carries a question that expects an answer from the receiver; a sender that wants an answer posts.
 - A message whose sender waits and that goes unanswered past a bound is journaled, so the orch can see it.
@@ -78,8 +78,8 @@ Orch recommendation on the idea:
 Operator view, not a decision (2026-10-17): all of this must be logged, including how often creel has to chase.
 
 Orch recommendation on the logging:
-- The journal gets an event per chase (`chased`, with the message id, receiver and chase number) and one `unanswered` event when the chases run out; `lyx creel log --id <id>` then shows a message's whole path, posted, read, chased, replied or unanswered.
-- A report, beside `lyx report convergence`, counts expected replies, chases and unanswered messages per receiver role, so the stencils of roles that often need chasing can be tuned.
+- The journal gets an event per chase (`chased`, with the message id, receiver and chase number) and one `unanswered` event when the chases run out; `lym creel log --id <id>` then shows a message's whole path, posted, read, chased, replied or unanswered.
+- A report, beside `lym report convergence`, counts expected replies, chases and unanswered messages per receiver role, so the stencils of roles that often need chasing can be tuned.
 
 ### Open
 
@@ -88,7 +88,7 @@ Orch recommendation on the logging:
 ## Operator view, not a decision (2026-10-23): SendMessage works well
 
 Claude Code's own messaging works well between Claude sessions: a message is sure to arrive, the receiver knows how to answer, and no one waits for a pane to be idle.
-Creel's reminder and `lyx creel read` cost the receiver an extra turn per agent message (note `creel-carry-agent-mail`).
+Creel's reminder and `lym creel read` cost the receiver an extra turn per agent message (note `creel-carry-agent-mail`).
 The problem is Codex: a Claude session cannot reach a Codex session through `SendMessage`, which is why this stage exists.
 
 ### Operator idea (2026-10-23): each engine's own messaging, a relay between them
@@ -100,7 +100,7 @@ The operator's concern: much added delay.
 
 - Whether Codex has messaging between sessions is not checked; the `codex-engine` spike can find out.
   `docs/research/codex-twill-spike-2026-10-24/report.md` saw Codex's `send_message`, `followup_task` and `interrupt_agent` tools between a parent and its subagents but did not test them; whether Codex agents can message each other is worth testing (operator, 2026-10-24).
-- The relay need not be LLM agents: creel is already a program that types into any pane, so a cross-engine message is one `lyx creel post` by the sender, typed in full into the receiver's pane, with no relay turn.
+- The relay need not be LLM agents: creel is already a program that types into any pane, so a cross-engine message is one `lym creel post` by the sender, typed in full into the receiver's pane, with no relay turn.
   Two relay agents would add two LLM turns and their delay per message.
   Operator (2026-10-23): relay agents are cheap, on the cheapest models such as Haiku or Luna, and must forward verbatim; creel as designed does the same.
 - What a cross-engine post costs today is the receiver's reminder and read turn, which note `creel-carry-agent-mail` would remove.

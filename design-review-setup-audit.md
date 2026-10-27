@@ -4,7 +4,7 @@
 
 ## Questions
 
-One audit over the same records (review files in the weft archive tags, `lyx report convergence`, `tools/tokencount/tokencount.sh`) answers three questions:
+One audit over the same records (review files in the weft archive tags, `lym report convergence`, `tools/tokencount/tokencount.sh`) answers three questions:
 
 1. Is the lens fan and twill fixer setup worth its cost at each perch, and what should the standard review rounds be?
 2. Which finding classes recur at Plan and Discussion, and where is each cheapest to stop at the source?
@@ -57,7 +57,7 @@ Compare those runs' round-1 Plan findings against the earlier audit's baseline, 
 
 ### Orch recommendation, not a decision
 
-- Run it after about ten loom runs with the setup, from `lyx report convergence` (stop classes, fresh-code fixes, review rounds per segment), `tools/tokencount/tokencount.sh` and the review files in the records repository.
+- Run it after about ten loom runs with the setup, from `lym report convergence` (stop classes, fresh-code fixes, review rounds per segment), `tools/tokencount/tokencount.sh` and the review files in the records repository.
 - Per perch: how many findings each fan member and round raised, how many led to a change that stayed, how many the later perches or PR-Gate would have caught anyway, and the tokens and minutes each round cost.
 - Compare with the runs from before 2026-10-16 where the records allow it.
 
@@ -76,7 +76,7 @@ Plan is heavy by nature, since it turns the Discussion into concrete work; the a
 
 - A fresh agent classifies every finding the Plan lenses and Plan-Burler-Review raised in recent runs: what kind of defect, whether it was real, and whether the review found something the lenses had not.
 - Each recurring class goes where it is cheapest to stop at the source:
-  - a machine check in `lyx loom validate-plan`, when the class can be checked deterministically;
+  - a machine check in `lym loom validate-plan`, when the class can be checked deterministically;
   - a writer rule in the Plan stencil, when it is a judgement the writer can make up front;
   - a missing input, when the writer lacked something it needed (for example what `discussion-relevant-list` now hands it).
 - Then measure whether lens and review findings per run drop.
@@ -110,7 +110,7 @@ Two of its proposals are left for this audit to weigh, numbered as in the origin
 ### Question (operator, 2026-10-18)
 
 Has the quality of Discussion and Plan output gone up since the writers became twill-based?
-An agent answered it on 2026-10-18 from the records (weft archive tags, Bolt config history, `lyx report convergence`); below is its finding.
+An agent answered it on 2026-10-18 from the records (weft archive tags, Bolt config history, `lym report convergence`); below is its finding.
 
 ### Short answer
 

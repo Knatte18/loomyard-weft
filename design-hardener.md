@@ -19,11 +19,11 @@ Then retire `crucible/`, which still writes to `_mill/` and runs its rounds thro
 - What the handoff must carry losslessly besides the finding-recurrence ledger.
 - Where the line falls between the Go scaffolding and the LLM's orchestrator role.
 - Whether the round agent reuses the `burler` package or only its prompt template.
-- How much of the sandbox provisioning lyx automates.
+- How much of the sandbox provisioning lym automates.
 
 ## Done when
 
-- `lyx` can start a Hardener campaign against a module and run it unattended to convergence or a round cap.
+- `lym` can start a Hardener campaign against a module and run it unattended to convergence or a round cap.
 - `crucible/` is deleted, and the design's durable content lives in package docs.
 
 ## Notes
@@ -143,13 +143,13 @@ Consequences carried from the hand-run method:
 - **Zero stray substrate state at teardown** is itself an invariant under test.
 - **Grow the suite with the module** — a bug found live leaves behind both a `//go:build smoke` regression test and, where visual, a suite scenario.
 
-## The likely `lyx` shape (open)
+## The likely `lym` shape (open)
 
-`Tenter`'s defining trait — an accumulating, targeting review-loop — is precisely what lyx's thesis otherwise *replaces* with Go.
+`Tenter`'s defining trait — an accumulating, targeting review-loop — is precisely what lym's thesis otherwise *replaces* with Go.
 So this probably is **not** "Go takes over the orchestrator."
-More likely: **lyx provides the deterministic scaffolding** and the **orchestrator brain stays an LLM** —
+More likely: **lym provides the deterministic scaffolding** and the **orchestrator brain stays an LLM** —
 
-- **Go / lyx owns** (split across `Shed` and `Treadle`): provision/reset the sandbox, deploy the binary, run the slow gates (smoke suite, zero-stray-state), collect + structure results, maintain handoff files (via `internal/state`), the per-round respawn loop, teardown.
+- **Go / lym owns** (split across `Shed` and `Treadle`): provision/reset the sandbox, deploy the binary, run the slow gates (smoke suite, zero-stray-state), collect + structure results, maintain handoff files (via `internal/state`), the per-round respawn loop, teardown.
 - **LLM orch-brain owns** (Tenter's judge, within `Treadle`): read results, accumulate understanding, decide what to target next, write the next round's focused prompt.
 - **`burler`-shaped round agent** (see the `internal/burlerengine` package documentation): the A→B worker, spawned per round (drives the sandbox;
   `fix-scope: source`;
@@ -182,7 +182,7 @@ Whether the round agent literally imports the `burler` package or only follows t
   what else?).
 - The Go-scaffolding / LLM-brain boundary above.
 - Whether it reuses the `burler` package or just the prompt template.
-- Sandbox provisioning: how much lyx automates vs. a pre-existing sandbox repo.
+- Sandbox provisioning: how much lym automates vs. a pre-existing sandbox repo.
 - The treadle judge stencils (`contracts/stencils/treadle/treadle-template-judge-circling.md`, `treadle-template-judge-milestone.md`, `treadle-template-targeting.md`) are kept for Hardener but unmaintained, and are re-derived from the Bouncer judge (`bouncer/bouncer-template-judge.md`) when Hardener is built, so no dead-code sweep removes them (operator decision 2026-10-16, from the stencil intent audit of 2026-10-15).
 
 **This module is post-loom and on-demand;
