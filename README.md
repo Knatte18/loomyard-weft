@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-27 15:02 UTC; every age below is as of then.
+Rendered 2026-10-27 15:05 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -38,10 +38,10 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Dobby survives deploys, logs changes only, tidies per owner; a visible adopt check**<br>• Fix the dobby re-exec exit, bound its log, count tidies per owner, give the adopt check its own gate key and visible progress | [`dobby-and-adopt-hardening`](design-dobby-and-adopt-hardening.md) | loom | Discussion-Burler-Review | neve | 1d<br>37m | workspaces, batten, gate, board |
-| T3 | **A gate test writes trace logs into the live hub and Bolt commits them**<br>• trace-*.log from a run gate test landed in _board/.lym/logs and board sync committed them | [`test-logs-leak-into-bolt`](design-test-logs-leak-into-bolt.md) | darn | Darn-Write | neve | 4h<br>37m | gate, board, testkit |
-| T4 | **A read creates directories: state.ReadJSON mkdirs, so a hub reader leaves a real _lym in a half-built pair** | [`hub-reader-creates-lym`](design-hub-reader-creates-lym.md) | darn | Code-Burler-Review | neve | 1d<br>37m | fabric, orch, batten |
-| T5 | **Board README lists draft tasks under Ready** | [`readme-draft-not-ready`](design-readme-draft-not-ready.md) | darn | Darn-Write | neve | 1d<br>37m | board |
+| T2 | **Dobby survives deploys, logs changes only, tidies per owner; a visible adopt check**<br>• Fix the dobby re-exec exit, bound its log, count tidies per owner, give the adopt check its own gate key and visible progress | [`dobby-and-adopt-hardening`](design-dobby-and-adopt-hardening.md) | loom | Discussion-Burler-Review | neve | 1d<br>40m | workspaces, batten, gate, board |
+| T3 | **A gate test writes trace logs into the live hub and Bolt commits them**<br>• trace-*.log from a run gate test landed in _board/.lym/logs and board sync committed them | [`test-logs-leak-into-bolt`](design-test-logs-leak-into-bolt.md) | darn | Darn-Write | neve | 4h<br>40m | gate, board, testkit |
+| T4 | **A read creates directories: state.ReadJSON mkdirs, so a hub reader leaves a real _lym in a half-built pair** | [`hub-reader-creates-lym`](design-hub-reader-creates-lym.md) | darn | Code-Burler-Fix | neve | 1d<br>40m | fabric, orch, batten |
+| T5 | **Board README lists draft tasks under Ready** | [`readme-draft-not-ready`](design-readme-draft-not-ready.md) | darn | Darn-Write | neve | 1d<br>40m | board |
 
 ### Ready (0)
 
@@ -66,8 +66,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Beam promote keeps the Discussion record as part of the beam**<br>• When Discussion finds a task should be a project, promote carries its decision record into the beam instead of dropping it | [`beam-promote-keeps-discussion`](design-beam-promote-keeps-discussion.md) | 2d<br>5h | workspaces, batten, loom |
 | E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>1h | shuttle, codex |
-| E5 |  | **Decide the layout of projects in the board README**<br>• The operator is not satisfied with how the README renders projects and their members; the layout is to be decided | [`board-projects-layout`](design-board-projects-layout.md) | 2d<br>37m | board |
-| E6 |  | **Board README: one rendered file per project, research notes first**<br>• Each project renders its own file linked from its parent; README.md is the root project; research notes come right after tasks | [`readme-per-project-files`](design-readme-per-project-files.md) | 1d<br>37m | board |
+| E5 |  | **Decide the layout of projects in the board README**<br>• The operator is not satisfied with how the README renders projects and their members; the layout is to be decided | [`board-projects-layout`](design-board-projects-layout.md) | 2d<br>40m | board |
+| E6 |  | **Board README: one rendered file per project, research notes first**<br>• Each project renders its own file linked from its parent; README.md is the root project; research notes come right after tasks | [`readme-per-project-files`](design-readme-per-project-files.md) | 1d<br>40m | board |
 | E7 |  | **Run verbs in one shared namespace, not under lym loom**<br>• lym loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 12d<br>5h | shed, loom |
 | E8 |  | **Darn runs Drift-Await after Drift-Baseline instead of a waiting capture** | [`darn-drift-await-row`](design-darn-drift-await-row.md) | 1d<br>1d | shed, loom |
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 2w<br>5h | burler, stencil |
@@ -106,7 +106,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R1 |  | **Recurring test-suite time and growth audit**<br>• Re-run cmd/testtiming against test-suite-timing.md to watch suite growth | [`test-time-audit-recurring`](design-test-time-audit-recurring.md) | 9d<br>1d |  |
-| R2 |  | **Audit the twill and lens review setup: worth per perch, recurring finding classes, writer quality**<br>• One audit over the review records once about ten loom runs with the current setup land on Neve | [`review-setup-audit`](design-review-setup-audit.md) | 11d<br>4h | burler, loom, report, stencil, shed |
+| R2 |  | **Audit the twill and lens review setup: worth per perch, recurring finding classes, writer quality**<br>• One audit over the review records once about ten loom runs with the current setup land on Neve | [`review-setup-audit`](design-review-setup-audit.md) | 11d<br>5h | burler, loom, report, stencil, shed |
 | R3 |  | **Sweep go_parallel on OSL-1046 with Cortex XDR**<br>• Time both gate tiers on the work laptop on a quiet machine and log them in docs beside the Neve numbers, with full hardware info | [`bench-osl1046-xdr`](design-bench-osl1046-xdr.md) | 7d<br>1d |  |
 | R4 |  | **Lens overlap audit: which lenses find the same defects, and a smaller set**<br>• twill-plan 8 to 5 lenses recommended; twill-discussion 7 to 4 and review-code 4 to 3 at low confidence | [`lens-overlap-audit`](design-lens-overlap-audit.md) | 5d<br>5h | burler, loom |
 | R5 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 5d<br>5h | webster |
