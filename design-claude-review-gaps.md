@@ -1,6 +1,6 @@
 # Study what the Claude lens fan misses that Codex finds, and how to tune it
 
-`claude-review-gaps` · Task · research, burler, stencil, claude · draft
+`claude-review-gaps` · Task · research, burler, stencil, claude
 
 ## Question
 
