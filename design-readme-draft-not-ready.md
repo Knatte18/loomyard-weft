@@ -1,6 +1,6 @@
 # Board README lists draft tasks under Ready
 
-`readme-draft-not-ready` · Task · bug, board
+`readme-draft-not-ready` · Task · bug, board · running · Worktree-Create
 
 Imported from [issue #873](https://github.com/Knatte18/loomyard/issues/873).
 
