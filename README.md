@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-27 10:01 UTC; every age below is as of then.
+Rendered 2026-10-27 10:02 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -38,7 +38,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (45)
+## Notes (44)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -67,7 +67,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 11d<br>11d | board, loom |
 | E11 |  | **Loom and darn Finalize resolve a moved parent themselves instead of rerouting** | [`loom-finalize-merges-itself`](design-loom-finalize-merges-itself.md) | 1d<br>18h | loom, batten |
 | E12 |  | **Adopt machine check: a gate key of its own, and visible while it runs**<br>• Adopt runs its machine check silently in the background under the finalize gate key | [`adopt-check-visible`](design-adopt-check-visible.md) | 1d<br>1m | gate, board |
-| E13 |  | **VS Code colours by project and worktree, and lym ide seed with no slug**<br>• Title bar shows the project (prime or beam), the activity bar the worktree; text colour by luminance; ide seed with no slug seeds the current worktree | [`ide-seed-current-worktree`](design-ide-seed-current-worktree.md) | 41m<br>2m | ide, workspaces |
+| E13 |  | **VS Code colours by project and worktree, and lym ide seed with no slug**<br>• Title bar shows the project (prime or beam), the activity bar the worktree; text colour by luminance; ide seed with no slug seeds the current worktree | [`ide-seed-current-worktree`](design-ide-seed-current-worktree.md) | 42m<br>3m | ide, workspaces |
 | E14 |  | **No test is skipped by design**<br>• Windows-only tests count as skips on Linux, and TestBuildLoomShed_OutputShape skips on every machine | [`test-skips-os-tags`](design-test-skips-os-tags.md) | 1d<br>23h | testkit, reed, loom, fabric, gate |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 9d<br>1m | webster, fabric, loom |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 8d<br>1m | fabric, batten |
@@ -94,7 +94,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 11d<br>1m | burler, shed, orch, quarry, report |
 | F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 4d<br>1m | loom, shed, batten, workspaces, burler |
 
-### Researchs (8)
+### Researchs (7)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -104,5 +104,4 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R4 |  | **Lens overlap audit: which lenses find the same defects, and a smaller set**<br>• twill-plan 8 to 5 lenses recommended; twill-discussion 7 to 4 and review-code 4 to 3 at low confidence | [`lens-overlap-audit`](design-lens-overlap-audit.md) | 4d<br>1m | burler, loom |
 | R5 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 4d<br>1m | webster |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 4d<br>1m | loom, stencil |
-| R7 |  | **Candidate names for the lyx binary: three letters, clash-checked (research, 2026-10-26)**<br>• Round 2: three-letter names sounding like lyx, clash only on an installable command; lys, lyd, lyn, lom, lur on top | [`binary-name-candidates`](design-binary-name-candidates.md) | 19h<br>18h |  |
 | R8 |  | **Ideas from r/ClaudeCode "one line in your CLAUDE.md": fit for LoomYard and bench measures**<br>• About 30 ideas judged against our stencils and rules; top 8 ranked for a bench, a few cheap enough without one | [`claude-md-thread-ideas`](design-claude-md-thread-ideas.md) | 19h<br>1m | stencil, loom, burler |
