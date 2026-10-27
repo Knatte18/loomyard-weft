@@ -1,12 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Darn-Write → stuck",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -166,6 +165,52 @@
       "budget_exempt": true,
       "repeats": 1,
       "last_at": "2026-10-27T14:50:52Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/hub-reader-creates-lym/_lym/landing/summary.md",
+      "at": "2026-10-27T15:02:14Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-27T15:00:21.853847935Z",
+          "end": "2026-10-27T15:00:30.043229765Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-27T15:01:12.393976865Z",
+          "end": "2026-10-27T15:01:20.675231178Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-27T15:00:30.085360443Z",
+          "end": "2026-10-27T15:00:35.91757752Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-27T15:00:36.295382442Z",
+          "end": "2026-10-27T15:01:12.366459365Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-27T15:01:20.721039274Z",
+          "end": "2026-10-27T15:02:14.209110931Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-27T15:02:14.284710075Z",
+          "end": "2026-10-27T15:02:14.288100698Z"
+        }
+      ],
+      "by": "shed"
     }
   ],
   "product": {
