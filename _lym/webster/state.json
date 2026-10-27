@@ -1,18 +1,18 @@
 {
   "runGuid": "f9fa29df67194cb4daff6b4ac0e5e3cd",
-  "planFingerprint": "326df1c9a45235520eb0e7f7b6435a2213cce5d5414a6bbc1a725828a50e4647",
+  "planFingerprint": "fcba6a02278c3506a5c7c38db3798c591a8fbae3ed422d09a59980f29e9f8500",
   "planFileHashes": {
     "00-overview.md": "6eca8a36216a4e85d8a060bcc719a99c1e25f991729e20cad7cad21a9490fdfb",
-    "01-shed-history-machine.md": "90043a6c4c525f12c1b49cf71d4c3165da04122b9c2fa85bd79b4aeb8926e6c2",
-    "02-batten-tells-machine.md": "11b2db9b60e93a1d35d35b118dcc74ed6f003d3ff8051be77da029a4f36c4af6",
-    "03-landings-by-machine.md": "c709babaa061cc9ebe6c50334b3558fc06c9387703247c288d580037628eb64f",
+    "01-shed-history-machine.md": "53ba7211ef6d0668b73d668b14b24468b158c6090e44008fdd884efb7bb9491b",
+    "02-batten-tells-machine.md": "49845cfdf33419de80e0f309065e77f122b55131ced9fd917e4c7d36ad371639",
+    "03-landings-by-machine.md": "958a275c2ddf71a5ee4328830a9ccf5882bb7feaea3317abd85baa37615f1ade",
     "04-landings-flag.md": "54a1c4c5408ca2b1c57f53d1c9329360a6549ddba5f62e1b3722f62f63bc4d0e",
-    "05-selfexec-callbacks.md": "d01224c8ffe6283ec9c12b63e45bb8276e31c1fc4f0fad450e482332d8022dc9",
-    "06-dobby-log-file.md": "53195b717256cecc8c9f78a238fbe31c304ddf08783613b12fa6eee9a94730fc",
-    "07-dobby-start-and-exits.md": "69ec1bbc937e3455f63e78bdf31eba87a24037accc0a1a05f90975c5e5e8863f",
+    "05-selfexec-callbacks.md": "0dd2ebf5e8a649cc1a3657467bf69c09900a3f68ef261598f90929b86fae70ba",
+    "06-dobby-log-file.md": "b577753d17df36156603ffbf244b6c0c6d889a3afc0d384e981b26ff9472b8b8",
+    "07-dobby-start-and-exits.md": "83054711cbe283db867bb08fd2c6abd6118143c07e7f6244a305a581332e9098",
     "08-dobby-worktree-gone.md": "8a08ce3869f2c71092ea090ee0407b6ad814b37fc72d8e9925ab7fd54285e9c0",
     "09-dobby-change-log-heartbeat.md": "0f35690e274c00c8022342c1b724f660571b9116e126c4b80100363dd0b297f3",
-    "10-dobby-cli-exits-and-out.md": "523c469e5093918e47810f91cd52474affe032e9901f870354060223ba1026a4",
+    "10-dobby-cli-exits-and-out.md": "48901afe07a3f1fa8110b40c365f93143d371c0b668e130788f9ef65e9c25e0d",
     "11-gate-adopt-key.md": "4ab81af7ea25a6a0ae103ad6b06bd1a13976213429309408a7024650a5919e7e",
     "12-gate-run-in-process.md": "16d207f56a976321b888c04ef0cc059172fc66b4665cf6c32e943bd451a8c3af",
     "13-adopt-check-verb.md": "f9203723114853389542fa2acf193c41882b06e8f11247b926d8229f7750ba6b",
@@ -327,7 +327,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "4b391991c73503e031a1cbe663fd375c",
   "masterSessionId": "6bae80f5-54af-46f3-a363-1efcff37f319",
   "masterEngine": "claude",
@@ -343,20 +343,41 @@
         "06-dobby-log-file"
       ],
       "cardHashes": {
-        "01-shed-history-machine": "90043a6c4c525f12c1b49cf71d4c3165da04122b9c2fa85bd79b4aeb8926e6c2",
-        "02-batten-tells-machine": "11b2db9b60e93a1d35d35b118dcc74ed6f003d3ff8051be77da029a4f36c4af6",
-        "03-landings-by-machine": "c709babaa061cc9ebe6c50334b3558fc06c9387703247c288d580037628eb64f",
+        "01-shed-history-machine": "53ba7211ef6d0668b73d668b14b24468b158c6090e44008fdd884efb7bb9491b",
+        "02-batten-tells-machine": "49845cfdf33419de80e0f309065e77f122b55131ced9fd917e4c7d36ad371639",
+        "03-landings-by-machine": "958a275c2ddf71a5ee4328830a9ccf5882bb7feaea3317abd85baa37615f1ade",
         "04-landings-flag": "54a1c4c5408ca2b1c57f53d1c9329360a6549ddba5f62e1b3722f62f63bc4d0e",
-        "05-selfexec-callbacks": "d01224c8ffe6283ec9c12b63e45bb8276e31c1fc4f0fad450e482332d8022dc9",
-        "06-dobby-log-file": "53195b717256cecc8c9f78a238fbe31c304ddf08783613b12fa6eee9a94730fc"
+        "05-selfexec-callbacks": "0dd2ebf5e8a649cc1a3657467bf69c09900a3f68ef261598f90929b86fae70ba",
+        "06-dobby-log-file": "b577753d17df36156603ffbf244b6c0c6d889a3afc0d384e981b26ff9472b8b8"
       },
       "startSha": "c7b48fa5c57a10549ae8af242c723b6f272dcae1",
       "kind": "fork",
       "spawnedAt": "2026-10-27T16:28:36Z",
       "sessionId": "6bae80f5-54af-46f3-a363-1efcff37f319",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-shed-history-machine",
+        "status": "done",
+        "head_sha": "fd60b7c5c72c2aa049049f58f2c01bde11b1d6a5",
+        "deviations": [
+          "internal/dobbyengine/logfile_test.go",
+          "internal/dobbyengine/tidy_test.go"
+        ]
+      },
+      "cardShas": [
+        "fd60b7c5c72c2aa049049f58f2c01bde11b1d6a5"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-dobby-and-adopt-hardening/6bae80f5-54af-46f3-a363-1efcff37f319/subagents/agent-acd4c719ce54473dd.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-dobby-and-adopt-hardening/6bae80f5-54af-46f3-a363-1efcff37f319/subagents/agent-acd4c719ce54473dd.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-dobby-and-adopt-hardening/6bae80f5-54af-46f3-a363-1efcff37f319/subagents/agent-acd4c719ce54473dd.jsonl"
+  ]
 }

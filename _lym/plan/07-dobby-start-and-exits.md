@@ -22,8 +22,8 @@
 - `plan:internal/dobbyengine#TestReadsAsReexec` -> `func TestReadsAsReexec(t *testing.T)`
 
 **Uses:**
-- `plan:internal/selfexec#Watcher.CheckWith`
-- `plan:internal/dobbyengine#AppendLog`
+- `internal/selfexec#Watcher.CheckWith`
+- `internal/dobbyengine#AppendLog`
 - `internal/beamcli#registerDobby`
 - `internal/dobbyengine#loopHarness.run`
 

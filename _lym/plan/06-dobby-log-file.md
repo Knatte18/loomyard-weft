@@ -14,16 +14,16 @@
 - `internal/beamcli/doc.go`
 
 **Create:**
-- `plan:internal/dobbyengine#OutFileName` -> `const OutFileName = "dobby.out"`
-- `plan:internal/dobbyengine#logRotateBytes` -> `const logRotateBytes = 1 << 20`
-- `plan:internal/dobbyengine#AppendLog` -> `func AppendLog(path, line string, rotate bool) error`
-- `plan:internal/dobbyengine#RotatePastBound` -> `func RotatePastBound(path string) (bool, error)`
-- `plan:internal/dobbyengine#rotateOutBeforeSpawn` -> `func rotateOutBeforeSpawn(geom Geometry, goos string)`
-- `plan:internal/dobbyengine#TestAppendLog` -> `func TestAppendLog(t *testing.T)`
-- `plan:internal/dobbyengine#TestRotateOutBeforeSpawn` -> `func TestRotateOutBeforeSpawn(t *testing.T)`
-- `plan:internal/dobbyengine#spawnDetached` -> `func spawnDetached(geom Geometry, start func(cmd *exec.Cmd) error) error`
-- `plan:internal/dobbyengine#TestSpawnDetached_SendsOutputToOutPath` -> `func TestSpawnDetached_SendsOutputToOutPath(t *testing.T)`
-- `plan:internal/hubgeom#DobbyBeamDir` -> `func DobbyBeamDir(worktree *lymcwd.Location) string`
+- `internal/dobbyengine#OutFileName`
+- `internal/dobbyengine#logRotateBytes`
+- `internal/dobbyengine#AppendLog`
+- `internal/dobbyengine#RotatePastBound`
+- `internal/dobbyengine#rotateOutBeforeSpawn`
+- `internal/dobbyengine#TestAppendLog`
+- `internal/dobbyengine#TestRotateOutBeforeSpawn`
+- `internal/dobbyengine#spawnDetached`
+- `internal/dobbyengine#TestSpawnDetached_SendsOutputToOutPath`
+- `internal/hubgeom#DobbyBeamDir`
 
 **Extends:**
 - `internal/dobbyengine/doc.go`
