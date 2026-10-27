@@ -1,6 +1,6 @@
 # Bench Codex on P2 with block v2 and the gap study lens texts, two medium runs
 
-`codex-p2-gap-texts-bench` · Task · research, codex, burler · running · Drift-Baseline
+`codex-p2-gap-texts-bench` · Task · research, codex, burler · running · Darn-Write
 
 Bench the forked Codex Astra fan on plan `P2` with block v2 plus three of the gap study's lens and boilerplate texts, at medium effort, and measure real findings per point of the weekly window.
 
