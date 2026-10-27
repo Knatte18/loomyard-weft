@@ -2,8 +2,6 @@
 
 `codex-p2-gap-texts-bench` · Task · research, codex, burler · draft
 
-Depends on: [`codex-v2-p4-bench`](design-codex-v2-p4-bench.md)
-
 Bench the forked Codex Astra fan on plan `P2` with block v2 plus three of the gap study's lens and boilerplate texts, at medium effort, and measure real findings per point of the weekly window.
 
 ## Why
