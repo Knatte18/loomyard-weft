@@ -28,7 +28,7 @@ grouping
 | --- | --- | --- | --- |
 | E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
 
-## Tasks (2)
+## Tasks (5)
 
 Concrete and claimable; only a task can run.
 
@@ -40,26 +40,26 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Bench Codex on P2 with block v2 and the gap study lens texts, two medium runs**<br>• Two medium forked Astra fan runs on P2 with gap-study proposals 1, 2 and 4; real findings per window point<br>• `profile: docs` | [`codex-p2-gap-texts-bench`](design-codex-p2-gap-texts-bench.md) | darn | Darn-Write | neve | 37m<br>37m | codex, burler |
 
-### Ready (1)
+### Ready (4)
 
 Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | `draft` **Dobby survives deploys, logs changes only, tidies per owner; a visible adopt check**<br>• Fix the dobby re-exec exit, bound its log, count tidies per owner, give the adopt check its own gate key and visible progress | [`dobby-and-adopt-hardening`](design-dobby-and-adopt-hardening.md) | loom |  | 1d<br>0m | workspaces, batten, gate, board |
+| T3 | `draft` **A gate test writes trace logs into the live hub and Bolt commits them**<br>• trace-*.log from a run gate test landed in _board/.lym/logs and board sync committed them | [`test-logs-leak-into-bolt`](design-test-logs-leak-into-bolt.md) | darn |  | 4h<br>0m | gate, board, testkit |
+| T4 | `draft` **A read creates directories: state.ReadJSON mkdirs, so a hub reader leaves a real _lym in a half-built pair** | [`hub-reader-creates-lym`](design-hub-reader-creates-lym.md) | darn |  | 1d<br>0m | fabric, orch, batten |
+| T5 | `draft` **Board README lists draft tasks under Ready** | [`readme-draft-not-ready`](design-readme-draft-not-ready.md) | darn |  | 1d<br>0m | board |
 
-## Notes (43)
+## Notes (40)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Bugs (5)
+### Bugs (2)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Find why a running run shows a dead waiter in the activity reader** | [`idle-notice-dead-waiter-cause`](design-idle-notice-dead-waiter-cause.md) | 3d<br>3d | batten, shuttle |
-| B2 |  | **A read creates directories: state.ReadJSON mkdirs, so a hub reader leaves a real _lym in a half-built pair** | [`hub-reader-creates-lym`](design-hub-reader-creates-lym.md) | 1d<br>4h | fabric, orch, batten |
-| B4 |  | **Board README lists draft tasks under Ready** | [`readme-draft-not-ready`](design-readme-draft-not-ready.md) | 1d<br>1d | board |
-| B6 |  | **A gate test writes trace logs into the live hub and Bolt commits them**<br>• trace-*.log from a run gate test landed in _board/.lym/logs and board sync committed them | [`test-logs-leak-into-bolt`](design-test-logs-leak-into-bolt.md) | 4h<br>4h | gate, board, testkit |
 | B7 |  | **An instruction typed into a pane is lost when the tackler re-spawns the row**<br>• A re-spawned row session starts from its prompt alone; operator input to the old session is dropped | [`pane-input-lost-on-respawn`](design-pane-input-lost-on-respawn.md) | 4h<br>4h | shed, shuttle, reed |
 
 ### Enhancements (18)
