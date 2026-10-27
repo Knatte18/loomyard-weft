@@ -32,7 +32,7 @@ grouping
 
 Concrete and claimable; only a task can run.
 
-### Running (3)
+### Running (4)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -40,15 +40,14 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Bench Codex review block v2 on P1: one high run against two medium**<br>• Forked Astra fan with block v2 and a 20-call fork cap on P1: 1 high and 2 medium runs<br>• `profile: docs` | [`codex-v2-p1-bench`](design-codex-v2-p1-bench.md) | darn | Darn-Write | neve | 0m<br>0m | codex, burler |
 | T2 | **Bench Codex review block v2 on P2: one high run against two medium**<br>• Forked Astra fan with block v2 and a 20-call fork cap on P2: 1 high and 2 medium runs<br>• `profile: docs` | [`codex-v2-p2-bench`](design-codex-v2-p2-bench.md) | darn | Worktree-Create | neve | 0m<br>0m | codex, burler |
-| T3 | **Bench Codex review block v2 on P4: one high run against two medium**<br>• Forked Astra fan with block v2 and a 20-call fork cap on P4: 1 high and 2 medium runs<br>• `profile: docs` | [`codex-v2-p4-bench`](design-codex-v2-p4-bench.md) | darn | Worktree-Create | neve | 0m<br>0m | codex, burler |
+| T3 | **Bench Codex review block v2 on P4: one high run against two medium**<br>• Forked Astra fan with block v2 and a 20-call fork cap on P4: 1 high and 2 medium runs<br>• `profile: docs` | [`codex-v2-p4-bench`](design-codex-v2-p4-bench.md) | darn | Darn-Write | neve | 0m<br>0m | codex, burler |
+| T4 | **Study what the Claude lens fan misses that Codex finds, and how to tune it**<br>• Desk study over the Astra benches: classify Claude-missed real findings and propose stencil changes<br>• `profile: docs` | [`claude-review-gaps`](design-claude-review-gaps.md) | darn | Worktree-Create | neve | 0m<br>0m | burler, stencil, claude |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Study what the Claude lens fan misses that Codex finds, and how to tune it**<br>• Desk study over the Astra benches: classify Claude-missed real findings and propose stencil changes<br>• `profile: docs` | [`claude-review-gaps`](design-claude-review-gaps.md) | darn |  | 0m<br>0m | burler, stencil, claude |
+_None._
 
 ## Notes (47)
 
