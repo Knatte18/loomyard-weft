@@ -1,12 +1,12 @@
 {
   "current_producer": "Run-Shed",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "battencli: cannot resume \"codex-astra-tuned-prompt-bench\": branch codex-astra-tuned-prompt-bench is rewound against origin; origin rewound codex-astra-tuned-prompt-bench to 9ae8932df74ade330bf534d573c31c82412ad950, dropping 1616b178569c3ef5f9c22feacd8d9830e8f18e30; to accept the rewind, run `git reset --keep 9ae8932df74ade330bf534d573c31c82412ad950` in /home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-prompt-bench, which drops the local commits past origin's head, then `lym fabric push` there; to restore the dropped commits, run `git push origin codex-astra-tuned-prompt-bench` in /home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-prompt-bench, a plain fast-forward; then re-run lym batten run codex-astra-tuned-prompt-bench",
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",
     "last": "Open-IDE → skipped",
-    "wait": ""
+    "wait": "battencli: cannot resume \"codex-astra-tuned-prompt-bench\": branch codex-astra-tuned-prompt-bench is rewound against origin; origin rewound codex-astra-tuned-prompt-bench to 9ae8932df74ade330bf534d573c31c82412ad950, dropping 1616b178569c3ef5f9c22feacd8d9830e8f18e30; to accept the rewind, run `git reset --keep 9ae8932df74ade330bf534d573c31c82412ad950` in /home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-prompt-bench, which drops the local commits past origin's head, then `lym fabric push` there; to restore the dropped commits, run `git push origin codex-astra-tuned-prompt-bench` in /home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-prompt-bench, a plain fast-forward; then re-run lym batten run codex-astra-tuned-prompt-bench"
   },
   "history": [
     {
