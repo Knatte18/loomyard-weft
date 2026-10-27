@@ -10,7 +10,8 @@
      This file declares no marker of its own beyond "{{.note_path}}" and must stay otherwise
      marker-free, because stencilstore.Validate parses it regardless of whether anything ever fills
      it.
-lyx-stencil: sha256=77e6aab072f853c621c34b2314db0d42edfed71957652fe6ae949308330f1f98 -->
+lyx-stencil: sha256=77e6aab072f853c621c34b2314db0d42edfed71957652fe6ae949308330f1f98
+lym-stencil: sha256=77e6aab072f853c621c34b2314db0d42edfed71957652fe6ae949308330f1f98 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 ## Friction note — optional, only if something went wrong
 

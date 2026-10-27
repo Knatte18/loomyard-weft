@@ -4,7 +4,8 @@
      {{.reviewed_files}}, {{.rubric_path}}, {{.lens_list}}, {{.final_self_check_command}}, {{.spawn_point}}, {{.severity_rule}}, {{.lens_report_path}}, {{.lens_report_spec_path}} and {{.judge_steps}}.
      {{.judge_steps}} is filled by Directive with one of the two judge part stencils.
      It also names two optional markers, {{.writer_fork}} and {{.relaunch_rules}}, each filled by Directive with one part stencil and left empty otherwise.
-lyx-stencil: sha256=794de7391128670868c51e598f057f4c7d03c25cafbb4465d313803f87e338e0 build=5e449651fc9099cf3c0ec513ef579c464138a703 time=2026-10-25T09:35:58Z -->
+lyx-stencil: sha256=794de7391128670868c51e598f057f4c7d03c25cafbb4465d313803f87e338e0 build=5e449651fc9099cf3c0ec513ef579c464138a703 time=2026-10-25T09:35:58Z
+lym-stencil: sha256=794de7391128670868c51e598f057f4c7d03c25cafbb4465d313803f87e338e0 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 ## Lens review by forks
 

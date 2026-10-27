@@ -2,7 +2,8 @@
      internal/twilldirective renders it into the twill directive for a host that asks for no critical fixer, and the spawning module hands that renderer every host value, so this block names no file, step, verb or section of any one host.
      It declares these required markers:
      {{.rejection_rule}} and {{.disposition_place}}.
-lyx-stencil: sha256=178ba11c199874b980ac6a096a16d6dc0f51a0d8f83c0d66eecb4dd8b1545881 build=2abb06c5ee3473f283f0b526362161487b9e6b26 time=2026-10-15T06:35:00Z -->
+lyx-stencil: sha256=178ba11c199874b980ac6a096a16d6dc0f51a0d8f83c0d66eecb4dd8b1545881 build=2abb06c5ee3473f283f0b526362161487b9e6b26 time=2026-10-15T06:35:00Z
+lym-stencil: sha256=178ba11c199874b980ac6a096a16d6dc0f51a0d8f83c0d66eecb4dd8b1545881 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 4. Judge every finding with the same skepticism, and merge duplicates across lenses.
    {{.rejection_rule}}

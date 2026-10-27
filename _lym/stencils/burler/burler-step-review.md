@@ -6,7 +6,8 @@
      The review-file format itself lives in the file review_format_path names (burler-review-format.md), never here.
      Every marker below is a top-level {{.X}} substitution;
      stencil.Fill requires all four non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go).
-lyx-stencil: sha256=74537805d5cb8c7cfa5e7e9a1f7d3f3a412acd032242a6acb36eb1e7c3dd009e build=b2e4cf913d2834503e0338810b1f952e426af78f time=2026-10-11T18:29:27Z -->
+lyx-stencil: sha256=74537805d5cb8c7cfa5e7e9a1f7d3f3a412acd032242a6acb36eb1e7c3dd009e build=b2e4cf913d2834503e0338810b1f952e426af78f time=2026-10-11T18:29:27Z
+lym-stencil: sha256=74537805d5cb8c7cfa5e7e9a1f7d3f3a412acd032242a6acb36eb1e7c3dd009e build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 ## Cluster rules
 

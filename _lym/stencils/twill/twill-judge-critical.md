@@ -2,7 +2,8 @@
      internal/twilldirective renders it into the twill directive for a host that asks for the critical fixer, and the spawning module hands that renderer every host value, so this block names no file, step, verb or section of any one host.
      It declares these required markers:
      {{.governing_input}}, {{.dispute_evidence}} and {{.disposition_place}}.
-lyx-stencil: sha256=a324e5986a185b24d67eed92a506f2bcd1109154be1ef8e2fdddd4b9b32e6946 build=2abb06c5ee3473f283f0b526362161487b9e6b26 time=2026-10-15T06:35:00Z -->
+lyx-stencil: sha256=a324e5986a185b24d67eed92a506f2bcd1109154be1ef8e2fdddd4b9b32e6946 build=2abb06c5ee3473f283f0b526362161487b9e6b26 time=2026-10-15T06:35:00Z
+lym-stencil: sha256=a324e5986a185b24d67eed92a506f2bcd1109154be1ef8e2fdddd4b9b32e6946 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 4. Judge every finding: merge duplicates across lenses, then weigh each finding twice: its premise, against the code and {{.governing_input}}, and the change it proposes.
    Give it exactly one of three dispositions, decided in this order; severity decides how a finding is reported, not whether it is weighed.

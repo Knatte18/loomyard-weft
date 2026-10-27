@@ -3,7 +3,8 @@
      from there at call time by composeReviewPrompt and composeFixPrompt (prompt.go), which render it unchanged into each half's instruction directory.
      The reviewer step names its path as the format it writes; the fixer seat names its path as the format it reads.
      It is marker-free on purpose: it states the format and carries no path of either half.
-lyx-stencil: sha256=1d3c69617965dc18661f5199b70c30129d944a38a4ddf111b466db3d066022c0 build=b2e4cf913d2834503e0338810b1f952e426af78f time=2026-10-11T18:29:27Z -->
+lyx-stencil: sha256=1d3c69617965dc18661f5199b70c30129d944a38a4ddf111b466db3d066022c0 build=b2e4cf913d2834503e0338810b1f952e426af78f time=2026-10-11T18:29:27Z
+lym-stencil: sha256=1d3c69617965dc18661f5199b70c30129d944a38a4ddf111b466db3d066022c0 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 ## Review-file format
 

@@ -1,7 +1,8 @@
 <!-- This is burler's fanned cluster-rules part: the spawn mechanics, the fork rules, the handler's holistic review and the consolidation rules the review step carries when the round names a fan.
      internal/burlerengine's clusterRulesBlock (prompt.go) reads and fills it, and the result becomes the review step's cluster_rules marker value.
      It declares three required markers: {{.lens_list}}, the round's lenses as one bullet per lens in fan order, {{.lens_report_path}}, the path each fork's report is saved at, and {{.lens_report_spec_path}}, the deployed spec of that report's format.
-lyx-stencil: sha256=57e5323c22c12dfabad2a5d5892709cb127e09786d2e285c839fab0fe7c6fe03 build=79bab47a02141f93160b00f89b273718b4033be5 time=2026-10-24T07:59:09Z -->
+lyx-stencil: sha256=57e5323c22c12dfabad2a5d5892709cb127e09786d2e285c839fab0fe7c6fe03 build=79bab47a02141f93160b00f89b273718b4033be5 time=2026-10-24T07:59:09Z
+lym-stencil: sha256=57e5323c22c12dfabad2a5d5892709cb127e09786d2e285c839fab0fe7c6fe03 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 This is a cluster round: after exploring the target fully, spawn ALL of the fork reviewers below in a SINGLE message via the Agent tool with `subagent_type: "fork"`, one per lens listed here — never pass a `name` (named forks silently lose inherited context).
 
 Lenses for this round:

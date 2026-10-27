@@ -2,7 +2,8 @@
      internal/seatengine is its only filler, through stencil.FillWith, from the chair's value map.
      It declares no marker of its own; every marker reaches it through the two blocks it includes, each rendered whole from that same map:
      loom-template-discussion, the single writer's prompt, and seat-directive-chair.
-lyx-stencil: sha256=e8c8bb79129fafb6fb066b87ce6469621482fb98b9026510020fd6bd6f97d3ee build=6df79b99d82d826539da6f216be524d984b39aea time=2026-10-11T08:24:01Z -->
+lyx-stencil: sha256=e8c8bb79129fafb6fb066b87ce6469621482fb98b9026510020fd6bd6f97d3ee build=6df79b99d82d826539da6f216be524d984b39aea time=2026-10-11T08:24:01Z
+lym-stencil: sha256=e8c8bb79129fafb6fb066b87ce6469621482fb98b9026510020fd6bd6f97d3ee build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 {{template "loom-template-discussion"}}
 {{template "seat-directive-chair"}}
