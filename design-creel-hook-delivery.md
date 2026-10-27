@@ -27,6 +27,3 @@ A darn writer works in one long turn, so a parent decision reaches it today only
 - The idle pane path's own rules (agent mail and long messages as a reminder line naming `lym creel read`) are unchanged; note `creel-carry-agent-mail` keeps that question.
 - Moving agent messaging from SendMessage onto creel (note `creel-agents`).
 
-## When it lands
-
-The orch rule "A decision for a working darn writer (#871)" in the hub-wide orch rules is removed, and #871 is closed.
