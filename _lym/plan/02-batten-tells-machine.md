@@ -16,9 +16,9 @@ Decision 7: batten's wiring tells its shed `machinename.Name()`, so a batten run
 
 `battenCLI` gains `machineName func() (string, error)`, documented like its sibling seams: nil selects `machinename.Name`, which only a hand-populated receiver leaves nil.
 In `specFor`, the `BuildShed` closure reads the name once per built shed, after `battenrecipe.New` returns, and sets `shed.Machine`.
-A read that fails, or returns an empty name, makes `BuildShed` return the refusal `battencli: this machine's name is unknown, so the run cannot record which machine it ran on: <error>; way forward: give the machine a hostname, then re-run lym batten run <slug>`, and no shed is built, so the run never stamps an empty name.
+A read that fails makes `BuildShed` return the refusal `battencli: this machine's name is unknown, so the run cannot record which machine it ran on: <error>; way forward: give the machine a hostname, then re-run lym batten run <slug>`, and no shed is built, so the run never stamps a missing name.
 The refusal reaches the operator through `shedverbs`' `BuildShed` error path, the one the cancel-marker refusal of `TestPreDriveCheck` already reaches.
-The input that reaches it after every upstream check passes is a host whose `os.Hostname` fails or is empty; `machinename.FromHostname` already refuses the empty one, so the test drives it through the seam.
+The input that reaches it after every upstream check passes is a host whose `os.Hostname` fails or is empty, which `machinename.Name` returns as an error, since `machinename.FromHostname` refuses an empty name; the test drives it through the seam.
 
 `TestBuildShed_TellsTheMachine`, over `newPreDriveReceiver` with a seeded batten run, has two rows: a `machineName` answering `"neve"` gives a shed whose `Machine` is `"neve"`; one answering an error gives a `BuildShed` error that contains the error's text and `give the machine a hostname`, and a nil shed.
 
