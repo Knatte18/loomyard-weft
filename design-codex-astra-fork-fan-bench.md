@@ -1,6 +1,6 @@
 # Bench a Codex Astra fan with real forks at high effort on one plan
 
-`codex-astra-fork-fan-bench` · Task · research, codex, burler · running · Worktree-Create
+`codex-astra-fork-fan-bench` · Task · research, codex, burler · running · Drift-Baseline
 
 ## Question
 
