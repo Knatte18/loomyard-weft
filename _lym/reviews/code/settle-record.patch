@@ -1,0 +1,1451 @@
+diff --git a/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/context-hashes.txt b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/context-hashes.txt
+new file mode 100644
+index 00000000..3b00b893
+--- /dev/null
++++ b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/context-hashes.txt
+@@ -0,0 +1,5 @@
++sha256	file
++ca275a3aee9c2883c94888e9c0984b37e19b61e263134c7f5f0de02256194b4b	AGENTS.md
++ca275a3aee9c2883c94888e9c0984b37e19b61e263134c7f5f0de02256194b4b	CLAUDE.md
++6ce3388aa0f267f24dc165e1e49668b852eb10bbf4cf9480f76c7faa8080393c	PATTERN.md
++837e0a639989b9a5389ce39997e9fa0978f6b0056c2c5383b4e64015b32c1310	tuned-block.md
+diff --git a/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/harness/build-fan.sh b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/harness/build-fan.sh
+new file mode 100755
+index 00000000..8d0431be
+--- /dev/null
++++ b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/harness/build-fan.sh
+@@ -0,0 +1,85 @@
++#!/usr/bin/env bash
++# Stage the fan prompts over an input that build.sh already built: build-fan.sh <id>
++# Writes work/.bench/instr/step-1-explore-fan.md, step-2-review-fan.md, one lens-<name>.prompt.md per lens and handler.prompt.md.
++set -euo pipefail
++ROOT=/home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-p1-high-bench
++id=$1
++code=$(grep -o 'code=[0-9a-f]*' "$ROOT/.scratch/bench/inputs/$id/meta.txt" | cut -d= -f2)
++in=$ROOT/.scratch/bench/inputs/$id
++W=$in/work
++fan=$in/fan
++rm -rf "$fan"; mkdir -p "$fan"
++LENSES="affected-set guard-reach way-forward"
++
++strip() { local s; s=$(<"$1"); [ "${s:0:4}" = '<!--' ] && s=${s#*-->}; printf '%s\n' "${s#"${s%%[![:space:]]*}"}"; }
++
++# The pre-read the forks inherited from the handler in round 1.
++git -C $ROOT show $code:contracts/stencils/burler/burler-fork-reading.md > "$fan/fork-reading.raw"
++reading=$(strip "$fan/fork-reading.raw")
++{ cat "$W/.bench/instr/step-1-explore.md"; printf '\n%s\n' "$reading"; } > "$W/.bench/instr/step-1-explore-fan.md"
++
++# A lens's text is its block in the template at the code commit, 4-space indent removed.
++git -C $ROOT show $code:internal/lenses/template.yaml > "$fan/template.yaml"
++lens_text() {
++  awk -v n="  $1: |" '$0==n {on=1; next} on && /^  [a-z-]+: \|/ {exit} on && /^[a-z]+:/ {exit} on {sub(/^    /,""); print}' "$fan/template.yaml"
++}
++
++for l in $LENSES; do
++  lens_text "$l" > "$fan/lens-$l.text"
++  [ -s "$fan/lens-$l.text" ] || { echo "no text for lens $l" >&2; exit 1; }
++  cat > "$fan/lens-$l.prompt.md" <<PROMPT
++# Burler — fork reviewer
++
++You are one fork reviewer of a fanned plan-review round, and you own one lens; the other forks own the other lenses, and a handler reviews holistically afterwards.
++
++Read \`$W/.bench/instr/step-1-explore-fan.md\` and do what it directs: it names the target, the fasit and the rubric, and ends with the reading to do.
++Do that reading, then work your lens's procedure and start your final message with the list your lens asks for.
++Report every finding your lens's procedure produces and nothing outside it, because the other lenses and the handler cover the rest.
++Judge nothing while you read, and review only after the reading is done.
++You are READ-ONLY: never write, edit or delete any file, run only commands that read, never touch \`$W/.bench/out\`, and never start another agent.
++Return your findings ONLY as your final message, each with a severity (\`BLOCKING\`, \`MEDIUM\`, \`LOW\` or \`NIT\`), a class (\`design\`, \`scope\`, \`decision\` or \`consistency\`), a location, a one-line summary and the file and line of the evidence you read.
++
++Your lens: $l
++$(cat "$fan/lens-$l.text")
++PROMPT
++done
++
++# The handler's review step: the fan cluster rules with the forks already returned.
++lens_list=""
++for l in $LENSES; do lens_list+="- $l: $(cat "$fan/lens-$l.text")"$'\n'; done
++lens_files=""
++for l in $LENSES; do lens_files+="- \`$W/.bench/lens/$l.md\`: the final message of the \`$l\` fork"$'\n'; done
++cluster=$(cat <<CLUSTER
++This is a cluster round. The fork reviewers have already run, one per lens listed here, and each returned its findings as its final message.
++
++Lenses for this round:
++
++$lens_list
++The forks' final messages are these files, which you read once your reading in step 1 is done:
++
++$lens_files
++You do not spawn any fork: the results are in those files.
++
++Do your own HOLISTIC review: what no lens owns, such as the target against its fasit and its board entry, the rubric's leanness and relocation rules, architecture and PATTERN-fit, reading further only where your review needs it.
++Then prepare the ground truths and the severity rubric you will judge every finding against.
++Write nothing to the review file until you have read all three fork reports and finished your own holistic review: consolidate with every finding in view.
++
++Consolidation: judge every fork finding and your own holistic findings with EQUAL skepticism, dedup findings that describe the same defect across lenses, tag every kept finding's frontmatter with an \`origin:\` key (\`lens:<name>\` or \`handler\`), move false positives to a \`## Rejected\` prose section below the frontmatter with a one-line reason each (a rejected item never appears in \`findings:\`), and order kept findings by severity.
++The consolidated review is the ONE review file, and the review is complete once it is fully written to disk — consolidation is part of the review, not a separate step after it.
++CLUSTER
++)
++git -C $ROOT show $code:contracts/stencils/burler/burler-step-review.md > "$fan/step-review.raw"
++review=$(strip "$fan/step-review.raw")
++review_path=$W/.bench/out/review.md
++fill() { local t=$1; shift; for kv in "$@"; do t=${t//"{{.${kv%%=*}}}"/"${kv#*=}"}; done; printf '%s' "$t"; }
++review=$(fill "$review" "cluster_rules=$cluster" "review_path=$review_path" \
++  "review_format_path=$W/.bench/instr/review-format.md" "prior_rounds=This is the first round — no prior round files exist.")
++printf '%s\n' "$review" > "$W/.bench/instr/step-2-review-fan.md"
++
++git -C $ROOT show $code:contracts/stencils/burler/burler-template-reviewer.md > "$fan/reviewer.raw"
++prompt=$(strip "$fan/reviewer.raw")
++prompt=$(fill "$prompt" "parent_directive=" "edit_directive=" "review_path=$review_path" \
++  "instruction_1_path=$W/.bench/instr/step-1-explore-fan.md" "instruction_2_path=$W/.bench/instr/step-2-review-fan.md")
++printf '%s\n' "$prompt" > "$fan/handler.prompt.md"
++if grep -l '{{' "$fan"/*.prompt.md "$W"/.bench/instr/*.md; then echo "leftover placeholder" >&2; exit 1; fi
++ls "$fan"
+diff --git a/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/harness/build-forkfan.sh b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/harness/build-forkfan.sh
+new file mode 100755
+index 00000000..5b46cdc8
+--- /dev/null
++++ b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/harness/build-forkfan.sh
+@@ -0,0 +1,48 @@
++#!/usr/bin/env bash
++# Stage the fork-fan handler prompt over an input that build.sh and build-fan.sh already built: build-forkfan.sh <id>
++# Writes work/.bench/instr/step-2-review-forkfan.md and fan/handler-fork.prompt.md.
++# The cluster rules are burler-cluster-fan.md with its Agent-tool wording turned into Codex's spawn_agent with fork_turns="all";
++# the boilerplate keeps the inherited-context sentence and the tool-call cap.
++set -euo pipefail
++ROOT=/home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-p1-high-bench
++id=$1
++code=$(grep -o 'code=[0-9a-f]*' "$ROOT/.scratch/bench/inputs/$id/meta.txt" | cut -d= -f2)
++in=$ROOT/.scratch/bench/inputs/$id
++W=$in/work
++fan=$in/fan
++LENSES="affected-set guard-reach way-forward"
++
++strip() { local s; s=$(<"$1"); [ "${s:0:4}" = '<!--' ] && s=${s#*-->}; printf '%s\n' "${s#"${s%%[![:space:]]*}"}"; }
++fill() { local t=$1; shift; for kv in "$@"; do t=${t//"{{.${kv%%=*}}}"/"${kv#*=}"}; done; printf '%s' "$t"; }
++
++git -C $ROOT show $code:contracts/stencils/burler/burler-cluster-fan.md > "$fan/cluster-fan.raw"
++cluster=$(strip "$fan/cluster-fan.raw")
++lens_list=""
++for l in $LENSES; do lens_list+="- $l: $(cat "$fan/lens-$l.text")"$'\n'; done
++cluster=$(fill "$cluster" "lens_list=$lens_list")
++# Claude's spawn mechanics become Codex's.
++cluster=${cluster//'via the Agent tool with `subagent_type: "fork"`, one per lens listed here — never pass a `name` (named forks silently lose inherited context).'/'by calling your `spawn_agent` tool once per lens listed here, so the forks run in parallel, each with `fork_turns` set to `"all"` so it inherits your context; never pass a name, a model or an effort for a fork, so each fork keeps your own.'}
++cluster=${cluster//'and never call the Agent tool.'/'and never spawn another agent.'}
++cluster=${cluster//'run only git commands that read, such as `git diff`, `git log` or `git show`, and never one that changes the repository, its index, its refs or its working tree,'/'run only commands that read,'}
++cluster=${cluster//'The consolidated review is the ONE review file'/'Wait for every fork with your wait tool before you consolidate.'$'\n''The consolidated review is the ONE review file'}
++# The tuned block, written once in data/prompts/tuned-block.md, goes into the fork boilerplate as one line and onto the handler prompt.
++BLOCK=$ROOT/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/prompts/tuned-block.md
++block_line=$(tail -n +3 "$BLOCK" | sed 's/^- //' | tr '\n' ' ' | sed 's/ $//')
++cluster=${cluster//"Work your lens's procedure, and start"/"Reading for this review: $block_line Work your lens's procedure, and start"}
++if ! grep -q 'Reading for this review' <<<"$cluster"; then echo "boilerplate anchor missing" >&2; exit 1; fi
++if grep -q 'Agent tool\|subagent_type' <<<"$cluster"; then echo "unconverted Agent wording" >&2; exit 1; fi
++
++git -C $ROOT show $code:contracts/stencils/burler/burler-step-review.md > "$fan/step-review.raw"
++review=$(strip "$fan/step-review.raw")
++review_path=$W/.bench/out/review.md
++review=$(fill "$review" "cluster_rules=$cluster" "review_path=$review_path" \
++  "review_format_path=$W/.bench/instr/review-format.md" "prior_rounds=This is the first round — no prior round files exist.")
++printf '%s\n' "$review" > "$W/.bench/instr/step-2-review-forkfan.md"
++
++git -C $ROOT show $code:contracts/stencils/burler/burler-template-reviewer.md > "$fan/reviewer.raw"
++prompt=$(strip "$fan/reviewer.raw")
++prompt=$(fill "$prompt" "parent_directive=" "edit_directive=" "review_path=$review_path" \
++  "instruction_1_path=$W/.bench/instr/step-1-explore-fan.md" "instruction_2_path=$W/.bench/instr/step-2-review-forkfan.md")
++{ printf "%s\n" "$prompt"; printf "\n"; cat "$BLOCK"; } > "$fan/handler-fork.prompt.md"
++if grep -l '{{' "$fan/handler-fork.prompt.md" "$W/.bench/instr/step-2-review-forkfan.md"; then echo "leftover placeholder" >&2; exit 1; fi
++echo ok
+diff --git a/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/harness/build.sh b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/harness/build.sh
+new file mode 100755
+index 00000000..d3daa075
+--- /dev/null
++++ b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/harness/build.sh
+@@ -0,0 +1,98 @@
++#!/usr/bin/env bash
++# Stage one bench input: code snapshot, artifacts, era stencils and the assembled reviewer prompt.
++# usage: build.sh <id> <kind: discussion|plan> <weft-commit> <code-commit>
++set -euo pipefail
++ROOT=/home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-p1-high-bench
++WEFT=/home/knatte/Code/loomyard-LYMHUB/loomyard-weft
++id=$1 kind=$2 wc=$3 code=$4
++dir=$ROOT/.scratch/bench/inputs/$id
++rm -rf "$dir"
++mkdir -p "$dir/work"
++
++start=$(git -C $WEFT show $wc:_lyx/reviews/$kind/round-1-usage.yaml | grep -m1 'start:' | tr -s ' ' | cut -d' ' -f3)
++echo "$id $kind weft=$wc start=$start code=$code" > "$dir/meta.txt"
++
++git -C $ROOT archive "$code" | tar -x -C "$dir/work"
++mkdir -p "$dir/work/_lyx/discussion"
++if [ "$kind" = discussion ]; then
++  for f in $(git -C $WEFT ls-tree --name-only $wc _lyx/discussion/ | grep -vE 'support-log\.lens-'); do
++    git -C $WEFT show $wc:$f > "$dir/work/$f"
++  done
++else
++  git -C $WEFT show $wc:_lyx/discussion/decision-record.md > "$dir/work/_lyx/discussion/decision-record.md"
++  mkdir -p "$dir/work/_lyx/plan"
++  for f in $(git -C $WEFT ls-tree -r --name-only $wc _lyx/plan/ | grep -v '/archive-'); do
++    mkdir -p "$dir/work/$(dirname $f)"
++    git -C $WEFT show $wc:$f > "$dir/work/$f"
++  done
++fi
++
++# Hub-style specs and stencils dirs, from the snapshot's own era.
++bench=$dir/work/.bench
++mkdir -p "$bench/specs/loom" "$bench/stencils" "$bench/instr" "$bench/out"
++cp "$dir"/work/contracts/specs/*.md "$bench/specs/" 2>/dev/null || true
++for f in "$dir"/work/contracts/specs/loom-*.md; do cp "$f" "$bench/specs/loom/${f##*/loom-}"; cp "$f" "$bench/specs/loom/$(basename $f)"; done
++cp -r "$dir"/work/contracts/stencils/* "$bench/stencils/"
++
++strip() { local s; s=$(<"$1"); [ "${s:0:4}" = '<!--' ] && s=${s#*-->}; printf '%s\n' "${s#"${s%%[![:space:]]*}"}"; }
++fill() { # fill <text> key=value...
++  local t=$1; shift
++  for kv in "$@"; do t=${t//"{{.${kv%%=*}}}"/"${kv#*=}"}; done
++  printf '%s' "$t"
++}
++
++W=$dir/work
++review_path=$W/.bench/out/review.md
++rubric=$(strip "$bench/stencils/loom/loom-rubric-$kind-review.md")
++rubric=$(fill "$rubric" "specs_dir=$bench/specs" "stencils_dir=$bench/stencils" "amendment=none" "webster_record=none" "gate_tiers=none")
++
++if [ "$kind" = discussion ]; then
++  target="- \`$W/_lyx/discussion/decision-record.md\`
++- \`$W/_lyx/discussion/support-log.md\`"
++  fasit="The authority for this round is the rubric supplied in the prompt. The mechanical section contract over the discussion artifact pair is already enforced by this round's own gate over this round's own output, so re-deriving it here is duplicated work."
++else
++  target="- \`$W/_lyx/plan\` (a directory — everything under it)"
++  fasit="- \`$W/_lyx/discussion/decision-record.md\`
++
++The decision record named above is the answer key: the plan's job is to implement the decisions and constraints it settles. With no rework generation, the decision record alone is the answer key. The format authority is $bench/specs/loom/loom-plan-spec.md, and the mechanical checks over that format are already enforced by this round's own gate over this round's own output, so re-deriving them here is duplicated work. This round may never write the approved: key in the plan's overview file."
++fi
++
++focus=""
++if git -C $WEFT cat-file -e $wc:_lyx/reviews/$kind/round-1-focus.md 2>/dev/null; then
++  git -C $WEFT show $wc:_lyx/reviews/$kind/round-1-focus.md > "$W/.bench/instr/focus.md"
++  focus=$(fill "$(strip "$bench/stencils/burler/burler-focus-directive.md")" "focus_path=$W/.bench/instr/focus.md")
++  echo focus=yes >> "$dir/meta.txt"
++else
++  echo focus=no >> "$dir/meta.txt"
++fi
++
++# The PATTERN directive a production burler reviewer gets: the review-fix stencil filled with PATTERN.md and the record's declared changes.
++declared=$(awk '/^## /{on=($0=="## PATTERN changes")} on && /^- `PATTERN-/' "$W/_lyx/discussion/decision-record.md")
++changes=""
++if [ -n "$declared" ]; then
++  changes=$(fill "$(strip "$bench/stencils/pattern/pattern-fragment-changes.md")" "pattern_change_list=$declared")
++fi
++directive=$(fill "$(strip "$bench/stencils/pattern/pattern-directive-review-fix.md")" "pattern_overview=$(<"$W/PATTERN.md")" "pattern_changes=$changes")
++# Codex loads AGENTS.md from the working directory as a Claude session loads CLAUDE.md.
++cp "$W/CLAUDE.md" "$W/AGENTS.md"
++
++explore=$(strip "$bench/stencils/burler/burler-step-1-explore.md")
++explore=$(fill "$explore" "pattern_directive=$directive" "focus_directive=$focus" "target=$target" "fasit=$fasit" "rubric=$rubric" \
++  "tool_use_rules=Read-only analysis in the explore and review steps: read files, run nothing." "fork_reading=")
++printf '%s\n' "$explore" > "$W/.bench/instr/step-1-explore.md"
++
++review=$(strip "$bench/stencils/burler/burler-step-review.md")
++review=$(fill "$review" "cluster_rules=$(strip "$bench/stencils/burler/burler-cluster-solo.md")" "review_path=$review_path" \
++  "review_format_path=$W/.bench/instr/review-format.md" "prior_rounds=This is the first round — no prior round files exist.")
++printf '%s\n' "$review" > "$W/.bench/instr/step-2-review.md"
++strip "$bench/stencils/burler/burler-review-format.md" > "$W/.bench/instr/review-format.md"
++
++prompt=$(strip "$bench/stencils/burler/burler-template-reviewer.md")
++prompt=$(fill "$prompt" "parent_directive=" "edit_directive=" "review_path=$review_path" \
++  "instruction_1_path=$W/.bench/instr/step-1-explore.md" "instruction_2_path=$W/.bench/instr/step-2-review.md")
++printf '%s\n' "$prompt" > "$dir/prompt.md"
++cat "$dir/meta.txt"
++if grep -l '{{' "$dir/prompt.md" "$W"/.bench/instr/*.md; then
++  echo "leftover placeholder in the files above" >&2
++  exit 1
++fi
+diff --git a/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/harness/dump.sh b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/harness/dump.sh
+new file mode 100755
+index 00000000..e2a00ec7
+--- /dev/null
++++ b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/harness/dump.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++# dump.sh <file>: one line per finding from the frontmatter.
++id= sev= cls= loc= 
++while IFS= read -r line; do
++  case "$line" in
++    "  - id: "*) [ -n "$id" ] && echo "$id $sev $cls $loc | $sum"; id=${line#  - id: }; sev=;cls=;loc=;sum=;;
++    "    severity: "*) sev=${line#    severity: };;
++    "    class: "*) cls=${line#    class: };;
++    "    location: "*) loc=${line#    location: };;
++    "    summary: "*) sum=${line#    summary: };;
++    "---") [ -n "$id" ] && [ -n "$sum" ] && { echo "$id $sev $cls $loc | $sum"; id=; }; ;;
++  esac
++done < "$1"
++[ -n "$id" ] && echo "$id $sev $cls $loc | $sum"
+diff --git a/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/harness/run-forkfan.sh b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/harness/run-forkfan.sh
+new file mode 100755
+index 00000000..3e586101
+--- /dev/null
++++ b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/harness/run-forkfan.sh
+@@ -0,0 +1,33 @@
++#!/usr/bin/env bash
++# Run the one fork-fan handler call: run-forkfan.sh <input-id>
++# One codex exec handler at high effort spawns the lens forks itself; every rollout the call created is copied to the cell.
++set -uo pipefail
++ROOT=/home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-p1-high-bench
++HARNESS=$ROOT/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/harness
++id=$1
++model=gpt-6-astra effort=high
++in=$ROOT/.scratch/bench/inputs/$id
++cell=$ROOT/.scratch/bench/runs/$id/forkfan
++rm -rf "$cell"; mkdir -p "$cell"
++cp -a "$in/work" "$cell/work"
++prompt=$(<"$in/fan/handler-fork.prompt.md")
++prompt=${prompt//"$in/work"/"$cell/work"}
++for f in "$cell"/work/.bench/instr/*.md; do
++  c=$(<"$f"); printf '%s\n' "${c//"$in/work"/"$cell/work"}" > "$f"
++done
++printf '%s\n' "$prompt" > "$cell/prompt.md"
++touch "$cell/.marker"
++start=$(date +%s)
++CODEX_HOME=$ROOT/.scratch/codex-home timeout 3000 codex exec \
++  -m "$model" -c "model_reasoning_effort=\"$effort\"" \
++  -s workspace-write -C "$cell/work" --skip-git-repo-check --json \
++  -o "$cell/last-message.txt" - <<<"$prompt" > "$cell/events.jsonl" 2> "$cell/stderr.txt"
++rc=$?
++end=$(date +%s)
++echo "rc=$rc wall_seconds=$((end-start))" > "$cell/result.txt"
++cp "$cell/work/.bench/out/review.md" "$cell/review.md" 2>/dev/null || echo "no review file" >> "$cell/result.txt"
++mkdir -p "$cell/rollouts"
++find "$ROOT/.scratch/codex-home/sessions" -name 'rollout-*.jsonl' -newer "$cell/.marker" -exec cp {} "$cell/rollouts/" \;
++ls "$cell/rollouts" >> "$cell/result.txt"
++grep '"turn.completed"' "$cell/events.jsonl" | tail -1 > "$cell/turn-completed.json"
++cat "$cell/result.txt"; cat "$cell/turn-completed.json"
+diff --git a/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/harness/setup-codex-home.sh b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/harness/setup-codex-home.sh
+new file mode 100755
+index 00000000..08d6af0b
+--- /dev/null
++++ b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/harness/setup-codex-home.sh
+@@ -0,0 +1,7 @@
++#!/usr/bin/env bash
++# setup-codex-home.sh: create the scratch CODEX_HOME the bench runs use, holding a symlink to the operator's auth.json.
++# The link is writable through to ~/.codex/auth.json, so a token refresh by Codex would change the operator's file.
++# An existing auth.json in the scratch directory, link or file, is replaced.
++ROOT=/home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-p1-high-bench
++mkdir -p "$ROOT/.scratch/codex-home"
++ln -sfn "$HOME/.codex/auth.json" "$ROOT/.scratch/codex-home/auth.json"
+diff --git a/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/harness/windows.sh b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/harness/windows.sh
+new file mode 100755
+index 00000000..c66e3a98
+--- /dev/null
++++ b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/harness/windows.sh
+@@ -0,0 +1,6 @@
++#!/usr/bin/env bash
++# windows.sh <rollout-file>: print the 5-hour and weekly used_percent of the rollout's last token_count event, space-separated.
++# Prints nothing when the rollout has no token_count event, as for a run the plan refused.
++grep '"token_count"' "$1" | tail -1 | grep -o '"primary":{[^}]*}\|"secondary":{[^}]*}' \
++  | grep -o '"used_percent":[0-9.]*' | cut -d: -f2 | tr '\n' ' ' | sed 's/ $//'
++echo
+diff --git a/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/inputs.txt b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/inputs.txt
+new file mode 100644
+index 00000000..79c72fb4
+--- /dev/null
++++ b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/inputs.txt
+@@ -0,0 +1 @@
++P1 plan weft=c36025a89 start=2026-10-24T07:58:30Z code=ab038b4e87e16c57c9ed4824ba88221ff92c1a76
+diff --git a/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/match.tsv b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/match.tsv
+new file mode 100644
+index 00000000..52acd788
+--- /dev/null
++++ b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/match.tsv
+@@ -0,0 +1,11 @@
++input	setting	finding	own_severity	label	claude_finding	claude_severity	note
++P1	astra-tuned-forkfan-high	F1	BLOCKING	shared	F1	BLOCKING	handler: card 23 shortens PATTERN.md after cards 3, 7 and 19 grow it, so the per-card lint-pattern gate fails on card 3; Astra adds that moving the shortening earlier is not enough, since the final overview is still 15,630 bytes and the last growing card crosses the line again, and proposes spreading the shortening over the growing cards; the fan proposes moving card 23 ahead of card 3
++P1	astra-tuned-forkfan-high	F2	BLOCKING	unique-real			fork affected-set: cmd/lyx/treesitterlink_integration_test.go:40 lists packages under integration,tmux,llm, which card 11 names as the old spelling it widens in three loaders but not in this guard, and internal/testkit/tmuxkit/allow_tmux.go is built under tmux || llm only so checkSockets rejects every socket once the old tags go; holds on both files; the fan's F2 is about other readers on cards 1, 6 and 14
++P1	astra-tuned-forkfan-high	F3	BLOCKING	unique-real			fork guard-reach: card 24's Verify regex go test[^&;|]*-tags[ =][^ ]*tier0 accepts -tags nottier0; holds on the regex, which has no boundary before the tier name; the fan's F9 is a different defect of the same line
++P1	astra-tuned-forkfan-high	F4	BLOCKING	unique-real			fork way-forward: card 19 sends a default-layer value to lyx config <module> from the prime, but batten is not hub-wide so selectedLayer picks the prime worktree's file without --layer default; holds on configreg.go and hubwide.go; the fan's F6 is about the run_settings half of the same sentence
++P1	astra-tuned-forkfan-high	F5	BLOCKING	unique-real			fork way-forward: card 20 retires the switch key but leaves commandRefWayForward telling the operator to set switch and command, and TestCommandEntry pins that text; holds on entries_command.go:19 and :58-67
++P1	astra-tuned-forkfan-high	F6	BLOCKING	unique-real			handler: card 20's TestWireSetting_OpenTerminalForcesOpenWindow repeats the forced-window case stepCommandRows_FollowTheTasksLocalSwitch already covers after card 20's own migration; holds on card 20 lines 41 and 43; Opus solo P1 F4 was graded unique-real in the solo bench; Astra rates it BLOCKING, the other grade is LOW
++P1	astra-tuned-forkfan-high	F7	MEDIUM	shared	F8	LOW	forks guard-reach and way-forward merged: the alternative bare lyx config reconcile is a dry run (fan F8); Astra adds that the retired-list refusal is not reached, since configengine.Load fills the template before decodeConfig and rejects the list with a shape mismatch, which holds on config.go:134-141 and fill.go:112-116
++P1	astra-tuned-forkfan-high	F8	MEDIUM	shared	F3	MEDIUM	handler: the retag cards use Custom on a false premise and the scan after the last retag departs from D5
++P1	astra-tuned-forkfan-high	F9	MEDIUM	shared	F4	MEDIUM	handler: missing re-sign arrows on darnTreeScope and guardRunOf, with the same fixes as the fan
++P1	astra-tuned-forkfan-high	F10	MEDIUM	unique-real			handler: cards 10 and 19 bundle exported cross-package symbols (ReadRunRecords, CheckSettingKey) into their feature cards against the rubric's Granularity rule; holds on card 10 lines 4 and 18 and the rule, and stays arguable since each has one consumer
+diff --git a/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/prompts/handler-fork.prompt.md b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/prompts/handler-fork.prompt.md
+new file mode 100644
+index 00000000..b733baf2
+--- /dev/null
++++ b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/prompts/handler-fork.prompt.md
+@@ -0,0 +1,28 @@
++# Burler — review
++
++
++
++You are a burler reviewer: a single agent doing the review half of ONE round over an artifact.
++Your one job is to form your OWN independent judgment of the target, judged AGAINST the fasit, hunt for defects, and write your findings to the review file with a verdict.
++
++## What you may write (BLOCKING)
++
++Your write surface is the review file `/home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-p1-high-bench/.scratch/bench/inputs/P1/work/.bench/out/review.md` and nothing else.
++You never edit, create, or delete a target file, you never fix a finding, and you run no mutating git command.
++Findings are recorded as you find them, never fixed on sight: if you catch yourself wanting to patch something the moment you spot it, write it down as a finding and keep reading.
++
++## Your two instruction files
++
++Read and execute each of the following files in turn, in this order — never preview a later file's content early:
++
++1. `/home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-p1-high-bench/.scratch/bench/inputs/P1/work/.bench/instr/step-1-explore-fan.md` — step 1: explore the target and understand what you are judging it against.
++2. `/home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-p1-high-bench/.scratch/bench/inputs/P1/work/.bench/instr/step-2-review-forkfan.md` — step 2: the cluster/review rules and where the review-file format is. Write the review to `/home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-p1-high-bench/.scratch/bench/inputs/P1/work/.bench/out/review.md`.
++
++Your work is done once `/home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-p1-high-bench/.scratch/bench/inputs/P1/work/.bench/out/review.md` is fully written on disk.
++You write no other file and send no message.
++
++## How to read for this review
++
++- Check every claim a card makes about existing code by reading that code and its callers, and read the code paths the change reaches beyond the cards.
++- Read the `pattern/` background file of every PATTERN entry the plan touches, and check that each new command, package or file the plan adds appears where that entry requires.
++- Read the tests the plan adds or changes for waits, sleeps and timing that would slow or flake the suite.
+diff --git a/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/prompts/handler-fork.run.prompt.md b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/prompts/handler-fork.run.prompt.md
+new file mode 100644
+index 00000000..3c3e0db9
+--- /dev/null
++++ b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/prompts/handler-fork.run.prompt.md
+@@ -0,0 +1,28 @@
++# Burler — review
++
++
++
++You are a burler reviewer: a single agent doing the review half of ONE round over an artifact.
++Your one job is to form your OWN independent judgment of the target, judged AGAINST the fasit, hunt for defects, and write your findings to the review file with a verdict.
++
++## What you may write (BLOCKING)
++
++Your write surface is the review file `/home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-p1-high-bench/.scratch/bench/runs/P1/forkfan/work/.bench/out/review.md` and nothing else.
++You never edit, create, or delete a target file, you never fix a finding, and you run no mutating git command.
++Findings are recorded as you find them, never fixed on sight: if you catch yourself wanting to patch something the moment you spot it, write it down as a finding and keep reading.
++
++## Your two instruction files
++
++Read and execute each of the following files in turn, in this order — never preview a later file's content early:
++
++1. `/home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-p1-high-bench/.scratch/bench/runs/P1/forkfan/work/.bench/instr/step-1-explore-fan.md` — step 1: explore the target and understand what you are judging it against.
++2. `/home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-p1-high-bench/.scratch/bench/runs/P1/forkfan/work/.bench/instr/step-2-review-forkfan.md` — step 2: the cluster/review rules and where the review-file format is. Write the review to `/home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-p1-high-bench/.scratch/bench/runs/P1/forkfan/work/.bench/out/review.md`.
++
++Your work is done once `/home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-p1-high-bench/.scratch/bench/runs/P1/forkfan/work/.bench/out/review.md` is fully written on disk.
++You write no other file and send no message.
++
++## How to read for this review
++
++- Check every claim a card makes about existing code by reading that code and its callers, and read the code paths the change reaches beyond the cards.
++- Read the `pattern/` background file of every PATTERN entry the plan touches, and check that each new command, package or file the plan adds appears where that entry requires.
++- Read the tests the plan adds or changes for waits, sleeps and timing that would slow or flake the suite.
+diff --git a/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/prompts/step-1-explore-fan.md b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/prompts/step-1-explore-fan.md
+new file mode 100644
+index 00000000..b021bfd8
+--- /dev/null
++++ b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/prompts/step-1-explore-fan.md
+@@ -0,0 +1,379 @@
++## Constraints — do this before you judge anything
++
++- These are the repo's rules; read them in full before forming any judgment:
++
++# PATTERN
++
++## Paths and geometry
++
++- `PATTERN-cwd-resolution` — Resolving a cwd or worktree root: only `internal/lyxcwd`. — [background](pattern/PATTERN-cwd-resolution.md)
++- `PATTERN-told-geometry` — Writing an engine: handed absolute paths, it derives none, never imports `internal/lyxcwd`. — [background](pattern/PATTERN-told-geometry.md)
++- `PATTERN-lyxdirs-single-declarer` — Naming `_lyx` or `.lyx` in a path: only `internal/lyxdirs` declares them, bar one variable block atop a `tools/` script.
++- `PATTERN-lyx-temp-root` — Creating temp file or dir: under `internal/lyxtemp`'s run dir, never `os.TempDir()`. (test) — [background](pattern/PATTERN-lyx-temp-root.md)
++- `PATTERN-durable-vs-ephemeral-state` — Adding file: tracked under `_lyx`, never-tracked under `.lyx`, same subpath. — [background](pattern/PATTERN-durable-vs-ephemeral-state.md)
++- `PATTERN-hub-containment` — Linking hub-level containers or writing hub workspace file: from the hub only. — [background](pattern/PATTERN-hub-containment.md)
++- `PATTERN-hub-wide-config` — A hub-level config module: `HubWide` in `configreg`, its file on board only. — [background](pattern/PATTERN-hub-wide-config.md)
++- `PATTERN-sparse-hub-base` — Writing a hub's base file: only the units the hub tuned, never a template fill. — [background](pattern/PATTERN-sparse-hub-base.md)
++- `PATTERN-hub-suffix` — Touching hub naming: `-LYXHUB` is sole hub container suffix. (test) — [background](pattern/PATTERN-hub-suffix.md)
++
++## CLI
++
++- `PATTERN-cli-cobra` — Adding CLI module: a cobra subtree under one root in `cmd/lyx/main.go`. (test) — [background](pattern/PATTERN-cli-cobra.md)
++- `PATTERN-cliwire-sole-wiring` — Wiring standalone CLI: `internal/cliwire` alone resolves target dir, repo root and state. (test) — [background](pattern/PATTERN-cliwire-sole-wiring.md)
++- `PATTERN-config-strictness` — Loading config: a caller adopts exactly one of strict `Load` or `LoadOrTemplate`, bar `runprofile`. — [background](pattern/PATTERN-config-strictness.md)
++- `PATTERN-config-layers` — Resolving a module's config: only `configengine` reads, stacks and locates layer files. — [background](pattern/PATTERN-config-layers.md)
++- `PATTERN-template-overlay` — Judging config document against its template: only against `configengine`'s effective template, overlay picked from base layer.
++- `PATTERN-binary-change-reconcile` — Reconciling a hub's config after a binary change: only via `hubreconcile.Ensure`, owner of build stamp and hub lock.
++- `PATTERN-refusal-way-forward` — Adding webster, shed or loom refusal: message names the way forward; a test reaches it. — [background](pattern/PATTERN-refusal-way-forward.md)
++- `PATTERN-no-denied-recovery` — Naming step in a refusal, stencil or spec: never a command agents' settings deny. (test) — [background](pattern/PATTERN-no-denied-recovery.md)
++
++## Fabric and git
++
++- `PATTERN-fabric-vocabulary` — Naming the wired composite: "fabric". (test) — [background](pattern/PATTERN-fabric-vocabulary.md)
++- `PATTERN-fabric-git` — Running git on warp or weft: only `internal/fabricengine`, in-process, never raw git. — [background](pattern/PATTERN-fabric-git.md)
++- `PATTERN-fabric-destruction-chokepoint` — Destroying anything in fabric: only `internal/fabricengine/destroy.go`. — [background](pattern/PATTERN-fabric-destruction-chokepoint.md)
++- `PATTERN-fabric-write-containment` — Writing `_launchers` or workspace file in `fabricengine`: via a hub `os.Root`, never raw `os` or `fslink`.
++- `PATTERN-push-both-sides` — Pushing run records from Go: code branch goes along. — [background](pattern/PATTERN-push-both-sides.md)
++- `PATTERN-push-failure-visible` — A push refused after retry: a failed-push record and creel notice. (test)
++- `PATTERN-mutation-record` — Adding a mutating fabric verb: it fills a `*Mutations` record. — [background](pattern/PATTERN-mutation-record.md)
++- `PATTERN-pair-teardown` — Tearing down a pair: only via `internal/pairteardown`. (test) — [background](pattern/PATTERN-pair-teardown.md)
++- `PATTERN-batten-bookend` — Creating or destroying a task worktree: its producer never runs inside it. — [background](pattern/PATTERN-batten-bookend.md)
++- `PATTERN-github-auth` — Calling GitHub: auth only via `internal/githubclient`; no other production package runs `gh`.
++- `PATTERN-agent-filed-issues` — Filing GitHub issue: only `lyx selfreport create` calls `selfreportengine.CreateIssue` in production. (test)
++- `PATTERN-hub-store-gc` — Hub stores run no auto gc or maintenance: only `fabricengine/housekeeping.go` sets it or runs `gc`. — [background](pattern/PATTERN-hub-store-gc.md)
++- `PATTERN-gogit-read-helper` — Reading via go-git in `internal/gitrepo`: only via `readGoGit`. (test) — [background](pattern/PATTERN-gogit-read-helper.md)
++- `PATTERN-gitrepo-client-boundary` — Git in `internal/gitrepo`: local reads via go-git and `dotgit`, rest via `gitexec`. (test) — [background](pattern/PATTERN-gitrepo-client-boundary.md)
++- `PATTERN-gitexec-checked-call` — Running git: `gitexec.Run`/`runChecked`; raw `RunGit`/`r.run` only at pinned `//gitexec:raw` sites.
++- `PATTERN-never-force-add` — Keeping transients unindexed: each repo's `.git/info/exclude`; fabric and gitrepo never run `git add -f`.
++- `PATTERN-origin-reconcile` — Acting on a run or hub after an absence: first `fabricengine`'s origin reconcile, sole judge of branches.
++- `PATTERN-owner-machine` — Starting, resuming or landing a run or acting on wake: only where no other machine owns its entry. — [background](pattern/PATTERN-owner-machine.md)
++- `PATTERN-parent-lock` — Moving, merging into or landing on a local parent branch: only in Finalize, under its `internal/parentlock` lock.
++
++## Shed and loom
++
++- `PATTERN-shed-producer-seam` — Importing into `internal/shedengine`: only stdlib, `state` and `lock`; status and lock paths are caller-supplied.
++- `PATTERN-shed-recipe-registry` — Adding producer: one `map[string]Constructor` in `internal/shedrecipe` behind `Lookup`, bar `Implementer`'s; no `init()`/`Register`/`lyxcwd`.
++- `PATTERN-recipe-setting-lookup` — Giving recipe row a value: never own `Env` field. — [background](pattern/PATTERN-recipe-setting-lookup.md)
++- `PATTERN-command-row` — Adding side-action row to a recipe: a `Command` row over config keys, command read from template and board default layer only, never a new engine.
++- `PATTERN-shed-verb-set` — Adding run, step, status, pause or goto verb: generic bodies only in `internal/shedverbs`. (test) — [background](pattern/PATTERN-shed-verb-set.md)
++- `PATTERN-shed-driver` — Driving shed run in Go, deciding stops or spawning a tackler: only `internal/sheddriver`. (test) — [background](pattern/PATTERN-shed-driver.md)
++- `PATTERN-shed-run-directory` — Touching run directories or `seed.json`: `internal/shedrun` alone declares paths, ids and `Seed`. — [background](pattern/PATTERN-shed-run-directory.md)
++- `PATTERN-tolerant-records` — Go-written JSON records: never refuse an unknown key; rewrite via `internal/state`. (test) — [background](pattern/PATTERN-tolerant-records.md)
++- `PATTERN-transient-stop` — Marking failure transient: `internal/shedengine` mark. — [background](pattern/PATTERN-transient-stop.md)
++- `PATTERN-recipe-owns-failures` — A merge or test failure at Merge-In or Finalize: its fixer, a Finalize reroute or a halt to the orch.
++- `PATTERN-failure-stop-visible` — An `--until-stop` failure as sole holder: status is non-running before the waiter returns. (test) — [background](pattern/PATTERN-failure-stop-visible.md)
++- `PATTERN-driver-choice-single-site` — Reading seed driver: once per recipe, in bootstrap verbs. (test) — [background](pattern/PATTERN-driver-choice-single-site.md)
++- `PATTERN-treadle-runner-seam` — Importing into `internal/treadleengine`: only allowlist, never `burlerengine`, `lyxcwd` or an `internal/*cli` package.
++- `PATTERN-plan-generation` — Archiving plan: `_lyx/plan/`'s top-level files hold one generation. — [background](pattern/PATTERN-plan-generation.md)
++- `PATTERN-ref-shape-registry` — Classifying plan ref or `plan:` handle: `internal/planparser` alone declares and decides. (test) — [background](pattern/PATTERN-ref-shape-registry.md)
++- `PATTERN-glyph-conversion-chokepoint` — Converting glyphs and paths: only via `glyph`. — [background](pattern/PATTERN-glyph-conversion-chokepoint.md)
++- `PATTERN-gate-self-check-parity` — Adding mechanical gate: closure and CLI self-check call one package function. — [background](pattern/PATTERN-gate-self-check-parity.md)
++- `PATTERN-verified-tree` — Running verify command: only via `verifytree.Verify`. (test) — [background](pattern/PATTERN-verified-tree.md)
++- `PATTERN-gate-slot` — Running gate build or test: only in held `internal/gateslot` slots. — [background](pattern/PATTERN-gate-slot.md)
++- `PATTERN-trimpath-safe-root` — Locating module root in code a gate run builds: never from a `runtime.Caller` path alone, which `-trimpath` makes module-relative.
++- `PATTERN-batcher-registry` — Choosing webster's execution unit: batch the active `batcher.yaml` profile derives. — [background](pattern/PATTERN-batcher-registry.md)
++- `PATTERN-review-round` — Review and fix round: review accepted on disk before any edit. — [background](pattern/PATTERN-review-round.md)
++- `PATTERN-sole-parsers` — Parsing plan, discussion, summary, recipe or halt note: only sole parser. (test) — [background](pattern/PATTERN-sole-parsers.md)
++
++## Agents and prompts
++
++- `PATTERN-agent-name` — Forming agent name: only `internal/agentname`, once by reed. — [background](pattern/PATTERN-agent-name.md)
++- `PATTERN-creel-store` — Writing creel journal or reaching a pane: only `internal/creelengine`. (test) — [background](pattern/PATTERN-creel-store.md)
++- `PATTERN-stencil-ownership` — Reading prompt or spec: at call time via `internal/stencilstore`, never embedded. — [background](pattern/PATTERN-stencil-ownership.md)
++- `PATTERN-producer-pointer-rule` — Writing an instruction file: it points at another producer's format contract, never restating it.
++- `PATTERN-friction-capture` — Halting a loom run or refusing in webster: Go writes a note. (test) — [background](pattern/PATTERN-friction-capture.md)
++- `PATTERN-completion-signal` — Finding run unfinished in `internal/shuttleengine`: consult `allOutputFilesExist` first. (test) — [background](pattern/PATTERN-completion-signal.md)
++- `PATTERN-shuttle-provider-seam` — Referencing provider: specifics live only under `internal/shuttleengine/<engine>`. (test) — [background](pattern/PATTERN-shuttle-provider-seam.md)
++- `PATTERN-model-choice-mapping` — Mapping a model-spec onto a spawn: only via `shuttleengine.NewModelChoice`. (test) — [background](pattern/PATTERN-model-choice-mapping.md)
++- `PATTERN-shuttle-stop` — Stopping shuttle strand from Go outside `internal/shuttleengine`: only via its stop verb. (test) — [background](pattern/PATTERN-shuttle-stop.md)
++- `PATTERN-orch-pane-single-writer` — Typing into orch session from Go: only creel, via `Delivery` seam. — [background](pattern/PATTERN-orch-pane-single-writer.md)
++- `PATTERN-shell-guard-table` — Guarding shell command: only in `internal/shellguard`, every engine rendering every row; engine tool guards stay in-engine.
++- `PATTERN-shell-mechanics-seam` — Building pane-shell command string: only via `internal/shell`, importing only stdlib.
++- `PATTERN-pane-text-injection` — Typing text into agent pane: only reed's guarded paste-submit. — [background](pattern/PATTERN-pane-text-injection.md)
++- `PATTERN-pause-holds-prompts` — Typing into a covered session: shuttle refuses by slug; caller holds the line or claims the session. — [background](pattern/PATTERN-pause-holds-prompts.md)
++- `PATTERN-guarded-interrupt` — Sending agent pane the interrupt key: only shuttle's two pane guards. — [background](pattern/PATTERN-guarded-interrupt.md)
++- `PATTERN-pane-binary-resolution` — Creating strand pane or detached `lyx` window in reed: resolve `lyx` via `panebin.go` only. (test) — [background](pattern/PATTERN-pane-binary-resolution.md)
++- `PATTERN-role-skills-typed` — Loading spawned session's skill: spawner names it on launch spec, lyx delivers it on launch line or typed; no stencil asks. (test)
++- `PATTERN-parent-directive` — Writing spawned role's top-level stencil: it renders parent directive. (test) — [background](pattern/PATTERN-parent-directive.md)
++- `PATTERN-edit-directive` — Writing spawned role's opening stencil: it renders `internal/editdirective`'s directive. (test) — [background](pattern/PATTERN-edit-directive.md)
++- `PATTERN-spawn-color` — Coloring spawned session: spawner names a segment on launch spec. — [background](pattern/PATTERN-spawn-color.md)
++- `PATTERN-wait-mark-display-only` — Marking wait on screen: only reed's `SetWaitMark`; no Go decision reads them. — [background](pattern/PATTERN-wait-mark-display-only.md)
++- `PATTERN-spawn-observability` — Starting OS process from `lyx`: log the spawn via `internal/logger`. — [background](pattern/PATTERN-spawn-observability.md)
++
++## Daemons and waits
++
++- `PATTERN-daemon-wakeups` — Unbounded wait wakes at most once a second and backs off while idle. (test) — [background](pattern/PATTERN-daemon-wakeups.md)
++- `PATTERN-run-process-owner` — A run's processes: registered in `internal/runproc`, ended only via `runproc.End`. — [background](pattern/PATTERN-run-process-owner.md)
++- `PATTERN-log-levels` — Logging in a loop or poll: follow `internal/logger`'s Level policy.
++
++## Packages
++
++- `PATTERN-leaf-packages` — Importing into a leaf package: only closed import set. — [background](pattern/PATTERN-leaf-packages.md)
++
++## Build and tooling
++
++- `PATTERN-sandbox-coverage` — Registering lyx module: sandbox suite exercises it or excludes it with a reason.
++- `PATTERN-dev-prod-binary-separation` — Resolving `lyx` in sandbox tooling: `resolveLyx` (`.dev-bin` first, then PATH), never bare PATH.
++- `PATTERN-quarry-cgo` — Building this module: `CGO_ENABLED=1` and a C compiler, for tree-sitter grammars. — [background](pattern/PATTERN-quarry-cgo.md)
++
++## Testing
++
++- `PATTERN-test-tiers` — Running hub's tests: only through `lyx gate test`'s tiers. — [background](pattern/PATTERN-test-tiers.md)
++- `PATTERN-test-economy` — Writing test: pins public-surface behavior no test covers, else extends one. — [background](pattern/PATTERN-test-economy.md)
++- `PATTERN-test-speed` — Writing test: lowest fitting tier, injected clocks, `t.Parallel` by default. (test) — [background](pattern/PATTERN-test-speed.md)
++- `PATTERN-test-isolation` — Testing package: git spawners use `gitkit.HermeticGitEnv()`. (test) — [background](pattern/PATTERN-test-isolation.md)
++- `PATTERN-testkit` — Sharing test support across packages: one kit under `internal/testkit/<kit>/`, imported only from tests. (test) — [background](pattern/PATTERN-testkit.md)
++- `PATTERN-hubforge-fixtures` — A hub fixture no fake can test: `hubforge` via `fabriccli.CloneAndWire`. — [background](pattern/PATTERN-hubforge-fixtures.md)
++
++## Docs
++
++- `PATTERN-markdown-link-integrity` — Linking in a `.md` file under `docs/`: every inline link resolves. (test) — [background](pattern/PATTERN-markdown-link-integrity.md)
++- `PATTERN-comment-line-breaks` — Writing Go comment: one sentence per line. (test) — [background](pattern/PATTERN-comment-line-breaks.md)
++- `PATTERN-documentation-lifecycle` — Design docs: none for unbuilt work. — [background](pattern/PATTERN-documentation-lifecycle.md)
++### Declared PATTERN changes
++
++This task declares these changes to PATTERN entries, and its own diff makes them:
++
++- `PATTERN-test-tiers` — changes: Running hub's tests: only via `lyx gate test`; a site names its gate key, never tiers or scope, bar darn's tree-scoped targets. — added after Discussion (parent, 2026-10-24)
++- `PATTERN-tier-tags` — adds: Tagging a test file: one `tierN` build tag, the tier that runs it; an untagged test file holds no test. (test)
++- `PATTERN-gate-carry` — adds: Skipping a test tier as already green: only `lyx gate test`'s green record, over a clean tree.
++- `PATTERN-row-entry-gate` — adds: Leaving a recipe row out by config: its `entry_gate`, never a recipe rewrite or producer-side switch.
++- `PATTERN-command-row` — changes: Adding side-action row to a recipe: a `Command` row over config keys, its command from template and board default only. — added after Discussion (parent, 2026-10-24)
++- `PATTERN-shed-recipe-registry` — changes: Adding producer: one `map[string]Constructor` in `internal/shedrecipe` behind `Lookup`, bar `Implementer`'s. — added after Discussion (parent, 2026-10-24)
++- `PATTERN-trimpath-safe-root` — changes: Locating module root in gate-built code: never from a `runtime.Caller` path alone. — added after Discussion (parent, 2026-10-24)
++- `PATTERN-role-skills-typed` — changes: Loading spawned session's skill: spawner names it on launch spec and lyx delivers it; no stencil asks. (test) — added after Discussion (parent, 2026-10-24)
++- `PATTERN-template-overlay` — changes: Judging config document against its template: only `configengine`'s effective template. — added after Discussion (parent, 2026-10-24)
++- `PATTERN-shell-guard-table` — changes: Guarding shell command: only in `internal/shellguard`, every engine rendering every row. — added after Discussion (parent, 2026-10-24)
++- `PATTERN-lyxdirs-single-declarer` — changes: Naming `_lyx` or `.lyx` in a path: only `internal/lyxdirs`, bar a `tools/` script's variable block. — added after Discussion (parent, 2026-10-24)
++- `PATTERN-treadle-runner-seam` — changes: Importing into `internal/treadleengine`: allowlist only, never `burlerengine`, `lyxcwd` or a CLI package. — added after Discussion (parent, 2026-10-24)
++- `PATTERN-binary-change-reconcile` — changes: Reconciling a hub's config after a binary change: only via `hubreconcile.Ensure`. — added after Discussion (parent, 2026-10-24)
++- `PATTERN-shed-producer-seam` — changes: Importing into `internal/shedengine`: only stdlib, `state` and `lock`; paths are told. — added after Discussion (parent, 2026-10-24)
++- `PATTERN-parent-lock` — changes: Moving, merging into or landing on a local parent branch: only in Finalize, under its parent lock. — added after Discussion (parent, 2026-10-24)
++- `PATTERN-agent-filed-issues` — changes: Filing GitHub issue: only `lyx selfreport create` in production. (test) — added after Discussion (parent, 2026-10-24)
++- `PATTERN-fabric-write-containment` — changes: Writing `_launchers` or workspace file in `fabricengine`: via a hub `os.Root` only. — added after Discussion (parent, 2026-10-24)
++- `PATTERN-origin-reconcile` — changes: Acting on a run or hub after an absence: `fabricengine`'s origin reconcile first. — added after Discussion (parent, 2026-10-24)
++- `PATTERN-never-force-add` — changes: Keeping transients unindexed: `.git/info/exclude`; never `git add -f`. — added after Discussion (parent, 2026-10-24)
++- `PATTERN-recipe-owns-failures` — changes: A merge or test failure at Merge-In or Finalize: its fixer, a reroute or a halt to the orch. — added after Discussion (parent, 2026-10-24)
++- `PATTERN-hub-store-gc` — changes: Hub stores run no auto gc: only `fabricengine/housekeeping.go` sets it or runs `gc`. — added after Discussion (parent, 2026-10-24)
++- `PATTERN-owner-machine` — changes: Starting, resuming or landing a run or acting on wake: only where no other machine owns it. — added after Discussion (parent, 2026-10-24)
++- `PATTERN-pane-binary-resolution` — changes: Starting `lyx` in a reed pane or window: resolve it via `panebin.go` only. (test) — added after Discussion (parent, 2026-10-24)
++
++- An entry listed here is followed and judged by its listed new text, never by the overview's current text.
++- An entry listed as `removes` no longer binds.
++- A departure from a listed entry cites the listed text.
++- Only the entries listed here are judged by their listed text; every other entry is judged by the overview's current text.
++
++- Read every background file under pattern/ that the entries above link to and that touches what you are about to judge.
++- Every violation of a listed constraint, an entry the declared changes list judged by its declared text, is a BLOCKING finding: record it no matter how small it looks, and never wave it through because the code works or the tests pass.
++- If a constraint conflicts with anything else in this prompt, the constraint wins — say so in your report instead of silently picking one.
++## Focus directive for this round
++
++Read the file at `/home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-p1-high-bench/.scratch/bench/inputs/P1/work/.bench/instr/focus.md` before forming any finding.
++It names where to look and which question to settle this round.
++
++How the directive relates to the rubric:
++
++1. The rubric binds over the focus directive.
++   A directive never licenses a finding the rubric's `Do not flag` list or symmetry rule forbids, and never suppresses a finding the rubric requires.
++2. A directive steers attention and order, not verdicts.
++   "The concrete instance to judge" means reach it and state a verdict on it, and "not a defect" is a valid verdict.
++3. Severity comes from the rubric's mapping and the evidence you find.
++   A severity cap in a directive is advisory and yields to evidence the round turns up.
++4. `exclude_lenses` keeps its mechanical meaning: it trims the cluster fan, and this rule does not govern it.
++
++The directive never licenses reading a prior round's files before your review is saved.
++A directive that points into one is followed only as far as its own text goes, and you record the gap under `## Focus departures`.
++
++If you depart from a directive, record it in the review file's `## Focus departures` section, as the review-file format describes.
++## What to review (the target)
++
++- `/home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-p1-high-bench/.scratch/bench/inputs/P1/work/_lyx/plan` (a directory — everything under it)
++
++## What to judge it against (the fasit)
++
++- `/home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-p1-high-bench/.scratch/bench/inputs/P1/work/_lyx/discussion/decision-record.md`
++
++The decision record named above is the answer key: the plan's job is to implement the decisions and constraints it settles. With no rework generation, the decision record alone is the answer key. The format authority is /home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-p1-high-bench/.scratch/bench/inputs/P1/work/.bench/specs/loom/loom-plan-spec.md, and the mechanical checks over that format are already enforced by this round's own gate over this round's own output, so re-deriving them here is duplicated work. This round may never write the approved: key in the plan's overview file.
++
++The fasit is the source of truth the target is judged AGAINST.
++A review that ignores the fasit degenerates into a pure internal-consistency check — always read it and hold the target to it.
++
++## Rubric
++
++# Plan-Review rubric
++
++The subject under review is the current plan: `_lyx/plan/00-overview.md` and the card files its Card Index names.
++The plan directory may also hold `archive-*/` subdirectories, which are rotations of superseded plans;
++they are out of scope, and a finding raised against one is never legitimate.
++
++The format contract, and the Card model it implements, are both `/home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-p1-high-bench/.scratch/bench/inputs/P1/work/.bench/specs/loom/loom-plan-spec.md`.
++This rubric points at both and restates neither.
++The mechanical checks over that contract are already enforced by this round's own gate over this round's own output — every check but `plan-unapproved` and `delete-target-gone` — while `plan-unapproved` is enforced at no row at all, resting on the review segment's own approve seam failing loudly if ever wired nil, and `delete-target-gone` fires only at Webster's dispatch, after this round.
++
++`Plan-Review` is the LLM producer, not the mechanical one — over-flagging is a judgment failure mode a mechanical producer, which has only checks and never judgment, cannot exhibit.
++Sitting behind a mechanical gate over this round's own output makes this gate's over-flagging surface larger than that of a gate with no validator ahead of it, not smaller.
++
++**`support-log.md` is outside this review entirely.**
++It appears in neither the artifact list nor the answer key, and it must not be read or reasoned from.
++`Plan-Write` provably never reads it, so a finding grounded in its content cannot be satisfied except by inventing the missing link.
++
++## Write surface
++
++none
++
++`none` means webster has begun no batch, and no card is frozen.
++Otherwise a done card is frozen: a fix never edits its file.
++A fix to its work is a follow-up card placed after the last begun batch, with its Card Index line in `00-overview.md`, in the format `/home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-p1-high-bench/.scratch/bench/inputs/P1/work/.bench/specs/loom/loom-plan-spec.md` defines.
++A fix inserts or removes a card only with `lyx loom insert-card` or `lyx loom remove-card`, which renumber the later cards and whose `--help` says what they do, never by renaming, rewriting under a new name or deleting a card file by hand.
++
++## Do not flag
++
++Do not flag any of the following as a finding:
++
++- **Anything this round's own gate already checks.**
++  Every check ID `/home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-p1-high-bench/.scratch/bench/inputs/P1/work/.bench/specs/loom/loom-plan-spec.md`'s own validation-checks section lists is enforced deterministically by this round's own gate over this round's own output, except `plan-unapproved`, which is enforced at no row at all, resting on the review segment's own approve seam failing loudly if ever wired nil, and `delete-target-gone`.
++  `delete-target-gone` fires only at Webster's dispatch, after this round, so no plan this round reviews can carry it.
++  Re-deriving any of them here is duplicated work whose only possible outcome is disagreement with the gate.
++- **A missing `DependsOn`/`Produces` field, or an incomplete dependency list.**
++  Dependency edges are derived, never authored — a card's `Uses` intersected against every other card's target list.
++  Plan-time completeness of that intersection is explicitly not provable;
++  the real gate is the post-merge build and test.
++- **A `Rename`, `Move`, `Prosa`, or `Custom` card carrying no `ImpactSummary`.**
++  It is required for `Edit` and `Delete` only, per the per-type table in `/home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-p1-high-bench/.scratch/bench/inputs/P1/work/.bench/specs/loom/loom-plan-spec.md`.
++  For `Rename` the reason is specific: a correctly executed AST-aware rename is binary, with no graded blast radius to summarise.
++
++## Also flag
++
++- **Granularity.**
++  One card per independently reviewable unit, not one card per literal symbol.
++  A private supporting type, or a constructor inseparable from its type, belongs in the other symbol's card;
++  a symbol that is part of a module's public surface, or reused across packages, gets its own card even when one card is its only consumer, and a helper serving one surface is bundled into that surface's card.
++- **Test economy.**
++  A card that plans a new test function or file for behavior an existing test already covers, or one test per symbol, is a finding; so is a card that plans an assertion on a stencil's static prose.
++  The finding names the existing test that covers the behavior, or, for a per-symbol test, the public-surface test that covers the symbol;
++  a vague "seems redundant" is not a finding.
++- **Member glyphs on an `Edit` card.**
++  An `Edit` card whose targets are only source file paths (`.go` or `.cs`) of non-test files while its `Intent` names specific symbols is a finding; the finding names the member glyphs to list instead.
++- **The re-sign arrow.**
++  An `Edit` member glyph without the re-sign arrow, while the card's `Intent` changes that member's parameters, results, type parameters or receiver, is a finding; the finding names the arrow to add.
++  It never fires for an interface method or a struct field, which take no arrow.
++- **`ImpactSummary` carries a real conclusion.**
++  A one-line blast-radius conclusion — "3 callers, all local to the billing package, no cross-module effects" — never a restatement of `Intent`.
++- **`Extends` on a ref the card rewrites.**
++  An `Extends` on a ref the card rewrites, reorders or removes content of is a finding, as a missing `Uses:` is; the finding names the ref and moves it under `**Edit:**`.
++  It flags only what the plan-writer stencil tells the writer to do: `Extends` is for adding to a ref without changing anything already there.
++- **`Custom` is a last resort.**
++  Used only where none of `Create`, `Edit`, `Extends`, `Delete`, `Rename`, `Move`, or `Prosa` genuinely fits, never as a shortcut around correct typing.
++  A `Custom` card is exempt from `path-missing` on its own targets and from `prosa-symbol-target` — which under the glyph alphabet means a `Prosa` group may only target file and unit self glyphs, with a member glyph (or anything else that fails to parse as a self glyph) the finding — so a mistyped `Custom` card silently escapes two checks the rest of the plan is held to.
++  It escapes only those two: `bare-symbol-target` and `directory-target` bind a card's flat `Targets`/`Uses` with no group scoping at all, so this round's own gate already blocks a `Custom` card carrying either — do not hunt for one here.
++  A `Custom` card whose targets could instead be expressed as a multi-label combination of the other seven is a finding — the format's one-or-more-labels grammar means `Custom` is never the only way to name a mixed target list.
++- **PATTERN fit.**
++  When the repository has a `PATTERN.md`, each card is checked against its entries and against the `pattern/` background files the plan names as relevant to the change;
++  a card that breaks one of their rules is a finding, and the finding names the entry.
++  In a repository without a `PATTERN.md` this check does not apply.
++- **Fidelity to the answer key.**
++  Every Decision and every Constraint in `_lyx/discussion/decision-record.md` is carried by some card, and no card introduces scope the answer key does not license.
++  A Decision step no card carries is accepted only when the step changes this task's own board entry's body or scope and the decision record carries an `Added after Discussion` entry recording its drop;
++  any other uncarried Decision stays a finding.
++  That path is anchor-relative: it resolves from this session's own working directory, and it is deliberately not the absolute form the artifact list uses.
++  The answer key is the measuring stick and never the subject — every finding is raised against the plan, never against the decision record or a findings file.
++  An entry between `<!-- lyx:carry-over … -->` marker lines in the decision record's `## Open risks` is not part of the answer key, and it licenses no card's scope.
++  In a rework generation the live generation's `findings.md` joins the decision record as the answer key:
++  every finding in it is covered by some card, and every card's scope is licensed by the decision record or by a finding.
++  A finding in `findings.md` is a reviewer's claim the rework plan answers, never a ruling;
++  it licenses a card's scope unless it overturns a Decision of the decision record, and a card carrying a finding that overturns a Decision with no `Added after Discussion` entry recording it is a finding.
++  The live generation's round is, among `_lyx/loom/rework/round-<N>/` directories, the highest `N` whose `record.json` carries a `class` and whose `first_card` equals the `first_card` in `_lyx/plan/00-overview.md`'s frontmatter (absent means `1`).
++  With no such round (generation 0, or a fresh Plan-Write plan after an operator `goto Plan-Write`), the decision record alone is the answer key.
++  The round's `prior-generation/` archive is context only, and a finding raised against anything inside it is never legitimate.
++- **A card that carries a research step.**
++  A card that leaves a fact the design depends on to be found out while it runs, or carries a rule to halt when its work discovers such a fact, is a finding.
++  The finding names the fact;
++  its fix is the fact researched and recorded in the plan, or in the decision record through the parent when the answer changes the design.
++- **A card that edits the task's own board entry.**
++  A card that changes this task's own board entry's body or scope is a finding, because the run's board lock refuses such a change.
++  A card writing another entry, the entry's status or its `run_settings`, or changing board-module code is not flagged by this bullet.
++- **Card order.**
++  A card that depends on something a later card does breaks the rule in `/home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-p1-high-bench/.scratch/bench/inputs/P1/work/.bench/specs/loom/loom-plan-spec.md`'s "Plan vs. schedule" section; the finding names the card and the later card it depends on.
++- **Verify lines.**
++  A card's `**Verify:**` line naming a raw test command is a finding, because the gates run the hub's tier lists over scopes lyx computes and a line that tests is one `lyx gate test --wait` call with a tier list and a scope form.
++  The hub's tiers and gate lists, as the plan writer was given them:
++none
++  A plan-level `## verify:` section is accepted and ignored, so it is no finding.
++- **The attack-surface question.**
++  For every new verb, flag, escape hatch or routing edge, and every guard that is removed, downgraded or bypassable, the card that introduces the change states in its `**Intent:**` what it can now skip or let through and what bounds it.
++  A card that introduces one with no stated bound is a finding.
++- **Reachability of a prescribed refusal.**
++  A card that prescribes a refusal or guard branch with no named input that reaches it, or no named test that reaches it, is a finding.
++  So is one whose named input an upstream check rejects; the finding names that upstream check.
++  A propagated raw I/O error, which `refusal-spec.md` exempts as transient, is exempt, and so is a fail-loud wiring guard in that file's sense, which takes no reaching test.
++  A test that calls only the refusal's error constructor does not reach the refusal.
++- **The writer/reviewer symmetry note.**
++  The plan writer's own stencil is `/home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-p1-high-bench/.scratch/bench/inputs/P1/work/.bench/stencils/loom/loom-template-plan.md`.
++  Whatever it says not to write, this rubric must not flag as missing.
++
++## Proposed fixes
++
++A finding whose fix adds, drops, moves or pairs targets, or changes a verify command, proposes only a fix that every check in the validation-checks section of `/home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-p1-high-bench/.scratch/bench/inputs/P1/work/.bench/specs/loom/loom-plan-spec.md` admits.
++A fix that adds or pairs targets must pass `redundant-package-target` and `redundant-file-target` there, since a file or a package listed beside a member of it on one card is refused, and the spec says what counts and the way forward.
++When the reviewer sees no admissible fix, it still reports the defect and names the check that constrains the fix.
++A finding's `fix` key is a proposal: the fixer may apply any other fix the checks admit, and when none exists it defers the finding with the constraining check as the reason.
++The rule narrows only which fix shapes a reviewer proposes; no defect becomes unreportable.
++
++Before writing a finding whose `fix` adds, drops, moves or pairs targets, or changes a verify command, the agent writing the review file checks the fixes against the plan gate with `lyx loom validate-plan --overlay`, which checks proposed plan file contents in memory and writes no file.
++`lyx loom validate-plan --help` shows the stdin format; this rubric does not restate it.
++It first runs `validate-plan --overlay` with `{}` as a baseline, never the flag-less run, so that no run writes a file.
++It then runs it once with every such fix applied together, with its Bash timeout raised to cover a type load, and proposes no fix whose run reports a blocking finding the baseline does not.
++When the combined run reports a new blocking finding, it re-runs with each fix overlaid alone.
++A fix whose solo run reports a new blocking finding is withheld, and its defect is reported with the constraining check named, as above for a defect with no admissible fix.
++A new blocking finding of the combined run that no solo run reproduces is a joint conflict: the fixes that finding names by card are withheld, and their defects are reported together the same way.
++A fix that inserts, removes or renumbers cards is not overlaid, since it goes through `insert-card` and `remove-card`.
++The directive binds writing a finding's `fix`, not a Bouncer row's focus file.
++
++A finding whose proposed glyph stands for a comment or a line it cites names the function or method whose body encloses that line, confirmed with `lyx quarry resolve` that the line lies inside the glyph's span, never the member after or near it.
++When no member span holds the line, as for a free-standing comment between declarations, it names the file's self glyph.
++
++## Amendment
++
++none
++
++When the note above is not `none`, this round reviews an amendment: review only the change it names, and report nothing about the settled remainder.
++
++## Finding class
++
++Every finding carries one class: `design`, `scope`, `decision` or `consistency`.
++Their generic meanings are in burler's review step; this section does not restate them.
++In this segment, `design` means the plan's structure is wrong: batching, sequencing, sizing or `verify:` correctness.
++A recurring enumeration gap is filed once as a `design` finding about the method, not once per missing item.
++Class never changes whether a finding is fixed.
++
++The rubric tells you what counts as BLOCKING, MEDIUM, LOW, or NIT for THIS target.
++It maps its own criteria onto that fixed four-value severity vocabulary;
++it never introduces a new severity name, and neither do you.
++Each finding also carries one of the four classes — `design`, `scope`, `decision`, `consistency` — and the rubric says what `design` means for this target.
++
++## Tool-use rules — how you gather evidence
++
++Read-only analysis in the explore and review steps: read files, run nothing.
++
++## Reading for the fork reviewers
++
++This round fans out: in step 2 you spawn fork reviewers, and each fork inherits your context as it stands at the spawn.
++Your reading in this step is the forks' reading, so read here what the review will need, once, instead of leaving each fork to read it again.
++
++Before you leave this step, read:
++
++- every file the target names, at the definitions of the symbols it cites;
++- for each symbol the target changes, guards or removes: its direct callers and callees, and every path that reaches it from another process, such as a child the code spawns or a command that calls the guarded verb in-process;
++- for each state, setting or file a decision introduces or changes: the existing code paths that also write, reset or reapply it, such as other verbs, hooks, resize or apply steps, and restart paths, and the code that reads it;
++- for each output, key, string, file shape or behaviour the target changes: every test, caller, doc and fixture that reads or asserts it;
++- the board entry of the task the target belongs to, through `lyx board get`;
++- the `pattern/` background file of every PATTERN entry the target names or touches;
++- the failure, restart and resume paths of each change the target makes.
++
++Read definitions and call sites, not whole files: a fork re-reads its inherited context on every turn.
++Judge nothing while you read: write no finding, verdict or assessment, not even in a status line or a note to yourself.
++A judgement in your context before the spawn colours every fork; your own review starts after the forks are spawned.
++
++Close this step with a reading manifest: one line per file and symbol you read, grouped by the part of the target it serves.
++The manifest names what you read and nothing about what you found.
++Write it as text in the same turn and go straight on to step 2: the manifest never ends your turn.
+diff --git a/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/prompts/step-2-review-forkfan.md b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/prompts/step-2-review-forkfan.md
+new file mode 100644
+index 00000000..ce33736b
+--- /dev/null
++++ b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/prompts/step-2-review-forkfan.md
+@@ -0,0 +1,57 @@
++## Cluster rules
++
++This is a cluster round: after exploring the target fully, spawn ALL of the fork reviewers below in a SINGLE message by calling your `spawn_agent` tool once per lens listed here, so the forks run in parallel, each with `fork_turns` set to `"all"` so it inherits your context; never pass a name, a model or an effort for a fork, so each fork keeps your own.
++
++Lenses for this round:
++
++- affected-set: Own what each card's change forces outside the card. For each output, key,
++string, file shape or behaviour a card changes, find everything that reads
++or asserts it, tests, callers, docs and fixtures, from the pre-read and a
++search for what the pre-read lacks. For each change, find the cards that
++cover the set. A card that covers part of a set is one finding about the
++method, naming the members it missed. Your list: per change, the set you
++found and the cards that cover it.
++- guard-reach: Own whether each guard can be reached. For each guard, refusal, branch or
++test row a card adds, trace the sequence of states a real entry point
++passes through to reach it. Say whether the state it guards can occur at
++that point, and whether the guarded site recurs elsewhere on a path the
++card does not guard. A guard whose state cannot occur, and a guarded site
++that recurs unguarded, are findings. Your list: per guard, reachable or
++not.
++- way-forward: Own the failure and recovery ends. For each refusal, stop, reset or
++recovery step a card adds, find the next step it names and check whether
++that step can succeed from the state the refusal leaves. A refusal that
++names no next step, and a next step that cannot succeed from that state,
++are findings. Your list: per refusal, the next step, progresses or not.
++
++### Fork rules for this round
++
++Spawn the forks as soon as step 1's reading manifest is written, in the same turn.
++Each fork's prompt is the boilerplate below, then the line `Your lens: <name>` and that lens's text, and nothing else: never add your own direction, hint, suspicion or reading list to a fork's prompt.
++
++Boilerplate:
++
++> You are one fork reviewer of this round, and you own one lens; the other forks own the other lenses, and the handler reviews holistically. Your inherited context already holds the target, the rules and the code listed in the reading manifest; review from it. Reading for this review: Check every claim a card makes about existing code by reading that code and its callers, and read the code paths the change reaches beyond the cards. Read the `pattern/` background file of every PATTERN entry the plan touches, and check that each new command, package or file the plan adds appears where that entry requires. Read the tests the plan adds or changes for waits, sleeps and timing that would slow or flake the suite. Work your lens's procedure, and start your final message with the list your lens asks for. Report every finding your lens's procedure produces and nothing outside it, because the other lenses and the handler cover the rest. You may make at most 6 tool calls, each only for something your procedure needs that the manifest lacks, such as a caller or a spawned process one hop beyond it, and never to re-read what your context already shows; end your final message with one line per tool call: what you read and why your context lacked it. You are READ-ONLY: never Write, Edit or delete any file, run only commands that read, never touch the two round output files, and never spawn another agent. Return your findings ONLY as your final message, each with a severity, a class, a location, a one-line summary and the file and line of the evidence you read.
++
++While the forks run, YOU (the handler) do your own HOLISTIC review: what no lens owns, such as the target against its fasit and its board entry, the rubric's leanness and relocation rules, architecture and PATTERN-fit, reading further only where your review needs it.
++Then prepare the ground truths and the severity rubric you will judge every finding against.
++Write nothing to the review file while any fork is outstanding, whatever an early report says: consolidate only once the last fork has returned, with every finding in view.
++
++Consolidation: judge every fork finding and your own holistic findings with EQUAL skepticism, dedup findings that describe the same defect across lenses, tag every kept finding's frontmatter with an `origin:` key (`lens:<name>` or `handler`), move false positives to a `## Rejected` prose section below the frontmatter with a one-line reason each (a rejected item never appears in `findings:`), and order kept findings by severity.
++Wait for every fork with your wait tool before you consolidate.
++The consolidated review is the ONE review file, and the review is complete once it is fully written to disk — consolidation is part of the review, not a separate step after it.
++
++## The review file
++
++Write the review to `/home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-p1-high-bench/.scratch/bench/inputs/P1/work/.bench/out/review.md`, in the format `/home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-p1-high-bench/.scratch/bench/inputs/P1/work/.bench/instr/review-format.md` describes.
++Read that file before you write.
++The review is complete once it is fully written to disk and passes the format's strict rules.
++
++## Source-grounding rule
++
++Never fabricate file contents.
++Read the actual files before you describe or judge them — every claim in your review must be grounded in something you actually read.
++
++## Prior rounds
++
++This is the first round — no prior round files exist.
+diff --git a/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/prompts/tuned-block.md b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/prompts/tuned-block.md
+new file mode 100644
+index 00000000..0f44be86
+--- /dev/null
++++ b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/prompts/tuned-block.md
+@@ -0,0 +1,5 @@
++## How to read for this review
++
++- Check every claim a card makes about existing code by reading that code and its callers, and read the code paths the change reaches beyond the cards.
++- Read the `pattern/` background file of every PATTERN entry the plan touches, and check that each new command, package or file the plan adds appears where that entry requires.
++- Read the tests the plan adds or changes for waits, sleeps and timing that would slow or flake the suite.
+diff --git a/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/reviews/P1/fork-affected-set.md b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/reviews/P1/fork-affected-set.md
+new file mode 100644
+index 00000000..d680375f
+--- /dev/null
++++ b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/reviews/P1/fork-affected-set.md
+@@ -0,0 +1,34 @@
++Affected-set coverage:
++
++- Gate shape, keys, migration, rendering, and failure kinds: cards 1–5 cover gateslot, Webster, loom wiring, landing, recipe constructors, and their named fixtures.
++- Darn tree scope and retired `tree_scope_verify`: card 6 covers config, migration, editor refusal, wiring, tests, and docs.
++- Green carry, diff bases, run records, summaries, counters, and reports: cards 7–10 cover gate execution and record consumers.
++- Tag-dependent package loads and guards: cards 11–16 cover impactset, planglyph, planparser, shellguard, testtiming, purity, LLM, and isolation scans; the tree-sitter dependency scan and tmuxkit’s runtime permission switch remain uncovered.
++- Entry state, goto/relaunch, routing, histories, settings, and consumers: cards 17–21 cover the principal engine, reader, builder, batten, and darn paths.
++- Documentation, retagging, and transition cleanup: cards 22–33 cover the listed packages and follow-up entry, but neither the retag instructions nor follow-up scope addresses the two uncovered tag consumers below.
++
++Finding:
++
++**BLOCKING — design — `_lyx/plan/11-package-load-tags.md`, cards 24–33**  
++**The tag migration enumerates only part of the existing tag-dependent consumers.**
++
++Card 11 promises that every Go package load listing tests moves to both spellings, but `TestTreeSitterLink_OnlyAllowedTestBinariesLinkIt` still invokes `go list -test -deps -tags integration,tmux,llm` at `cmd/lyx/treesitterlink_integration_test.go:40`.
++Card 24 changes that file’s build header only; no card changes this command.
++Once other test files become `tier0`/`tier1`/`tier2`/`tier3`, this guard excludes them, contrary to D5 and `PATTERN-test-speed`’s requirement that the tree-sitter scan inspect every tier.
++The guard also rejects allowlisted packages missing from its reduced dependency graph (`cmd/lyx/treesitterlink_test.go:114`).
++For example, the two test files directly importing planglyph in loomshed are untagged and have no guard marker (`internal/loomshed/gates_test.go:30`, `internal/loomshed/gatefindings_test.go:27`); card 26 changes them to `tier0`, which this scan does not request.
++
++The same enumeration omission leaves `internal/testkit/tmuxkit/allow_tmux.go:1–9` accepting only `tmux || llm`.
++Its `init` controls `tmuxAllowed`, and `afterRun` passes that switch to `checkSockets` (`internal/testkit/tmuxkit/tmuxkit.go:105`), which fails even registered surviving sockets when false (`:145–147`).
++The transitional hub commands mask this omission by retaining old tags, but card 33’s prescribed removal of those tags exposes it: a pure `tier2` or `tier3` run compiles the retagged tests without enabling their runtime tmux allowance.
++Card 29 only retags test files, whereas this switch is a non-test Go file, and card 33’s follow-up scope does not name it.
++These are one recurring affected-set enumeration defect, rather than independent per-file findings.
++
++Tool-call record:
++
++1. Searched gate-key, retired-config, and Command-field references outside the inherited definitions to enumerate remaining consumers.
++2. Read Webster’s gate-config caller and searched tag-dependent loaders and fixtures absent from the manifest.
++3. Read tmuxkit’s build-tag switch and the tree-sitter dependency scan because neither was in the inherited reading.
++4. Traced tree-sitter imports and history-outcome consumers beyond the named cards to test the affected-set boundaries.
++5. Read tmuxkit’s runtime socket check and darn’s latest-outcome consumer to establish the consequences of those dependencies.
++6. Checked the loomshed import files’ tags and markers and the tree-sitter scan’s stale-allowlist check to ground the migration finding.
+diff --git a/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/reviews/P1/fork-guard-reach.md b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/reviews/P1/fork-guard-reach.md
+new file mode 100644
+index 00000000..51d7993d
+--- /dev/null
++++ b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/reviews/P1/fork-guard-reach.md
+@@ -0,0 +1,34 @@
++Guard reachability list:
++
++- Card 1: unknown scope and forbidden `card` scope are reachable; the retired-list-shape refusal is intercepted upstream.
++- Card 2: mutually exclusive flags, unknown keys, and missing card IDs are reachable through the named CLI tests; explicit targets deliberately replace configured scope.
++- Cards 4–5: non-string `gate_key` refusals are reachable once the entries accept that key.
++- Card 6: removal of the tree-scope command guards is licensed by D14; replacement calls use the configured gate key.
++- Cards 7–8: dirty-tree, fingerprint, argument, module, and ancestry conditions are reachable; carried runs bypass slots as specified.
++- Card 10: malformed `--since` is reachable before hub resolution.
++- Card 12: scoped raw commands containing `tier2` or `tier3` reach the extended tag checks.
++- Card 14: wrong-tier markers, undeclared guard tiers, and commands lacking placeholders are reachable.
++- Card 15: zero-test runs, including an untagged `TestMain`, reach the new check; caller filters deliberately exempt runs, while generated guard filters do not.
++- Card 17: skip chains, evaluation errors, pauses, resume, goto bypass, and relaunch paths are reachable. A two-row `OnDone` cycle reaches the chain limit; `Shed.validate` rejects only direct self-`OnDone` routes.
++- Card 19: malformed checks, unknown settings/segments, and non-bool bare settings are reachable; nil seams are explicitly wiring guards.
++- Cards 20–21: forced Open-Window and budget-zero Describe paths are reachable.
++- Card 24: the transition guard runs, but accepts a command lacking the required tag.
++- Card 33: its specified fixture cases reach the planned static scanner.
++
++Findings:
++
++1. **MEDIUM · consistency · `_lyx/plan/01-gate-key-shape.md:53` — The retired-list refusal cannot be reached through the prescribed load test.**  
++   The card changes `decodeConfig` and prescribes loading `gates: {card: [0]}` through `TestLoadConfig`, expecting a reconcile instruction. Once the template declares `card` as a mapping, `configengine.Load` calls `yamlengine.FillMissing`, which rejects that sequence before `decodeConfig` runs. `LoadConfig` then wraps the upstream error with its existing `lyx config gate` instruction. The card does not change that upstream handling, so its reaching test cannot observe the promised refusal.  
++   Evidence: `internal/gateslot/config.go:134–141`; `internal/configengine/config.go:234`; `internal/yamlengine/fill.go:112–116`; `internal/gateslot/config_test.go:143`.
++
++2. **BLOCKING · decision · `_lyx/plan/24-retag-cmd-contracts-tools.md:31` — The only transition check accepts a different tag ending in the tier’s name.**  
++   The expression `-tags[ =][^ ]*` followed by `tier` requires no boundary before the required tag. For example, tier0’s command `go test -tags nottier0 ./...` satisfies the expression even though it does not compile `tier0` files. With other tiers valid and no `covers`, the Verify line succeeds. D13 and the Constraints require this check to fail when a tier lacks its own tag, because the installed binary cannot detect the resulting vacuous pass.  
++   Evidence: the Verify expression at `_lyx/plan/24-retag-cmd-contracts-tools.md:31`; D13 at `_lyx/discussion/decision-record.md:215`, and its transition constraint at line 357. `configengine.Provenance` preserves the resolved scalar through YAML annotation (`internal/configengine/layers.go:629`, `internal/yamlengine/layers.go:526–541`), so this command reaches the expression as written.
++
++Tool-call manifest:
++
++1. Located config loading, resolved-output rendering, and template-validation paths missing from the inherited manifest.
++2. Read `configengine.Load`, template lookup, and resolved-output tests to trace upstream refusal ordering.
++3. Read provenance, YAML fill/prune behavior, recipe shape checks, CLI flag construction, and scope fixtures to establish reachable entry paths.
++4. Read `fillMapping`, annotation encoding, and `Shed.validate` to confirm the list-shape interception and skip-cycle reachability; located the pertinent plan lines.
++5. Read `TestLoadConfig` and CLI refusal tests, and located exact loader and D13 evidence lines to confirm the findings’ test and contract grounding.
+diff --git a/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/reviews/P1/fork-way-forward.md b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/reviews/P1/fork-way-forward.md
+new file mode 100644
+index 00000000..7f28687d
+--- /dev/null
++++ b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/reviews/P1/fork-way-forward.md
+@@ -0,0 +1,49 @@
++| Refusal or recovery path | Named next step | Result |
++|---|---|---|
++| Card 1: invalid scope, forbidden `card` scope, missing/empty gate or undeclared tier | Edit `gate.yaml` through `lyx config gate` | Progresses. |
++| Card 1: retired list-shaped gate | `lyx fabric reconcile`, alternatively `lyx config reconcile`, from prime | Fabric reconcile progresses; the bare config-reconcile alternative does not migrate the hub file. |
++| Card 2: incompatible flags | Drop the conflicting flag | Progresses. |
++| Card 2: `card` scope without card IDs | Supply `--card <id>` | Progresses. |
++| Card 2: unknown key | `lyx config gate` | Progresses. |
++| Cards 4–5: non-string `gate_key` | Set a string key or remove the override | Progresses. |
++| Card 6: retirement of tree-scope command guards | Migration retains or clears trees according to the old value | Recovery remains available through config editing. |
++| Card 7: unreadable cache, lock/read/write failure | Warn and run normally | Progresses without relying on the cache. |
++| Card 10: malformed date | Supply `YYYY-MM-DD` | Progresses. |
++| Card 12: prohibited raw tier invocation | Existing gate steer | Progresses; no new recovery spelling. |
++| Card 14: guard in a forbidden tier | Move the guard to tier0/tier1 | Progresses for an eligible guard. |
++| Card 14: undeclared guard tier or missing command placeholders | `lyx config gate` | Progresses. |
++| Card 15: command omits its tier tag | Correct the tier through `lyx config gate` | Progresses. |
++| Card 17: gate evaluation error | Correct settings and resume; row remains unentered | Progresses. |
++| Card 17: excessive skip chain | Correct settings or use shed goto, then resume | The settings repair is available; goto is the deliberate bypass. |
++| Card 19: malformed check or unknown operand | Correct the check, module/key, or segment | Progresses. |
++| Card 19: nil lookup seams | Correct caller wiring | Explicit wiring guard, exempt from reaching-test requirements. |
++| Card 19: non-bool setting | Inspect `--resolved`, then edit from prime for a hub/default layer | Does not repair a per-worktree module’s board-default value without `--layer default`. |
++| Card 20: retired `switch` key | Move it to `entry_gate` | Progresses. |
++| Card 20: missing/non-string `command` after switch retirement | Existing recovery still says to set both `switch` and `command` | Following it introduces the newly forbidden key. |
++| Card 24: missing tier tags or retained `covers` | Orch updates hub config from prime and reruns the card | Progresses. |
++
++Findings:
++
++1. **BLOCKING — consistency — `_lyx/plan/19-recipe-entry-gate.md:43`**  
++   **The non-bool-setting recovery edits the wrong layer for a board-default value.**  
++   The plan explicitly sends a default-layer error to `lyx config <module>` from prime. For a per-worktree module such as `batten`, that command selects the prime’s own worktree file, leaving the board default consumed by the task unchanged. Resuming therefore returns to the same evaluation error. The recovery needs to distinguish a hub-wide module from a per-worktree module’s default layer, using `--layer default` for the latter.  
++   Evidence: `internal/configcli/configcli.go:42` documents the default selection; `internal/configcli/configcli.go:126–155` dispatches default-layer editing separately from worktree editing; `internal/configreg/configreg.go:120` registers `batten` without `HubWide`; `internal/configreg/configreg.go:121–124` explicitly marks hub-wide modules. This conflicts with `PATTERN-refusal-way-forward`.
++
++2. **BLOCKING — consistency — `_lyx/plan/20-batten-switch-entry-gate.md:30`**  
++   **Switch retirement leaves an existing recovery instruction telling users to add the forbidden `switch` key.**  
++   Card 20 updates `commandKeyWayForward`, but leaves `commandRefWayForward` unchanged. A Command row with missing `command` or `command: 3` passes the new unknown-key check, reaches `commandSettingRef`, and is told to “set switch and command.” Following that instruction reaches card 20’s new unknown-`switch` refusal. The existing missing/non-string-command cases also pin the obsolete recovery text.  
++   Evidence: `internal/shedrecipe/entries_command.go:19`, `:58–67`; `internal/shedrecipe/entries_command_test.go:60`, `:69–70`; card 20’s retirement at `_lyx/plan/20-batten-switch-entry-gate.md:30` and its specified test change at `:39`. This conflicts with `PATTERN-refusal-way-forward`.
++
++3. **MEDIUM — consistency — `_lyx/plan/01-gate-key-shape.md:53`**  
++   **The alternative `lyx config reconcile` command cannot perform the promised hub-file migration.**  
++   Bare `lyx config reconcile` defaults to a dry run over the worktree’s own/local files. It neither applies changes nor selects the hub’s board-default files. The primary `lyx fabric reconcile` option is valid, but the alternative needs `--layer default --apply` to repair the stated hub-file refusal.  
++   Evidence: `internal/configcli/configcli.go:525–563` separates worktree reconciliation from `--layer default`; `:729–730` defaults `--apply` to false and the layer to empty; `internal/configcli/hubwide.go:171–194` leaves a default-layer dry run unwritten.
++
++Tool-call manifest:
++
++1. Read the refusal contract, Command recovery constant/call sites, and recovery-test references; the inherited context lacked the exact recovery contract and test assertions.
++2. Located reconcile flag defaults and Command rejection cases; the inherited context did not establish whether the proposed reconcile command writes the relevant configuration.
++3. Read reconcile dispatch/default-layer handling, fabric reconcile behavior, and setting-reference recovery; these recovery entry points were absent from the pre-read.
++4. Read denied-recovery background and Command refusal tests, and located plan references; this established permitted recovery commands and exact stale assertions.
++5. Read config editor dispatch and resolved-output handling; the inherited context did not establish which layer the proposed editor command selects.
++6. Read module registration and setting-lookup tests; this confirmed that `batten` is a per-worktree module and that board-default values are distinct from prime-worktree values.
+diff --git a/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/reviews/P1/handler.md b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/reviews/P1/handler.md
+new file mode 100644
+index 00000000..1e4aadae
+--- /dev/null
++++ b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/reviews/P1/handler.md
+@@ -0,0 +1,207 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: "BLOCKING"
++    class: "design"
++    location: "_lyx/plan/03-gate-call-renders-key.md:37"
++    summary: "PATTERN growth fails the per-card gate before card 23 can supply the shortening."
++    fix: "Redistribute card 23's exact authorized shortening lines into the four cards that grow PATTERN.md, keeping the final text unchanged: card 3 takes trimpath-safe-root and role-skills-typed; card 7 takes template-overlay, shell-guard-table, command-row and lyxdirs-single-declarer; card 19 takes agent-filed-issues, binary-change-reconcile, shed-recipe-registry, shed-producer-seam and owner-machine; the tier-tags scan card takes the remaining eight lines. These groups remove 69, 123, 139 and 151 bytes against growth of 69, 122, 133 and 137 bytes respectively. Remove the emptied pattern-shorten card with lyx loom remove-card and let it renumber the index. If the scan is folded into the last retag card as F8 requires, keep its assigned shortenings with that scan."
++    origin: "handler"
++  - id: F2
++    severity: "BLOCKING"
++    class: "design"
++    location: "_lyx/plan/11-package-load-tags.md:13"
++    summary: "The tag migration inventories test headers but misses a package loader and the runtime tmux permission switch."
++    fix: "Use lyx loom insert-card to add a prerequisite before the first retag card covering both missed tag consumers: widen TestTreeSitterLink_OnlyAllowedTestBinariesLinkIt's go list tags to tier0,tier1,tier2,tier3,integration,tmux,llm, and make tmuxkit/allow_tmux.go compile under tier2 or tier3 as well as tmux or llm during transition. Preserve the socket cleanup policy and update its tag-related guidance. Record both consumers in the overview's migration inventory and in the D13 follow-up body prescribed by the scan card, so removal of legacy spellings leaves the new tier tags active. Keep the existing scanner and cleanup contract tests rather than creating parallel tests for their helpers."
++    origin: "lens:affected-set"
++  - id: F3
++    severity: "BLOCKING"
++    class: "design"
++    location: "_lyx/plan/24-retag-cmd-contracts-tools.md:31"
++    summary: "The only installed-binary migration check accepts a suffix match instead of the tier's actual build tag."
++    fix: "Require an exact comma-delimited tier token in the go test step's -tags argument, accepting both -tags value and -tags=value and rejecting absent or malformed values. In particular, tier0 with go test -tags nottier0 ./... must fail while tier0 with go test -tags tier0,integration ./... passes; preserve the no-tiers and covers refusals. A replacement Verify command is withheld because the mandatory baseline and combined validate-plan --overlay runs are forbidden by this round's read-files/run-nothing rule; validate the concrete replacement before adopting it."
++    origin: "lens:guard-reach"
++  - id: F4
++    severity: "BLOCKING"
++    class: "consistency"
++    location: "_lyx/plan/19-recipe-entry-gate.md:43"
++    summary: "The entry-gate recovery command edits the prime worktree instead of the invalid board default."
++    fix: "Change card 19's recovery specification so a per-worktree module's invalid board default is edited from the prime with lyx config <module> --layer default; retain the unqualified command only where that module's default dispatch actually selects the hub file. Keep --resolved for locating the source and the separate run_settings recovery. Extend the already planned non-bool rows of TestBuild_EntryGate to assert the applicable recovery text."
++    origin: "lens:way-forward"
++  - id: F5
++    severity: "BLOCKING"
++    class: "consistency"
++    location: "_lyx/plan/20-batten-switch-entry-gate.md:30"
++    summary: "Command-reference errors still tell the operator to add switch after the same card forbids switch."
++    fix: "Amend card 20's intended refusal migration to change commandRefWayForward to instruct setting command to a module.key reference, without adding switch, and update the existing MissingCommand and NonStringCommand rows of TestCommandEntry to assert that message. The existing constant needs explicit target coverage; a concrete additional target bullet is withheld pending the overlay validation that the read-only rule prevents in this round."
++    origin: "lens:way-forward"
++  - id: F6
++    severity: "BLOCKING"
++    class: "design"
++    location: "_lyx/plan/20-batten-switch-entry-gate.md:43"
++    summary: "The new hubforge test duplicates the existing public row-lifecycle test's forced-window behavior."
++    fix: "Fold the open_window lookup assertions and the seed_ide non-interference assertion into the existing stepCommandRows_FollowTheTasksLocalSwitch case of TestBattenIntegration_Rows, using the actual --open-terminal wiring already required by card 20 line 41. Remove the plan for a separate TestWireSetting_OpenTerminalForcesOpenWindow fixture. The concrete Create-target deletion is withheld pending the overlay validation prohibited in this round."
++    origin: "handler"
++  - id: F7
++    severity: "MEDIUM"
++    class: "consistency"
++    location: "_lyx/plan/01-gate-key-shape.md:53"
++    summary: "The retired-list refusal is intercepted upstream, and its optional reconcile command cannot migrate the hub file."
++    fix: "Specify the legacy-list recovery at the LoadConfig/configengine failure boundary rather than relying on decodeConfig to see card: [0]. Preserve configengine's template and layering ownership, and distinguish that retired shape from other invalid configuration errors before choosing the reconcile guidance. Keep TestLoadConfig's real hub-file input and assert the user-visible recovery there. Remove the bare lyx config reconcile alternative or spell it lyx config reconcile --layer default --apply from the prime. Additional target-list changes are withheld pending the prohibited overlay validation."
++    origin: "lens:guard-reach"
++  - id: F8
++    severity: "MEDIUM"
++    class: "design"
++    location: "_lyx/plan/00-overview.md:62"
++    summary: "The Custom rationale contradicts the header-edit contract and is used to postpone the scan beyond D5's last retag card."
++    fix: "Replace the Custom retag cards through lyx loom insert-card and lyx loom remove-card with typed retag cards: use Edit member targets for every member of each header-changed file, and Create/Move groups where the prescribed helper splits require them. Do not pair those member targets with their containing file or package self targets. Put the one-tag scan, its PATTERN change and the D13 follow-up on the last retag card, retaining its first-retag prerequisite check on the first card. Remove the redundant standalone scan card and rewrite retag-rules and scan-after-last-retag to match. Preserve F1's shortening allocation when combining the scan."
++    origin: "handler"
++  - id: F9
++    severity: "MEDIUM"
++    class: "consistency"
++    location: "_lyx/plan/04-verify-gate-site-key.md:19"
++    summary: "Two result-signature changes omit the required re-sign arrows."
++    fix: "On card 4's existing internal/loomcli#darnTreeScope Edit bullet, add -> func darnTreeScope(l *lyxcwd.Location) func(gateKey string) (string, bool, error). On card 14's existing internal/gatecli#guardRunOf Edit bullet, add -> func guardRunOf(plan []tierRun) []tierRun, and state that it returns the guard runs in tier order. Retain the existing caller targets on those cards."
++    origin: "handler"
++  - id: F10
++    severity: "MEDIUM"
++    class: "design"
++    location: "_lyx/plan/10-gate-report.md:4"
++    summary: "Reusable package APIs are bundled into their consuming feature cards instead of independently reviewable prerequisites."
++    fix: "Use lyx loom insert-card to extract ReadRunRecords and the gateslot Run log documentation from gate-report into an earlier API card, leaving the report command and its report assertions in gate-report. Similarly extract CheckSettingKey, SettingLookup's delegation and its existing TestSettingLookup coverage from recipe-entry-gate into an earlier configreg API card; keep entry-gate parsing, evaluation and their tests in recipe-entry-gate. Let the card tools maintain numbering and update the index, without adding one test per extracted symbol."
++    origin: "handler"
++---
++### [BLOCKING] The plan cannot reach its late PATTERN shortening
++
++**Location:** _lyx/plan/03-gate-call-renders-key.md:37
++
++**Issue:** PATTERN.md is already 15,651 bytes, above the 15,564-byte headroom threshold in internal/pattern/check.go:24.
++Card 3 adds 69 bytes, but the compensating changes do not occur until card 23.
++internal/websterengine/cardgate.go:22 renders lyx loom lint-pattern for every card; internal/patternlint/lint.go:26 compares HEAD with the working tree, and internal/pattern/headroom.go:12 refuses growth above the threshold.
++The implementer runs this gate before committing or proceeding to the next card (contracts/stencils/webster/webster-body-implementer.md:51).
++Thus card 3 fails at 15,720 bytes.
++This is an intermediate-card sequencing defect, not the final projected pattern-headroom check that the review must not duplicate.
++Moving all shortening earlier is insufficient: the final prescribed overview is still 15,630 bytes, so the final growing card would cross the threshold again.
++
++### [BLOCKING] Two tag consumers remain on the retired spellings
++
++**Location:** _lyx/plan/11-package-load-tags.md:13
++
++**Issue:** Card 11 promises every test-file package load uses the expanded tag set, but cmd/lyx/treesitterlink_integration_test.go:40 still invokes go list with integration,tmux,llm.
++Card 24 changes its build header, not that subprocess argument.
++After card 26 retags internal/loomshed/gates_test.go and gatefindings_test.go to tier0, the scan omits their planglyph imports.
++The allowlist still names loomshed, and treeSitterLinkFindings reports stale entries (cmd/lyx/treesitterlink_test.go:101), producing a false guard failure while also losing coverage of newly tagged imports.
++Separately, internal/testkit/tmuxkit/allow_tmux.go:1 is a production support file constrained to tmux || llm; the test-file retag rules never change it.
++Its init enables tmuxAllowed, which afterRun passes to checkSockets (tmuxkit.go:105).
++Without it, checkSockets rejects even registered sockets (tmuxkit.go:145), so tier2/tier3-only commands break after the prescribed legacy-tag removal.
++These are one affected-set enumeration failure: migration must include tag-reading subprocesses and compiled support files, not only test headers and the three loaders named in card 11.
++It violates D5's all-loaders requirement and PATTERN-test-speed's tier and link-guard contracts.
++
++### [BLOCKING] The retag prerequisite accepts the wrong tag
++
++**Location:** _lyx/plan/24-retag-cmd-contracts-tools.md:31
++
++**Issue:** The awk expression permits arbitrary non-space text immediately before the tier name: [^ ]* followed by tier.
++For a tier0 command, go test -tags nottier0 ./... therefore matches, although Go enables nottier0 and does not enable tier0.
++The first retag card then passes its stated prerequisite while the installed binary can miss the retagged tests.
++D13 and the Constraints explicitly rely on this Verify line because the installed lyx lacks D7's check.
++This is a false acceptance in the proposed check, not a raw-test-command formatting objection.
++
++### [BLOCKING] The default-layer way forward edits the wrong file
++
++**Location:** _lyx/plan/19-recipe-entry-gate.md:43
++
++**Issue:** Card 19 tells the operator to fix either a hub or default layer with lyx config <module> from the prime.
++Batten is a per-worktree module, not HubWide (internal/configreg/configreg.go:120).
++Without --layer default, configcli selects its worktree layer; editOne handles the board default only through the explicit LayerDefault branch (internal/configcli/configcli.go:126).
++For an invalid batten.open_window inherited from the board default, following the prescribed command edits the prime's own configuration and leaves the task's failing value intact.
++The refusal therefore lacks a progressing way forward under PATTERN-refusal-way-forward.
++
++### [BLOCKING] A Command refusal sends the operator into another refusal
++
++**Location:** _lyx/plan/20-batten-switch-entry-gate.md:30
++
++**Issue:** Card 20 updates commandKeyWayForward and rejects switch as an unknown key, but omits commandRefWayForward.
++internal/shedrecipe/entries_command.go:19 still says to set switch and command to module.key references.
++commandSettingRef uses that message for absent or non-string command values at lines 58–67, so those paths remain reachable after the switch lookup is removed.
++TestCommandEntry already pins the old wording in its MissingCommand and NonStringCommand rows (entries_command_test.go:60–70).
++Following that recovery adds a key the newly prescribed commandEntry rejects.
++Both the message and the existing reaching assertions need migration to satisfy PATTERN-refusal-way-forward.
++
++### [BLOCKING] Reuse the existing forced-window behavior test
++
++**Location:** _lyx/plan/20-batten-switch-entry-gate.md:43
++
++**Issue:** internal/battencli/lifecycle_integration_test.go:1254 already tests that open_window false skips Open-Window and that forcing it runs its command; TestBattenIntegration_Rows includes that case at line 339.
++Card 20 line 41 expressly migrates this existing test from the removed Forced field to --open-terminal, covering the new wiring through the public row behavior.
++Line 43 then creates another hubforge fixture to test the same false/forced-true behavior through Env.Setting.
++Its additional seed_ide assertion belongs in the existing case, and the already targeted wire-seam test also covers the forced lookup.
++A second integration test for this behavior violates PATTERN-test-economy; the plan should extend the existing coverage.
++
++### [MEDIUM] The planned legacy-config recovery is not reachable as described
++
++**Location:** _lyx/plan/01-gate-key-shape.md:53
++
++**Issue:** LoadConfig calls configengine.Load before decodeConfig (internal/gateslot/config.go:134–141).
++configengine.Load fills the effective template through yamlengine.FillMissing (internal/configengine/config.go:234).
++Because gates remains a per-name map rather than an open map, the template's new mapping at gates.card encounters the existing sequence [0] and fillMapping returns shapeMismatch before decodeConfig runs (internal/yamlengine/fill.go:112–116).
++LoadConfig wraps this earlier error with the existing lyx config gate advice, so the named TestLoadConfig input cannot reach the planned decoder refusal.
++The way-forward lens also confirmed that the alternative lyx config reconcile is a dry run over the worktree's own/local layers, not an applied migration of the board default (internal/configcli/configcli.go:525–563 and internal/configcli/hubwide.go:185).
++These two defects affect the same legacy-config recovery path.
++
++### [MEDIUM] Custom is not necessary for header edits
++
++**Location:** _lyx/plan/00-overview.md:62
++
++**Issue:** The overview claims a header change has no member to name and that edit-test-file forces Custom.
++The authoritative plan spec explicitly supplies the opposite way forward: for a build-constraint header change, name every member of the file under Edit (.bench/specs/loom/loom-plan-spec.md:569–574).
++Helper creation and relocation are also expressible with the ordinary labels.
++The repeated Custom choice therefore fails the rubric's last-resort rule.
++Its stated consequence is a second departure: the overview moves the scan to card 33 because Custom cannot combine with Create, whereas D5 explicitly requires the scan to land with the last retag card (_lyx/discussion/decision-record.md:107).
++No amendment licenses replacing 'with' by 'after'.
++Correctly typed cards remove the claimed obstacle and allow the last retag and its enforcement to land together.
++
++### [MEDIUM] Declare both changed result signatures
++
++**Location:** _lyx/plan/04-verify-gate-site-key.md:19
++
++**Issue:** Card 4 line 57 changes Env.VerifyTreeScope to a keyed function and line 69 requires darnTreeScope to supply it, but the existing darnTreeScope result is func() (string, bool, error) (internal/loomcli/darnwiring.go:76).
++Its Edit bullet lacks an arrow for that changed result type.
++Likewise card 14 line 61 changes guardRunOf from one guard run to every guard run, but its line 24 bullet omits an arrow; the current declaration returns *tierRun (internal/gatecli/run.go:202).
++These are function result changes, not the exempt Env struct-field changes.
++The rubric expressly requires the declaration heads even where the named functions and their callers are already targeted.
++
++### [MEDIUM] Separate the reusable API contracts from their first consumers
++
++**Location:** _lyx/plan/10-gate-report.md:4
++
++**Issue:** Card 10 creates exported gateslot.ReadRunRecords alongside the gatecli report command and implementation.
++Card 19 similarly creates exported configreg.CheckSettingKey, refactors SettingLookup and introduces shedbuild entry-gate parsing and evaluation in one card.
++The record-directory reader and known-setting validation are independently reviewable module contracts reused across package boundaries, rather than private helpers inseparable from the CLI or recipe feature.
++The rubric's Granularity rule explicitly gives such public or cross-package symbols their own card even when the current feature is their only new consumer.
++The same extraction rule should be applied consistently to these two boundaries, while leaving private supporting helpers bundled.
++
++## Rejected
++
++- The first retag Verify is not itself a raw test invocation: go test appears inside an awk pattern, while the command inspects resolved configuration.
++- Cards 1–3 deliberately keep the old rendering until the --gate flag exists, so the alleged early flag-use defect is absent.
++- Card 23's nineteen shortenings are authorized amendments, and card 33 files a different board entry expressly required by D13; neither is unauthorized task-body editing.
++- The new one-tag scan covers a file-tag contract that the existing purity and LLM-import guards do not enforce.
++- The green-record trust boundary and goto bypass are explicit decisions with stated bounds, not unbounded escapes inferred by this review.
++- Existing waits in the affected scenario infrastructure are not new production-duration waits introduced by this plan.
++
++## Focus departures
++
++- The instruction to run a baseline and combined `lyx loom validate-plan --overlay` conflicts with the same step's tool-use rule: “Read-only analysis in the explore and review steps: read files, run nothing.”
++  I followed the read-only rule and ran no validator, tests or quarry command.
++  Findings F3, F5, F6 and F7 therefore state the required semantic repair while withholding the concrete Verify or target-list patch whose admissibility requires that validator.
++  The card insertion/removal fixes in F1, F2, F8 and F10 use the rubric's explicit overlay exemption; F4 changes prose/test requirements and F9 adds arrows to already listed targets.
++- The exploration instruction to read “the board entry of the task the target belongs to, through `lyx board get`” conflicts with the same run-nothing rule.
++  The board entry was not fetched; board-related conclusions above are limited to the prescribed commands, the decision record and the plan's stated task identity.
++  No claim is made about the live board's contents.
++
++The overview and all 33 indexed cards were reviewed against D1–D14, their amendments, the Constraints, the relevant PATTERN backgrounds, and the existing code and test paths.
++All three fork reviewers returned before consolidation.
++No target file was changed.
++
+diff --git a/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/rollout-evidence.txt b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/rollout-evidence.txt
+new file mode 100644
+index 00000000..11a9c2e4
+--- /dev/null
++++ b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/rollout-evidence.txt
+@@ -0,0 +1,21 @@
++# One line per rollout: id, parent, start, end, commands_including_inherited, first model request, last total
++id=01a17d60-eb07-7522-9f82-0b5852684503 forked_from=- start=2026-10-27T12:41:07.637Z end=2026-10-27T12:59:38.710Z commands_including_inherited=45 first_request={"input_tokens":16316,"cached_input_tokens":12160} total={"input_tokens":6774924,"cached_input_tokens":6460032,"output_tokens":22602,"reasoning_output_tokens":9240}
++id=01a17d63-d564-7e32-b89c-b47dbf8b5d5a forked_from=01a17d60-eb07-7522-9f82-0b5852684503 start=2026-10-27T12:44:17.132Z end=2026-10-27T12:47:21.642Z commands_including_inherited=28 first_request={"input_tokens":182563,"cached_input_tokens":179712} total={"input_tokens":1401499,"cached_input_tokens":1362816,"output_tokens":4063,"reasoning_output_tokens":1997}
++id=01a17d64-0095-79c1-9466-619f248b84dd forked_from=01a17d60-eb07-7522-9f82-0b5852684503 start=2026-10-27T12:44:28.189Z end=2026-10-27T12:48:07.277Z commands_including_inherited=27 first_request={"input_tokens":183049,"cached_input_tokens":180224} total={"input_tokens":1176971,"cached_input_tokens":1144320,"output_tokens":4552,"reasoning_output_tokens":2760}
++id=01a17d64-1dc9-7331-bb3e-39e19efb26db forked_from=01a17d60-eb07-7522-9f82-0b5852684503 start=2026-10-27T12:44:35.665Z end=2026-10-27T12:48:04.198Z commands_including_inherited=28 first_request={"input_tokens":183493,"cached_input_tokens":180736} total={"input_tokens":1359362,"cached_input_tokens":1333504,"output_tokens":4809,"reasoning_output_tokens":2293}
++
++# spawn_agent calls in the handler's rollout (message bodies are encrypted)
++2026-10-27T12:44:17.112Z	{"task_name":"affected_set","fork_turns":"all"}
++2026-10-27T12:44:28.171Z	{"task_name":"guard_reach","fork_turns":"all"}
++2026-10-27T12:44:35.648Z	{"task_name":"way_forward","fork_turns":"all"}
++
++# AGENTS.md load notices (project instructions in the first model input), per rollout
++2026-10-27T13-41-07-01a17d60-eb07-7522-9f82-0b585268 2
++2026-10-27T13-44-17-01a17d63-d564-7e32-b89c-b47dbf8b 1
++2026-10-27T13-44-28-01a17d64-0095-79c1-9466-619f248b 1
++2026-10-27T13-44-35-01a17d64-1dc9-7331-bb3e-39e19efb 1
++
++# handler cat commands on pattern/ background files before the first spawn (22 commands ran before it)
++cat pattern/PATTERN-{gate-slot,verified-tree,cli-cobra,cliwire-sole-wiring,told-geometry,cwd-resolution,fabric-git,hub-store-gc,owner-machine,pane-binary-resolution,documentation-lifecycle,comment-line-breaks,testkit,hubforge-fixtures}.md
++cat pattern/PATTERN-{recipe-setting-lookup,tolerant-records,durable-vs-ephemeral-state,hub-wide-config,sole-parsers,failure-stop-visible,refusal-way-forward,shed-verb-set,shed-driver,config-layers,config-strictness}.md
++cat pattern/PATTERN-test-{tiers,speed,economy,isolation,kit}.md
+diff --git a/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/usage.txt b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/usage.txt
+new file mode 100644
+index 00000000..d4ea8656
+--- /dev/null
++++ b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/data/usage.txt
+@@ -0,0 +1,6 @@
++P1 handler rc=0 wall=1114 in=6774924 cached=6460032 fresh=314892 out=22602 reason=9240 weekly_used_percent_end=28.0 (first token_count of the call: 18.0)
++P1 fork-affected-set start=12:44:17 end=12:47:21 wall=184 in=1401499 cached=1362816 fresh=38683 out=4063 reason=1997 weekly_used_percent=25.0 commands=6
++P1 fork-guard-reach start=12:44:28 end=12:48:07 wall=219 in=1176971 cached=1144320 fresh=32651 out=4552 reason=2760 weekly_used_percent=26.0 commands=5
++P1 fork-way-forward start=12:44:35 end=12:48:04 wall=209 in=1359362 cached=1333504 fresh=25858 out=4809 reason=2293 weekly_used_percent=26.0 commands=6
++P1 handler verdict=BLOCKING n=10 (5 handler, 5 from forks; the forks returned 6, two of them merged into F7)
++P1 weekly window: 18.0 at the call's first request, 28.0 at its end; the sibling benches codex-astra-tuned-p1-med-bench and codex-astra-tuned-p4-med-bench drew on the same account over the same hours
+diff --git a/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/report.md b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/report.md
+new file mode 100644
+index 00000000..6bf7e09d
+--- /dev/null
++++ b/docs/research/codex-astra-tuned-p1-high-bench-2026-10-27/report.md
+@@ -0,0 +1,163 @@
++# Codex Astra forked fan with a tuned reviewer prompt on the plan P1
++
++Bench of 2026-10-27, the `P1` counterpart of `docs/research/codex-astra-tuned-prompt-bench-2026-10-27/report.md`, which ran the same setup on `P4`.
++Codex CLI 0.164.0, ChatGPT sign-in (plan `prolite`), Linux.
++One `codex exec` handler run on the plan `P1` (`gate-runs-once`, 33 cards), `gpt-6-astra` at high effort for the handler and its forks, one run, no repeat.
++The handler read the plan, then spawned three lens forks through `spawn_agent` with `fork_turns="all"`.
++Every condition of the `P4` bench is kept: the harness, the inlined PATTERN overview, `AGENTS.md` and the tuned reading block, unchanged; only the input changed.
++Nothing was built: the bench is shell scripts under `data/harness/`, the reviewers' own output and a hand grading.
++
++## Conclusion
++
++On `P1` the forked fan found 4 of the Claude fan's 12 findings and 1 of its 2 `BLOCKING` ones; on `P4` it found 4 of 11 and 2 of 3.
++The handler returned the fan's verdict (`BLOCKING`) and 10 findings: 4 shared with the fan, 6 `unique-real`, none `false`.
++Every earlier `P1` row of a solo run found 2 of the fan's 12 findings.
++
++| Fan `BLOCKING` finding | Found | By |
++|---|---|---|
++| `F1`: card 23 shortens `PATTERN.md` only after cards 3, 7 and 19 grow it | yes, as `F1` | the handler |
++| `F2`: the hand-enumerated readers of cards 1, 6 and 14 miss members | no | |
++
++- `F1` is the finding the solo Opus run also found and no solo Astra run found.
++  The handler adds that moving card 23 earlier is not enough, because the last growing card crosses the headroom line again, and spreads the shortening over the growing cards instead of moving the card.
++- `F2` is the fan's `affected-set` lens finding.
++  This run's `affected-set` fork returned one finding, on other readers (the tree-sitter link guard and the tmuxkit permission switch, both real); no fork or handler finding names `templateDefaults`, `TestCardGateCommand`, `TestRecoverSpawnOrAttach`, `TestBeginBatch_PromptFile`, the retired `tree_scope_verify` helpers or the `guard_tier` mentions.
++- Of the fan's 12 findings, 4 were found: `F1` (`BLOCKING`), `F3` and `F4` (`MEDIUM`), `F8` (`LOW`).
++  Not found: `F2`, `F5`, `F6`, `F7`, `F9`, `F10`, `F11`, `F12`.
++- Astra rates 6 findings `BLOCKING`, against the fan's 2.
++  The 5 it rates `BLOCKING` beyond the fan's `F1` are all `unique-real`; `F6` is the one solo Opus rated `LOW`.
++- The handler dropped none of the forks' findings.
++  The forks returned 6 findings, and the handler merged two of them (the `way-forward` fork's reconcile finding and the `guard-reach` fork's retired-list finding) into one.
++- The run took 1114 s and 412k fresh input tokens in all, against 950 s and 631k for the `P4` run.
++
++One input, one run per cell and one grader cannot separate the plan from the setup: the `P1` and `P4` results differ in the plan, the fan reference and chance at once.
++
++## Summary table
++
++One run per cell, `P1` only.
++The fan reference is 12 findings, 2 of them `BLOCKING`, from `opus` at medium effort with 3 lens forks, as the earlier benches recorded.
++"Found" counts distinct fan findings that a finding of the setting matched.
++
++| Setting | Findings | Shared with fan | Unique real | False | Fan findings found | `BLOCKING` found | Verdict as fan's | Fresh input tokens | Wall time |
++|---|---|---|---|---|---|---|---|---|---|
++| `gpt-6-astra` high, forked fan, tuned prompt and parity context | 10 | 4 | 6 | 0 | 4 of 12 | 1 of 2 | yes | 412k | 1114 s |
++| `gpt-6-astra` medium, solo | 2 | 2 | 0 | 0 | 2 of 12 | 0 of 2 | yes | 93k | 184 s |
++| Claude `opus` medium, solo | 6 | 3 | 3 | 0 | 2 of 12 | 1 of 2 | yes | 206k | 563 s |
++| Codex `gpt-6.1-sol` medium, solo | 7 | 4 | 3 | 0 | 2 of 12 | 0 of 2 | yes | 156k | 491 s |
++| Claude `opus` medium, fan | 12 | | | | | | | 384k, plus 92k in forks | 604 s |
++
++The `P4` row of this setup, for reference: 10 findings, 4 shared, 6 `unique-real`, 4 of 11 found, 2 of 3 `BLOCKING`, 631k, 950 s.
++No other Astra setting of the earlier benches ran on `P1`; their `P4` rows are in their own reports.
++The `sol` row is `codex-review-bench-2026-10-25`: its 7 findings include 4 shared findings, of which two name fan `F4` and two fan `F3`; the table counts its distinct fan findings found.
++Fresh input tokens for Astra and `sol` are `input_tokens` less `cached_input_tokens`; Opus counts cache creation as fresh input, so the figures are not the same measure.
++This run's figure sums the handler and its three forks.
++
++## Per call
++
++| Call | Wall time | Fresh input tokens | Output tokens | Commands | Weekly window after |
++|---|---|---|---|---|---|
++| Handler | 1114 s | 315k | 22.6k | 45 | 28 percent |
++| Fork `affected-set` | 184 s | 39k | 4.1k | 6 | 25 percent |
++| Fork `guard-reach` | 219 s | 33k | 4.6k | 5 | 26 percent |
++| Fork `way-forward` | 209 s | 26k | 4.8k | 6 | 26 percent |
++
++The handler's figures are its own thread's, so the forks' rows add to it.
++The forks' wall times run from spawn to their last message, and their window readings come from the last `token_count` in each fork's rollout, so they are not a sequence.
++The handler's wall time is the whole `codex exec`: 190 s of reading before the first spawn, 230 s more until the last fork returned, and 691 s of consolidation.
++The forks' command counts are their own: each fork's rollout also holds the 22 commands of the handler's reading, which it inherited.
++
++Each fork's first request held about 183k input tokens, of which 180k were cache hits, so a fork's fresh reading before its own commands was about 3k.
++The `P4` run's forks started from 196k with 112k cached.
++The cache hit count is as measured; the cause of the difference is not known.
++
++## Fork evidence
++
++The rollouts are the check the entry asked for; `data/rollout-evidence.txt` holds the figures.
++
++- Started: the handler's rollout holds three `spawn_agent` calls, `affected_set`, `guard_reach` and `way_forward`, each with `fork_turns` set to `"all"`, at 12:44:17, 12:44:28 and 12:44:35 UTC.
++  The fork bodies are encrypted, so the fork prompts themselves cannot be read.
++- Concurrent: the forks ran 12:44:17 to 12:47:21, 12:44:28 to 12:48:07 and 12:44:35 to 12:48:04, so all three overlap from 12:44:35 to 12:47:21.
++- Inherited context: each fork's `session_meta` carries `forked_from_id` of the handler's session, and its first request already held 182.6k, 183.0k and 183.5k input tokens against 16k for the handler's first.
++  Each fork's rollout holds the handler's 22 earlier commands, including the reads of the `pattern/` background files.
++- `AGENTS.md` loaded: the handler's rollout, and each fork's, holds an `AGENTS.md instructions for` block naming the run's working directory; its hash equals that of the snapshot's `CLAUDE.md` (`data/context-hashes.txt`).
++
++## Context and prompt
++
++The context is the `P4` bench's: `harness/build.sh` fills the code commit's `pattern-directive-review-fix.md` with that commit's `PATTERN.md` and the decision record's declared `PATTERN` changes, and the snapshot's `CLAUDE.md` is copied to `AGENTS.md`.
++The `P1` input also carries the round-1 focus file, which `build.sh` routes into the explore instruction as it did for the Claude fan.
++`data/prompts/tuned-block.md` is the `P4` bench's block, byte for byte; `build-forkfan.sh` appends it to the handler prompt and inserts it, as one line, into the fork boilerplate.
++The lenses are the Claude fan's round 1 on `P1`, `affected-set`, `guard-reach` and `way-forward`, as `round-1-usage.yaml` of the weft records them.
++Remaining differences from the Claude round's context are those of the `P4` bench: no plugin skills, empty parent and edit directives, and the snapshot's `CLAUDE.md`.
++The review step's read-only rule ("read files, run nothing") applied to the handler as it did to the Claude round; the handler named in its review that it ran no `validate-plan` overlay and withheld four concrete patches for that reason.
++
++## The handler's findings
++
++The handler returned `BLOCKING` with 10 findings: 5 of its own and 5 from the forks.
++The forks returned 6: `affected-set` 1, `guard-reach` 2 and `way-forward` 3.
++`data/match.tsv` holds each reading.
++
++| Finding | Severity | Origin | Defect | Grade |
++|---|---|---|---|---|
++| `F1` | `BLOCKING` | handler | `PATTERN.md` growth fails the per-card gate before card 23 can shorten it | shared, fan `F1` |
++| `F2` | `BLOCKING` | `affected-set` | Two tag consumers stay on the old spellings: the tree-sitter link guard's `go list` and the tmuxkit permission switch | `unique-real` |
++| `F3` | `BLOCKING` | `guard-reach` | Card 24's Verify regex accepts `-tags nottier0` for `tier0` | `unique-real` |
++| `F4` | `BLOCKING` | `way-forward` | Card 19's default-layer way forward edits the prime's own batten file | `unique-real` |
++| `F5` | `BLOCKING` | `way-forward` | `commandRefWayForward` still tells the operator to add the `switch` key card 20 forbids | `unique-real` |
++| `F6` | `BLOCKING` | handler | Card 20's new forced-window test repeats an existing case | `unique-real` |
++| `F7` | `MEDIUM` | `guard-reach`, `way-forward` | The retired-list refusal is not reached through `LoadConfig`, and its reconcile alternative is a dry run | shared, fan `F8` |
++| `F8` | `MEDIUM` | handler | The retag cards use `Custom` on a false premise | shared, fan `F3` |
++| `F9` | `MEDIUM` | handler | `darnTreeScope` and `guardRunOf` lack the re-sign arrow | shared, fan `F4` |
++| `F10` | `MEDIUM` | handler | Cards 10 and 19 bundle exported cross-package symbols into feature cards | `unique-real` |
++
++- `F2`, `F3`, `F4` and `F5` were checked against the snapshot's files and hold: `cmd/lyx/treesitterlink_integration_test.go:40` and `internal/testkit/tmuxkit/allow_tmux.go:1`; the regex on card 24's Verify line, which has no boundary before the tier name; `batten` registered without `HubWide` in `configreg.go` and `selectedLayer` in `configcli/hubwide.go`; and `internal/shedrecipe/entries_command.go:19`.
++- `F4` shares card 19's sentence with the fan's `F6` and is a different defect: the fan's `F6` is the `run_settings` half, which this run did not find.
++- `F6` is the finding solo Opus filed on `P1` as `LOW`; it holds on the card text and was not run.
++- `F7` goes beyond the fan's `F8`: `configengine.Load` fills the template and rejects the sequence in `gates.card` before `decodeConfig` runs (`internal/gateslot/config.go:134-141`, `internal/yamlengine/fill.go:112-116`).
++- `F10` stays arguable: each symbol has one consumer in the plan, and the rubric's Granularity rule asks for a card of its own for a public or cross-package symbol even then.
++
++## Method
++
++### Inputs and prompts
++
++`P1` is rebuilt with `data/harness/build.sh` from the solo bench's weft commit and code commit in `data/inputs.txt`.
++The harness is the `P4` bench's `data/harness/` with the repository root and the harness directory changed to this worktree and bench directory; no other line changed.
++The prompts are in `data/prompts/`: the handler prompt with the block, the two instruction files it reads, the block, and the prompt as the run rewrote it for its working copy.
++
++### Call
++
++```text
++CODEX_HOME=<scratch>/codex-home codex exec -m gpt-6-astra -c model_reasoning_effort="high" \
++  -s workspace-write -C <work> --skip-git-repo-check --json -o <last-message> - < prompt
++```
++
++`run-forkfan.sh` runs the one call, then copies every rollout the call created.
++The scratch `CODEX_HOME` holds only a link to the operator's `auth.json`, so the operator's `config.toml` did not apply.
++`spawn_agent` with `fork_turns` was available with the stable `multi_agent` feature; no feature flag was set.
++
++### Grading
++
++One Claude session graded every handler finding as the earlier benches did: against the fan's round-1 findings of `P1` in the weft's `round-1-review.md`, and an unmatched finding against the cited card lines and the snapshot's code.
++`shared` means the finding names the same defect as a fan finding; `unique-real` means the claim holds and the fan's round has no finding of it; `false` means it does not hold.
++
++## Deviations and limits
++
++- One input, one run, one grader: no variance is measured, and a repeat could change a count of one or two.
++- The grader is a Claude session and may favour its own family's phrasing; the rates are not validated.
++- The fork prompts are encrypted in the rollout; that each fork's text held the block rests on the handler following the cluster rules and on the forks' reading of the `pattern/` files and the test cards.
++- The weekly window read 18 percent at the call's first request and 28 at its end, but the sibling benches `codex-astra-tuned-p1-med-bench` and `codex-astra-tuned-p4-med-bench` ran on the same account over the same hours, so the 10 points cannot be attributed to this run; the stop at 70 percent was never near.
++- Recall is against the fan's list, not against the truth; the `unique-real` findings hold on reading, so the fan reference is not complete for `P1`.
++- `F4`'s default-layer reading was checked on `configreg.go`, `selectedLayer` and the fork's cited lines, and not run.
++- The operator's `~/.codex/config.toml` was not hashed before or after this bench.
++
++## Data
++
++`data/` holds:
++
++- `inputs.txt`: the input with weft commit, round start time and code commit.
++- `usage.txt`: one line per call with wall seconds, tokens and the weekly `used_percent`, then the handler's verdict.
++- `rollout-evidence.txt`: start, end, parent thread, commands, first request and totals of each rollout, the handler's `spawn_agent` calls, the `AGENTS.md` loads and the handler's reads of `pattern/` files.
++- `context-hashes.txt`: the hashes of `AGENTS.md`, `CLAUDE.md`, `PATTERN.md` and the block.
++- `match.tsv`: the grading of every handler finding.
++- `reviews/P1/`: the handler's review and the three forks' final messages.
++- `prompts/`: the handler prompt, the two instruction files it reads, the block and the run's rewritten prompt.
++- `harness/`: `build.sh`, `build-fan.sh`, `build-forkfan.sh`, `run-forkfan.sh`, `setup-codex-home.sh`, `windows.sh` and `dump.sh`, working on `.scratch/bench/`, which is not committed.
