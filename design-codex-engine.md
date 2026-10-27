@@ -76,6 +76,12 @@ High found more than medium on both plans at about twice the wall time.
 On `P1` the block, written after the `P4` misses, still reached the `PATTERN.md` headroom-order finding at high effort; no run reached a finding that needs every reader of a changed symbol enumerated (`P1` fan `F2`) or a read of code beyond the cards' own (`P4` fan `F1`).
 Across every Astra run no finding was false, and each found real defects the Claude fan lacks.
 
+Three benches of 2026-10-27 tried block v2 (reading directions revised) with the fork cap raised from 6 to 20 tool calls, one input each, one grader, one run per cell:
+- `docs/research/codex-v2-p1-bench-2026-10-27/report.md` (`P1`): high found 6 of 12 fan findings and 2 of 2 `BLOCKING`; two medium runs found 5 and 6, so effort and chance are not separable. Block v1 found 4 and 3. The cap of 20 never bound (most commands in one fork: 12). It is the first run to reach `F2`, the enumerated readers of a changed symbol, in part.
+- `docs/research/codex-v2-p4-bench-2026-10-27/report.md` (`P4`): high found 3 of 11 and 1 of 3 `BLOCKING`, medium runs 2 and 3; block v2 did not beat v1 (4 and 3), and no run reached `F1`, the owner guard on `retryWeftPush`. The two medium runs share one fan finding and each holds a `BLOCKING` finding the other lacks.
+- `docs/research/codex-p2-gap-texts-bench-2026-10-27/report.md` (`P2`, `quarry-csharp`, Claude fan 13 findings): adding three texts from `docs/research/claude-review-gaps-2026-10-27/report.md` (Proposals 1, 2 and 4) did not measurably change the yield (12 findings at 500k fresh tokens against 10 at 429k); the `way-forward` fork found nothing in any `P2` run, and one run returned `APPROVED` where the fan blocks.
+None ranks a setting; two medium runs of one setting differ as much as any setting from another.
+
 ## Goal (operator, 2026-10-27)
 
 Codex is to take review load off Claude: the work is to tune Codex reviews until a Codex fan can stand in for a Claude fan, not to add Codex as an extra reviewer beside it.
