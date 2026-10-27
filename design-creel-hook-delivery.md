@@ -1,6 +1,6 @@
 # Creel delivers mail to a working Claude strand at its next tool boundary through a PostToolUse hook
 
-`creel-hook-delivery` · Task · enhancement, creel, claude · running · PR-Review
+`creel-hook-delivery` · Task · enhancement, creel, claude · running · Finalize
 
 ## Goal
 
