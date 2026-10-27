@@ -1,6 +1,6 @@
-<!-- This is the fixer's instruction: fix every finding, the write-surface/git discipline for the fix, the fixer-report, and the never-push/never-touch-`_lyx` rule.
+<!-- This is the fixer's instruction: fix every finding, the write-surface/git discipline for the fix, the fixer-report, and the never-push/never-touch-`_lym` rule.
      It is shipped as an embedded default in the top-level stencils package (stencils/stencils.go),
-     seeded to <hub>/_board/_lyx/stencils/burler/ and read from there at call time by composeFixPrompt
+     seeded to <hub>/_board/_lym/stencils/burler/ and read from there at call time by composeFixPrompt
      (prompt.go) via internal/stencil, then read by the fixer only when the fixer stencil
      (burler-template-fixer.md) directs it here.
      The friction_directive marker is optional and renders as nothing when the round has no note.
@@ -8,7 +8,7 @@
      it sits directly before the Fixer-report heading with no line of its own, so an empty value adds no byte.
      Every other marker below is a top-level {{.X}} substitution;
      stencil.Fill requires them all non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go).
-lyx-stencil: sha256=01b4de978756b2faeaea2f27cfcfef9d8bb2e9eef181f9a1405f03a678e1cf29 build=90f613277e539c98eb07698ed58b50f705e99a77 time=2026-10-21T13:30:19Z -->
+lym-stencil: sha256=fba4c6cb629d0329e29c89733541dd6c76d88652c1bdb2b779f358487803937d build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 {{.friction_directive}}
 
@@ -55,9 +55,9 @@ Include what you changed, a `Disputed` section (empty if you disputed nothing) a
 The review at `{{.review_path}}` is the reviewer's file: you never write it.
 The round is not done until `{{.fixer_report_path}}` exists on disk — a skipped fixer-report leaves the round looking unfinished.
 
-## Never push, never touch `_lyx`
+## Never push, never touch `_lym`
 
 You must never push,
-and you must never run any git command against a `_lyx` path — those are owned by the loop that spawned you, not by this round.
+and you must never run any git command against a `_lym` path — those are owned by the loop that spawned you, not by this round.
 If your fix-scope rules above name commit-per-fix on the repo, stay inside the working tree;
-nothing here ever authorizes an `_lyx` commit.
+nothing here ever authorizes an `_lym` commit.

@@ -1,11 +1,10 @@
 <!-- This is the landing conflict-resolution session's entire instruction set. It is shipped as an
      embedded default in the top-level stencils package (stencils/stencils.go), seeded to
-     <hub>/_board/_lyx/stencils/landing/, and read from there at call time by mergeresolve's own spec
+     <hub>/_board/_lym/stencils/landing/, and read from there at call time by mergeresolve's own spec
      builder via internal/stencil, then handed to shuttle as the resolving agent's whole prompt.
      Every marker below is a top-level {{.X}} substitution; stencil.Fill requires every marker
      non-empty, parent_directive (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective) included, and
      there are no {{if}}/{{range}} conditionals anywhere in this file.
-lyx-stencil: sha256=2d9027fb4fd686c2ae24f1f5fc65834f2f40534fd95a7dc202a561a911461e7e
 lym-stencil: sha256=2d9027fb4fd686c2ae24f1f5fc65834f2f40534fd95a7dc202a561a911461e7e build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 # Conflict resolution — resolve each listed path in place

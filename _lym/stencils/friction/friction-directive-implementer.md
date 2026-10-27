@@ -1,6 +1,6 @@
 <!-- This is the RoleImplementer friction directive: the variant internal/friction.Directive renders
      for any agent that edits code. Its consuming call sites are the webster fork prompt, the webster
-     recovery-strand prompt, the webster integration fork prompt (internal/websterengine/render.go),
+     recovery-strand prompt, the webster verify-gate fixer fork prompt (internal/websterengine/render.go),
      and loom's Plan-Write (internal/loomengine/plan.go).
      internal/friction.Directive reads this file through stencilstore.Read, strips this banner with
      stencil.StripLeadingComment, and substitutes the literal "{{.note_path}}" token below with the
@@ -10,7 +10,6 @@
      This file declares no marker of its own beyond "{{.note_path}}" and must stay otherwise
      marker-free, because stencilstore.Validate parses it regardless of whether anything ever fills
      it.
-lyx-stencil: sha256=2ab86d196881d234c0e5fafeca28005470184fe37194ac72b7014136e5dad5e0
 lym-stencil: sha256=2ab86d196881d234c0e5fafeca28005470184fe37194ac72b7014136e5dad5e0 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 ## Friction note — optional, only if something went wrong

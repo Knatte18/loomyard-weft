@@ -1,12 +1,12 @@
 <!-- This is the drift baseline agent's entire instruction set. It is shipped as an embedded default in the
-     top-level stencils package (stencils/stencils.go), seeded to <hub>/_board/_lyx/stencils/drift/
+     top-level stencils package (stencils/stencils.go), seeded to <hub>/_board/_lym/stencils/drift/
      and read from there at call time by internal/seatengine, which fills it from the lead's value map that driftengine's BaselineTable builds, then hands it to
      shuttle as the agent's whole prompt.
      Every marker below is a top-level substitution;
      the engine fills the parent and edit directives, and BaselineTable fills the rest.
      scope_note is the only optional marker: it is empty until a scope is recorded, and then says so.
      There are no conditionals anywhere in this file.
-lyx-stencil: sha256=4afedea6e853a8922dadbcf59bd85a080bb8c5696878c435b72c037aa3ecdaee build=1c344094affd7a89153401258ff15083669e05d4 time=2026-10-25T17:30:00Z -->
+lym-stencil: sha256=5e7334c1c11780a593a4256db081174b9263eb9aa2b6a41a515633951a1673b0 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 # Drift baseline — scope the regression of this task
 
@@ -34,7 +34,7 @@ Choose the scope that fits what the task changes:
 ## Step 3 — Record the scope
 
 {{.scope_note}}
-Record the scope with `lyx drift scope --scope <off|partial|full>`, adding one `--skip <test>` for each skipped test under `partial`.
+Record the scope with `lym drift scope --scope <off|partial|full>`, adding one `--skip <test>` for each skipped test under `partial`.
 The verb refuses a second call, so call it once: when it refuses because a scope is already recorded, keep that scope and go on to step 4.
 
 ## Step 4 — Write the baseline report
@@ -44,4 +44,4 @@ Name the tests you expect to drift and why, so the agent that judges the compare
 When the scope was already recorded, write the report against that scope.
 
 Then end your turn.
-Taking the baseline capture is not yours: lyx runs it once you are done.
+Taking the baseline capture is not yours: lym runs it once you are done.

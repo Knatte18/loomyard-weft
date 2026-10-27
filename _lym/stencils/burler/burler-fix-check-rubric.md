@@ -1,7 +1,6 @@
 <!-- This is burler's fix-check rubric: the severity vocabulary and finding rules the fork lenses of a twill fixer's self-check work under.
      The fixer reads it from its deployed path before it spawns the forks, so every fork inherits it; internal/burlerengine's selfCheckBlock (prompt.go) names that path in the self-check part.
      It declares no marker.
-lyx-stencil: sha256=c3c9542d7635e7fdd1f158fb91c85f1ed94f5a39a772e54145c6a694bfb6067e build=112cccb8f4e09be50a700c9346b294b79f649e17 time=2026-10-16T14:39:17Z
 lym-stencil: sha256=c3c9542d7635e7fdd1f158fb91c85f1ed94f5a39a772e54145c6a694bfb6067e build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 # Fix-check rubric
 

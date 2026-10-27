@@ -5,7 +5,7 @@
      It is a marker VALUE, never a template -- its only markers are the ones ReadRubric fills, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=926af238b85b35a404551ff5f0a2520b43198d69c4991e31018befbdeab429de build=5e449651fc9099cf3c0ec513ef579c464138a703 time=2026-10-25T09:35:58Z -->
+lym-stencil: sha256=6e3b5c146ec0564f63d532ad070e35f6903bead31506a5cbf862c5e6ce30fab8 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 # Discussion-Review rubric
 
@@ -43,7 +43,7 @@ Do not flag any of the following as a finding:
   The fix is the research done and its answer recorded with the evidence it rests on.
   A fact the writer was told not to gather is no such question.
 - **A Decision that edits the task's own board entry.**
-  A Decision that asks the run to change this task's own board entry's body or scope, through `lyx board` or otherwise, is a finding, because the run's board lock refuses such a change.
+  A Decision that asks the run to change this task's own board entry's body or scope, through `lym board` or otherwise, is a finding, because the run's board lock refuses such a change.
   A Decision that writes another entry, the entry's status or its `run_settings`, or changes board-module code is not flagged by this bullet.
 - **A Decision that files or promotes a task.**
   A Decision that files a follow-up as a task, or promotes a note, is a finding, because only the operator decides what becomes a task and the board refuses a run's agent that creates or promotes one.

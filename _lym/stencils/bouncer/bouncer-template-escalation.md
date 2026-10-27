@@ -3,7 +3,7 @@
      Every marker below is a top-level {{.X}} substitution, and there are no {{if}}/{{range}} conditionals anywhere in this file.
      Go interpolates only paths, round, cause, segment and slug, plus the decide fragment it picks by the hard cap; the wording lives here and nowhere else.
      cause_detail is the one optional marker, filled through stencil.FillOptional: it renders the decision cause's detail and nothing for any other cause.
-lyx-stencil: sha256=7c6d5fcc8e18ccc59722dfa472c9c59e841495e2a33a9134c0b935aba8badd85 build=5e449651fc9099cf3c0ec513ef579c464138a703 time=2026-10-25T09:35:58Z -->
+lym-stencil: sha256=af4a56de3e7a62028e20059c77645944d535add1f2a6cfe03aa8da490c36c97e build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 # Escalation — review segment `{{.segment}}`, round {{.round}}
 
@@ -50,10 +50,10 @@ At cause `budget`, decide nothing: report back to your parent session which inpu
 
 When a recorded operator decision answers the question:
 
-1. Record the operator decision you applied, citing where it is recorded, with `lyx loom decision add {{.slug}} --by parent --title … --decision … --rationale …`, run in `{{.worktree}}`, when the decision record exists; never record with `--by operator`.
+1. Record the operator decision you applied, citing where it is recorded, with `lym loom decision add {{.slug}} --by parent --title … --decision … --rationale …`, run in `{{.worktree}}`, when the decision record exists; never record with `--by operator`.
    Without a decision record, name the applied decision and its source in your report back to your parent session instead.
 2. {{.decide_options}}
-3. Resume the run with `lyx loom resume` in `{{.worktree}}`.
+3. Resume the run with `lym loom resume` in `{{.worktree}}`.
 
 Otherwise record nothing and report back to your parent session, which asks the operator.
 The run stays `awaiting`.

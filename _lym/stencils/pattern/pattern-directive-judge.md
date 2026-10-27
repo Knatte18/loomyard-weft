@@ -7,7 +7,6 @@
      The result is injected as a producer template's optional pattern_directive marker value, so it
      is never itself passed through stencil.Fill again.
      This file declares two markers, the required pattern_overview and the optional pattern_changes, and no other.
-lyx-stencil: sha256=87ae9f9295bcd0775bf550e68bd04875fe9f1425f1d72afcd6e58da4f8f59cd1 build=6bfaaa1448adcd5fda4ab769115846291406977a time=2026-10-16T12:19:49Z
 lym-stencil: sha256=87ae9f9295bcd0775bf550e68bd04875fe9f1425f1d72afcd6e58da4f8f59cd1 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 ## Constraints — weigh every finding against these
