@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-27 17:23 UTC; every age below is as of then.
+Rendered 2026-10-27 17:34 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -38,7 +38,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Dobby survives deploys, logs changes only, tidies per owner; a visible adopt check**<br>• Fix the dobby re-exec exit, bound its log, count tidies per owner, give the adopt check its own gate key and visible progress | [`dobby-and-adopt-hardening`](design-dobby-and-adopt-hardening.md) | loom | Parent-Align | neve | 1d<br>2h | workspaces, batten, gate, board |
+| T2 | **Dobby survives deploys, logs changes only, tidies per owner; a visible adopt check**<br>• Fix the dobby re-exec exit, bound its log, count tidies per owner, give the adopt check its own gate key and visible progress | [`dobby-and-adopt-hardening`](design-dobby-and-adopt-hardening.md) | loom | Code-Bouncer | neve | 1d<br>3h | workspaces, batten, gate, board |
 
 ### Ready (0)
 
@@ -64,9 +64,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E1 |  | **Beam promote keeps the Discussion record as part of the beam**<br>• When Discussion finds a task should be a project, promote carries its decision record into the beam instead of dropping it | [`beam-promote-keeps-discussion`](design-beam-promote-keeps-discussion.md) | 2d<br>7h | workspaces, batten, loom |
 | E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>2h | shuttle, codex |
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 2h<br>2h | batten, stencil, config |
-| E5 |  | **Decide the layout of projects in the board README**<br>• The operator is not satisfied with how the README renders projects and their members; the layout is to be decided | [`board-projects-layout`](design-board-projects-layout.md) | 2d<br>2h | board |
+| E5 |  | **Decide the layout of projects in the board README**<br>• The operator is not satisfied with how the README renders projects and their members; the layout is to be decided | [`board-projects-layout`](design-board-projects-layout.md) | 2d<br>3h | board |
 | E6 |  | **Board README: one rendered file per project, research notes first**<br>• Each project renders its own file linked from its parent; README.md is the root project; research notes come right after tasks | [`readme-per-project-files`](design-readme-per-project-files.md) | 1d<br>2h | board |
-| E7 |  | **Run verbs in one shared namespace, not under lym loom**<br>• lym loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 12d<br>7h | shed, loom |
+| E7 |  | **Run verbs in one shared namespace, not under lym loom**<br>• lym loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 13d<br>7h | shed, loom |
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 2w<br>7h | burler, stencil |
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 12d<br>12d | board, loom |
 | E11 |  | **Loom and darn Finalize resolve a moved parent themselves instead of rerouting** | [`loom-finalize-merges-itself`](design-loom-finalize-merges-itself.md) | 1d<br>1d | loom, batten |
