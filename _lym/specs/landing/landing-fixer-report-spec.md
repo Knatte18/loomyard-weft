@@ -1,4 +1,5 @@
-<!-- lyx-stencil: sha256=56ad06f9e9006e023f61597ff9b6f48e6c19ed9e32a595d4c3ba3e37e590afbb build=5e449651fc9099cf3c0ec513ef579c464138a703 time=2026-10-25T09:35:58Z -->
+<!-- lyx-stencil: sha256=56ad06f9e9006e023f61597ff9b6f48e6c19ed9e32a595d4c3ba3e37e590afbb build=5e449651fc9099cf3c0ec513ef579c464138a703 time=2026-10-25T09:35:58Z
+lym-stencil: sha256=56ad06f9e9006e023f61597ff9b6f48e6c19ed9e32a595d4c3ba3e37e590afbb build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 # Landing fixer report spec — what the merge fixer writes when a turn ends
 
