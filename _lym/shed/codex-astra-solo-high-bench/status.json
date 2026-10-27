@@ -1,0 +1,20 @@
+{
+  "current_producer": "Worktree-Create",
+  "state": "blocked",
+  "error": "battencli: claim the board entry of \"codex-astra-solo-high-bench\": board: a held board lock deferred the push of the owner commit, and the board is still ahead of origin: run `lym board sync`, then re-run the verb",
+  "pause_requested": false,
+  "activity": {
+    "now": "Worktree-Create",
+    "last": "Worktree-Create → stuck",
+    "wait": "battencli: claim the board entry of \"codex-astra-solo-high-bench\": board: a held board lock deferred the push of the owner commit, and the board is still ahead of origin: run `lym board sync`, then re-run the verb"
+  },
+  "history": [
+    {
+      "producer": "Worktree-Create",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-27T11:08:30Z",
+      "budget_exempt": true
+    }
+  ]
+}
