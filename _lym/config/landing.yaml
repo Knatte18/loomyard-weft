@@ -1,2 +1,2 @@
 deploy: "./update-plugins.sh" # shell command batten's Land row runs in the prime after a landing into a branch listed in require_pr_to_base; empty runs nothing; the same trust class as publish_verify
-deploy_branches: []
+deploy_branches: ["main"]
