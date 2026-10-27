@@ -28,17 +28,19 @@ grouping
 | --- | --- | --- | --- |
 | E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
 
-## Tasks (1)
+## Tasks (3)
 
 Concrete and claimable; only a task can run.
 
-### Ready (1)
+### Ready (3)
 
 Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Bench Codex review block v2 on P1: one high run against two medium**<br>• Forked Astra fan with block v2 and a 20-call fork cap on P1: 1 high and 2 medium runs<br>• `profile: docs` | [`codex-v2-p1-bench`](design-codex-v2-p1-bench.md) | darn |  | 0m<br>0m | codex, burler |
+| T2 | `draft` **Bench Codex review block v2 on P2: one high run against two medium**<br>• Forked Astra fan with block v2 and a 20-call fork cap on P2: 1 high and 2 medium runs<br>• `profile: docs` | [`codex-v2-p2-bench`](design-codex-v2-p2-bench.md) | darn |  | 0m<br>0m | codex, burler |
+| T3 | `draft` **Bench Codex review block v2 on P4: one high run against two medium**<br>• Forked Astra fan with block v2 and a 20-call fork cap on P4: 1 high and 2 medium runs<br>• `profile: docs` | [`codex-v2-p4-bench`](design-codex-v2-p4-bench.md) | darn |  | 0m<br>0m | codex, burler |
 
 ## Notes (47)
 
