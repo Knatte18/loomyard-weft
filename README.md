@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-27 14:47 UTC; every age below is as of then.
+Rendered 2026-10-27 14:48 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -40,7 +40,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Dobby survives deploys, logs changes only, tidies per owner; a visible adopt check**<br>• Fix the dobby re-exec exit, bound its log, count tidies per owner, give the adopt check its own gate key and visible progress | [`dobby-and-adopt-hardening`](design-dobby-and-adopt-hardening.md) | loom | Discussion-Burler-Review | neve | 1d<br>22m | workspaces, batten, gate, board |
 | T3 | **A gate test writes trace logs into the live hub and Bolt commits them**<br>• trace-*.log from a run gate test landed in _board/.lym/logs and board sync committed them | [`test-logs-leak-into-bolt`](design-test-logs-leak-into-bolt.md) | darn | blocked · Darn-Write | neve | 4h<br>22m | gate, board, testkit |
-| T4 | **A read creates directories: state.ReadJSON mkdirs, so a hub reader leaves a real _lym in a half-built pair** | [`hub-reader-creates-lym`](design-hub-reader-creates-lym.md) | darn | blocked · Darn-Write | neve | 1d<br>22m | fabric, orch, batten |
+| T4 | **A read creates directories: state.ReadJSON mkdirs, so a hub reader leaves a real _lym in a half-built pair** | [`hub-reader-creates-lym`](design-hub-reader-creates-lym.md) | darn | Darn-Write | neve | 1d<br>22m | fabric, orch, batten |
 | T5 | **Board README lists draft tasks under Ready** | [`readme-draft-not-ready`](design-readme-draft-not-ready.md) | darn | blocked · Darn-Write | neve | 1d<br>22m | board |
 | T6 | **Markdown link guard skips the verbatim data of research reports**<br>• TestEnforcement_MarkdownLinks fails on main on bench prompt captures under docs/research/*/data/; skip that data | [`docs-link-skip-bench-data`](design-docs-link-skip-bench-data.md) | darn | Darn-Write | neve | 10m<br>10m | testkit |
 
