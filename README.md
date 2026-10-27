@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-27 12:38 UTC; every age below is as of then.
+Rendered 2026-10-27 12:39 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -28,15 +28,17 @@ grouping
 | --- | --- | --- | --- |
 | E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
 
-## Tasks (0)
+## Tasks (1)
 
 Concrete and claimable; only a task can run.
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T1 | `draft` **Bench the tuned forked Codex Astra fan on P1 at high effort**<br>• Tuned prompt, Claude reviewers' context, forked fan, Astra high, on P1<br>• `profile: docs` | [`codex-astra-tuned-p1-high-bench`](design-codex-astra-tuned-p1-high-bench.md) | darn |  | 0m<br>0m | codex, burler |
 
 ## Notes (47)
 
