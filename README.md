@@ -38,7 +38,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Bench a Codex Astra fan with real forks at high effort on one plan**<br>• One codex exec handler spawning 3 lens forks with fork_turns=all, Astra high, on P4<br>• `profile: docs` | [`codex-astra-fork-fan-bench`](design-codex-astra-fork-fan-bench.md) | darn | Drift-Verify | neve | 18m<br>18m | codex, burler |
+| T1 | **Bench a Codex Astra fan with real forks at high effort on one plan**<br>• One codex exec handler spawning 3 lens forks with fork_turns=all, Astra high, on P4<br>• `profile: docs` | [`codex-astra-fork-fan-bench`](design-codex-astra-fork-fan-bench.md) | darn | Finalize | neve | 18m<br>18m | codex, burler |
 
 ### Ready (0)
 
