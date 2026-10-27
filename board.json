@@ -897,6 +897,24 @@
       "body": "## Seen (OSL-1046, 2026-10-26)\n\nThe prime's `dobby.log` grew by 1423 lines between 09:02 and 17:00, nearly all of them `pass \u003cslug\u003e continue`, one per pass of every run in flight, about every 30 seconds; one run alone wrote 745.\nNothing bounds the file: `SpawnDetached` (`internal/dobbyengine/start.go`) appends the detached dobby's stdout and stderr to it, and `logLine` (`internal/dobbyengine/passes.go`) writes the pass lines there, outside `internal/logger`, whose trace files a retention sweep bounds by age and count.\n\n## Idea\n\n- Dobby logs through `internal/logger`, so its log falls under the same retention; or, if the log keeps its fixed place beside `state.json`, it gets a size bound of its own, rotated to one previous file.\n- Only changes are logged: a dobby start or re-exec, a run started, halted, landed or failed, a pass that fails, and a board-tidy spawn or end.\n- A heartbeat line every 10 minutes names the runs it drives and their states, so the log shows within ten minutes when a dobby died.\n- It runs as its own task after the rename to `lym`, never inside it, since the rename is a mechanical change that runs alone (operator, 2026-10-26).\n",
       "created": "2026-10-26T15:47:37Z",
       "revised": "2026-10-26T15:47:37Z"
+    },
+    {
+      "id": 838,
+      "handle": "B5",
+      "slug": "tidy-count-per-owner",
+      "title": "Board tidy counts landings per machine, not per owner",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "workspaces"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A dobby that does not own root tidies landings another machine already tidied",
+      "body": "## Seen (operator, 2026-10-27)\n\nOSL-1046 owned root and landed the runs there, and that machine's dobby ran board tidies over them.\nWhen this machine pulled their run records, Neve's dobby, which did not own root, spawned a tidy of its own, its line reading \"board tidy after 13 landings\".\nEach dobby counts the landings it reads into its own machine-local state record, so a tidy on another machine never resets the count here.\n\n## Idea\n\n- A dobby counts and tidies only the landings of a root or beam its machine owns.\n- A tidy on any machine marks its landings as tidied for every machine, so an adopt does not tidy them again.\n",
+      "created": "2026-10-27T07:16:59Z",
+      "revised": "2026-10-27T07:16:59Z"
     }
   ],
   "prime_owner": "neve",
