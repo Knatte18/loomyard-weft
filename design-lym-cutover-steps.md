@@ -18,7 +18,7 @@ The steps the operator takes once `rename-binary-lym` has landed; they replace t
    - Set `lym config landing --set 'deploy_branches=["main"]'`.
    - Point the `loomyard` plugin marketplace at `/home/knatte/Code/loomyard-LYMHUB/loomyard`: `~/.claude/settings.json` and `~/.claude/plugins/known_marketplaces.json` name the old prime's path, through `/plugin marketplace` remove and add or by editing both paths.
    - Run `./update-plugins.sh` from the new prime, so the plugin cache comes from the new hub.
-   - Copy the orch note into the new hub's `.lym/orch/handoffs/` and start it with `lym beam start`.
+   - Start it with `lym beam start`, and point the new orch at its note, `_lym/orch/handoff-lym-cutover.md`, committed on `main-weft` so it survives the fresh clone.
 
 The old `loomyard-LYXHUB` stays as a backup until the new hub is seen to work.
 The quarry, cs and OSL-1046 hubs each take steps 1, 3, 4 and 5; step 2 is once per machine.
