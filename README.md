@@ -39,7 +39,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Bench Codex review block v2 on P1: one high run against two medium**<br>• Forked Astra fan with block v2 and a 20-call fork cap on P1: 1 high and 2 medium runs<br>• `profile: docs` | [`codex-v2-p1-bench`](design-codex-v2-p1-bench.md) | darn | Darn-Write | neve | 0m<br>0m | codex, burler |
-| T2 | **Bench Codex review block v2 on P2: one high run against two medium**<br>• Forked Astra fan with block v2 and a 20-call fork cap on P2: 1 high and 2 medium runs<br>• `profile: docs` | [`codex-v2-p2-bench`](design-codex-v2-p2-bench.md) | darn | Worktree-Create | neve | 0m<br>0m | codex, burler |
+| T2 | **Bench Codex review block v2 on P2: one high run against two medium**<br>• Forked Astra fan with block v2 and a 20-call fork cap on P2: 1 high and 2 medium runs<br>• `profile: docs` | [`codex-v2-p2-bench`](design-codex-v2-p2-bench.md) | darn | Darn-Write | neve | 0m<br>0m | codex, burler |
 | T3 | **Bench Codex review block v2 on P4: one high run against two medium**<br>• Forked Astra fan with block v2 and a 20-call fork cap on P4: 1 high and 2 medium runs<br>• `profile: docs` | [`codex-v2-p4-bench`](design-codex-v2-p4-bench.md) | darn | Darn-Write | neve | 0m<br>0m | codex, burler |
 | T4 | **Study what the Claude lens fan misses that Codex finds, and how to tune it**<br>• Desk study over the Astra benches: classify Claude-missed real findings and propose stencil changes<br>• `profile: docs` | [`claude-review-gaps`](design-claude-review-gaps.md) | darn | Worktree-Create | neve | 0m<br>0m | burler, stencil, claude |
 
@@ -70,7 +70,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Beam promote keeps the Discussion record as part of the beam**<br>• When Discussion finds a task should be a project, promote carries its decision record into the beam instead of dropping it | [`beam-promote-keeps-discussion`](design-beam-promote-keeps-discussion.md) | 2d<br>3h | workspaces, batten, loom |
-| E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>13m | shuttle, codex |
+| E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>14m | shuttle, codex |
 | E3 |  | **Dobby log: changes and a heartbeat only, and bounded**<br>• dobby.log grows without bound with a line per pass; log changes plus a 10-minute heartbeat, under retention | [`dobby-log-bounded`](design-dobby-log-bounded.md) | 21h<br>21h | workspaces |
 | E5 |  | **Decide the layout of projects in the board README**<br>• The operator is not satisfied with how the README renders projects and their members; the layout is to be decided | [`board-projects-layout`](design-board-projects-layout.md) | 2d<br>2d | board |
 | E6 |  | **Board README: one rendered file per project, research notes first**<br>• Each project renders its own file linked from its parent; README.md is the root project; research notes come right after tasks | [`readme-per-project-files`](design-readme-per-project-files.md) | 1d<br>1d | board |
