@@ -915,6 +915,45 @@
       "body": "## Seen\n\nOn 2026-10-27, at 07:37Z and 07:45Z, a test that a run's gate ran wrote `trace-*.log` files into the live hub's records worktree, under `_board/.lym/logs/`, rather than into a temporary directory of its own.\nBolt's next `board sync` committed them (`12046c7ab`, `589327e6d`) because `_board/.gitignore` does not exclude `.lym/`.\nThey were removed later by hand.\n\n## Idea\n\n- Find the test that resolves the hub's records directory from the environment or the working directory instead of a test-owned temporary hub, and point it at its own fixture.\n- Make Bolt's sync stage only the board's own files, or have `_board/.gitignore` exclude `.lym/`, so a stray machine-local file never reaches Bolt.\n",
       "created": "2026-10-27T10:18:05Z",
       "revised": "2026-10-27T10:18:05Z"
+    },
+    {
+      "id": 842,
+      "handle": "B7",
+      "slug": "pane-input-lost-on-respawn",
+      "title": "An instruction typed into a pane is lost when the tackler re-spawns the row",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shed",
+        "shuttle",
+        "reed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A re-spawned row session starts from its prompt alone; operator input to the old session is dropped",
+      "body": "## Seen\n\nAn instruction the operator typed into a worker's tmux pane was lost when the tackler re-spawned that row's session: the new session started from the row's prompt alone, and nothing carried the typed line over.\n\n## Idea\n\nWhen a row is re-spawned, carry over what the operator said to the old session, for example by reading the operator's turns from the old transcript, or by routing operator input through creel so it is recorded and re-delivered to the new session.\nAt the least, warn the operator in the pane or by a notice that the session was replaced and an unanswered instruction may be lost.\n",
+      "created": "2026-10-27T10:18:05Z",
+      "revised": "2026-10-27T10:18:05Z"
+    },
+    {
+      "id": 843,
+      "handle": "F3",
+      "slug": "hub-pull-verb",
+      "title": "One verb that pulls the whole hub, Bolt included, while the orch runs",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "fabric",
+        "board"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Pull the prime pair, Bolt and local beams in one safe verb",
+      "body": "## Seen\n\nBringing a whole hub up to date takes separate pulls of the prime's warp and weft and of Bolt, and some of them refuse or race while the orch, dobby or a run writes the board.\n\n## Idea\n\nAdd one verb that pulls the whole hub (the prime pair, Bolt and each local beam), safe to run while the orch and dobby are live: it takes the locks the board and the landing path take, pulls each side and reports per side what moved or why it stopped.\n",
+      "created": "2026-10-27T10:18:05Z",
+      "revised": "2026-10-27T10:18:05Z"
     }
   ],
   "prime_owner": "neve",
