@@ -1,6 +1,6 @@
 # Bench the tuned forked Codex Astra fan on P1 at high effort
 
-`codex-astra-tuned-p1-high-bench` · Task · research, codex, burler · running · Finalize
+`codex-astra-tuned-p1-high-bench` · Task · research, codex, burler · done
 
 ## Question
 
