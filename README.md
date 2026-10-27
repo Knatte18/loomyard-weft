@@ -38,7 +38,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Bench Codex review block v2 on P1: one high run against two medium**<br>• Forked Astra fan with block v2 and a 20-call fork cap on P1: 1 high and 2 medium runs<br>• `profile: docs` | [`codex-v2-p1-bench`](design-codex-v2-p1-bench.md) | darn | Drift-Verify | neve | 18m<br>18m | codex, burler |
+| T1 | **Bench Codex review block v2 on P1: one high run against two medium**<br>• Forked Astra fan with block v2 and a 20-call fork cap on P1: 1 high and 2 medium runs<br>• `profile: docs` | [`codex-v2-p1-bench`](design-codex-v2-p1-bench.md) | darn | Finalize | neve | 18m<br>18m | codex, burler |
 | T3 | **Bench Codex review block v2 on P4: one high run against two medium**<br>• Forked Astra fan with block v2 and a 20-call fork cap on P4: 1 high and 2 medium runs<br>• `profile: docs` | [`codex-v2-p4-bench`](design-codex-v2-p4-bench.md) | darn | Darn-Write | neve | 18m<br>18m | codex, burler |
 
 ### Ready (0)
