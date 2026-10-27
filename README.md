@@ -49,7 +49,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Darn runs Drift-Await after Drift-Baseline instead of a waiting capture** | [`darn-drift-await-row`](design-darn-drift-await-row.md) | darn |  | 1d<br>2m | shed, loom |
+| T1 | **Darn runs Drift-Await after Drift-Baseline instead of a waiting capture** | [`darn-drift-await-row`](design-darn-drift-await-row.md) | darn |  | 1d<br>2m | shed, loom |
 
 ## Notes (39)
 
