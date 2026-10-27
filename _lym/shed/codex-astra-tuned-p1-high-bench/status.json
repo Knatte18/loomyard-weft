@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Baseline → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -21,6 +21,33 @@
       "output": "",
       "at": "2026-10-27T12:39:50Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-p1-high-bench/_lym/landing/summary.md",
+      "at": "2026-10-27T13:03:40Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-27T13:03:32.066987842Z",
+          "end": "2026-10-27T13:03:39.751683682Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-27T13:03:39.789950922Z",
+          "end": "2026-10-27T13:03:39.908407727Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-27T13:03:39.943959435Z",
+          "end": "2026-10-27T13:03:39.943990673Z"
+        }
+      ]
     }
   ],
   "product": {
