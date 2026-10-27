@@ -1,33 +1,32 @@
 # Give draft tasks their own Draft layer instead of Ready
 
-A task with status `draft` has not been released, and dobby starts no draft task.
-The board still put a draft task with no open dependency under Ready ("waits on nothing open; can start now"), and `lym board list` reported its layer as `Ready` (issue #873).
-`ComputeLayers` dealt with done, running, project and isolated entries but not draft ones, so a draft task fell through to depth 0.
+The board README listed an unreleased task under Ready ("waits on nothing open; can start now"), though dobby starts no draft task.
+`ComputeLayers` handled done, running, project and isolated entries but not draft, so a draft task with no open dependency fell into `Ready`.
+The same wrong layer showed in `lym board list`.
+
+Closes #873
 
 ## What changes
 
-- `ComputeLayers` (`internal/boardengine/layer.go`) gives every open draft task that no run holds the new layer `Draft`.
-  This comes after the done, running and project checks and before the isolation and depth checks, so a draft task is never Ready, a letter layer or Independent.
-  For a task that depends on it, a draft task counts as a dependency at depth 0, the same as Running or Ready, so that task lands in Layer A when the draft task is its deepest dependency.
-- `RenderOrder` puts the Draft bucket after Independent and before done entries.
-- The README Tasks section (`internal/boardengine/render.go`) gets a `### Draft (n)` subsection after the dependency layers and Independent.
-  It uses the same table as Ready and the layers, After column included, and is left out when no task is draft.
-  Layer A's meaning line now reads "Waits only on Running, Ready or Draft entries."
-  A project member table shows a draft member's standing as `Draft`.
-- `isDraft` in `draft.go` is the one draft-status check that the layer code and the title cell share.
-- The README part of the package doc (`internal/boardengine/doc.go`) describes the Draft subsection and its columns.
+- `ComputeLayers` puts every open draft task that no run holds in a new `Draft` layer, whatever its dependencies or isolation.
+  A run-held task stays `Running`, a released task with no open dependency stays `Ready`.
+- `RenderOrder` sorts `Draft` after Independent and before done.
+- The README Tasks section renders a `### Draft (n)` subsection after the dependency layers and Independent, in the same table as the other subsections.
+  It is omitted when no task is draft, as Running is.
+- A project member table names a draft member's standing `Draft`.
+- `internal/boardengine/doc.go` states the Draft subsection.
 
 ## Design decisions
 
-- A draft task with open dependencies, and an isolated draft task, both go under Draft rather than their letter layer or Independent: release is the first thing either waits on, and the After column still names the open dependencies.
-- The `draft` code span on the title cell stays.
-  Under the Draft heading it repeats what the heading says, but it remains the only draft mark on a run-held draft task's Running row.
-  The decision record also cites project member tables as relying on the span; they never showed it, and now name the standing `Draft` in their own column instead.
+- The Draft check runs ahead of the isolated and dependency checks, so a draft task with open dependencies, or an isolated one, is under Draft, not its letter layer or Independent.
+  Release is the first thing it waits on, and its After column still names its open dependencies.
+- A task depending on a draft task weighs it as a ready one, so it lands in Layer A when that is its deepest dependency.
+  Layer A's meaning line now names Draft beside Running and Ready.
+- A draft task's title cell keeps its `draft` code span, since the cell is shared with project member tables and Running rows, where the span is the only draft mark.
+- A new `isDraft` helper in `draft.go` replaces the inline status check in `entryCell`.
+- The layer stays computed at read time and is never stored.
 
-## Tests
+## Check by hand
 
-- `TestComputeLayers` gets a row covering a draft task with no dependencies, one with an open dependency and one that is isolated, all of which land in `Draft`.
-  The same row checks that a released task stays Ready and that a task depending on a draft task lands in Layer A.
-- `TestRenderOrder` now puts a draft task between Independent and done entries.
-- In `TestRenderReadmeGolden`, the draft task in the main fixture moves from Ready to a Draft section, and Ready then renders `_None._`.
-  The project fixture's grouping member is now draft, which covers the `Draft` member standing and a Ready count that excludes it.
+- Anything that matched `Ready` in `lym board list` to find startable tasks now skips draft tasks.
+  No production Go code reads the layer field, so this affects operator habit only.
