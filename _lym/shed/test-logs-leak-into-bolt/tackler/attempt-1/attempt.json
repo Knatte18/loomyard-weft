@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Darn-Write",
+    "history_length": 3,
+    "state": "blocked"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "f01dd764c9644a118ac280857c05a8a9a88fe434",
+    "branch": "test-logs-leak-into-bolt",
+    "dirty": {}
+  },
+  "spawned_at": "2026-10-27T15:42:52.797511781+01:00",
+  "deadline": "2026-10-27T15:52:52.797511781+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/test-logs-leak-into-bolt/_lym/shed/test-logs-leak-into-bolt/drive-reports/drive-envelope-20261027-154252-1cb6.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/test-logs-leak-into-bolt/_lym/shed/test-logs-leak-into-bolt/drive-reports/drive-report-20261027-154252-c476.md",
+  "strand_guid": "380b55a8aff96bed29116b38bf2c9b15"
+}
