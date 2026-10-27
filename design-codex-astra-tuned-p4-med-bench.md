@@ -1,6 +1,6 @@
 # Bench the tuned forked Codex Astra fan on P4 at medium effort
 
-`codex-astra-tuned-p4-med-bench` · Task · research, codex, burler · running · Drift-Verify
+`codex-astra-tuned-p4-med-bench` · Task · research, codex, burler · running · Finalize
 
 ## Question
 
