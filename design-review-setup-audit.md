@@ -162,7 +162,7 @@ Plan finding kinds per run, keyword counts over summaries, checked by reading ab
 | test branch no planned test reaches | 0.28 | 0.17 | 0.18 |
 
 G1 runs such as `quick-recipe`, `config-layers-run-settings` and `driver-arbiter` are full of duplicate-test and missing-refusal-row findings, which the twill-plan lens forks target.
-Discussion findings are the same kind in every generation, design holes such as unstated bounds and false premises (`lyx-halt`, `convergence-plan`, `fan-prompt-tuning`); design-class findings fall from 3.4 to 2.3 to 1.8 per run.
+Discussion findings are the same kind in every generation, design holes such as unstated bounds and false premises (`convergence-plan`, `fan-prompt-tuning`); design-class findings fall from 3.4 to 2.3 to 1.8 per run.
 Wrong code references are rare in every generation and were not separated.
 
 Rounds to converge, and circling settled by decision:
