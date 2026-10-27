@@ -3,7 +3,8 @@
      internal/burlerengine's prompt composition (composePrompt in prompt.go) is its consuming call site.
      It declares one required marker, {{.focus_path}}, and is filled with stencil.Fill, then injected
      as burler-step-1-explore's optional focus_directive marker value.
-lyx-stencil: sha256=3e6367f52a532ede9ebdfb4574b2418cedf3950a6bb822a5483993fafaabf9ac -->
+lyx-stencil: sha256=3e6367f52a532ede9ebdfb4574b2418cedf3950a6bb822a5483993fafaabf9ac
+lym-stencil: sha256=3e6367f52a532ede9ebdfb4574b2418cedf3950a6bb822a5483993fafaabf9ac build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 ## Focus directive for this round
 

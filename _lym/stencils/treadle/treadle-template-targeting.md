@@ -3,7 +3,8 @@
      Every marker below is a top-level {{.X}} substitution;
      stencil.Fill requires every marker non-empty, parent_directive included (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective), and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go).
      Unlike the judge templates, this call produces no verdict — its only output is the seed brief itself, free-form prose with no frontmatter.
-lyx-stencil: sha256=4d00e279cb4774560bd98b6ac281b5ef1a7590851c3568a5db96e4c5d4712862 -->
+lyx-stencil: sha256=4d00e279cb4774560bd98b6ac281b5ef1a7590851c3568a5db96e4c5d4712862
+lym-stencil: sha256=4d00e279cb4774560bd98b6ac281b5ef1a7590851c3568a5db96e4c5d4712862 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 # Treadle pre-round targeting judge
 

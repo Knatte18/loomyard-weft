@@ -19,7 +19,8 @@
      round-agrees-with-filename check discards it as malformed (crucible round sonnet-xhigh-r8,
      LS-1) -- before this fix, both instructions reused {{.round}}, so a compliant judge wrote a
      focus file whose OWN frontmatter round permanently disagreed with its OWN filename by one.
-lyx-stencil: sha256=e3b8ca306cad783c467afacb09632ee9026b1ea02fded72ec7d36ccc621297f5 build=072e2ed86cca361e439c0062b67634777d1b3410 time=2026-10-13T07:25:55Z -->
+lyx-stencil: sha256=e3b8ca306cad783c467afacb09632ee9026b1ea02fded72ec7d36ccc621297f5 build=072e2ed86cca361e439c0062b67634777d1b3410 time=2026-10-13T07:25:55Z
+lym-stencil: sha256=e3b8ca306cad783c467afacb09632ee9026b1ea02fded72ec7d36ccc621297f5 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 # Bouncer — judge pass, round {{.round}}
 

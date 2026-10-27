@@ -1,6 +1,7 @@
 <!-- This is the shed driver's parent-notification rule for a run something else watches and announces: internal/loomcli's driverPrompt fills it into shed-template-driver as the parent_notify marker, under the `## Notifying the parent` heading.
      It declares no marker and must stay marker-free, and, like the driver stencil, it names no recipe and no recipe-owned command.
-lyx-stencil: sha256=2f2f5171c40a2b66aeaad78f949513188ac7a11e928dd3aa9b8de8ea695067ff -->
+lyx-stencil: sha256=2f2f5171c40a2b66aeaad78f949513188ac7a11e928dd3aa9b8de8ea695067ff
+lym-stencil: sha256=2f2f5171c40a2b66aeaad78f949513188ac7a11e928dd3aa9b8de8ea695067ff build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 Message the parent session that the directive above names in exactly three cases, each one short SendMessage:
 
 - An `awaiting` stop whose envelope carries a non-empty `parent_notice`: send that notice verbatim, followed by the tail "Answer briefly, then continue your task."

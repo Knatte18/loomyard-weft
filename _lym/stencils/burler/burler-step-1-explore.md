@@ -11,7 +11,8 @@
      Both stay at the top level, before the first work heading, so their optional-blank semantics hold.
      fork_reading is the seventh marker, optional, filled via stencil.FillOptional, and renders nothing in a solo round;
      it sits directly after tool_use_rules on the same line, so an empty value adds no byte.
-lyx-stencil: sha256=8404297a9e6adbbd9830dd557f75778ed52a8d0b7120c439f82adc3d0cffdecc build=112cccb8f4e09be50a700c9346b294b79f649e17 time=2026-10-16T14:39:17Z -->
+lyx-stencil: sha256=8404297a9e6adbbd9830dd557f75778ed52a8d0b7120c439f82adc3d0cffdecc build=112cccb8f4e09be50a700c9346b294b79f649e17 time=2026-10-16T14:39:17Z
+lym-stencil: sha256=8404297a9e6adbbd9830dd557f75778ed52a8d0b7120c439f82adc3d0cffdecc build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 {{.pattern_directive}}
 {{.focus_directive}}

@@ -2,7 +2,8 @@
      internal/twilldirective renders it into the twill directive, and the spawning module hands that renderer every host value, so this block names no file, step, verb or section of any one host.
      It declares these required markers:
      {{.explore_step}}, {{.input_record}}, {{.reviewed_files}}, {{.last_file}}, {{.files_dir}}, {{.format_step}}, {{.self_check_step}}, {{.self_check_command}} and {{.disposition_place}}.
-lyx-stencil: sha256=94e96f7a7eb7a17bc964d03ef481b05b3e805b8ada6c2ee402259e2dfd0ba88a build=79bab47a02141f93160b00f89b273718b4033be5 time=2026-10-24T07:59:09Z -->
+lyx-stencil: sha256=94e96f7a7eb7a17bc964d03ef481b05b3e805b8ada6c2ee402259e2dfd0ba88a build=79bab47a02141f93160b00f89b273718b4033be5 time=2026-10-24T07:59:09Z
+lym-stencil: sha256=94e96f7a7eb7a17bc964d03ef481b05b3e805b8ada6c2ee402259e2dfd0ba88a build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 In this run one fork, fork0, writes the reviewed files: you explore, fork0 thinks and writes, and you review and finish what it wrote.
 Do these steps in place of running `{{.format_step}}` and `{{.self_check_step}}` yourself, in this order:
