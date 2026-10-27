@@ -1,6 +1,14 @@
-# Dobby dies at a deploy instead of re-executing onto the new binary
+# Dobby survives deploys, logs changes only, tidies per owner; a visible adopt check
 
-`dobby-reexec-on-deploy` · Note · bug, workspaces, batten
+`dobby-and-adopt-hardening` · Task · bug, enhancement, workspaces, batten, gate, board · draft
+
+One loom over the dobby, its log, its board tidy and the adopt machine check, bundled from four notes that touch the same packages (operator, 2026-10-27).
+
+## Decision for part 4 (operator, 2026-10-27)
+
+The adopt check reports a line per tier to the orch and a notice when it ends, failed or green, and `lym beam status` shows its progress; it gets no window or strand of its own.
+
+## Part 1, from B3: dobby dies at a deploy instead of re-executing
 
 Reported as [issue #880](https://github.com/Knatte18/loomyard/issues/880).
 
@@ -80,3 +88,43 @@ No other holder is excluded: a second `lym beam dobby` spawned in the exec windo
 - Log a refused re-exec start to `dobby.log` as a Warn naming the exit path, and post it to the orch, instead of printing only the envelope.
 - Give the dobby a trace file, or have it log its re-exec at Warn, so the next such event leaves a line.
 - Add the test the Expected section asks for: replace the binary under a running dobby while a probe loops on `dobbyengine.Live`.
+
+## Part 2, from E3: a bounded dobby log
+
+## Seen (OSL-1046, 2026-10-26)
+
+The prime's `dobby.log` grew by 1423 lines between 09:02 and 17:00, nearly all of them `pass <slug> continue`, one per pass of every run in flight, about every 30 seconds; one run alone wrote 745.
+Nothing bounds the file: `SpawnDetached` (`internal/dobbyengine/start.go`) appends the detached dobby's stdout and stderr to it, and `logLine` (`internal/dobbyengine/passes.go`) writes the pass lines there, outside `internal/logger`, whose trace files a retention sweep bounds by age and count.
+
+## Idea
+
+- Dobby logs through `internal/logger`, so its log falls under the same retention; or, if the log keeps its fixed place beside `state.json`, it gets a size bound of its own, rotated to one previous file.
+- Only changes are logged: a dobby start or re-exec, a run started, halted, landed or failed, a pass that fails, and a board-tidy spawn or end.
+- A heartbeat line every 10 minutes names the runs it drives and their states, so the log shows within ten minutes when a dobby died.
+
+## Part 3, from B5: board tidy counts landings per owner
+
+## Seen (operator, 2026-10-27)
+
+OSL-1046 owned root and landed the runs there, and that machine's dobby ran board tidies over them.
+When this machine pulled their run records, Neve's dobby, which did not own root, spawned a tidy of its own, its line reading "board tidy after 13 landings".
+Each dobby counts the landings it reads into its own machine-local state record, so a tidy on another machine never resets the count here.
+
+## Idea
+
+- A dobby counts and tidies only the landings of a root or beam its machine owns.
+- A tidy on any machine marks its landings as tidied for every machine, so an adopt does not tidy them again.
+
+## Part 4, from E12: a visible adopt check
+
+## Seen (operator, 2026-10-26, OSL-1046)
+
+`lym adopt root` on OSL-1046 (then `lym adopt --prime`, removed by `beam-start-and-ownership`) started the machine check in the background (`lym gate test --gate finalize --wait`) and printed only its pid and a log path, `_board/.lym/adopt/suite.log`, inside the JSON.
+Nothing on screen showed that a test run had started, how far it had come or how it ended.
+The check exists to find what a move between machines breaks, here from Neve on Ubuntu 26 to OSL-1046 on Ubuntu 24.
+The operator dislikes the gate key `finalize` for it: the run is the adopting machine's check, not a Finalize.
+
+## Idea
+
+- The adopt check runs under a gate key of its own, such as `adopt`, by the rule one gate key per producer, named after it.
+- Its progress and result are visible from where the operator works: a window or strand of its own, or a line per tier to the orch and in `lym beam status`, and a notice when it ends, failed or green.
