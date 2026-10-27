@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Run-Shed",
+    "history_length": 5,
+    "state": "failed"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "",
+    "branch": "",
+    "dirty": null
+  },
+  "spawned_at": "2026-10-27T13:36:11.834023997+01:00",
+  "deadline": "2026-10-27T13:46:11.834023997+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/codex-astra-tuned-prompt-bench/drive-reports/drive-envelope-20261027-133611-e26d.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/codex-astra-tuned-prompt-bench/drive-reports/drive-report-20261027-133611-e829.md",
+  "strand_guid": ""
+}
