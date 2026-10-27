@@ -28,18 +28,17 @@ grouping
 | --- | --- | --- | --- |
 | E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
 
-## Tasks (2)
+## Tasks (1)
 
 Concrete and claimable; only a task can run.
 
-### Running (2)
+### Running (1)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Bench the tuned forked Codex Astra fan on P1 at high effort**<br>• Tuned prompt, Claude reviewers' context, forked fan, Astra high, on P1<br>• `profile: docs` | [`codex-astra-tuned-p1-high-bench`](design-codex-astra-tuned-p1-high-bench.md) | darn | Darn-Write | neve | 13m<br>13m | codex, burler |
-| T2 | **Bench the tuned forked Codex Astra fan on P4 at medium effort**<br>• Tuned prompt, Claude reviewers' context, forked fan, Astra medium, on P4<br>• `profile: docs` | [`codex-astra-tuned-p4-med-bench`](design-codex-astra-tuned-p4-med-bench.md) | darn | Finalize | neve | 13m<br>13m | codex, burler |
 
 ### Ready (0)
 
@@ -117,3 +116,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R5 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 4d<br>2h | webster |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 4d<br>2h | loom, stencil |
 | R8 |  | **Ideas from r/ClaudeCode "one line in your CLAUDE.md": fit for LoomYard and bench measures**<br>• About 30 ideas judged against our stencils and rules; top 8 ranked for a bench, a few cheap enough without one | [`claude-md-thread-ideas`](design-claude-md-thread-ideas.md) | 22h<br>2h | stencil, loom, burler |
+
+## Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T2 | **Bench the tuned forked Codex Astra fan on P4 at medium effort**<br>• Tuned prompt, Claude reviewers' context, forked fan, Astra medium, on P4<br>• `profile: docs` | [`codex-astra-tuned-p4-med-bench`](design-codex-astra-tuned-p4-med-bench.md) | 13m<br>13m | codex, burler |
