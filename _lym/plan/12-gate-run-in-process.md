@@ -8,8 +8,8 @@
 - `internal/gatecli#TestGateTest_Scopes`
 
 **Create:**
-- `plan:internal/gatecli#TierObserver` -> `type TierObserver struct`
-- `plan:internal/gatecli#RunGate` -> `func RunGate(ctx context.Context, dir, gate string, out, stderr io.Writer, observer TierObserver) int`
+- `internal/gatecli#TierObserver`
+- `internal/gatecli#RunGate`
 
 **Extends:**
 - `internal/gatecli/doc.go`

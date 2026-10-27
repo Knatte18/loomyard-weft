@@ -6,28 +6,28 @@
 - `internal/lymdirs#AdoptDirName`
 
 **Create:**
-- `plan:internal/adoptcli#checkRecordName` -> `const checkRecordName = "check.json"`
-- `plan:internal/adoptcli#checkOutName` -> `const checkOutName = "check.out"`
-- `plan:internal/adoptcli#checkLockName` -> `const checkLockName = "check.lock"`
-- `plan:internal/adoptcli#checkGateKey` -> `const checkGateKey = "adopt"`
-- `plan:internal/adoptcli#checkProgram` -> `const checkProgram = "ADOPT"`
-- `plan:internal/adoptcli#CheckRecord` -> `type CheckRecord struct`
-- `plan:internal/adoptcli#CheckTier` -> `type CheckTier struct`
-- `plan:internal/adoptcli#ReadCheck` -> `func ReadCheck(recordPath string) (CheckRecord, bool, error)`
-- `plan:internal/adoptcli#checkDeps` -> `type checkDeps struct`
-- `plan:internal/adoptcli#runCheck` -> `func runCheck(ctx context.Context, deps checkDeps) (CheckRecord, bool, error)`
-- `plan:internal/adoptcli#hubCheckDeps` -> `func hubCheckDeps(prime *lymcwd.Location) checkDeps`
-- `plan:internal/adoptcli#checkCmd` -> `func checkCmd() *cobra.Command`
-- `plan:internal/adoptcli#TestRunCheck` -> `func TestRunCheck(t *testing.T)`
-- `plan:internal/adoptcli#TestHubCheckDeps_StaleStampRunsTheTunedFinalizeTiers` -> `func TestHubCheckDeps_StaleStampRunsTheTunedFinalizeTiers(t *testing.T)`
-- `plan:internal/adoptcli_test#TestCheckCmd_FromABeamExitsZeroWhileOneRuns` -> `func TestCheckCmd_FromABeamExitsZeroWhileOneRuns(t *testing.T)`
+- `internal/adoptcli#checkRecordName`
+- `internal/adoptcli#checkOutName`
+- `internal/adoptcli#checkLockName`
+- `internal/adoptcli#checkGateKey`
+- `internal/adoptcli#checkProgram`
+- `internal/adoptcli#CheckRecord`
+- `internal/adoptcli#CheckTier`
+- `internal/adoptcli#ReadCheck`
+- `internal/adoptcli#checkDeps`
+- `internal/adoptcli#runCheck`
+- `internal/adoptcli#hubCheckDeps`
+- `internal/adoptcli#checkCmd`
+- `internal/adoptcli#TestRunCheck`
+- `internal/adoptcli#TestHubCheckDeps_StaleStampRunsTheTunedFinalizeTiers`
+- `internal/adoptcli_test#TestCheckCmd_FromABeamExitsZeroWhileOneRuns`
 
 **Extends:**
 - `internal/adoptcli/doc.go`
 
 **Uses:**
-- `plan:internal/gatecli#RunGate`
-- `plan:internal/gatecli#TierObserver`
+- `internal/gatecli#RunGate`
+- `internal/gatecli#TierObserver`
 - `internal/adoptcli#suiteLogName`
 
 **Intent:**

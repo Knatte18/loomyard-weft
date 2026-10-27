@@ -14,16 +14,16 @@
 - `docs/overview.md`
 
 **Create:**
-- `plan:internal/adoptcli#checkAlive` -> `func checkAlive(record CheckRecord) bool`
-- `plan:internal/adoptcli#ensureCheck` -> `func ensureCheck(dir string, alive func(CheckRecord) bool, spawn func() (int, error)) (suiteStart, error)`
-- `plan:internal/adoptcli#TestEnsureCheck` -> `func TestEnsureCheck(t *testing.T)`
-- `plan:internal/adoptcli#TestCheckAlive` -> `func TestCheckAlive(t *testing.T)`
+- `internal/adoptcli#checkAlive`
+- `internal/adoptcli#ensureCheck`
+- `internal/adoptcli#TestEnsureCheck`
+- `internal/adoptcli#TestCheckAlive`
 
 **Uses:**
-- `plan:internal/adoptcli#ReadCheck`
-- `plan:internal/adoptcli#CheckRecord`
-- `plan:internal/adoptcli#checkRecordName`
-- `plan:internal/adoptcli#checkOutName`
+- `internal/adoptcli#ReadCheck`
+- `internal/adoptcli#CheckRecord`
+- `internal/adoptcli#checkRecordName`
+- `internal/adoptcli#checkOutName`
 - `internal/adoptcli#suiteLogName`
 
 **Intent:**
