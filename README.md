@@ -32,23 +32,23 @@ grouping
 
 Concrete and claimable; only a task can run.
 
-### Running (2)
+### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Bench Codex on P2 with block v2 and the gap study lens texts, two medium runs**<br>• Two medium forked Astra fan runs on P2 with gap-study proposals 1, 2 and 4; real findings per window point<br>• `profile: docs` | [`codex-p2-gap-texts-bench`](design-codex-p2-gap-texts-bench.md) | darn | Darn-Write | neve | 41m<br>41m | codex, burler |
-| T2 | **Dobby survives deploys, logs changes only, tidies per owner; a visible adopt check**<br>• Fix the dobby re-exec exit, bound its log, count tidies per owner, give the adopt check its own gate key and visible progress | [`dobby-and-adopt-hardening`](design-dobby-and-adopt-hardening.md) | loom | Worktree-Create | neve | 1d<br>3m | workspaces, batten, gate, board |
+| T2 | **Dobby survives deploys, logs changes only, tidies per owner; a visible adopt check**<br>• Fix the dobby re-exec exit, bound its log, count tidies per owner, give the adopt check its own gate key and visible progress | [`dobby-and-adopt-hardening`](design-dobby-and-adopt-hardening.md) | loom | Worktree-Create | neve | 1d<br>4m | workspaces, batten, gate, board |
+| T4 | **A read creates directories: state.ReadJSON mkdirs, so a hub reader leaves a real _lym in a half-built pair** | [`hub-reader-creates-lym`](design-hub-reader-creates-lym.md) | darn | Worktree-Create | neve | 1d<br>4m | fabric, orch, batten |
 
-### Ready (3)
+### Ready (2)
 
 Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **A gate test writes trace logs into the live hub and Bolt commits them**<br>• trace-*.log from a run gate test landed in _board/.lym/logs and board sync committed them | [`test-logs-leak-into-bolt`](design-test-logs-leak-into-bolt.md) | darn |  | 4h<br>3m | gate, board, testkit |
-| T4 | **A read creates directories: state.ReadJSON mkdirs, so a hub reader leaves a real _lym in a half-built pair** | [`hub-reader-creates-lym`](design-hub-reader-creates-lym.md) | darn |  | 1d<br>3m | fabric, orch, batten |
+| T3 | **A gate test writes trace logs into the live hub and Bolt commits them**<br>• trace-*.log from a run gate test landed in _board/.lym/logs and board sync committed them | [`test-logs-leak-into-bolt`](design-test-logs-leak-into-bolt.md) | darn |  | 4h<br>4m | gate, board, testkit |
 | T5 | **Board README lists draft tasks under Ready** | [`readme-draft-not-ready`](design-readme-draft-not-ready.md) | darn |  | 1d<br>3m | board |
 
 ## Notes (40)
