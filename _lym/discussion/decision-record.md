@@ -35,6 +35,12 @@ Rationale: the Tasks section reads from what is closest to running to what is fu
 Decision: a draft task's title cell keeps its `draft` code span.
 Rationale: the cell is shared with project member tables and Running rows, where the span is the only draft mark.
 
+### Added after Discussion (parent, 2026-10-27): Leave the bench link breaks to main
+
+Decision: Do not widen this run's scope and do not touch the docs/research bench files or the docs link allowlist. Task docs-link-skip-bench-data fixes TestEnforcement_MarkdownLinks on main by skipping docs/research/*/data/; once it lands, the orch resumes this run at Darn-Write and the run takes main in through its normal path.
+
+Rationale: The breaks come from main's bench commits, not this change; one fix on main serves every run.
+
 ## Constraints
 
 - `PATTERN-test-speed`: tests run through `lym gate test`, in the lowest tier that fits, parallel by default.
