@@ -28,6 +28,12 @@ Rationale: `LyX` names the LaTeX editor in a deploy test that guards against a f
 Decision: `Geometry.MarkerDir` is replaced by `LogPath`, `.lym/beam/dobby.log`, and `TidyDir`, `.lym/beam/tidy/`, a tidy report being named `<UTC timestamp>.md`; `MarkerDirName` gives way to a `TidyDirName` constant.
 Rationale: the directory never held marker files, and the board entry names these locations.
 
+### Added after Discussion (parent, 2026-10-27): Remove the empty cmd/lyx directory left by the rename
+
+Decision: Remove the empty, untracked cmd/lyx directory the git mv left on disk, then run verify again with all its tiers. The running gate builds a prebuilt binary only where cmd/lyx exists as a directory (internal/gatecli/prebuild.go), so without it the prebuild is skipped and the tier tests build the binary from the branch's own cmd/lym. Add no cmd/lyx shim and skip no tier.
+
+Rationale: The failure is 'no Go files in cmd/lyx' from a leftover empty directory, not from the rename itself; the old gate's stat check skips the prebuild once the directory is gone.
+
 ## Constraints
 
 - PATTERN entries that name renamed packages or variables are renamed by the same script, with their background files.
