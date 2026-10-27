@@ -74,6 +74,13 @@ Rationale: The breaks come from main's bench commits, not this change; one fix o
 - A caller that wrote into a directory with a raw `os` call, relying on an earlier read to have created it, fails after this change.
   A sweep of readers found none: writers go through `WriteJSON`, `UpdateJSON` or `fsx.AtomicWriteBytes`, which create their directory, and lock-taking writers create their lock directory first.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - readorigin-no-weft-no-exclude-unasserted (class scope, severity MEDIUM, open in rounds 1)
+  - websterengine-loadstate-no-scratch-untested (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - Reading a JSON record whose directory is absent returns not found and creates no directory.
