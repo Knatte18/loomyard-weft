@@ -1,6 +1,6 @@
 # Bench the forked Codex Astra fan with a Codex-tuned reviewer prompt
 
-`codex-astra-tuned-prompt-bench` · Task · research, codex, burler · running · Finalize
+`codex-astra-tuned-prompt-bench` · Task · research, codex, burler · done
 
 ## Question
 
