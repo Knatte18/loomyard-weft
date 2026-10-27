@@ -1,6 +1,6 @@
 # Dobby survives deploys, logs changes only, tidies per owner; a visible adopt check
 
-`dobby-and-adopt-hardening` · Task · bug, enhancement, workspaces, batten, gate, board · running · Drift-Verify
+`dobby-and-adopt-hardening` · Task · bug, enhancement, workspaces, batten, gate, board · running · Describe
 
 One loom over the dobby, its log, its board tidy and the adopt machine check, bundled from four notes that touch the same packages (operator, 2026-10-27).
 
