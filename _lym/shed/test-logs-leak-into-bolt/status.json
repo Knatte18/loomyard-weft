@@ -5,7 +5,7 @@
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",
-    "last": "Open-IDE → skipped",
+    "last": "Run-Shed → bounced to Run-Shed",
     "wait": ""
   },
   "history": [
@@ -39,6 +39,14 @@
       "output": "",
       "at": "2026-10-27T14:29:38Z",
       "reason": "batten.open_ide = false"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → blocked at Darn-Write",
+      "at": "2026-10-27T14:42:53Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
     }
   ]
 }
