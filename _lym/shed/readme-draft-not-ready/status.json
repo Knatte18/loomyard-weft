@@ -2,6 +2,7 @@
   "current_producer": "Darn-Write",
   "state": "blocked",
   "error": "gate did not pass after 3 attempts; findings: /home/knatte/Code/loomyard-LYMHUB/readme-draft-not-ready/.lym/shed/readme-draft-not-ready/gate-findings/Darn-Write.md; way forward: run \"lym loom resume\" in the task worktree, which re-spawns Darn-Write with a fresh verify budget",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Darn-Write",
