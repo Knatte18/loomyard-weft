@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-27 14:21 UTC; every age below is as of then.
+Rendered 2026-10-27 14:25 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -28,7 +28,7 @@ grouping
 | --- | --- | --- | --- |
 | E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
 
-## Tasks (1)
+## Tasks (2)
 
 Concrete and claimable; only a task can run.
 
@@ -38,37 +38,36 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Bench Codex on P2 with block v2 and the gap study lens texts, two medium runs**<br>• Two medium forked Astra fan runs on P2 with gap-study proposals 1, 2 and 4; real findings per window point<br>• `profile: docs` | [`codex-p2-gap-texts-bench`](design-codex-p2-gap-texts-bench.md) | darn | Darn-Write | neve | 34m<br>34m | codex, burler |
+| T1 | **Bench Codex on P2 with block v2 and the gap study lens texts, two medium runs**<br>• Two medium forked Astra fan runs on P2 with gap-study proposals 1, 2 and 4; real findings per window point<br>• `profile: docs` | [`codex-p2-gap-texts-bench`](design-codex-p2-gap-texts-bench.md) | darn | Darn-Write | neve | 37m<br>37m | codex, burler |
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T2 | `draft` **Dobby survives deploys, logs changes only, tidies per owner; a visible adopt check**<br>• Fix the dobby re-exec exit, bound its log, count tidies per owner, give the adopt check its own gate key and visible progress | [`dobby-and-adopt-hardening`](design-dobby-and-adopt-hardening.md) | loom |  | 1d<br>0m | workspaces, batten, gate, board |
 
-## Notes (47)
+## Notes (43)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Bugs (7)
+### Bugs (5)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Find why a running run shows a dead waiter in the activity reader** | [`idle-notice-dead-waiter-cause`](design-idle-notice-dead-waiter-cause.md) | 3d<br>3d | batten, shuttle |
 | B2 |  | **A read creates directories: state.ReadJSON mkdirs, so a hub reader leaves a real _lym in a half-built pair** | [`hub-reader-creates-lym`](design-hub-reader-creates-lym.md) | 1d<br>4h | fabric, orch, batten |
-| B3 |  | **Dobby dies at a deploy instead of re-executing onto the new binary**<br>• After a landing deploy the prime dobby was gone, its board-tidy agent left open | [`dobby-reexec-on-deploy`](design-dobby-reexec-on-deploy.md) | 22h<br>4h | workspaces, batten |
 | B4 |  | **Board README lists draft tasks under Ready** | [`readme-draft-not-ready`](design-readme-draft-not-ready.md) | 1d<br>1d | board |
-| B5 |  | **Board tidy counts landings per machine, not per owner**<br>• A dobby that does not own root tidies landings another machine already tidied | [`tidy-count-per-owner`](design-tidy-count-per-owner.md) | 7h<br>7h | workspaces |
 | B6 |  | **A gate test writes trace logs into the live hub and Bolt commits them**<br>• trace-*.log from a run gate test landed in _board/.lym/logs and board sync committed them | [`test-logs-leak-into-bolt`](design-test-logs-leak-into-bolt.md) | 4h<br>4h | gate, board, testkit |
 | B7 |  | **An instruction typed into a pane is lost when the tackler re-spawns the row**<br>• A re-spawned row session starts from its prompt alone; operator input to the old session is dropped | [`pane-input-lost-on-respawn`](design-pane-input-lost-on-respawn.md) | 4h<br>4h | shed, shuttle, reed |
 
-### Enhancements (20)
+### Enhancements (18)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Beam promote keeps the Discussion record as part of the beam**<br>• When Discussion finds a task should be a project, promote carries its decision record into the beam instead of dropping it | [`beam-promote-keeps-discussion`](design-beam-promote-keeps-discussion.md) | 2d<br>4h | workspaces, batten, loom |
-| E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>38m | shuttle, codex |
-| E3 |  | **Dobby log: changes and a heartbeat only, and bounded**<br>• dobby.log grows without bound with a line per pass; log changes plus a 10-minute heartbeat, under retention | [`dobby-log-bounded`](design-dobby-log-bounded.md) | 22h<br>22h | workspaces |
+| E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>42m | shuttle, codex |
 | E5 |  | **Decide the layout of projects in the board README**<br>• The operator is not satisfied with how the README renders projects and their members; the layout is to be decided | [`board-projects-layout`](design-board-projects-layout.md) | 2d<br>2d | board |
 | E6 |  | **Board README: one rendered file per project, research notes first**<br>• Each project renders its own file linked from its parent; README.md is the root project; research notes come right after tasks | [`readme-per-project-files`](design-readme-per-project-files.md) | 1d<br>1d | board |
 | E7 |  | **Run verbs in one shared namespace, not under lym loom**<br>• lym loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 12d<br>4h | shed, loom |
@@ -76,7 +75,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 2w<br>4h | burler, stencil |
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 12d<br>12d | board, loom |
 | E11 |  | **Loom and darn Finalize resolve a moved parent themselves instead of rerouting** | [`loom-finalize-merges-itself`](design-loom-finalize-merges-itself.md) | 1d<br>23h | loom, batten |
-| E12 |  | **Adopt machine check: a gate key of its own, and visible while it runs**<br>• Adopt runs its machine check silently in the background under the finalize gate key | [`adopt-check-visible`](design-adopt-check-visible.md) | 1d<br>4h | gate, board |
 | E13 |  | **VS Code colours by project and worktree, and lym ide seed with no slug**<br>• Title bar shows the project (prime or beam), the activity bar the worktree; text colour by luminance; ide seed with no slug seeds the current worktree | [`ide-seed-current-worktree`](design-ide-seed-current-worktree.md) | 5h<br>4h | ide, workspaces |
 | E14 |  | **No test is skipped by design**<br>• Windows-only tests count as skips on Linux, and TestBuildLoomShed_OutputShape skips on every machine | [`test-skips-os-tags`](design-test-skips-os-tags.md) | 1d<br>1d | testkit, reed, loom, fabric, gate |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 9d<br>4h | webster, fabric, loom |
