@@ -1,6 +1,6 @@
 # A gate test writes trace logs into the live hub and Bolt commits them
 
-`test-logs-leak-into-bolt` · Task · bug, gate, board, testkit · running · Code-Burler-Fix
+`test-logs-leak-into-bolt` · Task · bug, gate, board, testkit · running · Code-Bouncer
 
 ## Seen
 
