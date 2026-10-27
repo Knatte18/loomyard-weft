@@ -30,7 +30,7 @@ The hold notice goes to the prime orch (`orchcli.NotifyPrime`), while the parent
 
 This stage replaces paths that work today, so it stays a note, which never starts, until creel has proven itself; the operator then promotes it.
 When promoted, it depends on `creel-notices` and `engine-config-seams`.
-Operator decision (2026-10-25): it also waits until note `creel-carry-agent-mail`'s hook delivery at the tool boundary has been tested on its own.
+Operator decision (2026-10-27): it also waits until the operator has seen creel's hook delivery at the tool boundary (task `creel-hook-delivery`, built for Claude strands) reach a working agent mid-turn in a real run.
 
 ## Reply discipline (folded in from note `creel-reply-discipline`, operator decision 2026-10-17)
 
