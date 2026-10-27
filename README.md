@@ -32,13 +32,20 @@ grouping
 
 Concrete and claimable; only a task can run.
 
-### Ready (2)
+### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Bench the forked Codex Astra fan with the Claude reviewers context**<br>• Forked Astra fan, high, on P4, with the PATTERN overview inlined and CLAUDE.md as AGENTS.md<br>• `profile: docs` | [`codex-astra-context-parity-bench`](design-codex-astra-context-parity-bench.md) | darn | Worktree-Create | neve | 0m<br>0m | codex, burler |
+
+### Ready (1)
 
 Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Bench the forked Codex Astra fan with the Claude reviewers context**<br>• Forked Astra fan, high, on P4, with the PATTERN overview inlined and CLAUDE.md as AGENTS.md<br>• `profile: docs` | [`codex-astra-context-parity-bench`](design-codex-astra-context-parity-bench.md) | darn |  | 0m<br>0m | codex, burler |
 | T2 | **Bench the forked Codex Astra fan with a Codex-tuned reviewer prompt**<br>• Context parity plus a prompt block asking for code, PATTERN-background and test reads, Astra high, on P4<br>• `profile: docs` | [`codex-astra-tuned-prompt-bench`](design-codex-astra-tuned-prompt-bench.md) | darn |  | 0m<br>0m | codex, burler |
 
 ## Notes (47)
