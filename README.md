@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-27 11:21 UTC; every age below is as of then.
+Rendered 2026-10-27 11:26 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -38,7 +38,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Bench a Codex Astra fan with real forks at high effort on one plan**<br>• One codex exec handler spawning 3 lens forks with fork_turns=all, Astra high, on P4<br>• `profile: docs` | [`codex-astra-fork-fan-bench`](design-codex-astra-fork-fan-bench.md) | darn | Darn-Write | neve | 13m<br>13m | codex, burler |
+| T1 | **Bench a Codex Astra fan with real forks at high effort on one plan**<br>• One codex exec handler spawning 3 lens forks with fork_turns=all, Astra high, on P4<br>• `profile: docs` | [`codex-astra-fork-fan-bench`](design-codex-astra-fork-fan-bench.md) | darn | Drift-Verify | neve | 18m<br>18m | codex, burler |
 
 ### Ready (0)
 
