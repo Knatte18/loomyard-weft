@@ -1,6 +1,6 @@
 # Markdown link guard skips the verbatim data of research reports
 
-`docs-link-skip-bench-data` · Task · bug, testkit · draft
+`docs-link-skip-bench-data` · Task · bug, testkit
 
 ## Seen (2026-10-27)
 
