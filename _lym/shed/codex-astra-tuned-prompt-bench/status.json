@@ -1,12 +1,12 @@
 {
-  "current_producer": "Run-Shed",
-  "state": "failed",
-  "error": "battencli: cannot resume \"codex-astra-tuned-prompt-bench\": branch codex-astra-tuned-prompt-bench is rewound against origin; origin rewound codex-astra-tuned-prompt-bench to 9ae8932df74ade330bf534d573c31c82412ad950, dropping 1616b178569c3ef5f9c22feacd8d9830e8f18e30; to accept the rewind, run `git reset --keep 9ae8932df74ade330bf534d573c31c82412ad950` in /home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-prompt-bench, which drops the local commits past origin's head, then `lym fabric push` there; to restore the dropped commits, run `git push origin codex-astra-tuned-prompt-bench` in /home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-prompt-bench, a plain fast-forward; then re-run lym batten run codex-astra-tuned-prompt-bench",
+  "current_producer": "Land",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Run-Shed",
-    "last": "Open-IDE → skipped",
-    "wait": "battencli: cannot resume \"codex-astra-tuned-prompt-bench\": branch codex-astra-tuned-prompt-bench is rewound against origin; origin rewound codex-astra-tuned-prompt-bench to 9ae8932df74ade330bf534d573c31c82412ad950, dropping 1616b178569c3ef5f9c22feacd8d9830e8f18e30; to accept the rewind, run `git reset --keep 9ae8932df74ade330bf534d573c31c82412ad950` in /home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-prompt-bench, which drops the local commits past origin's head, then `lym fabric push` there; to restore the dropped commits, run `git push origin codex-astra-tuned-prompt-bench` in /home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-prompt-bench, a plain fast-forward; then re-run lym batten run codex-astra-tuned-prompt-bench"
+    "now": "Land",
+    "last": "Run-Shed → done",
+    "wait": ""
   },
   "history": [
     {
@@ -39,6 +39,21 @@
       "output": "",
       "at": "2026-10-27T12:13:04Z",
       "reason": "batten.open_ide = false"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → done at Friction-Reflect",
+      "at": "2026-10-27T12:36:57Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "by": "shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-27T12:36:58Z"
     }
   ]
 }
