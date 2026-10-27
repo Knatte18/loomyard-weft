@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-27 15:16 UTC; every age below is as of then.
+Rendered 2026-10-27 15:17 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -38,11 +38,11 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Darn runs Drift-Await after Drift-Baseline instead of a waiting capture** | [`darn-drift-await-row`](design-darn-drift-await-row.md) | darn | Darn-Write | neve | 1d<br>10m | shed, loom |
-| T2 | **Dobby survives deploys, logs changes only, tidies per owner; a visible adopt check**<br>• Fix the dobby re-exec exit, bound its log, count tidies per owner, give the adopt check its own gate key and visible progress | [`dobby-and-adopt-hardening`](design-dobby-and-adopt-hardening.md) | loom | Discussion-Burler-Review | neve | 1d<br>51m | workspaces, batten, gate, board |
-| T3 | **A gate test writes trace logs into the live hub and Bolt commits them**<br>• trace-*.log from a run gate test landed in _board/.lym/logs and board sync committed them | [`test-logs-leak-into-bolt`](design-test-logs-leak-into-bolt.md) | darn | Code-Burler-Fix | neve | 4h<br>51m | gate, board, testkit |
-| T4 | **A read creates directories: state.ReadJSON mkdirs, so a hub reader leaves a real _lym in a half-built pair** | [`hub-reader-creates-lym`](design-hub-reader-creates-lym.md) | darn | Finalize | neve | 1d<br>51m | fabric, orch, batten |
-| T5 | **Creel delivers mail to a working Claude strand at its next tool boundary through a PostToolUse hook** | [`creel-hook-delivery`](design-creel-hook-delivery.md) | darn | Darn-Write | neve | 2m<br>2m | creel, claude |
+| T1 | **Darn runs Drift-Await after Drift-Baseline instead of a waiting capture** | [`darn-drift-await-row`](design-darn-drift-await-row.md) | darn | Darn-Write | neve | 1d<br>11m | shed, loom |
+| T2 | **Dobby survives deploys, logs changes only, tidies per owner; a visible adopt check**<br>• Fix the dobby re-exec exit, bound its log, count tidies per owner, give the adopt check its own gate key and visible progress | [`dobby-and-adopt-hardening`](design-dobby-and-adopt-hardening.md) | loom | Discussion-Burler-Fix | neve | 1d<br>52m | workspaces, batten, gate, board |
+| T3 | **A gate test writes trace logs into the live hub and Bolt commits them**<br>• trace-*.log from a run gate test landed in _board/.lym/logs and board sync committed them | [`test-logs-leak-into-bolt`](design-test-logs-leak-into-bolt.md) | darn | Code-Burler-Fix | neve | 4h<br>52m | gate, board, testkit |
+| T4 | **A read creates directories: state.ReadJSON mkdirs, so a hub reader leaves a real _lym in a half-built pair** | [`hub-reader-creates-lym`](design-hub-reader-creates-lym.md) | darn | Finalize | neve | 1d<br>52m | fabric, orch, batten |
+| T5 | **Creel delivers mail to a working Claude strand at its next tool boundary through a PostToolUse hook** | [`creel-hook-delivery`](design-creel-hook-delivery.md) | darn | Darn-Write | neve | 3m<br>2m | creel, claude |
 
 ### Ready (0)
 
@@ -67,8 +67,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Beam promote keeps the Discussion record as part of the beam**<br>• When Discussion finds a task should be a project, promote carries its decision record into the beam instead of dropping it | [`beam-promote-keeps-discussion`](design-beam-promote-keeps-discussion.md) | 2d<br>5h | workspaces, batten, loom |
 | E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>2m | shuttle, codex |
-| E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 4m<br>4m | batten, stencil, config |
-| E5 |  | **Decide the layout of projects in the board README**<br>• The operator is not satisfied with how the README renders projects and their members; the layout is to be decided | [`board-projects-layout`](design-board-projects-layout.md) | 2d<br>51m | board |
+| E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 5m<br>5m | batten, stencil, config |
+| E5 |  | **Decide the layout of projects in the board README**<br>• The operator is not satisfied with how the README renders projects and their members; the layout is to be decided | [`board-projects-layout`](design-board-projects-layout.md) | 2d<br>52m | board |
 | E6 |  | **Board README: one rendered file per project, research notes first**<br>• Each project renders its own file linked from its parent; README.md is the root project; research notes come right after tasks | [`readme-per-project-files`](design-readme-per-project-files.md) | 1d<br>2m | board |
 | E7 |  | **Run verbs in one shared namespace, not under lym loom**<br>• lym loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 12d<br>5h | shed, loom |
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 2w<br>5h | burler, stencil |
