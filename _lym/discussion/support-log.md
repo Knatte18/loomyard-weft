@@ -50,12 +50,23 @@ Picked: the reconcile migration copies a tuned `finalize` value into a missing `
 
 ## Review rounds
 
-_No rounds yet._
+- Round 1, APPROVED with three MEDIUM findings and twelve LOW or NIT ones, all fixed in the record.
+  The exits before `Run` gained their lines (Decision 3), the adopt check gained a lock of its own and a hub reconcile before it reads its key (Decision 10), and the re-exec and dead-check tests gained start ticks beside the pid (Decisions 2, 11).
+  The fresh dobby's unregistered window was bounded rather than closed by moving the wiring after the lock, and a dobby that escapes a teardown now exits at a probe tick that finds its worktree gone (Decision 1).
+  The fixer's self-check made the adopt check fail on a failed reconcile rather than warn and go on, and made a record without start ticks read as a re-exec for the first deploy of this change.
+- Round 2, APPROVED with six MEDIUM findings and seven LOW or NIT ones, all fixed in the record.
+  A `placeDobby` refusal after the worktree resolves and a fatal `Run` error after a re-exec gained their line and post (Decision 3), and the worktree-gone exit writes to the prime's log and stops a tidy in flight (Decision 1).
+  `recordStart` and every pid writer share the start-ticks re-exec test (Decision 2), and the dobby moves inherited fds onto `dobby.out`, which the lock holder rotates where `selfexec` execs and a spawner that reads the lock free rotates on Windows (Decision 5).
+  The adopt check's own output goes to `check.out` (Decision 10).
+  Foreign landings already queued are cleared by a one-time emptying of `LandedSinceTidy` rather than a per-count drop, since run cleanup removes run directories (Decision 8).
+- Round 3, APPROVED with one MEDIUM finding and two LOW ones, all fixed in the record.
+  The worktree-gone exit tests the worktree's `.git` link at every loop iteration, since the dobby's own state access recreates a removed root, and keeps the tidy of the last tick that ended with the link present (Decision 1).
+  The re-exec test is named once, counting a record without start ticks as a re-exec for the lock wait and the notices (Decision 2), and the Windows spawner's `dobby.out` rotation is named as the one exception to the lock-holder rule (Decision 5).
 
 ## Question ledger
 
 - Fix for the re-exec exit — auto-pick: drop the pre-check, graced lock in `Run`, register after the lock, ten-second wait for a re-exec; resolved (Decisions 1, 2).
-- Orch notices for dobby exits — auto-pick: failed exec and refused re-exec start only; resolved (Decision 3).
+- Orch notices for dobby exits — auto-pick: failed exec, refused re-exec start, and a wiring failure, a `placeDobby` refusal or a fatal `Run` error after a re-exec only; resolved (Decision 3).
 - Pre-exec log line — auto-pick: a callback form of `selfexec.Watcher.Check`; resolved (Decision 3).
 - Log mechanism — auto-pick: fixed `dobby.log` written by the seam, 1 MiB rotation to one previous file, raw output to `dobby.out`; resolved (Decision 5).
 - Logged events and heartbeat — auto-pick: the entry's list, failing pass once per episode, ten-minute heartbeat as a constant; resolved (Decision 6).
