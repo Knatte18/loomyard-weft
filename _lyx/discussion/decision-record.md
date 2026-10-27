@@ -34,6 +34,12 @@ Decision: Remove the empty, untracked cmd/lyx directory the git mv left on disk,
 
 Rationale: The failure is 'no Go files in cmd/lyx' from a leftover empty directory, not from the rename itself; the old gate's stat check skips the prebuild once the directory is gone.
 
+### Added after Discussion (parent, 2026-10-27): Keep the comment reflow in the rename
+
+Decision: The reflow of the comment blocks the rename touched, made with tools/godocreflow so that each comment has one sentence per line, stays in this run's diff. It changes line breaks only, never words, and is in scope.
+
+Rationale: Operator, 2026-10-27: keep them; agents keep getting these line breaks wrong, so fixing them now is welcome.
+
 ## Constraints
 
 - PATTERN entries that name renamed packages or variables are renamed by the same script, with their background files.
