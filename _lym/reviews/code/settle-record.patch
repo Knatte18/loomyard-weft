@@ -1,0 +1,1387 @@
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/context-hashes.txt b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/context-hashes.txt
+new file mode 100644
+index 00000000..68b73036
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/context-hashes.txt
+@@ -0,0 +1,5 @@
++53db14071cc6f8d2 AGENTS.md
++53db14071cc6f8d2 CLAUDE.md
++4561518c3453800e PATTERN.md
++b01ae3bd0b21fd5a block-v2-gap.md
++2a417e8389136273 block-v2.md (earlier bench)
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/harness/build-fan.sh b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/harness/build-fan.sh
+new file mode 100755
+index 00000000..73c38519
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/harness/build-fan.sh
+@@ -0,0 +1,107 @@
++#!/usr/bin/env bash
++# Stage the fan prompts over an input that build.sh already built: build-fan.sh <id>
++# Writes work/.bench/instr/step-1-explore-fan.md, step-2-review-fan.md, one lens-<name>.prompt.md per lens and handler.prompt.md.
++set -euo pipefail
++ROOT=/home/knatte/Code/loomyard-LYMHUB/codex-p2-gap-texts-bench
++id=$1
++code=$(grep -o 'code=[0-9a-f]*' "$ROOT/.scratch/bench/inputs/$id/meta.txt" | cut -d= -f2)
++in=$ROOT/.scratch/bench/inputs/$id
++W=$in/work
++fan=$in/fan
++rm -rf "$fan"; mkdir -p "$fan"
++LENSES="affected-set guard-reach way-forward"
++
++strip() { local s; s=$(<"$1"); [ "${s:0:4}" = '<!--' ] && s=${s#*-->}; printf '%s\n' "${s#"${s%%[![:space:]]*}"}"; }
++
++# The pre-read the forks inherited from the handler in round 1.
++git -C $ROOT show $code:contracts/stencils/burler/burler-fork-reading.md > "$fan/fork-reading.raw"
++reading=$(strip "$fan/fork-reading.raw")
++{ cat "$W/.bench/instr/step-1-explore.md"; printf '\n%s\n' "$reading"; } > "$W/.bench/instr/step-1-explore-fan.md"
++
++# A lens's text is its block in the template at the code commit, 4-space indent removed.
++git -C $ROOT show $code:internal/lenses/template.yaml > "$fan/template.yaml"
++lens_text() {
++  awk -v n="  $1: |" '$0==n {on=1; next} on && /^  [a-z-]+: \|/ {exit} on && /^[a-z]+:/ {exit} on {sub(/^    /,""); print}' "$fan/template.yaml"
++}
++
++
++# The gap study's proposals 1, 2 and 4, each sentence word for word from docs/research/claude-review-gaps-2026-10-27/report.md.
++# Each patch replaces the lens's closing `Your list` sentence and fails when the template's text is not the expected one.
++patch_guard_reach() {
++  local t; t=$(<"$1")
++  local old=$'Your list: per guard, reachable or\nnot.'
++  [ "${t%"$old"}" != "$t" ] || { echo "guard-reach tail anchor missing" >&2; exit 1; }
++  t=${t%"$old"}
++  printf '%s%s\n' "$t" "Find the recurrences by a search for the callers of the guarded function, and treat each command, hook and pre-run that calls it, and each environment variable or flag that turns the guarded step off, as an entry point. For a value a card copies or captures, say when it is assigned and when the copy runs, and check that the copy comes later. For each check a card prescribes in text, such as a regex, comparison, threshold, refusal or verify line, run it by hand on the nearest input that must not pass and the nearest that must, and follow the input of the card's test row through every loader, filler and validator that runs before the check, to the first that rejects, rewrites or drops it. Your list: per guard, the entry points that reach the guarded site and which of them the guard covers." > "$1"
++}
++patch_way_forward() {
++  local t; t=$(<"$1")
++  local old=$'Your list: per refusal, the next step, progresses or not.'
++  [ "${t%"$old"}" != "$t" ] || { echo "way-forward tail anchor missing" >&2; exit 1; }
++  t=${t%"$old"}
++  printf '%s%s\n' "$t" "For each way forward, read the code of the command it names as it runs from the state the refusal leaves, including how it resolves a layer or scope and which gates or holds it waits behind. Read the whole text the operator sees, including any text the card appends to or takes from an existing error, and check that no sentence in it names a competing next step. Your list: per refusal, the final text, the next step, and the first precondition that fails or none." > "$1"
++}
++
++for l in $LENSES; do
++  lens_text "$l" > "$fan/lens-$l.text"
++  case "$l" in
++    guard-reach) patch_guard_reach "$fan/lens-$l.text";;
++    way-forward) patch_way_forward "$fan/lens-$l.text";;
++  esac
++  [ -s "$fan/lens-$l.text" ] || { echo "no text for lens $l" >&2; exit 1; }
++  cat > "$fan/lens-$l.prompt.md" <<PROMPT
++# Burler — fork reviewer
++
++You are one fork reviewer of a fanned plan-review round, and you own one lens; the other forks own the other lenses, and a handler reviews holistically afterwards.
++
++Read \`$W/.bench/instr/step-1-explore-fan.md\` and do what it directs: it names the target, the fasit and the rubric, and ends with the reading to do.
++Do that reading, then work your lens's procedure and start your final message with the list your lens asks for.
++Report every finding your lens's procedure produces and nothing outside it, because the other lenses and the handler cover the rest.
++Judge nothing while you read, and review only after the reading is done.
++You are READ-ONLY: never write, edit or delete any file, run only commands that read, never touch \`$W/.bench/out\`, and never start another agent.
++Return your findings ONLY as your final message, each with a severity (\`BLOCKING\`, \`MEDIUM\`, \`LOW\` or \`NIT\`), a class (\`design\`, \`scope\`, \`decision\` or \`consistency\`), a location, a one-line summary and the file and line of the evidence you read.
++
++Your lens: $l
++$(cat "$fan/lens-$l.text")
++PROMPT
++done
++
++# The handler's review step: the fan cluster rules with the forks already returned.
++lens_list=""
++for l in $LENSES; do lens_list+="- $l: $(cat "$fan/lens-$l.text")"$'\n'; done
++lens_files=""
++for l in $LENSES; do lens_files+="- \`$W/.bench/lens/$l.md\`: the final message of the \`$l\` fork"$'\n'; done
++cluster=$(cat <<CLUSTER
++This is a cluster round. The fork reviewers have already run, one per lens listed here, and each returned its findings as its final message.
++
++Lenses for this round:
++
++$lens_list
++The forks' final messages are these files, which you read once your reading in step 1 is done:
++
++$lens_files
++You do not spawn any fork: the results are in those files.
++
++Do your own HOLISTIC review: what no lens owns, such as the target against its fasit and its board entry, the rubric's leanness and relocation rules, architecture and PATTERN-fit, reading further only where your review needs it.
++Then prepare the ground truths and the severity rubric you will judge every finding against.
++Write nothing to the review file until you have read all three fork reports and finished your own holistic review: consolidate with every finding in view.
++
++Consolidation: judge every fork finding and your own holistic findings with EQUAL skepticism, dedup findings that describe the same defect across lenses, tag every kept finding's frontmatter with an \`origin:\` key (\`lens:<name>\` or \`handler\`), move false positives to a \`## Rejected\` prose section below the frontmatter with a one-line reason each (a rejected item never appears in \`findings:\`), and order kept findings by severity.
++The consolidated review is the ONE review file, and the review is complete once it is fully written to disk — consolidation is part of the review, not a separate step after it.
++CLUSTER
++)
++git -C $ROOT show $code:contracts/stencils/burler/burler-step-review.md > "$fan/step-review.raw"
++review=$(strip "$fan/step-review.raw")
++review_path=$W/.bench/out/review.md
++fill() { local t=$1; shift; for kv in "$@"; do t=${t//"{{.${kv%%=*}}}"/"${kv#*=}"}; done; printf '%s' "$t"; }
++review=$(fill "$review" "cluster_rules=$cluster" "review_path=$review_path" \
++  "review_format_path=$W/.bench/instr/review-format.md" "prior_rounds=This is the first round — no prior round files exist.")
++printf '%s\n' "$review" > "$W/.bench/instr/step-2-review-fan.md"
++
++git -C $ROOT show $code:contracts/stencils/burler/burler-template-reviewer.md > "$fan/reviewer.raw"
++prompt=$(strip "$fan/reviewer.raw")
++prompt=$(fill "$prompt" "parent_directive=" "edit_directive=" "review_path=$review_path" \
++  "instruction_1_path=$W/.bench/instr/step-1-explore-fan.md" "instruction_2_path=$W/.bench/instr/step-2-review-fan.md")
++printf '%s\n' "$prompt" > "$fan/handler.prompt.md"
++if grep -l '{{' "$fan"/*.prompt.md "$W"/.bench/instr/*.md; then echo "leftover placeholder" >&2; exit 1; fi
++ls "$fan"
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/harness/build-forkfan.sh b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/harness/build-forkfan.sh
+new file mode 100755
+index 00000000..6da5b42d
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/harness/build-forkfan.sh
+@@ -0,0 +1,53 @@
++#!/usr/bin/env bash
++# Stage the fork-fan handler prompt over an input that build.sh and build-fan.sh already built: build-forkfan.sh <id>
++# Writes work/.bench/instr/step-2-review-forkfan.md and fan/handler-fork.prompt.md.
++# The cluster rules are burler-cluster-fan.md with its Agent-tool wording turned into Codex's spawn_agent with fork_turns="all";
++# the boilerplate keeps the inherited-context sentence and the tool-call cap.
++set -euo pipefail
++ROOT=/home/knatte/Code/loomyard-LYMHUB/codex-p2-gap-texts-bench
++id=$1
++code=$(grep -o 'code=[0-9a-f]*' "$ROOT/.scratch/bench/inputs/$id/meta.txt" | cut -d= -f2)
++in=$ROOT/.scratch/bench/inputs/$id
++W=$in/work
++fan=$in/fan
++LENSES="affected-set guard-reach way-forward"
++
++strip() { local s; s=$(<"$1"); [ "${s:0:4}" = '<!--' ] && s=${s#*-->}; printf '%s\n' "${s#"${s%%[![:space:]]*}"}"; }
++fill() { local t=$1; shift; for kv in "$@"; do t=${t//"{{.${kv%%=*}}}"/"${kv#*=}"}; done; printf '%s' "$t"; }
++
++git -C $ROOT show $code:contracts/stencils/burler/burler-cluster-fan.md > "$fan/cluster-fan.raw"
++cluster=$(strip "$fan/cluster-fan.raw")
++lens_list=""
++for l in $LENSES; do lens_list+="- $l: $(cat "$fan/lens-$l.text")"$'\n'; done
++cluster=$(fill "$cluster" "lens_list=$lens_list")
++# Claude's spawn mechanics become Codex's.
++cluster=${cluster//'via the Agent tool with `subagent_type: "fork"`, one per lens listed here — never pass a `name` (named forks silently lose inherited context).'/'by calling your `spawn_agent` tool once per lens listed here, so the forks run in parallel, each with `fork_turns` set to `"all"` so it inherits your context; never pass a name, a model or an effort for a fork, so each fork keeps your own.'}
++cluster=${cluster//'and never call the Agent tool.'/'and never spawn another agent.'}
++cluster=${cluster//'run only git commands that read, such as `git diff`, `git log` or `git show`, and never one that changes the repository, its index, its refs or its working tree,'/'run only commands that read,'}
++cluster=${cluster//'The consolidated review is the ONE review file'/'Wait for every fork with your wait tool before you consolidate.'$'\n''The consolidated review is the ONE review file'}
++# Block v2, written once in data/prompts/block-v2-gap.md, goes into the fork boilerplate as one line and onto the handler prompt.
++BLOCK=$ROOT/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/prompts/block-v2-gap.md
++block_line=$(tail -n +3 "$BLOCK" | sed 's/^- //' | tr '\n' ' ' | sed 's/ $//')
++cluster=${cluster//"Work your lens's procedure, and start"/"Reading for this review: $block_line Work your lens's procedure, and start"}
++# The only other change to the boilerplate: the per-fork tool-call cap.
++cluster=${cluster//"at most 6 tool calls"/"at most 20 tool calls"}
++cluster=${cluster//"one hop beyond it"/"beyond it along the input's path"}
++if ! grep -q "beyond it along the input's path" <<<"$cluster" || grep -q "one hop beyond it" <<<"$cluster"; then echo "hop anchor missing" >&2; exit 1; fi
++if ! grep -q "at most 20 tool calls" <<<"$cluster" || grep -q "at most 6 tool calls" <<<"$cluster"; then echo "cap sentence anchor missing" >&2; exit 1; fi
++if ! grep -q 'Reading for this review' <<<"$cluster"; then echo "boilerplate anchor missing" >&2; exit 1; fi
++if grep -q 'Agent tool\|subagent_type' <<<"$cluster"; then echo "unconverted Agent wording" >&2; exit 1; fi
++
++git -C $ROOT show $code:contracts/stencils/burler/burler-step-review.md > "$fan/step-review.raw"
++review=$(strip "$fan/step-review.raw")
++review_path=$W/.bench/out/review.md
++review=$(fill "$review" "cluster_rules=$cluster" "review_path=$review_path" \
++  "review_format_path=$W/.bench/instr/review-format.md" "prior_rounds=This is the first round — no prior round files exist.")
++printf '%s\n' "$review" > "$W/.bench/instr/step-2-review-forkfan.md"
++
++git -C $ROOT show $code:contracts/stencils/burler/burler-template-reviewer.md > "$fan/reviewer.raw"
++prompt=$(strip "$fan/reviewer.raw")
++prompt=$(fill "$prompt" "parent_directive=" "edit_directive=" "review_path=$review_path" \
++  "instruction_1_path=$W/.bench/instr/step-1-explore-fan.md" "instruction_2_path=$W/.bench/instr/step-2-review-forkfan.md")
++{ printf "%s\n" "$prompt"; printf "\n"; cat "$BLOCK"; } > "$fan/handler-fork.prompt.md"
++if grep -l '{{' "$fan/handler-fork.prompt.md" "$W/.bench/instr/step-2-review-forkfan.md"; then echo "leftover placeholder" >&2; exit 1; fi
++echo ok
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/harness/build.sh b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/harness/build.sh
+new file mode 100755
+index 00000000..36527ee4
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/harness/build.sh
+@@ -0,0 +1,98 @@
++#!/usr/bin/env bash
++# Stage one bench input: code snapshot, artifacts, era stencils and the assembled reviewer prompt.
++# usage: build.sh <id> <kind: discussion|plan> <weft-commit> <code-commit>
++set -euo pipefail
++ROOT=/home/knatte/Code/loomyard-LYMHUB/codex-p2-gap-texts-bench
++WEFT=/home/knatte/Code/loomyard-LYMHUB/loomyard-weft
++id=$1 kind=$2 wc=$3 code=$4
++dir=$ROOT/.scratch/bench/inputs/$id
++rm -rf "$dir"
++mkdir -p "$dir/work"
++
++start=$(git -C $WEFT show $wc:_lyx/reviews/$kind/round-1-usage.yaml | grep -m1 'start:' | tr -s ' ' | cut -d' ' -f3)
++echo "$id $kind weft=$wc start=$start code=$code" > "$dir/meta.txt"
++
++git -C $ROOT archive "$code" | tar -x -C "$dir/work"
++mkdir -p "$dir/work/_lyx/discussion"
++if [ "$kind" = discussion ]; then
++  for f in $(git -C $WEFT ls-tree --name-only $wc _lyx/discussion/ | grep -vE 'support-log\.lens-'); do
++    git -C $WEFT show $wc:$f > "$dir/work/$f"
++  done
++else
++  git -C $WEFT show $wc:_lyx/discussion/decision-record.md > "$dir/work/_lyx/discussion/decision-record.md"
++  mkdir -p "$dir/work/_lyx/plan"
++  for f in $(git -C $WEFT ls-tree -r --name-only $wc _lyx/plan/ | grep -v '/archive-'); do
++    mkdir -p "$dir/work/$(dirname $f)"
++    git -C $WEFT show $wc:$f > "$dir/work/$f"
++  done
++fi
++
++# Hub-style specs and stencils dirs, from the snapshot's own era.
++bench=$dir/work/.bench
++mkdir -p "$bench/specs/loom" "$bench/stencils" "$bench/instr" "$bench/out"
++cp "$dir"/work/contracts/specs/*.md "$bench/specs/" 2>/dev/null || true
++for f in "$dir"/work/contracts/specs/loom-*.md; do cp "$f" "$bench/specs/loom/${f##*/loom-}"; cp "$f" "$bench/specs/loom/$(basename $f)"; done
++cp -r "$dir"/work/contracts/stencils/* "$bench/stencils/"
++
++strip() { local s; s=$(<"$1"); [ "${s:0:4}" = '<!--' ] && s=${s#*-->}; printf '%s\n' "${s#"${s%%[![:space:]]*}"}"; }
++fill() { # fill <text> key=value...
++  local t=$1; shift
++  for kv in "$@"; do t=${t//"{{.${kv%%=*}}}"/"${kv#*=}"}; done
++  printf '%s' "$t"
++}
++
++W=$dir/work
++review_path=$W/.bench/out/review.md
++rubric=$(strip "$bench/stencils/loom/loom-rubric-$kind-review.md")
++rubric=$(fill "$rubric" "specs_dir=$bench/specs" "stencils_dir=$bench/stencils" "amendment=none" "webster_record=none" "gate_tiers=none")
++
++if [ "$kind" = discussion ]; then
++  target="- \`$W/_lyx/discussion/decision-record.md\`
++- \`$W/_lyx/discussion/support-log.md\`"
++  fasit="The authority for this round is the rubric supplied in the prompt. The mechanical section contract over the discussion artifact pair is already enforced by this round's own gate over this round's own output, so re-deriving it here is duplicated work."
++else
++  target="- \`$W/_lyx/plan\` (a directory — everything under it)"
++  fasit="- \`$W/_lyx/discussion/decision-record.md\`
++
++The decision record named above is the answer key: the plan's job is to implement the decisions and constraints it settles. With no rework generation, the decision record alone is the answer key. The format authority is $bench/specs/loom/loom-plan-spec.md, and the mechanical checks over that format are already enforced by this round's own gate over this round's own output, so re-deriving them here is duplicated work. This round may never write the approved: key in the plan's overview file."
++fi
++
++focus=""
++if git -C $WEFT cat-file -e $wc:_lyx/reviews/$kind/round-1-focus.md 2>/dev/null; then
++  git -C $WEFT show $wc:_lyx/reviews/$kind/round-1-focus.md > "$W/.bench/instr/focus.md"
++  focus=$(fill "$(strip "$bench/stencils/burler/burler-focus-directive.md")" "focus_path=$W/.bench/instr/focus.md")
++  echo focus=yes >> "$dir/meta.txt"
++else
++  echo focus=no >> "$dir/meta.txt"
++fi
++
++# The PATTERN directive a production burler reviewer gets: the review-fix stencil filled with PATTERN.md and the record's declared changes.
++declared=$(awk '/^## /{on=($0=="## PATTERN changes")} on && /^- `PATTERN-/' "$W/_lyx/discussion/decision-record.md")
++changes=""
++if [ -n "$declared" ]; then
++  changes=$(fill "$(strip "$bench/stencils/pattern/pattern-fragment-changes.md")" "pattern_change_list=$declared")
++fi
++directive=$(fill "$(strip "$bench/stencils/pattern/pattern-directive-review-fix.md")" "pattern_overview=$(<"$W/PATTERN.md")" "pattern_changes=$changes")
++# Codex loads AGENTS.md from the working directory as a Claude session loads CLAUDE.md.
++cp "$W/CLAUDE.md" "$W/AGENTS.md"
++
++explore=$(strip "$bench/stencils/burler/burler-step-1-explore.md")
++explore=$(fill "$explore" "pattern_directive=$directive" "focus_directive=$focus" "target=$target" "fasit=$fasit" "rubric=$rubric" \
++  "tool_use_rules=Read-only analysis in the explore and review steps: read files, run nothing." "fork_reading=")
++printf '%s\n' "$explore" > "$W/.bench/instr/step-1-explore.md"
++
++review=$(strip "$bench/stencils/burler/burler-step-review.md")
++review=$(fill "$review" "cluster_rules=$(strip "$bench/stencils/burler/burler-cluster-solo.md")" "review_path=$review_path" \
++  "review_format_path=$W/.bench/instr/review-format.md" "prior_rounds=This is the first round — no prior round files exist.")
++printf '%s\n' "$review" > "$W/.bench/instr/step-2-review.md"
++strip "$bench/stencils/burler/burler-review-format.md" > "$W/.bench/instr/review-format.md"
++
++prompt=$(strip "$bench/stencils/burler/burler-template-reviewer.md")
++prompt=$(fill "$prompt" "parent_directive=" "edit_directive=" "review_path=$review_path" \
++  "instruction_1_path=$W/.bench/instr/step-1-explore.md" "instruction_2_path=$W/.bench/instr/step-2-review.md")
++printf '%s\n' "$prompt" > "$dir/prompt.md"
++cat "$dir/meta.txt"
++if grep -l '{{' "$dir/prompt.md" "$W"/.bench/instr/*.md; then
++  echo "leftover placeholder in the files above" >&2
++  exit 1
++fi
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/harness/dump.sh b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/harness/dump.sh
+new file mode 100755
+index 00000000..e2a00ec7
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/harness/dump.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++# dump.sh <file>: one line per finding from the frontmatter.
++id= sev= cls= loc= 
++while IFS= read -r line; do
++  case "$line" in
++    "  - id: "*) [ -n "$id" ] && echo "$id $sev $cls $loc | $sum"; id=${line#  - id: }; sev=;cls=;loc=;sum=;;
++    "    severity: "*) sev=${line#    severity: };;
++    "    class: "*) cls=${line#    class: };;
++    "    location: "*) loc=${line#    location: };;
++    "    summary: "*) sum=${line#    summary: };;
++    "---") [ -n "$id" ] && [ -n "$sum" ] && { echo "$id $sev $cls $loc | $sum"; id=; }; ;;
++  esac
++done < "$1"
++[ -n "$id" ] && echo "$id $sev $cls $loc | $sum"
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/harness/evidence.sh b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/harness/evidence.sh
+new file mode 100644
+index 00000000..ad744ba0
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/harness/evidence.sh
+@@ -0,0 +1,21 @@
++#!/usr/bin/env bash
++# evidence.sh <run-cell-dir>: one line per rollout of a run: id, parent, start, end, own commands, first request and last total, weekly window.
++# A fork's own commands are its custom_tool_call count less the handler's calls made before the fork's start.
++cell=$1
++handler=$(grep -L forked_from_id "$cell"/rollouts/*.jsonl | head -1)
++ncalls() { grep -c '"payload":{"type":"custom_tool_call"' "$1"; }
++first_ts() { head -1 "$1" | grep -o '"timestamp":"[^"]*"' | head -1 | cut -d'"' -f4; }
++last_ts() { tail -1 "$1" | grep -o '"timestamp":"[^"]*"' | head -1 | cut -d'"' -f4; }
++tot() { grep '"token_count"' "$1" | tail -1 | grep -o '"total_token_usage":{[^}]*}'; }
++first() { grep '"token_count"' "$1" | grep -o '"last_token_usage":{[^}]*}' | head -1; }
++for f in "$cell"/rollouts/*.jsonl; do
++  id=$(basename "$f" .jsonl | cut -c37-)
++  parent=$(head -c 4000 "$f" | grep -o '"forked_from_id":"[^"]*"' | head -1 | cut -d'"' -f4)
++  start=$(first_ts "$f")
++  n=$(ncalls "$f")
++  if [ -n "$parent" ]; then
++    inherited=$(awk -v s="$start" '/"payload":{"type":"custom_tool_call"/ { match($0,/"timestamp":"[^"]*"/); t=substr($0,RSTART+13,RLENGTH-14); if (t < s) c++ } END {print c+0}' "$handler")
++    own=$((n-inherited))
++  else own=$n; inherited=0; fi
++  echo "id=$id forked_from=${parent:--} start=$start end=$(last_ts "$f") commands_total=$n inherited=$inherited own_commands=$own first_request=$(first "$f") total=$(tot "$f")"
++done
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/harness/run-forkfan.sh b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/harness/run-forkfan.sh
+new file mode 100644
+index 00000000..8f884f64
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/harness/run-forkfan.sh
+@@ -0,0 +1,33 @@
++#!/usr/bin/env bash
++# Run one fork-fan handler call: run-forkfan.sh <input-id> <run> <effort>
++# One codex exec handler at the given effort spawns the lens forks itself; every rollout the call created is copied to the cell.
++set -uo pipefail
++ROOT=/home/knatte/Code/loomyard-LYMHUB/codex-p2-gap-texts-bench
++id=$1 run=$2 effort=$3
++model=gpt-6-astra
++in=$ROOT/.scratch/bench/inputs/$id
++cell=$ROOT/.scratch/bench/runs/$id/$run
++home=$ROOT/.scratch/codex-home-$run
++rm -rf "$cell"; mkdir -p "$cell"
++cp -a "$in/work" "$cell/work"
++prompt=$(<"$in/fan/handler-fork.prompt.md")
++prompt=${prompt//"$in/work"/"$cell/work"}
++for f in "$cell"/work/.bench/instr/*.md; do
++  c=$(<"$f"); printf '%s\n' "${c//"$in/work"/"$cell/work"}" > "$f"
++done
++printf '%s\n' "$prompt" > "$cell/prompt.md"
++touch "$cell/.marker"
++start=$(date +%s)
++CODEX_HOME=$home timeout 3000 codex exec \
++  -m "$model" -c "model_reasoning_effort=\"$effort\"" \
++  -s workspace-write -C "$cell/work" --skip-git-repo-check --json \
++  -o "$cell/last-message.txt" - <<<"$prompt" > "$cell/events.jsonl" 2> "$cell/stderr.txt"
++rc=$?
++end=$(date +%s)
++echo "rc=$rc wall_seconds=$((end-start))" > "$cell/result.txt"
++cp "$cell/work/.bench/out/review.md" "$cell/review.md" 2>/dev/null || echo "no review file" >> "$cell/result.txt"
++mkdir -p "$cell/rollouts"
++find "$home/sessions" -name 'rollout-*.jsonl' -newer "$cell/.marker" -exec cp {} "$cell/rollouts/" \;
++ls "$cell/rollouts" >> "$cell/result.txt"
++grep '"turn.completed"' "$cell/events.jsonl" | tail -1 > "$cell/turn-completed.json"
++cat "$cell/result.txt"; cat "$cell/turn-completed.json"
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/harness/setup-codex-home.sh b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/harness/setup-codex-home.sh
+new file mode 100755
+index 00000000..0a577355
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/harness/setup-codex-home.sh
+@@ -0,0 +1,8 @@
++#!/usr/bin/env bash
++# setup-codex-home.sh <run>: create the scratch CODEX_HOME of one bench run, holding a symlink to the operator's auth.json.
++# One home per run keeps concurrent runs' rollouts apart.
++# The link is writable through to ~/.codex/auth.json, so a token refresh by Codex would change the operator's file.
++# An existing auth.json in the scratch directory, link or file, is replaced.
++ROOT=/home/knatte/Code/loomyard-LYMHUB/codex-p2-gap-texts-bench
++mkdir -p "$ROOT/.scratch/codex-home-$1"
++ln -sfn "$HOME/.codex/auth.json" "$ROOT/.scratch/codex-home-$1/auth.json"
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/harness/usage.sh b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/harness/usage.sh
+new file mode 100755
+index 00000000..929d49b7
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/harness/usage.sh
+@@ -0,0 +1,28 @@
++#!/usr/bin/env bash
++# usage.sh <run-cell-dir> <run>: one line per rollout of a run, handler first: wall seconds, tokens, own commands and the weekly used_percent of the first and last token_count.
++# The lens of a fork is read from the handler's spawn_agent call order: affected_set, guard_reach, way_forward by start time.
++cell=$1 run=$2
++handler=$(grep -L forked_from_id "$cell"/rollouts/*.jsonl | head -1)
++ncalls() { grep -c '"payload":{"type":"custom_tool_call"' "$1"; }
++ts() { grep -o '"timestamp":"[^"]*"' | head -1 | cut -d'"' -f4; }
++epoch() { date -u -d "$1" +%s.%N; }
++pct() { grep '"token_count"' "$1" | "$2" -1 | grep -o '"primary":{[^}]*}' | grep -o '"used_percent":[0-9.]*' | cut -d: -f2; }
++line() { # file label inherited
++  local f=$1 label=$2 inh=$3
++  local s e w tot in cached out reason n
++  s=$(head -1 "$f" | ts); e=$(tail -1 "$f" | ts)
++  w=$(echo "$(epoch "$e") - $(epoch "$s")" | bc | cut -d. -f1)
++  tot=$(grep '"token_count"' "$f" | tail -1 | grep -o '"total_token_usage":{[^}]*}')
++  in=$(grep -o '"input_tokens":[0-9]*' <<<"$tot" | cut -d: -f2); cached=$(grep -o '"cached_input_tokens":[0-9]*' <<<"$tot" | cut -d: -f2)
++  out=$(grep -o '"output_tokens":[0-9]*' <<<"$tot" | cut -d: -f2); reason=$(grep -o '"reasoning_output_tokens":[0-9]*' <<<"$tot" | cut -d: -f2)
++  n=$(( $(ncalls "$f") - inh ))
++  echo "$run $label wall=$w in=$in cached=$cached fresh=$((in-cached)) out=$out reason=$reason commands=$n weekly_first=$(pct "$f" head) weekly_last=$(pct "$f" tail)"
++}
++line "$handler" handler 0
++i=0
++for f in $(grep -l forked_from_id "$cell"/rollouts/*.jsonl | xargs -n1 sh -c 'echo "$(head -1 $0 | grep -o "\"timestamp\":\"[^\"]*\"" | head -1) $0"' | sort | cut -d' ' -f2); do
++  start=$(head -1 "$f" | ts)
++  inh=$(awk -v s="$start" '/"payload":{"type":"custom_tool_call"/ { match($0,/"timestamp":"[^"]*"/); t=substr($0,RSTART+13,RLENGTH-14); if (t < s) c++ } END {print c+0}' "$handler")
++  lens=$(sed -n "$((i+1))p" <<<$'affected-set\nguard-reach\nway-forward'); i=$((i+1))
++  line "$f" "fork-$lens" "$inh"
++done
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/harness/windows.sh b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/harness/windows.sh
+new file mode 100755
+index 00000000..c66e3a98
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/harness/windows.sh
+@@ -0,0 +1,6 @@
++#!/usr/bin/env bash
++# windows.sh <rollout-file>: print the 5-hour and weekly used_percent of the rollout's last token_count event, space-separated.
++# Prints nothing when the rollout has no token_count event, as for a run the plan refused.
++grep '"token_count"' "$1" | tail -1 | grep -o '"primary":{[^}]*}\|"secondary":{[^}]*}' \
++  | grep -o '"used_percent":[0-9.]*' | cut -d: -f2 | tr '\n' ' ' | sed 's/ $//'
++echo
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/inputs.txt b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/inputs.txt
+new file mode 100644
+index 00000000..a06a5e87
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/inputs.txt
+@@ -0,0 +1 @@
++P2 plan weft=394715f7f start=2026-10-22T07:07:00Z code=750903aef1b7474b06597cdd2d6e0aecfd85d251
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/match.tsv b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/match.tsv
+new file mode 100644
+index 00000000..c0319055
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/match.tsv
+@@ -0,0 +1,13 @@
++input	setting	finding	own_severity	label	claude_finding	claude_severity	note
++P2	med1-handler	F1	BLOCKING	unique-real			fork guard-reach: an earlier Delete of Draw(string) and a re-sign of Draw(int) into that id may share a batch, since card 13 adds boundaries only for a later use of the re-sign's old glyph and boundary.go sees no cover; after the batch Draw(string) exists, so DoneChecks answers delete-not-done before RebindResigns runs; holds on cards 11 lines 39 to 40 and 59, 12 line 36, 13 lines 12 to 14, boundary.go lines 12 to 29 and donecheck.go lines 96 to 100 and 201 to 205
++P2	med1-handler	F2	BLOCKING	unique-real			handler: TestRenameCSharpDecl tests the unexported renameCSharpDecl directly, against PATTERN-test-economy ("an unexported helper is tested through the surface that uses it"); holds on card 10 line 41, severity BLOCKING arguable
++P2	med1-handler	F3	BLOCKING	unique-real			handler: card 14 defers the package docs and the PATTERN text past their implementing cards, against CLAUDE.md's same-commit rule; the grade is arguable, as in codex-v2-p2-bench
++P2	med1-handler	F4	MEDIUM	shared	F1	BLOCKING	fork guard-reach: the declaredNameIndex fallback picks IProvider in card 9's own draft row
++P2	med1-handler	F5	MEDIUM	unique-real			fork guard-reach: card 6's resolve half reads a .cs symbol from a Uses ref as a changed C# target; holds on planglyph.go lines 432 to 452
++P2	med1-handler	F6	MEDIUM	unique-real			fork affected-set: the new status and Unit readers of cards 6, 8, 11 and 12 are missing from allowedStatusConsumers; holds on status_enforcement_test.go lines 64 to 99 and 135
++P2	med1-handler	F7	MEDIUM	unique-real			handler: PathEntryPath is an exported planparser symbol with two consumers (cards 6 and 7) created inside card 6; the plan-review rubric gives a public-surface symbol its own card
++P2	med1-handler	F8	LOW	unique-real			handler: card 5 says none already skipped every gated check, but validate_test.go line 1700 has the row "language none still fires" for checkVerifyNestedModule, which has no language guard
++P2	med1-handler	F9	LOW	unique-real			handler: Plan.Language's field comment (plan.go lines 49 to 53) names only go and none, and neither card 2 nor card 14 covers it
++P2	med2-handler	F1	MEDIUM	shared	F1	BLOCKING	handler and fork guard-reach: the declaredNameIndex fallback picks IProvider in card 9's own draft row
++P2	med2-handler	F2	MEDIUM	unique-real			fork affected-set: the new status and Unit readers are missing from allowedStatusConsumers
++P2	med2-handler	F3	MEDIUM	unique-real			fork affected-set: card 10's renameDeclSource calls ParseRef with no plan to give it; holds on handle.go line 98
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/prompts/block-v2-gap.md b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/prompts/block-v2-gap.md
+new file mode 100644
+index 00000000..8955d8de
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/prompts/block-v2-gap.md
+@@ -0,0 +1,10 @@
++## How to read for this review
++
++- Check every claim a card makes about existing code by reading that code and its callers, and read the code paths the change reaches beyond the cards.
++- For every symbol, type, config key, file or command a card changes, renames or removes, search the whole tree for every reader of it, with `grep -rn` or `lym quarry`, list the readers, and check that a card covers each one; a reader no card covers is a finding.
++- For every function a card changes, read the functions it calls and the code that calls it, one hop beyond the cards, and check that the change still holds there.
++- for each guard, refusal or seam a card adds: the callers of the guarded function, the order in which the root constructs its commands and runs its pre-run, and the definition of every environment switch that turns the guarded step off;
++- Where several cards change the same file or limit, check what each card's gate sees given the cards before it.
++- Read the `pattern/` background file of every PATTERN entry the plan touches, and check that each new command, package or file the plan adds appears where that entry requires.
++- Read the tests the plan adds or changes for waits, sleeps and timing that would slow or flake the suite.
++- Put several searches into one command where you can.
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/prompts/diff-against-earlier-handler-prompt.txt b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/prompts/diff-against-earlier-handler-prompt.txt
+new file mode 100644
+index 00000000..46fb2cf5
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/prompts/diff-against-earlier-handler-prompt.txt
+@@ -0,0 +1,2 @@
++28a29
++> - for each guard, refusal or seam a card adds: the callers of the guarded function, the order in which the root constructs its commands and runs its pre-run, and the definition of every environment switch that turns the guarded step off;
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/prompts/diff-against-earlier-step-2.txt b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/prompts/diff-against-earlier-step-2.txt
+new file mode 100644
+index 00000000..7c85c0a0
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/prompts/diff-against-earlier-step-2.txt
+@@ -0,0 +1,13 @@
++19,20c19
++< that recurs unguarded, are findings. Your list: per guard, reachable or
++< not.
++---
++> that recurs unguarded, are findings. Find the recurrences by a search for the callers of
++25c24
++< are findings. Your list: per refusal, the next step, progresses or not.
++---
++> are findings. For each way forward, read the code of the command it names as it runs fro
++34c33
++< > You are one fork reviewer of this round, and you own one lens; the other forks own the
++---
++> > You are one fork reviewer of this round, and you own one lens; the other forks own the
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/prompts/handler-fork.prompt.md b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/prompts/handler-fork.prompt.md
+new file mode 100644
+index 00000000..42d0dc65
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/prompts/handler-fork.prompt.md
+@@ -0,0 +1,33 @@
++# Burler — review
++
++
++
++You are a burler reviewer: a single agent doing the review half of ONE round over an artifact.
++Your one job is to form your OWN independent judgment of the target, judged AGAINST the fasit, hunt for defects, and write your findings to the review file with a verdict.
++
++## What you may write (BLOCKING)
++
++Your write surface is the review file `/home/knatte/Code/loomyard-LYMHUB/codex-p2-gap-texts-bench/.scratch/bench/inputs/P2/work/.bench/out/review.md` and nothing else.
++You never edit, create, or delete a target file, you never fix a finding, and you run no mutating git command.
++Findings are recorded as you find them, never fixed on sight: if you catch yourself wanting to patch something the moment you spot it, write it down as a finding and keep reading.
++
++## Your two instruction files
++
++Read and execute each of the following files in turn, in this order — never preview a later file's content early:
++
++1. `/home/knatte/Code/loomyard-LYMHUB/codex-p2-gap-texts-bench/.scratch/bench/inputs/P2/work/.bench/instr/step-1-explore-fan.md` — step 1: explore the target and understand what you are judging it against.
++2. `/home/knatte/Code/loomyard-LYMHUB/codex-p2-gap-texts-bench/.scratch/bench/inputs/P2/work/.bench/instr/step-2-review-forkfan.md` — step 2: the cluster/review rules and where the review-file format is. Write the review to `/home/knatte/Code/loomyard-LYMHUB/codex-p2-gap-texts-bench/.scratch/bench/inputs/P2/work/.bench/out/review.md`.
++
++Your work is done once `/home/knatte/Code/loomyard-LYMHUB/codex-p2-gap-texts-bench/.scratch/bench/inputs/P2/work/.bench/out/review.md` is fully written on disk.
++You write no other file and send no message.
++
++## How to read for this review
++
++- Check every claim a card makes about existing code by reading that code and its callers, and read the code paths the change reaches beyond the cards.
++- For every symbol, type, config key, file or command a card changes, renames or removes, search the whole tree for every reader of it, with `grep -rn` or `lym quarry`, list the readers, and check that a card covers each one; a reader no card covers is a finding.
++- For every function a card changes, read the functions it calls and the code that calls it, one hop beyond the cards, and check that the change still holds there.
++- for each guard, refusal or seam a card adds: the callers of the guarded function, the order in which the root constructs its commands and runs its pre-run, and the definition of every environment switch that turns the guarded step off;
++- Where several cards change the same file or limit, check what each card's gate sees given the cards before it.
++- Read the `pattern/` background file of every PATTERN entry the plan touches, and check that each new command, package or file the plan adds appears where that entry requires.
++- Read the tests the plan adds or changes for waits, sleeps and timing that would slow or flake the suite.
++- Put several searches into one command where you can.
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/prompts/lens-guard-reach.text b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/prompts/lens-guard-reach.text
+new file mode 100644
+index 00000000..dac55ef7
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/prompts/lens-guard-reach.text
+@@ -0,0 +1,6 @@
++Own whether each guard can be reached. For each guard, refusal, branch or
++test row a card adds, trace the sequence of states a real entry point
++passes through to reach it. Say whether the state it guards can occur at
++that point, and whether the guarded site recurs elsewhere on a path the
++card does not guard. A guard whose state cannot occur, and a guarded site
++that recurs unguarded, are findings. Find the recurrences by a search for the callers of the guarded function, and treat each command, hook and pre-run that calls it, and each environment variable or flag that turns the guarded step off, as an entry point. For a value a card copies or captures, say when it is assigned and when the copy runs, and check that the copy comes later. For each check a card prescribes in text, such as a regex, comparison, threshold, refusal or verify line, run it by hand on the nearest input that must not pass and the nearest that must, and follow the input of the card's test row through every loader, filler and validator that runs before the check, to the first that rejects, rewrites or drops it. Your list: per guard, the entry points that reach the guarded site and which of them the guard covers.
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/prompts/lens-way-forward.text b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/prompts/lens-way-forward.text
+new file mode 100644
+index 00000000..68f7cf45
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/prompts/lens-way-forward.text
+@@ -0,0 +1,5 @@
++Own the failure and recovery ends. For each refusal, stop, reset or
++recovery step a card adds, find the next step it names and check whether
++that step can succeed from the state the refusal leaves. A refusal that
++names no next step, and a next step that cannot succeed from that state,
++are findings. For each way forward, read the code of the command it names as it runs from the state the refusal leaves, including how it resolves a layer or scope and which gates or holds it waits behind. Read the whole text the operator sees, including any text the card appends to or takes from an existing error, and check that no sentence in it names a competing next step. Your list: per refusal, the final text, the next step, and the first precondition that fails or none.
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/prompts/step-2-review-forkfan.md b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/prompts/step-2-review-forkfan.md
+new file mode 100644
+index 00000000..d4a71b49
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/prompts/step-2-review-forkfan.md
+@@ -0,0 +1,56 @@
++## Cluster rules
++
++This is a cluster round: after exploring the target fully, spawn ALL of the fork reviewers below in a SINGLE message by calling your `spawn_agent` tool once per lens listed here, so the forks run in parallel, each with `fork_turns` set to `"all"` so it inherits your context; never pass a name, a model or an effort for a fork, so each fork keeps your own.
++
++Lenses for this round:
++
++- affected-set: Own what each card's change forces outside the card. For each output, key,
++string, file shape or behaviour a card changes, find everything that reads
++or asserts it, tests, callers, docs and fixtures, from the pre-read and a
++search for what the pre-read lacks. For each change, find the cards that
++cover the set. A card that covers part of a set is one finding about the
++method, naming the members it missed. Your list: per change, the set you
++found and the cards that cover it.
++- guard-reach: Own whether each guard can be reached. For each guard, refusal, branch or
++test row a card adds, trace the sequence of states a real entry point
++passes through to reach it. Say whether the state it guards can occur at
++that point, and whether the guarded site recurs elsewhere on a path the
++card does not guard. A guard whose state cannot occur, and a guarded site
++that recurs unguarded, are findings. Find the recurrences by a search for the callers of the guarded function, and treat each command, hook and pre-run that calls it, and each environment variable or flag that turns the guarded step off, as an entry point. For a value a card copies or captures, say when it is assigned and when the copy runs, and check that the copy comes later. For each check a card prescribes in text, such as a regex, comparison, threshold, refusal or verify line, run it by hand on the nearest input that must not pass and the nearest that must, and follow the input of the card's test row through every loader, filler and validator that runs before the check, to the first that rejects, rewrites or drops it. Your list: per guard, the entry points that reach the guarded site and which of them the guard covers.
++- way-forward: Own the failure and recovery ends. For each refusal, stop, reset or
++recovery step a card adds, find the next step it names and check whether
++that step can succeed from the state the refusal leaves. A refusal that
++names no next step, and a next step that cannot succeed from that state,
++are findings. For each way forward, read the code of the command it names as it runs from the state the refusal leaves, including how it resolves a layer or scope and which gates or holds it waits behind. Read the whole text the operator sees, including any text the card appends to or takes from an existing error, and check that no sentence in it names a competing next step. Your list: per refusal, the final text, the next step, and the first precondition that fails or none.
++
++### Fork rules for this round
++
++Spawn the forks as soon as step 1's reading manifest is written, in the same turn.
++Each fork's prompt is the boilerplate below, then the line `Your lens: <name>` and that lens's text, and nothing else: never add your own direction, hint, suspicion or reading list to a fork's prompt.
++
++Boilerplate:
++
++> You are one fork reviewer of this round, and you own one lens; the other forks own the other lenses, and the handler reviews holistically. Your inherited context already holds the target, the rules and the code listed in the reading manifest; review from it. Reading for this review: Check every claim a card makes about existing code by reading that code and its callers, and read the code paths the change reaches beyond the cards. For every symbol, type, config key, file or command a card changes, renames or removes, search the whole tree for every reader of it, with `grep -rn` or `lym quarry`, list the readers, and check that a card covers each one; a reader no card covers is a finding. For every function a card changes, read the functions it calls and the code that calls it, one hop beyond the cards, and check that the change still holds there. for each guard, refusal or seam a card adds: the callers of the guarded function, the order in which the root constructs its commands and runs its pre-run, and the definition of every environment switch that turns the guarded step off; Where several cards change the same file or limit, check what each card's gate sees given the cards before it. Read the `pattern/` background file of every PATTERN entry the plan touches, and check that each new command, package or file the plan adds appears where that entry requires. Read the tests the plan adds or changes for waits, sleeps and timing that would slow or flake the suite. Put several searches into one command where you can. Work your lens's procedure, and start your final message with the list your lens asks for. Report every finding your lens's procedure produces and nothing outside it, because the other lenses and the handler cover the rest. You may make at most 20 tool calls, each only for something your procedure needs that the manifest lacks, such as a caller or a spawned process beyond it along the input's path, and never to re-read what your context already shows; end your final message with one line per tool call: what you read and why your context lacked it. You are READ-ONLY: never Write, Edit or delete any file, run only commands that read, never touch the two round output files, and never spawn another agent. Return your findings ONLY as your final message, each with a severity, a class, a location, a one-line summary and the file and line of the evidence you read.
++
++While the forks run, YOU (the handler) do your own HOLISTIC review: what no lens owns, such as the target against its fasit and its board entry, the rubric's leanness and relocation rules, architecture and PATTERN-fit, reading further only where your review needs it.
++Then prepare the ground truths and the severity rubric you will judge every finding against.
++Write nothing to the review file while any fork is outstanding, whatever an early report says: consolidate only once the last fork has returned, with every finding in view.
++
++Consolidation: judge every fork finding and your own holistic findings with EQUAL skepticism, dedup findings that describe the same defect across lenses, tag every kept finding's frontmatter with an `origin:` key (`lens:<name>` or `handler`), move false positives to a `## Rejected` prose section below the frontmatter with a one-line reason each (a rejected item never appears in `findings:`), and order kept findings by severity.
++Wait for every fork with your wait tool before you consolidate.
++The consolidated review is the ONE review file, and the review is complete once it is fully written to disk — consolidation is part of the review, not a separate step after it.
++
++## The review file
++
++Write the review to `/home/knatte/Code/loomyard-LYMHUB/codex-p2-gap-texts-bench/.scratch/bench/inputs/P2/work/.bench/out/review.md`, in the format `/home/knatte/Code/loomyard-LYMHUB/codex-p2-gap-texts-bench/.scratch/bench/inputs/P2/work/.bench/instr/review-format.md` describes.
++Read that file before you write.
++The review is complete once it is fully written to disk and passes the format's strict rules.
++
++## Source-grounding rule
++
++Never fabricate file contents.
++Read the actual files before you describe or judge them — every claim in your review must be grounded in something you actually read.
++
++## Prior rounds
++
++This is the first round — no prior round files exist.
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/reviews/P2/med1/fork-affected-set.md b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/reviews/P2/med1/fork-affected-set.md
+new file mode 100644
+index 00000000..4191e682
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/reviews/P2/med1/fork-affected-set.md
+@@ -0,0 +1,37 @@
++Affected-set list:
++
++- Quarry declaration inputs: `CanonicalizeHandles` and `renameDeclSource` are covered by cards 1, 3, 9–11.
++- Alphabet selection and signatures: production `parseGlyph`/`GlyphLanguage` callers in planparser, planglyph, websterengine, and plandag are covered by cards 2–3; ScopeGuard’s interface, implementation, fake, callers, and tests are covered by card 4.
++- Go-toolchain gating: affected validation functions and their test tables are targeted by card 5, but its description overlooks an existing `none` assertion.
++- New resolve-status readers: cards 6, 8, 11, and 12 add readers; no card covers the mandatory `allowedStatusConsumers` registration.
++- Handle, Rename, and re-sign behavior: existing declaration callers are covered by cards 9–12; batching by card 13.
++- Public language documentation: package docs and contracts are covered by cards 14–15, but `Plan.Language`’s field contract is omitted.
++
++Findings:
++
++1. **MEDIUM — design — cards 6, 8, 11, 12: New quarry status consumers omit the enforcement allowlist.**  
++   Card 6 introduces `languageMismatchFindings`, which distinguishes found/multipart answers; card 8 introduces `crossAlphabetDetail`, which tests ambiguous status; card 11 introduces `nameResigns` reading the parsed glyph’s `Unit` and `resignCollisionFindings` testing found answers; card 12 introduces `RebindResigns` testing found answers.  
++   `internal/planglyph/status_enforcement_test.go:64` includes both `Status` and `Unit` in its selector vocabulary, including non-status `Unit` fields; `:86` declares the closed `allowedStatusConsumers` list; `:135` scans every production file and fails for every unlisted reader.  
++   No card names this allowlist or its required registrations. Consequently, these implementation cards fail the package’s existing guard even when their runtime behavior is correct.  
++   Plan evidence: `_lyx/plan/06-plan-language-mismatch.md:30`, `08-multi-alphabet-answers.md:22`, `11-csharp-resign-arrows.md:30`, `11-csharp-resign-arrows.md:39`, `12-resign-post-batch.md:27`.  
++   This is one recurring affected-set enumeration gap, not five separate findings.
++
++2. **LOW — consistency — card 5: The assertion that `none` already skips the gated checks contradicts an existing test the card changes.**  
++   Card 5’s ImpactSummary says “`none` already skipped all of them,” and its test instructions prescribe only adding a C# row to `TestValidate_VerifyNestedModule`.  
++   The existing table explicitly contains `"language none still fires"` expecting `verify-nested-module` at `internal/planparser/validate_test.go:1700`; the implementation at `internal/planparser/verifymodule.go:37` has no language gate.  
++   The planned `GoToolchain` condition changes this behavior and requires updating that existing row, not merely adding the C# row.  
++   Plan evidence: `_lyx/plan/05-go-only-checks.md`, Tests and ImpactSummary.
++
++3. **LOW — consistency — card 2 / card 14: The public `Plan.Language` contract remains Go-only.**  
++   `internal/planparser/plan.go:51` documents the legal alphabet as “today `go`” plus `none`.  
++   Card 2 adds C# acceptance but does not target this field documentation; card 14 updates `doc.go` files only.  
++   The public model therefore retains a contradictory language contract after the planned documentation changes.
++
++Tool-call manifest:
++
++1. Searched changed function names and callers across Go files to check the card target lists against all callers beyond the inherited excerpts.
++2. Searched language, kind, and parse readers to find independent consumers and assertions missing from the inherited manifest.
++3. Read the existing `none` validation row, `Plan.Language` field documentation, status-consumer enforcement, and index adapters to determine their obligations.
++4. Read the enforcement scan and verify implementations and searched documentation and cards to confirm whether the new readers were registered anywhere.
++5. Read plandag’s graph logic, canonicalization, drift reload, and related tests to check downstream effects of the alphabet and signature changes.
++6. Read handle binding tests and searched test/language references and new helper mentions to finish the affected-set comparison.
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/reviews/P2/med1/fork-guard-reach.md b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/reviews/P2/med1/fork-guard-reach.md
+new file mode 100644
+index 00000000..a820e330
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/reviews/P2/med1/fork-guard-reach.md
+@@ -0,0 +1,50 @@
++Guard inventory:
++
++- Cards 2–3: `ParseRef` and glyph-language guards are reached through parser validation, resolve, drift, and kick-start consumers.
++- Card 5: `GoToolchain` covers plan-gate caller/import checks, dispatch’s `LaterDeleteReferences`, verify-package checks, and path mappings.
++- Card 6: pure mismatch runs through `Validate`/`ValidateFormat`; resolve mismatch runs through `resolvePass`, with completed-card suppression prescribed.
++- Card 7: namespace-pair findings run through shared validation; dispatch drops completed-card findings.
++- Card 8: cross-alphabet handling reaches status, Create, and done checks; candidate partitioning remains shared.
++- Cards 9–10: C# declaration derivation reaches `CanonicalizeHandles` and quarry `Name`.
++- Card 11: re-sign naming and collisions reach plan validation and dispatch through `resolvePass`.
++- Card 12: re-sign completion reaches both record and recovery through `postBatchChecks`, after existing done checks.
++- Card 13: grouping reaches `renameBoundaries` through `costBatcher.Batch`.
++
++Findings:
++
++1. **MEDIUM — consistency — `_lyx/plan/09-csharp-create-handles.md:24` — The fallback declared-name rule selects the interface qualifier in its own clean test.**  
++   For the prescribed draft `Renderer.IProvider<int>.draft` with head `int IProvider<int>.Count { get; }`, `draft` is absent, so the fallback chooses the first identifier followed by an allowed token.
++   That identifier is `IProvider`, followed by `<`, rather than `Count`.
++   Consequently the qualifier is not immediately before the selected token, `csharpOwner` keeps `Renderer.IProvider<int>`, and quarry rejects that owner.
++   The stated clean row at card 9 line 35 cannot succeed under the prescribed algorithm.
++   Evidence: card 9 lines 22–30 and 35; quarry v0.4.0 `internal/engine/name.go:330–348` rejects owner components carrying type arguments.
++   Correct the fallback selection rule so it skips generic interface qualifiers and reaches the actual declared name.
++
++2. **MEDIUM — decision — `_lyx/plan/06-plan-language-mismatch.md:31` — Resolve mismatch treats a C# Uses reference as a C# target.**  
++   The card fires when “some answer” names a `.cs` symbol, but `collectGlyphTargets` includes Uses as well as Targets.
++   A `go` plan editing an existing `README.md` and merely listing `Glyphchain.Sharp#Renderer.Title` under Uses reaches the new blocking mismatch despite changing no C# source.
++   All upstream parsing and existence checks accept this input; its Uses glyph resolves found.
++   D4 requires the positive C# answer to resolve a **plan target**, not any read dependency.
++   Evidence: card 6 lines 30–32; `internal/planglyph/planglyph.go:432–452`, especially Uses collection at 447–448; decision record D4.
++   Restrict the positive `.cs` trigger to answers corresponding to Targets and add the Uses-only counterexample to the existing planned table.
++
++3. **MEDIUM — design — `_lyx/plan/12-resign-post-batch.md:36` and card 13 — Allowed overload replacement can never reach the new completion pass.**  
++   Card 11 explicitly permits deleting an overload on the same or an earlier card before re-signing another member into its ID.
++   For an earlier Delete of `Draw(string)` followed by `Draw(int) -> Draw(string)`, the existing boundary rule sees no later cover of the deleted target, and card 13’s new rule sees no earlier re-sign.
++   Thus the two cards may share a batch.
++   After correct execution, `Draw(string)` exists again, so existing `DoneChecks` returns `delete-not-done`; `postBatchChecks` returns before the new `RebindResigns` call.
++   The same-card Delete/re-sign allowance is necessarily affected too.
++   Evidence: card 11 lines 39–40 and 59; card 13 lines 12–14; `internal/batcher/boundary.go:12–29`; `internal/batcher/cost.go:71–88`; `internal/planglyph/donecheck.go:96–100` and 201–205; `internal/websterengine/recordbatch.go:829–849`.
++   The plan must reconcile its D7 allowance with completion semantics, including a reaching post-batch test; merely testing clean plan-gate findings does not establish executability.
++
++Additional reads, one line per tool call:
++
++1. Located quarry v0.4.0 sources and parser/completion entry points absent from inherited excerpts.
++2. Read quarry’s `Name` boundary, parser normalization, Uses ordering, and done-entry construction to trace upstream processing.
++3. Read owner validation references, exact card locations, and cost-batcher boundary application.
++4. Read C# special-member grammar and owner rejection, plus resolve-target collection line locations.
++5. Read recovery/record inputs, rewrite mechanics, and the recovery test’s fixture path to check repeated completion.
++6. Read recovery CLI wiring and exact done-check/card locations to establish the completion refusal.
++7. Read status handling and post-batch refusal ordering to verify the concrete inputs reach or fail before new checks.
++8. Located verify guards and execution-batch loading omitted from inherited context.
++9. Read verify guard semantics, batch loading, ambiguity tests, and exact declared-name rule locations.
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/reviews/P2/med1/fork-way-forward.md b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/reviews/P2/med1/fork-way-forward.md
+new file mode 100644
+index 00000000..b45af0e2
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/reviews/P2/med1/fork-way-forward.md
+@@ -0,0 +1,30 @@
++Refusal and recovery paths checked:
++
++- `plan-language-mismatch` and Go `glyph-malformed`: set `language: csharp` or `language: none`, as appropriate.
++  No failing precondition found in the prescribed plan-edit route.
++- `rename-namespace-pair`: replace the namespace pair with Edit cards, or correct the old filename.
++  Both address the predicate the card specifies.
++- Cross-alphabet ambiguity: name a file or member instead of the ambiguous self glyph.
++  No competing instruction found.
++- C# `rename-old-unresolved`: correct the new handle spelling, or drop an unsupported pair.
++  No recovery command is required before execution.
++- `resign-head-mismatch`: preserve parameter-list presence or express a kind change through Delete and Create.
++  The latter provides a route when the intended operation exceeds a re-sign.
++- `resign-overload-collision`: choose a free signature, remove the conflicting overload earlier, or drop a duplicate declaration.
++  These correspond to the planned collision predicates and exceptions.
++- `resign-not-done`: correct the code and recover the batch, or correct the card head, rebaseline that card, then recover.
++  `failCardNotDone` leaves the batch terminal failed; `Rebaseline` accepts named edits to that failed batch; recovery reads the edited plan and repeats the shared post-batch checks.
++  Its archived report does not obstruct recovery.
++- `rename-tool-missing`: configure `rename_tools` through `lyx config language` from the prime, or recast the card, then retry.
++  This is the existing refusal and route.
++
++**No findings retained for the way-forward lens.**
++
++Additional reads, one line per tool call:
++
++1. Recovery/rebaseline entry-point searches, root pre-run, and `refusal-spec.md`: inherited context lacked the actual recovery command contracts.
++2. `failCardNotDone`, `Rebaseline`, recovery command setup and spawning, rebaseline CLI, root construction: traced the proposed correction through failed-batch state and command ordering.
++3. Recovery spawn and terminal persistence, plus wrapper searches: checked report archival, recovery prerequisites, and repeated post-batch checks.
++4. Webster pre-run and `executionBatches`, plus refusal/fingerprint searches: checked command wiring and the source of recovery’s batch selection.
++5. `BatchFailedError`, `failBatch`, `renameToolRefusal`, fingerprint guards/restamping: checked complete rendered errors and the state preserved for retry.
++6. `RewriteRefs`, root stencil-seeding skips, and existing edited-card recovery test location: checked the rewrite primitive and remaining root pre-run bypasses.
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/reviews/P2/med1/review.md b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/reviews/P2/med1/review.md
+new file mode 100644
+index 00000000..41e80c3a
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/reviews/P2/med1/review.md
+@@ -0,0 +1,164 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: BLOCKING
++    class: design
++    origin: lens:guard-reach
++    location: _lyx/plan/12-resign-post-batch.md:36
++    summary: An allowed overload replacement can fail completion before RebindResigns runs
++    fix: Revise the completion design in cards 11–13 to account for an overload deliberately removed and replaced by a re-sign in the same batch, including the same-card case D7 permits. Specify how completion distinguishes that replacement from an unperformed deletion, and extend the already-targeted record and recovery tests with this case. Preserve D7's allowance and its rewrite-after-done-check ordering.
++  - id: F2
++    severity: BLOCKING
++    class: design
++    origin: handler
++    location: _lyx/plan/10-csharp-rename-derivation.md:41
++    summary: The new Rename test directly tests a private helper contrary to PATTERN-test-economy
++    fix: Replace the private-helper testing prescription with public-surface coverage through CanonicalizeHandles or the existing TestGlyphChain_CSharp table. Retain uncovered tuple, operator and generic-name-bound behavior, and let the existing planned const and dictionary-field rows own their observable Rename behavior. A concrete target-list deletion or reassignment is withheld because this round forbids executing the required overlay validation.
++  - id: F3
++    severity: BLOCKING
++    class: design
++    origin: handler
++    location: _lyx/plan/14-package-docs-pattern.md:11
++    summary: The invariant and package documentation are deferred beyond the implementing commits
++    fix: Revise the card boundaries so the alphabet invariant lands with its implementation and each changed module's built behavior is documented in the implementing commit, as the repository instructions require. Keep only independently justified documentation work in card 14. Concrete target moves are withheld because this round forbids executing the required overlay validation.
++  - id: F4
++    severity: MEDIUM
++    class: consistency
++    origin: lens:guard-reach
++    location: _lyx/plan/09-csharp-create-handles.md:24
++    summary: The fallback name rule selects IProvider rather than Count in its own clean test
++    fix: Correct card 9's fallback algorithm to skip a generic interface qualifier followed by a dot and locate the actual declared member token. Keep the existing draft-name explicit-interface row and require it to bind with Owner Renderer and canonical member IProvider<int>.Count.
++  - id: F5
++    severity: MEDIUM
++    class: scope
++    origin: lens:guard-reach
++    location: _lyx/plan/06-plan-language-mismatch.md:31
++    summary: The resolve mismatch rule mistakes a CSharp Uses dependency for a changed target
++    fix: State that the positive CSharp resolve trigger is restricted to answers for the plan's Targets, as D4 requires. Extend the already-planned TestGlyphChain_CSharp table with a go plan editing an existing README.md and listing Glyphchain.Sharp#Renderer.Title only under Uses; it must not report plan-language-mismatch.
++  - id: F6
++    severity: MEDIUM
++    class: design
++    origin: lens:affected-set
++    location: _lyx/plan/06-plan-language-mismatch.md:30
++    summary: New status consumers are omitted from the existing enforcement registry
++    fix: Complete the affected-set plan for cards 6, 8, 11 and 12 so each introducing commit registers its new Status or Unit reader in internal/planglyph/status_enforcement_test.go's allowedStatusConsumers with its reviewed reason. Cover languageMismatchFindings, crossAlphabetDetail, nameResigns, resignCollisionFindings and RebindResigns where they read those selectors. A concrete target-list addition is withheld because this round forbids executing the required overlay validation.
++  - id: F7
++    severity: MEDIUM
++    class: design
++    origin: handler
++    location: _lyx/plan/06-plan-language-mismatch.md:4
++    summary: The exported PathEntryPath surface is bundled with its first consumer
++    fix: Use insert-card to give PathEntryPath its own independently reviewable card before the language-mismatch card, with its public contract and coverage. Keep the mismatch implementation and its two test tables on the consumer card, and retain the namespace-pair consumer after both.
++  - id: F8
++    severity: LOW
++    class: consistency
++    origin: lens:affected-set
++    location: _lyx/plan/05-go-only-checks.md:48
++    summary: The claim that none already skips every gated check contradicts an existing test
++    fix: Correct card 5's ImpactSummary to acknowledge the changed none behavior for verify-nested-module, and explicitly update the already-targeted TestValidate_VerifyNestedModule row named language none still fires to expect no finding under GoToolchain gating.
++  - id: F9
++    severity: LOW
++    class: scope
++    origin: lens:affected-set
++    location: _lyx/plan/02-planparser-ref-alphabet.md:51
++    summary: The public Plan.Language field contract is left describing only Go and none
++    fix: Carry the Plan.Language field-comment update with CSharp language acceptance so its legal-value description names go, csharp and none while preserving the absent-value default. A concrete glyph-target addition is withheld because this round forbids executing the required overlay validation.
++---
++
++### [BLOCKING] Accepted overload replacement cannot complete
++
++**Location:** `_lyx/plan/12-resign-post-batch.md:36`, with cards 11 and 13.
++**Issue:** Card 11 permits removing `Draw(string)` and re-signing `Draw(int)` into that signature on the same or a later card.
++The existing boundary algorithm only detects a later cover of an earlier target (`internal/batcher/boundary.go:12`), and card 13 only adds boundaries after an earlier re-sign whose old target a later card names.
++An earlier Delete of `Draw(string)` followed by that re-sign can therefore share a batch; the same-card form cannot be separated by batching at all.
++After correct execution, `Draw(string)` exists again.
++`DoneChecks` constructs a deletion check for that ID (`internal/planglyph/donecheck.go:96`) and treats every status other than `not_found` as still existing.
++`postBatchChecks` returns on the resulting `delete-not-done` before the proposed re-sign pass (`internal/websterengine/recordbatch.go:829`).
++Thus the plan-gate exception prescribed by D7 is not executable through the completion path the plan prescribes.
++
++### [BLOCKING] Private-helper testing violates the test boundary
++
++**Location:** `_lyx/plan/10-csharp-rename-derivation.md:41`.
++**Issue:** `TestRenameCSharpDecl` is explicitly a new test of the unexported `renameCSharpDecl`, using hand-built symbols and inspecting its derived heads.
++`pattern/PATTERN-test-economy.md` requires an unexported helper to be tested through the public surface using it.
++The distinction between exact-head assertions and minted-ID assertions means these are not simply duplicate assertions, but it does not exempt a direct private-helper test from that rule.
++The same card already extends the public plan-gate Rename table, `TestGlyphChain_CSharp`, for const and dictionary-field behavior.
++The uncovered cases can be exercised through naming and canonicalization without introducing a private-function testing surface.
++
++### [BLOCKING] Documentation and invariant changes land too late
++
++**Location:** `_lyx/plan/14-package-docs-pattern.md:11`.
++**Issue:** Card 14 reserves the changed alphabet invariant and the built package rules for a separate commit after cards 2–13 implement them.
++The supplied repository instructions require a new cross-cutting invariant in the same commit as its code, and require module documentation in the same commit as observable behavior changes.
++The plan format also defines each card as independently committable and reserves standalone Prosa work for module headers not triggered by a code change (`.bench/specs/loom/loom-plan-spec.md:320`).
++Card 14's updates are explicitly triggered by these earlier implementation cards, including the new plan refusals and re-sign completion behavior.
++The final documents are in the right locations, but the proposed commit boundaries do not satisfy the repository rule.
++
++### [MEDIUM] Draft-name fallback stops at the qualifier
++
++**Location:** `_lyx/plan/09-csharp-create-handles.md:24`.
++**Issue:** Apply the prescribed fallback to its own row, `Renderer.IProvider<int>.draft` with head `int IProvider<int>.Count { get; }`.
++The draft name is absent, and the first identifier followed by an admitted token is `IProvider`, followed by `<`.
++It is not `Count`, contrary to the next sentence and the clean-row expectation.
++No interface qualifier immediately precedes the selected `IProvider` token, so `csharpOwner` retains `Renderer.IProvider<int>`.
++Quarry v0.4.0 rejects an owner component carrying type arguments in `internal/engine/name.go:330–348`.
++This defeats the explicit-interface binding that D7 and the acceptance criteria require.
++
++### [MEDIUM] Read dependencies trigger the language refusal
++
++**Location:** `_lyx/plan/06-plan-language-mismatch.md:31`.
++**Issue:** D4's positive resolve trigger is a plan target declared in a `.cs` file.
++Card 6 instead specifies that some batched answer has such a symbol.
++`collectGlyphTargets` includes both Targets and Uses (`internal/planglyph/planglyph.go:432–452`).
++A Go plan editing an existing `README.md` and merely reading `Glyphchain.Sharp#Renderer.Title` therefore has a `.cs` symbol answer, no `.go` symbol answer, and no `.go` path target.
++It meets the card's refusal predicate although it changes no C# source.
++The property glyph parses under Go, and the fixture supplies its declaration, so this input reaches the new check.
++
++### [MEDIUM] The affected-set enumeration misses a guard registry
++
++**Location:** `_lyx/plan/06-plan-language-mismatch.md:30`, also cards 8, 11 and 12.
++**Issue:** `statusVocabularySelectors` includes `Status`, `Known`, `Rejected` and `Unit`, including `Unit` selectors on non-status types (`internal/planglyph/status_enforcement_test.go:64`).
++`TestStatusEnforcement_NoOutOfAllowlistConsumer` scans every production file and fails for a reader absent from `allowedStatusConsumers` (`:86`, `:135`).
++The new mismatch, cross-alphabet, collision and completion helpers read status, while re-sign naming reads the parsed glyph's unit.
++No card covers the registry update.
++The corresponding implementation gates will fail even if the new runtime logic works.
++This is one enumeration gap across the new readers, not a separate finding per helper.
++
++### [MEDIUM] A new exported surface needs its own card
++
++**Location:** `_lyx/plan/06-plan-language-mismatch.md:4`.
++**Issue:** `PathEntryPath` is an exported planparser surface with two independent consumers: language mismatch and namespace-pair validation.
++Card 6 bundles its creation with the mismatch implementation in two packages.
++The rubric's granularity rule explicitly gives a public surface its own card even when one card is its first consumer; the private-helper bundling exception does not apply.
++
++### [LOW] Existing none behavior is misdescribed
++
++**Location:** `_lyx/plan/05-go-only-checks.md:48`.
++**Issue:** `checkVerifyNestedModule` currently has no language guard (`internal/planparser/verifymodule.go:37`).
++Its existing table explicitly expects a finding in the row `language none still fires` (`internal/planparser/validate_test.go:1700`).
++Card 5's new gate changes that behavior, but its test instructions only add a C# row and its ImpactSummary says `none` already skipped every check.
++The table is already targeted, so correcting its existing expectation needs no additional test or target.
++
++### [LOW] Public language documentation is omitted
++
++**Location:** `_lyx/plan/02-planparser-ref-alphabet.md:51`, with card 14.
++**Issue:** `internal/planparser/plan.go:51` describes the implemented alphabets as today Go, plus `none`.
++Card 2 changes the accepted alphabet without covering that field contract, and card 14 updates package `doc.go` files but not this public model comment.
++It remains inconsistent with the built C# support.
++
++## Rejected
++
++- No way-forward finding was retained: the prescribed rebaseline/recover sequence is supported by the failed-batch and recovery paths examined by that lens.
++- Copying fixture glyph spellings after creating the named fixture is not deferred design research; the plan already specifies the fixture and library behavior.
++- No missing Verify line is reported: the writer contract makes it optional, and none of the cards supplies a raw-test Verify line.
++- The explicit generic-return-type substitution bound is not reported as a defect because D7 deliberately settles that bound.
++
++## Review limits
++
++This review used file reads and source searches only; no tests, board command, quarry command or overlay validator was executed, following the round's instruction to read files and run nothing.
++That restriction conflicts with the requested board lookup and with executable validation of target-changing fix proposals.
++Accordingly, concrete target-list edits requiring an overlay check are withheld above; their defects and required work remain recorded.
++The proposed insert-card split is exempt from overlay validation under the rubric.
++An initial broad read of the plan directory also returned `lens-review.md`; it was not used as evidence for the findings above.
++All retained findings are grounded in the current cards, decision record, repository rules and source reads described here.
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/reviews/P2/med2/fork-affected-set.md b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/reviews/P2/med2/fork-affected-set.md
+new file mode 100644
+index 00000000..c321cec8
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/reviews/P2/med2/fork-affected-set.md
+@@ -0,0 +1,37 @@
++Affected-set inventory:
++
++- Quarry upgrade and declaration `Lang`: all production `quarry.Declaration` construction sites are in `CanonicalizeHandles` and `renameDeclSource`; cards 1, 3, 9–11 cover them.
++- Alphabet migration: `parseGlyph` consumers in validation, redundancy, review classification, target derivation, and edit-test-file checks are covered by card 2; external `GlyphLanguage`/`glyph.Parse` consumers and their changed helper callers are covered by card 3.
++- Scope guard signature: interface, real implementation, fake, production caller, and direct tests are covered by card 4.
++- Go-only guards: implementation consumers and associated test tables are covered by card 5.
++- New resolve-status readers: cards 6, 8, 11, 12 introduce consumers of selectors policed by `allowedStatusConsumers`; no card covers that registry.
++- C# Rename parsing: card 10 requires `ParseRef(plan, body)` inside `renameDeclSource`, but does not supply the plan or cover its caller.
++- Re-sign naming chokepoint: card 11 covers `chokepointGuardedFuncs` and its tests, but not the separate status-reader guard.
++- Post-batch/index and batch boundary changes: cards 12–13 cover their interfaces, implementations, execution callers, and tests.
++- Package and contract documentation: cards 14–15 cover the named docs and format consumers.
++
++Findings:
++
++1. **MEDIUM — design — cards 6, 8, 11, 12: new quarry readers omit the existing status-consumer registry.**
++   The plan adds `languageMismatchFindings` (found/multipart), `crossAlphabetDetail` (ambiguous), `resignCollisionFindings` (found), and `RebindResigns` (found), plus `nameResigns` reading the glyph’s `.Unit`.
++   `internal/planglyph/status_enforcement_test.go:64–69` explicitly scans `Status`, `Known`, `Rejected`, and `Unit`; the fixed registry at lines 88–99 names none of these functions.
++   `TestStatusEnforcement_NoOutOfAllowlistConsumer`, lines 134–157, fails every new unregistered reader.
++   No card targets or mentions `allowedStatusConsumers`.
++   This is one recurring enumeration omission: the cards account for the `Name` chokepoint guard but omit the independent reader registry, so their own package gates cannot pass without unplanned edits.
++   Locations: `_lyx/plan/06-plan-language-mismatch.md:30`, `08-multi-alphabet-answers.md` (`crossAlphabetDetail`), `11-csharp-resign-arrows.md:31`, `:39`, and `12-resign-post-batch.md` (`RebindResigns`).
++
++2. **MEDIUM — design — card 10: `renameDeclSource` cannot use the plan-aware parser with its planned signature.**
++   `_lyx/plan/10-csharp-rename-derivation.md:23` requires parsing the new handle through `planparser.ParseRef`.
++   Card 2 defines that helper as `ParseRef(plan *Plan, ref string)`.
++   The existing `renameDeclSource` receives only four strings and a result map (`internal/planglyph/handle.go:98`), and its sole caller passes only those arguments (`handle.go:220`).
++   Card 10 lists `renameDeclSource` without a re-sign arrow at line 8 and omits `CanonicalizeHandles` from its targets.
++   No earlier card supplies a plan parameter.
++   The required alphabet decision therefore forces an unplanned signature and caller change; deriving a substitute plan from the resolved symbol would evade D3’s requirement that the actual plan choose the alphabet.
++
++Tool-call manifest:
++
++1. Whole-tree searches for parsing, handle, scope, and changed-helper readers; inherited searches had narrower scope.
++2. Existing test assertions, redundancy implementation, vocabulary reader, target derivation, and normalization; their bodies were absent from inherited context.
++3. Nested-module test and implementation, status registry, Kind/declaration readers, and canonicalization call; these exposed behavior assertions and the independent reader guard.
++4. Guard searches, parser canonicalization, index tests, batch boundary implementation, and handle-test inventory; these checked additional consumers beyond the supplied manifest.
++5. Numbered card locations and whole-tree ref/scope callers; these confirmed finding locations and the remaining reader inventory.
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/reviews/P2/med2/fork-guard-reach.md b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/reviews/P2/med2/fork-guard-reach.md
+new file mode 100644
+index 00000000..a059ed02
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/reviews/P2/med2/fork-guard-reach.md
+@@ -0,0 +1,39 @@
++Guard reachability list:
++
++- Cards 2–4: `ValidateFormat`, `Validate`, `ValidateDispatch`, kick-start, and post-batch scope checks reach the plan-aware parsing paths.
++- Card 5: plan-gate caller/import checks, dispatch’s `LaterDeleteReferences`, and pure verify/handle checks receive the Go-only guards.
++- Card 6: pure validation reaches the path-extension check; `resolvePass` reaches the symbol-extension check, with completed-card suppression.
++- Card 7: shared pure validation reaches the namespace-pair check; dispatch and after-completion validation suppress completed-card findings.
++- Card 8: status, Create, and done checks reach cross-alphabet ambiguity rendering.
++- Cards 9–10: handle canonicalization reaches owner derivation and Rename head derivation; the draft-name fallback fails its prescribed explicit-interface test.
++- Card 11: resolve-pass re-sign naming precedes batched resolution and collision checks; the named collision and mismatch inputs reach those branches.
++- Card 12: both record-batch and recover-batch call `postBatchChecks`; ordinary Edit arrows pass existing done checks and reach the new rebind check.
++- Card 13: cost batching reaches the shared boundary computation.
++
++Finding:
++
++**MEDIUM — consistency — `_lyx/plan/09-csharp-create-handles.md:24` — The declared-name fallback selects the interface type instead of `Count`.**
++
++The prescribed fallback selects the first identifier followed by `<`, among other tokens.
++For the card’s own test input `int IProvider<int>.Count { get; }`, with draft name `draft`, that identifier is `IProvider`, not `Count`.
++Consequently `csharpOwner` finds no qualifier immediately before the selected identifier and retains `Renderer.IProvider<int>`.
++Quarry rejects that owner for carrying type arguments, so the row prescribed as clean on line 35 instead produces `handle-name-failed`.
++This also affects Rename derivation when the renamed head no longer contains the old member name.
++
++Evidence:
++- `_lyx/plan/09-csharp-create-handles.md:23–31`: fallback selection, qualifier stripping, and stated quarry restriction.
++- `_lyx/plan/09-csharp-create-handles.md:35`: concrete draft-name input and expected clean binding.
++- `/home/knatte/go/pkg/mod/github.com/!knatte18/quarry@v0.4.0/internal/engine/name.go:333–348`: `nameCSharpContainer` rejects owner components carrying type arguments.
++- `internal/planglyph/handle.go:288–299`: naming errors become `handle-name-failed`.
++
++Proposed correction: specify how the fallback skips generic interface qualifiers before choosing the declared member token, preserving the existing explicit-interface draft-name row as the reaching test.
++This requires an Intent correction, not a target change.
++
++Tool-call manifest:
++1. Read validation dispatch, malformed-handle guards, and test/caller locations missing from the manifest.
++2. Read glyph-chain helpers, re-sign scenarios, dispatch-after-completion behavior, and batching boundary implementation to trace test inputs.
++3. Read delete-order and Create inversion paths, plus numbered card 9 text, to check upstream handling and the fallback algorithm.
++4. Located cached quarry v0.4.0 sources and read ambiguity/rewrite behavior to check external naming restrictions and post-batch substitutions.
++5. Located numbered card 11–12 rules and the rewrite arrow implementation; the guessed quarry filename was absent.
++6. Located quarry’s actual owner validation and post-batch test/caller definitions.
++7. Read actual quarry owner validation and record/recover test fixtures to confirm rejection and recovery-path reachability.
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/reviews/P2/med2/fork-way-forward.md b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/reviews/P2/med2/fork-way-forward.md
+new file mode 100644
+index 00000000..a92e858d
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/reviews/P2/med2/fork-way-forward.md
+@@ -0,0 +1,26 @@
++| Refusal | Planned text and next step | First failing precondition |
++|---|---|---|
++| `plan-language-mismatch` | Set `language:` to the files’ language, or `none` for mixed code. | None for the plan-time cases prescribed. |
++| C# `glyph-malformed` under Go | Set `language: csharp`. | None for the named C# member input. |
++| `rename-namespace-pair` | Replace namespace Rename with Edit cards covering declarations and references, or correct the old side to an existing root file. | None. |
++| Cross-alphabet ambiguity | Names both languages; name the file or a member. | None attributable to the plan; this implements D6’s prescribed recovery. |
++| C# `rename-old-unresolved`, malformed new handle | Spell the new handle in the C# alphabet. | None. |
++| C# `rename-old-unresolved`, unsupported declared token | Drop the pair; rename with the type where applicable. | None in the recovery instruction itself. |
++| C# `resign-head-mismatch` | Preserve parameter-list presence, or express a kind change as Delete/Create. | None. |
++| `resign-overload-collision` | Use a free signature, remove/re-sign the existing overload earlier, or drop a conflicting declaration. | None; the alternatives correspond to D7’s exceptions. |
++| `resign-not-done` | Make the edit match the head and recover; alternatively correct the head, `rebaseline --card NN`, then recover the batch. | None for a newly failed batch. The existing recovery budget remains applicable. |
++
++No findings from the way-forward lens.
++
++The post-batch failure route preserves the proposed recovery: `failCardNotDone` calls `failBatch`, which archives the OK report and marks the batch terminal failed (`internal/websterengine/recordbatch.go:134`, `internal/websterengine/batchfail.go:91`).
++That state is editable through `Rebaseline` and exempt from the “already has an OK report” recovery refusal.
++The CLI already tests editing a failed card, rebaselining it, and recovering it (`internal/webstercli/verbs_test.go:942`).
++The new automatic rewrite’s `restampFingerprint` also advances begun-card hashes, not merely the aggregate fingerprint (`internal/websterengine/fingerprint.go:205`).
++
++Tool-call manifest:
++1. Read rebaseline and recovery definitions and references; the inherited manifest did not contain the commands named by card 12’s way forward.
++2. Read post-batch failure propagation, recovery guards, and the rebaseline CLI; needed to establish the state left by the refusal.
++3. Read root/webster pre-runs, recovery CLI entry, and fingerprint references; needed to check upstream wiring and persistence.
++4. Read denied-recovery rules, Create ambiguity rendering, and fingerprint implementation; needed to check legal instructions and hash advancement.
++5. Located `batchfail.go`, read recovery dependencies and the existing failed-card rebaseline/recovery test; needed the missing failure primitive and execution evidence.
++6. Read `failBatch` and hub/standalone wiring; needed to confirm terminal state, report archival, and config preconditions.
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/reviews/P2/med2/review.md b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/reviews/P2/med2/review.md
+new file mode 100644
+index 00000000..5b6a8ab4
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/reviews/P2/med2/review.md
+@@ -0,0 +1,69 @@
++---
++verdict: APPROVED
++findings:
++  - id: F1
++    severity: MEDIUM
++    class: consistency
++    origin: lens:guard-reach
++    location: _lyx/plan/09-csharp-create-handles.md:24
++    summary: The fallback selects IProvider instead of the declared Count member
++    fix: Revise card 9's declaredNameIndex fallback to skip a generic qualifier whose balanced type-argument list is followed by a dot before selecting the declared member token. Preserve the existing draft-to-Count row and explicitly require that it selects Count and strips IProvider<int> from Owner. Apply the same rule when card 10 uses the helper after renaming the head.
++  - id: F2
++    severity: MEDIUM
++    class: design
++    origin: lens:affected-set
++    location: _lyx/plan/06-plan-language-mismatch.md:30
++    summary: The new quarry readers omit the status-consumer registry required by their package gate
++    fix: Account for allowedStatusConsumers in the commits introducing languageMismatchFindings, crossAlphabetDetail, nameResigns, resignCollisionFindings and RebindResigns, retaining the guard's reviewed-consumer and no-stale-entry rules. A concrete target-list amendment is withheld because this review's read-only analysis constraint prohibits the required overlay validation; validate that amendment before prescribing its target bullets.
++  - id: F3
++    severity: MEDIUM
++    class: design
++    origin: lens:affected-set
++    location: _lyx/plan/10-csharp-rename-derivation.md:23
++    summary: The Rename derivation requires the actual plan but its function receives no plan
++    fix: Specify that card 10 threads the actual plan from CanonicalizeHandles into renameDeclSource for ParseRef, with a corresponding re-sign contract and caller update in the same commit. The concrete arrow and target-list amendment is withheld because this review's read-only analysis constraint prohibits the required overlay validation; validate that amendment before prescribing its target bullets.
++---
++
++### [MEDIUM] Explicit-interface draft binding contradicts its algorithm
++
++**Location:** `_lyx/plan/09-csharp-create-handles.md:24`
++
++**Issue:** For the card's own input `int IProvider<int>.Count { get; }`, the draft name `draft` is absent, so the fallback searches for the first identifier followed by a listed stop token.
++`IProvider` is followed by `<` and therefore wins before `Count`.
++No interface qualifier immediately precedes that selected token, so `csharpOwner` retains `Renderer.IProvider<int>` instead of returning `Renderer`.
++Quarry v0.4.0's `internal/engine/name.go:333` rejects owner components carrying type arguments, and the existing `internal/planglyph/handle.go:288` turns that naming error into `handle-name-failed`.
++The clean binding prescribed at card 9 line 35 cannot follow the specified algorithm, contrary to D7's owner rule.
++The handler independently found the same defect; it is recorded once.
++
++### [MEDIUM] New reader enumeration misses the enforcement registry
++
++**Location:** `_lyx/plan/06-plan-language-mismatch.md:30`; cards 8, 11 and 12
++
++**Issue:** The new functions inspect resolve status, while `nameResigns` also reads the parsed glyph's `Unit`.
++`internal/planglyph/status_enforcement_test.go:64` scans selectors named `Status`, `Known`, `Rejected` and `Unit`, including `Unit` on non-status types.
++Its fixed `allowedStatusConsumers` list at line 88 contains none of the new functions, and `TestStatusEnforcement_NoOutOfAllowlistConsumer` at line 134 rejects unregistered consumers.
++No card carries this registry update, so the corresponding implementation commits cannot pass their existing package guard as planned.
++This is one enumeration defect across the affected cards, separate from the Name-call chokepoint that card 11 does cover.
++
++### [MEDIUM] Plan-aware Rename parsing lacks its input and caller change
++
++**Location:** `_lyx/plan/10-csharp-rename-derivation.md:23`
++
++**Issue:** Card 2 defines `ParseRef(plan *Plan, ref string)`, and card 10 requires `renameDeclSource` to call it on the new handle body.
++The actual function at `internal/planglyph/handle.go:98` receives four strings and a result map, with no plan.
++Its sole caller at line 220 likewise supplies no plan.
++Card 10 lists the function without a re-sign arrow and does not cover its caller; no earlier card supplies the missing argument.
++The implementation therefore requires an unplanned signature/caller change to honor D3's actual-plan alphabet selection.
++
++## Review limits
++
++The instruction to perform read-only analysis and run nothing conflicts with the requirement to execute `validate-plan --overlay` before proposing target amendments.
++The read-only constraint takes precedence, so F2 and F3 identify the required repairs but withhold concrete target amendments rather than claim they were validated.
++No tests, board command, or overlay validator were run.
++The verdict follows the specified format: these findings are MEDIUM, with no BLOCKING-severity finding.
++
++## Focus departures
++
++- The directive says prior review material must not supply findings.
++  An initial wildcard read inadvertently included the current plan directory's `lens-review.md`; no finding is grounded in that file, and every retained issue was checked against the numbered cards and actual source independently.
++  No archived plan or prior-round review was opened.
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/rollout-evidence.txt b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/rollout-evidence.txt
+new file mode 100644
+index 00000000..44e5361d
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/rollout-evidence.txt
+@@ -0,0 +1,20 @@
++== med1
++id=-8b56-7cd3-9b8c-81f875035624 forked_from=- start=2026-10-27T14:24:28.531Z end=2026-10-27T14:34:26.413Z commands_total=19 inherited=0 own_commands=19 first_request="last_token_usage":{"input_tokens":16496,"cached_input_tokens":12160,"cache_write_input_tokens":0,"output_tokens":74,"reasoning_output_tokens":0,"total_tokens":1657
++id=-c489-7fa2-a62d-3aec3fb3fcc9 forked_from=01a17dbf-8b56-7cd3-9b8c-81f875035624 start=2026-10-27T14:25:47.665Z end=2026-10-27T14:28:11.830Z commands_total=17 inherited=11 own_commands=6 first_request="last_token_usage":{"input_tokens":115978,"cached_input_tokens":113024,"cache_write_input_tokens":0,"output_tokens":111,"reasonin
++id=-fc85-7c02-9ebf-36c80728ffac forked_from=01a17dbf-8b56-7cd3-9b8c-81f875035624 start=2026-10-27T14:26:01.996Z end=2026-10-27T14:30:27.096Z commands_total=20 inherited=11 own_commands=9 first_request="last_token_usage":{"input_tokens":116958,"cached_input_tokens":113792,"cache_write_input_tokens":0,"output_tokens":343,"reasonin
++id=-34e1-7410-b3f5-276c682514e0 forked_from=01a17dbf-8b56-7cd3-9b8c-81f875035624 start=2026-10-27T14:26:16.424Z end=2026-10-27T14:28:35.587Z commands_total=17 inherited=11 own_commands=6 first_request="last_token_usage":{"input_tokens":117584,"cached_input_tokens":114560,"cache_write_input_tokens":0,"output_tokens":117,"reasonin
++== med2
++id=-0505-7543-8df6-5e2c52442cb0 forked_from=- start=2026-10-27T14:34:48.982Z end=2026-10-27T14:41:03.713Z commands_total=17 inherited=0 own_commands=17 first_request="last_token_usage":{"input_tokens":16496,"cached_input_tokens":12160,"cache_write_input_tokens":0,"output_tokens":73,"reasoning_output_tokens":0,"total_tokens":1656
++id=-2483-7911-b74c-59ff407b4ab4 forked_from=01a17dc9-0505-7543-8df6-5e2c52442cb0 start=2026-10-27T14:36:02.058Z end=2026-10-27T14:38:04.282Z commands_total=15 inherited=10 own_commands=5 first_request="last_token_usage":{"input_tokens":106565,"cached_input_tokens":103552,"cache_write_input_tokens":0,"output_tokens":123,"reasonin
++id=-5ed9-7793-8e9f-68526a4af2ce forked_from=01a17dc9-0505-7543-8df6-5e2c52442cb0 start=2026-10-27T14:36:16.992Z end=2026-10-27T14:38:48.042Z commands_total=17 inherited=10 own_commands=7 first_request="last_token_usage":{"input_tokens":107545,"cached_input_tokens":104448,"cache_write_input_tokens":0,"output_tokens":154,"reasonin
++id=-981d-7030-b901-708eb8f4a633 forked_from=01a17dc9-0505-7543-8df6-5e2c52442cb0 start=2026-10-27T14:36:31.653Z end=2026-10-27T14:38:17.538Z commands_total=16 inherited=10 own_commands=6 first_request="last_token_usage":{"input_tokens":108171,"cached_input_tokens":105088,"cache_write_input_tokens":0,"output_tokens":110,"reasonin
++== med1
++handler 2026-10-27T15-24-28 agents_md_loads=1 spawn_agent_calls=4 fork_turns_all=3
++fork 2026-10-27T15-25-47 agents_md_loads=1 spawn_agent_calls=2 fork_turns_all=1
++fork 2026-10-27T15-26-01 agents_md_loads=1 spawn_agent_calls=3 fork_turns_all=2
++fork 2026-10-27T15-26-16 agents_md_loads=1 spawn_agent_calls=4 fork_turns_all=3
++== med2
++handler 2026-10-27T15-34-48 agents_md_loads=1 spawn_agent_calls=4 fork_turns_all=3
++fork 2026-10-27T15-36-02 agents_md_loads=1 spawn_agent_calls=2 fork_turns_all=1
++fork 2026-10-27T15-36-16 agents_md_loads=1 spawn_agent_calls=3 fork_turns_all=2
++fork 2026-10-27T15-36-31 agents_md_loads=1 spawn_agent_calls=4 fork_turns_all=3
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/runs/med1-result.txt b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/runs/med1-result.txt
+new file mode 100644
+index 00000000..fe7730a5
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/runs/med1-result.txt
+@@ -0,0 +1,5 @@
++rc=0 wall_seconds=600
++rollout-2026-10-27T15-24-28-01a17dbf-8b56-7cd3-9b8c-81f875035624.jsonl
++rollout-2026-10-27T15-25-47-01a17dc0-c489-7fa2-a62d-3aec3fb3fcc9.jsonl
++rollout-2026-10-27T15-26-01-01a17dc0-fc85-7c02-9ebf-36c80728ffac.jsonl
++rollout-2026-10-27T15-26-16-01a17dc1-34e1-7410-b3f5-276c682514e0.jsonl
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/runs/med1-turn-completed.json b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/runs/med1-turn-completed.json
+new file mode 100644
+index 00000000..57de619f
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/runs/med1-turn-completed.json
+@@ -0,0 +1 @@
++{"type":"turn.completed","usage":{"input_tokens":2950861,"cached_input_tokens":2795904,"cache_write_input_tokens":0,"output_tokens":12336,"reasoning_output_tokens":4304}}
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/runs/med2-result.txt b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/runs/med2-result.txt
+new file mode 100644
+index 00000000..2dd1a56a
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/runs/med2-result.txt
+@@ -0,0 +1,5 @@
++rc=0 wall_seconds=380
++rollout-2026-10-27T15-34-48-01a17dc9-0505-7543-8df6-5e2c52442cb0.jsonl
++rollout-2026-10-27T15-36-02-01a17dca-2483-7911-b74c-59ff407b4ab4.jsonl
++rollout-2026-10-27T15-36-16-01a17dca-5ed9-7793-8e9f-68526a4af2ce.jsonl
++rollout-2026-10-27T15-36-31-01a17dca-981d-7030-b901-708eb8f4a633.jsonl
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/runs/med2-turn-completed.json b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/runs/med2-turn-completed.json
+new file mode 100644
+index 00000000..7ca6a4d9
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/runs/med2-turn-completed.json
+@@ -0,0 +1 @@
++{"type":"turn.completed","usage":{"input_tokens":2392157,"cached_input_tokens":2267520,"cache_write_input_tokens":0,"output_tokens":7632,"reasoning_output_tokens":2210}}
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/usage.txt b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/usage.txt
+new file mode 100644
+index 00000000..bf462685
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/data/usage.txt
+@@ -0,0 +1,8 @@
++med1 handler wall=597 in=2950861 cached=2795904 fresh=154957 out=12336 reason=4304 commands=19 weekly_first=62.0 weekly_last=65.0
++med1 fork-affected-set wall=144 in=938785 cached=898432 fresh=40353 out=2454 reason=708 commands=6 weekly_first=63.0 weekly_last=63.0
++med1 fork-guard-reach wall=265 in=1343744 cached=1307136 fresh=36608 out=4847 reason=2214 commands=9 weekly_first=63.0 weekly_last=64.0
++med1 fork-way-forward wall=139 in=935488 cached=904064 fresh=31424 out=2138 reason=817 commands=6 weekly_first=63.0 weekly_last=64.0
++med2 handler wall=374 in=2392157 cached=2267520 fresh=124637 out=7632 reason=2210 commands=17 weekly_first=65.0 weekly_last=67.0
++med2 fork-affected-set wall=122 in=876847 cached=838528 fresh=38319 out=2429 reason=526 commands=5 weekly_first=65.0 weekly_last=66.0
++med2 fork-guard-reach wall=151 in=1015444 cached=976384 fresh=39060 out=2726 reason=894 commands=7 weekly_first=66.0 weekly_last=67.0
++med2 fork-way-forward wall=105 in=893074 cached=858112 fresh=34962 out=1925 reason=496 commands=6 weekly_first=66.0 weekly_last=67.0
+diff --git a/docs/research/codex-p2-gap-texts-bench-2026-10-27/report.md b/docs/research/codex-p2-gap-texts-bench-2026-10-27/report.md
+new file mode 100644
+index 00000000..061cc472
+--- /dev/null
++++ b/docs/research/codex-p2-gap-texts-bench-2026-10-27/report.md
+@@ -0,0 +1,179 @@
++# Codex Astra forked fan on plan P2 with block v2 and three gap study texts: two medium runs
++
++Bench of 2026-10-27, a follow-up to `docs/research/codex-v2-p2-bench-2026-10-27/report.md`.
++Codex CLI 0.164.0, ChatGPT sign-in (plan `prolite`), Linux.
++Two `codex exec` handler runs of `gpt-6-astra` at `medium` effort on the plan `P2` (`quarry-csharp`), each spawning three lens forks through `spawn_agent` with `fork_turns="all"`, one run after the other with no other Codex bench on the account.
++The lenses are the Claude fan's round 1 lenses on `P2`: `affected-set`, `guard-reach` and `way-forward`.
++The setup is `codex-v2-p2-bench`'s unchanged except for three texts copied word for word from `docs/research/claude-review-gaps-2026-10-27/report.md`: Proposals 1, 2 and 4.
++Nothing was built: the bench is shell scripts under `data/harness/`, the reviewers' own output and a hand grading.
++
++## Conclusion
++
++The three texts did not measurably change the yield: the two runs together returned 12 findings, none false, at 500k fresh input tokens, against 10 findings at 429k for the two medium runs of `codex-v2-p2-bench`, which is 2.4 against 2.3 findings per 100k fresh input tokens.
++The two new runs differ from each other more than the pooled figure differs from the earlier one: 9 findings against 3, and 3.4 against 1.3 findings per 100k fresh tokens.
++
++| Measure | New run 1 | New run 2 | Earlier medium 1 | Earlier medium 2 |
++|---|---|---|---|---|
++| Findings | 9 | 3 | 4 | 6 |
++| Real findings | 9 | 3 | 4 | 6 |
++| `BLOCKING` findings, all real | 3, of which 2 arguable | 0 | 2, of which 1 arguable | 1 |
++| False findings | 0 | 0 | 0 | 0 |
++| Claude fan `BLOCKING` findings found | 1 of 3 | 1 of 3 | 1 of 3 | 2 of 3 |
++| Fan findings found | 1 of 13 | 1 of 13 | 1 of 13 | 2 of 13 |
++| Commands per fork (`affected-set`, `guard-reach`, `way-forward`) | 6, 9, 6 | 5, 7, 6 | 5, 4, 2 | 7, 6, 4 |
++| Findings from the `way-forward` fork | 0 | 0 | 0 | 0 |
++| Fresh input tokens | 263k | 237k | 192k | 237k |
++| Window points | 3 | 2 | not attributable | not attributable |
++| Wall time | 597 s | 374 s | 255 s | 370 s |
++| Verdict | `BLOCKING` | `APPROVED` | `BLOCKING` | `BLOCKING` |
++
++- Real findings per window point were 3.0 in run 1 and 1.5 in run 2, 2.4 over the two runs (12 findings in 5 points); real `BLOCKING` findings per point were 0.6 over the two runs (3 in 5 points, 0.2 with the two arguable ones left out).
++  The earlier bench's points cannot be set against these: its medium runs read 29 to 47 and 29 to 51 while two sibling benches drew on the same window, so the earlier rows have no points of their own.
++  The comparison therefore falls back on fresh input tokens: 2.4 real findings per 100k fresh tokens over the new runs against 2.3, and 0.6 `BLOCKING` real against 0.7 (0.2 against 0.5 without the arguable ones).
++- A difference of one or two findings is inside the run-to-run spread, and so is every difference in this table: one input, one grader, and two runs of the same setting that returned 9 and 3 findings.
++  This bench cannot say the texts helped or hurt.
++- The texts did not reach the fan's other findings: each new run found only `F1` of the fan's 13, the fallback that picks `IProvider`, and neither found `F2` or `F3`.
++  The earlier medium runs found `F1` and, in one, `F2`.
++- The `way-forward` fork returned no finding in either run, as in every run of `codex-v2-p2-bench`.
++  With Proposal 4 its forks ran 6 commands each against 2 and 4 and read the recovery, rebaseline and fingerprint code of the commands the cards name, and still found no failing precondition; the fan's five `way-forward` findings (`F6`, `F7`, `F8`, `F11`, `F12`) were not found.
++- The `guard-reach` fork of run 1 ran 9 commands, the most of any fork, and returned the one new `BLOCKING` finding that rests on tracing an entry point: an earlier Delete and a re-sign into the same overload id can share a batch, and the delete's done check then answers before the re-sign pass runs (`F1` of run 1).
++  One run does not tell whether Proposals 1 and 2 caused it.
++- Run 2 returned `APPROVED`, the one verdict that differs from the fan's `BLOCKING` in any `P2` run of these benches; its three findings are all `MEDIUM`.
++  Its fan finding `F1` is rated `MEDIUM` by Astra in both new runs, as in the earlier ones.
++
++## Summary table
++
++Per-run measures, `P2` only.
++The fan reference is 13 findings, 3 of them `BLOCKING`, from `opus` at medium effort with 3 lens forks, as the earlier benches recorded.
++"Real" counts findings that hold on reading, arguable ones included; "Shared" counts findings that name a defect of the fan's list.
++Fresh input tokens are the handler's plus the three forks', each rollout's `input_tokens` less `cached_input_tokens` of its last `token_count`.
++The window is the weekly window's `used_percent`: run 1 read 62 at its first request and 65 at its last token count, run 2 read 65 and 67.
++
++| Setting | Findings | Shared with fan | Unique real | False | Fan findings found | `BLOCKING` found | Verdict as fan's | Fresh input tokens | Window points | Wall time |
++|---|---|---|---|---|---|---|---|---|---|---|
++| `gpt-6-astra` medium 1, forked fan, block v2 and gap texts | 9 | 1 | 8 | 0 | 1 of 13 | 1 of 3 | yes | 263k | 62 to 65 | 597 s |
++| `gpt-6-astra` medium 2, forked fan, block v2 and gap texts | 3 | 1 | 2 | 0 | 1 of 13 | 1 of 3 | no (`APPROVED`) | 237k | 65 to 67 | 374 s |
++| Union of the two runs | 10 | 1 | 9 | 0 | 1 of 13 | 1 of 3 | | 500k | 62 to 67 | 971 s in sequence |
++| Earlier medium 1, block v2 | 4 | 1 | 3 | 0 | 1 of 13 | 1 of 3 | yes | 192k | 29 to 47, shared | 255 s |
++| Earlier medium 2, block v2 | 6 | 2 | 4 | 0 | 2 of 13 | 2 of 3 | yes | 237k | 29 to 51, shared | 370 s |
++| Earlier union of the two medium runs | 7 | 2 | 5 | 0 | 2 of 13 | 2 of 3 | yes | 429k | 29 to 51, shared | 370 s in parallel |
++
++The union row's findings are distinct defects: of the 12 findings the runs returned, 2 name defects both runs found.
++The earlier rows are `codex-v2-p2-bench`'s, copied from its report.
++
++## Per call
++
++| Run | Call | Wall time | Fresh input tokens | Output tokens | Reasoning tokens | Commands |
++|---|---|---|---|---|---|---|
++| 1 | Handler | 597 s | 155k | 12.3k | 4.3k | 19 |
++| 1 | Fork `affected-set` | 144 s | 40k | 2.5k | 0.7k | 6 |
++| 1 | Fork `guard-reach` | 265 s | 37k | 4.8k | 2.2k | 9 |
++| 1 | Fork `way-forward` | 139 s | 31k | 2.1k | 0.8k | 6 |
++| 2 | Handler | 374 s | 125k | 7.6k | 2.2k | 17 |
++| 2 | Fork `affected-set` | 122 s | 38k | 2.4k | 0.5k | 5 |
++| 2 | Fork `guard-reach` | 151 s | 39k | 2.7k | 0.9k | 7 |
++| 2 | Fork `way-forward` | 105 s | 35k | 1.9k | 0.5k | 6 |
++
++The handler's figures are its own thread's, so the forks' rows add to it; a handler's wall time is the rollout's, and a fork's runs from spawn to its last message.
++A fork's command count is its own: its rollout also holds the handler's commands made before the spawn, 11 in run 1 and 10 in run 2, which `data/harness/usage.sh` subtracts.
++`data/usage.txt` holds every figure with the window readings per rollout.
++
++## Fork evidence
++
++`data/rollout-evidence.txt` holds the figures; both runs pass the checks the earlier bench set.
++
++- Started: each handler's rollout holds three `spawn_agent` calls with `fork_turns` set to `"all"`, about 14 s apart.
++  The fork bodies are encrypted, so the fork prompts cannot be read.
++- Concurrent: the forks of run 1 ran 14:25:47 to 14:28:11, 14:26:01 to 14:30:27 and 14:26:16 to 14:28:35 UTC, overlapping from 14:26:16 to 14:28:11; run 2 overlaps from 14:36:31 to 14:38:04.
++- Inherited context: each fork's `session_meta` carries `forked_from_id` of its handler's session, and its first request already held 116k to 118k input tokens in run 1, against 16k for the handler's first.
++- `AGENTS.md` loaded: every rollout holds an `AGENTS.md instructions for` block; the snapshot's `AGENTS.md` and `CLAUDE.md` hash alike (`data/context-hashes.txt`).
++- The runs ran one after the other, run 2 starting 20 s after run 1 ended, and no other `codex exec` ran on the machine (`ps` read zero before run 1).
++
++## The findings
++
++`data/match.tsv` holds each reading; `data/reviews/P2/<run>/` holds the handlers' reviews and the forks' final messages.
++No handler dropped a finding its forks returned.
++
++| Defect | Severity (own) | Run 1 | Run 2 | Grade |
++|---|---|---|---|---|
++| `declaredNameIndex` fallback picks `IProvider` | `MEDIUM` | `F4` | `F1` | shared, fan `F1` |
++| Cards 6, 8, 11 and 12 add status and `Unit` readers outside `allowedStatusConsumers` | `MEDIUM` | `F6` | `F2` | `unique-real` |
++| Card 6's resolve half reads a `.cs` symbol from a `Uses` ref as a changed C# target | `MEDIUM` | `F5` | | `unique-real` |
++| `renameDeclSource` calls `ParseRef` with no plan to give it | `MEDIUM` | | `F3` | `unique-real` |
++| An earlier Delete and a re-sign into the same overload id can share a batch, and the delete's done check answers before `RebindResigns` | `BLOCKING` | `F1` | | `unique-real` |
++| `TestRenameCSharpDecl` tests an unexported helper directly | `BLOCKING` | `F2` | | `unique-real`, severity arguable |
++| Card 14 defers the package docs and the PATTERN text past their implementing cards | `BLOCKING` | `F3` | | `unique-real`, arguable |
++| `PathEntryPath` is an exported symbol with two consumers, created inside card 6 | `MEDIUM` | `F7` | | `unique-real` |
++| Card 5 says `none` already skipped every gated check, but an existing row says it fires | `LOW` | `F8` | | `unique-real` |
++| `Plan.Language`'s field comment names only `go` and `none` | `LOW` | `F9` | | `unique-real` |
++
++- The fallback finding and the status-registry finding are the two defects both new runs share; both were also in the earlier medium runs.
++  The earlier runs' unreached operator refusal of card 10, which all three runs of `codex-v2-p2-bench` found and rated `BLOCKING`, appears in neither new run.
++- The overload-replacement finding holds by reading: card 11 lines 39 to 40 permit an earlier card to delete an overload before another is re-signed into its id; `renameBoundaries` (`internal/batcher/boundary.go` lines 12 to 29) covers only a later Rename old side or Delete, and card 13's new boundary only a later use of the re-sign's old glyph, so the two cards may share a batch; after the batch the id exists again, `DoneChecks` treats every answer but `not_found` as still existing for a Delete (`internal/planglyph/donecheck.go` lines 96 to 100 and 201 to 205), and `postBatchChecks` returns on that before the re-sign pass (`internal/websterengine/recordbatch.go` lines 829 to 849).
++  It was graded by reading the cards and code, not by running a plan.
++- The private-helper finding holds on `pattern/PATTERN-test-economy.md` line 7 and card 10 line 41; whether it is `BLOCKING` is arguable, as is card 14's, which rests on `CLAUDE.md`'s rule that docs land in the same commit as the code.
++- The fan findings found by neither new run are `F2` to `F13`, as for the earlier runs but `F2`, which one earlier run found.
++
++## Method
++
++### Inputs and prompts
++
++`P2` is rebuilt with `data/harness/build.sh` from the weft commit `394715f7f` and the code commit `750903aef` in `data/inputs.txt`.
++The round's focus file is part of the input, as in the Claude round.
++The harness is `codex-v2-p2-bench`'s with `ROOT` changed to this worktree, plus three changes and one new script:
++
++- `build-fan.sh` overrides the template's `guard-reach` and `way-forward` texts after reading them, each by replacing the closing `Your list` sentence and failing when that sentence is not the template's.
++  `guard-reach` keeps the template's sentences up to "are findings." and takes Proposal 1's `Find the recurrences` and `For a value a card copies` sentences, Proposal 2's added `For each check a card prescribes` sentence and Proposal 1's `Your list`, in that order, since Proposal 1 replaces the old `Your list` and Proposal 2 adds before it.
++  `way-forward` keeps the template's sentences up to "are findings." and takes Proposal 4's two sentences and its `Your list`.
++- `build-forkfan.sh` changes "one hop beyond it" to "beyond it along the input's path" in the fork boilerplate (Proposal 2) and fails when the old words remain or the new ones are absent.
++  Block v2's own "one hop beyond the cards" bullet is unchanged.
++- `data/prompts/block-v2-gap.md` is `block-v2.md` with Proposal 1's reading bullet added after the bullet on the functions a card changes and their callers.
++- `usage.sh` is new and prints one line per rollout.
++
++`data/prompts/diff-against-earlier-handler-prompt.txt` and `diff-against-earlier-step-2.txt` hold the only differences against `codex-v2-p2-bench`'s prompts: the added bullet, the two lens texts and the boilerplate wording.
++The context is as before: the PATTERN overview inlined as production renders it, the snapshot's `CLAUDE.md` as `AGENTS.md`, and the fork cap of 20 tool calls.
++
++### Call
++
++```text
++CODEX_HOME=<scratch>/codex-home-<run> codex exec -m gpt-6-astra -c model_reasoning_effort="medium" \
++  -s workspace-write -C <work> --skip-git-repo-check --json -o <last-message> - < prompt
++```
++
++Run 1 started at 14:24:27 UTC and run 2 at 14:34:47 UTC, run 2 only after run 1 had ended.
++The scratch `CODEX_HOME` of each run holds only a link to the operator's `auth.json`, so the operator's `config.toml` did not apply.
++No feature flag was set.
++
++### Grading
++
++One Claude session graded every handler finding as the earlier benches did, against the fan's round-1 findings of `P2` (`docs/research/codex-review-bench-2026-10-25/data/claude-findings.tsv`), and an unmatched finding against the cited card lines and the snapshot's code.
++`shared` means the finding names the same defect as a fan finding; `unique-real` means the claim holds and the fan's round has no finding of it; `false` means it does not hold.
++The main measure is real findings, not overlap with the fan's list: two runs of a reviewer at this temperature do not find the same things, so matching one Claude round's list is a weak measure.
++
++## Deviations and limits
++
++- One input, two runs and one grader: a difference of one or two findings, or of a few tenths of findings per window point, is inside the run-to-run spread, and the two new runs themselves differ by 6 findings.
++- The window readings are whole percents, so a run's 3 or 2 points carry an error of about one point each, which is a third to a half of the figure.
++  Run 1's start of 62 is the first request's reading, so any use before it is not counted; run 2's start is run 1's last reading.
++  Nothing else drew on the Codex account during the two runs as far as the machine shows, but the account is the operator's and other devices are not visible.
++- The earlier bench's points are shared with its siblings, so no per-point comparison exists; the tokens-based rate stands in, and fresh tokens are a different cost from window points (the new run 1 used 263k tokens for 3 points and run 2 237k for 2).
++- The grader is a Claude session and may favour its own family's phrasing; the `unique-real` rates are not validated, and the `BLOCKING` grades of the private-helper and card 14 findings are arguable, so the `BLOCKING` real counts show the arguable ones apart.
++- The fork prompts are encrypted in the rollouts; that each fork's text held the new lens texts, the reading bullet, the changed boilerplate and the cap of 20 rests on the build script's checks and on the handler following the cluster rules.
++- Recall is against the fan's list, not against the truth; the `unique-real` findings hold on reading, so the fan reference is not complete for `P2`.
++- Proposals 1, 2 and 4 target defects of `P4` and `P1`, not of `P2`, so this bench tests whether the texts cost or add on a plan they were not written for; it does not test whether they catch their targets.
++- No run of block v2 without the three texts exists in this bench; the comparison is to `codex-v2-p2-bench`, whose two medium runs ran at the same effort but concurrently with two sibling benches.
++- The operator's `~/.codex/config.toml` was not hashed before or after this bench.
++
++## Data
++
++`data/` holds:
++
++- `inputs.txt`: the input with weft commit, round start time and code commit.
++- `usage.txt`: one line per call with wall seconds, tokens, command count and the weekly `used_percent` at the call's first and last `token_count`.
++- `rollout-evidence.txt`: start, end, parent thread, commands, first request and totals of each rollout, then the `spawn_agent` and `AGENTS.md` counts per rollout.
++- `context-hashes.txt`: the hashes of `AGENTS.md`, `CLAUDE.md`, `PATTERN.md` and both block files.
++- `match.tsv`: the grading of every handler finding.
++- `reviews/P2/<run>/`: each handler's review and its three forks' final messages.
++- `runs/`: each run's exit code, wall time and last turn's usage.
++- `prompts/`: the handler prompt, the review step's instructions, block v2 with Proposal 1's bullet, the two changed lens texts and the two diffs against the earlier bench.
++- `harness/`: `build.sh`, `build-fan.sh`, `build-forkfan.sh`, `run-forkfan.sh`, `setup-codex-home.sh`, `windows.sh`, `dump.sh`, `evidence.sh` and `usage.sh`, working on `.scratch/bench/`, which is not committed.
