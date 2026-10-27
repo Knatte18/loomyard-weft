@@ -783,7 +783,7 @@
     {
       "id": 833,
       "handle": "B2",
-      "slug": "hub-reader-creates-lyx",
+      "slug": "hub-reader-creates-lym",
       "title": "A read creates directories: state.ReadJSON mkdirs, so a hub reader leaves a real _lyx in a half-built pair",
       "kind": "note",
       "labels": [

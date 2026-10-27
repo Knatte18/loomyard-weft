@@ -1,6 +1,6 @@
 # A read creates directories: state.ReadJSON mkdirs, so a hub reader leaves a real _lyx in a half-built pair
 
-`hub-reader-creates-lyx` · Note · bug, fabric, orch, batten
+`hub-reader-creates-lym` · Note · bug, fabric, orch, batten
 
 ## Seen (scripted-edits-allowed, 2026-10-26)
 
