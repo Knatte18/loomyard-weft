@@ -54,4 +54,4 @@ The cause was a hub-wide reader: the `lym batten overview` window and the tender
 - `TestEnforcement_MarkdownLinks/repo` (`internal/lymcwd`) fails on this branch's fork point, independent of this change.
   The broken links are in the captured `docs/research/*-bench-2026-10-27/data/prompts/step-1-explore-fan.md` files from main's bench commits.
   Per the parent's decision "Leave the bench link breaks to main", this change touches neither those files nor the link allowlist.
-  The task `docs-link-skip-bench-data` fixes the guard on main, and this branch takes that fix in from main.
+  Main fixes the guard in af42ee01, "Markdown link guard skips verbatim research data", and this branch takes it in through the merge of main, ef75dac5.
