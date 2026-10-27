@@ -1,9 +1,8 @@
 {
   "current_producer": "Darn-Write",
-  "state": "paused",
+  "state": "running",
   "error": "",
   "pause_requested": false,
-  "pause_reason": "re-launched onto Darn-Write",
   "activity": {
     "now": "Darn-Write",
     "last": "Darn-Write → goto",

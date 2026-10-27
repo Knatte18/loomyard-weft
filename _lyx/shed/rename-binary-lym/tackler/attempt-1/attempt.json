@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Darn-Write",
+    "history_length": 3,
+    "state": "blocked"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "62af1761aebba2c3af7770a2b6eb9548580ae71b",
+    "branch": "rename-binary-lym",
+    "dirty": {}
+  },
+  "spawned_at": "2026-10-27T08:31:34.585988757+01:00",
+  "deadline": "2026-10-27T08:41:34.585988757+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYXHUB/rename-binary-lym/_lyx/shed/rename-binary-lym/drive-reports/drive-envelope-20261027-083134-2d26.json",
+  "report_path": "/home/knatte/Code/loomyard-LYXHUB/rename-binary-lym/_lyx/shed/rename-binary-lym/drive-reports/drive-report-20261027-083134-7cdd.md",
+  "strand_guid": "708ec0f77333703eec7ba03cc0afec75"
+}
