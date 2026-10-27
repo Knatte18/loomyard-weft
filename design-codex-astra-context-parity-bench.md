@@ -1,6 +1,6 @@
 # Bench the forked Codex Astra fan with the Claude reviewers context
 
-`codex-astra-context-parity-bench` · Task · research, codex, burler · running · Drift-Verify
+`codex-astra-context-parity-bench` · Task · research, codex, burler · running · Finalize
 
 ## Question
 
