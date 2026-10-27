@@ -1,0 +1,11 @@
+{
+  "verdict": "hand-back",
+  "reason": "The Darn-Write verify gate fails deterministically on the same two tier0 tests in all four attempts: TestEnforcement_MarkdownLinks and its /repo subtest (internal/lymcwd/docslink_test.go).\nThe test reports 569 broken relative links, all in committed bench data under docs/research/*-bench-2026-10-27/data/prompts/, for example docs/research/codex-v2-p4-bench-2026-10-27/data/prompts/step-1-explore-fan.md lines 119-129, which link to pattern/PATTERN-*.md from a directory where that path does not resolve.\nThose files were added in c7b48fa5, the merge-base of this branch and main.\nThe three commits on this branch (58f313c9, caacb180, c411bbb1) touch neither docs/research nor the link test nor pattern/, so the failure predates the writer's work and a plain relaunch or a goto to Darn-Write would fail the same way.\nCommit 04aafa88 (PATTERN.md cut) removed the linked pattern files, which is the likely source of the broken targets.\nFixing it needs a choice the run's parent makes: rewrite links in bench records (measurement artifacts), exempt docs/research from the link check, or land the fix on main first, where the same test is also expected to fail.\n",
+  "question": "The tier0 gate fails on TestEnforcement_MarkdownLinks in every Darn-Write attempt, and the 569 broken links are in bench data inherited from the base commit c7b48fa5, not from this branch's three commits. Which should the run take: (1) repair the links in docs/research/*-bench-2026-10-27/data/prompts/ to the existing pattern files, (2) exempt docs/research from the markdown link check, or (3) land a fix for the link check on main first and rebase this branch?\n",
+  "goto": "",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/hub-reader-creates-lym/_lym/shed/hub-reader-creates-lym/tackler/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/hub-reader-creates-lym/_lym/shed/hub-reader-creates-lym/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": ""
+}
