@@ -17,9 +17,9 @@
 - `internal/beamcli/doc.go`
 
 **Create:**
-- `plan:internal/dobbyengine#reexecLockWait` -> `const reexecLockWait = 10 * time.Second`
-- `plan:internal/dobbyengine#ReadsAsReexec` -> `func ReadsAsReexec(statePath string, pid int, startTicks string) (bool, error)`
-- `plan:internal/dobbyengine#TestReadsAsReexec` -> `func TestReadsAsReexec(t *testing.T)`
+- `internal/dobbyengine#reexecLockWait`
+- `internal/dobbyengine#ReadsAsReexec`
+- `internal/dobbyengine#TestReadsAsReexec`
 
 **Uses:**
 - `internal/selfexec#Watcher.CheckWith`

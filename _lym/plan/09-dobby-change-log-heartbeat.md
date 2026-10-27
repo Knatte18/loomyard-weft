@@ -21,10 +21,10 @@
 - `internal/dobbyengine#passKind.String`
 
 **Create:**
-- `plan:internal/dobbyengine#heartbeatInterval` -> `const heartbeatInterval = 10 * time.Minute`
-- `plan:internal/dobbyengine#daemon.heartbeat` -> `func (d *daemon) heartbeat(now time.Time, runs []RunView)`
-- `plan:internal/dobbyengine#TestLog_ChangesOnly` -> `func TestLog_ChangesOnly(t *testing.T)`
-- `plan:internal/dobbyengine#TestRun_Heartbeat` -> `func TestRun_Heartbeat(t *testing.T)`
+- `internal/dobbyengine#heartbeatInterval`
+- `internal/dobbyengine#daemon.heartbeat`
+- `internal/dobbyengine#TestLog_ChangesOnly`
+- `internal/dobbyengine#TestRun_Heartbeat`
 
 **Uses:**
 - `internal/dobbyengine#newPassHarness`
