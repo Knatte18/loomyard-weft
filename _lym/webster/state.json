@@ -327,7 +327,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "4b391991c73503e031a1cbe663fd375c",
   "masterSessionId": "6bae80f5-54af-46f3-a363-1efcff37f319",
   "masterEngine": "claude",
@@ -375,6 +375,30 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-dobby-and-adopt-hardening/6bae80f5-54af-46f3-a363-1efcff37f319/subagents/agent-acd4c719ce54473dd.jsonl"
       ]
+    },
+    "7": {
+      "slug": "dobby-start-and-exits",
+      "cards": [
+        "07-dobby-start-and-exits",
+        "08-dobby-worktree-gone",
+        "09-dobby-change-log-heartbeat",
+        "10-dobby-cli-exits-and-out",
+        "11-gate-adopt-key"
+      ],
+      "cardHashes": {
+        "07-dobby-start-and-exits": "83054711cbe283db867bb08fd2c6abd6118143c07e7f6244a305a581332e9098",
+        "08-dobby-worktree-gone": "8a08ce3869f2c71092ea090ee0407b6ad814b37fc72d8e9925ab7fd54285e9c0",
+        "09-dobby-change-log-heartbeat": "0f35690e274c00c8022342c1b724f660571b9116e126c4b80100363dd0b297f3",
+        "10-dobby-cli-exits-and-out": "48901afe07a3f1fa8110b40c365f93143d371c0b668e130788f9ef65e9c25e0d",
+        "11-gate-adopt-key": "4ab81af7ea25a6a0ae103ad6b06bd1a13976213429309408a7024650a5919e7e"
+      },
+      "startSha": "fd60b7c5c72c2aa049049f58f2c01bde11b1d6a5",
+      "kind": "fork",
+      "spawnedAt": "2026-10-27T16:37:55Z",
+      "sessionId": "6bae80f5-54af-46f3-a363-1efcff37f319",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
