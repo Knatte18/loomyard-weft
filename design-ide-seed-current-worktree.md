@@ -1,14 +1,39 @@
-# lym ide seed with no slug seeds the worktree it runs in
+# VS Code colours by project and worktree, and lym ide seed with no slug
 
-`ide-seed-current-worktree` · Note · enhancement, ide
+`ide-seed-current-worktree` · Note · enhancement, ide, workspaces
 
 ## Seen
 
 `lym ide seed <slug>` requires a slug, and its help names only task worktrees.
-A fresh `lym fabric clone` leaves the prime with no `.vscode/`, while every task worktree gets one from its run; seeding the prime took `lym ide seed loomyard` with the prime's name spelled out.
+A fresh `lym fabric clone` leaves the prime with no `.vscode/`; seeding it took `lym ide seed loomyard` with the prime's name spelled out.
+Every worktree today gets one title-bar colour from `vscode.PickColor`, the prime included (issue #882), and nothing shows which beam a worktree belongs to.
 
-## Idea
+## Design (agreed with the operator, 2026-10-27)
 
-The slug becomes optional: with none, `lym ide seed` seeds the worktree the current directory sits in, the prime included, with the prime's green title bar (issue #882).
-The help text names the prime as well as task worktrees.
+Only two areas are coloured, since they are the only ones that keep their colour in an unfocused window (tested in VS Code 1.142 on Linux, custom title bar):
+
+- **Title bar** (`titleBar.activeBackground` and `titleBar.inactiveBackground`, the same colour for both): the project's colour. The window manager draws the window edge in the same colour.
+- **Activity bar** (`activityBar.background`): the worktree's own colour.
+
+No other colour key is written: the status bar loses its background in an unfocused window while its text colour stays, `window.activeBorder` is not drawn, and tab colours change with the selected tab.
+
+The colours:
+
+- **Prime**: green title bar and green activity bar.
+- **Task under the prime**: green title bar; activity bar any palette colour but green.
+- **Beam**: picked when `lym beam create` makes the beam, from the palette less green and the colours other beams hold, and recorded on the beam so it stays the same at every open; title bar and activity bar both take it.
+- **Task under a beam**: the beam's colour on the title bar; activity bar any palette colour but the beam's.
+- Within one parent, a task's activity-bar colour avoids its sibling tasks' colours while the palette has one free.
+
+Text colour follows the background's luminance: white on a dark colour, black on a light one.
+The palette stays mostly dark, so text is mostly white.
+
+## lym ide seed with no slug
+
+The slug becomes optional: with none, `lym ide seed` seeds the worktree the current directory sits in, the prime included.
+The help names the prime as well as task worktrees.
 `fabric clone` stays IDE-free.
+
+## Open
+
+The window title text (for example the hub shortname, `LY: <slug>`) is not decided yet.
