@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-27 12:36 UTC; every age below is as of then.
+Rendered 2026-10-27 12:37 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -108,12 +108,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R5 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 4d<br>2h | webster |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 4d<br>2h | loom, stencil |
 | R8 |  | **Ideas from r/ClaudeCode "one line in your CLAUDE.md": fit for LoomYard and bench measures**<br>• About 30 ideas judged against our stencils and rules; top 8 ranked for a bench, a few cheap enough without one | [`claude-md-thread-ideas`](design-claude-md-thread-ideas.md) | 21h<br>2h | stencil, loom, burler |
-
-## Done (2)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T1 | **Bench the forked Codex Astra fan with the Claude reviewers context**<br>• Forked Astra fan, high, on P4, with the PATTERN overview inlined and CLAUDE.md as AGENTS.md<br>• `profile: docs` | [`codex-astra-context-parity-bench`](design-codex-astra-context-parity-bench.md) | 24m<br>24m | codex, burler |
-| T2 | **Bench the forked Codex Astra fan with a Codex-tuned reviewer prompt**<br>• Context parity plus a prompt block asking for code, PATTERN-background and test reads, Astra high, on P4<br>• `profile: docs` | [`codex-astra-tuned-prompt-bench`](design-codex-astra-tuned-prompt-bench.md) | 24m<br>24m | codex, burler |
