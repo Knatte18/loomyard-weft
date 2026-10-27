@@ -20,6 +20,7 @@ No other colour key is written: the status bar loses its background in an unfocu
 The colours:
 
 - **Prime**: green title bar and green activity bar.
+  The palette's green, `mainColor` and `palette[0]` in `internal/vscode/color.go`, becomes the darker `#1b5e20` in place of `#2d7d46`, which the operator found too light.
 - **Task under the prime**: green title bar; activity bar any palette colour but green.
 - **Beam**: picked when `lym beam create` makes the beam, from the palette less green and the colours other beams hold, and recorded on the beam so it stays the same at every open; title bar and activity bar both take it.
 - **Task under a beam**: the beam's colour on the title bar; activity bar any palette colour but the beam's.
