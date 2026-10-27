@@ -64,12 +64,6 @@ Merriam refuses the notice `lym loom decision add` sends, since it comes from `l
 While a run is at Webster, record the decision with the verb as usual, then message Merriam (`<shortname>:<slug>:webster`) yourself with the decision's content spelled out.
 Remove this section once #849 is fixed.
 
-## A decision for a working darn writer (#871)
-
-A darn writer works in one long turn, and creel delivers the notice `lym loom decision add` sends only when the writer is idle.
-After recording a decision for a darn run whose writer is working, also send the decision's content by `SendMessage` to `<shortname>:<slug>:darn`.
-Remove this section once #871 is fixed.
-
 ## A board body holds the current design only
 
 When a newer design, decision or answer replaces part of an entry's body, rewrite the body so it holds only what stands now: remove the replaced drafts, recommendations and open questions in the same write, never keep them under a "this replaces everything above" line (operator, 2026-10-25).
