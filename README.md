@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-27 07:46 UTC; every age below is as of then.
+Rendered 2026-10-27 07:47 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -38,7 +38,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Rename lyx to lym (LoomYard Mill): binary, LYXHUB suffix, LYX_ variables and _lyx/.lyx directories** | [`rename-binary-lym`](design-rename-binary-lym.md) | darn | Describe | neve | 11d<br>22m | stencil, shuttle |
+| T1 | **Rename lyx to lym (LoomYard Mill): binary, LYXHUB suffix, LYX_ variables and _lyx/.lyx directories** | [`rename-binary-lym`](design-rename-binary-lym.md) | darn | PR-Review | neve | 11d<br>22m | stencil, shuttle |
 
 ### Ready (0)
 
@@ -58,16 +58,16 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B2 |  | **A read creates directories: state.ReadJSON mkdirs, so a hub reader leaves a real _lyx in a half-built pair** | [`hub-reader-creates-lyx`](design-hub-reader-creates-lyx.md) | 19h<br>19h | fabric, orch, batten |
 | B3 |  | **Dobby dies at a deploy instead of re-executing onto the new binary**<br>• After a landing deploy the prime dobby was gone, its board-tidy agent left open | [`dobby-reexec-on-deploy`](design-dobby-reexec-on-deploy.md) | 16h<br>16h | workspaces, batten |
 | B4 |  | **Board README lists draft tasks under Ready** | [`readme-draft-not-ready`](design-readme-draft-not-ready.md) | 1d<br>1d | board |
-| B5 |  | **Board tidy counts landings per machine, not per owner**<br>• A dobby that does not own root tidies landings another machine already tidied | [`tidy-count-per-owner`](design-tidy-count-per-owner.md) | 29m<br>29m | workspaces |
+| B5 |  | **Board tidy counts landings per machine, not per owner**<br>• A dobby that does not own root tidies landings another machine already tidied | [`tidy-count-per-owner`](design-tidy-count-per-owner.md) | 30m<br>30m | workspaces |
 
 ### Enhancements (20)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Beam promote keeps the Discussion record as part of the beam**<br>• When Discussion finds a task should be a project, promote carries its decision record into the beam instead of dropping it | [`beam-promote-keeps-discussion`](design-beam-promote-keeps-discussion.md) | 1d<br>16h | workspaces, batten, loom |
-| E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>36m | shuttle, codex |
+| E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>37m | shuttle, codex |
 | E3 |  | **Dobby log: changes and a heartbeat only, and bounded**<br>• dobby.log grows without bound with a line per pass; log changes plus a 10-minute heartbeat, under retention | [`dobby-log-bounded`](design-dobby-log-bounded.md) | 15h<br>15h | workspaces |
-| E4 |  | **Cutover to lym after the rename lands**<br>• The operator steps that move every hub to lym once rename-binary-lym has landed | [`lym-cutover-steps`](design-lym-cutover-steps.md) | 1m<br>1m | fabric |
+| E4 |  | **Cutover to lym after the rename lands**<br>• The operator steps that move every hub to lym once rename-binary-lym has landed | [`lym-cutover-steps`](design-lym-cutover-steps.md) | 2m<br>2m | fabric |
 | E5 |  | **Decide the layout of projects in the board README**<br>• The operator is not satisfied with how the README renders projects and their members; the layout is to be decided | [`board-projects-layout`](design-board-projects-layout.md) | 2d<br>2d | board |
 | E6 |  | **Board README: one rendered file per project, research notes first**<br>• Each project renders its own file linked from its parent; README.md is the root project; research notes come right after tasks | [`readme-per-project-files`](design-readme-per-project-files.md) | 1d<br>1d | board |
 | E7 |  | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 12d<br>1d | shed, loom |
