@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Darn-Write → goto",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -103,6 +103,69 @@
       "outcome": "goto",
       "output": "",
       "at": "2026-10-27T07:32:00Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/rename-binary-lym/_lyx/landing/summary.md",
+      "at": "2026-10-27T07:40:15Z",
+      "gate_attempts": 2,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-27T07:35:21.6189751Z",
+          "end": "2026-10-27T07:35:30.396637934Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-27T07:36:02.366040054Z",
+          "end": "2026-10-27T07:36:11.490773548Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-27T07:36:27.639337002Z",
+          "end": "2026-10-27T07:36:36.869636821Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-27T07:35:30.429278037Z",
+          "end": "2026-10-27T07:35:38.891722012Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-27T07:35:39.294291388Z",
+          "end": "2026-10-27T07:36:02.343993557Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-27T07:36:11.528766988Z",
+          "end": "2026-10-27T07:36:20.197866385Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-27T07:36:20.59134819Z",
+          "end": "2026-10-27T07:36:27.614167694Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-27T07:36:36.910354639Z",
+          "end": "2026-10-27T07:40:14.57611942Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-27T07:40:14.613992866Z",
+          "end": "2026-10-27T07:40:14.614029144Z"
+        }
+      ]
     }
   ],
   "product": {
