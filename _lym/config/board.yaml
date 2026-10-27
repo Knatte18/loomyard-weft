@@ -1,15 +1,15 @@
 types: # type labels with their descriptions: a note carries exactly one, a task one or more
-    bug: lyx does something wrong
-    enhancement: something lyx already does gets cheaper, clearer or sturdier, with no new capability
-    feature: lyx gains something it cannot do today
+    bug: lym does something wrong
+    enhancement: something lym already does gets cheaper, clearer or sturdier, with no new capability
+    feature: lym gains something it cannot do today
     research: a measurement, bench or study; runs as darn with profile docs, never as loom
 labels:
-    board: the task tracker, lyx board
-    config: config files under _lyx/config and their loading
-    ide: VS Code integration, lyx ide
+    board: the task tracker, lym board
+    config: config files under _lym/config and their loading
+    ide: VS Code integration, lym ide
     reed: the tmux server, sessions and strands
     fabric: warp/weft pairs and their git verbs
-    selfreport: anomalies lyx files about itself
+    selfreport: anomalies lym files about itself
     shuttle: launching and driving agent sessions
     burler: review rounds
     webster: plan execution by cards and batches
@@ -22,11 +22,11 @@ labels:
     creel: the message layer every agent, program and operator uses to reach an agent
     claude: the Claude Code engine, shuttleengine/claudeengine and its config
     codex: the Codex CLI engine and its config
-    report: 'lyx report: read-only reports over the hub records and history (internal/reportengine)'
+    report: 'lym report: read-only reports over the hub records and history (internal/reportengine)'
     workspaces: 'umbrella tasks: project worktrees with their own orch thread, VS Code workspaces and pairs under them'
     deploy: update-plugins.sh, deploy-dev and the prod pointer (tools/deploy)
     dotnet: 'support for .NET/C# hubs: gate, verify tiers, scoping and baselines for a C# repository such as NORCE Models'
-    gate: lyx gate test, the gate-slot pool and the verify test tiers
+    gate: lym gate test, the gate-slot pool and the verify test tiers
     testkit: the shared test helpers under internal/testkit
     pattern: PATTERN.md, its pattern/ background files and their checks (internal/pattern)
     shortcut: the top-level shortcut verbs, internal/shortcutcli

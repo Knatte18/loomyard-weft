@@ -18,7 +18,7 @@ tiers:
     counter: go-json
     parallel: 4
     timeout_min: 30
-    prebuilt_lyx: true
+    prebuilt_lym: true
   tier2:
     about: tmux tests
     command: "go test -json -tags tier2 {targets} {args}"
@@ -27,7 +27,7 @@ tiers:
     counter: go-json
     parallel: 4
     timeout_min: 30
-    prebuilt_lyx: true
+    prebuilt_lym: true
   tier3:
     about: llm tests run by hand only
     command: "go test -json -tags tier3 {targets} {args}"
@@ -36,7 +36,7 @@ tiers:
     counter: go-json
     parallel: 1
     timeout_min: 60
-    prebuilt_lyx: true
+    prebuilt_lym: true
     manual: true
 gates:
   batch: {tiers: [0, 1], scope: card}
