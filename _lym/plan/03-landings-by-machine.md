@@ -26,8 +26,8 @@ An entry with an empty `Machine`, written before card 1, is never counted, and n
 Its doc comment says so.
 
 `hubDobbyDeps` wires `Landings` to `machineLandings(machinename.Name, …)`, which reads the machine's name on each call and passes it to `DobbyLandings`.
-A name read that fails, or an empty name, returns `this machine's name is unknown, so its landings cannot be told apart: <error>; way forward: give the machine a hostname`, which the tick reports as a failed landing read (`read the landings: …`) through the loop's existing tick-failure episode.
-`TestMachineLandings` (tier0) has three rows: a name `m1` reaches `read` with `m1` and returns its slugs; a failing name read returns an error naming the read's error and `give the machine a hostname`, and never calls `read`; an empty name does the same.
+A name read that fails returns `this machine's name is unknown, so its landings cannot be told apart: <error>; way forward: give the machine a hostname`, which the tick reports as a failed landing read (`read the landings: …`) through the loop's existing tick-failure episode.
+`TestMachineLandings` (tier0) has two rows: a name `m1` reaches `read` with `m1` and returns its slugs; a failing name read returns an error naming the read's error and `give the machine a hostname`, and never calls `read`.
 
 `internal/dobbyengine#Deps`' `Landings` field doc and `internal/dobbyengine/doc.go`'s board-tidy bullet, which say every Land Done is counted, now say only the landings whose Land Done names this machine are.
 
