@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Baseline → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -21,6 +21,33 @@
       "output": "",
       "at": "2026-10-27T11:08:29Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/codex-astra-fork-fan-bench/_lym/landing/summary.md",
+      "at": "2026-10-27T11:26:56Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-27T11:26:47.511313698Z",
+          "end": "2026-10-27T11:26:55.345920028Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-27T11:26:55.386537292Z",
+          "end": "2026-10-27T11:26:55.483875287Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-27T11:26:55.522891059Z",
+          "end": "2026-10-27T11:26:55.522914773Z"
+        }
+      ]
     }
   ],
   "product": {
