@@ -21,10 +21,8 @@ The board still put a draft task with no open dependency under Ready ("waits on 
 
 - A draft task with open dependencies, and an isolated draft task, both go under Draft rather than their letter layer or Independent: release is the first thing either waits on, and the After column still names the open dependencies.
 - The `draft` code span on the title cell stays.
-  Now that every draft task renders under Draft, the span repeats what the section heading already says.
-  The decision record gives a different reason for keeping it: that project member tables and Running rows rely on the span.
-  That reason is wrong: member tables never showed the span, and a draft task is never Running.
-  The span is kept anyway because it costs nothing and still marks a draft task wherever its cell is copied.
+  Under the Draft heading it repeats what the heading says, but it remains the only draft mark on a run-held draft task's Running row.
+  The decision record also cites project member tables as relying on the span; they never showed it, and now name the standing `Draft` in their own column instead.
 
 ## Tests
 
