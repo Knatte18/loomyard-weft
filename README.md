@@ -39,7 +39,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Bench the forked Codex Astra fan with the Claude reviewers context**<br>• Forked Astra fan, high, on P4, with the PATTERN overview inlined and CLAUDE.md as AGENTS.md<br>• `profile: docs` | [`codex-astra-context-parity-bench`](design-codex-astra-context-parity-bench.md) | darn | Darn-Write | neve | 23m<br>23m | codex, burler |
-| T2 | **Bench the forked Codex Astra fan with a Codex-tuned reviewer prompt**<br>• Context parity plus a prompt block asking for code, PATTERN-background and test reads, Astra high, on P4<br>• `profile: docs` | [`codex-astra-tuned-prompt-bench`](design-codex-astra-tuned-prompt-bench.md) | darn | Drift-Verify | neve | 23m<br>23m | codex, burler |
+| T2 | **Bench the forked Codex Astra fan with a Codex-tuned reviewer prompt**<br>• Context parity plus a prompt block asking for code, PATTERN-background and test reads, Astra high, on P4<br>• `profile: docs` | [`codex-astra-tuned-prompt-bench`](design-codex-astra-tuned-prompt-bench.md) | darn | Finalize | neve | 23m<br>23m | codex, burler |
 
 ### Ready (0)
 
