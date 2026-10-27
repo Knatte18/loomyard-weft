@@ -1,0 +1,11 @@
+{
+  "verdict": "resume",
+  "reason": "The stop is a blocked Worktree-Create: the owner commit 4c116bbde was deferred by a held board lock while the board was ahead of origin. The detached push (pid 791351) is no longer running, and 4c116bbde is an ancestor of origin/main-weft in the local tracking ref, so the deferred push appears to have landed and the board is no longer ahead. The stop's own remedy (lym board sync, then re-run the verb) therefore needs only the re-run. Not verified by fetch: origin/main-weft is read from the local tracking ref without fetching. Trace: 7868ab4bdc722ce9, envelope drive-envelope-20261027-120830-2790.json.",
+  "question": "",
+  "goto": "Worktree-Create",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/codex-astra-solo-high-bench/tackler/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/codex-astra-solo-high-bench/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": ""
+}
