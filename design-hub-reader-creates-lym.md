@@ -1,6 +1,6 @@
 # A read creates directories: state.ReadJSON mkdirs, so a hub reader leaves a real _lym in a half-built pair
 
-`hub-reader-creates-lym` · Task · bug, fabric, orch, batten · running · PR-Review
+`hub-reader-creates-lym` · Task · bug, fabric, orch, batten · running · Finalize
 
 ## Seen (scripted-edits-allowed, 2026-10-26)
 
