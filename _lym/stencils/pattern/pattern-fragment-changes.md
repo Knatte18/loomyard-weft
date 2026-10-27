@@ -3,7 +3,6 @@
      strips this banner and fills the file's one marker, the pattern_change_list marker, with the declared bullet lines joined by newlines.
      The result fills the optional pattern_changes marker of the role's directive stencil.
      This file declares that one marker and no other, and the marker is required.
-lyx-stencil: sha256=c68fab5aef4a47a0bc35584d147fbe3d37d09b24b824061e51d358e1b2385694 build=6bfaaa1448adcd5fda4ab769115846291406977a time=2026-10-16T12:19:49Z
 lym-stencil: sha256=c68fab5aef4a47a0bc35584d147fbe3d37d09b24b824061e51d358e1b2385694 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 ### Declared PATTERN changes

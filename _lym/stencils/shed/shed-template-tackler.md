@@ -9,7 +9,7 @@
      {{.parent_directive}} the no-parent variant of the shared parent directive rendered by internal/parentdirective,
      and {{.edit_directive}} the shared edit directive rendered by internal/editdirective.
      The body is recipe-blind: the recipe and the rows a `goto` may name arrive only through {{.recipe}} and {{.goto_rows}}, and everything else through the stop envelope and the files it points at.
-lyx-stencil: sha256=b95fad38b26001f20b4d3108682aebb8f2ffcbcb8c4733dc5d1073cdd593eeb7 build=a52467411aceba2e6a891a6de0a3c494ad0359d4 time=2026-10-15T08:16:33Z -->
+lym-stencil: sha256=95437d27dfbc30d57ec478008f0be4e1a060c70adec674c2a55ac604e2b281fc build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 # Shed tackler for run `{{.run_id}}`
 
@@ -48,7 +48,7 @@ Read the stop envelope to see which one you hold.
 3. The child traces under `{{.trace_dir}}`, only when those leave the cause open.
 
 The shed driver's log is `{{.driver_log}}`.
-You may also run any read-only `lyx` command or read any file in `{{.worktree}}`.
+You may also run any read-only `lym` command or read any file in `{{.worktree}}`.
 A path reading `none` is absent.
 
 ## What you may change
@@ -58,7 +58,7 @@ Write `{{.verdict_path}}` and, on an `escalate`, `{{.case_brief_path}}`, and not
 ## What you never do
 
 - Edit a file other than those two.
-- Run a `lyx` verb that changes the run.
+- Run a `lym` verb that changes the run.
 - Run a git command that changes anything.
 
 ## The verdict

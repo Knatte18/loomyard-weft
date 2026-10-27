@@ -1,7 +1,7 @@
 <!-- This is burler's fork-reading part: the pre-read a fanned round's handler does in the explore step, so every fork inherits the reading instead of repeating it.
      internal/burlerengine's forkReadingBlock (prompt.go) reads and fills it, and composeReviewPrompt injects it as burler-step-1-explore's optional fork_reading marker value in a fanned round only.
      It declares no marker.
-lyx-stencil: sha256=b68e2c4a91297f1e49dd8609ce5b7214425326f99eed7e026e3014ae2e9ea501 build=112cccb8f4e09be50a700c9346b294b79f649e17 time=2026-10-16T14:39:17Z -->
+lym-stencil: sha256=02f5aa62981ca38962a369ba457627069755044fe9fab5520088a7cc3213ff0a build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 ## Reading for the fork reviewers
 
 This round fans out: in step 2 you spawn fork reviewers, and each fork inherits your context as it stands at the spawn.
@@ -13,7 +13,7 @@ Before you leave this step, read:
 - for each symbol the target changes, guards or removes: its direct callers and callees, and every path that reaches it from another process, such as a child the code spawns or a command that calls the guarded verb in-process;
 - for each state, setting or file a decision introduces or changes: the existing code paths that also write, reset or reapply it, such as other verbs, hooks, resize or apply steps, and restart paths, and the code that reads it;
 - for each output, key, string, file shape or behaviour the target changes: every test, caller, doc and fixture that reads or asserts it;
-- the board entry of the task the target belongs to, through `lyx board get`;
+- the board entry of the task the target belongs to, through `lym board get`;
 - the `pattern/` background file of every PATTERN entry the target names or touches;
 - the failure, restart and resume paths of each change the target makes.
 

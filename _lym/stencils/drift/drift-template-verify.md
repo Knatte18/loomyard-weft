@@ -1,12 +1,12 @@
 <!-- This is the drift verify agent's entire instruction set. It is shipped as an embedded default in the
-     top-level stencils package (stencils/stencils.go), seeded to <hub>/_board/_lyx/stencils/drift/
+     top-level stencils package (stencils/stencils.go), seeded to <hub>/_board/_lym/stencils/drift/
      and read from there at call time by internal/seatengine, which fills it from the lead's value map that driftengine's VerifyTable builds, then hands it to
      shuttle as the agent's whole prompt.
      Every marker below is a top-level substitution;
      the engine fills the parent and edit directives, and VerifyTable fills the rest.
      pattern_directive is the only optional marker.
      There are no conditionals anywhere in this file.
-lyx-stencil: sha256=b06e5b7e273d5269c8fa10a565b3e6d52cfac34d481c33e2617cb74458d5709a build=1c344094affd7a89153401258ff15083669e05d4 time=2026-10-25T17:30:00Z -->
+lym-stencil: sha256=654a6af3611085f1f8c571ad1cfc1fa58ada9be065e09979c662cc14cee33202 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 # Drift verify — judge, accept and fix the drift of this task
 
@@ -30,18 +30,18 @@ Judge each drifted test against the task and the baseline report's expectation.
 Drift the task intends is acceptable; drift it does not intend is a defect of the task's code.
 Drift traced to a commit merged from the parent branch after the baseline's commit is acceptable too, and the report names that commit.
 
-Accept a drifted test with `lyx drift accept <test> --reason <text>`, giving the reason the drift is intended.
+Accept a drifted test with `lym drift accept <test> --reason <text>`, giving the reason the drift is intended.
 The run's parent can withdraw an acceptance; a withdrawn test is refused to you, so fix its drift or report it in the report.
 
 ## Step 3 — Fix the rest
 
 For each drift you do not accept, find its cause in the task's code and fix it, committing each fix on its own with a commit that leaves the tree green.
-Test as you work with `lyx gate test --wait`, which computes its scope from your changes.
+Test as you work with `lym gate test --wait`, which computes its scope from your changes.
 Never push: the landing steps that follow push the branch.
 
 ## Step 4 — Check again within your budget
 
-You have {{.max_runs}} runs in all of `lyx drift compare`, which runs the compare again, and `lyx drift capture --side`, which captures a spare profile of the current code beside the baseline.
+You have {{.max_runs}} runs in all of `lym drift compare`, which runs the compare again, and `lym drift capture --side`, which captures a spare profile of the current code beside the baseline.
 Run the harness only through these two verbs, never any other way.
 When the budget is spent, write what you found to the report and end your turn.
 

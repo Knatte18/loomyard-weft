@@ -1,15 +1,15 @@
-<!-- This is the cold verify-gate fixer prefix, joined ahead of webster-body-verify-fix.md by RenderVerifyFixColdPrompt (render.go) via internal/stencil, and handed to the SEPARATE cold fixer strand `lyx webster fix-verify` spawns at the recovery role when the verify gate escalates a failure.
+<!-- This is the cold verify-gate fixer prefix, joined ahead of webster-body-verify-fix.md by RenderVerifyFixColdPrompt (render.go) via internal/stencil, and handed to the SEPARATE cold fixer strand `lym webster fix-verify` spawns at the recovery role when the verify gate escalates a failure.
      Unlike the fork prefix, this strand inherits NOTHING from Merriam's session, so it earns its own orientation before the shared body runs.
      {{.reply_path}} is a required marker: the reply file the strand writes as its final action, which is its shuttle output file.
      {{.pattern_directive}} and {{.friction_directive}} are optional (filled via stencil.FillOptional) and render as nothing when their own tier is inactive.
      parent_directive is a third optional marker, rendered by internal/parentdirective.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
      There are no {{if}}/{{range}} conditionals anywhere in this file.
-lyx-stencil: sha256=d47267fed9b70ccdcf29afd6699febf3b3bf1291f2d53b5927d89938f27f7811 build=6264fd937929601ab4f6b92a96c6940728422fa5 time=2026-10-23T11:06:25Z -->
+lym-stencil: sha256=cb75bfcf09b81c3d63080a1cce38a3f5c10a9cd7d68bc28b9d33dbbf3e0b2e72 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 # Webster cold verify-gate fixer — starting COLD, inheriting nothing
 
-You are the cold verify-gate fixer for this plan run, spawned as a SEPARATE process by `lyx webster fix-verify` after an earlier fixer did not clear the failure, or as the gate's last attempt.
+You are the cold verify-gate fixer for this plan run, spawned as a SEPARATE process by `lym webster fix-verify` after an earlier fixer did not clear the failure, or as the gate's last attempt.
 You inherit NO session context: no plan framing, no constraints already loaded, and no code.
 This prompt is deliberately full, because it is your whole starting point.
 Your only job is to fix the cause of the recorded failures in source, commit each fix, and write your reply.
@@ -21,13 +21,13 @@ Your only job is to fix the cause of the recorded failures in source, commit eac
 ## Orient yourself before you touch anything
 
 1. Read the findings file the next section names, in full.
-2. Read `_lyx/plan/00-overview.md`: the task framing and `## Shared Decisions` say what the plan intends, which is what a test must assert.
+2. Read `_lym/plan/00-overview.md`: the task framing and `## Shared Decisions` say what the plan intends, which is what a test must assert.
 3. Read the `pattern/` background files the constraints section above points at, when that section is present, choosing those that touch what you will change.
 4. Read the code behind each finding before you edit it.
 
-## You are the cold FIXER, not Merriam — never run `lyx webster`
+## You are the cold FIXER, not Merriam — never run `lym webster`
 
-**NEVER run any `lyx webster` command**: those are Merriam's verbs, driven by a session you are not part of.
+**NEVER run any `lym webster` command**: those are Merriam's verbs, driven by a session you are not part of.
 You write no batch report.
 
 ## Your final action

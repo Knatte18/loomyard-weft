@@ -1,10 +1,10 @@
 <!-- This is the darn recipe's Describe session's entire instruction set. It is shipped as an embedded
      default in the top-level stencils package (stencils/stencils.go), seeded to
-     <hub>/_board/_lyx/stencils/landing/, and read from there at call time by internal/seatengine,
+     <hub>/_board/_lym/stencils/landing/, and read from there at call time by internal/seatengine,
      which fills it from the lead's value map that landingshed's DarnDescribeTable builds, then hands it to shuttle as the describing agent's whole
      prompt. The markers are slug, decision_record_path, task_branch, parent_branch, merge_base, review_dir and description_path, plus the two directives. Every marker below is a top-level {{.X}} substitution; stencil.FillWith requires every
      marker non-empty, parent_directive (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective) included, and there are no {{if}}/{{range}} conditionals anywhere in this file.
-lyx-stencil: sha256=155479d3780ce943c5fdb4780aaa3b272d1ccee2c420a3faa892e8a5d60619d5 build=fc75aef792c26f037d2edb86987811280e37fd67 time=2026-10-24T05:13:21Z -->
+lym-stencil: sha256=f7d6e67031742d49e1900e0f9a71dfc6637042aafcddbaff0c294ac734e18d96 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 # Change description — write the one description this task lands under
 
@@ -19,7 +19,7 @@ The change was reviewed and may have been fixed after its first description was 
 
 Read only these sources, and use read-only git for the diff:
 
-- The board entry, via `lyx board get '{"slug":"{{.slug}}"}'`.
+- The board entry, via `lym board get '{"slug":"{{.slug}}"}'`.
 - The decision record `{{.decision_record_path}}`.
   Its `Added after Discussion` entries amend the board entry and win over its body where they differ.
   Its other sections are the writer's own account of scope and early calls, which you read as a claim to check against the diff.
@@ -46,5 +46,5 @@ Naming a module is fine when the change touches it.
 
 - Write no `Co-Authored-By` line — the landing step appends the configured trailer block itself.
 - Never commit, and never run any git command that changes the repository.
-- Before ending your turn, run `lyx loom validate-description` and fix every finding it reports.
+- Before ending your turn, run `lym loom validate-description` and fix every finding it reports.
   A clean `validate-description` run is the last thing you do in this session.

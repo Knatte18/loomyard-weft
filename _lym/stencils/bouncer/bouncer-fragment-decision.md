@@ -1,7 +1,7 @@
 <!-- This is the decision detail of the Bouncer's escalation brief for cause `decision`: the questions only the run's parent can settle, the BLOCKING findings the round's review holds, the refusal the recorded answer would meet, and the verbs that record it.
      renderDecisionDetail fills it and passes the result as the brief's cause_detail marker, after the cause list.
      Every marker below is a top-level {{.X}} substitution: slug, decision_findings, blocking_findings, refusal and decide_verbs, each Go-filled and non-empty.
-lyx-stencil: sha256=805611b975e618d5f4bd3b8536c5e0461c9d63b777637e748947897a9fd9477f build=5e449651fc9099cf3c0ec513ef579c464138a703 time=2026-10-25T09:35:58Z -->
+lym-stencil: sha256=06ff486371a58dbe838359bda57af018249de4dd136b51fd0140a19b49301184 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 ### Decision findings
 
@@ -24,8 +24,8 @@ A `continue` runs another round whose fresh reviewers re-review the artifact, so
 
 ### Way forward
 
-Record the answer with `lyx loom decision add {{.slug}}`, then record the segment's outcome with exactly one of:
+Record the answer with `lym loom decision add {{.slug}}`, then record the segment's outcome with exactly one of:
 
 {{.decide_verbs}}
 
-Then resume the run with `lyx loom resume`.
+Then resume the run with `lym loom resume`.

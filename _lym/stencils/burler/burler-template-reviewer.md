@@ -1,5 +1,5 @@
 <!-- This is the burler reviewer seat stencil: the only seat of the review half's one-seat table.
-     It is shipped as an embedded default in the top-level stencils package (stencils/stencils.go), seeded to <hub>/_board/_lyx/stencils/burler/ and read
+     It is shipped as an embedded default in the top-level stencils package (stencils/stencils.go), seeded to <hub>/_board/_lym/stencils/burler/ and read
      from there at call time, then filled by internal/seatengine from the seat's value map and handed to the
      reviewer's shuttle run as the agent's entire visible instruction set — the two instruction
      files it names below are read one at a time, only when the review reaches that step, never
@@ -10,7 +10,6 @@
      There are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go).
      It names no fixer and no channel to one: the review half neither waits on nor messages the fix half.
      This file deliberately never repeats the instruction files' bodies — the review-file YAML format and the cluster fork-spawn prose live in the files it names, not here.
-lyx-stencil: sha256=6370f1d3efa87c22ba63b2be708d5fedce8e657122daa0432eac9bde20c3c0f1 build=b2e4cf913d2834503e0338810b1f952e426af78f time=2026-10-11T18:29:27Z
 lym-stencil: sha256=6370f1d3efa87c22ba63b2be708d5fedce8e657122daa0432eac9bde20c3c0f1 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 # Burler — review

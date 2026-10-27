@@ -3,7 +3,7 @@
      It declares seven top-level markers: {{.parent_directive}}, {{.edit_directive}}, {{.pattern_directive}}, {{.slug}}, {{.decision_record_path}}, {{.support_log_path}} and {{.output_files}};
      pattern_directive is optional and renders as nothing when the PATTERN tier is inactive.
      It also includes seat-directive-advisor whole, rendered from that same map.
-lyx-stencil: sha256=ccecfdfbcd18783f4e7e9d561c0c971a13e95ba4499e465739abd9cb2a81b4ee build=27657341cf3a467214d0a482c7d34359ff06151c time=2026-10-16T09:49:04Z -->
+lym-stencil: sha256=0d6805a48b390296d4b564a77cebdd9050c55edd092aa9afd6cc2cf67ddd6908 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 # Discussion advisor — study the task, answer the chair
 
@@ -20,14 +20,14 @@ You study the task and answer the chair's questions, and read the draft record a
 Read this task's board entry:
 
 ```bash
-lyx board get '{"slug":"{{.slug}}"}'
+lym board get '{"slug":"{{.slug}}"}'
 ```
 
 Then list the rest of the board and read every entry that touches this task:
 
 ```bash
-lyx board list
-lyx board get '{"slug":"<other-slug>"}'
+lym board list
+lym board get '{"slug":"<other-slug>"}'
 ```
 
 Read `PATTERN.md` and the background files that touch the task.

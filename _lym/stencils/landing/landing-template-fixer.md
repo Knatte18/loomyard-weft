@@ -1,10 +1,9 @@
 <!-- This is the landing merge fixer session's entire instruction set. It is shipped as an embedded
      default in the top-level stencils package (stencils/stencils.go), seeded to
-     <hub>/_board/_lyx/stencils/landing/, and read from there at call time by internal/seatengine,
+     <hub>/_board/_lym/stencils/landing/, and read from there at call time by internal/seatengine,
      which fills it from the lead's value map that landingshed's FixerTable builds, then hands it to shuttle as the fixing agent's whole
      prompt. Every marker below is a top-level {{.X}} substitution; stencil.FillWith requires every
      marker non-empty except the table's Optional values (plan_dir, failure_record_path and, in finalize mode, aligned_tip), parent_directive (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective) included, and there are no {{if}}/{{range}} conditionals anywhere in this file.
-lyx-stencil: sha256=b1b1b12c49dec50f6466c693655b64243aefa998ab93a10295c9444298455042 build=5e449651fc9099cf3c0ec513ef579c464138a703 time=2026-10-25T09:35:58Z
 lym-stencil: sha256=b1b1b12c49dec50f6466c693655b64243aefa998ab93a10295c9444298455042 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 # Merge fixer — fix the merge or the failing tests on the task branch

@@ -9,7 +9,6 @@
      and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty -- see internal/stencil/stencil.go).
      The focus-schema markers ({{.focus_example_lists}}, {{.focus_list_rules}}) have two variants, rendered by focusSchemaMarkers in internal/shedadapters/bouncerprompt.go:
      Go holds the variant so this stencil stays conditional-free.
-lyx-stencil: sha256=ee80952150130753f5fafbbe0f668f17a4029d2e72e46ba424a4547031b8fc2f
 lym-stencil: sha256=ee80952150130753f5fafbbe0f668f17a4029d2e72e46ba424a4547031b8fc2f build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 # Bouncer — seed pass

@@ -1,9 +1,9 @@
-<!-- This is the shared job body of webster's two verify-gate fixers: the fixer fork Merriam spawns in its own session, and the cold fixer strand `lyx webster fix-verify` spawns at the recovery role.
+<!-- This is the shared job body of webster's two verify-gate fixers: the fixer fork Merriam spawns in its own session, and the cold fixer strand `lym webster fix-verify` spawns at the recovery role.
      RenderVerifyFixPrompt joins it behind webster-prefix-verify-fix-fork, and RenderVerifyFixColdPrompt behind webster-prefix-verify-fix-cold (render.go), then fills it via internal/stencil.
      Its six markers are required top-level {{.X}} substitutions ({{.report_path}}, {{.plan_dir}}, {{.worktree_root}}, {{.outcome_path}}, {{.summary_path}}, {{.fix_gate}});
      stencil.FillOptional requires all of them non-empty.
      There are no {{if}}/{{range}} conditionals anywhere in this file.
-lyx-stencil: sha256=bd35ec5263e4fc160ab0a7b63db6f3dc89563ff499330e8e78c10ae90ca59fcf build=2e265a4fc47f52e90731aaff34f24b2d55a24bde time=2026-10-24T07:09:26Z -->
+lym-stencil: sha256=8328ae14958b87d9c4def340fa73d0d4649bf9b9b7af684c4cdd0eb35741089c build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 ## The findings — read them first
 
@@ -26,9 +26,9 @@ You never run a Bash call in the background, and you end your turn only after yo
 - A decision notice in your context, the one your parent directive admits, is your parent's call for this run: where it touches your fix, follow it over the plan.
 - Never delete, skip or weaken a test to make it pass: no `t.Skip`, no loosened assertion, no removed case.
   A test that is wrong is fixed to assert what the plan intends, never to assert less.
-- Never touch the plan directory `{{.plan_dir}}` or anything under `_lyx`: they sit outside every code commit, and a write there corrupts the run's own record.
+- Never touch the plan directory `{{.plan_dir}}` or anything under `_lym`: they sit outside every code commit, and a write there corrupts the run's own record.
 - Commit each fix to the repo with normal git from your working directory, with the subject `fix: <summary>`, where `<summary>` says what the fix repairs.
-  Never commit a path under `_lyx`.
+  Never commit a path under `_lym`.
 - A fix that departs from a PATTERN entry because the entry forbids the way the findings call for records the departure as a `Pattern-Departure:` trailer in that `fix:` commit, in the shape `loom-plan-spec.md`'s `## Pattern-Departure trailer` section defines.
 - Never write, create or delete Merriam's contract files `{{.outcome_path}}` and `{{.summary_path}}`.
   A fixer writing either forges the run's terminal judgment and halts the run at its exit audit.

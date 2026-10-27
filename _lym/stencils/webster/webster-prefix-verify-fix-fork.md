@@ -2,7 +2,7 @@
      Merriam's Agent-tool fork call is the same "Read this file and do exactly and only what it says: <this file's own path>" idiom used for a batch's own fork prompt.
      {{.friction_directive}} is its one marker, optional (filled via stencil.FillOptional), rendering as nothing when Tier 2 is off.
      There are no {{if}}/{{range}} conditionals anywhere in this file.
-lyx-stencil: sha256=49394f6ad7fcf2b19ecc7d9d11c868e6d813d1911141989cf2daf4d714f16d59 build=6264fd937929601ab4f6b92a96c6940728422fa5 time=2026-10-23T11:06:25Z -->
+lym-stencil: sha256=811510a5018838953a6ac243ebe9c755053810e4fe22d42d6d106622e1ca6ab9 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 # Webster verify-gate fixer fork — fix the recorded failures in source, commit, report
 
@@ -12,11 +12,11 @@ That context holds no code: Merriam never reads it, so read the code behind each
 Your only job is to fix the cause of the recorded failures in source, commit each fix, and end your turn.
 
 {{.friction_directive}}
-## You are the FIXER fork, not Merriam — never run `lyx webster`
+## You are the FIXER fork, not Merriam — never run `lym webster`
 
 You inherit Merriam's own loop instructions.
 Those are MERRIAM's actions, NOT yours.
-**NEVER run any `lyx webster` command**, never poll for a report and never write one: you write no report file.
+**NEVER run any `lym webster` command**, never poll for a report and never write one: you write no report file.
 You inherit Merriam's instruction to write its two contract files as a final action; that instruction is Merriam's, and the rules below forbid it to you.
 
 ## Your final action

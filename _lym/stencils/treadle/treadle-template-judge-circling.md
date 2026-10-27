@@ -3,7 +3,6 @@
      Every marker below is a top-level {{.X}} substitution;
      stencil.Fill requires every marker non-empty, parent_directive included (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective), and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go).
      This same call also maintains the judge-maintained handoff (previous_handoff in, handoff_path out) — see the handoff-on-disk shared decision: the handoff rides the SAME call as the verdict, never a separate spawn.
-lyx-stencil: sha256=a26728d4a10d11b21abd52f11ca3f924199b4a6f78cc9dd088f2c25df1a36993
 lym-stencil: sha256=a26728d4a10d11b21abd52f11ca3f924199b4a6f78cc9dd088f2c25df1a36993 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 # Treadle progress judge — per-round circling check
