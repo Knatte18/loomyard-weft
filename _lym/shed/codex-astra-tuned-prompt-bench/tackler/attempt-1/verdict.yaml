@@ -1,0 +1,11 @@
+verdict: hand-back
+reason: >-
+  The step was refused at bootstrap because the local branch codex-astra-tuned-prompt-bench is rewound against origin: origin was reset to 9ae8932d, which drops two local commits, 1616b178 and 0b0429ef (verified read-only with git log in the pair worktree).
+  A plain resume hits the same refusal, and neither fix the error names is a plain re-launch.
+  Accepting the rewind runs git reset --keep, which discards 1616b178 and 0b0429ef and their benchmark work (report.md, data/, reviews/P4/).
+  Restoring them runs a push that rewrites origin back to 0b0429ef.
+  Either choice decides whether that work is kept, so it belongs to the run's parent, not to a resume.
+question: >-
+  The branch codex-astra-tuned-prompt-bench in the pair worktree /home/knatte/Code/loomyard-LYMHUB/codex-astra-tuned-prompt-bench is rewound against origin.
+  Local holds 1616b178 and 0b0429ef, which origin dropped (origin is at 9ae8932d).
+  Do you keep the local commits (restore by pushing the branch to origin, a fast-forward that rewrites origin), or drop them (git reset --keep 9ae8932d, then lym fabric push)? Then re-run lym batten run codex-astra-tuned-prompt-bench.
