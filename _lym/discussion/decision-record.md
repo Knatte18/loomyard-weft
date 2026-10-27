@@ -202,6 +202,12 @@ Decision: The adopt seed is written only into the hub's base gate.yaml. seedAdop
 
 Rationale: Decision 9 licenses the seed only for the hub gate.yaml; seeding inside MigrateConfig reaches every caller and would log a misleading Warn on every run_settings read.
 
+### Added after Discussion (parent, 2026-10-27): A hub gate.yaml seeded from the prime or legacy files gets adopt in the same pass
+
+Decision: ReconcileHubWideAt's absent-file branch runs m.MigrateHubBase over the bytes sparseSeed returns for the prime and legacy seeds, so a hub gate.yaml seeded in that pass holds adopt at once. Card 11's Intent says so in place of the sentence that defers adopt to the next reconcile, and TestReconcileHubWideAt_SeedsAdoptFromATunedFinalize gains a row: an absent hub gate.yaml seeded from a prime copy tuning finalize to [0, 1] holds adopt with the same value.
+
+Rationale: hubreconcile.Ensure is gated on the build stamp and the seeding pass leaves it current, so the deferred form would run the template's adopt tiers until some later build; one rule for every hub gate.yaml is simpler than a documented gap.
+
 ## Constraints
 
 - PATTERN-daemon-wakeups: the heartbeat and the logging ride the loop's existing ticks; no new wait or wake.
