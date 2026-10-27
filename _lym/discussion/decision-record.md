@@ -196,6 +196,12 @@ No record shows nothing.
 
 Rationale: the operator's decision for part 4.
 
+### Added after Discussion (parent, 2026-10-27): Adopt seed only for the hub gate.yaml
+
+Decision: The adopt seed is written only into the hub's base gate.yaml. seedAdoptGate moves out of gateslot.MigrateConfig into a step that only the hub base file's reconcile runs, and card 11 adds that call site to its Edit list. The local-layer gate file (configsync.reconcileSparseFile), sparseSeed, and every run_settings or profile gate object read through configreg.PrepareRunSettings stay unseeded, so PrepareRunSettings logs no added-key Warn for it. A TestMigrateConfig row pins that MigrateConfig no longer seeds adopt, and a test of the hub reconcile pins that it does.
+
+Rationale: Decision 9 licenses the seed only for the hub gate.yaml; seeding inside MigrateConfig reaches every caller and would log a misleading Warn on every run_settings read.
+
 ## Constraints
 
 - PATTERN-daemon-wakeups: the heartbeat and the logging ride the loop's existing ticks; no new wait or wake.
