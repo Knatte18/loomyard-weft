@@ -74,15 +74,6 @@ High found more than medium on both plans at about twice the wall time.
 On `P1` the block, written after the `P4` misses, still reached the `PATTERN.md` headroom-order finding at high effort; no run reached a finding that needs every reader of a changed symbol enumerated (`P1` fan `F2`) or a read of code beyond the cards' own (`P4` fan `F1`).
 Across every Astra run no finding was false, and each found real defects the Claude fan lacks.
 
-Two later studies of 2026-10-27 followed:
-- `docs/research/codex-v2-p2-bench-2026-10-27/report.md` (landed as `codex-v2-p2-bench`): the tuned setup with a reading block v2 (adds a search for every reader of a changed symbol, a one-hop read beyond the cards and a 20-call fork cap) on `P2` (`quarry-csharp`; Claude fan 13 findings, 3 `BLOCKING`), one high run and two medium.
-  Each run found 1 or 2 of 13, and together all 3 `BLOCKING`, each by a different set of runs; the forks ran 2 to 7 commands, far under the cap, and the `way-forward` fork returned nothing in any run.
-  The two medium runs differ from each other as much as from the high run, so one run per setting cannot rank effort; the every-reader clause produced a finding all three runs share and the fan lacks.
-  The `P1` and `P4` counterparts `codex-v2-p1-bench` and `codex-v2-p4-bench` are still running.
-- `docs/research/claude-review-gaps-2026-10-27/report.md` (landed as `claude-review-gaps`): a desk study of the 28 `unique-real` Astra defects on `P1` and `P4`, none graded false, 9 of them `BLOCKING` with no Claude finding naming the same defect.
-  Four of six causes hold 23 of the 28 (a guard not reached by every entry point, a prescribed check that does not do what the card says, a reader outside the card left wrong, a way forward that cannot succeed); 24 of the 28 came from the Claude fan's own lens names, so the gaps are in what a lens's procedure makes a fork do, not in the lens set.
-  It proposes six hypotheses as text for named stencils; none is built or benched.
-
 ## Goal (operator, 2026-10-27)
 
 Codex is to take review load off Claude: the work is to tune Codex reviews until a Codex fan can stand in for a Claude fan, not to add Codex as an extra reviewer beside it.
