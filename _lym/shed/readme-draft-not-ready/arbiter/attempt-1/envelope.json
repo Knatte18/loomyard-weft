@@ -1,0 +1,12 @@
+{
+  "verdict": "hand-on",
+  "reason": "The tier0 failure comes from main, not from this run's change, and a fix inside the run would widen the task's scope.\nThe only failing test is the guard TestEnforcement_MarkdownLinks/repo in internal/lymcwd (.lym/verify/verify-4.log lines 632 and 745).\nIt reports 569 broken links, all in docs/research/*-bench-2026-10-27/data/prompts/step-1-explore-fan.md across eight bench records, each a link such as pattern/PATTERN-cwd-resolution.md.\nThose links resolve from the repository root but not from the prompts directory, so they are real breaks, not a -trimpath misfire.\nThe case brief's hypothesis is wrong on that point: the scan resolves targets against the containing file's directory (docsLinkResolve in internal/lymcwd/docslink_test.go), and its walk finds the files.\nThe prompt copies arrive on main in the bench commits 752e0035, a5bfba4d, 2e358176 and c7b48fa5, which is the branch's base.\nThe branch diff against main touches only internal/boardengine/, so Darn-Write has nothing of its own to fix.\nA plain resume would fail the same way, and there is no earlier row to send the run back to that would change the outcome.\nThe repair is either fixing the links in the bench records or adding allowlist entries in docsLinkAllowlist, as the existing codex-astra-solo-bench entry does.\nEither one edits docs/research or internal/lymcwd, which is outside this task's board scope, so the call is not mine.",
+  "question": "main is red on tier0: TestEnforcement_MarkdownLinks/repo reports 569 broken links in docs/research/*-bench-2026-10-27/data/prompts/step-1-explore-fan.md.\nThe bench commits 752e0035, a5bfba4d, 2e358176 and c7b48fa5 add these links, and this run's change in internal/boardengine/ does not touch them.\nShould the links be fixed on main first, by rewriting the links in the prompt copies or by adding docsLinkAllowlist entries in internal/lymcwd/docslink_test.go, with this run re-launched at Darn-Write once main is green and rebased in?\nOr should this run's scope widen so Darn-Write makes that fix itself?",
+  "goto": "",
+  "verbs": [],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/readme-draft-not-ready/_lym/shed/readme-draft-not-ready/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/readme-draft-not-ready/_lym/shed/readme-draft-not-ready/arbiter/attempt-1/verdict.yaml",
+  "relaunch": ""
+}

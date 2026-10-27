@@ -1,0 +1,11 @@
+{
+  "verdict": "escalate",
+  "reason": "The Darn-Write gate fails in tier0 on TestEnforcement_MarkdownLinks, which reports 69 broken links in docs/research/*/data/prompts/ files that already exist on main. The branch diff touches only internal/boardengine, so the writer did not cause it, and four identical verify runs show it is not transient. A plain resume gives a fresh budget but no new input, so it would fail the same way. Settling it needs the markdown-link check read and judged: whether the check resolves paths wrongly under -trimpath, or whether the research links are really broken on main. Case brief: _lym/shed/readme-draft-not-ready/tackler/attempt-1/case-brief.md.",
+  "question": "",
+  "goto": "",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/readme-draft-not-ready/_lym/shed/readme-draft-not-ready/tackler/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/readme-draft-not-ready/_lym/shed/readme-draft-not-ready/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": "/home/knatte/Code/loomyard-LYMHUB/readme-draft-not-ready/_lym/shed/readme-draft-not-ready/tackler/attempt-1/case-brief.md"
+}
