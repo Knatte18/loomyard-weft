@@ -1,6 +1,6 @@
 # Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils
 
-`claude-md-lyx-rules-out` · Note · enhancement, stencil, board, loom
+`claude-md-lym-rules-out` · Note · enhancement, stencil, board, loom
 
 ## Seen
 

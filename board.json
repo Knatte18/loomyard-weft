@@ -413,7 +413,7 @@
     {
       "id": 755,
       "handle": "E32",
-      "slug": "claude-md-lyx-rules-out",
+      "slug": "claude-md-lym-rules-out",
       "title": "Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils",
       "kind": "note",
       "labels": [

@@ -75,7 +75,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 4d<br>4d | burler, claude |
 | E27 | L | **Creel delivers agent mail in full at the receiver's next tool boundary**<br>• A reminder plus lyx creel read costs the receiver an extra turn per agent message | [`creel-carry-agent-mail`](design-creel-carry-agent-mail.md) | 4d<br>1d | creel |
 | E28 |  | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 5d<br>18h | dotnet |
-| E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 4d<br>2d | stencil, board, loom |
+| E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lym-rules-out`](design-claude-md-lym-rules-out.md) | 4d<br>2d | stencil, board, loom |
 | E35 |  | **A landing fixer escalation goes to the arbiter before the orch**<br>• Merge-In and Finalize fixer escalate reports reach the arbiter first | [`landing-escalate-arbiter`](design-landing-escalate-arbiter.md) | 3d<br>18h | shed, loom |
 
 ### Features (12)
