@@ -38,7 +38,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Rename lyx to lym (LoomYard Mill): binary, LYXHUB suffix, LYX_ variables and _lyx/.lyx directories** | [`rename-binary-lym`](design-rename-binary-lym.md) | darn | Code-Bouncer | neve | 11d<br>22m | stencil, shuttle |
+| T1 | **Rename lyx to lym (LoomYard Mill): binary, LYXHUB suffix, LYX_ variables and _lyx/.lyx directories** | [`rename-binary-lym`](design-rename-binary-lym.md) | darn | Describe | neve | 11d<br>22m | stencil, shuttle |
 
 ### Ready (0)
 
