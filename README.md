@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-27 17:40 UTC; every age below is as of then.
+Rendered 2026-10-27 17:46 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -38,7 +38,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Dobby survives deploys, logs changes only, tidies per owner; a visible adopt check**<br>• Fix the dobby re-exec exit, bound its log, count tidies per owner, give the adopt check its own gate key and visible progress | [`dobby-and-adopt-hardening`](design-dobby-and-adopt-hardening.md) | loom | Code-Burler-Fix | neve | 1d<br>3h | workspaces, batten, gate, board |
+| T2 | **Dobby survives deploys, logs changes only, tidies per owner; a visible adopt check**<br>• Fix the dobby re-exec exit, bound its log, count tidies per owner, give the adopt check its own gate key and visible progress | [`dobby-and-adopt-hardening`](design-dobby-and-adopt-hardening.md) | loom | Code-Bouncer | neve | 1d<br>3h | workspaces, batten, gate, board |
 
 ### Ready (0)
 
