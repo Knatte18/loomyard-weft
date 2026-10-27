@@ -30,6 +30,12 @@ seeding at the stage-all makes the board self-healing whatever seeded the gitdir
 Bound: the seed only appends exclude lines already owned by `seedWeftArtifactExcludes`; it adds no pattern and stages nothing.
 A seed failure fails the commit, since committing without the excludes is the defect.
 
+### Added after Discussion (parent, 2026-10-27): Leave the bench link breaks to main
+
+Decision: Do not touch the docs/research bench files or the docs link allowlist in this run. Task docs-link-skip-bench-data fixes TestEnforcement_MarkdownLinks on main by skipping docs/research/*/data/; once it lands, the orch resumes this run and the run takes main through its normal Parent-Align.
+
+Rationale: The breaks come from main's bench commits, not this change; one fix on main serves every run.
+
 ## Constraints
 
 - `PATTERN-fabric-git`: the exclude seeding stays inside `internal/fabricengine`.
