@@ -994,7 +994,7 @@
       "isolated": false,
       "brief": "One solo Astra high review of P4, against the medium solo run and the Claude fan",
       "body": "## Question\n\nHow much does effort alone change a solo Codex Astra plan review?\n`docs/research/codex-astra-solo-bench-2026-10-25/report.md` ran solo Astra at medium effort on `P4`: 4 findings, 2 of the Claude fan's 11, none of its 3 `BLOCKING` ones, in 166 s.\n\n## Cap\n\n- One input: `P4`, the `machine-handover` plan, with the snapshot, solo prompt and grading of the solo bench.\n- One model and effort: `gpt-6-astra` at high effort.\n- One `codex exec` call, no repeat, no Claude run.\n- Stop and report what was done if a rate-limit window passes 70 percent.\n\n## Method\n\nReuse the solo bench's harness under its `data/harness/` unchanged except for `model_reasoning_effort=\"high\"`.\nRecord the wall time, fresh input, output and reasoning tokens, and the windows.\n\n## Grading\n\nGrade every finding against the fan reference of `P4` as the solo bench did: `shared`, `unique-real` or `false`, in `data/match.tsv`.\nReport beside the solo bench's medium-effort Astra row and the Claude fan row.\n\n## Output\n\n`docs/research/codex-astra-solo-high-bench-\u003cdate\u003e/report.md` with its `data/`, landed as the run's commit.\n",
-      "status": "running · Darn-Write",
+      "status": "running · Drift-Verify",
       "created": "2026-10-27T11:08:10Z",
       "revised": "2026-10-27T11:08:10Z",
       "profile": "docs"
