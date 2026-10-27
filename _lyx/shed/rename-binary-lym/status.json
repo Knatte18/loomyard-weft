@@ -1,12 +1,13 @@
 {
   "current_producer": "Darn-Write",
-  "state": "blocked",
-  "error": "gate did not pass after 3 attempts; findings: /home/knatte/Code/loomyard-LYXHUB/rename-binary-lym/.lyx/shed/rename-binary-lym/gate-findings/Darn-Write.md; way forward: run \"lyx loom resume\" in the task worktree, which re-spawns Darn-Write with a fresh verify budget",
+  "state": "paused",
+  "error": "",
   "pause_requested": false,
+  "pause_reason": "re-launched onto Darn-Write",
   "activity": {
     "now": "Darn-Write",
-    "last": "Darn-Write → stuck",
-    "wait": "gate did not pass after 3 attempts; findings: /home/knatte/Code/loomyard-LYXHUB/rename-binary-lym/.lyx/shed/rename-binary-lym/gate-findings/Darn-Write.md; way forward: run \"lyx loom resume\" in the task worktree, which re-spawns Darn-Write with a fresh verify budget"
+    "last": "Darn-Write → goto",
+    "wait": ""
   },
   "history": [
     {
@@ -97,6 +98,12 @@
         }
       ],
       "budget_exempt": true
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "goto",
+      "output": "",
+      "at": "2026-10-27T07:32:00Z"
     }
   ],
   "product": {
