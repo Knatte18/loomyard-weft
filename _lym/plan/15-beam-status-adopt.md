@@ -9,18 +9,18 @@
 - `docs/overview.md`
 
 **Create:**
-- `plan:internal/adoptcli#CheckView` -> `type CheckView struct`
-- `plan:internal/adoptcli#ReadCheckView` -> `func ReadCheckView(hubPath string) (*CheckView, error)`
-- `plan:internal/adoptcli#checkView` -> `func checkView(record CheckRecord, alive bool, dir string) CheckView`
-- `plan:internal/adoptcli#TestCheckView` -> `func TestCheckView(t *testing.T)`
+- `internal/adoptcli#CheckView`
+- `internal/adoptcli#ReadCheckView`
+- `internal/adoptcli#checkView`
+- `internal/adoptcli#TestCheckView`
 
 **Extends:**
 - `internal/adoptcli/doc.go`
 
 **Uses:**
-- `plan:internal/adoptcli#ReadCheck`
-- `plan:internal/adoptcli#checkAlive`
-- `plan:internal/adoptcli#CheckRecord`
+- `internal/adoptcli#ReadCheck`
+- `internal/adoptcli#checkAlive`
+- `internal/adoptcli#CheckRecord`
 
 **Intent:**
 Decision 11: `lym beam status` shows the adopt check.
