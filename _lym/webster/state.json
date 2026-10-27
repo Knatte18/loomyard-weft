@@ -1,0 +1,362 @@
+{
+  "runGuid": "f9fa29df67194cb4daff6b4ac0e5e3cd",
+  "planFingerprint": "326df1c9a45235520eb0e7f7b6435a2213cce5d5414a6bbc1a725828a50e4647",
+  "planFileHashes": {
+    "00-overview.md": "6eca8a36216a4e85d8a060bcc719a99c1e25f991729e20cad7cad21a9490fdfb",
+    "01-shed-history-machine.md": "90043a6c4c525f12c1b49cf71d4c3165da04122b9c2fa85bd79b4aeb8926e6c2",
+    "02-batten-tells-machine.md": "11b2db9b60e93a1d35d35b118dcc74ed6f003d3ff8051be77da029a4f36c4af6",
+    "03-landings-by-machine.md": "c709babaa061cc9ebe6c50334b3558fc06c9387703247c288d580037628eb64f",
+    "04-landings-flag.md": "54a1c4c5408ca2b1c57f53d1c9329360a6549ddba5f62e1b3722f62f63bc4d0e",
+    "05-selfexec-callbacks.md": "d01224c8ffe6283ec9c12b63e45bb8276e31c1fc4f0fad450e482332d8022dc9",
+    "06-dobby-log-file.md": "53195b717256cecc8c9f78a238fbe31c304ddf08783613b12fa6eee9a94730fc",
+    "07-dobby-start-and-exits.md": "69ec1bbc937e3455f63e78bdf31eba87a24037accc0a1a05f90975c5e5e8863f",
+    "08-dobby-worktree-gone.md": "8a08ce3869f2c71092ea090ee0407b6ad814b37fc72d8e9925ab7fd54285e9c0",
+    "09-dobby-change-log-heartbeat.md": "0f35690e274c00c8022342c1b724f660571b9116e126c4b80100363dd0b297f3",
+    "10-dobby-cli-exits-and-out.md": "523c469e5093918e47810f91cd52474affe032e9901f870354060223ba1026a4",
+    "11-gate-adopt-key.md": "4ab81af7ea25a6a0ae103ad6b06bd1a13976213429309408a7024650a5919e7e",
+    "12-gate-run-in-process.md": "16d207f56a976321b888c04ef0cc059172fc66b4665cf6c32e943bd451a8c3af",
+    "13-adopt-check-verb.md": "f9203723114853389542fa2acf193c41882b06e8f11247b926d8229f7750ba6b",
+    "14-adopt-spawns-check.md": "8cab8544eed066b8bad99e1d35e9e9087664326118eb9aa88d5c5487184b2233",
+    "15-beam-status-adopt.md": "54c7b22d92f3123331bed9291399f1b28b314f645e0580364c086f85bf71ddf4"
+  },
+  "planOverviewFrameHash": "c7cfcd200ea5717f1ed88a0e3547846482fad6948057df5596f4d891f4be790d",
+  "partition": [
+    {
+      "cards": [
+        "01-shed-history-machine",
+        "02-batten-tells-machine",
+        "03-landings-by-machine",
+        "04-landings-flag",
+        "05-selfexec-callbacks",
+        "06-dobby-log-file"
+      ],
+      "profile": "wide",
+      "estimate": 215698,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54472,
+        "read_union": 32256,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 456,
+            "reads": {
+              "file:internal/shedengine/doc.go": 2460,
+              "package:internal/shedengine": 2000,
+              "tests:internal/shedengine": 2000
+            },
+            "messages": 63.5,
+            "written": 19506
+          },
+          {
+            "card": 2,
+            "card_text": 324,
+            "reads": {
+              "package:internal/battencli": 2000,
+              "tests:internal/battencli": 2000
+            },
+            "messages": 49,
+            "written": 15024
+          },
+          {
+            "card": 3,
+            "card_text": 480,
+            "reads": {
+              "file:internal/beamcli/doc.go": 1428,
+              "file:internal/dobbyengine/doc.go": 1272,
+              "package:internal/battencli": 2000,
+              "package:internal/beamcli": 2000,
+              "package:internal/dobbyengine": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/beamcli": 2000,
+              "tests:internal/dobbyengine": 2000
+            },
+            "messages": 91,
+            "written": 27780
+          },
+          {
+            "card": 4,
+            "card_text": 468,
+            "reads": {
+              "file:internal/dobbyengine/doc.go": 1272,
+              "package:internal/dobbyengine": 2000,
+              "tests:internal/dobbyengine": 2000
+            },
+            "messages": 36.5,
+            "written": 11418
+          },
+          {
+            "card": 5,
+            "card_text": 336,
+            "reads": {
+              "file:internal/selfexec/doc.go": 276,
+              "package:internal/selfexec": 2000,
+              "tests:internal/selfexec": 2000
+            },
+            "messages": 25.5,
+            "written": 7986
+          },
+          {
+            "card": 6,
+            "card_text": 756,
+            "reads": {
+              "file:internal/beamcli/doc.go": 1428,
+              "file:internal/dobbyengine/doc.go": 1272,
+              "package:internal/beamcli": 2000,
+              "package:internal/dobbyengine": 2000,
+              "package:internal/hubgeom": 2000,
+              "tests:internal/beamcli": 2000,
+              "tests:internal/dobbyengine": 2000,
+              "tests:internal/hubgeom": 2000
+            },
+            "messages": 155,
+            "written": 47256
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-dobby-start-and-exits",
+        "08-dobby-worktree-gone",
+        "09-dobby-change-log-heartbeat",
+        "10-dobby-cli-exits-and-out",
+        "11-gate-adopt-key"
+      ],
+      "profile": "wide",
+      "estimate": 297278,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61472,
+        "read_union": 62460,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 744,
+            "reads": {
+              "file:internal/beamcli/doc.go": 1428,
+              "file:internal/dobbyengine/doc.go": 1272,
+              "package:internal/beamcli": 2000,
+              "package:internal/dobbyengine": 2000,
+              "tests:internal/beamcli": 2000,
+              "tests:internal/dobbyengine": 2000
+            },
+            "messages": 122,
+            "written": 37344
+          },
+          {
+            "card": 8,
+            "card_text": 864,
+            "reads": {
+              "file:internal/beamcli/doc.go": 1428,
+              "file:internal/dobbyengine/doc.go": 1272,
+              "package:internal/beamcli": 2000,
+              "package:internal/dobbyengine": 2000,
+              "tests:internal/beamcli": 2000,
+              "tests:internal/dobbyengine": 2000
+            },
+            "messages": 100,
+            "written": 30864
+          },
+          {
+            "card": 9,
+            "card_text": 708,
+            "reads": {
+              "file:docs/overview.md": 10188,
+              "file:internal/dobbyengine/doc.go": 1272,
+              "package:docs": 2000,
+              "package:internal/dobbyengine": 2000,
+              "tests:docs": 2000,
+              "tests:internal/dobbyengine": 2000
+            },
+            "messages": 136.5,
+            "written": 41658
+          },
+          {
+            "card": 10,
+            "card_text": 648,
+            "reads": {
+              "file:internal/beamcli/doc.go": 1428,
+              "file:internal/dobbyengine/doc.go": 1272,
+              "package:internal/beamcli": 2000,
+              "package:internal/dobbyengine": 2000,
+              "tests:internal/beamcli": 2000,
+              "tests:internal/dobbyengine": 2000
+            },
+            "messages": 86,
+            "written": 26448
+          },
+          {
+            "card": 11,
+            "card_text": 732,
+            "reads": {
+              "file:docs/dotnet-hub.md": 2184,
+              "file:internal/gatecli/doc.go": 3816,
+              "file:internal/gateslot/doc.go": 1632,
+              "file:internal/gateslot/template.yaml": 516,
+              "file:pattern/PATTERN-test-speed.md": 1728,
+              "package:docs": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/configsync": 2000,
+              "package:internal/gatecli": 2000,
+              "package:internal/gateslot": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "package:pattern": 2000,
+              "tests:docs": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/configsync": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/gateslot": 2000,
+              "tests:internal/testkit/envkit": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 121,
+            "written": 37032
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "12-gate-run-in-process",
+        "13-adopt-check-verb",
+        "14-adopt-spawns-check",
+        "15-beam-status-adopt"
+      ],
+      "profile": "wide",
+      "estimate": 254622,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68472,
+        "read_union": 42924,
+        "cards": [
+          {
+            "card": 12,
+            "card_text": 480,
+            "reads": {
+              "file:internal/gatecli/doc.go": 3816,
+              "package:internal/gatecli": 2000,
+              "tests:internal/gatecli": 2000
+            },
+            "messages": 59,
+            "written": 18180
+          },
+          {
+            "card": 13,
+            "card_text": 780,
+            "reads": {
+              "file:internal/adoptcli/doc.go": 1116,
+              "package:internal/adoptcli": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/lymdirs": 2000,
+              "tests:internal/adoptcli": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/lymdirs": 2000
+            },
+            "messages": 228,
+            "written": 69180
+          },
+          {
+            "card": 14,
+            "card_text": 600,
+            "reads": {
+              "file:docs/overview.md": 10188,
+              "file:internal/adoptcli/doc.go": 1116,
+              "package:docs": 2000,
+              "package:internal/adoptcli": 2000,
+              "tests:docs": 2000,
+              "tests:internal/adoptcli": 2000
+            },
+            "messages": 102.5,
+            "written": 31350
+          },
+          {
+            "card": 15,
+            "card_text": 516,
+            "reads": {
+              "file:docs/overview.md": 10188,
+              "file:internal/adoptcli/doc.go": 1116,
+              "file:internal/beamcli/doc.go": 1428,
+              "package:docs": 2000,
+              "package:internal/adoptcli": 2000,
+              "package:internal/beamcli": 2000,
+              "tests:docs": 2000,
+              "tests:internal/adoptcli": 2000,
+              "tests:internal/beamcli": 2000
+            },
+            "messages": 80,
+            "written": 24516
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "4b391991c73503e031a1cbe663fd375c",
+  "masterSessionId": "6bae80f5-54af-46f3-a363-1efcff37f319",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "shed-history-machine",
+      "cards": [
+        "01-shed-history-machine",
+        "02-batten-tells-machine",
+        "03-landings-by-machine",
+        "04-landings-flag",
+        "05-selfexec-callbacks",
+        "06-dobby-log-file"
+      ],
+      "cardHashes": {
+        "01-shed-history-machine": "90043a6c4c525f12c1b49cf71d4c3165da04122b9c2fa85bd79b4aeb8926e6c2",
+        "02-batten-tells-machine": "11b2db9b60e93a1d35d35b118dcc74ed6f003d3ff8051be77da029a4f36c4af6",
+        "03-landings-by-machine": "c709babaa061cc9ebe6c50334b3558fc06c9387703247c288d580037628eb64f",
+        "04-landings-flag": "54a1c4c5408ca2b1c57f53d1c9329360a6549ddba5f62e1b3722f62f63bc4d0e",
+        "05-selfexec-callbacks": "d01224c8ffe6283ec9c12b63e45bb8276e31c1fc4f0fad450e482332d8022dc9",
+        "06-dobby-log-file": "53195b717256cecc8c9f78a238fbe31c304ddf08783613b12fa6eee9a94730fc"
+      },
+      "startSha": "c7b48fa5c57a10549ae8af242c723b6f272dcae1",
+      "kind": "fork",
+      "spawnedAt": "2026-10-27T16:28:36Z",
+      "sessionId": "6bae80f5-54af-46f3-a363-1efcff37f319",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
