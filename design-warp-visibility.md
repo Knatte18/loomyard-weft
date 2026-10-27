@@ -3,7 +3,7 @@
 `warp-visibility` · Note · feature, ide, fabric
 
 From `manifest/roadmap.md` Someday.
-Expose `CLAUDE.local.md` via symlink (Windows-Developer-Mode note and a copy fallback), so nothing lyx-related shows up in the Fabric repo's own git history.
+Expose `CLAUDE.local.md` via symlink (Windows-Developer-Mode note and a copy fallback), so nothing lym-related shows up in the Fabric repo's own git history.
 
 Out of date as of 2026-10-04: the design below and the roadmap line say the `CONSTRAINTS.md`-equivalent half is covered because `PATTERN.md` lives in weft.
 After `pattern-init`, `PATTERN.md` sits at the repo root and is tracked in the warp repo, so that half is not covered; decide it afresh when this is picked up.
@@ -17,7 +17,7 @@ The ignore entry for `CLAUDE.local.md` goes to `.git/info/exclude` through `fabr
 
 ## Design principle
 
-Nothing lyx-related should be visible in the Fabric repo's own git history — everything lives in `weft`.
+Nothing lym-related should be visible in the Fabric repo's own git history — everything lives in `weft`.
 
 ## `CONSTRAINTS.md`-equivalent — superseded by `PATTERN.md`
 

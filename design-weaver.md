@@ -10,7 +10,7 @@ Weaver is a second implementer beside it, built on Millhouse's "Builder" (skill 
 ## Seen (research, 2026-10-11)
 
 - Webster spawns one cold agent today: the recovery strand.
-  When a fork reports `stuck` or writes no report twice, Master runs `lyx webster recover-batch` (`contracts/stencils/webster/webster-template-master.md`), which starts a fresh shuttle/reed strand with a full cold-start prompt (`internal/websterengine/recoverbatch.go`).
+  When a fork reports `stuck` or writes no report twice, Master runs `lym webster recover-batch` (`contracts/stencils/webster/webster-template-master.md`), which starts a fresh shuttle/reed strand with a full cold-start prompt (`internal/websterengine/recoverbatch.go`).
   Its model is `webster.yaml` `recovery` (default `opus[high]`), against `master` at `sonnet[medium]`; that is Webster's only model escalation, and a batch gets at most two recoveries.
 - Builder (`plugins/mill/skills/mill-go-base/SKILL.md` in the Millhouse worktree) is a lean orchestrator that never reads cards or diffs.
   Per batch it starts a fresh, non-fork agent with a model from config (`roles.implementer.model`), and the agent reads only its batch file and the overview's Shared Decisions.
@@ -135,7 +135,7 @@ The width analysis ran on 34 real plans (238 cards, 106 batches): `docs/research
 - Narrow: the median plan has 6 cards and a critical path of 4, so unlimited worktrees give about 1.6x at best (1.3x counting same-package cards as dependent), with 2 to 3 cards runnable together.
 - Webster's actual batches leave about 1.0 to 1.1x, since batching by package already groups dependent cards.
 - 14 to 18% of batch pairs disjoint on paper still touched a common file; 16% of changed files were outside the batch's declared targets.
-- Shared docs (`doc.go`, `docs/overview.md`, `PATTERN.md`) and `cmd/lyx/testdata/test-budget.yaml` serialize most plans; 65% of cards list one of them.
+- Shared docs (`doc.go`, `docs/overview.md`, `PATTERN.md`) and `cmd/lym/testdata/test-budget.yaml` serialize most plans; 65% of cards list one of them.
   `test-budget.yaml` is one line per package, so different packages' raises merge cleanly in git unless adjacent; it is a false scheduling dependency.
 - A batchifier aiming at parallelism would gain roughly 1.3x to 1.6x on 8 to 17-card plans by ignoring `test-budget.yaml`, moving shared-doc edits to a final card and getting honest per-card file lists; nothing on the about 40% of plans with 4 or fewer cards.
 
@@ -155,8 +155,8 @@ The measure for it is the card-level width (cp and w columns of the study), not 
 
 For each batch:
 
-1. Create the batch's worktree with `lyx fabric`, so it has its own `.lyx` and `_lyx` folders.
-2. Copy the relevant part of the plan into the worktree's `_lyx`.
+1. Create the batch's worktree with `lym fabric`, so it has its own `.lym` and `_lym` folders.
+2. Copy the relevant part of the plan into the worktree's `_lym`.
 3. Seed the agent's instructions into the worktree; to the cold agent the worktree is an ordinary working folder, and it need not know anything outside it started it.
 4. Start a cold agent in the worktree; it does its work, writes a report with any deviations from the plan, and ends.
 5. Merge the worktree's work into the parent worktree, resolving conflicts; a good plan leaves little to resolve.
@@ -211,4 +211,4 @@ That idea is superseded, not lost: it's the direct ancestor of [quarry](https://
 - `internal/websterengine`'s package documentation — the sequential model this would extend.
 - loom-plan-spec.md — already captures the cheap win (`depends-on`).
 - [quarry](https://github.com/Knatte18/quarry) — Part B's successor.
-- `orch-any-worktree` (landed in dd11ab09f: `lyx fabric add --parent` forks a pair from a parent pair) — umbrella tasks need the same create-from-parent-pair, merge-back and teardown primitive as Weaver's per-batch pairs (orch recommendation, 2026-10-18).
+- `orch-any-worktree` (landed in dd11ab09f: `lym fabric add --parent` forks a pair from a parent pair) — umbrella tasks need the same create-from-parent-pair, merge-back and teardown primitive as Weaver's per-batch pairs (orch recommendation, 2026-10-18).

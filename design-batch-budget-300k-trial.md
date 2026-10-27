@@ -18,7 +18,7 @@ After a few loom runs, compare cost and fork quality against earlier runs; then 
 
 ## First check (Sonnet agent, 2026-10-24)
 
-The hub switched at 2026-10-22T15:50 (records commit `216c22a12`); each run's profile comes from its `_lyx/webster/state.json`.
+The hub switched at 2026-10-22T15:50 (records commit `216c22a12`); each run's profile comes from its `_lym/webster/state.json`.
 Only 2 wide runs with a Webster record have landed (`orch-strand-cycle`, `loom-tail-review`, the latter run on another machine, so no cost data), against 51 cautious runs since 2026-10-15.
 
 | median | cautious (51) | cautious, 10+ cards (18) | wide (2) |

@@ -4,7 +4,7 @@
 
 ## Seen (operator, 2026-10-26, OSL-1046)
 
-`lyx adopt root` on OSL-1046 (then `lyx adopt --prime`, removed by `beam-start-and-ownership`) started the machine check in the background (`lyx gate test --gate finalize --wait`) and printed only its pid and a log path, `_board/.lyx/adopt/suite.log`, inside the JSON.
+`lym adopt root` on OSL-1046 (then `lym adopt --prime`, removed by `beam-start-and-ownership`) started the machine check in the background (`lym gate test --gate finalize --wait`) and printed only its pid and a log path, `_board/.lym/adopt/suite.log`, inside the JSON.
 Nothing on screen showed that a test run had started, how far it had come or how it ended.
 The check exists to find what a move between machines breaks, here from Neve on Ubuntu 26 to OSL-1046 on Ubuntu 24.
 The operator dislikes the gate key `finalize` for it: the run is the adopting machine's check, not a Finalize.
@@ -12,4 +12,4 @@ The operator dislikes the gate key `finalize` for it: the run is the adopting ma
 ## Idea
 
 - The adopt check runs under a gate key of its own, such as `adopt`, by the rule one gate key per producer, named after it.
-- Its progress and result are visible from where the operator works: a window or strand of its own, or a line per tier to the orch and in `lyx beam status`, and a notice when it ends, failed or green.
+- Its progress and result are visible from where the operator works: a window or strand of its own, or a line per tier to the orch and in `lym beam status`, and a notice when it ends, failed or green.

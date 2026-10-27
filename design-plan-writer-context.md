@@ -23,7 +23,7 @@ Cutting a quarter of the writer's and its forks' cost saves about 4.5% of all sp
   Review could split per part the same way, since each fresh reviewer rebuilds its context every round (Plan reviewer: 48 turns at 123k mean context, $2.48 per session).
 - Twill-plan versus a solo writer: since the full `twill-plan` fan (2026-10-20), 7 landed loom runs average 2.00 Plan rounds against 2.09 before, while the writer's forks cost about $7 per run and a Plan round about $3.70; too few runs to judge.
   The operator sees strong signs that the twill writer makes a far better one-shot plan in shorter time, and time counts as well as tokens.
-  Still, test a solo Opus high writer: compare twill, solo Opus high and solo Fable on Plan cost, Plan rounds and Plan wall time (`lyx report timing`) per run.
+  Still, test a solo Opus high writer: compare twill, solo Opus high and solo Fable on Plan cost, Plan rounds and Plan wall time (`lym report timing`) per run.
 
 ## Split writing: two variants to bench (operator, 2026-10-22)
 
@@ -70,7 +70,7 @@ Plan writer plus its lens forks, means per run (API list price):
 - Plan-Write re-reads about 62% of the files Discussion-Write read (mean of per-run shares 62%), so exploration is repeated, but Plan reads about three times as many files and most of its reading (79%) is new.
 - Rough size of the repeat: the Plan-Write reads that Discussion had already made are about 3.3M tokens pooled, about 59k per run (file bytes at current `main` divided by 4; whole files assumed, so an upper bound).
   That is roughly a third of the Plan writer's mean context, and it is paid again on every later turn through the cache.
-- File-level only: directory greps, globs and `lyx quarry` reads are not counted, and a file is the same file by path, not by the lines read.
+- File-level only: directory greps, globs and `lym quarry` reads are not counted, and a file is the same file by path, not by the lines read.
 - The Discussion phase total holds its review rounds and fixers, which is most of its cost beyond the writer; the segment figures come from the 10-24 tokencount reports, so runs landed since are priced as of then.
 - Rerun: `.scratch/discussion-overlap/reads2.sh <slug> plan|discussion` per run, then `analyze.sh`; both stay in `.scratch` and are not committed.
 - Decision (operator, 2026-10-25): Discussion stays a separate step; folding it into the Plan writer would add turns to the costliest session.

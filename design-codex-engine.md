@@ -19,11 +19,11 @@ When claudeengine was built, what an engine needs was unknown; now claudeengine 
 
 ## Folder trust and the Codex home (operator decisions, 2026-10-24)
 
-Codex asks once per folder whether to trust it, keyed on the git repository root, and every lyx worktree is a new root; a parent-folder entry does not cover a repository, and `-c` cannot set trust (tested on Codex 0.164).
-- One shared lyx Codex home per machine (such as `~/.lyx/codex`) is every launch's `CODEX_HOME`: config, rules, hooks and skills rendered by lyx, with links to `~/.codex/auth.json` and `~/.codex/sessions`; the operator's own `~/.codex` stays untouched. A `CODEX_HOME` with its own trust entry and the auth link started Codex with no prompt (tested 2026-10-24).
+Codex asks once per folder whether to trust it, keyed on the git repository root, and every lym worktree is a new root; a parent-folder entry does not cover a repository, and `-c` cannot set trust (tested on Codex 0.164).
+- One shared lym Codex home per machine (such as `~/.lym/codex`) is every launch's `CODEX_HOME`: config, rules, hooks and skills rendered by lym, with links to `~/.codex/auth.json` and `~/.codex/sessions`; the operator's own `~/.codex` stays untouched. A `CODEX_HOME` with its own trust entry and the auth link started Codex with no prompt (tested 2026-10-24).
 - `codexengine` adds the launch's worktree root to that home's trust list when missing, and in the same write drops entries whose folder no longer exists, so no teardown step is needed and only shuttle knows of it.
 - Each write is a read-modify-write under an `internal/lock` file lock, written to a temp file and renamed into place.
-- Codex writes `config.toml` itself too (a `[tui]` table on first start) and ignores the lock: lyx pre-sets those settings, and checks after startup that the entry is still there.
+- Codex writes `config.toml` itself too (a `[tui]` table on first start) and ignores the lock: lym pre-sets those settings, and checks after startup that the entry is still there.
 - Untested: whether Codex resolves a linked worktree to its own root or to the main repository's.
 
 ## Steps

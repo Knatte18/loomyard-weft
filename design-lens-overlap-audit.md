@@ -8,8 +8,8 @@ Which lenses find the same defects, which defect areas the lenses essentially co
 
 ## Result (sonnet agent, 2026-10-22)
 
-Sources: `_lyx/plan/lens-review.md` in the weft archive tags (94 loom runs, only 6 of them, all on 2026-10-22, with all 8 `twill-plan` lenses), the per-lens fork reports in the machine-local Claude Code transcripts (5 runs), and per-lens attribution in `round-1-review.md`.
-The sample with the full lens set is small, lens texts changed over time, and a "fixed" finding only means the writer agreed; since `lens-fork-reports-kept` landed (79bab47a0) every lens fork's report is kept verbatim beside its record (`*.lens-<lens>.md` under `_lyx/plan/`, `_lyx/discussion/` and the review rounds), so later audits have per-lens data.
+Sources: `_lym/plan/lens-review.md` in the weft archive tags (94 loom runs, only 6 of them, all on 2026-10-22, with all 8 `twill-plan` lenses), the per-lens fork reports in the machine-local Claude Code transcripts (5 runs), and per-lens attribution in `round-1-review.md`.
+The sample with the full lens set is small, lens texts changed over time, and a "fixed" finding only means the writer agreed; since `lens-fork-reports-kept` landed (79bab47a0) every lens fork's report is kept verbatim beside its record (`*.lens-<lens>.md` under `_lym/plan/`, `_lym/discussion/` and the review rounds), so later audits have per-lens data.
 
 ### `twill-plan` (8 lenses)
 

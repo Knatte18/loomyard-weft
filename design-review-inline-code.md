@@ -23,7 +23,7 @@ One run per arm is too few to decide anything.
 
 ## Idea
 
-Give a review round, Webster-Review or Merge-Review first, since their target is a diff at a fixed commit, the bodies of the symbols the target changes or cites, rendered by lyx at round start, and measure finding quality and cost against today's reviewer.
+Give a review round, Webster-Review or Merge-Review first, since their target is a diff at a fixed commit, the bodies of the symbols the target changes or cites, rendered by lym at round start, and measure finding quality and cost against today's reviewer.
 
 ## Problem raised by the operator (2026-10-15)
 
@@ -39,7 +39,7 @@ The Burler side of the kick-start pack, issue #228: a pack of the reviewed glyph
 Measured basis from before: quarry's `results/2026-09-06-kickstart` (`bench/loomyard-eval/ladder/results/2026-09-06-kickstart/conclusion.md`, commit `d2e492d`).
 The Webster pack audits (`docs/research/glyph-audit-2026-10-12`, `-10-13`, `-10-15`) found too little gain to build it yet: forks read about 20 % less but explore as much.
 Take it up only if the per-card pack of task `kickstart-per-card` shows a clear gain when measured with `tools/forkaudit`.
-Since then the card pack and the kick-start pack are gone (`lyx loom card-pack` removed, `kickstart_pack*` keys retired in `internal/websterengine/config.go`), so pasting bodies into a reviewer's context needs a new measurement of its own (`docs/research/tsa-quarry-2026-10-24/report.md`, idea 1).
+Since then the card pack and the kick-start pack are gone (`lym loom card-pack` removed, `kickstart_pack*` keys retired in `internal/websterengine/config.go`), so pasting bodies into a reviewer's context needs a new measurement of its own (`docs/research/tsa-quarry-2026-10-24/report.md`, idea 1).
 
 ### The pack is the read set (was note pack-is-the-read-set)
 
