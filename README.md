@@ -28,7 +28,7 @@ grouping
 | --- | --- | --- | --- |
 | E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
 
-## Tasks (2)
+## Tasks (3)
 
 Concrete and claimable; only a task can run.
 
@@ -40,13 +40,14 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Bench the tuned forked Codex Astra fan on P1 at high effort**<br>• Tuned prompt, Claude reviewers' context, forked fan, Astra high, on P1<br>• `profile: docs` | [`codex-astra-tuned-p1-high-bench`](design-codex-astra-tuned-p1-high-bench.md) | darn | Worktree-Create | neve | 0m<br>0m | codex, burler |
 
-### Ready (1)
+### Ready (2)
 
 Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **Bench the tuned forked Codex Astra fan on P4 at medium effort**<br>• Tuned prompt, Claude reviewers' context, forked fan, Astra medium, on P4<br>• `profile: docs` | [`codex-astra-tuned-p4-med-bench`](design-codex-astra-tuned-p4-med-bench.md) | darn |  | 0m<br>0m | codex, burler |
+| T2 | **Bench the tuned forked Codex Astra fan on P4 at medium effort**<br>• Tuned prompt, Claude reviewers' context, forked fan, Astra medium, on P4<br>• `profile: docs` | [`codex-astra-tuned-p4-med-bench`](design-codex-astra-tuned-p4-med-bench.md) | darn |  | 0m<br>0m | codex, burler |
+| T3 | **Bench the tuned forked Codex Astra fan on P1 at medium effort**<br>• Tuned prompt, Claude reviewers' context, forked fan, Astra medium, on P1<br>• `profile: docs` | [`codex-astra-tuned-p1-med-bench`](design-codex-astra-tuned-p1-med-bench.md) | darn |  | 0m<br>0m | codex, burler |
 
 ## Notes (47)
 
