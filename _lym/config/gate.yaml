@@ -44,5 +44,6 @@ gates:
   webster: {tiers: [0, 1, 2], scope: all}
   parent-align: {tiers: [0, 1, 2], scope: all}
   finalize: {tiers: [0, 1, 2], scope: all}
+  adopt: {tiers: [0, 1, 2], scope: all}
   darn-write: {tiers: [0, 1, 2], scope: diff}
   code-burler-fix: {tiers: [0, 1, 2], scope: diff}
