@@ -1,0 +1,11 @@
+{
+  "verdict": "hand-back",
+  "reason": "The Darn-Write gate failed on attempt 3 in tier0 with two failures: TestEnforcement_MarkdownLinks/repo and its parent.\nThe scan reports 569 broken links in docs/research/codex-astra-context-parity-bench-2026-10-27/data/prompts/step-1-explore-fan.md, all of them pattern/PATTERN-*.md targets that do not resolve from that file's location (verify-3.log lines 25227-25236 and onward).\nThat file was added by commit 752e0035 and is already on main; the branch's diff against main touches only internal/fabric* files, so the break is not caused by this round.\nThe comment-wrap fix from attempt 1 was applied; the remaining failure is in a docs file outside the task's diff.\nA plain `lym loom resume` re-runs the same gate and will fail the same way, so this needs a scope decision.\n",
+  "question": "The gate test TestEnforcement_MarkdownLinks fails on a docs file that main already carries, so the Darn-Write round cannot pass verify by its own changes.\nHow should this be settled: (1) fix the broken links in docs/research/codex-astra-context-parity-bench-2026-10-27/data/prompts/step-1-explore-fan.md on main, or the link targets it names, in a separate change, then resume this task; (2) extend the docs link allowlist or scope the scan in internal/lymcwd/docslink_test.go, which is a change outside this task's scope; or (3) have Darn-Write fix the docs file within this task, which widens the task beyond its scope?\n",
+  "goto": "",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/test-logs-leak-into-bolt/_lym/shed/test-logs-leak-into-bolt/tackler/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/test-logs-leak-into-bolt/_lym/shed/test-logs-leak-into-bolt/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": ""
+}
