@@ -90,3 +90,8 @@ Always offer the cheaper path beside it: record the blocking fixes as decisions 
 ## Discussion rounds are not cut for a full body
 
 Discussion explores the code, bounds the scope and weighs the impact; a full board body does not do that work, so it is no reason to lower a task's Discussion rounds (operator, 2026-10-25).
+
+## Codex effort
+
+Never give a Codex run `xhigh` effort or above, in a bench or anywhere else: it costs too much; `high` is the ceiling (operator, 2026-10-27).
+A Codex reviewer always gets the same context a Claude reviewer of the same round gets, the PATTERN overview and the repository's agent instructions included (operator, 2026-10-27).
