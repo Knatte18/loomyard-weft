@@ -5,7 +5,7 @@
 - `internal/selfexec#TestWatcher_Check`
 
 **Create:**
-- `plan:internal/selfexec#Watcher.CheckWith` -> `func (w *Watcher) CheckWith(beforeExec func(), failed func(error))`
+- `internal/selfexec#Watcher.CheckWith`
 
 **Extends:**
 - `internal/selfexec/doc.go`

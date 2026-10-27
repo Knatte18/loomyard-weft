@@ -5,7 +5,7 @@
 - `internal/battencli#battenCLI.specFor`
 
 **Create:**
-- `plan:internal/battencli#TestBuildShed_TellsTheMachine` -> `func TestBuildShed_TellsTheMachine(t *testing.T)`
+- `internal/battencli#TestBuildShed_TellsTheMachine`
 
 **Uses:**
 - `internal/battencli#newPreDriveReceiver`

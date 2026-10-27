@@ -9,7 +9,7 @@
 - `internal/shedengine#TestStatus_JSONRoundTrip`
 
 **Create:**
-- `plan:internal/shedengine#TestStep_StampsTheToldMachine` -> `func TestStep_StampsTheToldMachine(t *testing.T)`
+- `internal/shedengine#TestStep_StampsTheToldMachine`
 
 **Extends:**
 - `internal/shedengine/doc.go`

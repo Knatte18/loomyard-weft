@@ -7,9 +7,9 @@
 - `internal/dobbyengine/doc.go`
 
 **Create:**
-- `plan:internal/beamcli#TestDobbyLandings_CountsOnlyThisMachine` -> `func TestDobbyLandings_CountsOnlyThisMachine(t *testing.T)`
-- `plan:internal/beamcli#machineLandings` -> `func machineLandings(machine func() (string, error), read func(machine string) ([]string, error)) func() ([]string, error)`
-- `plan:internal/beamcli#TestMachineLandings` -> `func TestMachineLandings(t *testing.T)`
+- `internal/beamcli#TestDobbyLandings_CountsOnlyThisMachine`
+- `internal/beamcli#machineLandings`
+- `internal/beamcli#TestMachineLandings`
 
 **Extends:**
 - `internal/beamcli/doc.go`

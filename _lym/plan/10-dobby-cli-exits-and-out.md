@@ -18,13 +18,13 @@
 **Uses:**
 - `internal/beamcli#hubDobbyDeps`
 - `internal/beamcli#registerDobby`
-- `plan:internal/dobbyengine#AppendLog`
-- `plan:internal/dobbyengine#RotatePastBound`
+- `internal/dobbyengine#AppendLog`
+- `internal/dobbyengine#RotatePastBound`
 - `plan:internal/dobbyengine#ReadsAsReexec`
 - `internal/dobbyengine#Run`
 - `internal/dobbyengine#Live`
 - `internal/dobbyengine#State`
-- `plan:internal/hubgeom#DobbyBeamDir`
+- `internal/hubgeom#DobbyBeamDir`
 - `internal/beamcli#seedBattenRun`
 
 **Intent:**
