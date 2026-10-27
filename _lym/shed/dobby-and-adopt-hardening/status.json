@@ -1,11 +1,11 @@
 {
-  "current_producer": "Drift-Baseline",
+  "current_producer": "Plan-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Drift-Baseline",
-    "last": "Discussion-Bouncer → done",
+    "now": "Plan-Write",
+    "last": "Drift-Baseline → skipped",
     "wait": ""
   },
   "history": [
@@ -165,6 +165,13 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYMHUB/dobby-and-adopt-hardening/_lym/reviews/discussion/round-3-bouncer-ledger.md",
       "at": "2026-10-27T15:22:00Z"
+    },
+    {
+      "producer": "Drift-Baseline",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-10-27T15:22:00Z",
+      "reason": "drift.enabled = false"
     }
   ],
   "product": {
