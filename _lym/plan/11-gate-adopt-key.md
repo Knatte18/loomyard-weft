@@ -14,10 +14,10 @@
 - `internal/gatecli/doc.go`
 
 **Create:**
-- `plan:internal/gateslot#seedAdoptGate` -> `func seedAdoptGate(gates *yaml.Node) []string`
-- `plan:internal/gateslot#SeedAdoptGate` -> `func SeedAdoptGate(existing []byte) ([]byte, []string, error)`
-- `plan:internal/gateslot#TestSeedAdoptGate` -> `func TestSeedAdoptGate(t *testing.T)`
-- `plan:internal/configsync#TestReconcileHubWideAt_SeedsAdoptFromATunedFinalize` -> `func TestReconcileHubWideAt_SeedsAdoptFromATunedFinalize(t *testing.T)`
+- `internal/gateslot#seedAdoptGate`
+- `internal/gateslot#SeedAdoptGate`
+- `internal/gateslot#TestSeedAdoptGate`
+- `internal/configsync#TestReconcileHubWideAt_SeedsAdoptFromATunedFinalize`
 
 **Extends:**
 - `pattern/PATTERN-test-speed.md`

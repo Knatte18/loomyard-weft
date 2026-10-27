@@ -10,10 +10,10 @@
 - `internal/dobbyengine#tidyShuttleFake.StopStrand`
 
 **Create:**
-- `plan:internal/dobbyengine#daemon.worktreeGone` -> `func (d *daemon) worktreeGone() bool`
-- `plan:internal/dobbyengine#daemon.exitWorktreeGone` -> `func (d *daemon) exitWorktreeGone()`
-- `plan:internal/dobbyengine#TestRun_WorktreeGoneExits` -> `func TestRun_WorktreeGoneExits(t *testing.T)`
-- `plan:internal/beamcli#TestHubDobbyDeps_PrimeTidyShuttle` -> `func TestHubDobbyDeps_PrimeTidyShuttle(t *testing.T)`
+- `internal/dobbyengine#daemon.worktreeGone`
+- `internal/dobbyengine#daemon.exitWorktreeGone`
+- `internal/dobbyengine#TestRun_WorktreeGoneExits`
+- `internal/beamcli#TestHubDobbyDeps_PrimeTidyShuttle`
 
 **Extends:**
 - `internal/dobbyengine/doc.go`

@@ -7,10 +7,10 @@
 - `internal/beamcli_test#TestDobbyCmd_RefusesAPathItCannotPlace`
 
 **Create:**
-- `plan:internal/beamcli#runDobbyWith` -> `func runDobbyWith(ctx context.Context, out io.Writer, root string, wire func(prime *lymcwd.Location, geom dobbyengine.Geometry) (dobbyengine.Deps, error), notify func(from *lymcwd.Location, slug, program, line string) (bool, error)) int`
-- `plan:internal/beamcli#reopenStdio` -> `func reopenStdio(path string) error`
-- `plan:internal/beamcli#TestRunDobbyWith_TracesEachExitBeforeRun` -> `func TestRunDobbyWith_TracesEachExitBeforeRun(t *testing.T)`
-- `plan:internal/beamcli_test#TestDobby_ReexecsOntoAReplacedBinary` -> `func TestDobby_ReexecsOntoAReplacedBinary(t *testing.T)`
+- `internal/beamcli#runDobbyWith`
+- `internal/beamcli#reopenStdio`
+- `internal/beamcli#TestRunDobbyWith_TracesEachExitBeforeRun`
+- `internal/beamcli_test#TestDobby_ReexecsOntoAReplacedBinary`
 
 **Extends:**
 - `internal/dobbyengine/doc.go`
@@ -20,7 +20,7 @@
 - `internal/beamcli#registerDobby`
 - `internal/dobbyengine#AppendLog`
 - `internal/dobbyengine#RotatePastBound`
-- `plan:internal/dobbyengine#ReadsAsReexec`
+- `internal/dobbyengine#ReadsAsReexec`
 - `internal/dobbyengine#Run`
 - `internal/dobbyengine#Live`
 - `internal/dobbyengine#State`
