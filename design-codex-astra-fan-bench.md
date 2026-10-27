@@ -1,6 +1,6 @@
 # Bench a Codex Astra lens fan against the Claude fan on one plan
 
-`codex-astra-fan-bench` · Task · research, codex, burler
+`codex-astra-fan-bench` · Task · research, codex, burler · running · Worktree-Create
 
 ## Question
 

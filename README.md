@@ -32,13 +32,19 @@ grouping
 
 Concrete and claimable; only a task can run.
 
-### Ready (1)
+### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Bench a Codex Astra lens fan against the Claude fan on one plan**<br>• Astra medium, 3 lens reviews plus a handler on P4, graded against the Claude fan reference<br>• `profile: docs` | [`codex-astra-fan-bench`](design-codex-astra-fan-bench.md) | darn | Worktree-Create | neve | 4m<br>4m | codex, burler |
+
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Bench a Codex Astra lens fan against the Claude fan on one plan**<br>• Astra medium, 3 lens reviews plus a handler on P4, graded against the Claude fan reference<br>• `profile: docs` | [`codex-astra-fan-bench`](design-codex-astra-fan-bench.md) | darn |  | 4m<br>4m | codex, burler |
+_None._
 
 ## Notes (47)
 
