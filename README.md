@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-27 11:26 UTC; every age below is as of then.
+Rendered 2026-10-27 11:27 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -28,17 +28,9 @@ grouping
 | --- | --- | --- | --- |
 | E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
 
-## Tasks (1)
+## Tasks (0)
 
 Concrete and claimable; only a task can run.
-
-### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Bench a Codex Astra fan with real forks at high effort on one plan**<br>• One codex exec handler spawning 3 lens forks with fork_turns=all, Astra high, on P4<br>• `profile: docs` | [`codex-astra-fork-fan-bench`](design-codex-astra-fork-fan-bench.md) | darn | Finalize | neve | 18m<br>18m | codex, burler |
 
 ### Ready (0)
 
@@ -116,3 +108,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R5 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 4d<br>1h | webster |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 4d<br>1h | loom, stencil |
 | R8 |  | **Ideas from r/ClaudeCode "one line in your CLAUDE.md": fit for LoomYard and bench measures**<br>• About 30 ideas judged against our stencils and rules; top 8 ranked for a bench, a few cheap enough without one | [`claude-md-thread-ideas`](design-claude-md-thread-ideas.md) | 20h<br>1h | stencil, loom, burler |
+
+## Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T1 | **Bench a Codex Astra fan with real forks at high effort on one plan**<br>• One codex exec handler spawning 3 lens forks with fork_turns=all, Astra high, on P4<br>• `profile: docs` | [`codex-astra-fork-fan-bench`](design-codex-astra-fork-fan-bench.md) | 18m<br>18m | codex, burler |
