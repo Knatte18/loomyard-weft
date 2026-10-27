@@ -1,6 +1,6 @@
 # Darn runs Drift-Await after Drift-Baseline instead of a waiting capture
 
-`darn-drift-await-row` · Task · enhancement, shed, loom · running · Code-Burler-Review
+`darn-drift-await-row` · Task · enhancement, shed, loom · running · Code-Burler-Fix
 
 ## Seen (operator, 2026-10-25)
 
