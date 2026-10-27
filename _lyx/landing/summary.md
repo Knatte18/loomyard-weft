@@ -1,24 +1,39 @@
-# Rename lyx to lym: binary, hub suffix, env variables and state dirs
+# Rename the binary lyx to lym and the lyx names with it
 
-`lyx` collides with the LyX editor's `/usr/bin/lyx`, so the binary and every name derived from it become `lym`, for LoomYard Mill.
+`lyx` collides with LyX, the LaTeX editor, whose Debian and Ubuntu package installs `/usr/bin/lyx`.
+On a machine with both, whichever comes first on PATH wins, so LoomYard's binary becomes `lym`, for LoomYard Mill.
 
-## What changed
+Closes #670
 
-- A case-mapping rename of `lyx`, `Lyx` and `LYX` to `lym`, `Lym` and `LYM` in every tracked text file and path, done by a one-off script that is not committed.
-  This covers `cmd/lym`, `binaryName()` in `tools/deploy`, the `-LYMHUB` hub suffix, the `LYM_*` environment variables, the `_lym/` and `.lym/` directory names, the `.lym-anchor` file, the `ly` plugin's stencils and skills, docs, scripts, and the package and identifier names such as `internal/lymcwd`, `internal/lymdirs`, `internal/lymtemp` and `LymDirName`.
-- Dobby's `markers` directory is gone: `Geometry.MarkerDir` is replaced by `LogPath` (`.lym/beam/dobby.log`, beside `state.json` and `dobby.lock`) and `TidyDir` (`.lym/beam/tidy/`), and a board-tidy report is named by its UTC timestamp alone, such as `20261026T151739Z.md`.
-  `MarkerDirName` gives way to `TidyDirName`.
-- Two `internal/gatecli` tests pin hashes computed over the renamed names; their literals are updated.
-- The comment paragraphs whose words the rename changed were legacy fixed-column-wrapped, so the comment lint read their breaks as new.
-  A second scripted pass rejoined each flagged paragraph and broke it only at sentence ends and semicolons, with no word changed; this is the bulk of the third commit's diff.
+## What changes
+
+- The binary: `cmd/lyx` becomes `cmd/lym`, and `tools/deploy` builds and installs `lym`.
+- The hub directory suffix `-LYXHUB` becomes `-LYMHUB`.
+- The `LYX_*` environment variables become `LYM_*`.
+- The `_lyx/` and `.lyx/` directories become `_lym/` and `.lym/`.
+- Docs, `PATTERN.md` and its background files, the `ly` plugin's stencils and skills, scripts and launchers follow.
+- Dobby's `markers` directory is gone, since it held no markers.
+  `dobby.log` now sits beside `state.json` and `dobby.lock` as `.lym/beam/dobby.log`.
+  Board-tidy reports go to `.lym/beam/tidy/<UTC timestamp>.md`, named by their timestamp alone.
+- Comment blocks the rename touched are reflowed to one sentence per line with `tools/godocreflow`.
+  This changes line breaks only, never words.
 
 ## Design decisions
 
-- `LyX`, the LaTeX editor's spelling in a `tools/deploy` test that guards against a foreign binary, is left as it is.
-- `go.sum` and `docs/research/` are left untouched: one holds hashes, the other dated measurement reports of past runs.
-- There is no migration code: the binary knows only the new names, and existing hubs are cloned afresh at the cutover the board entry describes.
-- The comment re-break touches only the paragraphs the lint flagged, not every wrapped comment in a touched file, to keep the diff to what the rename caused.
+- The rename is one case-mapped rewrite of `lyx`, `Lyx` and `LYX`, applied to every tracked text file, with every tracked path holding those spellings moved by `git mv`.
+  Package names such as `lyxcwd` and identifiers such as `LyxDirName` are renamed with the rest, so no mixed `lyx`/`lym` vocabulary is left.
+- Left as they are: the spelling `LyX`, which names the editor in a deploy test that guards against a foreign binary; `go.sum`; and `docs/research/`, whose dated measurement reports record past runs under the name they ran with.
+- The dobby geometry replaces `Geometry.MarkerDir` with `LogPath` and `TidyDir`, and the `MarkerDirName` constant gives way to `TidyDirName`.
+- No migration code: the binary knows only the new names.
+  Existing hubs are cloned afresh.
+- The landing deploys nothing, since `deploy_branches` is `[]` until the cutover.
 
-## Testing
+## To check or run by hand
 
-The scoped `lyx gate test` tier0 run is green, and `lyx loom lint-comments` against the fork point reports no findings.
+- The cutover after landing:
+  1. Clone loomyard into a plain directory and run `update-plugins.sh` there.
+  2. Rename `_lyx/` to `_lym/` in one commit on Bolt and on `main-weft`, and push both.
+  3. Clone the hub afresh with `lym fabric clone` as `loomyard-LYMHUB`, and start it with `lym beam start`.
+  4. Set `deploy_branches` back to `["main"]`.
+- Other hubs (quarry, cs, OSL-1046's) move to `lym` the same way, and machine-local state is not carried over.
+- A search of tracked files outside `go.sum` and `docs/research/` for `lyx`, `Lyx` and `LYX` should find nothing.
