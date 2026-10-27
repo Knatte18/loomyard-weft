@@ -43,7 +43,11 @@ The Codex account is ChatGPT Plus, bought for testing and benching, not for prod
 
 `docs/research/codex-review-bench-2026-10-25/report.md`: over 10 discussions and plans at medium effort, solo Codex does not reach the Claude lens fan's coverage.
 `gpt-6.1-sol` found 22 of 134 Claude findings (7 of 21 blocking), matched 9 of 10 verdicts and added 11 real findings Claude missed; Luna is too shallow, Astra matched Sol at about 4 times the plan cost.
-The report suggests Sol as an extra, non-gating reviewer beside the Claude fan, not a replacement; the plan's 5-hour limit stopped the bench early, so higher effort, repeats and Astra on plans are unmeasured.
+The report suggests Sol as an extra, non-gating reviewer beside the Claude fan, not a replacement; the plan's 5-hour limit stopped the bench early, so higher effort and repeats are unmeasured.
+
+`docs/research/codex-astra-solo-bench-2026-10-25/report.md` (landed as `codex-astra-solo-bench`) benches Astra against solo Opus, both at medium effort, on two plans: each reproduced 4 of the Claude fan's 23 findings, Opus 1 of its 5 blocking and Astra none.
+Astra was 2.3 to 3 times faster and cost 22 points of the Plus plan's 5-hour window on one plan; it blocked both plans as the fan did, where Opus approved one the fan blocked.
+Two inputs, one run per cell, one grader: it ranks neither reviewer.
 
 ## First candidate roles
 

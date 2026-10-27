@@ -29,7 +29,7 @@ The rename lands before LoomYard is taken into use on other repositories, since 
 ## Done mechanically (operator, 2026-10-26)
 
 The rename is done by a script, never by hand edits file by file.
-It needs agents to be allowed scripted edits, which `scripted-edits-allowed` brings.
+Agents are allowed scripted edits since `scripted-edits-allowed` landed: the shell guard no longer denies `sed -i`, `perl -i` or a redirect into a project file.
 
 ## Runs alone (operator, 2026-10-22)
 
