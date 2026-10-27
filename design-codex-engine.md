@@ -43,11 +43,20 @@ The Codex account is ChatGPT Plus, bought for testing and benching, not for prod
 
 `docs/research/codex-review-bench-2026-10-25/report.md`: over 10 discussions and plans at medium effort, solo Codex does not reach the Claude lens fan's coverage.
 `gpt-6.1-sol` found 22 of 134 Claude findings (7 of 21 blocking), matched 9 of 10 verdicts and added 11 real findings Claude missed; Luna is too shallow, Astra matched Sol at about 4 times the plan cost.
-The report suggests Sol as an extra, non-gating reviewer beside the Claude fan, not a replacement; the plan's 5-hour limit stopped the bench early, so higher effort and repeats are unmeasured.
+The report suggests Sol as an extra, non-gating reviewer beside the Claude fan, not a replacement; the plan's 5-hour limit stopped the bench early, so repeats are unmeasured; higher effort is measured on one plan by the Astra benches below.
 
 `docs/research/codex-astra-solo-bench-2026-10-25/report.md` (landed as `codex-astra-solo-bench`) benches Astra against solo Opus, both at medium effort, on two plans: each reproduced 4 of the Claude fan's 23 findings, Opus 1 of its 5 blocking and Astra none.
 Astra was 2.3 to 3 times faster and cost 22 points of the Plus plan's 5-hour window on one plan; it blocked both plans as the fan did, where Opus approved one the fan blocked.
 Two inputs, one run per cell, one grader: it ranks neither reviewer.
+
+Five follow-up benches of 2026-10-27, all on plan `P4` (`machine-handover`), one run per cell, one grader, against the Claude fan's 11 findings (3 `BLOCKING`); each returned the fan's verdict `BLOCKING` and no false finding, and none ranks Astra against the fan:
+- `docs/research/codex-astra-fan-bench-2026-10-27/report.md`: a cold-call Astra lens fan at medium effort found 0 of 11, with 8 unique real findings; 466k fresh input tokens and 907 s against solo's 77k and 166 s.
+- `docs/research/codex-astra-solo-high-bench-2026-10-27/report.md`: solo Astra at high effort found 1 of 11 where medium found 2; about 2.9 times the wall time, a different set of findings, not a larger one.
+- `docs/research/codex-astra-fork-fan-bench-2026-10-27/report.md`: a handler with real forks (`spawn_agent`, `fork_turns="all"`) at high effort found 1 of 11; the forks ran concurrently, children of the handler's thread, as the twill spike found.
+- `docs/research/codex-astra-context-parity-bench-2026-10-27/report.md`: the same forked fan with the PATTERN overview inlined and the snapshot's `CLAUDE.md` loaded as `AGENTS.md` found 2 of 11, none `BLOCKING`; the gain is the PATTERN-fit finding (fan `F6`).
+- `docs/research/codex-astra-tuned-prompt-bench-2026-10-27/report.md`: the forked fan with that context and one block of reading directions (read every `pattern/` background file, read the test card against the test-speed rules) found 4 of 11 and 2 of 3 `BLOCKING`, at 631k fresh input tokens and 950 s; it changes three things at once, so the block's share is unproven.
+The `BLOCKING` finding no Astra run reached is the owner guard on `retryWeftPush` reading origin's Bolt outside the reconcile.
+Astra's runs all add real findings the Claude fan lacks, which supports the note's earlier reading of Codex as an extra, non-gating reviewer beside the Claude fan, not a replacement.
 
 ## First candidate roles
 
