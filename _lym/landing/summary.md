@@ -1,37 +1,39 @@
-# Keep test trace logs out of the live hub and out of Bolt
+# Keep gate-test trace logs out of the live hub and out of Bolt
 
-A gate run's `fabriccli` test binary wrote `trace-*.log` files into the live hub's `_board/.lym/logs`, and the next `board sync` committed them to Bolt.
-This change closes both halves: the test no longer resolves the real hub, and Bolt's stage-all commit never takes a file under `.lym/`.
+A `go test` run of `fabriccli` wrote `trace-*.log` files into the live hub's `_board/.lym/logs`, and the next `board sync` committed them to Bolt.
+Two defects combined, and this change fixes both.
 
-## The leaking test
+## What changes
 
-`TestRunCLI_HubMutationScenario`'s bypass-push step called `fabriccli.RunCLI`, which reads the process cwd.
-Under `go test` that cwd is the package directory inside the real hub's task worktree.
-The bypass branch resolves the hub from cwd and calls `logger.SetDurableSinkDir(fabricengine.HubLogsDir(hub))`, so the test binary's process-wide trace sink moved to the live hub, and every later record of that binary followed it.
-The leaked files carry the scenario's own temp paths and an empty `worktree_root`, the shape that redirect leaves.
-
-The step now runs through `fabriccli.RunCLIIn(h.BoardDir(), …)`, the cwd the real detached push child starts in, and resets the sink on cleanup.
-It also asserts that `logger.TraceDir()` is the test hub's `HubLogsDir`, so a regression fails the scenario instead of writing into whatever hub holds the checkout.
-
-## Bolt's stage-all commit
-
-`commitWeftAt`, the wildcard-stage commit behind `Bolt.Commit` and so behind `boardengine.Sync`, now calls `seedWeftArtifactExcludes` before staging.
-That function owns the weft's `.git/info/exclude` lines: `.lym/`, `.weft/`, the push lock and the `*.lock`/`*.swaplock` patterns.
-Clone, reconcile and the weft verbs already seeded it, but a board whose common gitdir lacked the lines had nothing to repair them before a sync, and the stage-all took whatever lay under `_board/.lym/`.
-A seed failure now fails the commit, since committing without the excludes is the defect.
-
-`TestBolt_DirtyRepo_CommitsAndPushes` plants `.lym/logs/trace.log` beside the board file in an unseeded repo and asserts that `git ls-files` lists only the board file after the commit.
-`TestBolt_CleanRepo_CommitAndPushAreNoOps` no longer removes `.gitrepo-push.lock` by hand, because the seeded exclude now covers it.
-The stale clone comment that said Bolt's commit seeds nothing is rewritten, and fabricengine's `doc.go` states the new seeding.
+- The `fabriccli` hub-mutation scenario's bypass-push step now runs `fabriccli.RunCLIIn(h.BoardDir(), …)` instead of `RunCLI` with the process cwd.
+  The bypass branch resolves the hub from cwd and calls `logger.SetDurableSinkDir(fabricengine.HubLogsDir(hub))`.
+  Under `go test` the cwd is the package directory inside the real hub's task worktree, so the trace sink moved to the live `_board/.lym/logs` and every later record of that test binary followed it.
+  The step now resolves the test's own `hubforge` hub, which is also the cwd the detached push child has in production.
+  Its cleanup resets the process-wide sink with `logger.SetDurableSinkDir("")`, so the redirect does not outlive the step.
+- `commitWeftAt`, and so `Bolt.Commit` and the stage-all commit of `boardengine.Sync`, now calls `seedWeftArtifactExcludes` before staging.
+  A board whose weft common gitdir lacks the `.lym/` exclude no longer commits whatever lies under `_board/.lym/`.
+  Any other stray machine-local file there stays out of Bolt too.
+- The comment in `CloneHub` that called the board's excludes not self-healing is rewritten, since the commit now seeds them itself.
+  `internal/fabricengine/doc.go` records the new behavior.
 
 ## Design decisions
 
-- The exclude is seeded in fabricengine rather than adding `.lym/` to the `_board/.gitignore` patterns `boardengine` writes, because fabricengine already keeps weft scratch untracked through `info/exclude` and a committed pattern would be a second mechanism for the same rule.
-- Board sync keeps its stage-all rather than staging a list of board paths, because the board writes many file kinds and such a list would drift from them.
+- The exclude is seeded at the stage-all, not committed as a `_board/.gitignore` entry.
+  The info/exclude file is fabricengine's sole-owned mechanism for keeping weft scratch untracked, and the seed adds no pattern beyond those `seedWeftArtifactExcludes` already owns.
+- A seed failure fails the commit before anything is staged, because committing without the excludes is the defect.
+- The `CloneHub` seed stays, so `_board/.lym` never shows as untracked dirt from the hub's birth on.
+- Out of scope: the logger's override semantics, the bypass branch's production resolution and `boardengine`'s own `.gitignore` seeding.
 
-## Verification
+## Tests
 
-`lym gate test --tier 1` over `internal/fabricengine`, `internal/fabriccli` and `internal/boardengine` is green.
-Five back-to-back runs of `internal/fabriccli`'s tier1 tests wrote no `fabriccli.test` trace into the live hub's `_board/.lym/logs`;
-the traces that still appear there come from concurrent gate runs of branches that do not carry this change yet.
-Tier0 over the diff scope is green on a tree that carries main's markdown-link fix for the bench data under `docs/research/`.
+- `commitweftat_test.go` covers `commitWeftAt` on a repo whose gitdir has no excludes: a dirty board file is committed, a file under `.lym/` stays untracked, and a seed failure fails the call before staging.
+- `bolt_integration_test.go` is adjusted to the new behavior.
+- The hub-mutation scenario still asserts that the bypass push advances both bare upstreams.
+
+## Check by hand
+
+- `lym gate test` over `./internal/fabricengine` and `./internal/fabriccli` was not run while writing this description.
+- Another test that runs a hub-resolving verb with the process cwd could still redirect the sink into the live hub.
+  The seed keeps the resulting files out of Bolt, but a leak into `_board/.lym/logs` would no longer show in `board sync`.
+- `TestEnforcement_MarkdownLinks` may fail on the docs/research bench files.
+  Those breaks come from main's bench commits, and task `docs-link-skip-bench-data` fixes them on main.
