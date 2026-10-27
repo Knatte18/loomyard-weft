@@ -50,7 +50,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6 | `draft` **Markdown link guard skips the verbatim data of research reports**<br>• TestEnforcement_MarkdownLinks fails on main on bench prompt captures under docs/research/*/data/; skip that data | [`docs-link-skip-bench-data`](design-docs-link-skip-bench-data.md) | darn |  | 0m<br>0m | testkit |
+| T6 | **Markdown link guard skips the verbatim data of research reports**<br>• TestEnforcement_MarkdownLinks fails on main on bench prompt captures under docs/research/*/data/; skip that data | [`docs-link-skip-bench-data`](design-docs-link-skip-bench-data.md) | darn |  | 0m<br>0m | testkit |
 
 ## Notes (40)
 
