@@ -1,0 +1,21 @@
+# Relevant files
+
+- `internal/beamcli/cli.go` `runDobby`, `dobbyStatus` — the bare `Live` pre-check that ends a re-exec'd dobby, and the `lym beam status` view the adopt check joins
+- `internal/beamcli/dobbydeps.go` `hubDobbyDeps`, `registerDobby` — wires `CheckBinary`, `Log`, `Landings` and the notice seams of the dobby
+- `internal/dobbyengine/loop.go` `Run`, `Deps` — the graced lock acquisition, the re-exec detection by pid and the binary check between ticks
+- `internal/dobbyengine/start.go` `Live`, `SpawnDetached` — the lock probe and the detached spawn that appends stdout and stderr to `dobby.log`
+- `internal/dobbyengine/passes.go` `logLine` — the per-pass log line the change-only log drops
+- `internal/dobbyengine/tidy.go` `countLandings`, `tidyStep`, `settleTidy` — the landing count and the tidy agent kept across a re-exec
+- `internal/dobbyengine/state.go` `State`, `TidyState` — the record that carries the pid, the counted landings and the tidy in flight
+- `internal/dobbyengine/doc.go` — the dobby's documented loop, passes and tidy rules the change updates
+- `internal/selfexec/selfexec.go` `Watcher.Check`, `Watcher.Replaced` — the re-exec check that gains a pre-exec and failure callback
+- `internal/lock/lock.go` `ProbeGrace`, `AcquireWriteLockWithin`, `TryAcquireWriteLock` — the flock primitives and the grace the probes rely on
+- `internal/battencli/dobbyreads.go` `DobbyLandings`, `lockHeld`, `DobbyViewReader.Read` — the landing read to filter by machine and the lock probers
+- `internal/shedengine/status.go` `HistoryEntry` — the history entry that gains the landing machine
+- `internal/adoptcli/deps.go` `startSuite`, `suiteArgs` — the detached finalize-gate spawn the hidden check verb replaces
+- `internal/adoptcli/adopt.go` — the suite warning text naming `--gate finalize`
+- `internal/adoptcli/doc.go` — step 6, the test suite, as documented
+- `internal/gateslot/config.go` `MigrateConfig`, `retiredGateLists` — the gate reconcile migration that seeds `adopt` from `finalize`
+- `internal/gateslot/tiers.go` `goReadGates`, `GateCall` — the gate keys lym reads and the call rendering
+- `internal/gateslot/template.yaml` — the template's gate keys the `adopt` key joins
+- `internal/hubgeom/nearestlive.go` `NearestLiveOrch` — finds the orch the check's notices go to
