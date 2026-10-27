@@ -1,0 +1,1867 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index f71a3183..0693d651 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -308,8 +308,8 @@ github.com/Knatte18/loomyard/
+ ├── internal/tenderengine/        the pause, resume, revive and status sequences over seams: the entry, the grace, the Esc, the resume line and the revive line
+ ├── internal/hibernatecli/        the `lym hibernate` commands (`request`, `cancel`, `status` and the hidden `watch`), their hub wiring and the daemon and `systemctl` spawns
+ ├── internal/hibernateengine/     the hibernate request file and the submit, cancel, status and daemon sequences over seams
+-├── internal/creelcli/            the `lym creel` commands (`post`, `inject`, `interrupt`, `forward`, `read`, `inbox`, `log`, `hold`, `release` and the hidden `daemon`), their hub wiring and the delivery adapter over reed and shuttle
+-├── internal/creelengine/         the per-hub message daemon: the journal-folded pool of mail and queued injects, sender identity, reminders, injects, holds, the removed-holder sweep and the socket protocol, over a delivery seam
++├── internal/creelcli/            the `lym creel` commands (`post`, `inject`, `interrupt`, `forward`, `read`, `inbox`, `log`, `hold`, `release` and the hidden `daemon` and `hook-read`), their hub wiring and the delivery adapter over reed and shuttle
++├── internal/creelengine/         the per-hub message daemon: the journal-folded pool of mail and queued injects, sender identity, reminders, the per-strand mail flags and tool-boundary claim, injects, holds, the removed-holder sweep and the socket protocol, over a delivery seam
+ ├── internal/output/              shared JSON output
+ ├── internal/modelspec/           model-spec parser + models.yaml registry leaf
+ ├── internal/runprofile/          the hub's named run profiles in profiles.yaml: template, layered-load spec, loader and lookup
+@@ -469,7 +469,8 @@ User-facing modules each get one `lym <module>` namespace:
+   Only the orch or an external caller may request or cancel; an agent asks its parent session.
+   Bounds: the daemon waits a fixed window for the pause to confirm and for the wake, and fails the request, leaving its reason in the file, when either runs out.
+   ✅ Implemented. See the `internal/hibernateengine` and `internal/hibernatecli` package documentation.
+-- **creel** — the per-hub message daemon, the one way to reach an agent: mail from an agent strand, announced by a reminder typed at the receiver's idle and pulled with `lym creel read`, while mail from any other sender is carried in full in the line creel types when it fits the line cap, and lines injected into its pane (`internal/creelcli` + `internal/creelengine`; `lym creel post`, `inject`, `interrupt`, `forward`, `read`, `inbox`, `log`, `hold` and `release`, from any worktree of the hub, and the hidden `lym creel daemon`).
++- **creel** — the per-hub message daemon, the one way to reach an agent: mail from an agent strand, announced by a reminder typed at the receiver's idle and pulled with `lym creel read`, while mail from any other sender is carried in full in the line creel types when it fits the line cap, and lines injected into its pane (`internal/creelcli` + `internal/creelengine`; `lym creel post`, `inject`, `interrupt`, `forward`, `read`, `inbox`, `log`, `hold` and `release`, from any worktree of the hub, and the hidden `lym creel daemon` and `lym creel hook-read`).
++  A Claude strand in a hub also gets its mail, agent mail included, in full at its next tool call: a `PostToolUse` hook tests the strand's flag file, which creel keeps while the strand holds unread mail, and only then runs `lym creel hook-read`; each message is delivered once, by that hook or by the idle pane path.
+   The first verb of a hub starts its daemon, which folds its pool from an append-only journal, names a sender from the connecting process's ancestry, and delivers through shuttle only into a pane that reads idle.
+   Notices and the orch's typed lines go through creel: batten, loom, burler, webster and hibernate post their notices as mail to the orch strand, signed as their own program.
+   ✅ Implemented. See the `internal/creelengine` and `internal/creelcli` package documentation.
+diff --git a/internal/agentname/agentname.go b/internal/agentname/agentname.go
+index 55bbdd58..436437fa 100644
+--- a/internal/agentname/agentname.go
++++ b/internal/agentname/agentname.go
+@@ -13,6 +13,7 @@
+ // Reed forms a strand's full name once, in AddStrand under its state lock, and stores it in the strand record, which is the only key delivery and lookup resolve through.
+ // Pane titles and Claude session names are display mirrors.
+ // A full name never names a tmux session or socket, since tmux rewrites ':' and '.' there.
++// A per-strand file, such as creel's mail flag, is named by FileName.
+ //
+ // The module that spawns an agent owns its role name as a constant declared in that module, never as an inline literal in the spawn spec.
+ // There is no shared list of roles, and the role set stays open.
+@@ -318,3 +319,12 @@ func StandaloneShortname(hash8 string) string {
+ 	}
+ 	return "s" + hash8
+ }
++
++// fileNameSep replaces sep in a name's file name; no name segment holds it, so the mapping is one to one.
++const fileNameSep = "."
++
++// FileName returns the file name a per-strand file of full takes: full with every ":" turned into ".".
++// A full name is not a valid file name on Windows, where ":" is reserved.
++func FileName(full string) string {
++	return strings.ReplaceAll(full, sep, fileNameSep)
++}
+diff --git a/internal/agentname/agentname_test.go b/internal/agentname/agentname_test.go
+index 6c981bfe..aab702f0 100644
+--- a/internal/agentname/agentname_test.go
++++ b/internal/agentname/agentname_test.go
+@@ -260,3 +260,17 @@ func TestStandaloneShortname(t *testing.T) {
+ 		t.Fatal(err)
+ 	}
+ }
++
++func TestFileName(t *testing.T) {
++	t.Parallel()
++
++	tests := []struct{ full, want string }{
++		{"ly:orch", "ly.orch"},
++		{"ly:agent-naming:driver-2", "ly.agent-naming.driver-2"},
++	}
++	for _, tt := range tests {
++		if got := FileName(tt.full); got != tt.want {
++			t.Errorf("FileName(%q) = %q; want %q", tt.full, got, tt.want)
++		}
++	}
++}
+diff --git a/internal/creelcli/cli.go b/internal/creelcli/cli.go
+index b6795d60..8cebb840 100644
+--- a/internal/creelcli/cli.go
++++ b/internal/creelcli/cli.go
+@@ -73,14 +73,15 @@ func Command() *cobra.Command {
+ strand; a message from an agent strand is announced by a one-line reminder
+ typed when the receiver is idle and handed over by read, while mail from
+ EXTERNAL or a program is carried in full in the typed line when it fits the
+-line cap. inject types a line into an idle strand at once, interrupt
+-stops a running turn, forward passes a message on, hold keeps a receiver to
+-one sender for a while, and inbox and log show the pool. The daemon starts
+-by itself on the first verb.`,
++line cap. A working Claude strand also gets its mail in full at its next tool
++call, through a hook that runs the hidden hook-read verb. inject types a line
++into an idle strand at once, interrupt stops a running turn, forward passes a
++message on, hold keeps a receiver to one sender for a while, and inbox and log
++show the pool. The daemon starts by itself on the first verb.`,
+ 		RunE: clihelp.GroupRunE,
+ 	}
+ 	creel.AddCommand(
+-		postCmd(), injectCmd(), interruptCmd(), forwardCmd(), readCmd(), inboxCmd(), logCmd(), holdCmd(), releaseCmd(), daemonCmd(),
++		postCmd(), injectCmd(), interruptCmd(), forwardCmd(), readCmd(), inboxCmd(), logCmd(), holdCmd(), releaseCmd(), daemonCmd(), hookReadCmd(),
+ 	)
+ 	// Creel reads no stencils, and the seed pass's log lines would mix into the stderr its verbs use for refusals and stall progress.
+ 	// The long-lived daemon must also never commit seed writes into the hub.
+@@ -159,27 +160,10 @@ func runVerb(cmd *cobra.Command, timeout time.Duration, body func(client *creele
+ 	}
+ 	ctx := cmd.Context()
+ 	out := cmd.OutOrStdout()
+-	cwd, err := lymcwd.CwdFrom(ctx)
+-	if err != nil {
+-		return refuse(cmd, err)
+-	}
+-	location, mode, err := preflight.ResolveMode(cwd)
++	client, err := hubClient(ctx)
+ 	if err != nil {
+ 		return refuse(cmd, err)
+ 	}
+-	if mode != preflight.ModeHub {
+-		return refuse(cmd, errors.New("creel needs a hub, and this directory is not in one; way forward: run the verb from a worktree of a lym hub"))
+-	}
+-	root, err := lymtemp.ProcessRoot()
+-	if err != nil {
+-		return refuse(cmd, fmt.Errorf("open the lymtemp root: %w", err))
+-	}
+-	geometry, err := hubgeom.CreelGeometry(location.HubPath, root.Path())
+-	if err != nil {
+-		return refuse(cmd, err)
+-	}
+-	hubPath := location.HubPath
+-	client := creelengine.NewClient(geometry, claimFor(cwd), func() (creelengine.Spawn, error) { return seam.spawn(hubPath, geometry.DaemonLogPath) }, seam.clock)
+ 	res, err := body(client, out)
+ 	if errors.Is(err, creelengine.ErrWaitTimeout) {
+ 		writeRefusal(cmd, "", "no outcome arrived before the timeout of "+timeout.String(), res.fields, ExitWaitTimeout)
+@@ -206,6 +190,32 @@ func runVerb(cmd *cobra.Command, timeout time.Duration, body func(client *creele
+ 	return nil
+ }
+ 
++// hubClient resolves the hub from the cwd ctx carries and builds a client of its daemon, claiming the caller's strand.
++// A standalone directory is refused: creel needs a hub.
++func hubClient(ctx context.Context) (*creelengine.Client, error) {
++	cwd, err := lymcwd.CwdFrom(ctx)
++	if err != nil {
++		return nil, err
++	}
++	location, mode, err := preflight.ResolveMode(cwd)
++	if err != nil {
++		return nil, err
++	}
++	if mode != preflight.ModeHub {
++		return nil, errors.New("creel needs a hub, and this directory is not in one; way forward: run the verb from a worktree of a lym hub")
++	}
++	root, err := lymtemp.ProcessRoot()
++	if err != nil {
++		return nil, fmt.Errorf("open the lymtemp root: %w", err)
++	}
++	geometry, err := hubgeom.CreelGeometry(location.HubPath, root.Path())
++	if err != nil {
++		return nil, err
++	}
++	hubPath := location.HubPath
++	return creelengine.NewClient(geometry, claimFor(cwd), func() (creelengine.Spawn, error) { return seam.spawn(hubPath, geometry.DaemonLogPath) }, seam.clock), nil
++}
++
+ // claimFor states who the caller says it is: its strand name, and the envelope an EXTERNAL caller is shown with.
+ // A claim names no program; a program sender comes only through the Go client.
+ func claimFor(cwd string) creelengine.Claim {
+diff --git a/internal/creelcli/cli_test.go b/internal/creelcli/cli_test.go
+index 7d514c6c..a60f7d17 100644
+--- a/internal/creelcli/cli_test.go
++++ b/internal/creelcli/cli_test.go
+@@ -36,6 +36,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lymtemp"
+ 	"github.com/Knatte18/loomyard/internal/preflight"
+ 	"github.com/Knatte18/loomyard/internal/proc"
++	"github.com/Knatte18/loomyard/internal/shuttleengine/claudeengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/creelfake"
+ 	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
+ )
+@@ -588,6 +589,37 @@ func TestCreelCLI(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("as a strand hook-read prints its mail as the engine's tool-boundary context, nothing when none is left, and refuses to stderr", func(t *testing.T) {
++		r := newRig(t)
++		alpha := r.name("alpha:driver")
++		t.Setenv(agentname.StrandNameEnv, alpha)
++		strand := creelfake.LiveStrand(alpha)
++		strand.PanePID = os.Getpid()
++		r.delivery.SetStrands(strand)
++		r.startDaemon(t)
++
++		for _, body := range []string{"first\nline", "second"} {
++			if post := runCreel(r.cwd, "post", alpha, body); post.code != 0 {
++				t.Fatalf("creel post = (%d, %q); want exit 0", post.code, post.raw)
++			}
++		}
++		wantContext, err := claudeengine.New().ToolBoundaryContext(fmt.Sprintf("[creel] #1 from %[1]s: first line\n[creel] #2 from %[1]s: second", alpha))
++		if err != nil {
++			t.Fatalf("ToolBoundaryContext: %v", err)
++		}
++		var stderr bytes.Buffer
++		if got := runCreelSplit(r.cwd, &stderr, "hook-read", "claude"); got.code != 0 || got.raw != string(wantContext)+"\n" || stderr.Len() != 0 {
++			t.Fatalf("creel hook-read claude = (%d, %q, stderr %q); want exit 0 with %s", got.code, got.raw, stderr.String(), wantContext)
++		}
++		if again := runCreelSplit(r.cwd, &stderr, "hook-read", "claude"); again.code != 0 || again.raw != "" {
++			t.Errorf("creel hook-read after the claimed mail = (%d, %q); want exit 0 printing nothing", again.code, again.raw)
++		}
++		unknown := runCreelSplit(r.cwd, &stderr, "hook-read", "nope")
++		if unknown.code != 1 || unknown.raw != "" || !strings.HasPrefix(stderr.String(), "creel: ") || !strings.Contains(stderr.String(), `"nope"`) {
++			t.Errorf("creel hook-read nope = (%d, %q, stderr %q); want exit 1, no stdout and the refusal on stderr", unknown.code, unknown.raw, stderr.String())
++		}
++	})
++
+ 	t.Run("log shows a reminded event with its unread ids and step and no id", func(t *testing.T) {
+ 		r := newRig(t)
+ 		alpha := r.name("alpha:driver")
+diff --git a/internal/creelcli/doc.go b/internal/creelcli/doc.go
+index 0d348a01..ae2fc963 100644
+--- a/internal/creelcli/doc.go
++++ b/internal/creelcli/doc.go
+@@ -1,4 +1,4 @@
+-// Package creelcli builds the `lym creel` group over internal/creelengine: `post`, `inject`, `interrupt`, `forward`, `read`, `inbox`, `log`, `hold`, `release` and the hidden `daemon`.
++// Package creelcli builds the `lym creel` group over internal/creelengine: `post`, `inject`, `interrupt`, `forward`, `read`, `inbox`, `log`, `hold`, `release` and the hidden `daemon` and `hook-read`.
+ // The design, the protocol and the delivery rules are documented in internal/creelengine; this package wires them to the hub, its worktrees and their agent panes.
+ //
+ // Every operator verb resolves the mode from its cwd and refuses a standalone directory, since creel needs a hub.
+@@ -19,6 +19,9 @@
+ // For post and inject the line names what they already stored, and for a forward, hold, release or interrupt it says the verb took effect.
+ // The refusal fallback line opens with that statement too for a post or inject that stored before it refused.
+ // `inbox` prints the caller's unread counts as `inbox.senders`, a list of `{from, unread}`, and no other key.
++// `hook-read <engine>` is what a strand's tool-boundary hook runs: it claims the caller's mail through the daemon's claim verb and prints it as the named engine's tool-boundary context, one MessageLine per message, which shuttleengines.ToolBoundaryRenderer renders.
++// It prints nothing when nothing was claimed, acknowledges the mail only once its output was written, and bounds its call by 10 seconds, since the provider holds the session at the boundary meanwhile.
++// A refusal, an unknown engine included, goes to stderr as one `creel: ` line with exit 1 and leaves stdout empty, because the provider parses the hook's stdout as its JSON.
+ // GoClient is the one Go-side caller of creel, so no other module builds a creel request by hand.
+ // NewProgramClient signs as `<shortname>:<PROGRAM>` and claims no strand, whatever `$LYM_STRAND_NAME` holds, and NewStrandClient claims a strand and no program; the daemon's identity rules still decide who the caller is.
+ // Both refuse a location outside a hub with the way forward, start the daemon through the spawn seam when none answers, and connect on the first call.
+diff --git a/internal/creelcli/hookread.go b/internal/creelcli/hookread.go
+new file mode 100644
+index 00000000..35c9de6a
+--- /dev/null
++++ b/internal/creelcli/hookread.go
+@@ -0,0 +1,82 @@
++// hookread.go implements the hidden `hook-read` verb, which a strand's tool-boundary hook runs to take the strand's unread mail into its session.
++
++package creelcli
++
++import (
++	"fmt"
++	"strings"
++	"time"
++
++	"github.com/spf13/cobra"
++
++	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/creelengine"
++	"github.com/Knatte18/loomyard/internal/shuttleengines"
++)
++
++// hookReadVerb is the hidden verb's name, which the Claude engine's PostToolUse hook spells.
++const hookReadVerb = "hook-read"
++
++// hookReadTimeout bounds the verb's call to the daemon, since the provider holds the session at the tool boundary until its hook ends.
++const hookReadTimeout = 10 * time.Second
++
++// hookReadCmd builds the `hook-read` subcommand, hidden because only a strand's tool-boundary hook runs it.
++// Its standard output is the named engine's tool-boundary context JSON, or nothing when no mail was claimed;
++// a refusal goes to standard error with exit 1 and leaves standard output empty, since the provider parses the hook's standard output as its JSON.
++func hookReadCmd() *cobra.Command {
++	return &cobra.Command{
++		Use:         hookReadVerb + " <engine>",
++		Short:       "print the caller strand's unread mail as the engine's tool-boundary hook context and mark it read (run by the hook)",
++		Hidden:      true,
++		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceInternal},
++		Long: `hook-read claims the caller strand's unread mail, oldest first, and prints it as
++the named engine's tool-boundary hook output, one "[creel] #<id> from <sender>: <body>"
++line per message, which the provider adds to the session's context after the tool call.
++The messages are marked read once the output is written. With nothing to claim it
++prints nothing. A hold limits it to the holder's mail, a pause to none.`,
++		Args: cobra.ExactArgs(1),
++		RunE: func(cmd *cobra.Command, args []string) error {
++			if clihelp.ShouldAbort(cmd.Context()) {
++				return nil
++			}
++			if err := hookRead(cmd, args[0]); err != nil {
++				clihelp.SetExit(cmd.Context(), 1)
++				msg := err.Error()
++				if !strings.HasPrefix(msg, "creel: ") {
++					msg = "creel: " + msg
++				}
++				fmt.Fprintln(cmd.ErrOrStderr(), msg)
++			}
++			return nil
++		},
++	}
++}
++
++// hookRead claims the caller's mail through the daemon and writes it as engine's tool-boundary context, before the client acknowledges it.
++func hookRead(cmd *cobra.Command, engine string) error {
++	renderer, ok := shuttleengines.ToolBoundaryRenderer(engine)
++	if !ok {
++		return fmt.Errorf("the engine %q renders no tool-boundary context; the registered engines: %s", engine, strings.Join(shuttleengines.Names(), ", "))
++	}
++	client, err := hubClient(cmd.Context())
++	if err != nil {
++		return err
++	}
++	out := cmd.OutOrStdout()
++	writeContext := func(resp creelengine.Response) error {
++		lines := make([]string, len(resp.Messages))
++		for i, msg := range resp.Messages {
++			lines[i] = creelengine.MessageLine(msg)
++		}
++		data, err := renderer.ToolBoundaryContext(strings.Join(lines, "\n"))
++		if err != nil {
++			return err
++		}
++		if _, err := out.Write(append(data, '\n')); err != nil {
++			return fmt.Errorf("could not write the mail, so it stays unread: %w", err)
++		}
++		return nil
++	}
++	_, err = client.Call(creelengine.Request{Verb: creelengine.VerbClaim}, hookReadTimeout, writeContext)
++	return err
++}
+diff --git a/internal/creelengine/deliver.go b/internal/creelengine/deliver.go
+index 65e5677b..5acaab15 100644
+--- a/internal/creelengine/deliver.go
++++ b/internal/creelengine/deliver.go
+@@ -294,22 +294,25 @@ func (w *worker) typeInject(strand Strand, inject QueuedInject) bool {
+ }
+ 
+ // typeNotice types the notice's line once the receiver is idle, and journals the notice read once the line was typed, landed or not.
+-// A busy send leaves it unread for the next probe.
++// It reserves the notice before the send, so a tool-boundary claim never hands out the line being typed, and types nothing when a claim took it first.
++// A busy send releases it unread for the next probe.
+ func (w *worker) typeNotice(strand Strand, notice Message) bool {
+-	if !w.idle(strand) {
++	store := w.scheduler.store
++	if !w.idle(strand) || !store.reserveNotice(w.receiver, notice.ID) {
+ 		return false
+ 	}
+-	err := w.scheduler.delivery.Send(strand, composeNotice(notice))
++	err := w.scheduler.delivery.Send(strand, MessageLine(notice))
+ 	switch {
+ 	case err == nil, errors.Is(err, ErrNotLanded):
+ 		w.report("send", nil)
+-		w.report("journal", w.scheduler.store.markNoticeRead(w.receiver, notice.ID))
+-		w.report("journal", w.scheduler.store.noteStall(w.receiver, ""))
++		w.report("journal", store.markNoticeRead(w.receiver, notice.ID))
++		w.report("journal", store.noteStall(w.receiver, ""))
+ 		return true
+ 	default:
+ 		if !errors.Is(err, ErrBusy) {
+ 			w.report("send", err)
+ 		}
++		store.releaseNotice(w.receiver, notice.ID)
+ 		return false
+ 	}
+ }
+@@ -586,14 +589,44 @@ func (s *Store) tellStallLocked(receiver string, stall Stall, note stallNote) {
+ 	}
+ }
+ 
+-// markNoticeRead journals the notice id read by receiver, the pane it was typed into.
+-// A notice that left the receiver, was read or is reserved by a read meanwhile is left to that.
+-// A reserved notice whose read is released rather than acknowledged is unread and unreserved again, so its line is typed a second time;
+-// the journal still holds one read.
++// paneReserver is the reservation holder of a notice the pane path is typing; no agent name equals it, so no read or claim of a holder releases it.
++const paneReserver = "\x00pane"
++
++// reserveNotice reserves the notice id held by receiver for the pane path, and reports false when it left the receiver, was read or is reserved meanwhile.
++func (s *Store) reserveNotice(receiver string, id int64) bool {
++	reserved := false
++	_ = s.do(func() error {
++		msg := s.state.messages[id]
++		if msg == nil || msg.Holder != receiver || msg.Status != StatusUnread || s.reserved[id] != "" {
++			return nil
++		}
++		s.reserved[id] = paneReserver
++		reserved = true
++		return nil
++	})
++	return reserved
++}
++
++// releaseNotice drops the pane path's reservation of the notice id after a send that typed nothing, and answers a wait for receiver's mail, since the notice is back.
++func (s *Store) releaseNotice(receiver string, id int64) {
++	_ = s.do(func() error {
++		if s.reserved[id] == paneReserver {
++			delete(s.reserved, id)
++			s.answerLocked(waitKey{kind: waitHolder, holder: receiver}, Outcome{Kind: OutcomeMail})
++		}
++		return nil
++	})
++}
++
++// markNoticeRead drops the pane path's reservation of the notice id and journals it read by receiver, the pane it was typed into.
++// A notice that left the receiver meanwhile is left to that.
+ func (s *Store) markNoticeRead(receiver string, id int64) error {
+ 	return s.do(func() error {
++		if s.reserved[id] == paneReserver {
++			delete(s.reserved, id)
++		}
+ 		msg := s.state.messages[id]
+-		if msg == nil || msg.Holder != receiver || msg.Status != StatusUnread || s.reserved[id] != "" {
++		if msg == nil || msg.Holder != receiver || msg.Status != StatusUnread {
+ 			return nil
+ 		}
+ 		return s.writer.append(record{Event: eventRead, ID: id, By: receiver})
+diff --git a/internal/creelengine/deliver_test.go b/internal/creelengine/deliver_test.go
+index 59e88f9d..cdf5176d 100644
+--- a/internal/creelengine/deliver_test.go
++++ b/internal/creelengine/deliver_test.go
+@@ -479,6 +479,87 @@ func TestScheduler_Reminders(t *testing.T) {
+ 				t.Errorf("Log(#%d) events = %v; want posted, reminded and one read", notice, got)
+ 			}
+ 		}},
++		{"NoticeBeingTypedIsNotClaimedAtABoundary", func(t *testing.T, e *env) {
++			notice := e.post(t, program(batten), beta, "typing")
++			claimed := make(chan []creelengine.Message, 1)
++			e.del.SetSendFunc(func(string, string) error {
++				reading, err := e.store.ClaimAtBoundary(strand(beta))
++				if err != nil {
++					t.Errorf("ClaimAtBoundary during the send: %v", err)
++					claimed <- nil
++					return nil
++				}
++				claimed <- reading.Messages
++				return nil
++			})
++			e.start(t)
++			e.probeWaits(1)
++			if got := <-claimed; len(got) != 0 {
++				t.Errorf("a claim during the send handed out %v; want nothing", got)
++			}
++			if got := eventsOf(e.store.Log(creelengine.LogFilter{ID: notice})); !slices.Equal(got, []string{"posted", "read"}) {
++				t.Errorf("Log(#%d) events = %v; want posted and one read", notice, got)
++			}
++		}},
++		{"BusySendReleasesTheNoticeToAClaimAndAnswersTheHoldersWait", func(t *testing.T, e *env) {
++			notice := e.post(t, program(batten), beta, "busy")
++			waiting := make(chan *creelengine.Waiter, 1)
++			e.del.SetSendFunc(func(string, string) error {
++				// Registered while the pane path holds the notice, so the wait is not answered until the busy send releases it.
++				waiter, err := e.store.WaitMail(strand(beta))
++				if err != nil {
++					t.Errorf("WaitMail during the send: %v", err)
++				}
++				select {
++				case waiting <- waiter:
++				default:
++				}
++				return creelengine.ErrBusy
++			})
++			e.start(t)
++			e.probeWaits(1)
++			waiter := <-waiting
++			if outcome := awaitOutcome(t, waiter); outcome.Kind != creelengine.OutcomeMail {
++				t.Errorf("the holder's wait was answered %+v; want mail once the busy send released the notice", outcome)
++			}
++			reading, err := e.store.ClaimAtBoundary(strand(beta))
++			if err != nil {
++				t.Fatalf("ClaimAtBoundary: %v", err)
++			}
++			if len(reading.Messages) != 1 || reading.Messages[0].ID != notice {
++				t.Errorf("a claim after the busy send handed out %v; want the notice #%d", reading.Messages, notice)
++			}
++		}},
++		{"NoticeClaimedBeforeTheSendIsNeverTyped", func(t *testing.T, e *env) {
++			notice := e.post(t, program(batten), beta, "claimed first")
++			claimed := make(chan *creelengine.Reading, 1)
++			var once sync.Once
++			// The claim lands between the probe's idle check and its reservation of the notice.
++			e.del.SetIdleHook(func(string) {
++				once.Do(func() {
++					reading, err := e.store.ClaimAtBoundary(strand(beta))
++					if err != nil {
++						t.Errorf("ClaimAtBoundary during the idle check: %v", err)
++					}
++					claimed <- reading
++				})
++			})
++			e.start(t)
++			e.probeWaits(1)
++			reading := <-claimed
++			if reading == nil || len(reading.Messages) != 1 || reading.Messages[0].ID != notice {
++				t.Fatalf("the claim handed out %+v; want the notice #%d", reading, notice)
++			}
++			if got := e.typed(beta); len(got) != 0 {
++				t.Errorf("typed %q after a claim took the notice first; want nothing", got)
++			}
++			if err := reading.Ack(); err != nil {
++				t.Fatalf("Ack: %v", err)
++			}
++			if got := eventsOf(e.store.Log(creelengine.LogFilter{ID: notice})); !slices.Equal(got, []string{"posted", "read"}) {
++				t.Errorf("Log(#%d) events = %v; want posted and the claim's one read", notice, got)
++			}
++		}},
+ 		{"BusyNoticeStaysUnreadAndANotLandedOneIsRead", func(t *testing.T, e *env) {
+ 			busy := e.post(t, program(batten), beta, "busy")
+ 			e.del.SetSendError(creelengine.ErrBusy)
+diff --git a/internal/creelengine/doc.go b/internal/creelengine/doc.go
+index 49fcbaa0..bfbf8965 100644
+--- a/internal/creelengine/doc.go
++++ b/internal/creelengine/doc.go
+@@ -1,4 +1,4 @@
+-// Package creelengine is the engine of creel, the per-hub message daemon: a pool of mail and queued injects that agents post to and read from, delivered into agent panes when they are idle.
++// Package creelengine is the engine of creel, the per-hub message daemon: a pool of mail and queued injects that agents post to and read from, delivered into agent panes when they are idle, and mail also at a working strand's next tool boundary through its provider's hook.
+ // The engine is told its Geometry and a delivery seam and derives no path of its own.
+ // `internal/creelcli` wires it to the hub and carries the `lym creel` verbs.
+ //
+@@ -77,8 +77,9 @@
+ // A notice is a message from any sender but an agent strand, a program or EXTERNAL, whose body is at most 4 KiB.
+ // It is carried in full in its own line, typed when the receiver is idle, `[creel] #<id> from <sender>: <body>`, with every run of line breaks and other control characters turned into one space.
+ // The line opens with the id, so a sender that takes replies is answered with `lym creel post --reply <id>` and no read; creel does not know which senders answer.
+-// It is journaled read once the line was typed, landed or not; a busy send leaves it unread for the next probe, and a crash between the typing and the read record types it once more.
+-// Mail from an agent strand is never carried, so an agent's text cannot pose as an instruction in another agent's pane.
++// The delivery reserves it before the line is typed, so no tool-boundary claim hands it out meanwhile, and types nothing when a claim reserved it first.
++// It is journaled read once the line was typed, landed or not; a busy send releases it unread for the next probe, and a crash between the typing and the read record types it once more.
++// Mail from an agent strand is never typed into a pane, so an agent's text cannot pose as an instruction in another agent's pane.
+ //
+ // Every other unread message, an agent strand's or one over the cap, is reminded by one line, typed when the receiver is idle: `[creel] N unread: #id from <sender>, … — run lym creel read`.
+ // A reminder lists at most five messages and counts the rest, and carries no text a sender wrote, so it cannot pose as an instruction; under a hold it reads `lym creel read --from <owner>`.
+@@ -98,6 +99,22 @@
+ // forward moves an unread message the caller holds to another receiver: the holder changes, the sender stays, and the caller joins the message's path, so the new receiver replies to the sender and the message records the whole way it took.
+ // A message that is read, not the caller's, or addressed back to the caller is refused.
+ //
++// # Tool-boundary delivery
++//
++// While a strand holds unread mail, the daemon keeps an empty flag file for it in Geometry.FlagDir, named by agentname.FileName of the strand's name; a program gets none.
++// The store sets and clears the flags after every change it journals, so a flag goes when the strand's last unread message is read, forwarded, withdrawn or returned, and the daemon reconciles the directory to the pool when it starts.
++// A flag is derived state and never journaled; a failed write is logged and tried again at the next change.
++//
++// A provider hook that runs after each tool call tests the strand's flag and, only while it stands, runs the claim verb.
++// ClaimAtBoundary hands the strand its unread mail no read has reserved, oldest first and agent mail included, as a read does: reserved until the client acknowledges it on the same connection, and journaled read only then.
++// Under a hold it hands out only the owner's mail, and while a pause covers the strand nothing.
++// One claim stops before the message whose line would take its lines, with the newlines joining them, past an 8 KiB budget, though it always hands out the first, and what it leaves stays unread with its flag standing.
++// Each message is one MessageLine, the line a notice is typed as.
++// Bound: an agent strand's text reaches the session in full here, where the pane path only reminds it; the line opens with the sender creel stamps, and only mail the strand already holds is handed over.
++//
++// Each message is delivered once, by whichever path reserves it first: the claim during a turn, or the pane path, which reserves a notice before it types it.
++// A turn that ends with no tool call is reached by the pane path.
++//
+ // # Inject and interrupt
+ //
+ // inject queues one line, without control characters, to be typed into the receiver's pane when it is idle.
+@@ -189,7 +206,7 @@
+ // The Scheduler runs one worker per receiver with a queued inject or unread mail, and at most one delivery is in flight per receiver.
+ // A worker probes from a one-second base and doubles the wait to eight seconds after every probe that delivers nothing; a wake from the store or a probe that delivers returns it to the base, and the worker ends when nothing is pending.
+ // While the receiver is live and unpaused, the wait is capped at its soonest queued inject's remaining TTL, never below one second, so an inject expires when its TTL runs out and not at the next backed-off probe.
+-// A probe finds the strand, skips a dormant or paused one, and types the first queued inject, or under a hold the owner's; with none due it types the oldest notice no read holds reserved, under a hold the owner's, and with none of those the reminder.
++// A probe finds the strand, skips a dormant or paused one, and types the first queued inject, or under a hold the owner's; with none due it types the oldest notice no read or claim holds reserved, under a hold the owner's, and with none of those the reminder.
+ // Each delivery asks the seam whether the strand is idle first, and every wait goes through the Clock, so a test never waits out an interval.
+ // Every idle answer feeds the stall journal: a new non-empty reason is journaled, a repeat only stamps when it was read, and a reading with no reason, a probe error or a typed line clears it with no record.
+ // The inject TTL keeps running while a strand is stalled, live and unpaused.
+diff --git a/internal/creelengine/export_test.go b/internal/creelengine/export_test.go
+new file mode 100644
+index 00000000..785992dc
+--- /dev/null
++++ b/internal/creelengine/export_test.go
+@@ -0,0 +1,20 @@
++//go:build tier0
++
++// export_test.go exposes the store internals the external tests drive: a callback that journals and then fails.
++
++package creelengine
++
++import "errors"
++
++// ErrAfterJournaling is what ReadThenFail returns once it has journaled the read.
++var ErrAfterJournaling = errors.New("creel: failed after journaling")
++
++// ReadThenFail journals message id read by holder inside the store's locked section and then fails, as a verb whose later step failed would.
++func (s *Store) ReadThenFail(id int64, holder string) error {
++	return s.do(func() error {
++		if err := s.writer.append(record{Event: eventRead, ID: id, By: holder}); err != nil {
++			return err
++		}
++		return ErrAfterJournaling
++	})
++}
+diff --git a/internal/creelengine/flags.go b/internal/creelengine/flags.go
+new file mode 100644
+index 00000000..b118a1e1
+--- /dev/null
++++ b/internal/creelengine/flags.go
+@@ -0,0 +1,77 @@
++// flags.go keeps one flag file per strand holding unread mail in Geometry.FlagDir, which a strand's tool-boundary hook tests before it asks the daemon for mail.
++
++package creelengine
++
++import (
++	"errors"
++	"fmt"
++	"io/fs"
++	"os"
++	"path/filepath"
++
++	"github.com/Knatte18/loomyard/internal/agentname"
++	"github.com/Knatte18/loomyard/internal/logger"
++)
++
++// flaggedFilesLocked returns the flag file names the pool asks for: one per strand holding unread mail, and none for a program.
++func (s *Store) flaggedFilesLocked() map[string]bool {
++	want := map[string]bool{}
++	for _, msg := range s.state.messages {
++		if msg.Status == StatusUnread && deliverableReceiver(msg.Holder) {
++			want[agentname.FileName(msg.Holder)] = true
++		}
++	}
++	return want
++}
++
++// syncFlagsLocked creates each flag the pool asks for and the directory lacks, and removes each flag the directory holds and the pool no longer asks for.
++// A failed create or removal is logged and left out of the record of what the directory holds, so the next sync tries it again.
++// A store told no flag directory keeps no flags.
++func (s *Store) syncFlagsLocked() {
++	if s.geom.FlagDir == "" {
++		return
++	}
++	want := s.flaggedFilesLocked()
++	for name := range want {
++		if s.flags[name] {
++			continue
++		}
++		if err := os.WriteFile(filepath.Join(s.geom.FlagDir, name), nil, 0o644); err != nil {
++			logger.Warn("creel: could not set a strand's mail flag", "flag", name, "error", err)
++			continue
++		}
++		s.flags[name] = true
++	}
++	for name := range s.flags {
++		if want[name] {
++			continue
++		}
++		if err := os.Remove(filepath.Join(s.geom.FlagDir, name)); err != nil && !errors.Is(err, fs.ErrNotExist) {
++			logger.Warn("creel: could not clear a strand's mail flag", "flag", name, "error", err)
++			continue
++		}
++		delete(s.flags, name)
++	}
++}
++
++// ReconcileFlags makes Geometry.FlagDir hold exactly the flags the pool asks for, creating the directory and removing every other regular file in it.
++// The daemon runs it once at start, so a flag left by an earlier daemon for mail since read, or a flag lost with the directory, is put right.
++func (s *Store) ReconcileFlags() error {
++	s.mu.Lock()
++	defer s.mu.Unlock()
++	if err := os.MkdirAll(s.geom.FlagDir, 0o755); err != nil {
++		return fmt.Errorf("creel: create the flag directory %s: %w", s.geom.FlagDir, err)
++	}
++	entries, err := os.ReadDir(s.geom.FlagDir)
++	if err != nil {
++		return fmt.Errorf("creel: read the flag directory %s: %w", s.geom.FlagDir, err)
++	}
++	s.flags = map[string]bool{}
++	for _, entry := range entries {
++		if entry.Type().IsRegular() {
++			s.flags[entry.Name()] = true
++		}
++	}
++	s.syncFlagsLocked()
++	return nil
++}
+diff --git a/internal/creelengine/flags_test.go b/internal/creelengine/flags_test.go
+new file mode 100644
+index 00000000..dc929e9e
+--- /dev/null
++++ b/internal/creelengine/flags_test.go
+@@ -0,0 +1,152 @@
++//go:build tier0
++
++// flags_test.go pins the per-strand mail flags the store keeps in its flag directory.
++
++package creelengine_test
++
++import (
++	"errors"
++	"os"
++	"path/filepath"
++	"slices"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/agentname"
++	"github.com/Knatte18/loomyard/internal/creelengine"
++	"github.com/Knatte18/loomyard/internal/testkit/creelfake"
++)
++
++// newFlaggedEnv is newEnv over a store told a flag directory, reconciled once as the daemon does at start.
++// seed names flag files that stand in the directory before the store opens.
++func newFlaggedEnv(t *testing.T, seed ...string) *env {
++	t.Helper()
++	root := t.TempDir()
++	geom := creelengine.Geometry{
++		HubPath: filepath.Join(root, "hub"), Shortname: "ly", StateDir: filepath.Join(root, "state"),
++		JournalDir: filepath.Join(root, "state", "journal"), FlagDir: filepath.Join(root, "state", "flags"),
++	}
++	if err := os.MkdirAll(geom.FlagDir, 0o755); err != nil {
++		t.Fatal(err)
++	}
++	for _, name := range seed {
++		if err := os.WriteFile(filepath.Join(geom.FlagDir, name), nil, 0o644); err != nil {
++			t.Fatal(err)
++		}
++	}
++	del := creelfake.NewDelivery()
++	del.SetStrands(creelfake.LiveStrand(alpha), creelfake.LiveStrand(beta), creelfake.LiveStrand(orch), creelfake.LiveStrand(orch2))
++	clock := creelfake.NewClock(epoch)
++	store, err := creelengine.OpenStore(geom, del, clock)
++	if err != nil {
++		t.Fatalf("OpenStore: %v", err)
++	}
++	t.Cleanup(func() { _ = store.Close() })
++	if err := store.ReconcileFlags(); err != nil {
++		t.Fatalf("ReconcileFlags: %v", err)
++	}
++	return &env{store: store, del: del, clock: clock, geom: geom}
++}
++
++// flags returns the file names in the env's flag directory, sorted.
++func (e *env) flags(t *testing.T) []string {
++	t.Helper()
++	entries, err := os.ReadDir(e.geom.FlagDir)
++	if err != nil {
++		t.Fatalf("read the flag directory: %v", err)
++	}
++	var names []string
++	for _, entry := range entries {
++		names = append(names, entry.Name())
++	}
++	return names
++}
++
++func TestStore_MailFlags(t *testing.T) {
++	t.Parallel()
++	alphaFlag, betaFlag := agentname.FileName(alpha), agentname.FileName(beta)
++	tests := []struct {
++		name string
++		seed []string
++		run  func(t *testing.T, e *env)
++	}{
++		{"PostSetsTheReceiversFlagAndTheLastReadClearsIt", nil, func(t *testing.T, e *env) {
++			e.post(t, strand(alpha), beta, "one")
++			e.post(t, strand(alpha), beta, "two")
++			if got := e.flags(t); !slices.Equal(got, []string{betaFlag}) {
++				t.Fatalf("flags after two posts = %q; want %q", got, betaFlag)
++			}
++			e.readBodies(t, strand(beta), "")
++			if got := e.flags(t); len(got) != 0 {
++				t.Errorf("flags after the read = %q; want none", got)
++			}
++		}},
++		{"ForwardMovesTheFlag", nil, func(t *testing.T, e *env) {
++			id := e.post(t, strand(alpha), beta, "pass it on")
++			if err := e.store.Forward(strand(beta), id, orch); err != nil {
++				t.Fatalf("Forward: %v", err)
++			}
++			if got := e.flags(t); !slices.Equal(got, []string{agentname.FileName(orch)}) {
++				t.Errorf("flags after the forward = %q; want only the orch's", got)
++			}
++		}},
++		{"WithdrawClearsTheFlag", nil, func(t *testing.T, e *env) {
++			e.post(t, program(batten), beta, "withdrawn")
++			if _, err := e.store.Withdraw(program(batten), beta); err != nil {
++				t.Fatalf("Withdraw: %v", err)
++			}
++			if got := e.flags(t); len(got) != 0 {
++				t.Errorf("flags after the withdraw = %q; want none", got)
++			}
++		}},
++		{"ReturnMovesTheFlagBackToTheSender", nil, func(t *testing.T, e *env) {
++			e.post(t, strand(alpha), beta, "sent back")
++			e.del.SetStrands(creelfake.LiveStrand(alpha), creelfake.LiveStrand(orch), creelfake.LiveStrand(orch2))
++			e.start(t)
++			e.sweepStep()
++			e.sweepStep()
++			if got := e.flags(t); !slices.Equal(got, []string{alphaFlag}) {
++				t.Errorf("flags after the removed receiver's mail returned = %q; want only the sender's", got)
++			}
++		}},
++		{"FlagFollowsThePoolWhenACallbackJournalsThenFails", nil, func(t *testing.T, e *env) {
++			id := e.post(t, strand(alpha), beta, "read then failed")
++			if err := e.store.ReadThenFail(id, beta); !errors.Is(err, creelengine.ErrAfterJournaling) {
++				t.Fatalf("ReadThenFail = %v; want ErrAfterJournaling", err)
++			}
++			if got := e.flags(t); len(got) != 0 {
++				t.Errorf("flags after a callback that journaled the read and failed = %q; want none", got)
++			}
++		}},
++		{"ProgramReceiverGetsNoFlag", nil, func(t *testing.T, e *env) {
++			e.post(t, program(batten), alpha, "makes the program known")
++			e.readBodies(t, strand(alpha), "")
++			e.post(t, strand(alpha), batten, "to the program")
++			if got := e.flags(t); len(got) != 0 {
++				t.Errorf("flags after mail to a program = %q; want none", got)
++			}
++		}},
++		{"ReconcileRestoresALostFlag", nil, func(t *testing.T, e *env) {
++			e.post(t, strand(alpha), beta, "kept unread")
++			if err := os.RemoveAll(e.geom.FlagDir); err != nil {
++				t.Fatal(err)
++			}
++			if err := e.store.ReconcileFlags(); err != nil {
++				t.Fatalf("ReconcileFlags: %v", err)
++			}
++			if got := e.flags(t); !slices.Equal(got, []string{betaFlag}) {
++				t.Errorf("flags after reconciling a lost directory = %q; want beta's", got)
++			}
++		}},
++		{"ReconcileRemovesAStaleFlag", []string{alphaFlag}, func(t *testing.T, e *env) {
++			if got := e.flags(t); len(got) != 0 {
++				t.Errorf("flags after reconciling an empty pool = %q; want the stale one removed", got)
++			}
++		}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			tt.run(t, newFlaggedEnv(t, tt.seed...))
++		})
++	}
++}
+diff --git a/internal/creelengine/geometry.go b/internal/creelengine/geometry.go
+index c3a65b20..018bf0c7 100644
+--- a/internal/creelengine/geometry.go
++++ b/internal/creelengine/geometry.go
+@@ -25,6 +25,8 @@ type Geometry struct {
+ 	SocketPath string
+ 	// DaemonLogPath is the file the detached daemon's stderr is appended to, in StateDir.
+ 	DaemonLogPath string
++	// FlagDir holds one empty flag file per strand holding unread mail, named by the strand's agent-name file name, in StateDir; empty keeps no flags.
++	FlagDir string
+ }
+ 
+ // socketHashHexLen is how many hex digits of the hub path's hash the socket name carries.
+diff --git a/internal/creelengine/journal.go b/internal/creelengine/journal.go
+index 4c2071a3..00589962 100644
+--- a/internal/creelengine/journal.go
++++ b/internal/creelengine/journal.go
+@@ -142,6 +142,8 @@ type journalWriter struct {
+ 	pool  *pool
+ 	day   string
+ 	file  *os.File
++	// appended counts the records append folded into the pool, so a caller tells whether a change of its own reached the pool.
++	appended uint64
+ }
+ 
+ // openJournal prepares the writer over the pool folded from dir.
+@@ -227,6 +229,7 @@ func (w *journalWriter) append(rec record) error {
+ 		return err
+ 	}
+ 	w.pool.apply(rec, w.day)
++	w.appended++
+ 	return nil
+ }
+ 
+diff --git a/internal/creelengine/pool.go b/internal/creelengine/pool.go
+index d9166013..b445c23f 100644
+--- a/internal/creelengine/pool.go
++++ b/internal/creelengine/pool.go
+@@ -46,6 +46,8 @@ type Store struct {
+ 	stalls map[string]stallNote
+ 	// paneLocks maps a receiver to the mutex that serialises an interrupt of its pane with its deliveries.
+ 	paneLocks map[string]*sync.Mutex
++	// flags holds the file names of the flags the flag directory holds, as this store last set or found them.
++	flags map[string]bool
+ }
+ 
+ // paneLock returns the one mutex of receiver's pane.
+@@ -100,7 +102,7 @@ func OpenStore(geom Geometry, delivery Delivery, clock Clock) (*Store, error) {
+ 	return &Store{
+ 		geom: geom, delivery: delivery, clock: clock, state: state, writer: writer,
+ 		reserved: map[int64]string{}, waiters: map[waitKey][]*Waiter{}, agedWritten: map[int64]int64{},
+-		stalls: map[string]stallNote{}, paneLocks: map[string]*sync.Mutex{},
++		stalls: map[string]stallNote{}, paneLocks: map[string]*sync.Mutex{}, flags: map[string]bool{},
+ 	}, nil
+ }
+ 
+@@ -131,9 +133,14 @@ func (s *Store) SetWakeHook(hook func(receiver string)) {
+ }
+ 
+ // do runs fn under the mutex, then calls the wake hook for every receiver fn signalled once the mutex is free.
++// When fn journaled a record, the strands' mail flags follow the pool before the mutex is freed, whether or not fn failed after it.
+ func (s *Store) do(fn func() error) error {
+ 	s.mu.Lock()
++	appended := s.writer.appended
+ 	err := fn()
++	if s.writer.appended != appended {
++		s.syncFlagsLocked()
++	}
+ 	wakes, hook := s.wakes, s.wakeHook
+ 	s.wakes = nil
+ 	s.mu.Unlock()
+diff --git a/internal/creelengine/protocol.go b/internal/creelengine/protocol.go
+index ffac5f38..6f359fa1 100644
+--- a/internal/creelengine/protocol.go
++++ b/internal/creelengine/protocol.go
+@@ -28,6 +28,8 @@ const (
+ 	VerbRelease    = "release"
+ 	// VerbWithdraw removes a program's own queued injects and unread mail to one receiver; only the Go client sends it.
+ 	VerbWithdraw = "withdraw"
++	// VerbClaim hands a strand's tool-boundary hook its unread mail, acknowledged on the same connection as a read is.
++	VerbClaim = "claim"
+ )
+ 
+ // CodeStrandClaimOutsidePane is the Response.Code of the refusal of a strand claim that names a listed strand from a process in no strand pane.
+diff --git a/internal/creelengine/reminder.go b/internal/creelengine/reminder.go
+index b86f533f..4535be06 100644
+--- a/internal/creelengine/reminder.go
++++ b/internal/creelengine/reminder.go
+@@ -29,8 +29,9 @@ func isNotice(msg *Message) bool {
+ 	return agentname.IsProgram(msg.From) && len(msg.Body) <= maxNoticeBytes
+ }
+ 
+-// composeNotice renders the line that carries a notice: its id, so the receiver can reply without a read, its sender and its body, with every run of control characters and line breaks turned into one space.
+-func composeNotice(msg Message) string {
++// MessageLine renders the one line that carries a message in full, as a notice typed into an idle pane or as mail handed over at a tool boundary:
++// its id, so the receiver can reply without a read, its sender and its body, with every run of control characters and line breaks turned into one space.
++func MessageLine(msg Message) string {
+ 	body := strings.Join(strings.FieldsFunc(msg.Body, unicode.IsControl), " ")
+ 	return fmt.Sprintf("[creel] #%d from %s: %s", msg.ID, msg.From, strings.TrimSpace(body))
+ }
+diff --git a/internal/creelengine/server.go b/internal/creelengine/server.go
+index f032982f..9069a98f 100644
+--- a/internal/creelengine/server.go
++++ b/internal/creelengine/server.go
+@@ -78,6 +78,9 @@ func Run(ctx context.Context, opts Options) error {
+ 		return err
+ 	}
+ 	defer func() { _ = store.Close() }()
++	if err := store.ReconcileFlags(); err != nil {
++		logger.Warn("creel daemon: could not reconcile the strands' mail flags", "error", err)
++	}
+ 	listener, err := net.ListenUnix("unix", &net.UnixAddr{Name: geom.SocketPath, Net: "unix"})
+ 	if err != nil {
+ 		return fmt.Errorf("creel: listen on %s: %w", geom.SocketPath, err)
+@@ -298,6 +301,12 @@ func (d *daemon) dispatch(conn *net.UnixConn, reader *bufio.Reader, sender Sende
+ 		ok.ID = id
+ 	case VerbRead:
+ 		return d.read(conn, reader, sender, req)
++	case VerbClaim:
++		reading, err := store.ClaimAtBoundary(sender)
++		if err != nil {
++			return err
++		}
++		return d.handOut(conn, reader, sender, reading)
+ 	case VerbInbox:
+ 		inbox, err := store.Inbox(sender)
+ 		if err != nil {
+@@ -436,6 +445,11 @@ func (d *daemon) read(conn *net.UnixConn, reader *bufio.Reader, sender Sender, r
+ 			return nil
+ 		}
+ 	}
++	return d.handOut(conn, reader, sender, reading)
++}
++
++// handOut answers the messages of reading, and journals them read only once the client acknowledges them on the same connection; any other answer, or none in time, releases them.
++func (d *daemon) handOut(conn *net.UnixConn, reader *bufio.Reader, sender Sender, reading *Reading) error {
+ 	resp := Response{OK: true, Sender: sender.Name, Messages: reading.Messages, AckRequired: len(reading.ids) > 0}
+ 	if err := d.write(conn, resp); err != nil {
+ 		reading.Release()
+diff --git a/internal/creelengine/server_test.go b/internal/creelengine/server_test.go
+index 6e0ab546..48e0b6f6 100644
+--- a/internal/creelengine/server_test.go
++++ b/internal/creelengine/server_test.go
+@@ -21,6 +21,7 @@ import (
+ 	"testing"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/agentname"
+ 	"github.com/Knatte18/loomyard/internal/creelengine"
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/lymtemp"
+@@ -325,6 +326,30 @@ func TestDaemon_Protocol(t *testing.T) {
+ 				t.Errorf("a read after the acked one = %d messages; want none", len(again.Messages))
+ 			}
+ 		}},
++		{"ClaimHandsOutTheStrandsMailAndItsFlagFollowsTheMail", true, func(t *testing.T, r *rig) {
++			r.geom.FlagDir = filepath.Join(r.geom.StateDir, "flags")
++			flag := filepath.Join(r.geom.FlagDir, agentname.FileName(alpha))
++			r.start()
++			c := r.client(strandClaim(alpha), nil, creelfake.NewClock(epoch))
++			mustCall(t, c, creelengine.Request{Verb: creelengine.VerbPost, Receiver: alpha, Text: "at the boundary"})
++			if _, err := os.Stat(flag); err != nil {
++				t.Fatalf("alpha's flag after the post: %v; want it standing", err)
++			}
++			var handed []creelengine.Message
++			_, err := c.Call(creelengine.Request{Verb: creelengine.VerbClaim}, 0, func(resp creelengine.Response) error {
++				handed = resp.Messages
++				return nil
++			})
++			if err != nil || len(handed) != 1 || handed[0].Body != "at the boundary" {
++				t.Fatalf("claim handed out %+v, %v; want the one message", handed, err)
++			}
++			if _, err := os.Stat(flag); !errors.Is(err, os.ErrNotExist) {
++				t.Errorf("alpha's flag after the acked claim: %v; want it gone", err)
++			}
++			if again := mustCall(t, c, creelengine.Request{Verb: creelengine.VerbClaim}); len(again.Messages) != 0 {
++				t.Errorf("a claim after the acked one = %d messages; want none", len(again.Messages))
++			}
++		}},
+ 		{"ReadHandsOutEveryUnreadMessageFromEverySender", false, func(t *testing.T, r *rig) {
+ 			r.start()
+ 			batten := r.client(programClaim("ly:BATTEN"), nil, creelfake.NewClock(epoch))
+@@ -948,6 +973,26 @@ func TestDaemon_Lifecycle(t *testing.T) {
+ 				t.Errorf("typed %v; want the reminder of the stage 1 mail %v", got, want)
+ 			}
+ 		}},
++		{"StartReconcilesAStaleFlagAndAMissingOne", func(t *testing.T, r *rig) {
++			r.geom.FlagDir = filepath.Join(r.geom.StateDir, "flags")
++			staleFlag := filepath.Join(r.geom.FlagDir, agentname.FileName(alpha))
++			missingFlag := filepath.Join(r.geom.FlagDir, agentname.FileName(beta))
++			if err := os.MkdirAll(r.geom.FlagDir, 0o755); err != nil {
++				t.Fatalf("create the flag directory: %v", err)
++			}
++			if err := os.WriteFile(staleFlag, nil, 0o644); err != nil {
++				t.Fatalf("write the stale flag: %v", err)
++			}
++			r.writeJournal("2026-10-01",
++				`{"event":"posted","at":"2026-10-01T11:00:00Z","id":1,"from":"`+alpha+`","to":"`+beta+`","kind":"mail","body":"unread"}`)
++			r.start()
++			if _, err := os.Stat(missingFlag); err != nil {
++				t.Errorf("beta's flag after the start: %v; want it standing for the unread mail", err)
++			}
++			if _, err := os.Stat(staleFlag); !errors.Is(err, os.ErrNotExist) {
++				t.Errorf("alpha's flag after the start: %v; want the stale one removed", err)
++			}
++		}},
+ 		{"SendingWithoutAnOutcomeIsUnconfirmedAndNeverTypedAgain", func(t *testing.T, r *rig) {
+ 			r.writeJournal("2026-10-01", oldInject, `{"event":"sending","at":"2026-10-01T11:59:00Z","id":1}`)
+ 			r.start()
+diff --git a/internal/creelengine/verbs.go b/internal/creelengine/verbs.go
+index 6f8b69a6..fa473a3f 100644
+--- a/internal/creelengine/verbs.go
++++ b/internal/creelengine/verbs.go
+@@ -154,6 +154,57 @@ func (s *Store) Read(sender Sender, from string) (*Reading, error) {
+ 	return reading, nil
+ }
+ 
++// boundaryClaimBudget bounds the bytes of message lines, with the newlines joining them, one tool-boundary claim hands out, so one boundary adds a bounded amount to the session's context.
++const boundaryClaimBudget = 8 << 10
++
++// ClaimAtBoundary hands a strand's tool-boundary hook the strand's unread mail no read has reserved, oldest first and agent mail included, reserved until Ack or Release like a read's.
++// Under a hold it hands out only the hold owner's mail, and while a pause covers the strand it hands out nothing.
++// It stops before the message whose MessageLine, and the newline joining it to the line before, would take the lines past boundaryClaimBudget, but always hands out the first, and what it leaves stays unread for the next boundary.
++// Only a strand sender may claim; any other sender is refused with the read verb as the way forward.
++func (s *Store) ClaimAtBoundary(sender Sender) (*Reading, error) {
++	if sender.Kind != KindStrand {
++		return nil, fmt.Errorf("creel: only a strand's tool-boundary hook claims mail, and %s is no strand; read with `lym creel read`", sender.Name)
++	}
++	reading := &Reading{store: s, holder: sender.Name}
++	strand, err := s.strandTarget(sender.Name)
++	if err != nil {
++		return nil, err
++	}
++	paused, err := s.delivery.Paused(strand)
++	if err != nil {
++		return nil, fmt.Errorf("creel: could not read the pause record for %s: %w", sender.Name, err)
++	}
++	if paused {
++		return reading, nil
++	}
++	err = s.do(func() error {
++		hold := s.liveHoldLocked(sender.Name)
++		used := 0
++		for _, msg := range s.unreadLocked(sender.Name, "") {
++			if hold != nil && msg.From != hold.Owner {
++				continue
++			}
++			size := len(MessageLine(*msg))
++			if len(reading.ids) > 0 {
++				// The newline the hook joins this line to the one before with counts against the budget too.
++				size++
++				if used+size > boundaryClaimBudget {
++					break
++				}
++			}
++			used += size
++			s.reserved[msg.ID] = sender.Name
++			reading.ids = append(reading.ids, msg.ID)
++			reading.Messages = append(reading.Messages, *msg)
++		}
++		return nil
++	})
++	if err != nil {
++		return nil, err
++	}
++	return reading, nil
++}
++
+ var errExternalHoldsNothing = errors.New("creel: an EXTERNAL caller holds no mail; wait for an answer with `lym creel post --wait-reply`")
+ 
+ // Ack marks the reserved messages read and journals each; a message that left the holder meanwhile stays as it is.
+diff --git a/internal/creelengine/verbs_test.go b/internal/creelengine/verbs_test.go
+index 52137ceb..0f78de5e 100644
+--- a/internal/creelengine/verbs_test.go
++++ b/internal/creelengine/verbs_test.go
+@@ -843,3 +843,126 @@ func TestStore_InjectAndHold(t *testing.T) {
+ 		})
+ 	}
+ }
++
++func TestStore_ClaimAtBoundary(t *testing.T) {
++	t.Parallel()
++	// claimLines claims as the strand and returns the claimed messages' lines, leaving the reading unacknowledged.
++	claimLines := func(t *testing.T, e *env, as string) (*creelengine.Reading, []string) {
++		t.Helper()
++		reading, err := e.store.ClaimAtBoundary(strand(as))
++		if err != nil {
++			t.Fatalf("ClaimAtBoundary(%s): %v", as, err)
++		}
++		var lines []string
++		for _, msg := range reading.Messages {
++			lines = append(lines, creelengine.MessageLine(msg))
++		}
++		return reading, lines
++	}
++	tests := []struct {
++		name string
++		run  func(t *testing.T, e *env)
++	}{
++		{"HandsOutAgentAndProgramMailOldestFirstAndAckMarksItRead", func(t *testing.T, e *env) {
++			e.post(t, strand(alpha), beta, "from a strand\nsecond line")
++			e.post(t, program(batten), beta, "from a program")
++			reading, lines := claimLines(t, e, beta)
++			want := []string{"[creel] #1 from " + alpha + ": from a strand second line", "[creel] #2 from " + batten + ": from a program"}
++			if !slices.Equal(lines, want) {
++				t.Errorf("claimed %q; want %q", lines, want)
++			}
++			if _, again := claimLines(t, e, beta); len(again) != 0 {
++				t.Errorf("a second claim before the ack handed out %q; want nothing", again)
++			}
++			if err := reading.Ack(); err != nil {
++				t.Fatalf("Ack: %v", err)
++			}
++			if got := eventsOf(e.store.Log(creelengine.LogFilter{To: beta})); !slices.Equal(got, []string{"posted", "posted", "read", "read"}) {
++				t.Errorf("Log(to beta) events = %v; want two posts and two reads", got)
++			}
++		}},
++		{"ReleasedClaimLeavesTheMailUnread", func(t *testing.T, e *env) {
++			e.post(t, strand(alpha), beta, "kept")
++			reading, _ := claimLines(t, e, beta)
++			reading.Release()
++			wantBodies(t, e.readBodies(t, strand(beta), ""), "kept")
++		}},
++		{"StopsAtTheBudgetButHandsOutAtLeastOne", func(t *testing.T, e *env) {
++			big := strings.Repeat("x", 5000)
++			e.post(t, strand(alpha), beta, big)
++			e.post(t, strand(alpha), beta, big)
++			e.post(t, strand(alpha), beta, strings.Repeat("y", 10000))
++			first, lines := claimLines(t, e, beta)
++			if len(lines) != 1 || !strings.HasPrefix(lines[0], "[creel] #1 ") {
++				t.Fatalf("first claim handed out %d lines; want only #1, since #2 takes it past the budget", len(lines))
++			}
++			_ = first.Ack()
++			second, lines := claimLines(t, e, beta)
++			if len(lines) != 1 || !strings.HasPrefix(lines[0], "[creel] #2 ") {
++				t.Fatalf("second claim handed out %d lines; want only #2", len(lines))
++			}
++			_ = second.Ack()
++			if _, lines := claimLines(t, e, beta); len(lines) != 1 || !strings.HasPrefix(lines[0], "[creel] #3 ") {
++				t.Errorf("third claim handed out %d lines; want #3 whole though it is over the budget", len(lines))
++			}
++		}},
++		{"BudgetCountsTheNewlinesJoiningTheLines", func(t *testing.T, e *env) {
++			const budget = 8 << 10
++			firstBody := strings.Repeat("x", 4000)
++			prefixes := len(creelengine.MessageLine(creelengine.Message{ID: 1, From: alpha})) + len(creelengine.MessageLine(creelengine.Message{ID: 2, From: alpha}))
++			// The two lines fit the budget exactly without the newline between them, and one byte short of it with the newline.
++			e.post(t, strand(alpha), beta, firstBody)
++			e.post(t, strand(alpha), beta, strings.Repeat("y", budget-prefixes-len(firstBody)))
++			first, lines := claimLines(t, e, beta)
++			if len(lines) != 1 {
++				t.Fatalf("claim of two lines that fit the budget only without their newline handed out %d lines; want only #1", len(lines))
++			}
++			_ = first.Ack()
++			second, lines := claimLines(t, e, beta)
++			if len(lines) != 1 || !strings.HasPrefix(lines[0], "[creel] #2 ") {
++				t.Fatalf("second claim handed out %d lines; want only #2", len(lines))
++			}
++			_ = second.Ack()
++
++			// One byte shorter, the lines and their newline fit the budget exactly, so both go out together.
++			e.post(t, strand(alpha), beta, firstBody)
++			e.post(t, strand(alpha), beta, strings.Repeat("y", budget-prefixes-len(firstBody)-1))
++			if _, lines := claimLines(t, e, beta); len(lines) != 2 {
++				t.Errorf("claim of two lines that fit the budget with their newline handed out %d lines; want both", len(lines))
++			}
++		}},
++		{"UnderAHoldOnlyTheOwnersMail", func(t *testing.T, e *env) {
++			e.post(t, strand(alpha), beta, "muted")
++			e.post(t, program(batten), beta, "owner's")
++			if _, err := e.store.Hold(program(batten), beta, time.Minute); err != nil {
++				t.Fatalf("Hold: %v", err)
++			}
++			if _, lines := claimLines(t, e, beta); !slices.Equal(lines, []string{"[creel] #2 from " + batten + ": owner's"}) {
++				t.Errorf("claimed %q under the hold; want only the owner's mail", lines)
++			}
++		}},
++		{"UnderAPauseNothing", func(t *testing.T, e *env) {
++			e.post(t, strand(alpha), beta, "paused")
++			e.del.SetPaused(beta, true)
++			if _, lines := claimLines(t, e, beta); len(lines) != 0 {
++				t.Errorf("claimed %q under a pause; want nothing", lines)
++			}
++		}},
++		{"UnreadablePauseRefuses", func(t *testing.T, e *env) {
++			e.post(t, strand(alpha), beta, "unknown pause")
++			e.del.SetPausedError(errors.New("pause record torn"))
++			_, err := e.store.ClaimAtBoundary(strand(beta))
++			wantErr(t, err, "pause record", "pause record torn")
++		}},
++		{"NonStrandSenderRefusedNamingRead", func(t *testing.T, e *env) {
++			_, err := e.store.ClaimAtBoundary(program(batten))
++			wantErr(t, err, "no strand", "lym creel read")
++		}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			tt.run(t, newEnv(t))
++		})
++	}
++}
+diff --git a/internal/hubgeom/creelgeom.go b/internal/hubgeom/creelgeom.go
+index 851cfd0a..4d6077a9 100644
+--- a/internal/hubgeom/creelgeom.go
++++ b/internal/hubgeom/creelgeom.go
+@@ -30,5 +30,6 @@ func CreelGeometry(hubPath, tempRoot string) (creelengine.Geometry, error) {
+ 		LockPath:      filepath.Join(stateDir, "daemon.lock"),
+ 		SocketPath:    filepath.Join(tempRoot, creelengine.SocketName(shortname, hubPath)),
+ 		DaemonLogPath: filepath.Join(stateDir, "daemon.log"),
++		FlagDir:       filepath.Join(stateDir, lymdirs.CreelFlagDirName),
+ 	}, nil
+ }
+diff --git a/internal/hubgeom/hubgeom_test.go b/internal/hubgeom/hubgeom_test.go
+index 9aff22dc..af35dfba 100644
+--- a/internal/hubgeom/hubgeom_test.go
++++ b/internal/hubgeom/hubgeom_test.go
+@@ -22,6 +22,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
++	"github.com/Knatte18/loomyard/internal/shuttleengine/claudeengine"
+ )
+ 
+ // TestReedGeometry pins every ReedGeometry field against a fixture whose hub, worktree root and anchor path are distinct directories.
+@@ -271,7 +272,7 @@ func TestReconcileGeometry(t *testing.T) {
+ 	}
+ }
+ 
+-// TestCreelGeometry pins every creel geometry field, that one hub gives one socket path, that two hubs of one shortname get different ones,
++// TestCreelGeometry pins every creel geometry field, that its flag directory is the one a Claude strand's mail hook tests, that one hub gives one socket path, that two hubs of one shortname get different ones,
+ // and that a hub with no shortname record is refused naming it.
+ func TestCreelGeometry(t *testing.T) {
+ 	t.Parallel()
+@@ -301,10 +302,15 @@ func TestCreelGeometry(t *testing.T) {
+ 		LockPath:      filepath.Join(stateDir, "daemon.lock"),
+ 		SocketPath:    filepath.Join(tempRoot, creelengine.SocketName("abc", hub)),
+ 		DaemonLogPath: filepath.Join(stateDir, "daemon.log"),
++		FlagDir:       filepath.Join(stateDir, lymdirs.CreelFlagDirName),
+ 	}
+ 	if got != want {
+ 		t.Errorf("CreelGeometry(%q) = %+v; want %+v", hub, got, want)
+ 	}
++	// A Claude strand's mail hook tests flags in the directory its engine derives from the board directory alone.
++	if hookDir := claudeengine.CreelFlagDir(fabricengine.BoardDir(hub)); got.FlagDir != hookDir {
++		t.Errorf("CreelGeometry(%q).FlagDir = %q; want the Claude hook's %q", hub, got.FlagDir, hookDir)
++	}
+ 
+ 	again, err := CreelGeometry(hub, tempRoot)
+ 	if err != nil || again.SocketPath != got.SocketPath {
+diff --git a/internal/lymdirs/dirs.go b/internal/lymdirs/dirs.go
+index 5c112f42..0a2e8183 100644
+--- a/internal/lymdirs/dirs.go
++++ b/internal/lymdirs/dirs.go
+@@ -32,3 +32,6 @@ const AdoptDirName = "adopt"
+ 
+ // BeamDirName is the directory under a worktree's DotLymDirName that holds dobby's lock, state record and markers.
+ const BeamDirName = "beam"
++
++// CreelFlagDirName is the directory under CreelDirName that holds one flag file per strand holding unread mail.
++const CreelFlagDirName = "flags"
+diff --git a/internal/shuttleengine/claudeengine/capabilities.go b/internal/shuttleengine/claudeengine/capabilities.go
+index 7ec0ad6e..b2a72c18 100644
+--- a/internal/shuttleengine/claudeengine/capabilities.go
++++ b/internal/shuttleengine/claudeengine/capabilities.go
+@@ -1,15 +1,16 @@
+ // capabilities.go implements Claude's optional engine capabilities.
+-// They are requirement support, project instruction files and resume-context rendering.
++// They are requirement support, project instruction files, resume-context rendering and tool-boundary context rendering.
+ 
+ package claudeengine
+ 
+ import "github.com/Knatte18/loomyard/internal/shuttleengine"
+ 
+ var (
+-	_ shuttleengine.RequirementSupporter  = (*Claude)(nil)
+-	_ shuttleengine.ForkAuditor           = (*Claude)(nil)
+-	_ shuttleengine.ResumeContextRenderer = (*Claude)(nil)
+-	_ shuttleengine.InstructionFileLister = (*Claude)(nil)
++	_ shuttleengine.RequirementSupporter        = (*Claude)(nil)
++	_ shuttleengine.ForkAuditor                 = (*Claude)(nil)
++	_ shuttleengine.ResumeContextRenderer       = (*Claude)(nil)
++	_ shuttleengine.ToolBoundaryContextRenderer = (*Claude)(nil)
++	_ shuttleengine.InstructionFileLister       = (*Claude)(nil)
+ )
+ 
+ // Supports reports whether Claude Code meets req; it meets each requirement the seam names.
+@@ -30,3 +31,8 @@ func (c *Claude) InstructionFiles() []string {
+ func (c *Claude) ResumeContext(text string) ([]byte, error) {
+ 	return SessionStartContext(text)
+ }
++
++// ToolBoundaryContext renders text as Claude Code's PostToolUse hook output.
++func (c *Claude) ToolBoundaryContext(text string) ([]byte, error) {
++	return hookContext(hookEventPostToolUse, text)
++}
+diff --git a/internal/shuttleengine/claudeengine/claudeengine.go b/internal/shuttleengine/claudeengine/claudeengine.go
+index 3313e16e..b6c630bf 100644
+--- a/internal/shuttleengine/claudeengine/claudeengine.go
++++ b/internal/shuttleengine/claudeengine/claudeengine.go
+@@ -193,7 +193,19 @@ func (c *Claude) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengi
+ 		}
+ 	}
+ 
+-	settingsJSON, err := buildSettings(eventsPathForHook, spec.Interactive, cfg, claude, spec.ForkSubagents, spec.AllowAgentTool, spec.ContextAfterCompaction)
++	// A session in a hub gets creel's mail hook; the flag directory takes the same POSIX conversion as the events path.
++	creelFlagDirForHook := ""
++	if c.dirs.Board != "" {
++		creelFlagDirForHook = CreelFlagDir(c.dirs.Board)
++		if runtime.GOOS == "windows" {
++			creelFlagDirForHook, err = shuttleengine.PosixPath(creelFlagDirForHook)
++			if err != nil {
++				return shuttleengine.Launch{}, fmt.Errorf("convert creel flag directory to posix: %w", err)
++			}
++		}
++	}
++
++	settingsJSON, err := buildSettings(eventsPathForHook, spec.Interactive, cfg, claude, spec.ForkSubagents, spec.AllowAgentTool, spec.ContextAfterCompaction, creelFlagDirForHook)
+ 	if err != nil {
+ 		return shuttleengine.Launch{}, fmt.Errorf("build settings: %w", err)
+ 	}
+diff --git a/internal/shuttleengine/claudeengine/doc.go b/internal/shuttleengine/claudeengine/doc.go
+index 95e1f535..6d1b4474 100644
+--- a/internal/shuttleengine/claudeengine/doc.go
++++ b/internal/shuttleengine/claudeengine/doc.go
+@@ -123,6 +123,12 @@
+ // No recording hook prints to standard output, so the `PermissionRequest` recording answers no request and leaves Claude's own dialog to decide it.
+ // The one exception is the second command of the `compact` `SessionStart` entry, which Spec.ContextAfterCompaction sets: it runs after the recording command and verbatim, and its output joins the session's context after every compaction.
+ // SessionStartContext renders the additional-context JSON such a command prints.
++//
++// An engine told a hub board directory also installs one PostToolUse hook with no matcher, creel's mail hook, and an engine told none, a standalone run, installs no PostToolUse key.
++// Its command is plain POSIX `sh`: it forms the strand's flag name from `$LYM_STRAND_NAME` by parameter expansion alone, turning every `:` into `.` as agentname.FileName does, and exits 0 at once unless that flag stands in CreelFlagDir of the board directory, so a tool call with no mail starts no process.
++// When the flag stands it changes to `$CLAUDE_PROJECT_DIR` and runs `lym creel hook-read claude`, whose standard output, ToolBoundaryContext's PostToolUse additional-context JSON, adds the strand's mail to the session's context after the tool call.
++// On Windows the flag directory takes the same git-bash POSIX conversion as the events path.
++//
+ // Prepare declares the launch as recording session starts, so startup waits for the `startup` line beside the ready pane.
+ // Two accepted races follow from the append order.
+ // Hooks that fire at once can interleave their stamps ahead of both payloads, which the pairing by hook name absorbs;
+diff --git a/internal/shuttleengine/claudeengine/hookcmd_integration_test.go b/internal/shuttleengine/claudeengine/hookcmd_integration_test.go
+index 23c4683b..90d516a0 100644
+--- a/internal/shuttleengine/claudeengine/hookcmd_integration_test.go
++++ b/internal/shuttleengine/claudeengine/hookcmd_integration_test.go
+@@ -15,10 +15,12 @@ import (
+ 	"os/exec"
+ 	"path/filepath"
+ 	"reflect"
++	"slices"
+ 	"strings"
+ 	"testing"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/agentname"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ )
+ 
+@@ -28,7 +30,7 @@ func recordingHookCommands(t *testing.T, eventsPath string) map[string]string {
+ 	t.Helper()
+ 	commands := map[string]string{}
+ 	for _, interactive := range []bool{false, true} {
+-		data, err := buildSettings(eventsPath, interactive, shuttleengine.Config{}, Config{}, false, false, "")
++		data, err := buildSettings(eventsPath, interactive, shuttleengine.Config{}, Config{}, false, false, "", "")
+ 		if err != nil {
+ 			t.Fatalf("buildSettings() error: %v", err)
+ 		}
+@@ -260,3 +262,50 @@ func TestShellGuardDenies_RenderedCommandsGrepThePayload(t *testing.T) {
+ 		})
+ 	}
+ }
++
++// TestCreelMailHook_RunsLymOnlyWhenTheStrandsFlagStands runs the creel mail hook under sh with a stub `lym` on PATH that prints its directory and arguments.
++// The hook forms the flag's file name as agentname.FileName does, runs `lym creel hook-read claude` from the session's project directory only while that flag stands, and otherwise exits 0 having printed nothing.
++func TestCreelMailHook_RunsLymOnlyWhenTheStrandsFlagStands(t *testing.T) {
++	t.Parallel()
++
++	const name = "ly:creel-hook:driver-2"
++	root := t.TempDir()
++	flagDir, binDir, projectDir := filepath.Join(root, "flags"), filepath.Join(root, "bin"), filepath.Join(root, "project")
++	for _, dir := range []string{flagDir, binDir, projectDir} {
++		if err := os.MkdirAll(dir, 0o755); err != nil {
++			t.Fatal(err)
++		}
++	}
++	if err := os.WriteFile(filepath.Join(binDir, "lym"), []byte("#!/bin/sh\necho \"$(pwd -P) $*\"\n"), 0o755); err != nil {
++		t.Fatal(err)
++	}
++	if err := os.WriteFile(filepath.Join(flagDir, agentname.FileName(name)), nil, 0o644); err != nil {
++		t.Fatal(err)
++	}
++	resolvedProjectDir, err := filepath.EvalSymlinks(projectDir)
++	if err != nil {
++		t.Fatal(err)
++	}
++	command := creelMailHookCommand(shQuote(flagDir))
++	baseEnv := []string{"PATH=" + binDir + ":/usr/bin:/bin", "CLAUDE_PROJECT_DIR=" + projectDir}
++
++	tests := []struct {
++		name string
++		env  []string
++		want string
++	}{
++		{"FlagStands", []string{agentname.StrandNameEnv + "=" + name}, resolvedProjectDir + " creel hook-read claude\n"},
++		{"AnotherStrandsFlag", []string{agentname.StrandNameEnv + "=ly:creel-hook:driver"}, ""},
++		{"EmptyName", []string{agentname.StrandNameEnv + "="}, ""},
++		{"UnsetName", nil, ""},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			stdout, exitCode := runHookCommand(t, command, `{"hook_event_name":"PostToolUse"}`, append(slices.Clone(baseEnv), tt.env...))
++			if stdout != tt.want || exitCode != 0 {
++				t.Errorf("hook stdout = %q, exit = %d; want %q and exit 0", stdout, exitCode, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/shuttleengine/claudeengine/settings.go b/internal/shuttleengine/claudeengine/settings.go
+index c1bfb45a..757a64ef 100644
+--- a/internal/shuttleengine/claudeengine/settings.go
++++ b/internal/shuttleengine/claudeengine/settings.go
+@@ -20,8 +20,11 @@ package claudeengine
+ import (
+ 	"encoding/json"
+ 	"fmt"
++	"path/filepath"
+ 	"strings"
+ 
++	"github.com/Knatte18/loomyard/internal/agentname"
++	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/shellguard"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ )
+@@ -63,7 +66,8 @@ type hookEntry struct {
+ }
+ 
+ // settingsHooks is the "hooks" object of a Claude Code settings.json document.
+-// Every event but PreToolUse is a recording hook installed for every session.
++// Every event but PreToolUse and PostToolUse is a recording hook installed for every session.
++// PostToolUse carries the creel mail hook, and is omitted for a session in no hub.
+ // PreToolUse is omitted when an autonomous run has every deny off; interactive runs always carry at least the AskUserQuestion marker.
+ type settingsHooks struct {
+ 	Stop              []hookEntry `json:"Stop"`
+@@ -74,6 +78,7 @@ type settingsHooks struct {
+ 	SessionEnd        []hookEntry `json:"SessionEnd"`
+ 	SessionStart      []hookEntry `json:"SessionStart"`
+ 	PermissionRequest []hookEntry `json:"PermissionRequest"`
++	PostToolUse       []hookEntry `json:"PostToolUse,omitempty"`
+ }
+ 
+ // compactionMatcher is the SessionStart matcher for a session restarting after a compaction.
+@@ -84,19 +89,41 @@ const nonCompactionMatcher = "startup|resume|clear"
+ 
+ // SessionStartContext renders the additional-context JSON a SessionStart hook prints to add text to the session's context.
+ func SessionStartContext(text string) ([]byte, error) {
++	return hookContext(hookEventSessionStart, text)
++}
++
++// hookContext renders the additional-context JSON a hook of the named event prints to add text to the session's context.
++func hookContext(hookEventName, text string) ([]byte, error) {
+ 	type specificOutput struct {
+ 		HookEventName     string `json:"hookEventName"`
+ 		AdditionalContext string `json:"additionalContext"`
+ 	}
+ 	data, err := json.Marshal(struct {
+ 		HookSpecificOutput specificOutput `json:"hookSpecificOutput"`
+-	}{specificOutput{HookEventName: hookEventSessionStart, AdditionalContext: text}})
++	}{specificOutput{HookEventName: hookEventName, AdditionalContext: text}})
+ 	if err != nil {
+-		return nil, fmt.Errorf("marshal session start context: %w", err)
++		return nil, fmt.Errorf("marshal %s context: %w", hookEventName, err)
+ 	}
+ 	return data, nil
+ }
+ 
++// creelMailCommand is the command the PostToolUse hook runs when the strand's mail flag stands: creel's claim verb, told this engine's registry name so it renders the claimed mail as this engine's hook output.
++const creelMailCommand = "lym creel hook-read claude"
++
++// CreelFlagDir returns the directory creel keeps its per-strand mail flags in, for the hub whose board directory is boardDir.
++func CreelFlagDir(boardDir string) string {
++	return filepath.Join(boardDir, lymdirs.DotLymDirName, lymdirs.CreelDirName, lymdirs.CreelFlagDirName)
++}
++
++// creelMailHookCommand returns the PostToolUse hook command that hands the strand its creel mail at each tool boundary.
++// It forms the flag's file name from the strand's name by shell parameter expansion alone, turning every ":" into ".", and exits 0 at once unless that flag stands in the directory at quotedFlagDir, so a tool call with no mail starts no process.
++// An empty or unset strand name names no regular file and exits the same way.
++// When the flag stands it changes to the session's project directory, so a session that moved out of the hub still reaches it, and runs creelMailCommand, whose output is the hook's.
++func creelMailHookCommand(quotedFlagDir string) string {
++	formName := `n="${` + agentname.StrandNameEnv + `:-}"; f=; while :; do case "$n" in *:*) f="$f${n%%:*}."; n="${n#*:}";; *) break;; esac; done`
++	return formName + `; [ -f ` + quotedFlagDir + `/"$f$n" ] || exit 0; cd "${CLAUDE_PROJECT_DIR:-.}" 2>/dev/null; ` + creelMailCommand
++}
++
+ // settingsDoc is the Claude Code settings.json document Prepare writes.
+ // PromptSuggestionEnabled has no omitempty and buildSettings leaves it false, so every document carries `"promptSuggestionEnabled": false`.
+ // The styled read is what lets a hand-added session, which this document does not configure, have its suggestion read as an empty box.
+@@ -271,7 +298,8 @@ func recordingCommand(hookEventName, quotedEventsPath string) string {
+ // A non-empty contextAfterCompaction splits the SessionStart hook in two: one entry records every source but compaction, and the compaction entry records the event and then runs that command verbatim, so its standard output reaches the session's context.
+ // Empty gives a single recording entry with no matcher.
+ // The recordings print nothing and exit 0, so the PermissionRequest recording answers no request and the SessionStart recording adds nothing to the session's context.
+-func buildSettings(eventsPathPosix string, interactive bool, cfg shuttleengine.Config, claude Config, forkSubagents, allowAgentTool bool, contextAfterCompaction string) ([]byte, error) {
++// A non-empty creelFlagDirPosix, a git-bash POSIX path like eventsPathPosix, adds the PostToolUse creel mail hook testing the strand's flag in that directory; empty adds none.
++func buildSettings(eventsPathPosix string, interactive bool, cfg shuttleengine.Config, claude Config, forkSubagents, allowAgentTool bool, contextAfterCompaction, creelFlagDirPosix string) ([]byte, error) {
+ 	quotedEventsPath := shQuote(eventsPathPosix)
+ 	recordingHook := func(hookEventName string, alwaysSucceeds bool) []hookEntry {
+ 		command := recordingCommand(hookEventName, quotedEventsPath)
+@@ -318,6 +346,9 @@ func buildSettings(eventsPathPosix string, interactive bool, cfg shuttleengine.C
+ 			Hooks:   recordingHook(hookEventPreToolUse, false)[0].Hooks,
+ 		})
+ 	}
++	if creelFlagDirPosix != "" {
++		doc.Hooks.PostToolUse = []hookEntry{{Hooks: []hookCommand{{Type: "command", Command: creelMailHookCommand(shQuote(creelFlagDirPosix))}}}}
++	}
+ 
+ 	data, err := json.Marshal(doc)
+ 	if err != nil {
+diff --git a/internal/shuttleengine/claudeengine/settings_test.go b/internal/shuttleengine/claudeengine/settings_test.go
+index 822d3313..034678b9 100644
+--- a/internal/shuttleengine/claudeengine/settings_test.go
++++ b/internal/shuttleengine/claudeengine/settings_test.go
+@@ -9,6 +9,7 @@ import (
+ 	"fmt"
+ 	"os"
+ 	"path/filepath"
++	"reflect"
+ 	"runtime"
+ 	"strings"
+ 	"testing"
+@@ -53,7 +54,7 @@ func TestBuildSettings_PromptSuggestionOff(t *testing.T) {
+ 	}
+ 	for _, tt := range cases {
+ 		t.Run(tt.name, func(t *testing.T) {
+-			data, err := buildSettings("/c/run/events.jsonl", tt.interactive, shuttleengine.Config{}, Config{}, tt.fork, false, "")
++			data, err := buildSettings("/c/run/events.jsonl", tt.interactive, shuttleengine.Config{}, Config{}, tt.fork, false, "", "")
+ 			if err != nil {
+ 				t.Fatalf("buildSettings() error: %v", err)
+ 			}
+@@ -94,7 +95,7 @@ func TestBuildSettings_RecordingHooks(t *testing.T) {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 
+-			data, err := buildSettings(tt.eventsPath, false, shuttleengine.Config{}, Config{}, false, false, "")
++			data, err := buildSettings(tt.eventsPath, false, shuttleengine.Config{}, Config{}, false, false, "", "")
+ 			if err != nil {
+ 				t.Fatalf("buildSettings() error: %v", err)
+ 			}
+@@ -161,7 +162,7 @@ func TestBuildSettings_SessionStartHook(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			data, err := buildSettings("/c/run/events.jsonl", false, shuttleengine.Config{}, Config{}, false, false, tt.command)
++			data, err := buildSettings("/c/run/events.jsonl", false, shuttleengine.Config{}, Config{}, false, false, tt.command, "")
+ 			if err != nil {
+ 				t.Fatalf("buildSettings() error: %v", err)
+ 			}
+@@ -190,16 +191,59 @@ func TestBuildSettings_SessionStartHook(t *testing.T) {
+ 	}
+ }
+ 
+-// TestSessionStartContext pins the exact additional-context JSON a session-start hook prints, with the text escaped.
+-func TestSessionStartContext(t *testing.T) {
++// TestHookContext pins the exact additional-context JSON the session-start and tool-boundary hooks print, with the text escaped.
++func TestHookContext(t *testing.T) {
+ 	t.Parallel()
+-	got, err := SessionStartContext(`read "role.md"`)
+-	if err != nil {
+-		t.Fatalf("SessionStartContext() error: %v", err)
++	tests := []struct {
++		name   string
++		render func(string) ([]byte, error)
++		want   string
++	}{
++		{"SessionStart", SessionStartContext, `{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"read \"role.md\""}}`},
++		{"ToolBoundary", New().ToolBoundaryContext, `{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"read \"role.md\""}}`},
+ 	}
+-	const want = `{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"read \"role.md\""}}`
+-	if string(got) != want {
+-		t.Errorf("SessionStartContext() = %s; want %s", got, want)
++	for _, tt := range tests {
++		got, err := tt.render(`read "role.md"`)
++		if err != nil {
++			t.Fatalf("%s context error: %v", tt.name, err)
++		}
++		if string(got) != tt.want {
++			t.Errorf("%s context = %s; want %s", tt.name, got, tt.want)
++		}
++	}
++}
++
++// TestBuildSettings_CreelMailHook pins the PostToolUse creel mail hook: one entry with no matcher testing the flag directory it is told, and no PostToolUse key when told none.
++func TestBuildSettings_CreelMailHook(t *testing.T) {
++	t.Parallel()
++	tests := []struct {
++		name    string
++		flagDir string
++		want    []string
++	}{
++		{"InAHub", `/c/hub's/_board/.lym/creel/flags`, []string{creelMailHookCommand(`'/c/hub'\''s/_board/.lym/creel/flags'`)}},
++		{"Standalone", "", nil},
++	}
++	for _, tt := range tests {
++		data, err := buildSettings("/c/run/events.jsonl", false, shuttleengine.Config{}, Config{}, false, false, "", tt.flagDir)
++		if err != nil {
++			t.Fatalf("buildSettings(%s) error: %v", tt.name, err)
++		}
++		var got []string
++		for _, raw := range hooksFor(parseSettings(t, data), "PostToolUse") {
++			entry, _ := raw.(map[string]any)
++			if _, hasMatcher := entry["matcher"]; hasMatcher {
++				t.Errorf("%s: PostToolUse entry carries a matcher: %v", tt.name, entry)
++			}
++			hooks, _ := entry["hooks"].([]any)
++			for _, hook := range hooks {
++				command, _ := hook.(map[string]any)["command"].(string)
++				got = append(got, command)
++			}
++		}
++		if !reflect.DeepEqual(got, tt.want) {
++			t.Errorf("%s: PostToolUse commands = %q; want %q", tt.name, got, tt.want)
++		}
+ 	}
+ }
+ 
+@@ -233,7 +277,7 @@ func TestBuildSettings_DenyToggleMatrix(t *testing.T) {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			cfg := shuttleengine.Config{DenyPython: tt.pythonDeny}
+ 			claude := Config{DenyAgentTool: tt.agentDeny, DenyAskUserQuestion: tt.askUserDeny}
+-			data, err := buildSettings("/c/run/events.jsonl", tt.interactive, cfg, claude, tt.fork, false, "")
++			data, err := buildSettings("/c/run/events.jsonl", tt.interactive, cfg, claude, tt.fork, false, "", "")
+ 			if err != nil {
+ 				t.Fatalf("buildSettings() error: %v", err)
+ 			}
+@@ -433,7 +477,7 @@ func TestBuildSettings_AgentAndBashHooks(t *testing.T) {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 
+-			data, err := buildSettings("/c/run/events.jsonl", tt.interactive, shuttleengine.Config{}, tt.claude, tt.fork, tt.allowAgent, "")
++			data, err := buildSettings("/c/run/events.jsonl", tt.interactive, shuttleengine.Config{}, tt.claude, tt.fork, tt.allowAgent, "", "")
+ 			if err != nil {
+ 				t.Fatalf("buildSettings() error: %v", err)
+ 			}
+@@ -574,6 +618,58 @@ func TestPrepare_PromptLaunchLimit(t *testing.T) {
+ 	})
+ }
+ 
++// TestPrepare_CreelMailHookFollowsTheBoardDirectory pins that Prepare derives the creel flag directory from the hub's board directory, and that an engine in no hub writes no PostToolUse hook.
++func TestPrepare_CreelMailHookFollowsTheBoardDirectory(t *testing.T) {
++	t.Parallel()
++	boardDir := t.TempDir()
++	flagDir := CreelFlagDir(boardDir)
++	if runtime.GOOS == "windows" {
++		posixFlagDir, err := shuttleengine.PosixPath(flagDir)
++		if err != nil {
++			t.Fatalf("PosixPath(%q) error: %v", flagDir, err)
++		}
++		flagDir = posixFlagDir
++	}
++	tests := []struct {
++		name  string
++		board string
++		want  []string
++	}{
++		{"InAHub", boardDir, []string{creelMailHookCommand(shQuote(flagDir))}},
++		{"Standalone", "", nil},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			engine := engineWith(t, templateConfig(t))
++			engine.dirs.Board = tt.board
++			runDir := t.TempDir()
++			if _, err := engine.Prepare(runDir, shuttleengine.Spec{Prompt: "do the thing"}, shuttleengine.Config{}); err != nil {
++				t.Fatalf("Prepare() error: %v", err)
++			}
++			settingsBytes, err := os.ReadFile(filepath.Join(runDir, "settings.json"))
++			if err != nil {
++				t.Fatalf("read settings.json: %v", err)
++			}
++			var got []string
++			for _, raw := range hooksFor(parseSettings(t, settingsBytes), "PostToolUse") {
++				entry, _ := raw.(map[string]any)
++				if _, hasMatcher := entry["matcher"]; hasMatcher {
++					t.Errorf("PostToolUse entry carries a matcher: %v", entry)
++				}
++				hooks, _ := entry["hooks"].([]any)
++				for _, hook := range hooks {
++					command, _ := hook.(map[string]any)["command"].(string)
++					got = append(got, command)
++				}
++			}
++			if !reflect.DeepEqual(got, tt.want) {
++				t.Errorf("PostToolUse commands = %q; want %q", got, tt.want)
++			}
++		})
++	}
++}
++
+ // TestPrepare_WritesArtifactsAndReturnsConsistentLaunch pins the artifacts Prepare leaves on disk and that the launch and resume lines agree with them.
+ //
+ //testtiming:keep pins the prompt.md, settings.json and bash-env.sh contents and the env-file lead on both lines, which its covering test does not assert
+@@ -722,7 +818,7 @@ func TestBuildDenyNotice_MatchesInstalledDenies(t *testing.T) {
+ 					for _, fork := range []bool{false, true} {
+ 						cfg := shuttleengine.Config{DenyPython: pythonDeny, RefuseRaw: sampleRefuseRaw}
+ 						claude := Config{DenyAgentTool: agentDeny, DenyAskUserQuestion: askUserDeny}
+-						data, err := buildSettings("/c/run/events.jsonl", interactive, cfg, claude, fork, false, "")
++						data, err := buildSettings("/c/run/events.jsonl", interactive, cfg, claude, fork, false, "", "")
+ 						if err != nil {
+ 							t.Fatalf("buildSettings() error: %v", err)
+ 						}
+@@ -825,7 +921,7 @@ func TestBuildSettings_MatchesGolden(t *testing.T) {
+ 			t.Errorf("golden lacks %q", label)
+ 			continue
+ 		}
+-		settings, err := buildSettings("/c/run/events.jsonl", interactive, cfg, claude, fork, allowAgent, "")
++		settings, err := buildSettings("/c/run/events.jsonl", interactive, cfg, claude, fork, allowAgent, "", "")
+ 		if err != nil {
+ 			t.Fatalf("buildSettings(%s): %v", label, err)
+ 		}
+diff --git a/internal/shuttleengine/claudeengine/signals.go b/internal/shuttleengine/claudeengine/signals.go
+index c9272f71..06c6a85b 100644
+--- a/internal/shuttleengine/claudeengine/signals.go
++++ b/internal/shuttleengine/claudeengine/signals.go
+@@ -27,6 +27,7 @@ const (
+ 	hookEventNotification     = "Notification"
+ 	hookEventSessionEnd       = "SessionEnd"
+ 	hookEventSessionStart     = "SessionStart"
++	hookEventPostToolUse      = "PostToolUse"
+ 
+ 	hookEventPermissionRequest = "PermissionRequest"
+ )
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index 14f05482..264eeb23 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -24,7 +24,7 @@
+ // shuttleengine defines the Engine interface and its value types, and never imports a concrete
+ // engine implementation — concrete engines import shuttleengine, not the reverse.
+ // Only internal/shuttleengines and an engine's own directory import a concrete engine (the provider-seam import rule, enforced module-wide by seam_enforcement_test.go).
+-// Requirement support, fork audit, resume-context rendering and instruction files are optional capabilities beside Engine, which an engine without them lacks.
++// Requirement support, fork audit, resume-context rendering, tool-boundary context rendering and instruction files are optional capabilities beside Engine, which an engine without them lacks.
+ // A ForkSubagents run whose engine cannot audit forks finishes with its classified result, a nil ForkAudit and an error, and keeps its run directory.
+ // Spec.Requires lists what a run requires of its engine, and a ForkSubagents spec requires fork support without listing it.
+ // Start checks it right after resolving the spec's engine, and attach checks it against the engine the run's record names unless every output file is already on disk.
+diff --git a/internal/shuttleengine/engine.go b/internal/shuttleengine/engine.go
+index 2192580c..98442ac7 100644
+--- a/internal/shuttleengine/engine.go
++++ b/internal/shuttleengine/engine.go
+@@ -213,6 +213,13 @@ type ResumeContextRenderer interface {
+ 	ResumeContext(text string) ([]byte, error)
+ }
+ 
++// ToolBoundaryContextRenderer is an optional capability beside Engine: the provider's rendering of text as the output of the hook it runs after each tool call, which adds the text to the session's context.
++// An engine without it has no tool-boundary hook to render for.
++type ToolBoundaryContextRenderer interface {
++	// ToolBoundaryContext renders text as the provider's after-tool-call hook output.
++	ToolBoundaryContext(text string) ([]byte, error)
++}
++
+ // InstructionFileLister is an optional capability beside Engine: the names of the files the provider loads as project instructions.
+ // An engine without it has no project instruction files.
+ type InstructionFileLister interface {
+diff --git a/internal/shuttleengines/doc.go b/internal/shuttleengines/doc.go
+index 7802e093..c964d0bf 100644
+--- a/internal/shuttleengines/doc.go
++++ b/internal/shuttleengines/doc.go
+@@ -18,5 +18,6 @@
+ // RecordReaders returns each registered engine's offline read capabilities keyed by engine name, built with a zero shuttle config and no config directories as SessionNamers builds its engines.
+ // A capability is set only when the engine implements it, and each set one is its own adapter, one per capability rather than one per engine:
+ // a reader of finished session records gets reading alone, and no type assertion on a value in the set recovers an engine that can start, open, send to or stop a run.
++// ToolBoundaryRenderer returns one registered engine's tool-boundary context renderer by name, built the same way, for the creel verb a strand's tool-boundary hook runs.
+ // The package is told its Config and never imports internal/lymcwd.
+ package shuttleengines
+diff --git a/internal/shuttleengines/shuttleengines.go b/internal/shuttleengines/shuttleengines.go
+index 7c95ba21..1fcc6d77 100644
+--- a/internal/shuttleengines/shuttleengines.go
++++ b/internal/shuttleengines/shuttleengines.go
+@@ -247,3 +247,14 @@ type instructionsAdapter struct {
+ func (a instructionsAdapter) InstructionFiles() []string {
+ 	return a.instructions.InstructionFiles()
+ }
++
++// ToolBoundaryRenderer returns the registered engine named name as its tool-boundary context renderer, and false when no engine of that name is registered or the engine renders none.
++// The engine is built with a zero shuttle config and no config directories, as RecordReaders builds them, since rendering reads no config.
++func ToolBoundaryRenderer(name string) (shuttleengine.ToolBoundaryContextRenderer, bool) {
++	registered, ok := registry[name]
++	if !ok {
++		return nil, false
++	}
++	renderer, ok := registered.constructor(shuttleengine.Config{}, configengine.Dirs{}).(shuttleengine.ToolBoundaryContextRenderer)
++	return renderer, ok
++}
+diff --git a/internal/shuttleengines/shuttleengines_test.go b/internal/shuttleengines/shuttleengines_test.go
+index 9217023e..11710650 100644
+--- a/internal/shuttleengines/shuttleengines_test.go
++++ b/internal/shuttleengines/shuttleengines_test.go
+@@ -332,3 +332,21 @@ func TestRecordReaders(t *testing.T) {
+ 		t.Errorf("readsOf(reading engine).Instructions = %v; want nil", reading.Instructions)
+ 	}
+ }
++
++// TestToolBoundaryRenderer pins that the claude entry renders tool-boundary context as the engine does and that an unknown name renders none.
++func TestToolBoundaryRenderer(t *testing.T) {
++	t.Parallel()
++
++	renderer, ok := ToolBoundaryRenderer("claude")
++	if !ok {
++		t.Fatal("ToolBoundaryRenderer(claude) found none")
++	}
++	got, err := renderer.ToolBoundaryContext("mail")
++	want, wantErr := claudeengine.New().ToolBoundaryContext("mail")
++	if err != nil || wantErr != nil || string(got) != string(want) {
++		t.Errorf("ToolBoundaryContext = %s, %v; want the engine's %s", got, err, want)
++	}
++	if _, ok := ToolBoundaryRenderer("nope"); ok {
++		t.Error("ToolBoundaryRenderer(nope) found one; want none")
++	}
++}
+diff --git a/internal/testkit/creelfake/creelfake.go b/internal/testkit/creelfake/creelfake.go
+index b0a2da50..6ab274ec 100644
+--- a/internal/testkit/creelfake/creelfake.go
++++ b/internal/testkit/creelfake/creelfake.go
+@@ -56,6 +56,7 @@ type Delivery struct {
+ 	strandsErr, idleErr, pausedErr, sendErr, commandErr, interruptErr error
+ 	sendFn                                                            func(strand, text string) error
+ 	interruptFn                                                       func(strand string) error
++	idleHook                                                          func(strand string)
+ 
+ 	claimLive map[string]func() (bool, error)
+ 
+@@ -179,11 +180,24 @@ func (d *Delivery) Strands() ([]creelengine.Strand, error) {
+ 	return append([]creelengine.Strand(nil), d.strands...), nil
+ }
+ 
++// SetIdleHook makes Idle call fn with the strand's name, without the fake's lock held, just before it answers; nil removes it.
++func (d *Delivery) SetIdleHook(fn func(strand string)) {
++	d.mu.Lock()
++	defer d.mu.Unlock()
++	d.idleHook = fn
++}
++
+ // Idle implements creelengine.Delivery.
+ func (d *Delivery) Idle(strand creelengine.Strand) (creelengine.Idleness, error) {
+ 	d.mu.Lock()
+-	defer d.mu.Unlock()
+ 	d.idleCalls[strand.Name]++
++	hook := d.idleHook
++	d.mu.Unlock()
++	if hook != nil {
++		hook(strand.Name)
++	}
++	d.mu.Lock()
++	defer d.mu.Unlock()
+ 	if d.idleErr != nil {
+ 		return creelengine.Idleness{}, d.idleErr
+ 	}

@@ -1,0 +1,15 @@
+---
+round: 1
+focus:
+  - "internal/creelengine/deliver.go and verbs.go: settle whether a message can be delivered twice or lost between `reserveNotice`, `releaseNotice`, `markNoticeRead`, `ClaimAtBoundary`, `Ack` and `Release`; in particular whether `Read`, `unreadLocked` and the pane probe all treat `paneReserver` as reserved, and whether a hook claim released after a failed write leaves the message unread with its flag standing."
+  - "internal/creelengine/pool.go `Store.do` and flags.go: settle whether every change that alters the set of strands with unread mail (post, read, forward, withdraw, return, hold or pause effects, a program receiver) passes through a journaled append that triggers `syncFlagsLocked`, and whether a failed create or remove, or a `ReconcileFlags` run before any `do`, can leave a flag out of step with the pool."
+  - "internal/creelengine/server.go and the daemon start path: settle whether `ReconcileFlags` is called at daemon start and whether the new claim verb resolves the caller's identity to the strand (strand sender only) and applies the call through the same path as the other verbs."
+  - "internal/creelengine/verbs.go `ClaimAtBoundary`: settle hold, pause and the 8 KiB budget against the decision record (oldest first, at least one message, hold owner's mail only, nothing under a pause, a single over-budget message handed over whole), including the budget counting the joined newlines versus `MessageLine` lengths."
+  - "internal/creelcli/hookread.go: settle that nothing reaches standard output on a refusal or daemon error, that the output is written before the client acknowledges, that an empty claim prints nothing, and that the 10 second timeout and exit code 1 match the decision record."
+  - "internal/shuttleengine/claudeengine/settings.go and claudeengine.go: settle that the hook is rendered only when the engine is told a hub board directory, that the flag name formed by shell parameter expansion equals `agentname.FileName` for every strand name, that the quoted flag directory is correct on Windows git-bash paths, and that the hook has no matcher."
+  - "Provider seam: settle that Claude's hook JSON stays under claudeengine and only `internal/shuttleengines` reaches the concrete engine (`PATTERN-shuttle-provider-seam`), and that the flag name is formed only in `internal/agentname` and the directory name is a `lymdirs` constant (`PATTERN-agent-name`, `PATTERN-durable-vs-ephemeral-state`)."
+  - "Docs and PATTERN: settle that each changed package's `doc.go` and `docs/overview.md` describe the new behaviour, and that the CLAUDE.md terminology and one-sentence-per-line rules hold in the changed markdown."
+  - "Tests: settle whether each acceptance criterion in the decision record has a test, and whether any new test duplicates one already in the same package (flags_test.go, verbs_test.go, server_test.go, settings_test.go, hookcmd_integration_test.go), naming the covering test."
+---
+
+Focus is set from the board entry, the decision record and a read of the range's core diff; each entry names a question to settle, not a verdict.
