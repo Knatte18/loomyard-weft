@@ -1,6 +1,6 @@
 # Board README lists draft tasks under Ready
 
-`readme-draft-not-ready` · Task · bug, board · running · Code-Bouncer
+`readme-draft-not-ready` · Task · bug, board · running · Code-Burler-Review
 
 Imported from [issue #873](https://github.com/Knatte18/loomyard/issues/873).
 
