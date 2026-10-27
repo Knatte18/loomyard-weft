@@ -1,6 +1,6 @@
 # Bench Codex review block v2 on P4: one high run against two medium
 
-`codex-v2-p4-bench` · Task · research, codex, burler · running · Darn-Write
+`codex-v2-p4-bench` · Task · research, codex, burler · running · Drift-Verify
 
 ## Question
 
