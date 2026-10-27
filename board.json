@@ -956,28 +956,6 @@
       "revised": "2026-10-27T10:18:05Z"
     },
     {
-      "id": 844,
-      "handle": "T1",
-      "slug": "codex-v2-p1-bench",
-      "title": "Bench Codex review block v2 on P1: one high run against two medium",
-      "kind": "task",
-      "labels": [
-        "research",
-        "codex",
-        "burler"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Forked Astra fan with block v2 and a 20-call fork cap on P1: 1 high and 2 medium runs",
-      "body": "## Question\n\nOn plan `P1` (gate-runs-once), does reading block v2 with a raised fork tool-call cap let Codex Astra's forked lens fan find the Claude fan's findings it has missed so far, and is one high-effort run or the union of two medium-effort runs the better buy?\nBlock v1 (`docs/research/codex-astra-tuned-prompt-bench-2026-10-27/data/prompts/tuned-block.md`) reached 3 to 4 of the Claude fan's findings per plan; no run found a finding that needs every reader of a changed symbol, or a read of code beyond the cards.\nIts fork prompt asks the forks to read callers and code paths, yet keeps Claude's cap of 6 tool calls per fork, and the forks stopped at about 6 commands each.\nThe sibling tasks `codex-v2-p1-bench`, `codex-v2-p2-bench` and `codex-v2-p4-bench` run the same setup on one plan each; every condition but the plan is the same in all three.\n\n## Cap\n\n- One input: `P1`, with its snapshot from `docs/research/codex-review-bench-2026-10-25/data/inputs.txt` and the Claude fan reference recorded for it.\n- Three forked fan runs of `gpt-6-astra`, each one `codex exec` handler spawning 3 lens forks with `fork_turns=\"all\"`: one at high effort and two at medium effort, identical but for effort; never `xhigh` or above.\n- No Claude run, no other repeat.\n- Stop and report what was done if a rate-limit window passes 70 percent.\n\n## Method\n\n- Reuse the tuned-prompt bench's harness under its `data/harness/` and its context: the PATTERN overview inlined as production renders it, the snapshot's `CLAUDE.md` as `AGENTS.md`.\n- Use the lenses the Claude fan's round 1 on `P1` used.\n- Replace block v1 with block v2 below, word for word, in the handler's prompt and the fork boilerplate, and keep it in `data/prompts/block-v2.md`.\n- In the fork boilerplate change only the cap sentence's number, from `at most 6 tool calls` to `at most 20 tool calls`; keep the rest of the boilerplate as the tuned-prompt bench has it.\n- Confirm from each rollout that the forks started, ran concurrently and inherited the handler's context, and that `AGENTS.md` was loaded; if not, stop and report.\n- Record per run the wall time, the handler's and each fork's fresh input, output and reasoning tokens, each fork's own command count, and the windows; sibling benches run on the same account at the same time, so say so beside the window figures.\n\nBlock v2:\n\n\u003e ## How to read for this review\n\u003e \n\u003e - Check every claim a card makes about existing code by reading that code and its callers, and read the code paths the change reaches beyond the cards.\n\u003e - For every symbol, type, config key, file or command a card changes, renames or removes, search the whole tree for every reader of it, with `grep -rn` or `lym quarry`, list the readers, and check that a card covers each one; a reader no card covers is a finding.\n\u003e - For every function a card changes, read the functions it calls and the code that calls it, one hop beyond the cards, and check that the change still holds there.\n\u003e - Where several cards change the same file or limit, check what each card's gate sees given the cards before it.\n\u003e - Read the `pattern/` background file of every PATTERN entry the plan touches, and check that each new command, package or file the plan adds appears where that entry requires.\n\u003e - Read the tests the plan adds or changes for waits, sleeps and timing that would slow or flake the suite.\n\u003e - Put several searches into one command where you can.\n\n## Grading\n\nGrade every run's handler findings, and any fork finding a handler dropped, against the Claude fan reference of `P1` as the earlier benches did: `shared`, `unique-real` or `false`, in `data/match.tsv`.\nSay for each of the Claude fan's `BLOCKING` findings on `P1` which run found it.\nCompare three settings: the high run, each medium run alone, and the union of the two medium runs (distinct findings found by either), each with its findings, Claude fan findings found, `BLOCKING` found, unique real, false, fresh input tokens, window points and wall time, where the two medium runs count as run in parallel.\nReport how far the two medium runs differ from each other, the first repeat measure of these benches.\nReport beside every earlier Astra and Claude row for `P1`.\n\n## Output\n\n`docs/research/codex-v2-p1-bench-\u003cdate\u003e/report.md` with its `data/`, landed as the run's commit.\n",
-      "status": "done",
-      "created": "2026-10-27T13:23:41Z",
-      "revised": "2026-10-27T13:23:41Z",
-      "profile": "docs"
-    },
-    {
       "id": 846,
       "handle": "T3",
       "slug": "codex-v2-p4-bench",
