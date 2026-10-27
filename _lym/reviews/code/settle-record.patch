@@ -1,0 +1,242 @@
+diff --git a/internal/fabriccli/hubmutation_integration_test.go b/internal/fabriccli/hubmutation_integration_test.go
+index c637b018..4f8b557e 100644
+--- a/internal/fabriccli/hubmutation_integration_test.go
++++ b/internal/fabriccli/hubmutation_integration_test.go
+@@ -20,6 +20,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/fslink"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/testkit/envelope"
+ )
+@@ -53,8 +54,10 @@ func TestRunCLI_HubMutationScenario(t *testing.T) {
+ 			wantWarpSHA := gitkit.RevParse(t, h.PrimeWorktree(), "HEAD")
+ 
+ 			// A real forked push child cannot itself be observed from a test binary (it would re-exec the test binary), so the synchronous bypass handler it runs is the deterministic proof that a supplied path is pushed.
++			// It runs from the hub's board worktree, where the real child starts, because the bypass branch points the process-wide trace sink at the hub it resolves from cwd.
++			t.Cleanup(func() { logger.SetDurableSinkDir("") })
+ 			var out bytes.Buffer
+-			exitCode := fabriccli.RunCLI(&out, []string{
++			exitCode := fabriccli.RunCLIIn(h.BoardDir(), &out, []string{
+ 				"--warp-path", h.PrimeWorktree(),
+ 				"--weft-path", h.PrimeRecords(),
+ 				"push",
+@@ -64,6 +67,9 @@ func TestRunCLI_HubMutationScenario(t *testing.T) {
+ 			}
+ 
+ 			envelope.RequireOK(t, out.String())
++			if got, want := logger.TraceDir(), fabricengine.HubLogsDir(h.Path); got != want {
++				t.Errorf("trace sink after bypass push = %q; want the test hub's %q", got, want)
++			}
+ 
+ 			if gotWeftSHA := gitkit.RevParse(t, h.RecordsBare, "refs/heads/"+weftBranch); gotWeftSHA != wantWeftSHA {
+ 				t.Errorf("weft bare %s = %s; want %s (the unpushed commit was not pushed)", weftBranch, gotWeftSHA, wantWeftSHA)
+diff --git a/internal/fabricengine/bolt.go b/internal/fabricengine/bolt.go
+index af1fb25b..580ae602 100644
+--- a/internal/fabricengine/bolt.go
++++ b/internal/fabricengine/bolt.go
+@@ -33,6 +33,7 @@ func NewBolt(repoPath string) *Bolt {
+ 
+ // Commit stages and commits every change in the Bolt's repo under message, with no warp trailer and
+ // no correspondence recording.
++// It first seeds the repo's git excludes for the weft's never-tracked artifacts, so machine-local scratch under a .lym directory is never staged, whichever command seeded the repo before.
+ func (b *Bolt) Commit(message string, opts SyncOptions) (sha string, committed bool, err error) {
+ 	return commitWeftAt(b.path, message, opts)
+ }
+diff --git a/internal/fabricengine/bolt_integration_test.go b/internal/fabricengine/bolt_integration_test.go
+index 6f941ec2..db249aaa 100644
+--- a/internal/fabricengine/bolt_integration_test.go
++++ b/internal/fabricengine/bolt_integration_test.go
+@@ -19,13 +19,14 @@ import (
+ 	"errors"
+ 	"os"
+ 	"path/filepath"
++	"slices"
+ 	"strings"
+ 	"testing"
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+-	"github.com/Knatte18/loomyard/internal/gitrepo"
+ 	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/lymdirs"
+ )
+ 
+ // newBoltBareRemote creates a bare git repository at <dir>/bolt-remote.git
+@@ -58,7 +59,8 @@ func newBoltRepo(t *testing.T, dir, name, bareRemote string) string {
+ }
+ 
+ // TestBolt_DirtyRepo_CommitsAndPushes asserts that Commit followed by Push lands a real commit and
+-// advances the bare origin to that same SHA.
++// advances the bare origin to that same SHA,
++// and that the commit leaves machine-local scratch under .lym untracked in a repo nothing seeded excludes for.
+ func TestBolt_DirtyRepo_CommitsAndPushes(t *testing.T) {
+ 	t.Parallel()
+ 
+@@ -68,6 +70,13 @@ func TestBolt_DirtyRepo_CommitsAndPushes(t *testing.T) {
+ 	if err := os.WriteFile(filepath.Join(repoPath, "bolt-note.md"), []byte("a note"), 0o644); err != nil {
+ 		t.Fatalf("WriteFile: %v", err)
+ 	}
++	logsDir := filepath.Join(repoPath, lymdirs.DotLymDirName, "logs")
++	if err := os.MkdirAll(logsDir, 0o755); err != nil {
++		t.Fatalf("MkdirAll: %v", err)
++	}
++	if err := os.WriteFile(filepath.Join(logsDir, "trace.log"), []byte("a trace"), 0o644); err != nil {
++		t.Fatalf("WriteFile: %v", err)
++	}
+ 
+ 	b := NewBolt(repoPath)
+ 
+@@ -81,6 +90,9 @@ func TestBolt_DirtyRepo_CommitsAndPushes(t *testing.T) {
+ 	if sha == "" {
+ 		t.Fatalf("Commit() sha = %q; want a non-empty new HEAD SHA", sha)
+ 	}
++	if got, want := gitkit.LsFiles(t, repoPath), []string{"bolt-note.md"}; !slices.Equal(got, want) {
++		t.Errorf("git ls-files after Commit() = %q; want %q", got, want)
++	}
+ 
+ 	if err := b.Push(SyncOptions{}); err != nil {
+ 		t.Fatalf("Push() error = %v; want nil", err)
+@@ -116,15 +128,6 @@ func TestBolt_CleanRepo_CommitAndPushAreNoOps(t *testing.T) {
+ 	if err := b.Push(SyncOptions{}); err != nil {
+ 		t.Fatalf("Push() (seed) error = %v; want nil", err)
+ 	}
+-	// PushCoalesced leaves its own untracked .gitrepo-push.lock at the repo
+-	// root once it has run; a real board/clone checkout never has this test's
+-	// bare "no .gitignore at all" shape, but a plain unseeded fixture does, so
+-	// clear it here rather than have Bolt's own wildcard-stage commit sweep it
+-	// up and falsely report the next call as a real commit.
+-	if err := os.Remove(filepath.Join(repoPath, gitrepo.PushLockFileName)); err != nil && !os.IsNotExist(err) {
+-		t.Fatalf("remove push lock artifact: %v", err)
+-	}
+-
+ 	sha, committed, err := b.Commit("bolt sync", SyncOptions{})
+ 	if err != nil {
+ 		t.Fatalf("Commit() error = %v; want nil", err)
+diff --git a/internal/fabricengine/clone.go b/internal/fabricengine/clone.go
+index a9cfbaf8..878deb37 100644
+--- a/internal/fabricengine/clone.go
++++ b/internal/fabricengine/clone.go
+@@ -328,14 +328,11 @@ func CloneHub(cwd string, opts CloneOptions) (res CloneResult, err error) {
+ 	// The hub-wide never-tracked tree is <hub>/_board/.lym, the mirrored ephemeral sibling of <hub>/_board/_lym.
+ 	// It is created here, rather than at old step 4, because _board does not exist until ensureBoardWorktree above has run.
+ 	//
+-	// The excludes are seeded first because the exposure is the board's stage-all commit, not
+-	// untracked dirt: internal/fabriccli/clone.go runs CloneHub then NewBolt(res.BoardDir).Commit(...)
+-	// and only afterwards WireJunctionsWith, which is what seeds .lym/ into the weft common gitdir —
+-	// so without this call, anything written into _board/.lym before that commit lands on weft:main.
++	// The excludes are seeded first so _board/.lym never shows as untracked dirt in the board worktree from the hub's birth on;
++	// the board's stage-all commit seeds them again before staging.
+ 	//
+-	// The seed failure is fatal, routed through teardownHub like every other step-7 failure, rather
+-	// than best-effort: Bolt.Commit's commitWeftAt → gitrepo.StageAllAndCommit path seeds nothing, so
+-	// the board's excludes are not self-healing the way reconcile.go's best-effort call assumes.
++	// The seed failure is fatal, routed through teardownHub like every other step-7 failure:
++	// a hub whose weft common gitdir cannot take an exclude cannot keep its scratch untracked.
+ 	if err := seedWeftArtifactExcludes(boardDir); err != nil {
+ 		return CloneResult{}, teardownHub(rec, cwd, hubPath, hubTok, fmt.Errorf("seed weft artifact excludes in board worktree: %w", err))
+ 	}
+diff --git a/internal/fabricengine/commitweftat_test.go b/internal/fabricengine/commitweftat_test.go
+index 63ef3385..97e1fe24 100644
+--- a/internal/fabricengine/commitweftat_test.go
++++ b/internal/fabricengine/commitweftat_test.go
+@@ -1,14 +1,10 @@
+ //go:build tier1
+ 
+-// commitweftat_test.go — integration coverage for commitWeftAt, the
+-// package-level, warp-untethered commit primitive: a real commit on a dirty
+-// worktree, a no-op on a clean one, and the SkipGit early return. Package
+-// fabricengine (internal), reusing index_integration_test.go's
+-// newPlainWarpRepo(t) as a generic plain-git-repo fixture — it is not
+-// warp-specific despite its name, just `git init -b main` plus one commit,
+-// which is exactly the weft:main-shaped fixture these tests need. Relies on
+-// testmain_test.go's package-wide TestMain for HermeticGitEnv(); no new
+-// TestMain is added here.
++// commitweftat_test.go — integration coverage for commitWeftAt, the package-level, warp-untethered commit primitive:
++// a real commit on a dirty worktree, a no-op on a clean one, a seed-failure abort before staging, and the SkipGit early return.
++// Package fabricengine (internal), reusing index_integration_test.go's newPlainWarpRepo(t) as a generic plain-git-repo fixture.
++// It is not warp-specific despite its name, just `git init -b main` plus one commit, which is exactly the weft:main-shaped fixture these tests need.
++// Relies on testmain_test.go's package-wide TestMain for HermeticGitEnv(); no new TestMain is added here.
+ 
+ package fabricengine
+ 
+@@ -100,6 +96,48 @@ func TestCommitWeftAt_NoopOnCleanWorktree(t *testing.T) {
+ 	}
+ }
+ 
++// TestCommitWeftAt_SeedFailureFailsBeforeStaging asserts that a failure to seed the weft artifact excludes fails the commit before anything is staged:
++// a non-nil error, committed=false, an empty sha, and the dirty file left untracked.
++// The seed read is made to fail by replacing the repo's info/exclude file with a directory.
++//
++//testtiming:keep commitWeftAt failing before staging when the exclude seed fails; coverage of its blocks by other tests does not show an assertion of this
++func TestCommitWeftAt_SeedFailureFailsBeforeStaging(t *testing.T) {
++	t.Parallel()
++
++	dir := newPlainWarpRepo(t)
++	excludePath := filepath.Join(dir, ".git", "info", "exclude")
++	if err := os.RemoveAll(excludePath); err != nil {
++		t.Fatalf("RemoveAll(%s): %v", excludePath, err)
++	}
++	if err := os.MkdirAll(excludePath, 0o755); err != nil {
++		t.Fatalf("MkdirAll(%s): %v", excludePath, err)
++	}
++	if err := os.WriteFile(filepath.Join(dir, "board-note.md"), []byte("a board note"), 0o644); err != nil {
++		t.Fatalf("WriteFile: %v", err)
++	}
++
++	sha, committed, err := commitWeftAt(dir, "board sync", SyncOptions{})
++	if err == nil || !strings.Contains(err.Error(), "seed weft artifact excludes") {
++		t.Fatalf("commitWeftAt() error = %v; want a seed weft artifact excludes failure", err)
++	}
++	if committed {
++		t.Errorf("commitWeftAt() committed = true; want false")
++	}
++	if sha != "" {
++		t.Errorf("commitWeftAt() sha = %q; want empty", sha)
++	}
++	// git itself rejects a directory as the exclude file, so restore a plain file before reading the status.
++	if err := os.RemoveAll(excludePath); err != nil {
++		t.Fatalf("RemoveAll(%s): %v", excludePath, err)
++	}
++	if err := os.WriteFile(excludePath, nil, 0o644); err != nil {
++		t.Fatalf("WriteFile(%s): %v", excludePath, err)
++	}
++	if status := gitStatusPorcelain(t, dir); status != "?? board-note.md\n" {
++		t.Errorf("git status --porcelain = %q; want only board-note.md, still untracked", status)
++	}
++}
++
+ // TestCommitWeftAt_SkipGitReturnsImmediately asserts that opts.SkipGit short circuits before any
+ // git is spawned: the return is exactly ("", false, nil), and a dirty untracked file is left
+ // completely untouched.
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index e36eee3a..a675ff6c 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -130,6 +130,7 @@
+ // pathspec.
+ // The one exception is the package-level `commitWeftAt` function (not a `Fabric` method), which
+ // wraps board's wildcard-stage commit on its behalf — see `commitWeftAt`'s own doc comment.
++// It seeds the weft artifact excludes before every stage, so a file under `_board/.lym`, such as a stray trace log, never reaches Bolt.
+ //
+ // The default weft-staging pathspec (template.yaml's `pathspec:` key) is empty, so no optional
+ // directory is staged by default; `_lym` itself arrives from `structuralCommittedDirs`, not from
+diff --git a/internal/fabricengine/recordsgit.go b/internal/fabricengine/recordsgit.go
+index 1d919905..a1e41d8c 100644
+--- a/internal/fabricengine/recordsgit.go
++++ b/internal/fabricengine/recordsgit.go
+@@ -368,9 +368,13 @@ func (f *Fabric) PullWeft(opts SyncOptions) error {
+ // weft:main checkout, with no warp branch or Warp-SHA trailer. Returns
+ // ("", false, nil) when opts.SkipGit is true. Does not acquire the weft write
+ // lock; the caller is responsible for synchronization.
++// It seeds the weft artifact excludes before staging, so the stage-all never sweeps up machine-local scratch even in a repo no other verb has seeded.
+ func commitWeftAt(weftPath, message string, opts SyncOptions) (sha string, committed bool, err error) {
+ 	if opts.SkipGit {
+ 		return "", false, nil
+ 	}
++	if err := seedWeftArtifactExcludes(weftPath); err != nil {
++		return "", false, err
++	}
+ 	return gitrepo.New(weftPath).StageAllAndCommit(message)
+ }
