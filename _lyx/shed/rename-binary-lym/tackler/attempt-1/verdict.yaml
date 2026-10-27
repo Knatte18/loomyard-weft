@@ -1,0 +1,10 @@
+verdict: resume
+reason: >-
+  The Darn-Write verify gate failed three attempts in a row, and every failure is the same
+  check: the round added fixed-column-wrapped comment lines (286 sites per the gate's count),
+  so no test ran. The findings file names each file and line and the fix (break each comment
+  at sentence boundaries, one sentence per line). The stop is a mechanical comment reflow the
+  writer can make, not a scope or design choice, and no code fault is shown in the trace.
+  The stop's own way forward (lyx loom resume, which re-spawns Darn-Write with a fresh verify
+  budget) settles it.
+goto: Darn-Write
