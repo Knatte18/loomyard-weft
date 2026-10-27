@@ -35,9 +35,12 @@ From `docs/research/codex-feasibility.md`, section 3, after the spike:
 3. Engine-keyed include sets: the stencil renderer picks the running engine's file of named blocks at render time, which only `seatengine` and `twilldirective` do today (`docs/research/stencil-engine-audit-2026-10-24/report.md`); Burler review's stencils need it (operator, 2026-10-24).
 4. Forks and orch parity. Large; deferred. A twill-like fork fan is feasible, see the twill spike report.
 
-## Plan (operator, 2026-10-25)
+## Plan (operator, 2026-10-27)
 
-The Codex account is ChatGPT Plus, bought for testing and benching, not for production use: every Codex bench states an exact, small cap on runs.
+The Codex account is ChatGPT Pro (the 100 tier, plan `prolite` in the rollouts), bought for testing and benching, not yet for production use: every Codex bench states an exact, small cap on runs.
+Pro has a weekly window and no 5-hour window; a forked Astra fan run on one plan costs a few points of the week.
+Codex effort is at most `high`: `xhigh` and above cost too much (operator, 2026-10-27).
+A Codex reviewer always gets the context a Claude reviewer of the same round gets, the PATTERN overview and the repository's agent instructions included (operator, 2026-10-27).
 
 ## Review bench (2026-10-25)
 
@@ -55,8 +58,25 @@ Five follow-up benches of 2026-10-27, all on plan `P4` (`machine-handover`), one
 - `docs/research/codex-astra-fork-fan-bench-2026-10-27/report.md`: a handler with real forks (`spawn_agent`, `fork_turns="all"`) at high effort found 1 of 11; the forks ran concurrently, children of the handler's thread, as the twill spike found.
 - `docs/research/codex-astra-context-parity-bench-2026-10-27/report.md`: the same forked fan with the PATTERN overview inlined and the snapshot's `CLAUDE.md` loaded as `AGENTS.md` found 2 of 11, none `BLOCKING`; the gain is the PATTERN-fit finding (fan `F6`).
 - `docs/research/codex-astra-tuned-prompt-bench-2026-10-27/report.md`: the forked fan with that context and one block of reading directions (read every `pattern/` background file, read the test card against the test-speed rules) found 4 of 11 and 2 of 3 `BLOCKING`, at 631k fresh input tokens and 950 s; it changes three things at once, so the block's share is unproven.
-The `BLOCKING` finding no Astra run reached is the owner guard on `retryWeftPush` reading origin's Bolt outside the reconcile.
-Astra's runs all add real findings the Claude fan lacks, which supports the note's earlier reading of Codex as an extra, non-gating reviewer beside the Claude fan, not a replacement.
+The `BLOCKING` finding no Astra run reached on `P4` is the owner guard on `retryWeftPush` reading origin's Bolt outside the reconcile.
+
+Three runs of 2026-10-27 kept the tuned setup (context parity, the reading block word for word, forked fan) and varied the plan and effort, adding `P1` (`gate-runs-once`; Claude fan 12 findings, 2 `BLOCKING`):
+
+| Plan, effort | Claude fan findings found | `BLOCKING` found | Unique real | False | Fresh input | Wall time |
+|---|---|---|---|---|---|---|
+| `P4` high | 4 of 11 | 2 of 3 | 6 | 0 | 631k | 950 s |
+| `P4` medium | 3 of 11 | 2 of 3 | 3 | 0 | 236k | 492 s |
+| `P1` high | 4 of 12 | 1 of 2 | 6 | 0 | 412k | 1114 s |
+| `P1` medium | 3 of 12 | 0 of 2 | 5 | 0 | 263k | 414 s |
+
+Reports: `docs/research/codex-astra-tuned-p4-med-bench-2026-10-27/`, `codex-astra-tuned-p1-high-bench-2026-10-27/` and `codex-astra-tuned-p1-med-bench-2026-10-27/` under `docs/research/`.
+High found more than medium on both plans at about twice the wall time.
+On `P1` the block, written after the `P4` misses, still reached the `PATTERN.md` headroom-order finding at high effort; no run reached a finding that needs every reader of a changed symbol enumerated (`P1` fan `F2`) or a read of code beyond the cards' own (`P4` fan `F1`).
+Across every Astra run no finding was false, and each found real defects the Claude fan lacks.
+
+## Goal (operator, 2026-10-27)
+
+Codex is to take review load off Claude: the work is to tune Codex reviews until a Codex fan can stand in for a Claude fan, not to add Codex as an extra reviewer beside it.
 
 ## First candidate roles
 
