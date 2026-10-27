@@ -1,0 +1,11 @@
+verdict: hand-back
+reason: >-
+  The Darn-Write gate fails in tier0 on TestEnforcement_MarkdownLinks/repo, which reports 69 broken links in eight committed files under docs/research/*/data/prompts/step-1-explore-fan.md.
+  Each link is relative to its file (for example pattern/PATTERN-cwd-resolution.md), and the directory it resolves into, docs/research/*/data/prompts/pattern/, does not exist, so the check is right and the links are broken.
+  The -trimpath hypothesis in attempt-1 does not hold: the check reports a missing file, not a wrong repo root.
+  The breakage predates this branch, since the files are on main (latest 752e0035 and c7b48fa5), and the branch diff does not touch them.
+  A resume only re-runs the writer against the same failing tree, so it cannot settle this.
+  Fixing it is a choice between rewriting the link targets in recorded bench prompts, allowlisting the eight files in docsLinkAllowlist, or leaving the gate red.
+question: >-
+  The tier0 MarkdownLinks guard fails on eight committed bench prompt files under docs/research/*/data/prompts/, which link to pattern/PATTERN-*.md relative to their own directory and so resolve to nothing; this predates the branch and is on main too.
+  Which fix should the run take: (1) rewrite the 69 link targets to the correct relative path (../../../../../pattern/...) in those eight files, (2) add the eight files to docsLinkAllowlist with a reason, or (3) another choice you name?
