@@ -48,7 +48,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Find why a running run shows a dead waiter in the activity reader** | [`idle-notice-dead-waiter-cause`](design-idle-notice-dead-waiter-cause.md) | 3d<br>3d | batten, shuttle |
 | B2 |  | **A read creates directories: state.ReadJSON mkdirs, so a hub reader leaves a real _lym in a half-built pair** | [`hub-reader-creates-lym`](design-hub-reader-creates-lym.md) | 21h<br>0m | fabric, orch, batten |
-| B3 |  | **Dobby dies at a deploy instead of re-executing onto the new binary**<br>• After a landing deploy the prime dobby was gone, its board-tidy agent left open | [`dobby-reexec-on-deploy`](design-dobby-reexec-on-deploy.md) | 18h<br>18h | workspaces, batten |
+| B3 |  | **Dobby dies at a deploy instead of re-executing onto the new binary**<br>• After a landing deploy the prime dobby was gone, its board-tidy agent left open | [`dobby-reexec-on-deploy`](design-dobby-reexec-on-deploy.md) | 18h<br>0m | workspaces, batten |
 | B4 |  | **Board README lists draft tasks under Ready** | [`readme-draft-not-ready`](design-readme-draft-not-ready.md) | 1d<br>1d | board |
 | B5 |  | **Board tidy counts landings per machine, not per owner**<br>• A dobby that does not own root tidies landings another machine already tidied | [`tidy-count-per-owner`](design-tidy-count-per-owner.md) | 2h<br>2h | workspaces |
 
