@@ -31,7 +31,7 @@ The stale clone comment that said Bolt's commit seeds nothing is rewritten, and 
 
 ## Verification
 
-`lym gate test --tier 1` over `internal/fabricengine`, `internal/fabriccli` and `internal/boardengine` is green, and no trace file appeared in the live hub's logs during the run.
-Tier0 fails only `TestEnforcement_MarkdownLinks`, on broken `pattern/` links in the bench prompt dumps under `docs/research/*/data/prompts/`, which main's bench commits added.
-By the parent's recorded decision, this change leaves those files and the docs link allowlist untouched;
-task `docs-link-skip-bench-data` fixes the test on main, and this branch takes that fix through its Parent-Align.
+`lym gate test --tier 1` over `internal/fabricengine`, `internal/fabriccli` and `internal/boardengine` is green.
+Five back-to-back runs of `internal/fabriccli`'s tier1 tests wrote no `fabriccli.test` trace into the live hub's `_board/.lym/logs`;
+the traces that still appear there come from concurrent gate runs of branches that do not carry this change yet.
+Tier0 over the diff scope is green on a tree that carries main's markdown-link fix for the bench data under `docs/research/`.
