@@ -5,7 +5,7 @@
 ## Seen (operator, 2026-10-27)
 
 A run reads its instructions live while it runs: the `lym` binary, and the stencils, specs and hub config on Bolt (`_board/_lym/{stencils,specs,config}`).
-A landing deploys a new `lym` and can change those files, so a run started on one version can finish on another, such as a darn run that sits between its drift rows when `darn-drift-await-row` lands and its recipe changes under it.
+A landing deploys a new `lym` and can change those files, so a run started on one version can finish on another, such as a darn run that sat between its drift rows when `darn-drift-await-row` landed and its recipe changed under it (that landing wrote no transition code: such a run halts at Drift-Verify and is settled by hand with `lym drift waive`).
 LoomYard takes no special care for such a run today, and the operator wants none written per change (operator, 2026-10-27).
 
 ## Idea (operator, 2026-10-27)
