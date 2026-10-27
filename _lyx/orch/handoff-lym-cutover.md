@@ -23,7 +23,8 @@ There is no single verb that pulls the whole hub while the orch runs: `lyx fabri
 This note was written in the old hub `loomyard-LYXHUB` on 2026-10-27 for the move to `lym`: everything untracked (`.lyx/`, `.scratch/`) stays behind, so this note is committed on `main-weft` as `_lyx/orch/handoff-lym-cutover.md` and reaches the new hub as `_lym/orch/handoff-lym-cutover.md`.
 The new hub's orch reads it from there, then it is removed from `main-weft` in a weft commit.
 
-- T1 `rename-binary-lym` (darn) renames lyx to lym; it was at Darn-Write verify when this note was written. Its decisions so far: remove the empty untracked `cmd/lyx` directory so the old gate's prebuild skips; keep the comment reflow (`tools/godocreflow`) in the diff (operator).
+- T1 `rename-binary-lym` (darn) landed on `main` as `ef912d4` on 2026-10-27, Land and Worktree-Teardown done, and its board entry is gone. Its decisions: remove the empty untracked `cmd/lyx` directory so the old gate's prebuild skipped; keep the comment reflow (`tools/godocreflow`) in the diff (operator).
+- B5 `tidy-count-per-owner` is on the board: a dobby counts landings made on another machine and spawns a tidy of its own.
 - The landing deploys nothing: `deploy_branches` in the landing config is `[]`.
 - After the landing the operator runs the cutover in E4 `lym-cutover-steps` (stop all, deploy from the prime, `git mv _lyx _lym` on Bolt and `main-weft`, fresh `lym fabric clone`, then `deploy_branches` back to `["main"]`, repoint the `loomyard` plugin marketplace path in `~/.claude/settings.json` and `~/.claude/plugins/known_marketplaces.json`, `update-plugins.sh` from the new prime, `lym beam start`).
 - Root is owned by Neve again (`lyx adopt root`, 2026-10-27); `max_runs` is 5 in the prime's layer.
