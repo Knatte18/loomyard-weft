@@ -42,7 +42,7 @@ Held by a run; its scope is locked until the run ends.
 | T3 | **A gate test writes trace logs into the live hub and Bolt commits them**<br>• trace-*.log from a run gate test landed in _board/.lym/logs and board sync committed them | [`test-logs-leak-into-bolt`](design-test-logs-leak-into-bolt.md) | darn | blocked · Darn-Write | neve | 4h<br>21m | gate, board, testkit |
 | T4 | **A read creates directories: state.ReadJSON mkdirs, so a hub reader leaves a real _lym in a half-built pair** | [`hub-reader-creates-lym`](design-hub-reader-creates-lym.md) | darn | Darn-Write | neve | 1d<br>21m | fabric, orch, batten |
 | T5 | **Board README lists draft tasks under Ready** | [`readme-draft-not-ready`](design-readme-draft-not-ready.md) | darn | blocked · Darn-Write | neve | 1d<br>21m | board |
-| T6 | **Markdown link guard skips the verbatim data of research reports**<br>• TestEnforcement_MarkdownLinks fails on main on bench prompt captures under docs/research/*/data/; skip that data | [`docs-link-skip-bench-data`](design-docs-link-skip-bench-data.md) | darn | Worktree-Create | neve | 9m<br>9m | testkit |
+| T6 | **Markdown link guard skips the verbatim data of research reports**<br>• TestEnforcement_MarkdownLinks fails on main on bench prompt captures under docs/research/*/data/; skip that data | [`docs-link-skip-bench-data`](design-docs-link-skip-bench-data.md) | darn | Drift-Baseline | neve | 9m<br>9m | testkit |
 
 ### Ready (0)
 

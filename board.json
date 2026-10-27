@@ -926,7 +926,7 @@
       "isolated": false,
       "brief": "TestEnforcement_MarkdownLinks fails on main on bench prompt captures under docs/research/*/data/; skip that data",
       "body": "## Seen (2026-10-27)\n\n`TestEnforcement_MarkdownLinks` (`internal/lymcwd/docslink_test.go`) fails on `main`: it reports broken `pattern/PATTERN-*.md` links in files under `docs/research/*-2026-10-27/data/`, such as `data/prompts/step-1-explore-fan.md` and `data/reviews/P4/handler.md`.\nThe bench reports keep prompts and reviewer output verbatim in their `data/` directories, and those texts link to `pattern/` relative to the repository root, so the links do not resolve from where the file sits.\nThe bench landings changed only `docs/`, so no gate on their way ran the guard; every run's verify now meets it.\n\n## Fix (operator, 2026-10-27)\n\n- The guard skips every file under a `data/` directory of a `docs/research/\u003creport\u003e/` directory: that is captured verbatim data, not documentation, and its links are never rewritten.\n- The allowlist entry for `docs/research/codex-astra-solo-bench-2026-10-25/data/reviews/P4/opus-medium-r1.md` goes, since the skip covers it and the guard would report it stale.\n- A subtest pins the skip: a broken link under `docs/research/x/data/` is not reported, and one in `docs/research/x/report.md` still is.\n- The guard's doc comment and the Markdown Link Integrity text in `PATTERN.md` or its `pattern/` background file, wherever the guard's scope is stated, say that `docs/research/*/data/` is outside it.\n",
-      "status": "running · Worktree-Create",
+      "status": "running · Drift-Baseline",
       "created": "2026-10-27T14:37:50Z",
       "revised": "2026-10-27T14:37:50Z"
     }
