@@ -15,6 +15,6 @@ With the runs' cost in focus, everything might instead be typed into the pane di
 ## To weigh
 
 - The extra turn per agent message against the guard that keeps one agent's text from reading as an instruction in another agent's pane.
-- Delivery at a working strand's tool boundary is task `creel-hook-delivery`, which hands over agent mail in full through its hook; this note keeps only the idle pane path's reminder.
-- Codex's `PostToolUse` at a tool boundary is untested (`docs/research/creel-hook-delivery-2026-10-25/report.md` gives the steps), so the hook covers Claude strands only.
+- Delivery at a working Claude strand's tool boundary is built (landed `creel-hook-delivery`): its `PostToolUse` hook hands over agent mail in full, so this note keeps only the idle pane path's reminder.
+- Codex's `PostToolUse` at a tool boundary is untested (`docs/research/creel-hook-delivery-2026-10-25/report.md` gives the steps), so the hook covers Claude strands only and Codex strands keep the pane path.
 - Note `creel-agents` moves agent messaging from SendMessage onto creel, which makes agent mail, and so this cost, more common.
