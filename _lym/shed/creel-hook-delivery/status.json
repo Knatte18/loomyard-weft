@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Bouncer",
+  "current_producer": "Describe",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Bouncer",
-    "last": "Code-Burler-Fix → bounced to Code-Bouncer",
+    "now": "Describe",
+    "last": "Code-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -163,6 +163,12 @@
       "at": "2026-10-27T15:55:51Z",
       "budget_exempt": true,
       "routed_to": "Code-Bouncer"
+    },
+    {
+      "producer": "Code-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/creel-hook-delivery/_lym/reviews/code/round-1-bouncer-ledger.md",
+      "at": "2026-10-27T15:56:16Z"
     }
   ],
   "product": {
