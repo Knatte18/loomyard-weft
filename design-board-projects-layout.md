@@ -12,3 +12,5 @@ After the first two projects, `workspaces` and `dotnet`, were made, the operator
 
 Decide with the operator how projects and their members are shown on the board, then change the README rendering to match.
 The layout is not yet discussed.
+
+The board README rendering is not regarded as production code (operator, 2026-10-27).
