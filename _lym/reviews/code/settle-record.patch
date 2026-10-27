@@ -95,7 +95,7 @@ index 53ceec45..1889cbf9 100644
  // The gate slots come from hubgeom.GateSlots, and the capture child is registered under the run-process directory with the worktree name as owner.
  //
 diff --git a/internal/driftcli/wiring.go b/internal/driftcli/wiring.go
-index fc991b6d..bc170e82 100644
+index fbb65b3f..a20a54ea 100644
 --- a/internal/driftcli/wiring.go
 +++ b/internal/driftcli/wiring.go
 @@ -49,7 +49,7 @@ func (w *worktree) config() (driftengine.Config, error) {
@@ -105,7 +105,7 @@ index fc991b6d..bc170e82 100644
 -// verbStatus reads the run status under its lock, the recipe from the run's seed, the capture lock and the agent-session mark.
 +// verbStatus reads the run status under its lock, the capture lock and the agent-session mark.
  func (w *worktree) verbStatus() (driftengine.VerbStatus, error) {
- 	status, found, err := state.ReadJSONNoMkdir[shedengine.Status](shedrun.StatusFile(w.location, shedrun.SelfRunID), shedrun.StatusLock(w.location, shedrun.SelfRunID))
+ 	status, found, err := state.ReadJSON[shedengine.Status](shedrun.StatusFile(w.location, shedrun.SelfRunID), shedrun.StatusLock(w.location, shedrun.SelfRunID))
  	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 @@ -58,13 +58,6 @@ func (w *worktree) verbStatus() (driftengine.VerbStatus, error) {
  	if !found {
@@ -547,7 +547,7 @@ index 19883397..bd0075f3 100644
  			},
  		},
 diff --git a/internal/loomcli/driftwiring.go b/internal/loomcli/driftwiring.go
-index 7ee87bc6..d08ceb8d 100644
+index 2fe49398..fc4c307d 100644
 --- a/internal/loomcli/driftwiring.go
 +++ b/internal/loomcli/driftwiring.go
 @@ -49,9 +49,9 @@ type driftTables struct {
@@ -571,7 +571,7 @@ index 7ee87bc6..d08ceb8d 100644
  		BranchPoint:  branchPoint,
  		DirtyPaths:   dirtyPaths,
 diff --git a/internal/loomcli/wiring.go b/internal/loomcli/wiring.go
-index 987fb59b..933aace2 100644
+index adb748e0..db925ab3 100644
 --- a/internal/loomcli/wiring.go
 +++ b/internal/loomcli/wiring.go
 @@ -777,7 +777,7 @@ func (c *loomCLI) wire(location *lymcwd.Location, cwd string) error {

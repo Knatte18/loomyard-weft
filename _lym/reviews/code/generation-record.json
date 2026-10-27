@@ -4,6 +4,12 @@
   "base": "af42ee012689d76e74eeda414ad9581937ea808c",
   "review_input": "/home/knatte/Code/loomyard-LYMHUB/darn-drift-await-row/.lym/loom/overlap-note.md",
   "judge_subject": {
-    "kind": ""
-  }
+    "kind": "code",
+    "merge_base": "e95080b973d7019250e59890c3d47ba3d3590780",
+    "head": "e109ba4aecc8e878489b1eaa6a88c95b1f6e44c3",
+    "full_hash": "2797880e123a4e099eb528f834bb84f18a13fd4b9aedcea9cdeb2348a546d652",
+    "patch_id": "223488fcb2c3b562b28258ed9d16c39e212f1ef8"
+  },
+  "judge_base": "e95080b973d7019250e59890c3d47ba3d3590780",
+  "judge_at": "2026-10-27T15:36:49Z"
 }
