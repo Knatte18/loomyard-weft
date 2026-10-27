@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Bouncer",
+  "current_producer": "Describe",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Bouncer",
-    "last": "Drift-Verify → skipped",
+    "now": "Describe",
+    "last": "Code-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -55,6 +55,12 @@
       "output": "",
       "at": "2026-10-27T11:26:56Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Code-Bouncer",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-27T11:26:56Z"
     }
   ],
   "product": {
