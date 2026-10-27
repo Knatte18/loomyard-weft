@@ -38,7 +38,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Bench a Codex Astra lens fan against the Claude fan on one plan**<br>• Astra medium, 3 lens reviews plus a handler on P4, graded against the Claude fan reference<br>• `profile: docs` | [`codex-astra-fan-bench`](design-codex-astra-fan-bench.md) | darn | Drift-Verify | neve | 25m<br>25m | codex, burler |
+| T1 | **Bench a Codex Astra lens fan against the Claude fan on one plan**<br>• Astra medium, 3 lens reviews plus a handler on P4, graded against the Claude fan reference<br>• `profile: docs` | [`codex-astra-fan-bench`](design-codex-astra-fan-bench.md) | darn | Finalize | neve | 25m<br>25m | codex, burler |
 
 ### Ready (0)
 
