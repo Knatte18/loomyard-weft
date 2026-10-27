@@ -38,8 +38,8 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Bench a Codex Astra fan with real forks at high effort on one plan**<br>• One codex exec handler spawning 3 lens forks with fork_turns=all, Astra high, on P4<br>• `profile: docs` | [`codex-astra-fork-fan-bench`](design-codex-astra-fork-fan-bench.md) | darn |  | 0m<br>0m | codex, burler |
-| T2 | `draft` **Bench solo Codex Astra at high effort on one plan**<br>• One solo Astra high review of P4, against the medium solo run and the Claude fan<br>• `profile: docs` | [`codex-astra-solo-high-bench`](design-codex-astra-solo-high-bench.md) | darn |  | 0m<br>0m | codex, burler |
+| T1 | **Bench a Codex Astra fan with real forks at high effort on one plan**<br>• One codex exec handler spawning 3 lens forks with fork_turns=all, Astra high, on P4<br>• `profile: docs` | [`codex-astra-fork-fan-bench`](design-codex-astra-fork-fan-bench.md) | darn |  | 0m<br>0m | codex, burler |
+| T2 | **Bench solo Codex Astra at high effort on one plan**<br>• One solo Astra high review of P4, against the medium solo run and the Claude fan<br>• `profile: docs` | [`codex-astra-solo-high-bench`](design-codex-astra-solo-high-bench.md) | darn |  | 0m<br>0m | codex, burler |
 
 ## Notes (47)
 
