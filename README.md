@@ -28,17 +28,18 @@ grouping
 | --- | --- | --- | --- |
 | E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
 
-## Tasks (1)
+## Tasks (2)
 
 Concrete and claimable; only a task can run.
 
-### Ready (1)
+### Ready (2)
 
 Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Bench the forked Codex Astra fan with the Claude reviewers context**<br>• Forked Astra fan, high, on P4, with the PATTERN overview inlined and CLAUDE.md as AGENTS.md<br>• `profile: docs` | [`codex-astra-context-parity-bench`](design-codex-astra-context-parity-bench.md) | darn |  | 0m<br>0m | codex, burler |
+| T1 | **Bench the forked Codex Astra fan with the Claude reviewers context**<br>• Forked Astra fan, high, on P4, with the PATTERN overview inlined and CLAUDE.md as AGENTS.md<br>• `profile: docs` | [`codex-astra-context-parity-bench`](design-codex-astra-context-parity-bench.md) | darn |  | 0m<br>0m | codex, burler |
+| T2 | **Bench the forked Codex Astra fan with a Codex-tuned reviewer prompt**<br>• Context parity plus a prompt block asking for code, PATTERN-background and test reads, Astra high, on P4<br>• `profile: docs` | [`codex-astra-tuned-prompt-bench`](design-codex-astra-tuned-prompt-bench.md) | darn |  | 0m<br>0m | codex, burler |
 
 ## Notes (47)
 
