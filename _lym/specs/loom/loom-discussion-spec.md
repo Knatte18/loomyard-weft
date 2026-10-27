@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=f3a5eac2a9aa59c92044be788440d4309965a3424bea70e6bbd295c80b580ff8 build=c0532436a73f330fdde44ad3bbd570f1f9d1c6cc time=2026-10-26T10:52:00Z -->
+<!-- lym-stencil: sha256=b5a121cede2c9d5f933d887c33957392a655c97dcc2ac06db260ccc6de27674c build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
 
 # Discussion spec — the decision record, the support log and the relevant list
 
@@ -38,9 +38,9 @@ Each entry is one bullet, with `<id>` matching `[a-z0-9-]+`:
 An entry ID is listed at most once.
 An `adds` or `changes` bullet prescribes the overview line `` - `PATTERN-<id>` — <new entry text> ``.
 The discussion check refuses that line, as a `pattern-change-over-cap` finding, when its rule text, the new entry text without a trailing `(test)` or background link, is longer, in characters, than the PATTERN rule-text cap the plan gate's `pattern-entry-line-cap` applies;
-the cap is the same number whatever the entry's name, and `lyx loom decision add --pattern-text` applies it when the decision is recorded;
+the cap is the same number whatever the entry's name, and `lym loom decision add --pattern-text` applies it when the decision is recorded;
 detail that does not fit belongs in the entry's background file.
-`lyx loom decision add` appends a bullet with the suffix ` — added after Discussion (<by>, <date>)`.
+`lym loom decision add` appends a bullet with the suffix ` — added after Discussion (<by>, <date>)`.
 A record without the section is valid.
 
 ### Compaction rules
@@ -59,12 +59,12 @@ A record without the section is valid.
 
 ### Parts no writer authors
 
-- `### Added after Discussion (<by>, <date>): <title>` entries under `## Decisions` are appended only by `lyx loom decision add`.
+- `### Added after Discussion (<by>, <date>): <title>` entries under `## Decisions` are appended only by `lym loom decision add`.
   A writer never edits or removes one, and a record that drops an entry its history held fails the format check.
-- A `## PATTERN changes` bullet carrying the ` — added after Discussion (<by>, <date>)` suffix is appended only by `lyx loom decision add`.
-  A writer never edits or removes one, and a record that drops a bullet its history held fails the format check wherever the check for dropped `### Added after Discussion` entries runs: the darn discussion gate, `lyx loom validate-discussion` on a darn run and the verb's darn-record check.
+- A `## PATTERN changes` bullet carrying the ` — added after Discussion (<by>, <date>)` suffix is appended only by `lym loom decision add`.
+  A writer never edits or removes one, and a record that drops a bullet its history held fails the format check wherever the check for dropped `### Added after Discussion` entries runs: the darn discussion gate, `lym loom validate-discussion` on a darn run and the verb's darn-record check.
   A loom run's discussion check reads no history for either.
-- `<!-- lyx:carry-over … -->` blocks under `## Open risks` are written only by Go.
+- `<!-- lym:carry-over … -->` blocks under `## Open risks` are written only by Go.
   A writer never authors, edits or removes one.
 
 ## The support log
@@ -80,7 +80,7 @@ It carries these H2 sections, in this exact order:
 
 ## The relevant list
 
-`relevant.md` is the third file in `_lyx/discussion/`, beside the decision record and the support log.
+`relevant.md` is the third file in `_lym/discussion/`, beside the decision record and the support log.
 It lists the files, and the members in them, that the writer read and found relevant, each with one line of why.
 The list of code the writer read belongs here, never in the decision record.
 
