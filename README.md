@@ -28,7 +28,7 @@ grouping
 | --- | --- | --- | --- |
 | E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
 
-## Tasks (1)
+## Tasks (2)
 
 Concrete and claimable; only a task can run.
 
@@ -45,6 +45,14 @@ Held by a run; its scope is locked until the run ends.
 Waits on nothing open; can start now.
 
 _None._
+
+### Layer A (1)
+
+Waits only on Running or Ready entries.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T2 | `draft` **Desk study: which Astra-found defects the later Claude review rounds caught**<br>• Grade the Astra benches unique-real defects on P1, P2 and P4 against the Claude plan reviews of round 2 onward; no reviewer runs<br>• `profile: docs` | [`claude-later-rounds`](design-claude-later-rounds.md) | darn | `codex-v2-p4-bench` | 0m<br>0m | burler |
 
 ## Notes (47)
 
@@ -123,4 +131,4 @@ Finished, awaiting `lym board prune --apply`.
 
 | # | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- |
-| T1 | **Bench Codex review block v2 on P1: one high run against two medium**<br>• Forked Astra fan with block v2 and a 20-call fork cap on P1: 1 high and 2 medium runs<br>• `profile: docs` | [`codex-v2-p1-bench`](design-codex-v2-p1-bench.md) | 18m<br>18m | codex, burler |
+| T1 | **Bench Codex review block v2 on P1: one high run against two medium**<br>• Forked Astra fan with block v2 and a 20-call fork cap on P1: 1 high and 2 medium runs<br>• `profile: docs` | [`codex-v2-p1-bench`](design-codex-v2-p1-bench.md) | 19m<br>19m | codex, burler |

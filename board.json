@@ -998,6 +998,29 @@
       "created": "2026-10-27T13:23:42Z",
       "revised": "2026-10-27T13:23:42Z",
       "profile": "docs"
+    },
+    {
+      "id": 847,
+      "handle": "T2",
+      "slug": "claude-later-rounds",
+      "title": "Desk study: which Astra-found defects the later Claude review rounds caught",
+      "kind": "task",
+      "labels": [
+        "research",
+        "burler"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "codex-v2-p4-bench"
+      ],
+      "isolated": false,
+      "brief": "Grade the Astra benches unique-real defects on P1, P2 and P4 against the Claude plan reviews of round 2 onward; no reviewer runs",
+      "body": "Desk study: of the defects Codex Astra found and the Claude lens fan's round 1 missed, which did the Claude plan-review loop's later rounds catch?\n\n## Why\n\nEvery Astra bench of 2026-10-27, and the gap study `docs/research/claude-review-gaps-2026-10-27/report.md`, compared one Astra review with the Claude fan's round 1 only.\nA loom plan review runs several rounds of the same reviewer, and no single round catches everything (operator, 2026-10-27).\nThe plans benched went further rounds: `P1` (`gate-key-shape`) has rounds 2 and 3, `P4` (`machine-handover`) has rounds 2 and 3, and `P2` has at least round 2, as plan review files in `loomyard-weft` on the commits after the round-1 commits the benches name.\nThe fair question is what the whole Claude loop misses, not what its first round misses.\n\n## Scope\n\n- No reviewer runs at all: no Codex run and no Claude run. The Codex weekly budget is getting used up (operator, 2026-10-27).\n- Inputs: plans `P1`, `P2` and `P4`; the Claude plan reviews of every round after round 1 on each, and the plan's final approved state, all read from `loomyard-weft` history.\n- Population: every `unique-real` defect in the `data/match.tsv` of the Astra benches under `docs/research/codex-astra-*-2026-10-27/` and of the reports the tasks `codex-v2-p1-bench`, `codex-v2-p2-bench` and `codex-v2-p4-bench` land under `docs/research/`, deduplicated per plan as the gap study does, reusing its ids `P1-nn` and `P4-nn` and adding `P2-nn`.\n\n## Method\n\nFor each defect, read the Claude reviews of rounds 2 onward and the cards as they stood after the last fix, and grade it as one of:\n- `caught-later`: a later Claude round names the same defect (give the round and finding id).\n- `fixed-incidentally`: no finding names it, but a later card change removes it.\n- `still-in-plan`: the approved plan still has it.\nAlso state, per plan, how many rounds ran and each later round's finding count and verdict.\n\n## Report\n\n`docs/research/claude-later-rounds-2026-10-27/report.md`:\n- a table per defect with its id, severity, gap-study group (G1 to G6, or new) and grade;\n- per plan and per group, counts of each grade, and the `BLOCKING` ones apart;\n- what this changes in the gap study's six proposals: which groups the loop already closes and which stay open after the last round;\n- what it means for a Codex reviewer's place in the loop (for example only round 1, or every round), stated as a hypothesis.\nOne grader; say so in the limits.\n",
+      "status": "draft",
+      "created": "2026-10-27T13:42:41Z",
+      "revised": "2026-10-27T13:42:41Z",
+      "profile": "docs"
     }
   ],
   "prime_owner": "neve",
