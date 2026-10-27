@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-27 16:17 UTC; every age below is as of then.
+Rendered 2026-10-27 16:21 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -38,7 +38,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Dobby survives deploys, logs changes only, tidies per owner; a visible adopt check**<br>• Fix the dobby re-exec exit, bound its log, count tidies per owner, give the adopt check its own gate key and visible progress | [`dobby-and-adopt-hardening`](design-dobby-and-adopt-hardening.md) | loom | Plan-Burler-Fix | neve | 1d<br>1h | workspaces, batten, gate, board |
+| T2 | **Dobby survives deploys, logs changes only, tidies per owner; a visible adopt check**<br>• Fix the dobby re-exec exit, bound its log, count tidies per owner, give the adopt check its own gate key and visible progress | [`dobby-and-adopt-hardening`](design-dobby-and-adopt-hardening.md) | loom | Plan-Bouncer | neve | 1d<br>1h | workspaces, batten, gate, board |
 
 ### Ready (0)
 
@@ -55,7 +55,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Find why a running run shows a dead waiter in the activity reader** | [`idle-notice-dead-waiter-cause`](design-idle-notice-dead-waiter-cause.md) | 3d<br>3d | batten, shuttle |
-| B7 |  | **An instruction typed into a pane is lost when the tackler re-spawns the row**<br>• A re-spawned row session starts from its prompt alone; operator input to the old session is dropped | [`pane-input-lost-on-respawn`](design-pane-input-lost-on-respawn.md) | 5h<br>5h | shed, shuttle, reed |
+| B7 |  | **An instruction typed into a pane is lost when the tackler re-spawns the row**<br>• A re-spawned row session starts from its prompt alone; operator input to the old session is dropped | [`pane-input-lost-on-respawn`](design-pane-input-lost-on-respawn.md) | 6h<br>6h | shed, shuttle, reed |
 
 ### Enhancements (18)
 
@@ -70,7 +70,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 2w<br>6h | burler, stencil |
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 12d<br>12d | board, loom |
 | E11 |  | **Loom and darn Finalize resolve a moved parent themselves instead of rerouting** | [`loom-finalize-merges-itself`](design-loom-finalize-merges-itself.md) | 1d<br>1d | loom, batten |
-| E13 |  | **VS Code colours by project and worktree, and lym ide seed with no slug**<br>• Title bar shows the project (prime or beam), the activity bar the worktree; text colour by luminance; ide seed with no slug seeds the current worktree | [`ide-seed-current-worktree`](design-ide-seed-current-worktree.md) | 6h<br>5h | ide, workspaces |
+| E13 |  | **VS Code colours by project and worktree, and lym ide seed with no slug**<br>• Title bar shows the project (prime or beam), the activity bar the worktree; text colour by luminance; ide seed with no slug seeds the current worktree | [`ide-seed-current-worktree`](design-ide-seed-current-worktree.md) | 7h<br>6h | ide, workspaces |
 | E14 |  | **No test is skipped by design**<br>• Windows-only tests count as skips on Linux, and TestBuildLoomShed_OutputShape skips on every machine | [`test-skips-os-tags`](design-test-skips-os-tags.md) | 1d<br>1d | testkit, reed, loom, fabric, gate |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 9d<br>6h | webster, fabric, loom |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 8d<br>6h | fabric, batten |
@@ -86,7 +86,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 3w<br>6h | burler |
 | F2 | L | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lym-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 3w<br>6h | ide, fabric |
-| F3 |  | **One verb that pulls the whole hub, Bolt included, while the orch runs**<br>• Pull the prime pair, Bolt and local beams in one safe verb | [`hub-pull-verb`](design-hub-pull-verb.md) | 5h<br>5h | fabric, board |
+| F3 |  | **One verb that pulls the whole hub, Bolt included, while the orch runs**<br>• Pull the prime pair, Bolt and local beams in one safe verb | [`hub-pull-verb`](design-hub-pull-verb.md) | 6h<br>6h | fabric, board |
 | F5 |  | **Fabric's ordinary-monorepo verb surface**<br>• Against plain git, fabric still lacks log, show, branch, tag, stash, revert, restore, rm/mv, rebase, cherry-pick and blame | [`fabric-monorepo-verbs`](design-fabric-monorepo-verbs.md) | 3w<br>3w | fabric |
 | F6 |  | **Talk to the orch through Slack**<br>• A Slack relay so the operator can reach the orch from a phone where Claude's own app is not allowed | [`reed-slack-relay`](design-reed-slack-relay.md) | 3w<br> | reed |
 | F8 |  | **fabric: two-sided reset-to-SHA verb**<br>• The post-conclude undo the merge surface does not ship: reset to a warp SHA, resolve the paired weft SHA through the correspondence index, gate both sides | [`fabric-reset-to-sha`](design-fabric-reset-to-sha.md) | 3w<br>3w | fabric |
