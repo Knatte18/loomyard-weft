@@ -1,0 +1,2142 @@
+diff --git a/contracts/specs/loom-status-spec.md b/contracts/specs/loom-status-spec.md
+index 6a8f2266..a886373d 100644
+--- a/contracts/specs/loom-status-spec.md
++++ b/contracts/specs/loom-status-spec.md
+@@ -126,7 +126,7 @@ It is display only: no Go decision reads it.
+ 
+ ## Parse discipline
+ 
+-Fail-loud parsing: the `internal/state` read (`state.ReadJSONNoMkdir`) rejects malformed JSON and accepts unknown fields, and a rewrite keeps them.
++Fail-loud parsing: the `internal/state` read (`state.ReadJSON`) rejects malformed JSON and accepts unknown fields, and a rewrite keeps them.
+ An unparseable or malformed status file is a hard error;
+ loom never guesses a status.
+ `product` is decoded separately, after the shell decode succeeds — see [Validation checklist](#validation-checklist) below for how a `product` that fails to decode as loom's own shape is classified.
+diff --git a/internal/battencli/arm.go b/internal/battencli/arm.go
+index 96c35bbb..eee0e4b9 100644
+--- a/internal/battencli/arm.go
++++ b/internal/battencli/arm.go
+@@ -567,15 +567,8 @@ func ArmAt(location *lymcwd.Location, verb string, runID string) (shedverbs.Spec
+ // checkRunStatus is the read-only half of run's pre-flight: decode the status file, refuse a done slug, and resume silently over every other found state.
+ // It reports found false for an absent status file and never seeds one.
+ // A decode failure, an unrecognized state and a done slug come back as the error.
+-//
+-// It MkdirAlls the status lock's own ephemeral directory before the first read, mirroring battenPreStep's own MkdirAll(filepath.Dir(LockPath)) call:
+-// StatusPath is durable and StatusLockPath is ephemeral, the two no longer share a directory the way they did before this task's durable/ephemeral split, and state.ReadJSONNoMkdir deliberately never creates one itself (see its own "no MkdirAll" contract).
+-// On a run-id that has never stepped on this machine, the very first read here would otherwise fail to acquire the lock with a bare "no such file or directory", before the run ever reaches shedengine's own run-lock probe.
+ func (c *battenCLI) checkRunStatus() (found bool, err error) {
+-	if err := os.MkdirAll(filepath.Dir(c.shedPaths.StatusLockPath), 0o755); err != nil {
+-		return false, err
+-	}
+-	st, found, err := state.ReadJSONNoMkdir[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
++	st, found, err := state.ReadJSON[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
+ 	if err != nil {
+ 		return false, errors.New("battencli: decode status file " + c.shedPaths.StatusPath + ": " + err.Error())
+ 	}
+@@ -625,7 +618,7 @@ func (r *continueRefusal) Error() string {
+ func (c *battenCLI) refuseContinuePass() error {
+ 	refuse := func(reason string) error { return &continueRefusal{reason: reason, slug: c.slug} }
+ 
+-	status, found, err := state.ReadJSONNoMkdir[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
++	status, found, err := state.ReadJSON[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
+ 	if err != nil {
+ 		return errors.New("battencli: decode status file " + c.shedPaths.StatusPath + ": " + err.Error())
+ 	}
+@@ -740,7 +733,7 @@ func (c *battenCLI) battenPreRun(ctx context.Context) error {
+ 		if c.noReopen {
+ 			return nil
+ 		}
+-		status, _, err := state.ReadJSONNoMkdir[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
++		status, _, err := state.ReadJSON[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
+ 		if err != nil {
+ 			return errors.New("battencli: decode status file " + c.shedPaths.StatusPath + ": " + err.Error())
+ 		}
+@@ -908,7 +901,7 @@ func (c *battenCLI) battenPreStepUnmarked(ctx context.Context) (string, error) {
+ 		return shedverbs.KindBusy, fmt.Errorf("battencli: another batten run already holds the run lock %q", c.shedPaths.LockPath)
+ 	}
+ 
+-	st, found, err := state.ReadJSONNoMkdir[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
++	st, found, err := state.ReadJSON[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
+ 	if err != nil {
+ 		return shedverbs.KindUnseeded, errors.New("battencli: decode status file " + c.shedPaths.StatusPath + ": " + err.Error())
+ 	}
+@@ -1013,7 +1006,7 @@ func (c *battenCLI) readChildStatus() (shedengine.Status, bool) {
+ 	if err != nil {
+ 		return shedengine.Status{}, false
+ 	}
+-	child, found, err := state.ReadJSONNoMkdir[shedengine.Status](shedrun.StatusFile(task, shedrun.SelfRunID), shedrun.StatusLock(task, shedrun.SelfRunID))
++	child, found, err := state.ReadJSON[shedengine.Status](shedrun.StatusFile(task, shedrun.SelfRunID), shedrun.StatusLock(task, shedrun.SelfRunID))
+ 	if err != nil || !found {
+ 		return shedengine.Status{}, false
+ 	}
+diff --git a/internal/battencli/cancelcmd.go b/internal/battencli/cancelcmd.go
+index f0cdb0c3..ba5e2ba4 100644
+--- a/internal/battencli/cancelcmd.go
++++ b/internal/battencli/cancelcmd.go
+@@ -366,7 +366,7 @@ func hubTopology(location *lymcwd.Location) (*fabricengine.Topology, error) {
+ // readBattenStatus reads batten's status file for slug under its lock, creating nothing.
+ // found is false when the file, or the run directory around it, is absent.
+ func readBattenStatus(location *lymcwd.Location, slug string) (shedengine.Status, bool, error) {
+-	status, found, err := state.ReadJSONNoMkdir[shedengine.Status](StatusFile(location, slug), shedrun.StatusLock(location, slug))
++	status, found, err := state.ReadJSON[shedengine.Status](StatusFile(location, slug), shedrun.StatusLock(location, slug))
+ 	if errors.Is(err, fs.ErrNotExist) {
+ 		return shedengine.Status{}, false, nil
+ 	}
+diff --git a/internal/battencli/cancelmarker.go b/internal/battencli/cancelmarker.go
+index eb120278..0624f1f1 100644
+--- a/internal/battencli/cancelmarker.go
++++ b/internal/battencli/cancelmarker.go
+@@ -87,7 +87,7 @@ func readCancelMarker(location *lymcwd.Location, slug string) (cancelMarkerReadi
+ 	if !present {
+ 		return reading, nil
+ 	}
+-	marker, _, err := state.ReadJSONNoMkdir[cancelMarker](markerPath, cancelMarkerStateLock(markerPath))
++	marker, _, err := state.ReadJSON[cancelMarker](markerPath, cancelMarkerStateLock(markerPath))
+ 	if err != nil && !errors.Is(err, state.ErrDecode) {
+ 		return cancelMarkerReading{}, err
+ 	}
+diff --git a/internal/battencli/drive.go b/internal/battencli/drive.go
+index 0f4cc39b..66cea43f 100644
+--- a/internal/battencli/drive.go
++++ b/internal/battencli/drive.go
+@@ -176,7 +176,7 @@ func battenRunEnvelope(exit sheddriver.Exit, st shedengine.Status, found bool, a
+ 
+ // readRunStatus reads batten's own status file.
+ func (c *battenCLI) readRunStatus() (shedengine.Status, bool, error) {
+-	return state.ReadJSONNoMkdir[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
++	return state.ReadJSON[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
+ }
+ 
+ // reportSuffix returns four lowercase hex characters, the random part of a drive-reports file name.
+diff --git a/internal/battencli/driverdeps_test.go b/internal/battencli/driverdeps_test.go
+index 55ba3bcc..e8697238 100644
+--- a/internal/battencli/driverdeps_test.go
++++ b/internal/battencli/driverdeps_test.go
+@@ -157,7 +157,7 @@ func TestBattenDriverDeps(t *testing.T) {
+ 	}
+ 	readStatus := func() shedengine.Status {
+ 		t.Helper()
+-		st, _, err := state.ReadJSONNoMkdir[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
++		st, _, err := state.ReadJSON[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
+ 		if err != nil {
+ 			t.Fatalf("read status: %v", err)
+ 		}
+diff --git a/internal/battencli/land.go b/internal/battencli/land.go
+index f93fd3a9..fe43ab41 100644
+--- a/internal/battencli/land.go
++++ b/internal/battencli/land.go
+@@ -29,7 +29,7 @@ import (
+ // An absent status file reads as not paused.
+ func pauseRequested(location *lymcwd.Location, slug string) func() (bool, error) {
+ 	return func() (bool, error) {
+-		status, found, err := state.ReadJSONNoMkdir[shedengine.Status](StatusFile(location, slug), StatusLock(location, slug))
++		status, found, err := state.ReadJSON[shedengine.Status](StatusFile(location, slug), StatusLock(location, slug))
+ 		if err != nil || !found {
+ 			return false, err
+ 		}
+diff --git a/internal/battencli/owner.go b/internal/battencli/owner.go
+index eb6316d6..b45f34b9 100644
+--- a/internal/battencli/owner.go
++++ b/internal/battencli/owner.go
+@@ -253,7 +253,7 @@ func (c *battenCLI) ownerPreflight(found bool, status shedengine.Status) error {
+ 
+ // preflightRunOwner reads the run's status file and runs ownerPreflight over it.
+ func (c *battenCLI) preflightRunOwner() error {
+-	status, found, err := state.ReadJSONNoMkdir[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
++	status, found, err := state.ReadJSON[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
+ 	if err != nil {
+ 		return errors.New("battencli: decode status file " + c.shedPaths.StatusPath + ": " + err.Error())
+ 	}
+diff --git a/internal/battencli/parentlock.go b/internal/battencli/parentlock.go
+index c359f277..2beae1a5 100644
+--- a/internal/battencli/parentlock.go
++++ b/internal/battencli/parentlock.go
+@@ -59,7 +59,7 @@ func childParentLock(slug string, locateTask func() (*lymcwd.Location, error), b
+ // landingInFlight reports whether the task pair's run is at Finalize and running, or a verify marker of the pair is live, which holds the run's parent lock.
+ // A status directory that does not exist yet reads as no status; any other failed read of the status file or the marker returns its error.
+ func landingInFlight(taskLocation *lymcwd.Location) (bool, error) {
+-	status, found, err := state.ReadJSONNoMkdir[shedengine.Status](shedrun.StatusFile(taskLocation, shedrun.SelfRunID), shedrun.StatusLock(taskLocation, shedrun.SelfRunID))
++	status, found, err := state.ReadJSON[shedengine.Status](shedrun.StatusFile(taskLocation, shedrun.SelfRunID), shedrun.StatusLock(taskLocation, shedrun.SelfRunID))
+ 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+ 		return false, err
+ 	}
+diff --git a/internal/battencli/predrive_test.go b/internal/battencli/predrive_test.go
+index cf5122f1..58639061 100644
+--- a/internal/battencli/predrive_test.go
++++ b/internal/battencli/predrive_test.go
+@@ -66,7 +66,7 @@ func TestPreDriveCheck(t *testing.T) {
+ 		if err != nil || kind != "" {
+ 			t.Fatalf("battenPreStep() = (%q, %v); want (\"\", nil)", kind, err)
+ 		}
+-		status, found, err := state.ReadJSONNoMkdir[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
++		status, found, err := state.ReadJSON[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
+ 		if err != nil || !found || status.CurrentProducer != battenrecipe.NameWorktreeCreate || status.State != shedengine.StateRunning {
+ 			t.Errorf("status after battenPreStep = (%+v, found %v, err %v); want a running Worktree-Create", status, found, err)
+ 		}
+diff --git a/internal/battencli/run_test.go b/internal/battencli/run_test.go
+index b1e9346a..f5e58bbe 100644
+--- a/internal/battencli/run_test.go
++++ b/internal/battencli/run_test.go
+@@ -428,7 +428,7 @@ func TestRunCmd_ResumeDispositions(t *testing.T) {
+ 				}
+ 				return
+ 			}
+-			st, found, err := state.ReadJSONNoMkdir[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
++			st, found, err := state.ReadJSON[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
+ 			if err != nil || !found {
+ 				t.Fatalf("read persisted status: found=%v err=%v", found, err)
+ 			}
+@@ -632,7 +632,7 @@ func TestStatusAndPause_ReadADurableStatusWhoseLockDirIsAbsent(t *testing.T) {
+ 			if len(envelope) != 2 || envelope["ok"] != true || envelope["status_file"] != c.shedPaths.StatusPath {
+ 				t.Errorf("pause() envelope = %v; want exactly ok and status_file=%q", envelope, c.shedPaths.StatusPath)
+ 			}
+-			st, found, err := state.ReadJSONNoMkdir[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
++			st, found, err := state.ReadJSON[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
+ 			if err != nil || !found {
+ 				t.Fatalf("read persisted status: found=%v err=%v", found, err)
+ 			}
+diff --git a/internal/battencli/startguard.go b/internal/battencli/startguard.go
+index 0080cf25..98cc2883 100644
+--- a/internal/battencli/startguard.go
++++ b/internal/battencli/startguard.go
+@@ -297,7 +297,7 @@ func (c *battenCLI) refuseAtStart(verb string) error {
+ 	if err := os.MkdirAll(filepath.Dir(statusLockPath), 0o755); err != nil {
+ 		return err
+ 	}
+-	status, found, err := state.ReadJSONNoMkdir[shedengine.Status](statusPath, statusLockPath)
++	status, found, err := state.ReadJSON[shedengine.Status](statusPath, statusLockPath)
+ 	if err != nil {
+ 		return fmt.Errorf("battencli: read status file %s: %w", statusPath, err)
+ 	}
+diff --git a/internal/battencli/step_test.go b/internal/battencli/step_test.go
+index ffb4183e..22a7176b 100644
+--- a/internal/battencli/step_test.go
++++ b/internal/battencli/step_test.go
+@@ -32,7 +32,7 @@ import (
+ func TestBattenPreStep_SeedsAbsentStatus(t *testing.T) {
+ 	c := newFakeReceiver(t, nil)
+ 
+-	if _, found, err := state.ReadJSONNoMkdir[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath); err != nil || found {
++	if _, found, err := state.ReadJSON[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath); err != nil || found {
+ 		t.Fatalf("precondition: status read = (found=%v, err=%v); want (false, nil)", found, err)
+ 	}
+ 
+@@ -52,7 +52,7 @@ func TestBattenPreStep_SeedsAbsentStatus(t *testing.T) {
+ 		t.Errorf("row-notice marker stat error = %v; want it cleared by the fresh seed", err)
+ 	}
+ 
+-	st, found, err := state.ReadJSONNoMkdir[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
++	st, found, err := state.ReadJSON[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
+ 	if err != nil || !found {
+ 		t.Fatalf("status after battenPreStep = (found=%v, err=%v); want (true, nil)", found, err)
+ 	}
+diff --git a/internal/battencli/wire.go b/internal/battencli/wire.go
+index 71311577..8f78c72d 100644
+--- a/internal/battencli/wire.go
++++ b/internal/battencli/wire.go
+@@ -550,7 +550,7 @@ func noticesReachDriversParent(prime, taskLocation *lymcwd.Location) (bool, erro
+ 
+ // battenHistoryLen returns the length of batten's own status history for slug, 0 when the status file is absent.
+ func battenHistoryLen(location *lymcwd.Location, slug string) (int, error) {
+-	status, found, err := state.ReadJSONNoMkdir[shedengine.Status](StatusFile(location, slug), StatusLock(location, slug))
++	status, found, err := state.ReadJSON[shedengine.Status](StatusFile(location, slug), StatusLock(location, slug))
+ 	if err != nil || !found {
+ 		return 0, err
+ 	}
+@@ -657,7 +657,7 @@ func childAtBeamAwait(taskLocation *lymcwd.Location) bool {
+ 		logger.Debug("battencli: the child's status lock directory could not be made; it reads as no Beam-Await wait", "path", statusLockPath, "cause", err)
+ 		return false
+ 	}
+-	status, found, err := state.ReadJSONNoMkdir[shedengine.Status](statusPath, statusLockPath)
++	status, found, err := state.ReadJSON[shedengine.Status](statusPath, statusLockPath)
+ 	if err != nil {
+ 		logger.Debug("battencli: the child's status is unreadable; it reads as no Beam-Await wait", "path", statusPath, "cause", err)
+ 		return false
+@@ -1295,7 +1295,7 @@ func (c *battenCLI) wire(location *lymcwd.Location, slug string) error {
+ 				return childSpawnError(runErr, childOutput.String())
+ 			},
+ 			ReadStatus: func(statusPath, statusLockPath string) (shedengine.Status, bool, error) {
+-				return state.ReadJSONNoMkdir[shedengine.Status](statusPath, statusLockPath)
++				return state.ReadJSON[shedengine.Status](statusPath, statusLockPath)
+ 			},
+ 		},
+ 		SeedChild: battenshed.SeedChildDeps{
+diff --git a/internal/battenrecipe/recipe_test.go b/internal/battenrecipe/recipe_test.go
+index a8eb5943..2c9a78dc 100644
+--- a/internal/battenrecipe/recipe_test.go
++++ b/internal/battenrecipe/recipe_test.go
+@@ -239,7 +239,7 @@ func TestNew_PauseDuringLandReentersTheRowThroughGotoThenRun(t *testing.T) {
+ 		return nil, false, err
+ 	}
+ 	env.Land.PauseRequested = func() (bool, error) {
+-		status, _, err := state.ReadJSONNoMkdir[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
++		status, _, err := state.ReadJSON[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
+ 		return status.PauseRequested, err
+ 	}
+ 	env.Land.Sleep = func(context.Context, time.Duration) {}
+@@ -259,7 +259,7 @@ func TestNew_PauseDuringLandReentersTheRowThroughGotoThenRun(t *testing.T) {
+ 	if step.Producer != NameLand || step.Outcome != shedengine.Stuck || step.State != shedengine.StateBlocked || step.Next != NameLand {
+ 		t.Fatalf("first Step() = %+v; want Land Stuck, halting blocked at Land", step)
+ 	}
+-	blocked, _, _ := state.ReadJSONNoMkdir[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
++	blocked, _, _ := state.ReadJSON[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
+ 	if !blocked.PauseRequested {
+ 		t.Error("pause_requested after the blocked halt = false; want it still set")
+ 	}
+@@ -273,7 +273,7 @@ func TestNew_PauseDuringLandReentersTheRowThroughGotoThenRun(t *testing.T) {
+ 	}); err != nil {
+ 		t.Fatalf("Goto() error = %v, want nil", err)
+ 	}
+-	paused, _, _ := state.ReadJSONNoMkdir[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
++	paused, _, _ := state.ReadJSON[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
+ 	if paused.State != shedengine.StatePaused || paused.CurrentProducer != NameLand || paused.PauseRequested {
+ 		t.Fatalf("status after Goto = %+v; want paused at Land with the flag cleared", paused)
+ 	}
+diff --git a/internal/beamcli/deps.go b/internal/beamcli/deps.go
+index 7384b132..b577b7ed 100644
+--- a/internal/beamcli/deps.go
++++ b/internal/beamcli/deps.go
+@@ -53,7 +53,7 @@ func hubCreateDeps(prime *lymcwd.Location) (createDeps, error) {
+ 			return boardengine.SetOwners(boardDir, req)
+ 		},
+ 		RunStatus: func(slug string) (shedengine.State, bool, error) {
+-			status, found, err := state.ReadJSONNoMkdir[shedengine.Status](battencli.StatusFile(prime, slug), shedrun.StatusLock(prime, slug))
++			status, found, err := state.ReadJSON[shedengine.Status](battencli.StatusFile(prime, slug), shedrun.StatusLock(prime, slug))
+ 			if errors.Is(err, fs.ErrNotExist) {
+ 				return "", false, nil
+ 			}
+@@ -96,7 +96,7 @@ func hubLandDeps(prime *lymcwd.Location) landDeps {
+ 			if err := os.MkdirAll(filepath.Dir(lockPath), 0o755); err != nil {
+ 				return shedengine.Status{}, false, err
+ 			}
+-			return state.ReadJSONNoMkdir[shedengine.Status](statusPath, lockPath)
++			return state.ReadJSON[shedengine.Status](statusPath, lockPath)
+ 		},
+ 		RunID: func(slug string) (string, error) {
+ 			beam, err := beamOf(slug)
+diff --git a/internal/driftcli/wiring.go b/internal/driftcli/wiring.go
+index fc991b6d..fbb65b3f 100644
+--- a/internal/driftcli/wiring.go
++++ b/internal/driftcli/wiring.go
+@@ -51,7 +51,7 @@ func (w *worktree) config() (driftengine.Config, error) {
+ 
+ // verbStatus reads the run status under its lock, the recipe from the run's seed, the capture lock and the agent-session mark.
+ func (w *worktree) verbStatus() (driftengine.VerbStatus, error) {
+-	status, found, err := state.ReadJSONNoMkdir[shedengine.Status](shedrun.StatusFile(w.location, shedrun.SelfRunID), shedrun.StatusLock(w.location, shedrun.SelfRunID))
++	status, found, err := state.ReadJSON[shedengine.Status](shedrun.StatusFile(w.location, shedrun.SelfRunID), shedrun.StatusLock(w.location, shedrun.SelfRunID))
+ 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+ 		return driftengine.VerbStatus{}, err
+ 	}
+diff --git a/internal/fabricengine/add.go b/internal/fabricengine/add.go
+index 657c3c67..b00145a0 100644
+--- a/internal/fabricengine/add.go
++++ b/internal/fabricengine/add.go
+@@ -1,4 +1,4 @@
+-// add.go implements the transactional Add: it creates the warp worktree and launchers, wires junctions, and records and commits the pair's parent-branch and parent-worktree provenance, pushing nothing.
++// add.go implements the transactional Add: it creates the warp and weft worktrees, wires junctions, writes launchers, and records and commits the pair's parent-branch and parent-worktree provenance, pushing nothing.
+ // It performs a best-effort full rollback on any post-creation failure, so a partial worktree PAIR is never left behind.
+ // The rollback also deletes the warp branch this Add created, under any branch_prefix, and never touches origin — see rollbackAdd.
+ // Whether the pair is live, which branches origin lends it and whether a leftover remote branch from a removed pair is replaceable are all decided at pre-flight, before the first mutation (see remoteleftover.go).
+@@ -540,6 +540,26 @@ func (t *Topology) add(l *lymcwd.Location, slug string, opts AddOptions, local b
+ 		}
+ 	}
+ 
++	if t.beforeWire != nil {
++		t.beforeWire()
++	}
++
++	// (10b) Wire the new worktree's warp junctions as soon as the weft worktree exists, ahead of the local marks and the launchers,
++	// so a hub reader polling the half-built pair meets a warp worktree without its junction for as short a time as possible.
++	// The wired name-set comes from the repo-wide BoardDir base (not any per-pair weft base or acting-worktree config):
++	// every worktree must converge to the same repo-wide pathspec, matching Checkout's re-point call.
++	// The weft worktree already exists from step 8, so junction targets resolve.
++	// On failure, roll back the whole pair via the existing post-step-7 path.
++	names, err := RepoWiredNames(l)
++	if err != nil {
++		_ = t.rollbackAdd(rec, pairAt, slug, warpBranch, weftBranch, target, weftBranchAlreadyExists, warpTok, &warpPush)
++		return AddResult{}, fmt.Errorf("wire junctions: load fabric config: %w", err)
++	}
++	if err := WireJunctionsWith(rec, pairAt, slug, names); err != nil {
++		_ = t.rollbackAdd(rec, pairAt, slug, warpBranch, weftBranch, target, weftBranchAlreadyExists, warpTok, &warpPush)
++		return AddResult{}, fmt.Errorf("wire junctions: %w", err)
++	}
++
+ 	// Both worktrees exist: a local pair marks its two branches before the origin record's commit, so no push can carry that commit out.
+ 	if local {
+ 		if err := gitrepo.New(l.WorktreePath()).MarkBranchLocal(warpBranch); err != nil {
+@@ -560,22 +580,6 @@ func (t *Topology) add(l *lymcwd.Location, slug string, opts AddOptions, local b
+ 		}
+ 	}
+ 
+-	// (10b) Wire the new worktree's warp junctions eagerly, sourcing the wired
+-	// name-set from the repo-wide BoardDir base (not any per-pair weft base or
+-	// acting-worktree config) — every worktree must converge to the same
+-	// repo-wide pathspec, matching Checkout's re-point call. The weft worktree
+-	// already exists from step 8, so junction targets resolve. On failure, roll
+-	// back the whole pair via the existing post-step-7 path.
+-	names, err := RepoWiredNames(l)
+-	if err != nil {
+-		_ = t.rollbackAdd(rec, pairAt, slug, warpBranch, weftBranch, target, weftBranchAlreadyExists, warpTok, &warpPush)
+-		return AddResult{}, fmt.Errorf("wire junctions: load fabric config: %w", err)
+-	}
+-	if err := WireJunctionsWith(rec, pairAt, slug, names); err != nil {
+-		_ = t.rollbackAdd(rec, pairAt, slug, warpBranch, weftBranch, target, weftBranchAlreadyExists, warpTok, &warpPush)
+-		return AddResult{}, fmt.Errorf("wire junctions: %w", err)
+-	}
+-
+ 	// (10c) Record and commit the pair's provenance now that the pair is fully wired;
+ 	// the caller's push of the weft branch carries this commit to the remote.
+ 	// An adopted weft worktree that already carries the record keeps its parent fields,
+diff --git a/internal/fabricengine/add_hubreader_integration_test.go b/internal/fabricengine/add_hubreader_integration_test.go
+new file mode 100644
+index 00000000..353bc5dd
+--- /dev/null
++++ b/internal/fabricengine/add_hubreader_integration_test.go
+@@ -0,0 +1,142 @@
++//go:build tier1
++
++// add_hubreader_integration_test.go covers a hub-wide reader polling a pair Add is still building.
++// The origin read it makes through every listed worktree leaves no real _lym that the wiring then refuses.
++// ReadOrigin itself creates no .weft directory and seeds no exclude.
++
++package fabricengine_test
++
++import (
++	"os"
++	"os/exec"
++	"path/filepath"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/fslink"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++)
++
++func TestAdd_HubReaderBeforeWiringLeavesNoLym(t *testing.T) {
++	t.Parallel()
++
++	const slug = "half-built"
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	warpLym := fabricengine.CodeLymLink(h.Location, slug)
++
++	readHalfBuilt := false
++	fabricengine.SetBeforeWireForTest(h.Topology, func() {
++		worktrees, err := fabricengine.List(h.Location.WorktreePath())
++		if err != nil {
++			t.Errorf("List() error = %v", err)
++			return
++		}
++		for _, worktree := range worktrees {
++			if worktree.Main {
++				continue
++			}
++			pair, err := lymcwd.ResolveWorktree(worktree.Path)
++			if err != nil {
++				continue
++			}
++			weftPath := fabricengine.RecordsWorktree(pair)
++			weftDirBefore := lstatExists(t, filepath.Join(weftPath, ".weft"))
++			excludeBefore := readWeftExclude(t, weftPath)
++			_, found, err := fabricengine.ReadOrigin(pair)
++			if err != nil {
++				t.Errorf("ReadOrigin(%q) error = %v; want nil", pair.WorktreeName, err)
++			}
++			if pair.WorktreeName == slug {
++				if got := lstatExists(t, filepath.Join(weftPath, ".weft")); got != weftDirBefore {
++					t.Errorf(".weft exists in %q = %v after ReadOrigin; want it unchanged from %v", weftPath, got, weftDirBefore)
++				}
++				if got := readWeftExclude(t, weftPath); got != excludeBefore {
++					t.Errorf("info/exclude of %q = %q after ReadOrigin; want it unchanged from %q", weftPath, got, excludeBefore)
++				}
++				readHalfBuilt = true
++				if found {
++					t.Errorf("ReadOrigin(%q) found = true; want false before the pair is wired", slug)
++				}
++			}
++		}
++		if _, err := os.Lstat(warpLym); !os.IsNotExist(err) {
++			t.Errorf("Lstat(%q) error = %v; want the reader to leave no _lym before wiring", warpLym, err)
++		}
++	})
++
++	hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{SkipPush: true})
++
++	if !readHalfBuilt {
++		t.Errorf("the reader never read the half-built pair %q; want it listed and resolved before wiring", slug)
++	}
++	if isLink, err := fslink.IsLink(warpLym); err != nil || !isLink {
++		t.Errorf("IsLink(%q) = (%v, %v); want (true, nil) once Add completes", warpLym, isLink, err)
++	}
++}
++
++// weftExcludePath returns the git info/exclude file that weftPath's repository uses.
++func weftExcludePath(t *testing.T, weftPath string) string {
++	t.Helper()
++	out, err := exec.Command("git", "-C", weftPath, "rev-parse", "--path-format=absolute", "--git-path", "info/exclude").Output()
++	if err != nil {
++		t.Fatalf("git rev-parse --git-path info/exclude in %q: %v", weftPath, err)
++	}
++	return strings.TrimSpace(string(out))
++}
++
++// readWeftExclude returns the content of the git info/exclude file that weftPath's repository uses, or "" when the file does not exist.
++func readWeftExclude(t *testing.T, weftPath string) string {
++	t.Helper()
++	content, err := os.ReadFile(weftExcludePath(t, weftPath))
++	if os.IsNotExist(err) {
++		return ""
++	}
++	if err != nil {
++		t.Fatalf("ReadFile(info/exclude) in %q: %v", weftPath, err)
++	}
++	return string(content)
++}
++
++// lstatExists reports whether path exists, failing the test on any Lstat error other than not-exist.
++func lstatExists(t *testing.T, path string) bool {
++	t.Helper()
++	_, err := os.Lstat(path)
++	if err != nil && !os.IsNotExist(err) {
++		t.Fatalf("Lstat(%q): %v", path, err)
++	}
++	return err == nil
++}
++
++func TestReadOrigin_CreatesNoWeftDirectoryAndSeedsNoExclude(t *testing.T) {
++	t.Parallel()
++
++	const slug = "no-weft-dir"
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{SkipPush: true})
++	pair, err := lymcwd.ResolveWorktree(h.PairCodeWorktree(slug))
++	if err != nil {
++		t.Fatalf("ResolveWorktree(%q): %v", slug, err)
++	}
++	weftPath := fabricengine.RecordsWorktree(pair)
++	weftLockDir := filepath.Join(weftPath, ".weft")
++	if err := os.RemoveAll(weftLockDir); err != nil {
++		t.Fatalf("RemoveAll(%q): %v", weftLockDir, err)
++	}
++	// Add already seeded the exclude; emptying it lets a regression that seeds it again show.
++	if err := os.WriteFile(weftExcludePath(t, weftPath), nil, 0o644); err != nil {
++		t.Fatalf("WriteFile(info/exclude): %v", err)
++	}
++
++	origin, found, err := fabricengine.ReadOrigin(pair)
++	if err != nil || !found {
++		t.Fatalf("ReadOrigin(%q) = (%+v, %v, %v); want the record read without its lock directory", slug, origin, found, err)
++	}
++	if lstatExists(t, weftLockDir) {
++		t.Errorf("%q exists after ReadOrigin; want a read to create no .weft directory", weftLockDir)
++	}
++	if got := readWeftExclude(t, weftPath); got != "" {
++		t.Errorf("info/exclude of %q = %q after ReadOrigin; want it still empty", weftPath, got)
++	}
++}
+diff --git a/internal/fabricengine/destroy.go b/internal/fabricengine/destroy.go
+index aabaf087..f3411960 100644
+--- a/internal/fabricengine/destroy.go
++++ b/internal/fabricengine/destroy.go
+@@ -1747,6 +1747,19 @@ func stagedWorktreeContained(root *os.Root, rel string) bool {
+ 	return info.Mode()&os.ModeSymlink == 0 && info.IsDir()
+ }
+ 
++// worktreeStagingPrefix opens the name of the staging directory a new worktree is created in before it moves to its final path.
++const worktreeStagingPrefix = ".fabric-wt-staging-"
++
++// InWorktreeStaging reports whether path lies under a worktree staging directory, where a worktree being created sits before it moves to its final path.
++func InWorktreeStaging(path string) bool {
++	for _, part := range strings.Split(filepath.ToSlash(path), "/") {
++		if strings.HasPrefix(part, worktreeStagingPrefix) {
++			return true
++		}
++	}
++	return false
++}
++
+ // mkWorktreeStagingDir creates a fresh, collision-free staging parent directory directly under root and
+ // returns its base name. The name is unpredictable (crypto/rand) so a different-UID planter with hub
+ // write access cannot pre-plant a symlink at it, the mode is 0700 so such a planter can neither list nor
+@@ -1758,7 +1771,7 @@ func mkWorktreeStagingDir(root *os.Root) (string, error) {
+ 		if _, err := rand.Read(buf[:]); err != nil {
+ 			return "", fmt.Errorf("generate worktree staging name: %w", err)
+ 		}
+-		name := ".fabric-wt-staging-" + hex.EncodeToString(buf[:])
++		name := worktreeStagingPrefix + hex.EncodeToString(buf[:])
+ 		err := root.Mkdir(name, 0o700)
+ 		if err == nil {
+ 			return name, nil
+@@ -2314,4 +2327,3 @@ func (f *Fabric) resetMergeSides(rec *Mutations, warpSHA string) error {
+ 	}
+ 	return resetHardTo(rec, warpReq, f.code, warpSHA)
+ }
+-
+diff --git a/internal/fabricengine/destroy_test.go b/internal/fabricengine/destroy_test.go
+index 2bacab40..1f99c4b9 100644
+--- a/internal/fabricengine/destroy_test.go
++++ b/internal/fabricengine/destroy_test.go
+@@ -1253,3 +1253,27 @@ func TestDirtyPathsOutside(t *testing.T) {
+ 		})
+ 	}
+ }
++
++func TestInWorktreeStaging(t *testing.T) {
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		path string
++		want bool
++	}{
++		{"NestedUnderStagingDirectory", "/hub/" + worktreeStagingPrefix + "a1b2c3/feature", true},
++		{"StagingDirectoryItself", "/hub/" + worktreeStagingPrefix + "a1b2c3", true},
++		{"PrefixOnlyName", "/hub/" + strings.TrimSuffix(worktreeStagingPrefix, "-") + "/feature", false},
++		{"PrefixInsideAName", "/hub/not" + worktreeStagingPrefix + "x/feature", false},
++		{"UnrelatedPath", "/hub/feature", false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := InWorktreeStaging(tt.path); got != tt.want {
++				t.Errorf("InWorktreeStaging(%q) = %v; want %v", tt.path, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/fabricengine/export_test.go b/internal/fabricengine/export_test.go
+index 93eeb55b..227ed4ee 100644
+--- a/internal/fabricengine/export_test.go
++++ b/internal/fabricengine/export_test.go
+@@ -846,3 +846,9 @@ func HoldHubPauseForTest(t *testing.T, slug string) {
+ 		Sleep:    func(context.Context, time.Duration) error { return errors.New("the test's pause is never lifted") },
+ 	}))
+ }
++
++// SetBeforeWireForTest makes t's Add call hook once the new pair's weft worktree exists and before its junctions are wired.
++// It sets the hook on the one Topology, so parallel tests inject per instance.
++func SetBeforeWireForTest(t *Topology, hook func()) {
++	t.beforeWire = hook
++}
+diff --git a/internal/fabricengine/failedpush.go b/internal/fabricengine/failedpush.go
+index 25f2aa4d..76c7f2b6 100644
+--- a/internal/fabricengine/failedpush.go
++++ b/internal/fabricengine/failedpush.go
+@@ -153,7 +153,7 @@ func ListFailedPushes(hubPath string) ([]FailedPush, error) {
+ 			continue
+ 		}
+ 		path := filepath.Join(dir, entry.Name())
+-		record, found, err := state.ReadJSONNoMkdir[FailedPush](path, failedPushLockPath(path))
++		record, found, err := state.ReadJSON[FailedPush](path, failedPushLockPath(path))
+ 		if err != nil {
+ 			return nil, fmt.Errorf("read failed-push record %s: %w", entry.Name(), err)
+ 		}
+diff --git a/internal/fabricengine/junction.go b/internal/fabricengine/junction.go
+index 305cfc21..1f87cef1 100644
+--- a/internal/fabricengine/junction.go
++++ b/internal/fabricengine/junction.go
+@@ -40,6 +40,12 @@ func WarpLymLinkHere(l *lymcwd.Location) string {
+ 	return filepath.Join(l.WorktreePath(), l.AnchorRel, lymdirs.LymDirName)
+ }
+ 
++// LymJunctionWiredHere reports whether the current warp worktree's _lym is a link, as wiring leaves it.
++// A pair still being created has no link there yet, so a reader that goes through the path before then reads nothing and must create nothing there.
++func LymJunctionWiredHere(l *lymcwd.Location) (bool, error) {
++	return fslink.IsLink(WarpLymLinkHere(l))
++}
++
+ // WarpJunction represents a directory junction in the warp worktree that links to a weft directory.
+ type WarpJunction struct {
+ 	Name   string // Name is the directory name (e.g., "_lym")
+diff --git a/internal/fabricengine/moverecord.go b/internal/fabricengine/moverecord.go
+index 3f105af4..80fdf9cb 100644
+--- a/internal/fabricengine/moverecord.go
++++ b/internal/fabricengine/moverecord.go
+@@ -62,7 +62,7 @@ func ReadMoveRecord(weftPath string) (record MoveRecord, found bool, err error)
+ 	if _, statErr := os.Stat(path); os.IsNotExist(statErr) {
+ 		return MoveRecord{}, false, nil
+ 	}
+-	record, found, err = state.ReadJSONNoMkdir[MoveRecord](path, moveRecordStateLockPath(weftPath))
++	record, found, err = state.ReadJSON[MoveRecord](path, moveRecordStateLockPath(weftPath))
+ 	if err != nil {
+ 		return MoveRecord{}, false, fmt.Errorf("fabricengine: read the move record in %s: %w", weftPath, err)
+ 	}
+diff --git a/internal/fabricengine/origin.go b/internal/fabricengine/origin.go
+index f5cf3c70..086e36d3 100644
+--- a/internal/fabricengine/origin.go
++++ b/internal/fabricengine/origin.go
+@@ -102,11 +102,9 @@ func originLockPath(weftPath string) (string, error) {
+ // ReadOrigin reads the origin record for l's worktree pair.
+ // A false second return means no record exists for this worktree — the legacy-worktree case — and
+ // is not an error.
++// It creates no directory and seeds no exclude, so a hub reader polling a pair still being built leaves nothing behind in it.
+ func ReadOrigin(l *lymcwd.Location) (Origin, bool, error) {
+-	lockPath, err := originLockPath(RecordsWorktree(l))
+-	if err != nil {
+-		return Origin{}, false, err
+-	}
++	lockPath := filepath.Join(RecordsLockDirPath(RecordsWorktree(l)), originRecordLockFileName)
+ 	return state.ReadJSON[Origin](OriginRecordPath(l), lockPath)
+ }
+ 
+diff --git a/internal/fabricengine/topology.go b/internal/fabricengine/topology.go
+index 8e8bf8bc..ef19ac73 100644
+--- a/internal/fabricengine/topology.go
++++ b/internal/fabricengine/topology.go
+@@ -25,6 +25,8 @@ type Topology struct {
+ 	inFlight InFlightProbe
+ 	// teardownWait bounds how long Remove waits for a push of the pair to let go of the pair's teardown lock.
+ 	teardownWait time.Duration
++	// beforeWire runs in Add once the weft worktree exists and before the junctions are wired; nil in production.
++	beforeWire func()
+ }
+ 
+ // SetInFlightProbe sets the probe Remove's store housekeeping consults before it runs gc.
+diff --git a/internal/hibernatecli/deps.go b/internal/hibernatecli/deps.go
+index d5310edc..ac7f981f 100644
+--- a/internal/hibernatecli/deps.go
++++ b/internal/hibernatecli/deps.go
+@@ -128,7 +128,7 @@ func readRunStatus(prime *lymcwd.Location, slug string) (hibernateengine.RunStat
+ 	if err := os.MkdirAll(filepath.Dir(lockPath), 0o755); err != nil {
+ 		return hibernateengine.RunStatus{}, false, err
+ 	}
+-	status, found, err := state.ReadJSONNoMkdir[shedengine.Status](statusPath, lockPath)
++	status, found, err := state.ReadJSON[shedengine.Status](statusPath, lockPath)
+ 	if err != nil || !found {
+ 		return hibernateengine.RunStatus{}, false, err
+ 	}
+diff --git a/internal/loomcli/arm.go b/internal/loomcli/arm.go
+index d6227b25..55cb5613 100644
+--- a/internal/loomcli/arm.go
++++ b/internal/loomcli/arm.go
+@@ -507,7 +507,7 @@ func (c *loomCLI) loomPreStepUnmarked(ctx context.Context) (string, error) {
+ 	} else {
+ 		// An unreadable status file leaves the placeholder; the refusal still names the command's shape.
+ 		var currentProducer string
+-		if st, found, err := state.ReadJSONNoMkdir[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath); err == nil && found {
++		if st, found, err := state.ReadJSON[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath); err == nil && found {
+ 			currentProducer = st.CurrentProducer
+ 		}
+ 		return shedverbs.KindBusy, errors.New("loom: a driver already holds the run lock; run \"" + c.pauseAfterCommand(currentProducer) + "\" to request a pause at the end of the current producer")
+diff --git a/internal/loomcli/circling.go b/internal/loomcli/circling.go
+index 3633712c..4781e802 100644
+--- a/internal/loomcli/circling.go
++++ b/internal/loomcli/circling.go
+@@ -222,7 +222,7 @@ func circlingStatusReader(statusPath, statusLock string) reviewStatusReader {
+ 		if err := os.MkdirAll(filepath.Dir(statusLock), 0o755); err != nil {
+ 			return shedengine.Status{}, false, fmt.Errorf("create the status lock directory: %w", err)
+ 		}
+-		return state.ReadJSONNoMkdir[shedengine.Status](statusPath, statusLock)
++		return state.ReadJSON[shedengine.Status](statusPath, statusLock)
+ 	}
+ }
+ 
+diff --git a/internal/loomcli/darnwiring.go b/internal/loomcli/darnwiring.go
+index 56058017..b94343aa 100644
+--- a/internal/loomcli/darnwiring.go
++++ b/internal/loomcli/darnwiring.go
+@@ -117,7 +117,7 @@ func darnTreeScope(l *lymcwd.Location) func(gateKey string) (string, bool, error
+ // Reason is the status file's error while the run is halted at the Darn-Write row, and empty otherwise.
+ // An absent status file and a history with no Darn-Write entry report not found.
+ func latestDarnOutcome(statusPath, statusLockPath string) (loomshed.DarnOutcome, bool, error) {
+-	st, found, err := state.ReadJSONNoMkdir[shedengine.Status](statusPath, statusLockPath)
++	st, found, err := state.ReadJSON[shedengine.Status](statusPath, statusLockPath)
+ 	// A run directory not yet created fails the lock open with not-exist; that is an absent status file too.
+ 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+ 		return loomshed.DarnOutcome{}, false, err
+diff --git a/internal/loomcli/driftwiring.go b/internal/loomcli/driftwiring.go
+index 7ee87bc6..2fe49398 100644
+--- a/internal/loomcli/driftwiring.go
++++ b/internal/loomcli/driftwiring.go
+@@ -58,7 +58,7 @@ func driftDeps(location *lymcwd.Location, statusPath, statusLockPath string, awa
+ 		return driftengine.LoadConfig(fabricengine.ConfigDirs(location))
+ 	}
+ 	status := func() (shedengine.Status, error) {
+-		st, found, err := state.ReadJSONNoMkdir[shedengine.Status](statusPath, statusLockPath)
++		st, found, err := state.ReadJSON[shedengine.Status](statusPath, statusLockPath)
+ 		if err != nil {
+ 			return shedengine.Status{}, err
+ 		}
+diff --git a/internal/loomcli/drivewiring_test.go b/internal/loomcli/drivewiring_test.go
+index 6150514e..b2b70d6c 100644
+--- a/internal/loomcli/drivewiring_test.go
++++ b/internal/loomcli/drivewiring_test.go
+@@ -125,7 +125,7 @@ func TestGoDriverSeams_LabelShed(t *testing.T) {
+ 	}}
+ 	read := func() shedengine.Status {
+ 		t.Helper()
+-		st, _, err := state.ReadJSONNoMkdir[shedengine.Status](statusPath, statusLockPath)
++		st, _, err := state.ReadJSON[shedengine.Status](statusPath, statusLockPath)
+ 		if err != nil {
+ 			t.Fatalf("read status: %v", err)
+ 		}
+diff --git a/internal/loomcli/entryobservation.go b/internal/loomcli/entryobservation.go
+index 09b0cff0..a9f94d1e 100644
+--- a/internal/loomcli/entryobservation.go
++++ b/internal/loomcli/entryobservation.go
+@@ -47,7 +47,7 @@ func recordHandoffVoucher(path, lockPath string, historyLength int, persistedSta
+ // so what it left on disk is vouched for like a clean step's.
+ // It reads the status file strictly and warns, recording nothing, when the read fails or the file is absent.
+ func recordHandoffVoucherFromStatus(path, lockPath, statusPath, statusLockPath string) {
+-	st, found, err := state.ReadJSONNoMkdir[shedengine.Status](statusPath, statusLockPath)
++	st, found, err := state.ReadJSON[shedengine.Status](statusPath, statusLockPath)
+ 	if err != nil {
+ 		logger.Warn("loomcli: could not read the status file to record the handoff voucher", "path", statusPath, "cause", err)
+ 		return
+@@ -67,7 +67,7 @@ func recordHandoffVoucherFromStatus(path, lockPath, statusPath, statusLockPath s
+ // a delete failure is warned and does not change the result,
+ // since a lingering voucher can at worst suppress one further matching observation and the warn names it.
+ func consumeHandoffVoucher(path, lockPath string, historyLength int, observedState shedengine.State) (voucher handoffVoucher, found, matches bool) {
+-	voucher, found, err := state.ReadJSONNoMkdir[handoffVoucher](path, lockPath)
++	voucher, found, err := state.ReadJSON[handoffVoucher](path, lockPath)
+ 	if err != nil {
+ 		logger.Warn("loomcli: could not read the handoff voucher; treating it as absent", "path", path, "cause", err)
+ 		return handoffVoucher{}, false, false
+@@ -108,7 +108,7 @@ func observeEntry(enabled bool, runLockPath, statusPath, statusLockPath, handoff
+ 		_ = probe.Release()
+ 	}
+ 
+-	shed, found, err := state.ReadJSONNoMkdir[shedengine.Status](statusPath, statusLockPath)
++	shed, found, err := state.ReadJSON[shedengine.Status](statusPath, statusLockPath)
+ 	if err != nil {
+ 		logger.Warn("loomcli: could not read the status file for the entry observation", "path", statusPath, "cause", err)
+ 		return loomengine.EntryObservation{}
+diff --git a/internal/loomcli/halt.go b/internal/loomcli/halt.go
+index 0f3d2361..969411f2 100644
+--- a/internal/loomcli/halt.go
++++ b/internal/loomcli/halt.go
+@@ -97,7 +97,7 @@ func (c *loomCLI) failedHalt(err error) (haltNote, bool) {
+ 	if err == nil || errors.Is(err, shedengine.ErrShedBusy) {
+ 		return haltNote{}, false
+ 	}
+-	st, found, readErr := state.ReadJSONNoMkdir[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
++	st, found, readErr := state.ReadJSON[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
+ 	if readErr != nil || !found {
+ 		return haltNote{}, false
+ 	}
+diff --git a/internal/loomcli/landingdeps.go b/internal/loomcli/landingdeps.go
+index acff44de..f1f8703b 100644
+--- a/internal/loomcli/landingdeps.go
++++ b/internal/loomcli/landingdeps.go
+@@ -253,7 +253,7 @@ func landingDeps(
+ 		},
+ 		IsTestFile: fixerTestFileMatcher(recipe, fixerPlanDir(l, recipe)),
+ 		RowEntry: func(row string) (int, error) {
+-			status, _, err := state.ReadJSONNoMkdir[shedengine.Status](shedrun.StatusFile(l, shedrun.SelfRunID), shedrun.StatusLock(l, shedrun.SelfRunID))
++			status, _, err := state.ReadJSON[shedengine.Status](shedrun.StatusFile(l, shedrun.SelfRunID), shedrun.StatusLock(l, shedrun.SelfRunID))
+ 			if err != nil {
+ 				return 0, err
+ 			}
+@@ -398,7 +398,7 @@ func parentLockDeps(l *lymcwd.Location, runID, statusPath, statusLockPath string
+ 		Owner:    loopLockOwner(l, runID),
+ 		WaitPath: parentlock.WaitRecordPath(loomengine.LoomScratchDir(l)),
+ 		PauseRequested: func() (bool, error) {
+-			status, found, err := state.ReadJSONNoMkdir[shedengine.Status](statusPath, statusLockPath)
++			status, found, err := state.ReadJSON[shedengine.Status](statusPath, statusLockPath)
+ 			if err != nil || !found {
+ 				return false, err
+ 			}
+diff --git a/internal/loomcli/looparm.go b/internal/loomcli/looparm.go
+index 4110f12e..ba81df1e 100644
+--- a/internal/loomcli/looparm.go
++++ b/internal/loomcli/looparm.go
+@@ -183,7 +183,7 @@ func agentActivityFor(loc *lymcwd.Location, cfg shuttleengine.Config) func() (ti
+ // It always reports skipped.
+ func (c *loomCLI) loomAfterInterrupt(_ context.Context, producer, cause, traceFile string) string {
+ 	var history []shedengine.HistoryEntry
+-	if st, found, err := state.ReadJSONNoMkdir[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath); err == nil && found {
++	if st, found, err := state.ReadJSON[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath); err == nil && found {
+ 		history = st.History
+ 	}
+ 	return c.reflectHalt(haltNote{
+diff --git a/internal/loomcli/looplock.go b/internal/loomcli/looplock.go
+index 17d18451..9293dfca 100644
+--- a/internal/loomcli/looplock.go
++++ b/internal/loomcli/looplock.go
+@@ -174,7 +174,7 @@ func finalizeKeepsLock(statusPath, statusLockPath, verifyDir string) func() bool
+ 	markerPath := verifytree.NewPaths("", verifyDir).Marker
+ 	var failures logger.Episode
+ 	return func() bool {
+-		status, found, err := state.ReadJSONNoMkdir[shedengine.Status](statusPath, statusLockPath)
++		status, found, err := state.ReadJSON[shedengine.Status](statusPath, statusLockPath)
+ 		if err != nil && !errors.Is(err, fs.ErrNotExist) {
+ 			failures.Fail("loomcli: could not read the run's status for the parent lock's idle rule; keeping the lock", "cause", err)
+ 			return true
+diff --git a/internal/loomcli/resume.go b/internal/loomcli/resume.go
+index 6afc97b5..c0731d07 100644
+--- a/internal/loomcli/resume.go
++++ b/internal/loomcli/resume.go
+@@ -52,7 +52,7 @@ func (c *loomCLI) resumeFromRunState(ctx context.Context, out io.Writer, bootstr
+ 		refuse(resumeRefusal{message: err.Error()})
+ 		return
+ 	}
+-	status, found, err := state.ReadJSONNoMkdir[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
++	status, found, err := state.ReadJSON[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
+ 	if err != nil {
+ 		refuse(resumeRefusal{message: err.Error()})
+ 		return
+diff --git a/internal/loomcli/smoke_bootstrapwiring_test.go b/internal/loomcli/smoke_bootstrapwiring_test.go
+index a0d1cfc6..0c5f59ed 100644
+--- a/internal/loomcli/smoke_bootstrapwiring_test.go
++++ b/internal/loomcli/smoke_bootstrapwiring_test.go
+@@ -101,12 +101,12 @@ func TestSmokeStepBootstrapWiring(t *testing.T) {
+ 	// Relies on the first step's completed `step`.
+ 	// It must run before the re-entry step changes the status again.
+ 	t.Run("step records a handoff voucher matching the persisted status", func(t *testing.T) {
+-		persisted, found, err := state.ReadJSONNoMkdir[shedengine.Status](shedrun.StatusFile(loc, shedrun.SelfRunID), shedrun.StatusLock(loc, shedrun.SelfRunID))
++		persisted, found, err := state.ReadJSON[shedengine.Status](shedrun.StatusFile(loc, shedrun.SelfRunID), shedrun.StatusLock(loc, shedrun.SelfRunID))
+ 		if err != nil || !found {
+ 			t.Fatalf("read persisted status after step: found=%v err=%v", found, err)
+ 		}
+ 
+-		voucher, found, err := state.ReadJSONNoMkdir[handoffVoucher](loomengine.LoomHandoffVoucher(loc), loomengine.LoomHandoffVoucherLock(loc))
++		voucher, found, err := state.ReadJSON[handoffVoucher](loomengine.LoomHandoffVoucher(loc), loomengine.LoomHandoffVoucherLock(loc))
+ 		if err != nil {
+ 			t.Fatalf("read handoff voucher: %v", err)
+ 		}
+diff --git a/internal/loomcli/smoke_test.go b/internal/loomcli/smoke_test.go
+index 6d205953..20ff439f 100644
+--- a/internal/loomcli/smoke_test.go
++++ b/internal/loomcli/smoke_test.go
+@@ -224,7 +224,7 @@ func waitForCurrentProducer(t *testing.T, loc *lymcwd.Location, want string, tim
+ 	deadline := time.Now().Add(timeout)
+ 	var last string
+ 	for {
+-		st, found, err := state.ReadJSONNoMkdir[shedengine.Status](shedrun.StatusFile(loc, shedrun.SelfRunID), shedrun.StatusLock(loc, shedrun.SelfRunID))
++		st, found, err := state.ReadJSON[shedengine.Status](shedrun.StatusFile(loc, shedrun.SelfRunID), shedrun.StatusLock(loc, shedrun.SelfRunID))
+ 		if err == nil && found {
+ 			last = string(st.CurrentProducer)
+ 			if st.CurrentProducer == want && st.State == shedengine.StateRunning {
+@@ -358,7 +358,7 @@ func TestSmokeRunStandalone(t *testing.T) {
+ 		killGoDriver(worktree)
+ 		waitRunLockFree(t, loc, 20*time.Second)
+ 
+-		before, foundBefore, err := state.ReadJSONNoMkdir[shedengine.Status](shedrun.StatusFile(loc, shedrun.SelfRunID), shedrun.StatusLock(loc, shedrun.SelfRunID))
++		before, foundBefore, err := state.ReadJSON[shedengine.Status](shedrun.StatusFile(loc, shedrun.SelfRunID), shedrun.StatusLock(loc, shedrun.SelfRunID))
+ 		if err != nil || !foundBefore {
+ 			t.Fatalf("read status file before standalone drive: found=%v err=%v", foundBefore, err)
+ 		}
+@@ -392,7 +392,7 @@ func TestSmokeRunStandalone(t *testing.T) {
+ 		}
+ 		t.Logf("loom run exited %d: %s", driveCode, strings.TrimSpace(driveOut))
+ 
+-		after, foundAfter, err := state.ReadJSONNoMkdir[shedengine.Status](shedrun.StatusFile(loc, shedrun.SelfRunID), shedrun.StatusLock(loc, shedrun.SelfRunID))
++		after, foundAfter, err := state.ReadJSON[shedengine.Status](shedrun.StatusFile(loc, shedrun.SelfRunID), shedrun.StatusLock(loc, shedrun.SelfRunID))
+ 		if err != nil || !foundAfter {
+ 			t.Fatalf("read status file after standalone drive: found=%v err=%v", foundAfter, err)
+ 		}
+@@ -591,7 +591,7 @@ func TestSmokeBootstrapLifecycle(t *testing.T) {
+ 			t.Errorf("driver pid %d found but not alive", pids[0])
+ 		}
+ 
+-		st, found, err := state.ReadJSONNoMkdir[shedengine.Status](shedrun.StatusFile(loc, shedrun.SelfRunID), shedrun.StatusLock(loc, shedrun.SelfRunID))
++		st, found, err := state.ReadJSON[shedengine.Status](shedrun.StatusFile(loc, shedrun.SelfRunID), shedrun.StatusLock(loc, shedrun.SelfRunID))
+ 		if err != nil || !found {
+ 			t.Fatalf("read status file after bootstrap: found=%v err=%v", found, err)
+ 		}
+diff --git a/internal/loomcli/start.go b/internal/loomcli/start.go
+index 755daff2..73be02dc 100644
+--- a/internal/loomcli/start.go
++++ b/internal/loomcli/start.go
+@@ -113,7 +113,7 @@ func (c *loomCLI) startLLMDriverArm(driverAction driverStrandAction, driverGUID
+ // readRunStatus reads the run's status file, reporting found false when the file is absent or does not decode.
+ // An undecodable file is logged rather than refused, since the driver's own read gate diagnoses it in the driver log and hand-editing a status file is no way forward.
+ func (c *loomCLI) readRunStatus() (shedengine.Status, bool, error) {
+-	st, found, err := state.ReadJSONNoMkdir[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
++	st, found, err := state.ReadJSON[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
+ 	if errors.Is(err, state.ErrDecode) {
+ 		logger.Warn("loom: the status file does not decode; deferring its diagnosis to the driver", "path", c.shedPaths.StatusPath, "error", err)
+ 		return shedengine.Status{}, false, nil
+@@ -248,7 +248,7 @@ func (c *loomCLI) vouchForSpawnedResume() {
+ 	if c.frictionDir == "" {
+ 		return
+ 	}
+-	st, found, err := state.ReadJSONNoMkdir[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
++	st, found, err := state.ReadJSON[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
+ 	if err != nil {
+ 		logger.Warn("loom: could not read the status file to vouch for the spawned resume", "path", c.shedPaths.StatusPath, "cause", err)
+ 		return
+@@ -419,7 +419,7 @@ func (c *loomCLI) runDriverSpawnAndWait(ctx context.Context, out io.Writer, driv
+ 		// false rather than true: neither is evidence the machine halted, so neither may
+ 		// shortcut the handshake -- the deadline stays the arbiter in that case.
+ 		halted := func() bool {
+-			st, found, readErr := state.ReadJSONNoMkdir[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
++			st, found, readErr := state.ReadJSON[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
+ 			if readErr != nil || !found {
+ 				return false
+ 			}
+diff --git a/internal/loomcli/start_driver_test.go b/internal/loomcli/start_driver_test.go
+index baeae8cd..7e82824a 100644
+--- a/internal/loomcli/start_driver_test.go
++++ b/internal/loomcli/start_driver_test.go
+@@ -556,7 +556,7 @@ func voucherOnDisk(t *testing.T, c *loomCLI) (handoffVoucher, bool) {
+ 	if _, err := os.Stat(loomengine.LoomHandoffVoucher(c.location)); errors.Is(err, os.ErrNotExist) {
+ 		return handoffVoucher{}, false
+ 	}
+-	voucher, found, err := state.ReadJSONNoMkdir[handoffVoucher](loomengine.LoomHandoffVoucher(c.location), loomengine.LoomHandoffVoucherLock(c.location))
++	voucher, found, err := state.ReadJSON[handoffVoucher](loomengine.LoomHandoffVoucher(c.location), loomengine.LoomHandoffVoucherLock(c.location))
+ 	if err != nil {
+ 		t.Fatalf("read handoff voucher: %v", err)
+ 	}
+diff --git a/internal/loomcli/wiring.go b/internal/loomcli/wiring.go
+index 987fb59b..adb748e0 100644
+--- a/internal/loomcli/wiring.go
++++ b/internal/loomcli/wiring.go
+@@ -930,7 +930,7 @@ func loomSegmentSettings(cfg loomengine.Config, review loomengine.ReviewSettings
+ // routing projects the run's recipe with the review budget its builder applies, so the reported budget is the one Shed blocks on.
+ func segmentBounces(statusPath, statusLockPath string, routing func() (shedengine.Routing, error)) func(row string) (int, int, bool, error) {
+ 	return func(row string) (int, int, bool, error) {
+-		st, found, err := state.ReadJSONNoMkdir[shedengine.Status](statusPath, statusLockPath)
++		st, found, err := state.ReadJSON[shedengine.Status](statusPath, statusLockPath)
+ 		// A run directory not yet created fails the lock open with not-exist; that is an absent status file too.
+ 		if err != nil && !errors.Is(err, fs.ErrNotExist) {
+ 			return 0, 0, false, err
+diff --git a/internal/loomcli/wiring_darn_test.go b/internal/loomcli/wiring_darn_test.go
+index f7c8a4ca..81a58aab 100644
+--- a/internal/loomcli/wiring_darn_test.go
++++ b/internal/loomcli/wiring_darn_test.go
+@@ -252,7 +252,7 @@ func TestArmAt_RenamesRetiredDarnRows(t *testing.T) {
+ 			if _, err := c.armAt(loc, "status", nil); err != nil {
+ 				t.Fatalf("armAt(status) = %v; want nil", err)
+ 			}
+-			got, _, err := state.ReadJSONNoMkdir[shedengine.Status](statusPath, statusLock)
++			got, _, err := state.ReadJSON[shedengine.Status](statusPath, statusLock)
+ 			if err != nil {
+ 				t.Fatalf("read status = %v; want nil", err)
+ 			}
+@@ -300,7 +300,7 @@ func TestRenameRetiredRows(t *testing.T) {
+ 				t.Fatalf("renameRetiredRows() = %v; want nil", err)
+ 			}
+ 
+-			got, _, err := state.ReadJSONNoMkdir[shedengine.Status](statusPath, statusLock)
++			got, _, err := state.ReadJSON[shedengine.Status](statusPath, statusLock)
+ 			if err != nil {
+ 				t.Fatalf("read status = %v; want nil", err)
+ 			}
+diff --git a/internal/loomengine/seed.go b/internal/loomengine/seed.go
+index 83bd46f4..83341efc 100644
+--- a/internal/loomengine/seed.go
++++ b/internal/loomengine/seed.go
+@@ -8,7 +8,6 @@ import (
+ 	"errors"
+ 	"fmt"
+ 	"os"
+-	"path/filepath"
+ 
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/state"
+@@ -31,7 +30,7 @@ import (
+ // escalate, not treat this as "not ready". See internal/preflight/doc.go's "report-not-error
+ // contract" section for the same three-case shape stated in full.
+ //
+-// The step-1 pre-emption rule, stated once and generally: every verdict shedengine.Run's step-1 read gate already hard-errors or short-circuits on is unreachable when CheckSeed is driven as a producer row, because step 1 reads the same told path through the same state.ReadJSONNoMkdir[shedengine.Status] decoder before any producer is looked up.
++// The step-1 pre-emption rule, stated once and generally: every verdict shedengine.Run's step-1 read gate already hard-errors or short-circuits on is unreachable when CheckSeed is driven as a producer row, because step 1 reads the same told path through the same state.ReadJSON[shedengine.Status] decoder before any producer is looked up.
+ // Four of the verdicts below are covered by that rule, and are kept anyway:
+ //
+ //   - CheckSeedMissing: step 1's !found hard-errors, "status file %q does not exist; Shed never
+@@ -62,17 +61,7 @@ func CheckSeed(statusPath, statusLockPath, expectedProducer string, toleratedPro
+ 			report.AddFailure(CheckSeedUnreadable, err.Error())
+ 		}
+ 	} else {
+-		// state.ReadJSONNoMkdir does not create missing parent directories (see its own doc
+-		// comment), and neither does internal/lock's AcquireReadLock/AcquireWriteLock --
+-		// gofrs/flock opens the lock file with O_CREATE but never creates parents, the same
+-		// gap internal/reedengine/lock.go already works around with its own
+-		// MkdirAll-before-lock. Without this MkdirAll, CheckSeed would escalate a
+-		// missing-parent worktree to a hard infra error instead of honouring its
+-		// report-not-error contract.
+-		if err := os.MkdirAll(filepath.Dir(statusLockPath), 0o755); err != nil {
+-			return Report{}, err
+-		}
+-		shed, found, rerr := state.ReadJSONNoMkdir[shedengine.Status](statusPath, statusLockPath)
++		shed, found, rerr := state.ReadJSON[shedengine.Status](statusPath, statusLockPath)
+ 		switch {
+ 		case rerr != nil:
+ 			// A decode failure (malformed JSON) is a determined
+@@ -84,7 +73,7 @@ func CheckSeed(statusPath, statusLockPath, expectedProducer string, toleratedPro
+ 				return Report{}, rerr
+ 			}
+ 		case !found:
+-			// The stat above just succeeded, so ReadJSONNoMkdir returning not-found (its
++			// The stat above just succeeded, so ReadJSON returning not-found (its
+ 			// (zero,false,nil) not-exist path) means the file vanished between the two
+ 			// calls -- a TOCTOU race, not a determined verdict. Synthesize a non-nil
+ 			// error so this never masquerades as Report{}, nil.
+@@ -123,7 +112,7 @@ func CheckSeed(statusPath, statusLockPath, expectedProducer string, toleratedPro
+ //
+ // A missing file, an empty recorded slug, a product that does not decode, and a decode failure on the outer shed envelope itself (malformed JSON) all pass: each is some other check's business — the caller's own missing-file handling, and, for the coherence cases (an empty slug and the like), CheckSeed's own rules.
+ // A decode failure specifically is diagnosed one layer earlier than CheckSeed.
+-// The spawned driver's Shed.Run step-1 read gate does the same ReadJSONNoMkdir read at the top of its loop and errors on it BEFORE any producer — the Loom-Preflight row that calls CheckSeed included — is ever looked up, so CheckSeed-as-producer never even runs on a decode failure (see CheckSeed's own doc comment on that step-1 pre-emption).
++// The spawned driver's Shed.Run step-1 read gate does the same ReadJSON read at the top of its loop and errors on it BEFORE any producer — the Loom-Preflight row that calls CheckSeed included — is ever looked up, so CheckSeed-as-producer never even runs on a decode failure (see CheckSeed's own doc comment on that step-1 pre-emption).
+ // Either way this function answers ownership alone.
+ // Escalating a decode failure here stopped the bootstrap before it ever spawned a driver or reached its success envelope, for a condition the driver's own run loop already surfaces in its own log —
+ // reproduced live via a poisoned status file that made both "lym loom start" and "lym loom run" refuse on the envelope instead of letting the spawned driver's own step-1 gate report the decode failure.
+@@ -131,10 +120,7 @@ func CheckSeed(statusPath, statusLockPath, expectedProducer string, toleratedPro
+ // own error, never converted into a verdict: CheckSeed draws this exact same line (see its own
+ // rerr-handling), and this function draws it the same way for the same reason.
+ func VerifySeedOwnership(statusPath, statusLockPath, wantSlug string) error {
+-	if err := os.MkdirAll(filepath.Dir(statusLockPath), 0o755); err != nil {
+-		return err
+-	}
+-	shed, found, err := state.ReadJSONNoMkdir[shedengine.Status](statusPath, statusLockPath)
++	shed, found, err := state.ReadJSON[shedengine.Status](statusPath, statusLockPath)
+ 	if err != nil {
+ 		if errors.Is(err, state.ErrDecode) {
+ 			return nil
+diff --git a/internal/loomrecipe/escalation_test.go b/internal/loomrecipe/escalation_test.go
+index 42fbfb75..384d8ec3 100644
+--- a/internal/loomrecipe/escalation_test.go
++++ b/internal/loomrecipe/escalation_test.go
+@@ -42,7 +42,7 @@ func newEscalationShed(t *testing.T) (*shedengine.Shed, string, *shedfake.Burler
+ 	discussion.HardMaxBounces = budgetEscalationBudget + 1
+ 	env.Segments["Discussion-Review"] = discussion
+ 	env.SegmentBounces = func(row string) (int, int, bool, error) {
+-		st, found, err := state.ReadJSONNoMkdir[shedengine.Status](env.StatusPath, env.StatusLockPath)
++		st, found, err := state.ReadJSON[shedengine.Status](env.StatusPath, env.StatusLockPath)
+ 		if err != nil || !found {
+ 			return 0, 0, false, err
+ 		}
+@@ -61,7 +61,7 @@ func newEscalationShed(t *testing.T) (*shedengine.Shed, string, *shedfake.Burler
+ 	shed.Producers[0].Producer = fakeAlwaysDoneProducer{}
+ 
+ 	readStatus := func() shedengine.Status {
+-		st, found, err := state.ReadJSONNoMkdir[shedengine.Status](env.StatusPath, env.StatusLockPath)
++		st, found, err := state.ReadJSON[shedengine.Status](env.StatusPath, env.StatusLockPath)
+ 		if err != nil || !found {
+ 			t.Fatalf("read status file: found=%v err=%v", found, err)
+ 		}
+@@ -106,7 +106,7 @@ func TestEscalation_DarnPerchRuleContinuesThenHardCapAcceptReachesDescribe(t *te
+ 		return envkit.TemplateSetting(module, key)
+ 	}
+ 	env.SegmentBounces = func(row string) (int, int, bool, error) {
+-		st, found, err := state.ReadJSONNoMkdir[shedengine.Status](env.StatusPath, env.StatusLockPath)
++		st, found, err := state.ReadJSON[shedengine.Status](env.StatusPath, env.StatusLockPath)
+ 		if err != nil || !found {
+ 			return 0, 0, false, err
+ 		}
+@@ -143,7 +143,7 @@ func TestEscalation_DarnPerchRuleContinuesThenHardCapAcceptReachesDescribe(t *te
+ 	if !strings.Contains(result.Reason, "(cause: hard-cap)") || !strings.Contains(result.Reason, "brief at ") {
+ 		t.Errorf("Run() reason = %q; want the hard-cap cause and the rendered brief's path", result.Reason)
+ 	}
+-	if st, _, err := state.ReadJSONNoMkdir[shedengine.Status](env.StatusPath, env.StatusLockPath); err != nil || st.ParentNotice == "" {
++	if st, _, err := state.ReadJSON[shedengine.Status](env.StatusPath, env.StatusLockPath); err != nil || st.ParentNotice == "" {
+ 		t.Errorf("status ParentNotice = %q, %v; want the Bouncer's one-line notice", st.ParentNotice, err)
+ 	}
+ 
+@@ -290,7 +290,7 @@ func TestEscalation_PerchBudgetOneWithAutoAccept(t *testing.T) {
+ 				return dispatch(spec)
+ 			}
+ 			env.SegmentBounces = func(row string) (int, int, bool, error) {
+-				st, found, err := state.ReadJSONNoMkdir[shedengine.Status](env.StatusPath, env.StatusLockPath)
++				st, found, err := state.ReadJSON[shedengine.Status](env.StatusPath, env.StatusLockPath)
+ 				if err != nil || !found {
+ 					return 0, 0, false, err
+ 				}
+diff --git a/internal/loomrecipe/frictionreflect_test.go b/internal/loomrecipe/frictionreflect_test.go
+index de18704c..a02a9bb8 100644
+--- a/internal/loomrecipe/frictionreflect_test.go
++++ b/internal/loomrecipe/frictionreflect_test.go
+@@ -48,9 +48,9 @@ func buildFrictionShed(t *testing.T, env shedrecipe.Env, paths shedbuild.ShedPat
+ 
+ func readStatus(t *testing.T, paths shedbuild.ShedPaths) shedengine.Status {
+ 	t.Helper()
+-	st, found, err := state.ReadJSONNoMkdir[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
++	st, found, err := state.ReadJSON[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
+ 	if err != nil || !found {
+-		t.Fatalf("ReadJSONNoMkdir(status) found = %v, error = %v; want found and nil", found, err)
++		t.Fatalf("ReadJSON(status) found = %v, error = %v; want found and nil", found, err)
+ 	}
+ 	return st
+ }
+diff --git a/internal/loomrecipe/resume_test.go b/internal/loomrecipe/resume_test.go
+index a5cc9a41..e6dbcb79 100644
+--- a/internal/loomrecipe/resume_test.go
++++ b/internal/loomrecipe/resume_test.go
+@@ -189,9 +189,9 @@ func TestResume_PauseStopsAtBoundaryAndClearsFlag(t *testing.T) {
+ 		t.Errorf("first Run() History = %+v; want empty -- pause is checked before the halted producer is ever called", result1.History)
+ 	}
+ 
+-	got, found, err := state.ReadJSONNoMkdir[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
++	got, found, err := state.ReadJSON[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
+ 	if err != nil {
+-		t.Fatalf("ReadJSONNoMkdir() error = %v; want nil", err)
++		t.Fatalf("ReadJSON() error = %v; want nil", err)
+ 	}
+ 	if !found {
+ 		t.Fatalf("status file not found after pause")
+diff --git a/internal/loomrecipe/sequence_test.go b/internal/loomrecipe/sequence_test.go
+index e89dc249..083176e4 100644
+--- a/internal/loomrecipe/sequence_test.go
++++ b/internal/loomrecipe/sequence_test.go
+@@ -156,9 +156,9 @@ func TestSequence_FullRunBlocksAtMergeIn(t *testing.T) {
+ 		t.Errorf("parent-review verdict stat error = %v; want no verdict written", err)
+ 	}
+ 
+-	got, found, err := state.ReadJSONNoMkdir[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
++	got, found, err := state.ReadJSON[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
+ 	if err != nil {
+-		t.Fatalf("ReadJSONNoMkdir() error = %v; want nil", err)
++		t.Fatalf("ReadJSON() error = %v; want nil", err)
+ 	}
+ 	if !found {
+ 		t.Fatalf("status file not found after Run()")
+diff --git a/internal/loomshed/loompreflight.go b/internal/loomshed/loompreflight.go
+index 1291bd73..dd31d049 100644
+--- a/internal/loomshed/loompreflight.go
++++ b/internal/loomshed/loompreflight.go
+@@ -150,7 +150,7 @@ func (p *loomPreflightProducer) waivesHalfFinished(report loomengine.Report) boo
+ 	if !halfFinished {
+ 		return false
+ 	}
+-	st, found, err := state.ReadJSONNoMkdir[shedengine.Status](p.statusPath, p.statusLockPath)
++	st, found, err := state.ReadJSON[shedengine.Status](p.statusPath, p.statusLockPath)
+ 	if err != nil || !found || !isGotoReentry(st.History) {
+ 		return false
+ 	}
+diff --git a/internal/orchcli/beam_integration_test.go b/internal/orchcli/beam_integration_test.go
+index e261a64b..8b60861b 100644
+--- a/internal/orchcli/beam_integration_test.go
++++ b/internal/orchcli/beam_integration_test.go
+@@ -1,20 +1,24 @@
+ //go:build tier1
+ 
+-// beam_integration_test.go proves an orch can run in a beam over one hub: a marked beam pair's orch paths lie under its own anchor, and its reed geometry names the orch strand under the beam's slug.
++// beam_integration_test.go proves an orch can run in a beam over one hub: a marked beam pair's orch paths lie under its own anchor, its reed geometry names the orch strand under the beam's slug, and HubOrchs lists it while skipping a pair not yet wired.
+ 
+ package orchcli
+ 
+ import (
++	"os"
+ 	"path/filepath"
++	"slices"
+ 	"strings"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/agentname"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/fslink"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
++	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
+ )
+ 
+ func TestOrchInBeam(t *testing.T) {
+@@ -58,3 +62,39 @@ func TestOrchInBeam(t *testing.T) {
+ 		t.Errorf("orch strand name in the beam = %q; want %q", got, want)
+ 	}
+ }
++
++// It is not parallel: logcapture.CaptureVerbose swaps the process-global logger to read the warnings.
++func TestHubOrchs_ListsWiredBeamsAndSkipsUnwiredPairs(t *testing.T) {
++	logs := logcapture.CaptureVerbose(t)
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	for _, slug := range []string{"wired", "unwired"} {
++		hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{SkipPush: true})
++		if marked, err := fabricengine.MarkBeam(fabricengine.NewMutations(h.Location.HubPath), h.Location, slug); err != nil || !marked {
++			t.Fatalf("MarkBeam(%q) = (%v, %v); want (true, nil)", slug, marked, err)
++		}
++	}
++	unwiredLym := fabricengine.CodeLymLink(h.Location, "unwired")
++	if err := fslink.Remove(unwiredLym); err != nil {
++		t.Fatalf("Remove(%q): %v", unwiredLym, err)
++	}
++
++	logs.Reset()
++	orchs, err := HubOrchs(h.Location)
++	if err != nil {
++		t.Fatalf("HubOrchs() error = %v", err)
++	}
++	var got []string
++	for _, orch := range orchs {
++		got = append(got, orch.WorktreeName)
++	}
++	if want := []string{h.Location.WorktreeName, "wired"}; !slices.Equal(got, want) {
++		t.Errorf("HubOrchs() = %v; want %v", got, want)
++	}
++	if _, err := os.Lstat(unwiredLym); !os.IsNotExist(err) {
++		t.Errorf("Lstat(%q) error = %v; want HubOrchs to leave no _lym in the unwired pair", unwiredLym, err)
++	}
++	if strings.Contains(logs.String(), "level=WARN") {
++		t.Errorf("HubOrchs() logged %q; want no warning for a pair still being wired", logs.String())
++	}
++}
+diff --git a/internal/orchcli/doc.go b/internal/orchcli/doc.go
+index 6d002400..a66f9150 100644
+--- a/internal/orchcli/doc.go
++++ b/internal/orchcli/doc.go
+@@ -148,6 +148,7 @@
+ // and `ParentOrchRecorded` answers whether that destination records a strand, the watched-or-silent decision a driver reads.
+ // Callers that act on no run's pair, hibernate's notice and fabric's push notifier, keep `NotifyPrime`.
+ // `HubOrchs` lists the worktrees an orch may run in, the prime's location and each local pair whose origin record carries the beam mark, for the readers that must cover every orch of the hub.
++// It skips a pair still being created, in its staging directory or without its `_lym` junction, and reads nothing through it, so a poll during `lym fabric add` leaves nothing the wiring refuses.
+ // A beam's `watch` tells its watcher the orch's own agent name, so the pause checks match an orch caller or network operation marker against that name, and the prime's watcher keeps matching an orch name with no slug.
+ // `InstallPushNotifier` routes fabric's failed-push notice to the prime orch as mail signed `FABRIC`, for every lym process from the root pre-run.
+ // It resolves the hub from the working directory as the network gate does, so a detached push child starting in the board worktree is covered, and installs nothing outside a hub.
+diff --git a/internal/orchcli/live.go b/internal/orchcli/live.go
+index 2f775407..2369816f 100644
+--- a/internal/orchcli/live.go
++++ b/internal/orchcli/live.go
+@@ -16,6 +16,7 @@ import (
+ 
+ // HubOrchs lists the worktrees of the hub that location belongs to in which an orch may run: the prime's location first, then each local pair whose origin record carries the beam mark.
+ // A pair whose origin record cannot be read is skipped with a warning, since a reader that must keep working under a pause cannot stop on one half-present pair.
++// A pair still being created, one in its staging directory or without its _lym junction yet, is skipped silently and has nothing read through it.
+ func HubOrchs(location *lymcwd.Location) ([]*lymcwd.Location, error) {
+ 	prime, err := resolvePrime(location)
+ 	if err != nil {
+@@ -27,7 +28,9 @@ func HubOrchs(location *lymcwd.Location) ([]*lymcwd.Location, error) {
+ 	}
+ 	orchs := []*lymcwd.Location{prime}
+ 	for _, worktree := range worktrees {
+-		if worktree.Main || worktree.Prunable {
++		// A worktree still being created is skipped before anything reads through it: it has no origin yet,
++		// and its wiring refuses a real _lym a read could leave behind.
++		if worktree.Main || worktree.Prunable || fabricengine.InWorktreeStaging(worktree.Path) {
+ 			continue
+ 		}
+ 		pair, err := lymcwd.ResolveWorktree(worktree.Path)
+@@ -35,6 +38,14 @@ func HubOrchs(location *lymcwd.Location) ([]*lymcwd.Location, error) {
+ 			logger.Warn("orch: skipping a worktree that does not resolve while listing the hub's orchs", "worktree", worktree.Path, "error", err)
+ 			continue
+ 		}
++		wired, err := fabricengine.LymJunctionWiredHere(pair)
++		if err != nil {
++			logger.Warn("orch: skipping a pair whose _lym junction cannot be read while listing the hub's orchs", "worktree", pair.WorktreeName, "error", err)
++			continue
++		}
++		if !wired {
++			continue
++		}
+ 		origin, found, err := fabricengine.ReadOrigin(pair)
+ 		if err != nil {
+ 			logger.Warn("orch: skipping a pair whose origin record cannot be read while listing the hub's orchs", "worktree", pair.WorktreeName, "error", err)
+diff --git a/internal/pairteardown/claim.go b/internal/pairteardown/claim.go
+index 2ce95c94..8aec4601 100644
+--- a/internal/pairteardown/claim.go
++++ b/internal/pairteardown/claim.go
+@@ -147,7 +147,7 @@ func (t *Teardown) battenRunState(slug string) (seeded bool, state string, err e
+ 
+ // readStatus reads the shed status file at path under its lock; found is false when the file is absent, which includes a run directory that was never created.
+ func readStatus(path, lockPath string) (shedengine.Status, bool, error) {
+-	status, found, err := state.ReadJSONNoMkdir[shedengine.Status](path, lockPath)
++	status, found, err := state.ReadJSON[shedengine.Status](path, lockPath)
+ 	if errors.Is(err, fs.ErrNotExist) {
+ 		return shedengine.Status{}, false, nil
+ 	}
+diff --git a/internal/runproc/record.go b/internal/runproc/record.go
+index 9b663ec9..d6774edf 100644
+--- a/internal/runproc/record.go
++++ b/internal/runproc/record.go
+@@ -156,7 +156,7 @@ func (l lister) list(dir, owner string) ([]Record, error) {
+ 			continue
+ 		}
+ 		path := filepath.Join(ownerDir, entry.Name())
+-		record, found, err := state.ReadJSONNoMkdir[Record](path, path+".lock")
++		record, found, err := state.ReadJSON[Record](path, path+".lock")
+ 		if err != nil || !found {
+ 			continue
+ 		}
+diff --git a/internal/shedadapters/settlerecord.go b/internal/shedadapters/settlerecord.go
+index 1476da1e..55398357 100644
+--- a/internal/shedadapters/settlerecord.go
++++ b/internal/shedadapters/settlerecord.go
+@@ -118,7 +118,7 @@ func readRecord[T any](path string) (T, bool, error) {
+ 		}
+ 		return zero, false, fmt.Errorf("shedadapters: stat record %s: %w", path, err)
+ 	}
+-	record, found, err := state.ReadJSONNoMkdir[T](path, path+".lock")
++	record, found, err := state.ReadJSON[T](path, path+".lock")
+ 	if err != nil {
+ 		return record, false, fmt.Errorf("shedadapters: read record %s: %w", path, err)
+ 	}
+diff --git a/internal/shedcli/cli_test.go b/internal/shedcli/cli_test.go
+index 4aa7f5b6..01478034 100644
+--- a/internal/shedcli/cli_test.go
++++ b/internal/shedcli/cli_test.go
+@@ -96,7 +96,7 @@ func (l *loopRun) arrange(t *testing.T) shedverbs.ArmStop {
+ // assertStatus checks the status file's state after the refusal was reported.
+ func (l *loopRun) assertStatus(t *testing.T, stop shedverbs.ArmStop) {
+ 	t.Helper()
+-	st, found, err := state.ReadJSONNoMkdir[shedengine.Status](stop.StatusPath, stop.StatusLockPath)
++	st, found, err := state.ReadJSON[shedengine.Status](stop.StatusPath, stop.StatusLockPath)
+ 	if err != nil {
+ 		t.Fatalf("read status = %v; want nil", err)
+ 	}
+diff --git a/internal/shedengine/entry.go b/internal/shedengine/entry.go
+index 93e576f4..c2f879d3 100644
+--- a/internal/shedengine/entry.go
++++ b/internal/shedengine/entry.go
+@@ -69,7 +69,7 @@ func (s *Shed) enter(st Status, def ProducerDef) (ProducerDef, *StepResult, erro
+ 		// validate has already rejected an OnDone naming no producer in the list.
+ 		def, _ = findProducer(s.Producers, def.OnDone)
+ 		var found bool
+-		st, found, err = state.ReadJSONNoMkdir[Status](s.StatusPath, s.StatusLockPath)
++		st, found, err = state.ReadJSON[Status](s.StatusPath, s.StatusLockPath)
+ 		if err != nil {
+ 			return def, nil, fmt.Errorf("shedengine: read status file %q: %w", s.StatusPath, err)
+ 		}
+diff --git a/internal/shedengine/failedstop.go b/internal/shedengine/failedstop.go
+index e6f98ccb..f4fa684e 100644
+--- a/internal/shedengine/failedstop.go
++++ b/internal/shedengine/failedstop.go
+@@ -62,7 +62,7 @@ func WriteFailedStop(req FailedStopRequest) (FailedStopResult, error) {
+ 	}
+ 
+ 	// The strict read refuses a malformed file and leaves a file in any other state byte-for-byte untouched.
+-	current, found, err := state.ReadJSONNoMkdir[Status](req.StatusPath, req.StatusLockPath)
++	current, found, err := state.ReadJSON[Status](req.StatusPath, req.StatusLockPath)
+ 	if err != nil {
+ 		return FailedStopResult{}, fmt.Errorf("shedengine: read status file %q: %w", req.StatusPath, err)
+ 	}
+diff --git a/internal/shedengine/goto.go b/internal/shedengine/goto.go
+index a6a96d87..20a5f8a6 100644
+--- a/internal/shedengine/goto.go
++++ b/internal/shedengine/goto.go
+@@ -82,7 +82,7 @@ func Goto(req GotoRequest) (Status, error) {
+ 	}
+ 	defer runLock.Release()
+ 
+-	st, found, err := state.ReadJSONNoMkdir[Status](req.StatusPath, req.StatusLockPath)
++	st, found, err := state.ReadJSON[Status](req.StatusPath, req.StatusLockPath)
+ 	if err != nil {
+ 		return Status{}, fmt.Errorf("shedengine: read status file %q: %w", req.StatusPath, err)
+ 	}
+@@ -272,7 +272,7 @@ func RecordResumer(statusPath, statusLockPath, by string) error {
+ 	if by == "" {
+ 		return nil
+ 	}
+-	cur, found, err := state.ReadJSONNoMkdir[Status](statusPath, statusLockPath)
++	cur, found, err := state.ReadJSON[Status](statusPath, statusLockPath)
+ 	if err != nil {
+ 		return fmt.Errorf("shedengine: read status file %q: %w", statusPath, err)
+ 	}
+diff --git a/internal/shedengine/rename.go b/internal/shedengine/rename.go
+index 947b900d..0fe5362d 100644
+--- a/internal/shedengine/rename.go
++++ b/internal/shedengine/rename.go
+@@ -32,7 +32,7 @@ type RenameRequest struct {
+ // A run lock held by a live driver refuses with ErrShedBusy and leaves the file unchanged.
+ // Like Goto, it calls no CommitStatus: the next step's persist commits the file.
+ func RenameProducers(req RenameRequest) (bool, error) {
+-	st, found, err := state.ReadJSONNoMkdir[Status](req.StatusPath, req.StatusLockPath)
++	st, found, err := state.ReadJSON[Status](req.StatusPath, req.StatusLockPath)
+ 	// A run directory not yet created fails the status lock open with not-exist; that is an absent status file too.
+ 	// A status file that does not decode names no retired row; the driver's own read gate diagnoses it.
+ 	if err != nil && !errors.Is(err, fs.ErrNotExist) && !errors.Is(err, state.ErrDecode) {
+diff --git a/internal/shedengine/run.go b/internal/shedengine/run.go
+index c06bd544..19bda9c6 100644
+--- a/internal/shedengine/run.go
++++ b/internal/shedengine/run.go
+@@ -198,7 +198,7 @@ func (s *Shed) budgetWayForward() string {
+ func (s *Shed) stepLocked(ctx context.Context) (StepResult, error) {
+ 	// Step 1, the read gate. A found of false is a hard error: Shed never seeds a status
+ 	// file.
+-	st, found, err := state.ReadJSONNoMkdir[Status](s.StatusPath, s.StatusLockPath)
++	st, found, err := state.ReadJSON[Status](s.StatusPath, s.StatusLockPath)
+ 	if err != nil {
+ 		return StepResult{}, fmt.Errorf("shedengine: read status file %q: %w", s.StatusPath, err)
+ 	}
+@@ -273,7 +273,7 @@ func (s *Shed) stepLocked(ctx context.Context) (StepResult, error) {
+ 		return *ended, nil
+ 	}
+ 	if gated {
+-		st, found, err = state.ReadJSONNoMkdir[Status](s.StatusPath, s.StatusLockPath)
++		st, found, err = state.ReadJSON[Status](s.StatusPath, s.StatusLockPath)
+ 		if err != nil {
+ 			return StepResult{}, fmt.Errorf("shedengine: read status file %q: %w", s.StatusPath, err)
+ 		}
+@@ -755,7 +755,7 @@ func effectiveMaxBounces(def ProducerDef, shedMax int) int {
+ // After the write, and only after UpdateJSON has returned and released StatusLockPath, persist
+ // calls s.CommitStatus with the transition's own nextCurrentProducer and string(nextState),
+ // never from inside the mutate callback above: a synchronous network push made while
+-// StatusLockPath is held would block every ReadJSON/ReadJSONNoMkdir reader on that path for the
++// StatusLockPath is held would block every ReadJSON reader on that path for the
+ // push's duration -- "lym loom status --watch" included, which is precisely the observability
+ // this seam exists to deliver. A nil CommitStatus is a silent no-op. A non-nil error the closure
+ // returns propagates out of persist and therefore halts Run, but by then the status-file write
+@@ -808,7 +808,7 @@ func labelled(text, by string) string {
+ // It is StatePaused when the status file's pause_after names def, read fresh because an outside actor may have recorded it while def ran, and StateRunning otherwise.
+ // The paused reason is the pause_after reason followed by the condition's own label when one is set; the running reason is empty.
+ func (s *Shed) routedState(def ProducerDef) (State, string, error) {
+-	cur, found, err := state.ReadJSONNoMkdir[Status](s.StatusPath, s.StatusLockPath)
++	cur, found, err := state.ReadJSON[Status](s.StatusPath, s.StatusLockPath)
+ 	if err != nil {
+ 		return "", "", fmt.Errorf("shedengine: read status file %q: %w", s.StatusPath, err)
+ 	}
+diff --git a/internal/shedengine/testsupport_test.go b/internal/shedengine/testsupport_test.go
+index b7b1a682..3a96382b 100644
+--- a/internal/shedengine/testsupport_test.go
++++ b/internal/shedengine/testsupport_test.go
+@@ -88,13 +88,13 @@ func seedStatus(t testing.TB, statusPath, statusLockPath string, want Status) {
+ 	}
+ }
+ 
+-// readStatus reads the status file at statusPath/statusLockPath via state.ReadJSONNoMkdir, failing
++// readStatus reads the status file at statusPath/statusLockPath via state.ReadJSON, failing
+ // the test if the read errors or the file is missing.
+ func readStatus(t *testing.T, statusPath, statusLockPath string) Status {
+ 	t.Helper()
+-	got, found, err := state.ReadJSONNoMkdir[Status](statusPath, statusLockPath)
++	got, found, err := state.ReadJSON[Status](statusPath, statusLockPath)
+ 	if err != nil {
+-		t.Fatalf("readStatus: state.ReadJSONNoMkdir(...) = _, _, %v", err)
++		t.Fatalf("readStatus: state.ReadJSON(...) = _, _, %v", err)
+ 	}
+ 	if !found {
+ 		t.Fatalf("readStatus: status file %q not found", statusPath)
+diff --git a/internal/shedverbs/goto_test.go b/internal/shedverbs/goto_test.go
+index 3643c299..0ce0bf6e 100644
+--- a/internal/shedverbs/goto_test.go
++++ b/internal/shedverbs/goto_test.go
+@@ -80,7 +80,7 @@ func TestGotoCmd_MovesBlockedRunOntoRow(t *testing.T) {
+ 		t.Errorf("envelope run_id/status_file = %v/%v", env["run_id"], env["status_file"])
+ 	}
+ 
+-	st, found, err := state.ReadJSONNoMkdir[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
++	st, found, err := state.ReadJSON[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
+ 	if err != nil || !found {
+ 		t.Fatalf("re-read status: found=%v err=%v", found, err)
+ 	}
+@@ -103,7 +103,7 @@ func TestGotoCmd_MovesBlockedRunOntoRow(t *testing.T) {
+ 		if env, code := execEnvelope(t, gotoCmd(gotoTexts(), spec), []string{"--to", "A", "--by", "shed"}); code != 0 {
+ 			t.Fatalf("exit code = %d; want 0 (env %v)", code, env)
+ 		}
+-		st, _, err := state.ReadJSONNoMkdir[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
++		st, _, err := state.ReadJSON[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
+ 		if err != nil || len(st.History) != 1 || st.History[0].By != "shed" {
+ 			t.Errorf("History, err = %+v, %v; want one goto entry labelled shed", st.History, err)
+ 		}
+diff --git a/internal/shedverbs/loop.go b/internal/shedverbs/loop.go
+index 57438c88..4a5a735a 100644
+--- a/internal/shedverbs/loop.go
++++ b/internal/shedverbs/loop.go
+@@ -474,7 +474,7 @@ func readStatusFile(spec *Spec) (shedengine.Status, bool) {
+ // readStatusAt reads the status file at statusPath.
+ // found is false when the file is missing, with a nil error, or unreadable, with the read error.
+ func readStatusAt(statusPath, statusLockPath string) (shedengine.Status, bool, error) {
+-	st, found, err := state.ReadJSONNoMkdir[shedengine.Status](statusPath, statusLockPath)
++	st, found, err := state.ReadJSON[shedengine.Status](statusPath, statusLockPath)
+ 	if err != nil || !found {
+ 		return shedengine.Status{}, false, err
+ 	}
+diff --git a/internal/shedverbs/loop_arming_integration_test.go b/internal/shedverbs/loop_arming_integration_test.go
+index 5a0398f7..5dd2ecc7 100644
+--- a/internal/shedverbs/loop_arming_integration_test.go
++++ b/internal/shedverbs/loop_arming_integration_test.go
+@@ -78,7 +78,7 @@ func (f *loomRunFixture) resetRunning() {
+ 
+ func (f *loomRunFixture) status() shedengine.Status {
+ 	f.t.Helper()
+-	st, found, err := state.ReadJSONNoMkdir[shedengine.Status](shedrun.StatusFile(f.loc, shedrun.SelfRunID), shedrun.StatusLock(f.loc, shedrun.SelfRunID))
++	st, found, err := state.ReadJSON[shedengine.Status](shedrun.StatusFile(f.loc, shedrun.SelfRunID), shedrun.StatusLock(f.loc, shedrun.SelfRunID))
+ 	if err != nil || !found {
+ 		f.t.Fatalf("read the status file = %v, found %v; want it", err, found)
+ 	}
+diff --git a/internal/shedverbs/loop_integration_test.go b/internal/shedverbs/loop_integration_test.go
+index 0c37b6e0..7b0b260d 100644
+--- a/internal/shedverbs/loop_integration_test.go
++++ b/internal/shedverbs/loop_integration_test.go
+@@ -189,7 +189,7 @@ func TestLoopIntegration_ChildTreeDiesWithLoop(t *testing.T) {
+ 		t.Errorf("second waiter loop.detail = %q; want the in-flight step with its trace and the killed step tree", detail)
+ 	}
+ 	waitUntil(t, 30*time.Second, "the dead loop's step tree to be killed", func() bool { return processEnded(grandchild) })
+-	if st, found, err := state.ReadJSONNoMkdir[shedengine.Status](spec.StatusPath, spec.StatusLockPath); err != nil || !found || st.State != shedengine.StateFailed {
++	if st, found, err := state.ReadJSON[shedengine.Status](spec.StatusPath, spec.StatusLockPath); err != nil || !found || st.State != shedengine.StateFailed {
+ 		t.Errorf("status = %+v, %v, %v; want failed", st, found, err)
+ 	}
+ }
+diff --git a/internal/shedverbs/loop_test.go b/internal/shedverbs/loop_test.go
+index 95ebe8de..ccda59a0 100644
+--- a/internal/shedverbs/loop_test.go
++++ b/internal/shedverbs/loop_test.go
+@@ -155,7 +155,7 @@ func (fx *loopFixture) setStatus(current string, st shedengine.State, history in
+ 
+ func (fx *loopFixture) readStatus() shedengine.Status {
+ 	fx.t.Helper()
+-	st, found, err := state.ReadJSONNoMkdir[shedengine.Status](fx.paths.StatusPath, fx.paths.StatusLockPath)
++	st, found, err := state.ReadJSON[shedengine.Status](fx.paths.StatusPath, fx.paths.StatusLockPath)
+ 	if err != nil || !found {
+ 		fx.t.Fatalf("read status = %v, found %v; want the file", err, found)
+ 	}
+diff --git a/internal/shedverbs/pause_test.go b/internal/shedverbs/pause_test.go
+index cceaed36..ff33434c 100644
+--- a/internal/shedverbs/pause_test.go
++++ b/internal/shedverbs/pause_test.go
+@@ -46,7 +46,7 @@ func TestPauseCmd_SetsPauseRequested(t *testing.T) {
+ 		t.Errorf("status_file = %v; want %q", env["status_file"], paths.StatusPath)
+ 	}
+ 
+-	st, found, err := state.ReadJSONNoMkdir[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
++	st, found, err := state.ReadJSON[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
+ 	if err != nil || !found {
+ 		t.Fatalf("re-read status: found=%v err=%v", found, err)
+ 	}
+@@ -61,7 +61,7 @@ func TestPauseCmd_SetsPauseRequested(t *testing.T) {
+ 	if code != 0 {
+ 		t.Fatalf("exit code with --by = %d; want 0", code)
+ 	}
+-	st, _, err = state.ReadJSONNoMkdir[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
++	st, _, err = state.ReadJSON[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
+ 	if err != nil {
+ 		t.Fatalf("re-read status after --by: %v", err)
+ 	}
+@@ -73,7 +73,7 @@ func TestPauseCmd_SetsPauseRequested(t *testing.T) {
+ 	if code != 0 {
+ 		t.Fatalf("exit code with a repeat bare pause = %d; want 0", code)
+ 	}
+-	st, _, err = state.ReadJSONNoMkdir[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
++	st, _, err = state.ReadJSON[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
+ 	if err != nil {
+ 		t.Fatalf("re-read status after a repeat bare pause: %v", err)
+ 	}
+@@ -267,7 +267,7 @@ func TestPauseCmd_Conditions(t *testing.T) {
+ 				}
+ 			}
+ 
+-			got, found, err := state.ReadJSONNoMkdir[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
++			got, found, err := state.ReadJSON[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
+ 			if err != nil || !found {
+ 				t.Fatalf("re-read status: found=%v err=%v", found, err)
+ 			}
+diff --git a/internal/shedverbs/spec.go b/internal/shedverbs/spec.go
+index 1fc81f06..052f902a 100644
+--- a/internal/shedverbs/spec.go
++++ b/internal/shedverbs/spec.go
+@@ -185,7 +185,7 @@ type Spec struct {
+ 	Hooks Hooks
+ 	// StatusLabel is the --watch line's literal prefix -- "loom" for the loom recipe.
+ 	StatusLabel string
+-	// DecodeErrPrefix is the told prefix for this spec's own state.ReadJSONNoMkdir failure on the
++	// DecodeErrPrefix is the told prefix for this spec's own state.ReadJSON failure on the
+ 	// status file -- "loom:" for loom and "lifecyclecli:" for lifecycle. It also seeds
+ 	// ensureStatusLockDir's own error text, reproducing loomcli's existing wording for loom's spec
+ 	// rather than inventing a second prefix field for one string.
+@@ -206,10 +206,9 @@ type Spec struct {
+ 	// PauseAbsentMessage is the error text pause reports when its status file does not exist --
+ 	// there is nothing running to pause.
+ 	PauseAbsentMessage string
+-	// EnsureStatusLockDir tells status and pause whether to MkdirAll the status lock's ephemeral
+-	// parent directory before reading or writing through it. It travels as a told boolean rather
+-	// than an unconditional generic step because lifecycle's status is read-only, and creating its
+-	// per-slug directory as a side effect of reading it would be a new, unasked-for write.
++	// EnsureStatusLockDir tells pause and goto whether to MkdirAll the status lock's ephemeral
++	// parent directory before writing through it.
++	// status never creates it: a read whose lock directory is absent reads without the lock.
+ 	EnsureStatusLockDir bool
+ 	// Loop is the told arming of step's --until-stop mode; its zero value means the recipe arms no loop.
+ 	Loop LoopSpec
+diff --git a/internal/shedverbs/status.go b/internal/shedverbs/status.go
+index 23adba3c..cb2f7e71 100644
+--- a/internal/shedverbs/status.go
++++ b/internal/shedverbs/status.go
+@@ -116,7 +116,7 @@ func runStatusWatch(out io.Writer, spec *Spec, interval time.Duration) {
+ // statusWatchLine renders one poll of the --watch tail: the status line, with " | waiting <note>" appended while the Waiting hook reports a note.
+ // A hook error drops the note rather than ending the tail.
+ func statusWatchLine(spec *Spec) string {
+-	polled, found, err := state.ReadJSONNoMkdir[shedengine.Status](spec.StatusPath, spec.StatusLockPath)
++	polled, found, err := state.ReadJSON[shedengine.Status](spec.StatusPath, spec.StatusLockPath)
+ 	if err != nil || !found {
+ 		return UnavailableLine(spec.StatusLabel)
+ 	}
+@@ -151,14 +151,7 @@ func statusCmd(texts VerbTexts, spec *Spec) *cobra.Command {
+ 				return nil
+ 			}
+ 
+-			if spec.EnsureStatusLockDir {
+-				if err := ensureStatusLockDir(spec.DecodeErrPrefix, spec.StatusLockPath); err != nil {
+-					clihelp.SetExit(ctx, output.ErrFields(out, err.Error(), map[string]any{"trace_dir": traceDir}))
+-					return nil
+-				}
+-			}
+-
+-			st, found, err := state.ReadJSONNoMkdir[shedengine.Status](spec.StatusPath, spec.StatusLockPath)
++			st, found, err := state.ReadJSON[shedengine.Status](spec.StatusPath, spec.StatusLockPath)
+ 			if err != nil {
+ 				clihelp.SetExit(ctx, output.ErrFields(out, spec.DecodeErrPrefix+" decode status file "+spec.StatusPath+": "+err.Error(), map[string]any{"trace_dir": traceDir}))
+ 				return nil
+diff --git a/internal/shedverbs/status_test.go b/internal/shedverbs/status_test.go
+index 2d09f16c..b25720dd 100644
+--- a/internal/shedverbs/status_test.go
++++ b/internal/shedverbs/status_test.go
+@@ -213,7 +213,7 @@ func TestStatusCmd_DecodeErrorPrefixIsTold(t *testing.T) {
+ 	if err := os.MkdirAll(filepath.Dir(paths.StatusLockPath), 0o755); err != nil {
+ 		t.Fatalf("mkdir status lock parent: %v", err)
+ 	}
+-	// Malformed JSON: state.ReadJSONNoMkdir fails to decode.
++	// Malformed JSON: state.ReadJSON fails to decode.
+ 	if err := os.WriteFile(paths.StatusPath, []byte("not json"), 0o644); err != nil {
+ 		t.Fatalf("write malformed status file: %v", err)
+ 	}
+@@ -234,10 +234,8 @@ func TestStatusCmd_DecodeErrorPrefixIsTold(t *testing.T) {
+ 	}
+ }
+ 
+-// TestStatusCmd_EnsureStatusLockDir_True covers the told boolean's true arm: over a status-lock
+-// path whose parent directory does not yet exist, the parent is created and the read goes on to
+-// produce the told absent-file disposition.
+-func TestStatusCmd_EnsureStatusLockDir_True(t *testing.T) {
++// TestStatusCmd_AbsentLockDirReadsWithoutCreatingIt covers a status-lock path whose parent directory does not yet exist: the read reaches the told absent-file disposition and leaves the parent absent, even with EnsureStatusLockDir set, since status is a read.
++func TestStatusCmd_AbsentLockDirReadsWithoutCreatingIt(t *testing.T) {
+ 	paths := newTestPaths(t)
+ 	// The status lock's parent directory does not exist yet: nest it one level below the
+ 	// already-created temp dir so this test actually exercises a missing parent, rather than the
+@@ -259,35 +257,8 @@ func TestStatusCmd_EnsureStatusLockDir_True(t *testing.T) {
+ 	if env["found"] != false {
+ 		t.Errorf("found = %v; want false", env["found"])
+ 	}
+-	if _, err := os.Stat(filepath.Dir(paths.StatusLockPath)); err != nil {
+-		t.Errorf("status lock parent directory was not created: %v", err)
+-	}
+-}
+-
+-// TestStatusCmd_EnsureStatusLockDir_False covers the told boolean's false arm: over the same kind
+-// of never-created parent, the parent stays absent and the read fails in lock acquisition instead
+-// of ever reaching found.
+-func TestStatusCmd_EnsureStatusLockDir_False(t *testing.T) {
+-	paths := newTestPaths(t)
+-	// The status lock's parent directory does not exist yet: nest it one level below the
+-	// already-created temp dir so this test actually exercises a missing parent, rather than the
+-	// temp dir itself (which t.TempDir() already created).
+-	paths.StatusLockPath = filepath.Join(filepath.Dir(paths.StatusLockPath), "ephemeral", "status.lock")
+-
+-	spec := &Spec{
+-		StatusPath:          paths.StatusPath,
+-		StatusLockPath:      paths.StatusLockPath,
+-		DecodeErrPrefix:     "battencli:",
+-		EnsureStatusLockDir: false,
+-		AbsentStatus:        AbsentDisposition{Refuse: false},
+-	}
+-
+-	env, code := execEnvelope(t, statusCmd(statusTexts(), spec), nil)
+-	if code != 1 {
+-		t.Fatalf("exit code = %d; want 1 (lock acquisition must fail before found is ever produced): %v", code, env)
+-	}
+-	if _, err := os.Stat(filepath.Dir(paths.StatusLockPath)); err == nil {
+-		t.Error("status lock parent directory was created despite EnsureStatusLockDir being false")
++	if _, err := os.Stat(filepath.Dir(paths.StatusLockPath)); !os.IsNotExist(err) {
++		t.Errorf("Stat(status lock parent) error = %v; want the read to leave it absent", err)
+ 	}
+ }
+ 
+@@ -444,7 +415,7 @@ func seededStatusSpec(t *testing.T, hooks Hooks) *Spec {
+ 		t.Fatalf("mkdir status lock parent: %v", err)
+ 	}
+ 	seedStatus(t, paths, "Only")
+-	st, _, err := state.ReadJSONNoMkdir[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
++	st, _, err := state.ReadJSON[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
+ 	if err != nil {
+ 		t.Fatalf("read seeded status: %v", err)
+ 	}
+@@ -647,7 +618,7 @@ func TestRenderStatusLine_ProducerReasonReachesWait(t *testing.T) {
+ 	if _, err := shed.Step(context.Background()); err != nil {
+ 		t.Fatalf("Step(...) = _, %v; want nil error", err)
+ 	}
+-	st, found, err := state.ReadJSONNoMkdir[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
++	st, found, err := state.ReadJSON[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
+ 	if err != nil || !found {
+ 		t.Fatalf("read status: found=%v err=%v", found, err)
+ 	}
+@@ -692,7 +663,7 @@ func TestStatusCmd_WaitingNote_RunningOnly(t *testing.T) {
+ 
+ 	t.Run("not running skips the hook", func(t *testing.T) {
+ 		spec := seededStatusSpec(t, Hooks{Waiting: hook})
+-		st, _, err := state.ReadJSONNoMkdir[shedengine.Status](spec.StatusPath, spec.StatusLockPath)
++		st, _, err := state.ReadJSON[shedengine.Status](spec.StatusPath, spec.StatusLockPath)
+ 		if err != nil {
+ 			t.Fatalf("read status: %v", err)
+ 		}
+diff --git a/internal/shedverbs/step_test.go b/internal/shedverbs/step_test.go
+index 6d4c5e64..78c6f6bb 100644
+--- a/internal/shedverbs/step_test.go
++++ b/internal/shedverbs/step_test.go
+@@ -318,7 +318,7 @@ func TestStepCmd_BusyTreatment(t *testing.T) {
+ 	if env["error"] != spec.StepBusyMessage {
+ 		t.Errorf("error = %v; want %q", env["error"], spec.StepBusyMessage)
+ 	}
+-	st, _, err := state.ReadJSONNoMkdir[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
++	st, _, err := state.ReadJSON[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
+ 	if err != nil || st.PendingBy != "" {
+ 		t.Errorf("PendingBy, err = %q, %v; want empty after the busy refusal", st.PendingBy, err)
+ 	}
+@@ -915,7 +915,7 @@ func TestStepCmd_SuccessEnvelopeCarriesIdentityAndProgress(t *testing.T) {
+ 			if env, code := execEnvelope(t, stepCmd(stepTexts(), spec), nil); code != 0 {
+ 				t.Fatalf("exit code = %d; want 0 (%v)", code, env)
+ 			}
+-			st, _, err := state.ReadJSONNoMkdir[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
++			st, _, err := state.ReadJSON[shedengine.Status](paths.StatusPath, paths.StatusLockPath)
+ 			if err != nil {
+ 				t.Fatalf("re-read status: %v", err)
+ 			}
+diff --git a/internal/state/doc.go b/internal/state/doc.go
+index f5a8ec6b..a6959264 100644
+--- a/internal/state/doc.go
++++ b/internal/state/doc.go
+@@ -33,7 +33,7 @@
+ //
+ // # Unknown keys
+ //
+-// No read refuses a field its type does not declare: ReadJSON, ReadJSONNoMkdir and UpdateJSON's own read all decode with a plain unmarshal.
++// No read refuses a field its type does not declare: ReadJSON and UpdateJSON's own read both decode with a plain unmarshal.
+ // Every write keeps, in the file it replaces, each key the record's Go type does not declare, so a record a newer binary wrote loses nothing when an older one rewrites it.
+ // WriteJSON and UpdateJSON do this under the write lock they already hold, by reading the file they replace and merging it into the new encoding.
+ // A kept key lands after the declared ones, in the old file's order, with its raw value, so its exact digits survive.
+@@ -44,4 +44,9 @@
+ // An absent file, or one that does not parse, adds nothing.
+ //
+ // The bound: only keys already in the file being replaced pass through, and each write costs one extra read of that file under the held lock.
++//
++// # Reads create nothing
++//
++// Only writes create directories: WriteJSON, WriteFile and UpdateJSON make the record's directory before they lock, and ReadJSON makes none,
++// so a reader polling a tree another process is still building never leaves a directory that process then refuses.
+ package state
+diff --git a/internal/state/state.go b/internal/state/state.go
+index 0f68ae97..167bfa24 100644
+--- a/internal/state/state.go
++++ b/internal/state/state.go
+@@ -11,6 +11,7 @@ import (
+ 	"encoding/json"
+ 	"errors"
+ 	"fmt"
++	"io/fs"
+ 	"os"
+ 	"path/filepath"
+ 	"reflect"
+@@ -87,21 +88,21 @@ func writeJSONUnlocked[T any](path string, v T) error {
+ 	return fsx.AtomicWriteBytes(path, indented.Bytes())
+ }
+ 
+-// ReadJSON reads a JSON value from the given path.
+-// Returns (zero, false, nil) if the file does not exist.
+-// Returns (value, true, nil) on success.
++// ReadJSON reads a JSON value from path under a shared lock at lockPath, accepting fields T does not declare.
++// It creates no directory: a file whose directory is absent reads as a missing file.
++// When the lock file's directory is absent it reads without the lock, since no writer can hold a lock there and every write replaces the file atomically.
++// Returns (zero, false, nil) if the file does not exist and (value, true, nil) on success.
++// A read failure other than not-exist wraps ErrRead, and a malformed file wraps ErrDecode.
+ func ReadJSON[T any](path, lockPath string) (T, bool, error) {
+ 	var zero T
+-	dir := filepath.Dir(path)
+-	if err := os.MkdirAll(dir, 0o755); err != nil {
+-		return zero, false, fmt.Errorf("mkdir: %w", err)
+-	}
+ 
+ 	l, err := lock.AcquireReadLock(lockPath)
+-	if err != nil {
++	switch {
++	case err == nil:
++		defer l.Release()
++	case !errors.Is(err, fs.ErrNotExist):
+ 		return zero, false, fmt.Errorf("acquire read lock: %w", err)
+ 	}
+-	defer l.Release()
+ 
+ 	return readJSONUnlocked[T](path)
+ }
+@@ -119,12 +120,12 @@ func readJSONUnlocked[T any](path string) (T, bool, error) {
+ 		if os.IsNotExist(err) {
+ 			return zero, false, nil
+ 		}
+-		return zero, false, fmt.Errorf("read state: %w", err)
++		return zero, false, fmt.Errorf("%w: read state: %w", ErrRead, err)
+ 	}
+ 
+ 	var v T
+ 	if err := json.Unmarshal(data, &v); err != nil {
+-		// Wrapped in ErrDecode (alongside the underlying json error, both via %w) so a caller can tell a decode failure apart from a read or lock failure with errors.Is, exactly as ReadJSONNoMkdir already does on its own path.
++		// Wrapped in ErrDecode (alongside the underlying json error, both via %w) so a caller can tell a decode failure apart from a read or lock failure with errors.Is.
+ 		// loomshed.Seed relies on this to refuse — never overwrite — a present-but-undecodable status file rather than escalate it as bootstrap's own gate (crucible round fable5-high-r5, F3).
+ 		// The "unmarshal state" wording is kept for readers of the message.
+ 		return zero, false, fmt.Errorf("%w: unmarshal state: %w", ErrDecode, err)
+@@ -168,31 +169,3 @@ func UpdateJSON[T any](path, lockPath string, mutate func(cur T, found bool) (T,
+ 
+ 	return writeJSONUnlocked(path, next)
+ }
+-
+-// ReadJSONNoMkdir reads a JSON value from path, accepting fields T does not declare.
+-// Returns (zero, false, nil) if the file does not exist.
+-// Does not create missing parent directories.
+-func ReadJSONNoMkdir[T any](path, lockPath string) (T, bool, error) {
+-	var zero T
+-
+-	l, err := lock.AcquireReadLock(lockPath)
+-	if err != nil {
+-		return zero, false, fmt.Errorf("acquire read lock: %w", err)
+-	}
+-	defer l.Release()
+-
+-	data, err := os.ReadFile(path)
+-	if err != nil {
+-		if os.IsNotExist(err) {
+-			return zero, false, nil
+-		}
+-		return zero, false, fmt.Errorf("%w: %v", ErrRead, err)
+-	}
+-
+-	var v T
+-	if err := json.Unmarshal(data, &v); err != nil {
+-		return zero, false, fmt.Errorf("%w: %v", ErrDecode, err)
+-	}
+-
+-	return v, true, nil
+-}
+diff --git a/internal/state/state_test.go b/internal/state/state_test.go
+index 90cc3a7d..fbdbaebf 100644
+--- a/internal/state/state_test.go
++++ b/internal/state/state_test.go
+@@ -83,38 +83,6 @@ func TestWriteJSON_RoundTripOverwriteAndLayout(t *testing.T) {
+ 	}
+ }
+ 
+-// TestMissingFile reads a never-written path and verifies found=false, err=nil, and that the parent dir and lock file now exist.
+-//
+-//testtiming:keep pins the parent directory and lock file ReadJSON creates for a missing path, which the UpdateJSON tests never assert
+-func TestMissingFile(t *testing.T) {
+-	t.Parallel()
+-
+-	tmpDir := t.TempDir()
+-	path := filepath.Join(tmpDir, "subdir", "missing.json")
+-	lockPath := path + ".lock"
+-
+-	got, found, err := state.ReadJSON[sample](path, lockPath)
+-	if err != nil {
+-		t.Fatalf("ReadJSON() on missing file error: %v", err)
+-	}
+-	if found {
+-		t.Fatal("ReadJSON() found = true; want false")
+-	}
+-	if got != (sample{}) {
+-		t.Errorf("ReadJSON() = %+v; want zero value", got)
+-	}
+-
+-	// Verify parent dir and lock file exist.
+-	parentDir := filepath.Dir(path)
+-	if _, err := os.Stat(parentDir); err != nil {
+-		t.Errorf("parent directory does not exist: %v", err)
+-	}
+-
+-	if _, err := os.Stat(lockPath); err != nil {
+-		t.Errorf("lock file does not exist at %s: %v", lockPath, err)
+-	}
+-}
+-
+ // TestCorruptFile writes invalid JSON and verifies ReadJSON returns a non-nil error, and that UpdateJSON aborts the same way without running mutate or touching the file.
+ //
+ //testtiming:keep named by internal/loomcli's smoke test as the lenient read's decode-failure pin
+@@ -135,10 +103,7 @@ func TestCorruptFile(t *testing.T) {
+ 	if err == nil {
+ 		t.Fatal("ReadJSON() on corrupt file error = nil; want non-nil")
+ 	}
+-	// The lenient read path now wraps ErrDecode too, matching ReadJSONNoMkdir, so a caller can tell a
+-	// decode failure apart from a read or lock failure with errors.Is (loomshed.Seed relies on this
+-	// to refuse rather than escalate a present-but-undecodable status file — crucible round
+-	// fable5-high-r5, F3).
++	// loomshed.Seed relies on ErrDecode to refuse, rather than escalate, a present-but-undecodable status file.
+ 	if !errors.Is(err, state.ErrDecode) {
+ 		t.Errorf("ReadJSON() on corrupt file error = %v; want errors.Is(err, ErrDecode)", err)
+ 	}
+diff --git a/internal/state/strict_test.go b/internal/state/strict_test.go
+index 0c7aa5cb..d30c7257 100644
+--- a/internal/state/strict_test.go
++++ b/internal/state/strict_test.go
+@@ -1,7 +1,6 @@
+ //go:build tier0
+ 
+-// strict_test.go tests ReadJSONNoMkdir's unknown-field tolerance and no-MkdirAll contract using only temp
+-// files — no git, no spawning.
++// strict_test.go tests ReadJSON's unknown-field tolerance, its error sentinels and its contract that a read creates no directory, using only temp files — no git, no spawning.
+ 
+ package state
+ 
+@@ -16,72 +15,90 @@ type strictTestValue struct {
+ 	Name string `json:"name"`
+ }
+ 
+-func TestReadJSONNoMkdir(t *testing.T) {
++func TestReadJSON(t *testing.T) {
+ 	t.Parallel()
+ 
+ 	tests := []struct {
+ 		name string
+-		// content is written to value.json under a real t.TempDir() parent, so a file miss is a clean os.IsNotExist and not a lock-acquire failure caused by an absent parent directory (flock.RLock fails immediately if the lock file's directory does not exist -- see TestReadJSONNoMkdir_MissingFileCreatesNoDirectory below).
+-		// A nil content leaves the file absent.
+-		content       []byte
++		// dataDir and lockDir are the directories, relative to a t.TempDir() root, that hold value.json and its lock.
++		// Setup creates no directory below the root, so each one named here must still be absent after the read.
++		dataDir string
++		lockDir string
++		// content is written to value.json; a nil content leaves the file absent.
++		content []byte
++		// pathIsDir makes value.json a directory, which no read can open as a file.
++		pathIsDir bool
++		// lockIsDir makes value.json.lock a directory, so the lock cannot be opened although its parent exists.
++		lockIsDir     bool
+ 		wantOK        bool
+ 		wantName      string
++		wantErrRead   bool
++		wantErrLock   bool
+ 		wantErrDecode bool
+ 	}{
+-		{name: "ValidDecode", content: []byte(`{"name":"widget"}`), wantOK: true, wantName: "widget"},
+-		{name: "MissingFileExistingParent", content: nil},
+-		{name: "UnknownField", content: []byte(`{"name":"widget","extra":true}`), wantOK: true, wantName: "widget"},
+-		{name: "MalformedJSON", content: []byte(`{"name":`), wantErrDecode: true},
++		{name: "ValidDecode", dataDir: ".", lockDir: ".", content: []byte(`{"name":"widget"}`), wantOK: true, wantName: "widget"},
++		{name: "MissingFileExistingParent", dataDir: ".", lockDir: "."},
++		{name: "MissingDirectory", dataDir: "nested/sub", lockDir: "nested/sub"},
++		{name: "LockDirectoryAbsent", dataDir: ".", lockDir: "locks/absent", content: []byte(`{"name":"widget"}`), wantOK: true, wantName: "widget"},
++		{name: "LockUnopenableForAnotherReason", dataDir: ".", lockDir: ".", content: []byte(`{"name":"widget"}`), lockIsDir: true, wantErrLock: true},
++		{name: "UnknownField", dataDir: ".", lockDir: ".", content: []byte(`{"name":"widget","extra":true}`), wantOK: true, wantName: "widget"},
++		{name: "MalformedJSON", dataDir: ".", lockDir: ".", content: []byte(`{"name":`), wantErrDecode: true},
++		{name: "UnreadableFile", dataDir: ".", lockDir: ".", pathIsDir: true, wantErrRead: true},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 
+-			dir := t.TempDir()
+-			path := filepath.Join(dir, "value.json")
+-			lockPath := filepath.Join(dir, "value.json.lock")
+-			if tt.content != nil {
++			root := t.TempDir()
++			path := filepath.Join(root, tt.dataDir, "value.json")
++			lockPath := filepath.Join(root, tt.lockDir, "value.json.lock")
++			if tt.lockIsDir {
++				if err := os.Mkdir(lockPath, 0o755); err != nil {
++					t.Fatalf("Mkdir() error = %v", err)
++				}
++			}
++			switch {
++			case tt.pathIsDir:
++				if err := os.Mkdir(path, 0o755); err != nil {
++					t.Fatalf("Mkdir() error = %v", err)
++				}
++			case tt.content != nil:
+ 				if err := os.WriteFile(path, tt.content, 0o644); err != nil {
+ 					t.Fatalf("WriteFile() error = %v", err)
+ 				}
+ 			}
+ 
+-			got, ok, err := ReadJSONNoMkdir[strictTestValue](path, lockPath)
+-			if tt.wantErrDecode {
++			got, ok, err := ReadJSON[strictTestValue](path, lockPath)
++			switch {
++			case tt.wantErrDecode:
+ 				if !errors.Is(err, ErrDecode) {
+-					t.Errorf("ReadJSONNoMkdir() error = %v; want errors.Is(err, ErrDecode)", err)
++					t.Errorf("ReadJSON() error = %v; want errors.Is(err, ErrDecode)", err)
++				}
++			case tt.wantErrLock:
++				if err == nil {
++					t.Error("ReadJSON() error = nil; want the lock failure returned, not the unlocked record")
+ 				}
+-			} else if err != nil {
+-				t.Fatalf("ReadJSONNoMkdir() error = %v; want nil", err)
++			case tt.wantErrRead:
++				if !errors.Is(err, ErrRead) {
++					t.Errorf("ReadJSON() error = %v; want errors.Is(err, ErrRead)", err)
++				}
++			case err != nil:
++				t.Fatalf("ReadJSON() error = %v; want nil", err)
+ 			}
+ 			if ok != tt.wantOK {
+-				t.Errorf("ReadJSONNoMkdir() ok = %v; want %v", ok, tt.wantOK)
++				t.Errorf("ReadJSON() ok = %v; want %v", ok, tt.wantOK)
+ 			}
+ 			if got.Name != tt.wantName {
+-				t.Errorf("ReadJSONNoMkdir() Name = %q; want %q", got.Name, tt.wantName)
++				t.Errorf("ReadJSON() Name = %q; want %q", got.Name, tt.wantName)
++			}
++			for _, dir := range []string{tt.dataDir, tt.lockDir} {
++				if dir == "." {
++					continue
++				}
++				if _, statErr := os.Stat(filepath.Join(root, dir)); !os.IsNotExist(statErr) {
++					t.Errorf("ReadJSON() left directory %q present; want a read to create none", dir)
++				}
+ 			}
+ 		})
+ 	}
+ }
+-
+-func TestReadJSONNoMkdir_MissingFileCreatesNoDirectory(t *testing.T) {
+-	t.Parallel()
+-
+-	dir := t.TempDir()
+-	// A subdirectory that is never created ahead of time.
+-	// Because ReadJSONNoMkdir deliberately skips os.MkdirAll (unlike ReadJSON), the lock acquisition on a lockPath inside a nonexistent directory fails outright rather than silently creating the directory and returning a clean (zero, false, nil) miss.
+-	subdir := filepath.Join(dir, "nested", "sub")
+-	path := filepath.Join(subdir, "value.json")
+-	lockPath := filepath.Join(subdir, "value.json.lock")
+-
+-	_, ok, err := ReadJSONNoMkdir[strictTestValue](path, lockPath)
+-	if err == nil {
+-		t.Fatalf("ReadJSONNoMkdir() error = nil; want a lock-acquire error since the parent directory was never created")
+-	}
+-	if ok {
+-		t.Errorf("ReadJSONNoMkdir() ok = true; want false")
+-	}
+-	if _, statErr := os.Stat(subdir); !os.IsNotExist(statErr) {
+-		t.Errorf("ReadJSONNoMkdir() created parent directory %q; want it to remain absent (no MkdirAll)", subdir)
+-	}
+-}
+diff --git a/internal/tendercli/deps.go b/internal/tendercli/deps.go
+index 9f9d3058..07b2268b 100644
+--- a/internal/tendercli/deps.go
++++ b/internal/tendercli/deps.go
+@@ -297,7 +297,7 @@ func EndOwnedElsewhere(location *lymcwd.Location, slug string) ([]runproc.Ended,
+ 			if err := os.MkdirAll(filepath.Dir(lockPath), 0o755); err != nil {
+ 				return shedengine.Status{}, false, err
+ 			}
+-			return state.ReadJSONNoMkdir[shedengine.Status](statusPath, lockPath)
++			return state.ReadJSON[shedengine.Status](statusPath, lockPath)
+ 		},
+ 		restepped: func(status shedengine.Status) (bool, error) {
+ 			task, err := locateTask()
+@@ -607,7 +607,7 @@ func (p shuttlePair) Running() (string, bool, error) {
+ 	if err := os.MkdirAll(filepath.Dir(lockPath), 0o755); err != nil {
+ 		return "", false, err
+ 	}
+-	status, found, err := state.ReadJSONNoMkdir[shedengine.Status](statusPath, lockPath)
++	status, found, err := state.ReadJSON[shedengine.Status](statusPath, lockPath)
+ 	if err != nil || !found {
+ 		return "", false, err
+ 	}
+diff --git a/internal/websterengine/state.go b/internal/websterengine/state.go
+index f65c706d..ce6dddd4 100644
+--- a/internal/websterengine/state.go
++++ b/internal/websterengine/state.go
+@@ -368,16 +368,6 @@ type BatchState struct {
+ // An unreadable or malformed file is a wrapped error: fail loud, never guess at a corrupted run's
+ // state.
+ func LoadState(websterDir, scratchDir string) (*State, error) {
+-	// Unlike websterDir (created by SaveState's own MkdirAll the first time a
+-	// run ever saves anything), scratchDir can legitimately not exist yet on
+-	// a fresh worktree that has never run: without this MkdirAll,
+-	// state.ReadJSON's AcquireReadLock would hard-error resolving the lock's
+-	// missing parent instead of reaching its own not-found path and
+-	// returning the documented (nil, nil).
+-	if err := os.MkdirAll(scratchDir, 0o755); err != nil {
+-		return nil, fmt.Errorf("webster: create webster scratch dir %s: %w", scratchDir, err)
+-	}
+-
+ 	path := filepath.Join(websterDir, stateFileName)
+ 	lockPath := filepath.Join(scratchDir, stateFileName+".lock")
+ 
+diff --git a/internal/websterengine/state_test.go b/internal/websterengine/state_test.go
+index 7394b3a9..f75917ed 100644
+--- a/internal/websterengine/state_test.go
++++ b/internal/websterengine/state_test.go
+@@ -175,6 +175,9 @@ func TestLoadState_UnusualFiles(t *testing.T) {
+ 			}
+ 
+ 			got, err := websterengine.LoadState(websterDir, scratchDir)
++			if _, statErr := os.Stat(scratchDir); !os.IsNotExist(statErr) {
++				t.Errorf("Stat(%q) error = %v after LoadState; want a read to create no scratch directory", scratchDir, statErr)
++			}
+ 			if tt.wantErr {
+ 				if err == nil {
+ 					t.Fatal("LoadState error = nil; want error")
