@@ -38,7 +38,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Darn runs Drift-Await after Drift-Baseline instead of a waiting capture** | [`darn-drift-await-row`](design-darn-drift-await-row.md) | darn | Code-Bouncer | neve | 1d<br>16m | shed, loom |
+| T1 | **Darn runs Drift-Await after Drift-Baseline instead of a waiting capture** | [`darn-drift-await-row`](design-darn-drift-await-row.md) | darn | Code-Burler-Review | neve | 1d<br>16m | shed, loom |
 | T2 | **Dobby survives deploys, logs changes only, tidies per owner; a visible adopt check**<br>• Fix the dobby re-exec exit, bound its log, count tidies per owner, give the adopt check its own gate key and visible progress | [`dobby-and-adopt-hardening`](design-dobby-and-adopt-hardening.md) | loom | Plan-Write | neve | 1d<br>58m | workspaces, batten, gate, board |
 | T3 | **A gate test writes trace logs into the live hub and Bolt commits them**<br>• trace-*.log from a run gate test landed in _board/.lym/logs and board sync committed them | [`test-logs-leak-into-bolt`](design-test-logs-leak-into-bolt.md) | darn | Describe | neve | 5h<br>58m | gate, board, testkit |
 | T5 | **Creel delivers mail to a working Claude strand at its next tool boundary through a PostToolUse hook** | [`creel-hook-delivery`](design-creel-hook-delivery.md) | darn | Darn-Write | neve | 8m<br>8m | creel, claude |
