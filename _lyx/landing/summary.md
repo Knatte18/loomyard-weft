@@ -9,13 +9,16 @@
 - Dobby's `markers` directory is gone: `Geometry.MarkerDir` is replaced by `LogPath` (`.lym/beam/dobby.log`, beside `state.json` and `dobby.lock`) and `TidyDir` (`.lym/beam/tidy/`), and a board-tidy report is named by its UTC timestamp alone, such as `20261026T151739Z.md`.
   `MarkerDirName` gives way to `TidyDirName`.
 - Two `internal/gatecli` tests pin hashes computed over the renamed names; their literals are updated.
+- The comment paragraphs whose words the rename changed were legacy fixed-column-wrapped, so the comment lint read their breaks as new.
+  A second scripted pass rejoined each flagged paragraph and broke it only at sentence ends and semicolons, with no word changed; this is the bulk of the third commit's diff.
 
 ## Design decisions
 
 - `LyX`, the LaTeX editor's spelling in a `tools/deploy` test that guards against a foreign binary, is left as it is.
 - `go.sum` and `docs/research/` are left untouched: one holds hashes, the other dated measurement reports of past runs.
 - There is no migration code: the binary knows only the new names, and existing hubs are cloned afresh at the cutover the board entry describes.
+- The comment re-break touches only the paragraphs the lint flagged, not every wrapped comment in a touched file, to keep the diff to what the rename caused.
 
 ## Testing
 
-The scoped `lyx gate test` is green after the hash literals were updated.
+The scoped `lyx gate test` tier0 run is green, and `lyx loom lint-comments` against the fork point reports no findings.
