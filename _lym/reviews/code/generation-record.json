@@ -1,12 +1,9 @@
 {
-  "number": 1,
+  "number": 2,
+  "amendment": true,
+  "base": "813a5022883526511befeef185f317dbfebf2da1",
+  "review_input": "/home/knatte/Code/loomyard-LYMHUB/creel-hook-delivery/.lym/loom/overlap-note.md",
   "judge_subject": {
-    "kind": "code",
-    "merge_base": "813a5022883526511befeef185f317dbfebf2da1",
-    "head": "56650b75ca72ef74e40d3ed84e92bccf91244bd2",
-    "full_hash": "c2597c19a89baf64196272ee2f8b781ff0009efc8e66a0910ec7791a9674e846",
-    "patch_id": "9a342326476375f74cf38c35d8375c476840a36f"
-  },
-  "judge_base": "813a5022883526511befeef185f317dbfebf2da1",
-  "judge_at": "2026-10-27T15:49:49Z"
+    "kind": ""
+  }
 }
