@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-27 12:40 UTC; every age below is as of then.
+Rendered 2026-10-27 12:52 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -38,9 +38,9 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Bench the tuned forked Codex Astra fan on P1 at high effort**<br>• Tuned prompt, Claude reviewers' context, forked fan, Astra high, on P1<br>• `profile: docs` | [`codex-astra-tuned-p1-high-bench`](design-codex-astra-tuned-p1-high-bench.md) | darn | Darn-Write | neve | 0m<br>0m | codex, burler |
-| T2 | **Bench the tuned forked Codex Astra fan on P4 at medium effort**<br>• Tuned prompt, Claude reviewers' context, forked fan, Astra medium, on P4<br>• `profile: docs` | [`codex-astra-tuned-p4-med-bench`](design-codex-astra-tuned-p4-med-bench.md) | darn | Darn-Write | neve | 0m<br>0m | codex, burler |
-| T3 | **Bench the tuned forked Codex Astra fan on P1 at medium effort**<br>• Tuned prompt, Claude reviewers' context, forked fan, Astra medium, on P1<br>• `profile: docs` | [`codex-astra-tuned-p1-med-bench`](design-codex-astra-tuned-p1-med-bench.md) | darn | Darn-Write | neve | 0m<br>0m | codex, burler |
+| T1 | **Bench the tuned forked Codex Astra fan on P1 at high effort**<br>• Tuned prompt, Claude reviewers' context, forked fan, Astra high, on P1<br>• `profile: docs` | [`codex-astra-tuned-p1-high-bench`](design-codex-astra-tuned-p1-high-bench.md) | darn | Darn-Write | neve | 12m<br>12m | codex, burler |
+| T2 | **Bench the tuned forked Codex Astra fan on P4 at medium effort**<br>• Tuned prompt, Claude reviewers' context, forked fan, Astra medium, on P4<br>• `profile: docs` | [`codex-astra-tuned-p4-med-bench`](design-codex-astra-tuned-p4-med-bench.md) | darn | Darn-Write | neve | 12m<br>12m | codex, burler |
+| T3 | **Bench the tuned forked Codex Astra fan on P1 at medium effort**<br>• Tuned prompt, Claude reviewers' context, forked fan, Astra medium, on P1<br>• `profile: docs` | [`codex-astra-tuned-p1-med-bench`](design-codex-astra-tuned-p1-med-bench.md) | darn | Drift-Verify | neve | 12m<br>12m | codex, burler |
 
 ### Ready (0)
 
@@ -68,9 +68,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **Beam promote keeps the Discussion record as part of the beam**<br>• When Discussion finds a task should be a project, promote carries its decision record into the beam instead of dropping it | [`beam-promote-keeps-discussion`](design-beam-promote-keeps-discussion.md) | 1d<br>2h | workspaces, batten, loom |
-| E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>1m | shuttle, codex |
-| E3 |  | **Dobby log: changes and a heartbeat only, and bounded**<br>• dobby.log grows without bound with a line per pass; log changes plus a 10-minute heartbeat, under retention | [`dobby-log-bounded`](design-dobby-log-bounded.md) | 20h<br>20h | workspaces |
+| E1 |  | **Beam promote keeps the Discussion record as part of the beam**<br>• When Discussion finds a task should be a project, promote carries its decision record into the beam instead of dropping it | [`beam-promote-keeps-discussion`](design-beam-promote-keeps-discussion.md) | 2d<br>2h | workspaces, batten, loom |
+| E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>13m | shuttle, codex |
+| E3 |  | **Dobby log: changes and a heartbeat only, and bounded**<br>• dobby.log grows without bound with a line per pass; log changes plus a 10-minute heartbeat, under retention | [`dobby-log-bounded`](design-dobby-log-bounded.md) | 21h<br>21h | workspaces |
 | E5 |  | **Decide the layout of projects in the board README**<br>• The operator is not satisfied with how the README renders projects and their members; the layout is to be decided | [`board-projects-layout`](design-board-projects-layout.md) | 2d<br>2d | board |
 | E6 |  | **Board README: one rendered file per project, research notes first**<br>• Each project renders its own file linked from its parent; README.md is the root project; research notes come right after tasks | [`readme-per-project-files`](design-readme-per-project-files.md) | 1d<br>1d | board |
 | E7 |  | **Run verbs in one shared namespace, not under lym loom**<br>• lym loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 12d<br>2h | shed, loom |
@@ -117,4 +117,4 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R4 |  | **Lens overlap audit: which lenses find the same defects, and a smaller set**<br>• twill-plan 8 to 5 lenses recommended; twill-discussion 7 to 4 and review-code 4 to 3 at low confidence | [`lens-overlap-audit`](design-lens-overlap-audit.md) | 4d<br>2h | burler, loom |
 | R5 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 4d<br>2h | webster |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 4d<br>2h | loom, stencil |
-| R8 |  | **Ideas from r/ClaudeCode "one line in your CLAUDE.md": fit for LoomYard and bench measures**<br>• About 30 ideas judged against our stencils and rules; top 8 ranked for a bench, a few cheap enough without one | [`claude-md-thread-ideas`](design-claude-md-thread-ideas.md) | 21h<br>2h | stencil, loom, burler |
+| R8 |  | **Ideas from r/ClaudeCode "one line in your CLAUDE.md": fit for LoomYard and bench measures**<br>• About 30 ideas judged against our stencils and rules; top 8 ranked for a bench, a few cheap enough without one | [`claude-md-thread-ideas`](design-claude-md-thread-ideas.md) | 22h<br>2h | stencil, loom, burler |
