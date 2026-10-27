@@ -28,17 +28,16 @@ grouping
 | --- | --- | --- | --- |
 | E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
 
-## Tasks (6)
+## Tasks (5)
 
 Concrete and claimable; only a task can run.
 
-### Running (5)
+### Running (4)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Bench Codex on P2 with block v2 and the gap study lens texts, two medium runs**<br>• Two medium forked Astra fan runs on P2 with gap-study proposals 1, 2 and 4; real findings per window point<br>• `profile: docs` | [`codex-p2-gap-texts-bench`](design-codex-p2-gap-texts-bench.md) | darn | Finalize | neve | 58m<br>58m | codex, burler |
 | T2 | **Dobby survives deploys, logs changes only, tidies per owner; a visible adopt check**<br>• Fix the dobby re-exec exit, bound its log, count tidies per owner, give the adopt check its own gate key and visible progress | [`dobby-and-adopt-hardening`](design-dobby-and-adopt-hardening.md) | loom | Discussion-Burler-Review | neve | 1d<br>20m | workspaces, batten, gate, board |
 | T3 | **A gate test writes trace logs into the live hub and Bolt commits them**<br>• trace-*.log from a run gate test landed in _board/.lym/logs and board sync committed them | [`test-logs-leak-into-bolt`](design-test-logs-leak-into-bolt.md) | darn | blocked · Darn-Write | neve | 4h<br>20m | gate, board, testkit |
 | T4 | **A read creates directories: state.ReadJSON mkdirs, so a hub reader leaves a real _lym in a half-built pair** | [`hub-reader-creates-lym`](design-hub-reader-creates-lym.md) | darn | Darn-Write | neve | 1d<br>20m | fabric, orch, batten |
@@ -50,7 +49,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Markdown link guard skips the verbatim data of research reports**<br>• TestEnforcement_MarkdownLinks fails on main on bench prompt captures under docs/research/*/data/; skip that data | [`docs-link-skip-bench-data`](design-docs-link-skip-bench-data.md) | darn |  | 7m<br>7m | testkit |
+| T6 | **Markdown link guard skips the verbatim data of research reports**<br>• TestEnforcement_MarkdownLinks fails on main on bench prompt captures under docs/research/*/data/; skip that data | [`docs-link-skip-bench-data`](design-docs-link-skip-bench-data.md) | darn |  | 8m<br>8m | testkit |
 
 ## Notes (40)
 
@@ -115,3 +114,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R5 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 5d<br>4h | webster |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 4d<br>4h | loom, stencil |
 | R8 |  | **Ideas from r/ClaudeCode "one line in your CLAUDE.md": fit for LoomYard and bench measures**<br>• About 30 ideas judged against our stencils and rules; top 8 ranked for a bench, a few cheap enough without one | [`claude-md-thread-ideas`](design-claude-md-thread-ideas.md) | 23h<br>4h | stencil, loom, burler |
+
+## Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T1 | **Bench Codex on P2 with block v2 and the gap study lens texts, two medium runs**<br>• Two medium forked Astra fan runs on P2 with gap-study proposals 1, 2 and 4; real findings per window point<br>• `profile: docs` | [`codex-p2-gap-texts-bench`](design-codex-p2-gap-texts-bench.md) | 58m<br>58m | codex, burler |
