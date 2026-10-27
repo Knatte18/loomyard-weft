@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Code-Bouncer → done",
+    "now": "PR-Review",
+    "last": "Describe → skipped",
     "wait": ""
   },
   "history": [
@@ -61,6 +61,13 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-27T13:03:40Z"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-10-27T13:03:41Z",
+      "reason": "budget.Code-Review = 0"
     }
   ],
   "product": {
