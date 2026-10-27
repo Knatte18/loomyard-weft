@@ -39,6 +39,7 @@ From `docs/research/codex-feasibility.md`, section 3, after the spike:
 
 The Codex account is ChatGPT Pro (the 100 tier, plan `prolite` in the rollouts), bought for testing and benching, not yet for production use: every Codex bench states an exact, small cap on runs.
 The weekly budget is getting used up: prefer a desk study over a new Codex run, and spend Codex runs sparingly (operator, 2026-10-27).
+No further Codex bench in the week of 2026-10-27: the forked Astra fan at medium effort with block v2 is the setup, and the next step is building, starting with step 1 below, whose design is discussed with the operator before it goes on the board (operator, 2026-10-27).
 Pro has a weekly window and no 5-hour window; a forked Astra fan run on one plan costs a few points of the week.
 Codex effort is at most `high`: `xhigh` and above cost too much (operator, 2026-10-27).
 A Codex reviewer always gets the context a Claude reviewer of the same round gets, the PATTERN overview and the repository's agent instructions included (operator, 2026-10-27).
