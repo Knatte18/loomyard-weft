@@ -1,6 +1,6 @@
 # Bench Codex review block v2 on P2: one high run against two medium
 
-`codex-v2-p2-bench` · Task · research, codex, burler · running · Finalize
+`codex-v2-p2-bench` · Task · research, codex, burler · done
 
 ## Question
 
