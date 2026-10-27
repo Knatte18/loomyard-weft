@@ -35,6 +35,8 @@ The slug becomes optional: with none, `lym ide seed` seeds the worktree the curr
 The help names the prime as well as task worktrees.
 `fabric clone` stays IDE-free.
 
-## Open
+## Window title
 
-The window title text (for example the hub shortname, `LY: <slug>`) is not decided yet.
+Every worktree's `window.title` is the hub shortname upper-cased, a colon and the worktree's slug, such as `LY: loomyard` for the prime and `LY: <slug>` for a task.
+A beam takes the same form with its own slug; a task under a beam names only its own slug, not the beam's.
+The `.code-workspace` file `lym ide spawn` writes carries the same title and colours, since its settings override the folder's.
