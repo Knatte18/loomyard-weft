@@ -664,28 +664,6 @@
       "revised": "2026-10-27T10:00:26Z"
     },
     {
-      "id": 819,
-      "handle": "T5",
-      "slug": "readme-draft-not-ready",
-      "title": "Board README lists draft tasks under Ready",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "board"
-      ],
-      "issues": [
-        873
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #873](https://github.com/Knatte18/loomyard/issues/873).\n\nSeen (2026-10-25): a released-pending task with status draft and no open dependencies (codex-astra-solo-bench) renders under Ready, 'waits on nothing open; can start now', with only a draft tag. ComputeLayers (internal/boardengine/layer.go:33-41) handles done, running, project and isolated entries but not draft, so it falls into readyLayer. Expected: a draft task is not Ready; it gets its own layer (Draft) or sits apart from Ready, since dobby will not start it until released.\n\nThe board README rendering is not regarded as production code (operator, 2026-10-27).\n",
-      "status": "done",
-      "created": "2026-10-25T16:16:58Z",
-      "revised": "2026-10-27T14:25:23Z"
-    },
-    {
       "id": 826,
       "handle": "E6",
       "slug": "readme-per-project-files",
