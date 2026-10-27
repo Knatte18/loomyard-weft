@@ -1,0 +1,1070 @@
+diff --git a/docs/research/codex-astra-fan-bench-2026-10-27/data/harness/build-fan.sh b/docs/research/codex-astra-fan-bench-2026-10-27/data/harness/build-fan.sh
+new file mode 100755
+index 00000000..7d56fcfb
+--- /dev/null
++++ b/docs/research/codex-astra-fan-bench-2026-10-27/data/harness/build-fan.sh
+@@ -0,0 +1,85 @@
++#!/usr/bin/env bash
++# Stage the fan prompts over an input that build.sh already built: build-fan.sh <id>
++# Writes work/.bench/instr/step-1-explore-fan.md, step-2-review-fan.md, one lens-<name>.prompt.md per lens and handler.prompt.md.
++set -euo pipefail
++ROOT=/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench
++id=$1
++code=$(grep -o 'code=[0-9a-f]*' "$ROOT/.scratch/bench/inputs/$id/meta.txt" | cut -d= -f2)
++in=$ROOT/.scratch/bench/inputs/$id
++W=$in/work
++fan=$in/fan
++rm -rf "$fan"; mkdir -p "$fan"
++LENSES="affected-set guard-reach way-forward"
++
++strip() { local s; s=$(<"$1"); [ "${s:0:4}" = '<!--' ] && s=${s#*-->}; printf '%s\n' "${s#"${s%%[![:space:]]*}"}"; }
++
++# The pre-read the forks inherited from the handler in round 1.
++git -C $ROOT show $code:contracts/stencils/burler/burler-fork-reading.md > "$fan/fork-reading.raw"
++reading=$(strip "$fan/fork-reading.raw")
++{ cat "$W/.bench/instr/step-1-explore.md"; printf '\n%s\n' "$reading"; } > "$W/.bench/instr/step-1-explore-fan.md"
++
++# A lens's text is its block in the template at the code commit, 4-space indent removed.
++git -C $ROOT show $code:internal/lenses/template.yaml > "$fan/template.yaml"
++lens_text() {
++  awk -v n="  $1: |" '$0==n {on=1; next} on && /^  [a-z-]+: \|/ {exit} on && /^[a-z]+:/ {exit} on {sub(/^    /,""); print}' "$fan/template.yaml"
++}
++
++for l in $LENSES; do
++  lens_text "$l" > "$fan/lens-$l.text"
++  [ -s "$fan/lens-$l.text" ] || { echo "no text for lens $l" >&2; exit 1; }
++  cat > "$fan/lens-$l.prompt.md" <<PROMPT
++# Burler — fork reviewer
++
++You are one fork reviewer of a fanned plan-review round, and you own one lens; the other forks own the other lenses, and a handler reviews holistically afterwards.
++
++Read \`$W/.bench/instr/step-1-explore-fan.md\` and do what it directs: it names the target, the fasit and the rubric, and ends with the reading to do.
++Do that reading, then work your lens's procedure and start your final message with the list your lens asks for.
++Report every finding your lens's procedure produces and nothing outside it, because the other lenses and the handler cover the rest.
++Judge nothing while you read, and review only after the reading is done.
++You are READ-ONLY: never write, edit or delete any file, run only commands that read, never touch \`$W/.bench/out\`, and never start another agent.
++Return your findings ONLY as your final message, each with a severity (\`BLOCKING\`, \`MEDIUM\`, \`LOW\` or \`NIT\`), a class (\`design\`, \`scope\`, \`decision\` or \`consistency\`), a location, a one-line summary and the file and line of the evidence you read.
++
++Your lens: $l
++$(cat "$fan/lens-$l.text")
++PROMPT
++done
++
++# The handler's review step: the fan cluster rules with the forks already returned.
++lens_list=""
++for l in $LENSES; do lens_list+="- $l: $(cat "$fan/lens-$l.text")"$'\n'; done
++lens_files=""
++for l in $LENSES; do lens_files+="- \`$W/.bench/lens/$l.md\`: the final message of the \`$l\` fork"$'\n'; done
++cluster=$(cat <<CLUSTER
++This is a cluster round. The fork reviewers have already run, one per lens listed here, and each returned its findings as its final message.
++
++Lenses for this round:
++
++$lens_list
++The forks' final messages are these files, which you read once your reading in step 1 is done:
++
++$lens_files
++You do not spawn any fork: the results are in those files.
++
++Do your own HOLISTIC review: what no lens owns, such as the target against its fasit and its board entry, the rubric's leanness and relocation rules, architecture and PATTERN-fit, reading further only where your review needs it.
++Then prepare the ground truths and the severity rubric you will judge every finding against.
++Write nothing to the review file until you have read all three fork reports and finished your own holistic review: consolidate with every finding in view.
++
++Consolidation: judge every fork finding and your own holistic findings with EQUAL skepticism, dedup findings that describe the same defect across lenses, tag every kept finding's frontmatter with an \`origin:\` key (\`lens:<name>\` or \`handler\`), move false positives to a \`## Rejected\` prose section below the frontmatter with a one-line reason each (a rejected item never appears in \`findings:\`), and order kept findings by severity.
++The consolidated review is the ONE review file, and the review is complete once it is fully written to disk — consolidation is part of the review, not a separate step after it.
++CLUSTER
++)
++git -C $ROOT show $code:contracts/stencils/burler/burler-step-review.md > "$fan/step-review.raw"
++review=$(strip "$fan/step-review.raw")
++review_path=$W/.bench/out/review.md
++fill() { local t=$1; shift; for kv in "$@"; do t=${t//"{{.${kv%%=*}}}"/"${kv#*=}"}; done; printf '%s' "$t"; }
++review=$(fill "$review" "cluster_rules=$cluster" "review_path=$review_path" \
++  "review_format_path=$W/.bench/instr/review-format.md" "prior_rounds=This is the first round — no prior round files exist.")
++printf '%s\n' "$review" > "$W/.bench/instr/step-2-review-fan.md"
++
++git -C $ROOT show $code:contracts/stencils/burler/burler-template-reviewer.md > "$fan/reviewer.raw"
++prompt=$(strip "$fan/reviewer.raw")
++prompt=$(fill "$prompt" "parent_directive=" "edit_directive=" "review_path=$review_path" \
++  "instruction_1_path=$W/.bench/instr/step-1-explore-fan.md" "instruction_2_path=$W/.bench/instr/step-2-review-fan.md")
++printf '%s\n' "$prompt" > "$fan/handler.prompt.md"
++if grep -l '{{' "$fan"/*.prompt.md "$W"/.bench/instr/*.md; then echo "leftover placeholder" >&2; exit 1; fi
++ls "$fan"
+diff --git a/docs/research/codex-astra-fan-bench-2026-10-27/data/harness/build.sh b/docs/research/codex-astra-fan-bench-2026-10-27/data/harness/build.sh
+new file mode 100755
+index 00000000..27d18c05
+--- /dev/null
++++ b/docs/research/codex-astra-fan-bench-2026-10-27/data/harness/build.sh
+@@ -0,0 +1,88 @@
++#!/usr/bin/env bash
++# Stage one bench input: code snapshot, artifacts, era stencils and the assembled reviewer prompt.
++# usage: build.sh <id> <kind: discussion|plan> <weft-commit> <code-commit>
++set -euo pipefail
++ROOT=/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench
++WEFT=/home/knatte/Code/loomyard-LYMHUB/loomyard-weft
++id=$1 kind=$2 wc=$3 code=$4
++dir=$ROOT/.scratch/bench/inputs/$id
++rm -rf "$dir"
++mkdir -p "$dir/work"
++
++start=$(git -C $WEFT show $wc:_lyx/reviews/$kind/round-1-usage.yaml | grep -m1 'start:' | tr -s ' ' | cut -d' ' -f3)
++echo "$id $kind weft=$wc start=$start code=$code" > "$dir/meta.txt"
++
++git -C $ROOT archive "$code" | tar -x -C "$dir/work"
++mkdir -p "$dir/work/_lyx/discussion"
++if [ "$kind" = discussion ]; then
++  for f in $(git -C $WEFT ls-tree --name-only $wc _lyx/discussion/ | grep -vE 'support-log\.lens-'); do
++    git -C $WEFT show $wc:$f > "$dir/work/$f"
++  done
++else
++  git -C $WEFT show $wc:_lyx/discussion/decision-record.md > "$dir/work/_lyx/discussion/decision-record.md"
++  mkdir -p "$dir/work/_lyx/plan"
++  for f in $(git -C $WEFT ls-tree -r --name-only $wc _lyx/plan/ | grep -v '/archive-'); do
++    mkdir -p "$dir/work/$(dirname $f)"
++    git -C $WEFT show $wc:$f > "$dir/work/$f"
++  done
++fi
++
++# Hub-style specs and stencils dirs, from the snapshot's own era.
++bench=$dir/work/.bench
++mkdir -p "$bench/specs/loom" "$bench/stencils" "$bench/instr" "$bench/out"
++cp "$dir"/work/contracts/specs/*.md "$bench/specs/" 2>/dev/null || true
++for f in "$dir"/work/contracts/specs/loom-*.md; do cp "$f" "$bench/specs/loom/${f##*/loom-}"; cp "$f" "$bench/specs/loom/$(basename $f)"; done
++cp -r "$dir"/work/contracts/stencils/* "$bench/stencils/"
++
++strip() { local s; s=$(<"$1"); [ "${s:0:4}" = '<!--' ] && s=${s#*-->}; printf '%s\n' "${s#"${s%%[![:space:]]*}"}"; }
++fill() { # fill <text> key=value...
++  local t=$1; shift
++  for kv in "$@"; do t=${t//"{{.${kv%%=*}}}"/"${kv#*=}"}; done
++  printf '%s' "$t"
++}
++
++W=$dir/work
++review_path=$W/.bench/out/review.md
++rubric=$(strip "$bench/stencils/loom/loom-rubric-$kind-review.md")
++rubric=$(fill "$rubric" "specs_dir=$bench/specs" "stencils_dir=$bench/stencils" "amendment=none" "webster_record=none" "gate_tiers=none")
++
++if [ "$kind" = discussion ]; then
++  target="- \`$W/_lyx/discussion/decision-record.md\`
++- \`$W/_lyx/discussion/support-log.md\`"
++  fasit="The authority for this round is the rubric supplied in the prompt. The mechanical section contract over the discussion artifact pair is already enforced by this round's own gate over this round's own output, so re-deriving it here is duplicated work."
++else
++  target="- \`$W/_lyx/plan\` (a directory — everything under it)"
++  fasit="- \`$W/_lyx/discussion/decision-record.md\`
++
++The decision record named above is the answer key: the plan's job is to implement the decisions and constraints it settles. With no rework generation, the decision record alone is the answer key. The format authority is $bench/specs/loom/loom-plan-spec.md, and the mechanical checks over that format are already enforced by this round's own gate over this round's own output, so re-deriving them here is duplicated work. This round may never write the approved: key in the plan's overview file."
++fi
++
++focus=""
++if git -C $WEFT cat-file -e $wc:_lyx/reviews/$kind/round-1-focus.md 2>/dev/null; then
++  git -C $WEFT show $wc:_lyx/reviews/$kind/round-1-focus.md > "$W/.bench/instr/focus.md"
++  focus=$(fill "$(strip "$bench/stencils/burler/burler-focus-directive.md")" "focus_path=$W/.bench/instr/focus.md")
++  echo focus=yes >> "$dir/meta.txt"
++else
++  echo focus=no >> "$dir/meta.txt"
++fi
++
++explore=$(strip "$bench/stencils/burler/burler-step-1-explore.md")
++explore=$(fill "$explore" "pattern_directive=" "focus_directive=$focus" "target=$target" "fasit=$fasit" "rubric=$rubric" \
++  "tool_use_rules=Read-only analysis in the explore and review steps: read files, run nothing." "fork_reading=")
++printf '%s\n' "$explore" > "$W/.bench/instr/step-1-explore.md"
++
++review=$(strip "$bench/stencils/burler/burler-step-review.md")
++review=$(fill "$review" "cluster_rules=$(strip "$bench/stencils/burler/burler-cluster-solo.md")" "review_path=$review_path" \
++  "review_format_path=$W/.bench/instr/review-format.md" "prior_rounds=This is the first round — no prior round files exist.")
++printf '%s\n' "$review" > "$W/.bench/instr/step-2-review.md"
++strip "$bench/stencils/burler/burler-review-format.md" > "$W/.bench/instr/review-format.md"
++
++prompt=$(strip "$bench/stencils/burler/burler-template-reviewer.md")
++prompt=$(fill "$prompt" "parent_directive=" "edit_directive=" "review_path=$review_path" \
++  "instruction_1_path=$W/.bench/instr/step-1-explore.md" "instruction_2_path=$W/.bench/instr/step-2-review.md")
++printf '%s\n' "$prompt" > "$dir/prompt.md"
++cat "$dir/meta.txt"
++if grep -l '{{' "$dir/prompt.md" "$W"/.bench/instr/*.md; then
++  echo "leftover placeholder in the files above" >&2
++  exit 1
++fi
+diff --git a/docs/research/codex-astra-fan-bench-2026-10-27/data/harness/dump.sh b/docs/research/codex-astra-fan-bench-2026-10-27/data/harness/dump.sh
+new file mode 100755
+index 00000000..e2a00ec7
+--- /dev/null
++++ b/docs/research/codex-astra-fan-bench-2026-10-27/data/harness/dump.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++# dump.sh <file>: one line per finding from the frontmatter.
++id= sev= cls= loc= 
++while IFS= read -r line; do
++  case "$line" in
++    "  - id: "*) [ -n "$id" ] && echo "$id $sev $cls $loc | $sum"; id=${line#  - id: }; sev=;cls=;loc=;sum=;;
++    "    severity: "*) sev=${line#    severity: };;
++    "    class: "*) cls=${line#    class: };;
++    "    location: "*) loc=${line#    location: };;
++    "    summary: "*) sum=${line#    summary: };;
++    "---") [ -n "$id" ] && [ -n "$sum" ] && { echo "$id $sev $cls $loc | $sum"; id=; }; ;;
++  esac
++done < "$1"
++[ -n "$id" ] && echo "$id $sev $cls $loc | $sum"
+diff --git a/docs/research/codex-astra-fan-bench-2026-10-27/data/harness/run-call.sh b/docs/research/codex-astra-fan-bench-2026-10-27/data/harness/run-call.sh
+new file mode 100755
+index 00000000..9159a25e
+--- /dev/null
++++ b/docs/research/codex-astra-fan-bench-2026-10-27/data/harness/run-call.sh
+@@ -0,0 +1,41 @@
++#!/usr/bin/env bash
++# Run one Codex call of the fan: run-call.sh <input-id> <lens-affected-set|lens-guard-reach|lens-way-forward|handler>
++# Each call gets a fresh copy of the snapshot; the handler's copy also holds the three lens outputs.
++set -uo pipefail
++ROOT=/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench
++HARNESS=$ROOT/docs/research/codex-astra-fan-bench-2026-10-27/data/harness
++id=$1 call=$2
++model=gpt-6-astra effort=medium
++in=$ROOT/.scratch/bench/inputs/$id
++runs=$ROOT/.scratch/bench/runs/$id
++cell=$runs/$call
++rm -rf "$cell"; mkdir -p "$cell"
++cp -a "$in/work" "$cell/work"
++prompt=$(<"$in/fan/$call.prompt.md")
++prompt=${prompt//"$in/work"/"$cell/work"}
++for f in "$cell"/work/.bench/instr/*.md; do
++  c=$(<"$f"); printf '%s\n' "${c//"$in/work"/"$cell/work"}" > "$f"
++done
++if [ "$call" = handler ]; then
++  mkdir -p "$cell/work/.bench/lens"
++  for l in affected-set guard-reach way-forward; do
++    cp "$runs/lens-$l/last-message.txt" "$cell/work/.bench/lens/$l.md"
++  done
++fi
++printf '%s\n' "$prompt" > "$cell/prompt.md"
++start=$(date +%s)
++CODEX_HOME=$ROOT/.scratch/codex-home timeout 3000 codex exec \
++  -m "$model" -c "model_reasoning_effort=\"$effort\"" \
++  -s workspace-write -C "$cell/work" --skip-git-repo-check --json \
++  -o "$cell/last-message.txt" - <<<"$prompt" > "$cell/events.jsonl" 2> "$cell/stderr.txt"
++rc=$?
++end=$(date +%s)
++echo "rc=$rc wall_seconds=$((end-start))" > "$cell/result.txt"
++cp "$cell/work/.bench/out/review.md" "$cell/review.md" 2>/dev/null || echo "no review file" >> "$cell/result.txt"
++rollout=$(ls -t "$ROOT"/.scratch/codex-home/sessions/*/*/*/rollout-*.jsonl | head -1)
++windows=$(bash "$HARNESS/windows.sh" "$rollout" | head -1)
++tok=$(grep '"turn.completed"' "$cell/events.jsonl" | tail -1)
++echo "$tok" > "$cell/turn-completed.json"
++echo "windows=$windows rollout=$rollout" >> "$cell/result.txt"
++rm -rf "$cell/work"
++cat "$cell/result.txt"; cat "$cell/turn-completed.json"
+diff --git a/docs/research/codex-astra-fan-bench-2026-10-27/data/harness/setup-codex-home.sh b/docs/research/codex-astra-fan-bench-2026-10-27/data/harness/setup-codex-home.sh
+new file mode 100755
+index 00000000..f29d5581
+--- /dev/null
++++ b/docs/research/codex-astra-fan-bench-2026-10-27/data/harness/setup-codex-home.sh
+@@ -0,0 +1,7 @@
++#!/usr/bin/env bash
++# setup-codex-home.sh: create the scratch CODEX_HOME the bench runs use, holding a symlink to the operator's auth.json.
++# The link is writable through to ~/.codex/auth.json, so a token refresh by Codex would change the operator's file.
++# An existing auth.json in the scratch directory, link or file, is replaced.
++ROOT=/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench
++mkdir -p "$ROOT/.scratch/codex-home"
++ln -sfn "$HOME/.codex/auth.json" "$ROOT/.scratch/codex-home/auth.json"
+diff --git a/docs/research/codex-astra-fan-bench-2026-10-27/data/harness/windows.sh b/docs/research/codex-astra-fan-bench-2026-10-27/data/harness/windows.sh
+new file mode 100755
+index 00000000..c66e3a98
+--- /dev/null
++++ b/docs/research/codex-astra-fan-bench-2026-10-27/data/harness/windows.sh
+@@ -0,0 +1,6 @@
++#!/usr/bin/env bash
++# windows.sh <rollout-file>: print the 5-hour and weekly used_percent of the rollout's last token_count event, space-separated.
++# Prints nothing when the rollout has no token_count event, as for a run the plan refused.
++grep '"token_count"' "$1" | tail -1 | grep -o '"primary":{[^}]*}\|"secondary":{[^}]*}' \
++  | grep -o '"used_percent":[0-9.]*' | cut -d: -f2 | tr '\n' ' ' | sed 's/ $//'
++echo
+diff --git a/docs/research/codex-astra-fan-bench-2026-10-27/data/inputs.txt b/docs/research/codex-astra-fan-bench-2026-10-27/data/inputs.txt
+new file mode 100644
+index 00000000..b132115e
+--- /dev/null
++++ b/docs/research/codex-astra-fan-bench-2026-10-27/data/inputs.txt
+@@ -0,0 +1 @@
++P4 plan weft=045707759 start=2026-10-22T07:32:19Z code=750903aef1b7474b06597cdd2d6e0aecfd85d251
+diff --git a/docs/research/codex-astra-fan-bench-2026-10-27/data/match.tsv b/docs/research/codex-astra-fan-bench-2026-10-27/data/match.tsv
+new file mode 100644
+index 00000000..ce81682c
+--- /dev/null
++++ b/docs/research/codex-astra-fan-bench-2026-10-27/data/match.tsv
+@@ -0,0 +1,10 @@
++input	setting	finding	own_severity	label	claude_finding	claude_severity	note
++P4	astra-fan-handler	F1	BLOCKING	unique-real			handler's own: card 13 copies the owner-pause seam in orchcli.Command at construction in newRoot, while the pre-run installs it later, so a fresh process captures nil; main.go:161 builds Command before the root PersistentPreRunE runs; absent from the fan's list
++P4	astra-fan-handler	F2	BLOCKING	unique-real			handler's own: card 3 lets BOARD_SKIP_GIT and BOARD_SKIP_PUSH return an unpushed owner write as recorded; same defect as solo Astra F1
++P4	astra-fan-handler	F3	MEDIUM	unique-real			lens guard-reach: the Takeover guard covers slugs only, so a prime claim replaces an owner found by the setter's pull; same defect as solo Astra F2 and Opus F1
++P4	astra-fan-handler	F4	MEDIUM	unique-real			lens guard-reach: Finalize.Call runs holdParent, whose guard fetches the parent tips, before step 1b3, so a fully offline run never reaches the owner checks; finalize.go:198 before :204 and parentguard.go:126; the fan's F5 concerns card 8, not Finalize
++P4	astra-fan-handler	F5	MEDIUM	unique-real			lenses affected-set and guard-reach: Fabric.settleUnmovedWeft replays on pull and the following push is a fast-forward that never meets retryWeftPush; the fan's F1 attacks the same guard's origin read, a different defect
++P4	astra-fan-handler	F6	MEDIUM	unique-real			lens way-forward: the adopter-first repair is appended to a push error whose codeDivergedWayForward says to merge origin and push; failedpush.go:249
++P4	astra-fan-handler	F7	LOW	unique-real			lens affected-set: card 10 needs a sleep of at least a minute, SleepWatch.Observe records only gap > SleepTolerance and TestSleepWatch pins equality as no sleep; the fan's F4 is a different defect on the same card
++P4	astra-fan-handler	F8	LOW	unique-real			lens way-forward: card 16 refuses both local-choice flags and an empty selection with no correction named, though the Constraint requires a way forward
++P4	astra-fan-dropped	affected-set-3	LOW	unique-real			dropped by the handler: card 16 does not add adoptcli to the RunCLI and RunCLIIn lists of cmd/lyx/seamsignature_test.go; the claim holds, but the lists already omit battencli, shedcli and others, so the omission is marginal
+diff --git a/docs/research/codex-astra-fan-bench-2026-10-27/data/prompts/handler.prompt.md b/docs/research/codex-astra-fan-bench-2026-10-27/data/prompts/handler.prompt.md
+new file mode 100644
+index 00000000..c18d4421
+--- /dev/null
++++ b/docs/research/codex-astra-fan-bench-2026-10-27/data/prompts/handler.prompt.md
+@@ -0,0 +1,22 @@
++# Burler — review
++
++
++
++You are a burler reviewer: a single agent doing the review half of ONE round over an artifact.
++Your one job is to form your OWN independent judgment of the target, judged AGAINST the fasit, hunt for defects, and write your findings to the review file with a verdict.
++
++## What you may write (BLOCKING)
++
++Your write surface is the review file `/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench/.scratch/bench/inputs/P4/work/.bench/out/review.md` and nothing else.
++You never edit, create, or delete a target file, you never fix a finding, and you run no mutating git command.
++Findings are recorded as you find them, never fixed on sight: if you catch yourself wanting to patch something the moment you spot it, write it down as a finding and keep reading.
++
++## Your two instruction files
++
++Read and execute each of the following files in turn, in this order — never preview a later file's content early:
++
++1. `/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench/.scratch/bench/inputs/P4/work/.bench/instr/step-1-explore-fan.md` — step 1: explore the target and understand what you are judging it against.
++2. `/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench/.scratch/bench/inputs/P4/work/.bench/instr/step-2-review-fan.md` — step 2: the cluster/review rules and where the review-file format is. Write the review to `/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench/.scratch/bench/inputs/P4/work/.bench/out/review.md`.
++
++Your work is done once `/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench/.scratch/bench/inputs/P4/work/.bench/out/review.md` is fully written on disk.
++You write no other file and send no message.
+diff --git a/docs/research/codex-astra-fan-bench-2026-10-27/data/prompts/lens-affected-set.prompt.md b/docs/research/codex-astra-fan-bench-2026-10-27/data/prompts/lens-affected-set.prompt.md
+new file mode 100644
+index 00000000..aa30b260
+--- /dev/null
++++ b/docs/research/codex-astra-fan-bench-2026-10-27/data/prompts/lens-affected-set.prompt.md
+@@ -0,0 +1,19 @@
++# Burler — fork reviewer
++
++You are one fork reviewer of a fanned plan-review round, and you own one lens; the other forks own the other lenses, and a handler reviews holistically afterwards.
++
++Read `/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench/.scratch/bench/inputs/P4/work/.bench/instr/step-1-explore-fan.md` and do what it directs: it names the target, the fasit and the rubric, and ends with the reading to do.
++Do that reading, then work your lens's procedure and start your final message with the list your lens asks for.
++Report every finding your lens's procedure produces and nothing outside it, because the other lenses and the handler cover the rest.
++Judge nothing while you read, and review only after the reading is done.
++You are READ-ONLY: never write, edit or delete any file, run only commands that read, never touch `/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench/.scratch/bench/inputs/P4/work/.bench/out`, and never start another agent.
++Return your findings ONLY as your final message, each with a severity (`BLOCKING`, `MEDIUM`, `LOW` or `NIT`), a class (`design`, `scope`, `decision` or `consistency`), a location, a one-line summary and the file and line of the evidence you read.
++
++Your lens: affected-set
++Own what each card's change forces outside the card. For each output, key,
++string, file shape or behaviour a card changes, find everything that reads
++or asserts it, tests, callers, docs and fixtures, from the pre-read and a
++search for what the pre-read lacks. For each change, find the cards that
++cover the set. A card that covers part of a set is one finding about the
++method, naming the members it missed. Your list: per change, the set you
++found and the cards that cover it.
+diff --git a/docs/research/codex-astra-fan-bench-2026-10-27/data/prompts/lens-guard-reach.prompt.md b/docs/research/codex-astra-fan-bench-2026-10-27/data/prompts/lens-guard-reach.prompt.md
+new file mode 100644
+index 00000000..b2584acb
+--- /dev/null
++++ b/docs/research/codex-astra-fan-bench-2026-10-27/data/prompts/lens-guard-reach.prompt.md
+@@ -0,0 +1,19 @@
++# Burler — fork reviewer
++
++You are one fork reviewer of a fanned plan-review round, and you own one lens; the other forks own the other lenses, and a handler reviews holistically afterwards.
++
++Read `/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench/.scratch/bench/inputs/P4/work/.bench/instr/step-1-explore-fan.md` and do what it directs: it names the target, the fasit and the rubric, and ends with the reading to do.
++Do that reading, then work your lens's procedure and start your final message with the list your lens asks for.
++Report every finding your lens's procedure produces and nothing outside it, because the other lenses and the handler cover the rest.
++Judge nothing while you read, and review only after the reading is done.
++You are READ-ONLY: never write, edit or delete any file, run only commands that read, never touch `/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench/.scratch/bench/inputs/P4/work/.bench/out`, and never start another agent.
++Return your findings ONLY as your final message, each with a severity (`BLOCKING`, `MEDIUM`, `LOW` or `NIT`), a class (`design`, `scope`, `decision` or `consistency`), a location, a one-line summary and the file and line of the evidence you read.
++
++Your lens: guard-reach
++Own whether each guard can be reached. For each guard, refusal, branch or
++test row a card adds, trace the sequence of states a real entry point
++passes through to reach it. Say whether the state it guards can occur at
++that point, and whether the guarded site recurs elsewhere on a path the
++card does not guard. A guard whose state cannot occur, and a guarded site
++that recurs unguarded, are findings. Your list: per guard, reachable or
++not.
+diff --git a/docs/research/codex-astra-fan-bench-2026-10-27/data/prompts/lens-way-forward.prompt.md b/docs/research/codex-astra-fan-bench-2026-10-27/data/prompts/lens-way-forward.prompt.md
+new file mode 100644
+index 00000000..18e0fdc6
+--- /dev/null
++++ b/docs/research/codex-astra-fan-bench-2026-10-27/data/prompts/lens-way-forward.prompt.md
+@@ -0,0 +1,17 @@
++# Burler — fork reviewer
++
++You are one fork reviewer of a fanned plan-review round, and you own one lens; the other forks own the other lenses, and a handler reviews holistically afterwards.
++
++Read `/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench/.scratch/bench/inputs/P4/work/.bench/instr/step-1-explore-fan.md` and do what it directs: it names the target, the fasit and the rubric, and ends with the reading to do.
++Do that reading, then work your lens's procedure and start your final message with the list your lens asks for.
++Report every finding your lens's procedure produces and nothing outside it, because the other lenses and the handler cover the rest.
++Judge nothing while you read, and review only after the reading is done.
++You are READ-ONLY: never write, edit or delete any file, run only commands that read, never touch `/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench/.scratch/bench/inputs/P4/work/.bench/out`, and never start another agent.
++Return your findings ONLY as your final message, each with a severity (`BLOCKING`, `MEDIUM`, `LOW` or `NIT`), a class (`design`, `scope`, `decision` or `consistency`), a location, a one-line summary and the file and line of the evidence you read.
++
++Your lens: way-forward
++Own the failure and recovery ends. For each refusal, stop, reset or
++recovery step a card adds, find the next step it names and check whether
++that step can succeed from the state the refusal leaves. A refusal that
++names no next step, and a next step that cannot succeed from that state,
++are findings. Your list: per refusal, the next step, progresses or not.
+diff --git a/docs/research/codex-astra-fan-bench-2026-10-27/data/prompts/step-1-explore-fan.md b/docs/research/codex-astra-fan-bench-2026-10-27/data/prompts/step-1-explore-fan.md
+new file mode 100644
+index 00000000..4c479918
+--- /dev/null
++++ b/docs/research/codex-astra-fan-bench-2026-10-27/data/prompts/step-1-explore-fan.md
+@@ -0,0 +1,209 @@
++
++## Focus directive for this round
++
++Read the file at `/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench/.scratch/bench/inputs/P4/work/.bench/instr/focus.md` before forming any finding.
++It names where to look and which question to settle this round.
++
++How the directive relates to the rubric:
++
++1. The rubric binds over the focus directive.
++   A directive never licenses a finding the rubric's `Do not flag` list or symmetry rule forbids, and never suppresses a finding the rubric requires.
++2. A directive steers attention and order, not verdicts.
++   "The concrete instance to judge" means reach it and state a verdict on it, and "not a defect" is a valid verdict.
++3. Severity comes from the rubric's mapping and the evidence you find.
++   A severity cap in a directive is advisory and yields to evidence the round turns up.
++4. `exclude_lenses` keeps its mechanical meaning: it trims the cluster fan, and this rule does not govern it.
++
++The directive never licenses reading a prior round's files before your review is saved.
++A directive that points into one is followed only as far as its own text goes, and you record the gap under `## Focus departures`.
++
++If you depart from a directive, record it in the review file's `## Focus departures` section, as the review-file format describes.
++## What to review (the target)
++
++- `/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench/.scratch/bench/inputs/P4/work/_lyx/plan` (a directory — everything under it)
++
++## What to judge it against (the fasit)
++
++- `/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench/.scratch/bench/inputs/P4/work/_lyx/discussion/decision-record.md`
++
++The decision record named above is the answer key: the plan's job is to implement the decisions and constraints it settles. With no rework generation, the decision record alone is the answer key. The format authority is /home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench/.scratch/bench/inputs/P4/work/.bench/specs/loom/loom-plan-spec.md, and the mechanical checks over that format are already enforced by this round's own gate over this round's own output, so re-deriving them here is duplicated work. This round may never write the approved: key in the plan's overview file.
++
++The fasit is the source of truth the target is judged AGAINST.
++A review that ignores the fasit degenerates into a pure internal-consistency check — always read it and hold the target to it.
++
++## Rubric
++
++# Plan-Review rubric
++
++The subject under review is the current plan: `_lyx/plan/00-overview.md` and the card files its Card Index names.
++The plan directory may also hold `archive-*/` subdirectories, which are rotations of superseded plans;
++they are out of scope, and a finding raised against one is never legitimate.
++
++The format contract, and the Card model it implements, are both `/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench/.scratch/bench/inputs/P4/work/.bench/specs/loom/loom-plan-spec.md`.
++This rubric points at both and restates neither.
++The mechanical checks over that contract are already enforced by this round's own gate over this round's own output — every check but `plan-unapproved` and `delete-target-gone` — while `plan-unapproved` is enforced at no row at all, resting on the review segment's own approve seam failing loudly if ever wired nil, and `delete-target-gone` fires only at Webster's dispatch, after this round.
++
++`Plan-Review` is the LLM producer, not the mechanical one — over-flagging is a judgment failure mode a mechanical producer, which has only checks and never judgment, cannot exhibit.
++Sitting behind a mechanical gate over this round's own output makes this gate's over-flagging surface larger than that of a gate with no validator ahead of it, not smaller.
++
++**`support-log.md` is outside this review entirely.**
++It appears in neither the artifact list nor the answer key, and it must not be read or reasoned from.
++`Plan-Write` provably never reads it, so a finding grounded in its content cannot be satisfied except by inventing the missing link.
++
++## Write surface
++
++none
++
++`none` means webster has begun no batch, and no card is frozen.
++Otherwise a done card is frozen: a fix never edits its file.
++A fix to its work is a follow-up card placed after the last begun batch, with its Card Index line in `00-overview.md`, in the format `/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench/.scratch/bench/inputs/P4/work/.bench/specs/loom/loom-plan-spec.md` defines.
++A fix inserts or removes a card only with `lyx loom insert-card` or `lyx loom remove-card`, which renumber the later cards and whose `--help` says what they do, never by renaming, rewriting under a new name or deleting a card file by hand.
++
++## Do not flag
++
++Do not flag any of the following as a finding:
++
++- **Anything this round's own gate already checks.**
++  Every check ID `/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench/.scratch/bench/inputs/P4/work/.bench/specs/loom/loom-plan-spec.md`'s own validation-checks section lists is enforced deterministically by this round's own gate over this round's own output, except `plan-unapproved`, which is enforced at no row at all, resting on the review segment's own approve seam failing loudly if ever wired nil, and `delete-target-gone`.
++  `delete-target-gone` fires only at Webster's dispatch, after this round, so no plan this round reviews can carry it.
++  Re-deriving any of them here is duplicated work whose only possible outcome is disagreement with the gate.
++- **A missing `DependsOn`/`Produces` field, or an incomplete dependency list.**
++  Dependency edges are derived, never authored — a card's `Uses` intersected against every other card's target list.
++  Plan-time completeness of that intersection is explicitly not provable;
++  the real gate is the post-merge build and test.
++- **A `Rename`, `Move`, `Prosa`, or `Custom` card carrying no `ImpactSummary`.**
++  It is required for `Edit` and `Delete` only, per the per-type table in `/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench/.scratch/bench/inputs/P4/work/.bench/specs/loom/loom-plan-spec.md`.
++  For `Rename` the reason is specific: a correctly executed AST-aware rename is binary, with no graded blast radius to summarise.
++
++## Also flag
++
++- **Granularity.**
++  One card per independently reviewable unit, not one card per literal symbol.
++  A private supporting type, or a constructor inseparable from its type, belongs in the other symbol's card;
++  a symbol that is part of a module's public surface, or reused across packages, gets its own card even when one card is its only consumer, and a helper serving one surface is bundled into that surface's card.
++- **Test economy.**
++  A card that plans a new test function or file for behavior an existing test already covers, or one test per symbol, is a finding; so is a card that plans an assertion on a stencil's static prose.
++  The finding names the existing test that covers the behavior, or, for a per-symbol test, the public-surface test that covers the symbol;
++  a vague "seems redundant" is not a finding.
++- **Member glyphs on an `Edit` card.**
++  An `Edit` card whose targets are only Go file paths of non-test files while its `Intent` names specific symbols is a finding; the finding names the member glyphs to list instead.
++- **The re-sign arrow.**
++  An `Edit` member glyph without the re-sign arrow, while the card's `Intent` changes that member's parameters, results, type parameters or receiver, is a finding; the finding names the arrow to add.
++  It never fires for an interface method or a struct field, which take no arrow.
++- **`ImpactSummary` carries a real conclusion.**
++  A one-line blast-radius conclusion — "3 callers, all local to the billing package, no cross-module effects" — never a restatement of `Intent`.
++- **`Custom` is a last resort.**
++  Used only where none of `Create`, `Edit`, `Delete`, `Rename`, `Move`, or `Prosa` genuinely fits, never as a shortcut around correct typing.
++  A `Custom` card is exempt from `path-missing` on its own targets and from `prosa-symbol-target` — which under the glyph alphabet means a `Prosa` group may only target file and unit self glyphs, with a member glyph (or anything else that fails to parse as a self glyph) the finding — so a mistyped `Custom` card silently escapes two checks the rest of the plan is held to.
++  It escapes only those two: `bare-symbol-target` and `directory-target` bind a card's flat `Targets`/`Uses` with no group scoping at all, so this round's own gate already blocks a `Custom` card carrying either — do not hunt for one here.
++  A `Custom` card whose targets could instead be expressed as a multi-label combination of the other six is a finding — the format's one-or-more-labels grammar means `Custom` is never the only way to name a mixed target list.
++- **PATTERN fit.**
++  When the repository has a `PATTERN.md`, each card is checked against its entries and against the `pattern/` background files the plan names as relevant to the change;
++  a card that breaks one of their rules is a finding, and the finding names the entry.
++  In a repository without a `PATTERN.md` this check does not apply.
++- **Fidelity to the answer key.**
++  Every Decision and every Constraint in `_lyx/discussion/decision-record.md` is carried by some card, and no card introduces scope the answer key does not license.
++  A Decision step no card carries is accepted only when the step changes this task's own board entry's body or scope and the decision record carries an `Added after Discussion` entry recording its drop;
++  any other uncarried Decision stays a finding.
++  That path is anchor-relative: it resolves from this session's own working directory, and it is deliberately not the absolute form the artifact list uses.
++  The answer key is the measuring stick and never the subject — every finding is raised against the plan, never against the decision record or a findings file.
++  An entry between `<!-- lyx:carry-over … -->` marker lines in the decision record's `## Open risks` is not part of the answer key, and it licenses no card's scope.
++  In a rework generation the live generation's `findings.md` joins the decision record as the answer key:
++  every finding in it is covered by some card, and every card's scope is licensed by the decision record or by a finding.
++  A finding in `findings.md` is a reviewer's claim the rework plan answers, never a ruling;
++  it licenses a card's scope unless it overturns a Decision of the decision record, and a card carrying a finding that overturns a Decision with no `Added after Discussion` entry recording it is a finding.
++  The live generation's round is, among `_lyx/loom/rework/round-<N>/` directories, the highest `N` whose `record.json` carries a `class` and whose `first_card` equals the `first_card` in `_lyx/plan/00-overview.md`'s frontmatter (absent means `1`).
++  With no such round (generation 0, or a fresh Plan-Write plan after an operator `goto Plan-Write`), the decision record alone is the answer key.
++  The round's `prior-generation/` archive is context only, and a finding raised against anything inside it is never legitimate.
++- **A card that carries a research step.**
++  A card that leaves a fact the design depends on to be found out while it runs, or carries a rule to halt when its work discovers such a fact, is a finding.
++  The finding names the fact;
++  its fix is the fact researched and recorded in the plan, or in the decision record through the parent when the answer changes the design.
++- **A card that edits the task's own board entry.**
++  A card that changes this task's own board entry's body or scope is a finding, because the run's board lock refuses such a change.
++  A card writing another entry, the entry's status or its `run_settings`, or changing board-module code is not flagged by this bullet.
++- **Card order.**
++  A card that depends on something a later card does breaks the rule in `/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench/.scratch/bench/inputs/P4/work/.bench/specs/loom/loom-plan-spec.md`'s "Plan vs. schedule" section; the finding names the card and the later card it depends on.
++- **Verify lines.**
++  A card's `**Verify:**` line naming a raw test command is a finding, because the gates run the hub's tier lists over scopes lyx computes and a line that tests is one `lyx gate test --wait` call with a tier list and a scope form.
++  The hub's tiers and gate lists, as the plan writer was given them:
++none
++  A plan-level `## verify:` section is accepted and ignored, so it is no finding.
++- **The attack-surface question.**
++  For every new verb, flag, escape hatch or routing edge, and every guard that is removed, downgraded or bypassable, the card that introduces the change states in its `**Intent:**` what it can now skip or let through and what bounds it.
++  A card that introduces one with no stated bound is a finding.
++- **Reachability of a prescribed refusal.**
++  A card that prescribes a refusal or guard branch with no named input that reaches it, or no named test that reaches it, is a finding.
++  So is one whose named input an upstream check rejects; the finding names that upstream check.
++  A propagated raw I/O error, which `refusal-spec.md` exempts as transient, is exempt, and so is a fail-loud wiring guard in that file's sense, which takes no reaching test.
++  A test that calls only the refusal's error constructor does not reach the refusal.
++- **The writer/reviewer symmetry note.**
++  The plan writer's own stencil is `/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench/.scratch/bench/inputs/P4/work/.bench/stencils/loom/loom-template-plan.md`.
++  Whatever it says not to write, this rubric must not flag as missing.
++
++## Proposed fixes
++
++A finding whose fix adds, drops, moves or pairs targets, or changes a verify command, proposes only a fix that every check in the validation-checks section of `/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench/.scratch/bench/inputs/P4/work/.bench/specs/loom/loom-plan-spec.md` admits.
++A fix that adds or pairs targets must pass `redundant-package-target` and `redundant-file-target` there, since a file or a package listed beside a member of it on one card is refused, and the spec says what counts and the way forward.
++When the reviewer sees no admissible fix, it still reports the defect and names the check that constrains the fix.
++A finding's `fix` key is a proposal: the fixer may apply any other fix the checks admit, and when none exists it defers the finding with the constraining check as the reason.
++The rule narrows only which fix shapes a reviewer proposes; no defect becomes unreportable.
++
++Before writing a finding whose `fix` adds, drops, moves or pairs targets, or changes a verify command, the agent writing the review file checks the fixes against the plan gate with `lyx loom validate-plan --overlay`, which checks proposed plan file contents in memory and writes no file.
++`lyx loom validate-plan --help` shows the stdin format; this rubric does not restate it.
++It first runs `validate-plan --overlay` with `{}` as a baseline, never the flag-less run, so that no run writes a file.
++It then runs it once with every such fix applied together, with its Bash timeout raised to cover a type load, and proposes no fix whose run reports a blocking finding the baseline does not.
++When the combined run reports a new blocking finding, it re-runs with each fix overlaid alone.
++A fix whose solo run reports a new blocking finding is withheld, and its defect is reported with the constraining check named, as above for a defect with no admissible fix.
++A new blocking finding of the combined run that no solo run reproduces is a joint conflict: the fixes that finding names by card are withheld, and their defects are reported together the same way.
++A fix that inserts, removes or renumbers cards is not overlaid, since it goes through `insert-card` and `remove-card`.
++The directive binds writing a finding's `fix`, not a Bouncer row's focus file.
++
++A finding whose proposed glyph stands for a comment or a line it cites names the function or method whose body encloses that line, confirmed with `lyx quarry resolve` that the line lies inside the glyph's span, never the member after or near it.
++When no member span holds the line, as for a free-standing comment between declarations, it names the file's self glyph.
++
++## Amendment
++
++none
++
++When the note above is not `none`, this round reviews an amendment: review only the change it names, and report nothing about the settled remainder.
++
++## Finding class
++
++Every finding carries one class: `design`, `scope`, `decision` or `consistency`.
++Their generic meanings are in burler's review step; this section does not restate them.
++In this segment, `design` means the plan's structure is wrong: batching, sequencing, sizing or `verify:` correctness.
++A recurring enumeration gap is filed once as a `design` finding about the method, not once per missing item.
++Class never changes whether a finding is fixed.
++
++The rubric tells you what counts as BLOCKING, MEDIUM, LOW, or NIT for THIS target.
++It maps its own criteria onto that fixed four-value severity vocabulary;
++it never introduces a new severity name, and neither do you.
++Each finding also carries one of the four classes — `design`, `scope`, `decision`, `consistency` — and the rubric says what `design` means for this target.
++
++## Tool-use rules — how you gather evidence
++
++Read-only analysis in the explore and review steps: read files, run nothing.
++
++## Reading for the fork reviewers
++
++This round fans out: in step 2 you spawn fork reviewers, and each fork inherits your context as it stands at the spawn.
++Your reading in this step is the forks' reading, so read here what the review will need, once, instead of leaving each fork to read it again.
++
++Before you leave this step, read:
++
++- every file the target names, at the definitions of the symbols it cites;
++- for each symbol the target changes, guards or removes: its direct callers and callees, and every path that reaches it from another process, such as a child the code spawns or a command that calls the guarded verb in-process;
++- for each state, setting or file a decision introduces or changes: the existing code paths that also write, reset or reapply it, such as other verbs, hooks, resize or apply steps, and restart paths, and the code that reads it;
++- for each output, key, string, file shape or behaviour the target changes: every test, caller, doc and fixture that reads or asserts it;
++- the board entry of the task the target belongs to, through `lyx board get`;
++- the `pattern/` background file of every PATTERN entry the target names or touches;
++- the failure, restart and resume paths of each change the target makes.
++
++Read definitions and call sites, not whole files: a fork re-reads its inherited context on every turn.
++Judge nothing while you read: write no finding, verdict or assessment, not even in a status line or a note to yourself.
++A judgement in your context before the spawn colours every fork; your own review starts after the forks are spawned.
++
++Close this step with a reading manifest: one line per file and symbol you read, grouped by the part of the target it serves.
++The manifest names what you read and nothing about what you found.
++Write it as text in the same turn and go straight on to step 2: the manifest never ends your turn.
+diff --git a/docs/research/codex-astra-fan-bench-2026-10-27/data/prompts/step-2-review-fan.md b/docs/research/codex-astra-fan-bench-2026-10-27/data/prompts/step-2-review-fan.md
+new file mode 100644
+index 00000000..6911f43a
+--- /dev/null
++++ b/docs/research/codex-astra-fan-bench-2026-10-27/data/prompts/step-2-review-fan.md
+@@ -0,0 +1,55 @@
++## Cluster rules
++
++This is a cluster round. The fork reviewers have already run, one per lens listed here, and each returned its findings as its final message.
++
++Lenses for this round:
++
++- affected-set: Own what each card's change forces outside the card. For each output, key,
++string, file shape or behaviour a card changes, find everything that reads
++or asserts it, tests, callers, docs and fixtures, from the pre-read and a
++search for what the pre-read lacks. For each change, find the cards that
++cover the set. A card that covers part of a set is one finding about the
++method, naming the members it missed. Your list: per change, the set you
++found and the cards that cover it.
++- guard-reach: Own whether each guard can be reached. For each guard, refusal, branch or
++test row a card adds, trace the sequence of states a real entry point
++passes through to reach it. Say whether the state it guards can occur at
++that point, and whether the guarded site recurs elsewhere on a path the
++card does not guard. A guard whose state cannot occur, and a guarded site
++that recurs unguarded, are findings. Your list: per guard, reachable or
++not.
++- way-forward: Own the failure and recovery ends. For each refusal, stop, reset or
++recovery step a card adds, find the next step it names and check whether
++that step can succeed from the state the refusal leaves. A refusal that
++names no next step, and a next step that cannot succeed from that state,
++are findings. Your list: per refusal, the next step, progresses or not.
++
++The forks' final messages are these files, which you read once your reading in step 1 is done:
++
++- `/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench/.scratch/bench/inputs/P4/work/.bench/lens/affected-set.md`: the final message of the `affected-set` fork
++- `/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench/.scratch/bench/inputs/P4/work/.bench/lens/guard-reach.md`: the final message of the `guard-reach` fork
++- `/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench/.scratch/bench/inputs/P4/work/.bench/lens/way-forward.md`: the final message of the `way-forward` fork
++
++You do not spawn any fork: the results are in those files.
++
++Do your own HOLISTIC review: what no lens owns, such as the target against its fasit and its board entry, the rubric's leanness and relocation rules, architecture and PATTERN-fit, reading further only where your review needs it.
++Then prepare the ground truths and the severity rubric you will judge every finding against.
++Write nothing to the review file until you have read all three fork reports and finished your own holistic review: consolidate with every finding in view.
++
++Consolidation: judge every fork finding and your own holistic findings with EQUAL skepticism, dedup findings that describe the same defect across lenses, tag every kept finding's frontmatter with an `origin:` key (`lens:<name>` or `handler`), move false positives to a `## Rejected` prose section below the frontmatter with a one-line reason each (a rejected item never appears in `findings:`), and order kept findings by severity.
++The consolidated review is the ONE review file, and the review is complete once it is fully written to disk — consolidation is part of the review, not a separate step after it.
++
++## The review file
++
++Write the review to `/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench/.scratch/bench/inputs/P4/work/.bench/out/review.md`, in the format `/home/knatte/Code/loomyard-LYMHUB/codex-astra-fan-bench/.scratch/bench/inputs/P4/work/.bench/instr/review-format.md` describes.
++Read that file before you write.
++The review is complete once it is fully written to disk and passes the format's strict rules.
++
++## Source-grounding rule
++
++Never fabricate file contents.
++Read the actual files before you describe or judge them — every claim in your review must be grounded in something you actually read.
++
++## Prior rounds
++
++This is the first round — no prior round files exist.
+diff --git a/docs/research/codex-astra-fan-bench-2026-10-27/data/reviews/P4/handler.md b/docs/research/codex-astra-fan-bench-2026-10-27/data/reviews/P4/handler.md
+new file mode 100644
+index 00000000..94a885c4
+--- /dev/null
++++ b/docs/research/codex-astra-fan-bench-2026-10-27/data/reviews/P4/handler.md
+@@ -0,0 +1,125 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: BLOCKING
++    class: consistency
++    origin: handler
++    location: _lyx/plan/13-wake-and-orch-owner-pause.md:36
++    summary: Orch captures the owner-pause seam before the root installs it
++    fix: In card 13, resolve the installed pause function during orch's PersistentPreRunE, after the root pre-run, rather than copying it during Command construction. Keep the nil warning for genuinely unwired receivers. Extend the planned TestStart_ReconcilesTheHubFirst coverage with construction before installation followed by execution, asserting that the installed pause runs before strand startup.
++  - id: F2
++    severity: BLOCKING
++    class: consistency
++    origin: handler
++    location: _lyx/plan/03-board-owner-writes.md:52
++    summary: Board skip settings turn an unpushed owner write into a successful claim or adoption
++    fix: Change card 3 so SetOwners always performs its pull, commit, push and post-push read regardless of BOARD_SKIP_GIT or BOARD_SKIP_PUSH. Replace its skip-success test row with rows proving both settings cannot report ownership recorded without the required push. Update card 8's planned real-setter claim test to use a board with a bare remote instead of relying on BOARD_SKIP_GIT; its fake-setter rows can remain isolated.
++  - id: F3
++    severity: MEDIUM
++    class: consistency
++    origin: lens:guard-reach
++    location: _lyx/plan/03-board-owner-writes.md:47
++    summary: A first-act prime claim can overwrite an owner discovered by the setter's pull
++    fix: In card 3, apply the non-Takeover protection to Prime inside the post-pull write callback too. A nonempty prime owner different from Machine must remain unchanged and be reported as prime in Lost; only Takeover may replace it. Extend TestSetOwners with a locally unowned board whose remote already names another prime owner, asserting that a non-takeover prime claim preserves and reports that owner.
++  - id: F4
++    severity: MEDIUM
++    class: consistency
++    origin: lens:guard-reach
++    location: _lyx/plan/12-finalize-owner-checks.md:42
++    summary: Finalize's earlier parent fetch intercepts both prescribed fully offline branches
++    fix: Revise card 12's Finalize.Call ordering so it takes the parent lock, evaluates the local past-merge predicate and runs the owner checks before the parent-moved check can fetch. For a proven past-merge continuation, preserve the lock and avoid the remote parent-tip precondition that would stop it before its push; for a pre-merge run, retain the parent-moved protection after the owner checks. Extend the already planned Finalize owner tests with a wired parent guard whose fetch fails, covering both the owner-prefixed pre-merge halt and the past-merge attempt to push.
++  - id: F5
++    severity: MEDIUM
++    class: consistency
++    origin: lens:affected-set
++    location: _lyx/plan/05-reconcile-owner-outcome.md:42
++    summary: Pull can replay foreign-owned records before a push bypasses the guarded retry
++    fix: Remove card 5's claim that every push following Fabric.Pull meets retryWeftPush. Insert a follow-up card after owner-reader wiring, using lyx loom insert-card, to guard Fabric.settleUnmovedWeft before replay with the installed owner reader over fetched Bolt bytes. An owned-elsewhere pair must retain its local commits without replay and name adopt as the way forward. Extend the existing TestPull_WeftDivergedWarpAdvancesCleanly scenario to cover that owner and a subsequent push, asserting that the local records never become a replayed fast-forward onto the adopter's tip. Keep the owned-here pull behavior.
++  - id: F6
++    severity: MEDIUM
++    class: consistency
++    origin: lens:way-forward
++    location: _lyx/plan/12-finalize-owner-checks.md:45
++    summary: The adopter-first repair appends recovery advice that contradicts the existing push error
++    fix: Change card 12 so a positively identified adopter-first failure replaces the normal push recovery clause with the reset-or-rebase repair and subsequent fabric removal, retaining diagnostic facts but not the instruction to merge and push. Keep today's recovery only when the adopter-first predicate is false or unreadable. In the planned failed-push rows, assert that the adopter-first halt contains no merge-origin or retry-push recommendation.
++  - id: F7
++    severity: LOW
++    class: consistency
++    origin: lens:affected-set
++    location: _lyx/plan/10-innerrun-owner-check.md:40
++    summary: SleepWatch does not report the exact one-minute sleep that card 10 requires
++    fix: In card 10, derive the owner-check trigger from consecutive wall-minus-awake deltas with an inclusive comparison to SleepTolerance, storing those readings in childWait, rather than relying solely on new intervals from SleepWatch. Leave the shared watch's existing idle-accounting semantics unchanged. Make the planned TestInnerRun_OwnerCheck rows explicitly exercise exactly one minute, just below it and just above it.
++  - id: F8
++    severity: LOW
++    class: scope
++    origin: lens:way-forward
++    location: _lyx/plan/16-adopt-module.md:54
++    summary: Two adopt argument refusals have no specified correction
++    fix: In card 16, specify that simultaneous local-choice flags name a rerun with exactly one of --keep-local and --drop-local, and that an empty selection names lyx adopt <slug>, lyx adopt --prime or lyx adopt --all. Require the already planned TestAdopt argument rows to assert those corrections and that no reconciliation or mutation ran.
++---
++
++### [BLOCKING] Owner pause is installed too late for orch's receiver
++
++**Location:** _lyx/plan/13-wake-and-orch-owner-pause.md:36
++
++**Issue:** `cmd/lyx/main.go` constructs `orchcli.Command()` in `newRoot` before any `PersistentPreRunE` executes. Card 13 copies the process seam at construction but installs it in that later hook. A fresh CLI process therefore captures nil, warns and starts without performing D4's required owner pauses. Repeating the recommended command repeats the same wiring failure. The injected-receiver tests described in the card would miss it.
++
++### [BLOCKING] Local-only ownership is treated as published
++
++**Location:** _lyx/plan/03-board-owner-writes.md:52
++
++**Issue:** `ApplySkipEnv` reads ordinary process environment variables, not a test-only facility. The card explicitly lets those variables skip publication and still return the owners as recorded. Cards 8 and 16 then permit a claim/resume or adoption to proceed without origin recording the owner. D3 requires an owner write's push, and D5 requires publication before any resume. An existing convenience for other board writes does not authorize this exception to the answer key.
++
++### [MEDIUM] Prime first-claim protection is missing inside the transaction
++
++**Location:** _lyx/plan/03-board-owner-writes.md:47
++
++**Issue:** Card 8's resume can request a prime claim from stale local Bolt. `Bolt.PullThenCommitWritten` pulls before invoking the write callback (`internal/fabricengine/bolt.go:145`). The callback then unconditionally sets the prime owner, while card 3's Takeover guard covers slugs only. An owner discovered by that pull is overwritten on top of origin's tip, so replay's conflict rule cannot save it. D2 permits a first claim only when the prime is unowned; takeover belongs to adopt.
++
++### [MEDIUM] Offline Finalize is stopped before its new checks
++
++**Location:** _lyx/plan/12-finalize-owner-checks.md:42
++
++**Issue:** `Finalize.Call` calls `holdParent` before the step 1b3 replacement. That calls `parentGuard.moved`, which invokes `ReadParentTips(true)` when pushing is enabled. A failed fetch returns immediately (`internal/landingshed/parentguard.go:126`, `internal/fabricengine/parenttips.go:44`). With the code origin unreachable, neither the owner-prefixed halt nor the already-merged continuation described by D7 is reached. A fake unreachable reconcile report with an unwired parent guard is insufficient evidence for either branch.
++
++### [MEDIUM] Pull bypasses the replay protection
++
++**Location:** _lyx/plan/05-reconcile-owner-outcome.md:42
++
++**Issue:** `Fabric.settleUnmovedWeft` calls `replayWeft` on divergent records (`internal/fabricengine/pull.go:379`). After that local replay, the initial push can succeed; `pushClassified` calls its retry only after a rejected push (`internal/fabricengine/pushclassified.go:118`). Thus the card's stated reason for leaving Pull unchanged is false, and its promised prevention of replayed old-owner records reaching the adopter is incomplete. The affected-set and guard-reach reports describe the same defect and are consolidated here.
++
++### [MEDIUM] Duplicate-landing repair retains the wrong alternative
++
++**Location:** _lyx/plan/12-finalize-owner-checks.md:45
++
++**Issue:** `Finalize.pushParent` embeds the push error in its halt reason. A classified non-fast-forward code push supplies `codeDivergedWayForward`, which instructs a merge of origin followed by a push (`internal/fabricengine/failedpush.go:249`). Appending the new repair leaves that instruction standing. D6 explicitly requires dropping the duplicate squash, never merging it. The note must select the applicable recovery rather than offer both contradictory actions.
++
++### [LOW] Inclusive sleep threshold is not implemented by the named helper
++
++**Location:** _lyx/plan/10-innerrun-owner-check.md:40
++
++**Issue:** D6 and the card say at least a minute. `SleepWatch.Observe` uses `gap > SleepTolerance`, and `TestSleepWatch` explicitly asserts that equality records no sleep. Merely looking for a new interval cannot trigger the required exact-boundary owner check. This is a behavioral mismatch, not a missing dependency-list entry.
++
++### [LOW] Argument errors need their runnable corrections
++
++**Location:** _lyx/plan/16-adopt-module.md:54
++
++**Issue:** The plan names recovery for unknown, note and done slugs but only says to refuse conflicting local-choice flags and an empty selection. The decision record's Constraints require the new refusals to name a way forward and have a reaching test. Both inputs are reachable before reconciliation, so their corrections can be specified directly in the existing argument table.
++
++## Rejected
++
++- Affected-set's CLI seam-signature inventory finding: card 16 already prescribes both required signatures. The existing static lists also omit existing modules; their completeness is not a stated acceptance condition. Adding this inventory coverage is not necessary to establish a violation of the requested behavior.
++- Guard-reach's pull/retry finding: retained once as F5, with affected-set provenance.
++- A card-order defect involving OwnerRequest, the owner reader, the owner label or InstallOwnerPause: their creation precedes their consumers, or shares the same card. Root runtime initialization order is a separate defect, F1.
++- A blanket objection to nil owner seams: D4 explicitly permits a nil reader, and the cards describe test defaults and production wiring. The concrete production failure is F1, rather than the existence of test defaults.
++- Card 15's same-machine window reopening and card 17's PATTERN shortening: D8 expressly licenses the former; the Added after Discussion decision expressly licenses the latter, including preserving the full text in the background. The declared-text trailer and no-growth requirement are carried.
++- Test duplication on cards 7, 10, 14 and 16: the owner-label, ownership-transition and takeover cases add behavior; no existing public-surface test was established to already cover those owner-specific assertions. Card 7 extends existing tests rather than creating new functions.
++
++## Review basis
++
++The decision record is the answer key; its carry-over claims are not authority. No live rework directory was present. BLOCKING is used for a production path that systematically fails a core ownership requirement; MEDIUM for concrete transactional, branch-reachability or recovery contradictions; LOW for the threshold and argument-message gaps. No deterministic plan-format check is re-reported.
++
++The fixes above change Intent and already-planned coverage, except F5's expressly inserted follow-up card. They do not propose direct target-list or Verify edits requiring an overlay run. No plan or source file was changed and no validation program or test was run.
++
++Reading covered the current overview and cards 1–17, the decision record and focus, the writer stencil and relevant format sections, PATTERN and the relevant background rules, and definitions/call paths for root/orch construction, board skip settings and pull-first writes, batten resume, loom pause preflight, Finalize/parent guards, parent-tip reads, failed-push recovery, pull replay, initial push dispatch, SleepWatch and its test, CLI seam signatures, and InnerRun's lock harness. All three supplied lens reports were read and adjudicated. The task board entry was not queried because this round restricts evidence gathering to file reads; the source reading was targeted rather than an exhaustive expansion of every named symbol.
+diff --git a/docs/research/codex-astra-fan-bench-2026-10-27/data/reviews/P4/lens-affected-set.md b/docs/research/codex-astra-fan-bench-2026-10-27/data/reviews/P4/lens-affected-set.md
+new file mode 100644
+index 00000000..70ff28bb
+--- /dev/null
++++ b/docs/research/codex-astra-fan-bench-2026-10-27/data/reviews/P4/lens-affected-set.md
+@@ -0,0 +1,26 @@
++| Change | Affected set found | Covering cards |
++|---|---|---|
++| Machine identity | Owner readers/setter, batten, loom, landing, orch, tender, adopt; hostname and leaf-package tests | 1, 3, 6, 8–9, 12–14, 16 |
++| `owner_machine`, `prime_owner` | Task/store decoding, migration, persistence, replay, run-lock comparison, board views and tests | 2–4 |
++| Owner writes and payload validation | Single/batch upsert, merge, claim/resume, prime claim, adopt, CLI help and board skill | 3, 8, 13, 16 |
++| Board owner output | Brief/full views, `find` through `ListTasksBrief`, get envelope, Running table and golden | 4 |
++| `owned_elsewhere` and replay restriction | Classification, summary, mover, push retry, **pull replay followed by a successful initial push**, reconcile/pull/push tests | 5–6; pull-to-push path uncovered |
++| Owner-reader wiring | Hub seam builder; batten, landing, hibernate, orch and cleanup reconciles; root push-reader installation | 6, 8–13 |
++| Owner-pause metadata | Pause creation, coverage, InnerRun lock handling, wake/orch pauses, identity-based lift, status serialization and tests | 7, 10–11, 13–16 |
++| Start/resume refusals | Batten arm/pre-run/step/window/claim, loom start/resume, child refusal-envelope reader and spawn paths | 8–11 |
++| Sleep-triggered owner check | InnerRun watch, shared `SleepWatch.Observe`, its boundary test, other sleep-watch consumers | 10–11; shared boundary uncovered |
++| Finalize owner halt and exemption | Landing deps, reconcile verdicts, parent-lock handling, repair message, adopt halt recognition, orch instructions and tests | 10–12, 16–17 |
++| Wake/orch owner outcome | Hibernate mapping/hold/notice, orch start/envelope, cleanup reporting, root wiring | 13 |
++| Tender owner output | Hub deps, status report, CLI envelope, status/pair-owner tests, overview and orch instructions | 14, 17 |
++| Window reopening | Reed client listing, batten resume/command settings, help, package docs, overview and tests | 15 |
++| Adopt module and destructive primitive | Root registration, sandbox exclusion, mutation guards, clone fixtures, docs, **CLI seam-signature assertion lists** | 16; signature lists uncovered |
++| Orch interpretation and ownership rule | Role stencil, PATTERN overview and new background | 17 |
++
++1. **MEDIUM · design · `_lyx/plan/05-reconcile-owner-outcome.md:42` — The replay affected set omits pull followed by a fast-forward push.**  
++   Card 5 guards reconcile replay and rejected-push retry but explicitly leaves `Fabric.Pull` unchanged. `settleUnmovedWeft` can first replay the old machine’s commits onto the adopter’s tip; the subsequent initial push then succeeds without entering the guarded retry. The missed members are `Fabric.settleUnmovedWeft`, `pushClassified`’s successful initial-push path, and the pull-to-push test scenario. Evidence: `internal/fabricengine/pull.go:379`, `internal/fabricengine/pushclassified.go:120`, `internal/fabricengine/pushclassified.go:127`, `internal/fabricengine/pull_integration_test.go:609`.
++
++2. **LOW · design · `_lyx/plan/10-innerrun-owner-check.md:40` — The one-minute trigger omits the shared detector’s conflicting boundary contract.**  
++   Card 10 requires a sleep of one minute or more to trigger the check, but derives it from `SleepWatch`, which records only gaps strictly greater than one minute. Its existing test explicitly asserts that equality is not sleep. No card covers this helper/test boundary; changing the shared detector would also affect hibernate, alignment, shed watchdog, shuttle and existing InnerRun timing. Evidence: `internal/pauserecord/sleep.go:28`, `internal/pauserecord/sleep_test.go:28`, `_lyx/plan/10-innerrun-owner-check.md:51`.
++
++3. **LOW · design · `_lyx/plan/16-adopt-module.md:7` — New-module coverage omits both CLI seam-signature assertion lists.**  
++   Card 16 covers registration, sandbox and mutation-guard inventories, but neither it nor another card covers adding adopt’s `RunCLI` and `RunCLIIn` to the existing compile-time lists that pin module seam signatures. Evidence: `cmd/lyx/seamsignature_test.go:1`, `cmd/lyx/seamsignature_test.go:33`, `cmd/lyx/seamsignature_test.go:60`; card coverage: `_lyx/plan/16-adopt-module.md:27`.
+\ No newline at end of file
+diff --git a/docs/research/codex-astra-fan-bench-2026-10-27/data/reviews/P4/lens-guard-reach.md b/docs/research/codex-astra-fan-bench-2026-10-27/data/reviews/P4/lens-guard-reach.md
+new file mode 100644
+index 00000000..ddd3feac
+--- /dev/null
++++ b/docs/research/codex-astra-fan-bench-2026-10-27/data/reviews/P4/lens-guard-reach.md
+@@ -0,0 +1,24 @@
++- **Card 1 — hostname validation:** reachable through an empty hostname or `.local`.
++- **Cards 2–3 — effective-owner branches and payload refusal:** reachable through board reads, upsert, batch upsert and merge.
++- **Card 3 — setter guards:** task takeover, failed pull/push and lost-write branches are reachable; the equivalent prime-owner write remains unguarded.
++- **Cards 5–6 — reconcile and push-retry owner guards:** reachable; replay also occurs through an unguarded pull path.
++- **Card 7 — owner-label coverage and duplicate-pause suppression:** reachable with live slug pause entries.
++- **Card 8 — start, resume, step, window and claim guards:** reachable after their existing status and pause checks.
++- **Card 9 — existing-run owner refusal:** reachable when status exists and `refuseCovered` passes; absent-status and nil-seam bypasses are reachable.
++- **Cards 10–11 — sleep/hold-end checks, spawn refusals, owner holds and Finalize lock exceptions:** reachable through the wait loop and the four existing spawn sites.
++- **Card 12 — run/parent ownership halts and repair branches:** reachable; the fully offline Finalize halt and past-merge continuation do **not** reach the proposed checks.
++- **Card 13 — wake and orch owner-pause branches:** reachable after successful reconciliation; failure and unwired branches are reachable.
++- **Cards 14–15 — status-error and window branches:** reachable through status reads and resumes past Open-Window.
++- **Card 16 — adoption validation, local-commit/live-pair stops, write failures and selective resumes:** reachable through the prescribed ordered steps.
++
++1. **MEDIUM · consistency · `_lyx/plan/05-reconcile-owner-outcome.md:42` — Pull can bypass the guarded replay retry.**  
++   An old machine can run `lyx fabric pull` with divergent weft commits: `Fabric.Pull` replays those commits onto origin’s tip locally. Its subsequent push is then a fast-forward and succeeds without entering `retryWeftPush`, so the owner guard never runs. The card’s claim that every subsequent push meets the guarded retry is false.  
++   **Evidence:** `internal/fabriccli/weft_verbs.go:349`; `internal/fabricengine/pull.go:379`; `internal/fabricengine/pushclassified.go:118` and `:125`.
++
++2. **MEDIUM · decision · `_lyx/plan/03-board-owner-writes.md:47` — The non-takeover guard does not protect the prime-owner write.**  
++   A batten resume can read a stale local Bolt with no prime owner and request a first-act claim. `SetOwners` then pulls an existing remote prime owner and, as prescribed, overwrites it because `Prime` is set. The guard covers slugs only. This write is based on the newly pulled tip, so origin-wins replay need not occur, and the post-push read reports success. This requires no simultaneous drivers.  
++   **Evidence:** `_lyx/plan/03-board-owner-writes.md:47–48`; `_lyx/plan/08-batten-owner-check.md:50`; `internal/fabricengine/bolt.go:145` and `:154`.
++
++3. **MEDIUM · consistency · `_lyx/plan/12-finalize-owner-checks.md:42` — An upstream parent fetch prevents the prescribed offline Finalize branches.**  
++   With origin already unreachable and pushing enabled, `Finalize.Call` reaches `holdParent` before the new `ownerChecks`. That guard calls `ReadParentTips(true)`, whose failed fetch returns immediately. Neither the owner-prefixed unreachable halt nor the past-merge continuation to the parent push is reached. A records-only outage can reach the new branch, but the fully offline case cannot; a fake unreachable reconcile report misses this upstream interception.  
++   **Evidence:** `_lyx/plan/12-finalize-owner-checks.md:42–43` and `:50`; `internal/landingshed/finalize.go:204`; `internal/landingshed/stuck.go:115`; `internal/landingshed/parentguard.go:126`; `internal/fabricengine/parenttips.go:45–47`.
+\ No newline at end of file
+diff --git a/docs/research/codex-astra-fan-bench-2026-10-27/data/reviews/P4/lens-way-forward.md b/docs/research/codex-astra-fan-bench-2026-10-27/data/reviews/P4/lens-way-forward.md
+new file mode 100644
+index 00000000..26630c6a
+--- /dev/null
++++ b/docs/research/codex-astra-fan-bench-2026-10-27/data/reviews/P4/lens-way-forward.md
+@@ -0,0 +1,41 @@
++| Refusal or recovery | Named next step | Progresses? |
++|---|---|---|
++| Empty hostname | Give the machine a hostname | Yes |
++| Board payload changes ownership | Adopt from the prime | Yes, through adopt’s explicit choices |
++| Owner setter finds another owner | Adopt | Yes |
++| Owner write encounters dirty/diverged Bolt | Follow the pull’s recovery | Yes |
++| Owner push fails | Follow its classified recovery | Yes |
++| Owner push remains deferred | `lyx board sync`, then retry | Yes |
++| Reconcile or weft push finds another owner | Adopt | Yes, possibly through `--keep-local`/`--drop-local` |
++| Batten start/resume finds another owner | Adopt, then start if necessary | Yes |
++| Batten start or owner-writing resume cannot reach origin | Retry once origin answers | Yes |
++| Worktree-Create owner claim fails | Retry the same batten verb | Yes; the no-pair start check is specified |
++| Offline resume reads another owner locally | Retry once origin answers | Yes |
++| Loom owner refusal | Adopt from the prime | Yes |
++| Loom verdict error | Retry the requested verb | Yes for transient failures |
++| InnerRun owner check fails or origin is unreachable | Automatic later check | Yes |
++| InnerRun owner pause fails | Automatic next notice probe | Yes |
++| InnerRun spawn is refused for ownership | Pause, adopt, then recheck ownership | Yes |
++| Finalize retains its lock after a read failure | Retry the read next check | Yes |
++| Completed old-machine landing remains paused | `lyx resume <slug>` | Yes |
++| Finalize cannot read ownership or reach origin | `lyx loom resume` after recovery | Yes |
++| Finalize rejects run/parent ownership | Specified single or combined adopt commands | Yes |
++| Adopter-first parent push fails | Existing push recovery **plus** reset/rebase repair | **No: conflicting recovery instructions** |
++| Rebase repair conflicts | Abort, then drop the squash manually | Yes |
++| Wake/orch owner pause fails | Next wake or `lyx orch start` | Yes for a transient pause failure |
++| Adopt runs outside the prime | Rerun from the prime | Yes |
++| Adopt receives unknown slug / note | Board list / promote | Yes |
++| Adopt receives a done task | Resume its completed local landing | Yes for the stated local-landing case |
++| Adopt receives both local-choice flags | None specified | **No** |
++| Adopt receives no selection | None specified | **No** |
++| Adopt cannot reconcile | Resolve the reported cause, then retry | Yes |
++| Adopt stops on local commits/live pair | Keep or drop local state | Yes; live pairs require keep |
++| Drop-local encounters tracked changes | Existing dirty-state recovery | Yes |
++| Pair creation encounters a leftover branch | Delete the leftover branch, retry adopt | Yes |
++| Adopt’s owner push fails or loses | Push recovery / retry adopt | Yes |
++| Adopt leaves another pause standing | Slug or hub resume, as specified | Yes |
++| Adopt’s run resume fails | Underlying resume error and recovery | Yes |
++
++- **MEDIUM · consistency · `_lyx/plan/12-finalize-owner-checks.md:45` — Appending the adopter-first repair retains a conflicting instruction to merge and push the duplicate landing.** Existing `Finalize.pushParent` embeds the classified push error in its reason (`internal/landingshed/finalize.go:328`), whose non-fast-forward recovery explicitly says to merge origin and push (`internal/fabricengine/failedpush.go:217`, `:249`). Card 12 appends the reset/rebase repair without replacing that instruction. Following the original next step preserves the duplicate squash rather than repairing it. The adopter-first branch must replace the incompatible recovery guidance.
++
++- **LOW · design · `_lyx/plan/16-adopt-module.md:54` — Two argument refusals specify no next step.** The card explicitly refuses simultaneous `--keep-local`/`--drop-local` and an invocation without slugs, `--prime`, or `--all`, but names no correction for either. Specify rerunning with one local-state choice and rerunning with an explicit selection, respectively. Evidence: `_lyx/plan/16-adopt-module.md:54`; the required actionable recovery contract is in `contracts/specs/refusal-spec.md:9`.
+\ No newline at end of file
+diff --git a/docs/research/codex-astra-fan-bench-2026-10-27/data/usage.txt b/docs/research/codex-astra-fan-bench-2026-10-27/data/usage.txt
+new file mode 100644
+index 00000000..989e2f72
+--- /dev/null
++++ b/docs/research/codex-astra-fan-bench-2026-10-27/data/usage.txt
+@@ -0,0 +1,5 @@
++P4 lens-affected-set rc=0 wall=263 in=1487146 cached=1359360 fresh=127786 out=5985 reason=1680 weekly_used_percent=1.0
++P4 lens-guard-reach rc=0 wall=220 in=1665830 cached=1527168 fresh=138662 out=5197 reason=1436 weekly_used_percent=2.0
++P4 lens-way-forward rc=0 wall=187 in=1247776 cached=1144448 fresh=103328 out=4128 reason=1235 weekly_used_percent=3.0
++P4 handler rc=0 wall=237 in=1003593 cached=907520 fresh=96073 out=5466 reason=975 weekly_used_percent=3.0
++P4 handler verdict=BLOCKING n=8 (2 handler, 6 from lenses)
+diff --git a/docs/research/codex-astra-fan-bench-2026-10-27/report.md b/docs/research/codex-astra-fan-bench-2026-10-27/report.md
+new file mode 100644
+index 00000000..4a8fc7b8
+--- /dev/null
++++ b/docs/research/codex-astra-fan-bench-2026-10-27/report.md
+@@ -0,0 +1,133 @@
++# Codex Astra lens fan against the Claude fan on one plan
++
++Bench of 2026-10-27, a follow-up to `docs/research/codex-astra-solo-bench-2026-10-25/report.md`.
++Codex CLI, ChatGPT sign-in (plan `prolite`), Linux.
++Four `codex exec` calls in all, one run each: three lens reviews and one handler review, `gpt-6-astra` at medium effort, over the plan `P4` (`machine-handover`).
++Nothing was built: the bench is shell scripts under `data/harness/`, the reviewers' own output and a hand grading.
++
++## Conclusion
++
++Astra's fan found none of the Claude fan's 11 findings on `P4`, and none of its 3 `BLOCKING` ones.
++Solo Astra had reproduced 2 of the 11 and none of the `BLOCKING` ones, so the fan shape did not raise recall against this reference.
++The fan did return the fan's verdict (`BLOCKING`) and 8 findings, every one of which holds on reading and is absent from the fan's list, against solo Astra's 2 unique real findings.
++
++- The handler's 8 findings all graded `unique-real`, none `false`; the one lens finding it dropped also holds, marginally.
++- Two of the 8 are the defects both solo reviewers found: the prime claim that the no-`Takeover` guard does not cover, and the skip-variable bypass.
++- Six are new on `P4`: the owner-pause seam copied before the root pre-run installs it (`BLOCKING`), `Finalize`'s parent fetch ahead of the owner checks, the pull replay that reaches a fast-forward push unguarded, the adopter-first repair beside a contradicting push recovery, the strict sleep threshold, and two `adopt` refusals that name no correction.
++- The fan's three `BLOCKING` findings need a read the lenses did not make: the owner guard on `retryWeftPush` reading origin's Bolt outside the reconcile, the missing `adoptcli` entry in `PATTERN-cli-cobra`'s background, and the one-second production wait in `TestSetOwners`.
++  Lens `affected-set` came nearest on the first, with a different defect in the same cards (5 and 6).
++- The fan ran 907 s over four calls against 166 s for solo Astra, and 466k fresh input tokens against 77k.
++
++With one input, one run per cell and one grader, the sample cannot rank the fan against solo Astra or against the Claude fan.
++It shows that the fan shape gave Astra more real findings, not more of the Claude fan's.
++
++## Summary table
++
++Medium effort, one run per cell, `P4` only.
++The fan reference is 11 findings, 3 of them `BLOCKING`, from `opus` at medium effort with 3 lens forks, as the earlier benches recorded.
++"Found" counts distinct fan findings that a finding of the setting matched.
++
++| Setting | Findings | Shared with fan | Unique real | False | Fan findings found | `BLOCKING` found | Verdict as fan's | Fresh input tokens | Wall time | Window points |
++|---|---|---|---|---|---|---|---|---|---|---|
++| `gpt-6-astra` medium, fan | 8 | 0 | 8 | 0 | 0 of 11 | 0 of 3 | yes | 466k | 907 s | weekly at most 3 |
++| `gpt-6-astra` medium, solo | 4 | 2 | 2 | 0 | 2 of 11 | 0 of 3 | yes | 77k | 166 s | at most 15 of the 5-hour window |
++| Claude `opus` medium, solo | 6 | 2 | 4 | 0 | 2 of 11 | 0 of 3 | no (`APPROVED`) | 128k | 389 s | none |
++| Claude `opus` medium, fan | 11 | | | | | | | 489k, plus 79k in forks | 735 s | none |
++
++The solo and Claude fan rows are the solo bench's `P4` rows.
++Fresh input tokens for Astra are `input_tokens` less `cached_input_tokens` of the `turn.completed` event; Opus counts cache creation as fresh input, so the figures are not the same measure.
++
++## Per call
++
++| Call | Wall time | Fresh input tokens | Output tokens | Findings | Weekly window after |
++|---|---|---|---|---|---|
++| Lens `affected-set` | 263 s | 128k | 6.0k | 3 | 1 percent |
++| Lens `guard-reach` | 220 s | 139k | 5.2k | 3 | 2 percent |
++| Lens `way-forward` | 187 s | 103k | 4.1k | 2 | 3 percent |
++| Handler | 237 s | 96k | 5.5k | 8 | 3 percent |
++
++The plan reports one rate-limit window, of 10080 minutes, and no 5-hour window; the stop at 70 percent was never near.
++The first reading came after the first call, so the whole bench cost at most 3 points of the weekly window.
++
++## The handler's findings
++
++The handler returned `BLOCKING` with 8 findings: 2 of its own and 6 from the lenses.
++The lenses returned 8 findings: the handler kept 7 of them as 6 findings (two lens reports described the pull replay and merged into one) and dropped 1 with a reason.
++All were read against the cited card lines and, where a claim concerns code, against the snapshot; `data/match.tsv` holds each reading.
++
++| Finding | Severity | Origin | Defect |
++|---|---|---|---|
++| `F1` | `BLOCKING` | handler | Card 13 copies the owner-pause seam in `orchcli.Command`, built in `newRoot` before the root pre-run installs it, so a fresh process captures nil and starts without the owner pauses |
++| `F2` | `BLOCKING` | handler | Card 3 lets `BOARD_SKIP_GIT` and `BOARD_SKIP_PUSH` report an unpushed owner write as recorded |
++| `F3` | `MEDIUM` | `guard-reach` | A prime claim is not covered by the slug-only `Takeover` guard and replaces an owner the setter's pull found |
++| `F4` | `MEDIUM` | `guard-reach` | `Finalize.Call` fetches the parent tips in `holdParent` before step 1b3, so a fully offline run never reaches the new checks |
++| `F5` | `MEDIUM` | `affected-set`, `guard-reach` | A pull replays old-owner records and the following push is a fast-forward that never meets the guarded retry |
++| `F6` | `MEDIUM` | `way-forward` | The adopter-first repair is appended to a push error that tells the reader to merge origin and push |
++| `F7` | `LOW` | `affected-set` | `SleepWatch.Observe` records only a gap above the tolerance, but card 10 needs a sleep of at least a minute |
++| `F8` | `LOW` | `way-forward` | Two `adopt` argument refusals name no correction |
++
++- The handler's `BLOCKING` on `F2` matches the solo Astra rating of the same defect; the decision record does not say whether the skip variables count as test-only, so the finding stays arguable.
++- Dropped by the handler: `affected-set`'s finding that card 16 does not add `adoptcli` to the lists of `cmd/lyx/seamsignature_test.go`.
++  The claim holds, but the lists already omit `battencli`, `shedcli` and other modules, so graded `unique-real` and marginal.
++- The lens reports end in the lists their procedures ask for; `guard-reach` and `way-forward` list every guard and refusal they traced, and the handler's `## Rejected` section gives one line per rejected item.
++
++## Method
++
++### Inputs and prompts
++
++`P4` is rebuilt with `data/harness/build.sh` from the solo bench's weft commit and code commit in `data/inputs.txt`: a `git archive` of the code commit extracted under `.scratch/`, with the plan, the decision record, the era's rubric and stencils and the round's focus directive.
++`data/harness/build-fan.sh` builds the fan prompts from the code commit's stencils: the explore step with the fork-reading block appended, one lens prompt per lens, and the handler prompt.
++The lenses are the lenses of round 1: `affected-set`, `guard-reach` and `way-forward`, with their text from `internal/lenses/template.yaml` at the code commit.
++All prompts are in `data/prompts/`.
++
++### Lens runs
++
++Each lens is its own `codex exec` over a fresh copy of the snapshot.
++A Claude fork inherits the handler's reading; a separate call has none, so the lens prompt carries the round's explore step and its fork-reading block, which the forks inherited, then the fork rules and `Your lens: <name>` with the lens text.
++The fork boilerplate changes in two places: its inherited-context sentence becomes an instruction to do the reading, and its six-tool-call cap is dropped, since a run with no inherited context needs its reading.
++The read-only rule, the rule to report only the lens's own procedure and the final-message output rule stay.
++The lens output is the call's last message.
++
++### Handler run
++
++The handler prompt is the round-1 reviewer template with the fan cluster rules, in which the spawn paragraph and the fork rules are replaced by the three lens outputs as files in the handler's copy.
++Its holistic review, consolidation, `origin:` tags and `## Rejected` section are the stencil's.
++The handler read the lens files itself; no lens finding was pasted into the prompt.
++
++### Calls
++
++```text
++CODEX_HOME=<scratch>/codex-home codex exec -m gpt-6-astra -c model_reasoning_effort="medium" \
++  -s workspace-write -C <work> --skip-git-repo-check --json -o <last-message> - < prompt
++```
++
++`data/harness/run-call.sh` runs one call, after `setup-codex-home.sh` made the scratch `CODEX_HOME` and linked it to the operator's `auth.json`.
++The calls ran in sequence, so each window reading belongs to one call.
++The window comes from the last `token_count` event of the call's rollout (`windows.sh`).
++
++### Grading
++
++One Claude session graded every handler finding and the dropped lens finding as the solo bench did: against the fan's round-1 findings of `P4`, and an unmatched finding against the cited card lines and the snapshot's code.
++`shared` means the finding names the same defect as a fan finding; `unique-real` means the claim holds and the fan's round has no finding of it; `false` means it does not hold.
++A finding on the same card as a fan finding but naming another defect is `unique-real`.
++
++## Deviations and limits
++
++- One input, one run per call, one grader: no variance is measured, and a repeat could change a count of one or two.
++- The grader is a Claude session and may favour its own family's phrasing; the rates are not validated.
++- The lens runs differ from forks in reading for themselves, so the fan's token and time figures are not those of forks inheriting context, and the lens prompt's changes to the boilerplate favour Astra on reading depth.
++- The plan is now ChatGPT Pro (`prolite` in the rollout) where the solo bench ran on `plus`; only a weekly window is reported, so the window points are not comparable with the solo bench's 5-hour points, and no reading precedes the first call.
++- Recall is against the fan's list, not against the truth; the 8 findings all hold on reading, so the fan reference is not complete for `P4`.
++- `F2` and `F7` rest on a reading of the decision record's silence and of a boundary, and stay arguable.
++- The operator's `~/.codex/config.toml` was not hashed before or after this bench.
++
++## Data
++
++`data/` holds:
++
++- `inputs.txt`: the input with weft commit, round start time and code commit.
++- `usage.txt`: one line per call with return code, wall seconds, tokens and the weekly `used_percent` after the call, then the handler's verdict.
++- `match.tsv`: the grading of every handler finding and of the dropped lens finding.
++- `reviews/P4/`: the three lens outputs and the handler's review.
++- `prompts/`: the lens prompts, the handler prompt and the two instruction files they read.
++- `harness/`: `build.sh`, `build-fan.sh`, `run-call.sh`, `setup-codex-home.sh`, `windows.sh` and `dump.sh`, working on `.scratch/bench/`, which is not committed.
