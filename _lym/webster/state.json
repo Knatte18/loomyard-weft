@@ -327,7 +327,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 12,
   "masterStrand": "4b391991c73503e031a1cbe663fd375c",
   "masterSessionId": "6bae80f5-54af-46f3-a363-1efcff37f319",
   "masterEngine": "claude",
@@ -375,6 +375,28 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-dobby-and-adopt-hardening/6bae80f5-54af-46f3-a363-1efcff37f319/subagents/agent-acd4c719ce54473dd.jsonl"
       ]
+    },
+    "12": {
+      "slug": "gate-run-in-process",
+      "cards": [
+        "12-gate-run-in-process",
+        "13-adopt-check-verb",
+        "14-adopt-spawns-check",
+        "15-beam-status-adopt"
+      ],
+      "cardHashes": {
+        "12-gate-run-in-process": "16d207f56a976321b888c04ef0cc059172fc66b4665cf6c32e943bd451a8c3af",
+        "13-adopt-check-verb": "f9203723114853389542fa2acf193c41882b06e8f11247b926d8229f7750ba6b",
+        "14-adopt-spawns-check": "8cab8544eed066b8bad99e1d35e9e9087664326118eb9aa88d5c5487184b2233",
+        "15-beam-status-adopt": "54c7b22d92f3123331bed9291399f1b28b314f645e0580364c086f85bf71ddf4"
+      },
+      "startSha": "2cc054004fa428e276112ac92440269cad695e7c",
+      "kind": "fork",
+      "spawnedAt": "2026-10-27T17:02:20Z",
+      "sessionId": "6bae80f5-54af-46f3-a363-1efcff37f319",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "dobby-start-and-exits",
