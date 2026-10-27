@@ -39,7 +39,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Bench a Codex Astra fan with real forks at high effort on one plan**<br>• One codex exec handler spawning 3 lens forks with fork_turns=all, Astra high, on P4<br>• `profile: docs` | [`codex-astra-fork-fan-bench`](design-codex-astra-fork-fan-bench.md) | darn | Darn-Write | neve | 12m<br>12m | codex, burler |
-| T2 | **Bench solo Codex Astra at high effort on one plan**<br>• One solo Astra high review of P4, against the medium solo run and the Claude fan<br>• `profile: docs` | [`codex-astra-solo-high-bench`](design-codex-astra-solo-high-bench.md) | darn | Drift-Verify | neve | 12m<br>12m | codex, burler |
+| T2 | **Bench solo Codex Astra at high effort on one plan**<br>• One solo Astra high review of P4, against the medium solo run and the Claude fan<br>• `profile: docs` | [`codex-astra-solo-high-bench`](design-codex-astra-solo-high-bench.md) | darn | Finalize | neve | 12m<br>12m | codex, burler |
 
 ### Ready (0)
 
