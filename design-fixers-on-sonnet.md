@@ -24,3 +24,8 @@ A3 (`review-setup-audit`) notes a sloppy fixer causes many late-round defects, a
 `docs/research/review-setup-audit-2026-10-28/report.md` is the A3 audit named above.
 It does not measure fixer quality or a model swap.
 Its finding that bears here: in Plan round 3, 14 of 23 findings point at cards the round-2 fixer left alone, so those late defects are the writer's repository-invariant misses and not a sloppy fixer's; the audit recommends `validate-plan` checks for them.
+
+## Machine checks landed (task `validator-checks`, 2026-10-28)
+
+`lym loom validate-discussion` and `validate-plan`, and the gates that call them, now refuse the recurring findings a machine can see: decision ids and acceptance coverage, missing cited paths and symbols, and in plans `seam-test-unlisted`, `test-tier-unstated` and `doc-go-unlisted`.
+That is the audit's recommended `validate-plan` step, so the writer's repository-invariant misses are caught before a review round; the fixer-quality question here is unchanged and still needs a bench.
