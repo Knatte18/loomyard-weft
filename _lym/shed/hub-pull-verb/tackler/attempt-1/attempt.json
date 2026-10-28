@@ -1,0 +1,24 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Darn-Write",
+    "history_length": 3,
+    "state": "failed"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "546bc89cbe87f2a3b1ba06e5485ebe0bdc4575e2",
+    "branch": "hub-pull-verb",
+    "dirty": {
+      "/home/knatte/Code/loomyard-LYMHUB/hub-pull-verb/internal/fabriccli/anchordeps.go": "6c1055c5c8b3b241d2258135d56826cd9def0d4afbe1dd110f6c93dd7f0ae029",
+      "/home/knatte/Code/loomyard-LYMHUB/hub-pull-verb/internal/fabriccli/weft_verbs.go": "caa8bb2ce19720dcf0175e84cf490f4a47cfff9af4c44df921351ddbb553507f",
+      "/home/knatte/Code/loomyard-LYMHUB/hub-pull-verb/internal/fabricengine/bolt.go": "e239fd4e83d7a39e9402bc58fbaad1264ec7b8695397a26ba740b34a7def1c7c"
+    }
+  },
+  "spawned_at": "2026-10-28T10:38:53.152847605+01:00",
+  "deadline": "2026-10-28T10:48:53.152847605+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/hub-pull-verb/_lym/shed/hub-pull-verb/drive-reports/drive-envelope-20261028-103853-41b0.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/hub-pull-verb/_lym/shed/hub-pull-verb/drive-reports/drive-report-20261028-103853-6e70.md",
+  "strand_guid": ""
+}
