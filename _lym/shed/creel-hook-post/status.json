@@ -1,12 +1,11 @@
 {
-  "current_producer": "Parent-Align",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Parent-Align",
-    "last": "Parent-Align → stuck",
+    "now": "Code-Bouncer",
+    "last": "Parent-Align → done",
     "wait": ""
   },
   "history": [
@@ -341,6 +340,13 @@
       "output": "",
       "at": "2026-10-28T13:12:46Z",
       "budget_exempt": true
+    },
+    {
+      "producer": "Parent-Align",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-28T13:14:52Z",
+      "by": "shed"
     }
   ],
   "product": {
