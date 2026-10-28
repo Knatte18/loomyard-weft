@@ -9,7 +9,7 @@
 - `internal/creelcli#smokeHub`
 - `internal/creelcli#newHubDelivery`
 - `internal/shuttleengine#Launch`
-- `plan:internal/creelengine#BellLine`
+- `internal/creelengine#BellLine`
 
 **Intent:**
 The acceptance criteria that need a real Claude session run in the LLM tier, through shuttle's own rendered `settings.json` and launch line, never a hand-launched session; claim, count, waiter, bell and filter logic are pinned at lower tiers by cards 4 to 15 (`PATTERN-test-speed`).

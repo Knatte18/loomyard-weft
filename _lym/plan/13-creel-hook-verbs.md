@@ -1,12 +1,12 @@
 # Card 13 — hook-read takes the Stop and filters subagents; hook-wait is the idle waiter
 
 **Create:**
-- `plan:internal/creelcli#hookWaitVerb` -> `const hookWaitVerb = "hook-wait"`
-- `plan:internal/creelcli#hookWaitCmd` -> `func hookWaitCmd() *cobra.Command`
-- `plan:internal/creelcli#hookWait` -> `func hookWait(cmd *cobra.Command, engine string) (exitCode int)`
-- `plan:internal/creelcli#runCreelHook` -> `func runCreelHook(cwd, stdin string, stderr io.Writer, args ...string) cliRun`
-- `plan:internal/creelcli#hookReadExit` -> `func hookReadExit(event shuttleengine.HookEvent, wrote bool, err error) (exitCode int, printErr bool)`
-- `plan:internal/creelcli#TestHookReadExit` -> `func TestHookReadExit(t *testing.T)`
+- `internal/creelcli#hookWaitVerb`
+- `internal/creelcli#hookWaitCmd`
+- `internal/creelcli#hookWait`
+- `internal/creelcli#runCreelHook`
+- `internal/creelcli#hookReadExit`
+- `internal/creelcli#TestHookReadExit`
 
 **Edit:**
 - `internal/creelcli#hookRead` -> `func hookRead(cmd *cobra.Command, engine string) (event shuttleengine.HookEvent, wrote bool, err error)`
@@ -17,14 +17,14 @@
 
 **Uses:**
 - `internal/shuttleengines#ToolBoundaryRenderer`
-- `plan:internal/shuttleengine#HookInput`
+- `internal/shuttleengine#HookInput`
 - `internal/creelengine#VerbHookWait`
 - `internal/creelengine#OutcomeRing`
-- `plan:internal/creelengine#BellLine`
+- `internal/creelengine#BellLine`
 - `internal/creelcli#runCreelSplit`
 - `internal/creelcli#newRig`
 - `internal/testkit/creelfake#HookStrand`
-- `plan:internal/shuttleengine#HookEvent`
+- `internal/shuttleengine#HookEvent`
 
 **Intent:**
 D1 to D4 on the CLI side: the hidden verbs a strand's hooks run.

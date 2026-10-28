@@ -1,12 +1,12 @@
 # Card 14 — Claude's settings merge the Stop delivery into the turn-end record and add the idle waiter
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#strandFlagName` -> `func strandFlagName() string`
-- `plan:internal/shuttleengine/claudeengine#creelStopHookCommand` -> `func creelStopHookCommand(quotedFlagDir, quotedEventsPath string) string`
-- `plan:internal/shuttleengine/claudeengine#creelWaitCommand` -> `const creelWaitCommand = "lym creel hook-wait claude"`
-- `plan:internal/shuttleengine/claudeengine#creelWaitTimeout` -> `const creelWaitTimeout = 86400`
-- `plan:internal/shuttleengine/claudeengine#creelWaitHookCommand` -> `func creelWaitHookCommand() string`
-- `plan:internal/shuttleengine/claudeengine#TestCreelStopHook_RecordsATurnEndOnlyWithoutABlock` -> `func TestCreelStopHook_RecordsATurnEndOnlyWithoutABlock(t *testing.T)`
+- `internal/shuttleengine/claudeengine#strandFlagName`
+- `internal/shuttleengine/claudeengine#creelStopHookCommand`
+- `internal/shuttleengine/claudeengine#creelWaitCommand`
+- `internal/shuttleengine/claudeengine#creelWaitTimeout`
+- `internal/shuttleengine/claudeengine#creelWaitHookCommand`
+- `internal/shuttleengine/claudeengine#TestCreelStopHook_RecordsATurnEndOnlyWithoutABlock`
 
 **Edit:**
 - `internal/shuttleengine/claudeengine#hookCommand`
