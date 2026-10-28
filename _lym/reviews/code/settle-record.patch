@@ -1,0 +1,490 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 45de7b8e..33fa7b71 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -473,7 +473,7 @@ User-facing modules each get one `lym <module>` namespace:
+   Only the orch or an external caller may request or cancel; an agent asks its parent session.
+   Bounds: the daemon waits a fixed window for the pause to confirm and for the wake, and fails the request, leaving its reason in the file, when either runs out.
+   ✅ Implemented. See the `internal/hibernateengine` and `internal/hibernatecli` package documentation.
+-- **creel** — the per-hub message daemon, the one way to reach an agent: mail to a Claude strand shuttle launched with creel's hooks arrives in full through those hooks, while a strand whose engine is unknown or has no hook delivery, a hand-added one included, gets a typed notice or reminder and pulls its mail with `lym creel read`, and lines are injected into a pane (`internal/creelcli` + `internal/creelengine`; `lym creel post`, `inject`, `interrupt`, `forward`, `read`, `inbox`, `log`, `hold` and `release`, from any worktree of the hub, and the hidden `lym creel daemon`, `lym creel hook-read` and `lym creel hook-wait`).
++- **creel** — the per-hub message daemon, the one way to reach an agent: mail to a Claude strand shuttle launched with creel's hooks arrives in full through those hooks, while every other strand, a hand-added one or a session launched without those hooks included, gets a typed notice or reminder and pulls its mail with `lym creel read`, and lines are injected into a pane (`internal/creelcli` + `internal/creelengine`; `lym creel post`, `inject`, `interrupt`, `forward`, `read`, `inbox`, `log`, `hold` and `release`, from any worktree of the hub, and the hidden `lym creel daemon`, `lym creel hook-read` and `lym creel hook-wait`).
+   A hook strand gets each post in full, quoted with its sender, at its next tool call in a `PostToolUse` block and at its turn end in a `Stop` block that records no turn end while it blocks, at most 6 blocks a turn; the hooks test the strand's flag file, which creel keeps while the strand holds unread mail, and only the main thread takes mail, so a subagent's hook claims nothing.
+   An idle hook strand is woken by an `asyncRewake` waiter the daemon rings once per claimable set, or by a typed fixed bell line where no waiter reaches, and the woken turn's hooks hand it the mail.
+   Every line a claim hands out fits one hook field, so `lym creel post` refuses a longer one with the way forward of writing the text to a file and posting its path, and `lym creel post --interrupt` stops the receiver's running turn and then posts.
+diff --git a/internal/creelcli/cli.go b/internal/creelcli/cli.go
+index 8da860d9..58a1b4f8 100644
+--- a/internal/creelcli/cli.go
++++ b/internal/creelcli/cli.go
+@@ -73,8 +73,8 @@ func Command() *cobra.Command {
+ strand. A strand shuttle launched with creel's hooks gets the message in full
+ at its next tool call or turn end, through hooks that run the hidden hook-read
+ verb, and an idle one is woken first by a waiter that runs the hidden hook-wait
+-verb. A strand whose engine is unknown or has no hooks, a hand-added one
+-included, gets a typed notice or reminder and reads the message with read.
++verb. Any other strand, a hand-added one or a session launched without those
++hooks included, gets a typed notice or reminder and reads the message with read.
+ inject types a line into an idle strand at once, interrupt stops a running
+ turn, forward passes a message on, hold keeps a receiver to one sender for a
+ while, and inbox and log show the pool. The daemon starts by itself on the
+@@ -312,9 +312,9 @@ func postCmd() *cobra.Command {
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `post leaves the text as a message for the receiver strand and prints its id.
+ A strand shuttle launched with creel's hooks gets the message in full at its
+-next tool call or turn end, an idle one woken first. A strand whose engine is
+-unknown or has no hooks, a hand-added one included, gets a typed notice or
+-reminder and reads the message with "lym creel read".
++next tool call or turn end, an idle one woken first. Any other strand, a
++hand-added one or a session launched without those hooks included, gets a
++typed notice or reminder and reads the message with "lym creel read".
+ 
+ With --reply <id> the text answers message <id> and goes to its sender, so no
+ receiver is given. To answer mail you received, run
+diff --git a/internal/creelcli/delivery.go b/internal/creelcli/delivery.go
+index ebc75ac5..57fe2b70 100644
+--- a/internal/creelcli/delivery.go
++++ b/internal/creelcli/delivery.go
+@@ -260,16 +260,6 @@ func (d *hubDelivery) primeWorktree() string {
+ 	return filepath.Join(d.hubPath, strings.TrimSuffix(filepath.Base(d.hubPath), fabricengine.HubSuffix))
+ }
+ 
+-// hasHookDelivery reports whether the engine a strand's provider tag names delivers creel mail by hooks.
+-// An empty tag, as a strand added by hand carries, and a tag no registered engine renders delivery for both read false.
+-func hasHookDelivery(provider string) bool {
+-	if provider == "" {
+-		return false
+-	}
+-	_, ok := shuttleengines.ToolBoundaryRenderer(provider)
+-	return ok
+-}
+-
+ // worktreeStrands reads the strands persisted in one worktree and their liveness from its reed status.
+ func (d *hubDelivery) worktreeStrands(entry fabricengine.WorktreeEntry) ([]creelengine.Strand, error) {
+ 	location, err := lymcwd.ResolveWorktree(entry.Path)
+@@ -316,7 +306,6 @@ func (d *hubDelivery) worktreeStrands(entry fabricengine.WorktreeEntry) ([]creel
+ 			Live:       strandStatus.Live,
+ 			PanePID:    strandStatus.PanePID,
+ 			CreelHooks: persisted.CreelHooks,
+-			PaneMail:   !hasHookDelivery(persisted.Provider),
+ 		})
+ 	}
+ 	return strands, nil
+diff --git a/internal/creelcli/delivery_test.go b/internal/creelcli/delivery_test.go
+index 77d0bd27..f825f4aa 100644
+--- a/internal/creelcli/delivery_test.go
++++ b/internal/creelcli/delivery_test.go
+@@ -268,9 +268,9 @@ func TestHubDelivery(t *testing.T) {
+ 			t.Fatalf("Strands() = %v", err)
+ 		}
+ 		want := []creelengine.Strand{
+-			{Name: "ly:orch", GUID: "guid-orch", Worktree: prime, Live: true, PanePID: 11, PaneMail: true},
+-			{Name: "ly:pair:dormant", GUID: "guid-dormant", Worktree: pair, Slug: pairSlug, PaneMail: true},
+-			{Name: "ly:pair:impl", GUID: "guid-impl", Worktree: pair, Slug: pairSlug, Live: true, PanePID: 22, PaneMail: true},
++			{Name: "ly:orch", GUID: "guid-orch", Worktree: prime, Live: true, PanePID: 11},
++			{Name: "ly:pair:dormant", GUID: "guid-dormant", Worktree: pair, Slug: pairSlug},
++			{Name: "ly:pair:impl", GUID: "guid-impl", Worktree: pair, Slug: pairSlug, Live: true, PanePID: 22},
+ 		}
+ 		sortStrands(got)
+ 		if diff := cmp.Diff(want, got); diff != "" {
+@@ -278,7 +278,7 @@ func TestHubDelivery(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("Strands marks which strands keep the pane path and which have hook delivery", func(t *testing.T) {
++	t.Run("Strands carries each strand's CreelHooks mark whatever its provider, so an unmarked Claude strand keeps the pane path", func(t *testing.T) {
+ 		t.Parallel()
+ 		hub, prime, _ := newHub(t)
+ 		seedReedStrands(t, prime, []reedengine.Strand{
+@@ -293,19 +293,18 @@ func TestHubDelivery(t *testing.T) {
+ 		if err != nil {
+ 			t.Fatalf("Strands() = %v", err)
+ 		}
+-		type fields struct{ creelHooks, paneMail bool }
+-		gotFields := map[string]fields{}
++		gotHooks := map[string]bool{}
+ 		for _, strand := range got {
+-			gotFields[strand.Name] = fields{strand.CreelHooks, strand.PaneMail}
++			gotHooks[strand.Name] = strand.CreelHooks
+ 		}
+-		want := map[string]fields{
+-			"ly:hooked":   {creelHooks: true},
+-			"ly:codex":    {paneMail: true},
+-			"ly:hand":     {paneMail: true},
+-			"ly:unmarked": {},
++		want := map[string]bool{
++			"ly:hooked":   true,
++			"ly:codex":    false,
++			"ly:hand":     false,
++			"ly:unmarked": false,
+ 		}
+-		if diff := cmp.Diff(want, gotFields, cmp.AllowUnexported(fields{})); diff != "" {
+-			t.Errorf("Strands() creel fields mismatch (-want +got):\n%s", diff)
++		if diff := cmp.Diff(want, gotHooks); diff != "" {
++			t.Errorf("Strands() CreelHooks mismatch (-want +got):\n%s", diff)
+ 		}
+ 	})
+ 
+@@ -755,7 +754,7 @@ func TestHubDelivery_SkipsAWorktreeThatNoLongerResolves(t *testing.T) {
+ 				if err != nil {
+ 					t.Fatalf("Strands() call %d = %v; want the skip to leave the call whole", call, err)
+ 				}
+-				want := []creelengine.Strand{{Name: "ly:orch", GUID: "guid-orch", Worktree: prime, Live: true, PanePID: 11, PaneMail: true}}
++				want := []creelengine.Strand{{Name: "ly:orch", GUID: "guid-orch", Worktree: prime, Live: true, PanePID: 11}}
+ 				if diff := cmp.Diff(want, got); diff != "" {
+ 					t.Errorf("Strands() call %d mismatch (-want +got):\n%s", call, diff)
+ 				}
+diff --git a/internal/creelcli/smoke_tmux_test.go b/internal/creelcli/smoke_tmux_test.go
+index 7d6b5d8f..ce2f95cc 100644
+--- a/internal/creelcli/smoke_tmux_test.go
++++ b/internal/creelcli/smoke_tmux_test.go
+@@ -74,7 +74,7 @@ func (e *scriptProviderEngine) CompactSessionSequence(string) []shuttleengine.Pa
+ func (e *scriptProviderEngine) ReloadPluginsSequence() []shuttleengine.PaneInput { return nil }
+ 
+ // TestSmokeCreelFakeProviderPane runs the real daemon on the real socket over a hub whose one strand is the fake provider.
+-// The strand carries the provider tag `script`, which no engine renders hook delivery for, so it is a pane-mail strand.
++// The strand carries the provider tag `script` and no `CreelHooks` mark, so it is a pane-mail strand.
+ // A post is acknowledged and its carried line is typed into the pane, a privileged inject is typed and reported injected, and the log shows the events.
+ func TestSmokeCreelFakeProviderPane(t *testing.T) {
+ 	// The strand name in the environment is process-global state, set by newSmokeHub.
+diff --git a/internal/creelengine/deliver.go b/internal/creelengine/deliver.go
+index 6093da3c..7eb45769 100644
+--- a/internal/creelengine/deliver.go
++++ b/internal/creelengine/deliver.go
+@@ -30,8 +30,9 @@ const (
+ const BellLine = "[creel] Mail is waiting for you. End this turn now; creel hands the mail to you as the turn ends. Do not run lym creel read for it."
+ 
+ // Scheduler delivers what the pool holds into panes: one worker per receiver with pending deliveries, at most one delivery in flight per receiver.
+-// It types queued injects into every live strand, and notices and reminders only into a pane-mail strand, one whose engine has no creel hook delivery.
+-// A hook strand's mail is rung to its idle waiter, and a fixed bell line wakes it where no waiter reaches.
++// It types queued injects into every live strand.
++// A hook strand, one marked CreelHooks, has its mail rung to its idle waiter, and a fixed bell line wakes it where no waiter reaches;
++// every other strand is a pane-mail strand, whatever its engine, and gets notices and reminders.
+ // A program's mailbox is never reminded.
+ type Scheduler struct {
+ 	store    *Store
+@@ -235,9 +236,6 @@ func (w *worker) probe() (delivered, pending bool) {
+ 	if strand.CreelHooks {
+ 		return w.wakeHookStrand(strand, now), true
+ 	}
+-	if !strand.PaneMail {
+-		return false, true
+-	}
+ 	if len(snap.notices) > 0 {
+ 		return w.typeNotice(strand, snap.notices[0]), true
+ 	}
+diff --git a/internal/creelengine/deliver_test.go b/internal/creelengine/deliver_test.go
+index ee69a157..53a23ad9 100644
+--- a/internal/creelengine/deliver_test.go
++++ b/internal/creelengine/deliver_test.go
+@@ -243,27 +243,19 @@ func TestScheduler_Reminders(t *testing.T) {
+ 				t.Errorf("typed %q; want %q", got, want)
+ 			}
+ 		}},
+-		{"StrandsWithoutPaneMailGetNoNoticeOrReminderButTheirInjectsAreTyped", func(t *testing.T, e *env) {
+-			unflagged := creelfake.LiveStrand(alpha)
+-			unflagged.PaneMail = false
+-			e.del.SetStrands(unflagged, creelfake.HookStrand(beta))
++		{"AHookStrandGetsNoNoticeOrReminderButItsInjectsAreTyped", func(t *testing.T, e *env) {
++			e.del.SetStrands(creelfake.LiveStrand(alpha), creelfake.HookStrand(beta))
+ 			e.start(t)
+-			e.post(t, program(batten), alpha, "notice")
+-			e.post(t, strand(beta), alpha, "from a strand")
+ 			e.post(t, program(batten), beta, "notice")
+ 			e.post(t, strand(alpha), beta, "from a strand")
+ 			e.driveProbeWaits(4)
+-			for _, name := range []string{alpha, beta} {
+-				if got := e.typed(name); len(got) != 0 {
+-					t.Fatalf("typed %q into %s; want nothing for a strand that is not a pane-mail strand", got, name)
+-				}
++			if got := e.typed(beta); len(got) != 0 {
++				t.Fatalf("typed %q into %s; want nothing for a strand marked CreelHooks", got, beta)
+ 			}
+-			for _, name := range []string{alpha, beta} {
+-				if _, err := e.store.Inject(program(batten), name, "/one", 0, false); err != nil {
+-					t.Fatalf("Inject: %v", err)
+-				}
+-				awaitTyped(t, e, name, "/one")
++			if _, err := e.store.Inject(program(batten), beta, "/one", 0, false); err != nil {
++				t.Fatalf("Inject: %v", err)
+ 			}
++			awaitTyped(t, e, beta, "/one")
+ 		}},
+ 		{"ReplyToAStrandWithNoWorkerIsRemindedOnce", func(t *testing.T, e *env) {
+ 			first := e.post(t, strand(beta), alpha, "question")
+@@ -2007,9 +1999,7 @@ func TestScheduler_HookWake(t *testing.T) {
+ 			}
+ 		}},
+ 		{"OnlyAStrandMarkedCreelHooksOnAnUnpausedPaneGetsTheBell", func(t *testing.T, e *env) {
+-			neither := creelfake.LiveStrand(beta)
+-			neither.PaneMail = false
+-			e.del.SetStrands(creelfake.LiveStrand(alpha), neither, creelfake.HookStrand(orch))
++			e.del.SetStrands(creelfake.LiveStrand(alpha), creelfake.LiveStrand(beta), creelfake.HookStrand(orch))
+ 			e.del.SetPaused(orch, true)
+ 			e.start(t)
+ 			settle(e, func() {
+diff --git a/internal/creelengine/doc.go b/internal/creelengine/doc.go
+index be800441..7d69a36d 100644
+--- a/internal/creelengine/doc.go
++++ b/internal/creelengine/doc.go
+@@ -7,7 +7,7 @@
+ // Creel decides what is delivered and when, shuttle knows the provider and its idle check and safe send, and reed knows the pane and does the keystrokes: creel → shuttle → reed → tmux.
+ // The engine imports neither reed nor shuttle, and every keystroke goes through the Delivery seam; `PATTERN-pane-text-injection` pins that with an import scan.
+ // Delivery lists the hub's strands, asks whether a strand is idle, asks whether a pause covers it, claims a covered strand into its pause for the interrupt, types one line into its pane, runs one command of a closed set in its session and sends the guarded interrupt.
+-// Each strand it lists carries two fields the adapter fills: `CreelHooks`, the mark shuttle's launch set when the session runs creel's hook delivery, and `PaneMail`, true when the strand's engine has no hook delivery, as for a strand with no provider tag, so its posts keep the pane path.
++// Each strand it lists carries `CreelHooks`, the mark shuttle's launch set when the session runs creel's hook delivery; every strand without it is a pane-mail strand, whatever its engine, so its posts keep the pane path.
+ // Its idle answer also carries `NoTurn`, whether no turn is in progress whatever the input box holds, and `TurnEndedAt`, when the hook-derived reading behind it began, zero when the pane decided.
+ // Its idle answer carries a stall reason when a not-idle pane waits on something the operator can act on, a pane too short for the input box, a draft in it or a pane showing no input box, and the engine journals each change of that reason as a `stalled` record.
+ // `internal/creelcli` implements it over the hub's worktrees, reed's persisted state and status, the pause record, and a shuttle runner built per worktree at each call.
+@@ -78,7 +78,8 @@
+ // A reply to an EXTERNAL sender, which only a waiting `post --wait-reply` receives and no claim hands out, keeps a 64 KiB cap on its body.
+ // A claim never hands out a message an older binary stored whose line is past 10,000 UTF-16 units, the cap Claude Code keeps of one hook field; it stays for `lym creel read` and raises no mail flag.
+ //
+-// The pane path types notices and reminders only into a pane-mail strand, one whose engine has no creel hook delivery; a strand whose engine delivers by hooks gets its mail there, and only queued injects are typed into its pane.
++// The pane path types notices and reminders only into a pane-mail strand, one whose session runs without creel's hook delivery, as a Claude session launched before that delivery, a `lym shuttle open` session or a hand-added strand does;
++// a strand marked `CreelHooks` gets its mail through its hooks, and only queued injects are typed into its pane.
+ // A notice is a message from any sender but an agent strand, a program or EXTERNAL, whose body is at most 4 KiB.
+ // It is carried in full in its own line, typed when the receiver is idle, `[creel] #<id> from "<sender>": <body>`, with every run of line breaks and other control characters turned into one space.
+ // The line opens with the id, so a sender that takes replies is answered with `lym creel post --reply <id>` and no read; creel does not know which senders answer.
+@@ -146,7 +147,7 @@
+ // With the last ring unanswered, the grace does not apply, since a ring ends the waiter it rings, and it types the bell once the ring has gone unanswered for 30 seconds.
+ // The bell goes through the guarded send under every rule a typed line has: a draft, a too-short pane or a missing input box holds it, a send that did not land is recorded and never retyped for the set, and a busy send is tried again on the next probe.
+ // A newer set may get its own bell, and an unchanged set never gets a second; a pause silences the bell as it does the ring, and under a hold from another sender only the owner's mail makes a set.
+-// Only a strand marked `CreelHooks` gets the bell: a pane-mail strand has its notice and reminder, and a strand with neither field reads its mail with `lym creel read`.
++// Only a strand marked `CreelHooks` gets the bell: every other strand is a pane-mail strand and has its notice and reminder, so mail to an idle strand always wakes it.
+ // Bound: one fixed line per claimable set; a waiter whose session died rings into nothing once and the window hands the set to the bell; a restarted daemon may type the bell once more for a set it already woke.
+ //
+ // # Inject and interrupt
+diff --git a/internal/creelengine/seam.go b/internal/creelengine/seam.go
+index a7dfd7bc..68c3f504 100644
+--- a/internal/creelengine/seam.go
++++ b/internal/creelengine/seam.go
+@@ -27,8 +27,6 @@ type Strand struct {
+ 	PanePID int
+ 	// CreelHooks reports whether shuttle launched the strand's session with creel's hook delivery, so the daemon may ring its idle waiter and ring its bell.
+ 	CreelHooks bool
+-	// PaneMail reports whether the strand's engine has no creel hook delivery, so its posts keep the pane path: the notice line and the reminder.
+-	PaneMail bool
+ }
+ 
+ // Delivery is the seam through which the engine learns the hub's strands and reaches their panes.
+diff --git a/internal/creelengine/verbs.go b/internal/creelengine/verbs.go
+index 350a759f..b19351c4 100644
+--- a/internal/creelengine/verbs.go
++++ b/internal/creelengine/verbs.go
+@@ -102,7 +102,7 @@ func (s *Store) interruptBeforePost(sender Sender, receiver string) (bool, error
+ 		return false, err
+ 	}
+ 	if !target.CreelHooks {
+-		return false, fmt.Errorf("creel: %s runs no creel hook delivery, so post --interrupt cannot hand it the post; way forward: lym creel inject --interrupt %s <text>, which stops the turn and types the text, or a post without --interrupt, which the receiver gets by its typed notice or reminder when its engine is unknown or has no hooks and by lym creel read otherwise", target.Name, target.Name)
++		return false, fmt.Errorf("creel: %s runs no creel hook delivery, so post --interrupt cannot hand it the post; way forward: lym creel inject --interrupt %s <text>, which stops the turn and types the text, or a post without --interrupt, which the receiver gets by its typed notice or reminder", target.Name, target.Name)
+ 	}
+ 	interrupted, err := s.interruptTarget(sender, target)
+ 	var refusal *interruptRefusal
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index 86827559..8b0d34f6 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -272,6 +272,7 @@
+ // Runner.ClearSession, Runner.CompactSession and Runner.ReloadPlugins send their slash commands through the same path, so a draft in the box or an active operator holds them with ErrSessionBusy instead of a caller's earlier idle probe letting them type.
+ // Runner.ClearSession and Runner.CompactSession confirm on the session-start line their command makes the provider write, of source clear and compact, past the events offset taken before the paste;
+ // an empty box does not confirm them early, and when the submit window closes with no such line the box read decides as for any send, so an engine that records no session starts confirms on the empty box at the window's end.
++// Once their box has read empty they are submitted: later box text, such as a draft the operator types during a compaction, and no readable box send no key and fail nothing, and the window's end confirms them.
+ // An engine without SessionSignalParser confirms them on the empty box at once, as any other send.
+ // A provider with no command for the request types nothing and asks nothing.
+ // The palette-to-command mapping is provider grammar and lives in the engine.
+diff --git a/internal/shuttleengine/send.go b/internal/shuttleengine/send.go
+index 1c152f39..cd677693 100644
+--- a/internal/shuttleengine/send.go
++++ b/internal/shuttleengine/send.go
+@@ -602,6 +602,7 @@ func retryLanded(sc sendContext, text string) bool {
+ // A turn start past sentAt, or an empty box, means the paste landed.
+ // A send with a landingStart, to an engine that parses session signals, instead lands on a session start of that source past sentAt, and an empty box does not end its reads while the window and the read cap allow more;
+ // when they run out with none, the box read decides as for any send.
++// Such a send that has read its box empty is submitted: from then on any box text, which can only be a new draft such as the operator's typed during a compaction, and no readable box are read again with no key sent, and the window or read cap running out returns nil.
+ // A box holding exactly the sent text, or the provider's placeholder for it, means the Enter did not take, and the guarded Enter is sent and the box read again.
+ // No readable box sends nothing and is read again.
+ // The sent text beside other text fails with ErrSentTextInDraft, and any other text fails with ErrForeignBoxText quoting the box; neither sends a key.
+@@ -611,6 +612,7 @@ func confirmPasted(sc sendContext, paster TextPaster, reader InputBoxReader, tex
+ 	settle := reader.SubmitSettle()
+ 	interval := settle
+ 	maxReads := windowPollCap(submitConfirmTimeout(sc.cfg), idlePollInitial)
++	submitted := false
+ 	for read := 1; ; read++ {
+ 		wait := min(interval, closeAt.Sub(sc.clock.Now()))
+ 		sc.clock.Sleep(max(wait, settle))
+@@ -622,13 +624,13 @@ func confirmPasted(sc sendContext, paster TextPaster, reader InputBoxReader, tex
+ 		if awaitsLanding && sessionStartedSince(sc.engine, sc.eventsPath, sentAt, sc.landingStart) {
+ 			return nil
+ 		}
+-		if boxText, readable := readInputBox(sc, reader); readable {
++		if boxText, readable := readInputBox(sc, reader); readable && !submitted {
+ 			box := normalizePaneText(boxText)
+ 			switch {
++			case box == "" && !awaitsLanding:
++				return nil
+ 			case box == "":
+-				if !awaitsLanding || windowClosed(sc.clock, closeAt) || read >= maxReads {
+-					return nil
+-				}
++				submitted = true
+ 			case box == normalized || paster.OwnPastePlaceholder(boxText, text):
+ 				if _, err := guardedEnter(sc); err != nil {
+ 					return err
+@@ -640,6 +642,9 @@ func confirmPasted(sc sendContext, paster TextPaster, reader InputBoxReader, tex
+ 			}
+ 		}
+ 		if windowClosed(sc.clock, closeAt) || read >= maxReads {
++			if submitted {
++				return nil
++			}
+ 			reason := fmt.Errorf("%w: the pasted text is still pending, or its box unreadable, after %d read(s) within the %s submit window", ErrSubmissionNotLanded, read, submitConfirmTimeout(sc.cfg))
+ 			return failUnlanded(sc, reader, normalized, reason)
+ 		}
+diff --git a/internal/shuttleengine/session_test.go b/internal/shuttleengine/session_test.go
+index 8fac3b82..802e34d0 100644
+--- a/internal/shuttleengine/session_test.go
++++ b/internal/shuttleengine/session_test.go
+@@ -478,15 +478,20 @@ func (e *slashPasteEngine) ParseSessionSignals(data []byte) ([]SessionSignal, in
+ 
+ // pasteLineReed is a fakeReed that appends line to the events file after every paste, as the provider's hook does when a pasted command restarts the session.
+ // An empty line appends nothing.
++// A non-nil onPaste runs after every paste, before the line is appended.
+ type pasteLineReed struct {
+ 	*fakeReed
+ 
+ 	eventsPath string
+ 	line       string
++	onPaste    func()
+ }
+ 
+ func (r *pasteLineReed) PasteSubmit(guid, text string, submit bool) error {
+ 	err := r.fakeReed.PasteSubmit(guid, text, submit)
++	if r.onPaste != nil {
++		r.onPaste()
++	}
+ 	if r.line == "" {
+ 		return err
+ 	}
+@@ -531,18 +536,22 @@ type parserlessPasteEngine struct {
+ // newSlashPasteRunner returns a runner over a live strand "strand-1" on a paste-path engine whose input box reads box and whose pane shows an operator active or not, and the reed it drives.
+ func newSlashPasteRunner(t *testing.T, box string, active, noColor bool) (*Runner, *fakeReed, string) {
+ 	t.Helper()
+-	runner, reed, runDir, _ := newSlashPasteRunnerAppending(t, box, active, noColor, "", false)
++	runner, reed, runDir, _ := newSlashPasteRunnerAppending(t, box, active, noColor, "", false, nil)
+ 	return runner, reed, runDir
+ }
+ 
+ // newSlashPasteRunnerAppending is newSlashPasteRunner with every paste appending pasteLine to the events file, and returns the runner's clock as well.
++// A non-nil afterPaste replaces the box's answers once the paste is made, so the reads that confirm the send see it.
+ // parserless hides the engine's session-signal parsing behind parserlessPasteEngine.
+-func newSlashPasteRunnerAppending(t *testing.T, box string, active, noColor bool, pasteLine string, parserless bool) (*Runner, *fakeReed, string, *fakeClock) {
++func newSlashPasteRunnerAppending(t *testing.T, box string, active, noColor bool, pasteLine string, parserless bool, afterPaste []inputBoxAnswer) (*Runner, *fakeReed, string, *fakeClock) {
+ 	t.Helper()
+ 	reed := &fakeReed{StatusQueue: liveStrandStatus(true), CaptureQueue: []string{"IDLE"}, ActiveQueue: []bool{active}}
+ 	appending := &pasteLineReed{fakeReed: reed, line: pasteLine}
+ 	clock := newFakeClock(time.Now())
+ 	boxes := &inputBoxEngine{fakeEngine: readyAgentEngine(), boxes: []inputBoxAnswer{{box, true}}, settle: 100 * time.Millisecond}
++	if afterPaste != nil {
++		appending.onPaste = func() { boxes.boxes = afterPaste }
++	}
+ 	slash := &slashPasteEngine{scriptedPasteEngine: &scriptedPasteEngine{clearableBoxEngine: &clearableBoxEngine{inputBoxEngine: boxes}, pasteSubmits: true}, noColor: noColor}
+ 	var engine Engine = slash
+ 	if parserless {
+@@ -562,12 +571,15 @@ func newSlashPasteRunnerAppending(t *testing.T, box string, active, noColor bool
+ 	return fx.Runner, reed, filepath.Dir(fx.EventsPath), clock
+ }
+ 
+-// checkLandingStartConfirmation drives call, a session command that restarts the session with the source landing, over a paste-path engine whose box reads empty after the paste.
++// checkLandingStartConfirmation drives call, a session command that restarts the session with the source landing, over a paste-path engine whose box reads empty after the paste unless a row scripts it.
+ // A session-start line of landing appended by the paste confirms the send at its first read.
+ // A line of other, or none, leaves the send waiting out the whole submit window before the empty box confirms it.
+ // A line of landing already in the events file before the send is older than the pre-send offset and is waited out too.
+ // An engine that parses no session signals confirms on the empty box at once.
+-func checkLandingStartConfirmation(t *testing.T, landing, other SessionStartSource, call func(*Runner) error) {
++// A box that read empty after the paste stays confirmed when it then holds other text, as an operator typing during a compaction leaves it, or holds sentText or cannot be read;
++// other text before any empty read fails the send with ErrForeignBoxText.
++// No row sends a key after the paste.
++func checkLandingStartConfirmation(t *testing.T, landing, other SessionStartSource, sentText string, call func(*Runner) error) {
+ 	t.Helper()
+ 	window := submitConfirmTimeout(Config{SubmitConfirmTimeoutS: 30})
+ 	tests := []struct {
+@@ -575,23 +587,39 @@ func checkLandingStartConfirmation(t *testing.T, landing, other SessionStartSour
+ 		priorLine  string
+ 		pasteLine  string
+ 		parserless bool
++		afterPaste []inputBoxAnswer
+ 		wantWait   bool
++		wantErr    error
+ 	}{
+ 		{name: "a session start of the matching source confirms the send at once", pasteLine: "SESSIONSTART:" + string(landing)},
+ 		{name: "a session start of the other source is waited out", pasteLine: "SESSIONSTART:" + string(other), wantWait: true},
+ 		{name: "no session start confirms on the empty box once the window closes", wantWait: true},
+ 		{name: "a session start of the matching source before the send is waited out", priorLine: "SESSIONSTART:" + string(landing), wantWait: true},
+ 		{name: "an engine that parses no session signals confirms on the empty box at once", parserless: true},
++		{name: "a box that read empty and then holds the operator's draft confirms once the window closes", afterPaste: []inputBoxAnswer{{"", true}, {"the operator's draft", true}}, wantWait: true},
++		{name: "a box holding the operator's draft before any empty read fails as foreign text", afterPaste: []inputBoxAnswer{{"the operator's draft", true}}, wantErr: ErrForeignBoxText},
++		{name: "a box that read empty and then cannot be read confirms once the window closes", afterPaste: []inputBoxAnswer{{"", true}, {"", false}}, wantWait: true},
++		{name: "a box that read empty and then holds the sent text confirms once the window closes", afterPaste: []inputBoxAnswer{{"", true}, {sentText, true}}, wantWait: true},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			runner, _, runDir, clock := newSlashPasteRunnerAppending(t, "", false, false, tt.pasteLine, tt.parserless)
++			runner, reed, runDir, clock := newSlashPasteRunnerAppending(t, "", false, false, tt.pasteLine, tt.parserless, tt.afterPaste)
+ 			if tt.priorLine != "" {
+ 				appendEventsLine(t, filepath.Join(runDir, eventsFileName), tt.priorLine)
+ 			}
+ 			start := clock.Now()
+-			if err := call(runner); err != nil {
++			err := call(runner)
++			if keys := sentCalls(reed); len(keys) != 0 {
++				t.Errorf("sent calls = %v, want none after the paste", keys)
++			}
++			if tt.wantErr != nil {
++				if !errors.Is(err, tt.wantErr) {
++					t.Errorf("error = %v, want one wrapping %v", err, tt.wantErr)
++				}
++				return
++			}
++			if err != nil {
+ 				t.Fatalf("error = %v, want the command confirmed", err)
+ 			}
+ 			waited := clock.Now().Sub(start)
+@@ -671,7 +699,7 @@ func TestRunner_ClearSession_PlaysScriptedSequence(t *testing.T) {
+ 	}
+ 
+ 	checkPastedSessionCommand(t, "/clear", func(r *Runner) error { return r.ClearSession("strand-1") })
+-	checkLandingStartConfirmation(t, SessionStartClear, SessionStartCompact, func(r *Runner) error { return r.ClearSession("strand-1") })
++	checkLandingStartConfirmation(t, SessionStartClear, SessionStartCompact, "/clear", func(r *Runner) error { return r.ClearSession("strand-1") })
+ }
+ 
+ // sentCalls returns the keys and texts reed was asked to write, in order.
+@@ -758,7 +786,7 @@ func TestRunner_CompactSession_PlaysSequenceForFocus(t *testing.T) {
+ 	}
+ 
+ 	checkPastedSessionCommand(t, "/compact the plan", func(r *Runner) error { return r.CompactSession("strand-1", "the plan") })
+-	checkLandingStartConfirmation(t, SessionStartCompact, SessionStartClear, func(r *Runner) error { return r.CompactSession("strand-1", "the plan") })
++	checkLandingStartConfirmation(t, SessionStartCompact, SessionStartClear, "/compact the plan", func(r *Runner) error { return r.CompactSession("strand-1", "the plan") })
+ }
+ 
+ func TestRunner_CompactSession_RefusesMultiLineFocus(t *testing.T) {
+diff --git a/internal/testkit/creelfake/creelfake.go b/internal/testkit/creelfake/creelfake.go
+index ccc7a00c..5b5cf988 100644
+--- a/internal/testkit/creelfake/creelfake.go
++++ b/internal/testkit/creelfake/creelfake.go
+@@ -22,14 +22,13 @@ const DefaultPanePID = 999_999_999
+ 
+ // LiveStrand returns a live pane-mail strand with the given full name and the default pane pid, so the scheduler types its notices and reminders into it.
+ func LiveStrand(name string) creelengine.Strand {
+-	return creelengine.Strand{Name: name, GUID: "guid-" + name, Worktree: "/hub/worktree", Live: true, PanePID: DefaultPanePID, PaneMail: true}
++	return creelengine.Strand{Name: name, GUID: "guid-" + name, Worktree: "/hub/worktree", Live: true, PanePID: DefaultPanePID}
+ }
+ 
+-// HookStrand returns a live strand with the given full name and the default pane pid whose session runs creel's hook delivery: CreelHooks set and PaneMail not.
++// HookStrand returns a live strand with the given full name and the default pane pid whose session runs creel's hook delivery: CreelHooks set.
+ func HookStrand(name string) creelengine.Strand {
+ 	strand := LiveStrand(name)
+ 	strand.CreelHooks = true
+-	strand.PaneMail = false
+ 	return strand
+ }
+ 
