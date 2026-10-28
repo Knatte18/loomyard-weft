@@ -23,7 +23,7 @@
 
 **Uses:**
 - `internal/loomshed#goPackageDirs`
-- `plan:internal/impactset#FindSeamTests`
+- `internal/impactset#FindSeamTests`
 - `internal/planindex#GlyphAnswer`
 - `internal/planparser#GoPackageCounterpart`
 - `internal/planparser#ParseRef`

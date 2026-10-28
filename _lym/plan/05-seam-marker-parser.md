@@ -1,10 +1,10 @@
 # Card 5 — seam-marker-parser
 
 **Create:**
-- `plan:internal/impactset#SeamTest` -> `type SeamTest struct`
-- `plan:internal/impactset#SeamMalformed` -> `const SeamMalformed GuardScanKind = "seam-malformed"`
-- `plan:internal/impactset#FindSeamTests` -> `func FindSeamTests(worktree string, dirs []string) (map[string][]SeamTest, error)`
-- `plan:internal/impactset#TestFindSeamTests` -> `func TestFindSeamTests(t *testing.T)`
+- `internal/impactset#SeamTest`
+- `internal/impactset#SeamMalformed`
+- `internal/impactset#FindSeamTests`
+- `internal/impactset#TestFindSeamTests`
 
 **Edit:**
 - `internal/impactset#onlyKeepLinesAfter`
