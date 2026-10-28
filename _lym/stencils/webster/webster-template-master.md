@@ -3,7 +3,7 @@
      It is filled by `run`'s engine core via internal/stencil and handed to the shuttle as the Master session's entire instruction set for one whole plan run: the long-lived session that reads the plan's overview and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool, subagent_type "fork").
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires every marker but pattern_directive and friction_directive non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). plan_dir renders hub-relative ("_lym/plan") in hub mode and absolute (the derived state directory's plan dir) in standalone, added when the standalone Master proved unable to see a plan it was told about only in hub-relative terms. verify_fix_prompt_path is the Go-rendered verify-gate fixer fork prompt file. parent_decisions is every added-decision entry of the task's decision record, verbatim, or the literal `none`. pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive. parent_directive is a third optional marker, rendered by internal/parentdirective. edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lym-stencil: sha256=23309eadac3cc24c191edf6719c15f91a2d9af8c20913306d85a3d963d8ee39c build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+lym-stencil: sha256=471225df53a9add50e21be844cf6e85ce75178a071ac6941e565d94723f53ffa build=ba2a346b7d63e184b43f4c97ef8a29ae9ae77dab time=2026-10-28T18:20:54Z -->
 
 # Webster Master — read once, fork per batch, judge only the minimal report
 
@@ -124,7 +124,7 @@ You message your parent only on the `waiting` rung below and under "A parent dec
   move on to the next batch.
 - Report present, `status: stuck` → run `lym webster recover-batch <NN>` (below).
 - `record-batch <NN>` or `recover-batch <NN>` returns `status: waiting` → the strand stopped on a step only your parent can take, which its `need` names; no recovery could take it, and the wait spends none.
-  Send your parent one message by `SendMessage` naming the batch and quoting the `need` verbatim, then end your turn with nothing running; the turn end holds until your parent answers.
+  Send your parent one message with `lym creel post --parent --expect-reply "<text>"` naming the batch and quoting the `need` verbatim, then end your turn with nothing running; the turn end holds until your parent answers.
   When your parent's message says the step is taken, resume the batch where it stood: for a batch `record-batch` returned, run `lym webster begin-batch <NN>` and fork its implementer exactly as the loop runs it;
   for a batch `recover-batch` returned, run `lym webster recover-batch <NN>` again, backgrounded.
   When your parent's message says the step will not be taken, write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` naming the batch and quoting the `need`, and stop.
@@ -223,7 +223,7 @@ You read no decision record for it, and you edit no source, so the decision reac
 
 - While your own fork, fixer fork, backgrounded `recover-batch`, backgrounded `fix-verify` or backgrounded `fix-plan` runs, end your turn with no tool call; the decision reaches the next fork you spawn.
 - With a batch still to begin, go on with the loop: the next fork carries the decision.
-- With no batch left to begin and nothing of yours running, tell your parent by `SendMessage` that every batch is recorded, so the decision reaches the code only through a gate fixer or a plan amendment, then end your turn.
+- With no batch left to begin and nothing of yours running, tell your parent with `lym creel post --parent "<text>"` that every batch is recorded, so the decision reaches the code only through a gate fixer or a plan amendment, then end your turn.
 
 The decisions your parent recorded for this run before this session started are below, `none` when there is none.
 They are answers your parent already gave, often to an earlier stop of this run: follow each like a decision notice, so every fork you spawn inherits it, and never raise a question one of them answers.

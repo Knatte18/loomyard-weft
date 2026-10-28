@@ -7,7 +7,7 @@
      decision_record_path and support_log_path are required markers, naming the two discussion files the writer writes before any code.
      prior_work is never empty: DarnTable fills it with (none) when it has nothing to tell.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lym-stencil: sha256=06dd614834db5eadc15331f5f6567365c6ffb25aae0421df273636fb1799be9a build=bf00a04359aa5980fdd8dc2b7cf76d3ee9799216 time=2026-10-28T14:12:42Z -->
+lym-stencil: sha256=2b45457f36656670ca49c192fdd32255d6a616a6ed0727557b7b8aa8c669fb58 build=ba2a346b7d63e184b43f4c97ef8a29ae9ae77dab time=2026-10-28T18:20:54Z -->
 
 # Darn — make the change a board entry asks for, in one session
 
@@ -43,8 +43,8 @@ When `{{.decision_record_path}}` or `{{.support_log_path}}` is absent, or `lym l
 Check the entry before you write:
 
 - Read `lym board list`, every entry that touches the task and every board note titled `Decision for {{.slug}}:` for it, and `lym loom peers` for the runs in flight and the parent's commits since the fork.
-- When the entry is plainly outdated, because landed work overtook it or another board entry or run contradicts it, and no decision note answers it, send your parent a message by `SendMessage` naming what overtook or contradicts the entry.
-  Ask it to write its answer as a `Decision for {{.slug}}:` board note and then reply by `SendMessage`, since a note alone wakes nothing; then end your turn to wait.
+- When the entry is plainly outdated, because landed work overtook it or another board entry or run contradicts it, and no decision note answers it, send your parent a message with `lym creel post --parent --expect-reply "<text>"` naming what overtook or contradicts the entry.
+  Ask it to write its answer as a `Decision for {{.slug}}:` board note and then reply with `lym creel post --reply <id>`, since a note alone wakes nothing; then end your turn to wait.
   On any message from your parent, re-read the board for the note.
 - Write the answer into the decision record as a Decision citing the parent.
 - Once the record is committed, ask your parent to record the same answer with `lym loom decision add`.
