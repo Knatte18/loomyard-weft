@@ -9,7 +9,7 @@
      twill_directive is a fourth optional marker, rendered by internal/twilldirective through internal/loomengine;
      it sits on the line that would otherwise be blank, so an empty value leaves the blank line and the prompt's bytes unchanged.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lym-stencil: sha256=1736792b56a80fb99a53c61e168aff401743c5f974e2b1fc38ac65537166a160 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+lym-stencil: sha256=8f211c3d776f65eb17870a2cebe1cc9fb023d5c61e0480a2bd56127bbe564d7b build=26f0d9dc38fcc22b3e7767531448a3a5dc64d183 time=2026-10-28T13:52:59Z -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -94,6 +94,8 @@ The plan runs strictly in card order, and the Card Index lists the cards in that
 
 A card that needs a corpus or a fixture takes it from committed test data in the tree, created by an earlier card where it does not exist yet, never from the live files of other worktrees or the fabric repo.
 `card-fabric-reference` in `{{.specs_dir}}/loom/loom-plan-spec.md` names what the plan gate refuses.
+
+The plan gate also refuses a card for `test-tier-unstated`, `seam-test-unlisted` and `doc-go-unlisted`; `{{.specs_dir}}/loom/loom-plan-spec.md`'s validation checks hold their rules.
 
 A card that prescribes an addition to a `PATTERN.md` entry line leaves the line's rule text under the cap, `pattern-entry-line-cap` in the same spec: the gate fails a fenced verbatim entry line whose rule text is over it.
 A declared `adds` or `changes` entry is prescribed verbatim as its whole overview line in a fenced block on a card that edits `PATTERN.md`.

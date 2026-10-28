@@ -12,7 +12,7 @@
      it sits on the line that would otherwise be blank, so an empty value leaves the blank line and the prompt's bytes unchanged.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
      The literal `{` / `}` characters around {{.slug}} in the board-read example below are ordinary JSON punctuation, not template syntax — only `{{` begins a template action.
-lym-stencil: sha256=200c38599e16d7dad23b2e12be242586fee41d45a4f9c189068eac3210f38f5b build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+lym-stencil: sha256=ee0b7c367688f65131e0e0c06299a6d5c380b23671cdf4170be2a8abaa44990a build=26f0d9dc38fcc22b3e7767531448a3a5dc64d183 time=2026-10-28T13:52:59Z -->
 
 # Discussion — interview, then write the decision record
 
@@ -117,6 +117,7 @@ lym loom validate-discussion
 The verb takes no arguments.
 It exits 0 on a clean gate and 1 otherwise, and puts its findings under the failure envelope's `findings` key.
 Fix whatever it reports, then re-run it until it exits 0 before ending your turn.
+The gate also runs the decision-id, acceptance and citation checks that the decision record section of `{{.specs_dir}}/loom/loom-discussion-spec.md` states.
 A design change in that turn may update `{{.relevant_path}}` in the same turn.
 
 ## Never use `AskUserQuestion`
