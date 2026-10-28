@@ -1,6 +1,6 @@
 # Creel delivers every post to a Claude strand through hooks, visibly and in full
 
-`creel-hook-post` · Task · enhancement, creel, shuttle, claude · running · PR-Review
+`creel-hook-post` · Task · enhancement, creel, shuttle, claude · running · Finalize
 
 ## Goal
 
