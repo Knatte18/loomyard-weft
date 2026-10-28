@@ -255,6 +255,13 @@ Rationale: The operator ruled that creel must keep delivering to Codex (2026-10-
   - oversized-first-message-overflows-hook-field (class design, severity BLOCKING, open in rounds 1)
 <!-- /lym:carry-over Discussion-Review -->
 
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/plan/round-2-review.md; fixer report: _lym/reviews/plan/round-2-fixer-report.md.
+  - journal-close-test-row-panics (class design, severity MEDIUM, open in rounds 2)
+  - llm-smoke-bell-pane-assertion (class design, severity MEDIUM, open in rounds 2)
+<!-- /lym:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 All real-Claude scenarios run in the LLM tier through shuttle's own rendered `settings.json` and launch line, never a hand-launched session.
