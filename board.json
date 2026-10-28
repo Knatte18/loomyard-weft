@@ -998,6 +998,26 @@
       "body": "Imported from [issue #879](https://github.com/Knatte18/loomyard/issues/879).\n\n## Seen (beam-start-and-ownership, 2026-10-26)\n\nWithin minutes, `ly:FABRIC` sent the orch two `not_fast_forward` notices for one run on one machine: first for its code branch, then for its records branch.\nEach way forward named a `git merge` or `git reset --keep`, and the records notice said \"another machine wrote the same paths\" with `paths: none`.\nA fetch right after each notice showed nothing on origin the local branch lacked: a concurrent push had already landed, and the next push was a plain fast-forward.\nTwo asynchronous pushes of the same branch raced, and the loser reported a divergence that no longer existed.\n\n## Idea\n\n- A rejected push fetches origin again before it reports: when origin is now an ancestor of the local tip, it retries the push instead of sending a notice.\n- The notice names another machine only when origin's commits carry another machine's name, and never with `paths: none`.",
       "created": "2026-10-28T11:33:42Z",
       "revised": "2026-10-28T11:33:42Z"
+    },
+    {
+      "id": 866,
+      "handle": "B11",
+      "slug": "webster-recovery-circular",
+      "title": "webster recovery way-forward is circular: recover-batch points to accept-audit, which refuses; reset is refused while run.lock is held",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "webster"
+      ],
+      "issues": [
+        878
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #878](https://github.com/Knatte18/loomyard/issues/878).\n\n## What happened\n\nAfter `lyx webster record-batch` failed a batch on fabric-reference audit findings, `lyx webster recover-batch` refused with `needs_fresh` and a way forward of \"`lyx webster accept-audit --batch 6` then `lyx webster recover-batch 6`\", or `reset --to batch-start`, or `reset --to start`.\n`lyx webster accept-audit --batch=6` then refused, because the batch's commits are kept only when every fabric reference is read-only, and the finding is the very one that made recover-batch advise it. Its only way forward was `lyx webster reset --to batch-start --batch 06`.\n`lyx webster reset --to=batch-start --batch=6` was refused with `run is already in progress ... (run.lock held)`, with way forward \"wait for it to finish, or check `lyx webster status`\".\nThe Webster session had no verb left that it was allowed to use, so it escalated: the run halted `blocked` with anomaly `escalation-to-human`, and the halt note says the parent has to run the reset after the run stops.\n\n## Why it is abnormal\n\n- `recover-batch` offers `accept-audit` as a way forward in a case where `accept-audit` is known to refuse; the advice cannot be followed.\n- The refusals were retried several times (two `accept-audit` refusals, three `recover-batch` refusals), each with the same text.\n- `reset` is refused for a lock the Webster session itself holds, so the one working remedy is unreachable from inside the run that needs it.\n\n## What to do\n\n- Have `recover-batch` run the `accept-audit` check and drop that option from the way forward when it would refuse.\n- Let `reset --to batch-start` run from the Webster session that owns `run.lock`, or have the refusal name who must run it and when.\n\n## Provenance\n\nTask `umbrella-anchor`; notes: webster-refusal-recover-batch.md, webster-refusal-recover-batch-2.md, webster-refusal-recover-batch-3.md, webster-refusal-accept-audit.md, webster-refusal-accept-audit-2.md, webster-refusal-reset.md, loom-halt-3.md.\n",
+      "created": "2026-10-28T11:33:45Z",
+      "revised": "2026-10-28T11:33:45Z"
     }
   ],
   "prime_owner": "neve",
