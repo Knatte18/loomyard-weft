@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -28,6 +28,33 @@
       "output": "",
       "at": "2026-10-28T13:51:56Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/fixer-overcap-review/_lym/landing/summary.md",
+      "at": "2026-10-28T14:07:05Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-28T14:02:19.999615256Z",
+          "end": "2026-10-28T14:02:44.705294162Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-28T14:02:44.859616955Z",
+          "end": "2026-10-28T14:07:04.325398685Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-28T14:07:04.445028308Z",
+          "end": "2026-10-28T14:07:04.446497197Z"
+        }
+      ]
     }
   ],
   "product": {
