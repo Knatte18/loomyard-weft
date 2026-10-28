@@ -27,7 +27,7 @@ On Linux, tier0 reports one skip, the llmkit skip helper's own test `TestClaude/
   `push_test.go` registers `pushCoalescedChild` and `lockHolderChild` in `childBodies` from `init`.
   `TestMain` in `testmain_test.go` runs the body whose variable is set and exits before `m.Run`.
   The parent spawns the binary with `-test.run=^$`.
-- `pattern/PATTERN-test-speed.md` gains a "No test skips by design" section stating the rule.
+- `pattern/PATTERN-test-speed.md` gains a "No test skips by design" section stating the rule, and the `PATTERN.md` entry for `PATTERN-test-speed` gains a clause.
   `cmd/lym/tierpurity_test.go`'s allowlist entry follows the socket-file test to `internal/reedengine/socketfile_unix_test.go`.
 
 ## Design decisions
@@ -39,11 +39,9 @@ On Linux, tier0 reports one skip, the llmkit skip helper's own test `TestClaude/
 - `internal/shedverbs/loop_integration_test.go` keeps its tier1 tag because `TestMain` needs its helper roles on every OS.
   Only `TestLoopIntegration_ChildTreeDiesWithLoop` moved to `loop_unix_integration_test.go`.
 
-## Verification
+## To check by hand
 
-- `lym gate test --gate darn-write` over the diff: tier1 and tier2 passed with no skips.
-  tier0's one failure, the stale tier-purity allowlist entry, is fixed, and the tier0 rerun passed.
-- `go vet` passed under `tier0` through `tier3` on Linux for every touched package.
+- Linux `go vet` passed under `tier0` through `tier3` on Linux for every touched package.
   With `GOOS=windows`, `go vet` under `tier0` through `tier2` showed no new error in the touched packages.
   It still reports the existing `undefined: mustTmuxOutput` in `internal/reedengine/contract_integration_test.go`, because that helper lives in the `tier2 && linux` file `switch_integration_test.go`.
   That break predates this change and is left alone.
