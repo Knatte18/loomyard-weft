@@ -1,0 +1,2213 @@
+diff --git a/PATTERN.md b/PATTERN.md
+index 672c308f..11bd9e5f 100644
+--- a/PATTERN.md
++++ b/PATTERN.md
+@@ -31,7 +31,7 @@
+ 
+ - `PATTERN-shed-recipe-registry` — Adding producer or recipe row: one `Constructor` map in `internal/shedrecipe`, bar `Implementer`'s; a row's value looked up by key, a side action a `Command` row, a config-off row its `entry_gate`. — [background](pattern/PATTERN-shed-recipe-registry.md)
+ - `PATTERN-shed-driver` — Driving a shed run: generic verb bodies only in `internal/shedverbs`, the step-until-stop loop only in `internal/sheddriver`, run paths, ids and `Seed` only in `internal/shedrun`. (test) — [background](pattern/PATTERN-shed-driver.md)
+-- `PATTERN-shed-stop-chain` — A shed run's stop: rule table, tackler, arbiter, then parent, for every recipe; a blocked stop at a row the driver's arbiter seam marks as judged first goes rule table, arbiter, then parent; arbiter keys in shed.yaml with module overrides.
++- `PATTERN-shed-stop-chain` — A shed run's stop: rule table, tackler, arbiter, then parent, for every recipe; a blocked stop the driver's arbiter seam marks as judged first, by its row and reason, goes rule table, arbiter, then parent; arbiter keys in shed.yaml with module overrides.
+ - `PATTERN-dobby-starts-runs` — Starting or driving a board task's run: its parent's dobby, from an empty status, in batten passes; a hand `lym batten run` is one pass.
+ - `PATTERN-transient-stop` — Marking a failure transient: only `internal/shedengine`'s mark, translated by `internal/shedtransient` at a producer or step-bootstrap boundary; never on a gate verdict.
+ - `PATTERN-friction-capture` — Halting or crash-resuming a loom run, or refusing in webster: Go writes a note via `internal/friction`; none is archived before a reflection covers it. (test)
+diff --git a/contracts/recipes/darn-recipe.yaml b/contracts/recipes/darn-recipe.yaml
+index c130383a..b5d5eb4d 100644
+--- a/contracts/recipes/darn-recipe.yaml
++++ b/contracts/recipes/darn-recipe.yaml
+@@ -40,7 +40,7 @@
+ # _lym/discussion/board-entry.md, as amended by the decision record's `Added after Discussion`
+ # entries; the record's other sections are the writer's own claim, reviewed against the snapshot.
+ #
+-# Finalize declares on_reroute: Code-Bouncer, the row a conflict or a merge too large to land sends
++# Finalize declares on_reroute: Code-Bouncer, the row a spent or over-cap fixer change sends
+ # the run back to, so the perch reviews the code the writer changed in answer.
+ # Shed's reroute cap bounds that edge, and a reroute spends no bounce budget.
+ # With a budget of 0 the Bouncer settles approved at once on that reroute too.
+@@ -227,7 +227,7 @@ producers:
+ 
+   # Finalize takes the parent lock first, merges the parent into the task branch, runs the landing
+   # gate and the merge fixer, then fast-forwards the parent and releases the lock on every way out.
+-  # A conflict or a merge too large to land reroutes to Code-Bouncer.
++  # Only a spent or over-cap fixer change reroutes to Code-Bouncer; a conflict or a large merge lands through the gate.
+   - name: Finalize
+     engine: Finalize
+     on_reroute: Code-Bouncer
+diff --git a/contracts/recipes/loom-recipe.yaml b/contracts/recipes/loom-recipe.yaml
+index 38722b4b..cab1bd7c 100644
+--- a/contracts/recipes/loom-recipe.yaml
++++ b/contracts/recipes/loom-recipe.yaml
+@@ -29,8 +29,8 @@
+ # Webster's Stuck halts the run for a human too, with one exception: Webster declares on_reroute:
+ # Plan-Burler-Review, and its producer marks a Stuck Reroute only when begin-batch left a new
+ # plan-conflict record.
+-# Finalize declares on_reroute: Parent-Align, the edge a moved parent or a merge too large to land takes.
+-# Shed's reroute cap bounds both edges, and a reroute spends no bounce budget.
++# Finalize declares on_reroute: Parent-Align, the edge a spent or over-cap fixer change takes when a review follows.
++# Shed's reroute cap bounds that edge, and a reroute spends no bounce budget.
+ #
+ # PR-Review and Friction-Reflect are outside the escalate-to-a-human set: each also carries no
+ # on_stuck, but each always returns Done and never Stuck.
+@@ -541,7 +541,7 @@ producers:
+ 
+   # Finalize takes the parent lock first, merges the parent into the task branch, runs the landing
+   # gate and the merge fixer, then fast-forwards the parent and releases the lock on every way out.
+-  # A conflict or a merge too large to land reroutes to Parent-Align.
++  # Only a spent or over-cap fixer change reroutes to Parent-Align; a conflict or a large merge lands through the gate.
+   - name: Finalize
+     engine: Finalize
+     on_reroute: Parent-Align
+diff --git a/contracts/recipes/pawl-recipe.yaml b/contracts/recipes/pawl-recipe.yaml
+index e635a869..d75f416a 100644
+--- a/contracts/recipes/pawl-recipe.yaml
++++ b/contracts/recipes/pawl-recipe.yaml
+@@ -28,10 +28,10 @@
+ # they stay in the round's review files.
+ # Beam-Describe carries no entry gate: it writes from the entry and the commits whatever the budget.
+ #
+-# Finalize never reroutes, so it declares no on_reroute: a conflict or a merge too large to land has no
+-# earlier row to return to, because Beam-Describe writes from the entry and the commits and reviews
+-# nothing. A merge conflict goes to Finalize's merge fixer, a large merge runs the landing gate, and a
+-# failure the fixer cannot fix halts the run for the orch.
++# Finalize never reroutes, so it declares no on_reroute: a spent or over-cap fixer has no review to
++# return to, because Beam-Describe writes from the entry and the commits and reviews nothing, so it
++# halts for the orch. A conflict or a large merge lands through the gate in every recipe: the merge
++# fixer takes a failing merged tree.
+ #
+ # Parent-Align and Beam-Describe carry no on_stuck: Parent-Align fixes its own merge and test failures in
+ # its merge fixer, and a description that fails validation halts the run for the orch, which ends the
+diff --git a/contracts/specs/landing-fixer-report-spec.md b/contracts/specs/landing-fixer-report-spec.md
+index 78c29433..279c9c70 100644
+--- a/contracts/specs/landing-fixer-report-spec.md
++++ b/contracts/specs/landing-fixer-report-spec.md
+@@ -23,7 +23,7 @@ An empty section is its heading with no bullet under it.
+ ## Verdicts
+ 
+ - `fixed` — the fixer made every change the failure needed, and the row goes on to re-check.
+-- `escalate` — a parent change conflicts with a decision of the record, which the fixer does not settle; the row halts to the orch with the `## Conflict` text.
++- `escalate` — a parent change conflicts with a decision of the record, which the fixer does not settle; the row halts to the arbiter first on a loom or darn run and to the orch on a pawl run with the `## Conflict` text.
+   An `escalate` report with no `## Conflict` section is invalid.
+ 
+ ## Sole parser
+diff --git a/contracts/specs/loom-status-spec.md b/contracts/specs/loom-status-spec.md
+index a886373d..87eb0077 100644
+--- a/contracts/specs/loom-status-spec.md
++++ b/contracts/specs/loom-status-spec.md
+@@ -95,6 +95,14 @@ Per-field notes — `product`'s three fields are the whole of loom's own half of
+ Both are true when the run is blocked and the recipe's told check answers true for the status's `current_producer` and `error`, and false otherwise, including when no check is told.
+ For loom and darn the check is `landingshed.HandsBack`: a blocked stop at Parent-Align or Finalize whose reason opens with the landing-stop prefix, or a blocked stop at Finalize whose reason opens with the reroute-cap prefix.
+ A true key marks a halt that goes to the orch, so every driver hands it back instead of routing it.
++A loom or darn fixer's escalate halt opens with the landing-escalate prefix, `landingshed.EscalateHalt` answers true for it, and the key stays false: it goes to the arbiter first.
++
++## The `restep_hold` key
++
++`lym loom status` carries a top-level `restep_hold` key, and the loop's stop envelope carries `loop.restep_hold`.
++Both are true when the run is blocked and the recipe's told check answers true for the status's `current_producer` and `error`, and false otherwise, including when no check is told.
++For loom and darn the check is `landingshed.EscalateHalt`: a blocked stop at Parent-Align or Finalize whose reason opens with the landing-escalate prefix.
++A true key marks a halt the LLM driver's own build re-launch and binary watch leave alone; it still goes to the arbiter first, and only the arbiter's `resume` or the orch's `lym loom resume` moves it.
+ 
+ ## The `waiting` key
+ 
+diff --git a/contracts/stencils/loom/loom-rubric-code-review.md b/contracts/stencils/loom/loom-rubric-code-review.md
+index 7913ac88..ce2b3316 100644
+--- a/contracts/stencils/loom/loom-rubric-code-review.md
++++ b/contracts/stencils/loom/loom-rubric-code-review.md
+@@ -115,7 +115,7 @@ When the note above is not `none`, this round reviews an amendment: review only
+ 
+ ## Review input
+ 
+-When the amendment note names a review input, that file is a report written after this perch last settled: the merge fixer's report of the latest Parent-Align, or the overlap note of a Finalize reroute.
++When the amendment note names a review input, that file is a report written after this perch last settled: the merge fixer's report of the latest Parent-Align.
+ Read it as an input besides the diff: judge from it whether the alignment it reports, and the parent changes it names, keep the code consistent with the answer key.
+ A finding about the report itself is never raised; each finding is about the code.
+ 
+diff --git a/contracts/stencils/orch/orch-template-role.md b/contracts/stencils/orch/orch-template-role.md
+index d831e5d7..c7e52ac0 100644
+--- a/contracts/stencils/orch/orch-template-role.md
++++ b/contracts/stencils/orch/orch-template-role.md
+@@ -70,7 +70,7 @@ Its stop report then carries the arbiter's verdict path and question: read the v
+ - A landing-stop halt at Parent-Align or Finalize, or a reroute-cap halt at Finalize: see Landing halts below.
+   Never a goto to Plan-Bouncer for either, since the plan does not change.
+ - A parent lock held too long: `lym batten lock list` shows who holds each parent lock, and `lym batten lock release <branch>` frees one whose owner is alive but wedged.
+-  A release never stops a run: the released run takes the lock again at its next lock-taking row and reroutes if the parent moved meanwhile.
++  A release never stops a run: the released run takes the lock again at its next lock-taking row and merges the moved parent at its next Finalize.
+ - A design call the child cannot make, in an escalation that is not a review escalation: decide it and record it with `lym loom decision add`; a review escalation never takes this bullet and follows the hand-on bullet or the fault paragraph below.
+   A design call that amends the approved plan is recorded with `--amends-plan`, as Fixing a run says, never by a card edit.
+ - An escalation naming a peer run: classify each as a hand-on or a fault first, and investigate a fault as a stop.
+@@ -124,13 +124,14 @@ A brief for a non-fork agent that runs `lym gate test` carries a copy of the gat
+ 
+ A run lands with no orch turn: Parent-Align and Finalize fix their own merge and test failures with the merge fixer, and no pull request waits for an approval.
+ Finalize takes the parent lock first, syncs the task branch with main, squashes it onto main, marks the board task done and pushes main.
+-A parent that moved since Parent-Align, a loom conflict or a merge too large to land sends the run back to Parent-Align by itself.
++A parent that moved since Parent-Align, a conflict or a large merge no longer sends the run back: Finalize merges the parent in place, resolves a conflict under the lock and gates the merged tree.
+ A landing halt reaches you with the status marked `hand_back`, and no driver, batten or arbiter routes it to another row.
+-- A landing-stop halt at Parent-Align or Finalize means the fixer spent its cap, failed, made a change no review on the way back can see, escalated a decision for `lym loom decision add`, or found its attempt record undecodable.
++- A landing-stop halt at Parent-Align or Finalize means the fixer spent its cap, failed, made a change no review on the way back can see, on a pawl run escalated a decision, or found its attempt record undecodable.
+   The halt's reason says which, and names the commits the fixer kept.
+   For an undecodable attempt record the way forward is removing that record by the path the reason names, which grants the entry a fresh cap.
+   Read the commits, decide with the operator what the run needs, then `lym loom resume` in the task worktree.
+-- A reroute-cap halt at Finalize means a parent that keeps moving, or a fixer that keeps failing to clear the gate within its caps; read the cause from the halt's reason.
++- On a loom or darn run a fixer that escalated a decision halts with the landing-escalate prefix instead, and the arbiter judges it first, so it reaches you only as the arbiter's hand-on; record the deciding decision with `lym loom decision add`, then `lym loom resume`.
++- A reroute-cap halt at Finalize means a fixer that keeps failing to clear the gate within its caps; read the cause from the halt's reason.
+ After a run lands, amend the board entries it superseded.
+ 
+ ## After landing
+diff --git a/contracts/stencils/shed/shed-template-driver-guide.md b/contracts/stencils/shed/shed-template-driver-guide.md
+index 6c6a0ed6..04c86814 100644
+--- a/contracts/stencils/shed/shed-template-driver-guide.md
++++ b/contracts/stencils/shed/shed-template-driver-guide.md
+@@ -64,8 +64,8 @@ The `reinvoke` sub-case counts toward the cap.
+ 
+ The watch is a background shell loop that resolves the `lym` executable once, checks its modification time about once a minute, and exits when it changes.
+ It never runs a long-lived `lym` process, which would block a deploy's overwrite on Windows.
+-When it exits, read `lym shed status <run-id>` once, and re-step only if `binary_changed` is true, the clean-tree guard passes and `hand_back` is false; otherwise re-arm the watch.
+-A stop marked `hand_back` starts no watch and is handed back to the parent.
++When it exits, read `lym shed status <run-id>` once, and re-step only if `binary_changed` is true, the clean-tree guard passes and neither `hand_back` nor `restep_hold` is true; otherwise re-arm the watch.
++A stop marked `hand_back` starts no watch and is handed back to the parent; a stop marked `restep_hold` starts no watch and goes to the arbiter first.
+ A watch job that ends by the harness timeout is re-armed, never read as a resume.
+ 
+ ## Interrupted invocations
+diff --git a/contracts/stencils/shed/shed-template-driver.md b/contracts/stencils/shed/shed-template-driver.md
+index 47603744..6dac38e8 100644
+--- a/contracts/stencils/shed/shed-template-driver.md
++++ b/contracts/stencils/shed/shed-template-driver.md
+@@ -94,11 +94,12 @@ You re-launch the loop on your own in exactly these cases, a closed list:
+ 
+ - the fork's action is a re-launch;
+ - the arbiter's verdict is `resume`, whose envelope carries the `relaunch` line to run; this is allowed over a spent repair cap, and for this case it reverses the rule that a `blocked` stop is never repaired;
+-- `lym shed status`'s `last_step.binary_changed` is true at an eligible stop, which is a `blocked` stop or an escalated `producer`, `bootstrap`, `unseeded`, `interrupted` or transient error, and the stop is not marked `hand_back`;
++- `lym shed status`'s `last_step.binary_changed` is true at an eligible stop, which is a `blocked` stop or an escalated `producer`, `bootstrap`, `unseeded`, `interrupted` or transient error, and the stop is marked neither `hand_back` nor `restep_hold`;
+   the guide's binary watch states the watch and the clean-tree guard that gate it.
+ 
+-Never re-launch over an `awaiting`, `paused` or `busy` stop, an `ownership` stop, a no-kind refusal, a stop marked `hand_back`, or an `interrupted` stop under `interrupt_policy: handback`.
++Never re-launch over an `awaiting`, `paused` or `busy` stop, an `ownership` stop, a no-kind refusal, a stop marked `hand_back` or `restep_hold`, or an `interrupted` stop under `interrupt_policy: handback`.
+ A stop marked `hand_back` goes to the parent with no arbiter and no re-step, since only the parent's resume lifts it.
++A stop marked `restep_hold` goes to the arbiter first and is never re-launched on a build change; only the arbiter's `resume` or the parent's resume moves it.
+ Before any self-initiated re-launch, remove the park marker.
+ 
+ ## Arbiter
+@@ -141,7 +142,7 @@ At a hand-back, which is every stop other than `done` and a `busy` refusal, you
+ 
+ 1. write your stop report to `{{.report_path}}`, unless the fork already wrote it there, in which case you add your own lines to it;
+ 2. run the park command `{{.park_command}}`, which commits the run records and writes the park marker, named `driver-parked`, under `scratch_dir`, holding the stop report's path;
+-3. start the binary watch the guide describes as a background job when the stop is binary-change eligible and not marked `hand_back`.
++3. start the binary watch the guide describes as a background job when the stop is binary-change eligible and marked neither `hand_back` nor `restep_hold`.
+ 
+ Never write the park marker by hand: the park command owns it.
+ `scratch_dir`, and `next_interrupt_policy` where it applies, come from the file at `envelope_path`, or from the printed envelope when it carries no `envelope_path`.
+diff --git a/docs/overview.md b/docs/overview.md
+index 833e0231..a856b9ba 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -569,8 +569,9 @@ User-facing modules each get one `lym <module>` namespace:
+   The three regression rows, `Drift-Baseline` before `Plan-Write` in loom and before `Drift-Await` in darn, `Drift-Await` before `Webster` in loom and before `Darn-Write` in darn, and `Drift-Verify` as above, each carry the entry gate `drift.enabled` of the hub-wide `drift.yaml`, so a hub that leaves it off records each of them skipped and spawns or runs nothing for them.
+   `Parent-Align` merges the parent's upstream tip into the task with no parent lock, verifies the merged tree through the `parent-align` gate key and runs the merge fixer in parent-align mode, which settles a conflict or a failing tree and aligns the task to what the parent brought in; it writes the merge record with the aligned tip, and the Code-Perch then reviews the task's code against that.
+   `PR-Review` is a stub for the human pull-request review that is not built: it always returns Done, and logs one line when its flag is on.
+-  `Finalize` takes the parent lock first, merges the parent into the task again and reroutes to `Parent-Align` on a loom conflict or a merge too large to land; it runs the `finalize` gate key and the merge fixer in finalize mode, lands on the parent with the task trailer and releases the lock on every exit.
+-  A halt at `Parent-Align` or `Finalize` (a spent or over-cap fixer, an escalation, a reroute-cap stop) is handed back to the orch through every driver, and the status marks it `hand_back`.
++  `Finalize` takes the parent lock first, merges the parent into the task in place, resolving a conflict with the conflict session under the lock, with no reroute on a conflict or a large merge; it runs the `finalize` gate key and the merge fixer in finalize mode, lands on the parent with the task trailer and releases the lock on every exit.
++  A halt at `Parent-Align` or `Finalize` (a spent or over-cap fixer, a reroute-cap stop) is handed back to the orch through every driver, and the status marks it `hand_back`.
++  On a loom or darn run a fixer's escalate halts with `EscalateStopPrefix` instead, is not marked `hand_back` and goes to the arbiter first, reaching the orch only as the arbiter's hand-on; on a pawl run it is a landing halt like the rest.
+   `Webster` reroutes to `Plan-Burler-Review` when begin-batch left a new plan conflict that the plan fixer `lym webster fix-plan` could not clear.
+   `Describe` writes the change description at `_lym/landing/summary.md`, the single source for the landing commit, whose message ends in the trailer block Go appends: `landing.yaml`'s `trailer_text`, then the `engine_trailers` text of each engine that ran a session in the task, each copied verbatim and each switchable off by an empty value.
+   `Finalize` tolerates an already-landed parent and marks the board task `done` after the parent merge.
+diff --git a/internal/arbiterstop/arbiterstop_test.go b/internal/arbiterstop/arbiterstop_test.go
+index 0d10f7b2..460cd8dd 100644
+--- a/internal/arbiterstop/arbiterstop_test.go
++++ b/internal/arbiterstop/arbiterstop_test.go
+@@ -34,6 +34,8 @@ func TestCheck_RefusesLandingHalts(t *testing.T) {
+ 		{name: "blocked halt at Discussion-Bouncer without the prefix", producer: "Discussion-Bouncer", reason: "a plain halt"},
+ 		{name: "reroute-cap halt at Webster", producer: "Webster", reason: shedengine.ReasonRerouteCapReached + ": Webster rerouted to Plan-Write 3 times; way forward: x"},
+ 		{name: "ordinary blocked halt", producer: "Plan-Write", reason: "a plain halt"},
++		{name: "escalate halt at Finalize", producer: "Finalize", reason: landingshed.EscalateStopPrefix + "the fixer of Finalize found a parent change that conflicts with a decision of the record; way forward: record the deciding decision, then `lym loom resume`"},
++		{name: "escalate halt at Parent-Align", producer: "Parent-Align", reason: landingshed.EscalateStopPrefix + "the fixer of Parent-Align found a parent change that conflicts with a decision of the record; way forward: record the deciding decision, then `lym loom resume`"},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/arbiterstop/doc.go b/internal/arbiterstop/doc.go
+index cf93a7cc..0b9b16f3 100644
+--- a/internal/arbiterstop/doc.go
++++ b/internal/arbiterstop/doc.go
+@@ -11,6 +11,7 @@
+ // a `budget` or `decision` escalation, an unknown cause and an unreadable record all go to the run's parent.
+ // A blocked stop that is a landing halt, as the landing rows' hand-back predicate reads the status's producer and error, is refused too, since only the run's parent lifts it.
+ // So is a decision halt, a blocked stop whose error opens with the decision halt prefix.
++// A loom or darn fixer's escalate halt opens with neither prefix, so it is no landing halt and is eligible as a blocked stop.
+ // HandsBack is the one predicate of a blocked stop that goes to the run's parent: a landing halt or a decision halt.
+ // Every refusal ends with HandBackWayForward.
+ //
+diff --git a/internal/battencli/wire.go b/internal/battencli/wire.go
+index 8f78c72d..30982d96 100644
+--- a/internal/battencli/wire.go
++++ b/internal/battencli/wire.go
+@@ -35,6 +35,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/fsx"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/hubreconcile"
++	"github.com/Knatte18/loomyard/internal/landingshed"
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
+@@ -1062,10 +1063,8 @@ func (c *battenCLI) wire(location *lymcwd.Location, slug string) error {
+ 				}
+ 				return sheddriver.RestepRecorded(records, status), nil
+ 			},
+-			// HandBack marks a blocked landing halt or decision halt over the child status's current producer and error, so the binary re-step leaves it to the orch.
+-			HandBack: func(status shedengine.Status) bool {
+-				return status.State == shedengine.StateBlocked && arbiterstop.HandsBack(status.CurrentProducer, status.Error)
+-			},
++			// HandBack marks a blocked landing halt, decision halt or loom or darn escalate halt, so the binary re-step leaves it alone.
++			HandBack: restepSkips,
+ 			// PauseRequested reads batten's own status file, the one `lym batten pause` writes, so the in-call wait notices a pause within one check.
+ 			PauseRequested: pauseRequested(location, slug),
+ 			// Pause reads the hub's pause record at the prime's geometry, for the slug this run drives.
+@@ -1484,3 +1483,13 @@ func (c *battenCLI) wire(location *lymcwd.Location, slug string) error {
+ 	}
+ 	return nil
+ }
++
++// restepSkips reports whether a child's status is a blocked halt the binary re-step leaves alone:
++// a landing halt or a decision halt for the orch, or a loom or darn fixer's escalate halt for the arbiter.
++// The halt is read over the status's current producer and error.
++func restepSkips(status shedengine.Status) bool {
++	if status.State != shedengine.StateBlocked {
++		return false
++	}
++	return arbiterstop.HandsBack(status.CurrentProducer, status.Error) || landingshed.EscalateHalt(status.CurrentProducer, status.Error)
++}
+diff --git a/internal/battencli/wire_seams_test.go b/internal/battencli/wire_seams_test.go
+index 6c7372b3..d7f5f1d9 100644
+--- a/internal/battencli/wire_seams_test.go
++++ b/internal/battencli/wire_seams_test.go
+@@ -16,11 +16,13 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/landingshed"
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/parentlock"
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/proc"
++	"github.com/Knatte18/loomyard/internal/shedadapters"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/state"
+@@ -150,6 +152,38 @@ func TestWire_EverySeamFilled(t *testing.T) {
+ 			t.Errorf("intentionallyNil lists c.env.%s but wire() now fills it; remove the entry", path)
+ 		}
+ 	}
++
++	escalated := shedengine.Status{State: shedengine.StateBlocked, CurrentProducer: "Finalize", Error: landingshed.EscalateStopPrefix + "the fixer escalated"}
++	if !c.env.InnerRun.HandBack(escalated) {
++		t.Errorf("InnerRun.HandBack(%+v) = false; want true, so the binary re-step leaves a loom or darn escalate halt alone", escalated)
++	}
++}
++
++// TestRestepSkips pins which child statuses the binary re-step leaves alone: a blocked landing, decision or escalate halt, and nothing else.
++func TestRestepSkips(t *testing.T) {
++	t.Parallel()
++
++	tests := []struct {
++		name   string
++		status shedengine.Status
++		want   bool
++	}{
++		{"LandingHaltAtFinalize", shedengine.Status{State: shedengine.StateBlocked, CurrentProducer: "Finalize", Error: landingshed.LandingStopPrefix + "over the caps"}, true},
++		{"DecisionHalt", shedengine.Status{State: shedengine.StateBlocked, CurrentProducer: "Discussion-Bouncer", Error: shedadapters.DecisionHaltPrefix + "a held accept"}, true},
++		{"EscalateHaltAtFinalize", shedengine.Status{State: shedengine.StateBlocked, CurrentProducer: "Finalize", Error: landingshed.EscalateStopPrefix + "a conflict"}, true},
++		{"EscalateHaltAtParentAlign", shedengine.Status{State: shedengine.StateBlocked, CurrentProducer: "Parent-Align", Error: landingshed.EscalateStopPrefix + "a conflict"}, true},
++		{"EscalateReasonOnAFailedStatus", shedengine.Status{State: shedengine.StateFailed, CurrentProducer: "Finalize", Error: landingshed.EscalateStopPrefix + "a conflict"}, false},
++		{"EscalateReasonAtDescribe", shedengine.Status{State: shedengine.StateBlocked, CurrentProducer: "Describe", Error: landingshed.EscalateStopPrefix + "a conflict"}, false},
++		{"PlainHalt", shedengine.Status{State: shedengine.StateBlocked, CurrentProducer: "Finalize", Error: "dirty parent"}, false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := restepSkips(tt.status); got != tt.want {
++				t.Errorf("restepSkips(%+v) = %v; want %v", tt.status, got, tt.want)
++			}
++		})
++	}
+ }
+ 
+ // wiredPrime wires a battenCLI over a prime location rooted in a temp hub with no task worktree.
+diff --git a/internal/battenshed/deps.go b/internal/battenshed/deps.go
+index c6f916e9..f49dc528 100644
+--- a/internal/battenshed/deps.go
++++ b/internal/battenshed/deps.go
+@@ -290,7 +290,7 @@ type InnerRunDeps struct {
+ 	// Restepped reports whether the child's settle records hold a re-step of the stop status names.
+ 	// A nil Restepped resolves to reporting false in NewInnerRun.
+ 	Restepped func(status shedengine.Status) (bool, error)
+-	// HandBack reports whether the child's blocked status is a landing halt only the orch's resume lifts, which the binary re-step then leaves alone.
++	// HandBack reports whether the child's blocked status is a landing halt, a decision halt or a loom or darn escalate halt, which the binary re-step then leaves alone.
+ 	// A nil HandBack resolves to marking nothing in NewInnerRun.
+ 	HandBack func(status shedengine.Status) bool
+ }
+diff --git a/internal/battenshed/doc.go b/internal/battenshed/doc.go
+index 7ed8700f..85ae8540 100644
+--- a/internal/battenshed/doc.go
++++ b/internal/battenshed/doc.go
+@@ -142,7 +142,7 @@
+ // A halted go child is also re-stepped once per halt and per lym build (innerrun_binaryrestep.go), so a fix deployed after a Go driver handed back lands without a parent turn.
+ // The child is re-stepped, through the same Spawn seam as every bootstrap, only when it is blocked or failed, its reed state holds no driver strand, neither its run lock nor its driver lock is held;
+ // the lym on disk must differ from the build the child's last step recorded, and the task pair must have no uncommitted or untracked path outside the run's records.
+-// A blocked halt that `InnerRunDeps.HandBack` marks as a landing halt is skipped and writes no marker, so only the orch's `lym loom resume` lifts it; every other halt keeps the re-step, so a fix deployed in a new build can still clear it.
++// A blocked halt that `InnerRunDeps.HandBack` marks as a landing halt is skipped and writes no marker, so only the orch's `lym loom resume` lifts it; a loom or darn fixer's escalate halt, which the arbiter judges first, is marked and skipped too; every other halt keeps the re-step, so a fix deployed in a new build can still clear it.
+ // The `<row>-binary-restep` marker holds the halt's stop key and the build label, and is written only after the spawn returns success, so the re-step happens once per halt and build and survives a batten restart.
+ // A spawn refused as not parked or as a busy pane, and a dirty tree, write no marker and are tried again at the next due check; the spawns are capped at five per halt and build.
+ // Reading the build and the dirty paths costs a process, so the check runs once per interval, kept in the memory record:
+diff --git a/internal/battenshed/innerrun_binaryrestep.go b/internal/battenshed/innerrun_binaryrestep.go
+index bf469586..0ce45e4f 100644
+--- a/internal/battenshed/innerrun_binaryrestep.go
++++ b/internal/battenshed/innerrun_binaryrestep.go
+@@ -50,7 +50,7 @@ func restepStopKey(status shedengine.Status) string {
+ 
+ // binaryRestep re-steps a halted driverless go child once per halt and build, through the child's bootstrap.
+ // It acts only when every condition holds:
+-// the child is blocked or failed, is not a landing halt that deps.HandBack marks for the orch, and its reed state holds no driver strand;
++// the child is blocked or failed, is not a landing halt, decision halt or loom or darn escalate halt that deps.HandBack marks, and its reed state holds no driver strand;
+ // neither its run lock nor its driver lock is held;
+ // the on-disk build differs from the child's last step's, and the task pair has no uncommitted path outside the run's records;
+ // and the marker does not already name this halt and this build.
+diff --git a/internal/landingshed/deps.go b/internal/landingshed/deps.go
+index 9f4f45c4..9b1ecb6b 100644
+--- a/internal/landingshed/deps.go
++++ b/internal/landingshed/deps.go
+@@ -69,6 +69,10 @@ type Deps struct {
+ 	// PushSkipped is the told skip decision, which Finalize's parent push honours by skipping its push.
+ 	PushSkipped bool
+ 
++	// EscalateJudgedFirst is the told decision whether a merge fixer's escalate halts with EscalateStopPrefix, so the arbiter judges it before the orch, or with LandingStopPrefix as a hand-back.
++	// True on a loom or darn run, false on a pawl run, whose arbiter has no decision verb to settle it with.
++	EscalateJudgedFirst bool
++
+ 	// OpenFabric and OpenParentFabric are the two lazy opener closures Parent-Align and Finalize hold,
+ 	// respectively -- Parent-Align's over the task worktree's own pair, Finalize's over the parent
+ 	// branch's pair. Laziness is required, not stylistic: the constructor each closure wraps
+@@ -153,15 +157,6 @@ type Deps struct {
+ 	// Told by the caller, and unset where LandBlockers is nil.
+ 	ParentWorktree string
+ 
+-	// ConflictReroutes reports whether a conflict in Finalize's merge of the parent branch into the task aborts the merge and reroutes, which leaves the merge and its conflict session to Parent-Align outside the parent lock.
+-	// Told by the caller: true for loom.
+-	// False, darn's value, resolves the conflict with the conflict session under the lock, since darn has no other merging row.
+-	ConflictReroutes bool
+-	// LargeMergeLands lets a merge that needed the conflict session, or whose parent changes touch a file the task changed, go on to the gate instead of rerouting, writing no overlap note.
+-	// Told by the caller, for a Finalize whose recipe row declares no reroute edge; it is meant for ConflictReroutes false, since a conflict that aborts the merge still reroutes.
+-	// False, the value of loom and darn, reroutes a large merge.
+-	LargeMergeLands bool
+-
+ 	// CommitParentRecords commits the parent pair's own run records, which Finalize calls after its merge of the parent branch and before the parent-side merge.
+ 	// Sibling runs leave their status records uncommitted in the parent pair, and the merge guard refuses any tracked modification there.
+ 	// A clean subtree is a no-op, and a returned error is Stuck.
+diff --git a/internal/landingshed/doc.go b/internal/landingshed/doc.go
+index 5761d2f3..a8577c92 100644
+--- a/internal/landingshed/doc.go
++++ b/internal/landingshed/doc.go
+@@ -36,15 +36,13 @@
+ // A Finalize already past its parent-side merge, an empty list and a nil seam land as before.
+ // Bound: a member that lands into the beam between this check and the parent-side merge is not caught here, and the Worktree-Create hold read keeps any member from forking once the landing hold stands.
+ // A parent that already holds the task's work, after a GitHub merge or an earlier landing, lands through the already-landed path.
+-// Finalize then merges the parent branch into the task worktree under the lock and judges the merge.
++// Finalize then merges the parent branch into the task worktree through its resolver for every recipe, which resolves a conflict with the conflict session under the lock, and gates the merged tree.
+ // It reads the merge record's merged tip, clears a parked merge-in, checks the tree clean and merges.
+-// A loom Finalize (Deps.ConflictReroutes) merges through the task pair's merge-in and, on a conflict, aborts the merge and reroutes, leaving the merge and its conflict session to Parent-Align outside the lock.
+-// A darn Finalize merges through its resolver, which resolves a conflict with the conflict session under the lock, since darn has no other merging row.
+-// An unreadable merge record is logged and read as absent, so the parent side is measured from the task's merge base, as a darn run with no record is.
+-// The merge is large when it needed the conflict session, or when the parent's changes since the merged tip it read touch a file the task changed since its merge base; a parent already holding the task's work is never large.
+-// A large merge keeps the merge commit and reroutes with no gate run: a Stuck with Reroute set on the row's on_reroute edge, which spends no bounce budget, and the deferred release frees the lock first, with shed's reroute cap as its bound.
+-// A Finalize built with Deps.LargeMergeLands, for a recipe row that declares no reroute edge, neither reroutes a large merge nor writes the overlap note, and goes on to the gate.
+-// What that lets through, unseen by any review, is the conflict session's resolution against the parent's newer work and a textually clean merge of the parent's changes to files the task also changed; the `finalize` gate over the merged tree bounds both, and a spent fixer or a change past the caps halts for the orch.
++// An unreadable merge record is logged and read as absent, so the parent side is measured from the task's merge base, as a run with no record is.
++// The merge is large when the parent's changes since the merged tip it read touch a file the task changed since its merge base; a parent already holding the task's work is never large.
++// A large merge writes the merge record, with its overlap, and goes on to the gate like any other merge, and a conflict or a large merge reroutes in no recipe.
++// Bound: what lands with no review is the conflict session's resolution against the parent's newer work and a textually clean merge of the parent's changes to files the task also changed; the `finalize` gate over the merged tree bounds both, and a spent fixer or a change past the caps reroutes when a review follows the reroute and halts for the orch otherwise.
++// The conflict session runs while the parent lock is held, so sibling landings onto that parent wait, bounded by the lock's owner, pause and release rules.
+ // Finalize then writes the merge record with the new merged tip and the aligned tip as it was.
+ // Next it runs its own gate key, `finalize`, over the merged tree through verifytree, which skips a tree it already verified, so a run that went right holds the lock for one merge, a skipped gate and the landing.
+ // A darn Finalize over a diff wholly under `tree_scope` runs the tree-scoped command, since darn's verify source answers it.
+@@ -55,12 +53,12 @@
+ // An entry has no attempts left when its Spent reaches `finalize_fix_attempts`, whatever the record's Halt notes, and a resumed entry with none left spawns no fixer: over a failing gate it ends as a spent cap, and over a passing one its change since Baseline is judged.
+ // A spent cap or a change over the caps keeps the fixer's commits and reroutes through the reroute reason when a review follows the reroute (Deps.RerouteReviewed), and halts with LandingStopPrefix otherwise, naming the commits and noting `spent` or `over-cap` in the record's Halt.
+ // A resume after an over-cap halt writes Baseline afresh at the HEAD the gate starts from, clears the note in the same record write, reads the operator's review as acceptance of the commits and runs the gate: a passing gate lands without judging the change, and a failing one runs the fixer on the attempts left.
+-// An escalate report keeps the commits and halts naming the report; a turn that ended without a usable result halts, and a failed spawn is an error that spends no attempt.
++// An escalate report keeps the commits and halts naming the report, with EscalateStopPrefix on a loom or darn run; a turn that ended without a usable result halts, and a failed spawn is an error that spends no attempt.
+ // An attempt record that does not decode halts naming the file, with removing it, which grants a fresh cap, as the way forward.
+ // A Finalize reroute leaves the entry's attempt record for the next entry to clear, and a Done clears it.
+ // The size and kind caps bound what an unreviewed Finalize fix lets through: a fix within them lands with no perch, behind only the `finalize` gate it passed and the finalize mode's instruction to fix failing tests only.
+ // After a merge-in-required error from the parent-side merge Finalize retries once, which covers a parent moved by run records alone;
+-// the retry merges and judges the parent again under the same lock, so a code-side commit that arrives between the first merge and the parent-side merge reroutes there and never lands.
++// the retry merges the parent again and gates the merged tree under the same lock, so a code-side commit that arrives between the first merge and the parent-side merge is merged, gated and landed.
+ // A dirty parent is Stuck naming the parent's code checkout and its tracked dirty paths, capped at 20, with the way forward per reason.
+ // The run records Finalize commits at its parent-records step never count as that dirt, since the guard reads the code checkout alone, whose `_lym` link is excluded from its index.
+ // A parent push that fails for a reason other than a transient one carries a repair note when origin's parent already holds the task's work, which an adopter-first landing leaves:
+@@ -105,7 +103,7 @@
+ // Parent commits brought in, or a failing gate, run the merge fixer in parent-align mode on the attempts `parent_align_fix_attempts` leaves the entry; a `fixed` report over a passing gate advances the aligned tip and is Done.
+ // The entry's fork point is kept in its attempt record before the merge, so a resumed entry whose merge is already up to date still reads what the first merge brought in.
+ // With the Code-Review perch's budget 0, or told nothing, a fixer change over `finalize_fix_max_lines` or touching a test, testdata or gate configuration file, or adding a test skip or a build constraint, halts over-cap; with a budget above 0 the change goes to the Code-Perch unjudged.
+-// An escalate report, a spent cap, a turn that ended without a usable result and an over-cap change each halt with a reason opening with LandingStopPrefix and a way forward; the resume after an over-cap halt reads the operator's review as the alignment.
++// A spent cap, a turn that ended without a usable result and an over-cap change each halt with a reason opening with LandingStopPrefix and a way forward; the resume after an over-cap halt reads the operator's review as the alignment.
+ // Every Done clears the entry's attempt record, and an entry reached again from another row starts at zero attempts.
+ // A run halted on the row under its name before the rename, Merge-In, resumes with its spent attempts: the row reads the old name's attempt record when its own is absent, and every Done removes both.
+ // Last it writes the merge record: the tip merged, the task head before the merge, the parent tip last merged into the task, the aligned tip, the merge commit and where the parent's changes since the aligned tip meet the task's changes since its last merge base.
+@@ -117,10 +115,15 @@
+ // HandsBack is the one predicate that names the halts the orch takes over: a blocked stop at Parent-Align or Finalize whose reason opens with LandingStopPrefix, and a blocked stop at Finalize whose reason opens with the reroute-cap prefix.
+ // Parent-Align has no reroute edge, and a reroute-cap halt at another row, such as Webster's, stays routed as before.
+ // A merge or test failure at Parent-Align or Finalize is the recipe's own to settle:
+-// the row's fixer fixes it, a loom conflict, a large merge or a spent or over-cap fix at Finalize routes back through the recipe's reroute edge, or halts where that edge reaches no review, and the halt goes to the orch.
++// the row's fixer fixes it, a spent or over-cap fix at Finalize routes back through the recipe's reroute edge, or halts where that edge reaches no review, and the halt goes to the orch.
+ // No driver, batten, arbiter or record target routes a Parent-Align or Finalize failure to another row.
+ // The recipe's owner tells it to shedverbs as Spec.HandBack, which marks the loop's stop envelope and the status as hand_back; the drivers read the predicate or that mark.
+ //
++// An escalate report halts with a reason opening with EscalateStopPrefix on a loom or darn run, which Deps.EscalateJudgedFirst tells, and with LandingStopPrefix on a pawl run, whose arbiter has no decision verb.
++// EscalateHalt is the prefix's only reader: a blocked stop at Parent-Align, Finalize or Merge-In whose reason opens with it.
++// Such a halt is no hand-back, so the driver's arbiter judges it first and batten's binary re-step leaves it alone.
++// Only a fixer's escalate changes route; a halt an older build parked under LandingStopPrefix stays a hand-back.
++//
+ // A darn run whose diff lies wholly under its configured non-production trees runs only the tree-scoped command at Parent-Align and Finalize, the hub's whole statement of what such a diff needs.
+ // landing.yaml's retired `publish_verify` key loads and is dropped, and `lym config reconcile` prunes it.
+ //
+diff --git a/internal/landingshed/finalize.go b/internal/landingshed/finalize.go
+index 5b1d8df7..477907e4 100644
+--- a/internal/landingshed/finalize.go
++++ b/internal/landingshed/finalize.go
+@@ -19,7 +19,6 @@ import (
+ 	"path"
+ 	"strconv"
+ 	"strings"
+-	"sync/atomic"
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+@@ -27,7 +26,6 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/mergeresolve"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+-	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/summaryparser"
+ 	"github.com/Knatte18/loomyard/internal/verifytree"
+ )
+@@ -59,47 +57,10 @@ type parentMerger interface {
+ // The compile-time assertion that *fabricengine.Fabric satisfies parentMerger.
+ var _ parentMerger = (*fabricengine.Fabric)(nil)
+ 
+-// taskMerger is the narrow seam over the task pair's merge-in of the parent branch and its abort, which `*fabricengine.Fabric` satisfies.
+-// A loom Finalize merges through it, so a conflict is a result state it aborts, never a session it runs.
+-type taskMerger interface {
+-	// MergeIn merges source into the task pair, returning any conflicts as a result state rather than an error. See fabricengine.Fabric.MergeIn.
+-	MergeIn(source string) (fabricengine.MergeResult, error)
+-	// MergeAbort discards the merge the task pair has parked. See fabricengine.Fabric.MergeAbort.
+-	MergeAbort() (fabricengine.MergeResult, error)
+-}
+-
+-// The compile-time assertion that *fabricengine.Fabric satisfies taskMerger.
+-var _ taskMerger = (*fabricengine.Fabric)(nil)
+-
+-// conflictSessions wraps the conflict session runner and counts the sessions it starts, so a darn Finalize can tell a merge that needed one.
+-type conflictSessions struct {
+-	inner   mergeresolve.Shuttle
+-	started atomic.Int64
+-}
+-
+-// Run counts the session and starts it on the wrapped runner.
+-func (c *conflictSessions) Run(spec shuttleengine.Spec) (shuttleengine.Result, error) {
+-	c.started.Add(1)
+-	return c.inner.Run(spec)
+-}
+-
+-// count returns the sessions started so far; a nil counter has started none.
+-func (c *conflictSessions) count() int64 {
+-	if c == nil {
+-		return 0
+-	}
+-	return c.started.Load()
+-}
+-
+ // Finalize is the ShedProducer that merges the parent branch into the task worktree under the parent lock, then merges the task branch into the parent pair's own worktree.
+ type Finalize struct {
+ 	deps     Deps
+ 	resolver resolver
+-	// taskMerger merges the parent branch into the task pair for a loom Finalize, whose conflict it aborts.
+-	// A struct-literal Finalize leaves it nil and merges through its resolver, as a darn one does.
+-	taskMerger taskMerger
+-	// sessions counts the conflict sessions resolver starts; nil counts none.
+-	sessions *conflictSessions
+ 	// parentOpener adapts deps.OpenParentFabric's concrete *fabricengine.Fabric return type onto
+ 	// the parentMerger seam. It is called once per Call, never at construction: the pair
+ 	// constructor it wraps stat-checks a layout that may not be wired yet, so opening eagerly
+@@ -151,15 +112,9 @@ func NewFinalize(deps Deps) (*Finalize, error) {
+ 		return nil, fmt.Errorf("landingshed: NewFinalize: open pair: %w", err)
+ 	}
+ 
+-	// A nil told shuttle stays nil, so the resolver's constructor refuses it as it refuses any other.
+-	sessions := &conflictSessions{inner: deps.Shuttle}
+-	var shuttle mergeresolve.Shuttle
+-	if deps.Shuttle != nil {
+-		shuttle = sessions
+-	}
+ 	res, err := mergeresolve.New(mergeresolve.Deps{
+ 		Fabric:         fabricHandle,
+-		Shuttle:        shuttle,
++		Shuttle:        deps.Shuttle,
+ 		WorktreeRoot:   deps.WorktreeRoot,
+ 		ScratchDir:     deps.ScratchDir,
+ 		StencilsDir:    deps.StencilsDir,
+@@ -176,13 +131,11 @@ func NewFinalize(deps Deps) (*Finalize, error) {
+ 	gate := newVerifyGate(deps)
+ 	gate.recorder = &failureRecorder{failingTests: deps.FailingTests, traceFailure: deps.TraceFailure, head: deps.TaskHead}
+ 	return &Finalize{
+-		deps:       deps,
+-		resolver:   res,
+-		taskMerger: fabricHandle,
+-		sessions:   sessions,
+-		gate:       gate,
+-		premerge:   newPreMerge(deps),
+-		guard:      newParentGuard(deps),
++		deps:     deps,
++		resolver: res,
++		gate:     gate,
++		premerge: newPreMerge(deps),
++		guard:    newParentGuard(deps),
+ 		parentOpener: func() (parentMerger, error) {
+ 			h, err := deps.OpenParentFabric()
+ 			if err != nil {
+@@ -200,9 +153,9 @@ func NewFinalize(deps Deps) (*Finalize, error) {
+ // Under that lock it runs the owner checks: a run origin ended or stopped is Stuck, and a run or parent another machine owns, an unreachable origin and a failed owner read halt.
+ // A parent already holding the task's work skips the owner checks and the unreachable halt, and an unreachable origin then proceeds.
+ // It then opens the parent pair and syncs it: a pair that is missing, dirty or mid-merge, or a parent that cannot be fast-forwarded to its upstream, is Stuck with a way forward before any merge.
+-// It then merges the parent branch into the task worktree and judges the merge: a conflict a loom Finalize aborts, a conflict a darn Finalize resolves, and a merge large by its conflict or by files both sides changed reroute, with no gate run.
+-// A merge that proceeds is gated by the `landing` gate, and a failing gate runs the merge fixer in finalize mode; a spent cap or an over-cap fix reroutes or halts.
+-// After a merge-in-required error from the parent-side merge it re-runs the merge and its gate once under the same lock.
++// It then merges the parent branch into the task worktree through its resolver, which resolves a conflict with the conflict session under the lock, and gates the merged tree with no reroute on a conflict or a large merge.
++// The `landing` gate judges the merged tree, and a failing gate runs the merge fixer in finalize mode; a spent cap or an over-cap fix reroutes or halts.
++// After a merge-in-required error from the parent-side merge it re-runs the merge and its gate once under the same lock, so a code-side parent commit that arrived in between is merged, gated and landed.
+ //
+ // Immediately before each landing attempt it re-reads the parent lock record, so a lock something released lands nothing and is a halting Stuck.
+ // The re-read and the landing are not atomic: a release between them is caught only by the parent push's rejection.
+@@ -317,7 +270,7 @@ func (fz *Finalize) Call(ctx context.Context) (shedengine.Outcome, shedengine.Ou
+ 	}
+ 
+ 	// Retry: on the merge-in-required error, re-run steps 2 to 5 under the same lock and retry the parent-side merge exactly once.
+-	// Step 2 merges and judges the parent again, so a code-side commit that arrived between the check and the parent-side merge reroutes there and never lands.
++	// Step 2 merges the parent again, so a code-side commit that arrived between the check and the parent-side merge is merged, gated and landed.
+ 	var mergeInRequired *fabricengine.ErrMergeInRequired
+ 	if errors.As(mergeErr, &mergeInRequired) {
+ 		if outcome, out, err, done := fz.mergeAndGate(ctx); done {
+@@ -637,7 +590,8 @@ func (fz *Finalize) mergeAndGate(ctx context.Context) (shedengine.Outcome, shede
+ // An entry has no attempts left when its Spent reaches the cap, whatever the record's Halt notes, and such an entry spawns no fixer: over a failing gate it ends as a spent cap, and over a passing one its change since Baseline is judged.
+ // A spent cap or a change over the caps keeps the fixer's commits and reroutes when a review follows the reroute (Deps.RerouteReviewed), and halts with LandingStopPrefix otherwise, noting the cause in the attempt record's Halt.
+ // A resume after such an over-cap halt writes Baseline afresh at the HEAD the gate starts from and reads the operator's review as acceptance of the fixer's commits.
+-// An escalate report, an unusable turn and an attempt record that does not decode each halt with LandingStopPrefix, and a failed spawn is an error that spends no attempt.
++// An escalate report halts with EscalateStopPrefix on a loom or darn run (Deps.EscalateJudgedFirst) and with LandingStopPrefix on a pawl run;
++// an unusable turn and an attempt record that does not decode each halt with LandingStopPrefix, and a failed spawn is an error that spends no attempt.
+ // done is false when the tree passed within the caps and Call proceeds; otherwise the other values are what Call returns at once.
+ func (fz *Finalize) gateAndFix(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error, bool) {
+ 	attemptsPath := FixerAttemptsPath(fz.deps.ScratchDir, finalizeName)
+@@ -729,7 +683,7 @@ func (fz *Finalize) runFixer(ctx context.Context, rec FixerAttempts) (shedengine
+ 	case fixerEndSpent:
+ 		return fz.endSpent(ctx, updated, outcome.failureLog)
+ 	}
+-	return fz.halt(ctx, outcome.haltReason(finalizeName))
++	return fz.halt(ctx, outcome.haltReason(finalizeName, fz.deps.EscalateJudgedFirst))
+ }
+ 
+ // failedGateLog names the log of the landing gate's failure: the failure record's log when one was written, and the gate's own reason otherwise.
+@@ -824,24 +778,17 @@ type parentMergeBefore struct {
+ type parentMerge struct {
+ 	// upToDate reports that the task already held the parent's tip.
+ 	upToDate bool
+-	// conflicted reports that the merge needed the conflict session, or, for a loom Finalize, conflicted and was aborted.
+-	conflicted bool
+-	// conflicts are the paths a loom Finalize's aborted merge conflicted in.
+-	conflicts []string
+ }
+ 
+ // mergeParent merges the parent branch into the task worktree and judges the merge, which are Finalize's steps 2 and 3 under the parent lock it already holds.
+ // It clears a parked merge-in, checks the tree clean and merges.
+-// A loom Finalize merges through taskMerger and, on a conflict, aborts the merge and reroutes, leaving the merge and its conflict session to Parent-Align outside the lock.
+-// A darn Finalize merges through its resolver, which resolves a conflict with the conflict session under the lock, since darn has no other merging row.
++// The merge goes through the resolver, which resolves a conflict with the conflict session under the lock.
+ //
+-// The merge is large when it needed the conflict session, or when the parent's changes since the merged tip the merge record names touch a file the task changed.
++// The merge is large when the parent's changes since the merged tip the merge record names touch a file the task changed.
+ // A merge record that cannot be read is logged and read as absent, so the parent side is measured from the task's merge base; a parent already holding the task's work is never large.
+ // The merge record is written with the new merged tip and the aligned tip as it was.
+-// A large merge keeps the merge commit and reroutes, with no gate run and no fixer;
+-// a darn Finalize first writes the overlap note naming the parent's changes to the overlapping files since the tip the parent side was measured from.
+-// With Deps.LargeMergeLands a large merge is neither rerouted nor noted: the merge record is written and the gate judges the merged tree.
+-// done is false when the merge is within bounds and Call goes on to the gate; otherwise the other values are what Call returns at once.
++// A large merge writes the merge record, with the overlap, and goes on to the gate like any other merge.
++// done is false when the merge settled and Call goes on to the gate; otherwise the other values are what Call returns at once.
+ func (fz *Finalize) mergeParent(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error, bool) {
+ 	reason, err := fz.premerge.clear(finalizeName, fz.deps.ParentBranch)
+ 	if outcome, out, err, stop := fz.gateStop(ctx, reason, err); stop {
+@@ -867,10 +814,6 @@ func (fz *Finalize) mergeParent(ctx context.Context) (shedengine.Outcome, sheden
+ 		outcome, out, err := fz.stuckOrCancelled(ctx, reason)
+ 		return outcome, out, err, true
+ 	}
+-	if len(merge.conflicts) > 0 {
+-		outcome, out, err := fz.reroute(ctx, fz.rerouteReason(fmt.Sprintf("merging parent branch %q into the task conflicts in %s, and the merge was aborted", fz.deps.ParentBranch, strings.Join(merge.conflicts, ", "))))
+-		return outcome, out, err, true
+-	}
+ 	reason, err = fz.gate.clean(finalizeName, "after the merge-in")
+ 	if outcome, out, err, stop := fz.gateStop(ctx, reason, err); stop {
+ 		return outcome, out, err, true
+@@ -902,25 +845,6 @@ func (fz *Finalize) mergeParent(ctx context.Context) (shedengine.Outcome, sheden
+ 	if err := WriteMergeRecord(fz.deps.MergeRecordPath, record); err != nil {
+ 		return "", shedengine.OutputPointer{}, fmt.Errorf("landingshed: %s: %w", finalizeName, err), true
+ 	}
+-
+-	// A darn run's re-entered Code-Bouncer reads the note as its review input; a loom run's Code-Perch reads the fixer's report instead.
+-	if (merge.conflicted || len(overlap.Files) > 0) && !fz.deps.ConflictReroutes && !fz.deps.LargeMergeLands {
+-		measured := MergeRecord{ParentBranch: fz.deps.ParentBranch, MergedTip: fz.mergedTipRead(before)}
+-		if err := WriteOverlapNote(OverlapNotePath(fz.deps.ScratchDir), measured, overlap.Files); err != nil {
+-			return "", shedengine.OutputPointer{}, fmt.Errorf("landingshed: %s: %w", finalizeName, err), true
+-		}
+-	}
+-
+-	switch {
+-	case fz.deps.LargeMergeLands:
+-		// A large merge lands: the finalize gate over the merged tree judges it.
+-	case merge.conflicted:
+-		outcome, out, err := fz.reroute(ctx, fz.rerouteReason(fmt.Sprintf("merging parent branch %q into the task needed the conflict session, so the merge is large", fz.deps.ParentBranch)))
+-		return outcome, out, err, true
+-	case len(overlap.Files) > 0:
+-		outcome, out, err := fz.reroute(ctx, fz.rerouteReason(fmt.Sprintf("the parent's changes since %s touch files the task changed, so the merge is large: %s", fz.mergedTipRead(before), strings.Join(overlap.Files, ", "))))
+-		return outcome, out, err, true
+-	}
+ 	return "", shedengine.OutputPointer{}, nil, false
+ }
+ 
+@@ -956,24 +880,9 @@ func (fz *Finalize) mergedTipRead(before parentMergeBefore) string {
+ }
+ 
+ // mergeIntoTask merges the parent branch into the task worktree and reports how the merge ended, or a Stuck reason.
+-// A loom Finalize aborts a conflicted merge and reports its conflicts; a darn Finalize resolves it.
++// The resolver resolves a conflict with the conflict session.
+ func (fz *Finalize) mergeIntoTask(ctx context.Context) (parentMerge, string, error) {
+ 	parent := fz.deps.ParentBranch
+-	if fz.deps.ConflictReroutes {
+-		result, err := fz.taskMerger.MergeIn(parent)
+-		if err != nil {
+-			return parentMerge{}, fmt.Sprintf("merge-in of parent branch %q failed: %v", parent, err), nil
+-		}
+-		if len(result.Conflicts) > 0 {
+-			if _, err := fz.taskMerger.MergeAbort(); err != nil {
+-				return parentMerge{}, "", fmt.Errorf("landingshed: %s: abort the conflicted merge-in of parent branch %q: %w", finalizeName, parent, err)
+-			}
+-			return parentMerge{conflicted: true, conflicts: result.Conflicts}, "", nil
+-		}
+-		return parentMerge{upToDate: result.AlreadyUpToDate}, "", nil
+-	}
+-
+-	startedBefore := fz.sessions.count()
+ 	result, err := fz.resolver.Resolve(ctx, parent, "")
+ 	if err != nil {
+ 		return parentMerge{}, "", fmt.Errorf("landingshed: %s: merge-in against parent branch %q: %w", finalizeName, parent, err)
+@@ -981,7 +890,7 @@ func (fz *Finalize) mergeIntoTask(ctx context.Context) (parentMerge, string, err
+ 	if result.Outcome == mergeresolve.OutcomeStuck {
+ 		return parentMerge{}, result.Reason, nil
+ 	}
+-	return parentMerge{upToDate: result.AlreadyUpToDate, conflicted: fz.sessions.count() > startedBefore}, "", nil
++	return parentMerge{upToDate: result.AlreadyUpToDate}, "", nil
+ }
+ 
+ // judgeParentMerge reads the parent's tip after the merge and the files both sides changed since the merged tip the merge record names.
+diff --git a/internal/landingshed/finalize_gate_test.go b/internal/landingshed/finalize_gate_test.go
+index d69ae15e..01382745 100644
+--- a/internal/landingshed/finalize_gate_test.go
++++ b/internal/landingshed/finalize_gate_test.go
+@@ -380,7 +380,7 @@ func TestFinalize_GateAndFixer(t *testing.T) {
+ 		fx.seats.turns = []func(){fx.turn(t, escalateReport, "h6")}
+ 		outcome, ptr = fx.call(t)
+ 
+-		requireHalt(t, outcome, ptr, fx.reportPath(), "decision D3", "`lym loom decision add`")
++		requireHalt(t, outcome, ptr, fx.reportPath(), "decision D3")
+ 		if got := fx.seats.tables[1].Gate[0].Attempts; got != 1 {
+ 			t.Errorf("gate attempts = %d; want the 1 turn the entry has left", got)
+ 		}
+@@ -426,11 +426,25 @@ func TestFinalize_GateAndFixer(t *testing.T) {
+ 		outcome, ptr := fx.call(t)
+ 
+ 		requireHalt(t, outcome, ptr, fx.reportPath(), "decision D3")
++		if strings.Contains(ptr.Reason, "`lym loom decision add`") {
++			t.Errorf("reason = %q; want no decision verb on a run that does not judge an escalate first", ptr.Reason)
++		}
+ 		if rec, _ := fx.attempts(t); rec.Spent != 0 || rec.Halt != "" {
+ 			t.Errorf("attempt record = %+v; want no spent turn and no halt noted", rec)
+ 		}
+ 	})
+ 
++	t.Run("an escalate report on a run that judges it first halts with the escalate prefix, no hand-back", func(t *testing.T) {
++		fx := newFinalizeGateFixture(t)
++		fx.fz.deps.EscalateJudgedFirst = true
++		fx.scriptGate(failing)
++		fx.seats.turns = []func(){fx.turn(t, escalateReport, "f1")}
++
++		outcome, ptr := fx.call(t)
++
++		requireEscalateHalt(t, outcome, ptr, finalizeName, fx.reportPath(), "decision D3", "`lym loom decision add`")
++	})
++
+ 	t.Run("a re-entry from another row starts at zero attempts while a resume keeps the spent ones", func(t *testing.T) {
+ 		tests := []struct {
+ 			name         string
+diff --git a/internal/landingshed/finalize_integration_test.go b/internal/landingshed/finalize_integration_test.go
+index 7589dba5..648560df 100644
+--- a/internal/landingshed/finalize_integration_test.go
++++ b/internal/landingshed/finalize_integration_test.go
+@@ -138,7 +138,7 @@ func newFinalizeAt(t *testing.T, taskBranch, taskCode, parentCode string, shuttl
+ 
+ // TestFinalize_OverRealHub lands tasks into a parent pair of one hub, a step at a time.
+ //
+-// The first step builds a task pair and a parent pair off the hub, diverges both on conflict.txt (a genuine code-side conflict) and diverges the task pair alone on a second, clean records-side file, runs Finalize with a fake session that writes a real resolution to the conflicted file, which reroutes as a large merge, runs it again, which lands, and asserts that the parent pair's code side afterward carries the task's resolved content and the squash setting took effect there, that the parent pair's records side is left byte-identical -- the records side is not a merge participant, per this task's own no-caller-facing-signature-change-in-fabric-shaped change to Fabric.Merge -- and that no merge record is left behind on either pair.
++// The first step builds a task pair and a parent pair off the hub, diverges both on conflict.txt (a genuine code-side conflict) and diverges the task pair alone on a second, clean records-side file, runs Finalize with a fake session that writes a real resolution to the conflicted file, and lands in that one call, resolving the conflict with one conflict session, and asserts that the parent pair's code side afterward carries the task's resolved content and the squash setting took effect there, that the parent pair's records side is left byte-identical -- the records side is not a merge participant, per this task's own no-caller-facing-signature-change-in-fabric-shaped change to Fabric.Merge -- and that no merge record is left behind on either pair.
+ //
+ // The second step lands a second task into the same parent once, then calls Finalize again on the same pair, and asserts the second call is Done with no second landing commit.
+ // A fresh Finalize over a parent that already carries the task's squashed diff behaves the same way.
+@@ -179,12 +179,8 @@ func TestFinalize_OverRealHub(t *testing.T) {
+ 		// convention for its records side (see e.g. its merge-local integration test).
+ 		parentRecordsBefore := gitkit.RevParse(t, parentRecords, "HEAD")
+ 
+-		// A conflict that needed the conflict session makes the merge large, so Finalize keeps the merge commit and reroutes with nothing landed.
+-		if ptr := shedfake.RequireOutcome(t, fz, shedengine.Stuck); !ptr.Reroute {
+-			t.Errorf("OutputPointer.Reroute = false; want a reroute after a conflict that needed the conflict session")
+-		}
+-		// The next Finalize finds the merge already made and lands.
+-		shedfake.RequireOutcome(t, newFinalizeAt(t, "task", taskCode, parentCode, shuttle, true, nil, nil), shedengine.Done)
++		// One Finalize call resolves the conflict with one conflict session under the parent lock and lands.
++		shedfake.RequireOutcome(t, fz, shedengine.Done)
+ 		if len(shuttle.Specs) != 1 {
+ 			t.Errorf("fake shuttle Run() called %d time(s); want exactly 1 (one conflict-resolution session)", len(shuttle.Specs))
+ 		} else if want := []string{"scribe:prose", "scribe:code-quality", "scribe:golang-testing"}; !slices.Equal(shuttle.Specs[0].Skills, want) {
+diff --git a/internal/landingshed/finalize_merge_test.go b/internal/landingshed/finalize_merge_test.go
+index 920e8cfa..f053e1d9 100644
+--- a/internal/landingshed/finalize_merge_test.go
++++ b/internal/landingshed/finalize_merge_test.go
+@@ -1,12 +1,13 @@
+ //go:build tier0
+ 
+-// finalize_merge_test.go drives Finalize's merge of the parent branch into the task and the judgement of that merge, over a fake task merger, a fake resolver and the gate fixture.
++// finalize_merge_test.go drives Finalize's merge of the parent branch into the task and the judgement of that merge, over a fake resolver and the gate fixture.
+ 
+ package landingshed
+ 
+ import (
+ 	"context"
+ 	"os"
++	"path/filepath"
+ 	"slices"
+ 	"strings"
+ 	"testing"
+@@ -16,119 +17,50 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ )
+ 
+-// fakeTaskMerger is the test's taskMerger: its MergeIn answers a scripted result, conflicts included, and it records whether MergeAbort ran.
+-type fakeTaskMerger struct {
+-	result  fabricengine.MergeResult
+-	err     error
+-	merges  []string
+-	aborted bool
+-	// onMerge, when set, runs at each MergeIn, standing in for the merge commit it makes.
+-	onMerge func()
+-}
+-
+-func (f *fakeTaskMerger) MergeIn(source string) (fabricengine.MergeResult, error) {
+-	f.merges = append(f.merges, source)
+-	if f.onMerge != nil {
+-		f.onMerge()
+-	}
+-	return f.result, f.err
+-}
+-
+-func (f *fakeTaskMerger) MergeAbort() (fabricengine.MergeResult, error) {
+-	f.aborted = true
+-	return fabricengine.MergeResult{}, nil
+-}
+-
+ // TestFinalize_MergeJudgement pins Finalize's merge of the parent branch into the task and the judgement of that merge:
+-// when the merge proceeds to the gate, when it reroutes with no gate run, how a conflict ends for a loom and a darn Finalize, what the parent side is measured from, and what the merge record carries afterwards.
++// every merge runs under the parent lock and proceeds to the gate, a large merge included, what the parent side is measured from, and what the merge record carries afterwards.
+ func TestFinalize_MergeJudgement(t *testing.T) {
+ 	const earlierTip, newTip, taskBase, aligned = "p1", "p2", "b0", "a1"
+-	committed := fabricengine.MergeResult{Committed: true}
+ 	tests := []struct {
+ 		name string
+-		// loom tells Deps.ConflictReroutes; a darn Finalize merges through its resolver, which starts a conflict session when session is set.
+-		loom bool
+-		// largeLands tells Deps.LargeMergeLands.
+-		largeLands bool
+-		merge      fabricengine.MergeResult
+-		session    bool
++		// upToDate is whether the merge finds the task already holding the parent's tip, which moves no head.
++		upToDate bool
+ 		// record is the merge record at entry: "keep" holds earlierTip, "unreadable" does not decode and "absent" is missing.
+ 		record string
+ 		// paths answers ChangedPaths by "from..to".
+ 		paths map[string][]string
+-		// wantReroute is whether the call reroutes with no gate run, and wantInReason what its reason names.
+-		wantReroute  bool
+-		wantInReason string
+-		wantAborted  bool
+ 		// wantChanged are the ChangedPaths calls, in order.
+ 		wantChanged []string
+-		// wantRecord is whether the merge record is rewritten, and wantMergeCommit and wantOverlap what it then carries.
+-		wantRecord      bool
++		// wantMergeCommit and wantOverlap are what the rewritten merge record carries.
+ 		wantMergeCommit string
+ 		wantOverlap     []string
+-		wantUpToDate    bool
+-		// wantNote are the fragments the overlap note holds; nil means no note is written.
+-		wantNote []string
+ 	}{
+ 		{
+-			name: "an up-to-date merge proceeds to the gate", loom: true, merge: fabricengine.MergeResult{AlreadyUpToDate: true}, record: "keep",
+-			wantRecord: true, wantUpToDate: true,
+-		},
+-		{
+-			name: "a loom conflict aborts the merge and reroutes with no gate run", loom: true, merge: fabricengine.MergeResult{Conflicts: []string{"a.go"}}, record: "keep",
+-			wantReroute: true, wantInReason: "a.go", wantAborted: true,
+-		},
+-		{
+-			name: "an unreadable merge record measures the parent side from the task's merge base", loom: true, merge: committed, record: "unreadable",
+-			paths:       map[string][]string{"b0..p2": {"x.go"}, "b0..t1": {"x.go"}},
+-			wantReroute: true, wantInReason: "x.go", wantChanged: []string{"b0..p2", "b0..t1"}, wantRecord: true, wantMergeCommit: "t2", wantOverlap: []string{"x.go"},
+-		},
+-		{
+-			name: "a darn conflict runs the conflict session and reroutes as a large merge", merge: committed, session: true, record: "keep",
+-			wantReroute: true, wantInReason: "conflict session", wantChanged: []string{"p1..p2", "b0..t1"}, wantRecord: true, wantMergeCommit: "t2",
+-			wantNote: []string{"conflict session", "since p1"},
+-		},
+-		{
+-			name: "a darn overlap reroute writes the note from the merged tip the record names", merge: committed, record: "keep",
+-			paths:       map[string][]string{"p1..p2": {"a.go", "b.go"}, "b0..t1": {"b.go", "c.go"}},
+-			wantReroute: true, wantInReason: "b.go", wantChanged: []string{"p1..p2", "b0..t1"}, wantRecord: true, wantMergeCommit: "t2", wantOverlap: []string{"b.go"},
+-			wantNote: []string{"since its tip p1", "- b.go", "git diff p1 "},
++			name: "an up-to-date merge proceeds to the gate", upToDate: true, record: "keep",
+ 		},
+ 		{
+-			name: "a darn overlap reroute with no merge record writes the note from the task's merge base", merge: committed, record: "absent",
++			name: "an unreadable merge record measures the parent side from the task's merge base and lands", record: "unreadable",
+ 			paths:       map[string][]string{"b0..p2": {"x.go"}, "b0..t1": {"x.go"}},
+-			wantReroute: true, wantInReason: "x.go", wantChanged: []string{"b0..p2", "b0..t1"}, wantRecord: true, wantMergeCommit: "t2", wantOverlap: []string{"x.go"},
+-			wantNote: []string{"since its tip b0", "- x.go", "git diff b0 "},
++			wantChanged: []string{"b0..p2", "b0..t1"}, wantMergeCommit: "t2", wantOverlap: []string{"x.go"},
+ 		},
+ 		{
+-			name: "an overlapping parent change reroutes with the merge commit kept", loom: true, merge: committed, record: "keep",
++			name: "an overlapping parent change lands with the merge commit kept", record: "keep",
+ 			paths:       map[string][]string{"p1..p2": {"a.go", "b.go"}, "b0..t1": {"b.go", "c.go"}},
+-			wantReroute: true, wantInReason: "b.go", wantChanged: []string{"p1..p2", "b0..t1"}, wantRecord: true, wantMergeCommit: "t2", wantOverlap: []string{"b.go"},
++			wantChanged: []string{"p1..p2", "b0..t1"}, wantMergeCommit: "t2", wantOverlap: []string{"b.go"},
+ 		},
+ 		{
+-			name: "a non-overlapping parent change proceeds to the gate", loom: true, merge: committed, record: "keep",
++			name: "a non-overlapping parent change proceeds to the gate", record: "keep",
+ 			paths:       map[string][]string{"p1..p2": {"a.go"}, "b0..t1": {"c.go"}},
+-			wantChanged: []string{"p1..p2", "b0..t1"}, wantRecord: true, wantMergeCommit: "t2",
++			wantChanged: []string{"p1..p2", "b0..t1"}, wantMergeCommit: "t2",
+ 		},
+ 		{
+-			name: "a conflict session merge lands to the gate with no note when large merges land", largeLands: true, merge: committed, session: true, record: "keep",
+-			wantChanged: []string{"p1..p2", "b0..t1"}, wantRecord: true, wantMergeCommit: "t2",
+-		},
+-		{
+-			name: "an overlapping parent change lands to the gate with no note when large merges land", largeLands: true, merge: committed, record: "keep",
+-			paths:       map[string][]string{"p1..p2": {"a.go", "b.go"}, "b0..t1": {"b.go", "c.go"}},
+-			wantChanged: []string{"p1..p2", "b0..t1"}, wantRecord: true, wantMergeCommit: "t2", wantOverlap: []string{"b.go"},
+-		},
+-		{
+-			name: "a darn run with no merge record measures the parent side from the task's merge base", merge: committed, record: "absent",
+-			wantChanged: []string{"b0..p2", "b0..t1"}, wantRecord: true, wantMergeCommit: "t2",
++			name: "a run with no merge record measures the parent side from the task's merge base", record: "absent",
++			wantChanged: []string{"b0..p2", "b0..t1"}, wantMergeCommit: "t2",
+ 		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			deps := newTestDeps(t)
+-			deps.ConflictReroutes = tt.loom
+-			deps.LargeMergeLands = tt.largeLands
+ 			head := "t1"
+ 			deps.TaskHead = func() (string, error) { return head, nil }
+ 			deps.MergeBase = func(string) (string, error) { return taskBase, nil }
+@@ -155,63 +87,43 @@ func TestFinalize_MergeJudgement(t *testing.T) {
+ 				}
+ 			}
+ 			gate := newGateFixture(t, "finalize", "go test ./...", nil)
+-			merger := &recordingParentMerger{results: []mergeCallResult{{result: committed}}}
+-			taskMerger := &fakeTaskMerger{result: tt.merge, onMerge: func() {
+-				if len(tt.merge.Conflicts) == 0 && !tt.merge.AlreadyUpToDate {
+-					head = "t2"
+-				}
+-			}}
+-			fz := &Finalize{deps: deps, taskMerger: taskMerger, gate: gate.gate, sessions: &conflictSessions{}, parentOpener: func() (parentMerger, error) { return merger, nil }}
+-			fz.resolver = &eventResolver{events: new([]string), result: mergeresolve.Result{Outcome: mergeresolve.OutcomeResolved}, onResolve: func() {
+-				head = "t2"
+-				if tt.session {
+-					fz.sessions.started.Add(1)
+-				}
+-			}}
++			merger := &recordingParentMerger{results: []mergeCallResult{{result: fabricengine.MergeResult{Committed: true}}}}
++			resolver := &eventResolver{
++				events: new([]string),
++				result: mergeresolve.Result{Outcome: mergeresolve.OutcomeResolved, AlreadyUpToDate: tt.upToDate},
++				lockHeld: func() bool {
++					rec, found, _ := deps.Lock.Store.Read("main")
++					return found && rec.Owner.Slug == "me"
++				},
++				onResolve: func() {
++					if !tt.upToDate {
++						head = "t2"
++					}
++				},
++			}
++			fz := &Finalize{deps: deps, resolver: resolver, gate: gate.gate, guard: newParentGuard(deps), parentOpener: func() (parentMerger, error) { return merger, nil }}
+ 
+ 			outcome, ptr, err := fz.Call(context.Background())
+ 
+ 			if err != nil {
+ 				t.Fatalf("Call() error = %v", err)
+ 			}
+-			if tt.wantReroute {
+-				if outcome != shedengine.Stuck || !ptr.Reroute || ptr.Halt || !strings.Contains(ptr.Reason, tt.wantInReason) {
+-					t.Fatalf("Call() = %q, %+v; want a reroute naming %q", outcome, ptr, tt.wantInReason)
+-				}
+-				if gate.fake.verifyCalls != 0 || len(merger.calls) != 0 {
+-					t.Errorf("verify calls = %d, parent-side merges = %d; want none after a reroute", gate.fake.verifyCalls, len(merger.calls))
+-				}
+-			} else if outcome != shedengine.Done || gate.fake.verifyCalls != 1 {
++			if outcome != shedengine.Done || gate.fake.verifyCalls != 1 {
+ 				t.Fatalf("Call() = %q, %+v with %d verify call(s); want Done after one", outcome, ptr, gate.fake.verifyCalls)
+ 			}
+-			note, noteErr := os.ReadFile(OverlapNotePath(deps.ScratchDir))
+-			if tt.wantNote == nil {
+-				if noteErr == nil {
+-					t.Errorf("overlap note = %q; want none written", note)
+-				}
+-			} else {
+-				for _, fragment := range tt.wantNote {
+-					if !strings.Contains(string(note), fragment) {
+-						t.Errorf("overlap note = %q, %v; want it to hold %q", note, noteErr, fragment)
+-					}
+-				}
++			if !resolver.heldAtMerge {
++				t.Error("the merge-in ran without the parent lock held; want it, and any conflict session it starts, under the lock")
+ 			}
+-			if taskMerger.aborted != tt.wantAborted {
+-				t.Errorf("MergeAbort ran = %v; want %v", taskMerger.aborted, tt.wantAborted)
++			if _, statErr := os.Stat(filepath.Join(deps.ScratchDir, "overlap-note.md")); statErr == nil {
++				t.Error("overlap-note.md exists; want none written")
+ 			}
+ 			if got, want := strings.Join(changed, ","), strings.Join(tt.wantChanged, ","); got != want {
+ 				t.Errorf("ChangedPaths calls = %q; want %q", got, want)
+ 			}
+ 
+ 			rec, found, _ := ReadMergeRecord(deps.MergeRecordPath)
+-			if !tt.wantRecord {
+-				if rec.MergedTip != earlierTip {
+-					t.Errorf("merge record = %+v; want it left as it was", rec)
+-				}
+-				return
+-			}
+-			if !found || rec.MergedTip != newTip || rec.TaskBase != taskBase || rec.TaskHead != "t1" || rec.MergeCommit != tt.wantMergeCommit || rec.UpToDate != tt.wantUpToDate {
+-				t.Errorf("merge record = %+v, %v; want merged tip %s, task base %s, task head t1, merge commit %q, up to date %v", rec, found, newTip, taskBase, tt.wantMergeCommit, tt.wantUpToDate)
++			if !found || rec.MergedTip != newTip || rec.TaskBase != taskBase || rec.TaskHead != "t1" || rec.MergeCommit != tt.wantMergeCommit || rec.UpToDate != tt.upToDate {
++				t.Errorf("merge record = %+v, %v; want merged tip %s, task base %s, task head t1, merge commit %q, up to date %v", rec, found, newTip, taskBase, tt.wantMergeCommit, tt.upToDate)
+ 			}
+ 			if !slices.Equal(rec.Overlap.Files, tt.wantOverlap) {
+ 				t.Errorf("merge record overlap files = %v; want %v", rec.Overlap.Files, tt.wantOverlap)
+diff --git a/internal/landingshed/finalize_test.go b/internal/landingshed/finalize_test.go
+index 4d3f9650..fd1f2887 100644
+--- a/internal/landingshed/finalize_test.go
++++ b/internal/landingshed/finalize_test.go
+@@ -11,6 +11,7 @@ import (
+ 	"fmt"
+ 	"os"
+ 	"path/filepath"
++	"slices"
+ 	"strings"
+ 	"testing"
+ 
+@@ -385,9 +386,12 @@ func TestFinalize_MergeInRequiredRetry(t *testing.T) {
+ 		wantOrder   string
+ 		wantCalls   int
+ 		wantReroute bool
++		// parentMoves makes the parent tip read p2 until the first parent-side merge call and p3 after it, as a code-side commit arriving between the passes does.
++		parentMoves bool
+ 	}{
+-		{"retry lands", mergeCallResult{result: fabricengine.MergeResult{Committed: true}}, shedengine.Done, "merge-in,records,merge,merge-in,records,merge,mark,push", 2, false},
+-		{"retry also required stays Stuck", mergeCallResult{err: &fabricengine.ErrMergeInRequired{}}, shedengine.Stuck, "merge-in,records,merge,merge-in,records,merge", 2, false},
++		{"retry lands", mergeCallResult{result: fabricengine.MergeResult{Committed: true}}, shedengine.Done, "merge-in,records,merge,merge-in,records,merge,mark,push", 2, false, false},
++		{"retry also required stays Stuck", mergeCallResult{err: &fabricengine.ErrMergeInRequired{}}, shedengine.Stuck, "merge-in,records,merge,merge-in,records,merge", 2, false, false},
++		{"a code-side parent commit between the passes lands through the retry", mergeCallResult{result: fabricengine.MergeResult{Committed: true}}, shedengine.Done, "merge-in,records,merge,merge-in,records,merge,mark,push", 2, false, true},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -404,9 +408,27 @@ func TestFinalize_MergeInRequiredRetry(t *testing.T) {
+ 				results: []mergeCallResult{{err: &fabricengine.ErrMergeInRequired{Source: deps.TaskBranch}}, tt.secondTry},
+ 				order:   &order,
+ 			}
++			var changed []string
++			if tt.parentMoves {
++				deps.MergeBase = func(string) (string, error) { return "b0", nil }
++				deps.ReadParentTips = func(bool) (fabricengine.ParentTips, error) {
++					tip := "p2"
++					if len(merger.calls) > 0 {
++						tip = "p3"
++					}
++					return fabricengine.ParentTips{Local: tip, Upstream: tip, Relation: fabricengine.ParentEqual}, nil
++				}
++				deps.ChangedPaths = func(from, to string) ([]string, error) {
++					changed = append(changed, from+".."+to)
++					return []string{"x.go"}, nil
++				}
++			}
+ 			fz := &Finalize{deps: deps, resolver: res, guard: newParentGuard(deps), parentOpener: func() (parentMerger, error) { return merger, nil }}
+ 
+ 			ptr := shedfake.RequireOutcome(t, fz, tt.wantOutcome)
++			if tt.parentMoves && !slices.Contains(changed, "p2..p3") {
++				t.Errorf("ChangedPaths calls = %v; want the retry to read the parent's changes since p2 as a p2..p3 call", changed)
++			}
+ 			if len(merger.calls) != tt.wantCalls {
+ 				t.Fatalf("parent-side merge calls = %d; want %d", len(merger.calls), tt.wantCalls)
+ 			}
+diff --git a/internal/landingshed/fixerrun.go b/internal/landingshed/fixerrun.go
+index c8af795e..2a34b5e6 100644
+--- a/internal/landingshed/fixerrun.go
++++ b/internal/landingshed/fixerrun.go
+@@ -22,6 +22,9 @@ import (
+ // LandingStopPrefix opens the reason of every halt a landing row hands back to the orch, so the hand-back predicate finds it.
+ const LandingStopPrefix = "landing stop: "
+ 
++// EscalateStopPrefix opens the reason of a loom or darn merge fixer's escalate halt, which goes to the arbiter first and is no hand-back.
++const EscalateStopPrefix = "landing escalate: "
++
+ // fixerGateName labels the fixer session's one gate entry.
+ const fixerGateName = "landing"
+ 
+@@ -293,8 +296,11 @@ func (s *fixerSession) judge() (shuttleengine.GateResult, error) {
+ }
+ 
+ // haltReason words the halt a run that did not end fixed ends the row with.
+-// Each reason opens with LandingStopPrefix and ends with a way forward, and is one line.
+-func (o fixerOutcome) haltReason(row string) string {
++// Every reason except a loom or darn escalate opens with LandingStopPrefix and ends with a way forward, and is one line.
++// An escalate end with escalateJudgedFirst true opens with EscalateStopPrefix instead and names the decision verb as its way forward;
++// with it false the way forward is the conflict settled on the task branch, since a pawl run refuses the decision verb.
++func (o fixerOutcome) haltReason(row string, escalateJudgedFirst bool) string {
++	prefix := LandingStopPrefix
+ 	var cause, wayForward string
+ 	switch o.end {
+ 	case fixerEndSpent:
+@@ -302,7 +308,12 @@ func (o fixerOutcome) haltReason(row string) string {
+ 		wayForward = "fix the failure on the task branch, then `lym loom resume`"
+ 	case fixerEndEscalate:
+ 		cause = fmt.Sprintf("the fixer of %s found a parent change that conflicts with a decision of the record; report: %s; conflict: %s", row, o.reportPath, singleLine(o.conflict))
+-		wayForward = "add the deciding decision with `lym loom decision add` in the task worktree, then `lym loom resume`"
++		if escalateJudgedFirst {
++			prefix = EscalateStopPrefix
++			wayForward = "record the deciding decision with `lym loom decision add` in the task worktree, then `lym loom resume`"
++		} else {
++			wayForward = "settle the conflict on the task branch, then `lym loom resume`"
++		}
+ 	case fixerEndTimeout, fixerEndNoReport, fixerEndDirty:
+ 		cause = fmt.Sprintf("the fixer session of %s ended without a usable turn (%s); session log: %s; report: %s", row, o.end, o.sessionLog, o.reportPath)
+ 		wayForward = "fix or clean the task branch, then `lym loom resume`"
+@@ -312,7 +323,7 @@ func (o fixerOutcome) haltReason(row string) string {
+ 	default:
+ 		return ""
+ 	}
+-	return LandingStopPrefix + cause + "; way forward: " + wayForward
++	return prefix + cause + "; way forward: " + wayForward
+ }
+ 
+ // singleLine collapses every run of whitespace in text, line breaks included, to one space.
+diff --git a/internal/landingshed/fixerrun_test.go b/internal/landingshed/fixerrun_test.go
+index 6bc26e39..c51bf59a 100644
+--- a/internal/landingshed/fixerrun_test.go
++++ b/internal/landingshed/fixerrun_test.go
+@@ -154,13 +154,14 @@ func TestFixerRun_Outcomes(t *testing.T) {
+ 
+ 	failing := verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 1}
+ 	tests := []struct {
+-		name       string
+-		start      FixerAttempts
+-		setup      func(t *testing.T, fx *fixerRunFixture)
+-		wantEnd    fixerEnd
+-		wantSpent  int
+-		wantTurns  int
+-		wantReason []string
++		name        string
++		start       FixerAttempts
++		setup       func(t *testing.T, fx *fixerRunFixture)
++		wantEnd     fixerEnd
++		wantSpent   int
++		wantTurns   int
++		wantReason  []string
++		avoidReason []string
+ 	}{
+ 		{
+ 			name: "fixed over a passing gate with an unmoved remote tip",
+@@ -175,7 +176,8 @@ func TestFixerRun_Outcomes(t *testing.T) {
+ 				fx.seats.turns = []func(){func() { fx.writeReport(t, escalateReport) }}
+ 			},
+ 			wantEnd: fixerEndEscalate, wantSpent: 0, wantTurns: 1,
+-			wantReason: []string{LandingStopPrefix, "decision D3", "`lym loom decision add`", "`lym loom resume`"},
++			wantReason:  []string{LandingStopPrefix, "settle the conflict on the task branch", "decision D3", "`lym loom resume`"},
++			avoidReason: []string{"`lym loom decision add`"},
+ 		},
+ 		{
+ 			name: "a failing gate re-prompts, and the last turn's failure is spent",
+@@ -302,13 +304,33 @@ func TestFixerRun_Outcomes(t *testing.T) {
+ 			if outcome.reportPath != fx.reportPath() {
+ 				t.Errorf("run() report path = %q; want %q", outcome.reportPath, fx.reportPath())
+ 			}
+-			reason := outcome.haltReason(fixerTestRow)
++			reason := outcome.haltReason(fixerTestRow, false)
++			judged := outcome.haltReason(fixerTestRow, true)
+ 			if tt.wantEnd == fixerEndFixed {
+-				if reason != "" {
+-					t.Errorf("haltReason() = %q for a fixed run; want none", reason)
++				if reason != "" || judged != "" {
++					t.Errorf("haltReason() = %q, %q for a fixed run; want none", reason, judged)
+ 				}
+ 				return
+ 			}
++			for _, avoid := range tt.avoidReason {
++				if strings.Contains(reason, avoid) {
++					t.Errorf("haltReason() = %q; want it to omit %q", reason, avoid)
++				}
++			}
++			if tt.wantEnd != fixerEndEscalate {
++				if judged != reason {
++					t.Errorf("haltReason(judged first) = %q; want the unjudged reason %q", judged, reason)
++				}
++			} else {
++				if !strings.HasPrefix(judged, EscalateStopPrefix) {
++					t.Errorf("haltReason(judged first) = %q; want the prefix %q", judged, EscalateStopPrefix)
++				}
++				for _, want := range []string{outcome.reportPath, fixerTestRow, "decision D3", "`lym loom decision add`", "`lym loom resume`"} {
++					if !strings.Contains(judged, want) {
++						t.Errorf("haltReason(judged first) = %q; want it to contain %q", judged, want)
++					}
++				}
++			}
+ 			for _, want := range tt.wantReason {
+ 				if !strings.Contains(reason, want) {
+ 					t.Errorf("haltReason() = %q; want it to contain %q", reason, want)
+diff --git a/internal/landingshed/handback.go b/internal/landingshed/handback.go
+index 4246ab06..bd6a240d 100644
+--- a/internal/landingshed/handback.go
++++ b/internal/landingshed/handback.go
+@@ -1,4 +1,4 @@
+-// handback.go implements HandsBack, the one predicate every driver reads to tell a landing halt that goes to the orch from a stop the recipe routes itself.
++// handback.go implements HandsBack and EscalateHalt, the predicates every driver reads to tell a landing halt that goes to the orch, or a loom or darn escalate halt that goes to the arbiter first, from a stop the recipe routes itself.
+ 
+ package landingshed
+ 
+@@ -22,3 +22,14 @@ func HandsBack(producer, reason string) bool {
+ 	}
+ 	return false
+ }
++
++// EscalateHalt reports whether a blocked stop at producer with the persisted reason is a loom or darn merge fixer's escalate halt.
++// A stop at Parent-Align, Finalize or Merge-In, the row's name before its rename, whose reason opens with EscalateStopPrefix is one.
++// Such a halt is no hand-back: the arbiter judges it first, and batten's binary re-step leaves it alone.
++func EscalateHalt(producer, reason string) bool {
++	switch producer {
++	case parentAlignName, retiredMergeInName, finalizeName:
++		return strings.HasPrefix(reason, EscalateStopPrefix)
++	}
++	return false
++}
+diff --git a/internal/landingshed/handback_test.go b/internal/landingshed/handback_test.go
+index c5a1127b..87b1d0b0 100644
+--- a/internal/landingshed/handback_test.go
++++ b/internal/landingshed/handback_test.go
+@@ -14,24 +14,29 @@ func TestHandsBack(t *testing.T) {
+ 	t.Parallel()
+ 
+ 	tests := []struct {
+-		name     string
+-		producer string
+-		reason   string
+-		want     bool
++		name         string
++		producer     string
++		reason       string
++		want         bool
++		wantEscalate bool
+ 	}{
+-		{"LandingStopAtParentAlign", "Parent-Align", LandingStopPrefix + "the fixer escalated; way forward: resolve it, then `lym loom resume`", true},
+-		{"LandingStopAtMergeIn", "Merge-In", LandingStopPrefix + "the fixer escalated; way forward: resolve it, then `lym loom resume`", true},
+-		{"LandingStopAtFinalize", "Finalize", LandingStopPrefix + "the fixer's change is over the caps; way forward: review it", true},
+-		{"UndecodableAttemptRecordAtParentAlign", "Parent-Align", LandingStopPrefix + "the fixer attempt record of Parent-Align does not decode: p; way forward: remove p", true},
+-		{"UndecodableAttemptRecordAtMergeIn", "Merge-In", LandingStopPrefix + "the fixer attempt record of Merge-In does not decode: p; way forward: remove p", true},
+-		{"UndecodableAttemptRecordAtFinalize", "Finalize", LandingStopPrefix + "the fixer attempt record of Finalize does not decode: p; way forward: remove p", true},
+-		{"LockRecheckAtFinalize", "Finalize", LandingStopPrefix + "the parent lock on \"main\" no longer names this run; nothing was landed", true},
+-		{"RerouteCapAtFinalize", "Finalize", shedengine.ReasonRerouteCapReached + ": Finalize rerouted to Parent-Align 3 times since its last done; way forward: x", true},
+-		{"RerouteCapAtWebster", "Webster", shedengine.ReasonRerouteCapReached + ": Webster rerouted to Plan-Write 3 times since its last done; way forward: x", false},
+-		{"RerouteCapAtParentAlign", "Parent-Align", shedengine.ReasonRerouteCapReached + ": Parent-Align rerouted to Webster 3 times since its last done; way forward: x", false},
+-		{"RerouteCapAtMergeIn", "Merge-In", shedengine.ReasonRerouteCapReached + ": Merge-In rerouted to Webster 3 times since its last done; way forward: x", false},
+-		{"LandingStopPrefixAtOtherRow", "Describe", LandingStopPrefix + "the fixer escalated", false},
+-		{"UnrelatedReasonAtFinalize", "Finalize", "dirty parent: the parent's code checkout has tracked changes", false},
++		{"LandingStopAtParentAlign", "Parent-Align", LandingStopPrefix + "the fixer escalated; way forward: resolve it, then `lym loom resume`", true, false},
++		{"LandingStopAtMergeIn", "Merge-In", LandingStopPrefix + "the fixer escalated; way forward: resolve it, then `lym loom resume`", true, false},
++		{"LandingStopAtFinalize", "Finalize", LandingStopPrefix + "the fixer's change is over the caps; way forward: review it", true, false},
++		{"UndecodableAttemptRecordAtParentAlign", "Parent-Align", LandingStopPrefix + "the fixer attempt record of Parent-Align does not decode: p; way forward: remove p", true, false},
++		{"UndecodableAttemptRecordAtMergeIn", "Merge-In", LandingStopPrefix + "the fixer attempt record of Merge-In does not decode: p; way forward: remove p", true, false},
++		{"UndecodableAttemptRecordAtFinalize", "Finalize", LandingStopPrefix + "the fixer attempt record of Finalize does not decode: p; way forward: remove p", true, false},
++		{"LockRecheckAtFinalize", "Finalize", LandingStopPrefix + "the parent lock on \"main\" no longer names this run; nothing was landed", true, false},
++		{"RerouteCapAtFinalize", "Finalize", shedengine.ReasonRerouteCapReached + ": Finalize rerouted to Parent-Align 3 times since its last done; way forward: x", true, false},
++		{"RerouteCapAtWebster", "Webster", shedengine.ReasonRerouteCapReached + ": Webster rerouted to Plan-Write 3 times since its last done; way forward: x", false, false},
++		{"RerouteCapAtParentAlign", "Parent-Align", shedengine.ReasonRerouteCapReached + ": Parent-Align rerouted to Webster 3 times since its last done; way forward: x", false, false},
++		{"RerouteCapAtMergeIn", "Merge-In", shedengine.ReasonRerouteCapReached + ": Merge-In rerouted to Webster 3 times since its last done; way forward: x", false, false},
++		{"LandingStopPrefixAtOtherRow", "Describe", LandingStopPrefix + "the fixer escalated", false, false},
++		{"UnrelatedReasonAtFinalize", "Finalize", "dirty parent: the parent's code checkout has tracked changes", false, false},
++		{"EscalateAtParentAlign", "Parent-Align", EscalateStopPrefix + "the fixer escalated; way forward: record the decision", false, true},
++		{"EscalateAtMergeIn", "Merge-In", EscalateStopPrefix + "the fixer escalated; way forward: record the decision", false, true},
++		{"EscalateAtFinalize", "Finalize", EscalateStopPrefix + "the fixer escalated; way forward: record the decision", false, true},
++		{"EscalateAtOtherRow", "Describe", EscalateStopPrefix + "the fixer escalated", false, false},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -39,6 +44,9 @@ func TestHandsBack(t *testing.T) {
+ 			if got := HandsBack(tt.producer, tt.reason); got != tt.want {
+ 				t.Errorf("HandsBack(%q, %q) = %v; want %v", tt.producer, tt.reason, got, tt.want)
+ 			}
++			if got := EscalateHalt(tt.producer, tt.reason); got != tt.wantEscalate {
++				t.Errorf("EscalateHalt(%q, %q) = %v; want %v", tt.producer, tt.reason, got, tt.wantEscalate)
++			}
+ 		})
+ 	}
+ }
+diff --git a/internal/landingshed/overlapnote.go b/internal/landingshed/overlapnote.go
+deleted file mode 100644
+index 3aace980..00000000
+--- a/internal/landingshed/overlapnote.go
++++ /dev/null
+@@ -1,34 +0,0 @@
+-// overlapnote.go implements the overlap note a darn Finalize writes when a large merge reroutes the run, which the re-entered review perch reads as its review input.
+-
+-package landingshed
+-
+-import (
+-	"fmt"
+-	"path/filepath"
+-	"strings"
+-)
+-
+-const overlapNoteFile = "overlap-note.md"
+-
+-// OverlapNotePath is the overlap note's path in scratchDir.
+-func OverlapNotePath(scratchDir string) string {
+-	return filepath.Join(scratchDir, overlapNoteFile)
+-}
+-
+-// WriteOverlapNote writes the note naming the parent's changes to the overlapping files at path, creating its directory and replacing an earlier note atomically.
+-// rec.ParentBranch is the branch the changes are on and rec.MergedTip the parent tip they are read since.
+-// files are the paths both sides changed, and the note gives the command that reads the parent's changes to them.
+-func WriteOverlapNote(path string, rec MergeRecord, files []string) error {
+-	var note strings.Builder
+-	fmt.Fprintf(&note, "# Parent changes to review\n\nThe merge of parent branch %q was large, so the run went back to review.\n", rec.ParentBranch)
+-	if len(files) == 0 {
+-		fmt.Fprintf(&note, "The merge needed the conflict session; the parent's changes since %s are the ones to review.\n", rec.MergedTip)
+-		return writeBytesAtomic(path, "overlap-note", []byte(note.String()))
+-	}
+-	fmt.Fprintf(&note, "The parent changed these files the task changed too, since its tip %s:\n\n", rec.MergedTip)
+-	for _, file := range files {
+-		fmt.Fprintf(&note, "- %s\n", file)
+-	}
+-	fmt.Fprintf(&note, "\nRead the parent's changes to them with `git diff %s %s -- %s`.\n", rec.MergedTip, rec.ParentBranch, strings.Join(files, " "))
+-	return writeBytesAtomic(path, "overlap-note", []byte(note.String()))
+-}
+diff --git a/internal/landingshed/parentalign.go b/internal/landingshed/parentalign.go
+index 481706ad..75e30df3 100644
+--- a/internal/landingshed/parentalign.go
++++ b/internal/landingshed/parentalign.go
+@@ -119,6 +119,7 @@ func NewParentAlign(deps Deps) (*ParentAlign, error) {
+ // It writes nothing in the parent pair and holds no parent lock across the merge; a paused lock wait and an unreadable lock record for the local-tip read are Stuck with Halt, so the run stops at this row.
+ // After the merge and the `landing` gate it aligns: it runs the merge fixer when the parent brought in commits or the gate fails,
+ // and every halt of that alignment is a Stuck with Halt whose reason opens with LandingStopPrefix.
++// A fixer's escalate on a loom or darn run (Deps.EscalateJudgedFirst) opens with EscalateStopPrefix instead.
+ // A failed record write and every infrastructure fault are errors.
+ func (m *ParentAlign) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error) {
+ 	if err := entryErr(ctx, parentAlignName); err != nil {
+@@ -389,7 +390,7 @@ func (m *ParentAlign) align(ctx context.Context, tip, mergeCommit string, gateRe
+ 		}
+ 		m.attempts = updated
+ 	}
+-	return m.haltStop(ctx, outcome.haltReason(parentAlignName))
++	return m.haltStop(ctx, outcome.haltReason(parentAlignName, m.deps.EscalateJudgedFirst))
+ }
+ 
+ // alignError returns err from Call, or the cancellation error when ctx is cancelled.
+@@ -416,7 +417,7 @@ func (m *ParentAlign) haltSpent(ctx context.Context, gateReason string) (shedeng
+ 	if found {
+ 		log = failure.LogPath
+ 	}
+-	return m.haltStop(ctx, fixerOutcome{end: fixerEndSpent, failureLog: log}.haltReason(parentAlignName))
++	return m.haltStop(ctx, fixerOutcome{end: fixerEndSpent, failureLog: log}.haltReason(parentAlignName, m.deps.EscalateJudgedFirst))
+ }
+ 
+ // judgeFixerChange judges the entry's fixer change, from its baseline to HEAD, against the caps when no review follows Parent-Align.
+diff --git a/internal/landingshed/parentalign_fixer_test.go b/internal/landingshed/parentalign_fixer_test.go
+index a3495a93..a9702861 100644
+--- a/internal/landingshed/parentalign_fixer_test.go
++++ b/internal/landingshed/parentalign_fixer_test.go
+@@ -80,6 +80,22 @@ func requireHalt(t *testing.T, outcome shedengine.Outcome, ptr shedengine.Output
+ 	return ptr.Reason
+ }
+ 
++// requireEscalateHalt asserts the call ended in a halting Stuck whose reason opens with EscalateStopPrefix, no hand-back for the orch, and holds every fragment.
++func requireEscalateHalt(t *testing.T, outcome shedengine.Outcome, ptr shedengine.OutputPointer, producer string, fragments ...string) {
++	t.Helper()
++	if outcome != shedengine.Stuck || !ptr.Halt || !strings.HasPrefix(ptr.Reason, EscalateStopPrefix) {
++		t.Fatalf("Call() = %q, %+v; want a halting Stuck opening with %q", outcome, ptr, EscalateStopPrefix)
++	}
++	for _, want := range fragments {
++		if !strings.Contains(ptr.Reason, want) {
++			t.Errorf("reason = %q; want it to contain %q", ptr.Reason, want)
++		}
++	}
++	if HandsBack(producer, ptr.Reason) || !EscalateHalt(producer, ptr.Reason) {
++		t.Errorf("HandsBack(%q) = %v, EscalateHalt = %v for %q; want false and true", producer, HandsBack(producer, ptr.Reason), EscalateHalt(producer, ptr.Reason), ptr.Reason)
++	}
++}
++
+ // resumeAfterMerge readies the fixture for a resumed Merge-In whose merge is already up to date, so the merge base is now the merged tip.
+ func (fx *mergeInFixture) resumeAfterMerge() {
+ 	fx.mergeBase = "p1"
+@@ -182,6 +198,9 @@ func TestMergeIn_Fixer(t *testing.T) {
+ 		outcome, ptr := fx.call(t)
+ 
+ 		requireHalt(t, outcome, ptr, fx.fixerReportPath(), "decision D3")
++		if strings.Contains(ptr.Reason, "`lym loom decision add`") {
++			t.Errorf("reason = %q; want no decision verb on a run that does not judge an escalate first", ptr.Reason)
++		}
+ 		if rec, _ := fx.attemptsOnDisk(t); rec.Spent != 0 || rec.AlignFrom != "b0" {
+ 			t.Errorf("attempt record = %+v; want no spent turn and the fork point b0", rec)
+ 		}
+@@ -196,6 +215,18 @@ func TestMergeIn_Fixer(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("escalate on a run that judges it first halts with the escalate prefix, no hand-back", func(t *testing.T) {
++		t.Parallel()
++		fx := newMergeInFixture(t)
++		brought(fx)
++		fx.m.deps.EscalateJudgedFirst = true
++		fx.seats.turns = []func(){fx.fixerTurn(t, escalateReport, "t2")}
++
++		outcome, ptr := fx.call(t)
++
++		requireEscalateHalt(t, outcome, ptr, parentAlignName, fx.fixerReportPath(), "decision D3", "`lym loom decision add`")
++	})
++
+ 	t.Run("a first Merge-In that stops with an error after the merge still spawns the fixer when resumed", func(t *testing.T) {
+ 		t.Parallel()
+ 		fx := newMergeInFixture(t)
+diff --git a/internal/loomcli/arm.go b/internal/loomcli/arm.go
+index 55cb5613..73cea6d1 100644
+--- a/internal/loomcli/arm.go
++++ b/internal/loomcli/arm.go
+@@ -43,6 +43,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/frictionengine"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/hubreconcile"
++	"github.com/Knatte18/loomyard/internal/landingshed"
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
+@@ -343,6 +344,10 @@ func (c *loomCLI) specFor(verb string) shedverbs.Spec {
+ 		spec.Hooks.ConsumeAttempt = c.loomConsumeAttempt
+ 		spec.GotoGuard = c.settledGuard()
+ 	}
++	if c.recipe == shedrun.RecipeLoom || c.recipe == shedrun.RecipeDarn {
++		// A fixer escalate halt goes to the arbiter first on loom and darn runs, so a driver's build re-launch leaves it alone.
++		spec.RestepHold = landingshed.EscalateHalt
++	}
+ 	spec.Routing = c.routing
+ 
+ 	// BuildShed is filled per verb, never left generic: step drives c.buildLoomShed, which
+diff --git a/internal/loomcli/cli_test.go b/internal/loomcli/cli_test.go
+index 9535f81a..e2db40e3 100644
+--- a/internal/loomcli/cli_test.go
++++ b/internal/loomcli/cli_test.go
+@@ -16,6 +16,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+ 	"github.com/Knatte18/loomyard/internal/frictionengine"
++	"github.com/Knatte18/loomyard/internal/landingshed"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/shedbuild"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+@@ -402,3 +403,37 @@ func TestPauseCmd_BareLoomPauseRefusesNamingBothWaysForward(t *testing.T) {
+ 		t.Errorf("status file after a refused bare pause = %q, %v; want it unchanged: %q", after, err, before)
+ 	}
+ }
++
++// TestSpecFor_RestepHold asserts specFor tells loom and darn the escalate-halt check as RestepHold, and pawl and a receiver with no recipe none.
++func TestSpecFor_RestepHold(t *testing.T) {
++	t.Parallel()
++	tests := []struct {
++		recipe   string
++		told     bool
++		producer string
++		reason   string
++		want     bool
++	}{
++		{shedrun.RecipeLoom, true, "Finalize", landingshed.EscalateStopPrefix + "the fixer needs a decision", true},
++		{shedrun.RecipeLoom, true, "Finalize", "a plain reason", false},
++		{shedrun.RecipeDarn, true, "Parent-Align", landingshed.EscalateStopPrefix + "the fixer needs a decision", true},
++		{shedrun.RecipeDarn, true, "Parent-Align", "a plain reason", false},
++		{shedrun.RecipePawl, false, "", "", false},
++		{"", false, "", "", false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.recipe+"/"+tt.reason, func(t *testing.T) {
++			t.Parallel()
++			c := &loomCLI{runID: shedrun.SelfRunID, recipe: tt.recipe}
++			spec := c.specFor("status")
++			if (spec.RestepHold != nil) != tt.told {
++				t.Fatalf("specFor(status).RestepHold told = %v; want %v", spec.RestepHold != nil, tt.told)
++			}
++			if tt.told {
++				if got := spec.RestepHold(tt.producer, tt.reason); got != tt.want {
++					t.Errorf("RestepHold(%q, %q) = %v; want %v", tt.producer, tt.reason, got, tt.want)
++				}
++			}
++		})
++	}
++}
+diff --git a/internal/loomcli/darnwiring.go b/internal/loomcli/darnwiring.go
+index b94343aa..2a899073 100644
+--- a/internal/loomcli/darnwiring.go
++++ b/internal/loomcli/darnwiring.go
+@@ -235,8 +235,6 @@ func (c *loomCLI) wireDarn(location *lymcwd.Location, stencilsDir, specsDir, fri
+ 		return loomrecipe.DarnRouting(budgets)
+ 	})
+ 	c.env.Darn = darnDeps(location, c.runID)
+-	// The overlap note Finalize writes on a large-merge reroute is the Code-Bouncer's review input.
+-	c.env.ReviewInput = overlapNoteInput(loomengine.LoomScratchDir(location))
+ 	// The history seam turns the Darn-Write row's "discussion" gate into the darn gate, whose commit snapshots the board entry the perch reads.
+ 	c.env.DiscussionHistory = discussionHistory(location)
+ 	c.env.CommitDiscussion = func() error { return commitDarnDiscussion(location) }
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index b094da22..34eb0e9c 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -14,7 +14,7 @@
+ // A running shed also watches the land request's directory, so a request wakes Beam-Await at once.
+ // Beam-Describe writes the change description from the beam's board entry and the commits the beam adds over the parent branch its pair records.
+ // The perch's budget is `loom.yaml`'s Code-Review one, and a budget of 0 turns Parent-Align's review off as for a loom run.
+-// Its Finalize reads the hub's `finalize` gate key over the whole merged tree, lets a large merge go on to the gate in place of a reroute, and halts for the orch on a fixer that is spent or over its caps.
++// Its Finalize reads the hub's `finalize` gate key over the whole merged tree and halts for the orch on a fixer that is spent or over its caps.
+ // A land check backstops the re-check: Finalize halts, behind its own prefix, while an open member or a pair forked from the beam still works, reading `pawlLandBlockers` and naming the beam's parent worktree as where a cancel runs.
+ //
+ // # Start
+diff --git a/internal/loomcli/drivewiring.go b/internal/loomcli/drivewiring.go
+index d3cabea1..6c029492 100644
+--- a/internal/loomcli/drivewiring.go
++++ b/internal/loomcli/drivewiring.go
+@@ -25,6 +25,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/friction"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
++	"github.com/Knatte18/loomyard/internal/landingshed"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/loomshed"
+@@ -125,12 +126,14 @@ func tacklerFor(dirs configengine.Dirs, recipe string, reg modelspec.Registry) (
+ }
+ 
+ // loomArbiterSeam builds the arbiter seam loom hands the shed driver.
+-// Merriam reports a batch it cannot carry on only as a stuck outcome, so the arbiter, not the tackler, is the first to judge a blocked stop at the Webster row before it reaches the parent; no other row is marked.
++// Merriam reports a batch it cannot carry on only as a stuck outcome, and a loom or darn landing merge fixer reports an escalate as a halt of its own, so the arbiter, not the tackler, is the first to judge a blocked stop at the Webster row or a landing escalate before it reaches the parent; no other stop is marked.
+ func loomArbiterSeam(arbiterDeps shedarbiter.Deps, runID string) *sheddriver.ArbiterSeam {
+ 	seam := shedarbiter.Seam(arbiterDeps, runID, func(producer string) bool {
+ 		return arbiterstop.EscalationEligible(producer, arbiterDeps.Stop)
+ 	})
+-	seam.JudgesFirst = func(producer string) bool { return producer == loomshed.NameWebster }
++	seam.JudgesFirst = func(producer, reason string) bool {
++		return producer == loomshed.NameWebster || landingshed.EscalateHalt(producer, reason)
++	}
+ 	return seam
+ }
+ 
+diff --git a/internal/loomcli/drivewiring_test.go b/internal/loomcli/drivewiring_test.go
+index b2b70d6c..17481d31 100644
+--- a/internal/loomcli/drivewiring_test.go
++++ b/internal/loomcli/drivewiring_test.go
+@@ -11,6 +11,7 @@ import (
+ 	"strings"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/landingshed"
+ 	"github.com/Knatte18/loomyard/internal/loomshed"
+ 	"github.com/Knatte18/loomyard/internal/shedarbiter"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+@@ -71,28 +72,33 @@ func TestLoomPark(t *testing.T) {
+ 	}
+ }
+ 
+-// TestLoomArbiterSeam_JudgesFirst covers the arbiter seam loom hands the driver: its arbiter-first marking is set, the Webster row is marked, and no other producer is.
++// TestLoomArbiterSeam_JudgesFirst covers the arbiter seam loom hands the driver: its arbiter-first marking is set, the Webster row is marked with any reason, a landing row is marked only for an escalate reason, and no other stop is.
+ func TestLoomArbiterSeam_JudgesFirst(t *testing.T) {
+ 	t.Parallel()
+ 
+ 	tests := []struct {
+ 		producer string
++		reason   string
+ 		want     bool
+ 	}{
+-		{loomshed.NameWebster, true},
+-		{loomshed.NameDarnWrite, false},
+-		{loomshed.NameFinalize, false},
+-		{"", false},
++		{loomshed.NameWebster, "", true},
++		{loomshed.NameWebster, "stuck: a batch failed", true},
++		{loomshed.NameFinalize, landingshed.EscalateStopPrefix + "the fixer needs a decision", true},
++		{loomshed.NameParentAlign, landingshed.EscalateStopPrefix + "the fixer needs a decision", true},
++		{loomshed.NameFinalize, landingshed.LandingStopPrefix + "a cap was reached", false},
++		{loomshed.NameFinalize, "a plain reason", false},
++		{loomshed.NameDarnWrite, landingshed.EscalateStopPrefix + "the fixer needs a decision", false},
++		{"", "", false},
+ 	}
+ 	seam := loomArbiterSeam(shedarbiter.Deps{}, "run-1")
+ 	if seam.JudgesFirst == nil {
+ 		t.Fatal("loomArbiterSeam().JudgesFirst = nil; want the arbiter-first marking")
+ 	}
+ 	for _, tt := range tests {
+-		t.Run(tt.producer, func(t *testing.T) {
++		t.Run(tt.producer+"/"+tt.reason, func(t *testing.T) {
+ 			t.Parallel()
+-			if got := seam.JudgesFirst(tt.producer); got != tt.want {
+-				t.Errorf("JudgesFirst(%q) = %v; want %v", tt.producer, got, tt.want)
++			if got := seam.JudgesFirst(tt.producer, tt.reason); got != tt.want {
++				t.Errorf("JudgesFirst(%q, %q) = %v; want %v", tt.producer, tt.reason, got, tt.want)
+ 			}
+ 		})
+ 	}
+diff --git a/internal/loomcli/landingdeps.go b/internal/loomcli/landingdeps.go
+index f1f8703b..1a13677f 100644
+--- a/internal/loomcli/landingdeps.go
++++ b/internal/loomcli/landingdeps.go
+@@ -90,17 +90,16 @@ func landingDeps(
+ 		}
+ 	}
+ 	return landingshed.Deps{
+-		ParentName:      parentName,
+-		LanguageSkills:  languageSkills,
+-		WorktreeRoot:    l.WorktreePath(),
+-		TaskBranch:      taskBranch,
+-		ParentBranch:    parentBranch,
+-		DescriptionPath: summaryparser.Path(loomengine.LandingDir(l)),
+-		// Only a loom run's Finalize reroutes a conflict to Parent-Align; a darn or pawl run resolves it under the lock, since neither declares the reroute.
+-		ConflictReroutes: recipe == shedrun.RecipeLoom,
+-		StencilsDir:      geom.StencilsDir,
+-		ScratchDir:       loomengine.LoomScratchDir(l),
+-		PushSkipped:      pushSkipped,
++		ParentName:          parentName,
++		LanguageSkills:      languageSkills,
++		WorktreeRoot:        l.WorktreePath(),
++		TaskBranch:          taskBranch,
++		ParentBranch:        parentBranch,
++		DescriptionPath:     summaryparser.Path(loomengine.LandingDir(l)),
++		StencilsDir:         geom.StencilsDir,
++		ScratchDir:          loomengine.LoomScratchDir(l),
++		PushSkipped:         pushSkipped,
++		EscalateJudgedFirst: recipe == shedrun.RecipeLoom || recipe == shedrun.RecipeDarn,
+ 		OpenFabric: func() (*fabricengine.Fabric, error) {
+ 			return fabricengine.Open(l)
+ 		},
+@@ -262,8 +261,6 @@ func landingDeps(
+ 		CodeReviewOff:   codeReviewOff(l, recipe),
+ 		RerouteReviewed: reviewFollowsReroute,
+ 		LandBlockers:    landBlockers,
+-		// A pawl run has no reroute edge: a large merge runs the gate, and a spent or over-cap fixer halts for the orch.
+-		LargeMergeLands: recipe == shedrun.RecipePawl,
+ 		// The task branch's remote-tracking ref is read without a fetch, so an absent one is no tip.
+ 		TaskRemoteTip: func() (string, error) {
+ 			tip, err := gitrepo.New(l.WorktreePath()).RefSHA("refs/remotes/origin/" + taskBranch)
+diff --git a/internal/loomcli/landingdeps_test.go b/internal/loomcli/landingdeps_test.go
+index 64fbf8c1..931e4741 100644
+--- a/internal/loomcli/landingdeps_test.go
++++ b/internal/loomcli/landingdeps_test.go
+@@ -90,9 +90,6 @@ func TestLandingDeps_EveryFieldPopulated(t *testing.T) {
+ 	if build(shedrun.RecipeDarn).TraceFailure != nil {
+ 		t.Error("landingDeps(...).TraceFailure is set for the darn recipe; want nil")
+ 	}
+-	if !deps.ConflictReroutes || build(shedrun.RecipeDarn).ConflictReroutes {
+-		t.Error("landingDeps(...).ConflictReroutes is not true for loom and false for darn")
+-	}
+ 
+ 	// The slug entry stops the verify until the run holds its parent lock, which exempts the slug's entries.
+ 	if !deps.VerifyHold.PastGrace() {
+@@ -126,14 +123,12 @@ func TestLandingDeps_EveryFieldPopulated(t *testing.T) {
+ 	v := reflect.ValueOf(deps)
+ 	typ := v.Type()
+ 	// FixerSeats is filled by wireLanding, from the seat engine wire built, and GateKey by each landing row's registry entry, on its own copy of Deps.
+-	// LargeMergeLands is true for a beam run only, and the loom run built here leaves it false.
+ 	// LandBlockers and ParentWorktree are a pawl run's, which a loom run leaves unset.
+ 	unfilled := map[string]bool{
+-		"FixerSeats":      true,
+-		"GateKey":         true,
+-		"LargeMergeLands": true,
+-		"LandBlockers":    true,
+-		"ParentWorktree":  true,
++		"FixerSeats":     true,
++		"GateKey":        true,
++		"LandBlockers":   true,
++		"ParentWorktree": true,
+ 	}
+ 	for i := 0; i < v.NumField(); i++ {
+ 		field := v.Field(i)
+diff --git a/internal/loomcli/status_test.go b/internal/loomcli/status_test.go
+index 87815692..82a61624 100644
+--- a/internal/loomcli/status_test.go
++++ b/internal/loomcli/status_test.go
+@@ -93,7 +93,7 @@ func TestStatusCmd_EnvelopeKeySet(t *testing.T) {
+ 				"ok": true, "current_producer": true, "state": true, "error": true,
+ 				"pause_reason": true, "pause_requested": true, "activity": true, "history_length": true,
+ 				"slug": true, "parent": true, "interrupt_policy": true, "trace_dir": true,
+-				"run_id": true, "progress": true, "last_step": true, "hand_back": true,
++				"run_id": true, "progress": true, "last_step": true, "hand_back": true, "restep_hold": true,
+ 			}
+ 			if tt.covered {
+ 				wantKeys["paused_since"] = true
+diff --git a/internal/loomcli/subjects.go b/internal/loomcli/subjects.go
+index 9821b1f0..87f5f557 100644
+--- a/internal/loomcli/subjects.go
++++ b/internal/loomcli/subjects.go
+@@ -244,12 +244,6 @@ func fixerReportInput(scratchDir string) func() (string, time.Time, bool, error)
+ 	}
+ }
+ 
+-// overlapNoteInput returns the review input seam of a darn run: the overlap note Finalize writes under scratchDir on a large-merge reroute, with the time it was written.
+-// A run that never rerouted leaves no note, which answers not found.
+-func overlapNoteInput(scratchDir string) func() (string, time.Time, bool, error) {
+-	return reviewInputFile(landingshed.OverlapNotePath(scratchDir))
+-}
+-
+ // reviewInputFile returns the seam that reports the file at path and its modification time, and not found while the file is absent.
+ func reviewInputFile(path string) func() (string, time.Time, bool, error) {
+ 	return func() (string, time.Time, bool, error) {
+diff --git a/internal/loomcli/subjects_test.go b/internal/loomcli/subjects_test.go
+index 82ffa434..2eb32295 100644
+--- a/internal/loomcli/subjects_test.go
++++ b/internal/loomcli/subjects_test.go
+@@ -12,7 +12,6 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/discussionparser"
+-	"github.com/Knatte18/loomyard/internal/landingshed"
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/loomshed"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+@@ -142,7 +141,6 @@ func TestReviewInputSeams(t *testing.T) {
+ 		{"FixerReportUnderRetiredName", fixerReportInput, func(scratchDir string) string {
+ 			return filepath.Join(scratchDir, "Merge-In-fixer-report.md")
+ 		}},
+-		{"OverlapNote", overlapNoteInput, landingshed.OverlapNotePath},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/loomcli/wiring.go b/internal/loomcli/wiring.go
+index db925ab3..83e19809 100644
+--- a/internal/loomcli/wiring.go
++++ b/internal/loomcli/wiring.go
+@@ -952,7 +952,7 @@ const loomMissingStatusWayForward = "way forward: run \"lym loom start\" first t
+ 
+ // loomRerouteCapWayForward is the told clause a reroute-cap halt ends with, whichever row's reroute hit the cap.
+ // The halt is resumed once the cause its reason quotes is cleared.
+-const loomRerouteCapWayForward = "run \"lym loom resume\" in the task worktree once the cause the halt's reason quotes is cleared: for a parent-branch reroute, once the parent branch has settled; for a fixer whose attempts are spent, once the failing tests are fixed on the task branch; for a fixer whose change is over the caps, once the fixer's commits are reviewed and fixed on the task branch; for a Webster plan conflict, once the run's parent has recorded the fix with \"lym loom decision add\" and \"--amends-plan\", then run \"lym loom goto --to Plan-Burler-Review\""
++const loomRerouteCapWayForward = "run \"lym loom resume\" in the task worktree once the cause the halt's reason quotes is cleared: for a fixer whose attempts are spent, once the failing tests are fixed on the task branch; for a fixer whose change is over the caps, once the fixer's commits are reviewed and fixed on the task branch; for a Webster plan conflict, once the run's parent has recorded the fix with \"lym loom decision add\" and \"--amends-plan\", then run \"lym loom goto --to Plan-Burler-Review\""
+ 
+ // loomBudgetWayForward is the told clause a bounce-budget-exhausted halt ends with, whichever row's budget ran out.
+ // Only the resume grants a budget; a goto keeps the spent one.
+diff --git a/internal/loomcli/wiring_beam_test.go b/internal/loomcli/wiring_beam_test.go
+index f7ae66aa..c083d477 100644
+--- a/internal/loomcli/wiring_beam_test.go
++++ b/internal/loomcli/wiring_beam_test.go
+@@ -87,7 +87,7 @@ func TestWire_BeamRecipe(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("the landing deps of a pawl run let a large merge land and halt a spent fixer", func(t *testing.T) {
++	t.Run("the landing deps of a pawl run halt a spent fixer, and only a loom or darn run judges an escalate first", func(t *testing.T) {
+ 		t.Parallel()
+ 		loc := hubLocation(t, "pair", ".")
+ 		runner := &shuttleengine.Runner{}
+@@ -95,15 +95,14 @@ func TestWire_BeamRecipe(t *testing.T) {
+ 		lock := parentLockDeps(loc, shedrun.SelfRunID, "", "")
+ 
+ 		tests := []struct {
+-			recipe               string
+-			wantLargeMerge       bool
+-			wantConflictReroutes bool
+-			wantRerouteSeam      bool
+-			wantLandBlockers     bool
++			recipe                  string
++			wantRerouteSeam         bool
++			wantLandBlockers        bool
++			wantEscalateJudgedFirst bool
+ 		}{
+-			{shedrun.RecipeLoom, false, true, true, false},
+-			{shedrun.RecipeDarn, false, false, true, false},
+-			{shedrun.RecipePawl, true, false, false, true},
++			{shedrun.RecipeLoom, true, false, true},
++			{shedrun.RecipeDarn, true, false, true},
++			{shedrun.RecipePawl, false, true, false},
+ 		}
+ 		for _, tt := range tests {
+ 			deps := landingDeps(
+@@ -123,18 +122,15 @@ func TestWire_BeamRecipe(t *testing.T) {
+ 				planVerifySource(loc),
+ 				lock,
+ 			)
+-			if deps.LargeMergeLands != tt.wantLargeMerge {
+-				t.Errorf("%s: LargeMergeLands = %v; want %v", tt.recipe, deps.LargeMergeLands, tt.wantLargeMerge)
+-			}
+-			if deps.ConflictReroutes != tt.wantConflictReroutes {
+-				t.Errorf("%s: ConflictReroutes = %v; want %v", tt.recipe, deps.ConflictReroutes, tt.wantConflictReroutes)
+-			}
+ 			if (deps.RerouteReviewed != nil) != tt.wantRerouteSeam {
+ 				t.Errorf("%s: RerouteReviewed set = %v; want %v", tt.recipe, deps.RerouteReviewed != nil, tt.wantRerouteSeam)
+ 			}
+ 			if (deps.LandBlockers != nil) != tt.wantLandBlockers {
+ 				t.Errorf("%s: LandBlockers set = %v; want %v", tt.recipe, deps.LandBlockers != nil, tt.wantLandBlockers)
+ 			}
++			if deps.EscalateJudgedFirst != tt.wantEscalateJudgedFirst {
++				t.Errorf("%s: EscalateJudgedFirst = %v; want %v", tt.recipe, deps.EscalateJudgedFirst, tt.wantEscalateJudgedFirst)
++			}
+ 			if tt.recipe == shedrun.RecipePawl {
+ 				if deps.TraceFailure != nil {
+ 					t.Error("pawl: TraceFailure is set; want nil")
+diff --git a/internal/loomcli/wiring_darn_test.go b/internal/loomcli/wiring_darn_test.go
+index 81a58aab..bd45b4e2 100644
+--- a/internal/loomcli/wiring_darn_test.go
++++ b/internal/loomcli/wiring_darn_test.go
+@@ -15,7 +15,6 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/darnengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+-	"github.com/Knatte18/loomyard/internal/landingshed"
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/loomrecipe"
+@@ -55,19 +54,12 @@ func TestWire_DarnRecipe(t *testing.T) {
+ 				}
+ 			}
+ 		}
+-		// envkit.NilSeams skips ReviewInput through nilLegal, so a direct check pins that wireDarn tells it the overlap note Finalize writes.
++		// envkit.NilSeams skips ReviewInput through nilLegal, so a direct check pins that a darn seed keeps the shared wiring's seam, which answers not found since darn has no Parent-Align report.
+ 		if c.env.ReviewInput == nil {
+ 			t.Fatal("ReviewInput is nil after wire() of a darn seed; want it told")
+ 		}
+ 		if path, _, found, err := c.env.ReviewInput(); err != nil || found {
+-			t.Errorf("ReviewInput() before a reroute = %q, %v, %v; want not found, nil", path, found, err)
+-		}
+-		notePath := landingshed.OverlapNotePath(loomengine.LoomScratchDir(loc))
+-		if err := landingshed.WriteOverlapNote(notePath, landingshed.MergeRecord{ParentBranch: "main", MergedTip: "p1"}, []string{"b.go"}); err != nil {
+-			t.Fatalf("WriteOverlapNote() = %v; want nil", err)
+-		}
+-		if path, _, found, err := c.env.ReviewInput(); err != nil || !found || path != notePath {
+-			t.Errorf("ReviewInput() after a reroute = %q, %v, %v; want %q, found, nil", path, found, err, notePath)
++			t.Errorf("ReviewInput() = %q, %v, %v; want not found, nil", path, found, err)
+ 		}
+ 		if c.env.VerifyMergeBase == nil {
+ 			t.Error("c.env.VerifyMergeBase is nil after wire() of a darn seed; want the merge base reader")
+diff --git a/internal/loomcli/wiring_test.go b/internal/loomcli/wiring_test.go
+index 2732ee0e..e122bb09 100644
+--- a/internal/loomcli/wiring_test.go
++++ b/internal/loomcli/wiring_test.go
+@@ -1045,18 +1045,18 @@ func TestWire_LanguageSkills(t *testing.T) {
+ 	}
+ }
+ 
+-// TestLoomRerouteCapWayForward_IsRowNeutral proves the reroute-cap clause serves every row's cap halt: it names the resume verb, the parent-branch cause and the plan amendment route of a Webster plan conflict.
++// TestLoomRerouteCapWayForward_IsRowNeutral proves the reroute-cap clause serves every row's cap halt: it names the resume verb and the plan amendment route of a Webster plan conflict.
+ func TestLoomRerouteCapWayForward_IsRowNeutral(t *testing.T) {
+ 	t.Parallel()
+ 
+-	for _, want := range []string{`lym loom resume`, "parent branch has settled", "--amends-plan", "lym loom goto --to Plan-Burler-Review"} {
++	for _, want := range []string{`lym loom resume`, "--amends-plan", "lym loom goto --to Plan-Burler-Review"} {
+ 		if !strings.Contains(loomRerouteCapWayForward, want) {
+ 			t.Errorf("loomRerouteCapWayForward = %q; want it to contain %q", loomRerouteCapWayForward, want)
+ 		}
+ 	}
+ }
+ 
+-// TestLoomRerouteCapWayForward proves a loom shed that reroutes Finalize past the cap halts blocked at Finalize with the told clause, which names the parent-branch cause, the spent fixer cap and the over-cap fixer change, each with its way forward.
++// TestLoomRerouteCapWayForward proves a loom shed that reroutes Finalize past the cap halts blocked at Finalize with the told clause, which names the spent fixer cap and the over-cap fixer change, each with its way forward.
+ func TestLoomRerouteCapWayForward(t *testing.T) {
+ 	t.Parallel()
+ 
+@@ -1096,7 +1096,6 @@ func TestLoomRerouteCapWayForward(t *testing.T) {
+ 		t.Errorf("Run() reason = %q; want it to start with %q", res.Reason, shedengine.ReasonRerouteCapReached)
+ 	}
+ 	for _, want := range []string{
+-		"for a parent-branch reroute, once the parent branch has settled",
+ 		"for a fixer whose attempts are spent, once the failing tests are fixed on the task branch",
+ 		"for a fixer whose change is over the caps, once the fixer's commits are reviewed and fixed on the task branch",
+ 		`run "lym loom resume"`,
+diff --git a/internal/shedcli/cli_test.go b/internal/shedcli/cli_test.go
+index 01478034..c709a7e7 100644
+--- a/internal/shedcli/cli_test.go
++++ b/internal/shedcli/cli_test.go
+@@ -118,13 +118,13 @@ func (l *loopRun) assertLoop(t *testing.T, envelope map[string]any) {
+ 	if !ok {
+ 		t.Fatalf("envelope %v has no loop object", envelope)
+ 	}
+-	for _, key := range []string{"steps", "first_producer", "stop", "detail", "status_moved", "hand_back", "current_producer", "history_length", "state", "interrupt_policy", "trace_copy", "stderr_path"} {
++	for _, key := range []string{"steps", "first_producer", "stop", "detail", "status_moved", "hand_back", "restep_hold", "current_producer", "history_length", "state", "interrupt_policy", "trace_copy", "stderr_path"} {
+ 		if _, present := loop[key]; !present {
+ 			t.Errorf("loop %v lacks key %q", loop, key)
+ 		}
+ 	}
+-	if len(loop) != 12 {
+-		t.Errorf("loop %v has %d keys; want the closed set of 12", loop, len(loop))
++	if len(loop) != 13 {
++		t.Errorf("loop %v has %d keys; want the closed set of 13", loop, len(loop))
+ 	}
+ 	if loop["stop"] != l.wantStop || loop["steps"] != float64(0) {
+ 		t.Errorf("loop stop/steps = %v/%v; want %s/0", loop["stop"], loop["steps"], l.wantStop)
+diff --git a/internal/sheddriver/doc.go b/internal/sheddriver/doc.go
+index 3f2eac7c..4995bc19 100644
+--- a/internal/sheddriver/doc.go
++++ b/internal/sheddriver/doc.go
+@@ -35,7 +35,7 @@
+ //   - any other awaiting stop: hand back;
+ //   - a stop the on-disk build could change, after the last step ran another build: hand over to a fresh driver of the on-disk build, once per build;
+ //   - a stop an applied tackler resume returned to: the arbiter decides;
+-//   - a blocked stop at a row the told `ArbiterSeam.JudgesFirst` marks: the arbiter decides, with no tackler call;
++//   - a blocked stop the told `ArbiterSeam.JudgesFirst` marks for its row and its reason, or for a stop built from a status its error: the arbiter decides, with no tackler call;
+ //   - a transient error that outlived its re-step: the tackler decides;
+ //   - an interrupted step under the re-invoke policy, below the repair cap: re-step;
+ //   - an interrupted step under the hand-back policy: hand back;
+@@ -69,7 +69,7 @@
+ // A stop a removed row would have caught meets the later rows unchanged, so it ends in the tackler under its spawn budget, a re-step under the repair cap, or a hand-back.
+ // No unwired seam adds a resume path: a tackler escalation with no arbiter hands back, naming the tackler's case brief.
+ // Loom's, darn's and batten's drivers all wire the arbiter after the tackler, batten's with `batten.yaml`'s arbiter overrides of `shed.yaml`.
+-// The loom CLI's wiring, which loom and darn share, marks one row the arbiter judges first: the Webster row, whose blocked stop is Merriam's stuck outcome.
++// The loom CLI's wiring, which loom and darn share, marks two kinds of blocked stop the arbiter judges first: the Webster row, whose blocked stop is Merriam's stuck outcome, and a loom or darn landing escalate, a merge fixer's halt that opens with the escalate prefix.
+ //
+ // # The hand-back
+ //
+diff --git a/internal/sheddriver/drive.go b/internal/sheddriver/drive.go
+index 6895e62b..e1997007 100644
+--- a/internal/sheddriver/drive.go
++++ b/internal/sheddriver/drive.go
+@@ -108,8 +108,8 @@ type ArbiterSeam struct {
+ 	Judge func(envelopePath, reportPath, caseBriefPath string) (ArbiterOutcome, error)
+ 	// AttemptEnvelope returns the stop envelope the arbiter attempt in attemptDir recorded, for the restart read of an open attempt.
+ 	AttemptEnvelope func(attemptDir string) (envelopePath string, err error)
+-	// JudgesFirst reports whether a blocked stop at producer goes to the arbiter without the tackler judging it first; nil marks no row.
+-	JudgesFirst func(producer string) bool
++	// JudgesFirst reports whether a blocked stop at producer with the persisted reason goes to the arbiter without the tackler judging it first; nil marks no stop.
++	JudgesFirst func(producer, reason string) bool
+ }
+ 
+ // ArbiterOutcome is what the driver reads off the arbiter's verdict envelope.
+@@ -711,7 +711,12 @@ func (d *goDriver) facts(stop Stop) (driveFacts, error) {
+ 		facts.EscalationPending = pending
+ 	}
+ 	if key.State == string(shedengine.StateBlocked) && d.deps.Arbiter != nil && d.deps.Arbiter.JudgesFirst != nil {
+-		facts.ArbiterFirst = d.deps.Arbiter.JudgesFirst(key.CurrentProducer)
++		// A status-built stop carries the halt text in Error, as budgetExhausted reads it.
++		reason := stop.Reason
++		if stop.FromStatus {
++			reason = stop.Error
++		}
++		facts.ArbiterFirst = d.deps.Arbiter.JudgesFirst(key.CurrentProducer, reason)
+ 	}
+ 
+ 	records, err := ReadSettleRecords(d.deps.SettlePath)
+diff --git a/internal/sheddriver/drive_test.go b/internal/sheddriver/drive_test.go
+index 0977bb6f..99514836 100644
+--- a/internal/sheddriver/drive_test.go
++++ b/internal/sheddriver/drive_test.go
+@@ -114,12 +114,19 @@ func TestGoDriver_Settle(t *testing.T) {
+ 	blockedLater := func(t *testing.T) []byte {
+ 		return driveEnvelopeJSON(t, map[string]any{"ok": true, "state": "blocked"}, map[string]any{"state": "blocked", "current_producer": "Build", "history_length": 3})
+ 	}
++	escalateBlocked := func(t *testing.T) []byte {
++		return driveEnvelopeJSON(t, map[string]any{"ok": true, "state": "blocked", "reason": "escalate: the fixer needs a decision"},
++			map[string]any{"state": "blocked", "current_producer": "Build", "history_length": 2})
++	}
+ 	blockedKey := StopKey{CurrentProducer: "Build", HistoryLength: 2, State: "blocked"}
+ 	awaitingKey := StopKey{CurrentProducer: "Review", HistoryLength: 2, State: "awaiting"}
+ 	blockedStatus := shedengine.Status{State: shedengine.StateBlocked, CurrentProducer: "Build", History: []shedengine.HistoryEntry{
+ 		{Producer: "Plan", Outcome: shedengine.Done, At: driveTestEpoch.Format(time.RFC3339)},
+ 		{Producer: "Build", Outcome: shedengine.Stuck, At: driveTestEpoch.Add(time.Second).Format(time.RFC3339)},
+ 	}}
++	escalateStatus := blockedStatus
++	escalateStatus.Error = "escalate: the fixer needs a decision"
++	escalateStatus.History = append(slices.Clone(blockedStatus.History), shedengine.HistoryEntry{Producer: "Build", Outcome: shedengine.Stuck, At: driveTestEpoch.Add(2 * time.Second).Format(time.RFC3339)})
+ 	awaitingStatus := shedengine.Status{State: shedengine.StateAwaiting, CurrentProducer: "Review", History: blockedStatus.History}
+ 	tacklerOutcome := func(verdict string, attempt int) TacklerEnvelope {
+ 		dir := fmt.Sprintf("tackler/%d", attempt)
+@@ -164,9 +171,11 @@ func TestGoDriver_Settle(t *testing.T) {
+ 		runLockHeld bool
+ 		escalation  bool
+ 		// judgesFirst, when set, is the one row the arbiter seam judges before the tackler.
+-		judgesFirst  string
+-		pauseCovered []bool
+-		orchRecorded bool
++		judgesFirst string
++		// judgesFirstReason, when set, limits the judgesFirst row to a stop whose reason opens with it.
++		judgesFirstReason string
++		pauseCovered      []bool
++		orchRecorded      bool
+ 
+ 		// The agent seams: what Tackler and Arbiter return, and what ConsumeTackler refuses with.
+ 		tacklerReturns TacklerEnvelope
+@@ -340,6 +349,27 @@ func TestGoDriver_Settle(t *testing.T) {
+ 			wantActions: []string{shedrun.SettleSpawn, shedrun.SettleHandBack}, wantSettlers: []string{shedrun.SettlerArbiter, shedrun.SettlerParent},
+ 			wantReports: 2, wantParked: true, wantNotifies: 1, wantHandBack: true, wantExit: ExitHandBack, wantReportHas: map[int][]string{2: {"a row the arbiter judges first", "which way?"}},
+ 		},
++		{
++			name:  "a blocked stop at a row the arbiter judges first by its escalate reason goes to the arbiter with no tackler call",
++			steps: []func(*testing.T) []byte{escalateBlocked}, judgesFirst: "Build", judgesFirstReason: "escalate: ", arbiterReturns: arbiterOutcome("hand-on", 1),
++			wantCalls:   []string{"step", "arbiter:"},
++			wantActions: []string{shedrun.SettleSpawn, shedrun.SettleHandBack}, wantSettlers: []string{shedrun.SettlerArbiter, shedrun.SettlerParent},
++			wantReports: 2, wantParked: true, wantHandBack: true, wantExit: ExitHandBack,
++		},
++		{
++			name:  "a blocked stop at the judged row with a plain reason goes to the tackler",
++			steps: []func(*testing.T) []byte{blocked}, judgesFirst: "Build", judgesFirstReason: "escalate: ", tacklerReturns: tacklerOutcome(TacklerVerdictHandBack, 1),
++			wantCalls:   []string{"step", "tackler", "snapshot", "snapshot"},
++			wantActions: []string{shedrun.SettleSpawn, shedrun.SettleHandBack}, wantSettlers: []string{shedrun.SettlerTackler, shedrun.SettlerParent},
++			wantReports: 2, wantParked: true, wantHandBack: true, wantExit: ExitHandBack,
++		},
++		{
++			name:  "a status moved to a blocked stop whose error is an escalate goes to the arbiter with no tackler call",
++			steps: []func(*testing.T) []byte{blocked}, statusSeq: []shedengine.Status{escalateStatus}, judgesFirst: "Build", judgesFirstReason: "escalate: ", arbiterReturns: arbiterOutcome("hand-on", 1),
++			wantCalls:   []string{"step", "arbiter:"},
++			wantActions: []string{shedrun.SettleMoved, shedrun.SettleSpawn, shedrun.SettleHandBack}, wantSettlers: []string{shedrun.SettlerGoRule, shedrun.SettlerArbiter, shedrun.SettlerParent},
++			wantReports: 2, wantParked: true, wantHandBack: true, wantExit: ExitHandBack,
++		},
+ 		{
+ 			name:  "a blocked stop at a row the arbiter does not judge first goes to the tackler",
+ 			steps: []func(*testing.T) []byte{blocked}, judgesFirst: "Review", tacklerReturns: tacklerOutcome(TacklerVerdictHandBack, 1),
+@@ -733,7 +763,9 @@ func TestGoDriver_Settle(t *testing.T) {
+ 				},
+ 			}
+ 			if tt.judgesFirst != "" {
+-				deps.Arbiter.JudgesFirst = func(producer string) bool { return producer == tt.judgesFirst }
++				deps.Arbiter.JudgesFirst = func(producer, reason string) bool {
++					return producer == tt.judgesFirst && strings.HasPrefix(reason, tt.judgesFirstReason)
++				}
+ 			}
+ 			if tt.noArbiter {
+ 				deps.Arbiter = nil
+diff --git a/internal/shedverbs/doc.go b/internal/shedverbs/doc.go
+index 2f3cbeba..efb25f47 100644
+--- a/internal/shedverbs/doc.go
++++ b/internal/shedverbs/doc.go
+@@ -12,7 +12,7 @@
+ // --by <label> stores a free-text caller label beside the request it accompanies: pause_requested_by for a bare pause, pause_before_by with --before and pause_after_by with --after, each replaced with its condition and --clear dropping both condition labels.
+ // The label gates nothing, and the engine records it in the paused run's pause_reason;
+ // --by shed is refused before any write, since shed is the label of lym's own automatic steps.
+-// status's generic core is eleven keys, and pause_reason is the status file's value; the human view prints it as a "why" line for a paused run with a non-empty reason.
++// status's generic core is twelve keys, and pause_reason is the status file's value; the human view prints it as a "why" line for a paused run with a non-empty reason.
+ // Spec.GotoGuard is the recipe's told check of a goto target, which every goto passes on; nil admits every target.
+ // Spec.HandBack is the recipe's told check of a blocked stop that goes to the orch, which keeps the package recipe-generic: the loop's stop envelope and lym shed status report its answer as hand_back.
+ //
+@@ -48,9 +48,10 @@
+ // LastStepBuildChanged reads whether the last step ran on a known build other than the one passed, which an in-process driver judges against the lym on disk.
+ //
+ // The final envelope is the stop step's short envelope plus a loop object whose keys are closed:
+-// steps, first_producer, stop, detail, status_moved, hand_back, restep (only when a re-step ran), current_producer, history_length, state, interrupt_policy, trace_copy and stderr_path.
++// steps, first_producer, stop, detail, status_moved, hand_back, restep_hold, restep (only when a re-step ran), current_producer, history_length, state, interrupt_policy, trace_copy and stderr_path.
+ // hand_back is true when the stop is blocked and Spec.HandBack, the recipe's told check, answers true for the status's current producer and error, so a driver hands the halt to the orch; nil marks nothing.
+-// lym shed status reports the same hand_back key at its top level, over the status file.
++// restep_hold is true under the same rule for Spec.RestepHold, the recipe's told check of a blocked stop that a driver's own build re-launch leaves alone, though such a stop still goes to the arbiter first.
++// lym shed status reports the same hand_back and restep_hold keys at their top level, over the status file.
+ // detail is the stop's error or reason and the WARN and ERROR lines and last lines of the stop step's trace, capped by lines and bytes.
+ // trace_copy is a copy of the stop step's trace files, which outlives a sweep of the trace directory.
+ // A refusal of the --until-stop invocation's own arming goes through ReportLoopArmError, which prints the bootstrap error with a loop object that stopped with no step run.
+diff --git a/internal/shedverbs/loop.go b/internal/shedverbs/loop.go
+index 4a5a735a..834605c8 100644
+--- a/internal/shedverbs/loop.go
++++ b/internal/shedverbs/loop.go
+@@ -333,6 +333,7 @@ func runLoop(ctx context.Context, spec *Spec, loopID string, argv []string, out
+ 	obj.HistoryLength = len(after.History)
+ 	obj.State = string(after.State)
+ 	obj.HandBack = spec.handsBack(after)
++	obj.RestepHold = spec.restepHolds(after)
+ 	obj.StatusMoved = before.CurrentProducer != after.CurrentProducer || len(before.History) != len(after.History)
+ 	if spec.Hooks.InterruptPolicyFor != nil {
+ 		obj.InterruptPolicy = spec.Hooks.InterruptPolicyFor(after.CurrentProducer)
+diff --git a/internal/shedverbs/loop_helper_test.go b/internal/shedverbs/loop_helper_test.go
+index 4ee312db..9000e2d3 100644
+--- a/internal/shedverbs/loop_helper_test.go
++++ b/internal/shedverbs/loop_helper_test.go
+@@ -25,7 +25,7 @@ func loopOf(t *testing.T, env map[string]any) map[string]any {
+ // assertLoopKeys checks the loop object's closed key set.
+ func assertLoopKeys(t *testing.T, loop map[string]any, withRestep bool) {
+ 	t.Helper()
+-	want := []string{"steps", "first_producer", "stop", "detail", "status_moved", "hand_back", "current_producer", "history_length", "state", "interrupt_policy", "trace_copy", "stderr_path"}
++	want := []string{"steps", "first_producer", "stop", "detail", "status_moved", "hand_back", "restep_hold", "current_producer", "history_length", "state", "interrupt_policy", "trace_copy", "stderr_path"}
+ 	if withRestep {
+ 		want = append(want, "restep")
+ 	}
+diff --git a/internal/shedverbs/loop_test.go b/internal/shedverbs/loop_test.go
+index ccda59a0..304f15ef 100644
+--- a/internal/shedverbs/loop_test.go
++++ b/internal/shedverbs/loop_test.go
+@@ -242,11 +242,13 @@ func TestLoop_RunsUntilStopAndPrintsOneEnvelope(t *testing.T) {
+ 		wantStep map[string]any
+ 		// wantHandBack is the loop's hand_back under a told check that answers true for the producer B, where every halting script leaves the run.
+ 		wantHandBack bool
++		// wantRestepHold is the loop's restep_hold under a told check that answers true for the producer B, true for the blocked row only.
++		wantRestepHold bool
+ 		// wantStatusLeftAtA is whether the status file must still read running at the row the run was seeded on.
+ 		wantStatusLeftAtA bool
+ 	}{
+ 		{name: "yield", scripts: []childScript{yielding()}, wantStop: LoopStopHalted, wantStatusLeftAtA: true},
+-		{name: "blocked", scripts: []childScript{continuing("B", 1), halting(shedengine.StateBlocked, shedengine.ReasonBounceBudgetExhausted, 2)}, wantStop: LoopStopHalted, wantHandBack: true},
++		{name: "blocked", scripts: []childScript{continuing("B", 1), halting(shedengine.StateBlocked, shedengine.ReasonBounceBudgetExhausted, 2)}, wantStop: LoopStopHalted, wantHandBack: true, wantRestepHold: true},
+ 		{name: "awaiting", scripts: []childScript{halting(shedengine.StateAwaiting, "", 1)}, wantStop: LoopStopHalted},
+ 		{name: "done", scripts: []childScript{continuing("B", 1), halting(shedengine.StateDone, "", 2)}, wantStop: LoopStopHalted},
+ 		{name: "bare pause", scripts: []childScript{halting(shedengine.StatePaused, "", 1)}, wantStop: LoopStopHalted},
+@@ -264,6 +266,7 @@ func TestLoop_RunsUntilStopAndPrintsOneEnvelope(t *testing.T) {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			fx := newLoopFixture(t, tt.scripts...)
+ 			fx.spec.HandBack = func(producer, _ string) bool { return producer == "B" }
++			fx.spec.RestepHold = func(producer, _ string) bool { return producer == "B" }
+ 			startCalls, childrenAtStart := 0, -1
+ 			fx.spec.Loop.OnStart = func() {
+ 				startCalls++
+@@ -287,6 +290,9 @@ func TestLoop_RunsUntilStopAndPrintsOneEnvelope(t *testing.T) {
+ 			if loop["hand_back"] != tt.wantHandBack {
+ 				t.Errorf("loop hand_back = %v; want %v", loop["hand_back"], tt.wantHandBack)
+ 			}
++			if loop["restep_hold"] != tt.wantRestepHold {
++				t.Errorf("loop restep_hold = %v; want %v", loop["restep_hold"], tt.wantRestepHold)
++			}
+ 
+ 			if st := fx.readStatus(); tt.wantStatusLeftAtA && (st.State != shedengine.StateRunning || st.CurrentProducer != "A") {
+ 				t.Errorf("status after the loop = %s at %s; want running at A, left as it was", st.State, st.CurrentProducer)
+diff --git a/internal/shedverbs/loopenvelope.go b/internal/shedverbs/loopenvelope.go
+index de6a95d0..b8d3c7d5 100644
+--- a/internal/shedverbs/loopenvelope.go
++++ b/internal/shedverbs/loopenvelope.go
+@@ -44,6 +44,7 @@ type loopObject struct {
+ 	Detail          string
+ 	StatusMoved     bool
+ 	HandBack        bool
++	RestepHold      bool
+ 	Restep          *loopRestep
+ 	CurrentProducer string
+ 	HistoryLength   int
+@@ -62,6 +63,7 @@ func (o loopObject) fields() map[string]any {
+ 		"detail":           o.Detail,
+ 		"status_moved":     o.StatusMoved,
+ 		"hand_back":        o.HandBack,
++		"restep_hold":      o.RestepHold,
+ 		"current_producer": o.CurrentProducer,
+ 		"history_length":   o.HistoryLength,
+ 		"state":            o.State,
+diff --git a/internal/shedverbs/spec.go b/internal/shedverbs/spec.go
+index 052f902a..062bc8f6 100644
+--- a/internal/shedverbs/spec.go
++++ b/internal/shedverbs/spec.go
+@@ -221,9 +221,17 @@ type Spec struct {
+ 	// HandBack is the recipe's told check of a stop that goes to the orch whatever driver reads it, answering for a producer and the error its blocked stop persists.
+ 	// The loop's stop envelope and status report it as hand_back for a blocked status; nil marks nothing.
+ 	HandBack func(producer, reason string) bool
++	// RestepHold is the recipe's told check of a blocked stop that a driver's own build re-launch must leave alone, answering for a producer and the error its blocked stop persists.
++	// The loop's stop envelope and status report it as restep_hold for a blocked status; nil marks nothing.
++	RestepHold func(producer, reason string) bool
+ }
+ 
+ // handsBack reports whether st is a blocked stop the told HandBack check answers true for, by the status's current producer and error.
+ func (s *Spec) handsBack(st shedengine.Status) bool {
+ 	return s.HandBack != nil && st.State == shedengine.StateBlocked && s.HandBack(st.CurrentProducer, st.Error)
+ }
++
++// restepHolds reports whether st is a blocked stop the told RestepHold check answers true for, by the status's current producer and error.
++func (s *Spec) restepHolds(st shedengine.Status) bool {
++	return s.RestepHold != nil && st.State == shedengine.StateBlocked && s.RestepHold(st.CurrentProducer, st.Error)
++}
+diff --git a/internal/shedverbs/status.go b/internal/shedverbs/status.go
+index cb2f7e71..80c5eae9 100644
+--- a/internal/shedverbs/status.go
++++ b/internal/shedverbs/status.go
+@@ -185,6 +185,7 @@ func statusCmd(texts VerbTexts, spec *Spec) *cobra.Command {
+ 				"state":            string(st.State),
+ 				"error":            st.Error,
+ 				"hand_back":        spec.handsBack(st),
++				"restep_hold":      spec.restepHolds(st),
+ 				"pause_reason":     st.PauseReason,
+ 				"activity":         st.Activity,
+ 				"history_length":   len(st.History),
+diff --git a/internal/shedverbs/status_test.go b/internal/shedverbs/status_test.go
+index b25720dd..4877e486 100644
+--- a/internal/shedverbs/status_test.go
++++ b/internal/shedverbs/status_test.go
+@@ -474,6 +474,9 @@ func TestStatusCmd_FoundEnvelope_GenericCore(t *testing.T) {
+ 			if env["hand_back"] != false {
+ 				t.Errorf("hand_back = %v; want false with no check told", env["hand_back"])
+ 			}
++			if env["restep_hold"] != false {
++				t.Errorf("restep_hold = %v; want false with no check told", env["restep_hold"])
++			}
+ 		})
+ 	}
+ 
+@@ -509,6 +512,36 @@ func TestStatusCmd_FoundEnvelope_GenericCore(t *testing.T) {
+ 			}
+ 		})
+ 	}
++
++	restepHoldCheck := func(producer, reason string) bool {
++		return producer == "Finalize" && strings.HasPrefix(reason, "escalate: ")
++	}
++	restepHoldTests := []struct {
++		name  string
++		state shedengine.State
++		check func(producer, reason string) bool
++		want  bool
++	}{
++		{"BlockedFinalizeEscalate", shedengine.StateBlocked, restepHoldCheck, true},
++		{"NoCheckTold", shedengine.StateBlocked, nil, false},
++		{"FailedFinalize", shedengine.StateFailed, restepHoldCheck, false},
++	}
++	for _, tt := range restepHoldTests {
++		t.Run("RestepHold_"+tt.name, func(t *testing.T) {
++			spec := seededStatusSpec(t, Hooks{})
++			spec.RestepHold = tt.check
++			if err := state.UpdateJSON(spec.StatusPath, spec.StatusLockPath, func(cur shedengine.Status, found bool) (shedengine.Status, error) {
++				cur.CurrentProducer, cur.State, cur.Error = "Finalize", tt.state, "escalate: the fixer needs a decision"
++				return cur, nil
++			}); err != nil {
++				t.Fatalf("record the halt: %v", err)
++			}
++			env, code := execEnvelope(t, statusCmd(statusTexts(), spec), nil)
++			if code != 0 || env["restep_hold"] != tt.want {
++				t.Errorf("status = exit %d, restep_hold %v; want exit 0, restep_hold %v", code, env["restep_hold"], tt.want)
++			}
++		})
++	}
+ }
+ 
+ // TestStatusCmd_FoundEnvelope_RunIDAndProgress asserts the found envelope carries the told run_id
+diff --git a/internal/testkit/envkit/envkit.go b/internal/testkit/envkit/envkit.go
+index ce7c4275..4a910c8a 100644
+--- a/internal/testkit/envkit/envkit.go
++++ b/internal/testkit/envkit/envkit.go
+@@ -150,7 +150,6 @@ func LandingDeps(dir string) landingshed.Deps {
+ 		TaskBranch:       "task-branch",
+ 		ParentBranch:     "fixture-parent",
+ 		DescriptionPath:  summaryparser.Path(dir),
+-		ConflictReroutes: true,
+ 		StencilsDir:      dir,
+ 		ParentName:       "fixture-parent-session",
+ 		ScratchDir:       filepath.Join(dir, "landing-scratch"),
