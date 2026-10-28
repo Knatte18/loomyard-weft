@@ -559,6 +559,24 @@
       "body": "## Seen (operator, 2026-10-28)\n\nThe operator runs KDE Plasma with virtual desktops and tiling.\nThe Konsole windows lym opens on a run's worktree (`lym reed window`, batten's terminal for each run) and the VS Code windows it opens (`lym ide`) land wherever KWin puts them, untiled and on the current desktop, so the operator moves and tiles each by hand.\n\n## Idea\n\nA window lym opens lands tiled on the right virtual desktop by itself.\nHow the placement rules are written and kept is open (operator, 2026-10-28); the candidates:\n\n- KWin window rules (`kwinrulesrc`) that match the window title or class lym already sets, such as the reed window's `--title` and the VS Code window title `lym ide seed` writes, and assign desktop and position.\n  KWin keeps them, and lym only names its windows predictably; lym could write or check the rules from a config of its own.\n- lym places each window after opening it, through KWin's D-Bus or a KWin script, from a config that maps a window kind (orch, run, IDE) to a desktop and a tile.\n- Plasma 6 tiling: whether a rule or a script can put a window into a named custom tile, or only on a desktop and screen edge, is to be found out first.\n\nWhatever the route, lym hard-codes no desktop environment: the placement is a config choice that does nothing on a machine without KDE.\n\n## Open\n\n- Which windows: run terminals only, or the orch's and VS Code too.\n- The mapping: one desktop per run, per hub, or per window kind.\n- Whether lym writes the rules or the operator does, with lym only keeping its window titles stable.\n",
       "created": "2026-10-28T15:26:02Z",
       "revised": "2026-10-28T15:26:02Z"
+    },
+    {
+      "id": 886,
+      "handle": "E5",
+      "slug": "creel-ring-carries-mail",
+      "title": "The idle ring hands the mail over itself, without an empty turn",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "creel"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "hook-wait wakes an idle strand with a bell line only, so each mail costs one extra empty turn",
+      "body": "## Seen (hub orch, 2026-10-28)\n\nEvery piece of mail to an idle hook strand costs an extra model turn.\nThe `hook-wait` ring wakes the strand with `BellLine`, \"Mail is waiting for you. End this turn now\", and carries no mail; the woken turn ends with nothing done, and only its Stop hook hands the mail over.\n`internal/creelengine/doc.go` states it as the ring's bound: \"one ring costs one short model turn before the mail turn\".\nIn the hub orch on 2026-10-28 every notice and agent message arrived this way, so each cost two turns, the first an empty one.\n\n## Idea\n\nThe ring hands the mail over itself: when the worker rings, `hook-wait` claims the strand's claimable mail as a boundary claim does, writes it as the rewake output in place of `BellLine`, and acknowledges the claim once the output is written, so the woken turn starts with the mail and no empty turn runs.\n\n## Open\n\n- Whether an asyncRewake output written by a hook that then exits is shown to the model for sure, so acknowledging on write never journals read a message the session did not see; the Stop path's block count guards the same risk there.\n- The 8 KiB budget of a claim and whether the rewake output takes the same size.\n- A ring that races a turn the operator starts: the mail would land under the operator's prompt, which the Stop path already does today.\n",
+      "created": "2026-10-28T18:22:10Z",
+      "revised": "2026-10-28T18:22:10Z"
     }
   ],
   "prime_owner": "neve",
