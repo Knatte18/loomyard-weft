@@ -63,7 +63,7 @@ Duplicates merged; each line names the lenses.
 - Post the seat engine's up and ending lines through creel: the step process may run in a driver's pane, where creel refuses a program claim, and the typed line already reaches any engine's pane.
 - Deny the `SendMessage` tool by hook: the webster fork addressing needs it; a scan test is enough.
 - Chase interval as a creel config key: creel deliberately has no config file.
-- Each engine's own messaging with relay agents between engines (operator idea 2026-10-23): creel already types into any pane, so relay agents add two model turns per message, and hook delivery removed the read turn for Claude.
+- Each engine's own messaging with relay agents between engines (operator idea 2026-10-23): creel already types into any pane, so relay agents add two model turns per message, and hook delivery removed the read turn for Claude: creel's hook delivery hands a Claude strand its mail in full, so the extra read turn the operator's 2026-10-23 view objected to no longer applies to Claude-to-Claude messages.
 
 ## Review rounds
 
@@ -78,7 +78,7 @@ _No rounds yet._
 - Auto-pick: seat notices stay typed lines.
 - Auto-pick: remove `RequirementPeerMessaging`.
 - Auto-pick: flag name `--expect-reply`; `--wait-reply` implies it; every stencil question carries it.
-- Auto-pick: chase interval 15 minutes, two chases, then `unanswered`; constant, not config; clock frozen like an inject TTL.
+- Auto-pick: chase interval 15 minutes, two chases, then `unanswered`; constant, not config; clock stopped while the holder is dormant or paused, as an inject TTL is, and also under another sender's hold.
 - Auto-pick: a reply to a chase by the holder answers the chased message.
 - Auto-pick: `lym report replies` as its own verb.
 - Resolved by research: no creel `defer` verb exists, so whether a deferral counts as an answer is moot.
