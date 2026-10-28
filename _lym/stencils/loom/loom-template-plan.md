@@ -9,7 +9,7 @@
      twill_directive is a fourth optional marker, rendered by internal/twilldirective through internal/loomengine;
      it sits on the line that would otherwise be blank, so an empty value leaves the blank line and the prompt's bytes unchanged.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lym-stencil: sha256=8f211c3d776f65eb17870a2cebe1cc9fb023d5c61e0480a2bd56127bbe564d7b build=26f0d9dc38fcc22b3e7767531448a3a5dc64d183 time=2026-10-28T13:52:59Z -->
+lym-stencil: sha256=400c30810de35c748e9d8cd8bcd36921eba608437e6f5175fe15a11275a6b2ee build=bf00a04359aa5980fdd8dc2b7cf76d3ee9799216 time=2026-10-28T14:12:42Z -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -50,6 +50,7 @@ A follow-up a card files goes on the board as a note, never as a task, and no ca
 ## Step 2 — Explore the codebase
 
 Before planning, start from the code the relevant list names, then read the other relevant parts of the codebase: check recent commits, and follow existing patterns and any PATTERN entries in this prompt rather than inventing new ones.
+Issue every search and read you can name in one message; wait for a result only to choose the next call.
 
 ### Look up glyphs with `lym quarry` — never spell one from memory
 

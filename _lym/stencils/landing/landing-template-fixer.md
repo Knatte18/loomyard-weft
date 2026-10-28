@@ -4,7 +4,7 @@
      which fills it from the lead's value map that landingshed's FixerTable builds, then hands it to shuttle as the fixing agent's whole
      prompt. Every marker below is a top-level {{.X}} substitution; stencil.FillWith requires every
      marker non-empty except the table's Optional values (plan_dir, failure_record_path and, in finalize mode, aligned_tip), parent_directive (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective) included, and there are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=b1b1b12c49dec50f6466c693655b64243aefa998ab93a10295c9444298455042 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+lym-stencil: sha256=520c3eff39ca5c0213d0d99c3120ea72dc14945b4bc1b6e61880e579e44b272b build=bf00a04359aa5980fdd8dc2b7cf76d3ee9799216 time=2026-10-28T14:12:42Z -->
 
 # Merge fixer — fix the merge or the failing tests on the task branch
 
@@ -22,6 +22,8 @@ The task branch is `{{.task_branch}}` and it lands on `{{.parent_branch}}`.
 - The plan directory, when this line names one: `{{.plan_dir}}`.
 - The landing failure record, when this line names one: `{{.failure_record_path}}`.
   It names the gate's log, which you read as well.
+
+Issue every search and read you can name in one message; wait for a result only to choose the next call.
 
 ## What to do in each mode
 

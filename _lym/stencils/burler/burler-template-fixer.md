@@ -9,7 +9,7 @@
      There are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go).
      It names no reviewer and no channel to one: the fix half is spawned only once the review is accepted on disk, and never waits on or messages the review half.
      This file deliberately never repeats the review-file format, which lives in the file review_format_path names, nor the fix-everything body, which lives in the fix step.
-lym-stencil: sha256=68a8ec0d9ec19e702d001a298be3bb73d895c6bbd081a0643bd996973f51b4af build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+lym-stencil: sha256=19d0ea108bd59e3fc2fca4c8d23e4123f6efc2ab379effef601394f1c07b88aa build=bf00a04359aa5980fdd8dc2b7cf76d3ee9799216 time=2026-10-28T14:12:42Z -->
 
 # Burler — fix
 
@@ -26,8 +26,10 @@ The review is already written and accepted on disk; you hold none of the reviewe
 2. **Validate.**
    Check each finding's premise against the code you read and, separately, the change its `fix` key proposes.
    `{{.instruction_fix_path}}` says what to do with each result.
+   Read the files the findings name together, in one message.
 3. **Fix.**
    Read and execute `{{.instruction_fix_path}}`: the fix-everything rule, your write surface and the fixer-report.
+   Apply the corrections to one file in one message.
 
 Read the fix step only when its step is reached, never early.
 
