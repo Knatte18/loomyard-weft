@@ -41,6 +41,7 @@ Tests:
 `TestPrepare_AppendSystemPromptMatchesDenyNotice` asserts, over every deny combination, that both lines carry `--append-system-prompt-file` naming the run directory's `append-system-prompt.txt` and no `--append-system-prompt ` argument, and that the file holds the notice, a space and the sentence when the notice is non-empty and the sentence alone otherwise; its `testtiming:keep` reason names the file.
 `TestPrepare_WritesArtifactsAndReturnsConsistentLaunch` lists `append-system-prompt.txt` among the artifacts and pins its content.
 `TestBuildDenyNotice_MatchesInstalledDenies`'s `testtiming:keep` reason, which names the old flag, names the prompt file instead.
+`prepare_test.go`'s file header names the prompt file carrying the notice and the trust sentence in place of the `--append-system-prompt` notice.
 The claudeengine doc's notice paragraph and the line builders' docs describe the file and the sentence, and `docs/overview.md`'s shuttle row, which names `--append-system-prompt` for the deny notice, names the prompt file carrying the notice and the trust sentence on launch and resume.
 
 **ImpactSummary:** both line builders are re-signed; their one production caller is Prepare and their test callers are three tests in command_test.go, all in this card.

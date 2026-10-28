@@ -23,8 +23,6 @@
 - `internal/creelengine/doc.go`
 - `internal/creelengine_test#TestDaemon_Protocol`
 - `internal/creelengine_test#TestDaemon_Lifecycle`
-
-**Extends:**
 - `pattern/PATTERN-daemon-wakeups.md`
 
 **Uses:**
@@ -46,7 +44,7 @@ D4: an `asyncRewake` waiter, started by every Stop of a strand's session, holds 
 The ring carries no mail and claims nothing.
 
 Waiters.
-`Store.HookWait(sender)` registers a wait under `waitKey{kind: waitHook, holder: sender.Name}` and wakes the strand's worker, so a set already standing can ring at once; any sender but a strand is refused with "creel: only a strand's idle waiter hook waits for a wake, and <name> is no strand; read with lym creel read".
+`Store.HookWait(sender)` registers a wait under `waitKey{kind: waitHook, holder: sender.Name}` and wakes the strand's worker, so a set already standing can ring at once; any sender but a strand is refused with "creel: only a strand's idle waiter hook waits for a wake, and <name> is no strand", followed for a program sender by "; read with lym creel read" and for EXTERNAL by "; wait for an answer with lym creel post --wait-reply".
 A newer waiter of the same strand ends the older: `HookWait` answers every wait already under that key with `OutcomeSuperseded` before it registers the new one.
 A waiter counts as live while it is registered; `daemon.awaitOutcome` cancels it when its connection closes or the daemon stops, so the registration ends with the connection.
 `daemon.dispatch` serves `VerbHookWait` by `HookWait` and `awaitOutcome` with id 0: a pending response at once, then `OutcomeRing` or `OutcomeSuperseded`.
@@ -76,7 +74,7 @@ after a ring, a new post with a turn end stamped before the ring rings nothing, 
 mid-chain: after a ring, a Stop claim takes part of the set, a newer `HookWait` registers as the blocked Stop's waiter would, and a new post arrives, changing the set, while the turn end stays stamped before the ring; nothing rings until a turn end stamped after the ring;
 after a ring, a Stop claim with `StopHookActive` true hands out mail, the count `resetStopBlocks` reset, where the daemon-start cap would have refused it;
 the cap chain: with 5,000-byte bodies so each claim takes one message, a Stop with `StopHookActive` false and five more with it true each hand out one, the seventh claims nothing while mail stands; a waiter registered after it, with a turn end stamped after that capped Stop, is rung for the remaining set; and the next Stop with `StopHookActive` true hands out mail;
-a strand sender is required: `HookWait` from a program is refused naming `lym creel read`;
+a strand sender is required: `HookWait` from a program is refused naming `lym creel read`, and from EXTERNAL naming `lym creel post --wait-reply`;
 a `LiveStrand`, a pane-mail strand, is never rung.
 `TestDaemon_Protocol` gains a row: with the rig's strand re-scripted as `HookStrand` with the test process's pane pid, since the rig's default `LiveStrand` is a pane-mail strand that never rings, a hook-wait over the socket gets its pending response, and a post to the strand rings it with `OutcomeRing`.
 `TestDaemon_Lifecycle` gains a row on the same re-scripted `HookStrand`: a hook-wait whose daemon is stopped and started again reconnects, and a post to the new daemon rings it.

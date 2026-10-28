@@ -30,11 +30,11 @@ The engine, not the strand, decides which path a strand's posts take (added deci
 `creelengine.Strand` gains two fields the adapter fills:
 `CreelHooks bool`, the strand's reed `CreelHooks` mark (card 1), set when shuttle launched its session with creel's hook delivery, so D4's ring and D5's bell may reach it;
 `PaneMail bool`, true when the strand's engine has no creel hook delivery, so its posts keep today's pane path, the notice and the reminder.
-`hubDelivery.worktreeStrands` sets `CreelHooks` from the persisted strand, and `PaneMail` true when the persisted `Provider` is non-empty and `shuttleengines.ToolBoundaryRenderer(provider)` finds no renderer.
+`hubDelivery.worktreeStrands` sets `CreelHooks` from the persisted strand, and `PaneMail` true when the persisted `Provider` is empty or `shuttleengines.ToolBoundaryRenderer(provider)` finds no renderer (added decision "A strand with no hook-delivering engine keeps the pane path").
 `shuttleengines.ToolBoundaryRenderer`'s doc comment, whose code is unchanged, is rewritten to say it returns the named engine's creel hook-delivery capability, so a false answer means the engine delivers creel mail by no hook; that wording stays true when card 12 changes what the capability renders.
-A strand with no provider, one added with `lym reed add`, has neither: its engine is unknown, so it gets no notice, reminder, ring or bell, and reads its mail with `lym creel read` (D6), and a Claude strand without the mark, a `lym shuttle open` session or one launched before the deploy, gets the same.
-Bound: a Codex session added by hand also has no provider, so it gets no pane path either; only a session shuttle launched names its engine.
-`shuttleengines` registers only `claude` today, and shuttle launches only registered engines, so no production strand is a pane-mail strand until an engine without hook delivery is registered; the branch is kept for that engine, as the added decision rules, and is reached in tests by unregistered providers such as `codex` and `script`.
+A strand with no provider, one added with `lym reed add`, has an unknown engine, so it is a pane-mail strand and keeps the notice and the reminder; a Codex session, which today exists only as such a hand-added strand, gets its mail that way.
+A Claude strand without the mark, a `lym shuttle open` session or one launched before the deploy, is neither: its engine renders hook delivery, so it gets no notice, reminder, ring or bell, and reads its mail with `lym creel read` (D6).
+Bound: only a strand whose engine renders creel hook delivery loses the pane path; `shuttleengines` registers only `claude` today, so the unregistered-provider branch is reached only in tests, by providers such as `codex` and `script`, and the empty-provider branch is what hand-added strands reach in production.
 
 `Idleness` gains `NoTurn bool` and `TurnEndedAt time.Time`, documented as `IdleProbe`'s (card 7); `hubDelivery.Idle` copies them from the probe on every answer.
 
@@ -45,7 +45,7 @@ The package doc of creelfake names the turn script beside the idle flags.
 `stubOps` gains `noTurn bool` and `turnEndedAt time.Time`, which `stubOps.SessionIdle` returns on its probe.
 `seedReedStrands` persists whole reed strands, provider and mark included, as `seedReedState` persists named ones.
 `TestHubDelivery` gains rows:
-`Strands` reports a strand seeded with provider `claude` and the mark as `CreelHooks` true and `PaneMail` false, one with provider `codex`, which `shuttleengines` does not register, as `PaneMail` true, and one with no provider as neither;
+`Strands` reports a strand seeded with provider `claude` and the mark as `CreelHooks` true and `PaneMail` false, one with provider `codex`, which `shuttleengines` does not register, as `PaneMail` true, one with no provider as `PaneMail` true and `CreelHooks` false, and one with provider `claude` and no mark as neither;
 `Idle` copies a stub's `noTurn` and `turnEndedAt` onto its answer for an idle and a draft-held probe.
 The doc's layering paragraph names the two strand fields and the no-turn reading the seam now answers.
 

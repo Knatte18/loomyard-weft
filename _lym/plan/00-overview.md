@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -37,7 +37,7 @@ The cards build bottom-up: the reed mark and shuttle launch field, the creel lin
   The added decision "A post body is capped at the hook field budget" lowers the post cap to the 8 KiB claim budget, while D1 and the acceptance criteria keep the 64 KiB cap for a reply to EXTERNAL, which only a waiting `post --wait-reply` receives and no claim hands out.
   Card 4 caps every post and strand reply by its whole `MessageLine` against the 8 KiB budget, which is stricter than a body cap of the same size, and leaves `maxBodyBytes` at 64 KiB as the EXTERNAL-reply cap alone, so both decisions hold.
 - **The engine decides a strand's path, read from reed's provider tag.**
-  A strand whose provider is known and has no tool-boundary renderer is a pane-mail strand and keeps the notice and the reminder; a strand marked `CreelHooks` gets the ring and the bell; a strand with neither, one added by hand or a Claude session without the mark, keeps its mail for `lym creel read`.
+  A strand whose provider is empty or names an engine with no tool-boundary renderer is a pane-mail strand and keeps the notice and the reminder, so a hand-added strand, a Codex session included, still gets its mail; a strand marked `CreelHooks` gets the ring and the bell; a Claude strand without the mark has neither and keeps its mail for `lym creel read`.
 - **The ring's hold rests on the hook reading's turn-end time.**
   A woken turn records no `UserPromptSubmit`, so shuttle's idle probe reports the time of the turn end its no-turn reading rests on, and the daemon holds a strand's no-turn reading false from a ring until a later turn end; a reading the pane decided is taken as it reads.
 - **The LLM-tier scenarios use shuttle's own launch.**

@@ -37,7 +37,7 @@ A newer set clears only the mark's bell record, so its bell may be typed once mo
 The bell's idle gate is the guarded send's own `Delivery.Idle`, as D5 prescribes; a woken turn whose hook reading reads ready is answered by its first claim, its first tool call or its turn end, well inside the window, so the window, not the idle gate, keeps the bell out of a woken turn.
 `typeBell` types `BellLine` through the guarded `Delivery.Send` under every rule a typed line has: it asks `worker.idle` first, so a draft, a too-short pane or a missing input box holds it and feeds the stall journal; a nil answer or `ErrNotLanded` records the bell for the set, `ErrNotLanded` never retyped; `ErrBusy` records nothing and the next probe tries again.
 Pause and hold apply as for the ring: a paused strand is never probed, and the set holds only the hold owner's mail.
-Only a strand marked `CreelHooks` gets a bell: a pane-mail strand has its notice and reminder, and a strand with neither field gets nothing (D6).
+Only a strand marked `CreelHooks` gets a bell: a pane-mail strand has its notice and reminder, and a strand with neither field, a Claude strand without the mark, reads its mail with `lym creel read` (D6).
 Bound: one fixed line per claimable set, only into a strand marked `CreelHooks`; a waiter whose session died rings into nothing once and the window hands the set to the bell; a restarted daemon may type the bell once more for a set it already woke.
 
 `TestScheduler_HookWake` gains rows:

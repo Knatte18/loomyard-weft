@@ -40,6 +40,7 @@ Claude implements them: `HookInput` reads `hook_event_name` (`PostToolUse` and `
 `BoundaryBlock` marshals `{"decision":"block","reason":<text>,"systemMessage":<text>}`, so the model reads the reason and the operator sees the system message under the tool result or the stop;
 `RewakeOutput` returns text plus a newline and exit code 2, the `asyncRewake` wake.
 `Claude.ToolBoundaryContext` goes; `hookContext` stays for `SessionStartContext`.
+`capabilities.go`'s file header names creel's hook delivery, the hook-input parse, the visible block and the wake output, in place of tool-boundary context rendering.
 
 Its callers move in this card: `hookRead` renders its claimed lines with `BoundaryBlock` in place of `ToolBoundaryContext`, so the PostToolUse hook already prints the visible block; card 13 adds the input, the Stop and the subagent filter.
 `TestHookContext` keeps its SessionStart row and replaces its tool-boundary row with a `BoundaryBlock` row pinning the block JSON byte for byte, `"` in the text escaped once in each field.
