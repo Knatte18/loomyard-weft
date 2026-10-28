@@ -16,9 +16,6 @@
 - `internal/shedrecipe#TestPlanWriteEntry_GateConfig`
 - `internal/loomcli#loomCLI.validatePlanCmd`
 - `internal/loomcli#TestGateParity_PlanGate`
-- `internal/loomcli#TestValidatePlanCmd`
-- `internal/loomcli#TestValidatePlanCmd_Overlay`
-- `internal/loomcli#TestValidatePlanCmd_ReworkReportsFindingsForFirstCardMismatch`
 
 **Extends:**
 - `contracts/specs/loom-plan-spec.md`
@@ -43,7 +40,7 @@ D6: a card that touches a struct a test reflects over covers that seam test.
 
 `planContextFindings` gains the index its callers already hold, re-signed above; `ValidatePlan` and `ValidateReworkPlan` pass theirs.
 When `plan.GoToolchain()` holds and `pc.SeamTests` is set, it calls the reader once and appends `seamTestFindings` after the tier findings; a reader error is returned.
-That error is an infrastructure fault the plan writer cannot fix, since it sits in a test file: it names the file and line and card 5's way forward, which a session that may edit tests takes before the gate is re-run.
+That error is an infrastructure fault the plan writer cannot fix, since it sits in a test file: it names the file and line, the halt is the parent's, and the operator corrects the test file the error names in the task worktree, a misplaced or malformed marker as card 5's way forward says and an unparsable file by making it parse, and re-runs `lym loom validate-plan`.
 
 `seamTestFindings` resolves every marked struct glyph in one `index.ResolveGlyphs` call (made only when the plan has cards and some marker exists; its error is returned), giving each struct's declaring files.
 A card is held to a marked struct `u#T` when a ref of its `Create`, `Edit`, `Extends`, `Delete` or `Rename` groups, with a `plan:` prefix stripped, is `u#T`, a member `u#T.<x>`, the file self glyph of a file declaring `T`, or the package self glyph `u#`.
@@ -55,13 +52,12 @@ Bound, stated in the spec: a method change on a marked struct also requires the 
 Tests:
 `TestValidatePlan_CardChecks` gains D6 rows over a temp worktree holding `internal/s/s.go` declaring `type Deps struct{}`, `internal/s/doc.go`, and `internal/c/c_test.go` declaring `TestDeps` marked `//lym:seam internal/s#Deps`, with `SeamTests` set to `SeamTestReader` over it.
 A card editing `internal/s#Deps` without the test fails with `seam-test-unlisted` naming card, struct, test and the way forward; so do a card editing the member `internal/s#Deps.Field`, a card creating the handle `plan:internal/s#Deps.Run` (a method of the struct), a card editing the file `internal/s/s.go`, a card editing the package `internal/s#`, a card extending `internal/s#Deps`, a card deleting `internal/s#Deps.Field` and a card renaming `internal/s#Deps.Field` to `plan:internal/s#Deps.Other`;
-a card listing `internal/c#TestDeps` under Uses with no later card targeting it passes; a card that also edits `internal/c#TestDeps` passes; a card whose later card edits `internal/c#TestDeps` passes, and so does one whose later card extends it; a card listing `internal/c_test#TestDeps` while the test sits in package `c` passes; a card listing the test's file `internal/c/c_test.go` under Uses passes; a card listing the package self glyph `internal/c#` under Uses passes, and so does one listing `internal/c_test#`; a done card, a `language: csharp` plan and a nil `SeamTests` pass; a marker the parser rejects makes `ValidatePlan` return the scan error; and `ValidateDispatch` over the failing row's plan reports no `seam-test-unlisted`.
+a card listing `internal/c#TestDeps` under Uses with no later card targeting it passes; a card that also edits `internal/c#TestDeps` passes; a card whose later card edits `internal/c#TestDeps` passes, and so does one whose later card extends it; a card listing `internal/c_test#TestDeps` while the test sits in package `c` reports no `seam-test-unlisted`, through the counterpart match, and one `glyph-not-found` for that ref, since quarry answers a `_test` unit with no such package not_found; a card listing the test's file `internal/c/c_test.go` under Uses passes; a card listing the package self glyph `internal/c#` under Uses passes; one listing `internal/c_test#` reports no `seam-test-unlisted` and one `glyph-not-found` for that ref, for the same reason; a done card, a `language: csharp` plan and a nil `SeamTests` pass; and a marker the parser rejects makes `ValidatePlan` return the scan error.
 `TestGateParity_PlanGate` gains a case whose fixture marks a test for a struct a card edits without listing it: the gate told `SeamTestReader` over the fixture root, the lens-review gate, and the verb's no-flag and `--lens-review` modes all report `seam-test-unlisted`.
-Over the tiered fixture card 7 gives them, `TestValidatePlanCmd`'s pair of rows, `TestValidatePlanCmd_Overlay`'s row and `TestValidatePlanCmd_ReworkReportsFindingsForFirstCardMismatch`'s assertion each gain a marked test and a card editing its struct: the no-flag, `--overlay` and `--rework` modes report `seam-test-unlisted` and `--require-approved` does not.
 `TestPlanWriteEntry_GateConfig` gains a row: the gate built through `planContextOf` over such a worktree reports it.
 `noFindingsPlanIndex`, the index that test's rows run on, gains `ResolveGlyphs`, answering every glyph `GlyphFound` with no files, so the row is held through the struct's own glyph and never calls the nil embedded index.
 
-Docs: `contracts/specs/loom-plan-spec.md` gains the `seam-test-unlisted` row with its holding and covering rules, way forward and bound, and its card rules say a card touching a struct a `//lym:seam` test marks lists the test; `internal/loomshed/doc.go` lists the check and `SeamTestReader`; `validatePlanCmd`'s Long help names it.
+Docs: `contracts/specs/loom-plan-spec.md` gains the `seam-test-unlisted` row with its holding and covering rules, way forward and bound, the sentence that a seam-marker scan error halts the gate, the halt is the parent's, and the operator corrects the marker or the unparsable test file the error names in the task worktree and re-runs `lym loom validate-plan`, and its card rules say a card touching a struct a `//lym:seam` test marks lists the test; `internal/loomshed/doc.go` lists the check and `SeamTestReader`; `validatePlanCmd`'s Long help adds `seam-test-unlisted` to the sentence card 7 rewrote, the one starting "Every mode but --require-approved also runs", among the checks it lists, outside the clause on what `rename-tool-missing` and `pattern-changes-mismatch` read.
 
 **ImpactSummary:** `planContextFindings` gains an index parameter; its two callers sit in the same file and are listed; the new refusal fires only on a go plan with a card touching a marked struct.
 
