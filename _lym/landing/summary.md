@@ -1,0 +1,49 @@
+# Webster recovery names a working way forward; gate test is no weft ref
+
+A Webster batch was failed on fabric-reference findings that were false positives, and the recovery advice then sent the Webster session around a loop of verbs that each refused (#877, #878).
+This change fixes the false positive and makes each refusal on that path name a step that works.
+
+## The audit no longer reads a card ID as a weft sibling
+
+The fork ran `lym gate test --wait --gate card --card 6-clone-records-marker-on-prime-weft`.
+The card ID ends in the weft suffix, so the fabric-reference scanner's bare-name rule read it as a sibling worktree.
+`ReferenceRule.MatchPath` now blanks every `lym gate` invocation in command position before the bare-word scan.
+A gate takes gate keys, card IDs, tiers and package patterns, all resolved inside the worktree.
+The separator-prefixed path rule, the exact sibling-path rule and the `lym fabric/weft/warp` spelling rule still run over gate commands, so `lym gate test ../other-weft/...` still matches.
+The plan check uses the same rule, so a card's Verify command that names its own `-weft`-suffixed card ID is no longer flagged either.
+
+## recover-batch names accept-audit only when accept-audit would accept
+
+When every uncheckable entry of a failed batch is a pathless fabric reference, recover-batch already accepted them in line when every command was read-only.
+Otherwise it refused with `needs_fresh`, and the way forward always offered `accept-audit --batch NN`, including on the read-only basis it had just ruled out.
+The evidence check is now split out of `AcceptBatchFabricReference` into `batchFabricReferenceEvidence`, which mutates nothing.
+The refusal runs that check:
+
+- When the evidence holds (HEAD at the batch's start, clean tree), the way forward is `accept-audit --batch NN` then `recover-batch NN`, or the reset-to-start route.
+- When it refuses, the way forward is accept-audit's own reason and steps, ending by re-running `accept-audit --batch NN` then `recover-batch NN`, with the reset-to-start route appended when the steps do not already name it.
+  For the incident that means `reset --to batch-start --batch 06`, then accept-audit, then recover-batch.
+
+The refusal still unwraps to `ErrRecoveryNeedsFresh`, so the Master stencil's `needs_fresh` rung is unchanged.
+No guard is weakened: recover-batch still accepts in line only on the read-only basis.
+
+## reset's run-lock refusal names who resets and when
+
+`reset` for any target but `report-head` refuses while `run.lock` is held, and its way forward was to wait, which the Webster session holding the lock could never do.
+The refusal now says the reset runs only once the run has stopped, that a Webster session inside the run ends it as stuck instead, and that the run's parent re-runs the reset once `lym webster status` shows no run in progress.
+
+## Design decisions
+
+- The gate exemption covers only the bare-name rule, so a real weft path in a gate command still counts as a reference.
+- `reset --to batch-start` stays refused inside the run.
+  The Master stencil allows Master no reset but `report-head`, and this reset discards a batch's work before the parent has judged it.
+- recover-batch does not accept in line on the at-start basis.
+  That basis leaves the fabric repo's own state for the caller to vouch for, so it stays an explicit `accept-audit --batch` call.
+- `batchFabricReferenceEvidence` treats a nil read-only classifier as accepting nothing, since recover-batch may pass one.
+- Naming the matched weft text in a fabric-reference finding's detail is left for a follow-up: it changes the `RefMatcher` seam for a case the scanner fix already stops.
+
+## Tests
+
+- `TestRefScanner_Matches` gains rows for the incident's gate command, the same command chained after `git commit -m "…"`, a gate command with a separator-prefixed weft path, and a bare weft name after a gate segment.
+- `RecoverSpawnOrAttach`'s table now checks that a batch with no recorded start names why accept-audit refuses and no accept-audit route.
+  It gains rows for a mutating reference at the batch's start (accept-audit route) and one commit past it (batch-start reset, then accept-audit and recover-batch).
+- `TestPlanReset_HeldRunLockIsTransientBusy` pins the new run-lock way forward on the incident's `batch-start` target.
