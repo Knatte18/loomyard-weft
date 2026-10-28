@@ -32,29 +32,28 @@ grouping
 
 Concrete and claimable; only a task can run.
 
-### Running (9)
+### Running (10)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Creel delivers every post to a Claude strand through hooks, visibly and in full**<br>• PostToolUse, Stop and asyncRewake hooks carry posts as fast as possible; shuttle appends a trust and reply sentence to the system prompt | [`creel-hook-post`](design-creel-hook-post.md) | loom | Webster | neve | 5d<br>2h | creel, shuttle, claude |
-| T2 | **Gate and agent runs survive transient task-limit pressure and run in the anchor**<br>• `profile: solid` | [`gate-robustness`](design-gate-robustness.md) | darn | Darn-Write | neve | 22m<br>14m | gate, shuttle, dotnet, batten, loom |
+| T2 | **Gate and agent runs survive transient task-limit pressure and run in the anchor**<br>• `profile: solid` | [`gate-robustness`](design-gate-robustness.md) | darn | Darn-Write | neve | 22m<br>15m | gate, shuttle, dotnet, batten, loom |
+| T3 | **Codex hook delivery spike**<br>• Six Codex runs on Luna low: can Codex take creel posts through hooks like Claude does<br>• `profile: docs` | [`codex-hook-spike`](design-codex-hook-spike.md) | darn | Worktree-Create | neve | 0m<br>0m | codex, creel |
 | T4 | **Machine checks in validate-discussion and validate-plan for recurring review findings**<br>• Citation and acceptance checks for the decision record; seam-test, tier-tag and doc.go checks for plan cards<br>• `profile: solid` | [`validator-checks`](design-validator-checks.md) | loom | Plan-Burler-Fix | neve | 1h<br>1h | loom, stencil |
-| T6 | **A transient fork EAGAIN or died tmux session does not end a loom run hard**<br>• `profile: solid` | [`transient-halt-recovery`](design-transient-halt-recovery.md) | darn | Darn-Write | neve | 22m<br>14m | loom, shed, shuttle, reed, fabric |
-| T7 | **lym loom resume names prior work and honours a recorded wait decision** | [`resume-fixes`](design-resume-fixes.md) | darn | Code-Burler-Fix | neve | 22m<br>14m | loom, shed |
-| T8 | **Webster recovery has a way forward, and its audit accepts a sanctioned gate test** | [`webster-recovery`](design-webster-recovery.md) | darn | Darn-Write | neve | 21m<br>14m | webster |
+| T6 | **A transient fork EAGAIN or died tmux session does not end a loom run hard**<br>• `profile: solid` | [`transient-halt-recovery`](design-transient-halt-recovery.md) | darn | Darn-Write | neve | 22m<br>15m | loom, shed, shuttle, reed, fabric |
+| T7 | **lym loom resume names prior work and honours a recorded wait decision** | [`resume-fixes`](design-resume-fixes.md) | darn | Code-Burler-Fix | neve | 22m<br>15m | loom, shed |
+| T8 | **Webster recovery has a way forward, and its audit accepts a sanctioned gate test** | [`webster-recovery`](design-webster-recovery.md) | darn | Darn-Write | neve | 21m<br>15m | webster |
 | T9 | **Burler fork audit reads a listing git branch as read-only** | [`fork-audit-branch-list`](design-fork-audit-branch-list.md) | darn | Code-Burler-Fix | neve | 22m<br>14m | burler |
-| T10 | **Comment lint ignores a legacy wrapped paragraph changed only by a word rename** | [`comment-lint-rename`](design-comment-lint-rename.md) | darn | Code-Burler-Fix | neve | 21m<br>14m | loom |
+| T10 | **Comment lint ignores a legacy wrapped paragraph changed only by a word rename** | [`comment-lint-rename`](design-comment-lint-rename.md) | darn | Code-Burler-Fix | neve | 22m<br>14m | loom |
 | T11 | **A racing async push reports no divergence that is already gone** | [`async-push-race`](design-async-push-race.md) | darn | Darn-Write | neve | 21m<br>14m | fabric |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Codex hook delivery spike**<br>• Six Codex runs on Luna low: can Codex take creel posts through hooks like Claude does<br>• `profile: docs` | [`codex-hook-spike`](design-codex-hook-spike.md) | darn |  | 0m<br>0m | codex, creel |
+_None._
 
 ### Layer A (1)
 
