@@ -1,6 +1,8 @@
 # Stencil and system-prompt sentences that batch independent calls and edits
 
-`turn-batching` · Task · enhancement, stencil, shuttle · draft
+`turn-batching` · Task · enhancement, stencil, shuttle
+
+Depends on: [`creel-hook-post`](design-creel-hook-post.md), [`validator-checks`](design-validator-checks.md), [`review-setup-tuning`](design-review-setup-tuning.md)
 
 ## Seen
 
