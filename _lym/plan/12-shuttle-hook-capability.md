@@ -1,14 +1,14 @@
 # Card 12 — The tool-boundary capability parses hook input and renders a visible block per event
 
 **Create:**
-- `plan:internal/shuttleengine#HookEvent` -> `type HookEvent string`
-- `plan:internal/shuttleengine#HookEventToolBoundary` -> `const HookEventToolBoundary HookEvent = "tool-boundary"`
-- `plan:internal/shuttleengine#HookEventStop` -> `const HookEventStop HookEvent = "stop"`
-- `plan:internal/shuttleengine#HookInput` -> `type HookInput struct`
-- `plan:internal/shuttleengine/claudeengine#Claude.HookInput` -> `func (c *Claude) HookInput(payload []byte) (shuttleengine.HookInput, error)`
-- `plan:internal/shuttleengine/claudeengine#Claude.BoundaryBlock` -> `func (c *Claude) BoundaryBlock(text string) ([]byte, error)`
-- `plan:internal/shuttleengine/claudeengine#Claude.RewakeOutput` -> `func (c *Claude) RewakeOutput(text string) (stderr []byte, exitCode int)`
-- `plan:internal/shuttleengine/claudeengine#TestClaude_HookInput` -> `func TestClaude_HookInput(t *testing.T)`
+- `internal/shuttleengine#HookEvent`
+- `internal/shuttleengine#HookEventToolBoundary`
+- `internal/shuttleengine#HookEventStop`
+- `internal/shuttleengine#HookInput`
+- `internal/shuttleengine/claudeengine#Claude.HookInput`
+- `internal/shuttleengine/claudeengine#Claude.BoundaryBlock`
+- `internal/shuttleengine/claudeengine#Claude.RewakeOutput`
+- `internal/shuttleengine/claudeengine#TestClaude_HookInput`
 
 **Edit:**
 - `internal/shuttleengine#ToolBoundaryContextRenderer`

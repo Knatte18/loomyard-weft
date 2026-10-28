@@ -1,10 +1,10 @@
 # Card 11 — A typed fixed bell wakes an idle hook strand no waiter reaches
 
 **Create:**
-- `plan:internal/creelengine#BellLine` -> `const BellLine = "[creel] Mail is waiting for you. End this turn now; creel hands the mail to you as the turn ends. Do not run lym creel read for it."`
-- `plan:internal/creelengine#bellGrace` -> `const bellGrace = 5 * time.Second`
-- `plan:internal/creelengine#ringAnswerWindow` -> `const ringAnswerWindow = 30 * time.Second`
-- `plan:internal/creelengine#worker.typeBell` -> `func (w *worker) typeBell(strand Strand, ids []int64) bool`
+- `internal/creelengine#BellLine`
+- `internal/creelengine#bellGrace`
+- `internal/creelengine#ringAnswerWindow`
+- `internal/creelengine#worker.typeBell`
 
 **Edit:**
 - `internal/creelengine#wakeMark`
