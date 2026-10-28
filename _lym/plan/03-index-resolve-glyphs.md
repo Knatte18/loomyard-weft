@@ -1,14 +1,14 @@
 # Card 3 — index-resolve-glyphs
 
 **Create:**
-- `plan:internal/planindex#GlyphVerdict` -> `type GlyphVerdict string`
-- `plan:internal/planindex#GlyphFound` -> `const GlyphFound GlyphVerdict = "found"`
-- `plan:internal/planindex#GlyphMissing` -> `const GlyphMissing GlyphVerdict = "missing"`
-- `plan:internal/planindex#GlyphAmbiguous` -> `const GlyphAmbiguous GlyphVerdict = "ambiguous"`
-- `plan:internal/planindex#GlyphAnswer` -> `type GlyphAnswer struct`
-- `plan:internal/planglyph#index.ResolveGlyphs` -> `func (index) ResolveGlyphs(worktreeRoot string, glyphs []string) ([]planindex.GlyphAnswer, error)`
-- `plan:internal/planglyph#resolveVerdict` -> `func resolveVerdict(worktreeRoot string, r quarry.ResolveResult) (planindex.GlyphVerdict, bool, ambiguity)`
-- `plan:internal/planglyph#TestResolveGlyphs` -> `func TestResolveGlyphs(t *testing.T)`
+- `internal/planindex#GlyphVerdict`
+- `internal/planindex#GlyphFound`
+- `internal/planindex#GlyphMissing`
+- `internal/planindex#GlyphAmbiguous`
+- `internal/planindex#GlyphAnswer`
+- `internal/planglyph#index.ResolveGlyphs`
+- `internal/planglyph#resolveVerdict`
+- `internal/planglyph#TestResolveGlyphs`
 
 **Edit:**
 - `internal/planglyph#statusFindings`

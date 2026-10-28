@@ -22,9 +22,9 @@
 - `internal/loomshed/doc.go`
 
 **Uses:**
-- `plan:internal/loomshed#goPackageDirs`
+- `internal/loomshed#goPackageDirs`
 - `plan:internal/impactset#FindSeamTests`
-- `plan:internal/planindex#GlyphAnswer`
+- `internal/planindex#GlyphAnswer`
 - `internal/planparser#GoPackageCounterpart`
 - `internal/planparser#ParseRef`
 - `internal/planparser#PathEntryPath`

@@ -15,7 +15,7 @@
 - `internal/loomcli/doc.go`
 
 **Uses:**
-- `plan:internal/planindex#GlyphAnswer`
+- `internal/planindex#GlyphAnswer`
 - `internal/planparser#ParseRef`
 - `internal/planparser#PathEntryPath`
 - `internal/testkit/plankit#Write`
