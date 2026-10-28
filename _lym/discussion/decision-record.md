@@ -56,6 +56,13 @@ Rationale: the loop's own trace holds the start warnings, so the halt note's `tr
 
 - A deploy that holds the binary open for writing longer than the retry bound still ends the run `failed`, now with a cause that names it.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - start-failed-cause-not-decided-form (class design, severity BLOCKING, open in rounds 1)
+  - trace-fallback-requires-start-failure (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1, D2: a child start refused with ETXTBSY and then accepted runs the step, and the recorded waits double from the first delay.
