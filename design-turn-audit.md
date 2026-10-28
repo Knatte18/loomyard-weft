@@ -1,6 +1,6 @@
 # Audit where agent turns go and which could be merged
 
-`turn-audit` · Task · research, stencil, shuttle, loom, webster · running · Finalize
+`turn-audit` · Task · research, stencil, shuttle, loom, webster · done
 
 ## Question
 
