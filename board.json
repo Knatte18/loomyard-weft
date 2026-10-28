@@ -642,30 +642,6 @@
       "revised": "2026-10-27T17:50:10Z"
     },
     {
-      "id": 880,
-      "handle": "T7",
-      "slug": "compact-inject-draft",
-      "title": "Watcher's /compact inject into an idle orch is typed but not submitted (unconfirmed, then stalled on draft)",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "creel",
-        "shuttle",
-        "orch"
-      ],
-      "issues": [
-        897
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #897](https://github.com/Knatte18/loomyard/issues/897).\n\n## Seen\n\nOn 2026-10-28 the orch watcher's `/compact` cycle inject into the idle orch strand `ly:orch` was typed but never submitted.\nThe orch had written its note and ended its turn; the session was idle.\n`lym creel log --since 2026-10-28T13:35:00Z` shows:\n\n- 13:44:05.80 `posted` inject #107, command `compact`, from `ly:ORCHWATCH`.\n- 13:44:05.93 `sending` #107.\n- 13:44:25.52 `unconfirmed` #107: the send answered not landed, so creel never retypes it.\n- 13:44:43.53 `posted` inject #108, command `color`.\n- 13:44:43.65 `stalled`, reason `draft`: the `/compact` text sat in the input box unsent.\n\nThe cycle stalled until the operator submitted `/compact` by hand.\n\n## Suspected cause\n\nUnconfirmed: `creel-hook-post` (161a4a7f) had been deployed about twenty minutes earlier.\nIt added an `asyncRewake` `Stop` entry, `lym creel hook-wait claude`, that stays open while the session is idle.\nThe typed line or its Enter may race that hook, or the pane may not read as ready for the verified send while it runs.\n\n## Workaround\n\nThe operator submits the stuck `/compact` draft by hand.\n\n## Expected\n\nA cycle inject into an idle orch is submitted, or an unconfirmed send whose text sits as a draft is completed or cleared and retried, so the cycle never hangs on a draft.",
-      "status": "done",
-      "created": "2026-10-28T13:50:29Z",
-      "revised": "2026-10-28T13:50:43Z"
-    },
-    {
       "id": 881,
       "handle": "T8",
       "slug": "shuttle-hook-signals",
@@ -681,9 +657,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "compact-inject-draft"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "PostToolUse activity for the idle reader, UserPromptSubmit carried over on respawn, subagent and compact signals",
       "body": "Claude Code hooks give shuttle signals it now guesses from panes and pids; this task puts them to use.\nCreel already renders hooks into each Claude session's `settings.json` (`creel-hook-post`), so new entries ride the same path.\n\n## Dead waiter in the activity reader (from B1)\n\nTask `idle-notice-no-live-run` landed as 450bc6ff1 with diagnostics only: `ReadAgentActivity` still skips a running run whose waiter pid is dead, so the idle notice can say \"no agent activity readable\" while an agent works; it logs that case (Warn once per episode).\nThe root cause is unconfirmed.\n\nWhat to do: record a `PostToolUse` activity stamp per strand and let the activity reader use it, so a working agent reads as active whatever its waiter pid says; find and fix why the waiter pid is dead, or drop the pid as the activity source.\n\n## Operator input lost on respawn (from B7)\n\nAn instruction the operator typed into a worker's pane was lost when the tackler re-spawned that row's session: the new session started from the row's prompt alone.\n\nWhat to do: a `UserPromptSubmit` hook records each prompt the operator submits to a strand, and a re-spawned row's session gets the unanswered ones carried over with its prompt.\nAt the least, the operator is told in a notice that the session was replaced and which instruction may be lost.\n\n## Further hook signals\n\n- `SubagentStart` and `SubagentStop`: a session whose fork works reads as active, not idle.\n- `PreCompact` and `PostCompact`: a compaction reads as activity, and is recorded for the strand.\n- Claude Code's `quota_auto_resume_*` settings: decide whether shuttle sets them, so a session resumes by itself when a usage limit resets; align with `usage-limit-wake`, which lands first.\n\nEach signal is used only where it replaces a guess the code makes today; one that has no such use is left out, with the reason in the change description.\n",
