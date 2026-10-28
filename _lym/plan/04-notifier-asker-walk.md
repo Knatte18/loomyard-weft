@@ -1,8 +1,8 @@
 # Card 4 — notifier-asker-walk
 
 **Create:**
-- `plan:internal/orchcli#NotifyAsker` -> `func NotifyAsker(location *lymcwd.Location, program, line string) (posted bool, err error)`
-- `plan:internal/orchcli#askerOrchStrand` -> `func askerOrchStrand(location *lymcwd.Location, live func(worktree *lymcwd.Location) (bool, error)) (name string, recorded bool, err error)`
+- `internal/orchcli#NotifyAsker`
+- `internal/orchcli#askerOrchStrand`
 
 **Edit:**
 - `internal/orchcli#TestParentOrchStrand`
@@ -14,7 +14,7 @@
 - `internal/orchcli/doc.go`
 
 **Uses:**
-- `plan:internal/orchroute#Asker`
+- `internal/orchroute#Asker`
 - `internal/orchcli#postNotice`
 - `internal/orchcli#OrchLive`
 - `internal/burlercli/doc.go`

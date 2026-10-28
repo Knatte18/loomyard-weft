@@ -11,9 +11,9 @@
 - `internal/creelcli/doc.go`
 
 **Uses:**
-- `plan:internal/orchroute#Asker`
-- `plan:internal/orchroute#Live`
-- `plan:internal/orchroute#Paths`
+- `internal/orchroute#Asker`
+- `internal/orchroute#Live`
+- `internal/orchroute#Paths`
 
 **Intent:**
 Add `--parent` to `lym creel post` (D1): `lym creel post --parent <text>` takes no receiver argument and posts to the caller's parent orch, resolved at post time from the caller's worktree with `orchroute.Asker`, the rule batten's run notices use: from a pair the walk from the pair's recorded parent to the nearest live orch, from a beam or the prime the walk starting at that worktree itself, the prime's orch at the end.

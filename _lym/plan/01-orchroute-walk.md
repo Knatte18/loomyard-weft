@@ -2,19 +2,19 @@
 
 **Create:**
 - `internal/orchroute/doc.go`
-- `plan:internal/orchroute#DirName` -> `const DirName = "orch"`
-- `plan:internal/orchroute#RulesRel` -> `func RulesRel() string`
-- `plan:internal/orchroute#Paths` -> `func Paths(location *lymcwd.Location) orchengine.Paths`
-- `plan:internal/orchroute#Live` -> `func Live(worktree *lymcwd.Location) (bool, error)`
-- `plan:internal/orchroute#liveFrom` -> `func liveFrom(st orchengine.State, strands func() ([]reedengine.StrandStatus, error)) (bool, error)`
-- `plan:internal/orchroute#StrandOf` -> `func StrandOf(worktree *lymcwd.Location) (name string, recorded bool, err error)`
-- `plan:internal/orchroute#Prime` -> `func Prime(location *lymcwd.Location) (*lymcwd.Location, error)`
-- `plan:internal/orchroute#WorktreeOrPrime` -> `func WorktreeOrPrime(location *lymcwd.Location, worktree string) (*lymcwd.Location, error)`
-- `plan:internal/orchroute#From` -> `func From(start *lymcwd.Location, live func(worktree *lymcwd.Location) (bool, error)) (name string, recorded bool, err error)`
-- `plan:internal/orchroute#FromPair` -> `func FromPair(pair *lymcwd.Location, live func(worktree *lymcwd.Location) (bool, error)) (name string, recorded bool, err error)`
-- `plan:internal/orchroute#Asker` -> `func Asker(location *lymcwd.Location, live func(worktree *lymcwd.Location) (bool, error)) (name string, recorded bool, err error)`
-- `plan:internal/orchroute#TestLiveFrom` -> `func TestLiveFrom(t *testing.T)`
-- `plan:internal/orchroute#TestAsker` -> `func TestAsker(t *testing.T)`
+- `internal/orchroute#DirName`
+- `internal/orchroute#RulesRel`
+- `internal/orchroute#Paths`
+- `internal/orchroute#Live`
+- `internal/orchroute#liveFrom`
+- `internal/orchroute#StrandOf`
+- `internal/orchroute#Prime`
+- `internal/orchroute#WorktreeOrPrime`
+- `internal/orchroute#From`
+- `internal/orchroute#FromPair`
+- `internal/orchroute#Asker`
+- `internal/orchroute#TestLiveFrom`
+- `internal/orchroute#TestAsker`
 - `internal/orchroute/testmain_test.go`
 - `internal/orchroute/testmain_integration_test.go`
 
