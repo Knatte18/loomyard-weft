@@ -10,8 +10,8 @@
 - `PATTERN.md`
 
 **Uses:**
-- `plan:internal/landingshed#EscalateHalt`
-- `plan:internal/landingshed#EscalateStopPrefix`
+- `internal/landingshed#EscalateHalt`
+- `internal/landingshed#EscalateStopPrefix`
 - `internal/landingshed#LandingStopPrefix`
 
 **Intent:**

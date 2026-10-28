@@ -1,12 +1,12 @@
 {
   "runGuid": "0f5adbbab22af2edd998c7fd0173d726",
-  "planFingerprint": "35ca57bea8bafb932a78062912e458b95b9916075274db11587bdfb3486b9a84",
+  "planFingerprint": "183d955ecd107064494b264691068cdd053175b0feac34c2f4735f7d9cefbc91",
   "planFileHashes": {
     "00-overview.md": "20d2d87e27845fcbdcb49f4963bc7cc0b8d678a16729ce1791846e0c69086569",
     "01-finalize-merges-in-place.md": "9bd29242cba6c897e146cc6ad38c6f35b0447fd540cc77478fbe8a137d2624f2",
-    "02-escalate-halt-prefix.md": "71c1b8ec0eae9d909f4af3ccccb8d48f5e0c9020c25bdd19d4af2000b4d0ba8a",
-    "03-arbiter-judges-escalate-first.md": "9ce6b08d8cdae6c71263fcfb4152018f87481e116b7137c3b8f11d4e2e1a42d9",
-    "04-restep-hold-key.md": "72e95bbabe72b9bc63c656ee2c2d7411fc701c62d97f2f5164397eef1c4018aa"
+    "02-escalate-halt-prefix.md": "8775e33038d9492ffbf276ad9ad7d27baba8a6941c0434cd955f78c789393897",
+    "03-arbiter-judges-escalate-first.md": "a842b982cdc733f5fd640f57d1b115e63842cd3620869692cb5ab0680c9586a5",
+    "04-restep-hold-key.md": "1c8aedf5abef8da930907b27c6eab310df621c0946ac0c9693e159f480e89a2a"
   },
   "planOverviewFrameHash": "7f313af15efd3866fa6555cdd586959806afba2d7e0186e4a94e8a74c28555a7",
   "partition": [
@@ -191,7 +191,7 @@
       }
     }
   ],
-  "currentBatch": 2,
+  "currentBatch": 0,
   "masterStrand": "cc9328600fc322351769081abc945991",
   "masterSessionId": "fc8d23c0-9cc1-49a8-9f08-87222d5c1836",
   "masterEngine": "claude",
@@ -232,18 +232,36 @@
         "02-escalate-halt-prefix"
       ],
       "cardHashes": {
-        "02-escalate-halt-prefix": "71c1b8ec0eae9d909f4af3ccccb8d48f5e0c9020c25bdd19d4af2000b4d0ba8a"
+        "02-escalate-halt-prefix": "8775e33038d9492ffbf276ad9ad7d27baba8a6941c0434cd955f78c789393897"
       },
       "startSha": "9e0974b0efdfb0ff23655aa6a1716655a6e819ff",
       "kind": "fork",
       "spawnedAt": "2026-10-28T10:28:35Z",
       "sessionId": "fc8d23c0-9cc1-49a8-9f08-87222d5c1836",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "02-escalate-halt-prefix",
+        "status": "done",
+        "head_sha": "c5855d8d80f1127ecfc8b9333756284ef68edc4b",
+        "deviations": [
+          "internal/landingshed/parentalign_fixer_test.go"
+        ]
+      },
+      "cardShas": [
+        "c5855d8d80f1127ecfc8b9333756284ef68edc4b"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-landing-settles-in-place/fc8d23c0-9cc1-49a8-9f08-87222d5c1836/subagents/agent-a0ae8ea2a56a16870.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-landing-settles-in-place/fc8d23c0-9cc1-49a8-9f08-87222d5c1836/subagents/agent-a0ae8ea2a56a16870.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-landing-settles-in-place/fc8d23c0-9cc1-49a8-9f08-87222d5c1836/subagents/agent-adf773f352b8ac3a3.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-landing-settles-in-place/fc8d23c0-9cc1-49a8-9f08-87222d5c1836/subagents/agent-adf773f352b8ac3a3.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-landing-settles-in-place/fc8d23c0-9cc1-49a8-9f08-87222d5c1836/subagents/agent-a0ae8ea2a56a16870.jsonl"
   ]
 }
