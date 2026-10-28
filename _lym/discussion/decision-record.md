@@ -79,6 +79,13 @@ Rationale: workspace settings override folder settings, so the beam file would o
 - Rewriting an existing `settings.json` drops its comments; files lym wrote carry none.
 - Board files written by an older binary keep `beam_color` as an unknown key and round-trip it, so a mixed fleet keeps the value.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - beam-color-replay-normalize-untested (class design, severity MEDIUM, open in rounds 1)
+  - fabricengine-doc-prime-only-settings (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - The prime's settings carry `#1b5e20` on the title bar and activity bar, and title `LY: <prime>` for shortname `ly`.
