@@ -24,7 +24,7 @@ Codex asks once per folder whether to trust it, keyed on the git repository root
 - `codexengine` adds the launch's worktree root to that home's trust list when missing, and in the same write drops entries whose folder no longer exists, so no teardown step is needed and only shuttle knows of it.
 - Each write is a read-modify-write under an `internal/lock` file lock, written to a temp file and renamed into place.
 - Codex writes `config.toml` itself too (a `[tui]` table on first start) and ignores the lock: lym pre-sets those settings, and checks after startup that the entry is still there.
-- Untested: whether Codex resolves a linked worktree to its own root or to the main repository's.
+- Tested 2026-10-28 (`codex-hook-spike`, one sample): one accepted trust entry keyed on the main checkout's root covers a linked worktree of the same repository, and the project hook ran there with no prompt; whether the shared lym Codex home still needs an entry per worktree is not tested.
 
 ## Steps
 
