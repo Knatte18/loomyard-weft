@@ -1,0 +1,542 @@
+diff --git a/internal/battencli/arm.go b/internal/battencli/arm.go
+index 5d0e9f6e..f7ba1a25 100644
+--- a/internal/battencli/arm.go
++++ b/internal/battencli/arm.go
+@@ -534,8 +534,9 @@ func battenLoopSpec(location *lymcwd.Location, slug string) shedverbs.LoopSpec {
+ 		StopFiles: func(traceID string) (string, string) {
+ 			return shedrun.StepTraceCopy(location, slug, traceID), shedrun.StepStderr(location, slug, traceID)
+ 		},
+-		TraceFiles: func(traceID string) ([]string, error) { return logger.TraceFilesFor(logger.TraceDir(), traceID) },
+-		Executable: executable,
++		TraceFiles:    func(traceID string) ([]string, error) { return logger.TraceFilesFor(logger.TraceDir(), traceID) },
++		LoopTraceFile: logger.TraceFile,
++		Executable:    executable,
+ 		OnStart: func() {
+ 			if err := runproc.Register(fabricengine.RunProcDir(location.HubPath), slug, runproc.SelfRecord(runproc.RoleLoop)); err != nil {
+ 				logger.Warn("battencli: could not register the loop process", "slug", slug, "error", err.Error())
+diff --git a/internal/loomcli/looparm.go b/internal/loomcli/looparm.go
+index d8c1935d..17f6aeb3 100644
+--- a/internal/loomcli/looparm.go
++++ b/internal/loomcli/looparm.go
+@@ -48,11 +48,12 @@ func loopSpecFor(loc *lymcwd.Location, runID string, idle time.Duration, activit
+ 		StopFiles: func(traceID string) (string, string) {
+ 			return shedrun.StepTraceCopy(loc, runID, traceID), shedrun.StepStderr(loc, runID, traceID)
+ 		},
+-		TraceFiles:  func(traceID string) ([]string, error) { return logger.TraceFilesFor(logger.TraceDir(), traceID) },
+-		Executable:  executable,
+-		IdleTimeout: idle,
+-		Activity:    activity,
+-		OnStart:     func() { registerRunProcess(loc, loc.WorktreeName, runproc.RoleLoop) },
++		TraceFiles:    func(traceID string) ([]string, error) { return logger.TraceFilesFor(logger.TraceDir(), traceID) },
++		LoopTraceFile: logger.TraceFile,
++		Executable:    executable,
++		IdleTimeout:   idle,
++		Activity:      activity,
++		OnStart:       func() { registerRunProcess(loc, loc.WorktreeName, runproc.RoleLoop) },
+ 		Pause: func(now time.Time) (pauserecord.Coverage, error) {
+ 			geometry, err := hubgeom.PauseGeometry(loc)
+ 			if err != nil {
+diff --git a/internal/proc/doc.go b/internal/proc/doc.go
+index 900b629d..9d31be38 100644
+--- a/internal/proc/doc.go
++++ b/internal/proc/doc.go
+@@ -19,6 +19,7 @@
+ //
+ // IsSpawnAgain tells a process start the host refused for a temporary resource shortage, EAGAIN from fork or exec, from every other start failure.
+ // NoteSpawnAgain records the time of each such refusal process-wide, and LastSpawnAgain reads it back, so a caller that sees a later failure can judge whether a host resource shortage preceded it.
++// IsSpawnBusy tells a start refused because the executable was open for writing, ETXTBSY, as while a deploy rewrites the binary in place.
+ //
+ // BuildServerOffEnv is the environment that keeps a .NET build from leaving MSBuild reuse nodes and the MSBuild server running after it exits;
+ // reed exports it in every strand pane and `lym gate test` sets it for every run, so builds that parallel agents start leave no thread-holding servers behind.
+diff --git a/internal/proc/spawnbusy.go b/internal/proc/spawnbusy.go
+new file mode 100644
+index 00000000..b770ad17
+--- /dev/null
++++ b/internal/proc/spawnbusy.go
+@@ -0,0 +1,14 @@
++// spawnbusy.go holds the test for a process start refused because the executable was open for writing.
++
++package proc
++
++import (
++	"errors"
++	"syscall"
++)
++
++// IsSpawnBusy reports whether err is a refusal to start a process because its executable was open for writing, ETXTBSY from exec, as while a deploy rewrites the binary in place.
++// The refusal comes before the program runs, so a caller may start the same command again without running it twice.
++func IsSpawnBusy(err error) bool {
++	return errors.Is(err, syscall.ETXTBSY)
++}
+diff --git a/internal/shedverbs/doc.go b/internal/shedverbs/doc.go
+index da96417e..97dd519f 100644
+--- a/internal/shedverbs/doc.go
++++ b/internal/shedverbs/doc.go
+@@ -36,7 +36,10 @@
+ // error is a step that ended in an error, and interrupted a child that ended without an envelope; both write the status file failed while it still reads running.
+ // An interrupted child's cause is its exit, its command line and an excerpt of its captured stderr: a Go crash's first lines when stderr holds one, and its last lines otherwise.
+ // The stop names the row the status file names once the child exited, since a child that skipped gated rows moved the run on before it died,
+-// and its trace file is the child's first trace file, or its captured stderr when it left none.
++// and its trace file is the child's first trace file, or its captured stderr when it left none, or the loop process's own trace file when it left neither.
++// A child start refused because the executable was open for writing, ETXTBSY, as while a deploy rewrites the lym binary in place, is tried again, five tries in all, waiting 100 ms before the first retry and doubling after through Spec.Loop.Sleep.
++// A child that never started is interrupted with the cause start-failed after <n> tries: <error>, which for ETXTBSY adds what the refusal means.
++// The loop process's own trace file, which Spec.Loop.LoopTraceFile names, holds the start failure of a child that never started.
+ // The failed write comes before Hooks.AfterInterrupt, so the hook reads the status the stop leaves: a child that died before its resume write leaves a paused run paused.
+ // interrupted is also the stop on the status read at an iteration's top, with the cause status-missing for an absent file and status-unreadable: <error> for an unreadable one.
+ // A decode error stops at once, since the file stays undecodable to this binary; any other read error gets one re-read through the same re-step the transient errors share, and stops when that fails or the re-step is already used.
+diff --git a/internal/shedverbs/loop.go b/internal/shedverbs/loop.go
+index fa112799..61242f1b 100644
+--- a/internal/shedverbs/loop.go
++++ b/internal/shedverbs/loop.go
+@@ -54,6 +54,8 @@ type LoopSpec struct {
+ 	StopFiles func(traceID string) (traceCopy, stderr string)
+ 	// TraceFiles lists the trace files of the child that ran under traceID, oldest first.
+ 	TraceFiles func(traceID string) ([]string, error)
++	// LoopTraceFile names the loop process's own trace file, which holds a child start's failure and is the trace file of an interrupted stop whose child left no trace file and no stderr; nil names none.
++	LoopTraceFile func() string
+ 	// Runner starts a child step; nil selects the production runner, which ties the child to the loop.
+ 	Runner ChildRunner
+ 	// ReadStatus is the read of the status file at the top of each iteration; nil selects readStatusAt.
+@@ -304,6 +306,9 @@ func runLoop(ctx context.Context, spec *Spec, loopID string, argv []string, out
+ 		} else {
+ 			traceFile = interruptedTraceFile(loop, res.traceID)
+ 		}
++		if traceFile == "" && loop.LoopTraceFile != nil {
++			traceFile = loop.LoopTraceFile()
++		}
+ 	case LoopStopError, LoopStopBusy:
+ 		errText, _ = res.full["error"].(string)
+ 		transient, _ = res.full["transient"].(string)
+@@ -417,15 +422,19 @@ func runChild(ctx context.Context, spec *Spec, argv []string, traceID string, id
+ 	if runner == nil {
+ 		runner = procChildRunner
+ 	}
+-	child, err := runner(ctx, ChildRequest{
++	child, tries, err := startChild(ctx, loop, runner, ChildRequest{
+ 		Argv:       append([]string{loop.Executable}, argv...),
+ 		Env:        childEnvironment(traceID),
+ 		Stdout:     &stdout,
+ 		StderrPath: stderrPath,
+-	})
++	}, traceID)
+ 	if err != nil {
+ 		logger.Warn("shed: loop child did not start", "trace_id", traceID, "error", err.Error())
+-		return childResult{traceID: traceID, cause: "start-failed: " + err.Error()}
++		cause := fmt.Sprintf("start-failed after %d tries: %s", tries, err.Error())
++		if proc.IsSpawnBusy(err) {
++			cause += "; the executable was open for writing, as while a deploy replaces it in place"
++		}
++		return childResult{traceID: traceID, cause: cause}
+ 	}
+ 	record(child.Record())
+ 	now := loop.Now
+diff --git a/internal/shedverbs/loop_test.go b/internal/shedverbs/loop_test.go
+index cedcbcf6..b6a56a49 100644
+--- a/internal/shedverbs/loop_test.go
++++ b/internal/shedverbs/loop_test.go
+@@ -13,12 +13,14 @@ import (
+ 	"encoding/json"
+ 	"errors"
+ 	"fmt"
++	"io/fs"
+ 	"os"
+ 	"path/filepath"
+ 	"reflect"
+ 	"slices"
+ 	"strings"
+ 	"sync"
++	"syscall"
+ 	"testing"
+ 	"time"
+ 
+@@ -672,6 +674,151 @@ func TestLoop_InterruptedChildFillsTheErrorForm(t *testing.T) {
+ 	})
+ }
+ 
++func TestLoop_ChildStartRetriesABusyExecutable(t *testing.T) {
++	busy := &fs.PathError{Op: "fork/exec", Path: "lym-fake", Err: syscall.ETXTBSY}
++	const busyMeaning = "; the executable was open for writing, as while a deploy replaces it in place"
++	diesWithoutTrace := func(*loopFixture, string, ChildRequest) error { return errors.New("exit status 1") }
++	tests := []struct {
++		name      string
++		refusals  int
++		refusal   error
++		sleepErr  error
++		script    childScript
++		wantTries int
++		wantWaits []time.Duration
++		wantCause string
++		wantStop  LoopStop
++		// loopTrace is how the spec names the loop's own trace file: the real path, nil, or a function returning "".
++		loopTrace string
++		// wantTrace is the trace_file an interrupted stop records.
++		wantTrace string
++	}{
++		{
++			name:      "BusyThenStarted",
++			refusals:  2,
++			refusal:   busy,
++			wantTries: 3,
++			wantWaits: []time.Duration{100 * time.Millisecond, 200 * time.Millisecond},
++			wantStop:  LoopStopHalted,
++		},
++		{
++			name:      "BusyOnEveryTry",
++			refusals:  childStartBusyAttempts,
++			refusal:   busy,
++			wantTries: childStartBusyAttempts,
++			wantWaits: []time.Duration{100 * time.Millisecond, 200 * time.Millisecond, 400 * time.Millisecond, 800 * time.Millisecond},
++			wantCause: fmt.Sprintf("start-failed after %d tries: fork/exec lym-fake: text file busy%s", childStartBusyAttempts, busyMeaning),
++			wantStop:  LoopStopInterrupted,
++			loopTrace: "path",
++			wantTrace: "path",
++		},
++		{
++			name:      "WaitEndedBeforeTheLastTry",
++			refusals:  childStartBusyAttempts,
++			refusal:   busy,
++			sleepErr:  errors.New("context canceled"),
++			wantTries: 1,
++			wantWaits: []time.Duration{100 * time.Millisecond},
++			wantCause: "start-failed after 1 tries: fork/exec lym-fake: text file busy" + busyMeaning,
++			wantStop:  LoopStopInterrupted,
++			loopTrace: "path",
++			wantTrace: "path",
++		},
++		{
++			name:      "OtherStartErrorNotRetried",
++			refusals:  1,
++			refusal:   &fs.PathError{Op: "fork/exec", Path: "lym-fake", Err: syscall.ENOENT},
++			wantTries: 1,
++			wantCause: "start-failed after 1 tries: fork/exec lym-fake: no such file or directory",
++			wantStop:  LoopStopInterrupted,
++			loopTrace: "path",
++			wantTrace: "path",
++		},
++		{
++			name:      "StartedChildDiesWithoutTrace",
++			script:    diesWithoutTrace,
++			wantTries: 1,
++			wantCause: "exited: exit status 1; command: lym-fake",
++			wantStop:  LoopStopInterrupted,
++			loopTrace: "path",
++			wantTrace: "path",
++		},
++		{
++			name:      "NoLoopTraceFileNamed",
++			script:    diesWithoutTrace,
++			wantTries: 1,
++			wantCause: "exited: exit status 1; command: lym-fake",
++			wantStop:  LoopStopInterrupted,
++			loopTrace: "nil",
++		},
++		{
++			name:      "LoopTraceFileNamedEmpty",
++			script:    diesWithoutTrace,
++			wantTries: 1,
++			wantCause: "exited: exit status 1; command: lym-fake",
++			wantStop:  LoopStopInterrupted,
++			loopTrace: "empty",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			script := tt.script
++			if script == nil {
++				script = halting(shedengine.StateDone, "", 1)
++			}
++			fx := newLoopFixture(t, script)
++			tries := 0
++			fx.spec.Loop.Runner = func(ctx context.Context, req ChildRequest) (Child, error) {
++				tries++
++				if tries <= tt.refusals {
++					return nil, tt.refusal
++				}
++				return fx.run(ctx, req)
++			}
++			var waits []time.Duration
++			fx.spec.Loop.Sleep = func(_ context.Context, delay time.Duration) error {
++				waits = append(waits, delay)
++				return tt.sleepErr
++			}
++			loopTrace := filepath.Join(t.TempDir(), "loop-trace.log")
++			switch tt.loopTrace {
++			case "path":
++				fx.spec.Loop.LoopTraceFile = func() string { return loopTrace }
++			case "empty":
++				fx.spec.Loop.LoopTraceFile = func() string { return "" }
++			}
++			wantTrace := ""
++			if tt.wantTrace == "path" {
++				wantTrace = loopTrace
++			}
++			var hookCause, hookTrace string
++			fx.spec.Hooks.AfterInterrupt = func(_ context.Context, _, cause, file string) string {
++				hookCause, hookTrace = cause, file
++				return ""
++			}
++
++			env, _ := fx.execute()
++
++			if tries != tt.wantTries {
++				t.Errorf("child starts = %d; want %d", tries, tt.wantTries)
++			}
++			if !reflect.DeepEqual(waits, tt.wantWaits) {
++				t.Errorf("waits between starts = %v; want %v", waits, tt.wantWaits)
++			}
++			if stop := loopOf(t, env)["stop"]; stop != string(tt.wantStop) {
++				t.Errorf("loop stop = %v; want %s", stop, tt.wantStop)
++			}
++			if tt.wantStop != LoopStopInterrupted {
++				return
++			}
++			gotTrace, _ := env["trace_file"].(string)
++			if hookCause != tt.wantCause || hookTrace != wantTrace || gotTrace != wantTrace {
++				t.Errorf("AfterInterrupt cause/trace, envelope trace_file = %q/%q, %q; want %q and trace %q", hookCause, hookTrace, gotTrace, tt.wantCause, wantTrace)
++			}
++		})
++	}
++}
++
+ func TestLoop_TransientRestepOnce(t *testing.T) {
+ 	const class = string(shedengine.TransientGitTransport)
+ 	tests := []struct {
+diff --git a/internal/shedverbs/loopchild.go b/internal/shedverbs/loopchild.go
+index 2f9423f6..e3bf8bb9 100644
+--- a/internal/shedverbs/loopchild.go
++++ b/internal/shedverbs/loopchild.go
+@@ -1,4 +1,4 @@
+-// loopchild.go is the production ChildRunner of the loop: it starts a step child tied to the loop's life.
++// loopchild.go starts the loop's step children: the retry of a start refused for a busy executable, and the production ChildRunner, which ties a child to the loop's life.
+ 
+ package shedverbs
+ 
+@@ -8,6 +8,7 @@ import (
+ 	"os"
+ 	"os/exec"
+ 	"path/filepath"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/proc"
+@@ -38,3 +39,32 @@ func procChildRunner(ctx context.Context, req ChildRequest) (Child, error) {
+ 	logger.Info("shed: loop child process started", "pid", tied.Record().PID, "executable", req.Argv[0])
+ 	return tied, nil
+ }
++
++// childStartBusyAttempts is how many times a child start refused because its executable was open for writing is tried in all.
++const childStartBusyAttempts = 5
++
++// childStartBusyFirstDelay is the wait before the first retry of such a start; each later wait doubles it.
++const childStartBusyFirstDelay = 100 * time.Millisecond
++
++// startChild starts req with runner, and starts it again while the start is refused because the executable is open for writing, as while a deploy rewrites the binary in place, up to childStartBusyAttempts tries in all.
++// Such a refusal comes before the child runs, so no step runs twice.
++// The waits between tries go through loop.Sleep, a real wait when it is nil, and a wait that ctx ends returns the last refusal.
++// It returns the tries made, one for a start that needed no retry.
++func startChild(ctx context.Context, loop LoopSpec, runner ChildRunner, req ChildRequest, traceID string) (Child, int, error) {
++	sleep := loop.Sleep
++	if sleep == nil {
++		sleep = sleepFor
++	}
++	delay := childStartBusyFirstDelay
++	for attempt := 1; ; attempt++ {
++		child, err := runner(ctx, req)
++		if err == nil || !proc.IsSpawnBusy(err) || attempt == childStartBusyAttempts {
++			return child, attempt, err
++		}
++		logger.Warn("shed: loop child start found its executable busy; retrying", "trace_id", traceID, "attempt", attempt, "delay", delay.String(), "error", err.Error())
++		if sleep(ctx, delay) != nil {
++			return nil, attempt, err
++		}
++		delay *= 2
++	}
++}
+diff --git a/tools/deploy/main.go b/tools/deploy/main.go
+index c0587b08..c81f341c 100644
+--- a/tools/deploy/main.go
++++ b/tools/deploy/main.go
+@@ -3,6 +3,7 @@
+ // Production is the default and is what update-plugins.sh / update-plugins.cmd run: it puts the checked-out, committed code into production in one step.
+ // It refuses a dirty working tree or a HEAD that is not pushed to origin/main, mirrors every installed loomyard plugin's git-tracked files into the Claude Code plugin cache, and builds lym into the Go bin dir (`go env GOBIN`, else GOPATH/bin).
+ // Nothing reaches production except through this step.
++// Every deploy installs lym by building it beside its target and renaming it over the target, so a process starting lym while it deploys never finds the file open for writing.
+ // No pointer on origin records the deployed commit: each machine deploys on its own, so a shared one could not say what any one machine runs.
+ //
+ // -dev (deploy-dev / deploy-dev.cmd) builds the working tree as-is into <repoRoot>/.dev-bin (see
+@@ -24,6 +25,7 @@ import (
+ 	"os/exec"
+ 	"path/filepath"
+ 	"runtime"
++	"strconv"
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/tools/internal/devbin"
+@@ -77,16 +79,21 @@ func run(dev bool) error {
+ 	if dev {
+ 		ldflags = "-X github.com/Knatte18/loomyard/internal/buildinfo.Channel=dev"
+ 	}
+-	args := []string{"build", "-o", dest, "-ldflags", ldflags, "./cmd/lym"}
+-	build := exec.Command("go", args...)
+-	build.Dir = root
+-	// lym links quarry's tree-sitter grammars through cgo, so pin CGO_ENABLED=1
+-	// explicitly: an environment that has disabled cgo must fail here at the
+-	// compiler rather than produce a binary silently missing that linkage.
+-	build.Env = append(os.Environ(), "CGO_ENABLED=1")
+-	build.Stdout, build.Stderr = os.Stdout, os.Stderr
+-	if err := build.Run(); err != nil {
+-		return fmt.Errorf("go build: %w", err)
++	err = installBinary(dest, func(out string) error {
++		build := exec.Command("go", "build", "-o", out, "-ldflags", ldflags, "./cmd/lym")
++		build.Dir = root
++		// lym links quarry's tree-sitter grammars through cgo, so pin CGO_ENABLED=1
++		// explicitly: an environment that has disabled cgo must fail here at the
++		// compiler rather than produce a binary silently missing that linkage.
++		build.Env = append(os.Environ(), "CGO_ENABLED=1")
++		build.Stdout, build.Stderr = os.Stdout, os.Stderr
++		if err := build.Run(); err != nil {
++			return fmt.Errorf("go build: %w", err)
++		}
++		return nil
++	})
++	if err != nil {
++		return err
+ 	}
+ 
+ 	info, err := os.Stat(dest)
+@@ -109,6 +116,22 @@ func run(dev bool) error {
+ 	return nil
+ }
+ 
++// installBinary has build write the binary to a temporary file beside dest and renames it over dest, so a process starting or running the old binary never finds dest open for writing, which exec refuses with ETXTBSY.
++// The rename stays on dest's filesystem, where it replaces the directory entry at once and a running process keeps the old file.
++// A failed build or rename removes the temporary file and leaves dest as it was.
++func installBinary(dest string, build func(out string) error) error {
++	tmp := filepath.Join(filepath.Dir(dest), "."+filepath.Base(dest)+".deploy-"+strconv.Itoa(os.Getpid()))
++	if err := build(tmp); err != nil {
++		_ = os.Remove(tmp)
++		return err
++	}
++	if err := os.Rename(tmp, dest); err != nil {
++		_ = os.Remove(tmp)
++		return fmt.Errorf("install the built binary over %s: %w", dest, err)
++	}
++	return nil
++}
++
+ func binaryName() string {
+ 	if runtime.GOOS == "windows" {
+ 		return "lym.exe"
+diff --git a/tools/deploy/main_test.go b/tools/deploy/main_test.go
+index 838ac060..fcfe8ee6 100644
+--- a/tools/deploy/main_test.go
++++ b/tools/deploy/main_test.go
+@@ -1,7 +1,7 @@
+ //go:build tier0
+ 
+ // main_test.go covers the production deploy's pieces — the dirty-tree refusal, the marketplace
+-// parse, the plugin mirror, and the stray-binary report — plus -dev's destination and a
++// parse, the plugin mirror, the binary install and the stray-binary report — plus -dev's destination and a
+ // source-level guard that the -ldflags -X path in run() still names a variable that actually exists
+ // at internal/buildinfo, and a go.mod guard that lymMainPackage still names lym's main package.
+ // Tests spawn no git, go build, or go env;
+@@ -10,9 +10,11 @@
+ package main
+ 
+ import (
++	"errors"
+ 	"go/ast"
+ 	"go/parser"
+ 	"go/token"
++	"io"
+ 	"os"
+ 	"path/filepath"
+ 	"runtime"
+@@ -273,3 +275,87 @@ func declaresExportedVar(file *ast.File, name string) bool {
+ 	}
+ 	return false
+ }
++
++// TestInstallBinary_RenameFailureRemovesTheBuild verifies a rename that fails leaves the target as it was and no temporary file behind.
++func TestInstallBinary_RenameFailureRemovesTheBuild(t *testing.T) {
++	t.Parallel()
++	dir := t.TempDir()
++	// A non-empty directory at the target makes the rename of the built file over it fail.
++	dest := filepath.Join(dir, "lym")
++	if err := os.MkdirAll(filepath.Join(dest, "keep"), 0o755); err != nil {
++		t.Fatal(err)
++	}
++
++	err := installBinary(dest, func(out string) error {
++		return os.WriteFile(out, []byte("new"), 0o755)
++	})
++
++	if err == nil {
++		t.Fatal("installBinary() error = nil; want the rename failure")
++	}
++	if _, statErr := os.Stat(filepath.Join(dest, "keep")); statErr != nil {
++		t.Errorf("target after the failed rename: %v; want it untouched", statErr)
++	}
++	entries, readErr := os.ReadDir(dir)
++	if readErr != nil {
++		t.Fatal(readErr)
++	}
++	if len(entries) != 1 || entries[0].Name() != "lym" {
++		t.Errorf("install directory = %v; want the target alone", entries)
++	}
++}
++
++// TestInstallBinary_RenamesTheBuildOverTheTarget verifies a deploy never rewrites the installed binary in place:
++// a reader holding the old file keeps its content, and the install directory ends with the target alone.
++func TestInstallBinary_RenamesTheBuildOverTheTarget(t *testing.T) {
++	t.Parallel()
++	buildErr := errors.New("go build: exit status 1")
++	tests := []struct {
++		name        string
++		buildErr    error
++		wantErr     error
++		wantContent string
++	}{
++		{"BuildSucceeds", nil, nil, "new"},
++		{"BuildFails", buildErr, buildErr, "old"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dir := t.TempDir()
++			dest := filepath.Join(dir, "lym")
++			if err := os.WriteFile(dest, []byte("old"), 0o755); err != nil {
++				t.Fatal(err)
++			}
++			held, err := os.Open(dest)
++			if err != nil {
++				t.Fatal(err)
++			}
++			t.Cleanup(func() { held.Close() })
++
++			err = installBinary(dest, func(out string) error {
++				if err := os.WriteFile(out, []byte("new"), 0o755); err != nil {
++					return err
++				}
++				return tt.buildErr
++			})
++
++			if !errors.Is(err, tt.wantErr) {
++				t.Errorf("installBinary() error = %v; want %v", err, tt.wantErr)
++			}
++			if got, _ := os.ReadFile(dest); string(got) != tt.wantContent {
++				t.Errorf("target content = %q; want %q", got, tt.wantContent)
++			}
++			if got, _ := io.ReadAll(held); string(got) != "old" {
++				t.Errorf("held old file content = %q; want \"old\", never rewritten in place", got)
++			}
++			entries, err := os.ReadDir(dir)
++			if err != nil {
++				t.Fatal(err)
++			}
++			if len(entries) != 1 || entries[0].Name() != "lym" {
++				t.Errorf("install directory = %v; want the target alone", entries)
++			}
++		})
++	}
++}
