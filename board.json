@@ -748,29 +748,6 @@
       "revised": "2026-10-28T10:29:58Z"
     },
     {
-      "id": 871,
-      "handle": "T8",
-      "slug": "webster-recovery",
-      "title": "Webster recovery has a way forward, and its audit accepts a sanctioned gate test",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "webster"
-      ],
-      "issues": [
-        878,
-        877
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## webster recovery way-forward is circular: recover-batch points to accept-audit, which refuses; reset is refused while run.lock is held (was note `webster-recovery-circular`)\n\nImported from [issue #878](https://github.com/Knatte18/loomyard/issues/878).\n\n#### What happened\n\nAfter `lyx webster record-batch` failed a batch on fabric-reference audit findings, `lyx webster recover-batch` refused with `needs_fresh` and a way forward of \"`lyx webster accept-audit --batch 6` then `lyx webster recover-batch 6`\", or `reset --to batch-start`, or `reset --to start`.\n`lyx webster accept-audit --batch=6` then refused, because the batch's commits are kept only when every fabric reference is read-only, and the finding is the very one that made recover-batch advise it. Its only way forward was `lyx webster reset --to batch-start --batch 06`.\n`lyx webster reset --to=batch-start --batch=6` was refused with `run is already in progress ... (run.lock held)`, with way forward \"wait for it to finish, or check `lyx webster status`\".\nThe Webster session had no verb left that it was allowed to use, so it escalated: the run halted `blocked` with anomaly `escalation-to-human`, and the halt note says the parent has to run the reset after the run stops.\n\n#### Why it is abnormal\n\n- `recover-batch` offers `accept-audit` as a way forward in a case where `accept-audit` is known to refuse; the advice cannot be followed.\n- The refusals were retried several times (two `accept-audit` refusals, three `recover-batch` refusals), each with the same text.\n- `reset` is refused for a lock the Webster session itself holds, so the one working remedy is unreachable from inside the run that needs it.\n\n#### What to do\n\n- Have `recover-batch` run the `accept-audit` check and drop that option from the way forward when it would refuse.\n- Let `reset --to batch-start` run from the Webster session that owns `run.lock`, or have the refusal name who must run it and when.\n\n#### Provenance\n\nTask `umbrella-anchor`; notes: webster-refusal-recover-batch.md, webster-refusal-recover-batch-2.md, webster-refusal-recover-batch-3.md, webster-refusal-accept-audit.md, webster-refusal-accept-audit-2.md, webster-refusal-reset.md, loom-halt-3.md.\n\n## webster fabric-reference audit flags the sanctioned lyx gate test as a run-state rewrite, failing the batch (was note `webster-audit-gate-test-readonly`)\n\nImported from [issue #877](https://github.com/Knatte18/loomyard/issues/877).\n\n#### What happened\n\nA Webster implementer fork ran `lyx gate test --wait --gate card --card \u003ccard\u003e` and `lyx gate test --wait --gate batch --card \u003ccard\u003e`, the gate commands the session's own gate rule tells agents to run, and once chained them after a `git commit`.\n`lyx webster record-batch` failed the batch with `fabric-reference violation ... ran a fabric-referencing command (\"lyx gate test ...\") that can rewrite run state — an implementer fork must never touch the fabric repo directly`.\nThe finding \"names no path\"; it is raised from the command text alone.\n`lyx webster recover-batch` then refused with `needs_fresh` on the same findings.\n\n#### Why it is abnormal\n\n`lyx gate test` is the mandated way to run tests, so the audit makes the normal workflow a violation.\nThe audit does not distinguish a gate invocation from a command that writes the fabric repo, and a pipe through `tail`/`grep` does not change that.\nA whole batch of otherwise valid work was lost to the flag, and the run halted blocked at Webster with an escalation.\n\n#### What to do\n\nTreat `lyx gate test` (and its `--wait`, `--gate`, `--card` forms) as read-only for the fabric-reference audit, or make the audit check the paths a command actually writes.\nAt minimum the finding should say why this specific command can rewrite run state.\n\n#### Provenance\n\nTask `umbrella-anchor`; notes: webster-refusal-record-batch.md, webster-refusal-recover-batch.md, webster-refusal-recover-batch-2.md, webster-refusal-recover-batch-3.md, loom-halt.md, loom-halt-2.md, loom-halt-3.md.\n\n",
-      "status": "done",
-      "created": "2026-10-28T11:33:45Z",
-      "revised": "2026-10-28T11:40:40Z"
-    },
-    {
       "id": 876,
       "handle": "E4",
       "slug": "dobby-task-limit-hold",
