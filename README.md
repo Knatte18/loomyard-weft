@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-28 12:10 UTC; every age below is as of then.
+Rendered 2026-10-28 12:11 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -44,8 +44,8 @@ Held by a run; its scope is locked until the run ends.
 | T4 | **Machine checks in validate-discussion and validate-plan for recurring review findings**<br>• Citation and acceptance checks for the decision record; seam-test, tier-tag and doc.go checks for plan cards<br>• `profile: solid` | [`validator-checks`](design-validator-checks.md) | loom | Plan-Burler-Review | neve | 1h<br>1h | loom, stencil |
 | T6 | **A transient fork EAGAIN or died tmux session does not end a loom run hard**<br>• `profile: solid` | [`transient-halt-recovery`](design-transient-halt-recovery.md) | darn | Darn-Write | neve | 37m<br>30m | loom, shed, shuttle, reed, fabric |
 | T7 | **lym loom resume names prior work and honours a recorded wait decision** | [`resume-fixes`](design-resume-fixes.md) | darn | Finalize | neve | 37m<br>30m | loom, shed |
-| T8 | **Webster recovery has a way forward, and its audit accepts a sanctioned gate test** | [`webster-recovery`](design-webster-recovery.md) | darn | Code-Burler-Fix | neve | 36m<br>30m | webster |
-| T11 | **A racing async push reports no divergence that is already gone** | [`async-push-race`](design-async-push-race.md) | darn | Code-Burler-Review | neve | 36m<br>30m | fabric |
+| T8 | **Webster recovery has a way forward, and its audit accepts a sanctioned gate test** | [`webster-recovery`](design-webster-recovery.md) | darn | Code-Burler-Fix | neve | 37m<br>30m | webster |
+| T11 | **A racing async push reports no divergence that is already gone** | [`async-push-race`](design-async-push-race.md) | darn | Code-Burler-Fix | neve | 37m<br>30m | fabric |
 
 ### Ready (0)
 
