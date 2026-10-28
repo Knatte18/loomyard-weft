@@ -784,6 +784,25 @@
       "body": "Imported from [issue #893](https://github.com/Knatte18/loomyard/issues/893).\n\n## What happened\n\nA loom run halted `failed` at the `Friction-Reflect` producer with anomaly `interrupted-stop`:\n\n```\nstart-failed: fork/exec \u003cgo bin dir\u003e/lym: text file busy\n```\n\nEvery earlier producer in the run (Preflight, Darn-Write, Code-Bouncer, PR-Review, Finalize) finished or was skipped normally.\nThe halt note carried an empty `trace_file`, so the failure left no trace to inspect.\n\n## Why it is abnormal\n\n`text file busy` (ETXTBSY) on `fork/exec` of the `lym` binary means another process was writing to that executable at the moment of the spawn, most likely a deploy or rebuild replacing the binary in place.\nThe last producer of an otherwise clean run then failed for a reason unrelated to the task, and the run ended `failed` instead of finishing.\nThe classification as `interrupted-stop` also hides the cause: it is a transient spawn error, not an interrupted run.\n\n## What to do\n\n- Retry the spawn a few times with a short backoff when `fork/exec` returns ETXTBSY, before declaring `start-failed`.\n- Have the deploy path (`update-plugins.sh`, `deploy-dev`, the Land row's `deploy` command) install the binary by writing a temp file and renaming it over the target, so a running or spawning process never sees a file open for writing.\n- Write a trace file, or the spawn error's detail, into the halt note when `start-failed` occurs, so the note is self-explanatory.\n\nProvenance: task slug `codex-hook-spike`; notes `loom-halt.md`.\n",
       "created": "2026-10-28T13:19:01Z",
       "revised": "2026-10-28T13:19:01Z"
+    },
+    {
+      "id": 879,
+      "handle": "E8",
+      "slug": "fixer-overcap-review",
+      "title": "A merge fixer change over the caps gets a solo review of its own commits, not a full Code review",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom",
+        "burler"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nOn 2026-10-28 `creel-hook-post`'s Finalize merged the moved `main` in place, and the landing gate failed on a race between parallel `fabriccli` tests that repoint the process-wide trace sink.\nThe merge fixer added a `sync.RWMutex` across three test files, ten added lines and none deleted, and the gate passed.\n`FixCap.Exceeded` in `internal/landingshed/fixcap.go` judges any change that touches a test file over the caps, whatever its size, so Finalize rerouted the run to Parent-Align and a full Code review segment: a `solid` lens fan reviewed the whole task again for a ten-line test lock.\n\n## Idea (operator, 2026-10-28)\n\nA fixer change over the caps goes to one solo reviewer who reads only the fixer's commits, the range the reroute reason already names, instead of the run's full Code review segment.\nThe caps stay as they are: what they guard against, a fixer weakening or skipping a test to pass the gate, is still checked by a reviewer before the landing.\nA reviewer who finds the change wrong sends it back as today's reroute does.\n",
+      "created": "2026-10-28T13:36:21Z",
+      "revised": "2026-10-28T13:36:21Z"
     }
   ],
   "prime_owner": "neve",
