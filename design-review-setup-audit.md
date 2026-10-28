@@ -1,6 +1,6 @@
 # Audit the review setup: rounds per perch, per-lens worth, finding classes
 
-`review-setup-audit` · Task · research, burler, loom, stencil · failed · Code-Bouncer
+`review-setup-audit` · Task · research, burler, loom, stencil · running · Code-Bouncer
 
 ## Question
 
