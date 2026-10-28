@@ -1,8 +1,8 @@
 # Card 4 — The envelope and status carry restep_hold for the LLM driver
 
 **Create:**
-- `plan:internal/shedverbs#Spec.restepHolds` -> `func (s *Spec) restepHolds(st shedengine.Status) bool`
-- `plan:internal/loomcli#TestSpecFor_RestepHold` -> `func TestSpecFor_RestepHold(t *testing.T)`
+- `internal/shedverbs#Spec.restepHolds`
+- `internal/loomcli#TestSpecFor_RestepHold`
 
 **Edit:**
 - `internal/shedverbs#Spec`
