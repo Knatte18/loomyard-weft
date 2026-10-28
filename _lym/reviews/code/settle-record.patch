@@ -418,10 +418,10 @@ index 580ae602..f429e50a 100644
  // The caller holds the board write lock.
  // pullFirst also holds the push lock in the board dir for its whole run, taken after the board write lock.
 diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
-index a675ff6c..49e51add 100644
+index e8d5e8d6..2dd5b2b7 100644
 --- a/internal/fabricengine/doc.go
 +++ b/internal/fabricengine/doc.go
-@@ -1219,6 +1219,17 @@
+@@ -1220,6 +1220,17 @@
  // The commit is built from loose blobs and `git mktree`, so no branch moves and neither worktree's index is touched; with nothing uncommitted it writes nothing.
  // `SnapshotTagged` reports whether such an annotated tag of a slug exists, which tells a later run that an earlier one took the snapshot.
  //
