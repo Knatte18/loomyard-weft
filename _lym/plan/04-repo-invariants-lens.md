@@ -3,13 +3,13 @@
 **Edit:**
 - `internal/lenses/template.yaml`
 - `internal/lenses#TestConfigTemplate_DecodesAndIsSelfConsistent`
-- `plan:internal/lenses#TestTemplateChecks_FlagBrokenTemplates`
+- `internal/lenses#TestTemplateChecks_FlagBrokenTemplates`
 
 **Create:**
-- `plan:internal/lenses#writerFanGaps` -> `func writerFanGaps(orders map[string][]string, writerOf map[string]string, absorbedBy map[string]string, reviewerOnly map[string]bool) []string`
+- `internal/lenses#writerFanGaps`
 
 **Uses:**
-- `plan:internal/lenses#emphasisLineGaps`
+- `internal/lenses#emphasisLineGaps`
 
 **Intent:**
 D2: in `internal/lenses/template.yaml`, add the procedure lens `repo-invariants`, and `review-plan` becomes `affected-set`, `guard-reach`, `repo-invariants`.

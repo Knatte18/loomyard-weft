@@ -1,12 +1,12 @@
 {
   "runGuid": "39b1174cbe424e70bb6dfd41c8dc9ca6",
-  "planFingerprint": "dfbc7269ce56e83fcef8d8f4f12fccf9dc1bab0cd484dd5d64a30b8e9f4b7992",
+  "planFingerprint": "e37b587d6b9e9af32c309d03b1804dec6990b9edc6d1d354d9a8ec27f5f394db",
   "planFileHashes": {
     "00-overview.md": "f500ed4da54e6b2dee43062104893f95cfafe39ef863f8afceca2c767d5781c8",
     "01-code-reviewer-fan-local.md": "e40eb91e1bf8e74d10f6af13dd33e396c86c3ec8d0e10ddb14cdbd8bc95beec5",
     "02-solo-code-review-profiles.md": "238c820577552e88c97dbbd7ba90b7ac25d34b2125cfbaee0b42ff1eb0facbf5",
-    "03-board-scope-lens.md": "f091b43f092e6e4fe6bf543955186c2bb295759ba01365073b6cb42c3a645de5",
-    "04-repo-invariants-lens.md": "2ef44b1c885628c6bda48a97730ec7d6e712df8e0199124aa9a9782b87945d35",
+    "03-board-scope-lens.md": "5b585dc36a684a7ef0327d9948a6c74d4e2c7948e2a1ddee5f15bb44a393c689",
+    "04-repo-invariants-lens.md": "2c655330749457a022005792c966bb3ca21a2126921c5df48c441c612d243dd5",
     "05-code-review-lenses.md": "63ad9d899a392e60828b87694b64a5e106f83aad34a8930535b24244a384ee0a"
   },
   "planOverviewFrameHash": "5762097b068a1ad0b9f6ac14c28bf216a1d574b8520eda8401cc33e6bd5e8092",
@@ -119,7 +119,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "271642d981350cb3f95096d8c2885311",
   "masterSessionId": "ca12ec09-6499-458c-b69a-1abfb245cbda",
   "masterEngine": "claude",
@@ -136,8 +136,8 @@
       "cardHashes": {
         "01-code-reviewer-fan-local": "e40eb91e1bf8e74d10f6af13dd33e396c86c3ec8d0e10ddb14cdbd8bc95beec5",
         "02-solo-code-review-profiles": "238c820577552e88c97dbbd7ba90b7ac25d34b2125cfbaee0b42ff1eb0facbf5",
-        "03-board-scope-lens": "f091b43f092e6e4fe6bf543955186c2bb295759ba01365073b6cb42c3a645de5",
-        "04-repo-invariants-lens": "2ef44b1c885628c6bda48a97730ec7d6e712df8e0199124aa9a9782b87945d35",
+        "03-board-scope-lens": "5b585dc36a684a7ef0327d9948a6c74d4e2c7948e2a1ddee5f15bb44a393c689",
+        "04-repo-invariants-lens": "2c655330749457a022005792c966bb3ca21a2126921c5df48c441c612d243dd5",
         "05-code-review-lenses": "63ad9d899a392e60828b87694b64a5e106f83aad34a8930535b24244a384ee0a"
       },
       "startSha": "81dee6a5e6c13037921b95debc302508cd7979df",
@@ -145,8 +145,28 @@
       "spawnedAt": "2026-10-28T11:19:49Z",
       "sessionId": "ca12ec09-6499-458c-b69a-1abfb245cbda",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-code-reviewer-fan-local",
+        "status": "done",
+        "head_sha": "71d2c26a876e9cc4932de73ec9afa7bef5dd48a2",
+        "deviations": [
+          "internal/lenses/config_test.go"
+        ]
+      },
+      "cardShas": [
+        "71d2c26a876e9cc4932de73ec9afa7bef5dd48a2"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-review-setup-tuning/ca12ec09-6499-458c-b69a-1abfb245cbda/subagents/agent-adbfa30bbd7d7cd31.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-review-setup-tuning/ca12ec09-6499-458c-b69a-1abfb245cbda/subagents/agent-adbfa30bbd7d7cd31.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-review-setup-tuning/ca12ec09-6499-458c-b69a-1abfb245cbda/subagents/agent-adbfa30bbd7d7cd31.jsonl"
+  ]
 }
