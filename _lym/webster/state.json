@@ -1,0 +1,152 @@
+{
+  "runGuid": "39b1174cbe424e70bb6dfd41c8dc9ca6",
+  "planFingerprint": "dfbc7269ce56e83fcef8d8f4f12fccf9dc1bab0cd484dd5d64a30b8e9f4b7992",
+  "planFileHashes": {
+    "00-overview.md": "f500ed4da54e6b2dee43062104893f95cfafe39ef863f8afceca2c767d5781c8",
+    "01-code-reviewer-fan-local.md": "e40eb91e1bf8e74d10f6af13dd33e396c86c3ec8d0e10ddb14cdbd8bc95beec5",
+    "02-solo-code-review-profiles.md": "238c820577552e88c97dbbd7ba90b7ac25d34b2125cfbaee0b42ff1eb0facbf5",
+    "03-board-scope-lens.md": "f091b43f092e6e4fe6bf543955186c2bb295759ba01365073b6cb42c3a645de5",
+    "04-repo-invariants-lens.md": "2ef44b1c885628c6bda48a97730ec7d6e712df8e0199124aa9a9782b87945d35",
+    "05-code-review-lenses.md": "63ad9d899a392e60828b87694b64a5e106f83aad34a8930535b24244a384ee0a"
+  },
+  "planOverviewFrameHash": "5762097b068a1ad0b9f6ac14c28bf216a1d574b8520eda8401cc33e6bd5e8092",
+  "partition": [
+    {
+      "cards": [
+        "01-code-reviewer-fan-local",
+        "02-solo-code-review-profiles",
+        "03-board-scope-lens",
+        "04-repo-invariants-lens",
+        "05-code-review-lenses"
+      ],
+      "profile": "wide",
+      "estimate": 189070,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54424,
+        "read_union": 58524,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 540,
+            "reads": {
+              "file:docs/overview.md": 10248,
+              "file:pattern/PATTERN-config-layers.md": 780,
+              "package:docs": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/loomengine": 2000,
+              "package:pattern": 2000,
+              "tests:docs": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 58,
+            "written": 17940
+          },
+          {
+            "card": 2,
+            "card_text": 432,
+            "reads": {
+              "file:internal/runprofile/doc.go": 288,
+              "file:internal/runprofile/template.yaml": 564,
+              "package:internal/battencli": 2000,
+              "package:internal/configsync": 2000,
+              "package:internal/runprofile": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/configsync": 2000,
+              "tests:internal/runprofile": 2000
+            },
+            "messages": 71,
+            "written": 21732
+          },
+          {
+            "card": 3,
+            "card_text": 672,
+            "reads": {
+              "file:internal/lenses/template.yaml": 5208,
+              "package:internal/configsync": 2000,
+              "package:internal/lenses": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:internal/configsync": 2000,
+              "tests:internal/lenses": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 57.5,
+            "written": 17922
+          },
+          {
+            "card": 4,
+            "card_text": 432,
+            "reads": {
+              "file:internal/lenses/template.yaml": 5208,
+              "package:internal/lenses": 2000,
+              "tests:internal/lenses": 2000
+            },
+            "messages": 27.5,
+            "written": 8682
+          },
+          {
+            "card": 5,
+            "card_text": 396,
+            "reads": {
+              "file:docs/dotnet-hub.md": 2196,
+              "file:internal/lenses/sets/csharp.yaml": 768,
+              "file:internal/lenses/template.yaml": 5208,
+              "package:docs": 2000,
+              "package:internal/lenses": 2000,
+              "package:internal/lenses/sets": 2000,
+              "tests:docs": 2000,
+              "tests:internal/lenses": 2000,
+              "tests:internal/lenses/sets": 2000
+            },
+            "messages": 31.5,
+            "written": 9846
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "271642d981350cb3f95096d8c2885311",
+  "masterSessionId": "ca12ec09-6499-458c-b69a-1abfb245cbda",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "code-reviewer-fan-local",
+      "cards": [
+        "01-code-reviewer-fan-local",
+        "02-solo-code-review-profiles",
+        "03-board-scope-lens",
+        "04-repo-invariants-lens",
+        "05-code-review-lenses"
+      ],
+      "cardHashes": {
+        "01-code-reviewer-fan-local": "e40eb91e1bf8e74d10f6af13dd33e396c86c3ec8d0e10ddb14cdbd8bc95beec5",
+        "02-solo-code-review-profiles": "238c820577552e88c97dbbd7ba90b7ac25d34b2125cfbaee0b42ff1eb0facbf5",
+        "03-board-scope-lens": "f091b43f092e6e4fe6bf543955186c2bb295759ba01365073b6cb42c3a645de5",
+        "04-repo-invariants-lens": "2ef44b1c885628c6bda48a97730ec7d6e712df8e0199124aa9a9782b87945d35",
+        "05-code-review-lenses": "63ad9d899a392e60828b87694b64a5e106f83aad34a8930535b24244a384ee0a"
+      },
+      "startSha": "81dee6a5e6c13037921b95debc302508cd7979df",
+      "kind": "fork",
+      "spawnedAt": "2026-10-28T11:19:49Z",
+      "sessionId": "ca12ec09-6499-458c-b69a-1abfb245cbda",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
