@@ -28,7 +28,7 @@ All seven forks returned a report.
 - interactions 1 and walkthrough 1 (MEDIUM, merged): the orch role's parent-lock bullet still says a released run reroutes — fixed in D5.
 - interactions 2 (LOW): the escalate way forward named no command — fixed: it names `lym loom resume`.
 - interactions 3, walkthrough 2 (LOW, merged): darn's `ReviewInput` after the override goes — fixed: D2 says darn keeps the shared Parent-Align fixer-report seam, which answers not found.
-- walkthrough 3 (LOW): pawl's arbiter has no decision record — fixed: D4 says it hands on.
+- walkthrough 3 (LOW): pawl's arbiter has no decision record — fixed: D4 says it hands on; superseded in Turn 4.
 - bound-breaker 2 (LOW): wrong reason for keeping `Overlap` — fixed in Auto-mode assumptions.
 - bound-breaker 3 (LOW): in-flight darn runs lose the overlap note — fixed: accepted under Constraints.
 - goal-scope 1 and leanness Open risks (merged): both risks restated D1's bound — fixed: the wall-time clause folded into D1's bound, Open risks now `None.`
@@ -40,6 +40,23 @@ All seven forks returned a report.
 - leanness Auto-mode assumption 1 snapshot date — fixed: reworded.
 - leanness support-log Turn 2 duplicates the ledger — rejected: the interview turn records the batch as asked; the support log is not plan input.
 - board-fit: no findings.
+
+### Turn 4 — burler round 1 fixes
+
+- F1 (BLOCKING): a stop built from a status carries its halt text in `Error`, not `Reason` — fixed: D4 hands `JudgesFirst` the Reason, or the Error for a status-built stop, and the acceptance criteria cover a restarted or re-checking driver.
+- F2 (MEDIUM): the pawl escalate rested on the arbiter's choice — fixed with the review's option (a): a pawl escalate keeps `LandingStopPrefix` and hands back, through a new `Deps.EscalateJudgedFirst`, false on pawl; Goal, Scope, D3, D5, Constraints, Notes and the acceptance criteria follow.
+- F3 (LOW): D4's Bound now says an escalate-resume loop spends the run's shared arbiter budget.
+- F4 (LOW): D3's prefix also differs from `shedadapters.DecisionHaltPrefix`.
+- Self-check: the escalate criterion and D3's opening now say "on a loom or darn run", and a pawl escalate halt's way forward settles the conflict on the task branch instead of naming `lym loom decision add`, which refuses a pawl run.
+
+### Turn 5 — burler round 2 fixes
+
+- F1 (MEDIUM): the LLM driver session re-launched a halted escalate on a new build, since it reads only the `hand_back` mark — fixed: D3 gives its stencil the escalate skip, D5 lists the driver stencil, its guide, and an acceptance criterion pins it.
+- F2 (LOW): the driver criterion named a start path that never builds a status stop — fixed: it now names the re-check, open-attempt and fresh-start paths separately.
+- F3 (LOW): D3's re-step guarantee is scoped to batten, deferring to D4's Bound for the driver's hand-over.
+- F4 (LOW): D5 lists the loom status spec's `hand_back` section.
+- F5 (NIT): Turn 4 moved from under the question ledger to the Interview.
+- Self-check: the LLM driver skip read the reason text, which its stencil forbids, so a recipe-neutral `restep_hold` key on the envelope and status now carries it and the escalate predicate stays the prefix's only reader; Scope names the key; D3 and D4's Bound widen the driver re-step to any Go driver start with no open arbiter attempt; the start criterion names the start check.
 
 ## Rejected alternatives
 
@@ -66,3 +83,4 @@ _No rounds yet._
 - Q7 (auto-pick): Finalize keeps writing the merge record's `Overlap` — resolved, Auto-mode assumptions.
 - Q8 (auto-pick): batten's binary re-step skips a landing escalate, while the driver's build hand-over re-step stays as for Webster — resolved, D3 and D4.
 - Q9 (auto-pick): darn keeps the shared fixer-report review-input seam rather than a nil one — resolved, D2.
+- Q10 (auto-pick): the LLM driver leaves a landing escalate alone on a new build through a new `restep_hold` key on the envelope and status, not by matching the reason prefix — resolved, D3 and D5.
