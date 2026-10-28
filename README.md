@@ -41,7 +41,7 @@ Held by a run; its scope is locked until the run ends.
 | T1 | **Creel delivers every post to a Claude strand through hooks, visibly and in full**<br>• PostToolUse, Stop and asyncRewake hooks carry posts as fast as possible; shuttle appends a trust and reply sentence to the system prompt | [`creel-hook-post`](design-creel-hook-post.md) | loom | Finalize | neve | 5d<br>3h | creel, shuttle, claude |
 | T4 | **Machine checks in validate-discussion and validate-plan for recurring review findings**<br>• Citation and acceptance checks for the decision record; seam-test, tier-tag and doc.go checks for plan cards<br>• `profile: solid` | [`validator-checks`](design-validator-checks.md) | loom | Webster | neve | 2h<br>2h | loom, stencil |
 | T6 | **A transient fork EAGAIN or died tmux session does not end a loom run hard**<br>• `profile: solid` | [`transient-halt-recovery`](design-transient-halt-recovery.md) | darn | Finalize | neve | 58m<br>50m | loom, shed, shuttle, reed, fabric |
-| T8 | **Webster recovery has a way forward, and its audit accepts a sanctioned gate test** | [`webster-recovery`](design-webster-recovery.md) | darn | Describe | neve | 57m<br>50m | webster |
+| T8 | **Webster recovery has a way forward, and its audit accepts a sanctioned gate test** | [`webster-recovery`](design-webster-recovery.md) | darn | Finalize | neve | 57m<br>50m | webster |
 | T11 | **A racing async push reports no divergence that is already gone** | [`async-push-race`](design-async-push-race.md) | darn | Finalize | neve | 57m<br>50m | fabric |
 
 ### Ready (0)
