@@ -69,6 +69,13 @@ Rationale: Same code as #897, creel delivery into an idle orch strand; the opera
 - A landing send whose box shows foreign text on its very first read, before any empty read, still fails `ErrForeignBoxText`.
 - A Claude strand without `CreelHooks` gets a typed notice for program and operator mail again, which a session with the older claim hook may also have claimed; the reservation keeps it to one delivery.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - creel-help-old-pane-mail-rule (class consistency, severity MEDIUM, open in rounds 1)
+  - interrupt-refusal-names-removed-distinction (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1, D2: a compact send whose box reads empty and then holds other text, with no session start inside the window, succeeds and sends no further key.
