@@ -191,6 +191,21 @@ Rationale: Review finding F1 of Discussion round 1, taken as written; the operat
 - The board entry says the operator's 2026-10-27 wait (a real mid-turn run of creel's hook delivery) stands, and the `creel-hook-post` real-Claude scenarios did not run in the verify gates; the task is nevertheless running. Parent: is that wait met, or should this run hold?
 - Moving the chair–advisor channel from `SendMessage` to hook-delivered creel mail changes when a chair sees an advisor's answer; a Discussion or Plan table with advisors is the first real run of it.
 
+<!-- lym:carry-over Discussion-Review -->
+- Discussion-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/discussion/round-1-review.md; fixer report: _lym/reviews/discussion/round-1-fixer-report.md.
+  - F1 (class design, severity BLOCKING, open in rounds 1)
+  - F2 (class decision, severity BLOCKING, open in rounds 1; answered since by: The 2026-10-27 wait for a real mid-turn run of creel hook delivery is met; A holder that disappears after reading a marked message is found gone (review F1))
+  - beam-question-and-hold-notice-diverge (class design, severity MEDIUM, open in rounds 1)
+  - chase-clock-not-rebuilt-after-restart (class design, severity MEDIUM, open in rounds 1)
+  - d8-shuttle-send-misread-bound (class design, severity MEDIUM, open in rounds 1)
+  - hold-notice-plain-post-leaves-mark-owed (class design, severity MEDIUM, open in rounds 1)
+  - holder-gone-after-read-never-swept (class design, severity BLOCKING, open in rounds 1)
+  - parent-question-2026-10-27-wait (class decision, severity BLOCKING, open in rounds 1)
+  - program-trust-gap-orch-only (class design, severity MEDIUM, open in rounds 1)
+  - reply-to-forwarded-chase-unread (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - D1: `lym creel post --parent` from a pair whose parent orch is live posts to it; from a pair whose parent is a beam with no live orch it posts to the nearest live orch above, the prime's at the end; from a beam it starts at the beam's own orch; where the resolved worktree records no orch strand it is refused naming the way forward; with a receiver argument or `--reply` it is refused before any call.
