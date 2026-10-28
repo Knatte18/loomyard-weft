@@ -28,7 +28,7 @@ grouping
 | --- | --- | --- | --- |
 | E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
 
-## Tasks (6)
+## Tasks (7)
 
 Concrete and claimable; only a task can run.
 
@@ -54,7 +54,7 @@ Waits only on Running, Ready or Draft entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **Stencil and system-prompt sentences that batch independent calls and edits**<br>• The turn audit sentences per heavy role, plus one shuttle-appended system-prompt sentence for every Claude agent | [`turn-batching`](design-turn-batching.md) | darn | `validator-checks` | 3h<br>3h | stencil, shuttle |
 
-### Draft (4)
+### Draft (5)
 
 Not released; nothing starts it until its status is cleared.
 
@@ -64,17 +64,17 @@ Not released; nothing starts it until its status is cleared.
 | T2 | `draft` **A merge fixer change over the caps gets a solo review of its own commits, not a full Code review** | [`fixer-overcap-review`](design-fixer-overcap-review.md) | darn |  | 14m<br>0m | loom, burler |
 | T3 | `draft` **Friction-Reflect producer fails to start with 'text file busy' when the lym binary is replaced mid-run** | [`spawn-text-file-busy`](design-spawn-text-file-busy.md) | darn |  | 31m<br>0m | shed, deploy, loom |
 | T6 | `draft` **The dobby holds a new run start while the user slice nears its task limit**<br>• Hold new run starts when the user slice pids.current nears pids.max | [`dobby-task-limit-hold`](design-dobby-task-limit-hold.md) | darn |  | 1h<br>0m | batten |
+| T7 | `draft` **Watcher's /compact inject into an idle orch is typed but not submitted (unconfirmed, then stalled on draft)** | [`compact-inject-draft`](design-compact-inject-draft.md) | darn |  | 0m<br>0m | creel, shuttle, orch |
 
-## Notes (34)
+## Notes (33)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Bugs (3)
+### Bugs (2)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Find why a running run shows a dead waiter in the activity reader** | [`idle-notice-dead-waiter-cause`](design-idle-notice-dead-waiter-cause.md) | 4d<br>4d | batten, shuttle |
-| B2 |  | **Watcher's /compact inject into an idle orch is typed but not submitted (unconfirmed, then stalled on draft)** | [`compact-inject-draft`](design-compact-inject-draft.md) | 0m<br>0m | creel, shuttle, orch |
 | B7 |  | **An instruction typed into a pane is lost when the tackler re-spawns the row**<br>• A re-spawned row session starts from its prompt alone; operator input to the old session is dropped | [`pane-input-lost-on-respawn`](design-pane-input-lost-on-respawn.md) | 1d<br>1d | shed, shuttle, reed |
 
 ### Enhancements (14)
