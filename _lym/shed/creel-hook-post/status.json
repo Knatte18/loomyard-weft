@@ -1,12 +1,11 @@
 {
-  "current_producer": "Discussion-Bouncer",
+  "current_producer": "Drift-Baseline",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Bouncer",
-    "last": "Discussion-Bouncer → awaiting",
+    "now": "Drift-Baseline",
+    "last": "Discussion-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -83,6 +82,13 @@
       "outcome": "awaiting",
       "output": "/home/knatte/Code/loomyard-LYMHUB/creel-hook-post/_lym/reviews/discussion/round-1-bouncer-ledger.md",
       "at": "2026-10-28T09:51:56Z"
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/creel-hook-post/_lym/reviews/discussion/round-1-bouncer-ledger.md",
+      "at": "2026-10-28T09:56:30Z",
+      "by": "shed"
     }
   ],
   "product": {
