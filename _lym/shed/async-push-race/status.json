@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Bouncer",
+  "current_producer": "Describe",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Bouncer",
-    "last": "Code-Burler-Fix → bounced to Code-Bouncer",
+    "now": "Describe",
+    "last": "Code-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -121,6 +121,12 @@
       ],
       "budget_exempt": true,
       "routed_to": "Code-Bouncer"
+    },
+    {
+      "producer": "Code-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/async-push-race/_lym/reviews/code/round-1-bouncer-ledger.md",
+      "at": "2026-10-28T12:26:37Z"
     }
   ],
   "product": {
