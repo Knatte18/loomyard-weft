@@ -1,6 +1,6 @@
 # Recurring test-suite time and growth audit
 
-`test-time-audit-recurring` · Note · research
+`test-time-audit-recurring` · Task · research · draft
 
 ## What this is
 
