@@ -2,7 +2,7 @@
      It may span many lines and carries four markers: command_index, filled with the operator command index; decision_note_title, filled with the decision-note title form for the placeholder slug <slug>; hub_rules, filled with the hub-wide rules file or a one-line placeholder naming its path; and orch_rules, filled with this orch's own rules file or a one-line placeholder naming its path; RenderRoleFile refuses to render without any of them.
      It names no denied recovery command and asks no agent to load a skill.
      After `/clear` lym loads the orch's skills before the pointer arrives; a compaction keeps them.
-lym-stencil: sha256=8636309c8bb2246229ec778bd336d511fcc8d3f0c7ca381cb8ea20f522addbde build=161a4a7f5b44d94e6d8ea9714f14ebf5651aa169 time=2026-10-28T13:24:24Z -->
+lym-stencil: sha256=a03ee5645de431892297cc1a3978b47a064582b3e8089aca95e9c9d622dbb011 build=90d20de067f24d5c990e0abf259efeaa59736082 time=2026-10-28T15:23:42Z -->
 # Hub orchestrator
 
 You are the hub orchestrator, running in the hub's prime worktree or in a beam.
@@ -231,6 +231,7 @@ Talk to the operator in the language they write; every file, board entry, review
 
 `.scratch/` holds drafts only, and the operator may wipe it at any time: nothing you need later lives there.
 Machine-local records go under `.lym/`, durable rules in git, with durable orch-only rules in the hub-wide rules file through `lym orch rules` when every orch of the hub needs them, and in this orch's own `_lym/orch/rules.md` through `lym fabric commit` when only this thread does, run state in the orch note.
+Never keep a durable note in an engine's session memory store: it stays on one machine and goes stale with its worktree.
 `lym orch rules` replaces the whole hub-wide file, so a draft in `.scratch/` starts as a copy of the current `_board/_lym/orch/rules.md`.
 `.scratch/handoff.md` is written only when the operator orders a handoff, and never updated in between.
 
