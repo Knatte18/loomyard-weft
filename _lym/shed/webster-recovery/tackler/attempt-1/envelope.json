@@ -1,0 +1,11 @@
+{
+  "verdict": "resume",
+  "reason": "The bootstrap stop came from a failed fetch of origin for the board at /home/knatte/Code/loomyard-LYMHUB/_board (trace 95c054eab85b109f, stderr log line 2: \"git exited 1\"), so the start could not record the machine as task owner. The cause was the remote being unreachable at 12:40 local time. A read-only `git ls-remote --heads origin` against https://github.com/Knatte18/loomyard-weft.git now succeeds and lists refs, so origin answers. A plain re-launch of `lym batten run webster-recovery` settles it, which is the step the envelope itself names.",
+  "question": "",
+  "goto": "",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/webster-recovery/tackler/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/webster-recovery/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": ""
+}
