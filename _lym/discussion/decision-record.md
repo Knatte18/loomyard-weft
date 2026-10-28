@@ -75,6 +75,14 @@ Rationale: the operator's idea; the Stencil Ownership Invariant keeps prompt tex
 - Claude Code may word the reset clause differently in a later version; the reading then falls back to the 30-minute retry.
 - A usage limit hit while a cycle is in flight is left to the cycle's own timeouts and is read at the next idle turn end.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - batten-usage-limit-precedence-untested (class scope, severity MEDIUM, open in rounds 1)
+  - reset-for-fresh-launch-limit-fields-untested (class scope, severity MEDIUM, open in rounds 1)
+  - shuttle-activity-usagelimit-copy-untested (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - A usage-limit transcript entry reads as a usage limit with its reset time; a plain API error reads as none; table rows cover a time with and without minutes, with a date, an unknown zone and a missing clause.
