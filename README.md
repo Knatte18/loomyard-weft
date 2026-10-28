@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-28 16:42 UTC; every age below is as of then.
+Rendered 2026-10-28 16:43 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -11,7 +11,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 - [P1 Workspaces: beams, pairs from a parent pair, dobby](project-workspaces.md) — Beams that develop a project in their own worktree, driven by a dobby daemon
 - [P2 .NET: LoomYard for C# repositories](project-dotnet.md) — Running LoomYard on C#/.NET repositories such as Models: scoped gates, regression, a sandbox hub
 
-## Tasks (1)
+## Tasks (2)
 
 Concrete and claimable; only a task can run.
 
@@ -28,6 +28,14 @@ Held by a run; its scope is locked until the run ends.
 Waits on nothing open; can start now.
 
 _None._
+
+### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T1 | `draft` **Codex code-review bench: the decision record as yardstick**<br>• Two Codex runs: one added reading line naming the decision record and acceptance criteria as the yardstick<br>• `profile: docs` | [`codex-review-yardstick`](design-codex-review-yardstick.md) | darn |  | 0m<br>0m | shuttle, codex |
 
 ## Notes (26)
 
@@ -48,7 +56,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Beam promote keeps the Discussion record as part of the beam**<br>• When Discussion finds a task should be a project, promote carries its decision record into the beam instead of dropping it | [`beam-promote-keeps-discussion`](design-beam-promote-keeps-discussion.md) | 3d<br>1d | workspaces, batten, loom |
-| E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>3m | shuttle, codex |
+| E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>4m | shuttle, codex |
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 1d<br>22h | batten, stencil, config |
 | E4 |  | **Restore the verify-gate test for a misplaced //lym:guard marker**<br>• Once the darn verify key reads its diff base, cover the guard scan of a narrowed run again | [`verifygate-misplaced-guard-test`](design-verifygate-misplaced-guard-test.md) | 1h<br>1h | loom, gate |
 | E7 |  | **Run verbs in one shared namespace, not under lym loom**<br>• lym loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 13d<br>1d | shed, loom |
