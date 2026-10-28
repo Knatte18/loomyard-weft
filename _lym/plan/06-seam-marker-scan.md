@@ -1,9 +1,9 @@
 # Card 6 — seam-marker-scan
 
 **Create:**
-- `plan:internal/testkit/envkit#envSeamStructs` -> `func envSeamStructs() []string`
-- `plan:internal/testkit/envkit#seamViolations` -> `func seamViolations(root string, dirs []string, envStructs []string) ([]string, error)`
-- `plan:internal/testkit/envkit#TestSeamMarkers_ReflectiveTestsAreMarked` -> `func TestSeamMarkers_ReflectiveTestsAreMarked(t *testing.T)`
+- `internal/testkit/envkit#envSeamStructs`
+- `internal/testkit/envkit#seamViolations`
+- `internal/testkit/envkit#TestSeamMarkers_ReflectiveTestsAreMarked`
 
 **Edit:**
 - `internal/testkit/envkit#TestFullEnv_FillsEverySeam`
@@ -21,8 +21,8 @@
 - `internal/fabricengine_test#TestMergeState_Record`
 
 **Uses:**
-- `plan:internal/impactset#FindSeamTests`
-- `plan:internal/impactset#SeamTest`
+- `internal/impactset#FindSeamTests`
+- `internal/impactset#SeamTest`
 - `internal/testkit/envkit#nilLegal`
 - `internal/testkit/envkit#NilSeams`
 - `internal/testkit/envkit#walkNil`
