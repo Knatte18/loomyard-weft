@@ -1,14 +1,13 @@
 {
   "current_producer": "Discussion-Bouncer",
-  "state": "awaiting",
-  "error": "bouncer Discussion-Bouncer: round 1 escalated to the parent (cause: decision); brief at /home/knatte/Code/loomyard-LYMHUB/creel-hook-post/_lym/reviews/discussion/round-1-escalation.md; record the answer with `lym loom decision add creel-hook-post`, then decide with `lym loom circling accept creel-hook-post` or `lym loom circling continue creel-hook-post`, then run `lym loom resume` in the task worktree to resume",
-  "parent_notice": "Review segment of task `creel-hook-post` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/creel-hook-post/_lym/reviews/discussion/round-1-escalation.md` with a one-shot fork.",
+  "state": "running",
+  "error": "",
   "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Bouncer",
     "last": "Discussion-Bouncer → awaiting",
-    "wait": "bouncer Discussion-Bouncer: round 1 escalated to the parent (cause: decision); brief at /home/knatte/Code/loomyard-LYMHUB/creel-hook-post/_lym/reviews/discussion/round-1-escalation.md; record the answer with `lym loom decision add creel-hook-post`, then decide with `lym loom circling accept creel-hook-post` or `lym loom circling continue creel-hook-post`, then run `lym loom resume` in the task worktree to resume"
+    "wait": ""
   },
   "history": [
     {
