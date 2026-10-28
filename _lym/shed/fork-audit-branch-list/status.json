@@ -1,14 +1,21 @@
 {
-  "current_producer": "Preflight",
+  "current_producer": "Drift-Baseline",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "",
-    "last": "",
+    "now": "Drift-Baseline",
+    "last": "Preflight → done",
     "wait": ""
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Preflight",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-28T11:41:28Z"
+    }
+  ],
   "product": {
     "slug": "fork-audit-branch-list",
     "parent": "main",
