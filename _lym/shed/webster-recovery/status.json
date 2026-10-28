@@ -1,13 +1,21 @@
 {
-  "current_producer": "Worktree-Create",
+  "current_producer": "Seed-Child",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Worktree-Create",
-    "last": "",
+    "now": "Seed-Child",
+    "last": "Worktree-Create → done",
     "wait": ""
   },
-  "history": []
+  "history": [
+    {
+      "producer": "Worktree-Create",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-28T11:41:52Z",
+      "by": "shed",
+      "machine": "neve"
+    }
+  ]
 }
