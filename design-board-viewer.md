@@ -12,6 +12,7 @@ Operator 2026-10-04: the board needs an interactive view with filters, reachable
   With Microsoft's Live Preview extension installed, the task may open it in a VS Code panel instead; VS Code alone shows HTML as source.
   A link from `_lym` was considered and rejected: `_lym` is the pair's weft, the board is hub-level, and file symlinks are not relied on (Windows).
 - Phone: the board repo is private, so GitHub Pages needs a paid plan; instead make README.md easier to read in the GitHub app, grouped by type and area with collapsible `<details>` sections per area and per body.
+  Built by `board-readme-per-project` (2026-10-28): `README.md` is the root project's file and every project renders to `project-<slug>.md` beside it, research notes first; the collapsible `<details>` sections per area and per body are not built.
 
 Builds on `board-model`'s kind and labels.
 

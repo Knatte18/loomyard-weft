@@ -200,7 +200,7 @@ The OP replied that banning em dashes made the model use " - " instead: "swapped
 ### Call things what they are; do not invent terminology (actual-time-traveler, Classic-Asparagus)
 
 - Verdict: does not fit for the project, partly for agents.
-- Why: LoomYard coins its own names on purpose (weft, warp, reed, creel, dobby, batten); `CLAUDE.md:59-61` already confines the shorthands to conversation.
+- Why: LoomYard coins its own names on purpose (weft, warp, reed, creel, dobby, batten); `CLAUDE.md:53` already confines the shorthands to conversation.
   An agent coining a new term in a stencil or doc comment is a review-level concern, not a bench.
 
 ### Ask one question before editing instead of guessing; say what you did not test (London-Boat)
@@ -226,7 +226,7 @@ The OP replied that banning em dashes made the model use " - " instead: "swapped
 ### Every mistake becomes a rule or, better, a pre-work check (Weekly_Cat6537)
 
 - Verdict: have it.
-- Where: `CLAUDE.md:10` (a new invariant goes into PATTERN with its code), PATTERN entries marked `(test)`, and the orch workaround rule, `.lym/orch/role.md:353`.
+- Where: `CLAUDE.md:9` (a new invariant goes into PATTERN with its code), PATTERN entries marked `(test)`, and the orch workaround rule, `.lym/orch/role.md:353`.
 
 ### Keep CLAUDE.md under a page or it gets ignored (OP)
 
