@@ -191,7 +191,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "cc9328600fc322351769081abc945991",
   "masterSessionId": "fc8d23c0-9cc1-49a8-9f08-87222d5c1836",
   "masterEngine": "claude",
@@ -209,8 +209,25 @@
       "spawnedAt": "2026-10-28T10:24:54Z",
       "sessionId": "fc8d23c0-9cc1-49a8-9f08-87222d5c1836",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-finalize-merges-in-place",
+        "status": "done",
+        "head_sha": "9e0974b0efdfb0ff23655aa6a1716655a6e819ff"
+      },
+      "cardShas": [
+        "9e0974b0efdfb0ff23655aa6a1716655a6e819ff"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-landing-settles-in-place/fc8d23c0-9cc1-49a8-9f08-87222d5c1836/subagents/agent-adf773f352b8ac3a3.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-landing-settles-in-place/fc8d23c0-9cc1-49a8-9f08-87222d5c1836/subagents/agent-adf773f352b8ac3a3.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-landing-settles-in-place/fc8d23c0-9cc1-49a8-9f08-87222d5c1836/subagents/agent-adf773f352b8ac3a3.jsonl"
+  ]
 }
