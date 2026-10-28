@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-28 14:21 UTC; every age below is as of then.
+Rendered 2026-10-28 14:22 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -41,7 +41,7 @@ Held by a run; its scope is locked until the run ends.
 | T1 | **The watcher wakes the orch after a usage limit resets, and holds the repeat notices**<br>• `profile: solid` | [`usage-limit-wake`](design-usage-limit-wake.md) | darn | Describe | neve | 1h<br>31m | orch, batten, shuttle |
 | T2 | **A merge fixer change over the caps gets a solo review of its own commits, not a full Code review** | [`fixer-overcap-review`](design-fixer-overcap-review.md) | darn | Finalize | neve | 45m<br>31m | loom, burler |
 | T3 | **Friction-Reflect producer fails to start with 'text file busy' when the lym binary is replaced mid-run** | [`spawn-text-file-busy`](design-spawn-text-file-busy.md) | darn | Finalize | neve | 1h<br>31m | shed, deploy, loom |
-| T7 | **Watcher's /compact inject into an idle orch is typed but not submitted (unconfirmed, then stalled on draft)** | [`compact-inject-draft`](design-compact-inject-draft.md) | darn | Code-Bouncer | neve | 31m<br>31m | creel, shuttle, orch |
+| T7 | **Watcher's /compact inject into an idle orch is typed but not submitted (unconfirmed, then stalled on draft)** | [`compact-inject-draft`](design-compact-inject-draft.md) | darn | Code-Burler-Review | neve | 31m<br>31m | creel, shuttle, orch |
 
 ### Ready (0)
 
