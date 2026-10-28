@@ -3,41 +3,35 @@ lens: existing-paths
 outcome: reported
 ```
 
-The task: run the existing-paths lens over the decision record's D1–D11 and trace the code paths that already run against each change.
+Lens: existing-paths. I traced every existing path that writes or reads the state the record's decisions introduce or change.
 
 **Paths traced, per decision**
 
-- D1/D2 — `ValidateLoomDiscussion`. Its callers are `NewDiscussionGate` (the Discussion-Write and Discussion-Burler-Fix rows, `contracts/recipes/loom-recipe.yaml:110,200`) and `validate-discussion` (`internal/loomcli/validate.go:72`). **Survives.** Both callers go through the one function.
-- D1/D2 — `ValidateDarnDiscussion`. It returns early on a defect today (`internal/loomshed/gates.go:141`); D2 changes that and keeps the history check only on a clean record. Its callers are `NewDarnDiscussionGate` and `validate.go:70`. **Survives.**
-- D1 — headings that `lym loom decision add` writes. `addedDecisionHeading` writes `Added after Discussion (&lt;by&gt;, &lt;date&gt;): &lt;title&gt;` (`internal/loomcli/decision.go:706`). D1's `### Added after Discussion` exemption has to match on that prefix. **Survives**, as long as the exemption is a prefix match.
-- D2 — `lym loom decision add`. Its record check is a seam that restores the record on findings (`decision.go:79`); D2 leaves it out of the new checks. **Survives.**
-- D4 — the Env index on the discussion gate. `wiring.go:309` sets `PlanIndex` for every recipe, and `wiring.go:296` sets `WorktreeRoot`. The discussion gate entry (`internal/shedrecipe/entries_gate.go:139-155`) passes neither today, so the change has to add both. **Survives.**
-- D4 — `NewSlottedIndex`. A type load that no caller covers waits for a gate slot (`internal/planglyph/index.go:25-32`). The record doesn't say whether the new resolve method type-loads. **Survives**, but this is unverified.
-- D5 — guard scan. `onlyKeepLinesAfter` admits only keep lines today (`internal/impactset/guards.go:194`); D5 widens it to seam lines. **Survives.**
-- D5 — `cmd/testtiming/keep.go:21`. This is a third parser of the same directive stack. It already admits any `//lym:` line between a keep line and its func, so `//lym:seam` passes. **Survives.** D5 doesn't name this parser, but none of its behaviour needs to change.
-- D5 — reflective helpers in tier2 files, such as `internal/fabricengine/mergestate_integration_test.go:36` (`assertNoZeroFields`). The guard scan refuses a guard in a tier2 or tier3 file. D5 doesn't carry that restriction over to seam markers. **Survives.**
-- D9 — `ValidatePlan` hands `planContextFindings` only the pending cards (`gates.go:260-269`). **Survives.**
-- D9 — `ValidatePlanLensReview` wraps `ValidatePlan`. **Survives.**
-- D9 — `ValidateReworkPlan` hands `planContextFindings` every card, `plan.Cards` (`gates.go:330`). **Breaks** D9's claim that done cards are skipped (finding 1).
-- D9 — `--require-approved` calls `PlanIndex.Validate` with no `PlanContext` (`validate.go:283`). **Survives.**
-- D3 — reading the git-tracked root entries from `internal/loomshed`. Nothing in loomshed reads git today, and `PATTERN-fabric-git` and `PATTERN-gitrepo-client-boundary` own git reads. **Breaks**: the record names no source for the tracked list (finding 2).
+- **D1, D2 against `lym loom decision add`.** `internal/discussionparser/append.go:119` writes `### Added after Discussion (…)` headings, and D1 exempts those. D2 does not check them, and the record keeps `decision add` on `Validate` alone. Survives.
+- **D1 against carry-over blocks.** `internal/discussionparser/carryover.go:23` puts these blocks in `## Open risks`, and D1 reads only `## Decisions`. Survives.
+- **D2 against the darn gate's commit and the darn verb's commit.** At `internal/loomshed/gates.go:165` and `internal/loomcli/validate.go:66-72`, a D1 or D2 finding makes the check unclean, so nothing commits. The history check keeps its `Validate`-clean precondition as D2 states. Survives.
+- **D2 against webster's rendering of added entries.** `internal/websterengine/doc.go:246` only reads the entries, and D1 and D2 change nothing about them. Survives.
+- **D4: Env fields read by the discussion gate.** `internal/loomcli/wiring.go:296` fills `WorktreeRoot` and `wiring.go:309` fills `PlanIndex` for every recipe, before `entries_gate.go:155` builds `NewDiscussionGate`. The record's claim that Env "already holds both" is right. Survives.
+- **D4: the `validate-discussion` verb.** It reads the same `c.env` (`internal/loomcli/validate.go:66-72`), so the verb and the gate stay on one function. Survives.
+- **D4: quarry outage handling.** Outside planglyph, only webster and the CLI verbs branch on `ErrQuarryUnavailable` (`websterengine/runlevel.go:668`, `loomcli/validate.go:298`, `webstercli/validate.go:244`). The loomshed gates return the error as an infrastructure fault, and D4's Bound says the same for the discussion gate. Survives.
+  The `validate-discussion` verb reports it through its generic `loom: validate discussion: <err>` line, and the wrapped message names quarry, so it is not misread as an invalid record.
+- **D5 against `impactset`'s guard scan.** `internal/impactset/guards.go:185` refuses a marker that is not directly above the func line, unless only keep lines sit between. D5 states that the guard scan will admit seam lines. Survives, by D5's own stated change.
+- **D5 against the `testtiming` keep scanner.** `cmd/testtiming/keep.go:14,41-43` already skips any `//lym:` lines between a keep line and its func line, so a stacked `//lym:seam` passes there unchanged. Survives.
+- **D9: the gate-side `PlanContext` builder.** `planContextOf` (`internal/shedrecipe/entries_gate.go:125-132`) reads Env fields filled at wiring, so tier tags "as `RefuseRaw` is" means a new Env field filled the same way. Survives.
+- **D9: the verb-side `PlanContext` builder.** `internal/loomcli/validate.go:256-277` reads `gate.yaml` through `gateslot.LoadConfig`, treats an absent config as `ErrConfigAbsent`, and is skipped under `--require-approved`. This matches D7's "no `gate.yaml` skips" and D9's `--require-approved` exclusion. Survives.
+- **D9: done-card skipping.** `ValidatePlan` hands only non-done cards to `planContextFindings` (`internal/loomshed/gates.go:262-269`). `ValidateReworkPlan` hands all cards of the fresh generation (`gates.go:330`), which holds no done card. Both match D9's claim. Survives.
+- **D9: webster dispatch.** `beginbatch` and `runlevel` reach `index.ValidateDispatch` and never `planContextFindings`, which matches "webster's dispatch do not run them". Survives.
+- **D8 through D4's method in `planContextFindings`.** Both callers (`gates.go:269`, `gates.go:330`) already hold `index` as a parameter, as D9 claims. Survives.
 
 **Findings**
 
-1. MEDIUM · design · D9, "They skip the cards webster's run record holds done, as the other tree-dependent checks do."
-   - **Issue:** The `--rework` path hands D6–D8 the whole plan, done cards included, so they report findings against frozen done cards that `done-card-edited` stops the writer from fixing.
-   - **Evidence:** `ValidateReworkPlan` calls `planContextFindings(plan, plan.Cards, …)` at `internal/loomshed/gates.go:330`. The rework plan keeps the earlier cards: `first_card` is one past the highest committed card (`gates.go:318-322`). `ValidatePlan` filters to pending cards only at `gates.go:260-269`.
-   - **Fix direction:** D9 states how the rework path scopes D6–D8 to the cards from `told` onward. Otherwise the claim narrows to the gate and the no-flag mode.
+None. Every existing path I traced keeps the decisions' results, or the record already states the change that path needs.
 
-2. MEDIUM · design · D3, "its first segment is an entry git tracks at the worktree root".
-   - **Issue:** The check depends on git's tracked root entries, which keeps `.scratch/` and other untracked roots out of the test. The record doesn't say what supplies that list to `internal/loomshed`, and loomshed runs no git today. Running git there would go against `PATTERN-fabric-git` (git on warp or weft only via `internal/fabricengine`) and `PATTERN-gitrepo-client-boundary`.
-   - **Evidence:** D3's text, and D4's "`internal/loomshed` tests them against the told worktree root and index". `ValidateLoomDiscussion` (`gates.go:123`) and the discussion gate entry (`entries_gate.go:155`) take only paths.
-   - **Fix direction:** Name the source of the tracked-root list, for example a value or seam filled through fabricengine on Env and the verb's wiring. Or define the root test without git.
+**Tool calls**
 
-Tool calls:
-1. grep for `ValidateLoomDiscussion`, `ValidateDarnDiscussion` and `testtiming:keep` callers: the manifest had no list of callers beyond `gates.go`.
-2. `cmd/testtiming/keep.go` and `discussionparser` callers: the keep-line parser and the record check behind `decision add` weren't in the manifest.
-3. `decision.go` validate sites, `discussionwrite.go` and the recipe gate rows: to find which rows run the discussion gate.
-4. `recipe.yaml` rows and `loomcli` files that use `discussionparser`: to confirm which rows carry the discussion gate.
-5. `NewSlottedIndex` and the `decision.go` function list: to see whether the index slots its type load, and what decision add checks.
-6. `addedDecisionHeading` and the `validate.go` mode dispatch: the heading text and the mode-to-function mapping weren't in the manifest.
+1. grep for carry-over and added-decision writers: the manifest lacked who writes the regions D1 reads.
+2. `internal/loomcli/validate.go` discussion verb and `wiring.go:295-315`: the manifest lacked the verb's Env fill for the root and index.
+3. Both `PlanContext` builders (`entries_gate.go:105-140`, `validate.go:240-300`): needed for D9's "both builders fill the same way" claim.
+4. grep for `ErrQuarryUnavailable` outside planglyph and planindex: needed to see who reads the outage that D4's new path returns.
+5. grep for `testtiming:keep` readers: needed to find a second scanner of the comment block that D5 stacks into.
+6. `cmd/testtiming/keep.go`: needed to check whether that scanner admits a `//lym:seam` line.
