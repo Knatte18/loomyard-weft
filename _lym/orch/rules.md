@@ -89,3 +89,8 @@ Discussion explores the code, bounds the scope and weighs the impact; a full boa
 
 Never give a Codex run `xhigh` effort or above, in a bench or anywhere else: it costs too much; `high` is the ceiling (operator, 2026-10-27).
 A Codex reviewer always gets the same context a Claude reviewer of the same round gets, the PATTERN overview and the repository's agent instructions included (operator, 2026-10-27).
+
+## Agents read the source themselves
+
+Never propose handing an agent pre-read source: no inlined file contents, digests or summaries of code in its prompt in place of its own reads (operator, 2026-10-28, said several times).
+An agent must read the source files directly to work from the original material; cost is cut by fewer turns, never by pre-reading for it.
