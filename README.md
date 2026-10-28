@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-28 13:52 UTC; every age below is as of then.
+Rendered 2026-10-28 13:54 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -38,11 +38,11 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **The watcher wakes the orch after a usage limit resets, and holds the repeat notices**<br>• `profile: solid` | [`usage-limit-wake`](design-usage-limit-wake.md) | darn | Darn-Write | neve | 34m<br>2m | orch, batten, shuttle |
-| T2 | **A merge fixer change over the caps gets a solo review of its own commits, not a full Code review** | [`fixer-overcap-review`](design-fixer-overcap-review.md) | darn | Darn-Write | neve | 16m<br>2m | loom, burler |
-| T3 | **Friction-Reflect producer fails to start with 'text file busy' when the lym binary is replaced mid-run** | [`spawn-text-file-busy`](design-spawn-text-file-busy.md) | darn | Darn-Write | neve | 33m<br>2m | shed, deploy, loom |
-| T6 | **The dobby holds a new run start while the user slice nears its task limit**<br>• Hold new run starts when the user slice pids.current nears pids.max | [`dobby-task-limit-hold`](design-dobby-task-limit-hold.md) | darn | Darn-Write | neve | 1h<br>2m | batten |
-| T7 | **Watcher's /compact inject into an idle orch is typed but not submitted (unconfirmed, then stalled on draft)** | [`compact-inject-draft`](design-compact-inject-draft.md) | darn | Darn-Write | neve | 2m<br>2m | creel, shuttle, orch |
+| T1 | **The watcher wakes the orch after a usage limit resets, and holds the repeat notices**<br>• `profile: solid` | [`usage-limit-wake`](design-usage-limit-wake.md) | darn | Darn-Write | neve | 35m<br>3m | orch, batten, shuttle |
+| T2 | **A merge fixer change over the caps gets a solo review of its own commits, not a full Code review** | [`fixer-overcap-review`](design-fixer-overcap-review.md) | darn | Darn-Write | neve | 17m<br>3m | loom, burler |
+| T3 | **Friction-Reflect producer fails to start with 'text file busy' when the lym binary is replaced mid-run** | [`spawn-text-file-busy`](design-spawn-text-file-busy.md) | darn | Darn-Write | neve | 35m<br>3m | shed, deploy, loom |
+| T6 | **The dobby holds a new run start while the user slice nears its task limit**<br>• Hold new run starts when the user slice pids.current nears pids.max | [`dobby-task-limit-hold`](design-dobby-task-limit-hold.md) | darn | Darn-Write | neve | 1h<br>3m | batten |
+| T7 | **Watcher's /compact inject into an idle orch is typed but not submitted (unconfirmed, then stalled on draft)** | [`compact-inject-draft`](design-compact-inject-draft.md) | darn | Darn-Write | neve | 3m<br>3m | creel, shuttle, orch |
 
 ### Ready (1)
 
@@ -58,7 +58,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **Shuttle reads activity and operator input from Claude Code hooks**<br>• PostToolUse activity for the idle reader, UserPromptSubmit carried over on respawn, subagent and compact signals<br>• `profile: solid` | [`shuttle-hook-signals`](design-shuttle-hook-signals.md) | darn | `usage-limit-wake`, `compact-inject-draft` | 4d<br>2m | shuttle, batten, shed, reed, claude |
+| T8 | **Shuttle reads activity and operator input from Claude Code hooks**<br>• PostToolUse activity for the idle reader, UserPromptSubmit carried over on respawn, subagent and compact signals<br>• `profile: solid` | [`shuttle-hook-signals`](design-shuttle-hook-signals.md) | darn | `usage-limit-wake`, `compact-inject-draft` | 4d<br>3m | shuttle, batten, shed, reed, claude |
 
 ## Notes (31)
 
@@ -69,7 +69,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Beam promote keeps the Discussion record as part of the beam**<br>• When Discussion finds a task should be a project, promote carries its decision record into the beam instead of dropping it | [`beam-promote-keeps-discussion`](design-beam-promote-keeps-discussion.md) | 3d<br>1d | workspaces, batten, loom |
-| E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>45m | shuttle, codex |
+| E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>47m | shuttle, codex |
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 22h<br>20h | batten, stencil, config |
 | E5 |  | **Decide the layout of projects in the board README**<br>• The operator is not satisfied with how the README renders projects and their members; the layout is to be decided | [`board-projects-layout`](design-board-projects-layout.md) | 3d<br>23h | board |
 | E6 |  | **Board README: one rendered file per project, research notes first**<br>• Each project renders its own file linked from its parent; README.md is the root project; research notes come right after tasks | [`readme-per-project-files`](design-readme-per-project-files.md) | 2d<br>22h | board |
@@ -96,7 +96,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F12 |  | **Spawn audit log: every process lym starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | 2w<br>1d | reed, shuttle, config |
 | F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 2w<br>4h | webster |
 | F15 |  | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 13d<br>1d | reed, config, batten |
-| F16 | H | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | 13d<br>45m | creel, shuttle, loom, stencil, report |
+| F16 | H | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | 13d<br>47m | creel, shuttle, loom, stencil, report |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 12d<br>1d | burler, shed, orch, quarry, report |
 | F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 5d<br>1d | loom, shed, batten, workspaces, burler |
 
@@ -109,11 +109,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R5 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 6d<br>1d | webster |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 5d<br>3h | loom, stencil |
 | R8 |  | **Ideas from r/ClaudeCode "one line in your CLAUDE.md": fit for LoomYard and bench measures**<br>• About 30 ideas judged against our stencils and rules; top 8 ranked for a bench, a few cheap enough without one | [`claude-md-thread-ideas`](design-claude-md-thread-ideas.md) | 1d<br>1d | stencil, loom, burler |
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T4 | **Machine checks in validate-discussion and validate-plan for recurring review findings**<br>• Citation and acceptance checks for the decision record; seam-test, tier-tag and doc.go checks for plan cards<br>• `profile: solid` | [`validator-checks`](design-validator-checks.md) | 3h<br>3h | loom, stencil |
