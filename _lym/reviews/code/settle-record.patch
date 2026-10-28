@@ -1,0 +1,145 @@
+diff --git a/internal/commentlint/doc.go b/internal/commentlint/doc.go
+index 4c2007f0..c90e67bf 100644
+--- a/internal/commentlint/doc.go
++++ b/internal/commentlint/doc.go
+@@ -10,6 +10,9 @@
+ // the words on its two sides are not adjacent across a line end in the base text.
+ // A line end an edit carries over unchanged is not new, so fixing one flagged break never makes another break of the block checked,
+ // and a legacy wrapped block is flagged only where an edit creates a break.
++// A line end is not new either when the base holds a line pair of the same word counts that differs from the break's two lines only by words substituted in place, and whose unchanged words outnumber the substituted ones.
++// A word rename inside a legacy wrapped paragraph therefore flags none of its breaks.
++// A rename that changes a line's word count still makes the breaks around that line new.
+ //
+ // A checked break passes when its line ends a sentence (`.`, `!`, `?` or `:`, each optionally followed by a closing `)`, quote or backtick), a semicolon, or a comma whose next line starts with a coordinating conjunction (`and`, `but`, `or`, `nor`, `yet` or `so`; `for` is left out because `, for example` is introductory) that opens an independent clause.
+ // The words after the conjunction, up to the next `,`, `;`, `:` or sentence end, open a clause when they start with a subject and hold a finite-verb candidate after the subject's head word.
+diff --git a/internal/commentlint/lint.go b/internal/commentlint/lint.go
+index cc154396..6b083b2d 100644
+--- a/internal/commentlint/lint.go
++++ b/internal/commentlint/lint.go
+@@ -157,17 +157,62 @@ func lineEndPair(before, after commentLine) string {
+ 	return beforeWords[len(beforeWords)-1] + " " + afterWords[0]
+ }
+ 
+-// baseLineEndPairs returns the word pairs adjacent across a line end inside a comment block of src.
+-func baseLineEndPairs(src string) map[string]bool {
+-	pairs := map[string]bool{}
++// linePair is the words of the two lines either side of a break.
++type linePair struct {
++	before, after []string
++}
++
++// baseBreaks is the line breaks inside the comment blocks of a base text.
++type baseBreaks struct {
++	// wordPairs holds the word pairs adjacent across a base line end.
++	wordPairs map[string]bool
++	// linePairsByShape holds the base line pairs, keyed by the word counts of their two lines.
++	linePairsByShape map[[2]int][]linePair
++}
++
++// newBaseBreaks collects the line breaks inside the comment blocks of src.
++func newBaseBreaks(src string) baseBreaks {
++	breaks := baseBreaks{wordPairs: map[string]bool{}, linePairsByShape: map[[2]int][]linePair{}}
+ 	for _, block := range commentBlocks(src) {
+ 		for _, paragraph := range paragraphs(block) {
+ 			for i := 0; i+1 < len(paragraph); i++ {
+-				pairs[lineEndPair(paragraph[i], paragraph[i+1])] = true
++				before, after := paragraph[i], paragraph[i+1]
++				breaks.wordPairs[lineEndPair(before, after)] = true
++				pair := linePair{before: strings.Fields(before.content), after: strings.Fields(after.content)}
++				shape := [2]int{len(pair.before), len(pair.after)}
++				breaks.linePairsByShape[shape] = append(breaks.linePairsByShape[shape], pair)
+ 			}
+ 		}
+ 	}
+-	return pairs
++	return breaks
++}
++
++// carriesOver reports whether the break between two new lines already stood in the base text.
++// It did when the base holds the same word pair across a line end.
++// It also did when the base holds a line pair that differs from the two lines only by words substituted in place, such as a renamed word, and whose unchanged words outnumber the substituted ones.
++func (b baseBreaks) carriesOver(before, after commentLine) bool {
++	if b.wordPairs[lineEndPair(before, after)] {
++		return true
++	}
++	pair := linePair{before: strings.Fields(before.content), after: strings.Fields(after.content)}
++	for _, basePair := range b.linePairsByShape[[2]int{len(pair.before), len(pair.after)}] {
++		unchanged := countEqualPositions(basePair.before, pair.before) + countEqualPositions(basePair.after, pair.after)
++		if 2*unchanged > len(pair.before)+len(pair.after) {
++			return true
++		}
++	}
++	return false
++}
++
++// countEqualPositions returns the number of positions at which two equally long word lists hold the same word.
++func countEqualPositions(first, second []string) int {
++	count := 0
++	for i := range first {
++		if first[i] == second[i] {
++			count++
++		}
++	}
++	return count
+ }
+ 
+ // endsSemanticBreak reports whether a line may end where it does: at a sentence end, a semicolon, or a comma before a coordinating conjunction that opens a clause.
+@@ -238,7 +283,7 @@ func findNewWrappedBreaks(path, baseText, newText string) []Finding {
+ 	if generatedPattern.MatchString(newText) {
+ 		return nil
+ 	}
+-	known := baseLineEndPairs(baseText)
++	known := newBaseBreaks(baseText)
+ 	var findings []Finding
+ 	for _, block := range commentBlocks(newText) {
+ 		for _, paragraph := range paragraphs(block) {
+@@ -247,7 +292,7 @@ func findNewWrappedBreaks(path, baseText, newText string) []Finding {
+ 			}
+ 			for i := 0; i+1 < len(paragraph); i++ {
+ 				before, after := paragraph[i], paragraph[i+1]
+-				if known[lineEndPair(before, after)] || endsSemanticBreak(before, after) {
++				if endsSemanticBreak(before, after) || known.carriesOver(before, after) {
+ 					continue
+ 				}
+ 				findings = append(findings, Finding{File: path, Line: before.number, Text: strings.TrimSpace(before.literal)})
+diff --git a/internal/commentlint/lint_test.go b/internal/commentlint/lint_test.go
+index 169403ab..32611df8 100644
+--- a/internal/commentlint/lint_test.go
++++ b/internal/commentlint/lint_test.go
+@@ -56,6 +56,36 @@ func TestFindNewWrappedBreaks(t *testing.T) {
+ 			source("// the first line of a fixed-column wrapped comment", "// that goes on."),
+ 			nil,
+ 		},
++		{
++			"a rename of a legacy wrapped line's last word is not flagged",
++			wrapped,
++			source("// the first line of one", "// fixed-column wrapped comment", "// that goes on."),
++			nil,
++		},
++		{
++			"a rename of a legacy wrapped line's first word is not flagged",
++			wrapped,
++			source("// the first line of a", "// column-limited wrapped comment", "// that goes on."),
++			nil,
++		},
++		{
++			"a break an edit creates beside a rename in a legacy wrapped block is flagged",
++			wrapped,
++			source("// the first line of a", "// fixed-column folded", "// comment that goes on."),
++			[]int{4},
++		},
++		{
++			"a legacy wrapped line pair rewritten in most of its words is flagged",
++			wrapped,
++			source("// one second row in the", "// fixed-column wrapped comment", "// that goes on."),
++			[]int{3},
++		},
++		{
++			"a legacy wrapped line pair with exactly half its words unchanged is flagged",
++			source("// a b", "// c d"),
++			source("// a x", "// y d"),
++			[]int{3},
++		},
+ 		{"a sentence end passes", "", source("// ends a sentence.", "// starts the next."), nil},
+ 		{"a sentence end before a closing parenthesis passes", "", source("// ends a sentence (like this.)", "// starts the next."), nil},
+ 		{"a sentence end before a closing quote passes", "", source(`// ends with "a quote."`, "// starts the next."), nil},
