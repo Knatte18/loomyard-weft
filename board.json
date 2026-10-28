@@ -641,27 +641,6 @@
       "revised": "2026-10-27T10:00:27Z"
     },
     {
-      "id": 840,
-      "handle": "T5",
-      "slug": "ide-seed-current-worktree",
-      "title": "VS Code colours by project and worktree, and lym ide seed with no slug",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "ide",
-        "workspaces"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Title bar shows the project (prime or beam), the activity bar the worktree; text colour by luminance; ide seed with no slug seeds the current worktree",
-      "body": "## Seen\n\n`lym ide seed \u003cslug\u003e` requires a slug, and its help names only task worktrees.\nA fresh `lym fabric clone` leaves the prime with no `.vscode/`; seeding it took `lym ide seed loomyard` with the prime's name spelled out.\nEvery worktree today gets one title-bar colour from `vscode.PickColor`, the prime included (issue #882), and nothing shows which beam a worktree belongs to.\n\n## Design (agreed with the operator, 2026-10-27)\n\nOnly two areas are coloured, since they are the only ones that keep their colour in an unfocused window (tested in VS Code 1.142 on Linux, custom title bar):\n\n- **Title bar** (`titleBar.activeBackground` and `titleBar.inactiveBackground`, the same colour for both): the project's colour. The window manager draws the window edge in the same colour.\n- **Activity bar** (`activityBar.background`): the worktree's own colour.\n\nNo other colour key is written: the status bar loses its background in an unfocused window while its text colour stays, `window.activeBorder` is not drawn, and tab colours change with the selected tab.\n\nThe colours:\n\n- **Prime**: green title bar and green activity bar.\n  The palette's green, `mainColor` and `palette[0]` in `internal/vscode/color.go`, becomes the darker `#1b5e20` in place of `#2d7d46`, which the operator found too light.\n- **Task under the prime**: green title bar; activity bar any palette colour but green.\n- **Beam**: picked when `lym beam create` makes the beam, from the palette less green and the colours other beams hold, and recorded on the beam so it stays the same at every open; title bar and activity bar both take it.\n- **Task under a beam**: the beam's colour on the title bar; activity bar any palette colour but the beam's.\n- Within one parent, a task's activity-bar colour avoids its sibling tasks' colours while the palette has one free.\n\nText colour follows the background's luminance: white on a dark colour, black on a light one.\nThe palette stays mostly dark, so text is mostly white.\n\n## lym ide seed with no slug\n\nThe slug becomes optional: with none, `lym ide seed` seeds the worktree the current directory sits in, the prime included.\nThe help names the prime as well as task worktrees.\n`fabric clone` stays IDE-free.\n\n## Window title\n\nEvery worktree's `window.title` is the hub shortname upper-cased, a colon and the worktree's slug, such as `LY: loomyard` for the prime and `LY: \u003cslug\u003e` for a task.\nA beam takes the same form with its own slug; a task under a beam names only its own slug, not the beam's.\nThe `.code-workspace` file `lym ide spawn` writes carries the same title and colours, since its settings override the folder's.\n",
-      "status": "done",
-      "created": "2026-10-27T09:20:10Z",
-      "revised": "2026-10-28T09:29:26Z"
-    },
-    {
       "id": 842,
       "handle": "B7",
       "slug": "pane-input-lost-on-respawn",
@@ -765,30 +744,6 @@
       "status": "running · Plan-Write",
       "created": "2026-10-24T06:32:58Z",
       "revised": "2026-10-28T09:29:26Z"
-    },
-    {
-      "id": 852,
-      "handle": "T3",
-      "slug": "turn-audit",
-      "title": "Audit where agent turns go and which could be merged",
-      "kind": "task",
-      "labels": [
-        "research",
-        "stencil",
-        "shuttle",
-        "loom",
-        "webster"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Calls per turn, mergeable serial turns and the read-then-edit-then-test pattern per role, from transcripts only",
-      "body": "## Question\n\nA session's cost grows with its turns times its context: every turn reads the whole context again from cache, and every early turn grows the context the later turns read (`docs/research/token-audit-2026-10-22`: the Plan writer averages 81 turns at 223k, a Webster fork 62 at 179k, the darn writer 58 at 124k, the Plan reviewer 48 at 123k).\nThis audit finds where turns go and which of them could have been merged, as the baseline for stencil and system-prompt changes that cut turns.\nAgents keep reading the source themselves: no change proposed from this audit hands an agent pre-read or digested source (operator, 2026-10-28).\n\nPer role (Plan writer and its lens forks, Discussion writer, Webster implementer forks, darn writer, Discussion, Plan and Code reviewers and fixers, merge fixer):\n\n1. **Calls per turn.** Turns per session, tool calls per assistant turn, and the share of turns with a single tool call.\n2. **Mergeable turns.** Runs of consecutive single-call turns whose calls do not depend on each other's results, such as reads, greps, `lym quarry` calls and lint runs back to back; their count and the share of the session's cost they carry, since a later turn costs more than an early one.\n3. **Read, then edit, then test.** The pattern from the r/ClaudeCode thread in note `claude-md-thread-ideas`: gather every file needed before the first edit, make all edits in as few turns as possible, then test once. Per session: reads after the first edit, switches between reading and editing, edits per turn, edits that touch a file edited before in the same session, and gate, test and lint calls per session.\n4. **Kinds of serial calls.** Which tools and commands make up the mergeable turns (Read, `sed -n`, `grep`, `lym quarry`, `lym loom validate-plan`, lint, `lym gate test`), so a fix can name them.\n5. **Recommendations.** Per role, the concrete stencil wording or system-prompt sentence (appended by shuttle with `--append-system-prompt`) most likely to cut turns, and an estimate of the turns and cost each saves; marked as recommendations, not decisions.\n\n## Scope and cap\n\n- Sessions: the Claude Code transcripts of loom and darn runs landed on Neve since 2026-10-20, found as `tools/tokencount` finds them; runs from OSL-1046 are left out.\n- No agent or model run beyond the darn writer itself: no bench, no replay, no grading agents.\n- Output: `docs/research/turn-audit-2026-10-28/report.md`, with the sample size beside every number, and the scripts that produced the tables beside it.\n",
-      "status": "done",
-      "created": "2026-10-28T09:46:59Z",
-      "revised": "2026-10-28T09:46:59Z",
-      "profile": "docs"
     }
   ],
   "prime_owner": "neve",
