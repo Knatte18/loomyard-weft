@@ -1,0 +1,1050 @@
+diff --git a/docs/research/codex-review-yardstick-2026-10-28/data/context-hashes.txt b/docs/research/codex-review-yardstick-2026-10-28/data/context-hashes.txt
+new file mode 100644
+index 00000000..bd29e351
+--- /dev/null
++++ b/docs/research/codex-review-yardstick-2026-10-28/data/context-hashes.txt
+@@ -0,0 +1,3 @@
++CLAUDE.md of both snapshots and the AGENTS.md copy the Codex handler loaded:
++503b050e86fd77f16ea10b50500ae6dcbc779455b80cca00d57c21582488798d  FOR/for1/work/AGENTS.md
++503b050e86fd77f16ea10b50500ae6dcbc779455b80cca00d57c21582488798d  STB/stb1/work/AGENTS.md
+diff --git a/docs/research/codex-review-yardstick-2026-10-28/data/harness/build.sh b/docs/research/codex-review-yardstick-2026-10-28/data/harness/build.sh
+new file mode 100755
+index 00000000..ea68a7cb
+--- /dev/null
++++ b/docs/research/codex-review-yardstick-2026-10-28/data/harness/build.sh
+@@ -0,0 +1,124 @@
++#!/usr/bin/env bash
++# Stage one bench input and the forked-fan handler prompt for a Code-Review round.
++# usage: build.sh <id> <weft-commit> <code-commit> <base-commit>
++#   weft-commit: the weft commit whose tree holds the round's _lym/discussion, _lym/landing and round-1 focus files.
++#   code-commit: the code commit the Claude round reviewed.
++#   base-commit: the merge base the rubric's review range starts from.
++# Writes .scratch/bench/inputs/<id>/{work,meta.txt,fan/}; the handler prompt is fan/handler-fork.prompt.md.
++# The work tree is a shared clone checked out at code-commit, so `git diff <base>..HEAD` works as in the production worktree.
++# Prompts are assembled as internal/burlerengine's composeReviewPrompt does for a fanned Code-Review round, from the stencils of code-commit.
++set -euo pipefail
++ROOT=/home/knatte/Code/loomyard-LYMHUB/codex-review-yardstick
++WEFT=/home/knatte/Code/loomyard-LYMHUB/loomyard-weft
++HARNESS_DOCS=$ROOT/docs/research/codex-review-yardstick-2026-10-28/data
++id=$1 wc=$2 code=$3 base=$4
++in=$ROOT/.scratch/bench/inputs/$id
++rm -rf "$in"; mkdir -p "$in"
++W=$in/work
++fan=$in/fan; mkdir -p "$fan"
++echo "$id weft=$wc code=$code base=$base" > "$in/meta.txt"
++
++git clone -q --shared --no-checkout "$ROOT" "$W"
++git -C "$W" checkout -q -b bench "$code"
++git -C "$W" config user.email bench@example.invalid
++git -C "$W" config user.name bench
++printf '%s\n' '.bench/' 'AGENTS.md' '_lym/' >> "$W/.git/info/exclude"
++
++mkdir -p "$W/_lym/discussion" "$W/_lym/landing"
++for f in board-entry decision-record support-log; do git -C $WEFT show $wc:_lym/discussion/$f.md > "$W/_lym/discussion/$f.md"; done
++git -C $WEFT show $wc:_lym/landing/summary.md > "$W/_lym/landing/summary.md"
++
++bench=$W/.bench
++mkdir -p "$bench/specs/loom" "$bench/stencils" "$bench/instr" "$bench/out"
++git -C $ROOT archive "$code" contracts/specs contracts/stencils | tar -x -C "$in"
++cp "$in"/contracts/specs/*.md "$bench/specs/"
++for f in "$in"/contracts/specs/loom-*.md; do cp "$f" "$bench/specs/loom/$(basename $f | sed 's/^loom-//')"; cp "$f" "$bench/specs/loom/$(basename $f)"; done
++cp -r "$in"/contracts/stencils/* "$bench/stencils/"
++rm -rf "$in/contracts"
++
++strip() { local s; s=$(<"$1"); [ "${s:0:4}" = '<!--' ] && s=${s#*-->}; printf '%s\n' "${s#"${s%%[![:space:]]*}"}"; }
++fill() { local t=$1; shift; for kv in "$@"; do t=${t//"{{.${kv%%=*}}}"/"${kv#*=}"}; done; printf '%s' "$t"; }
++st=$bench/stencils
++
++# Rubric, as shedadapters.ReadRubric fills it, with the review range base.
++rubric=$(strip "$st/loom/loom-rubric-code-review.md")
++rubric=$(fill "$rubric" "specs_dir=$bench/specs" "stencils_dir=$st" "amendment=none" "webster_record=none" "gate_tiers=none" "review_base=$base")
++
++# Target and fasit, as darn-recipe.yaml's Code-Burler-Review profile gives them.
++target="The subject under review is the committed diff. The rubric supplied in this prompt is
++the single definition of the review range: read its \"Determining the review range\"
++section and derive the range exactly as written there."
++fasit="- \`$W/_lym/discussion/board-entry.md\`
++- \`$W/_lym/discussion/decision-record.md\`
++
++The board entry snapshot named above is the task's scope, as amended by the
++\`Added after Discussion\` entries of the decision record named above, which win where
++they differ. The record's other sections are the writer's own claim, checked against
++the snapshot and never the answer key. The diff's job is to make the change the
++amended entry asks for."
++
++git -C $WEFT show $wc:_lym/reviews/code/round-1-focus.md > "$W/.bench/instr/focus.md"
++focus=$(fill "$(strip "$st/burler/burler-focus-directive.md")" "focus_path=$W/.bench/instr/focus.md")
++
++declared=$(awk '/^## /{on=($0=="## PATTERN changes")} on && /^- `PATTERN-/' "$W/_lym/discussion/decision-record.md")
++changes=""
++if [ -n "$declared" ]; then
++  changes=$(fill "$(strip "$st/pattern/pattern-fragment-changes.md")" "pattern_change_list=$declared")
++fi
++directive=$(fill "$(strip "$st/pattern/pattern-directive-review-fix.md")" "pattern_overview=$(<"$W/PATTERN.md")" "pattern_changes=$changes")
++cp "$W/CLAUDE.md" "$W/AGENTS.md"
++
++# Fork reading: the board entry is a file in the snapshot, as lym is not on the Codex run's path.
++reading=$(strip "$st/burler/burler-fork-reading.md")
++reading=${reading//'the board entry of the task the target belongs to, through `lym board get`;'/"the board entry snapshot at \`$W/_lym/discussion/board-entry.md\`;"}
++if grep -q 'lym board get' <<<"$reading"; then echo "board-entry anchor missing" >&2; exit 1; fi
++fork_reading=$'\n\n'"$reading"
++
++# Read-only tool-use rules, as the plan benches ran: no build, no test, no lym in the Codex run.
++explore=$(strip "$st/burler/burler-step-1-explore.md")
++explore=$(fill "$explore" "pattern_directive=$directive" "focus_directive=$focus" "target=$target" "fasit=$fasit" "rubric=$rubric" \
++  "tool_use_rules=Read-only analysis in the explore and review steps: read files, run nothing." "fork_reading=$fork_reading")
++printf '%s\n' "$explore" > "$W/.bench/instr/step-1-explore-fan.md"
++
++# Lens texts of the code commit's template.
++git -C $ROOT show $code:internal/lenses/template.yaml > "$fan/template.yaml"
++lens_text() {
++  awk -v n="  $1: |" '$0==n {on=1; next} on && /^  [a-z-]+: \|/ {exit} on && /^[a-z]+:/ {exit} on {sub(/^    /,""); print}' "$fan/template.yaml"
++}
++LENSES="code-correctness code-affected-set code-tests"
++lens_list=""
++for l in $LENSES; do
++  lens_text "$l" > "$fan/lens-$l.text"
++  [ -s "$fan/lens-$l.text" ] || { echo "no text for lens $l" >&2; exit 1; }
++  lens_list+="- $l: $(cat "$fan/lens-$l.text")"$'\n'
++done
++
++# The fanned cluster rules; Claude's spawn mechanics become Codex's.
++cluster=$(strip "$st/burler/burler-cluster-fan.md")
++cluster=$(fill "$cluster" "lens_list=$lens_list" "lens_report_path=$W/.bench/out/review.lens-<lens>.md" "lens_report_spec_path=$bench/specs/twill-lens-report-spec.md")
++cluster=${cluster//'via the Agent tool with `subagent_type: "fork"`, one per lens listed here — never pass a `name` (named forks silently lose inherited context).'/'by calling your `spawn_agent` tool once per lens listed here, so the forks run in parallel, each with `fork_turns` set to `"all"` so it inherits your context; never pass a name, a model or an effort for a fork, so each fork keeps your own.'}
++cluster=${cluster//'and never call the Agent tool.'/'and never spawn another agent.'}
++cluster=${cluster//'run only git commands that read, such as `git diff`, `git log` or `git show`, and never one that changes the repository, its index, its refs or its working tree,'/'run only commands that read, such as `git diff`, `git log` or `git show`, and never one that changes the repository, its index, its refs or its working tree,'}
++cluster=${cluster//'While the forks run, YOU (the handler) do your own HOLISTIC review'/'Wait for every fork with your wait tool; while the forks run, YOU (the handler) do your own HOLISTIC review'}
++# The tuned block goes into the fork boilerplate as one line and onto the handler prompt.
++BLOCK=$HARNESS_DOCS/prompts/block-v2-code.md
++block_line=$(tail -n +3 "$BLOCK" | sed 's/^- //' | tr '\n' ' ' | sed 's/ $//')
++cluster=${cluster//"Work your lens's procedure, and start"/"Reading for this review: $block_line Work your lens's procedure, and start"}
++cluster=${cluster//"at most 6 tool calls"/"at most 20 tool calls"}
++for anchor in 'at most 20 tool calls' 'Reading for this review' 'spawn_agent' 'Wait for every fork'; do
++  grep -q "$anchor" <<<"$cluster" || { echo "anchor missing: $anchor" >&2; exit 1; }
++done
++if grep -q 'Agent tool\|subagent_type\|{{' <<<"$cluster"; then echo "unconverted wording" >&2; exit 1; fi
++
++review_path=$W/.bench/out/review.md
++strip "$st/burler/burler-review-format.md" > "$W/.bench/instr/review-format.md"
++review=$(fill "$(strip "$st/burler/burler-step-review.md")" "cluster_rules=$cluster" "review_path=$review_path" \
++  "review_format_path=$W/.bench/instr/review-format.md" "prior_rounds=This is the first round — no prior round files exist.")
++printf '%s\n' "$review" > "$W/.bench/instr/step-2-review-fan.md"
++
++prompt=$(strip "$st/burler/burler-template-reviewer.md")
++prompt=$(fill "$prompt" "parent_directive=" "edit_directive=" "review_path=$review_path" \
++  "instruction_1_path=$W/.bench/instr/step-1-explore-fan.md" "instruction_2_path=$W/.bench/instr/step-2-review-fan.md")
++{ printf '%s\n' "$prompt"; printf '\n'; cat "$BLOCK"; } > "$fan/handler-fork.prompt.md"
++if grep -l '{{' "$fan/handler-fork.prompt.md" "$W"/.bench/instr/*.md; then echo "leftover placeholder" >&2; exit 1; fi
++echo "built $id"; cat "$in/meta.txt"
+diff --git a/docs/research/codex-review-yardstick-2026-10-28/data/harness/dump.sh b/docs/research/codex-review-yardstick-2026-10-28/data/harness/dump.sh
+new file mode 100755
+index 00000000..e2a00ec7
+--- /dev/null
++++ b/docs/research/codex-review-yardstick-2026-10-28/data/harness/dump.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++# dump.sh <file>: one line per finding from the frontmatter.
++id= sev= cls= loc= 
++while IFS= read -r line; do
++  case "$line" in
++    "  - id: "*) [ -n "$id" ] && echo "$id $sev $cls $loc | $sum"; id=${line#  - id: }; sev=;cls=;loc=;sum=;;
++    "    severity: "*) sev=${line#    severity: };;
++    "    class: "*) cls=${line#    class: };;
++    "    location: "*) loc=${line#    location: };;
++    "    summary: "*) sum=${line#    summary: };;
++    "---") [ -n "$id" ] && [ -n "$sum" ] && { echo "$id $sev $cls $loc | $sum"; id=; }; ;;
++  esac
++done < "$1"
++[ -n "$id" ] && echo "$id $sev $cls $loc | $sum"
+diff --git a/docs/research/codex-review-yardstick-2026-10-28/data/harness/evidence.sh b/docs/research/codex-review-yardstick-2026-10-28/data/harness/evidence.sh
+new file mode 100755
+index 00000000..ac1d1ffd
+--- /dev/null
++++ b/docs/research/codex-review-yardstick-2026-10-28/data/harness/evidence.sh
+@@ -0,0 +1,33 @@
++#!/usr/bin/env bash
++# evidence.sh <input-id> <label>: print the rollout evidence and usage lines of one run cell under .scratch/bench/runs/<input-id>/<label>.
++# A "command" is one exec call in a rollout; a fork's own count is its total less the handler's calls before the first spawn.
++ROOT=/home/knatte/Code/loomyard-LYMHUB/codex-review-yardstick
++cell=$ROOT/.scratch/bench/runs/$1/$2
++cd "$cell/rollouts" || exit 1
++handler=$(grep -L '"forked_from_id":"0' * | head -1)
++for f in *; do
++  jq -r 'select(.type=="session_meta")|.payload|.id' "$f" | grep -q . || continue
++done
++fid() { jq -r 'select(.type=="session_meta")|.payload.forked_from_id // "-"' "$1" | head -1; }
++for f in $(ls); do [ "$(fid $f)" = "-" ] && handler=$f; done
++first_spawn=$(jq -r 'select(.type=="response_item" and .payload.name=="spawn_agent")|.timestamp' "$handler" | head -1)
++pre=$(jq -r --arg t "$first_spawn" 'select(.type=="response_item" and .payload.name=="exec" and .timestamp<$t)|1' "$handler" | wc -l)
++echo "# run $1/$2: id, parent, start, end, wall_s, commands (own), first request, last total, weekly used_percent first/last"
++for f in $(ls); do
++  id=$(jq -r 'select(.type=="session_meta")|.payload.id' $f | head -1)
++  st=$(head -1 $f | jq -r .timestamp)
++  en=$(tail -1 $f | jq -r .timestamp)
++  wall=$(( $(date -d "$en" +%s) - $(date -d "$st" +%s) ))
++  cmds=$(jq -r 'select(.type=="response_item" and .payload.name=="exec")|1' $f | wc -l)
++  own=$cmds; [ "$f" != "$handler" ] && own=$((cmds-pre))
++  first=$(jq -c 'select(.type=="event_msg" and .payload.type=="token_count" and .payload.info!=null)|.payload.info.last_token_usage|{input_tokens,cached_input_tokens}' $f | head -1)
++  tot=$(jq -c 'select(.type=="event_msg" and .payload.type=="token_count" and .payload.info!=null)|.payload.info.total_token_usage|{input_tokens,cached_input_tokens,output_tokens,reasoning_output_tokens}' $f | tail -1)
++  wf=$(jq -r 'select(.type=="event_msg" and .payload.type=="token_count")|.payload.rate_limits.primary.used_percent' $f | head -1)
++  wl=$(jq -r 'select(.type=="event_msg" and .payload.type=="token_count")|.payload.rate_limits.primary.used_percent' $f | tail -1)
++  ag=$(jq -r 'select(.type=="response_item")|tostring' $f | grep -c 'AGENTS.md instructions for')
++  fresh=$(jq -n --argjson t "$tot" '$t.input_tokens-$t.cached_input_tokens')
++  echo "id=$id kind=$([ "$f" = "$handler" ] && echo handler || echo fork) forked_from=$(fid $f) start=$st end=$en wall=$wall commands_own=$own commands_total=$cmds first_request=$first total=$tot fresh=$fresh weekly_first=$wf weekly_last=$wl agents_md_blocks=$ag"
++done
++echo "# spawn_agent calls in the handler"
++jq -r 'select(.type=="response_item" and .payload.name=="spawn_agent")|"\(.timestamp)\t\(.payload.arguments|fromjson|del(.message)|tostring)"' "$handler"
++echo "# handler exec calls before the first spawn: $pre"
+diff --git a/docs/research/codex-review-yardstick-2026-10-28/data/harness/run-forkfan.sh b/docs/research/codex-review-yardstick-2026-10-28/data/harness/run-forkfan.sh
+new file mode 100755
+index 00000000..179e272d
+--- /dev/null
++++ b/docs/research/codex-review-yardstick-2026-10-28/data/harness/run-forkfan.sh
+@@ -0,0 +1,35 @@
++#!/usr/bin/env bash
++# Run one fork-fan handler call: run-forkfan.sh <input-id> <label> <effort>
++# One codex exec handler at the given effort spawns the lens forks itself; every rollout the call created is copied to the cell.
++# The run's PATH holds no lym or go: the handler reads and runs nothing that builds.
++set -uo pipefail
++ROOT=/home/knatte/Code/loomyard-LYMHUB/codex-review-yardstick
++id=$1
++model=gpt-6-astra label=$2 effort=$3
++in=$ROOT/.scratch/bench/inputs/$id
++cell=$ROOT/.scratch/bench/runs/$id/$label
++rm -rf "$cell"; mkdir -p "$cell"
++cp -a "$in/work" "$cell/work"
++prompt=$(<"$in/fan/handler-fork.prompt.md")
++prompt=${prompt//"$in/work"/"$cell/work"}
++for f in "$cell"/work/.bench/instr/*.md; do
++  c=$(<"$f"); printf '%s\n' "${c//"$in/work"/"$cell/work"}" > "$f"
++done
++printf '%s\n' "$prompt" > "$cell/prompt.md"
++touch "$cell/.marker"
++start=$(date +%s)
++env -i HOME="$HOME" PATH=/usr/bin:/bin CODEX_HOME=$ROOT/.scratch/codex-home-$label timeout 3000 /home/knatte/.local/bin/codex exec \
++  -m "$model" -c "model_reasoning_effort=\"$effort\"" \
++  -s workspace-write -C "$cell/work" --skip-git-repo-check --json \
++  -o "$cell/last-message.txt" - <<<"$prompt" > "$cell/events.jsonl" 2> "$cell/stderr.txt"
++rc=$?
++end=$(date +%s)
++echo "rc=$rc wall_seconds=$((end-start))" > "$cell/result.txt"
++cp "$cell/work/.bench/out/review.md" "$cell/review.md" 2>/dev/null || echo "no review file" >> "$cell/result.txt"
++mkdir -p "$cell/lens"
++cp "$cell"/work/.bench/out/review.lens-*.md "$cell/lens/" 2>/dev/null
++mkdir -p "$cell/rollouts"
++find "$ROOT/.scratch/codex-home-$label/sessions" -name 'rollout-*.jsonl' -newer "$cell/.marker" -exec cp {} "$cell/rollouts/" \;
++ls "$cell/rollouts" >> "$cell/result.txt"
++grep '"turn.completed"' "$cell/events.jsonl" | tail -1 > "$cell/turn-completed.json"
++cat "$cell/result.txt"; cat "$cell/turn-completed.json"
+diff --git a/docs/research/codex-review-yardstick-2026-10-28/data/harness/setup-codex-home.sh b/docs/research/codex-review-yardstick-2026-10-28/data/harness/setup-codex-home.sh
+new file mode 100755
+index 00000000..2cfd9832
+--- /dev/null
++++ b/docs/research/codex-review-yardstick-2026-10-28/data/harness/setup-codex-home.sh
+@@ -0,0 +1,9 @@
++#!/usr/bin/env bash
++# setup-codex-home.sh <label>...: create one scratch CODEX_HOME per run label, holding a symlink to the operator's auth.json.
++# The link is writable through to ~/.codex/auth.json, so a token refresh by Codex would change the operator's file.
++# An existing auth.json in the scratch directory, link or file, is replaced.
++ROOT=/home/knatte/Code/loomyard-LYMHUB/codex-review-yardstick
++for label in "$@"; do
++  mkdir -p "$ROOT/.scratch/codex-home-$label"
++  ln -sfn "$HOME/.codex/auth.json" "$ROOT/.scratch/codex-home-$label/auth.json"
++done
+diff --git a/docs/research/codex-review-yardstick-2026-10-28/data/harness/windows.sh b/docs/research/codex-review-yardstick-2026-10-28/data/harness/windows.sh
+new file mode 100755
+index 00000000..c66e3a98
+--- /dev/null
++++ b/docs/research/codex-review-yardstick-2026-10-28/data/harness/windows.sh
+@@ -0,0 +1,6 @@
++#!/usr/bin/env bash
++# windows.sh <rollout-file>: print the 5-hour and weekly used_percent of the rollout's last token_count event, space-separated.
++# Prints nothing when the rollout has no token_count event, as for a run the plan refused.
++grep '"token_count"' "$1" | tail -1 | grep -o '"primary":{[^}]*}\|"secondary":{[^}]*}' \
++  | grep -o '"used_percent":[0-9.]*' | cut -d: -f2 | tr '\n' ' ' | sed 's/ $//'
++echo
+diff --git a/docs/research/codex-review-yardstick-2026-10-28/data/match.tsv b/docs/research/codex-review-yardstick-2026-10-28/data/match.tsv
+new file mode 100644
+index 00000000..653f75e5
+--- /dev/null
++++ b/docs/research/codex-review-yardstick-2026-10-28/data/match.tsv
+@@ -0,0 +1,12 @@
++run	codex_id	severity	grade	reference	note
++stb1	F1	MEDIUM	shared	F1,F3	failed-start cause omits `start-failed after <n> tries: <error>` and can overstate the count; found at MEDIUM, the fan's is BLOCKING
++stb1	F2	MEDIUM	shared	F2	loop trace discarded when a child starts but exits without trace or stderr
++stb1	F3	MEDIUM	shared	F3	retry cancellation and Warn emission untested
++stb1	F4	MEDIUM	shared	F4	fallback precedence and an empty callback result untested; the nil-callback row of the fan's F4 is not named
++stb1	F5	MEDIUM	shared	F5	rename-failure cleanup untested
++for1	F1	BLOCKING	unique-real		approval rewrite through WriteFixerAttempts drops unknown keys; PATTERN-tolerant-records
++for1	F2	BLOCKING	unique-real		fix-review-report gate has no CLI self-check and parity check; PATTERN-gate-slot; arguable as in the earlier bench
++for1	F3	BLOCKING	shared	F1,F2,F4	approval write, moved HEAD, timeout, transient start, retry, model and timeout untested, citing D3, D5 and D6 acceptance
++for1	F4	MEDIUM	unique-real		wait error from a started review session returns before the dirty-tree and HEAD checks
++for1	F5	MEDIUM	unique-real		bare `verdict: approved` passes the parser
++for1	F6	LOW	unique-real		Finalize.Call comment still says every over-cap fix reroutes or halts
+diff --git a/docs/research/codex-review-yardstick-2026-10-28/data/prompts/block-v2-code.md b/docs/research/codex-review-yardstick-2026-10-28/data/prompts/block-v2-code.md
+new file mode 100644
+index 00000000..f04fb3a2
+--- /dev/null
++++ b/docs/research/codex-review-yardstick-2026-10-28/data/prompts/block-v2-code.md
+@@ -0,0 +1,9 @@
++## How to read for this review
++
++- Check every claim the board entry, the decision record and the change description make about existing code by reading that code and its callers, and read the code paths the diff reaches beyond the lines it changes.
++- Judge the diff against the decision record's decisions and its acceptance criteria as well as against the board entry snapshot: they are a yardstick beside it, and where the rubric above calls the record only the writer's own claim, that does not apply to them here; a divergence of the diff from a decision or an acceptance criterion is a finding, whether or not the board entry names it.
++- For every symbol, type, config key, file, message or command the diff changes, renames or removes, search the whole tree for every reader of it, with `grep -rn`, list the readers, and check that the diff covers each one; a reader the diff leaves wrong is a finding.
++- For every function the diff changes, read the functions it calls and the code that calls it, one hop beyond the diff, and check that the change still holds there.
++- Read the `pattern/` background file of every PATTERN entry the diff touches, and check that each new command, package or file the diff adds appears where that entry requires.
++- Read the tests the diff adds or changes for waits, sleeps and timing that would slow or flake the suite.
++- Put several searches into one command where you can.
+diff --git a/docs/research/codex-review-yardstick-2026-10-28/data/reviews/FOR/for1/last-message.txt b/docs/research/codex-review-yardstick-2026-10-28/data/reviews/FOR/for1/last-message.txt
+new file mode 100644
+index 00000000..e69de29b
+diff --git a/docs/research/codex-review-yardstick-2026-10-28/data/reviews/FOR/for1/result.txt b/docs/research/codex-review-yardstick-2026-10-28/data/reviews/FOR/for1/result.txt
+new file mode 100644
+index 00000000..7a06d4dc
+--- /dev/null
++++ b/docs/research/codex-review-yardstick-2026-10-28/data/reviews/FOR/for1/result.txt
+@@ -0,0 +1,5 @@
++rc=0 wall_seconds=377
++rollout-2026-10-28T17-44-40-01a18366-415b-7581-b0d2-8b2ca041a5cc.jsonl
++rollout-2026-10-28T17-45-59-01a18367-79e1-7b93-8907-fb46e654cec4.jsonl
++rollout-2026-10-28T17-46-14-01a18367-b70f-7602-8997-5304f7eac071.jsonl
++rollout-2026-10-28T17-46-28-01a18367-ebf8-79d2-88b0-36a9f9522f59.jsonl
+diff --git a/docs/research/codex-review-yardstick-2026-10-28/data/reviews/FOR/for1/review.lens-code-affected-set.md b/docs/research/codex-review-yardstick-2026-10-28/data/reviews/FOR/for1/review.lens-code-affected-set.md
+new file mode 100644
+index 00000000..ce6757ea
+--- /dev/null
++++ b/docs/research/codex-review-yardstick-2026-10-28/data/reviews/FOR/for1/review.lens-code-affected-set.md
+@@ -0,0 +1,40 @@
++```yaml
++lens: code-affected-set
++outcome: reported
++```
++
++Affected-set inventory:
++
++- `keepFixerCommits` signature: its three callers in `Finalize.judgeFixerChange` and `endSpent` pass the new eligibility argument; covered.
++- Shared `archiveStaleReport`: fixer and fix-review callers pass the timestamp, row and session description; covered.
++- Fix-review role, stencil and spec: `fixreview.go`, stencil registry, `roleOpeningStencils`, spec registry, registry tests and `PATTERN-sole-parsers.md`; covered.
++- Stencil values and directives: `seatengine.seatValues`, `composeSeatPrompt`, `seatSpec` and `SeatRole` supply the directives and propagate model, timeout, skills and role; covered.
++- `Fixer` / `FixerTimeoutMin`: configuration validation, template, existing fixer table and new review table remain compatible; no key migration required.
++- `FixerAttempts.Reviewed`: Finalize writes approval, checks the same HEAD, retains it through ordinary record reads, and clears the record on completion; Parent-Align uses a separate row record.
++  The new approval rewrite does not preserve unknown keys.
++- Finalize routing: package documentation, overview, recipe comments and changed gate tests describe the new route; the public `Call` comment still describes the superseded route.
++- Report parsing: both production consumers use `ParseFixReviewReport`; no second parser found.
++- Commit and declared PATTERN changes: no departure trailer and no declared PATTERN change requiring an additional landing.
++
++Findings:
++
++1. **BLOCKING — design — `internal/landingshed/finalize.go:740–741`: The new approval rewrite discards unknown attempt-record keys.**
++   The newly added approval path rewrites the existing Go-written JSON record through `WriteFixerAttempts`.
++   That function serializes only the declared struct fields with `json.Marshal` (`internal/landingshed/fixerattempts.go:58–63`), after `ReadFixerAttempts` decoded into the struct (`:47–54`).
++   Therefore an existing unknown key disappears when this new approval path saves `Reviewed`.
++   `pattern/PATTERN-tolerant-records.md:3–8` explicitly requires rewrites to preserve unknown keys through `internal/state` or equivalent preservation in the type.
++   `writeBytesAtomic` only writes and renames the supplied bytes (`internal/landingshed/mergerecord.go:86` onward).
++   Fix the approval record write through a preserving writer.
++   The underlying helper predates this diff, but this finding concerns the newly added rewrite operation.
++
++2. **LOW — consistency — `internal/landingshed/finalize.go:157`: `Finalize.Call` still documents every over-cap fix as rerouting or halting.**
++   Its comment says “a spent cap or an over-cap fix reroutes or halts,” while the new approved branch returns `proceed()` (`:739–744`).
++   Update the public producer comment to describe the review-approved landing route.
++   The detailed comments and `doc.go` were updated, but this affected description was missed.
++
++Tool-call record:
++
++1. Searched landing/config/report readers and read both recipe diffs; the inherited context lacked the complete affected documentation set and recipe changes.
++2. Read atomic-write implementation, `state` preservation contract, Parent-Align record lifecycle and complete seat directive/naming functions; inherited outputs omitted those callees or truncated them.
++3. Searched the whole tree for changed configuration/report names, read registry behavior and configuration validation, and inspected the base attempt writer; these established external readers, registry integration and which part of the JSON defect predates the diff.
++4. Read numbered evidence for the approval writer, stale `Call` description and tolerance rule, and checked remaining helper call sites and explicit registry consumers; these supplied precise locations and confirmed the caller set.
+diff --git a/docs/research/codex-review-yardstick-2026-10-28/data/reviews/FOR/for1/review.lens-code-correctness.md b/docs/research/codex-review-yardstick-2026-10-28/data/reviews/FOR/for1/review.lens-code-correctness.md
+new file mode 100644
+index 00000000..2a9e7475
+--- /dev/null
++++ b/docs/research/codex-review-yardstick-2026-10-28/data/reviews/FOR/for1/review.lens-code-correctness.md
+@@ -0,0 +1,41 @@
++```yaml
++lens: code-correctness
++outcome: reported
++```
++
++Branch/case list:
++
++- `ParseFixReviewReport`: absent file and unreadable file return wrapped errors; empty input and unknown verdict are rejected; both valid verdicts parse; rejection with an empty Findings section is rejected; bullets outside Findings are ignored.
++- `ParseFixReviewReport`: `verdict: approved\n` without the required Findings section is incorrectly accepted.
++- `fixReviewTable`: empty required inputs, missing stencil, malformed model-spec and failed registry resolution return errors; valid inputs produce one reviewer seat with the configured model, timeout, output and skills; an absent optional fixer report is supported.
++- `archiveStaleReport`: absent old report proceeds; existing report is renamed; rename failure returns an error.
++- `runFixReview`: a failed start marked `ErrNotStarted`, or a result marked `NotStarted`, becomes a transient error.
++- `runFixReview`: a started session returning a wait/mechanism error exits before cleanliness, HEAD and report classification; this does not implement D3’s fallback routing.
++- `runFixReview`: clean timeout yields no verdict; missing or malformed report yields no verdict; rejection retains findings; approval yields approval.
++- `runFixReview`: dirty tree or changed HEAD with no runner error yields the changed-branch outcome; cleanliness and HEAD read failures propagate.
++- `Finalize.judgeFixerChange`: empty baseline proceeds; HEAD/change-read failures stop; within-cap changes proceed; approval at the same HEAD proceeds; a different HEAD requires review again when eligible.
++- `Finalize.judgeFixerChange`: no following review preserves the over-cap halt; approval persists Reviewed before proceeding; persistence failure stops; rejection/no verdict reroutes; changed branch halts with `LandingStopPrefix`.
++- `reviewFollowsReroute`: nil seam returns false; a seam error is wrapped; true/false is preserved.
++- `endSpent` and `keepFixerCommits`: spent attempts do not spawn the reviewer; eligible reroutes retain the baseline-to-HEAD range; ineligible paths persist Halt and halt; seam, HEAD and persistence errors stop.
++- `fixReviewOutcome.rerouteCause`: rejection names findings and report; no-verdict names cause and session log.
++- Resume and retry: attempt records are read by entry, Reviewed survives reads, and the same-HEAD bypass is reached through the passing-gate path.
++
++Findings:
++
++1. **MEDIUM — design — `internal/landingshed/fixreview.go:71–85` — An approval without the required Findings section is accepted.**  
++   Evidence: `contracts/specs/landing-fix-review-spec.md:14` requires a `## Findings` section after the verdict; `ParseFixReviewReport` tracks only whether it is currently inside that section and validates missing findings only for rejection.
++   The concrete report `verdict: approved\n` therefore passes the report gate at `fixreview.go:226–230` and becomes approval at `fixreview.go:272–273`, although it does not satisfy D7’s format contract.
++   Track whether the required heading appeared and reject a report that lacks it, while continuing to accept an explicitly empty Findings section on approval.
++
++2. **MEDIUM — design — `internal/landingshed/fixreview.go:241–242` — Errors after a reviewer starts bypass D3’s no-verdict fallback and branch-change halt.**  
++   Evidence: a real started session can return a wait error without a report when shuttle exhausts events/status retries (`internal/shuttleengine/wait.go:294–300`, `385–398`); `seatengine.Engine.join` stops that chair and returns its wait error (`internal/seatengine/engine.go:376–400`).
++   `runFixReview` immediately propagates that error, before inspecting cleanliness or HEAD.
++   Consequently a clean failed review does not reroute with the no-verdict cause, and a failed review that changed the branch does not halt with `LandingStopPrefix`, contrary to D3.
++   Preserve the special transient startup handling, then classify a started session’s branch state before mapping its ended-without-verdict error to `fixReviewEndNoVerdict`; retain infrastructure errors where checking the branch itself fails.
++
++Tool-call manifest:
++
++- Call 1: read previously truncated `seatengine.Run`/`join`, searched shuttle gate timeout semantics and production landing seams; the attempted `record.go` lookup found no file.
++- Call 2: read production `TaskHead`, `startSeat` error propagation, and located shuttle gate/finalization and atomic writer definitions missing from inherited excerpts.
++- Call 3: read shuttle deadline/mechanism-failure completion and finalization, the atomic writer, exact new-code line numbers, and the review format.
++- Call 4: read `Fabric.HeadSHA`, `verifytree.DirtyPaths`, relevant dependency/config declarations, and shuttle’s concrete runtime failure returns to establish the started-session error route.
+diff --git a/docs/research/codex-review-yardstick-2026-10-28/data/reviews/FOR/for1/review.lens-code-tests.md b/docs/research/codex-review-yardstick-2026-10-28/data/reviews/FOR/for1/review.lens-code-tests.md
+new file mode 100644
+index 00000000..59778fa1
+--- /dev/null
++++ b/docs/research/codex-review-yardstick-2026-10-28/data/reviews/FOR/for1/review.lens-code-tests.md
+@@ -0,0 +1,49 @@
++```yaml
++lens: code-tests
++outcome: reported
++```
++
++Behavior-to-test list:
++
++- Over-cap changes with a review after reroute spawn one review with the fixer’s range, cap reason and report path: covered by `TestFinalize_GateAndFixer/a fix over the caps goes to the fix review...` (`finalize_gate_test.go:323–368`).
++- Approval permits landing: covered by `TestFinalize_GateAndFixer/the fix review's end decides.../an approval lands` (`finalize_gate_test.go:379–382`).
++- Rejection reroutes with findings, report path and fixer commits: covered by the over-cap table (`finalize_gate_test.go:355`).
++- Missing and unparseable reports reroute: covered by the end-routing table (`finalize_gate_test.go:384–393`).
++- Dirty tree and changed HEAD halt without merging: covered by the end-routing table (`finalize_gate_test.go:395–433`).
++- Review timeout reroutes, including when an approval report exists: no test.
++- Review startup failure becomes a transient error: no test.
++- Approval writes `Reviewed` before landing so an interrupted Finalize can reuse it: no test.
++- A matching, preseeded `Reviewed` skips review: covered by `a pass at the HEAD the fix review approved lands with no second review` (`finalize_gate_test.go:443–457`).
++- A changed HEAD invalidates a previous approval and requires review: no test.
++- Only approval stores a new reviewed HEAD: no test.
++- Review uses the configured fixer model-spec and timeout: no test.
++- Review retries a malformed report once and accepts its corrected replacement: no test asserts the retry count or successful second turn.
++- A previous approval report is archived before a new review: no review-path test; `TestFixerRun` covers the shared archiving operation through the merge-fixer path.
++- No review after reroute keeps the prior halt behavior and spawns no review: covered by `with no review after the reroute...` (`finalize_gate_test.go:459–477`), with existing loom wiring tests covering Code budget and recipe eligibility.
++- Spent fixer keeps its previous route: covered by the resumed-entry table (`finalize_gate_test.go:284–285`); that table prohibits fixer roles but does not explicitly prohibit review roles.
++- Review executes while the parent lock is held: no review callback checks the lock; existing lock tests exercise the merge fixer.
++- Parser accepts both verdicts and findings, rejects unknown verdicts and an empty rejected Findings section, and preserves missing-file identity: covered by `TestParseFixReviewReport`.
++- New spec registration and deployed relative path: covered by `contracts/specs/specs_test.go:24,62`.
++- New test timing: no sleeps, production-duration waits or subprocesses were added.
++- Test redundancy: no concrete redundant new test identified; parser tests pin the file contract and the Finalize tests pin routing.
++
++Finding:
++
++**BLOCKING — design — `internal/landingshed/finalize_gate_test.go:370–457` — The review tests leave several explicit acceptance criteria and the approval persistence boundary untested.**
++
++The new end-routing table exercises approval, missing/malformed reports and branch mutations, but never produces a review timeout or review startup failure.
++The existing timeout and transient-start tests in `fixerrun_test.go:210–245,370–388` call `fixerRun.run`, not the new `runFixReview`, so they do not cover `fixreview.go:232–242,264–266`.
++Likewise, the resume case seeds `Reviewed: "f1"` directly (`finalize_gate_test.go:448`) and the approval case immediately completes landing, whose helper requires the record to have been removed (`finalize_gate_test.go:174–185`).
++Consequently, deleting the approval write in `finalize.go:740–743` would leave these tests passing, as would incorrectly honoring any nonempty reviewed SHA instead of matching the current HEAD.
++No assertion on the review table checks `ModelChoice` or `Timeout`, despite D5’s explicit acceptance criterion; the existing model/timeout assertions target `FixerTable`, a separate builder.
++
++This is one recurring coverage-enumeration gap under the rubric’s test-economy requirement and `PATTERN-test-speed`.
++Extend the existing Finalize table to cover the review-specific timeout/start branches, configuration propagation, and a real approval followed by an interrupted landing and resumed Finalize at both the same and a different HEAD.
++Also pin the bounded retry and stale-report behavior through that public path rather than adding tests for each helper.
++The evidence is the tests above and the unexercised production branches in `fixreview.go:147–168,223–242,264–266` and `finalize.go:722,739–744`.
++
++Tool-call manifest:
++
++1. Searched all landingshed tests for review, record, timeout, model and startup assertions because inherited context contained changed hunks but not the complete existing coverage.
++2. Read the Finalize fixture and unchanged test rows, the existing fixer startup/configuration tests and attempt-record tests, and searched all repository tests for review identifiers to establish whether coverage existed outside the changed files.
++3. Read the remainder of the test-speed background, searched Finalize tests for parallelism and lock coverage, and read the fake seat runner’s full behavior because those details were absent or truncated in inherited context.
+diff --git a/docs/research/codex-review-yardstick-2026-10-28/data/reviews/FOR/for1/review.md b/docs/research/codex-review-yardstick-2026-10-28/data/reviews/FOR/for1/review.md
+new file mode 100644
+index 00000000..fe1c1c51
+--- /dev/null
++++ b/docs/research/codex-review-yardstick-2026-10-28/data/reviews/FOR/for1/review.md
+@@ -0,0 +1,103 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: BLOCKING
++    class: design
++    location: internal/landingshed/finalize.go:741
++    summary: The new approval rewrite discards unknown attempt-record keys
++    fix: Route the approval record update through internal/state so existing unknown JSON keys survive when Reviewed is saved; replace the raw marshal-and-replace path used by WriteFixerAttempts while preserving its entry and atomic-write semantics.
++    origin: lens:code-affected-set
++  - id: F2
++    severity: BLOCKING
++    class: scope
++    location: internal/landingshed/fixreview.go:226
++    summary: The new mechanical report gate has no CLI self-check or parity check
++    fix: Add and register a loom validate-fix-review self-check for the Finalize review report, call ParseFixReviewReport from both that verb and the gate, and add the corresponding parity check and command documentation required by PATTERN-gate-slot.
++    origin: handler
++  - id: F3
++    severity: BLOCKING
++    class: design
++    location: internal/landingshed/finalize_gate_test.go:370
++    summary: Explicit review acceptance criteria and approval persistence lack behavioral coverage
++    fix: Extend TestFinalize_GateAndFixer with review-specific timeout and transient-start cases, assertions on the review ModelChoice and Timeout, a malformed-report retry that succeeds on its second turn, and stale-report exclusion; exercise an actual approval followed by interrupted landing and resume at the same and a different HEAD, asserting that only approval writes Reviewed and that the matching HEAD alone skips review.
++    origin: lens:code-tests
++  - id: F4
++    severity: MEDIUM
++    class: design
++    location: internal/landingshed/fixreview.go:241
++    summary: A started review that returns a wait error bypasses the required fallback routing
++    fix: Preserve transient handling for failed startup and error handling for an un-stopped seat, but classify cleanliness and HEAD after a started session has stopped even when Run returns a wait error; return fixReviewEndChanged for mutations and fixReviewEndNoVerdict with the wait cause for a clean session without a usable report, retaining errors when branch inspection itself fails.
++    origin: lens:code-correctness
++  - id: F5
++    severity: MEDIUM
++    class: design
++    location: internal/landingshed/fixreview.go:71
++    summary: The parser accepts approval without the required Findings section
++    fix: Track whether ParseFixReviewReport encountered the Findings heading and return a spec-naming error when it is absent for either verdict; keep an explicitly empty Findings section valid for approval and invalid for rejection, and extend the existing parser table with the missing-heading case.
++    origin: lens:code-correctness
++  - id: F6
++    severity: LOW
++    class: consistency
++    location: internal/landingshed/finalize.go:157
++    summary: The public Call comment still says every over-cap fix reroutes or halts
++    fix: Update the Finalize.Call comment to describe eligible over-cap changes going to the solo review, approval permitting landing, and rejection or no verdict taking the existing reroute.
++    origin: lens:code-affected-set
++---
++
++Reviewed `161a4a7f..HEAD` against the board snapshot, D1–D7 and the acceptance criteria, with read-only code inspection and no test execution.
++The eligibility check, unchanged caps, spent-fixer route, zero-budget and pawl behavior, explicit rejection handling, ordinary dirty-tree and moved-HEAD halts, role registration and stencil inputs match the requested design.
++The matching-HEAD approval check is present; the persistence and invalidation coverage remains incomplete as detailed below.
++
++### [BLOCKING] Approval rewrites lose unknown record data
++
++**Location:** `internal/landingshed/finalize.go:741`
++**Issue:** The new approval branch calls `WriteFixerAttempts` after setting `Reviewed`.
++`ReadFixerAttempts` decodes into the fixed struct, and `WriteFixerAttempts` marshals that struct directly (`fixerattempts.go:47–63`), so an existing unknown key disappears on this newly introduced rewrite.
++`writeBytesAtomic` only replaces bytes and does not preserve keys.
++This violates `PATTERN-tolerant-records.md:3–8`, which explicitly requires unknown-key preservation on rewrites through `internal/state` or equivalent handling in the type.
++The helper predates this diff, but the approval rewrite is new and reaches the violation on a resumed entry whose gate passes.
++
++### [BLOCKING] Report gate lacks its required self-check
++
++**Location:** `internal/landingshed/fixreview.go:226`
++**Issue:** The diff adds the `fix-review-report` mechanical gate, whose closure validates the artifact through `ParseFixReviewReport`.
++The whole-tree reference search finds its production parser calls only inside `fixreview.go`; no CLI self-check or parity check accompanies it.
++`PATTERN-gate-slot.md:24,45–49` requires a new mechanical gate to add its self-check verb and parity check in the same task, including a gate inside a producer closure.
++The decision record's lack of a CLI work item does not waive this repository constraint.
++
++### [BLOCKING] Review behavior is not fully pinned by the tests
++
++**Location:** `internal/landingshed/finalize_gate_test.go:370`
++**Issue:** The end-routing table covers approval, missing or malformed reports, dirty trees and moved HEADs, but never exercises the new review's timeout or transient startup failure.
++The existing fixer tests exercise `fixerRun.run`, not `runFixReview`.
++The resume test seeds `Reviewed` directly at line 448, while the approval test completes landing and checks that the record is gone through `requireLanded` at lines 174–185.
++Deleting the approval write would therefore leave both cases passing, as would changing the comparison to accept any nonempty reviewed SHA.
++No review-table assertion pins the configured model or timeout, and the fake review path does not assert a successful bounded retry or exclusion of a stale approval report.
++These are uncovered new behaviors and explicit D3, D5 and D6 acceptance requirements, contrary to the rubric's test-economy requirement and `PATTERN-test-speed`.
++This is consolidated as one coverage-enumeration finding rather than one finding per missing case.
++No redundant new test or added real-time wait was found.
++
++### [MEDIUM] Session errors skip D3 classification
++
++**Location:** `internal/landingshed/fixreview.go:241`
++**Issue:** A started review can finish without a report because shuttle exhausts event-read or status retries (`internal/shuttleengine/wait.go:294–300,385–398`).
++`seatengine.Engine.join` stops the chair and returns the wait error (`internal/seatengine/engine.go:376–400`).
++The new review runner returns that error immediately, before checking the tree or HEAD.
++A clean stopped session therefore becomes a producer error instead of the D3 no-verdict reroute naming its cause; a session that also changed the branch misses the required `LandingStopPrefix` halt.
++An actual failure to stop the seat remains an infrastructure error and must not be treated as a safe completed review.
++
++### [MEDIUM] A verdict-only approval passes the report contract
++
++**Location:** `internal/landingshed/fixreview.go:71`
++**Issue:** The concrete file `verdict: approved\n` returns an approved report despite lacking the section required by `contracts/specs/landing-fix-review-spec.md:14` and D7.
++The parser tracks whether it is inside Findings but never requires that the heading appeared; its final validation only covers rejected verdicts.
++The malformed approval consequently passes the report gate and can authorize landing.
++The existing rejection-with-empty-Findings case is correctly rejected, and production consumers otherwise use the sole parser.
++
++### [LOW] Public producer documentation describes the old route
++
++**Location:** `internal/landingshed/finalize.go:157`
++**Issue:** The `Finalize.Call` comment still says that a spent cap or an over-cap fix reroutes or halts.
++The changed implementation now permits an approved over-cap fix to proceed at lines 739–744.
++The package documentation and detailed helper comments describe the new behavior, but this directly affected public description was missed.
+diff --git a/docs/research/codex-review-yardstick-2026-10-28/data/reviews/FOR/for1/turn-completed.json b/docs/research/codex-review-yardstick-2026-10-28/data/reviews/FOR/for1/turn-completed.json
+new file mode 100644
+index 00000000..41862c8f
+--- /dev/null
++++ b/docs/research/codex-review-yardstick-2026-10-28/data/reviews/FOR/for1/turn-completed.json
+@@ -0,0 +1 @@
++{"type":"turn.completed","usage":{"input_tokens":2272079,"cached_input_tokens":2154240,"cache_write_input_tokens":0,"output_tokens":10617,"reasoning_output_tokens":934}}
+diff --git a/docs/research/codex-review-yardstick-2026-10-28/data/reviews/STB/stb1/last-message.txt b/docs/research/codex-review-yardstick-2026-10-28/data/reviews/STB/stb1/last-message.txt
+new file mode 100644
+index 00000000..e69de29b
+diff --git a/docs/research/codex-review-yardstick-2026-10-28/data/reviews/STB/stb1/result.txt b/docs/research/codex-review-yardstick-2026-10-28/data/reviews/STB/stb1/result.txt
+new file mode 100644
+index 00000000..119c3f72
+--- /dev/null
++++ b/docs/research/codex-review-yardstick-2026-10-28/data/reviews/STB/stb1/result.txt
+@@ -0,0 +1,5 @@
++rc=0 wall_seconds=327
++rollout-2026-10-28T17-44-40-01a18366-415e-75a0-b58b-1b749c55c769.jsonl
++rollout-2026-10-28T17-45-52-01a18367-5f8f-7191-94ad-966830801f9e.jsonl
++rollout-2026-10-28T17-46-08-01a18367-9f2a-7251-8013-f8d088e955a9.jsonl
++rollout-2026-10-28T17-46-24-01a18367-db9a-7911-a05c-df8b611bb277.jsonl
+diff --git a/docs/research/codex-review-yardstick-2026-10-28/data/reviews/STB/stb1/review.lens-code-affected-set.md b/docs/research/codex-review-yardstick-2026-10-28/data/reviews/STB/stb1/review.lens-code-affected-set.md
+new file mode 100644
+index 00000000..f084bc4b
+--- /dev/null
++++ b/docs/research/codex-review-yardstick-2026-10-28/data/reviews/STB/stb1/review.lens-code-affected-set.md
+@@ -0,0 +1,47 @@
++```yaml
++lens: code-affected-set
++outcome: reported
++```
++
++Affected-set list:
++
++- `IsSpawnBusy`: callers are `startChild` and `runChild`; the new retry table exercises the wrapped `fs.PathError` case, and `internal/proc/doc.go` documents the predicate.
++  Covered.
++- Retry constants and `startChild`: `runChild` is the production caller; `LoopSpec.Sleep`, `procChildRunner`, `proc.StartTied`, and `sleepFor` supply the existing process and timing seams.
++  The retry table asserts retry limits and doubling waits.
++  Covered.
++- Start-failure cause: `runLoop` passes it to `interruptedError` and `AfterInterrupt`; `loomAfterInterrupt` preserves it as the halt-note reason.
++  The new test and package documentation adopt the implementation’s old prefix, contrary to D4.
++  Not covered correctly.
++- `LoopTraceFile`: both production constructors, `loopSpecFor` and `battenLoopSpec`, supply `logger.TraceFile`; test constructors may omit the optional callback.
++  `runLoop` applies the fallback only to `startFailed` results, leaving another D4-required interruption case uncovered.
++- Atomic installation: `run` is the only production caller of `installBinary`; the production and development shell/Windows launchers all call `tools/deploy`.
++  Batten invokes its configured deploy command.
++  The helper’s tests cover successful replacement and build failure.
++  Callers and documentation are consistent with the new installation path.
++- Repository rules: the loop test file explicitly documents its process-global logger reason for omitting `t.Parallel`; new waits use the injected seam.
++  Package documentation changes accompany the implementation.
++  No stencil changes, declared PATTERN changes, or `Pattern-Departure:` trailers occur in this range.
++
++Findings:
++
++1. **MEDIUM — design — `internal/shedverbs/loop.go:435–437`**
++   **The start-failure cause does not implement D4’s required attempt-count format.**
++   D4 requires `start-failed after <n> tries: <error>`.
++   The implementation retains `start-failed: <error>` and adds an attempt count only for ETXTBSY.
++   Consequently an ordinary failed start has no attempt count, and a busy failure has a different format.
++   This reaches the actual halt-note reason because `internal/loomcli/looparm.go:187` copies `cause` into `haltNote.Reason`.
++   `internal/shedverbs/loop_test.go:702,710` asserts the divergent format instead of the settled contract.
++   Fix the cause construction and its existing assertions, and align `internal/shedverbs/doc.go:41`.
++
++2. **MEDIUM — design — `internal/shedverbs/loop.go:311`**
++   **The fallback omits an interrupted child that started but left neither trace nor stderr.**
++   D4 says `interruptedTraceFile` falls back to the loop trace whenever the child left neither trace nor non-empty stderr; its acceptance criterion likewise describes an interrupted stop without restricting it to spawn failures.
++   `interruptedTraceFile` still returns `""` for that case (`internal/shedverbs/loop.go:538`), and the new caller fallback additionally requires `res.startFailed`.
++   A child that starts and exits before writing either output therefore leaves `trace_file` empty even when `LoopTraceFile` supplies a usable path.
++   Apply the fallback after child-trace and non-empty-stderr selection for all such interrupted-child stops.
++
++Tool-call record:
++
++1. Searched all repository Go/Markdown readers of the changed symbols; read the loop test’s previously truncated parallelism explanation, `loomAfterInterrupt`, and the refusal background to verify downstream consumers and rules.
++2. Read logger’s level policy, searched contract/plugin/documentation readers, read deploy launchers and Batten’s deploy invocation to check logging constraints and entry-point coverage; attempted platform-source paths were absent.
+diff --git a/docs/research/codex-review-yardstick-2026-10-28/data/reviews/STB/stb1/review.lens-code-correctness.md b/docs/research/codex-review-yardstick-2026-10-28/data/reviews/STB/stb1/review.lens-code-correctness.md
+new file mode 100644
+index 00000000..ef75d710
+--- /dev/null
++++ b/docs/research/codex-review-yardstick-2026-10-28/data/reviews/STB/stb1/review.lens-code-correctness.md
+@@ -0,0 +1,43 @@
++```yaml
++lens: code-correctness
++outcome: reported
++```
++
++Procedure list:
++
++- `proc.IsSpawnBusy`: nil and ENOENT return false; direct ETXTBSY and wrapped `fs.PathError` return true through `errors.Is`.
++- `startChild`: immediate success returns without sleeping; two ETXTBSY refusals then success perform three starts and 100/200 ms waits; persistent ETXTBSY performs five starts and four waits totaling 1.5 seconds; another error stops immediately.
++- `startChild` cancellation: a sleep interrupted after the first refusal returns that refusal after one actual start; downstream reporting incorrectly claims five tries.
++- `runChild`: failed starts become interrupted results, but their cause does not follow D4’s required format or report actual attempts.
++- `runLoop` trace selection: a failed start with no child trace or non-empty stderr gets the loop trace; existing child evidence takes precedence; nil or empty loop trace remains empty.
++- `runLoop` trace selection after successful spawn followed by an interruption: no child evidence leaves an empty trace despite an available loop trace, contrary to D4.
++- `procChildRunner` and `proc.StartTied`: each retry creates a fresh command; stderr is closed on return; Linux start errors propagate before child execution.
++- `loopSpecFor` and `battenLoopSpec`: both supply the `logger.TraceFile` callback; the logger’s unavailable-sink result remains empty.
++- `installBinary`: successful build and rename replace the target and consume the temporary name; build failure and rename failure attempt temporary-file removal and propagate the primary error.
++- `run`: the build callback keeps cgo and channel flags and builds at the install helper’s supplied path.
++- Windows deployment: the destination name remains `lym.exe`; replacement failure follows the rename-error cleanup path.
++
++Findings:
++
++1. **MEDIUM — design — `internal/shedverbs/loop.go:435`**  
++   **Summary:** Failed-start causes omit the required attempt format and can falsely report five attempts.  
++   **Evidence:** D4 requires `start-failed after <n> tries: <error>` at `_lym/discussion/decision-record.md:39`.
++   The implementation retains `start-failed: ...`, gives non-ETXTBSY errors no attempt count, and appends `childStartBusyAttempts` for every ETXTBSY failure at `loop.go:437`.
++   `startChild` returns early when the injected or real sleep fails at `internal/shedverbs/loopchild.go:64`, so cancellation after the first refusal produces a halt note claiming five attempts although only one occurred.
++   **Fix:** Return the actual number of attempts from `startChild`, use it to construct D4’s required cause for every failed start, and append the executable-open-for-writing explanation only for ETXTBSY.
++   Adjust the existing cause assertions accordingly.
++
++2. **MEDIUM — design — `internal/shedverbs/loop.go:311`**  
++   **Summary:** Loop-trace fallback excludes interrupted children that successfully started but left no evidence.  
++   **Evidence:** D4 and its acceptance criterion require the loop trace whenever an interrupted child left neither a trace nor non-empty stderr (`_lym/discussion/decision-record.md:40,64`).
++   The new fallback requires `res.startFailed`.
++   A successfully spawned child that exits without an envelope, trace, or stderr returns a result with `startFailed == false` at `internal/shedverbs/loop.go:480`, so `interruptedTraceFile` returns empty and the available loop trace is discarded.
++   `loomAfterInterrupt` then copies that empty trace directly into the halt note at `internal/loomcli/looparm.go:192`.
++   **Fix:** Put the loop-trace fallback in `interruptedTraceFile` after child trace and non-empty stderr selection, including its no-`StopFiles` branch, and remove the `startFailed` restriction.
++   Preserve the separate status-read-stop trace handling.
++
++Tool-call record:
++
++1. Read `proc`’s Linux/Windows tied-start implementations, the interrupt-hook portion missing from truncated inherited output, the loop declarations, caller locations, and review format to trace production errors and reporting.
++2. Read step dispatch and interrupted envelope generation, obtained exact changed-code line numbers, and attempted to inspect Go platform/build sources; those assumed standard-library paths were absent.
++3. Located the installed Go command, searched cause/fallback test references, and obtained decision-record and child-exit line numbers to ground the two concrete reporting failures.
+diff --git a/docs/research/codex-review-yardstick-2026-10-28/data/reviews/STB/stb1/review.lens-code-tests.md b/docs/research/codex-review-yardstick-2026-10-28/data/reviews/STB/stb1/review.lens-code-tests.md
+new file mode 100644
+index 00000000..b8415abc
+--- /dev/null
++++ b/docs/research/codex-review-yardstick-2026-10-28/data/reviews/STB/stb1/review.lens-code-tests.md
+@@ -0,0 +1,49 @@
++```yaml
++lens: code-tests
++outcome: reported
++```
++
++Behavior-to-test list:
++
++- Wrapped ETXTBSY followed by success, with 100 ms then 200 ms waits: `TestLoop_ChildStartRetriesABusyExecutable/BusyThenStarted`, `internal/shedverbs/loop_test.go:689`.
++- Five unsuccessful starts, with waits of 100/200/400/800 ms and an interrupted stop: `BusyOnEveryTry`, `internal/shedverbs/loop_test.go:696`.
++- Another start error receives no retry: `OtherStartErrorNotRetried`, `internal/shedverbs/loop_test.go:706`.
++- Required `start-failed after <n> tries: <error>` cause: no correct assertion; the table explicitly expects the older format at lines 702 and 710.
++- Each retry emits a Warn: no assertion.
++- Interrupted retry sleep ends further start attempts: no test row; every injected retry sleep returns nil.
++- Failed start without child trace or stderr uses the supplied loop trace: the new retry table checks both `AfterInterrupt` and envelope paths at line 752.
++- Child trace and nonempty stderr retain precedence: existing interruption rows cover those sources, but never with `LoopTraceFile` installed.
++- Loom and batten supply the logger trace callback: no test; their existing arming tests exercise process registration.
++- Replacement leaves old open readers unchanged, new target installed, and no temporary file: `TestInstallBinary_RenamesTheBuildOverTheTarget/BuildSucceeds`.
++- Build failure preserves the target and removes its temporary file: the same test’s `BuildFails` row.
++- Rename failure preserves the target and removes its temporary file: no row.
++- Retry tests inject waits instead of sleeping; deploy tests contain no waits.
++- No duplicate coverage identified; the new cases exercise previously absent behavior.
++
++Findings:
++
++1. **MEDIUM — consistency — `internal/shedverbs/loop_test.go:702` — The new assertions require a cause that contradicts D4.**  
++   Evidence: `BusyOnEveryTry` expects `start-failed: ...; ... across 5 tries`, and `OtherStartErrorNotRetried` at line 710 expects no attempt count at all.
++   D4 requires `start-failed after <n> tries: <error>`.
++   Correct these existing expectations alongside the production change, including the one-attempt non-ETXTBSY case; do not add a redundant test.
++
++2. **MEDIUM — scope — `internal/shedverbs/loop_test.go:677` — Retry cancellation and retry-warning behavior have no coverage.**  
++   Evidence: the production branches are `internal/shedverbs/loopchild.go:63–65`; the new table checks starts, waits, stop, cause, and trace, while its injected sleep always returns nil.
++   Removing the Warn or ignoring a sleep failure would leave the table green.
++   Extend the existing table with a sleep-failure case that stops after the actual attempts, and capture logs to verify the required retry warnings.
++
++3. **MEDIUM — scope — `internal/shedverbs/loop_test.go:731` — Trace fallback tests bypass both production wiring and source precedence.**  
++   Evidence: all new interrupted cases inject a nonempty fake `LoopTraceFile` and leave no child trace or stderr.
++   The preexisting source-selection cases at lines 360, 417, and 494 leave the callback nil.
++   The only production callback assignments are `internal/loomcli/looparm.go:52` and `internal/battencli/arm.go:538`; their existing arming tests only exercise `OnStart`.
++   Extend the existing interruption cases with an armed fallback and verify child-trace/nonempty-stderr precedence, empty callback output, and the logger callback supplied by each production armer.
++
++4. **MEDIUM — scope — `tools/deploy/main_test.go:289` — The new deploy table does not exercise rename failure cleanup.**  
++   Evidence: its only rows are `BuildSucceeds` and `BuildFails`; neither reaches the failure branch at `tools/deploy/main.go:128–130`.
++   Deleting cleanup in that branch leaves all new assertions passing, despite D3 explicitly requiring removal on rename failure.
++   Add a rename-refusal row, for example using an existing nonempty directory as the destination, and assert the destination survives, the temporary build is removed, and the error identifies installation failure.
++
++Tool-call record:
++
++- Call 1: searched relevant tests and read previously unseen interruption rows, the file-level serial-test justification, and review severity/format rules.
++- Call 2: searched the whole Go tree for the new predicate, callback, installer, and warning; read production arming tests and numbered retry/install branches to establish absent coverage and precise evidence locations.
+diff --git a/docs/research/codex-review-yardstick-2026-10-28/data/reviews/STB/stb1/review.md b/docs/research/codex-review-yardstick-2026-10-28/data/reviews/STB/stb1/review.md
+new file mode 100644
+index 00000000..72ddc8ae
+--- /dev/null
++++ b/docs/research/codex-review-yardstick-2026-10-28/data/reviews/STB/stb1/review.md
+@@ -0,0 +1,99 @@
++---
++verdict: APPROVED
++findings:
++  - id: F1
++    severity: MEDIUM
++    class: design
++    origin: lens:code-correctness
++    location: internal/shedverbs/loop.go:435
++    summary: Failed-start causes omit the required format and can overstate the actual attempt count
++    fix: 'Return the actual attempted-start count from startChild and construct every failed-start cause as start-failed after <n> tries: <error>, appending the executable-open-for-writing explanation for ETXTBSY only. Update the existing cause assertions in loop_test.go and the description in shedverbs/doc.go.'
++  - id: F2
++    severity: MEDIUM
++    class: design
++    origin: lens:code-affected-set
++    location: internal/shedverbs/loop.go:311
++    summary: The loop trace is discarded when a child starts but exits without trace or stderr
++    fix: Move the optional LoopTraceFile fallback into interruptedTraceFile after child-trace and non-empty-stderr selection, including the nil StopFiles case. Remove the startFailed restriction and preserve the separate status-read-stop handling. Extend the existing interruption cases to cover a started child with neither output and an available loop trace, and update shedverbs/doc.go accordingly.
++  - id: F3
++    severity: MEDIUM
++    class: scope
++    origin: lens:code-tests
++    location: internal/shedverbs/loop_test.go:677
++    summary: Retry cancellation and warning emission have no behavioral coverage
++    fix: Extend TestLoop_ChildStartRetriesABusyExecutable with an injected sleep failure and assert that no further start occurs and the cause names the actual attempt count. Capture the logger output in the existing retry cases and assert one Warn for each retry with its attempt and delay, without waiting in real time.
++  - id: F4
++    severity: MEDIUM
++    class: scope
++    origin: lens:code-tests
++    location: internal/shedverbs/loop_test.go:731
++    summary: Trace-fallback coverage omits source precedence and production callback wiring
++    fix: Arm LoopTraceFile in the existing child-trace and stderr interruption cases and assert those sources retain precedence; add an empty callback-result case. Extend the existing loomcli and battencli arming tests to verify that their loop specifications expose the logger trace through LoopTraceFile, using the existing isolated logger facilities.
++  - id: F5
++    severity: MEDIUM
++    class: scope
++    origin: lens:code-tests
++    location: tools/deploy/main_test.go:289
++    summary: Atomic-install tests omit the required cleanup after rename failure
++    fix: Add a rename-refusal row to TestInstallBinary_RenamesTheBuildOverTheTarget, using an existing nonempty directory as the destination and a successfully written temporary binary. Assert an installation error, preservation of the destination and its contents, and removal of the temporary build without spawning a process.
++---
++
++Reviewed `git diff 161a4a7f..HEAD` and both commit messages against the board snapshot, D1–D4, their acceptance criteria, the change description, and the relevant repository rules.
++The verdict uses the format's distinction between MEDIUM findings and BLOCKING findings; the findings below still require correction.
++No build, test, or deploy was run because this review permits read-only inspection only.
++
++### [MEDIUM] Report actual start attempts in the settled cause format
++
++**Location:** internal/shedverbs/loop.go:435
++**Issue:** D4 requires `start-failed after <n> tries: <error>` for a failed start.
++The code retains `start-failed: <error>` and names a count only for ETXTBSY, always using the maximum of five.
++If the first ETXTBSY refusal is followed by cancellation during the injected or real sleep, `startChild` returns at loopchild.go:65 after one attempt, yet the halt reason claims five.
++An ordinary non-ETXTBSY failure has no count at all, including one following earlier busy refusals.
++The cause flows unchanged into `loomAfterInterrupt` and the halt note; the new test expectations at loop_test.go:702 and :710 encode the divergence rather than the decision.
++
++### [MEDIUM] Apply the trace fallback to every evidence-free child interruption
++
++**Location:** internal/shedverbs/loop.go:311
++**Issue:** D4 and its acceptance criterion require an interrupted stop with neither child trace nor non-empty stderr to record the loop's own trace when available.
++The new fallback requires `res.startFailed`, so a successfully spawned child that exits without an envelope or diagnostic output still leaves an empty trace.
++That path returns a result without `startFailed` at loop.go:480, and `interruptedTraceFile` returns empty at loop.go:538 onward.
++The empty path is then copied into the halt note despite an available loop trace.
++Both production armers supply the callback correctly; the selection condition is the missing case.
++
++### [MEDIUM] Exercise retry cancellation and retry diagnostics
++
++**Location:** internal/shedverbs/loop_test.go:677
++**Issue:** The new table covers eventual success, exhaustion, and a non-busy refusal, but its injected sleep always succeeds and it never inspects logging.
++Ignoring a failed sleep or removing the Warn at loopchild.go:63 would leave those assertions passing.
++These are added behaviors with no coverage under the rubric's test-economy rule.
++An injected cancellation case also pins the actual-count failure described in F1 without sitting out a production delay.
++
++### [MEDIUM] Cover fallback precedence and the real arming seams
++
++**Location:** internal/shedverbs/loop_test.go:731
++**Issue:** Every new interrupted case installs a non-empty fake loop trace and supplies no child evidence.
++Existing child-trace and stderr cases leave the callback nil, so they do not establish precedence when both sources are available.
++The new behavior's empty callback result is also untested.
++The production assignments at loomcli/looparm.go:52 and battencli/arm.go:538 have no assertion in their existing arming tests, which exercise process registration instead.
++Removing either assignment would preserve the new tests while losing the fallback for that production caller.
++
++### [MEDIUM] Cover installation failure after a successful build
++
++**Location:** tools/deploy/main_test.go:289
++**Issue:** D3 explicitly requires temporary-file removal after rename failure.
++The new table contains only successful installation and failed build, so neither row reaches main.go:128–130's error branch.
++Removing its cleanup would leave the suite's new assertions passing while leaving a temporary binary behind after a refused replacement.
++
++## Consolidation
++
++The affected-set and correctness reports describe the same two D4 defects and are consolidated into F1 and F2.
++The tests report's contradictory cause assertions are part of F1, not a separate defect.
++No duplicate test coverage was identified.
++The retry limit, doubling injected waits, ETXTBSY predicate, production trace callback assignments, and same-directory build/rename path are otherwise consistent with their intended behavior on inspection.
++The docs land with the implementation, but their narrowed cause and fallback descriptions must change with F1 and F2.
++No new cross-cutting invariant or declared PATTERN change was identified.
++
++## Rejected
++
++- Repeated Warn calls as an independent logging-policy violation: the logger's detailed policy explicitly admits retry warnings and its hard repetition bound is roughly ten iterations; this retry has at most five starts and D1 explicitly requires a Warn per retry.
++- A separate helper-only test for IsSpawnBusy: the existing new loop table already exercises a wrapped ETXTBSY error through the consuming behavior, so another test of that same case would duplicate coverage.
+diff --git a/docs/research/codex-review-yardstick-2026-10-28/data/reviews/STB/stb1/turn-completed.json b/docs/research/codex-review-yardstick-2026-10-28/data/reviews/STB/stb1/turn-completed.json
+new file mode 100644
+index 00000000..5dc0193e
+--- /dev/null
++++ b/docs/research/codex-review-yardstick-2026-10-28/data/reviews/STB/stb1/turn-completed.json
+@@ -0,0 +1 @@
++{"type":"turn.completed","usage":{"input_tokens":1506429,"cached_input_tokens":1419904,"cache_write_input_tokens":0,"output_tokens":9617,"reasoning_output_tokens":759}}
+diff --git a/docs/research/codex-review-yardstick-2026-10-28/data/rollout-evidence.txt b/docs/research/codex-review-yardstick-2026-10-28/data/rollout-evidence.txt
+new file mode 100644
+index 00000000..4896d3f1
+--- /dev/null
++++ b/docs/research/codex-review-yardstick-2026-10-28/data/rollout-evidence.txt
+@@ -0,0 +1,20 @@
++# run STB/stb1: id, parent, start, end, wall_s, commands (own), first request, last total, weekly used_percent first/last
++id=01a18366-415e-75a0-b58b-1b749c55c769 kind=handler forked_from=- start=2026-10-28T16:44:40.144Z end=2026-10-28T16:50:04.404Z wall=324 commands_own=13 commands_total=13 first_request={"input_tokens":16427,"cached_input_tokens":12160} total={"input_tokens":1506429,"cached_input_tokens":1419904,"output_tokens":9617,"reasoning_output_tokens":759} fresh=86525 weekly_first=5.0 weekly_last=8.0 agents_md_blocks=1
++id=01a18367-5f8f-7191-94ad-966830801f9e kind=fork forked_from=01a18366-415e-75a0-b58b-1b749c55c769 start=2026-10-28T16:45:52.436Z end=2026-10-28T16:47:27.221Z wall=95 commands_own=3 commands_total=10 first_request={"input_tokens":77074,"cached_input_tokens":74112} total={"input_tokens":330301,"cached_input_tokens":318208,"output_tokens":1764,"reasoning_output_tokens":374} fresh=12093 weekly_first=6.0 weekly_last=7.0 agents_md_blocks=1
++id=01a18367-9f2a-7251-8013-f8d088e955a9 kind=fork forked_from=01a18366-415e-75a0-b58b-1b749c55c769 start=2026-10-28T16:46:08.688Z end=2026-10-28T16:47:25.362Z wall=77 commands_own=2 commands_total=9 first_request={"input_tokens":77914,"cached_input_tokens":74880} total={"input_tokens":245616,"cached_input_tokens":234496,"output_tokens":1411,"reasoning_output_tokens":284} fresh=11120 weekly_first=6.0 weekly_last=6.0 agents_md_blocks=1
++id=01a18367-db9a-7911-a05c-df8b611bb277 kind=fork forked_from=01a18366-415e-75a0-b58b-1b749c55c769 start=2026-10-28T16:46:24.160Z end=2026-10-28T16:47:34.771Z wall=70 commands_own=2 commands_total=9 first_request={"input_tokens":78476,"cached_input_tokens":75520} total={"input_tokens":258310,"cached_input_tokens":241792,"output_tokens":1554,"reasoning_output_tokens":265} fresh=16518 weekly_first=6.0 weekly_last=7.0 agents_md_blocks=1
++# spawn_agent calls in the handler
++2026-10-28T16:45:52.392Z	{"task_name":"code_correctness","fork_turns":"all"}
++2026-10-28T16:46:08.675Z	{"task_name":"code_affected_set","fork_turns":"all"}
++2026-10-28T16:46:24.137Z	{"task_name":"code_tests","fork_turns":"all"}
++# handler exec calls before the first spawn: 7
++# run FOR/for1: id, parent, start, end, wall_s, commands (own), first request, last total, weekly used_percent first/last
++id=01a18366-415b-7581-b0d2-8b2ca041a5cc kind=handler forked_from=- start=2026-10-28T16:44:40.675Z end=2026-10-28T16:50:54.784Z wall=374 commands_own=18 commands_total=18 first_request={"input_tokens":16426,"cached_input_tokens":12160} total={"input_tokens":2272079,"cached_input_tokens":2154240,"output_tokens":10617,"reasoning_output_tokens":934} fresh=117839 weekly_first=5.0 weekly_last=9.0 agents_md_blocks=1
++id=01a18367-79e1-7b93-8907-fb46e654cec4 kind=fork forked_from=01a18366-415b-7581-b0d2-8b2ca041a5cc start=2026-10-28T16:45:59.143Z end=2026-10-28T16:47:46.169Z wall=107 commands_own=4 commands_total=12 first_request={"input_tokens":87242,"cached_input_tokens":84224} total={"input_tokens":491752,"cached_input_tokens":468480,"output_tokens":2121,"reasoning_output_tokens":558} fresh=23272 weekly_first=6.0 weekly_last=7.0 agents_md_blocks=1
++id=01a18367-b70f-7602-8997-5304f7eac071 kind=fork forked_from=01a18366-415b-7581-b0d2-8b2ca041a5cc start=2026-10-28T16:46:14.805Z end=2026-10-28T16:48:05.810Z wall=111 commands_own=4 commands_total=12 first_request={"input_tokens":88087,"cached_input_tokens":84992} total={"input_tokens":497779,"cached_input_tokens":472192,"output_tokens":1948,"reasoning_output_tokens":490} fresh=25587 weekly_first=6.0 weekly_last=7.0 agents_md_blocks=1
++id=01a18367-ebf8-79d2-88b0-36a9f9522f59 kind=fork forked_from=01a18366-415b-7581-b0d2-8b2ca041a5cc start=2026-10-28T16:46:28.350Z end=2026-10-28T16:48:06.563Z wall=98 commands_own=3 commands_total=11 first_request={"input_tokens":88645,"cached_input_tokens":85632} total={"input_tokens":391050,"cached_input_tokens":369664,"output_tokens":1950,"reasoning_output_tokens":466} fresh=21386 weekly_first=7.0 weekly_last=7.0 agents_md_blocks=1
++# spawn_agent calls in the handler
++2026-10-28T16:45:59.130Z	{"task_name":"code_correctness","fork_turns":"all"}
++2026-10-28T16:46:14.790Z	{"task_name":"code_affected_set","fork_turns":"all"}
++2026-10-28T16:46:28.335Z	{"task_name":"code_tests","fork_turns":"all"}
++# handler exec calls before the first spawn: 8
+diff --git a/docs/research/codex-review-yardstick-2026-10-28/data/usage.txt b/docs/research/codex-review-yardstick-2026-10-28/data/usage.txt
+new file mode 100644
+index 00000000..89564c8f
+--- /dev/null
++++ b/docs/research/codex-review-yardstick-2026-10-28/data/usage.txt
+@@ -0,0 +1,12 @@
++AGENTS.md instruction blocks per rollout (handler and its three forks hold one each):
++STB/stb1 1
++STB/stb1 1
++STB/stb1 1
++STB/stb1 1
++FOR/for1 1
++FOR/for1 1
++FOR/for1 1
++FOR/for1 1
++
++stb1 fresh_total=126256 handler_fresh=86525 handler_wall=324 codex_exec_wall=327 max_fork_cmds=3
++for1 fresh_total=188084 handler_fresh=117839 handler_wall=374 codex_exec_wall=377 max_fork_cmds=4
+diff --git a/docs/research/codex-review-yardstick-2026-10-28/report.md b/docs/research/codex-review-yardstick-2026-10-28/report.md
+new file mode 100644
+index 00000000..5af4b615
+--- /dev/null
++++ b/docs/research/codex-review-yardstick-2026-10-28/report.md
+@@ -0,0 +1,140 @@
++# Codex code-review bench with the decision record as yardstick: one added line, two medium runs
++
++Bench of 2026-10-28, a follow-up to `docs/research/codex-code-review-bench-2026-10-28/report.md`.
++Codex CLI 0.164.0, ChatGPT sign-in, Linux.
++Two `codex exec` handler runs, one per input, `gpt-6-astra` at medium effort for handler and forks.
++Each handler read the diff, then spawned the three Code-Review lens forks through `spawn_agent` with `fork_turns="all"`.
++Nothing was built in `internal/`: the bench is the earlier bench's shell scripts, one changed prompt block, the reviewers' own output and a hand grading.
++
++## Conclusion
++
++With the added line, the forked fan found all 5 of the Claude fan's findings on `spawn-text-file-busy`, where the earlier bench's four runs found 2 of 5, but still found the same 3 of 6 on `fixer-overcap-review` and none of the record findings `F3`, `F5` and `F6` there.
++The line drew no false finding on either input.
++It moved the verdict on `spawn-text-file-busy` from `BLOCKING` to `APPROVED`, and the fan's `BLOCKING` finding was found at `MEDIUM`.
++
++| Input | Fan findings found, this run (earlier runs) | Fan `BLOCKING` found | Verdict, this run (earlier runs) against fan | Real findings the fan lacks | False findings |
++|---|---|---|---|---|---|
++| `spawn-text-file-busy` | 5 of 5 (2 of 5, 2 of 5) | found at `MEDIUM`, not `BLOCKING` (0 of 1, 0 of 1) | `APPROVED` (`BLOCKING`, `BLOCKING`) against `BLOCKING` | 0 (1 and 0) | 0 (1 and 2) |
++| `fixer-overcap-review` | 3 of 6 (3 of 6, 3 of 6) | none | `BLOCKING` (`BLOCKING`, `BLOCKING`) against `APPROVED` | 5 (3 and 4) | 0 (0 and 0) |
++
++- The line let the fan find the record findings on `spawn-text-file-busy`.
++  `F1`, that the start-failed cause does not read `start-failed after <n> tries: <error>`, was raised in the review as a `MEDIUM` finding citing `D4` and its acceptance criterion; `F2`, the loop-trace fallback gated on `res.startFailed`, was raised citing the same decision.
++  The two earlier runs of this input rejected both by name.
++  The review also found `F4`, which the earlier runs rejected as an extra test.
++- On `fixer-overcap-review` the line changed none of the three record findings.
++  `F5` (the dirty-tree halt reason) and `F6` (two stale docs) are in neither the review nor any lens report.
++  `F3`, the spent-fixer no-review criterion, is in the code-tests lens report ("that table prohibits fixer roles but does not explicitly prohibit review roles") and was dropped when the handler consolidated, so the lens read the criterion and the review did not carry it.
++- The review's tests finding on `fixer-overcap-review` now cites "explicit D3, D5 and D6 acceptance requirements" and was raised at `BLOCKING`, where the earlier runs raised it at `MEDIUM`; one run cannot tell whether the line caused the higher severity.
++- The false `BLOCKING` finding of both earlier runs on `spawn-text-file-busy`, a `Warn` per ETXTBSY retry, was not raised; the review lists it under `## Rejected` on `D1`'s ground.
++  The earlier bench's graders counted it as false for that same ground.
++- The earlier bench found the same fan findings in both runs of each input, so 5 of 5 against 2 of 5 and 2 of 5 is outside that spread.
++  One run per input still measures a single draw and not a rate; see Limits.
++- The verdict `APPROVED` on `spawn-text-file-busy` sits beside five `MEDIUM` findings that the review says "still require correction".
++  The fan's verdict there is `BLOCKING` for its one `BLOCKING` finding, which the review rated `MEDIUM`.
++
++## The added line
++
++`data/prompts/block-v2-code.md` is the earlier block with one bullet added after the first:
++
++> Judge the diff against the decision record's decisions and its acceptance criteria as well as against the board entry snapshot: they are a yardstick beside it, and where the rubric above calls the record only the writer's own claim, that does not apply to them here; a divergence of the diff from a decision or an acceptance criterion is a finding, whether or not the board entry names it.
++
++`diff` against the earlier block shows this bullet alone.
++The build puts the block on the handler prompt and into the fork boilerplate as before, so every fork carries the line.
++
++### Why it is worded this way
++
++The rendered prompt told the runs, in three places, to use the board snapshot alone as the measuring stick:
++
++- the fasit text of `darn-recipe.yaml`'s Code-Burler-Review profile: "The record's other sections are the writer's own claim, checked against the snapshot and never the answer key";
++- the rubric's "A board entry snapshot" bullet: "check them against the snapshot, never use them as the measuring stick";
++- the rubric's "Check every claim the board entry, the decision record and the change description make", which sets the record as a claim to test.
++
++A line that only said "the record is a yardstick" would contradict these without saying which wins, and a model resolving it would side with the longer, earlier rubric text.
++So the line names the exception (`D<n>` decisions and acceptance criteria, not the record's other sections), says that it overrides the rubric's "writer's own claim" reading for them, and says a divergence is a finding whether or not the board entry names it, since the earlier runs rejected `F1` for the reason that the entry names no spelling.
++The line does not touch the rubric, the fasit or the target text; the entry fixes the change to the block.
++
++## Setup
++
++The earlier bench's harness, copied to `data/harness/` with the root path changed to this worktree's scratch tree and nothing else.
++The staged prompts differ from the earlier bench's by the added line and path text only, checked with `diff` for the handler prompt and both instruction files of each input.
++Inputs, reviewed commits (`7615d129` and `d50e5277`, base `161a4a7f`), weft commits (`abfabfcf6`, `c9fb5eb56`), reference findings, context parity, the fork cap of 20, the read-only tool-use rules and the model and effort are the earlier bench's; see its `## Inputs` and `## Setup`.
++`data/context-hashes.txt` shows `AGENTS.md` equal to the earlier bench's hash and loaded once by each of the eight rollouts.
++The reference findings are graded from `docs/research/codex-code-review-bench-2026-10-28/data/reference/`, which is not copied.
++
++## Results
++
++One run per cell.
++The fan reference is 5 findings (1 `BLOCKING`) on `STB` and 6 (none `BLOCKING`) on `FOR`.
++"Found" counts distinct reference findings that a Codex finding matched, as the earlier bench counted; one Codex finding may match several.
++`data/match.tsv` holds each reading and `data/reviews/<input>/<run>/` holds each handler's review and the three forks' reports.
++
++| Run | Findings | Shared | Unique real | False | Fan findings found | `BLOCKING` found | Verdict | Fresh input tokens | Wall time |
++|---|---|---|---|---|---|---|---|---|---|
++| `STB` this run | 5 | 5 | 0 | 0 | 5 of 5 | at `MEDIUM` | `APPROVED` | 126k | 327 s |
++| `STB` earlier run 1 | 4 | 2 | 1 | 1 | 2 of 5 | 0 of 1 | `BLOCKING` | 108k | 306 s |
++| `STB` earlier run 2 | 4 | 2 | 0 | 2 | 2 of 5 | 0 of 1 | `BLOCKING` | 115k | 276 s |
++| `FOR` this run | 6 | 1 | 5 | 0 | 3 of 6 | none | `BLOCKING` | 188k | 377 s |
++| `FOR` earlier run 1 | 4 | 1 | 3 | 0 | 3 of 6 | none | `BLOCKING` | 180k | 391 s |
++| `FOR` earlier run 2 | 7 | 3 | 4 | 0 | 3 of 6 | none | `BLOCKING` | 168k | 347 s |
++| Claude fan, `STB` | 5 | | | | | | `BLOCKING` | 138k | 131 s |
++| Claude fan, `FOR` | 6 | | | | | | `APPROVED` | 178k | 147 s |
++
++Fresh input tokens are `input_tokens` less `cached_input_tokens` of each rollout's last `token_count`, summed over the handler and its three forks (`data/usage.txt`), as in the earlier bench; the Claude fan's are not the same measure, see that report.
++Wall time is the whole `codex exec`.
++The weekly `used_percent` went from 5 to 9 over the two runs, which ran in parallel on one account; the stop at 70 percent was not reached.
++
++### Per call
++
++| Run | Handler wall | Handler fresh | Fork fresh, three forks | Longest fork's own commands |
++|---|---|---|---|---|
++| `STB` | 324 s | 87k | 12k, 11k, 17k | 3 |
++| `FOR` | 374 s | 118k | 23k, 26k, 21k | 4 |
++
++Each handler's rollout holds three `spawn_agent` calls, `code_correctness`, `code_affected_set` and `code_tests`, each with `fork_turns` set to `"all"`; each fork's `session_meta` names its handler as `forked_from_id`.
++The cap of 20 never bound.
++The fork prompts are encrypted in the rollouts, so that every fork held the added line rests on the handler following the cluster rules, as in the earlier bench; `data/rollout-evidence.txt` has the rest.
++
++## The record findings
++
++| Input | Record finding | Found | How |
++|---|---|---|---|
++| `STB` | `F1` (`BLOCKING`), cause format | yes, at `MEDIUM` | `F1`: "D4 requires `start-failed after <n> tries: <error>`", with the overstated count of a cancelled backoff folded in |
++| `STB` | `F2` (`MEDIUM`), loop-trace fallback | yes | `F2`: "D4 and its acceptance criterion require" the fallback for every evidence-free interruption |
++| `FOR` | `F3` (`MEDIUM`), spent-fixer criterion | no | read by the code-tests lens, absent from the review |
++| `FOR` | `F5` (`LOW`), dirty-tree halt reason | no | absent from the review and every lens report |
++| `FOR` | `F6` (`LOW`), two stale docs | no | the review raised a different stale comment, on `Finalize.Call`, and not `llm-model-spec.md:128` or `docs/overview.md:585` |
++
++New false findings drawn by the line: none on either input.
++On `STB` the review's `## Rejected` names the `Warn` per retry and a helper-only `IsSpawnBusy` test, both with reasons.
++
++## The findings
++
++### `spawn-text-file-busy`
++
++- Found: `F1`, `F2`, `F3` (a cancelled backoff reports five tries, folded into the review's `F1` and its own test finding), `F4` (the review's `F4` names the empty callback result and precedence, not the nil-callback row) and `F5`.
++- Missed: none.
++- Unique real: none.
++  The earlier run 1's trace-precedence point is part of the review's `F4`.
++- False: none.
++
++### `fixer-overcap-review`
++
++- Found: `F1`, `F2` and `F4`, as one `BLOCKING` finding (`F3` of the review), against `MEDIUM` in the earlier runs.
++- Missed: `F3`, `F5` and `F6`, as above.
++- Unique real: five, all raised by one or both earlier runs: the approval rewrite dropping unknown keys against `PATTERN-tolerant-records` (`BLOCKING`), the missing self-check and parity check of the `fix-review-report` gate (`BLOCKING`, arguable on the reading the earlier bench gave it), a wait error from a started review session returning before the dirty-tree and HEAD checks (`MEDIUM`), the bare `verdict: approved` passing the parser (`MEDIUM`, `LOW` before) and the `Finalize.Call` comment (`LOW`).
++
++## Limits
++
++- Two runs, one per input: no rate can be read, and a difference from the earlier runs is a difference from four draws and one.
++  The gain on `STB` lies outside the earlier runs' spread of the fan findings found (the same ones in both runs of each input), but one run could reach 5 of 5 by chance.
++- The fan's findings found rose on one input and not on the other, so the line cannot be said to work on both kinds of record finding; `FOR`'s missed findings are a dropped consolidation (`F3`) and two low-severity findings the review never raised (`F5`, `F6`), which a yardstick line does not address.
++- One grader, the writer of the earlier bench's matching rule and of this run's too; the real-or-false calls on `FOR`'s unique findings are carried over from the earlier bench's readings of the same defects, and the gate-parity one is arguable.
++- The reference is one run of a `sonnet` fan at medium: a finding it raised is not a proven defect, and one it did not raise is not proven absent.
++- The line is one wording; another wording is not tested, and the line states that it overrides the rubric's text, so it may not carry over to a rubric worded otherwise.
++- The fan and the Codex fan differ in more than the engine and the line, as the earlier report lists: model, forks' cap, reading block and tool-use rules.
++
++## Reproducing
++
++`data/harness/setup-codex-home.sh stb1 for1`, then `build.sh STB abfabfcf6 7615d129 161a4a7f` and `build.sh FOR c9fb5eb56 d50e5277 161a4a7f`, then `run-forkfan.sh <STB|FOR> <label> medium` per run, then `evidence.sh <input> <label>`.
++The scripts take the clone and the weft repository from the paths at their head, which need this worktree and the hub's `loomyard-weft`.
++The scratch tree under `.scratch/`, including the two scratch `CODEX_HOME` directories, was removed after the runs.
