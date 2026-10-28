@@ -225,7 +225,6 @@
       ],
       "issues": [],
       "depends_on": [
-        "shuttle-hook-signals",
         "claude-md-lym-rules-out"
       ],
       "isolated": false,
@@ -592,31 +591,6 @@
       "body": "## Seen (operator, 2026-10-27)\n\nA run reads its instructions live while it runs: the `lym` binary, and the stencils, specs and hub config on Bolt (`_board/_lym/{stencils,specs,config}`).\nA landing deploys a new `lym` and can change those files, so a run started on one version can finish on another, such as a darn run that sat between its drift rows when `darn-drift-await-row` landed and its recipe changed under it (that landing wrote no transition code: such a run halts at Drift-Verify and is settled by hand with `lym drift waive`).\nLoomYard takes no special care for such a run today, and the operator wants none written per change (operator, 2026-10-27).\n\n## Idea (operator, 2026-10-27)\n\nA run keeps the version it started with, so nothing changes under it.\n- Bolt: the run records the Bolt commit at its start and reads stencils, specs and config from that commit through git, in the one place those files are read, instead of from the working files; no copy is made.\n- Binary: at the run's start the running `lym` is copied into a store under a name derived from its content, as the gate's prebuilt store does (`internal/gateslot`), and the run's driver and agents call that copy.\n- Shared state stays live: the board, locks, gate slots, creel mail and the run's own records.\n- One verb moves a run onto the newest version, for a run that needs a fix that landed after it started.\n\n## Open\n\n- Shared daemons (dobby, creel, gate) run the newest binary, so a pinned run's formats must stay readable by them, and a pinned binary must not write the board in an older format.\n- Plugins and skills are loaded by Claude Code from one shared place and are left out of the first step.\n",
       "created": "2026-10-27T15:12:04Z",
       "revised": "2026-10-27T17:50:10Z"
-    },
-    {
-      "id": 881,
-      "handle": "T8",
-      "slug": "shuttle-hook-signals",
-      "title": "Shuttle reads activity and operator input from Claude Code hooks",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "shuttle",
-        "batten",
-        "shed",
-        "reed",
-        "claude"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "PostToolUse activity for the idle reader, UserPromptSubmit carried over on respawn, subagent and compact signals",
-      "body": "Claude Code hooks give shuttle signals it now guesses from panes and pids; this task puts them to use.\nCreel already renders hooks into each Claude session's `settings.json` (`creel-hook-post`), so new entries ride the same path.\n\n## Dead waiter in the activity reader (from B1)\n\nTask `idle-notice-no-live-run` landed as 450bc6ff1 with diagnostics only: `ReadAgentActivity` still skips a running run whose waiter pid is dead, so the idle notice can say \"no agent activity readable\" while an agent works; it logs that case (Warn once per episode).\nThe root cause is unconfirmed.\n\nWhat to do: record a `PostToolUse` activity stamp per strand and let the activity reader use it, so a working agent reads as active whatever its waiter pid says; find and fix why the waiter pid is dead, or drop the pid as the activity source.\n\n## Operator input lost on respawn (from B7)\n\nAn instruction the operator typed into a worker's pane was lost when the tackler re-spawned that row's session: the new session started from the row's prompt alone.\n\nWhat to do: a `UserPromptSubmit` hook records each prompt the operator submits to a strand, and a re-spawned row's session gets the unanswered ones carried over with its prompt.\nAt the least, the operator is told in a notice that the session was replaced and which instruction may be lost.\n\n## Further hook signals\n\n- `SubagentStart` and `SubagentStop`: a session whose fork works reads as active, not idle.\n- `PreCompact` and `PostCompact`: a compaction reads as activity, and is recorded for the strand.\n- Claude Code's `quota_auto_resume_*` settings: decide whether shuttle sets them, so a session resumes by itself when a usage limit resets; align with `usage-limit-wake`, which lands first.\n\nEach signal is used only where it replaces a guess the code makes today; one that has no such use is left out, with the reason in the change description.\n",
-      "status": "done",
-      "created": "2026-10-24T09:07:21Z",
-      "revised": "2026-10-28T13:50:47Z",
-      "profile": "solid"
     },
     {
       "id": 882,
