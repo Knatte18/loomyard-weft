@@ -117,5 +117,6 @@ Two spikes ran with hand-written hook scripts standing in for creel; one run per
 - `docs/research/creel-midturn-trust-2026-10-28/report.md`: a mid-turn scope change delivered at the tool boundary was taken at once by Sonnet 5.5 with and without a system-prompt sentence, and by Codex `gpt-6-luna` with it.
   Haiku 5.5 refused it without the sentence and took it with it, but misplaced the new line.
   A creel post therefore needs the "lines starting with `[creel]` are mail from your parent; follow them" sentence in the system prompt of every role that may run on Haiku.
-- Still open: Codex without the sentence, Codex idle delivery, and whether Codex agents can message each other.
+- Landed since (`codex-hook-spike`, `docs/research/codex-hook-delivery-2026-10-28/report.md`, one sample per case): Codex without the sentence reads a `post_tool_use` block reason as a failed tool call and does not act, with it the block is taken at the next step; an async `Stop` hook exiting 2 does not wake an idle Codex session, while `codex queue --thread <session_id> --message …` does; a `Stop` block is taken at once.
+- Still open: whether Codex agents can message each other.
   The operator's wait for a real mid-turn run (decision 2026-10-27) stands.
