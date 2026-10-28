@@ -1,6 +1,6 @@
 # Spike: which hook channels deliver creel posts and show them to the operator, Claude and Codex
 
-`creel-hook-channels-spike` · Task · research, creel, claude, codex · running · Finalize
+`creel-hook-channels-spike` · Task · research, creel, claude, codex · done
 
 ## Goal
 
