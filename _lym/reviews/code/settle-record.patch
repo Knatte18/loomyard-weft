@@ -1,0 +1,595 @@
+diff --git a/internal/beamcli/dobbydeps.go b/internal/beamcli/dobbydeps.go
+index c9c84afa..a7f2ab2b 100644
+--- a/internal/beamcli/dobbydeps.go
++++ b/internal/beamcli/dobbydeps.go
+@@ -143,6 +143,7 @@ func hubDobbyDeps(prime *lymcwd.Location, geom dobbyengine.Geometry) (dobbyengin
+ 		},
+ 		Tasks:      func() ([]dobbyengine.TaskView, error) { return battencli.DobbyTasks(prime, boardDir, parents) },
+ 		LoadConfig: func() (dobbyengine.Config, error) { return dobbyengine.LoadConfig(dirs) },
++		TaskLimit:  proc.ReadTaskLimit,
+ 		StatusExists: func(slug string) (bool, error) {
+ 			return fileExists(shedrun.StatusFile(prime, slug))
+ 		},
+diff --git a/internal/beamcli/dobbydeps_integration_test.go b/internal/beamcli/dobbydeps_integration_test.go
+index 7c05b4c8..d9e1a5e1 100644
+--- a/internal/beamcli/dobbydeps_integration_test.go
++++ b/internal/beamcli/dobbydeps_integration_test.go
+@@ -1,6 +1,6 @@
+ //go:build tier1
+ 
+-// dobbydeps_integration_test.go pins the seams hubDobbyDeps fills differently for a beam's dobby and the prime's, over a hubforge hub.
++// dobbydeps_integration_test.go pins the seams hubDobbyDeps fills, those that differ between a beam's dobby and the prime's and those it fills for both, over a hubforge hub.
+ 
+ package beamcli
+ 
+@@ -42,4 +42,12 @@ func TestHubDobbyDeps_PrimeTidyShuttle(t *testing.T) {
+ 	if primeDeps.PrimeTidyShuttle != nil {
+ 		t.Errorf("prime PrimeTidyShuttle = %#v; want nil", primeDeps.PrimeTidyShuttle)
+ 	}
++
++	// The seam reads the host's real cgroup, so it is checked for being filled and never called.
++	if beamDeps.TaskLimit == nil {
++		t.Errorf("beam TaskLimit = nil; want the task-limit reader")
++	}
++	if primeDeps.TaskLimit == nil {
++		t.Errorf("prime TaskLimit = nil; want the task-limit reader")
++	}
+ }
+diff --git a/internal/dobbyengine/config.go b/internal/dobbyengine/config.go
+index 8a90d9e5..7b7fd427 100644
+--- a/internal/dobbyengine/config.go
++++ b/internal/dobbyengine/config.go
+@@ -27,6 +27,8 @@ type Config struct {
+ 	BoardTidyEvery int `yaml:"board_tidy_every"`
+ 	// BoardTidyTimeoutMin is the minutes the board-tidy agent may run.
+ 	BoardTidyTimeoutMin int `yaml:"board_tidy_timeout_min"`
++	// TaskHeadroom is the fewest free tasks under the cgroup task limit for dobby to start a run; 0 never holds a start.
++	TaskHeadroom int `yaml:"task_headroom"`
+ }
+ 
+ // ConfigSpec returns beam's layered-load spec: a per-worktree module whose every key is open to every layer.
+@@ -38,6 +40,7 @@ func ConfigSpec() configengine.Spec {
+ 			"max_runs":               configengine.CategoryNone,
+ 			"board_tidy_every":       configengine.CategoryNone,
+ 			"board_tidy_timeout_min": configengine.CategoryNone,
++			"task_headroom":          configengine.CategoryNone,
+ 		},
+ 	}
+ }
+@@ -60,6 +63,7 @@ func LoadConfig(dirs configengine.Dirs) (Config, error) {
+ 		{"max_runs", cfg.MaxRuns},
+ 		{"board_tidy_every", cfg.BoardTidyEvery},
+ 		{"board_tidy_timeout_min", cfg.BoardTidyTimeoutMin},
++		{"task_headroom", cfg.TaskHeadroom},
+ 	} {
+ 		if key.value < 0 {
+ 			return Config{}, configengine.MarkInvalid(fmt.Errorf("beam config key %q is %d: must not be negative; way forward: fix it with `lym config beam --set %s=<value>`", key.name, key.value, key.name))
+diff --git a/internal/dobbyengine/config_test.go b/internal/dobbyengine/config_test.go
+index f8321e7e..9416eac3 100644
+--- a/internal/dobbyengine/config_test.go
++++ b/internal/dobbyengine/config_test.go
+@@ -34,9 +34,10 @@ func TestLoadConfig(t *testing.T) {
+ 		want     Config
+ 		wantErr  []string
+ 	}{
+-		{name: "the template defaults", want: Config{MaxRuns: 3, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30}},
+-		{name: "a worktree layer's max_runs of 0 starts none", worktree: "max_runs: 0\n", want: Config{MaxRuns: 0, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30}},
++		{name: "the template defaults", want: Config{MaxRuns: 3, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30, TaskHeadroom: 500}},
++		{name: "a worktree layer's max_runs of 0 starts none", worktree: "max_runs: 0\n", want: Config{MaxRuns: 0, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30, TaskHeadroom: 500}},
+ 		{name: "a negative board_tidy_every is refused naming the key", worktree: "board_tidy_every: -1\n", wantErr: []string{"board_tidy_every", "lym config beam --set"}},
++		{name: "a negative task_headroom is refused naming the key", worktree: "task_headroom: -1\n", wantErr: []string{"task_headroom", "lym config beam --set"}},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/dobbyengine/doc.go b/internal/dobbyengine/doc.go
+index f492cb8d..f508e5ca 100644
+--- a/internal/dobbyengine/doc.go
++++ b/internal/dobbyengine/doc.go
+@@ -85,6 +85,10 @@
+ //   - A task waits on the board as `draft` until released, and dobby starts it from an empty status.
+ //     It starts a task when the entry is a task whose dependencies are all done, its parent is this dobby's worktree, no other machine owns it, and no pause entry covers the hub or the slug.
+ //     Each tick reads the local board, which a write of `board.json` and the probe tick both cause, and starts each ready task while fewer than `max_runs` runs it drives are in flight: halted runs count, done runs, runs recorded owned elsewhere and pawl runs with no landing hold do not, and `max_runs: 0` starts nothing.
++//   - Right before each start, dobby reads the cgroup task limit it sits under through Deps.TaskLimit, the level of its own cgroup ancestry with the fewest free tasks, such as the user slice; while fewer than beam.yaml's `task_headroom` tasks are free, the tick starts no task.
++//     A held task gets no refused-start record, notice or backoff and is tried on the next tick; the first held start of an episode logs `hold starts: <current> of <max> tasks in <cgroup>, below task_headroom <n>` and the first start let through after it logs `starts resume: …`, the episode kept in process only.
++//     `task_headroom: 0`, a nil seam and a limit that does not read, as on Windows or a cgroup v1 host, hold nothing.
++//     Bound: the hold only delays starts, never a pass of a run already started, and a start goes within the idle timer's minute of the headroom returning; first passes fork little at their start, so starts in one tick or by several dobbies can each pass the check before the earlier ones grow.
+ //   - Starting is the run's first pass, a full pass, which claims the task as batten does; a slug with a pass in flight is never started twice.
+ //     A first pass refused for a covering pause is no refused start: no notice, no marker and no backoff, and the start waits for the lift.
+ //     Any other first pass that exits non-zero and leaves no status file, a refusal as owned elsewhere included, is a refused start: one notice per refusal text, and a retry from one probe interval, doubling up to an hour, or at once when the entry changes.
+@@ -125,7 +129,7 @@
+ //   - The runs are the listed ones that are not done, each with batten's state and producer, a pass in flight while its driver lock is held, and its last pass exit, owed full pass, owner mark and failing count from the state record.
+ //   - A task waits while it is released to the worktree, a task with an empty status whose parent is the worktree, and not started.
+ //     Its reasons are the start step's own conditions: the dependencies not done, another machine's ownership, a covering pause, a refused start whose backoff has not run out for the entry as it reads now, and `max_runs`.
+-//     The `max_runs` reason falls, in board order as the start step walks, on the tasks nothing else holds once the runs that take a slot fill it; a task with no reason starts on the dobby's next tick.
++//     The `max_runs` reason falls, in board order as the start step walks, on the tasks nothing else holds once the runs that take a slot fill it; a task with no reason starts on the dobby's next tick unless the task-limit hold stands, which the view does not read and the dobby log records.
+ //   - Bound: a first pass in flight that has left no status file is in no file, so its task reads as ready and its slot as free until the status appears.
+ //
+ // Told-geometry tier: the package takes every absolute path from its caller and imports neither internal/lymcwd nor any CLI package, per PATTERN-cwd-resolution.
+diff --git a/internal/dobbyengine/loop.go b/internal/dobbyengine/loop.go
+index a4c124ab..32f2136d 100644
+--- a/internal/dobbyengine/loop.go
++++ b/internal/dobbyengine/loop.go
+@@ -99,6 +99,9 @@ type Deps struct {
+ 	Tasks func() ([]TaskView, error)
+ 	// LoadConfig loads beam.yaml over the dobby's worktree layer stack.
+ 	LoadConfig func() (Config, error)
++	// TaskLimit reads the cgroup task limit the dobby sits under, `proc.ReadTaskLimit` in production; found is false where none reads.
++	// A nil TaskLimit holds no start.
++	TaskLimit func() (limit proc.TaskLimit, found bool)
+ 	// StatusExists reports whether a first pass left batten's status file for slug.
+ 	StatusExists func(slug string) (bool, error)
+ 	// PauseCovers reports whether a live pause entry covers the hub or slug.
+@@ -261,6 +264,8 @@ type daemon struct {
+ 	// tickFailLogged and ownerUnreadable report whether the standing failure episode of the ticks or the owner read has logged its line.
+ 	tickFailLogged  bool
+ 	ownerUnreadable bool
++	// taskLimitHeld reports whether the cgroup task limit held the last start the start step tried.
++	taskLimitHeld bool
+ 
+ 	sleepWatch pauserecord.SleepWatch
+ 	owesAll    bool
+diff --git a/internal/dobbyengine/passes_test.go b/internal/dobbyengine/passes_test.go
+index 6eded4d3..9f6006ee 100644
+--- a/internal/dobbyengine/passes_test.go
++++ b/internal/dobbyengine/passes_test.go
+@@ -11,6 +11,8 @@ import (
+ 	"strings"
+ 	"testing"
+ 	"time"
++
++	"github.com/Knatte18/loomyard/internal/proc"
+ )
+ 
+ func TestPlanPass(t *testing.T) {
+@@ -85,6 +87,11 @@ type passFake struct {
+ 	maxRuns  int
+ 	statuses map[string]bool
+ 	covers   map[string]bool
++
++	// taskHeadroom is beam.yaml's task_headroom, and limit and limitFound what the task-limit seam reads.
++	taskHeadroom int
++	limit        proc.TaskLimit
++	limitFound   bool
+ }
+ 
+ type spawnedPass struct {
+@@ -144,7 +151,8 @@ func newPassHarness(t *testing.T, runs ...RunView) *passHarness {
+ 			},
+ 			Machine:      func() (string, error) { return "m1", nil },
+ 			Tasks:        func() ([]TaskView, error) { return append([]TaskView(nil), fake.tasks...), nil },
+-			LoadConfig:   func() (Config, error) { return Config{MaxRuns: fake.maxRuns}, nil },
++			LoadConfig:   func() (Config, error) { return Config{MaxRuns: fake.maxRuns, TaskHeadroom: fake.taskHeadroom}, nil },
++			TaskLimit:    func() (proc.TaskLimit, bool) { return fake.limit, fake.limitFound },
+ 			StatusExists: func(slug string) (bool, error) { return fake.statuses[slug], nil },
+ 			PauseCovers:  func(slug string) (bool, error) { return fake.covers[slug], nil },
+ 			PauseOwned: func(context.Context, string) error {
+diff --git a/internal/dobbyengine/starts.go b/internal/dobbyengine/starts.go
+index b619c099..fde61931 100644
+--- a/internal/dobbyengine/starts.go
++++ b/internal/dobbyengine/starts.go
+@@ -1,4 +1,4 @@
+-// starts.go starts the beam's ready tasks from the board: the start condition, the cap on runs in flight, and the notice and backoff of a refused first pass.
++// starts.go starts the beam's ready tasks from the board: the start condition, the cap on runs in flight, the hold under the cgroup task limit, and the notice and backoff of a refused first pass.
+ 
+ package dobbyengine
+ 
+@@ -10,6 +10,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/proc"
+ )
+ 
+ // startBackoffCeiling is the longest wait between two attempts to start a refused task.
+@@ -52,6 +53,7 @@ func readyToStart(task TaskView, here string, covered bool) bool {
+ // Starting is the run's first pass, a full pass, which claims the task as batten does; a slug with a pass in flight is never started twice.
+ // The runs counted are the ones listed for this tick, halted ones included and done ones, ones recorded owned elsewhere and pawl runs without their landing hold not, plus first passes that have not yet left a status file.
+ // A task whose backoff has not run out waits, unless its entry changed since the refusal.
++// While the cgroup task limit leaves fewer than task_headroom tasks free, the step starts no task.
+ func (d *daemon) startReady(ctx context.Context, now time.Time) error {
+ 	cfg, err := d.deps.LoadConfig()
+ 	if err != nil {
+@@ -94,6 +96,9 @@ func (d *daemon) startReady(ctx context.Context, now time.Time) error {
+ 		if now.Before(attempt.NextTry) {
+ 			continue
+ 		}
++		if d.taskLimitHolds(cfg.TaskHeadroom, now) {
++			break
++		}
+ 		running++
+ 		d.startFirstPass(task, now)
+ 	}
+@@ -103,6 +108,28 @@ func (d *daemon) startReady(ctx context.Context, now time.Time) error {
+ 	return nil
+ }
+ 
++// taskLimitHolds reports whether the cgroup task limit holds a start: fewer than headroom tasks are free under it, so a new run could take the host to where every fork fails.
++// A headroom of 0, a nil TaskLimit seam and a limit that does not read hold nothing.
++// The first held start of an episode logs the reading, and the first start let through after it logs the resume.
++func (d *daemon) taskLimitHolds(headroom int, now time.Time) bool {
++	var limit proc.TaskLimit
++	found := false
++	if headroom > 0 && d.deps.TaskLimit != nil {
++		limit, found = d.deps.TaskLimit()
++	}
++	held := found && limit.Headroom() < headroom
++	switch {
++	case held && !d.taskLimitHeld:
++		d.logLine(now, fmt.Sprintf("hold starts: %d of %d tasks in %s, below task_headroom %d", limit.Current, limit.Max, limit.Cgroup, headroom))
++	case !held && d.taskLimitHeld && found:
++		d.logLine(now, fmt.Sprintf("starts resume: %d of %d tasks in %s", limit.Current, limit.Max, limit.Cgroup))
++	case !held && d.taskLimitHeld:
++		d.logLine(now, "starts resume: no task limit applies")
++	}
++	d.taskLimitHeld = held
++	return held
++}
++
+ // runsInFlight counts the runs this dobby drives that take a slot: the listed ones not recorded owned elsewhere, and first passes that left no run yet.
+ func (d *daemon) runsInFlight(current State) int {
+ 	listed := make(map[string]bool, len(d.runs))
+diff --git a/internal/dobbyengine/starts_test.go b/internal/dobbyengine/starts_test.go
+index aa2132e0..57c41ec4 100644
+--- a/internal/dobbyengine/starts_test.go
++++ b/internal/dobbyengine/starts_test.go
+@@ -1,13 +1,16 @@
+ //go:build tier0
+ 
+-// starts_test.go pins the start condition of a board task and the start step's cap, refusal notices and backoff.
++// starts_test.go pins the start condition of a board task and the start step's cap, task-limit hold, refusal notices and backoff.
+ 
+ package dobbyengine
+ 
+ import (
+ 	"context"
++	"slices"
+ 	"testing"
+ 	"time"
++
++	"github.com/Knatte18/loomyard/internal/proc"
+ )
+ 
+ func TestReadyToStart(t *testing.T) {
+@@ -301,3 +304,109 @@ func TestStartReady_RefusalsAndBackoff(t *testing.T) {
+ 		}
+ 	})
+ }
++
++func TestStartReady_TaskLimitHold(t *testing.T) {
++	t.Parallel()
++	near := proc.TaskLimit{Current: 2997, Max: 3000, Cgroup: "/user.slice/user-1000.slice"}
++	free := proc.TaskLimit{Current: 1200, Max: 3000, Cgroup: "/user.slice/user-1000.slice"}
++
++	t.Run("a start waits while the headroom is below task_headroom, logged once, and goes once it returns", func(t *testing.T) {
++		t.Parallel()
++		h := newPassHarness(t)
++		lines := h.recordLog()
++		h.fake.taskHeadroom = 500
++		h.fake.limit, h.fake.limitFound = near, true
++		h.fake.tasks = []TaskView{readyTask("a"), readyTask("b")}
++
++		h.tick(true)
++		h.tick(true)
++		if len(h.fake.spawned) != 0 {
++			t.Fatalf("first passes under the hold = %+v; want none", h.fake.spawned)
++		}
++		if starts := h.stateRecord().Starts; len(starts) != 0 {
++			t.Errorf("start records under the hold = %+v; want none", starts)
++		}
++		want := []string{"hold starts: 2997 of 3000 tasks in /user.slice/user-1000.slice, below task_headroom 500"}
++		if !slices.Equal(*lines, want) {
++			t.Fatalf("log lines under the hold = %q; want %q", *lines, want)
++		}
++
++		h.fake.limit = free
++		h.tick(true)
++		if got := h.fake.spawned; len(got) != 2 {
++			t.Errorf("first passes once the headroom returned = %+v; want both tasks", got)
++		}
++		want = append(want, "starts resume: 1200 of 3000 tasks in /user.slice/user-1000.slice", "start a", "start b")
++		if !slices.Equal(*lines, want) {
++			t.Errorf("log lines = %q; want %q", *lines, want)
++		}
++	})
++
++	t.Run("a hold ended by task_headroom 0 logs the resume without a reading", func(t *testing.T) {
++		t.Parallel()
++		h := newPassHarness(t)
++		lines := h.recordLog()
++		h.fake.taskHeadroom = 500
++		h.fake.limit, h.fake.limitFound = near, true
++		h.fake.tasks = []TaskView{readyTask("a")}
++		h.tick(true)
++		h.fake.taskHeadroom = 0
++		h.tick(true)
++		want := []string{"hold starts: 2997 of 3000 tasks in /user.slice/user-1000.slice, below task_headroom 500", "starts resume: no task limit applies", "start a"}
++		if !slices.Equal(*lines, want) {
++			t.Errorf("log lines = %q; want %q", *lines, want)
++		}
++	})
++
++	t.Run("the limit is read right before each start, so a reading that turns near holds the next task", func(t *testing.T) {
++		t.Parallel()
++		h := newPassHarness(t)
++		lines := h.recordLog()
++		h.fake.taskHeadroom = 500
++		h.fake.tasks = []TaskView{readyTask("a"), readyTask("b")}
++		reads := 0
++		h.d.deps.TaskLimit = func() (proc.TaskLimit, bool) {
++			reads++
++			if reads == 1 {
++				return free, true
++			}
++			return near, true
++		}
++
++		h.tick(true)
++		if got := h.fake.spawned; len(got) != 1 || got[0].slug != "a" {
++			t.Errorf("first passes = %+v; want only the first task", got)
++		}
++		want := []string{"start a", "hold starts: 2997 of 3000 tasks in /user.slice/user-1000.slice, below task_headroom 500"}
++		if !slices.Equal(*lines, want) {
++			t.Errorf("log lines = %q; want %q", *lines, want)
++		}
++	})
++
++	tests := []struct {
++		name         string
++		taskHeadroom int
++		limitFound   bool
++		nilSeam      bool
++	}{
++		{"TaskHeadroomZeroHoldsNothing", 0, true, false},
++		{"AnUnreadLimitHoldsNothing", 500, false, false},
++		{"ANilSeamHoldsNothing", 500, true, true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			h := newPassHarness(t)
++			h.fake.taskHeadroom = tt.taskHeadroom
++			h.fake.limit, h.fake.limitFound = near, tt.limitFound
++			if tt.nilSeam {
++				h.d.deps.TaskLimit = nil
++			}
++			h.fake.tasks = []TaskView{readyTask("a")}
++			h.tick(true)
++			if len(h.fake.spawnsOf("a")) != 1 {
++				t.Errorf("first passes = %+v; want the task started", h.fake.spawned)
++			}
++		})
++	}
++}
+diff --git a/internal/dobbyengine/template.yaml b/internal/dobbyengine/template.yaml
+index eb038026..fdfa49c7 100644
+--- a/internal/dobbyengine/template.yaml
++++ b/internal/dobbyengine/template.yaml
+@@ -1,3 +1,4 @@
+ max_runs: 3  # the most runs of this beam's tasks dobby drives at once; 0 starts none
+ board_tidy_every: 5  # dobby starts the board-tidy agent after this many landings; 0 never tidies
+ board_tidy_timeout_min: 30  # the minutes the board-tidy agent may run before dobby gives up on it
++task_headroom: 500  # the fewest free tasks under the cgroup task limit (pids.max) for dobby to start a run; 0 never holds a start
+diff --git a/internal/proc/doc.go b/internal/proc/doc.go
+index 900b629d..053028a0 100644
+--- a/internal/proc/doc.go
++++ b/internal/proc/doc.go
+@@ -17,6 +17,8 @@
+ // All of these read /proc or signal by pid, so they work on Linux only: on Windows TreeCPU, ListProcesses and ListStats return errors.ErrUnsupported, IsAncestor is false, SignalProcess only kills and SignalGroup returns ErrNoProcessGroup.
+ // CreationTime is the exception: it reads a process's creation time by pid on Windows, where StartTime is unreadable, and is always the zero time and false elsewhere.
+ //
++// ReadTaskLimit reads the cgroup v2 task limit closest to being reached over the calling process's cgroup and its ancestors, its `pids.current` and `pids.max`, so a caller can hold back new work before every fork fails; it finds none on Windows or a cgroup v1 host.
++//
+ // IsSpawnAgain tells a process start the host refused for a temporary resource shortage, EAGAIN from fork or exec, from every other start failure.
+ // NoteSpawnAgain records the time of each such refusal process-wide, and LastSpawnAgain reads it back, so a caller that sees a later failure can judge whether a host resource shortage preceded it.
+ //
+diff --git a/internal/proc/tasklimit.go b/internal/proc/tasklimit.go
+new file mode 100644
+index 00000000..f1a02681
+--- /dev/null
++++ b/internal/proc/tasklimit.go
+@@ -0,0 +1,92 @@
++// tasklimit.go reads the cgroup v2 task limit the calling process sits under: the level of its cgroup ancestry with the fewest free tasks.
++
++package proc
++
++import (
++	"bufio"
++	"os"
++	"path"
++	"path/filepath"
++	"strconv"
++	"strings"
++)
++
++// TaskLimit is one cgroup's task count and its limit, as `pids.current` and `pids.max` read.
++type TaskLimit struct {
++	// Current is the tasks the cgroup and its descendants hold.
++	Current int
++	// Max is the cgroup's limit on them.
++	Max int
++	// Cgroup is the cgroup's path below the cgroup v2 mount, such as `/user.slice/user-1000.slice`.
++	Cgroup string
++}
++
++// Headroom is the tasks the cgroup can still start before its limit refuses a fork.
++func (l TaskLimit) Headroom() int {
++	return l.Max - l.Current
++}
++
++// ReadTaskLimit reads the task limit closest to being reached over the calling process's cgroup and each of its ancestors, so a fork-refusing limit is seen at whichever level it is set, such as a systemd user slice.
++// found is false when the process's cgroup v2 path is unreadable, as on Windows or a cgroup v1 host, or when no level sets a numeric limit.
++func ReadTaskLimit() (limit TaskLimit, found bool) {
++	return readTaskLimitAt("/proc/self/cgroup", "/sys/fs/cgroup")
++}
++
++// readTaskLimitAt reads the task limit closest to being reached for the process whose cgroup file is selfCgroup, under the cgroup v2 mount at mount.
++func readTaskLimitAt(selfCgroup, mount string) (TaskLimit, bool) {
++	cgroup, ok := readCgroupV2Path(selfCgroup)
++	if !ok {
++		return TaskLimit{}, false
++	}
++	var tightest TaskLimit
++	found := false
++	for level := cgroup; ; level = path.Dir(level) {
++		if limit, ok := readPidsLevel(mount, level); ok && (!found || limit.Headroom() < tightest.Headroom()) {
++			tightest, found = limit, true
++		}
++		if level == "/" {
++			break
++		}
++	}
++	return tightest, found
++}
++
++// readCgroupV2Path returns the cgroup v2 path the `0::` line of the cgroup file at selfCgroup names.
++func readCgroupV2Path(selfCgroup string) (string, bool) {
++	file, err := os.Open(selfCgroup)
++	if err != nil {
++		return "", false
++	}
++	defer file.Close()
++	scanner := bufio.NewScanner(file)
++	for scanner.Scan() {
++		if cgroup, ok := strings.CutPrefix(scanner.Text(), "0::"); ok && strings.HasPrefix(cgroup, "/") {
++			return path.Clean(cgroup), true
++		}
++	}
++	return "", false
++}
++
++// readPidsLevel reads the task count and numeric limit of the cgroup at level under mount; ok is false when the level sets no limit or either file is unreadable or malformed.
++func readPidsLevel(mount, level string) (TaskLimit, bool) {
++	dir := filepath.Join(mount, filepath.FromSlash(level))
++	limit, ok := readIntFile(filepath.Join(dir, "pids.max"))
++	if !ok {
++		return TaskLimit{}, false
++	}
++	current, ok := readIntFile(filepath.Join(dir, "pids.current"))
++	if !ok {
++		return TaskLimit{}, false
++	}
++	return TaskLimit{Current: current, Max: limit, Cgroup: level}, true
++}
++
++// readIntFile reads the one decimal integer the file name holds; a file holding `max` reads as not ok.
++func readIntFile(name string) (int, bool) {
++	content, err := os.ReadFile(name)
++	if err != nil {
++		return 0, false
++	}
++	value, err := strconv.Atoi(strings.TrimSpace(string(content)))
++	return value, err == nil
++}
+diff --git a/internal/proc/tasklimit_test.go b/internal/proc/tasklimit_test.go
+new file mode 100644
+index 00000000..3344bc30
+--- /dev/null
++++ b/internal/proc/tasklimit_test.go
+@@ -0,0 +1,107 @@
++//go:build tier0
++
++// tasklimit_test.go pins the task-limit reader over fixture cgroup files: the tightest level wins, and an unreadable or limitless ancestry reads as not found.
++
++package proc
++
++import (
++	"os"
++	"path/filepath"
++	"testing"
++)
++
++func TestReadTaskLimitAt(t *testing.T) {
++	t.Parallel()
++
++	const leaf = "/user.slice/user-1000.slice/user@1000.service/app.slice/run.scope"
++	tests := []struct {
++		name string
++		// selfCgroup is the cgroup file's content; empty leaves the file absent.
++		selfCgroup string
++		// levels maps a cgroup path to its pids.max and pids.current contents; an empty current leaves that file absent.
++		levels    map[string][2]string
++		want      TaskLimit
++		wantFound bool
++	}{
++		{
++			name:       "the user slice is the only numeric limit",
++			selfCgroup: "0::" + leaf + "\n",
++			levels: map[string][2]string{
++				"/user.slice":                                   {"max", "2364"},
++				"/user.slice/user-1000.slice":                   {"3000", "2997"},
++				"/user.slice/user-1000.slice/user@1000.service": {"max", "2350"},
++			},
++			want:      TaskLimit{Current: 2997, Max: 3000, Cgroup: "/user.slice/user-1000.slice"},
++			wantFound: true,
++		},
++		{
++			name:       "the level with the fewest free tasks wins over a larger limit closer to the root",
++			selfCgroup: "0::" + leaf + "\n",
++			levels: map[string][2]string{
++				"/user.slice/user-1000.slice": {"20000", "2400"},
++				leaf:                          {"500", "450"},
++			},
++			want:      TaskLimit{Current: 450, Max: 500, Cgroup: leaf},
++			wantFound: true,
++		},
++		{
++			name:       "a level missing pids.current or holding a malformed number is skipped",
++			selfCgroup: "12:pids:/legacy\n0::" + leaf + "\n",
++			levels: map[string][2]string{
++				"/user.slice":                 {"100", ""},
++				"/user.slice/user-1000.slice": {"many", "1"},
++				leaf:                          {"4000", "10"},
++			},
++			want:      TaskLimit{Current: 10, Max: 4000, Cgroup: leaf},
++			wantFound: true,
++		},
++		{
++			name:       "no numeric limit in the ancestry",
++			selfCgroup: "0::" + leaf + "\n",
++			levels:     map[string][2]string{"/user.slice/user-1000.slice": {"max", "2364"}},
++		},
++		{
++			name:       "a cgroup v1 file holds no v2 path",
++			selfCgroup: "12:pids:/user.slice\n",
++			levels:     map[string][2]string{"/user.slice": {"3000", "2997"}},
++		},
++		{
++			name:   "an absent cgroup file",
++			levels: map[string][2]string{"/user.slice": {"3000", "2997"}},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			root := t.TempDir()
++			selfCgroup := filepath.Join(root, "cgroup")
++			if tt.selfCgroup != "" {
++				writeFixture(t, selfCgroup, tt.selfCgroup)
++			}
++			mount := filepath.Join(root, "mount")
++			for level, files := range tt.levels {
++				dir := filepath.Join(mount, filepath.FromSlash(level))
++				writeFixture(t, filepath.Join(dir, "pids.max"), files[0]+"\n")
++				if files[1] != "" {
++					writeFixture(t, filepath.Join(dir, "pids.current"), files[1]+"\n")
++				}
++			}
++
++			got, found := readTaskLimitAt(selfCgroup, mount)
++			if got != tt.want || found != tt.wantFound {
++				t.Errorf("readTaskLimitAt() = %+v, %v; want %+v, %v", got, found, tt.want, tt.wantFound)
++			}
++		})
++	}
++}
++
++// writeFixture writes content to path, creating its directory.
++func writeFixture(t *testing.T, path, content string) {
++	t.Helper()
++	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++		t.Fatalf("MkdirAll(%q) = %v; want nil", filepath.Dir(path), err)
++	}
++	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
++		t.Fatalf("WriteFile(%q) = %v; want nil", path, err)
++	}
++}
