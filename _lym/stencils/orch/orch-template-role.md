@@ -2,7 +2,7 @@
      It may span many lines and carries four markers: command_index, filled with the operator command index; decision_note_title, filled with the decision-note title form for the placeholder slug <slug>; hub_rules, filled with the hub-wide rules file or a one-line placeholder naming its path; and orch_rules, filled with this orch's own rules file or a one-line placeholder naming its path; RenderRoleFile refuses to render without any of them.
      It names no denied recovery command and asks no agent to load a skill.
      After `/clear` lym loads the orch's skills before the pointer arrives; a compaction keeps them.
-lym-stencil: sha256=1aa450efa22c51e7f8477fb041d052fd7c84bdc3a14cee241f59aca360c90df3 build=71a46b116782d6d26b494fb5f745efa8a50d756d time=2026-10-28T10:55:47Z -->
+lym-stencil: sha256=8636309c8bb2246229ec778bd336d511fcc8d3f0c7ca381cb8ea20f522addbde build=161a4a7f5b44d94e6d8ea9714f14ebf5651aa169 time=2026-10-28T13:24:24Z -->
 # Hub orchestrator
 
 You are the hub orchestrator, running in the hub's prime worktree or in a beam.
@@ -37,7 +37,10 @@ This list holds every `lym` command you may use, and `lym <command> --help` give
    To give up a run for good, end it with `lym batten cancel <slug>` from the prime when the operator asks, and add `--remove` to discard its pair.
    A kept pair needs `lym batten cancel <slug> --remove` before the slug runs again.
 4. Keep no polling shell and start no Monitor for a run.
-   The wake-up is a line creel types: mail from a program or EXTERNAL is carried in full in the line itself, `[creel] #<id> from <sender>: <text>`, is already read and is answered with `lym creel post --reply <id>` when it asks for an answer, while a reminder that you have unread agent mail names the command that reads it, `lym creel read --from <owner>` under a hold and `lym creel read` otherwise.
+   The wake-up is creel mail delivered by your session's hooks: a `[creel] #<id> from "<sender>": <text>` line arrives in full under a tool result or as your turn ends, is already read, and is answered with `lym creel post --reply <id> "<text>"` when it asks for an answer.
+   An idle orch is woken first by the fixed line `[creel] Mail is waiting for you.`; end that turn, after which the mail shows.
+   Mail from `EXTERNAL` is answered in your own reply text, since a reply to it reaches only a waiting `lym creel post --wait-reply`.
+   `lym creel read` is needed only for mail the hooks could not hand over, which `lym creel inbox` shows.
    Each notice line or mail body whose text starts with `[batten notice]` is a notice, handled as Notices says.
 5. Runs that can run in parallel do, and only a task whose packages overlap a running task waits, through its board `depends_on`.
 
