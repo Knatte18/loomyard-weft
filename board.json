@@ -524,24 +524,6 @@
       ]
     },
     {
-      "id": 810,
-      "handle": "E5",
-      "slug": "board-projects-layout",
-      "title": "Decide the layout of projects in the board README",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "board"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The operator is not satisfied with how the README renders projects and their members; the layout is to be decided",
-      "body": "## Seen (operator, 2026-10-25)\n\nProject entries (P handles) and their members render in the README's Projects section since dd11ab09f.\nThe section's lead line (`projectsSection` in `internal/boardengine/render.go`) reads \"Groups of entries; a beam spawns its members from its own worktree.\", which reads as if every project were a beam; a project needs no beam, and most are grouping only (operator, 2026-10-25).\nAfter the first two projects, `workspaces` and `dotnet`, were made, the operator was not satisfied with that layout.\n\n## Idea\n\nDecide with the operator how projects and their members are shown on the board, then change the README rendering to match.\nThe layout is not yet discussed.\n\nThe board README rendering is not regarded as production code (operator, 2026-10-27).\n",
-      "created": "2026-10-25T06:20:53Z",
-      "revised": "2026-10-27T14:25:22Z"
-    },
-    {
       "id": 814,
       "handle": "E1",
       "slug": "beam-promote-keeps-discussion",
@@ -560,24 +542,6 @@
       "body": "## Seen (2026-10-25)\n\n`lym beam promote \u003cslug\u003e` ends the task's run for good, keeps the code commits on the pair's branch, and resets the pair's records to a fresh fork of its parent's.\nThe run's discussion, plan and run records leave the worktree and stay only in the records history.\n\n## Idea (operator, 2026-10-25)\n\nThe likely moment to promote is Discussion finding that the task is so large it should be a project.\nThen everything the Discussion writer found must be kept: its decision record and what it learned become part of the beam, as the beam's starting design, not something left behind in history.\nNote `loom-beam-darns` is a related shape, where a large loom task turns its own worktree into a beam and runs the pieces inside it.\n\n## Until then (operator, 2026-10-25)\n\nBeams are made with `lym beam create` on a project entry only; `lym beam promote` is not used.\n\n## Landed since (beam-start-and-ownership)\n\n`lym beam promote` is removed, so the Seen and Until-then sections above describe a verb that no longer exists.\nA beam's life is now one batten run over its project entry with the `pawl` recipe; the idea here, keeping Discussion's record as a beam's starting design, still stands but needs a new route.\n",
       "created": "2026-10-25T12:46:33Z",
       "revised": "2026-10-27T10:00:26Z"
-    },
-    {
-      "id": 826,
-      "handle": "E6",
-      "slug": "readme-per-project-files",
-      "title": "Board README: one rendered file per project, research notes first",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "board"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Each project renders its own file linked from its parent; README.md is the root project; research notes come right after tasks",
-      "body": "## Seen (operator, 2026-10-25)\n\nThe board renders one README.md holding every project, task and note of the hub.\nThe notes are grouped by type label in file order, so after the `audit` label became `research` the research notes moved from first under Notes to last, under the heading `Researchs`.\n\n## Idea (operator, 2026-10-25)\n\n- Research notes come first under Notes, right after the tasks, where the audits stood; the heading reads `Research`.\n- Each project gets its own rendered file.\n  It opens with the projects directly under it, each a link to its file with its short description, then holds the tasks and notes that belong to the project itself.\n- Every project sits under another project, except the root project at the top.\n- The split is rendering only: every entry stays in the one board store, and handles stay numbered across the whole hub, so a project's file shows gaps in its numbering and a handle names one entry whichever file shows it.\n- A task's After column names its dependencies by handle instead of by slug, one handle per line within the cell.\n- A draft task is not ready, so it never shows under Ready: drafts get a subsection of their own after the ready and layered tasks (built: `### Draft (n)` in the Tasks section, see `internal/boardengine/doc.go`).\n- README.md is the root project's file: the projects under root first, each linked with its short description, then every task and note that belongs to no other project.\n\n\nThe board README rendering is not regarded as production code (operator, 2026-10-27).\n",
-      "created": "2026-10-25T18:24:12Z",
-      "revised": "2026-10-27T15:14:55Z"
     },
     {
       "id": 830,
@@ -665,6 +629,26 @@
       "created": "2026-10-24T09:07:21Z",
       "revised": "2026-10-28T13:50:47Z",
       "profile": "solid"
+    },
+    {
+      "id": 882,
+      "handle": "T1",
+      "slug": "board-readme-per-project",
+      "title": "Board README: one rendered file per project, research notes first",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "board"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Render one README file per project, research notes first, After by handle",
+      "body": "## Seen (operator, 2026-10-25)\n\nThe board renders one README.md holding every project, task and note of the hub.\nThe notes are grouped by type label in file order, so after the `audit` label became `research` the research notes moved from first under Notes to last, under the heading `Researchs`.\n\n## Idea (operator, 2026-10-25)\n\n- Research notes come first under Notes, right after the tasks, where the audits stood; the heading reads `Research`.\n- Each project gets its own rendered file.\n  It opens with the projects directly under it, each a link to its file with its short description, then holds the tasks and notes that belong to the project itself.\n- Every project sits under another project, except the root project at the top.\n- The split is rendering only: every entry stays in the one board store, and handles stay numbered across the whole hub, so a project's file shows gaps in its numbering and a handle names one entry whichever file shows it.\n- A task's After column names its dependencies by handle instead of by slug, one handle per line within the cell.\n- A draft task is not ready, so it never shows under Ready: drafts get a subsection of their own after the ready and layered tasks (built: `### Draft (n)` in the Tasks section, see `internal/boardengine/doc.go`).\n- README.md is the root project's file: the projects under root first, each linked with its short description, then every task and note that belongs to no other project.\n- No lead line reads as if every project were a beam: the Projects section's lead line, \"Groups of entries; a beam spawns its members from its own worktree.\" (`projectsSection` in `internal/boardengine/render.go`), goes, since most projects are grouping only (from E5, operator 2026-10-25).\n\nThe board README rendering is not regarded as production code (operator, 2026-10-27).\n",
+      "status": "draft",
+      "created": "2026-10-25T06:20:53Z",
+      "revised": "2026-10-28T15:05:22Z"
     }
   ],
   "prime_owner": "neve",
