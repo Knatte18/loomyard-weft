@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -28,6 +28,33 @@
       "output": "",
       "at": "2026-10-28T14:33:18Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/shuttle-hook-signals/_lym/landing/summary.md",
+      "at": "2026-10-28T14:52:42Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-28T14:50:03.979824244Z",
+          "end": "2026-10-28T14:50:13.321001974Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-28T14:50:13.359950839Z",
+          "end": "2026-10-28T14:52:41.298985036Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-28T14:52:41.337322879Z",
+          "end": "2026-10-28T14:52:41.337391838Z"
+        }
+      ]
     }
   ],
   "product": {
