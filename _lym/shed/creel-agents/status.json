@@ -1,11 +1,11 @@
 {
-  "current_producer": "Drift-Baseline",
+  "current_producer": "Plan-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Drift-Baseline",
-    "last": "Discussion-Bouncer → done",
+    "now": "Plan-Write",
+    "last": "Drift-Baseline → skipped",
     "wait": ""
   },
   "history": [
@@ -89,6 +89,13 @@
       "output": "/home/knatte/Code/loomyard-LYMHUB/creel-agents/_lym/reviews/discussion/round-1-bouncer-ledger.md",
       "at": "2026-10-28T16:17:11Z",
       "by": "shed"
+    },
+    {
+      "producer": "Drift-Baseline",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-10-28T16:17:12Z",
+      "reason": "drift.enabled = false"
     }
   ],
   "product": {
