@@ -2,8 +2,6 @@
 
 `turn-batching` · Task · enhancement, stencil, shuttle
 
-Depends on: [`validator-checks`](design-validator-checks.md)
-
 ## Seen
 
 A session's cost grows with its turns times its context.
