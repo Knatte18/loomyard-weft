@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-28 10:57 UTC; every age below is as of then.
+Rendered 2026-10-28 10:58 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -39,8 +39,8 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Creel delivers every post to a Claude strand through hooks, visibly and in full**<br>• PostToolUse, Stop and asyncRewake hooks carry posts as fast as possible; shuttle appends a trust and reply sentence to the system prompt | [`creel-hook-post`](design-creel-hook-post.md) | loom | Webster | neve | 5d<br>1h | creel, shuttle, claude |
-| T3 | **Lens sets and code review per profile as the review-setup audit recommends**<br>• Merge goal-scope and board-fit, replace review-plan way-forward with a repository-invariant lens, fold code-pattern-fit into code-affected-set, narrow code-tests, solo code review in light and docs<br>• `profile: solid` | [`review-setup-tuning`](design-review-setup-tuning.md) | loom | Discussion-Bouncer | neve | 27m<br>27m | burler, stencil, config |
-| T4 | **Machine checks in validate-discussion and validate-plan for recurring review findings**<br>• Citation and acceptance checks for the decision record; seam-test, tier-tag and doc.go checks for plan cards<br>• `profile: solid` | [`validator-checks`](design-validator-checks.md) | loom | Discussion-Burler-Review | neve | 27m<br>27m | loom, stencil |
+| T3 | **Lens sets and code review per profile as the review-setup audit recommends**<br>• Merge goal-scope and board-fit, replace review-plan way-forward with a repository-invariant lens, fold code-pattern-fit into code-affected-set, narrow code-tests, solo code review in light and docs<br>• `profile: solid` | [`review-setup-tuning`](design-review-setup-tuning.md) | loom | Drift-Baseline | neve | 28m<br>28m | burler, stencil, config |
+| T4 | **Machine checks in validate-discussion and validate-plan for recurring review findings**<br>• Citation and acceptance checks for the decision record; seam-test, tier-tag and doc.go checks for plan cards<br>• `profile: solid` | [`validator-checks`](design-validator-checks.md) | loom | Discussion-Burler-Review | neve | 28m<br>28m | loom, stencil |
 
 ### Ready (0)
 
@@ -54,7 +54,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Stencil and system-prompt sentences that batch independent calls and edits**<br>• The turn audit sentences per heavy role, plus one shuttle-appended system-prompt sentence for every Claude agent | [`turn-batching`](design-turn-batching.md) | darn | `creel-hook-post`, `validator-checks`, `review-setup-tuning` | 27m<br>27m | stencil, shuttle |
+| T5 | **Stencil and system-prompt sentences that batch independent calls and edits**<br>• The turn audit sentences per heavy role, plus one shuttle-appended system-prompt sentence for every Claude agent | [`turn-batching`](design-turn-batching.md) | darn | `creel-hook-post`, `validator-checks`, `review-setup-tuning` | 28m<br>28m | stencil, shuttle |
 
 ## Notes (33)
 
