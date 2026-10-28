@@ -237,6 +237,18 @@ Rationale: The operator called such long messages absurd; one rule keeps every d
 - For the parent: the entry says the pane path for posts goes. D5 types a fixed bell, with no sender text, into an idle strand marked `CreelHooks` that no waiter reaches, which after a user interrupt is the usual case, so `post --interrupt` mostly wakes through it. Keep D5, or drop it and let such mail wait for the strand's next turn?
 - Sessions launched before the deploy keep the old settings and resume line: they get no `Stop` delivery, no waiter, no bell and no D9 sentence until shuttle launches them afresh, since a reed resume replays the old line and settings.
 
+<!-- lym:carry-over Discussion-Review -->
+- Discussion-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/discussion/round-1-review.md; fixer report: _lym/reviews/discussion/round-1-fixer-report.md.
+  - F1 (class design, severity BLOCKING, open in rounds 1)
+  - F12 (class decision, severity LOW, open in rounds 1; answered since by: Posts still reach a session without creel hooks; A post body is capped at the hook field budget)
+  - bell-misdirects-pre-deploy-sessions (class design, severity MEDIUM, open in rounds 1)
+  - continuation-count-climbs-reset-unordered (class design, severity MEDIUM, open in rounds 1)
+  - daemon-restart-loses-count-and-woken-marks (class design, severity MEDIUM, open in rounds 1)
+  - idle-reading-missing-from-delivery-seam (class design, severity MEDIUM, open in rounds 1)
+  - oversized-first-message-overflows-hook-field (class design, severity BLOCKING, open in rounds 1)
+<!-- /lym:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 All real-Claude scenarios run in the LLM tier through shuttle's own rendered `settings.json` and launch line, never a hand-launched session.
