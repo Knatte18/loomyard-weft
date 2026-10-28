@@ -1,57 +1,62 @@
-# Creel delivers every post to a Claude strand through hooks
+# Creel delivers Claude posts through hooks, visibly and in full
 
-Creel now hands a post to a Claude strand through hooks that shuttle renders into the session's `settings.json`, in full and visibly to the operator.
-A scope change from the orch reaches a working agent at its next tool call, never only at its turn end.
-No message body is typed into a pane for a Claude strand.
+Creel now hands every post to a Claude strand through hooks that shuttle renders into the session's `settings.json`.
+A scope change from the orch reaches a working agent at its next tool call, not only at its turn end, and no message body is typed into a pane for a Claude strand.
+The operator sees each message in the pane, and the receiver acts on it.
 
 Closes #871
 
 ## What changes
 
-- **Mid-turn:** `PostToolUse` runs `lym creel hook-read claude`, which prints `{"decision":"block","reason":…,"systemMessage":…}`.
-  The operator sees the lines under the tool result, and the receiver acts on them at once.
-  This replaces `additionalContext`, which the operator cannot see and Haiku refused.
-- **Turn end:** the recording `Stop` command and the creel `Stop` delivery are one command.
-  While claimable mail stands it blocks the stop and appends nothing to `events.jsonl`, so a blocked stop records no turn end.
-  Creel counts consecutive blocks per strand and stops blocking at 6, under Claude Code's cap of 8, so no journaled-read mail is ever discarded by an override.
-- **Idle wake:** a second `Stop` entry, `asyncRewake` with `lym creel hook-wait claude`, holds a waiting daemon call.
-  The daemon rings it once per claimable set when the strand has claimable mail and no running turn (new `Idleness.NoTurn`).
-  The waiter writes a fixed bell line to stderr and exits 2, and the woken turn's first tool call or `Stop` delivers the mail as a visible block.
-  A settings hook cannot show rewake text to the operator, so the wake carries no mail.
-- **Bell:** a strand marked `CreelHooks` that no waiter reaches gets the same fixed line typed once per claimable set through the guarded pane send.
-  A hand-added strand, a `lym shuttle open` session and a session launched before the deploy have no mark and get none.
-- **Main thread only:** `hook-read` and `hook-wait` claim nothing when the hook input carries a non-empty `agent_id`, so a fork or subagent never takes mail.
-- **`post --interrupt`:** one daemon request that validates the post, sends the guarded interrupt with `interrupt`'s rules, then stores the message.
-  A receiver without the `CreelHooks` mark is refused before any key.
-  `--interrupt` with `--reply` is refused.
-- **Quoted senders:** `MessageLine` and `lym creel read` render `[creel] #1 from "ly:orch": …`.
-- **Trust sentence:** every Claude session launched with a run directory appends the trust and reply sentence through one `--append-system-prompt-file`, which also carries the deny notice.
-  The text rides a file because a native argument on Windows does not carry `"` reliably.
-- **Help and docs:** `lym creel` and `lym creel post` help carry the reply rule.
-  Package docs, `docs/overview.md`, the orch role stencil and `internal/orchcli/doc.go` describe hook delivery instead of the reminder flow.
+- Mid-turn: the `PostToolUse` hook runs `lym creel hook-read claude`, which prints `{"decision":"block","reason":…,"systemMessage":…}` instead of `additionalContext`.
+  The operator sees the lines under the tool result, and Haiku acts on a `block` where it refused `additionalContext`.
+- Turn end: the `Stop` recording command and the creel delivery are one command, so a blocked stop writes neither a stamp line nor a payload to `events.jsonl`.
+  A blocked turn end therefore never reads as a finished turn to `ParseEvents`.
+  Creel counts consecutive `Stop` blocks per strand and stops blocking at 6, under Claude Code's own cap of 8.
+- Idle wake: a second `Stop` entry, an `asyncRewake` waiter (`lym creel hook-wait claude`), wakes an idle session with a fixed line and exit 2.
+  The waiter claims nothing; the woken turn's `Stop` or first tool call delivers the mail as a visible block.
+  The cost is one short model turn per idle wake, because a settings hook cannot show rewake text to the operator.
+- Bell: when no waiter reaches an idle strand, the delivery worker types the same fixed line once per claimable set through the guarded pane send.
+  Only a strand carrying the new reed field `CreelHooks` gets it, so hand-added strands, `lym shuttle open` sessions and sessions launched before the deploy get none.
+- Main thread only: `hook-read` and `hook-wait` claim nothing when the hook input carries an `agent_id`, so a fork never swallows mail its context would lose.
+- `lym creel post --interrupt <receiver>` validates the post, sends the guarded interrupt, then stores the message.
+  It is refused before any key for a receiver without `CreelHooks`, and together with `--reply`.
+- Sender names are quoted in `MessageLine` and in `lym creel read`: `[creel] #<id> from "<sender>": <body>`.
+- Shuttle appends a trust and reply sentence to every Claude session it launches with a run directory.
+  It goes through one `--append-system-prompt-file` flag beside the run's `settings.json`, replacing the `--append-system-prompt` argument the deny notice rode, because a native argument holding `"` is not carried reliably on Windows.
+- `lym creel` help states the reply rule.
+- Docs follow: the `doc.go` of `creelengine`, `creelcli`, `claudeengine`, `orchcli`, `docs/overview.md` and the orch role stencil.
 
-## Design decisions to know
+## Design decisions to review
 
-- **Line cap replaces the 64 KiB body cap.**
-  `post` refuses a message whose `MessageLine` passes the 8 KiB claim budget, with the existing way forward: write the text to a file and mail its path.
-  A reply to `EXTERNAL`, which reaches only a waiting `post --wait-reply`, keeps the 64 KiB cap.
-  A post between 8 KiB and 64 KiB, accepted before, is now refused.
-  An old-binary message whose line passes 10,000 characters is never claimed and stays for `lym creel read`.
-- **LOOM's decision notice** sends one notice per entry when its joined line would pass the budget, and `lym loom decision add` refuses an entry whose own notice would pass it.
-- **Pane path kept where no hook engine exists.**
-  A strand whose persisted provider is empty, or names an engine with no hook renderer, keeps the notice and reminder lines, so Codex and hand-added strands still get mail.
-  Only strands whose engine renders creel hooks lose the pane path.
-- **Stop count is in daemon memory.**
-  A started daemon sets every count to the cap, so a restart mid-chain ends the chain at its next `Stop` and the ring delivers the rest.
-  The woken-set marks are also in memory, so a restarted daemon may ring or type the bell once more for a set it already woke.
-- **Cost:** one idle wake costs one short model turn before the mail turn.
-- **Sessions launched before the deploy** keep their old settings and get posts once shuttle launches them afresh.
-- New constants and timings (waiter timeout 86400 s, 30 s for an unanswered ring, 5 s grace before the bell, the Stop cap of 6) are the author's choices; the board entry fixes none.
+- A post is capped at the 8 KiB claim budget, replacing the 64 KiB `maxBodyBytes`, so every claim fits one hook field (10,000 characters, above which Claude Code shows a preview while creel has journaled the message read).
+  A longer post is refused with the existing way forward: write the text to a file and mail its path.
+  A reply to `EXTERNAL` keeps the 64 KiB cap.
+- `lym loom decision add` refuses an entry whose own notice would pass the budget, before it records anything, and LOOM's notice sends one post per entry when the joined line would.
+- A message an old binary stored whose line passes 10,000 characters is left out of every claim and stays for `lym creel read`.
+- Strands without a hook-delivering engine keep today's pane path (notice, reminder, backoff, notice cap).
+  That covers an empty `Provider` and any engine `ToolBoundaryRenderer` does not find, so a hand-added Codex session still gets its mail.
+  Only a strand whose engine renders hook delivery loses the pane path.
+- The `Delivery` seam's `Idleness` answer gains `NoTurn`, true when no turn runs whatever the input box holds.
+  A woken turn records no `UserPromptSubmit`, so the daemon holds `NoTurn` false from a ring until a turn end recorded after it.
+- Daemon state is in memory: a restarted daemon sets every strand's block count to the cap, so the chain's next `Stop` claims nothing and the ring delivers the rest, and it may ring or type the bell once more for a set it already woke.
+- Sessions launched before the deploy keep their old settings and resume line, so they get no `Stop` delivery, waiter, bell or trust sentence until shuttle launches them afresh.
+- Codex is out of scope; the engine-neutral seam stays and no Codex hook is rendered.
 
-## Check by hand
+## To check by hand
 
-- Real-Claude behavior is covered by the LLM-tier smoke test in `internal/creelcli/smoke_llm_test.go`, which was not run here.
-  Run it on a machine with Claude to confirm mid-turn delivery, the `Stop` block, the idle wake, the fork filter and `post --interrupt`.
-- The journal-close test row in the `creelengine` delivery tests may panic; check that the row's setup closes the journal safely.
-- The LLM smoke test's bell assertion on the pane text: check that it asserts the pane content it means to and is not flaky.
-- `docs/research/creel-midturn-trust-2026-10-28/report.md` rests on Claude Code 2.1.312; re-check the hook facts on a newer version.
+- The real-Claude scenarios live in the LLM tier (`internal/creelcli/smoke_llm_test.go`) and were not run in the verify gates.
+  Run them against a live Claude, covering a mid-turn block, a `Stop` block, an idle wake, three successive wakes, a daemon restart mid-chain, and a real fork.
+- Open carry-over, the `journal-close-test-row-panics` finding: a journal-close test row can panic.
+  Check the creel journal tests for it.
+- Open carry-over, the `llm-smoke-bell-pane-assertion` finding: the smoke test's assertion on the bell in the pane may not pin what the scenario claims.
+  Check it in `internal/creelcli/smoke_llm_test.go`.
+- Open design points, answered only by the decisions above:
+  - an oversized first message overflowing a hook field, handled by the line cap;
+  - the continuation count climbing when resets are unordered, handled by applying a reset before the cap check;
+  - the daemon restart losing the count and the woken marks;
+  - the idle reading missing from the delivery seam, handled by `NoTurn`;
+  - the bell misdirecting pre-deploy sessions, handled by the `CreelHooks` mark.
+
+  Confirm each holds in `internal/creelengine/verbs.go` and `deliver.go`.
+- Whether one extra model turn per idle wake is acceptable, and whether to keep the typed bell, are the operator's call.
