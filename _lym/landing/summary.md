@@ -1,49 +1,42 @@
-# Webster recovery names a working way forward; gate test is no weft ref
+# Webster recovery gets a usable way forward; gate tests pass the audit
 
-A Webster batch was failed on fabric-reference findings that were false positives, and the recovery advice then sent the Webster session around a loop of verbs that each refused (#877, #878).
-This change fixes the false positive and makes each refusal on that path name a step that works.
+A batch that failed on fabric-reference findings now gets a recovery way forward the named verbs accept, and the fabric-reference audit no longer fails a batch whose fork ran the sanctioned `lym gate test` with a card argument.
 
-## The audit no longer reads a card ID as a weft sibling
+Before, a fork that ran `lym gate test --card <id>` was flagged when the card ID ended in the weft suffix, because the bare weft-name rule read the ID as a sibling worktree.
+`recover-batch` then refused with `needs_fresh` and advised `accept-audit`, which refused on the same findings, and `reset` was refused while the Webster session's own `run.lock` was held.
+The session had no verb left and escalated.
 
-The fork ran `lym gate test --wait --gate card --card 6-clone-records-marker-on-prime-weft`.
-The card ID ends in the weft suffix, so the fabric-reference scanner's bare-name rule read it as a sibling worktree.
-`ReferenceRule.MatchPath` now blanks every `lym gate` invocation in command position before the bare-word scan.
-A gate takes gate keys, card IDs, tiers and package patterns, all resolved inside the worktree.
-The separator-prefixed path rule, the exact sibling-path rule and the `lym fabric/weft/warp` spelling rule still run over gate commands, so `lym gate test ../other-weft/...` still matches.
-The plan check uses the same rule, so a card's Verify command that names its own `-weft`-suffixed card ID is no longer flagged either.
+Closes #877
+Closes #878
 
-## recover-batch names accept-audit only when accept-audit would accept
+## What changes
 
-When every uncheckable entry of a failed batch is a pathless fabric reference, recover-batch already accepted them in line when every command was read-only.
-Otherwise it refused with `needs_fresh`, and the way forward always offered `accept-audit --batch NN`, including on the read-only basis it had just ruled out.
-The evidence check is now split out of `AcceptBatchFabricReference` into `batchFabricReferenceEvidence`, which mutates nothing.
-The refusal runs that check:
-
-- When the evidence holds (HEAD at the batch's start, clean tree), the way forward is `accept-audit --batch NN` then `recover-batch NN`, or the reset-to-start route.
-- When it refuses, the way forward is accept-audit's own reason and steps, ending by re-running `accept-audit --batch NN` then `recover-batch NN`, with the reset-to-start route appended when the steps do not already name it.
-  For the incident that means `reset --to batch-start --batch 06`, then accept-audit, then recover-batch.
-
-The refusal still unwraps to `ErrRecoveryNeedsFresh`, so the Master stencil's `needs_fresh` rung is unchanged.
-No guard is weakened: recover-batch still accepts in line only on the read-only basis.
-
-## reset's run-lock refusal names who resets and when
-
-`reset` for any target but `report-head` refuses while `run.lock` is held, and its way forward was to wait, which the Webster session holding the lock could never do.
-The refusal now says the reset runs only once the run has stopped, that a Webster session inside the run ends it as stuck instead, and that the run's parent re-runs the reset once `lym webster status` shows no run in progress.
+- `internal/fabricengine`: `ReferenceRule.MatchPath` blanks every `lym gate` segment in command position, up to the next shell separator, before its bare-word scan.
+  A redirect ampersand (`2>&1`, `>&2`, `&>`) stays inside the segment, so an argument after it is still a gate argument.
+- `internal/websterengine` `recover-batch`: when every uncheckable entry is a pathless fabric reference, the `needs_fresh` refusal runs the evidence check `accept-audit --batch` applies, mutating nothing.
+  If the evidence holds, the way forward names `accept-audit --batch NN` then `recover-batch NN`.
+  If it does not, the way forward is that refusal's reason and its own steps, ending in the re-run of both verbs, and it names no accept-audit route on its own.
+  The refusal is still `ErrRecoveryNeedsFresh`.
+- `internal/websterengine` `PlanReset`: the run-lock refusal for any target but `report-head` says the reset runs only once the run has stopped, that a Webster session inside the run ends it as stuck, and that the run's parent re-runs the reset once `lym webster status` shows no run in progress.
+- `internal/planparser`: the card-id fabric-reference finding and `contracts/specs/loom-plan-spec.md` now say a command naming the card fails the audit unless it is a `lym gate` invocation.
+- Package docs (`internal/fabricengine/doc.go`, `internal/websterengine/doc.go`, `internal/planparser/doc.go`) and tests are updated; new cases are rows in the existing tables.
 
 ## Design decisions
 
-- The gate exemption covers only the bare-name rule, so a real weft path in a gate command still counts as a reference.
-- `reset --to batch-start` stays refused inside the run.
-  The Master stencil allows Master no reset but `report-head`, and this reset discards a batch's work before the parent has judged it.
-- recover-batch does not accept in line on the at-start basis.
-  That basis leaves the fabric repo's own state for the caller to vouch for, so it stays an explicit `accept-audit --batch` call.
-- `batchFabricReferenceEvidence` treats a nil read-only classifier as accepting nothing, since recover-batch may pass one.
-- Naming the matched weft text in a fabric-reference finding's detail is left for a follow-up: it changes the `RefMatcher` seam for a case the scanner fix already stops.
+- One evidence function (`batchFabricReferenceEvidence`) serves both `accept-audit` and `recover-batch`, so the advice cannot drift from what `accept-audit` does.
+  No guard changes: `recover-batch` still accepts in line only on the read-only basis.
+- `reset --to batch-start` is not allowed inside the run.
+  The Master stencil allows no reset but `report-head`, and the reset discards a batch the parent has not judged, so the refusal names who runs it and when instead.
+- `IsReadOnlyCommand`'s allow-list is unchanged, and the finding's detail wording is unchanged.
+- Only the bare-word scan skips a gate segment.
+  The path rule and the spelling rule still run over it.
 
-## Tests
+## Risk
 
-- `TestRefScanner_Matches` gains rows for the incident's gate command, the same command chained after `git commit -m "…"`, a gate command with a separator-prefixed weft path, and a bare weft name after a gate segment.
-- `RecoverSpawnOrAttach`'s table now checks that a batch with no recorded start names why accept-audit refuses and no accept-audit route.
-  It gains rows for a mutating reference at the batch's start (accept-audit route) and one commit past it (batch-start reset, then accept-audit and recover-batch).
-- `TestPlanReset_HeldRunLockIsTransientBusy` pins the new run-lock way forward on the incident's `batch-start` target.
+A `lym gate` invocation that spells a sibling by bare name, such as a package pattern `other-weft/...` run from the hub, is no longer caught.
+The path form `../other-weft/...` still is, as is a bare weft name in a segment after the gate segment.
+
+## Not run by hand
+
+- No end-to-end Webster run against a real failed batch; the refusal texts are covered by table tests only.
+- `lym gate test --upto 2` on `main` before push, as the repository's push rule requires.
