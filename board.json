@@ -764,6 +764,26 @@
       "body": "Follow-up from task `gate-robustness` (issue #885), which made no .NET build leave MSBuild servers behind and made `lym gate test` rerun a tier once on a fork EAGAIN, but left the dobby unchanged.\n\nWith five loom runs and a darn run live, the user slice reached `pids.current 2997` of `pids.max 3000` and every fork failed.\nSix parallel runs sit close to the default limit even without leaked processes.\n\nWhat to do: before a dobby pass starts a new run, read the user slice cgroup's `pids.current` and `pids.max` on Linux and hold the start, logged with both numbers, while the headroom is below a configured margin.\nA machine with no readable cgroup starts runs as today.\n\nThe EAGAIN retries in git wrappers and the transient halt class `host-resources` for loom runs landed with `transient-halt-recovery`; this note is only the hold on a new run start.\n",
       "created": "2026-10-28T12:05:29Z",
       "revised": "2026-10-28T13:07:05Z"
+    },
+    {
+      "id": 877,
+      "handle": "F3",
+      "slug": "usage-limit-wake",
+      "title": "The watcher wakes the orch after a usage limit resets, and holds the repeat notices",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "orch",
+        "batten",
+        "shuttle"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nOn 2026-10-28 a weekly usage limit stopped the Webster session of `validator-checks`, and batten sent the orch the same api-error notice again and again (#95 to #103, more after), until the limit reset at 14:00 Europe/Oslo.\nThe orch is hit by the same limit, so it cannot act on any of them; the notices only pile up.\nAfter the reset the operator had to tell the orch, which ran `lym tender revive`.\nClaude Code resumed some sessions on its own at the reset (\"Usage limit reset · Continuing automatically\"), others not.\n\n## Idea (operator, 2026-10-28)\n\n- When a session hits a usage limit, the orch watcher reads the reset time from the limit message itself, such as \"resets 2pm (Europe/Oslo)\"; `UsageLimitReader` in `internal/shuttleengine/hold.go` already tells a usage limit from an API error.\n- While the limit stands, batten's usage-limit notices do not reach the orch; the watcher holds them, so no repeat notice is sent.\n- One minute after the reset time the watcher wakes the orch with one line, such as \"Usage limit reset at 14:00; run `lym tender revive` and check every run\", and the orch revives and restarts what stopped, as it does on the operator's heads-up today.\n- When no reset time can be read, the watcher retries waking the orch at a fixed interval, such as every 30 minutes, until the orch answers.\n- `lym tender revive` stays harmless for a session Claude Code already resumed.\n",
+      "created": "2026-10-28T13:18:51Z",
+      "revised": "2026-10-28T13:18:51Z"
     }
   ],
   "prime_owner": "neve",
