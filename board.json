@@ -834,46 +834,6 @@
       "revised": "2026-10-28T11:33:24Z"
     },
     {
-      "id": 858,
-      "handle": "E4",
-      "slug": "gate-tier-dir-follows-anchor",
-      "title": "Gate tier runs dotnet test in the worktree root instead of the anchor subdirectory",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "gate"
-      ],
-      "issues": [
-        888
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #888](https://github.com/Knatte18/loomyard/issues/888).\n\n## What happened\n\nIn a task whose project anchor is a subdirectory of the worktree (`dotnet/`), `lym gate test --wait` ran the tier0 command `dotnet test LymCsharp.sln ...` in the worktree root.\nIt failed at once with `MSB1009: Project file does not exist`.\nThe hub's gate tiers set no `dir`, and the default run directory does not follow the anchor.\n\nThe producer agent worked around it by passing `-C \u003cworktree\u003e/dotnet` with an explicit target, after which all tests passed.\nThe loom's diff-scoped verify very likely runs the same way, since the producer hit the same failure at the handoff gate: the run halted `blocked` with `gate did not pass after 3 attempts` (anomaly `escalation-to-human`).\n\n## Why it is abnormal\n\nThe failure is a gate misconfiguration, not a code defect, so no amount of agent retrying can clear it.\nThe halt's way forward, `lym loom resume`, gives a fresh verify budget but leaves the gate config unchanged.\nThe resumed spawn therefore hit the identical failure and halted a second time.\n\n## What to do\n\n- Make a gate tier's default run directory follow the task's anchor directory when the anchor is a subdirectory of the worktree.\n- Failing that, detect a gate that fails identically with a missing-project error and surface it as a configuration problem, rather than as a verify failure that offers `lym loom resume` as the way forward.\n\nProvenance: task `regression-harness`; notes Darn-Write.md, Darn-Write-2.md, loom-halt.md, loom-halt-2.md.\n",
-      "created": "2026-10-28T11:33:26Z",
-      "revised": "2026-10-28T11:33:26Z"
-    },
-    {
-      "id": 859,
-      "handle": "B5",
-      "slug": "gate-eagain-not-test-failure",
-      "title": "lym gate test reports transient fork/thread exhaustion as test failures",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "gate"
-      ],
-      "issues": [
-        887
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #887](https://github.com/Knatte18/loomyard/issues/887).\n\n## What happened\n\nTwo `lym gate test --wait` runs failed with `fork/exec ... resource temporarily unavailable` and `runtime: failed to create new OS thread (errno=11)`.\nA `go vet` run and one PreToolUse hook failed the same way (\"Cannot fork\").\nThe failures hit packages the change did not touch.\n`ulimit -u` was far above the live thread count, and a rerun a minute later was green.\nThe cause looks like short-lived process or thread pressure from other runs sharing the machine.\n\n## Why it is abnormal\n\nThe gate surfaces these as ordinary build or test failures.\nThe cause is an environment error that a retry clears, and reporting it as a test failure hides that.\n\n## What to do\n\nHave `lym gate test` recognise fork/exec EAGAIN and thread-creation failures and report them as a retryable environment error, or retry them automatically.\nConsider limiting how many gate runs execute concurrently on one machine.\n\nProvenance: task `ide-seed-current-worktree`, note `Darn-Write.md`.\n",
-      "created": "2026-10-28T11:33:28Z",
-      "revised": "2026-10-28T11:33:28Z"
-    },
-    {
       "id": 860,
       "handle": "B6",
       "slug": "loom-halt-on-transient-eagain",
@@ -895,50 +855,6 @@
       "body": "Imported from [issue #886](https://github.com/Knatte18/loomyard/issues/886).\n\nTwo loom halts were recorded within a second of each other (09:41:18Z and 09:41:19Z), both as `failed`, one in `Drift-Verify` and one in `Code-Bouncer`.\n\n**What happened**\n\n- The `Code-Bouncer` halt (anomaly `producer-hard-failure`) carries this lym error: `shedadapters: Code-Bouncer (bouncer): read the live subject: fabricengine: read task patch: diff the working tree against \u003csha\u003e: fork/exec /usr/bin/git: resource temporarily unavailable`. That is EAGAIN from the OS while lym spawned `git`, a transient condition.\n- The `Drift-Verify` halt (anomaly `interrupted-stop`) carries only `exited: exit status 2`. The note names no cause, and its history lists `Drift-Verify` as `skipped` even though the halt is attributed to it.\n\n**Why it is abnormal**\n\n- A transient process-spawn failure halts the whole run as `failed` with no retry, so a momentary resource spike costs the run.\n- The two halts share a time window and most likely a root cause, but nothing in the notes links them.\n- The `interrupted-stop` note gives no reason, so the operator must open the trace file to learn what exit status 2 means.\n- The Drift-Verify history entry reads `skipped` while the halt names that producer as the failed one.\n\n**What to do**\n\n- Retry `fork/exec` EAGAIN in the fabricengine git wrapper with a short bounded backoff before surfacing it as a hard failure.\n- Put the underlying cause (the failing command or its stderr tail) into `interrupted-stop` halt notes.\n- Check whether lym itself spawns enough concurrent processes or git calls at the end of `Darn-Write` to exhaust the process limit.\n- Reconcile the history state of a producer the halt blames with the halt note.\n\nProvenance: task `review-setup-audit`; notes `loom-halt.md`, `loom-halt-2.md`.\n\n\n## From issue #891\n\nImported from [issue #891](https://github.com/Knatte18/loomyard/issues/891).\n\nWhat happened: after the `Darn-Write` halt, a later loom entry halted `failed` at `Darn-Write` with `exited: exit status 2`, anomaly `interrupted-stop`, and an empty `trace_file:` field.\nThe history showed `Darn-Write / goto` as the last entry.\nAfterwards the Go driver found the run `paused` at `Darn-Write` with no reason recorded, and wrote only a drive envelope under `_lym/shed/\u003cslug\u003e/drive-reports/`.\n\nWhy it is abnormal: an exit status 2 gives no cause and no trace file to follow, so the halt cannot be diagnosed.\nA paused state with no reason leaves the operator and driver unable to tell whether the pause is deliberate or a leftover of the failed run.\n\nWhat to do: make the `interrupted-stop` halt note always name the trace file and the exiting command, and record a reason whenever a run is left `paused`.\n\nProvenance: task `hub-pull-verb`; notes `loom-halt-2.md`, `go-driver-paused.md`.\n",
       "created": "2026-10-28T11:33:31Z",
       "revised": "2026-10-28T11:33:52Z"
-    },
-    {
-      "id": 861,
-      "handle": "B8",
-      "slug": "msbuild-node-reuse-task-limit",
-      "title": "Lingering MSBuild reuse nodes exhaust the user's task limit during .NET runs",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "shuttle",
-        "gate",
-        "dotnet",
-        "batten"
-      ],
-      "issues": [
-        885
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #885](https://github.com/Knatte18/loomyard/issues/885).\n\n## Seen (Neve, 2026-10-28)\n\nWith five loomyard runs and one darn run in the C# sandbox hub (lym-csharp) live, the user slice hit its systemd task limit (user-1000.slice pids.max 3000, pids.current 2997).\nEvery fork then failed with EAGAIN: three batten runs stopped at Run-Shed or Darn-Write, pushes failed (a git credential helper that cannot fork falls back to a username prompt, reported as an auth failure), and Claude Code's own hooks failed with 'Cannot fork'.\n18 idle `dotnet MSBuild.dll /nodemode:1 /nodeReuse:true` processes, about 20 threads each, were left behind by `dotnet build` and `dotnet test` calls made by agents outside the gate; the gate's own runs used `/nodeReuse:false` nodes.\n`dotnet build-server shutdown --msbuild` did not end them.\n\n## Workaround\n\nKilled them by hand: `pkill -u \u003cuser\u003e -f 'MSBuild.dll .*nodeReuse:true'`, which took the slice from 2940 to 2500 tasks.\n\n## Expected\n\nlym sets `MSBUILDDISABLENODEREUSE=1` (and `DOTNET_CLI_USE_MSBUILD_SERVER=0`) in the environment of every agent session and gate run it starts, so no .NET build an agent runs leaves worker nodes behind.\nBeside that, the dobby could hold a new run start while the user slice is near its task limit, since six parallel runs sit close to the default limit even without the leak.",
-      "created": "2026-10-28T11:33:33Z",
-      "revised": "2026-10-28T11:33:33Z"
-    },
-    {
-      "id": 862,
-      "handle": "B9",
-      "slug": "verify-findings-show-failures",
-      "title": "Verify-gate findings log tail shows only passing tests, hiding the failure",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "loom",
-        "gate"
-      ],
-      "issues": [
-        884
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #884](https://github.com/Knatte18/loomyard/issues/884).\n\n## What happened\n\nA producer row's verify gate failed three times in a row, and the run halted `blocked` with anomaly `escalation-to-human`.\nEach re-prompt carried a findings text of the form \"The verify command failed with exit code 1\", a full-log path and a \"Log tail\".\nThe tail was the last lines of the `lym gate test` output, and those lines held only `--- PASS` entries, a final `PASS` and `ok` for the last package.\nThe `--- FAIL` lines sat tens of thousands of lines earlier in the same log (the verify log ran to roughly 57,000 lines, and the first failure sat near line 25,800).\nThe only hint of failure in the tail was the gate summary line `tier0 computed ... failed 2 ...`, which names no test.\n\n## Why it is abnormal\n\nThe tail exists so the re-prompted agent can see what failed.\nWith `go test` output interleaved from parallel packages, the last lines are not where failures are, so the agent got a findings text that looks like a pass.\nThe agent had to open a 57,000-line log and search for `--- FAIL` by itself, and the budget of three attempts was spent re-running with little to act on.\n\n## What to do\n\nBuild the findings text from the failures rather than from the raw tail.\nFor `lym gate test` output, extract the `--- FAIL` and `FAIL \u003cpackage\u003e` lines (with a few lines of context each) and put them first.\nFall back to the tail only when no failure marker is found.\nAlternatively, make `lym gate test` print a failed-tests section at the end of its output, so any tail contains it.\n\nProvenance: task `hub-reader-creates-lym`; notes `loom-halt.md`, `loom-halt-2.md`.\n",
-      "created": "2026-10-28T11:33:36Z",
-      "revised": "2026-10-28T11:33:36Z"
     },
     {
       "id": 863,
@@ -1039,6 +955,36 @@
       "body": "Imported from [issue #877](https://github.com/Knatte18/loomyard/issues/877).\n\n## What happened\n\nA Webster implementer fork ran `lyx gate test --wait --gate card --card \u003ccard\u003e` and `lyx gate test --wait --gate batch --card \u003ccard\u003e`, the gate commands the session's own gate rule tells agents to run, and once chained them after a `git commit`.\n`lyx webster record-batch` failed the batch with `fabric-reference violation ... ran a fabric-referencing command (\"lyx gate test ...\") that can rewrite run state — an implementer fork must never touch the fabric repo directly`.\nThe finding \"names no path\"; it is raised from the command text alone.\n`lyx webster recover-batch` then refused with `needs_fresh` on the same findings.\n\n## Why it is abnormal\n\n`lyx gate test` is the mandated way to run tests, so the audit makes the normal workflow a violation.\nThe audit does not distinguish a gate invocation from a command that writes the fabric repo, and a pipe through `tail`/`grep` does not change that.\nA whole batch of otherwise valid work was lost to the flag, and the run halted blocked at Webster with an escalation.\n\n## What to do\n\nTreat `lyx gate test` (and its `--wait`, `--gate`, `--card` forms) as read-only for the fabric-reference audit, or make the audit check the paths a command actually writes.\nAt minimum the finding should say why this specific command can rewrite run state.\n\n## Provenance\n\nTask `umbrella-anchor`; notes: webster-refusal-record-batch.md, webster-refusal-recover-batch.md, webster-refusal-recover-batch-2.md, webster-refusal-recover-batch-3.md, loom-halt.md, loom-halt-2.md, loom-halt-3.md.\n",
       "created": "2026-10-28T11:33:47Z",
       "revised": "2026-10-28T11:33:47Z"
+    },
+    {
+      "id": 868,
+      "handle": "T2",
+      "slug": "gate-robustness",
+      "title": "Gate and agent runs survive transient task-limit pressure and run in the anchor",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "gate",
+        "shuttle",
+        "dotnet",
+        "batten",
+        "loom"
+      ],
+      "issues": [
+        885,
+        887,
+        888,
+        884
+      ],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Lingering MSBuild reuse nodes exhaust the user's task limit during .NET runs (was note `msbuild-node-reuse-task-limit`)\n\nImported from [issue #885](https://github.com/Knatte18/loomyard/issues/885).\n\n#### Seen (Neve, 2026-10-28)\n\nWith five loomyard runs and one darn run in the C# sandbox hub (lym-csharp) live, the user slice hit its systemd task limit (user-1000.slice pids.max 3000, pids.current 2997).\nEvery fork then failed with EAGAIN: three batten runs stopped at Run-Shed or Darn-Write, pushes failed (a git credential helper that cannot fork falls back to a username prompt, reported as an auth failure), and Claude Code's own hooks failed with 'Cannot fork'.\n18 idle `dotnet MSBuild.dll /nodemode:1 /nodeReuse:true` processes, about 20 threads each, were left behind by `dotnet build` and `dotnet test` calls made by agents outside the gate; the gate's own runs used `/nodeReuse:false` nodes.\n`dotnet build-server shutdown --msbuild` did not end them.\n\n#### Workaround\n\nKilled them by hand: `pkill -u \u003cuser\u003e -f 'MSBuild.dll .*nodeReuse:true'`, which took the slice from 2940 to 2500 tasks.\n\n#### Expected\n\nlym sets `MSBUILDDISABLENODEREUSE=1` (and `DOTNET_CLI_USE_MSBUILD_SERVER=0`) in the environment of every agent session and gate run it starts, so no .NET build an agent runs leaves worker nodes behind.\nBeside that, the dobby could hold a new run start while the user slice is near its task limit, since six parallel runs sit close to the default limit even without the leak.\n## lym gate test reports transient fork/thread exhaustion as test failures (was note `gate-eagain-not-test-failure`)\n\nImported from [issue #887](https://github.com/Knatte18/loomyard/issues/887).\n\n#### What happened\n\nTwo `lym gate test --wait` runs failed with `fork/exec ... resource temporarily unavailable` and `runtime: failed to create new OS thread (errno=11)`.\nA `go vet` run and one PreToolUse hook failed the same way (\"Cannot fork\").\nThe failures hit packages the change did not touch.\n`ulimit -u` was far above the live thread count, and a rerun a minute later was green.\nThe cause looks like short-lived process or thread pressure from other runs sharing the machine.\n\n#### Why it is abnormal\n\nThe gate surfaces these as ordinary build or test failures.\nThe cause is an environment error that a retry clears, and reporting it as a test failure hides that.\n\n#### What to do\n\nHave `lym gate test` recognise fork/exec EAGAIN and thread-creation failures and report them as a retryable environment error, or retry them automatically.\nConsider limiting how many gate runs execute concurrently on one machine.\n\nProvenance: task `ide-seed-current-worktree`, note `Darn-Write.md`.\n\n## Gate tier runs dotnet test in the worktree root instead of the anchor subdirectory (was note `gate-tier-dir-follows-anchor`)\n\nImported from [issue #888](https://github.com/Knatte18/loomyard/issues/888).\n\n#### What happened\n\nIn a task whose project anchor is a subdirectory of the worktree (`dotnet/`), `lym gate test --wait` ran the tier0 command `dotnet test LymCsharp.sln ...` in the worktree root.\nIt failed at once with `MSB1009: Project file does not exist`.\nThe hub's gate tiers set no `dir`, and the default run directory does not follow the anchor.\n\nThe producer agent worked around it by passing `-C \u003cworktree\u003e/dotnet` with an explicit target, after which all tests passed.\nThe loom's diff-scoped verify very likely runs the same way, since the producer hit the same failure at the handoff gate: the run halted `blocked` with `gate did not pass after 3 attempts` (anomaly `escalation-to-human`).\n\n#### Why it is abnormal\n\nThe failure is a gate misconfiguration, not a code defect, so no amount of agent retrying can clear it.\nThe halt's way forward, `lym loom resume`, gives a fresh verify budget but leaves the gate config unchanged.\nThe resumed spawn therefore hit the identical failure and halted a second time.\n\n#### What to do\n\n- Make a gate tier's default run directory follow the task's anchor directory when the anchor is a subdirectory of the worktree.\n- Failing that, detect a gate that fails identically with a missing-project error and surface it as a configuration problem, rather than as a verify failure that offers `lym loom resume` as the way forward.\n\nProvenance: task `regression-harness`; notes Darn-Write.md, Darn-Write-2.md, loom-halt.md, loom-halt-2.md.\n\n## Verify-gate findings log tail shows only passing tests, hiding the failure (was note `verify-findings-show-failures`)\n\nImported from [issue #884](https://github.com/Knatte18/loomyard/issues/884).\n\n#### What happened\n\nA producer row's verify gate failed three times in a row, and the run halted `blocked` with anomaly `escalation-to-human`.\nEach re-prompt carried a findings text of the form \"The verify command failed with exit code 1\", a full-log path and a \"Log tail\".\nThe tail was the last lines of the `lym gate test` output, and those lines held only `--- PASS` entries, a final `PASS` and `ok` for the last package.\nThe `--- FAIL` lines sat tens of thousands of lines earlier in the same log (the verify log ran to roughly 57,000 lines, and the first failure sat near line 25,800).\nThe only hint of failure in the tail was the gate summary line `tier0 computed ... failed 2 ...`, which names no test.\n\n#### Why it is abnormal\n\nThe tail exists so the re-prompted agent can see what failed.\nWith `go test` output interleaved from parallel packages, the last lines are not where failures are, so the agent got a findings text that looks like a pass.\nThe agent had to open a 57,000-line log and search for `--- FAIL` by itself, and the budget of three attempts was spent re-running with little to act on.\n\n#### What to do\n\nBuild the findings text from the failures rather than from the raw tail.\nFor `lym gate test` output, extract the `--- FAIL` and `FAIL \u003cpackage\u003e` lines (with a few lines of context each) and put them first.\nFall back to the tail only when no failure marker is found.\nAlternatively, make `lym gate test` print a failed-tests section at the end of its output, so any tail contains it.\n\nProvenance: task `hub-reader-creates-lym`; notes `loom-halt.md`, `loom-halt-2.md`.\n\n",
+      "status": "draft",
+      "created": "2026-10-28T11:33:26Z",
+      "revised": "2026-10-28T11:40:40Z",
+      "profile": "solid"
     }
   ],
   "prime_owner": "neve",

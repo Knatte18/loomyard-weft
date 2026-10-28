@@ -28,7 +28,7 @@ grouping
 | --- | --- | --- | --- |
 | E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
 
-## Tasks (4)
+## Tasks (5)
 
 Concrete and claimable; only a task can run.
 
@@ -56,42 +56,46 @@ Waits only on Running, Ready or Draft entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **Stencil and system-prompt sentences that batch independent calls and edits**<br>• The turn audit sentences per heavy role, plus one shuttle-appended system-prompt sentence for every Claude agent | [`turn-batching`](design-turn-batching.md) | darn | `creel-hook-post`, `validator-checks`, `review-setup-tuning` | 1h<br>1h | stencil, shuttle |
 
-## Notes (46)
+### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T2 | `draft` **Gate and agent runs survive transient task-limit pressure and run in the anchor**<br>• `profile: solid` | [`gate-robustness`](design-gate-robustness.md) | darn |  | 7m<br>0m | gate, shuttle, dotnet, batten, loom |
+
+## Notes (42)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Bugs (12)
+### Bugs (9)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Find why a running run shows a dead waiter in the activity reader** | [`idle-notice-dead-waiter-cause`](design-idle-notice-dead-waiter-cause.md) | 4d<br>4d | batten, shuttle |
 | B2 |  | **Burler fork audit counts a listing git branch as git-mutating** | [`fork-audit-git-branch-list`](design-fork-audit-git-branch-list.md) | 7m<br>7m | burler |
 | B3 |  | **Loom run fails hard when the producer's tmux session dies after a fork EAGAIN** | [`died-after-tmux-eagain-transient`](design-died-after-tmux-eagain-transient.md) | 7m<br>7m | shuttle, reed, shed |
-| B4 |  | **lym loom resume re-spawn prompt names prior work as (none) although the branch holds the first spawn's commit** | [`resume-prompt-prior-work-none`](design-resume-prompt-prior-work-none.md) | 6m<br>6m | loom, shed |
-| B5 |  | **lym gate test reports transient fork/thread exhaustion as test failures** | [`gate-eagain-not-test-failure`](design-gate-eagain-not-test-failure.md) | 6m<br>6m | gate |
-| B6 |  | **Loom halts on transient fork/exec EAGAIN and records an opaque exit status 2 for the sibling halt** | [`loom-halt-on-transient-eagain`](design-loom-halt-on-transient-eagain.md) | 6m<br>6m | loom, shed, fabric |
+| B4 |  | **lym loom resume re-spawn prompt names prior work as (none) although the branch holds the first spawn's commit** | [`resume-prompt-prior-work-none`](design-resume-prompt-prior-work-none.md) | 7m<br>7m | loom, shed |
+| B6 |  | **Loom halts on transient fork/exec EAGAIN and records an opaque exit status 2 for the sibling halt** | [`loom-halt-on-transient-eagain`](design-loom-halt-on-transient-eagain.md) | 7m<br>6m | loom, shed, fabric |
 | B7 |  | **An instruction typed into a pane is lost when the tackler re-spawns the row**<br>• A re-spawned row session starts from its prompt alone; operator input to the old session is dropped | [`pane-input-lost-on-respawn`](design-pane-input-lost-on-respawn.md) | 1d<br>1d | shed, shuttle, reed |
-| B8 |  | **Lingering MSBuild reuse nodes exhaust the user's task limit during .NET runs** | [`msbuild-node-reuse-task-limit`](design-msbuild-node-reuse-task-limit.md) | 6m<br>6m | shuttle, gate, dotnet, batten |
-| B9 |  | **Verify-gate findings log tail shows only passing tests, hiding the failure** | [`verify-findings-show-failures`](design-verify-findings-show-failures.md) | 6m<br>6m | loom, gate |
 | B10 |  | **A racing async push reports a divergence that is already gone** | [`async-push-race-false-divergence`](design-async-push-race-false-divergence.md) | 6m<br>6m | fabric |
 | B11 |  | **webster recovery way-forward is circular: recover-batch points to accept-audit, which refuses; reset is refused while run.lock is held** | [`webster-recovery-circular`](design-webster-recovery-circular.md) | 6m<br>6m | webster |
 | B12 |  | **webster fabric-reference audit flags the sanctioned lyx gate test as a run-state rewrite, failing the batch** | [`webster-audit-gate-test-readonly`](design-webster-audit-gate-test-readonly.md) | 6m<br>6m | webster |
 
-### Enhancements (17)
+### Enhancements (16)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Beam promote keeps the Discussion record as part of the beam**<br>• When Discussion finds a task should be a project, promote carries its decision record into the beam instead of dropping it | [`beam-promote-keeps-discussion`](design-beam-promote-keeps-discussion.md) | 2d<br>1d | workspaces, batten, loom |
 | E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>20h | shuttle, codex |
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 20h<br>17h | batten, stencil, config |
-| E4 |  | **Gate tier runs dotnet test in the worktree root instead of the anchor subdirectory** | [`gate-tier-dir-follows-anchor`](design-gate-tier-dir-follows-anchor.md) | 6m<br>6m | gate |
 | E5 |  | **Decide the layout of projects in the board README**<br>• The operator is not satisfied with how the README renders projects and their members; the layout is to be decided | [`board-projects-layout`](design-board-projects-layout.md) | 3d<br>21h | board |
 | E6 |  | **Board README: one rendered file per project, research notes first**<br>• Each project renders its own file linked from its parent; README.md is the root project; research notes come right after tasks | [`readme-per-project-files`](design-readme-per-project-files.md) | 2d<br>20h | board |
 | E7 |  | **Run verbs in one shared namespace, not under lym loom**<br>• lym loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 13d<br>1d | shed, loom |
-| E8 |  | **lym loom resume re-prompts a producer to fix findings a recorded decision forbids, without checking the awaited task landed** | [`resume-honours-wait-decision`](design-resume-honours-wait-decision.md) | 6m<br>6m | loom |
+| E8 |  | **lym loom resume re-prompts a producer to fix findings a recorded decision forbids, without checking the awaited task landed** | [`resume-honours-wait-decision`](design-resume-honours-wait-decision.md) | 7m<br>7m | loom |
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 2w<br>1d | burler, stencil |
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 13d<br>13d | board, loom |
-| E11 |  | **Comment lint flags every line break of a legacy wrapped paragraph after a pure word rename** | [`comment-lint-rename-breaks`](design-comment-lint-rename-breaks.md) | 6m<br>6m | loom |
+| E11 |  | **Comment lint flags every line break of a legacy wrapped paragraph after a pure word rename** | [`comment-lint-rename-breaks`](design-comment-lint-rename-breaks.md) | 7m<br>7m | loom |
 | E14 |  | **No test is skipped by design**<br>• Windows-only tests count as skips on Linux, and TestBuildLoomShed_OutputShape skips on every machine | [`test-skips-os-tags`](design-test-skips-os-tags.md) | 2d<br>2d | testkit, reed, loom, fabric, gate |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 10d<br>1d | webster, fabric, loom |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 9d<br>1d | fabric, batten |
