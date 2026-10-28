@@ -49,6 +49,12 @@ Rationale: `git branch -avv` is a common listing form, and reading each letter k
 
 - A read-only option git adds later counts as mutating until the allow-list names it; the failure is loud and the fix is one map entry.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - branch-verbose-wrongly-list-mode (class design, severity BLOCKING, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - `git branch`, `git branch -a`, `git branch -r`, `git branch -avv`, `git branch -a --contains <commit>`, `git branch --contains=<commit>`, `git branch -l 'feat*'`, `git branch --list feat*`, `git branch --merged main`, `git branch --no-merged main`, `git branch --points-at HEAD`, `git branch --show-current` and `git branch --sort -committerdate` are not mutating.
