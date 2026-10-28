@@ -528,25 +528,6 @@
       "revised": "2026-10-27T10:00:27Z"
     },
     {
-      "id": 791,
-      "handle": "E35",
-      "slug": "landing-escalate-arbiter",
-      "title": "A landing fixer escalation goes to the arbiter before the orch",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "shed",
-        "loom"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Merge-In and Finalize fixer escalate reports reach the arbiter first",
-      "body": "## Seen (2026-10-24)\n\nA landing-stop halt at `Parent-Align` (renamed from `Merge-In` in 5e449651f) or `Finalize`, the merge fixer's `escalate` report included, goes straight to the orch: `internal/arbiterstop` marks it `LandingHalt` and skips the arbiter, and `landingshed.HandsBack` names it a hand-back.\nThe fixer escalates when a decision in the task collides with work the parent brought in, the one case with a real judgement in it; the old alignment agent (removed in 5e449651f) rejected 4 of 72 such checks, all valid.\n\n## Idea (operator, 2026-10-24)\n\nA fixer's `escalate` at a landing row goes to the arbiter first, as other stops do: the arbiter is a strong agent that can likely settle a decision collision against the decision record and what landed, and only its hand-on reaches the orch.\nA spent cap, a failed or unusable fixer turn and an over-cap change stay as they are.\n\n## Landed since (webster-stop-asked-once)\n\n`ArbiterSeam` has an optional `JudgesFirst func(producer string) bool`; a blocked stop at a row it marks goes to the arbiter, skipping the tackler.\nOnly the Webster row is marked today.\nA landing fixer's escalate would be one more row for the seam, not a new mechanism; the landing-halt rule row still precedes it and would need to yield.\n",
-      "created": "2026-10-24T06:32:58Z",
-      "revised": "2026-10-26T15:18:38Z"
-    },
-    {
       "id": 796,
       "handle": "B1",
       "slug": "idle-notice-dead-waiter-cause",
@@ -659,25 +640,6 @@
       "body": "## Seen (operator, 2026-10-25)\n\nThe board renders one README.md holding every project, task and note of the hub.\nThe notes are grouped by type label in file order, so after the `audit` label became `research` the research notes moved from first under Notes to last, under the heading `Researchs`.\n\n## Idea (operator, 2026-10-25)\n\n- Research notes come first under Notes, right after the tasks, where the audits stood; the heading reads `Research`.\n- Each project gets its own rendered file.\n  It opens with the projects directly under it, each a link to its file with its short description, then holds the tasks and notes that belong to the project itself.\n- Every project sits under another project, except the root project at the top.\n- The split is rendering only: every entry stays in the one board store, and handles stay numbered across the whole hub, so a project's file shows gaps in its numbering and a handle names one entry whichever file shows it.\n- A task's After column names its dependencies by handle instead of by slug, one handle per line within the cell.\n- A draft task is not ready, so it never shows under Ready: drafts get a subsection of their own after the ready and layered tasks (built: `### Draft (n)` in the Tasks section, see `internal/boardengine/doc.go`).\n- README.md is the root project's file: the projects under root first, each linked with its short description, then every task and note that belongs to no other project.\n\n\nThe board README rendering is not regarded as production code (operator, 2026-10-27).\n",
       "created": "2026-10-25T18:24:12Z",
       "revised": "2026-10-27T15:14:55Z"
-    },
-    {
-      "id": 828,
-      "handle": "E11",
-      "slug": "loom-finalize-merges-itself",
-      "title": "Loom and darn Finalize resolve a moved parent themselves instead of rerouting",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "loom",
-        "batten"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen (umbrella-anchor, 2026-10-25)\n\nA loom Finalize found that the parent's changes since Parent-Align touched files the task changed (`docs/overview.md`, `internal/beamcli/cli.go`, `internal/beamcli/doc.go`), judged the merge large and rerouted to Parent-Align.\nThe reroute re-enters the whole Code-Review perch over the whole diff, which takes long enough for the parent to move again, so a run can loop through Parent-Align and the perch several times, each loop a full perch's cost.\nLoom, darn and beam run the same Finalize (`landingshed.Finalize`), with its conflict session and its merge fixer; only two flags set per recipe in `internal/loomcli/landingdeps.go` differ:\n\n| Recipe | Conflict | Parent changes overlap the task's files |\n|---|---|---|\n| loom | aborts and reroutes to Parent-Align (`ConflictReroutes`) | reroutes to Parent-Align and the whole perch |\n| darn | the conflict session resolves it in Finalize | reroutes to Code-Bouncer, whose perch reviews the overlap note |\n| beam (now `pawl`) | the conflict session resolves it in Finalize | lands through the gate (`LargeMergeLands`) |\n\n## Idea (operator, 2026-10-25)\n\n- Loom and darn handle a moved parent in Finalize itself: the conflict session resolves a conflict under the parent lock, and an overlapping merge goes on to the landing gate, whose merge fixer fixes what fails.\n- A conflict or overlap in Finalize no longer reroutes, so neither recipe re-runs its Code-Review perch for it.\n- Parent-Align, before Code-Review, stays the loom row that catches the bulk of the parent's drift; Finalize takes only what moved since.\n- A beam's landing is the opposite case and gets the full treatment instead; that is the `pawl` recipe, landed in e6fbc14c (`beam-start-and-ownership`), whose rows are Beam-Up, Beam-Await, Parent-Align, the Code-Review perch, Beam-Describe, Finalize and Beam-Down.\n",
-      "created": "2026-10-25T19:24:54Z",
-      "revised": "2026-10-26T15:18:38Z"
     },
     {
       "id": 830,
@@ -821,6 +783,27 @@
       "status": "running · Discussion-Write",
       "created": "2026-10-23T08:45:46Z",
       "revised": "2026-10-28T09:11:13Z"
+    },
+    {
+      "id": 851,
+      "handle": "T2",
+      "slug": "landing-settles-in-place",
+      "title": "A landing merges a moved parent in Finalize and sends a fixer escalate to the arbiter first",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "loom",
+        "batten",
+        "shed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "No Finalize reroute to Parent-Align for a moved parent, and a landing fixer escalate reaches the orch only as the arbiter hand-on",
+      "body": "## Goal\n\nA landing settles what it can in place instead of rerouting or handing the stop straight to the orch:\na moved parent is merged in Finalize itself, and a merge fixer's `escalate` goes to the arbiter first.\n\n## Finalize handles a moved parent itself (was note `loom-finalize-merges-itself`)\n\n### Seen (umbrella-anchor, 2026-10-25)\n\nA loom Finalize found that the parent's changes since Parent-Align touched files the task changed (`docs/overview.md`, `internal/beamcli/cli.go`, `internal/beamcli/doc.go`), judged the merge large and rerouted to Parent-Align.\nThe reroute re-enters the whole Code-Review perch over the whole diff, which takes long enough for the parent to move again, so a run can loop through Parent-Align and the perch several times, each loop a full perch's cost.\nLoom, darn and pawl run the same Finalize (`landingshed.Finalize`), with its conflict session and its merge fixer; only two flags set per recipe in `internal/loomcli/landingdeps.go` differ:\n\n| Recipe | Conflict | Parent changes overlap the task's files |\n|---|---|---|\n| loom | aborts and reroutes to Parent-Align (`ConflictReroutes`) | reroutes to Parent-Align and the whole perch |\n| darn | the conflict session resolves it in Finalize | reroutes to Code-Bouncer, whose perch reviews the overlap note |\n| pawl | the conflict session resolves it in Finalize | lands through the gate (`LargeMergeLands`) |\n\n### Design (operator, 2026-10-25)\n\n- Loom and darn handle a moved parent in Finalize itself: the conflict session resolves a conflict under the parent lock, and an overlapping merge goes on to the landing gate, whose merge fixer fixes what fails.\n- A conflict or overlap in Finalize no longer reroutes, so neither recipe re-runs its Code-Review perch for it.\n- Parent-Align, before Code-Review, stays the loom row that catches the bulk of the parent's drift; Finalize takes only what moved since.\n- A beam's landing, the `pawl` recipe, keeps its own full treatment.\n\n## A landing fixer's escalate goes to the arbiter first (was note `landing-escalate-arbiter`)\n\n### Seen (2026-10-24)\n\nA landing-stop halt at `Parent-Align` or `Finalize`, the merge fixer's `escalate` report included, goes straight to the orch: `internal/arbiterstop` marks it `LandingHalt` and skips the arbiter, and `landingshed.HandsBack` names it a hand-back.\nThe fixer escalates when a decision in the task collides with work the parent brought in, the one case with a real judgement in it.\n\n### Design (operator, 2026-10-24)\n\n- A fixer's `escalate` at a landing row goes to the arbiter first, as other stops do: the arbiter can likely settle a decision collision against the decision record and what landed, and only its hand-on reaches the orch.\n- A spent cap, a failed or unusable fixer turn and an over-cap change stay as they are.\n- `ArbiterSeam` has an optional `JudgesFirst func(producer string) bool`; a blocked stop at a row it marks goes to the arbiter, skipping the tackler, and only the Webster row is marked today.\n  A landing fixer's escalate is one more row for the seam, not a new mechanism; the landing-halt rule row that precedes it must yield for that case.\n\n## Docs\n\nThe orch's role text on landing halts (`Landing halts` in the orch role stencil) changes with the behaviour: an escalate reaches the orch only as the arbiter's hand-on, and a moved parent no longer reroutes.\n",
+      "status": "draft",
+      "created": "2026-10-24T06:32:58Z",
+      "revised": "2026-10-28T09:29:26Z"
     }
   ],
   "prime_owner": "neve",
