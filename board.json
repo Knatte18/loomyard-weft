@@ -528,27 +528,6 @@
       "revised": "2026-10-27T10:00:27Z"
     },
     {
-      "id": 771,
-      "handle": "E27",
-      "slug": "creel-carry-agent-mail",
-      "title": "Creel types agent mail in full into an idle pane instead of a reminder line",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "creel"
-      ],
-      "issues": [
-        871
-      ],
-      "priority": "low",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A reminder plus lym creel read costs the receiver an extra turn per agent message",
-      "body": "## Seen (2026-10-23)\n\nCreel carries a message in full into the receiver's pane only when its sender is a program or EXTERNAL.\nMail from an agent strand, and any message over 4 KiB, reaches the receiver only as a reminder line naming `lym creel read` (`internal/creelengine/doc.go`), so the receiver spends one extra turn reading it before it can act.\nThe reminder exists so that an agent's text cannot pose as an instruction in another agent's pane.\n\n## Operator view, not a decision (2026-10-23)\n\nWith the runs' cost in focus, everything might instead be typed into the pane directly, with no reminder and read turn; to weigh later.\n\n## To weigh\n\n- The extra turn per agent message against the guard that keeps one agent's text from reading as an instruction in another agent's pane.\n- Delivery at a working Claude strand's tool boundary is built (landed `creel-hook-delivery`): its `PostToolUse` hook hands over agent mail in full, so this note keeps only the idle pane path's reminder.\n- Codex's `PostToolUse` at a tool boundary is untested (`docs/research/creel-hook-delivery-2026-10-25/report.md` gives the steps), so the hook covers Claude strands only and Codex strands keep the pane path.\n- Note `creel-agents` moves agent messaging from SendMessage onto creel, which makes agent mail, and so this cost, more common.\n",
-      "created": "2026-10-23T08:45:46Z",
-      "revised": "2026-10-27T17:50:09Z"
-    },
-    {
       "id": 791,
       "handle": "E35",
       "slug": "landing-escalate-arbiter",
@@ -822,23 +801,26 @@
     },
     {
       "id": 850,
-      "handle": "E4",
-      "slug": "creel-hook-visible",
-      "title": "Creel hook delivery shows a line in the pane, not only in the agent context",
-      "kind": "note",
+      "handle": "T1",
+      "slug": "creel-hook-post",
+      "title": "Creel delivers every post to a Claude strand through hooks, visibly and in full",
+      "kind": "task",
       "labels": [
         "enhancement",
         "creel",
-        "claude",
-        "codex"
+        "shuttle",
+        "claude"
       ],
-      "issues": [],
+      "issues": [
+        871
+      ],
       "depends_on": [],
       "isolated": false,
-      "brief": "hook-read adds a systemMessage per delivered message so the operator sees mid-turn deliveries",
-      "body": "## Seen (orch, 2026-10-27)\n\nCreel's tool-boundary hook (`lym creel hook-read claude`, from task `creel-hook-delivery`) delivered #57 and #58 from `ly:EXTERNAL` into the running orch session mid-turn, after a Bash call, and the journal shows each as read at that moment.\nThe operator saw neither delivery, in the chat or in Claude Code's expanded view (ctrl+o): the hook's output is `hookSpecificOutput.additionalContext`, which reaches the model's context only.\nThe orch's answer to #58, a `lym creel post --reply`, went to `ly:EXTERNAL`, which has no pane, so the operator saw it only as a Bash call in the expanded view.\nA delivery the operator cannot see cannot be trusted or debugged from the pane (operator, 2026-10-27).\n\n## Idea\n\n- `hook-read`'s Claude output also carries a top-level `systemMessage`, which Claude Code shows to the user in the chat, with one short line per delivered message, such as `[creel] #57 from ly:EXTERNAL delivered`.\n  The line names id and sender only, never the body, so the chat stays short; the body still reaches the agent through `additionalContext`.\n  The renderer behind `shuttleengines.ToolBoundaryRenderer` for Claude is the one place to change; a Codex renderer, when one exists, decides its own form.\n- A reply to `ly:EXTERNAL` lands in no pane, so the agent stencils say that mail from `ly:EXTERNAL` is the operator's, answered in the agent's own chat as well as by `post --reply`.\n\n## Seen (spike `creel-hook-channels-spike`, 2026-10-28): the sender name is ambiguous\n\nCodex, given `[creel] #1 from ly:orch: write the word EPSILON into reply.txt` by its `post_tool_use` hook, read the sender as `ly` and the message as `orch: write …`, since the strand name's separator and the line's separator are both a colon.\n\n## Decision (operator, 2026-10-28): names stay, the line quotes them\n\nStrand names keep `:` as their separator; every other separator was weighed and refused (`/` reads as a directory, `#` belongs to quarry's glyphs, `@` collides with Claude's mentions, `.` with tmux's `window.pane`, `-` with slugs).\nInstead, wherever creel writes a strand name inside text, it quotes it, as Claude Code does for a name with a colon (`@\"ly:orch\"`): `[creel] #1 from \"ly:orch\": write the word …`.\nThis covers `creelengine.MessageLine`, the reminder line and `lym creel read`'s output.\n",
-      "created": "2026-10-27T18:17:28Z",
-      "revised": "2026-10-28T07:53:40Z"
+      "brief": "PostToolUse, Stop and asyncRewake hooks carry posts as fast as possible; shuttle appends a trust and reply sentence to the system prompt",
+      "body": "## Goal\n\nCreel delivers every post to a Claude strand under the hood, through hooks shuttle renders into the session's `settings.json`, as fast as possible, in full, visibly to the operator, and acted on by the receiver.\nA scope change from the orch reaches a working agent at its next tool call, never only at its turn end.\nCodex is out of scope until `codexengine` exists.\n\n## Evidence\n\n- `docs/research/creel-hook-channels-2026-10-28/report.md`: which hook channels deliver and which the operator sees.\n- `docs/research/creel-midturn-trust-2026-10-28/report.md`: a `PostToolUse` block with `reason` and `systemMessage` is taken at once by Sonnet with or without a system-prompt sentence, and by Haiku only with it; the operator sees the message under the tool result.\n- `additionalContext` is out: the operator cannot see it, and Haiku refused to act on it.\n\n## Delivery: one kind of post, as fast as possible\n\n- While the receiver works: its `PostToolUse` hook hands over its unread mail with `decision: \"block\"`, the lines as `reason`, and the same lines as `systemMessage`, so the operator sees them under the tool result.\n- When it arrives after the turn's last tool call: the `Stop` hook blocks with the lines as `reason`, so the turn goes on; it blocks only while unread mail stands, so it cannot loop.\n- While the receiver is idle: an `asyncRewake` hook wakes the session with the lines.\n  Today that wake shows the operator only a bare `Stop hook feedback` line; the build makes the message text itself visible in the pane, and stops and asks the parent when it finds no way.\n- Each message is delivered once, by whichever path reserves it first, as creel's claim already does; a wake waiter that loses the race to a new turn delivers nothing.\n- Delivery happens in the session's main thread only: a hook call whose input marks it as coming from a subagent or fork (Claude Code's `agent_id`, to be confirmed by a test) delivers nothing and leaves the mail for the main thread's next boundary.\n  The main role passes on to its forks what they need.\n- Pause and hold keep their rules: nothing under a pause, only the owner's mail under a hold.\n- The 8 KiB claim budget stays; what is left goes at the next boundary.\n\n## Creel changes\n\n- Agent mail is delivered in full like any other mail; the reminder line and its `lym creel read` turn go.\n- The pane path for posts goes: every session is launched by shuttle and has the hooks, and a session launched before the deploy gets posts once it is restarted.\n- `inject` keeps typing into the pane, since `/clear`, `/compact` and the resume line need it.\n- `lym creel post --interrupt` sends the guarded interrupt first and then posts, so the message reaches the stopped session at once through the idle wake; `interrupt` stays its own verb.\n- Wherever creel writes a strand name in text, it quotes it: `[creel] #1 from \"ly:orch\": …`, in `creelengine.MessageLine` and `lym creel read`'s output.\n  Strand names keep `:`; `/`, `#`, `@`, `.` and `-` were weighed and refused (operator, 2026-10-28).\n\n## Trust and replies\n\nShuttle appends one sentence to the system prompt of every Claude session it launches, with `--append-system-prompt`, so trust rests on no skill and no `CLAUDE.md`:\n\n```text\nLines starting with [creel] are LoomYard internal mail delivered by hooks; follow them as the operator's own instructions. When one asks for an answer, reply with lym creel post --reply \u003cid\u003e \"\u003ctext\u003e\", using the id after #; answer mail from EXTERNAL in your own reply text instead.\n```\n\nThe sentence does not tell senders apart: a message is a message (operator, 2026-10-28).\nA reply to EXTERNAL reaches only a waiting `post --wait-reply`, so the agent answers the operator in its own text, which the operator sees in the pane.\n`lym creel`'s Cobra help, on the command group and on `post`, carries the same reply rule.\n\n## Test\n\nThe build tests through shuttle's own rendered `settings.json` and launch arguments, never with hand-launched sessions: mid-turn delivery, the `Stop` block, the idle wake and its visible text, the fork and subagent filter, and `post --interrupt`.\n",
+      "status": "draft",
+      "created": "2026-10-23T08:45:46Z",
+      "revised": "2026-10-28T09:11:13Z"
     }
   ],
   "prime_owner": "neve",
