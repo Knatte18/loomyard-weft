@@ -1,0 +1,216 @@
+{
+  "runGuid": "0f5adbbab22af2edd998c7fd0173d726",
+  "planFingerprint": "35ca57bea8bafb932a78062912e458b95b9916075274db11587bdfb3486b9a84",
+  "planFileHashes": {
+    "00-overview.md": "20d2d87e27845fcbdcb49f4963bc7cc0b8d678a16729ce1791846e0c69086569",
+    "01-finalize-merges-in-place.md": "9bd29242cba6c897e146cc6ad38c6f35b0447fd540cc77478fbe8a137d2624f2",
+    "02-escalate-halt-prefix.md": "71c1b8ec0eae9d909f4af3ccccb8d48f5e0c9020c25bdd19d4af2000b4d0ba8a",
+    "03-arbiter-judges-escalate-first.md": "9ce6b08d8cdae6c71263fcfb4152018f87481e116b7137c3b8f11d4e2e1a42d9",
+    "04-restep-hold-key.md": "72e95bbabe72b9bc63c656ee2c2d7411fc701c62d97f2f5164397eef1c4018aa"
+  },
+  "planOverviewFrameHash": "7f313af15efd3866fa6555cdd586959806afba2d7e0186e4a94e8a74c28555a7",
+  "partition": [
+    {
+      "cards": [
+        "01-finalize-merges-in-place"
+      ],
+      "profile": "wide",
+      "estimate": 202490,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54412,
+        "read_union": 74860,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 1068,
+            "reads": {
+              "file:contracts/recipes/darn-recipe.yaml": 2916,
+              "file:contracts/recipes/loom-recipe.yaml": 6708,
+              "file:contracts/recipes/pawl-recipe.yaml": 1860,
+              "file:contracts/stencils/loom/loom-rubric-code-review.md": 1536,
+              "file:contracts/stencils/orch/orch-template-role.md": 3252,
+              "file:docs/overview.md": 10200,
+              "file:internal/landingshed/doc.go": 2412,
+              "file:internal/landingshed/finalize.go": 12900,
+              "file:internal/landingshed/overlapnote.go": 408,
+              "file:internal/loomcli/doc.go": 3600,
+              "package:contracts/recipes": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:contracts/stencils/orch": 2000,
+              "package:docs": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:contracts/stencils/orch": 2000,
+              "tests:docs": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 240.5,
+            "written": 73218
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "02-escalate-halt-prefix"
+      ],
+      "profile": "wide",
+      "estimate": 204700,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61412,
+        "read_union": 54392,
+        "cards": [
+          {
+            "card": 2,
+            "card_text": 996,
+            "reads": {
+              "file:contracts/specs/landing-fixer-report-spec.md": 396,
+              "file:contracts/specs/loom-status-spec.md": 2280,
+              "file:contracts/stencils/orch/orch-template-role.md": 3252,
+              "file:docs/overview.md": 10200,
+              "file:internal/arbiterstop/doc.go": 264,
+              "file:internal/battenshed/doc.go": 2592,
+              "file:internal/landingshed/doc.go": 2412,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils/orch": 2000,
+              "package:docs": 2000,
+              "package:internal/arbiterstop": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/battenshed": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils/orch": 2000,
+              "tests:docs": 2000,
+              "tests:internal/arbiterstop": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenshed": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 293,
+            "written": 88896
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "03-arbiter-judges-escalate-first",
+        "04-restep-hold-key"
+      ],
+      "profile": "wide",
+      "estimate": 185854,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68412,
+        "read_union": 38152,
+        "cards": [
+          {
+            "card": 3,
+            "card_text": 516,
+            "reads": {
+              "file:PATTERN.md": 732,
+              "file:internal/sheddriver/doc.go": 1212,
+              "package:.": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/sheddriver": 2000,
+              "tests:.": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/sheddriver": 2000
+            },
+            "messages": 96.5,
+            "written": 29466
+          },
+          {
+            "card": 4,
+            "card_text": 624,
+            "reads": {
+              "file:contracts/specs/loom-status-spec.md": 2280,
+              "file:contracts/stencils/shed/shed-template-driver-guide.md": 1080,
+              "file:contracts/stencils/shed/shed-template-driver.md": 2184,
+              "file:internal/shedverbs/doc.go": 1524,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils/shed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedcli": 2000,
+              "package:internal/shedverbs": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils/shed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedcli": 2000,
+              "tests:internal/shedverbs": 2000
+            },
+            "messages": 164,
+            "written": 49824
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "cc9328600fc322351769081abc945991",
+  "masterSessionId": "fc8d23c0-9cc1-49a8-9f08-87222d5c1836",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "finalize-merges-in-place",
+      "cards": [
+        "01-finalize-merges-in-place"
+      ],
+      "cardHashes": {
+        "01-finalize-merges-in-place": "9bd29242cba6c897e146cc6ad38c6f35b0447fd540cc77478fbe8a137d2624f2"
+      },
+      "startSha": "546bc89cbe87f2a3b1ba06e5485ebe0bdc4575e2",
+      "kind": "fork",
+      "spawnedAt": "2026-10-28T10:24:54Z",
+      "sessionId": "fc8d23c0-9cc1-49a8-9f08-87222d5c1836",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
