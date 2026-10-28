@@ -811,6 +811,27 @@
       "body": "Imported from [issue #890](https://github.com/Knatte18/loomyard/issues/890).\n\nWhat happened: during `lym loom step` at the `Darn-Write` producer (seats engine), the trace shows `reed: tmux could not be started, retrying` with `fork/exec /usr/bin/tmux: resource temporarily unavailable`.\nAbout ten seconds later shuttle reported `state=dead cause=process-gone`, the run finished with `outcome=die`, and the step was refused with `shedadapters: Darn-Write (seats): shuttle run outcome died` and an empty `transient` field.\nThe loom halted as `failed` with anomaly `producer-hard-failure`.\n\nWhy it is abnormal: the death coincides with a transient host resource shortage, yet the refusal carries no transient marker, so the run went to a terminal `failed` state instead of a retry or a resumable pause.\nThe halt note gives no hint that resource exhaustion preceded the death.\n\nWhat to do: decide whether a `died` chair outcome that follows a tmux fork EAGAIN should be classed as transient, and either retry or surface the tmux error in the halt note.\n\nProvenance: task `hub-pull-verb`; notes `loom-halt.md`.\n",
       "created": "2026-10-28T11:33:22Z",
       "revised": "2026-10-28T11:33:22Z"
+    },
+    {
+      "id": 857,
+      "handle": "B4",
+      "slug": "resume-prompt-prior-work-none",
+      "title": "lym loom resume re-spawn prompt names prior work as (none) although the branch holds the first spawn's commit",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "loom",
+        "shed"
+      ],
+      "issues": [
+        889
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #889](https://github.com/Knatte18/loomyard/issues/889).\n\n## What happened\n\nAfter a run halted `blocked` at a producer, `lym loom resume` re-spawned the same producer.\nThe re-spawn's prompt named the prior work as `(none)`, while the branch already held the first spawn's commit and an archived summary.\n\n## Why it is abnormal\n\nThe resumed agent is told there is no earlier work although there is, so it can redo or conflict with existing commits, or miss that the failure it must fix is a gate failure on already-written code.\n\n## What to do\n\nHave the resume path populate the prior-work section of the re-spawn prompt from the branch's existing commits and the archived summary of the earlier spawn.\n\nProvenance: task `regression-harness`; note Darn-Write-2.md.\n",
+      "created": "2026-10-28T11:33:24Z",
+      "revised": "2026-10-28T11:33:24Z"
     }
   ],
   "prime_owner": "neve",
