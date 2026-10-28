@@ -871,7 +871,7 @@
       "isolated": false,
       "brief": "",
       "body": "## A racing async push reports a divergence that is already gone (was note `async-push-race-false-divergence`)\n\nImported from [issue #879](https://github.com/Knatte18/loomyard/issues/879).\n\n#### Seen (beam-start-and-ownership, 2026-10-26)\n\nWithin minutes, `ly:FABRIC` sent the orch two `not_fast_forward` notices for one run on one machine: first for its code branch, then for its records branch.\nEach way forward named a `git merge` or `git reset --keep`, and the records notice said \"another machine wrote the same paths\" with `paths: none`.\nA fetch right after each notice showed nothing on origin the local branch lacked: a concurrent push had already landed, and the next push was a plain fast-forward.\nTwo asynchronous pushes of the same branch raced, and the loser reported a divergence that no longer existed.\n\n#### Idea\n\n- A rejected push fetches origin again before it reports: when origin is now an ancestor of the local tip, it retries the push instead of sending a notice.\n- The notice names another machine only when origin's commits carry another machine's name, and never with `paths: none`.\n",
-      "status": "running · Code-Burler-Review",
+      "status": "running · Code-Burler-Fix",
       "created": "2026-10-28T11:33:42Z",
       "revised": "2026-10-28T11:40:41Z"
     },
