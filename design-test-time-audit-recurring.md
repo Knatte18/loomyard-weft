@@ -1,6 +1,6 @@
 # Recurring test-suite time and growth audit
 
-`test-time-audit-recurring` · Task · research, gate
+`test-time-audit-recurring` · Task · research, gate · running · Worktree-Create
 
 ## What this is
 
