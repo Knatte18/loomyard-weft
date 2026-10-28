@@ -1,6 +1,6 @@
 # A merge fixer change over the caps gets a solo review of its own commits, not a full Code review
 
-`fixer-overcap-review` · Task · enhancement, loom, burler · running · PR-Review
+`fixer-overcap-review` · Task · enhancement, loom, burler · running · Finalize
 
 ## Seen
 
