@@ -1,47 +1,40 @@
-# Pull the whole hub with `lym fabric pull --hub`, safe beside a live orch
+# Add `lym fabric pull --hub` to pull the whole hub in one verb
 
-Getting a hub up to date used to take separate pulls of Bolt and of each pair's warp and weft, and some of those refused or raced while the orch, a dobby or a run wrote the board.
-`lym fabric pull --hub` now pulls Bolt, the prime pair and every local beam pair in one call, from any warp worktree of the hub, and reports per side what moved or why it stopped.
+Bringing a hub up to date took separate pulls of the prime's warp and weft and of Bolt, and some of them refused or raced while the orch, a dobby or a run was writing the board.
+`lym fabric pull --hub`, run from any warp worktree of the hub, now pulls Bolt, the prime pair and every local beam pair, and reports per side what moved or why it stopped.
+Plain `lym fabric pull` is unchanged, and `--hub` adds no new reach: it runs paths a plain pull and a board write already run, and the role guard that refuses `pull` from a task session refuses it with the flag too.
 
-## What changed
+## Behavior
 
-- `fabricengine.PullHub` pulls the sides in a fixed order: Bolt, then the prime pair, then each local beam pair in `git worktree list` order.
-  A side that stops never keeps the next one from running.
-  Each side is reported as `moved`, `up_to_date` or `stopped`, and a stop's detail is the way forward its own path already names.
-- `Bolt.Pull` takes the board write lock and runs the pull-first path a board write runs, which also takes the board's push lock.
-  A Bolt pull therefore never interleaves with a board write or a coalesced push.
-- Each pair goes through the existing `Fabric.Pull` while the caller's `PairLock` holds the parent lock of its code branch, the lock a landing into that branch takes.
-  The lock is held for that one pair only.
+- Sides run in a fixed order: Bolt, the prime pair, then each local beam in `git worktree list` order.
+  A side that stops never keeps the next side from running.
+- Bolt is pulled through the new `Bolt.Pull` under the board write lock, then the existing pull-first path, which takes the push lock.
+  A pull therefore never interleaves with a board write or a coalesced push.
+- Each pair is pulled under the parent lock of its code branch, the lock a landing into that branch takes, so a pull never moves the branch under a landing in progress.
+  The wait is unbounded except for Ctrl-C, the notice on stderr names the holder, and the lock is held for one pair's pull only.
 - A local beam is a pair present on this machine whose origin record carries the beam mark, whatever machine owns it.
-  A beam whose code branch has no upstream is reported `up_to_date` without taking the lock.
-  Task pairs are left to their own runs.
-- In the CLI, `--hub` on `lym fabric pull` resolves the prime and passes the parent-lock seam `lym fabric anchor` already used.
-  `acquireBranchLock` now takes the verb, so the lock owner's run id (`fabric-pull`) and the stderr wait notice name the right verb.
-  The envelope's `sides` lists `kind`, `worktree`, `outcome` and `detail` per side.
-  Any stopped side makes the output an error envelope that names the stopped sides and still lists every side.
-- The `lym fabric pull` help gained the `--hub` paragraph, and its existing bullets were tightened.
-  `internal/fabriccli/doc.go` and `internal/fabricengine/doc.go` each gained a hub-pull section.
+  Task pairs are not pulled, and nothing is pushed.
+- A beam whose code branch has no upstream is reported `up_to_date`, since a beam made with no push has nothing to pull from.
+- A beam whose origin record cannot be read is reported as a stopped beam side, and the remaining beams are still pulled.
+- With `FABRIC_SKIP_GIT=1` every side is reported `up_to_date`.
+- The envelope carries one entry per side under `sides`, with `kind` (`board`, `prime` or `beam`), `worktree`, `outcome` (`moved`, `up_to_date` or `stopped`) and `detail`.
+  A stop's detail is the way forward its own path already names, such as the dirty-warp refusal for the prime.
+  Any stop makes the envelope an error envelope that still carries every side, as `lym fabric reconcile` does, and the exit is non-zero.
 
-## Design decisions
+## Design notes
 
-- `--hub` is a flag on the existing pull verb rather than a new verb, so the operator keeps one pull verb.
-  The role guard that refuses `pull` from a task session refuses it with the flag too.
-- A held parent lock is waited for, as `lym fabric anchor` waits, instead of being reported as a stop.
-  Ctrl-C ends the wait through the command context.
-- The board write lock is held for the Bolt side only, never across the pair pulls, so a long pair pull never stalls board writes.
-- A pair whose records side could not reach origin is reported `stopped`, since `Fabric.Pull` only warns about it and would otherwise read as up to date.
-- Moving the prime's or a beam's branch outside a run's Finalize is a departure from `PATTERN-parent-lock`, recorded as a `Pattern-Departure` trailer on the engine commit.
-  The plain pull in the prime already moves that branch outside any run.
-  The hub pull does it under the branch's parent lock, so it never moves a branch while a landing is in progress.
+- Git runs only in `internal/fabricengine` (`PullHub`); `internal/fabriccli` passes the parent-lock seam.
+- `acquireBranchLock`, which `lym fabric anchor` used with a fixed run id, now takes the verb name.
+  The lock owner's run id is `fabric-<verb>` and the wait notice names `lym fabric <verb>`, so the anchor verb's behavior is unchanged and the hub pull identifies itself as `fabric-pull`.
+- This departs from PATTERN-parent-lock, which has a local parent branch move only in a run's Finalize.
+  The plain `lym fabric pull` in the prime already moves that branch outside a run; the hub pull moves it the same way, but under the branch's parent lock.
+- The prime's dirty warp stops the prime side with the existing refusal text; the hub pull stashes nothing.
 
-## Tests
+Docs: the `pull` help text, and the `doc.go` of `internal/fabriccli` and `internal/fabricengine`.
 
-`internal/fabricengine/hubpull_integration_test.go` (tier 1) pins:
-- every moved side pulled, then all sides `up_to_date` with no mutations;
-- a dirty prime stopping with `ErrWarpDirty` while Bolt still moves;
-- a beam with no upstream taking no lock;
-- each pair's pull falling between taking and releasing its lock;
-- `Bolt.Pull` waiting for a held board write lock.
+## Check by hand
 
-`internal/fabriccli/hubpull_integration_test.go` (tier 1) drives the verb from a task pair through the real parent lock.
-It checks the clean and the stopped envelope, the exit code, and that no parent lock is left held.
+- The tests are hermetic fixtures and none ran a real hub: run `lym fabric pull --hub` once against a live hub while the orch is running, with origin ahead on Bolt, the prime and a beam.
+- A long landing holds the parent lock for minutes and the hub pull waits for it; confirm the wait notice names the holder.
+- The wait on a held parent lock is pinned by the CLI test `TestRunHubPull_WaitsForAHeldParentLock`; cancelling the command during the wait (Ctrl-C) leaves that pair stopped with the later sides still pulled, and no test covers it.
+- A moving side after a stopped side is pinned in `TestPullHub_StoppedSideLeavesTheOthersPulled`; check that a pushed, origin-moved beam listed after a dirty prime is still reported `moved`.
