@@ -39,7 +39,7 @@ From `docs/research/codex-feasibility.md`, section 3, after the spike:
 
 The Codex account is ChatGPT Pro (the 100 tier, plan `prolite` in the rollouts), bought for testing and benching, not yet for production use: every Codex bench states an exact, small cap on runs.
 The weekly budget is getting used up: prefer a desk study over a new Codex run, and spend Codex runs sparingly (operator, 2026-10-27).
-No further Codex bench in the week of 2026-10-27: the forked Astra fan at medium effort with block v2 is the setup, and the next step is building, starting with step 1 below, whose design is discussed with the operator before it goes on the board (operator, 2026-10-27).
+The forked Astra fan at medium effort with block v2 is the setup, and the next step is building, starting with step 1 below, whose design is discussed with the operator before it goes on the board (operator, 2026-10-27).
 Pro has a weekly window and no 5-hour window; a forked Astra fan run on one plan costs a few points of the week.
 Codex effort is at most `high`: `xhigh` and above cost too much (operator, 2026-10-27).
 A Codex reviewer always gets the context a Claude reviewer of the same round gets, the PATTERN overview and the repository's agent instructions included (operator, 2026-10-27).
@@ -81,6 +81,10 @@ Three benches of 2026-10-27 tried block v2 (reading directions revised) with the
 - `docs/research/codex-v2-p4-bench-2026-10-27/report.md` (`P4`): high found 3 of 11 and 1 of 3 `BLOCKING`, medium runs 2 and 3; block v2 did not beat v1 (4 and 3), and no run reached `F1`, the owner guard on `retryWeftPush`. The two medium runs share one fan finding and each holds a `BLOCKING` finding the other lacks.
 - `docs/research/codex-p2-gap-texts-bench-2026-10-27/report.md` (`P2`, `quarry-csharp`, Claude fan 13 findings): adding three texts from `docs/research/claude-review-gaps-2026-10-27/report.md` (Proposals 1, 2 and 4) did not measurably change the yield (12 findings at 500k fresh tokens against 10 at 429k); the `way-forward` fork found nothing in any `P2` run, and one run returned `APPROVED` where the fan blocks.
 None ranks a setting; two medium runs of one setting differ as much as any setting from another.
+
+`docs/research/codex-code-review-bench-2026-10-28/report.md`, the first bench over code: the forked Astra fan at medium with block v2 reviewed two landed darn diffs twice each against the Claude Code-Review fan (`sonnet` at medium).
+It found 2 of 5 and 3 of 6 fan findings, the same ones in both runs of an input, and missed the fan's one `BLOCKING` finding; it misses divergences from the decision record and acceptance criteria, and on one input it found two real PATTERN violations the fan lacks.
+It does not stand in for the Claude Code-Review fan as it ran there.
 
 ## Goal (operator, 2026-10-27)
 
