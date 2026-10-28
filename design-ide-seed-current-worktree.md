@@ -1,6 +1,6 @@
 # VS Code colours by project and worktree, and lym ide seed with no slug
 
-`ide-seed-current-worktree` · Task · enhancement, ide, workspaces · running · PR-Review
+`ide-seed-current-worktree` · Task · enhancement, ide, workspaces · running · Finalize
 
 ## Seen
 
