@@ -1,0 +1,28 @@
+# Relevant files
+
+- `internal/landingshed/finalize.go` `Finalize.Call`, `mergeParent`, `mergeIntoTask`, `judgeParentMerge`, `gateAndFix`, `keepFixerCommits`, `reroute` — the merge, large-merge reroute and fixer paths D1 and D2 change
+- `internal/landingshed/deps.go` `ConflictReroutes`, `LargeMergeLands`, `RerouteReviewed` — the per-recipe flags D2 removes and the review seam that stays
+- `internal/landingshed/handback.go` `HandsBack` — the hand-back predicate D3 narrows
+- `internal/landingshed/fixerrun.go` `LandingStopPrefix`, `fixerOutcome.haltReason` — where the escalate halt reason is worded
+- `internal/landingshed/fixerreport.go` `FixerEscalate` — the escalate verdict
+- `internal/landingshed/overlapnote.go` `WriteOverlapNote`, `OverlapNotePath` — the note D2 removes
+- `internal/landingshed/doc.go` — package doc rewritten for D1 to D3
+- `internal/loomcli/landingdeps.go` `landingDeps`, `rerouteReviewed` — sets the flags per recipe
+- `internal/loomcli/subjects.go` `overlapNoteInput` — darn's review input read from the overlap note
+- `internal/loomcli/darnwiring.go` — wires darn's `ReviewInput` to the overlap note
+- `internal/loomcli/drivewiring.go` `loomArbiterSeam` — marks Webster as judged first; D4 adds the landing escalate
+- `internal/loomcli/arbiterprompt.go` `arbiterRepairVerbs` — already lists `lym loom decision add`
+- `internal/sheddriver/drive.go` `ArbiterSeam.JudgesFirst`, `goDriver.facts` — the seam D4 extends with the reason
+- `internal/sheddriver/doc.go` — rule table text naming JudgesFirst and loom's wiring
+- `internal/arbiterstop/arbiterstop.go` `HandsBack`, `Eligibility`, `Check` — reads landing halts through `landingshed.HandsBack`
+- `internal/arbiterstop/doc.go` — eligibility doc naming landing halts
+- `contracts/recipes/loom-recipe.yaml` — header and Finalize row comments on the reroute edge
+- `contracts/recipes/darn-recipe.yaml` — header and Finalize row comments on the reroute edge
+- `contracts/stencils/orch/orch-template-role.md` — the `Landing halts` section D5 rewrites
+- `contracts/stencils/loom/loom-rubric-code-review.md` — review-input paragraph naming the overlap note
+- `contracts/stencils/loom/loom-template-arbiter.md` — arbiter rules on resume gotos and hand-on, unchanged
+- `contracts/specs/landing-fixer-report-spec.md` — says an escalate halts to the orch
+- `docs/overview.md` — Finalize and landing-halt lines
+- `internal/battenshed/innerrun_binaryrestep.go` `binaryRestep` — skips a stop its `HandBack` seam marks; D3 adds the escalate
+- `internal/battenshed/doc.go` — binary re-step paragraph naming landing halts
+- `internal/sheddriver/driverules.go` `binaryEligible` — the build hand-over row that precedes the arbiter-first row
