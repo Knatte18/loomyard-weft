@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-28 12:14 UTC; every age below is as of then.
+Rendered 2026-10-28 12:15 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -38,14 +38,14 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Creel delivers every post to a Claude strand through hooks, visibly and in full**<br>• PostToolUse, Stop and asyncRewake hooks carry posts as fast as possible; shuttle appends a trust and reply sentence to the system prompt | [`creel-hook-post`](design-creel-hook-post.md) | loom | Parent-Align | neve | 5d<br>3h | creel, shuttle, claude |
-| T2 | **Gate and agent runs survive transient task-limit pressure and run in the anchor**<br>• `profile: solid` | [`gate-robustness`](design-gate-robustness.md) | darn | Code-Burler-Review | neve | 40m<br>33m | gate, shuttle, dotnet, batten, loom |
-| T3 | **Codex hook delivery spike**<br>• Six Codex runs on Luna low: can Codex take creel posts through hooks like Claude does<br>• `profile: docs` | [`codex-hook-spike`](design-codex-hook-spike.md) | darn | Finalize | neve | 18m<br>18m | codex, creel |
+| T1 | **Creel delivers every post to a Claude strand through hooks, visibly and in full**<br>• PostToolUse, Stop and asyncRewake hooks carry posts as fast as possible; shuttle appends a trust and reply sentence to the system prompt | [`creel-hook-post`](design-creel-hook-post.md) | loom | Code-Bouncer | neve | 5d<br>3h | creel, shuttle, claude |
+| T2 | **Gate and agent runs survive transient task-limit pressure and run in the anchor**<br>• `profile: solid` | [`gate-robustness`](design-gate-robustness.md) | darn | Code-Burler-Review | neve | 41m<br>34m | gate, shuttle, dotnet, batten, loom |
+| T3 | **Codex hook delivery spike**<br>• Six Codex runs on Luna low: can Codex take creel posts through hooks like Claude does<br>• `profile: docs` | [`codex-hook-spike`](design-codex-hook-spike.md) | darn | Finalize | neve | 19m<br>19m | codex, creel |
 | T4 | **Machine checks in validate-discussion and validate-plan for recurring review findings**<br>• Citation and acceptance checks for the decision record; seam-test, tier-tag and doc.go checks for plan cards<br>• `profile: solid` | [`validator-checks`](design-validator-checks.md) | loom | Plan-Burler-Fix | neve | 1h<br>1h | loom, stencil |
-| T6 | **A transient fork EAGAIN or died tmux session does not end a loom run hard**<br>• `profile: solid` | [`transient-halt-recovery`](design-transient-halt-recovery.md) | darn | Code-Burler-Review | neve | 40m<br>33m | loom, shed, shuttle, reed, fabric |
-| T7 | **lym loom resume names prior work and honours a recorded wait decision** | [`resume-fixes`](design-resume-fixes.md) | darn | Finalize | neve | 40m<br>33m | loom, shed |
-| T8 | **Webster recovery has a way forward, and its audit accepts a sanctioned gate test** | [`webster-recovery`](design-webster-recovery.md) | darn | Code-Burler-Fix | neve | 40m<br>33m | webster |
-| T11 | **A racing async push reports no divergence that is already gone** | [`async-push-race`](design-async-push-race.md) | darn | Code-Burler-Fix | neve | 40m<br>33m | fabric |
+| T6 | **A transient fork EAGAIN or died tmux session does not end a loom run hard**<br>• `profile: solid` | [`transient-halt-recovery`](design-transient-halt-recovery.md) | darn | Code-Burler-Review | neve | 41m<br>34m | loom, shed, shuttle, reed, fabric |
+| T7 | **lym loom resume names prior work and honours a recorded wait decision** | [`resume-fixes`](design-resume-fixes.md) | darn | Finalize | neve | 41m<br>34m | loom, shed |
+| T8 | **Webster recovery has a way forward, and its audit accepts a sanctioned gate test** | [`webster-recovery`](design-webster-recovery.md) | darn | Code-Burler-Fix | neve | 41m<br>34m | webster |
+| T11 | **A racing async push reports no divergence that is already gone** | [`async-push-race`](design-async-push-race.md) | darn | Code-Burler-Fix | neve | 41m<br>34m | fabric |
 
 ### Ready (0)
 
@@ -77,11 +77,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Beam promote keeps the Discussion record as part of the beam**<br>• When Discussion finds a task should be a project, promote carries its decision record into the beam instead of dropping it | [`beam-promote-keeps-discussion`](design-beam-promote-keeps-discussion.md) | 2d<br>1d | workspaces, batten, loom |
-| E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>20h | shuttle, codex |
+| E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>21h | shuttle, codex |
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 21h<br>18h | batten, stencil, config |
-| E4 |  | **The dobby holds a new run start while the user slice nears its task limit**<br>• Hold new run starts when the user slice pids.current nears pids.max | [`dobby-task-limit-hold`](design-dobby-task-limit-hold.md) | 8m<br>8m | batten |
+| E4 |  | **The dobby holds a new run start while the user slice nears its task limit**<br>• Hold new run starts when the user slice pids.current nears pids.max | [`dobby-task-limit-hold`](design-dobby-task-limit-hold.md) | 9m<br>9m | batten |
 | E5 |  | **Decide the layout of projects in the board README**<br>• The operator is not satisfied with how the README renders projects and their members; the layout is to be decided | [`board-projects-layout`](design-board-projects-layout.md) | 3d<br>21h | board |
-| E6 |  | **Board README: one rendered file per project, research notes first**<br>• Each project renders its own file linked from its parent; README.md is the root project; research notes come right after tasks | [`readme-per-project-files`](design-readme-per-project-files.md) | 2d<br>20h | board |
+| E6 |  | **Board README: one rendered file per project, research notes first**<br>• Each project renders its own file linked from its parent; README.md is the root project; research notes come right after tasks | [`readme-per-project-files`](design-readme-per-project-files.md) | 2d<br>21h | board |
 | E7 |  | **Run verbs in one shared namespace, not under lym loom**<br>• lym loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 13d<br>1d | shed, loom |
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 2w<br>1d | burler, stencil |
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 13d<br>13d | board, loom |
