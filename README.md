@@ -42,7 +42,7 @@ Held by a run; its scope is locked until the run ends.
 | T2 | **A landing merges a moved parent in Finalize and sends a fixer escalate to the arbiter first**<br>• No Finalize reroute to Parent-Align for a moved parent, and a landing fixer escalate reaches the orch only as the arbiter hand-on | [`landing-settles-in-place`](design-landing-settles-in-place.md) | loom | Discussion-Write | neve | 4d<br>0m | loom, batten, shed |
 | T3 | **Audit the review setup: rounds per perch, per-lens worth, finding classes**<br>• One audit over loom runs landed since per-lens reports were kept, from records only<br>• `profile: docs` | [`review-setup-audit`](design-review-setup-audit.md) | darn | Worktree-Create | neve | 12d<br> | burler, loom, stencil |
 | T4 | **One verb that pulls the whole hub, Bolt included, while the orch runs**<br>• Pull the prime pair, Bolt and local beams in one safe verb | [`hub-pull-verb`](design-hub-pull-verb.md) | darn | Darn-Write | neve | 23h<br>0m | fabric, board |
-| T5 | **VS Code colours by project and worktree, and lym ide seed with no slug**<br>• Title bar shows the project (prime or beam), the activity bar the worktree; text colour by luminance; ide seed with no slug seeds the current worktree | [`ide-seed-current-worktree`](design-ide-seed-current-worktree.md) | darn | Worktree-Create | neve | 1d<br>0m | ide, workspaces |
+| T5 | **VS Code colours by project and worktree, and lym ide seed with no slug**<br>• Title bar shows the project (prime or beam), the activity bar the worktree; text colour by luminance; ide seed with no slug seeds the current worktree | [`ide-seed-current-worktree`](design-ide-seed-current-worktree.md) | darn | Darn-Write | neve | 1d<br>0m | ide, workspaces |
 
 ### Ready (0)
 
