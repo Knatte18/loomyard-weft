@@ -1,6 +1,6 @@
 # Audit where agent turns go and which could be merged
 
-`turn-audit` · Task · research, stencil, shuttle, loom, webster · running · Drift-Verify
+`turn-audit` · Task · research, stencil, shuttle, loom, webster · running · Finalize
 
 ## Question
 
