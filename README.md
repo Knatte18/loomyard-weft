@@ -42,11 +42,13 @@ Held by a run; its scope is locked until the run ends.
 | T2 | **No test is skipped by design**<br>• Windows-only tests count as skips on Linux, and TestBuildLoomShed_OutputShape skips on every machine | [`test-skips-os-tags`](design-test-skips-os-tags.md) | darn | Darn-Write | neve | 2d<br>15m | testkit, reed, loom, fabric, gate |
 | T3 | **Move rules about lym behaviour out of this repo's CLAUDE.md into lym code and stencils** | [`claude-md-lym-rules-out`](design-claude-md-lym-rules-out.md) | darn | Finalize | neve | 6d<br>15m | stencil, board, loom |
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T5 | **Bench: the forked Codex Astra fan as Code reviewer on two darn diffs**<br>• 4 codex exec runs at medium: 2 landed darn diffs, twice each, graded against the Claude Code-Review fan<br>• `profile: docs` | [`codex-code-review-bench`](design-codex-code-review-bench.md) | darn |  | 0m<br>0m | codex, burler |
 
 ### Layer A (1)
 
@@ -55,14 +57,6 @@ Waits only on Running, Ready or Draft entries.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent<br>• `profile: solid` | [`creel-agents`](design-creel-agents.md) | loom | `claude-md-lym-rules-out` | 13d<br>14m | creel, shuttle, loom, stencil, report |
-
-### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T5 | `draft` **Bench: the forked Codex Astra fan as Code reviewer on two darn diffs**<br>• 4 codex exec runs at medium: 2 landed darn diffs, twice each, graded against the Claude Code-Review fan<br>• `profile: docs` | [`codex-code-review-bench`](design-codex-code-review-bench.md) | darn |  | 0m<br>0m | codex, burler |
 
 ## Notes (25)
 
