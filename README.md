@@ -43,19 +43,13 @@ Held by a run; its scope is locked until the run ends.
 | T4 | **One verb that pulls the whole hub, Bolt included, while the orch runs**<br>• Pull the prime pair, Bolt and local beams in one safe verb | [`hub-pull-verb`](design-hub-pull-verb.md) | darn | Darn-Write | neve | 23h<br>17m | fabric, board |
 | T5 | **VS Code colours by project and worktree, and lym ide seed with no slug**<br>• Title bar shows the project (prime or beam), the activity bar the worktree; text colour by luminance; ide seed with no slug seeds the current worktree | [`ide-seed-current-worktree`](design-ide-seed-current-worktree.md) | darn | Darn-Write | neve | 1d<br>17m | ide, workspaces |
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
-
-### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **Audit where agent turns go and which could be merged**<br>• Calls per turn, mergeable serial turns and the read-then-edit-then-test pattern per role, from transcripts only<br>• `profile: docs` | [`turn-audit`](design-turn-audit.md) | darn |  | 0m<br>0m | stencil, shuttle, loom, webster |
+| T3 | **Audit where agent turns go and which could be merged**<br>• Calls per turn, mergeable serial turns and the read-then-edit-then-test pattern per role, from transcripts only<br>• `profile: docs` | [`turn-audit`](design-turn-audit.md) | darn |  | 0m<br>0m | stencil, shuttle, loom, webster |
 
 ## Notes (33)
 
