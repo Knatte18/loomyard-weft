@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Parent-Align",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Drift-Await → skipped",
+    "now": "Parent-Align",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -283,6 +283,33 @@
       "output": "",
       "at": "2026-10-28T12:25:28Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/validator-checks/_lym/webster/summary.md",
+      "at": "2026-10-28T13:37:54Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-28T13:31:44.618867071Z",
+          "end": "2026-10-28T13:34:42.199070936Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-28T13:34:42.58737745Z",
+          "end": "2026-10-28T13:36:23.864828447Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-28T13:36:23.890525552Z",
+          "end": "2026-10-28T13:37:54.063098466Z"
+        }
+      ]
     }
   ],
   "product": {
