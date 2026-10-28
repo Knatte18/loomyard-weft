@@ -1,0 +1,380 @@
+diff --git a/internal/loomcli/darnwiring.go b/internal/loomcli/darnwiring.go
+index 2a899073..17843f79 100644
+--- a/internal/loomcli/darnwiring.go
++++ b/internal/loomcli/darnwiring.go
+@@ -7,6 +7,7 @@ import (
+ 	"errors"
+ 	"fmt"
+ 	"io/fs"
++	"os"
+ 	"path/filepath"
+ 	"strings"
+ 
+@@ -114,9 +115,11 @@ func darnTreeScope(l *lymcwd.Location) func(gateKey string) (string, bool, error
+ }
+ 
+ // latestDarnOutcome returns the latest Darn-Write history entry of the status file at statusPath, locked by statusLockPath.
+-// Reason is the status file's error while the run is halted at the Darn-Write row, and empty otherwise.
+-// An absent status file and a history with no Darn-Write entry report not found.
+-func latestDarnOutcome(statusPath, statusLockPath string) (loomshed.DarnOutcome, bool, error) {
++// FindingsPath is findingsPath when that file exists, and empty otherwise:
++// the kept findings outlive the resume write that clears the status file's error before the row is called.
++// Reroute, goto and skipped entries record no spawn that did work, so they are passed over.
++// An absent status file and a history with no other Darn-Write entry report not found.
++func latestDarnOutcome(statusPath, statusLockPath, findingsPath string) (loomshed.DarnOutcome, bool, error) {
+ 	st, found, err := state.ReadJSON[shedengine.Status](statusPath, statusLockPath)
+ 	// A run directory not yet created fails the lock open with not-exist; that is an absent status file too.
+ 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+@@ -126,13 +129,15 @@ func latestDarnOutcome(statusPath, statusLockPath string) (loomshed.DarnOutcome,
+ 		return loomshed.DarnOutcome{}, false, nil
+ 	}
+ 	for i := len(st.History) - 1; i >= 0; i-- {
+-		if st.History[i].Producer != loomshed.NameDarnWrite || st.History[i].Outcome == shedengine.OutcomeReroute {
++		entry := st.History[i]
++		if entry.Producer != loomshed.NameDarnWrite || entry.Outcome == shedengine.OutcomeReroute || entry.Outcome == shedengine.OutcomeGoto || entry.Outcome == shedengine.OutcomeSkipped {
+ 			continue
+ 		}
+-		latest := loomshed.DarnOutcome{Outcome: st.History[i].Outcome}
+-		halted := st.State == shedengine.StateBlocked || st.State == shedengine.StateAwaiting || st.State == shedengine.StateFailed
+-		if halted && st.CurrentProducer == loomshed.NameDarnWrite {
+-			latest.Reason = st.Error
++		latest := loomshed.DarnOutcome{Outcome: entry.Outcome}
++		if _, err := os.Stat(findingsPath); err == nil {
++			latest.FindingsPath = findingsPath
++		} else if !errors.Is(err, fs.ErrNotExist) {
++			return loomshed.DarnOutcome{}, false, err
+ 		}
+ 		return latest, true, nil
+ 	}
+@@ -150,7 +155,7 @@ func darnDeps(l *lymcwd.Location, runID string) loomshed.DarnDeps {
+ 			return err
+ 		},
+ 		LatestOutcome: func() (loomshed.DarnOutcome, bool, error) {
+-			return latestDarnOutcome(shedrun.StatusFile(l, runID), shedrun.StatusLock(l, runID))
++			return latestDarnOutcome(shedrun.StatusFile(l, runID), shedrun.StatusLock(l, runID), shedrun.GateFindingsFile(l, runID, loomshed.NameDarnWrite))
+ 		},
+ 	}
+ }
+diff --git a/internal/loomcli/wiring_darn_test.go b/internal/loomcli/wiring_darn_test.go
+index bd45b4e2..7dd4869d 100644
+--- a/internal/loomcli/wiring_darn_test.go
++++ b/internal/loomcli/wiring_darn_test.go
+@@ -409,35 +409,60 @@ func TestLatestDarnOutcome(t *testing.T) {
+ 	t.Parallel()
+ 
+ 	tests := []struct {
+-		name      string
+-		status    *shedengine.Status
+-		wantFound bool
+-		want      loomshed.DarnOutcome
++		name   string
++		status *shedengine.Status
++		// findingsKept writes the row's gate findings file before the read.
++		findingsKept bool
++		wantFound    bool
++		want         loomshed.DarnOutcome
++		// wantFindings expects the outcome to name the kept findings file.
++		wantFindings bool
++		// invalidPath gives the findings path a NUL byte, so stat fails with an invalid-argument error on every platform.
++		invalidPath bool
++		wantErr     bool
+ 	}{
+ 		{name: "absent status file"},
+ 		{name: "no Darn-Write entry", status: &shedengine.Status{History: []shedengine.HistoryEntry{{Producer: loomshed.NamePreflight, Outcome: shedengine.Done}}}},
+ 		{
+-			name:      "latest Darn-Write entry of a run that moved on carries no reason",
++			name:      "latest Darn-Write entry of a run that moved on, with no findings kept",
+ 			status:    &shedengine.Status{CurrentProducer: loomshed.NameFinalize, State: shedengine.StateRunning, Error: "stale", History: []shedengine.HistoryEntry{{Producer: loomshed.NameDarnWrite, Outcome: shedengine.Stuck}, {Producer: loomshed.NameDarnWrite, Outcome: shedengine.Done}}},
+ 			wantFound: true,
+ 			want:      loomshed.DarnOutcome{Outcome: shedengine.Done},
+ 		},
+ 		{
+-			name:      "halted at Darn-Write carries the status error",
+-			status:    &shedengine.Status{CurrentProducer: loomshed.NameDarnWrite, State: shedengine.StateBlocked, Error: "verify gate failed", History: []shedengine.HistoryEntry{{Producer: loomshed.NameDarnWrite, Outcome: shedengine.Stuck}}},
+-			wantFound: true,
+-			want:      loomshed.DarnOutcome{Outcome: shedengine.Stuck, Reason: "verify gate failed"},
++			name:         "a resumed run, its error cleared, names the kept findings",
++			status:       &shedengine.Status{CurrentProducer: loomshed.NameDarnWrite, State: shedengine.StateRunning, History: []shedengine.HistoryEntry{{Producer: loomshed.NameDarnWrite, Outcome: shedengine.Stuck}}},
++			findingsKept: true,
++			wantFound:    true,
++			want:         loomshed.DarnOutcome{Outcome: shedengine.Stuck},
++			wantFindings: true,
+ 		},
+ 		{
+-			name:      "a Darn-Write reroute entry is skipped for the last real halt",
+-			status:    &shedengine.Status{CurrentProducer: loomshed.NameDarnWrite, State: shedengine.StateBlocked, Error: "verify gate failed", History: []shedengine.HistoryEntry{{Producer: loomshed.NameDarnWrite, Outcome: shedengine.Stuck}, {Producer: loomshed.NameDarnWrite, Outcome: shedengine.OutcomeReroute}}},
+-			wantFound: true,
+-			want:      loomshed.DarnOutcome{Outcome: shedengine.Stuck, Reason: "verify gate failed"},
++			name:         "a Darn-Write reroute entry is skipped for the last real entry",
++			status:       &shedengine.Status{CurrentProducer: loomshed.NameDarnWrite, State: shedengine.StateBlocked, Error: "verify gate failed", History: []shedengine.HistoryEntry{{Producer: loomshed.NameDarnWrite, Outcome: shedengine.Stuck}, {Producer: loomshed.NameDarnWrite, Outcome: shedengine.OutcomeReroute}}},
++			findingsKept: true,
++			wantFound:    true,
++			want:         loomshed.DarnOutcome{Outcome: shedengine.Stuck},
++			wantFindings: true,
+ 		},
+ 		{
+ 			name:   "a lone Darn-Write reroute entry reports not found",
+ 			status: &shedengine.Status{CurrentProducer: loomshed.NameParentAlign, State: shedengine.StateRunning, History: []shedengine.HistoryEntry{{Producer: loomshed.NameDarnWrite, Outcome: shedengine.OutcomeReroute}}},
+ 		},
++		{
++			name:        "a findings path that cannot be statted is returned as the error",
++			status:      &shedengine.Status{CurrentProducer: loomshed.NameDarnWrite, State: shedengine.StateRunning, History: []shedengine.HistoryEntry{{Producer: loomshed.NameDarnWrite, Outcome: shedengine.Stuck}}},
++			invalidPath: true,
++			wantErr:     true,
++		},
++		{
++			name:   "a lone Darn-Write goto entry reports not found",
++			status: &shedengine.Status{CurrentProducer: loomshed.NameDarnWrite, State: shedengine.StateRunning, History: []shedengine.HistoryEntry{{Producer: loomshed.NameDarnWrite, Outcome: shedengine.OutcomeGoto}}},
++		},
++		{
++			name:   "a lone Darn-Write skipped entry reports not found",
++			status: &shedengine.Status{CurrentProducer: loomshed.NameFinalize, State: shedengine.StateRunning, History: []shedengine.HistoryEntry{{Producer: loomshed.NameDarnWrite, Outcome: shedengine.OutcomeSkipped}}},
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -450,17 +475,64 @@ func TestLatestDarnOutcome(t *testing.T) {
+ 					t.Fatalf("WriteJSON() = %v; want nil", err)
+ 				}
+ 			}
+-			got, found, err := latestDarnOutcome(statusPath, lockPath)
++			findingsPath := filepath.Join(dir, "Darn-Write.findings.md")
++			if tt.findingsKept {
++				if err := os.WriteFile(findingsPath, []byte("verify failed"), 0o644); err != nil {
++					t.Fatalf("write the findings file: %v", err)
++				}
++			}
++			if tt.invalidPath {
++				findingsPath = filepath.Join(dir, "Darn-Write\x00.findings.md")
++			}
++			want := tt.want
++			if tt.wantFindings {
++				want.FindingsPath = findingsPath
++			}
++			got, found, err := latestDarnOutcome(statusPath, lockPath, findingsPath)
++			if tt.wantErr {
++				if err == nil || found || got != (loomshed.DarnOutcome{}) {
++					t.Errorf("latestDarnOutcome() = %+v, %v, %v; want the stat error and not found", got, found, err)
++				}
++				return
++			}
+ 			if err != nil {
+ 				t.Fatalf("latestDarnOutcome() error = %v; want nil", err)
+ 			}
+-			if found != tt.wantFound || got != tt.want {
+-				t.Errorf("latestDarnOutcome() = %+v, %v; want %+v, %v", got, found, tt.want, tt.wantFound)
++			if found != tt.wantFound || got != want {
++				t.Errorf("latestDarnOutcome() = %+v, %v; want %+v, %v", got, found, want, tt.wantFound)
+ 			}
+ 		})
+ 	}
+ }
+ 
++// TestDarnDeps_LatestOutcomeNamesTheRowsFindingsFile pins that the LatestOutcome seam reads the run's status file and names the findings file Env.GateFindingsFile gives the Darn-Write row.
++func TestDarnDeps_LatestOutcomeNamesTheRowsFindingsFile(t *testing.T) {
++	t.Parallel()
++
++	loc := hubLocation(t, "pair", ".")
++	statusPath, statusLock := shedrun.StatusFile(loc, shedrun.SelfRunID), shedrun.StatusLock(loc, shedrun.SelfRunID)
++	if err := os.MkdirAll(filepath.Dir(statusLock), 0o755); err != nil {
++		t.Fatal(err)
++	}
++	seed := shedengine.Status{CurrentProducer: loomshed.NameDarnWrite, State: shedengine.StateRunning, History: []shedengine.HistoryEntry{{Producer: loomshed.NameDarnWrite, Outcome: shedengine.Stuck}}}
++	if err := state.WriteJSON(statusPath, statusLock, seed); err != nil {
++		t.Fatalf("state.WriteJSON() = %v; want nil", err)
++	}
++	findingsPath := shedrun.GateFindingsFile(loc, shedrun.SelfRunID, loomshed.NameDarnWrite)
++	if err := os.MkdirAll(filepath.Dir(findingsPath), 0o755); err != nil {
++		t.Fatal(err)
++	}
++	if err := os.WriteFile(findingsPath, []byte("verify failed"), 0o644); err != nil {
++		t.Fatalf("write the findings file: %v", err)
++	}
++
++	got, found, err := darnDeps(loc, shedrun.SelfRunID).LatestOutcome()
++	want := loomshed.DarnOutcome{Outcome: shedengine.Stuck, FindingsPath: findingsPath}
++	if err != nil || !found || got != want {
++		t.Errorf("LatestOutcome() = %+v, %v, %v; want %+v, true, nil", got, found, err, want)
++	}
++}
++
+ // firstNonEmptyState returns st, or the running state when st is empty, since a status file with no state does not decode.
+ func firstNonEmptyState(st shedengine.State) shedengine.State {
+ 	if st == "" {
+diff --git a/internal/loomshed/darnwrite.go b/internal/loomshed/darnwrite.go
+index dc3b4708..d4aa31fd 100644
+--- a/internal/loomshed/darnwrite.go
++++ b/internal/loomshed/darnwrite.go
+@@ -14,6 +14,18 @@ import (
+ // darnResumeWayForward is appended to the Reason of a Darn-Write session whose gate failed.
+ const darnResumeWayForward = "way forward: run \"lym loom resume\" in the task worktree, which re-spawns Darn-Write with a fresh verify budget"
+ 
++// decisionsWinLine tells the darn writer that a decision recorded after the Discussion wins over a gate finding it forbids fixing.
++const decisionsWinLine = "Where a decision under `Added after Discussion` in the decision record forbids fixing a finding, follow the decision and leave that finding unfixed."
++
++// DarnGateReprompt returns the re-prompt line renderer of a Darn-Write gate entry.
++// The line names the findings file and decisionRecordPath, and lets a decision recorded after the Discussion win over a finding it forbids fixing, which the default "fix every finding" line contradicts.
++// The rendered line carries no newline, as a gate re-prompt requires.
++func DarnGateReprompt(decisionRecordPath string) func(findingsPath string) string {
++	return func(findingsPath string) string {
++		return fmt.Sprintf("Gate findings recorded at %s — read it and fix every finding, bar one a decision under `Added after Discussion` in %s forbids fixing, which you leave unfixed; then end your turn.", findingsPath, decisionRecordPath)
++	}
++}
++
+ // DarnTold carries the token text the producer decides for one darn writer spawn, empty when it has nothing to tell.
+ type DarnTold struct {
+ 	// PriorWork is the note that the change is already under way on the task branch.
+@@ -24,15 +36,15 @@ type DarnTold struct {
+ type DarnOutcome struct {
+ 	// Outcome is the entry's outcome.
+ 	Outcome shedengine.Outcome
+-	// Reason is the halt reason recorded with the entry; empty when the run did not halt there.
+-	Reason string
++	// FindingsPath is the row's kept gate findings file, which holds the text of the last failed gate; empty when no file is kept.
++	FindingsPath string
+ }
+ 
+ // DarnDeps carries the told seams NewDarnWrite needs.
+ type DarnDeps struct {
+ 	// Commit commits the landing directory.
+ 	Commit func() error
+-	// LatestOutcome returns the latest Darn-Write history entry of the run; found is false when the row has no entry yet.
++	// LatestOutcome returns the latest Darn-Write history entry of the run that records a spawn; found is false when the row has no such entry yet.
+ 	LatestOutcome func() (DarnOutcome, bool, error)
+ }
+ 
+@@ -102,13 +114,23 @@ func (p *darnWrite) checkSeams() error {
+ 	return nil
+ }
+ 
+-// renderPriorWork returns the note that the change is already under way on the task branch, naming the latest outcome's halt reason.
+-// It is empty when the row has no halt reason.
++// renderPriorWork returns the note that the change is already under way on the task branch, naming the latest outcome and its kept gate findings file.
++// It tells the writer that a decision recorded after the Discussion wins over a finding it forbids fixing, so a resumed spawn never works against the parent's call.
++// It is empty when the row has no earlier entry.
+ func renderPriorWork(latest DarnOutcome, found bool) string {
+-	if !found || latest.Reason == "" {
++	if !found {
+ 		return ""
+ 	}
+-	return fmt.Sprintf("An earlier spawn of this task already began the change, and its work is committed on the task branch.\nRead that work first and continue it instead of starting over.\nThe run halted there with: %s", latest.Reason)
++	lines := []string{
++		"An earlier spawn of this task already began the change, and its work is committed on the task branch.",
++		"Read that work first and continue it instead of starting over.",
++		fmt.Sprintf("That spawn ended %s.", latest.Outcome),
++	}
++	if latest.FindingsPath != "" {
++		lines = append(lines, fmt.Sprintf("Its last gate findings are kept at %s: read them and fix what they name.", latest.FindingsPath))
++	}
++	lines = append(lines, decisionsWinLine)
++	return strings.Join(lines, "\n")
+ }
+ 
+ // nonEmpty returns the values that are not empty, in order.
+diff --git a/internal/loomshed/darnwrite_test.go b/internal/loomshed/darnwrite_test.go
+index aeecbe02..69e5be93 100644
+--- a/internal/loomshed/darnwrite_test.go
++++ b/internal/loomshed/darnwrite_test.go
+@@ -67,10 +67,10 @@ func TestDarnWrite_Call(t *testing.T) {
+ 			wantEvents: "session,commit",
+ 		},
+ 		{
+-			name: "prior work names the halt reason",
++			name: "prior work names the earlier outcome and its kept findings",
+ 			mutate: func(f *darnFixture) {
+ 				f.deps.LatestOutcome = func() (DarnOutcome, bool, error) {
+-					return DarnOutcome{Outcome: shedengine.Stuck, Reason: "verify failed"}, true, nil
++					return DarnOutcome{Outcome: shedengine.Stuck, FindingsPath: "/run/Darn-Write.findings.md"}, true, nil
+ 				}
+ 			},
+ 			session:    true,
+@@ -78,7 +78,9 @@ func TestDarnWrite_Call(t *testing.T) {
+ 			wantEvents: "session,commit",
+ 			wantTold: DarnTold{PriorWork: "An earlier spawn of this task already began the change, and its work is committed on the task branch.\n" +
+ 				"Read that work first and continue it instead of starting over.\n" +
+-				"The run halted there with: verify failed"},
++				"That spawn ended stuck.\n" +
++				"Its last gate findings are kept at /run/Darn-Write.findings.md: read them and fix what they name.\n" +
++				decisionsWinLine},
+ 		},
+ 		{
+ 			name: "gate-failed Stuck commits, keeps the record and appends the way forward",
+@@ -208,9 +210,8 @@ func TestRenderPriorWork(t *testing.T) {
+ 		want   string
+ 	}{
+ 		{"nothing to name", DarnOutcome{}, false, ""},
+-		{"outcome without a reason", DarnOutcome{Outcome: shedengine.Done}, true, ""},
+-		{"reason of an entry the read did not find is ignored", DarnOutcome{Reason: "stale"}, false, ""},
+-		{"reason only", DarnOutcome{Reason: "halted"}, true, "An earlier spawn of this task already began the change, and its work is committed on the task branch.\nRead that work first and continue it instead of starting over.\nThe run halted there with: halted"},
++		{"findings of an entry the read did not find are ignored", DarnOutcome{FindingsPath: "/run/stale.md"}, false, ""},
++		{"an earlier entry with no kept findings", DarnOutcome{Outcome: shedengine.Done}, true, "An earlier spawn of this task already began the change, and its work is committed on the task branch.\nRead that work first and continue it instead of starting over.\nThat spawn ended done.\n" + decisionsWinLine},
+ 	}
+ 	for _, tc := range cases {
+ 		t.Run(tc.name, func(t *testing.T) {
+diff --git a/internal/loomshed/doc.go b/internal/loomshed/doc.go
+index 5edcbb06..5cc74a16 100644
+--- a/internal/loomshed/doc.go
++++ b/internal/loomshed/doc.go
+@@ -70,7 +70,10 @@
+ // Webster's run record and the Plan-Review and Code-Review run directories are generation-scoped: they move into the round with the plan, so the next generation starts with none.
+ //
+ // The Darn-Write row's producer (NewDarnWrite) wraps the gated darn writer session and tells it a prior-work note, empty when absent.
+-// The note, written in Go, says the change is already under way on the task branch and names the latest Darn-Write history entry's halt reason.
++// The note, written in Go, is told whenever the run's history holds a Darn-Write entry:
++// it says the change is already under way on the task branch, names that entry's outcome and the row's kept gate findings file when one exists, and lets a decision recorded after the Discussion win over a finding it forbids fixing.
++// It reads no halt reason, because the shed's resume write clears the status error before the row is called.
++// Each Darn-Write gate entry re-prompts with DarnGateReprompt's line, which names the decision record and lets the same decisions win over a gate finding.
+ // On a non-empty output pointer, Done or a gate-failed Stuck, it commits the landing directory.
+ // A gate-failed Stuck keeps its record and gains the resume way forward.
+ // A failed commit is a returned error, since re-running the session cannot fix a git or filesystem fault.
+diff --git a/internal/shedrecipe/entries_darnwrite.go b/internal/shedrecipe/entries_darnwrite.go
+index 136b7ca2..b650cb36 100644
+--- a/internal/shedrecipe/entries_darnwrite.go
++++ b/internal/shedrecipe/entries_darnwrite.go
+@@ -16,6 +16,7 @@ import (
+ //
+ // The table arrives as an injected func(loomshed.DarnTold) for the reason planWriteEntry gives, evaluated with the values the producer tells each session it builds.
+ // The resolved gate is stamped onto each table it returns, so the row's "gates" key guards the writer.
++// Each gate entry re-prompts with the darn line, which names Env.DecisionRecordPath so a recorded decision wins over a finding it forbids fixing.
+ func darnWriteEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error) {
+ 	gate, err := resolveRowGateSpec("DarnWrite", row.Name, cfg, env)
+ 	if err != nil {
+@@ -24,6 +25,9 @@ func darnWriteEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProduc
+ 	if err := configRejectUnknown(cfg, "gates", "gate_key"); err != nil {
+ 		return nil, err
+ 	}
++	for i := range gate {
++		gate[i].Reprompt = loomshed.DarnGateReprompt(env.DecisionRecordPath)
++	}
+ 	if err := requireSeam("DarnWrite", "DarnTable", env.DarnTable); err != nil {
+ 		return nil, err
+ 	}
+diff --git a/internal/shedrecipe/entries_darnwrite_test.go b/internal/shedrecipe/entries_darnwrite_test.go
+index 92073c80..08a598b1 100644
+--- a/internal/shedrecipe/entries_darnwrite_test.go
++++ b/internal/shedrecipe/entries_darnwrite_test.go
+@@ -7,6 +7,7 @@ package shedrecipe
+ import (
+ 	"context"
+ 	"path/filepath"
++	"strings"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/loomshed"
+@@ -96,6 +97,16 @@ func TestDarnWriteEntry_HappyPath(t *testing.T) {
+ 	if len(gate) != 2 || gate[0].Name != "verify" || gate[1].Name != "description" || gate[0].Attempts != 2 || gate[1].Attempts != 2 {
+ 		t.Errorf("table gate = %+v; want the verify and description entries with 2 attempts each", gate)
+ 	}
++	for _, entry := range gate {
++		if entry.Reprompt == nil {
++			t.Errorf("gate entry %q Reprompt = nil; want the darn line", entry.Name)
++			continue
++		}
++		line := entry.Reprompt("/run/findings.md")
++		if !strings.Contains(line, "/run/findings.md") || !strings.Contains(line, env.DecisionRecordPath) || !strings.Contains(line, "Added after Discussion") || strings.Contains(line, "\n") {
++			t.Errorf("gate entry %q Reprompt() = %q; want one line naming the findings file, %s and the Added after Discussion entries", entry.Name, line, env.DecisionRecordPath)
++		}
++	}
+ 
+ 	// An exhausted gate's reason names the row's findings file, so an entry that drops the chain fails here.
+ 	withGateFindingsFile(&env, t.TempDir())
