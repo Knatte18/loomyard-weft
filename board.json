@@ -584,13 +584,13 @@
     },
     {
       "id": 887,
-      "handle": "E6",
+      "handle": "F4",
       "slug": "landing-watch",
       "title": "A landing notice on request, per task",
       "kind": "note",
       "labels": [
-        "enhancement",
-        "batten",
+        "feature",
+        "workspaces",
         "creel",
         "orch"
       ],
@@ -598,9 +598,9 @@
       "depends_on": [],
       "isolated": false,
       "brief": "The orch can ask for one creel line when a named run lands; off unless set for that slug",
-      "body": "## Seen (operator, 2026-10-28)\n\nA run that lands sends nothing: the orch learns of a landing only when something else wakes it, and the orch never polls runs.\nWhen the operator asks the orch to report a run's result as soon as it lands, the orch cannot keep that promise, and the operator has to ask again.\n\n## Idea\n\nThe orch can ask for a landing notice on one slug: a watch set per task, never on by default for every run.\n- The orch sets the watch when the operator asks, for example `lym batten watch \u003cslug\u003e`, and it can be removed again.\n- When the watched run lands, or ends without landing, one short line reaches the orch through creel, naming the slug, the outcome and the landing commit.\n- The watch ends when it has fired once.\n\n## Open\n\n- Where the watch lives: a flag on the board entry, a record batten's Land row reads, or a creel subscription per slug.\n- Whether the orch's watcher or batten's Land row sends the line.\n",
+      "body": "## Seen (operator, 2026-10-28)\n\nA run that lands sends nothing: the orch learns of a landing only when something else wakes it, and the orch never polls runs.\nWhen the operator asks the orch to report a run's result as soon as it lands, the orch cannot keep that promise, and the operator has to ask again.\n\n## Idea\n\nThe orch can ask for a landing notice on one slug: a watch set per task, never on by default for every run.\n- The orch sets the watch when the operator asks, through a verb of its own, and it can be removed again.\n- Dobby sends the line, not batten (operator, 2026-10-28): dobby drives each run to its end and already mails the orch, so batten knows nothing of who listens.\n- When the watched run lands, or ends without landing, one short line reaches the orch through creel, naming the slug, the outcome and the landing commit.\n- The watch ends when it has fired once.\n\n## Open\n\n- Where dobby keeps the watch: a flag on the board entry or a record of its own.\n",
       "created": "2026-10-28T18:40:56Z",
-      "revised": "2026-10-28T18:40:56Z"
+      "revised": "2026-10-28T18:42:59Z"
     }
   ],
   "prime_owner": "neve",
