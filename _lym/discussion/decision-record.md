@@ -74,6 +74,15 @@ Rationale: `PATTERN-sole-parsers` and `PATTERN-stencil-ownership`: the stencil p
 
 - A reviewer that approves a change the full Code review would have rejected lands it; the bound is the reviewer's prompt, which names exactly what the caps guard.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - d2-spent-fixer-no-review-weakly-pinned (class design, severity MEDIUM, open in rounds 1)
+  - d3-timeout-failed-start-reprompt-untested (class design, severity MEDIUM, open in rounds 1)
+  - d5-fix-review-model-spec-and-timeout-unasserted (class design, severity MEDIUM, open in rounds 1)
+  - d6-approval-record-and-moved-head-untested (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1, D4: An over-cap fixer change at Finalize, on a run where a review follows the reroute, spawns one fix review session, under the run's Finalize entry, whose prompt names the fixer's range `Baseline..HEAD`.
