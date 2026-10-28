@@ -167,6 +167,12 @@ The darn writer stencil already points at the discussion spec and gains nothing.
 The `validate-discussion` and `validate-plan` help texts name the new checks.
 `pattern/PATTERN-test-speed.md` gains a `//lym:seam` section beside its `//lym:guard` section, with the stacking rule of D5.
 
+### Added after Discussion (parent, 2026-10-28): Tier tags are collected as a set
+
+Decision: Card 7's Intent states, in the sentence that collects a test file's tier tags, that they are collected as a set of distinct tags, so the same tag stated on several Intent lines naming one file counts as one tag and passes; the loom-plan-spec.md row carries the same sentence, and the D7 table gains a row where one file is named on two Intent lines that both state //go:build tier1 and passes.
+
+Rationale: The check is that a test file has exactly one tier; repeating the same tier is not a second tier.
+
 ## Constraints
 
 - `PATTERN-stencil-ownership` wins over the entry's "the writer stencils state the new rules": a stencil points at the format contract and never restates it, so the rules go in the specs and the stencils carry pointer sentences (D10).
