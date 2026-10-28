@@ -18,3 +18,9 @@ For the Webster perch Sonnet is the natural fit, since Webster's own forks are S
 
 Before the Plan and Discussion fixers move to Sonnet, check that their findings are concrete: each names the place and the change, not only the problem.
 A3 (`review-setup-audit`) notes a sloppy fixer causes many late-round defects, and `docs/research/model-downgrade-results.md` holds earlier downgrade results; bench before switching.
+
+## Review-setup audit (landed 2026-10-28)
+
+`docs/research/review-setup-audit-2026-10-28/report.md` is the A3 audit named above.
+It does not measure fixer quality or a model swap.
+Its finding that bears here: in Plan round 3, 14 of 23 findings point at cards the round-2 fixer left alone, so those late defects are the writer's repository-invariant misses and not a sloppy fixer's; the audit recommends `validate-plan` checks for them.
