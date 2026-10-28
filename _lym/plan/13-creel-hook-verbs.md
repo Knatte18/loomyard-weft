@@ -18,12 +18,12 @@
 **Uses:**
 - `internal/shuttleengines#ToolBoundaryRenderer`
 - `plan:internal/shuttleengine#HookInput`
-- `plan:internal/creelengine#VerbHookWait`
-- `plan:internal/creelengine#OutcomeRing`
+- `internal/creelengine#VerbHookWait`
+- `internal/creelengine#OutcomeRing`
 - `plan:internal/creelengine#BellLine`
 - `internal/creelcli#runCreelSplit`
 - `internal/creelcli#newRig`
-- `plan:internal/testkit/creelfake#HookStrand`
+- `internal/testkit/creelfake#HookStrand`
 - `plan:internal/shuttleengine#HookEvent`
 
 **Intent:**

@@ -1,7 +1,7 @@
 # Card 9 — The pane path types posts only into a strand whose engine has no hook delivery
 
 **Create:**
-- `plan:internal/creelcli#smokeHub.addProviderStrand` -> `func (s *smokeHub) addProviderStrand(t *testing.T, role, command, provider string) (name, guid string)`
+- `internal/creelcli#smokeHub.addProviderStrand`
 
 **Edit:**
 - `internal/creelengine#worker.probe`
@@ -11,7 +11,7 @@
 - `internal/creelcli#TestSmokeCreelFakeProviderPane`
 
 **Uses:**
-- `plan:internal/testkit/creelfake#HookStrand`
+- `internal/testkit/creelfake#HookStrand`
 - `internal/testkit/creelfake#LiveStrand`
 - `internal/creelengine_test#awaitTyped`
 - `internal/creelcli#smokeHub`
