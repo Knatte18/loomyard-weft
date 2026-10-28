@@ -1,12 +1,13 @@
 {
-  "current_producer": "Drift-Verify",
-  "state": "running",
-  "error": "",
+  "current_producer": "Code-Bouncer",
+  "state": "failed",
+  "error": "shedverbs: step Drift-Verify interrupted (exited: exit status 2); way forward: read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, then re-run lym shed step review-setup-audit --until-stop",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Drift-Verify",
-    "last": "Darn-Write → done",
-    "wait": ""
+    "now": "Code-Bouncer",
+    "last": "Drift-Verify → skipped",
+    "wait": "shedverbs: step Drift-Verify interrupted (exited: exit status 2); way forward: read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, then re-run lym shed step review-setup-audit --until-stop"
   },
   "history": [
     {
@@ -55,6 +56,13 @@
           "end": "2026-10-28T09:41:18.165519727Z"
         }
       ]
+    },
+    {
+      "producer": "Drift-Verify",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-10-28T09:41:19Z",
+      "reason": "drift.enabled = false"
     }
   ],
   "product": {
