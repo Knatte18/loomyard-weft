@@ -1,11 +1,11 @@
 {
-  "current_producer": "Open-IDE",
+  "current_producer": "Run-Shed",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Open-IDE",
-    "last": "Seed-IDE → done",
+    "now": "Run-Shed",
+    "last": "Open-IDE → skipped",
     "wait": ""
   },
   "history": [
@@ -35,6 +35,14 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-28T09:47:16Z",
+      "machine": "neve"
+    },
+    {
+      "producer": "Open-IDE",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-10-28T09:47:18Z",
+      "reason": "batten.open_ide = false",
       "machine": "neve"
     }
   ]
