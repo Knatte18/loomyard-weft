@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-28 14:28 UTC; every age below is as of then.
+Rendered 2026-10-28 14:29 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -39,7 +39,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **The watcher wakes the orch after a usage limit resets, and holds the repeat notices**<br>• `profile: solid` | [`usage-limit-wake`](design-usage-limit-wake.md) | darn | Finalize | neve | 1h<br>38m | orch, batten, shuttle |
-| T7 | **Watcher's /compact inject into an idle orch is typed but not submitted (unconfirmed, then stalled on draft)** | [`compact-inject-draft`](design-compact-inject-draft.md) | darn | Describe | neve | 38m<br>38m | creel, shuttle, orch |
+| T7 | **Watcher's /compact inject into an idle orch is typed but not submitted (unconfirmed, then stalled on draft)** | [`compact-inject-draft`](design-compact-inject-draft.md) | darn | PR-Review | neve | 38m<br>38m | creel, shuttle, orch |
 
 ### Ready (0)
 
@@ -53,7 +53,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **Shuttle reads activity and operator input from Claude Code hooks**<br>• PostToolUse activity for the idle reader, UserPromptSubmit carried over on respawn, subagent and compact signals<br>• `profile: solid` | [`shuttle-hook-signals`](design-shuttle-hook-signals.md) | darn | `usage-limit-wake`, `compact-inject-draft` | 4d<br>37m | shuttle, batten, shed, reed, claude |
+| T8 | **Shuttle reads activity and operator input from Claude Code hooks**<br>• PostToolUse activity for the idle reader, UserPromptSubmit carried over on respawn, subagent and compact signals<br>• `profile: solid` | [`shuttle-hook-signals`](design-shuttle-hook-signals.md) | darn | `usage-limit-wake`, `compact-inject-draft` | 4d<br>38m | shuttle, batten, shed, reed, claude |
 
 ## Notes (31)
 
