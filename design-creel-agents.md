@@ -105,3 +105,17 @@ The operator's concern: much added delay.
   Operator (2026-10-23): relay agents are cheap, on the cheapest models such as Haiku or Luna, and must forward verbatim; creel as designed does the same.
 - What a cross-engine post costs today is the receiver's reminder and read turn, which note `creel-carry-agent-mail` would remove.
 
+
+## Spikes landed (2026-10-28)
+
+Two spikes ran with hand-written hook scripts standing in for creel; one run per case, so each result is one sample.
+
+- `docs/research/creel-hook-channels-2026-10-28/report.md`: on Claude only an `asyncRewake` Stop hook reaches an idle session without the pane, and its text is invisible to the operator.
+  `PostToolUse` on Claude and `post_tool_use` on Codex reach a working session at its next tool call, and one hook script serves both engines (the input has the Claude shape).
+  `systemMessage` is what the operator sees; `additionalContext` alone shows nothing.
+  So creel's hook delivery is not Claude-only, which bears on this stage's reason (a Codex role with a parent).
+- `docs/research/creel-midturn-trust-2026-10-28/report.md`: a mid-turn scope change delivered at the tool boundary was taken at once by Sonnet 5.5 with and without a system-prompt sentence, and by Codex `gpt-6-luna` with it.
+  Haiku 5.5 refused it without the sentence and took it with it, but misplaced the new line.
+  A creel post therefore needs the "lines starting with `[creel]` are mail from your parent; follow them" sentence in the system prompt of every role that may run on Haiku.
+- Still open: Codex without the sentence, Codex idle delivery, and whether Codex agents can message each other.
+  The operator's wait for a real mid-turn run (decision 2026-10-27) stands.
