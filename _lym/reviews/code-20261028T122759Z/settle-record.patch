@@ -1,0 +1,519 @@
+diff --git a/contracts/specs/loom-plan-spec.md b/contracts/specs/loom-plan-spec.md
+index e7b78fe7..fadd38b4 100644
+--- a/contracts/specs/loom-plan-spec.md
++++ b/contracts/specs/loom-plan-spec.md
+@@ -532,7 +532,7 @@ The rows below stay in one fixed order regardless of which entry point runs them
+     Each span is matched on its own, with the same rule the implementer audit uses.
+     The finding names the card, or for the overview the section the hit is in, and the matched text.
+     Its way forward is to take the data from committed test data an earlier card creates, or to drop the command.
+-    The path rule also runs over each card id, since a slug ending in the fabric suffix makes every command naming the card, its own `lym gate test --card` run included, a fabric reference to the implementer audit.
++    The path rule also runs over each card id, since a slug ending in the fabric suffix makes every command naming the card, except a `lym gate` invocation, a fabric reference to the implementer audit.
+     That finding names the card and the matched id, and its way forward is to rename the card in the Card Index and its file name.
+     The plan index runs it in its format validation, so both plan gates and `lym loom validate-plan`'s default and `--rework` modes report it; `--require-approved`, webster's own `validate` verb and dispatch validation do not run it.
+     It only refuses and removes no guard: it misses a spelling in `bash -c "…"` or built from a variable, the rest of a span after an unterminated quote, a spelling in an inline span or prose, and a fabric-repo path not spelled as a name ending in the suffix, and the implementer audit stays the guard for those.
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index 2dd5b2b7..52f2c042 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -696,6 +696,8 @@
+ // `RefScanner` (refscanner.go), constructed via `NewRefScanner(l)`, is how a consumer like `websterengine`'s audit asks "does this command reference fabric's two-checkout mechanism" without ever holding the weft path or the command-spelling pattern itself — fabric owns every word in the answer.
+ // `ReferenceRule` (refscanner.go), constructed via `NewReferenceRule()`, is the location-free part of that answer.
+ // Its `MatchPath` and `MatchSpelling` return the matched text without any worktree, so a plan check shares one rule with the audit.
++// `MatchPath` reads no bare weft-suffixed word inside a `lym gate` invocation, because a card ID may end in the suffix and a gate resolves its arguments inside the worktree;
++// a separator-prefixed weft path there still matches.
+ // `IsReadOnlyCommand` (refscanner.go) rejects an unquoted parenthesis and a dollar expansion in a reader segment, because a zsh glob qualifier and a parameter expansion run code with no substitution marker.
+ // It otherwise leaves readers' globs and flags free, because no flag of a listed reader writes a file or runs a command, so a glob that expands into a flag-shaped name can do nothing a typed flag could not.
+ // A reader joins `readOnlyCommands` only if none of its flags writes or executes, and a reader that blocks, such as `tail -f`, writes nothing and is admitted.
+diff --git a/internal/fabricengine/refscanner.go b/internal/fabricengine/refscanner.go
+index 0b68dcf8..9427bd79 100644
+--- a/internal/fabricengine/refscanner.go
++++ b/internal/fabricengine/refscanner.go
+@@ -26,6 +26,14 @@ var spellingPattern = regexp.MustCompile(
+ 		`(?:\S*[/\\])?lym(?:\.exe)?\s+(?:fabric|weft|warp)\b`,
+ )
+ 
++// gateSegmentPattern matches a `lym gate` invocation in command position, from the separator before it up to the next separator.
++// It runs over a quote-blanked copy, so a separator inside a quoted argument does not end the segment.
++// The ampersand of a redirect (`2>&1`, `>&2`, `&>`) stays inside the segment, so an argument after it is still a gate argument.
++var gateSegmentPattern = regexp.MustCompile(
++	"(?:^|[;&|(\\n`]|\\$\\()\\s*(?:(?:env|exec|command|nohup|time|xargs)\\s+|\\w+=\\S*\\s+)*" +
++		"(?:\\S*[/\\\\])?lym(?:\\.exe)?\\s+gate\\b(?:[0-9]*[<>]&[0-9-]*|&>|[^;&|()\\n`])*",
++)
++
+ // heredocOpener matches a heredoc redirection (`<<EOF`, `<<-EOF`, `<<'EOF'`, `<<"EOF"`) and captures
+ // its delimiter word.
+ var heredocOpener = regexp.MustCompile(`<<-?\s*['"]?(\w+)['"]?`)
+@@ -35,6 +43,7 @@ var heredocOpener = regexp.MustCompile(`<<-?\s*['"]?(\w+)['"]?`)
+ // Heredoc bodies are dropped before any match, since a file an agent writes is content, not a command it runs.
+ // A weft sibling counts as a path when the name follows a path separator (`/hub/x-weft`, quoted or not).
+ // A bare word ending in the weft suffix counts only outside quotes, so a string literal such as `"archive-happy-weft"` in a test is text.
++// It counts only outside a `lym gate` invocation as well, since a gate's arguments are gate keys, card IDs, tiers and package patterns resolved inside the worktree, and a card ID may end in the suffix.
+ // Construct via NewReferenceRule; the zero value is not valid.
+ type ReferenceRule struct {
+ 	pathPattern *regexp.Regexp
+@@ -60,14 +69,17 @@ func NewReferenceRule() *ReferenceRule {
+ }
+ 
+ // MatchPath reports the sibling-name reference in cmd, if any.
+-// A separator-prefixed name ending in the suffix is found with quotes intact, then a bare word ending in the suffix on a copy with quoted spans blanked.
++// A separator-prefixed name ending in the suffix is found with quotes intact, then a bare word ending in the suffix on a copy with quoted spans and `lym gate` invocations blanked.
+ // The returned text comes from the copy the pattern ran on, without its trailing separator.
+ func (r *ReferenceRule) MatchPath(cmd string) (string, bool) {
+ 	cmd = stripHeredocBodies(cmd)
+ 	if m := r.pathPattern.FindString(cmd); m != "" {
+ 		return strings.TrimRight(m, referenceTrim), true
+ 	}
+-	if m := r.barePattern.FindString(blankQuoted(cmd)); m != "" {
++	bareView := gateSegmentPattern.ReplaceAllStringFunc(blankQuoted(cmd), func(segment string) string {
++		return strings.Repeat(" ", len(segment))
++	})
++	if m := r.barePattern.FindString(bareView); m != "" {
+ 		return strings.TrimRight(m, referenceTrim), true
+ 	}
+ 	return "", false
+diff --git a/internal/fabricengine/refscanner_test.go b/internal/fabricengine/refscanner_test.go
+index 9c06f6d3..12921cc4 100644
+--- a/internal/fabricengine/refscanner_test.go
++++ b/internal/fabricengine/refscanner_test.go
+@@ -65,6 +65,16 @@ func TestRefScanner_Matches(t *testing.T) {
+ 		{"weft name ending the command matches", "ls /hub/other-weft", true},
+ 		{"escaped alternation in a quoted grep is text", `grep -n "weftBranch\s*[:=]\|WeftSuffix\|-weft" x_test.go`, false},
+ 		{"windows sibling weft path matches", `dir C:\hub\other-weft\_lym`, true},
++		{"gate card ID ending in the suffix is text", "lym gate test --wait --gate card --card 6-clone-records-marker-on-prime-weft 2>&1 | tail -40", false},
++		{"gate card ID after a commit with a quoted message is text", "git add -A internal && git commit -q -m \"7: anchor\n\nbody\" && lym gate test --wait --gate batch --card 6-prime-weft --card 7-anchor 2>&1 | grep -E \"^(--- FAIL|FAIL)\"", false},
++		{"gate test with a separator-prefixed weft path matches", "lym gate test ../other-weft/internal/x", true},
++		{"bare weft name after a gate segment matches", "lym gate test --card 6-prime-weft && git -C other-weft status", true},
++		{"gate words outside command position are not blanked", "echo lym gate other-weft", true},
++		{"bare weft name after a semicolon ends the gate segment", "lym gate test --card a-weft; ls other-weft", true},
++		{"bare weft name after a pipe ends the gate segment", "lym gate test --card a-weft | grep other-weft", true},
++		{"bare weft name after a double pipe ends the gate segment", "lym gate test --card a-weft || ls other-weft", true},
++		{"bare weft name after a newline ends the gate segment", "lym gate test --card a-weft\nls other-weft", true},
++		{"gate card ID after a stderr redirect is text", "lym gate test 2>&1 --card 6-prime-weft", false},
+ 	}
+ 
+ 	for _, tt := range tests {
+diff --git a/internal/planparser/doc.go b/internal/planparser/doc.go
+index a431d0c0..5c498d0c 100644
+--- a/internal/planparser/doc.go
++++ b/internal/planparser/doc.go
+@@ -143,7 +143,7 @@
+ // CheckFabricVocabularyName needs no told input, but the plan index appends it beside CheckCardFabricReference.
+ // CheckEditTestFile is appended by the plan index at format and rework validation, and takes the done set so format validation skips a completed card.
+ // CheckCardFabricReference scans the raw text the parse step records in Plan.OverviewText and Card.Text, so it reads no file and planparser stays the sole parser.
+-// It also runs the path rule over each card id, since an id ending in the fabric suffix would turn every command naming the card into a fabric reference to the implementer audit.
++// It also runs the path rule over each card id, since an id ending in the fabric suffix would turn every command naming the card, except a `lym gate` invocation, into a fabric reference to the implementer audit.
+ //
+ // # Entry-line cap
+ //
+diff --git a/internal/planparser/fabricref.go b/internal/planparser/fabricref.go
+index e2331d40..2a663026 100644
+--- a/internal/planparser/fabricref.go
++++ b/internal/planparser/fabricref.go
+@@ -29,7 +29,7 @@ type scanSpan struct {
+ }
+ 
+ // CheckCardFabricReference reports one card-fabric-reference finding per distinct command a plan carries that reaches the fabric repo, and one per card whose card id the path rule matches.
+-// Such a card id would make every command naming the card, its own gate run included, a fabric reference to the implementer audit; its way forward is renaming the card.
++// Such a card id would make every command naming the card, except a `lym gate` invocation, a fabric reference to the implementer audit; its way forward is renaming the card.
+ // The spans scanned are a card's `**Verify:**` value and the overview's `## verify:` section body (path rule and spelling rule), every fenced code block of every plan file whatever its info string (both rules), and every inline code span of every plan file (path rule only, because a span documenting a command opens with the spelling).
+ // Prose outside code is never scanned.
+ // A finding names the card, or for a hit in the overview the section it is in, and the matched text; its way forward is committed test data an earlier card creates, or dropping the command.
+@@ -72,7 +72,7 @@ func CheckCardFabricReference(plan *Plan, matcher FabricReferenceMatcher) []Vali
+ 	for _, card := range plan.Cards {
+ 		id := cardID(card)
+ 		if matched, ok := matcher.MatchPath(id); ok {
+-			detail := fmt.Sprintf("card %s has an id the implementer audit reads as a fabric-repo worktree name: %q, so every command naming the card fails the audit; rename the card in the Card Index and its file name so its slug no longer ends in the fabric suffix", id, matched)
++			detail := fmt.Sprintf("card %s has an id the implementer audit reads as a fabric-repo worktree name: %q, so any command naming the card other than a lym gate invocation fails the audit; rename the card in the Card Index and its file name so its slug no longer ends in the fabric suffix", id, matched)
+ 			findings = append(findings, ValidationError{Check: cardFabricReferenceCheck, Card: id, Detail: detail})
+ 		}
+ 		spans := codeSpans(card.Text)
+diff --git a/internal/planparser/fabricref_test.go b/internal/planparser/fabricref_test.go
+index c9ebd49d..a2e90f40 100644
+--- a/internal/planparser/fabricref_test.go
++++ b/internal/planparser/fabricref_test.go
+@@ -57,6 +57,9 @@ func TestCheckCardFabricReference(t *testing.T) {
+ 		return plan
+ 	}
+ 
++	gateVerify := parsed("", "alpha", "")
++	gateVerify.Cards[0].Verify = "lym gate test --card 1-prime" + fabricSuffix
++
+ 	tests := []struct {
+ 		name string
+ 		plan *planparser.Plan
+@@ -78,6 +81,7 @@ func TestCheckCardFabricReference(t *testing.T) {
+ 		{"plan without either passes", parsed("", fenced("go test ./..."), "go build ./..."), nil},
+ 		{"card slug ending in the fabric suffix fails", withSlug("prime" + fabricSuffix), []string{"card 1-prime" + fabricSuffix, "rename the card"}},
+ 		{"card slug holding the fabric suffix mid-name passes", withSlug("prime" + fabricSuffix + "-marker"), nil},
++		{"gate command naming a suffix-ending card id in a Verify passes", gateVerify, nil},
+ 	}
+ 
+ 	matcher := fabricengine.NewReferenceRule()
+diff --git a/internal/websterengine/auditledger.go b/internal/websterengine/auditledger.go
+index f36da3ca..722c814a 100644
+--- a/internal/websterengine/auditledger.go
++++ b/internal/websterengine/auditledger.go
+@@ -203,54 +203,69 @@ func AcceptPendingAudit(engines AuditEngines, st *State, geom Geometry, parentBr
+ // It never saves;
+ // the caller holds the state-mutation lease and saves.
+ func AcceptBatchFabricReference(st *State, geom Geometry, n int, readOnly func(cmd string) bool, verb string) (accepted []string, err error) {
++	basis, err := batchFabricReferenceEvidence(st, geom, n, readOnly, fmt.Sprintf("re-run \"lym webster %s %d\"", verb, n))
++	if err != nil {
++		return nil, err
++	}
++	bs := st.Batches[n]
++	for i, entry := range bs.Uncheckable {
++		id := fmt.Sprintf("accepted:batch-%02d:%d", n, i+1)
++		markDisposition(st, id, dispositionWarned)
++		bs.AuditWarnings = append(bs.AuditWarnings, AuditWarning{Identity: id, Class: string(ClassFabricReference), Detail: "accepted by " + verb + ", " + basis + ": " + strings.TrimPrefix(entry, fabricReferencePrefix)})
++	}
++	accepted = bs.Uncheckable
++	bs.Uncheckable = nil
++	return accepted, nil
++}
++
++// batchFabricReferenceEvidence reports, mutating nothing, whether failed batch n's uncheckable entries may be accepted, and returns the basis that holds.
++// Every entry must be a pathless fabric reference, the batch must have recorded a start commit, and the worktree must be clean apart from the run's own state.
++// HEAD must be that start, or descend from it with every entry recording a command readOnly accepts.
++// A nil readOnly accepts none.
++// rerun is the step a refusal names for running the accepting verb again once the evidence is restored.
++// A refusal wraps ErrAuditNotAcceptable and ends in its way forward;
++// any other error is a git read failure.
++func batchFabricReferenceEvidence(st *State, geom Geometry, n int, readOnly func(cmd string) bool, rerun string) (basis string, err error) {
+ 	bs := st.Batches[n]
+ 	if bs == nil || !bs.Terminal || bs.Status != DigestStatusFailed || len(bs.Uncheckable) == 0 {
+-		return nil, fmt.Errorf("%w: batch %02d is not a failed batch with uncheckable findings; accept-audit --batch accepts only those", ErrAuditNotAcceptable, n)
++		return "", fmt.Errorf("%w: batch %02d is not a failed batch with uncheckable findings; accept-audit --batch accepts only those", ErrAuditNotAcceptable, n)
+ 	}
+ 	if !allPathlessFabricReference(bs.Uncheckable) {
+-		return nil, fmt.Errorf("%w: batch %02d carries an uncheckable finding that is not a pathless fabric reference: %s; %s", ErrAuditNotAcceptable, n, strings.Join(bs.Uncheckable, ", "), resetToStartSteps(stepRun))
++		return "", fmt.Errorf("%w: batch %02d carries an uncheckable finding that is not a pathless fabric reference: %s; %s", ErrAuditNotAcceptable, n, strings.Join(bs.Uncheckable, ", "), resetToStartSteps(stepRun))
+ 	}
+ 	if bs.StartSHA == "" {
+-		return nil, fmt.Errorf("%w: batch %02d recorded no start commit, so its tree cannot be shown unchanged; %s", ErrAuditNotAcceptable, n, resetToStartSteps(stepRun))
++		return "", fmt.Errorf("%w: batch %02d recorded no start commit, so its tree cannot be shown unchanged; %s", ErrAuditNotAcceptable, n, resetToStartSteps(stepRun))
+ 	}
+ 	head, err := geom.git().HeadSHA(geom.WorktreeRoot)
+ 	if err != nil {
+-		return nil, err
++		return "", err
+ 	}
+ 	atStart := head == bs.StartSHA
+ 	if !atStart {
+ 		reachable, err := geom.git().IsAncestor(geom.WorktreeRoot, bs.StartSHA, head)
+ 		if err != nil {
+-			return nil, err
++			return "", err
+ 		}
+ 		if !reachable {
+-			return nil, fmt.Errorf("%w: HEAD %s is not batch %02d's start commit %s, nor does it descend from it; %s", ErrAuditNotAcceptable, head, n, bs.StartSHA, wayForwardSteps(stepResetToStart, "lym webster run"))
++			return "", fmt.Errorf("%w: HEAD %s is not batch %02d's start commit %s, nor does it descend from it; %s", ErrAuditNotAcceptable, head, n, bs.StartSHA, wayForwardSteps(stepResetToStart, "lym webster run"))
+ 		}
+ 	}
+ 	dirty, err := UncommittedPaths(geom)
+ 	if err != nil {
+-		return nil, err
++		return "", err
+ 	}
+ 	if len(dirty) > 0 {
+-		return nil, fmt.Errorf("%w: the worktree has uncommitted or untracked changes: %s; way forward: restore or remove them with git, then re-run \"lym webster %s %d\"", ErrAuditNotAcceptable, strings.Join(dirty, ", "), verb, n)
++		return "", fmt.Errorf("%w: the worktree has uncommitted or untracked changes: %s; way forward: restore or remove them with git, then %s", ErrAuditNotAcceptable, strings.Join(dirty, ", "), rerun)
+ 	}
+-	basis := "HEAD was the batch's start commit and the tree clean"
+-	if !atStart {
+-		for _, entry := range bs.Uncheckable {
+-			if cmd, ok := fabricReferenceCommand(entry); !ok || !readOnly(cmd) {
+-				return nil, fmt.Errorf("%w: batch %02d's commits are kept only when every fabric reference is a read-only command, and this one is not: %s; %s", ErrAuditNotAcceptable, n, entry, wayForwardSteps(resetVerb(ResetToBatchStart, n), fmt.Sprintf("re-run \"lym webster %s %d\"", verb, n)))
+-			}
+-		}
+-		basis = "the batch's commits were kept as the command is read-only and the tree clean"
++	if atStart {
++		return "HEAD was the batch's start commit and the tree clean", nil
+ 	}
+-	for i, entry := range bs.Uncheckable {
+-		id := fmt.Sprintf("accepted:batch-%02d:%d", n, i+1)
+-		markDisposition(st, id, dispositionWarned)
+-		bs.AuditWarnings = append(bs.AuditWarnings, AuditWarning{Identity: id, Class: string(ClassFabricReference), Detail: "accepted by " + verb + ", " + basis + ": " + strings.TrimPrefix(entry, fabricReferencePrefix)})
++	for _, entry := range bs.Uncheckable {
++		if cmd, ok := fabricReferenceCommand(entry); !ok || readOnly == nil || !readOnly(cmd) {
++			return "", fmt.Errorf("%w: batch %02d's commits are kept only when every fabric reference is a read-only command, and this one is not: %s; %s", ErrAuditNotAcceptable, n, entry, wayForwardSteps(resetVerb(ResetToBatchStart, n), rerun))
++		}
+ 	}
+-	accepted = bs.Uncheckable
+-	bs.Uncheckable = nil
+-	return accepted, nil
++	return "the batch's commits were kept as the command is read-only and the tree clean", nil
+ }
+ 
+ // UncommittedPaths returns, sorted, the worktree-relative paths of the task's uncommitted work: every tracked change and untracked file git status names, minus the run's own state.
+diff --git a/internal/websterengine/doc.go b/internal/websterengine/doc.go
+index cc329484..a2036668 100644
+--- a/internal/websterengine/doc.go
++++ b/internal/websterengine/doc.go
+@@ -290,7 +290,9 @@
+ // One narrow exception keeps the batches before it (AcceptBatchFabricReference, `lym webster accept-audit --batch NN`):
+ // when every Uncheckable entry is a pathless fabric reference, the batch recorded a start commit and the worktree is clean apart from the run's own state,
+ // the explicit call clears the entries and records each as a batch audit warning, and recover-batch then proceeds;
+-// the refusal names that route only for such a record.
++// the refusal names that route only for such a record, and only where the same evidence check, run without mutating, admits it.
++// When the evidence holds, the refusal names `accept-audit --batch NN` then `recover-batch NN`.
++// Otherwise it names the check's own reason and steps, which end by re-running both, beside the reset-to-start route.
+ // It has two routes.
+ // Either HEAD is that start, so the batch changed nothing (a batch that committed qualifies after `lym webster reset --to batch-start --batch NN`),
+ // or the start is an ancestor of HEAD and every entry's recorded command is read-only (`fabricengine.IsReadOnlyCommand`), so the batch's commits are kept.
+@@ -663,6 +665,7 @@
+ // `--batch` is required for `report-head` and `batch-start` and refused for the other three, before any git read.
+ // The refusals run in order: the `--batch` pairing, run lock held (transient, except for `report-head`), no state, a merge in progress, a checked-out branch that is not the task branch,
+ // no recorded target, a recorded commit missing from the repository, a target that is not an ancestor of HEAD, and a dirty tracked path outside the run's own writes.
++// The run-lock refusal's way forward has the run's parent re-run the reset once the run has stopped, since a Webster session inside the run cannot.
+ // The own paths are the tracked paths that loadRunWrites records a successful write to, Master's, every fork's, every recovery session's and every cold verify-gate fixer session's; a failed write is not evidence.
+ // Each refusal ends in wayForwardSteps' numbered list.
+ // The plan carries the SHA and the own paths, and reads no force flag.
+diff --git a/internal/websterengine/recoverbatch.go b/internal/websterengine/recoverbatch.go
+index 7d8d8818..1ffd2dfb 100644
+--- a/internal/websterengine/recoverbatch.go
++++ b/internal/websterengine/recoverbatch.go
+@@ -538,7 +538,9 @@ func RecoverSpawnOrAttach(deps RecoverDeps, batchNumber int, clk Clock) (bs *Bat
+ 			}
+ 			wayForward := resetToStartSteps(stepRun)
+ 			if len(contracts.Uncleared) == 0 && allPathlessFabricReference(contracts.Rest) {
+-				wayForward = fmt.Sprintf("way forward: when the worktree is clean and HEAD is the batch's start commit (\"%s\" moves it there if the batch committed), or the batch's commits are kept and every recorded command is read-only, \"lym webster accept-audit --batch %d\" then \"lym webster recover-batch %d\"; otherwise %s", resetVerb(ResetToBatchStart, batchNumber), batchNumber, batchNumber, freshRestartSteps(stepRun))
++				if wayForward, err = acceptAuditWayForward(deps, batchNumber); err != nil {
++					return nil, false, err
++				}
+ 			}
+ 			return nil, false, &recoveryNeedsFreshError{msg: fmt.Sprintf("webster: batch %02d failed on findings recovery cannot check: %s; %s", batchNumber, strings.Join(what, ", "), wayForward)}
+ 		}
+@@ -569,6 +571,28 @@ func RecoverSpawnOrAttach(deps RecoverDeps, batchNumber int, clk Clock) (bs *Bat
+ 	return fresh, true, nil
+ }
+ 
++// acceptAuditWayForward is the way forward of a refusal over a failed batch whose uncheckable entries are all pathless fabric references.
++// It runs the evidence check `lym webster accept-audit --batch` applies, mutating nothing, so it names that verb only on a route the check admits.
++// When the evidence holds, the way forward is accept-audit then recover-batch.
++// Otherwise it is the evidence refusal's reason and its own steps, which re-run both verbs.
++// Either way it also names the reset-to-start route.
++// A git read failure is returned.
++func acceptAuditWayForward(deps RecoverDeps, batchNumber int) (string, error) {
++	acceptThenRecover := fmt.Sprintf("\"lym webster accept-audit --batch %d\" then \"lym webster recover-batch %d\"", batchNumber, batchNumber)
++	_, err := batchFabricReferenceEvidence(deps.State, deps.Geom, batchNumber, deps.ReadOnly, "re-run "+acceptThenRecover)
++	if err == nil {
++		return fmt.Sprintf("way forward: %s; otherwise %s", acceptThenRecover, freshRestartSteps(stepRun)), nil
++	}
++	if !errors.Is(err, ErrAuditNotAcceptable) {
++		return "", err
++	}
++	refusal := fmt.Sprintf("accept-audit --batch %d refuses it: %s", batchNumber, strings.TrimPrefix(err.Error(), ErrAuditNotAcceptable.Error()+": "))
++	if !strings.Contains(refusal, stepResetToStart) {
++		refusal += "; otherwise " + freshRestartSteps(stepRun)
++	}
++	return refusal, nil
++}
++
+ // RecoveryWaitBudget is the wait one recover-batch call blocks for by default: recovery_timeout_min plus one poll tick.
+ // The budget always outlasts the timeout measured from spawn, so a call returns at a terminal digest, or once Classify marks the strand dead on its timeout, and never as a running snapshot.
+ func RecoveryWaitBudget(cfg Config) time.Duration {
+diff --git a/internal/websterengine/recoverbatch_test.go b/internal/websterengine/recoverbatch_test.go
+index 5c35fb7a..e356014c 100644
+--- a/internal/websterengine/recoverbatch_test.go
++++ b/internal/websterengine/recoverbatch_test.go
+@@ -1050,22 +1050,37 @@ func TestRecoverSpawnOrAttach(t *testing.T) {
+ 		fx.Deps.State.Batches[1] = rec
+ 		fx.Deps.ReadOnly = fabricengine.IsReadOnlyCommand
+ 	}
+-	// Only a refusal over pathless fabric references names the accept-audit --batch route.
++	// A refusal over pathless fabric references names the accept-audit --batch route only where accept-audit's own evidence check admits it.
+ 	const acceptBatchStep = `"lym webster accept-audit --batch 1" then "lym webster recover-batch 1"`
+-	// The route names both evidence: HEAD at the start commit, and a committed batch whose recorded commands are read-only.
+-	const startRouteText = "when the worktree is clean and HEAD is the batch's start commit (\"lym webster reset --to batch-start --batch 01\" moves it there if the batch committed)"
+-	const committedRouteText = "or the batch's commits are kept and every recorded command is read-only"
+-	fabricRefusalCheck := func(t *testing.T, fx *recoverFixture, bs *websterengine.BatchState, spawned bool, err error) {
+-		fabricRefusalBase(t, fx, bs, spawned, err)
+-		if err == nil {
+-			return
+-		}
+-		for _, want := range []string{acceptBatchStep, startRouteText, committedRouteText} {
+-			if !strings.Contains(err.Error(), want) {
+-				t.Errorf("error %q lacks %q", err, want)
++	const noStartText = "accept-audit --batch 1 refuses it: batch 01 recorded no start commit"
++	// noStartCheck wraps base, the check of a batch with no recorded start, so it also wants the accept-audit refusal named and no accept-audit route.
++	noStartCheck := func(base func(t *testing.T, fx *recoverFixture, bs *websterengine.BatchState, spawned bool, err error)) func(t *testing.T, fx *recoverFixture, bs *websterengine.BatchState, spawned bool, err error) {
++		return func(t *testing.T, fx *recoverFixture, bs *websterengine.BatchState, spawned bool, err error) {
++			base(t, fx, bs, spawned, err)
++			if err == nil {
++				return
++			}
++			if !strings.Contains(err.Error(), noStartText) {
++				t.Errorf("error %q lacks %q", err, noStartText)
++			}
++			if strings.Contains(err.Error(), acceptBatchStep) {
++				t.Errorf("error %q names %s, which accept-audit refuses", err, acceptBatchStep)
+ 			}
+ 		}
+ 	}
++	fabricRefusalCheck := noStartCheck(fabricRefusalBase)
++	// atStartSetup and committedSetup seed a mutating fabric reference with a recorded start, at HEAD = the start and one commit past it.
++	atStartBaseSetup, atStartBase := uncheckableRefusal(readOnlyEntry("lym fabric add x"))
++	atStartSetup := func(fx *recoverFixture) {
++		atStartBaseSetup(fx).StartSHA = fx.Git.head
++		fx.Deps.ReadOnly = fabricengine.IsReadOnlyCommand
++	}
++	committedBaseSetup, _ := uncheckableRefusal(readOnlyEntry("lym fabric add x"))
++	committedSetup := func(fx *recoverFixture) {
++		committedBaseSetup(fx).StartSHA = fx.Git.head
++		fx.Git.commit()
++		fx.Deps.ReadOnly = fabricengine.IsReadOnlyCommand
++	}
+ 	pauseRefusalCheck := func(t *testing.T, fx *recoverFixture, bs *websterengine.BatchState, spawned bool, err error) {
+ 		pauseRefusalBase(t, fx, bs, spawned, err)
+ 		if err != nil && strings.Contains(err.Error(), "accept-audit --batch") {
+@@ -1407,17 +1422,104 @@ func TestRecoverSpawnOrAttach(t *testing.T) {
+ 			check: longBesidePathCheck,
+ 		},
+ 		{
+-			name:  "a pathless entry longer than NAME_MAX alone is refused toward the accept-audit route",
++			name:  "a pathless entry longer than NAME_MAX alone with no recorded start names why accept-audit refuses",
+ 			setup: func(fx *recoverFixture) { longAloneSetup(fx) },
++			check: noStartCheck(longAloneBase),
++		},
++		{
++			name:  "a mutating fabric reference at the batch's start on a clean tree is refused toward the accept-audit route",
++			setup: atStartSetup,
+ 			check: func(t *testing.T, fx *recoverFixture, bs *websterengine.BatchState, spawned bool, err error) {
+-				longAloneBase(t, fx, bs, spawned, err)
+-				if err == nil {
+-					return
++				atStartBase(t, fx, bs, spawned, err)
++				if err != nil && !strings.Contains(err.Error(), "way forward: "+acceptBatchStep+"; otherwise 1) lym webster reset --to start; 2) lym webster run") {
++					t.Errorf("error %q lacks the accept-audit route", err)
+ 				}
+-				for _, want := range []string{acceptBatchStep, startRouteText, committedRouteText} {
+-					if !strings.Contains(err.Error(), want) {
+-						t.Errorf("error %q lacks %q", err, want)
+-					}
++			},
++		},
++		{
++			name:  "a mutating fabric reference past the batch's start names the batch-start reset before accept-audit",
++			setup: committedSetup,
++			check: func(t *testing.T, fx *recoverFixture, bs *websterengine.BatchState, spawned bool, err error) {
++				if !errors.Is(err, websterengine.ErrRecoveryNeedsFresh) || spawned {
++					t.Fatalf("RecoverSpawnOrAttach() = spawned %v, err %v; want ErrRecoveryNeedsFresh and no strand", spawned, err)
++				}
++				want := "accept-audit --batch 1 refuses it: batch 01's commits are kept only when every fabric reference is a read-only command" +
++					`, and this one is not: ` + readOnlyEntry("lym fabric add x") +
++					`; way forward: 1) lym webster reset --to batch-start --batch 01; 2) re-run ` + acceptBatchStep +
++					"; otherwise 1) lym webster reset --to start; 2) lym webster run"
++				if !strings.HasSuffix(err.Error(), want) {
++					t.Errorf("error %q; want it to end %q", err, want)
++				}
++			},
++		},
++		{
++			name: "a mutating fabric reference on a dirty tree names accept-audit's dirty-tree reason and the re-run",
++			setup: func(fx *recoverFixture) {
++				atStartSetup(fx)
++				fx.Git.dirtyPaths = []string{"internal/x/x.go"}
++			},
++			check: func(t *testing.T, fx *recoverFixture, bs *websterengine.BatchState, spawned bool, err error) {
++				if !errors.Is(err, websterengine.ErrRecoveryNeedsFresh) || spawned {
++					t.Fatalf("RecoverSpawnOrAttach() = spawned %v, err %v; want ErrRecoveryNeedsFresh and no strand", spawned, err)
++				}
++				want := "accept-audit --batch 1 refuses it: the worktree has uncommitted or untracked changes: internal/x/x.go" +
++					"; way forward: restore or remove them with git, then re-run " + acceptBatchStep +
++					"; otherwise 1) lym webster reset --to start; 2) lym webster run"
++				if !strings.HasSuffix(err.Error(), want) {
++					t.Errorf("error %q; want it to end %q", err, want)
++				}
++			},
++		},
++		{
++			name: "a mutating fabric reference with a HEAD that does not descend from the start names only the reset-to-start route",
++			setup: func(fx *recoverFixture) {
++				atStartSetup(fx)
++				unrelated := fx.Git.mint()
++				fx.Git.parents[unrelated] = nil
++				fx.Git.head = unrelated
++			},
++			check: func(t *testing.T, fx *recoverFixture, bs *websterengine.BatchState, spawned bool, err error) {
++				if !errors.Is(err, websterengine.ErrRecoveryNeedsFresh) || spawned {
++					t.Fatalf("RecoverSpawnOrAttach() = spawned %v, err %v; want ErrRecoveryNeedsFresh and no strand", spawned, err)
++				}
++				want := "nor does it descend from it; way forward: 1) lym webster reset --to start; 2) lym webster run"
++				if !strings.HasSuffix(err.Error(), want) {
++					t.Errorf("error %q; want it to end %q", err, want)
++				}
++				if strings.Contains(err.Error(), "; otherwise") || strings.Contains(err.Error(), acceptBatchStep) {
++					t.Errorf("error %q names a route beyond reset-to-start", err)
++				}
++			},
++		},
++		{
++			name: "a git read failure while checking accept-audit's evidence is returned and is not needs_fresh",
++			setup: func(fx *recoverFixture) {
++				atStartSetup(fx)
++				fx.Git.headErr = errors.New("git head unreadable")
++			},
++			check: func(t *testing.T, fx *recoverFixture, bs *websterengine.BatchState, spawned bool, err error) {
++				if err == nil || spawned {
++					t.Fatalf("RecoverSpawnOrAttach() = spawned %v, err %v; want the git error and no strand", spawned, err)
++				}
++				if errors.Is(err, websterengine.ErrRecoveryNeedsFresh) || !strings.Contains(err.Error(), "git head unreadable") {
++					t.Errorf("error %q; want the git read failure, not ErrRecoveryNeedsFresh", err)
++				}
++			},
++		},
++		{
++			name: "a committed batch with no read-only classifier names the batch-start reset",
++			setup: func(fx *recoverFixture) {
++				committedSetup(fx)
++				fx.Deps.ReadOnly = nil
++			},
++			check: func(t *testing.T, fx *recoverFixture, bs *websterengine.BatchState, spawned bool, err error) {
++				if !errors.Is(err, websterengine.ErrRecoveryNeedsFresh) || spawned {
++					t.Fatalf("RecoverSpawnOrAttach() = spawned %v, err %v; want ErrRecoveryNeedsFresh and no strand", spawned, err)
++				}
++				want := "way forward: 1) lym webster reset --to batch-start --batch 01; 2) re-run " + acceptBatchStep +
++					"; otherwise 1) lym webster reset --to start; 2) lym webster run"
++				if !strings.HasSuffix(err.Error(), want) {
++					t.Errorf("error %q; want it to end %q", err, want)
+ 				}
+ 			},
+ 		},
+diff --git a/internal/websterengine/reset.go b/internal/websterengine/reset.go
+index 54eb9cac..83dad0ed 100644
+--- a/internal/websterengine/reset.go
++++ b/internal/websterengine/reset.go
+@@ -135,8 +135,8 @@ func PlanReset(deps ResetDeps, to ResetTarget, batch int) (ResetPlan, error) {
+ 		return ResetPlan{}, err
+ 	}
+ 	if active && to != ResetToReportHead {
+-		return ResetPlan{}, fmt.Errorf("%w: %q (run.lock held); %s", ErrRunBusy, geom.ScratchDir,
+-			wayForwardSteps("wait for it to finish, or check `lym webster status`"))
++		return ResetPlan{}, fmt.Errorf("%w: %q (run.lock held); this reset runs only once the run has stopped, so a Webster session inside the run ends it as stuck instead; %s", ErrRunBusy, geom.ScratchDir,
++			wayForwardSteps("the run's parent waits until `lym webster status` shows no run in progress", rerun))
+ 	}
+ 	if deps.State == nil {
+ 		return ResetPlan{}, resetRefusal(to, "the run has no state.json", wayForwardSteps("run `lym webster run` first"))
+diff --git a/internal/websterengine/reset_test.go b/internal/websterengine/reset_test.go
+index 11f35363..126ffc95 100644
+--- a/internal/websterengine/reset_test.go
++++ b/internal/websterengine/reset_test.go
+@@ -34,12 +34,14 @@ func TestPlanReset_HeldRunLockIsTransientBusy(t *testing.T) {
+ 		ParentBranch: func() (string, error) { return "main", nil },
+ 		Branch:       func() (string, error) { return "task", nil },
+ 	}
+-	_, err = websterengine.PlanReset(deps, websterengine.ResetToStart, 0)
++	_, err = websterengine.PlanReset(deps, websterengine.ResetToBatchStart, 6)
+ 	if !errors.Is(err, websterengine.ErrRunBusy) {
+ 		t.Fatalf("PlanReset error = %v, want ErrRunBusy", err)
+ 	}
+-	if !strings.Contains(err.Error(), "wait for it to finish, or check `lym webster status`") {
+-		t.Errorf("error = %v, want the wait way forward", err)
++	// The refusal names who resets and when, since the session holding the lock cannot.
++	want := "a Webster session inside the run ends it as stuck instead; way forward: 1) the run's parent waits until `lym webster status` shows no run in progress; 2) re-run `lym webster reset --to batch-start --batch 06`"
++	if !strings.HasSuffix(err.Error(), want) {
++		t.Errorf("error = %v, want it to end %q", err, want)
+ 	}
+ 
+ 	// report-head is the one target Master runs inside its run, so it passes the lock and reaches the batch check.
