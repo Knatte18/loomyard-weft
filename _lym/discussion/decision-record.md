@@ -206,6 +206,12 @@ Rationale: The check is that a test file has exactly one tier; repeating the sam
   - d6-later-card-cover-unbounded (class design, severity MEDIUM, open in rounds 2)
 <!-- /lym:carry-over Discussion-Review -->
 
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 3: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/plan/round-3-review.md; fixer report: _lym/reviews/plan/round-3-fixer-report.md.
+  - test-tier-unstated-way-forward (class consistency, severity MEDIUM, open in rounds 1, 2, 3)
+<!-- /lym:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - A record with an H3 under `## Decisions` that is neither `### D<n> — …` nor an `Added after Discussion` entry, or with a repeated id, fails both recipes' discussion checks with the finding naming the heading (D1).
