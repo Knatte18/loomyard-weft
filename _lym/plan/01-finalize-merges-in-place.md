@@ -10,6 +10,9 @@
 - `internal/landingshed#TestFinalize_MergeJudgement`
 - `internal/landingshed#TestFinalize_MergeInRequiredRetry`
 - `internal/loomcli/doc.go`
+- `internal/loomcli#loomRerouteCapWayForward`
+- `internal/loomcli#TestLoomRerouteCapWayForward_IsRowNeutral`
+- `internal/loomcli#TestLoomRerouteCapWayForward`
 - `internal/landingshed_test#TestFinalize_OverRealHub`
 - `internal/loomcli#TestLandingDeps_EveryFieldPopulated`
 - `internal/loomcli#TestWire_BeamRecipe`
@@ -51,7 +54,9 @@ D1 and D2: Finalize always merges the parent through its resolver, so a conflict
 `NewFinalize` hands `deps.Shuttle` to `mergeresolve.New` as told, so a nil shuttle is still refused by the resolver's constructor; the `shuttleengine` import goes if no other use remains.
 `Deps.ConflictReroutes` and `Deps.LargeMergeLands` are deleted, with `landingDeps`'s two settings and their comments, and `envkit.LandingDeps`'s `ConflictReroutes: true`.
 `overlapnote.go` is deleted (`WriteOverlapNote`, `OverlapNotePath`, `overlapNoteFile`), with `overlapNoteInput`; `loomCLI.wireDarn` drops its `c.env.ReviewInput` override, so a darn run keeps the shared wiring's `fixerReportInput` seam, which answers not found since darn has no Parent-Align.
+`loomRerouteCapWayForward` drops its clause for a parent-branch reroute, a cause no reroute carries any more, and keeps its spent-fixer, over-cap-fixer and Webster plan-conflict causes.
 `Finalize.Call`'s doc and its retry comment say the retry after a merge-in-required error merges, gates and lands a code-side parent commit instead of rerouting.
+`Finalize.Call`'s doc rewrites its merge sentence too: Finalize merges the parent through its resolver, resolves a conflict with the conflict session under the lock, and gates the merged tree, with no reroute on a conflict or a large merge; `Finalize.mergeIntoTask`'s doc drops the loom abort, and `Finalize.mergeParent`'s doc drops the large-merge reroute, the overlap note and `Deps.LargeMergeLands` and says a large merge writes the merge record and goes on to the gate.
 
 Bound (a guard removed): what now lands with no review is the conflict session's resolution against the parent's newer work and a textually clean merge of parent changes to files the task also changed, in loom and darn as already in pawl.
 The `finalize` gate over the merged tree bounds both; a failing gate runs the fixer, whose attempts and size and kind caps bound its change, and a spent cap or over-cap change still reroutes through `keepFixerCommits` when `RerouteReviewed` answers true and halts with `LandingStopPrefix` otherwise.
@@ -70,8 +75,10 @@ Tests:
 - `TestFinalize_OverRealHub`'s first step expects one `Finalize` call to resolve the conflict with one conflict session and land Done, and drops the reroute and second call; its doc comment says so.
 - `TestLandingDeps_EveryFieldPopulated` drops the `ConflictReroutes` check and the `LargeMergeLands` entry of its unfilled map; `TestWire_BeamRecipe` drops the `wantLargeMerge` and `wantConflictReroutes` columns and their checks, and its subtest name drops "let a large merge land".
 - `TestWire_DarnRecipe` drops the overlap-note write and asserts the darn `ReviewInput` is told and answers not found; `TestReviewInputSeams` drops its `OverlapNote` row.
+- `TestLoomRerouteCapWayForward_IsRowNeutral` and `TestLoomRerouteCapWayForward` drop their parent-branch fragments, `parent branch has settled` and `for a parent-branch reroute, once the parent branch has settled` in that order, keep their other fragments, and their doc comments stop naming the parent-branch cause.
 
 Docs: `internal/landingshed/doc.go`'s Finalize merge paragraph says Finalize merges through its resolver for every recipe, a conflict runs the conflict session under the lock, and a large merge writes the merge record and goes on to the gate, with the bound above.
+Its HandsBack paragraph's list of what Finalize routes back through the recipe's reroute edge drops a loom conflict and a large merge and keeps only a spent or over-cap fix.
 The loom and darn recipe header and Finalize row comments say the `on_reroute` edge carries only a spent or over-cap fixer change.
 The pawl recipe header gives its missing `on_reroute` edge the reason that remains: a spent or over-cap fixer has no review to return to, so it halts for the orch, while a conflict or a large merge lands through the gate in every recipe.
 `internal/loomcli/doc.go`'s pawl paragraph drops "lets a large merge go on to the gate in place of a reroute", which every recipe now does, and keeps the halt for a spent or over-cap fixer.
@@ -79,4 +86,4 @@ The Code-Review rubric's review-input paragraph names only the merge fixer's Par
 The orch role stencil's `Landing halts` says a moved parent, a conflict or a large merge no longer reroutes, and its parent-lock bullet says the released run merges the moved parent at its next Finalize.
 `docs/overview.md`'s Finalize line says Finalize merges the parent in place, resolving a conflict under the lock, and gates the merged tree with no reroute on a conflict or a large merge.
 
-**ImpactSummary:** Finalize's merge path collapses to the resolver within `internal/landingshed`; the two removed `Deps` fields and the overlap note reach only `internal/loomcli`'s landing and darn wiring, `envkit.LandingDeps` and their tests, with no exported signature change elsewhere.
+**ImpactSummary:** Finalize's merge path collapses to the resolver within `internal/landingshed`; the two removed `Deps` fields and the overlap note reach only `internal/loomcli`'s landing and darn wiring, `envkit.LandingDeps` and their tests, and `loomRerouteCapWayForward` loses its parent-branch cause with its two tests, with no exported signature change elsewhere.

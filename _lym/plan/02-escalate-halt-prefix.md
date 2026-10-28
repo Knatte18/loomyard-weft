@@ -18,6 +18,8 @@
 - `internal/loomcli#landingDeps`
 - `internal/battencli#battenCLI.wire`
 - `internal/battenshed/doc.go`
+- `internal/battenshed#InnerRunDeps`
+- `internal/battenshed#innerRunProducer.binaryRestep`
 - `internal/arbiterstop/doc.go`
 - `internal/landingshed#TestFixerRun_Outcomes`
 - `internal/landingshed#TestHandsBack`
@@ -48,8 +50,7 @@ D3: on a loom or darn run a merge fixer's `escalate` at Parent-Align or Finalize
 `Deps` gains `EscalateJudgedFirst bool`, told by the caller: true on a loom or darn run, false on a pawl run.
 `landingDeps` sets it to `recipe == shedrun.RecipeLoom || recipe == shedrun.RecipeDarn`, the two recipes the record names; the drift guard in `TestLandingDeps_EveryFieldPopulated` builds a loom run, so the field is filled there with no change to its unfilled map.
 `fixerOutcome.haltReason` takes `escalateJudgedFirst`: for `fixerEndEscalate` with it true the reason is `EscalateStopPrefix` + the cause as now (row, report path, conflict) + `; way forward: record the deciding decision with` `` `lym loom decision add` `` `in the task worktree, then` `` `lym loom resume` ``;
-with it false the reason opens with `LandingStopPrefix`, keeps the cause and its way forward reads `settle the conflict on the task branch, then` `` `lym loom resume` `` `; a settle past the fixer's caps halts over-cap, and the resume after that halt accepts the commits`, naming no `lym loom decision add`, since that verb refuses a pawl run.
-The second clause is there because the resume judges the change since the entry's Baseline, the operator's commits included, against the caps, and a pawl run has no review to reroute to.
+with it false the reason opens with `LandingStopPrefix`, keeps the cause and its way forward reads `settle the conflict on the task branch, then` `` `lym loom resume` ``, naming no `lym loom decision add`, since that verb refuses a pawl run.
 Every other end ignores the flag and keeps its `LandingStopPrefix` reason unchanged.
 `ParentAlign.align` and `ParentAlign.haltSpent` pass `m.deps.EscalateJudgedFirst`, and `Finalize.runFixer` passes `fz.deps.EscalateJudgedFirst`.
 
@@ -72,6 +73,7 @@ Tests:
 Docs: `internal/landingshed/doc.go`'s escalate and HandsBack paragraphs name the prefix, the predicate, the pawl case and the bound.
 `Finalize.gateAndFix`'s doc and `ParentAlign.Call`'s doc say a loom or darn escalate halts with `EscalateStopPrefix`, and every other halt of theirs with `LandingStopPrefix`.
 `internal/battenshed/doc.go`'s binary re-step paragraph says an escalate halt `InnerRunDeps.HandBack` marks is left alone too.
+The `InnerRunDeps.HandBack` field doc and `binaryRestep`'s doc name a landing halt, a decision halt or a loom or darn escalate halt as what the seam marks and the re-step leaves alone.
 `internal/arbiterstop/doc.go` says a loom or darn escalate halt is no landing halt and is eligible as a blocked stop.
 The landing fixer report spec says an `escalate` goes to the arbiter first on a loom or darn run and to the orch on a pawl run.
 The loom status spec's `hand_back` section says a loom or darn fixer escalate halt opens with the escalate prefix, is not marked `hand_back`, and goes to the arbiter first.
