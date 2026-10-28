@@ -38,7 +38,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Board README: one rendered file per project, research notes first**<br>• Render one README file per project, research notes first, After by handle | [`board-readme-per-project`](design-board-readme-per-project.md) | darn | Drift-Verify | neve | 3d<br>20m | board |
+| T1 | **Board README: one rendered file per project, research notes first**<br>• Render one README file per project, research notes first, After by handle | [`board-readme-per-project`](design-board-readme-per-project.md) | darn | Code-Bouncer | neve | 3d<br>20m | board |
 | T2 | **No test is skipped by design**<br>• Windows-only tests count as skips on Linux, and TestBuildLoomShed_OutputShape skips on every machine | [`test-skips-os-tags`](design-test-skips-os-tags.md) | darn | Darn-Write | neve | 2d<br>20m | testkit, reed, loom, fabric, gate |
 | T4 | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent<br>• `profile: solid` | [`creel-agents`](design-creel-agents.md) | loom | Discussion-Write | neve | 13d<br>20m | creel, shuttle, loom, stencil, report |
 | T5 | **Bench: the forked Codex Astra fan as Code reviewer on two darn diffs**<br>• 4 codex exec runs at medium: 2 landed darn diffs, twice each, graded against the Claude Code-Review fan<br>• `profile: docs` | [`codex-code-review-bench`](design-codex-code-review-bench.md) | darn | Darn-Write | neve | 5m<br>5m | codex, burler |
