@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -28,6 +28,33 @@
       "output": "",
       "at": "2026-10-28T11:55:54Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/codex-hook-spike/_lym/landing/summary.md",
+      "at": "2026-10-28T12:10:40Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-28T12:10:09.78011524Z",
+          "end": "2026-10-28T12:10:39.329013734Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-28T12:10:39.416678988Z",
+          "end": "2026-10-28T12:10:39.607614091Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-28T12:10:39.689538061Z",
+          "end": "2026-10-28T12:10:39.689591551Z"
+        }
+      ]
     }
   ],
   "product": {
