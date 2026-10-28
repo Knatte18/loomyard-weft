@@ -1,6 +1,6 @@
 # Shuttle reads activity and operator input from Claude Code hooks
 
-`shuttle-hook-signals` · Task · bug, shuttle, batten, shed, reed, claude · running · Worktree-Create
+`shuttle-hook-signals` · Task · bug, shuttle, batten, shed, reed, claude · running · Drift-Baseline
 
 Depends on: [`compact-inject-draft`](design-compact-inject-draft.md)
 
