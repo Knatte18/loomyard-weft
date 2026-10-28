@@ -42,7 +42,7 @@ Held by a run; its scope is locked until the run ends.
 | T3 | **Friction-Reflect producer fails to start with 'text file busy' when the lym binary is replaced mid-run** | [`spawn-text-file-busy`](design-spawn-text-file-busy.md) | darn | Worktree-Create | neve | 32m<br>0m | shed, deploy, loom |
 | T4 | **Machine checks in validate-discussion and validate-plan for recurring review findings**<br>• Citation and acceptance checks for the decision record; seam-test, tier-tag and doc.go checks for plan cards<br>• `profile: solid` | [`validator-checks`](design-validator-checks.md) | loom | Code-Bouncer | neve | 3h<br>3h | loom, stencil |
 | T6 | **The dobby holds a new run start while the user slice nears its task limit**<br>• Hold new run starts when the user slice pids.current nears pids.max | [`dobby-task-limit-hold`](design-dobby-task-limit-hold.md) | darn | Darn-Write | neve | 1h<br>0m | batten |
-| T7 | **Watcher's /compact inject into an idle orch is typed but not submitted (unconfirmed, then stalled on draft)** | [`compact-inject-draft`](design-compact-inject-draft.md) | darn | Drift-Baseline | neve | 1m<br>0m | creel, shuttle, orch |
+| T7 | **Watcher's /compact inject into an idle orch is typed but not submitted (unconfirmed, then stalled on draft)** | [`compact-inject-draft`](design-compact-inject-draft.md) | darn | Darn-Write | neve | 1m<br>0m | creel, shuttle, orch |
 
 ### Ready (1)
 
