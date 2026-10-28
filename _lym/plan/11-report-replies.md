@@ -1,13 +1,13 @@
 # Card 11 — report-replies
 
 **Create:**
-- `plan:internal/reportengine#RoleReplies` -> `type RoleReplies struct`
-- `plan:internal/reportengine#ComputeReplies` -> `func ComputeReplies(entries []creelengine.LogEntry) []RoleReplies`
-- `plan:internal/reportengine#TestComputeReplies` -> `func TestComputeReplies(t *testing.T)`
-- `plan:internal/reportcli#repliesCommand` -> `func repliesCommand() *cobra.Command`
-- `plan:internal/reportcli#creelLog` -> `var creelLog = readCreelLog`
-- `plan:internal/reportcli#readCreelLog` -> `func readCreelLog(location *lymcwd.Location) ([]creelengine.LogEntry, error)`
-- `plan:internal/reportcli#TestRepliesVerb` -> `func TestRepliesVerb(t *testing.T)`
+- `internal/reportengine#RoleReplies`
+- `internal/reportengine#ComputeReplies`
+- `internal/reportengine#TestComputeReplies`
+- `internal/reportcli#repliesCommand`
+- `internal/reportcli#creelLog`
+- `internal/reportcli#readCreelLog`
+- `internal/reportcli#TestRepliesVerb`
 
 **Edit:**
 - `internal/reportcli#Command`
