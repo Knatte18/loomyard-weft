@@ -38,7 +38,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Spike: which hook channels deliver creel posts and show them to the operator, Claude and Codex**<br>• One run each of PostToolUse systemMessage, Stop block, asyncRewake when idle, MessageDisplay, and Codex post_tool_use, with pane captures<br>• `profile: docs` | [`creel-hook-channels-spike`](design-creel-hook-channels-spike.md) | darn | Worktree-Create | neve | 0m<br>0m | creel, claude, codex |
+| T1 | **Spike: which hook channels deliver creel posts and show them to the operator, Claude and Codex**<br>• One run each of PostToolUse systemMessage, Stop block, asyncRewake when idle, MessageDisplay, and Codex post_tool_use, with pane captures<br>• `profile: docs` | [`creel-hook-channels-spike`](design-creel-hook-channels-spike.md) | darn | Drift-Baseline | neve | 0m<br>0m | creel, claude, codex |
 
 ### Ready (0)
 
