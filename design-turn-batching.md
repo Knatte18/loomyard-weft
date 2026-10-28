@@ -1,6 +1,6 @@
 # Stencil and system-prompt sentences that batch independent calls and edits
 
-`turn-batching` · Task · enhancement, stencil, shuttle
+`turn-batching` · Task · enhancement, stencil, shuttle · running · Worktree-Create
 
 ## Seen
 
