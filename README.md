@@ -22,7 +22,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Codex code-review bench: the decision record as yardstick**<br>• Two Codex runs: one added reading line naming the decision record and acceptance criteria as the yardstick<br>• `profile: docs` | [`codex-review-yardstick`](design-codex-review-yardstick.md) | darn | Darn-Write | neve | 28m<br>28m | shuttle, codex |
-| T4 | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent<br>• `profile: solid` | [`creel-agents`](design-creel-agents.md) | loom | Drift-Await | neve | 13d<br>2h | creel, shuttle, loom, stencil, report |
+| T4 | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent<br>• `profile: solid` | [`creel-agents`](design-creel-agents.md) | loom | Webster | neve | 13d<br>2h | creel, shuttle, loom, stencil, report |
 
 ### Ready (0)
 
