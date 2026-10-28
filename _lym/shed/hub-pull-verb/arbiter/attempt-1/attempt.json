@@ -1,0 +1,15 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Run-Shed",
+    "history_length": 6,
+    "state": "failed"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-10-28T10:39:55.200297718+01:00",
+  "deadline": "2026-10-28T11:09:55.200297718+01:00",
+  "strand_guid": "2c50b1aacd917f05e256bb5e8483b589",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/hub-pull-verb/drive-reports/drive-envelope-20261028-103955-3012.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/hub-pull-verb/drive-reports/drive-report-20261028-103955-dacd.md"
+}

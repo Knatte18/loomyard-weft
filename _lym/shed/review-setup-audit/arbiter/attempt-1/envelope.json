@@ -1,0 +1,12 @@
+{
+  "verdict": "hand-on",
+  "reason": "The stop is environmental, not a run or plan defect.\nRun-Shed had been yielding cleanly every 30 s while the inner shed run works (\"adopting the running inner shed run\"), and the inner run in /home/knatte/Code/loomyard-LYMHUB/review-setup-audit is still healthy: state running at Darn-Write, no error.\nThe two failures at 10:39 are fork failures: the origin reconcile's `git ls-remote` failed with \"cannot fork() for git-remote-https: Resource temporarily unavailable\", and the last loop step failed with \"list git worktrees ...: fork/exec /usr/bin/git: resource temporarily unavailable\".\nThe cause is still present: /sys/fs/cgroup/user.slice/user-1000.slice/pids.current read 2967 at 10:41, at the slice's task cap, and pids.events shows the cap hit 2966 times.\nMy own shell hooks failed with \"Cannot fork\" repeatedly during this check.\nThe heaviest holders were desktop and IDE processes (plasmashell 82 threads, code 54, chrome), 69 `lym` processes, 11 `git-receive-pack`, and a `fabricengine.test` binary.\nThe driver's tackler re-launch already returned to this same stop, so another plain re-launch while the slice sits at its cap would fail the same way.\nA plain re-launch with no goto is safe once forks succeed again: the run's position (history length 5, Run-Shed) is intact and Run-Shed only re-adopts the inner run.",
+  "question": "The user's cgroup (user-1000.slice) is pinned at its task cap (pids.current 2967), so every git fork in Run-Shed fails with \"resource temporarily unavailable\"; the inner run is still healthy at Darn-Write.\nWill you free task slots (for example by stopping stray `lym`, `git-receive-pack` or test processes, or raising the slice's TasksMax) and then re-launch review-setup-audit plainly at Run-Shed, with no goto?",
+  "goto": "",
+  "verbs": [],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/review-setup-audit/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/review-setup-audit/arbiter/attempt-1/verdict.yaml",
+  "relaunch": ""
+}

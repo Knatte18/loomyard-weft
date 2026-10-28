@@ -1,0 +1,18 @@
+verdict: hand-on
+reason: |-
+  The stop is not transient, so a plain re-launch is not safe.
+  The spawned loop exited with "list git worktrees: fork/exec /usr/bin/git: resource temporarily unavailable" (tail of .lym/shed/hub-pull-verb/steps/loop.log).
+  The stop before it was the same EAGAIN from fork in git ls-remote, and the child's own run already failed at Darn-Write with "shuttle run outcome died", the same kind of death the first arbiter launch suffered at 10:40:02.
+  The tackler judged the first fork failure transient by checking `ulimit -u` (113180), but that is not the binding limit.
+  The binding limit is the systemd user slice: /sys/fs/cgroup/user.slice/user-1000.slice/pids.max is 3000.
+  pids.current read 2978 and then 2997, and pids.events "max" rose from 1890 to 2227 within about a minute.
+  Commands in this session keep failing with "Cannot fork" and "failed to spawn thread: Resource temporarily unavailable".
+  Re-launching or moving back a row does not free tasks.
+  Several batten runs and their agents share the slice: worktrees creel-hook-post, hub-pull-verb, ide-seed-current-worktree, landing-settles-in-place and review-setup-audit.
+  Fixing this means stopping processes or raising the slice's TasksMax, which is outside the arbiter's moves.
+  After that, the child run at Darn-Write also needs `lym loom resume` in the task worktree.
+verbs: []
+question: |-
+  The user slice user-1000.slice is pinned at its task limit (pids.current about 2997 of pids.max 3000, with the max-hit counter still climbing), so every fork in this run fails with EAGAIN.
+  Will you free tasks, for example by pausing some of the parallel batten runs or other heavy processes, or raise the slice's TasksMax?
+  Once pids.current sits well below 3000, re-launch hub-pull-verb and resume the child run at Darn-Write with `lym loom resume` in /home/knatte/Code/loomyard-LYMHUB/hub-pull-verb.

@@ -2,6 +2,7 @@
   "current_producer": "Run-Shed",
   "state": "running",
   "error": "",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",

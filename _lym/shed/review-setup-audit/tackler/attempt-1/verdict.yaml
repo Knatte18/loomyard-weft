@@ -1,0 +1,10 @@
+verdict: resume
+reason: >-
+  The bootstrap stop was a transient environment failure. The origin reconcile
+  ran `git ls-remote --heads origin`, which failed with "cannot fork() for
+  git-remote-https: Resource temporarily unavailable" (EAGAIN from fork, trace
+  c892ece0cf4e0b21, stderr log line 1). Re-running the same read-only command
+  now succeeds (exit 0, all heads listed), and the machine has headroom: 316
+  user processes against a `ulimit -u` of 113180, and 13.9 GB free memory. The
+  cause has cleared, so a plain re-launch settles it. No goto: a bootstrap stop
+  is not a blocked row.

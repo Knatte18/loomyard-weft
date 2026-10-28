@@ -1,12 +1,12 @@
 {
   "current_producer": "Run-Shed",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "battencli: cannot verify this is the hub's prime worktree: resolve main worktree: list git worktrees in \"/home/knatte/Code/loomyard-LYMHUB/loomyard\": fork/exec /usr/bin/git: resource temporarily unavailable",
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",
     "last": "Open-IDE → skipped",
-    "wait": ""
+    "wait": "battencli: cannot verify this is the hub's prime worktree: resolve main worktree: list git worktrees in \"/home/knatte/Code/loomyard-LYMHUB/loomyard\": fork/exec /usr/bin/git: resource temporarily unavailable"
   },
   "history": [
     {

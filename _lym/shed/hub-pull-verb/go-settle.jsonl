@@ -1,0 +1,4 @@
+{"stop_key":{"current_producer":"Run-Shed","history_length":6,"state":"failed"},"settler":"tackler","action":"spawn","outcome":"tackler spawned","at":"2026-10-28T10:39:28.228160241+01:00","target":"attempt-1"}
+{"stop_key":{"current_producer":"Run-Shed","history_length":6,"state":"failed"},"settler":"tackler","action":"restep","outcome":"tackler resume","at":"2026-10-28T10:39:28.22899969+01:00"}
+{"stop_key":{"current_producer":"Run-Shed","history_length":6,"state":"failed"},"settler":"arbiter","action":"spawn","outcome":"arbiter spawned","at":"2026-10-28T10:41:13.496231153+01:00","target":"attempt-1"}
+{"stop_key":{"current_producer":"Run-Shed","history_length":6,"state":"failed"},"settler":"parent","action":"hand-back","outcome":"the arbiter handed the stop on","at":"2026-10-28T10:41:13.496338794+01:00"}
