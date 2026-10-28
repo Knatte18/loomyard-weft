@@ -4,6 +4,12 @@
   "base": "546bc89cbe87f2a3b1ba06e5485ebe0bdc4575e2",
   "review_input": "/home/knatte/Code/loomyard-LYMHUB/hub-pull-verb/.lym/loom/overlap-note.md",
   "judge_subject": {
-    "kind": ""
-  }
+    "kind": "code",
+    "merge_base": "26c17888c72bd348bfda5ade8c76c45da10ade40",
+    "head": "50d582a8e354ee1672f8403aac1f374791cb96a8",
+    "full_hash": "fc4fd620545cdc47344e0bae9bb6dc10311ef6cc58470f10da0f4365a33dcb96",
+    "patch_id": "dc5a5ea7cbd2905db723dae0bebf6a70cfcfcc4c"
+  },
+  "judge_base": "26c17888c72bd348bfda5ade8c76c45da10ade40",
+  "judge_at": "2026-10-28T10:23:16Z"
 }
