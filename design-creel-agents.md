@@ -2,7 +2,7 @@
 
 `creel-agents` · Task · feature, creel, shuttle, loom, stencil, report
 
-Depends on: [`shuttle-hook-signals`](design-shuttle-hook-signals.md)
+Depends on: [`shuttle-hook-signals`](design-shuttle-hook-signals.md), [`claude-md-lym-rules-out`](design-claude-md-lym-rules-out.md)
 
 ## Goal
 
