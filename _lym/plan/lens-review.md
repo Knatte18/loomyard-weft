@@ -1,0 +1,21 @@
+# Lens review — review-setup-tuning plan
+
+Every lens fork returned a report.
+Duplicates were merged: coverage 2, row-validity 1 and guard-reach 1's admitted half and guard-reach 2 are one finding; way-forward 1 and guard-reach 1's refused half are one finding.
+
+- coverage 1, MEDIUM, fixed as proposed: card 1's `TestPrepareRunSettings` gains a row setting `loom.code_reviewer_fan: ""` directly, admitted with `wantDocs` `code_reviewer_fan: ""`.
+- coverage 2 / row-validity 1 / guard-reach 1 (admitted half) / guard-reach 2, MEDIUM, fixed as proposed: card 1 lists `internal/loomengine#TestLoadConfig_Loads` and adds a "hub stack" row loading a local `code_reviewer_fan: ""` over the template list as `lenses.FanList{""}`; card 2 cites that row in place of the base-file row.
+- coverage 3, MEDIUM, fixed as proposed: card 2 lists `internal/configsync#TestReconcileAll_SparseLayers` and adds a row where a local loom file holding `code_reviewer_fan: ""` is left byte-identical by a reconcile, which no existing row of that test pins (`internal/configsync/configsync_test.go:1453-1510`).
+- coverage 4, MEDIUM, fixed as proposed: card 3's `wantSentences` gains "reports only a contradiction with the board", and the test asserts `board-scope`'s text does not contain the emphasis line.
+- coverage 5, LOW, fixed as proposed: cards 3 and 5 assert `cfg.Lenses` defines none of `goal-scope`, `board-fit` and `code-pattern-fit`.
+- coverage 6, LOW, fixed as proposed: card 1's `TestPrepareRunSettings` gains refused rows for loom's retired `plan_fan`, `discussion_fix_fan` and `plan_fix_fan`, which `retiredReviewKeyRenames` (`internal/loomengine/config.go:1020-1027`) renames onto `plan_reviewer_fan`, `discussion_fixer_fan` and `plan_fixer_fan`.
+- coverage 7, LOW, fixed differently: the proposal to drop "sorted" was not taken, since a sorted result keeps the helper's error order deterministic; card 3's `leanness` row instead holds two failing lenses, `leanness` and `scenarios`, and wants them in sorted order, which reaches the sort.
+- way-forward 1 / guard-reach 1 (refused half), MEDIUM, fixed as proposed: card 1 adds a `TestLoadConfig_Refuses` subtest writing a local `code_reviewer_fan: nosuchfan` and wanting `loom config key "code_reviewer_fan" entry 1` and `set the entry to ""`.
+- way-forward 2, LOW, fixed differently: the proposal to make the refusal name the pair's local file was not taken, because the text is `ValidateFanKeys`' (`internal/lenses/fankeys.go`), shared by every loom and darn fan key, and the record's D5 bound accepts the refusal as it is ("whose refusal names the key and the fix"), so changing it is scope the answer key does not license; card 1's Intent instead states that the value to fix sits in the pair's local loom file and that a `run_settings` or hub write reaches no running pair.
+- way-forward 3, LOW, fixed as proposed: cards 3 and 5 note in their Intent that the operator's recovery is to drop the deleted lens name from the fan with `lym config lenses --set` or the editor, and that the shared refusal text stays.
+- row-validity 2, LOW, fixed as proposed: card 1 drops the planned refused `code_fixer_fan` row from `TestModules_LocalLayerRefusals`, which `TestLoadConfig_Refuses`' local-fan loop already pins (`internal/loomengine/config_test.go:685-700`).
+- row-validity 3, LOW, fixed as proposed: card 4 drops the `writerFanGaps` row over the template's own pairs, which `TestConfigTemplate_DecodesAndIsSelfConsistent`'s call already makes.
+- row-validity 4, LOW, fixed as proposed: card 5 drops the csharp exact-order assertion and states the existing layer checks that cover it (`internal/lenses/config_test.go:378-380`, `412-439`).
+- guard-reach 3, LOW, fixed as proposed: card 3's template test asserts the computed `procedureLenses` holds `board-scope` and lacks `leanness`.
+- forced-edits 1, MEDIUM, fixed as proposed: card 3 lists `internal/configsync#TestReconcile_MovesKeysAcrossModules` and cuts `burlerOldTemplate`'s `twill-discussion` fan to `[:5]`, since `[:6]` (`internal/configsync/configsync_test.go:2063-2065`) equals the six-lens fan card 3 leaves.
+- forced-edits 2, LOW, fixed as proposed: the overview's ordering decision and card 2's Intent say `TestProfilesCheckLoad` fails at the batch and `webster` gates without card 1, since `internal/configreg` is outside card 2's packages.
