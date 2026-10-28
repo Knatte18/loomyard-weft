@@ -1,8 +1,8 @@
 # Card 5 — expect-reply-engine
 
 **Create:**
-- `plan:internal/creelengine#PostOptions` -> `type PostOptions struct`
-- `plan:internal/creelengine#Store.PostWith` -> `func (s *Store) PostWith(sender Sender, receiver, body string, opts PostOptions) (int64, bool, *Waiter, error)`
+- `internal/creelengine#PostOptions`
+- `internal/creelengine#Store.PostWith`
 
 **Edit:**
 - `internal/creelengine#Request`

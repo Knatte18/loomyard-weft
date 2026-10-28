@@ -2,30 +2,30 @@
 
 **Create:**
 - `internal/creelengine/chase.go`
-- `plan:internal/creelengine#chaseInterval` -> `const chaseInterval = 15 * time.Minute`
-- `plan:internal/creelengine#maxChases` -> `const maxChases = 2`
-- `plan:internal/creelengine#chaseProbeCeiling` -> `const chaseProbeCeiling = 8 * time.Minute`
-- `plan:internal/creelengine#ChaserProgram` -> `const ChaserProgram = "CREEL"`
-- `plan:internal/creelengine#eventChased` -> `const eventChased = "chased"`
-- `plan:internal/creelengine#eventChaseAged` -> `const eventChaseAged = "chase-aged"`
-- `plan:internal/creelengine#eventUnanswered` -> `const eventUnanswered = "unanswered"`
-- `plan:internal/creelengine#UnansweredNoReply` -> `const UnansweredNoReply = "no-reply"`
-- `plan:internal/creelengine#UnansweredHolderGone` -> `const UnansweredHolderGone = "holder-gone"`
-- `plan:internal/creelengine#OutcomeUnanswered` -> `const OutcomeUnanswered OutcomeKind = "unanswered"`
-- `plan:internal/creelengine#isChaseable` -> `func isChaseable(msg *Message) bool`
-- `plan:internal/creelengine#chaser` -> `type chaser struct`
-- `plan:internal/creelengine#chaser.run` -> `func (c *chaser) run()`
-- `plan:internal/creelengine#Store.chaseSubjects` -> `func (s *Store) chaseSubjects() []string`
-- `plan:internal/creelengine#Store.chasePending` -> `func (s *Store) chasePending(holder string) bool`
-- `plan:internal/creelengine#Store.ageChases` -> `func (s *Store) ageChases(holder string, elapsed time.Duration) error`
-- `plan:internal/creelengine#Store.persistChaseAged` -> `func (s *Store) persistChaseAged(holder string) error`
-- `plan:internal/creelengine#Store.stepChases` -> `func (s *Store) stepChases(holder string) error`
-- `plan:internal/creelengine#Store.settleUnansweredLocked` -> `func (s *Store) settleUnansweredLocked(id int64, reason string) error`
-- `plan:internal/creelengine#Store.repairChases` -> `func (s *Store) repairChases() error`
-- `plan:internal/creelengine_test#isChaseWait` -> `func isChaseWait(d time.Duration) bool`
-- `plan:internal/creelengine_test#env.writeJournal` -> `func (e *env) writeJournal(t *testing.T, day string, lines ...string)`
-- `plan:internal/creelengine_test#env.reopen` -> `func (e *env) reopen(t *testing.T)`
-- `plan:internal/creelengine_test#TestScheduler_Chases` -> `func TestScheduler_Chases(t *testing.T)`
+- `internal/creelengine#chaseInterval`
+- `internal/creelengine#maxChases`
+- `internal/creelengine#chaseProbeCeiling`
+- `internal/creelengine#ChaserProgram`
+- `internal/creelengine#eventChased`
+- `internal/creelengine#eventChaseAged`
+- `internal/creelengine#eventUnanswered`
+- `internal/creelengine#UnansweredNoReply`
+- `internal/creelengine#UnansweredHolderGone`
+- `internal/creelengine#OutcomeUnanswered`
+- `internal/creelengine#isChaseable`
+- `internal/creelengine#chaser`
+- `internal/creelengine#chaser.run`
+- `internal/creelengine#Store.chaseSubjects`
+- `internal/creelengine#Store.chasePending`
+- `internal/creelengine#Store.ageChases`
+- `internal/creelengine#Store.persistChaseAged`
+- `internal/creelengine#Store.stepChases`
+- `internal/creelengine#Store.settleUnansweredLocked`
+- `internal/creelengine#Store.repairChases`
+- `internal/creelengine_test#isChaseWait`
+- `internal/creelengine_test#env.writeJournal`
+- `internal/creelengine_test#env.reopen`
+- `internal/creelengine_test#TestScheduler_Chases`
 
 **Edit:**
 - `internal/creelengine#record`

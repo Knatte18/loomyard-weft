@@ -12,7 +12,7 @@
 - `internal/creelcli/doc.go`
 
 **Uses:**
-- `plan:internal/creelengine#OutcomeUnanswered`
+- `internal/creelengine#OutcomeUnanswered`
 - `internal/creelcli#newHookRig`
 - `internal/creelcli#rig.startDaemon`
 

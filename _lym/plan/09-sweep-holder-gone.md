@@ -10,9 +10,9 @@
 - `pattern/PATTERN-daemon-wakeups.md`
 
 **Uses:**
-- `plan:internal/creelengine#isChaseable`
-- `plan:internal/creelengine#Store.settleUnansweredLocked`
-- `plan:internal/creelengine#UnansweredHolderGone`
+- `internal/creelengine#isChaseable`
+- `internal/creelengine#Store.settleUnansweredLocked`
+- `internal/creelengine#UnansweredHolderGone`
 - `internal/creelengine_test#env.sweepStep`
 - `internal/creelengine_test#env.sweepLast`
 

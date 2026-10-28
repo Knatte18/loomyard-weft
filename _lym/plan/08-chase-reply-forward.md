@@ -3,13 +3,13 @@
 **Edit:**
 - `internal/creelengine#Store.Reply`
 - `internal/creelengine#Store.Forward`
-- `plan:internal/creelengine_test#TestScheduler_Chases`
+- `internal/creelengine_test#TestScheduler_Chases`
 
 **Extends:**
 - `internal/creelengine/doc.go`
 
 **Uses:**
-- `plan:internal/creelengine#isChaseable`
+- `internal/creelengine#isChaseable`
 - `internal/creelengine_test#env`
 
 **Intent:**
