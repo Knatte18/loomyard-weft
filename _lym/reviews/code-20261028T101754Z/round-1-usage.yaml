@@ -1,0 +1,59 @@
+round: 1
+fan: review-code
+fix_fan: fix-code
+fans_recorded: true
+lenses:
+    - code-correctness
+    - code-affected-set
+    - code-tests
+    - code-pattern-fit
+fix_lenses:
+    - fix-code-correctness
+    - fix-consistency
+    - fix-proposal
+    - fix-affected-set
+fix_forks: 4
+review:
+    engine: claude
+    model: sonnet
+    effort: medium
+    start: 2026-10-28T09:52:45Z
+    end: 2026-10-28T10:56:11.27990093+01:00
+    wall_seconds: 206.27990093
+    tokens_known: true
+    fresh_tokens: 152265
+    cache_read_tokens: 2409187
+    forks: 4
+    fork_fresh_tokens: 30659
+    fork_cache_read_tokens: 575365
+    fork_fresh_share: 0.20135290447574952
+fix:
+    engine: claude
+    model: sonnet
+    effort: medium
+    start: 2026-10-28T09:56:12Z
+    end: 2026-10-28T11:16:36.273220905+01:00
+    wall_seconds: 1224.273220905
+    tokens_known: true
+    fresh_tokens: 200358
+    cache_read_tokens: 6816590
+seed:
+    - engine: claude
+      model: sonnet
+      effort: medium
+      start: 2026-10-28T09:52:19Z
+      end: 2026-10-28T10:52:44.110560351+01:00
+      wall_seconds: 25.110560351
+      tokens_known: true
+      fresh_tokens: 29020
+      cache_read_tokens: 142467
+judge:
+    - engine: claude
+      model: sonnet
+      effort: medium
+      start: 2026-10-28T10:16:37Z
+      end: 2026-10-28T11:17:10.181929711+01:00
+      wall_seconds: 33.181929711
+      tokens_known: true
+      fresh_tokens: 39035
+      cache_read_tokens: 157922
