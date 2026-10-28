@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-28 14:10 UTC; every age below is as of then.
+Rendered 2026-10-28 14:11 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -39,9 +39,9 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **The watcher wakes the orch after a usage limit resets, and holds the repeat notices**<br>• `profile: solid` | [`usage-limit-wake`](design-usage-limit-wake.md) | darn | Code-Burler-Review | neve | 52m<br>20m | orch, batten, shuttle |
-| T2 | **A merge fixer change over the caps gets a solo review of its own commits, not a full Code review** | [`fixer-overcap-review`](design-fixer-overcap-review.md) | darn | Code-Burler-Fix | neve | 34m<br>20m | loom, burler |
-| T3 | **Friction-Reflect producer fails to start with 'text file busy' when the lym binary is replaced mid-run** | [`spawn-text-file-busy`](design-spawn-text-file-busy.md) | darn | Code-Burler-Fix | neve | 51m<br>20m | shed, deploy, loom |
-| T5 | **Stencil and system-prompt sentences that batch independent calls and edits**<br>• The turn audit sentences per heavy role, plus one shuttle-appended system-prompt sentence for every Claude agent | [`turn-batching`](design-turn-batching.md) | darn | Code-Bouncer | neve | 3h<br>3h | stencil, shuttle |
+| T2 | **A merge fixer change over the caps gets a solo review of its own commits, not a full Code review** | [`fixer-overcap-review`](design-fixer-overcap-review.md) | darn | Code-Burler-Fix | neve | 35m<br>20m | loom, burler |
+| T3 | **Friction-Reflect producer fails to start with 'text file busy' when the lym binary is replaced mid-run** | [`spawn-text-file-busy`](design-spawn-text-file-busy.md) | darn | Code-Burler-Fix | neve | 52m<br>20m | shed, deploy, loom |
+| T5 | **Stencil and system-prompt sentences that batch independent calls and edits**<br>• The turn audit sentences per heavy role, plus one shuttle-appended system-prompt sentence for every Claude agent | [`turn-batching`](design-turn-batching.md) | darn | Describe | neve | 3h<br>3h | stencil, shuttle |
 | T6 | **The dobby holds a new run start while the user slice nears its task limit**<br>• Hold new run starts when the user slice pids.current nears pids.max | [`dobby-task-limit-hold`](design-dobby-task-limit-hold.md) | darn | Code-Burler-Fix | neve | 2h<br>20m | batten |
 | T7 | **Watcher's /compact inject into an idle orch is typed but not submitted (unconfirmed, then stalled on draft)** | [`compact-inject-draft`](design-compact-inject-draft.md) | darn | Darn-Write | neve | 20m<br>20m | creel, shuttle, orch |
 
