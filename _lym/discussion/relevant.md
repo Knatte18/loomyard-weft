@@ -1,0 +1,34 @@
+# Relevant files
+
+- `contracts/stencils/parent/parent-directive-parent.md` — the parent directive every role with a parent renders; names `SendMessage`
+- `contracts/stencils/seat/seat-directive-chair.md` — chair's advisor channel wording
+- `contracts/stencils/seat/seat-directive-advisor.md` — advisor's chair channel wording
+- `contracts/stencils/loom/loom-template-discussion-advisor.md` — advisor answers over the session message channel
+- `contracts/stencils/shed/shed-template-driver-notify.md` — LLM driver's parent notify rule, unwatched
+- `contracts/stencils/shed/shed-template-driver-notify-watched.md` — LLM driver's parent notify rule, watched
+- `contracts/stencils/darn/darn-template-write.md` — darn writer's outdated-entry ask by `SendMessage`
+- `contracts/stencils/webster/webster-template-master.md` — Merriam's parent asks and its fork addressing
+- `contracts/stencils/orch/orch-template-role.md` — orch messaging section and hold notice answer
+- `internal/shuttleengine/hold.go` `holdNotice`, `holdNoticeSettle` — hold notice text naming `SendMessage`
+- `internal/shuttleengine/requires.go` `knownRequirements` — closed requirement set
+- `internal/shuttleengine/engine.go` `RequirementPeerMessaging` — the requirement D7 removes
+- `internal/shuttleengine/claudeengine/capabilities.go` — Claude engine's met requirements
+- `internal/seatengine/prompt.go` `seatSpec` — adds peer messaging to multi-seat tables
+- `internal/shuttleengine/claudeengine/settings.go` — appends the creel trust sentence D6 rewords
+- `internal/seatengine/doc.go` — seat model, notice sender and hold deferral
+- `internal/shuttlecli/send.go` `sendCmd` — `lym shuttle send`
+- `internal/shuttlecli/interrupt.go` `interruptCmd` — `lym shuttle interrupt`
+- `internal/shuttleengine/interruptguard.go` `ErrNoRunningTurn` — refusals naming the shuttle verbs
+- `internal/orchcli/notify.go` `NotifyParent`, `NotifyFrom`, `NotifyPrime` — creel notices to the nearest live orch
+- `internal/hubgeom/nearestlive.go` `NearestLiveOrch` — the walk D1 reuses
+- `internal/hubgeom/parent.go` `ResolveParent`, `decideParent` — the static parent name the directive renders
+- `internal/battencli/notices.go` `notifyRunParent` — batten's run-parent notice walk
+- `internal/loomcli/wiring.go` — loom runner notifier wiring to `NotifyParent`
+- `internal/loomcli/driverprompt.go` `driverPrompt` — fills the notify stencils into the LLM driver prompt
+- `internal/sheddriver/drivehandback.go` `driveNotices`, `handBackRun` — Go driver notices already posted through creel
+- `internal/creelengine/doc.go` — creel design, mail, hooks, reminders, unbuilt stage 3 section
+- `internal/creelcli/doc.go` — creel CLI verbs, read output, Go client
+- `internal/websterengine/runlevel.go` — Merriam spec sets `ForkSubagents`
+- `pattern/PATTERN-pane-text-injection.md` — orch pane via creel; names `lym shuttle interrupt`
+- `pattern/PATTERN-parent-directive.md` — parent directive rule
+- `docs/research/stencil-engine-audit-2026-10-24/report.md` — block 7 site list
