@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-28 08:24 UTC; every age below is as of then.
+Rendered 2026-10-28 08:26 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -32,19 +32,13 @@ grouping
 
 Concrete and claimable; only a task can run.
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
-
-### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Spike: a mid-turn creel post the model acts on and the operator sees**<br>• PostToolUse block+reason with and without a system-prompt sentence, Haiku and Sonnet, plus Codex, with a realistic scope change<br>• `profile: docs` | [`creel-midturn-trust-spike`](design-creel-midturn-trust-spike.md) | darn |  | 0m<br>0m | creel, claude, codex |
+| T1 | **Spike: a mid-turn creel post the model acts on and the operator sees**<br>• PostToolUse block+reason with and without a system-prompt sentence, Haiku and Sonnet, plus Codex, with a realistic scope change<br>• `profile: docs` | [`creel-midturn-trust-spike`](design-creel-midturn-trust-spike.md) | darn |  | 1m<br>1m | creel, claude, codex |
 
 ## Notes (41)
 
@@ -64,8 +58,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E1 |  | **Beam promote keeps the Discussion record as part of the beam**<br>• When Discussion finds a task should be a project, promote carries its decision record into the beam instead of dropping it | [`beam-promote-keeps-discussion`](design-beam-promote-keeps-discussion.md) | 2d<br>22h | workspaces, batten, loom |
 | E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>17h | shuttle, codex |
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 17h<br>14h | batten, stencil, config |
-| E4 |  | **Creel hook delivery shows a line in the pane, not only in the agent context**<br>• hook-read adds a systemMessage per delivered message so the operator sees mid-turn deliveries | [`creel-hook-visible`](design-creel-hook-visible.md) | 14h<br>31m | creel, claude, codex |
-| E5 |  | **Decide the layout of projects in the board README**<br>• The operator is not satisfied with how the README renders projects and their members; the layout is to be decided | [`board-projects-layout`](design-board-projects-layout.md) | 3d<br>17h | board |
+| E4 |  | **Creel hook delivery shows a line in the pane, not only in the agent context**<br>• hook-read adds a systemMessage per delivered message so the operator sees mid-turn deliveries | [`creel-hook-visible`](design-creel-hook-visible.md) | 14h<br>32m | creel, claude, codex |
+| E5 |  | **Decide the layout of projects in the board README**<br>• The operator is not satisfied with how the README renders projects and their members; the layout is to be decided | [`board-projects-layout`](design-board-projects-layout.md) | 3d<br>18h | board |
 | E6 |  | **Board README: one rendered file per project, research notes first**<br>• Each project renders its own file linked from its parent; README.md is the root project; research notes come right after tasks | [`readme-per-project-files`](design-readme-per-project-files.md) | 2d<br>17h | board |
 | E7 |  | **Run verbs in one shared namespace, not under lym loom**<br>• lym loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 13d<br>22h | shed, loom |
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 2w<br>22h | burler, stencil |
