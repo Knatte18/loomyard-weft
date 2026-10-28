@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-28 11:39 UTC; every age below is as of then.
+Rendered 2026-10-28 11:40 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -40,7 +40,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Creel delivers every post to a Claude strand through hooks, visibly and in full**<br>• PostToolUse, Stop and asyncRewake hooks carry posts as fast as possible; shuttle appends a trust and reply sentence to the system prompt | [`creel-hook-post`](design-creel-hook-post.md) | loom | Webster | neve | 5d<br>2h | creel, shuttle, claude |
 | T3 | **Lens sets and code review per profile as the review-setup audit recommends**<br>• Merge goal-scope and board-fit, replace review-plan way-forward with a repository-invariant lens, fold code-pattern-fit into code-affected-set, narrow code-tests, solo code review in light and docs<br>• `profile: solid` | [`review-setup-tuning`](design-review-setup-tuning.md) | loom | Describe | neve | 1h<br>1h | burler, stencil, config |
-| T4 | **Machine checks in validate-discussion and validate-plan for recurring review findings**<br>• Citation and acceptance checks for the decision record; seam-test, tier-tag and doc.go checks for plan cards<br>• `profile: solid` | [`validator-checks`](design-validator-checks.md) | loom | Plan-Write | neve | 1h<br>1h | loom, stencil |
+| T4 | **Machine checks in validate-discussion and validate-plan for recurring review findings**<br>• Citation and acceptance checks for the decision record; seam-test, tier-tag and doc.go checks for plan cards<br>• `profile: solid` | [`validator-checks`](design-validator-checks.md) | loom | Plan-Bouncer | neve | 1h<br>1h | loom, stencil |
 
 ### Ready (0)
 
@@ -69,7 +69,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B3 |  | **Loom run fails hard when the producer's tmux session dies after a fork EAGAIN** | [`died-after-tmux-eagain-transient`](design-died-after-tmux-eagain-transient.md) | 6m<br>6m | shuttle, reed, shed |
 | B4 |  | **lym loom resume re-spawn prompt names prior work as (none) although the branch holds the first spawn's commit** | [`resume-prompt-prior-work-none`](design-resume-prompt-prior-work-none.md) | 6m<br>6m | loom, shed |
 | B5 |  | **lym gate test reports transient fork/thread exhaustion as test failures** | [`gate-eagain-not-test-failure`](design-gate-eagain-not-test-failure.md) | 6m<br>6m | gate |
-| B6 |  | **Loom halts on transient fork/exec EAGAIN and records an opaque exit status 2 for the sibling halt** | [`loom-halt-on-transient-eagain`](design-loom-halt-on-transient-eagain.md) | 6m<br>5m | loom, shed, fabric |
+| B6 |  | **Loom halts on transient fork/exec EAGAIN and records an opaque exit status 2 for the sibling halt** | [`loom-halt-on-transient-eagain`](design-loom-halt-on-transient-eagain.md) | 6m<br>6m | loom, shed, fabric |
 | B7 |  | **An instruction typed into a pane is lost when the tackler re-spawns the row**<br>• A re-spawned row session starts from its prompt alone; operator input to the old session is dropped | [`pane-input-lost-on-respawn`](design-pane-input-lost-on-respawn.md) | 1d<br>1d | shed, shuttle, reed |
 | B8 |  | **Lingering MSBuild reuse nodes exhaust the user's task limit during .NET runs** | [`msbuild-node-reuse-task-limit`](design-msbuild-node-reuse-task-limit.md) | 6m<br>6m | shuttle, gate, dotnet, batten |
 | B9 |  | **Verify-gate findings log tail shows only passing tests, hiding the failure** | [`verify-findings-show-failures`](design-verify-findings-show-failures.md) | 6m<br>6m | loom, gate |
