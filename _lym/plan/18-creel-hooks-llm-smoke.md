@@ -1,8 +1,8 @@
 # Card 18 — Real Claude sessions prove the hook delivery end to end
 
 **Create:**
-- `plan:internal/creelcli#TestSmokeCreelHookDelivery` -> `func TestSmokeCreelHookDelivery(t *testing.T)`
-- `plan:internal/creelcli#smokeHub.startClaudeRun` -> `func (s *smokeHub) startClaudeRun(t *testing.T, spec shuttleengine.Spec) (name, guid, eventsPath string)`
+- `internal/creelcli#TestSmokeCreelHookDelivery`
+- `internal/creelcli#smokeHub.startClaudeRun`
 
 **Uses:**
 - `internal/creelcli#newSmokeHub`
