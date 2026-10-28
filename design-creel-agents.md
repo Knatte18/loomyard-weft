@@ -120,3 +120,13 @@ Two spikes ran with hand-written hook scripts standing in for creel; one run per
 - Landed since (`codex-hook-spike`, `docs/research/codex-hook-delivery-2026-10-28/report.md`, one sample per case): Codex without the sentence reads a `post_tool_use` block reason as a failed tool call and does not act, with it the block is taken at the next step; an async `Stop` hook exiting 2 does not wake an idle Codex session, while `codex queue --thread <session_id> --message …` does; a `Stop` block is taken at once.
 - Still open: whether Codex agents can message each other.
   The operator's wait for a real mid-turn run (decision 2026-10-27) stands.
+
+## Hook delivery landed (task `creel-hook-post`, 2026-10-28)
+
+Creel now delivers every post to a Claude strand through hooks that shuttle renders into the session's `settings.json`; no message body is typed into a pane for such a strand.
+Mid-turn it is a `PostToolUse` block (`lym creel hook-read claude`) the operator sees, at turn end the `Stop` command delivers, and an idle session is woken by an `asyncRewake` waiter (`lym creel hook-wait claude`), with a typed bell as fallback for strands carrying the reed field `CreelHooks`.
+Codex is out of scope there: the engine-neutral seam stays and no Codex hook is rendered, so this stage's reason (a Codex role with a parent) stands.
+Shuttle also appends the trust and reply sentence to every Claude session it launches with a run directory, so the Haiku finding above is met for Claude.
+A post is capped at the 8 KiB claim budget.
+The design is in the `doc.go` of `creelengine` and `creelcli`.
+The real-Claude scenarios in `internal/creelcli/smoke_llm_test.go` were not run in the verify gates, so the operator's wait for a real mid-turn run (decision 2026-10-27) stands.
