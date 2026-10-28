@@ -1,36 +1,38 @@
-# Move lym-wide rules out of CLAUDE.md into stencils and skills lym ships
+# Keep lym-wide rules out of CLAUDE.md; ship them in stencils and skills
 
-`CLAUDE.md` is read only by sessions working in this repository, yet it held rules about how lym behaves in every hub.
-Read as lym rules, LoomYard-only rules leak into other hubs, as when the quarry hub's orch took in LoomYard's issues.
-This change leaves `CLAUDE.md` with only the rules for developing LoomYard, and moves each lym-wide rule into the code, stencil or skill lym ships.
+`CLAUDE.md` mixed rules for developing LoomYard with rules that hold for every hub developed with lym.
+A rule of the second kind written here is read by other hubs as a lym rule; the quarry hub's orch began taking in LoomYard's issues that way.
+After this change `CLAUDE.md` holds only rules for developing LoomYard itself, and every rule for any use of lym lives in lym's code or in a stencil or skill lym ships.
 
 ## What changes
 
-- `CLAUDE.md` drops the lym-wide rules:
-  that spawned agents get the `PATTERN.md` overview inlined,
-  how Batten's Land row runs the hub's `deploy` command,
-  that task worktrees are torn down with the memory store,
-  how `_lym/raddle/` reaches the parent,
-  where orch-only rules go,
-  that an unbuilt design lives in its board entry's body and the building task never rewrites it,
-  the run-lock rule,
-  and that the board is read and written only through `lym board`.
-- The "Notes go in git" section becomes "This file holds LoomYard development rules only".
-  It states the split itself: a rule for developing LoomYard goes in `CLAUDE.md` or a code comment, and a rule for every use of lym goes into lym's code or its shipped stencils and skills, never into `CLAUDE.md` or a package's `doc.go`.
-- The orch role stencil's "Scratch and notes" section now forbids keeping a durable note in an engine's session memory store.
-- The board skill's "Writing a body" section now states that a body holds an entry's design while it is unbuilt, and that the building task never rewrites its own entry's body or scope.
+`CLAUDE.md` loses these rules:
+
+- That agents lym spawns get the `PATTERN.md` overview inlined; the pattern directive stencils already carry it.
+- That Batten's Land row runs the hub's `deploy` command after a landing into a `deploy_branches` branch; `internal/battenshed` enforces it and the orch role stencil states it.
+- The "Notes go in git" details: worktree teardown with the memory store, `_lym/raddle/` regeneration, and where orch-only rules go.
+- That the building task never changes its own entry's body or scope, that landing marks the entry done and prune removes it, and the run-lock rule; the board's run lock enforces the last two and the discussion, plan, darn and review stencils state them.
+- That the board is read and written only through `lym board`; the board skill states it.
+
+The "Notes go in git" section becomes "This file holds LoomYard development rules only".
+It states the kind split, so a later edit does not put a lym-wide rule back.
+
+Two rules had no shipped home and gain one:
+
+- `contracts/stencils/orch/orch-template-role.md`, "Scratch and notes": never keep a durable note in an engine's session memory store.
+- `plugins/ly/skills/board/SKILL.md`, "Writing a body": a body holds an entry's design while it is unbuilt, and the building task never rewrites its own entry's body or scope.
 
 ## Design decisions
 
-- Every other removed rule already had a home that ships with lym:
-  `internal/battenshed` runs the deploy and the orch stencil describes it,
-  the board's run lock and the discussion, plan, darn and review stencils carry the run-lock rule,
-  the orch stencil names the orch-rules files,
-  and the board skill requires `lym board`.
-- The `_lym/raddle/` sentence is dropped with no new home, since no lym code regenerates `_lym/raddle/`.
-- "Work only in your own worktree" stays in `CLAUDE.md`.
-  It governs sessions that develop this repository by hand, and no lym stencil reaches those sessions.
-- The memory-store rule goes to the orch only, because it is the lym role that keeps notes across sessions.
-  The shared edit directive states only how a role changes files, so the rule does not belong there.
-- The stencil scan found no rule naming LoomYard where it should name the hub's repository:
-  each mention is about lym's own bugs or friction, or the code-review rubric's own-standard line.
+- The `_lym/raddle/` regeneration sentence is dropped, not moved: no lym code regenerates `_lym/raddle/`, so it described no built behaviour.
+- Rules for working in one's own worktree, the cgo build, `update-plugins.sh`, the `main` push rule and the other LoomYard conventions stay.
+  "Work only in your own worktree" stays because it governs hand-started sessions in this repository, which no stencil reaches.
+- The memory-store rule goes only into the orch stencil, the one lym role that keeps notes across sessions.
+- The shipped stencils, specs and board skill were scanned for text naming LoomYard where it should name the hub's own repository; none was found, so no stencil text changes for that.
+  The remaining mentions are lym's own bug reports and the code-review rubric's own-standard line.
+- No new enforcement code.
+
+## To check by hand
+
+- The stencil edits ship with lym; the stencil tests in `contracts/stencils` were not run for this description.
+- A session started by hand in another hub's worktree reads no stencil, so it gets the moved rules only when it loads the board skill.
