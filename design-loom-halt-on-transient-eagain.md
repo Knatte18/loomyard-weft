@@ -26,3 +26,19 @@ Two loom halts were recorded within a second of each other (09:41:18Z and 09:41:
 - Reconcile the history state of a producer the halt blames with the halt note.
 
 Provenance: task `review-setup-audit`; notes `loom-halt.md`, `loom-halt-2.md`.
+
+
+## From issue #891
+
+Imported from [issue #891](https://github.com/Knatte18/loomyard/issues/891).
+
+What happened: after the `Darn-Write` halt, a later loom entry halted `failed` at `Darn-Write` with `exited: exit status 2`, anomaly `interrupted-stop`, and an empty `trace_file:` field.
+The history showed `Darn-Write / goto` as the last entry.
+Afterwards the Go driver found the run `paused` at `Darn-Write` with no reason recorded, and wrote only a drive envelope under `_lym/shed/<slug>/drive-reports/`.
+
+Why it is abnormal: an exit status 2 gives no cause and no trace file to follow, so the halt cannot be diagnosed.
+A paused state with no reason leaves the operator and driver unable to tell whether the pause is deliberate or a leftover of the failed run.
+
+What to do: make the `interrupted-stop` halt note always name the trace file and the exiting command, and record a reason whenever a run is left `paused`.
+
+Provenance: task `hub-pull-verb`; notes `loom-halt-2.md`, `go-driver-paused.md`.
