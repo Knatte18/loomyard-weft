@@ -60,10 +60,10 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **The watcher wakes the orch after a usage limit resets, and holds the repeat notices** | [`usage-limit-wake`](design-usage-limit-wake.md) | loom |  | 31m<br>31m | orch, batten, shuttle |
-| T2 | `draft` **A merge fixer change over the caps gets a solo review of its own commits, not a full Code review** | [`fixer-overcap-review`](design-fixer-overcap-review.md) | loom |  | 14m<br>14m | loom, burler |
-| T3 | `draft` **Friction-Reflect producer fails to start with 'text file busy' when the lym binary is replaced mid-run** | [`spawn-text-file-busy`](design-spawn-text-file-busy.md) | loom |  | 31m<br>31m | shed, deploy, loom |
-| T6 | `draft` **The dobby holds a new run start while the user slice nears its task limit**<br>• Hold new run starts when the user slice pids.current nears pids.max | [`dobby-task-limit-hold`](design-dobby-task-limit-hold.md) | loom |  | 1h<br>43m | batten |
+| T1 | `draft` **The watcher wakes the orch after a usage limit resets, and holds the repeat notices**<br>• `profile: solid` | [`usage-limit-wake`](design-usage-limit-wake.md) | darn |  | 31m<br>0m | orch, batten, shuttle |
+| T2 | `draft` **A merge fixer change over the caps gets a solo review of its own commits, not a full Code review** | [`fixer-overcap-review`](design-fixer-overcap-review.md) | darn |  | 14m<br>0m | loom, burler |
+| T3 | `draft` **Friction-Reflect producer fails to start with 'text file busy' when the lym binary is replaced mid-run** | [`spawn-text-file-busy`](design-spawn-text-file-busy.md) | darn |  | 31m<br>0m | shed, deploy, loom |
+| T6 | `draft` **The dobby holds a new run start while the user slice nears its task limit**<br>• Hold new run starts when the user slice pids.current nears pids.max | [`dobby-task-limit-hold`](design-dobby-task-limit-hold.md) | darn |  | 1h<br>0m | batten |
 
 ## Notes (34)
 
