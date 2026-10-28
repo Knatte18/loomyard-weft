@@ -1,0 +1,1263 @@
+diff --git a/docs/dotnet-hub.md b/docs/dotnet-hub.md
+index 744e0a2c..e33cee2a 100644
+--- a/docs/dotnet-hub.md
++++ b/docs/dotnet-hub.md
+@@ -59,7 +59,7 @@ build:
+ It builds the whole solution whatever the tiers' scopes, and relies on MSBuild's incremental up-to-date checks for the projects a change did not touch.
+ It restores implicitly, so there is no separate restore step: NuGet's no-op restore does real work only when a project file or package reference changed.
+ The properties on the command make the gated and baseline projects test projects, so the tiers' `--no-build` runs find them built.
+-lym adds no MSBuild or compiler-server switch to the command, and the words after `--` never reach it.
++lym adds no switch to the command, and the words after `--` never reach it.
+ Its output passes into the call's output and its own log.
+ `build` has its own `timeout_min`, counted from the slot hold, and the tier's `timeout_min` starts after the build.
+ 
+@@ -139,15 +139,15 @@ refuse_raw: ["dotnet test"]
+ 
+ The shell guard then refuses an agent's raw `dotnet test` and steers it to `lym gate test`.
+ 
+-## Warm build processes
++## Build processes
+ 
+-lym sets nothing that disables MSBuild node reuse or the shared compiler server, so the SDK's defaults keep build processes warm where the platform allows it.
+-On Linux, idle nodes outlive the build's process, since only a cancelled call kills its process group, and serve later gate calls until the SDK's idle timeout.
+-On Windows, the build runs in a job object that ends every process it started, so nodes and the compiler server end with each build or tier run.
+-The saving there is the one build per call and the `--no-build` test runs, not warmth across calls.
++lym sets `MSBUILDDISABLENODEREUSE=1` and `DOTNET_CLI_USE_MSBUILD_SERVER=0` in the environment of every gate run and every agent pane it starts, so no MSBuild worker node or MSBuild server outlives the build that started it.
++Idle reuse nodes from the builds of parallel agents otherwise pile up until the user's task limit refuses every fork.
++The saving left is the one build per call and the `--no-build` test runs, not warmth across calls.
++The shared compiler server is left at the SDK's default.
+ A warm node holds none of the child's output pipe, so a call ends when the build or test process does.
+ Set neither `MSBUILDENSURESTDOUTFORTASKPROCESSES` nor `MSBUILDNODEWINDOW` in a `build` or tier `env`: on a later SDK either leaves a Unix node's output unredirected, and the call then waits on idle nodes until `timeout_min`.
+-A hub that wants the opt-in MSBuild server sets `DOTNET_CLI_USE_MSBUILD_SERVER` in its `build` and tier `env`.
++A tier's own `env` is applied after these values, so a hub that wants warm nodes for a tier sets them there; a `build` `env` likewise.
+ 
+ ## The repo-rules lens
+ 
+diff --git a/internal/gatecli/cli.go b/internal/gatecli/cli.go
+index 20c7d6e6..605d170b 100644
+--- a/internal/gatecli/cli.go
++++ b/internal/gatecli/cli.go
+@@ -28,13 +28,16 @@ const defaultGoBinary = "go"
+ // defaultPreTierCeiling bounds the work before a call's first tier.
+ const defaultPreTierCeiling = 10 * time.Minute
+ 
++// defaultShortageRetryDelay is how long a tier that failed on a resource shortage waits before its one rerun, long enough for a burst of short-lived processes elsewhere to end.
++const defaultShortageRetryDelay = 10 * time.Second
++
+ // Command builds the cobra command tree for the gate module.
+ func Command() *cobra.Command {
+-	return newCommand(defaultGoBinary, defaultSamplePeriod, shuttleengine.DefaultAwaitCap, defaultPreTierCeiling, time.Minute)
++	return newCommand(defaultGoBinary, defaultSamplePeriod, shuttleengine.DefaultAwaitCap, defaultPreTierCeiling, time.Minute, defaultShortageRetryDelay)
+ }
+ 
+-// newCommand builds the gate command tree over goBinary, the go command a prebuilding tier builds `lym` with, samplePeriod, how often the CPU watchdog samples a tier's process tree, slotWait, the longest the test verb waits for a free slot without --wait, preTierCeiling, the bound on the work before the first tier, and timeoutUnit, the length of one `timeout_min` minute.
+-func newCommand(goBinary string, samplePeriod, slotWait, preTierCeiling, timeoutUnit time.Duration) *cobra.Command {
++// newCommand builds the gate command tree over goBinary, the go command a prebuilding tier builds `lym` with, samplePeriod, how often the CPU watchdog samples a tier's process tree, slotWait, the longest the test verb waits for a free slot without --wait, preTierCeiling, the bound on the work before the first tier, timeoutUnit, the length of one `timeout_min` minute, and shortageRetryDelay, how long a tier that failed on a resource shortage waits before its one rerun.
++func newCommand(goBinary string, samplePeriod, slotWait, preTierCeiling, timeoutUnit, shortageRetryDelay time.Duration) *cobra.Command {
+ 	cmd := &cobra.Command{
+ 		Use:   "gate",
+ 		Short: "run the hub's test tiers inside the hub's gate-slot pool",
+@@ -86,7 +89,7 @@ Examples:
+ 				return nil
+ 			}
+ 			request := testRequest{
+-				goBinary: goBinary, samplePeriod: samplePeriod, slotWait: slotWait, preTierCeiling: preTierCeiling, timeoutUnit: timeoutUnit,
++				goBinary: goBinary, samplePeriod: samplePeriod, slotWait: slotWait, preTierCeiling: preTierCeiling, timeoutUnit: timeoutUnit, shortageRetryDelay: shortageRetryDelay,
+ 				stderr: cmd.ErrOrStderr(), dir: dir, tags: tags, gate: gate, tiers: tiers, cards: cards, base: base, all: all, guards: guards, wait: wait, targets: args,
+ 				upto: upto, uptoGiven: cmd.Flags().Changed("upto"),
+ 			}
+@@ -141,6 +144,8 @@ type testRequest struct {
+ 	preTierCeiling time.Duration
+ 	// timeoutUnit is the length of one `timeout_min` minute.
+ 	timeoutUnit time.Duration
++	// shortageRetryDelay is how long a tier that failed on a resource shortage waits before its one rerun.
++	shortageRetryDelay time.Duration
+ 	// stderr receives the lines the verb prints beside its output: the CPU watchdog's quit, a tier's timeout and each tier's summary.
+ 	stderr io.Writer
+ 	// dir is the -C value as typed; empty means the tier's own dir.
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index e70f20d9..17a8fd4c 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -7,6 +7,10 @@
+ // `lym gate test [-C <dir>] [--gate <key>] [--tier N]... [--upto N] [--card <id>]... [--base <rev>] [--all] [--guards] [--wait] [<targets>...] [-- <args>]` runs the tiers the hub declares in gate.yaml, in ascending tier number, and then the vet step and the guard step below when they are planned.
+ // A run that fails does not stop the call: every later tier, vet and guard run still runs, so a failure the change under test did not cause, such as one present at the base, hides no later check.
+ // When a run failed, the verb closes with one stderr line naming each failed run, a vet run as `vet tierN` and a guard run as `guard tierN`, with its exit code.
++// A tier run that fails without timing out and whose output holds a resource-shortage marker, `resource temporarily unavailable`, `failed to create new OS thread` or `cannot fork` in any case, runs once more inside the same slots after a ten-second delay, and the rerun's result is the tier's;
++// a stderr line names the marker, and the rerun's log opens with it.
++// A rerun that fails on a marker again keeps its exit code, and the closing line names the run as a resource shortage, an environment error, with the way forward of re-running once the machine's process load drops.
++// Bound: one rerun per tier run, so a test whose own output holds a marker costs one extra run and keeps its verdict; the build step is not rerun.
+ // A refusal, a slot wait that does not end with the slots held and a terminating signal still end the call at once.
+ // `--gate <key>` runs the tiers and the scope the `gates` key of that name holds, and `listedTiers` takes the key's tiers as the listed tiers.
+ // It goes with none of `--tier`, `--upto`, `--all` and `--base`, which is refused before hub resolution naming the key and the flag to drop, since the key's tiers and scope come from gate.yaml.
+@@ -29,8 +33,8 @@
+ // Terms that push the expression past `greenCommandBudget` are dropped and the tier's `filter` stands alone, so that project runs whole within itself, and an Info log names the tier.
+ // A command without `{filter}` renders no filter whatever terms it is given.
+ // A tier's `filter` applies at whole scope too, landing gates included, bounded by the executable, hub-file-only `tiers` key.
+-// The command runs through the shell `verifyrun.ShellFor` names, as a tied child in the run directory, with this process's environment less the strand-name and trace-id variables, less an inherited `gateslot.PrebuiltLymEnv`, plus the tier's `env` with `{parallel}` filled, plus the lease's `gateslot.InheritEnv` and the enclosing-gate pid.
+-// The tier's `dir`, relative to the worktree root, is the run directory.
++// The command runs through the shell `verifyrun.ShellFor` names, as a tied child in the run directory, with this process's environment less the strand-name and trace-id variables, less an inherited `gateslot.PrebuiltLymEnv`, plus `proc.BuildServerOffEnv`, replacing an inherited value, plus the tier's `env` with `{parallel}` filled, plus the lease's `gateslot.InheritEnv` and the enclosing-gate pid.
++// The tier's `dir`, relative to the worktree root, is the run directory, and a tier that sets no `dir` runs in the worktree's anchor, filled by `gateslot.Config.WithDefaultDir` once the config is loaded, so a hub anchored at a subdirectory need not spell it per tier.
+ // A tier with `prebuilt_lym` first builds `lym` at the tier's `parallel`, inside its slots and timeout, only where the worktree root holds `cmd/lym`, and exports `gateslot.PrebuiltLymEnv`.
+ // Inside a hub the binary is copied into the pool's store (`gateslot.Pool.PrebuiltDir`) as `lym-` and the first 16 hex digits of its SHA-256, the build directory is removed, and the variable names the stored copy;
+ // outside a hub the variable names the build directory's binary, which is removed after the tier.
+@@ -99,7 +103,8 @@
+ // The first such tier in plan order whose run takes slots, one with invocations left after the green record's subtraction or one with only a build to run, runs `runBuild` inside its slots, before its own command, and no later tier runs it again.
+ // A call whose opted-in tiers are all carried, or whose shares are empty, such as an inert-only, all-inert-card or empty diff, runs no build, bar a `carry: false` tier, which runs whole and so runs the build before its command.
+ // A `shared_build` tier whose share selected no test class has no invocation and takes its slots only to run the build, so a compile break still fails the gate; it then passes with nothing discovered.
+-// The command runs through the platform shell as a tied child in the build's `dir`, with the call's environment, the slot's inherited variable and the build's `env`; the words after `--` never reach it, and lym adds no MSBuild or compiler-server switch.
++// The command runs through the platform shell as a tied child in the build's `dir`, with the call's environment, the slot's inherited variable and the build's `env`; the words after `--` never reach it, and lym adds no switch to the command.
++// A build that sets no `dir` runs in the anchor, as a tier does.
+ // Its output passes to stdout and into its log, and it is bounded by its own `timeout_min` counted from the hold, so the tier's `timeout_min` starts after it.
+ // A timeout kills the tree, exits 1 and prints and logs `gateslot.BuildTimeoutLine`.
+ // A shell that cannot start is refused naming the build's `dir`, halts the call with exit 1 and writes no build record.
+diff --git a/internal/gatecli/run.go b/internal/gatecli/run.go
+index 543055f3..c2ce1e4b 100644
+--- a/internal/gatecli/run.go
++++ b/internal/gatecli/run.go
+@@ -64,6 +64,7 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 	if refusal := gateKeyRefusal(cfg, request); refusal != "" {
+ 		return output.Err(out, refusal)
+ 	}
++	cfg = cfg.WithDefaultDir(location.AnchorRel)
+ 	request.root = buildRoot(location, dir)
+ 	request.busyQuit = cfg.Limits().BusyQuit
+ 
+@@ -126,6 +127,7 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 		return strings.HasPrefix(entry, agentname.StrandNameEnv+"=") || strings.HasPrefix(entry, logger.TraceIDEnv+"=")
+ 	})
+ 	env = gateslot.StripPrebuilt(env)
++	env = withBuildServerOff(env)
+ 	watching, reason := watchdogApplies(request.busyQuit, request.args, os.Getenv(enclosingGateEnv), proc.IsAncestor)
+ 	logger.Info("gate test: CPU watchdog decision", "applies", watching, "reason", reason)
+ 	exe.request.watching = watching
+@@ -154,7 +156,7 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 			}
+ 			failures = append(failures, runLabel(run)+" (blocked by the build)")
+ 		} else if end.ran && end.code != 0 {
+-			failures = append(failures, fmt.Sprintf("%s (exit %d)", runLabel(run), end.code))
++			failures = append(failures, failedRunLabel(run, end))
+ 			if code == 0 {
+ 				code, firstFailed = end.code, runLabel(run)
+ 			}
+@@ -194,7 +196,15 @@ func printFailedRuns(stderr io.Writer, failures []string, firstFailed string, ha
+ 	if halted {
+ 		suffix = "; the call stopped there, so later runs did not run"
+ 	}
+-	printLine(stderr, fmt.Sprintf("gate test: failed runs: %s; the exit code is %s's%s", strings.Join(failures, ", "), firstFailed, suffix))
++	printLine(stderr, fmt.Sprintf("%s%s; the exit code is %s's%s", gateslot.FailedRunsPrefix, strings.Join(failures, ", "), firstFailed, suffix))
++}
++
++// failedRunLabel names run, which ran and failed as end says, in the closing line of failed runs: its label and exit code, and for a run that failed on a resource shortage twice, the marker and the way forward of re-running once the load drops.
++func failedRunLabel(run tierRun, end runEnd) string {
++	if end.shortage == "" {
++		return fmt.Sprintf("%s (exit %d)", runLabel(run), end.code)
++	}
++	return fmt.Sprintf("%s (exit %d, a resource shortage, %q, in its run and its rerun: an environment error, not a test failure; way forward: re-run the same command once the machine's process load drops)", runLabel(run), end.code, end.shortage)
+ }
+ 
+ // runEnd is how one run of the plan ended: its exit code, and whether the call stops there instead of going on to the next run.
+@@ -206,6 +216,8 @@ type runEnd struct {
+ 	ran bool
+ 	// blocked is set for a tier that ran no command since the build step it opts into failed; code is then the build's exit code.
+ 	blocked bool
++	// shortage is the resource-shortage marker of a run that failed on one twice, its run and its one rerun; empty otherwise.
++	shortage string
+ }
+ 
+ // runLabel names run in the closing line of failed runs: its tier, prefixed `guard` for a guard run and `vet` for a vet run.
+@@ -411,7 +423,9 @@ func (e *execution) runGreenAware(run tierRun) runEnd {
+ 				return result
+ 			}
+ 		}
+-		return runTier(e.ctx, e.out, run, env, e.request)
++		return retryOnShortage(e.ctx, e.request.stderr, runLabel(run), e.request.shortageRetryDelay, func() tierResult {
++			return runTier(e.ctx, e.out, run, env, e.request)
++		})
+ 	})
+ 	if end.code == 0 && !end.halt && e.green != nil {
+ 		e.green.recordPass(e.ctx, run, run.invocations, plan, e.env, time.Now())
+@@ -465,7 +479,7 @@ func (e *execution) report(run tierRun, result tierResult, waitStart time.Time)
+ 	if e.request.observer.Ended != nil {
+ 		e.request.observer.Ended(record)
+ 	}
+-	return runEnd{code: record.ExitCode, halt: e.ctx.Err() != nil, ran: true}
++	return runEnd{code: record.ExitCode, halt: e.ctx.Err() != nil, ran: true, shortage: result.shortage}
+ }
+ 
+ // writeRecord adds the call's worktree, slug, tier list and gate key to record, writes it with log under a stamp later than the previous record's, and returns the log's path, "(not written)" when the write failed.
+@@ -604,3 +618,14 @@ func exitCodeOf(runErr error) int {
+ 	}
+ 	return 1
+ }
++
++// withBuildServerOff returns env with every proc.BuildServerOffEnv variable set to its value, replacing an inherited one, so no .NET build a run starts leaves MSBuild servers behind.
++func withBuildServerOff(env []string) []string {
++	env = slices.DeleteFunc(env, func(entry string) bool {
++		return slices.ContainsFunc(proc.BuildServerOffEnv, func(v proc.EnvVar) bool { return strings.HasPrefix(entry, v.Name+"=") })
++	})
++	for _, v := range proc.BuildServerOffEnv {
++		env = append(env, v.Name+"="+v.Value)
++	}
++	return env
++}
+diff --git a/internal/gatecli/rungate.go b/internal/gatecli/rungate.go
+index 4fffc217..4cb156e2 100644
+--- a/internal/gatecli/rungate.go
++++ b/internal/gatecli/rungate.go
+@@ -26,7 +26,7 @@ type TierObserver struct {
+ // The envelope goes to out and the summary lines to stderr.
+ func RunGate(ctx context.Context, dir, gate string, out, stderr io.Writer, observer TierObserver) int {
+ 	request := testRequest{
+-		goBinary: defaultGoBinary, samplePeriod: defaultSamplePeriod, slotWait: shuttleengine.DefaultAwaitCap, preTierCeiling: defaultPreTierCeiling, timeoutUnit: time.Minute,
++		goBinary: defaultGoBinary, samplePeriod: defaultSamplePeriod, slotWait: shuttleengine.DefaultAwaitCap, preTierCeiling: defaultPreTierCeiling, timeoutUnit: time.Minute, shortageRetryDelay: defaultShortageRetryDelay,
+ 		stderr: stderr, gate: gate, wait: true, observer: observer,
+ 	}
+ 	return runTest(lymcwd.WithCwd(ctx, dir), out, request)
+diff --git a/internal/gatecli/test_integration_test.go b/internal/gatecli/test_integration_test.go
+index 00c1d9dd..b588cfef 100644
+--- a/internal/gatecli/test_integration_test.go
++++ b/internal/gatecli/test_integration_test.go
+@@ -10,6 +10,7 @@ import (
+ 	"bytes"
+ 	"context"
+ 	"encoding/json"
++	"fmt"
+ 	"os"
+ 	"os/exec"
+ 	"path/filepath"
+@@ -42,6 +43,7 @@ const (
+ 	// helperRoleGate runs `lym gate test` over helperCwdEnv and the process arguments, with the stand-in as its go binary unless helperGoEnv is empty.
+ 	helperRoleGate = "gate"
+ 	// helperRoleStandIn records how it was invoked, then exits with helperExitEnv or, under helperHoldEnv, sleeps until killed with a sleeper child.
++	// Under helperShortageEnv a tier invocation prints a resource-shortage error and exits 1 instead.
+ 	// A build invocation instead writes helperBuildContentEnv to its `-o` file when it succeeds and exits with helperBuildExitEnv.
+ 	// The hub's shared build step is such an invocation too, with `sharedbuild` as its first argument, and holds under helperHoldEnv like a tier does.
+ 	helperRoleStandIn = "standin"
+@@ -57,7 +59,9 @@ const (
+ 	helperBuildExitEnv    = "GATECLI_TEST_BUILD_EXIT"
+ 	helperBuildContentEnv = "GATECLI_TEST_BUILD_CONTENT"
+ 	helperHoldEnv         = "GATECLI_TEST_HOLD"
+-	// helperSlotWaitEnv, helperCeilingEnv and helperUnitEnv are durations the gate helper passes to newCommand in place of its defaults.
++	// helperShortageEnv makes a tier invocation print a resource-shortage error and exit 1, on its first run when the value is `once` and on every run when it is `always`.
++	helperShortageEnv = "GATECLI_TEST_SHORTAGE"
++	// helperSlotWaitEnv, helperCeilingEnv and helperUnitEnv are durations the gate helper passes to newCommand in place of its defaults, and the helper always passes a shortage-rerun delay of 0.
+ 	helperSlotWaitEnv = "GATECLI_TEST_SLOT_WAIT"
+ 	helperCeilingEnv  = "GATECLI_TEST_CEILING"
+ 	helperUnitEnv     = "GATECLI_TEST_UNIT"
+@@ -88,9 +92,12 @@ type standInRecord struct {
+ 	// Enclosing is the enclosing-gate pid variable the stand-in saw.
+ 	Enclosing string `json:"enclosing"`
+ 	// Trace is the trace-id variable the stand-in saw; empty when the gate dropped it.
+-	Trace      string `json:"trace"`
+-	PID        int    `json:"pid"`
+-	Grandchild int    `json:"grandchild"`
++	Trace string `json:"trace"`
++	// NodeReuse and MSBuildServer are the MSBuild node-reuse and build-server variables the stand-in saw.
++	NodeReuse     string `json:"node_reuse"`
++	MSBuildServer string `json:"msbuild_server"`
++	PID           int    `json:"pid"`
++	Grandchild    int    `json:"grandchild"`
+ }
+ 
+ func runGateHelper() int {
+@@ -113,7 +120,7 @@ func runGateHelper() int {
+ 			durations[name] = parsed
+ 		}
+ 	}
+-	code := clihelp.ExecuteIn(newCommand(goBinary, time.Second, durations[helperSlotWaitEnv], durations[helperCeilingEnv], durations[helperUnitEnv]), os.Getenv(helperCwdEnv), os.Stdout, os.Args[1:])
++	code := clihelp.ExecuteIn(newCommand(goBinary, time.Second, durations[helperSlotWaitEnv], durations[helperCeilingEnv], durations[helperUnitEnv], 0), os.Getenv(helperCwdEnv), os.Stdout, os.Args[1:])
+ 	// The helper stands for `lym`'s main, which removes the process run directory on exit.
+ 	_ = lymtemp.Remove()
+ 	return code
+@@ -123,7 +130,7 @@ func runStandIn() int {
+ 	cwd, _ := os.Getwd()
+ 	sharedBuild := len(os.Args) > 1 && os.Args[1] == "sharedbuild"
+ 	isBuild := sharedBuild || (len(os.Args) > 1 && os.Args[1] == "build")
+-	record := standInRecord{Args: os.Args[1:], Build: isBuild, Cwd: cwd, GoFlags: os.Getenv("GOFLAGS"), BuildMark: os.Getenv("BUILD_MARK"), Slot: os.Getenv(gateslot.InheritEnv), Strand: os.Getenv(agentname.StrandNameEnv), Prebuilt: os.Getenv(gateslot.PrebuiltLymEnv), Enclosing: os.Getenv(enclosingGateEnv), Trace: os.Getenv(logger.TraceIDEnv), PID: os.Getpid()}
++	record := standInRecord{Args: os.Args[1:], Build: isBuild, Cwd: cwd, GoFlags: os.Getenv("GOFLAGS"), BuildMark: os.Getenv("BUILD_MARK"), Slot: os.Getenv(gateslot.InheritEnv), Strand: os.Getenv(agentname.StrandNameEnv), Prebuilt: os.Getenv(gateslot.PrebuiltLymEnv), Enclosing: os.Getenv(enclosingGateEnv), Trace: os.Getenv(logger.TraceIDEnv), NodeReuse: os.Getenv("MSBUILDDISABLENODEREUSE"), MSBuildServer: os.Getenv("DOTNET_CLI_USE_MSBUILD_SERVER"), PID: os.Getpid()}
+ 	// A prebuild invocation only records itself and exits with its own code; the hold belongs to the tier's invocation and the shared build's.
+ 	hold := (!isBuild || sharedBuild) && os.Getenv(helperHoldEnv) != ""
+ 	if hold {
+@@ -134,6 +141,8 @@ func runStandIn() int {
+ 		}
+ 		record.Grandchild = sleeper.Process.Pid
+ 	}
++	prior, _ := os.ReadFile(os.Getenv(helperRecordEnv))
++	priorRecords := bytes.Count(prior, []byte("\n"))
+ 	data, err := json.Marshal(record)
+ 	if err != nil {
+ 		return 1
+@@ -163,6 +172,10 @@ func runStandIn() int {
+ 	if slices.ContainsFunc(os.Args, func(arg string) bool { return strings.HasPrefix(arg, "^(TestGuard") }) && os.Getenv(helperGuardExitEnv) != "" {
+ 		exitEnv = helperGuardExitEnv
+ 	}
++	if shortage := os.Getenv(helperShortageEnv); shortage == "always" || shortage == "once" && priorRecords == 0 {
++		fmt.Println("fork/exec /usr/bin/git: Resource temporarily unavailable")
++		return 1
++	}
+ 	code, _ := strconv.Atoi(os.Getenv(exitEnv))
+ 	return code
+ }
+@@ -578,7 +591,7 @@ func TestGateTest_Scenario(t *testing.T) {
+ 		writeConfig(t, scenarioConfig(t, withSharedBuild("sub")))
+ 		defer writeConfig(t, gateConfig)
+ 
+-		g := startGate(t, gateRun{cwd: prime, args: []string{"test", "--tier", "0", "--tier", "6", "./pkg", "--", "-count=1"}})
++		g := startGate(t, gateRun{cwd: prime, args: []string{"test", "--tier", "0", "--tier", "6", "./pkg", "--", "-count=1"}, env: []string{"MSBUILDDISABLENODEREUSE=0", "DOTNET_CLI_USE_MSBUILD_SERVER=1"}})
+ 		if code := g.wait(t); code != 0 {
+ 			t.Fatalf("exit code = %d, stdout %q; want 0", code, g.stdout.String())
+ 		}
+@@ -589,6 +602,9 @@ func TestGateTest_Scenario(t *testing.T) {
+ 		if build := builds[0]; !slices.Equal(build.Args, []string{"sharedbuild"}) || build.Cwd != buildDir || build.BuildMark != "1" || filepath.Dir(build.Slot) != pool.Dir {
+ 			t.Errorf("build invocation = %+v; want only `sharedbuild`, run in %s with BUILD_MARK and a slot of %s", build, buildDir, pool.Dir)
+ 		}
++		if build := builds[0]; build.NodeReuse != "1" || build.MSBuildServer != "0" {
++			t.Errorf("build environment MSBUILDDISABLENODEREUSE = %q, DOTNET_CLI_USE_MSBUILD_SERVER = %q; want 1 and 0 over the inherited values", build.NodeReuse, build.MSBuildServer)
++		}
+ 		if records := g.records(t); len(records) != 3 || !records[0].Build || records[1].Build || records[2].Build || records[1].BuildMark != "" || records[1].Slot != builds[0].Slot {
+ 			t.Errorf("stand-in records = %+v; want the build first, then both tiers in the build's slot without its env", records)
+ 		}
+@@ -786,7 +802,7 @@ func TestGateTest_Scenario(t *testing.T) {
+ 	})
+ 
+ 	t.Run("a free slot runs the tier under its env, exits with its code and records the run", func(t *testing.T) {
+-		g := startGate(t, gateRun{cwd: prime, args: []string{"test", "./pkg", "--", "-run", "X"}, env: []string{helperExitEnv + "=7", strandEnvEntry, logger.TraceIDEnv + "=0123456789abcdef"}})
++		g := startGate(t, gateRun{cwd: prime, args: []string{"test", "./pkg", "--", "-run", "X"}, env: []string{helperExitEnv + "=7", strandEnvEntry, logger.TraceIDEnv + "=0123456789abcdef", "MSBUILDDISABLENODEREUSE=0", "DOTNET_CLI_USE_MSBUILD_SERVER=1"}})
+ 		if code := g.wait(t); code != 7 {
+ 			t.Errorf("exit code = %d; want the stand-in's 7", code)
+ 		}
+@@ -797,6 +813,9 @@ func TestGateTest_Scenario(t *testing.T) {
+ 		if record.Trace != "" {
+ 			t.Errorf("tier environment %s = %q; want it dropped", logger.TraceIDEnv, record.Trace)
+ 		}
++		if record.NodeReuse != "1" || record.MSBuildServer != "0" {
++			t.Errorf("tier environment MSBUILDDISABLENODEREUSE = %q, DOTNET_CLI_USE_MSBUILD_SERVER = %q; want 1 and 0 over the inherited values", record.NodeReuse, record.MSBuildServer)
++		}
+ 		if want := strconv.Itoa(g.cmd.Process.Pid); record.Enclosing != want {
+ 			t.Errorf("tier environment %s = %q; want the gate's pid %s", enclosingGateEnv, record.Enclosing, want)
+ 		}
+@@ -827,6 +846,56 @@ func TestGateTest_Scenario(t *testing.T) {
+ 		requireFree(t)
+ 	})
+ 
++	t.Run("a tier's own env overrides the MSBuild variables the gate sets", func(t *testing.T) {
++		writeConfig(t, scenarioConfig(t, func(cfg map[string]any) {
++			cfg["tiers"].(map[string]any)["tier6"].(map[string]any)["env"] = map[string]string{"MSBUILDDISABLENODEREUSE": "0"}
++		}))
++		defer writeConfig(t, gateConfig)
++
++		g := startGate(t, gateRun{cwd: prime, args: []string{"test", "--tier", "6", "./pkg"}})
++		if code := g.wait(t); code != 0 {
++			t.Fatalf("exit code = %d, stdout %q; want 0", code, g.stdout.String())
++		}
++		if record := g.standIn(t); record.NodeReuse != "0" || record.MSBuildServer != "0" {
++			t.Errorf("tier environment MSBUILDDISABLENODEREUSE = %q, DOTNET_CLI_USE_MSBUILD_SERVER = %q; want the tier's 0 and the gate's 0", record.NodeReuse, record.MSBuildServer)
++		}
++		requireFree(t)
++	})
++
++	t.Run("a tier that fails once on a resource shortage is rerun and ends passed with the rerun announced", func(t *testing.T) {
++		g := startGate(t, gateRun{cwd: prime, args: []string{"test", "--tier", "6", "./pkg"}, env: []string{helperShortageEnv + "=once"}})
++		if code := g.wait(t); code != 0 {
++			t.Fatalf("exit code = %d, stdout %q; want 0 after the rerun", code, g.stdout.String())
++		}
++		if got := len(g.tierRecords(t)); got != 2 {
++			t.Errorf("tier invocations = %d; want the run and its one rerun", got)
++		}
++		if !strings.Contains(g.stdout.String(), "gate test: tier6 failed on a resource shortage") {
++			t.Errorf("stdout = %q; want the rerun announced", g.stdout.String())
++		}
++		requireFree(t)
++	})
++
++	t.Run("a tier that fails on a resource shortage twice keeps its exit code and is named a resource shortage in the closing line", func(t *testing.T) {
++		g := startGate(t, gateRun{cwd: prime, args: []string{"test", "--tier", "6", "./pkg"}, env: []string{helperShortageEnv + "=always"}})
++		if code := g.wait(t); code != 1 {
++			t.Fatalf("exit code = %d, stdout %q; want the run's own 1", code, g.stdout.String())
++		}
++		if got := len(g.tierRecords(t)); got != 2 {
++			t.Errorf("tier invocations = %d; want the run and one rerun, no more", got)
++		}
++		closing := ""
++		for _, line := range strings.Split(g.stdout.String(), "\n") {
++			if strings.HasPrefix(line, gateslot.FailedRunsPrefix) {
++				closing = line
++			}
++		}
++		if !strings.Contains(closing, "tier6 (exit 1, a resource shortage") {
++			t.Errorf("closing line = %q; want it to name tier6 as a resource shortage", closing)
++		}
++		requireFree(t)
++	})
++
+ 	t.Run("every slot held past the wait cap answers slot_free false naming the holders and exits SlotBusyExit", func(t *testing.T) {
+ 		acquire(t, "holder one")
+ 		acquire(t, "holder two")
+@@ -1699,3 +1768,36 @@ func TestGateTest_Scenario(t *testing.T) {
+ 		})
+ 	}
+ }
++
++func TestGateTest_UnsetDirFollowsTheAnchor(t *testing.T) {
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "backend"})
++	prime := h.PrimeWorktree()
++	anchor := h.Location.AnchorPath()
++	if err := os.MkdirAll(filepath.Join(prime, "sub"), 0o755); err != nil {
++		t.Fatal(err)
++	}
++	gateConfig := scenarioConfig(t, func(cfg map[string]any) {
++		cfg["build"] = map[string]any{"command": "'" + os.Args[0] + "' sharedbuild", "timeout_min": 1}
++		tiers := cfg["tiers"].(map[string]any)
++		tiers["tier0"].(map[string]any)["shared_build"] = true
++		tiers["tier6"].(map[string]any)["dir"] = "."
++		tiers["tier2"].(map[string]any)["dir"] = "sub"
++	})
++	if err := os.WriteFile(configengine.ConfigFile(h.BoardDir(), "gate"), gateConfig, 0o644); err != nil {
++		t.Fatal(err)
++	}
++
++	g := startGate(t, gateRun{cwd: anchor, args: []string{"test", "--tier", "0", "--tier", "2", "--tier", "6", "./pkg"}})
++	if code := g.wait(t); code != 0 {
++		t.Fatalf("exit code = %d, stdout %q; want 0", code, g.stdout.String())
++	}
++	var cwds []string
++	for _, record := range g.records(t) {
++		cwds = append(cwds, record.Cwd)
++	}
++	if want := []string{anchor, anchor, filepath.Join(prime, "sub"), prime}; !slices.Equal(cwds, want) {
++		t.Errorf("build, tier0, tier2 and tier6 ran in %q; want the build and tier0, which set no dir, in the anchor, tier2, whose dir is sub, in sub under the worktree root, and tier6, whose dir is ., in the worktree root: %q", cwds, want)
++	}
++}
+diff --git a/internal/gatecli/tierrun.go b/internal/gatecli/tierrun.go
+index 5e211b40..2f62380c 100644
+--- a/internal/gatecli/tierrun.go
++++ b/internal/gatecli/tierrun.go
+@@ -41,6 +41,8 @@ type tierResult struct {
+ 	trimpathNote string
+ 	// buildFailed is set instead of an outcome when the build step that precedes the tier failed or timed out, so the tier ran no command and is reported blocked.
+ 	buildFailed bool
++	// shortage is the resource-shortage marker of a tier that failed on one in its run and again in its one rerun; empty otherwise.
++	shortage string
+ }
+ 
+ // runTier runs the tier of run in ctx with its slots held: it prebuilds `lym` when the tier asks, then runs each invocation's command through the platform shell as a tied child, stopping at the first non-zero exit.
+@@ -113,6 +115,54 @@ func runTier(ctx context.Context, out io.Writer, run tierRun, env []string, requ
+ 	return tierResult{record: record, log: logBuffer.Bytes(), trimpathNote: trimpathNote}
+ }
+ 
++// shortageMarkers are lowercase fragments of the errors a process or thread creation prints when the user's task limit or the machine's process table is momentarily exhausted:
++// Go's fork/exec and thread-creation EAGAIN and a shell's failed fork.
++var shortageMarkers = []string{"resource temporarily unavailable", "failed to create new os thread", "cannot fork"}
++
++// resourceShortage returns the first of shortageMarkers that log holds, matched without case, or "" when it holds none.
++func resourceShortage(log []byte) string {
++	lower := bytes.ToLower(log)
++	for _, marker := range shortageMarkers {
++		if bytes.Contains(lower, []byte(marker)) {
++			return marker
++		}
++	}
++	return ""
++}
++
++// failedOnShortage returns the resource-shortage marker of a tier run that ran to a failing exit without timing out, or "" for any other result.
++func failedOnShortage(result tierResult) string {
++	if result.refusal != "" || result.buildFailed || result.record.ExitCode == 0 || result.record.TimedOut {
++		return ""
++	}
++	return resourceShortage(result.log)
++}
++
++// retryOnShortage runs attempt, the tier named tier, and when it failed on a resource shortage, an environment error a rerun clears, runs it once more after delay and returns the rerun's result.
++// The rerun's log opens with the line announcing it, which also goes to stderr, and a rerun that fails on a shortage again carries its marker in shortage.
++// A ctx cancelled before or during the delay returns the first result.
++func retryOnShortage(ctx context.Context, stderr io.Writer, tier string, delay time.Duration, attempt func() tierResult) tierResult {
++	result := attempt()
++	marker := failedOnShortage(result)
++	if marker == "" || ctx.Err() != nil {
++		return result
++	}
++	line := fmt.Sprintf("gate test: %s failed on a resource shortage (%q in its output), an environment error a rerun clears; running it once more in %s", tier, marker, delay)
++	printLine(stderr, line)
++	logger.Warn("gate test: rerunning a tier that failed on a resource shortage", "tier", tier, "marker", marker, "delay", delay)
++	timer := time.NewTimer(delay)
++	defer timer.Stop()
++	select {
++	case <-ctx.Done():
++		return result
++	case <-timer.C:
++	}
++	retried := attempt()
++	retried.shortage = failedOnShortage(retried)
++	retried.log = append([]byte(line+"\n"), retried.log...)
++	return retried
++}
++
+ // runInvocations prebuilds `lym` when the tier asks, then runs each invocation of run in order under ctx, stopping at the first non-zero exit.
+ // It returns that exit code, the commands it rendered and a refusal when a command could not be run at all.
+ func runInvocations(ctx context.Context, run tierRun, counter counter, env []string, request testRequest) (exit int, commands []string, refusal string) {
+diff --git a/internal/gatecli/tierrun_test.go b/internal/gatecli/tierrun_test.go
+new file mode 100644
+index 00000000..65fd9649
+--- /dev/null
++++ b/internal/gatecli/tierrun_test.go
+@@ -0,0 +1,119 @@
++//go:build tier0
++
++// tierrun_test.go covers the one rerun of a tier that failed on a resource shortage and how the closing line names such a run, over fake attempts that spawn nothing.
++
++package gatecli
++
++import (
++	"bytes"
++	"context"
++	"io"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/gateslot"
++)
++
++// cancelOnWrite cancels a call at its first write, standing in for a cancellation that arrives while a tier waits to rerun.
++type cancelOnWrite struct {
++	io.Writer
++	cancel context.CancelFunc
++}
++
++func (w cancelOnWrite) Write(p []byte) (int, error) {
++	w.cancel()
++	return w.Writer.Write(p)
++}
++
++func TestRetryOnShortage(t *testing.T) {
++	t.Parallel()
++
++	failed := func(exit int, log string) tierResult {
++		return tierResult{record: gateslot.RunRecord{ExitCode: exit}, log: []byte(log)}
++	}
++	eagain := failed(2, "fork/exec /usr/bin/git: Resource temporarily unavailable\n")
++	thread := failed(2, "runtime: failed to create new OS thread (have 12 already; errno=11)\n")
++	tests := []struct {
++		name      string
++		attempts  []tierResult
++		cancelled bool
++		// cancelDuringDelay cancels the call when the rerun is announced, so the wait before the rerun ends on the cancellation.
++		cancelDuringDelay bool
++		wantAttempts      int
++		wantExit          int
++		wantShortage      string
++		wantRetry         bool
++	}{
++		{name: "PassIsNotRerun", attempts: []tierResult{failed(0, "Resource temporarily unavailable\n")}, wantAttempts: 1},
++		{name: "FailureWithoutMarkerIsNotRerun", attempts: []tierResult{failed(1, "--- FAIL: TestX\n")}, wantAttempts: 1, wantExit: 1},
++		{name: "TimeoutIsNotRerun", attempts: []tierResult{{record: gateslot.RunRecord{ExitCode: 1, TimedOut: true}, log: eagain.log}}, wantAttempts: 1, wantExit: 1},
++		{name: "RefusalIsNotRerun", attempts: []tierResult{{refusal: "no shell", log: eagain.log}}, wantAttempts: 1},
++		{name: "CancelledCallIsNotRerun", attempts: []tierResult{eagain}, cancelled: true, wantAttempts: 1, wantExit: 2},
++		{name: "CancelDuringTheDelayReturnsTheFirstResult", attempts: []tierResult{eagain}, cancelDuringDelay: true, wantAttempts: 1, wantExit: 2, wantRetry: true},
++		{name: "ShortageThenPassEndsPassed", attempts: []tierResult{eagain, failed(0, "ok\n")}, wantAttempts: 2, wantRetry: true},
++		{name: "ShortageThenOrdinaryFailureCarriesNoShortage", attempts: []tierResult{thread, failed(1, "--- FAIL: TestX\n")}, wantAttempts: 2, wantExit: 1, wantRetry: true},
++		{name: "ShortageTwiceCarriesTheMarker", attempts: []tierResult{eagain, thread}, wantAttempts: 2, wantExit: 2, wantShortage: "failed to create new os thread", wantRetry: true},
++		{name: "ShellForkFailureIsAShortage", attempts: []tierResult{failed(1, "sh: Cannot fork\n"), failed(1, "bash: fork: Cannot fork\n")}, wantAttempts: 2, wantExit: 1, wantShortage: "cannot fork", wantRetry: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			ctx, cancel := context.WithCancel(context.Background())
++			defer cancel()
++			if tt.cancelled {
++				cancel()
++			}
++			var stderr bytes.Buffer
++			var out io.Writer = &stderr
++			delay := time.Duration(0)
++			if tt.cancelDuringDelay {
++				out = cancelOnWrite{Writer: &stderr, cancel: cancel}
++				delay = time.Hour
++			}
++			calls := 0
++			got := retryOnShortage(ctx, out, "tier0", delay, func() tierResult {
++				calls++
++				return tt.attempts[calls-1]
++			})
++			if calls != tt.wantAttempts {
++				t.Errorf("retryOnShortage ran %d attempts; want %d", calls, tt.wantAttempts)
++			}
++			if got.record.ExitCode != tt.wantExit || got.shortage != tt.wantShortage {
++				t.Errorf("retryOnShortage() = exit %d, shortage %q; want exit %d, shortage %q", got.record.ExitCode, got.shortage, tt.wantExit, tt.wantShortage)
++			}
++			const announced = "gate test: tier0 failed on a resource shortage"
++			if retried := strings.HasPrefix(stderr.String(), announced); retried != tt.wantRetry {
++				t.Errorf("stderr = %q; want the rerun announced: %v", stderr.String(), tt.wantRetry)
++			}
++			if tt.wantRetry && calls == 2 && !strings.HasPrefix(string(got.log), stderr.String()) {
++				t.Errorf("rerun log = %q; want it to open with the announcement %q", got.log, stderr.String())
++			}
++		})
++	}
++}
++
++func TestFailedRunLabel(t *testing.T) {
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		end  runEnd
++		want string
++	}{
++		{name: "OrdinaryFailure", end: runEnd{code: 1, ran: true}, want: "tier1 (exit 1)"},
++		{
++			name: "ShortageTwice",
++			end:  runEnd{code: 2, ran: true, shortage: "cannot fork"},
++			want: `tier1 (exit 2, a resource shortage, "cannot fork", in its run and its rerun: an environment error, not a test failure; way forward: re-run the same command once the machine's process load drops)`,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := failedRunLabel(tierRun{number: 1}, tt.end); got != tt.want {
++				t.Errorf("failedRunLabel() = %q; want %q", got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/gateslot/config.go b/internal/gateslot/config.go
+index 637e465f..ad2c26e8 100644
+--- a/internal/gateslot/config.go
++++ b/internal/gateslot/config.go
+@@ -50,7 +50,7 @@ type BuildStep struct {
+ 	About string
+ 	// Command is the shell command the build runs.
+ 	Command string
+-	// Dir is the run directory relative to the worktree root.
++	// Dir is the run directory relative to the worktree root, empty when gate.yaml sets none.
+ 	Dir string
+ 	// Env is the environment the command runs with.
+ 	Env map[string]string
+@@ -288,11 +288,7 @@ func decodeBuild(file buildFile) (BuildStep, error) {
+ 	if *file.TimeoutMin < 1 {
+ 		return BuildStep{}, refuse("timeout_min", fmt.Sprintf("%d; want at least 1", *file.TimeoutMin))
+ 	}
+-	step := BuildStep{About: file.About, Command: file.Command, Dir: file.Dir, Env: file.Env, TimeoutMin: *file.TimeoutMin}
+-	if step.Dir == "" {
+-		step.Dir = "."
+-	}
+-	return step, nil
++	return BuildStep{About: file.About, Command: file.Command, Dir: file.Dir, Env: file.Env, TimeoutMin: *file.TimeoutMin}, nil
+ }
+ 
+ // Inert reports whether the worktree-relative slash path rel matches an inert_paths pattern:
+diff --git a/internal/gateslot/config_test.go b/internal/gateslot/config_test.go
+index 9a8c10e7..9d2bd562 100644
+--- a/internal/gateslot/config_test.go
++++ b/internal/gateslot/config_test.go
+@@ -103,7 +103,7 @@ func TestLoadConfig(t *testing.T) {
+ 		{
+ 			"a tier in flow form reads parallel and slots as 1", baseKeys + tier0Flow,
+ 			hubWith(func(c *Config) {
+-				c.Tiers["tier0"] = Tier{Command: "go test -json {targets} {args}", Dir: ".", AllTargets: "./...", Parallel: 1, TimeoutMin: 60, Counter: "go-json", Slots: 1}
++				c.Tiers["tier0"] = Tier{Command: "go test -json {targets} {args}", AllTargets: "./...", Parallel: 1, TimeoutMin: 60, Counter: "go-json", Slots: 1}
+ 			}), "",
+ 		},
+ 		{
+@@ -112,7 +112,7 @@ func TestLoadConfig(t *testing.T) {
+   tier1: {about: integration, command: "go test -tags integration {targets}", all_targets: ./..., dir: sub, env: {GOFLAGS: "-p={parallel}"}, parallel: 3, timeout_min: 30, counter: go-json, covers: [0], slots: all, prebuilt_lym: true}
+ `,
+ 			hubWith(func(c *Config) {
+-				c.Tiers["tier0"] = Tier{Command: "go test", Dir: ".", Parallel: 1, TimeoutMin: 5, Counter: "vstest", Slots: 1}
++				c.Tiers["tier0"] = Tier{Command: "go test", Parallel: 1, TimeoutMin: 5, Counter: "vstest", Slots: 1}
+ 				c.Tiers["tier1"] = Tier{About: "integration", Command: "go test -tags integration {targets}", Dir: "sub", Env: map[string]string{"GOFLAGS": "-p={parallel}"}, AllTargets: "./...", Parallel: 3, TimeoutMin: 30, Counter: "go-json", Covers: []int{0}, Slots: 0, PrebuiltLym: true}
+ 			}), "",
+ 		},
+@@ -130,8 +130,8 @@ func TestLoadConfig(t *testing.T) {
+ 		{
+ 			"a manual tier above tier0 loads", baseKeys + `tiers: {tier0: {command: x, timeout_min: 5, counter: vstest}, tier3: {command: y, timeout_min: 5, counter: vstest, manual: true}}`,
+ 			hubWith(func(c *Config) {
+-				c.Tiers["tier0"] = Tier{Command: "x", Dir: ".", Parallel: 1, TimeoutMin: 5, Counter: "vstest", Slots: 1}
+-				c.Tiers["tier3"] = Tier{Command: "y", Dir: ".", Parallel: 1, TimeoutMin: 5, Counter: "vstest", Slots: 1, Manual: true}
++				c.Tiers["tier0"] = Tier{Command: "x", Parallel: 1, TimeoutMin: 5, Counter: "vstest", Slots: 1}
++				c.Tiers["tier3"] = Tier{Command: "y", Parallel: 1, TimeoutMin: 5, Counter: "vstest", Slots: 1, Manual: true}
+ 			}), "",
+ 		},
+ 		{"a manual tier0", baseKeys + `tiers: {tier0: {command: x, timeout_min: 5, counter: vstest, manual: true}}`, Config{}, `gate config key "tiers.tier0.manual": true; want false, since tier0 is the tier a call with no tier flag runs` + fixIt},
+@@ -155,9 +155,9 @@ build: {command: "dotnet build", timeout_min: 10}
+ inert_paths: ["*.md", "docs/*"]
+ `,
+ 			hubWith(func(c *Config) {
+-				c.Tiers["tier0"] = Tier{Command: "dotnet test {filter}", Dir: ".", Parallel: 1, TimeoutMin: 5, Counter: "vstest", Slots: 1, Filter: "Category!=Slow", SharedBuild: true, NoCarry: true}
+-				c.Tiers["tier1"] = Tier{Command: "x", Dir: ".", Parallel: 1, TimeoutMin: 5, Counter: "vstest", Slots: 1}
+-				c.Build = BuildStep{Command: "dotnet build", Dir: ".", TimeoutMin: 10}
++				c.Tiers["tier0"] = Tier{Command: "dotnet test {filter}", Parallel: 1, TimeoutMin: 5, Counter: "vstest", Slots: 1, Filter: "Category!=Slow", SharedBuild: true, NoCarry: true}
++				c.Tiers["tier1"] = Tier{Command: "x", Parallel: 1, TimeoutMin: 5, Counter: "vstest", Slots: 1}
++				c.Build = BuildStep{Command: "dotnet build", TimeoutMin: 10}
+ 				c.InertPaths = []string{"*.md", "docs/*"}
+ 			}), "",
+ 		},
+@@ -261,14 +261,14 @@ inert_paths: ["*.md", "docs/*"]
+ 		{
+ 			name: "a machine tier_parallel entry beats the tier's own parallel", hub: baseKeys + `tiers: {tier0: {command: x, timeout_min: 5, counter: vstest, parallel: 4}}`, machine: "tier_parallel:\n  tier0: 2\n",
+ 			want: hubWith(func(c *Config) {
+-				c.Tiers["tier0"] = Tier{Command: "x", Dir: ".", Parallel: 2, TimeoutMin: 5, Counter: "vstest", Slots: 1}
++				c.Tiers["tier0"] = Tier{Command: "x", Parallel: 2, TimeoutMin: 5, Counter: "vstest", Slots: 1}
+ 				c.TierParallel["tier0"] = 2
+ 			}),
+ 		},
+ 		{
+ 			name: "a machine tier_parallel entry written as the string a scalar set writes", hub: baseKeys + `tiers: {tier0: {command: x, timeout_min: 5, counter: vstest}}`, machine: "tier_parallel:\n  tier0: \"3\"\n",
+ 			want: hubWith(func(c *Config) {
+-				c.Tiers["tier0"] = Tier{Command: "x", Dir: ".", Parallel: 3, TimeoutMin: 5, Counter: "vstest", Slots: 1}
++				c.Tiers["tier0"] = Tier{Command: "x", Parallel: 3, TimeoutMin: 5, Counter: "vstest", Slots: 1}
+ 				c.TierParallel["tier0"] = 3
+ 			}),
+ 		},
+@@ -303,7 +303,7 @@ inert_paths: ["*.md", "docs/*"]
+ 		{
+ 			name: "a board-only load never stacks the machine file", hub: hubTier0, machine: machineBadParallel, boardOnly: true,
+ 			want: hubWith(func(c *Config) {
+-				c.Tiers["tier0"] = Tier{Command: "x", Dir: ".", Parallel: 1, TimeoutMin: 5, Counter: "vstest", Slots: 1}
++				c.Tiers["tier0"] = Tier{Command: "x", Parallel: 1, TimeoutMin: 5, Counter: "vstest", Slots: 1}
+ 			}),
+ 		},
+ 		{
+diff --git a/internal/gateslot/doc.go b/internal/gateslot/doc.go
+index d35a69ee..76a3b488 100644
+--- a/internal/gateslot/doc.go
++++ b/internal/gateslot/doc.go
+@@ -62,7 +62,7 @@
+ // `tiers` and `build` are executable keys, since a tier or build command runs any shell command in a task worktree, and `gates`, `scoper`, `refuse_raw` and `inert_paths` are guard keys, so all of them are hub-file only.
+ // `build` is an open map, so its sub-keys travel whole through the layer stack and reconcile never prunes a hub's build.
+ // A tier may also hold `filter`, its own test-filter expression, `shared_build: true`, which makes the tier depend on the build step, and `carry: false`, which keeps a green run from being carried over an unchanged tree; Tier.NoCarry is the negative form, so a zero Tier carries.
+-// `build` holds `about`, `command`, `dir` (default `.`), `env` and `timeout_min`; the template's `build: {}` is no build step, and a declared step has a non-empty Config.Build.Command.
++// `build` holds `about`, `command`, `dir` (default the worktree's anchor, filled by `Config.WithDefaultDir`), `env` and `timeout_min`; the template's `build: {}` is no build step, and a declared step has a non-empty Config.Build.Command.
+ // `inert_paths` lists glob patterns of files no test reads: Config.Inert matches a worktree-relative slash path through `path.Match`, a pattern without a slash against the path's base name and one with a slash against the whole path, and a pattern `path.Match` rejects matches nothing.
+ // Config.AllInert is true only when the list and the paths are both non-empty and every path is inert.
+ // The `dotnet` scoper derives the impacted C# test projects and classes from the type-name closure over test classes.
+diff --git a/internal/gateslot/runlog.go b/internal/gateslot/runlog.go
+index 7b7b2f9b..5851d300 100644
+--- a/internal/gateslot/runlog.go
++++ b/internal/gateslot/runlog.go
+@@ -198,6 +198,9 @@ func FindTierTimeout(log string) (tier string, ok bool) {
+ 	return "", false
+ }
+ 
++// FailedRunsPrefix opens the one stderr line a gate call that had a failed run closes with, naming each failed run, so a reader of the call's output can find it.
++const FailedRunsPrefix = "gate test: failed runs: "
++
+ // TierSummaryLine renders the one stderr line the gate prints after each tier run.
+ // A carried tier is marked with `carried` after its scope form.
+ func TierSummaryLine(record RunRecord, logPath string) string {
+diff --git a/internal/gateslot/template.yaml b/internal/gateslot/template.yaml
+index 4d6be75b..26c428cb 100644
+--- a/internal/gateslot/template.yaml
++++ b/internal/gateslot/template.yaml
+@@ -4,7 +4,7 @@ busy_quit_sec: 120  # seconds a Go test binary under lym gate test may keep a CP
+ # The hub's test tiers, keyed tier0, tier1, and so on; the template declares none.
+ # A tier is written whole with one flow mapping: lym config gate --set 'tiers.tier0={command: "go test -json {targets} {args}", all_targets: ./..., timeout_min: 60, counter: go-json}'
+ # It holds command (with {targets}, {parallel} and {args} placeholders), timeout_min (at least 1) and counter (go-json or vstest), and all_targets when the command holds {targets}.
+-# It may also hold about, dir (default .), env, parallel (at least 1, default 1), covers (lower tier numbers its command runs anyway), slots (a count of at least 1, or all; default 1), prebuilt_lym and manual (true keeps a tier above tier0 out of lym gate test --upto, so it runs only when --tier names it).
++# It may also hold about, dir (relative to the worktree root; default the worktree's anchor), env, parallel (at least 1, default 1), covers (lower tier numbers its command runs anyway), slots (a count of at least 1, or all; default 1), prebuilt_lym and manual (true keeps a tier above tier0 out of lym gate test --upto, so it runs only when --tier names it).
+ # Three more keys: filter (the tier's own test-filter expression, allowed only when the command holds {filter}), shared_build (true runs the hub's build step first, once per call) and carry (false keeps a green run from being carried over an unchanged tree; default true).
+ # Inside the mapping a value holding a brace, comma or bracket is a double-quoted string.
+ tiers: {}
+@@ -29,7 +29,7 @@ gates:
+ scoper: none
+ 
+ # The build a tier with shared_build runs once per call; {} declares none.
+-# It holds command and timeout_min (at least 1), and may hold about, dir (default .) and env.
++# It holds command and timeout_min (at least 1), and may hold about, dir (relative to the worktree root; default the worktree's anchor) and env.
+ build: {}
+ 
+ # Glob patterns of files no test reads, such as "*.md" or "docs/*": a pattern without a slash matches the file's base name, one with a slash the whole worktree-relative path.
+diff --git a/internal/gateslot/tiers.go b/internal/gateslot/tiers.go
+index 012b2c19..87c3d157 100644
+--- a/internal/gateslot/tiers.go
++++ b/internal/gateslot/tiers.go
+@@ -21,7 +21,7 @@ type Tier struct {
+ 	About string
+ 	// Command is the shell command a run executes, with the placeholders {targets}, {parallel}, {args} and {filter}.
+ 	Command string
+-	// Dir is the run directory relative to the worktree root.
++	// Dir is the run directory relative to the worktree root, empty when gate.yaml sets none.
+ 	Dir string
+ 	// Env is the environment the command runs with; values may hold {parallel}.
+ 	Env map[string]string
+@@ -141,9 +141,6 @@ func decodeTier(key string, number int, file tierFile) (Tier, error) {
+ 	if tier.Manual && number == 0 {
+ 		return Tier{}, refuse("manual", "true; want false, since tier0 is the tier a call with no tier flag runs")
+ 	}
+-	if tier.Dir == "" {
+-		tier.Dir = "."
+-	}
+ 	if strings.TrimSpace(tier.Command) == "" {
+ 		return Tier{}, refuse("command", "missing; want the shell command a run executes")
+ 	}
+@@ -249,6 +246,23 @@ func useRefusal(format string, args ...any) error {
+ 	return fmt.Errorf("gate config: %s; fix it with \"lym config gate\" from the prime%s", fmt.Sprintf(format, args...), roleClause)
+ }
+ 
++// WithDefaultDir returns c with every tier and the build step that set no dir running in dir, a path relative to the worktree root.
++// A gate run fills it with the worktree's anchor, so a hub whose commands only work in a subdirectory anchor need not spell it per tier.
++func (c Config) WithDefaultDir(dir string) Config {
++	tiers := make(map[string]Tier, len(c.Tiers))
++	for key, tier := range c.Tiers {
++		if tier.Dir == "" {
++			tier.Dir = dir
++		}
++		tiers[key] = tier
++	}
++	c.Tiers = tiers
++	if c.Build.Command != "" && c.Build.Dir == "" {
++		c.Build.Dir = dir
++	}
++	return c
++}
++
+ // Tier returns the declared tier with the given number, or refuses naming lym config gate.
+ func (c Config) Tier(number int) (Tier, error) {
+ 	tier, ok := c.Tiers[tierKey(number)]
+diff --git a/internal/loomshed/doc.go b/internal/loomshed/doc.go
+index 5edcbb06..ec3d9839 100644
+--- a/internal/loomshed/doc.go
++++ b/internal/loomshed/doc.go
+@@ -44,7 +44,7 @@
+ // The round form lints the comments added since the told command's latest recorded pass when that commit is an ancestor of HEAD, else since the merge base, so a first round lints rather than skips; with neither base it runs no lint.
+ // It then runs the told command as it is through verifytree.Verify: the gate derives its own diff base, narrowing, fallback to whole and guard step.
+ // Webster's gate, Publish and Finalize keep the full verify on the tree that lands.
+-// A failed run's findings carry the exit code, the log path and the log's tail, and when the whole log holds the CPU watchdog's line that `lym gate test` prints after it quits a busy test binary, a paragraph naming the window.
++// A failed run's findings carry the exit code, the log path, and the failing tests and packages the log names, each with its own output, followed by `lym gate test`'s closing line of failed runs; a log that names none is quoted as its tail instead, and when the whole log holds the CPU watchdog's line that `lym gate test` prints after it quits a busy test binary, a paragraph naming the window.
+ // A watchdog quit of a healthy package has no code fix: the way forward is raising `busy_quit_sec` through `lym config gate` from the prime, then re-stepping the row.
+ // The gate runs no flake rerun.
+ // The told command runs the tiers its key lists and nothing else, so `tmux` and `llm` tiers run only if the hub lists them in that key.
+diff --git a/internal/loomshed/verifygate.go b/internal/loomshed/verifygate.go
+index 93dbf6ba..10681014 100644
+--- a/internal/loomshed/verifygate.go
++++ b/internal/loomshed/verifygate.go
+@@ -8,6 +8,7 @@ import (
+ 	"fmt"
+ 	"os"
+ 	"strings"
++	"unicode/utf8"
+ 
+ 	"github.com/Knatte18/loomyard/internal/commentlint"
+ 	"github.com/Knatte18/loomyard/internal/gateslot"
+@@ -17,11 +18,18 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/patternlint"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/verifytree"
++	"github.com/Knatte18/loomyard/internal/websterengine"
+ )
+ 
+ // verifyLogTailBytes bounds how much of the verify log a failing verdict quotes.
+ const verifyLogTailBytes = 4096
+ 
++// verifyFailuresBytes bounds the failures section a failing verdict quotes in place of the log tail; one failure longer than the bound is cut to it.
++const verifyFailuresBytes = 8192
++
++// verifyFailureTruncated ends a failure cut to verifyFailuresBytes.
++const verifyFailureTruncated = "\n[truncated]"
++
+ // NewVerifyGate returns a must-pass shuttleengine.Gate that, at each arrival, reads the told verify command, lints the comments the work added, and runs the command through verifytree.Verify over worktreeRoot, keeping its record, marker and log in verifyDir.
+ // siteLabel names the call site in the running marker, and the closure's own count of its calls is the attempt.
+ // command is the told verify-command source, the site's own `lym gate test --wait --gate <key>` call, read at each arrival; it runs as it is, since the gate derives its own diff base, and a pass keeps its record entry so a later arrival on the same tree skips.
+@@ -155,7 +163,8 @@ func commentLintFindings(findings []commentlint.Finding) string {
+ 	return b.String()
+ }
+ 
+-// verifyFailureFindings renders a StatusFailed result as the exit code or the timeout, the log path and the log's tail.
++// verifyFailureFindings renders a StatusFailed result as the exit code or the timeout, the log path, and the failing tests and packages the log names, each with its own output, and the gate's closing line of failed runs;
++// a log that names no failing test or package is quoted as its tail instead, since in the output of parallel packages the last lines need not hold the failures.
+ // When the whole log holds the CPU watchdog's line, a paragraph after the first sentence names the window and the way forward for a healthy package that is CPU-bound.
+ func verifyFailureFindings(res verifytree.Result, logPath string) string {
+ 	log, _ := os.ReadFile(logPath)
+@@ -172,7 +181,12 @@ func verifyFailureFindings(res verifytree.Result, logPath string) string {
+ 		fmt.Fprintf(&b, "\n\nThe gate test's CPU watchdog quit a test binary that kept a CPU core busy for %s, so its goroutine stacks are in the log: look there for a livelock or a spin, and if the package is CPU-bound but healthy, %s, then re-step the row.", window, gateslot.BusyQuitWayForward)
+ 	}
+ 	fmt.Fprintf(&b, "\n\nFull log: %s\n", logPath)
+-	if tail := logTail(log); tail != "" {
++	if failures := failuresSection(log); failures != "" {
++		fmt.Fprintf(&b, "\nFailures:\n\n%s\n", failures)
++		if line := failedRunsLine(log); line != "" {
++			fmt.Fprintf(&b, "\n%s\n", line)
++		}
++	} else if tail := logTail(log); tail != "" {
+ 		fmt.Fprintf(&b, "\nLog tail:\n\n%s\n", tail)
+ 	}
+ 	return b.String()
+@@ -185,3 +199,81 @@ func logTail(log []byte) string {
+ 	}
+ 	return string(bytes.TrimSpace(log))
+ }
++
++// failuresSection returns the failing tests and packages websterengine.ParseVerifyFailures names in log, each as its identity and its own output, within verifyFailuresBytes, or "" when it names none.
++// A test whose output the parser found nested under its header gets that output, and otherwise the output above its header, where `lym gate test` renders a test's output.
++func failuresSection(log []byte) string {
++	lines := strings.Split(strings.ReplaceAll(string(log), "\r\n", "\n"), "\n")
++	var b strings.Builder
++	for _, failure := range websterengine.ParseVerifyFailures(string(log)) {
++		if failure.Kind == websterengine.FailureKindOpaque {
++			continue
++		}
++		output := strings.TrimSpace(failure.Tail)
++		if output == "" && failure.Kind == websterengine.FailureKindTest {
++			output = outputAboveHeader(lines, failure.Package, strings.TrimPrefix(failure.ID, failure.Package+"."))
++		}
++		entry := fmt.Sprintf("%s:\n%s\n\n", failure.ID, output)
++		if len(entry) > verifyFailuresBytes {
++			cut := verifyFailuresBytes - len(verifyFailureTruncated) - len("\n\n")
++			for cut > 0 && !utf8.RuneStart(entry[cut]) {
++				cut--
++			}
++			entry = entry[:cut] + verifyFailureTruncated + "\n\n"
++		}
++		if b.Len() > 0 && b.Len()+len(entry) > verifyFailuresBytes {
++			b.WriteString("More failures are in the full log.\n")
++			break
++		}
++		b.WriteString(entry)
++	}
++	return strings.TrimSpace(b.String())
++}
++
++// failedRunsLine returns the last line of log that `lym gate test` closes a failed call with, naming each failed run, or "" when log holds none.
++func failedRunsLine(log []byte) string {
++	lines := strings.Split(strings.TrimSpace(string(log)), "\n")
++	for i := len(lines) - 1; i >= 0; i-- {
++		if line := strings.TrimSpace(lines[i]); strings.HasPrefix(line, gateslot.FailedRunsPrefix) {
++			return line
++		}
++	}
++	return ""
++}
++
++// verifyOutputAboveLines caps the output outputAboveHeader quotes for one test.
++const verifyOutputAboveLines = 40
++
++// outputAboveHeader returns the output lines directly above the first `--- FAIL: <test> ` header in the block of package pkg, back to the nearest `=== ` or `--- ` marker line, at most verifyOutputAboveLines of them, or "" when no block of pkg holds such a header.
++// A block runs from the line after the previous package's closing line to pkg's own `FAIL\t<pkg>` line, so a test name another package shares never borrows that package's output.
++func outputAboveHeader(lines []string, pkg, test string) string {
++	header := "--- FAIL: " + test + " "
++	blockStart := 0
++	for closing, line := range lines {
++		isFail := strings.HasPrefix(line, "FAIL\t")
++		if !isFail && !strings.HasPrefix(line, "ok  \t") && !strings.HasPrefix(line, "?   \t") {
++			continue
++		}
++		fields := strings.Fields(strings.TrimPrefix(line, "FAIL\t"))
++		if !isFail || len(fields) == 0 || fields[0] != pkg {
++			blockStart = closing + 1
++			continue
++		}
++		for i := blockStart; i < closing; i++ {
++			if !strings.HasPrefix(strings.TrimSpace(lines[i]), header) {
++				continue
++			}
++			start := i
++			for start > blockStart && i-start < verifyOutputAboveLines {
++				above := strings.TrimSpace(lines[start-1])
++				if strings.HasPrefix(above, "=== ") || strings.HasPrefix(above, "--- ") {
++					break
++				}
++				start--
++			}
++			return strings.TrimSpace(strings.Join(lines[start:i], "\n"))
++		}
++		blockStart = closing + 1
++	}
++	return ""
++}
+diff --git a/internal/loomshed/verifygate_test.go b/internal/loomshed/verifygate_test.go
+index d0f7aeae..bd3fe9aa 100644
+--- a/internal/loomshed/verifygate_test.go
++++ b/internal/loomshed/verifygate_test.go
+@@ -9,12 +9,13 @@ import (
+ 	"strings"
+ 	"testing"
+ 	"time"
++	"unicode/utf8"
+ 
+ 	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/verifytree"
+ )
+ 
+-// TestVerifyFailureFindings pins how a failed verify result renders: the exit code, the could-not-start cause or the timeout sentence, then the full log path and the log tail.
++// TestVerifyFailureFindings pins how a failed verify result renders: the exit code, the could-not-start cause or the timeout sentence, then the full log path and either the failing tests the log names with the gate's closing line, or the log tail when it names none.
+ func TestVerifyFailureFindings(t *testing.T) {
+ 	t.Parallel()
+ 
+@@ -25,6 +26,8 @@ func TestVerifyFailureFindings(t *testing.T) {
+ 		log     string
+ 		want    []string
+ 		wantNot []string
++		// failures marks a log that names failing tests, so the findings quote those instead of the tail.
++		failures bool
+ 	}{
+ 		{
+ 			name:    "a non-zero exit names its code",
+@@ -50,6 +53,37 @@ func TestVerifyFailureFindings(t *testing.T) {
+ 			want:    []string{"failed with exit code 1.", "2m0s", "busy_quit_sec", `"lym config gate" from the prime`},
+ 			wantNot: []string{"did not finish", "could not start"},
+ 		},
++		{
++			name:     "failing tests early in a log that ends in passes are quoted with their output above or under the header and the closing line instead of the tail",
++			result:   verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 1},
++			log:      "=== RUN   TestA\n    a_test.go:9: boom\n--- FAIL: TestA (0.00s)\nFAIL\nFAIL\texample.com/mod/a\t0.1s\n" + "--- FAIL: TestC (0.00s)\n    c_test.go:3: nested\nFAIL\nFAIL\texample.com/mod/c\t0.1s\n" + strings.Repeat("--- PASS: TestB (0.00s)\nok  \texample.com/mod/b\t0.1s\n", 300) + gateslot.FailedRunsPrefix + "tier0 (exit 1); the exit code is tier0's\nlast passing line\n",
++			failures: true,
++			want:     []string{"Failures:", "example.com/mod/a.TestA:", "a_test.go:9: boom", "example.com/mod/c.TestC:\nc_test.go:3: nested", gateslot.FailedRunsPrefix + "tier0 (exit 1)"},
++			wantNot:  []string{"Log tail:", "last passing line", "TestB"},
++		},
++		{
++			name:     "two packages failing a test of the same name each get their own output, never the other's or a closing line",
++			result:   verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 1},
++			log:      "=== RUN   TestX\n    a_test.go:1: from a\n--- FAIL: TestX (0.00s)\nFAIL\nFAIL\texample.com/mod/a\t0.1s\n" + "ok  \texample.com/mod/b\t0.1s\nstray line\n--- FAIL: TestX (0.00s)\nFAIL\nFAIL\texample.com/mod/c\t0.1s\n",
++			failures: true,
++			want:     []string{"example.com/mod/a.TestX:\na_test.go:1: from a", "example.com/mod/c.TestX:\nstray line"},
++			wantNot:  []string{"ok  \texample.com/mod/b", "FAIL\texample.com/mod/a"},
++		},
++		{
++			name:     "a package repeated in the log gets the output of the block that holds the failing test",
++			result:   verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 1},
++			log:      "=== RUN   TestOne\n    first\n--- FAIL: TestOne (0.00s)\nFAIL\nFAIL\texample.com/mod/a\t0.1s\n=== RUN   TestTwo\n    second\n--- FAIL: TestTwo (0.00s)\nFAIL\nFAIL\texample.com/mod/a\t0.1s\n",
++			failures: true,
++			want:     []string{"example.com/mod/a.TestOne:\nfirst", "example.com/mod/a.TestTwo:\nsecond"},
++		},
++		{
++			name:     "an oversized failure is cut on a rune boundary and the failures after it are left to the full log",
++			result:   verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 1},
++			log:      "=== RUN   TestBig\n" + strings.Repeat("é", 20000) + "\n--- FAIL: TestBig (0.00s)\nFAIL\nFAIL\texample.com/mod/a\t0.1s\n=== RUN   TestSmall\n    small\n--- FAIL: TestSmall (0.00s)\nFAIL\nFAIL\texample.com/mod/b\t0.1s\n",
++			failures: true,
++			want:     []string{"example.com/mod/a.TestBig:\n" + strings.Repeat("é", 100), verifyFailureTruncated, "More failures are in the full log."},
++			wantNot:  []string{"TestSmall", strings.Repeat("é", 5000)},
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -66,7 +100,14 @@ func TestVerifyFailureFindings(t *testing.T) {
+ 
+ 			got := verifyFailureFindings(tt.result, logPath)
+ 
+-			for _, want := range append(tt.want, "Full log: "+logPath, "last line") {
++			want := append(tt.want, "Full log: "+logPath)
++			if !tt.failures {
++				want = append(want, "Log tail:", "last line")
++			}
++			if !utf8.ValidString(got) {
++				t.Errorf("findings are not valid UTF-8: %q", got)
++			}
++			for _, want := range want {
+ 				if !strings.Contains(got, want) {
+ 					t.Errorf("findings %q lack %q", got, want)
+ 				}
+diff --git a/internal/proc/buildserver.go b/internal/proc/buildserver.go
+new file mode 100644
+index 00000000..e40d3171
+--- /dev/null
++++ b/internal/proc/buildserver.go
+@@ -0,0 +1,16 @@
++// buildserver.go declares the environment that keeps a .NET build from leaving build-server processes running after it exits.
++
++package proc
++
++// EnvVar is one environment variable as a name and its value.
++type EnvVar struct {
++	Name  string
++	Value string
++}
++
++// BuildServerOffEnv is the environment that stops a .NET build from leaving MSBuild reuse nodes and the MSBuild server running once it exits.
++// Lingering nodes of the builds parallel agents run hold enough threads to exhaust a user's task limit, so every process lym starts for an agent or a gate run gets these values.
++var BuildServerOffEnv = []EnvVar{
++	{Name: "MSBUILDDISABLENODEREUSE", Value: "1"},
++	{Name: "DOTNET_CLI_USE_MSBUILD_SERVER", Value: "0"},
++}
+diff --git a/internal/proc/doc.go b/internal/proc/doc.go
+index 6814f242..0a98485a 100644
+--- a/internal/proc/doc.go
++++ b/internal/proc/doc.go
+@@ -16,4 +16,7 @@
+ // SignalProcess and SignalGroup send SIGTERM, or SIGKILL when asked, to one pid or to one process group and return the raw syscall error.
+ // All of these read /proc or signal by pid, so they work on Linux only: on Windows TreeCPU, ListProcesses and ListStats return errors.ErrUnsupported, IsAncestor is false, SignalProcess only kills and SignalGroup returns ErrNoProcessGroup.
+ // CreationTime is the exception: it reads a process's creation time by pid on Windows, where StartTime is unreadable, and is always the zero time and false elsewhere.
++//
++// BuildServerOffEnv is the environment that keeps a .NET build from leaving MSBuild reuse nodes and the MSBuild server running after it exits;
++// reed exports it in every strand pane and `lym gate test` sets it for every run, so builds that parallel agents start leave no thread-holding servers behind.
+ package proc
+diff --git a/internal/reedengine/doc.go b/internal/reedengine/doc.go
+index e1355e56..dea560f1 100644
+--- a/internal/reedengine/doc.go
++++ b/internal/reedengine/doc.go
+@@ -175,6 +175,7 @@
+ //
+ // Every strand pane reed creates resolves `lym` to the binary that spawned it, because launchStrandLocked prepends that binary's directory to the pane's PATH and exports LYM_BIN to its absolute path as shell statements.
+ // A fresh shell a strand's command starts re-runs its rc and can reorder PATH, so LYM_BIN names the spawning binary there, and a shuttle engine re-asserts LYM_BIN's directory in its agent's tool shell.
++// After the prelude the line exports `proc.BuildServerOffEnv`, so no .NET build an agent runs leaves MSBuild reuse nodes or the MSBuild server holding threads after it exits; these exports stay when the prelude is dropped.
+ // The composed line, prelude and launch command together, is written to the strand's launch script, and the typed send-keys line sources it in the pane shell's own scope, so the prelude still runs after the pane shell's profile.
+ // The shell dialect's discard-line key (`C-u` on POSIX, none on PowerShell) is sent ahead of that line, so input that reached the booting pane first, such as a viewer's keystrokes or a terminal reply after a window switch, never prefixes it.
+ // The strand records that absolute path as `Strand.LymBin` at every launch and relaunch, and reed's status reports it.
+diff --git a/internal/reedengine/panebin.go b/internal/reedengine/panebin.go
+index 07791244..3bde6add 100644
+--- a/internal/reedengine/panebin.go
++++ b/internal/reedengine/panebin.go
+@@ -2,7 +2,7 @@
+ // The composition lives in this one file, reached from two chokepoints, launchStrandLocked in spawn.go for strand panes and OpenWindow in window.go for detached windows,
+ // so the property "every pane reed creates for a `lym` command resolves lym to its spawning binary" holds by construction rather than by every pane-creating call site remembering to apply it.
+ // It also composes the session-switch command the Alt-key bindings run, from the same executablePath chokepoint.
+-// The same composition exports LYM_STRAND_NAME (the strand's full name) and LYM_PARENT (the worktree's parent, when told) beside LYM_BIN.
++// The same composition exports LYM_STRAND_NAME (the strand's full name), LYM_PARENT (the worktree's parent, when told) and the .NET build-server switches beside LYM_BIN.
+ // The file also owns the per-strand launch script the composed line is written to,
+ // so the pane types a short source statement instead of the full line.
+ 
+@@ -15,6 +15,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/agentname"
+ 	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/Knatte18/loomyard/internal/shell"
+ )
+ 
+@@ -48,11 +49,20 @@ func nameExports(sh shell.Shell, name, parent string) string {
+ 	return sh.Chain(parts...)
+ }
+ 
+-// composePaneLaunchLine returns the launch script's content: the pane-binary prelude, the name exports, then launchCmd, on sh's dialect.
++// buildServerExports returns the statements exporting proc.BuildServerOffEnv on sh's dialect, so no .NET build the strand's process runs leaves MSBuild servers behind.
++func buildServerExports(sh shell.Shell) string {
++	parts := make([]string, 0, len(proc.BuildServerOffEnv))
++	for _, v := range proc.BuildServerOffEnv {
++		parts = append(parts, sh.ExportEnv(v.Name, v.Value))
++	}
++	return sh.Chain(parts...)
++}
++
++// composePaneLaunchLine returns the launch script's content: the pane-binary prelude, the build-server exports, the name exports, then launchCmd, on sh's dialect.
+ // launchStrandLocked writes it through stageLaunchScript and types only the source statement.
+ // It reads the running process's own path via executablePath;
+ // on error it logs a named logger.Warn and drops the prelude, so the pane launches with no prelude rather than failing the strand launch (executable-error-warns-and-degrades Shared Decision).
+-// The name exports do not depend on that lookup and stay either way.
++// The build-server and name exports do not depend on that lookup and stay either way.
+ // Because Chain drops empty parts, an empty launchCmd yields the statements alone with no trailing separator and no empty command fragment.
+ // It also returns the executable path the prelude exports, empty when the lookup failed and the prelude was dropped.
+ func composePaneLaunchLine(sh shell.Shell, launchCmd, strandGUID, name, parent string) (line, exe string) {
+@@ -64,7 +74,7 @@ func composePaneLaunchLine(sh shell.Shell, launchCmd, strandGUID, name, parent s
+ 	} else {
+ 		prelude = paneBinPrelude(sh, exe)
+ 	}
+-	return sh.Chain(prelude, nameExports(sh, name, parent), launchCmd), exe
++	return sh.Chain(prelude, buildServerExports(sh), nameExports(sh, name, parent), launchCmd), exe
+ }
+ 
+ // composeWindowCommand returns the shell line a detached reed window runs: the pane-binary prelude, then `lym` invoked with lymArgs, each quoted, on sh's dialect.
+diff --git a/internal/reedengine/panebin_test.go b/internal/reedengine/panebin_test.go
+index 66a5e85a..43affdb2 100644
+--- a/internal/reedengine/panebin_test.go
++++ b/internal/reedengine/panebin_test.go
+@@ -80,8 +80,8 @@ func TestPaneBinPrelude_ComposesPrependThenExport(t *testing.T) {
+ }
+ 
+ // TestComposePaneLaunchLine drives composePaneLaunchLine in both dialects with an injected executable path:
+-// the prelude, then the name export (always when a name is told), the parent export (only when a parent is told), then the command, all on one line;
+-// an empty command emits the prelude alone with no trailing separator;
++// the prelude, then the .NET build-server exports, the name export (always when a name is told), the parent export (only when a parent is told), then the command, all on one line;
++// an empty command emits the prelude and exports alone with no trailing separator;
+ // and a failed executable lookup drops only the prelude, passing the command and exports through with a warning naming the strand.
+ //
+ //testtiming:keep pins the composed pane launch line per dialect: prelude, name and parent exports then the command on one line, the prelude alone for an empty command, and only the prelude dropped with a warning naming the strand when the executable cannot be resolved; its covering tests run this code without asserting it
+@@ -108,18 +108,22 @@ func TestComposePaneLaunchLine(t *testing.T) {
+ 		{
+ 			name: "PreludeThenCommand",
+ 			cmd:  launchCmd,
+-			want: func(sh shell.Shell) string { return sh.Chain(paneBinPrelude(sh, exe), launchCmd) },
++			want: func(sh shell.Shell) string {
++				return sh.Chain(paneBinPrelude(sh, exe), buildServerExports(sh), launchCmd)
++			},
+ 		},
+ 		{
+ 			// The shape a strand added with no command produces (for example `lym reed add` without `--cmd`).
+ 			name: "EmptyCmdEmitsThePreludeAlone",
+-			want: func(sh shell.Shell) string { return paneBinPrelude(sh, exe) },
++			want: func(sh shell.Shell) string { return sh.Chain(paneBinPrelude(sh, exe), buildServerExports(sh)) },
+ 		},
+ 		{
+ 			name:   "NameExportWithoutParent",
+ 			cmd:    launchCmd,
+ 			strand: name,
+-			want:   func(sh shell.Shell) string { return sh.Chain(paneBinPrelude(sh, exe), nameExport(sh), launchCmd) },
++			want: func(sh shell.Shell) string {
++				return sh.Chain(paneBinPrelude(sh, exe), buildServerExports(sh), nameExport(sh), launchCmd)
++			},
+ 		},
+ 		{
+ 			name:   "NameAndParentExports",
+@@ -127,19 +131,19 @@ func TestComposePaneLaunchLine(t *testing.T) {
+ 			strand: name,
+ 			parent: parent,
+ 			want: func(sh shell.Shell) string {
+-				return sh.Chain(paneBinPrelude(sh, exe), nameExport(sh), parentExport(sh), launchCmd)
++				return sh.Chain(paneBinPrelude(sh, exe), buildServerExports(sh), nameExport(sh), parentExport(sh), launchCmd)
+ 			},
+ 		},
+ 		{
+ 			name:       "ExecutableErrorPassesTheCommandThrough",
+ 			executable: noExecutable,
+ 			cmd:        launchCmd,
+-			want:       func(sh shell.Shell) string { return launchCmd },
++			want:       func(sh shell.Shell) string { return sh.Chain(buildServerExports(sh), launchCmd) },
+ 		},
+ 		{
+-			name:       "ExecutableErrorWithEmptyCommandIsEmpty",
++			name:       "ExecutableErrorWithEmptyCommandIsTheBuildServerExportsAlone",
+ 			executable: noExecutable,
+-			want:       func(sh shell.Shell) string { return "" },
++			want:       func(sh shell.Shell) string { return buildServerExports(sh) },
+ 		},
+ 		{
+ 			name:       "ExportsSurviveAnExecutableError",
+@@ -147,7 +151,9 @@ func TestComposePaneLaunchLine(t *testing.T) {
+ 			cmd:        launchCmd,
+ 			strand:     name,
+ 			parent:     parent,
+-			want:       func(sh shell.Shell) string { return sh.Chain(nameExport(sh), parentExport(sh), launchCmd) },
++			want: func(sh shell.Shell) string {
++				return sh.Chain(buildServerExports(sh), nameExport(sh), parentExport(sh), launchCmd)
++			},
+ 		},
+ 	}
+ 	for _, tt := range tests {
+@@ -173,6 +179,11 @@ func TestComposePaneLaunchLine(t *testing.T) {
+ 				if want := tt.want(sh); got != want {
+ 					t.Errorf("composePaneLaunchLine(...) = %q, want %q", got, want)
+ 				}
++				for _, export := range []string{sh.ExportEnv("MSBUILDDISABLENODEREUSE", "1"), sh.ExportEnv("DOTNET_CLI_USE_MSBUILD_SERVER", "0")} {
++					if !strings.Contains(got, export) {
++						t.Errorf("composePaneLaunchLine(...) = %q, want it to hold %q", got, export)
++					}
++				}
+ 				if strings.Contains(got, "\n") {
+ 					t.Errorf("composePaneLaunchLine(...) = %q, want a single line with no newline", got)
+ 				}
+diff --git a/internal/reedengine/spawn_test.go b/internal/reedengine/spawn_test.go
+index 98119640..5dd51dcf 100644
+--- a/internal/reedengine/spawn_test.go
++++ b/internal/reedengine/spawn_test.go
+@@ -463,12 +463,16 @@ func TestLaunchStrandLocked_LaunchScript(t *testing.T) {
+ 			name:       "NoPreludeWhenTheExecutableIsUnresolvable",
+ 			executable: errors.New("no exe"),
+ 			cmds:       []string{"claude"},
+-			want:       func(shell.Shell, Strand, *Engine) string { return "claude\n" },
++			want: func(sh shell.Shell, _ Strand, _ *Engine) string {
++				return sh.Chain(buildServerExports(sh), "claude") + "\n"
++			},
+ 		},
+ 		{
+-			name: "EmptyCommandWritesThePreludeAlone",
++			name: "EmptyCommandWritesThePreludeAndExportsAlone",
+ 			cmds: []string{""},
+-			want: func(sh shell.Shell, _ Strand, _ *Engine) string { return paneBinPrelude(sh, exe) + "\n" },
++			want: func(sh shell.Shell, _ Strand, _ *Engine) string {
++				return sh.Chain(paneBinPrelude(sh, exe), buildServerExports(sh)) + "\n"
++			},
+ 		},
+ 	}
+ 	for _, tt := range tests {
