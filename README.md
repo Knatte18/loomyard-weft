@@ -45,7 +45,7 @@ Held by a run; its scope is locked until the run ends.
 | T6 | **A transient fork EAGAIN or died tmux session does not end a loom run hard**<br>• `profile: solid` | [`transient-halt-recovery`](design-transient-halt-recovery.md) | darn | Darn-Write | neve | 34m<br>27m | loom, shed, shuttle, reed, fabric |
 | T7 | **lym loom resume names prior work and honours a recorded wait decision** | [`resume-fixes`](design-resume-fixes.md) | darn | Code-Bouncer | neve | 34m<br>27m | loom, shed |
 | T8 | **Webster recovery has a way forward, and its audit accepts a sanctioned gate test** | [`webster-recovery`](design-webster-recovery.md) | darn | Code-Burler-Fix | neve | 34m<br>27m | webster |
-| T11 | **A racing async push reports no divergence that is already gone** | [`async-push-race`](design-async-push-race.md) | darn | Drift-Verify | neve | 34m<br>27m | fabric |
+| T11 | **A racing async push reports no divergence that is already gone** | [`async-push-race`](design-async-push-race.md) | darn | Code-Bouncer | neve | 34m<br>27m | fabric |
 
 ### Ready (0)
 
