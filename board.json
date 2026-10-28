@@ -583,6 +583,28 @@
       "body": "## Seen (operator, 2026-10-28)\n\nThe operator runs KDE Plasma with virtual desktops and tiling.\nThe Konsole windows lym opens on a run's worktree (`lym reed window`, batten's terminal for each run) and the VS Code windows it opens (`lym ide`) land wherever KWin puts them, untiled and on the current desktop, so the operator moves and tiles each by hand.\n\n## Idea\n\nA window lym opens lands tiled on the right virtual desktop by itself.\nHow the placement rules are written and kept is open (operator, 2026-10-28); the candidates:\n\n- KWin window rules (`kwinrulesrc`) that match the window title or class lym already sets, such as the reed window's `--title` and the VS Code window title `lym ide seed` writes, and assign desktop and position.\n  KWin keeps them, and lym only names its windows predictably; lym could write or check the rules from a config of its own.\n- lym places each window after opening it, through KWin's D-Bus or a KWin script, from a config that maps a window kind (orch, run, IDE) to a desktop and a tile.\n- Plasma 6 tiling: whether a rule or a script can put a window into a named custom tile, or only on a desktop and screen edge, is to be found out first.\n\nWhatever the route, lym hard-codes no desktop environment: the placement is a config choice that does nothing on a machine without KDE.\n\n## Open\n\n- Which windows: run terminals only, or the orch's and VS Code too.\n- The mapping: one desktop per run, per hub, or per window kind.\n- Whether lym writes the rules or the operator does, with lym only keeping its window titles stable.\n",
       "created": "2026-10-28T15:26:02Z",
       "revised": "2026-10-28T15:26:02Z"
+    },
+    {
+      "id": 886,
+      "handle": "T1",
+      "slug": "codex-review-yardstick",
+      "title": "Codex code-review bench: the decision record as yardstick",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "shuttle",
+        "codex"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Two Codex runs: one added reading line naming the decision record and acceptance criteria as the yardstick",
+      "body": "## Question\n\nDoes one reading direction that names the decision record and the acceptance criteria as the yardstick let the forked Codex Astra fan find the Claude Code-Review fan's findings it rejected?\n`docs/research/codex-code-review-bench-2026-10-28/report.md` found that both Codex runs of each input rejected the fan's record findings by name, on the reading that the board snapshot, not the decision record, is the measuring stick: `F1` (`BLOCKING`) and `F2` on `spawn-text-file-busy`, and the code-against-record findings `F3`, `F5` and `F6` on `fixer-overcap-review`.\n\n## Change\n\nExactly one change to that bench's setup: one added line in `data/prompts/block-v2-code.md` stating that the decision record's decisions and the acceptance criteria are the yardstick the diff is judged against, beside the board entry, and that a divergence from either is a finding.\nRead the rubric and target text the harness renders first to see what made the runs read the board snapshot as the only yardstick, and word the line against that; record the line and the reason in the report.\nEverything else stays as that bench ran it: the harness under `docs/research/codex-code-review-bench-2026-10-28/data/harness/`, the same two inputs and reviewed commits, the same reference findings, context parity, the fork cap of 20, `gpt-6-astra` at `medium` for handler and forks.\n\n## Cap\n\nExactly 2 `codex exec` handler runs: each of the 2 inputs once, at medium effort.\nNo other Codex run, no high effort, no reruns of a failed run beyond one retry of a run that failed to start.\n\n## Grading\n\nGrade as that bench did, against the same reference, and set each run beside that bench's two runs of the same input: fan findings found (and `BLOCKING`), real findings the fan lacks, false findings, verdict, fresh input tokens and wall time.\nName for each of the record findings above whether the run found it, and whether the added line drew any new false finding.\n\n## Output\n\n`docs/research/codex-review-yardstick-2026-10-28/report.md` with the changed block and raw outputs under `data/`, in the shape of that bench's report.\n",
+      "status": "draft",
+      "created": "2026-10-28T16:43:10Z",
+      "revised": "2026-10-28T16:43:10Z",
+      "profile": "docs"
     }
   ],
   "prime_owner": "neve",
