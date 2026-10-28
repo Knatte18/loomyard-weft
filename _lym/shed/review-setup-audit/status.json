@@ -1,13 +1,13 @@
 {
   "current_producer": "Code-Bouncer",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "shedadapters: Code-Bouncer (bouncer): read the live subject: fabricengine: read task patch: diff the working tree against 546bc89cbe87f2a3b1ba06e5485ebe0bdc4575e2: fork/exec /usr/bin/git: resource temporarily unavailable",
   "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Code-Bouncer",
     "last": "Drift-Verify → skipped",
-    "wait": ""
+    "wait": "shedadapters: Code-Bouncer (bouncer): read the live subject: fabricengine: read task patch: diff the working tree against 546bc89cbe87f2a3b1ba06e5485ebe0bdc4575e2: fork/exec /usr/bin/git: resource temporarily unavailable"
   },
   "history": [
     {
