@@ -1,6 +1,6 @@
 # No test is skipped by design
 
-`test-skips-os-tags` · Task · enhancement, testkit, reed, loom, fabric, gate · running · Code-Burler-Fix
+`test-skips-os-tags` · Task · enhancement, testkit, reed, loom, fabric, gate · running · Code-Bouncer
 
 ## Seen (operator, 2026-10-26, OSL-1046)
 
