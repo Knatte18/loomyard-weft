@@ -678,7 +678,7 @@
       "isolated": false,
       "brief": "Hold new run starts when the user slice pids.current nears pids.max",
       "body": "Follow-up from task `gate-robustness` (issue #885), which made no .NET build leave MSBuild servers behind and made `lym gate test` rerun a tier once on a fork EAGAIN, but left the dobby unchanged.\n\nWith five loom runs and a darn run live, the user slice reached `pids.current 2997` of `pids.max 3000` and every fork failed.\nSix parallel runs sit close to the default limit even without leaked processes.\n\nWhat to do: before a dobby pass starts a new run, read the user slice cgroup's `pids.current` and `pids.max` on Linux and hold the start, logged with both numbers, while the headroom is below a configured margin.\nA machine with no readable cgroup starts runs as today.\n\nThe EAGAIN retries in git wrappers and the transient halt class `host-resources` for loom runs landed with `transient-halt-recovery`; this note is only the hold on a new run start.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Describe",
       "created": "2026-10-28T12:05:29Z",
       "revised": "2026-10-28T13:50:43Z"
     },
