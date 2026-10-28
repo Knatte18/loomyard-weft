@@ -193,6 +193,12 @@ Decision: maxBodyBytes in internal/creelengine/pool.go is lowered to the 8 KiB b
 
 Rationale: The operator called such long messages absurd; one rule keeps every delivered message whole within one hook field, so no message is journaled read while the session saw only a preview.
 
+### Added after Discussion (parent, 2026-10-28): A strand with no hook-delivering engine keeps the pane path
+
+Decision: A strand whose persisted Provider is empty, or names an engine that shuttleengines.ToolBoundaryRenderer does not find, keeps today's pane path for posts (the notice and the reminder), so a hand-added strand, a Codex session included, still gets its mail. Only a strand whose engine renders creel hook delivery loses the pane path.
+
+Rationale: The operator ruled that creel must keep delivering to Codex (2026-10-28); today a Codex session exists only as a hand-added strand with no provider tag, so the empty-provider case must take the pane path for that ruling to hold.
+
 ## Constraints
 
 - Claude Code 2.1.312 is the version the facts below rest on; "hooks docs" is `code.claude.com/docs/en/hooks`.
