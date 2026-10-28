@@ -1,6 +1,6 @@
 # creel stage 3: agents message through creel, not SendMessage
 
-`creel-agents` · Task · feature, creel, shuttle, loom, stencil, report · running · Loom-Preflight
+`creel-agents` · Task · feature, creel, shuttle, loom, stencil, report · running · Discussion-Write
 
 Depends on: [`claude-md-lym-rules-out`](design-claude-md-lym-rules-out.md)
 
