@@ -191,7 +191,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 3,
   "masterStrand": "cc9328600fc322351769081abc945991",
   "masterSessionId": "fc8d23c0-9cc1-49a8-9f08-87222d5c1836",
   "masterEngine": "claude",
@@ -258,6 +258,24 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-landing-settles-in-place/fc8d23c0-9cc1-49a8-9f08-87222d5c1836/subagents/agent-a0ae8ea2a56a16870.jsonl"
       ]
+    },
+    "3": {
+      "slug": "arbiter-judges-escalate-first",
+      "cards": [
+        "03-arbiter-judges-escalate-first",
+        "04-restep-hold-key"
+      ],
+      "cardHashes": {
+        "03-arbiter-judges-escalate-first": "a842b982cdc733f5fd640f57d1b115e63842cd3620869692cb5ab0680c9586a5",
+        "04-restep-hold-key": "1c8aedf5abef8da930907b27c6eab310df621c0946ac0c9693e159f480e89a2a"
+      },
+      "startSha": "c5855d8d80f1127ecfc8b9333756284ef68edc4b",
+      "kind": "fork",
+      "spawnedAt": "2026-10-28T10:32:55Z",
+      "sessionId": "fc8d23c0-9cc1-49a8-9f08-87222d5c1836",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
