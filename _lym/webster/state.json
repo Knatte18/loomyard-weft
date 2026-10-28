@@ -405,7 +405,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 13,
   "masterStrand": "5841496fec2988abb41e9b4658ab04fe",
   "masterSessionId": "a29a8065-09be-4e72-ba3a-0f2957b04202",
   "masterEngine": "claude",
@@ -448,6 +448,28 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-creel-agents/a29a8065-09be-4e72-ba3a-0f2957b04202/subagents/agent-a556bba78770b260f.jsonl"
       ]
+    },
+    "13": {
+      "slug": "drop-peer-messaging",
+      "cards": [
+        "13-drop-peer-messaging",
+        "14-creel-trust-sentence",
+        "15-remove-shuttle-send-interrupt",
+        "16-agent-messaging-scan"
+      ],
+      "cardHashes": {
+        "13-drop-peer-messaging": "56caacdd965a426b5cbb0c131c94f9452c086c3ad0c4d4bcb4b871e09e32feb8",
+        "14-creel-trust-sentence": "f4f54f12d836f44ec4b1e4edd1400bfe636d336e90a5d9dcc49c0acbddb0d14c",
+        "15-remove-shuttle-send-interrupt": "d834ecdadcf99a0a696e3589cb449724114bd6fac64a25b36677b2be023e1838",
+        "16-agent-messaging-scan": "a348524bb17b6167804434b0ae36f24ca3e009e07584c07c2161c348e02c8d32"
+      },
+      "startSha": "0009874a6e036794f42aecc3bc8274cc67b6ce08",
+      "kind": "fork",
+      "spawnedAt": "2026-10-28T17:53:09Z",
+      "sessionId": "a29a8065-09be-4e72-ba3a-0f2957b04202",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "5": {
       "slug": "expect-reply-engine",
