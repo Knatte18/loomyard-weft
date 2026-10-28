@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-28 15:11 UTC; every age below is as of then.
+Rendered 2026-10-28 15:12 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -40,7 +40,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Board README: one rendered file per project, research notes first**<br>• Render one README file per project, research notes first, After by handle | [`board-readme-per-project`](design-board-readme-per-project.md) | darn | Darn-Write | neve | 3d<br>6m | board |
 | T2 | **No test is skipped by design**<br>• Windows-only tests count as skips on Linux, and TestBuildLoomShed_OutputShape skips on every machine | [`test-skips-os-tags`](design-test-skips-os-tags.md) | darn | Darn-Write | neve | 2d<br>6m | testkit, reed, loom, fabric, gate |
-| T3 | **Move rules about lym behaviour out of this repo's CLAUDE.md into lym code and stencils** | [`claude-md-lym-rules-out`](design-claude-md-lym-rules-out.md) | darn | Code-Bouncer | neve | 6d<br>6m | stencil, board, loom |
+| T3 | **Move rules about lym behaviour out of this repo's CLAUDE.md into lym code and stencils** | [`claude-md-lym-rules-out`](design-claude-md-lym-rules-out.md) | darn | Code-Burler-Review | neve | 6d<br>6m | stencil, board, loom |
 
 ### Ready (0)
 
@@ -66,7 +66,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Beam promote keeps the Discussion record as part of the beam**<br>• When Discussion finds a task should be a project, promote carries its decision record into the beam instead of dropping it | [`beam-promote-keeps-discussion`](design-beam-promote-keeps-discussion.md) | 3d<br>1d | workspaces, batten, loom |
 | E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>2h | shuttle, codex |
-| E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 23h<br>21h | batten, stencil, config |
+| E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 1d<br>21h | batten, stencil, config |
 | E7 |  | **Run verbs in one shared namespace, not under lym loom**<br>• lym loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 13d<br>1d | shed, loom |
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 13d<br>13d | board, loom |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 10d<br>1d | webster, fabric, loom |
