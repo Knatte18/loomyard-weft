@@ -1,39 +1,44 @@
-# A loop child start survives a deploy replacing the lym binary
+# Retry loop child starts on ETXTBSY and install lym by rename
 
-A loom run no longer ends `failed` because a deploy was rewriting the `lym` binary when the loop started a child step.
-A child start that does fail now leaves a halt note that explains itself.
+A loop child start refused with `text file busy` (ETXTBSY) no longer ends the run `failed` at once.
+The binary is no longer rewritten in place by deploy, and a start that still fails explains itself in the halt note.
 
 Closes #893
 
 ## What changes
 
-- `internal/proc` gains `IsSpawnBusy`, the one predicate for a start refused with ETXTBSY because the executable was open for writing.
-- `internal/shedverbs` loop:
-  - A child start refused with ETXTBSY is tried again, five tries in all, waiting 100 ms before the first retry and doubling after.
-    The waits go through the existing `LoopSpec.Sleep` seam, and each retry is logged at Warn.
-    Any other start error fails at once, as before.
-  - A start that still fails keeps the `start-failed: <error>` cause, and for ETXTBSY adds the number of tries and that the executable stayed open for writing, as while a deploy rewrites it in place.
-  - The new `LoopSpec.LoopTraceFile` names the loop process's own trace file, which holds the start warnings.
-    A child that never started takes it as its interrupted stop's trace file when there is no child trace and no non-empty stderr, so the halt note's `trace_file` is no longer empty.
-    `internal/loomcli` and `internal/battencli` arm it with `logger.TraceFile`.
-- `tools/deploy`, which `update-plugins.sh`, `deploy-dev` and the hub's Land-row `deploy` command all run, builds `lym` into a hidden temporary file in the install directory and renames it over the target.
-  A failed build or rename removes the temporary file and leaves the installed binary as it was.
-
-The `proc` and `shedverbs` package docs and the `tools/deploy` command doc are updated to match.
+- `internal/shedverbs`: `startChild` starts the loop's child again when the start is refused with ETXTBSY, five tries in all.
+  The first retry waits 100 ms and each later wait doubles it.
+  The waits go through `LoopSpec.Sleep`, and each retry logs at Warn.
+  Any other start error fails at once, as before.
+- `internal/proc`: `IsSpawnBusy` is the one ETXTBSY predicate, beside the existing EAGAIN one.
+- `tools/deploy`: `installBinary` builds `lym` into a temporary file beside the target and renames it over the target.
+  `update-plugins.sh`, `deploy-dev` and the Land row's `deploy` command all run this tool, so all three install atomically.
+  A failed build or rename removes the temporary file and leaves the target as it was.
+- A start that still fails ends the stop with the cause `start-failed after <n> tries: <error>`, where `<n>` is the tries made.
+  For ETXTBSY the cause adds that the executable was open for writing, as while a deploy replaces it in place.
+- An interrupted stop whose child left no trace file and no stderr now records the loop process's own trace file, which holds the start warnings.
+  `LoopSpec.LoopTraceFile` carries it, wired to `logger.TraceFile` in `internal/loomcli/looparm.go` and `internal/battencli/arm.go`.
 
 ## Design decisions
 
-- `go build -o` copies into an existing target in place when its work directory sits on another filesystem, as with a tmpfs `/tmp`, and that window is where exec returns ETXTBSY.
-  A rename within the install directory replaces the directory entry at once, and a running process keeps the old file.
-  So the rename removes the cause, and the start retry covers a binary written by other means.
-- The retry lives at the loop's child start only, the site the failure occurred.
-  ETXTBSY is refused before the child runs, so a retry never runs a step twice.
-- A failed start keeps the `interrupted-stop` anomaly kind and gets no transient class.
-  The cause and trace file now carry what the classification hid, and a re-step after the retry bound would only repeat the refusal.
-- The temporary binary sits in the install directory, not in `lymtemp`'s run directory, because a rename across filesystems is no atomic replace.
-- On Windows a rename over a running `lym.exe` fails, as `go build -o` over it did before; the change keeps that behaviour.
+- ETXTBSY is refused before the child runs, so a retry never runs a step twice.
+  The bound of about 1.5 s covers a binary copy while a binary held open for writing still fails.
+- `go build -o` copies into an existing target in place when its work directory is on another filesystem, and that window is what a spawning process sees as ETXTBSY.
+  The temporary file sits in the install directory rather than the lym temp root because a rename across filesystems is not atomic.
+- No new anomaly kind or transient class is added for a failed start; it stays an interrupted stop.
+- Other `lym` spawn sites are not changed.
+- On Windows a rename over a running `lym.exe` fails, as `go build -o` over it did before.
 
 ## Check by hand
 
-- No real ETXTBSY was provoked: the loop test stubs the runner and records the waits.
-- Run `./deploy-dev` while a loop step is starting, and confirm `.dev-bin` holds only `lym` afterwards.
+Not run: a real deploy racing a loop child start.
+A deploy that holds the binary open for writing longer than the retry bound still ends the run `failed`, now with a cause that names it.
+
+Check these points in the diff:
+
+- `internal/shedverbs/loop.go`: the `start-failed after <n> tries` cause is built for every start error, with the tries actually made, including a backoff that the context cancels early.
+- `internal/shedverbs/loop.go`: the loop-trace fallback applies to any interrupted stop with an empty trace file, not only to a child that never started.
+- `internal/shedverbs/loopchild.go`: a cancelled backoff reports the tries made, not all five.
+- `internal/shedverbs/loop_test.go`: the fallback's empty-path cases, `LoopTraceFile` nil and returning an empty string, keep `trace_file` empty without a panic.
+- `tools/deploy/main_test.go`: the rename-failure branch of `installBinary` removes the temporary file and leaves the target unchanged.
