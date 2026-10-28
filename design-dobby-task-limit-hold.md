@@ -1,6 +1,6 @@
 # The dobby holds a new run start while the user slice nears its task limit
 
-`dobby-task-limit-hold` · Task · enhancement, batten · draft
+`dobby-task-limit-hold` · Task · enhancement, batten
 
 Follow-up from task `gate-robustness` (issue #885), which made no .NET build leave MSBuild servers behind and made `lym gate test` rerun a tier once on a fork EAGAIN, but left the dobby unchanged.
 

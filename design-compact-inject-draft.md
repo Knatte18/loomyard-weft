@@ -1,6 +1,6 @@
 # Watcher's /compact inject into an idle orch is typed but not submitted (unconfirmed, then stalled on draft)
 
-`compact-inject-draft` · Task · bug, creel, shuttle, orch · draft
+`compact-inject-draft` · Task · bug, creel, shuttle, orch
 
 Imported from [issue #897](https://github.com/Knatte18/loomyard/issues/897).
 
