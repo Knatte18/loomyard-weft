@@ -1,0 +1,779 @@
+diff --git a/docs/dotnet-hub.md b/docs/dotnet-hub.md
+index 744e0a2c..6e2dba51 100644
+--- a/docs/dotnet-hub.md
++++ b/docs/dotnet-hub.md
+@@ -166,7 +166,6 @@ fans:
+     - code-correctness
+     - code-affected-set
+     - code-tests
+-    - code-pattern-fit
+     - models-rules
+ ```
+ 
+diff --git a/docs/overview.md b/docs/overview.md
+index a856b9ba..0fbbad31 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -581,7 +581,7 @@ User-facing modules each get one `lym <module>` namespace:
+   `landing.yaml` also holds the merge fixer's `fixer` model-spec, `fixer_timeout_min`, `parent_align_fix_attempts`, `finalize_fix_attempts` and `finalize_fix_max_lines`, and `deploy_branches`, the base branches whose landing runs `deploy`, which `lym config reconcile` renames from the retired `require_pr_to_base`; reconcile also renames the retired `merge_fix_attempts` key to `parent_align_fix_attempts` and `gate.yaml`'s `merge-in` gate key to `parent-align`.
+   `landing.yaml` gains `describe` (the row's model), `describe_timeout_min`, `trailer_text` and `engine_trailers`; an existing hub takes their template defaults until `lym config reconcile --apply` writes them, moving a retired `co_authored_by` value into `engine_trailers.claude`, and an in-flight run parked past `Webster-Bouncer` is restarted rather than migrated.
+   `lym loom status --watch` is this module's registered interactive-handoff exception ([PATTERN-cli-cobra](../pattern/PATTERN-cli-cobra.md)): it self-displays the polled status line then blocks forever as its own keepalive tail, with every fallible step running pre-flight, on the envelope, and only that tail exempt from emitting JSON.
+-  ✅ Implemented. loom's config module (`loom.yaml`, holding the `discussion`/`plan`/`judge` role model-specs and the shared `reviewer_model`/`fixer_model`, where `seed` names the Bouncer seed pass model, `discussion_judge`/`plan_judge`/`code_judge` and `discussion_seed`/`plan_seed`/`code_seed` override the judge and seed per review segment, an empty one taking its fallback, and `reviewer_model` and `fixer_model` each take one model-spec or a per-round list, and `<segment>_reviewer_model`/`<segment>_fixer_model` for Discussion, Plan and Code override them per review segment, `discussion_reviewer_fan`/`plan_reviewer_fan`/`code_reviewer_fan`, which name a `lenses.yaml` fan, or list one per round, to cluster-review Discussion-Review, Plan-Review or Code-Review, `discussion_fixer_fan`/`plan_fixer_fan`/`code_fixer_fan`, which do the same for the fixer, an empty entry running the single fixer, all six closed to the local layer, `discussion_timeout_min`/`plan_timeout_min`/`review_timeout_min`, `discussion_interactive`, `discussion_advisors`, the Discussion-Write advisors, one `{name, model}` entry each, where an empty list runs the lead alone, deciding each question itself, `discussion_lenses` and `plan_lenses`, which each name the `lenses.yaml` fan whose lenses the Discussion-Write or Plan-Write lead forks itself for, empty turning the forks off, all three closed to the local layer, `review_circling_checkpoint`, `review_max_bounces`, `review_amend_max_bounces`, the amendment allowance a review segment re-entered over a changed subject runs under, the per-perch `discussion_max_bounces`/`plan_max_bounces`/`code_max_bounces`, where null takes `review_max_bounces` and 0 runs no review round, `review_hard_max_bounces` and the per-perch `discussion_hard_max_bounces`/`plan_hard_max_bounces`/`code_hard_max_bounces`, where 0 takes `review_hard_max_bounces` and a hard cap below its perch's budget is refused at load, and `discussion_auto_accept`/`plan_auto_accept`/`code_auto_accept`, which make a perch accept a harvested round at a spent budget instead of running the soft-cap rule) exists and reconciles via `lym config reconcile --apply` (the bare verb is a dry run that only reports added and removed keys and writes nothing).
++  ✅ Implemented. loom's config module (`loom.yaml`, holding the `discussion`/`plan`/`judge` role model-specs and the shared `reviewer_model`/`fixer_model`, where `seed` names the Bouncer seed pass model, `discussion_judge`/`plan_judge`/`code_judge` and `discussion_seed`/`plan_seed`/`code_seed` override the judge and seed per review segment, an empty one taking its fallback, and `reviewer_model` and `fixer_model` each take one model-spec or a per-round list, and `<segment>_reviewer_model`/`<segment>_fixer_model` for Discussion, Plan and Code override them per review segment, `discussion_reviewer_fan`/`plan_reviewer_fan`/`code_reviewer_fan`, which name a `lenses.yaml` fan, or list one per round, to cluster-review Discussion-Review, Plan-Review or Code-Review, `discussion_fixer_fan`/`plan_fixer_fan`/`code_fixer_fan`, which do the same for the fixer, an empty entry running the single fixer, `code_reviewer_fan` open to the local layer and the other five closed to it, `discussion_timeout_min`/`plan_timeout_min`/`review_timeout_min`, `discussion_interactive`, `discussion_advisors`, the Discussion-Write advisors, one `{name, model}` entry each, where an empty list runs the lead alone, deciding each question itself, `discussion_lenses` and `plan_lenses`, which each name the `lenses.yaml` fan whose lenses the Discussion-Write or Plan-Write lead forks itself for, empty turning the forks off, all three closed to the local layer, `review_circling_checkpoint`, `review_max_bounces`, `review_amend_max_bounces`, the amendment allowance a review segment re-entered over a changed subject runs under, the per-perch `discussion_max_bounces`/`plan_max_bounces`/`code_max_bounces`, where null takes `review_max_bounces` and 0 runs no review round, `review_hard_max_bounces` and the per-perch `discussion_hard_max_bounces`/`plan_hard_max_bounces`/`code_hard_max_bounces`, where 0 takes `review_hard_max_bounces` and a hard cap below its perch's budget is refused at load, and `discussion_auto_accept`/`plan_auto_accept`/`code_auto_accept`, which make a perch accept a harvested round at a spent budget instead of running the soft-cap rule) exists and reconciles via `lym config reconcile --apply` (the bare verb is a dry run that only reports added and removed keys and writes nothing).
+   Reconcile renames the retired `review`, `fix`, `<segment>_review`, `<segment>_fix`, `<segment>_fan` and `<segment>_fix_fan` keys of `loom.yaml` to their new names, and the retired `webster_*` perch keys to `code_*`; `darn.yaml`'s perch keys, `review_fan` and `review_fix_fan` among them, move to `loom.yaml`'s `code_*` keys; the retired `merge_*` perch keys, `rework`, `alignment_pr_approve`, `alignment`, `alignment_timeout_min`, `skip_alignment` and `parent_review_wait_min` are dropped.
+   The four driver and tackler keys of `loom.yaml`, and of `darn.yaml`, are overrides of `shed.yaml`'s defaults of the same names: `driver_kind`, `tackler`, `tackler_timeout_min` and `tackler_max_spawns`, where an empty string, a 0 or a null inherits, and a set `tackler_max_spawns` of 0 turns the tackler off.
+   The reviewer and fixer model keys and `review_timeout_min` are the review segments' own models and timeout, and live here rather than in the recipe because the recipe is embedded in the binary and a recipe-literal model would be untunable without a rebuild.
+diff --git a/internal/battencli/runsettings_test.go b/internal/battencli/runsettings_test.go
+index 934810fb..a7b02a7e 100644
+--- a/internal/battencli/runsettings_test.go
++++ b/internal/battencli/runsettings_test.go
+@@ -43,7 +43,7 @@ func TestPrepareRunSettings(t *testing.T) {
+ 		{
+ 			name:     "no profiles file takes the template's default for the recipe",
+ 			settings: battenshed.RunSettings{Recipe: "darn"},
+-			wantDocs: map[string]string{"loom": "code_hard_max_bounces: 2\ncode_max_bounces: 1\n"},
++			wantDocs: map[string]string{"loom": "code_hard_max_bounces: 2\ncode_max_bounces: 1\ncode_reviewer_fan: \"\"\n"},
+ 		},
+ 		{
+ 			name:        "the task's settings lie over the loom block, and the profile's retired merge_max_bounces is dropped",
+diff --git a/internal/configreg/configreg_test.go b/internal/configreg/configreg_test.go
+index 586cb113..986533cd 100644
+--- a/internal/configreg/configreg_test.go
++++ b/internal/configreg/configreg_test.go
+@@ -83,7 +83,7 @@ func TestModules_EveryTemplateKeyClassified(t *testing.T) {
+ 		"claude":  {"binary", "deny_agent_tool", "deny_ask_user_question"},
+ 		"reed":    {"debug_log", "mouse", "shell", "tmux", "tmux_conf"},
+ 		"shuttle": {"deny_python", "run_dir"},
+-		"loom":    {"code_auto_accept", "code_fixer_fan", "code_reviewer_fan", "discussion_advisors", "discussion_auto_accept", "discussion_fixer_fan", "discussion_lenses", "discussion_reviewer_fan", "plan_auto_accept", "plan_fixer_fan", "plan_lenses", "plan_reviewer_fan"},
++		"loom":    {"code_auto_accept", "code_fixer_fan", "discussion_advisors", "discussion_auto_accept", "discussion_fixer_fan", "discussion_lenses", "discussion_reviewer_fan", "plan_auto_accept", "plan_fixer_fan", "plan_lenses", "plan_reviewer_fan"},
+ 		"lenses":  {"fans", "lens_set", "lenses", "remove"},
+ 	}
+ 	for _, m := range Modules() {
+diff --git a/internal/configreg/runsettings_test.go b/internal/configreg/runsettings_test.go
+index 237f27c1..015dc829 100644
+--- a/internal/configreg/runsettings_test.go
++++ b/internal/configreg/runsettings_test.go
+@@ -192,18 +192,31 @@ func TestPrepareRunSettings(t *testing.T) {
+ 			wantDocs: map[string]string{"loom": "code_fixer_model: opus[low]\ncode_reviewer_model: opus[high]\nreview_amend_max_bounces: 0\n"},
+ 		},
+ 		{
+-			name:        "a retired darn reviewer fan key moves to loom's code_reviewer_fan and is refused as a guard key",
+-			settings:    map[string]any{"darn": map[string]any{"darn_reviewer_fan": "review-code"}},
+-			wantRefusal: "code_reviewer_fan",
+-			wantModule:  "loom",
+-			wantInvalid: true,
++			name:         "a retired darn reviewer fan key moves to loom's code_reviewer_fan and is admitted",
++			settings:     map[string]any{"darn": map[string]any{"darn_reviewer_fan": "review-code"}},
++			wantDocs:     map[string]string{"loom": "code_reviewer_fan: review-code\n"},
++			wantNoModule: "darn",
+ 		},
+ 		{
+-			name:        "a retired darn review_fan moves to loom's code_reviewer_fan and is refused as a guard key",
+-			settings:    map[string]any{"darn": map[string]any{"review_fan": "review-code"}},
+-			wantRefusal: "code_reviewer_fan",
+-			wantModule:  "loom",
+-			wantInvalid: true,
++			name:         "a retired darn review_fan moves to loom's code_reviewer_fan and is admitted",
++			settings:     map[string]any{"darn": map[string]any{"review_fan": "review-code"}},
++			wantDocs:     map[string]string{"loom": "code_reviewer_fan: review-code\n"},
++			wantNoModule: "darn",
++		},
++		{
++			name:     "a retired webster_fan is renamed to code_reviewer_fan and admitted by loom's Migrate",
++			settings: map[string]any{"loom": map[string]any{"webster_fan": "review-code"}},
++			wantDocs: map[string]string{"loom": "code_reviewer_fan: review-code # fan name from lenses.yaml, such as review-code, that turns the lens fan on for Code-Review; one fan name, or a YAML list with one fan name per round, the last entry serving every later round; the default fans round one out over review-code and runs later rounds solo; an empty entry runs that round solo\n"},
++		},
++		{
++			name:     "a retired webster_reviewer_fan is renamed to code_reviewer_fan and admitted by loom's Migrate",
++			settings: map[string]any{"loom": map[string]any{"webster_reviewer_fan": "review-code"}},
++			wantDocs: map[string]string{"loom": "code_reviewer_fan: review-code # fan name from lenses.yaml, such as review-code, that turns the lens fan on for Code-Review; one fan name, or a YAML list with one fan name per round, the last entry serving every later round; the default fans round one out over review-code and runs later rounds solo; an empty entry runs that round solo\n"},
++		},
++		{
++			name:     "a solo code_reviewer_fan is admitted as a profile block or run_settings carries it",
++			settings: map[string]any{"loom": map[string]any{"code_reviewer_fan": ""}},
++			wantDocs: map[string]string{"loom": "code_reviewer_fan: \"\"\n"},
+ 		},
+ 		{
+ 			name:        "D4-closed key of a hub-wide module",
+diff --git a/internal/configsync/configsync_test.go b/internal/configsync/configsync_test.go
+index e4e39175..cb40c638 100644
+--- a/internal/configsync/configsync_test.go
++++ b/internal/configsync/configsync_test.go
+@@ -1508,6 +1508,10 @@ func TestReconcileAll_SparseLayers(t *testing.T) {
+ 		{
+ 			name: "absent local file reports nothing", module: "loom", layer: configengine.LayerLocal,
+ 		},
++		{
++			name: "a local loom file keeps a solo code_reviewer_fan", module: "loom", layer: configengine.LayerLocal,
++			content: "code_reviewer_fan: \"\"\n", wantFile: ptr("code_reviewer_fan: \"\"\n"), wantResult: true,
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -2061,7 +2065,7 @@ func TestReconcile_MovesKeysAcrossModules(t *testing.T) {
+ 		cfg.Lenses["generic"] = tunedGeneric + "\n"
+ 	})
+ 	burlerOldTemplate := burlerFixture(t, func(cfg *lenses.Config) {
+-		cfg.Fans["twill-discussion"] = cfg.Fans["twill-discussion"][:6]
++		cfg.Fans["twill-discussion"] = cfg.Fans["twill-discussion"][:5]
+ 	})
+ 	lensesEqualTemplate := lensesFixture(t, func(cfg *lenses.Config) {})
+ 	lensesWithHubLens := lensesFixture(t, func(cfg *lenses.Config) {
+diff --git a/internal/lenses/config_test.go b/internal/lenses/config_test.go
+index e19410b7..d8acdd1c 100644
+--- a/internal/lenses/config_test.go
++++ b/internal/lenses/config_test.go
+@@ -1,13 +1,15 @@
+ //go:build tier0
+ 
+ // config_test.go table-drives Load, ResolveFan and CheckLoad, and pins the embedded template.yaml's self-consistency:
+-// every fan entry names a defined lens, the seeded fan lengths and orders, each writer fan holding its reviewer fan's lenses, and the emphasis-never-exclusion posture (no lens text carries "ignore " phrasing).
++// every fan entry names a defined lens, the seeded fan lengths and orders, each writer fan holding its reviewer fan's lenses but the reviewer-only repo-invariants, and the emphasis-never-exclusion posture (no lens text carries "ignore " phrasing).
+ // Untagged unit tier: no process spawns, fixtures written directly via os.WriteFile under t.TempDir.
+ 
+ package lenses
+ 
+ import (
+ 	"errors"
++	"fmt"
++	"maps"
+ 	"os"
+ 	"path/filepath"
+ 	"slices"
+@@ -42,6 +44,94 @@ func loadTemplateConfig(t *testing.T) Config {
+ 	return cfg
+ }
+ 
++// emphasisLine closes every lens that is not a procedure lens and is not generic.
++const emphasisLine = "Report anything else you notice too — emphasis, never exclusion."
++
++// emphasisLineGaps returns, sorted, the names in lensTexts, other than generic and those exempt holds, whose whitespace-normalised text does not end with the emphasis line.
++func emphasisLineGaps(lensTexts map[string]string, exempt map[string]bool) []string {
++	var gaps []string
++	for name, text := range lensTexts {
++		if name != "generic" && !exempt[name] && !strings.HasSuffix(strings.Join(strings.Fields(text), " "), emphasisLine) {
++			gaps = append(gaps, name)
++		}
++	}
++	slices.Sort(gaps)
++	return gaps
++}
++
++// writerFanGaps returns one message per lens of a reviewer fan in writerOf that its writer fan's order lacks, neither itself nor through absorbedBy, and that reviewerOnly does not hold.
++func writerFanGaps(orders map[string][]string, writerOf map[string]string, absorbedBy map[string]string, reviewerOnly map[string]bool) []string {
++	var gaps []string
++	for _, reviewerFan := range slices.Sorted(maps.Keys(writerOf)) {
++		writerFan := writerOf[reviewerFan]
++		for _, lensName := range orders[reviewerFan] {
++			if reviewerOnly[lensName] || slices.Contains(orders[writerFan], lensName) || slices.Contains(orders[writerFan], absorbedBy[lensName]) {
++				continue
++			}
++			gaps = append(gaps, fmt.Sprintf("fan %q lacks lens %q of reviewer fan %q", writerFan, lensName, reviewerFan))
++		}
++	}
++	return gaps
++}
++
++// TestTemplateChecks_FlagBrokenTemplates drives the template checks' helpers over hand-built inputs that must fail, since the template itself holds none.
++func TestTemplateChecks_FlagBrokenTemplates(t *testing.T) {
++	t.Parallel()
++	t.Run("emphasisLineGaps", func(t *testing.T) {
++		t.Parallel()
++		exempt := map[string]bool{"board-scope": true}
++		tests := []struct {
++			name  string
++			lens  map[string]string
++			wants []string
++		}{
++			{"an exempt lens ending in its list", map[string]string{"board-scope": "Own it. Your list: x."}, nil},
++			{"non-procedure lenses without the line", map[string]string{"scenarios": "Focus.", "leanness": "Focus."}, []string{"leanness", "scenarios"}},
++			{"generic without the line", map[string]string{"generic": "Anything."}, nil},
++			{"a lens ending with the line", map[string]string{"scenarios": "Focus.\n  " + emphasisLine}, nil},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				if got := emphasisLineGaps(tt.lens, exempt); !slices.Equal(got, tt.wants) {
++					t.Errorf("emphasisLineGaps() = %v; want %v", got, tt.wants)
++				}
++			})
++		}
++	})
++
++	t.Run("writerFanGaps", func(t *testing.T) {
++		t.Parallel()
++		writerOf := map[string]string{"review": "twill"}
++		tests := []struct {
++			name         string
++			orders       map[string][]string
++			absorbedBy   map[string]string
++			reviewerOnly map[string]bool
++			wantLens     []string
++		}{
++			{"a reviewer lens the writer fan lacks", map[string][]string{"review": {"way-forward"}, "twill": {"coverage"}}, nil, nil, []string{"way-forward"}},
++			{"a lens absorbed by a writer lens", map[string][]string{"review": {"affected-set"}, "twill": {"forced-edits"}}, map[string]string{"affected-set": "forced-edits"}, nil, nil},
++			{"a reviewer-only lens with no exemption", map[string][]string{"review": {"repo-invariants"}, "twill": {"coverage"}}, nil, map[string]bool{}, []string{"repo-invariants"}},
++			{"a reviewer-only lens with its exemption", map[string][]string{"review": {"repo-invariants"}, "twill": {"coverage"}}, nil, map[string]bool{"repo-invariants": true}, nil},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				got := writerFanGaps(tt.orders, writerOf, tt.absorbedBy, tt.reviewerOnly)
++				if len(got) != len(tt.wantLens) {
++					t.Fatalf("writerFanGaps() = %v; want one message per lens %v", got, tt.wantLens)
++				}
++				for i, lens := range tt.wantLens {
++					if !strings.Contains(got[i], fmt.Sprintf("%q", lens)) {
++						t.Errorf("writerFanGaps()[%d] = %q; want it to name %q", i, got[i], lens)
++					}
++				}
++			})
++		}
++	})
++}
++
+ // TestLoad covers Load's layer stack: the per-name fill from the template, per-name layer replacement, the local layer's refusal, the strict decode and the expansion of lens prose.
+ // Its rows run serially, since logcapture.CaptureVerbose swaps the process-global logger.
+ func TestLoad(t *testing.T) {
+@@ -65,7 +155,7 @@ func TestLoad(t *testing.T) {
+ 
+ 	t.Run("a hub lens keeps its own text over the template's while a sibling lens of the fan resolves the template's", func(t *testing.T) {
+ 		boardDir, anchor := t.TempDir(), t.TempDir()
+-		writeLensesYAML(t, boardDir, "lenses:\n  goal-scope: tuned goal-scope prose\n")
++		writeLensesYAML(t, boardDir, "lenses:\n  interactions: tuned interactions prose\n")
+ 
+ 		cfg, err := Load(configengine.Dirs{Anchor: anchor, Board: boardDir})
+ 		if err != nil {
+@@ -80,11 +170,11 @@ func TestLoad(t *testing.T) {
+ 		for _, lens := range lenses {
+ 			texts[lens.Name] = lens.Text
+ 		}
+-		if texts["goal-scope"] != "tuned goal-scope prose" {
+-			t.Errorf("ResolveFan(review-discussion) goal-scope text = %q; want the hub's own text", texts["goal-scope"])
++		if texts["interactions"] != "tuned interactions prose" {
++			t.Errorf("ResolveFan(review-discussion) interactions text = %q; want the hub's own text", texts["interactions"])
+ 		}
+-		if texts["board-fit"] != template.Lenses["board-fit"] {
+-			t.Errorf("ResolveFan(review-discussion) board-fit text = %q; want the template's", texts["board-fit"])
++		if texts["existing-paths"] != template.Lenses["existing-paths"] {
++			t.Errorf("ResolveFan(review-discussion) existing-paths text = %q; want the template's", texts["existing-paths"])
+ 		}
+ 	})
+ 
+@@ -250,7 +340,7 @@ func TestConfigTemplate_DecodesAndIsSelfConsistent(t *testing.T) {
+ 
+ 	cfg := loadTemplateConfig(t)
+ 
+-	const wantLenses = 38
++	const wantLenses = 37
+ 	if len(cfg.Lenses) != wantLenses {
+ 		t.Errorf("seeded template has %d lenses; want %d", len(cfg.Lenses), wantLenses)
+ 	}
+@@ -265,7 +355,7 @@ func TestConfigTemplate_DecodesAndIsSelfConsistent(t *testing.T) {
+ 			}
+ 		}
+ 	}
+-	for fanName, wantEntries := range map[string]int{"standard": 5, "full": 8, "discussion": 5, "plan": 5, "twill-discussion": 7, "twill-plan": 5, "review-discussion": 6, "review-plan": 3, "fix-discussion": 4, "fix-plan": 4, "review-code": 4, "fix-code": 4} {
++	for fanName, wantEntries := range map[string]int{"standard": 5, "full": 8, "discussion": 5, "plan": 5, "twill-discussion": 6, "twill-plan": 5, "review-discussion": 4, "review-plan": 3, "fix-discussion": 4, "fix-plan": 4, "review-code": 3, "fix-code": 4} {
+ 		entries, ok := cfg.Fans[fanName]
+ 		if !ok {
+ 			t.Errorf("seeded template is missing fan %q", fanName)
+@@ -275,15 +365,15 @@ func TestConfigTemplate_DecodesAndIsSelfConsistent(t *testing.T) {
+ 		}
+ 	}
+ 	wantOrders := map[string][]string{
+-		"discussion":        {"generic", "goal-scope", "pattern-fit", "scenarios", "leanness"},
++		"discussion":        {"generic", "board-scope", "pattern-fit", "scenarios", "leanness"},
+ 		"plan":              {"generic", "decision-coverage", "card-structure", "verify-tests", "pattern-fit"},
+-		"twill-discussion":  {"interactions", "existing-paths", "bound-breaker", "walkthrough", "goal-scope", "board-fit", "leanness"},
++		"twill-discussion":  {"interactions", "existing-paths", "bound-breaker", "walkthrough", "board-scope", "leanness"},
+ 		"twill-plan":        {"coverage", "row-validity", "forced-edits", "guard-reach", "way-forward"},
+-		"review-discussion": {"interactions", "existing-paths", "bound-breaker", "walkthrough", "goal-scope", "board-fit"},
+-		"review-plan":       {"affected-set", "guard-reach", "way-forward"},
++		"review-discussion": {"interactions", "existing-paths", "bound-breaker", "walkthrough"},
++		"review-plan":       {"affected-set", "guard-reach", "repo-invariants"},
+ 		"fix-discussion":    {"fix-consistency", "fix-claims", "fix-proposal", "fix-way-forward"},
+ 		"fix-plan":          {"fix-consistency", "fix-claims", "fix-proposal", "fix-affected-set"},
+-		"review-code":       {"code-correctness", "code-affected-set", "code-tests", "code-pattern-fit"},
++		"review-code":       {"code-correctness", "code-affected-set", "code-tests"},
+ 		"fix-code":          {"fix-code-correctness", "fix-consistency", "fix-proposal", "fix-affected-set"},
+ 	}
+ 	procedureLenses := map[string]bool{}
+@@ -308,14 +398,13 @@ func TestConfigTemplate_DecodesAndIsSelfConsistent(t *testing.T) {
+ 		}
+ 	}
+ 
++	procedureLenses["board-scope"] = true
++
+ 	// A perch's writer runs every procedure its reviewer judges it by, itself or through the writer lens that absorbed it.
+ 	absorbedBy := map[string]string{"affected-set": "forced-edits"}
+-	for reviewerFan, writerFan := range map[string]string{"review-discussion": "twill-discussion", "review-plan": "twill-plan"} {
+-		for _, lensName := range wantOrders[reviewerFan] {
+-			if !slices.Contains(wantOrders[writerFan], lensName) && !slices.Contains(wantOrders[writerFan], absorbedBy[lensName]) {
+-				t.Errorf("fan %q lacks lens %q of reviewer fan %q", writerFan, lensName, reviewerFan)
+-			}
+-		}
++	// repo-invariants is the one lens only a reviewer runs: the writer reads the repository's invariants through its own lenses.
++	for _, gap := range writerFanGaps(wantOrders, map[string]string{"review-discussion": "twill-discussion", "review-plan": "twill-plan"}, absorbedBy, map[string]bool{"repo-invariants": true}) {
++		t.Error(gap)
+ 	}
+ 
+ 	for lensName, wantSentences := range map[string][]string{
+@@ -325,6 +414,18 @@ func TestConfigTemplate_DecodesAndIsSelfConsistent(t *testing.T) {
+ 		},
+ 		"forced-edits": {"a registration no card lists is a finding"},
+ 		"row-validity": {"a zero-value or nil seam of a new field has a stated meaning"},
++		"repo-invariants": {
++			"A broken invariant no card lists is a finding.",
++			"reflective seam test",
++		},
++		"code-affected-set": {"PATTERN.md", "Declared PATTERN changes landed", "Commit messages and departures"},
++		"code-tests":        {"Your list: per behaviour, the test that pins it, or none."},
++		"board-scope": {
++			"that is at most six tool calls",
++			"reports only a contradiction with the board",
++			"class `decision`",
++			"Your list:",
++		},
+ 	} {
+ 		text := strings.Join(strings.Fields(cfg.Lenses[lensName]), " ")
+ 		for _, wantSentence := range wantSentences {
+@@ -334,21 +435,34 @@ func TestConfigTemplate_DecodesAndIsSelfConsistent(t *testing.T) {
+ 		}
+ 	}
+ 
+-	const emphasisLine = "Report anything else you notice too — emphasis, never exclusion."
++	if strings.Contains(strings.Join(strings.Fields(cfg.Lenses["code-tests"]), " "), "Test economy") {
++		t.Errorf("lens code-tests names \"Test economy\"; want the review lead alone to judge it")
++	}
++	if strings.Contains(strings.Join(strings.Fields(cfg.Lenses["board-scope"]), " "), emphasisLine) {
++		t.Errorf("lens board-scope text carries the emphasis line; want nothing after its list")
++	}
++	for _, retired := range []string{"goal-scope", "board-fit", "code-pattern-fit"} {
++		if _, ok := cfg.Lenses[retired]; ok {
++			t.Errorf("seeded template defines retired lens %q", retired)
++		}
++	}
++	if procedureLenses["leanness"] {
++		t.Errorf("procedure lenses = %v; want leanness out", procedureLenses)
++	}
+ 	for name, text := range cfg.Lenses {
+ 		if strings.TrimSpace(text) == "" {
+ 			t.Errorf("lens %q has empty text", name)
+ 		}
+-		if name != "generic" && !procedureLenses[name] && !strings.HasSuffix(strings.Join(strings.Fields(text), " "), emphasisLine) {
+-			t.Errorf("lens %q text does not end with the emphasis line", name)
+-		}
+ 		if strings.Contains(text, "ignore ") {
+ 			t.Errorf("lens %q text contains hard-exclusion phrasing (\"ignore \"): %q", name, text)
+ 		}
+ 	}
++	for _, name := range emphasisLineGaps(cfg.Lenses, procedureLenses) {
++		t.Errorf("lens %q text does not end with the emphasis line", name)
++	}
+ 
+ 	// The exemption from the emphasis line is computed from the base fans only, so a lens a layer adds to a review fan still ends with it.
+-	baseProcedureLenses := map[string]bool{}
++	baseProcedureLenses := map[string]bool{"board-scope": true}
+ 	for fanName, entries := range cfg.Fans {
+ 		if strings.HasPrefix(fanName, "review-") || strings.HasPrefix(fanName, "fix-") {
+ 			for _, name := range entries {
+@@ -404,10 +518,8 @@ func TestConfigTemplate_DecodesAndIsSelfConsistent(t *testing.T) {
+ 					t.Errorf("fan %q under lens_set %s = %v; want %v", name, layerName, entries, want)
+ 				}
+ 			}
+-			for name, text := range layer.Lenses {
+-				if name != "generic" && !baseProcedureLenses[name] && !strings.HasSuffix(strings.Join(strings.Fields(text), " "), emphasisLine) {
+-					t.Errorf("layer %s lens %q does not end with the emphasis line", layerName, name)
+-				}
++			for _, name := range emphasisLineGaps(layer.Lenses, baseProcedureLenses) {
++				t.Errorf("layer %s lens %q does not end with the emphasis line", layerName, name)
+ 			}
+ 			for name, entries := range layer.Fans {
+ 				baseEntries, inBase := cfg.Fans[name]
+@@ -575,7 +687,7 @@ func TestCheckLoad(t *testing.T) {
+ 	t.Run("a remove emptying a fan passes the check and the fan is refused at resolution", func(t *testing.T) {
+ 		t.Parallel()
+ 		anchor := t.TempDir()
+-		writeLensesYAML(t, anchor, "remove: [code-correctness, code-affected-set, code-tests, code-pattern-fit]\n")
++		writeLensesYAML(t, anchor, "remove: [code-correctness, code-affected-set, code-tests]\n")
+ 		dirs := configengine.Dirs{Anchor: anchor}
+ 
+ 		if err := CheckLoad(dirs); err != nil {
+diff --git a/internal/lenses/sets/csharp.yaml b/internal/lenses/sets/csharp.yaml
+index f6eae9dc..03e42937 100644
+--- a/internal/lenses/sets/csharp.yaml
++++ b/internal/lenses/sets/csharp.yaml
+@@ -50,7 +50,6 @@ fans:
+     - code-correctness
+     - code-affected-set
+     - code-tests
+-    - code-pattern-fit
+     - numerics
+   full:
+     - correctness
+diff --git a/internal/lenses/template.yaml b/internal/lenses/template.yaml
+index 5c791f23..2f2d26e6 100644
+--- a/internal/lenses/template.yaml
++++ b/internal/lenses/template.yaml
+@@ -31,7 +31,7 @@
+ # my-fan: [generic, my-lens, my-lens]
+ #
+ # The dormant lenses are phrased as EMPHASIS, never exclusion. The procedure
+-# lenses of the production fans (each review-* and fix-* fan) are each a
++# lenses of the production fans (each review-* and fix-* fan) and board-scope are each a
+ # procedure that ends in its own list instead, and a fixer lens may end with
+ # no list. The no-"ignore" rule holds
+ # for every lens: none tells a fork to ignore anything, because hard "ignore
+@@ -101,21 +101,26 @@ lenses:
+     change should have updated but didn't, stale references to removed or
+     renamed symbols, and examples that would no longer compile or run as
+     written. Report anything else you notice too — emphasis, never exclusion.
+-  goal-scope: |
+-    Own the record's fit with its board entry. Read `lym board list` once and
+-    `lym board get` for this task, then up to four board notes titled
+-    `Decision for <slug>:` for this task, newest first, by `lym board get`;
+-    that is at most six tool calls. A board note titled `Decision for <slug>:`
+-    for this task, and the record's `Added after Discussion` entries, are
+-    parent decisions and win over the entry body. Check the record against the
+-    entry: a goal point left out, work that belongs to another entry, a
+-    direction the entry rules out, unlicensed work, or a deferral. Each is an
+-    ordinary finding for the fixer when the writer could settle it. Report
+-    doubt about what the task is for as a finding of class `decision`, phrased
+-    as a question for the run's parent. A question an `Added after Discussion`
+-    entry or a decision note already settles is no finding. Your list: each
+-    goal point of the entry and whether the record meets it, and each decision
+-    note you read and any the list names that you could not reach.
++  board-scope: |
++    Own the record's fit with the board. Read `lym board list`, `lym board get`
++    for this task and `lym loom peers`, then up to three reads, nearest first,
++    of a `Decision for <slug>:` note for this task, a touching entry, a close
++    peer's record or a parent commit `lym loom peers` lists; that is at most
++    six tool calls. A `Decision for <slug>:` note for this task, and the
++    record's `Added after Discussion` entries, are parent decisions and win
++    over the entry body. It reports only a contradiction with the board: a
++    goal point of the entry the record leaves out or defers, work the entry
++    rules out, work another entry owns, and a design conflict with another
++    entry, run or landed parent commit. Doubt about what the task is for, an
++    entry plainly outdated by landed work and a conflict the writer cannot
++    settle are a finding of class `decision`, phrased as a question for the
++    run's parent; everything else is an ordinary finding. A text-only overlap
++    of the same file or package, a shared bookkeeping line such as a
++    module-table or PATTERN index line, and a question a decision note or an
++    `Added after Discussion` entry settles are no finding. Your list: each
++    goal point of the entry, met or not; each entry, peer and parent commit
++    you checked, with conflict or none; and each decision note you read and any
++    you could not reach.
+   pattern-fit: |
+     Focus on fit with the repo's rules: check every decision or card against
+     the repository's own rules it touches, the PATTERN.md entries and pattern/
+@@ -141,33 +146,6 @@ lenses:
+     what the record cites, such as the caller, the config key or the spawned
+     process a cited piece leans on. Report anything else you notice too —
+     emphasis, never exclusion.
+-  board-fit: |
+-    Own the record's fit with the rest of the hub. Read `lym board list` and
+-    `lym loom peers`, then up to four reads, nearest first, of: `lym board get`
+-    for a touching entry or for a `Decision for <slug>:` note for this task,
+-    `lym loom peers show <slug> --record decision` or `--record plan` for a
+-    close peer, and a read-only `git show` of a parent commit that
+-    `lym loom peers` lists; that is at most six tool calls. Name this task's
+-    decision notes from the `lym board list` titles you already hold, and spend
+-    one of your four reads on a note before raising a parent question that
+-    note's title touches. A board note titled `Decision for <slug>:` for this
+-    task, and the record's `Added after Discussion` entries, are parent
+-    decisions and win over the entry body. Report as a `decision` finding,
+-    phrased as a question for the run's parent: the entry plainly outdated,
+-    because landed work overtook it or another board entry or run contradicts
+-    it; a design conflict with another run, where both change the same
+-    behaviour or the same PATTERN entry in different ways, or a decision in one
+-    contradicts or duplicates one in the other; or a landed parent commit that
+-    contradicts one of the record's decisions, or already makes one in a way
+-    the writer cannot settle by citing or dropping the decision. A landed
+-    commit that already makes a decision the writer can cite or drop is an
+-    ordinary finding, and so is any ordinary misalignment the writer could
+-    settle. A text-only overlap (the same file or package at different places)
+-    and a shared bookkeeping line (a module-table line, a PATTERN index line)
+-    are no finding, and neither is a question an `Added after Discussion` entry
+-    or a decision note already settles. Your list: each entry, peer and parent
+-    commit you checked, with overlap, conflict or none, and each decision note
+-    you read and any you could not reach.
+   decision-coverage: |
+     Focus on the plan against the decision record: apply the Plan-Review
+     rubric's "Fidelity to the answer key". Report anything else you notice
+@@ -285,12 +263,23 @@ lenses:
+     card does not guard. A guard whose state cannot occur, and a guarded site
+     that recurs unguarded, are findings. Your list: per guard, reachable or
+     not.
++  repo-invariants: |
++    Own the repository invariants a card breaks without touching the line that
++    breaks them. For each card, check three kinds. Test seams: a field a card
++    adds to a shared struct that a reflective seam test must cover, and each
++    new test file's one tier tag. Doc text a card falsifies: the package
++    `doc.go`, `PATTERN.md` entries and `pattern/` background files that
++    describe behaviour the card's Intent changes, with no card listing them.
++    Card order: a card that cannot pass its own gate from the state the cards
++    before it leave. A broken invariant no card lists is a finding. Your list:
++    per card, each invariant checked, held or broken.
+   way-forward: |
+     Own the failure and recovery ends. For each refusal, stop, reset or
+     recovery step a card adds, find the next step it names and check whether
+     that step can succeed from the state the refusal leaves. A refusal that
+     names no next step, and a next step that cannot succeed from that state,
+     are findings. Your list: per refusal, the next step, progresses or not.
++    Report anything else you notice too — emphasis, never exclusion.
+   code-correctness: |
+     Own the correctness of the code the diff changes. For each function,
+     branch and error path the diff adds or changes, take one concrete input,
+@@ -304,26 +293,19 @@ lenses:
+     Own what the diff's changes force outside the lines it touches. For each
+     signature, output, key, message, file shape or behaviour the diff changes,
+     find everything that calls, reads or asserts it, callers, tests, docs,
+-    stencils and fixtures, from the definitions your context holds and a
+-    search for what it lacks. A member of the set the diff leaves wrong is a
+-    finding. Apply the rubric's "Stencil wording" and "The repository's own
+-    rules" where this round's rubric carries them. Your list: per change, the
+-    set you found, covered or not.
++    stencils, fixtures and the repository's rule documents that describe it,
++    the PATTERN.md entries and pattern/ background files where the repository
++    has a PATTERN.md, otherwise the rules its CLAUDE.md files state, from the
++    definitions your context holds and a search for what it lacks. A member of
++    the set the diff leaves wrong is a finding. Apply the rubric's "Stencil
++    wording", "The repository's own rules", "Declared PATTERN changes landed"
++    and "Commit messages and departures" where this round's rubric carries
++    them. Your list: per change, the set you found, covered or not.
+   code-tests: |
+     Own the tests of the diff. For each behaviour the diff adds or changes,
+-    find the test row that would fail if it were broken, and for each new test
+-    or row, open the existing tests of the same function. Apply the rubric's
+-    "Test economy". Your list: per behaviour, the test that pins it, or none.
+-  code-pattern-fit: |
+-    Own the diff's fit with the repository's rules. Read the repository's own
+-    rules, the PATTERN.md entries and the pattern/ background files the diff
+-    touches where the repository has a PATTERN.md, otherwise the rules its
+-    CLAUDE.md files state, and check every changed file against each rule that
+-    applies to it. Apply whichever
+-    of the rubric's "The repository's own rules", "Declared PATTERN changes
+-    landed", "Commit messages and departures", "A broken invariant" and "A
+-    pattern the parent changed" this round's rubric carries. Your list: each
+-    rule you checked, held or broken.
++    find the test row that would fail if it were broken; a behaviour with no
++    such row is a finding, a stencil's static prose exempt. Your list: per
++    behaviour, the test that pins it, or none.
+   fix-code-correctness: |
+     Own the correctness of the code the fix changed. For each function or
+     branch the fix added or changed, take one concrete input, including a
+@@ -377,7 +359,7 @@ fans:
+     - docs-consistency
+   discussion:
+     - generic
+-    - goal-scope
++    - board-scope
+     - pattern-fit
+     - scenarios
+     - leanness
+@@ -392,8 +374,7 @@ fans:
+     - existing-paths
+     - bound-breaker
+     - walkthrough
+-    - goal-scope
+-    - board-fit
++    - board-scope
+     - leanness
+   twill-plan:
+     - coverage
+@@ -406,12 +387,10 @@ fans:
+     - existing-paths
+     - bound-breaker
+     - walkthrough
+-    - goal-scope
+-    - board-fit
+   review-plan:
+     - affected-set
+     - guard-reach
+-    - way-forward
++    - repo-invariants
+   fix-discussion:
+     - fix-consistency
+     - fix-claims
+@@ -426,7 +405,6 @@ fans:
+     - code-correctness
+     - code-affected-set
+     - code-tests
+-    - code-pattern-fit
+   fix-code:
+     - fix-code-correctness
+     - fix-consistency
+diff --git a/internal/loomengine/config.go b/internal/loomengine/config.go
+index d363aa11..18af8c2d 100644
+--- a/internal/loomengine/config.go
++++ b/internal/loomengine/config.go
+@@ -498,6 +498,7 @@ func ConfigOpenMaps() []string {
+ // Only the keys that can switch off or hollow a review or approval gate are barred from the local layer.
+ // The budget, hard-cap and auto-accept keys come from reviewbudget: a budget of 0 is the per-run off switch and no guard, while the auto-accept keys are guards.
+ // discussion_advisors, discussion_lenses and plan_lenses are barred too, so no local override or task run_settings can start advisors, turn the lens forks off or change their fan.
++// code_reviewer_fan is the one reviewer fan key open to the local layer, since its value names only a fan the guarded lenses.yaml defines, or "" for a solo round, and the perch's round count, rubric and whole-diff read stay.
+ func ConfigSpec() configengine.Spec {
+ 	none := configengine.CategoryNone
+ 	guard := configengine.CategoryGuard
+@@ -525,7 +526,7 @@ func ConfigSpec() configengine.Spec {
+ 			"code_fixer_model":           none,
+ 			"discussion_reviewer_fan":    guard,
+ 			"plan_reviewer_fan":          guard,
+-			"code_reviewer_fan":          guard,
++			"code_reviewer_fan":          none,
+ 			"discussion_fixer_fan":       guard,
+ 			"plan_fixer_fan":             guard,
+ 			"code_fixer_fan":             guard,
+diff --git a/internal/loomengine/config_test.go b/internal/loomengine/config_test.go
+index c5de2b4c..26fbb7ad 100644
+--- a/internal/loomengine/config_test.go
++++ b/internal/loomengine/config_test.go
+@@ -467,6 +467,11 @@ review_timeout_min: 240
+ 				local:  "driver_kind: go\n",
+ 				mutate: func(c *Config) { c.DriverKind = "go" },
+ 			},
++			{
++				name:   "a local code_reviewer_fan of \"\" is open to the local layer",
++				local:  "code_reviewer_fan: \"\"\n",
++				mutate: func(c *Config) { c.CodeReviewerFan = lenses.FanList{""} },
++			},
+ 		}
+ 		for _, tt := range tests {
+ 			t.Run(tt.name, func(t *testing.T) {
+@@ -684,7 +689,7 @@ func TestLoadConfig_Refuses(t *testing.T) {
+ 
+ 	t.Run("a local fan key is refused naming the local file and the key", func(t *testing.T) {
+ 		t.Parallel()
+-		for _, key := range []string{"discussion_reviewer_fan", "plan_reviewer_fan", "code_reviewer_fan", "discussion_fixer_fan", "plan_fixer_fan", "code_fixer_fan"} {
++		for _, key := range []string{"discussion_reviewer_fan", "plan_reviewer_fan", "discussion_fixer_fan", "plan_fixer_fan", "code_fixer_fan"} {
+ 			t.Run(key, func(t *testing.T) {
+ 				t.Parallel()
+ 				board, anchor := t.TempDir(), t.TempDir()
+diff --git a/internal/loomengine/discussiontable_test.go b/internal/loomengine/discussiontable_test.go
+index 90210c0d..5786090f 100644
+--- a/internal/loomengine/discussiontable_test.go
++++ b/internal/loomengine/discussiontable_test.go
+@@ -410,9 +410,9 @@ func TestDiscussionTable(t *testing.T) {
+ 			wantLenses  []string
+ 		}{
+ 			{name: "template fan without lenses.yaml", wantLenses: lensNames(templateFan)},
+-			{name: "lenses.yaml redefines the fan", lensesYAML: "fans:\n  twill-discussion: [goal-scope]\n", wantLenses: []string{"goal-scope"}},
+-			{name: "the fan lives only in the repo default", defaultYAML: "fans:\n  twill-discussion: [goal-scope]\n", wantLenses: []string{"goal-scope"}},
+-			{name: "the key names a fan of lenses.yaml's own", fan: "writer-lenses", lensesYAML: "fans:\n  writer-lenses: [goal-scope]\n", wantLenses: []string{"goal-scope"}},
++			{name: "lenses.yaml redefines the fan", lensesYAML: "fans:\n  twill-discussion: [board-scope]\n", wantLenses: []string{"board-scope"}},
++			{name: "the fan lives only in the repo default", defaultYAML: "fans:\n  twill-discussion: [board-scope]\n", wantLenses: []string{"board-scope"}},
++			{name: "the key names a fan of lenses.yaml's own", fan: "writer-lenses", lensesYAML: "fans:\n  writer-lenses: [board-scope]\n", wantLenses: []string{"board-scope"}},
+ 		}
+ 		for _, tt := range tests {
+ 			t.Run(tt.name, func(t *testing.T) {
+@@ -456,7 +456,7 @@ func TestDiscussionTable(t *testing.T) {
+ 				}
+ 				if tt.lensesYAML != "" || tt.defaultYAML != "" {
+ 					for _, dropped := range templateFan {
+-						if dropped.Name != "goal-scope" && strings.Contains(prompt, "- "+dropped.Name+": ") {
++						if dropped.Name != "board-scope" && strings.Contains(prompt, "- "+dropped.Name+": ") {
+ 							t.Errorf("twill lead prompt carries lens %q; want only the lenses.yaml fan %v", dropped.Name, tt.wantLenses)
+ 						}
+ 					}
+diff --git a/internal/runprofile/doc.go b/internal/runprofile/doc.go
+index 5fbf5f55..b39c9199 100644
+--- a/internal/runprofile/doc.go
++++ b/internal/runprofile/doc.go
+@@ -11,6 +11,7 @@
+ // The template's starting profiles are one ladder of review rounds per perch, `speed`, `light`, `solid` and `wide`, each perch's hard cap its rounds plus one, and `docs`, a darn-only profile for prose and config value edits;
+ // its defaults are `solid` for loom and `light` for darn and pawl.
+ // Each ladder profile's pawl block carries the same perch values as its darn block.
++// `light`, `docs` and `speed`'s loom block run the Code-Review round solo through `loom.code_reviewer_fan: ""`, while `solid`, `wide` and the rest take the hub's fan.
+ // A round count of 0 turns a perch off, since its Bouncer then settles approved with no review round.
+ //
+ // The module is hub-wide and seed-only: the hub reconcile seeds an absent file with the template's entries and never rewrites a present one.
+diff --git a/internal/runprofile/runprofile_test.go b/internal/runprofile/runprofile_test.go
+index 07721950..e48e3fd4 100644
+--- a/internal/runprofile/runprofile_test.go
++++ b/internal/runprofile/runprofile_test.go
+@@ -109,11 +109,12 @@ func TestTemplateLadder(t *testing.T) {
+ 		profile                string
+ 		discussion, plan, code int
+ 		darnCode               int
++		solo                   []string
+ 	}{
+-		{"speed", 0, 0, 1, 0},
+-		{"light", 1, 1, 1, 1},
+-		{"solid", 2, 2, 1, 2},
+-		{"wide", 3, 2, 1, 3},
++		{"speed", 0, 0, 1, 0, []string{"loom"}},
++		{"light", 1, 1, 1, 1, []string{"loom", "darn", "pawl"}},
++		{"solid", 2, 2, 1, 2, nil},
++		{"wide", 3, 2, 1, 3, nil},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.profile, func(t *testing.T) {
+@@ -144,6 +145,13 @@ func TestTemplateLadder(t *testing.T) {
+ 			if !reflect.DeepEqual(got, want) {
+ 				t.Errorf("Settings(%s) rounds = %v; want %v", tt.profile, got, want)
+ 			}
++			blockKeys := map[string]map[string]any{"loom": loom["loom"].(map[string]any), "darn": darnKeys, "pawl": pawlKeys}
++			for block, keys := range blockKeys {
++				fan, present := keys["code_reviewer_fan"]
++				if wantSolo := slices.Contains(tt.solo, block); present != wantSolo || (present && fan != "") {
++					t.Errorf("Settings(%s, %s) code_reviewer_fan = %v, present %v; want %q present %v", tt.profile, block, fan, present, "", wantSolo)
++				}
++			}
+ 		})
+ 	}
+ }
+@@ -161,7 +169,7 @@ func TestTemplateDocsProfile(t *testing.T) {
+ 	}
+ 	want := map[string]any{
+ 		"darn": map[string]any{"writer": "sonnet[medium]"},
+-		"loom": map[string]any{"code_max_bounces": 1, "code_hard_max_bounces": 2},
++		"loom": map[string]any{"code_max_bounces": 1, "code_hard_max_bounces": 2, "code_reviewer_fan": ""},
+ 	}
+ 	if !reflect.DeepEqual(got, want) {
+ 		t.Errorf("Settings(docs, darn) = %v; want %v", got, want)
+diff --git a/internal/runprofile/template.yaml b/internal/runprofile/template.yaml
+index 323bb094..98719691 100644
+--- a/internal/runprofile/template.yaml
++++ b/internal/runprofile/template.yaml
+@@ -15,18 +15,18 @@ defaults:
+   pawl: light
+ speed:
+   loom:
+-    loom: {discussion_max_bounces: 0, discussion_hard_max_bounces: 1, plan_max_bounces: 0, plan_hard_max_bounces: 1, code_max_bounces: 1, code_hard_max_bounces: 2}
++    loom: {discussion_max_bounces: 0, discussion_hard_max_bounces: 1, plan_max_bounces: 0, plan_hard_max_bounces: 1, code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: ""}
+   darn:
+     loom: {code_max_bounces: 0, code_hard_max_bounces: 1}
+   pawl:
+     loom: {code_max_bounces: 0, code_hard_max_bounces: 1}
+ light:
+   loom:
+-    loom: {discussion_max_bounces: 1, discussion_hard_max_bounces: 2, plan_max_bounces: 1, plan_hard_max_bounces: 2, code_max_bounces: 1, code_hard_max_bounces: 2}
++    loom: {discussion_max_bounces: 1, discussion_hard_max_bounces: 2, plan_max_bounces: 1, plan_hard_max_bounces: 2, code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: ""}
+   darn:
+-    loom: {code_max_bounces: 1, code_hard_max_bounces: 2}
++    loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: ""}
+   pawl:
+-    loom: {code_max_bounces: 1, code_hard_max_bounces: 2}
++    loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: ""}
+ solid:
+   loom:
+     loom: {discussion_max_bounces: 2, discussion_hard_max_bounces: 3, plan_max_bounces: 2, plan_hard_max_bounces: 3, code_max_bounces: 1, code_hard_max_bounces: 2}
+@@ -44,4 +44,4 @@ wide:
+ docs:
+   darn:
+     darn: {writer: "sonnet[medium]"}
+-    loom: {code_max_bounces: 1, code_hard_max_bounces: 2}
++    loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: ""}
+diff --git a/pattern/PATTERN-config-layers.md b/pattern/PATTERN-config-layers.md
+index 0514ced2..c958f80f 100644
+--- a/pattern/PATTERN-config-layers.md
++++ b/pattern/PATTERN-config-layers.md
+@@ -10,6 +10,7 @@ Machine alone opens a key to the machine layer.
+ - **Sourced file**: the key sources a file into a shared process.
+ - **Cross-pair**: the key reaches across pairs, including a shared process's boot option or what lands on the parent branch.
+ - **Guard**: the key switches off or hollows a guard, including a review or an approval gate, a timeout whose expiry lets that gate pass, and the prose or lens set a reviewer is given.
++  `loom.code_reviewer_fan` is the one reviewer fan key open to the local layer: its value names only a fan the guarded `lenses.yaml` defines, or `""` for a solo round, and the perch's rounds, rubric and whole-diff read are unchanged.
+ - **Machine**: the key's value is a property of the machine, bounding a resource every worktree of the hub on that machine shares.
+   It opens the key to the machine layer and keeps it closed to the local layer.
+ 
