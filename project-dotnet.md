@@ -1,6 +1,6 @@
 # P2 .NET: LoomYard for C# repositories
 
-Rendered 2026-10-28 18:46 UTC; every age below is as of then.
+Rendered 2026-10-28 18:48 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Running LoomYard on C#/.NET repositories such as Models: scoped gates, regression, a sandbox hub
