@@ -1,6 +1,6 @@
 # Shuttle reads activity and operator input from Claude Code hooks
 
-`shuttle-hook-signals` · Task · bug, shuttle, batten, shed, reed, claude · running · Describe
+`shuttle-hook-signals` · Task · bug, shuttle, batten, shed, reed, claude · running · PR-Review
 
 Claude Code hooks give shuttle signals it now guesses from panes and pids; this task puts them to use.
 Creel already renders hooks into each Claude session's `settings.json` (`creel-hook-post`), so new entries ride the same path.
