@@ -28,7 +28,7 @@ grouping
 | --- | --- | --- | --- |
 | E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
 
-## Tasks (3)
+## Tasks (6)
 
 Concrete and claimable; only a task can run.
 
@@ -54,15 +54,18 @@ Waits only on Running, Ready or Draft entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **Stencil and system-prompt sentences that batch independent calls and edits**<br>• The turn audit sentences per heavy role, plus one shuttle-appended system-prompt sentence for every Claude agent | [`turn-batching`](design-turn-batching.md) | darn | `validator-checks` | 3h<br>3h | stencil, shuttle |
 
-### Draft (1)
+### Draft (4)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **The watcher wakes the orch after a usage limit resets, and holds the repeat notices** | [`usage-limit-wake`](design-usage-limit-wake.md) | loom |  | 31m<br>31m | orch, batten, shuttle |
+| T2 | `draft` **A merge fixer change over the caps gets a solo review of its own commits, not a full Code review** | [`fixer-overcap-review`](design-fixer-overcap-review.md) | loom |  | 14m<br>14m | loom, burler |
+| T3 | `draft` **Friction-Reflect producer fails to start with 'text file busy' when the lym binary is replaced mid-run** | [`spawn-text-file-busy`](design-spawn-text-file-busy.md) | loom |  | 31m<br>31m | shed, deploy, loom |
+| T6 | `draft` **The dobby holds a new run start while the user slice nears its task limit**<br>• Hold new run starts when the user slice pids.current nears pids.max | [`dobby-task-limit-hold`](design-dobby-task-limit-hold.md) | loom |  | 1h<br>43m | batten |
 
-## Notes (36)
+## Notes (34)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -71,21 +74,19 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Find why a running run shows a dead waiter in the activity reader** | [`idle-notice-dead-waiter-cause`](design-idle-notice-dead-waiter-cause.md) | 4d<br>4d | batten, shuttle |
-| B2 |  | **Friction-Reflect producer fails to start with 'text file busy' when the lym binary is replaced mid-run** | [`spawn-text-file-busy`](design-spawn-text-file-busy.md) | 31m<br>31m | shed, deploy, loom |
+| B2 |  | **Watcher's /compact inject into an idle orch is typed but not submitted (unconfirmed, then stalled on draft)** | [`compact-inject-draft`](design-compact-inject-draft.md) | 0m<br>0m | creel, shuttle, orch |
 | B7 |  | **An instruction typed into a pane is lost when the tackler re-spawns the row**<br>• A re-spawned row session starts from its prompt alone; operator input to the old session is dropped | [`pane-input-lost-on-respawn`](design-pane-input-lost-on-respawn.md) | 1d<br>1d | shed, shuttle, reed |
 
-### Enhancements (16)
+### Enhancements (14)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Beam promote keeps the Discussion record as part of the beam**<br>• When Discussion finds a task should be a project, promote carries its decision record into the beam instead of dropping it | [`beam-promote-keeps-discussion`](design-beam-promote-keeps-discussion.md) | 3d<br>1d | workspaces, batten, loom |
 | E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>43m | shuttle, codex |
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 22h<br>20h | batten, stencil, config |
-| E4 |  | **The dobby holds a new run start while the user slice nears its task limit**<br>• Hold new run starts when the user slice pids.current nears pids.max | [`dobby-task-limit-hold`](design-dobby-task-limit-hold.md) | 1h<br>43m | batten |
 | E5 |  | **Decide the layout of projects in the board README**<br>• The operator is not satisfied with how the README renders projects and their members; the layout is to be decided | [`board-projects-layout`](design-board-projects-layout.md) | 3d<br>23h | board |
 | E6 |  | **Board README: one rendered file per project, research notes first**<br>• Each project renders its own file linked from its parent; README.md is the root project; research notes come right after tasks | [`readme-per-project-files`](design-readme-per-project-files.md) | 2d<br>22h | board |
 | E7 |  | **Run verbs in one shared namespace, not under lym loom**<br>• lym loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 13d<br>1d | shed, loom |
-| E8 |  | **A merge fixer change over the caps gets a solo review of its own commits, not a full Code review** | [`fixer-overcap-review`](design-fixer-overcap-review.md) | 14m<br>14m | loom, burler |
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 2w<br>1d | burler, stencil |
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 13d<br>13d | board, loom |
 | E14 |  | **No test is skipped by design**<br>• Windows-only tests count as skips on Linux, and TestBuildLoomShed_OutputShape skips on every machine | [`test-skips-os-tags`](design-test-skips-os-tags.md) | 2d<br>2d | testkit, reed, loom, fabric, gate |
