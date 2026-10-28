@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=b5a121cede2c9d5f933d887c33957392a655c97dcc2ac06db260ccc6de27674c build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+<!-- lym-stencil: sha256=8eaa4cc7633c4800f9f83a60b69f4c7ccb69e236bed3bf1902652a09fccc25e1 build=26f0d9dc38fcc22b3e7767531448a3a5dc64d183 time=2026-10-28T13:52:59Z -->
 
 # Discussion spec — the decision record, the support log and the relevant list
 
@@ -42,6 +42,34 @@ the cap is the same number whatever the entry's name, and `lym loom decision add
 detail that does not fit belongs in the entry's background file.
 `lym loom decision add` appends a bullet with the suffix ` — added after Discussion (<by>, <date>)`.
 A record without the section is valid.
+
+### Decision ids and acceptance coverage
+
+Each decision under `## Decisions` is one H3 headed `### D<n> — <title>`, with `n` a positive integer and ids unique within the record.
+An `### Added after Discussion` entry carries no id.
+Any other H3 there is refused, as a `decision-heading-malformed` finding, and a repeated id as a `decision-id-duplicate` finding.
+Each id appears as a whole word in a bullet of `## Acceptance criteria`, so `D1` is not met by `D10`, and a range such as "D1 to D4" covers only the ids it spells.
+An id no bullet names is a `decision-not-in-acceptance` finding.
+Both checks run for loom and darn records alike, in the discussion gates and `lym loom validate-discussion`, and not in `lym loom decision add`.
+Lines inside fenced blocks are not read.
+
+### Citations in a loom record
+
+On a loom run, the discussion check tests the paths and symbols the record cites in backticks; a darn record's citations are not tested.
+
+- A token is a path when it holds a `/`, none of `#>*{}$:`, no `...` segment, and its first segment is a root entry git tracks, an entry staged and never committed included; `_lym/` and `.lym/` paths are never tested.
+  It must exist in the worktree, and a token ending in `/` must be a directory; otherwise the check reports `citation-path-missing`.
+- A token is a glyph when it parses as a member glyph `<unit>#<member>` whose unit holds a `/` or `.` and does not name an existing file other than a `.go` or `.cs` one, so `docs/overview.md#Modules`, `C#` and `## Decisions` are no glyph.
+  A Go symbol is cited qualified with its package, `pkg.Member` or `pkg.Member.Sub` with a trailing call parenthesis ignored, or as a glyph.
+  A qualified symbol resolves as the glyph of the one package directory named `pkg`; two such directories are `citation-symbol-ambiguous`, and the way forward is to spell the symbol as a glyph.
+  A glyph or symbol that does not resolve is `citation-symbol-missing`, and one declared in several places is `citation-symbol-ambiguous`; cite the declaring file by its path in place of the symbol.
+- A task that creates or removes the cited thing marks it with ` (new)` or ` (removed)` right after the closing backtick, and a marked citation is not tested.
+- A token holding whitespace or `<` is not tested, so a name that must not exist is written as a `<placeholder>`.
+- The parts no writer authors are not tested: fenced blocks, `### Added after Discussion` entries, appended `## PATTERN changes` bullets and carry-over blocks.
+
+Bound: a marked token or one holding `<` is exempt, so a writer can excuse a wrong claim that way and review still reads it.
+A path outside backticks, a slash-free file name, a package pattern with `...`, a token under an untracked root entry, and run-state paths under `_lym/` or `.lym/` are not tested, nor is a member after the first of `pkg.Member.Sub`.
+The Discussion-Write and Discussion-Burler-Fix gates halt on a quarry outage as an infrastructure fault.
 
 ### Compaction rules
 
