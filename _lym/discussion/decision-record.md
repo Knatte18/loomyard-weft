@@ -54,6 +54,12 @@ The research subsection's heading is `Research`, not pluralised; every other typ
 Rationale: the operator asked for research where the audits stood, and "Researchs" is wrong.
 Bound: a hub with no `research` type renders as before.
 
+### Added after Discussion (parent, 2026-10-28): The records replay change in fabricengine is in scope
+
+Decision: The change to internal/fabricengine/replay.go and its doc.go, which replays a board commit that touches a project-*.md file by entry like README.md, is part of this task's scope: the per-project files require it, since without it such a commit falls back to a git-level replay that conflicts on board.json. Keep it, with the tests review finding F1 asks for.
+
+Rationale: Forced by the new file shape the task renders; refusing it would break records replay for every board write once project files exist.
+
 ## Constraints
 
 - `Render` stays pure: entries in, file map out, no I/O.
