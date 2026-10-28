@@ -1,6 +1,6 @@
 # Spike: a mid-turn creel post the model acts on and the operator sees
 
-`creel-midturn-trust-spike` · Task · research, creel, claude, codex · running · Drift-Baseline
+`creel-midturn-trust-spike` · Task · research, creel, claude, codex · running · Darn-Write
 
 ## Goal
 
