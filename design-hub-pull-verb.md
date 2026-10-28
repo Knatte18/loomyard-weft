@@ -1,6 +1,6 @@
 # One verb that pulls the whole hub, Bolt included, while the orch runs
 
-`hub-pull-verb` · Task · feature, fabric, board · running · Finalize
+`hub-pull-verb` · Task · feature, fabric, board · done
 
 ## Seen
 
