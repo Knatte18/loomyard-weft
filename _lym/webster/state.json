@@ -382,7 +382,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "bd45008b4eb72f58b98934b7a40e128e",
   "masterSessionId": "70f31af5-8b0a-4ef1-b1f5-35accab55fce",
   "masterEngine": "claude",
@@ -431,6 +431,28 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-creel-hook-post/70f31af5-8b0a-4ef1-b1f5-35accab55fce/subagents/agent-a75bda37e4086eddf.jsonl"
       ]
+    },
+    "7": {
+      "slug": "shuttle-idle-no-turn",
+      "cards": [
+        "07-shuttle-idle-no-turn",
+        "08-creel-delivery-seam-fields",
+        "09-creel-pane-path-by-engine",
+        "10-creel-hook-waiter-ring"
+      ],
+      "cardHashes": {
+        "07-shuttle-idle-no-turn": "c2c43b3e693b60a062e559bfa42ec2055d81f30227434e8429ca03fe739b12da",
+        "08-creel-delivery-seam-fields": "c73e1e63394e7acfea5ca5719d0d63cb43e7c481b7ec9152c6979245b8d72ac1",
+        "09-creel-pane-path-by-engine": "9ab514f1a2536393c2d0ef4b323da844c928ef1224869a457fbdc05654a78c13",
+        "10-creel-hook-waiter-ring": "1cc58fcb6c0b4c8f47dd16dd9144ebf0bef5b08bf112fa0ea32daba93901e51c"
+      },
+      "startSha": "fe3e96ddd22ceec3cf0c3687c59a9bd238afc954",
+      "kind": "fork",
+      "spawnedAt": "2026-10-28T11:06:21Z",
+      "sessionId": "70f31af5-8b0a-4ef1-b1f5-35accab55fce",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
