@@ -1,12 +1,13 @@
 {
   "current_producer": "Discussion-Bouncer",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "bouncer Discussion-Bouncer: round 1 escalated to the parent (cause: decision); brief at /home/knatte/Code/loomyard-LYMHUB/creel-agents/_lym/reviews/discussion/round-1-escalation.md; record the answer with `lym loom decision add creel-agents`, then decide with `lym loom circling accept creel-agents` or `lym loom circling continue creel-agents`, then run `lym loom resume` in the task worktree to resume",
+  "parent_notice": "Review segment of task `creel-agents` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/creel-agents/_lym/reviews/discussion/round-1-escalation.md` with a one-shot fork.",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Bouncer",
-    "last": "Discussion-Burler-Fix → bounced to Discussion-Bouncer",
-    "wait": ""
+    "last": "Discussion-Bouncer → awaiting",
+    "wait": "bouncer Discussion-Bouncer: round 1 escalated to the parent (cause: decision); brief at /home/knatte/Code/loomyard-LYMHUB/creel-agents/_lym/reviews/discussion/round-1-escalation.md; record the answer with `lym loom decision add creel-agents`, then decide with `lym loom circling accept creel-agents` or `lym loom circling continue creel-agents`, then run `lym loom resume` in the task worktree to resume"
   },
   "history": [
     {
@@ -76,6 +77,12 @@
       ],
       "budget_exempt": true,
       "routed_to": "Discussion-Bouncer"
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "awaiting",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/creel-agents/_lym/reviews/discussion/round-1-bouncer-ledger.md",
+      "at": "2026-10-28T15:48:14Z"
     }
   ],
   "product": {
