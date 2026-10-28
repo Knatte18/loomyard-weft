@@ -1,0 +1,12 @@
+{
+  "current_producer": "Worktree-Create",
+  "state": "failed",
+  "error": "battencli: a start records this machine as the task's owner, which needs origin (board: origin is unreachable, so the owner write was not pushed: fetching origin for the board at /home/knatte/Code/loomyard-LYMHUB/_board failed (gitrepo: fetch in /home/knatte/Code/loomyard-LYMHUB/_board: git exited 1 (run `git -C /home/knatte/Code/loomyard-LYMHUB/_board fetch` for git's own diagnosis)); re-run the command once the remote is reachable); re-run `lym batten run webster-recovery` once origin answers",
+  "pause_requested": false,
+  "activity": {
+    "now": "Worktree-Create",
+    "last": "",
+    "wait": "battencli: a start records this machine as the task's owner, which needs origin (board: origin is unreachable, so the owner write was not pushed: fetching origin for the board at /home/knatte/Code/loomyard-LYMHUB/_board failed (gitrepo: fetch in /home/knatte/Code/loomyard-LYMHUB/_board: git exited 1 (run `git -C /home/knatte/Code/loomyard-LYMHUB/_board fetch` for git's own diagnosis)); re-run the command once the remote is reachable); re-run `lym batten run webster-recovery` once origin answers"
+  },
+  "history": []
+}
