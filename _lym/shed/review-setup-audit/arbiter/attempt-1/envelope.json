@@ -1,0 +1,12 @@
+{
+  "verdict": "hand-on",
+  "reason": "This is an error stop at Code-Bouncer (history length 5), so I have no repair verbs.\nIt is the second failure from the same cause.\nThe first stop was `fork/exec /usr/bin/git: resource temporarily unavailable` (EAGAIN) at 10:41:19.\nThe tackler judged the cause cleared and resumed.\nThe re-launch then failed 22 seconds later at bootstrap with `run list-commands: exit status 1`, which is the reed tmux version probe failing to start.\nThe run state itself is clean: that step was refused before it changed anything (status_moved false), and status.json shows Darn-Write done and Code-Bouncer failed.\nThe tackler read the wrong limit.\nIt checked `ulimit -u` (113180), but the limit that binds is the systemd user slice cgroup.\n/sys/fs/cgroup/user.slice/user-1000.slice has pids.max 3000, and pids.events reads `max 3207`, so that cap has refused a task 3207 times.\nAt 10:42 the slice held about 2600 of its 3000 tasks.\nThat load is several concurrent loom drives and steps across the LYMHUB and lym-csharp hubs, three or four `lym gate test` runs, a dotnet test with MSBuild nodes, Chrome and VS Code.\nSo the cause has not cleared.\nIt recurs whenever a gate or build burst takes up the remaining ~400 tasks, and a third plain re-launch would race the same cap.\nThe fix is a host change (raise the slice's TasksMax) or less concurrency, and neither belongs to this run.",
+  "question": "Run review-setup-audit stopped twice at Code-Bouncer with fork EAGAIN.\nThe cause is the user-1000.slice cgroup task cap (pids.max 3000, already hit 3207 times, about 2600 in use at 10:42), not the run.\nShould the operator raise the cap, for example `sudo systemctl set-property user-1000.slice TasksMax=8192`, or should concurrent runs and gate tests be cut back before this run is re-launched?\nThe run's state is clean, so once there is headroom a plain re-launch of the Code-Bouncer row, with no goto, should settle it.",
+  "goto": "",
+  "verbs": [],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/review-setup-audit/_lym/shed/review-setup-audit/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/review-setup-audit/_lym/shed/review-setup-audit/arbiter/attempt-1/verdict.yaml",
+  "relaunch": ""
+}
