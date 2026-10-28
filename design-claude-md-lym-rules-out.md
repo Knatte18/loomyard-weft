@@ -1,6 +1,6 @@
 # Move rules about lym behaviour out of this repo's CLAUDE.md into lym code and stencils
 
-`claude-md-lym-rules-out` · Task · enhancement, stencil, board, loom · running · PR-Review
+`claude-md-lym-rules-out` · Task · enhancement, stencil, board, loom · running · Finalize
 
 ## Seen
 
