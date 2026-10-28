@@ -601,6 +601,24 @@
       "body": "## Seen (operator, 2026-10-28)\n\nA run that lands sends nothing: the orch learns of a landing only when something else wakes it, and the orch never polls runs.\nWhen the operator asks the orch to report a run's result as soon as it lands, the orch cannot keep that promise, and the operator has to ask again.\n\n## Idea\n\nThe orch can ask for a landing notice on one slug: a watch set per task, never on by default for every run.\n- The orch sets the watch when the operator asks, through a verb of its own, and it can be removed again.\n- Dobby sends the line, not batten (operator, 2026-10-28): dobby drives each run to its end and already mails the orch, so batten knows nothing of who listens.\n- When the watched run lands, or ends without landing, one short line reaches the orch through creel, naming the slug, the outcome and the landing commit.\n- The watch ends when it has fired once.\n\n## Open\n\n- Where dobby keeps the watch: a flag on the board entry or a record of its own.\n",
       "created": "2026-10-28T18:40:56Z",
       "revised": "2026-10-28T18:44:45Z"
+    },
+    {
+      "id": 888,
+      "handle": "E6",
+      "slug": "label-coverage",
+      "title": "A module label for every package group under internal/",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "board"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Several lym modules have no label, so entries take the nearest one that says something else",
+      "body": "## Seen (operator and hub orch, 2026-10-28)\n\nSome lym modules have no module label, so an entry that touches them takes the nearest label, which says something else.\nNote `landing-watch` took `workspaces` for dobby until the `dobby` label was added on 2026-10-28.\n`lym board labels` lists the module labels; `ls internal/` lists the modules, and a package with no label covering it today includes, among others, `tender` and `hibernate`, `drift`, `darn`, `shedarbiter` and `arbiterstop`, `landingshed` and `pawl`, `cleanup`, `termwindow` and `logger`.\n\n## Idea\n\nGo through the packages under `internal/` once, and add a module label for each group of packages an entry can touch on its own, with a description naming its packages, so the label an entry needs exists when the entry is written.\nNote `labels-from-diff` derives or checks labels from what a task touches; a label set that covers every package is what such a check maps paths onto.\n\n## Open\n\n- How fine the labels go: one per package group a task can touch alone, not one per package.\n- Whether a label names its packages in its description, which a path-to-label check could read.\n",
+      "created": "2026-10-28T18:44:52Z",
+      "revised": "2026-10-28T18:44:52Z"
     }
   ],
   "prime_owner": "neve",
