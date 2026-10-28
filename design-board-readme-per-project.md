@@ -1,6 +1,6 @@
 # Board README: one rendered file per project, research notes first
 
-`board-readme-per-project` · Task · enhancement, board · running · Finalize
+`board-readme-per-project` · Task · enhancement, board · done
 
 ## Seen (operator, 2026-10-25)
 
