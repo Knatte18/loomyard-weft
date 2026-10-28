@@ -46,7 +46,7 @@ Held by a run; its scope is locked until the run ends.
 | T8 | **Webster recovery has a way forward, and its audit accepts a sanctioned gate test** | [`webster-recovery`](design-webster-recovery.md) | darn | Darn-Write | neve | 8m<br>1m | webster |
 | T9 | **Burler fork audit reads a listing git branch as read-only** | [`fork-audit-branch-list`](design-fork-audit-branch-list.md) | darn | Darn-Write | neve | 8m<br>1m | burler |
 | T10 | **Comment lint ignores a legacy wrapped paragraph changed only by a word rename** | [`comment-lint-rename`](design-comment-lint-rename.md) | darn | Darn-Write | neve | 8m<br>1m | loom |
-| T11 | **A racing async push reports no divergence that is already gone** | [`async-push-race`](design-async-push-race.md) | darn | Drift-Baseline | neve | 8m<br>1m | fabric |
+| T11 | **A racing async push reports no divergence that is already gone** | [`async-push-race`](design-async-push-race.md) | darn | Darn-Write | neve | 8m<br>1m | fabric |
 
 ### Ready (0)
 
