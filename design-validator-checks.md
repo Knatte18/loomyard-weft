@@ -1,6 +1,6 @@
 # Machine checks in validate-discussion and validate-plan for recurring review findings
 
-`validator-checks` · Task · enhancement, loom, stencil · running · Code-Burler-Fix
+`validator-checks` · Task · enhancement, loom, stencil · running · Code-Bouncer
 
 ## Seen
 
