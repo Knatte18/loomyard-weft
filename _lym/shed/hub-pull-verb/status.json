@@ -1,12 +1,12 @@
 {
   "current_producer": "Darn-Write",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "shedadapters: Darn-Write (seats): shuttle run outcome died",
   "pause_requested": false,
   "activity": {
     "now": "Darn-Write",
     "last": "Drift-Await → skipped",
-    "wait": ""
+    "wait": "shedadapters: Darn-Write (seats): shuttle run outcome died"
   },
   "history": [
     {
