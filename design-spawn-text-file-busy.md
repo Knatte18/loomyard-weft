@@ -1,6 +1,6 @@
 # Friction-Reflect producer fails to start with 'text file busy' when the lym binary is replaced mid-run
 
-`spawn-text-file-busy` · Task · bug, shed, deploy, loom · running · Darn-Write
+`spawn-text-file-busy` · Task · bug, shed, deploy, loom · running · Drift-Verify
 
 Imported from [issue #893](https://github.com/Knatte18/loomyard/issues/893).
 
