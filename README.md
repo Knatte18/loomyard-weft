@@ -8,25 +8,8 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 ## Projects (2)
 
-Groups of entries; a beam spawns its members from its own worktree.
-
-### P1 Workspaces: beams, pairs from a parent pair, dobby
-
-Beams that develop a project in their own worktree, driven by a dobby daemon
-
-grouping
-
-_None._
-
-### P2 .NET: LoomYard for C# repositories
-
-Running LoomYard on C#/.NET repositories such as Models: scoped gates, regression, a sandbox hub
-
-grouping
-
-| # | Member | Kind | Standing |
-| --- | --- | --- | --- |
-| E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
+- [P1 Workspaces: beams, pairs from a parent pair, dobby](project-workspaces.md) — Beams that develop a project in their own worktree, driven by a dobby daemon
+- [P2 .NET: LoomYard for C# repositories](project-dotnet.md) — Running LoomYard on C#/.NET repositories such as Models: scoped gates, regression, a sandbox hub
 
 ## Tasks (3)
 
@@ -40,7 +23,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **No test is skipped by design**<br>• Windows-only tests count as skips on Linux, and TestBuildLoomShed_OutputShape skips on every machine | [`test-skips-os-tags`](design-test-skips-os-tags.md) | darn | Code-Burler-Fix | neve | 2d<br>38m | testkit, reed, loom, fabric, gate |
 | T4 | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent<br>• `profile: solid` | [`creel-agents`](design-creel-agents.md) | loom | Discussion-Burler-Fix | neve | 13d<br>38m | creel, shuttle, loom, stencil, report |
-| T5 | **Bench: the forked Codex Astra fan as Code reviewer on two darn diffs**<br>• 4 codex exec runs at medium: 2 landed darn diffs, twice each, graded against the Claude Code-Review fan<br>• `profile: docs` | [`codex-code-review-bench`](design-codex-code-review-bench.md) | darn | Drift-Verify | neve | 23m<br>23m | codex, burler |
+| T5 | **Bench: the forked Codex Astra fan as Code reviewer on two darn diffs**<br>• 4 codex exec runs at medium: 2 landed darn diffs, twice each, graded against the Claude Code-Review fan<br>• `profile: docs` | [`codex-code-review-bench`](design-codex-code-review-bench.md) | darn | Finalize | neve | 23m<br>23m | codex, burler |
 
 ### Ready (0)
 
@@ -48,11 +31,21 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (27)
+## Notes (26)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Enhancements (10)
+### Research (5)
+
+| # | P | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| R1 |  | **Recurring test-suite time and growth audit**<br>• Re-run cmd/testtiming against test-suite-timing.md to watch suite growth | [`test-time-audit-recurring`](design-test-time-audit-recurring.md) | 10d<br>3d |  |
+| R3 |  | **Sweep go_parallel on OSL-1046 with Cortex XDR**<br>• Time both gate tiers on the work laptop on a quiet machine and log them in docs beside the Neve numbers, with full hardware info | [`bench-osl1046-xdr`](design-bench-osl1046-xdr.md) | 8d<br>3d |  |
+| R5 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 6d<br>1d | webster |
+| R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 5d<br>5h | loom, stencil |
+| R8 |  | **Ideas from r/ClaudeCode "one line in your CLAUDE.md": fit for LoomYard and bench measures**<br>• About 30 ideas judged against our stencils and rules; top 8 ranked for a bench, a few cheap enough without one | [`claude-md-thread-ideas`](design-claude-md-thread-ideas.md) | 2d<br>1d | stencil, loom, burler |
+
+### Enhancements (9)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -65,7 +58,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 10d<br>1d | webster, fabric, loom |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 9d<br>1d | fabric, batten |
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 5d<br>1h | burler, claude |
-| E28 |  | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 6d<br>1d | dotnet |
 
 ### Features (12)
 
@@ -83,13 +75,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F15 |  | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 13d<br>1d | reed, config, batten |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 12d<br>31m | burler, shed, orch, quarry, report |
 | F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 5d<br>1d | loom, shed, batten, workspaces, burler |
-
-### Researchs (5)
-
-| # | P | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| R1 |  | **Recurring test-suite time and growth audit**<br>• Re-run cmd/testtiming against test-suite-timing.md to watch suite growth | [`test-time-audit-recurring`](design-test-time-audit-recurring.md) | 10d<br>3d |  |
-| R3 |  | **Sweep go_parallel on OSL-1046 with Cortex XDR**<br>• Time both gate tiers on the work laptop on a quiet machine and log them in docs beside the Neve numbers, with full hardware info | [`bench-osl1046-xdr`](design-bench-osl1046-xdr.md) | 8d<br>3d |  |
-| R5 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 6d<br>1d | webster |
-| R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 5d<br>5h | loom, stencil |
-| R8 |  | **Ideas from r/ClaudeCode "one line in your CLAUDE.md": fit for LoomYard and bench measures**<br>• About 30 ideas judged against our stencils and rules; top 8 ranked for a bench, a few cheap enough without one | [`claude-md-thread-ideas`](design-claude-md-thread-ideas.md) | 2d<br>1d | stencil, loom, burler |
