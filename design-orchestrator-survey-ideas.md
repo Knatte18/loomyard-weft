@@ -109,6 +109,8 @@ Nothing here is a commitment; these are leads to triage.
 - **Proactive rate-limit wait** — oh-my-claudecode (`src/features/rate-limit-wait/daemon.ts`).
   It reads the 5h/weekly usage windows and their reset times, then resumes blocked panes when the window resets.
   For LoomYard: tender schedules the resume instead of waiting for `revive`.
+  Built by `usage-limit-wake`: the orch watcher reads the reset time, holds the orch's deliveries and wakes it one minute after the reset to run `lym tender revive`; batten sends one usage-limit notice per run.
+  Still open: the resume itself stays with the orch running `revive`, and tender schedules nothing.
 - **Standing goals and scheduled routines** — ORCH goals (`src/domain/goal.ts`, `seedAutonomousTasks`), [CAO](https://github.com/awslabs/cli-agent-orchestrator) cron flows with a gate script (`docs/flows.md`), and Fusion routines (README only).
   For LoomYard: board plus orch, for periodic triage, dependency bumps or `selfreport` sweeps.
 
@@ -134,6 +136,8 @@ Nothing here is a commitment; these are leads to triage.
 - **Status from hooks rather than pane scraping** — [agent-of-empires](https://github.com/agent-of-empires/agent-of-empires) (`src/hooks/status_file.rs`).
   Claude hooks write `running`/`waiting`/`idle` to per-instance sidecar files, and pane reconciliation fills the gaps.
   For LoomYard: shuttle already reads the Stop payload; adding a "waiting for input" sidecar could replace screen heuristics.
+  Partly built by `shuttle-hook-signals`: `PostToolUse`, `PreCompact` and `PostCompact` hooks touch an activity stamp file in the run directory, which shuttle reads as `LastActivity`.
+  Still open: a "waiting for input" signal and the screen heuristics in readiness and startup handling.
 - **Reference status patterns and a paste pitfall** — CAO (`providers/claude_code.py`, `docs/inbox-delivery.md`).
   Regexes cover the spinner, the idle prompt, `↑/↓ to navigate` (an open question), plan approval, the trust and bypass dialogs, and "Newer model available".
   Bracketed paste behaves differently in tmux below and above 3.7.
@@ -141,6 +145,7 @@ Nothing here is a commitment; these are leads to triage.
 - **Context forecasting and rotation for every session** — ntm (`docs/context-forecast.md`, `docs/compaction-recovery.md`).
   It warns at over 70% occupancy with under 15 minutes projected, and re-injects a refresher after "Conversation compacted".
   For LoomYard: the orch watcher's cycle, extended to the long-lived webster Master and the loom driver.
+  Compaction is now counted as activity (`shuttle-hook-signals`); occupancy forecasting and the refresher re-injection are not built.
 - **Edit-loop detector** — Bernstein (`docs/operations/agent-loop-detection.md`).
   It kills an agent that edits the same file 4 or more times within 5 minutes.
   For LoomYard: reed's watchdog or shuttle.
