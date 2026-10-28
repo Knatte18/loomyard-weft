@@ -1,43 +1,44 @@
-# One notice per usage limit, and the orch is woken after the reset
+# Wake the orch after a usage limit resets and hold repeat notices
 
-When Claude's usage limit stopped a task's agent, batten told the orch the same api-error notice again and again until the limit reset, and the orch, stopped by the same limit, could act on none of them.
-After the reset nothing woke the orch; the operator had to.
+A provider usage limit stops every session on the account, the orch included.
+Until now batten told the orch about each stopped run as an api-error, and each api-error revive typed into the limited session produced a fresh API-error turn end and so a fresh notice.
+The orch cannot act on any of them, and after the reset the operator had to tell it to run `lym tender revive`.
+This change sends one usage-limit notice per run and limit, holds the orch's mail while its own session is limited, and wakes it once the limit has reset.
+
+Closes #894
 
 ## What changes
 
-**Shuttle.**
-`TurnEndActivity` and `AgentActivity` carry a `UsageLimit` reading: whether the newest main-chain turn end is an API error the provider classifies as its usage limit, and when the limit resets.
-`Runner.UsageLimit` gives the same reading for one turn end of a named run.
-The Claude engine takes the limit from its `rate_limit` classification and the reset time from the message's `resets 2pm (Europe/Oslo)` clause, with optional minutes and an optional month and day, as the first such instant after the entry's timestamp in the named zone (`claudeengine/usagelimit.go`).
-The zone database is embedded through `time/tzdata`, so the zone resolves on Windows too.
-
-**Batten.**
-A run standing on a usage limit gets a `usage-limit` notice, ahead of the api-error and quiet ones, naming the agent, the reset time in UTC or `reset time unknown`, and the limit's text.
-Its episode key is stamped with the reset time and stays sent while any live run of the child reads usage-limited, however its activity moves; a later limit sends a new notice.
-No api-error revive is sent for it.
-The repeats came from that revive: each one typed into the limited session, which ended in the limit again, moved the activity and so opened a new api-error episode, and from the third in a row every one was noticed.
-
-**Orch watcher.**
-When the newest turn end an idle tick reads is the orch's own usage limit, the watcher records it in `State` (`UsageLimitAt`, `UsageLimitResetsAt`, `UsageLimitWakeAt`), holds the orch strand's creel deliveries and starts no cycle.
-One minute after the reset time, or 30 minutes on when none is readable, it injects one line from the new `orch-template-usage-limit-wake` stencil, telling the orch to run `lym tender revive` and check each run, and repeats it every 30 minutes until the orch answers.
-The first turn end that is not a usage limit clears the record and releases the hold, so the held notices are delivered.
-A fresh launch clears the record.
+- `shuttleengine`: `TurnEndActivity` and `AgentActivity` gain a `UsageLimit` value, set when the newest main-chain turn end is a usage-limit API error, with the reset time the limit message states (zero when it states none).
+- `claudeengine`: the entry is still recognised only by Claude Code's `rate_limit` classification.
+  The reset time is parsed from the text's `resets <time> (<zone>)` clause, with an optional month and day, as the first such instant after the entry's own timestamp in the named IANA zone.
+  An unknown zone or a missing clause reads as no reset time.
+- `battenshed`: a live run whose newest turn end is a usage limit, idle for the api-error idle time, gets one `usage-limit` notice naming the agent, the reset time and the limit text.
+  It goes ahead of the api-error and quiet checks, and no api-error revive is sent for it.
+- `orchengine`: when the newest turn end the idle watcher reads for the orch is a usage limit, it records the limit, its reset time and the next wake time in the persisted state, and holds the orch strand's creel deliveries, renewing the hold every tick.
+  No cycle starts while the limit stands.
+  One minute after the reset time the watcher injects one line rendered from the new orch stencil `orch-template-usage-limit-wake.md`, telling the orch to run `lym tender revive` and check each run.
+  It injects again every 30 minutes until the orch answers.
+  With no readable reset time the first wake goes 30 minutes after the limit was read.
+  A turn end that is not a usage limit clears the record and releases the hold, so the held notices are delivered.
 
 ## Design decisions
 
-- The orch's own turn end is the reading the watcher acts on: the orch shares the account's limit, so no hub-wide limit record is needed between batten and the watcher.
-- The wake line is the watcher's own inject, which its creel hold lets through, so the hold can stand until the orch answers.
-- A wake that creel refuses stays due and is tried at the next tick; a wake line that fails to render waits for the next retry, with a Warn.
-- One notice per task run and limit stands for the issue's "one per strand": a run's agents share it.
-- `lym tender revive` is unchanged: it already skips a session Claude Code resumed on its own as busy.
-- A limit hit during a cycle is not read until the next idle turn end; the cycle's own timeouts cover it.
+- The usage-limit notice's episode key is stamped with the reset time and stays sent while any run of the child still reads usage-limited, whatever its activity does.
+  It ends when no run reads limited, so a limit that ends and a new one that starts sends a second notice.
+  The key holds back only the usage-limit notice: a state change, a dead driver and a plain API error still notice as before.
+- One notice per task run stands for one per strand, since a run's agents share the account's limit.
+- The orch's own turn end is the reading that counts for its watcher, because the orch shares the limit.
+  The hold covers only deliveries to the orch strand and lapses within the cycle hold duration if the watcher dies.
+- The wake is a text inject, the watcher's own delivery, which passes its own hold.
+  The wake line lives in a stencil read at call time, per the Stencil Ownership Invariant.
+  The 1-minute delay and 30-minute retry are constants in `internal/orchengine/usagelimit.go`.
+- The new orch state fields are optional, so an old record reads as no limit.
+- `lym tender revive` is unchanged: it already skips a strand Claude Code resumed on its own as busy.
+- Not covered: a limit read only in a fork's transcript (the main chain's turn end decides), and a hub-wide limit record shared between batten and the orch watcher.
+  A limit hit while an orch cycle is in flight is left to the cycle's own timeouts and is read at the next idle turn end.
 
-## Tests
+## To check by hand
 
-- `TestUsageLimitResetsAt` covers the reset clause: with and without minutes, a time already past, midnight, a date, a date in the next year, the older wording, an unknown zone, no clause, an hour out of range and a bad timestamp.
-- `TestTurnEndActivity` gains a usage-limit row.
-- `TestNotice_UsageLimitNotifiesOncePerLimitWithoutARevive` pins one notice and no revive across moving activity, and a second notice for a later limit, with and without a reset time.
-- `TestWatcher_UsageLimitHoldsTheOrchAndWakesItAfterTheReset` pins the hold, no cycle over the threshold, the first wake, the retry and the release, with and without a reset time.
-- `TestRenderPointers_*` gain the wake line's rows.
-
-Closes #894.
+- Not run against a live limit.
+  If Claude Code words the reset clause differently, the reading falls back to the 30-minute retry; compare the parser in `internal/shuttleengine/claudeengine/usagelimit.go` with a real limit message.
