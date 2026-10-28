@@ -1,0 +1,1299 @@
+diff --git a/contracts/recipes/darn-recipe.yaml b/contracts/recipes/darn-recipe.yaml
+index b5d5eb4d..0c586745 100644
+--- a/contracts/recipes/darn-recipe.yaml
++++ b/contracts/recipes/darn-recipe.yaml
+@@ -40,8 +40,9 @@
+ # _lym/discussion/board-entry.md, as amended by the decision record's `Added after Discussion`
+ # entries; the record's other sections are the writer's own claim, reviewed against the snapshot.
+ #
+-# Finalize declares on_reroute: Code-Bouncer, the row a spent or over-cap fixer change sends
+-# the run back to, so the perch reviews the code the writer changed in answer.
++# Finalize declares on_reroute: Code-Bouncer, the row a spent fixer change, or an over-cap one
++# Finalize's own solo fix review does not approve, sends the run back to, so the perch reviews
++# the code the writer changed in answer.
+ # Shed's reroute cap bounds that edge, and a reroute spends no bounce budget.
+ # With a budget of 0 the Bouncer settles approved at once on that reroute too.
+ #
+@@ -227,7 +228,9 @@ producers:
+ 
+   # Finalize takes the parent lock first, merges the parent into the task branch, runs the landing
+   # gate and the merge fixer, then fast-forwards the parent and releases the lock on every way out.
+-  # Only a spent or over-cap fixer change reroutes to Code-Bouncer; a conflict or a large merge lands through the gate.
++  # An over-cap fixer change goes to Finalize's own solo fix review first, and lands on its approval.
++  # Only a spent fixer change, or an over-cap one the fix review does not approve, reroutes to Code-Bouncer;
++  # a conflict or a large merge lands through the gate.
+   - name: Finalize
+     engine: Finalize
+     on_reroute: Code-Bouncer
+diff --git a/contracts/recipes/loom-recipe.yaml b/contracts/recipes/loom-recipe.yaml
+index cab1bd7c..16250aa7 100644
+--- a/contracts/recipes/loom-recipe.yaml
++++ b/contracts/recipes/loom-recipe.yaml
+@@ -29,7 +29,8 @@
+ # Webster's Stuck halts the run for a human too, with one exception: Webster declares on_reroute:
+ # Plan-Burler-Review, and its producer marks a Stuck Reroute only when begin-batch left a new
+ # plan-conflict record.
+-# Finalize declares on_reroute: Parent-Align, the edge a spent or over-cap fixer change takes when a review follows.
++# Finalize declares on_reroute: Parent-Align, the edge a spent fixer change, or an over-cap one its
++# fix review does not approve, takes when a review follows.
+ # Shed's reroute cap bounds that edge, and a reroute spends no bounce budget.
+ #
+ # PR-Review and Friction-Reflect are outside the escalate-to-a-human set: each also carries no
+@@ -541,7 +542,9 @@ producers:
+ 
+   # Finalize takes the parent lock first, merges the parent into the task branch, runs the landing
+   # gate and the merge fixer, then fast-forwards the parent and releases the lock on every way out.
+-  # Only a spent or over-cap fixer change reroutes to Parent-Align; a conflict or a large merge lands through the gate.
++  # An over-cap fixer change goes to Finalize's own solo fix review first, and lands on its approval.
++  # Only a spent fixer change, or an over-cap one the fix review does not approve, reroutes to Parent-Align;
++  # a conflict or a large merge lands through the gate.
+   - name: Finalize
+     engine: Finalize
+     on_reroute: Parent-Align
+diff --git a/contracts/specs/landing-fix-review-spec.md b/contracts/specs/landing-fix-review-spec.md
+new file mode 100644
+index 00000000..466758f1
+--- /dev/null
++++ b/contracts/specs/landing-fix-review-spec.md
+@@ -0,0 +1,27 @@
++# Landing fix review spec — what the fix review writes
++
++> **Status: Contract — pinned.** This doc pins the fix review's report format: what the fix review session writes when it ends, and what Finalize reads from it.
++
++## What it is
++
++The fix review is the one solo session Finalize spawns when the merge fixer's change is over the caps and a review follows Finalize's reroute.
++It reads only the fixer's commits and ends by writing one report, a markdown file at the path its prompt names.
++An approval lets Finalize land; a rejection sends the run back along Finalize's reroute edge.
++
++## Format
++
++The first line is the verdict, exactly `verdict: approved` or `verdict: rejected`.
++One section follows, opened by the heading `## Findings`: one bullet per finding, each naming the commit or file and what is wrong with it.
++A bullet is a line opening with `- `.
++
++## Verdicts
++
++- `approved` — the change fixes the failure and keeps every test's meaning; the `## Findings` section may be empty.
++- `rejected` — the change weakens or dodges a test, or is wrong in itself; the `## Findings` section holds at least one bullet.
++  A `rejected` report with no finding is invalid.
++
++## Sole parser
++
++`internal/landingshed` is the sole parser of the format, through `ParseFixReviewReport`; consumers read only the `FixReviewReport` it returns.
++A missing report is an error wrapping `fs.ErrNotExist`.
++A first line that is no known verdict, and a `rejected` report without a finding, are errors naming the line and this spec.
+diff --git a/contracts/specs/llm-model-spec.md b/contracts/specs/llm-model-spec.md
+index 709ffce6..0358a48a 100644
+--- a/contracts/specs/llm-model-spec.md
++++ b/contracts/specs/llm-model-spec.md
+@@ -125,4 +125,4 @@ loom.yaml gives the Bouncer judge and seed passes keys of their own, each a mode
+ - A per-segment judge key (`discussion_judge`, `plan_judge`, `code_judge`) left empty takes `judge`.
+ - A per-segment seed key (`discussion_seed`, `plan_seed`, `code_seed`) left empty takes `seed`, and `seed` left empty takes that segment's resolved judge.
+ 
+-landing.yaml's `fixer` is the model-spec of the merge fixer session that Parent-Align and Finalize run, `opus[high]` by default, and `fixer_timeout_min` bounds one of its turns.
++landing.yaml's `fixer` is the model-spec of the merge fixer session that Parent-Align and Finalize run, and of the fix review session Finalize runs over an over-cap fixer change, `opus[high]` by default, and `fixer_timeout_min` bounds one of the fixer's turns or the fix review session.
+diff --git a/contracts/specs/specs.go b/contracts/specs/specs.go
+index 24cd573d..0641bf25 100644
+--- a/contracts/specs/specs.go
++++ b/contracts/specs/specs.go
+@@ -38,6 +38,12 @@ var LoomDiscussionSpec []byte
+ //go:embed landing-fixer-report-spec.md
+ var LandingFixerReportSpec []byte
+ 
++// LandingFixReviewSpec is the fix review's report format contract's shipped-default content.
++// The fix review writes its report against it, and internal/landingshed parses it.
++//
++//go:embed landing-fix-review-spec.md
++var LandingFixReviewSpec []byte
++
+ // TwillLensReportSpec is the lens report format contract's shipped-default content.
+ // Every lens review's writer saves each lens fork's report against its format.
+ //
+@@ -57,6 +63,7 @@ var entries = []registryEntry{
+ 	{"loom-final-summary-spec", &LoomFinalSummarySpec},
+ 	{"loom-discussion-spec", &LoomDiscussionSpec},
+ 	{"landing-fixer-report-spec", &LandingFixerReportSpec},
++	{"landing-fix-review-spec", &LandingFixReviewSpec},
+ 	{"twill-lens-report-spec", &TwillLensReportSpec},
+ }
+ 
+diff --git a/contracts/specs/specs_test.go b/contracts/specs/specs_test.go
+index 48a7bc72..2edf1df2 100644
+--- a/contracts/specs/specs_test.go
++++ b/contracts/specs/specs_test.go
+@@ -21,7 +21,7 @@ func TestRegistry_NamesAndDefaults(t *testing.T) {
+ 
+ 	reg := Registry()
+ 
+-	want := []string{"loom-plan-spec", "loom-final-summary-spec", "loom-discussion-spec", "landing-fixer-report-spec", "twill-lens-report-spec"}
++	want := []string{"loom-plan-spec", "loom-final-summary-spec", "loom-discussion-spec", "landing-fixer-report-spec", "landing-fix-review-spec", "twill-lens-report-spec"}
+ 	got := reg.Names()
+ 	if len(got) != len(want) {
+ 		t.Fatalf("Registry().Names() = %v; want %v", got, want)
+@@ -59,6 +59,7 @@ func TestRegistry_RelPathPlacesBothUnderLoomFamily(t *testing.T) {
+ 		{"loom-final-summary-spec", "loom/loom-final-summary-spec.md"},
+ 		{"loom-discussion-spec", "loom/loom-discussion-spec.md"},
+ 		{"landing-fixer-report-spec", "landing/landing-fixer-report-spec.md"},
++		{"landing-fix-review-spec", "landing/landing-fix-review-spec.md"},
+ 		{"twill-lens-report-spec", "twill/twill-lens-report-spec.md"},
+ 	}
+ 	for _, tt := range tests {
+diff --git a/contracts/stencils/landing/landing-template-fix-review.md b/contracts/stencils/landing/landing-template-fix-review.md
+new file mode 100644
+index 00000000..b25b3241
+--- /dev/null
++++ b/contracts/stencils/landing/landing-template-fix-review.md
+@@ -0,0 +1,46 @@
++<!-- This is the landing fix review session's entire instruction set. It is shipped as an embedded
++     default in the top-level stencils package (stencils/stencils.go), seeded to
++     <hub>/_board/_lym/stencils/landing/, and read from there at call time by internal/seatengine,
++     which fills it from the lead's value map that landingshed's fixReviewTable builds, then hands it to shuttle as the reviewing agent's whole
++     prompt. Every marker below is a top-level {{.X}} substitution; stencil.FillWith requires every
++     marker non-empty except the table's Optional value fixer_report_path, parent_directive (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective) included, and there are no {{if}}/{{range}} conditionals anywhere in this file. -->
++
++# Fix review — judge the merge fixer's change before it lands
++
++{{.parent_directive}}
++{{.edit_directive}}
++
++You are the fix review for task `{{.slug}}`, working in the task branch's own worktree.
++The task branch is `{{.task_branch}}` and it lands on `{{.parent_branch}}`.
++
++The landing gate failed after the parent was merged in, and the merge fixer committed a change that makes it pass.
++That change is over the caps that let a fix land unreviewed: {{.cap_reason}}.
++You are the one reviewer it gets before it lands.
++
++## What to read
++
++- The fixer's commits, and only those: the range `{{.baseline}}..{{.head}}`.
++  Read them with read-only git, such as `git log -p {{.baseline}}..{{.head}}`.
++- The fixer's report, when this line names one: `{{.fixer_report_path}}`.
++- The decision record, `{{.decision_record_path}}`, for what the task decided.
++
++Read other code only where a commit in the range needs it to be judged.
++
++## What to judge
++
++Approve the change when it fixes the failure and keeps every test's meaning.
++Reject it when it does any of these:
++
++- weakens, skips or deletes a test, or loosens an assertion, so that a real failure passes;
++- changes gate or build configuration, a build constraint or test data to dodge the failure rather than fix it;
++- is wrong in itself, such as a race fixed in the test while the code under test keeps it, or a change that contradicts a decision of the record.
++
++## Rules
++
++- Change nothing: no edit, no commit, no push.
++  The task branch's HEAD and working tree stay exactly as you found them.
++
++## The report — your terminal act
++
++Write the report at `{{.report_path}}`, in the format the `landing-fix-review-spec.md` spec pins.
++Writing the report is the last thing you do — nothing you do afterward is read by anyone.
+diff --git a/contracts/stencils/stencils.go b/contracts/stencils/stencils.go
+index a9fc65f5..7d12741c 100644
+--- a/contracts/stencils/stencils.go
++++ b/contracts/stencils/stencils.go
+@@ -33,6 +33,11 @@ var LandingTemplateDescribeDarn []byte
+ //go:embed landing/landing-template-fixer.md
+ var LandingTemplateFixer []byte
+ 
++// LandingTemplateFixReview is the landing fix review's shipped-default prompt: the solo session that judges an over-cap merge fixer change before Finalize lands it.
++//
++//go:embed landing/landing-template-fix-review.md
++var LandingTemplateFixReview []byte
++
+ // DarnTemplateWrite is the darn writer's shipped-default prompt: the whole instruction set of the one session that makes a board entry's change.
+ //
+ //go:embed darn/darn-template-write.md
+@@ -443,6 +448,7 @@ var entries = []registryEntry{
+ 	{"landing-template-describe", &LandingTemplateDescribe},
+ 	{"landing-template-describe-darn", &LandingTemplateDescribeDarn},
+ 	{"landing-template-fixer", &LandingTemplateFixer},
++	{"landing-template-fix-review", &LandingTemplateFixReview},
+ 	{"darn-template-write", &DarnTemplateWrite},
+ 	{"drift-template-baseline", &DriftTemplateBaseline},
+ 	{"drift-template-verify", &DriftTemplateVerify},
+@@ -541,6 +547,7 @@ var roleOpeningStencils = map[string][]string{
+ 	"burler-fix":         {"burler-template-fixer"},
+ 	"conflict":           {"landing-template-conflict"},
+ 	"fixer":              {"landing-template-fixer"},
++	"fix-reviewer":       {"landing-template-fix-review"},
+ 	"bouncer-judge":      {"bouncer-template-judge"},
+ 	"bouncer-seed":       {"bouncer-template-seed"},
+ 	"treadle-targeting":  {"treadle-template-targeting"},
+diff --git a/docs/overview.md b/docs/overview.md
+index 45de7b8e..e341d873 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -573,6 +573,7 @@ User-facing modules each get one `lym <module>` namespace:
+   `Parent-Align` merges the parent's upstream tip into the task with no parent lock, verifies the merged tree through the `parent-align` gate key and runs the merge fixer in parent-align mode, which settles a conflict or a failing tree and aligns the task to what the parent brought in; it writes the merge record with the aligned tip, and the Code-Perch then reviews the task's code against that.
+   `PR-Review` is a stub for the human pull-request review that is not built: it always returns Done, and logs one line when its flag is on.
+   `Finalize` takes the parent lock first, merges the parent into the task in place, resolving a conflict with the conflict session under the lock, with no reroute on a conflict or a large merge; it runs the `finalize` gate key and the merge fixer in finalize mode, lands on the parent with the task trailer and releases the lock on every exit.
++  A fixer change over the caps, on a run whose reroute reaches a review, goes first to Finalize's solo fix review, which reads only the fixer's commits: an approval lands it, and a rejection or a missing verdict reroutes as a spent fixer does.
+   A halt at `Parent-Align` or `Finalize` (a spent or over-cap fixer, a reroute-cap stop) is handed back to the orch through every driver, and the status marks it `hand_back`.
+   On a loom or darn run a fixer's escalate halts with `EscalateStopPrefix` instead, is not marked `hand_back` and goes to the arbiter first, reaching the orch only as the arbiter's hand-on; on a pawl run it is a landing halt like the rest.
+   `Webster` reroutes to `Plan-Burler-Review` when begin-batch left a new plan conflict that the plan fixer `lym webster fix-plan` could not clear.
+@@ -581,7 +582,7 @@ User-facing modules each get one `lym <module>` namespace:
+   Every run transition before that writes the board task's status as `<state> · <producer>` (for example `awaiting · Code-Bouncer`), so the board README shows where each run stands; a failed board write only warns.
+   `Parent-Align` and `Finalize` each run the plan's verify command after a parent merge-in that changed the task tree, and halt Stuck on a failure, with the command's output in the loom verify-output log;
+   a pending-verify marker keeps the gate armed across a resume until a verify passes.
+-  `landing.yaml` also holds the merge fixer's `fixer` model-spec, `fixer_timeout_min`, `parent_align_fix_attempts`, `finalize_fix_attempts` and `finalize_fix_max_lines`, and `deploy_branches`, the base branches whose landing runs `deploy`, which `lym config reconcile` renames from the retired `require_pr_to_base`; reconcile also renames the retired `merge_fix_attempts` key to `parent_align_fix_attempts` and `gate.yaml`'s `merge-in` gate key to `parent-align`.
++  `landing.yaml` also holds the `fixer` model-spec and `fixer_timeout_min` (those of the merge fixer and of the fix review session Finalize runs over an over-cap fixer change), `parent_align_fix_attempts`, `finalize_fix_attempts` and `finalize_fix_max_lines`, and `deploy_branches`, the base branches whose landing runs `deploy`, which `lym config reconcile` renames from the retired `require_pr_to_base`; reconcile also renames the retired `merge_fix_attempts` key to `parent_align_fix_attempts` and `gate.yaml`'s `merge-in` gate key to `parent-align`.
+   `landing.yaml` gains `describe` (the row's model), `describe_timeout_min`, `trailer_text` and `engine_trailers`; an existing hub takes their template defaults until `lym config reconcile --apply` writes them, moving a retired `co_authored_by` value into `engine_trailers.claude`, and an in-flight run parked past `Webster-Bouncer` is restarted rather than migrated.
+   `lym loom status --watch` is this module's registered interactive-handoff exception ([PATTERN-cli-cobra](../pattern/PATTERN-cli-cobra.md)): it self-displays the polled status line then blocks forever as its own keepalive tail, with every fallible step running pre-flight, on the envelope, and only that tail exempt from emitting JSON.
+   ✅ Implemented. loom's config module (`loom.yaml`, holding the `discussion`/`plan`/`judge` role model-specs and the shared `reviewer_model`/`fixer_model`, where `seed` names the Bouncer seed pass model, `discussion_judge`/`plan_judge`/`code_judge` and `discussion_seed`/`plan_seed`/`code_seed` override the judge and seed per review segment, an empty one taking its fallback, and `reviewer_model` and `fixer_model` each take one model-spec or a per-round list, and `<segment>_reviewer_model`/`<segment>_fixer_model` for Discussion, Plan and Code override them per review segment, `discussion_reviewer_fan`/`plan_reviewer_fan`/`code_reviewer_fan`, which name a `lenses.yaml` fan, or list one per round, to cluster-review Discussion-Review, Plan-Review or Code-Review, `discussion_fixer_fan`/`plan_fixer_fan`/`code_fixer_fan`, which do the same for the fixer, an empty entry running the single fixer, `code_reviewer_fan` open to the local layer and the other five closed to it, `discussion_timeout_min`/`plan_timeout_min`/`review_timeout_min`, `discussion_interactive`, `discussion_advisors`, the Discussion-Write advisors, one `{name, model}` entry each, where an empty list runs the lead alone, deciding each question itself, `discussion_lenses` and `plan_lenses`, which each name the `lenses.yaml` fan whose lenses the Discussion-Write or Plan-Write lead forks itself for, empty turning the forks off, all three closed to the local layer, `review_circling_checkpoint`, `review_max_bounces`, `review_amend_max_bounces`, the amendment allowance a review segment re-entered over a changed subject runs under, the per-perch `discussion_max_bounces`/`plan_max_bounces`/`code_max_bounces`, where null takes `review_max_bounces` and 0 runs no review round, `review_hard_max_bounces` and the per-perch `discussion_hard_max_bounces`/`plan_hard_max_bounces`/`code_hard_max_bounces`, where 0 takes `review_hard_max_bounces` and a hard cap below its perch's budget is refused at load, and `discussion_auto_accept`/`plan_auto_accept`/`code_auto_accept`, which make a perch accept a harvested round at a spent budget instead of running the soft-cap rule) exists and reconciles via `lym config reconcile --apply` (the bare verb is a dry run that only reports added and removed keys and writes nothing).
+diff --git a/internal/landingshed/config.go b/internal/landingshed/config.go
+index f9a34f72..fe3095bf 100644
+--- a/internal/landingshed/config.go
++++ b/internal/landingshed/config.go
+@@ -53,9 +53,9 @@ type Config struct {
+ 	// A run at Finalize and running, or with a live verify, keeps the lock past it.
+ 	// A value below 1 reads as the default.
+ 	ParentLockIdleReleaseMin int `yaml:"parent_lock_idle_release_min"`
+-	// Fixer is the model-spec string selecting the model the merge fixer session runs under.
++	// Fixer is the model-spec string selecting the model the merge fixer session and the fix review session run under.
+ 	Fixer string `yaml:"fixer"`
+-	// FixerTimeoutMin is the minutes one fixer turn may run.
++	// FixerTimeoutMin is the minutes one fixer turn, or the fix review session, may run.
+ 	FixerTimeoutMin int `yaml:"fixer_timeout_min"`
+ 	// ParentAlignFixAttempts is the fixer turns one Parent-Align row entry may spend.
+ 	ParentAlignFixAttempts int `yaml:"parent_align_fix_attempts"`
+diff --git a/internal/landingshed/doc.go b/internal/landingshed/doc.go
+index a8577c92..78c118c2 100644
+--- a/internal/landingshed/doc.go
++++ b/internal/landingshed/doc.go
+@@ -41,7 +41,7 @@
+ // An unreadable merge record is logged and read as absent, so the parent side is measured from the task's merge base, as a run with no record is.
+ // The merge is large when the parent's changes since the merged tip it read touch a file the task changed since its merge base; a parent already holding the task's work is never large.
+ // A large merge writes the merge record, with its overlap, and goes on to the gate like any other merge, and a conflict or a large merge reroutes in no recipe.
+-// Bound: what lands with no review is the conflict session's resolution against the parent's newer work and a textually clean merge of the parent's changes to files the task also changed; the `finalize` gate over the merged tree bounds both, and a spent fixer or a change past the caps reroutes when a review follows the reroute and halts for the orch otherwise.
++// Bound: what lands with no review is the conflict session's resolution against the parent's newer work and a textually clean merge of the parent's changes to files the task also changed; the `finalize` gate over the merged tree bounds both, and a spent fixer, or a change past the caps the fix review does not approve, reroutes when a review follows the reroute and halts for the orch otherwise.
+ // The conflict session runs while the parent lock is held, so sibling landings onto that parent wait, bounded by the lock's owner, pause and release rules.
+ // Finalize then writes the merge record with the new merged tip and the aligned tip as it was.
+ // Next it runs its own gate key, `finalize`, over the merged tree through verifytree, which skips a tree it already verified, so a run that went right holds the lock for one merge, a skipped gate and the landing.
+@@ -51,12 +51,17 @@
+ // The fixer gets no parent tip to read from and the merged tip the merge record carries.
+ // The first spawn writes the HEAD before the fixer's first turn into the record's Baseline, every resume of the entry keeps it but the one after an over-cap halt, and the fixer's whole change is judged by `LineChange(Baseline, HEAD)` against `finalize_fix_max_lines` and the run's test-file matcher, so turns that each stay under the cap but sum past it are over it.
+ // An entry has no attempts left when its Spent reaches `finalize_fix_attempts`, whatever the record's Halt notes, and a resumed entry with none left spawns no fixer: over a failing gate it ends as a spent cap, and over a passing one its change since Baseline is judged.
+-// A spent cap or a change over the caps keeps the fixer's commits and reroutes through the reroute reason when a review follows the reroute (Deps.RerouteReviewed), and halts with LandingStopPrefix otherwise, naming the commits and noting `spent` or `over-cap` in the record's Halt.
++// A change over the caps, when a review follows the reroute (Deps.RerouteReviewed), first goes to the fix review: one solo session on the fixer's model-spec and turn timeout, which reads only the fixer's commits, Baseline..HEAD, and writes the report `landing-fix-review-spec.md` pins.
++// An approval lands the change and keeps the approved HEAD in the record's Reviewed, so a later pass of the entry at that HEAD lands with no second review;
++// a rejection, or a session that ends without a verdict, reroutes naming the findings or why;
++// a session that dirties the tree or moves the task head halts with LandingStopPrefix, and one that fails to start is a transient error.
++// Bound: the fix review lets an over-cap fixer change land behind one reviewer's explicit approval of the fixer's own commits instead of the run's full Code review, under the parent lock, for at most one `fixer_timeout_min` session and one re-prompt over an unparseable report.
++// A spent cap, and a change over the caps the fix review does not approve, keep the fixer's commits and reroute through the reroute reason when a review follows the reroute, and halt with LandingStopPrefix otherwise, naming the commits and noting `spent` or `over-cap` in the record's Halt.
+ // A resume after an over-cap halt writes Baseline afresh at the HEAD the gate starts from, clears the note in the same record write, reads the operator's review as acceptance of the commits and runs the gate: a passing gate lands without judging the change, and a failing one runs the fixer on the attempts left.
+ // An escalate report keeps the commits and halts naming the report, with EscalateStopPrefix on a loom or darn run; a turn that ended without a usable result halts, and a failed spawn is an error that spends no attempt.
+ // An attempt record that does not decode halts naming the file, with removing it, which grants a fresh cap, as the way forward.
+ // A Finalize reroute leaves the entry's attempt record for the next entry to clear, and a Done clears it.
+-// The size and kind caps bound what an unreviewed Finalize fix lets through: a fix within them lands with no perch, behind only the `finalize` gate it passed and the finalize mode's instruction to fix failing tests only.
++// The size and kind caps bound what a Finalize fix lets through without a reviewer: a fix within them lands with no perch, behind only the `finalize` gate it passed and the finalize mode's instruction to fix failing tests only.
+ // After a merge-in-required error from the parent-side merge Finalize retries once, which covers a parent moved by run records alone;
+ // the retry merges the parent again and gates the merged tree under the same lock, so a code-side commit that arrives between the first merge and the parent-side merge is merged, gated and landed.
+ // A dirty parent is Stuck naming the parent's code checkout and its tracked dirty paths, capped at 20, with the way forward per reason.
+@@ -115,7 +120,7 @@
+ // HandsBack is the one predicate that names the halts the orch takes over: a blocked stop at Parent-Align or Finalize whose reason opens with LandingStopPrefix, and a blocked stop at Finalize whose reason opens with the reroute-cap prefix.
+ // Parent-Align has no reroute edge, and a reroute-cap halt at another row, such as Webster's, stays routed as before.
+ // A merge or test failure at Parent-Align or Finalize is the recipe's own to settle:
+-// the row's fixer fixes it, a spent or over-cap fix at Finalize routes back through the recipe's reroute edge, or halts where that edge reaches no review, and the halt goes to the orch.
++// the row's fixer fixes it, a spent fix or an over-cap fix its fix review does not approve at Finalize routes back through the recipe's reroute edge, or halts where that edge reaches no review, and the halt goes to the orch.
+ // No driver, batten, arbiter or record target routes a Parent-Align or Finalize failure to another row.
+ // The recipe's owner tells it to shedverbs as Spec.HandBack, which marks the loop's stop envelope and the status as hand_back; the drivers read the predicate or that mark.
+ //
+diff --git a/internal/landingshed/finalize.go b/internal/landingshed/finalize.go
+index 477907e4..b366b854 100644
+--- a/internal/landingshed/finalize.go
++++ b/internal/landingshed/finalize.go
+@@ -588,7 +588,8 @@ func (fz *Finalize) mergeAndGate(ctx context.Context) (shedengine.Outcome, shede
+ // A failing gate spawns the fixer on the attempts landing.yaml's finalize_fix_attempts leaves the entry, read from the attempt record under the row's entry.
+ // The fixer's whole change is judged against the size and kind caps from the entry's Baseline, the HEAD before its first turn, so turns that each stay under the cap but sum past it are over it.
+ // An entry has no attempts left when its Spent reaches the cap, whatever the record's Halt notes, and such an entry spawns no fixer: over a failing gate it ends as a spent cap, and over a passing one its change since Baseline is judged.
+-// A spent cap or a change over the caps keeps the fixer's commits and reroutes when a review follows the reroute (Deps.RerouteReviewed), and halts with LandingStopPrefix otherwise, noting the cause in the attempt record's Halt.
++// A change over the caps, when a review follows the reroute (Deps.RerouteReviewed), goes to the fix review, whose approval lets Finalize land.
++// A spent cap, and a change over the caps the fix review does not approve, keep the fixer's commits and reroute when a review follows the reroute, and halt with LandingStopPrefix otherwise, noting the cause in the attempt record's Halt.
+ // A resume after such an over-cap halt writes Baseline afresh at the HEAD the gate starts from and reads the operator's review as acceptance of the fixer's commits.
+ // An escalate report halts with EscalateStopPrefix on a loom or darn run (Deps.EscalateJudgedFirst) and with LandingStopPrefix on a pawl run;
+ // an unusable turn and an attempt record that does not decode each halt with LandingStopPrefix, and a failed spawn is an error that spends no attempt.
+@@ -696,11 +697,19 @@ func (fz *Finalize) failedGateLog(gateReason string) string {
+ 
+ // judgeFixerChange judges the entry's fixer change, from its Baseline to HEAD, against the size and kind caps.
+ // An entry whose fixer never ran has no Baseline and no change.
+-// A change within the caps lets Finalize go on; one over them ends as an over-cap change.
++// A change within the caps lets Finalize go on.
++// A change over them, on a run where a review follows the reroute, goes to the fix review first, which reads only the fixer's commits:
++// an approval lets Finalize go on and is kept in the attempt record as the HEAD it approved, so a later pass at that HEAD lands without a second review;
++// a rejection, or a review that gives no verdict, ends as an over-cap change naming why;
++// and a review that changed the task branch halts with LandingStopPrefix.
++// With no review after the reroute an over-cap change ends as one at once.
+ func (fz *Finalize) judgeFixerChange(ctx context.Context, rec FixerAttempts) (shedengine.Outcome, shedengine.OutputPointer, error, bool) {
+-	if rec.Baseline == "" {
++	proceed := func() (shedengine.Outcome, shedengine.OutputPointer, error, bool) {
+ 		return "", shedengine.OutputPointer{}, nil, false
+ 	}
++	if rec.Baseline == "" {
++		return proceed()
++	}
+ 	head, err := fz.deps.TaskHead()
+ 	if err != nil {
+ 		return fz.errorStop(ctx, fmt.Errorf("landingshed: %s: read the task head: %w", finalizeName, err))
+@@ -710,21 +719,60 @@ func (fz *Finalize) judgeFixerChange(ctx context.Context, rec FixerAttempts) (sh
+ 		return fz.errorStop(ctx, fmt.Errorf("landingshed: %s: read the fixer's change: %w", finalizeName, err))
+ 	}
+ 	reason := FixCap{MaxLines: fz.deps.Config.FinalizeFixMaxLines, IsTestFile: fz.deps.IsTestFile}.Exceeded(change)
+-	if reason == "" {
+-		return "", shedengine.OutputPointer{}, nil, false
++	if reason == "" || rec.Reviewed == head {
++		return proceed()
++	}
++	cause := fmt.Sprintf("the fixer's change in %s is over the caps: %s", finalizeName, reason)
++	reviewed, err := fz.reviewFollowsReroute()
++	if err != nil {
++		return fz.errorStop(ctx, err)
+ 	}
+-	return fz.keepFixerCommits(ctx, rec, fixerHaltOverCap, fmt.Sprintf("the fixer's change in %s is over the caps: %s", finalizeName, reason))
++	if !reviewed {
++		return fz.keepFixerCommits(ctx, rec, fixerHaltOverCap, cause, false)
++	}
++
++	review, err := runFixReview(fz.deps, fz.gate, finalizeName, rec.Baseline, head, reason)
++	if err != nil {
++		return fz.errorStop(ctx, err)
++	}
++	switch review.end {
++	case fixReviewEndApproved:
++		rec.Reviewed = head
++		if err := WriteFixerAttempts(FixerAttemptsPath(fz.deps.ScratchDir, finalizeName), rec); err != nil {
++			return fz.errorStop(ctx, err)
++		}
++		return proceed()
++	case fixReviewEndChanged:
++		return fz.halt(ctx, fmt.Sprintf("%sthe fix review session of %s changed the task branch: %s; session log: %s; way forward: restore the task branch to the fixer's commits %s..%s with a clean tree, then `lym loom resume`", LandingStopPrefix, finalizeName, review.cause, review.sessionLog, rec.Baseline, head))
++	}
++	return fz.keepFixerCommits(ctx, rec, fixerHaltOverCap, cause+"; "+review.rerouteCause(), true)
++}
++
++// reviewFollowsReroute reports whether a review follows Finalize's reroute, through Deps.RerouteReviewed; a Finalize built with no such read answers false.
++func (fz *Finalize) reviewFollowsReroute() (bool, error) {
++	if fz.deps.RerouteReviewed == nil {
++		return false, nil
++	}
++	reviewed, err := fz.deps.RerouteReviewed()
++	if err != nil {
++		return false, fmt.Errorf("landingshed: %s: read whether a review follows the reroute: %w", finalizeName, err)
++	}
++	return reviewed, nil
+ }
+ 
+ // endSpent ends an entry whose attempts are spent over a gate that still fails, naming the failed gate's log.
+ func (fz *Finalize) endSpent(ctx context.Context, rec FixerAttempts, log string) (shedengine.Outcome, shedengine.OutputPointer, error, bool) {
+-	return fz.keepFixerCommits(ctx, rec, fixerHaltSpent, fmt.Sprintf("the fixer spent every attempt of %s and the landing gate still fails; log: %s", finalizeName, log))
++	reviewed, err := fz.reviewFollowsReroute()
++	if err != nil {
++		return fz.errorStop(ctx, err)
++	}
++	return fz.keepFixerCommits(ctx, rec, fixerHaltSpent, fmt.Sprintf("the fixer spent every attempt of %s and the landing gate still fails; log: %s", finalizeName, log), reviewed)
+ }
+ 
+ // keepFixerCommits ends the entry on cause while keeping the fixer's commits on the task branch.
+-// When a review follows the reroute, Finalize reroutes through rerouteReason so that review sees the fix.
++// When reviewed, a review follows the reroute, and Finalize reroutes through rerouteReason so that review sees the fix.
+ // Otherwise it halts with LandingStopPrefix, naming the fixer's commits and noting in the attempt record's Halt which cause it was.
+-func (fz *Finalize) keepFixerCommits(ctx context.Context, rec FixerAttempts, note, cause string) (shedengine.Outcome, shedengine.OutputPointer, error, bool) {
++func (fz *Finalize) keepFixerCommits(ctx context.Context, rec FixerAttempts, note, cause string, reviewed bool) (shedengine.Outcome, shedengine.OutputPointer, error, bool) {
+ 	head, err := fz.deps.TaskHead()
+ 	if err != nil {
+ 		return fz.errorStop(ctx, fmt.Errorf("landingshed: %s: read the task head: %w", finalizeName, err))
+@@ -733,12 +781,6 @@ func (fz *Finalize) keepFixerCommits(ctx context.Context, rec FixerAttempts, not
+ 	if rec.Baseline != "" {
+ 		commits = rec.Baseline + ".." + head
+ 	}
+-	reviewed := false
+-	if fz.deps.RerouteReviewed != nil {
+-		if reviewed, err = fz.deps.RerouteReviewed(); err != nil {
+-			return fz.errorStop(ctx, fmt.Errorf("landingshed: %s: read whether a review follows the reroute: %w", finalizeName, err))
+-		}
+-	}
+ 	if reviewed {
+ 		outcome, out, err := fz.reroute(ctx, fz.rerouteReason(fmt.Sprintf("%s; fixer commits: %s", cause, commits)))
+ 		return outcome, out, err, true
+diff --git a/internal/landingshed/finalize_gate_test.go b/internal/landingshed/finalize_gate_test.go
+index 01382745..98111b0b 100644
+--- a/internal/landingshed/finalize_gate_test.go
++++ b/internal/landingshed/finalize_gate_test.go
+@@ -6,14 +6,18 @@ package landingshed
+ 
+ import (
+ 	"context"
++	"errors"
++	"fmt"
+ 	"os"
+ 	"path/filepath"
+ 	"strings"
+ 	"testing"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/modelspec"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/stencilkit"
+ 	"github.com/Knatte18/loomyard/internal/verifytree"
+ )
+@@ -104,6 +108,26 @@ func (fx *finalizeGateFixture) turn(t *testing.T, content, head string) func() {
+ 	}
+ }
+ 
++// reviewPath is the report the fix review session writes for Finalize.
++func (fx *finalizeGateFixture) reviewPath() string {
++	return filepath.Join(fx.deps.ScratchDir, finalizeName+"-fix-review.md")
++}
++
++// review scripts a fix review turn that writes content as its report.
++func (fx *finalizeGateFixture) review(t *testing.T, content string) func() {
++	t.Helper()
++	return func() {
++		if err := os.WriteFile(fx.reviewPath(), []byte(content), 0o644); err != nil {
++			t.Errorf("write fix review report: %v", err)
++		}
++	}
++}
++
++const (
++	approvedReview = "verdict: approved\n\n## Findings\n"
++	rejectedReview = "verdict: rejected\n\n## Findings\n- f1 loosens the assertion in a_test.go\n"
++)
++
+ // scriptGate makes the n-th verify from now answer results[n], and every later one the last result.
+ func (fx *finalizeGateFixture) scriptGate(results ...verifytree.Result) {
+ 	already := fx.gate.fake.verifyCalls
+@@ -216,12 +240,13 @@ func TestFinalize_GateAndFixer(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("two turns each under the line cap but past it together reroute as over the cap, measured from the entry's baseline", func(t *testing.T) {
++	t.Run("two turns each under the line cap but past it together are over the cap, measured from the entry's baseline", func(t *testing.T) {
+ 		fx := newFinalizeGateFixture(t)
+ 		fx.reviewed = true
+ 		fx.lineChange = fabricengine.LineChange{Lines: 60, Paths: []string{"a/a.go"}}
+ 		fx.scriptGate(failing, failing, passing)
+ 		fx.seats.turns = []func(){fx.turn(t, fixedReport, "f1"), fx.turn(t, fixedReport, "f2")}
++		fx.seats.reviewTurns = []func(){fx.review(t, rejectedReview)}
+ 
+ 		outcome, ptr := fx.call(t)
+ 
+@@ -249,19 +274,21 @@ func TestFinalize_GateAndFixer(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("an entry whose last turn ended without a note is resumed with no spawn", func(t *testing.T) {
++	t.Run("an entry whose last turn ended without a note is resumed with no fixer spawn", func(t *testing.T) {
+ 		tests := []struct {
+-			name       string
+-			gate       verifytree.Result
+-			change     fabricengine.LineChange
+-			reviewed   bool
++			name     string
++			gate     verifytree.Result
++			change   fabricengine.LineChange
++			reviewed bool
++			// review is the fix review's report, written when the row reaches one.
++			review     string
+ 			wantLand   bool
+ 			wantReason []string
+ 		}{
+ 			{name: "a failing gate reroutes as a spent cap does", gate: failing, reviewed: true, wantReason: []string{"spent every attempt", "verify-", "fixer commits: t2..f1"}},
+ 			{name: "a failing gate halts where no review follows the reroute", gate: failing, wantReason: []string{"spent every attempt", "verify-", "fixer commits: t2..f1"}},
+ 			{name: "a passing gate over a change within the caps proceeds", gate: passing, change: small, reviewed: true, wantLand: true},
+-			{name: "a passing gate over a change past the caps reroutes", gate: passing, change: fabricengine.LineChange{Lines: 500}, reviewed: true, wantReason: []string{"over the cap of 50", "fixer commits: t2..f1"}},
++			{name: "a passing gate over a change past the caps reroutes on the fix review's rejection", gate: passing, change: fabricengine.LineChange{Lines: 500}, reviewed: true, review: rejectedReview, wantReason: []string{"over the cap of 50", "the fix review rejected it", "fixer commits: t2..f1"}},
+ 		}
+ 		for _, tt := range tests {
+ 			t.Run(tt.name, func(t *testing.T) {
+@@ -271,11 +298,23 @@ func TestFinalize_GateAndFixer(t *testing.T) {
+ 				fx.lineChange = tt.change
+ 				fx.seed(t, FixerAttempts{Entry: 1, Spent: 2, Baseline: "t2"})
+ 				fx.scriptGate(tt.gate)
++				if tt.review != "" {
++					fx.seats.reviewTurns = []func(){fx.review(t, tt.review)}
++				}
+ 
+ 				outcome, ptr := fx.call(t)
+ 
+-				if len(fx.seats.tables) != 0 {
+-					t.Errorf("fixer sessions = %d; want none", len(fx.seats.tables))
++				wantSessions := 0
++				if tt.review != "" {
++					wantSessions = 1
++				}
++				if len(fx.seats.tables) != wantSessions {
++					t.Fatalf("sessions = %d; want %d", len(fx.seats.tables), wantSessions)
++				}
++				for _, table := range fx.seats.tables {
++					if table.RolePrefix != fixReviewRole {
++						t.Errorf("session role = %q; want no fixer spawned", table.RolePrefix)
++					}
+ 				}
+ 				switch {
+ 				case tt.wantLand:
+@@ -292,7 +331,7 @@ func TestFinalize_GateAndFixer(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("a fix over the caps reroutes with its commits kept, whatever makes it over", func(t *testing.T) {
++	t.Run("a fix over the caps goes to the fix review over the fixer's commits, and a rejection reroutes with the commits kept, whatever makes it over", func(t *testing.T) {
+ 		tests := []struct {
+ 			name       string
+ 			change     fabricengine.LineChange
+@@ -320,15 +359,214 @@ func TestFinalize_GateAndFixer(t *testing.T) {
+ 				}
+ 				fx.scriptGate(failing, passing)
+ 				fx.seats.turns = []func(){fx.turn(t, fixedReport, "f1")}
++				fx.seats.reviewTurns = []func(){fx.review(t, rejectedReview)}
++
++				outcome, ptr := fx.call(t)
++
++				fx.requireReroute(t, outcome, ptr, tt.wantReason, "the fix review rejected it: f1 loosens the assertion", fx.reviewPath(), "fixer commits: t2..f1")
++				if len(fx.seats.tables) != 2 {
++					t.Fatalf("sessions = %d; want the fixer's and the fix review's", len(fx.seats.tables))
++				}
++				review := fx.seats.tables[1]
++				if review.RolePrefix != fixReviewRole || review.Values["baseline"] != "t2" || review.Values["head"] != "f1" || !strings.Contains(review.Values["cap_reason"], tt.wantReason) {
++					t.Errorf("fix review table = %q, %v; want role %q over t2..f1 naming %q", review.RolePrefix, review.Values, fixReviewRole, tt.wantReason)
++				}
++				if got := review.Values["fixer_report_path"]; got != fx.reportPath() {
++					t.Errorf("fix review fixer_report_path = %q; want %q", got, fx.reportPath())
++				}
++				if want := time.Duration(fx.deps.Config.FixerTimeoutMin) * time.Minute; review.Timeout != want {
++					t.Errorf("fix review timeout = %v; want fixer_timeout_min, %v", review.Timeout, want)
++				}
++				if got, want := review.Seats[0].ModelChoice, fx.seats.tables[0].Seats[0].ModelChoice; got != want {
++					t.Errorf("fix review model choice = %+v; want the fixer's %+v", got, want)
++				}
++			})
++		}
++	})
++
++	t.Run("the fix review's end decides where an over-cap change goes", func(t *testing.T) {
++		tests := []struct {
++			name string
++			// review scripts the fix review's one turn, given the fixture.
++			review     func(t *testing.T, fx *finalizeGateFixture) func()
++			wantLand   bool
++			wantHalt   bool
++			wantReason []string
++			// rePrompted is the report the re-prompt's turn writes, when the first turn's report does not parse.
++			rePrompted string
++			// reviewTimeout makes the review session end on its timeout.
++			reviewTimeout bool
++			// absentReason is a fragment the halt reason must not hold.
++			absentReason string
++		}{
++			{
++				name:     "an approval lands",
++				review:   func(t *testing.T, fx *finalizeGateFixture) func() { return fx.review(t, approvedReview) },
++				wantLand: true,
++			},
++			{
++				name:          "a session past its timeout reroutes naming the timeout key",
++				review:        func(*testing.T, *finalizeGateFixture) func() { return func() {} },
++				reviewTimeout: true,
++				wantReason:    []string{"the fix review gave no verdict", "fixer_timeout_min", "session log: " + fakeFixerRunDir, "fixer commits: t2..f1"},
++			},
++			{
++				name:       "an unparseable report is re-prompted once, and the report that follows decides",
++				review:     func(t *testing.T, fx *finalizeGateFixture) func() { return fx.review(t, "verdict: maybe\n") },
++				rePrompted: approvedReview,
++				wantLand:   true,
++			},
++			{
++				name:       "a session that leaves no report reroutes naming the missing report",
++				review:     func(*testing.T, *finalizeGateFixture) func() { return func() {} },
++				wantReason: []string{"the fix review gave no verdict", "session log: " + fakeFixerRunDir, "fixer commits: t2..f1"},
++			},
++			{
++				name:       "a report with no known verdict reroutes naming the line",
++				review:     func(t *testing.T, fx *finalizeGateFixture) func() { return fx.review(t, "verdict: maybe\n") },
++				wantReason: []string{"the fix review gave no verdict", "is no known verdict"},
++			},
++			{
++				name: "a session that dirties the tree halts naming the way forward",
++				review: func(t *testing.T, fx *finalizeGateFixture) func() {
++					return func() {
++						fx.review(t, approvedReview)()
++						fx.gate.fake.dirtyAt(fx.gate.fake.dirtyCalls, "a/a.go")
++					}
++				},
++				wantHalt:     true,
++				wantReason:   []string{"the fix review session of Finalize changed the task branch", "a/a.go", "way forward: restore the task branch to the fixer's commits t2..f1", "`lym loom resume`"},
++				absentReason: "commit or remove them",
++			},
++			{
++				name: "a session that commits halts naming the moved head",
++				review: func(t *testing.T, fx *finalizeGateFixture) func() {
++					return func() {
++						fx.review(t, approvedReview)()
++						fx.head = "r1"
++					}
++				},
++				wantHalt:   true,
++				wantReason: []string{"the task head moved from f1 to r1", "way forward: restore the task branch"},
++			},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				fx := newFinalizeGateFixture(t)
++				fx.reviewed = true
++				fx.lineChange = fabricengine.LineChange{Lines: 3, Paths: []string{"a/a_test.go"}}
++				fx.scriptGate(failing, passing)
++				fx.seats.turns = []func(){fx.turn(t, fixedReport, "f1")}
++				fx.seats.reviewTurns = []func(){tt.review(t, fx)}
++				if tt.rePrompted != "" {
++					fx.seats.reviewTurns = append(fx.seats.reviewTurns, fx.review(t, tt.rePrompted))
++				}
++				fx.seats.reviewTimeout = tt.reviewTimeout
+ 
+ 				outcome, ptr := fx.call(t)
+ 
+-				fx.requireReroute(t, outcome, ptr, tt.wantReason, "fixer commits: t2..f1")
++				switch {
++				case tt.wantLand:
++					fx.requireLanded(t, outcome, ptr)
++				case tt.wantHalt:
++					requireHalt(t, outcome, ptr, tt.wantReason...)
++					if tt.absentReason != "" && strings.Contains(ptr.Reason, tt.absentReason) {
++						t.Errorf("reason = %q; want it without %q", ptr.Reason, tt.absentReason)
++					}
++					if len(fx.merger.calls) != 0 {
++						t.Errorf("parent-side merges = %d; want none after a halt", len(fx.merger.calls))
++					}
++				default:
++					fx.requireReroute(t, outcome, ptr, tt.wantReason...)
++				}
+ 			})
+ 		}
+ 	})
+ 
+-	t.Run("with no review after the reroute an over-cap change halts naming its commits and noting over-cap", func(t *testing.T) {
++	t.Run("an approval is kept in the attempt record as the HEAD it approved", func(t *testing.T) {
++		fx := newFinalizeGateFixture(t)
++		fx.reviewed = true
++		fx.lineChange = fabricengine.LineChange{Lines: 3, Paths: []string{"a/a_test.go"}}
++		fx.merger.pushErr = errors.New("push refused")
++		fx.scriptGate(failing, passing)
++		fx.seats.turns = []func(){fx.turn(t, fixedReport, "f1")}
++		fx.seats.reviewTurns = []func(){fx.review(t, approvedReview)}
++
++		// The refused push stops the landing after the merge, which keeps the record the landing would otherwise remove.
++		if _, _, err := fx.fz.Call(context.Background()); err != nil {
++			t.Fatalf("Call() error = %v", err)
++		}
++
++		if len(fx.merger.calls) != 1 {
++			t.Fatalf("parent-side merges = %d; want the landing to reach its merge after the approval", len(fx.merger.calls))
++		}
++		if rec, found := fx.attempts(t); !found || rec.Reviewed != "f1" {
++			t.Errorf("attempt record = %+v, %v; want Reviewed f1, the HEAD the review approved", rec, found)
++		}
++	})
++
++	t.Run("a pass at a HEAD the fix review approved lands with no second review, and at any other HEAD is reviewed again", func(t *testing.T) {
++		tests := []struct {
++			name     string
++			reviewed string
++			// review is the fix review's report, written when a review runs.
++			review       string
++			wantSessions int
++			wantLand     bool
++		}{
++			{name: "the approved HEAD", reviewed: "f1", wantLand: true},
++			{name: "a HEAD that moved since the approval", reviewed: "e9", review: rejectedReview, wantSessions: 1},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				fx := newFinalizeGateFixture(t)
++				fx.reviewed = true
++				fx.head = "f1"
++				fx.lineChange = fabricengine.LineChange{Lines: 3, Paths: []string{"a/a_test.go"}}
++				fx.seed(t, FixerAttempts{Entry: 1, Spent: 1, Baseline: "t2", Reviewed: tt.reviewed})
++				fx.scriptGate(passing)
++				if tt.review != "" {
++					fx.seats.reviewTurns = []func(){fx.review(t, tt.review)}
++				}
++
++				outcome, ptr := fx.call(t)
++
++				if tt.wantLand {
++					fx.requireLanded(t, outcome, ptr)
++				} else {
++					fx.requireReroute(t, outcome, ptr, "the fix review rejected it")
++				}
++				if len(fx.seats.tables) != tt.wantSessions {
++					t.Errorf("sessions = %d; want %d", len(fx.seats.tables), tt.wantSessions)
++				}
++				for _, table := range fx.seats.tables {
++					if table.RolePrefix != fixReviewRole {
++						t.Errorf("session role = %q; want only fix review sessions", table.RolePrefix)
++					}
++				}
++			})
++		}
++	})
++
++	t.Run("a fix review session that fails to start returns a transient error and lands nothing", func(t *testing.T) {
++		fx := newFinalizeGateFixture(t)
++		fx.reviewed = true
++		fx.lineChange = fabricengine.LineChange{Lines: 3, Paths: []string{"a/a_test.go"}}
++		fx.scriptGate(failing, passing)
++		fx.seats.turns = []func(){fx.turn(t, fixedReport, "f1")}
++		fx.seats.reviewStartErr = fmt.Errorf("seat chair: %w", shuttleengine.ErrNotStarted)
++
++		_, _, err := fx.fz.Call(context.Background())
++
++		if err == nil || shedengine.TransientOf(err) != shedengine.TransientAgentStart {
++			t.Fatalf("Call() error = %v; want one the transient mark classifies as %q", err, shedengine.TransientAgentStart)
++		}
++		if len(fx.merger.calls) != 0 {
++			t.Errorf("parent-side merges = %d; want none after a failed start", len(fx.merger.calls))
++		}
++	})
++
++	t.Run("with no review after the reroute an over-cap change halts naming its commits and noting over-cap, with no fix review", func(t *testing.T) {
+ 		fx := newFinalizeGateFixture(t)
+ 		fx.lineChange = fabricengine.LineChange{Lines: 3, Paths: []string{"a/a_test.go"}}
+ 		fx.scriptGate(failing, passing)
+@@ -343,6 +581,9 @@ func TestFinalize_GateAndFixer(t *testing.T) {
+ 		if len(fx.merger.calls) != 0 {
+ 			t.Errorf("parent-side merges = %d; want none after a halt", len(fx.merger.calls))
+ 		}
++		if len(fx.seats.tables) != 1 {
++			t.Errorf("sessions = %d; want the fixer's alone", len(fx.seats.tables))
++		}
+ 	})
+ 
+ 	t.Run("a resume after an over-cap halt reads the operator's review as acceptance of the commits", func(t *testing.T) {
+diff --git a/internal/landingshed/fixerattempts.go b/internal/landingshed/fixerattempts.go
+index e4777e67..03f958f5 100644
+--- a/internal/landingshed/fixerattempts.go
++++ b/internal/landingshed/fixerattempts.go
+@@ -24,6 +24,8 @@ type FixerAttempts struct {
+ 	AlignFrom string `json:"align_from"`
+ 	// Halt notes the halt that last stopped the entry: "spent", "over-cap" or empty.
+ 	Halt string `json:"halt"`
++	// Reviewed is the HEAD a fix review approved the entry's over-cap change at; empty when none did.
++	Reviewed string `json:"reviewed,omitempty"`
+ }
+ 
+ // FixerAttemptsPath is the attempt record's path for row under scratchDir: one file per row.
+diff --git a/internal/landingshed/fixerrun.go b/internal/landingshed/fixerrun.go
+index 2a34b5e6..927be9bb 100644
+--- a/internal/landingshed/fixerrun.go
++++ b/internal/landingshed/fixerrun.go
+@@ -114,7 +114,7 @@ func (f fixerRun) run(ctx context.Context, mode FixerMode, rec FixerAttempts, ca
+ 	if err != nil {
+ 		return fixerOutcome{}, rec, fmt.Errorf("landingshed: %s: %w", f.row, err)
+ 	}
+-	if err := f.archiveStaleReport(reportPath); err != nil {
++	if err := archiveStaleReport(reportPath, f.gate.now(), f.row, "fixer"); err != nil {
+ 		return fixerOutcome{}, rec, err
+ 	}
+ 	remoteBefore, err := f.deps.TaskRemoteTip()
+@@ -181,12 +181,13 @@ func (f fixerRun) failureRecordPath() string {
+ 	return f.gate.paths.LandingFailure
+ }
+ 
+-// archiveStaleReport renames a report an earlier fixer run left at reportPath, so a new session never starts beside a finished report.
+-func (f fixerRun) archiveStaleReport(reportPath string) error {
+-	stamp := f.gate.now().UTC().Format("20060102T150405Z")
++// archiveStaleReport renames a report an earlier session of row left at reportPath, stamped with now, so a new session never starts beside a finished report.
++// what names the session in the error.
++func archiveStaleReport(reportPath string, now time.Time, row, what string) error {
++	stamp := now.UTC().Format("20060102T150405Z")
+ 	archived := strings.TrimSuffix(reportPath, ".md") + "-" + stamp + ".md"
+ 	if err := os.Rename(reportPath, archived); err != nil && !errors.Is(err, fs.ErrNotExist) {
+-		return fmt.Errorf("landingshed: %s: archive the stale fixer report: %w", f.row, err)
++		return fmt.Errorf("landingshed: %s: archive the stale %s report: %w", row, what, err)
+ 	}
+ 	return nil
+ }
+diff --git a/internal/landingshed/fixerrun_test.go b/internal/landingshed/fixerrun_test.go
+index c51bf59a..020c049c 100644
+--- a/internal/landingshed/fixerrun_test.go
++++ b/internal/landingshed/fixerrun_test.go
+@@ -28,10 +28,15 @@ type fakeFixerSeats struct {
+ 	// turns scripts each turn by its index: it may write the report, commit, dirty the tree, move the remote tip, advance the gate's clock or release a lock record.
+ 	// A turn past the script does nothing.
+ 	turns []func()
++	// reviewTurns scripts a fix review session's turns the same way, in place of turns.
++	reviewTurns []func()
+ 	// startErr, when set, is returned by Run before any turn, as a seat that never started.
+ 	startErr error
+ 	// sessionTimeout makes the session end on the table's timeout without reaching the gate closure.
+ 	sessionTimeout bool
++	// reviewTimeout and reviewStartErr do what sessionTimeout and startErr do, for a fix review session alone.
++	reviewTimeout  bool
++	reviewStartErr error
+ 	// hangAfter, when above zero, makes the turn at that index run its callback and then end the session with hangOutcome, never reaching the gate closure.
+ 	hangAfter   int
+ 	hangOutcome shuttleengine.Outcome
+@@ -50,14 +55,22 @@ func (f *fakeFixerSeats) Run(table seatengine.Table) (seatengine.Result, error)
+ 	if f.startErr != nil {
+ 		return seatengine.Result{}, f.startErr
+ 	}
+-	if f.sessionTimeout {
++	isReview := table.RolePrefix == fixReviewRole
++	if isReview && f.reviewStartErr != nil {
++		return seatengine.Result{}, f.reviewStartErr
++	}
++	if f.sessionTimeout || (isReview && f.reviewTimeout) {
+ 		return seatengine.Result{Chair: shuttleengine.Result{Outcome: shuttleengine.OutcomeTimeout, RunDir: fakeFixerRunDir}}, nil
+ 	}
++	turns := f.turns
++	if isReview {
++		turns = f.reviewTurns
++	}
+ 	entry := table.Gate[0]
+ 	for turn := 0; turn <= entry.Attempts; turn++ {
+ 		f.turnsRun++
+-		if turn < len(f.turns) {
+-			f.turns[turn]()
++		if turn < len(turns) {
++			turns[turn]()
+ 		}
+ 		if f.hangAfter > 0 && turn == f.hangAfter {
+ 			return seatengine.Result{Chair: shuttleengine.Result{Outcome: f.hangOutcome, RunDir: fakeFixerRunDir}}, nil
+diff --git a/internal/landingshed/fixreview.go b/internal/landingshed/fixreview.go
+new file mode 100644
+index 00000000..98b9c151
+--- /dev/null
++++ b/internal/landingshed/fixreview.go
+@@ -0,0 +1,287 @@
++// fixreview.go implements the fix review: the one solo session Finalize spawns to judge a merge fixer's change that is over the caps, reading only the fixer's commits, and ParseFixReviewReport, the one reader of the report format contracts/specs/landing-fix-review-spec.md defines.
++
++package landingshed
++
++import (
++	"errors"
++	"fmt"
++	"os"
++	"path/filepath"
++	"strings"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/modelspec"
++	"github.com/Knatte18/loomyard/internal/seatengine"
++	"github.com/Knatte18/loomyard/internal/segmentcolor"
++	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/stencilstore"
++)
++
++// fixReviewStencilName is the registered name of the fix review's prompt.
++const fixReviewStencilName = "landing-template-fix-review"
++
++// fixReviewRole is the agent-name role the fix review's spawn carries.
++const fixReviewRole = "fix-reviewer"
++
++// fixReviewGateName labels the fix review session's one gate entry, which re-prompts a session whose report does not parse.
++const fixReviewGateName = "fix-review-report"
++
++// fixReviewReprompts is how many times the session is re-prompted over a missing or unparseable report.
++const fixReviewReprompts = 1
++
++// fixReviewSpecName is the spec every fix review report error points the reader to.
++const fixReviewSpecName = "landing-fix-review-spec.md"
++
++// FixReviewVerdict is the verdict on a fix review report's first line.
++type FixReviewVerdict string
++
++const (
++	// FixReviewApproved is the verdict of a review that found the fixer's change fixes the failure and keeps every test's meaning.
++	FixReviewApproved FixReviewVerdict = "approved"
++	// FixReviewRejected is the verdict of a review that found the change weakens or dodges a test, or is wrong in itself.
++	FixReviewRejected FixReviewVerdict = "rejected"
++)
++
++// FixReviewReport is the parsed form of a fix review's report.
++// Findings holds one entry per `## Findings` bullet with the bullet marker removed.
++type FixReviewReport struct {
++	Verdict  FixReviewVerdict
++	Findings []string
++}
++
++// ParseFixReviewReport reads the fix review report at path.
++// A missing file is an error wrapping fs.ErrNotExist.
++// A first line that is no known verdict, and a rejected report with no finding, are errors naming the line and the spec.
++func ParseFixReviewReport(path string) (FixReviewReport, error) {
++	data, err := os.ReadFile(path)
++	if err != nil {
++		return FixReviewReport{}, fmt.Errorf("landingshed: read fix review report %s: %w", path, err)
++	}
++
++	lines := strings.Split(string(data), "\n")
++	first := strings.TrimSpace(lines[0])
++	verdict := FixReviewVerdict(strings.TrimPrefix(first, fixerVerdictPrefix))
++	if !strings.HasPrefix(first, fixerVerdictPrefix) || (verdict != FixReviewApproved && verdict != FixReviewRejected) {
++		return FixReviewReport{}, fmt.Errorf("landingshed: fix review report %s: line 1 %q is no known verdict; the first line is %q or %q, per %s",
++			path, first, fixerVerdictPrefix+string(FixReviewApproved), fixerVerdictPrefix+string(FixReviewRejected), fixReviewSpecName)
++	}
++
++	report := FixReviewReport{Verdict: verdict}
++	inFindings := false
++	for _, line := range lines[1:] {
++		if heading, ok := strings.CutPrefix(line, "## "); ok {
++			inFindings = strings.TrimSpace(heading) == "Findings"
++			continue
++		}
++		if bullet, ok := strings.CutPrefix(strings.TrimSpace(line), "- "); ok && inFindings {
++			report.Findings = append(report.Findings, bullet)
++		}
++	}
++	if verdict == FixReviewRejected && len(report.Findings) == 0 {
++		return FixReviewReport{}, fmt.Errorf("landingshed: fix review report %s: a rejected report needs at least one \"## Findings\" bullet, per %s", path, fixReviewSpecName)
++	}
++	return report, nil
++}
++
++// fixReviewInputs carries the told values one fix review session needs.
++// Every field is required except FixerReportPath and LanguageSkills.
++type fixReviewInputs struct {
++	// StencilsDir is the absolute directory the landing stencils are read from.
++	StencilsDir string
++	// DecisionRecordPath is the run's decision record, which the agent reads.
++	DecisionRecordPath string
++	// FixerReportPath is the merge fixer's last report; empty when none is on disk.
++	FixerReportPath string
++	// Baseline and Head bound the fixer's commits, the only range the agent reviews.
++	Baseline string
++	Head     string
++	// CapReason is why the change is over the caps.
++	CapReason string
++	// ReportPath is the file the agent writes: its report.
++	ReportPath string
++	// TaskBranch is the branch under review.
++	TaskBranch string
++	// ParentBranch is the branch the task lands on.
++	ParentBranch string
++	// Slug is the task's slug.
++	Slug string
++	// LanguageSkills are the run's language skills the session loads before its prompt.
++	LanguageSkills []string
++}
++
++// fixReviewTable builds the seatengine.Table of the fix review session: one lead that reads the fixer's commits and writes the report at in.ReportPath.
++// It runs on the merge fixer's model-spec and turn timeout.
++// An empty required input field is an error naming the field, and so is a stencil missing from in.StencilsDir.
++func fixReviewTable(in fixReviewInputs, cfg Config, reg modelspec.Registry) (seatengine.Table, error) {
++	required := []struct{ name, value string }{
++		{"StencilsDir", in.StencilsDir},
++		{"DecisionRecordPath", in.DecisionRecordPath},
++		{"Baseline", in.Baseline},
++		{"Head", in.Head},
++		{"CapReason", in.CapReason},
++		{"ReportPath", in.ReportPath},
++		{"TaskBranch", in.TaskBranch},
++		{"ParentBranch", in.ParentBranch},
++		{"Slug", in.Slug},
++	}
++	for _, r := range required {
++		if r.value == "" {
++			return seatengine.Table{}, fmt.Errorf("landingshed: fixReviewTable: %s is empty", r.name)
++		}
++	}
++	if _, err := stencilstore.Read(in.StencilsDir, fixReviewStencilName); err != nil {
++		return seatengine.Table{}, fmt.Errorf("landingshed: fixReviewTable: %w", err)
++	}
++	parsed, err := modelspec.Parse(cfg.Fixer)
++	if err != nil {
++		return seatengine.Table{}, fmt.Errorf("landingshed: fixReviewTable: fixer model-spec: %w", err)
++	}
++	resolved, err := reg.Resolve(parsed)
++	if err != nil {
++		return seatengine.Table{}, fmt.Errorf("landingshed: fixReviewTable: fixer model-spec: %w", err)
++	}
++
++	return seatengine.Table{
++		RolePrefix: fixReviewRole,
++		Segment:    segmentcolor.Landing,
++		Timeout:    time.Duration(cfg.FixerTimeoutMin) * time.Minute,
++		Values: map[string]string{
++			"slug":                 in.Slug,
++			"decision_record_path": in.DecisionRecordPath,
++			"fixer_report_path":    in.FixerReportPath,
++			"baseline":             in.Baseline,
++			"head":                 in.Head,
++			"cap_reason":           in.CapReason,
++			"report_path":          in.ReportPath,
++			"task_branch":          in.TaskBranch,
++			"parent_branch":        in.ParentBranch,
++		},
++		Optional: []string{"fixer_report_path"},
++		Seats: []seatengine.Seat{{
++			Stencil:     fixReviewStencilName,
++			ModelChoice: shuttleengine.NewModelChoice(resolved),
++			Outputs:     []string{in.ReportPath},
++			Skills:      in.LanguageSkills,
++		}},
++	}, nil
++}
++
++// fixReviewEnd names how one fix review session ended.
++type fixReviewEnd string
++
++const (
++	// fixReviewEndApproved is a report that approves the change.
++	fixReviewEndApproved fixReviewEnd = "approved"
++	// fixReviewEndRejected is a report that rejects the change.
++	fixReviewEndRejected fixReviewEnd = "rejected"
++	// fixReviewEndNoVerdict is a session that timed out or left no report that parses.
++	fixReviewEndNoVerdict fixReviewEnd = "no-verdict"
++	// fixReviewEndChanged is a session that left the tree dirty or moved the task head.
++	fixReviewEndChanged fixReviewEnd = "changed"
++)
++
++// fixReviewOutcome is how a fix review session ended and what the reroute or halt that follows names.
++type fixReviewOutcome struct {
++	end fixReviewEnd
++	// reportPath is the report the session writes.
++	reportPath string
++	// sessionLog is the session's run directory, which holds its log.
++	sessionLog string
++	// findings are the rejected report's findings.
++	findings []string
++	// cause is why a no-verdict or changed session ended so.
++	cause string
++}
++
++// runFixReview runs the fix review over the fixer's commits, baseline..head, inside row, and returns how it ended.
++// capReason is why the change is over the caps.
++// A session that fails to start is an error marked transient.
++func runFixReview(deps Deps, gate verifyGate, row, baseline, head, capReason string) (fixReviewOutcome, error) {
++	reportPath := filepath.Join(deps.ScratchDir, row+"-fix-review.md")
++	fixerReport := filepath.Join(deps.ScratchDir, row+"-fixer-report.md")
++	if _, err := os.Stat(fixerReport); err != nil {
++		fixerReport = ""
++	}
++	table, err := fixReviewTable(fixReviewInputs{
++		StencilsDir:        deps.StencilsDir,
++		DecisionRecordPath: deps.DecisionRecordPath,
++		FixerReportPath:    fixerReport,
++		Baseline:           baseline,
++		Head:               head,
++		CapReason:          capReason,
++		ReportPath:         reportPath,
++		TaskBranch:         deps.TaskBranch,
++		ParentBranch:       deps.ParentBranch,
++		Slug:               deps.Slug,
++		LanguageSkills:     deps.LanguageSkills,
++	}, deps.Config, deps.Registry)
++	if err != nil {
++		return fixReviewOutcome{}, fmt.Errorf("landingshed: %s: %w", row, err)
++	}
++	if err := archiveStaleReport(reportPath, gate.now(), row, "fix review"); err != nil {
++		return fixReviewOutcome{}, err
++	}
++	table.Gate = shuttleengine.GateSpec{{Name: fixReviewGateName, Attempts: fixReviewReprompts, Gate: func() (shuttleengine.GateResult, error) {
++		if _, err := ParseFixReviewReport(reportPath); err != nil {
++			return shuttleengine.GateResult{Findings: err.Error()}, nil
++		}
++		return shuttleengine.GateResult{Passed: true}, nil
++	}}}
++
++	result, runErr := deps.FixerSeats.Run(table)
++	if (runErr != nil && errors.Is(runErr, shuttleengine.ErrNotStarted)) || (runErr == nil && result.Chair.NotStarted) {
++		cause := runErr
++		if cause == nil {
++			cause = errors.New(result.Chair.StartError)
++		}
++		return fixReviewOutcome{}, shedengine.MarkTransient(shedengine.TransientAgentStart, fmt.Errorf("landingshed: %s: the fix review session did not start: %w", row, cause))
++	}
++	if runErr != nil {
++		return fixReviewOutcome{}, fmt.Errorf("landingshed: %s: run the fix review session: %w", row, runErr)
++	}
++
++	outcome := fixReviewOutcome{reportPath: reportPath, sessionLog: result.Chair.RunDir}
++	defer func() {
++		logger.Info("landingshed: fix review ended", "row", row, "end", string(outcome.end), "range", baseline+".."+head)
++	}()
++	dirty, err := gate.clean(row, "after the fix review")
++	if err != nil {
++		return fixReviewOutcome{}, err
++	}
++	after, err := deps.TaskHead()
++	if err != nil {
++		return fixReviewOutcome{}, fmt.Errorf("landingshed: %s: read the task head: %w", row, err)
++	}
++	switch {
++	case dirty != "":
++		// The halt names its own way forward: a commit would move the head past the range the review judged.
++		outcome.end, outcome.cause = fixReviewEndChanged, strings.TrimSuffix(dirty, dirtyWayForward)
++		return outcome, nil
++	case after != head:
++		outcome.end, outcome.cause = fixReviewEndChanged, fmt.Sprintf("the task head moved from %s to %s", head, after)
++		return outcome, nil
++	case result.Chair.Outcome == shuttleengine.OutcomeTimeout:
++		outcome.end, outcome.cause = fixReviewEndNoVerdict, "the session ran past fixer_timeout_min"
++		return outcome, nil
++	}
++	report, err := ParseFixReviewReport(reportPath)
++	switch {
++	case err != nil:
++		outcome.end, outcome.cause = fixReviewEndNoVerdict, singleLine(err.Error())
++	case report.Verdict == FixReviewApproved:
++		outcome.end = fixReviewEndApproved
++	default:
++		outcome.end, outcome.findings = fixReviewEndRejected, report.Findings
++	}
++	return outcome, nil
++}
++
++// rerouteCause words what a rejected or verdict-less review adds to the reroute's cause.
++func (o fixReviewOutcome) rerouteCause() string {
++	if o.end == fixReviewEndRejected {
++		return fmt.Sprintf("the fix review rejected it: %s; review: %s", singleLine(strings.Join(o.findings, "; ")), o.reportPath)
++	}
++	return fmt.Sprintf("the fix review gave no verdict (%s); session log: %s", o.cause, o.sessionLog)
++}
+diff --git a/internal/landingshed/fixreview_test.go b/internal/landingshed/fixreview_test.go
+new file mode 100644
+index 00000000..4c6c9e68
+--- /dev/null
++++ b/internal/landingshed/fixreview_test.go
+@@ -0,0 +1,84 @@
++//go:build tier0
++
++// fixreview_test.go pins ParseFixReviewReport's verdicts, findings and refusals.
++
++package landingshed
++
++import (
++	"errors"
++	"io/fs"
++	"os"
++	"path/filepath"
++	"reflect"
++	"strings"
++	"testing"
++)
++
++func TestParseFixReviewReport(t *testing.T) {
++	t.Parallel()
++
++	tests := []struct {
++		name    string
++		content string
++		want    FixReviewReport
++		wantErr string
++	}{
++		{
++			name:    "approved with an empty findings section",
++			content: "verdict: approved\n\n## Findings\n",
++			want:    FixReviewReport{Verdict: FixReviewApproved},
++		},
++		{
++			name:    "approved with a note under findings",
++			content: "verdict: approved\n\n## Findings\n- f1: the lock is test-only and keeps every assertion\n",
++			want:    FixReviewReport{Verdict: FixReviewApproved, Findings: []string{"f1: the lock is test-only and keeps every assertion"}},
++		},
++		{
++			name:    "rejected with findings, bullets outside the section ignored",
++			content: "verdict: rejected\n\n- stray\n\n## Findings\n\n- f1: skips TestRace\n- f2: drops an assertion\n",
++			want:    FixReviewReport{Verdict: FixReviewRejected, Findings: []string{"f1: skips TestRace", "f2: drops an assertion"}},
++		},
++		{
++			name:    "an unknown verdict",
++			content: "verdict: fixed\n\n## Findings\n",
++			wantErr: `line 1 "verdict: fixed" is no known verdict`,
++		},
++		{
++			name:    "a rejection with no finding",
++			content: "verdict: rejected\n\n## Findings\n",
++			wantErr: "a rejected report needs at least one",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			path := filepath.Join(t.TempDir(), "review.md")
++			if err := os.WriteFile(path, []byte(tt.content), 0o644); err != nil {
++				t.Fatal(err)
++			}
++
++			got, err := ParseFixReviewReport(path)
++
++			if tt.wantErr != "" {
++				if err == nil || !strings.Contains(err.Error(), tt.wantErr) || !strings.Contains(err.Error(), fixReviewSpecName) {
++					t.Errorf("ParseFixReviewReport() error = %v; want one containing %q and naming %s", err, tt.wantErr, fixReviewSpecName)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("ParseFixReviewReport() error = %v", err)
++			}
++			if !reflect.DeepEqual(got, tt.want) {
++				t.Errorf("ParseFixReviewReport() = %+v; want %+v", got, tt.want)
++			}
++		})
++	}
++
++	t.Run("MissingFile", func(t *testing.T) {
++		t.Parallel()
++		_, err := ParseFixReviewReport(filepath.Join(t.TempDir(), "absent.md"))
++		if !errors.Is(err, fs.ErrNotExist) {
++			t.Errorf("ParseFixReviewReport(absent) error = %v; want one wrapping fs.ErrNotExist", err)
++		}
++	})
++}
+diff --git a/internal/landingshed/template.yaml b/internal/landingshed/template.yaml
+index b87f7f03..30dfe2a4 100644
+--- a/internal/landingshed/template.yaml
++++ b/internal/landingshed/template.yaml
+@@ -8,8 +8,8 @@ trailer_text: ""  # fixed lines copied verbatim into every landing commit's trai
+ engine_trailers:  # engine name to the trailer text copied verbatim into the landing commit when that engine ran a session in the task; an engine left out or set to "" adds nothing
+   claude: "Co-Authored-By: Claude <noreply@anthropic.com>"
+ deploy: ""  # shell command batten's Land row runs in the prime after a landing into a branch listed in deploy_branches; empty runs nothing
+-fixer: opus[high]  # model-spec for the merge fixer session that Parent-Align and Finalize run to fix a merge or test failure (see contracts/specs/llm-model-spec.md)
+-fixer_timeout_min: 60  # minutes one fixer turn may run
++fixer: opus[high]  # model-spec for the merge fixer session that Parent-Align and Finalize run to fix a merge or test failure, and for the fix review Finalize runs over a fixer change past the caps (see contracts/specs/llm-model-spec.md)
++fixer_timeout_min: 60  # minutes one fixer turn, or the fix review session, may run
+ parent_align_fix_attempts: 2  # fixer turns one Parent-Align row entry may spend
+ finalize_fix_attempts: 2  # fixer turns one Finalize row entry may spend
+ finalize_fix_max_lines: 40  # added plus deleted lines a fixer change may hold before it is over the cap
+diff --git a/internal/landingshed/verifygate.go b/internal/landingshed/verifygate.go
+index 6b3dd732..a88cb62a 100644
+--- a/internal/landingshed/verifygate.go
++++ b/internal/landingshed/verifygate.go
+@@ -175,6 +175,9 @@ func (g verifyGate) clean(producer, point string) (string, error) {
+ 	return dirtyReason(point, paths), nil
+ }
+ 
++// dirtyWayForward ends every dirty-tree reason with what the operator does about it.
++const dirtyWayForward = "; commit or remove them on the task branch, then resume"
++
+ // dirtyReason is the Stuck reason for a dirty tree found at point.
+ func dirtyReason(point string, paths []string) string {
+ 	shown := paths
+@@ -185,7 +188,7 @@ func dirtyReason(point string, paths []string) string {
+ 	if more := len(paths) - len(shown); more > 0 {
+ 		list = fmt.Sprintf("%s and %d more", list, more)
+ 	}
+-	return fmt.Sprintf("the task worktree has uncommitted changes %s: %s; commit or remove them on the task branch, then resume", point, list)
++	return fmt.Sprintf("the task worktree has uncommitted changes %s: %s%s", point, list, dirtyWayForward)
+ }
+ 
+ // readBase returns the base command, the one whose record entry every pass of this gate keeps.
+diff --git a/pattern/PATTERN-sole-parsers.md b/pattern/PATTERN-sole-parsers.md
+index 7ad81378..94ef3fcc 100644
+--- a/pattern/PATTERN-sole-parsers.md
++++ b/pattern/PATTERN-sole-parsers.md
+@@ -45,3 +45,8 @@ It imports the standard library only.
+ 
+ `internal/landingshed`'s `ParseFixerReport` is the sole parser of the merge fixer's report format, which `contracts/specs/landing-fixer-report-spec.md` defines.
+ Parent-Align and Finalize read only the `FixerReport` it returns.
++
++## Fix review report format (`internal/landingshed`)
++
++`internal/landingshed`'s `ParseFixReviewReport` is the sole parser of the fix review's report format, which `contracts/specs/landing-fix-review-spec.md` defines.
++Finalize reads only the `FixReviewReport` it returns.
