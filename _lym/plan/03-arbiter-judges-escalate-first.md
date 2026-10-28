@@ -30,7 +30,6 @@ Tests:
 - `TestGoDriver_Settle` gains `judgesFirstReason`: when set, the test seam marks a stop only when its producer is `judgesFirst` and the reason it is handed opens with `judgesFirstReason`; the existing `judgesFirst` rows leave it empty and keep their answers.
   A new step builder returns a blocked envelope at Build whose `reason` opens with `escalate: `.
   New rows: that stop with `judgesFirst` Build and `judgesFirstReason` `escalate: ` goes to the arbiter with no tackler call (calls `step`, `arbiter:`), and the arbiter's hand-on hands back; the plain `blocked` stop under the same seam goes to the tackler; a run whose re-check finds the status moved to a blocked Build stop whose `Error` opens with `escalate: ` (via `statusSeq`) sends that status-built stop to the arbiter with no tackler call.
-  One more row sends the escalate-prefixed stop under the same seam to an arbiter that answers `arbiter_max_spawns: 0 turns the arbiter off` as its error: it hands back to the parent with no tackler call, as a spent arbiter budget does through the same error path.
   The restart with an open arbiter attempt and the start check at a halted stop are the existing rows, which act before `JudgesFirst` is read.
 - `TestLoomArbiterSeam_JudgesFirst` gains a reason column: Webster with any reason is marked; Finalize and Parent-Align with an `EscalateStopPrefix` reason are marked; Finalize with a `LandingStopPrefix` reason and with a plain reason, Darn-Write with an `EscalateStopPrefix` reason, and the empty producer are not.
 
