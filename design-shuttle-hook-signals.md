@@ -1,6 +1,6 @@
 # Shuttle reads activity and operator input from Claude Code hooks
 
-`shuttle-hook-signals` · Task · bug, shuttle, batten, shed, reed, claude · draft
+`shuttle-hook-signals` · Task · bug, shuttle, batten, shed, reed, claude
 
 Depends on: [`usage-limit-wake`](design-usage-limit-wake.md), [`compact-inject-draft`](design-compact-inject-draft.md)
 
