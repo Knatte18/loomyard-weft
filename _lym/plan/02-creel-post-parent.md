@@ -35,8 +35,9 @@ The liveness predicate the resolution uses is a new `clientSeam` field, `live fu
 `newRig` copies the previous seam's `live` into the seam it installs, so a row that sets no predicate resolves with the production liveness; a row that needs a live beam orch sets `seam.live` itself for its duration.
 A nil `live` never reaches the resolution.
 
-`TestCreelCLI` gains rows over the rig's hub with a beam `b`, a member pair `m` of `b` and a pair `p` forked from the prime (`hubforge.AddPairWith`), orch state seeded with `orchroute.Paths` and `orchengine.SaveState`, and the resolved orch names listed as strands on the rig's fake delivery:
-from `p` the post goes to the prime's orch; from `m` with `b`'s orch live it goes to `b`'s orch; from `m` with `b`'s orch not live it goes to the prime's orch; from `b` with its orch live it goes to `b`'s own orch; each row asserts the envelope's `receiver` and the message's holder through `creel log`.
+`TestCreelCLI` gains one resolution row over the rig's hub with a beam `b`, orch state seeded with `orchroute.Paths` and `orchengine.SaveState`, and `b`'s orch name listed as a strand on the rig's fake delivery:
+from `b` with its orch live the post goes to `b`'s own orch, running `orchroute.Asker`'s beam branch through the CLI; the row asserts the envelope's `receiver` and the message's holder through `creel log`.
+The pair walks, from a pair forked from the prime and from a beam's member pair with the beam's orch live and not live, are `TestAsker`'s (card 1) and `internal/orchcli#TestParentOrchStrand`'s; this row pins only the `--parent` wiring.
 The three refusals above are rows too, asserting exit 1 and the message; the first two run before the rig's daemon starts, and the row then starts it and reads `creel log` to assert that no `posted` event was journaled.
 `internal/creelcli/doc.go` adds the `--parent` form and its resolution rule to the post paragraph, and `post`'s Long help gains the form and an example.
 

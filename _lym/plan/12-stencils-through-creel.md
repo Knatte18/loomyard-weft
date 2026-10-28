@@ -14,6 +14,10 @@
 - `internal/seatengine/testdata/smoke-advisor.md`
 - `internal/orchengine/doc.go`
 
+**Edit:**
+- `internal/seatengine_test#copyTestdataStencil`
+- `internal/seatengine_test#TestSmokeSeatsChairAsksAdvisor`
+
 **Intent:**
 Every stencil site of the stencil audit's block 7 moves from `SendMessage` to a creel verb, Claude-to-Claude included, so one route serves every engine (D2, D4, D5); every question site carries `--expect-reply`.
 
@@ -34,7 +38,9 @@ Every stencil site of the stencil audit's block 7 moves from `SendMessage` to a 
 - `orch-template-role.md` (D5): the `## Messaging` section says the orch reaches an agent with `lym creel post <strand> "<text>"`, adding `--expect-reply` to a question, answers creel mail with `lym creel post --reply <id> "<text>"`, lists strands with `lym reed list`, never types into a pane and never puts a question that wants an answer in an inject; every message to a working agent still ends with the tail `TestStencils_NameGoValues` pins.
   A hold notice is answered with `lym creel post --reply <id>` when the held agent's marked question is in the orch's mail, and by a post to the strand the notice names only when none is pending.
 - The seat smoke fixtures `smoke-chair.md` and `smoke-advisor.md` move to the same wording: the chair asks with `lym creel post --expect-reply`, the advisor answers with `lym creel post --reply`.
+  `internal/seatengine/smoke_seats_test.go`'s file header and the comment in `TestSmokeSeatsChairAsksAdvisor` above the advisor's history polling name creel mail in place of the session channel and `SendMessage`; the header sits outside any member, so the card lists every member of the file.
 - `internal/orchengine/doc.go`'s residual and open-risk notes about `SendMessage` across `/clear` restate for creel mail: creel mail handed over between the handoff turn's end and `/clear` is lost from context like any text of that turn, while mail still unread stays in the pool for the cleared session, and the strand name stays the creel address across `/clear`.
 
 No stencil names `SendMessage` after this card but the webster fork-addressing line, which card 16's scan allowlists.
 
+**ImpactSummary:** Stencil and fixture wording and the seat smoke test's comments; no Go behavior change.
