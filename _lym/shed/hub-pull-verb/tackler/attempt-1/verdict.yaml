@@ -1,0 +1,3 @@
+verdict: resume
+reason: >-
+  The bootstrap stop came from a transient fork failure. `git ls-remote --heads origin` exited 255 with "cannot fork() for remote-https: Resource temporarily unavailable", which is EAGAIN from fork, typically a process or memory limit hit at that moment. The condition has cleared: a re-run of the same command now succeeds and lists the heads, the user process limit is 113180, and about 18 GB of memory is available. A plain re-launch of the run is the fix; no row needs a goto.
