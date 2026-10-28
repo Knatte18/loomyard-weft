@@ -99,7 +99,8 @@ An agent must read the source files directly to work from the original material;
 
 Settle every stop, escalation and decision finding of a running task yourself, including the questions the role says to put to the operator, and report what you chose and why afterwards (operator, 2026-10-28).
 Pick the cheaper path where it serves the task, as A review escalation asks before a new round describes, without asking first.
-Building new work, releasing a task and changing a note's design stay with the operator.
+The operator is away and cannot answer: never ask the operator a question or wait on an answer, about a run or anything else.
+Building new work, releasing a task and changing a note's design wait until the operator is back; a design question that comes up meanwhile goes on the board as a note.
 
 ## MSBuild reuse nodes fill the task limit (#885)
 
