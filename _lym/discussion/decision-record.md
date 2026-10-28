@@ -22,6 +22,18 @@ The result is a research report at `docs/research/creel-hook-channels-<date>/rep
   Rationale: the operator cannot be present, so the capture stands in for watching.
 - A case that cannot run, such as a usage limit, is reported as not run with the error, never inferred from the docs.
 
+### Added after Discussion (parent, 2026-10-28): Case 3 tests a draft in the input box
+
+Decision: In case 3, type a half-written draft into the idle session's input box (without submitting it) before the file that triggers the asyncRewake hook is written. Record whether the session wakes and starts a turn, and what happens to the draft: kept in the box, submitted, mixed with the message or lost. Capture the pane before and after.
+
+Rationale: The operator's draft in the box is what stalls today's pane delivery (creel's draft stall); delivery under the hood is only better if a draft neither blocks it nor gets mixed with it (operator, 2026-10-28).
+
+### Added after Discussion (parent, 2026-10-28): Turn ends are read from a Stop hook, not the pane
+
+Decision: From case 2 on, each test session's settings carry a Stop hook that appends a line to a file, and the wait for a turn end watches that file instead of matching the prompt glyph in the pane. Pane captures stay, for what the operator sees.
+
+Rationale: Case 1's wait matched the prompt glyph with a plain space while Claude Code prints a no-break space, so it never ended; lym itself reads turn ends from the Stop hook (operator, 2026-10-28).
+
 ## Constraints
 
 - `CLAUDE.md`: agents run in interactive tmux, never `claude -p`; no production deploy; no push; markdown with semantic line breaks.
