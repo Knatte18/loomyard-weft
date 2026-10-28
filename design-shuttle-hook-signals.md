@@ -2,7 +2,7 @@
 
 `shuttle-hook-signals` · Task · bug, shuttle, batten, shed, reed, claude
 
-Depends on: [`usage-limit-wake`](design-usage-limit-wake.md), [`compact-inject-draft`](design-compact-inject-draft.md)
+Depends on: [`compact-inject-draft`](design-compact-inject-draft.md)
 
 Claude Code hooks give shuttle signals it now guesses from panes and pids; this task puts them to use.
 Creel already renders hooks into each Claude session's `settings.json` (`creel-hook-post`), so new entries ride the same path.
