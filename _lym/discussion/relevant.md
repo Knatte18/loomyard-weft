@@ -1,0 +1,21 @@
+# Relevant files
+
+- `docs/research/review-setup-audit-2026-10-28/report.md` — the measurements and recommendations the task builds
+- `internal/lenses/template.yaml` — every lens's prose and every fan the task changes
+- `internal/lenses/sets/csharp.yaml` — the csharp layer's `review-code` fan that names `code-pattern-fit`
+- `internal/lenses/doc.go` — the lenses module's resolution, reconcile and `ResolveFan` refusal rules
+- `internal/lenses/config_test.go` — pins fan sizes and orders, and the writer-covers-reviewer check D2 changes
+- `internal/lenses/fankeys.go` `FanList`, `ValidateFanKeys` — how `""` decodes as a solo round
+- `internal/loomengine/config.go` `ConfigSpec`, `ConfigOpenMaps` — classifies `code_reviewer_fan` as a guard
+- `internal/loomengine/template.yaml` — the default `code_reviewer_fan` and the other fan keys
+- `internal/loomengine/discussiontable_test.go` — uses `goal-scope` as a fixture lens name
+- `internal/configreg/runsettings.go` `checkLocalDocument` — checks profile blocks and run settings through `ValidateLocal`
+- `internal/configengine/layers.go` `Category` — the guard category's meaning
+- `internal/runprofile/template.yaml` — the `light` and `docs` profiles D6 changes
+- `internal/runprofile/doc.go` — describes the starting profiles
+- `pattern/PATTERN-config-layers.md` — the Guard category text D5 departs from
+- `contracts/stencils/loom/loom-rubric-code-review.md` — the rubric bullets the code lenses apply
+- `docs/dotnet-hub.md` — the Models hub's `review-code` fan example naming `code-pattern-fit`
+- `docs/overview.md` — the loom config line that calls every fan key closed to the local layer
+- `internal/configsync/configsync.go` `formerLoomValues`, `stripToSparse` — the former-value strip, which never runs on a local file
+- `internal/configreg/runsettings_test.go` — pins the retired darn fan keys moving onto `code_reviewer_fan` and being refused today
