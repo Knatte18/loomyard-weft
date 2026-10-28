@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-28 11:49 UTC; every age below is as of then.
+Rendered 2026-10-28 11:50 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -39,14 +39,14 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Creel delivers every post to a Claude strand through hooks, visibly and in full**<br>• PostToolUse, Stop and asyncRewake hooks carry posts as fast as possible; shuttle appends a trust and reply sentence to the system prompt | [`creel-hook-post`](design-creel-hook-post.md) | loom | Webster | neve | 5d<br>2h | creel, shuttle, claude |
-| T2 | **Gate and agent runs survive transient task-limit pressure and run in the anchor**<br>• `profile: solid` | [`gate-robustness`](design-gate-robustness.md) | darn | Darn-Write | neve | 16m<br>8m | gate, shuttle, dotnet, batten, loom |
+| T2 | **Gate and agent runs survive transient task-limit pressure and run in the anchor**<br>• `profile: solid` | [`gate-robustness`](design-gate-robustness.md) | darn | Darn-Write | neve | 16m<br>9m | gate, shuttle, dotnet, batten, loom |
 | T4 | **Machine checks in validate-discussion and validate-plan for recurring review findings**<br>• Citation and acceptance checks for the decision record; seam-test, tier-tag and doc.go checks for plan cards<br>• `profile: solid` | [`validator-checks`](design-validator-checks.md) | loom | Plan-Burler-Review | neve | 1h<br>1h | loom, stencil |
-| T6 | **A transient fork EAGAIN or died tmux session does not end a loom run hard**<br>• `profile: solid` | [`transient-halt-recovery`](design-transient-halt-recovery.md) | darn | Darn-Write | neve | 16m<br>8m | loom, shed, shuttle, reed, fabric |
-| T7 | **lym loom resume names prior work and honours a recorded wait decision** | [`resume-fixes`](design-resume-fixes.md) | darn | Darn-Write | neve | 16m<br>8m | loom, shed |
-| T8 | **Webster recovery has a way forward, and its audit accepts a sanctioned gate test** | [`webster-recovery`](design-webster-recovery.md) | darn | Darn-Write | neve | 15m<br>8m | webster |
-| T9 | **Burler fork audit reads a listing git branch as read-only** | [`fork-audit-branch-list`](design-fork-audit-branch-list.md) | darn | Code-Burler-Review | neve | 16m<br>8m | burler |
-| T10 | **Comment lint ignores a legacy wrapped paragraph changed only by a word rename** | [`comment-lint-rename`](design-comment-lint-rename.md) | darn | Code-Bouncer | neve | 15m<br>8m | loom |
-| T11 | **A racing async push reports no divergence that is already gone** | [`async-push-race`](design-async-push-race.md) | darn | Darn-Write | neve | 15m<br>8m | fabric |
+| T6 | **A transient fork EAGAIN or died tmux session does not end a loom run hard**<br>• `profile: solid` | [`transient-halt-recovery`](design-transient-halt-recovery.md) | darn | Darn-Write | neve | 16m<br>9m | loom, shed, shuttle, reed, fabric |
+| T7 | **lym loom resume names prior work and honours a recorded wait decision** | [`resume-fixes`](design-resume-fixes.md) | darn | Darn-Write | neve | 16m<br>9m | loom, shed |
+| T8 | **Webster recovery has a way forward, and its audit accepts a sanctioned gate test** | [`webster-recovery`](design-webster-recovery.md) | darn | Darn-Write | neve | 16m<br>9m | webster |
+| T9 | **Burler fork audit reads a listing git branch as read-only** | [`fork-audit-branch-list`](design-fork-audit-branch-list.md) | darn | Code-Burler-Review | neve | 16m<br>9m | burler |
+| T10 | **Comment lint ignores a legacy wrapped paragraph changed only by a word rename** | [`comment-lint-rename`](design-comment-lint-rename.md) | darn | Code-Burler-Review | neve | 16m<br>9m | loom |
+| T11 | **A racing async push reports no divergence that is already gone** | [`async-push-race`](design-async-push-race.md) | darn | Darn-Write | neve | 16m<br>9m | fabric |
 
 ### Ready (0)
 
@@ -79,7 +79,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Beam promote keeps the Discussion record as part of the beam**<br>• When Discussion finds a task should be a project, promote carries its decision record into the beam instead of dropping it | [`beam-promote-keeps-discussion`](design-beam-promote-keeps-discussion.md) | 2d<br>1d | workspaces, batten, loom |
 | E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>20h | shuttle, codex |
-| E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 20h<br>17h | batten, stencil, config |
+| E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 20h<br>18h | batten, stencil, config |
 | E5 |  | **Decide the layout of projects in the board README**<br>• The operator is not satisfied with how the README renders projects and their members; the layout is to be decided | [`board-projects-layout`](design-board-projects-layout.md) | 3d<br>21h | board |
 | E6 |  | **Board README: one rendered file per project, research notes first**<br>• Each project renders its own file linked from its parent; README.md is the root project; research notes come right after tasks | [`readme-per-project-files`](design-readme-per-project-files.md) | 2d<br>20h | board |
 | E7 |  | **Run verbs in one shared namespace, not under lym loom**<br>• lym loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 13d<br>1d | shed, loom |
