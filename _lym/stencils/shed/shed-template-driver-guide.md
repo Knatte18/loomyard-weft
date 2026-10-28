@@ -2,7 +2,7 @@
      The driver stencil points at it by its deployed path through its guide_path marker and never paraphrases it; the guide is not an opening stencil and joins no role's list.
      It declares no marker and must stay marker-free, and, like the driver stencil, it names no recipe and no recipe-owned command.
      Refusal text and its ways forward live in the refusal messages, never restated here.
-lym-stencil: sha256=38197a20759cf4e75c1fd3fc6b3bcfb217491ee308ae4b193dcfa32850c05c39 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+lym-stencil: sha256=6d9de5cb1e2472eeee4ecacf575532c5598a5f2e432ab7657689017518869831 build=71a46b116782d6d26b494fb5f745efa8a50d756d time=2026-10-28T10:55:47Z -->
 
 # Repair guide for a stopped run
 
@@ -65,8 +65,8 @@ The `reinvoke` sub-case counts toward the cap.
 
 The watch is a background shell loop that resolves the `lym` executable once, checks its modification time about once a minute, and exits when it changes.
 It never runs a long-lived `lym` process, which would block a deploy's overwrite on Windows.
-When it exits, read `lym shed status <run-id>` once, and re-step only if `binary_changed` is true, the clean-tree guard passes and `hand_back` is false; otherwise re-arm the watch.
-A stop marked `hand_back` starts no watch and is handed back to the parent.
+When it exits, read `lym shed status <run-id>` once, and re-step only if `binary_changed` is true, the clean-tree guard passes and neither `hand_back` nor `restep_hold` is true; otherwise re-arm the watch.
+A stop marked `hand_back` starts no watch and is handed back to the parent; a stop marked `restep_hold` starts no watch and goes to the arbiter first.
 A watch job that ends by the harness timeout is re-armed, never read as a resume.
 
 ## Interrupted invocations

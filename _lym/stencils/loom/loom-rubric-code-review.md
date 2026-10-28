@@ -6,7 +6,7 @@
      It is a marker VALUE, never a template -- it carries no top-level stencil markers of its own, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lym-stencil: sha256=fa5f1d4d5020b16ae795b6c3189970160cfa8a47a60f43113b773e766e40168d build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+lym-stencil: sha256=a466179b8700f05bd4cf0aa924ac371c02dc7c9845ed2df92b938bfd63297f87 build=71a46b116782d6d26b494fb5f745efa8a50d756d time=2026-10-28T10:55:47Z -->
 
 # Code-Review rubric
 
@@ -116,7 +116,7 @@ When the note above is not `none`, this round reviews an amendment: review only 
 
 ## Review input
 
-When the amendment note names a review input, that file is a report written after this perch last settled: the merge fixer's report of the latest Parent-Align, or the overlap note of a Finalize reroute.
+When the amendment note names a review input, that file is a report written after this perch last settled: the merge fixer's report of the latest Parent-Align.
 Read it as an input besides the diff: judge from it whether the alignment it reports, and the parent changes it names, keep the code consistent with the answer key.
 A finding about the report itself is never raised; each finding is about the code.
 
