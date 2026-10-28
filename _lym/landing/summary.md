@@ -1,50 +1,37 @@
-# A landed cycle command reads as injected; mail wakes every idle strand
+# Fix idle /compact inject failing on box text; pane-mail non-hook strands
 
-Two faults in creel's delivery into an idle orch strand are fixed.
-A `/compact` that the session took could be journaled `unconfirmed`.
-Mail to a Claude strand launched without creel's hooks could sit unread with no ring, bell or reminder.
+The orch watcher's `/compact` cycle inject into an idle orch was journaled `unconfirmed`, then stalled on a `draft`.
+The transcript and the creel journal show the `/compact` was submitted 150 ms after creel's `sending` record, so the suspected race with the `hook-wait` waiter did not occur; that session's settings carried no waiter.
+The confirmation failed because the operator had typed into the input box during the compaction, and `confirmPasted` read that text as `ErrForeignBoxText`.
+The `draft` stall was the operator's own text.
+
+The same run folds in the delivery gap behind #899: a Claude strand without `CreelHooks` fell into neither the hook branch nor the pane path, so its mail sat unread until a tool call or a hand read.
 
 Closes #897
 Closes #899
 
-## What happened in #897
-
-The orch's records show that the watcher's `/compact` did land.
-The Claude transcript records it submitted at 13:44:06.083, 150 ms after creel's `sending` record for inject #107.
-The compaction ran until 13:44:43.
-The orch session ran settings from 2026-10-27 with no `hook-wait` entry, so the suspected `asyncRewake` race could not have happened.
-While the compaction ran, the operator typed into the input box.
-Shuttle's paste confirmation, still waiting for the compaction's session start, read that draft as foreign box text and failed with `ErrForeignBoxText`.
-Creel maps that error to `ErrNotLanded` and journaled #107 `unconfirmed`.
-The later `draft` stall was the operator's own text, and the cycle went on: color, plugins and the resume line went in at 13:45:15–19.
-
 ## What changes
 
-- Shuttle (`confirmPasted`): a send that confirms on a session start, which covers `/compact` and `/clear`, counts as submitted once its box reads empty after the paste.
-  From then on, any box text and any unreadable box are read again with no key sent, and the end of the submit window confirms the send, as an empty box already did.
-  A send that never read its box empty keeps today's rules: Enter for its own text, `ErrSentTextInDraft` for its text beside a draft, and `ErrForeignBoxText` for other text.
-- Creel: `Strand.PaneMail` and `creelcli`'s `hasHookDelivery` are gone.
-  A strand marked `CreelHooks` is rung or belled, and every other strand gets the notice and the reminder, whatever its provider.
-  Before this, a strand whose provider renders hook delivery but whose session lacked it fell into neither branch.
-  Such strands are a Claude session launched before `creel-hook-post`'s deploy, a `lym shuttle open` session and a hand-added Claude strand.
-  For the orch in #899 that meant mail #106 from `ly:ORCHWATCH` sat unread about 90 seconds.
-- Docs: `shuttleengine`, `creelengine` and `docs/overview.md` state both rules.
+- `internal/shuttleengine`: a send with a `landingStart` (`/compact`, `/clear`) that has read its input box empty after the paste now counts as submitted.
+  From then on a box holding any text, or no readable box, is read again and no key is sent; a window or read cap that runs out returns nil instead of failing.
+  A send that has not read its box empty keeps the existing rules, including `ErrSentTextInDraft` and `ErrForeignBoxText`.
+- `internal/creelengine`: `Strand` loses its `PaneMail` field.
+  The delivery probe rings or bells a strand marked `CreelHooks` and types the notice or the reminder into every other strand, whatever its provider.
+- `internal/creelcli`: `hasHookDelivery` and its provider lookup are removed; the hub delivery no longer computes `PaneMail`.
+- Docs follow in `internal/shuttleengine/doc.go`, `internal/creelengine/doc.go`, `docs/overview.md` and the `lym creel` help and refusal texts.
 
-## Design decisions to review
+## Design decisions
 
-- After the box has read empty once, shuttle accepts a landing send without reading what comes next.
-  The evidence standard is the same one every other paste already lands on.
-  It never sends a key afterwards, so an operator's draft is never submitted or cleared.
-- Creel removes a field rather than deriving it from `CreelHooks` in `creelcli`, so no caller can set the two apart again.
-  A strand with an older tool-boundary claim hook may still claim mail at a tool call.
-  The pane path reserves a notice before it types it, so each message is delivered once, and agent mail stays reminder-only.
-- Out of scope: retyping a command inject creel journaled `unconfirmed`, since the one in #897 had landed and a retype would compact twice.
-  The orch watcher's handling of `unconfirmed` also stays unchanged: it already waits for the compaction boundary.
+- The shuttle change is provider-neutral; nothing Claude-specific leaves `claudeengine`.
+- An empty box after the paste is the evidence every other paste already lands on, and text arriving after it is a new draft, never this send's.
+  The change never sends a key after that read, so an operator's draft is never submitted or cleared.
+- A landing send whose box shows foreign text on its very first read, before any empty read, still fails `ErrForeignBoxText`.
+- A Claude strand without `CreelHooks` gets a typed notice for program and operator mail again, and a session with the older claim hook may also claim it at a tool boundary.
+  The notice is reserved before it is typed and a claim reserves before it hands out, so each message is still delivered once; agent mail stays reminder-only.
+- Out of scope: the orch watcher's handling of an `unconfirmed` cycle step, and retyping an inject creel journaled unconfirmed.
 
 ## To check by hand
 
-- Run a live `/compact` cycle on the orch while typing into its box during the compaction, and check that `lym creel log` shows the compact inject `injected`.
-- Post to an orch strand launched before the hook delivery while it is idle, and check that the notice is typed.
-- During this work, `TestCreelCLI`'s EXTERNAL row failed twice under a loaded machine.
-  It then passed alone, as the whole test three times, as the whole package twice and in the final scoped `--upto 2` run.
-  Its assertions read nothing the change touched, so check whether it flakes under load.
+Not run: the real-session behavior in tmux.
+Inject `/compact` into an idle orch, type text into its box during the compaction, and confirm the send is journaled `injected` and the typed text is left as a draft.
+Mail an idle Claude strand launched without `CreelHooks` and confirm its notice and reminder are typed.
