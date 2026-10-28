@@ -64,7 +64,22 @@ Every fork returned a report.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1 — APPROVED, six findings fixed
+
+- F1, MEDIUM: `board-scope` stays a procedure lens ending in its list, and the template header and `TestConfigTemplate`'s emphasis-line exemption widen to name it; the Constraint and D1's acceptance line follow.
+  The first fix ended it with the emphasis line, which the self-check found contradicts its report-only rule.
+- F2, LOW: `speed`'s loom block runs the code review solo too, listed under Auto-mode assumptions and named in Goal, Scope and Open risk 1; its `darn` and `pawl` blocks run no code round and set no fan.
+- F3, LOW: D5 and its acceptance line name loom's retired `webster_reviewer_fan` and `webster_fan` as admitted routes under the same bound.
+- F4, LOW: D7 drops loom's `template.yaml` and `internal/configcli/doc.go`, which hold no closed-to-local text.
+- F5, LOW: the deleted-lens Open risk separates a reviewer or fixer fan key, failing at load, from `discussion_lenses` and `plan_lenses`, failing at the writer lead.
+- F6, NIT: D6 says `solid` and `wide` take the hub's `code_reviewer_fan`.
+
+### Round 2 — APPROVED, four findings fixed
+
+- F1, MEDIUM: `way-forward` leaves `review-plan`, its one procedure fan, so D2 has its prose gain the emphasis line, as `coverage`, `row-validity` and `forced-edits` end, and D2's acceptance line checks it.
+- F2, LOW: D5's third Bound bullet says the local layer can point the code review at any defined fan, not only solo, and names the whole-diff read under the rubric as the floor.
+- F3, LOW: Auto-mode assumptions list D1's `review-discussion` pick, dropping `goal-scope` and `board-fit` with no replacement.
+- F4, NIT: D5 says loom's `MigrateConfig` renames the retired webster keys in `PrepareRunSettings` and in a reconcile, and a hand-edited local file holding one is refused at load until a reconcile migrates it.
 
 ## Question ledger
 
