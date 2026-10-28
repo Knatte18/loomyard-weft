@@ -1,6 +1,6 @@
 {
   "runGuid": "ab14928b30c90aa13ca8e708758348eb",
-  "planFingerprint": "fec7226ad0e7b997cb40a49b10f677db20b3b0131fc3fe37f5f311ebcadfffd3",
+  "planFingerprint": "de7c19e5b0863ded6bc157bc73f8f6febaf167e0a5b357cfd223ead67b8cd2d2",
   "planFileHashes": {
     "00-overview.md": "d69adde87fd7eeeb16fcfa49e9afb99d74b5c325237eeb0ef098bf4c4adbd3d2",
     "01-decision-id-check.md": "f747571fe48a7b08a3e5fbb721f0d4d8cf7da7b8b88dd23df8a6002acd2b3d10",
@@ -9,9 +9,9 @@
     "04-citation-check.md": "b966043cc0eacdec918d37d07246b912fd6bb946e994f92a776d6762ff5f8a03",
     "05-seam-marker-parser.md": "1a0e242fc3fab80c0d97297d72da1798e87556dec51fc662514d30b187e7a50b",
     "06-seam-marker-scan.md": "1e42d6994b8c4f715edc1ef71804e74c000671df339879226b3495a88e6ca03e",
-    "07-test-tier-check.md": "524c85417c50c6a62b0be9f08731a35264e65c766fc78a9c7f4eb4697efdeb90",
-    "08-seam-test-check.md": "60a222a734949e470f5e7c86479ccd3cfbf38d533de0bc7ba03a68fe2a67752d",
-    "09-doc-go-check.md": "799afe395fb121216adb2881db25eb3622576fb1c69f82b7000b8a141bf35827"
+    "07-test-tier-check.md": "867d8d87c7033b4b5a1e4ba3f3b4cc1555b0b64bac11d45c70744fa3c0b7d5a4",
+    "08-seam-test-check.md": "30cb8f3865a37bbf8c64a2c07b3a9abae471c926625a0c7a15e5298792a1696d",
+    "09-doc-go-check.md": "6c962b2d99fcf8518c3b666734fac78989d7bab9792b822927f4dcaa3f00ad09"
   },
   "planOverviewFrameHash": "5a9eeef12f102a6723cc569bec4a81aa3c9f17a29500cb8347bf92efcec52654",
   "partition": [
@@ -265,7 +265,7 @@
       }
     }
   ],
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "f0f9e821405dbcc4fa3d18778115c4c1",
   "masterSessionId": "a974a700-ac33-4fb5-bf0c-229ce203acc3",
   "masterEngine": "claude",
@@ -358,21 +358,43 @@
         "09-doc-go-check"
       ],
       "cardHashes": {
-        "07-test-tier-check": "524c85417c50c6a62b0be9f08731a35264e65c766fc78a9c7f4eb4697efdeb90",
-        "08-seam-test-check": "60a222a734949e470f5e7c86479ccd3cfbf38d533de0bc7ba03a68fe2a67752d",
-        "09-doc-go-check": "799afe395fb121216adb2881db25eb3622576fb1c69f82b7000b8a141bf35827"
+        "07-test-tier-check": "867d8d87c7033b4b5a1e4ba3f3b4cc1555b0b64bac11d45c70744fa3c0b7d5a4",
+        "08-seam-test-check": "30cb8f3865a37bbf8c64a2c07b3a9abae471c926625a0c7a15e5298792a1696d",
+        "09-doc-go-check": "6c962b2d99fcf8518c3b666734fac78989d7bab9792b822927f4dcaa3f00ad09"
       },
       "startSha": "d7fce7ac6f5da3bb58447076e2d0c4ad63e5f468",
       "kind": "fork",
       "spawnedAt": "2026-10-28T13:18:04Z",
       "sessionId": "a974a700-ac33-4fb5-bf0c-229ce203acc3",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-test-tier-check",
+        "status": "done",
+        "head_sha": "8a7208e147115255f866385093dfe68df010db00",
+        "deviations": [
+          "internal/loomcli/parity_test.go",
+          "internal/loomshed/docgo.go",
+          "internal/loomshed/seamtest.go",
+          "internal/loomshed/testtier.go",
+          "internal/shedrecipe/fixture_test.go"
+        ]
+      },
+      "cardShas": [
+        "8a7208e147115255f866385093dfe68df010db00"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-validator-checks/a974a700-ac33-4fb5-bf0c-229ce203acc3/subagents/agent-ac31f1525096c98de.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-validator-checks/a974a700-ac33-4fb5-bf0c-229ce203acc3/subagents/agent-ac31f1525096c98de.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-validator-checks/a974a700-ac33-4fb5-bf0c-229ce203acc3/subagents/agent-a017c16177f9f8720.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-validator-checks/a974a700-ac33-4fb5-bf0c-229ce203acc3/subagents/agent-a91d390579ff32cee.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-validator-checks/a974a700-ac33-4fb5-bf0c-229ce203acc3/subagents/agent-a91d390579ff32cee.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-validator-checks/a974a700-ac33-4fb5-bf0c-229ce203acc3/subagents/agent-ac31f1525096c98de.jsonl"
   ]
 }
