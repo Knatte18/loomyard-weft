@@ -1,12 +1,12 @@
 {
-  "current_producer": "Run-Shed",
-  "state": "failed",
-  "error": "battencli: cannot verify this is the hub's prime worktree: resolve main worktree: list git worktrees in \"/home/knatte/Code/loomyard-LYMHUB/loomyard\": fork/exec /usr/bin/git: resource temporarily unavailable",
+  "current_producer": "Land",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Run-Shed",
-    "last": "Open-IDE → skipped",
-    "wait": "battencli: cannot verify this is the hub's prime worktree: resolve main worktree: list git worktrees in \"/home/knatte/Code/loomyard-LYMHUB/loomyard\": fork/exec /usr/bin/git: resource temporarily unavailable"
+    "now": "Land",
+    "last": "Run-Shed → done",
+    "wait": ""
   },
   "history": [
     {
@@ -43,6 +43,23 @@
       "output": "",
       "at": "2026-10-28T09:30:01Z",
       "reason": "batten.open_ide = false",
+      "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → done at Friction-Reflect",
+      "at": "2026-10-28T10:18:47Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "by": "shed",
+      "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-28T10:18:51Z",
       "machine": "neve"
     }
   ]
