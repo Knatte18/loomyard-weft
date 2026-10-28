@@ -5,7 +5,7 @@
 Codex CLI is the candidate second engine for shuttle, to offload Claude token use: Loomyard spawns hundreds of agents a day (operator, 2026-10-13), and Codex is more relevant to support than Gemini (operator, 2026-10-03).
 The hands-on spike is done: `docs/research/codex-spike-2026-10-24/report.md` holds every finding, a proposed launch line, a pane classifier table and a send sequence.
 The stencil audit is done too: `docs/research/stencil-engine-audit-2026-10-24/report.md` proposes 13 include blocks over 127 stencil sites, 8 spec sites and 35 Go sites; blocks await-completion, message-agent and session-lifecycle have no tested Codex answer, and an engine-keyed choice of include set at render time is missing.
-Its `Not tested` section stays open: billing under a ChatGPT login, `codex exec`, `Tab` queueing, a `PermissionRequest` `allow` decision and `~/.agents/skills`.
+Its `Not tested` section stays open: billing under a ChatGPT login, a `PermissionRequest` `allow` decision and `~/.agents/skills`; `codex exec` and `Tab` queueing are covered by `docs/research/codex-hook-delivery-2026-10-28/report.md` (task `codex-hook-spike`): `codex exec` runs the same `post_tool_use` and `Stop` hooks, and a `Tab`-queued line reaches the model after the turn ends, not at the next step.
 
 ## Design basis (operator view, not a decision, 2026-10-24)
 
