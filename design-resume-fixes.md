@@ -1,6 +1,6 @@
 # lym loom resume names prior work and honours a recorded wait decision
 
-`resume-fixes` · Task · bug, loom, shed · running · Darn-Write
+`resume-fixes` · Task · bug, loom, shed · running · Drift-Verify
 
 ## lym loom resume re-spawn prompt names prior work as (none) although the branch holds the first spawn's commit (was note `resume-prompt-prior-work-none`)
 
