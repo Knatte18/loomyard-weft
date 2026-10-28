@@ -1,6 +1,8 @@
-# Comment lint flags every line break of a legacy wrapped paragraph after a pure word rename
+# Comment lint ignores a legacy wrapped paragraph changed only by a word rename
 
-`comment-lint-rename-breaks` · Note · enhancement, loom
+`comment-lint-rename` · Task · enhancement, loom · draft
+
+## Comment lint flags every line break of a legacy wrapped paragraph after a pure word rename (was note `comment-lint-rename-breaks`)
 
 Imported from [issue #881](https://github.com/Knatte18/loomyard/issues/881).
 
@@ -15,3 +17,4 @@ This is abnormal because the findings point at comment wrapping the change never
 Suggested fix: compare word pairs modulo the rename, or ignore a break whose surrounding line text is otherwise unchanged apart from the renamed word.
 
 Provenance: task `rename-binary-lym`; notes `Darn-Write.md`, `loom-halt.md`.
+

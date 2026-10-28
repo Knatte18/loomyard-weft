@@ -1,6 +1,8 @@
-# Loom halts on transient fork/exec EAGAIN and records an opaque exit status 2 for the sibling halt
+# A transient fork EAGAIN or died tmux session does not end a loom run hard
 
-`loom-halt-on-transient-eagain` · Note · bug, loom, shed, fabric
+`transient-halt-recovery` · Task · bug, loom, shed, shuttle, reed, fabric · draft
+
+## Loom halts on transient fork/exec EAGAIN and records an opaque exit status 2 for the sibling halt (was note `loom-halt-on-transient-eagain`)
 
 Imported from [issue #886](https://github.com/Knatte18/loomyard/issues/886).
 
@@ -28,7 +30,7 @@ Two loom halts were recorded within a second of each other (09:41:18Z and 09:41:
 Provenance: task `review-setup-audit`; notes `loom-halt.md`, `loom-halt-2.md`.
 
 
-## From issue #891
+#### From issue #891
 
 Imported from [issue #891](https://github.com/Knatte18/loomyard/issues/891).
 
@@ -42,3 +44,19 @@ A paused state with no reason leaves the operator and driver unable to tell whet
 What to do: make the `interrupted-stop` halt note always name the trace file and the exiting command, and record a reason whenever a run is left `paused`.
 
 Provenance: task `hub-pull-verb`; notes `loom-halt-2.md`, `go-driver-paused.md`.
+
+## Loom run fails hard when the producer's tmux session dies after a fork EAGAIN (was note `died-after-tmux-eagain-transient`)
+
+Imported from [issue #890](https://github.com/Knatte18/loomyard/issues/890).
+
+What happened: during `lym loom step` at the `Darn-Write` producer (seats engine), the trace shows `reed: tmux could not be started, retrying` with `fork/exec /usr/bin/tmux: resource temporarily unavailable`.
+About ten seconds later shuttle reported `state=dead cause=process-gone`, the run finished with `outcome=die`, and the step was refused with `shedadapters: Darn-Write (seats): shuttle run outcome died` and an empty `transient` field.
+The loom halted as `failed` with anomaly `producer-hard-failure`.
+
+Why it is abnormal: the death coincides with a transient host resource shortage, yet the refusal carries no transient marker, so the run went to a terminal `failed` state instead of a retry or a resumable pause.
+The halt note gives no hint that resource exhaustion preceded the death.
+
+What to do: decide whether a `died` chair outcome that follows a tmux fork EAGAIN should be classed as transient, and either retry or surface the tmux error in the halt note.
+
+Provenance: task `hub-pull-verb`; notes `loom-halt.md`.
+

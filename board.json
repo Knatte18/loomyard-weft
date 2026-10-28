@@ -741,7 +741,7 @@
       "isolated": false,
       "brief": "Citation and acceptance checks for the decision record; seam-test, tier-tag and doc.go checks for plan cards",
       "body": "## Seen\n\n`docs/research/review-setup-audit-2026-10-28/report.md` (section 3) classed the gating Discussion and Plan findings and found themes a machine check could stop before a reviewer spends a round on them.\nThe operator agreed with its recommendations (2026-10-28); this task builds the checks.\n\n## Design\n\n`lym loom validate-discussion`, and the gates of the rows that run it:\n\n- A citation check: every repository path and Go symbol the decision record cites exists.\n- An acceptance check: every decision id appears in at least one acceptance criterion.\n\n`lym loom validate-plan`, and the gates of the rows that run it:\n\n- A card that adds a field to a shared `Deps` or `Env` struct lists the reflective seam tests of that struct.\n- A card that adds a test file states exactly one tier tag for it.\n- A card whose Intent changes a package's behaviour lists that package's `doc.go`.\n\nEach check's refusal names the item it found and what the writer adds to fix it.\nThe Discussion and Plan writer stencils state the new rules, so a writer meets them before the gate does.\n\n## Out of scope\n\n- Lens and profile changes: a task of their own.\n- Checks for the design-interaction and unbounded-edge classes, which the report leaves to the lenses.\n",
-      "status": "running · Plan-Bouncer",
+      "status": "running · Plan-Burler-Review",
       "created": "2026-10-28T10:29:56Z",
       "revised": "2026-10-28T10:29:56Z",
       "profile": "solid"
@@ -769,192 +769,6 @@
       "body": "## Seen\n\nA session's cost grows with its turns times its context.\n`docs/research/turn-audit-2026-10-28/report.md` found that a large share of the heavy roles' turns are single-call turns whose calls did not depend on each other, and edits made one per turn; its section 5 words a sentence per role.\nThe operator agreed with its recommendations (2026-10-28); this task builds them.\nAgents keep reading the source themselves: nothing here hands an agent pre-read or digested source.\n\n## Design\n\n- Add the report's section 5 sentence for each role to that role's stencil: the darn writer, the Webster implementer, the Discussion and Plan writers, the twill lens directive, the burler review step that reads the focus, the burler fixer and the landing fixer.\n  The rule they carry: gather every file and search you can name in one message before the first edit, make independent edits in one message, and run the gate once after the last edit.\n- Shuttle appends one sentence to every Claude agent's system prompt with `--append-system-prompt`: \"Request every call whose arguments you already know in one message, and read what you need before you edit; wait for a result only to choose the next call.\"\n  It sits beside the creel sentence shuttle appends, in one appended prompt.\n\n## Measure\n\nNo bench before the change: the next loom and darn runs after landing are measured against the report's figures by re-running the report's scripts on their transcripts, as a later audit.\n\n## Out of scope\n\n- A `PostToolUse` hook that nudges toward batching; only if the stencil and prompt sentences do not cut enough.\n",
       "created": "2026-10-28T10:29:56Z",
       "revised": "2026-10-28T10:29:58Z"
-    },
-    {
-      "id": 855,
-      "handle": "B2",
-      "slug": "fork-audit-git-branch-list",
-      "title": "Burler fork audit counts a listing git branch as git-mutating",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "burler"
-      ],
-      "issues": [
-        892
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #892](https://github.com/Knatte18/loomyard/issues/892).\n\nSeen: validator-checks failed at Discussion-Burler-Review (round 2 attempt 2, 2026-10-28T11:02Z) because a review fork ran `git branch -a --contains 71a46b11`. internal/burlerengine/cluster.go lists `branch` in mutatingGitSubcommands and only `git tag` gets a list-mode exception, so a read-only branch listing fails the whole review round.\n\nWorkaround: the orch resumed the run with `lym loom resume`, which re-runs the round; a fork that lists branches again fails it again.\n\nExpected: `git branch` counts as mutating only when it creates, deletes, renames, copies or moves a branch or sets its upstream; with no operand, or with list-mode options (-a, -r, -l/--list, --contains, --no-contains, --merged, --no-merged, --points-at, -v, --show-current, --format, --sort), it only reads, as `git tag` list mode already does.",
-      "created": "2026-10-28T11:33:19Z",
-      "revised": "2026-10-28T11:33:19Z"
-    },
-    {
-      "id": 856,
-      "handle": "B3",
-      "slug": "died-after-tmux-eagain-transient",
-      "title": "Loom run fails hard when the producer's tmux session dies after a fork EAGAIN",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "shuttle",
-        "reed",
-        "shed"
-      ],
-      "issues": [
-        890
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #890](https://github.com/Knatte18/loomyard/issues/890).\n\nWhat happened: during `lym loom step` at the `Darn-Write` producer (seats engine), the trace shows `reed: tmux could not be started, retrying` with `fork/exec /usr/bin/tmux: resource temporarily unavailable`.\nAbout ten seconds later shuttle reported `state=dead cause=process-gone`, the run finished with `outcome=die`, and the step was refused with `shedadapters: Darn-Write (seats): shuttle run outcome died` and an empty `transient` field.\nThe loom halted as `failed` with anomaly `producer-hard-failure`.\n\nWhy it is abnormal: the death coincides with a transient host resource shortage, yet the refusal carries no transient marker, so the run went to a terminal `failed` state instead of a retry or a resumable pause.\nThe halt note gives no hint that resource exhaustion preceded the death.\n\nWhat to do: decide whether a `died` chair outcome that follows a tmux fork EAGAIN should be classed as transient, and either retry or surface the tmux error in the halt note.\n\nProvenance: task `hub-pull-verb`; notes `loom-halt.md`.\n",
-      "created": "2026-10-28T11:33:22Z",
-      "revised": "2026-10-28T11:33:22Z"
-    },
-    {
-      "id": 857,
-      "handle": "B4",
-      "slug": "resume-prompt-prior-work-none",
-      "title": "lym loom resume re-spawn prompt names prior work as (none) although the branch holds the first spawn's commit",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "loom",
-        "shed"
-      ],
-      "issues": [
-        889
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #889](https://github.com/Knatte18/loomyard/issues/889).\n\n## What happened\n\nAfter a run halted `blocked` at a producer, `lym loom resume` re-spawned the same producer.\nThe re-spawn's prompt named the prior work as `(none)`, while the branch already held the first spawn's commit and an archived summary.\n\n## Why it is abnormal\n\nThe resumed agent is told there is no earlier work although there is, so it can redo or conflict with existing commits, or miss that the failure it must fix is a gate failure on already-written code.\n\n## What to do\n\nHave the resume path populate the prior-work section of the re-spawn prompt from the branch's existing commits and the archived summary of the earlier spawn.\n\nProvenance: task `regression-harness`; note Darn-Write-2.md.\n",
-      "created": "2026-10-28T11:33:24Z",
-      "revised": "2026-10-28T11:33:24Z"
-    },
-    {
-      "id": 860,
-      "handle": "B6",
-      "slug": "loom-halt-on-transient-eagain",
-      "title": "Loom halts on transient fork/exec EAGAIN and records an opaque exit status 2 for the sibling halt",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "loom",
-        "shed",
-        "fabric"
-      ],
-      "issues": [
-        886,
-        891
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #886](https://github.com/Knatte18/loomyard/issues/886).\n\nTwo loom halts were recorded within a second of each other (09:41:18Z and 09:41:19Z), both as `failed`, one in `Drift-Verify` and one in `Code-Bouncer`.\n\n**What happened**\n\n- The `Code-Bouncer` halt (anomaly `producer-hard-failure`) carries this lym error: `shedadapters: Code-Bouncer (bouncer): read the live subject: fabricengine: read task patch: diff the working tree against \u003csha\u003e: fork/exec /usr/bin/git: resource temporarily unavailable`. That is EAGAIN from the OS while lym spawned `git`, a transient condition.\n- The `Drift-Verify` halt (anomaly `interrupted-stop`) carries only `exited: exit status 2`. The note names no cause, and its history lists `Drift-Verify` as `skipped` even though the halt is attributed to it.\n\n**Why it is abnormal**\n\n- A transient process-spawn failure halts the whole run as `failed` with no retry, so a momentary resource spike costs the run.\n- The two halts share a time window and most likely a root cause, but nothing in the notes links them.\n- The `interrupted-stop` note gives no reason, so the operator must open the trace file to learn what exit status 2 means.\n- The Drift-Verify history entry reads `skipped` while the halt names that producer as the failed one.\n\n**What to do**\n\n- Retry `fork/exec` EAGAIN in the fabricengine git wrapper with a short bounded backoff before surfacing it as a hard failure.\n- Put the underlying cause (the failing command or its stderr tail) into `interrupted-stop` halt notes.\n- Check whether lym itself spawns enough concurrent processes or git calls at the end of `Darn-Write` to exhaust the process limit.\n- Reconcile the history state of a producer the halt blames with the halt note.\n\nProvenance: task `review-setup-audit`; notes `loom-halt.md`, `loom-halt-2.md`.\n\n\n## From issue #891\n\nImported from [issue #891](https://github.com/Knatte18/loomyard/issues/891).\n\nWhat happened: after the `Darn-Write` halt, a later loom entry halted `failed` at `Darn-Write` with `exited: exit status 2`, anomaly `interrupted-stop`, and an empty `trace_file:` field.\nThe history showed `Darn-Write / goto` as the last entry.\nAfterwards the Go driver found the run `paused` at `Darn-Write` with no reason recorded, and wrote only a drive envelope under `_lym/shed/\u003cslug\u003e/drive-reports/`.\n\nWhy it is abnormal: an exit status 2 gives no cause and no trace file to follow, so the halt cannot be diagnosed.\nA paused state with no reason leaves the operator and driver unable to tell whether the pause is deliberate or a leftover of the failed run.\n\nWhat to do: make the `interrupted-stop` halt note always name the trace file and the exiting command, and record a reason whenever a run is left `paused`.\n\nProvenance: task `hub-pull-verb`; notes `loom-halt-2.md`, `go-driver-paused.md`.\n",
-      "created": "2026-10-28T11:33:31Z",
-      "revised": "2026-10-28T11:33:52Z"
-    },
-    {
-      "id": 863,
-      "handle": "E8",
-      "slug": "resume-honours-wait-decision",
-      "title": "lym loom resume re-prompts a producer to fix findings a recorded decision forbids, without checking the awaited task landed",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "loom"
-      ],
-      "issues": [
-        883
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #883](https://github.com/Knatte18/loomyard/issues/883).\n\nA `lym loom` run halted blocked at a producer row after its verify gate failed three attempts in a row, and was resumed with `lym loom resume` before the condition the parent's recorded decision waited on had been met.\n\nThe decision told the run not to fix the failing findings and to wait for another task to land on `main`.\nThe resume re-spawned the producer with a fresh verify budget, and each round re-prompted it with \"fix every finding\".\nThat instruction contradicts the recorded decision, so every round could only end unchanged until the gate exhausted again, and the run halted blocked a second time with anomaly `escalation-to-human`.\n\nThis is abnormal because the resume burned a full verify budget and a producer session on a round known in advance not to converge.\n\nWhat to do:\n- Let `lym loom resume` (or the decision record) carry a \"wait for task X to land\" condition and refuse, or warn, while it is unmet.\n- Or have the re-prompt after a resume include the recorded parent decisions, so \"fix every finding\" does not override them.\n\nProvenance: task `readme-draft-not-ready`; notes Darn-Write.md, loom-halt.md, loom-halt-2.md.\n",
-      "created": "2026-10-28T11:33:38Z",
-      "revised": "2026-10-28T11:33:38Z"
-    },
-    {
-      "id": 864,
-      "handle": "E11",
-      "slug": "comment-lint-rename-breaks",
-      "title": "Comment lint flags every line break of a legacy wrapped paragraph after a pure word rename",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "loom"
-      ],
-      "issues": [
-        881
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #881](https://github.com/Knatte18/loomyard/issues/881).\n\nThe comment lint judges a line break new when the word pair across it is absent from the base text.\nA pure word rename inside a legacy fixed-column-wrapped comment paragraph changes the word pair at every break in that paragraph, so each break becomes a finding although the wrapping was never touched.\n\nA mechanical binary rename run halted at its producer row (`anomaly: escalation-to-human`, `gate did not pass after 3 attempts`) on several hundred such findings in `gate-findings`.\nThe agent cleared them with a second scripted pass that rejoined each flagged paragraph and broke it at sentence ends.\n\nThis is abnormal because the findings point at comment wrapping the change never altered, and the halt cost the whole verify budget.\n\nSuggested fix: compare word pairs modulo the rename, or ignore a break whose surrounding line text is otherwise unchanged apart from the renamed word.\n\nProvenance: task `rename-binary-lym`; notes `Darn-Write.md`, `loom-halt.md`.\n",
-      "created": "2026-10-28T11:33:40Z",
-      "revised": "2026-10-28T11:33:40Z"
-    },
-    {
-      "id": 865,
-      "handle": "B10",
-      "slug": "async-push-race-false-divergence",
-      "title": "A racing async push reports a divergence that is already gone",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "fabric"
-      ],
-      "issues": [
-        879
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #879](https://github.com/Knatte18/loomyard/issues/879).\n\n## Seen (beam-start-and-ownership, 2026-10-26)\n\nWithin minutes, `ly:FABRIC` sent the orch two `not_fast_forward` notices for one run on one machine: first for its code branch, then for its records branch.\nEach way forward named a `git merge` or `git reset --keep`, and the records notice said \"another machine wrote the same paths\" with `paths: none`.\nA fetch right after each notice showed nothing on origin the local branch lacked: a concurrent push had already landed, and the next push was a plain fast-forward.\nTwo asynchronous pushes of the same branch raced, and the loser reported a divergence that no longer existed.\n\n## Idea\n\n- A rejected push fetches origin again before it reports: when origin is now an ancestor of the local tip, it retries the push instead of sending a notice.\n- The notice names another machine only when origin's commits carry another machine's name, and never with `paths: none`.",
-      "created": "2026-10-28T11:33:42Z",
-      "revised": "2026-10-28T11:33:42Z"
-    },
-    {
-      "id": 866,
-      "handle": "B11",
-      "slug": "webster-recovery-circular",
-      "title": "webster recovery way-forward is circular: recover-batch points to accept-audit, which refuses; reset is refused while run.lock is held",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "webster"
-      ],
-      "issues": [
-        878
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #878](https://github.com/Knatte18/loomyard/issues/878).\n\n## What happened\n\nAfter `lyx webster record-batch` failed a batch on fabric-reference audit findings, `lyx webster recover-batch` refused with `needs_fresh` and a way forward of \"`lyx webster accept-audit --batch 6` then `lyx webster recover-batch 6`\", or `reset --to batch-start`, or `reset --to start`.\n`lyx webster accept-audit --batch=6` then refused, because the batch's commits are kept only when every fabric reference is read-only, and the finding is the very one that made recover-batch advise it. Its only way forward was `lyx webster reset --to batch-start --batch 06`.\n`lyx webster reset --to=batch-start --batch=6` was refused with `run is already in progress ... (run.lock held)`, with way forward \"wait for it to finish, or check `lyx webster status`\".\nThe Webster session had no verb left that it was allowed to use, so it escalated: the run halted `blocked` with anomaly `escalation-to-human`, and the halt note says the parent has to run the reset after the run stops.\n\n## Why it is abnormal\n\n- `recover-batch` offers `accept-audit` as a way forward in a case where `accept-audit` is known to refuse; the advice cannot be followed.\n- The refusals were retried several times (two `accept-audit` refusals, three `recover-batch` refusals), each with the same text.\n- `reset` is refused for a lock the Webster session itself holds, so the one working remedy is unreachable from inside the run that needs it.\n\n## What to do\n\n- Have `recover-batch` run the `accept-audit` check and drop that option from the way forward when it would refuse.\n- Let `reset --to batch-start` run from the Webster session that owns `run.lock`, or have the refusal name who must run it and when.\n\n## Provenance\n\nTask `umbrella-anchor`; notes: webster-refusal-recover-batch.md, webster-refusal-recover-batch-2.md, webster-refusal-recover-batch-3.md, webster-refusal-accept-audit.md, webster-refusal-accept-audit-2.md, webster-refusal-reset.md, loom-halt-3.md.\n",
-      "created": "2026-10-28T11:33:45Z",
-      "revised": "2026-10-28T11:33:45Z"
-    },
-    {
-      "id": 867,
-      "handle": "B12",
-      "slug": "webster-audit-gate-test-readonly",
-      "title": "webster fabric-reference audit flags the sanctioned lyx gate test as a run-state rewrite, failing the batch",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "webster"
-      ],
-      "issues": [
-        877
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #877](https://github.com/Knatte18/loomyard/issues/877).\n\n## What happened\n\nA Webster implementer fork ran `lyx gate test --wait --gate card --card \u003ccard\u003e` and `lyx gate test --wait --gate batch --card \u003ccard\u003e`, the gate commands the session's own gate rule tells agents to run, and once chained them after a `git commit`.\n`lyx webster record-batch` failed the batch with `fabric-reference violation ... ran a fabric-referencing command (\"lyx gate test ...\") that can rewrite run state — an implementer fork must never touch the fabric repo directly`.\nThe finding \"names no path\"; it is raised from the command text alone.\n`lyx webster recover-batch` then refused with `needs_fresh` on the same findings.\n\n## Why it is abnormal\n\n`lyx gate test` is the mandated way to run tests, so the audit makes the normal workflow a violation.\nThe audit does not distinguish a gate invocation from a command that writes the fabric repo, and a pipe through `tail`/`grep` does not change that.\nA whole batch of otherwise valid work was lost to the flag, and the run halted blocked at Webster with an escalation.\n\n## What to do\n\nTreat `lyx gate test` (and its `--wait`, `--gate`, `--card` forms) as read-only for the fabric-reference audit, or make the audit check the paths a command actually writes.\nAt minimum the finding should say why this specific command can rewrite run state.\n\n## Provenance\n\nTask `umbrella-anchor`; notes: webster-refusal-record-batch.md, webster-refusal-recover-batch.md, webster-refusal-recover-batch-2.md, webster-refusal-recover-batch-3.md, loom-halt.md, loom-halt-2.md, loom-halt-3.md.\n",
-      "created": "2026-10-28T11:33:47Z",
-      "revised": "2026-10-28T11:33:47Z"
     },
     {
       "id": 868,
@@ -985,6 +799,148 @@
       "created": "2026-10-28T11:33:26Z",
       "revised": "2026-10-28T11:40:40Z",
       "profile": "solid"
+    },
+    {
+      "id": 869,
+      "handle": "T6",
+      "slug": "transient-halt-recovery",
+      "title": "A transient fork EAGAIN or died tmux session does not end a loom run hard",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "loom",
+        "shed",
+        "shuttle",
+        "reed",
+        "fabric"
+      ],
+      "issues": [
+        886,
+        891,
+        890
+      ],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Loom halts on transient fork/exec EAGAIN and records an opaque exit status 2 for the sibling halt (was note `loom-halt-on-transient-eagain`)\n\nImported from [issue #886](https://github.com/Knatte18/loomyard/issues/886).\n\nTwo loom halts were recorded within a second of each other (09:41:18Z and 09:41:19Z), both as `failed`, one in `Drift-Verify` and one in `Code-Bouncer`.\n\n**What happened**\n\n- The `Code-Bouncer` halt (anomaly `producer-hard-failure`) carries this lym error: `shedadapters: Code-Bouncer (bouncer): read the live subject: fabricengine: read task patch: diff the working tree against \u003csha\u003e: fork/exec /usr/bin/git: resource temporarily unavailable`. That is EAGAIN from the OS while lym spawned `git`, a transient condition.\n- The `Drift-Verify` halt (anomaly `interrupted-stop`) carries only `exited: exit status 2`. The note names no cause, and its history lists `Drift-Verify` as `skipped` even though the halt is attributed to it.\n\n**Why it is abnormal**\n\n- A transient process-spawn failure halts the whole run as `failed` with no retry, so a momentary resource spike costs the run.\n- The two halts share a time window and most likely a root cause, but nothing in the notes links them.\n- The `interrupted-stop` note gives no reason, so the operator must open the trace file to learn what exit status 2 means.\n- The Drift-Verify history entry reads `skipped` while the halt names that producer as the failed one.\n\n**What to do**\n\n- Retry `fork/exec` EAGAIN in the fabricengine git wrapper with a short bounded backoff before surfacing it as a hard failure.\n- Put the underlying cause (the failing command or its stderr tail) into `interrupted-stop` halt notes.\n- Check whether lym itself spawns enough concurrent processes or git calls at the end of `Darn-Write` to exhaust the process limit.\n- Reconcile the history state of a producer the halt blames with the halt note.\n\nProvenance: task `review-setup-audit`; notes `loom-halt.md`, `loom-halt-2.md`.\n\n\n#### From issue #891\n\nImported from [issue #891](https://github.com/Knatte18/loomyard/issues/891).\n\nWhat happened: after the `Darn-Write` halt, a later loom entry halted `failed` at `Darn-Write` with `exited: exit status 2`, anomaly `interrupted-stop`, and an empty `trace_file:` field.\nThe history showed `Darn-Write / goto` as the last entry.\nAfterwards the Go driver found the run `paused` at `Darn-Write` with no reason recorded, and wrote only a drive envelope under `_lym/shed/\u003cslug\u003e/drive-reports/`.\n\nWhy it is abnormal: an exit status 2 gives no cause and no trace file to follow, so the halt cannot be diagnosed.\nA paused state with no reason leaves the operator and driver unable to tell whether the pause is deliberate or a leftover of the failed run.\n\nWhat to do: make the `interrupted-stop` halt note always name the trace file and the exiting command, and record a reason whenever a run is left `paused`.\n\nProvenance: task `hub-pull-verb`; notes `loom-halt-2.md`, `go-driver-paused.md`.\n\n## Loom run fails hard when the producer's tmux session dies after a fork EAGAIN (was note `died-after-tmux-eagain-transient`)\n\nImported from [issue #890](https://github.com/Knatte18/loomyard/issues/890).\n\nWhat happened: during `lym loom step` at the `Darn-Write` producer (seats engine), the trace shows `reed: tmux could not be started, retrying` with `fork/exec /usr/bin/tmux: resource temporarily unavailable`.\nAbout ten seconds later shuttle reported `state=dead cause=process-gone`, the run finished with `outcome=die`, and the step was refused with `shedadapters: Darn-Write (seats): shuttle run outcome died` and an empty `transient` field.\nThe loom halted as `failed` with anomaly `producer-hard-failure`.\n\nWhy it is abnormal: the death coincides with a transient host resource shortage, yet the refusal carries no transient marker, so the run went to a terminal `failed` state instead of a retry or a resumable pause.\nThe halt note gives no hint that resource exhaustion preceded the death.\n\nWhat to do: decide whether a `died` chair outcome that follows a tmux fork EAGAIN should be classed as transient, and either retry or surface the tmux error in the halt note.\n\nProvenance: task `hub-pull-verb`; notes `loom-halt.md`.\n\n",
+      "status": "draft",
+      "created": "2026-10-28T11:33:22Z",
+      "revised": "2026-10-28T11:40:40Z",
+      "profile": "solid"
+    },
+    {
+      "id": 870,
+      "handle": "T7",
+      "slug": "resume-fixes",
+      "title": "lym loom resume names prior work and honours a recorded wait decision",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "loom",
+        "shed"
+      ],
+      "issues": [
+        889,
+        883
+      ],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## lym loom resume re-spawn prompt names prior work as (none) although the branch holds the first spawn's commit (was note `resume-prompt-prior-work-none`)\n\nImported from [issue #889](https://github.com/Knatte18/loomyard/issues/889).\n\n#### What happened\n\nAfter a run halted `blocked` at a producer, `lym loom resume` re-spawned the same producer.\nThe re-spawn's prompt named the prior work as `(none)`, while the branch already held the first spawn's commit and an archived summary.\n\n#### Why it is abnormal\n\nThe resumed agent is told there is no earlier work although there is, so it can redo or conflict with existing commits, or miss that the failure it must fix is a gate failure on already-written code.\n\n#### What to do\n\nHave the resume path populate the prior-work section of the re-spawn prompt from the branch's existing commits and the archived summary of the earlier spawn.\n\nProvenance: task `regression-harness`; note Darn-Write-2.md.\n\n## lym loom resume re-prompts a producer to fix findings a recorded decision forbids, without checking the awaited task landed (was note `resume-honours-wait-decision`)\n\nImported from [issue #883](https://github.com/Knatte18/loomyard/issues/883).\n\nA `lym loom` run halted blocked at a producer row after its verify gate failed three attempts in a row, and was resumed with `lym loom resume` before the condition the parent's recorded decision waited on had been met.\n\nThe decision told the run not to fix the failing findings and to wait for another task to land on `main`.\nThe resume re-spawned the producer with a fresh verify budget, and each round re-prompted it with \"fix every finding\".\nThat instruction contradicts the recorded decision, so every round could only end unchanged until the gate exhausted again, and the run halted blocked a second time with anomaly `escalation-to-human`.\n\nThis is abnormal because the resume burned a full verify budget and a producer session on a round known in advance not to converge.\n\nWhat to do:\n- Let `lym loom resume` (or the decision record) carry a \"wait for task X to land\" condition and refuse, or warn, while it is unmet.\n- Or have the re-prompt after a resume include the recorded parent decisions, so \"fix every finding\" does not override them.\n\nProvenance: task `readme-draft-not-ready`; notes Darn-Write.md, loom-halt.md, loom-halt-2.md.\n\n",
+      "status": "draft",
+      "created": "2026-10-28T11:33:24Z",
+      "revised": "2026-10-28T11:40:40Z"
+    },
+    {
+      "id": 871,
+      "handle": "T8",
+      "slug": "webster-recovery",
+      "title": "Webster recovery has a way forward, and its audit accepts a sanctioned gate test",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "webster"
+      ],
+      "issues": [
+        878,
+        877
+      ],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## webster recovery way-forward is circular: recover-batch points to accept-audit, which refuses; reset is refused while run.lock is held (was note `webster-recovery-circular`)\n\nImported from [issue #878](https://github.com/Knatte18/loomyard/issues/878).\n\n#### What happened\n\nAfter `lyx webster record-batch` failed a batch on fabric-reference audit findings, `lyx webster recover-batch` refused with `needs_fresh` and a way forward of \"`lyx webster accept-audit --batch 6` then `lyx webster recover-batch 6`\", or `reset --to batch-start`, or `reset --to start`.\n`lyx webster accept-audit --batch=6` then refused, because the batch's commits are kept only when every fabric reference is read-only, and the finding is the very one that made recover-batch advise it. Its only way forward was `lyx webster reset --to batch-start --batch 06`.\n`lyx webster reset --to=batch-start --batch=6` was refused with `run is already in progress ... (run.lock held)`, with way forward \"wait for it to finish, or check `lyx webster status`\".\nThe Webster session had no verb left that it was allowed to use, so it escalated: the run halted `blocked` with anomaly `escalation-to-human`, and the halt note says the parent has to run the reset after the run stops.\n\n#### Why it is abnormal\n\n- `recover-batch` offers `accept-audit` as a way forward in a case where `accept-audit` is known to refuse; the advice cannot be followed.\n- The refusals were retried several times (two `accept-audit` refusals, three `recover-batch` refusals), each with the same text.\n- `reset` is refused for a lock the Webster session itself holds, so the one working remedy is unreachable from inside the run that needs it.\n\n#### What to do\n\n- Have `recover-batch` run the `accept-audit` check and drop that option from the way forward when it would refuse.\n- Let `reset --to batch-start` run from the Webster session that owns `run.lock`, or have the refusal name who must run it and when.\n\n#### Provenance\n\nTask `umbrella-anchor`; notes: webster-refusal-recover-batch.md, webster-refusal-recover-batch-2.md, webster-refusal-recover-batch-3.md, webster-refusal-accept-audit.md, webster-refusal-accept-audit-2.md, webster-refusal-reset.md, loom-halt-3.md.\n\n## webster fabric-reference audit flags the sanctioned lyx gate test as a run-state rewrite, failing the batch (was note `webster-audit-gate-test-readonly`)\n\nImported from [issue #877](https://github.com/Knatte18/loomyard/issues/877).\n\n#### What happened\n\nA Webster implementer fork ran `lyx gate test --wait --gate card --card \u003ccard\u003e` and `lyx gate test --wait --gate batch --card \u003ccard\u003e`, the gate commands the session's own gate rule tells agents to run, and once chained them after a `git commit`.\n`lyx webster record-batch` failed the batch with `fabric-reference violation ... ran a fabric-referencing command (\"lyx gate test ...\") that can rewrite run state — an implementer fork must never touch the fabric repo directly`.\nThe finding \"names no path\"; it is raised from the command text alone.\n`lyx webster recover-batch` then refused with `needs_fresh` on the same findings.\n\n#### Why it is abnormal\n\n`lyx gate test` is the mandated way to run tests, so the audit makes the normal workflow a violation.\nThe audit does not distinguish a gate invocation from a command that writes the fabric repo, and a pipe through `tail`/`grep` does not change that.\nA whole batch of otherwise valid work was lost to the flag, and the run halted blocked at Webster with an escalation.\n\n#### What to do\n\nTreat `lyx gate test` (and its `--wait`, `--gate`, `--card` forms) as read-only for the fabric-reference audit, or make the audit check the paths a command actually writes.\nAt minimum the finding should say why this specific command can rewrite run state.\n\n#### Provenance\n\nTask `umbrella-anchor`; notes: webster-refusal-record-batch.md, webster-refusal-recover-batch.md, webster-refusal-recover-batch-2.md, webster-refusal-recover-batch-3.md, loom-halt.md, loom-halt-2.md, loom-halt-3.md.\n\n",
+      "status": "draft",
+      "created": "2026-10-28T11:33:45Z",
+      "revised": "2026-10-28T11:40:40Z"
+    },
+    {
+      "id": 872,
+      "handle": "T9",
+      "slug": "fork-audit-branch-list",
+      "title": "Burler fork audit reads a listing git branch as read-only",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "burler"
+      ],
+      "issues": [
+        892
+      ],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Burler fork audit counts a listing git branch as git-mutating (was note `fork-audit-git-branch-list`)\n\nImported from [issue #892](https://github.com/Knatte18/loomyard/issues/892).\n\nSeen: validator-checks failed at Discussion-Burler-Review (round 2 attempt 2, 2026-10-28T11:02Z) because a review fork ran `git branch -a --contains 71a46b11`. internal/burlerengine/cluster.go lists `branch` in mutatingGitSubcommands and only `git tag` gets a list-mode exception, so a read-only branch listing fails the whole review round.\n\nWorkaround: the orch resumed the run with `lym loom resume`, which re-runs the round; a fork that lists branches again fails it again.\n\nExpected: `git branch` counts as mutating only when it creates, deletes, renames, copies or moves a branch or sets its upstream; with no operand, or with list-mode options (-a, -r, -l/--list, --contains, --no-contains, --merged, --no-merged, --points-at, -v, --show-current, --format, --sort), it only reads, as `git tag` list mode already does.\n",
+      "status": "draft",
+      "created": "2026-10-28T11:33:19Z",
+      "revised": "2026-10-28T11:40:41Z"
+    },
+    {
+      "id": 873,
+      "handle": "T10",
+      "slug": "comment-lint-rename",
+      "title": "Comment lint ignores a legacy wrapped paragraph changed only by a word rename",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "loom"
+      ],
+      "issues": [
+        881
+      ],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Comment lint flags every line break of a legacy wrapped paragraph after a pure word rename (was note `comment-lint-rename-breaks`)\n\nImported from [issue #881](https://github.com/Knatte18/loomyard/issues/881).\n\nThe comment lint judges a line break new when the word pair across it is absent from the base text.\nA pure word rename inside a legacy fixed-column-wrapped comment paragraph changes the word pair at every break in that paragraph, so each break becomes a finding although the wrapping was never touched.\n\nA mechanical binary rename run halted at its producer row (`anomaly: escalation-to-human`, `gate did not pass after 3 attempts`) on several hundred such findings in `gate-findings`.\nThe agent cleared them with a second scripted pass that rejoined each flagged paragraph and broke it at sentence ends.\n\nThis is abnormal because the findings point at comment wrapping the change never altered, and the halt cost the whole verify budget.\n\nSuggested fix: compare word pairs modulo the rename, or ignore a break whose surrounding line text is otherwise unchanged apart from the renamed word.\n\nProvenance: task `rename-binary-lym`; notes `Darn-Write.md`, `loom-halt.md`.\n\n",
+      "status": "draft",
+      "created": "2026-10-28T11:33:40Z",
+      "revised": "2026-10-28T11:40:41Z"
+    },
+    {
+      "id": 874,
+      "handle": "T11",
+      "slug": "async-push-race",
+      "title": "A racing async push reports no divergence that is already gone",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "fabric"
+      ],
+      "issues": [
+        879
+      ],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## A racing async push reports a divergence that is already gone (was note `async-push-race-false-divergence`)\n\nImported from [issue #879](https://github.com/Knatte18/loomyard/issues/879).\n\n#### Seen (beam-start-and-ownership, 2026-10-26)\n\nWithin minutes, `ly:FABRIC` sent the orch two `not_fast_forward` notices for one run on one machine: first for its code branch, then for its records branch.\nEach way forward named a `git merge` or `git reset --keep`, and the records notice said \"another machine wrote the same paths\" with `paths: none`.\nA fetch right after each notice showed nothing on origin the local branch lacked: a concurrent push had already landed, and the next push was a plain fast-forward.\nTwo asynchronous pushes of the same branch raced, and the loser reported a divergence that no longer existed.\n\n#### Idea\n\n- A rejected push fetches origin again before it reports: when origin is now an ancestor of the local tip, it retries the push instead of sending a notice.\n- The notice names another machine only when origin's commits carry another machine's name, and never with `paths: none`.\n",
+      "status": "draft",
+      "created": "2026-10-28T11:33:42Z",
+      "revised": "2026-10-28T11:40:41Z"
     }
   ],
   "prime_owner": "neve",
