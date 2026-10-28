@@ -28,20 +28,19 @@ grouping
 | --- | --- | --- | --- |
 | E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
 
-## Tasks (5)
+## Tasks (4)
 
 Concrete and claimable; only a task can run.
 
-### Running (4)
+### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Creel delivers every post to a Claude strand through hooks, visibly and in full**<br>• PostToolUse, Stop and asyncRewake hooks carry posts as fast as possible; shuttle appends a trust and reply sentence to the system prompt | [`creel-hook-post`](design-creel-hook-post.md) | loom | Webster | neve | 5d<br>1h | creel, shuttle, claude |
-| T2 | **A landing merges a moved parent in Finalize and sends a fixer escalate to the arbiter first**<br>• No Finalize reroute to Parent-Align for a moved parent, and a landing fixer escalate reaches the orch only as the arbiter hand-on | [`landing-settles-in-place`](design-landing-settles-in-place.md) | loom | Finalize | neve | 4d<br>1h | loom, batten, shed |
 | T3 | **Lens sets and code review per profile as the review-setup audit recommends**<br>• Merge goal-scope and board-fit, replace review-plan way-forward with a repository-invariant lens, fold code-pattern-fit into code-affected-set, narrow code-tests, solo code review in light and docs<br>• `profile: solid` | [`review-setup-tuning`](design-review-setup-tuning.md) | loom | Discussion-Burler-Fix | neve | 25m<br>25m | burler, stencil, config |
-| T4 | **Machine checks in validate-discussion and validate-plan for recurring review findings**<br>• Citation and acceptance checks for the decision record; seam-test, tier-tag and doc.go checks for plan cards<br>• `profile: solid` | [`validator-checks`](design-validator-checks.md) | loom | Discussion-Bouncer | neve | 25m<br>25m | loom, stencil |
+| T4 | **Machine checks in validate-discussion and validate-plan for recurring review findings**<br>• Citation and acceptance checks for the decision record; seam-test, tier-tag and doc.go checks for plan cards<br>• `profile: solid` | [`validator-checks`](design-validator-checks.md) | loom | Discussion-Burler-Review | neve | 25m<br>25m | loom, stencil |
 
 ### Ready (0)
 
@@ -113,3 +112,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R5 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 5d<br>1d | webster |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 5d<br>35m | loom, stencil |
 | R8 |  | **Ideas from r/ClaudeCode "one line in your CLAUDE.md": fit for LoomYard and bench measures**<br>• About 30 ideas judged against our stencils and rules; top 8 ranked for a bench, a few cheap enough without one | [`claude-md-thread-ideas`](design-claude-md-thread-ideas.md) | 1d<br>1d | stencil, loom, burler |
+
+## Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T2 | **A landing merges a moved parent in Finalize and sends a fixer escalate to the arbiter first**<br>• No Finalize reroute to Parent-Align for a moved parent, and a landing fixer escalate reaches the orch only as the arbiter hand-on | [`landing-settles-in-place`](design-landing-settles-in-place.md) | 4d<br>1h | loom, batten, shed |
