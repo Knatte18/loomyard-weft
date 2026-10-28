@@ -1,6 +1,8 @@
 # creel stage 3: agents message through creel, not SendMessage
 
-`creel-agents` · Note · feature, creel, shuttle, loom, stencil, report
+`creel-agents` · Task · feature, creel, shuttle, loom, stencil, report
+
+Depends on: [`shuttle-hook-signals`](design-shuttle-hook-signals.md)
 
 ## Goal
 
