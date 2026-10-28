@@ -78,24 +78,43 @@ Extra research for the fixes: hooks docs (10,000-character cap per output field,
 - Filtering subagents on `agent_type`: `--agent` sets it in the main thread too.
 - Typing the bell into hand-added strands: they have no hooks, so the bell would promise a delivery that never comes.
 - Gating D2 on `stop_hook_active` alone: a rewake turn carries it as true, so the woken turn's Stop would never deliver.
-- Changing the D9 sentence to avoid `"`: the entry gives it verbatim, and both `Quote` forms carry `"`.
+- Changing the D9 sentence to avoid `"`: the entry gives it verbatim; D9 carries it in a file instead.
+- Delivering an oversized message as a fixed line naming the command that reads it: the message stays claimable, so every `Stop` would block on it again unless a new pointed state is journaled, where a cap at `post` uses the existing file way forward.
+- Counting rings toward creel's cap: a ring starts a new turn at Claude Code's count 0, so counting it only drives an idle receiver to the cap.
+- The `Stop` creel step without the flag gate, so every turn end resets the count: one `lym` process per turn end, where a ring reset covers the same case.
+- Keeping D9's sentence on the `--append-system-prompt` argument: pwsh drops its `"` for a `.cmd` target and before 7.3.
 - A waiter that exits on a dropped connection: every deploy would leave idle strands to the typed bell.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+Review `round-1-review.md`, verdict BLOCKING; F12 (`decision`) went to the parent.
+Extra research: the 2.1.312 bundle's query loop (block count per turn, rewake turns start at 0 with `stop_hook_active` true) and CLI options (`--append-system-prompt-file`); `ClaimAtBoundary`, `maxBodyBytes`, `Idleness`, `IdleProbe`, reed's `Strand`, `recordingCommand`, `buildLaunchCmd`, `buildOpenCmd`; PowerShell's native-argument modes.
+
+- F1 (oversized first message): `post` caps a message's line at the 8 KiB budget; old-binary lines past 10,000 characters are never claimed (D1, Constraints, criterion).
+- F2 (count climbs across wakes): a ring resets the count, resets apply before the cap check, and D4's ring replaces D5's at-cap trigger (D2, D4, D5, Constraints, criteria).
+- F3 (daemon restart): a starting daemon sets every count to the cap; woken-set marks may re-ring (D2, D4, criterion).
+- F4 (no running-turn reading): new `Idleness.NoTurn` field for the ring; the bell uses the guarded send's `Idle` (D4, D5).
+- F5 (pre-deploy sessions belled): the `CreelHooks` reed mark gates the bell (D5, Open risks).
+- F6 (acknowledge before Claude Code reads): `hook-read` writes straight to the hook's output and decides recording by its exit status (D2).
+- F7 (orphan stamp): a blocked `Stop` appends neither stamp nor payload (D2, criterion).
+- F8 (`--interrupt` to an unmarked strand; store failure): refused before any key; the store-failure answer stated (D7, criterion).
+- F9 (D6 rationale): corrected, and the unmarked strand's lack of signal bounded (D6).
+- F10 and F11 (one flag; Windows quotes): the appended text goes in one `--append-system-prompt-file` (D9, Constraints, criterion).
+- Self-check: the forks' findings fixed: `NoTurn` held false from a ring to the next recorded turn end; LOOM's decision notice kept under the line cap; replies to `EXTERNAL` keep the 64 KiB cap; D7's way forward is `inject --interrupt`; `lym shuttle open` sessions carry no D9 file; "restarted" means a fresh shuttle launch.
 
 ## Question ledger
 
 - Q1 (auto-pick): How does the idle wake become visible? — The wake carries a fixed bell and the next boundary's block carries the mail (D4); the entry's "stop and ask the parent when no way" is not needed since a way exists, and the trade is raised under Open risks.
 - Q2 (auto-pick): How does a blocked Stop interact with turn-end recording? — One merged command; a block records no turn end (D2).
-- Q3 (auto-pick): What reaches an idle session with no live waiter? — A typed fixed bell once per new mail set, shuttle-launched strands only (D5); raised under Open risks.
+- Q3 (auto-pick): What reaches an idle session with no live waiter? — A typed fixed bell once per new mail set, strands marked `CreelHooks` only (D5, narrowed in round 1); raised under Open risks.
 - Q4 (auto-pick): Waiter timeout? — 86400 s.
 - Q5 (auto-pick): Does a draft hold the wake? — No; the spike shows the wake leaves a draft untouched.
 - Q6 (auto-pick): Which names does D8 quote? — Every sender name in `MessageLine` and `read`'s output.
 - Q7 (auto-pick): `--interrupt` with `--reply`? — Refused with the way forward.
 - Q8 (auto-pick): Which sessions get the D9 sentence? — Every Claude session shuttle launches, as the entry says.
-- Q10 (auto-pick): How does D2 stay clear of Claude Code's continuation cap? — Creel's own count of blocks and rings, cap 6, reset by a `PostToolUse` claim or a `Stop` with `stop_hook_active` false.
+- Q10 (auto-pick, revised in round 1): How does D2 stay clear of Claude Code's continuation cap? — Creel's own count of a turn's `Stop` blocks, cap 6, reset by a `PostToolUse` claim, a `Stop` with `stop_hook_active` false or a ring, and set to the cap when the daemon starts.
 - Q11 (auto-pick): How long before an unanswered ring or a missing waiter falls back to the bell? — 30 s and 5 s.
 - Q12 (resolved by research): Does an 8 KiB claim fit the hook output? — Yes: 10,000 characters per field (hooks docs, JSON output).
 - Q9 (resolved by research): Does a fork's hook input carry `agent_id`? — Yes by the docs and the 2.1.312 hook-input builder; the LLM-tier test pins it.
