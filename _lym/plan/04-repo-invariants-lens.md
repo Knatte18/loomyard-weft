@@ -29,6 +29,7 @@ Tests in `internal/lenses`:
   `way-forward` is no longer in a `review-*` order, so the existing emphasis check, through `emphasisLineGaps`, now requires its line.
 - `TestTemplateChecks_FlagBrokenTemplates` gains `writerFanGaps` rows over hand-built orders: a reviewer fan naming `way-forward` beside a writer fan lacking it gives one message naming `way-forward`; `affected-set` absorbed by `forced-edits` gives none; `repo-invariants` with an empty `reviewerOnly` gives one message.
   This pins D2's criterion that the check passes with `repo-invariants` as the one reviewer-only lens and still fails for any other reviewer lens missing from its writer fan.
+- `config_test.go`'s file header, whose line 4 lists "each writer fan holding its reviewer fan's lenses", gains the exception: "each writer fan holding its reviewer fan's lenses but the reviewer-only repo-invariants".
 
 The carry-over finding `d2-way-forward-loses-emphasis-exemption` is met by `way-forward`'s new emphasis line, which the emphasis check pins.
 
