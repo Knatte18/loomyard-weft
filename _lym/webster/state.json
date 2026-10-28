@@ -382,7 +382,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 11,
   "masterStrand": "bd45008b4eb72f58b98934b7a40e128e",
   "masterSessionId": "70f31af5-8b0a-4ef1-b1f5-35accab55fce",
   "masterEngine": "claude",
@@ -431,6 +431,28 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-creel-hook-post/70f31af5-8b0a-4ef1-b1f5-35accab55fce/subagents/agent-a75bda37e4086eddf.jsonl"
       ]
+    },
+    "11": {
+      "slug": "creel-bell",
+      "cards": [
+        "11-creel-bell",
+        "12-shuttle-hook-capability",
+        "13-creel-hook-verbs",
+        "14-claude-creel-hooks-render"
+      ],
+      "cardHashes": {
+        "11-creel-bell": "db9f530a7a9363b91e6889725e6311ce537258b9bd5d0afbcbc1e39017626c7c",
+        "12-shuttle-hook-capability": "31b7444b2d5aa8f2a878d69eaeae57407c268ebde938a8df404cb71ff5e07f37",
+        "13-creel-hook-verbs": "dcf7c0dfdca8bebfdda8ebd42863362ec0de69b3b03e5bcf82f53c894458c7f5",
+        "14-claude-creel-hooks-render": "5468febda39acb84f43e9d7fc4d3df396e2ce9cc4ae3671960ff5584290d0d3f"
+      },
+      "startSha": "72cb7106c4d64bc706307c040653bc86d72d23f6",
+      "kind": "fork",
+      "spawnedAt": "2026-10-28T11:19:46Z",
+      "sessionId": "70f31af5-8b0a-4ef1-b1f5-35accab55fce",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "shuttle-idle-no-turn",
