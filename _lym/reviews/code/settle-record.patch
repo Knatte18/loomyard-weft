@@ -1,0 +1,2149 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 491af9ff..833e0231 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -393,7 +393,11 @@ User-facing modules each get one `lym <module>` namespace:
+   The generated `tasks.json` holds one on-demand `reed attach` task, with the `lym` path stamped absolute at generation time, reached through "Tasks: Run Task" or the seeded `ctrl+alt+a` key binding;
+   no task runs on folder open, so opening a worktree in VS Code starts no session and no `claude`.
+   `lym ide spawn` and batten's Seed-IDE row write this config through one shared path.
+-  `lym ide spawn` regenerates `tasks.json` on every spawn, overwriting an untracked one, and keeps `settings.json` when present.
++  `lym ide spawn` regenerates `tasks.json` on every spawn, overwriting an untracked one, and in an existing `settings.json` sets only the window title and colour keys lym owns.
++  The title bar takes the project's colour, green for the prime and a task under it, a beam's recorded `beam_color` for the beam and a task under it, and the activity bar the worktree's own colour, which a task picks avoiding its siblings';
++  `window.title` is the upper-cased hub shortname, a colon and the slug.
++  A beam's own `<RepoName>-<beam>.code-workspace` carries the beam's settings.
++  `lym ide seed` writes the same config and launches nothing; with no slug it seeds the worktree it runs in, the prime included.
+   It keeps `.vscode/` out of git through the repository's shared `info/exclude` at the anchor subpath rather than `.gitignore`, and leaves a tracked `tasks.json` alone with a warning.
+   `lym ide spawn` also seeds a `// lym:begin` … `// lym:end` block into the user's VS Code `keybindings.json`, forwarding the four Alt keys of reed's tmux bindings to the integrated terminal and binding `ctrl+alt+a` to run the `reed attach` task, and reports the outcome in its JSON result.
+   It writes only between its own markers, and a file it cannot merge safely is skipped with a reason and never fails the spawn.
+@@ -649,7 +653,7 @@ User-facing modules each get one `lym <module>` namespace:
+   A stop the tackler escalates meets the arbiter next, wired in batten's driver after the tackler and set by `batten.yaml`'s `arbiter`, `arbiter_timeout_min` and `arbiter_max_spawns`, overrides of `shed.yaml`'s keys of the same names; its goto is held to the halted row.
+   The process holds the run's driver lock for its life, so a second `lym batten run` for the slug is refused.
+   Between `Seed-Child` and `Run-Shed`, three `Command` rows each run one shell command from `internal/shedadapters`' `Command` producer, each run only when its entry gate's `batten.yaml` setting, which a task's `run_settings` may set, is on: `Open-Window` (`open_window`, on by default, command `open_window_command`) opens one desktop terminal window on the task worktree, titled with the slug, through `lym reed window`;
+-  `Seed-IDE` (`seed_ide`, on, command `seed_ide_command`) runs `lym ide seed`, which writes the task worktree's VS Code colour and `.vscode/` config as `lym ide spawn` does, without the user's key bindings;
++  `Seed-IDE` (`seed_ide`, on, command `seed_ide_command`) runs `lym ide seed`, which writes the task worktree's VS Code title, colours and `.vscode/` config as `lym ide spawn` does, without the user's key bindings;
+   `Open-IDE` (`open_ide`, off, command `open_ide_command`) runs `lym ide open`, which opens VS Code on it.
+   A command key is read from the template and the board default layer only; `lym config batten --layer default --set <key>=<value>` from the prime changes one, and a different value in the task worktree's own layers is ignored with a warning.
+   A failed command only warns, and the row passes on.
+diff --git a/internal/battenshed/template.yaml b/internal/battenshed/template.yaml
+index 92711292..bb0d81ae 100644
+--- a/internal/battenshed/template.yaml
++++ b/internal/battenshed/template.yaml
+@@ -1,7 +1,7 @@
+ open_window: true  # the Open-Window row's entry gate: the row runs open_window_command when this is on
+ open_window_command: "{lym} reed window {task_dir} --title {slug}"  # the Open-Window row's command, opening a terminal window attached to the task worktree's reed session; placeholders {lym}, {slug} and {task_dir}; change it with `lym config batten --layer default --set open_window_command=<value>` from the prime
+ seed_ide: true  # the Seed-IDE row's entry gate: the row runs seed_ide_command when this is on
+-seed_ide_command: "{lym} ide seed {slug}"  # the Seed-IDE row's command, writing the task worktree's VS Code title-bar colour and .vscode/ config without the user's key bindings; placeholders {lym}, {slug} and {task_dir}; change it with `lym config batten --layer default --set seed_ide_command=<value>` from the prime
++seed_ide_command: "{lym} ide seed {slug}"  # the Seed-IDE row's command, writing the task worktree's VS Code title, colours and .vscode/ config without the user's key bindings; placeholders {lym}, {slug} and {task_dir}; change it with `lym config batten --layer default --set seed_ide_command=<value>` from the prime
+ open_ide: false  # the Open-IDE row's entry gate: the row runs open_ide_command when this is on
+ open_ide_command: "{lym} ide open {slug}"  # the Open-IDE row's command, opening VS Code on the task worktree; placeholders {lym}, {slug} and {task_dir}; change it with `lym config batten --layer default --set open_ide_command=<value>` from the prime
+ tackler: ""  # overrides shed.yaml's tackler model-spec for a batten run (see contracts/specs/llm-model-spec.md); empty inherits shed.yaml
+diff --git a/internal/beamcli/create.go b/internal/beamcli/create.go
+index 06999d11..3e15d235 100644
+--- a/internal/beamcli/create.go
++++ b/internal/beamcli/create.go
+@@ -7,6 +7,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/vscode"
+ )
+ 
+ // createDeps holds the seam of every create step, which hubCreateDeps fills over the hub and TestCreate fakes.
+@@ -135,7 +136,8 @@ func judgeParentOwner(deps createDeps, owners boardengine.Owners, here, slug str
+ 
+ // createSteps runs the three steps in order, each skipped when its result stands, and records what it did on result.
+ // The root is claimed when the board records no root owner; a claim another machine wins is judged again, so a parent that now reads as theirs refuses.
+-// The owner step records this machine as the beam's owner with the beam flag and the pawl recipe in one write.
++// The owner step records this machine as the beam's owner with the beam flag and the pawl recipe in one write, and a colour for the beam's VS Code windows when it has none;
++// a beam recorded here with no colour runs the step again to get one.
+ // The run is the last step, so a beam's pair is made by the run's own Worktree-Create and marked by its Beam-Up.
+ func createSteps(deps createDeps, owners boardengine.Owners, here, slug, anchor string, result *createResult) error {
+ 	rerun := "run `lym beam create " + slug + "` again"
+@@ -158,8 +160,8 @@ func createSteps(deps createDeps, owners boardengine.Owners, here, slug, anchor
+ 	}
+ 
+ 	entry := owners.Entries[slug]
+-	if !entry.Beam || entry.Owner != here {
+-		write, err := deps.SetOwners(boardengine.OwnerRequest{Machine: here, Slugs: []string{slug}, Beam: true, ParentOf: deps.ParentOf})
++	if !entry.Beam || entry.Owner != here || entry.BeamColor == "" {
++		write, err := deps.SetOwners(boardengine.OwnerRequest{Machine: here, Slugs: []string{slug}, Beam: true, BeamColor: vscode.PickBeamColor, ParentOf: deps.ParentOf})
+ 		if err != nil {
+ 			return fmt.Errorf("lym beam create: record this machine as the owner of %s with the beam flag: %w; way forward: fix the cause it names, then %s", slug, err, rerun)
+ 		}
+diff --git a/internal/beamcli/create_test.go b/internal/beamcli/create_test.go
+index 6fafb9cb..a5266516 100644
+--- a/internal/beamcli/create_test.go
++++ b/internal/beamcli/create_test.go
+@@ -89,8 +89,14 @@ func (w *createWorld) deps() createDeps {
+ 			if owner, lost := w.lost[slug]; lost {
+ 				return boardengine.OwnerWrite{Lost: map[string]string{slug: owner}}, nil
+ 			}
++			if req.BeamColor == nil {
++				return boardengine.OwnerWrite{}, errors.New("the beam owner write carries no colour picker")
++			}
+ 			entry := w.owners.Entries[slug]
+ 			entry.Owner, entry.Beam = req.Machine, req.Beam
++			if entry.BeamColor == "" {
++				entry.BeamColor = req.BeamColor(nil)
++			}
+ 			w.owners.Entries[slug] = entry
+ 			return boardengine.OwnerWrite{Recorded: []string{slug}}, nil
+ 		},
+@@ -238,16 +244,25 @@ func TestCreate(t *testing.T) {
+ 			name: "RerunAfterTheOwnerStepSkipsIt",
+ 			slug: "group",
+ 			setup: func(w *createWorld) {
+-				w.owners.Entries["group"] = boardengine.OwnerEntry{IsProject: true, Beam: true, Owner: here}
++				w.owners.Entries["group"] = boardengine.OwnerEntry{IsProject: true, Beam: true, Owner: here, BeamColor: "#7d2d6b"}
+ 			},
+ 			wantCalls:   []string{"start"},
+ 			wantAnchors: []string{""},
+ 		},
+ 		{
+-			name: "PawlRunInFlightIsReportedLiveAndStartsNothing",
++			name: "BeamRecordedHereWithNoColourRunsTheOwnerStepForOne",
+ 			slug: "group",
+ 			setup: func(w *createWorld) {
+ 				w.owners.Entries["group"] = boardengine.OwnerEntry{IsProject: true, Beam: true, Owner: here}
++			},
++			wantCalls:   []string{"owner", "start"},
++			wantAnchors: []string{""},
++		},
++		{
++			name: "PawlRunInFlightIsReportedLiveAndStartsNothing",
++			slug: "group",
++			setup: func(w *createWorld) {
++				w.owners.Entries["group"] = boardengine.OwnerEntry{IsProject: true, Beam: true, Owner: here, BeamColor: "#7d2d6b"}
+ 				w.runs["group"] = shedengine.StateRunning
+ 			},
+ 			check: func(t *testing.T, got createResult) {
+@@ -261,7 +276,7 @@ func TestCreate(t *testing.T) {
+ 			slug:   "group",
+ 			anchor: "y",
+ 			setup: func(w *createWorld) {
+-				w.owners.Entries["group"] = boardengine.OwnerEntry{IsProject: true, Beam: true, Owner: here}
++				w.owners.Entries["group"] = boardengine.OwnerEntry{IsProject: true, Beam: true, Owner: here, BeamColor: "#7d2d6b"}
+ 			},
+ 			wantCalls:   []string{"start"},
+ 			wantAnchors: []string{"y"},
+diff --git a/internal/beamcli/doc.go b/internal/beamcli/doc.go
+index 620431f8..0782f242 100644
+--- a/internal/beamcli/doc.go
++++ b/internal/beamcli/doc.go
+@@ -19,7 +19,8 @@
+ //
+ //  1. `boardengine.SetOwners` with `Prime` claims the root for this machine when the board records no root owner.
+ //     A claim another machine wins reads the board again, and a parent that now reads as theirs is refused naming `lym adopt root`.
+-//  2. `boardengine.SetOwners` records this machine as the beam's owner with the beam flag and `recipe: pawl`; a write lost to another machine is refused naming `lym adopt <slug>`.
++//  2. `boardengine.SetOwners` records this machine as the beam's owner with the beam flag and `recipe: pawl`, and the beam's colour when it has none; a write lost to another machine is refused naming `lym adopt <slug>`.
++//     A beam recorded here with no colour runs the step again.
+ //  3. `battencli.StartFirstPass` starts the beam's batten run as a detached first pass recording the anchor, driven on by the parent's dobby.
+ //     A run in flight, a batten status file not done, is reported live and starts nothing; a flagged beam with no run status, or a legacy beam with a marked pair and no pawl run, gets its pawl run.
+ //     A first pass whose envelope is not ok, such as one a covering pause refused, is the verb's error carrying the envelope's error and leaves no run.
+diff --git a/internal/boardcli/doc.go b/internal/boardcli/doc.go
+index 2a185bcf..143b038f 100644
+--- a/internal/boardcli/doc.go
++++ b/internal/boardcli/doc.go
+@@ -25,6 +25,7 @@
+ // `ValidateSlug` applies fabric's pair slug rule, with the hub's configured junction names, to every task or project slug a write makes, a promote and a rename included;
+ // `PairExists` reports whether a directory stands at the slug's pair worktree path, for the refusal of a project change or rename on an entry with a pair;
+ // `ParentOf` is `hubgeom.ParentOf`, the one parent resolver.
++// `get` emits a beam's `beam_color`, which only the owner setter writes, so `upsert` refuses a payload naming it as an unknown field.
+ // `get` carries the entry's `parent_beam` beside `task` in its envelope, the slug of the beam above it and empty when the prime is its parent, and gives a project its effective owner as it gives a task's; `list` carries `parent_beam` on each entry that has one.
+ //
+ // A payload argument that is a bare handle, in either letter case, reads as `{"handle":…}`, so `lym board get B4` works and a verb that needs further keys refuses it as missing them.
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index adabe8d7..7315b65d 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -105,7 +105,8 @@
+ //
+ // SetOwners is the only writer of an owner or the prime owner.
+ // It pulls the board level with its upstream, writes one commit "board: owner <machine> for <slugs>" that sets each named beam project's owner, the prime owner when asked and an optional claim status on its slug, and pushes it.
+-// A named task or grouping project gets no owner, and a Beam request sets the beam flag and `recipe: pawl` on a named project in the same commit.
++// A named task or grouping project gets no owner, and a Beam request sets the beam flag and `recipe: pawl` on a named project in the same commit, and with a BeamColor picker the beam's `beam_color` when it has none, picked from the colours the other open beams hold.
++// `beam_color` is no upsert key, and only a beam project keeps one.
+ // A claim writes the run status alone, never an owner, and lands only on a task or on a project whose beam flag is set; any other entry keeps its status, and a claim on an entry whose effective owner is another machine is reported in OwnerWrite.Lost.
+ // Without Takeover it leaves an entry whose effective owner is another machine untouched and reports it in OwnerWrite.Lost; `lym adopt` alone passes Takeover.
+ // A competing write origin already holds wins the replay of a rejected push, and the owners re-read from the local board.json after the push decide Recorded and Lost.
+diff --git a/internal/boardengine/migrate.go b/internal/boardengine/migrate.go
+index b682578b..1a89101e 100644
+--- a/internal/boardengine/migrate.go
++++ b/internal/boardengine/migrate.go
+@@ -101,6 +101,7 @@ func migrateEntries(entries []storedEntry, vocab *Vocabulary) []Task {
+ 		// Only a beam project records an owner, so the key a task or grouping project carried from an older machine is dropped here and leaves board.json at the next write.
+ 		if out[i].Kind != KindProject || !out[i].Beam {
+ 			out[i].OwnerMachine = ""
++			out[i].BeamColor = ""
+ 		}
+ 		if out[i].Kind != KindTask {
+ 			continue
+diff --git a/internal/boardengine/migrate_test.go b/internal/boardengine/migrate_test.go
+index 36f8f08c..b6379772 100644
+--- a/internal/boardengine/migrate_test.go
++++ b/internal/boardengine/migrate_test.go
+@@ -122,6 +122,17 @@ func TestMigrateEntriesRewrites(t *testing.T) {
+ 				{Kind: KindNote, Labels: []string{"bug"}},
+ 			},
+ 		},
++		{
++			name: "only a beam project keeps its owner and colour",
++			in: []storedEntry{
++				{Task: Task{Slug: "b", Kind: KindProject, Labels: []string{"bug"}, Beam: true, OwnerMachine: "neve", BeamColor: "#7d2d6b"}},
++				{Task: Task{Slug: "g", Kind: KindProject, Labels: []string{"bug"}, OwnerMachine: "neve", BeamColor: "#7d2d6b"}},
++			},
++			want: []Task{
++				{Kind: KindProject, Labels: []string{"bug"}, OwnerMachine: "neve", BeamColor: "#7d2d6b"},
++				{Kind: KindProject, Labels: []string{"bug"}},
++			},
++		},
+ 		{
+ 			name: "an entry with neither tier nor kind is a note with empty labels",
+ 			in:   []storedEntry{{Task: Task{Slug: "a"}}},
+@@ -138,6 +149,7 @@ func TestMigrateEntriesRewrites(t *testing.T) {
+ 			for i, want := range tt.want {
+ 				e := got[i]
+ 				if e.Kind != want.Kind || e.Brief != want.Brief || e.Body != want.Body ||
++					e.OwnerMachine != want.OwnerMachine || e.BeamColor != want.BeamColor ||
+ 					!slices.Equal(e.Labels, want.Labels) || (e.Labels == nil) != (want.Labels == nil) ||
+ 					!slices.Equal(e.DependsOn, want.DependsOn) || (e.Status == nil) != (want.Status == nil) {
+ 					t.Errorf("entry %d = %+v, want %+v", i, e, want)
+diff --git a/internal/boardengine/owners.go b/internal/boardengine/owners.go
+index e4c6c8f7..b8804475 100644
+--- a/internal/boardengine/owners.go
++++ b/internal/boardengine/owners.go
+@@ -26,6 +26,8 @@ type OwnerEntry struct {
+ 	IsProject bool
+ 	// Beam reports whether the entry is a project that is a beam.
+ 	Beam bool
++	// BeamColor is the colour a beam project records, empty when none is recorded and for every other entry.
++	BeamColor string
+ 	// Done reports whether the entry is marked done.
+ 	Done bool
+ 	// RunHeld reports whether a run status stands on the entry; it does not change whose owner the entry reads.
+@@ -79,6 +81,7 @@ func ownersOf(primeOwner string, tasks []Task) Owners {
+ 		}
+ 		if entry.isBeamProject() {
+ 			entry.Owner = task.OwnerMachine
++			entry.BeamColor = task.BeamColor
+ 		}
+ 		owners.Entries[task.Slug] = entry
+ 	}
+diff --git a/internal/boardengine/owners_test.go b/internal/boardengine/owners_test.go
+index aaac83f4..675b8b83 100644
+--- a/internal/boardengine/owners_test.go
++++ b/internal/boardengine/owners_test.go
+@@ -107,14 +107,14 @@ func TestOwnersEffective(t *testing.T) {
+ 	t.Run("ReadsProjectAndBeam", func(t *testing.T) {
+ 		t.Parallel()
+ 		owners, err := ParseOwners([]byte(`{"version":1,"entries":[` +
+-			`{"id":0,"slug":"beamer","title":"b","kind":"project","labels":["bug"],"beam":true,"owner_machine":"box"},` +
++			`{"id":0,"slug":"beamer","title":"b","kind":"project","labels":["bug"],"beam":true,"owner_machine":"box","beam_color":"#7d2d6b"},` +
+ 			`{"id":1,"slug":"grouping","title":"g","kind":"project","labels":["bug"]},` +
+ 			`{"id":2,"slug":"work","title":"w","kind":"task","labels":["bug"]}]}`))
+ 		if err != nil {
+ 			t.Fatalf("ParseOwners() error = %v; want nil", err)
+ 		}
+ 		want := map[string]OwnerEntry{
+-			"beamer":   {Owner: "box", IsProject: true, Beam: true},
++			"beamer":   {Owner: "box", IsProject: true, Beam: true, BeamColor: "#7d2d6b"},
+ 			"grouping": {IsProject: true},
+ 			"work":     {IsTask: true},
+ 		}
+diff --git a/internal/boardengine/ownerset.go b/internal/boardengine/ownerset.go
+index f9725876..1d0b4a85 100644
+--- a/internal/boardengine/ownerset.go
++++ b/internal/boardengine/ownerset.go
+@@ -45,6 +45,8 @@ type OwnerRequest struct {
+ 	Claim string
+ 	// Beam sets the beam flag and the project recipe on each named project the write records, in the same commit as the owner; only the beam verbs ask for it.
+ 	Beam bool
++	// BeamColor picks the colour a Beam request records on a beam that has none, given the colours the board's other open beams hold, in the same write; nil records none.
++	BeamColor func(held []string) string
+ 	// ParentOf names the slug of an entry's parent pair, "" for the prime, so the effective owner is judged as a read judges it; nil reads every parent as the prime.
+ 	ParentOf func(slug string) (string, error)
+ 	// Sleep waits out the retry delay after a held lock deferred the push; nil sleeps.
+@@ -190,6 +192,9 @@ func writeOwners(boardDir string, req OwnerRequest, lost map[string]string) (wri
+ 		if req.Beam && entry.Kind == KindProject {
+ 			entry.Beam = true
+ 			entry.Recipe = ProjectRecipe
++			if entry.BeamColor == "" && req.BeamColor != nil {
++				entry.BeamColor = req.BeamColor(heldBeamColors(store.tasks, slug))
++			}
+ 		}
+ 		isBeam := entry.Kind == KindProject && entry.Beam
+ 		switch {
+@@ -290,3 +295,14 @@ func ReadOwners(boardDir string) (Owners, error) {
+ 	}
+ 	return ParseOwners(raw)
+ }
++
++// heldBeamColors returns the colours recorded on the open beam projects among tasks other than slug.
++func heldBeamColors(tasks []Task, slug string) []string {
++	var held []string
++	for _, task := range tasks {
++		if task.Slug != slug && task.Kind == KindProject && task.Beam && task.BeamColor != "" && !isDone(task) {
++			held = append(held, task.BeamColor)
++		}
++	}
++	return held
++}
+diff --git a/internal/boardengine/ownerset_integration_test.go b/internal/boardengine/ownerset_integration_test.go
+index fd6251f0..49d45214 100644
+--- a/internal/boardengine/ownerset_integration_test.go
++++ b/internal/boardengine/ownerset_integration_test.go
+@@ -68,6 +68,7 @@ func newOwnerFixture(t *testing.T, primeOwner string) *ownerFixture {
+ 		case "boxed":
+ 			store.tasks[i].Beam = true
+ 			store.tasks[i].OwnerMachine = "box"
++			store.tasks[i].BeamColor = "#7d2d6b"
+ 		}
+ 	}
+ 	store.primeOwner = primeOwner
+@@ -415,16 +416,32 @@ func TestSetOwners(t *testing.T) {
+ 		t.Parallel()
+ 		f := newOwnerFixture(t, "neve")
+ 
+-		got, err := SetOwners(f.boardDir, OwnerRequest{Machine: "neve", Slugs: []string{"grouping"}, Beam: true, Sleep: failOnSleep(t)})
++		var held []string
++		pick := func(colors []string) string {
++			held = colors
++			return "#2d4f7d"
++		}
++		got, err := SetOwners(f.boardDir, OwnerRequest{Machine: "neve", Slugs: []string{"grouping"}, Beam: true, BeamColor: pick, Sleep: failOnSleep(t)})
+ 		if err != nil || !slices.Equal(got.Recorded, []string{"grouping"}) {
+ 			t.Fatalf("SetOwners() = %+v, %v; want grouping recorded", got, err)
+ 		}
+ 		grouping := originTasks(t, f)["grouping"]
+-		if !grouping.Beam || grouping.OwnerMachine != "neve" || grouping.Recipe != ProjectRecipe {
+-			t.Errorf("origin grouping = beam %v, owner %q, recipe %q; want the beam flag, neve and recipe %s written together", grouping.Beam, grouping.OwnerMachine, grouping.Recipe, ProjectRecipe)
++		if !grouping.Beam || grouping.OwnerMachine != "neve" || grouping.Recipe != ProjectRecipe || grouping.BeamColor != "#2d4f7d" {
++			t.Errorf("origin grouping = beam %v, owner %q, recipe %q, colour %q; want the beam flag, neve, recipe %s and #2d4f7d written together", grouping.Beam, grouping.OwnerMachine, grouping.Recipe, grouping.BeamColor, ProjectRecipe)
++		}
++		if !slices.Equal(held, []string{"#7d2d6b"}) {
++			t.Errorf("colour picker saw held = %v; want [#7d2d6b], the other open beam's colour", held)
+ 		}
+ 		if count := gitkit.Git(t, f.bare, "rev-list", "--count", f.seedHead+"..main"); count != "1" {
+-			t.Errorf("commits on origin since the seed = %s; want 1, the flag and the owner in one commit", count)
++			t.Errorf("commits on origin since the seed = %s; want 1, the flag, the owner and the colour in one commit", count)
++		}
++
++		repick := func([]string) string { return "#ffffff" }
++		if _, err := SetOwners(f.boardDir, OwnerRequest{Machine: "neve", Slugs: []string{"grouping"}, Beam: true, BeamColor: repick, Sleep: failOnSleep(t)}); err != nil {
++			t.Fatalf("second SetOwners() error = %v; want nil", err)
++		}
++		if color := originTasks(t, f)["grouping"].BeamColor; color != "#2d4f7d" {
++			t.Errorf("origin grouping colour after a second beam write = %q; want #2d4f7d kept", color)
+ 		}
+ 	})
+ 
+diff --git a/internal/boardengine/replay.go b/internal/boardengine/replay.go
+index 3ea16529..0baf9f0b 100644
+--- a/internal/boardengine/replay.go
++++ b/internal/boardengine/replay.go
+@@ -54,6 +54,7 @@ var replayFields = []replayField{
+ 	{"project", func(t Task) any { return t.Project }, func(dst *Task, src Task) { dst.Project = src.Project }},
+ 	{"order", func(t Task) any { return orEmpty(t.Order) }, func(dst *Task, src Task) { dst.Order = slices.Clone(src.Order) }},
+ 	{"beam", func(t Task) any { return t.Beam }, func(dst *Task, src Task) { dst.Beam = src.Beam }},
++	{"beam_color", func(t Task) any { return t.BeamColor }, func(dst *Task, src Task) { dst.BeamColor = src.BeamColor }},
+ }
+ 
+ // orEmpty returns values, or an empty slice for nil, so a nil and an empty slice compare equal.
+diff --git a/internal/boardengine/replay_test.go b/internal/boardengine/replay_test.go
+index af6480a3..2ba237e1 100644
+--- a/internal/boardengine/replay_test.go
++++ b/internal/boardengine/replay_test.go
+@@ -83,6 +83,10 @@ func withOrder(slugs ...string) func(*Task) {
+ 
+ func asBeam(task *Task) { task.Beam = true }
+ 
++func withBeamColor(color string) func(*Task) {
++	return func(task *Task) { task.BeamColor = color }
++}
++
+ // boardJSON encodes tasks as a board.json, numbering the entries by position.
+ func boardJSON(t *testing.T, tasks []Task) []byte {
+ 	t.Helper()
+@@ -344,6 +348,32 @@ func TestFabricReplay(t *testing.T) {
+ 				}
+ 			},
+ 		},
++		{
++			name:        "BeamColorOnlyTheCommitChangedLandsOnABeamOriginLacksItOn",
++			base:        []Task{replayEntry("a", asProject, asBeam)},
++			origin:      []Task{replayEntry("a", asProject, asBeam)},
++			parent:      []Task{replayEntry("a", asProject, asBeam)},
++			commit:      []Task{replayEntry("a", asProject, asBeam, withBeamColor("#7d2d6b"))},
++			wantEntries: map[string]string{"a": "a"},
++			check: func(t *testing.T, _ string, got map[string]Task) {
++				if got["a"].BeamColor != "#7d2d6b" {
++					t.Errorf("beam_color = %q; want the commit's #7d2d6b", got["a"].BeamColor)
++				}
++			},
++		},
++		{
++			name:        "BeamFlagClearedByTheCommitDropsTheColourOriginRecorded",
++			base:        []Task{replayEntry("a", asProject, asBeam)},
++			origin:      []Task{replayEntry("a", asProject, asBeam, withBeamColor("#7d2d6b"))},
++			parent:      []Task{replayEntry("a", asProject, asBeam)},
++			commit:      []Task{replayEntry("a", asProject)},
++			wantEntries: map[string]string{"a": "a"},
++			check: func(t *testing.T, _ string, got map[string]Task) {
++				if got["a"].Beam || got["a"].BeamColor != "" {
++					t.Errorf("beam = %v, beam_color = %q; want a non-beam entry with no colour", got["a"].Beam, got["a"].BeamColor)
++				}
++			},
++		},
+ 		{
+ 			name:        "OwnerOnlyTheCommitChangedLandsOnARunHeldEntry",
+ 			base:        []Task{replayEntry("a", asProject, asBeam, withStatus(runLocked))},
+diff --git a/internal/boardengine/store.go b/internal/boardengine/store.go
+index 3e49cfbc..bc6e53d1 100644
+--- a/internal/boardengine/store.go
++++ b/internal/boardengine/store.go
+@@ -454,6 +454,7 @@ type MergeStatusUpdate struct {
+ // UpsertPayloadKeys returns the keys a task payload carries on every upsert path: the required keys and the optional ones.
+ // "id" and "handle" are assigned by the board and never accepted; "phase" and "group" are retired.
+ // "owner_machine" is accepted only as the entry's effective owner, a no-op, and "beam" only as the entry's stored flag.
++// "beam_color" is output only: a beam carries it in what is read back, the owner setter records it, and an upsert naming it is refused as an unknown field.
+ func UpsertPayloadKeys() (required, optional []string) {
+ 	return []string{"slug"}, []string{"title", "brief", "body", "depends_on", "isolated", "status", "kind", "labels", "recipe", "priority", "short_name", "issues", "created", "revised", "run_settings", "profile", "owner_machine", "project", "order", "beam"}
+ }
+diff --git a/internal/boardengine/store_test.go b/internal/boardengine/store_test.go
+index 194a626a..4db0c79d 100644
+--- a/internal/boardengine/store_test.go
++++ b/internal/boardengine/store_test.go
+@@ -490,6 +490,19 @@ func TestUpsertFieldAllowlist(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("beam_color_is_output_only_and_refused_as_an_unknown_field", func(t *testing.T) {
++		s := boardengine.NewStore("")
++		err := s.UpsertTasksBatch([]map[string]any{
++			{"slug": "beamer", "beam_color": "#7d2d6b"},
++		})
++		if err == nil {
++			t.Fatalf("expected error for the beam_color key")
++		}
++		if !stringContains(err.Error(), `"beam_color"`) {
++			t.Errorf("expected error naming 'beam_color', got %v", err)
++		}
++	})
++
+ 	t.Run("owner_machine_is_accepted_only_as_the_effective_owner", func(t *testing.T) {
+ 		entryPoints := []struct {
+ 			name  string
+@@ -1444,6 +1457,20 @@ func TestLoad(t *testing.T) {
+ 			save:     true,
+ 			wantKeys: [][3]string{{"t", "owner_machine", ""}, {"g", "owner_machine", ""}, {"b", "owner_machine", `"box"`}},
+ 		},
++		{
++			name: "a task's and a grouping project's recorded beam colour is dropped and a beam project's kept",
++			body: `{"version":1,"entries":[` +
++				`{"id":0,"slug":"t","kind":"task","beam_color":"#7d2d6b"},` +
++				`{"id":1,"slug":"g","kind":"project","beam_color":"#7d2d6b"},` +
++				`{"id":2,"slug":"b","kind":"project","beam":true,"beam_color":"#7d2d6b"}]}`,
++			check: func(t *testing.T, tasks []boardengine.Task) {
++				if len(tasks) != 3 || tasks[0].BeamColor != "" || tasks[1].BeamColor != "" || tasks[2].BeamColor != "#7d2d6b" {
++					t.Errorf("loaded %+v; want no colour on the task and the grouping project and #7d2d6b on the beam", tasks)
++				}
++			},
++			save:     true,
++			wantKeys: [][3]string{{"t", "beam_color", ""}, {"g", "beam_color", ""}, {"b", "beam_color", `"#7d2d6b"`}},
++		},
+ 		{
+ 			name: "a kind with no labels key becomes an empty labels list",
+ 			body: `{"version":1,"entries":[{"id":0,"slug":"a","title":"A","kind":"note"}]}`,
+diff --git a/internal/boardengine/task.go b/internal/boardengine/task.go
+index 5e930883..90f9c39f 100644
+--- a/internal/boardengine/task.go
++++ b/internal/boardengine/task.go
+@@ -50,6 +50,8 @@ type Task struct {
+ 	Order []string `json:"order,omitempty"`
+ 	// Beam reports whether a project is a beam, a long-lived pair that runs its members; only a project carries it.
+ 	Beam bool `json:"beam,omitempty"`
++	// BeamColor is the #rrggbb colour a beam project's VS Code windows show, recorded once by the owner setter; only a beam project carries it.
++	BeamColor string `json:"beam_color,omitempty"`
+ 
+ 	// Unknown holds the decoded entry's keys this binary does not know, each with its raw JSON value, nil when there are none.
+ 	// Encoding writes them back after the known fields in key order, and no step decodes a value into a Go type.
+@@ -274,6 +276,7 @@ func normalizeTask(t *Task) error {
+ 	}
+ 	if t.Kind != KindProject || !t.Beam {
+ 		t.OwnerMachine = ""
++		t.BeamColor = ""
+ 	}
+ 	t.Created = entryTime(t.Created)
+ 	t.Revised = entryTime(t.Revised)
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index a675ff6c..e8d5e8d6 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -1130,7 +1130,8 @@
+ // Beside it, `BeamWorkspacePath` names `<hub>/<RepoName>-<beam>.code-workspace` for each pair whose origin record carries the beam mark, listing the beam, its parent, `Bolt` and every pair whose parent is the beam; a sub-beam appears there by its own worktree only and has a file of its own.
+ // Each beam file carries `lym.generated: true` as its first key, and a regeneration removes such a file only when its beam pair is gone, through the hub's `os.Root`, so an operator's unmarked file of that name stays.
+ // The files are lym-owned and rewritten from the hub's current worktrees and origin records whenever their bytes would change, so a hand edit is overwritten;
+-// settings belong in the prime's `.vscode/settings.json`, which the file splices verbatim.
++// settings belong in the prime's `.vscode/settings.json`, which the hub file splices verbatim.
++// A beam's file splices the beam's own `.vscode/settings.json` when it exists and can be read, and the prime's otherwise, with a Warn for an unreadable one.
+ // A regeneration runs under `HubWorkspaceLockPath(hub)`, a leaf lock under the hub scratch directory, and lists the folders only after taking it,
+ // so a pair created while the regeneration waits is listed.
+ // The write goes through an `os.Root` at the hub, so a symlink planted at the file's path that escapes the hub is refused.
+diff --git a/internal/fabricengine/hubworkspace.go b/internal/fabricengine/hubworkspace.go
+index 390cac5e..631405c9 100644
+--- a/internal/fabricengine/hubworkspace.go
++++ b/internal/fabricengine/hubworkspace.go
+@@ -50,7 +50,7 @@ func HubWorkspaceLockPath(hubPath string) string {
+ 
+ // RegenerateHubWorkspace rewrites the hub workspace file and a workspace file per beam from the hub's current worktrees, the pairs' origin records and the prime's .vscode/settings.json, and returns the hub file's path.
+ // The hub file lists the prime, the board as Bolt, then every pair whose parent is the prime, beams included, and no pair under a beam.
+-// A beam's file, BeamWorkspacePath, lists the beam, its parent, Bolt and every pair whose parent is the beam, and a file of a beam that is gone is removed when it carries the generated mark.
++// A beam's file, BeamWorkspacePath, lists the beam, its parent, Bolt and every pair whose parent is the beam, with the beam's own .vscode/settings.json when it has a readable one and the prime's otherwise, and a file of a beam that is gone is removed when it carries the generated mark.
+ // A pair with no readable origin record is listed in the hub file as a pair of the prime.
+ // Each file is rewritten only when its bytes change; a write or removal is recorded in rec.
+ // The regeneration runs under the hub workspace lock, so two callers never interleave their listing and write.
+@@ -59,6 +59,23 @@ func RegenerateHubWorkspace(rec *Mutations, l *lymcwd.Location) (string, error)
+ 	return regenerateHubWorkspace(rec, l, hubWorkspaceLockWait)
+ }
+ 
++// beamWorkspaceSettings returns the settings a beam's workspace file splices: the beam's own .vscode/settings.json, which carries its window title and colours, or primeSettings when the beam has none.
++// An unreadable anchor or settings file is an error.
++func beamWorkspaceSettings(l *lymcwd.Location, beam string, primeSettings []byte) ([]byte, error) {
++	beamLoc, err := lymcwd.NamedWorktree(l.HubPath, beam)
++	if err != nil {
++		return nil, fmt.Errorf("read the anchor of beam %s: %w", beam, err)
++	}
++	settings, err := vscode.ReadSettings(beamLoc.AnchorPath())
++	if err != nil {
++		return nil, fmt.Errorf("read settings of beam %s: %w", beam, err)
++	}
++	if settings == nil {
++		return primeSettings, nil
++	}
++	return settings, nil
++}
++
+ // regenerateAfterVerb regenerates the hub workspace file at the end of a fabric verb that changed the hub's worktrees.
+ // A failure is logged at Warn, naming the verb and the repair, and is never returned:
+ // a stale file is rewritten by the next regenerating verb or prime spawn, so it never fails or rolls back the verb.
+@@ -118,7 +135,12 @@ func regenerateHubWorkspace(rec *Mutations, l *lymcwd.Location, lockWait time.Du
+ 	kept := map[string]bool{}
+ 	for _, beam := range layout.beams {
+ 		kept[beam.slug] = true
+-		beamContent, err := vscode.BuildWorkspace(beam.folders, settings)
++		beamSettings, err := beamWorkspaceSettings(l, beam.slug, settings)
++		if err != nil {
++			logger.Warn("fabricengine: a beam's own settings could not be read, so its workspace file splices the prime's", "beam", beam.slug, "error", err)
++			beamSettings = settings
++		}
++		beamContent, err := vscode.BuildWorkspace(beam.folders, beamSettings)
+ 		if err != nil {
+ 			return "", fmt.Errorf("build workspace of beam %s: %w", beam.slug, err)
+ 		}
+diff --git a/internal/fabricengine/hubworkspace_integration_test.go b/internal/fabricengine/hubworkspace_integration_test.go
+index db0565ef..f698283a 100644
+--- a/internal/fabricengine/hubworkspace_integration_test.go
++++ b/internal/fabricengine/hubworkspace_integration_test.go
+@@ -340,6 +340,42 @@ func TestRegenerateHubWorkspace(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("SplicesTheBeamsOwnSettingsIntoItsFileAndThePrimesWhenItHasNone", func(t *testing.T) {
++		t.Parallel()
++		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++		hubforge.AddPairWith(t, h, "b", beamAddOptions)
++		writeSettingsAt(t, h.PrimeWorktree(), `{"window.title": "prime"}`)
++		beamPath := fabricengine.BeamWorkspacePath(h.Location, "b")
++
++		path, _ := regenerateHub(t, h)
++		for file, want := range map[string]string{path: "prime", beamPath: "prime"} {
++			if got := workspaceTitle(t, file); got != want {
++				t.Errorf("%s window.title = %q; want %q with no beam settings", filepath.Base(file), got, want)
++			}
++		}
++
++		writeSettingsAt(t, fabricengine.WorktreePath(h.Location, "b"), `{"window.title": "beam"}`)
++		regenerateHub(t, h)
++		for file, want := range map[string]string{path: "prime", beamPath: "beam"} {
++			if got := workspaceTitle(t, file); got != want {
++				t.Errorf("%s window.title = %q; want %q", filepath.Base(file), got, want)
++			}
++		}
++
++		// A settings.json that is a directory cannot be read: the beam falls back to the prime's settings.
++		settingsPath := filepath.Join(fabricengine.WorktreePath(h.Location, "b"), ".vscode", "settings.json")
++		if err := os.Remove(settingsPath); err != nil {
++			t.Fatalf("remove the beam settings: %v", err)
++		}
++		if err := os.Mkdir(settingsPath, 0o755); err != nil {
++			t.Fatalf("make the beam settings unreadable: %v", err)
++		}
++		regenerateHub(t, h)
++		if got := workspaceTitle(t, beamPath); got != "prime" {
++			t.Errorf("%s window.title = %q; want %q with unreadable beam settings", filepath.Base(beamPath), got, "prime")
++		}
++	})
++
+ 	t.Run("PlacesAReanchoredBeamAtItsOwnAnchorFromAnyWorktree", func(t *testing.T) {
+ 		t.Parallel()
+ 		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+@@ -610,3 +646,31 @@ func TestRegenerateHubWorkspace(t *testing.T) {
+ 		assertNoWorkspaceFile(t, h)
+ 	})
+ }
++
++// writeSettingsAt writes content as <dir>/.vscode/settings.json.
++func writeSettingsAt(t *testing.T, dir, content string) {
++	t.Helper()
++	if err := os.MkdirAll(filepath.Join(dir, ".vscode"), 0o755); err != nil {
++		t.Fatalf("create .vscode: %v", err)
++	}
++	if err := os.WriteFile(filepath.Join(dir, ".vscode", "settings.json"), []byte(content), 0o644); err != nil {
++		t.Fatalf("write settings: %v", err)
++	}
++}
++
++// workspaceTitle returns the window.title the workspace file at path carries in its settings.
++func workspaceTitle(t *testing.T, path string) string {
++	t.Helper()
++	data, err := os.ReadFile(path)
++	if err != nil {
++		t.Fatalf("read %s: %v", path, err)
++	}
++	var ws struct {
++		Settings map[string]any `json:"settings"`
++	}
++	if err := json.Unmarshal(data, &ws); err != nil {
++		t.Fatalf("%s is not valid JSON: %v\n%s", path, err, data)
++	}
++	title, _ := ws.Settings["window.title"].(string)
++	return title
++}
+diff --git a/internal/idecli/cli.go b/internal/idecli/cli.go
+index 9f6f9527..0478b149 100644
+--- a/internal/idecli/cli.go
++++ b/internal/idecli/cli.go
+@@ -2,9 +2,9 @@
+ //
+ // Command() returns the root "ide" command with four subcommands — spawn, menu, seed and open.
+ // spawn and menu wrap the existing handler bodies;
+-// seed writes an existing pair's .vscode/ config and title-bar colour and launches nothing.
+-// open starts VS Code on that pair's folder.
+-// Both take a slug.
++// seed writes an existing worktree's .vscode/ config, window title and colours and launches nothing;
++// with no slug it seeds the worktree it runs in, the prime included.
++// open starts VS Code on a pair's folder and takes a slug.
+ // Layout resolution happens once in a PersistentPreRunE so that the no-arg "lym ide" listing never
+ // requires a git repo.
+ 
+@@ -100,20 +100,25 @@ func Command() *cobra.Command {
+ 		},
+ 	}
+ 
+-	seedCmd := slugVerbCommand(&l, "seed", "write a task worktree's VS Code config and title-bar colour", ideengine.SeedTask)
+-	openCmd := slugVerbCommand(&l, "open", "open a task worktree's folder in VS Code", ideengine.OpenTask)
++	seedCmd := slugVerbCommand(&l, "seed", "write the VS Code config, window title and colours of the prime or a task worktree, the current worktree with no slug", true, ideengine.Seed)
++	openCmd := slugVerbCommand(&l, "open", "open a task worktree's folder in VS Code", false, ideengine.OpenTask)
+ 
+ 	cmd.AddCommand(spawnCmd, menuCmd, seedCmd, openCmd)
+ 	return cmd
+ }
+ 
+-// slugVerbCommand builds the operator-audience verb name <slug> that runs action on an existing pair of the hub.
++// slugVerbCommand builds the operator-audience verb name <slug> that runs action on an existing worktree of the hub.
++// With slugOptional, the slug may be left out and names the worktree the verb runs in, the prime included.
+ // Before calling action it refuses a slug failing the slug grammar and one whose worktree directory under the hub does not exist,
+ // so the verb acts only on a directory directly under the hub.
+ // The location is read through l when the verb runs, after the root's pre-run has resolved it.
+-func slugVerbCommand(l **lymcwd.Location, name, short string, action func(*lymcwd.Location, string) error) *cobra.Command {
++func slugVerbCommand(l **lymcwd.Location, name, short string, slugOptional bool, action func(*lymcwd.Location, string) error) *cobra.Command {
++	use := name + " <slug>"
++	if slugOptional {
++		use = name + " [<slug>]"
++	}
+ 	return &cobra.Command{
+-		Use:         name + " <slug>",
++		Use:         use,
+ 		Short:       short,
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+@@ -121,11 +126,16 @@ func slugVerbCommand(l **lymcwd.Location, name, short string, action func(*lymcw
+ 				return nil
+ 			}
+ 
+-			if len(args) < 1 {
+-				clihelp.SetExit(cmd.Context(), output.Err(cmd.OutOrStdout(), "usage: lym ide "+name+" <slug>"))
++			var slug string
++			switch {
++			case len(args) > 0:
++				slug = args[0]
++			case slugOptional:
++				slug = (*l).WorktreeName
++			default:
++				clihelp.SetExit(cmd.Context(), output.Err(cmd.OutOrStdout(), "usage: lym ide "+use))
+ 				return nil
+ 			}
+-			slug := args[0]
+ 
+ 			if err := agentname.ValidateSlug(slug); err != nil {
+ 				clihelp.SetExit(cmd.Context(), output.Err(cmd.OutOrStdout(), fmt.Sprintf("%s failed: %v", name, err)))
+diff --git a/internal/idecli/cli_test.go b/internal/idecli/cli_test.go
+index a79c65b9..1575c7a5 100644
+--- a/internal/idecli/cli_test.go
++++ b/internal/idecli/cli_test.go
+@@ -1,7 +1,7 @@
+ //go:build tier1
+ 
+ // cli_test.go covers the ide CLI cobra surface: spawn dispatch with a stubbed
+-// launcher, the non-git refusal and the missing-slug error.
++// launcher, seed with and without a slug, the non-git refusal and the missing-slug error.
+ 
+ package idecli
+ 
+@@ -102,6 +102,31 @@ func TestRunCLI_SpawnScenario(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("seed without a slug seeds the worktree it runs in, the prime included", func(t *testing.T) {
++		launches = nil
++		var out bytes.Buffer
++		code := RunCLIIn(h.PrimeWorktree(), &out, []string{"seed"})
++
++		if code != 0 {
++			t.Fatalf("RunCLI(seed) in the prime = %d; output: %s", code, out.String())
++		}
++		var envelope struct {
++			Slug string `json:"slug"`
++		}
++		if err := json.Unmarshal(out.Bytes(), &envelope); err != nil {
++			t.Fatalf("envelope %q: %v", out.String(), err)
++		}
++		if want := filepath.Base(h.PrimeWorktree()); envelope.Slug != want {
++			t.Errorf("seeded slug = %q; want the prime %q", envelope.Slug, want)
++		}
++		if _, err := os.Stat(filepath.Join(h.PrimeWorktree(), ".vscode", "settings.json")); err != nil {
++			t.Errorf("prime .vscode/settings.json: %v", err)
++		}
++		if len(launches) != 0 {
++			t.Errorf("seed launched %v; want no launch", launches)
++		}
++	})
++
+ 	t.Run("open launches once on the pair folder", func(t *testing.T) {
+ 		launches = nil
+ 		var out bytes.Buffer
+@@ -122,7 +147,7 @@ func TestRunCLI_SpawnScenario(t *testing.T) {
+ 		wantVerb  string
+ 		wantUsage bool
+ 	}{
+-		{name: "seed without a slug", args: []string{"seed"}, wantVerb: "usage: lym ide seed", wantUsage: true},
++		{name: "open without a slug", args: []string{"open"}, wantVerb: "usage: lym ide open", wantUsage: true},
+ 		{name: "seed of a slug with no pair", args: []string{"seed", "nosuch"}, wantVerb: "seed"},
+ 		{name: "open of a slug with no pair", args: []string{"open", "nosuch"}, wantVerb: "open"},
+ 		{name: "open of a path-shaped slug", args: []string{"open", "../child"}, wantVerb: "open"},
+diff --git a/internal/ideengine/look_test.go b/internal/ideengine/look_test.go
+new file mode 100644
+index 00000000..80b3d6ce
+--- /dev/null
++++ b/internal/ideengine/look_test.go
+@@ -0,0 +1,163 @@
++//go:build tier0
++
++// look_test.go covers lookFor over a hub of plain directories: the window title from the hub shortname,
++// and the project and worktree colours of the prime, a beam and a task under each.
++
++package ideengine
++
++import (
++	"encoding/json"
++	"os"
++	"path/filepath"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/vscode"
++)
++
++// Colours of the palette the hub below uses, in palette order after the prime's green.
++const (
++	purple = "#7d2d6b"
++	blue   = "#2d4f7d"
++	brown  = "#7d5c2d"
++	violet = "#4a2d7d"
++)
++
++// lookHub builds a hub of plain directories: a prime, a beam bm recording violet, a beam bn recording no colour, tasks t1 and t2 under bm, and tasks t3, t4 and t5 under the prime, with settings for t2, t4 and t5.
++// A non-empty shortname is recorded on the board.
++func lookHub(t *testing.T, shortname string) *lymcwd.Location {
++	t.Helper()
++	hub := t.TempDir()
++	for _, name := range []string{"prime", "bm", "bn", "t1", "t2", "t3", "t4", "t5"} {
++		if err := os.MkdirAll(filepath.Join(hub, name), 0o755); err != nil {
++			t.Fatal(err)
++		}
++	}
++	board := fabricengine.BoardDir(hub)
++	if err := os.MkdirAll(board, 0o755); err != nil {
++		t.Fatal(err)
++	}
++	boardJSON := `{"version":1,"entries":[` +
++		`{"id":0,"slug":"bm","title":"BM","kind":"project","labels":["bug"],"beam":true,"beam_color":"` + violet + `"},` +
++		`{"id":1,"slug":"bn","title":"BN","kind":"project","labels":["bug"],"beam":true},` +
++		`{"id":2,"slug":"gone","title":"Gone","kind":"project","labels":["bug"],"beam":true,"beam_color":"` + purple + `","status":"done"},` +
++		`{"id":3,"slug":"t1","title":"T1","kind":"task","labels":["bug"],"project":"bm"},` +
++		`{"id":4,"slug":"t2","title":"T2","kind":"task","labels":["bug"],"project":"bm"}]}`
++	if err := os.WriteFile(filepath.Join(board, "board.json"), []byte(boardJSON), 0o644); err != nil {
++		t.Fatal(err)
++	}
++	if shortname != "" {
++		if err := fabricengine.WriteShortname(board, shortname); err != nil {
++			t.Fatal(err)
++		}
++	}
++	writeBars(t, filepath.Join(hub, "t2"), violet, vscode.PrimeColor)
++	writeBars(t, filepath.Join(hub, "t4"), vscode.PrimeColor, purple)
++	writeBars(t, filepath.Join(hub, "t5"), vscode.PrimeColor, brown)
++	return &lymcwd.Location{HubPath: hub, WorktreeName: "prime", AnchorRel: "."}
++}
++
++// writeBars writes <dir>/.vscode/settings.json holding title and activity as the title-bar and activity-bar backgrounds.
++func writeBars(t *testing.T, dir, title, activity string) {
++	t.Helper()
++	data, err := json.Marshal(map[string]any{"workbench.colorCustomizations": map[string]any{"titleBar.activeBackground": title, "activityBar.background": activity}})
++	if err != nil {
++		t.Fatal(err)
++	}
++	if err := os.MkdirAll(filepath.Join(dir, ".vscode"), 0o755); err != nil {
++		t.Fatal(err)
++	}
++	if err := os.WriteFile(filepath.Join(dir, ".vscode", "settings.json"), data, 0o644); err != nil {
++		t.Fatal(err)
++	}
++}
++
++func TestLookFor(t *testing.T) {
++	t.Parallel()
++	l := lookHub(t, "tst")
++	tests := []struct {
++		slug string
++		want vscode.Look
++	}{
++		{"prime", vscode.Look{Title: "TST: prime", ProjectColor: vscode.PrimeColor, WorktreeColor: vscode.PrimeColor}},
++		{"bm", vscode.Look{Title: "TST: bm", ProjectColor: violet, WorktreeColor: violet}},
++		{"bn", vscode.Look{Title: "TST: bn", ProjectColor: purple, WorktreeColor: purple}},
++		{"t1", vscode.Look{Title: "TST: t1", ProjectColor: violet, WorktreeColor: purple}},
++		{"t3", vscode.Look{Title: "TST: t3", ProjectColor: vscode.PrimeColor, WorktreeColor: blue}},
++		{"t5", vscode.Look{Title: "TST: t5", ProjectColor: vscode.PrimeColor, WorktreeColor: brown}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.slug, func(t *testing.T) {
++			t.Parallel()
++			own, err := lymcwd.NamedWorktree(l.HubPath, tt.slug)
++			if err != nil {
++				t.Fatal(err)
++			}
++			if got := lookFor(l, own, tt.slug, "prime"); got != tt.want {
++				t.Errorf("lookFor(%s) = %+v; want %+v", tt.slug, got, tt.want)
++			}
++		})
++	}
++}
++
++func TestLookForDegradesToATaskUnderThePrime(t *testing.T) {
++	t.Parallel()
++	tests := []struct {
++		name   string
++		slug   string
++		damage func(t *testing.T, l *lymcwd.Location)
++	}{
++		{
++			name: "UnreadableBoard",
++			slug: "t1",
++			damage: func(t *testing.T, l *lymcwd.Location) {
++				if err := os.WriteFile(filepath.Join(fabricengine.BoardDir(l.HubPath), "board.json"), []byte("not json"), 0o644); err != nil {
++					t.Fatal(err)
++				}
++			},
++		},
++		{
++			name: "UnresolvableParent",
++			slug: "t1",
++			damage: func(t *testing.T, l *lymcwd.Location) {
++				marker := filepath.Join(fabricengine.BoardDir(l.HubPath), lymcwd.AnchorFileName)
++				if err := os.MkdirAll(filepath.Dir(marker), 0o755); err != nil {
++					t.Fatal(err)
++				}
++				if err := os.WriteFile(marker, []byte("../escape"), 0o644); err != nil {
++					t.Fatal(err)
++				}
++			},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			l := lookHub(t, "tst")
++			own, err := lymcwd.NamedWorktree(l.HubPath, tt.slug)
++			if err != nil {
++				t.Fatal(err)
++			}
++			tt.damage(t, l)
++
++			got := lookFor(l, own, tt.slug, "prime")
++
++			if got.ProjectColor != vscode.PrimeColor || got.WorktreeColor == vscode.PrimeColor {
++				t.Errorf("lookFor(%s) = %+v; want green on the title bar and a non-green activity bar", tt.slug, got)
++			}
++		})
++	}
++}
++
++func TestLookForWithoutShortnameTitlesTheSlugAlone(t *testing.T) {
++	t.Parallel()
++	l := lookHub(t, "")
++	own, err := lymcwd.NamedWorktree(l.HubPath, "t3")
++	if err != nil {
++		t.Fatal(err)
++	}
++	if got := lookFor(l, own, "t3", "prime").Title; got != "t3" {
++		t.Errorf("lookFor(t3).Title = %q; want %q", got, "t3")
++	}
++}
+diff --git a/internal/ideengine/spawn.go b/internal/ideengine/spawn.go
+index f367626b..5090cead 100644
+--- a/internal/ideengine/spawn.go
++++ b/internal/ideengine/spawn.go
+@@ -1,5 +1,5 @@
+-// spawn.go implements the ide entry point Spawn (`ide spawn`), and its two halves for a task pair, SeedTask and OpenTask.
+-// It assigns a title-bar color, generates the worktree's .vscode/ config, and launches VS Code;
++// spawn.go implements the ide entry point Spawn (`ide spawn`), and its two halves, Seed and OpenTask.
++// It resolves a worktree's window title and colours from the prime, the board's beams and the worktree's parent, generates the worktree's .vscode/ config, and launches VS Code;
+ // it regenerates tasks.json on every call and keeps .vscode/ out of git through info/exclude.
+ // A task slug opens its bare folder.
+ // The prime instead opens the lym-generated hub workspace <hub>/<RepoName>.code-workspace (prime, Bolt, every task pair), regenerated on every prime spawn.
+@@ -8,12 +8,14 @@ package ideengine
+ 
+ import (
+ 	"fmt"
+-	"log/slog"
+ 	"os"
+ 	"path"
+ 	"path/filepath"
++	"strings"
+ 
++	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/vscode"
+@@ -38,13 +40,13 @@ var KeybindingsPath = vscode.UserKeybindingsPath
+ // Before launching it seeds the lym block of key bindings into the user's VS Code keybindings.json and returns the outcome beside the error;
+ // a skipped seed never fails the spawn.
+ func Spawn(l *lymcwd.Location, slug string) (vscode.KeybindingsResult, error) {
+-	worktreeDir, color, primeName, primeResolved := resolveSpawnTarget(l, slug, targetUnknown)
+ 	own, err := lymcwd.NamedWorktree(l.HubPath, slug)
+ 	if err != nil {
+ 		return vscode.KeybindingsResult{}, fmt.Errorf("read the anchor of %q: %w", slug, err)
+ 	}
++	worktreeDir, look, primeName, primeResolved := resolveSpawnTarget(l, own, slug)
+ 
+-	if err := writeWorktreeConfig(l, worktreeDir, slug, color); err != nil {
++	if err := writeWorktreeConfig(own, worktreeDir, slug, look); err != nil {
+ 		return vscode.KeybindingsResult{}, err
+ 	}
+ 
+@@ -62,11 +64,15 @@ func Spawn(l *lymcwd.Location, slug string) (vscode.KeybindingsResult, error) {
+ 	return keybindings, CodeLauncher(openDir)
+ }
+ 
+-// SeedTask writes task slug's title-bar color and .vscode/ config, as Spawn does for a task pair, and launches nothing.
++// Seed writes the window title and colours and the .vscode/ config of the worktree slug, the prime or a pair, as Spawn does, and launches nothing.
+ // It leaves the user's keybindings.json alone.
+-func SeedTask(l *lymcwd.Location, slug string) error {
+-	worktreeDir, color, _, _ := resolveSpawnTarget(l, slug, targetTask)
+-	return writeWorktreeConfig(l, worktreeDir, slug, color)
++func Seed(l *lymcwd.Location, slug string) error {
++	own, err := lymcwd.NamedWorktree(l.HubPath, slug)
++	if err != nil {
++		return fmt.Errorf("read the anchor of %q: %w", slug, err)
++	}
++	worktreeDir, look, _, _ := resolveSpawnTarget(l, own, slug)
++	return writeWorktreeConfig(own, worktreeDir, slug, look)
+ }
+ 
+ // OpenTask launches VS Code on task slug's bare folder at the task's own anchor, as Spawn does for a task pair, and writes nothing.
+@@ -78,15 +84,11 @@ func OpenTask(l *lymcwd.Location, slug string) error {
+ 	return CodeLauncher(filepath.Join(fabricengine.WorktreePath(l, slug), own.AnchorRel))
+ }
+ 
+-// writeWorktreeConfig writes slug's .vscode/ config at slug's own anchor through writeVSCodeConfig, stamping in the absolute lym path.
++// writeWorktreeConfig writes slug's .vscode/ config at own's anchor through writeVSCodeConfig, stamping in the absolute lym path.
+ // The path degrades to the empty string on error so vscode.WriteConfig's own bare-name fallback rule applies.
+-func writeWorktreeConfig(l *lymcwd.Location, worktreeDir, slug, color string) error {
+-	own, err := lymcwd.NamedWorktree(l.HubPath, slug)
+-	if err != nil {
+-		return fmt.Errorf("read the anchor of %q: %w", slug, err)
+-	}
++func writeWorktreeConfig(own *lymcwd.Location, worktreeDir, slug string, look vscode.Look) error {
+ 	lymPath, _ := os.Executable()
+-	return writeVSCodeConfig(own, worktreeDir, slug, color, lymPath)
++	return writeVSCodeConfig(own, worktreeDir, slug, look, lymPath)
+ }
+ 
+ // seedKeybindings seeds the user's keybindings.json through the KeybindingsPath seam; a path it cannot resolve is a skip.
+@@ -101,7 +103,7 @@ func seedKeybindings() vscode.KeybindingsResult {
+ // writeVSCodeConfig keeps .vscode/ out of git and writes the .vscode/ config at the worktree's anchor.
+ // When .vscode/tasks.json is already tracked, it logs one warning and writes neither file nor the exclude line.
+ // Otherwise it first adds an anchored .vscode line to the shared info/exclude, then calls vscode.WriteConfig.
+-func writeVSCodeConfig(l *lymcwd.Location, worktreeDir, slug, color, lymPath string) error {
++func writeVSCodeConfig(l *lymcwd.Location, worktreeDir, slug string, look vscode.Look, lymPath string) error {
+ 	tasksRel := path.Join(filepath.ToSlash(l.AnchorRel), ".vscode", "tasks.json")
+ 	tracked, err := fabricengine.PathTracked(worktreeDir, tasksRel)
+ 	if err != nil {
+@@ -118,52 +120,93 @@ func writeVSCodeConfig(l *lymcwd.Location, worktreeDir, slug, color, lymPath str
+ 	if changed {
+ 		logger.Info("excluded .vscode/ from git", "slug", slug, "exclude", excludePath)
+ 	}
+-	if err := vscode.WriteConfig(worktreeDir, l.AnchorRel, slug, color, lymPath); err != nil {
++	if err := vscode.WriteConfig(worktreeDir, l.AnchorRel, look, lymPath); err != nil {
+ 		return fmt.Errorf("write vscode config: %w", err)
+ 	}
+ 	return nil
+ }
+ 
+-// spawnTarget is what a spawn opens, as far as the caller can tell before the prime's name is known.
+-type spawnTarget int
++// resolveSpawnTarget resolves slug's worktree path and window look, own being slug's location, and the prime's name.
++// A prime-resolution failure is logged here, once, and degrades rather than failing the spawn:
++// slug reads as a task under the prime, and the returned flag is false.
++// A wrong colour or a missing hub workspace is not worth aborting over.
++func resolveSpawnTarget(l, own *lymcwd.Location, slug string) (worktreeDir string, look vscode.Look, primeName string, primeResolved bool) {
++	worktreeDir = fabricengine.WorktreePath(l, slug)
++	primeName, primeErr := fabricengine.PrimeName(l)
++	if primeErr != nil {
++		logger.Warn("resolve prime name; opening the bare folder", "slug", slug, "error", primeErr)
++	}
++	return worktreeDir, lookFor(l, own, slug, primeName), primeName, primeErr == nil
++}
+ 
+-const (
+-	// targetUnknown is a spawn whose slug may name the prime; fabricengine has no structural check that tells without the prime-name read.
+-	targetUnknown spawnTarget = iota
+-	// targetTask is a spawn that always opens a task pair.
+-	targetTask
+-	// targetPrime is a spawn known to open the prime.
+-	targetPrime
+-)
++// lookFor returns the window look of the worktree slug, whose location is own: its title, its project's colour and its own colour.
++// The prime takes green on both, and a beam its board-recorded colour on both.
++// A task takes its parent's colour, green under the prime or the beam's colour under a beam, as its project colour, and as its own colour keeps the one its settings.json holds while that is allowed and free, else picks one avoiding its siblings'.
++// An empty primeName, an unreadable board or an unresolvable parent reads slug as a task under the prime, logged at Warn.
++func lookFor(l, own *lymcwd.Location, slug, primeName string) vscode.Look {
++	title := slug
++	if shortname, found := fabricengine.ReadShortname(fabricengine.BoardDir(l.HubPath)); found {
++		title = strings.ToUpper(shortname) + ": " + slug
++	}
++	if primeName != "" && slug == primeName {
++		return vscode.Look{Title: title, ProjectColor: vscode.PrimeColor, WorktreeColor: vscode.PrimeColor}
++	}
+ 
+-// primeResolveLogLevel decides how loudly a prime-name resolution failure is logged for target.
+-// A prime or unknown target logs at WARN, since a prime spawn must never lose its warning;
+-// a task target logs at debug, since only its title-bar color degrades.
+-// No error logs nothing.
+-func primeResolveLogLevel(target spawnTarget, err error) (level slog.Level, log bool) {
+-	if err == nil {
+-		return 0, false
++	beams, err := beamColors(l.HubPath)
++	if err != nil {
++		logger.Warn("read the board's beams; colouring as a task under the prime", "slug", slug, "error", err)
++	}
++	if color, isBeam := beams[slug]; isBeam {
++		return vscode.Look{Title: title, ProjectColor: color, WorktreeColor: color}
+ 	}
+-	if target == targetTask {
+-		return slog.LevelDebug, true
++
++	projectColor := vscode.PrimeColor
++	if primeName != "" {
++		if parent, err := parentOf(l.HubPath, primeName, slug); err != nil {
++			logger.Warn("read the parent of a worktree; colouring it as a task under the prime", "slug", slug, "error", err)
++		} else if color, isBeam := beams[parent]; isBeam {
++			projectColor = color
++		}
+ 	}
+-	return slog.LevelWarn, true
++	current := vscode.ActivityBarColor(own.AnchorPath())
++	siblings := vscode.SiblingWorktreeColors(l, projectColor, slug)
++	return vscode.Look{Title: title, ProjectColor: projectColor, WorktreeColor: vscode.PickWorktreeColor(projectColor, current, siblings)}
+ }
+ 
+-// resolveSpawnTarget resolves slug's worktree path and title-bar color, and the prime's name.
+-// A prime-resolution failure is logged here, once, at the level primeResolveLogLevel picks for target, and degrades rather than failing the spawn:
+-// PickColor skips its prime-skip step, and the returned flag is false.
+-// A wrong title-bar color or a missing hub workspace is not worth aborting over.
+-func resolveSpawnTarget(l *lymcwd.Location, slug string, target spawnTarget) (worktreeDir, color, primeName string, primeResolved bool) {
+-	worktreeDir = fabricengine.WorktreePath(l, slug)
+-	primeName, primeErr := fabricengine.PrimeName(l)
+-	if level, ok := primeResolveLogLevel(target, primeErr); ok {
+-		if level == slog.LevelDebug {
+-			logger.Debug("resolve prime name; opening the bare folder", "slug", slug, "error", primeErr)
+-		} else {
+-			logger.Warn("resolve prime name; opening the bare folder", "slug", slug, "error", primeErr)
++// parentOf returns the slug of the pair slug was forked from, "" for the prime, read over the prime primeName of the hub at hubPath.
++func parentOf(hubPath, primeName, slug string) (string, error) {
++	prime, err := lymcwd.NamedWorktree(hubPath, primeName)
++	if err != nil {
++		return "", fmt.Errorf("read the prime's anchor: %w", err)
++	}
++	return hubgeom.ParentOf(prime, slug)
++}
++
++// beamColors maps the slug of every open beam on the hub's board to its colour:
++// its recorded colour, or for a beam with none the colour a new beam would record, without recording it.
++// An absent board holds no beam.
++func beamColors(hubPath string) (map[string]string, error) {
++	tasks, err := boardengine.ReadTasks(fabricengine.BoardDir(hubPath))
++	if err != nil {
++		return nil, err
++	}
++	colors := map[string]string{}
++	var held, unrecorded []string
++	for _, task := range tasks {
++		if task.Kind != boardengine.KindProject || !task.Beam || (task.Status != nil && *task.Status == "done") {
++			continue
++		}
++		if task.BeamColor == "" {
++			unrecorded = append(unrecorded, task.Slug)
++			continue
+ 		}
++		colors[task.Slug] = task.BeamColor
++		held = append(held, task.BeamColor)
++	}
++	for _, slug := range unrecorded {
++		color := vscode.PickBeamColor(held)
++		colors[slug] = color
++		held = append(held, color)
+ 	}
+-	color = vscode.PickColor(l, primeName)
+-	return worktreeDir, color, primeName, primeErr == nil
++	return colors, nil
+ }
+diff --git a/internal/ideengine/spawn_clean_integration_test.go b/internal/ideengine/spawn_clean_integration_test.go
+index b6de4741..1e26f25c 100644
+--- a/internal/ideengine/spawn_clean_integration_test.go
++++ b/internal/ideengine/spawn_clean_integration_test.go
+@@ -19,6 +19,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
++	"github.com/Knatte18/loomyard/internal/vscode"
+ )
+ 
+ // sharedExcludePath resolves the shared info/exclude of the task worktree's repo.
+@@ -110,7 +111,7 @@ func checkTaskPairStaysClean(t *testing.T, h *hubforge.Hub, slug, gitignore stri
+ 	assertAttachTaskOnly(t, anchorDir)
+ }
+ 
+-// checkOverwritesTasksKeepsSettings asserts an untracked tasks.json holding an old chain is replaced and an existing settings.json is untouched.
++// checkOverwritesTasksKeepsSettings asserts an untracked tasks.json holding an old chain is replaced and an existing settings.json keeps its keys and gains the title and colours.
+ func checkOverwritesTasksKeepsSettings(t *testing.T, h *hubforge.Hub, slug string) {
+ 	l := h.Location
+ 	recordLauncher(t)
+@@ -133,12 +134,9 @@ func checkOverwritesTasksKeepsSettings(t *testing.T, h *hubforge.Hub, slug strin
+ 	}
+ 
+ 	assertAttachTaskOnly(t, filepath.Dir(vscodeDir))
+-	got, err := os.ReadFile(filepath.Join(vscodeDir, "settings.json"))
+-	if err != nil {
+-		t.Fatalf("read settings: %v", err)
+-	}
+-	if string(got) != settings {
+-		t.Errorf("settings.json changed:\n%s", got)
++	got := readPrimeLook(t, filepath.Join(vscodeDir, "settings.json"))
++	if got.TabSize != 2 || got.Title != "TST: "+slug || got.Colors["titleBar.activeBackground"] != vscode.PrimeColor || got.Colors["activityBar.background"] == "" || got.Colors["activityBar.background"] == vscode.PrimeColor {
++		t.Errorf("settings.json = %+v; want tabSize 2 kept, title %q, green title bar and a non-green activity bar", got, "TST: "+slug)
+ 	}
+ }
+ 
+diff --git a/internal/ideengine/spawn_hub_integration_test.go b/internal/ideengine/spawn_hub_integration_test.go
+index d2a191b5..0f9ae846 100644
+--- a/internal/ideengine/spawn_hub_integration_test.go
++++ b/internal/ideengine/spawn_hub_integration_test.go
+@@ -18,6 +18,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/vscode"
+ )
+ 
+ // recordLauncher swaps CodeLauncher for a recorder and returns the launched paths, restoring the seam on cleanup.
+@@ -141,7 +142,7 @@ func readOptionalFile(t *testing.T, path string) (data []byte, exists bool) {
+ }
+ 
+ // checkTaskSlugOpensBareFolder asserts a task spawn launches its bare folder and leaves the workspace file's bytes, or its absence, unchanged.
+-// It also asserts SeedTask writes the same on-demand attach task Spawn does, and leaves the keybindings.json alone where Spawn seeds it.
++// It also asserts Seed writes the same on-demand attach task Spawn does, and leaves the keybindings.json alone where Spawn seeds it.
+ func checkTaskSlugOpensBareFolder(t *testing.T, h *hubforge.Hub, slug string) {
+ 	resetPrimeEditorState(t, h)
+ 	l := h.Location
+@@ -156,12 +157,12 @@ func checkTaskSlugOpensBareFolder(t *testing.T, h *hubforge.Hub, slug string) {
+ 	}
+ 	workspaceBefore, workspaceExisted := readOptionalFile(t, fabricengine.HubWorkspacePath(l))
+ 
+-	if err := SeedTask(l, slug); err != nil {
+-		t.Fatalf("SeedTask: %v", err)
++	if err := Seed(l, slug); err != nil {
++		t.Fatalf("Seed: %v", err)
+ 	}
+ 	assertAttachTaskOnly(t, filepath.Join(fabricengine.WorktreePath(l, slug), l.AnchorRel))
+ 	if _, err := os.Stat(keybindingsPath); !os.IsNotExist(err) {
+-		t.Errorf("keybindings.json exists after SeedTask (stat err = %v)", err)
++		t.Errorf("keybindings.json exists after Seed (stat err = %v)", err)
+ 	}
+ 
+ 	if _, err := Spawn(l, slug); err != nil {
+@@ -200,12 +201,16 @@ func checkPrimeSplicesSettingsAndRegenerates(t *testing.T, h *hubforge.Hub) {
+ 	if _, err := Spawn(l, prime); err != nil {
+ 		t.Fatalf("Spawn with JSONC settings: %v", err)
+ 	}
++	settings := readPrimeLook(t, settingsPath)
++	if settings.TabSize != 2 || settings.Title != "TST: "+prime || settings.Colors["titleBar.activeBackground"] != vscode.PrimeColor || settings.Colors["activityBar.background"] != vscode.PrimeColor {
++		t.Errorf("prime settings after Spawn = %+v; want tabSize 2 kept, title %q and green on both bars", settings, "TST: "+prime)
++	}
+ 	first, err := os.ReadFile(wsPath)
+ 	if err != nil {
+ 		t.Fatalf("read workspace: %v", err)
+ 	}
+-	if !strings.Contains(string(first), jsonc) {
+-		t.Fatalf("workspace file does not carry the JSONC settings verbatim:\n%s", first)
++	if !strings.Contains(string(first), string(settings.Raw)) {
++		t.Fatalf("workspace file does not carry the prime's settings verbatim:\n%s", first)
+ 	}
+ 
+ 	if _, err := Spawn(l, prime); err != nil {
+@@ -216,15 +221,15 @@ func checkPrimeSplicesSettingsAndRegenerates(t *testing.T, h *hubforge.Hub) {
+ 		t.Errorf("bytes changed on an unchanged spawn:\n%s", again)
+ 	}
+ 
+-	changed := "{\n  \"editor.tabSize\": 8\n}"
+-	if err := os.WriteFile(settingsPath, []byte(changed), 0o644); err != nil {
++	if err := os.WriteFile(settingsPath, []byte("{\n  \"editor.tabSize\": 8\n}"), 0o644); err != nil {
+ 		t.Fatalf("rewrite settings: %v", err)
+ 	}
+ 	if _, err := Spawn(l, prime); err != nil {
+ 		t.Fatalf("Spawn after settings change: %v", err)
+ 	}
++	changed := readPrimeLook(t, settingsPath)
+ 	got, _ := os.ReadFile(wsPath)
+-	if !strings.Contains(string(got), changed) || strings.Contains(string(got), "keep me") {
++	if changed.TabSize != 8 || !strings.Contains(string(got), string(changed.Raw)) || strings.Contains(string(got), "keep me") {
+ 		t.Errorf("changed settings not reflected:\n%s", got)
+ 	}
+ 
+@@ -251,7 +256,7 @@ func checkPrimeSettingsReadFailure(t *testing.T, h *hubforge.Hub) {
+ 	}
+ 
+ 	_, err := Spawn(l, prime)
+-	if err == nil || !strings.Contains(err.Error(), "read prime settings") {
++	if err == nil || !strings.Contains(err.Error(), "settings.json") {
+ 		t.Fatalf("Spawn error = %v, want the read cause", err)
+ 	}
+ 	if len(*launched) != 0 {
+@@ -290,3 +295,26 @@ func checkPrimeWriteFailure(t *testing.T, h *hubforge.Hub) {
+ 		t.Errorf("workspace file = %q (read err %v), want the planted bytes", got, readErr)
+ 	}
+ }
++
++// primeLook is the part of a seeded settings.json the prime checks read, with the file's bytes.
++type primeLook struct {
++	TabSize int               `json:"editor.tabSize"`
++	Title   string            `json:"window.title"`
++	Colors  map[string]string `json:"workbench.colorCustomizations"`
++	Raw     []byte            `json:"-"`
++}
++
++// readPrimeLook reads and decodes the settings.json at path.
++func readPrimeLook(t *testing.T, path string) primeLook {
++	t.Helper()
++	data, err := os.ReadFile(path)
++	if err != nil {
++		t.Fatalf("read settings: %v", err)
++	}
++	var look primeLook
++	if err := json.Unmarshal(data, &look); err != nil {
++		t.Fatalf("decode settings: %v\n%s", err, data)
++	}
++	look.Raw = data
++	return look
++}
+diff --git a/internal/ideengine/spawn_scenario_integration_test.go b/internal/ideengine/spawn_scenario_integration_test.go
+index fe97f112..b8dcb5f5 100644
+--- a/internal/ideengine/spawn_scenario_integration_test.go
++++ b/internal/ideengine/spawn_scenario_integration_test.go
+@@ -110,8 +110,8 @@ func TestSpawnAnchoredScenario(t *testing.T) {
+ 		hubforge.ReanchorPair(t, h, slug, taskAnchor)
+ 		anchorDir := filepath.Join(fabricengine.WorktreePath(h.Location, slug), taskAnchor)
+ 
+-		if err := SeedTask(h.Location, slug); err != nil {
+-			t.Fatalf("SeedTask: %v", err)
++		if err := Seed(h.Location, slug); err != nil {
++			t.Fatalf("Seed: %v", err)
+ 		}
+ 		assertAttachTaskOnly(t, anchorDir)
+ 		if err := OpenTask(h.Location, slug); err != nil {
+diff --git a/internal/ideengine/spawn_test.go b/internal/ideengine/spawn_test.go
+deleted file mode 100644
+index 9d899219..00000000
+--- a/internal/ideengine/spawn_test.go
++++ /dev/null
+@@ -1,37 +0,0 @@
+-//go:build tier0
+-
+-// spawn_test.go covers primeResolveLogLevel, the pure decision behind the prime-name failure log level.
+-
+-package ideengine
+-
+-import (
+-	"errors"
+-	"log/slog"
+-	"testing"
+-)
+-
+-func TestPrimeResolveLogLevel(t *testing.T) {
+-	boom := errors.New("boom")
+-	tests := []struct {
+-		name      string
+-		target    spawnTarget
+-		err       error
+-		wantLevel slog.Level
+-		wantLog   bool
+-	}{
+-		{"prime with error warns", targetPrime, boom, slog.LevelWarn, true},
+-		{"task with error is debug", targetTask, boom, slog.LevelDebug, true},
+-		{"unknown with error warns", targetUnknown, boom, slog.LevelWarn, true},
+-		{"prime without error logs nothing", targetPrime, nil, 0, false},
+-		{"task without error logs nothing", targetTask, nil, 0, false},
+-		{"unknown without error logs nothing", targetUnknown, nil, 0, false},
+-	}
+-	for _, tt := range tests {
+-		t.Run(tt.name, func(t *testing.T) {
+-			level, ok := primeResolveLogLevel(tt.target, tt.err)
+-			if ok != tt.wantLog || (ok && level != tt.wantLevel) {
+-				t.Errorf("got (%v, %v), want (%v, %v)", level, ok, tt.wantLevel, tt.wantLog)
+-			}
+-		})
+-	}
+-}
+diff --git a/internal/vscode/color.go b/internal/vscode/color.go
+index ad619a68..70212eef 100644
+--- a/internal/vscode/color.go
++++ b/internal/vscode/color.go
+@@ -1,15 +1,17 @@
+-// color.go defines the title-bar color palette and the picker that assigns each worktree the first
+-// unused non-green color, scanning sibling worktrees' VS Code settings so two open worktrees never
+-// share a color.
+-// Green is reserved for main.
++// color.go defines the window colour palette, the pickers for a beam's colour and a worktree's activity-bar colour,
++// and the text colour a background takes by its luminance.
++// Green is reserved for the prime.
+ 
+ package vscode
+ 
+ import (
+ 	"encoding/json"
+ 	"errors"
++	"math"
+ 	"os"
+ 	"path/filepath"
++	"slices"
++	"strconv"
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+@@ -18,9 +20,12 @@ import (
+ // ErrUnsupported is returned when vscode launch is attempted on an unsupported platform.
+ var ErrUnsupported = errors.New("vscode launch unsupported on this platform")
+ 
+-// Color palette (order matters; green is reserved for main).
++// PrimeColor is the green the prime takes on its title bar and activity bar, and every task under the prime on its title bar.
++const PrimeColor = "#1b5e20"
++
++// palette lists the window colours in pick order, the prime's green first.
+ var palette = []string{
+-	"#2d7d46",
++	PrimeColor,
+ 	"#7d2d6b",
+ 	"#2d4f7d",
+ 	"#7d5c2d",
+@@ -30,66 +35,114 @@ var palette = []string{
+ 	"#7d462d",
+ }
+ 
+-// mainColor is the reserved color for the main worktree.
+-var mainColor = "#2d7d46"
++// PickBeamColor returns the first palette colour other than green that no colour in held names, compared case-insensitively.
++// It is the colour a new beam records, held being the colours the other open beams hold.
++// When every non-green colour is held it returns the first non-green one.
++func PickBeamColor(held []string) string {
++	return firstFree(PrimeColor, "", held)
++}
+ 
+-// PickColor selects an unused non-green color for a child worktree, scanning sibling
+-// .vscode/settings.json files for existing assignments.
+-// Returns the first unused non-green palette color.
+-// primeName is the main worktree's base name (the caller sources it via fabricengine.PrimeName(l),
+-// never resolved here — pulling the entire fabric engine into a colour picker would reintroduce a
+-// `git worktree list` subprocess per call);
+-// the prime-skip step is omitted when primeName is empty.
+-func PickColor(l *lymcwd.Location, primeName string) string {
+-	used := make(map[string]bool)
++// PickWorktreeColor returns a worktree's activity-bar colour under a parent whose project colour is projectColor:
++// current when it is a palette colour other than projectColor that no colour in siblings names, else the first such palette colour, else, with every one taken, the first palette colour other than projectColor.
++// Colours compare case-insensitively.
++func PickWorktreeColor(projectColor, current string, siblings []string) string {
++	return firstFree(projectColor, current, siblings)
++}
+ 
+-	entries, err := os.ReadDir(l.HubPath)
+-	if err != nil {
+-		// Hub doesn't exist or unreadable; return first non-green
+-		return palette[1]
++// firstFree returns preferred when it is a palette colour other than excluded and absent from taken, else the first palette colour that is neither, else the first palette colour other than excluded.
++func firstFree(excluded, preferred string, taken []string) string {
++	free := func(color string) bool {
++		return !strings.EqualFold(color, excluded) && !slices.ContainsFunc(taken, func(t string) bool { return strings.EqualFold(t, color) })
+ 	}
+-
+-	for _, entry := range entries {
+-		if !entry.IsDir() {
++	if slices.Contains(palette, strings.ToLower(preferred)) && free(strings.ToLower(preferred)) {
++		return strings.ToLower(preferred)
++	}
++	fallback := ""
++	for _, color := range palette {
++		if strings.EqualFold(color, excluded) {
+ 			continue
+ 		}
+-
+-		if primeName != "" && entry.Name() == primeName {
+-			continue
++		if fallback == "" {
++			fallback = color
+ 		}
+-
+-		settingsPath := filepath.Join(
+-			l.HubPath,
+-			entry.Name(),
+-			l.AnchorRel,
+-			".vscode",
+-			"settings.json",
+-		)
+-
+-		content, err := os.ReadFile(settingsPath)
+-		if err != nil {
+-			// Unreadable or missing; skip this sibling
+-			continue
++		if free(color) {
++			return color
+ 		}
++	}
++	return fallback
++}
+ 
+-		var settings map[string]any
+-		if err := json.Unmarshal(content, &settings); err != nil {
++// SiblingWorktreeColors returns the activity-bar colours of the hub's worktrees, other than the one named self, whose title bar holds projectColor, read from each worktree's .vscode/settings.json at l's anchor.
++// They are the colours a new worktree under the same parent avoids.
++// A worktree with no readable or decodable settings, or no activity-bar colour, adds nothing, and an unreadable hub yields nil.
++func SiblingWorktreeColors(l *lymcwd.Location, projectColor, self string) []string {
++	entries, err := os.ReadDir(l.HubPath)
++	if err != nil {
++		return nil
++	}
++	var colors []string
++	for _, entry := range entries {
++		if !entry.IsDir() || entry.Name() == self {
+ 			continue
+ 		}
+-
+-		if colorCustomizations, ok := settings["workbench.colorCustomizations"].(map[string]any); ok {
+-			if activeBackground, ok := colorCustomizations["titleBar.activeBackground"].(string); ok {
+-				used[strings.ToLower(activeBackground)] = true
+-			}
++		title, activity := barColors(filepath.Join(l.HubPath, entry.Name(), l.AnchorRel))
++		if activity != "" && strings.EqualFold(title, projectColor) {
++			colors = append(colors, strings.ToLower(activity))
+ 		}
+ 	}
++	return colors
++}
++
++// luminanceThreshold is the relative luminance at which black and white text give a background equal contrast.
++const luminanceThreshold = 0.179
+ 
+-	for i := 1; i < len(palette); i++ {
+-		if !used[palette[i]] {
+-			return palette[i]
++// Foreground returns the text colour for background, a #rrggbb colour: black when its WCAG relative luminance is above the point where black and white give equal contrast, white otherwise.
++// A value that is not #rrggbb reads as dark and takes white.
++func Foreground(background string) string {
++	if relativeLuminance(background) > luminanceThreshold {
++		return "#000000"
++	}
++	return "#ffffff"
++}
++
++// relativeLuminance returns the WCAG relative luminance of a #rrggbb colour, 0 for any other value.
++func relativeLuminance(color string) float64 {
++	hex, ok := strings.CutPrefix(color, "#")
++	if !ok || len(hex) != 6 {
++		return 0
++	}
++	value, err := strconv.ParseUint(hex, 16, 32)
++	if err != nil {
++		return 0
++	}
++	linear := func(channel uint64) float64 {
++		c := float64(channel) / 255
++		if c <= 0.04045 {
++			return c / 12.92
+ 		}
++		return math.Pow((c+0.055)/1.055, 2.4)
+ 	}
++	return 0.2126*linear(value>>16&0xff) + 0.7152*linear(value>>8&0xff) + 0.0722*linear(value&0xff)
++}
++
++// ActivityBarColor returns the activity-bar colour <dir>/.vscode/settings.json holds, lower-cased, empty when it holds none or cannot be read or decoded.
++func ActivityBarColor(dir string) string {
++	_, activity := barColors(dir)
++	return strings.ToLower(activity)
++}
+ 
+-	// All non-green colors are used; return first non-green
+-	return palette[1]
++// barColors returns the title-bar and activity-bar background colours <dir>/.vscode/settings.json holds, each empty when it holds none or cannot be read or decoded.
++func barColors(dir string) (title, activity string) {
++	content, err := os.ReadFile(filepath.Join(dir, ".vscode", "settings.json"))
++	if err != nil {
++		return "", ""
++	}
++	var settings map[string]any
++	if err := json.Unmarshal(stripJSONC(content), &settings); err != nil {
++		return "", ""
++	}
++	customizations, _ := settings[colorCustomizationsKey].(map[string]any)
++	title, _ = customizations[titleBarActiveBackground].(string)
++	activity, _ = customizations[activityBarBackground].(string)
++	return title, activity
+ }
+diff --git a/internal/vscode/color_test.go b/internal/vscode/color_test.go
+index fa6884d6..3a02197f 100644
+--- a/internal/vscode/color_test.go
++++ b/internal/vscode/color_test.go
+@@ -1,7 +1,6 @@
+ //go:build tier0
+ 
+-// color_test.go covers the palette picker, including scanning sibling worktrees' VS Code settings
+-// for colors already in use.
++// color_test.go covers the beam and worktree colour pickers, the sibling scan over the hub's settings files, and the luminance text colour.
+ 
+ package vscode
+ 
+@@ -9,124 +8,149 @@ import (
+ 	"encoding/json"
+ 	"os"
+ 	"path/filepath"
++	"reflect"
++	"slices"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ )
+ 
+-// TestPickColor tests the palette picker for color selection.
+-func TestPickColor(t *testing.T) {
++func TestPaletteStartsWithThePrimeGreen(t *testing.T) {
++	t.Parallel()
++	if palette[0] != PrimeColor || PrimeColor != "#1b5e20" {
++		t.Errorf("palette[0] = %s, PrimeColor = %s; want both #1b5e20", palette[0], PrimeColor)
++	}
++}
++
++func TestPickBeamColor(t *testing.T) {
++	t.Parallel()
+ 	tests := []struct {
+-		name      string
+-		RelPath   string
+-		setupFunc func(tmpDir, mainPath string)
+-		wantColor string
+-		wantNot   string // color(s) that should NOT be returned
++		name string
++		held []string
++		want string
+ 	}{
+-		{
+-			name:    "TestPickColorNeverReturnsGreen",
+-			RelPath: ".",
+-			setupFunc: func(tmpDir, mainPath string) {
+-				// Just create main and child; no colors in use
+-				childPath := filepath.Join(tmpDir, "child")
+-				if err := os.MkdirAll(childPath, 0o755); err != nil {
+-					t.Fatalf("failed to create child: %v", err)
+-				}
+-			},
+-			wantColor: "",
+-			wantNot:   mainColor, // should not be green
+-		},
+-		{
+-			name:    "TestPickColorFirstUnusedNonGreen",
+-			RelPath: ".",
+-			setupFunc: func(tmpDir, mainPath string) {
+-				// Create child1 with purple in use
+-				child1Path := filepath.Join(tmpDir, "child1")
+-				child1Settings := filepath.Join(child1Path, ".vscode")
+-				if err := os.MkdirAll(child1Settings, 0o755); err != nil {
+-					t.Fatalf("failed to create .vscode: %v", err)
+-				}
+-				settingsFile := filepath.Join(child1Settings, "settings.json")
+-				settings := map[string]any{
+-					"workbench.colorCustomizations": map[string]any{
+-						"titleBar.activeBackground": "#7d2d6b", // purple
+-					},
+-				}
+-				data, _ := json.Marshal(settings)
+-				if err := os.WriteFile(settingsFile, data, 0o644); err != nil {
+-					t.Fatalf("failed to write settings.json: %v", err)
+-				}
+-			},
+-			wantColor: "#2d4f7d", // blue (first unused non-green)
+-			wantNot:   "",
+-		},
+-		{
+-			name:    "TestPickColorWrapAroundAllUsed",
+-			RelPath: ".vscode",
+-			setupFunc: func(tmpDir, mainPath string) {
+-				// Create children with all non-green colors in use
+-				for i, color := range palette[1:] {
+-					childPath := filepath.Join(tmpDir, "child"+string(rune('0'+i)))
+-					childSettings := filepath.Join(childPath, ".vscode")
+-					if err := os.MkdirAll(childSettings, 0o755); err != nil {
+-						t.Fatalf("failed to create .vscode: %v", err)
+-					}
+-
+-					settings := map[string]any{
+-						"workbench.colorCustomizations": map[string]any{
+-							"titleBar.activeBackground": color,
+-						},
+-					}
+-					data, _ := json.Marshal(settings)
+-					settingsFile := filepath.Join(childSettings, "settings.json")
+-					if err := os.WriteFile(settingsFile, data, 0o644); err != nil {
+-						t.Fatalf("failed to write settings.json: %v", err)
+-					}
+-				}
+-			},
+-			wantColor: palette[1], // wrap around to first non-green
+-			wantNot:   "",
+-		},
+-		{
+-			name:    "TestPickColorIgnoresUnreadable",
+-			RelPath: ".vscode",
+-			setupFunc: func(tmpDir, mainPath string) {
+-				// Create child with missing settings.json
+-				childPath := filepath.Join(tmpDir, "child")
+-				childVscode := filepath.Join(childPath, ".vscode")
+-				if err := os.MkdirAll(childVscode, 0o755); err != nil {
+-					t.Fatalf("failed to create .vscode: %v", err)
+-				}
+-			},
+-			wantColor: palette[1], // first non-green since nothing in use
+-			wantNot:   "",
+-		},
++		{"NoneHeld", nil, palette[1]},
++		{"SkipsHeldCaseInsensitively", []string{"#7D2D6B"}, palette[2]},
++		{"GreenHeldChangesNothing", []string{PrimeColor}, palette[1]},
++		{"AllHeldTakesFirstNonGreen", palette[1:], palette[1]},
+ 	}
+-
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+-			tmpDir := t.TempDir()
+-			mainPath := filepath.Join(tmpDir, "main")
++			t.Parallel()
++			if got := PickBeamColor(tt.held); got != tt.want {
++				t.Errorf("PickBeamColor(%v) = %s; want %s", tt.held, got, tt.want)
++			}
++		})
++	}
++}
+ 
+-			if err := os.MkdirAll(mainPath, 0o755); err != nil {
+-				t.Fatalf("failed to create main: %v", err)
++func TestPickWorktreeColor(t *testing.T) {
++	t.Parallel()
++	tests := []struct {
++		name     string
++		project  string
++		current  string
++		siblings []string
++		want     string
++	}{
++		{"UnderPrimeNeverGreen", PrimeColor, "", nil, palette[1]},
++		{"UnderBeamSkipsBeamColor", palette[1], "", nil, PrimeColor},
++		{"UnderBeamSkipsSiblings", palette[1], "", []string{PrimeColor, palette[2]}, palette[3]},
++		{"KeepsAllowedFreeCurrent", PrimeColor, "#2D6B6B", []string{palette[1]}, palette[5]},
++		{"DropsCurrentEqualToProject", palette[3], palette[3], nil, PrimeColor},
++		{"DropsCurrentHeldBySibling", PrimeColor, palette[2], []string{palette[2]}, palette[1]},
++		{"DropsCurrentOutsidePalette", PrimeColor, "#2d7d46", nil, palette[1]},
++		{"AllTakenTakesFirstOtherThanProject", PrimeColor, "", palette, palette[1]},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := PickWorktreeColor(tt.project, tt.current, tt.siblings); got != tt.want {
++				t.Errorf("PickWorktreeColor(%s, %s, %v) = %s; want %s", tt.project, tt.current, tt.siblings, got, tt.want)
+ 			}
++		})
++	}
++}
+ 
+-			tt.setupFunc(tmpDir, mainPath)
++// writeSettingsFile writes content as <hub>/<name>/<anchor>/.vscode/settings.json.
++func writeSettingsFile(t *testing.T, hub, name, anchor, content string) {
++	t.Helper()
++	dir := filepath.Join(hub, name, anchor, ".vscode")
++	if err := os.MkdirAll(dir, 0o755); err != nil {
++		t.Fatal(err)
++	}
++	if err := os.WriteFile(filepath.Join(dir, "settings.json"), []byte(content), 0o644); err != nil {
++		t.Fatal(err)
++	}
++}
+ 
+-			layout := &lymcwd.Location{HubPath: tmpDir, AnchorRel: tt.RelPath}
++// barSettings returns settings.json content holding title and activity as the title-bar and activity-bar backgrounds.
++func barSettings(t *testing.T, title, activity string) string {
++	t.Helper()
++	data, err := json.Marshal(map[string]any{colorCustomizationsKey: map[string]any{titleBarActiveBackground: title, activityBarBackground: activity}})
++	if err != nil {
++		t.Fatal(err)
++	}
++	return string(data)
++}
+ 
+-			color := PickColor(layout, filepath.Base(mainPath))
++func TestSiblingWorktreeColorsTakesSameProjectActivityColors(t *testing.T) {
++	t.Parallel()
++	hub := t.TempDir()
++	const anchor = "sub"
++	writeSettingsFile(t, hub, "prime", anchor, barSettings(t, PrimeColor, PrimeColor))
++	writeSettingsFile(t, hub, "sibling", anchor, "{\n  // JSONC\n  "+barSettings(t, PrimeColor, "#7D2D6B")[1:])
++	writeSettingsFile(t, hub, "self", anchor, barSettings(t, PrimeColor, palette[2]))
++	writeSettingsFile(t, hub, "beam-member", anchor, barSettings(t, palette[3], palette[4]))
++	writeSettingsFile(t, hub, "old-style", anchor, `{"workbench.colorCustomizations":{"titleBar.activeBackground":"#1b5e20"}}`)
++	writeSettingsFile(t, hub, "broken", anchor, "{not json")
++	if err := os.MkdirAll(filepath.Join(hub, "no-settings"), 0o755); err != nil {
++		t.Fatal(err)
++	}
+ 
+-			// Check wantNot constraint
+-			if tt.wantNot != "" && color == tt.wantNot {
+-				t.Errorf("pickColor() = %s; should not return %s", color, tt.wantNot)
+-			}
++	got := SiblingWorktreeColors(&lymcwd.Location{HubPath: hub, AnchorRel: anchor}, PrimeColor, "self")
++	slices.Sort(got)
++	want := []string{PrimeColor, palette[1]}
++	slices.Sort(want)
++	if !reflect.DeepEqual(got, want) {
++		t.Errorf("SiblingWorktreeColors = %v; want %v", got, want)
++	}
++}
+ 
+-			// Check wantColor if specified
+-			if tt.wantColor != "" && color != tt.wantColor {
+-				t.Errorf("pickColor() = %s; want %s", color, tt.wantColor)
+-			}
+-		})
++func TestActivityBarColor(t *testing.T) {
++	t.Parallel()
++	hub := t.TempDir()
++	writeSettingsFile(t, hub, "w", ".", barSettings(t, PrimeColor, "#7D2D6B"))
++	if got := ActivityBarColor(filepath.Join(hub, "w")); got != palette[1] {
++		t.Errorf("ActivityBarColor = %q; want %q", got, palette[1])
++	}
++	if got := ActivityBarColor(filepath.Join(hub, "absent")); got != "" {
++		t.Errorf("ActivityBarColor of a missing file = %q; want empty", got)
++	}
++}
++
++func TestForeground(t *testing.T) {
++	t.Parallel()
++	tests := []struct {
++		background string
++		want       string
++	}{
++		{"#ffffff", "#000000"},
++		{"#ffeb3b", "#000000"},
++		{"#000000", "#ffffff"},
++		{"#808080", "#000000"},
++		{"#757575", "#ffffff"},
++		{"not a colour", "#ffffff"},
++	}
++	for _, color := range palette {
++		tests = append(tests, struct {
++			background string
++			want       string
++		}{color, "#ffffff"})
++	}
++	for _, tt := range tests {
++		if got := Foreground(tt.background); got != tt.want {
++			t.Errorf("Foreground(%s) = %s; want %s", tt.background, got, tt.want)
++		}
+ 	}
+ }
+diff --git a/internal/vscode/config.go b/internal/vscode/config.go
+index f9d15bc1..14eb3d04 100644
+--- a/internal/vscode/config.go
++++ b/internal/vscode/config.go
+@@ -1,6 +1,13 @@
+ // Package vscode generates VS Code configuration and manages VS Code-specific launch behavior for
+ // worktrees.
+ // It is responsible for config generation (settings.json and tasks.json), color-palette selection, and launching VS Code.
++//
++// A window is coloured in the two areas that keep their colour in an unfocused window:
++// the title bar takes the project's colour, the prime's green or its beam's colour, and the activity bar the worktree's own colour.
++// A task's activity-bar colour is any palette colour but its project's, avoiding its siblings', the worktrees whose title bar holds the same project colour, while one is free.
++// Text on either bar is black or white by the background's luminance.
++// No status-bar, border or tab colour is written: the status bar loses its background in an unfocused window, the active border is not drawn, and tab colours follow the selected tab.
++// lym owns those keys and window.title in a worktree's settings.json and rewrites them at every seed; every other key is the operator's.
+ // It also seeds the marked block of key bindings into the user's keybindings.json (see SeedKeybindings):
+ // the Alt-arrow keys the integrated terminal forwards to reed's tmux bindings, and ctrl+alt+a, which runs the reed attach task.
+ // The mill values (palette, settings keys, cmd /c code) are baked in — no external Python is read.
+@@ -12,61 +19,109 @@ package vscode
+ 
+ import (
+ 	"encoding/json"
++	"errors"
++	"io/fs"
+ 	"os"
+ 	"path/filepath"
++
++	"github.com/Knatte18/loomyard/internal/logger"
++)
++
++// Settings keys lym owns in a worktree's settings.json.
++const (
++	colorCustomizationsKey        = "workbench.colorCustomizations"
++	windowTitleKey                = "window.title"
++	titleBarActiveBackground      = "titleBar.activeBackground"
++	titleBarInactiveBackground    = "titleBar.inactiveBackground"
++	titleBarActiveForeground      = "titleBar.activeForeground"
++	titleBarInactiveForeground    = "titleBar.inactiveForeground"
++	activityBarBackground         = "activityBar.background"
++	activityBarForeground         = "activityBar.foreground"
++	activityBarInactiveForeground = "activityBar.inactiveForeground"
++	inactiveForegroundAlphaHex    = "aa"
+ )
+ 
+-// WriteConfig generates VS Code configuration files in a worktree.
+-// settings.json is written only if it doesn't already exist, never clobbering operator edits.
++// Look is how a worktree's VS Code window shows itself: its window title, the project colour its title bar takes and the worktree's own colour its activity bar takes, each a #rrggbb colour.
++type Look struct {
++	Title         string
++	ProjectColor  string
++	WorktreeColor string
++}
++
++// WriteConfig writes a worktree's VS Code configuration under <worktreeDir>/<relpath>/.vscode.
++// A missing settings.json is created with look and lym's defaults.
++// In an existing one only the keys lym owns are set from look: window.title and the title-bar and activity-bar keys of workbench.colorCustomizations;
++// every other key is kept, though comments are not, and a file that does not decode as JSONC is left untouched with a warning.
+ // tasks.json is always written, overwriting any existing file, and holds one "reed attach" task, run on demand or by its seeded key binding;
+ // no task runs on folder open, so opening the folder starts no session and no agent.
+ // Neither file touches .gitignore; the caller keeps .vscode/ out of git through info/exclude.
+ // lymPath is the resolved absolute lym path stamped into the task;
+ // an empty lymPath becomes "lym", so a resolution failure upstream still produces a runnable (PATH-dependent) task file rather than a broken one.
+-// Returns an error if I/O fails (but not if settings.json already exists).
+-func WriteConfig(worktreeDir, relpath, slug, color, lymPath string) error {
++// Returns an error if I/O fails.
++func WriteConfig(worktreeDir, relpath string, look Look, lymPath string) error {
+ 	if lymPath == "" {
+ 		lymPath = "lym"
+ 	}
+ 
+-	dir := filepath.Join(worktreeDir, relpath)
+-	vscodePath := filepath.Join(dir, ".vscode")
+-
++	vscodePath := filepath.Join(worktreeDir, relpath, ".vscode")
+ 	if err := os.MkdirAll(vscodePath, 0o755); err != nil {
+ 		return err
+ 	}
++	if err := writeSettings(filepath.Join(vscodePath, "settings.json"), look); err != nil {
++		return err
++	}
++	return writeAttachTask(filepath.Join(vscodePath, "tasks.json"), lymPath)
++}
+ 
+-	settingsPath := filepath.Join(vscodePath, "settings.json")
+-	if _, err := os.Stat(settingsPath); err == nil {
+-	} else if os.IsNotExist(err) {
+-		settings := map[string]any{
+-			"workbench.colorCustomizations": map[string]any{
+-				"titleBar.activeBackground":   color,
+-				"titleBar.activeForeground":   "#ffffff",
+-				"titleBar.inactiveBackground": color,
+-				"titleBar.inactiveForeground": "#ffffffaa",
+-			},
++// writeSettings creates settingsPath with lym's defaults and look, or sets look's keys in the existing file, keeping its other keys.
++// An existing file that does not decode as a JSONC object is logged and left untouched.
++func writeSettings(settingsPath string, look Look) error {
++	content, err := os.ReadFile(settingsPath)
++	var settings map[string]any
++	switch {
++	case errors.Is(err, fs.ErrNotExist):
++		settings = map[string]any{
+ 			"files.watcherExclude": map[string]any{
+ 				"**/_lym/**": true,
+ 			},
+-			"window.title":                                 slug,
+ 			"workbench.startupEditor":                      "none",
+ 			"workbench.secondarySideBar.defaultVisibility": "hidden",
+ 			// The reed attach terminal is the window's main content, so it opens as an editor tab, not in the panel.
+ 			"terminal.integrated.defaultLocation": "editor",
+ 		}
+-		data, err := json.MarshalIndent(settings, "", "  ")
+-		if err != nil {
+-			return err
+-		}
+-		if err := os.WriteFile(settingsPath, data, 0o644); err != nil {
+-			return err
+-		}
+-	} else {
++	case err != nil:
+ 		return err
++	default:
++		if err := json.Unmarshal(stripJSONC(content), &settings); err != nil || settings == nil {
++			logger.Warn("vscode: settings.json is not a JSON object; leaving its title and colours as they are", "path", settingsPath, "error", err)
++			return nil
++		}
+ 	}
+ 
+-	return writeAttachTask(filepath.Join(vscodePath, "tasks.json"), lymPath)
++	customizations, _ := settings[colorCustomizationsKey].(map[string]any)
++	if customizations == nil {
++		customizations = map[string]any{}
++	}
++	titleForeground := Foreground(look.ProjectColor)
++	activityForeground := Foreground(look.WorktreeColor)
++	customizations[titleBarActiveBackground] = look.ProjectColor
++	customizations[titleBarInactiveBackground] = look.ProjectColor
++	customizations[titleBarActiveForeground] = titleForeground
++	customizations[titleBarInactiveForeground] = titleForeground + inactiveForegroundAlphaHex
++	customizations[activityBarBackground] = look.WorktreeColor
++	customizations[activityBarForeground] = activityForeground
++	customizations[activityBarInactiveForeground] = activityForeground + inactiveForegroundAlphaHex
++	settings[colorCustomizationsKey] = customizations
++	settings[windowTitleKey] = look.Title
++
++	data, err := json.MarshalIndent(settings, "", "  ")
++	if err != nil {
++		return err
++	}
++	if string(data) == string(content) {
++		return nil
++	}
++	return os.WriteFile(settingsPath, data, 0o644)
+ }
+ 
+ // attachTaskLabel names the reed attach task; the seeded key binding finds the task by this label.
+diff --git a/internal/vscode/config_test.go b/internal/vscode/config_test.go
+index b580b5f3..0b994bd1 100644
+--- a/internal/vscode/config_test.go
++++ b/internal/vscode/config_test.go
+@@ -1,7 +1,6 @@
+ //go:build tier0
+ 
+-// config_test.go covers config generation and its non-clobbering behavior when .vscode files
+-// already exist.
++// config_test.go covers config generation: the settings.json written fresh, lym's own keys set in an existing one, and the tasks.json overwritten.
+ 
+ package vscode
+ 
+@@ -9,9 +8,33 @@ import (
+ 	"encoding/json"
+ 	"os"
+ 	"path/filepath"
++	"reflect"
+ 	"testing"
+ )
+ 
++// testLook is a look with a light worktree colour, so the two bars take different text colours.
++var testLook = Look{Title: "TST: test-slug", ProjectColor: PrimeColor, WorktreeColor: "#ffeb3b"}
++
++// assertLook asserts settings carry testLook's window title and exactly lym's title-bar and activity-bar colour keys.
++func assertLook(t *testing.T, settings map[string]any) {
++	t.Helper()
++	if got := settings["window.title"]; got != testLook.Title {
++		t.Errorf("window.title = %v; want %q", got, testLook.Title)
++	}
++	want := map[string]any{
++		"titleBar.activeBackground":      PrimeColor,
++		"titleBar.inactiveBackground":    PrimeColor,
++		"titleBar.activeForeground":      "#ffffff",
++		"titleBar.inactiveForeground":    "#ffffffaa",
++		"activityBar.background":         "#ffeb3b",
++		"activityBar.foreground":         "#000000",
++		"activityBar.inactiveForeground": "#000000aa",
++	}
++	if got := settings["workbench.colorCustomizations"]; !reflect.DeepEqual(got, want) {
++		t.Errorf("workbench.colorCustomizations = %v; want %v", got, want)
++	}
++}
++
+ // TestWriteVSCodeConfigCreatesFilesWhenAbsent pins the full generated config: the settings.json keys and the single on-demand reed attach task with its command, args and presentation, and no folder-open trigger.
+ //
+ //testtiming:keep pins the whole settings.json and the attach task's shape, which no covering test asserts
+@@ -19,7 +42,7 @@ func TestWriteVSCodeConfigCreatesFilesWhenAbsent(t *testing.T) {
+ 	dir := t.TempDir()
+ 	lymPath := "/opt/lym/bin/lym"
+ 
+-	if err := WriteConfig(dir, ".", "test-slug", "#2d7d46", lymPath); err != nil {
++	if err := WriteConfig(dir, ".", testLook, lymPath); err != nil {
+ 		t.Fatalf("WriteConfig failed: %v", err)
+ 	}
+ 
+@@ -31,12 +54,7 @@ func TestWriteVSCodeConfigCreatesFilesWhenAbsent(t *testing.T) {
+ 	if err := json.Unmarshal(settingsData, &settings); err != nil {
+ 		t.Fatalf("settings.json is not valid JSON: %v", err)
+ 	}
+-	if _, ok := settings["workbench.colorCustomizations"]; !ok {
+-		t.Fatalf("missing workbench.colorCustomizations in settings.json")
+-	}
+-	if _, ok := settings["window.title"]; !ok {
+-		t.Fatalf("missing window.title in settings.json")
+-	}
++	assertLook(t, settings)
+ 	if got := settings["terminal.integrated.defaultLocation"]; got != "editor" {
+ 		t.Errorf("terminal.integrated.defaultLocation = %v; want \"editor\" so the reed attach terminal opens in the main area", got)
+ 	}
+@@ -105,7 +123,7 @@ func TestWriteConfigFallsBackToBareName(t *testing.T) {
+ 	t.Parallel()
+ 	dir := t.TempDir()
+ 
+-	if err := WriteConfig(dir, ".", "test-slug", "#2d7d46", ""); err != nil {
++	if err := WriteConfig(dir, ".", testLook, ""); err != nil {
+ 		t.Fatalf("WriteConfig failed: %v", err)
+ 	}
+ 
+@@ -118,10 +136,10 @@ func TestWriteConfigFallsBackToBareName(t *testing.T) {
+ 	}
+ }
+ 
+-// TestWriteConfigKeepsSettingsAndOverwritesTasks pins that a rerun leaves an existing settings.json untouched and replaces an existing tasks.json.
++// TestWriteConfigRewritesOwnSettingsKeysAndOverwritesTasks pins that a rerun sets lym's title and colour keys in an existing settings.json, keeping its other keys and colour customizations, and replaces an existing tasks.json.
+ //
+-//testtiming:keep pins the untouched settings.json and the overwritten tasks.json, which the gitignore test does not assert
+-func TestWriteConfigKeepsSettingsAndOverwritesTasks(t *testing.T) {
++//testtiming:keep pins the kept settings keys and the overwritten tasks.json, which the gitignore test does not assert
++func TestWriteConfigRewritesOwnSettingsKeysAndOverwritesTasks(t *testing.T) {
+ 	t.Parallel()
+ 	dir := t.TempDir()
+ 	vscodePath := filepath.Join(dir, ".vscode")
+@@ -129,24 +147,37 @@ func TestWriteConfigKeepsSettingsAndOverwritesTasks(t *testing.T) {
+ 		t.Fatalf("failed to create .vscode: %v", err)
+ 	}
+ 	settingsPath := filepath.Join(vscodePath, "settings.json")
+-	custom := []byte(`{"custom":"value"}`)
+-	if err := os.WriteFile(settingsPath, custom, 0o644); err != nil {
++	existing := "{\n  // operator note\n  \"custom\": \"value\",\n  \"window.title\": \"old\",\n  \"workbench.colorCustomizations\": {\"titleBar.activeBackground\": \"#2d7d46\", \"statusBar.background\": \"#123456\"},\n}"
++	if err := os.WriteFile(settingsPath, []byte(existing), 0o644); err != nil {
+ 		t.Fatalf("failed to write original settings.json: %v", err)
+ 	}
+ 	if err := os.WriteFile(filepath.Join(vscodePath, "tasks.json"), []byte(`{"version":"999.0.0"}`), 0o644); err != nil {
+ 		t.Fatalf("failed to write original tasks.json: %v", err)
+ 	}
+ 
+-	if err := WriteConfig(dir, ".", "slug", "#2d7d46", "/opt/lym/bin/lym"); err != nil {
++	if err := WriteConfig(dir, ".", testLook, "/opt/lym/bin/lym"); err != nil {
+ 		t.Fatalf("WriteConfig failed: %v", err)
+ 	}
+ 
+-	got, err := os.ReadFile(settingsPath)
++	data, err := os.ReadFile(settingsPath)
+ 	if err != nil {
+ 		t.Fatalf("failed to read settings.json: %v", err)
+ 	}
+-	if string(got) != string(custom) {
+-		t.Errorf("settings.json was clobbered: %q", got)
++	var settings map[string]any
++	if err := json.Unmarshal(data, &settings); err != nil {
++		t.Fatalf("settings.json is not valid JSON: %v\n%s", err, data)
++	}
++	if settings["custom"] != "value" {
++		t.Errorf("custom = %v; want the operator's value kept", settings["custom"])
++	}
++	customizations, _ := settings["workbench.colorCustomizations"].(map[string]any)
++	if customizations["statusBar.background"] != "#123456" {
++		t.Errorf("statusBar.background = %v; want the operator's value kept", customizations["statusBar.background"])
++	}
++	delete(customizations, "statusBar.background")
++	assertLook(t, settings)
++	if _, ok := settings["files.watcherExclude"]; ok {
++		t.Errorf("files.watcherExclude added to an existing settings.json; want only lym's title and colour keys set")
+ 	}
+ 	tasks := readTasksFile(t, dir)
+ 	if tasks.Version != "2.0.0" {
+@@ -157,6 +188,32 @@ func TestWriteConfigKeepsSettingsAndOverwritesTasks(t *testing.T) {
+ 	}
+ }
+ 
++// TestWriteConfigLeavesUndecodableSettingsAlone pins that a settings.json that is not a JSON object keeps its bytes while tasks.json is still written.
++func TestWriteConfigLeavesUndecodableSettingsAlone(t *testing.T) {
++	t.Parallel()
++	for _, content := range []string{"{not json", "[1, 2]", "null"} {
++		dir := t.TempDir()
++		settingsPath := filepath.Join(dir, ".vscode", "settings.json")
++		if err := os.MkdirAll(filepath.Dir(settingsPath), 0o755); err != nil {
++			t.Fatal(err)
++		}
++		if err := os.WriteFile(settingsPath, []byte(content), 0o644); err != nil {
++			t.Fatal(err)
++		}
++
++		if err := WriteConfig(dir, ".", testLook, "/opt/lym/bin/lym"); err != nil {
++			t.Fatalf("WriteConfig(%q settings) failed: %v", content, err)
++		}
++
++		if got, _ := os.ReadFile(settingsPath); string(got) != content {
++			t.Errorf("settings.json = %q; want %q untouched", got, content)
++		}
++		if tasks := readTasksFile(t, dir); len(tasks.Tasks) != 1 {
++			t.Errorf("tasks = %v; want the single reed attach task", tasks.Tasks)
++		}
++	}
++}
++
+ // TestWriteConfigLeavesGitignoreAlone pins that WriteConfig neither creates a .gitignore nor modifies an existing one.
+ //
+ //testtiming:keep pins that no .gitignore is created or modified, which its covering tests do not assert
+@@ -164,7 +221,7 @@ func TestWriteConfigLeavesGitignoreAlone(t *testing.T) {
+ 	t.Parallel()
+ 	dir := t.TempDir()
+ 
+-	if err := WriteConfig(dir, ".", "slug", "#2d7d46", "/opt/lym/bin/lym"); err != nil {
++	if err := WriteConfig(dir, ".", testLook, "/opt/lym/bin/lym"); err != nil {
+ 		t.Fatalf("WriteConfig failed: %v", err)
+ 	}
+ 	if _, err := os.Stat(filepath.Join(dir, ".gitignore")); !os.IsNotExist(err) {
+@@ -175,7 +232,7 @@ func TestWriteConfigLeavesGitignoreAlone(t *testing.T) {
+ 	if err := os.WriteFile(filepath.Join(dir, ".gitignore"), existing, 0o644); err != nil {
+ 		t.Fatal(err)
+ 	}
+-	if err := WriteConfig(dir, ".", "slug", "#2d7d46", "/opt/lym/bin/lym"); err != nil {
++	if err := WriteConfig(dir, ".", testLook, "/opt/lym/bin/lym"); err != nil {
+ 		t.Fatalf("WriteConfig failed: %v", err)
+ 	}
+ 	got, _ := os.ReadFile(filepath.Join(dir, ".gitignore"))
