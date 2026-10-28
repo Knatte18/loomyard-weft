@@ -38,7 +38,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **Shuttle reads activity and operator input from Claude Code hooks**<br>• PostToolUse activity for the idle reader, UserPromptSubmit carried over on respawn, subagent and compact signals<br>• `profile: solid` | [`shuttle-hook-signals`](design-shuttle-hook-signals.md) | darn | Drift-Verify | neve | 4d<br>1h | shuttle, batten, shed, reed, claude |
+| T8 | **Shuttle reads activity and operator input from Claude Code hooks**<br>• PostToolUse activity for the idle reader, UserPromptSubmit carried over on respawn, subagent and compact signals<br>• `profile: solid` | [`shuttle-hook-signals`](design-shuttle-hook-signals.md) | darn | Code-Bouncer | neve | 4d<br>1h | shuttle, batten, shed, reed, claude |
 
 ### Ready (0)
 
