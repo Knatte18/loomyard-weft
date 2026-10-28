@@ -48,11 +48,13 @@ Held by a run; its scope is locked until the run ends.
 | T10 | **Comment lint ignores a legacy wrapped paragraph changed only by a word rename** | [`comment-lint-rename`](design-comment-lint-rename.md) | darn | Code-Burler-Fix | neve | 21m<br>14m | loom |
 | T11 | **A racing async push reports no divergence that is already gone** | [`async-push-race`](design-async-push-race.md) | darn | Darn-Write | neve | 21m<br>14m | fabric |
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T3 | **Codex hook delivery spike**<br>• Six Codex runs on Luna low: can Codex take creel posts through hooks like Claude does<br>• `profile: docs` | [`codex-hook-spike`](design-codex-hook-spike.md) | darn |  | 0m<br>0m | codex, creel |
 
 ### Layer A (1)
 
@@ -61,14 +63,6 @@ Waits only on Running, Ready or Draft entries.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **Stencil and system-prompt sentences that batch independent calls and edits**<br>• The turn audit sentences per heavy role, plus one shuttle-appended system-prompt sentence for every Claude agent | [`turn-batching`](design-turn-batching.md) | darn | `creel-hook-post`, `validator-checks` | 1h<br>1h | stencil, shuttle |
-
-### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **Codex hook delivery spike**<br>• Six Codex runs on Luna low: can Codex take creel posts through hooks like Claude does<br>• `profile: docs` | [`codex-hook-spike`](design-codex-hook-spike.md) | darn |  | 0m<br>0m | codex, creel |
 
 ## Notes (33)
 
