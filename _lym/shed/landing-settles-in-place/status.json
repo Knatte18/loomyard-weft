@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Parent-Align",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Drift-Await → skipped",
+    "now": "Parent-Align",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -199,6 +199,33 @@
       "output": "",
       "at": "2026-10-28T10:24:36Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/landing-settles-in-place/_lym/webster/summary.md",
+      "at": "2026-10-28T10:43:45Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-28T10:37:58.353018022Z",
+          "end": "2026-10-28T10:40:54.321428499Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-28T10:40:54.697280813Z",
+          "end": "2026-10-28T10:42:15.900211817Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-28T10:42:15.92727801Z",
+          "end": "2026-10-28T10:43:44.821125222Z"
+        }
+      ]
     }
   ],
   "product": {
