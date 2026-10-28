@@ -1,7 +1,7 @@
 # Card 10 — unanswered-cli-log
 
 **Create:**
-- `plan:internal/creelcli#isChaseWait` -> `func isChaseWait(d time.Duration) bool`
+- `internal/creelcli#isChaseWait`
 
 **Edit:**
 - `internal/creelcli#postCmd`
