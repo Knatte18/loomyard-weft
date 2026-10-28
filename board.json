@@ -807,30 +807,6 @@
       "profile": "solid"
     },
     {
-      "id": 870,
-      "handle": "T7",
-      "slug": "resume-fixes",
-      "title": "lym loom resume names prior work and honours a recorded wait decision",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "loom",
-        "shed"
-      ],
-      "issues": [
-        889,
-        883
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## lym loom resume re-spawn prompt names prior work as (none) although the branch holds the first spawn's commit (was note `resume-prompt-prior-work-none`)\n\nImported from [issue #889](https://github.com/Knatte18/loomyard/issues/889).\n\n#### What happened\n\nAfter a run halted `blocked` at a producer, `lym loom resume` re-spawned the same producer.\nThe re-spawn's prompt named the prior work as `(none)`, while the branch already held the first spawn's commit and an archived summary.\n\n#### Why it is abnormal\n\nThe resumed agent is told there is no earlier work although there is, so it can redo or conflict with existing commits, or miss that the failure it must fix is a gate failure on already-written code.\n\n#### What to do\n\nHave the resume path populate the prior-work section of the re-spawn prompt from the branch's existing commits and the archived summary of the earlier spawn.\n\nProvenance: task `regression-harness`; note Darn-Write-2.md.\n\n## lym loom resume re-prompts a producer to fix findings a recorded decision forbids, without checking the awaited task landed (was note `resume-honours-wait-decision`)\n\nImported from [issue #883](https://github.com/Knatte18/loomyard/issues/883).\n\nA `lym loom` run halted blocked at a producer row after its verify gate failed three attempts in a row, and was resumed with `lym loom resume` before the condition the parent's recorded decision waited on had been met.\n\nThe decision told the run not to fix the failing findings and to wait for another task to land on `main`.\nThe resume re-spawned the producer with a fresh verify budget, and each round re-prompted it with \"fix every finding\".\nThat instruction contradicts the recorded decision, so every round could only end unchanged until the gate exhausted again, and the run halted blocked a second time with anomaly `escalation-to-human`.\n\nThis is abnormal because the resume burned a full verify budget and a producer session on a round known in advance not to converge.\n\nWhat to do:\n- Let `lym loom resume` (or the decision record) carry a \"wait for task X to land\" condition and refuse, or warn, while it is unmet.\n- Or have the re-prompt after a resume include the recorded parent decisions, so \"fix every finding\" does not override them.\n\nProvenance: task `readme-draft-not-ready`; notes Darn-Write.md, loom-halt.md, loom-halt-2.md.\n\n",
-      "status": "done",
-      "created": "2026-10-28T11:33:24Z",
-      "revised": "2026-10-28T11:40:40Z"
-    },
-    {
       "id": 871,
       "handle": "T8",
       "slug": "webster-recovery",
@@ -874,28 +850,6 @@
       "status": "running · Code-Burler-Fix",
       "created": "2026-10-28T11:33:42Z",
       "revised": "2026-10-28T11:40:41Z"
-    },
-    {
-      "id": 875,
-      "handle": "T3",
-      "slug": "codex-hook-spike",
-      "title": "Codex hook delivery spike",
-      "kind": "task",
-      "labels": [
-        "research",
-        "codex",
-        "creel"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Six Codex runs on Luna low: can Codex take creel posts through hooks like Claude does",
-      "body": "## Goal\n\nFind whether Codex can take creel posts through hooks the way Claude does, so a later task can move Codex sessions off the pane path.\nToday Codex sessions keep the pane path (decision on `creel-hook-post`, operator, 2026-10-28), and Codex is used for review only at first.\n\n## What is known\n\n- `docs/research/creel-hook-channels-2026-10-28/report.md`: Codex `post_tool_use` with `additionalContext` and `systemMessage` delivers mid-turn on `gpt-6-luna` at `low`, and the operator sees it as `↳ Hook · [creel] #1 …`; it fires only after a tool call.\n- `docs/research/creel-midturn-trust-2026-10-28/report.md`: on Claude, a `PostToolUse` block with `reason` is taken at once, and Haiku obeys only with a system-prompt sentence.\n- `docs/research/codex-spike-2026-10-24/report.md`: its `Not tested` section leaves `codex exec` and `Tab` queueing open; folder trust is keyed on the git repository root.\n\n## Cases\n\nCodex CLI on `gpt-6-luna` at `low` effort, one run per case, no repeats: six runs in all.\nEach case uses a hand-written hook script standing in for creel; no change to lym's code.\n\n1. Idle wake: a hook comparable to Claude's `asyncRewake` that wakes an idle Codex session with a message, or a finding that none exists.\n2. `Stop` block: a stop-time hook that keeps the turn going with the message as its reason.\n3. `post_tool_use` block with a reason, beside the `additionalContext` channel already proven: is the message taken at the next step?\n4. Trust without the sentence: the case 3 delivery with no sentence in the developer instructions, to see whether Codex acts on a `[creel]` scope change anyway.\n5. Folder trust for a linked worktree: does the trust entry of a git worktree's root cover hook execution there, or does a linked worktree prompt again?\n6. `Tab` queue and `codex exec`: whether a line queued with `Tab` mid-turn reaches the model at the next step, and whether `codex exec` runs the same hooks.\n\n## Method\n\n- Each session runs as a reed strand in this worktree, so the operator can watch with `lym reed attach`; each step waits about 20 seconds.\n- A turn end is read from a hook writing a file, never by matching a prompt glyph in the pane.\n- Each case's strand is removed with `lym reed remove --name \u003cstrand\u003e` once its captures are written.\n- A `CODEX_HOME` of its own for the spike, as the codex spike set up, so the operator's `~/.codex` stays untouched.\n\n## Report\n\n`docs/research/codex-hook-delivery-\u003cdate\u003e/report.md`, per case: the hook config and script, whether the model took the message at its next step, later or not at all, quoting its words, a `tmux capture-pane -p` copy after delivery, and what the operator could see.\nEnd with a table of case × outcome and whether it is visible to the operator.\n",
-      "status": "running · Finalize",
-      "created": "2026-10-28T11:55:37Z",
-      "revised": "2026-10-28T11:55:37Z",
-      "profile": "docs"
     },
     {
       "id": 876,
