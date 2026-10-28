@@ -9,6 +9,12 @@ lenses:
     - walkthrough
     - goal-scope
     - board-fit
+fix_lenses:
+    - fix-consistency
+    - fix-claims
+    - fix-proposal
+    - fix-way-forward
+fix_forks: 4
 review:
     engine: claude
     model: opus
@@ -23,6 +29,16 @@ review:
     fork_fresh_tokens: 105547
     fork_cache_read_tokens: 2684478
     fork_fresh_share: 0.3387748551620099
+fix:
+    engine: claude
+    model: opus
+    effort: medium
+    start: 2026-10-28T10:51:24Z
+    end: 2026-10-28T11:55:04.607184168+01:00
+    wall_seconds: 220.607184168
+    tokens_known: true
+    fresh_tokens: 138333
+    cache_read_tokens: 1964396
 seed:
     - engine: claude
       model: sonnet
