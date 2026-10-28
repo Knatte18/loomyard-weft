@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-28 10:29 UTC; every age below is as of then.
+Rendered 2026-10-28 10:30 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -32,7 +32,7 @@ grouping
 
 Concrete and claimable; only a task can run.
 
-### Running (2)
+### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -40,14 +40,14 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Creel delivers every post to a Claude strand through hooks, visibly and in full**<br>• PostToolUse, Stop and asyncRewake hooks carry posts as fast as possible; shuttle appends a trust and reply sentence to the system prompt | [`creel-hook-post`](design-creel-hook-post.md) | loom | Plan-Burler-Review | neve | 5d<br>1h | creel, shuttle, claude |
 | T2 | **A landing merges a moved parent in Finalize and sends a fixer escalate to the arbiter first**<br>• No Finalize reroute to Parent-Align for a moved parent, and a landing fixer escalate reaches the orch only as the arbiter hand-on | [`landing-settles-in-place`](design-landing-settles-in-place.md) | loom | Webster | neve | 4d<br>1h | loom, batten, shed |
+| T3 | **Lens sets and code review per profile as the review-setup audit recommends**<br>• Merge goal-scope and board-fit, replace review-plan way-forward with a repository-invariant lens, fold code-pattern-fit into code-affected-set, narrow code-tests, solo code review in light and docs<br>• `profile: solid` | [`review-setup-tuning`](design-review-setup-tuning.md) | loom | Worktree-Create | neve | 0m<br>0m | burler, stencil, config |
 
-### Ready (2)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Lens sets and code review per profile as the review-setup audit recommends**<br>• Merge goal-scope and board-fit, replace review-plan way-forward with a repository-invariant lens, fold code-pattern-fit into code-affected-set, narrow code-tests, solo code review in light and docs<br>• `profile: solid` | [`review-setup-tuning`](design-review-setup-tuning.md) | loom |  | 0m<br>0m | burler, stencil, config |
 | T4 | **Machine checks in validate-discussion and validate-plan for recurring review findings**<br>• Citation and acceptance checks for the decision record; seam-test, tier-tag and doc.go checks for plan cards<br>• `profile: solid` | [`validator-checks`](design-validator-checks.md) | loom |  | 0m<br>0m | loom, stencil |
 
 ### Layer A (1)
