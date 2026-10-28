@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Burler-Review",
+  "current_producer": "Discussion-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Burler-Review",
-    "last": "Discussion-Bouncer → bounced to Discussion-Burler-Review",
+    "now": "Discussion-Burler-Fix",
+    "last": "Discussion-Burler-Review → bounced to Discussion-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -83,6 +83,35 @@
       "output": "/home/knatte/Code/loomyard-LYMHUB/review-setup-tuning/_lym/reviews/discussion/round-1-bouncer-ledger.md",
       "at": "2026-10-28T10:49:03Z",
       "routed_to": "Discussion-Burler-Review"
+    },
+    {
+      "producer": "Discussion-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/review-setup-tuning/_lym/reviews/discussion/round-2-review.md",
+      "at": "2026-10-28T10:55:00Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-10-28T10:54:33.997768811Z",
+          "end": "2026-10-28T10:54:33.997984735Z"
+        },
+        {
+          "gate": "review",
+          "kind": "rework",
+          "start": "2026-10-28T10:54:34.426202503Z",
+          "end": "2026-10-28T10:54:59.501089212Z"
+        },
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-10-28T10:54:59.549699414Z",
+          "end": "2026-10-28T10:54:59.550436802Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Discussion-Burler-Fix"
     }
   ],
   "product": {
