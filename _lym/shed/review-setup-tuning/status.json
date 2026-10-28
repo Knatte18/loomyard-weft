@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Parent-Align",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Drift-Await → skipped",
+    "now": "Parent-Align",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -211,6 +211,21 @@
       "output": "",
       "at": "2026-10-28T11:19:30Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/review-setup-tuning/_lym/webster/summary.md",
+      "at": "2026-10-28T11:29:09Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-28T11:26:21.230587031Z",
+          "end": "2026-10-28T11:29:09.270164048Z"
+        }
+      ]
     }
   ],
   "product": {
