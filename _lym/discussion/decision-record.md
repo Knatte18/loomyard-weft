@@ -75,13 +75,6 @@ The commit that adds the pair pull carries a `Pattern-Departure: PATTERN-parent-
 
 - A long landing holds the parent lock for minutes, and the hub pull waits for it; the wait message names the holder.
 
-<!-- lym:carry-over Code-Review -->
-- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
-  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
-  - no-test-moving-side-after-stopped-side (class design, severity MEDIUM, open in rounds 1)
-  - parent-lock-wait-untested (class design, severity MEDIUM, open in rounds 1)
-<!-- /lym:carry-over Code-Review -->
-
 ## Acceptance criteria
 
 - Bolt, the prime and a beam that origin moved are all moved by one hub pull, each reported `moved`.
