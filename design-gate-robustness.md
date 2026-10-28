@@ -1,6 +1,6 @@
 # Gate and agent runs survive transient task-limit pressure and run in the anchor
 
-`gate-robustness` · Task · bug, gate, shuttle, dotnet, batten, loom · draft
+`gate-robustness` · Task · bug, gate, shuttle, dotnet, batten, loom · running · Worktree-Create
 
 ## Lingering MSBuild reuse nodes exhaust the user's task limit during .NET runs (was note `msbuild-node-reuse-task-limit`)
 
