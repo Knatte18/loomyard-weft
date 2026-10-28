@@ -99,3 +99,8 @@ An agent must read the source files directly to work from the original material;
 
 When forks fail with "resource temporarily unavailable" while a .NET hub runs, check `pids.current` against `pids.max` of `/sys/fs/cgroup/user.slice/user-<uid>.slice`, and end idle MSBuild reuse nodes with `pkill -u <user> -f 'MSBuild.dll .*nodeReuse:true'`; then re-launch the stopped runs plainly.
 Remove this section once #885 is fixed.
+
+## A review fork that lists branches fails the round (#892)
+
+When a review row fails with "a fork must never run a state-mutating git command" and the named command is a read-only `git branch` listing, such as `git branch -a --contains <sha>`, resume the run with `lym loom resume` in the task worktree.
+Remove this section once #892 is fixed.
