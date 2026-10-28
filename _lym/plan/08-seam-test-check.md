@@ -1,9 +1,9 @@
 # Card 8 — seam-test-check
 
 **Create:**
-- `plan:internal/loomshed#SeamTestReader` -> `func SeamTestReader(worktreeRoot string) func() ([]impactset.SeamTest, error)`
-- `plan:internal/loomshed#seamTestFindings` -> `func seamTestFindings(plan *planparser.Plan, cards []planparser.Card, worktreeRoot string, index planindex.Index, seams []impactset.SeamTest) ([]planindex.Finding, error)`
-- `plan:internal/shedrecipe#noFindingsPlanIndex.ResolveGlyphs` -> `func (noFindingsPlanIndex) ResolveGlyphs(worktreeRoot string, glyphs []string) ([]planindex.GlyphAnswer, error)`
+- `internal/loomshed#SeamTestReader`
+- `internal/loomshed#seamTestFindings`
+- `internal/shedrecipe#noFindingsPlanIndex.ResolveGlyphs`
 
 **Edit:**
 - `internal/loomshed#PlanContext`
@@ -11,7 +11,7 @@
 - `internal/loomshed#ValidatePlan`
 - `internal/loomshed#ValidateReworkPlan`
 - `internal/loomshed#loomshedAllowedImports`
-- `plan:internal/loomshed#TestValidatePlan_CardChecks`
+- `internal/loomshed#TestValidatePlan_CardChecks`
 - `internal/shedrecipe#planContextOf`
 - `internal/shedrecipe#TestPlanWriteEntry_GateConfig`
 - `internal/loomcli#loomCLI.validatePlanCmd`

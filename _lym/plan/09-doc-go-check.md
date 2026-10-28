@@ -1,11 +1,11 @@
 # Card 9 — doc-go-check
 
 **Create:**
-- `plan:internal/loomshed#docGoFindings` -> `func docGoFindings(plan *planparser.Plan, cards []planparser.Card, worktreeRoot string, index planindex.Index) ([]planindex.Finding, error)`
+- `internal/loomshed#docGoFindings`
 
 **Edit:**
 - `internal/loomshed#planContextFindings`
-- `plan:internal/loomshed#TestValidatePlan_CardChecks`
+- `internal/loomshed#TestValidatePlan_CardChecks`
 - `internal/loomcli#loomCLI.validatePlanCmd`
 
 **Extends:**

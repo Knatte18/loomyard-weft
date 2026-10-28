@@ -1,9 +1,9 @@
 # Card 7 — test-tier-check
 
 **Create:**
-- `plan:internal/loomshed#testTierFindings` -> `func testTierFindings(plan *planparser.Plan, cards []planparser.Card, tierTags []string) []planindex.Finding`
-- `plan:internal/loomshed#TestValidatePlan_CardChecks` -> `func TestValidatePlan_CardChecks(t *testing.T)`
-- `plan:internal/loomcli#gateTierTags` -> `func gateTierTags(cfg gateslot.Config) []string`
+- `internal/loomshed#testTierFindings`
+- `internal/loomshed#TestValidatePlan_CardChecks`
+- `internal/loomcli#gateTierTags`
 
 **Edit:**
 - `internal/loomshed#PlanContext`
