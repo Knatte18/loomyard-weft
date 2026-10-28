@@ -38,7 +38,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **The watcher wakes the orch after a usage limit resets, and holds the repeat notices**<br>• `profile: solid` | [`usage-limit-wake`](design-usage-limit-wake.md) | darn | Drift-Verify | neve | 50m<br>18m | orch, batten, shuttle |
+| T1 | **The watcher wakes the orch after a usage limit resets, and holds the repeat notices**<br>• `profile: solid` | [`usage-limit-wake`](design-usage-limit-wake.md) | darn | Code-Bouncer | neve | 50m<br>18m | orch, batten, shuttle |
 | T2 | **A merge fixer change over the caps gets a solo review of its own commits, not a full Code review** | [`fixer-overcap-review`](design-fixer-overcap-review.md) | darn | Code-Burler-Review | neve | 33m<br>18m | loom, burler |
 | T3 | **Friction-Reflect producer fails to start with 'text file busy' when the lym binary is replaced mid-run** | [`spawn-text-file-busy`](design-spawn-text-file-busy.md) | darn | Code-Burler-Fix | neve | 50m<br>18m | shed, deploy, loom |
 | T5 | **Stencil and system-prompt sentences that batch independent calls and edits**<br>• The turn audit sentences per heavy role, plus one shuttle-appended system-prompt sentence for every Claude agent | [`turn-batching`](design-turn-batching.md) | darn | Code-Burler-Fix | neve | 3h<br>3h | stencil, shuttle |
