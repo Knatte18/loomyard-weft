@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=b2bdb40c9f3a9056b34b85465e96256979703e969a66c5e193383447e08b4b68 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+<!-- lym-stencil: sha256=888736331942708c99aea6f07eb8c56e6dc7d32f30dbfdaa223e8f92cfbb9fec build=bf00a04359aa5980fdd8dc2b7cf76d3ee9799216 time=2026-10-28T14:12:42Z -->
 
 # Webster implementer job — read your cards, implement, commit, report
 
@@ -53,6 +53,7 @@ Make exactly the changes the card describes, in exactly the targets its type lab
 {{.rename_tools}}
 
    Locate them with one `lym quarry resolve <glyph>...` call over the card's target and `Uses:` glyphs: each answer gives the member's `file` and its `start` and `end` lines, so read those spans instead of grepping for them or reading whole files.
+   Read every span it names in one message before the card's first edit, put the card's edits that do not depend on each other in one message, and run the card's gate, as step 3 lists it, after the card's last edit rather than after each edit.
    A `plan:` handle names a member the card creates and does not resolve yet.
 3. Run each step of the card's gate from the list below, in order, each as its own foreground Bash call under the gate rule in your system prompt.
    A failure here is the card's own gate — fix it before moving on;

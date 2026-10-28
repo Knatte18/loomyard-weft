@@ -11,7 +11,7 @@
      Both stay at the top level, before the first work heading, so their optional-blank semantics hold.
      fork_reading is the seventh marker, optional, filled via stencil.FillOptional, and renders nothing in a solo round;
      it sits directly after tool_use_rules on the same line, so an empty value adds no byte.
-lym-stencil: sha256=8404297a9e6adbbd9830dd557f75778ed52a8d0b7120c439f82adc3d0cffdecc build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+lym-stencil: sha256=8ae794cde3ab61488900aa52d2d72033225b41affdb607657aafbe94b71ad425 build=bf00a04359aa5980fdd8dc2b7cf76d3ee9799216 time=2026-10-28T14:12:42Z -->
 
 {{.pattern_directive}}
 {{.focus_directive}}
@@ -36,5 +36,7 @@ it never introduces a new severity name, and neither do you.
 Each finding also carries one of the four classes — `design`, `scope`, `decision`, `consistency` — and the rubric says what `design` means for this target.
 
 ## Tool-use rules — how you gather evidence
+
+Make the reads your focus needs, or the whole target when no focus is set, in one message.
 
 {{.tool_use_rules}}{{.fork_reading}}
