@@ -1,6 +1,6 @@
 # Codex hook delivery spike
 
-`codex-hook-spike` · Task · research, codex, creel · draft
+`codex-hook-spike` · Task · research, codex, creel
 
 ## Goal
 
