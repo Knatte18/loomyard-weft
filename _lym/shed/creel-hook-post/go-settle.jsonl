@@ -1,1 +1,2 @@
 {"stop_key":{"current_producer":"Discussion-Bouncer","history_length":7,"state":"awaiting"},"settler":"parent","action":"hand-back","outcome":"an awaiting stop with a parent notice: relay it and hand back","at":"2026-10-28T10:51:56.428604873+01:00"}
+{"stop_key":{"current_producer":"Parent-Align","history_length":29,"state":"blocked"},"settler":"parent","action":"hand-back","outcome":"a landing halt: only the orch's resume lifts it","at":"2026-10-28T14:12:46.919543132+01:00"}
