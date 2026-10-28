@@ -86,6 +86,9 @@ None ranks a setting; two medium runs of one setting differ as much as any setti
 It found 2 of 5 and 3 of 6 fan findings, the same ones in both runs of an input, and missed the fan's one `BLOCKING` finding; it misses divergences from the decision record and acceptance criteria, and on one input it found two real PATTERN violations the fan lacks.
 It does not stand in for the Claude Code-Review fan as it ran there.
 
+`docs/research/codex-review-yardstick-2026-10-28/report.md` (landed as `codex-review-yardstick`) adds one prompt bullet naming the decision record's decisions and acceptance criteria as a yardstick beside the board snapshot, and ran the fan once per input: all 5 of the fan's findings on the first input (2 of 5 before) and the same 3 of 6 on the second, with no new false finding.
+The record-divergence miss above is therefore a prompt gap, not a limit of the fan; one run per input, one grader.
+
 ## Goal (operator, 2026-10-27)
 
 Codex is to take review load off Claude: the work is to tune Codex reviews until a Codex fan can stand in for a Claude fan, not to add Codex as an extra reviewer beside it.
