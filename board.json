@@ -657,7 +657,7 @@
       "isolated": false,
       "brief": "Citation and acceptance checks for the decision record; seam-test, tier-tag and doc.go checks for plan cards",
       "body": "## Seen\n\n`docs/research/review-setup-audit-2026-10-28/report.md` (section 3) classed the gating Discussion and Plan findings and found themes a machine check could stop before a reviewer spends a round on them.\nThe operator agreed with its recommendations (2026-10-28); this task builds the checks.\n\n## Design\n\n`lym loom validate-discussion`, and the gates of the rows that run it:\n\n- A citation check: every repository path and Go symbol the decision record cites exists.\n- An acceptance check: every decision id appears in at least one acceptance criterion.\n\n`lym loom validate-plan`, and the gates of the rows that run it:\n\n- A card that adds a field to a shared `Deps` or `Env` struct lists the reflective seam tests of that struct.\n- A card that adds a test file states exactly one tier tag for it.\n- A card whose Intent changes a package's behaviour lists that package's `doc.go`.\n\nEach check's refusal names the item it found and what the writer adds to fix it.\nThe Discussion and Plan writer stencils state the new rules, so a writer meets them before the gate does.\n\n## Out of scope\n\n- Lens and profile changes: a task of their own.\n- Checks for the design-interaction and unbounded-edge classes, which the report leaves to the lenses.\n",
-      "status": "running · Drift-Verify",
+      "status": "running · Describe",
       "created": "2026-10-28T10:29:56Z",
       "revised": "2026-10-28T10:29:56Z",
       "profile": "solid"
@@ -749,7 +749,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #893](https://github.com/Knatte18/loomyard/issues/893).\n\n## What happened\n\nA loom run halted `failed` at the `Friction-Reflect` producer with anomaly `interrupted-stop`:\n\n```\nstart-failed: fork/exec \u003cgo bin dir\u003e/lym: text file busy\n```\n\nEvery earlier producer in the run (Preflight, Darn-Write, Code-Bouncer, PR-Review, Finalize) finished or was skipped normally.\nThe halt note carried an empty `trace_file`, so the failure left no trace to inspect.\n\n## Why it is abnormal\n\n`text file busy` (ETXTBSY) on `fork/exec` of the `lym` binary means another process was writing to that executable at the moment of the spawn, most likely a deploy or rebuild replacing the binary in place.\nThe last producer of an otherwise clean run then failed for a reason unrelated to the task, and the run ended `failed` instead of finishing.\nThe classification as `interrupted-stop` also hides the cause: it is a transient spawn error, not an interrupted run.\n\n## What to do\n\n- Retry the spawn a few times with a short backoff when `fork/exec` returns ETXTBSY, before declaring `start-failed`.\n- Have the deploy path (`update-plugins.sh`, `deploy-dev`, the Land row's `deploy` command) install the binary by writing a temp file and renaming it over the target, so a running or spawning process never sees a file open for writing.\n- Write a trace file, or the spawn error's detail, into the halt note when `start-failed` occurs, so the note is self-explanatory.\n\nProvenance: task slug `codex-hook-spike`; notes `loom-halt.md`.\n",
-      "status": "running · Worktree-Create",
+      "status": "running · Darn-Write",
       "created": "2026-10-28T13:19:01Z",
       "revised": "2026-10-28T13:50:43Z"
     },
