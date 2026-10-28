@@ -872,6 +872,28 @@
       "body": "Imported from [issue #887](https://github.com/Knatte18/loomyard/issues/887).\n\n## What happened\n\nTwo `lym gate test --wait` runs failed with `fork/exec ... resource temporarily unavailable` and `runtime: failed to create new OS thread (errno=11)`.\nA `go vet` run and one PreToolUse hook failed the same way (\"Cannot fork\").\nThe failures hit packages the change did not touch.\n`ulimit -u` was far above the live thread count, and a rerun a minute later was green.\nThe cause looks like short-lived process or thread pressure from other runs sharing the machine.\n\n## Why it is abnormal\n\nThe gate surfaces these as ordinary build or test failures.\nThe cause is an environment error that a retry clears, and reporting it as a test failure hides that.\n\n## What to do\n\nHave `lym gate test` recognise fork/exec EAGAIN and thread-creation failures and report them as a retryable environment error, or retry them automatically.\nConsider limiting how many gate runs execute concurrently on one machine.\n\nProvenance: task `ide-seed-current-worktree`, note `Darn-Write.md`.\n",
       "created": "2026-10-28T11:33:28Z",
       "revised": "2026-10-28T11:33:28Z"
+    },
+    {
+      "id": 860,
+      "handle": "B6",
+      "slug": "loom-halt-on-transient-eagain",
+      "title": "Loom halts on transient fork/exec EAGAIN and records an opaque exit status 2 for the sibling halt",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "loom",
+        "shed",
+        "fabric"
+      ],
+      "issues": [
+        886
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #886](https://github.com/Knatte18/loomyard/issues/886).\n\nTwo loom halts were recorded within a second of each other (09:41:18Z and 09:41:19Z), both as `failed`, one in `Drift-Verify` and one in `Code-Bouncer`.\n\n**What happened**\n\n- The `Code-Bouncer` halt (anomaly `producer-hard-failure`) carries this lym error: `shedadapters: Code-Bouncer (bouncer): read the live subject: fabricengine: read task patch: diff the working tree against \u003csha\u003e: fork/exec /usr/bin/git: resource temporarily unavailable`. That is EAGAIN from the OS while lym spawned `git`, a transient condition.\n- The `Drift-Verify` halt (anomaly `interrupted-stop`) carries only `exited: exit status 2`. The note names no cause, and its history lists `Drift-Verify` as `skipped` even though the halt is attributed to it.\n\n**Why it is abnormal**\n\n- A transient process-spawn failure halts the whole run as `failed` with no retry, so a momentary resource spike costs the run.\n- The two halts share a time window and most likely a root cause, but nothing in the notes links them.\n- The `interrupted-stop` note gives no reason, so the operator must open the trace file to learn what exit status 2 means.\n- The Drift-Verify history entry reads `skipped` while the halt names that producer as the failed one.\n\n**What to do**\n\n- Retry `fork/exec` EAGAIN in the fabricengine git wrapper with a short bounded backoff before surfacing it as a hard failure.\n- Put the underlying cause (the failing command or its stderr tail) into `interrupted-stop` halt notes.\n- Check whether lym itself spawns enough concurrent processes or git calls at the end of `Darn-Write` to exhaust the process limit.\n- Reconcile the history state of a producer the halt blames with the halt note.\n\nProvenance: task `review-setup-audit`; notes `loom-halt.md`, `loom-halt-2.md`.\n",
+      "created": "2026-10-28T11:33:31Z",
+      "revised": "2026-10-28T11:33:31Z"
     }
   ],
   "prime_owner": "neve",

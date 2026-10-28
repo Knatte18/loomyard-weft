@@ -56,11 +56,11 @@ Waits only on Running, Ready or Draft entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **Stencil and system-prompt sentences that batch independent calls and edits**<br>• The turn audit sentences per heavy role, plus one shuttle-appended system-prompt sentence for every Claude agent | [`turn-batching`](design-turn-batching.md) | darn | `creel-hook-post`, `validator-checks`, `review-setup-tuning` | 1h<br>1h | stencil, shuttle |
 
-## Notes (38)
+## Notes (39)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Bugs (6)
+### Bugs (7)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -69,6 +69,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B3 |  | **Loom run fails hard when the producer's tmux session dies after a fork EAGAIN** | [`died-after-tmux-eagain-transient`](design-died-after-tmux-eagain-transient.md) | 0m<br>0m | shuttle, reed, shed |
 | B4 |  | **lym loom resume re-spawn prompt names prior work as (none) although the branch holds the first spawn's commit** | [`resume-prompt-prior-work-none`](design-resume-prompt-prior-work-none.md) | 0m<br>0m | loom, shed |
 | B5 |  | **lym gate test reports transient fork/thread exhaustion as test failures** | [`gate-eagain-not-test-failure`](design-gate-eagain-not-test-failure.md) | 0m<br>0m | gate |
+| B6 |  | **Loom halts on transient fork/exec EAGAIN and records an opaque exit status 2 for the sibling halt** | [`loom-halt-on-transient-eagain`](design-loom-halt-on-transient-eagain.md) | 0m<br>0m | loom, shed, fabric |
 | B7 |  | **An instruction typed into a pane is lost when the tackler re-spawns the row**<br>• A re-spawned row session starts from its prompt alone; operator input to the old session is dropped | [`pane-input-lost-on-respawn`](design-pane-input-lost-on-respawn.md) | 1d<br>1d | shed, shuttle, reed |
 
 ### Enhancements (15)
