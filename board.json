@@ -789,6 +789,28 @@
       "body": "Imported from [issue #892](https://github.com/Knatte18/loomyard/issues/892).\n\nSeen: validator-checks failed at Discussion-Burler-Review (round 2 attempt 2, 2026-10-28T11:02Z) because a review fork ran `git branch -a --contains 71a46b11`. internal/burlerengine/cluster.go lists `branch` in mutatingGitSubcommands and only `git tag` gets a list-mode exception, so a read-only branch listing fails the whole review round.\n\nWorkaround: the orch resumed the run with `lym loom resume`, which re-runs the round; a fork that lists branches again fails it again.\n\nExpected: `git branch` counts as mutating only when it creates, deletes, renames, copies or moves a branch or sets its upstream; with no operand, or with list-mode options (-a, -r, -l/--list, --contains, --no-contains, --merged, --no-merged, --points-at, -v, --show-current, --format, --sort), it only reads, as `git tag` list mode already does.",
       "created": "2026-10-28T11:33:19Z",
       "revised": "2026-10-28T11:33:19Z"
+    },
+    {
+      "id": 856,
+      "handle": "B3",
+      "slug": "died-after-tmux-eagain-transient",
+      "title": "Loom run fails hard when the producer's tmux session dies after a fork EAGAIN",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shuttle",
+        "reed",
+        "shed"
+      ],
+      "issues": [
+        890
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #890](https://github.com/Knatte18/loomyard/issues/890).\n\nWhat happened: during `lym loom step` at the `Darn-Write` producer (seats engine), the trace shows `reed: tmux could not be started, retrying` with `fork/exec /usr/bin/tmux: resource temporarily unavailable`.\nAbout ten seconds later shuttle reported `state=dead cause=process-gone`, the run finished with `outcome=die`, and the step was refused with `shedadapters: Darn-Write (seats): shuttle run outcome died` and an empty `transient` field.\nThe loom halted as `failed` with anomaly `producer-hard-failure`.\n\nWhy it is abnormal: the death coincides with a transient host resource shortage, yet the refusal carries no transient marker, so the run went to a terminal `failed` state instead of a retry or a resumable pause.\nThe halt note gives no hint that resource exhaustion preceded the death.\n\nWhat to do: decide whether a `died` chair outcome that follows a tmux fork EAGAIN should be classed as transient, and either retry or surface the tmux error in the halt note.\n\nProvenance: task `hub-pull-verb`; notes `loom-halt.md`.\n",
+      "created": "2026-10-28T11:33:22Z",
+      "revised": "2026-10-28T11:33:22Z"
     }
   ],
   "prime_owner": "neve",

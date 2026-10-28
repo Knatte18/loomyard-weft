@@ -56,16 +56,17 @@ Waits only on Running, Ready or Draft entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **Stencil and system-prompt sentences that batch independent calls and edits**<br>• The turn audit sentences per heavy role, plus one shuttle-appended system-prompt sentence for every Claude agent | [`turn-batching`](design-turn-batching.md) | darn | `creel-hook-post`, `validator-checks`, `review-setup-tuning` | 1h<br>1h | stencil, shuttle |
 
-## Notes (34)
+## Notes (35)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Bugs (3)
+### Bugs (4)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Find why a running run shows a dead waiter in the activity reader** | [`idle-notice-dead-waiter-cause`](design-idle-notice-dead-waiter-cause.md) | 4d<br>4d | batten, shuttle |
 | B2 |  | **Burler fork audit counts a listing git branch as git-mutating** | [`fork-audit-git-branch-list`](design-fork-audit-git-branch-list.md) | 0m<br>0m | burler |
+| B3 |  | **Loom run fails hard when the producer's tmux session dies after a fork EAGAIN** | [`died-after-tmux-eagain-transient`](design-died-after-tmux-eagain-transient.md) | 0m<br>0m | shuttle, reed, shed |
 | B7 |  | **An instruction typed into a pane is lost when the tackler re-spawns the row**<br>• A re-spawned row session starts from its prompt alone; operator input to the old session is dropped | [`pane-input-lost-on-respawn`](design-pane-input-lost-on-respawn.md) | 1d<br>1d | shed, shuttle, reed |
 
 ### Enhancements (14)
