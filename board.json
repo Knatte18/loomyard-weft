@@ -894,6 +894,110 @@
       "body": "Imported from [issue #886](https://github.com/Knatte18/loomyard/issues/886).\n\nTwo loom halts were recorded within a second of each other (09:41:18Z and 09:41:19Z), both as `failed`, one in `Drift-Verify` and one in `Code-Bouncer`.\n\n**What happened**\n\n- The `Code-Bouncer` halt (anomaly `producer-hard-failure`) carries this lym error: `shedadapters: Code-Bouncer (bouncer): read the live subject: fabricengine: read task patch: diff the working tree against \u003csha\u003e: fork/exec /usr/bin/git: resource temporarily unavailable`. That is EAGAIN from the OS while lym spawned `git`, a transient condition.\n- The `Drift-Verify` halt (anomaly `interrupted-stop`) carries only `exited: exit status 2`. The note names no cause, and its history lists `Drift-Verify` as `skipped` even though the halt is attributed to it.\n\n**Why it is abnormal**\n\n- A transient process-spawn failure halts the whole run as `failed` with no retry, so a momentary resource spike costs the run.\n- The two halts share a time window and most likely a root cause, but nothing in the notes links them.\n- The `interrupted-stop` note gives no reason, so the operator must open the trace file to learn what exit status 2 means.\n- The Drift-Verify history entry reads `skipped` while the halt names that producer as the failed one.\n\n**What to do**\n\n- Retry `fork/exec` EAGAIN in the fabricengine git wrapper with a short bounded backoff before surfacing it as a hard failure.\n- Put the underlying cause (the failing command or its stderr tail) into `interrupted-stop` halt notes.\n- Check whether lym itself spawns enough concurrent processes or git calls at the end of `Darn-Write` to exhaust the process limit.\n- Reconcile the history state of a producer the halt blames with the halt note.\n\nProvenance: task `review-setup-audit`; notes `loom-halt.md`, `loom-halt-2.md`.\n",
       "created": "2026-10-28T11:33:31Z",
       "revised": "2026-10-28T11:33:31Z"
+    },
+    {
+      "id": 861,
+      "handle": "B8",
+      "slug": "msbuild-node-reuse-task-limit",
+      "title": "Lingering MSBuild reuse nodes exhaust the user's task limit during .NET runs",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shuttle",
+        "gate",
+        "dotnet",
+        "batten"
+      ],
+      "issues": [
+        885
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #885](https://github.com/Knatte18/loomyard/issues/885).\n\n## Seen (Neve, 2026-10-28)\n\nWith five loomyard runs and one darn run in the C# sandbox hub (lym-csharp) live, the user slice hit its systemd task limit (user-1000.slice pids.max 3000, pids.current 2997).\nEvery fork then failed with EAGAIN: three batten runs stopped at Run-Shed or Darn-Write, pushes failed (a git credential helper that cannot fork falls back to a username prompt, reported as an auth failure), and Claude Code's own hooks failed with 'Cannot fork'.\n18 idle `dotnet MSBuild.dll /nodemode:1 /nodeReuse:true` processes, about 20 threads each, were left behind by `dotnet build` and `dotnet test` calls made by agents outside the gate; the gate's own runs used `/nodeReuse:false` nodes.\n`dotnet build-server shutdown --msbuild` did not end them.\n\n## Workaround\n\nKilled them by hand: `pkill -u \u003cuser\u003e -f 'MSBuild.dll .*nodeReuse:true'`, which took the slice from 2940 to 2500 tasks.\n\n## Expected\n\nlym sets `MSBUILDDISABLENODEREUSE=1` (and `DOTNET_CLI_USE_MSBUILD_SERVER=0`) in the environment of every agent session and gate run it starts, so no .NET build an agent runs leaves worker nodes behind.\nBeside that, the dobby could hold a new run start while the user slice is near its task limit, since six parallel runs sit close to the default limit even without the leak.",
+      "created": "2026-10-28T11:33:33Z",
+      "revised": "2026-10-28T11:33:33Z"
+    },
+    {
+      "id": 862,
+      "handle": "B9",
+      "slug": "verify-findings-show-failures",
+      "title": "Verify-gate findings log tail shows only passing tests, hiding the failure",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "loom",
+        "gate"
+      ],
+      "issues": [
+        884
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #884](https://github.com/Knatte18/loomyard/issues/884).\n\n## What happened\n\nA producer row's verify gate failed three times in a row, and the run halted `blocked` with anomaly `escalation-to-human`.\nEach re-prompt carried a findings text of the form \"The verify command failed with exit code 1\", a full-log path and a \"Log tail\".\nThe tail was the last lines of the `lym gate test` output, and those lines held only `--- PASS` entries, a final `PASS` and `ok` for the last package.\nThe `--- FAIL` lines sat tens of thousands of lines earlier in the same log (the verify log ran to roughly 57,000 lines, and the first failure sat near line 25,800).\nThe only hint of failure in the tail was the gate summary line `tier0 computed ... failed 2 ...`, which names no test.\n\n## Why it is abnormal\n\nThe tail exists so the re-prompted agent can see what failed.\nWith `go test` output interleaved from parallel packages, the last lines are not where failures are, so the agent got a findings text that looks like a pass.\nThe agent had to open a 57,000-line log and search for `--- FAIL` by itself, and the budget of three attempts was spent re-running with little to act on.\n\n## What to do\n\nBuild the findings text from the failures rather than from the raw tail.\nFor `lym gate test` output, extract the `--- FAIL` and `FAIL \u003cpackage\u003e` lines (with a few lines of context each) and put them first.\nFall back to the tail only when no failure marker is found.\nAlternatively, make `lym gate test` print a failed-tests section at the end of its output, so any tail contains it.\n\nProvenance: task `hub-reader-creates-lym`; notes `loom-halt.md`, `loom-halt-2.md`.\n",
+      "created": "2026-10-28T11:33:36Z",
+      "revised": "2026-10-28T11:33:36Z"
+    },
+    {
+      "id": 863,
+      "handle": "E8",
+      "slug": "resume-honours-wait-decision",
+      "title": "lym loom resume re-prompts a producer to fix findings a recorded decision forbids, without checking the awaited task landed",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom"
+      ],
+      "issues": [
+        883
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #883](https://github.com/Knatte18/loomyard/issues/883).\n\nA `lym loom` run halted blocked at a producer row after its verify gate failed three attempts in a row, and was resumed with `lym loom resume` before the condition the parent's recorded decision waited on had been met.\n\nThe decision told the run not to fix the failing findings and to wait for another task to land on `main`.\nThe resume re-spawned the producer with a fresh verify budget, and each round re-prompted it with \"fix every finding\".\nThat instruction contradicts the recorded decision, so every round could only end unchanged until the gate exhausted again, and the run halted blocked a second time with anomaly `escalation-to-human`.\n\nThis is abnormal because the resume burned a full verify budget and a producer session on a round known in advance not to converge.\n\nWhat to do:\n- Let `lym loom resume` (or the decision record) carry a \"wait for task X to land\" condition and refuse, or warn, while it is unmet.\n- Or have the re-prompt after a resume include the recorded parent decisions, so \"fix every finding\" does not override them.\n\nProvenance: task `readme-draft-not-ready`; notes Darn-Write.md, loom-halt.md, loom-halt-2.md.\n",
+      "created": "2026-10-28T11:33:38Z",
+      "revised": "2026-10-28T11:33:38Z"
+    },
+    {
+      "id": 864,
+      "handle": "E11",
+      "slug": "comment-lint-rename-breaks",
+      "title": "Comment lint flags every line break of a legacy wrapped paragraph after a pure word rename",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom"
+      ],
+      "issues": [
+        881
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #881](https://github.com/Knatte18/loomyard/issues/881).\n\nThe comment lint judges a line break new when the word pair across it is absent from the base text.\nA pure word rename inside a legacy fixed-column-wrapped comment paragraph changes the word pair at every break in that paragraph, so each break becomes a finding although the wrapping was never touched.\n\nA mechanical binary rename run halted at its producer row (`anomaly: escalation-to-human`, `gate did not pass after 3 attempts`) on several hundred such findings in `gate-findings`.\nThe agent cleared them with a second scripted pass that rejoined each flagged paragraph and broke it at sentence ends.\n\nThis is abnormal because the findings point at comment wrapping the change never altered, and the halt cost the whole verify budget.\n\nSuggested fix: compare word pairs modulo the rename, or ignore a break whose surrounding line text is otherwise unchanged apart from the renamed word.\n\nProvenance: task `rename-binary-lym`; notes `Darn-Write.md`, `loom-halt.md`.\n",
+      "created": "2026-10-28T11:33:40Z",
+      "revised": "2026-10-28T11:33:40Z"
+    },
+    {
+      "id": 865,
+      "handle": "B10",
+      "slug": "async-push-race-false-divergence",
+      "title": "A racing async push reports a divergence that is already gone",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "fabric"
+      ],
+      "issues": [
+        879
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #879](https://github.com/Knatte18/loomyard/issues/879).\n\n## Seen (beam-start-and-ownership, 2026-10-26)\n\nWithin minutes, `ly:FABRIC` sent the orch two `not_fast_forward` notices for one run on one machine: first for its code branch, then for its records branch.\nEach way forward named a `git merge` or `git reset --keep`, and the records notice said \"another machine wrote the same paths\" with `paths: none`.\nA fetch right after each notice showed nothing on origin the local branch lacked: a concurrent push had already landed, and the next push was a plain fast-forward.\nTwo asynchronous pushes of the same branch raced, and the loser reported a divergence that no longer existed.\n\n## Idea\n\n- A rejected push fetches origin again before it reports: when origin is now an ancestor of the local tip, it retries the push instead of sending a notice.\n- The notice names another machine only when origin's commits carry another machine's name, and never with `paths: none`.",
+      "created": "2026-10-28T11:33:42Z",
+      "revised": "2026-10-28T11:33:42Z"
     }
   ],
   "prime_owner": "neve",
