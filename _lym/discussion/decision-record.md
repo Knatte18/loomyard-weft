@@ -76,6 +76,13 @@ Rationale: Forced by the new file shape the task renders; refusing it would brea
 
 - Links from outside the board to project sections of the old README break; the board README has no external anchors known to rely on them.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - project-file-replay-untested (class design, severity MEDIUM, open in rounds 1)
+  - replay-change-outside-record-scope (class decision, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: a render of a board with an open and a done project returns `project-<slug>.md` for both, and RenderToDisk's manifest removes a project file once its project is gone.
