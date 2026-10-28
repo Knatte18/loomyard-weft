@@ -1,0 +1,13 @@
+verdict: resume
+reason: >-
+  The producer stop at Code-Bouncer came from a transient fork/exec failure
+  ("fork/exec /usr/bin/git: resource temporarily unavailable", EAGAIN) while
+  reading the task patch against 546bc89c. The cause has cleared: git 2.53.0
+  runs, the host holds 579 processes against a user limit of 113180, and
+  memory has 19 GiB available. The step wrote no partial state that needs
+  repair: the two fabric commits in the trace (c99f087c, 5d8929c1, 5f9da5f2)
+  and their pushes are ordinary progress. A plain re-launch of the failed
+  producer row settles it, so no goto is set. Noted, not acted on: the trace
+  line "bouncer skip seam approved the artifact without a review" means
+  Code-Bouncer was passed without a review on this step, which the parent may
+  want to check when the run reaches landing.
