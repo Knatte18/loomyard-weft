@@ -1,12 +1,13 @@
 {
   "current_producer": "Darn-Write",
-  "state": "failed",
-  "error": "shedadapters: Darn-Write (seats): shuttle run outcome died",
+  "state": "paused",
+  "error": "",
   "pause_requested": false,
+  "pause_reason": "re-launched onto Darn-Write",
   "activity": {
     "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
-    "wait": "shedadapters: Darn-Write (seats): shuttle run outcome died"
+    "last": "Darn-Write → goto",
+    "wait": ""
   },
   "history": [
     {
@@ -28,6 +29,12 @@
       "output": "",
       "at": "2026-10-28T09:29:52Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "goto",
+      "output": "",
+      "at": "2026-10-28T09:39:54Z"
     }
   ],
   "product": {
