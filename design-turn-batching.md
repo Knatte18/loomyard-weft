@@ -1,6 +1,6 @@
 # Stencil and system-prompt sentences that batch independent calls and edits
 
-`turn-batching` · Task · enhancement, stencil, shuttle · running · Describe
+`turn-batching` · Task · enhancement, stencil, shuttle · running · PR-Review
 
 ## Seen
 
