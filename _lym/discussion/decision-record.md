@@ -47,6 +47,12 @@ Decision: the scope covers issue #899 as well as #897, and the change descriptio
 
 Rationale: both are creel delivery into an idle orch strand, and the operator chose one run over two.
 
+### Added after Discussion (parent, 2026-10-28): Scope covers issue #899 as well as #897
+
+Decision: The task fixes issue #899 (https://github.com/Knatte18/loomyard/issues/899) beside #897: mail to an idle Claude strand without the CreelHooks reed field must wake it through the pane path, as mail to every idle strand must. The change description closes both issues. This confirms D4.
+
+Rationale: Same code as #897, creel delivery into an idle orch strand; the operator chose to fold it into this run rather than start another.
+
 ## Constraints
 
 - `PATTERN-pane-text-injection`: typing stays inside shuttle's guarded send and creel's `Delivery` seam.
