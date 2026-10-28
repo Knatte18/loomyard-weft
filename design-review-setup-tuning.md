@@ -1,6 +1,6 @@
 # Lens sets and code review per profile as the review-setup audit recommends
 
-`review-setup-tuning` · Task · enhancement, burler, stencil, config · running · Describe
+`review-setup-tuning` · Task · enhancement, burler, stencil, config · running · PR-Review
 
 ## Seen
 
