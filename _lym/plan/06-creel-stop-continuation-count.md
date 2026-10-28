@@ -1,8 +1,8 @@
 # Card 6 — The claim knows its boundary and counts a turn's Stop blocks
 
 **Create:**
-- `plan:internal/creelengine#Boundary` -> `type Boundary struct`
-- `plan:internal/creelengine#stopBlockCap` -> `const stopBlockCap = 6`
+- `internal/creelengine#Boundary`
+- `internal/creelengine#stopBlockCap`
 
 **Edit:**
 - `internal/creelengine#Store.ClaimAtBoundary` -> `func (s *Store) ClaimAtBoundary(sender Sender, boundary Boundary) (*Reading, error)`

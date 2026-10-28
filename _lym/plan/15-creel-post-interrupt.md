@@ -24,7 +24,7 @@
 - `internal/creelengine#Store.checkMayAct`
 - `internal/creelengine#Store.checkReceiverLocked`
 - `internal/testkit/creelfake#Delivery.SetClaimLive`
-- `plan:internal/creelengine#validateLine`
+- `internal/creelengine#validateLine`
 - `plan:internal/testkit/creelfake#HookStrand`
 - `internal/testkit/creelfake#LiveStrand`
 - `internal/creelengine_test#TestStore_InjectAndHold`
