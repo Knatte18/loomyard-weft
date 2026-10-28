@@ -81,6 +81,12 @@ Rationale: the landed usage-limit wake already wakes the orch after the reset to
 - A run directory swept by another run's start between the stop and the re-spawn loses its instructions; the sweep's age guard of twice the startup timeout makes that window short.
 - An operator instruction typed with text identical to one shuttle sent to the same run is not carried over.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/code/round-2-review.md; fixer report: _lym/reviews/code/round-2-fixer-report.md.
+  - waitergone-skip-untested (class scope, severity MEDIUM, open in rounds 2)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: a built run's settings carry the stamp command on `PostToolUse`, `PreCompact` and `PostCompact`, in a hub and outside one, and the creel mail hook still rides `PostToolUse` in a hub.
