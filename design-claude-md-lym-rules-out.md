@@ -1,4 +1,4 @@
-# Move rules about lym behaviour out of this repo's CLAUDE.md into lym code, doc.go and stencils
+# Move rules about lym behaviour out of this repo's CLAUDE.md into lym code and stencils
 
 `claude-md-lym-rules-out` · Note · enhancement, stencil, board, loom
 
