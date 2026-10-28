@@ -32,13 +32,19 @@ grouping
 
 Concrete and claimable; only a task can run.
 
-### Ready (1)
+### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Spike: a mid-turn creel post the model acts on and the operator sees**<br>• PostToolUse block+reason with and without a system-prompt sentence, Haiku and Sonnet, plus Codex, with a realistic scope change<br>• `profile: docs` | [`creel-midturn-trust-spike`](design-creel-midturn-trust-spike.md) | darn | Worktree-Create | neve | 1m<br>1m | creel, claude, codex |
+
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Spike: a mid-turn creel post the model acts on and the operator sees**<br>• PostToolUse block+reason with and without a system-prompt sentence, Haiku and Sonnet, plus Codex, with a realistic scope change<br>• `profile: docs` | [`creel-midturn-trust-spike`](design-creel-midturn-trust-spike.md) | darn |  | 1m<br>1m | creel, claude, codex |
+_None._
 
 ## Notes (41)
 
