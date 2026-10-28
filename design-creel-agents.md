@@ -1,6 +1,6 @@
 # creel stage 3: agents message through creel, not SendMessage
 
-`creel-agents` · Task · feature, creel, shuttle, loom, stencil, report · running · Plan-Bouncer
+`creel-agents` · Task · feature, creel, shuttle, loom, stencil, report · running · Plan-Burler-Review
 
 ## Goal
 
