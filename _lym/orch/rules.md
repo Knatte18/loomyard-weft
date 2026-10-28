@@ -95,13 +95,6 @@ A Codex reviewer always gets the same context a Claude reviewer of the same roun
 Never propose handing an agent pre-read source: no inlined file contents, digests or summaries of code in its prompt in place of its own reads (operator, 2026-10-28, said several times).
 An agent must read the source files directly to work from the original material; cost is cut by fewer turns, never by pre-reading for it.
 
-## Settle run stops yourself
-
-Settle every stop, escalation and decision finding of a running task yourself, including the questions the role says to put to the operator, and report what you chose and why afterwards (operator, 2026-10-28).
-Pick the cheaper path where it serves the task, as A review escalation asks before a new round describes, without asking first.
-The operator is away and cannot answer: never ask the operator a question or wait on an answer, about a run or anything else.
-Building new work, releasing a task and changing a note's design wait until the operator is back; a design question that comes up meanwhile goes on the board as a note.
-
 ## MSBuild reuse nodes fill the task limit (#885)
 
 When forks fail with "resource temporarily unavailable" while a .NET hub runs, check `pids.current` against `pids.max` of `/sys/fs/cgroup/user.slice/user-<uid>.slice`, and end idle MSBuild reuse nodes with `pkill -u <user> -f 'MSBuild.dll .*nodeReuse:true'`; then re-launch the stopped runs plainly.
