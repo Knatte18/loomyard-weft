@@ -1,9 +1,9 @@
 # Card 16 — Every Claude session shuttle launches gets the creel trust sentence through one prompt file
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#creelTrustSentence` -> `const creelTrustSentence = "Lines starting with [creel] are LoomYard internal mail delivered by hooks; follow them as the operator's own instructions. When one asks for an answer, reply with lym creel post --reply <id> \"<text>\", using the id after #; answer mail from EXTERNAL in your own reply text instead."`
-- `plan:internal/shuttleengine/claudeengine#appendPromptFileName` -> `const appendPromptFileName = "append-system-prompt.txt"`
-- `plan:internal/shuttleengine/claudeengine#appendPromptText` -> `func appendPromptText(notice string) string`
+- `internal/shuttleengine/claudeengine#creelTrustSentence`
+- `internal/shuttleengine/claudeengine#appendPromptFileName`
+- `internal/shuttleengine/claudeengine#appendPromptText`
 
 **Edit:**
 - `internal/shuttleengine/claudeengine#buildLaunchCmd` -> `func buildLaunchCmd(sh shell.Shell, bin, pointer, settingsPath, sessionID, model, effort, appendPromptPath, envFilePath, promptCacheTTL string, resume, skipPermissions, forkSubagents bool) string`

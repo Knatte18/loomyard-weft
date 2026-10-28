@@ -1,7 +1,7 @@
 # Card 15 — post --interrupt stops the turn, then posts; creel's help carries the reply rule
 
 **Create:**
-- `plan:internal/creelengine#Store.PostInterrupt` -> `func (s *Store) PostInterrupt(sender Sender, receiver, body string, wait bool) (int64, bool, *Waiter, error)`
+- `internal/creelengine#Store.PostInterrupt`
 
 **Edit:**
 - `internal/creelengine#Store.post` -> `func (s *Store) post(sender Sender, receiver, body string, wait, interrupt bool) (int64, bool, *Waiter, error)`
