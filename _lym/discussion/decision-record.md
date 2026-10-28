@@ -62,6 +62,12 @@ Rationale: no commit lym writes carries a machine name, so the notice cannot tel
 
 - A synchronous push whose rejection persists now waits out the backoff schedule before it returns, the same wait a gone branch or an unreachable origin already takes.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - doc-go-retry-once-sentence (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - A code-side push rejected more than once while origin holds no commit the local branch lacks lands, with no failed-push record and no mail.
