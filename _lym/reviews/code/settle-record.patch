@@ -1,0 +1,1410 @@
+diff --git a/internal/gitexec/doc.go b/internal/gitexec/doc.go
+index db352b80..cc471f2b 100644
+--- a/internal/gitexec/doc.go
++++ b/internal/gitexec/doc.go
+@@ -46,6 +46,12 @@
+ // The bounds are not configuration.
+ // A legitimate remote command that runs longer than the deadline, or moves under the low-speed limit for the low-speed time, fails as a transport failure.
+ //
++// # Start retry
++//
++// A git the host could not start for EAGAIN, a fork or exec refused for a temporary resource shortage, is started again: four tries in all, waiting 250 ms before the first retry and doubling the wait each time, each retry logged at Warn.
++// git never ran on such a failure, so the retry repeats no side effect, for a local or a remote subcommand alike; a git that ran and exited nonzero, and every other start failure, returns at once.
++// Each refusal is noted in proc's spawn-refusal record, and a start still refused after the last try returns its exec error unwrapped, as any other exec-level failure.
++//
+ // # Limits
+ //
+ // On Windows there is no process group to signal, so a timed-out git's helper process, such as git-remote-https, may outlive the kill.
+diff --git a/internal/gitexec/export_test.go b/internal/gitexec/export_test.go
+index 8a3eacaf..66e77c81 100644
+--- a/internal/gitexec/export_test.go
++++ b/internal/gitexec/export_test.go
+@@ -1,8 +1,9 @@
+-// export_test.go lets package gitexec_test shorten the remote deadline and the stall bound and inject a git version line.
++// export_test.go lets package gitexec_test shorten the remote deadline and the stall bound, inject a git version line and make a git start fail.
+ 
+ package gitexec
+ 
+ import (
++	"os/exec"
+ 	"testing"
+ 	"time"
+ )
+@@ -40,3 +41,27 @@ func SetStallBoundForTest(t *testing.T, d time.Duration) {
+ 	stallBound = d
+ 	t.Cleanup(func() { stallBound = previous })
+ }
++
++// SetStartFailuresForTest makes the next len(failures) git starts fail with failures in order, without starting git, and sets the wait before the first start retry to delay, until the test ends.
++// The waits between start retries are recorded instead of slept.
++// A nil entry starts git as usual.
++// It returns a function that reports how many starts were made and one that reports the waits recorded so far.
++// It changes process-global state, so the calling test must not be parallel.
++func SetStartFailuresForTest(t *testing.T, delay time.Duration, failures ...error) (starts func() int, waits func() []time.Duration) {
++	t.Helper()
++
++	previousRun, previousDelay, previousSleep := runCommand, spawnAgainFirstDelay, sleepBeforeRetry
++	startCount := 0
++	var recorded []time.Duration
++	runCommand = func(cmd *exec.Cmd) error {
++		startCount++
++		if startCount <= len(failures) && failures[startCount-1] != nil {
++			return failures[startCount-1]
++		}
++		return previousRun(cmd)
++	}
++	spawnAgainFirstDelay = delay
++	sleepBeforeRetry = func(wait time.Duration) { recorded = append(recorded, wait) }
++	t.Cleanup(func() { runCommand, spawnAgainFirstDelay, sleepBeforeRetry = previousRun, previousDelay, previousSleep })
++	return func() int { return startCount }, func() []time.Duration { return recorded }
++}
+diff --git a/internal/gitexec/gitexec.go b/internal/gitexec/gitexec.go
+index 54ee6e98..28820b11 100644
+--- a/internal/gitexec/gitexec.go
++++ b/internal/gitexec/gitexec.go
+@@ -50,6 +50,19 @@ var remoteDeadline = 10 * time.Minute
+ // It is a variable only so a test can shorten it.
+ var stallBound = 30 * time.Second
+ 
++// spawnAgainAttempts is how many times a git the host could not start for EAGAIN is tried in all.
++const spawnAgainAttempts = 4
++
++// spawnAgainFirstDelay is the wait before the first retry of such a start; each later wait doubles it.
++// It is a variable only so a test can shorten it.
++var spawnAgainFirstDelay = 250 * time.Millisecond
++
++// sleepBeforeRetry waits between start retries; it is a variable only so a test can record the waits instead of sitting them out.
++var sleepBeforeRetry = time.Sleep
++
++// runCommand runs one git child to completion; it is a variable only so a test can make a start fail.
++var runCommand = (*exec.Cmd).Run
++
+ // remoteWaitDelay bounds the wait on output pipes after a remote git command exits or is killed, since an orphaned helper such as git-remote-https can still hold them.
+ const remoteWaitDelay = 10 * time.Second
+ 
+@@ -203,6 +216,7 @@ func runCore(args []string, cwd, stdin string, extraEnv []string) (stdout, stder
+ // A remote subcommand runs under deadline and stallBound, in its own process group, with lowSpeedEnv added to the environment;
+ // a local one runs unbounded.
+ // A remote subcommand killed for a stall runs once more, since it received nothing from the remote and so changed nothing there.
++// A git the host could not start for EAGAIN is started again as runSpawning says, before any of this judges the result.
+ // A remote subcommand first waits while a pause covers the process, through the installed network gate, if any, and its bounds start only once it runs.
+ // Every child gets the process environment less GIT_DIR, GIT_WORK_TREE and GIT_OPTIONAL_LOCKS, with GIT_OPTIONAL_LOCKS=0 set, and extraEnv after all of it.
+ func runCoreWithin(args []string, cwd, stdin string, extraEnv []string, deadline time.Duration) (stdout, stderr string, exitCode int, err error) {
+@@ -210,25 +224,42 @@ func runCoreWithin(args []string, cwd, stdin string, extraEnv []string, deadline
+ 		return "", "", -1, floorErr
+ 	}
+ 	if !remoteSubcommands[subcommand(args)] {
+-		stdout, stderr, exitCode, _, err = runAttempt(args, cwd, stdin, extraEnv, false, deadline)
++		stdout, stderr, exitCode, _, err = runSpawning(args, cwd, stdin, extraEnv, false, deadline)
+ 		return stdout, stderr, exitCode, err
+ 	}
+ 
+ 	// The hold comes before the bounds' timers, so a command held by a pause starts its bounds only when it runs.
+ 	_, done := pauserecord.Network(subcommand(args))
+ 	defer done()
+-	stdout, stderr, exitCode, stalled, err := runAttempt(args, cwd, stdin, extraEnv, true, deadline)
++	stdout, stderr, exitCode, stalled, err := runSpawning(args, cwd, stdin, extraEnv, true, deadline)
+ 	if !stalled {
+ 		return stdout, stderr, exitCode, err
+ 	}
+ 	logger.Warn("gitexec: remote sent no answer, retrying once", "subcommand", subcommand(args), "dir", cwd, "stall_bound", stallBound)
+-	stdout, stderr, exitCode, stalled, err = runAttempt(args, cwd, stdin, extraEnv, true, deadline)
++	stdout, stderr, exitCode, stalled, err = runSpawning(args, cwd, stdin, extraEnv, true, deadline)
+ 	if stalled {
+ 		return stdout, stderr, -1, &GitError{Args: args, Dir: cwd, ExitCode: -1, Stderr: stderr, Timeout: stallBound, Stalled: true}
+ 	}
+ 	return stdout, stderr, exitCode, err
+ }
+ 
++// runSpawning is runAttempt started again after a doubling wait while git could not be started for EAGAIN, up to spawnAgainAttempts tries in all.
++// It returns the first attempt that is not such a failure, or the last one.
++// Each EAGAIN failure is noted in proc's spawn-refusal record and each retry is logged at Warn;
++// git never ran on such a failure, so a retry repeats no side effect, local or remote.
++func runSpawning(args []string, cwd, stdin string, extraEnv []string, remote bool, deadline time.Duration) (stdout, stderr string, exitCode int, stalled bool, err error) {
++	delay := spawnAgainFirstDelay
++	for try := 1; ; try++ {
++		stdout, stderr, exitCode, stalled, err = runAttempt(args, cwd, stdin, extraEnv, remote, deadline)
++		if !proc.NoteSpawnAgain(err) || try == spawnAgainAttempts {
++			return stdout, stderr, exitCode, stalled, err
++		}
++		logger.Warn("gitexec: git could not be started, retrying", "subcommand", subcommand(args), "dir", cwd, "attempt", try, "delay", delay, "error", err)
++		sleepBeforeRetry(delay)
++		delay *= 2
++	}
++}
++
+ // runAttempt spawns git once with args in cwd and captures its output, with runCoreWithin's result contract.
+ // A remote attempt runs under deadline, in its own process group, with lowSpeedEnv and a packet trace file added to the environment.
+ // When stallBound passes under deadline and the trace file is still empty, the remote has sent no answer:
+@@ -284,7 +315,7 @@ func runAttempt(args []string, cwd, stdin string, extraEnv []string, remote bool
+ 
+ 	proc.HideWindow(cmd)
+ 
+-	runErr := cmd.Run()
++	runErr := runCommand(cmd)
+ 
+ 	if runErr != nil && sawStall.Load() {
+ 		return outBuf.String(), errBuf.String(), -1, true, nil
+diff --git a/internal/gitexec/startretry_test.go b/internal/gitexec/startretry_test.go
+new file mode 100644
+index 00000000..4b80a7d4
+--- /dev/null
++++ b/internal/gitexec/startretry_test.go
+@@ -0,0 +1,75 @@
++//go:build tier1
++
++// startretry_test.go covers the exec core's retry of a git the host could not start for EAGAIN.
++
++package gitexec_test
++
++import (
++	"errors"
++	"os"
++	"slices"
++	"strings"
++	"syscall"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/gitexec"
++	"github.com/Knatte18/loomyard/internal/proc"
++)
++
++// TestRun_StartRefusedForEAGAIN pins the start retry: a start refused for EAGAIN is tried again up to four times in all, while a git that ran and exited nonzero, and any other start failure, is started once.
++// A refusal is noted in proc's spawn-refusal record.
++// It replaces the package's start seam, which is process-global state, so neither the test nor its rows run in parallel.
++func TestRun_StartRefusedForEAGAIN(t *testing.T) {
++	refused := &os.PathError{Op: "fork/exec", Path: "/usr/bin/git", Err: syscall.EAGAIN}
++	missing := &os.PathError{Op: "fork/exec", Path: "/usr/bin/git", Err: syscall.ENOENT}
++	dir := t.TempDir()
++	const firstDelay = 100 * time.Millisecond
++
++	tests := []struct {
++		name       string
++		args       []string
++		failures   []error
++		wantStarts int
++		wantWaits  []time.Duration
++		wantStdout string
++		wantErr    error
++		wantGitErr bool
++	}{
++		{name: "RefusedThenStarted", args: []string{"--version"}, failures: []error{refused, refused}, wantStarts: 3, wantWaits: []time.Duration{firstDelay, 2 * firstDelay}, wantStdout: "git version"},
++		{name: "RefusedEveryTry", args: []string{"--version"}, failures: []error{refused, refused, refused, refused, refused}, wantStarts: 4, wantWaits: []time.Duration{firstDelay, 2 * firstDelay, 4 * firstDelay}, wantErr: syscall.EAGAIN},
++		{name: "RemoteRefusedEveryTry", args: []string{"ls-remote", dir}, failures: []error{refused, refused, refused, refused, refused}, wantStarts: 4, wantWaits: []time.Duration{firstDelay, 2 * firstDelay, 4 * firstDelay}, wantErr: syscall.EAGAIN},
++		{name: "OtherStartFailure", args: []string{"--version"}, failures: []error{missing}, wantStarts: 1, wantErr: syscall.ENOENT},
++		{name: "GitExitsNonzero", args: []string{"rev-parse", "--verify", "no-such-ref"}, wantStarts: 1, wantGitErr: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			starts, waits := gitexec.SetStartFailuresForTest(t, firstDelay, tt.failures...)
++			stdout, err := gitexec.Run(tt.args, dir)
++			if got := starts(); got != tt.wantStarts {
++				t.Errorf("Run(%v) started git %d times; want %d", tt.args, got, tt.wantStarts)
++			}
++			if got := waits(); !slices.Equal(got, tt.wantWaits) {
++				t.Errorf("Run(%v) waited %v between starts; want %v", tt.args, got, tt.wantWaits)
++			}
++			if !strings.HasPrefix(stdout, tt.wantStdout) {
++				t.Errorf("Run(%v) stdout = %q; want prefix %q", tt.args, stdout, tt.wantStdout)
++			}
++			var gitErr *gitexec.GitError
++			switch {
++			case tt.wantErr != nil && !errors.Is(err, tt.wantErr):
++				t.Errorf("Run(%v) error = %v; want one wrapping %v", tt.args, err, tt.wantErr)
++			case tt.wantErr != nil && errors.As(err, &gitErr):
++				t.Errorf("Run(%v) returned a *GitError for a git that never ran: %v", tt.args, err)
++			case tt.wantGitErr && !errors.As(err, &gitErr):
++				t.Errorf("Run(%v) error = %v; want a *GitError", tt.args, err)
++			case tt.wantErr == nil && !tt.wantGitErr && err != nil:
++				t.Errorf("Run(%v) error = %v; want nil", tt.args, err)
++			}
++		})
++	}
++
++	if _, noted := proc.LastSpawnAgain(); !noted {
++		t.Errorf("proc.LastSpawnAgain() noted nothing after refused starts")
++	}
++}
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 34eb0e9c..87594f1a 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -3,7 +3,9 @@
+ // The run, step, status, pause and goto bodies are the shared `internal/shedverbs` verbs, mounted here with loom's own text.
+ // Friction-Reflect, the last row, runs the Tier 2 friction reflection under run and under step alike, before the run records done.
+ // A `blocked` or `failed` halt, and an interrupted stop, write their Go halt note and spawn no reflection, so no stop holds the driver lock for a friction session and `lym loom resume` never waits on one; the note waits for the run's Friction-Reflect row, which reflects every note in the friction directory.
+-// An interrupted stop's note carries the `interrupted-stop` anomaly kind, never `producer-hard-failure`, with the stop's cause as its reason and the in-flight step's trace file where the stop knows it.
++// An interrupted stop's note carries the `interrupted-stop` anomaly kind, never `producer-hard-failure`, with the stop's cause as its reason and the in-flight step's trace file, or its captured stderr, where the stop knows it.
++// It records the state the status file holds after the stop, which stays `paused` for a step that died before its resume write over a paused run,
++// and an error the status file holds that the stop did not write, such as the step's own producer failure, on a `status error:` line of its reason.
+ //
+ // A run seeded with the recipe `pawl` is a beam's life, batten's Seed-Child seeds it in the beam's pair.
+ // Its shed reads Beam-Up, Beam-Await, Parent-Align, the Code-Review perch, Beam-Describe, Finalize and Beam-Down, with no plan and no reroute edge.
+diff --git a/internal/loomcli/halt_test.go b/internal/loomcli/halt_test.go
+index a7b590de..270e1719 100644
+--- a/internal/loomcli/halt_test.go
++++ b/internal/loomcli/halt_test.go
+@@ -473,26 +473,71 @@ func TestStep_ProducerErrorWritesTheHaltNoteAndNoReflection(t *testing.T) {
+ }
+ 
+ // TestLoomAfterInterrupt_WritesTheHaltNoteAndNoReflection asserts the interrupt hook writes the `loom-halt` note as an interrupted stop with the cause as reason, reports skipped and runs the reflection shuttle zero times.
++// The note records the state the status file holds after the stop, `failed` when there is none, and an error in it the stop did not write.
+ func TestLoomAfterInterrupt_WritesTheHaltNoteAndNoReflection(t *testing.T) {
+ 	t.Parallel()
+ 
+-	f := newHaltFixture(t)
+-	f.c.runID = "self"
+-	f.seedStatus(t, "Plan-Write", shedengine.StateRunning, "")
++	tests := []struct {
++		name       string
++		state      shedengine.State
++		unseeded   bool
++		errText    string
++		want       []string
++		wantAbsent string
++	}{
++		{
++			name:       "FailedByTheStop",
++			state:      shedengine.StateFailed,
++			errText:    "shedverbs: step Plan-Write interrupted (watchdog); way forward: re-run",
++			want:       []string{"loom halted failed at Plan-Write", "state: failed"},
++			wantAbsent: "status error:",
++		},
++		{
++			name:    "ChildRecordedItsOwnFailure",
++			state:   shedengine.StateFailed,
++			errText: "fork/exec /usr/bin/git: resource temporarily unavailable",
++			want:    []string{"loom halted failed at Plan-Write", "watchdog\nstatus error: fork/exec /usr/bin/git: resource temporarily unavailable"},
++		},
++		{
++			name:       "NoStatusFile_FallsBackToFailed",
++			unseeded:   true,
++			want:       []string{"loom halted failed at Plan-Write", "state: failed"},
++			wantAbsent: "status error:",
++		},
++		{
++			name:  "PausedRunLeftPaused",
++			state: shedengine.StatePaused,
++			want:  []string{"loom halted paused at Plan-Write", "state: paused"},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
+ 
+-	got := f.c.specFor("step").Hooks.AfterInterrupt(t.Context(), "Plan-Write", "watchdog", "/logs/child.log")
++			f := newHaltFixture(t)
++			f.c.runID = "self"
++			if !tt.unseeded {
++				f.seedStatus(t, "Plan-Write", tt.state, tt.errText)
++			}
+ 
+-	if got != frictionengine.StatusSkipped {
+-		t.Errorf("AfterInterrupt() = %q; want %q", got, frictionengine.StatusSkipped)
+-	}
+-	if len(f.shuttle.Specs) != 0 {
+-		t.Errorf("reflection shuttle ran %d times; want 0", len(f.shuttle.Specs))
+-	}
+-	note := readNote(t, filepath.Join(f.frictionDir, "loom-halt.md"))
+-	for _, want := range []string{"loom halted failed at Plan-Write", "state: failed", "anomaly: " + string(loomengine.AnomalyInterrupted), "watchdog", "trace_file: /logs/child.log"} {
+-		if !strings.Contains(note, want) {
+-			t.Errorf("halt note %q does not contain %q", note, want)
+-		}
++			got := f.c.specFor("step").Hooks.AfterInterrupt(t.Context(), "Plan-Write", "watchdog", "/logs/child.log")
++
++			if got != frictionengine.StatusSkipped {
++				t.Errorf("AfterInterrupt() = %q; want %q", got, frictionengine.StatusSkipped)
++			}
++			if len(f.shuttle.Specs) != 0 {
++				t.Errorf("reflection shuttle ran %d times; want 0", len(f.shuttle.Specs))
++			}
++			note := readNote(t, filepath.Join(f.frictionDir, "loom-halt.md"))
++			for _, want := range append(tt.want, "anomaly: "+string(loomengine.AnomalyInterrupted), "watchdog", "trace_file: /logs/child.log") {
++				if !strings.Contains(note, want) {
++					t.Errorf("halt note %q does not contain %q", note, want)
++				}
++			}
++			if tt.wantAbsent != "" && strings.Contains(note, tt.wantAbsent) {
++				t.Errorf("halt note %q contains %q", note, tt.wantAbsent)
++			}
++		})
+ 	}
+ }
+ 
+diff --git a/internal/loomcli/looparm.go b/internal/loomcli/looparm.go
+index ba81df1e..d8c1935d 100644
+--- a/internal/loomcli/looparm.go
++++ b/internal/loomcli/looparm.go
+@@ -179,19 +179,24 @@ func agentActivityFor(loc *lymcwd.Location, cfg shuttleengine.Config) func() (ti
+ }
+ 
+ // loomAfterInterrupt is loom's AfterInterrupt hook and returns the envelope's "friction" key.
+-// It writes the halt note a `failed` halt writes, classified as an interrupted stop with the cause as the reason, and spawns no reflection, so an interrupted stop leaves a note the run's Friction-Reflect row covers.
++// It writes a halt note classified as an interrupted stop, with the cause as the reason, and spawns no reflection, so an interrupted stop leaves a note the run's Friction-Reflect row covers.
++// The note records the state the status file holds after the stop, or `failed` when the file is unreadable.
++// When the file holds an error the stop did not write, such as the child's own producer failure, the reason carries it on a `status error:` line, so the two halts of one step are linked.
+ // It always reports skipped.
+ func (c *loomCLI) loomAfterInterrupt(_ context.Context, producer, cause, traceFile string) string {
+-	var history []shedengine.HistoryEntry
+-	if st, found, err := state.ReadJSON[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath); err == nil && found {
+-		history = st.History
+-	}
+-	return c.reflectHalt(haltNote{
++	note := haltNote{
+ 		Producer:    producer,
+ 		State:       shedengine.StateFailed,
+ 		Reason:      cause,
+-		History:     history,
+ 		TraceFile:   traceFile,
+ 		Interrupted: true,
+-	})
++	}
++	if st, found, err := state.ReadJSON[shedengine.Status](c.shedPaths.StatusPath, c.shedPaths.StatusLockPath); err == nil && found {
++		note.State = st.State
++		note.History = st.History
++		if st.Error != "" && !strings.Contains(st.Error, cause) {
++			note.Reason = cause + "\nstatus error: " + st.Error
++		}
++	}
++	return c.reflectHalt(note)
+ }
+diff --git a/internal/loomengine/anomaly.go b/internal/loomengine/anomaly.go
+index a2c2fb26..ec8065b4 100644
+--- a/internal/loomengine/anomaly.go
++++ b/internal/loomengine/anomaly.go
+@@ -26,7 +26,7 @@ const (
+ 	AnomalyBudgetExhausted AnomalyKind = "bounce-budget-exhausted"
+ 	// AnomalyProducerFailure is trigger 4: a failed halt, an engine-level producer error.
+ 	AnomalyProducerFailure AnomalyKind = "producer-hard-failure"
+-	// AnomalyInterrupted is trigger 5: a failed halt of a step that ended without an envelope, from outside its producer:
++	// AnomalyInterrupted is trigger 5: a non-blocked halt of a step that ended without an envelope, from outside its producer:
+ 	// a killed or crashed step, a stalled one the watchdog killed, or a loop that died under it.
+ 	AnomalyInterrupted AnomalyKind = "interrupted-stop"
+ )
+@@ -73,8 +73,9 @@ func DetectCrashResume(entry EntryObservation) bool {
+ 
+ // ClassifyHalt evaluates the halt-kind triggers (escalation, budget-exhausted, producer-hard-failure, interrupted-stop) against a run's final state, the reason it persisted and whether the halt is an interrupted stop.
+ // At most one fires, since the triggers partition state:
+-// blocked with shedengine.ReasonBounceBudgetExhausted, blocked with anything else, failed by an interrupted stop, or failed otherwise.
+-// interrupted is told by the caller that wrote the stop and changes no blocked kind.
++// blocked with shedengine.ReasonBounceBudgetExhausted, blocked with anything else, any non-blocked state by an interrupted stop, or failed otherwise.
++// interrupted is told by the caller that wrote the stop and changes no blocked kind;
++// an interrupted step leaves whatever state its failed write could reach, such as a paused run that died before its resume write or a running one the failed write found busy, and still classifies as an interrupted stop.
+ // shedengine persists StateBlocked from exactly two arms, so "blocked and not budget-exhausted" is exactly the
+ // escalation arm whatever reason its producer supplied.
+ // The one text the partition still matches is the budget prefix, matched with strings.HasPrefix because the persisted reason carries the exhausted row and the told resume way forward after it:
+@@ -86,7 +87,7 @@ func ClassifyHalt(state shedengine.State, reason string, interrupted bool) (Anom
+ 		return AnomalyBudgetExhausted, true
+ 	case state == shedengine.StateBlocked:
+ 		return AnomalyEscalation, true
+-	case state == shedengine.StateFailed && interrupted:
++	case interrupted:
+ 		return AnomalyInterrupted, true
+ 	case state == shedengine.StateFailed:
+ 		return AnomalyProducerFailure, true
+diff --git a/internal/loomengine/anomaly_test.go b/internal/loomengine/anomaly_test.go
+index 9ca07180..453cb232 100644
+--- a/internal/loomengine/anomaly_test.go
++++ b/internal/loomengine/anomaly_test.go
+@@ -174,9 +174,26 @@ func TestClassifyHalt(t *testing.T) {
+ 			wantOK:      true,
+ 		},
+ 		{
+-			name:        "RunningInterrupted_None",
++			name:        "PausedInterrupted_InterruptedStop",
++			state:       shedengine.StatePaused,
++			reason:      "exited: exit status 2",
++			interrupted: true,
++			wantKind:    AnomalyInterrupted,
++			wantOK:      true,
++		},
++		{
++			name:        "RunningInterrupted_InterruptedStop",
+ 			state:       shedengine.StateRunning,
+ 			interrupted: true,
++			wantKind:    AnomalyInterrupted,
++			wantOK:      true,
++		},
++		{
++			name:        "DoneInterrupted_InterruptedStop",
++			state:       shedengine.StateDone,
++			interrupted: true,
++			wantKind:    AnomalyInterrupted,
++			wantOK:      true,
+ 		},
+ 		{
+ 			name:   "Running_None",
+diff --git a/internal/proc/doc.go b/internal/proc/doc.go
+index 6814f242..40adfac0 100644
+--- a/internal/proc/doc.go
++++ b/internal/proc/doc.go
+@@ -16,4 +16,7 @@
+ // SignalProcess and SignalGroup send SIGTERM, or SIGKILL when asked, to one pid or to one process group and return the raw syscall error.
+ // All of these read /proc or signal by pid, so they work on Linux only: on Windows TreeCPU, ListProcesses and ListStats return errors.ErrUnsupported, IsAncestor is false, SignalProcess only kills and SignalGroup returns ErrNoProcessGroup.
+ // CreationTime is the exception: it reads a process's creation time by pid on Windows, where StartTime is unreadable, and is always the zero time and false elsewhere.
++//
++// IsSpawnAgain tells a process start the host refused for a temporary resource shortage, EAGAIN from fork or exec, from every other start failure.
++// NoteSpawnAgain records the time of each such refusal process-wide, and LastSpawnAgain reads it back, so a caller that sees a later failure can judge whether a host resource shortage preceded it.
+ package proc
+diff --git a/internal/proc/spawnagain.go b/internal/proc/spawnagain.go
+new file mode 100644
+index 00000000..ee31761a
+--- /dev/null
++++ b/internal/proc/spawnagain.go
+@@ -0,0 +1,38 @@
++// spawnagain.go holds the test for a process start the host refused for a temporary resource shortage, and this process's record of the last such refusal.
++
++package proc
++
++import (
++	"errors"
++	"sync/atomic"
++	"syscall"
++	"time"
++)
++
++// lastSpawnAgain is the Unix-nanosecond time NoteSpawnAgain last recorded a refusal, zero before the first.
++var lastSpawnAgain atomic.Int64
++
++// IsSpawnAgain reports whether err is a refusal by the host to start a process because it was temporarily out of a resource, EAGAIN from fork or exec.
++// A process that started and exited nonzero never matches, so a caller may start the same command again without running it twice.
++func IsSpawnAgain(err error) bool {
++	return errors.Is(err, syscall.EAGAIN)
++}
++
++// NoteSpawnAgain records now as the time this process last saw a spawn refusal when err is one, and reports whether it was.
++// The record lets a caller that sees a later failure judge whether a host resource shortage preceded it.
++func NoteSpawnAgain(err error) bool {
++	if !IsSpawnAgain(err) {
++		return false
++	}
++	lastSpawnAgain.Store(time.Now().UnixNano())
++	return true
++}
++
++// LastSpawnAgain returns the time NoteSpawnAgain last recorded a refusal in this process, and false when it recorded none.
++func LastSpawnAgain() (time.Time, bool) {
++	nanos := lastSpawnAgain.Load()
++	if nanos == 0 {
++		return time.Time{}, false
++	}
++	return time.Unix(0, nanos), true
++}
+diff --git a/internal/reedengine/doc.go b/internal/reedengine/doc.go
+index e1355e56..87aed636 100644
+--- a/internal/reedengine/doc.go
++++ b/internal/reedengine/doc.go
+@@ -286,6 +286,7 @@
+ // Every tmux call goes through TmuxCmd's run, runStdin or output (overlay.go), and a tmux the host could not start for EAGAIN is retried there: four tries in all, waiting 250 ms before the first retry and doubling the wait each time, each retry logged at Warn.
+ // A fork or exec failure means tmux never ran, so a retry repeats no side effect; a tmux that ran and exited nonzero, and every other start failure, returns at once.
+ // So a transient process-table shortage never reads to a liveness check, a capture or a strand removal as a dead pane or a failed command.
++// Each EAGAIN failure is noted in proc's spawn-refusal record, which the step's transient classifier reads to judge an agent that died soon after.
+ //
+ // Pane enumeration: listPanes (overlay.go) always runs
+ //
+diff --git a/internal/reedengine/overlay.go b/internal/reedengine/overlay.go
+index 54dd8593..9d2180fb 100644
+--- a/internal/reedengine/overlay.go
++++ b/internal/reedengine/overlay.go
+@@ -17,10 +17,10 @@ import (
+ 	"os/exec"
+ 	"runtime"
+ 	"strings"
+-	"syscall"
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/proc"
+ )
+ 
+ // TmuxCmd wraps low-level tmux operations for one binary and one server, addressed by -L socket name or, in socket-path mode, by -S socket path.
+@@ -60,20 +60,15 @@ const (
+ 	execAgainFirstDelay = 250 * time.Millisecond
+ )
+ 
+-// isExecAgain reports whether err is a failure to start tmux because the host was temporarily out of a resource, EAGAIN from fork or exec.
+-// A tmux that started and exited nonzero never matches, so a retry never repeats a tmux command that ran.
+-func isExecAgain(err error) bool {
+-	return errors.Is(err, syscall.EAGAIN)
+-}
+-
+ // retryExecAgain calls attempt, and calls it again after a doubling wait while it fails with EAGAIN, up to execAgainAttempts calls in all.
+ // It returns the first result that is not an EAGAIN failure, or the last attempt's.
+-// Each retry is logged at Warn with the tmux argv.
++// Each EAGAIN failure is noted in the process's spawn-refusal record, and each retry is logged at Warn with the tmux argv.
++// A tmux that started and exited nonzero is never retried, so a retry never repeats a tmux command that ran.
+ func retryExecAgain[T any](p TmuxCmd, args []string, attempt func() (T, error)) (T, error) {
+ 	delay := execAgainFirstDelay
+ 	for try := 1; ; try++ {
+ 		value, err := attempt()
+-		if err == nil || try == execAgainAttempts || !isExecAgain(err) {
++		if !proc.NoteSpawnAgain(err) || try == execAgainAttempts {
+ 			return value, err
+ 		}
+ 		logger.Warn("reed: tmux could not be started, retrying", "args", args, "attempt", try, "delay", delay, "err", err)
+diff --git a/internal/shedadapters/doc.go b/internal/shedadapters/doc.go
+index 95721ba8..1764147e 100644
+--- a/internal/shedadapters/doc.go
++++ b/internal/shedadapters/doc.go
+@@ -43,7 +43,7 @@
+ //   - MultiLLMProducer: the chair's result maps as follows:
+ //     shuttleengine.OutcomeDone maps to Done with the chair's first output as the pointer's path,
+ //     a done chair whose gate failed maps to Stuck with that pointer and the gate's attempts and reason,
+-//     and OutcomeDied and OutcomeTimeout are engine-level errors, wrapping shuttleengine.ErrNotStarted when the chair's provider never came up and carrying the start error's text when shuttle reported one.
++//     and OutcomeDied and OutcomeTimeout are engine-level errors, wrapping shuttleengine.ErrNotStarted when the chair's provider never came up and carrying the start error's text when shuttle reported one, and a chair that started and died wraps shuttleengine.ErrAgentDied.
+ //     The advisors' results are logged and never judged, since an advisor's death weakens nothing the chair decided.
+ //     Before archiving anything Call probes the table's seats through its SeatRunner: a live chair is resumed and its result mapped,
+ //     and otherwise the probe has stopped every live advisor, so Call archives every seat's stale outputs and runs the table fresh.
+diff --git a/internal/shedadapters/multillm.go b/internal/shedadapters/multillm.go
+index bb7dece5..c9150087 100644
+--- a/internal/shedadapters/multillm.go
++++ b/internal/shedadapters/multillm.go
+@@ -140,7 +140,8 @@ func (p *MultiLLMProducer) errorExit(ctx context.Context, what string, err error
+ 
+ // mapOutcome maps the chair's result onto shedengine's contract, shared by the resume path and the fresh path:
+ // done maps to Done with the chair's first output as the pointer, unless its gate failed, which maps to Stuck with the pointer and the gate's attempts and reason;
+-// died and timeout are engine-level errors, wrapping shuttleengine.ErrNotStarted when the chair never started and carrying the chair's start error text when shuttle reported one.
++// died and timeout are engine-level errors, wrapping shuttleengine.ErrNotStarted when the chair never started and carrying the chair's start error text when shuttle reported one;
++// a chair that started and died wraps shuttleengine.ErrAgentDied.
+ // A genuine success survives cancellation, the one exception cancelErr never applies to.
+ func (p *MultiLLMProducer) mapOutcome(ctx context.Context, result seatengine.Result) (shedengine.Outcome, shedengine.OutputPointer, error) {
+ 	for _, advisor := range result.Advisors {
+@@ -176,6 +177,9 @@ func (p *MultiLLMProducer) mapOutcome(ctx context.Context, result seatengine.Res
+ 			}
+ 			return "", shedengine.OutputPointer{}, fmt.Errorf("shedadapters: %s (%s): shuttle run outcome %s: %w", p.name, multiLLMEngineLabel, chair.Outcome, shuttleengine.ErrNotStarted)
+ 		}
++		if chair.Outcome == shuttleengine.OutcomeDied {
++			return "", shedengine.OutputPointer{}, fmt.Errorf("shedadapters: %s (%s): shuttle run outcome %s: %w", p.name, multiLLMEngineLabel, chair.Outcome, shuttleengine.ErrAgentDied)
++		}
+ 		return "", shedengine.OutputPointer{}, fmt.Errorf("shedadapters: %s (%s): shuttle run outcome %s", p.name, multiLLMEngineLabel, chair.Outcome)
+ 
+ 	default:
+diff --git a/internal/shedadapters/multillm_test.go b/internal/shedadapters/multillm_test.go
+index 135c27cc..1b5537ce 100644
+--- a/internal/shedadapters/multillm_test.go
++++ b/internal/shedadapters/multillm_test.go
+@@ -279,6 +279,7 @@ func TestMultiLLMProducer_MapsTheLeadResult(t *testing.T) {
+ 		// wantErr is a substring of the error, and "" means no error.
+ 		wantErr        string
+ 		wantNotStarted bool
++		wantDied       bool
+ 	}{
+ 		{name: "done", result: shuttleengine.Result{Outcome: shuttleengine.OutcomeDone}, wantOutcome: shedengine.Done},
+ 		{
+@@ -335,7 +336,7 @@ func TestMultiLLMProducer_MapsTheLeadResult(t *testing.T) {
+ 			keepFindings: true,
+ 			preWritten:   true,
+ 		},
+-		{name: "died", result: shuttleengine.Result{Outcome: shuttleengine.OutcomeDied}, wantErr: "shuttle run outcome died"},
++		{name: "died", result: shuttleengine.Result{Outcome: shuttleengine.OutcomeDied}, wantErr: "shuttle run outcome died", wantDied: true},
+ 		{name: "timeout", result: shuttleengine.Result{Outcome: shuttleengine.OutcomeTimeout}, wantErr: "shuttle run outcome timeout"},
+ 		{
+ 			name:           "a provider that never came up",
+@@ -390,6 +391,9 @@ func TestMultiLLMProducer_MapsTheLeadResult(t *testing.T) {
+ 				if errors.Is(err, shuttleengine.ErrNotStarted) != tt.wantNotStarted {
+ 					t.Errorf("Call() error = %v, want wrapping ErrNotStarted = %v", err, tt.wantNotStarted)
+ 				}
++				if errors.Is(err, shuttleengine.ErrAgentDied) != tt.wantDied {
++					t.Errorf("Call() error = %v, want wrapping ErrAgentDied = %v", err, tt.wantDied)
++				}
+ 				if outcome != "" || !reflect.DeepEqual(pointer, shedengine.OutputPointer{}) {
+ 					t.Errorf("Call() = %q, %+v on error, want the zero outcome and pointer", outcome, pointer)
+ 				}
+diff --git a/internal/shedcli/cli_test.go b/internal/shedcli/cli_test.go
+index c709a7e7..3d61af47 100644
+--- a/internal/shedcli/cli_test.go
++++ b/internal/shedcli/cli_test.go
+@@ -118,13 +118,14 @@ func (l *loopRun) assertLoop(t *testing.T, envelope map[string]any) {
+ 	if !ok {
+ 		t.Fatalf("envelope %v has no loop object", envelope)
+ 	}
+-	for _, key := range []string{"steps", "first_producer", "stop", "detail", "status_moved", "hand_back", "restep_hold", "current_producer", "history_length", "state", "interrupt_policy", "trace_copy", "stderr_path"} {
++	keys := []string{"steps", "first_producer", "stop", "detail", "status_moved", "hand_back", "restep_hold", "current_producer", "history_length", "state", "interrupt_policy", "trace_copy", "stderr_path", "pause_reason"}
++	for _, key := range keys {
+ 		if _, present := loop[key]; !present {
+ 			t.Errorf("loop %v lacks key %q", loop, key)
+ 		}
+ 	}
+-	if len(loop) != 13 {
+-		t.Errorf("loop %v has %d keys; want the closed set of 13", loop, len(loop))
++	if len(loop) != len(keys) {
++		t.Errorf("loop %v has %d keys; want the closed set of %d", loop, len(loop), len(keys))
+ 	}
+ 	if loop["stop"] != l.wantStop || loop["steps"] != float64(0) {
+ 		t.Errorf("loop stop/steps = %v/%v; want %s/0", loop["stop"], loop["steps"], l.wantStop)
+diff --git a/internal/sheddriver/doc.go b/internal/sheddriver/doc.go
+index 4995bc19..58adc110 100644
+--- a/internal/sheddriver/doc.go
++++ b/internal/sheddriver/doc.go
+@@ -42,7 +42,8 @@
+ //   - a producer, bootstrap or unseeded error, an interrupted step over the repair cap, or a blocked stop: the tackler decides;
+ //   - anything else: hand back.
+ //
+-// A stop built from a paused status takes the status's `pause_reason` as its reason, and a stop report for a paused stop with none says `paused with no recorded reason`.
++// A stop built from a paused status takes the status's `pause_reason` as its reason, and so does a stop whose loop envelope leaves the run paused with no reason of its own, through the loop object's `pause_reason`;
++// a stop report for a paused stop with none says `paused with no recorded reason`.
+ // The landing-halt, budget-exhausted and precondition-unmet rows only hand back; they never resume a run.
+ // A recipe's told `GotoGuard` reaches the tackler through `TacklerDeps`: a verdict whose goto the guard refuses, or cannot decide, is rejected as an invalid resume with the guard's text.
+ //
+diff --git a/internal/sheddriver/driverules.go b/internal/sheddriver/driverules.go
+index 4498b97d..2a68e423 100644
+--- a/internal/sheddriver/driverules.go
++++ b/internal/sheddriver/driverules.go
+@@ -51,6 +51,7 @@ type Stop struct {
+ }
+ 
+ // parseDriveStop decodes the envelope shedverbs.RunUntilStop prints.
++// A stop that leaves the run paused with no reason of its own takes the loop's pause_reason, the one the status file records.
+ // An unknown key is tolerated, and bytes that do not decode are refused.
+ func parseDriveStop(envelope []byte) (Stop, error) {
+ 	var decoded struct {
+@@ -73,17 +74,22 @@ func parseDriveStop(envelope []byte) (Stop, error) {
+ 			StatusMoved     bool   `json:"status_moved"`
+ 			TraceCopy       string `json:"trace_copy"`
+ 			StderrPath      string `json:"stderr_path"`
++			PauseReason     string `json:"pause_reason"`
+ 			HandBack        bool   `json:"hand_back"`
+ 		} `json:"loop"`
+ 	}
+ 	if err := json.Unmarshal(envelope, &decoded); err != nil {
+ 		return Stop{}, fmt.Errorf("sheddriver: drive: the loop's stop envelope does not decode: %w", err)
+ 	}
++	reason := decoded.Reason
++	if reason == "" && decoded.Loop.State == string(shedengine.StatePaused) {
++		reason = decoded.Loop.PauseReason
++	}
+ 	return Stop{
+ 		OK:              decoded.OK,
+ 		Outcome:         decoded.Outcome,
+ 		State:           decoded.State,
+-		Reason:          decoded.Reason,
++		Reason:          reason,
+ 		Kind:            decoded.Kind,
+ 		Transient:       decoded.Transient,
+ 		ParentNotice:    decoded.ParentNotice,
+diff --git a/internal/sheddriver/driverules_test.go b/internal/sheddriver/driverules_test.go
+index 5e0a72d3..442057ce 100644
+--- a/internal/sheddriver/driverules_test.go
++++ b/internal/sheddriver/driverules_test.go
+@@ -178,6 +178,33 @@ func TestParseDriveStop(t *testing.T) {
+ 			},
+ 			wantKey: StopKey{CurrentProducer: "Run-Shed", HistoryLength: 3, State: "running"},
+ 		},
++		{
++			name:     "interrupted stop over a paused run takes the loop's pause reason",
++			envelope: `{"ok":false,"error":"interrupted","kind":"interrupted","loop":{"stop":"interrupted","current_producer":"Darn-Write","history_length":6,"state":"paused","pause_reason":"goto to Darn-Write by orch"}}`,
++			want: Stop{
++				Reason: "goto to Darn-Write by orch", Error: "interrupted", Kind: "interrupted",
++				Stop: "interrupted", CurrentProducer: "Darn-Write", HistoryLength: 6, LoopState: "paused",
++			},
++			wantKey: StopKey{CurrentProducer: "Darn-Write", HistoryLength: 6, State: "paused"},
++		},
++		{
++			name:     "a stop's own reason wins over the loop's pause reason",
++			envelope: `{"ok":true,"state":"paused","reason":"paused by request","loop":{"stop":"halted","current_producer":"A","history_length":1,"state":"paused","pause_reason":"older"}}`,
++			want: Stop{
++				OK: true, State: "paused", Reason: "paused by request",
++				Stop: "halted", CurrentProducer: "A", HistoryLength: 1, LoopState: "paused",
++			},
++			wantKey: StopKey{CurrentProducer: "A", HistoryLength: 1, State: "paused"},
++		},
++		{
++			name:     "a pause reason on a run that is not paused is not taken",
++			envelope: `{"ok":false,"error":"interrupted","kind":"interrupted","loop":{"stop":"interrupted","current_producer":"A","history_length":1,"state":"failed","pause_reason":"older"}}`,
++			want: Stop{
++				Error: "interrupted", Kind: "interrupted",
++				Stop: "interrupted", CurrentProducer: "A", HistoryLength: 1, LoopState: "failed",
++			},
++			wantKey: StopKey{CurrentProducer: "A", HistoryLength: 1, State: "failed"},
++		},
+ 		{name: "undecodable bytes are refused", envelope: `{"ok":`, wantErr: true},
+ 	}
+ 	for _, tt := range tests {
+diff --git a/internal/shedengine/transient.go b/internal/shedengine/transient.go
+index dd5d83e4..d5bb1c32 100644
+--- a/internal/shedengine/transient.go
++++ b/internal/shedengine/transient.go
+@@ -7,7 +7,7 @@ package shedengine
+ import "errors"
+ 
+ // TransientClass names one kind of transient infrastructure failure.
+-// The set is closed at the three constants below, and the empty class means "not transient".
++// The set is closed at the constants below, and the empty class means "not transient".
+ // A failure qualifies only when the same step, run again unchanged, can plausibly succeed;
+ // a rejected credential, a merge conflict, a missing branch or any verdict never does.
+ type TransientClass string
+@@ -20,8 +20,11 @@ const (
+ 	// A 4xx that names a bad request, a missing resource or bad credentials never qualifies, and neither does a rate limit, since an immediate retry hits the same limit.
+ 	TransientGitHubAPI TransientClass = "github-api"
+ 	// TransientAgentStart is an agent session that never became ready or never took its first input.
+-	// An agent that started and then died or timed out never qualifies.
++	// An agent that started and then died or timed out never qualifies here.
+ 	TransientAgentStart TransientClass = "agent-start"
++	// TransientHostResources is a process start the host refused for a temporary resource shortage, EAGAIN from fork or exec, or an agent that died shortly after the step's own process saw such a refusal.
++	// An agent that died with no such refusal behind it, or timed out, never qualifies.
++	TransientHostResources TransientClass = "host-resources"
+ )
+ 
+ // transientError carries a class beside the error it wraps.
+diff --git a/internal/shedtransient/doc.go b/internal/shedtransient/doc.go
+index a453a6cc..7cd2e51f 100644
+--- a/internal/shedtransient/doc.go
++++ b/internal/shedtransient/doc.go
+@@ -1,7 +1,10 @@
+ // Package shedtransient is the one place that translates a lower-level package's own failure classification into shedengine's transient mark.
+-// shedengine stays stdlib-only and the leaf packages (gitexec, githubclient, shuttleengine) gain no shedengine import;
++// shedengine stays stdlib-only and the leaf packages (gitexec, githubclient, proc, shuttleengine) gain no shedengine import;
+ // the producer boundary (the classifier shedbuild.NewShed tells a Shed) and the bootstrap boundary (the PreStep hooks) share this single mapping.
+ //
+-// Import allowlist: stdlib, shedengine, shuttleengine, gitexec and githubclient, and nothing else;
++// A spawn the host refused for EAGAIN is a host-resources failure, and so is an agent death that follows such a refusal in the same process within two minutes, read from proc's spawn-refusal record;
++// a death with no refusal in that window stays a hard failure.
++//
++// Import allowlist: stdlib, shedengine, shuttleengine, gitexec, githubclient and proc, and nothing else;
+ // seam_enforcement_test.go enforces it.
+ package shedtransient
+diff --git a/internal/shedtransient/seam_enforcement_test.go b/internal/shedtransient/seam_enforcement_test.go
+index 040e249d..e17d5f03 100644
+--- a/internal/shedtransient/seam_enforcement_test.go
++++ b/internal/shedtransient/seam_enforcement_test.go
+@@ -1,6 +1,6 @@
+ //go:build tier0
+ 
+-// seam_enforcement_test.go enforces this package's import allowlist: production code in internal/shedtransient may import only the stdlib and the four packages whose classifications it translates,
++// seam_enforcement_test.go enforces this package's import allowlist: production code in internal/shedtransient may import only the stdlib and the packages whose classifications it translates,
+ // so shedengine stays stdlib-only and no leaf package ever imports shedengine.
+ 
+ package shedtransient
+@@ -15,6 +15,7 @@ import (
+ var shedtransientAllowedImports = []string{
+ 	"github.com/Knatte18/loomyard/internal/gitexec",
+ 	"github.com/Knatte18/loomyard/internal/githubclient",
++	"github.com/Knatte18/loomyard/internal/proc",
+ 	"github.com/Knatte18/loomyard/internal/shedengine",
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine",
+ }
+diff --git a/internal/shedtransient/shedtransient.go b/internal/shedtransient/shedtransient.go
+index 6e358943..00f32c20 100644
+--- a/internal/shedtransient/shedtransient.go
++++ b/internal/shedtransient/shedtransient.go
+@@ -4,16 +4,21 @@ package shedtransient
+ 
+ import (
+ 	"errors"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/gitexec"
+ 	"github.com/Knatte18/loomyard/internal/githubclient"
++	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ )
+ 
++// spawnRefusalWindow is how long after this process saw a spawn refused for EAGAIN an agent's death still counts as the host's resource shortage.
++const spawnRefusalWindow = 2 * time.Minute
++
+ // Class returns the transient class of err, or the empty class when err is nil or not transient.
+ // A mark already on err wins, so a class set closer to the failure is never overridden;
+-// otherwise a never-ready agent start, a git transport failure and a transient GitHub API failure are tried in that order.
++// otherwise a never-ready agent start, a spawn the host refused for EAGAIN, an agent that died within spawnRefusalWindow of such a refusal in this process, a git transport failure and a transient GitHub API failure are tried in that order.
+ func Class(err error) shedengine.TransientClass {
+ 	if err == nil {
+ 		return ""
+@@ -24,6 +29,8 @@ func Class(err error) shedengine.TransientClass {
+ 	switch {
+ 	case errors.Is(err, shuttleengine.ErrNotStarted):
+ 		return shedengine.TransientAgentStart
++	case proc.IsSpawnAgain(err), errors.Is(err, shuttleengine.ErrAgentDied) && spawnRefusedRecently(time.Now()):
++		return shedengine.TransientHostResources
+ 	case gitexec.IsTransportFailure(err):
+ 		return shedengine.TransientGitTransport
+ 	case githubclient.IsTransient(err):
+@@ -32,6 +39,12 @@ func Class(err error) shedengine.TransientClass {
+ 	return ""
+ }
+ 
++// spawnRefusedRecently reports whether this process noted a spawn refused for EAGAIN within spawnRefusalWindow before now.
++func spawnRefusedRecently(now time.Time) bool {
++	last, noted := proc.LastSpawnAgain()
++	return noted && now.Sub(last) <= spawnRefusalWindow
++}
++
+ // Mark returns err marked with Class(err): err unchanged when nothing matches,
+ // and never double-wrapped when err already carries a mark.
+ func Mark(err error) error {
+diff --git a/internal/shedtransient/shedtransient_test.go b/internal/shedtransient/shedtransient_test.go
+index 24d61736..5194b397 100644
+--- a/internal/shedtransient/shedtransient_test.go
++++ b/internal/shedtransient/shedtransient_test.go
+@@ -6,9 +6,13 @@ import (
+ 	"errors"
+ 	"fmt"
+ 	"net/http"
++	"os"
++	"syscall"
+ 	"testing"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/gitexec"
++	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/google/go-github/v75/github"
+@@ -18,6 +22,9 @@ func ghError(status int) error {
+ 	return &github.ErrorResponse{Response: &http.Response{StatusCode: status}}
+ }
+ 
++// TestClassAndMark pins the class of each failure shape and that Mark adds exactly that class.
++// Its last row notes a spawn refusal in proc's process-wide record, so the test and its rows run in order and never in parallel.
++// The died row before it therefore sees no refusal noted.
+ func TestClassAndMark(t *testing.T) {
+ 	notStarted := fmt.Errorf("outer: %w", fmt.Errorf("inner: %w", shuttleengine.ErrNotStarted))
+ 	transport := fmt.Errorf("publish: %w", &gitexec.GitError{
+@@ -32,24 +39,34 @@ func TestClassAndMark(t *testing.T) {
+ 	}
+ 	marked := shedengine.MarkTransient(shedengine.TransientGitHubAPI, fmt.Errorf("x: %w", shuttleengine.ErrNotStarted))
+ 	plain := errors.New("boom")
++	refused := fmt.Errorf("read task patch: %w", &os.PathError{Op: "fork/exec", Path: "/usr/bin/git", Err: syscall.EAGAIN})
++	died := fmt.Errorf("seats: shuttle run outcome died: %w", shuttleengine.ErrAgentDied)
+ 
+ 	tests := []struct {
+ 		name string
+ 		err  error
+ 		want shedengine.TransientClass
++		// before runs ahead of the row, such as noting a spawn refusal.
++		before func()
+ 	}{
+-		{"not started wrapped twice", notStarted, shedengine.TransientAgentStart},
+-		{"git transport", transport, shedengine.TransientGitTransport},
+-		{"rejected push", rejected, ""},
+-		{"github 503", ghError(http.StatusServiceUnavailable), shedengine.TransientGitHubAPI},
+-		{"github 404", ghError(http.StatusNotFound), ""},
+-		{"rate limit", &github.RateLimitError{}, ""},
+-		{"existing mark wins", marked, shedengine.TransientGitHubAPI},
+-		{"plain", plain, ""},
+-		{"nil", nil, ""},
++		{name: "not started wrapped twice", err: notStarted, want: shedengine.TransientAgentStart},
++		{name: "git transport", err: transport, want: shedengine.TransientGitTransport},
++		{name: "rejected push", err: rejected},
++		{name: "github 503", err: ghError(http.StatusServiceUnavailable), want: shedengine.TransientGitHubAPI},
++		{name: "github 404", err: ghError(http.StatusNotFound)},
++		{name: "rate limit", err: &github.RateLimitError{}},
++		{name: "existing mark wins", err: marked, want: shedengine.TransientGitHubAPI},
++		{name: "plain", err: plain},
++		{name: "nil", err: nil},
++		{name: "spawn refused for EAGAIN", err: refused, want: shedengine.TransientHostResources},
++		{name: "agent died with no spawn refusal noted", err: died},
++		{name: "agent died after a spawn refusal", err: died, want: shedengine.TransientHostResources, before: func() { proc.NoteSpawnAgain(syscall.EAGAIN) }},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
++			if tt.before != nil {
++				tt.before()
++			}
+ 			if got := Class(tt.err); got != tt.want {
+ 				t.Errorf("Class = %q, want %q", got, tt.want)
+ 			}
+@@ -63,3 +80,31 @@ func TestClassAndMark(t *testing.T) {
+ 		})
+ 	}
+ }
++
++// TestSpawnRefusedRecently pins the bound of the refusal window: a refusal noted at the edge of it counts, one beyond it does not.
++// It notes a spawn refusal in proc's process-wide record, so it runs in order after TestClassAndMark and never in parallel.
++func TestSpawnRefusedRecently(t *testing.T) {
++	proc.NoteSpawnAgain(syscall.EAGAIN)
++	noted, ok := proc.LastSpawnAgain()
++	if !ok {
++		t.Fatal("proc.LastSpawnAgain() noted nothing after NoteSpawnAgain(EAGAIN)")
++	}
++
++	tests := []struct {
++		name string
++		age  time.Duration
++		want bool
++	}{
++		{"JustNow", 0, true},
++		{"JustInsideTheWindow", spawnRefusalWindow - time.Nanosecond, true},
++		{"AtTheWindow", spawnRefusalWindow, true},
++		{"JustBeyondTheWindow", spawnRefusalWindow + time.Nanosecond, false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			if got := spawnRefusedRecently(noted.Add(tt.age)); got != tt.want {
++				t.Errorf("spawnRefusedRecently(refusal + %s) = %v; want %v", tt.age, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/shedverbs/doc.go b/internal/shedverbs/doc.go
+index efb25f47..da96417e 100644
+--- a/internal/shedverbs/doc.go
++++ b/internal/shedverbs/doc.go
+@@ -34,6 +34,10 @@
+ // halted is a run that is no longer running: blocked, awaiting, done or paused by request.
+ // stop-condition is a pause_before or pause_after condition that fired.
+ // error is a step that ended in an error, and interrupted a child that ended without an envelope; both write the status file failed while it still reads running.
++// An interrupted child's cause is its exit, its command line and an excerpt of its captured stderr: a Go crash's first lines when stderr holds one, and its last lines otherwise.
++// The stop names the row the status file names once the child exited, since a child that skipped gated rows moved the run on before it died,
++// and its trace file is the child's first trace file, or its captured stderr when it left none.
++// The failed write comes before Hooks.AfterInterrupt, so the hook reads the status the stop leaves: a child that died before its resume write leaves a paused run paused.
+ // interrupted is also the stop on the status read at an iteration's top, with the cause status-missing for an absent file and status-unreadable: <error> for an unreadable one.
+ // A decode error stops at once, since the file stays undecodable to this binary; any other read error gets one re-read through the same re-step the transient errors share, and stops when that fails or the re-step is already used.
+ // No child runs at such a stop, the trace file is the loop log, and the error names the status file and the loop log and ends with a way forward split by cause: the recipe's own reseed for an absent file, a lym binary that decodes the file for a decode error, and a re-run of the step for a read error.
+@@ -48,12 +52,13 @@
+ // LastStepBuildChanged reads whether the last step ran on a known build other than the one passed, which an in-process driver judges against the lym on disk.
+ //
+ // The final envelope is the stop step's short envelope plus a loop object whose keys are closed:
+-// steps, first_producer, stop, detail, status_moved, hand_back, restep_hold, restep (only when a re-step ran), current_producer, history_length, state, interrupt_policy, trace_copy and stderr_path.
++// steps, first_producer, stop, detail, status_moved, hand_back, restep_hold, restep (only when a re-step ran), current_producer, history_length, state, interrupt_policy, trace_copy, stderr_path and pause_reason.
+ // hand_back is true when the stop is blocked and Spec.HandBack, the recipe's told check, answers true for the status's current producer and error, so a driver hands the halt to the orch; nil marks nothing.
+ // restep_hold is true under the same rule for Spec.RestepHold, the recipe's told check of a blocked stop that a driver's own build re-launch leaves alone, though such a stop still goes to the arbiter first.
+ // lym shed status reports the same hand_back and restep_hold keys at their top level, over the status file.
+ // detail is the stop's error or reason and the WARN and ERROR lines and last lines of the stop step's trace, capped by lines and bytes.
+ // trace_copy is a copy of the stop step's trace files, which outlives a sweep of the trace directory.
++// pause_reason is the status file's pause reason as the stop leaves it, empty unless the run is paused, so a stop that leaves a paused run names why even when the stop step's own envelope carries no reason.
+ // A refusal of the --until-stop invocation's own arming goes through ReportLoopArmError, which prints the bootstrap error with a loop object that stopped with no step run.
+ //
+ // The loop runs detached, and the --until-stop invocation is a waiter on it.
+diff --git a/internal/shedverbs/loop.go b/internal/shedverbs/loop.go
+index 834605c8..fa112799 100644
+--- a/internal/shedverbs/loop.go
++++ b/internal/shedverbs/loop.go
+@@ -13,6 +13,7 @@ import (
+ 	"io"
+ 	"os"
+ 	"path/filepath"
++	"slices"
+ 	"strings"
+ 	"time"
+ 
+@@ -286,23 +287,23 @@ func runLoop(ctx context.Context, spec *Spec, loopID string, argv []string, out
+ 	var (
+ 		errText   string
+ 		transient string
++		traceFile string
+ 	)
++	interrupted := stop == LoopStopInterrupted
+ 	switch stop {
+ 	case LoopStopInterrupted:
++		// A child that skipped gated rows moved the run on before it died, so the status file names the row it died in.
++		if after, found := readStatusFile(spec); found && !res.statusStop && after.CurrentProducer != "" {
++			lastKnown = after.CurrentProducer
++		}
+ 		message, wayForward := interruptedError(spec.RunID, lastKnown, res.cause)
+ 		errText = message + "; way forward: " + wayForward
+-		traceFile := ""
+ 		if res.statusStop {
+ 			errText = fmt.Sprintf("%s; status file %s, loop log %s; %s", message, spec.StatusPath, loop.LogPath, statusStopWayForward(spec, res.statusErr))
+ 			traceFile = loop.LogPath
+-		} else if files := traceFilesOf(loop, res.traceID); len(files) > 0 {
+-			traceFile = files[0]
+-		}
+-		friction := ""
+-		if spec.Hooks.AfterInterrupt != nil {
+-			friction = spec.Hooks.AfterInterrupt(ctx, lastKnown, res.cause, traceFile)
++		} else {
++			traceFile = interruptedTraceFile(loop, res.traceID)
+ 		}
+-		res.full, res.path = interruptedRecord(spec, res.traceID, errText, traceFile, friction)
+ 	case LoopStopError, LoopStopBusy:
+ 		errText, _ = res.full["error"].(string)
+ 		transient, _ = res.full["transient"].(string)
+@@ -322,6 +323,14 @@ func runLoop(ctx context.Context, spec *Spec, loopID string, argv []string, out
+ 			stop = LoopStopBusy
+ 		}
+ 	}
++	// The hook runs after the failed write, so it reads the status the stop leaves.
++	if interrupted {
++		friction := ""
++		if spec.Hooks.AfterInterrupt != nil {
++			friction = spec.Hooks.AfterInterrupt(ctx, lastKnown, res.cause, traceFile)
++		}
++		res.full, res.path = interruptedRecord(spec, res.traceID, errText, traceFile, friction)
++	}
+ 	logger.Info("shed: loop stop", "stop", string(stop), "steps", obj.Steps, "trace_id", res.traceID, "error", errText)
+ 
+ 	after, _ := readStatusFile(spec)
+@@ -334,6 +343,7 @@ func runLoop(ctx context.Context, spec *Spec, loopID string, argv []string, out
+ 	obj.State = string(after.State)
+ 	obj.HandBack = spec.handsBack(after)
+ 	obj.RestepHold = spec.restepHolds(after)
++	obj.PauseReason = after.PauseReason
+ 	obj.StatusMoved = before.CurrentProducer != after.CurrentProducer || len(before.History) != len(after.History)
+ 	if spec.Hooks.InterruptPolicyFor != nil {
+ 		obj.InterruptPolicy = spec.Hooks.InterruptPolicyFor(after.CurrentProducer)
+@@ -393,7 +403,7 @@ func loopStartRefusal(loop LoopSpec) string {
+ // runChild runs one child step under a fresh trace id and reads back what it left.
+ // The child's own record, <StepsDir>/<traceID>.json, is its full envelope;
+ // a child that refused before its step body ran left an error envelope on stdout instead;
+-// a child that left neither is reported interrupted for the cause its exit gives, or for the cause the watchdog's kill renders when the idle watch killed it, which ends with the note OnWatchdogKill returned.
++// a child that left neither is reported interrupted for the cause its exit gives, followed by its command line and an excerpt of its captured stderr, or for the cause the watchdog's kill renders when the idle watch killed it, which ends with the note OnWatchdogKill returned.
+ // record is told the child's process tree when it starts and the zero record when it has exited.
+ // idleWindow is the window of the child's idle watch, and zero disarms it.
+ func runChild(ctx context.Context, spec *Spec, argv []string, traceID string, idleWindow time.Duration, record func(proc.TreeRecord)) childResult {
+@@ -452,6 +462,10 @@ func runChild(ctx context.Context, spec *Spec, argv []string, traceID string, id
+ 	if waitErr != nil {
+ 		cause += ": " + waitErr.Error()
+ 	}
++	cause += "; command: " + strings.Join(append([]string{loop.Executable}, argv...), " ")
++	if excerpt := stderrExcerpt(stderrPath); excerpt != "" {
++		cause += "; stderr: " + excerpt
++	}
+ 	return childResult{traceID: traceID, cause: cause}
+ }
+ 
+@@ -508,6 +522,52 @@ func traceFilesOf(loop LoopSpec, traceID string) []string {
+ 	return files
+ }
+ 
++// interruptedTraceFile returns the first trace file of the child under traceID, or its captured stderr when it left no trace file and the capture is not empty, or "" when it left neither.
++// A child that died before its logger wrote leaves no trace, and its stderr then holds what it said.
++func interruptedTraceFile(loop LoopSpec, traceID string) string {
++	if files := traceFilesOf(loop, traceID); len(files) > 0 {
++		return files[0]
++	}
++	if loop.StopFiles == nil {
++		return ""
++	}
++	_, stderrPath := loop.StopFiles(traceID)
++	if info, err := os.Stat(stderrPath); err != nil || info.Size() == 0 {
++		return ""
++	}
++	return stderrPath
++}
++
++// stderrExcerptLines caps the lines of a child's stderr an interrupted cause carries.
++const stderrExcerptLines = 3
++
++// goCrashPrefixes open the line a Go program writes to stderr when it panics or dies of a runtime fatal error, which exits with status 2.
++var goCrashPrefixes = []string{"panic: ", "fatal error: ", "runtime: "}
++
++// stderrExcerpt returns at most stderrExcerptLines non-empty lines of the stderr file at path, joined with " | ", or "" when it is empty or unreadable.
++// A Go crash's lines are taken from its first crash line on, since the goroutine stacks that follow it name no cause;
++// otherwise the file's last lines are taken.
++func stderrExcerpt(path string) string {
++	data, err := os.ReadFile(path)
++	if err != nil {
++		return ""
++	}
++	var lines []string
++	for _, line := range strings.Split(string(data), "\n") {
++		if line = strings.TrimSpace(line); line != "" {
++			lines = append(lines, line)
++		}
++	}
++	excerpt := lines[max(len(lines)-stderrExcerptLines, 0):]
++	for i, line := range lines {
++		if slices.ContainsFunc(goCrashPrefixes, func(prefix string) bool { return strings.HasPrefix(line, prefix) }) {
++			excerpt = lines[i:min(i+stderrExcerptLines, len(lines))]
++			break
++		}
++	}
++	return strings.Join(excerpt, " | ")
++}
++
+ // copyTraceFiles concatenates files, in order, into dest, and reports whether a copy was written.
+ func copyTraceFiles(files []string, dest string) bool {
+ 	if dest == "" || len(files) == 0 {
+diff --git a/internal/shedverbs/loop_helper_test.go b/internal/shedverbs/loop_helper_test.go
+index 9000e2d3..69e0dc37 100644
+--- a/internal/shedverbs/loop_helper_test.go
++++ b/internal/shedverbs/loop_helper_test.go
+@@ -25,7 +25,7 @@ func loopOf(t *testing.T, env map[string]any) map[string]any {
+ // assertLoopKeys checks the loop object's closed key set.
+ func assertLoopKeys(t *testing.T, loop map[string]any, withRestep bool) {
+ 	t.Helper()
+-	want := []string{"steps", "first_producer", "stop", "detail", "status_moved", "hand_back", "restep_hold", "current_producer", "history_length", "state", "interrupt_policy", "trace_copy", "stderr_path"}
++	want := []string{"steps", "first_producer", "stop", "detail", "status_moved", "hand_back", "restep_hold", "current_producer", "history_length", "state", "interrupt_policy", "trace_copy", "stderr_path", "pause_reason"}
+ 	if withRestep {
+ 		want = append(want, "restep")
+ 	}
+diff --git a/internal/shedverbs/loop_test.go b/internal/shedverbs/loop_test.go
+index 304f15ef..cedcbcf6 100644
+--- a/internal/shedverbs/loop_test.go
++++ b/internal/shedverbs/loop_test.go
+@@ -373,7 +373,7 @@ func TestLoop_InterruptedChildFillsTheErrorForm(t *testing.T) {
+ 		env, code := fx.execute()
+ 
+ 		id := fx.childIDs()[0]
+-		wantText := "shedverbs: step A interrupted (exited: exit status 3); way forward: read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, then re-run lym shed step run-1 --until-stop"
++		wantText := "shedverbs: step A interrupted (exited: exit status 3; command: lym-fake); way forward: read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, then re-run lym shed step run-1 --until-stop"
+ 		recordPath := filepath.Join(fx.stepsDir, id+".json")
+ 		if code != 1 || env["kind"] != KindInterrupted || env["error"] != wantText || env["transient"] != "" || env["run_id"] != "run-1" {
+ 			t.Errorf("exit/kind/error/transient/run_id = %d/%v/%v/%v/%v; want 1/%s/%q/empty/run-1", code, env["kind"], env["error"], env["transient"], env["run_id"], KindInterrupted, wantText)
+@@ -381,7 +381,7 @@ func TestLoop_InterruptedChildFillsTheErrorForm(t *testing.T) {
+ 		if env["trace_file"] != traceFile || env["friction"] != "reflected" || env["envelope_path"] != recordPath {
+ 			t.Errorf("trace_file/friction/envelope_path = %v/%v/%v; want %s/reflected/%s", env["trace_file"], env["friction"], env["envelope_path"], traceFile, recordPath)
+ 		}
+-		if !reflect.DeepEqual(hookArgs, []string{"A", "exited: exit status 3", traceFile}) {
++		if !reflect.DeepEqual(hookArgs, []string{"A", "exited: exit status 3; command: lym-fake", traceFile}) {
+ 			t.Errorf("AfterInterrupt args = %v; want the stop row, the cause and the first trace file", hookArgs)
+ 		}
+ 
+@@ -412,6 +412,139 @@ func TestLoop_InterruptedChildFillsTheErrorForm(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("child crashes with no trace after moving the run on", func(t *testing.T) {
++		var stderrPath string
++		fx := newLoopFixture(t, func(fx *loopFixture, traceID string, _ ChildRequest) error {
++			fx.setStatus("B", shedengine.StateRunning, 1)
++			_, stderrPath = fx.spec.Loop.StopFiles(traceID)
++			crash := "time=t level=WARN msg=retrying\nruntime: failed to create new OS thread\nfatal error: newosproc\n\ngoroutine 1 [running]:\nmain.main()\n"
++			if err := os.MkdirAll(filepath.Dir(stderrPath), 0o755); err != nil {
++				t.Fatalf("create the stderr directory: %v", err)
++			}
++			if err := os.WriteFile(stderrPath, []byte(crash), 0o644); err != nil {
++				t.Fatalf("write stderr: %v", err)
++			}
++			return errors.New("exit status 2")
++		})
++		var hookArgs []string
++		var hookState shedengine.State
++		fx.spec.Hooks.AfterInterrupt = func(_ context.Context, producer, cause, file string) string {
++			hookArgs = []string{producer, cause, file}
++			hookState = fx.readStatus().State
++			return ""
++		}
++
++		env, _ := fx.execute()
++
++		wantCause := "exited: exit status 2; command: lym-fake; stderr: runtime: failed to create new OS thread | fatal error: newosproc | goroutine 1 [running]:"
++		if !reflect.DeepEqual(hookArgs, []string{"B", wantCause, stderrPath}) {
++			t.Errorf("AfterInterrupt args = %q; want the row the status names, the cause with the crash lines and the stderr file", hookArgs)
++		}
++		if hookState != shedengine.StateFailed {
++			t.Errorf("status state at the hook = %s; want failed, written before the hook", hookState)
++		}
++		if env["trace_file"] != stderrPath {
++			t.Errorf("trace_file = %v; want the captured stderr %s", env["trace_file"], stderrPath)
++		}
++		if st := fx.readStatus(); st.CurrentProducer != "B" || !strings.Contains(st.Error, "step B interrupted (") {
++			t.Errorf("status current/error = %s/%q; want B blamed", st.CurrentProducer, st.Error)
++		}
++	})
++
++	t.Run("child dies leaving the status without a producer", func(t *testing.T) {
++		fx := newLoopFixture(t, func(fx *loopFixture, _ string, _ ChildRequest) error {
++			fx.setStatus("", shedengine.StateRunning, 1)
++			return errors.New("exit status 2")
++		})
++		var hookProducer string
++		fx.spec.Hooks.AfterInterrupt = func(_ context.Context, producer, _, _ string) string {
++			hookProducer = producer
++			return ""
++		}
++
++		env, _ := fx.execute()
++
++		if hookProducer != "A" || !strings.Contains(fmt.Sprint(env["error"]), "step A interrupted (") {
++			t.Errorf("hook producer/error = %q/%v; want the row read before the child, A, blamed", hookProducer, env["error"])
++		}
++	})
++
++	t.Run("status file unreadable after the child exited", func(t *testing.T) {
++		fx := newLoopFixture(t, func(fx *loopFixture, _ string, _ ChildRequest) error {
++			if err := os.WriteFile(fx.paths.StatusPath, []byte("{"), 0o644); err != nil {
++				t.Fatalf("corrupt the status file: %v", err)
++			}
++			return errors.New("exit status 2")
++		})
++		var hookProducer string
++		fx.spec.Hooks.AfterInterrupt = func(_ context.Context, producer, _, _ string) string {
++			hookProducer = producer
++			return ""
++		}
++
++		env, _ := fx.execute()
++
++		if hookProducer != "A" || !strings.Contains(fmt.Sprint(env["error"]), "step A interrupted (") {
++			t.Errorf("hook producer/error = %q/%v; want the row read before the child, A, blamed", hookProducer, env["error"])
++		}
++	})
++
++	t.Run("child leaves an empty stderr and no trace file", func(t *testing.T) {
++		var stderrPath string
++		fx := newLoopFixture(t, func(fx *loopFixture, traceID string, _ ChildRequest) error {
++			_, stderrPath = fx.spec.Loop.StopFiles(traceID)
++			if err := os.MkdirAll(filepath.Dir(stderrPath), 0o755); err != nil {
++				t.Fatalf("create the stderr directory: %v", err)
++			}
++			if err := os.WriteFile(stderrPath, nil, 0o644); err != nil {
++				t.Fatalf("write stderr: %v", err)
++			}
++			return errors.New("exit status 2")
++		})
++
++		env, _ := fx.execute()
++
++		if env["trace_file"] != "" {
++			t.Errorf("trace_file = %v; want none for an empty stderr %s", env["trace_file"], stderrPath)
++		}
++	})
++
++	t.Run("loop without stop files has no trace file to name", func(t *testing.T) {
++		fx := newLoopFixture(t, func(*loopFixture, string, ChildRequest) error { return errors.New("exit status 2") })
++		fx.spec.Loop.StopFiles = nil
++
++		env, _ := fx.execute()
++
++		if env["kind"] != KindInterrupted || env["trace_file"] != "" {
++			t.Errorf("kind/trace_file = %v/%v; want an interrupted stop with no trace file", env["kind"], env["trace_file"])
++		}
++	})
++
++	t.Run("child dies before its resume write over a paused run", func(t *testing.T) {
++		fx := newLoopFixture(t, func(*loopFixture, string, ChildRequest) error { return errors.New("exit status 2") })
++		if err := state.WriteJSON(fx.paths.StatusPath, fx.paths.StatusLockPath, shedengine.Status{CurrentProducer: "A", State: shedengine.StatePaused, PauseReason: "goto to A by orch", History: historyOf(1)}); err != nil {
++			t.Fatalf("write status: %v", err)
++		}
++		var hookProducer string
++		fx.spec.Hooks.AfterInterrupt = func(_ context.Context, producer, _, _ string) string {
++			hookProducer = producer
++			return ""
++		}
++
++		env, _ := fx.execute()
++
++		if st := fx.readStatus(); st.State != shedengine.StatePaused || st.PauseReason != "goto to A by orch" {
++			t.Errorf("status state/pause_reason = %s/%q; want the pause left as found", st.State, st.PauseReason)
++		}
++		loop := loopOf(t, env)
++		if loop["state"] != "paused" || loop["pause_reason"] != "goto to A by orch" {
++			t.Errorf("loop state/pause_reason = %v/%v; want paused/goto to A by orch", loop["state"], loop["pause_reason"])
++		}
++		if hookProducer != "A" || env["trace_file"] != "" {
++			t.Errorf("hook producer/trace_file = %s/%v; want A and no trace file", hookProducer, env["trace_file"])
++		}
++	})
++
+ 	t.Run("status file vanishes between steps", func(t *testing.T) {
+ 		fx := newLoopFixture(t, func(fx *loopFixture, traceID string, req ChildRequest) error {
+ 			if err := continuing("B", 1)(fx, traceID, req); err != nil {
+@@ -1168,3 +1301,28 @@ func TestLoop_WakeHookRunsOnWatchWakes(t *testing.T) {
+ 		t.Errorf("hook ran %d times for %d watch wakes; want one run per wake", wakes, len(delays))
+ 	}
+ }
++
++// TestStderrExcerpt pins the stderr lines an interrupted cause carries when the child wrote no Go crash: the last non-empty lines, or none for an absent file.
++// A Go crash's lines are pinned by the interrupted-child test.
++func TestStderrExcerpt(t *testing.T) {
++	dir := t.TempDir()
++	tail := filepath.Join(dir, "tail.log")
++	if err := os.WriteFile(tail, []byte("one\ntwo\n\nthree\nfour\n\n"), 0o644); err != nil {
++		t.Fatalf("write stderr: %v", err)
++	}
++	tests := []struct {
++		name string
++		path string
++		want string
++	}{
++		{name: "LastLines", path: tail, want: "two | three | four"},
++		{name: "AbsentFile", path: filepath.Join(dir, "absent.log"), want: ""},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			if got := stderrExcerpt(tt.path); got != tt.want {
++				t.Errorf("stderrExcerpt(%s) = %q; want %q", tt.path, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/shedverbs/loopenvelope.go b/internal/shedverbs/loopenvelope.go
+index b8d3c7d5..d67a4ee6 100644
+--- a/internal/shedverbs/loopenvelope.go
++++ b/internal/shedverbs/loopenvelope.go
+@@ -52,6 +52,7 @@ type loopObject struct {
+ 	InterruptPolicy string
+ 	TraceCopy       string
+ 	StderrPath      string
++	PauseReason     string
+ }
+ 
+ // fields renders the object as its envelope keys; restep is omitted when no re-step ran.
+@@ -70,6 +71,7 @@ func (o loopObject) fields() map[string]any {
+ 		"interrupt_policy": o.InterruptPolicy,
+ 		"trace_copy":       o.TraceCopy,
+ 		"stderr_path":      o.StderrPath,
++		"pause_reason":     o.PauseReason,
+ 	}
+ 	if o.Restep != nil {
+ 		fields["restep"] = map[string]any{"producer": o.Restep.Producer, "error": o.Restep.Error, "transient": o.Restep.Transient}
+diff --git a/internal/shedverbs/loopwait.go b/internal/shedverbs/loopwait.go
+index a99a5505..eb86c252 100644
+--- a/internal/shedverbs/loopwait.go
++++ b/internal/shedverbs/loopwait.go
+@@ -492,6 +492,7 @@ func loopExitStop(ctx context.Context, spec *Spec, rec LoopPIDRecord, detail str
+ 		CurrentProducer: after.CurrentProducer,
+ 		HistoryLength:   len(after.History),
+ 		State:           string(after.State),
++		PauseReason:     after.PauseReason,
+ 	}
+ 	obj.StatusMoved = rec.hasChild() && !rec.inFlightAt(after)
+ 	if spec.Hooks.InterruptPolicyFor != nil {
+diff --git a/internal/shedverbs/loopwait_test.go b/internal/shedverbs/loopwait_test.go
+index 3185957e..988d538e 100644
+--- a/internal/shedverbs/loopwait_test.go
++++ b/internal/shedverbs/loopwait_test.go
+@@ -28,6 +28,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/output"
+ 	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/state"
+ 	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
+ )
+ 
+@@ -540,6 +541,21 @@ func TestUntilStop_DeadLoopStopsLoopExited(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("a paused status keeps its pause reason in the stop's loop object", func(t *testing.T) {
++		w := newWaitWorld(t)
++		if err := state.WriteJSON(w.paths.StatusPath, w.paths.StatusLockPath, shedengine.Status{CurrentProducer: "A", State: shedengine.StatePaused, PauseReason: "goto to A by orch", History: historyOf(1)}); err != nil {
++			t.Fatalf("write status: %v", err)
++		}
++		w.writePID(LoopPIDRecord{LoopID: "dead-1", Child: proc.TreeRecord{PID: 4242}, CurrentProducer: "A"})
++
++		env, _ := w.wait()
++
++		loop := loopOf(t, env)
++		if loop["stop"] != string(LoopStopInterrupted) || loop["state"] != "paused" || loop["pause_reason"] != "goto to A by orch" {
++			t.Errorf("loop stop/state/pause_reason = %v/%v/%v; want interrupted/paused/goto to A by orch", loop["stop"], loop["state"], loop["pause_reason"])
++		}
++	})
++
+ 	t.Run("a loop that dies while the watch emits nothing is seen at the next tick", func(t *testing.T) {
+ 		w := newWaitWorld(t)
+ 		live := w.startLiveLoop("live-1")
+diff --git a/internal/shedverbs/spec.go b/internal/shedverbs/spec.go
+index 062bc8f6..a749b4ee 100644
+--- a/internal/shedverbs/spec.go
++++ b/internal/shedverbs/spec.go
+@@ -101,8 +101,9 @@ type Hooks struct {
+ 	// the --watch line drops the note on an error rather than ending the tail.
+ 	// The hook closes over whatever location the arming module was told, so shedverbs stays path-free.
+ 	Waiting func(st shedengine.Status) (string, error)
+-	// AfterInterrupt runs when the loop stops on a child step that ended without an envelope, after the stop is classified and before its envelope is written.
+-	// It receives the stop row, the cause and the first trace file of the child, and its return is the envelope's friction key, like AfterStep's.
++	// AfterInterrupt runs when the loop stops on a child step that ended without an envelope, after the failed stop is written and before its envelope is written, so it reads the status the stop leaves.
++	// It receives the stop row, the one the status file names once the child exited, the cause and the first trace file of the child, or its captured stderr when it left no trace.
++	// Its return is the envelope's friction key, like AfterStep's.
+ 	// At a stop on the status read, absent or unreadable, no child ran and the trace file is the loop log.
+ 	AfterInterrupt func(ctx context.Context, producer, cause, traceFile string) string
+ 	// ConsumeAttempt runs in step's waiter, on `--until-stop --arbiter-attempt <attempt>`, before the loop is spawned.
+diff --git a/internal/shuttleengine/wait.go b/internal/shuttleengine/wait.go
+index 73712123..aca5c164 100644
+--- a/internal/shuttleengine/wait.go
++++ b/internal/shuttleengine/wait.go
+@@ -199,6 +199,10 @@ var errStrandPaneBindingCleared = errors.New(
+ // see abandonStartup for the teardown and the full error text a caller actually sees.
+ var ErrNotStarted = errors.New("shuttle: the provider never became ready")
+ 
++// ErrAgentDied reports that a run's provider started and then died before it wrote its outputs, the OutcomeDied result of a run that got past its start.
++// shuttle never returns it; a caller that turns such a result into an error wraps it, so a classifier can tell the death from other failures.
++var ErrAgentDied = errors.New("shuttle: the agent died before it wrote its outputs")
++
+ // Wait blocks until run reaches a terminal outcome.
+ // Error is reserved for mechanism failures that leave no classifiable outcome.
+ // A turn end without every output file is held, never terminal: Wait logs the hold and keeps polling,
