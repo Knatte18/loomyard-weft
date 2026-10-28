@@ -1,11 +1,11 @@
 {
-  "current_producer": "Drift-Verify",
+  "current_producer": "Describe",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Drift-Verify",
-    "last": "Code-Bouncer → done",
+    "now": "Describe",
+    "last": "Drift-Verify → skipped",
     "wait": ""
   },
   "history": [
@@ -286,6 +286,13 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYMHUB/creel-agents/_lym/reviews/code/round-1-bouncer-ledger.md",
       "at": "2026-10-28T18:19:39Z"
+    },
+    {
+      "producer": "Drift-Verify",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-10-28T18:19:39Z",
+      "reason": "drift.enabled = false"
     }
   ],
   "product": {
