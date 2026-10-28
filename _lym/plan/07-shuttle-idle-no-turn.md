@@ -1,16 +1,20 @@
 # Card 7 — Shuttle's idle probe reports whether a turn is in progress
 
+**Create:**
+- `plan:internal/shuttleengine#guardedReadinessEngine` -> `type guardedReadinessEngine struct`
+- `plan:internal/shuttleengine#guardedReadinessEngine.RunningTurn` -> `func (e *guardedReadinessEngine) RunningTurn(capture string) bool`
+- `plan:internal/shuttleengine#guardedReadinessEngine.InterruptSettle` -> `func (e *guardedReadinessEngine) InterruptSettle() time.Duration`
+
 **Edit:**
 - `internal/shuttleengine#IdleProbe`
 - `internal/shuttleengine#readiness`
 - `internal/shuttleengine#judgeReadiness`
 - `internal/shuttleengine#Runner.SessionIdle`
 - `internal/shuttleengine#TestRunner_SessionIdle_ReturnsScriptedClassification`
-
-**Extends:**
 - `internal/shuttleengine/doc.go`
 
 **Uses:**
+- `internal/shuttleengine#readinessEngine`
 - `internal/shuttleengine#InterruptGuard.RunningTurn`
 - `internal/shuttleengine#readBox`
 
@@ -27,7 +31,10 @@ When the reading is unknown and the pane decides, `NoTurn` is the pane's idle an
 
 `TestRunner_SessionIdle_ReturnsScriptedClassification` compares whole probes, so each of its rows' wanted probes gains the two fields: idle and draft-held rows from a turn end want `NoTurn` true and the turn end's stamp time, running-turn, ask, dead and unmatched rows want them zero, the operator-activity row wants `NoTurn` true and the turn end's stamp time beside its hold reason, and the unknown-reading and no-run-record rows, whose `readinessEngine` implements no `InterruptGuard`, want `NoTurn` equal to the pane's idle answer: true for the idle pane, false for a pane showing no box and for the busy-draft row.
 The existing "a draft in the box is held with its reason" row, updated to want `NoTurn` true with `Idle` false, pins that a draft does not read as a turn.
-New rows pin the other boxes under the hook reading: a session idle at a turn end whose pane is too short, and one whose pane shows no input box, each read `NoTurn` true with the turn end's time while `Idle` stays false; and a too-short pane under the pane probe reads `NoTurn` false.
+New rows pin the other boxes under the hook reading: a session idle at a turn end whose pane is too short, and one whose pane shows no input box, each read `NoTurn` true with the turn end's time while `Idle` stays false; the too-short pane under the pane probe is a guarded row, below.
+`guardedReadinessEngine`, a test engine in `fakes_test.go`, is `readinessEngine` plus `InterruptGuard`, its `RunningTurn` reading `RUNNING` in the capture, so a row has both the input box and the running-turn check that Claude's pane probe uses.
+The test gains a `guarded` engine setting beside `styled`, which runs the row on `guardedReadinessEngine`, and its doc comment names the guarded engine beside the box reader; rows with it set pin the guarded pane probe under an unknown reading: a pane with an input box holding a draft and no running turn reads `NoTurn` true with `Idle` false and a zero `TurnEndedAt`, and the same pane showing a running turn reads `NoTurn` false;
+a too-short pane (`tooShort` set) and a pane showing no input box, neither capture showing a running turn, each read `NoTurn` false with `Idle` false and a zero `TurnEndedAt`, so a guarded branch that drops its found-box or not-too-short condition fails a row.
 The doc's sentence on what `SessionIdle` answers gains the two fields.
 
 **ImpactSummary:** two probe fields filled inside SessionIdle; its other callers (creelcli's delivery and orch's watcher) read only the old fields and are unaffected until card 8 reads the new ones.

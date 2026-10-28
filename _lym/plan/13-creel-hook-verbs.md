@@ -9,7 +9,7 @@
 - `plan:internal/creelcli#TestHookReadExit` -> `func TestHookReadExit(t *testing.T)`
 
 **Edit:**
-- `internal/creelcli#hookRead`
+- `internal/creelcli#hookRead` -> `func hookRead(cmd *cobra.Command, engine string) (event shuttleengine.HookEvent, wrote bool, err error)`
 - `internal/creelcli#hookReadCmd`
 - `internal/creelcli#Command`
 - `internal/creelcli#TestCreelCLI`
@@ -36,7 +36,7 @@ An input that is neither the tool-boundary nor the Stop event is refused on stan
 Otherwise it claims with `Request{Verb: VerbClaim, Stop: <event is Stop>, StopHookActive: <the input's flag>}` and writes the claimed lines, joined by newlines, as the engine's `BoundaryBlock` straight to standard output before the client acknowledges them, the order D1 keeps.
 On the tool-boundary event it exits 0 whether or not it claimed anything, as before.
 On a Stop it exits 0 exactly when it wrote a block, whatever follows the write, and 1 when it claimed nothing, printing nothing to either stream then; a refusal or daemon failure before the write exits 1 with the error on standard error, as today.
-`hookRead` reports whether its write callback wrote the block beside its error, and `hookReadExit(event, wrote, err)` decides the exit and whether the error is printed, so the rule is one pure decision: a Stop exits 0 on `wrote` whatever the error, and an error after the write, such as a failed acknowledgement, is still printed to standard error.
+`hookRead` returns the parsed event and whether its write callback wrote the block beside its error, and `hookReadCmd`'s `RunE` passes those three results to `hookReadExit(event, wrote, err)`, which decides the exit and whether the error is printed, so the rule is one pure decision: a Stop exits 0 on `wrote` whatever the error, and an error after the write, such as a failed acknowledgement, is still printed to standard error.
 That exit status is what card 14's merged Stop command decides on: 0 records no turn end, anything else records it.
 The Long text describes the input, the block, the subagent filter and the Stop exit.
 
@@ -59,7 +59,7 @@ a hook-wait as a strand rings when mail is posted: exit 2 and `BellLine` on stan
 a hook-wait from a subagent input exits 0 at once;
 a hook-wait superseded by a newer one of the same strand exits 0 printing nothing;
 a hook-wait refused, for an unknown engine, for an input that is not JSON, and from a caller that is no strand (the strand name unset, so the daemon resolves EXTERNAL), each exits 0 printing nothing on either stream.
-`TestHookReadExit` is table-driven over the decision: a Stop with a block written and no error, and with a block written and an acknowledgement error, exits 0, the second printing its error; a Stop with nothing written exits 1, printing an error only when there is one; a tool-boundary call exits 0 with nothing written and no error and 1 on an error.
+`TestHookReadExit` is table-driven over the decisions no `TestCreelCLI` row reaches: a Stop with a block written and an acknowledgement error exits 0 and prints its error, and a Stop with nothing written and an error, a daemon failure before the write, exits 1 and prints it, and a tool-boundary call whose claim fails after the parse exits 1 and prints its error; `TestCreelCLI` covers the rest, a Stop that writes a block, a Stop with no mail, a tool-boundary call that claims, and a refused input.
 The block-then-failed-acknowledgement case has no CLI row, since nothing outside the daemon can fail an acknowledgement after the write: the day file stays open across an unlink, and the daemon's acknowledgement deadline is 30 seconds.
 The creelcli package doc describes both hidden verbs.
 
