@@ -1,6 +1,6 @@
 # A landing merges a moved parent in Finalize and sends a fixer escalate to the arbiter first
 
-`landing-settles-in-place` · Task · enhancement, loom, batten, shed · draft
+`landing-settles-in-place` · Task · enhancement, loom, batten, shed
 
 ## Goal
 
