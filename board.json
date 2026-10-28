@@ -832,6 +832,26 @@
       "body": "Imported from [issue #889](https://github.com/Knatte18/loomyard/issues/889).\n\n## What happened\n\nAfter a run halted `blocked` at a producer, `lym loom resume` re-spawned the same producer.\nThe re-spawn's prompt named the prior work as `(none)`, while the branch already held the first spawn's commit and an archived summary.\n\n## Why it is abnormal\n\nThe resumed agent is told there is no earlier work although there is, so it can redo or conflict with existing commits, or miss that the failure it must fix is a gate failure on already-written code.\n\n## What to do\n\nHave the resume path populate the prior-work section of the re-spawn prompt from the branch's existing commits and the archived summary of the earlier spawn.\n\nProvenance: task `regression-harness`; note Darn-Write-2.md.\n",
       "created": "2026-10-28T11:33:24Z",
       "revised": "2026-10-28T11:33:24Z"
+    },
+    {
+      "id": 858,
+      "handle": "E4",
+      "slug": "gate-tier-dir-follows-anchor",
+      "title": "Gate tier runs dotnet test in the worktree root instead of the anchor subdirectory",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "gate"
+      ],
+      "issues": [
+        888
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #888](https://github.com/Knatte18/loomyard/issues/888).\n\n## What happened\n\nIn a task whose project anchor is a subdirectory of the worktree (`dotnet/`), `lym gate test --wait` ran the tier0 command `dotnet test LymCsharp.sln ...` in the worktree root.\nIt failed at once with `MSB1009: Project file does not exist`.\nThe hub's gate tiers set no `dir`, and the default run directory does not follow the anchor.\n\nThe producer agent worked around it by passing `-C \u003cworktree\u003e/dotnet` with an explicit target, after which all tests passed.\nThe loom's diff-scoped verify very likely runs the same way, since the producer hit the same failure at the handoff gate: the run halted `blocked` with `gate did not pass after 3 attempts` (anomaly `escalation-to-human`).\n\n## Why it is abnormal\n\nThe failure is a gate misconfiguration, not a code defect, so no amount of agent retrying can clear it.\nThe halt's way forward, `lym loom resume`, gives a fresh verify budget but leaves the gate config unchanged.\nThe resumed spawn therefore hit the identical failure and halted a second time.\n\n## What to do\n\n- Make a gate tier's default run directory follow the task's anchor directory when the anchor is a subdirectory of the worktree.\n- Failing that, detect a gate that fails identically with a missing-project error and surface it as a configuration problem, rather than as a verify failure that offers `lym loom resume` as the way forward.\n\nProvenance: task `regression-harness`; notes Darn-Write.md, Darn-Write-2.md, loom-halt.md, loom-halt-2.md.\n",
+      "created": "2026-10-28T11:33:26Z",
+      "revised": "2026-10-28T11:33:26Z"
     }
   ],
   "prime_owner": "neve",
