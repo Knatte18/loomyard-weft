@@ -1,0 +1,436 @@
+{
+  "runGuid": "ed6b138cc48c0588caa2d52fdb07cf01",
+  "planFingerprint": "221374dfd2e0ed765021e7312fc93e3565ca0955734d1ae0ca196b407dad098b",
+  "planFileHashes": {
+    "00-overview.md": "1fd312821d3fb7257b18b6aaa01f388bade4f61c1381d940a478ecb4be4d2f2a",
+    "01-orchroute-walk.md": "741c544fcae845c855a95298f26323055f6ec673e5f782199d00a9784477f062",
+    "02-creel-post-parent.md": "3c8ff48e096970bfdbefc16d043956008226aaab3021b65043bf8d22e167f771",
+    "03-hold-notice-creel.md": "86f9c6b89450bc11634350391abffa837fd79bea2639a1abe369cce81b34e52a",
+    "04-notifier-asker-walk.md": "1d144f80ea8932285b6e9b6b7aefd7ad122b3a16bf9482ab29a636a9cc62c2a7",
+    "05-expect-reply-engine.md": "6f495801f688ea5bb27214bd8fd1c1d0a55e334c6e6a0bdad1884f30ff10800c",
+    "06-expect-reply-cli.md": "c2b9433d3ed8e812f0684aa14737cfe7b0b9114b08f7126dde72eec708c1a473",
+    "07-chase-clock.md": "214bdba9dbfa89f0cd3bea217ec81db750a6de566c204bb6162238640555d6d4",
+    "08-chase-reply-forward.md": "5da4043e3ccc603ac9c896b86cf1bcd77223ae904c46dd6f54cbdaff8ede2d8a",
+    "09-sweep-holder-gone.md": "aa3574e6f1850a229ab06b435d843860b877b350767318e6a92ae1e97890b98b",
+    "10-unanswered-cli-log.md": "6c368263ac17089098324a5e363b715f044f55053471014fa47cb9a0f5b1b188",
+    "11-report-replies.md": "05cd953ba8070ae702ce59d56bdd3df2502cff278a33bcc5009e924096384b79",
+    "12-stencils-through-creel.md": "07d65d53c725539ba614feb84e9e64e839881dd6206f9055a98cf32483adc1a0",
+    "13-drop-peer-messaging.md": "56caacdd965a426b5cbb0c131c94f9452c086c3ad0c4d4bcb4b871e09e32feb8",
+    "14-creel-trust-sentence.md": "f4f54f12d836f44ec4b1e4edd1400bfe636d336e90a5d9dcc49c0acbddb0d14c",
+    "15-remove-shuttle-send-interrupt.md": "d834ecdadcf99a0a696e3589cb449724114bd6fac64a25b36677b2be023e1838",
+    "16-agent-messaging-scan.md": "a348524bb17b6167804434b0ae36f24ca3e009e07584c07c2161c348e02c8d32"
+  },
+  "planOverviewFrameHash": "9f5fb29b7c5c572003da0fae33d62c5791ff98765f8d18457ecedea0bb6c308d",
+  "partition": [
+    {
+      "cards": [
+        "01-orchroute-walk",
+        "02-creel-post-parent",
+        "03-hold-notice-creel",
+        "04-notifier-asker-walk"
+      ],
+      "profile": "wide",
+      "estimate": 238086,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54952,
+        "read_union": 58868,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 804,
+            "reads": {
+              "file:docs/overview.md": 10308,
+              "file:internal/orchcli/live_test.go": 1008,
+              "package:docs": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/orchroute": 2000,
+              "tests:docs": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/orchroute": 2000
+            },
+            "messages": 190.5,
+            "written": 57954
+          },
+          {
+            "card": 2,
+            "card_text": 528,
+            "reads": {
+              "file:internal/creelcli/doc.go": 612,
+              "package:internal/creelcli": 2000,
+              "tests:internal/creelcli": 2000
+            },
+            "messages": 46.5,
+            "written": 14478
+          },
+          {
+            "card": 3,
+            "card_text": 264,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 6324,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 53,
+            "written": 16164
+          },
+          {
+            "card": 4,
+            "card_text": 420,
+            "reads": {
+              "file:internal/burlercli/doc.go": 192,
+              "file:internal/loomcli/doc.go": 3756,
+              "file:internal/orchcli/doc.go": 1860,
+              "file:internal/webstercli/doc.go": 792,
+              "package:internal/burlercli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/webstercli": 2000,
+              "tests:internal/burlercli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/webstercli": 2000
+            },
+            "messages": 117.5,
+            "written": 35670
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-expect-reply-engine",
+        "06-expect-reply-cli",
+        "07-chase-clock"
+      ],
+      "profile": "wide",
+      "estimate": 284392,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61952,
+        "read_union": 37520,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 780,
+            "reads": {
+              "file:internal/creelengine/doc.go": 3144,
+              "package:internal/creelengine": 2000,
+              "tests:internal/creelengine": 2000
+            },
+            "messages": 174.5,
+            "written": 53130
+          },
+          {
+            "card": 6,
+            "card_text": 384,
+            "reads": {
+              "file:internal/creelcli/doc.go": 612,
+              "package:internal/creelcli": 2000,
+              "tests:internal/creelcli": 2000
+            },
+            "messages": 48.5,
+            "written": 14934
+          },
+          {
+            "card": 7,
+            "card_text": 1656,
+            "reads": {
+              "file:docs/overview.md": 10308,
+              "file:internal/creelengine/doc.go": 3144,
+              "file:pattern/PATTERN-daemon-wakeups.md": 636,
+              "package:cmd/lym": 2000,
+              "package:docs": 2000,
+              "package:internal/creelengine": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:docs": 2000,
+              "tests:internal/creelengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 384,
+            "written": 116856
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "08-chase-reply-forward",
+        "09-sweep-holder-gone",
+        "10-unanswered-cli-log",
+        "11-report-replies",
+        "12-stencils-through-creel"
+      ],
+      "profile": "wide",
+      "estimate": 265564,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68952,
+        "read_union": 99928,
+        "cards": [
+          {
+            "card": 8,
+            "card_text": 384,
+            "reads": {
+              "file:internal/creelengine/doc.go": 3144,
+              "package:internal/creelengine": 2000,
+              "tests:internal/creelengine": 2000
+            },
+            "messages": 32.5,
+            "written": 10134
+          },
+          {
+            "card": 9,
+            "card_text": 360,
+            "reads": {
+              "file:internal/creelengine/doc.go": 3144,
+              "file:pattern/PATTERN-daemon-wakeups.md": 636,
+              "package:internal/creelengine": 2000,
+              "package:pattern": 2000,
+              "tests:internal/creelengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 56.5,
+            "written": 17310
+          },
+          {
+            "card": 10,
+            "card_text": 324,
+            "reads": {
+              "file:internal/creelcli/doc.go": 612,
+              "package:internal/creelcli": 2000,
+              "tests:internal/creelcli": 2000
+            },
+            "messages": 40.5,
+            "written": 12474
+          },
+          {
+            "card": 11,
+            "card_text": 564,
+            "reads": {
+              "file:docs/overview.md": 10308,
+              "file:internal/reportcli/doc.go": 528,
+              "file:internal/reportengine/doc.go": 2232,
+              "package:docs": 2000,
+              "package:internal/reportcli": 2000,
+              "package:internal/reportengine": 2000,
+              "tests:docs": 2000,
+              "tests:internal/reportcli": 2000,
+              "tests:internal/reportengine": 2000
+            },
+            "messages": 90.5,
+            "written": 27714
+          },
+          {
+            "card": 12,
+            "card_text": 552,
+            "reads": {
+              "file:contracts/stencils/darn/darn-template-write.md": 1356,
+              "file:contracts/stencils/loom/loom-template-discussion-advisor.md": 648,
+              "file:contracts/stencils/orch/orch-template-role.md": 3312,
+              "file:contracts/stencils/parent/parent-directive-parent.md": 192,
+              "file:contracts/stencils/seat/seat-directive-advisor.md": 192,
+              "file:contracts/stencils/seat/seat-directive-chair.md": 324,
+              "file:contracts/stencils/shed/shed-template-driver-notify-watched.md": 168,
+              "file:contracts/stencils/shed/shed-template-driver-notify.md": 96,
+              "file:contracts/stencils/webster/webster-template-master.md": 3804,
+              "file:internal/orchengine/doc.go": 5928,
+              "file:internal/seatengine/testdata/smoke-advisor.md": 132,
+              "file:internal/seatengine/testdata/smoke-chair.md": 132,
+              "package:contracts/stencils/darn": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:contracts/stencils/orch": 2000,
+              "package:contracts/stencils/parent": 2000,
+              "package:contracts/stencils/seat": 2000,
+              "package:contracts/stencils/shed": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/orchengine": 2000,
+              "package:internal/seatengine": 2000,
+              "package:internal/seatengine/testdata": 2000,
+              "tests:contracts/stencils/darn": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:contracts/stencils/orch": 2000,
+              "tests:contracts/stencils/parent": 2000,
+              "tests:contracts/stencils/seat": 2000,
+              "tests:contracts/stencils/shed": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/orchengine": 2000,
+              "tests:internal/seatengine": 2000,
+              "tests:internal/seatengine/testdata": 2000
+            },
+            "messages": 95,
+            "written": 29052
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "13-drop-peer-messaging",
+        "14-creel-trust-sentence",
+        "15-remove-shuttle-send-interrupt",
+        "16-agent-messaging-scan"
+      ],
+      "profile": "wide",
+      "estimate": 269354,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75952,
+        "read_union": 72904,
+        "cards": [
+          {
+            "card": 13,
+            "card_text": 348,
+            "reads": {
+              "file:internal/seatengine/doc.go": 1332,
+              "file:internal/shuttleengine/claudeengine/doc.go": 3204,
+              "file:internal/shuttleengine/doc.go": 6324,
+              "package:internal/seatengine": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/seatengine": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 104,
+            "written": 31548
+          },
+          {
+            "card": 14,
+            "card_text": 180,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/doc.go": 3204,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 23.5,
+            "written": 7230
+          },
+          {
+            "card": 15,
+            "card_text": 552,
+            "reads": {
+              "file:docs/overview.md": 10308,
+              "file:internal/creelengine/doc.go": 3144,
+              "file:internal/shuttlecli/interrupt.go": 648,
+              "file:internal/shuttlecli/send.go": 852,
+              "file:internal/shuttleengine/claudeengine/doc.go": 3204,
+              "file:internal/shuttleengine/doc.go": 6324,
+              "file:internal/shuttleengine/messagetail.go": 228,
+              "file:pattern/PATTERN-pane-text-injection.md": 1152,
+              "file:tools/sandbox/SANDBOX-SHUTTLE-SUITE.md": 3432,
+              "package:cmd/lym": 2000,
+              "package:docs": 2000,
+              "package:internal/creelengine": 2000,
+              "package:internal/shuttlecli": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:pattern": 2000,
+              "package:tools/sandbox": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:docs": 2000,
+              "tests:internal/creelengine": 2000,
+              "tests:internal/shuttlecli": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:pattern": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 195.5,
+            "written": 59202
+          },
+          {
+            "card": 16,
+            "card_text": 468,
+            "reads": {
+              "file:PATTERN.md": 732,
+              "package:.": 2000,
+              "package:cmd/lym": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lym": 2000
+            },
+            "messages": 73.5,
+            "written": 22518
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "5841496fec2988abb41e9b4658ab04fe",
+  "masterSessionId": "a29a8065-09be-4e72-ba3a-0f2957b04202",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "orchroute-walk",
+      "cards": [
+        "01-orchroute-walk",
+        "02-creel-post-parent",
+        "03-hold-notice-creel",
+        "04-notifier-asker-walk"
+      ],
+      "cardHashes": {
+        "01-orchroute-walk": "741c544fcae845c855a95298f26323055f6ec673e5f782199d00a9784477f062",
+        "02-creel-post-parent": "3c8ff48e096970bfdbefc16d043956008226aaab3021b65043bf8d22e167f771",
+        "03-hold-notice-creel": "86f9c6b89450bc11634350391abffa837fd79bea2639a1abe369cce81b34e52a",
+        "04-notifier-asker-walk": "1d144f80ea8932285b6e9b6b7aefd7ad122b3a16bf9482ab29a636a9cc62c2a7"
+      },
+      "startSha": "90d20de067f24d5c990e0abf259efeaa59736082",
+      "kind": "fork",
+      "spawnedAt": "2026-10-28T17:12:34Z",
+      "sessionId": "a29a8065-09be-4e72-ba3a-0f2957b04202",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
