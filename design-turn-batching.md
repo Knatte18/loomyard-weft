@@ -2,7 +2,7 @@
 
 `turn-batching` · Task · enhancement, stencil, shuttle
 
-Depends on: [`creel-hook-post`](design-creel-hook-post.md), [`validator-checks`](design-validator-checks.md)
+Depends on: [`validator-checks`](design-validator-checks.md)
 
 ## Seen
 
