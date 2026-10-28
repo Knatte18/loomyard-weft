@@ -3542,6 +3542,56 @@ index 0f78de5e..54d507f3 100644
  			wantErr(t, err, "no strand", "lym creel read")
  		}},
  	}
+diff --git a/internal/fabriccli/anchor_integration_test.go b/internal/fabriccli/anchor_integration_test.go
+index 347551a3..a21c2074 100644
+--- a/internal/fabriccli/anchor_integration_test.go
++++ b/internal/fabriccli/anchor_integration_test.go
+@@ -27,6 +27,8 @@ import (
+ func newAnchorCLIHub(t *testing.T) *hubforge.Hub {
+ 	t.Helper()
+ 
++	traceSinkMu.RLock()
++	t.Cleanup(traceSinkMu.RUnlock)
+ 	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 	// The verb points the process-wide trace sink into the hub it moves, so the sink is reset before the hub's directories are removed:
+ 	// a parallel test's record would otherwise recreate a logs directory inside them while they go.
+diff --git a/internal/fabriccli/hubmutation_integration_test.go b/internal/fabriccli/hubmutation_integration_test.go
+index 4f8b557e..6daa0077 100644
+--- a/internal/fabriccli/hubmutation_integration_test.go
++++ b/internal/fabriccli/hubmutation_integration_test.go
+@@ -55,6 +55,8 @@ func TestRunCLI_HubMutationScenario(t *testing.T) {
+ 
+ 			// A real forked push child cannot itself be observed from a test binary (it would re-exec the test binary), so the synchronous bypass handler it runs is the deterministic proof that a supplied path is pushed.
+ 			// It runs from the hub's board worktree, where the real child starts, because the bypass branch points the process-wide trace sink at the hub it resolves from cwd.
++			traceSinkMu.Lock()
++			t.Cleanup(traceSinkMu.Unlock)
+ 			t.Cleanup(func() { logger.SetDurableSinkDir("") })
+ 			var out bytes.Buffer
+ 			exitCode := fabriccli.RunCLIIn(h.BoardDir(), &out, []string{
+diff --git a/internal/fabriccli/testmain_test.go b/internal/fabriccli/testmain_test.go
+index da1b3a52..01447eaa 100644
+--- a/internal/fabriccli/testmain_test.go
++++ b/internal/fabriccli/testmain_test.go
+@@ -8,6 +8,7 @@ package fabriccli_test
+ 
+ import (
+ 	"os"
++	"sync"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/fabriccli"
+@@ -17,6 +18,11 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tmuxkit"
+ )
+ 
++// traceSinkMu orders the tests that point the process-wide trace sink at their own hub.
++// A test that only drives such a verb holds the read side, so those tests still run in parallel;
++// a test that asserts where the sink points holds the write side across the verb and the assertion, so no parallel verb repoints the sink in between.
++var traceSinkMu sync.RWMutex
++
+ // TestMain runs gitkit.HermeticGitEnv() before any test spawns git, then runs the tests under tmuxkit.Main.
+ // The add verb's pair push runs in the foreground: a detached one would fork this test binary, and the tests read the pushed branches on the remote.
+ func TestMain(m *testing.M) {
 diff --git a/internal/loomcli/decision.go b/internal/loomcli/decision.go
 index 2c28e6ca..00082e3f 100644
 --- a/internal/loomcli/decision.go
@@ -3635,10 +3685,19 @@ index 2c28e6ca..00082e3f 100644
  			geometry, err := hubgeom.ReedGeometry(target)
  			if err != nil {
 diff --git a/internal/loomcli/decision_test.go b/internal/loomcli/decision_test.go
-index 98122f87..b7296c63 100644
+index 98122f87..b2940710 100644
 --- a/internal/loomcli/decision_test.go
 +++ b/internal/loomcli/decision_test.go
-@@ -77,6 +77,9 @@ type decisionFake struct {
+@@ -37,6 +37,8 @@ type decisionFake struct {
+ 	findings  []discussionparser.Finding
+ 	appendErr error
+ 	commitErr error
++	// programNameErr is what the LOOM program name resolver returns.
++	programNameErr error
+ 	// strandName is the caller's exported strand name, empty for an unnamed shell.
+ 	strandName string
+ 	parent     hubgeom.Parent
+@@ -77,6 +79,9 @@ type decisionFake struct {
  	notifyErrs map[string]error
  	// posts records every post the verb made, receiver and line.
  	posts []decisionPost
@@ -3648,15 +3707,15 @@ index 98122f87..b7296c63 100644
  
  	// amendmentPath is the plan amendment record the fake's seams write, in a temp dir.
  	amendmentPath string
-@@ -134,6 +137,7 @@ func newDarnDecisionFake(t *testing.T) *decisionFake {
+@@ -134,6 +139,7 @@ func newDarnDecisionFake(t *testing.T) *decisionFake {
  func (f *decisionFake) deps() decisionDeps {
  	return decisionDeps{
  		strandName:    f.strandName,
-+		programName:   func() (string, error) { return "hub:LOOM", nil },
++		programName:   func() (string, error) { return "hub:LOOM", f.programNameErr },
  		parent:        func() (hubgeom.Parent, error) { return f.parent, f.parentErr },
  		arbiterStrand: func(name string) bool { return name == f.arbiterName },
  		readStatus:    func() (shedengine.Status, bool, error) { return f.status, f.found, f.statusErr },
-@@ -206,6 +210,10 @@ func (f *decisionFake) deps() decisionDeps {
+@@ -206,6 +212,10 @@ func (f *decisionFake) deps() decisionDeps {
  		},
  		liveStrands: func() ([]string, error) { return f.liveStrands, f.liveErr },
  		notify: func(receiver, line string) error {
@@ -3667,7 +3726,34 @@ index 98122f87..b7296c63 100644
  			if err := f.notifyErrs[receiver]; err != nil {
  				return err
  			}
-@@ -711,6 +719,12 @@ func TestDecisionVerb_Refusals(t *testing.T) {
+@@ -283,6 +293,8 @@ func TestDecisionVerb_AppendsAndCommits(t *testing.T) {
+ 		running bool
+ 		// pattern sets the three PATTERN-change flags.
+ 		pattern bool
++		// programNameFails makes the LOOM program name resolver fail.
++		programNameFails bool
+ 	}{
+ 		{name: "parent label with the PATTERN-change form", by: "parent", pattern: true},
+ 		{name: "darn run from an unnamed shell", by: "parent", darn: true},
+@@ -290,6 +302,7 @@ func TestDecisionVerb_AppendsAndCommits(t *testing.T) {
+ 		{name: "darn run while Darn-Write runs", by: "parent", darn: true, running: true},
+ 		{name: "parent label from an unnamed shell", by: "parent"},
+ 		{name: "operator label from an unnamed shell", by: "operator"},
++		{name: "program name unresolvable", by: "parent", programNameFails: true},
+ 		{name: "recorded parent's own name", by: "parent", strandName: "hub:orch", parentName: "hub:orch"},
+ 		{name: "slug-bearing recorded parent's own name", by: "parent", strandName: "hub:other:orch", parentName: "hub:other:orch"},
+ 		{name: "the run's arbiter strand with the arbiter label", by: "arbiter", strandName: "hub:slug:arbiter", parentName: "hub:orch", arbiterName: "hub:slug:arbiter"},
+@@ -307,6 +320,9 @@ func TestDecisionVerb_AppendsAndCommits(t *testing.T) {
+ 			}
+ 			f.strandName = tc.strandName
+ 			f.arbiterName = tc.arbiterName
++			if tc.programNameFails {
++				f.programNameErr = errors.New("geometry boom")
++			}
+ 			f.parent = hubgeom.Parent{Name: tc.parentName}
+ 			input := goodDecisionInput()
+ 			input.by = by
+@@ -711,6 +727,12 @@ func TestDecisionVerb_Refusals(t *testing.T) {
  			noDarnReads:  true,
  			want:         []string{"entries 1 and 2 of the --from file both change PATTERN-x", "way forward:"},
  		},
@@ -3680,7 +3766,7 @@ index 98122f87..b7296c63 100644
  		{
  			name: "darn batch entry missing from the committed record after the commit",
  			from: decisionBatchJSON,
-@@ -776,6 +790,8 @@ func TestDecisionVerb_Refusals(t *testing.T) {
+@@ -776,6 +798,8 @@ func TestDecisionVerb_Refusals(t *testing.T) {
  // and that a failed listing or post is reported on a success envelope.
  func TestDecisionVerb_NotifiesLiveAgents(t *testing.T) {
  	t.Parallel()
@@ -3689,7 +3775,7 @@ index 98122f87..b7296c63 100644
  	tests := []struct {
  		name        string
  		strandName  string
-@@ -783,7 +799,11 @@ func TestDecisionVerb_NotifiesLiveAgents(t *testing.T) {
+@@ -783,7 +807,11 @@ func TestDecisionVerb_NotifiesLiveAgents(t *testing.T) {
  		liveStrands []string
  		liveErr     error
  		notifyErrs  map[string]error
@@ -3702,7 +3788,7 @@ index 98122f87..b7296c63 100644
  		// wantErrors are the strands of the reported failures, "" for a failed listing.
  		wantErrors []string
  	}{
-@@ -821,6 +841,21 @@ func TestDecisionVerb_NotifiesLiveAgents(t *testing.T) {
+@@ -821,6 +849,21 @@ func TestDecisionVerb_NotifiesLiveAgents(t *testing.T) {
  			want:        []string{"hub:task-a:plan"},
  			wantErrors:  []string{"hub:task-a:darn"},
  		},
@@ -3724,7 +3810,7 @@ index 98122f87..b7296c63 100644
  	}
  	for _, tt := range tests {
  		t.Run(tt.name, func(t *testing.T) {
-@@ -837,6 +872,10 @@ func TestDecisionVerb_NotifiesLiveAgents(t *testing.T) {
+@@ -837,6 +880,10 @@ func TestDecisionVerb_NotifiesLiveAgents(t *testing.T) {
  				f.arbiterName = tt.strandName
  				input.by = "arbiter"
  			}
@@ -3735,7 +3821,7 @@ index 98122f87..b7296c63 100644
  			var out bytes.Buffer
  			if code := decisionVerb(&out, "task-a", f.deps(), input); code != 0 {
  				t.Fatalf("exit = %d, out %s; want 0", code, out.String())
-@@ -861,6 +900,25 @@ func TestDecisionVerb_NotifiesLiveAgents(t *testing.T) {
+@@ -861,6 +908,25 @@ func TestDecisionVerb_NotifiesLiveAgents(t *testing.T) {
  				t.Errorf("envelope notice_errors strands = %v; want %v", gotErrors, tt.wantErrors)
  			}
  
@@ -3819,10 +3905,10 @@ index 0d081856..a3496970 100644
  func (w *Watcher) queueResumeLine(record pauserecord.Record, st State, now time.Time) error {
  	var resumed pauserecord.Entry
 diff --git a/internal/reedengine/doc.go b/internal/reedengine/doc.go
-index e1355e56..1df863c8 100644
+index e0e721d5..6d104293 100644
 --- a/internal/reedengine/doc.go
 +++ b/internal/reedengine/doc.go
-@@ -226,6 +226,7 @@
+@@ -227,6 +227,7 @@
  // The tick resets a drifted pane title itself and repairs a drifted provider session name through the SessionNamer seam, which the provider package implements and `internal/shuttleengines` fills.
  // A strand carries an opaque provider tag its spawner sets (Strand.Provider, JSON `provider`, omitted when empty); reed stores it and never interprets it.
  // The watchdog is handed a map from tag to SessionNamer and repairs each strand's session name through the namer for its tag, so a strand whose tag has no namer gets its pane title repaired only.
