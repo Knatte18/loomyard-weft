@@ -1,6 +1,6 @@
 # Codex hook delivery spike
 
-`codex-hook-spike` · Task · research, codex, creel · running · Drift-Verify
+`codex-hook-spike` · Task · research, codex, creel · running · Finalize
 
 ## Goal
 
