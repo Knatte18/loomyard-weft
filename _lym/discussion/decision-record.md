@@ -171,6 +171,12 @@ Decision: In D10, replace the sentence that relies on the removed-holder sweep w
 
 Rationale: Review finding F1 of Discussion round 1, taken as written; the operator chose to accept the round with its fixes recorded rather than run another round (2026-10-28).
 
+### Added after Discussion (parent, 2026-10-28): D10's chase refusals: one way forward, and a fail-loud guard with no reaching test (review F5)
+
+Decision: Amend D10 and its Constraint: the refusal of a forward of a chase names only lym creel post --reply <chase id>, and the refusal of a chase reply from a former holder is a fail-loud guard with no reaching test. The overview's Shared Decisions former-holder-reply-guard and chase-forward-way-forward and card 8's Intent cite this entry; card 8's code design stays as written.
+
+Rationale: Store.Forward refuses a message that is not unread (internal/creelengine/verbs.go), and a chase goes only to the holder of a read message, so D10's second way forward and the reaching test cannot be reached. Plan-Burler-Fix round 1 finding F5, taken as written.
+
 ## Constraints
 
 - `PATTERN-parent-directive`: the directive stays the one place a spawned role learns how to ask; the orch stencils stay exempt.
