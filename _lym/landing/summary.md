@@ -1,59 +1,69 @@
-# VS Code colours by project and worktree, and lym ide seed with no slug
+# Colour VS Code by project and worktree; lym ide seed takes no slug
 
-A worktree's VS Code window now shows two things: its project on the title bar and the worktree itself on the activity bar.
-These are the only two areas that keep their colour when the window loses focus.
+A worktree's VS Code window now shows its project on the title bar and the worktree itself on the activity bar.
+`lym ide seed` with no slug seeds the worktree the current directory sits in, the prime included.
+Before, every worktree got one title-bar colour, nothing showed which beam it belonged to, and seeding a fresh prime meant spelling out its name.
 
 ## What changes
 
 - **Colours.**
-  The prime takes green on both bars, and the green is now the darker `#1b5e20`.
-  A task under the prime takes green on the title bar and some other palette colour on the activity bar.
-  A beam takes its own colour on both bars.
-  A task under a beam takes the beam's colour on the title bar and a different colour on the activity bar.
-  A task's activity-bar colour avoids its siblings' colours while the palette has one free.
-  Siblings are the worktrees whose title bar holds the same project colour.
-  A task keeps its current colour as long as that colour is still allowed and free, so seeding again does not change it.
-  Text on either bar is black or white, chosen by the background's WCAG relative luminance.
-  No status-bar, border or tab colour is written.
+  Only the title bar (active and inactive, the same colour) and the activity bar are written, since they are the only areas that keep their colour in an unfocused window.
+  - The prime takes green on both bars.
+    The palette's green, `mainColor` and `palette[0]` in `internal/vscode/color.go`, is now the darker `#1b5e20`.
+  - A beam takes its own colour on both bars.
+  - A task takes its parent's project colour on the title bar (green under the prime, the beam's colour under a beam).
+    Its activity bar takes a palette colour other than that, avoiding its sibling tasks' activity colours while one is free and keeping its own current colour when that is still allowed and free.
+  - Text colour follows WCAG relative luminance: black above 0.179, white otherwise.
+    The inactive title-bar and activity-bar text take the same colour at `aa` alpha.
 - **Window title.**
-  `window.title` is the hub shortname in upper case, a colon and the worktree's slug, for example `LY: loomyard`.
-  A hub with no recorded shortname shows the slug alone.
-- **Beam colour on the board.**
-  A beam project carries a new `beam_color` field.
-  `boardengine.SetOwners` writes it in the same commit as the beam flag, using the new `OwnerRequest.BeamColor` picker.
-  The picker chooses from the colours the other open beams hold, and it runs inside the board write lock, so two concurrent creates cannot take the same colour.
-  `lym beam create` passes `vscode.PickBeamColor` as the picker.
-  It also runs its owner step again for a beam that is already recorded here but has no colour.
-  The replay merges the field.
-  Only a beam project keeps it, and no upsert key sets it.
-- **settings.json.**
-  `vscode.WriteConfig` now takes a `Look` (title, project colour, worktree colour).
-  In an existing `settings.json` it sets only the keys lym owns: `window.title` and the title-bar and activity-bar keys of `workbench.colorCustomizations`.
-  It keeps every other key.
-  A file that does not decode as a JSONC object is left untouched, with a warning.
-- **Beam workspace file.**
-  A beam's `<RepoName>-<beam>.code-workspace` now splices the beam's own `.vscode/settings.json`, so it carries the beam's title and colours.
-  When the beam has no settings file, it falls back to the prime's settings as before.
+  `window.title` is the hub shortname upper-cased, `: ` and the worktree's slug, such as `LY: loomyard`.
+  A hub with no recorded shortname takes the slug alone.
 - **`lym ide seed [<slug>]`.**
-  The slug is optional: with none, the command seeds the worktree it runs in, the prime included.
-  `ideengine.SeedTask` becomes `Seed`.
-  `lym ide open` still requires a slug.
+  With no slug it seeds the worktree `Location.WorktreeName` names; with a slug it behaves as before, and the prime's name is accepted as one.
+  The help names the prime as well as task worktrees.
+  `lym ide open` keeps its required slug and `lym fabric clone` stays IDE-free.
+- **Beam colour.**
+  A beam project carries a new board field, `beam_color`.
+  `lym beam create` asks the owner write to record it, picked from the palette less green and the colours other open beams hold.
+  Re-running `lym beam create` on a beam recorded here with no colour records one.
+- **Beam workspace file.**
+  `RegenerateHubWorkspace` splices each beam's own `.vscode/settings.json` into its `.code-workspace` file when it exists, and the prime's otherwise, so the beam's file no longer overrides it with the prime's green and title.
+  An unreadable beam settings file falls back to the prime's for that beam and leaves the other beams' files and the stale-file removal running.
 
 ## Design decisions
 
-- The beam colour lives on the board rather than in a file on the machine, so every machine shows the same colour for a beam.
-- `lym beam create` picks a beam's colour only once. Until a beam made before this change gets one, the IDE picks a colour for it each time it opens and records none.
-- Rewriting lym's own keys in an existing `settings.json` replaces the old write-once rule. Without it, the prime and every worktree seeded earlier would keep the old green and title until the operator deleted the file.
-  The cost is that a rewritten file loses its comments, and an operator's own title-bar colour is replaced at the next seed.
-- The prime-name log-level split (`primeResolveLogLevel` and the `spawnTarget` enum) is removed.
-  When the prime's name cannot be resolved, every worktree's colours are affected, not just a task's, so the failure now always logs at Warn.
+- **`beam_color` lives on the board, set only by `boardengine.SetOwners`.**
+  The board is the one record every machine shares, so the colour is the same at every open.
+  The request's `BeamColor` function picks it inside the board write lock, so two concurrent `lym beam create` runs cannot take one colour.
+  It is not an upsert key: `normalizeTask` drops it from any entry that is not a beam project, and the `lym board upsert` help and the `UpsertPayloadKeys` comment name it as output-only.
+  Board files written by an older binary keep it as an unknown key and round-trip it.
+- **A beam with no recorded colour reads one picked as `lym beam create` would, without recording it.**
+  The colour can change once, when it is recorded.
+- **Siblings come from the settings files on disk**, with no extra geometry read.
+  A task's parent is read only through `hubgeom.ParentOf`.
+  An unreadable board or a failing `ParentOf` reads the worktree as a task under the prime, with a warning.
+- **lym owns its keys in an existing `settings.json`.**
+  The writer creates the file as before; in an existing one it rewrites only the title-bar and activity-bar keys under `workbench.colorCustomizations` and `window.title`, keeping every other key.
+  A file that does not decode as JSONC is left byte-identical, with a warning.
+  Comments in a rewritten file are lost; files lym wrote carry none.
+  Without this, the prime and every earlier-seeded worktree would keep the old colour and title.
+- **An operator's own colour in these keys is replaced at the next seed or spawn**, since lym assigns every worktree's colour.
+- The status-bar and border keys are never written, as the status bar loses its background and the active border is not drawn in an unfocused window.
 
-## Tests
+Docs updated in the touched packages' `doc.go`, `docs/overview.md`'s Seed-IDE line and the `seed_ide_command` comment in `internal/battenshed/template.yaml`.
 
-- `internal/vscode`: tests for both pickers, the sibling scan, `Foreground`, and the full set of colour keys in a new and in an existing `settings.json`.
-- `internal/ideengine`: `look_test.go` covers `lookFor` over a hub of plain directories, for the prime, a beam with a colour, a beam without one, tasks under each, and the title with and without a shortname.
-- The ide spawn integration checks are updated for the rewritten settings.
-- `internal/boardengine`: tests that the owner write records the colour, passes the other open beams' colours to the picker and keeps an existing colour; that load drops `beam_color` from an entry that is not a beam; and that `ParseOwners` reads the field.
-- `internal/beamcli`: a test that a beam with no colour runs the owner step again.
-- `internal/fabricengine`: a test that a beam's workspace file uses the beam's own settings, and the prime's when the beam has none.
-- `internal/idecli`: a test that `lym ide seed` with no slug run in the prime seeds the prime.
+## To check by hand
+
+Not run: a real VS Code window.
+Seed a prime, a beam and tasks under each, open them, and look at the title bar, activity bar, text colour and window title, focused and unfocused.
+Also run `lym ide seed` with no slug from the prime and from a task.
+
+The review of this change ended without converging; check each of these findings by hand:
+
+- `internal/fabricengine/doc.go` (the hub workspace section): the doc must say a beam's file splices the beam's own settings, with the prime-only sentence limited to the hub file.
+- `internal/boardengine/replay.go:57` and `task.go:279`: `beam_color` must survive a replayed commit and be dropped from a non-beam entry, each pinned by a test.
+- `internal/fabricengine/hubworkspace.go:135-142`: one beam with unreadable settings must not abort the regeneration of the others.
+- `internal/boardengine/store.go:456-458`: `beam_color` in `lym board get` output must be documented as output-only for `lym board upsert`, with a key test.
+- `internal/ideengine/spawn.go` (`lookFor`): the unreadable-board and failing-`ParentOf` fallbacks need tests.
+- `internal/beamcli/create.go:164`: a test must pin that `lym beam create` passes the colour picker.
+- `internal/beamcli/doc.go:22`: create step 2 must mention the colour and the re-run for a beam with none.
