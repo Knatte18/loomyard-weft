@@ -1,6 +1,6 @@
 # Comment lint ignores a legacy wrapped paragraph changed only by a word rename
 
-`comment-lint-rename` · Task · enhancement, loom · running · Drift-Verify
+`comment-lint-rename` · Task · enhancement, loom · running · Code-Bouncer
 
 ## Comment lint flags every line break of a legacy wrapped paragraph after a pure word rename (was note `comment-lint-rename-breaks`)
 

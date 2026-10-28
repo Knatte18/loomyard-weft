@@ -45,7 +45,7 @@ Held by a run; its scope is locked until the run ends.
 | T7 | **lym loom resume names prior work and honours a recorded wait decision** | [`resume-fixes`](design-resume-fixes.md) | darn | Darn-Write | neve | 16m<br>8m | loom, shed |
 | T8 | **Webster recovery has a way forward, and its audit accepts a sanctioned gate test** | [`webster-recovery`](design-webster-recovery.md) | darn | Darn-Write | neve | 15m<br>8m | webster |
 | T9 | **Burler fork audit reads a listing git branch as read-only** | [`fork-audit-branch-list`](design-fork-audit-branch-list.md) | darn | Code-Burler-Review | neve | 16m<br>8m | burler |
-| T10 | **Comment lint ignores a legacy wrapped paragraph changed only by a word rename** | [`comment-lint-rename`](design-comment-lint-rename.md) | darn | Drift-Verify | neve | 15m<br>8m | loom |
+| T10 | **Comment lint ignores a legacy wrapped paragraph changed only by a word rename** | [`comment-lint-rename`](design-comment-lint-rename.md) | darn | Code-Bouncer | neve | 15m<br>8m | loom |
 | T11 | **A racing async push reports no divergence that is already gone** | [`async-push-race`](design-async-push-race.md) | darn | Darn-Write | neve | 15m<br>8m | fabric |
 
 ### Ready (0)
