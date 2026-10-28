@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Bouncer",
+  "current_producer": "Code-Burler-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Bouncer",
-    "last": "Drift-Verify → skipped",
+    "now": "Code-Burler-Review",
+    "last": "Code-Bouncer → bounced to Code-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -80,6 +80,13 @@
       "output": "",
       "at": "2026-10-28T12:04:47Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Code-Bouncer",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-28T12:05:05Z",
+      "routed_to": "Code-Burler-Review"
     }
   ],
   "product": {
