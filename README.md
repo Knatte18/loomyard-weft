@@ -56,11 +56,11 @@ Waits only on Running, Ready or Draft entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **Stencil and system-prompt sentences that batch independent calls and edits**<br>• The turn audit sentences per heavy role, plus one shuttle-appended system-prompt sentence for every Claude agent | [`turn-batching`](design-turn-batching.md) | darn | `creel-hook-post`, `validator-checks`, `review-setup-tuning` | 1h<br>1h | stencil, shuttle |
 
-## Notes (44)
+## Notes (45)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Bugs (10)
+### Bugs (11)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -74,6 +74,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B8 |  | **Lingering MSBuild reuse nodes exhaust the user's task limit during .NET runs** | [`msbuild-node-reuse-task-limit`](design-msbuild-node-reuse-task-limit.md) | 0m<br>0m | shuttle, gate, dotnet, batten |
 | B9 |  | **Verify-gate findings log tail shows only passing tests, hiding the failure** | [`verify-findings-show-failures`](design-verify-findings-show-failures.md) | 0m<br>0m | loom, gate |
 | B10 |  | **A racing async push reports a divergence that is already gone** | [`async-push-race-false-divergence`](design-async-push-race-false-divergence.md) | 0m<br>0m | fabric |
+| B11 |  | **webster recovery way-forward is circular: recover-batch points to accept-audit, which refuses; reset is refused while run.lock is held** | [`webster-recovery-circular`](design-webster-recovery-circular.md) | 0m<br>0m | webster |
 
 ### Enhancements (17)
 
