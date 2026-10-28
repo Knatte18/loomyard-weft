@@ -8,8 +8,8 @@
 - `internal/configsync#TestReconcile_MovesKeysAcrossModules`
 
 **Create:**
-- `plan:internal/lenses#emphasisLineGaps` -> `func emphasisLineGaps(lensTexts map[string]string, exempt map[string]bool) []string`
-- `plan:internal/lenses#TestTemplateChecks_FlagBrokenTemplates` -> `func TestTemplateChecks_FlagBrokenTemplates(t *testing.T)`
+- `internal/lenses#emphasisLineGaps`
+- `internal/lenses#TestTemplateChecks_FlagBrokenTemplates`
 
 **Uses:**
 - `internal/lenses#loadTemplateConfig`
