@@ -1,0 +1,11 @@
+{
+  "verdict": "resume",
+  "reason": "The Darn-Write chair (session 119e6b74) died with process-gone at 10:38:52 after running from 10:29:52. Just before, at 10:38:42, tmux could not be forked (fork/exec /usr/bin/tmux: resource temporarily unavailable), and the host shell also reports 'Cannot fork' when a Bash call runs, so the machine is out of process or fork capacity. That is an environment fault, not a defect in the writer's work, and a plain re-run of Darn-Write settles it once fork capacity is back. Not verified that it has cleared; if the re-run dies the same way, the next stop is a repeat and should go to hand-back.",
+  "question": "",
+  "goto": "Darn-Write",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/hub-pull-verb/_lym/shed/hub-pull-verb/tackler/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/hub-pull-verb/_lym/shed/hub-pull-verb/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": ""
+}
