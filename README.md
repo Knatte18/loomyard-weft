@@ -23,19 +23,13 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent<br>• `profile: solid` | [`creel-agents`](design-creel-agents.md) | loom | Plan-Burler-Review | neve | 13d<br>1h | creel, shuttle, loom, stencil, report |
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
-
-### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Codex code-review bench: the decision record as yardstick**<br>• Two Codex runs: one added reading line naming the decision record and acceptance criteria as the yardstick<br>• `profile: docs` | [`codex-review-yardstick`](design-codex-review-yardstick.md) | darn |  | 0m<br>0m | shuttle, codex |
+| T1 | **Codex code-review bench: the decision record as yardstick**<br>• Two Codex runs: one added reading line naming the decision record and acceptance criteria as the yardstick<br>• `profile: docs` | [`codex-review-yardstick`](design-codex-review-yardstick.md) | darn |  | 0m<br>0m | shuttle, codex |
 
 ## Notes (26)
 

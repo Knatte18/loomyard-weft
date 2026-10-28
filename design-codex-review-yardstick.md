@@ -1,6 +1,6 @@
 # Codex code-review bench: the decision record as yardstick
 
-`codex-review-yardstick` · Task · enhancement, shuttle, codex · draft
+`codex-review-yardstick` · Task · enhancement, shuttle, codex
 
 ## Question
 
