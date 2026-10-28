@@ -45,7 +45,7 @@ Held by a run; its scope is locked until the run ends.
 | T6 | **A transient fork EAGAIN or died tmux session does not end a loom run hard**<br>• `profile: solid` | [`transient-halt-recovery`](design-transient-halt-recovery.md) | darn | Darn-Write | neve | 25m<br>17m | loom, shed, shuttle, reed, fabric |
 | T7 | **lym loom resume names prior work and honours a recorded wait decision** | [`resume-fixes`](design-resume-fixes.md) | darn | Code-Burler-Fix | neve | 25m<br>17m | loom, shed |
 | T8 | **Webster recovery has a way forward, and its audit accepts a sanctioned gate test** | [`webster-recovery`](design-webster-recovery.md) | darn | Darn-Write | neve | 24m<br>17m | webster |
-| T9 | **Burler fork audit reads a listing git branch as read-only** | [`fork-audit-branch-list`](design-fork-audit-branch-list.md) | darn | PR-Review | neve | 25m<br>17m | burler |
+| T9 | **Burler fork audit reads a listing git branch as read-only** | [`fork-audit-branch-list`](design-fork-audit-branch-list.md) | darn | Finalize | neve | 25m<br>17m | burler |
 | T10 | **Comment lint ignores a legacy wrapped paragraph changed only by a word rename** | [`comment-lint-rename`](design-comment-lint-rename.md) | darn | Finalize | neve | 24m<br>17m | loom |
 | T11 | **A racing async push reports no divergence that is already gone** | [`async-push-race`](design-async-push-race.md) | darn | Darn-Write | neve | 24m<br>17m | fabric |
 
