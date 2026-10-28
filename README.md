@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-28 07:34 UTC; every age below is as of then.
+Rendered 2026-10-28 07:35 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -32,19 +32,13 @@ grouping
 
 Concrete and claimable; only a task can run.
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
-
-### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Spike: which hook channels deliver creel posts and show them to the operator, Claude and Codex**<br>• One run each of PostToolUse systemMessage, Stop block, asyncRewake when idle, MessageDisplay, and Codex post_tool_use, with pane captures<br>• `profile: docs` | [`creel-hook-channels-spike`](design-creel-hook-channels-spike.md) | darn |  | 0m<br>0m | creel, claude, codex |
+| T1 | **Spike: which hook channels deliver creel posts and show them to the operator, Claude and Codex**<br>• One run each of PostToolUse systemMessage, Stop block, asyncRewake when idle, MessageDisplay, and Codex post_tool_use, with pane captures<br>• `profile: docs` | [`creel-hook-channels-spike`](design-creel-hook-channels-spike.md) | darn |  | 0m<br>0m | creel, claude, codex |
 
 ## Notes (41)
 
