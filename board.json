@@ -707,7 +707,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #897](https://github.com/Knatte18/loomyard/issues/897).\n\n## Seen\n\nOn 2026-10-28 the orch watcher's `/compact` cycle inject into the idle orch strand `ly:orch` was typed but never submitted.\nThe orch had written its note and ended its turn; the session was idle.\n`lym creel log --since 2026-10-28T13:35:00Z` shows:\n\n- 13:44:05.80 `posted` inject #107, command `compact`, from `ly:ORCHWATCH`.\n- 13:44:05.93 `sending` #107.\n- 13:44:25.52 `unconfirmed` #107: the send answered not landed, so creel never retypes it.\n- 13:44:43.53 `posted` inject #108, command `color`.\n- 13:44:43.65 `stalled`, reason `draft`: the `/compact` text sat in the input box unsent.\n\nThe cycle stalled until the operator submitted `/compact` by hand.\n\n## Suspected cause\n\nUnconfirmed: `creel-hook-post` (161a4a7f) had been deployed about twenty minutes earlier.\nIt added an `asyncRewake` `Stop` entry, `lym creel hook-wait claude`, that stays open while the session is idle.\nThe typed line or its Enter may race that hook, or the pane may not read as ready for the verified send while it runs.\n\n## Workaround\n\nThe operator submits the stuck `/compact` draft by hand.\n\n## Expected\n\nA cycle inject into an idle orch is submitted, or an unconfirmed send whose text sits as a draft is completed or cleared and retried, so the cycle never hangs on a draft.",
-      "status": "running · Code-Burler-Review",
+      "status": "running · Code-Burler-Fix",
       "created": "2026-10-28T13:50:29Z",
       "revised": "2026-10-28T13:50:43Z"
     },
