@@ -1,11 +1,11 @@
 {
-  "current_producer": "Drift-Await",
+  "current_producer": "Webster",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Drift-Await",
-    "last": "Plan-Bouncer → done",
+    "now": "Webster",
+    "last": "Drift-Await → skipped",
     "wait": ""
   },
   "history": [
@@ -204,6 +204,13 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYMHUB/review-setup-tuning/_lym/reviews/plan/round-1-bouncer-ledger.md",
       "at": "2026-10-28T11:19:30Z"
+    },
+    {
+      "producer": "Drift-Await",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-10-28T11:19:30Z",
+      "reason": "drift.enabled = false"
     }
   ],
   "product": {
