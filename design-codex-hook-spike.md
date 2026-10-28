@@ -1,6 +1,6 @@
 # Codex hook delivery spike
 
-`codex-hook-spike` · Task · research, codex, creel
+`codex-hook-spike` · Task · research, codex, creel · running · Worktree-Create
 
 ## Goal
 
