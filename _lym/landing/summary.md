@@ -1,59 +1,58 @@
 # Shuttle reads activity and operator input from Claude Code hooks
 
-Shuttle guessed two things it can read from Claude Code hooks instead.
-`ReadAgentActivity` skipped a running run whose waiter process had died, so batten's idle notice could say "no agent activity readable" while the agent worked.
-When the tackler re-spawned a row's session, an instruction the operator had typed into the old pane was lost, because the new session started from the row's prompt alone.
-This change adds an activity stamp hooks write, reads running runs whatever their waiter pid says, and carries the operator's typed instructions over into a re-spawned session's prompt.
+A working agent no longer reads as "no agent activity readable", and an instruction the operator typed into a worker's pane survives a re-spawn of that row's session.
+Shuttle took both from guesses (a waiter pid, the row's prompt alone) that failed.
+Claude Code hooks now supply the signals.
 
 ## What changes
 
-- `claudeengine`: every run's settings carry a `PostToolUse`, a `PreCompact` and a `PostCompact` hook that run `touch <stamp>; true`.
-  The stamp is the file `shuttleengine.ActivityStampFileName` names, beside the run's events file.
-  A tool call, a fork's included, and a compaction now move the stamp without growing the events file.
-  In a hub, creel's mail hook stays on `PostToolUse` as a second entry after the stamp.
-- `shuttleengine.ReadAgentActivity`: `LastActivity` is the newest of the transcript reading, the events-file reading and the stamp's modification time.
-  A run whose record reads running is read even when its recorded waiter pid is gone.
-  Such a run still logs its waiterless episode, and its reading carries its activity only: its API error and usage limit read zero, so batten sends no revive or usage-limit notice to a session no process waits on.
-- `shuttleengine` sends: every verified send into a run with a directory appends the text it types, as one JSON string line, to the run's `sent-texts.jsonl` before typing.
-- `SessionSignal` gains `Instruction`.
-  Claude's `UserPromptSubmit` sets it to the trimmed `prompt`, and leaves it empty for a `<task-notification>` prompt Claude Code submits itself and for a slash command.
-- `shuttleengine` start: the run record gains `roleKey`, which is the spec's name override or else its role, and `carriedInstructions`.
-  Before its orphan sweep, a start finds the newest earlier run with the same role key.
-  If that run is unfinished, meaning its record reads stopped, died or timeout, or reads running with its waiter gone, the start collects its operator instructions:
-  the instructions of its turn starts past the prompt offset, skipping the first turn start, which is the prompt itself, and skipping every text in its `sent-texts.jsonl`.
-  It adds the instructions that run had carried itself, drops repeats, and appends the result to the new prompt under `## Operator instructions carried over`.
-  The new record stores them as its own carried instructions, and the start logs one Warn line and sends the runner's notifier one line that quotes each instruction.
-- `doc.go` of both packages describe the stamp, the waiterless reading, the carry-over and the two signals left out.
+- **Activity stamp.**
+  Every Claude run's settings carry a `PostToolUse`, a `PreCompact` and a `PostCompact` hook that each touch one file in the run directory.
+  The file's modification time is the stamp and no payload is written, so the events file does not grow.
+  `PostToolUse` fires for forks too, so a working fork moves the stamp, and a compaction counts as activity.
+  In a hub the creel mail hook stays a second command beside the stamp on `PostToolUse`.
+- **Activity reader.**
+  `readRunActivity` takes the newest of the transcript reading, the events-file reading and the stamp as `LastActivity`.
+  `ReadAgentActivity` reads every run whose record reads running, whatever its waiter pid says.
+  A run whose waiter is gone still logs its waiterless episode, and its reading carries `LastActivity` only; its API-error and usage-limit parts read zero, so no revive or usage-limit notice is aimed at a session no process waits on.
+- **Operator input.**
+  Shuttle appends the text of every verified send into a run to a sent-texts file in the run directory, before typing it.
+  `claudeengine` now passes a `UserPromptSubmit` prompt's text on as an instruction, left empty for a `<task-notification>` line and for a slash command.
+  A run's operator instructions are its turn-start instructions past the prompt offset, minus the first (the run's prompt), minus every text in the sent-texts file.
+- **Carry-over on re-spawn.**
+  A run record keeps its role key (the spec's name override, else its role) and the instructions it carried over.
+  At start, before the orphan sweep, shuttle finds the newest run of the same role key that reads stopped, died or timeout, or running with its waiter gone.
+  That run's carried and operator instructions, without repeats, are appended to the new prompt as one block and recorded in the new run's record, so a second re-spawn carries them again.
+  The runner's notifier, when set, gets one line naming the new strand and the instructions; the line is also logged at Warn.
+- Docs: `shuttleengine/doc.go`, `claudeengine/doc.go` and `battenshed/doc.go` describe the above.
 
 ## Design decisions
 
-- The stamp is a file's modification time, not a line in the events file.
-  `PostToolUse` payloads carry tool output, and the events file is parsed whole on every poll.
-  A stamp line with no payload would also be held back by the session-signal parser as an unpaired stamp.
-- The waiter pid is no longer the activity source.
-  Why the waiter dies is still unconfirmed: the hub's logs hold no waiterless Warn since 450bc6ff1 added it.
-  With the stamp, the activity reading no longer needs the pid to be alive.
-  The pid still decides whether a reading carries API-error and usage-limit parts.
-- A predecessor is matched by role key rather than strand name.
-  Reed numbers a role against the strands it holds, and the new strand's name is formed only after the prompt is written.
-  Only the newest run of the key counts, and only when it is unfinished.
-  A done run answered its instructions, and a running run with a live waiter is a parallel run rather than a predecessor.
-- The carried instructions are kept in the new record, so a second re-spawn carries them again even after the sweep removes the first run's directory.
-- `SubagentStart` and `SubagentStop` are left out.
-  The `PostToolUse` stamp already moves for every tool call a fork makes, and the existing transcript reading covers a fork held in one long call.
-  A start with no stop would read a crashed fork active without bound, and `SubagentStop` also fires for the main agent's own turn segments.
-- `PreCompact` and `PostCompact` only touch the stamp.
-  The compaction itself is already recorded for the strand by the `SessionStart` hook's `compact` source.
-- Claude Code's auto-continue setting, `autoContinueAtUsageLimit` in 2.1.312, is left unset.
-  The landed usage-limit wake already wakes the orch after the reset to revive each run.
-  A session that continued by itself would race that revive, and no hook tells shuttle it resumed.
+- The stamp is a file time, not an events-file line: a hook that writes nothing adds no growth and no parse cost.
+- The waiter pid is dropped as an activity source rather than debugged.
+  The root cause of the dead waiter is unconfirmed, and no waiterless warning has appeared in the hub's logs since 450bc6ff1.
+  A run whose agent is gone ages like any quiet run.
+- Shuttle records its own sends because the hook payload cannot tell a parent's send or a gate re-prompt from an operator's typed instruction.
+- Carry-over adds text to a prompt and starts nothing.
+  A done predecessor, a running one with a live waiter, an empty role key and a run directory an earlier sweep removed carry nothing over.
+- Hook names, the `<task-notification>` marker and the slash-command rule stay in `claudeengine`, per `PATTERN-shuttle-provider-seam`.
+  The new record fields are optional, so an older record reads as no role key and no carried instructions.
 
-## To check
+## Signals left out
 
-- The re-spawn path was not run live.
-  The new tier0 tests drive `Runner.Start` against a seeded predecessor and a fake engine, covering stopped, waiterless, done, live, other-role and role-less predecessors.
-- A predecessor's directory removed by another run's sweep between the stop and the re-spawn carries nothing.
-  The sweep's age guard, twice the startup timeout, keeps that window short.
-- An instruction the operator typed with the exact text of one shuttle sent to the same run is not carried over.
-- `PreCompact` and `PostCompact` are taken as accepted hook names because the installed Claude Code 2.1.312 binary names both.
-  No live compaction was observed moving the stamp.
+- `SubagentStart` and `SubagentStop`: the `PostToolUse` stamp already moves for every tool call a fork makes, and a fork held in one long call is read through its transcript's pending call.
+  A start without a stop would read a crashed fork active with no bound, and `SubagentStop` also fires for the main agent's turn segments.
+- Claude Code's auto-continue-at-usage-limit setting (`autoContinueAtUsageLimit` in 2.1.312): shuttle leaves it unset.
+  The usage-limit wake already revives every run after the reset, and a session continuing by itself would race that revive with no hook to tell shuttle it resumed.
+
+## Known limits
+
+- A run directory swept by another run's start between the stop and the re-spawn loses its instructions; the sweep's age guard of twice the startup timeout keeps that window short.
+- An operator instruction typed with text identical to one shuttle sent to the same run is not carried over.
+
+## To check by hand
+
+- Not run: a real Claude Code session.
+  Confirm that `PostToolUse` fires for a fork's tool calls, and that `PreCompact` and `PostCompact` are accepted by the installed Claude Code.
+- Not run: a tackler re-spawn in a live hub.
+  Type an instruction into a worker's pane, stop the run, and check the new session's prompt and the notice.
