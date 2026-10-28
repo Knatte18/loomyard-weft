@@ -177,6 +177,12 @@ Decision: Amend D10 and its Constraint: the refusal of a forward of a chase name
 
 Rationale: Store.Forward refuses a message that is not unread (internal/creelengine/verbs.go), and a chase goes only to the holder of a read message, so D10's second way forward and the reaching test cannot be reached. Plan-Burler-Fix round 1 finding F5, taken as written.
 
+### Added after Discussion (parent, 2026-10-28): A chaser's first tick charges (review F2, Plan round 2)
+
+Decision: chaser.run probes the holder once when it starts and counts that reading as the previous tick's, so the first tick, one agedPersistInterval later, charges running time. Chase 1 then lands at the 15th tick after the chaser starts, and a step one interval after a restart lands at the tick that completes that interval. Card 7's Intent, the Shared Decision chase-clock-cadence and the TestScheduler_Chases rows name these tick counts.
+
+Rationale: Review finding F2 of Plan round 2: the plan left the first tick open, so the 15-minute row could land at 15 or 16 ticks. Charging from a start probe makes a stated interval of running time equal the same number of ticks, with no off-by-one to explain.
+
 ## Constraints
 
 - `PATTERN-parent-directive`: the directive stays the one place a spawned role learns how to ask; the orch stencils stay exempt.
