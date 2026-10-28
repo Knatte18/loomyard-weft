@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-28 12:06 UTC; every age below is as of then.
+Rendered 2026-10-28 12:07 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -39,13 +39,13 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Creel delivers every post to a Claude strand through hooks, visibly and in full**<br>• PostToolUse, Stop and asyncRewake hooks carry posts as fast as possible; shuttle appends a trust and reply sentence to the system prompt | [`creel-hook-post`](design-creel-hook-post.md) | loom | Parent-Align | neve | 5d<br>2h | creel, shuttle, claude |
-| T2 | **Gate and agent runs survive transient task-limit pressure and run in the anchor**<br>• `profile: solid` | [`gate-robustness`](design-gate-robustness.md) | darn | Darn-Write | neve | 33m<br>25m | gate, shuttle, dotnet, batten, loom |
+| T2 | **Gate and agent runs survive transient task-limit pressure and run in the anchor**<br>• `profile: solid` | [`gate-robustness`](design-gate-robustness.md) | darn | Darn-Write | neve | 33m<br>26m | gate, shuttle, dotnet, batten, loom |
 | T3 | **Codex hook delivery spike**<br>• Six Codex runs on Luna low: can Codex take creel posts through hooks like Claude does<br>• `profile: docs` | [`codex-hook-spike`](design-codex-hook-spike.md) | darn | Darn-Write | neve | 11m<br>11m | codex, creel |
 | T4 | **Machine checks in validate-discussion and validate-plan for recurring review findings**<br>• Citation and acceptance checks for the decision record; seam-test, tier-tag and doc.go checks for plan cards<br>• `profile: solid` | [`validator-checks`](design-validator-checks.md) | loom | Plan-Burler-Review | neve | 1h<br>1h | loom, stencil |
-| T6 | **A transient fork EAGAIN or died tmux session does not end a loom run hard**<br>• `profile: solid` | [`transient-halt-recovery`](design-transient-halt-recovery.md) | darn | Darn-Write | neve | 33m<br>25m | loom, shed, shuttle, reed, fabric |
-| T7 | **lym loom resume names prior work and honours a recorded wait decision** | [`resume-fixes`](design-resume-fixes.md) | darn | Code-Burler-Fix | neve | 33m<br>25m | loom, shed |
-| T8 | **Webster recovery has a way forward, and its audit accepts a sanctioned gate test** | [`webster-recovery`](design-webster-recovery.md) | darn | Code-Burler-Review | neve | 32m<br>25m | webster |
-| T11 | **A racing async push reports no divergence that is already gone** | [`async-push-race`](design-async-push-race.md) | darn | Darn-Write | neve | 32m<br>25m | fabric |
+| T6 | **A transient fork EAGAIN or died tmux session does not end a loom run hard**<br>• `profile: solid` | [`transient-halt-recovery`](design-transient-halt-recovery.md) | darn | Darn-Write | neve | 33m<br>26m | loom, shed, shuttle, reed, fabric |
+| T7 | **lym loom resume names prior work and honours a recorded wait decision** | [`resume-fixes`](design-resume-fixes.md) | darn | Code-Burler-Fix | neve | 33m<br>26m | loom, shed |
+| T8 | **Webster recovery has a way forward, and its audit accepts a sanctioned gate test** | [`webster-recovery`](design-webster-recovery.md) | darn | Code-Burler-Fix | neve | 33m<br>26m | webster |
+| T11 | **A racing async push reports no divergence that is already gone** | [`async-push-race`](design-async-push-race.md) | darn | Darn-Write | neve | 33m<br>26m | fabric |
 
 ### Ready (0)
 
