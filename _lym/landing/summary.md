@@ -1,54 +1,46 @@
-# Render one board file per project, research notes first
+# Board: render one file per project, research notes first
 
-The board no longer renders every project, task and note of the hub into one README.md.
-README.md is now the root project's file, and every project gets a `project-<slug>.md` beside it.
+The board rendered one `README.md` holding every project, task and note of the hub.
+After the `audit` label became `research`, the research notes moved from first under Notes to last, under the heading `Researchs`.
+This change renders one file per project, puts research first and names dependencies by handle.
 
-## What changes in the rendered board
+## What changes
 
-- **One file per project.**
-  Every project entry, open or done, renders to `project-<slug>.md`.
-  README.md holds the entries whose project is empty; a project file holds the entries whose project is that project.
-  Handles, layers, the After cells and the Owner column still read the whole board, so a task waiting on another project's task stands in the same layer as before, and a file's handles have gaps.
-- **Projects section.**
-  Each file opens its body with `## Projects (n)`, one bullet per open project directly under it: the handle and title linked to its file, then its brief.
-  Child projects follow the parent's `order` key, then handle; README.md lists them by handle.
-  The lead line "Groups of entries; a beam spawns its members from its own worktree." is gone, and so is the per-project member table with its Standing column, since a project's members now render in full in its own file.
-  A done project is a row of its parent file's Done table, with its title linked to its file.
-- **Project file header.**
-  A project file opens with `# <handle> <title>`, the render time, `Under:` linking up to its parent's file (README.md for a root-level project), the brief, `beam` or `grouping`, and a beam's effective owner.
-- **Research first.**
-  Notes subsections run `research` first when it is a configured type, then the other types in board.yaml order, then Other.
-  The research heading reads `Research`, not `Researchs`.
-- **After by handle.**
-  The After cell names each open dependency by handle, one per line (`<br>`), in depends_on order.
-  A dependency the board holds no handle for, or no longer holds, shows as its slug.
+- `README.md` is the root project's file: the projects with no parent as linked bullets with their briefs, then every task and note that belongs to no project.
+- Every project, open or done, renders to `project-<slug>.md` beside `README.md`.
+  It opens with the project's handle and title, the render time, a link up to its parent's file, the brief, `beam` or `grouping`, and a beam's effective owner.
+  It then holds the same sections as `README.md` for its own entries, and a nested project is listed in its parent's file.
+- The split is rendering only: entries stay in the one store, and handles and layers stay hub-wide.
+  A task in a project that waits on a root task stands in the same layer it did, and a project's file shows gaps in its handle numbering.
+- The Projects section loses its lead line, its member table and its Standing column.
+  A done project is a Done row of its parent's file, its title linked to its file.
+- The After column names open dependencies by handle, one per line within the cell, in `depends_on` order.
+  A dependency that names no board entry shows its slug as a code span.
+- Notes run `Research` first, when `research` is a configured type, then the other types in `board.yaml` order, then Other.
+  The heading is `Research`, not `Researchs`; a hub with no `research` type renders as before.
+- `internal/fabricengine` replays a board commit that touches a `project-<slug>.md` file by entry, like `README.md`.
+  Without it such a commit falls back to a git-level replay that conflicts on `board.json`, so every board write would break the records replay once project files exist.
 
-Removed project files are cleaned up by the existing render manifest, so a project that is pruned or renamed leaves no stale file behind.
-
-## Code
-
-- `internal/boardengine/render.go`: `Render` builds README.md and one file per project through `boardView.renderBoardFile`, replacing `renderReadme` and `renderProjects`.
-  `boardView` holds the hub-wide facts each file reads: entries by slug and effective owners.
-  `notesTypeOrder` and `typeHeading` handle the research ordering and heading.
-  `afterCell` replaces the slug list.
-  `standingCell`, `projectMembers`, `codeList` and the Member, Kind and Standing columns are removed.
-- `internal/boardengine/doc.go`: the `# README` section describes the per-project layout.
-- `internal/fabricengine/replay.go`: `isBoardOverview` recognises `project-<slug>.md` at the board root as a rendered overview beside README.md.
-  Without it, a board commit touching a project file was not board-only, fell back to a git-level replay and conflicted on board.json; the board re-renders every overview after a replay, so none names an entry change.
-  The Bolt paragraph of `internal/fabricengine/doc.go` names the new files.
+`internal/boardengine/doc.go` and `internal/fabricengine/doc.go` describe the new layout.
 
 ## Design decisions
 
-- The file prefix `project-` is a renderer constant, not a `board.yaml` key, so no hub base config changes.
-- Every project gets a file, done ones included, because prune keeps a done project while a member still names it, and those members need somewhere to render.
-- The research-first rule names the `research` type label in the renderer; a hub without that type renders its Notes in board.yaml order as before.
-- Design docs keep their `Depends on:` line by slug; only the board files' After cell switched to handles.
+- The file name is `project-<slug>.md` with the prefix a constant in `render.go`, so no `board.yaml` key is added.
+  The slug is unique and path-safe, and the render manifest drops the file of a removed project.
+- `fabricengine` cannot import `boardengine`, which imports it, so `boardProjectPrefix` repeats `projectFilePrefix`; a comment on each names the other.
+- `Render` stays pure, and the tests stay tier0 goldens in `render_test.go`.
+- The replay change falls outside the original scope, which listed only `boardengine` files; it was added to the scope as forced by the new file shape.
+- Links from outside the board to project sections of the old `README.md` break.
+  No external anchor is known to rely on them.
 
-## Tests
+## To check by hand
 
-- `TestRenderReadmeGolden`: the main fixture gains a research note, pinning Research before Bugs and Enhancements, and the After goldens switch to handles.
-  The projects row now pins README.md holding only root entries with linked project bullets and a linked done project, the full `project-ship.md` and nested `project-inner.md`, the child order from the `order` key, a multi-handle After cell across projects, and the full set of project files.
-  The lone-beam row pins the beam's owner in its own file.
-- `TestRenderToDiskManifestCleanup/ProjectRemoved`: a project's file is removed once the project leaves the board.
-- `TestSetOwners/CompetingWriteLosesToOrigins` covers the replay of a board commit that touches project files.
-- `TestRename_KeepsEntryRewritesDependentsAndReportsMentions` reads the renamed member from its project's file and pins the old project file's removal.
+Nothing was run by hand.
+A render against the real hub board is worth a look for the file set and links.
+The first two items were open when the review ended; the others were addressed by later commits, which are worth confirming.
+
+- `isBoardOverview` in `internal/fabricengine/replay.go` and its project-file handling are covered by a replay test, including rows where `project-.md`, `project-a/b.md` and `dir/project-x.md` are not overviews.
+- The replay change in `internal/fabricengine/replay.go` is outside the render scope; confirm it belongs in this change.
+- `TestRenderReadmeGolden` in `internal/boardengine/render_test.go` pins the After cell of a dependency that names no board entry.
+- `TestRenderReadmeGolden` pins a draft task in a project file, as its own Draft subsection after the Ready and layered tasks.
+- `boardProjectPrefix` in `internal/fabricengine/replay.go` and `projectFilePrefix` in `internal/boardengine/render.go` hold the same text.
