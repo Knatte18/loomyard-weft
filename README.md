@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-28 15:34 UTC; every age below is as of then.
+Rendered 2026-10-28 15:35 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -38,10 +38,10 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Board README: one rendered file per project, research notes first**<br>• Render one README file per project, research notes first, After by handle | [`board-readme-per-project`](design-board-readme-per-project.md) | darn | Code-Burler-Fix | neve | 3d<br>29m | board |
-| T2 | **No test is skipped by design**<br>• Windows-only tests count as skips on Linux, and TestBuildLoomShed_OutputShape skips on every machine | [`test-skips-os-tags`](design-test-skips-os-tags.md) | darn | Code-Bouncer | neve | 2d<br>29m | testkit, reed, loom, fabric, gate |
+| T1 | **Board README: one rendered file per project, research notes first**<br>• Render one README file per project, research notes first, After by handle | [`board-readme-per-project`](design-board-readme-per-project.md) | darn | Code-Burler-Fix | neve | 3d<br>30m | board |
+| T2 | **No test is skipped by design**<br>• Windows-only tests count as skips on Linux, and TestBuildLoomShed_OutputShape skips on every machine | [`test-skips-os-tags`](design-test-skips-os-tags.md) | darn | Code-Burler-Review | neve | 2d<br>30m | testkit, reed, loom, fabric, gate |
 | T4 | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent<br>• `profile: solid` | [`creel-agents`](design-creel-agents.md) | loom | Discussion-Burler-Review | neve | 13d<br>29m | creel, shuttle, loom, stencil, report |
-| T5 | **Bench: the forked Codex Astra fan as Code reviewer on two darn diffs**<br>• 4 codex exec runs at medium: 2 landed darn diffs, twice each, graded against the Claude Code-Review fan<br>• `profile: docs` | [`codex-code-review-bench`](design-codex-code-review-bench.md) | darn | Darn-Write | neve | 14m<br>14m | codex, burler |
+| T5 | **Bench: the forked Codex Astra fan as Code reviewer on two darn diffs**<br>• 4 codex exec runs at medium: 2 landed darn diffs, twice each, graded against the Claude Code-Review fan<br>• `profile: docs` | [`codex-code-review-bench`](design-codex-code-review-bench.md) | darn | Darn-Write | neve | 15m<br>15m | codex, burler |
 
 ### Ready (0)
 
@@ -74,7 +74,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 3w<br>1d | burler |
 | F2 | L | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lym-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 3w<br>1d | ide, fabric |
-| F3 |  | **Windows lym opens land tiled on the right KDE virtual desktop**<br>• Konsole and VS Code windows opened by lym placed by desktop and tile on KDE Plasma | [`kde-window-placement`](design-kde-window-placement.md) | 8m<br>8m | reed, ide, config |
+| F3 |  | **Windows lym opens land tiled on the right KDE virtual desktop**<br>• Konsole and VS Code windows opened by lym placed by desktop and tile on KDE Plasma | [`kde-window-placement`](design-kde-window-placement.md) | 9m<br>9m | reed, ide, config |
 | F5 |  | **Fabric's ordinary-monorepo verb surface**<br>• Against plain git, fabric still lacks log, show, branch, tag, stash, revert, restore, rm/mv, rebase, cherry-pick and blame | [`fabric-monorepo-verbs`](design-fabric-monorepo-verbs.md) | 3w<br>3w | fabric |
 | F6 |  | **Talk to the orch through Slack**<br>• A Slack relay so the operator can reach the orch from a phone where Claude's own app is not allowed | [`reed-slack-relay`](design-reed-slack-relay.md) | 3w<br> | reed |
 | F8 |  | **fabric: two-sided reset-to-SHA verb**<br>• The post-conclude undo the merge surface does not ship: reset to a warp SHA, resolve the paired weft SHA through the correspondence index, gate both sides | [`fabric-reset-to-sha`](design-fabric-reset-to-sha.md) | 3w<br>3w | fabric |
@@ -82,7 +82,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F12 |  | **Spawn audit log: every process lym starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | 2w<br>1d | reed, shuttle, config |
 | F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 2w<br>6h | webster |
 | F15 |  | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 13d<br>1d | reed, config, batten |
-| F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 12d<br>22m | burler, shed, orch, quarry, report |
+| F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 12d<br>23m | burler, shed, orch, quarry, report |
 | F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 5d<br>1d | loom, shed, batten, workspaces, burler |
 
 ### Researchs (5)
