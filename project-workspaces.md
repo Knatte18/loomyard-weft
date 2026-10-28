@@ -1,6 +1,6 @@
 # P1 Workspaces: beams, pairs from a parent pair, dobby
 
-Rendered 2026-10-28 17:17 UTC; every age below is as of then.
+Rendered 2026-10-28 17:18 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Beams that develop a project in their own worktree, driven by a dobby daemon
