@@ -1,6 +1,6 @@
 # Board README: one rendered file per project, research notes first
 
-`readme-per-project-files` · Note · enhancement, board
+`board-readme-per-project` · Task · enhancement, board · draft
 
 ## Seen (operator, 2026-10-25)
 
@@ -17,6 +17,6 @@ The notes are grouped by type label in file order, so after the `audit` label be
 - A task's After column names its dependencies by handle instead of by slug, one handle per line within the cell.
 - A draft task is not ready, so it never shows under Ready: drafts get a subsection of their own after the ready and layered tasks (built: `### Draft (n)` in the Tasks section, see `internal/boardengine/doc.go`).
 - README.md is the root project's file: the projects under root first, each linked with its short description, then every task and note that belongs to no other project.
-
+- No lead line reads as if every project were a beam: the Projects section's lead line, "Groups of entries; a beam spawns its members from its own worktree." (`projectsSection` in `internal/boardengine/render.go`), goes, since most projects are grouping only (from E5, operator 2026-10-25).
 
 The board README rendering is not regarded as production code (operator, 2026-10-27).
