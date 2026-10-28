@@ -1,16 +1,16 @@
 # Card 10 — The daemon rings an idle hook strand's waiter once per claimable set
 
 **Create:**
-- `plan:internal/creelengine#VerbHookWait` -> `const VerbHookWait = "hook-wait"`
-- `plan:internal/creelengine#OutcomeRing` -> `const OutcomeRing OutcomeKind = "ring"`
-- `plan:internal/creelengine#OutcomeSuperseded` -> `const OutcomeSuperseded OutcomeKind = "superseded"`
-- `plan:internal/creelengine#waitHook` -> `const waitHook waitKind = 3`
-- `plan:internal/creelengine#wakeMark` -> `type wakeMark struct`
-- `plan:internal/creelengine#Store.HookWait` -> `func (s *Store) HookWait(sender Sender) (*Waiter, error)`
-- `plan:internal/creelengine#Store.claimableLocked` -> `func (s *Store) claimableLocked(holder string) []*Message`
-- `plan:internal/creelengine#Store.resetStopBlocks` -> `func (s *Store) resetStopBlocks(strand string)`
-- `plan:internal/creelengine#worker.wakeHookStrand` -> `func (w *worker) wakeHookStrand(strand Strand, now time.Time) bool`
-- `plan:internal/creelengine_test#TestScheduler_HookWake` -> `func TestScheduler_HookWake(t *testing.T)`
+- `internal/creelengine#VerbHookWait`
+- `internal/creelengine#OutcomeRing`
+- `internal/creelengine#OutcomeSuperseded`
+- `internal/creelengine#waitHook`
+- `internal/creelengine#wakeMark`
+- `internal/creelengine#Store.HookWait`
+- `internal/creelengine#Store.claimableLocked`
+- `internal/creelengine#Store.resetStopBlocks`
+- `internal/creelengine#worker.wakeHookStrand`
+- `internal/creelengine_test#TestScheduler_HookWake`
 
 **Edit:**
 - `internal/creelengine#Store`
@@ -34,8 +34,8 @@
 - `internal/creelengine#Store.unreadLocked`
 - `internal/creelengine#daemon.awaitOutcome`
 - `internal/creelengine#Waiter`
-- `plan:internal/testkit/creelfake#HookStrand`
-- `plan:internal/testkit/creelfake#Delivery.SetTurn`
+- `internal/testkit/creelfake#HookStrand`
+- `internal/testkit/creelfake#Delivery.SetTurn`
 - `internal/creelengine_test#newEnv`
 - `internal/creelengine_test#newRig`
 

@@ -1,9 +1,9 @@
 # Card 7 — Shuttle's idle probe reports whether a turn is in progress
 
 **Create:**
-- `plan:internal/shuttleengine#guardedReadinessEngine` -> `type guardedReadinessEngine struct`
-- `plan:internal/shuttleengine#guardedReadinessEngine.RunningTurn` -> `func (e *guardedReadinessEngine) RunningTurn(capture string) bool`
-- `plan:internal/shuttleengine#guardedReadinessEngine.InterruptSettle` -> `func (e *guardedReadinessEngine) InterruptSettle() time.Duration`
+- `internal/shuttleengine#guardedReadinessEngine`
+- `internal/shuttleengine#guardedReadinessEngine.RunningTurn`
+- `internal/shuttleengine#guardedReadinessEngine.InterruptSettle`
 
 **Edit:**
 - `internal/shuttleengine#IdleProbe`

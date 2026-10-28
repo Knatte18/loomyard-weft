@@ -1,6 +1,6 @@
 {
   "runGuid": "61404ab4738278a1ccb89c03db90ef2e",
-  "planFingerprint": "71613767c6ac517cbe2d6ec88438afa9d9e8d30927eae51611034dfa688f12cd",
+  "planFingerprint": "94917c99f4bcb2d8d9f276f13901858935502f3ed9e801ff57725b23743f22f9",
   "planFileHashes": {
     "00-overview.md": "bec5478ec59a21eb9312c9c392d82207479100f2d178a315e21ef93f0977ceff",
     "01-reed-creel-hooks-mark.md": "e9adb7af6ef5abcee67441b373a5a5b1d757fb0d3581e7ffdc6ec6cd552e3d9b",
@@ -9,15 +9,15 @@
     "04-creel-line-cap.md": "3cb19f0cd58743bce9c6e964ee201f52755a7019895f7647f410abdeb5c69eb3",
     "05-loom-decision-notice-cap.md": "3e7c516dda1a443b6e7e8cc84a3facb346bd234a979f8718491e7a9342a971b1",
     "06-creel-stop-continuation-count.md": "f7cac7ee0ad9d168091c26d6a9d7450857daa5160573148db84e7016d70b7996",
-    "07-shuttle-idle-no-turn.md": "c2c43b3e693b60a062e559bfa42ec2055d81f30227434e8429ca03fe739b12da",
-    "08-creel-delivery-seam-fields.md": "c73e1e63394e7acfea5ca5719d0d63cb43e7c481b7ec9152c6979245b8d72ac1",
-    "09-creel-pane-path-by-engine.md": "9ab514f1a2536393c2d0ef4b323da844c928ef1224869a457fbdc05654a78c13",
-    "10-creel-hook-waiter-ring.md": "1cc58fcb6c0b4c8f47dd16dd9144ebf0bef5b08bf112fa0ea32daba93901e51c",
-    "11-creel-bell.md": "ee03dd2b47cb0aaec6ec41845d60b9348767ea30f533b7ff6b1a03754da2abb4",
+    "07-shuttle-idle-no-turn.md": "854ceff208a73fd86cd3c4691bdc1207eaf1debddbb2f40eee20b43173204af9",
+    "08-creel-delivery-seam-fields.md": "cc955230416a8d454fcb2c72f59f2213e073a7aba98d2cd98c92d9a155808b9f",
+    "09-creel-pane-path-by-engine.md": "0d4c41b1185766eac56b1b0d5d18bbcc7769a7b8523890d4b74addbb5abcc03b",
+    "10-creel-hook-waiter-ring.md": "4d98f68a90c6923abcf7d46dc4b7aedfd5f68c064f1bee4a7661e08f105bf050",
+    "11-creel-bell.md": "db9f530a7a9363b91e6889725e6311ce537258b9bd5d0afbcbc1e39017626c7c",
     "12-shuttle-hook-capability.md": "31b7444b2d5aa8f2a878d69eaeae57407c268ebde938a8df404cb71ff5e07f37",
-    "13-creel-hook-verbs.md": "0d93025097174739dd37cbdf52c9fedffe4e6e42ae04e4757745d57472ecd600",
+    "13-creel-hook-verbs.md": "dcf7c0dfdca8bebfdda8ebd42863362ec0de69b3b03e5bcf82f53c894458c7f5",
     "14-claude-creel-hooks-render.md": "5468febda39acb84f43e9d7fc4d3df396e2ce9cc4ae3671960ff5584290d0d3f",
-    "15-creel-post-interrupt.md": "ba05bbcb3b423b08bb9706e4112ea498194983ff5b0819f778ae54a55b4341ca",
+    "15-creel-post-interrupt.md": "b76e4235fc7b75393568121469474ed63f8abc913f3e35ab93f9d0fa3794dbf0",
     "16-claude-trust-sentence.md": "85520a0d09f171f7dd165fe773fb75b3ca2768d790770dc914fd7d848162a0be",
     "17-creel-hook-docs.md": "d77b6d990e983335cff1507cf84ab255e4ac24fa6d29b3185dbaf2e61351bded",
     "18-creel-hooks-llm-smoke.md": "6cbf1c76219ee1f21a624c96b5bd1f9d848ade9d2d2942f7b86cab3ecd1b731b"
@@ -382,7 +382,7 @@
       }
     }
   ],
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "bd45008b4eb72f58b98934b7a40e128e",
   "masterSessionId": "70f31af5-8b0a-4ef1-b1f5-35accab55fce",
   "masterEngine": "claude",
@@ -441,21 +441,43 @@
         "10-creel-hook-waiter-ring"
       ],
       "cardHashes": {
-        "07-shuttle-idle-no-turn": "c2c43b3e693b60a062e559bfa42ec2055d81f30227434e8429ca03fe739b12da",
-        "08-creel-delivery-seam-fields": "c73e1e63394e7acfea5ca5719d0d63cb43e7c481b7ec9152c6979245b8d72ac1",
-        "09-creel-pane-path-by-engine": "9ab514f1a2536393c2d0ef4b323da844c928ef1224869a457fbdc05654a78c13",
-        "10-creel-hook-waiter-ring": "1cc58fcb6c0b4c8f47dd16dd9144ebf0bef5b08bf112fa0ea32daba93901e51c"
+        "07-shuttle-idle-no-turn": "854ceff208a73fd86cd3c4691bdc1207eaf1debddbb2f40eee20b43173204af9",
+        "08-creel-delivery-seam-fields": "cc955230416a8d454fcb2c72f59f2213e073a7aba98d2cd98c92d9a155808b9f",
+        "09-creel-pane-path-by-engine": "0d4c41b1185766eac56b1b0d5d18bbcc7769a7b8523890d4b74addbb5abcc03b",
+        "10-creel-hook-waiter-ring": "4d98f68a90c6923abcf7d46dc4b7aedfd5f68c064f1bee4a7661e08f105bf050"
       },
       "startSha": "fe3e96ddd22ceec3cf0c3687c59a9bd238afc954",
       "kind": "fork",
       "spawnedAt": "2026-10-28T11:06:21Z",
       "sessionId": "70f31af5-8b0a-4ef1-b1f5-35accab55fce",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-shuttle-idle-no-turn",
+        "status": "done",
+        "head_sha": "72cb7106c4d64bc706307c040653bc86d72d23f6",
+        "deviations": [
+          "internal/creelcli/delivery.go",
+          "internal/creelcli/delivery_test.go",
+          "internal/creelengine/pool.go",
+          "internal/creelengine/verbs.go",
+          "internal/testkit/creelfake/creelfake.go"
+        ]
+      },
+      "cardShas": [
+        "72cb7106c4d64bc706307c040653bc86d72d23f6"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-creel-hook-post/70f31af5-8b0a-4ef1-b1f5-35accab55fce/subagents/agent-a08e1c0382227324a.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-creel-hook-post/70f31af5-8b0a-4ef1-b1f5-35accab55fce/subagents/agent-a08e1c0382227324a.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-creel-hook-post/70f31af5-8b0a-4ef1-b1f5-35accab55fce/subagents/agent-a75bda37e4086eddf.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-creel-hook-post/70f31af5-8b0a-4ef1-b1f5-35accab55fce/subagents/agent-a75bda37e4086eddf.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-creel-hook-post/70f31af5-8b0a-4ef1-b1f5-35accab55fce/subagents/agent-a08e1c0382227324a.jsonl"
   ]
 }

@@ -7,9 +7,9 @@
 - `plan:internal/creelengine#worker.typeBell` -> `func (w *worker) typeBell(strand Strand, ids []int64) bool`
 
 **Edit:**
-- `plan:internal/creelengine#wakeMark`
-- `plan:internal/creelengine#worker.wakeHookStrand`
-- `plan:internal/creelengine_test#TestScheduler_HookWake`
+- `internal/creelengine#wakeMark`
+- `internal/creelengine#worker.wakeHookStrand`
+- `internal/creelengine_test#TestScheduler_HookWake`
 - `internal/creelengine#Store`
 - `internal/creelengine#OpenStore`
 - `internal/creelengine#Waiter.Cancel`

@@ -1,9 +1,9 @@
 # Card 8 — The delivery seam tells a hook strand from a pane-mail strand and reads the turn
 
 **Create:**
-- `plan:internal/testkit/creelfake#HookStrand` -> `func HookStrand(name string) creelengine.Strand`
-- `plan:internal/testkit/creelfake#Delivery.SetTurn` -> `func (d *Delivery) SetTurn(name string, running bool, endedAt time.Time)`
-- `plan:internal/creelcli#seedReedStrands` -> `func seedReedStrands(t *testing.T, path string, strands []reedengine.Strand)`
+- `internal/testkit/creelfake#HookStrand`
+- `internal/testkit/creelfake#Delivery.SetTurn`
+- `internal/creelcli#seedReedStrands`
 
 **Edit:**
 - `internal/creelengine#Strand`
