@@ -1,6 +1,6 @@
 # Codex code-review bench: the decision record as yardstick
 
-`codex-review-yardstick` · Task · enhancement, shuttle, codex · running · Darn-Write
+`codex-review-yardstick` · Task · enhancement, shuttle, codex · running · Drift-Verify
 
 ## Question
 
