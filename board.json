@@ -852,6 +852,26 @@
       "body": "Imported from [issue #888](https://github.com/Knatte18/loomyard/issues/888).\n\n## What happened\n\nIn a task whose project anchor is a subdirectory of the worktree (`dotnet/`), `lym gate test --wait` ran the tier0 command `dotnet test LymCsharp.sln ...` in the worktree root.\nIt failed at once with `MSB1009: Project file does not exist`.\nThe hub's gate tiers set no `dir`, and the default run directory does not follow the anchor.\n\nThe producer agent worked around it by passing `-C \u003cworktree\u003e/dotnet` with an explicit target, after which all tests passed.\nThe loom's diff-scoped verify very likely runs the same way, since the producer hit the same failure at the handoff gate: the run halted `blocked` with `gate did not pass after 3 attempts` (anomaly `escalation-to-human`).\n\n## Why it is abnormal\n\nThe failure is a gate misconfiguration, not a code defect, so no amount of agent retrying can clear it.\nThe halt's way forward, `lym loom resume`, gives a fresh verify budget but leaves the gate config unchanged.\nThe resumed spawn therefore hit the identical failure and halted a second time.\n\n## What to do\n\n- Make a gate tier's default run directory follow the task's anchor directory when the anchor is a subdirectory of the worktree.\n- Failing that, detect a gate that fails identically with a missing-project error and surface it as a configuration problem, rather than as a verify failure that offers `lym loom resume` as the way forward.\n\nProvenance: task `regression-harness`; notes Darn-Write.md, Darn-Write-2.md, loom-halt.md, loom-halt-2.md.\n",
       "created": "2026-10-28T11:33:26Z",
       "revised": "2026-10-28T11:33:26Z"
+    },
+    {
+      "id": 859,
+      "handle": "B5",
+      "slug": "gate-eagain-not-test-failure",
+      "title": "lym gate test reports transient fork/thread exhaustion as test failures",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "gate"
+      ],
+      "issues": [
+        887
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #887](https://github.com/Knatte18/loomyard/issues/887).\n\n## What happened\n\nTwo `lym gate test --wait` runs failed with `fork/exec ... resource temporarily unavailable` and `runtime: failed to create new OS thread (errno=11)`.\nA `go vet` run and one PreToolUse hook failed the same way (\"Cannot fork\").\nThe failures hit packages the change did not touch.\n`ulimit -u` was far above the live thread count, and a rerun a minute later was green.\nThe cause looks like short-lived process or thread pressure from other runs sharing the machine.\n\n## Why it is abnormal\n\nThe gate surfaces these as ordinary build or test failures.\nThe cause is an environment error that a retry clears, and reporting it as a test failure hides that.\n\n## What to do\n\nHave `lym gate test` recognise fork/exec EAGAIN and thread-creation failures and report them as a retryable environment error, or retry them automatically.\nConsider limiting how many gate runs execute concurrently on one machine.\n\nProvenance: task `ide-seed-current-worktree`, note `Darn-Write.md`.\n",
+      "created": "2026-10-28T11:33:28Z",
+      "revised": "2026-10-28T11:33:28Z"
     }
   ],
   "prime_owner": "neve",
