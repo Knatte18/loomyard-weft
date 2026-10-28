@@ -2,8 +2,6 @@
 
 `creel-agents` · Task · feature, creel, shuttle, loom, stencil, report · running · Discussion-Write
 
-Depends on: [`claude-md-lym-rules-out`](design-claude-md-lym-rules-out.md)
-
 ## Goal
 
 Creel stage 3: agents reach their parent and each other through creel, not Claude Code's `SendMessage`, so a non-Claude engine can take a role that has a parent.
