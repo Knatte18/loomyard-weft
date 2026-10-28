@@ -1,12 +1,12 @@
 # Card 4 — citation-check
 
 **Create:**
-- `plan:internal/loomshed#citationFindings` -> `func citationFindings(worktreeRoot string, index planindex.Index, citations []discussionparser.Citation) ([]discussionparser.Finding, error)`
-- `plan:internal/loomshed#goPackageDirs` -> `func goPackageDirs(worktreeRoot string) ([]string, error)`
+- `internal/loomshed#citationFindings`
+- `internal/loomshed#goPackageDirs`
 - `internal/loomshed/citations_integration_test.go`
-- `plan:internal/gitrepo#Repo.TrackedRootEntries` -> `func (r *Repo) TrackedRootEntries() ([]string, error)`
-- `plan:internal/gitrepo_test#TestTrackedRootEntries` -> `func TestTrackedRootEntries(t *testing.T)`
-- `plan:internal/testkit/envkit#noFindingsIndex.ResolveGlyphs` -> `func (noFindingsIndex) ResolveGlyphs(worktreeRoot string, glyphs []string) ([]planindex.GlyphAnswer, error)`
+- `internal/gitrepo#Repo.TrackedRootEntries`
+- `internal/gitrepo_test#TestTrackedRootEntries`
+- `internal/testkit/envkit#noFindingsIndex.ResolveGlyphs`
 
 **Edit:**
 - `internal/loomshed#ValidateLoomDiscussion` -> `func ValidateLoomDiscussion(decisionRecordPath, supportLogPath, relevantPath, worktreeRoot string, index planindex.Index) ([]discussionparser.Finding, error)`
@@ -32,9 +32,9 @@
 - `internal/gitrepo/doc.go`
 
 **Uses:**
-- `plan:internal/discussionparser#Citations`
-- `plan:internal/discussionparser#Citation`
-- `plan:internal/planindex#GlyphAnswer`
+- `internal/discussionparser#Citations`
+- `internal/discussionparser#Citation`
+- `internal/planindex#GlyphAnswer`
 - `internal/planindex#ErrQuarryUnavailable`
 - `internal/gitrepo#New`
 - `internal/lymdirs#LymDirName`

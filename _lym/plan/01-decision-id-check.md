@@ -1,8 +1,8 @@
 # Card 1 — decision-id-check
 
 **Create:**
-- `plan:internal/discussionparser#CheckDecisionIDs` -> `func CheckDecisionIDs(record []byte) []Finding`
-- `plan:internal/discussionparser#TestCheckDecisionIDs` -> `func TestCheckDecisionIDs(t *testing.T)`
+- `internal/discussionparser#CheckDecisionIDs`
+- `internal/discussionparser#TestCheckDecisionIDs`
 
 **Edit:**
 - `internal/loomshed#ValidateLoomDiscussion`

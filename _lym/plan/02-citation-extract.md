@@ -1,9 +1,9 @@
 # Card 2 — citation-extract
 
 **Create:**
-- `plan:internal/discussionparser#Citation` -> `type Citation struct`
-- `plan:internal/discussionparser#Citations` -> `func Citations(record []byte) []Citation`
-- `plan:internal/discussionparser#TestCitations` -> `func TestCitations(t *testing.T)`
+- `internal/discussionparser#Citation`
+- `internal/discussionparser#Citations`
+- `internal/discussionparser#TestCitations`
 
 **Extends:**
 - `internal/discussionparser/doc.go`
