@@ -1,11 +1,11 @@
 {
-  "current_producer": "Drift-Baseline",
+  "current_producer": "Plan-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Drift-Baseline",
-    "last": "Discussion-Bouncer → done",
+    "now": "Plan-Write",
+    "last": "Drift-Baseline → skipped",
     "wait": ""
   },
   "history": [
@@ -135,6 +135,13 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYMHUB/review-setup-tuning/_lym/reviews/discussion/round-2-bouncer-ledger.md",
       "at": "2026-10-28T10:58:04Z"
+    },
+    {
+      "producer": "Drift-Baseline",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-10-28T10:58:04Z",
+      "reason": "drift.enabled = false"
     }
   ],
   "product": {
