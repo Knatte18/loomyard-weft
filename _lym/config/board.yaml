@@ -30,3 +30,4 @@ labels:
     testkit: the shared test helpers under internal/testkit
     pattern: PATTERN.md, its pattern/ background files and their checks (internal/pattern)
     shortcut: the top-level shortcut verbs, internal/shortcutcli
+    dobby: the hub daemon that starts, drives, lands and cleans up runs (internal/dobby)
