@@ -2,11 +2,11 @@
 
 **Create:**
 - `cmd/lym/agentmessaging_test.go`
-- `plan:cmd/lym#engineToolAllowed` -> `var engineToolAllowed = map[string]string{}`
-- `plan:cmd/lym#engineToolHits` -> `func engineToolHits(rel, content string) []string`
-- `plan:cmd/lym#goLiteralHits` -> `func goLiteralHits(t *testing.T, rel string, src []byte) []string`
-- `plan:cmd/lym#testdataPromptRoots` -> `func testdataPromptRoots(t *testing.T, root string) []string`
-- `plan:cmd/lym#TestAgentMessaging_NoEngineTool` -> `func TestAgentMessaging_NoEngineTool(t *testing.T)`
+- `cmd/lym#engineToolAllowed`
+- `cmd/lym#engineToolHits`
+- `cmd/lym#goLiteralHits`
+- `cmd/lym#testdataPromptRoots`
+- `cmd/lym#TestAgentMessaging_NoEngineTool`
 
 **Edit:**
 - `PATTERN.md`
