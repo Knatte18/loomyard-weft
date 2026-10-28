@@ -25,8 +25,8 @@
 
 **Uses:**
 - `internal/shedverbs#Spec.handsBack`
-- `plan:internal/landingshed#EscalateHalt`
-- `plan:internal/landingshed#EscalateStopPrefix`
+- `internal/landingshed#EscalateHalt`
+- `internal/landingshed#EscalateStopPrefix`
 
 **Intent:**
 D3's LLM-driver half: the LLM driver branches only on envelope and status fields, so `lym shed status` (and `lym loom status`, built on it) and the loop's envelope gain a recipe-neutral `restep_hold` key beside `hand_back`, read the same way.

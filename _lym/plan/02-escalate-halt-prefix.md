@@ -1,10 +1,10 @@
 # Card 2 — A loom or darn fixer escalate halts with its own prefix and is no hand-back
 
 **Create:**
-- `plan:internal/landingshed#EscalateStopPrefix` -> `const EscalateStopPrefix = "landing escalate: "`
-- `plan:internal/landingshed#EscalateHalt` -> `func EscalateHalt(producer, reason string) bool`
-- `plan:internal/battencli#restepSkips` -> `func restepSkips(status shedengine.Status) bool`
-- `plan:internal/battencli#TestRestepSkips` -> `func TestRestepSkips(t *testing.T)`
+- `internal/landingshed#EscalateStopPrefix`
+- `internal/landingshed#EscalateHalt`
+- `internal/battencli#restepSkips`
+- `internal/battencli#TestRestepSkips`
 
 **Edit:**
 - `internal/landingshed#Deps`
