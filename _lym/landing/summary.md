@@ -1,37 +1,37 @@
-# Stencil and system-prompt sentences that batch independent calls
+# Batch independent calls and edits via stencil and prompt sentences
 
-The turn audit in `docs/research/turn-audit-2026-10-28/report.md` found that the heavy roles spend many turns on single tool calls that did not depend on each other, and on edits made one per turn.
-This change adds the audit's section 5 sentences to each heavy role's stencil, and one batching sentence to the system prompt every Claude session shuttle launches with a run directory gets.
+A session's cost grows with its turns times its context.
+The turn audit (`docs/research/turn-audit-2026-10-28/report.md`) found that many turns of the heavy roles are single-call turns whose calls did not depend on each other, and that edits were made one per turn.
+This change tells each role to batch, and tells every shuttle-launched Claude session the same in its system prompt.
+Agents still read the source themselves; nothing here hands an agent pre-read or digested source.
 
-## Stencils
+## What changes
 
-Each sentence sits at the step where the role first reads or edits:
-
-- `darn/darn-template-write.md`, Step 4: read every file the change touches, with its greps, in one message before the first edit, make independent edits in one message, and run `lym gate test --wait` once after the last edit of each commit instead of testing as it works.
-- `webster/webster-body-implementer.md`, step 2 of the per-card sequence: read the spans `lym quarry resolve` names in one message, batch the card's independent edits, and run the card's gate once after its last edit.
-- `loom/loom-template-plan.md` and `loom/loom-template-discussion.md`, Step 2, and `landing/landing-template-fixer.md`, after `## What to read`: issue every search and read you can name in one message; wait for a result only to choose the next call.
-- `twill/twill-directive.md`, the fork boilerplate every lens fork copies: the same sentence for the fork's further calls.
-- `burler/burler-step-1-explore.md`: read the files of the focus, or of the whole target when no focus is set, in one message, then check them.
-- `burler/burler-template-fixer.md`: read the findings' files together, and apply the corrections to one file in one message.
-
-The burler stencils serve the Discussion, Plan and Code rounds alike, so the code-review rows of the report are covered by the same two sentences.
-
-## Appended system prompt
-
-`internal/shuttleengine/claudeengine` now writes the deny notice, the creel trust sentence and a new `batchingSentence` into `append-system-prompt.txt`, space-separated, with the notice left out when no deny is installed.
-The sentence reads: "Request every call whose arguments you already know in one message, and read what you need before you edit; wait for a result only to choose the next call."
-The file already rides `--append-system-prompt-file` on the launch and the resume line, so the sentence survives a resume.
-The package's init check now refuses a line break in either sentence.
-The Prepare and settings tests pin the new file contents, and the package doc and `docs/overview.md` describe them.
+- Eight stencils under `contracts/stencils/` each gain a batching sentence at the step where the role first reads or edits.
+  The sentences follow the report's section 5 wording with "turn" replaced by "message", the unit one batch of tool calls arrives in.
+  - Darn writer, Plan and Discussion writers, twill lens directive, burler explore step, burler fixer, landing fixer and Webster implementer each carry the sentence for their role.
+  - The Plan and Discussion sentence is "Issue every search and read you can name in one message; wait for a result only to choose the next call."
+    The landing fixer and the twill fork boilerplate reuse it.
+- `internal/shuttleengine/claudeengine` appends the sentence "Request every call whose arguments you already know in one message, and read what you need before you edit; wait for a result only to choose the next call." to the run directory's `append-system-prompt.txt`.
+  The file now reads: deny notice, creel trust sentence, batching sentence, space-separated; with no deny notice it holds the two sentences alone.
+  The package `init` check refuses a line break in either sentence, since the file is one line.
+- `doc.go` of `claudeengine` and `docs/overview.md` describe the new file contents.
 
 ## Design decisions
 
-- The stencils say "message" where the report says "turn": one message carries several tool calls, and the Edit tool applies several edits when they arrive together, while a turn can span several messages.
-- The darn gate runs once per commit rather than once per session, since the stencil keeps its rule that each commit leaves the tree green.
-- Webster's per-card gate and commit stay mandatory; the sentence only removes repeated gate runs within a card.
-- A session opened with `lym shuttle open` writes no run directory, so it gets neither the creel sentence nor the batching sentence, as before.
+- The darn writer's "test as you work" becomes one `lym gate test --wait` after the last edit of each commit.
+  The stencil still asks for small commits that each leave the tree green, so the gate runs once per commit, not once per session.
+  Edits within a commit go unchecked until that gate, the same bound the commit rule already sets.
+- Webster's gate stays per card: the sentence asks for the card's gate once, after the card's last edit, and does not touch the per-card gate and commit that form the plan's resume trail.
+- The burler stencils serve the Discussion, Plan and Code rounds alike, so one sentence each covers every burler round.
+- Placement keeps the stencil markers where they were: the twill marker stays in the Plan writer's Step 2, and the burler explore step's `fork_reading` marker stays on the `tool_use_rules` line.
+- The sentences live in the stencils, read at call time, and the prompt sentence stays inside `claudeengine`, per `PATTERN-stencil-ownership` and `PATTERN-shuttle-provider-seam`.
+- A session opened with `lym shuttle open` writes no run directory, so it carries neither this sentence nor the creel one, as before.
 
-## Measurement
+## To check by hand
 
-No bench ran before the change.
-The next loom and darn runs after landing are to be measured against the report's figures by re-running its scripts on their transcripts.
+- The sentences may cut fewer turns than the audit's ceiling.
+  No bench was run before the change; the next loom and darn runs after landing are to be measured against the report's figures by re-running its scripts on their transcripts.
+- A merged message delivers its results together, which can lengthen a later context slightly.
+
+Out of scope: a `PostToolUse` hook that nudges toward batching, to be considered only if these sentences do not cut enough.
