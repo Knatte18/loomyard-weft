@@ -1,6 +1,6 @@
 # A transient fork EAGAIN or died tmux session does not end a loom run hard
 
-`transient-halt-recovery` · Task · bug, loom, shed, shuttle, reed, fabric · running · Worktree-Create
+`transient-halt-recovery` · Task · bug, loom, shed, shuttle, reed, fabric · running · Drift-Baseline
 
 ## Loom halts on transient fork/exec EAGAIN and records an opaque exit status 2 for the sibling halt (was note `loom-halt-on-transient-eagain`)
 
