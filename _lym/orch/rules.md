@@ -99,3 +99,9 @@ An agent must read the source files directly to work from the original material;
 
 When forks fail with "resource temporarily unavailable" while a .NET hub runs, check `pids.current` against `pids.max` of `/sys/fs/cgroup/user.slice/user-<uid>.slice`, and end idle MSBuild reuse nodes with `pkill -u <user> -f 'MSBuild.dll .*nodeReuse:true'`; then re-launch the stopped runs plainly.
 Remove this section once #885 is fixed.
+
+## Repeated api-error notices at a usage limit (#894)
+
+A usage limit makes batten repeat the same api-error notice for a strand until the limit resets; answer the first and ignore the identical repeats.
+After the operator's heads-up that the limit reset, run `lym tender revive` and check each run.
+Remove this section once #894 is fixed.
