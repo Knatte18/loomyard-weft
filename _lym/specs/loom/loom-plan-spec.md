@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=d059ff13edf7dfb315c6fc4eb5e2b8bad848f577f15b0ddd9cc5a747bb2044d9 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+<!-- lym-stencil: sha256=8e5e88c5ec21a0ff4a1e2337465ffe08337d745453d22c011511811c6d686810 build=e355df15dddd6645ec11a152b9568f003713901a time=2026-10-28T13:14:59Z -->
 
 # Loom plan-spec — flat card list
 
@@ -534,7 +534,7 @@ The rows below stay in one fixed order regardless of which entry point runs them
     Each span is matched on its own, with the same rule the implementer audit uses.
     The finding names the card, or for the overview the section the hit is in, and the matched text.
     Its way forward is to take the data from committed test data an earlier card creates, or to drop the command.
-    The path rule also runs over each card id, since a slug ending in the fabric suffix makes every command naming the card, its own `lym gate test --card` run included, a fabric reference to the implementer audit.
+    The path rule also runs over each card id, since a slug ending in the fabric suffix makes every command naming the card, except a `lym gate` invocation, a fabric reference to the implementer audit.
     That finding names the card and the matched id, and its way forward is to rename the card in the Card Index and its file name.
     The plan index runs it in its format validation, so both plan gates and `lym loom validate-plan`'s default and `--rework` modes report it; `--require-approved`, webster's own `validate` verb and dispatch validation do not run it.
     It only refuses and removes no guard: it misses a spelling in `bash -c "…"` or built from a variable, the rest of a span after an unterminated quote, a spelling in an inline span or prose, and a fabric-repo path not spelled as a name ending in the suffix, and the implementer audit stays the guard for those.
