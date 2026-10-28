@@ -94,3 +94,8 @@ A Codex reviewer always gets the same context a Claude reviewer of the same roun
 
 Never propose handing an agent pre-read source: no inlined file contents, digests or summaries of code in its prompt in place of its own reads (operator, 2026-10-28, said several times).
 An agent must read the source files directly to work from the original material; cost is cut by fewer turns, never by pre-reading for it.
+
+## MSBuild reuse nodes fill the task limit (#885)
+
+When forks fail with "resource temporarily unavailable" while a .NET hub runs, check `pids.current` against `pids.max` of `/sys/fs/cgroup/user.slice/user-<uid>.slice`, and end idle MSBuild reuse nodes with `pkill -u <user> -f 'MSBuild.dll .*nodeReuse:true'`; then re-launch the stopped runs plainly.
+Remove this section once #885 is fixed.
