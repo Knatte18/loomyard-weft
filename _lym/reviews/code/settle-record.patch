@@ -1,0 +1,1088 @@
+diff --git a/contracts/stencils/orch/orch-template-usage-limit-wake.md b/contracts/stencils/orch/orch-template-usage-limit-wake.md
+new file mode 100644
+index 00000000..d11ce5b6
+--- /dev/null
++++ b/contracts/stencils/orch/orch-template-usage-limit-wake.md
+@@ -0,0 +1,4 @@
++<!-- This is the wake line the `lym orch` watcher types into the orch once a usage limit that stopped it should have reset, rendered by RenderUsageLimitWake (internal/orchengine/prompt.go).
++     It must render to ONE line: shuttle's Send refuses multi-line text.
++     Its one marker is {{.reset}}, when the limit reset, or that its reset time could not be read. -->
++[lym orch watcher] The usage limit that stopped this session {{.reset}}. Run `lym tender revive`, then check each run with `lym batten status <slug>` and restart what stopped.
+diff --git a/contracts/stencils/stencils.go b/contracts/stencils/stencils.go
+index a9fc65f5..dbade8ea 100644
+--- a/contracts/stencils/stencils.go
++++ b/contracts/stencils/stencils.go
+@@ -291,6 +291,11 @@ var OrchTemplateNote []byte
+ //go:embed orch/orch-template-reload.md
+ var OrchTemplateReload []byte
+ 
++// OrchTemplateUsageLimitWake is orch's shipped-default one-line wake line typed once a usage limit that stopped the orch should have reset.
++//
++//go:embed orch/orch-template-usage-limit-wake.md
++var OrchTemplateUsageLimitWake []byte
++
+ // PatternDirectiveImplementer is the shipped-default PATTERN directive for RoleImplementer.
+ //
+ //go:embed pattern/pattern-directive-implementer.md
+@@ -493,6 +498,7 @@ var entries = []registryEntry{
+ 	{"orch-template-role", &OrchTemplateRole},
+ 	{"orch-template-note", &OrchTemplateNote},
+ 	{"orch-template-reload", &OrchTemplateReload},
++	{"orch-template-usage-limit-wake", &OrchTemplateUsageLimitWake},
+ 	{"pattern-directive-implementer", &PatternDirectiveImplementer},
+ 	{"pattern-directive-review-fix", &PatternDirectiveReviewFix},
+ 	{"pattern-directive-orchestrator", &PatternDirectiveOrchestrator},
+diff --git a/internal/battencli/wire.go b/internal/battencli/wire.go
+index 30982d96..f44783f7 100644
+--- a/internal/battencli/wire.go
++++ b/internal/battencli/wire.go
+@@ -608,7 +608,8 @@ func readAgentActivity(taskLocation *lymcwd.Location) (runs []battenshed.AgentAc
+ 	}
+ 	states := readSessionStatesByStrand(cfg, anchor, engines)
+ 	for _, reading := range readings {
+-		run := battenshed.AgentActivity{Producer: reading.StrandName, LastActivity: reading.LastActivity, APIError: reading.APIError, APIErrorText: reading.APIErrorText}
++		run := battenshed.AgentActivity{Producer: reading.StrandName, LastActivity: reading.LastActivity, APIError: reading.APIError, APIErrorText: reading.APIErrorText,
++			UsageLimited: reading.UsageLimit.Limited, UsageLimitResetsAt: reading.UsageLimit.ResetsAt}
+ 		if state, ok := states[reading.StrandName]; ok {
+ 			run.SessionState, run.SessionCause = string(state.Name), state.Cause
+ 			if !state.Since.IsZero() {
+diff --git a/internal/battenshed/deps.go b/internal/battenshed/deps.go
+index f49dc528..1fca8dc5 100644
+--- a/internal/battenshed/deps.go
++++ b/internal/battenshed/deps.go
+@@ -321,6 +321,10 @@ type AgentActivity struct {
+ 	APIError bool
+ 	// APIErrorText is the error's text; empty unless APIError is true.
+ 	APIErrorText string
++	// UsageLimited is true when the API error is the provider's usage limit.
++	UsageLimited bool
++	// UsageLimitResetsAt is when that limit resets, as the provider's message states it; zero when it states no readable time or UsageLimited is false.
++	UsageLimitResetsAt time.Time
+ 	// SessionState, SessionCause and SessionSince are the run's session state, its cause and the RFC 3339 time it began, empty when unread.
+ 	// They are only logged where a notice is decided, and no decision reads them.
+ 	SessionState string
+diff --git a/internal/battenshed/doc.go b/internal/battenshed/doc.go
+index 85ae8540..f0679410 100644
+--- a/internal/battenshed/doc.go
++++ b/internal/battenshed/doc.go
+@@ -21,6 +21,9 @@
+ // The api-error notice goes when the newest turn end of any live run is an API error and that run has not been active for two minutes since; it names the producer and the error text cut to one line, and takes precedence over quiet.
+ // With the ReviveAPIError seam wired, the first sight of an api-error episode revives the stalled sessions and notices nothing:
+ // the notice goes when the same episode still stands at a later probe check, or at the third revived episode in a row with no write of the child's status file between them.
++// A run whose API error the provider classifies as its usage limit gets the usage-limit notice instead, ahead of the api-error and quiet ones, after the same two minutes:
++// it names the producer, when the limit resets in UTC or that the reset time is unknown, and the limit's text, and no revive is sent, since a revive typed into a limited session only ends in the limit again.
++// Its episode is the limit, keyed by the reset time, and lasts while any live run of the child reads usage-limited, however its activity moves, so a standing limit sends one notice and a later limit another.
+ // The quiet notice goes when every live run has been idle for the quiet window and no verify marker, shuttle wait marker, parent lock wait record or child status running at the pawl recipe's Beam-Await row is live, and says how long the agents have been idle;
+ // with no live run found, it falls back to "no agent activity readable" counted from the later of the child's newest history entry and since.
+ // Both episodes are keyed by the newest agent activity, so they end when an agent is active again, with `since` on the line as content only.
+diff --git a/internal/battenshed/notice.go b/internal/battenshed/notice.go
+index a1989299..cb64b9ca 100644
+--- a/internal/battenshed/notice.go
++++ b/internal/battenshed/notice.go
+@@ -53,6 +53,9 @@ const (
+ 	// noticeAPIError is a live agent run of the running child whose newest turn end is an API error and which has not been active for noticeAPIErrorIdle since.
+ 	// It takes precedence over noticeQuiet and is informational.
+ 	noticeAPIError = "api-error"
++	// noticeUsageLimit is a live agent run of the running child whose newest turn end is the provider's usage limit and which has not been active for noticeAPIErrorIdle since.
++	// It takes precedence over noticeAPIError and noticeQuiet, sends no api-error revive, and its key stands while any run of the child still reads usage-limited.
++	noticeUsageLimit = "usage-limit"
+ )
+ 
+ // noticeDriverBusyCondition is the condition text of the notice for a resume held back by a busy driver pane.
+@@ -158,7 +161,7 @@ func haltText(status shedengine.Status) string {
+ }
+ 
+ // noticeKey renders the episode key of one condition: the condition, the child's state and the stamp that tells its episodes apart.
+-// The stamp of a state-changed and of a driver-dead notice is the state episode's since; a quiet and an api-error notice's is the newest agent activity.
++// The stamp of a state-changed and of a driver-dead notice is the state episode's since; a quiet and an api-error notice's is the newest agent activity, and a usage-limit notice's the limit's reset time.
+ func noticeKey(condition string, state shedengine.State, stampNanos int64) string {
+ 	return condition + "|" + string(state) + "|" + strconv.FormatInt(stampNanos, 10)
+ }
+@@ -180,7 +183,7 @@ func readNoticeKeys(path string) []string {
+ 
+ // keepEpisode drops the keys the current status no longer belongs to.
+ // A key ends with its episode when the child's state changed or the state episode's since moved;
+-// a quiet or api-error key ends when the newest agent activity moved, and stays while the activity cannot be read.
++// a quiet or api-error key ends when the newest agent activity moved, and a usage-limit key when no run reads usage-limited any more; each stays while the activity cannot be read.
+ func keepEpisode(keys []string, state shedengine.State, sinceNanos int64, activity activityStamp) []string {
+ 	var kept []string
+ 	for _, k := range keys {
+@@ -188,7 +191,11 @@ func keepEpisode(keys []string, state shedengine.State, sinceNanos int64, activi
+ 		if len(parts) != 3 || parts[1] != string(state) {
+ 			continue
+ 		}
+-		if parts[0] == noticeQuiet || parts[0] == noticeAPIError {
++		if parts[0] == noticeUsageLimit {
++			if activity.known && !activity.usageLimited {
++				continue
++			}
++		} else if parts[0] == noticeQuiet || parts[0] == noticeAPIError {
+ 			if activity.known && parts[2] != strconv.FormatInt(activity.nanos, 10) {
+ 				continue
+ 			}
+@@ -201,9 +208,11 @@ func keepEpisode(keys []string, state shedengine.State, sinceNanos int64, activi
+ }
+ 
+ // activityStamp is the newest agent activity as an episode stamp, known only when the agents were read.
++// usageLimited is true when any run read stands on the provider's usage limit.
+ type activityStamp struct {
+-	nanos int64
+-	known bool
++	nanos        int64
++	known        bool
++	usageLimited bool
+ }
+ 
+ // noticeFinding is the condition the child is in, the stamp of its episode key, and the words that replace the condition's fixed text when it carries any.
+@@ -458,6 +467,16 @@ func (p *innerRunProducer) judgeAgents(ctx context.Context, w *childWait) (notic
+ 		}
+ 	}
+ 	stamp := activityStamp{nanos: newest.UnixNano(), known: true}
++	for _, run := range reading.runs {
++		stamp.usageLimited = stamp.usageLimited || run.UsageLimited
++	}
++	for _, run := range reading.runs {
++		if run.UsageLimited && awakeSince(run.LastActivity) >= noticeAPIErrorIdle {
++			text := fmt.Sprintf("agent %s hit a usage limit, %s: %s", run.Producer, resetText(run.UsageLimitResetsAt), oneLine(run.APIErrorText, noticeErrorMax))
++			p.logSessionStatesAtNotice(reading.runs, noticeUsageLimit)
++			return noticeFinding{condition: noticeUsageLimit, stamp: resetStamp(run.UsageLimitResetsAt), text: text}, stamp
++		}
++	}
+ 	for _, run := range reading.runs {
+ 		if run.APIError && awakeSince(run.LastActivity) >= noticeAPIErrorIdle {
+ 			text := fmt.Sprintf("agent %s hit an API error: %s", run.Producer, oneLine(run.APIErrorText, noticeErrorMax))
+@@ -643,3 +662,19 @@ func (p *innerRunProducer) saveEpisode(keys, old []string) {
+ 		logger.Warn("battenshed: write notice marker failed", "producer", p.name, "slug", p.slug, "error", err)
+ 	}
+ }
++
++// resetText renders when a usage limit resets, in UTC as a notice's since is, or that its reset time is unknown.
++func resetText(resetsAt time.Time) string {
++	if resetsAt.IsZero() {
++		return "reset time unknown"
++	}
++	return "resets " + resetsAt.UTC().Format(time.RFC3339)
++}
++
++// resetStamp returns the episode stamp of a usage limit that resets at resetsAt: its Unix seconds, or 0 for an unknown reset time.
++func resetStamp(resetsAt time.Time) int64 {
++	if resetsAt.IsZero() {
++		return 0
++	}
++	return resetsAt.Unix()
++}
+diff --git a/internal/battenshed/notice_test.go b/internal/battenshed/notice_test.go
+index 895f5754..d5a458f9 100644
+--- a/internal/battenshed/notice_test.go
++++ b/internal/battenshed/notice_test.go
+@@ -886,6 +886,98 @@ func TestNotice_APIErrorStall(t *testing.T) {
+ 	})
+ }
+ 
++func TestNotice_UsageLimitNotifiesOncePerLimitWithoutARevive(t *testing.T) {
++	const limitText = "You've hit your weekly limit · resets 2pm (Europe/Oslo)"
++	resetsAt := time.Date(2026, 10, 28, 13, 0, 0, 0, time.UTC)
++	tests := []struct {
++		name     string
++		resetsAt time.Time
++		wantText string
++	}{
++		{"AReadableResetTime", resetsAt, "running at Plan-Write; agent t:task:impl hit a usage limit, resets 2026-10-28T13:00:00Z: " + limitText},
++		{"AnUnknownResetTime", time.Time{}, "running at Plan-Write; agent t:task:impl hit a usage limit, reset time unknown: " + limitText},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			h := newNoticeHarness(t)
++			h.reviveAPI = true
++			h.setStatus(shedengine.Status{State: shedengine.StateRunning, CurrentProducer: "Plan-Write"})
++			p := h.producer()
++			limited := func(resetsAt time.Time) {
++				h.runs = []AgentActivity{{Producer: "t:task:impl", LastActivity: h.clock.Now(), APIError: true, APIErrorText: limitText, UsageLimited: true, UsageLimitResetsAt: resetsAt}}
++			}
++
++			// The session's activity moves under a standing limit, as a revive typed into it would move it.
++			for range 3 {
++				limited(tt.resetsAt)
++				h.clock.advance(noticeAPIErrorIdle)
++				h.call(p)
++				h.clock.advance(2 * h.quiet)
++				h.call(p)
++			}
++			if h.revives != 0 || len(h.notified) != 1 || !strings.Contains(h.notified[0], tt.wantText) {
++				t.Fatalf("revives = %d, notified = %v; want no revive and one usage-limit notice containing %q", h.revives, h.notified, tt.wantText)
++			}
++
++			// The limit ends, and a later one is a new notice.
++			h.runs = []AgentActivity{{Producer: "t:task:impl", LastActivity: h.clock.Now()}}
++			h.call(p)
++			limited(tt.resetsAt.Add(24 * time.Hour))
++			h.clock.advance(noticeAPIErrorIdle)
++			h.call(p)
++			if len(h.notified) != 2 || !strings.Contains(h.notified[1], "hit a usage limit") {
++				t.Fatalf("notified = %v; want a second usage-limit notice for the later limit", h.notified)
++			}
++		})
++	}
++}
++
++func TestNotice_UsageLimitOfOneRunOutranksTheOthersAndStandsWhileItReadsLimited(t *testing.T) {
++	const limitText = "You've hit your weekly limit · resets 2pm (Europe/Oslo)"
++	resetsAt := time.Date(2026, 10, 28, 13, 0, 0, 0, time.UTC)
++	tests := []struct {
++		name string
++		// otherRun builds the child's second run at now.
++		otherRun func(now time.Time) AgentActivity
++		// limitedFirst puts the limited run ahead of the other run in the reading.
++		limitedFirst bool
++	}{
++		{"AnotherRunWithAPlainAPIError", func(now time.Time) AgentActivity {
++			return AgentActivity{Producer: "t:task:review", LastActivity: now, APIError: true, APIErrorText: "API Error: 529 overloaded"}
++		}, false},
++		{"AnotherRunNotLimited", func(now time.Time) AgentActivity {
++			return AgentActivity{Producer: "t:task:review", LastActivity: now}
++		}, false},
++		{"AnotherRunNotLimitedAfterTheLimitedRun", func(now time.Time) AgentActivity {
++			return AgentActivity{Producer: "t:task:review", LastActivity: now}
++		}, true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			h := newNoticeHarness(t)
++			h.reviveAPI = true
++			h.setStatus(shedengine.Status{State: shedengine.StateRunning, CurrentProducer: "Plan-Write"})
++			p := h.producer()
++
++			for range 3 {
++				now := h.clock.Now()
++				limited := AgentActivity{Producer: "t:task:impl", LastActivity: now, APIError: true, APIErrorText: limitText, UsageLimited: true, UsageLimitResetsAt: resetsAt}
++				h.runs = []AgentActivity{tt.otherRun(now), limited}
++				if tt.limitedFirst {
++					h.runs = []AgentActivity{limited, tt.otherRun(now)}
++				}
++				h.clock.advance(noticeAPIErrorIdle)
++				h.call(p)
++				h.clock.advance(2 * h.quiet)
++				h.call(p)
++			}
++			if len(h.notified) != 1 || !strings.Contains(h.notified[0], "hit a usage limit") || strings.Contains(h.notified[0], "API error") {
++				t.Fatalf("notified = %v; want exactly one usage-limit notice and no API-error notice", h.notified)
++			}
++		})
++	}
++}
++
+ func TestNotice_RestartDoesNotRenotify(t *testing.T) {
+ 	h := newNoticeHarness(t)
+ 	h.setStatus(parked(shedengine.StateFailed))
+diff --git a/internal/orchcli/session.go b/internal/orchcli/session.go
+index 24148405..a669e0c1 100644
+--- a/internal/orchcli/session.go
++++ b/internal/orchcli/session.go
+@@ -97,3 +97,8 @@ func (s runnerSession) ClassifySkillLoad(guid string, turnEnd shuttleengine.Even
+ func (s runnerSession) CompactedSince(guid string, turnEnd shuttleengine.Event, since time.Time) (shuttleengine.CompactionBoundary, bool, error) {
+ 	return s.runner.CompactedSince(guid, turnEnd, since)
+ }
++
++// UsageLimit delegates to Runner.UsageLimit.
++func (s runnerSession) UsageLimit(guid string, turnEnd shuttleengine.Event) (shuttleengine.UsageLimit, error) {
++	return s.runner.UsageLimit(guid, turnEnd)
++}
+diff --git a/internal/orchengine/doc.go b/internal/orchengine/doc.go
+index 8e7c5cd6..949e1974 100644
+--- a/internal/orchengine/doc.go
++++ b/internal/orchengine/doc.go
+@@ -425,6 +425,20 @@
+ //     An orch the entry does not own, such as an idle one or the caller, gets none.
+ //   - An unreadable record holds nothing, with one Warn per change of error.
+ //
++// # Usage limit
++//
++// The orch shares the account's usage limit with every session it watches, so a limit that stops them stops the orch too, and notices sent meanwhile only pile up.
++// An idle tick that reads a turn end asks Session.UsageLimit about the newest one.
++// A usage-limited turn end records State.UsageLimitAt, the reset time the limit message states in State.UsageLimitResetsAt, and the next wake in State.UsageLimitWakeAt:
++// one minute past the reset time, at once when that has passed, and 30 minutes on when the limit states no reset time.
++// While the limit stands, the idle tick renews the watcher's creel hold on the orch strand, so no other sender's mail or inject reaches the orch, and starts no cycle.
++// Once the wake time has passed, the watcher injects one line rendered from the `orch-template-usage-limit-wake` stencil, its own delivery, which the hold lets through, telling the orch to run `lym tender revive` and check each run, and moves the wake 30 minutes on, so the line repeats until the orch answers.
++// A later usage-limited turn end sets the reset and wake times afresh.
++// The first turn end that is not a usage limit clears the record and releases the hold, so the held notices are delivered.
++// A fresh launch clears the record.
++// Bound: the hold covers deliveries to the orch strand only, lapses within `cycleHoldDuration` when the watcher dies, and is renewed only while the orch's newest turn end reads usage-limited; a hub pause's held tick does not renew it.
++// A limit is read only at an idle tick: one hit during a cycle is left to the cycle's own timeouts and read at the next idle turn end.
++//
+ // # Binary re-exec
+ //
+ // A watcher told a check through `WatchBinary`, which `lym orch watch` wires to a `selfexec` watcher, re-execs onto a replaced binary.
+diff --git a/internal/orchengine/prompt.go b/internal/orchengine/prompt.go
+index 667a710b..39affa3f 100644
+--- a/internal/orchengine/prompt.go
++++ b/internal/orchengine/prompt.go
+@@ -1,4 +1,4 @@
+-// prompt.go renders the orch stencils (orch-template-role, orch-template-note, orch-template-start, orch-template-handoff, orch-template-resume, orch-template-handoff-soft, orch-template-compact, orch-template-reload).
++// prompt.go renders the orch stencils (orch-template-role, orch-template-note, orch-template-start, orch-template-handoff, orch-template-resume, orch-template-handoff-soft, orch-template-compact, orch-template-reload, orch-template-usage-limit-wake).
+ // Each is read from a told stencils directory at call time via stencilstore.Read, per the Stencil Ownership Invariant, and filled with stencil.Fill, which drops the leading comment.
+ // The role and note stencils render to files the session reads, and the two note requests render to the mail body creel posts.
+ // Every other render is injected as one creel text line or handed to shuttle as its launch pointer, and a creel text inject is one line,
+@@ -15,6 +15,7 @@ import (
+ 	"path/filepath"
+ 	"slices"
+ 	"strings"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/fsx"
+ 	"github.com/Knatte18/loomyard/internal/stencil"
+@@ -32,6 +33,7 @@ const (
+ 	softHandoffStencilName = "orch-template-handoff-soft"
+ 	compactStencilName     = "orch-template-compact"
+ 	reloadStencilName      = "orch-template-reload"
++	usageLimitWakeStencil  = "orch-template-usage-limit-wake"
+ )
+ 
+ const (
+@@ -144,6 +146,16 @@ func RenderReloadPrompt(stencilsDir, rolePath string) (string, error) {
+ 	return render(stencilsDir, reloadStencilName, map[string]string{"role_path": rolePath}, true)
+ }
+ 
++// RenderUsageLimitWake renders the one-line wake line typed once a usage limit that stopped the orch should have reset.
++// A zero resetsAt renders that the reset time could not be read; any other renders it in its own zone.
++func RenderUsageLimitWake(stencilsDir string, resetsAt time.Time) (string, error) {
++	reset := "has a reset time that could not be read, so this is a retry"
++	if !resetsAt.IsZero() {
++		reset = "reset at " + resetsAt.Format("2006-01-02 15:04 -07:00")
++	}
++	return render(stencilsDir, usageLimitWakeStencil, map[string]string{"reset": reset}, true)
++}
++
+ // RenderCompactFocus renders the one-line focus text typed after `/compact`.
+ func RenderCompactFocus(stencilsDir string) (string, error) {
+ 	return render(stencilsDir, compactStencilName, nil, true)
+diff --git a/internal/orchengine/prompt_test.go b/internal/orchengine/prompt_test.go
+index 2865c16d..beacad6e 100644
+--- a/internal/orchengine/prompt_test.go
++++ b/internal/orchengine/prompt_test.go
+@@ -8,6 +8,7 @@ import (
+ 	"path/filepath"
+ 	"strings"
+ 	"testing"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/stencilstore"
+ 	"github.com/Knatte18/loomyard/internal/testkit/stencilkit"
+@@ -198,6 +199,10 @@ func TestRenderPointers_OneLineNamingTheirPaths(t *testing.T) {
+ 		{"resume", func() (string, error) { return RenderResumePrompt(dir, testRolePath, "/tmp/h/one.md") }, []string{testRolePath, "/tmp/h/one.md"}},
+ 		{"reload", func() (string, error) { return RenderReloadPrompt(dir, testRolePath) }, []string{testRolePath}},
+ 		{"compact focus", func() (string, error) { return RenderCompactFocus(dir) }, nil},
++		{"usage-limit wake", func() (string, error) {
++			return RenderUsageLimitWake(dir, time.Date(2026, 10, 28, 14, 0, 0, 0, time.FixedZone("CET", 3600)))
++		}, []string{"reset at 2026-10-28 14:00 +01:00", "lym tender revive"}},
++		{"usage-limit wake with no reset time", func() (string, error) { return RenderUsageLimitWake(dir, time.Time{}) }, []string{"could not be read", "lym tender revive"}},
+ 	}
+ 	for _, c := range cases {
+ 		got, err := c.render()
+@@ -225,6 +230,7 @@ func TestRenderPointers_MultiLineOverrideFails(t *testing.T) {
+ 		{startStencilName, func(dir string) (string, error) { return RenderStartPrompt(dir, testRolePath) }},
+ 		{resumeStencilName, func(dir string) (string, error) { return RenderResumePrompt(dir, testRolePath, "/tmp/h/one.md") }},
+ 		{reloadStencilName, func(dir string) (string, error) { return RenderReloadPrompt(dir, testRolePath) }},
++		{usageLimitWakeStencil, func(dir string) (string, error) { return RenderUsageLimitWake(dir, time.Time{}) }},
+ 	}
+ 	for _, c := range cases {
+ 		dir := seedStencils(t)
+diff --git a/internal/orchengine/state.go b/internal/orchengine/state.go
+index 8acabe67..75ffccbf 100644
+--- a/internal/orchengine/state.go
++++ b/internal/orchengine/state.go
+@@ -156,6 +156,14 @@ type State struct {
+ 	// ReloadSkipsSkills is true for a reload entered after a compaction, which has no skills step;
+ 	// false after `/clear`.
+ 	ReloadSkipsSkills bool `json:"reload_skips_skills"`
++
++	// UsageLimitAt is when the watcher first read the orch's newest turn end as the provider's usage limit; zero while no limit stands.
++	// While it is set the watcher holds the orch's creel deliveries and starts no cycle.
++	UsageLimitAt time.Time `json:"usage_limit_at"`
++	// UsageLimitResetsAt is when that limit resets as the limit message states; zero when it states no readable time.
++	UsageLimitResetsAt time.Time `json:"usage_limit_resets_at"`
++	// UsageLimitWakeAt is when the watcher next types the wake line into the orch; zero while no limit stands.
++	UsageLimitWakeAt time.Time `json:"usage_limit_wake_at"`
+ }
+ 
+ // The resuming phase's steps, persisted in State.ReloadStep.
+@@ -427,6 +435,7 @@ func NewHandoffPath(p Paths, now time.Time) string {
+ // A non-idle phase is recorded in LastAbortReason as abandoned;
+ // the offsets are zeroed because a new run has a new events file.
+ // The pending step, the note request's id, the stuck reason and the recorded fresh-launch failure are cleared too, since they belong to the abandoned phase or the earlier launch.
++// A usage limit the earlier session stood on is cleared, and the new session's first usage-limited turn end records it again.
+ // The context reading and the turn end it was taken through are cleared, since they describe the previous session;
+ // the new session's first turn end sets them again.
+ // CompactionBaseline becomes launchedAt, so a compaction boundary the session already carried never triggers a reload, and LaunchedAt records it.
+@@ -451,6 +460,7 @@ func ResetForFreshLaunch(s State, strand string, launchedAt time.Time) State {
+ 	s.Pending, s.RequestID, s.RequestReadAt = nil, 0, time.Time{}
+ 	s.Stuck, s.StuckByCreel = "", false
+ 	s.FreshLaunchFailure, s.ResumeLineWithdrawn = "", false
++	s.UsageLimitAt, s.UsageLimitResetsAt, s.UsageLimitWakeAt = time.Time{}, time.Time{}, time.Time{}
+ 	s.WatcherExit = ""
+ 	return s
+ }
+diff --git a/internal/orchengine/state_test.go b/internal/orchengine/state_test.go
+index 897fbfbe..3d04f397 100644
+--- a/internal/orchengine/state_test.go
++++ b/internal/orchengine/state_test.go
+@@ -284,7 +284,7 @@ func TestResetForFreshLaunch(t *testing.T) {
+ 	deferred := time.Date(2026, 1, 2, 3, 5, 6, 0, time.UTC)
+ 	launched := time.Date(2026, 1, 2, 3, 6, 7, 0, time.UTC)
+ 	t.Run("idle", func(t *testing.T) {
+-		in := State{Phase: PhaseIdle, LastHandoff: "h", PhaseEventsOffset: 5, LastInjectionOffset: 6, CycleCount: 2, LastContextTokens: 9, LastContextKnown: true, ReloadStep: ReloadStepRetry, ReloadTypedAt: deferred, ReloadRetry: []string{"ly:board"}, RequestReadAt: deferred}
++		in := State{Phase: PhaseIdle, LastHandoff: "h", PhaseEventsOffset: 5, LastInjectionOffset: 6, CycleCount: 2, LastContextTokens: 9, LastContextKnown: true, ReloadStep: ReloadStepRetry, ReloadTypedAt: deferred, ReloadRetry: []string{"ly:board"}, RequestReadAt: deferred, UsageLimitAt: deferred, UsageLimitResetsAt: deferred, UsageLimitWakeAt: deferred}
+ 		got := ResetForFreshLaunch(in, "g2", launched)
+ 		if !got.RequestReadAt.IsZero() {
+ 			t.Errorf("RequestReadAt = %v, want cleared", got.RequestReadAt)
+@@ -298,6 +298,9 @@ func TestResetForFreshLaunch(t *testing.T) {
+ 		if got.LastAbortReason != "" {
+ 			t.Errorf("LastAbortReason = %q, want empty", got.LastAbortReason)
+ 		}
++		if !got.UsageLimitAt.IsZero() || !got.UsageLimitResetsAt.IsZero() || !got.UsageLimitWakeAt.IsZero() {
++			t.Errorf("usage limit = %v/%v/%v, want cleared", got.UsageLimitAt, got.UsageLimitResetsAt, got.UsageLimitWakeAt)
++		}
+ 		if got.Strand != "g2" || got.Phase != PhaseIdle {
+ 			t.Errorf("Strand/Phase = %q/%q", got.Strand, got.Phase)
+ 		}
+diff --git a/internal/orchengine/usagelimit.go b/internal/orchengine/usagelimit.go
+new file mode 100644
+index 00000000..2ff44efa
+--- /dev/null
++++ b/internal/orchengine/usagelimit.go
+@@ -0,0 +1,74 @@
++// usagelimit.go holds the orch's creel deliveries while the provider's usage limit stops its session, and wakes it once the limit should have reset.
++
++package orchengine
++
++import (
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++)
++
++const (
++	// usageLimitWakeDelay is how long after a limit's stated reset time the wake line goes, so the limit has lifted when the orch acts on it.
++	usageLimitWakeDelay = time.Minute
++	// usageLimitRetry is how long the watcher waits for an answer before it types the wake line again, and the first wait when the limit states no reset time.
++	usageLimitRetry = 30 * time.Minute
++)
++
++// recordUsageLimit records in st the usage-limit reading of the orch's newest turn end, read at now, and reports whether it ended a limit st recorded.
++// A limited reading keeps the first sight's UsageLimitAt and sets the reset time and the next wake: one usageLimitWakeDelay past the reset time, at once when that has already passed, and usageLimitRetry from now when the limit states no reset time.
++// A reading with no limit clears the record.
++func recordUsageLimit(st *State, limit shuttleengine.UsageLimit, now time.Time) (ended bool) {
++	if !limit.Limited {
++		if st.UsageLimitAt.IsZero() {
++			return false
++		}
++		logger.Info("orch: the orch answered after a usage limit; its deliveries flow again", "strandGUID", st.Strand, "limitSince", st.UsageLimitAt)
++		st.UsageLimitAt, st.UsageLimitResetsAt, st.UsageLimitWakeAt = time.Time{}, time.Time{}, time.Time{}
++		return true
++	}
++	if st.UsageLimitAt.IsZero() {
++		st.UsageLimitAt = now
++		logger.Info("orch: the orch stopped on a usage limit; holding its deliveries until it resets", "strandGUID", st.Strand, "resetsAt", limit.ResetsAt)
++	}
++	st.UsageLimitResetsAt = limit.ResetsAt
++	switch wake := limit.ResetsAt.Add(usageLimitWakeDelay); {
++	case limit.ResetsAt.IsZero():
++		st.UsageLimitWakeAt = now.Add(usageLimitRetry)
++	case wake.After(now):
++		st.UsageLimitWakeAt = wake
++	default:
++		st.UsageLimitWakeAt = now
++	}
++	return false
++}
++
++// tickUsageLimit is the idle tick while a usage limit stands: it renews the creel hold on the orch strand, so no mail reaches a session that cannot act on it, and starts no cycle.
++// Once UsageLimitWakeAt has passed it queues the wake line, the watcher's own delivery, which the hold lets through, and moves the next wake usageLimitRetry on.
++// A wake line that fails to render is warned about and skipped until the next wake; a creel failure goes through creelFailed and leaves the wake due, so the next tick tries again.
++func (w *Watcher) tickUsageLimit(st State, now time.Time) error {
++	held, err := w.renewHold(&st)
++	if err != nil || !held {
++		return err
++	}
++	if now.Before(st.UsageLimitWakeAt) {
++		return nil
++	}
++	line, err := RenderUsageLimitWake(w.stencilsDir, st.UsageLimitResetsAt)
++	if err != nil {
++		st.UsageLimitWakeAt = now.Add(usageLimitRetry)
++		logger.Warn("orch: usage-limit wake line not rendered; retrying at the next wake", "strandGUID", st.Strand, "nextWakeAt", st.UsageLimitWakeAt, "error", err)
++		return w.save(st)
++	}
++	name, err := w.orchName(st)
++	if err != nil {
++		return w.creelFailed(&st, err)
++	}
++	if _, err := w.creel.Inject(name, CreelStep{Text: line}, stepInjectTTL); err != nil {
++		return w.creelFailed(&st, err)
++	}
++	st.UsageLimitWakeAt = now.Add(usageLimitRetry)
++	logger.Info("orch: usage-limit wake line queued", "strandGUID", st.Strand, "resetsAt", st.UsageLimitResetsAt, "nextWakeAt", st.UsageLimitWakeAt)
++	return w.save(st)
++}
+diff --git a/internal/orchengine/watcher.go b/internal/orchengine/watcher.go
+index d75b591e..2f6c313d 100644
+--- a/internal/orchengine/watcher.go
++++ b/internal/orchengine/watcher.go
+@@ -86,6 +86,8 @@ type Session interface {
+ 	ClassifySkillLoad(guid string, turnEnd shuttleengine.Event, skills []string) (shuttleengine.SkillLoadReport, error)
+ 	// CompactedSince returns the newest compaction boundary after since in the transcript turnEnd names, with the turn ends that follow it, for the run identified by guid.
+ 	CompactedSince(guid string, turnEnd shuttleengine.Event, since time.Time) (shuttleengine.CompactionBoundary, bool, error)
++	// UsageLimit returns the usage-limit reading of the transcript turnEnd names, for the run identified by guid.
++	UsageLimit(guid string, turnEnd shuttleengine.Event) (shuttleengine.UsageLimit, error)
+ 	// Interrupt stops the session's running turn with the provider's interrupt key, sent only into a pane showing one.
+ 	// It fails with shuttleengine.ErrNoRunningTurn when the pane shows none, and with shuttleengine.ErrRewindPickerOpen when it closed an open rewind picker.
+ 	Interrupt(guid string) error
+@@ -293,7 +295,11 @@ func (w *Watcher) tick() (done bool, err error) {
+ 		}
+ 	}
+ 	var compactedAt time.Time
++	var limit shuttleengine.UsageLimit
+ 	if lastTurnEnd != nil {
++		if limit, err = w.session.UsageLimit(st.Strand, *lastTurnEnd); err != nil {
++			return false, err
++		}
+ 		boundary, found, err := w.session.CompactedSince(st.Strand, *lastTurnEnd, st.CompactionBaseline)
+ 		if err != nil {
+ 			return false, err
+@@ -327,11 +333,20 @@ func (w *Watcher) tick() (done bool, err error) {
+ 			w.seen.turnEnds = append(w.seen.turnEnds, ev)
+ 		}
+ 	}
++	limitEnded := false
++	if lastTurnEnd != nil {
++		limitEnded = recordUsageLimit(&st, limit, now)
++	}
+ 	if readingChanged {
+ 		if err := w.save(st); err != nil {
+ 			return false, err
+ 		}
+ 	}
++	if limitEnded {
++		if err := w.releaseHold(&st); err != nil {
++			return false, err
++		}
++	}
+ 
+ 	if st.FreshLaunchFailure != "" {
+ 		retried, err := w.retryFreshLaunch(&st)
+@@ -371,6 +386,9 @@ func (w *Watcher) tick() (done bool, err error) {
+ 
+ 	switch st.Phase {
+ 	case PhaseIdle:
++		if !st.UsageLimitAt.IsZero() {
++			return false, w.tickUsageLimit(st, now)
++		}
+ 		return false, w.tickIdle(st, now)
+ 	case PhaseHandoffRequested:
+ 		return false, w.tickHandoff(st, now)
+diff --git a/internal/orchengine/watcher_test.go b/internal/orchengine/watcher_test.go
+index 327ce7b9..4e68c39c 100644
+--- a/internal/orchengine/watcher_test.go
++++ b/internal/orchengine/watcher_test.go
+@@ -43,6 +43,7 @@ type fakeSession struct {
+ 
+ 	skillLoads  map[string]shuttleengine.SkillLoadReport    // Turn-end message to the report ClassifySkillLoad answers, else a report with every skill loaded.
+ 	autoCompact map[string]shuttleengine.CompactionBoundary // Turn-end message to a main-chain compaction boundary CompactedSince finds through it.
++	limits      map[string]shuttleengine.UsageLimit         // Turn-end message to the reading UsageLimit answers, else no limit.
+ 
+ 	sessionState    shuttleengine.SessionState // Answered by SessionState while stateErr is nil.
+ 	sessionStateErr error                      // Returned by every SessionState while set.
+@@ -100,6 +101,10 @@ func (f *fakeSession) CompactedSince(guid string, turnEnd shuttleengine.Event, s
+ 	return b, ok && b.At.After(since), nil
+ }
+ 
++func (f *fakeSession) UsageLimit(guid string, turnEnd shuttleengine.Event) (shuttleengine.UsageLimit, error) {
++	return f.limits[turnEnd.Message], nil
++}
++
+ func (f *fakeSession) StrandAlive(string) (bool, error) {
+ 	if f.onAlive != nil {
+ 		f.onAlive()
+diff --git a/internal/orchengine/watcher_usagelimit_test.go b/internal/orchengine/watcher_usagelimit_test.go
+new file mode 100644
+index 00000000..3086078e
+--- /dev/null
++++ b/internal/orchengine/watcher_usagelimit_test.go
+@@ -0,0 +1,141 @@
++//go:build tier0
++
++// watcher_usagelimit_test.go covers the watcher under a usage limit at the orch's own turn end: the hold on its deliveries, no cycle, the wake line and its retries, and the release once the orch answers.
++
++package orchengine
++
++import (
++	"errors"
++	"slices"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/testkit/stencilkit"
++)
++
++func TestWatcher_UsageLimitHoldsTheOrchAndWakesItAfterTheReset(t *testing.T) {
++	t.Parallel()
++	tests := []struct {
++		name string
++		// resetIn is how long after the limit is read it resets; zero for a message stating no reset time.
++		resetIn time.Duration
++		// firstWake is how long after the limit is read the first wake line goes.
++		firstWake time.Duration
++		wantLine  string
++	}{
++		{"AReadableResetTime", time.Hour, time.Hour + usageLimitWakeDelay, "reset at "},
++		{"NoReadableResetTime", 0, usageLimitRetry, "could not be read"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			e := newWatchEnv(t)
++			e.tick()
++			readAt := e.clock.now
++			var resetsAt time.Time
++			if tt.resetIn > 0 {
++				resetsAt = readAt.Add(tt.resetIn)
++			}
++			// The limited turn end is over the hard threshold, so only the limit keeps a cycle from starting.
++			e.s.usage["limited"] = 2000
++			e.s.limits = map[string]shuttleengine.UsageLimit{"limited": {Limited: true, ResetsAt: resetsAt}}
++			e.s.events = append(e.s.events, stop("limited"))
++			wakes := func() int { return e.s.count("send:") }
++
++			e.tick()
++			st := e.state()
++			if !st.UsageLimitAt.Equal(readAt) || !st.UsageLimitResetsAt.Equal(resetsAt) || st.Phase != PhaseIdle || wakes() != 0 || !slices.Contains(e.c.calls, "hold:"+fakeOrchStrandName) {
++				t.Fatalf("state = %+v, sends = %v, creel calls = %v; want the limit recorded, the orch held, idle and nothing sent", st, e.s.calls, e.c.calls)
++			}
++
++			e.clock.now = readAt.Add(tt.firstWake - time.Second)
++			e.tick()
++			if wakes() != 0 {
++				t.Fatalf("sends = %v; want none before the wake time", e.s.calls)
++			}
++			e.clock.now = readAt.Add(tt.firstWake)
++			e.tick()
++			if wakes() != 1 || !strings.Contains(e.s.calls[0], tt.wantLine) || !strings.Contains(e.s.calls[0], "lym tender revive") {
++				t.Fatalf("sends = %v; want one wake line containing %q", e.s.calls, tt.wantLine)
++			}
++
++			// With no answer the line goes again one retry interval later.
++			e.clock.now = e.clock.now.Add(usageLimitRetry - time.Second)
++			e.tick()
++			e.clock.now = e.clock.now.Add(time.Second)
++			e.tick()
++			if wakes() != 2 {
++				t.Fatalf("sends = %v; want a second wake line after %s with no answer", e.s.calls, usageLimitRetry)
++			}
++
++			e.s.events = append(e.s.events, stop("answer"))
++			e.tick()
++			st = e.state()
++			if !st.UsageLimitAt.IsZero() || !st.UsageLimitWakeAt.IsZero() || !slices.Contains(e.c.calls, "release:"+fakeOrchStrandName) {
++				t.Fatalf("state = %+v, creel calls = %v; want the limit cleared and the hold released once the orch answered", st, e.c.calls)
++			}
++		})
++	}
++}
++
++// limitedWatchEnv returns an env whose orch has just stopped on a usage limit stating resetsAt, with the limit read at the returned time.
++func limitedWatchEnv(t *testing.T, resetsAt func(readAt time.Time) time.Time) (*watchEnv, time.Time) {
++	t.Helper()
++	e := newWatchEnv(t)
++	e.tick()
++	readAt := e.clock.now
++	e.s.usage["limited"] = 2000
++	e.s.limits = map[string]shuttleengine.UsageLimit{"limited": {Limited: true, ResetsAt: resetsAt(readAt)}}
++	e.s.events = append(e.s.events, stop("limited"))
++	e.tick()
++	return e, readAt
++}
++
++func TestWatcher_UsageLimitReadAfterItsResetWakesTheOrchAtOnce(t *testing.T) {
++	t.Parallel()
++	e, readAt := limitedWatchEnv(t, func(readAt time.Time) time.Time { return readAt.Add(-time.Hour) })
++	e.tick()
++	if got := e.s.count("send:"); got != 1 {
++		t.Fatalf("sends = %v; want one wake line without waiting out a retry interval", e.s.calls)
++	}
++	if want := readAt.Add(usageLimitRetry); !e.state().UsageLimitWakeAt.Equal(want) {
++		t.Errorf("UsageLimitWakeAt = %v; want %v, one retry interval after the wake", e.state().UsageLimitWakeAt, want)
++	}
++}
++
++func TestWatcher_UsageLimitWakeFailuresRetryTheWake(t *testing.T) {
++	t.Parallel()
++	noReset := func(time.Time) time.Time { return time.Time{} }
++	t.Run("WakeLineThatDoesNotRender", func(t *testing.T) {
++		t.Parallel()
++		e, readAt := limitedWatchEnv(t, noReset)
++		stencilkit.Remove(t, e.stDir, usageLimitWakeStencil)
++		e.clock.now = readAt.Add(usageLimitRetry)
++		e.tick()
++		if e.s.count("send:") != 0 {
++			t.Fatalf("sends = %v; want nothing sent for a wake line that does not render", e.s.calls)
++		}
++		if want := e.clock.now.Add(usageLimitRetry); !e.state().UsageLimitWakeAt.Equal(want) {
++			t.Errorf("UsageLimitWakeAt = %v; want %v, one retry interval on", e.state().UsageLimitWakeAt, want)
++		}
++	})
++	t.Run("CreelInjectThatFails", func(t *testing.T) {
++		t.Parallel()
++		e, readAt := limitedWatchEnv(t, noReset)
++		e.clock.now = readAt.Add(usageLimitRetry)
++		e.c.failNext("inject", errors.New("creel is down"))
++		e.tick()
++		if e.s.count("send:") != 0 {
++			t.Fatalf("sends = %v; want none from a failed inject", e.s.calls)
++		}
++		if got := e.state().UsageLimitWakeAt; !got.Equal(readAt.Add(usageLimitRetry)) {
++			t.Fatalf("UsageLimitWakeAt = %v; want it left due at %v", got, readAt.Add(usageLimitRetry))
++		}
++		e.tick()
++		if got := e.s.count("send:"); got != 1 {
++			t.Errorf("sends = %v; want the next tick to send the wake line", e.s.calls)
++		}
++	})
++}
+diff --git a/internal/shuttleengine/activity.go b/internal/shuttleengine/activity.go
+index 2eeff1a5..a8ebfccf 100644
+--- a/internal/shuttleengine/activity.go
++++ b/internal/shuttleengine/activity.go
+@@ -30,6 +30,17 @@ type TurnEndActivity struct {
+ 	APIError bool
+ 	// APIErrorText is the error's text; empty unless APIError is true.
+ 	APIErrorText string
++	// UsageLimit is the usage-limit reading of the same turn end.
++	UsageLimit UsageLimit
++}
++
++// UsageLimit is the provider's reading of whether its usage limit refused a session's newest turn end, and when that limit resets.
++// The zero value is no usage limit.
++type UsageLimit struct {
++	// Limited is true when the newest main-chain turn end is an API error the provider classifies as its usage limit.
++	Limited bool
++	// ResetsAt is when the limit resets, as the provider's limit message states it; zero when the message states no readable time.
++	ResetsAt time.Time
+ }
+ 
+ // AgentActivity is the reading of one live run.
+@@ -44,6 +55,8 @@ type AgentActivity struct {
+ 	APIError bool
+ 	// APIErrorText is the error's text; empty unless APIError is true.
+ 	APIErrorText string
++	// UsageLimit is the usage-limit reading of the run's newest turn end.
++	UsageLimit UsageLimit
+ }
+ 
+ // unreadableFiles keeps one failure episode per file the files-only readers skip, keyed by the path their log line names.
+@@ -146,7 +159,7 @@ func readRunActivity(rs RunState, engine Engine, reader ActivityReader) AgentAct
+ 	}
+ 	// A turn end before the prompt offset stands in only for the session's last activity: its API error is not the run's own.
+ 	if ownTurnEnd {
+-		reading.APIError, reading.APIErrorText = activity.APIError, activity.APIErrorText
++		reading.APIError, reading.APIErrorText, reading.UsageLimit = activity.APIError, activity.APIErrorText, activity.UsageLimit
+ 	}
+ 
+ 	reading.LastActivity = activity.TranscriptModTime
+diff --git a/internal/shuttleengine/activity_test.go b/internal/shuttleengine/activity_test.go
+index 35d37c1e..dcf03aa2 100644
+--- a/internal/shuttleengine/activity_test.go
++++ b/internal/shuttleengine/activity_test.go
+@@ -158,6 +158,24 @@ func TestReadAgentActivity(t *testing.T) {
+ 			transcript: map[string]TurnEndActivity{"turn": {TranscriptModTime: transcriptWritten, APIError: true, APIErrorText: "API Error: 529 overloaded"}},
+ 			want:       []AgentActivity{{StrandName: "hub:task:driver", LastActivity: transcriptWritten, APIError: true, APIErrorText: "API Error: 529 overloaded"}},
+ 		},
++		{
++			name:       "a usage-limited turn end carries its limit",
++			runs:       map[string]activityRun{"run-a": live},
++			transcript: map[string]TurnEndActivity{"turn": {TranscriptModTime: transcriptWritten, APIError: true, APIErrorText: "You've hit your weekly limit", UsageLimit: UsageLimit{Limited: true, ResetsAt: transcriptWritten.Add(time.Hour)}}},
++			want:       []AgentActivity{{StrandName: "hub:task:driver", LastActivity: transcriptWritten, APIError: true, APIErrorText: "You've hit your weekly limit", UsageLimit: UsageLimit{Limited: true, ResetsAt: transcriptWritten.Add(time.Hour)}}},
++		},
++		{
++			name: "a usage limit on a turn end before the prompt offset is not the run's own",
++			runs: map[string]activityRun{"run-a": {
++				outcome: runOutcomeRunning, pid: livePID, strandName: "hub:task:driver",
++				events: "STOP:skill\nSTOP:turn\n", promptOffset: int64(len("STOP:skill\n")),
++			}},
++			transcript: map[string]TurnEndActivity{
++				"skill": {UsageLimit: UsageLimit{Limited: true, ResetsAt: transcriptWritten.Add(time.Hour)}},
++				"turn":  {TranscriptModTime: transcriptWritten},
++			},
++			want: []AgentActivity{{StrandName: "hub:task:driver", LastActivity: transcriptWritten}},
++		},
+ 		{
+ 			name: "turn ends before the prompt offset are not the run's own",
+ 			runs: map[string]activityRun{"run-a": {
+diff --git a/internal/shuttleengine/claudeengine/activity.go b/internal/shuttleengine/claudeengine/activity.go
+index e82ff7a0..7c82be6a 100644
+--- a/internal/shuttleengine/claudeengine/activity.go
++++ b/internal/shuttleengine/claudeengine/activity.go
+@@ -1,4 +1,4 @@
+-// activity.go implements shuttleengine.ActivityReader for Claude: the session's last activity, its forks included, and whether the newest main-chain turn end of the transcript a Stop payload names through transcript_path is an API error.
++// activity.go implements shuttleengine.ActivityReader for Claude: the session's last activity, its forks included, and whether the newest main-chain turn end of the transcript a Stop payload names through transcript_path is an API error, and whether that error is the usage limit, with its reset time.
+ // It also implements shuttleengine.UsageLimitReader: whether Claude Code's usage-limit classification stopped that turn end or a fork during its turn.
+ // The session's last activity is the newest of the main transcript's last write and its fork transcripts' activity;
+ // a fork's pending tool call reads active up to bashMaxTimeout past its last write, and the API-error part reads the main transcript only.
+@@ -63,7 +63,7 @@ func (c *Claude) TurnEndActivity(turnEnd shuttleengine.Event) shuttleengine.Turn
+ 	}
+ 	readBackward(f, info.Size(), initialReadChunk, func(data []byte) bool {
+ 		var found bool
+-		activity.APIError, activity.APIErrorText, found = newestTurnEndError(data)
++		activity.APIError, activity.APIErrorText, activity.UsageLimit, found = newestTurnEndError(data)
+ 		return found
+ 	})
+ 	return activity
+@@ -164,9 +164,9 @@ func newestToolCallingMessagePending(data []byte) (pending, settled bool) {
+ 	return false, settled
+ }
+ 
+-// newestTurnEndError scans the complete lines of data from the last to the first and reports whether the first main-chain assistant entry that ends a turn or carries the API-error marker is an API error, with its final text.
++// newestTurnEndError scans the complete lines of data from the last to the first and reports whether the first main-chain assistant entry that ends a turn or carries the API-error marker is an API error, with its final text and its usage-limit reading.
+ // found is false when data holds no such entry.
+-func newestTurnEndError(data []byte) (apiError bool, text string, found bool) {
++func newestTurnEndError(data []byte) (apiError bool, text string, limit shuttleengine.UsageLimit, found bool) {
+ 	for end := len(data); end > 0; {
+ 		start := bytes.LastIndexByte(data[:end], '\n') + 1
+ 		line := bytes.TrimSpace(data[start:end])
+@@ -181,12 +181,16 @@ func newestTurnEndError(data []byte) (apiError bool, text string, found bool) {
+ 		if e.IsSidechain || e.Type != "assistant" || !(e.isTurnEnd() || e.IsAPIErrorMessage) {
+ 			continue
+ 		}
+-		if e.IsAPIErrorMessage {
+-			return true, e.finalText(), true
++		if !e.IsAPIErrorMessage {
++			return false, "", shuttleengine.UsageLimit{}, true
+ 		}
+-		return false, "", true
++		text = e.finalText()
++		if e.isUsageLimit() {
++			limit = shuttleengine.UsageLimit{Limited: true, ResetsAt: usageLimitResetsAt(text, e.Timestamp)}
++		}
++		return true, text, limit, true
+ 	}
+-	return false, "", false
++	return false, "", shuttleengine.UsageLimit{}, false
+ }
+ 
+ // TurnEndUsageLimited reads the transcript turnEnd's transcript_path names.
+diff --git a/internal/shuttleengine/claudeengine/activity_test.go b/internal/shuttleengine/claudeengine/activity_test.go
+index afdb9bed..6d56e29d 100644
+--- a/internal/shuttleengine/claudeengine/activity_test.go
++++ b/internal/shuttleengine/claudeengine/activity_test.go
+@@ -21,6 +21,7 @@ func TestTurnEndActivity(t *testing.T) {
+ 		toolUse       = `{"type":"assistant","message":{"stop_reason":"tool_use","content":[{"type":"text","text":"working"}]}}`
+ 		apiError      = `{"type":"assistant","isApiErrorMessage":true,"message":{"stop_reason":"stop_sequence","content":[{"type":"text","text":"API Error: 529 overloaded"}]}}`
+ 		sidechainErr  = `{"type":"assistant","isSidechain":true,"isApiErrorMessage":true,"message":{"stop_reason":"stop_sequence","content":[{"type":"text","text":"API Error: 500"}]}}`
++		usageLimit    = `{"type":"assistant","timestamp":"2026-10-28T11:03:42.000Z","isApiErrorMessage":true,"error":"rate_limit","message":{"stop_reason":"stop_sequence","content":[{"type":"text","text":"You've hit your weekly limit · resets 2pm (Europe/Oslo)"}]}}`
+ 	)
+ 	written := time.Date(2026, 10, 7, 9, 30, 0, 0, time.UTC)
+ 	now := written.Add(2 * time.Hour)
+@@ -51,6 +52,12 @@ func TestTurnEndActivity(t *testing.T) {
+ 			transcript: []string{normalTurnEnd, sidechainErr},
+ 			want:       shuttleengine.TurnEndActivity{TranscriptModTime: written},
+ 		},
++		{
++			name:       "a usage-limit turn end reads the limit and its reset time",
++			transcript: []string{normalTurnEnd, usageLimit},
++			want: shuttleengine.TurnEndActivity{TranscriptModTime: written, APIError: true, APIErrorText: "You've hit your weekly limit · resets 2pm (Europe/Oslo)",
++				UsageLimit: shuttleengine.UsageLimit{Limited: true, ResetsAt: time.Date(2026, 10, 28, 13, 0, 0, 0, time.UTC)}},
++		},
+ 		{
+ 			name:       "a transcript with no turn end reports its time alone",
+ 			transcript: []string{toolUse},
+@@ -70,7 +77,8 @@ func TestTurnEndActivity(t *testing.T) {
+ 
+ 			got := newClaude().TurnEndActivity(stopEventFor(t, path))
+ 
+-			if !got.TranscriptModTime.Equal(tt.want.TranscriptModTime) || got.APIError != tt.want.APIError || got.APIErrorText != tt.want.APIErrorText {
++			if !got.TranscriptModTime.Equal(tt.want.TranscriptModTime) || got.APIError != tt.want.APIError || got.APIErrorText != tt.want.APIErrorText ||
++				got.UsageLimit.Limited != tt.want.UsageLimit.Limited || !got.UsageLimit.ResetsAt.Equal(tt.want.UsageLimit.ResetsAt) {
+ 				t.Errorf("TurnEndActivity = %+v; want %+v", got, tt.want)
+ 			}
+ 		})
+diff --git a/internal/shuttleengine/claudeengine/doc.go b/internal/shuttleengine/claudeengine/doc.go
+index 0c649839..eabdc434 100644
+--- a/internal/shuttleengine/claudeengine/doc.go
++++ b/internal/shuttleengine/claudeengine/doc.go
+@@ -153,6 +153,9 @@
+ // The API-error part reads the main transcript only.
+ // A session whose newest such entry carries the marker stands on an API error, and the entry's final text is the error's text;
+ // a sidechain entry never counts, and a later normal turn end clears the error.
++// The same entry gives the activity reading's usage limit when it carries the usage-limit classification below, with the reset time its text states:
++// the first instant after the entry's timestamp that matches a `resets 2pm (Europe/Oslo)` clause, with optional minutes and an optional month and day, in the clause's IANA zone.
++// The classification alone decides that the limit stopped the turn; a text with no readable clause, or one naming a day its month lacks, gives a limit with no reset time.
+ // Every failure degrades to the zero reading.
+ //
+ // The usage-limit reading (UsageLimitReader) reads Claude Code's own classification, the `error` field `rate_limit` on a synthetic `isApiErrorMessage` entry, never the entry's text or the agent's words.
+diff --git a/internal/shuttleengine/claudeengine/usagelimit.go b/internal/shuttleengine/claudeengine/usagelimit.go
+new file mode 100644
+index 00000000..a88ff73c
+--- /dev/null
++++ b/internal/shuttleengine/claudeengine/usagelimit.go
+@@ -0,0 +1,67 @@
++// usagelimit.go reads when a usage limit resets from the text of Claude Code's usage-limit message.
++
++package claudeengine
++
++import (
++	"regexp"
++	"strconv"
++	"time"
++	// The zone database is embedded so a reset clause's zone resolves on a machine with no system zone files, such as Windows.
++	_ "time/tzdata"
++)
++
++// resetClause matches the reset clause of Claude Code's usage-limit message: `resets 2pm (Europe/Oslo)`, `resets 2:30pm (Europe/Oslo)`, `resets Oct 30, 2pm (Europe/Oslo)` or `reset at 2pm (Europe/Oslo)`.
++// Its groups are the month, the day, the hour, the minute, `am` or `pm`, and the IANA zone.
++var resetClause = regexp.MustCompile(`resets?(?: at)? (?:([A-Z][a-z]{2}) (\d{1,2}),? (?:at )?)?(\d{1,2})(?::(\d{2}))? ?([ap]m) \(([^)]+)\)`)
++
++// usageLimitResetsAt returns when the usage limit the message text names resets: the first instant after the entry's RFC 3339 timestamp that matches the text's reset clause in the clause's zone.
++// A clause with a month and day resolves to that date, in the timestamp's year or the next.
++// It returns the zero time when the text has no reset clause, the timestamp does not parse, or the zone, hour, minute, month or day of the month is not valid.
++func usageLimitResetsAt(text, timestamp string) time.Time {
++	match := resetClause.FindStringSubmatch(text)
++	if match == nil {
++		return time.Time{}
++	}
++	written, err := time.Parse(time.RFC3339, timestamp)
++	if err != nil {
++		return time.Time{}
++	}
++	zone, err := time.LoadLocation(match[6])
++	if err != nil {
++		return time.Time{}
++	}
++	hour, _ := strconv.Atoi(match[3])
++	minute := 0
++	if match[4] != "" {
++		minute, _ = strconv.Atoi(match[4])
++	}
++	if hour < 1 || hour > 12 || minute > 59 {
++		return time.Time{}
++	}
++	hour %= 12
++	if match[5] == "pm" {
++		hour += 12
++	}
++	local := written.In(zone)
++	if match[1] == "" {
++		reset := time.Date(local.Year(), local.Month(), local.Day(), hour, minute, 0, 0, zone)
++		if !reset.After(written) {
++			reset = time.Date(local.Year(), local.Month(), local.Day()+1, hour, minute, 0, 0, zone)
++		}
++		return reset
++	}
++	month, err := time.Parse("Jan", match[1])
++	if err != nil {
++		return time.Time{}
++	}
++	day, _ := strconv.Atoi(match[2])
++	reset := time.Date(local.Year(), month.Month(), day, hour, minute, 0, 0, zone)
++	if !reset.After(written) {
++		reset = time.Date(local.Year()+1, month.Month(), day, hour, minute, 0, 0, zone)
++	}
++	// time.Date normalises a day the month lacks into the next month.
++	if reset.Day() != day || reset.Month() != month.Month() {
++		return time.Time{}
++	}
++	return reset
++}
+diff --git a/internal/shuttleengine/claudeengine/usagelimit_test.go b/internal/shuttleengine/claudeengine/usagelimit_test.go
+new file mode 100644
+index 00000000..4cb8fb46
+--- /dev/null
++++ b/internal/shuttleengine/claudeengine/usagelimit_test.go
+@@ -0,0 +1,41 @@
++//go:build tier0
++
++package claudeengine
++
++import (
++	"testing"
++	"time"
++)
++
++func TestUsageLimitResetsAt(t *testing.T) {
++	t.Parallel()
++	// 12:03:42 in Oslo, which keeps UTC+1 after the October clock change.
++	const written = "2026-10-28T11:03:42.000Z"
++	tests := []struct {
++		name      string
++		text      string
++		timestamp string
++		want      time.Time
++	}{
++		{"An hour later the same day", "You've hit your weekly limit · resets 2pm (Europe/Oslo)", written, time.Date(2026, 10, 28, 13, 0, 0, 0, time.UTC)},
++		{"Hour and minute", "You've hit your session limit · resets 2:30pm (Europe/Oslo)", written, time.Date(2026, 10, 28, 13, 30, 0, 0, time.UTC)},
++		{"A time already past rolls to the next day", "You've hit your session limit · resets 9am (Europe/Oslo)", written, time.Date(2026, 10, 29, 8, 0, 0, 0, time.UTC)},
++		{"Twelve am is midnight", "You've hit your session limit · resets 12am (Europe/Oslo)", written, time.Date(2026, 10, 28, 23, 0, 0, 0, time.UTC)},
++		{"A month and day", "You've hit your weekly limit · resets Oct 30, 2pm (Europe/Oslo)", written, time.Date(2026, 10, 30, 13, 0, 0, 0, time.UTC)},
++		{"A date already past rolls to the next year", "You've hit your weekly limit · resets Jan 2, 2pm (Europe/Oslo)", written, time.Date(2027, 1, 2, 13, 0, 0, 0, time.UTC)},
++		{"The older wording", "Claude usage limit reached. Your limit will reset at 2pm (Europe/Oslo).", written, time.Date(2026, 10, 28, 13, 0, 0, 0, time.UTC)},
++		{"An unknown zone", "You've hit your weekly limit · resets 2pm (Mars/Olympus)", written, time.Time{}},
++		{"No reset clause", "You've hit your weekly limit", written, time.Time{}},
++		{"An hour out of range", "You've hit your weekly limit · resets 13pm (Europe/Oslo)", written, time.Time{}},
++		{"A day the month lacks", "You've hit your weekly limit · resets Feb 31, 2pm (Europe/Oslo)", written, time.Time{}},
++		{"A timestamp that does not parse", "You've hit your weekly limit · resets 2pm (Europe/Oslo)", "yesterday", time.Time{}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := usageLimitResetsAt(tt.text, tt.timestamp); !got.Equal(tt.want) {
++				t.Errorf("usageLimitResetsAt(%q, %q) = %v; want %v", tt.text, tt.timestamp, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index 86827559..8d2813b6 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -432,7 +432,8 @@
+ // ReadAgentActivity logs a record that reads running with its recorded waiter gone at Warn once per episode per run directory, at Debug while it repeats and at Info once it reads live again, no longer reads running or has no record.
+ // Such a run's agent may still be working where no activity reader sees it.
+ // ReadAgentActivity returns one AgentActivity per live run under a run-directory root:
+-// the run's strand name, its last activity, and whether its newest turn end is an API error with the error's text.
++// the run's strand name, its last activity, and whether its newest turn end is an API error with the error's text, and its UsageLimit: whether the provider classifies that error as its usage limit, and when the limit resets as its message states.
++// Runner.UsageLimit gives the same UsageLimit for one turn end of a named run, which the orch watcher reads at its own session's turn ends.
+ // The last activity is the newer of the session's last activity, its forks included, and the time of the events file's newest Stop or ask line, the run's creation time when neither is readable.
+ // A Stop or ask line carrying no time, an engine without the optional SessionSignalParser capability, and a file yielding no signals count the events file's last write instead, so an idle notice, a prompt submission or a stamp line never moves it.
+ // The events past the prompt offset are parsed through the Engine, and the newest turn end goes to the optional ActivityReader capability for the session part.
+diff --git a/internal/shuttleengine/session.go b/internal/shuttleengine/session.go
+index cbb22eba..e4a73bd0 100644
+--- a/internal/shuttleengine/session.go
++++ b/internal/shuttleengine/session.go
+@@ -205,6 +205,27 @@ func (r *Runner) CompactedSince(guid string, turnEnd Event, since time.Time) (Co
+ 	return boundary, found, nil
+ }
+ 
++// UsageLimit returns the usage-limit reading of the transcript turnEnd names, via the ActivityReader of the engine the run identified by guid records.
++// An engine without the capability reads no usage limit.
++func (r *Runner) UsageLimit(guid string, turnEnd Event) (UsageLimit, error) {
++	if r.toldErr != nil {
++		return UsageLimit{}, r.toldErr
++	}
++	state, _, err := FindRun(r.cfg, r.anchorPath, guid)
++	if err != nil {
++		return UsageLimit{}, fmt.Errorf("shuttle: %q is not a shuttle strand: %w", guid, err)
++	}
++	engine, _, err := r.engineFor(state)
++	if err != nil {
++		return UsageLimit{}, err
++	}
++	reader, ok := engine.(ActivityReader)
++	if !ok {
++		return UsageLimit{}, nil
++	}
++	return reader.TurnEndActivity(turnEnd).UsageLimit, nil
++}
++
+ // SessionIdle reports whether the run identified by guid can take typed input.
+ // The answer is the readiness reading over the run's hook-derived session state and one pane capture, styled where the engine can blank its placeholder:
+ // a ready reading is idle and a held one is not idle with its Reason, and the runner keeps one turn-start hold per strand across calls.
