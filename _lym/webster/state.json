@@ -191,7 +191,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 2,
   "masterStrand": "cc9328600fc322351769081abc945991",
   "masterSessionId": "fc8d23c0-9cc1-49a8-9f08-87222d5c1836",
   "masterEngine": "claude",
@@ -225,6 +225,22 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-landing-settles-in-place/fc8d23c0-9cc1-49a8-9f08-87222d5c1836/subagents/agent-adf773f352b8ac3a3.jsonl"
       ]
+    },
+    "2": {
+      "slug": "escalate-halt-prefix",
+      "cards": [
+        "02-escalate-halt-prefix"
+      ],
+      "cardHashes": {
+        "02-escalate-halt-prefix": "71c1b8ec0eae9d909f4af3ccccb8d48f5e0c9020c25bdd19d4af2000b4d0ba8a"
+      },
+      "startSha": "9e0974b0efdfb0ff23655aa6a1716655a6e819ff",
+      "kind": "fork",
+      "spawnedAt": "2026-10-28T10:28:35Z",
+      "sessionId": "fc8d23c0-9cc1-49a8-9f08-87222d5c1836",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
