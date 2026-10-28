@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-28 09:52 UTC; every age below is as of then.
+Rendered 2026-10-28 09:53 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -40,9 +40,9 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Creel delivers every post to a Claude strand through hooks, visibly and in full**<br>• PostToolUse, Stop and asyncRewake hooks carry posts as fast as possible; shuttle appends a trust and reply sentence to the system prompt | [`creel-hook-post`](design-creel-hook-post.md) | loom | awaiting · Discussion-Bouncer | neve | 5d<br>41m | creel, shuttle, claude |
 | T2 | **A landing merges a moved parent in Finalize and sends a fixer escalate to the arbiter first**<br>• No Finalize reroute to Parent-Align for a moved parent, and a landing fixer escalate reaches the orch only as the arbiter hand-on | [`landing-settles-in-place`](design-landing-settles-in-place.md) | loom | Discussion-Burler-Review | neve | 4d<br>23m | loom, batten, shed |
-| T3 | **Audit where agent turns go and which could be merged**<br>• Calls per turn, mergeable serial turns and the read-then-edit-then-test pattern per role, from transcripts only<br>• `profile: docs` | [`turn-audit`](design-turn-audit.md) | darn | Darn-Write | neve | 5m<br>5m | stencil, shuttle, loom, webster |
+| T3 | **Audit where agent turns go and which could be merged**<br>• Calls per turn, mergeable serial turns and the read-then-edit-then-test pattern per role, from transcripts only<br>• `profile: docs` | [`turn-audit`](design-turn-audit.md) | darn | Darn-Write | neve | 6m<br>6m | stencil, shuttle, loom, webster |
 | T4 | **One verb that pulls the whole hub, Bolt included, while the orch runs**<br>• Pull the prime pair, Bolt and local beams in one safe verb | [`hub-pull-verb`](design-hub-pull-verb.md) | darn | Code-Burler-Review | neve | 23h<br>23m | fabric, board |
-| T5 | **VS Code colours by project and worktree, and lym ide seed with no slug**<br>• Title bar shows the project (prime or beam), the activity bar the worktree; text colour by luminance; ide seed with no slug seeds the current worktree | [`ide-seed-current-worktree`](design-ide-seed-current-worktree.md) | darn | Code-Burler-Review | neve | 1d<br>23m | ide, workspaces |
+| T5 | **VS Code colours by project and worktree, and lym ide seed with no slug**<br>• Title bar shows the project (prime or beam), the activity bar the worktree; text colour by luminance; ide seed with no slug seeds the current worktree | [`ide-seed-current-worktree`](design-ide-seed-current-worktree.md) | darn | Code-Burler-Fix | neve | 1d<br>23m | ide, workspaces |
 
 ### Ready (0)
 
