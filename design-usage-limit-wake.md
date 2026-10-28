@@ -1,6 +1,6 @@
 # The watcher wakes the orch after a usage limit resets, and holds the repeat notices
 
-`usage-limit-wake` · Note · feature, orch, batten, shuttle
+`usage-limit-wake` · Task · feature, orch, batten, shuttle · draft
 
 ## Seen
 
