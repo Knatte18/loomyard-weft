@@ -15,6 +15,9 @@
 - `internal/reportengine/doc.go`
 - `docs/overview.md`
 
+**Extends:**
+- `internal/reportengine#allowedImports`
+
 **Uses:**
 - `internal/reportcli#resolvePrime`
 - `internal/creelcli#NewProgramClient`
@@ -30,6 +33,7 @@
 Per role, `RoleReplies` counts `Expected` (a `posted` entry with `ExpectReply`, by its `To`), `Replied` (a `posted` reply entry whose `ReplyTo` names a message the entries show as marked, by the reply's sender, the holder that answered), `Chased` (a `chased` entry, by its `To`) and `Unanswered` (an `unanswered` entry, by its `To`).
 A reply whose `ReplyTo` names no marked message counts nowhere.
 Roles come out in name order.
+`allowedImports` in `internal/reportengine/seam_enforcement_test.go` gains `github.com/Knatte18/loomyard/internal/creelengine` and `github.com/Knatte18/loomyard/internal/agentname`, the two packages `ComputeReplies` imports, so `TestToldGeometryInvariant_AllowlistOnly` passes.
 
 `repliesCommand` is the verb, beside `convergence` and `timing`: it resolves the prime through `resolvePrime`, which refuses any other worktree naming `lym report replies`, reads the journal through the package seam `creelLog`, whose production value `readCreelLog` calls `creelcli.NewProgramClient(location, "REPORT")`'s `Log`, and prints one `{"ok":true}` envelope holding `roles`; it takes no flags, writes nothing and changes nothing.
 Bound: the program claim is accepted from the operator's terminal or an orch pane, the places the report verbs run from, and creel refuses it from another agent's pane, naming the claim.

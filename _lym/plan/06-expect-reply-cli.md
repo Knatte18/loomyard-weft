@@ -23,6 +23,9 @@ The CLI side of the expected-reply mark (D9, D11).
 `log`'s entry fields gain `expect_reply: true` on an entry that carries the mark and `reply_to` on a reply's entry.
 The `post` Long help and `internal/creelcli/doc.go` name the flag and the header mark.
 
+Bound: the flag adds no privilege, since it marks a post the sender could already make to a receiver the daemon's usual rules admit.
+What the mark sets in motion, from card 7 on, is at most two content-free `CREEL` chases to the holder and one notice to the sender per marked message, and only once the holder has read it.
+
 `TestWriteMessagesText` gains a row for a marked message's header.
 `TestCreelCLI` gains rows: `post --expect-reply` journals a `posted` event whose `log` entry carries `expect_reply`, and the receiver's `read --envelope` hands the message out with `expect_reply: true`; a reply's `log` entry carries `reply_to`; `post --expect-reply --reply` is refused before any call.
 

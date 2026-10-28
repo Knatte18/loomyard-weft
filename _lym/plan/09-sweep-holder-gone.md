@@ -2,15 +2,17 @@
 
 **Edit:**
 - `internal/creelengine#Store.sweepSubjects`
+- `internal/creelengine#Store.sweepNeeded`
+- `internal/creelengine#Scheduler.sweepLoop`
 - `internal/creelengine#Store.releaseGoneHolder`
 - `internal/creelengine_test#TestSweep_RemovedHolders`
 - `internal/creelengine/doc.go`
+- `pattern/PATTERN-daemon-wakeups.md`
 
 **Uses:**
 - `plan:internal/creelengine#isChaseable`
 - `plan:internal/creelengine#Store.settleUnansweredLocked`
 - `plan:internal/creelengine#UnansweredHolderGone`
-- `internal/creelengine#Scheduler.sweepLoop`
 - `internal/creelengine_test#env.sweepStep`
 - `internal/creelengine_test#env.sweepLast`
 
@@ -22,5 +24,7 @@ Its unread mail and queued injects are moved as before.
 
 `TestSweep_RemovedHolders` gains rows, driven by `env.sweepStep` and `env.sweepLast`, whose `isSweepWait` card 7 narrowed to the sweep's own waits so the chaser running beside the sweep is never stepped in its place: a strand that read a marked message, posted with a wait, and holds no other mail or inject is removed from the fake delivery's strands, and after the sweep's two misses the message is `unanswered` with reason `holder-gone`, the wait gets `OutcomeUnanswered` and no chase was posted; the same with the holder also holding unread mail, which goes back along its path as before.
 `internal/creelengine/doc.go`'s `# Removed holders` section names the widened subjects and the `holder-gone` outcome.
+`pattern/PATTERN-daemon-wakeups.md`'s creel removed-holder sweep bullet says the sweep runs while a strand holds unread mail, a queued inject or a read, marked, unanswered message.
+The doc comments of `sweepNeeded`, `sweepSubjects` and `sweepLoop` name the same widened run condition.
 
 **ImpactSummary:** The removed-holder sweep gains one subject kind and one settle step; its handling of unread mail and injects is unchanged.
