@@ -1,6 +1,6 @@
 # Bench: the forked Codex Astra fan as Code reviewer on two darn diffs
 
-`codex-code-review-bench` · Task · research, codex, burler · running · Finalize
+`codex-code-review-bench` · Task · research, codex, burler · done
 
 ## Question
 
