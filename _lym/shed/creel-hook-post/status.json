@@ -1,13 +1,13 @@
 {
   "current_producer": "Parent-Align",
-  "state": "blocked",
-  "error": "landing stop: the fixer session of Parent-Align pushed origin/creel-hook-post at 9ea6905350432b67d069b4549b51e10c87f0ffe8; session log: /home/knatte/Code/loomyard-LYMHUB/creel-hook-post/.lym/shuttle/3ef9137adabe40976a12d0f413ae6cba; way forward: check the pushed commits are the task's, then `lym loom resume`",
+  "state": "running",
+  "error": "",
   "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Parent-Align",
     "last": "Parent-Align → stuck",
-    "wait": "landing stop: the fixer session of Parent-Align pushed origin/creel-hook-post at 9ea6905350432b67d069b4549b51e10c87f0ffe8; session log: /home/knatte/Code/loomyard-LYMHUB/creel-hook-post/.lym/shuttle/3ef9137adabe40976a12d0f413ae6cba; way forward: check the pushed commits are the task's, then `lym loom resume`"
+    "wait": ""
   },
   "history": [
     {
