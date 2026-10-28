@@ -28,11 +28,11 @@ grouping
 | --- | --- | --- | --- |
 | E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
 
-## Tasks (8)
+## Tasks (7)
 
 Concrete and claimable; only a task can run.
 
-### Running (7)
+### Running (6)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -40,7 +40,6 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Creel delivers every post to a Claude strand through hooks, visibly and in full**<br>• PostToolUse, Stop and asyncRewake hooks carry posts as fast as possible; shuttle appends a trust and reply sentence to the system prompt | [`creel-hook-post`](design-creel-hook-post.md) | loom | Code-Burler-Review | neve | 5d<br>3h | creel, shuttle, claude |
 | T2 | **Gate and agent runs survive transient task-limit pressure and run in the anchor**<br>• `profile: solid` | [`gate-robustness`](design-gate-robustness.md) | darn | Code-Burler-Fix | neve | 43m<br>36m | gate, shuttle, dotnet, batten, loom |
-| T3 | **Codex hook delivery spike**<br>• Six Codex runs on Luna low: can Codex take creel posts through hooks like Claude does<br>• `profile: docs` | [`codex-hook-spike`](design-codex-hook-spike.md) | darn | Finalize | neve | 21m<br>21m | codex, creel |
 | T4 | **Machine checks in validate-discussion and validate-plan for recurring review findings**<br>• Citation and acceptance checks for the decision record; seam-test, tier-tag and doc.go checks for plan cards<br>• `profile: solid` | [`validator-checks`](design-validator-checks.md) | loom | Plan-Bouncer | neve | 1h<br>1h | loom, stencil |
 | T6 | **A transient fork EAGAIN or died tmux session does not end a loom run hard**<br>• `profile: solid` | [`transient-halt-recovery`](design-transient-halt-recovery.md) | darn | Code-Burler-Fix | neve | 43m<br>36m | loom, shed, shuttle, reed, fabric |
 | T8 | **Webster recovery has a way forward, and its audit accepts a sanctioned gate test** | [`webster-recovery`](design-webster-recovery.md) | darn | Code-Burler-Fix | neve | 43m<br>36m | webster |
@@ -117,11 +116,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R5 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 5d<br>1d | webster |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 5d<br>1h | loom, stencil |
 | R8 |  | **Ideas from r/ClaudeCode "one line in your CLAUDE.md": fit for LoomYard and bench measures**<br>• About 30 ideas judged against our stencils and rules; top 8 ranked for a bench, a few cheap enough without one | [`claude-md-thread-ideas`](design-claude-md-thread-ideas.md) | 1d<br>1d | stencil, loom, burler |
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T7 | **lym loom resume names prior work and honours a recorded wait decision** | [`resume-fixes`](design-resume-fixes.md) | 43m<br>36m | loom, shed |
