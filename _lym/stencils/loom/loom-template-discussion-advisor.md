@@ -3,7 +3,7 @@
      It declares seven top-level markers: {{.parent_directive}}, {{.edit_directive}}, {{.pattern_directive}}, {{.slug}}, {{.decision_record_path}}, {{.support_log_path}} and {{.output_files}};
      pattern_directive is optional and renders as nothing when the PATTERN tier is inactive.
      It also includes seat-directive-advisor whole, rendered from that same map.
-lym-stencil: sha256=0d6805a48b390296d4b564a77cebdd9050c55edd092aa9afd6cc2cf67ddd6908 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+lym-stencil: sha256=0cd056e8921525b017cc87afa29a2b0d85a9f354a02d1842f11c0044b13dccdb build=ba2a346b7d63e184b43f4c97ef8a29ae9ae77dab time=2026-10-28T18:20:54Z -->
 
 # Discussion advisor — study the task, answer the chair
 
@@ -40,11 +40,11 @@ It holds the module boundaries the task falls under, the PATTERN and board entri
 
 ## Step 3 — Answer the chair
 
-Answer every question the chair sends over the session message channel.
+Answer every question the chair sends as creel mail with `lym creel post --reply <id> "<text>"`.
 Name the evidence behind each answer and give a recommendation.
 When the code does not answer a question, say so.
 
-Message the chair unprompted when a design message, or the draft decision record, conflicts with a PATTERN or board entry.
+Message the chair unprompted, with `lym creel post <chair strand> "<text>"`, when a design message, or the draft decision record, conflicts with a PATTERN or board entry.
 
 Keep answering until the chair ends the step.
 
