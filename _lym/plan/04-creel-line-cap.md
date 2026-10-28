@@ -1,10 +1,10 @@
 # Card 4 — Every line a claim can hand out fits one hook field
 
 **Create:**
-- `plan:internal/creelengine#LineFits` -> `func LineFits(from, body string) bool`
-- `plan:internal/creelengine#validateLine` -> `func validateLine(from, body string) error`
-- `plan:internal/creelengine#hookFieldCap` -> `const hookFieldCap = 10000`
-- `plan:internal/creelengine#Store.PostUnchecked` -> `func (s *Store) PostUnchecked(sender Sender, receiver, body string) (int64, error)`
+- `internal/creelengine#LineFits`
+- `internal/creelengine#validateLine`
+- `internal/creelengine#hookFieldCap`
+- `internal/creelengine#Store.PostUnchecked`
 
 **Edit:**
 - `internal/creelengine#maxBodyBytes`

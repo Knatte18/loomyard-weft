@@ -1,8 +1,8 @@
 # Card 5 — LOOM's decision notice fits creel's line cap
 
 **Create:**
-- `plan:internal/loomcli#decisionWayNoticeTooLong` -> `const decisionWayNoticeTooLong = "way forward: shorten the decision or rationale, put the detail in a file and name that file in the entry"`
-- `plan:internal/loomcli#noticeFits` -> `func noticeFits(deps decisionDeps, line string) bool`
+- `internal/loomcli#decisionWayNoticeTooLong`
+- `internal/loomcli#noticeFits`
 
 **Edit:**
 - `internal/loomcli#decisionDeps`
@@ -14,7 +14,7 @@
 - `internal/loomcli#TestDecisionVerb_NotifiesLiveAgents`
 
 **Uses:**
-- `plan:internal/creelengine#LineFits`
+- `internal/creelengine#LineFits`
 - `internal/loomcli#decisionNoticeLine`
 - `internal/loomcli#postDecisionNotice`
 - `internal/loomcli#newDecisionFake`
