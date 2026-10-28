@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Recurring test-suite time and growth audit**<br>• Re-run cmd/testtiming against test-suite-timing.md to watch suite growth<br>• `profile: docs` | [`test-time-audit-recurring`](design-test-time-audit-recurring.md) | darn | Drift-Baseline | neve | 10d<br>0m | gate |
+| T1 | **Recurring test-suite time and growth audit**<br>• Re-run cmd/testtiming against test-suite-timing.md to watch suite growth<br>• `profile: docs` | [`test-time-audit-recurring`](design-test-time-audit-recurring.md) | darn | Darn-Write | neve | 10d<br>0m | gate |
 
 ### Ready (0)
 
