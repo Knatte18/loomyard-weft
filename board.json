@@ -741,7 +741,7 @@
       "isolated": false,
       "brief": "Citation and acceptance checks for the decision record; seam-test, tier-tag and doc.go checks for plan cards",
       "body": "## Seen\n\n`docs/research/review-setup-audit-2026-10-28/report.md` (section 3) classed the gating Discussion and Plan findings and found themes a machine check could stop before a reviewer spends a round on them.\nThe operator agreed with its recommendations (2026-10-28); this task builds the checks.\n\n## Design\n\n`lym loom validate-discussion`, and the gates of the rows that run it:\n\n- A citation check: every repository path and Go symbol the decision record cites exists.\n- An acceptance check: every decision id appears in at least one acceptance criterion.\n\n`lym loom validate-plan`, and the gates of the rows that run it:\n\n- A card that adds a field to a shared `Deps` or `Env` struct lists the reflective seam tests of that struct.\n- A card that adds a test file states exactly one tier tag for it.\n- A card whose Intent changes a package's behaviour lists that package's `doc.go`.\n\nEach check's refusal names the item it found and what the writer adds to fix it.\nThe Discussion and Plan writer stencils state the new rules, so a writer meets them before the gate does.\n\n## Out of scope\n\n- Lens and profile changes: a task of their own.\n- Checks for the design-interaction and unbounded-edge classes, which the report leaves to the lenses.\n",
-      "status": "running · Discussion-Burler-Review",
+      "status": "failed · Discussion-Burler-Review",
       "created": "2026-10-28T10:29:56Z",
       "revised": "2026-10-28T10:29:56Z",
       "profile": "solid"
