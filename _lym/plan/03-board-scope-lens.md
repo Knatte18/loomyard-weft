@@ -50,6 +50,7 @@ Test in `internal/configsync`:
 - `TestReconcile_MovesKeysAcrossModules`' fixture `burlerOldTemplate` cuts the template's `twill-discussion` fan to `[:5]` instead of `[:6]`, since the fan now has six lenses and `[:6]` would equal the template, leaving the row "a lenses.yaml equal to the template is kept over an old-template burler.yaml and cut to empty maps" without the old-template input it names.
 
 A hub whose `lenses.yaml` names `goal-scope` or `board-fit` in a fan fails at resolve after the deploy; that is the record's open risk, for the operator, not a card's.
-The refusal it meets, `ValidateFanKeys` over `ResolveFan`'s undefined-lens error, says to define the fan or set the entry to `""`; the operator's recovery is to drop the deleted lens name from the fan with `lym config lenses --set` or the editor, as the record's open risk says, and the shared refusal text stays as it is.
+The refusal it meets, `ValidateFanKeys` over `ResolveFan`'s undefined-lens error, says to define the fan or set the entry to `""`; the operator's recovery, as the record's open risk says, is to drop the deleted lens name from the fan with `lym config lenses --set` or the editor, and the shared refusal text stays as it is.
+The `--set` route fixes every fan that names the lens in one call, one `--set` per fan, since a `--set` that leaves another broken fan changes the load error and is rolled back.
 
 **ImpactSummary:** one template file and four tests in three packages; no Go production code reads a lens name, and no stencil names the deleted lenses.

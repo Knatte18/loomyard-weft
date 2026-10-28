@@ -5,7 +5,6 @@
 - `internal/loomengine#TestLoadConfig_Loads`
 - `internal/loomengine#TestLoadConfig_Refuses`
 - `internal/configreg#TestModules_EveryTemplateKeyClassified`
-- `internal/configreg#TestModules_LocalLayerRefusals`
 - `internal/configreg#TestPrepareRunSettings`
 - `docs/overview.md`
 - `pattern/PATTERN-config-layers.md`
@@ -31,18 +30,16 @@ A hand-edited local file holding `webster_fan` or `webster_reviewer_fan` stays r
 
 Tests:
 - `TestLoadConfig_Refuses`' subtest "a local fan key is refused naming the local file and the key" drops `code_reviewer_fan` from its key loop and keeps the other five, so a local file holding any of them is still refused.
-  A sibling subtest seeds the template board, writes `code_reviewer_fan: nosuchfan\n` to the local file with `writeLocalLoomConfig`, and wants `LoadConfig` refused containing `loom config key "code_reviewer_fan" entry 1` and `set the entry to ""`: a wrong name from the newly open layer reaches `ValidateFanKeys`.
 - `TestLoadConfig_Loads`' "hub stack" subtest gains the row "a local code_reviewer_fan of \"\" is open to the local layer": `local: "code_reviewer_fan: \"\"\n"` over the template's `["review-code", ""]`, `mutate` setting `CodeReviewerFan` to `lenses.FanList{""}`, so the local scalar replaces the hub list whole, the state a pair seeded from a solo-fan profile loads.
 - `TestModules_EveryTemplateKeyClassified`'s `wantLocalDenied["loom"]` drops `code_reviewer_fan`.
-- `TestModules_LocalLayerRefusals` gains the row `{"loom", "code_reviewer_fan: \"\"\n", "code_reviewer_fan", true}`, admitted, beside the existing `plan_reviewer_fan` refused row; the other fixer keys' local refusal stays pinned by `TestLoadConfig_Refuses`' loop.
 - `TestPrepareRunSettings`: the rows "a retired darn reviewer fan key moves to loom's code_reviewer_fan and is refused as a guard key" and "a retired darn review_fan moves to loom's code_reviewer_fan and is refused as a guard key" become admitted rows, renamed to "... moves to loom's code_reviewer_fan and is admitted", with `wantDocs: {"loom": "code_reviewer_fan: review-code\n"}` and `wantNoModule: "darn"`, as the darn model-key move row renders its moved keys.
   Two rows are added: `{"loom": {"webster_fan": "review-code"}}` and `{"loom": {"webster_reviewer_fan": "review-code"}}`, each admitted with `wantDocs` `code_reviewer_fan: review-code # <comment>\n`, where `<comment>` is the line comment of `code_reviewer_fan` in `internal/loomengine/template.yaml`, which a rename carries as the webster_review row shows.
   A row sets `{"loom": {"code_reviewer_fan": ""}}` directly and is admitted with `wantDocs` `{"loom": "code_reviewer_fan: \"\"\n"}`, the shape a profile block or a task's `run_settings` carries.
-  The existing refused rows for `discussion_fan` (to `discussion_reviewer_fan`) and `review_fix_fan` (to `code_fixer_fan`) stay, and three refused rows join them for loom's retired `plan_fan`, `discussion_fix_fan` and `plan_fix_fan`, each `wantRefusal` its renamed key `plan_reviewer_fan`, `discussion_fixer_fan` or `plan_fixer_fan` with `wantModule: "loom"` and `wantInvalid: true`, so each of the other five fan keys is pinned refused through run settings.
+  The other five fan keys stay refused through run settings with no new row: the existing refused rows for `discussion_fan` and `review_fix_fan` pin the rename-then-refuse path, and `PrepareRunSettings` refuses through the same `LocalDenied` set `wantLocalDenied` pins.
 
 Docs (D7):
 - `docs/overview.md`'s loom config line replaces "all six closed to the local layer" with wording that names `code_reviewer_fan` as open to the local layer and the other five as closed.
 - `pattern/PATTERN-config-layers.md`'s Guard bullet gains a sentence naming `code_reviewer_fan` as the one reviewer fan key open to the local layer, with D5's bound: its value names only a fan the guarded `lenses.yaml` defines or `""`, and the perch's rounds, rubric and whole-diff read are unchanged.
   The `PATTERN.md` overview line is unchanged.
 
-**ImpactSummary:** one category entry in loom's spec; LocalDenied for loom loses one key, pinned by configreg's classification test; run-settings, local-layer and loom load rows change or join, no production caller changes.
+**ImpactSummary:** one category entry in loom's spec; LocalDenied for loom loses one key, pinned by configreg's classification test; run-settings and loom load rows change or join, no production caller changes.

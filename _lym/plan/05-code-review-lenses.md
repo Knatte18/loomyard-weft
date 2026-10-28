@@ -28,5 +28,6 @@ Docs (D7): `docs/dotnet-hub.md`'s `review-code` example drops `code-pattern-fit`
 
 A hub whose `lenses.yaml` names `code-pattern-fit` in a fan a fan key names fails every loom config load after the deploy; the record's open risk names the Models hub's operator dropping it first.
 The refusal it meets says to define the fan or set the entry to `""`; the recovery is to drop `code-pattern-fit` from the fan with `lym config lenses --set` or the editor, and the shared refusal text stays as it is.
+The `--set` route fixes every fan that names the lens in one call, one `--set` per fan, since a `--set` that leaves another broken fan changes the load error and is rolled back.
 
 **ImpactSummary:** the template and the csharp layer, two tests in `internal/lenses` and one doc example; no Go production code or stencil names `code-pattern-fit`.
