@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -28,6 +28,33 @@
       "output": "",
       "at": "2026-10-28T13:51:14Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/dobby-task-limit-hold/_lym/landing/summary.md",
+      "at": "2026-10-28T14:06:17Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-28T14:00:21.381138582Z",
+          "end": "2026-10-28T14:00:45.584151942Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-28T14:00:45.78658537Z",
+          "end": "2026-10-28T14:06:16.190145998Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-28T14:06:16.264237981Z",
+          "end": "2026-10-28T14:06:16.264881626Z"
+        }
+      ]
     }
   ],
   "product": {
