@@ -1,12 +1,9 @@
 {
-  "number": 1,
+  "number": 2,
+  "amendment": true,
+  "base": "87f3eb8030269a840358c6d237068fde20f0aef7",
+  "review_input": "/home/knatte/Code/loomyard-LYMHUB/creel-hook-post/.lym/loom/Parent-Align-fixer-report.md",
   "judge_subject": {
-    "kind": "code",
-    "merge_base": "87f3eb8030269a840358c6d237068fde20f0aef7",
-    "head": "2d9870d027a6bec5287881f513ee0652d959f294",
-    "full_hash": "e21090115da06b3d0cce22f0a794367db66d8f106a9157a38c8876ecbaf2b474",
-    "patch_id": "8adf30acb720f5f5703ceb403f4e104c16099f79"
-  },
-  "judge_base": "87f3eb8030269a840358c6d237068fde20f0aef7",
-  "judge_at": "2026-10-28T12:29:04Z"
+    "kind": ""
+  }
 }
