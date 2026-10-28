@@ -1,6 +1,6 @@
 # Recurring test-suite time and growth audit
 
-`test-time-audit-recurring` · Task · research, gate · running · Drift-Verify
+`test-time-audit-recurring` · Task · research, gate · running · Finalize
 
 ## What this is
 
