@@ -74,3 +74,10 @@ Plan writer plus its lens forks, means per run (API list price):
 - The Discussion phase total holds its review rounds and fixers, which is most of its cost beyond the writer; the segment figures come from the 10-24 tokencount reports, so runs landed since are priced as of then.
 - Rerun: `.scratch/discussion-overlap/reads2.sh <slug> plan|discussion` per run, then `analyze.sh`; both stay in `.scratch` and are not committed.
 - Decision (operator, 2026-10-25): Discussion stays a separate step; folding it into the Plan writer would add turns to the costliest session.
+
+## Turn audit (landed 2026-10-28)
+
+`docs/research/turn-audit-2026-10-28/report.md` (n = 1 loom run, 213 sessions) finds the Plan writer spends 33 of its 101 turns on serial single-call reads and searches, mostly shell `grep` and `sed -n`, which a merged turn would remove.
+It recommends one stencil sentence in `loom-template-plan.md` and in the twill lens directive: issue every search and read you can name in one message.
+This is a cheaper cut than the digest, the earlier fork and the split writing above, and the audit proposes no pre-read for the writer.
+The recommendation is untested: no run measured the effect, and the Plan row rests on one session.
