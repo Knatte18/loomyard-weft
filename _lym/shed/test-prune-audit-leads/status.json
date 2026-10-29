@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -28,6 +28,33 @@
       "output": "",
       "at": "2026-10-29T09:50:19Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/test-prune-audit-leads/_lym/landing/summary.md",
+      "at": "2026-10-29T10:12:42Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-29T10:04:28.345252927Z",
+          "end": "2026-10-29T10:04:47.185477765Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-29T10:04:47.25553361Z",
+          "end": "2026-10-29T10:12:41.80943423Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-29T10:12:41.907975914Z",
+          "end": "2026-10-29T10:12:41.908175123Z"
+        }
+      ]
     }
   ],
   "product": {
