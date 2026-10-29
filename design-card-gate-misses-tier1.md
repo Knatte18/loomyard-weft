@@ -1,6 +1,6 @@
 # Card gate runs tier0 only and misses tier1 breakage a card causes
 
-`card-gate-misses-tier1` · Task · bug, webster, gate · running · Describe
+`card-gate-misses-tier1` · Task · bug, webster, gate · running · PR-Review
 
 Imported from [issue #896](https://github.com/Knatte18/loomyard/issues/896).
 
