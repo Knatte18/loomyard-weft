@@ -726,7 +726,7 @@
     {
       "id": 907,
       "handle": "B1",
-      "slug": "stop-hook-selfreport",
+      "slug": "stop-hook-mail-doubled",
       "title": "File a GitHub self-report for the doubled Stop-hook mail delivery",
       "kind": "note",
       "labels": [
