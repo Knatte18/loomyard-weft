@@ -639,6 +639,24 @@
       "body": "## Seen\n\nCreel mail #2 from `ly:ADOPT` reported `adopt check: tier0 failed, passed 21018 failed 2 skipped 1, 88.1s`.\nIt names neither the failing tests nor their messages.\nThe names sit only in `suite.log` under `_board/.lym/adopt/`; `check.json` holds counts only.\nThe per-tier line is built in `runCheck` in `internal/adoptcli/check.go` from `CheckTier`, which carries no failure names.\n\n## Idea\n\nCarry the failing test names in `CheckTier`, and list each in the per-tier failure mail with its first failure line, plus the `suite.log` path.\nThe operator asked for this to be fixed and prioritized (2026-10-29).\n",
       "created": "2026-10-29T07:35:50Z",
       "revised": "2026-10-29T07:36:19Z"
+    },
+    {
+      "id": 891,
+      "handle": "B2",
+      "slug": "chases-refused-forward-journal",
+      "title": "TestScheduler_Chases fails: a refused forward grew the journal",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "creel"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The adopt tier0 run failed the refused-forward chase subtest; flake or regression from creel stage 3 is undecided.",
+      "body": "## Seen\n\nThe adopt tier0 run failed `TestScheduler_Chases/AChaseTheHolderStillHoldsUnreadIsRefusedForwardingAndStaysWithItsHolder` in `internal/creelengine`, with a machine under gate load:\n\n- `deliver_test.go:2627: journal entries after the refused forward = 20; want 19`\n- `deliver_test.go:2634: alpha's unread senders = []; want the chase still with its holder`\n\nIt was not rerun.\nEither the refused `Forward` wrote a journal entry, or the chase scheduler fired between the `before` read and the check.\nThe latest commit touching `creelengine` is `ba2a346b` (creel stage 3).\n\n## Idea\n\nRun the subtest alone repeatedly to tell a timing race from a regression, then fix the test or the scheduler deterministically.\n",
+      "created": "2026-10-29T07:36:26Z",
+      "revised": "2026-10-29T07:36:26Z"
     }
   ],
   "prime_owner": "osl-1046",
