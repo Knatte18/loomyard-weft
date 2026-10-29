@@ -755,6 +755,27 @@
       "body": "Imported from [issue #900](https://github.com/Knatte18/loomyard/issues/900).\n\nWhile tracing why a `/compact` delivery to the orch session ended as an `unconfirmed` record, the only evidence that the compact had landed was the orch's own Claude transcript.\nThe creel daemon writes no delivery-level log, so the shuttle error behind the `unconfirmed` record had to be inferred from timing.\n\nThis is abnormal because an `unconfirmed` outcome is exactly the case where an operator needs to see what the delivery attempted and what the shuttle returned.\nWithout a log, a wrong suspected cause (here, a race with the `asyncRewake` Stop waiter) survived until the transcript was checked by hand.\n\nWhat to do: have the creel daemon log each delivery attempt, with the target session, the shuttle result or error, and the final confirmed or unconfirmed decision, at a path an operator can find from the `unconfirmed` record.\n\nProvenance: task `compact-inject-draft`, note `Darn-Write.md`.\n",
       "created": "2026-10-29T07:41:23Z",
       "revised": "2026-10-29T07:41:23Z"
+    },
+    {
+      "id": 897,
+      "handle": "B5",
+      "slug": "burler-guard-readonly-git",
+      "title": "Burler fork guard halts a run on a read-only git command",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "burler",
+        "shed"
+      ],
+      "issues": [
+        898
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #898](https://github.com/Knatte18/loomyard/issues/898).\n\n## What happened\n\nA `lym loom` run halted `failed` (anomaly `producer-hard-failure`) at producer `Discussion-Burler-Review`, round 2 attempt 2.\nThe halt reason from `shedadapters` said the burler review fork \"ran a git-mutating command\".\nThe command it flagged was a chain of read-only git inspections: `git branch -a --contains \u003csha\u003e`, `git merge-base --is-ancestor \u003csha\u003e HEAD` and `git show --stat \u003csha\u003e`, piped through `head` and `grep`.\nNone of these changes repository state.\n\n## Why it is abnormal\n\nThe fork guard that rejects state-mutating git commands misclassifies read-only commands as mutating.\nLikely causes: it matches on the `branch` verb without checking for a mutating flag, or it treats the whole compound line (pipes, `\u0026\u0026`, `||`, `2\u003e/dev/null`) as unsafe.\nA false positive here is a hard failure, so a review segment that was working normally ended the run.\n\n## What to do\n\nMake the fork git guard classify by verb and arguments:\nallow `branch` with listing flags (`-a`, `-r`, `--contains`, `--list`), `merge-base`, `show`, `log`, `diff`, `status` and `rev-parse`, and judge each simple command in a pipeline or `\u0026\u0026`/`||` chain on its own.\nAdd a regression test with the command line above.\nConsider downgrading a guard hit from `producer-hard-failure` to a retried attempt, since the fork changed nothing.\n\nTrace file: `.lym/logs/trace-20261028T105548Z-7bfaff2abe252dc3-993265.log`.\n\nTask slug `validator-checks`; source note: `loom-halt.md`.\n",
+      "created": "2026-10-29T07:41:25Z",
+      "revised": "2026-10-29T07:41:25Z"
     }
   ],
   "prime_owner": "osl-1046",
