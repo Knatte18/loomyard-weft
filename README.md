@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-29 09:31 UTC; every age below is as of then.
+Rendered 2026-10-29 09:33 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -11,7 +11,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 - [P1 Workspaces: beams, pairs from a parent pair, dobby](project-workspaces.md) — Beams that develop a project in their own worktree, driven by a dobby daemon
 - [P2 .NET: LoomYard for C# repositories](project-dotnet.md) — Running LoomYard on C#/.NET repositories such as Models: scoped gates, regression, a sandbox hub
 
-## Tasks (1)
+## Tasks (2)
 
 Concrete and claimable; only a task can run.
 
@@ -21,15 +21,16 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Draft (1)
+### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Act on the first test-time audit: reedengine wait, three over-grown test packages**<br>• Injectable wait for reedengine tier2 tests (40 s); prune tests in shell, boardtest and battenrecipe | [`test-prune-audit-leads`](design-test-prune-audit-leads.md) | darn |  | 14h<br>14h | reed, board, batten |
+| T2 | `draft` **Creel hook delivery: mail arrives once, and the HookWake flake**<br>• Make a creel mail reach the agent once through the Stop hooks, and make the HookWake blocked-chain subtest deterministic.<br>• `profile: solid` | [`creel-hook-delivery-fixes`](design-creel-hook-delivery-fixes.md) | darn |  | 16m<br>0m | creel, claude |
 
-## Notes (35)
+## Notes (33)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -41,12 +42,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 6d<br>23h | loom, stencil |
 | R8 |  | **Ideas from r/ClaudeCode "one line in your CLAUDE.md": fit for LoomYard and bench measures**<br>• About 30 ideas judged against our stencils and rules; top 8 ranked for a bench, a few cheap enough without one | [`claude-md-thread-ideas`](design-claude-md-thread-ideas.md) | 2d<br>16h | stencil, loom, burler |
 
-### Bugs (5)
+### Bugs (3)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **TestScheduler_HookWake blocked-chain subtest flakes under tier_parallel 8**<br>• A creelengine hook-wake subtest failed once in the OSL-1046 bench run at tier_parallel 8; the cause is not diagnosed. | [`hookwake-blocked-chain-flake`](design-hookwake-blocked-chain-flake.md) | 15m<br>15m | creel |
-| B2 |  | **Each creel mail reaches the agent twice through the Stop hook**<br>• A mail delivered by the Stop hook shows up in the agent's context as two messages, which doubles its tokens and invites a second reading. | [`creel-mail-arrives-twice`](design-creel-mail-arrives-twice.md) | 0m<br>0m | creel, claude |
 | B3 |  | **Flaky websterengine recover-batch subtest fails once with "record changed"** | [`webster-recover-batch-flake`](design-webster-recover-batch-flake.md) | 1h<br>1h | webster |
 | B5 |  | **Burler fork guard halts a run on a read-only git command** | [`burler-guard-readonly-git`](design-burler-guard-readonly-git.md) | 1h<br>1h | burler, shed |
 | B6 |  | **Card gate runs tier0 only and misses tier1 breakage a card causes** | [`card-gate-misses-tier1`](design-card-gate-misses-tier1.md) | 1h<br>1h | webster, gate |
@@ -61,7 +60,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E4 |  | **Restore the verify-gate test for a misplaced //lym:guard marker**<br>• Once the darn verify key reads its diff base, cover the guard scan of a narrowed run again | [`verifygate-misplaced-guard-test`](design-verifygate-misplaced-guard-test.md) | 18h<br>18h | loom, gate |
 | E5 |  | **The idle ring hands the mail over itself, without an empty turn**<br>• hook-wait wakes an idle strand with a bell line only, so each mail costs one extra empty turn | [`creel-ring-carries-mail`](design-creel-ring-carries-mail.md) | 15h<br>15h | creel |
 | E6 |  | **A module label for every package group under internal/**<br>• Several lym modules have no label, so entries take the nearest one that says something else | [`label-coverage`](design-label-coverage.md) | 14h<br>14h | board |
-| E7 |  | **loom names the general run; today's loom is one variant**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | 2w<br>22m | shed, loom |
+| E7 |  | **loom names the general run; today's loom is one variant**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | 2w<br>24m | shed, loom |
 | E8 |  | **lym ide seed colours the VS Code workspace too**<br>• A hub opened as a VS Code workspace has no colour, since lym ide seed seeds only worktrees. | [`workspace-ide-seed`](design-workspace-ide-seed.md) | 1h<br>1h | ide, workspaces |
 | E9 |  | **Reed navigation keys, Alt+arrows, are seeded by lym**<br>• Alt+arrow keys do not switch windows and sessions in Reed in this hub; lym should seed them. | [`reed-alt-arrow-keys-seeded`](design-reed-alt-arrow-keys-seeded.md) | 1h<br>1h | reed, config |
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 13d<br>13d | board, loom |
