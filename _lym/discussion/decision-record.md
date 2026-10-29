@@ -244,6 +244,23 @@ Rationale: lym already has its own GitHub client, so the row needs no gh command
 - Branch protection that dismisses stale approvals turns every Finalize that brought the branch level into the D11 halt and a second approval.
 - A long wait holds a dobby `max_runs` slot per waiting run, so several open pull requests can starve a beam of new starts.
 
+<!-- lym:carry-over Discussion-Review -->
+- Discussion-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/discussion/round-1-review.md; fixer report: _lym/reviews/discussion/round-1-fixer-report.md.
+  - F1 (class design, severity BLOCKING, open in rounds 1)
+  - F2 (class design, severity BLOCKING, open in rounds 1)
+  - F3 (class design, severity BLOCKING, open in rounds 1)
+  - F4 (class decision, severity BLOCKING, open in rounds 1; answered since by: No pr_account: the pull request is opened by the gh user, and the operator ends it through the agent; The PR-Review row opens and closes the pull request, through lym's own GitHub client)
+  - d10-wait-marker-kind-unnamed (class design, severity BLOCKING, open in rounds 1)
+  - d11-disallowed-merge-method-no-way-forward (class design, severity MEDIUM, open in rounds 1)
+  - d11-github-merge-skips-fabric-merge-records (class design, severity MEDIUM, open in rounds 1)
+  - d7-session-identifiers-no-home (class design, severity MEDIUM, open in rounds 1)
+  - d7-session-limit-unenforced (class design, severity BLOCKING, open in rounds 1)
+  - d9-merged-lands-ungated-head (class design, severity BLOCKING, open in rounds 1)
+  - d9-merged-session-live-dirty-tree (class design, severity MEDIUM, open in rounds 1)
+  - operator-cannot-approve-own-pr (class decision, severity BLOCKING, open in rounds 1)
+<!-- /lym:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - D1: `beam.yaml` resolves `pull_request` to `on` when no layer sets it, refuses a value outside the three with its way forward, and refuses it in a local layer.
