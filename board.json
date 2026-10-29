@@ -544,6 +544,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #902](https://github.com/Knatte18/loomyard/issues/902).\n\n`lym gate test` failed once in a `TestRecoverSpawnOrAttach` subtest of `internal/websterengine` (the one covering a mutating fabric reference at a batch's start on a clean tree), reporting \"record changed\" although the record it printed was unchanged.\nThe change under test touches nothing `internal/websterengine` reads, and a rerun of the same gate passed.\n\nThis is abnormal: a gate failure unrelated to the change, which passes on rerun, is a flaky test and costs a gate slot and a rerun each time.\nThe likely cause is in `internal/websterengine/recoverbatch_test.go`: a closure-shared record variable is reassigned by a setup and check pair, and parallel subtests share it, so one subtest's check can compare against another subtest's record.\n\nWhat to do: give each subtest its own record, by declaring it inside the subtest body or copying it per iteration, and confirm with repeated runs under the race detector.\n\nProvenance: task `shuttle-hook-signals`, from note `Darn-Write.md`.\n",
+      "status": "running · Worktree-Create",
       "created": "2026-10-29T07:41:18Z",
       "revised": "2026-10-29T13:15:12Z"
     },
@@ -591,7 +592,6 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #896](https://github.com/Knatte18/loomyard/issues/896).\n\nA card that made `PaneMail` persist on every strand broke a tier1 `creelcli` test.\nThe card gate runs tier0 only, so it did not run that test; the later batch gate found the breakage.\nThe failure surfaced a card late, away from the change that caused it.\n\nThis is abnormal: a card's gate can pass while its own change breaks a higher-tier test, so the fix lands outside the card that introduced it.\n\nProvenance: task `creel-hook-post`, note `07-shuttle-idle-no-turn.md`.\n\n## Design\n\nThe card gate's result states that the higher tiers were not run, so a card that passes tier0 is never read as fully green.\nIt does not run tier1: a tier1 run per card costs more than the late find, and the batch gate still catches the breakage.\n",
-      "status": "draft",
       "created": "2026-10-29T07:41:27Z",
       "revised": "2026-10-29T13:15:12Z"
     },
