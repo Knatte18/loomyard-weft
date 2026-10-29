@@ -1,17 +1,17 @@
 {
   "runGuid": "c8e48468b7eabbdb323e353b975e6fee",
-  "planFingerprint": "79371ffcd95abeb2a0ef0f56cdeb7f11544c6b1fe74eef240b2cf9f68c79e5b9",
+  "planFingerprint": "62bb8d886080e5cbf7d83d6487ec34a4cf30d857ec68f1472d78f84fc1fdbbd0",
   "planFileHashes": {
     "00-overview.md": "f30d139c1d58f1df59113fcf17db45f1d1fb966da9e7eaa23f23ad84e3764bd6",
-    "01-hook-output-seam.md": "5d76f6969b19bf28fe93c68d1ce96d9ea02ae7ff0f3dc096833ead077d083e3f",
-    "02-waiter-rewake-labels.md": "08d412d6f7486587ee3c2aea3c6c4874a67000a178e398a225a651b76e4e7d68",
-    "03-ack-failure-releases.md": "7702ecaca193e87caaa92e19243e313dd467e0b24bbc8ee4d78d270a6d69a318",
-    "04-ring-claims-mail.md": "dc2f2e425d9a6975cde972f2f87ba7d862aa1eae23162e683c5e33bf145ffaf0",
+    "01-hook-output-seam.md": "1906e40c5cb431e3bb7df1e17a5caf70b624d6aa3742fb89eab9952eb2f34c54",
+    "02-waiter-rewake-labels.md": "51199bc419e401d45de72eb8d055b5fca1b288469ccbc043e32fbd84bf9c8394",
+    "03-ack-failure-releases.md": "5ee84c3885a061170909af242573349d3a5ddf37e99cb5a5a869c3ea175d3838",
+    "04-ring-claims-mail.md": "9e74bef5d9feee52f28cdde328d0c4fc0184ac1503408549acbf6fecba242657",
     "05-client-ring-ack.md": "b2231f2a9f667c099bf2bab00ac45d2d95721d7e8f42e636bc43e61d5cd391d1",
     "06-hook-wait-hands-mail.md": "da3e60cadece418b7573a34a812bd4a60af55acf5da087e92eec9abd3286489e",
-    "07-ring-echo.md": "70b4edaf24a1d6db42ec584421e4d84215cb2507c07e28ef945a1d221ecfec35",
+    "07-ring-echo.md": "831772988b79933ebe6d3567e3f706d8b74595c89600d0be719ae1b3f39848fe",
     "08-hook-read-renders-echo.md": "bb8c23b3c5a3484b3e7431c55087db9f5b3bbd00a3c4b805aab80a322482546e",
-    "09-claim-delivery-log.md": "28dd888212cbb5048efda0b20b3330814f8e91b80f4f1576c11930a18a4748ae",
+    "09-claim-delivery-log.md": "f684c5a732b25a0d02ecf9475d3d3e8d8ccb78107e3a26772c0ae301548e7096",
     "10-smoke-hook-delivery.md": "2619b3a994321304a5354dde5d7212237458cd1818bd2025d676d032460b2ee8"
   },
   "planOverviewFrameHash": "f1a534d18f8448ca53f86cc9707fe2adc709501cc1abf2eed133abd4b6ffd6bd",
@@ -215,7 +215,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "3af924911cd224b267dfbd994a4414ce",
   "masterSessionId": "25e8c3e8-2951-44dc-b4f4-afcdbe80cad2",
   "masterEngine": "claude",
@@ -229,18 +229,41 @@
         "04-ring-claims-mail"
       ],
       "cardHashes": {
-        "01-hook-output-seam": "5d76f6969b19bf28fe93c68d1ce96d9ea02ae7ff0f3dc096833ead077d083e3f",
-        "02-waiter-rewake-labels": "08d412d6f7486587ee3c2aea3c6c4874a67000a178e398a225a651b76e4e7d68",
-        "03-ack-failure-releases": "7702ecaca193e87caaa92e19243e313dd467e0b24bbc8ee4d78d270a6d69a318",
-        "04-ring-claims-mail": "dc2f2e425d9a6975cde972f2f87ba7d862aa1eae23162e683c5e33bf145ffaf0"
+        "01-hook-output-seam": "1906e40c5cb431e3bb7df1e17a5caf70b624d6aa3742fb89eab9952eb2f34c54",
+        "02-waiter-rewake-labels": "51199bc419e401d45de72eb8d055b5fca1b288469ccbc043e32fbd84bf9c8394",
+        "03-ack-failure-releases": "5ee84c3885a061170909af242573349d3a5ddf37e99cb5a5a869c3ea175d3838",
+        "04-ring-claims-mail": "9e74bef5d9feee52f28cdde328d0c4fc0184ac1503408549acbf6fecba242657"
       },
       "startSha": "4a059d2a437aee803bdc5a1d5799d0b06a736707",
       "kind": "fork",
       "spawnedAt": "2026-10-29T13:36:09Z",
       "sessionId": "25e8c3e8-2951-44dc-b4f4-afcdbe80cad2",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-hook-output-seam",
+        "status": "done",
+        "head_sha": "28a7986793d892ef4333d78af4c79d15fe565fa8",
+        "deviations": [
+          "internal/creelcli/hookread.go",
+          "internal/creelengine/server_test.go",
+          "internal/creelengine/verbs.go",
+          "internal/shuttleengine/engine.go"
+        ]
+      },
+      "cardShas": [
+        "28a7986793d892ef4333d78af4c79d15fe565fa8"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-creel-mail-delivered-once/25e8c3e8-2951-44dc-b4f4-afcdbe80cad2/subagents/agent-abd7d7d3c844b3732.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-creel-mail-delivered-once/25e8c3e8-2951-44dc-b4f4-afcdbe80cad2/subagents/agent-abd7d7d3c844b3732.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-creel-mail-delivered-once/25e8c3e8-2951-44dc-b4f4-afcdbe80cad2/subagents/agent-abd7d7d3c844b3732.jsonl"
+  ]
 }

@@ -7,8 +7,8 @@
 - `internal/shuttleengine/claudeengine/doc.go`
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#creelRewakeMessage` -> `const creelRewakeMessage = "[creel] Mail that arrived while you were idle:"`
-- `plan:internal/shuttleengine/claudeengine#creelRewakeSummary` -> `const creelRewakeSummary = "creel mail"`
+- `internal/shuttleengine/claudeengine#creelRewakeMessage`
+- `internal/shuttleengine/claudeengine#creelRewakeSummary`
 
 **Intent:**
 Decision D4: the idle waiter's Stop hook entry carries creel's labels for the wake, so the model reads `[creel] Mail that arrived while you were idle: <lines>` instead of `Stop hook blocking error from command "<hook name>":`, and the operator's notification row reads `creel mail`.

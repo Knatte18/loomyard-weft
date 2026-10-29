@@ -7,7 +7,7 @@
 - `internal/creelengine#Reading.Ack`
 - `internal/creelengine#Reading.Release`
 - `internal/creelengine#Store.ClaimAtBoundary`
-- `plan:internal/creelengine#Store.claimLocked`
+- `internal/creelengine#Store.claimLocked`
 - `internal/creelengine#Store.flaggedFilesLocked`
 - `internal/creelengine#Response`
 - `internal/creelengine#daemon.handOut`
@@ -19,7 +19,7 @@
 - `plan:internal/creelengine#EchoHeading` -> `const EchoHeading = "[creel] Delivered while idle:"`
 
 **Uses:**
-- `plan:internal/creelengine#Store.FailJournalWrites`
+- `internal/creelengine#Store.FailJournalWrites`
 - `internal/creelengine_test#newFlaggedEnv`
 - `internal/creelengine#Store.Forward`
 - `internal/creelengine_test#env.start`

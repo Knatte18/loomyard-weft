@@ -8,7 +8,7 @@
 - `internal/creelengine#Store.ringHook`
 - `internal/creelengine#worker.typeBell`
 - `internal/creelengine#daemon.handOut`
-- `plan:internal/creelengine#daemon.awaitAck`
+- `internal/creelengine#daemon.awaitAck`
 - `internal/creelengine/doc.go`
 
 **Create:**
@@ -16,7 +16,7 @@
 - `plan:internal/creelengine_test#TestStore_ClaimLog` -> `func TestStore_ClaimLog(t *testing.T)`
 
 **Uses:**
-- `plan:internal/creelengine#Store.FailJournalWrites`
+- `internal/creelengine#Store.FailJournalWrites`
 - `internal/creelengine_test#env.start`
 - `internal/creelengine_test#awaitOutcome`
 - `internal/creelengine_test#env.probeWaits`
