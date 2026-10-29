@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Creel mail reaches the model and the operator once, in one message, and is logged**<br>• Fix the doubled Stop-hook delivery and its error label, let the idle ring carry the mail, and log each delivery attempt<br>• `profile: solid` | [`creel-mail-delivered-once`](design-creel-mail-delivered-once.md) | loom | Discussion-Burler-Fix | osl-1046 | 18h<br>39m | creel |
-| T2 | **lym ide seed colours the VS Code workspace and passes Alt+arrow through to Reed**<br>• Seed the workspace like a worktree and seed the VS Code terminal setting for the Reed navigation keys<br>• `profile: light` | [`ide-seed-workspace-and-keys`](design-ide-seed-workspace-and-keys.md) | darn | PR-Review | osl-1046 | 5h<br>39m | ide, workspaces, reed, config |
+| T2 | **lym ide seed colours the VS Code workspace and passes Alt+arrow through to Reed**<br>• Seed the workspace like a worktree and seed the VS Code terminal setting for the Reed navigation keys<br>• `profile: light` | [`ide-seed-workspace-and-keys`](design-ide-seed-workspace-and-keys.md) | darn | Finalize | osl-1046 | 5h<br>39m | ide, workspaces, reed, config |
 | T3 | **Map every rule of the loomyard CLAUDE.md to where lym agents already get it**<br>• One darn docs run lands a per-rule table so the operator decides each rule before CLAUDE.md is deleted<br>• `profile: docs` | [`claude-md-rule-map`](design-claude-md-rule-map.md) | darn | Darn-Write | osl-1046 | 2m<br>2m | pattern, stencil |
 
 ### Ready (0)
