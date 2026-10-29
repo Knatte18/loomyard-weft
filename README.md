@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-29 12:09 UTC; every age below is as of then.
+Rendered 2026-10-29 12:13 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -16,8 +16,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Creel mail reaches the model and the operator once, in one message, and is logged**<br>• Fix the doubled Stop-hook delivery and its error label, let the idle ring carry the mail, and log each delivery attempt<br>• `profile: solid` | [`creel-mail-delivered-once`](design-creel-mail-delivered-once.md) | loom | Discussion-Burler-Review | osl-1046 | 17h<br>11m | creel |
-| T2 | **lym ide seed colours the VS Code workspace and passes Alt+arrow through to Reed**<br>• Seed the workspace like a worktree and seed the VS Code terminal setting for the Reed navigation keys<br>• `profile: light` | [`ide-seed-workspace-and-keys`](design-ide-seed-workspace-and-keys.md) | darn | Darn-Write | osl-1046 | 4h<br>11m | ide, workspaces, reed, config |
+| T1 | **Creel mail reaches the model and the operator once, in one message, and is logged**<br>• Fix the doubled Stop-hook delivery and its error label, let the idle ring carry the mail, and log each delivery attempt<br>• `profile: solid` | [`creel-mail-delivered-once`](design-creel-mail-delivered-once.md) | loom | Discussion-Burler-Review | osl-1046 | 17h<br>15m | creel |
+| T2 | **lym ide seed colours the VS Code workspace and passes Alt+arrow through to Reed**<br>• Seed the workspace like a worktree and seed the VS Code terminal setting for the Reed navigation keys<br>• `profile: light` | [`ide-seed-workspace-and-keys`](design-ide-seed-workspace-and-keys.md) | darn | Darn-Write | osl-1046 | 4h<br>15m | ide, workspaces, reed, config |
 
 ### Ready (0)
 
@@ -53,7 +53,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>18h | shuttle, codex |
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 1d<br>1d | batten, stencil, config |
 | E4 |  | **Restore the verify-gate test for a misplaced //lym:guard marker**<br>• Once the darn verify key reads its diff base, cover the guard scan of a narrowed run again | [`verifygate-misplaced-guard-test`](design-verifygate-misplaced-guard-test.md) | 20h<br>20h | loom, gate |
-| E5 | H | **Take every non-LoomYard-specific rule out of the loomyard CLAUDE.md**<br>• CLAUDE.md holds only rules for developing LoomYard; rules for lym agents go to stencils and skills | [`claude-md-lym-rules-out`](design-claude-md-lym-rules-out.md) | 4m<br>4m | stencil |
+| E5 | H | **Take every non-LoomYard-specific rule out of the loomyard CLAUDE.md**<br>• CLAUDE.md holds only rules for developing LoomYard; rules for lym agents go to stencils and skills | [`claude-md-lym-rules-out`](design-claude-md-lym-rules-out.md) | 9m<br>9m | stencil |
 | E6 |  | **A module label for every package group under internal/**<br>• Several lym modules have no label, so entries take the nearest one that says something else | [`label-coverage`](design-label-coverage.md) | 17h<br>17h | board |
 | E7 |  | **loom names the general run; today's loom is one variant**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | 2w<br>3h | shed, loom |
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 2w<br>2w | board, loom |
@@ -61,14 +61,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 11d<br>2d | webster, fabric, loom |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 10d<br>2d | fabric, batten |
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 6d<br>21h | burler, claude |
-| E28 |  | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 7d<br>17m | dotnet |
+| E28 |  | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 7d<br>22m | dotnet |
 
 ### Features (13)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 3w<br>2d | burler |
-| F2 | H | **warp-visibility: lym leaves no instruction file in the repository, CLAUDE.local.md at most**<br>• Move lym agents rules into stencils so no lym CLAUDE file is needed; fallback is one Bolt-held CLAUDE.local.md copied into every worktree | [`warp-visibility`](design-warp-visibility.md) | 3w<br>4m | ide, fabric |
+| F2 | H | **warp-visibility: LoomYard needs no CLAUDE.md of its own**<br>• Drop the loomyard CLAUDE.md after moving any rule only it holds into PATTERN, stencils or skills; no CLAUDE.local.md channel | [`warp-visibility`](design-warp-visibility.md) | 3w<br>0m | ide, fabric |
 | F3 |  | **Windows lym opens land tiled on the right KDE virtual desktop**<br>• Konsole and VS Code windows opened by lym placed by desktop and tile on KDE Plasma | [`kde-window-placement`](design-kde-window-placement.md) | 20h<br>20h | reed, ide, config |
 | F4 |  | **A landing notice on request, per task**<br>• The orch can ask for one creel line when a named run lands; off unless set for that slug | [`landing-watch`](design-landing-watch.md) | 17h<br>17h | dobby, creel, orch |
 | F5 |  | **Fabric's ordinary-monorepo verb surface**<br>• Against plain git, fabric still lacks log, show, branch, tag, stash, revert, restore, rm/mv, rebase, cherry-pick and blame | [`fabric-monorepo-verbs`](design-fabric-monorepo-verbs.md) | 3w<br>3w | fabric |
@@ -78,5 +78,5 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F12 |  | **Spawn audit log: every process lym starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | 2w<br>2d | reed, shuttle, config |
 | F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 2w<br>1d | webster |
 | F15 |  | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 2w<br>2d | reed, config, batten |
-| F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 13d<br>20h | burler, shed, orch, quarry, report |
+| F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 13d<br>21h | burler, shed, orch, quarry, report |
 | F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 6d<br>2d | loom, shed, batten, workspaces, burler |
