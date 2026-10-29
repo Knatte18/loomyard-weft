@@ -646,7 +646,7 @@
       "isolated": false,
       "brief": "Seed the workspace like a worktree and seed the VS Code terminal setting for the Reed navigation keys",
       "body": "## Goal\n\n`lym ide seed` seeds a VS Code workspace like a worktree, and seeds what the VS Code terminal needs to pass Alt+arrow through to Reed's tmux.\n\n## Seen\n\n- The operator opened the loomyard hub as a VS Code workspace and it carries no colour.\n  `lym ide seed` writes the VS Code config, window title and colours of the prime or a task worktree, but nothing for the workspace itself.\n- In that workspace, Alt+arrow keys do not switch windows and sessions in Reed.\n  In a Konsole window they do (operator, 2026-10-29), so the layer that swallows the keys is VS Code's integrated terminal, not tmux or the desktop.\n\n## Scope\n\n- Seed the workspace like a worktree: its own colour, window title and the rest of the config `lym ide seed` writes for a worktree, so a workspace window is told apart from its worktrees at a glance.\n- Seed the VS Code setting that passes Alt+arrow through to the shell, so the Reed keys work in any hub opened in VS Code.\n  Which setting does it, such as `terminal.integrated.sendKeybindingsToShell` or a `commandsToSkipShell` entry, is the first thing to find, and is proved by the keys working in the VS Code terminal.\n",
-      "status": "running · Code-Burler-Fix",
+      "status": "running · Code-Bouncer",
       "created": "2026-10-29T07:36:56Z",
       "revised": "2026-10-29T11:57:52Z",
       "profile": "light"
