@@ -12,7 +12,7 @@ The Konsole windows lym opens on a run's worktree (`lym reed window`, batten's t
 A window lym opens lands tiled on the right virtual desktop by itself.
 How the placement rules are written and kept is open (operator, 2026-10-28); the candidates:
 
-- KWin window rules (`kwinrulesrc`) that match the window title or class lym already sets, such as the reed window's `--title` and the VS Code window title `lym ide seed` writes, and assign desktop and position.
+- KWin window rules (`kwinrulesrc`) that match the window title or class lym already sets, such as the reed window's `--title` and the VS Code window title `lym ide seed` writes (a hub or beam workspace file now sets `window.title` to `<SHORTNAME>: <name> workspace`, since `ide-seed-workspace-and-keys`), and assign desktop and position.
   KWin keeps them, and lym only names its windows predictably; lym could write or check the rules from a config of its own.
 - lym places each window after opening it, through KWin's D-Bus or a KWin script, from a config that maps a window kind (orch, run, IDE) to a desktop and a tile.
 - Plasma 6 tiling: whether a rule or a script can put a window into a named custom tile, or only on a desktop and screen edge, is to be found out first.
