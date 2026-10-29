@@ -1,6 +1,6 @@
 # Creel hook delivery: mail arrives once, and the HookWake flake
 
-`creel-hook-delivery-fixes` · Task · bug, creel, claude · running · PR-Review
+`creel-hook-delivery-fixes` · Task · bug, creel, claude · running · Finalize
 
 ## Seen
 
