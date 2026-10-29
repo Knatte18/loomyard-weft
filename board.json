@@ -302,9 +302,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "creel-flakes-and-adopt-names"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "Time both gate tiers on the work laptop on a quiet machine and log them in docs beside the Neve numbers, with full hardware info",
       "body": "## Done (2026-10-20)\n\nThe before and after measurement of `-trimpath` is in `docs/benchmarks/gate-test-xdr.md`.\nThe `go_parallel` sweep at 4, 8 and 12 is in the same file (`03af4c75`): no value gave a real gain, 8 was 6 % under 4 while two runs at 4 differed by 36 s, and no run failed, so `go_parallel` stays 4.\n\n## Seen in the sweep\n\nWith `-trimpath` the build is reproducible: a fresh `GOCACHE` links byte-identical test binaries whose hashes XDR already knows, so it holds none of them.\nThe sweep forced new hashes with a random `-ldflags=-B` build ID, and even then few packages were held; `internal/fabricengine` (117-175 s) bounds the tier's wall time, and the rise at 8 and 12 is contention.\n\n## Still open\n\nThe case the sweep set out to cover is unmeasured: a refill after a real change to a widely imported package, such as `internal/logger`, which showed about 50 held packages and a verify of about 6 min.\nWhether a higher `-p` overlaps those holds needs one such run at 4 and one at 8.\n\n## When\n\nThe hub now runs on OSL-1046, so the measurement can be made here.\nIt waits until the task `creel-flakes-and-adopt-names` has landed, so the run meets no flaky test (operator, 2026-10-29).\nIt runs as a darn task with profile `docs`, and its report lands in `docs/benchmarks/gate-test-xdr.md`.\n\n## Cap\n\nExactly two measured gate runs on one input, a change to `internal/logger`: one at `go_parallel` 4 and one at 8.\nNo other input, no repeats, no Codex.\nThe run records the held-package count and the verify time of each, with the hardware info the file already holds.\n",
@@ -745,31 +743,6 @@
       "body": "Imported from [issue #896](https://github.com/Knatte18/loomyard/issues/896).\n\nA card that made `PaneMail` persist on every strand broke a tier1 `creelcli` test.\nThe card gate runs tier0 only, so it did not run that test; the later batch gate found the breakage.\nThe failure surfaced a card late, away from the change that caused it.\n\nThis is abnormal: a card's gate can pass while its own change breaks a higher-tier test, so the fix lands outside the card that introduced it.\nConsider letting the card gate run the tier1 tests of packages the card's diff touches, or flagging in the card result that higher tiers were not run.\n\nProvenance: task `creel-hook-post`, note `07-shuttle-idle-no-turn.md`.\n",
       "created": "2026-10-29T07:41:27Z",
       "revised": "2026-10-29T07:41:27Z"
-    },
-    {
-      "id": 899,
-      "handle": "T3",
-      "slug": "creel-flakes-and-adopt-names",
-      "title": "Fix two flaky creel tests and name failing tests in the adopt mail",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "creel",
-        "gate"
-      ],
-      "issues": [
-        895,
-        901
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Make the daemon lifecycle and TestCreelCLI EXTERNAL tests deterministic, and list failed tests in the adopt check mail.",
-      "body": "## Seen\n\nThree findings, one task: two flaky creel tests and the adopt check mail that left the first flake undiagnosable.\n\n### Adopt check mail names the failing tests\n\nCreel mail from `ly:ADOPT` reported `adopt check: tier0 failed, passed 21018 failed 2 skipped 1, 88.1s`, naming neither the failing tests nor their messages.\nThe names sit only in `suite.log` under `_board/.lym/adopt/`; `check.json` holds counts only.\nThe per-tier line is built in `runCheck` in `internal/adoptcli/check.go` from `CheckTier`, which carries no failure names.\nThe operator asked for this to be fixed and prioritized (2026-10-29).\n\n### Daemon lifecycle test: \"another daemon holds this hub\" (issue #895)\n\nA gate run failed once on the `internal/creelengine` `TestDaemon_Lifecycle` subtest covering a hook wait that reconnects across a daemon restart, with \"the daemon ended before it listened: creel: another daemon holds this hub\" (`server_test.go`).\nNo code under test had changed, and the identical gate passed on the next run.\nThis points to a race between the first daemon releasing the hub and the second daemon starting.\n\n### `TestCreelCLI` EXTERNAL row (issue #901)\n\nThe `TestCreelCLI` EXTERNAL row failed twice in full-package tier1 runs while other worktrees' gates loaded the machine, then passed alone and in later runs.\nIt does not reproduce without load, so it looks timing-sensitive.\nTelling a flake from a break took a stash round-trip to the base tree.\n\n## Fix\n\n- Carry the failing test names in `CheckTier`, and list each in the per-tier failure mail with its first failure line, plus the `suite.log` path.\n- Look at the hub-release ordering in the creel daemon shutdown path, and make the lifecycle test wait for the release or retry the start, so it is deterministic.\n- Find the timing assumption in the EXTERNAL row, a fixed wait or a tight deadline, and make it load-tolerant.\n",
-      "status": "done",
-      "created": "2026-10-29T07:35:50Z",
-      "revised": "2026-10-29T08:15:55Z",
-      "profile": "light"
     }
   ],
   "prime_owner": "osl-1046",
