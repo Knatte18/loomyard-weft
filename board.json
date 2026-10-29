@@ -679,6 +679,24 @@
       "body": "## Seen (operator, 2026-10-29)\n\nThe operator wants the README rendering revised.\nThe trigger: the note `csharp-sandbox-hub` was a member of the project `dotnet`, so it rendered only on `project-dotnet.md` and left the README's type groups, while the README listed the project as one line with its brief, no member count and no titles.\nThe note looked gone, and a project with members looked as empty as one without.\n\nOther unclear spots seen in the same read:\n\n- The notes tables have a `P` column that holds the priority, `L` for low, while `P` is also the handle letter of a project.\n- A project page carries a stray line reading `grouping` under its brief.\n\n## Idea\n\nShow each project's members, or at least their count, under its line in the README, so no entry disappears from the README's view, and settle the rest of the revision with the operator.\n",
       "created": "2026-10-29T09:40:37Z",
       "revised": "2026-10-29T09:49:15Z"
+    },
+    {
+      "id": 901,
+      "handle": "B1",
+      "slug": "creel-stop-hook-doubled",
+      "title": "Stop-hook mail still arrives as feedback plus a blocking error that carries the hook command",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "creel"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "After the delivery fix the pointer line comes twice and the hook command text still reaches the model",
+      "body": "## Seen\n\nAfter the landing of `creel-hook-delivery-fixes`, the orch session still gets every creel mail as a pair of Stop-hook messages (operator, 2026-10-29).\nThe mail text itself reaches the model once now, in the hook's additional context, but the surrounding messages are doubled and carry the hook command.\n\nOne mail arrives in two steps:\n\n1. The `hook-wait claude` ring wakes the idle strand with a system notification titled `Stop hook feedback`, whose body is a `Stop hook blocking error from command \"Stop\"` holding the bell line `[creel] Mail is waiting for you. End this turn now; ...`.\n2. When the turn ends, the `hook-read claude` hook delivers the mail as a user turn that holds both a `Stop hook feedback:` line, `[creel] Mail for you arrived as this turn ended; ...`, and a `Stop hook blocking error from command:` message that repeats that same line after the whole shell text of the hook command, with the mail in `Stop hook additional context`.\n\nSo the model reads the pointer line twice in step 2, and the full hook command text, with its paths and flag-file logic, sits in the agent's context.\nThe earlier task's fix text said the hook command text should not appear in the agent's context at all; it still does.\n\n## Fix\n\n- Find why the harness shows the `hook-read` result both as feedback and as a blocking error, and whether the exit code, the `decision` field or the `reason` field of the hook's JSON causes the second copy.\n- Make the pointer line reach the model once and keep the command text out of the context.\n- Decide whether the step 1 bell and the step 2 delivery can be one message; this is the point of `creel-ring-carries-mail`, so fold the two notes together if the cause is shared.\n",
+      "created": "2026-10-29T11:50:16Z",
+      "revised": "2026-10-29T11:50:16Z"
     }
   ],
   "prime_owner": "osl-1046",
