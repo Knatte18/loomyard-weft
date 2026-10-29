@@ -47,7 +47,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 | H | **The adopt check mail names the failing tests**<br>• The adopt tier0 failure mail gives only counts, so the operator cannot see which tests failed. | [`adopt-check-names-failures`](design-adopt-check-names-failures.md) | 5m<br>5m | gate |
-| B2 |  | **TestScheduler_Chases fails: a refused forward grew the journal**<br>• The adopt tier0 run failed the refused-forward chase subtest; flake or regression from creel stage 3 is undecided. | [`chases-refused-forward-journal`](design-chases-refused-forward-journal.md) | 5m<br>5m | creel |
+| B2 |  | **TestScheduler_Chases refused-forward subtest races alpha's delivery worker**<br>• The refused-forward chase subtest is a timing flake: it never waits for the delivery worker that reads the chase. | [`chases-refused-forward-journal`](design-chases-refused-forward-journal.md) | 5m<br>0m | creel |
 | B3 |  | **Flaky websterengine recover-batch subtest fails once with "record changed"** | [`webster-recover-batch-flake`](design-webster-recover-batch-flake.md) | 0m<br>0m | webster |
 | B4 |  | **TestCreelCLI EXTERNAL row flakes in full-package tier1 runs under machine load** | [`creelcli-external-row-flake`](design-creelcli-external-row-flake.md) | 0m<br>0m | creel |
 | B5 |  | **Burler fork guard halts a run on a read-only git command** | [`burler-guard-readonly-git`](design-burler-guard-readonly-git.md) | 0m<br>0m | burler, shed |
