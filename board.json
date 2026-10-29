@@ -696,6 +696,28 @@
       "body": "## Seen\n\nThe quiet, driver-dead, api-error and usage-limit notices are built in `internal/battenshed/notice.go`, as a row of each batten run's own recipe, and run inside the pass dobby spawns for that run (operator, 2026-10-29).\nDobby is the common driver of every batten run under its beam, the pawl run of a beam included, which the dobby of the beam's parent drives.\nIts loop already reads every run's state, writes a heartbeat and posts its own notices, so it sees what each notice needs.\n\n## Idea\n\nDobby detects and sends these notices itself, in its loop over the runs it drives, and the batten recipe keeps no notice row.\nA run waiting on a person, such as a pull request, is then read by the same loop through the wait markers it already honours, so a long wait never reads as a stall.\nThe detection logic, its keys and its idle clocks move as they are; only the place that runs them changes.\n\n## Open\n\n- What replaces the notice row's place in the batten pass, and how a notice's key and stamp survive a dobby re-exec.\n- Whether the notices of a run driven by another machine's dobby stay with that dobby's machine.\n- The order against `pr-review-row`, which registers its wait marker for the existing quiet check first.\n",
       "created": "2026-10-29T13:08:11Z",
       "revised": "2026-10-29T13:08:11Z"
+    },
+    {
+      "id": 906,
+      "handle": "T7",
+      "slug": "pattern-spawn-and-links-scans",
+      "title": "PATTERN entries and scans for interactive spawns and filesystem links",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "pattern",
+        "shuttle",
+        "fabric"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Move the tmux-only spawn rule and the fslink rule from CLAUDE.md into PATTERN with a scan each",
+      "body": "## Goal\n\nTwo rules that stand today only in the loomyard `CLAUDE.md` become PATTERN entries with a scan each, so they survive the file's deletion (`docs/research/claude-md-rule-map-2026-10-29.md`, operator decision 2026-10-29).\n\n## Scope\n\n- A PATTERN entry for spawning an agent: every agent lym spawns runs as an interactive tmux session driven through reed, never `claude -p`, with a scan that fails on a `claude` spawn carrying `-p`.\n  Read `README.md` and `internal/shuttleengine/doc.go` for the rule's current wording, and `internal/pattern` for how an entry and its scan are written.\n- A PATTERN entry for filesystem links: every link goes through `internal/fslink` (`CreateDirLink`), directory junctions on Windows and symlinks elsewhere, with a scan that fails on `os.Symlink` or `os.Link` outside `internal/fslink`.\n  `internal/fabricengine/doc.go` notes that the Windows claim of the rule is unsettled; the entry states only what the scan can hold.\n- Each entry carries its `(test)` mark, and the change adds the scans' tests, with a case of the scan finding a violation and a case of it passing.\n- No change to `CLAUDE.md`; its deletion is the task that follows (`claude-md-lym-rules-out`).\n",
+      "status": "draft",
+      "created": "2026-10-29T13:19:18Z",
+      "revised": "2026-10-29T13:19:18Z"
     }
   ],
   "prime_owner": "osl-1046",
