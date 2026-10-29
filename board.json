@@ -741,6 +741,25 @@
       "body": "## Seen\n\nRun 2 of the `bench-osl1046-xdr` bench, at `tier_parallel` 8 on OSL-1046, failed one `internal/creelengine` test: `TestScheduler_HookWake/MailArrivingInAWokenTurnsBlockedChain...` (the strand's report truncates the name).\nThe run's cap allowed no repeat, so it was not rerun and its message was not read.\nIt is the third timing-sensitive creel test seen on this machine, after the refused-forward chase subtest and the daemon lifecycle and `TestCreelCLI` flakes bundled in `creel-flakes-and-adopt-names`.\n\n## Idea\n\nRun the subtest alone repeatedly, with and without CPU load, to find which wait it assumes, and make it wait for the worker or event it depends on instead of for time.\n",
       "created": "2026-10-29T09:16:21Z",
       "revised": "2026-10-29T09:16:21Z"
+    },
+    {
+      "id": 900,
+      "handle": "B2",
+      "slug": "creel-mail-arrives-twice",
+      "title": "Each creel mail reaches the agent twice through the Stop hook",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "creel",
+        "claude"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A mail delivered by the Stop hook shows up in the agent's context as two messages, which doubles its tokens and invites a second reading.",
+      "body": "## Seen (operator, 2026-10-29)\n\nThe operator sees a creel mail processed twice by the model: once when the hook fires, and once more when the model repeats what the hook delivered.\n\nIn the orch session each mail arrived as two messages: a `Stop hook feedback:` line carrying the mail, and a `Stop hook blocking error from command` message that repeats the mail after the whole hook command text.\nBefore each Stop-hook mail the session first gets `[creel] Mail is waiting for you`, ends its turn, and only then sees the mail.\nThe `PostToolUse` variant delivers the mail once, under a tool result.\n\n## Idea\n\nFind whether the Stop hook's exit code or output makes Claude Code surface the same text as both feedback and error, and make the hook deliver the mail once; the command text should not appear in the agent's context at all.\nCheck whether the hook-wake flake `TestScheduler_HookWake` is related.\n",
+      "created": "2026-10-29T09:30:29Z",
+      "revised": "2026-10-29T09:30:29Z"
     }
   ],
   "prime_owner": "osl-1046",
