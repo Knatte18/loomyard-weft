@@ -6,7 +6,7 @@
      the engine fills the parent and edit directives, and BaselineTable fills the rest.
      scope_note is the only optional marker: it is empty until a scope is recorded, and then says so.
      There are no conditionals anywhere in this file.
-lym-stencil: sha256=5e7334c1c11780a593a4256db081174b9263eb9aa2b6a41a515633951a1673b0 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+lym-stencil: sha256=7e82455c271b442fedb697c80db6cd0fce2fd666f41ce50a56d5d2c92d81d8f3 build=c15d6390d28286d8e0b70fcac8ec021f9ef46d59 time=2026-10-29T14:15:15Z -->
 
 # Drift baseline — scope the regression of this task
 
@@ -20,7 +20,7 @@ No operator is present, so make best-judgment calls and never block on a dialog.
 
 Read the task's subject: {{.subject_reading}}.
 It is the whole statement of the change the task makes.
-Also read the repository's `CLAUDE.md`, which names how the repository is built and tested.
+Also read the repository's README and its test setup, which name how the repository is built and tested.
 
 ## Step 2 — Decide the scope
 

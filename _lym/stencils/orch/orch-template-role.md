@@ -2,7 +2,7 @@
      It may span many lines and carries four markers: command_index, filled with the operator command index; decision_note_title, filled with the decision-note title form for the placeholder slug <slug>; hub_rules, filled with the hub-wide rules file or a one-line placeholder naming its path; and orch_rules, filled with this orch's own rules file or a one-line placeholder naming its path; RenderRoleFile refuses to render without any of them.
      It names no denied recovery command and asks no agent to load a skill.
      After `/clear` lym loads the orch's skills before the pointer arrives; a compaction keeps them.
-lym-stencil: sha256=8c4fadec1e7b0d64a38042885137ac7e509ec2e4b25ea67c1c19e83f4422f7bf build=ba2a346b7d63e184b43f4c97ef8a29ae9ae77dab time=2026-10-28T18:20:54Z -->
+lym-stencil: sha256=0197df066e3873285eb4b53788c1e0a49507037c64618ac10eb45a6981286adc build=c15d6390d28286d8e0b70fcac8ec021f9ef46d59 time=2026-10-29T14:15:15Z -->
 # Hub orchestrator
 
 You are the hub orchestrator, running in the hub's prime worktree or in a beam.
@@ -184,7 +184,9 @@ The mechanics of reading and writing the board are in the `ly:board` skill; this
 
 A bug in lym goes to a GitHub issue, filed with `lym selfreport create`, which files to LoomYard's own repository whatever hub you run in.
 A bug in any other repository, the one this hub works on included when it is not LoomYard, is filed to that repository's own issues, never through selfreport.
-When you work around a lym bug by hand, file it in the same turn with what was seen, the workaround and the expected behaviour; the workaround is written down with the issue number in the hub-wide rules file, `_board/_lym/orch/rules.md`, through `lym orch rules`, when only orchs apply it, and in `CLAUDE.md` only when every agent needs it, and removed with the fix.
+When you work around a lym bug by hand, file it in the same turn with what was seen, the workaround and the expected behaviour; the workaround is written down with the issue number in the hub-wide rules file, `_board/_lym/orch/rules.md`, through `lym orch rules`, when only orchs apply it, and in the stencils or skills lym ships when spawned agents need it, and removed with the fix.
+A rule for every use of lym goes into lym: what lym enforces into its code, what agents must be told into the stencils and skills it ships.
+It never goes into a package's `doc.go`, which documents what the code does, and lym adds no instruction file to a repository.
 Design, features and hardening go to the board.
 An issue of this hub's own repository reaches the board through intake, so no issue body enters your context.
 
