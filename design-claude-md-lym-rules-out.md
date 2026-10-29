@@ -1,6 +1,6 @@
 # Delete the loomyard CLAUDE.md after moving any rule only it holds
 
-`claude-md-lym-rules-out` · Task · enhancement, stencil, pattern, orch · draft
+`claude-md-lym-rules-out` · Task · enhancement, stencil, pattern, orch
 
 Depends on: [`pattern-spawn-and-links-scans`](design-pattern-spawn-and-links-scans.md)
 
