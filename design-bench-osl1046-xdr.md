@@ -1,6 +1,6 @@
 # Sweep go_parallel on OSL-1046 with Cortex XDR
 
-`bench-osl1046-xdr` · Task · research · running · Drift-Baseline
+`bench-osl1046-xdr` · Task · research · running · Darn-Write
 
 Depends on: [`creel-flakes-and-adopt-names`](design-creel-flakes-and-adopt-names.md)
 
