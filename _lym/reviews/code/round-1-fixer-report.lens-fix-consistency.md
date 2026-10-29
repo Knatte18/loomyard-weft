@@ -1,0 +1,2 @@
+- LOW — `pattern/PATTERN-fs-links.md:5`: the bullet says the scan reports calls "through whatever name the file binds `os` to"; a dot import binds no name, and the scan now reports the import line itself, which the bullet does not say.
+- Note: `TestInteractiveSpawn_Allowlist` is a separate test, not the review's optional fixture-loop field; the fixer-report should mark it as fixed differently.
