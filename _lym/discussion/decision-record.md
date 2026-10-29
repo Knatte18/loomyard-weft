@@ -65,6 +65,13 @@ Rationale: CLAUDE.md asks for PATTERN in the same commit as a new invariant, whi
 - The spawn scan's identifier heuristic (a name holding `claude`) could flag an unrelated call that takes a `-p` literal; an allowlist entry with a reason is the remedy.
 - A future claude-engine string carrying a `-p` token for another tool would need an allowlist entry.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - fslink-scan-dot-import-of-os-skipped (class design, severity MEDIUM, open in rounds 1)
+  - spawn-scan-allowlist-consulted-before-findings (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: `PATTERN.md` carries `PATTERN-interactive-spawn` in "Agents and prompts" with `(test)` and a background link, and `pattern.Check` passes on the real tree.
