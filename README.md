@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-29 08:13 UTC; every age below is as of then.
+Rendered 2026-10-29 08:14 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -15,13 +15,19 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (1)
+### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T2 | **TestScheduler_Chases refused-forward subtest races alpha's delivery worker**<br>• The refused-forward chase subtest is a timing flake: it never waits for the delivery worker that reads the chase.<br>• `profile: light` | [`chases-refused-forward-journal`](design-chases-refused-forward-journal.md) | darn | Worktree-Create | osl-1046 | 37m<br>0m | creel |
+
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T2 | **TestScheduler_Chases refused-forward subtest races alpha's delivery worker**<br>• The refused-forward chase subtest is a timing flake: it never waits for the delivery worker that reads the chase.<br>• `profile: light` | [`chases-refused-forward-journal`](design-chases-refused-forward-journal.md) | darn |  | 37m<br>0m | creel |
+_None._
 
 ### Draft (1)
 
