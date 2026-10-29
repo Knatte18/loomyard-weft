@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-29 08:53 UTC; every age below is as of then.
+Rendered 2026-10-29 08:54 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Fix two flaky creel tests and name failing tests in the adopt mail**<br>• Make the daemon lifecycle and TestCreelCLI EXTERNAL tests deterministic, and list failed tests in the adopt check mail.<br>• `profile: light` | [`creel-flakes-and-adopt-names`](design-creel-flakes-and-adopt-names.md) | darn | Code-Burler-Fix | osl-1046 | 1h<br>37m | creel, gate |
+| T3 | **Fix two flaky creel tests and name failing tests in the adopt mail**<br>• Make the daemon lifecycle and TestCreelCLI EXTERNAL tests deterministic, and list failed tests in the adopt check mail.<br>• `profile: light` | [`creel-flakes-and-adopt-names`](design-creel-flakes-and-adopt-names.md) | darn | Code-Bouncer | osl-1046 | 1h<br>38m | creel, gate |
 
 ### Ready (0)
 
