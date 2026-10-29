@@ -685,7 +685,7 @@
       "isolated": false,
       "brief": "One darn docs run lands a per-rule table so the operator decides each rule before CLAUDE.md is deleted",
       "body": "## Goal\n\nMap every rule of the loomyard `CLAUDE.md` to where lym's agents already get it, so the operator can decide per rule what happens to it before the file is deleted (`claude-md-lym-rules-out`).\n\n## Scope\n\n- Input: the repository's `CLAUDE.md`, one file, read by one writer session in one run; no other runs, models or repeats.\n- The writer reads the source itself: `CLAUDE.md`, `PATTERN.md`, the `pattern/` files, `contracts/stencils/`, `plugins/` and the orch rules.\n- It first records which roles receive `PATTERN.md` by injection and which do not, citing the code that injects it.\n- Then one table row per rule or sentence of `CLAUDE.md` with the columns: the rule in a short quote, where it already stands for the agents that need it (`file:line`, or `none`), the agents that need it, and a verdict of `covered`, `move to \u003cplace\u003e` or `drop`, each with a one-line reason.\n- The report lands as `docs/research/claude-md-rule-map-2026-10-29.md` and changes no other file; `CLAUDE.md` stays as it is.\n- It names every rule whose only home is `CLAUDE.md` and which agents would lose it on deletion, and every rule enforced in code, with the check that enforces it.\n\n## What the run proves\n\nThe operator's choice per row is taken from the table, and the follow-up task moves, drops or guards each rule as decided and deletes the file.\n",
-      "status": "running · Darn-Write",
+      "status": "running · Drift-Verify",
       "created": "2026-10-29T12:34:44Z",
       "revised": "2026-10-29T12:34:44Z",
       "profile": "docs"
