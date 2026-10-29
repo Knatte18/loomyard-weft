@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Code-Bouncer → done",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -100,6 +100,21 @@
       "outcome": "done",
       "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/verifygate-misplaced-guard-test/_lym/reviews/code/round-1-bouncer-ledger.md",
       "at": "2026-10-29T13:32:22Z"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/verifygate-misplaced-guard-test/_lym/landing/summary.md",
+      "at": "2026-10-29T13:32:43Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-29T13:32:42.139331251Z",
+          "end": "2026-10-29T13:32:42.139362319Z"
+        }
+      ]
     }
   ],
   "product": {
