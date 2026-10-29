@@ -1,6 +1,6 @@
 # Flaky websterengine recover-batch subtest fails once with "record changed"
 
-`webster-recover-batch-flake` · Task · bug, webster · running · PR-Review
+`webster-recover-batch-flake` · Task · bug, webster · running · Finalize
 
 Imported from [issue #902](https://github.com/Knatte18/loomyard/issues/902).
 
