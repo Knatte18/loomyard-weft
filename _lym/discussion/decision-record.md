@@ -140,6 +140,14 @@ Bound: a daemon restart drops an owed echo, and the operator then never sees tha
   Rerunning the tier3 smoke run after a Claude Code update is an operator action, not a bound.
 - A model may weigh mail in additional context less than a block reason; the creel trust sentence names `[creel]` lines, which the mail lines open with, and the smoke run checks the model acts on it.
 
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/plan/round-1-review.md; fixer report: _lym/reviews/plan/round-1-fixer-report.md.
+  - card6-misses-superseded-hook-wait-subtest (class consistency, severity MEDIUM, open in rounds 1)
+  - d3-bounds-and-delivered-once-exceptions-undocumented (class scope, severity MEDIUM, open in rounds 1)
+  - orch-stencil-keeps-bell-first-wake (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - D1: a Stop claim that hands out mail and no echo prints JSON with `hookSpecificOutput.additionalContext` holding the lines and no `decision`, `reason` or `systemMessage` key, and `hook-read` exits 0; a Stop claim that hands out nothing prints nothing and exits 1.
