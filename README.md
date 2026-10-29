@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-29 07:36 UTC; every age below is as of then.
+Rendered 2026-10-29 07:39 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -29,7 +29,7 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Act on the first test-time audit: reedengine wait, three over-grown test packages**<br>• Injectable wait for reedengine tier2 tests (40 s); prune tests in shell, boardtest and battenrecipe | [`test-prune-audit-leads`](design-test-prune-audit-leads.md) | darn |  | 12h<br>12h | reed, board, batten |
 
-## Notes (31)
+## Notes (32)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -46,10 +46,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 | H | **The adopt check mail names the failing tests**<br>• The adopt tier0 failure mail gives only counts, so the operator cannot see which tests failed. | [`adopt-check-names-failures`](design-adopt-check-names-failures.md) | 1m<br>0m | gate |
-| B2 |  | **TestScheduler_Chases fails: a refused forward grew the journal**<br>• The adopt tier0 run failed the refused-forward chase subtest; flake or regression from creel stage 3 is undecided. | [`chases-refused-forward-journal`](design-chases-refused-forward-journal.md) | 0m<br>0m | creel |
+| B1 | H | **The adopt check mail names the failing tests**<br>• The adopt tier0 failure mail gives only counts, so the operator cannot see which tests failed. | [`adopt-check-names-failures`](design-adopt-check-names-failures.md) | 3m<br>2m | gate |
+| B2 |  | **TestScheduler_Chases fails: a refused forward grew the journal**<br>• The adopt tier0 run failed the refused-forward chase subtest; flake or regression from creel stage 3 is undecided. | [`chases-refused-forward-journal`](design-chases-refused-forward-journal.md) | 2m<br>2m | creel |
 
-### Enhancements (12)
+### Enhancements (13)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -60,7 +60,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E5 |  | **The idle ring hands the mail over itself, without an empty turn**<br>• hook-wait wakes an idle strand with a bell line only, so each mail costs one extra empty turn | [`creel-ring-carries-mail`](design-creel-ring-carries-mail.md) | 13h<br>13h | creel |
 | E6 |  | **A module label for every package group under internal/**<br>• Several lym modules have no label, so entries take the nearest one that says something else | [`label-coverage`](design-label-coverage.md) | 12h<br>12h | board |
 | E7 |  | **Run verbs in one shared namespace, not under lym loom**<br>• lym loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 2w<br>1d | shed, loom |
-| E8 |  | **lym ide seed colours the VS Code workspace too**<br>• A hub opened as a VS Code workspace has no colour, since lym ide seed seeds only worktrees. | [`workspace-ide-seed`](design-workspace-ide-seed.md) | 0m<br>0m | ide, workspaces |
+| E8 |  | **lym ide seed colours the VS Code workspace too**<br>• A hub opened as a VS Code workspace has no colour, since lym ide seed seeds only worktrees. | [`workspace-ide-seed`](design-workspace-ide-seed.md) | 2m<br>2m | ide, workspaces |
+| E9 |  | **Reed navigation keys, Alt+arrows, are seeded by lym**<br>• Alt+arrow keys do not switch windows and sessions in Reed in this hub; lym should seed them. | [`reed-alt-arrow-keys-seeded`](design-reed-alt-arrow-keys-seeded.md) | 0m<br>0m | reed, config |
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 13d<br>13d | board, loom |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 11d<br>1d | webster, fabric, loom |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 10d<br>1d | fabric, batten |
