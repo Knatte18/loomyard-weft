@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 | T2 | **PR-Review opens a pull request and starts an interactive agent to discuss it**<br>• Build the PR-Review stub: a pull request per parent branch setting, a talkable agent on its own configured model, and a landing that follows the pull request | [`pr-review-row`](design-pr-review-row.md) | loom | awaiting · Discussion-Bouncer | osl-1046 | 55m<br>29m | loom, shed, batten, shuttle, config |
 | T3 | **Burler fork guard halts a run on a read-only git command** | [`burler-guard-readonly-git`](design-burler-guard-readonly-git.md) | darn | Code-Burler-Fix | osl-1046 | 5h<br>14m | burler, shed |
 | T4 | **Restore the verify-gate test for a misplaced //lym:guard marker**<br>• Once the darn verify key reads its diff base, cover the guard scan of a narrowed run again | [`verifygate-misplaced-guard-test`](design-verifygate-misplaced-guard-test.md) | darn | Darn-Write | osl-1046 | 22h<br>14m | loom, gate |
-| T5 | **Flaky websterengine recover-batch subtest fails once with "record changed"** | [`webster-recover-batch-flake`](design-webster-recover-batch-flake.md) | darn | Code-Bouncer | osl-1046 | 5h<br>12m | webster |
+| T5 | **Flaky websterengine recover-batch subtest fails once with "record changed"** | [`webster-recover-batch-flake`](design-webster-recover-batch-flake.md) | darn | Code-Burler-Review | osl-1046 | 5h<br>12m | webster |
 | T7 | **PATTERN entries and scans for interactive spawns and filesystem links**<br>• Move the tmux-only spawn rule and the fslink rule from CLAUDE.md into PATTERN with a scan each | [`pattern-spawn-and-links-scans`](design-pattern-spawn-and-links-scans.md) | darn | Darn-Write | osl-1046 | 8m<br>8m | pattern, shuttle, fabric |
 
 ### Ready (0)
@@ -54,7 +54,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Stop-hook creel mail arrives twice and is labelled as an error**<br>• One creel mail shows twice at the Stop hook, once as feedback and once as Stop hook error, with the hook command text in the model context | [`stop-hook-mail-doubled`](design-stop-hook-mail-doubled.md) | 3m<br>3m | creel |
+| B1 |  | **Stop-hook creel mail arrives twice and is labelled as an error**<br>• One creel mail shows twice at the Stop hook, once as feedback and once as Stop hook error, with the hook command text in the model context | [`stop-hook-mail-doubled`](design-stop-hook-mail-doubled.md) | 4m<br>3m | creel |
 
 ### Enhancements (11)
 
