@@ -77,7 +77,7 @@
       "id": 80,
       "handle": "F2",
       "slug": "warp-visibility",
-      "title": "warp-visibility: LoomYard needs no CLAUDE.md of its own",
+      "title": "warp-visibility: LoomYard adds no instruction file to a repository",
       "kind": "note",
       "labels": [
         "feature",
@@ -88,10 +88,10 @@
       "priority": "high",
       "depends_on": [],
       "isolated": false,
-      "brief": "Drop the loomyard CLAUDE.md after moving any rule only it holds into PATTERN, stencils or skills; no CLAUDE.local.md channel",
-      "body": "## Seen\n\nUsing LoomYard on a repository should be invisible: nothing lym-related in the repository's own git history, and no lym text in a file the repository's own people read (operator, 2026-10-29).\n\n## Decision (operator, 2026-10-29)\n\nLoomYard needs no `CLAUDE.md` or `CLAUDE.local.md` of its own, in this repository or any other.\nThe rules agents follow are in `PATTERN.md`, which lym injects where it is needed, in the stencils lym spawns agents with, and in the skills and hooks of the lym plugins.\nA session opened by hand with `lym shuttle open` has no goal and takes no PATTERN injection: it is an exploration or an interactive task with the operator, so it needs no instruction file either.\nThe Bolt-held `CLAUDE.local.md` copied into every worktree is dropped.\n\n## Scope\n\n- Check every rule of the loomyard `CLAUDE.md` against `PATTERN.md`, the stencils and the plugin skills, and move any rule that stands only in `CLAUDE.md` to the place that reaches the agents that need it.\n- The cgo build requirement goes into `docs/` or an error message of the build script.\n- A guard on `update-plugins.sh` that refuses a run no operator started, if the script has none, in place of the text rule.\n- Delete the loomyard `CLAUDE.md`.\n- `PATTERN.md` sits at the repository root and is tracked in the warp repository, so it is visible in the repository's history; the invisibility goal does not cover it yet, and it needs its own decision.\n",
+      "brief": "No CLAUDE.md or CLAUDE.local.md of lym in any repo; open: where a repo own rules for lym agents live out of sight of its team",
+      "body": "## Seen\n\nUsing LoomYard on a repository should be invisible: nothing lym-related in the repository's own git history, and no lym text in a file the repository's own people read (operator, 2026-10-29).\n\n## Decision (operator, 2026-10-29)\n\nLoomYard adds no `CLAUDE.md` or `CLAUDE.local.md` of its own to any repository.\nWhat lym's agents need comes from `PATTERN.md`, which lym injects where it is needed, from the stencils lym spawns them with, and from the skills and hooks of the lym plugins.\nA repository's own `CLAUDE.md`, if it has one, is its team's and is read as usual.\nA session opened by hand with `lym shuttle open` has no goal and takes no PATTERN injection: it is an exploration or an interactive task with the operator, so it needs no instruction file either.\nThe Bolt-held `CLAUDE.local.md` copied into every worktree is dropped.\n\n## Open\n\nWhere a repository's own rules for lym's agents live, out of sight of the team.\n`pattern-init` puts `PATTERN.md` at the repository root, tracked in the warp repository, so it shows in the repository's history; the choices are a `PATTERN.md` held in weft, or a review lens in Bolt such as `lenses.yaml`.\nIt needs its own decision before a task is drafted.\n",
       "created": "2026-10-04T12:45:43Z",
-      "revised": "2026-10-29T12:13:50Z"
+      "revised": "2026-10-29T12:30:39Z"
     },
     {
       "id": 83,
