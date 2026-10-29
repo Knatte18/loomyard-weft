@@ -19,9 +19,19 @@ This replaces moving the run verbs to a new shared namespace.
 Today's variant is renamed `tapestry` (operator, 2026-10-29): a picture woven to a full-size drawing made first, which is the discuss-and-plan-before-building path.
 `weave` was rejected for sitting too close to `Webster`, who weaves.
 
+## Staging (operator, 2026-10-29)
+
+Two steps, so that no search has to tell the family from the variant:
+
+1. A mechanical rename of today's variant from `loom` to `tapestry`, done by a Go program under `tools/` like the `lyx` to `lym` rename (`ef912d41`, `tools/wordswap`).
+   The `lym loom ...` verbs stay as they are, since they become the general ones.
+2. Move the generic parts back under `loom`, as design work, once every remaining `loom` is a candidate for the family.
+
 ## Open
 
-- How the `loom` to `tapestry` rename is staged, and what the board's `recipe` field and an empty `recipe` mean during it.
+- Which packages, docs and stencils are the variant's and which are general; the rename program's inclusion and exclusion lists follow from it.
+- What the board's `recipe` field and an empty `recipe` mean during step 1, since existing entries and runs carry `loom` or nothing.
+- The strand names `ly:LOOM` and the texts that name them.
 - How `loom` as the general driver relates to `shed`: `lym shed` already carries `run`, `step`, `status`, `pause` and `goto`, which the general `lym loom` verbs would overlap.
 - Which packages take the general name: `internal/loomcli` already serves darn runs, while the packages and docs that mean today's variant need the new name.
 - Every stencil, way-forward text and doc that says "loom" for the variant changes with it.

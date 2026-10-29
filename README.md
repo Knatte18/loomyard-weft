@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-29 09:07 UTC; every age below is as of then.
+Rendered 2026-10-29 09:08 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Sweep go_parallel on OSL-1046 with Cortex XDR**<br>• Time both gate tiers on the work laptop on a quiet machine and log them in docs beside the Neve numbers, with full hardware info<br>• `profile: docs` | [`bench-osl1046-xdr`](design-bench-osl1046-xdr.md) | darn | Darn-Write | osl-1046 | 9d<br>18m |  |
+| T2 | **Sweep go_parallel on OSL-1046 with Cortex XDR**<br>• Time both gate tiers on the work laptop on a quiet machine and log them in docs beside the Neve numbers, with full hardware info<br>• `profile: docs` | [`bench-osl1046-xdr`](design-bench-osl1046-xdr.md) | darn | Darn-Write | osl-1046 | 9d<br>20m |  |
 
 ### Ready (0)
 
