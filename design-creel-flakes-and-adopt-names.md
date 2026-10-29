@@ -1,6 +1,6 @@
 # Fix two flaky creel tests and name failing tests in the adopt mail
 
-`creel-flakes-and-adopt-names` · Task · bug, creel, gate · running · Code-Bouncer
+`creel-flakes-and-adopt-names` · Task · bug, creel, gate · running · Describe
 
 ## Seen
 
