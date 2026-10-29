@@ -1,6 +1,6 @@
 # lym ide seed colours the VS Code workspace and passes Alt+arrow through to Reed
 
-`ide-seed-workspace-and-keys` · Task · enhancement, ide, workspaces, reed, config · running · PR-Review
+`ide-seed-workspace-and-keys` · Task · enhancement, ide, workspaces, reed, config · running · Finalize
 
 ## Goal
 
