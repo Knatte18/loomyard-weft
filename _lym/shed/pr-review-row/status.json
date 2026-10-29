@@ -3,6 +3,7 @@
   "state": "awaiting",
   "error": "bouncer Discussion-Bouncer: round 1 escalated to the parent (cause: decision); brief at /home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/pr-review-row/_lym/reviews/discussion/round-1-escalation.md; record the answer with `lym loom decision add pr-review-row`, then decide with `lym loom circling accept pr-review-row` or `lym loom circling continue pr-review-row`, then run `lym loom resume` in the task worktree to resume",
   "parent_notice": "Review segment of task `pr-review-row` needs a decision: review the brief at `/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/pr-review-row/_lym/reviews/discussion/round-1-escalation.md` with a one-shot fork.",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Bouncer",
