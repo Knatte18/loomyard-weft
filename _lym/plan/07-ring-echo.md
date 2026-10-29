@@ -37,6 +37,7 @@ Claim: the struct `Reading` gains `Echo []string`, the echoed lines handed out, 
 Under a pause the mail steps are skipped whole, the Stop count's reset, cap check and count included, so a paused claim leaves the count as today's early return does.
 `claimLocked` measures the budget over the echo lines already in `reading` as well, so the echo and the mail share the 8 KiB budget, the first item, echo or message, always handed out, and what does not fit stays owed.
 Only handed-out mail marks the ring answered and counts a Stop; an echo alone continues no turn.
+A ring hands out no echo, so its claim measures the budget over mail alone, and with an echo owed it can hand out mail the boundary claim's shared budget would leave for later; card 4-ring-claims-mail's "the set a boundary claim would hand the same strand" holds from here on for the mail with the echo set aside.
 `Reading.Ack` of a claim drops its echo items, whether or not its journal writes succeed, since the hook already showed them; `Reading.Release` unreserves them, so they stay owed.
 
 Flags: `Store.flaggedFilesLocked` also asks for the flag of a strand with an owed echo item, reserved or not, so the tool-boundary hook and the merged Stop command run hook-read while an echo is owed; Ack and Release call `syncFlagsLocked` themselves whenever they change a strand's echo, since an echo-only claim journals nothing and `Store.do` syncs only after an append.
@@ -45,7 +46,7 @@ Protocol: the struct `Response` gains `Echo []string` tagged `json:"echo,omitemp
 
 Tests (tier0), in `TestScheduler_HookWake` (with card 4-ring-claims-mail's `registerTaking`):
 - `AnAcknowledgedRingLeavesAnEchoTheNextClaimHandsOutAheadOfItsMail`: ring of #1 acked, a post #2; a tool-boundary claim's `Echo` is #1's line and `Messages` #2; after its Ack a claim hands out nothing.
-- `ThePausedOrHeldStrandsClaimStillHandsOutTheEcho`: after the acked ring, with a pause set the claim's `Echo` is #1's line and `Messages` empty; with another sender's hold and a non-owner post, the same.
+- `ThePausedOrHeldStrandsClaimStillHandsOutTheEcho`: after the acked ring, with a pause set the claim's `Echo` is #1's line and `Messages` empty, and that claim is released, so the echo stays owed; with the pause cleared, another sender's hold and a non-owner post, the next claim's `Echo` is #1's line and `Messages` empty.
 - `TheStopCapKeepsTheMailBackButNotTheEcho`: a short ring acked, then bigBody posts; six Stop claims, the first with `StopHookActive: false` and the rest `true` as `StopBlocksAreCappedAtSixPerTurnAndANewTurnStartsTheCountOver` passes them, each released, hand out the echo and one message and raise the count; the seventh Stop claim hands out the echo alone.
 - `TheEchoSharesTheBudgetAndAReleaseKeepsIt`: a bigBody ring acked and a bigBody post; the claim hands out the echo alone; after its Release the next claim hands out the echo again.
 - `AJournalFailureAtTheRingsAckEchoesOnlyTheIdsBeforeTheFailingWrite`: a ring of three short messages, `FailJournalWrites(1)`, Ack fails; after `FailJournalWrites(-1)` a claim's `Echo` is #1's line and `Messages` #2 and #3.

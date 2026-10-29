@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -13,7 +13,7 @@ The Stop and tool-boundary outputs stop being blocks (D1, D2), the idle ring han
 
 1 — hook-output-seam — replace the boundary block with additional context and the system message (D1, D2)
 2 — waiter-rewake-labels — set rewakeMessage and rewakeSummary on the waiter hook (D4)
-3 — ack-failure-releases — a failed journal write at an acknowledgement releases the ids it left unjournaled (D3)
+3 — ack-failure-releases — a failed journal write at a claim's acknowledgement releases the ids it left unjournaled (D3)
 4 — ring-claims-mail — the daemon claims mail into the ring of a marked waiter and awaits its acknowledgement (D3)
 5 — client-ring-ack — the Go client never resumes a hook-wait whose ring reached its handler and names an unsent ack (D3)
 6 — hook-wait-hands-mail — hook-wait writes the ring's lines as the wake and acknowledges them (D3)

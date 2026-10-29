@@ -50,7 +50,7 @@ The creel side's wording of a Stop "block" follows: in `internal/creelengine`, t
 `docs/overview.md`'s creel paragraph says a hook strand gets each post at its next tool call in the `PostToolUse` hook's additional context and at its turn end in the `Stop` hook's additional context, which continues the turn and records no turn end, at most 6 a turn.
 The names of the test cases that say "block" follow: `TestCreelCLI`'s subtest "as a strand hook-read prints its mail as the engine's visible block, …" names the engine's hook output, and `TestHookReadExit`'s `StopWroteTheBlock…` rows read `StopWroteTheMail…`.
 
-Tests: `TestHookContext` (tier0, `settings_test.go`) keeps its SessionStart row and pins the exact bytes of seven `HookOutput` rows over the text `read "role.md"` as mail and `[creel] Delivered while idle:\nread "role.md"` as echo: tool boundary with mail, with mail and echo, with echo alone; Stop with mail, with mail and echo, with echo alone; each row's want string shows no `decision` and no `reason` key.
+Tests: `TestHookContext` (tier0, `settings_test.go`) keeps its SessionStart row and pins the exact bytes of a `HookOutput` row for each of the following, over the text `read "role.md"` as mail and `[creel] Delivered while idle:\nread "role.md"` as echo: tool boundary with mail, with mail and echo, with echo alone; Stop with mail, with mail and echo, with echo alone; each row's want string shows no `decision` and no `reason` key.
 `TestToolBoundaryRenderer` (tier0) compares the registry's `HookOutput(HookEventStop, "mail", "")` with the engine's.
 `hookBlock(t, event, text)` keeps its signature and returns `HookOutput(event, text, "")` plus a newline, so `TestCreelCLI`'s hook-read subtests (tier1) pin that hook-read prints the new output.
 

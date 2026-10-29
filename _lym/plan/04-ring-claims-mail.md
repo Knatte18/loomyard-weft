@@ -33,6 +33,7 @@
 
 **Intent:**
 Decision D3, daemon side: the ring hands the mail over to a waiter that takes it.
+The mark lets a strand's own idle waiter take that strand's claimable mail, the set a boundary claim would hand the same strand, journaled read at its acknowledgement, skipping only the Stop cap and the Stop count, which the ring starts over anyway; it is bounded by `Store.HookWait`'s refusal of every sender but a strand, so only a strand marks its own waiter, and by the pause read, the hold, `hookFieldCap` and the 8 KiB budget.
 
 Protocol: the struct `Request` gains `TakesMail bool` tagged `json:"takes_mail,omitempty"`, the hook-wait request's mark that its waiter takes mail; an older daemon ignores it (`PATTERN-tolerant-records`).
 `daemon.dispatch` passes it to `Store.HookWait`, re-signed with `takesMail`, which records it on the new waiter in the struct `Waiter`'s new unexported field `takesMail bool` under the store's mutex.
@@ -42,6 +43,7 @@ Claim: the budget loop of `Store.ClaimAtBoundary` moves into `Store.claimLocked`
 
 Ring: `Store.ringHook` takes the `Strand` so it can read the pause.
 When a registered waiter of the strand takes mail, it reads `s.delivery.Paused(strand)` just before its locked step, as a boundary claim does, and with a pause or a pause read error it rings nothing and leaves the waiter registered.
+The locked step claims only when that pause read ran for a marked waiter before it: a marked waiter the locked step finds registered without that read, one that superseded an unmarked waiter in between, rings nothing and stays registered, and its registration's wake has the worker probe again, whose ring reads the pause.
 In the locked step, with the claimable set still `ids` (a set that changed meanwhile rings nothing and leaves the waiter registered, as today), it claims through `claimLocked` into a new `Reading` whose new unexported field `ring bool` is set, and answers the waiter with `Outcome{Kind: OutcomeRing, Reading: reading}` (the struct `Outcome` gains `Reading *Reading`, nil for every other outcome) and records the wake mark of `ids` at now, unanswered.
 `claimLocked` always takes the first message of a non-empty set, so once the set equals the non-empty `ids` the claim is never empty: D3's "a ring whose claim comes back empty does not ring" is met by the pause return and the changed-set return, the only states in which the ring's claim would come back empty, and no separate empty-claim branch is written.
 An unmarked waiter, an older binary's, is rung as today with no `Reading`.
@@ -71,6 +73,7 @@ Tests (tier0), in `TestScheduler_HookWake`, with a new `registerTaking` closure 
 `register`'s and `OnlyAStrandRegistersAWaiter`'s `HookWait` calls pass false.
 In `TestDaemon_Protocol`: `HookWaitIsPendingAtOnceAndAPostToTheIdleStrandRingsIt` also asserts the unmarked ring carries no messages and no `ack_required`; new rows `AMarkedHookWaitIsRungWithTheMailAndItsAckJournalsTheRead` (raw `takes_mail` request, ring response with one message and `ack_required`, ack, `ok` confirmation, log holds the read) and `AMarkedHookWaitWhoseClientLeavesBeforeTheAckLeavesTheMailUnread` (close after the ring; a strand `Request{Verb: VerbRead, Wait: true}`, which waits out the daemon's release as `ReadAckMarksReadAndAClientDyingBeforeTheAckLeavesMessagesUnread` does, hands the message out).
 
-`internal/creelengine/doc.go`'s Idle wake section: the mark, the ring's claim under the boundary rules, the changed-set and paused rings that ring nothing, the acknowledgement answering the ring, every release path, an unmarked waiter rung as before, and the Bound that a pause starting between the pause read and the locked step lets one ring deliver; the sentence "A ring carries no mail and claims nothing" and the Bound "one ring costs one short model turn" go, and the claim paragraph's "delivered once, by whichever path reserves it first" names the ring's claim among the paths.
+`internal/creelengine/doc.go`'s Idle wake section: the mark, the ring's claim under the boundary rules, the changed-set and paused rings that ring nothing, the acknowledgement answering the ring, every release path, an unmarked waiter rung as before, and the Bound that a pause starting between the pause read and the locked step lets one ring deliver.
+The sentence "A ring carries no mail and claims nothing" and the Bound "one ring costs one short model turn" go, and the claim paragraph's "delivered once, by whichever path reserves it first" names the ring's claim among the paths; D3's Bounds and the Constraint's exceptions that rest on the hook commands showing the mail land with card 6-hook-wait-hands-mail, which builds that showing.
 
 **ImpactSummary:** HookWait and ringHook re-signed with all callers on this card (dispatch, wakeHookStrand, two test sites); the read and claim acknowledgement paths keep their behaviour through awaitAck; all inside creelengine.
