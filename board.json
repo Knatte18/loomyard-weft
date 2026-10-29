@@ -525,7 +525,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #902](https://github.com/Knatte18/loomyard/issues/902).\n\n`lym gate test` failed once in a `TestRecoverSpawnOrAttach` subtest of `internal/websterengine` (the one covering a mutating fabric reference at a batch's start on a clean tree), reporting \"record changed\" although the record it printed was unchanged.\nThe change under test touches nothing `internal/websterengine` reads, and a rerun of the same gate passed.\n\nThis is abnormal: a gate failure unrelated to the change, which passes on rerun, is a flaky test and costs a gate slot and a rerun each time.\nThe likely cause is in `internal/websterengine/recoverbatch_test.go`: a closure-shared record variable is reassigned by a setup and check pair, and parallel subtests share it, so one subtest's check can compare against another subtest's record.\n\nWhat to do: give each subtest its own record, by declaring it inside the subtest body or copying it per iteration, and confirm with repeated runs under the race detector.\n\nProvenance: task `shuttle-hook-signals`, from note `Darn-Write.md`.\n",
-      "status": "running · Drift-Verify",
+      "status": "running · Code-Bouncer",
       "created": "2026-10-29T07:41:18Z",
       "revised": "2026-10-29T13:15:12Z"
     },
