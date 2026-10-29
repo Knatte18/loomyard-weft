@@ -224,6 +224,12 @@ Decision: The PATTERN-github-auth change reads: Calling GitHub: auth only via in
 
 Rationale: The decision that removes pr_account makes the earlier text, with a named account through gh auth token --user, false.
 
+### Added after Discussion (parent, 2026-10-29): D9 changed: a covering pause holds the PR-Review row in process
+
+Decision: D9's pause step changes: when a pause covers the run, the row stops its session as D7 says, then holds in process, waiting until the pause no longer covers the run and then resuming its wait, as pauserecord.WaitUncovered and shuttle's waitWhileCovered hold an entry point. It does not end the call with a transient mark. Cards 13 and 14 keep the in-process hold as written in the plan.
+
+Rationale: PATTERN-transient-stop's classes are failures and a pause is not one, and other entry points already hold in process while a pause covers them (verifytree, shuttleengine, battencli).
+
 ## Constraints
 
 - `PATTERN-github-auth`: every GitHub call and the `gh auth token --user` shell-out live in or go through `internal/githubclient`.
