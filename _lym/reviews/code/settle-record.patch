@@ -1,0 +1,273 @@
+diff --git a/internal/creelcli/cli_test.go b/internal/creelcli/cli_test.go
+index b6960509..da49ae92 100644
+--- a/internal/creelcli/cli_test.go
++++ b/internal/creelcli/cli_test.go
+@@ -39,6 +39,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/orchroute"
+ 	"github.com/Knatte18/loomyard/internal/preflight"
+ 	"github.com/Knatte18/loomyard/internal/proc"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine/claudeengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/creelfake"
+ 	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
+@@ -154,10 +155,10 @@ func hookLine(id int, sender, body string) string {
+ 	return fmt.Sprintf("[creel] #%d from \"%s\": %s", id, sender, body)
+ }
+ 
+-// hookBlock is what hook-read prints for text: the claude engine's block and a newline.
+-func hookBlock(t *testing.T, text string) string {
++// hookBlock is what hook-read prints for text on event: the claude engine's block and a newline.
++func hookBlock(t *testing.T, event shuttleengine.HookEvent, text string) string {
+ 	t.Helper()
+-	block, err := claudeengine.New().BoundaryBlock(text)
++	block, err := claudeengine.New().BoundaryBlock(event, text)
+ 	if err != nil {
+ 		t.Fatalf("BoundaryBlock: %v", err)
+ 	}
+@@ -852,7 +853,7 @@ func TestCreelCLI(t *testing.T) {
+ 				t.Fatalf("creel post = (%d, %q); want exit 0", post.code, post.raw)
+ 			}
+ 		}
+-		wantBlock := hookBlock(t, fmt.Sprintf("[creel] #1 from \"%[1]s\": first line\n[creel] #2 from \"%[1]s\": second", alpha))
++		wantBlock := hookBlock(t, shuttleengine.HookEventToolBoundary, fmt.Sprintf("[creel] #1 from \"%[1]s\": first line\n[creel] #2 from \"%[1]s\": second", alpha))
+ 		var stderr bytes.Buffer
+ 		if got := runCreelHook(r.cwd, postToolUseInput, &stderr, "hook-read", "claude"); got.code != 0 || got.raw != wantBlock || stderr.Len() != 0 {
+ 			t.Fatalf("creel hook-read claude = (%d, %q, stderr %q); want exit 0 with %s", got.code, got.raw, stderr.String(), wantBlock)
+@@ -876,11 +877,11 @@ func TestCreelCLI(t *testing.T) {
+ 		}
+ 		var stderr bytes.Buffer
+ 		first := runCreelHook(r.cwd, stopInput, &stderr, "hook-read", "claude")
+-		if want := hookBlock(t, hookLine(1, alpha, bodies[0])); first.code != 0 || first.raw != want {
++		if want := hookBlock(t, shuttleengine.HookEventStop, hookLine(1, alpha, bodies[0])); first.code != 0 || first.raw != want {
+ 			t.Fatalf("first Stop = (%d, %q); want exit 0 with the block of the first message", first.code, first.raw)
+ 		}
+ 		second := runCreelHook(r.cwd, stopActiveInput, &stderr, "hook-read", "claude")
+-		if want := hookBlock(t, hookLine(2, alpha, bodies[1])); second.code != 0 || second.raw != want {
++		if want := hookBlock(t, shuttleengine.HookEventStop, hookLine(2, alpha, bodies[1])); second.code != 0 || second.raw != want {
+ 			t.Fatalf("Stop with stop_hook_active = (%d, %q); want exit 0 with the block of the second message", second.code, second.raw)
+ 		}
+ 		if empty := runCreelHook(r.cwd, stopInput, &stderr, "hook-read", "claude"); empty.code != 1 || empty.raw != "" || stderr.Len() != 0 {
+@@ -901,11 +902,11 @@ func TestCreelCLI(t *testing.T) {
+ 			}
+ 		}
+ 		var stderr bytes.Buffer
+-		want := hookBlock(t, hookLine(1, alpha, bodies[0])+"\n"+hookLine(2, alpha, bodies[1]))
++		want := hookBlock(t, shuttleengine.HookEventToolBoundary, hookLine(1, alpha, bodies[0])+"\n"+hookLine(2, alpha, bodies[1]))
+ 		if got := runCreelHook(r.cwd, postToolUseInput, &stderr, "hook-read", "claude"); got.code != 0 || got.raw != want {
+ 			t.Fatalf("first call = (%d, %d bytes); want exit 0 with the block of the two lines that fill the budget", got.code, len(got.raw))
+ 		}
+-		if got, want := runCreelHook(r.cwd, postToolUseInput, &stderr, "hook-read", "claude"), hookBlock(t, hookLine(3, alpha, bodies[2])); got.code != 0 || got.raw != want {
++		if got, want := runCreelHook(r.cwd, postToolUseInput, &stderr, "hook-read", "claude"), hookBlock(t, shuttleengine.HookEventToolBoundary, hookLine(3, alpha, bodies[2])); got.code != 0 || got.raw != want {
+ 			t.Errorf("next call = (%d, %q); want exit 0 with the block of the one left", got.code, got.raw)
+ 		}
+ 	})
+@@ -922,7 +923,7 @@ func TestCreelCLI(t *testing.T) {
+ 		if got := runCreelHook(r.cwd, subagentStopInput, &stderr, "hook-read", "claude"); got.code != 1 || got.raw != "" || stderr.Len() != 0 {
+ 			t.Errorf("subagent Stop = (%d, %q, stderr %q); want exit 1 printing nothing", got.code, got.raw, stderr.String())
+ 		}
+-		if got, want := runCreelHook(r.cwd, postToolUseInput, &stderr, "hook-read", "claude"), hookBlock(t, hookLine(1, alpha, "mail")); got.code != 0 || got.raw != want {
++		if got, want := runCreelHook(r.cwd, postToolUseInput, &stderr, "hook-read", "claude"), hookBlock(t, shuttleengine.HookEventToolBoundary, hookLine(1, alpha, "mail")); got.code != 0 || got.raw != want {
+ 			t.Errorf("main-thread call after the subagent calls = (%d, %q); want exit 0 with the mail the subagent left", got.code, got.raw)
+ 		}
+ 		other := runCreelHook(r.cwd, `{"hook_event_name":"SessionStart"}`, &stderr, "hook-read", "claude")
+diff --git a/internal/creelcli/doc.go b/internal/creelcli/doc.go
+index ebade223..ddbbebcd 100644
+--- a/internal/creelcli/doc.go
++++ b/internal/creelcli/doc.go
+@@ -29,7 +29,7 @@
+ // A worktree whose resolved orch state records no strand is refused with nothing posted.
+ // The liveness predicate it resolves with is part of the client seam.
+ // `inbox` prints the caller's unread counts as `inbox.senders`, a list of `{from, unread}`, and no other key.
+-// `hook-read <engine>` is what a strand's tool-boundary and Stop hooks run: it reads the hook input from stdin, parses it with the engine's capability from shuttleengines.ToolBoundaryRenderer, claims the caller's mail through the daemon's claim verb and prints it as the engine's visible block, one MessageLine per message joined by newlines.
++// `hook-read <engine>` is what a strand's tool-boundary and Stop hooks run: it reads the hook input from stdin, parses it with the engine's capability from shuttleengines.ToolBoundaryRenderer, claims the caller's mail through the daemon's claim verb and prints it as the engine's visible block for the input's event, one MessageLine per message joined by newlines.
+ // The claim carries whether the event is a Stop and the input's stop_hook_active, which the daemon's Stop count rests on.
+ // A call from a subagent or fork claims and prints nothing, so the mail and its flag stay for the main thread's next boundary.
+ // It prints nothing when nothing was claimed, acknowledges the mail only once its output was written, and bounds its call by 10 seconds, since the provider holds the session at the boundary meanwhile.
+diff --git a/internal/creelcli/hookread.go b/internal/creelcli/hookread.go
+index a19d5034..add2fd26 100644
+--- a/internal/creelcli/hookread.go
++++ b/internal/creelcli/hookread.go
+@@ -113,7 +113,7 @@ func hookRead(cmd *cobra.Command, engine string) (event shuttleengine.HookEvent,
+ 		for i, msg := range resp.Messages {
+ 			lines[i] = creelengine.MessageLine(msg)
+ 		}
+-		data, err := renderer.BoundaryBlock(strings.Join(lines, "\n"))
++		data, err := renderer.BoundaryBlock(input.Event, strings.Join(lines, "\n"))
+ 		if err != nil {
+ 			return err
+ 		}
+diff --git a/internal/creelengine/deliver_test.go b/internal/creelengine/deliver_test.go
+index 3559f515..5261c817 100644
+--- a/internal/creelengine/deliver_test.go
++++ b/internal/creelengine/deliver_test.go
+@@ -1688,6 +1688,9 @@ func TestScheduler_HookWake(t *testing.T) {
+ 		return e
+ 	}
+ 	// settle runs trigger and waits until a worker has probed after it and gone back to sleep.
++	// It counts one probe, so the trigger wakes alpha's worker at most once:
++	// a second wake during that probe is buffered and runs a probe after settle returned.
++	// A row that posts several messages at once posts them before the scheduler starts and settles the start.
+ 	settle := func(e *env, trigger func()) {
+ 		seen := len(e.probeWaits(0))
+ 		trigger()
+@@ -1825,12 +1828,10 @@ func TestScheduler_HookWake(t *testing.T) {
+ 		{"MailArrivingInAWokenTurnsBlockedChainRingsNothingUntilANewTurnEnd", func(t *testing.T, e *env) {
+ 			ringAt := e.clock.Now()
+ 			e.del.SetTurn(alpha, false, ringAt.Add(-time.Minute))
+-			e.start(t)
+ 			first := register(t, e, alpha)
+-			settle(e, func() {
+-				e.post(t, strand(beta), alpha, bigBody)
+-				e.post(t, strand(beta), alpha, bigBody)
+-			})
++			e.post(t, strand(beta), alpha, bigBody)
++			e.post(t, strand(beta), alpha, bigBody)
++			settle(e, func() { e.start(t) })
+ 			wantKind(t, first, creelengine.OutcomeRing)
+ 			if got := claim(t, e, false); len(got) != 1 {
+ 				t.Fatalf("the Stop claim took %d messages; want part of the set", len(got))
+@@ -1858,12 +1859,10 @@ func TestScheduler_HookWake(t *testing.T) {
+ 			}
+ 		}},
+ 		{"ARingAfterTheStopCapStartsAFreshCount", func(t *testing.T, e *env) {
+-			e.start(t)
+-			settle(e, func() {
+-				for range 8 {
+-					e.post(t, strand(beta), alpha, bigBody)
+-				}
+-			})
++			for range 8 {
++				e.post(t, strand(beta), alpha, bigBody)
++			}
++			settle(e, func() { e.start(t) })
+ 			for i := range 6 {
+ 				if got := claim(t, e, i > 0); len(got) != 1 {
+ 					t.Fatalf("Stop claim %d took %d messages; want one", i+1, len(got))
+@@ -1977,11 +1976,9 @@ func TestScheduler_HookWake(t *testing.T) {
+ 		}},
+ 		{"ARingAnsweredByAClaimIsNotFollowedByTheBell", func(t *testing.T, e *env) {
+ 			e.del.SetTurn(alpha, false, e.clock.Now().Add(-time.Minute))
+-			e.start(t)
+-			settle(e, func() {
+-				e.post(t, strand(beta), alpha, bigBody)
+-				e.post(t, strand(beta), alpha, bigBody)
+-			})
++			e.post(t, strand(beta), alpha, bigBody)
++			e.post(t, strand(beta), alpha, bigBody)
++			settle(e, func() { e.start(t) })
+ 			var first *creelengine.Waiter
+ 			settle(e, func() { first = register(t, e, alpha) })
+ 			wantKind(t, first, creelengine.OutcomeRing)
+diff --git a/internal/shuttleengine/claudeengine/capabilities.go b/internal/shuttleengine/claudeengine/capabilities.go
+index 301fe839..9a20f39b 100644
+--- a/internal/shuttleengine/claudeengine/capabilities.go
++++ b/internal/shuttleengine/claudeengine/capabilities.go
+@@ -63,13 +63,28 @@ func (c *Claude) HookInput(payload []byte) (shuttleengine.HookInput, error) {
+ 	return input, nil
+ }
+ 
+-// BoundaryBlock renders text as the JSON a PostToolUse or Stop hook prints to block with text as the reason, which the model reads, and as the system message, which the operator sees.
+-func (c *Claude) BoundaryBlock(text string) ([]byte, error) {
+-	data, err := json.Marshal(struct {
+-		Decision      string `json:"decision"`
+-		Reason        string `json:"reason"`
+-		SystemMessage string `json:"systemMessage"`
+-	}{"block", text, text})
++// stopBlockReason is the reason of creel's Stop block, which points the model at the mail in the block's additional context.
++const stopBlockReason = "[creel] Mail for you arrived as this turn ended; it is in this Stop hook's additional context. Act on it now."
++
++// BoundaryBlock renders text as the JSON a PostToolUse or Stop hook prints to block, handing text to the model once and showing it to the operator as the system message.
++// After a tool call text is the block's reason.
++// On a Stop text is the additional context and the reason is stopBlockReason, since Claude Code hands a Stop block's reason to the model twice, once after the hook's command text.
++func (c *Claude) BoundaryBlock(event shuttleengine.HookEvent, text string) ([]byte, error) {
++	type specificOutput struct {
++		HookEventName     string `json:"hookEventName"`
++		AdditionalContext string `json:"additionalContext"`
++	}
++	block := struct {
++		Decision           string          `json:"decision"`
++		Reason             string          `json:"reason"`
++		SystemMessage      string          `json:"systemMessage"`
++		HookSpecificOutput *specificOutput `json:"hookSpecificOutput,omitempty"`
++	}{Decision: "block", Reason: text, SystemMessage: text}
++	if event == shuttleengine.HookEventStop {
++		block.Reason = stopBlockReason
++		block.HookSpecificOutput = &specificOutput{HookEventName: hookEventStop, AdditionalContext: text}
++	}
++	data, err := json.Marshal(block)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("marshal boundary block: %w", err)
+ 	}
+diff --git a/internal/shuttleengine/claudeengine/doc.go b/internal/shuttleengine/claudeengine/doc.go
+index 03e5ac9b..c5789397 100644
+--- a/internal/shuttleengine/claudeengine/doc.go
++++ b/internal/shuttleengine/claudeengine/doc.go
+@@ -131,6 +131,10 @@
+ // An engine told a hub board directory also installs a second PostToolUse entry with no matcher, creel's mail hook; an engine told none, a standalone run, installs the stamp alone.
+ // Its command is plain POSIX `sh`: it forms the strand's flag name from `$LYM_STRAND_NAME` by parameter expansion alone, turning every `:` into `.` as agentname.FileName does, and exits 0 at once unless that flag stands in CreelFlagDir of the board directory, so a tool call with no mail starts no process.
+ // When the flag stands it changes to `$CLAUDE_PROJECT_DIR` and runs `lym creel hook-read claude`, whose standard output, BoundaryBlock's `{"decision":"block","reason":<text>,"systemMessage":<text>}`, hands the strand's mail to the session after the tool call as the reason and shows it to the operator as the system message.
++// On a Stop, BoundaryBlock moves the text into `hookSpecificOutput.additionalContext` and makes the reason a fixed line pointing at it, beside the same system message.
++// Claude Code hands a blocking Stop hook's reason to the model twice, as `Stop hook feedback:` and as `Stop hook blocking error from command: "<command>": <reason>`, and shows it to the operator as `Stop hook error:`;
++// with the mail in the additional context the model reads it once, as `Stop hook additional context:`, and the operator once, as `Stop says:`.
++// Bound: the block still names the hook's command to the model, beside the fixed reason, since every blocking Stop hook's does; the block is what keeps the turn going.
+ // HookInput parses a hook's payload: `PostToolUse` and `Stop` map to the tool-boundary and stop events, a non-empty `agent_id` marks a subagent, and `stop_hook_active` is carried; RewakeOutput returns the text plus a newline and exit code 2, the `asyncRewake` wake.
+ // Claude Code runs an event's matching hooks in parallel, so a separate creel Stop hook could not keep the recording from logging a turn end its block then cancels, and ParseEvents would read every blocked Stop as a turn end.
+ // An engine told a board directory therefore replaces the plain Stop recording with one merged command, and adds the idle waiter as a second Stop entry; a standalone run keeps the plain recording.
+diff --git a/internal/shuttleengine/claudeengine/settings_test.go b/internal/shuttleengine/claudeengine/settings_test.go
+index c2aa82b4..b0353e0e 100644
+--- a/internal/shuttleengine/claudeengine/settings_test.go
++++ b/internal/shuttleengine/claudeengine/settings_test.go
+@@ -198,16 +198,21 @@ func TestBuildSettings_SessionStartHook(t *testing.T) {
+ 	}
+ }
+ 
+-// TestHookContext pins the exact JSON the session-start hook and creel's boundary block print, with the text escaped.
++// TestHookContext pins the exact JSON the session-start hook and creel's boundary blocks print, with the text escaped:
++// after a tool call the text is the reason, and on a Stop it is the additional context and appears in no reason.
+ func TestHookContext(t *testing.T) {
+ 	t.Parallel()
++	boundaryBlock := func(event shuttleengine.HookEvent) func(string) ([]byte, error) {
++		return func(text string) ([]byte, error) { return New().BoundaryBlock(event, text) }
++	}
+ 	tests := []struct {
+ 		name   string
+ 		render func(string) ([]byte, error)
+ 		want   string
+ 	}{
+ 		{"SessionStart", SessionStartContext, `{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"read \"role.md\""}}`},
+-		{"BoundaryBlock", New().BoundaryBlock, `{"decision":"block","reason":"read \"role.md\"","systemMessage":"read \"role.md\""}`},
++		{"ToolBoundaryBlock", boundaryBlock(shuttleengine.HookEventToolBoundary), `{"decision":"block","reason":"read \"role.md\"","systemMessage":"read \"role.md\""}`},
++		{"StopBlock", boundaryBlock(shuttleengine.HookEventStop), `{"decision":"block","reason":"` + stopBlockReason + `","systemMessage":"read \"role.md\"","hookSpecificOutput":{"hookEventName":"Stop","additionalContext":"read \"role.md\""}}`},
+ 	}
+ 	for _, tt := range tests {
+ 		got, err := tt.render(`read "role.md"`)
+diff --git a/internal/shuttleengine/engine.go b/internal/shuttleengine/engine.go
+index 35cd0077..60a212c3 100644
+--- a/internal/shuttleengine/engine.go
++++ b/internal/shuttleengine/engine.go
+@@ -239,8 +239,8 @@ type HookInput struct {
+ type ToolBoundaryContextRenderer interface {
+ 	// HookInput parses the provider's hook input payload, refusing a payload that is not a hook input.
+ 	HookInput(payload []byte) (HookInput, error)
+-	// BoundaryBlock renders text as the provider's hook output that hands it to the session and shows it to the operator, the same for both events.
+-	BoundaryBlock(text string) ([]byte, error)
++	// BoundaryBlock renders text as the provider's hook output for event that hands it to the session once and shows it to the operator.
++	BoundaryBlock(event HookEvent, text string) ([]byte, error)
+ 	// RewakeOutput returns what an idle waiter hook writes to standard error and exits with to wake the session with text.
+ 	RewakeOutput(text string) (stderr []byte, exitCode int)
+ }
+diff --git a/internal/shuttleengines/shuttleengines_test.go b/internal/shuttleengines/shuttleengines_test.go
+index 7c94e45c..600a1bf8 100644
+--- a/internal/shuttleengines/shuttleengines_test.go
++++ b/internal/shuttleengines/shuttleengines_test.go
+@@ -341,8 +341,8 @@ func TestToolBoundaryRenderer(t *testing.T) {
+ 	if !ok {
+ 		t.Fatal("ToolBoundaryRenderer(claude) found none")
+ 	}
+-	got, err := renderer.BoundaryBlock("mail")
+-	want, wantErr := claudeengine.New().BoundaryBlock("mail")
++	got, err := renderer.BoundaryBlock(shuttleengine.HookEventStop, "mail")
++	want, wantErr := claudeengine.New().BoundaryBlock(shuttleengine.HookEventStop, "mail")
+ 	if err != nil || wantErr != nil || string(got) != string(want) {
+ 		t.Errorf("BoundaryBlock = %s, %v; want the engine's %s", got, err, want)
+ 	}
