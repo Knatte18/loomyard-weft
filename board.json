@@ -797,6 +797,26 @@
       "body": "Imported from [issue #896](https://github.com/Knatte18/loomyard/issues/896).\n\nA card that made `PaneMail` persist on every strand broke a tier1 `creelcli` test.\nThe card gate runs tier0 only, so it did not run that test; the later batch gate found the breakage.\nThe failure surfaced a card late, away from the change that caused it.\n\nThis is abnormal: a card's gate can pass while its own change breaks a higher-tier test, so the fix lands outside the card that introduced it.\nConsider letting the card gate run the tier1 tests of packages the card's diff touches, or flagging in the card result that higher tiers were not run.\n\nProvenance: task `creel-hook-post`, note `07-shuttle-idle-no-turn.md`.\n",
       "created": "2026-10-29T07:41:27Z",
       "revised": "2026-10-29T07:41:27Z"
+    },
+    {
+      "id": 899,
+      "handle": "B7",
+      "slug": "creel-daemon-restart-flake",
+      "title": "Flaky creel daemon lifecycle test: 'another daemon holds this hub' on restart",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "creel"
+      ],
+      "issues": [
+        895
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #895](https://github.com/Knatte18/loomyard/issues/895).\n\nA gate run failed once on the creelengine `TestDaemon_Lifecycle` subtest covering a hook wait that reconnects across a daemon restart.\nThe failure text was \"the daemon ended before it listened: creel: another daemon holds this hub\" (`server_test.go`).\nThe change under test touched only prose and doc comments, and the identical gate passed on the next run and on the batch gate.\n\nThis is abnormal: a passing-then-failing test with no code change points to a race between the first daemon releasing the hub and the second daemon starting.\nLook at the hub-release ordering in the creel daemon shutdown path and make the test wait for the release (or retry the start) so it is deterministic.\n\nProvenance: task `creel-hook-post`, note `15-creel-post-interrupt.md`.\n",
+      "created": "2026-10-29T07:41:30Z",
+      "revised": "2026-10-29T07:41:30Z"
     }
   ],
   "prime_owner": "osl-1046",

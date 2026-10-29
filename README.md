@@ -29,7 +29,7 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Act on the first test-time audit: reedengine wait, three over-grown test packages**<br>• Injectable wait for reedengine tier2 tests (40 s); prune tests in shell, boardtest and battenrecipe | [`test-prune-audit-leads`](design-test-prune-audit-leads.md) | darn |  | 12h<br>12h | reed, board, batten |
 
-## Notes (37)
+## Notes (38)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -42,7 +42,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 6d<br>21h | loom, stencil |
 | R8 |  | **Ideas from r/ClaudeCode "one line in your CLAUDE.md": fit for LoomYard and bench measures**<br>• About 30 ideas judged against our stencils and rules; top 8 ranked for a bench, a few cheap enough without one | [`claude-md-thread-ideas`](design-claude-md-thread-ideas.md) | 2d<br>14h | stencil, loom, burler |
 
-### Bugs (6)
+### Bugs (7)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -52,6 +52,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B4 |  | **TestCreelCLI EXTERNAL row flakes in full-package tier1 runs under machine load** | [`creelcli-external-row-flake`](design-creelcli-external-row-flake.md) | 0m<br>0m | creel |
 | B5 |  | **Burler fork guard halts a run on a read-only git command** | [`burler-guard-readonly-git`](design-burler-guard-readonly-git.md) | 0m<br>0m | burler, shed |
 | B6 |  | **Card gate runs tier0 only and misses tier1 breakage a card causes** | [`card-gate-misses-tier1`](design-card-gate-misses-tier1.md) | 0m<br>0m | webster, gate |
+| B7 |  | **Flaky creel daemon lifecycle test: 'another daemon holds this hub' on restart** | [`creel-daemon-restart-flake`](design-creel-daemon-restart-flake.md) | 0m<br>0m | creel |
 
 ### Enhancements (14)
 
