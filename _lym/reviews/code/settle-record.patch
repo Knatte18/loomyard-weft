@@ -1,0 +1,96 @@
+diff --git a/internal/burlerengine/cluster.go b/internal/burlerengine/cluster.go
+index 40c9ab33..62543728 100644
+--- a/internal/burlerengine/cluster.go
++++ b/internal/burlerengine/cluster.go
+@@ -355,6 +355,7 @@ func gitBranchReadsOnly(args []string) bool {
+ 
+ // splitShellSegments splits cmd into segments at unquoted ;, &, | and newlines, each segment a list of words.
+ // A single or double quoted run is part of one word with its quotes removed.
++// An unquoted < or > redirection is no word: the operator, an unquoted file-descriptor number attached before it, an & attached after it and the target word that follows are all dropped, so 2>/dev/null is never read as an operand.
+ // A backslash-newline pair is removed, so a continued line stays in its segment.
+ // A # at the start of a word comments out the rest of its line.
+ // Any other backslash outside single quotes escapes the next character, so an escaped quote opens no quoted run.
+@@ -363,16 +364,23 @@ func splitShellSegments(cmd string) [][]string {
+ 	var words []string
+ 	var word strings.Builder
+ 	inWord := false
++	wordQuoted := false
+ 	var quote rune
++	dropNextWord := false
+ 	endWord := func() {
+ 		if inWord {
+-			words = append(words, word.String())
++			if !dropNextWord {
++				words = append(words, word.String())
++			}
++			dropNextWord = false
+ 			word.Reset()
+ 			inWord = false
++			wordQuoted = false
+ 		}
+ 	}
+ 	endSegment := func() {
+ 		endWord()
++		dropNextWord = false
+ 		segments = append(segments, words)
+ 		words = nil
+ 	}
+@@ -400,9 +408,24 @@ func splitShellSegments(cmd string) [][]string {
+ 			i++
+ 			word.WriteRune(runes[i])
+ 			inWord = true
++			wordQuoted = true
+ 		case r == '\'' || r == '"':
+ 			quote = r
+ 			inWord = true
++			wordQuoted = true
++		case r == '<' || r == '>':
++			if fd := word.String(); inWord && !wordQuoted && fd != "" && strings.Trim(fd, "0123456789") == "" {
++				word.Reset()
++				inWord = false
++			}
++			endWord()
++			for i+1 < len(runes) && (runes[i+1] == '<' || runes[i+1] == '>') {
++				i++
++			}
++			if i+1 < len(runes) && runes[i+1] == '&' {
++				i++
++			}
++			dropNextWord = true
+ 		case strings.ContainsRune(";&|\n", r):
+ 			endSegment()
+ 		case r == ' ' || r == '\t' || r == '\r':
+diff --git a/internal/burlerengine/cluster_test.go b/internal/burlerengine/cluster_test.go
+index 27560296..82edf3cb 100644
+--- a/internal/burlerengine/cluster_test.go
++++ b/internal/burlerengine/cluster_test.go
+@@ -377,6 +377,17 @@ func TestFirstMutatingGitCommand(t *testing.T) {
+ 		{"branch -v is not mutating", "git branch -v", false},
+ 		{"branch -v beside -l with a pattern is not mutating", "git branch -v -l feat*", false},
+ 		{"branch list option before a pattern after a double dash is not mutating", "git branch -l -- feat*", false},
++		{"branch -a with stderr redirected is not mutating", "git branch -a 2>/dev/null", false},
++		{"branch with a 2>&1 redirect into a pipe is not mutating", "git branch 2>&1 | head", false},
++		{"branch with a spaced output redirect is not mutating", "git branch -r > branches.txt", false},
++		{"redirect before the subcommand hides no mutating verb", "git 2>/dev/null commit -m x", true},
++		{"fd duplication before the subcommand hides no mutating verb", "git 2>&1 commit -m x", true},
++		{"quoted redirect character is an operand", `git branch ">"`, true},
++		{"quoted digit before a redirect is an operand", `git branch "2">x`, true},
++		{"redirect with no target before a separator drops no later word", "git branch -a >; git commit -m x", true},
++		{"digit word detached from the redirect is an operand", "git branch 2 > x", true},
++		{"escaped redirect character is an operand", `git branch \>`, true},
++		{"read-only git chain from a burler halt is not mutating", `git branch -a --contains 71a46b11 2>/dev/null | head -20 && git merge-base --is-ancestor 71a46b11 HEAD 2>/dev/null && echo ancestor || echo not-ancestor; git show --stat 71a46b11 2>/dev/null | head -40 | grep -v "^$"`, false},
+ 		{"git log is not mutating", "git log --oneline", false},
+ 		{"git diff is not mutating", "git diff HEAD~1", false},
+ 		{"git status is not mutating", "git status", false},
+diff --git a/internal/burlerengine/doc.go b/internal/burlerengine/doc.go
+index aaaad86d..45c18686 100644
+--- a/internal/burlerengine/doc.go
++++ b/internal/burlerengine/doc.go
+@@ -301,6 +301,7 @@
+ // so a mutating verb named as an argument, as in git help cherry-pick or git log --grep merge, and a -h or --help request pass;
+ // git tag alone is judged by its arguments too, and passes when bare or in list mode, as in git tag --points-at HEAD, with no option that creates, deletes or signs a tag;
+ // git branch is judged by its arguments too, and passes when every option only reads and it either has no operand or is in list mode, as in git branch -a --contains HEAD or git branch --show-current, while a branch name beside -a, -r, -v or --format alone still counts, since git creates that branch;
++// a redirection such as 2>/dev/null, with its target, is no word of the command, so it is never read as an operand;
+ // a mutating invocation also passes when it acts inside a repository the fork itself created earlier, by git init or by git worktree add from such a repository, so a fork may experiment on a throwaway repository in its scratchpad;
+ // the directory is resolved lexically from each command's cd segments and -C options, and git push, --git-dir, --work-tree and an unresolvable directory never pass this way, and a git init whose relative path is the starting directory, an ancestor or leaves it through .. records no repository, and a .. climbing above a leading ~ or $ word leaves the directory unresolvable;
+ // any named spawn is a hard error.
