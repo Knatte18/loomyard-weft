@@ -676,6 +676,25 @@
       "body": "## Seen\n\nThe operator opened the loomyard hub as a VS Code workspace and it carries no colour.\n`lym ide seed` writes the VS Code config, window title and colours of the prime or a task worktree, but nothing for the workspace itself.\n\n## Idea\n\nSeed the workspace like a worktree: its own colour, window title and the rest of the config `lym ide seed` writes for a worktree, so a workspace window is told apart from its worktrees at a glance.\n",
       "created": "2026-10-29T07:36:56Z",
       "revised": "2026-10-29T07:36:56Z"
+    },
+    {
+      "id": 893,
+      "handle": "E9",
+      "slug": "reed-alt-arrow-keys-seeded",
+      "title": "Reed navigation keys, Alt+arrows, are seeded by lym",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "reed",
+        "config"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Alt+arrow keys do not switch windows and sessions in Reed in this hub; lym should seed them.",
+      "body": "## Seen\n\nIn the loomyard hub opened as a VS Code workspace, Alt+arrow keys do not switch windows and sessions in Reed, which they should.\n\n## Idea\n\nLym seeds the Reed navigation keys itself, at startup, init or clone, so they work in any hub without manual setup.\nWhich layer swallows the keys here (VS Code terminal, tmux or the desktop) is not yet known and is the first thing to find.\n",
+      "created": "2026-10-29T07:39:11Z",
+      "revised": "2026-10-29T07:39:11Z"
     }
   ],
   "prime_owner": "osl-1046",
