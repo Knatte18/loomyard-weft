@@ -691,6 +691,28 @@
       "body": "## Seen\n\n`PR-Review` is a stub today: `internal/landingshed/doc.go` calls it the human pull-request review that is not built yet, and `Finalize` opens, looks up and closes no pull request, so a landing makes no GitHub call.\nThe operator wants it built first, since a hub on Models needs a pull request to review before a run lands (operator, 2026-10-29).\n\n## Idea\n\nThe PR-Review row opens a pull request for the task branch and then starts an interactive agent session the operator can talk to, to discuss the pull request before it is merged.\nThe session has its own config key for the engine, model and effort it runs on, in the same `\u003calias\u003e[\u003ceffort\u003e]` form `lym shuttle open --model` takes.\nThe row sits where the stub already sits in the recipe, before Finalize, and its flag keeps the stub's meaning of off by default.\n\n## Open\n\n- How the run goes on after the discussion: the operator's word, the pull request merged on GitHub, or both, and what Finalize does with a pull request that is already merged.\n- Which credentials open the pull request: the hub's own repository may belong to another GitHub account than the session's, as Models does.\n- What the interactive agent is given: the diff, the plan and the decision record, which it reads itself, never as pre-read text in its prompt.\n- What happens to the pull request when the run is cancelled or the operator rejects it.\n",
       "created": "2026-10-29T12:32:07Z",
       "revised": "2026-10-29T12:32:07Z"
+    },
+    {
+      "id": 905,
+      "handle": "T3",
+      "slug": "claude-md-rule-map",
+      "title": "Map every rule of the loomyard CLAUDE.md to where lym agents already get it",
+      "kind": "task",
+      "labels": [
+        "research",
+        "pattern",
+        "stencil"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "One darn docs run lands a per-rule table so the operator decides each rule before CLAUDE.md is deleted",
+      "body": "## Goal\n\nMap every rule of the loomyard `CLAUDE.md` to where lym's agents already get it, so the operator can decide per rule what happens to it before the file is deleted (`claude-md-lym-rules-out`).\n\n## Scope\n\n- Input: the repository's `CLAUDE.md`, one file, read by one writer session in one run; no other runs, models or repeats.\n- The writer reads the source itself: `CLAUDE.md`, `PATTERN.md`, the `pattern/` files, `contracts/stencils/`, `plugins/` and the orch rules.\n- It first records which roles receive `PATTERN.md` by injection and which do not, citing the code that injects it.\n- Then one table row per rule or sentence of `CLAUDE.md` with the columns: the rule in a short quote, where it already stands for the agents that need it (`file:line`, or `none`), the agents that need it, and a verdict of `covered`, `move to \u003cplace\u003e` or `drop`, each with a one-line reason.\n- The report lands as `docs/research/claude-md-rule-map-2026-10-29.md` and changes no other file; `CLAUDE.md` stays as it is.\n- It names every rule whose only home is `CLAUDE.md` and which agents would lose it on deletion, and every rule enforced in code, with the check that enforces it.\n\n## What the run proves\n\nThe operator's choice per row is taken from the table, and the follow-up task moves, drops or guards each rule as decided and deletes the file.\n",
+      "status": "draft",
+      "created": "2026-10-29T12:34:44Z",
+      "revised": "2026-10-29T12:34:44Z",
+      "profile": "docs"
     }
   ],
   "prime_owner": "osl-1046",
