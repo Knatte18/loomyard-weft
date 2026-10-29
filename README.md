@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **TestScheduler_Chases refused-forward subtest races alpha's delivery worker**<br>• The refused-forward chase subtest is a timing flake: it never waits for the delivery worker that reads the chase.<br>• `profile: light` | [`chases-refused-forward-journal`](design-chases-refused-forward-journal.md) | darn | Code-Burler-Fix | osl-1046 | 49m<br>11m | creel |
+| T2 | **TestScheduler_Chases refused-forward subtest races alpha's delivery worker**<br>• The refused-forward chase subtest is a timing flake: it never waits for the delivery worker that reads the chase.<br>• `profile: light` | [`chases-refused-forward-journal`](design-chases-refused-forward-journal.md) | darn | Code-Bouncer | osl-1046 | 49m<br>11m | creel |
 
 ### Ready (0)
 
