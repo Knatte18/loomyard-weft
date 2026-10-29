@@ -1,17 +1,43 @@
-# Burler fork git guard no longer reads a redirection as a git operand
+# Burler fork git guard: ignore shell redirections when judging git
 
-Fixes #898.
+The burler fork guard no longer fails a review round on a read-only git chain that carries a redirection such as `2>/dev/null`.
+The command from the report, `git branch -a --contains <sha> 2>/dev/null | head -20 && git merge-base --is-ancestor <sha> HEAD ... ; git show --stat <sha> 2>/dev/null | head -40 | grep -v "^$"`, now passes.
 
-The burler fork audit splits each fork Bash command into shell segments and judges every git invocation by its subcommand and arguments.
-The splitter kept a redirection such as `2>/dev/null` as an ordinary word, so `git branch -a 2>/dev/null` read as `git branch` with a branch-name operand and failed the review round as a git-mutating command.
+Closes #898
 
-`splitShellSegments` in `internal/burlerengine/cluster.go` now drops each unquoted `<` or `>` redirection: the operator, a file-descriptor number attached in front of it, an `&` attached after it and the target word that follows.
-A quoted or escaped `<` or `>` stays part of its word, and a subcommand word elsewhere in the segment is still judged, so `git 2>/dev/null commit -m x` still counts as mutating.
-The guard's description in `internal/burlerengine/doc.go` names the rule.
+## Cause
 
-`TestFirstMutatingGitCommand` gains rows for a redirected `git branch -a`, a `2>&1` redirect into a pipe, a spaced output redirect, a redirect before a mutating subcommand, a quoted `">"` operand, and the read-only chain from the issue: `git branch -a --contains`, `git merge-base --is-ancestor` and `git show --stat`, piped through `head` and `grep` and joined by `&&`, `||` and `;`.
+`splitShellSegments` in `internal/burlerengine/cluster.go` cut a command into words without modelling redirections.
+`git branch -a 2>/dev/null` therefore gave `git branch` the operand `2>/dev/null`, which the guard read as a branch name being created, and the fork was flagged as mutating.
+The `git branch` list-mode rule that already landed passes `--contains` and the other listing flags; the redirection was the remaining false positive in the reported command shape.
 
-## Design decisions
+## Change
 
-- The `git branch` list-mode classification the issue asks for had already landed in commit 910ec75a, after the halt it reports; this change leaves it as it is and fixes the redirection false positive that remained in that command shape.
-- A guard hit stays a producer hard failure and is not downgraded to a retried attempt: on a true hit the fork may have changed the repository, and a retry would review on top of that change.
+- `splitShellSegments` drops an unquoted `<` or `>` redirection from the words of a segment: the operator, a file-descriptor number attached before it, an `&` attached after it, and the target word that follows.
+- Only the target leaves the words.
+  A subcommand word elsewhere in the segment stays, so `git 2>/dev/null commit -m x` and `git 2>&1 commit -m x` are still mutating.
+- A quoted or backslash-escaped `<` or `>` stays in its word, so `git branch ">"` and `git branch \>` are still mutating.
+  A quoted digit before a redirect, as in `git branch "2">x`, and a digit detached from it, as in `git branch 2 > x`, are operands, not file descriptors.
+- A redirection with no target before a separator drops no word of the next segment.
+- The guard stays lexical; no shell classifies a command.
+- `internal/burlerengine/doc.go` states the redirection rule in the guard's description.
+
+## Decisions
+
+- A guard hit stays a producer hard failure.
+  The issue suggests downgrading it to a retried attempt, but on a true hit the fork may have changed the repository and a retry would review on top of that change.
+  The false positive is fixed in the classifier, and `forkViolation` is unchanged.
+- The `git branch` list-mode classification is not reworked here.
+- Redirection forms the splitter does not model keep their current reading: here-document bodies, `>|`, `&>` and process substitution.
+
+## Tests
+
+`TestFirstMutatingGitCommand` gains rows for the chain from the issue (with an abbreviated sha, since the original values are not recoverable), redirected `git branch` listings, and the mutating cases above.
+The rows join the existing `tier0` table.
+No test run is recorded in this description.
+
+## Check by hand
+
+- `internal/burlerengine/cluster_test.go:381`: the `&` skip after a redirection operator is pinned only by the row `git 2>&1 commit -m x`; confirm that row fails when the skip in `splitShellSegments` is removed.
+- `internal/burlerengine/cluster.go:412`: the file-descriptor test must treat a quoted or escaped digit as an operand; confirm `git branch "2">x` is mutating.
+- `internal/burlerengine/cluster_test.go:380`: confirm the rows for a redirect with no target before a separator, a detached digit operand and a backslash-escaped redirect character each fail without the behaviour they pin.
