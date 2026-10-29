@@ -10,20 +10,14 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (0)
+### Ready (2)
 
 Waits on nothing open; can start now.
 
-_None._
-
-### Draft (2)
-
-Not released; nothing starts it until its status is cleared.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Creel mail reaches the model and the operator once, in one message, and is logged**<br>• Fix the doubled Stop-hook delivery and its error label, let the idle ring carry the mail, and log each delivery attempt<br>• `profile: solid` | [`creel-mail-delivered-once`](design-creel-mail-delivered-once.md) | loom |  | 17h<br>0m | creel |
-| T2 | `draft` **lym ide seed colours the VS Code workspace and passes Alt+arrow through to Reed**<br>• Seed the workspace like a worktree and seed the VS Code terminal setting for the Reed navigation keys<br>• `profile: light` | [`ide-seed-workspace-and-keys`](design-ide-seed-workspace-and-keys.md) | darn |  | 4h<br>0m | ide, workspaces, reed, config |
+| T1 | **Creel mail reaches the model and the operator once, in one message, and is logged**<br>• Fix the doubled Stop-hook delivery and its error label, let the idle ring carry the mail, and log each delivery attempt<br>• `profile: solid` | [`creel-mail-delivered-once`](design-creel-mail-delivered-once.md) | loom |  | 17h<br>0m | creel |
+| T2 | **lym ide seed colours the VS Code workspace and passes Alt+arrow through to Reed**<br>• Seed the workspace like a worktree and seed the VS Code terminal setting for the Reed navigation keys<br>• `profile: light` | [`ide-seed-workspace-and-keys`](design-ide-seed-workspace-and-keys.md) | darn |  | 4h<br>0m | ide, workspaces, reed, config |
 
 ## Notes (31)
 
