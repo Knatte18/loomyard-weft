@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-29 11:57 UTC; every age below is as of then.
+Rendered 2026-10-29 11:58 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -10,21 +10,20 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running (1)
+### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Creel mail reaches the model and the operator once, in one message, and is logged**<br>• Fix the doubled Stop-hook delivery and its error label, let the idle ring carry the mail, and log each delivery attempt<br>• `profile: solid` | [`creel-mail-delivered-once`](design-creel-mail-delivered-once.md) | loom | Worktree-Create | osl-1046 | 17h<br>0m | creel |
+| T2 | **lym ide seed colours the VS Code workspace and passes Alt+arrow through to Reed**<br>• Seed the workspace like a worktree and seed the VS Code terminal setting for the Reed navigation keys<br>• `profile: light` | [`ide-seed-workspace-and-keys`](design-ide-seed-workspace-and-keys.md) | darn | Worktree-Create | osl-1046 | 4h<br>0m | ide, workspaces, reed, config |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T2 | **lym ide seed colours the VS Code workspace and passes Alt+arrow through to Reed**<br>• Seed the workspace like a worktree and seed the VS Code terminal setting for the Reed navigation keys<br>• `profile: light` | [`ide-seed-workspace-and-keys`](design-ide-seed-workspace-and-keys.md) | darn |  | 4h<br>0m | ide, workspaces, reed, config |
+_None._
 
 ## Notes (31)
 
