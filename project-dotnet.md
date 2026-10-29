@@ -1,6 +1,6 @@
 # P2 .NET: LoomYard for C# repositories
 
-Rendered 2026-10-29 09:17 UTC; every age below is as of then.
+Rendered 2026-10-29 09:30 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Running LoomYard on C#/.NET repositories such as Models: scoped gates, regression, a sandbox hub
@@ -28,4 +28,4 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E28 |  | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 6d<br>1d | dotnet |
+| E28 |  | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 7d<br>1d | dotnet |
