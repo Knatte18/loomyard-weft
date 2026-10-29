@@ -389,24 +389,6 @@
       "revised": "2026-10-27T10:00:27Z"
     },
     {
-      "id": 808,
-      "handle": "P1",
-      "slug": "workspaces",
-      "title": "Workspaces: beams, pairs from a parent pair, dobby",
-      "kind": "project",
-      "labels": [
-        "enhancement",
-        "workspaces"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Beams that develop a project in their own worktree, driven by a dobby daemon",
-      "body": "",
-      "created": "2026-10-25T06:18:01Z",
-      "revised": "2026-10-25T06:18:07Z"
-    },
-    {
       "id": 809,
       "handle": "P2",
       "slug": "dotnet",
