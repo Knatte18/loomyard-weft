@@ -2,8 +2,6 @@
 
 `card-gate-misses-tier1` · Task · bug, webster, gate
 
-Depends on: [`webster-recover-batch-flake`](design-webster-recover-batch-flake.md)
-
 Imported from [issue #896](https://github.com/Knatte18/loomyard/issues/896).
 
 A card that made `PaneMail` persist on every strand broke a tier1 `creelcli` test.
