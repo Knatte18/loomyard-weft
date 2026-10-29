@@ -17,11 +17,11 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Creel mail reaches the model and the operator once, in one message, and is logged**<br>• Fix the doubled Stop-hook delivery and its error label, let the idle ring carry the mail, and log each delivery attempt<br>• `profile: solid` | [`creel-mail-delivered-once`](design-creel-mail-delivered-once.md) | loom | Plan-Burler-Review | osl-1046 | 19h<br>1h | creel |
-| T2 | **PR-Review opens a pull request and starts an interactive agent to discuss it**<br>• Build the PR-Review stub: a pull request per parent branch setting, a talkable agent on its own configured model, and a landing that follows the pull request | [`pr-review-row`](design-pr-review-row.md) | loom | Discussion-Bouncer | osl-1046 | 51m<br>25m | loom, shed, batten, shuttle, config |
+| T2 | **PR-Review opens a pull request and starts an interactive agent to discuss it**<br>• Build the PR-Review stub: a pull request per parent branch setting, a talkable agent on its own configured model, and a landing that follows the pull request | [`pr-review-row`](design-pr-review-row.md) | loom | awaiting · Discussion-Bouncer | osl-1046 | 52m<br>26m | loom, shed, batten, shuttle, config |
 | T3 | **Burler fork guard halts a run on a read-only git command** | [`burler-guard-readonly-git`](design-burler-guard-readonly-git.md) | darn | Darn-Write | osl-1046 | 5h<br>11m | burler, shed |
 | T4 | **Restore the verify-gate test for a misplaced //lym:guard marker**<br>• Once the darn verify key reads its diff base, cover the guard scan of a narrowed run again | [`verifygate-misplaced-guard-test`](design-verifygate-misplaced-guard-test.md) | darn | Darn-Write | osl-1046 | 22h<br>11m | loom, gate |
-| T5 | **Flaky websterengine recover-batch subtest fails once with "record changed"** | [`webster-recover-batch-flake`](design-webster-recover-batch-flake.md) | darn | Darn-Write | osl-1046 | 5h<br>8m | webster |
-| T7 | **PATTERN entries and scans for interactive spawns and filesystem links**<br>• Move the tmux-only spawn rule and the fslink rule from CLAUDE.md into PATTERN with a scan each | [`pattern-spawn-and-links-scans`](design-pattern-spawn-and-links-scans.md) | darn | Darn-Write | osl-1046 | 4m<br>4m | pattern, shuttle, fabric |
+| T5 | **Flaky websterengine recover-batch subtest fails once with "record changed"** | [`webster-recover-batch-flake`](design-webster-recover-batch-flake.md) | darn | Darn-Write | osl-1046 | 5h<br>9m | webster |
+| T7 | **PATTERN entries and scans for interactive spawns and filesystem links**<br>• Move the tmux-only spawn rule and the fslink rule from CLAUDE.md into PATTERN with a scan each | [`pattern-spawn-and-links-scans`](design-pattern-spawn-and-links-scans.md) | darn | Darn-Write | osl-1046 | 5m<br>5m | pattern, shuttle, fabric |
 
 ### Ready (0)
 
@@ -35,8 +35,8 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Card gate runs tier0 only and misses tier1 breakage a card causes** | [`card-gate-misses-tier1`](design-card-gate-misses-tier1.md) | darn | T5 | 5h<br>8m | webster, gate |
-| T8 | **Delete the loomyard CLAUDE.md after moving any rule only it holds**<br>• Check each rule against PATTERN, stencils and skills, move what is missing, guard update-plugins.sh, then delete CLAUDE.md | [`claude-md-lym-rules-out`](design-claude-md-lym-rules-out.md) | darn | T7 | 1h<br>4m | stencil, pattern, orch |
+| T6 | **Card gate runs tier0 only and misses tier1 breakage a card causes** | [`card-gate-misses-tier1`](design-card-gate-misses-tier1.md) | darn | T5 | 5h<br>9m | webster, gate |
+| T8 | **Delete the loomyard CLAUDE.md after moving any rule only it holds**<br>• Check each rule against PATTERN, stencils and skills, move what is missing, guard update-plugins.sh, then delete CLAUDE.md | [`claude-md-lym-rules-out`](design-claude-md-lym-rules-out.md) | darn | T7 | 1h<br>5m | stencil, pattern, orch |
 
 ## Notes (29)
 
@@ -54,7 +54,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Stop-hook creel mail arrives twice and is labelled as an error**<br>• One creel mail shows twice at the Stop hook, once as feedback and once as Stop hook error, with the hook command text in the model context | [`stop-hook-mail-doubled`](design-stop-hook-mail-doubled.md) | 0m<br>0m | creel |
+| B1 |  | **Stop-hook creel mail arrives twice and is labelled as an error**<br>• One creel mail shows twice at the Stop hook, once as feedback and once as Stop hook error, with the hook command text in the model context | [`stop-hook-mail-doubled`](design-stop-hook-mail-doubled.md) | 1m<br>0m | creel |
 
 ### Enhancements (12)
 
@@ -65,7 +65,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 1d<br>1d | batten, stencil, config |
 | E6 |  | **A module label for every package group under internal/**<br>• Several lym modules have no label, so entries take the nearest one that says something else | [`label-coverage`](design-label-coverage.md) | 18h<br>18h | board |
 | E7 |  | **loom names the general run; today's loom is one variant**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | 2w<br>4h | shed, loom |
-| E8 |  | **Dobby sends the batten notices, not a row of the batten recipe**<br>• Move quiet, driver-dead and api-error detection from battenshed/notice.go into dobby loop over the runs it drives | [`notices-from-dobby`](design-notices-from-dobby.md) | 15m<br>15m | dobby, batten |
+| E8 |  | **Dobby sends the batten notices, not a row of the batten recipe**<br>• Move quiet, driver-dead and api-error detection from battenshed/notice.go into dobby loop over the runs it drives | [`notices-from-dobby`](design-notices-from-dobby.md) | 16m<br>16m | dobby, batten |
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 2w<br>2w | board, loom |
 | E12 |  | **Revise the board README rendering**<br>• The README hides project members behind a bare link and has other unclear spots; the operator wants the rendering revised. | [`readme-omits-csharp-note`](design-readme-omits-csharp-note.md) | 3h<br>3h | board |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 11d<br>2d | webster, fabric, loom |
