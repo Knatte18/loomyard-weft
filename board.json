@@ -715,6 +715,26 @@
       "body": "Imported from [issue #902](https://github.com/Knatte18/loomyard/issues/902).\n\n`lym gate test` failed once in a `TestRecoverSpawnOrAttach` subtest of `internal/websterengine` (the one covering a mutating fabric reference at a batch's start on a clean tree), reporting \"record changed\" although the record it printed was unchanged.\nThe change under test touches nothing `internal/websterengine` reads, and a rerun of the same gate passed.\n\nThis is abnormal: a gate failure unrelated to the change, which passes on rerun, is a flaky test and costs a gate slot and a rerun each time.\nThe likely cause is in `internal/websterengine/recoverbatch_test.go`: a closure-shared record variable is reassigned by a setup and check pair, and parallel subtests share it, so one subtest's check can compare against another subtest's record.\n\nWhat to do: give each subtest its own record, by declaring it inside the subtest body or copying it per iteration, and confirm with repeated runs under the race detector.\n\nProvenance: task `shuttle-hook-signals`, from note `Darn-Write.md`.\n",
       "created": "2026-10-29T07:41:18Z",
       "revised": "2026-10-29T07:41:18Z"
+    },
+    {
+      "id": 895,
+      "handle": "B4",
+      "slug": "creelcli-external-row-flake",
+      "title": "TestCreelCLI EXTERNAL row flakes in full-package tier1 runs under machine load",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "creel"
+      ],
+      "issues": [
+        901
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #901](https://github.com/Knatte18/loomyard/issues/901).\n\nThe `TestCreelCLI` EXTERNAL row failed twice in full-package tier1 runs while other worktrees' gates loaded the machine.\nIt then passed alone, three times as a whole test, twice as a whole package, and in the final `lym gate test --upto 2` run.\n\nThis is abnormal because the failure did not reproduce without load, so it looks like a timing-sensitive test rather than a regression.\nTelling the two apart took a stash round-trip to the base tree, which is costly for an agent that cannot tell a flake from a break.\n\nWhat to do: find the timing assumption in the EXTERNAL row (a fixed wait or a tight deadline) and make it load-tolerant; if the gate can tell a load-induced failure from a real one, have it say so.\n\nProvenance: task `compact-inject-draft`, note `Darn-Write.md`.\n",
+      "created": "2026-10-29T07:41:21Z",
+      "revised": "2026-10-29T07:41:21Z"
     }
   ],
   "prime_owner": "osl-1046",
