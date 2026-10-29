@@ -1,6 +1,6 @@
 # Burler fork guard halts a run on a read-only git command
 
-`burler-guard-readonly-git` · Note · bug, burler, shed
+`burler-guard-readonly-git` · Task · bug, burler, shed · draft
 
 Imported from [issue #898](https://github.com/Knatte18/loomyard/issues/898).
 
