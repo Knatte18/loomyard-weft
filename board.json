@@ -636,9 +636,9 @@
       "depends_on": [],
       "isolated": false,
       "brief": "The adopt tier0 failure mail gives only counts, so the operator cannot see which tests failed.",
-      "body": "## Seen\n\nCreel mail #2 from `ly:ADOPT` reported `adopt check: tier0 failed, passed 21018 failed 2 skipped 1, 88.1s`.\nIt names neither the failing tests nor their messages, nor where the output is kept.\n\n## Idea\n\nThe adopt check failure mail lists each failed test with its first failure line, and the path of the full gate output.\nThe operator asked for this to be fixed and prioritized (2026-10-29).\n",
+      "body": "## Seen\n\nCreel mail #2 from `ly:ADOPT` reported `adopt check: tier0 failed, passed 21018 failed 2 skipped 1, 88.1s`.\nIt names neither the failing tests nor their messages.\nThe names sit only in `suite.log` under `_board/.lym/adopt/`; `check.json` holds counts only.\nThe per-tier line is built in `runCheck` in `internal/adoptcli/check.go` from `CheckTier`, which carries no failure names.\n\n## Idea\n\nCarry the failing test names in `CheckTier`, and list each in the per-tier failure mail with its first failure line, plus the `suite.log` path.\nThe operator asked for this to be fixed and prioritized (2026-10-29).\n",
       "created": "2026-10-29T07:35:50Z",
-      "revised": "2026-10-29T07:35:50Z"
+      "revised": "2026-10-29T07:36:19Z"
     }
   ],
   "prime_owner": "osl-1046",
