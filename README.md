@@ -45,7 +45,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **TestScheduler_HookWake blocked-chain subtest flakes under tier_parallel 8**<br>• A creelengine hook-wake subtest failed once in the OSL-1046 bench run at tier_parallel 8; the cause is not diagnosed. | [`hookwake-blocked-chain-flake`](design-hookwake-blocked-chain-flake.md) | 0m<br>0m | creel |
+| B1 |  | **TestScheduler_HookWake blocked-chain subtest flakes under tier_parallel 8**<br>• A creelengine hook-wake subtest failed once in the OSL-1046 bench run at tier_parallel 8; the cause is not diagnosed. | [`hookwake-blocked-chain-flake`](design-hookwake-blocked-chain-flake.md) | 1m<br>1m | creel |
 | B3 |  | **Flaky websterengine recover-batch subtest fails once with "record changed"** | [`webster-recover-batch-flake`](design-webster-recover-batch-flake.md) | 1h<br>1h | webster |
 | B5 |  | **Burler fork guard halts a run on a read-only git command** | [`burler-guard-readonly-git`](design-burler-guard-readonly-git.md) | 1h<br>1h | burler, shed |
 | B6 |  | **Card gate runs tier0 only and misses tier1 breakage a card causes** | [`card-gate-misses-tier1`](design-card-gate-misses-tier1.md) | 1h<br>1h | webster, gate |
@@ -86,11 +86,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F15 |  | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 2w<br>1d | reed, config, batten |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 13d<br>18h | burler, shed, orch, quarry, report |
 | F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 6d<br>1d | loom, shed, batten, workspaces, burler |
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T2 | **Sweep go_parallel on OSL-1046 with Cortex XDR**<br>• Time both gate tiers on the work laptop on a quiet machine and log them in docs beside the Neve numbers, with full hardware info<br>• `profile: docs` | [`bench-osl1046-xdr`](design-bench-osl1046-xdr.md) | 9d<br>28m |  |
