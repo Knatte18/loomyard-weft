@@ -1,6 +1,6 @@
 # Act on the first test-time audit: reedengine wait, three over-grown test packages
 
-`test-prune-audit-leads` · Task · enhancement, reed, board, batten · running · PR-Review
+`test-prune-audit-leads` · Task · enhancement, reed, board, batten · running · Finalize
 
 ## Seen
 
