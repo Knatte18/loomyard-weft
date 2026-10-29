@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-29 14:10 UTC; every age below is as of then.
+Rendered 2026-10-29 14:11 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Creel mail reaches the model and the operator once, in one message, and is logged**<br>• Fix the doubled Stop-hook delivery and its error label, let the idle ring carry the mail, and log each delivery attempt<br>• `profile: solid` | [`creel-mail-delivered-once`](design-creel-mail-delivered-once.md) | loom | Webster | osl-1046 | 19h<br>2h | creel |
 | T2 | **PR-Review opens a pull request and starts an interactive agent to discuss it**<br>• Build the PR-Review stub: a pull request per parent branch setting, a talkable agent on its own configured model, and a landing that follows the pull request | [`pr-review-row`](design-pr-review-row.md) | loom | Plan-Burler-Review | osl-1046 | 1h<br>1h | loom, shed, batten, shuttle, config |
-| T8 | **Delete the loomyard CLAUDE.md after moving any rule only it holds**<br>• Check each rule against PATTERN, stencils and skills, move what is missing, guard update-plugins.sh, then delete CLAUDE.md | [`claude-md-lym-rules-out`](design-claude-md-lym-rules-out.md) | darn | Code-Bouncer | osl-1046 | 2h<br>51m | stencil, pattern, orch |
+| T8 | **Delete the loomyard CLAUDE.md after moving any rule only it holds**<br>• Check each rule against PATTERN, stencils and skills, move what is missing, guard update-plugins.sh, then delete CLAUDE.md | [`claude-md-lym-rules-out`](design-claude-md-lym-rules-out.md) | darn | Describe | osl-1046 | 2h<br>51m | stencil, pattern, orch |
 
 ### Ready (0)
 
@@ -42,9 +42,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Stop-hook creel mail arrives twice and is labelled as an error**<br>• One creel mail shows twice at the Stop hook, once as feedback and once as Stop hook error, with the hook command text in the model context | [`stop-hook-mail-doubled`](design-stop-hook-mail-doubled.md) | 47m<br>46m | creel |
-| B2 |  | **Dobby never starts a task whose slug has an old finished run record, and status gives no reason**<br>• A ready task sat unstarted for over an hour: batten refused its slug every pass, and beam status read ready to start | [`dobby-start-blocked-silently`](design-dobby-start-blocked-silently.md) | 19m<br>19m | dobby, batten |
-| B3 |  | **Dobby's notice for a start that keeps failing reached the orch over an hour late**<br>• Dobby failed to start a task every pass from 13:43Z, but its mail reached the orch only an hour later | [`dobby-start-notice-late`](design-dobby-start-notice-late.md) | 19m<br>19m | dobby, creel |
+| B1 |  | **Stop-hook creel mail arrives twice and is labelled as an error**<br>• One creel mail shows twice at the Stop hook, once as feedback and once as Stop hook error, with the hook command text in the model context | [`stop-hook-mail-doubled`](design-stop-hook-mail-doubled.md) | 47m<br>47m | creel |
+| B2 |  | **Dobby never starts a task whose slug has an old finished run record, and status gives no reason**<br>• A ready task sat unstarted for over an hour: batten refused its slug every pass, and beam status read ready to start | [`dobby-start-blocked-silently`](design-dobby-start-blocked-silently.md) | 20m<br>20m | dobby, batten |
+| B3 |  | **Dobby's notice for a start that keeps failing reached the orch over an hour late**<br>• Dobby failed to start a task every pass from 13:43Z, but its mail reached the orch only an hour later | [`dobby-start-notice-late`](design-dobby-start-notice-late.md) | 20m<br>20m | dobby, creel |
 
 ### Enhancements (11)
 
