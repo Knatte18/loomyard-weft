@@ -218,6 +218,12 @@ Decision: The PR-Review row, not another part of Shed, opens the pull request an
 
 Rationale: lym already has its own GitHub client, so the row needs no gh command, and the operator is sure only that the PR-Review row closes the pull request.
 
+### Added after Discussion (parent, 2026-10-29): PATTERN-github-auth change without a named account
+
+Decision: The PATTERN-github-auth change reads: Calling GitHub: auth only via internal/githubclient; no other production package runs gh; only lym selfreport create files an issue; only PR-Review, Finalize and pair teardown open, merge or close a pull request. (test). It carries no named-account clause, since there is no pr_account.
+
+Rationale: The decision that removes pr_account makes the earlier text, with a named account through gh auth token --user, false.
+
 ## Constraints
 
 - `PATTERN-github-auth`: every GitHub call and the `gh auth token --user` shell-out live in or go through `internal/githubclient`.
@@ -286,6 +292,6 @@ Rationale: lym already has its own GitHub client, so the row needs no gh command
 ## PATTERN changes
 
 - `PATTERN-parent-lock` — changes: Moving, merging into or landing on a local parent branch, or merging a run's pull request: only in a run's Finalize, under `internal/parentlock`'s lock for that parent.
-- `PATTERN-github-auth` — changes: Calling GitHub: auth only via `internal/githubclient`, a named account via `gh auth token --user`; no other production package runs `gh`; only `lym selfreport create` files an issue; only PR-Review, Finalize and pair teardown open, merge or close a pull request. (test)
+- `PATTERN-github-auth` — changes: Calling GitHub: auth only via internal/githubclient; no other production package runs gh; only lym selfreport create files an issue; only PR-Review, Finalize and pair teardown open, merge or close a pull request. (test) — added after Discussion (parent, 2026-10-29)
 - `PATTERN-pull-request-mode` — adds: Deciding whether a landing goes through a pull request: only landingshed's one resolver, from the receiving worktree's `beam.pull_request`, the landing entry's `pull_request` field and the origin; no profile or run setting carries it.
 - `PATTERN-shed-recipe-registry` — changes: Adding producer or recipe row: one `Constructor` map in `internal/shedrecipe`, bar `Implementer`'s; a row's value looked up by key, a side action a `Command` row, a row off by one config key its `entry_gate`, one whose off reads more its own call.
