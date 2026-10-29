@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-29 10:12 UTC; every age below is as of then.
+Rendered 2026-10-29 10:13 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -16,7 +16,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Act on the first test-time audit: reedengine wait, three over-grown test packages**<br>• Injectable wait for reedengine tier2 tests (40 s); prune tests in shell, boardtest and battenrecipe | [`test-prune-audit-leads`](design-test-prune-audit-leads.md) | darn | Code-Bouncer | osl-1046 | 15h<br>15h | reed, board, batten |
+| T1 | **Act on the first test-time audit: reedengine wait, three over-grown test packages**<br>• Injectable wait for reedengine tier2 tests (40 s); prune tests in shell, boardtest and battenrecipe | [`test-prune-audit-leads`](design-test-prune-audit-leads.md) | darn | Code-Burler-Review | osl-1046 | 15h<br>15h | reed, board, batten |
 
 ### Ready (0)
 
