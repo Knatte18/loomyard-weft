@@ -62,6 +62,12 @@ Rationale: a snapshot count races the waits earlier verbs' workers and the sweep
 
 - The EXTERNAL row's stepping advances the sweep and the chase timers alongside the probes; a later change that makes a sweep or chase act on alpha in that window could change the row's outcome.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - run-record-failures-key-unpinned (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: a counter row with a failing test whose output holds a status line and an error line, a failing parent with a failing subtest, and a panic reports exactly the leaf failures with their first non-status lines; a `vstest` tier reports none.
