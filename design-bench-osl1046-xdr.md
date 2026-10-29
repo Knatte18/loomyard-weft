@@ -1,6 +1,6 @@
 # Sweep go_parallel on OSL-1046 with Cortex XDR
 
-`bench-osl1046-xdr` · Task · research · running · Drift-Verify
+`bench-osl1046-xdr` · Task · research · running · Finalize
 
 ## Done (2026-10-20)
 
