@@ -15,8 +15,17 @@ One mail arrives in two steps:
 So the model reads the pointer line twice in step 2, and the full hook command text, with its paths and flag-file logic, sits in the agent's context.
 The earlier task's fix text said the hook command text should not appear in the agent's context at all; it still does.
 
+What the operator's terminal shows for one mail (2026-10-29):
+
+- A `Stop hook feedback` block headed by a line `Stop says: [creel] #13 from ...` that holds the whole mail text; where that line is written is not known.
+- Then `Ran 2 stop hooks` with two lines: `Stop hook error: [creel] Mail for you arrived as this turn ended; it is in this Stop hook's additional context. Act on it now.` and `Stop hook feedback: [creel] #13 from ...` with the whole mail text again.
+- The hook command text is not shown there, only in the model's context.
+
+So the operator reads the mail twice, and a normal delivery is labelled an error.
+
 ## Fix
 
-- Find why the harness shows the `hook-read` result both as feedback and as a blocking error, and whether the exit code, the `decision` field or the `reason` field of the hook's JSON causes the second copy.
-- Make the pointer line reach the model once and keep the command text out of the context.
+- Find why the harness shows the `hook-read` result both as feedback and as a blocking error, and whether the exit code, the `decision` field or the `reason` field of the hook's JSON causes the extra copy and the error label.
+- Find what writes the `Stop says:` line and why it carries the mail text.
+- Make the pointer line reach the model once, show the mail to the operator once, never label a delivery an error, and keep the command text out of the context.
 - Decide whether the step 1 bell and the step 2 delivery can be one message; this is the point of `creel-ring-carries-mail`, so fold the two notes together if the cause is shared.
