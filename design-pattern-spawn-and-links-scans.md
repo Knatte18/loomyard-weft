@@ -1,6 +1,6 @@
 # PATTERN entries and scans for interactive spawns and filesystem links
 
-`pattern-spawn-and-links-scans` · Task · enhancement, pattern, shuttle, fabric · running · Finalize
+`pattern-spawn-and-links-scans` · Task · enhancement, pattern, shuttle, fabric · done
 
 ## Goal
 
