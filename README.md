@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Creel hook delivery: mail arrives once, and the HookWake flake**<br>• Make a creel mail reach the agent once through the Stop hooks, and make the HookWake blocked-chain subtest deterministic.<br>• `profile: solid` | [`creel-hook-delivery-fixes`](design-creel-hook-delivery-fixes.md) | darn | Drift-Baseline | osl-1046 | 16m<br>0m | creel, claude |
+| T2 | **Creel hook delivery: mail arrives once, and the HookWake flake**<br>• Make a creel mail reach the agent once through the Stop hooks, and make the HookWake blocked-chain subtest deterministic.<br>• `profile: solid` | [`creel-hook-delivery-fixes`](design-creel-hook-delivery-fixes.md) | darn | Darn-Write | osl-1046 | 16m<br>0m | creel, claude |
 
 ### Ready (0)
 
