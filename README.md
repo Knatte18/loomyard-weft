@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-29 13:12 UTC; every age below is as of then.
+Rendered 2026-10-29 13:13 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -10,7 +10,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running (3)
+### Running (4)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -19,14 +19,13 @@ Held by a run; its scope is locked until the run ends.
 | T1 | **Creel mail reaches the model and the operator once, in one message, and is logged**<br>• Fix the doubled Stop-hook delivery and its error label, let the idle ring carry the mail, and log each delivery attempt<br>• `profile: solid` | [`creel-mail-delivered-once`](design-creel-mail-delivered-once.md) | loom | Plan-Write | osl-1046 | 18h<br>1h | creel |
 | T2 | **PR-Review opens a pull request and starts an interactive agent to discuss it**<br>• Build the PR-Review stub: a pull request per parent branch setting, a talkable agent on its own configured model, and a landing that follows the pull request | [`pr-review-row`](design-pr-review-row.md) | loom | Discussion-Burler-Review | osl-1046 | 40m<br>14m | loom, shed, batten, shuttle, config |
 | T3 | **Burler fork guard halts a run on a read-only git command** | [`burler-guard-readonly-git`](design-burler-guard-readonly-git.md) | darn | Worktree-Create | osl-1046 | 5h<br>0m | burler, shed |
+| T4 | **Restore the verify-gate test for a misplaced //lym:guard marker**<br>• Once the darn verify key reads its diff base, cover the guard scan of a narrowed run again | [`verifygate-misplaced-guard-test`](design-verifygate-misplaced-guard-test.md) | darn | Worktree-Create | osl-1046 | 21h<br>0m | loom, gate |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Restore the verify-gate test for a misplaced //lym:guard marker**<br>• Once the darn verify key reads its diff base, cover the guard scan of a narrowed run again | [`verifygate-misplaced-guard-test`](design-verifygate-misplaced-guard-test.md) | darn |  | 21h<br>0m | loom, gate |
+_None._
 
 ## Notes (31)
 
