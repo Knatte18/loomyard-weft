@@ -1,14 +1,17 @@
-# File a GitHub self-report for the doubled Stop-hook mail delivery
+# Stop-hook creel mail arrives twice and is labelled as an error
 
-`stop-hook-mail-doubled` · Note · bug, creel, selfreport
+`stop-hook-mail-doubled` · Note · bug, creel
 
 ## Seen (operator and hub orch, 2026-10-29)
 
-The Stop hook delivers each creel mail twice to the operator's terminal: a `Stop hook feedback` block with the mail text, then `Ran 2 stop hooks` with a `Stop hook error` line naming the hook command and a second `Stop hook feedback` with the same mail text.
-The hook command text reaches the model, and a normal delivery is labelled `Stop hook error`.
-The task `creel-mail-delivered-once` fixes it and carries issue #900.
+Each creel mail reaches the operator's terminal twice at a Stop hook:
 
-## Idea
+- a `Stop hook feedback` block headed `Stop says: [creel] #N from ...` with the mail text;
+- then `Ran 2 stop hooks` with a `Stop hook error: [creel] Mail for you arrived... additional context` line and a second `Stop hook feedback: [creel] #N ...` with the mail text again.
 
-File a GitHub self-report with `lym selfreport create` for the doubled delivery, as the operator asked on 2026-10-29: what was seen, the installed `lym` that carries the fix of `creel-hook-delivery-fixes`, and the expected behaviour of one message, delivered once.
-Check first whether #900 already covers it, and if so fold this note into it.
+A normal delivery is labelled `Stop hook error`, and the hook command text reaches the model.
+The installed `lym` carries the fix of `creel-hook-delivery-fixes`, so the bug stands in the current build.
+
+## Expected
+
+One message per mail, delivered once, labelled as a delivery and not as an error, with no hook command text in the model's context.

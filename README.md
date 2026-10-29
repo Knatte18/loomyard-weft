@@ -54,7 +54,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **File a GitHub self-report for the doubled Stop-hook mail delivery**<br>• Operator asked for it as a note: file the selfreport for the doubled Stop-hook delivery, unless #900 covers it | [`stop-hook-mail-doubled`](design-stop-hook-mail-doubled.md) | 0m<br>0m | creel, selfreport |
+| B1 |  | **Stop-hook creel mail arrives twice and is labelled as an error**<br>• One creel mail shows twice at the Stop hook, once as feedback and once as Stop hook error, with the hook command text in the model context | [`stop-hook-mail-doubled`](design-stop-hook-mail-doubled.md) | 0m<br>0m | creel |
 
 ### Enhancements (12)
 

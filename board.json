@@ -727,20 +727,19 @@
       "id": 907,
       "handle": "B1",
       "slug": "stop-hook-mail-doubled",
-      "title": "File a GitHub self-report for the doubled Stop-hook mail delivery",
+      "title": "Stop-hook creel mail arrives twice and is labelled as an error",
       "kind": "note",
       "labels": [
         "bug",
-        "creel",
-        "selfreport"
+        "creel"
       ],
       "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "Operator asked for it as a note: file the selfreport for the doubled Stop-hook delivery, unless #900 covers it",
-      "body": "## Seen (operator and hub orch, 2026-10-29)\n\nThe Stop hook delivers each creel mail twice to the operator's terminal: a `Stop hook feedback` block with the mail text, then `Ran 2 stop hooks` with a `Stop hook error` line naming the hook command and a second `Stop hook feedback` with the same mail text.\nThe hook command text reaches the model, and a normal delivery is labelled `Stop hook error`.\nThe task `creel-mail-delivered-once` fixes it and carries issue #900.\n\n## Idea\n\nFile a GitHub self-report with `lym selfreport create` for the doubled delivery, as the operator asked on 2026-10-29: what was seen, the installed `lym` that carries the fix of `creel-hook-delivery-fixes`, and the expected behaviour of one message, delivered once.\nCheck first whether #900 already covers it, and if so fold this note into it.\n",
+      "brief": "One creel mail shows twice at the Stop hook, once as feedback and once as Stop hook error, with the hook command text in the model context",
+      "body": "## Seen (operator and hub orch, 2026-10-29)\n\nEach creel mail reaches the operator's terminal twice at a Stop hook:\n\n- a `Stop hook feedback` block headed `Stop says: [creel] #N from ...` with the mail text;\n- then `Ran 2 stop hooks` with a `Stop hook error: [creel] Mail for you arrived... additional context` line and a second `Stop hook feedback: [creel] #N ...` with the mail text again.\n\nA normal delivery is labelled `Stop hook error`, and the hook command text reaches the model.\nThe installed `lym` carries the fix of `creel-hook-delivery-fixes`, so the bug stands in the current build.\n\n## Expected\n\nOne message per mail, delivered once, labelled as a delivery and not as an error, with no hook command text in the model's context.\n",
       "created": "2026-10-29T13:23:27Z",
-      "revised": "2026-10-29T13:23:27Z"
+      "revised": "2026-10-29T13:23:56Z"
     }
   ],
   "prime_owner": "osl-1046",
