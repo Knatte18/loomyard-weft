@@ -735,6 +735,26 @@
       "body": "Imported from [issue #901](https://github.com/Knatte18/loomyard/issues/901).\n\nThe `TestCreelCLI` EXTERNAL row failed twice in full-package tier1 runs while other worktrees' gates loaded the machine.\nIt then passed alone, three times as a whole test, twice as a whole package, and in the final `lym gate test --upto 2` run.\n\nThis is abnormal because the failure did not reproduce without load, so it looks like a timing-sensitive test rather than a regression.\nTelling the two apart took a stash round-trip to the base tree, which is costly for an agent that cannot tell a flake from a break.\n\nWhat to do: find the timing assumption in the EXTERNAL row (a fixed wait or a tight deadline) and make it load-tolerant; if the gate can tell a load-induced failure from a real one, have it say so.\n\nProvenance: task `compact-inject-draft`, note `Darn-Write.md`.\n",
       "created": "2026-10-29T07:41:21Z",
       "revised": "2026-10-29T07:41:21Z"
+    },
+    {
+      "id": 896,
+      "handle": "E11",
+      "slug": "creel-delivery-log",
+      "title": "Creel daemon writes no delivery-level log, so an unconfirmed delivery cannot be diagnosed",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "creel"
+      ],
+      "issues": [
+        900
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #900](https://github.com/Knatte18/loomyard/issues/900).\n\nWhile tracing why a `/compact` delivery to the orch session ended as an `unconfirmed` record, the only evidence that the compact had landed was the orch's own Claude transcript.\nThe creel daemon writes no delivery-level log, so the shuttle error behind the `unconfirmed` record had to be inferred from timing.\n\nThis is abnormal because an `unconfirmed` outcome is exactly the case where an operator needs to see what the delivery attempted and what the shuttle returned.\nWithout a log, a wrong suspected cause (here, a race with the `asyncRewake` Stop waiter) survived until the transcript was checked by hand.\n\nWhat to do: have the creel daemon log each delivery attempt, with the target session, the shuttle result or error, and the final confirmed or unconfirmed decision, at a path an operator can find from the `unconfirmed` record.\n\nProvenance: task `compact-inject-draft`, note `Darn-Write.md`.\n",
+      "created": "2026-10-29T07:41:23Z",
+      "revised": "2026-10-29T07:41:23Z"
     }
   ],
   "prime_owner": "osl-1046",
