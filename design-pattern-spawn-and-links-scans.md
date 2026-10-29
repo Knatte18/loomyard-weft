@@ -1,6 +1,6 @@
 # PATTERN entries and scans for interactive spawns and filesystem links
 
-`pattern-spawn-and-links-scans` · Task · enhancement, pattern, shuttle, fabric · running · Drift-Verify
+`pattern-spawn-and-links-scans` · Task · enhancement, pattern, shuttle, fabric · running · Code-Bouncer
 
 ## Goal
 
