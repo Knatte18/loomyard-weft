@@ -1,70 +1,42 @@
-# Creel Stop mail reaches the model once; HookWake test made deterministic
+# Creel Stop mail reaches the model once; fix HookWake flake
 
-Two fixes to creel's hook delivery, in two commits.
+A creel mail handed over at a Stop now reaches the model once and the operator once.
+Before, Claude Code showed the mail twice to both: as `Stop hook feedback:` and again inside `Stop hook blocking error from command: "<command>": <reason>`, and as `Stop says:` and `Stop hook error:` for the operator.
+The `TestScheduler_HookWake` blocked-chain subtest also no longer depends on how fast the delivery worker runs.
 
-## A Stop's mail reaches the model once
+## Cause
 
-Claude Code turns one blocking Stop hook's `reason` into two model messages: `Stop hook feedback:\n<reason>`, and a blocking-error attachment rendered as `Stop hook blocking error from command: "<command>": <reason>`.
-It also shows the reason to the operator as `Stop hook error: <reason>`, and the `systemMessage` as a second line, `Stop says: …`.
-This was read from the Claude Code 2.1.312 bundle's hook handling and matches case 2 of `docs/research/creel-hook-channels-2026-10-28/report.md`.
-So both copies of the mail came from the merged Stop command's one block.
-The idle waiter, `hook-wait`, writes only the bell line, so it never wrote the second copy.
+Claude Code turns one blocking Stop hook's `reason` into two model messages and one operator error line.
+The idle waiter (`hook-wait`) is not involved: its exit 2 carries only the bell line.
+The two findings share no cause: the duplicate comes from Claude Code's Stop handling, the flake from the test's wake counting.
 
-`shuttleengine.ToolBoundaryContextRenderer.BoundaryBlock` now takes the `HookEvent`, and `hook-read` passes the event its input carried.
-On a Stop, the Claude engine's block is:
+## Change
 
-```json
-{"decision":"block","reason":"<fixed pointer>","systemMessage":<mail>,"hookSpecificOutput":{"hookEventName":"Stop","additionalContext":<mail>}}
-```
-
-The model reads the mail once, as `Stop hook additional context: <mail>`, and the operator sees it once, as `Stop says: <mail>`.
-`decision: block` stays, so the turn goes on as before, and the daemon's Stop count, `hook-read`'s exit codes and the merged command's turn-end recording are unchanged.
-The tool-boundary block is unchanged byte for byte.
-
-The two findings share no cause.
-The note `creel-ring-carries-mail` is not touched: the ring and the bell line are unchanged.
-One fact bears on it: Claude Code renders an `asyncRewake` hook's exit-2 output to the model as `Stop hook blocking error from command "<hook name>": <stderr>`, so mail carried by the ring would arrive with that prefix too.
-
-## HookWake rows wait for the probe they depend on
-
-`settle` in `TestScheduler_HookWake` waits for one probe wait after its trigger.
-A trigger that posts several messages wakes alpha's worker again while it probes.
-The wake channel buffers that second wake, and its probe runs after `settle` returned, so every later `settle` in the row waited for the previous trigger's probe.
-In the blocked-chain row, that late probe could read the turn end the row sets for its last step and ring the blocked waiter.
-The woken waiter then saw the same claimable set and was never rung, and the row failed at `wantKind(t, woken, OutcomeRing)` after its 10-second deadline.
-
-The blocked-chain row and the Stop-cap row now post their messages before the scheduler starts and settle the start, whose new worker probes once.
-`settle`'s comment states that it counts one wake.
-The production worker is unchanged.
+- On a Stop, `claudeengine.Claude.BoundaryBlock` keeps `decision: block`, so the turn still continues and the Stop count and turn-end recording are unchanged.
+  It puts the mail in `hookSpecificOutput.additionalContext` (`hookEventName` `Stop`) and in `systemMessage`.
+  The `reason` becomes a fixed pointer line that names no message and says the mail is in the additional context.
+  The model reads the mail once as `Stop hook additional context:`, the operator once as `Stop says:`.
+- A tool-boundary (PostToolUse) block is byte-for-byte unchanged.
+- The `shuttleengine.ToolBoundaryContextRenderer` seam's `BoundaryBlock` now takes the `HookEvent`, and `hook-read` in `internal/creelcli` passes the event its input carried.
+  `hook-read` stays engine-neutral.
+- `TestScheduler_HookWake`: `settle` counts one probe wait after its trigger, which is exact only when the trigger wakes alpha's worker once.
+  A trigger posting several messages woke it again during a probe; the buffered wake ran a probe after `settle` returned and could ring the blocked waiter instead of the woken one.
+  The rows that post several messages in one trigger now post them before the scheduler starts and settle the start.
+  No real-time wait is added, and the production worker is unchanged.
+- The `claudeengine` and `creelcli` package docs state the Stop rendering.
+  `TestHookContext` pins the block JSON.
 
 ## Design decisions
 
-- **The block stays on a Stop.**
-  A Stop output with additional context and no block would keep the hook command out of the model's context.
-  Nothing shows that such an output keeps the turn going, though, and if the turn ended the mail would already be journaled read.
-  The block is the only Stop output proven to continue the turn.
-- **The pointer reason is Claude-specific, so it lives in `claudeengine`**, as `stopBlockReason`.
-- **The seam takes the event instead of gaining a second method**, because only the Claude engine implements it and the event is the one fact the rendering turns on.
+- The hook's command text still reaches the model, inside the blocking-error copy of the pointer, because Claude Code names the command of every blocking Stop hook.
+  The mail itself is no longer next to it.
+  Removing the command text entirely would need a Stop output other than a block, and the block is the only Stop output proven to keep the turn going.
+- The merged Stop hook command in `settings.go`, `hook-wait` and the bell line are untouched, so the note `creel-ring-carries-mail` is not acted on.
 
-## Deviations from the board entry
+## Check by hand
 
-- The board entry asks that the hook command text not appear in the agent's context at all.
-  Under a blocking Stop hook that cannot be done, because Claude Code names the command of every blocking Stop hook.
-  The command now appears only beside the fixed pointer line, never beside the mail.
-
-## Testing
-
-- `TestHookContext` pins the exact JSON of both blocks, and `TestToolBoundaryRenderer` and the `hook-read` rows of `TestCreelCLI` expect each event's block.
-- `lym gate test` tier0 over the diff and tier1 for `internal/creelcli` passed.
-- The old and new HookWake rows were each run under `-run TestScheduler_HookWake -count=300 -cpu=1,2,8`.
-  The old rows failed 10 of 900 runs, all in the blocked-chain row at the woken waiter's ring.
-  The new rows failed none.
-
-## For the reviewer
-
-- The Stop change rests on how Claude Code handles hook output internally, which is not a stable contract.
-  The tier3 smoke test `TestSmokeCreelHookDelivery` covers Stop delivery against a real session and was not run here, since llm-tier runs are refused in this session.
-  Run its row `a post after the last tool call is delivered by the Stop block and the turn goes on` once before relying on the change.
-- A model may trust mail in additional context less than mail in a block reason.
-  The creel-hook-channels research saw Haiku decline a PostToolUse additional context.
-  The pointer reason tells the model the mail is there and to act on it.
+- A model may trust mail less in additional context than in a block reason; an earlier research run saw Haiku decline a PostToolUse additional context.
+  Run the tier3 smoke test `TestSmokeCreelHookDelivery` against a real session; it was not run here.
+- That Stop additional context reaches the model alongside a block rests on Claude Code 2.1.312's handling, which is not a stable contract.
+  Re-check the delivery after a Claude Code upgrade.
+- Run the `TestScheduler_HookWake` blocked-chain subtest repeatedly under CPU load, such as at `tier_parallel` 8, to confirm the flake is gone.
