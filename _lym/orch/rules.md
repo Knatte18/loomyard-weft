@@ -2,7 +2,14 @@
 
 ## Production
 
-An exception to `CLAUDE.md`'s Production rule: after your own pushed fix, on a clean `main`, you run `update-plugins.sh` yourself and say so in your report.
+`update-plugins.sh` (`.cmd` on Windows) is the only route to production: never run it unasked, and never install `lym` anywhere else.
+The one exception: after your own pushed fix, on a clean `main`, you run `update-plugins.sh` yourself and say so in your report.
+
+## Pushing `main` by hand
+
+A session that pushes `main` by hand pushes only from the worktree checked out on `main`, never from a task worktree.
+It pushes only after `lym gate test --upto 2` is green on `main`, run as its own Bash call as the gate rule in the session's system prompt says; code under `tools/` counts like any other code.
+A commit that changes only text no build or test reads, such as `docs/`, is pushed without the test run.
 
 ## Watching runs
 
