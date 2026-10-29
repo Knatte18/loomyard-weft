@@ -1,0 +1,870 @@
+diff --git a/docs/benchmarks/test-suite-timing.md b/docs/benchmarks/test-suite-timing.md
+index 0a1bab01..9f78f0db 100644
+--- a/docs/benchmarks/test-suite-timing.md
++++ b/docs/benchmarks/test-suite-timing.md
+@@ -476,3 +476,10 @@ Each line is a lead for a prune task under `PATTERN-test-speed`, not a verdict;
+ - `internal/shedrun` 22 to 72 tests: +903/-209 lines in 11 files over 27 commits, a plausible match for new behavior (beams, dobby, arbiter) but worth a redundancy pass.
+ - `internal/battenshed` +84, `internal/shuttleengine` +78, `internal/loomcli` +61 and `internal/fabricengine` +51 track 49 to 142 commits and 9.7 to 34.9 thousand changed lines each, so their growth matches new behavior.
+ - `internal/reedengine` `tier2`: 2 tests spending 40.00 s, a candidate for an injectable duration under `PATTERN-test-speed`.
++
++#### Correction (2026-10-29)
++
++The per-package counts above for the three prune leads do not match the packages' sources, so the per-package split of the gate's logs is not reliable as a count.
++Counted by `func Test` declarations, `internal/shell` went from 11 to 14 tests, `internal/boardengine/boardtest` stayed at 3 and `internal/battenrecipe` went from 8 to 9; a verbose run shows `internal/shell`'s 14 tests carrying 60 subtests, which neither count includes.
++`internal/reedengine`'s `tier2` time was no waited-out duration: its 32 tests ran serially, with the slowest at 11 s, and their times summed to the package's wall.
++A later audit counts per package from `go test -json` events keyed by package, or from a verbose run of the package alone.
+diff --git a/internal/battenrecipe/recipe_test.go b/internal/battenrecipe/recipe_test.go
+index 2c9a78dc..b3b606f1 100644
+--- a/internal/battenrecipe/recipe_test.go
++++ b/internal/battenrecipe/recipe_test.go
+@@ -24,7 +24,13 @@ import (
+ 
+ // TestNew_RowNamesMatchTheDurableIdentityConstants asserts New assembles exactly the rows the Name* constants name, in order.
+ // It is the durable-identity guard internal/loomrecipe's own row-name test mirrors.
++// It also pins NameRunShed's value: shedengine persists the row name, not the engine name, into the status file,
++// so a symmetry-minded rename of the row onto its InnerRun engine would break resume for an in-flight run.
+ func TestNew_RowNamesMatchTheDurableIdentityConstants(t *testing.T) {
++	if NameRunShed != "Run-Shed" {
++		t.Errorf("NameRunShed = %q; want the durable value %q", NameRunShed, "Run-Shed")
++	}
++
+ 	env, paths := testEnv(t)
+ 	shed, err := New(env, paths)
+ 	if err != nil {
+@@ -174,33 +180,6 @@ func TestNew_CarriesShedPathsVerbatim(t *testing.T) {
+ 	}
+ }
+ 
+-// TestNameRunShed_ValueIsPinnedAgainstASymmetryRename exists because shedengine persists
+-// CurrentProducer -- the row name, not the engine name -- into the status file, so renaming a row
+-// breaks resume for an in-flight run. This guard makes a later symmetry-minded rename of the
+-// durable identity (matching the engine's InnerRun rename onto the row) fail loudly here rather
+-// than silently breaking resume.
+-func TestNameRunShed_ValueIsPinnedAgainstASymmetryRename(t *testing.T) {
+-	if NameRunShed != "Run-Shed" {
+-		t.Errorf("NameRunShed = %q; want the durable value %q", NameRunShed, "Run-Shed")
+-	}
+-
+-	env, paths := testEnv(t)
+-	shed, err := New(env, paths)
+-	if err != nil {
+-		t.Fatalf("New() error = %v, want nil", err)
+-	}
+-
+-	wantNames := []string{NameWorktreeCreate, NameSeedChild, NameOpenWindow, NameSeedIDE, NameOpenIDE, NameRunShed, NameLand, NameWorktreeTeardown}
+-	if len(shed.Producers) != len(wantNames) {
+-		t.Fatalf("New() row count = %d, want %d", len(shed.Producers), len(wantNames))
+-	}
+-	for i, want := range wantNames {
+-		if got := shed.Producers[i].Name; got != want {
+-			t.Errorf("row %d name = %q; want %q", i, got, want)
+-		}
+-	}
+-}
+-
+ // TestRecipeEngines_ReportsEveryEngineNameSortedOnce asserts RecipeEngines() returns the sorted, de-duplicated engine names of battenRowEngines.
+ // It is the input the cross-consumer guard trusts, so a silently empty return would disable that guard rather than fail it.
+ func TestRecipeEngines_ReportsEveryEngineNameSortedOnce(t *testing.T) {
+diff --git a/internal/reedengine/activity_integration_test.go b/internal/reedengine/activity_integration_test.go
+index 55572003..3b8a2f53 100644
+--- a/internal/reedengine/activity_integration_test.go
++++ b/internal/reedengine/activity_integration_test.go
+@@ -13,6 +13,7 @@ import (
+ )
+ 
+ func TestOperatorActive_ReadsAnAttachedClientsKeystroke(t *testing.T) {
++	t.Parallel()
+ 	e := newIntegrationEngine(t, "off")
+ 	if _, err := e.Up(); err != nil {
+ 		t.Fatalf("Up: %v", err)
+diff --git a/internal/reedengine/attachgeometry_integration_test.go b/internal/reedengine/attachgeometry_integration_test.go
+index 3c94785f..0e3c1b5a 100644
+--- a/internal/reedengine/attachgeometry_integration_test.go
++++ b/internal/reedengine/attachgeometry_integration_test.go
+@@ -149,6 +149,7 @@ func waitForClientAttached(t *testing.T, e *Engine, timeout time.Duration) {
+ // lands a working attach: attach is the operator's escape hatch, and this pins
+ // that a pre-flight with no client size known is a working attach, not a broken one.
+ func TestAttachGeometry_DegradedPathStillAttaches(t *testing.T) {
++	t.Parallel()
+ 	e := setupAttachGeometryFixture(t)
+ 
+ 	argv := e.AttachArgv(0, 0)
+@@ -181,6 +182,7 @@ func TestAttachGeometry_DegradedPathStillAttaches(t *testing.T) {
+ // a client attached to a session that is killed while the server lives on exits 0, and a client attached to a session whose server is killed exits non-zero.
+ // A second session is created up front, so killing the first leaves the server running under tmux's exit-empty.
+ func TestAttachGeometry_ClientExitStatusOnSessionEndAndServerShutdown(t *testing.T) {
++	t.Parallel()
+ 	e := setupAttachGeometryFixture(t)
+ 	const otherSession = "attach-exit-status-other"
+ 	if err := e.tmux.run("new-session", "-d", "-s", otherSession, "sleep 300"); err != nil {
+diff --git a/internal/reedengine/bar_integration_test.go b/internal/reedengine/bar_integration_test.go
+index 5ecd15ac..8ab78bea 100644
+--- a/internal/reedengine/bar_integration_test.go
++++ b/internal/reedengine/bar_integration_test.go
+@@ -80,6 +80,7 @@ func (f *barFixture) expand(t *testing.T, format string) string {
+ }
+ 
+ func TestBar_LineOneButtonsFollowTheWindowZoomAndWaitMarks(t *testing.T) {
++	t.Parallel()
+ 	f := newBarFixture(t)
+ 	e := f.e
+ 	if err := e.tmux.run("select-window", "-t", f.strandWindow); err != nil {
+@@ -210,6 +211,7 @@ func TestBar_LineOneButtonsFollowTheWindowZoomAndWaitMarks(t *testing.T) {
+ // The session carrying @lym_prime_session comes ahead of the rest.
+ // With no session marked the first loop draws nothing, and the second loop's order is session name on tmux 3.4 and session id on newer tmux, so no order is asserted.
+ func TestBar_LineTwoListsSessionsPrimeFirst(t *testing.T) {
++	t.Parallel()
+ 	f := newBarFixture(t)
+ 
+ 	current := "list=focus bg=yellow fg=black bold] " + f.e.SessionName() + " "
+diff --git a/internal/reedengine/bindings.go b/internal/reedengine/bindings.go
+index d24240d9..c4b5fd10 100644
+--- a/internal/reedengine/bindings.go
++++ b/internal/reedengine/bindings.go
+@@ -196,9 +196,9 @@ func (e *Engine) switchBindingCommandsLocked() (prev, next, follow string) {
+ 		return "", "", ""
+ 	}
+ 	sh := shell.ForGOOS()
+-	prev, prevOK := composeSwitchCommand(sh, false, socketPath, tmuxPath)
+-	next, nextOK := composeSwitchCommand(sh, true, socketPath, tmuxPath)
+-	follow, followOK := composeFollowCommand(sh, socketPath, tmuxPath)
++	prev, prevOK := composeSwitchCommand(sh, e.executablePath, false, socketPath, tmuxPath)
++	next, nextOK := composeSwitchCommand(sh, e.executablePath, true, socketPath, tmuxPath)
++	follow, followOK := composeFollowCommand(sh, e.executablePath, socketPath, tmuxPath)
+ 	if !prevOK || !nextOK || !followOK {
+ 		return "", "", ""
+ 	}
+diff --git a/internal/reedengine/bindings_integration_test.go b/internal/reedengine/bindings_integration_test.go
+index d46abe27..9a400867 100644
+--- a/internal/reedengine/bindings_integration_test.go
++++ b/internal/reedengine/bindings_integration_test.go
+@@ -3,7 +3,6 @@
+ // bindings_integration_test.go drives the Alt-key and status-bar bindings against a real tmux server and an attached client.
+ // The terminal's own byte sequences are written into the client's pty (ESC [1;3A..D, SGR mouse clicks at the bar's cells), so the whole key path is exercised.
+ // The client is attached through the pty harness attachgeometry_integration_test.go defines.
+-// Every test swaps the package-level executablePath seam and so never runs in parallel.
+ 
+ package reedengine
+ 
+@@ -53,9 +52,8 @@ func newBindingsFixture(t *testing.T) *bindingsFixture {
+ 	if err := os.WriteFile(scriptPath, []byte(script), 0o755); err != nil {
+ 		t.Fatalf("write recorder script: %v", err)
+ 	}
+-	withInjectedExecutablePath(t, func() (string, error) { return scriptPath, nil })
+-
+ 	e := newIntegrationEngine(t, "on")
++	e.executablePath = func() (string, error) { return scriptPath, nil }
+ 	if _, err := e.Up(); err != nil {
+ 		t.Fatalf("Up: %v", err)
+ 	}
+@@ -193,6 +191,7 @@ func (f *bindingsFixture) click(t *testing.T, row int, label string) {
+ }
+ 
+ func TestBindings_AltUpDownStepWindowsInIndexOrderPastHiddenOnes(t *testing.T) {
++	t.Parallel()
+ 	f := newBindingsFixture(t)
+ 	if _, err := f.e.AddStrand(AddSpec{NameOverride: "agent", Cmd: "sleep 300", Display: render.Display{Anchor: render.AnchorOwnWindow}}); err != nil {
+ 		t.Fatalf("AddStrand(agent): %v", err)
+@@ -245,6 +244,7 @@ func TestBindings_AltUpDownStepWindowsInIndexOrderPastHiddenOnes(t *testing.T) {
+ }
+ 
+ func TestBindings_StatusBarClicksSelectAndZoomByRangeType(t *testing.T) {
++	t.Parallel()
+ 	f := newBindingsFixture(t)
+ 	session := f.e.SessionName()
+ 	socketPath := strings.TrimSpace(mustTmuxOutput(t, f.e, "display-message", "-p", "#{socket_path}"))
+@@ -356,6 +356,7 @@ func TestBindings_StatusBarClicksSelectAndZoomByRangeType(t *testing.T) {
+ }
+ 
+ func TestBindings_AltLeftRightRunTheSwitchCommandWithTheToldPaths(t *testing.T) {
++	t.Parallel()
+ 	f := newBindingsFixture(t)
+ 	socketPath := strings.TrimSpace(mustTmuxOutput(t, f.e, "display-message", "-p", "#{socket_path}"))
+ 	f.setFollow(t, f.e.SessionName(), "on")
+diff --git a/internal/reedengine/contract_integration_test.go b/internal/reedengine/contract_integration_test.go
+index 04f3d5d5..c721da57 100644
+--- a/internal/reedengine/contract_integration_test.go
++++ b/internal/reedengine/contract_integration_test.go
+@@ -66,6 +66,7 @@ func waitUntil(t *testing.T, timeout time.Duration, msg string, cond func() bool
+ 
+ // TestMultiplexerContract validates the multiplexer wire contract against a real binary.
+ func TestMultiplexerContract(t *testing.T) {
++	t.Parallel()
+ 	tmpDir := t.TempDir()
+ 	seedReedConfig(t, tmpDir)
+ 
+@@ -385,6 +386,7 @@ func TestMultiplexerContract(t *testing.T) {
+ // touch the sibling — the canary for a configured binary (psmux) that does not implement the "="
+ // target syntax.
+ func TestExactSessionTargetsNeverPrefixMatchSiblings(t *testing.T) {
++	t.Parallel()
+ 	tmpDir := t.TempDir()
+ 	seedReedConfig(t, tmpDir)
+ 
+@@ -461,6 +463,7 @@ func TestExactSessionTargetsNeverPrefixMatchSiblings(t *testing.T) {
+ // The assertions below are therefore paired — the raw wire answer AND what parsePaneGeneration makes
+ // of it — so the connection cannot be broken from either end without a failure.
+ func TestDisplayMessageDoesNotErrorForAnAbsentSession(t *testing.T) {
++	t.Parallel()
+ 	tmpDir := t.TempDir()
+ 	seedReedConfig(t, tmpDir)
+ 
+@@ -527,6 +530,7 @@ func TestDisplayMessageDoesNotErrorForAnAbsentSession(t *testing.T) {
+ // future tmux behaviour change (a hard rejection, a different substitute character, a wider rewrite
+ // set) surface as a test failure rather than as a silently-weakened guard.
+ func TestSessionNameRewriteIsSilentAndExactTargetsMissIt(t *testing.T) {
++	t.Parallel()
+ 	tmpDir := t.TempDir()
+ 	seedReedConfig(t, tmpDir)
+ 
+@@ -604,6 +608,7 @@ func TestSessionNameRewriteIsSilentAndExactTargetsMissIt(t *testing.T) {
+ // it remains in place for the (now believed unreachable in practice, but still defensive) case
+ // where Selvage is itself somehow absent.
+ func TestRemoveStrand_SoleStrandEmptiesSessionSucceeds(t *testing.T) {
++	t.Parallel()
+ 	tmpDir := t.TempDir()
+ 	seedReedConfig(t, tmpDir)
+ 
+@@ -728,6 +733,7 @@ func TestRemoveStrand_SoleStrandEmptiesSessionSucceeds(t *testing.T) {
+ // That pane is the alive Selvage, and its height equals the window's height.
+ // The fixture attaches no client, so window-size latest has none to follow.
+ func TestDeadSelvagePaneIsHealedByUpWithoutCorruptingLayout(t *testing.T) {
++	t.Parallel()
+ 	tmpDir := t.TempDir()
+ 	seedReedConfig(t, tmpDir)
+ 
+@@ -853,6 +859,7 @@ func assertOnlySelvageFillsTheWindow(t *testing.T, e *Engine, selvagePaneID, ste
+ // with another window made current in the session, the seam still resolves the window holding the strands.
+ // An enumeration op (AddStrand) then lands the new strand in a window of its own and leaves the other window's pane unreaped, and the session-scoped pane-generation read still answers.
+ func TestStrandOpsIgnoreASecondCurrentWindow(t *testing.T) {
++	t.Parallel()
+ 	e := newColdScratchEngine(t)
+ 	if _, err := e.Up(); err != nil {
+ 		t.Fatalf("Up: %v", err)
+diff --git a/internal/reedengine/doc.go b/internal/reedengine/doc.go
+index 9c325a0d..03ead782 100644
+--- a/internal/reedengine/doc.go
++++ b/internal/reedengine/doc.go
+@@ -182,7 +182,7 @@
+ // The composition lives in panebin.go and is reached from the one chokepoint, so the property holds by construction for every present and future AddStrand caller including Resume's replay.
+ // The mechanism is a typed shell statement rather than `split-window -e` or `set-environment`, so it prepends onto the pane's live PATH instead of replacing it with a value computed from the lym process's own environment, it survives the pane shell's profile (which has already run by the time anything is typed), and it needs no multiplexer capability.
+ // Selvage's pane and the new-session first pane are out of scope.
+-// The detached `lym` window OpenWindow opens composes its command in panebin.go with the same prelude, and every key binding that runs `lym` names the pinning binary's absolute path from the same executablePath seam, each `#` doubled for run-shell's format expansion.
++// The detached `lym` window OpenWindow opens composes its command in panebin.go with the same prelude, and every key binding that runs `lym` names the pinning binary's absolute path from the same executable-path lookup, an engine field New sets to os.Executable, each `#` doubled for run-shell's format expansion.
+ // The detached `lym loom run` and watchdog daemon spawns are outside the rule, since both are spawned from the executable path and never resolve `lym` from PATH.
+ // Every shell token is emitted through internal/shell, in the shell.ForGOOS() dialect the launch command uses.
+ // A failed launch-script write degrades to typing the composed line, and an unresolvable executable to a pane with no prelude and no such binding, each with a named logger.Warn, never a failed launch.
+diff --git a/internal/reedengine/enginefixture_helper_test.go b/internal/reedengine/enginefixture_helper_test.go
+index ae3163aa..cadaabba 100644
+--- a/internal/reedengine/enginefixture_helper_test.go
++++ b/internal/reedengine/enginefixture_helper_test.go
+@@ -58,14 +58,6 @@ func newTestEngine(t *testing.T) *Engine {
+ 	return New(cfg, geom, testScrub)
+ }
+ 
+-// withInjectedExecutablePath overrides executablePath for the duration of t, restoring the previous value on cleanup.
+-func withInjectedExecutablePath(t *testing.T, fn func() (string, error)) {
+-	t.Helper()
+-	prev := executablePath
+-	executablePath = fn
+-	t.Cleanup(func() { executablePath = prev })
+-}
+-
+ // containsArg reports whether want appears verbatim anywhere in args.
+ func containsArg(args []string, want string) bool {
+ 	for _, a := range args {
+diff --git a/internal/reedengine/ensuresession_integration_test.go b/internal/reedengine/ensuresession_integration_test.go
+index 4fa789f7..e1edc113 100644
+--- a/internal/reedengine/ensuresession_integration_test.go
++++ b/internal/reedengine/ensuresession_integration_test.go
+@@ -82,6 +82,7 @@ func newColdScratchEngine(t *testing.T) *Engine {
+ // TestEnsureSession_BootedTrueOnColdSessionFalseOnWarm pins the primitive both this task's
+ // attribution log lines derive from: EnsureSession answers true against a worktree whose session has
+ // never been created, and false when called again against the live session it just created.
++// It sets an environment variable, process-global state, so it does not run in parallel.
+ func TestEnsureSession_BootedTrueOnColdSessionFalseOnWarm(t *testing.T) {
+ 	t.Setenv(scrubProbeEnv, "1")
+ 	e := newColdScratchEngine(t)
+@@ -147,6 +148,7 @@ func TestEnsureSession_BootedTrueOnColdSessionFalseOnWarm(t *testing.T) {
+ // TestAddStrand_LogsAttributionOnlyOnColdBoot pins AddStrand's own log line, using logcapture.CaptureVerbose, which sets both the logger output and its verbosity — neither alone captures at Info.
+ // A cold AddStrand must emit the attribution line;
+ // a second AddStrand against the now-live session must not.
++// It captures the process-global logger, so it does not run in parallel.
+ func TestAddStrand_LogsAttributionOnlyOnColdBoot(t *testing.T) {
+ 	e := newColdScratchEngine(t)
+ 	logs := logcapture.CaptureVerbose(t)
+diff --git a/internal/reedengine/launchscript_integration_test.go b/internal/reedengine/launchscript_integration_test.go
+index eedaa695..760ae5cb 100644
+--- a/internal/reedengine/launchscript_integration_test.go
++++ b/internal/reedengine/launchscript_integration_test.go
+@@ -29,11 +29,12 @@ func readOrEmpty(path string) string {
+ 
+ // TestLaunchScript_SourcedScriptRunsInThePaneShellScope adds a strand whose command writes a marker file, then checks the script's content, the command's effect, and that LYM_BIN and PATH still carry the prelude's values in the pane shell after the command returned.
+ func TestLaunchScript_SourcedScriptRunsInThePaneShellScope(t *testing.T) {
++	t.Parallel()
+ 	e := newColdScratchEngine(t)
+ 
+ 	work := t.TempDir()
+ 	fakeExe := filepath.Join(work, "fakebin", "lym")
+-	withInjectedExecutablePath(t, func() (string, error) { return fakeExe, nil })
++	e.executablePath = func() (string, error) { return fakeExe, nil }
+ 
+ 	sh := shell.ForGOOS()
+ 	q := shell.Posix()
+@@ -58,7 +59,7 @@ func TestLaunchScript_SourcedScriptRunsInThePaneShellScope(t *testing.T) {
+ 	if err != nil {
+ 		t.Fatalf("read launch script %q: %v", scriptPath, err)
+ 	}
+-	line, _ := composePaneLaunchLine(sh, cmd, strand.GUID, strand.Name, e.geom.ParentName)
++	line, _ := composePaneLaunchLine(sh, e.executablePath, cmd, strand.GUID, strand.Name, e.geom.ParentName)
+ 	if want := line + "\n"; string(got) != want {
+ 		t.Errorf("launch script = %q, want %q", got, want)
+ 	}
+diff --git a/internal/reedengine/lock.go b/internal/reedengine/lock.go
+index 0f40a584..747b7270 100644
+--- a/internal/reedengine/lock.go
++++ b/internal/reedengine/lock.go
+@@ -52,6 +52,8 @@ type Engine struct {
+ 	ensureServerGone func(serverPID int) error
+ 	// paneAge reports the elapsed time of a pane's first process; New sets it to paneProcessAge and a test sets a stub.
+ 	paneAge func(pid int) (time.Duration, bool)
++	// executablePath resolves the path of the running lym binary, which pane preludes and key bindings name; New sets it to os.Executable and a test sets a stub, since under go test the live value is the test binary.
++	executablePath func() (string, error)
+ }
+ 
+ // New builds an Engine for the given Config, Geometry and EnvScrub.
+@@ -68,9 +70,10 @@ func New(cfg Config, geom Geometry, scrub EnvScrub) *Engine {
+ 		scrub: scrub,
+ 		tmux:  NewTmuxCmd(cfg.Tmux, geom.SocketKey),
+ 
+-		warnOut: os.Stderr,
+-		build:   buildvcs.Running(),
+-		paneAge: paneProcessAge,
++		warnOut:        os.Stderr,
++		build:          buildvcs.Running(),
++		paneAge:        paneProcessAge,
++		executablePath: os.Executable,
+ 	}
+ }
+ 
+diff --git a/internal/reedengine/mouse_boot_integration_test.go b/internal/reedengine/mouse_boot_integration_test.go
+index f3fcaec1..2f060f5f 100644
+--- a/internal/reedengine/mouse_boot_integration_test.go
++++ b/internal/reedengine/mouse_boot_integration_test.go
+@@ -90,6 +90,7 @@ func readMouseOption(t *testing.T, e *Engine) string {
+ // on a separate fresh hub, "on", asserting the live server reports the matching value after Up() in
+ // both directions.
+ func TestMouseBootIntegration_PinsOptionAtBoot(t *testing.T) {
++	t.Parallel()
+ 	t.Run("off", func(t *testing.T) {
+ 		e := newIntegrationEngine(t, "off")
+ 		if _, err := e.Up(); err != nil {
+@@ -118,6 +119,7 @@ func TestMouseBootIntegration_PinsOptionAtBoot(t *testing.T) {
+ // set-option, so the live value must stay "off" — proving there is no live toggle without a server
+ // restart.
+ func TestMouseBootIntegration_NoLiveToggleWithoutRestart(t *testing.T) {
++	t.Parallel()
+ 	e1 := newIntegrationEngine(t, "off")
+ 	if _, err := e1.Up(); err != nil {
+ 		t.Fatalf("first Up(): %v", err)
+diff --git a/internal/reedengine/naming_integration_test.go b/internal/reedengine/naming_integration_test.go
+index 1a19527d..a98a3c99 100644
+--- a/internal/reedengine/naming_integration_test.go
++++ b/internal/reedengine/naming_integration_test.go
+@@ -19,7 +19,7 @@ import (
+ // addEnvProbeStrand adds a role strand whose command writes $LYM_STRAND_NAME and $LYM_PARENT to a file and returns the strand with the file's path.
+ func addEnvProbeStrand(t *testing.T, e *Engine, role string) (Strand, string) {
+ 	t.Helper()
+-	withInjectedExecutablePath(t, func() (string, error) { return filepath.Join(t.TempDir(), "lym"), nil })
++	e.executablePath = func() (string, error) { return filepath.Join(t.TempDir(), "lym"), nil }
+ 
+ 	probe := filepath.Join(t.TempDir(), "env.txt")
+ 	cmd := "printf '%s\\n%s\\n' \"$LYM_STRAND_NAME\" \"$LYM_PARENT\" > " + shell.Posix().Quote(probe)
+@@ -47,7 +47,7 @@ func paneTitle(t *testing.T, e *Engine, paneID string) string {
+ }
+ 
+ // TestNaming runs the naming steps against one cold session; each step adds its own role's strand, and the geometry fields a step needs are set on the shared engine for that step alone.
+-// Process-global state: withInjectedExecutablePath and the captured log, so the scenario is not parallel.
++// Process-global state: the captured log, so the scenario is not parallel.
+ func TestNaming(t *testing.T) {
+ 	logs := logcapture.CaptureVerbose(t)
+ 	e := newColdScratchEngine(t)
+diff --git a/internal/reedengine/ownwindow_integration_test.go b/internal/reedengine/ownwindow_integration_test.go
+index da70ef09..9ba63e05 100644
+--- a/internal/reedengine/ownwindow_integration_test.go
++++ b/internal/reedengine/ownwindow_integration_test.go
+@@ -19,16 +19,17 @@ import (
+ )
+ 
+ // TestOwnWindow_RealTmux runs its steps in order on one cold session.
+-// It overrides the executable path so the detached `lym` window of OpenWindow is a stub that sleeps for its first argument's seconds, which makes it process-global state, so it does not run in parallel.
++// It overrides the executable path so the detached `lym` window of OpenWindow is a stub that sleeps for its first argument's seconds.
+ func TestOwnWindow_RealTmux(t *testing.T) {
++	t.Parallel()
+ 	stubDir := t.TempDir()
+ 	stub := filepath.Join(stubDir, "lym")
+ 	if err := os.WriteFile(stub, []byte("#!/bin/sh\nsleep \"$1\"\n"), 0o755); err != nil {
+ 		t.Fatalf("write lym stub: %v", err)
+ 	}
+-	withInjectedExecutablePath(t, func() (string, error) { return stub, nil })
+ 
+ 	e := newColdScratchEngine(t)
++	e.executablePath = func() (string, error) { return stub, nil }
+ 	if _, err := e.Up(); err != nil {
+ 		t.Fatalf("Up: %v", err)
+ 	}
+diff --git a/internal/reedengine/panebin.go b/internal/reedengine/panebin.go
+index 3bde6add..08da20e3 100644
+--- a/internal/reedengine/panebin.go
++++ b/internal/reedengine/panebin.go
+@@ -1,7 +1,7 @@
+ // panebin.go owns the whole pane-binary seam: composing the shell prelude that resolves `lym` to the binary that spawned every strand pane, the one function (composePaneLaunchLine) that joins it onto a strand's launch command, and the one (composeWindowCommand) that joins it onto a detached window's `lym` command.
+ // The composition lives in this one file, reached from two chokepoints, launchStrandLocked in spawn.go for strand panes and OpenWindow in window.go for detached windows,
+ // so the property "every pane reed creates for a `lym` command resolves lym to its spawning binary" holds by construction rather than by every pane-creating call site remembering to apply it.
+-// It also composes the session-switch command the Alt-key bindings run, from the same executablePath chokepoint.
++// It also composes the session-switch command the Alt-key bindings run, from the same executable-path lookup, which the engine passes in.
+ // The same composition exports LYM_STRAND_NAME (the strand's full name), LYM_PARENT (the worktree's parent, when told) and the .NET build-server switches beside LYM_BIN.
+ // The file also owns the per-strand launch script the composed line is written to,
+ // so the pane types a short source statement instead of the full line.
+@@ -19,13 +19,6 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/shell"
+ )
+ 
+-// executablePath is a package-local testability seam over os.Executable, modelled on
+-// tools/sandbox/resolve.go's own devBinPath seam. Under `go test` the live value is the test
+-// binary's path, so hermetic tests inject a path here instead of asserting against the real one —
+-// re-exec'ing os.Executable() under go test is itself barred by
+-// PATTERN-spawn-observability.
+-var executablePath = os.Executable
+-
+ // paneBinPrelude returns the pure, injectable pane-binary composition for exe on sh's dialect: sh's
+ // own PrependPathEntry of exe's parent directory, then sh's own ExportEnv of agentname.LymBinEnv to exe,
+ // joined by sh.Chain. The prepend is unconditional — no guard against the directory already being on
+@@ -65,7 +58,7 @@ func buildServerExports(sh shell.Shell) string {
+ // The build-server and name exports do not depend on that lookup and stay either way.
+ // Because Chain drops empty parts, an empty launchCmd yields the statements alone with no trailing separator and no empty command fragment.
+ // It also returns the executable path the prelude exports, empty when the lookup failed and the prelude was dropped.
+-func composePaneLaunchLine(sh shell.Shell, launchCmd, strandGUID, name, parent string) (line, exe string) {
++func composePaneLaunchLine(sh shell.Shell, executablePath func() (string, error), launchCmd, strandGUID, name, parent string) (line, exe string) {
+ 	prelude := ""
+ 	exe, err := executablePath()
+ 	if err != nil {
+@@ -80,7 +73,7 @@ func composePaneLaunchLine(sh shell.Shell, launchCmd, strandGUID, name, parent s
+ // composeWindowCommand returns the shell line a detached reed window runs: the pane-binary prelude, then `lym` invoked with lymArgs, each quoted, on sh's dialect.
+ // No strand name exports, since a window is not a strand.
+ // An unresolvable executable path logs a named logger.Warn and drops the prelude, as composePaneLaunchLine does.
+-func composeWindowCommand(sh shell.Shell, lymArgs []string) string {
++func composeWindowCommand(sh shell.Shell, executablePath func() (string, error), lymArgs []string) string {
+ 	prelude := ""
+ 	exe, err := executablePath()
+ 	if err != nil {
+@@ -101,7 +94,7 @@ func composeWindowCommand(sh shell.Shell, lymArgs []string) string {
+ // Every pinned token is quoted once and then has each # doubled, because run-shell format-expands its whole command at key press;
+ // #{q:client_name} is the one value left for that expansion, as its own unquoted word.
+ // An unresolvable executable path logs a named logger.Warn and returns false, so the caller pins no switch binding.
+-func composeSwitchCommand(sh shell.Shell, next bool, socketPath, tmuxPath string) (string, bool) {
++func composeSwitchCommand(sh shell.Shell, executablePath func() (string, error), next bool, socketPath, tmuxPath string) (string, bool) {
+ 	exe, err := executablePath()
+ 	if err != nil {
+ 		logger.Warn("reed: could not resolve this binary, pinning no session-switch binding", "err", err)
+@@ -126,7 +119,7 @@ func composeSwitchCommand(sh shell.Shell, next bool, socketPath, tmuxPath string
+ // Every pinned token is quoted once and then has each # doubled, because the line is format-expanded when the button is clicked;
+ // #{q:session_name} is the one value left for that expansion, as its own unquoted word, so the session reaches the verb as one quoted argument.
+ // An unresolvable executable path logs a named logger.Warn and returns false, so the caller pins no follow jump.
+-func composeFollowCommand(sh shell.Shell, socketPath, tmuxPath string) (string, bool) {
++func composeFollowCommand(sh shell.Shell, executablePath func() (string, error), socketPath, tmuxPath string) (string, bool) {
+ 	exe, err := executablePath()
+ 	if err != nil {
+ 		logger.Warn("reed: could not resolve this binary, pinning no follow jump", "err", err)
+diff --git a/internal/reedengine/panebin_test.go b/internal/reedengine/panebin_test.go
+index 43affdb2..eccdcc86 100644
+--- a/internal/reedengine/panebin_test.go
++++ b/internal/reedengine/panebin_test.go
+@@ -1,11 +1,7 @@
+ //go:build tier0
+ 
+-// panebin_test.go hermetically covers panebin.go's composition: paneBinPrelude and
+-// composePaneLaunchLine, driven directly against injected inputs with no tmux and no process
+-// spawned. Every case injects the executable path by overriding executablePath and restoring it via
+-// t.Cleanup -- under go test the live os.Executable() value is the test binary's path, which
+-// PATTERN-spawn-observability bars re-exec'ing, so no case here reads
+-// it.
++// panebin_test.go hermetically covers panebin.go's composition: paneBinPrelude and composePaneLaunchLine, driven directly against injected inputs with no tmux and no process spawned.
++// Every case passes a stub executable lookup: under go test the live os.Executable() value is the test binary's path, which PATTERN-spawn-observability bars re-exec'ing, so no case here reads it.
+ // The stageLaunchScript cases at the end cover the per-strand launch script file.
+ 
+ package reedengine
+@@ -83,6 +79,7 @@ func TestPaneBinPrelude_ComposesPrependThenExport(t *testing.T) {
+ // the prelude, then the .NET build-server exports, the name export (always when a name is told), the parent export (only when a parent is told), then the command, all on one line;
+ // an empty command emits the prelude and exports alone with no trailing separator;
+ // and a failed executable lookup drops only the prelude, passing the command and exports through with a warning naming the strand.
++// It captures the process-global logger, so it does not run in parallel.
+ //
+ //testtiming:keep pins the composed pane launch line per dialect: prelude, name and parent exports then the command on one line, the prelude alone for an empty command, and only the prelude dropped with a warning naming the strand when the executable cannot be resolved; its covering tests run this code without asserting it
+ func TestComposePaneLaunchLine(t *testing.T) {
+@@ -158,16 +155,16 @@ func TestComposePaneLaunchLine(t *testing.T) {
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+-			withInjectedExecutablePath(t, func() (string, error) {
++			executablePath := func() (string, error) {
+ 				if tt.executable != nil {
+ 					return "", tt.executable
+ 				}
+ 				return exe, nil
+-			})
++			}
+ 			for _, sh := range launchScriptDialects() {
+ 				buf := logcapture.CaptureVerbose(t)
+ 
+-				got, gotExe := composePaneLaunchLine(sh, tt.cmd, guid, tt.strand, tt.parent)
++				got, gotExe := composePaneLaunchLine(sh, executablePath, tt.cmd, guid, tt.strand, tt.parent)
+ 
+ 				wantExe := exe
+ 				if tt.executable != nil {
+@@ -283,6 +280,7 @@ func TestStageLaunchScript_WriteFailureDegrades(t *testing.T) {
+ }
+ 
+ // TestComposeSwitchCommand pins the switch command a key binding runs and the follow command the follow button runs: the pinned tokens are quoted once and have every # doubled, #{q:client_name} or #{q:session_name} stays an unquoted word, and an unresolvable executable pins nothing.
++// It captures the process-global logger, so it does not run in parallel.
+ func TestComposeSwitchCommand(t *testing.T) {
+ 	const (
+ 		exe        = "/opt/it's#here/lym"
+@@ -295,10 +293,10 @@ func TestComposeSwitchCommand(t *testing.T) {
+ 			direction = "--next"
+ 		}
+ 		t.Run(direction, func(t *testing.T) {
+-			withInjectedExecutablePath(t, func() (string, error) { return exe, nil })
++			executablePath := func() (string, error) { return exe, nil }
+ 			sh := shell.Posix()
+ 
+-			got, ok := composeSwitchCommand(sh, next, socketPath, tmuxPath)
++			got, ok := composeSwitchCommand(sh, executablePath, next, socketPath, tmuxPath)
+ 
+ 			want := sh.Invoke(exe) + " reed switch " + direction + " --socket " + sh.Quote(socketPath) + " --client #{q:client_name} --tmux " + sh.Quote(tmuxPath)
+ 			want = strings.ReplaceAll(want, "#{q:client_name}", "\x00")
+@@ -311,10 +309,10 @@ func TestComposeSwitchCommand(t *testing.T) {
+ 	}
+ 
+ 	t.Run("unresolvable executable pins nothing", func(t *testing.T) {
+-		withInjectedExecutablePath(t, func() (string, error) { return "", errors.New("no executable") })
++		executablePath := func() (string, error) { return "", errors.New("no executable") }
+ 		logs := logcapture.CaptureVerbose(t)
+ 
+-		got, ok := composeSwitchCommand(shell.Posix(), true, socketPath, tmuxPath)
++		got, ok := composeSwitchCommand(shell.Posix(), executablePath, true, socketPath, tmuxPath)
+ 
+ 		if ok || got != "" {
+ 			t.Errorf("composeSwitchCommand with an unresolvable executable = (%q, %v), want (\"\", false)", got, ok)
+@@ -325,10 +323,10 @@ func TestComposeSwitchCommand(t *testing.T) {
+ 	})
+ 
+ 	t.Run("follow", func(t *testing.T) {
+-		withInjectedExecutablePath(t, func() (string, error) { return exe, nil })
++		executablePath := func() (string, error) { return exe, nil }
+ 		sh := shell.Posix()
+ 
+-		got, ok := composeFollowCommand(sh, socketPath, tmuxPath)
++		got, ok := composeFollowCommand(sh, executablePath, socketPath, tmuxPath)
+ 
+ 		want := sh.Invoke(exe) + " reed follow --socket " + sh.Quote(socketPath) + " --session #{q:session_name} --tmux " + sh.Quote(tmuxPath)
+ 		want = strings.ReplaceAll(want, "#{q:session_name}", "\x00")
+@@ -340,10 +338,10 @@ func TestComposeSwitchCommand(t *testing.T) {
+ 	})
+ 
+ 	t.Run("follow with an unresolvable executable pins nothing", func(t *testing.T) {
+-		withInjectedExecutablePath(t, func() (string, error) { return "", errors.New("no executable") })
++		executablePath := func() (string, error) { return "", errors.New("no executable") }
+ 		logs := logcapture.CaptureVerbose(t)
+ 
+-		got, ok := composeFollowCommand(shell.Posix(), socketPath, tmuxPath)
++		got, ok := composeFollowCommand(shell.Posix(), executablePath, socketPath, tmuxPath)
+ 
+ 		if ok || got != "" {
+ 			t.Errorf("composeFollowCommand with an unresolvable executable = (%q, %v), want (\"\", false)", got, ok)
+diff --git a/internal/reedengine/paste_integration_test.go b/internal/reedengine/paste_integration_test.go
+index 483b1fb0..bf874eb9 100644
+--- a/internal/reedengine/paste_integration_test.go
++++ b/internal/reedengine/paste_integration_test.go
+@@ -35,6 +35,7 @@ func waitForCapture(t *testing.T, e *Engine, guid string, pred func(screen strin
+ }
+ 
+ func TestPasteSubmit_DeliversTextAndLeavesTheBufferStackAlone(t *testing.T) {
++	t.Parallel()
+ 	e := newIntegrationEngine(t, "off")
+ 	if _, err := e.Up(); err != nil {
+ 		t.Fatalf("Up: %v", err)
+diff --git a/internal/reedengine/revive_integration_test.go b/internal/reedengine/revive_integration_test.go
+index 2a150e09..aa0afb5a 100644
+--- a/internal/reedengine/revive_integration_test.go
++++ b/internal/reedengine/revive_integration_test.go
+@@ -115,6 +115,7 @@ func killServerAndWait(t *testing.T, e *Engine) {
+ 
+ // TestRevive_RestartedServerKeepsSpawnOrder pins the revival against a real server restart.
+ func TestRevive_RestartedServerKeepsSpawnOrder(t *testing.T) {
++	t.Parallel()
+ 	names := []string{"wt-a", "wt-b", "wt-c"}
+ 
+ 	t.Run("BootingTheLastBringsTheSessionsBackInListOrder", func(t *testing.T) {
+diff --git a/internal/reedengine/serverconfig_integration_test.go b/internal/reedengine/serverconfig_integration_test.go
+index e67feff4..d7b9cadd 100644
+--- a/internal/reedengine/serverconfig_integration_test.go
++++ b/internal/reedengine/serverconfig_integration_test.go
+@@ -65,6 +65,7 @@ func bootOwnServer(t *testing.T, e *Engine) error {
+ // It reads no operator config, pins the resolved shell on the session, and a pane split into the session starts that shell, which a login-shell pane would not report.
+ //
+ // The second step pins that the option names the kit's config sets to the shell are the names reed pins per session.
++// It sets HOME, process-global state, so it does not run in parallel.
+ func TestBoot_ReadsNoOperatorConfigAndStartsNonLoginPanes(t *testing.T) {
+ 	t.Run("ReadsNoOperatorConfigAndStartsNonLoginPanes", func(t *testing.T) {
+ 		home := t.TempDir()
+diff --git a/internal/reedengine/spawn.go b/internal/reedengine/spawn.go
+index 0722e3af..09e87b28 100644
+--- a/internal/reedengine/spawn.go
++++ b/internal/reedengine/spawn.go
+@@ -115,7 +115,7 @@ func (e *Engine) launchStrandLocked(st *ReedState, s *Strand, launchCmd string)
+ 	// A separate Enter then submits it.
+ 	// The dialect's discard-line key goes first: input routed to the booting pane before the payload, a viewer's keystrokes or a terminal reply while a window switch lands on it, would otherwise prefix the launch line and break it.
+ 	sh := shell.ForGOOS()
+-	composedLine, exe := composePaneLaunchLine(sh, launchCmd, s.GUID, s.Name, e.geom.ParentName)
++	composedLine, exe := composePaneLaunchLine(sh, e.executablePath, launchCmd, s.GUID, s.Name, e.geom.ParentName)
+ 	s.LymBin = exe
+ 	payload := stageLaunchScript(sh, e.stateDir(), s.GUID, composedLine)
+ 	if key := sh.DiscardLineKey(); key != "" {
+diff --git a/internal/reedengine/spawn_test.go b/internal/reedengine/spawn_test.go
+index 5dd51dcf..92a638f6 100644
+--- a/internal/reedengine/spawn_test.go
++++ b/internal/reedengine/spawn_test.go
+@@ -436,6 +436,7 @@ func breakSaveState(t *testing.T, e *Engine) {
+ //
+ //testtiming:keep pins what a launch types and writes: any discard-line key, the source statement then a separate Enter, and a launch script holding the prelude joined onto the command, regenerated on relaunch, the bare command when the executable is unresolvable and the prelude alone for an empty command; its covering tests run this code without asserting it
+ func TestLaunchStrandLocked_LaunchScript(t *testing.T) {
++	t.Parallel()
+ 	const exe = "/opt/lym/bin/lym"
+ 	tests := []struct {
+ 		name       string
+@@ -447,7 +448,7 @@ func TestLaunchStrandLocked_LaunchScript(t *testing.T) {
+ 			name: "PreludeAheadOfTheStrandCommand",
+ 			cmds: []string{"claude --continue"},
+ 			want: func(sh shell.Shell, s Strand, e *Engine) string {
+-				line, _ := composePaneLaunchLine(sh, "claude --continue", s.GUID, s.Name, e.geom.ParentName)
++				line, _ := composePaneLaunchLine(sh, e.executablePath, "claude --continue", s.GUID, s.Name, e.geom.ParentName)
+ 				return line + "\n"
+ 			},
+ 		},
+@@ -455,7 +456,7 @@ func TestLaunchStrandLocked_LaunchScript(t *testing.T) {
+ 			name: "RelaunchRegeneratesTheScript",
+ 			cmds: []string{"first cmd", "second cmd"},
+ 			want: func(sh shell.Shell, s Strand, e *Engine) string {
+-				line, _ := composePaneLaunchLine(sh, "second cmd", s.GUID, s.Name, e.geom.ParentName)
++				line, _ := composePaneLaunchLine(sh, e.executablePath, "second cmd", s.GUID, s.Name, e.geom.ParentName)
+ 				return line + "\n"
+ 			},
+ 		},
+@@ -477,13 +478,14 @@ func TestLaunchStrandLocked_LaunchScript(t *testing.T) {
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
+ 			e := newTestEngine(t)
+-			withInjectedExecutablePath(t, func() (string, error) {
++			e.executablePath = func() (string, error) {
+ 				if tt.executable != nil {
+ 					return "", tt.executable
+ 				}
+ 				return exe, nil
+-			})
++			}
+ 			fake := launchFake(t, e, nil)
+ 			st := &ReedState{SelvagePaneID: "%selvage", Strands: []Strand{{GUID: "new"}}}
+ 			s := &st.Strands[0]
+@@ -539,11 +541,12 @@ func TestLaunchStrandLocked_LaunchScript(t *testing.T) {
+ 
+ // TestLaunchStrandLocked_WriteFailureSendsTheFullLine pins the degrade path: a regular file where the launch directory's parent belongs makes the payload the composed line,
+ // and the warning names the strand GUID.
++// It captures the process-global logger, so it does not run in parallel.
+ //
+ //testtiming:keep pins the degrade path: when the launch script cannot be written the send-keys payload is the full composed line and the warning names the strand guid; its covering tests run this code without asserting it
+ func TestLaunchStrandLocked_WriteFailureSendsTheFullLine(t *testing.T) {
+ 	e := newTestEngine(t)
+-	withInjectedExecutablePath(t, func() (string, error) { return "/opt/lym/bin/lym", nil })
++	e.executablePath = func() (string, error) { return "/opt/lym/bin/lym", nil }
+ 	fake := launchFake(t, e, nil)
+ 	if err := os.MkdirAll(e.stateDir(), 0o755); err != nil {
+ 		t.Fatalf("MkdirAll: %v", err)
+@@ -558,7 +561,7 @@ func TestLaunchStrandLocked_WriteFailureSendsTheFullLine(t *testing.T) {
+ 	if err := e.launchStrandLocked(st, &st.Strands[0], launchCmd); err != nil {
+ 		t.Fatalf("launchStrandLocked: %v", err)
+ 	}
+-	line, _ := composePaneLaunchLine(shell.ForGOOS(), launchCmd, "guid-w", st.Strands[0].Name, e.geom.ParentName)
++	line, _ := composePaneLaunchLine(shell.ForGOOS(), e.executablePath, launchCmd, "guid-w", st.Strands[0].Name, e.geom.ParentName)
+ 	want := sendKeysLiteralArg(line)
+ 	sends := fake.ArgvFor("send-keys")
+ 	if literal := sends[len(sends)-2]; literal[len(literal)-1] != want {
+@@ -573,6 +576,7 @@ func TestLaunchStrandLocked_WriteFailureSendsTheFullLine(t *testing.T) {
+ // a launch whose literal send-keys fails deletes the script it already wrote,
+ // and a SaveState failure right after the launch deletes the never-persisted strand's script, for add and for replace alike.
+ func TestLaunchScriptDoesNotSurviveAFailedLaunch(t *testing.T) {
++	t.Parallel()
+ 	spec := AddSpec{Role: "worker", NameOverride: "n", Cmd: "claude"}
+ 	tests := []struct {
+ 		name  string
+@@ -618,8 +622,9 @@ func TestLaunchScriptDoesNotSurviveAFailedLaunch(t *testing.T) {
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
+ 			e := newTestEngine(t)
+-			withInjectedExecutablePath(t, func() (string, error) { return "/opt/lym/bin/lym", nil })
++			e.executablePath = func() (string, error) { return "/opt/lym/bin/lym", nil }
+ 			tt.setup(t, e)
+ 
+ 			if err := tt.run(e); err == nil {
+@@ -636,6 +641,7 @@ func TestLaunchScriptDoesNotSurviveAFailedLaunch(t *testing.T) {
+ // and therefore changes the pane's inherited PATH — and that pane resolves claude by bare name, so the change would stop the agent binary resolving at all.
+ // The two title commands then run in order between the window creation and the send-keys, and carry the strand's full name;
+ // a tmux whose version predates allow-set-title runs only the select-pane, with no log naming the option.
++// It captures the process-global logger, so it does not run in parallel.
+ //
+ //testtiming:keep pins the new-window argv ending with -c and the told cwd with no trailing shell command, which would make tmux exec a non-login shell, and the two title commands running in order between the window creation and the send-keys; its covering tests run this code without asserting it
+ func TestLaunchStrandLocked_SplitWindowAndPaneTitleCalls(t *testing.T) {
+@@ -702,7 +708,7 @@ func TestLaunchStrandLocked_SplitWindowAndPaneTitleCalls(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			e := newTestEngine(t)
+-			withInjectedExecutablePath(t, func() (string, error) { return "/opt/lym/bin/lym", nil })
++			e.executablePath = func() (string, error) { return "/opt/lym/bin/lym", nil }
+ 			fake := launchFake(t, e, nil)
+ 			e.tmux.floorLine = tt.floorLine
+ 			if tt.failAllowSetTitle {
+diff --git a/internal/reedengine/switch_integration_test.go b/internal/reedengine/switch_integration_test.go
+index eb6ccd54..e05999e7 100644
+--- a/internal/reedengine/switch_integration_test.go
++++ b/internal/reedengine/switch_integration_test.go
+@@ -14,6 +14,7 @@ import (
+ )
+ 
+ func TestSwitchClient_StepsAnAttachedClientThroughSessionsInIDOrder(t *testing.T) {
++	t.Parallel()
+ 	e := newIntegrationEngine(t, "off")
+ 	if _, err := e.Up(); err != nil {
+ 		t.Fatalf("Up: %v", err)
+diff --git a/internal/reedengine/tmuxconf_integration_test.go b/internal/reedengine/tmuxconf_integration_test.go
+index 739cf882..458680bc 100644
+--- a/internal/reedengine/tmuxconf_integration_test.go
++++ b/internal/reedengine/tmuxconf_integration_test.go
+@@ -71,6 +71,7 @@ func bootConcurrently(t *testing.T, engines ...*Engine) []error {
+ 
+ // TestBoot_TmuxConf boots reed with an operator file named by tmux_conf, each time into a server reed starts itself.
+ func TestBoot_TmuxConf(t *testing.T) {
++	t.Parallel()
+ 	t.Run("FileOptionsStandOnTheServer", func(t *testing.T) {
+ 		conf := writeTmuxConf(t, "set -g @operator_marker yes", "set -g prefix C-a", "set -g escape-time 7")
+ 		e, _ := tmuxConfEngine(t, t.TempDir(), "worktree", conf)
+diff --git a/internal/reedengine/window.go b/internal/reedengine/window.go
+index e9c59d17..52b4a062 100644
+--- a/internal/reedengine/window.go
++++ b/internal/reedengine/window.go
+@@ -95,7 +95,7 @@ func (e *Engine) OpenWindowIn(name, dir string, lymArgs []string) (WindowResult,
+ 			logger.Debug("reed: could not list the session's windows to place the new window", "socket", e.Socket(), "session", session, "err", err)
+ 		}
+ 
+-		command := composeWindowCommand(shell.ForGOOS(), lymArgs)
++		command := composeWindowCommand(shell.ForGOOS(), e.executablePath, lymArgs)
+ 		// No other window holds the temporary name, so the chained options cannot land on a same-named window.
+ 		temporaryName := fmt.Sprintf("%s%d-%d", temporaryWindowNamePrefix, os.Getpid(), temporaryWindowCounter.Add(1))
+ 		temporaryTarget := exactSessionWindowTarget(session) + "=" + temporaryName
+diff --git a/internal/reedengine/window_integration_test.go b/internal/reedengine/window_integration_test.go
+index f1bdbd41..5b59c8f0 100644
+--- a/internal/reedengine/window_integration_test.go
++++ b/internal/reedengine/window_integration_test.go
+@@ -16,16 +16,17 @@ import (
+ )
+ 
+ // TestOpenWindow_RealTmux runs its steps in order on one cold session.
+-// It overrides the executable path so the window's `lym` is a stub that sleeps for its first argument's seconds, which makes it process-global state, so it does not run in parallel.
++// It overrides the executable path so the window's `lym` is a stub that sleeps for its first argument's seconds.
+ func TestOpenWindow_RealTmux(t *testing.T) {
++	t.Parallel()
+ 	stubDir := t.TempDir()
+ 	stub := filepath.Join(stubDir, "lym")
+ 	if err := os.WriteFile(stub, []byte("#!/bin/sh\nsleep \"$1\"\n"), 0o755); err != nil {
+ 		t.Fatalf("write lym stub: %v", err)
+ 	}
+-	withInjectedExecutablePath(t, func() (string, error) { return stub, nil })
+ 
+ 	e := newColdScratchEngine(t)
++	e.executablePath = func() (string, error) { return stub, nil }
+ 	if _, err := e.Up(); err != nil {
+ 		t.Fatalf("Up: %v", err)
+ 	}
+diff --git a/internal/reedengine/window_test.go b/internal/reedengine/window_test.go
+index 570a51fa..87087c61 100644
+--- a/internal/reedengine/window_test.go
++++ b/internal/reedengine/window_test.go
+@@ -14,9 +14,8 @@ import (
+ )
+ 
+ // TestOpenWindow drives every outcome of OpenWindow.
+-// The injected executable path makes it process-global, so it does not run in parallel.
+ func TestOpenWindow(t *testing.T) {
+-	withInjectedExecutablePath(t, func() (string, error) { return "/opt/lym/bin/lym", nil })
++	t.Parallel()
+ 	const name = "batten:slug"
+ 	sh := shell.ForGOOS()
+ 	wantCommand := sh.Chain(paneBinPrelude(sh, "/opt/lym/bin/lym"), sh.Invoke("lym")+" "+sh.Quote("batten")+" "+sh.Quote("run")+" "+sh.Quote("my slug"))
+@@ -135,7 +134,9 @@ func TestOpenWindow(t *testing.T) {
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
+ 			e := newTestEngine(t)
++			e.executablePath = func() (string, error) { return "/opt/lym/bin/lym", nil }
+ 			fake := installFakeTmux(t, e)
+ 			fake.answer("-V", fakeVersionOutput, nil)
+ 			fake.answer("list-commands", fakeFullCommandsOutput(), nil)
+diff --git a/internal/reedengine/windoworder_integration_test.go b/internal/reedengine/windoworder_integration_test.go
+index 0a9b2117..d1a21a3d 100644
+--- a/internal/reedengine/windoworder_integration_test.go
++++ b/internal/reedengine/windoworder_integration_test.go
+@@ -18,16 +18,17 @@ import (
+ )
+ 
+ // TestWindowOrder_RealTmux runs its steps in order on one cold session.
+-// It overrides the executable path so the detached `lym` window of OpenWindow is a stub that sleeps for its first argument's seconds, which makes it process-global state, so it does not run in parallel.
++// It overrides the executable path so the detached `lym` window of OpenWindow is a stub that sleeps for its first argument's seconds.
+ func TestWindowOrder_RealTmux(t *testing.T) {
++	t.Parallel()
+ 	stubDir := t.TempDir()
+ 	stub := filepath.Join(stubDir, "lym")
+ 	if err := os.WriteFile(stub, []byte("#!/bin/sh\nsleep \"$1\"\n"), 0o755); err != nil {
+ 		t.Fatalf("write lym stub: %v", err)
+ 	}
+-	withInjectedExecutablePath(t, func() (string, error) { return stub, nil })
+ 
+ 	e := newColdScratchEngine(t)
++	e.executablePath = func() (string, error) { return stub, nil }
+ 	if _, err := e.Up(); err != nil {
+ 		t.Fatalf("Up: %v", err)
+ 	}
+diff --git a/internal/reedengine/windoworder_test.go b/internal/reedengine/windoworder_test.go
+index 9ea5af95..107cd860 100644
+--- a/internal/reedengine/windoworder_test.go
++++ b/internal/reedengine/windoworder_test.go
+@@ -79,8 +79,6 @@ func TestWindowOrder(t *testing.T) {
+ // TestEnsureShellWindow drives the shell window check through its callers, OpenWindow and AttachArgv.
+ // It captures the process-global logger, so it does not run in parallel.
+ func TestEnsureShellWindow(t *testing.T) {
+-	withInjectedExecutablePath(t, func() (string, error) { return "/opt/lym/bin/lym", nil })
+-
+ 	// The fake derives its session pane listing from list-panes, placing every pane in window @0.
+ 	const (
+ 		selvageInSession = "%1"
+@@ -141,6 +139,7 @@ func TestEnsureShellWindow(t *testing.T) {
+ 			t.Run(tt.name+"/"+via, func(t *testing.T) {
+ 				buf := logcapture.CaptureVerbose(t)
+ 				e := newTestEngine(t)
++				e.executablePath = func() (string, error) { return "/opt/lym/bin/lym", nil }
+ 				if err := SaveState(e.stateDir(), &ReedState{SelvagePaneID: tt.selvage}); err != nil {
+ 					t.Fatalf("SaveState: %v", err)
+ 				}
