@@ -1,6 +1,6 @@
 # TestScheduler_Chases refused-forward subtest races alpha's delivery worker
 
-`chases-refused-forward-journal` · Task · bug, creel · draft
+`chases-refused-forward-journal` · Task · bug, creel
 
 ## Seen
 
