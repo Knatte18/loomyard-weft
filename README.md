@@ -29,7 +29,7 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Act on the first test-time audit: reedengine wait, three over-grown test packages**<br>• Injectable wait for reedengine tier2 tests (40 s); prune tests in shell, boardtest and battenrecipe | [`test-prune-audit-leads`](design-test-prune-audit-leads.md) | darn |  | 12h<br>12h | reed, board, batten |
 
-## Notes (36)
+## Notes (37)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -42,15 +42,16 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 6d<br>21h | loom, stencil |
 | R8 |  | **Ideas from r/ClaudeCode "one line in your CLAUDE.md": fit for LoomYard and bench measures**<br>• About 30 ideas judged against our stencils and rules; top 8 ranked for a bench, a few cheap enough without one | [`claude-md-thread-ideas`](design-claude-md-thread-ideas.md) | 2d<br>14h | stencil, loom, burler |
 
-### Bugs (5)
+### Bugs (6)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 | H | **The adopt check mail names the failing tests**<br>• The adopt tier0 failure mail gives only counts, so the operator cannot see which tests failed. | [`adopt-check-names-failures`](design-adopt-check-names-failures.md) | 5m<br>5m | gate |
-| B2 |  | **TestScheduler_Chases fails: a refused forward grew the journal**<br>• The adopt tier0 run failed the refused-forward chase subtest; flake or regression from creel stage 3 is undecided. | [`chases-refused-forward-journal`](design-chases-refused-forward-journal.md) | 4m<br>4m | creel |
+| B2 |  | **TestScheduler_Chases fails: a refused forward grew the journal**<br>• The adopt tier0 run failed the refused-forward chase subtest; flake or regression from creel stage 3 is undecided. | [`chases-refused-forward-journal`](design-chases-refused-forward-journal.md) | 5m<br>5m | creel |
 | B3 |  | **Flaky websterengine recover-batch subtest fails once with "record changed"** | [`webster-recover-batch-flake`](design-webster-recover-batch-flake.md) | 0m<br>0m | webster |
 | B4 |  | **TestCreelCLI EXTERNAL row flakes in full-package tier1 runs under machine load** | [`creelcli-external-row-flake`](design-creelcli-external-row-flake.md) | 0m<br>0m | creel |
 | B5 |  | **Burler fork guard halts a run on a read-only git command** | [`burler-guard-readonly-git`](design-burler-guard-readonly-git.md) | 0m<br>0m | burler, shed |
+| B6 |  | **Card gate runs tier0 only and misses tier1 breakage a card causes** | [`card-gate-misses-tier1`](design-card-gate-misses-tier1.md) | 0m<br>0m | webster, gate |
 
 ### Enhancements (14)
 
