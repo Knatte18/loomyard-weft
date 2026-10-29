@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-29 10:01 UTC; every age below is as of then.
+Rendered 2026-10-29 10:02 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Act on the first test-time audit: reedengine wait, three over-grown test packages**<br>• Injectable wait for reedengine tier2 tests (40 s); prune tests in shell, boardtest and battenrecipe | [`test-prune-audit-leads`](design-test-prune-audit-leads.md) | darn | Darn-Write | osl-1046 | 15h<br>15h | reed, board, batten |
-| T2 | **Creel hook delivery: mail arrives once, and the HookWake flake**<br>• Make a creel mail reach the agent once through the Stop hooks, and make the HookWake blocked-chain subtest deterministic.<br>• `profile: solid` | [`creel-hook-delivery-fixes`](design-creel-hook-delivery-fixes.md) | darn | Code-Burler-Review | osl-1046 | 45m<br>28m | creel, claude |
+| T2 | **Creel hook delivery: mail arrives once, and the HookWake flake**<br>• Make a creel mail reach the agent once through the Stop hooks, and make the HookWake blocked-chain subtest deterministic.<br>• `profile: solid` | [`creel-hook-delivery-fixes`](design-creel-hook-delivery-fixes.md) | darn | Code-Burler-Fix | osl-1046 | 46m<br>29m | creel, claude |
 
 ### Ready (0)
 
@@ -55,16 +55,16 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E4 |  | **Restore the verify-gate test for a misplaced //lym:guard marker**<br>• Once the darn verify key reads its diff base, cover the guard scan of a narrowed run again | [`verifygate-misplaced-guard-test`](design-verifygate-misplaced-guard-test.md) | 18h<br>18h | loom, gate |
 | E5 |  | **The idle ring hands the mail over itself, without an empty turn**<br>• hook-wait wakes an idle strand with a bell line only, so each mail costs one extra empty turn | [`creel-ring-carries-mail`](design-creel-ring-carries-mail.md) | 15h<br>15h | creel |
 | E6 |  | **A module label for every package group under internal/**<br>• Several lym modules have no label, so entries take the nearest one that says something else | [`label-coverage`](design-label-coverage.md) | 15h<br>15h | board |
-| E7 |  | **loom names the general run; today's loom is one variant**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | 2w<br>52m | shed, loom |
+| E7 |  | **loom names the general run; today's loom is one variant**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | 2w<br>53m | shed, loom |
 | E8 |  | **lym ide seed colours the VS Code workspace too**<br>• A hub opened as a VS Code workspace has no colour, since lym ide seed seeds only worktrees. | [`workspace-ide-seed`](design-workspace-ide-seed.md) | 2h<br>2h | ide, workspaces |
 | E9 |  | **Reed navigation keys, Alt+arrows, are seeded by lym**<br>• Alt+arrow keys do not switch windows and sessions in Reed in this hub; lym should seed them. | [`reed-alt-arrow-keys-seeded`](design-reed-alt-arrow-keys-seeded.md) | 2h<br>2h | reed, config |
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 13d<br>13d | board, loom |
 | E11 |  | **Creel daemon writes no delivery-level log, so an unconfirmed delivery cannot be diagnosed** | [`creel-delivery-log`](design-creel-delivery-log.md) | 2h<br>2h | creel |
-| E12 |  | **Revise the board README rendering**<br>• The README hides project members behind a bare link and has other unclear spots; the operator wants the rendering revised. | [`readme-omits-csharp-note`](design-readme-omits-csharp-note.md) | 20m<br>12m | board |
+| E12 |  | **Revise the board README rendering**<br>• The README hides project members behind a bare link and has other unclear spots; the operator wants the rendering revised. | [`readme-omits-csharp-note`](design-readme-omits-csharp-note.md) | 22m<br>13m | board |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 11d<br>2d | webster, fabric, loom |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 10d<br>2d | fabric, batten |
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 6d<br>19h | burler, claude |
-| E28 |  | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 7d<br>12m | dotnet |
+| E28 |  | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 7d<br>13m | dotnet |
 
 ### Features (13)
 
