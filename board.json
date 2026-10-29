@@ -669,6 +669,25 @@
       "body": "## Seen (operator and hub orch, 2026-10-29)\n\nDobby failed to start the released task `claude-md-lym-rules-out` on every pass from 13:43:17Z, about every 30 seconds, and the orch heard nothing.\nIts mail, creel #34 from `ly:DOBBY` with the text `dobby could not start the task`, reached the orch only after more than an hour, right after the orch ran `lym batten cleanup --apply`.\nThe orch found the cause by asking `lym beam status` and reading `.lym/beam/dobby.log` through a fork, after the operator noticed the task had not started.\nThe role says dobby sends a line for a refused start and for a pass that keeps failing, so the notice should have come within a few passes.\n\n## Idea\n\n- Find out why the notice came late: whether dobby sends it only after many failed passes, whether the send was held, or whether creel delivered it late.\n- A refused start or a pass that keeps failing reaches the orch within a few passes, and a start that keeps failing with the same error does not resend it every pass.\n",
       "created": "2026-10-29T13:50:51Z",
       "revised": "2026-10-29T13:50:51Z"
+    },
+    {
+      "id": 910,
+      "handle": "E4",
+      "slug": "sandbox-dotnet-gate",
+      "title": "Prove the dotnet scoper, shared build and Drift on the C# sandbox hub",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "dotnet",
+        "gate"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Switch the sandbox gate to scoper dotnet, a build step and --no-build, then enable Drift there",
+      "body": "## Seen (operator and hub orch, 2026-10-29)\n\nThe sandbox hub `lym-csharp-LYMHUB` (shortname `cs`, anchor `lym-csharp/dotnet`, over `Knatte18/lym-csharp`) ran its first darn run, `friction-colebrook`, end to end, and it landed as `7f50ffe`.\nIts gate is the simple form: `tier0` runs `dotnet test` without `Category=Slow` and `tier1` with it, with no `scoper`, no `build` step and no `--no-build`.\nSo the dotnet scoper, the shared build and Drift are not proved on a C# repository.\nThe first `tier1` gate run on Neve died with \"Internal CLR error (0x80131506)\" after 900 s and passed on a rerun; the cause is unknown.\n\n## Idea\n\nSwitch the sandbox gate to `scoper: dotnet`, a `build` step and `--no-build`, so the scoper and the shared build are proved there, then turn on `drift.enabled` there to prove Drift, before any C# hub that holds proprietary code relies on them.\nThe hub's setup is in `docs/dotnet-hub.md`; the sandbox stays the place to reproduce a lym fault another C# hub shows.\n",
+      "created": "2026-10-29T13:53:36Z",
+      "revised": "2026-10-29T13:53:36Z"
     }
   ],
   "prime_owner": "osl-1046",
