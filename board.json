@@ -743,6 +743,24 @@
       "body": "Imported from [issue #896](https://github.com/Knatte18/loomyard/issues/896).\n\nA card that made `PaneMail` persist on every strand broke a tier1 `creelcli` test.\nThe card gate runs tier0 only, so it did not run that test; the later batch gate found the breakage.\nThe failure surfaced a card late, away from the change that caused it.\n\nThis is abnormal: a card's gate can pass while its own change breaks a higher-tier test, so the fix lands outside the card that introduced it.\nConsider letting the card gate run the tier1 tests of packages the card's diff touches, or flagging in the card result that higher tiers were not run.\n\nProvenance: task `creel-hook-post`, note `07-shuttle-idle-no-turn.md`.\n",
       "created": "2026-10-29T07:41:27Z",
       "revised": "2026-10-29T07:41:27Z"
+    },
+    {
+      "id": 899,
+      "handle": "B1",
+      "slug": "hookwake-blocked-chain-flake",
+      "title": "TestScheduler_HookWake blocked-chain subtest flakes under tier_parallel 8",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "creel"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A creelengine hook-wake subtest failed once in the OSL-1046 bench run at tier_parallel 8; the cause is not diagnosed.",
+      "body": "## Seen\n\nRun 2 of the `bench-osl1046-xdr` bench, at `tier_parallel` 8 on OSL-1046, failed one `internal/creelengine` test: `TestScheduler_HookWake/MailArrivingInAWokenTurnsBlockedChain...` (the strand's report truncates the name).\nThe run's cap allowed no repeat, so it was not rerun and its message was not read.\nIt is the third timing-sensitive creel test seen on this machine, after the refused-forward chase subtest and the daemon lifecycle and `TestCreelCLI` flakes bundled in `creel-flakes-and-adopt-names`.\n\n## Idea\n\nRun the subtest alone repeatedly, with and without CPU load, to find which wait it assumes, and make it wait for the worker or event it depends on instead of for time.\n",
+      "created": "2026-10-29T09:16:21Z",
+      "revised": "2026-10-29T09:16:21Z"
     }
   ],
   "prime_owner": "osl-1046",
