@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-29 09:40 UTC; every age below is as of then.
+Rendered 2026-10-29 09:41 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Creel hook delivery: mail arrives once, and the HookWake flake**<br>• Make a creel mail reach the agent once through the Stop hooks, and make the HookWake blocked-chain subtest deterministic.<br>• `profile: solid` | [`creel-hook-delivery-fixes`](design-creel-hook-delivery-fixes.md) | darn | Darn-Write | osl-1046 | 24m<br>7m | creel, claude |
+| T2 | **Creel hook delivery: mail arrives once, and the HookWake flake**<br>• Make a creel mail reach the agent once through the Stop hooks, and make the HookWake blocked-chain subtest deterministic.<br>• `profile: solid` | [`creel-hook-delivery-fixes`](design-creel-hook-delivery-fixes.md) | darn | Darn-Write | osl-1046 | 24m<br>8m | creel, claude |
 
 ### Ready (0)
 
@@ -49,16 +49,15 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 6d<br>23h | loom, stencil |
 | R8 |  | **Ideas from r/ClaudeCode "one line in your CLAUDE.md": fit for LoomYard and bench measures**<br>• About 30 ideas judged against our stencils and rules; top 8 ranked for a bench, a few cheap enough without one | [`claude-md-thread-ideas`](design-claude-md-thread-ideas.md) | 2d<br>16h | stencil, loom, burler |
 
-### Bugs (4)
+### Bugs (3)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **The board README omits the note csharp-sandbox-hub**<br>• The operator does not see csharp-sandbox-hub in the rendered README, under dotnet or elsewhere, though lym board list shows it. | [`readme-omits-csharp-note`](design-readme-omits-csharp-note.md) | 0m<br>0m | board |
 | B3 |  | **Flaky websterengine recover-batch subtest fails once with "record changed"** | [`webster-recover-batch-flake`](design-webster-recover-batch-flake.md) | 1h<br>1h | webster |
 | B5 |  | **Burler fork guard halts a run on a read-only git command** | [`burler-guard-readonly-git`](design-burler-guard-readonly-git.md) | 1h<br>1h | burler, shed |
 | B6 |  | **Card gate runs tier0 only and misses tier1 breakage a card causes** | [`card-gate-misses-tier1`](design-card-gate-misses-tier1.md) | 1h<br>1h | webster, gate |
 
-### Enhancements (14)
+### Enhancements (15)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -68,11 +67,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E4 |  | **Restore the verify-gate test for a misplaced //lym:guard marker**<br>• Once the darn verify key reads its diff base, cover the guard scan of a narrowed run again | [`verifygate-misplaced-guard-test`](design-verifygate-misplaced-guard-test.md) | 18h<br>18h | loom, gate |
 | E5 |  | **The idle ring hands the mail over itself, without an empty turn**<br>• hook-wait wakes an idle strand with a bell line only, so each mail costs one extra empty turn | [`creel-ring-carries-mail`](design-creel-ring-carries-mail.md) | 15h<br>15h | creel |
 | E6 |  | **A module label for every package group under internal/**<br>• Several lym modules have no label, so entries take the nearest one that says something else | [`label-coverage`](design-label-coverage.md) | 14h<br>14h | board |
-| E7 |  | **loom names the general run; today's loom is one variant**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | 2w<br>31m | shed, loom |
+| E7 |  | **loom names the general run; today's loom is one variant**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | 2w<br>32m | shed, loom |
 | E8 |  | **lym ide seed colours the VS Code workspace too**<br>• A hub opened as a VS Code workspace has no colour, since lym ide seed seeds only worktrees. | [`workspace-ide-seed`](design-workspace-ide-seed.md) | 2h<br>2h | ide, workspaces |
 | E9 |  | **Reed navigation keys, Alt+arrows, are seeded by lym**<br>• Alt+arrow keys do not switch windows and sessions in Reed in this hub; lym should seed them. | [`reed-alt-arrow-keys-seeded`](design-reed-alt-arrow-keys-seeded.md) | 2h<br>2h | reed, config |
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 13d<br>13d | board, loom |
 | E11 |  | **Creel daemon writes no delivery-level log, so an unconfirmed delivery cannot be diagnosed** | [`creel-delivery-log`](design-creel-delivery-log.md) | 1h<br>1h | creel |
+| E12 |  | **The board README hides project members, so a project looks empty**<br>• A note in a project renders only on the project page, and the README lists the project as a bare link, so the member seems to be missing. | [`readme-omits-csharp-note`](design-readme-omits-csharp-note.md) | 0m<br>0m | board |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 11d<br>1d | webster, fabric, loom |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 10d<br>1d | fabric, batten |
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 6d<br>19h | burler, claude |
@@ -84,7 +84,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 3w<br>1d | burler |
 | F2 | L | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lym-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 3w<br>1d | ide, fabric |
 | F3 |  | **Windows lym opens land tiled on the right KDE virtual desktop**<br>• Konsole and VS Code windows opened by lym placed by desktop and tile on KDE Plasma | [`kde-window-placement`](design-kde-window-placement.md) | 18h<br>18h | reed, ide, config |
-| F4 |  | **A landing notice on request, per task**<br>• The orch can ask for one creel line when a named run lands; off unless set for that slug | [`landing-watch`](design-landing-watch.md) | 14h<br>14h | dobby, creel, orch |
+| F4 |  | **A landing notice on request, per task**<br>• The orch can ask for one creel line when a named run lands; off unless set for that slug | [`landing-watch`](design-landing-watch.md) | 15h<br>14h | dobby, creel, orch |
 | F5 |  | **Fabric's ordinary-monorepo verb surface**<br>• Against plain git, fabric still lacks log, show, branch, tag, stash, revert, restore, rm/mv, rebase, cherry-pick and blame | [`fabric-monorepo-verbs`](design-fabric-monorepo-verbs.md) | 3w<br>3w | fabric |
 | F6 |  | **Talk to the orch through Slack**<br>• A Slack relay so the operator can reach the orch from a phone where Claude's own app is not allowed | [`reed-slack-relay`](design-reed-slack-relay.md) | 3w<br> | reed |
 | F8 |  | **fabric: two-sided reset-to-SHA verb**<br>• The post-conclude undo the merge surface does not ship: reset to a warp SHA, resolve the paired weft SHA through the correspondence index, gate both sides | [`fabric-reset-to-sha`](design-fabric-reset-to-sha.md) | 3w<br>3w | fabric |
