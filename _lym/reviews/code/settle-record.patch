@@ -1,0 +1,578 @@
+diff --git a/internal/adoptcli/check.go b/internal/adoptcli/check.go
+index 6c1e6d31..4107507c 100644
+--- a/internal/adoptcli/check.go
++++ b/internal/adoptcli/check.go
+@@ -42,6 +42,8 @@ const (
+ 	checkGateKey = "adopt"
+ 	// checkProgram signs the check's notices to the orch.
+ 	checkProgram = "ADOPT"
++	// maxListedFailures caps the failed tests one tier's notice lists; suite.log and check.json hold the rest.
++	maxListedFailures = 10
+ )
+ 
+ // The states a CheckRecord is in.
+@@ -81,6 +83,8 @@ type CheckTier struct {
+ 	Failed      int     `json:"failed"`
+ 	Skipped     int     `json:"skipped"`
+ 	WallSeconds float64 `json:"wall_seconds"`
++	// Failures lists the tier's failed tests as the gate's counter reported them.
++	Failures []gateslot.TestFailure `json:"failures,omitempty"`
+ }
+ 
+ // ReadCheck reads the check record at recordPath and reports whether one exists.
+@@ -169,14 +173,14 @@ func runCheck(ctx context.Context, deps checkDeps) (CheckRecord, bool, error) {
+ 			save()
+ 		},
+ 		Ended: func(ended gateslot.RunRecord) {
+-			tier := CheckTier{Tier: ended.Tier, Outcome: checkGreen, Passed: ended.Passed, Failed: ended.Failed, Skipped: ended.Skipped, WallSeconds: ended.WallSec}
++			tier := CheckTier{Tier: ended.Tier, Outcome: checkGreen, Passed: ended.Passed, Failed: ended.Failed, Skipped: ended.Skipped, WallSeconds: ended.WallSec, Failures: ended.Failures}
+ 			if ended.Outcome != "passed" {
+ 				tier.Outcome = checkFailed
+ 			}
+ 			record.Tiers = append(record.Tiers, tier)
+ 			record.Running = nil
+ 			save()
+-			post(fmt.Sprintf("adopt check: tier%d %s, passed %d failed %d skipped %d, %.1fs", tier.Tier, tier.Outcome, tier.Passed, tier.Failed, tier.Skipped, tier.WallSeconds))
++			post(tierNotice(tier, logPath))
+ 		},
+ 	}
+ 	code := deps.RunGate(ctx, logFile, observer)
+@@ -209,6 +213,27 @@ func runCheck(ctx context.Context, deps checkDeps) (CheckRecord, bool, error) {
+ 	return finish()
+ }
+ 
++// tierNotice renders the notice of one ended tier: its outcome and counts on the first line, and for a failed tier one line per failed test with the first line it printed, at most maxListedFailures, then the log at logPath.
++func tierNotice(tier CheckTier, logPath string) string {
++	lines := []string{fmt.Sprintf("adopt check: tier%d %s, passed %d failed %d skipped %d, %.1fs", tier.Tier, tier.Outcome, tier.Passed, tier.Failed, tier.Skipped, tier.WallSeconds)}
++	if tier.Outcome != checkFailed {
++		return lines[0]
++	}
++	for i, failure := range tier.Failures {
++		if i == maxListedFailures {
++			lines = append(lines, fmt.Sprintf("and %d more", len(tier.Failures)-maxListedFailures))
++			break
++		}
++		line := failure.Package + " " + failure.Test
++		if failure.FirstLine != "" {
++			line += ": " + failure.FirstLine
++		}
++		lines = append(lines, line)
++	}
++	lines = append(lines, "log "+logPath)
++	return strings.Join(lines, "\n")
++}
++
+ // writeCheck writes record to the check record at recordPath under its state lock.
+ func writeCheck(recordPath string, record CheckRecord) error {
+ 	return state.WriteJSON(recordPath, recordPath+".lock", record)
+diff --git a/internal/adoptcli/check_test.go b/internal/adoptcli/check_test.go
+index ed8845f9..d33553b0 100644
+--- a/internal/adoptcli/check_test.go
++++ b/internal/adoptcli/check_test.go
+@@ -7,9 +7,11 @@ package adoptcli
+ import (
+ 	"context"
+ 	"errors"
++	"fmt"
+ 	"io"
+ 	"os"
+ 	"path/filepath"
++	"reflect"
+ 	"slices"
+ 	"strings"
+ 	"testing"
+@@ -62,8 +64,9 @@ func passedTier(tier, passed, skipped int) gateslot.RunRecord {
+ 	return gateslot.RunRecord{Tier: tier, Outcome: "passed", Passed: passed, Skipped: skipped, WallSec: 1.5}
+ }
+ 
+-func failedTier(tier, failed int) gateslot.RunRecord {
+-	return gateslot.RunRecord{Tier: tier, Outcome: "failed", ExitCode: 1, Passed: 3, Failed: failed, WallSec: 2}
++// failedTier returns a failed tier record whose counter named failures; Failed counts them.
++func failedTier(tier int, failures ...gateslot.TestFailure) gateslot.RunRecord {
++	return gateslot.RunRecord{Tier: tier, Outcome: "failed", ExitCode: 1, Passed: 3, Failed: len(failures), WallSec: 2, Failures: failures}
+ }
+ 
+ func (f *checkFixture) recordPath() string { return filepath.Join(f.dir, checkRecordName) }
+@@ -83,7 +86,7 @@ func TestRunCheck(t *testing.T) {
+ 		if record.State != checkGreen || record.Running != nil || record.FailedTier != nil || record.EndedAt.IsZero() || record.PID != 4242 || record.StartTicks != "777" || record.Gate != "adopt" {
+ 			t.Errorf("record = %+v; want green, nothing in flight, no failed tier, an end time and this process's identity", record)
+ 		}
+-		if want := []CheckTier{{0, checkGreen, 10, 0, 1, 1.5}, {1, checkGreen, 4, 0, 0, 1.5}}; !slices.Equal(record.Tiers, want) {
++		if want := []CheckTier{{0, checkGreen, 10, 0, 1, 1.5, nil}, {1, checkGreen, 4, 0, 0, 1.5, nil}}; !reflect.DeepEqual(record.Tiers, want) {
+ 			t.Errorf("tiers = %+v; want %+v", record.Tiers, want)
+ 		}
+ 		wantNotices := []string{
+@@ -99,9 +102,13 @@ func TestRunCheck(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("a failing tier ends the check failed naming the tier, the log and the rerun", func(t *testing.T) {
++	t.Run("a failing tier ends the check failed naming the tier, its failed tests, the log and the rerun", func(t *testing.T) {
+ 		t.Parallel()
+-		f := newCheckFixture(t, []scriptedTier{{0, passedTier(0, 10, 0)}, {1, failedTier(1, 2)}}, 1)
++		failures := []gateslot.TestFailure{
++			{Package: "example.com/a", Test: "TestA/sub", FirstLine: "a_test.go:12: got 1; want 2"},
++			{Package: "example.com/b", Test: "TestB"},
++		}
++		f := newCheckFixture(t, []scriptedTier{{0, passedTier(0, 10, 0)}, {1, failedTier(1, failures...)}}, 1)
+ 
+ 		record, _, err := runCheck(context.Background(), f.deps)
+ 		if err != nil {
+@@ -110,6 +117,16 @@ func TestRunCheck(t *testing.T) {
+ 		if record.State != checkFailed || record.FailedTier == nil || *record.FailedTier != 1 || record.Error != "" {
+ 			t.Errorf("record = %+v; want failed at tier 1 with no error text", record)
+ 		}
++		wantTierNotice := "adopt check: tier1 failed, passed 3 failed 2 skipped 0, 2.0s\n" +
++			"example.com/a TestA/sub: a_test.go:12: got 1; want 2\n" +
++			"example.com/b TestB\n" +
++			"log " + f.logPath()
++		if len(f.notices) < 2 || f.notices[1] != wantTierNotice {
++			t.Errorf("notices = %q; want the tier1 notice %q", f.notices, wantTierNotice)
++		}
++		if onDisk, _, err := ReadCheck(f.recordPath()); err != nil || len(onDisk.Tiers) != 2 || !slices.Equal(onDisk.Tiers[1].Failures, failures) {
++			t.Errorf("ReadCheck() = %+v, %v; want tier1's failures on disk", onDisk, err)
++		}
+ 		end := f.notices[len(f.notices)-1]
+ 		for _, want := range []string{"tier1", f.logPath(), "lym gate test --gate adopt"} {
+ 			if !strings.Contains(end, want) {
+@@ -121,6 +138,42 @@ func TestRunCheck(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("a failing tier's notice lists failed tests up to the cap and counts the rest", func(t *testing.T) {
++		t.Parallel()
++		failures := make([]gateslot.TestFailure, maxListedFailures+3)
++		for i := range failures {
++			failures[i] = gateslot.TestFailure{Package: "example.com/p", Test: fmt.Sprintf("Test%d", i), FirstLine: "boom"}
++		}
++		f := newCheckFixture(t, []scriptedTier{{0, failedTier(0, failures...)}}, 1)
++
++		if _, _, err := runCheck(context.Background(), f.deps); err != nil {
++			t.Fatalf("runCheck() error = %v", err)
++		}
++		lines := strings.Split(f.notices[0], "\n")
++		if want := maxListedFailures + 3; len(lines) != want {
++			t.Fatalf("tier notice = %q; want %d lines: the summary, %d tests, the remainder and the log", f.notices[0], want, maxListedFailures)
++		}
++		if got, want := lines[maxListedFailures], "example.com/p Test9: boom"; got != want {
++			t.Errorf("last listed test = %q; want %q", got, want)
++		}
++		if got, want := lines[len(lines)-2:], []string{"and 3 more", "log " + f.logPath()}; !slices.Equal(got, want) {
++			t.Errorf("notice tail = %q; want %q", got, want)
++		}
++	})
++
++	t.Run("a failing tier with no recorded failures has a notice of the summary line and the log", func(t *testing.T) {
++		t.Parallel()
++		f := newCheckFixture(t, []scriptedTier{{0, failedTier(0)}}, 1)
++
++		if _, _, err := runCheck(context.Background(), f.deps); err != nil {
++			t.Fatalf("runCheck() error = %v", err)
++		}
++		want := "adopt check: tier0 failed, passed 3 failed 0 skipped 0, 2.0s\nlog " + f.logPath()
++		if len(f.notices) == 0 || f.notices[0] != want {
++			t.Errorf("notices = %q; want the tier0 notice %q", f.notices, want)
++		}
++	})
++
+ 	t.Run("a notice that fails changes nothing in the record", func(t *testing.T) {
+ 		t.Parallel()
+ 		f := newCheckFixture(t, []scriptedTier{{0, passedTier(0, 1, 0)}, {1, passedTier(1, 1, 0)}}, 0)
+diff --git a/internal/adoptcli/doc.go b/internal/adoptcli/doc.go
+index cfcbd529..15b33c33 100644
+--- a/internal/adoptcli/doc.go
++++ b/internal/adoptcli/doc.go
+@@ -92,13 +92,14 @@
+ // `check.json`, the progress record, written through `internal/state` under its own state lock;
+ // `check.lock`, the verb's own lock;
+ // and `check.out`, which the spawn of the check points its stdout and stderr at.
+-// `CheckRecord` holds the check's pid and start ticks, its start, the gate key, each `CheckTier` as it ended, the tier in flight, its state (`running`, `green` or `failed`), its end time, the first failed tier and an error, and an unknown key reads.
++// `CheckRecord` holds the check's pid and start ticks, its start, the gate key, each `CheckTier` as it ended with the failed tests the gate's counter named, the tier in flight, its state (`running`, `green` or `failed`), its end time, the first failed tier and an error, and an unknown key reads.
+ // `ReadCheck` stats the record first and reports false, taking no lock and creating no directory, when it is absent; a record that does not decode reads as absent with one Warn, so a damaged file never blocks the next check.
+ //
+ // `runCheck` takes `check.lock` with a non-blocking acquire and returns at once, having written and posted nothing, when it is held.
+ // Holding it, it truncates `suite.log`, writes a running record and reconciles the hub through `hubreconcile.Ensure`, so a hub whose build stamp is stale seeds `adopt` from its tuned `finalize` before the gate reads it.
+ // A failing reconcile ends the check failed with the way forward and runs no tier, so no check goes green on the template's tiers.
+-// The gate's `suite.log` is its log; its observer rewrites the record as each tier starts and ends and posts `adopt check: tier<N> <green|failed>, passed <p> failed <f> skipped <s>, <wall>s`.
++// The gate's `suite.log` is its log; its observer rewrites the record as each tier starts and ends and posts `adopt check: tier<N> <green|failed>, passed <p> failed <f> skipped <s>, <wall>s`;
++// a failed tier's notice adds one line per failed test, `<package> <test>: <first line>`, at most `maxListedFailures` and then `and <n> more`, and a last line naming `suite.log`.
+ // A green gate ends the record green and posts the tiers and `suite.log`; any other exit ends it failed, with the first failed tier, or with the gate's exit code as the error when no tier ended, and posts the failure, `suite.log` and the rerun `lym gate test --gate adopt` in the prime.
+ // A tier that refuses after it started returns without ending, so the end clears the tier in flight.
+ // A post that fails is logged and changes nothing.
+diff --git a/internal/creelcli/cli_test.go b/internal/creelcli/cli_test.go
+index 798f60e5..b6960509 100644
+--- a/internal/creelcli/cli_test.go
++++ b/internal/creelcli/cli_test.go
+@@ -244,6 +244,20 @@ func awaitRun(t *testing.T, results <-chan cliRun) cliRun {
+ 	}
+ }
+ 
++// advanceUntilReturned steps clock by each newly recorded wait keep accepts until the async verb returns, and returns its run.
++// Stepping on every new wait, instead of once after a counted one, never mistakes a wait an earlier verb's worker recorded late for one the verb's own work caused.
++func advanceUntilReturned(t *testing.T, clock *creelfake.Clock, keep func(time.Duration) bool, results <-chan cliRun) cliRun {
++	t.Helper()
++	returned := make(chan struct{})
++	forwarded := make(chan cliRun, 1)
++	go func() {
++		forwarded <- <-results
++		close(returned)
++	}()
++	clock.AdvanceByWaitsWhere(keep, returned)
++	return awaitRun(t, forwarded)
++}
++
+ // rig is one hub with a daemon running in process over a fake delivery.
+ type rig struct {
+ 	hub      *hubforge.Hub
+@@ -668,11 +682,8 @@ func TestCreelCLI(t *testing.T) {
+ 		r.delivery.SetSendError(nil)
+ 
+ 		r.delivery.SetIdle(alpha, false)
+-		probesBefore := len(r.clock.AwaitWaitsWhere(0, isProbeWait))
+ 		expiring := runAsync(r.cwd, "inject", "--wait", "--ttl", "1m", alpha, "/clear")
+-		r.clock.AwaitWaitsWhere(probesBefore+1, isProbeWait)
+-		r.clock.Advance(61 * time.Second)
+-		if expired := awaitRun(t, expiring); expired.code != ExitInjectExpired {
++		if expired := advanceUntilReturned(t, r.clock, isProbeWait, expiring); expired.code != ExitInjectExpired {
+ 			t.Errorf("creel inject --wait past its TTL = (%d, %q); want exit %d", expired.code, expired.raw, ExitInjectExpired)
+ 		}
+ 
+@@ -687,11 +698,8 @@ func TestCreelCLI(t *testing.T) {
+ 		r.delivery.SetIdle(beta, false)
+ 		waiting := runAsync(r.cwd, "post", "--wait-reply", beta, "anyone?")
+ 		r.awaitLogged(t, "anyone?")
+-		r.clock.AwaitWaitsWhere(1, isSweepWait)
+ 		r.delivery.SetStrands(creelfake.LiveStrand(alpha))
+-		r.sweepStep()
+-		r.sweepLast()
+-		if returned := awaitRun(t, waiting); returned.code != ExitReturnedUndelivered {
++		if returned := advanceUntilReturned(t, r.clock, isSweepWait, waiting); returned.code != ExitReturnedUndelivered {
+ 			t.Errorf("creel post --wait-reply once the receiver left = (%d, %q); want exit %d", returned.code, returned.raw, ExitReturnedUndelivered)
+ 		} else if returned.fields["sender"] != external {
+ 			t.Errorf("creel post --wait-reply printed sender %v; want %q", returned.fields["sender"], external)
+diff --git a/internal/creelengine/server_test.go b/internal/creelengine/server_test.go
+index d4e73665..e5303d72 100644
+--- a/internal/creelengine/server_test.go
++++ b/internal/creelengine/server_test.go
+@@ -1064,41 +1064,36 @@ func TestDaemon_Lifecycle(t *testing.T) {
+ 			hook := creelfake.HookStrand(alpha)
+ 			hook.PanePID = os.Getpid()
+ 			r.del.SetStrands(hook, creelfake.LiveStrand(beta))
+-			// A running turn keeps the ring back, and the idle read marks the point where the waiter is registered with mail standing.
++			// A running turn keeps the ring back while the waiters register with mail standing.
+ 			r.del.SetTurn(alpha, true, time.Time{})
+-			probed := make(chan struct{}, 16)
+-			r.del.SetIdleHook(func(string) {
+-				select {
+-				case probed <- struct{}{}:
+-				default:
+-				}
+-			})
+-			awaitProbe := func() {
+-				t.Helper()
+-				select {
+-				case <-probed:
+-				case <-time.After(10 * time.Second):
+-					t.Fatal("no probe read the hook strand's turn")
+-				}
+-			}
+ 			first := r.start()
+ 			mustCall(t, r.client(externalClaim(), nil, creelfake.NewClock(epoch)), creelengine.Request{Verb: creelengine.VerbPost, Receiver: alpha, Text: "one"})
+-			// The post's own wake reads the turn before any waiter exists;
+-			// consuming that read keeps it from passing for the waiter's registration, which would stop the daemon before the waiter connects.
+-			awaitProbe()
++			// Two waiters of one strand: whichever registers second supersedes the other, so the superseded answer proves the survivor is registered with the first daemon before it stops.
++			// The waiters spawn nothing, so a waiter that connected late would fail instead of starting a daemon that takes the hub from the restart.
+ 			clientClock := creelfake.NewClock(epoch)
+-			waiting := callAsync(r.client(strandClaim(alpha), r.spawn, clientClock), creelengine.Request{Verb: creelengine.VerbHookWait, Wait: true}, 0)
+-			awaitProbe()
++			hookWait := func() <-chan callResult {
++				return callAsync(r.client(strandClaim(alpha), nil, clientClock), creelengine.Request{Verb: creelengine.VerbHookWait, Wait: true}, 0)
++			}
++			one, other := hookWait(), hookWait()
++			var superseded callResult
++			var waiting <-chan callResult
++			select {
++			case superseded = <-one:
++				waiting = other
++			case superseded = <-other:
++				waiting = one
++			case <-time.After(10 * time.Second):
++				t.Fatal("neither hook-wait was superseded")
++			}
++			if superseded.err != nil || superseded.resp.Outcome != creelengine.OutcomeSuperseded {
++				t.Fatalf("the first hook-wait to end = %+v, %v; want superseded by the second", superseded.resp, superseded.err)
++			}
+ 			if err := first.stop(); err != nil {
+ 				t.Fatalf("stop: %v", err)
+ 			}
+ 			clientClock.AwaitWaits(1)
+-			for len(probed) > 0 {
+-				<-probed
+-			}
+ 			r.start()
+ 			clientClock.Advance(time.Second)
+-			awaitProbe()
+ 			r.del.SetTurn(alpha, false, time.Time{})
+ 			mustCall(t, r.client(externalClaim(), nil, creelfake.NewClock(epoch)), creelengine.Request{Verb: creelengine.VerbPost, Receiver: alpha, Text: "two"})
+ 			if got := result(t, waiting); got.err != nil || got.resp.Outcome != creelengine.OutcomeRing {
+diff --git a/internal/gatecli/counters.go b/internal/gatecli/counters.go
+index fa61a944..7c986553 100644
+--- a/internal/gatecli/counters.go
++++ b/internal/gatecli/counters.go
+@@ -9,6 +9,7 @@ import (
+ 	"io"
+ 	"maps"
+ 	"regexp"
++	"slices"
+ 	"strconv"
+ 	"strings"
+ 	"sync"
+@@ -45,6 +46,8 @@ type counter interface {
+ 	TestsRun() map[string]int
+ 	// Launches returns, per package whose test binary ran, how long the binary took to launch and how long the package took, in the order the packages started; nil for a counter that does not read packages.
+ 	Launches() []gateslot.PackageLaunch
++	// Failures returns the failed tests so far, leaves only, in the order they failed; nil for a counter that does not read tests.
++	Failures() []gateslot.TestFailure
+ }
+ 
+ // newCounter returns the counter kind names, writing the tier's text output to out.
+@@ -120,6 +123,15 @@ type goJSONCounter struct {
+ 	order    []string
+ 	// testsRun holds, per package any event named, the number of tests that sent a run event.
+ 	testsRun map[string]int
++	// firstLines holds, per test in flight, the first line it printed beside go test's status lines; a test leaves it when it ends.
++	firstLines map[testKey]string
++	// failures holds every failed test, parents of failed subtests included, in the order they failed.
++	failures []gateslot.TestFailure
++}
++
++// testKey names one test of one package.
++type testKey struct {
++	pkg, test string
+ }
+ 
+ // packageTiming is what the counter has seen of one package's test binary launching.
+@@ -181,6 +193,43 @@ func (c *goJSONCounter) Launches() []gateslot.PackageLaunch {
+ 	return launches
+ }
+ 
++// Failures returns the failed tests, leaving out a test with a failed subtest in the same package, since its own failure carries no line of its own.
++func (c *goJSONCounter) Failures() []gateslot.TestFailure {
++	c.lines.mu.Lock()
++	defer c.lines.mu.Unlock()
++	var leaves []gateslot.TestFailure
++	for _, failure := range c.failures {
++		parent := slices.ContainsFunc(c.failures, func(other gateslot.TestFailure) bool {
++			return other.Package == failure.Package && strings.HasPrefix(other.Test, failure.Test+"/")
++		})
++		if !parent {
++			leaves = append(leaves, failure)
++		}
++	}
++	return leaves
++}
++
++// observeTest folds a test's event into its first line and, on its fail event, into the failures.
++func (c *goJSONCounter) observeTest(event goTestEvent) {
++	key := testKey{event.Package, event.Test}
++	switch event.Action {
++	case "output":
++		line := strings.TrimSpace(event.Output)
++		if _, seen := c.firstLines[key]; seen || line == "" || strings.HasPrefix(line, "=== ") || strings.HasPrefix(line, "--- ") {
++			return
++		}
++		if c.firstLines == nil {
++			c.firstLines = map[testKey]string{}
++		}
++		c.firstLines[key] = line
++	case "fail":
++		c.failures = append(c.failures, gateslot.TestFailure{Package: event.Package, Test: event.Test, FirstLine: c.firstLines[key]})
++		delete(c.firstLines, key)
++	case "pass", "skip":
++		delete(c.firstLines, key)
++	}
++}
++
+ // observePackage folds event into the launch timing of its package.
+ func (c *goJSONCounter) observePackage(event goTestEvent) {
+ 	if event.Package == "" {
+@@ -236,6 +285,7 @@ func (c *goJSONCounter) handle(line []byte, terminated bool) error {
+ 		}
+ 	}
+ 	if event.Test != "" {
++		c.observeTest(event)
+ 		switch event.Action {
+ 		case "run":
+ 			c.counts.discovered++
+@@ -276,6 +326,9 @@ func (c *vstestCounter) TestsRun() map[string]int { return nil }
+ // Launches returns nil: a VSTest run reports no per-package launch timing.
+ func (c *vstestCounter) Launches() []gateslot.PackageLaunch { return nil }
+ 
++// Failures returns nil: a VSTest summary line names no test.
++func (c *vstestCounter) Failures() []gateslot.TestFailure { return nil }
++
+ // handle runs under the line reader's lock.
+ func (c *vstestCounter) handle(line []byte, terminated bool) error {
+ 	if match := vstestSummary.FindSubmatch(line); match != nil {
+diff --git a/internal/gatecli/counters_test.go b/internal/gatecli/counters_test.go
+index 162f6a8a..99d666bc 100644
+--- a/internal/gatecli/counters_test.go
++++ b/internal/gatecli/counters_test.go
+@@ -66,6 +66,8 @@ func TestCounters(t *testing.T) {
+ 		wantLaunches []gateslot.PackageLaunch
+ 		// wantTestsRun is the per-package count of tests that ran.
+ 		wantTestsRun map[string]int
++		// wantFailures is the failed leaf tests the counter reports.
++		wantFailures []gateslot.TestFailure
+ 	}{
+ 		{
+ 			name: "a package with start, a later event and a closing pass has one launch entry",
+@@ -99,6 +101,7 @@ func TestCounters(t *testing.T) {
+ 			wantOut:      "=== RUN   TestA\n--- FAIL: TestB (0.00s)\nFAIL\n",
+ 			wantCounts:   tierCounts{discovered: 2, passed: 1, failed: 1},
+ 			wantTestsRun: map[string]int{"example.com/p": 2},
++			wantFailures: []gateslot.TestFailure{{Package: "example.com/p", Test: "TestB"}},
+ 		},
+ 		{
+ 			name:         "a skipped test",
+@@ -116,6 +119,34 @@ func TestCounters(t *testing.T) {
+ 			wantCounts:   tierCounts{discovered: 2, passed: 2},
+ 			wantTestsRun: map[string]int{"example.com/p": 2},
+ 		},
++		{
++			name: "a failed subtest is named with its first error line and its failed parent is left out",
++			kind: "go-json",
++			writes: []string{strings.Join([]string{
++				goEvent("run", "TestA", ""), goEvent("output", "TestA", "=== RUN   TestA\n"),
++				goEvent("run", "TestA/sub", ""), goEvent("output", "TestA/sub", "=== RUN   TestA/sub\n"),
++				goEvent("output", "TestA/sub", "    a_test.go:12: got 1; want 2\n"), goEvent("output", "TestA/sub", "    a_test.go:13: second\n"),
++				goEvent("output", "TestA/sub", "    --- FAIL: TestA/sub (0.00s)\n"), goEvent("fail", "TestA/sub", ""),
++				goEvent("output", "TestA", "--- FAIL: TestA (0.00s)\n"), goEvent("fail", "TestA", ""),
++				goEvent("run", "TestB", ""), goEvent("output", "TestB", "    b_test.go:5: passing note\n"), goEvent("pass", "TestB", ""),
++			}, "\n") + "\n"},
++			wantOut: "=== RUN   TestA\n=== RUN   TestA/sub\n    a_test.go:12: got 1; want 2\n    a_test.go:13: second\n    --- FAIL: TestA/sub (0.00s)\n--- FAIL: TestA (0.00s)\n" +
++				"    b_test.go:5: passing note\n",
++			wantCounts:   tierCounts{discovered: 3, passed: 1, failed: 2},
++			wantTestsRun: map[string]int{"example.com/p": 3},
++			wantFailures: []gateslot.TestFailure{{Package: "example.com/p", Test: "TestA/sub", FirstLine: "a_test.go:12: got 1; want 2"}},
++		},
++		{
++			name: "a failed test whose name prefixes another failed test's name without a slash is still named",
++			kind: "go-json",
++			writes: []string{strings.Join([]string{
++				goEvent("run", "TestA", ""), goEvent("fail", "TestA", ""),
++				goEvent("run", "TestAB", ""), goEvent("fail", "TestAB", ""),
++			}, "\n") + "\n"},
++			wantCounts:   tierCounts{discovered: 2, failed: 2},
++			wantTestsRun: map[string]int{"example.com/p": 2},
++			wantFailures: []gateslot.TestFailure{{Package: "example.com/p", Test: "TestA"}, {Package: "example.com/p", Test: "TestAB"}},
++		},
+ 		{
+ 			name: "a panic's output and a build error's non-JSON lines read as text",
+ 			kind: "go-json",
+@@ -125,6 +156,7 @@ func TestCounters(t *testing.T) {
+ 			wantOut:      "# example.com/p\nx.go:1:1: undefined: y\npanic: boom\nFAIL\texample.com/p [build failed]\n",
+ 			wantCounts:   tierCounts{failed: 1},
+ 			wantTestsRun: map[string]int{"example.com/p": 0},
++			wantFailures: []gateslot.TestFailure{{Package: "example.com/p", Test: "TestA", FirstLine: "panic: boom"}},
+ 		},
+ 		{
+ 			name:         "a line split across two writes",
+@@ -199,6 +231,9 @@ func TestCounters(t *testing.T) {
+ 			if got := c.TestsRun(); !maps.Equal(got, tt.wantTestsRun) {
+ 				t.Errorf("TestsRun() = %v; want %v", got, tt.wantTestsRun)
+ 			}
++			if got := c.Failures(); !slices.Equal(got, tt.wantFailures) {
++				t.Errorf("Failures() = %+v; want %+v", got, tt.wantFailures)
++			}
+ 		})
+ 	}
+ 
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 17a8fd4c..ca53e3ce 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -220,6 +220,7 @@
+ // A write failure is logged and decides nothing.
+ // The `go-json` counter also keeps, per package, the gap from its `start` event to its next event and its closing event's elapsed time, and the record carries them as `launches`; a cached package and one with no test files are left out, and a `vstest` run records none.
+ // The `go-json` counter also keeps, per package, the number of tests that ran in it, and a `vstest` run keeps none.
++// The `go-json` counter also records each failed test with the first line it printed beside `go test`'s `=== ` and `--- ` status lines, leaving out a test whose subtest failed, and the record carries them as `failures`; a `vstest` run records none.
+ // A `go-json` tier under the `go` scoper fails when a package holding a test under the tier's tag ran none, since the tier's command then lacks its tag: a package with a `Test` function in a file whose build constraint holds under `tierN` on the host's GOOS and GOARCH.
+ // The failure exits 1 and its line, naming the tier, the package and `lym config gate`, goes to stderr and the log before the summary line.
+ // A run whose words after `--` carry `-run`, `-skip`, `-list` or `-bench` is exempt, since its filter may match nothing; the guard step's own `-run` filter exempts nothing.
+diff --git a/internal/gatecli/tierrun.go b/internal/gatecli/tierrun.go
+index 2f62380c..1dccc075 100644
+--- a/internal/gatecli/tierrun.go
++++ b/internal/gatecli/tierrun.go
+@@ -112,6 +112,7 @@ func runTier(ctx context.Context, out io.Writer, run tierRun, env []string, requ
+ 	}
+ 	record.Discovered, record.Passed, record.Failed, record.Skipped = counts.discovered, counts.passed, counts.failed, counts.skipped
+ 	record.Launches = counter.Launches()
++	record.Failures = counter.Failures()
+ 	return tierResult{record: record, log: logBuffer.Bytes(), trimpathNote: trimpathNote}
+ }
+ 
+diff --git a/internal/gateslot/runlog.go b/internal/gateslot/runlog.go
+index 5851d300..1eaa1a12 100644
+--- a/internal/gateslot/runlog.go
++++ b/internal/gateslot/runlog.go
+@@ -68,6 +68,16 @@ type RunRecord struct {
+ 	Skipped    int    `json:"skipped"`
+ 	// Launches lists, per package whose test binary ran, how long the binary took to launch; empty for a record written before the list existed, a tier that reads no packages and a run that launched none.
+ 	Launches []PackageLaunch `json:"launches,omitempty"`
++	// Failures lists the failed tests of a go-json tier in the order they failed, leaves only, so a test whose subtest failed is left out; empty for a tier that failed none and for a VSTest tier.
++	Failures []TestFailure `json:"failures,omitempty"`
++}
++
++// TestFailure is one failed test of a tier run.
++// FirstLine is the first line the test printed beside go test's own `=== ` and `--- ` status lines, trimmed, which is where an error, a fatal or a panic states its cause; empty when the test printed nothing else.
++type TestFailure struct {
++	Package   string `json:"package"`
++	Test      string `json:"test"`
++	FirstLine string `json:"first_line,omitempty"`
+ }
+ 
+ // PackageLaunch is one package's launch timing in a go-json tier run.
+diff --git a/internal/gateslot/runlog_test.go b/internal/gateslot/runlog_test.go
+index 49356d11..7346d1e6 100644
+--- a/internal/gateslot/runlog_test.go
++++ b/internal/gateslot/runlog_test.go
+@@ -30,6 +30,7 @@ func TestWriteRunRecord(t *testing.T) {
+ 			ExitCode: 1, TimedOut: false, Outcome: "failed", GuardStep: true, Carried: true,
+ 			Discovered: 9, Passed: 7, Failed: 1, Skipped: 1,
+ 			Launches: []PackageLaunch{{Package: "example.com/p", LaunchSeconds: 0.25, ElapsedSeconds: 1.5}},
++			Failures: []TestFailure{{Package: "example.com/p", Test: "TestA/sub", FirstLine: "a_test.go:12: got 1; want 2"}, {Package: "example.com/q", Test: "TestB"}},
+ 		}
+ 		path, err := WriteRunRecord(dir, want, []byte("FAIL\n"), now)
+ 		if err != nil {
+@@ -90,22 +91,24 @@ func TestWriteRunRecord(t *testing.T) {
+ 		})
+ 	}
+ 
+-	t.Run("RecordWithoutLaunchesReadsWithNone", func(t *testing.T) {
++	t.Run("RecordWithoutLaunchesOrFailuresReadsWithNone", func(t *testing.T) {
+ 		t.Parallel()
+ 
+ 		var got RunRecord
+ 		if err := json.Unmarshal([]byte(`{"tier":0,"outcome":"passed","discovered":3}`), &got); err != nil {
+ 			t.Fatalf("decode record: %v", err)
+ 		}
+-		if got.Launches != nil || got.Discovered != 3 {
+-			t.Errorf("record read back = %+v; want no launches and the other fields kept", got)
++		if got.Launches != nil || got.Failures != nil || got.Discovered != 3 {
++			t.Errorf("record read back = %+v; want no launches, no failures and the other fields kept", got)
+ 		}
+ 		data, err := json.Marshal(RunRecord{})
+ 		if err != nil {
+ 			t.Fatal(err)
+ 		}
+-		if strings.Contains(string(data), "launches") {
+-			t.Errorf("record without launches encodes as %s; want the key omitted", data)
++		for _, key := range []string{"launches", "failures"} {
++			if strings.Contains(string(data), key) {
++				t.Errorf("record without %s encodes as %s; want the key omitted", key, data)
++			}
+ 		}
+ 	})
+ 
