@@ -1,6 +1,6 @@
 # File a GitHub self-report for the doubled Stop-hook mail delivery
 
-`stop-hook-selfreport` · Note · bug, creel, selfreport
+`stop-hook-mail-doubled` · Note · bug, creel, selfreport
 
 ## Seen (operator and hub orch, 2026-10-29)
 
