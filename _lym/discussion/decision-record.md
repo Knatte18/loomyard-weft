@@ -62,6 +62,12 @@ Rationale: each would otherwise name a file that no longer exists as the holder 
 
 The opening line about LoomYard developing itself and the conversational-shorthand rule get no new home, as the board entry says.
 
+### Added after Discussion (parent, 2026-10-29): D2 stands: the drift baseline stencil gets the pointer replacement only
+
+Decision: Decision D2 of the record stands and the board entry's scope is corrected to it: in contracts/stencils/drift/drift-template-baseline.md the CLAUDE.md line in step 1 is replaced by a read of the repository's README and test setup, and the docs-in-the-same-commit and PATTERN rule is not added to the baseline stencil. Code-Review finding F1 is closed without a change to the stencil.
+
+Rationale: The baseline agent changes no code, so a rule about docs landing with code has nothing to act on there, and the line in step 1 names the build and test route, which the rule-map report read as the doc list.
+
 ## Constraints
 
 - `PATTERN-stencil-ownership`: stencils are read at call time; the edits change stencil text only.
