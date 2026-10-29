@@ -20,8 +20,8 @@ Held by a run; its scope is locked until the run ends.
 | T2 | **PR-Review opens a pull request and starts an interactive agent to discuss it**<br>• Build the PR-Review stub: a pull request per parent branch setting, a talkable agent on its own configured model, and a landing that follows the pull request | [`pr-review-row`](design-pr-review-row.md) | loom | awaiting · Discussion-Bouncer | osl-1046 | 57m<br>31m | loom, shed, batten, shuttle, config |
 | T3 | **Burler fork guard halts a run on a read-only git command** | [`burler-guard-readonly-git`](design-burler-guard-readonly-git.md) | darn | Code-Burler-Fix | osl-1046 | 5h<br>16m | burler, shed |
 | T4 | **Restore the verify-gate test for a misplaced //lym:guard marker**<br>• Once the darn verify key reads its diff base, cover the guard scan of a narrowed run again | [`verifygate-misplaced-guard-test`](design-verifygate-misplaced-guard-test.md) | darn | Darn-Write | osl-1046 | 22h<br>16m | loom, gate |
-| T5 | **Flaky websterengine recover-batch subtest fails once with "record changed"** | [`webster-recover-batch-flake`](design-webster-recover-batch-flake.md) | darn | Code-Bouncer | osl-1046 | 5h<br>13m | webster |
-| T7 | **PATTERN entries and scans for interactive spawns and filesystem links**<br>• Move the tmux-only spawn rule and the fslink rule from CLAUDE.md into PATTERN with a scan each | [`pattern-spawn-and-links-scans`](design-pattern-spawn-and-links-scans.md) | darn | Code-Burler-Review | osl-1046 | 9m<br>9m | pattern, shuttle, fabric |
+| T5 | **Flaky websterengine recover-batch subtest fails once with "record changed"** | [`webster-recover-batch-flake`](design-webster-recover-batch-flake.md) | darn | Describe | osl-1046 | 5h<br>14m | webster |
+| T7 | **PATTERN entries and scans for interactive spawns and filesystem links**<br>• Move the tmux-only spawn rule and the fslink rule from CLAUDE.md into PATTERN with a scan each | [`pattern-spawn-and-links-scans`](design-pattern-spawn-and-links-scans.md) | darn | Code-Burler-Review | osl-1046 | 10m<br>10m | pattern, shuttle, fabric |
 
 ### Ready (0)
 
@@ -35,8 +35,8 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Card gate runs tier0 only and misses tier1 breakage a card causes** | [`card-gate-misses-tier1`](design-card-gate-misses-tier1.md) | darn | T5 | 5h<br>13m | webster, gate |
-| T8 | **Delete the loomyard CLAUDE.md after moving any rule only it holds**<br>• Check each rule against PATTERN, stencils and skills, move what is missing, guard update-plugins.sh, then delete CLAUDE.md | [`claude-md-lym-rules-out`](design-claude-md-lym-rules-out.md) | darn | T7 | 1h<br>9m | stencil, pattern, orch |
+| T6 | **Card gate runs tier0 only and misses tier1 breakage a card causes** | [`card-gate-misses-tier1`](design-card-gate-misses-tier1.md) | darn | T5 | 5h<br>14m | webster, gate |
+| T8 | **Delete the loomyard CLAUDE.md after moving any rule only it holds**<br>• Check each rule against PATTERN, stencils and skills, move what is missing, guard update-plugins.sh, then delete CLAUDE.md | [`claude-md-lym-rules-out`](design-claude-md-lym-rules-out.md) | darn | T7 | 1h<br>10m | stencil, pattern, orch |
 
 ## Notes (28)
 
@@ -65,7 +65,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 1d<br>1d | batten, stencil, config |
 | E6 |  | **A module label for every package group under internal/**<br>• Several lym modules have no label, so entries take the nearest one that says something else | [`label-coverage`](design-label-coverage.md) | 18h<br>3m | board |
 | E7 |  | **loom names the general run; today's loom is one variant**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | 2w<br>4h | shed, loom |
-| E8 |  | **Dobby sends the batten notices, not a row of the batten recipe**<br>• Move quiet, driver-dead and api-error detection from battenshed/notice.go into dobby loop over the runs it drives | [`notices-from-dobby`](design-notices-from-dobby.md) | 20m<br>20m | dobby, batten |
+| E8 |  | **Dobby sends the batten notices, not a row of the batten recipe**<br>• Move quiet, driver-dead and api-error detection from battenshed/notice.go into dobby loop over the runs it drives | [`notices-from-dobby`](design-notices-from-dobby.md) | 21m<br>21m | dobby, batten |
 | E12 |  | **Revise the board README rendering**<br>• The README hides project members behind a bare link and has other unclear spots; the operator wants the rendering revised. | [`readme-omits-csharp-note`](design-readme-omits-csharp-note.md) | 3h<br>3m | board |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 11d<br>2d | webster, fabric, loom |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 10d<br>2d | fabric, batten |
