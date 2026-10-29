@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -28,6 +28,33 @@
       "output": "",
       "at": "2026-10-29T12:35:40Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/claude-md-rule-map/_lym/landing/summary.md",
+      "at": "2026-10-29T12:39:54Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-29T12:39:33.734789921Z",
+          "end": "2026-10-29T12:39:53.226621637Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-29T12:39:53.334515869Z",
+          "end": "2026-10-29T12:39:53.591867584Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-29T12:39:53.707677376Z",
+          "end": "2026-10-29T12:39:53.707785785Z"
+        }
+      ]
     }
   ],
   "product": {
