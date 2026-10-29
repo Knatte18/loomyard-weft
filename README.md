@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-29 08:14 UTC; every age below is as of then.
+Rendered 2026-10-29 08:15 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -11,7 +11,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 - [P1 Workspaces: beams, pairs from a parent pair, dobby](project-workspaces.md) — Beams that develop a project in their own worktree, driven by a dobby daemon
 - [P2 .NET: LoomYard for C# repositories](project-dotnet.md) — Running LoomYard on C#/.NET repositories such as Models: scoped gates, regression, a sandbox hub
 
-## Tasks (2)
+## Tasks (3)
 
 Concrete and claimable; only a task can run.
 
@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **TestScheduler_Chases refused-forward subtest races alpha's delivery worker**<br>• The refused-forward chase subtest is a timing flake: it never waits for the delivery worker that reads the chase.<br>• `profile: light` | [`chases-refused-forward-journal`](design-chases-refused-forward-journal.md) | darn | Darn-Write | osl-1046 | 37m<br>0m | creel |
+| T2 | **TestScheduler_Chases refused-forward subtest races alpha's delivery worker**<br>• The refused-forward chase subtest is a timing flake: it never waits for the delivery worker that reads the chase.<br>• `profile: light` | [`chases-refused-forward-journal`](design-chases-refused-forward-journal.md) | darn | Darn-Write | osl-1046 | 39m<br>1m | creel |
 
 ### Ready (0)
 
@@ -29,15 +29,16 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Draft (1)
+### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Act on the first test-time audit: reedengine wait, three over-grown test packages**<br>• Injectable wait for reedengine tier2 tests (40 s); prune tests in shell, boardtest and battenrecipe | [`test-prune-audit-leads`](design-test-prune-audit-leads.md) | darn |  | 13h<br>13h | reed, board, batten |
+| T3 | `draft` **Fix two flaky creel tests and name failing tests in the adopt mail**<br>• Make the daemon lifecycle and TestCreelCLI EXTERNAL tests deterministic, and list failed tests in the adopt check mail.<br>• `profile: light` | [`creel-flakes-and-adopt-names`](design-creel-flakes-and-adopt-names.md) | darn | T2 | 40m<br>0m | creel, gate |
 
-## Notes (37)
+## Notes (34)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -50,16 +51,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 6d<br>21h | loom, stencil |
 | R8 |  | **Ideas from r/ClaudeCode "one line in your CLAUDE.md": fit for LoomYard and bench measures**<br>• About 30 ideas judged against our stencils and rules; top 8 ranked for a bench, a few cheap enough without one | [`claude-md-thread-ideas`](design-claude-md-thread-ideas.md) | 2d<br>14h | stencil, loom, burler |
 
-### Bugs (6)
+### Bugs (3)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 | H | **The adopt check mail names the failing tests**<br>• The adopt tier0 failure mail gives only counts, so the operator cannot see which tests failed. | [`adopt-check-names-failures`](design-adopt-check-names-failures.md) | 38m<br>37m | gate |
-| B3 |  | **Flaky websterengine recover-batch subtest fails once with "record changed"** | [`webster-recover-batch-flake`](design-webster-recover-batch-flake.md) | 32m<br>32m | webster |
-| B4 |  | **TestCreelCLI EXTERNAL row flakes in full-package tier1 runs under machine load** | [`creelcli-external-row-flake`](design-creelcli-external-row-flake.md) | 32m<br>32m | creel |
-| B5 |  | **Burler fork guard halts a run on a read-only git command** | [`burler-guard-readonly-git`](design-burler-guard-readonly-git.md) | 32m<br>32m | burler, shed |
-| B6 |  | **Card gate runs tier0 only and misses tier1 breakage a card causes** | [`card-gate-misses-tier1`](design-card-gate-misses-tier1.md) | 32m<br>32m | webster, gate |
-| B7 |  | **Flaky creel daemon lifecycle test: 'another daemon holds this hub' on restart** | [`creel-daemon-restart-flake`](design-creel-daemon-restart-flake.md) | 32m<br>32m | creel |
+| B3 |  | **Flaky websterengine recover-batch subtest fails once with "record changed"** | [`webster-recover-batch-flake`](design-webster-recover-batch-flake.md) | 34m<br>34m | webster |
+| B5 |  | **Burler fork guard halts a run on a read-only git command** | [`burler-guard-readonly-git`](design-burler-guard-readonly-git.md) | 34m<br>34m | burler, shed |
+| B6 |  | **Card gate runs tier0 only and misses tier1 breakage a card causes** | [`card-gate-misses-tier1`](design-card-gate-misses-tier1.md) | 34m<br>34m | webster, gate |
 
 ### Enhancements (14)
 
@@ -72,10 +70,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E5 |  | **The idle ring hands the mail over itself, without an empty turn**<br>• hook-wait wakes an idle strand with a bell line only, so each mail costs one extra empty turn | [`creel-ring-carries-mail`](design-creel-ring-carries-mail.md) | 13h<br>13h | creel |
 | E6 |  | **A module label for every package group under internal/**<br>• Several lym modules have no label, so entries take the nearest one that says something else | [`label-coverage`](design-label-coverage.md) | 13h<br>13h | board |
 | E7 |  | **Run verbs in one shared namespace, not under lym loom**<br>• lym loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 2w<br>1d | shed, loom |
-| E8 |  | **lym ide seed colours the VS Code workspace too**<br>• A hub opened as a VS Code workspace has no colour, since lym ide seed seeds only worktrees. | [`workspace-ide-seed`](design-workspace-ide-seed.md) | 37m<br>37m | ide, workspaces |
-| E9 |  | **Reed navigation keys, Alt+arrows, are seeded by lym**<br>• Alt+arrow keys do not switch windows and sessions in Reed in this hub; lym should seed them. | [`reed-alt-arrow-keys-seeded`](design-reed-alt-arrow-keys-seeded.md) | 35m<br>35m | reed, config |
+| E8 |  | **lym ide seed colours the VS Code workspace too**<br>• A hub opened as a VS Code workspace has no colour, since lym ide seed seeds only worktrees. | [`workspace-ide-seed`](design-workspace-ide-seed.md) | 38m<br>38m | ide, workspaces |
+| E9 |  | **Reed navigation keys, Alt+arrows, are seeded by lym**<br>• Alt+arrow keys do not switch windows and sessions in Reed in this hub; lym should seed them. | [`reed-alt-arrow-keys-seeded`](design-reed-alt-arrow-keys-seeded.md) | 36m<br>36m | reed, config |
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 13d<br>13d | board, loom |
-| E11 |  | **Creel daemon writes no delivery-level log, so an unconfirmed delivery cannot be diagnosed** | [`creel-delivery-log`](design-creel-delivery-log.md) | 32m<br>32m | creel |
+| E11 |  | **Creel daemon writes no delivery-level log, so an unconfirmed delivery cannot be diagnosed** | [`creel-delivery-log`](design-creel-delivery-log.md) | 34m<br>34m | creel |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 11d<br>1d | webster, fabric, loom |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 10d<br>1d | fabric, batten |
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 6d<br>17h | burler, claude |

@@ -622,25 +622,6 @@
       "revised": "2026-10-28T18:56:22Z"
     },
     {
-      "id": 890,
-      "handle": "B1",
-      "slug": "adopt-check-names-failures",
-      "title": "The adopt check mail names the failing tests",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "gate"
-      ],
-      "issues": [],
-      "priority": "high",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The adopt tier0 failure mail gives only counts, so the operator cannot see which tests failed.",
-      "body": "## Seen\n\nCreel mail #2 from `ly:ADOPT` reported `adopt check: tier0 failed, passed 21018 failed 2 skipped 1, 88.1s`.\nIt names neither the failing tests nor their messages.\nThe names sit only in `suite.log` under `_board/.lym/adopt/`; `check.json` holds counts only.\nThe per-tier line is built in `runCheck` in `internal/adoptcli/check.go` from `CheckTier`, which carries no failure names.\n\n## Idea\n\nCarry the failing test names in `CheckTier`, and list each in the per-tier failure mail with its first failure line, plus the `suite.log` path.\nThe operator asked for this to be fixed and prioritized (2026-10-29).\n",
-      "created": "2026-10-29T07:35:50Z",
-      "revised": "2026-10-29T07:36:19Z"
-    },
-    {
       "id": 891,
       "handle": "T2",
       "slug": "chases-refused-forward-journal",
@@ -720,26 +701,6 @@
       "revised": "2026-10-29T07:41:18Z"
     },
     {
-      "id": 895,
-      "handle": "B4",
-      "slug": "creelcli-external-row-flake",
-      "title": "TestCreelCLI EXTERNAL row flakes in full-package tier1 runs under machine load",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "creel"
-      ],
-      "issues": [
-        901
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #901](https://github.com/Knatte18/loomyard/issues/901).\n\nThe `TestCreelCLI` EXTERNAL row failed twice in full-package tier1 runs while other worktrees' gates loaded the machine.\nIt then passed alone, three times as a whole test, twice as a whole package, and in the final `lym gate test --upto 2` run.\n\nThis is abnormal because the failure did not reproduce without load, so it looks like a timing-sensitive test rather than a regression.\nTelling the two apart took a stash round-trip to the base tree, which is costly for an agent that cannot tell a flake from a break.\n\nWhat to do: find the timing assumption in the EXTERNAL row (a fixed wait or a tight deadline) and make it load-tolerant; if the gate can tell a load-induced failure from a real one, have it say so.\n\nProvenance: task `compact-inject-draft`, note `Darn-Write.md`.\n",
-      "created": "2026-10-29T07:41:21Z",
-      "revised": "2026-10-29T07:41:21Z"
-    },
-    {
       "id": 896,
       "handle": "E11",
       "slug": "creel-delivery-log",
@@ -803,23 +764,30 @@
     },
     {
       "id": 899,
-      "handle": "B7",
-      "slug": "creel-daemon-restart-flake",
-      "title": "Flaky creel daemon lifecycle test: 'another daemon holds this hub' on restart",
-      "kind": "note",
+      "handle": "T3",
+      "slug": "creel-flakes-and-adopt-names",
+      "title": "Fix two flaky creel tests and name failing tests in the adopt mail",
+      "kind": "task",
       "labels": [
         "bug",
-        "creel"
+        "creel",
+        "gate"
       ],
       "issues": [
-        895
+        895,
+        901
       ],
-      "depends_on": [],
+      "recipe": "darn",
+      "depends_on": [
+        "chases-refused-forward-journal"
+      ],
       "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #895](https://github.com/Knatte18/loomyard/issues/895).\n\nA gate run failed once on the creelengine `TestDaemon_Lifecycle` subtest covering a hook wait that reconnects across a daemon restart.\nThe failure text was \"the daemon ended before it listened: creel: another daemon holds this hub\" (`server_test.go`).\nThe change under test touched only prose and doc comments, and the identical gate passed on the next run and on the batch gate.\n\nThis is abnormal: a passing-then-failing test with no code change points to a race between the first daemon releasing the hub and the second daemon starting.\nLook at the hub-release ordering in the creel daemon shutdown path and make the test wait for the release (or retry the start) so it is deterministic.\n\nProvenance: task `creel-hook-post`, note `15-creel-post-interrupt.md`.\n",
-      "created": "2026-10-29T07:41:30Z",
-      "revised": "2026-10-29T07:41:30Z"
+      "brief": "Make the daemon lifecycle and TestCreelCLI EXTERNAL tests deterministic, and list failed tests in the adopt check mail.",
+      "body": "## Seen\n\nThree findings, one task: two flaky creel tests and the adopt check mail that left the first flake undiagnosable.\n\n### Adopt check mail names the failing tests\n\nCreel mail from `ly:ADOPT` reported `adopt check: tier0 failed, passed 21018 failed 2 skipped 1, 88.1s`, naming neither the failing tests nor their messages.\nThe names sit only in `suite.log` under `_board/.lym/adopt/`; `check.json` holds counts only.\nThe per-tier line is built in `runCheck` in `internal/adoptcli/check.go` from `CheckTier`, which carries no failure names.\nThe operator asked for this to be fixed and prioritized (2026-10-29).\n\n### Daemon lifecycle test: \"another daemon holds this hub\" (issue #895)\n\nA gate run failed once on the `internal/creelengine` `TestDaemon_Lifecycle` subtest covering a hook wait that reconnects across a daemon restart, with \"the daemon ended before it listened: creel: another daemon holds this hub\" (`server_test.go`).\nNo code under test had changed, and the identical gate passed on the next run.\nThis points to a race between the first daemon releasing the hub and the second daemon starting.\n\n### `TestCreelCLI` EXTERNAL row (issue #901)\n\nThe `TestCreelCLI` EXTERNAL row failed twice in full-package tier1 runs while other worktrees' gates loaded the machine, then passed alone and in later runs.\nIt does not reproduce without load, so it looks timing-sensitive.\nTelling a flake from a break took a stash round-trip to the base tree.\n\n## Fix\n\n- Carry the failing test names in `CheckTier`, and list each in the per-tier failure mail with its first failure line, plus the `suite.log` path.\n- Look at the hub-release ordering in the creel daemon shutdown path, and make the lifecycle test wait for the release or retry the start, so it is deterministic.\n- Find the timing assumption in the EXTERNAL row, a fixed wait or a tight deadline, and make it load-tolerant.\n",
+      "status": "draft",
+      "created": "2026-10-29T07:35:50Z",
+      "revised": "2026-10-29T08:15:55Z",
+      "profile": "light"
     }
   ],
   "prime_owner": "osl-1046",
