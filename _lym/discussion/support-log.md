@@ -63,12 +63,42 @@ All six forks returned a report.
 - Record the delivery path as a new journal field shown by `lym creel log`: the board asks for logging of attempts, which the daemon log carries without a journal format change; a journal field records only successes.
 - Claim for every ring whatever the waiter's binary: an older `hook-wait` acknowledges unasked and writes only the bell, so its mail would be journaled read and never shown.
 - Resume the wait after a failed acknowledgement: the lines already on stderr would reach the model in the next wake while the released mail is handed out again.
+- Exit 0 from `hook-wait` on any acknowledgement not confirmed: when the daemon journaled the read and only the confirmation was lost, the mail is lost as read with no copy shown; D3 exits the wake code once the acknowledgement is written and takes the visible duplicate instead, as `hook-read` does.
+- Carry the ring's lines in a per-wake `rewakeSummary` printed on the hook's stdout: Claude Code 2.1.312 honors that key only for a hook of a plugin from Anthropic's own marketplaces, and the waiter is a settings hook.
+- Carry the lines in the settings `rewakeSummary`: the label is fixed for the session when the settings are written.
+- Shape the wake's summary as a monitor event, whose body the terminal does draw expanded: it leans on an internal notification shape the hook does not own, and the body is still hidden until the operator expands it.
+- Echo the ring's mail to the operator through the bell or a pane notice: new typing into the pane, against `PATTERN-pane-text-injection`.
 - Drop `[creel]` from `rewakeMessage`: the wake's first line would no longer open with the tag the trust sentence names.
 - Rewrite the bell line: it is typed as a prompt whose turn ends at a Stop that D1 now delivers cleanly; nothing in the entry asks for it.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+APPROVED with seven findings, all fixed in the decision record; Q10 resolved.
+
+- F1, MEDIUM, mode check deferred to the smoke run: fixed, D1 states the simple-mode guard and why no lym session reaches it, and the risk is cut.
+- F2, MEDIUM, the Stop summary row clamps to 5 lines: fixed, D1 states the bound and judges it against the Goal, and its real-session criterion checks it.
+- F3, LOW, the version risk names no trigger: fixed, the risk records the cross-version evidence, the self-update, the failure a breaking update causes, and the rerun as an operator action.
+- F4, LOW, the ring wake's operator copy unstated: fixed, D4 states the notification's shape and the D3 criterion checks the operator copy; whether the body is drawn stays open as Q11.
+- F5, LOW, the ring's answer path ends without releasing: fixed, D3 releases on every end before the daemon journals the acknowledgement, and D5 logs it as `released`.
+- F6, LOW, a lost confirmation after the journaled read: fixed, D3's Bound names the second window and Constraints both.
+- F7, NIT, only overstates how a ring is answered: fixed, reworded.
+
+### Round 2
+
+APPROVED with four findings, all fixed in the decision record; Q11 resolved, Q12 auto-picked.
+
+- F1, MEDIUM, the ring wake's operator copy left to the smoke run: fixed, the 2.1.312 source settles that the terminal never draws the wake's body; D4 records the evidence, D6 gives the operator an echo at the woken turn's first claim, and the open risk is cut.
+- F2, LOW, the ring's acknowledgement-failure policy unweighed: fixed, D3 exits the wake code once the acknowledgement is written and states the loss-against-duplicate choice; the exit-0 policy is a rejected alternative.
+- F3, LOW, the client's resume path defeats never resuming: fixed, D3 keeps a ring outcome off the resume path, the Notes name `CallWatching`'s resume, and Scope names the doc sentence.
+- F4, NIT, no outcome for a failed journal write after acknowledgement: fixed, D5 adds `ack-failed` at `Warn`.
+
+### Round 3
+
+APPROVED with one finding, fixed in the decision record.
+
+- F1, LOW, D6 states no echo rule for a failed acknowledgement: fixed, D6 drops a handed-out echo at that acknowledgement and keeps a ring's echo for the ids before the failing write, journaled or skipped, D5's `ack-failed` lists the dropped echo's ids and none on a ring, and the D6 criterion checks both.
 
 ## Question ledger
 
@@ -81,4 +111,6 @@ _No rounds yet._
 - Q7 (auto-pick): the ring claims in its own locked step and acknowledges on write (D3), the board entry's own design.
 - Q8 (auto-pick): set `rewakeMessage` and `rewakeSummary` on the waiter entry (D4), with the fallback bound.
 - Q9 (auto-pick): "is logged" means a daemon log line per attempt (D5), not a journal field.
-- Q10 (open, carried to Open risks): whether a lym session can hit the mode check that keeps Stop additional context from continuing the turn; the tier3 smoke run settles it.
+- Q10 (resolved, research): whether a lym session can hit the mode check that keeps Stop additional context from continuing the turn — no; the check is Claude Code's simple mode, `CLAUDE_CODE_SIMPLE` or `--bare`, the same in the installed 2.1.310, 2.1.311 and 2.1.312, and lym never passes `--bare` while reed's launch scrubs every `CLAUDE_CODE_`-prefixed variable.
+- Q11 (resolved, research): whether the terminal draws a ring wake's body under its `creel mail` row — no; 2.1.312's task-notification row component draws the summary, status, duration and a background command's delivery note, and a body only for a monitor event, in neither the expanded nor the verbose view; a stdout `rewakeSummary` is honored only for a hook of an Anthropic-marketplace plugin.
+- Q12 (auto-pick): the ring's operator copy is an echo the daemon keeps and the woken turn's first claim renders as `systemMessage` (D6), the first operator surface lym reaches without typing into the pane.
