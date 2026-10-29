@@ -15,20 +15,21 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T2 | **Creel hook delivery: mail arrives once, and the HookWake flake**<br>• Make a creel mail reach the agent once through the Stop hooks, and make the HookWake blocked-chain subtest deterministic.<br>• `profile: solid` | [`creel-hook-delivery-fixes`](design-creel-hook-delivery-fixes.md) | darn |  | 16m<br>0m | creel, claude |
 
-### Draft (2)
+### Draft (1)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Act on the first test-time audit: reedengine wait, three over-grown test packages**<br>• Injectable wait for reedengine tier2 tests (40 s); prune tests in shell, boardtest and battenrecipe | [`test-prune-audit-leads`](design-test-prune-audit-leads.md) | darn |  | 14h<br>14h | reed, board, batten |
-| T2 | `draft` **Creel hook delivery: mail arrives once, and the HookWake flake**<br>• Make a creel mail reach the agent once through the Stop hooks, and make the HookWake blocked-chain subtest deterministic.<br>• `profile: solid` | [`creel-hook-delivery-fixes`](design-creel-hook-delivery-fixes.md) | darn |  | 16m<br>0m | creel, claude |
 
 ## Notes (33)
 
