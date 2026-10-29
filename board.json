@@ -77,7 +77,7 @@
       "id": 80,
       "handle": "F2",
       "slug": "warp-visibility",
-      "title": "warp-visibility: lym leaves no instruction file in the repository, CLAUDE.local.md at most",
+      "title": "warp-visibility: LoomYard needs no CLAUDE.md of its own",
       "kind": "note",
       "labels": [
         "feature",
@@ -88,10 +88,10 @@
       "priority": "high",
       "depends_on": [],
       "isolated": false,
-      "brief": "Move lym agents rules into stencils so no lym CLAUDE file is needed; fallback is one Bolt-held CLAUDE.local.md copied into every worktree",
-      "body": "## Seen\n\nUsing LoomYard on a repository should be invisible: nothing lym-related in the repository's own git history, and no lym text in a `CLAUDE.md` the repository's own people read (operator, 2026-10-29).\nThe text lym's agents need beyond their stencils must therefore live outside the repository's tracked files, and it holds only what lym's agents need, never general rules.\n\n## Idea\n\nFirst choice: no `CLAUDE.md` or `CLAUDE.local.md` of lym's at all.\nEvery rule lym's agents need goes into the stencils lym spawns them with, the skills and hooks of the lym plugins, and the system prompt text lym appends to a session, so a repository carries no lym file for them to read.\nWhat this leaves open is what an agent reads from a `CLAUDE.md` today that no stencil, skill or appended prompt carries; find that first.\n\nFallback, if some rule cannot be delivered that way: one repository-wide `CLAUDE.local.md` that lives in Bolt and is copied into every worktree lym creates, beside any `CLAUDE.md` the repository already has.\nOrdinary agents never write it.\nIt changes only through a controlled `lym` command that edits the file in Bolt, so no merging of weft branches is needed.\nThe copy is excluded through `.git/info/exclude` by `fabricengine`, never a tracked `.gitignore` (the Fabric Git entry, `PATTERN-fabric-git`).\n\n## Open\n\n- How Claude Code loads `CLAUDE.md`: a file in a worktree reaches the agents started inside that worktree, anchor subdirectory included, and no agent of another worktree.\n  Check this against the Claude Code documentation before relying on it.\n- `PATTERN.md` sits at the repository root and is tracked in the warp repository, so it is visible in the repository's history; the invisibility goal does not cover it yet, and it needs its own decision.\n",
+      "brief": "Drop the loomyard CLAUDE.md after moving any rule only it holds into PATTERN, stencils or skills; no CLAUDE.local.md channel",
+      "body": "## Seen\n\nUsing LoomYard on a repository should be invisible: nothing lym-related in the repository's own git history, and no lym text in a file the repository's own people read (operator, 2026-10-29).\n\n## Decision (operator, 2026-10-29)\n\nLoomYard needs no `CLAUDE.md` or `CLAUDE.local.md` of its own, in this repository or any other.\nThe rules agents follow are in `PATTERN.md`, which lym injects where it is needed, in the stencils lym spawns agents with, and in the skills and hooks of the lym plugins.\nA session opened by hand with `lym shuttle open` has no goal and takes no PATTERN injection: it is an exploration or an interactive task with the operator, so it needs no instruction file either.\nThe Bolt-held `CLAUDE.local.md` copied into every worktree is dropped.\n\n## Scope\n\n- Check every rule of the loomyard `CLAUDE.md` against `PATTERN.md`, the stencils and the plugin skills, and move any rule that stands only in `CLAUDE.md` to the place that reaches the agents that need it.\n- The cgo build requirement goes into `docs/` or an error message of the build script.\n- A guard on `update-plugins.sh` that refuses a run no operator started, if the script has none, in place of the text rule.\n- Delete the loomyard `CLAUDE.md`.\n- `PATTERN.md` sits at the repository root and is tracked in the warp repository, so it is visible in the repository's history; the invisibility goal does not cover it yet, and it needs its own decision.\n",
       "created": "2026-10-04T12:45:43Z",
-      "revised": "2026-10-29T12:04:44Z"
+      "revised": "2026-10-29T12:13:50Z"
     },
     {
       "id": 83,
