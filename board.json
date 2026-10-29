@@ -655,7 +655,7 @@
       "id": 903,
       "handle": "E5",
       "slug": "claude-md-lym-rules-out",
-      "title": "Take every non-LoomYard-specific rule out of the loomyard CLAUDE.md",
+      "title": "Delete the loomyard CLAUDE.md after moving any rule only it holds",
       "kind": "note",
       "labels": [
         "enhancement",
@@ -665,10 +665,10 @@
       "priority": "high",
       "depends_on": [],
       "isolated": false,
-      "brief": "CLAUDE.md holds only rules for developing LoomYard; rules for lym agents go to stencils and skills",
-      "body": "## Seen\n\nThe loomyard repository's `CLAUDE.md` holds, beside the rules for developing LoomYard itself, text that is general or that lym's agents need in every repository (operator, 2026-10-29).\nIts own section says a rule for every use of lym goes into lym, in the stencils and skills lym ships, never into this file.\nWhatever sits in it against that rule makes lym's use less invisible, since the agents learn it from a repository file.\n\n## Idea\n\nGo through `CLAUDE.md` rule by rule and take out everything that is not specific to developing LoomYard:\n\n- A rule every lym agent needs moves into the stencil or skill that reaches that agent.\n- A general rule that no lym agent needs goes to the plugin skill that already covers it, or is dropped.\n- What stays is only what the agents that develop this repository need.\n\nIt feeds `warp-visibility`, which asks what lym's agents read from a `CLAUDE.md` today.\n",
+      "brief": "Check each rule against PATTERN, stencils and skills, move what is missing, guard update-plugins.sh, then delete CLAUDE.md",
+      "body": "## Seen\n\nThe loomyard repository's `CLAUDE.md` holds, beside the rules for developing LoomYard itself, text that is general or that lym's agents need in every repository (operator, 2026-10-29).\nIts own section says a rule for every use of lym goes into lym, in the stencils and skills lym ships, never into this file.\nThe operator's view is that nothing in it needs to be there: the rules to follow are in `PATTERN.md`, which lym injects where it is needed, and a session opened by hand has no goal and needs none of it.\n\n## Idea\n\nDelete the loomyard `CLAUDE.md` once every rule that stands only in it has a new home:\n\n- Check each rule against `PATTERN.md`, the stencils and the plugin skills, and move any rule that stands only in `CLAUDE.md` to the place that reaches the agents that need it.\n- The cgo build requirement goes into `docs/` or an error message of the build script.\n- `update-plugins.sh` gets a guard that refuses a run no operator started, if it has none, in place of the text rule.\n- The terminology shorthands (Merriam, perch, board, Bolt) go to the orch rules, which are the only place that talks with the operator in them.\n\nIt follows from `warp-visibility`, which records that LoomYard adds no instruction file to any repository.\n",
       "created": "2026-10-29T12:04:44Z",
-      "revised": "2026-10-29T12:04:44Z"
+      "revised": "2026-10-29T12:30:40Z"
     }
   ],
   "prime_owner": "osl-1046",
