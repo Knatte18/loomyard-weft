@@ -6,7 +6,7 @@ Prime owner: `osl-1046`.
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (7)
+## Tasks (8)
 
 Concrete and claimable; only a task can run.
 
@@ -36,15 +36,16 @@ Waits only on Running, Ready or Draft entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T6 | **Card gate runs tier0 only and misses tier1 breakage a card causes** | [`card-gate-misses-tier1`](design-card-gate-misses-tier1.md) | darn | T5 | 5h<br>4m | webster, gate |
 
-### Draft (1)
+### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T7 | `draft` **PATTERN entries and scans for interactive spawns and filesystem links**<br>• Move the tmux-only spawn rule and the fslink rule from CLAUDE.md into PATTERN with a scan each | [`pattern-spawn-and-links-scans`](design-pattern-spawn-and-links-scans.md) | darn |  | 0m<br>0m | pattern, shuttle, fabric |
+| T8 | `draft` **Delete the loomyard CLAUDE.md after moving any rule only it holds**<br>• Check each rule against PATTERN, stencils and skills, move what is missing, guard update-plugins.sh, then delete CLAUDE.md | [`claude-md-lym-rules-out`](design-claude-md-lym-rules-out.md) | darn | T7 | 1h<br>0m | stencil, pattern, orch |
 
-## Notes (29)
+## Notes (28)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -56,14 +57,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 6d<br>1d | loom, stencil |
 | R8 |  | **Ideas from r/ClaudeCode "one line in your CLAUDE.md": fit for LoomYard and bench measures**<br>• About 30 ideas judged against our stencils and rules; top 8 ranked for a bench, a few cheap enough without one | [`claude-md-thread-ideas`](design-claude-md-thread-ideas.md) | 2d<br>20h | stencil, loom, burler |
 
-### Enhancements (13)
+### Enhancements (12)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Beam promote keeps the Discussion record as part of the beam**<br>• When Discussion finds a task should be a project, promote carries its decision record into the beam instead of dropping it | [`beam-promote-keeps-discussion`](design-beam-promote-keeps-discussion.md) | 4d<br>2d | workspaces, batten, loom |
 | E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>20h | shuttle, codex |
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 1d<br>1d | batten, stencil, config |
-| E5 | H | **Delete the loomyard CLAUDE.md after moving any rule only it holds**<br>• Check each rule against PATTERN, stencils and skills, move what is missing, guard update-plugins.sh, then delete CLAUDE.md | [`claude-md-lym-rules-out`](design-claude-md-lym-rules-out.md) | 1h<br>48m | stencil |
 | E6 |  | **A module label for every package group under internal/**<br>• Several lym modules have no label, so entries take the nearest one that says something else | [`label-coverage`](design-label-coverage.md) | 18h<br>18h | board |
 | E7 |  | **loom names the general run; today's loom is one variant**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | 2w<br>4h | shed, loom |
 | E8 |  | **Dobby sends the batten notices, not a row of the batten recipe**<br>• Move quiet, driver-dead and api-error detection from battenshed/notice.go into dobby loop over the runs it drives | [`notices-from-dobby`](design-notices-from-dobby.md) | 11m<br>11m | dobby, batten |
