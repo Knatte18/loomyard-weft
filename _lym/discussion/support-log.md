@@ -20,7 +20,8 @@ Every other open point of the entry was settled by auto-pick; see the question l
 ### Turn 4 — operator decision via ly:orch (creel #20)
 
 `ly:orch` relayed the operator's decision on how a waiting run is seen: it registers a wait marker that battenshed's quiet check already honours, so no quiet notice goes off; no new notice and no change to dobby.
-Answered with `lym creel post --reply 20`; D10 now keeps such a marker live and sends no notice, and the parent creel lines at open and end were dropped.
+Answered with `lym creel post --reply 20`; D10 sends no notice, and the parent creel lines at open and end were dropped.
+Round 1's review found that none of the live waits `readAgentActivity` counts fits the row, so D10 has the quiet check also read a child status running at `PR-Review`, beside its Beam-Await read.
 
 ### Turn 5 — lens review
 
@@ -83,9 +84,9 @@ _No rounds yet._
 - Q2 (resolved, auto-pick): what is the override field? Board `pull_request`, empty, `on` or `off`; `required` wins with a Warn (D2).
 - Q3 (resolved, operator via ly:orch, creel #18): may the agent change the branch? Yes, on its own task branch.
 - Q4 (resolved, auto-pick): how are the agent's commits gated? The row runs the `pr-review` gate on a clean moved head and pushes on a pass (D8).
-- Q5 (resolved, operator via ly:orch, creel #20): how does the waiting run show? A wait marker the quiet check honours, no new notice, no dobby change (D10).
+- Q5 (resolved, operator via ly:orch, creel #20): how does the waiting run show? As a live wait to the quiet check, through its read of a child status running at `PR-Review`; no new notice, no dobby change (D10).
 - Q6 (resolved, auto-pick, fact checked): which credentials? landing.yaml `pr_account` resolved by `gh auth token --user`, available from gh 2.40.0 and present in the installed gh 2.103.3 (D5).
-- Q7 (resolved, auto-pick): what happens on cancel or rejection? Every teardown closes an open pull request with a comment; a closed pull request halts with reopen-and-resume or cancel as the way forward (D9, D12).
+- Q7 (resolved, auto-pick): what happens on cancel or rejection? Every teardown of a present task worktree closes an open pull request with a comment, and one of a gone worktree leaves it open with a Warn; a closed pull request halts with reopen-and-resume or cancel as the way forward (D9, D12).
 - Q8 (resolved, auto-pick): what is the agent given? Paths and identifiers only, read by the agent itself (D7).
 - Q9 (resolved, out of scope by the entry): branch protection as the source of `required`.
 - Q10 (resolved, auto-pick): what does a hub without a GitHub origin do? A no under a parent-derived `on`, a halt under `required` or a field `on` (D4).
