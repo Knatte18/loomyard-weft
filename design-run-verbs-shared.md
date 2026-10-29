@@ -16,9 +16,12 @@ A third recipe is planned, `Hardener` (the note `hardener`), which would make th
 What is called loom today is one variant of it, darn is another, and `Hardener` becomes a third.
 This replaces moving the run verbs to a new shared namespace.
 
+Today's variant is renamed `tapestry` (operator, 2026-10-29): a picture woven to a full-size drawing made first, which is the discuss-and-plan-before-building path.
+`weave` was rejected for sitting too close to `Webster`, who weaves.
+
 ## Open
 
-- The name of today's variant, since `loom` now names the family: the board's `recipe` field says `loom` for it today, and an empty `recipe` means it.
+- How the `loom` to `tapestry` rename is staged, and what the board's `recipe` field and an empty `recipe` mean during it.
 - How `loom` as the general driver relates to `shed`: `lym shed` already carries `run`, `step`, `status`, `pause` and `goto`, which the general `lym loom` verbs would overlap.
 - Which packages take the general name: `internal/loomcli` already serves darn runs, while the packages and docs that mean today's variant need the new name.
 - Every stencil, way-forward text and doc that says "loom" for the variant changes with it.
