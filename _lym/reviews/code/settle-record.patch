@@ -1,0 +1,440 @@
+diff --git a/PATTERN.md b/PATTERN.md
+index bd6cb362..34d48c2f 100644
+--- a/PATTERN.md
++++ b/PATTERN.md
+@@ -6,6 +6,7 @@
+ - `PATTERN-lym-temp-root` — Creating temp file or dir: under `internal/lymtemp`'s run dir, never `os.TempDir()`. (test) — [background](pattern/PATTERN-lym-temp-root.md)
+ - `PATTERN-durable-vs-ephemeral-state` — Adding file: tracked under `_lym`, never-tracked under `.lym`, same subpath; only `internal/lymdirs` names either, bar a `tools/` script's variable block. — [background](pattern/PATTERN-durable-vs-ephemeral-state.md)
+ - `PATTERN-leaf-packages` — Importing into a leaf package: only closed import set. — [background](pattern/PATTERN-leaf-packages.md)
++- `PATTERN-fs-links` — Creating a filesystem link: only `internal/fslink`'s `CreateDirLink`; no `os.Symlink` or `os.Link` outside `internal/fslink`. (test) — [background](pattern/PATTERN-fs-links.md)
+ 
+ ## CLI and config
+ 
+@@ -45,6 +46,7 @@
+ - `PATTERN-parent-directive` — Writing a spawned role's stencil: it renders the parent and edit directives; its skills and color go on the launch spec, never asked of the agent. (test) — [background](pattern/PATTERN-parent-directive.md)
+ - `PATTERN-agent-messaging` — Messaging another session from an agent: only through creel, never an engine's own tool, bar a fork addressed in-session under ForkSubagents. (test)
+ - `PATTERN-shuttle-provider-seam` — Touching a provider or shuttle run: specifics only under `internal/shuttleengine/<engine>`, model-specs via `NewModelChoice`, a strand stopped via the stop verb, a negative finish after `allOutputFilesExist`. (test) — [background](pattern/PATTERN-shuttle-provider-seam.md)
++- `PATTERN-interactive-spawn` — Spawning an agent: an interactive tmux session driven through reed, never headless `claude` with `-p` or `--print`. (test) — [background](pattern/PATTERN-interactive-spawn.md)
+ - `PATTERN-pane-text-injection` — Typing into an agent pane: reed's guarded paste-submit, an interrupt key only via shuttle's guards, a covered session held; the orch pane and creel journal only via creel. (test) — [background](pattern/PATTERN-pane-text-injection.md)
+ - `PATTERN-agent-name` — Forming, parsing or matching an agent name: only `internal/agentname`, a strand's full name formed once by reed; a spawned role is its module's constant.
+ - `PATTERN-wait-mark-display-only` — Marking a pane waiting: only reed's `SetWaitMark`; no Go decision reads `@lym_wait` or `@lym_wait_start`.
+diff --git a/cmd/lym/fslinkonly_test.go b/cmd/lym/fslinkonly_test.go
+new file mode 100644
+index 00000000..dba2166d
+--- /dev/null
++++ b/cmd/lym/fslinkonly_test.go
+@@ -0,0 +1,123 @@
++//go:build tier0
++
++// fslinkonly_test.go enforces `PATTERN-fs-links`: no production Go file outside internal/fslink calls `os.Symlink` or `os.Link`.
++// A link is created through fslink.CreateDirLink.
++
++package main
++
++import (
++	"fmt"
++	"go/ast"
++	"go/parser"
++	"os"
++	"path/filepath"
++	"sort"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/scankit"
++)
++
++// allowedLinkCalls is the `PATTERN-fs-links` allowlist, keyed `<file>:<call>`, for example `internal/x/y.go:os.Symlink`.
++// An entry admits one link call in one file, and its reason names the obstacle to creating the link through fslink.
++var allowedLinkCalls = []scankit.Entry{
++	{Key: "tools/deploy/main.go:os.Symlink", Why: "copies a plugin-tree symlink verbatim, and it may point at a file, which fslink has no primitive for"},
++}
++
++// fslinkDir is the link package's own directory, whose files make the raw link calls.
++const fslinkDir = "internal/fslink/"
++
++// linkCallFailures walks the production Go files under opts and returns one failure line per osName.Symlink or osName.Link call outside internal/fslink, with the number of files scanned.
++func linkCallFailures(t *testing.T, opts scankit.Options, allow *scankit.Allowlist) (failures []string, scanned int) {
++	t.Helper()
++	scanned = scankit.Walk(t, opts, func(f *scankit.File) {
++		rel := filepath.ToSlash(f.Rel)
++		if strings.HasPrefix(rel, fslinkDir) {
++			return
++		}
++		file := f.AST(t, parser.SkipObjectResolution)
++		for _, imp := range file.Imports {
++			if imp.Name != nil && imp.Name.Name == "." && strings.Trim(imp.Path.Value, `"`) == "os" {
++				failures = append(failures, fmt.Sprintf("%s:%d: dot import of os hides link calls; import os by name", rel, f.FileSet().Position(imp.Pos()).Line))
++			}
++		}
++		osName := osImportName(file)
++		if osName == "" {
++			return
++		}
++		ast.Inspect(file, func(n ast.Node) bool {
++			call, ok := n.(*ast.CallExpr)
++			if !ok {
++				return true
++			}
++			sel, ok := call.Fun.(*ast.SelectorExpr)
++			if !ok || (sel.Sel.Name != "Symlink" && sel.Sel.Name != "Link") {
++				return true
++			}
++			if pkg, ok := sel.X.(*ast.Ident); !ok || pkg.Name != osName {
++				return true
++			}
++			name := "os." + sel.Sel.Name
++			if allow.Allowed(rel + ":" + name) {
++				return true
++			}
++			failures = append(failures, fmt.Sprintf("%s:%d: %s outside internal/fslink; create the link through fslink.CreateDirLink", rel, f.FileSet().Position(call.Pos()).Line, name))
++			return true
++		})
++	})
++	sort.Strings(failures)
++	return failures, scanned
++}
++
++// TestFslinkOnly_NoRawLinkCalls fails for every production os.Symlink or os.Link call outside internal/fslink, unless allowlisted.
++//
++//lym:guard
++func TestFslinkOnly_NoRawLinkCalls(t *testing.T) {
++	t.Parallel()
++	allow := scankit.NewAllowlist(allowedLinkCalls)
++	failures, scanned := linkCallFailures(t, scankit.Options{}, allow)
++	scankit.RequireFloor(t, scanned, 20, "fslink-only scan")
++	allow.RequireNoStale(t)
++	if len(failures) > 0 {
++		t.Errorf("`PATTERN-fs-links` violated:\n%s", strings.Join(failures, "\n"))
++	}
++}
++
++func TestFslinkOnly_FixtureTrees(t *testing.T) {
++	t.Parallel()
++	const header = "package p\n\nimport \"os\"\n\n"
++	tests := []struct {
++		name     string
++		files    map[string]string
++		wantFail int
++	}{
++		{"Symlink", map[string]string{"p/a.go": header + "func f() { os.Symlink(\"t\", \"l\") }\n"}, 1},
++		{"Link", map[string]string{"p/a.go": header + "func f() { os.Link(\"t\", \"l\") }\n"}, 1},
++		{"aliased os import", map[string]string{"p/a.go": "package p\n\nimport sys \"os\"\n\nfunc f() { sys.Symlink(\"t\", \"l\") }\n"}, 1},
++		{"dot import of os", map[string]string{"p/a.go": "package p\n\nimport . \"os\"\n\nfunc f() { Symlink(\"t\", \"l\") }\n"}, 1},
++		{"blank import of os", map[string]string{"p/a.go": "package p\n\nimport _ \"os\"\n"}, 0},
++		{"call inside fslink", map[string]string{"internal/fslink/a.go": header + "func f() { os.Symlink(\"t\", \"l\") }\n"}, 0},
++		{"mention in a comment", map[string]string{"p/a.go": header + "// os.Symlink(\"t\", \"l\") is raw.\nfunc f() { _ = os.Args }\n"}, 0},
++		{"Readlink", map[string]string{"p/a.go": header + "func f() { os.Readlink(\"l\") }\n"}, 0},
++		{"test file is not scanned", map[string]string{"p/a_test.go": header + "func f() { os.Symlink(\"t\", \"l\") }\n"}, 0},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			base := t.TempDir()
++			for rel, body := range tt.files {
++				path := filepath.Join(base, filepath.FromSlash(rel))
++				if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++					t.Fatal(err)
++				}
++				if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
++					t.Fatal(err)
++				}
++			}
++			failures, _ := linkCallFailures(t, scankit.Options{Base: base}, scankit.NewAllowlist(nil))
++			if len(failures) != tt.wantFail {
++				t.Errorf("linkCallFailures() = %v; want %d failures", failures, tt.wantFail)
++			}
++		})
++	}
++}
+diff --git a/cmd/lym/interactivespawn_test.go b/cmd/lym/interactivespawn_test.go
+new file mode 100644
+index 00000000..0718f483
+--- /dev/null
++++ b/cmd/lym/interactivespawn_test.go
+@@ -0,0 +1,239 @@
++//go:build tier0
++
++// interactivespawn_test.go enforces `PATTERN-interactive-spawn`: no production Go file spawns claude headless, with `-p` or `--print`.
++// It parses each file, so a comment naming the forbidden form never counts.
++
++package main
++
++import (
++	"fmt"
++	"go/ast"
++	"go/parser"
++	"go/token"
++	"os"
++	"path/filepath"
++	"slices"
++	"sort"
++	"strconv"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/scankit"
++)
++
++// allowedHeadlessSpawn is the `PATTERN-interactive-spawn` allowlist, keyed by module-relative file path.
++// An entry admits every finding in its file, and its reason names why the print flag there launches no agent.
++var allowedHeadlessSpawn = []scankit.Entry{}
++
++// claudeEngineDir is the engine directory that composes claude's pane-shell launch lines from flag fragments,
++// so a print flag in any of its strings is a finding.
++const claudeEngineDir = "internal/shuttleengine/claudeengine/"
++
++// isPrintFlag reports whether token is claude's headless print flag in any spelling.
++func isPrintFlag(token string) bool {
++	return token == "-p" || token == "--print" || strings.HasPrefix(token, "--print=")
++}
++
++// namesClaudeBinary reports whether token names the claude executable, by bare name or by path.
++func namesClaudeBinary(token string) bool {
++	base := token[strings.LastIndexAny(token, `/\`)+1:]
++	return base == "claude" || base == "claude.exe"
++}
++
++// stringLiteralValue returns the unquoted value of expr when it is a string literal.
++func stringLiteralValue(expr ast.Expr) (string, bool) {
++	lit, ok := expr.(*ast.BasicLit)
++	if !ok || lit.Kind != token.STRING {
++		return "", false
++	}
++	value, err := strconv.Unquote(lit.Value)
++	return value, err == nil
++}
++
++// exprNamesClaude reports whether expr names the claude executable:
++// a string literal naming it, or an identifier, selector or call whose name holds "claude" in any case.
++func exprNamesClaude(expr ast.Expr) bool {
++	switch e := expr.(type) {
++	case *ast.BasicLit:
++		value, ok := stringLiteralValue(e)
++		return ok && namesClaudeBinary(value)
++	case *ast.Ident:
++		return strings.Contains(strings.ToLower(e.Name), "claude")
++	case *ast.SelectorExpr:
++		return strings.Contains(strings.ToLower(e.Sel.Name), "claude") || exprNamesClaude(e.X)
++	case *ast.CallExpr:
++		return exprNamesClaude(e.Fun)
++	}
++	return false
++}
++
++// callSpawnsHeadlessClaude reports whether call takes a print-flag string literal and another argument naming the claude executable.
++func callSpawnsHeadlessClaude(call *ast.CallExpr) bool {
++	hasFlag, hasClaude := false, false
++	for _, arg := range call.Args {
++		if value, ok := stringLiteralValue(arg); ok && isPrintFlag(value) {
++			hasFlag = true
++			continue
++		}
++		if exprNamesClaude(arg) {
++			hasClaude = true
++		}
++	}
++	return hasFlag && hasClaude
++}
++
++// literalTokens splits a string literal's value at whitespace and trims shell quote characters from each token.
++func literalTokens(value string) []string {
++	tokens := strings.Fields(value)
++	for i, tok := range tokens {
++		tokens[i] = strings.Trim(tok, "\"'`")
++	}
++	return tokens
++}
++
++// headlessClaudeLine reports whether tokens name the claude executable and carry a print flag after it.
++func headlessClaudeLine(tokens []string) bool {
++	sawClaude := false
++	for _, tok := range tokens {
++		if namesClaudeBinary(tok) {
++			sawClaude = true
++			continue
++		}
++		if sawClaude && isPrintFlag(tok) {
++			return true
++		}
++	}
++	return false
++}
++
++// headlessSpawnFailures walks the production Go files under opts and returns one failure line per headless claude spawn shape, with the number of files scanned.
++func headlessSpawnFailures(t *testing.T, opts scankit.Options, allow *scankit.Allowlist) (failures []string, scanned int) {
++	t.Helper()
++	scanned = scankit.Walk(t, opts, func(f *scankit.File) {
++		rel := filepath.ToSlash(f.Rel)
++		file := f.AST(t, parser.SkipObjectResolution)
++		inClaudeEngine := strings.HasPrefix(rel, claudeEngineDir)
++		var fileFailures []string
++		report := func(pos token.Pos, shape string) {
++			fileFailures = append(fileFailures, fmt.Sprintf("%s:%d: %s; launch the agent through shuttle as an interactive tmux session", rel, f.FileSet().Position(pos).Line, shape))
++		}
++		ast.Inspect(file, func(n ast.Node) bool {
++			switch node := n.(type) {
++			case *ast.CallExpr:
++				if callSpawnsHeadlessClaude(node) {
++					report(node.Pos(), "a call passes claude a print flag")
++				}
++			case *ast.BasicLit:
++				value, ok := stringLiteralValue(node)
++				if !ok {
++					return true
++				}
++				tokens := literalTokens(value)
++				switch {
++				case headlessClaudeLine(tokens):
++					report(node.Pos(), "a string runs claude with a print flag")
++				case inClaudeEngine && slices.ContainsFunc(tokens, isPrintFlag):
++					report(node.Pos(), "a claude engine string carries a print flag")
++				}
++			}
++			return true
++		})
++		if len(fileFailures) > 0 && !allow.Allowed(rel) {
++			failures = append(failures, fileFailures...)
++		}
++	})
++	sort.Strings(failures)
++	return failures, scanned
++}
++
++// TestInteractiveSpawn_NoHeadlessClaude fails for every production call or string that runs claude with `-p` or `--print`, unless allowlisted.
++//
++//lym:guard
++func TestInteractiveSpawn_NoHeadlessClaude(t *testing.T) {
++	t.Parallel()
++	allow := scankit.NewAllowlist(allowedHeadlessSpawn)
++	failures, scanned := headlessSpawnFailures(t, scankit.Options{}, allow)
++	scankit.RequireFloor(t, scanned, 20, "interactive spawn scan")
++	allow.RequireNoStale(t)
++	if len(failures) > 0 {
++		t.Errorf("`PATTERN-interactive-spawn` violated:\n%s", strings.Join(failures, "\n"))
++	}
++}
++
++func TestInteractiveSpawn_FixtureTrees(t *testing.T) {
++	t.Parallel()
++	const header = "package p\n\nimport \"os/exec\"\n\n"
++	tests := []struct {
++		name     string
++		files    map[string]string
++		wantFail int
++	}{
++		{"Command with a claude literal and -p", map[string]string{"p/a.go": header + "func f() { exec.Command(\"claude\", \"-p\", \"hi\") }\n"}, 1},
++		{"CommandContext with a claude path and --print", map[string]string{"p/a.go": header + "func f() { exec.CommandContext(nil, \"/usr/bin/claude\", \"--print\") }\n"}, 1},
++		{"claude variable with --print=", map[string]string{"p/a.go": header + "func f(claudePath string) { exec.Command(claudePath, \"--print=json\") }\n"}, 1},
++		{"claude config selector", map[string]string{"p/a.go": header + "type c struct{ Binary string }\n\nfunc f(claude c) { exec.Command(claude.Binary, \"-p\") }\n"}, 1},
++		{"claude binary call", map[string]string{"p/a.go": header + "func claudeBinary() string { return \"claude\" }\n\nfunc f() { exec.Command(claudeBinary(), \"-p\") }\n"}, 1},
++		{"pane line string", map[string]string{"p/a.go": "package p\n\nvar line = \"claude --model opus -p 'hi'\"\n"}, 1},
++		{"quoted claude.exe in a pane line", map[string]string{"p/a.go": "package p\n\nvar line = `& 'C:\\bin\\claude.exe' --print`\n"}, 1},
++		{"print flag fragment in the claude engine", map[string]string{"internal/shuttleengine/claudeengine/a.go": "package claudeengine\n\nvar flag = \" -p\"\n"}, 1},
++		{"interactive launch", map[string]string{"p/a.go": header + "func f() { exec.Command(\"claude\", \"--dangerously-skip-permissions\", \"hi\") }\n"}, 0},
++		{"tmux -p", map[string]string{"p/a.go": header + "func f() { exec.Command(\"tmux\", \"display-message\", \"-p\", \"#{pid}\") }\n"}, 0},
++		{"print flag before claude", map[string]string{"p/a.go": "package p\n\nvar line = \"tmux display-message -p claude\"\n"}, 0},
++		{"mention in a comment", map[string]string{"p/a.go": "package p\n\n// Never run claude -p.\nvar x = 1\n"}, 0},
++		{"print flag fragment outside the claude engine", map[string]string{"p/a.go": "package p\n\nvar flag = \" -p\"\n"}, 0},
++		{"test file is not scanned", map[string]string{"p/a_test.go": header + "func f() { exec.Command(\"claude\", \"-p\") }\n"}, 0},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			base := t.TempDir()
++			for rel, body := range tt.files {
++				path := filepath.Join(base, filepath.FromSlash(rel))
++				if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++					t.Fatal(err)
++				}
++				if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
++					t.Fatal(err)
++				}
++			}
++			failures, _ := headlessSpawnFailures(t, scankit.Options{Base: base}, scankit.NewAllowlist(nil))
++			if len(failures) != tt.wantFail {
++				t.Errorf("headlessSpawnFailures() = %v; want %d failures", failures, tt.wantFail)
++			}
++		})
++	}
++}
++
++func TestInteractiveSpawn_Allowlist(t *testing.T) {
++	t.Parallel()
++	const header = "package p\n\nimport \"os/exec\"\n\n"
++	tests := []struct {
++		name      string
++		body      string
++		wantFail  int
++		wantStale []string
++	}{
++		{"entry admits the findings of its file", header + "func f() { exec.Command(\"claude\", \"-p\") }\n", 0, nil},
++		{"entry for a file with no finding is stale", header + "func f() { exec.Command(\"claude\") }\n", 0, []string{"p/a.go"}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			base := t.TempDir()
++			if err := os.MkdirAll(filepath.Join(base, "p"), 0o755); err != nil {
++				t.Fatal(err)
++			}
++			if err := os.WriteFile(filepath.Join(base, "p", "a.go"), []byte(tt.body), 0o644); err != nil {
++				t.Fatal(err)
++			}
++			allow := scankit.NewAllowlist([]scankit.Entry{{Key: "p/a.go", Why: "fixture"}})
++			failures, _ := headlessSpawnFailures(t, scankit.Options{Base: base}, allow)
++			if len(failures) != tt.wantFail {
++				t.Errorf("headlessSpawnFailures() = %v; want %d failures", failures, tt.wantFail)
++			}
++			if stale := allow.Stale(); !slices.Equal(stale, tt.wantStale) {
++				t.Errorf("Stale() = %v; want %v", stale, tt.wantStale)
++			}
++		})
++	}
++}
+diff --git a/cmd/lym/tierpurity_test.go b/cmd/lym/tierpurity_test.go
+index c002aed6..3d1fbcd3 100644
+--- a/cmd/lym/tierpurity_test.go
++++ b/cmd/lym/tierpurity_test.go
+@@ -38,6 +38,7 @@ var allowedSpawners = []scankit.Entry{
+ 	{Key: "internal/reedengine/socketfile_unix_test.go", Why: "references the kit's spawn-free BindStaleSocket, which binds and closes a datagram socket file and starts no server"},
+ 	{Key: "internal/shuttleengines/shuttleengines_test.go", Why: "references the kit's spawn-free ServerEnviron, a pure environment filter that starts no server"},
+ 	{Key: "cmd/lym/spawnobservability_test.go", Why: "contains the banned `exec.Command`/`exec.CommandContext` token strings as its own scan data (Live-Substrate Spawn Observability guard)"},
++	{Key: "cmd/lym/interactivespawn_test.go", Why: "contains the banned `exec.Command`/`exec.CommandContext` token strings as fixture source for the headless-spawn scan, which only parses it (`PATTERN-interactive-spawn` guard)"},
+ }
+ 
+ // allowedTmuxkitOutsideTmuxTier lists tagged files that compile in tier 2 and reference a tmuxkit export, each with a reason it starts no server there.
+diff --git a/pattern/PATTERN-fs-links.md b/pattern/PATTERN-fs-links.md
+new file mode 100644
+index 00000000..1abe6fee
+--- /dev/null
++++ b/pattern/PATTERN-fs-links.md
+@@ -0,0 +1,9 @@
++# PATTERN-fs-links
++
++Every filesystem link lym creates goes through `internal/fslink`'s `CreateDirLink`, which owns the platform difference between link kinds.
++
++- The scan in `cmd/lym/fslinkonly_test.go` parses every production Go file of the module, `tools/` included, and reports each `os.Symlink` or `os.Link` call, through whatever name the file binds `os` to, outside `internal/fslink`; a dot import of `os` binds no name, so the scan reports the import line itself.
++- The scan's allowlist is keyed `<file>:<call>` and admits one call with a reason naming the obstacle to going through fslink.
++  `tools/deploy/main.go` is admitted for `os.Symlink`: it copies a plugin-tree symlink verbatim, the link may point at a file, and fslink has no file-link primitive.
++- Bound: test files are not scanned, because tests plant links as hostile or foreign fixtures that fslink's refusals would block.
++- The entry claims nothing about how a link behaves on Windows: fslink's Windows path has never been executed, and `internal/fabricengine`'s package documentation records what settling it takes.
+diff --git a/pattern/PATTERN-interactive-spawn.md b/pattern/PATTERN-interactive-spawn.md
+new file mode 100644
+index 00000000..53d27895
+--- /dev/null
++++ b/pattern/PATTERN-interactive-spawn.md
+@@ -0,0 +1,13 @@
++# PATTERN-interactive-spawn
++
++Every agent lym spawns runs as an interactive session in a tmux pane, placed by reed and driven by shuttle, never as a headless `claude -p` or `claude --print` process.
++Interactive sessions keep subscription coverage, while headless use is moving to API billing, so the reason is economic rather than technical.
++
++- The scan in `cmd/lym/interactivespawn_test.go` parses every production Go file of the module, `tools/` included, and reports three shapes:
++  a call that takes a `-p`, `--print` or `--print=…` string literal and another argument naming claude, which is a string literal whose base name is `claude` or `claude.exe`, or an identifier, selector or call whose name holds `claude` in any case;
++  a string literal whose whitespace tokens, quote characters trimmed, name claude and then carry a print flag;
++  and any string literal under `internal/shuttleengine/claudeengine` carrying a print-flag token, since that engine builds claude's launch lines from flag fragments.
++- Comments are never read, so documentation naming the forbidden form passes.
++- The scan's allowlist is keyed by file and admits every finding in that file, with a reason naming why the flag there launches no agent.
++- Bound: the scan sees static shapes only, so a flag built at runtime, or a launch line assembled from fragments outside the claude engine's directory, passes.
++- Bound: test files are not scanned, so a test may hold the forbidden text as data.
