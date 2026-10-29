@@ -1,6 +1,6 @@
 # Delete the loomyard CLAUDE.md after moving any rule only it holds
 
-`claude-md-lym-rules-out` · Task · enhancement, stencil, pattern, orch · running · Code-Burler-Review
+`claude-md-lym-rules-out` · Task · enhancement, stencil, pattern, orch · running · Code-Burler-Fix
 
 ## Goal
 
