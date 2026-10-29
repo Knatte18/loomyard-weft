@@ -1,6 +1,8 @@
 # Sweep go_parallel on OSL-1046 with Cortex XDR
 
-`bench-osl1046-xdr` · Task · research · draft
+`bench-osl1046-xdr` · Task · research
+
+Depends on: [`creel-flakes-and-adopt-names`](design-creel-flakes-and-adopt-names.md)
 
 ## Done (2026-10-20)
 
@@ -21,4 +23,10 @@ Whether a higher `-p` overlaps those holds needs one such run at 4 and one at 8.
 
 The hub now runs on OSL-1046, so the measurement can be made here.
 It waits until the task `creel-flakes-and-adopt-names` has landed, so the run meets no flaky test (operator, 2026-10-29).
-It runs as a darn task with profile `docs`, and its body states the exact cap on runs when it is promoted.
+It runs as a darn task with profile `docs`, and its report lands in `docs/benchmarks/gate-test-xdr.md`.
+
+## Cap
+
+Exactly two measured gate runs on one input, a change to `internal/logger`: one at `go_parallel` 4 and one at 8.
+No other input, no repeats, no Codex.
+The run records the held-package count and the verify time of each, with the hardware info the file already holds.
