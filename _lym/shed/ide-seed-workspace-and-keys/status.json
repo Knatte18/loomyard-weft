@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -28,6 +28,51 @@
       "output": "",
       "at": "2026-10-29T11:58:13Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/ide-seed-workspace-and-keys/_lym/landing/summary.md",
+      "at": "2026-10-29T12:21:37Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-29T12:13:34.015728237Z",
+          "end": "2026-10-29T12:13:53.866944481Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-29T12:14:29.044599305Z",
+          "end": "2026-10-29T12:14:48.438134081Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-29T12:13:53.960331903Z",
+          "end": "2026-10-29T12:13:54.295296694Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-29T12:13:54.790892332Z",
+          "end": "2026-10-29T12:14:28.986038045Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-29T12:14:48.522863954Z",
+          "end": "2026-10-29T12:21:37.077313912Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-29T12:21:37.154171468Z",
+          "end": "2026-10-29T12:21:37.154220323Z"
+        }
+      ]
     }
   ],
   "product": {
