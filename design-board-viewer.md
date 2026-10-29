@@ -32,5 +32,5 @@ Assume no `.vscode/` exists beforehand, or that it may be deleted and re-seeded 
 - Pairs keep their current chains (driven: attach only).
 
 
-From `reed-view` Discussion (D15, 2026-10-08): `lym ide spawn` rewrites the whole `// lym:begin` … `// lym:end` block in the user `keybindings.json` on every run, for the reed Alt keys.
-This note's keys must be added through the same writer, or each spawn wipes them.
+From `reed-view` Discussion (D15, 2026-10-08): `lym ide spawn` rewrites the whole `// lym:begin` … `// lym:end` block in the user `keybindings.json` on every run, for the reed Alt keys; since `ide-seed-workspace-and-keys`, `lym ide seed` writes the same block too.
+This note's keys must be added through the same writer, or each spawn or seed wipes them.
