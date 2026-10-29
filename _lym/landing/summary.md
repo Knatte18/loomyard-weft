@@ -1,45 +1,53 @@
-# Parallel reedengine tier2 tests, battenrecipe prune, audit correction
+# Run reedengine tier2 tests in parallel; fold one battenrecipe duplicate
 
-Acts on the leads of the first recurring test-time audit (`docs/benchmarks/test-suite-timing.md`, section `test-time-audit: first recurring audit`).
+The first test-time audit flagged a 40 s `internal/reedengine` `tier2` cost and three packages whose test counts had grown far beyond their code.
+This change acts on those leads, and corrects the audit where its readings were wrong.
 
-## reedengine: parallel tier2 tests, not an injected wait
+## `internal/reedengine`: the executable lookup becomes an engine field
 
-The audit read `internal/reedengine`'s 40.00 s in `tier2` as "2 tests waiting out a fixed duration".
-A verbose gate run shows otherwise: the package has 32 top-level `tier2` tests, the slowest 11 s, none waiting out a production duration, and their times sum to the package's wall time (58.6 s).
-None of them called `t.Parallel`, so the package ran fully serially.
+The audit's "2 tests, 40.00 s" was a reading of interleaved log lines, not a waited-out duration.
+The package's `tier2` tests ran serially, each building its own tmux server, so their times summed to the package's wall time; the slowest was 11 s.
+No fixed wait exists to inject.
+The speed-up comes from running the tests in parallel, which `PATTERN-test-speed`'s "Tests run in parallel" already requires.
 
-What held most of them serial was the package-level `executablePath` variable in `panebin.go`, which tests swapped to stub the `lym` binary a pane prelude or key binding names.
+What held them serial was the package-level `executablePath` variable in `panebin.go`, which tests swapped to stand in for the test binary.
+It is now an `Engine` field that `New` sets to `os.Executable`, and `composePaneLaunchLine`, `composeWindowCommand`, `composeSwitchCommand` and `composeFollowCommand` take the lookup as a parameter.
+The callers in `spawn.go`, `window.go` and `bindings.go` pass `e.executablePath`.
+Production behavior is unchanged: every engine `New` builds resolves the path through `os.Executable` as before.
+An unresolvable path still logs its named `logger.Warn` and drops the prelude or the binding.
 
-- The lookup is now an `Engine` field, `executablePath`, which `New` sets to `os.Executable`. The four compose functions (`composePaneLaunchLine`, `composeWindowCommand`, `composeSwitchCommand`, `composeFollowCommand`) take it as a parameter, and their callers in `spawn.go`, `window.go` and `bindings.go` pass `e.executablePath`. Production behavior is unchanged.
-- Tests set the field on their own engine, or pass a stub lookup to a compose function; `withInjectedExecutablePath` is gone.
-- Every `tier2` test now calls `t.Parallel`, apart from those touching process-global state, which stay serial with a comment naming it: `TestEnsureSession_BootedTrueOnColdSessionFalseOnWarm` and `TestBoot_ReadsNoOperatorConfigAndStartsNonLoginPanes` (`t.Setenv`), `TestAddStrand_LogsAttributionOnlyOnColdBoot`, `TestFollow_RealTmux` and `TestNaming` (captured logger), and `TestProbeCapability_LeavesTheHubSocketAndNoProbeSocketBehind` (scans the shared socket directory).
-- The `tier0` tests `TestOpenWindow`, `TestLaunchStrandLocked_LaunchScript` and `TestLaunchScriptDoesNotSurviveAFailedLaunch`, which were serial only because of the seam, now run in parallel too.
+Every `tier2` test that touches no process-global state, and every `tier0` test that was serial only because of the seam, now calls `t.Parallel`.
+Tests that use `t.Setenv` or capture the process logger stay serial.
+The tests this diff rewrote name that state in a comment.
+`doc.go` and the `panebin.go` header describe the new seam.
 
-The package's `tier2` time fell from 58.6 s to 21.0 and 26.6 s on two runs; a third run, overlapping another task's `tier2` run at a load average of 14.7, took 50.6 s, and its serial tests slowed to match.
-All 122 tests and subtests passed on every run.
+## Per-package test counts
 
-## Prune: per-package counts
+Counts are `func Test` declarations on the branch against the audit's figures.
 
-The audit's per-package counts (shell 11 to 65, boardtest 3 to 68, battenrecipe 8 to 57) do not match the sources.
-Counting `func Test` declarations at the last commit on or before 2026-10-07 and now:
+| Package | Audit, before to after | Source, before to after | Result |
+| --- | --- | --- | --- |
+| `internal/shell` | 11 to 65 | 11 to 14 | unchanged |
+| `internal/boardengine/boardtest` | 3 to 68 | 3 to 3 | unchanged |
+| `internal/battenrecipe` | 8 to 57 | 8 to 9, then 8 | one duplicate folded |
 
-| Package | 2026-10-07 | Before | After |
-|---|---|---|---|
-| `internal/shell` | 11 | 14 | 14 |
-| `internal/boardengine/boardtest` | 3 | 3 | 3 |
-| `internal/battenrecipe` | 8 | 9 | 8 |
+The audit's figures came from splitting interleaved gate logs per package and are not these packages' tests.
+`internal/shell` holds 14 tests carrying 60 subtests, and `boardtest` holds 3 tests with 7 subtests; the audit's counts included such subtests.
+`internal/shell` keeps one table per `Shell` method, each pinning a distinct method's output in both dialects.
+`boardtest` keeps three distinct contracts.
+Each test pins distinct behavior, so both packages are left as they are, as the board entry directs.
 
-- `internal/shell`: left as it is. It holds one table per `Shell` method, and each pins that method's exact output in both dialects; 60 subtests sit under the 14 tests. The quoting rows repeat across tables because each method composes its own quoting, so no table covers another's behavior.
-- `internal/boardengine/boardtest`: left as it is. Its three tests pin distinct contracts: reads stay consistent under a concurrent writer, concurrent writers lose no update, and `TestSync`'s seven ordered steps pin the background pusher.
-- `internal/battenrecipe`: `TestNameRunShed_ValueIsPinnedAgainstASymmetryRename` repeated the row-name loop of `TestNew_RowNamesMatchTheDurableIdentityConstants` line for line. Its one distinct assertion, that `NameRunShed` reads `Run-Shed` (the durable row name shedengine persists, which a rename would break resume on), moves into the row-name test, and the duplicate is deleted. The other eight tests each pin a distinct behavior.
+In `internal/battenrecipe`, `TestNameRunShed_ValueIsPinnedAgainstASymmetryRename` repeated the row-name loop of `TestNew_RowNamesMatchTheDurableIdentityConstants` over the same eight names.
+Its one distinct assertion, that `NameRunShed` reads `Run-Shed`, moved into the row-name test with the rationale for the pin, and the duplicate was deleted.
+No coverage is lost.
 
 ## Audit correction
 
-The audit section gets a dated correction under its prune-task candidates, naming the real counts and the reedengine reading, and how a later audit should count per package.
-The section's measured numbers stay as recorded.
+`docs/benchmarks/test-suite-timing.md` gets a correction note under the audit's prune-task candidates, naming the real counts and the reedengine reading.
+The audit's own numbers stay, since the section is a measurement report.
 
-## Design decisions
+## To check by hand
 
-- The board entry asked to make reedengine's wait injectable. There was no wait, so the change applies the same rule's purpose, keeping a seam off package-level state so tests keep `t.Parallel`, to the seam that held the package serial.
-- The compose functions take the lookup as a parameter instead of becoming `Engine` methods, so the `tier0` tests that drive them with no engine stay as they are apart from the passed stub.
-- `docs/benchmarks/test-redundancy.md` still lists the removed battenrecipe test: it is generated by `cmd/testtiming -redundancy`, which was not rerun here and is already stale for this package.
+- `internal/reedengine` has serial tests that capture the process logger without a comment naming that state, in files this diff did not rewrite, among them `attach_test.go`, `launchscript_cleanup_test.go`, `lifecycle_test.go`, `namerepair_test.go`, `probe_test.go`, `reconcile_test.go`, `windowsize_test.go` and `TestStageLaunchScript_WriteFailureDegrades` in `panebin_test.go`.
+  The list is unverified; whether a package-wide comment sweep belongs in this change is open.
+- Parallel `tier2` tests raise the load on the tmux servers they start, so a bounded wait could time out on a loaded host; run `lym gate test ./internal/reedengine --tier tier2` several times to check.
