@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -28,6 +28,51 @@
       "output": "",
       "at": "2026-10-29T09:33:20Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/creel-hook-delivery-fixes/_lym/landing/summary.md",
+      "at": "2026-10-29T10:01:13Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-29T09:52:45.252305129Z",
+          "end": "2026-10-29T09:53:04.658801153Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-29T09:53:56.816656272Z",
+          "end": "2026-10-29T09:54:15.715690065Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-29T09:53:04.708277783Z",
+          "end": "2026-10-29T09:53:04.985701991Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-29T09:53:05.557255195Z",
+          "end": "2026-10-29T09:53:56.750177959Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-29T09:54:15.826565286Z",
+          "end": "2026-10-29T10:01:13.012174484Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-29T10:01:13.069682161Z",
+          "end": "2026-10-29T10:01:13.069746174Z"
+        }
+      ]
     }
   ],
   "product": {
