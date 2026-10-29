@@ -16,3 +16,9 @@ The sweep forced new hashes with a random `-ldflags=-B` build ID, and even then 
 
 The case the sweep set out to cover is unmeasured: a refill after a real change to a widely imported package, such as `internal/logger`, which showed about 50 held packages and a verify of about 6 min.
 Whether a higher `-p` overlaps those holds needs one such run at 4 and one at 8.
+
+## When
+
+The hub now runs on OSL-1046, so the measurement can be made here.
+It waits until the task `creel-flakes-and-adopt-names` has landed, so the run meets no flaky test (operator, 2026-10-29).
+It runs as a darn task with profile `docs`, and its body states the exact cap on runs when it is promoted.
