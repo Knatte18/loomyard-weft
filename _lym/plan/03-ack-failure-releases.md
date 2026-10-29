@@ -11,7 +11,7 @@
 - `internal/creelengine/doc.go`
 
 **Create:**
-- `plan:internal/creelengine#Store.FailJournalWrites` -> `func (s *Store) FailJournalWrites(after int)`
+- `internal/creelengine#Store.FailJournalWrites`
 
 **Intent:**
 Decision D3's ordering rule: a journal write that fails at an acknowledgement releases every id the acknowledgement left unjournaled, where today `Reading.Ack` returns at the failing id with that id and the ones after it still in `Store.reserved`, so no later claim or read hands them out until the daemon restarts.

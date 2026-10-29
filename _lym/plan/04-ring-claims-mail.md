@@ -23,11 +23,11 @@
 - `internal/creelengine/doc.go`
 
 **Create:**
-- `plan:internal/creelengine#Store.claimLocked` -> `func (s *Store) claimLocked(holder string, reading *Reading)`
-- `plan:internal/creelengine#daemon.awaitAck` -> `func (d *daemon) awaitAck(conn net.Conn, reader *bufio.Reader, sender Sender, reading *Reading) error`
+- `internal/creelengine#Store.claimLocked`
+- `internal/creelengine#daemon.awaitAck`
 
 **Uses:**
-- `plan:internal/creelengine#Store.FailJournalWrites`
+- `internal/creelengine#Store.FailJournalWrites`
 - `internal/creelengine_test#env.start`
 - `internal/creelengine_test#awaitOutcome`
 

@@ -25,7 +25,7 @@
 - `internal/shuttleengine/claudeengine#stopBlockReason`
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#Claude.HookOutput` -> `func (c *Claude) HookOutput(event shuttleengine.HookEvent, mail, echo string) ([]byte, error)`
+- `internal/shuttleengine/claudeengine#Claude.HookOutput`
 
 **Intent:**
 Decisions D1 and D2: neither creel hook delivery is a block any more, so Claude Code adds no command text and no error label.
