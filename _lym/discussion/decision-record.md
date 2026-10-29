@@ -14,6 +14,7 @@ In:
 - The GitHub account lym uses for pull requests, through `internal/githubclient`.
 - Finalize's landing through the pull request: merge it on GitHub, or take the already-landed path when it is merged.
 - Closing the pull request when the pair is torn down unlanded.
+- The quiet check's read of a child status running at `PR-Review` as a live wait, in `internal/battencli` and `internal/battenshed/doc.go`.
 - Retiring the stub's `pr_review` keys and `pr_review_setting` row key.
 
 Out:
@@ -63,7 +64,9 @@ One resolver keeps the row and Finalize from disagreeing.
 A pull request needs an origin on `github.com` whose owner and repository `githubclient.ParseOwnerRepo` reads, a parent with an upstream and no push skip.
 `ParseOwnerRepo` is extended to the `ssh://git@github.com/<owner>/<repo>` and `https://<user>@github.com/<owner>/<repo>` shapes, with or without `.git`.
 Without those facts, a mode `on` that came from the parent's value alone is a no, with the missing fact in the reason.
-A parent `required`, or an entry field `on`, is Stuck with Halt naming the missing fact, with the way forward: give the hub a GitHub origin and an upstream for the parent, or for a field `on` under a parent that is not `required`, `lym batten cancel <slug>` and a new run with the field changed; then `lym loom resume`.
+A parent `required`, or an entry field `on`, is Stuck with Halt naming the missing fact, with two ways forward.
+One gives the hub a GitHub origin and an upstream for the parent, then `lym loom resume`.
+The other, for a field `on` under a parent that is not `required`, runs `lym batten cancel <slug>` and starts a new run with the field changed.
 An origin on `github.com` that `ParseOwnerRepo` still refuses is the same halt, never a no.
 
 Rationale: the default is `on`, and hubs with local origins, test hubs among them, must keep landing as they do today; an explicit demand for a pull request must not land without one.
@@ -86,7 +89,7 @@ After a yes from D3, the row:
 1. pushes the task branch through the run's blocking both-sides push (`PATTERN-push-both-sides`), never the detached one;
 2. reads its pull-request record in the run directory; with none, looks up an open pull request whose head is the task branch and whose base is the parent branch, and opens one only when there is none;
 3. sets the pull request's title and body from the change description Describe wrote, read through its sole parser, on every entry;
-4. writes the record, holding the number, URL, base and the gated head it last pushed, as a tolerant JSON record written through `internal/state`, its path named in `internal/shedrun`.
+4. writes the record, holding the number, URL, base and the gated head it last pushed, and, once D7 starts the session, that session's strand GUID, session id and engine, as a tolerant JSON record written through `internal/state`, its path named in `internal/shedrun`.
 
 A re-entry, after a crash, a resume or a Finalize reroute back through Describe, finds the recorded pull request and opens no second one; a recorded pull request that GitHub reports closed is handled as in D9.
 
@@ -95,16 +98,22 @@ Rationale: an idempotent entry is what `InterruptPolicyReinvoke` in `internal/lo
 ### D7 — The interactive agent: its own model key, its own stencil, one session per run
 
 landing.yaml gains `pr_reviewer`, a model-spec in `<alias>[<effort>]` form, template default `opus[high]`, `CategoryNone`, validated with `modelspec.Parse` at load like `conflict`, `describe` and `fixer`.
-After D6 the row starts one interactive session in its own window, in the task worktree, whose first prompt is a new stencil `contracts/stencils/landing/landing-template-pr-review.md` (new) read at call time through `internal/stencilstore`; shuttle's `Runner.Open` opens a session with no prompt today, so shuttle gains a start that carries the rendered prompt and is not awaited.
+After D6 the row starts one interactive session in its own window, in the task worktree, whose first prompt is a new stencil `contracts/stencils/landing/landing-template-pr-review.md` (new) read at call time through `internal/stencilstore`; shuttle's `Runner.Open` opens a session with no prompt today and writes no run record, so shuttle gains a start that carries the rendered prompt and is not awaited, and beside it a resume of an opened session by its session id.
 The stencil carries the parent directive and the edit directive; its skills and color go on the launch spec.
 It hands the session paths and identifiers only, never their content: the pull request URL, the task worktree, the parent branch to diff against, the change description and, where the run has them, the decision record, the plan and the board entry snapshot.
 The session is told it may commit to the task branch (D8), never pushes, never approves, merges or closes the pull request and never calls GitHub, and that the run ends on the pull request's state, not on the session.
 The row never waits on the session's output: the session has no output file.
 It is registered in `internal/runproc` under the run.
 The row stops it through shuttle's stop verb at Done (D9), at a Stuck and at an error, and at a pause (D9); a cancelled context leaves it running, so the reinvoke's re-call finds it.
-A call that finds the run's session strand live reuses it; one that finds a stopped session resumes it by its session id, and one with none starts it.
+The row reads the session's strand GUID, session id and engine from the D6 record, which it writes when it starts the session.
+A call that finds the recorded strand live reuses it; one that finds the recorded session stopped resumes it through shuttle's resume, and one with no recorded session starts one.
 The wait loop of D9 starts no session, so an operator who closes the window ends the agent until the next entry.
 `internal/loomshed/interruptpolicy.go`'s comment that PR-Review spawns nothing changes with it.
+The launch spec installs shell-guard denies of `git push` and `gh` for this session alone, a new `internal/shellguard` row hung on a launch-spec switch.
+Bound: those rows are a guardrail over static text, not a barrier, so a command that slips past them can push, approve, merge or close the pull request from the task worktree.
+A head it pushes is gated by the row as any agent commit (D8), and a merge on GitHub of a head other than the record's gated head halts after the merge (D9).
+A merge of the gated head on GitHub lands through Finalize's already-landed path, with the bound D11 states for a pull request merged on GitHub by someone else; a close is D9's closed halt.
+An approval it gives with an account other than the pull request's author counts as a standing approval, so D9 can end Done without the operator's; Finalize's `finalize` gate still runs before the merge lym makes (D11).
 
 Rationale: the entry asks for a session the operator talks to, with its own engine, model and effort key, and for the agent to read the material itself.
 
@@ -118,7 +127,7 @@ The verdict counts only when the head is unchanged and the tree clean after the 
 A counted pass pushes the task branch through the D6 push only when the head still equals the gated head, and records it as the gated head; the pull request updates on GitHub.
 A counted failure pushes nothing and posts one creel line to the agent's strand naming the failing tier and the log path, once per failing head.
 `internal/gateslot/template.yaml` gains `pr-review: {tiers: [0], scope: diff}`.
-Bound: the detached both-sides push that a run-record commit fires carries the task branch along, so an ungated agent commit can reach the pull request that way; D9's Done and D11 read only the record's gated head, so such a commit lands nothing until the row has gated it.
+Bound: the detached both-sides push that a run-record commit fires carries the task branch along, so an ungated agent commit can reach the pull request that way; D9's Done, its merged ending included, and D11 land only the record's gated head, and a pull request merged on GitHub with any other head halts (D9), so such a commit lands nothing through lym until the row has gated it.
 The gate lets through what tier 0 over the diff passes; Finalize's `finalize` gate over the merged whole tree still runs before any merge lym makes (D11).
 
 Rationale: nothing lym lands rests on an ungated head, and the agent learns of a failure where it works.
@@ -131,10 +140,14 @@ Each wake reads pause coverage; a pause covering the run stops the session (D7) 
 Each GitHub poll reads the pull request's state, head and reviews.
 A reviewer's standing review is their latest `APPROVED`, `CHANGES_REQUESTED` or `DISMISSED` one; `COMMENTED` and `PENDING` reviews never change it.
 
-- merged, with the merged head equal to the task head and a clean tree: Done.
-- merged, with task commits the merged head lacks: Stuck with Halt naming those commits, with filing them as a follow-up and `lym batten cancel <slug>` as the way forward.
+On a merged pull request the row first stops a live session, then re-reads the task head and tree, and judges what it re-read:
+
+- merged, with task commits the merged head lacks: Stuck with Halt naming those commits, with filing them as a board note and `lym batten cancel <slug>` as the way forward.
+- merged, with a merged head other than the record's gated head: Stuck with Halt naming both heads, with running the gate over the parent branch in its worktree and filing a board note for any fix it needs, then `lym loom goto Finalize`, which lands through the already-landed path and marks the task done, as the way forward.
+- merged, with the merged head equal to the gated head and the task head, on a clean tree: Done.
+- merged, with the merged head equal to the task head, on a dirty tree: Stuck with Halt naming the uncommitted files, with discarding them in the task worktree, after filing any worth keeping as a board note, then `lym loom resume`, as the way forward.
 - closed without a merge: Stuck with Halt naming the pull request, with reopening it on GitHub and `lym loom resume`, or `lym batten cancel <slug>`, as the way forward.
-- open, with the pull request's head equal to the record's gated head and the task head, at least one standing `APPROVED` review on that head, and no standing `CHANGES_REQUESTED`: the row stops the session, then re-reads the head and tree; an unchanged head and a clean tree are Done, and anything else resumes the session (D7) and keeps waiting.
+- open, with the pull request's head equal to the record's gated head and the task head, at least one standing `APPROVED` review on that head, and no standing `CHANGES_REQUESTED`: the row stops a live session, then re-reads the head and tree; an unchanged head and a clean tree are Done, and otherwise the row resumes the session (D7) only when it stopped a live one for this read, and keeps waiting.
 - open otherwise: keep waiting.
 
 A transient GitHub failure, as `githubclient.IsTransient` judges it, is logged once per episode at Warn and the loop keeps waiting; an auth failure is the D5 halt.
@@ -145,27 +158,32 @@ Stopping the session before the last read keeps a commit made after the approval
 
 ### D10 — The waiting run reads as waiting
 
-For the whole wait of D9, the row keeps a wait marker live of a kind battenshed's quiet check already reads (`internal/battenshed/doc.go`), so the quiet notice does not go off (operator decision via `ly:orch`, creel #20).
+For the whole wait of D9, the quiet check reads the run as waiting, so the quiet notice does not go off (operator decision via `ly:orch`, creel #20).
+None of the live waits `readAgentActivity` in `internal/battencli/wire.go` counts fits the row: a verify marker is live only during a gate, a parent-lock wait record needs the lock D9 never takes, the child status read matches only pawl's Beam-Await row, and a shuttle wait marker is written only inside a shuttle Run's Wait, which D7's un-awaited session has not.
+So `readAgentActivity` also counts a child status running at the `PR-Review` row, beside `childAtBeamAwait`'s Beam-Await read, live for as long as the status reads running at `PR-Review`; `internal/battenshed/doc.go`'s list of live waits names it.
 It also marks the run's driver strand through reed's `SetWaitMark` as `PR #<n>`, sets it again after each `pr-review` gate (whose verify mark replaces and clears it), and clears it on every way out; the mark is display only (`PATTERN-wait-mark-display-only`).
 The run stays `running` at `PR-Review`.
 No new notice is sent and dobby is unchanged.
 
-Rationale: the operator settled how the waiting run is seen; a live marker is what the quiet check already honours.
+Rationale: the operator settled how the waiting run is seen; a child status running at a waiting row is the read the quiet check already makes for Beam-Await.
 
 ### D11 — Finalize lands through the pull request
 
 Finalize (`internal/landingshed/finalize.go`) calls the D3 resolver after taking the parent lock, as its first step under it, and follows the resolver, never the record alone.
 
-- A no lands locally as today; a D6 record left standing is closed by the teardown (D12).
+- A no closes a D6 record's open pull request with a comment naming the resolver's reason and removes the record, as D3's no does, then lands locally as today.
 - A yes with no D6 record of an open or merged pull request is Stuck with Halt, behind `LandingStopPrefix`, naming the missing pull request, with `lym loom goto PR-Review` as the way forward.
 - A yes with a record runs Finalize's sequence as today through the parent sync, the merge of the parent into the task worktree, the fixer and the `finalize` gate; a pull request GitHub already merged lands through Finalize's existing already-landed path.
 - Otherwise, in place of the local parent-side merge, it pushes the task branch through the D6 push and records the pushed head, then merges the pull request through GitHub with that head as the expected head, squash or merge by landing.yaml's `squash`, and the change description and trailer block as the commit title and message.
   A refusal GitHub gives while it computes mergeability for the new head is retried for at most a minute under the lock.
-  It then fetches the parent and fast-forwards the local parent pair to its upstream, marks the board task done and goes on as after today's parent-side merge.
-- A merge GitHub still refuses, for a moved head, an approval dismissed by the push, a required check or a conflict, is Stuck with Halt behind `LandingStopPrefix`, naming the pull request and GitHub's message, with approving the pull request again or settling the check, then `lym loom resume`, as the way forward.
+  It then fetches the parent, fast-forwards the local parent pair to its upstream and lands through Finalize's existing already-landed path, as for a pull request merged on GitHub by someone else.
+- A merge GitHub still refuses is Stuck with Halt behind `LandingStopPrefix`, naming the pull request and GitHub's message, with a way forward per refusal.
+  A merge method the repository disallows names setting landing.yaml's `squash` to the method the repository allows through `lym config landing --set squash=<true|false>` in the prime worktree, or allowing the method in the repository's settings, then `lym loom resume`.
+  A moved head, an approval dismissed by the push, a required check or a conflict names approving the pull request again or settling the check, then `lym loom resume`.
 
 Bound: what reaches the parent after the approval without a second one is the merge of the parent and the finalize fixer's commits, within the caps Finalize already applies, behind the `finalize` gate; branch protection on GitHub can refuse it, which is the halt above.
 A pull request merged on GitHub by someone else carries GitHub's commit message, so the parent's commit lacks lym's trailer block for that landing.
+A landing through the already-landed path, lym's own GitHub merge included, writes no merge record and no conclude commit on the records side, since `Fabric.Merge` finds the parent up to date and records nothing.
 
 Rationale: the entry has Finalize merge the pull request instead of squashing itself, under the lock, after its merge fixer brings the branch level.
 A GitHub merge moves the parent, which `PATTERN-parent-lock` keeps inside Finalize under its lock.
@@ -173,7 +191,8 @@ A GitHub merge moves the parent, which `PATTERN-parent-lock` keeps inside Finali
 ### D12 — The pair teardown closes an open pull request
 
 `internal/pairteardown`, every teardown's one route, closes a pull request the run's D6 record names when GitHub reports it open, with one comment naming the teardown's cause, through the D5 client, before it removes the record.
-That covers `lym batten cancel`, `lym cleanup --apply`, `lym fabric remove` and every other teardown caller; a landed run's pull request is merged and left as it is.
+That covers `lym batten cancel`, `lym cleanup --apply`, `lym fabric remove` and every other teardown caller of a present task worktree; a landed run's pull request is merged and left as it is.
+Bound: a teardown of a gone task worktree cannot read the record under its run directory, so it leaves the pull request open and logs a Warn naming the task branch.
 A failure is logged at Warn with the pull request's URL and never stops the teardown.
 The remote task branch is handled as today.
 
@@ -186,6 +205,12 @@ In every recipe the row carries no `entry_gate` and no `on_stuck`, since its Stu
 The stencil of D7 serves all three recipes: the row tells it which of the decision record, plan and board entry snapshot the run has.
 
 Rationale: the entry says a beam's landing into its parent follows that parent's mode, which needs the row in the beam's recipe.
+
+### Added after Discussion (parent, 2026-10-29): No pr_account: the pull request is opened by the gh user, and the operator ends it through the agent
+
+Decision: There is no pr_account setting: lym always opens the pull request as the user registered for gh, and offers no choice of account. The operator is not required to approve the pull request on GitHub; the operator may use it only as an overview of what was done. A review ends in one of two ways: another person reviews and approves it, or the operator talks to the PR-Review agent, has it make changes, and when satisfied asks it to continue. On that request the agent sets a flag that Shed reads to continue the run: the pull request is CLOSED, not merged, and the run goes on through the ordinary Finalize, with its gate and trailer. No lym-side approval is built and no merge on GitHub is the operator's ending.
+
+Rationale: GitHub refuses the approval of one's own pull request, and lym has no other account to open it with. The operator's ending through the agent keeps Finalize's gate and trailer and needs no second account; the same split exists in Millhouse, where another person reviews or the operator reviews alone.
 
 ## Constraints
 
@@ -223,19 +248,21 @@ Rationale: the entry says a beam's landing into its parent follows that parent's
 - D4: with a non-GitHub origin a parent-derived `on` is a no, and a field `on` or a parent `required` halts with its way forward; `ParseOwnerRepo` reads the `ssh://` and user-info `https://` shapes.
 - D5: a named `pr_account` resolves only through `gh auth token --user`, ignores `GH_TOKEN`, keeps its own cache file, and an unresolvable token halts naming the key.
 - D6: a first entry pushes with the blocking push and opens one pull request with the description as title and body; a re-entry with a record or an existing open pull request opens none and updates the title and body.
-- D7: the session starts in the task worktree on the `pr_reviewer` model-spec with the stencil as its first prompt, holding paths and no file content; a call finding it live starts none; a cancelled context leaves it running; Done, Stuck, error and pause stop it.
+- D7: the session starts in the task worktree on the `pr_reviewer` model-spec with the stencil as its first prompt, holding paths and no file content, and its strand GUID, session id and engine are written to the D6 record; a call finding it live starts none; a re-entry after a crash resumes the recorded session; a cancelled context leaves it running; Done, Stuck, error and pause stop it.
+- D7: the session's launch spec denies `git push` and `gh` through the shell guard; a head the session pushes lands through lym only after the row gates it, and a merge it makes on GitHub of an ungated head is followed by D9's ungated-merge halt.
 - D8: a clean moved head is gated by `pr-review` and pushed on a pass; a failing gate pushes nothing and mails the agent once per head; a dirty tree waits; a head or tree that changed during the gate discards the verdict.
-- D9: merged with the task head is Done; merged lacking task commits halts naming them; closed halts with its way forward; approved on the gated head with no standing change request stops the session and is Done only on an unchanged head and clean tree; an approval of an older head, or a comment after a change request, keeps waiting.
+- D9: on merged the session is stopped before the re-read; merged with the gated head, equal to the task head on a clean tree, is Done; merged with a head other than the gated head, an ungated agent commit carried by the detached push among them, halts naming both heads with `lym loom goto Finalize` in its way forward; merged lacking task commits halts naming them; merged with the task head on a dirty tree halts naming the uncommitted files; closed halts with its way forward.
+- D9: approved on the gated head with no standing change request stops a live session and is Done only on an unchanged head and clean tree, otherwise resuming only a session it stopped; an approval of an older head, or a comment after a change request, keeps waiting.
 - D9: a transient GitHub failure keeps the wait going and logs once per episode; a covering pause stops the session and ends the call transient; the wake interval stays between a second and a minute and GitHub is polled at most once a minute.
 - D9, D11: `PR-Review` takes no parent lock on any path.
-- D10: the quiet notice does not go off during the wait; the strand's wait mark is set during the wait, set again after each gate and cleared on every way out.
-- D11: on a yes with a record, Finalize pushes, merges through GitHub with the expected head and the squash setting, fast-forwards the local parent and marks the task done; a refused merge halts behind `LandingStopPrefix`; a GitHub-merged pull request takes the already-landed path; a yes with no record halts; a no lands locally.
-- D12: tearing down a run whose pull request is open closes it with a comment, whatever the teardown's caller, and a failed close does not stop the teardown.
+- D10: `readAgentActivity` reports a live wait for a child status running at `PR-Review`, so the quiet notice does not go off during the wait; the strand's wait mark is set during the wait, set again after each gate and cleared on every way out.
+- D11: on a yes with a record, Finalize pushes, merges through GitHub with the expected head and the squash setting, fast-forwards the local parent and lands through the already-landed path, marking the task done; a refused merge halts behind `LandingStopPrefix` with the way forward of its refusal, a disallowed merge method naming the `squash` setting; a GitHub-merged pull request takes the already-landed path; a yes with no record halts; a no closes a recorded open pull request, removes the record and lands locally.
+- D12: tearing down a run whose pull request is open closes it with a comment, whatever the teardown's caller, while its task worktree is present; a gone task worktree leaves it open with a Warn naming the task branch; a failed close does not stop the teardown.
 - D13: the loom, darn and pawl recipes each wire `PR-Review` before `Finalize` with no entry gate and no `on_stuck`, and the recipe checks pass.
 
 ## PATTERN changes
 
 - `PATTERN-parent-lock` — changes: Moving, merging into or landing on a local parent branch, or merging a run's pull request: only in a run's Finalize, under `internal/parentlock`'s lock for that parent.
-- `PATTERN-github-auth` — changes: Calling GitHub: auth only via `internal/githubclient`, a named account via `gh auth token --user`; no other production package runs `gh`; only `lym selfreport create` files an issue, and only PR-Review opens, Finalize merges and pair teardown closes a pull request. (test)
+- `PATTERN-github-auth` — changes: Calling GitHub: auth only via `internal/githubclient`, a named account via `gh auth token --user`; no other production package runs `gh`; only `lym selfreport create` files an issue; only PR-Review, Finalize and pair teardown open, merge or close a pull request. (test)
 - `PATTERN-pull-request-mode` — adds: Deciding whether a landing goes through a pull request: only landingshed's one resolver, from the receiving worktree's `beam.pull_request`, the landing entry's `pull_request` field and the origin; no profile or run setting carries it.
 - `PATTERN-shed-recipe-registry` — changes: Adding producer or recipe row: one `Constructor` map in `internal/shedrecipe`, bar `Implementer`'s; a row's value looked up by key, a side action a `Command` row, a row off by one config key its `entry_gate`, one whose off reads more its own call.
