@@ -1,6 +1,6 @@
 # Fix two flaky creel tests and name failing tests in the adopt mail
 
-`creel-flakes-and-adopt-names` · Task · bug, creel, gate
+`creel-flakes-and-adopt-names` · Task · bug, creel, gate · running · Worktree-Create
 
 Depends on: [`chases-refused-forward-journal`](design-chases-refused-forward-journal.md)
 
