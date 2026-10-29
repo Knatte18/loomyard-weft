@@ -1,4 +1,4 @@
-# Run verbs in one shared namespace, not under lym loom
+# loom names the general run; today's loom is one variant
 
 `run-verbs-shared` · Note · enhancement, shed, loom
 
@@ -7,19 +7,18 @@
 Since `0850f76e` a darn run has a decision record, and `lym loom decision add` works on it.
 The operator finds it absurd that a `loom` command acts on something that is not a loom run.
 The same holds for the other run verbs the orch uses on darn runs: `lym loom status`, `goto`, `resume`, `approve`, `reject`, `start`, `review approve`.
+A third recipe is planned, `Hardener` (the note `hardener`), which would make three recipes steered with `lym loom`.
 
-A third recipe is planned: `Hardener`, a `Shed` wrapping `Tenter` (the note `hardener`).
-With loom, darn and Hardener, three recipes of one kind would all be steered with `lym loom` (operator, 2026-10-29), which sharpens the point.
+## Direction (operator, 2026-10-29)
 
-## Direction (operator, 2026-10-14)
-
-Darn, loom and Hardener are shed recipes and are to be handled the same way.
-Verbs that act on any run move to one shared namespace, and `lym loom` keeps only what is loom's own.
-Not `lym shed`: shed is only the FSM and knows nothing about decisions, reviews or approvals (operator).
-For now the verbs stay under `lym loom` (operator, 2026-10-14).
+`loom` becomes the name of the general run in Shed, the generic driver of a run, and `lym loom ...` stays as it is today.
+`loom` is the name of the hub itself, loomyard, so it fits the general run.
+What is called loom today is one variant of it, darn is another, and `Hardener` becomes a third.
+This replaces moving the run verbs to a new shared namespace.
 
 ## Open
 
-- The shared namespace's name, and which module owns it: the layer above shed that every recipe shares (the decision record) has no module of its own today; `internal/loomcli` serves darn runs too.
-- Which verbs are recipe-neutral and which are loom's own.
-- Every stencil, way-forward text and doc that names `lym loom <verb>` for a darn run changes with it.
+- The name of today's variant, since `loom` now names the family: the board's `recipe` field says `loom` for it today, and an empty `recipe` means it.
+- How `loom` as the general driver relates to `shed`: `lym shed` already carries `run`, `step`, `status`, `pause` and `goto`, which the general `lym loom` verbs would overlap.
+- Which packages take the general name: `internal/loomcli` already serves darn runs, while the packages and docs that mean today's variant need the new name.
+- Every stencil, way-forward text and doc that says "loom" for the variant changes with it.
