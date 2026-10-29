@@ -1,6 +1,6 @@
 # Card gate runs tier0 only and misses tier1 breakage a card causes
 
-`card-gate-misses-tier1` · Task · bug, webster, gate · draft
+`card-gate-misses-tier1` · Task · bug, webster, gate
 
 Depends on: [`webster-recover-batch-flake`](design-webster-recover-batch-flake.md)
 
