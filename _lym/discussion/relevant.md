@@ -1,0 +1,28 @@
+# Relevant files
+
+- `internal/landingshed/prreview.go` `PRReview`, `NewPRReview`, `PRReview.Call` — the stub this task replaces
+- `internal/landingshed/doc.go` — describes the stub and Finalize's landing sequence, both of which change
+- `internal/landingshed/config.go` `Config`, `ConfigSpec`, `LoadConfig` — landing.yaml gains `pr_account` and `pr_reviewer`
+- `internal/landingshed/template.yaml` — landing.yaml template the new keys join
+- `internal/shedrecipe/entries_prreview.go` `prReviewEntry` — registry entry that drops `pr_review_setting` and gains the entry gate
+- `contracts/recipes/loom-recipe.yaml` — PR-Review row and header comment
+- `contracts/recipes/darn-recipe.yaml` — PR-Review row and header comment
+- `contracts/recipes/pawl-recipe.yaml` — beam recipe that gains a PR-Review row
+- `internal/loomengine/config.go` `Config.PRReview`, `ConfigSpec` — `pr_review` key to retire
+- `internal/darnengine/config.go` `Config.PRReview`, `ConfigSpec` — `pr_review` key to retire
+- `internal/loomshed/interruptpolicy.go` — PR-Review's reinvoke policy, whose comment says it spawns nothing
+- `internal/dobbyengine/config.go` `Config`, `ConfigSpec`, `LoadConfig` — beam.yaml, which gains `pull_request`
+- `internal/dobbyengine/template.yaml` — beam.yaml template
+- `internal/boardengine/task.go` `Task` — board entry that gains the `pull_request` field
+- `internal/githubclient/doc.go` — token chain, cache and deadlines a named account extends
+- `internal/githubclient/token.go` `resolveToken`, `realRunGHAuthToken` — where `gh auth token --user` goes
+- `internal/githubclient/parseownerrepo.go` `ParseOwnerRepo` — owner and repository from the origin URL
+- `internal/shedengine/producer.go` `Outcome`, `OutputPointer` — verdicts the row returns
+- `internal/pawlengine/beamawait.go` `BeamAwait.Call`, `nextAwaitWait` — in-process wait loop to follow
+- `internal/shuttleengine/open.go` `Runner.Open` — interactive session start, today without a prompt
+- `internal/fabricengine/replay.go` `ParentHoldsTaskWork` — already-landed test Finalize uses after a GitHub merge
+- `internal/fabricengine/parenttips.go` `Fabric.HoldsWork` — merge-tree test that recognises a squash
+- `internal/configengine/doc.go` — layer stack and local rule the new keys follow
+- `internal/configreg/configreg.go` `Modules` — module registry, beam per-worktree and landing hub-wide
+- `internal/gateslot/template.yaml` — gate keys; gains `pr-review`
+- `internal/battenshed/doc.go` — the quiet notice and the wait markers that hold it off, which D10's marker joins
