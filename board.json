@@ -528,7 +528,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #896](https://github.com/Knatte18/loomyard/issues/896).\n\nA card that made `PaneMail` persist on every strand broke a tier1 `creelcli` test.\nThe card gate runs tier0 only, so it did not run that test; the later batch gate found the breakage.\nThe failure surfaced a card late, away from the change that caused it.\n\nThis is abnormal: a card's gate can pass while its own change breaks a higher-tier test, so the fix lands outside the card that introduced it.\n\nProvenance: task `creel-hook-post`, note `07-shuttle-idle-no-turn.md`.\n\n## Design\n\nThe card gate's result states that the higher tiers were not run, so a card that passes tier0 is never read as fully green.\nIt does not run tier1: a tier1 run per card costs more than the late find, and the batch gate still catches the breakage.\n",
-      "status": "running · Code-Burler-Fix",
+      "status": "running · Code-Bouncer",
       "created": "2026-10-29T07:41:27Z",
       "revised": "2026-10-29T13:15:12Z"
     },
