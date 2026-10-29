@@ -212,6 +212,12 @@ Decision: There is no pr_account setting: lym always opens the pull request as t
 
 Rationale: GitHub refuses the approval of one's own pull request, and lym has no other account to open it with. The operator's ending through the agent keeps Finalize's gate and trailer and needs no second account; the same split exists in Millhouse, where another person reviews or the operator reviews alone.
 
+### Added after Discussion (parent, 2026-10-29): The PR-Review row opens and closes the pull request, through lym's own GitHub client
+
+Decision: The PR-Review row, not another part of Shed, opens the pull request and closes it when the operator asks the agent to continue and the agent has set its flag; whether anything else in Shed also closes it is left to the design. The row opens and closes the pull request through go-github with the client of internal/githubclient, whose token comes from GH_TOKEN, GITHUB_TOKEN, its cache or gh auth token, and never by running the gh command. This refines the earlier decision on pr_account and the operator's ending, which it does not replace.
+
+Rationale: lym already has its own GitHub client, so the row needs no gh command, and the operator is sure only that the PR-Review row closes the pull request.
+
 ## Constraints
 
 - `PATTERN-github-auth`: every GitHub call and the `gh auth token --user` shell-out live in or go through `internal/githubclient`.
