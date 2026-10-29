@@ -445,7 +445,7 @@
       "isolated": false,
       "brief": "Once the darn verify key reads its diff base, cover the guard scan of a narrowed run again",
       "body": "The verify-gate integration test in `internal/loomshed/verifygate_integration_test.go` had a subtest, `fails with the file and line of a misplaced marker`, that always skipped: the gate key's call carries no `--base`, so a narrowed run never reaches the guard scan over the diff.\nTask `test-skips-os-tags` deleted it, since no test is skipped by design.\n\nOnce the key reads its diff base from the green record, add the case back: a committed `a/a_test.go` with `//lym:guard` above a non-test declaration fails both the loom gate and the darn gate, naming `a/a_test.go:5` and the way to place the marker.\n",
-      "status": "running · Describe",
+      "status": "running · PR-Review",
       "created": "2026-10-28T15:22:38Z",
       "revised": "2026-10-29T13:12:49Z"
     },
