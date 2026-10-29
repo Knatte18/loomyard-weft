@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-29 11:51 UTC; every age below is as of then.
+Rendered 2026-10-29 11:54 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -32,7 +32,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Stop-hook mail still arrives as feedback plus a blocking error that carries the hook command**<br>• After the delivery fix the pointer line comes twice and the hook command text still reaches the model | [`creel-stop-hook-doubled`](design-creel-stop-hook-doubled.md) | 1m<br>1m | creel |
+| B1 |  | **Stop-hook mail still arrives as feedback plus a blocking error that carries the hook command**<br>• After the delivery fix the pointer line comes twice and the hook command text still reaches the model | [`creel-stop-hook-doubled`](design-creel-stop-hook-doubled.md) | 4m<br>4m | creel |
 | B3 |  | **Flaky websterengine recover-batch subtest fails once with "record changed"** | [`webster-recover-batch-flake`](design-webster-recover-batch-flake.md) | 4h<br>4h | webster |
 | B5 |  | **Burler fork guard halts a run on a read-only git command** | [`burler-guard-readonly-git`](design-burler-guard-readonly-git.md) | 4h<br>4h | burler, shed |
 | B6 |  | **Card gate runs tier0 only and misses tier1 breakage a card causes** | [`card-gate-misses-tier1`](design-card-gate-misses-tier1.md) | 4h<br>4h | webster, gate |
@@ -49,14 +49,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E6 |  | **A module label for every package group under internal/**<br>• Several lym modules have no label, so entries take the nearest one that says something else | [`label-coverage`](design-label-coverage.md) | 17h<br>17h | board |
 | E7 |  | **loom names the general run; today's loom is one variant**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | 2w<br>2h | shed, loom |
 | E8 |  | **lym ide seed colours the VS Code workspace too**<br>• A hub opened as a VS Code workspace has no colour, since lym ide seed seeds only worktrees. | [`workspace-ide-seed`](design-workspace-ide-seed.md) | 4h<br>4h | ide, workspaces |
-| E9 |  | **Reed navigation keys, Alt+arrows, are seeded by lym**<br>• Alt+arrow keys do not switch windows and sessions in Reed in this hub; lym should seed them. | [`reed-alt-arrow-keys-seeded`](design-reed-alt-arrow-keys-seeded.md) | 4h<br>4h | reed, config |
+| E9 |  | **Reed navigation keys, Alt+arrows, are seeded by lym**<br>• Alt+arrow keys do not switch windows and sessions in Reed in this hub; lym should seed them. | [`reed-alt-arrow-keys-seeded`](design-reed-alt-arrow-keys-seeded.md) | 4h<br>0m | reed, config |
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 2w<br>2w | board, loom |
 | E11 |  | **Creel daemon writes no delivery-level log, so an unconfirmed delivery cannot be diagnosed** | [`creel-delivery-log`](design-creel-delivery-log.md) | 4h<br>4h | creel |
 | E12 |  | **Revise the board README rendering**<br>• The README hides project members behind a bare link and has other unclear spots; the operator wants the rendering revised. | [`readme-omits-csharp-note`](design-readme-omits-csharp-note.md) | 2h<br>2h | board |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 11d<br>2d | webster, fabric, loom |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 10d<br>2d | fabric, batten |
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 6d<br>21h | burler, claude |
-| E28 |  | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 7d<br>0m | dotnet |
+| E28 |  | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 7d<br>3m | dotnet |
 
 ### Features (13)
 
