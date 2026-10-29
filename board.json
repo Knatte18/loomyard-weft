@@ -388,27 +388,6 @@
       "revised": "2026-10-27T10:00:27Z"
     },
     {
-      "id": 809,
-      "handle": "P2",
-      "slug": "dotnet",
-      "title": ".NET: LoomYard for C# repositories",
-      "kind": "project",
-      "labels": [
-        "enhancement",
-        "dotnet"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Running LoomYard on C#/.NET repositories such as Models: scoped gates, regression, a sandbox hub",
-      "body": "",
-      "created": "2026-10-25T06:18:01Z",
-      "revised": "2026-10-25T06:18:07Z",
-      "order": [
-        "csharp-sandbox-hub"
-      ]
-    },
-    {
       "id": 814,
       "handle": "E1",
       "slug": "beam-promote-keeps-discussion",

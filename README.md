@@ -6,10 +6,6 @@ Prime owner: `osl-1046`.
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Projects (1)
-
-- [P2 .NET: LoomYard for C# repositories](project-dotnet.md) — Running LoomYard on C#/.NET repositories such as Models: scoped gates, regression, a sandbox hub
-
 ## Tasks (2)
 
 Concrete and claimable; only a task can run.
