@@ -1,6 +1,6 @@
 # Map every rule of the loomyard CLAUDE.md to where lym agents already get it
 
-`claude-md-rule-map` · Task · research, pattern, stencil · running · Drift-Baseline
+`claude-md-rule-map` · Task · research, pattern, stencil · running · Darn-Write
 
 ## Goal
 
