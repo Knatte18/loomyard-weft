@@ -1,2 +1,0 @@
-{"stop_key":{"current_producer":"Run-Shed","history_length":5,"state":"failed"},"settler":"tackler","action":"spawn","outcome":"tackler spawned","at":"2026-10-27T13:36:31.931043778+01:00","target":"attempt-1"}
-{"stop_key":{"current_producer":"Run-Shed","history_length":5,"state":"failed"},"settler":"parent","action":"hand-back","outcome":"the tackler handed the stop back","at":"2026-10-27T13:36:31.931164364+01:00"}
