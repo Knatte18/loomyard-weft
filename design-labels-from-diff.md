@@ -1,4 +1,4 @@
-# Module labels from what a task touches, not only what it is about
+# Record the modules a landed task touched, for reports
 
 `labels-from-diff` · Note · enhancement, board, loom
 
@@ -10,8 +10,13 @@ The board's module labels are set by hand when an entry is written, before anyon
 The orch bundles tasks and sets `depends_on` by package overlap read from labels, so a label that misses a touched module hides an overlap.
 Counted by Haiku agents from the board history and `gh pr list`; scripts and tables in `.scratch/label-count/` in the prime, not committed.
 
-## Idea
+## Idea (operator, 2026-10-29)
 
-- Derive a task's module labels, or check them, from what the work touches: the plan's `Edit:`/`Create:` paths once Plan-Write has run, and the landed diff at landing.
-- At least, record the touched modules on the landed entry or in the run record, so overlap checks and reports read facts, not the labels written up front.
-- Whether a mismatch only warns, adds the label, or feeds the orch's overlap check is open.
+A label is useful only before the run starts, when the orch reads it to bundle tasks and set `depends_on`.
+Deriving a task's labels from the plan's `Edit:`/`Create:` paths or from the landed diff comes too late for that, so it is dropped.
+What remains is a fact for reports: record the modules a landed task touched on its entry or in its run record, so a report reads what the diff touched and not the labels written up front.
+The labels themselves stay the work of `label-coverage`: a label for every module, so the right one exists when the entry is written.
+
+## Open
+
+- Whether the touched-modules record is worth building at all once every module has a label.
