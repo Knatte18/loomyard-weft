@@ -50,6 +50,12 @@ Rationale: the board entry's first fix request is overtaken by that commit, and 
 
 - Shell redirection forms the splitter does not model, such as a here-document body, keep their current reading.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - redirect-amp-skip-unpinned (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: `git branch -a 2>/dev/null` and `git branch 2>&1 | head` are not mutating, and `git 2>/dev/null commit -m x` is.
