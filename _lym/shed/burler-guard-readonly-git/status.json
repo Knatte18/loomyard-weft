@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Code-Bouncer → done",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -109,6 +109,21 @@
       "outcome": "done",
       "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/burler-guard-readonly-git/_lym/reviews/code/round-1-bouncer-ledger.md",
       "at": "2026-10-29T13:35:48Z"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/burler-guard-readonly-git/_lym/landing/summary.md",
+      "at": "2026-10-29T13:36:12Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-29T13:36:11.184115192Z",
+          "end": "2026-10-29T13:36:11.184330926Z"
+        }
+      ]
     }
   ],
   "product": {
