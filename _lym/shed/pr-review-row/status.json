@@ -1,0 +1,20 @@
+{
+  "current_producer": "Seed-Child",
+  "state": "running",
+  "error": "",
+  "pause_requested": false,
+  "activity": {
+    "now": "Seed-Child",
+    "last": "Worktree-Create → done",
+    "wait": ""
+  },
+  "history": [
+    {
+      "producer": "Worktree-Create",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-29T12:58:16Z",
+      "machine": "osl-1046"
+    }
+  ]
+}
