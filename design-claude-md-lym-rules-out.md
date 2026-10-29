@@ -2,8 +2,6 @@
 
 `claude-md-lym-rules-out` · Task · enhancement, stencil, pattern, orch
 
-Depends on: [`pattern-spawn-and-links-scans`](design-pattern-spawn-and-links-scans.md)
-
 ## Goal
 
 Delete the loomyard `CLAUDE.md` after each rule that stands only in it has a new home, as the operator decided from `docs/research/claude-md-rule-map-2026-10-29.md` (2026-10-29).
