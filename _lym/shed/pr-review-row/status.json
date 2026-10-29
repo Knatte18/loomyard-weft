@@ -53,6 +53,15 @@
       "budget_exempt": true,
       "routed_to": "Run-Shed",
       "machine": "osl-1046"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → running at Drift-Baseline",
+      "at": "2026-10-29T13:35:25Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "machine": "osl-1046"
     }
   ]
 }
