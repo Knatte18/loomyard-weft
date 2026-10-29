@@ -1,14 +1,13 @@
-# The board README omits the note csharp-sandbox-hub
+# The board README hides project members, so a project looks empty
 
-`readme-omits-csharp-note` · Note · bug, board
+`readme-omits-csharp-note` · Note · enhancement, board
 
 ## Seen (operator, 2026-10-29)
 
-The note `csharp-sandbox-hub` does not appear in the rendered board README, though `lym board list` shows it as a note with the label `dotnet`.
-The project `dotnet` listed it in `order` while the note had no `project` field.
-Setting `project` to `dotnet` made the link two-sided, and the README was regenerated in the same second as that write, but the operator still did not see the note.
+The note `csharp-sandbox-hub` was not visible in the board README.
+It is a member of the project `dotnet`: it renders on that project's own page, `project-dotnet.md`, and no longer in the README's type groups.
+The README lists a project as one line, a link and its brief, with no member count or member titles, so a project with members looks as empty as one without, and the note looks gone.
 
 ## Idea
 
-Find which entries the README renderer drops, and why: an entry named in a project's `order` without pointing back, or a note with a module label of a project, are the first suspects.
-A project whose members are all missing should not render as an empty heading, and no entry should vanish from the README.
+The README shows each project's members, or at least their count, under its line, so a member never disappears from the README's view.

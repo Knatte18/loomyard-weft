@@ -748,21 +748,21 @@
     },
     {
       "id": 900,
-      "handle": "B1",
+      "handle": "E12",
       "slug": "readme-omits-csharp-note",
-      "title": "The board README omits the note csharp-sandbox-hub",
+      "title": "The board README hides project members, so a project looks empty",
       "kind": "note",
       "labels": [
-        "bug",
+        "enhancement",
         "board"
       ],
       "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "The operator does not see csharp-sandbox-hub in the rendered README, under dotnet or elsewhere, though lym board list shows it.",
-      "body": "## Seen (operator, 2026-10-29)\n\nThe note `csharp-sandbox-hub` does not appear in the rendered board README, though `lym board list` shows it as a note with the label `dotnet`.\nThe project `dotnet` listed it in `order` while the note had no `project` field.\nSetting `project` to `dotnet` made the link two-sided, and the README was regenerated in the same second as that write, but the operator still did not see the note.\n\n## Idea\n\nFind which entries the README renderer drops, and why: an entry named in a project's `order` without pointing back, or a note with a module label of a project, are the first suspects.\nA project whose members are all missing should not render as an empty heading, and no entry should vanish from the README.\n",
+      "brief": "A note in a project renders only on the project page, and the README lists the project as a bare link, so the member seems to be missing.",
+      "body": "## Seen (operator, 2026-10-29)\n\nThe note `csharp-sandbox-hub` was not visible in the board README.\nIt is a member of the project `dotnet`: it renders on that project's own page, `project-dotnet.md`, and no longer in the README's type groups.\nThe README lists a project as one line, a link and its brief, with no member count or member titles, so a project with members looks as empty as one without, and the note looks gone.\n\n## Idea\n\nThe README shows each project's members, or at least their count, under its line, so a member never disappears from the README's view.\n",
       "created": "2026-10-29T09:40:37Z",
-      "revised": "2026-10-29T09:40:37Z"
+      "revised": "2026-10-29T09:41:11Z"
     }
   ],
   "prime_owner": "osl-1046",
