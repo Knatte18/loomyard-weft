@@ -85,6 +85,12 @@ Rationale: The baseline agent changes no code, so a rule about docs landing with
 - `lym orch rules` may refuse a task session; then the rules-file draft goes to the parent to write.
 - The orch rules file is written on Bolt before this run lands; its new text names no file this task deletes, so it stands either way.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - drift-baseline-docs-rule-omitted (class decision, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: the darn write stencil names no `CLAUDE.md` and its step 4.3 states the docs and PATTERN rule.
