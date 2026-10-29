@@ -2,8 +2,6 @@
 
 `creel-flakes-and-adopt-names` · Task · bug, creel, gate · running · Darn-Write
 
-Depends on: [`chases-refused-forward-journal`](design-chases-refused-forward-journal.md)
-
 ## Seen
 
 Three findings, one task: two flaky creel tests and the adopt check mail that left the first flake undiagnosable.
