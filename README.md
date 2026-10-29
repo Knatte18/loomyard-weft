@@ -35,7 +35,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Act on the first test-time audit: reedengine wait, three over-grown test packages**<br>• Injectable wait for reedengine tier2 tests (40 s); prune tests in shell, boardtest and battenrecipe | [`test-prune-audit-leads`](design-test-prune-audit-leads.md) | darn |  | 13h<br>13h | reed, board, batten |
+| T1 | `draft` **Act on the first test-time audit: reedengine wait, three over-grown test packages**<br>• Injectable wait for reedengine tier2 tests (40 s); prune tests in shell, boardtest and battenrecipe | [`test-prune-audit-leads`](design-test-prune-audit-leads.md) | darn |  | 14h<br>14h | reed, board, batten |
 
 ## Notes (33)
 
@@ -93,11 +93,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F15 |  | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 2w<br>1d | reed, config, batten |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 13d<br>17h | burler, shed, orch, quarry, report |
 | F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 6d<br>1d | loom, shed, batten, workspaces, burler |
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T3 | **Fix two flaky creel tests and name failing tests in the adopt mail**<br>• Make the daemon lifecycle and TestCreelCLI EXTERNAL tests deterministic, and list failed tests in the adopt check mail.<br>• `profile: light` | [`creel-flakes-and-adopt-names`](design-creel-flakes-and-adopt-names.md) | 1h<br>40m | creel, gate |

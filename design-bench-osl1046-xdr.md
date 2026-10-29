@@ -2,8 +2,6 @@
 
 `bench-osl1046-xdr` · Task · research · running · Darn-Write
 
-Depends on: [`creel-flakes-and-adopt-names`](design-creel-flakes-and-adopt-names.md)
-
 ## Done (2026-10-20)
 
 The before and after measurement of `-trimpath` is in `docs/benchmarks/gate-test-xdr.md`.
