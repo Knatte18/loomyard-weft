@@ -31,6 +31,15 @@ The first `tier1` gate run died with "Internal CLR error (0x80131506)" after 900
 3. One darn run on this sandbox hub proves the whole C# path, with the hub anchored in a subdirectory (anchor not `.`) so the per-worktree `.lym-anchor` path is proved end to end in the same run.
 4. Models, on OSL-1046; nothing is done there until the operator names what to test.
 
+## Decision (operator, 2026-10-29)
+
+Skip the sandbox run and test directly on Models, a real C# repo on OSL-1046.
+Models' subpath is not `.`, so the anchor-in-a-subdirectory proof of step 3 is covered there.
+What the sandbox would have separated is lost: a failure on Models can be a lym fault or a Models fault, and Models cannot be shared for a reproduction.
+The sandbox hub stays as the place to reproduce a lym fault that Models shows.
+Setup follows `docs/dotnet-hub.md`, and a `lym gate report` baseline is taken on OSL-1046 first.
+The operator names what to test first.
+
 ## Regression harness (operator, 2026-10-25)
 
 The sandbox gets a small capture/compare regression harness on the pattern of Models' `NORCE.Models.NumericalBaseline`: a capture writes scrubbed output into a gitignored baseline directory, and a compare mode fails on the first deviation.
