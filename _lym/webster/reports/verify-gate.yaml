@@ -1,0 +1,9 @@
+attempt: 1
+cap: 2
+failures:
+    - id: github.com/Knatte18/loomyard/cmd/lym
+      kind: package
+      package: github.com/Knatte18/loomyard/cmd/lym
+      tail: "FAIL\tgithub.com/Knatte18/loomyard/cmd/lym\t6.632s"
+log_path: /home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/creel-mail-delivered-once/.lym/verify/verify-2.log
+fixer: fork
