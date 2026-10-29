@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **TestScheduler_Chases refused-forward subtest races alpha's delivery worker**<br>• The refused-forward chase subtest is a timing flake: it never waits for the delivery worker that reads the chase.<br>• `profile: light` | [`chases-refused-forward-journal`](design-chases-refused-forward-journal.md) | darn | Describe | osl-1046 | 49m<br>12m | creel |
+| T2 | **TestScheduler_Chases refused-forward subtest races alpha's delivery worker**<br>• The refused-forward chase subtest is a timing flake: it never waits for the delivery worker that reads the chase.<br>• `profile: light` | [`chases-refused-forward-journal`](design-chases-refused-forward-journal.md) | darn | PR-Review | osl-1046 | 49m<br>12m | creel |
 
 ### Ready (0)
 
@@ -62,7 +62,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B3 |  | **Flaky websterengine recover-batch subtest fails once with "record changed"** | [`webster-recover-batch-flake`](design-webster-recover-batch-flake.md) | 44m<br>44m | webster |
+| B3 |  | **Flaky websterengine recover-batch subtest fails once with "record changed"** | [`webster-recover-batch-flake`](design-webster-recover-batch-flake.md) | 45m<br>45m | webster |
 | B5 |  | **Burler fork guard halts a run on a read-only git command** | [`burler-guard-readonly-git`](design-burler-guard-readonly-git.md) | 44m<br>44m | burler, shed |
 | B6 |  | **Card gate runs tier0 only and misses tier1 breakage a card causes** | [`card-gate-misses-tier1`](design-card-gate-misses-tier1.md) | 44m<br>44m | webster, gate |
 
@@ -78,7 +78,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E6 |  | **A module label for every package group under internal/**<br>• Several lym modules have no label, so entries take the nearest one that says something else | [`label-coverage`](design-label-coverage.md) | 13h<br>13h | board |
 | E7 |  | **Run verbs in one shared namespace, not under lym loom**<br>• lym loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 2w<br>1d | shed, loom |
 | E8 |  | **lym ide seed colours the VS Code workspace too**<br>• A hub opened as a VS Code workspace has no colour, since lym ide seed seeds only worktrees. | [`workspace-ide-seed`](design-workspace-ide-seed.md) | 49m<br>49m | ide, workspaces |
-| E9 |  | **Reed navigation keys, Alt+arrows, are seeded by lym**<br>• Alt+arrow keys do not switch windows and sessions in Reed in this hub; lym should seed them. | [`reed-alt-arrow-keys-seeded`](design-reed-alt-arrow-keys-seeded.md) | 46m<br>46m | reed, config |
+| E9 |  | **Reed navigation keys, Alt+arrows, are seeded by lym**<br>• Alt+arrow keys do not switch windows and sessions in Reed in this hub; lym should seed them. | [`reed-alt-arrow-keys-seeded`](design-reed-alt-arrow-keys-seeded.md) | 47m<br>47m | reed, config |
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 13d<br>13d | board, loom |
 | E11 |  | **Creel daemon writes no delivery-level log, so an unconfirmed delivery cannot be diagnosed** | [`creel-delivery-log`](design-creel-delivery-log.md) | 44m<br>44m | creel |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 11d<br>1d | webster, fabric, loom |
@@ -91,7 +91,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 3w<br>1d | burler |
 | F2 | L | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lym-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 3w<br>1d | ide, fabric |
-| F3 |  | **Windows lym opens land tiled on the right KDE virtual desktop**<br>• Konsole and VS Code windows opened by lym placed by desktop and tile on KDE Plasma | [`kde-window-placement`](design-kde-window-placement.md) | 16h<br>16h | reed, ide, config |
+| F3 |  | **Windows lym opens land tiled on the right KDE virtual desktop**<br>• Konsole and VS Code windows opened by lym placed by desktop and tile on KDE Plasma | [`kde-window-placement`](design-kde-window-placement.md) | 17h<br>17h | reed, ide, config |
 | F4 |  | **A landing notice on request, per task**<br>• The orch can ask for one creel line when a named run lands; off unless set for that slug | [`landing-watch`](design-landing-watch.md) | 13h<br>13h | dobby, creel, orch |
 | F5 |  | **Fabric's ordinary-monorepo verb surface**<br>• Against plain git, fabric still lacks log, show, branch, tag, stash, revert, restore, rm/mv, rebase, cherry-pick and blame | [`fabric-monorepo-verbs`](design-fabric-monorepo-verbs.md) | 3w<br>3w | fabric |
 | F6 |  | **Talk to the orch through Slack**<br>• A Slack relay so the operator can reach the orch from a phone where Claude's own app is not allowed | [`reed-slack-relay`](design-reed-slack-relay.md) | 3w<br> | reed |
