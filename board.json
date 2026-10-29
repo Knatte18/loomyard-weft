@@ -669,6 +669,28 @@
       "body": "## Seen\n\nThe loomyard repository's `CLAUDE.md` holds, beside the rules for developing LoomYard itself, text that is general or that lym's agents need in every repository (operator, 2026-10-29).\nIts own section says a rule for every use of lym goes into lym, in the stencils and skills lym ships, never into this file.\nThe operator's view is that nothing in it needs to be there: the rules to follow are in `PATTERN.md`, which lym injects where it is needed, and a session opened by hand has no goal and needs none of it.\n\n## Idea\n\nDelete the loomyard `CLAUDE.md` once every rule that stands only in it has a new home:\n\n- Check each rule against `PATTERN.md`, the stencils and the plugin skills, and move any rule that stands only in `CLAUDE.md` to the place that reaches the agents that need it.\n- The cgo build requirement goes into `docs/` or an error message of the build script.\n- `update-plugins.sh` gets a guard that refuses a run no operator started, if it has none, in place of the text rule.\n- The terminology shorthands (Merriam, perch, board, Bolt) go to the orch rules, which are the only place that talks with the operator in them.\n\nIt follows from `warp-visibility`, which records that LoomYard adds no instruction file to any repository.\n",
       "created": "2026-10-29T12:04:44Z",
       "revised": "2026-10-29T12:30:40Z"
+    },
+    {
+      "id": 904,
+      "handle": "F7",
+      "slug": "pr-review-row",
+      "title": "PR-Review opens a pull request and starts an interactive agent to discuss it",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "loom",
+        "shed",
+        "shuttle",
+        "config"
+      ],
+      "issues": [],
+      "priority": "high",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Build the PR-Review stub: open the pull request, then a talkable agent session on its own configured model",
+      "body": "## Seen\n\n`PR-Review` is a stub today: `internal/landingshed/doc.go` calls it the human pull-request review that is not built yet, and `Finalize` opens, looks up and closes no pull request, so a landing makes no GitHub call.\nThe operator wants it built first, since a hub on Models needs a pull request to review before a run lands (operator, 2026-10-29).\n\n## Idea\n\nThe PR-Review row opens a pull request for the task branch and then starts an interactive agent session the operator can talk to, to discuss the pull request before it is merged.\nThe session has its own config key for the engine, model and effort it runs on, in the same `\u003calias\u003e[\u003ceffort\u003e]` form `lym shuttle open --model` takes.\nThe row sits where the stub already sits in the recipe, before Finalize, and its flag keeps the stub's meaning of off by default.\n\n## Open\n\n- How the run goes on after the discussion: the operator's word, the pull request merged on GitHub, or both, and what Finalize does with a pull request that is already merged.\n- Which credentials open the pull request: the hub's own repository may belong to another GitHub account than the session's, as Models does.\n- What the interactive agent is given: the diff, the plan and the decision record, which it reads itself, never as pre-read text in its prompt.\n- What happens to the pull request when the run is cancelled or the operator rejects it.\n",
+      "created": "2026-10-29T12:32:07Z",
+      "revised": "2026-10-29T12:32:07Z"
     }
   ],
   "prime_owner": "osl-1046",
