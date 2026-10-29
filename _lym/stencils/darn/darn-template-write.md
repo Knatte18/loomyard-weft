@@ -7,7 +7,7 @@
      decision_record_path and support_log_path are required markers, naming the two discussion files the writer writes before any code.
      prior_work is never empty: DarnTable fills it with (none) when it has nothing to tell.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lym-stencil: sha256=2b45457f36656670ca49c192fdd32255d6a616a6ed0727557b7b8aa8c669fb58 build=ba2a346b7d63e184b43f4c97ef8a29ae9ae77dab time=2026-10-28T18:20:54Z -->
+lym-stencil: sha256=3c38f882348fe8de627ba290f1aad4405f5479a469993b3ea888baca58a2432c build=c15d6390d28286d8e0b70fcac8ec021f9ef46d59 time=2026-10-29T14:15:15Z -->
 
 # Darn — make the change a board entry asks for, in one session
 
@@ -23,9 +23,6 @@ No operator is present, so make best-judgment calls and never block on a dialog.
 Read the board entry for task `{{.slug}}` with `lym board get '{"slug":"{{.slug}}"}'`.
 It is the whole statement of the change you make.
 Once the decision record at `{{.decision_record_path}}` holds `Added after Discussion` entries, they amend the board entry and win over its body where they differ.
-
-Also read the repository's `CLAUDE.md`.
-It names the docs and the checks a change to this repository carries.
 
 ## Step 2 — This spawn's work
 
@@ -74,7 +71,9 @@ A later spawn that finds both present and passing leaves them as they are.
    Follow the existing patterns, and the PATTERN entries in this prompt.
    Read every file the change touches, with the greps that find them, in one message before the first edit of each commit, and make independent edits in one message.
 2. Test with `lym gate test --wait` once, after the last edit of each commit, never after each edit; it computes its scope from your changes; never run a raw test command or a module-wide run.
-3. Update the docs the repository's `CLAUDE.md` names for your kind of change in the same commits as the code.
+3. Update, in the same commits as the code, the docs the change makes stale: the package doc of each package whose behavior changes, `doc.go` for a Go package;
+   the repository's overview doc when a module table or execution stack it shows changes;
+   and, when the repository has a `PATTERN.md`, its entry for a cross-cutting invariant the change adds or changes.
 4. Commit on the task branch in small, coherent commits, each leaving the tree green.
    Never push: the landing steps that follow push the branch.
 
