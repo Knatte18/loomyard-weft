@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Creel mail reaches the model and the operator once, in one message, and is logged**<br>• Fix the doubled Stop-hook delivery and its error label, let the idle ring carry the mail, and log each delivery attempt<br>• `profile: solid` | [`creel-mail-delivered-once`](design-creel-mail-delivered-once.md) | loom | Discussion-Burler-Fix | osl-1046 | 18h<br>42m | creel |
-| T3 | **Map every rule of the loomyard CLAUDE.md to where lym agents already get it**<br>• One darn docs run lands a per-rule table so the operator decides each rule before CLAUDE.md is deleted<br>• `profile: docs` | [`claude-md-rule-map`](design-claude-md-rule-map.md) | darn | Drift-Verify | osl-1046 | 5m<br>5m | pattern, stencil |
+| T3 | **Map every rule of the loomyard CLAUDE.md to where lym agents already get it**<br>• One darn docs run lands a per-rule table so the operator decides each rule before CLAUDE.md is deleted<br>• `profile: docs` | [`claude-md-rule-map`](design-claude-md-rule-map.md) | darn | Finalize | osl-1046 | 5m<br>5m | pattern, stencil |
 
 ### Ready (0)
 
