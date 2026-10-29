@@ -1,18 +1,18 @@
 {
   "runGuid": "c8e48468b7eabbdb323e353b975e6fee",
-  "planFingerprint": "62bb8d886080e5cbf7d83d6487ec34a4cf30d857ec68f1472d78f84fc1fdbbd0",
+  "planFingerprint": "0080ce804d0e5e11236166674339ccfd97653b5c07f2ef25361d9e123e480f79",
   "planFileHashes": {
     "00-overview.md": "f30d139c1d58f1df59113fcf17db45f1d1fb966da9e7eaa23f23ad84e3764bd6",
     "01-hook-output-seam.md": "1906e40c5cb431e3bb7df1e17a5caf70b624d6aa3742fb89eab9952eb2f34c54",
     "02-waiter-rewake-labels.md": "51199bc419e401d45de72eb8d055b5fca1b288469ccbc043e32fbd84bf9c8394",
     "03-ack-failure-releases.md": "5ee84c3885a061170909af242573349d3a5ddf37e99cb5a5a869c3ea175d3838",
     "04-ring-claims-mail.md": "9e74bef5d9feee52f28cdde328d0c4fc0184ac1503408549acbf6fecba242657",
-    "05-client-ring-ack.md": "b2231f2a9f667c099bf2bab00ac45d2d95721d7e8f42e636bc43e61d5cd391d1",
-    "06-hook-wait-hands-mail.md": "da3e60cadece418b7573a34a812bd4a60af55acf5da087e92eec9abd3286489e",
-    "07-ring-echo.md": "831772988b79933ebe6d3567e3f706d8b74595c89600d0be719ae1b3f39848fe",
-    "08-hook-read-renders-echo.md": "bb8c23b3c5a3484b3e7431c55087db9f5b3bbd00a3c4b805aab80a322482546e",
-    "09-claim-delivery-log.md": "f684c5a732b25a0d02ecf9475d3d3e8d8ccb78107e3a26772c0ae301548e7096",
-    "10-smoke-hook-delivery.md": "2619b3a994321304a5354dde5d7212237458cd1818bd2025d676d032460b2ee8"
+    "05-client-ring-ack.md": "5f0de576d3c9f26c942b244eead482ebc46d51bf85d6a0594bda1f33eee9f282",
+    "06-hook-wait-hands-mail.md": "f6e61826383719c8fdb0c7847984438d52d048c09af3852fa7d5f19f9fd10630",
+    "07-ring-echo.md": "1f4411620c6754f92bd0f780e4e455cca4f5d99d80d5f498a854cd450e2387f5",
+    "08-hook-read-renders-echo.md": "e23c8e394c1c3a1a6a6bc4b9e380b272e0414f2bcfb578f73c790d6a9d50cbc7",
+    "09-claim-delivery-log.md": "2f809ad8f862814a1994fbbb449d35d25dfb9c737ca2c8dc48c5ef0e3d312b9d",
+    "10-smoke-hook-delivery.md": "f7987347759733ff5af19b1b4f1b3ba5c598238162fdc55f69708c2f9bb21f81"
   },
   "planOverviewFrameHash": "f1a534d18f8448ca53f86cc9707fe2adc709501cc1abf2eed133abd4b6ffd6bd",
   "partition": [
@@ -215,7 +215,7 @@
       }
     }
   ],
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "3af924911cd224b267dfbd994a4414ce",
   "masterSessionId": "25e8c3e8-2951-44dc-b4f4-afcdbe80cad2",
   "masterEngine": "claude",
@@ -273,23 +273,46 @@
         "10-smoke-hook-delivery"
       ],
       "cardHashes": {
-        "05-client-ring-ack": "b2231f2a9f667c099bf2bab00ac45d2d95721d7e8f42e636bc43e61d5cd391d1",
-        "06-hook-wait-hands-mail": "da3e60cadece418b7573a34a812bd4a60af55acf5da087e92eec9abd3286489e",
-        "07-ring-echo": "831772988b79933ebe6d3567e3f706d8b74595c89600d0be719ae1b3f39848fe",
-        "08-hook-read-renders-echo": "bb8c23b3c5a3484b3e7431c55087db9f5b3bbd00a3c4b805aab80a322482546e",
-        "09-claim-delivery-log": "f684c5a732b25a0d02ecf9475d3d3e8d8ccb78107e3a26772c0ae301548e7096",
-        "10-smoke-hook-delivery": "2619b3a994321304a5354dde5d7212237458cd1818bd2025d676d032460b2ee8"
+        "05-client-ring-ack": "5f0de576d3c9f26c942b244eead482ebc46d51bf85d6a0594bda1f33eee9f282",
+        "06-hook-wait-hands-mail": "f6e61826383719c8fdb0c7847984438d52d048c09af3852fa7d5f19f9fd10630",
+        "07-ring-echo": "1f4411620c6754f92bd0f780e4e455cca4f5d99d80d5f498a854cd450e2387f5",
+        "08-hook-read-renders-echo": "e23c8e394c1c3a1a6a6bc4b9e380b272e0414f2bcfb578f73c790d6a9d50cbc7",
+        "09-claim-delivery-log": "2f809ad8f862814a1994fbbb449d35d25dfb9c737ca2c8dc48c5ef0e3d312b9d",
+        "10-smoke-hook-delivery": "f7987347759733ff5af19b1b4f1b3ba5c598238162fdc55f69708c2f9bb21f81"
       },
       "startSha": "28a7986793d892ef4333d78af4c79d15fe565fa8",
       "kind": "fork",
       "spawnedAt": "2026-10-29T13:47:24Z",
       "sessionId": "25e8c3e8-2951-44dc-b4f4-afcdbe80cad2",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-client-ring-ack",
+        "status": "done",
+        "head_sha": "0bbcb6b4c9145d6b165e94303a58520a9c2e76ee",
+        "deviations": [
+          "internal/creelcli/cli_test.go",
+          "internal/creelcli/hookread_test.go",
+          "internal/creelcli/smoke_llm_test.go",
+          "internal/creelengine/deliver_test.go",
+          "internal/creelengine/server_test.go",
+          "internal/creelengine/verbs.go"
+        ]
+      },
+      "cardShas": [
+        "0bbcb6b4c9145d6b165e94303a58520a9c2e76ee"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-creel-mail-delivered-once/25e8c3e8-2951-44dc-b4f4-afcdbe80cad2/subagents/agent-a9af13ef994427544.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-creel-mail-delivered-once/25e8c3e8-2951-44dc-b4f4-afcdbe80cad2/subagents/agent-a9af13ef994427544.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-creel-mail-delivered-once/25e8c3e8-2951-44dc-b4f4-afcdbe80cad2/subagents/agent-abd7d7d3c844b3732.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-creel-mail-delivered-once/25e8c3e8-2951-44dc-b4f4-afcdbe80cad2/subagents/agent-abd7d7d3c844b3732.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-creel-mail-delivered-once/25e8c3e8-2951-44dc-b4f4-afcdbe80cad2/subagents/agent-a9af13ef994427544.jsonl"
   ]
 }

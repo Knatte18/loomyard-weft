@@ -4,7 +4,7 @@
 - `internal/creelcli#TestSmokeCreelHookDelivery`
 
 **Create:**
-- `plan:internal/creelcli#claudeScenario.transcriptCount` -> `func (c *claudeScenario) transcriptCount(text string) int`
+- `internal/creelcli#claudeScenario.transcriptCount`
 
 **Uses:**
 - `internal/creelcli#forkTranscripts`

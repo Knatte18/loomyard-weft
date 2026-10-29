@@ -16,7 +16,7 @@
 - `internal/creelengine/doc.go`
 
 **Create:**
-- `plan:internal/creelengine#EchoHeading` -> `const EchoHeading = "[creel] Delivered while idle:"`
+- `internal/creelengine#EchoHeading`
 
 **Uses:**
 - `internal/creelengine#Store.FailJournalWrites`

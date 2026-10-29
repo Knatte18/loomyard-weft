@@ -12,8 +12,8 @@
 - `internal/creelengine/doc.go`
 
 **Create:**
-- `plan:internal/creelengine#Reading.logOutcome` -> `func (r *Reading) logOutcome(outcome string, released, dropped []int64, err error)`
-- `plan:internal/creelengine_test#TestStore_ClaimLog` -> `func TestStore_ClaimLog(t *testing.T)`
+- `internal/creelengine#Reading.logOutcome`
+- `internal/creelengine_test#TestStore_ClaimLog`
 
 **Uses:**
 - `internal/creelengine#Store.FailJournalWrites`

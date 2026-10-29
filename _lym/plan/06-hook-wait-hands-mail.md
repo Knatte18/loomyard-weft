@@ -12,11 +12,11 @@
 - `contracts/stencils/orch/orch-template-role.md`
 
 **Create:**
-- `plan:internal/creelcli#hookWaitExit` -> `func hookWaitExit(wakeCode int, wroteLines bool, err error) int`
-- `plan:internal/creelcli#TestHookWaitExit` -> `func TestHookWaitExit(t *testing.T)`
+- `internal/creelcli#hookWaitExit`
+- `internal/creelcli#TestHookWaitExit`
 
 **Uses:**
-- `plan:internal/creelengine#ErrAckUnsent`
+- `internal/creelengine#ErrAckUnsent`
 - `internal/creelcli#newHookRig`
 - `internal/creelcli#runCreelHook`
 - `internal/creelcli#hookLine`
