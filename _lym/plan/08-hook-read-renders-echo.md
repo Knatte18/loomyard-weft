@@ -11,7 +11,7 @@
 - `internal/shuttleengine/claudeengine/doc.go`
 
 **Uses:**
-- `plan:internal/creelengine#EchoHeading`
+- `internal/creelengine#EchoHeading`
 - `internal/creelcli#newHookRig`
 - `internal/creelcli#runCreelHook`
 - `internal/creelcli#hookLine`

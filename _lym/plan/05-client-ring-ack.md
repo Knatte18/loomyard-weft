@@ -10,7 +10,7 @@
 - `internal/creelengine/doc.go`
 
 **Create:**
-- `plan:internal/creelengine#ErrAckUnsent` -> `var ErrAckUnsent = errors.New("creel: the acknowledgement could not be sent, so the daemon journaled nothing")`
+- `internal/creelengine#ErrAckUnsent`
 
 **Uses:**
 - `internal/creelengine_test#rig.client`
