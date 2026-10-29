@@ -210,25 +210,6 @@
       "revised": "2026-10-27T10:00:27Z"
     },
     {
-      "id": 554,
-      "handle": "E10",
-      "slug": "labels-from-diff",
-      "title": "Record the modules a landed task touched, for reports",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "board",
-        "loom"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A label helps only before the run starts, so deriving labels after the plan is dropped; a touched-modules record on the landed entry remains",
-      "body": "## Seen (count, 2026-10-15)\n\nOf 50 landings on `main` from 2026-10-05 to 2026-10-15 that changed non-test Go code in `internal/shuttleengine/*.go`, 47 were matched to their task through the closing PR comment, and only 24 of those carried the `shuttle` label.\nThe others carried labels for what the task was about (`reed`, `loom`, `burler`, `batten`, `stencil`), not for every package its diff touched: `run-pane-timing`, `overview-seats`, `hibernate-trigger`, `merge-review`, `twill-discusser` and `small-fixes-batch` among them.\nThe board's module labels are set by hand when an entry is written, before anyone knows which packages the work will touch.\nThe orch bundles tasks and sets `depends_on` by package overlap read from labels, so a label that misses a touched module hides an overlap.\nCounted by Haiku agents from the board history and `gh pr list`; scripts and tables in `.scratch/label-count/` in the prime, not committed.\n\n## Idea (operator, 2026-10-29)\n\nA label is useful only before the run starts, when the orch reads it to bundle tasks and set `depends_on`.\nDeriving a task's labels from the plan's `Edit:`/`Create:` paths or from the landed diff comes too late for that, so it is dropped.\nWhat remains is a fact for reports: record the modules a landed task touched on its entry or in its run record, so a report reads what the diff touched and not the labels written up front.\nThe labels themselves stay the work of `label-coverage`: a label for every module, so the right one exists when the entry is written.\n\n## Open\n\n- Whether the touched-modules record is worth building at all once every module has a label.\n",
-      "created": "2026-10-15T10:34:27Z",
-      "revised": "2026-10-29T13:25:42Z"
-    },
-    {
       "id": 568,
       "handle": "F17",
       "slug": "orchestrator-survey-ideas",
