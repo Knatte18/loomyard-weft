@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Parent-Align",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Drift-Await → skipped",
+    "now": "Parent-Align",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -241,6 +241,33 @@
       "output": "",
       "at": "2026-10-29T13:35:54Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/creel-mail-delivered-once/_lym/webster/summary.md",
+      "at": "2026-10-29T14:17:37Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-29T14:04:37.193929717Z",
+          "end": "2026-10-29T14:12:26.533325871Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-29T14:12:26.980778563Z",
+          "end": "2026-10-29T14:15:06.247954203Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-29T14:15:06.277166819Z",
+          "end": "2026-10-29T14:17:36.31404878Z"
+        }
+      ]
     }
   ],
   "product": {
