@@ -64,6 +64,12 @@ Rationale: the section is a measurement report and its numbers stay, but a reade
 
 - Parallel `tier2` tests raise the load on the tmux servers they start, so a wait bounded at a few seconds could time out on a loaded host; the gate runs the package several times before landing to check.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - spawn-test-serial-tests-unnamed-global-state (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1, D3: a gate run of `internal/reedengine`'s `tier2` tier passes with its package time well under the serial 58 s, and every test that does not call `t.Parallel` carries a comment naming the process-global state it touches.
