@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Bouncer",
+  "current_producer": "Drift-Baseline",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Bouncer",
-    "last": "Discussion-Burler-Fix → bounced to Discussion-Bouncer",
+    "now": "Drift-Baseline",
+    "last": "Discussion-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -159,6 +159,12 @@
       ],
       "budget_exempt": true,
       "routed_to": "Discussion-Bouncer"
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/creel-mail-delivered-once/_lym/reviews/discussion/round-3-bouncer-ledger.md",
+      "at": "2026-10-29T12:56:43Z"
     }
   ],
   "product": {
