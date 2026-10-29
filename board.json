@@ -776,6 +776,27 @@
       "body": "Imported from [issue #898](https://github.com/Knatte18/loomyard/issues/898).\n\n## What happened\n\nA `lym loom` run halted `failed` (anomaly `producer-hard-failure`) at producer `Discussion-Burler-Review`, round 2 attempt 2.\nThe halt reason from `shedadapters` said the burler review fork \"ran a git-mutating command\".\nThe command it flagged was a chain of read-only git inspections: `git branch -a --contains \u003csha\u003e`, `git merge-base --is-ancestor \u003csha\u003e HEAD` and `git show --stat \u003csha\u003e`, piped through `head` and `grep`.\nNone of these changes repository state.\n\n## Why it is abnormal\n\nThe fork guard that rejects state-mutating git commands misclassifies read-only commands as mutating.\nLikely causes: it matches on the `branch` verb without checking for a mutating flag, or it treats the whole compound line (pipes, `\u0026\u0026`, `||`, `2\u003e/dev/null`) as unsafe.\nA false positive here is a hard failure, so a review segment that was working normally ended the run.\n\n## What to do\n\nMake the fork git guard classify by verb and arguments:\nallow `branch` with listing flags (`-a`, `-r`, `--contains`, `--list`), `merge-base`, `show`, `log`, `diff`, `status` and `rev-parse`, and judge each simple command in a pipeline or `\u0026\u0026`/`||` chain on its own.\nAdd a regression test with the command line above.\nConsider downgrading a guard hit from `producer-hard-failure` to a retried attempt, since the fork changed nothing.\n\nTrace file: `.lym/logs/trace-20261028T105548Z-7bfaff2abe252dc3-993265.log`.\n\nTask slug `validator-checks`; source note: `loom-halt.md`.\n",
       "created": "2026-10-29T07:41:25Z",
       "revised": "2026-10-29T07:41:25Z"
+    },
+    {
+      "id": 898,
+      "handle": "B6",
+      "slug": "card-gate-misses-tier1",
+      "title": "Card gate runs tier0 only and misses tier1 breakage a card causes",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "webster",
+        "gate"
+      ],
+      "issues": [
+        896
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #896](https://github.com/Knatte18/loomyard/issues/896).\n\nA card that made `PaneMail` persist on every strand broke a tier1 `creelcli` test.\nThe card gate runs tier0 only, so it did not run that test; the later batch gate found the breakage.\nThe failure surfaced a card late, away from the change that caused it.\n\nThis is abnormal: a card's gate can pass while its own change breaks a higher-tier test, so the fix lands outside the card that introduced it.\nConsider letting the card gate run the tier1 tests of packages the card's diff touches, or flagging in the card result that higher tiers were not run.\n\nProvenance: task `creel-hook-post`, note `07-shuttle-idle-no-turn.md`.\n",
+      "created": "2026-10-29T07:41:27Z",
+      "revised": "2026-10-29T07:41:27Z"
     }
   ],
   "prime_owner": "osl-1046",
