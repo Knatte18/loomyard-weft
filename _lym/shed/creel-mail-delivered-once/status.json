@@ -1,11 +1,11 @@
 {
-  "current_producer": "Drift-Baseline",
+  "current_producer": "Plan-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Drift-Baseline",
-    "last": "Discussion-Bouncer → done",
+    "now": "Plan-Write",
+    "last": "Drift-Baseline → skipped",
     "wait": ""
   },
   "history": [
@@ -165,6 +165,13 @@
       "outcome": "done",
       "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/creel-mail-delivered-once/_lym/reviews/discussion/round-3-bouncer-ledger.md",
       "at": "2026-10-29T12:56:43Z"
+    },
+    {
+      "producer": "Drift-Baseline",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-10-29T12:56:44Z",
+      "reason": "drift.enabled = false"
     }
   ],
   "product": {
