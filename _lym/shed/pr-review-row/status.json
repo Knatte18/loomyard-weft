@@ -1,12 +1,11 @@
 {
-  "current_producer": "Plan-Bouncer",
+  "current_producer": "Drift-Await",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Bouncer",
-    "last": "Plan-Bouncer → awaiting",
+    "now": "Drift-Await",
+    "last": "Plan-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -254,6 +253,13 @@
       "outcome": "awaiting",
       "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/pr-review-row/_lym/reviews/plan/round-3-bouncer-ledger.md",
       "at": "2026-10-30T06:48:22Z"
+    },
+    {
+      "producer": "Plan-Bouncer",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/pr-review-row/_lym/reviews/plan/round-3-bouncer-ledger.md",
+      "at": "2026-10-30T06:49:07Z",
+      "by": "shed"
     }
   ],
   "product": {
