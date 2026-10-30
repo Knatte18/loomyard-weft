@@ -619,6 +619,26 @@
       "created": "2026-10-29T13:50:51Z",
       "revised": "2026-10-30T13:54:42Z",
       "profile": "solid"
+    },
+    {
+      "id": 919,
+      "handle": "E8",
+      "slug": "seed-starts-at-start",
+      "title": "A seed says only that a run starts at its start, with no producer name",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom",
+        "pawl",
+        "shed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The shared seed names Preflight as the first producer for every recipe; the seed should name none, and the recipe supplies its first row.",
+      "body": "## Seen (operator, 2026-10-30)\n\nA new beam stopped at once because the shared seed set its status file's `current_producer` to `Preflight`, a row the pawl recipe lacked.\nThe seed names the producer an inner run starts at, so each recipe's first row must match a name hard-coded in `loomshed.Seed` (`internal/loomshed/seed.go`), which the bootstrap shared by every inner recipe calls.\n\n## Design (operator, 2026-10-30)\n\n- The seed names no producer: it says only that the run starts at its start, and the recipe's first row is the start.\n- A seed can then never name a row its recipe lacks, whatever recipe a run is seeded for.\n- The change reaches the shared seeding for loom, darn and pawl, how the status file records the current producer before the first pass, and the verbs that move a run (`goto`, resume), which the task checks.\n",
+      "created": "2026-10-30T13:58:16Z",
+      "revised": "2026-10-30T13:58:16Z"
     }
   ],
   "prime_owner": "osl-1046",
