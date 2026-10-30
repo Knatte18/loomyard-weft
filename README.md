@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-30 12:14 UTC; every age below is as of then.
+Rendered 2026-10-30 12:15 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **A module label for every package group under internal/**<br>• Several lym modules have no label, so entries take the nearest one that says something else<br>• `profile: docs` | [`label-coverage`](design-label-coverage.md) | darn | blocked · PR-Review | osl-1046 | 1d<br>1h | board |
-| T2 | **Land a run whose branch has no commits beyond its parent without a pull request**<br>• PR-Review fails with 422 on an empty branch; it must skip the pull request and land empty, and the failure text must not blame the token<br>• `profile: light` | [`pr-review-empty-branch`](design-pr-review-empty-branch.md) | darn | Code-Bouncer | osl-1046 | 1h<br>43m | landing |
+| T2 | **Land a run whose branch has no commits beyond its parent without a pull request**<br>• PR-Review fails with 422 on an empty branch; it must skip the pull request and land empty, and the failure text must not blame the token<br>• `profile: light` | [`pr-review-empty-branch`](design-pr-review-empty-branch.md) | darn | Code-Bouncer | osl-1046 | 1h<br>44m | landing |
 
 ### Ready (0)
 
@@ -55,7 +55,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E4 |  | **Prove the dotnet scoper, shared build and Drift on the C# sandbox hub**<br>• Switch the sandbox gate to scoper dotnet, a build step and --no-build, then enable Drift there | [`sandbox-dotnet-gate`](design-sandbox-dotnet-gate.md) | 22h<br>22h | dotnet, gate |
 | E7 |  | **loom names the general run; today's loom is one variant**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | 2w<br>1d | shed, loom |
 | E8 |  | **Dobby sends the batten notices, not a row of the batten recipe**<br>• Move quiet, driver-dead and api-error detection from battenshed/notice.go into dobby loop over the runs it drives | [`notices-from-dobby`](design-notices-from-dobby.md) | 23h<br>23h | dobby, batten |
-| E12 |  | **Revise the board README rendering**<br>• The README hides project members behind a bare link and has other unclear spots; the operator wants the rendering revised. | [`readme-omits-csharp-note`](design-readme-omits-csharp-note.md) | 1d<br>22h | board |
+| E12 |  | **Revise the board README rendering**<br>• The README hides project members behind a bare link and has other unclear spots; the operator wants the rendering revised. | [`readme-omits-csharp-note`](design-readme-omits-csharp-note.md) | 1d<br>0m | board |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 12d<br>3d | webster, fabric, loom |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 11d<br>3d | fabric, batten |
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 7d<br>1d | burler, claude |
