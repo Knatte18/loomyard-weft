@@ -1,0 +1,217 @@
+diff --git a/contracts/recipes/pawl-recipe.yaml b/contracts/recipes/pawl-recipe.yaml
+index c3f585a6..64548e58 100644
+--- a/contracts/recipes/pawl-recipe.yaml
++++ b/contracts/recipes/pawl-recipe.yaml
+@@ -1,4 +1,5 @@
+-# pawl-recipe.yaml is the pawl recipe, a beam's life: Beam-Up brings the beam up, Beam-Await holds the run
++# pawl-recipe.yaml is the pawl recipe, a beam's life: Preflight checks the pair, as loom and darn do, so the
++# row the shared seed names is the recipe's entry, Beam-Up brings the beam up, Beam-Await holds the run
+ # until a land request passes the landing re-check, Parent-Align brings the parent's upstream tip into the
+ # beam, the Code-Review perch reviews the beam's diff, Beam-Describe writes the change description from the
+ # beam's board entry and the commits it adds, PR-Review lands the beam through a pull request when the
+@@ -7,14 +8,14 @@
+ # It is embedded into the binary by the sibling recipes.go rather than read from disk. The row names below
+ # are the durable on-disk identities that resume depends on.
+ #
+-# The rows are Beam-Up, Beam-Await, Parent-Align, the Code-Review perch (Code-Bouncer,
++# The rows are Preflight, Beam-Up, Beam-Await, Parent-Align, the Code-Review perch (Code-Bouncer,
+ # Code-Burler-Review, Code-Burler-Fix), Beam-Describe, PR-Review, Finalize and Beam-Down.
+ # Beam-Up, Beam-Await and Beam-Down are Go producers that spawn no agent, and Beam-Await returns Done only
+ # for a land request that names this run and passes the re-check.
+ #
+-# The hold boundary: a beam project's run holds its beam from Parent-Align on, so Beam-Up and Beam-Await
+-# leave the beam open to members, and boardengine.RunHolds names those two rows and batten's claim row as
+-# the hold-free ones. A test pins that list against this recipe's row names.
++# The hold boundary: a beam project's run holds its beam from Parent-Align on, so Preflight, Beam-Up and
++# Beam-Await leave the beam open to members, and boardengine.RunHolds names those three rows and batten's
++# claim row as the hold-free ones. A test pins that list against this recipe's row names.
+ #
+ # Code-Bouncer, Code-Burler-Review and Code-Burler-Fix are the Code-Review perch, the same perch the darn
+ # and loom recipes run, with the same row names, segment, run_subdir, role_prefix, rubric, fan and
+@@ -34,16 +35,22 @@
+ # halts for the orch. A conflict or a large merge lands through the gate in every recipe: the merge
+ # fixer takes a failing merged tree.
+ #
++# Preflight carries no on_stuck: nothing in the list produces what it gates, so a human is the only thing
++# that can fix it.
+ # Parent-Align and Beam-Describe carry no on_stuck: Parent-Align fixes its own merge and test failures in
+ # its merge fixer, and a description that fails validation halts the run for the orch, which ends the
+ # landing and fixes the entry.
+ 
+ version: 1
+-entry: Beam-Up
++entry: Preflight
+ terminals:
+   - Beam-Down
+ 
+ producers:
++  - name: Preflight
++    engine: Preflight
++    on_done: Beam-Up
++
+   - name: Beam-Up
+     engine: BeamUp
+     on_done: Beam-Await
+diff --git a/internal/battencli/dobbyreads.go b/internal/battencli/dobbyreads.go
+index fa2ce7ac..2c56dd31 100644
+--- a/internal/battencli/dobbyreads.go
++++ b/internal/battencli/dobbyreads.go
+@@ -176,7 +176,7 @@ func DobbyRuns(prime *lymcwd.Location, geom dobbyengine.Geometry, parents *Dobby
+ }
+ 
+ // runTakesNoSlot reports whether the run behind task takes no slot under its dobby's max_runs: a beam project whose status is a run status and whose run does not hold the beam.
+-// A pawl run stands at Worktree-Create, Beam-Up and Beam-Await with no hold, waiting on its members, and takes a slot from Parent-Align on.
++// A pawl run stands at Worktree-Create, Preflight, Beam-Up and Beam-Await with no hold, waiting on its members, and takes a slot from Parent-Align on.
+ func runTakesNoSlot(task boardengine.Task) bool {
+ 	return task.Kind == boardengine.KindProject && task.Beam && boardengine.IsRunStatus(task.Status) && !boardengine.RunHolds(task)
+ }
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index 6e8260eb..bc761ee1 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -224,7 +224,7 @@
+ // # The landing hold
+ //
+ // Whether an entry is held and whether its run is in flight are two questions with two readers.
+-// `RunHolds` answers the first: it is true for every entry `IsRunStatus` accepts, except a beam project whose producer half is `Worktree-Create`, `Beam-Up` or `Beam-Await`, the rows a pawl run stands at before it reaches Parent-Align, a halt at any of them included.
++// `RunHolds` answers the first: it is true for every entry `IsRunStatus` accepts, except a beam project whose producer half is `Worktree-Create`, `Preflight`, `Beam-Up` or `Beam-Await`, the rows a pawl run stands at before it reaches Parent-Align, a halt at any of them included.
+ // `boardengine` imports no recipe package, so the pawl recipe's own test pins that list against the claim row's and the recipe's row names.
+ // The readers that ask whether an entry is held switch on it: membership of a task in a beam, the Project layer, a member forking from its beam, a verb running inside the beam and the `lym loom peers` list.
+ // The readers that ask whether a run is in flight keep `IsRunStatus` and see the pawl run at every row: adopt's started-entry test, tender's owner-pause selection, batten's owner check and the parent dobby's driven runs.
+diff --git a/internal/boardengine/runlock.go b/internal/boardengine/runlock.go
+index 3733f2b2..6c244758 100644
+--- a/internal/boardengine/runlock.go
++++ b/internal/boardengine/runlock.go
+@@ -37,9 +37,9 @@ func RunStatusProducer(status *string) (string, bool) {
+ 	return producer, true
+ }
+ 
+-// holdFreeProducers are the producer rows at which a beam project's run holds nothing of its entry: batten's claim row and the pawl run's first two rows.
++// holdFreeProducers are the producer rows at which a beam project's run holds nothing of its entry: batten's claim row and the pawl run's rows before Parent-Align.
+ // A halt at any of them holds nothing either, since the hold is judged from the producer half of the status alone.
+-var holdFreeProducers = []string{"Worktree-Create", "Beam-Up", "Beam-Await"}
++var holdFreeProducers = []string{"Worktree-Create", "Preflight", "Beam-Up", "Beam-Await"}
+ 
+ // RunHolds reports whether the run behind task's status holds the entry: whether the entry's members may not join, fork from or run inside it, and its scope fields take no edit.
+ // It is true for every entry whose status IsRunStatus accepts, except a beam project whose producer half is one of the hold-free rows.
+diff --git a/internal/boardengine/runlock_test.go b/internal/boardengine/runlock_test.go
+index f9bafb44..2332e9ae 100644
+--- a/internal/boardengine/runlock_test.go
++++ b/internal/boardengine/runlock_test.go
+@@ -363,6 +363,7 @@ func TestRunHolds(t *testing.T) {
+ 		{"TaskAtAHoldFreeProducerName", task(boardengine.KindTask, false, strPtr("running · Beam-Await")), true},
+ 		{"GroupingProjectRunning", task(boardengine.KindProject, false, strPtr("running · Beam-Await")), true},
+ 		{"BeamAtWorktreeCreate", task(boardengine.KindProject, true, strPtr("running · Worktree-Create")), false},
++		{"BeamAtPreflight", task(boardengine.KindProject, true, strPtr("running · Preflight")), false},
+ 		{"BeamAtBeamUp", task(boardengine.KindProject, true, strPtr("running · Beam-Up")), false},
+ 		{"BeamAtBeamAwaitRunning", task(boardengine.KindProject, true, strPtr("running · Beam-Await")), false},
+ 		{"BeamAtBeamAwaitBlocked", task(boardengine.KindProject, true, strPtr("blocked · Beam-Await")), false},
+diff --git a/internal/dobbyengine/doc.go b/internal/dobbyengine/doc.go
+index 4ebe31a5..c5616128 100644
+--- a/internal/dobbyengine/doc.go
++++ b/internal/dobbyengine/doc.go
+@@ -101,7 +101,7 @@
+ //
+ // The slot rule:
+ //
+-//   - A run whose RunView carries NoSlot takes no slot under `max_runs`, a pawl run whose landing hold does not stand, which only waits on its members at Worktree-Create, Beam-Up and Beam-Await; it takes one from Parent-Align on.
++//   - A run whose RunView carries NoSlot takes no slot under `max_runs`, a pawl run whose landing hold does not stand, which only waits on its members at Worktree-Create, Preflight, Beam-Up and Beam-Await; it takes one from Parent-Align on.
+ //     The parent's dobby still schedules the run's passes, owed full passes and probes as for every run it drives, and the view's `max_runs` reasons follow, since BuildView counts through the same rule.
+ //
+ // The "can land" notice:
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index c1f949a7..e1742694 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -8,7 +8,7 @@
+ // and an error the status file holds that the stop did not write, such as the step's own producer failure, on a `status error:` line of its reason.
+ //
+ // A run seeded with the recipe `pawl` is a beam's life, batten's Seed-Child seeds it in the beam's pair.
+-// Its shed reads Beam-Up, Beam-Await, Parent-Align, the Code-Review perch, Beam-Describe, PR-Review, Finalize and Beam-Down, with no plan and no reroute edge.
++// Its shed reads Preflight, Beam-Up, Beam-Await, Parent-Align, the Code-Review perch, Beam-Describe, PR-Review, Finalize and Beam-Down, with no plan and no reroute edge.
+ // wire fills `Env.Pawl` for it through `pawlDeps`: the run's seed id is the seed's start time, the status is written on the beam's project entry through the board, and Beam-Up's one step is `orchcli.BeamUp` with no prepare, since the run already judged origin.
+ // The beam's dobby is stopped through `runproc.EndRole` by its `RoleDobby` record, and restarted through `dobbyengine.EnsureLive` naming the beam alone.
+ // Beam-Await's re-check reads `battencli.ReadBeamLandBlockers` and `battencli.BeamLandRefusal` with the beam's owner and its parent's owner, and words each failure as `pawlRecheckLines` does, naming `lym adopt <beam>` or the parent's adopt subject, `root` for the prime.
+diff --git a/internal/loomcli/wiring_beam_test.go b/internal/loomcli/wiring_beam_test.go
+index 2218f771..0c5b5e6c 100644
+--- a/internal/loomcli/wiring_beam_test.go
++++ b/internal/loomcli/wiring_beam_test.go
+@@ -48,7 +48,7 @@ import (
+ func TestWire_BeamRecipe(t *testing.T) {
+ 	t.Parallel()
+ 
+-	t.Run("a pawl seed fills the BeamDescribe and Pawl seams and routes its nine rows with no reroute edge", func(t *testing.T) {
++	t.Run("a pawl seed fills the BeamDescribe and Pawl seams and routes its rows with no reroute edge", func(t *testing.T) {
+ 		t.Parallel()
+ 		loc := hubLocation(t, "pair", ".")
+ 		c := &loomCLI{runID: shedrun.SelfRunID, recipe: shedrun.RecipePawl}
+@@ -91,7 +91,7 @@ func TestWire_BeamRecipe(t *testing.T) {
+ 				t.Errorf("row %q OnReroute = %q; want none", producer.Name, producer.OnReroute)
+ 			}
+ 		}
+-		if want := []string{"Beam-Up", "Beam-Await", "Parent-Align", "Code-Bouncer", "Code-Burler-Review", "Code-Burler-Fix", "Beam-Describe", "PR-Review", "Finalize", "Beam-Down"}; strings.Join(rows, ",") != strings.Join(want, ",") {
++		if want := []string{"Preflight", "Beam-Up", "Beam-Await", "Parent-Align", "Code-Bouncer", "Code-Burler-Review", "Code-Burler-Fix", "Beam-Describe", "PR-Review", "Finalize", "Beam-Down"}; strings.Join(rows, ",") != strings.Join(want, ",") {
+ 			t.Errorf("recipeRouting() rows = %v; want %v", rows, want)
+ 		}
+ 	})
+diff --git a/internal/loomrecipe/doc.go b/internal/loomrecipe/doc.go
+index c807f803..fc432406 100644
+--- a/internal/loomrecipe/doc.go
++++ b/internal/loomrecipe/doc.go
+@@ -27,7 +27,7 @@
+ // LoomRetiredRows maps the landing row's former name, `Merge-In`, onto `Parent-Align` for a loom run the same way.
+ //
+ // NewPawl is the third builder: it builds the embedded pawl recipe, a beam's life, and PawlRouting projects that recipe's routing.
+-// The recipe reads `Beam-Up → Beam-Await → Parent-Align → Code-Review → Beam-Describe → PR-Review → Finalize → Beam-Down`, with no reroute edge:
++// The recipe reads `Preflight → Beam-Up → Beam-Await → Parent-Align → Code-Review → Beam-Describe → PR-Review → Finalize → Beam-Down`, with no reroute edge:
+ // a merge Finalize cannot land halts the run for the orch.
+ // Its Code-Review perch is darn's, with the same names, segment, rubric and `loom.yaml` keys, the project entry's board snapshot as its only answer key and no carry-over.
+ // NewPawl takes the perch's budget from shedrecipe.Env.Segments["Code-Review"], and PawlRouting from a map keyed by segment, as NewDarn and DarnRouting do, and both refuse a missing Code-Review entry and a value below 0.
+diff --git a/internal/loomrecipe/pawlrecipe_test.go b/internal/loomrecipe/pawlrecipe_test.go
+index c82b15d5..7d65898e 100644
+--- a/internal/loomrecipe/pawlrecipe_test.go
++++ b/internal/loomrecipe/pawlrecipe_test.go
+@@ -1,6 +1,6 @@
+ //go:build tier0
+ 
+-// pawlrecipe_test.go covers NewPawl and PawlRouting: the pawl recipe's ten rows, their edges, with Beam-Describe handing to PR-Review, and producer types, the Code-Review perch's budget, the absence of a reroute edge on Finalize, the refusal of an unfilled seam, and the hold boundary the recipe's rows pin against boardengine.RunHolds.
++// pawlrecipe_test.go covers NewPawl and PawlRouting: the pawl recipe's rows, their edges, with Beam-Describe handing to PR-Review, and producer types, the Code-Review perch's budget, the absence of a reroute edge on Finalize, the refusal of an unfilled seam, and the hold boundary the recipe's rows pin against boardengine.RunHolds.
+ 
+ package loomrecipe
+ 
+@@ -15,6 +15,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/landingshed"
+ 	"github.com/Knatte18/loomyard/internal/loomshed"
+ 	"github.com/Knatte18/loomyard/internal/pawlengine"
++	"github.com/Knatte18/loomyard/internal/preflightshed"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/testkit/shedfake"
+@@ -36,6 +37,7 @@ func wantPawlRows(t *testing.T) []wantPawlRow {
+ 		t.Fatalf("landingshed.NewBeamDescribe() error = %v; want nil", err)
+ 	}
+ 	return []wantPawlRow{
++		{loomshed.NamePreflight, reflect.TypeOf(preflightshed.NewPreflight("", "")), pawlengine.NameBeamUp, ""},
+ 		{pawlengine.NameBeamUp, reflect.TypeOf(&pawlengine.BeamUp{}), pawlengine.NameBeamAwait, ""},
+ 		{pawlengine.NameBeamAwait, reflect.TypeOf(&pawlengine.BeamAwait{}), loomshed.NameParentAlign, ""},
+ 		{loomshed.NameParentAlign, reflect.TypeOf(&landingshed.ParentAlign{}), loomshed.NameCodeBouncer, ""},
+@@ -52,7 +54,7 @@ func wantPawlRows(t *testing.T) []wantPawlRow {
+ func TestNewPawl(t *testing.T) {
+ 	t.Parallel()
+ 
+-	t.Run("BuildsTheTenRowsAndTheirEdges", func(t *testing.T) {
++	t.Run("BuildsTheRowsAndTheirEdges", func(t *testing.T) {
+ 		t.Parallel()
+ 		env, paths := testEnv(t)
+ 		setCodeBudget(&env, 3)
+@@ -161,8 +163,8 @@ func TestPawlRouting(t *testing.T) {
+ 		if err != nil {
+ 			t.Fatalf("PawlRouting() error = %v; want nil", err)
+ 		}
+-		if routing.Entry != pawlengine.NameBeamUp {
+-			t.Errorf("PawlRouting().Entry = %q; want %q", routing.Entry, pawlengine.NameBeamUp)
++		if routing.Entry != loomshed.NamePreflight {
++			t.Errorf("PawlRouting().Entry = %q; want %q", routing.Entry, loomshed.NamePreflight)
+ 		}
+ 		want := wantPawlRows(t)
+ 		if len(routing.Producers) != len(want) {
