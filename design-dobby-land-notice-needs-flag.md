@@ -10,12 +10,12 @@ The notice is `landNotice` in `internal/dobbyengine/landnotice.go`: it goes out 
 
 ## Design (operator, 2026-10-30)
 
-- Dobby waits with the can-land notice until the beam's own worktree has set a flag saying the beam is considered finished and ready to merge.
+- Dobby waits with the can-land notice until the beam has a flag saying it is considered finished and ready to merge.
 - Without the flag, nothing working under the beam is no cause for a notice, however long the beam has been idle.
-- The flag is set from the beam's worktree, never by dobby.
+- The beam's orch sets the flag, or the operator; which of them does not matter.
+  Dobby never sets it.
+- `lym beam land` refuses without the flag.
 
 ## Open
 
-- Who sets the flag and through which verb: the beam's orch on the operator's word, or a verb of its own.
-- Where the flag lives: a field on the beam's project entry or a record in the beam's `_lym`.
-- Whether `lym beam land` itself refuses without the flag, or only the notice depends on it.
+- Where the flag lives: a field on the beam's project entry, set by a verb of its own, or a record in the beam's `_lym`.
