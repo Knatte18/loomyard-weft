@@ -31,7 +31,8 @@ The operator worried earlier (2026-10-15) that buttons next to others invite mis
 
 ## Open design points
 
-- Whether ending a run for good (`lym batten cancel <slug>`) gets a button of its own beside HALT, behind `confirm-before`, since a halt is reversible and an end is not.
+- Ending a run for good (`lym batten cancel <slug>`) gets a CANCEL button of its own, kept apart from HALT, since a halt is reversible and an end is not (operator, 2026-10-30).
+  It must be hard to press by mistake: how, for example a tmux `command-prompt` that requires typing the slug, is open.
 - Which role and model the new-agent button opens, and whether the role name is asked for or fixed.
 - Where the set lives: presumably reed's module config, with a hub default and per-session overrides (the orch session needs other buttons than a task pair).
 - What a button entry holds: a label, the command, and which sessions show it.
