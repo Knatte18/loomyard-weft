@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Code-Bouncer → done",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -162,6 +162,21 @@
       "outcome": "done",
       "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/notices-from-dobby/_lym/reviews/code/round-2-bouncer-ledger.md",
       "at": "2026-10-30T13:32:58Z"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/notices-from-dobby/_lym/landing/summary.md",
+      "at": "2026-10-30T13:33:27Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-30T13:33:24.610975732Z",
+          "end": "2026-10-30T13:33:24.611057147Z"
+        }
+      ]
     }
   ],
   "product": {
