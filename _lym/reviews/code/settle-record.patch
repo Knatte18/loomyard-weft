@@ -1,0 +1,3133 @@
+diff --git a/contracts/stencils/orch/orch-template-role.md b/contracts/stencils/orch/orch-template-role.md
+index 46ea2825..61cf01b4 100644
+--- a/contracts/stencils/orch/orch-template-role.md
++++ b/contracts/stencils/orch/orch-template-role.md
+@@ -36,8 +36,8 @@ This list holds every `lym` command you may use, and `lym <command> --help` give
+    To give up a run for good, end it with `lym batten cancel <slug>` from the prime when the operator asks, and add `--remove` to discard its pair.
+    A kept pair needs `lym batten cancel <slug> --remove` before the slug runs again.
+ 4. Keep no polling shell and start no Monitor for a run.
+-   The wake-up is creel mail delivered by your session's hooks: a `[creel] #<id> from "<sender>": <text>` line arrives in full under a tool result or as your turn ends, is already read, and is answered with `lym creel post --reply <id> "<text>"` when it asks for an answer.
+-   An idle orch is woken first by the fixed line `[creel] Mail is waiting for you.`; end that turn, after which the mail shows.
++   The wake-up is creel mail delivered by your session's hooks: a `[creel] #<id> from "<sender>": <text>` line arrives in full under a tool result, as your turn ends or as the wake of an idle turn, is already read, and is answered with `lym creel post --reply <id> "<text>"` when it asks for an answer.
++   An idle orch is woken with its mail under `[creel] Mail that arrived while you were idle:` and acts on it in that turn; only an orch no waiter reaches gets the fixed line `[creel] Mail is waiting for you.`, after which its hooks hand it the mail as that turn ends.
+    Mail from `EXTERNAL` is answered in your own reply text, since a reply to it reaches only a waiting `lym creel post --wait-reply`.
+    `lym creel read` is needed only for mail the hooks could not hand over, which `lym creel inbox` shows.
+    Each notice line or mail body whose text starts with `[batten notice]` is a notice, handled as Notices says.
+diff --git a/docs/overview.md b/docs/overview.md
+index 8d8e7a0a..d4a53e4f 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -477,8 +477,8 @@ User-facing modules each get one `lym <module>` namespace:
+   Bounds: the daemon waits a fixed window for the pause to confirm and for the wake, and fails the request, leaving its reason in the file, when either runs out.
+   ✅ Implemented. See the `internal/hibernateengine` and `internal/hibernatecli` package documentation.
+ - **creel** — the per-hub message daemon, the one way to reach an agent: mail to a Claude strand shuttle launched with creel's hooks arrives in full through those hooks, while every other strand, a hand-added one or a session launched without those hooks included, gets a typed notice or reminder and pulls its mail with `lym creel read`, and lines are injected into a pane (`internal/creelcli` + `internal/creelengine`; `lym creel post`, `inject`, `interrupt`, `forward`, `read`, `inbox`, `log`, `hold` and `release`, from any worktree of the hub, and the hidden `lym creel daemon`, `lym creel hook-read` and `lym creel hook-wait`).
+-  A hook strand gets each post in full, quoted with its sender, at its next tool call in a `PostToolUse` block and at its turn end in a `Stop` block that records no turn end while it blocks, at most 6 blocks a turn; the hooks test the strand's flag file, which creel keeps while the strand holds unread mail, and only the main thread takes mail, so a subagent's hook claims nothing.
+-  An idle hook strand is woken by an `asyncRewake` waiter the daemon rings once per claimable set, or by a typed fixed bell line where no waiter reaches, and the woken turn's hooks hand it the mail.
++  A hook strand gets each post in full, quoted with its sender, at its next tool call in the `PostToolUse` hook's additional context and at its turn end in the `Stop` hook's additional context, which continues the turn and records no turn end, at most 6 a turn; the hooks test the strand's flag file, which creel keeps while the strand holds unread mail, and only the main thread takes mail, so a subagent's hook claims nothing.
++  An idle hook strand is woken by an `asyncRewake` waiter the daemon rings once per claimable set, which wakes it with the mail itself, or by a typed fixed bell line where no waiter reaches, and the woken turn's hooks hand it the mail.
+   Every line a claim hands out fits one hook field, so `lym creel post` refuses a longer one with the way forward of writing the text to a file and posting its path, and `lym creel post --interrupt` stops the receiver's running turn and then posts.
+   Every Claude session shuttle launches gets the sentence that tells it to follow `[creel]` mail and how to reply, and one further sentence that asks for batched calls, through one `append-system-prompt.txt` file.
+   The first verb of a hub starts its daemon, which folds its pool from an append-only journal, names a sender from the connecting process's ancestry, and delivers through shuttle only into a pane that reads idle.
+diff --git a/internal/creelcli/cli.go b/internal/creelcli/cli.go
+index 1854cec3..9938d423 100644
+--- a/internal/creelcli/cli.go
++++ b/internal/creelcli/cli.go
+@@ -75,8 +75,8 @@ func Command() *cobra.Command {
+ 		Long: `creel is the hub's message daemon and its verbs. post leaves a message for a
+ strand. A strand shuttle launched with creel's hooks gets the message in full
+ at its next tool call or turn end, through hooks that run the hidden hook-read
+-verb, and an idle one is woken first by a waiter that runs the hidden hook-wait
+-verb. Any other strand, a hand-added one or a session launched without those
++verb, and an idle one is woken by a waiter that runs the hidden hook-wait verb
++with the message itself. Any other strand, a hand-added one or a session launched without those
+ hooks included, gets a typed notice or reminder and reads the message with read.
+ inject types a line into an idle strand at once, interrupt stops a running
+ turn, forward passes a message on, hold keeps a receiver to one sender for a
+@@ -341,9 +341,9 @@ func postCmd() *cobra.Command {
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `post leaves the text as a message for the receiver strand and prints its id.
+ A strand shuttle launched with creel's hooks gets the message in full at its
+-next tool call or turn end, an idle one woken first. Any other strand, a
+-hand-added one or a session launched without those hooks included, gets a
+-typed notice or reminder and reads the message with "lym creel read".
++next tool call or turn end, an idle one woken with it.
++Any other strand, a hand-added one or a session launched without those hooks included,
++gets a typed notice or reminder and reads the message with "lym creel read".
+ 
+ With --reply <id> the text answers message <id> and goes to its sender, so no
+ receiver is given. To answer mail you received, run
+diff --git a/internal/creelcli/cli_test.go b/internal/creelcli/cli_test.go
+index da49ae92..d2b97086 100644
+--- a/internal/creelcli/cli_test.go
++++ b/internal/creelcli/cli_test.go
+@@ -155,14 +155,20 @@ func hookLine(id int, sender, body string) string {
+ 	return fmt.Sprintf("[creel] #%d from \"%s\": %s", id, sender, body)
+ }
+ 
+-// hookBlock is what hook-read prints for text on event: the claude engine's block and a newline.
++// hookBlock is what hook-read prints for text on event: the claude engine's hook output and a newline.
+ func hookBlock(t *testing.T, event shuttleengine.HookEvent, text string) string {
+ 	t.Helper()
+-	block, err := claudeengine.New().BoundaryBlock(event, text)
++	return hookOutputLine(t, event, text, "")
++}
++
++// hookOutputLine is what hook-read prints for mail and echo on event: the claude engine's hook output and a newline.
++func hookOutputLine(t *testing.T, event shuttleengine.HookEvent, mail, echo string) string {
++	t.Helper()
++	output, err := claudeengine.New().HookOutput(event, mail, echo)
+ 	if err != nil {
+-		t.Fatalf("BoundaryBlock: %v", err)
++		t.Fatalf("HookOutput: %v", err)
+ 	}
+-	return string(block) + "\n"
++	return string(output) + "\n"
+ }
+ 
+ // failingWriter is an output that refuses every write.
+@@ -845,7 +851,7 @@ func TestCreelCLI(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("as a strand hook-read prints its mail as the engine's visible block, nothing when none is left, and refuses to stderr", func(t *testing.T) {
++	t.Run("as a strand hook-read prints its mail as the engine's hook output, nothing when none is left, and refuses to stderr", func(t *testing.T) {
+ 		r, alpha := newHookRig(t)
+ 
+ 		for _, body := range []string{"first\nline", "second"} {
+@@ -932,15 +938,54 @@ func TestCreelCLI(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("hook-wait rings a strand as exit 2 with the bell line, and a subagent or a refused call exits 0 printing nothing", func(t *testing.T) {
++	t.Run("after a ring hook-read shows the echo to the operator alone, ahead of any mail", func(t *testing.T) {
++		r, alpha := newHookRig(t)
++		if post := runCreel(r.cwd, "post", alpha, "mail"); post.code != 0 {
++			t.Fatalf("creel post = (%d, %q); want exit 0", post.code, post.raw)
++		}
++		var rung lockedBuffer
++		if got := awaitRun(t, runHookAsync(r.cwd, postToolUseInput, &rung, "hook-wait", "claude")); got.code != 2 {
++			t.Fatalf("hook-wait = (%d, %q, stderr %q); want exit 2", got.code, got.raw, rung.String())
++		}
++		var stderr bytes.Buffer
++		echoOnly := hookOutputLine(t, shuttleengine.HookEventStop, "", creelengine.EchoHeading+"\n"+hookLine(1, alpha, "mail"))
++		if got := runCreelHook(r.cwd, stopInput, &stderr, "hook-read", "claude"); got.code != 1 || got.raw != echoOnly || stderr.Len() != 0 {
++			t.Fatalf("first Stop = (%d, %q, stderr %q); want exit 1 with the echo alone as %q", got.code, got.raw, stderr.String(), echoOnly)
++		}
++		if got := runCreelHook(r.cwd, stopInput, &stderr, "hook-read", "claude"); got.code != 1 || got.raw != "" || stderr.Len() != 0 {
++			t.Fatalf("second Stop = (%d, %q, stderr %q); want exit 1 printing nothing, since the echo was shown", got.code, got.raw, stderr.String())
++		}
++
++		// The first ring's woken turn recorded no prompt submit, so a turn end after the ring stands in for the next turn's end.
++		r.delivery.SetTurn(alpha, false, r.clock.Now().Add(time.Second))
++		if post := runCreel(r.cwd, "post", alpha, "second"); post.code != 0 {
++			t.Fatalf("creel post = (%d, %q); want exit 0", post.code, post.raw)
++		}
++		var secondRing lockedBuffer
++		if got := awaitRun(t, runHookAsync(r.cwd, postToolUseInput, &secondRing, "hook-wait", "claude")); got.code != 2 {
++			t.Fatalf("second hook-wait = (%d, %q, stderr %q); want exit 2", got.code, got.raw, secondRing.String())
++		}
++		if post := runCreel(r.cwd, "post", alpha, "third"); post.code != 0 {
++			t.Fatalf("creel post = (%d, %q); want exit 0", post.code, post.raw)
++		}
++		both := hookOutputLine(t, shuttleengine.HookEventToolBoundary, hookLine(3, alpha, "third"), creelengine.EchoHeading+"\n"+hookLine(2, alpha, "second"))
++		if got := runCreelHook(r.cwd, postToolUseInput, &stderr, "hook-read", "claude"); got.code != 0 || got.raw != both {
++			t.Errorf("tool-boundary hook-read = (%d, %q); want exit 0 with the echo of the second post and the third as mail, %q", got.code, got.raw, both)
++		}
++	})
++
++	t.Run("hook-wait rings a strand as exit 2 with its mail, and a subagent or a refused call exits 0 printing nothing", func(t *testing.T) {
+ 		r, alpha := newHookRig(t)
+ 		if post := runCreel(r.cwd, "post", alpha, "mail"); post.code != 0 {
+ 			t.Fatalf("creel post = (%d, %q); want exit 0", post.code, post.raw)
+ 		}
+ 		var rung lockedBuffer
+ 		got := awaitRun(t, runHookAsync(r.cwd, postToolUseInput, &rung, "hook-wait", "claude"))
+-		if got.code != 2 || got.raw != "" || rung.String() != creelengine.BellLine+"\n" {
+-			t.Errorf("hook-wait = (%d, %q, stderr %q); want exit 2 with the bell line on stderr", got.code, got.raw, rung.String())
++		if want := hookLine(1, alpha, "mail") + "\n"; got.code != 2 || got.raw != "" || rung.String() != want {
++			t.Errorf("hook-wait = (%d, %q, stderr %q); want exit 2 with %q on stderr", got.code, got.raw, rung.String(), want)
++		}
++		if !logHasEvent(runCreel(r.cwd, "log", "--id", "1"), "read") {
++			t.Errorf("creel log --id 1 after the ring holds no read event; want the ring's mail journaled read")
+ 		}
+ 		silent := []struct {
+ 			name  string
+@@ -1008,8 +1053,39 @@ func TestCreelCLI(t *testing.T) {
+ 		if post := runCreel(r.cwd, "post", alpha, "more mail"); post.code != 0 {
+ 			t.Fatalf("creel post = (%d, %q); want exit 0", post.code, post.raw)
+ 		}
+-		if got := awaitRun(t, newerResults); got.code != 2 || newer.String() != creelengine.BellLine+"\n" {
+-			t.Errorf("the newer hook-wait = (%d, %q, stderr %q); want it still waiting, then rung with exit 2", got.code, got.raw, newer.String())
++		want := hookLine(1, alpha, "mail") + "\n" + hookLine(2, alpha, "more mail") + "\n"
++		if got := awaitRun(t, newerResults); got.code != 2 || newer.String() != want {
++			t.Errorf("the newer hook-wait = (%d, %q, stderr %q); want it still waiting, then rung with exit 2 and %q", got.code, got.raw, newer.String(), want)
++		}
++	})
++
++	t.Run("hook-wait whose stderr refuses the lines exits 0 and leaves the mail unread", func(t *testing.T) {
++		r, alpha := newHookRig(t)
++		if post := runCreel(r.cwd, "post", alpha, "mail"); post.code != 0 {
++			t.Fatalf("creel post = (%d, %q); want exit 0", post.code, post.raw)
++		}
++		if got := awaitRun(t, runHookAsync(r.cwd, postToolUseInput, failingWriter{}, "hook-wait", "claude")); got.code != 0 || got.raw != "" {
++			t.Fatalf("hook-wait over a refusing stderr = (%d, %q); want exit 0 printing nothing", got.code, got.raw)
++		}
++		// The daemon releases the ring's claim on its own goroutine once it reads the closed connection, so a hook-read before that prints nothing and claims nothing.
++		want := hookBlock(t, shuttleengine.HookEventToolBoundary, hookLine(1, alpha, "mail"))
++		deadline := time.Now().Add(10 * time.Second)
++		for {
++			var stderr bytes.Buffer
++			got := runCreelHook(r.cwd, postToolUseInput, &stderr, "hook-read", "claude")
++			if got.raw == want {
++				break
++			}
++			if got.raw != "" || got.code != 0 {
++				t.Fatalf("hook-read after the refused wake = (%d, %q, stderr %q); want nothing until the mail is released, then %q", got.code, got.raw, stderr.String(), want)
++			}
++			if time.Now().After(deadline) {
++				t.Fatal("the mail was never released after the refused wake")
++			}
++			time.Sleep(time.Millisecond)
++		}
++		if !logHasEvent(runCreel(r.cwd, "log", "--id", "1"), "read") {
++			t.Errorf("creel log --id 1 holds no read event; want the mail journaled read by the hook-read that showed it")
+ 		}
+ 	})
+ 
+diff --git a/internal/creelcli/doc.go b/internal/creelcli/doc.go
+index ddbbebcd..2bead31d 100644
+--- a/internal/creelcli/doc.go
++++ b/internal/creelcli/doc.go
+@@ -29,14 +29,17 @@
+ // A worktree whose resolved orch state records no strand is refused with nothing posted.
+ // The liveness predicate it resolves with is part of the client seam.
+ // `inbox` prints the caller's unread counts as `inbox.senders`, a list of `{from, unread}`, and no other key.
+-// `hook-read <engine>` is what a strand's tool-boundary and Stop hooks run: it reads the hook input from stdin, parses it with the engine's capability from shuttleengines.ToolBoundaryRenderer, claims the caller's mail through the daemon's claim verb and prints it as the engine's visible block for the input's event, one MessageLine per message joined by newlines.
++// `hook-read <engine>` is what a strand's tool-boundary and Stop hooks run: it reads the hook input from stdin, parses it with the engine's capability from shuttleengines.ToolBoundaryRenderer, claims the caller's mail through the daemon's claim verb and prints it as the engine's hook output for the input's event, one MessageLine per message joined by newlines: the mail goes to the model as additional context and, after a tool call, to the operator as the system message, never as a block.
+ // The claim carries whether the event is a Stop and the input's stop_hook_active, which the daemon's Stop count rests on.
+ // A call from a subagent or fork claims and prints nothing, so the mail and its flag stay for the main thread's next boundary.
+ // It prints nothing when nothing was claimed, acknowledges the mail only once its output was written, and bounds its call by 10 seconds, since the provider holds the session at the boundary meanwhile.
+-// After a tool call it exits 0; on a Stop it exits 0 exactly when it wrote a block, whatever follows the write, and 1 otherwise, since the merged turn-end command records no turn end after an exit 0.
++// A strand an idle ring woke with its mail is owed an echo of those lines: the claim hands it out ahead of any mail, and hook-read prints it as the system message alone under creelengine.EchoHeading, followed by the mail's own output when the claim holds mail too.
++// After a tool call it exits 0; on a Stop it exits 0 exactly when it wrote mail, whatever follows the write, and 1 otherwise, an echo alone included, since the merged turn-end command records the turn end after an exit other than 0 and keeps the echo it printed as the hook's output.
+ // A refusal, an unknown engine and an input of another event included, goes to stderr as one `creel: ` line with exit 1 and leaves stdout empty, because the provider parses the hook's stdout as its JSON.
+ // `hook-wait <engine>` is the idle waiter a strand's hook holds open: it parses its hook input, exits 0 at once for a subagent call, and otherwise holds the daemon's hook-wait verb with no timeout of its own, the hook entry's timeout bounding it.
+-// On a ring it writes the engine's wake output carrying creelengine.BellLine to stderr and exits with the engine's wake code, 2 for Claude; a superseded wait, an unreachable daemon and any refusal exit 0 printing nothing, so it exits with the wake code on a ring alone.
++// It marks its request as taking mail, so a ring carries the claimed messages: it writes their MessageLines, joined by newlines, to stderr as the engine's wake output, acknowledges them and exits with the engine's wake code, 2 for Claude.
++// It exits 0 when no lines were written, a superseded wait, an unreachable daemon, any refusal, a ring from an older daemon that carries no mail and a failed write of the lines included, and when the acknowledgement could not be sent; any other end after the lines were written exits with the wake code, a refused or lost confirmation included, since the session shows mail the daemon may not have journaled.
++// A write of the lines that fails leaves the mail unread and the ring unanswered, and a wait is never resumed once a ring reached it.
+ // A waiter costs one idle process per live strand, blocked on its socket.
+ // GoClient is the one Go-side caller of creel, so no other module builds a creel request by hand.
+ // NewProgramClient signs as `<shortname>:<PROGRAM>` and claims no strand, whatever `$LYM_STRAND_NAME` holds, and NewStrandClient claims a strand and no program; the daemon's identity rules still decide who the caller is.
+diff --git a/internal/creelcli/hookread.go b/internal/creelcli/hookread.go
+index add2fd26..634c7060 100644
+--- a/internal/creelcli/hookread.go
++++ b/internal/creelcli/hookread.go
+@@ -23,28 +23,35 @@ const hookReadVerb = "hook-read"
+ const hookReadTimeout = 10 * time.Second
+ 
+ // hookReadCmd builds the `hook-read` subcommand, hidden because only a strand's hooks run it.
+-// Its standard output is the named engine's block JSON, or nothing when no mail was claimed;
++// Its standard output is the named engine's hook output for the event, or nothing when nothing was claimed;
+ // a refusal goes to standard error and leaves standard output empty, since the provider parses the hook's standard output as its JSON.
+-// The exit code is 0 after a tool-boundary call that raised no error and, on a Stop, exactly when a block was written.
++// The exit code is 0 after a tool-boundary call that raised no error and, on a Stop, exactly when mail was written.
+ func hookReadCmd() *cobra.Command {
+ 	return &cobra.Command{
+ 		Use:         hookReadVerb + " <engine>",
+-		Short:       "print the caller strand's unread mail as the engine's visible block and mark it read (run by the hook)",
++		Short:       "print the caller strand's unread mail as the engine's hook output and mark it read (run by the hook)",
+ 		Hidden:      true,
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceInternal},
+ 		Long: `hook-read reads the engine's hook input from standard input and, for the
+ after-tool-call or the turn-end event of the session's main thread, claims the
+ caller strand's unread mail, oldest first, and prints it as the named engine's
+-block, one [creel] #<id> from "<sender>": <body> line per message, which the
+-provider hands to the session and shows to the operator. The messages are
+-marked read once the block is written. With nothing to claim it prints nothing.
++hook output, one [creel] #<id> from "<sender>": <body> line per message, which
++the provider hands to the session as additional context and, after a tool call,
++shows to the operator as the system message. The messages are marked read once
++the output is written. With nothing to claim it prints nothing.
+ A hold limits it to the holder's mail, a pause to none.
+ 
++A strand whose idle wake already handed it mail is owed an echo of those lines.
++The claim prints them under "[creel] Delivered while idle:" ahead of any mail,
++as the system message alone, so the operator sees them and the session does
++not read them twice; they are dropped once the output is written.
++
+ A call from a subagent or fork claims and prints nothing, so the mail stays for
+ the main thread. After a tool call the exit code is 0. On a turn end it is 0
+-exactly when a block was written and 1 otherwise, which the merged turn-end
+-command reads as "record the turn end". An input of any other event is refused
+-on standard error with exit 1.`,
++exactly when mail was written and 1 otherwise, an echo alone included, which the
++merged turn-end command reads as "record the turn end" and keeps the printed
++echo as the hook's output. An input of any other event is refused on standard
++error with exit 1.`,
+ 		Args: cobra.ExactArgs(1),
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+ 			if clihelp.ShouldAbort(cmd.Context()) {
+@@ -65,8 +72,9 @@ on standard error with exit 1.`,
+ 	}
+ }
+ 
+-// hookReadExit decides the exit code of hook-read and whether its error is printed, from the event the input carried, whether the block was written and the error the call ended with.
+-// A Stop exits 0 exactly when the block was written, whatever followed the write, since exit 0 tells the merged turn-end command a block was written and no turn end is to be recorded;
++// hookReadExit decides the exit code of hook-read and whether its error is printed, from the event the input carried, whether mail was written and the error the call ended with.
++// A Stop exits 0 exactly when mail was written, whatever followed the write, since exit 0 tells the merged turn-end command mail was handed to the session, which continues the turn, and no turn end is to be recorded;
++// an echo-only Stop exits 1, so the merged command records the turn end and keeps the printed echo as the hook's output;
+ // any other call exits 1 on an error.
+ // An error is always printed, so a failed acknowledgement after the write still reaches standard error.
+ func hookReadExit(event shuttleengine.HookEvent, wrote bool, err error) (exitCode int, printErr bool) {
+@@ -80,8 +88,9 @@ func hookReadExit(event shuttleengine.HookEvent, wrote bool, err error) (exitCod
+ 	return 0, false
+ }
+ 
+-// hookRead parses the hook input on the command's standard input and, for the main thread's tool-boundary or Stop event, claims the caller's mail through the daemon and writes it as engine's visible block, before the client acknowledges it.
+-// It returns the event the input carried and whether the block was written, beside the error the call ended with.
++// hookRead parses the hook input on the command's standard input and, for the main thread's tool-boundary or Stop event, claims the caller's mail through the daemon and writes it as the engine's hook output, before the client acknowledges it.
++// It returns the event the input carried and whether mail was written, beside the error the call ended with; an echo written alone leaves it false.
++// A claim that hands out an echo prints it as the system message under creelengine.EchoHeading, ahead of any mail.
+ func hookRead(cmd *cobra.Command, engine string) (event shuttleengine.HookEvent, wrote bool, err error) {
+ 	renderer, ok := shuttleengines.ToolBoundaryRenderer(engine)
+ 	if !ok {
+@@ -108,22 +117,34 @@ func hookRead(cmd *cobra.Command, engine string) (event shuttleengine.HookEvent,
+ 		return input.Event, false, err
+ 	}
+ 	out := cmd.OutOrStdout()
+-	writeBlock := func(resp creelengine.Response) error {
++	writeOutput := func(resp creelengine.Response) error {
+ 		lines := make([]string, len(resp.Messages))
+ 		for i, msg := range resp.Messages {
+ 			lines[i] = creelengine.MessageLine(msg)
+ 		}
+-		data, err := renderer.BoundaryBlock(input.Event, strings.Join(lines, "\n"))
++		mail := strings.Join(lines, "\n")
++		echo := ""
++		if len(resp.Echo) > 0 {
++			echo = creelengine.EchoHeading + "\n" + strings.Join(resp.Echo, "\n")
++		}
++		data, err := renderer.HookOutput(input.Event, mail, echo)
+ 		if err != nil {
+ 			return err
+ 		}
+ 		if _, err := out.Write(append(data, '\n')); err != nil {
+-			return fmt.Errorf("could not write the mail, so it stays unread: %w", err)
++			var stays []string
++			if mail != "" {
++				stays = append(stays, "its mail stays unread")
++			}
++			if echo != "" {
++				stays = append(stays, "its echo stays owed")
++			}
++			return fmt.Errorf("could not write the hook output, so %s: %w", strings.Join(stays, " and "), err)
+ 		}
+-		wrote = true
++		wrote = mail != ""
+ 		return nil
+ 	}
+ 	request := creelengine.Request{Verb: creelengine.VerbClaim, Stop: input.Event == shuttleengine.HookEventStop, StopHookActive: input.StopHookActive}
+-	_, err = client.Call(request, hookReadTimeout, writeBlock)
++	_, err = client.Call(request, hookReadTimeout, writeOutput)
+ 	return input.Event, wrote, err
+ }
+diff --git a/internal/creelcli/hookread_test.go b/internal/creelcli/hookread_test.go
+index 8ce78aca..d2c4f333 100644
+--- a/internal/creelcli/hookread_test.go
++++ b/internal/creelcli/hookread_test.go
+@@ -8,9 +8,46 @@ import (
+ 	"errors"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/creelengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ )
+ 
++// TestHookWaitExit pins the exit code of hook-wait for the decisions the CLI rows reach only in part:
++// a refused or lost confirmation after the lines were written still wakes the session, and an acknowledgement that was never sent does not.
++func TestHookWaitExit(t *testing.T) {
++	t.Parallel()
++	failure := errors.New("creel: the daemon refused the confirmation")
++	unsent := &sendError{creelengine.ErrAckUnsent}
++	tests := []struct {
++		name       string
++		wroteLines bool
++		err        error
++		want       int
++	}{
++		{"LinesWrittenAndConfirmed", true, nil, 2},
++		{"LinesWrittenAndTheConfirmationRefusedOrLost", true, failure, 2},
++		{"LinesWrittenAndTheAckUnsent", true, unsent, 0},
++		{"LinesNotWritten", false, failure, 0},
++		{"NothingWrittenAndNoError", false, nil, 0},
++		{"TheAckUnsentWithNoLinesWritten", false, unsent, 0},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := hookWaitExit(2, tt.wroteLines, tt.err); got != tt.want {
++				t.Errorf("hookWaitExit(2, %v, %v) = %d; want %d", tt.wroteLines, tt.err, got, tt.want)
++			}
++		})
++	}
++}
++
++// sendError wraps an error the way the client wraps a failed write of the acknowledgement, so the row reaches errors.Is through a chain.
++type sendError struct{ err error }
++
++func (e *sendError) Error() string { return "write failed: " + e.err.Error() }
++
++func (e *sendError) Unwrap() error { return e.err }
++
+ // TestHookReadExit pins the exit code and whether the error is printed for the decisions no CLI row reaches:
+ // an acknowledgement failing after the block was written, a daemon failure before the write and a failed tool-boundary claim.
+ func TestHookReadExit(t *testing.T) {
+@@ -24,8 +61,8 @@ func TestHookReadExit(t *testing.T) {
+ 		wantCode  int
+ 		wantPrint bool
+ 	}{
+-		{"StopWroteTheBlockAndTheAcknowledgementFailed", shuttleengine.HookEventStop, true, failure, 0, true},
+-		{"StopWroteTheBlock", shuttleengine.HookEventStop, true, nil, 0, false},
++		{"StopWroteTheMailAndTheAcknowledgementFailed", shuttleengine.HookEventStop, true, failure, 0, true},
++		{"StopWroteTheMail", shuttleengine.HookEventStop, true, nil, 0, false},
+ 		{"StopFailedBeforeTheWrite", shuttleengine.HookEventStop, false, failure, 1, true},
+ 		{"StopClaimedNothing", shuttleengine.HookEventStop, false, nil, 1, false},
+ 		{"ToolBoundaryClaimFailed", shuttleengine.HookEventToolBoundary, false, failure, 1, true},
+diff --git a/internal/creelcli/hookwait.go b/internal/creelcli/hookwait.go
+index d728bb70..608cee7f 100644
+--- a/internal/creelcli/hookwait.go
++++ b/internal/creelcli/hookwait.go
+@@ -3,7 +3,9 @@
+ package creelcli
+ 
+ import (
++	"errors"
+ 	"io"
++	"strings"
+ 
+ 	"github.com/spf13/cobra"
+ 
+@@ -16,20 +18,24 @@ import (
+ const hookWaitVerb = "hook-wait"
+ 
+ // hookWaitCmd builds the `hook-wait` subcommand, hidden because only a strand's idle waiter hook runs it.
+-// It prints nothing to standard output; on a ring it writes the engine's wake text to standard error and exits with the engine's wake code, and every other end exits 0 printing nothing.
++// It prints nothing to standard output; on a ring it writes the claimed mail to standard error as the engine's wake text, acknowledges it and exits with the engine's wake code, and every other end exits 0 printing nothing.
+ func hookWaitCmd() *cobra.Command {
+ 	return &cobra.Command{
+ 		Use:         hookWaitVerb + " <engine>",
+-		Short:       "hold the caller strand's idle waiter until the daemon wakes it (run by the hook)",
++		Short:       "hold the caller strand's idle waiter until the daemon wakes it with its mail (run by the hook)",
+ 		Hidden:      true,
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceInternal},
+ 		Long: `hook-wait reads the engine's hook input from standard input and holds the
+ caller strand's idle waiter open on the daemon, with no timeout of its own: the
+-hook entry's timeout bounds it. When the daemon wakes the idle strand it writes
+-the engine's wake text to standard error and exits with the engine's wake code,
+-2 for Claude, which wakes the session. A call from a subagent or fork, a waiter
+-a newer one superseded, an unreachable daemon and any refusal exit 0 and print
+-nothing, so the waiter exits with the wake code on a wake alone.`,
++hook entry's timeout bounds it. When the daemon wakes the idle strand with its
++mail, hook-wait writes the claimed [creel] lines to standard error as the
++engine's wake text, acknowledges them and exits with the engine's wake code, 2
++for Claude, which wakes the session with the mail. The wait is never resumed
++once a ring reached it. A call from a subagent or fork, a waiter a newer one
++superseded, an unreachable daemon, any refusal, a ring whose lines could not be
++written and a ring whose acknowledgement could not be sent exit 0 and print
++nothing more, so the waiter exits with the wake code only once it wrote the
++lines and sent the acknowledgement, whether or not the daemon confirmed it.`,
+ 		Args: cobra.ExactArgs(1),
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+ 			if clihelp.ShouldAbort(cmd.Context()) {
+@@ -41,9 +47,19 @@ nothing, so the waiter exits with the wake code on a wake alone.`,
+ 	}
+ }
+ 
++// hookWaitExit decides the exit code of hook-wait from the engine's wake code, whether the ring's lines were written and the error the call ended with.
++// It is 0 when no lines were written, since nothing woke the session, and 0 when the acknowledgement could not be sent, since the daemon journaled nothing and the mail stays unread for the next claim;
++// otherwise it is the wake code, whether the daemon confirmed the acknowledgement, refused it on a failed journal write or the confirmation was lost.
++func hookWaitExit(wakeCode int, wroteLines bool, err error) int {
++	if !wroteLines || errors.Is(err, creelengine.ErrAckUnsent) {
++		return 0
++	}
++	return wakeCode
++}
++
+ // hookWait holds the caller strand's idle waiter and returns the exit code the command sets.
+-// It returns the engine's wake code only after writing the wake text to standard error on a ring, and 0 in every other case.
+-func hookWait(cmd *cobra.Command, engine string) (exitCode int) {
++// On a ring it writes the claimed mail to standard error as the engine's wake text before the client acknowledges it, so a write that fails leaves the mail unread.
++func hookWait(cmd *cobra.Command, engine string) int {
+ 	renderer, ok := shuttleengines.ToolBoundaryRenderer(engine)
+ 	if !ok {
+ 		return 0
+@@ -60,13 +76,20 @@ func hookWait(cmd *cobra.Command, engine string) (exitCode int) {
+ 	if err != nil {
+ 		return 0
+ 	}
+-	resp, err := client.Call(creelengine.Request{Verb: creelengine.VerbHookWait, Wait: true}, 0, nil)
+-	if err != nil || resp.Outcome != creelengine.OutcomeRing {
+-		return 0
+-	}
+-	stderr, code := renderer.RewakeOutput(creelengine.BellLine)
+-	if _, err := cmd.ErrOrStderr().Write(stderr); err != nil {
+-		return 0
++	var wakeCode int
++	var wroteLines bool
++	writeWake := func(resp creelengine.Response) error {
++		lines := make([]string, len(resp.Messages))
++		for i, msg := range resp.Messages {
++			lines[i] = creelengine.MessageLine(msg)
++		}
++		stderr, code := renderer.RewakeOutput(strings.Join(lines, "\n"))
++		if _, err := cmd.ErrOrStderr().Write(stderr); err != nil {
++			return err
++		}
++		wakeCode, wroteLines = code, true
++		return nil
+ 	}
+-	return code
++	_, err = client.Call(creelengine.Request{Verb: creelengine.VerbHookWait, Wait: true, TakesMail: true}, 0, writeWake)
++	return hookWaitExit(wakeCode, wroteLines, err)
+ }
+diff --git a/internal/creelcli/smoke_llm_test.go b/internal/creelcli/smoke_llm_test.go
+index fd286f21..9a4217fe 100644
+--- a/internal/creelcli/smoke_llm_test.go
++++ b/internal/creelcli/smoke_llm_test.go
+@@ -289,6 +289,112 @@ func (c *claudeScenario) awaitTurnEnds(n int) {
+ 	c.await(fmt.Sprintf("%d recorded turn ends", n), func() bool { return c.payloads("Stop") >= n })
+ }
+ 
++// mainTranscript returns the path of the session's own transcript, the first transcript_path its events hold, or empty before any event carries one.
++func (c *claudeScenario) mainTranscript() string {
++	for _, record := range c.eventRecords() {
++		if path, _ := record["transcript_path"].(string); path != "" {
++			return path
++		}
++	}
++	return ""
++}
++
++// transcriptCount counts the occurrences of text in the session's main transcript.
++func (c *claudeScenario) transcriptCount(text string) int {
++	path := c.mainTranscript()
++	if path == "" {
++		return 0
++	}
++	data, err := os.ReadFile(path)
++	if err != nil {
++		return 0
++	}
++	return strings.Count(string(data), text)
++}
++
++// requireTranscriptLacks fails when the main transcript holds any of texts, which stand for the hook command text and the error label a block would leave there.
++func (c *claudeScenario) requireTranscriptLacks(texts ...string) {
++	c.t.Helper()
++	for _, text := range texts {
++		if got := c.transcriptCount(text); got != 0 {
++			c.fail("the transcript holds %q %d times; want none", text, got)
++		}
++	}
++}
++
++// requireWakeShown checks the session's wake-th idle wake once the model has acted on its mail, taking the wakes before it as delivered.
++// The token is in the transcript with no turn end recorded since the earlier wake ended, which a turn that ran without the mail would have left.
++// After the woken turn ends, the pane shows one `creel mail` row per wake so far and the echo under creelengine.EchoHeading, with the token under it once.
++func (c *claudeScenario) requireWakeShown(token string, wake int) {
++	c.t.Helper()
++	c.await("the transcript to hold "+token, func() bool { return c.transcriptCount(token) > 0 })
++	if got := c.payloads("Stop"); got != wake {
++		c.fail("events hold %d Stop payloads when the wake of %s reached the transcript; want %d, so no turn ran before the mail", got, token, wake)
++	}
++	c.awaitTurnEnds(wake + 1)
++	c.await("the pane to show the echo of "+token, func() bool { return paneEchoCount(c.smoke.lastPane(c.t, c.guid), token) >= 1 })
++	pane := c.smoke.lastPane(c.t, c.guid)
++	if got := strings.Count(pane, "creel mail"); got != wake {
++		c.fail("the pane shows %d `creel mail` rows; want one per wake, %d", got, wake)
++	}
++	if got := paneEchoCount(pane, token); got != 1 {
++		c.fail("the pane shows the echo of %s %d times; want once", token, got)
++	}
++}
++
++// paneEchoCount counts the echoes of token in pane: the lines of creelengine.EchoHeading whose next non-empty line holds token.
++func paneEchoCount(pane, token string) int {
++	lines := strings.Split(pane, "\n")
++	count := 0
++	for i, line := range lines {
++		if !strings.Contains(line, creelengine.EchoHeading) {
++			continue
++		}
++		for _, next := range lines[i+1:] {
++			if strings.TrimSpace(next) == "" {
++				continue
++			}
++			if strings.Contains(next, token) {
++				count++
++			}
++			break
++		}
++	}
++	return count
++}
++
++// requireHeadShownOnce checks the pane's stop-hook summary of a Stop claim of many lines: the first token appears once in the Stop hook feedback lines, there is no second `Stop hook feedback:` row, and no `Stop says:` line carries any token.
++// The model's own reply and tool calls may quote a token, so only those summary lines are read.
++func (c *claudeScenario) requireHeadShownOnce(first string, tokens []string) {
++	c.t.Helper()
++	lines := strings.Split(c.smoke.lastPane(c.t, c.guid), "\n")
++	rows, inFeedback, headShown := 0, false, 0
++	for _, line := range lines {
++		if strings.Contains(line, "Stop hook feedback:") {
++			rows++
++			inFeedback = true
++		} else if strings.TrimSpace(line) == "" {
++			inFeedback = false
++		}
++		if inFeedback {
++			headShown += strings.Count(line, first)
++		}
++		if strings.Contains(line, "Stop says:") {
++			for _, token := range tokens {
++				if strings.Contains(line, token) {
++					c.fail("a `Stop says:` line carries %s; the operator is shown the head once, in the feedback row", token)
++				}
++			}
++		}
++	}
++	if rows != 1 {
++		c.fail("the pane shows %d `Stop hook feedback:` rows; want exactly one", rows)
++	}
++	if headShown != 1 {
++		c.fail("the pane's Stop hook feedback lines hold %s %d times; want once", first, headShown)
++	}
++}
++
+ // TestSmokeCreelHookDelivery proves creel's hook delivery into real Claude sessions started by shuttle's own launch, so their settings and launch line are the ones production renders.
+ // The test process posts as EXTERNAL.
+ // It needs a `lym` built from this tree on PATH, since the sessions' hooks run `lym creel hook-read` and `lym creel hook-wait`.
+@@ -310,9 +416,10 @@ func TestSmokeCreelHookDelivery(t *testing.T) {
+ 		c.awaitShown("creel-midturn-token")
+ 		c.awaitTurnEnds(1)
+ 		c.requireNoPanePath()
++		c.requireTranscriptLacks("lym creel hook-read", "hook blocking error")
+ 	})
+ 
+-	t.Run("a post after the last tool call is delivered by the Stop block and the turn goes on", func(t *testing.T) {
++	t.Run("a post after the last tool call is delivered at the Stop as additional context and the turn goes on", func(t *testing.T) {
+ 		c := newClaudeScenario(t, smoke, "Run one Bash call, `echo only-command`. After it, write out the lines item-1 to item-200, one per line, and end your turn. "+
+ 			"If a message starting with [creel] arrives, do what it says before you end your turn.", false)
+ 		c.awaitShown("item-20")
+@@ -327,6 +434,27 @@ func TestSmokeCreelHookDelivery(t *testing.T) {
+ 			c.fail("events hold %d Stop stamps; want exactly the real end's, none for the blocked stop", got)
+ 		}
+ 		c.requireNoPanePath()
++		c.requireTranscriptLacks("lym creel hook-read", "hook blocking error")
++	})
++
++	t.Run("a Stop claim of more than five lines shows the operator its head once", func(t *testing.T) {
++		c := newClaudeScenario(t, smoke, "Run one Bash call, `echo only-command`. After it, write out the lines item-1 to item-200, one per line, and end your turn. "+
++			"If messages starting with [creel] arrive, act on the last one before you end your turn.", false)
++		c.awaitShown("item-20")
++		var tokens []string
++		for i := 1; i <= 7; i++ {
++			token := fmt.Sprintf("creel-head-%d", i)
++			tokens = append(tokens, token)
++			body := token + ": nothing to do for this one"
++			if i == 7 {
++				body = token + ": write the word ok into the file " + c.file("head.txt")
++			}
++			c.post(c.name, body)
++		}
++		c.awaitFile("head.txt")
++		c.awaitTurnEnds(1)
++		c.requireHeadShownOnce(tokens[0], tokens)
++		c.requireNoPanePath()
+ 	})
+ 
+ 	t.Run("an idle session with a draft is woken and keeps its draft", func(t *testing.T) {
+@@ -340,8 +468,7 @@ func TestSmokeCreelHookDelivery(t *testing.T) {
+ 		c.awaitShown(draft)
+ 		c.post(c.name, "creel-wake-token: write the word ok into the file "+c.file("wake.txt"))
+ 		c.awaitFile("wake.txt")
+-		c.awaitShown("creel-wake-token")
+-		c.await("the woken turn to end", func() bool { return c.payloads("Stop") >= 2 })
++		c.requireWakeShown("creel-wake-token", 1)
+ 		if !strings.Contains(smoke.lastPane(t, c.guid), draft) {
+ 			c.fail("the draft %q is gone from the input box", draft)
+ 		}
+@@ -351,7 +478,7 @@ func TestSmokeCreelHookDelivery(t *testing.T) {
+ 		c.requireNoPanePath()
+ 	})
+ 
+-	t.Run("successive wakes are each delivered through the Stop block", func(t *testing.T) {
++	t.Run("successive wakes are each delivered through the waiter", func(t *testing.T) {
+ 		c := newClaudeScenario(t, smoke, "Reply with the single word ready and end your turn. "+
+ 			"Each time a message starting with [creel] arrives, do what it says.", false)
+ 		c.awaitTurnEnds(1)
+@@ -360,8 +487,7 @@ func TestSmokeCreelHookDelivery(t *testing.T) {
+ 			file := fmt.Sprintf("successive-%d.txt", i)
+ 			c.post(c.name, token+": write the word ok into the file "+c.file(file))
+ 			c.awaitFile(file)
+-			c.awaitShown(token)
+-			c.awaitTurnEnds(1 + i)
++			c.requireWakeShown(token, i)
+ 		}
+ 		if got := c.promptsContaining(creelengine.BellLine); got != 0 {
+ 			c.fail("%d prompts contain the bell line; each wake was to come from the waiter", got)
+@@ -422,13 +548,7 @@ func TestSmokeCreelHookDelivery(t *testing.T) {
+ 
+ // forkTranscripts returns the transcripts of the session's forks: the files under the directory named for the session's own transcript, and when that directory does not exist the other transcripts of its project directory.
+ func forkTranscripts(c *claudeScenario) []string {
+-	var main string
+-	for _, record := range c.eventRecords() {
+-		if path, _ := record["transcript_path"].(string); path != "" {
+-			main = path
+-			break
+-		}
+-	}
++	main := c.mainTranscript()
+ 	if main == "" {
+ 		return nil
+ 	}
+diff --git a/internal/creelengine/client.go b/internal/creelengine/client.go
+index fc4e4433..92f987fd 100644
+--- a/internal/creelengine/client.go
++++ b/internal/creelengine/client.go
+@@ -57,6 +57,10 @@ func NewClient(geom Geometry, claim Claim, spawn func() (Spawn, error), clock Cl
+ 	return &Client{geom: geom, claim: claim, spawn: spawn, clock: clock}
+ }
+ 
++// ErrAckUnsent marks a failed write of the acknowledgement line: the daemon never received it, so it journaled nothing of what it handed out.
++// A confirmation the daemon refused or that was lost never matches it, since the acknowledgement was written.
++var ErrAckUnsent = errors.New("creel: the acknowledgement could not be sent, so the daemon journaled nothing")
++
+ // connLostError marks a connection that dropped, or never came up, as opposed to a refusal by the daemon.
+ type connLostError struct{ err error }
+ 
+@@ -120,12 +124,15 @@ func (c *Client) gaveUp(pid, connects int, err error) error {
+ // waitState remembers what a waiting call learned, so a reconnect can resume it.
+ type waitState struct {
+ 	id int64
++	// handled is set once a response reached the caller's handler, after which a hook-wait is never resumed.
++	handled bool
+ }
+ 
+ // Call sends the request as the client's claim and returns the final response.
+ // A refusal by the daemon comes back as an error carrying its message; one that carries a code also matches that code's sentinel under errors.Is.
+ // The timeout is measured on the client's clock over the whole request, waiting or not, and zero means none; its expiry returns ErrWaitTimeout.
+ // A waiting call whose connection drops reconnects up to MaxReconnects times, starting the daemon if needed, and resumes the same wait.
++// A hook-wait resumes only until a ring reaches handle; a connection lost after that ends the call, since the daemon may already have journaled the mail the ring carried.
+ // A read's response is handed to handle, and acknowledged only when handle returns nil; a handle that fails leaves the messages unread.
+ func (c *Client) Call(req Request, timeout time.Duration, handle func(Response) error) (Response, error) {
+ 	return c.CallWatching(req, timeout, handle, nil)
+@@ -154,6 +161,9 @@ func (c *Client) CallWatching(req Request, timeout time.Duration, handle func(Re
+ 		if !errors.As(err, &lost) || !established || !req.Wait {
+ 			return Response{}, err
+ 		}
++		if req.Verb == VerbHookWait && state.handled {
++			return Response{}, err
++		}
+ 		if reconnects >= MaxReconnects {
+ 			return Response{}, fmt.Errorf("creel: lost the connection to %s and gave up after %d reconnects: %w", c.geom.SocketPath, reconnects, err)
+ 		}
+@@ -169,7 +179,7 @@ func (c *Client) CallWatching(req Request, timeout time.Duration, handle func(Re
+ }
+ 
+ // resume builds the request that continues a waiting call on a new connection.
+-// A read and a hook-wait resume by sending the same request again, since neither waits on an id.
++// A read and a hook-wait resume by sending the same request again, since neither waits on an id; a hook-wait whose ring reached the handler is never resumed, and CallWatching ends it before it gets here.
+ func (c *Client) resume(req Request, state *waitState) (Request, error) {
+ 	resumed := Request{Claim: c.claim, ID: state.id, Wait: true}
+ 	switch {
+@@ -252,13 +262,14 @@ func (c *Client) exchange(conn net.Conn, req Request, timer <-chan time.Time, st
+ 			}
+ 			if resp.AckRequired {
+ 				if handle != nil {
++					state.handled = true
+ 					if err := handle(resp); err != nil {
+ 						return Response{}, err
+ 					}
+ 				}
+ 				ack, _ := encodeLine(ackLine{Ack: true})
+ 				if _, err := conn.Write(ack); err != nil {
+-					return Response{}, &connLostError{err}
++					return Response{}, &connLostError{fmt.Errorf("%w: %w", ErrAckUnsent, err)}
+ 				}
+ 				if err := c.awaitAckConfirmation(lines, timer); err != nil {
+ 					return Response{}, err
+diff --git a/internal/creelengine/deliver.go b/internal/creelengine/deliver.go
+index 6af0818e..a46bece5 100644
+--- a/internal/creelengine/deliver.go
++++ b/internal/creelengine/deliver.go
+@@ -277,7 +277,7 @@ func (w *worker) wakeHookStrand(strand Strand, now time.Time) bool {
+ 		unanswered = false
+ 	}
+ 	if ringable && idleness.NoTurn && (mark.at.IsZero() || idleness.TurnEndedAt.IsZero() || idleness.TurnEndedAt.After(mark.at)) {
+-		return store.ringHook(strand.Name, ids, now)
++		return store.ringHook(strand, ids, now)
+ 	}
+ 	if belled {
+ 		return false
+@@ -294,12 +294,27 @@ func (w *worker) wakeHookStrand(strand Strand, now time.Time) bool {
+ 
+ // typeBell types BellLine into a hook strand once it is idle, and records the bell for the claimable set ids, whether the line landed or not.
+ // A line that did not land is never typed again for the same set; a busy send records nothing, so the next probe tries again.
++// Every send it makes logs one `creel bell` line.
+ func (w *worker) typeBell(strand Strand, ids []int64) bool {
+ 	store := w.scheduler.store
+ 	if !w.idle(strand) {
+ 		return false
+ 	}
+ 	err := w.scheduler.delivery.Send(strand, BellLine)
++	outcome := "sent"
++	switch {
++	case errors.Is(err, ErrNotLanded):
++		outcome = "not-landed"
++	case errors.Is(err, ErrBusy):
++		outcome = "busy"
++	case err != nil:
++		outcome = "failed"
++	}
++	attrs := []any{"strand", strand.Name, "ids", ids, "outcome", outcome}
++	if outcome == "failed" {
++		attrs = append(attrs, "error", err)
++	}
++	logger.Info("creel bell", attrs...)
+ 	switch {
+ 	case err == nil, errors.Is(err, ErrNotLanded):
+ 		w.report("send", nil)
+diff --git a/internal/creelengine/deliver_test.go b/internal/creelengine/deliver_test.go
+index 5261c817..3f179ce1 100644
+--- a/internal/creelengine/deliver_test.go
++++ b/internal/creelengine/deliver_test.go
+@@ -14,10 +14,12 @@ import (
+ 	"slices"
+ 	"strings"
+ 	"sync"
++	"sync/atomic"
+ 	"testing"
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/creelengine"
++	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/testkit/creelfake"
+ 	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
+ )
+@@ -1698,12 +1700,79 @@ func TestScheduler_HookWake(t *testing.T) {
+ 	}
+ 	register := func(t *testing.T, e *env, name string) *creelengine.Waiter {
+ 		t.Helper()
+-		waiter, err := e.store.HookWait(strand(name))
++		waiter, err := e.store.HookWait(strand(name), false)
+ 		if err != nil {
+ 			t.Fatalf("HookWait(%s): %v", name, err)
+ 		}
+ 		return waiter
+ 	}
++	// registerTaking registers a waiter marked as taking mail, whose ring carries the claimed messages.
++	registerTaking := func(t *testing.T, e *env, name string) *creelengine.Waiter {
++		t.Helper()
++		waiter, err := e.store.HookWait(strand(name), true)
++		if err != nil {
++			t.Fatalf("HookWait(%s, takes mail): %v", name, err)
++		}
++		return waiter
++	}
++	// ringed waits for the waiter's ring and returns its claim, which a marked waiter's ring always carries.
++	ringed := func(t *testing.T, waiter *creelengine.Waiter) *creelengine.Reading {
++		t.Helper()
++		outcome := awaitOutcome(t, waiter)
++		if outcome.Kind != creelengine.OutcomeRing || outcome.Reading == nil {
++			t.Fatalf("the marked waiter was answered %+v; want a ring carrying a claim", outcome)
++		}
++		return outcome.Reading
++	}
++	// bodiesOf returns the bodies of the messages a reading holds.
++	bodiesOf := func(reading *creelengine.Reading) []string {
++		var bodies []string
++		for _, msg := range reading.Messages {
++			bodies = append(bodies, msg.Body)
++		}
++		return bodies
++	}
++	// boundaryClaim claims as alpha's tool-boundary hook and acknowledges, returning the bodies handed out.
++	boundaryClaim := func(t *testing.T, e *env) []string {
++		t.Helper()
++		reading, err := e.store.ClaimAtBoundary(strand(alpha), creelengine.Boundary{})
++		if err != nil {
++			t.Fatalf("ClaimAtBoundary: %v", err)
++		}
++		if err := reading.Ack(); err != nil {
++			t.Fatalf("Ack: %v", err)
++		}
++		return bodiesOf(reading)
++	}
++	// linesOf returns the lines the messages are handed out as.
++	linesOf := func(messages []creelengine.Message) []string {
++		var lines []string
++		for _, msg := range messages {
++			lines = append(lines, creelengine.MessageLine(msg))
++		}
++		return lines
++	}
++	// claimOnce claims as alpha's hook at the boundary and returns the reading without settling it.
++	claimOnce := func(t *testing.T, e *env, boundary creelengine.Boundary) *creelengine.Reading {
++		t.Helper()
++		reading, err := e.store.ClaimAtBoundary(strand(alpha), boundary)
++		if err != nil {
++			t.Fatalf("ClaimAtBoundary: %v", err)
++		}
++		return reading
++	}
++	// ackedRing rings a marked waiter of alpha for a post of body, acknowledges the ring and returns the line it carried, which is then owed as an echo.
++	ackedRing := func(t *testing.T, e *env, body string) []string {
++		t.Helper()
++		waiter := registerTaking(t, e, alpha)
++		e.post(t, strand(beta), alpha, body)
++		settle(e, func() { e.start(t) })
++		ring := ringed(t, waiter)
++		if err := ring.Ack(); err != nil {
++			t.Fatalf("Ack of the ring: %v", err)
++		}
++		return linesOf(ring.Messages)
++	}
+ 	wantKind := func(t *testing.T, waiter *creelengine.Waiter, want creelengine.OutcomeKind) {
+ 		t.Helper()
+ 		if got := awaitOutcome(t, waiter).Kind; got != want {
+@@ -1782,7 +1851,291 @@ func TestScheduler_HookWake(t *testing.T) {
+ 			settle(e, func() { e.post(t, strand(beta), alpha, "one") })
+ 			var waiter *creelengine.Waiter
+ 			settle(e, func() { waiter = register(t, e, alpha) })
+-			wantKind(t, waiter, creelengine.OutcomeRing)
++			if outcome := awaitOutcome(t, waiter); outcome.Kind != creelengine.OutcomeRing || outcome.Reading != nil {
++				t.Fatalf("the unmarked waiter was answered %+v; want a ring carrying no claim", outcome)
++			}
++			if got := boundaryClaim(t, e); !slices.Equal(got, []string{"one"}) {
++				t.Errorf("a claim after the unmarked ring handed out %q; want the mail", got)
++			}
++		}},
++		{"AMarkedWaiterIsRungWithTheBudgetedClaimAndItsAckJournalsItAndAnswersTheRing", func(t *testing.T, e *env) {
++			ringAt := e.clock.Now()
++			e.del.SetTurn(alpha, false, ringAt.Add(-time.Minute))
++			first := registerTaking(t, e, alpha)
++			e.post(t, strand(beta), alpha, bigBody)
++			e.post(t, strand(beta), alpha, bigBody)
++			settle(e, func() { e.start(t) })
++			reading := ringed(t, first)
++			if len(reading.Messages) != 1 || reading.Messages[0].ID != 1 {
++				t.Fatalf("the ring carried %+v; want #1 alone, since #2 passes the byte budget", reading.Messages)
++			}
++			if err := reading.Ack(); err != nil {
++				t.Fatalf("Ack: %v", err)
++			}
++			if got := eventsOf(e.store.Log(creelengine.LogFilter{To: alpha})); !slices.Equal(got, []string{"posted", "posted", "read"}) {
++				t.Errorf("Log(to alpha) events = %v; want two posts and the read of #1", got)
++			}
++			var second *creelengine.Waiter
++			settle(e, func() { second = registerTaking(t, e, alpha) })
++			for e.clock.Now().Sub(ringAt) < 45*time.Second {
++				step(e)
++			}
++			if got := e.typed(alpha); len(got) != 0 {
++				t.Errorf("typed %q after an acknowledged ring; want no bell, since the acknowledgement answered it", got)
++			}
++			wantSilent(t, second)
++			if got := boundaryClaim(t, e); len(got) != 0 {
++				t.Errorf("the tool-boundary claim after the ring handed out %d messages; want the echo of #1 alone, which fills the budget", len(got))
++			}
++			if got := boundaryClaim(t, e); len(got) != 1 || got[0] != bigBody {
++				t.Errorf("a later tool-boundary claim handed out %d messages; want #2", len(got))
++			}
++		}},
++		{"AMarkedRingStartsTheStopCountOver", func(t *testing.T, e *env) {
++			waiter := registerTaking(t, e, alpha)
++			e.post(t, strand(beta), alpha, bigBody)
++			e.post(t, strand(beta), alpha, bigBody)
++			settle(e, func() { e.start(t) })
++			if err := ringed(t, waiter).Ack(); err != nil {
++				t.Fatalf("Ack: %v", err)
++			}
++			if got := claim(t, e, true); len(got) != 0 {
++				t.Fatalf("the first Stop claim after the marked ring handed out %+v; want the echo of #1 alone, which fills the budget", got)
++			}
++			if got := claim(t, e, true); len(got) != 1 || got[0].ID != 2 {
++				t.Errorf("the Stop claim after the marked ring handed out %+v; want #2, which a count no claim of this daemon set would refuse", got)
++			}
++		}},
++		{"AMarkedWaiterUnderAnotherSendersHoldIsRungWithTheOwnersMailOnly", func(t *testing.T, e *env) {
++			if _, err := e.store.Hold(program(batten), alpha, time.Hour); err != nil {
++				t.Fatalf("Hold: %v", err)
++			}
++			e.start(t)
++			waiter := registerTaking(t, e, alpha)
++			settle(e, func() { e.post(t, strand(beta), alpha, "not the owner's") })
++			wantSilent(t, waiter)
++			settle(e, func() { e.post(t, program(batten), alpha, "the owner's") })
++			if got := bodiesOf(ringed(t, waiter)); !slices.Equal(got, []string{"the owner's"}) {
++				t.Errorf("the ring carried %q; want the owner's mail only", got)
++			}
++		}},
++		{"AMarkedWaiterIsRungWithoutALineOverTheHookFieldCap", func(t *testing.T, e *env) {
++			waiter := registerTaking(t, e, alpha)
++			if _, err := e.store.PostUnchecked(strand(beta), alpha, strings.Repeat("x", 10001)); err != nil {
++				t.Fatalf("PostUnchecked: %v", err)
++			}
++			e.post(t, strand(beta), alpha, "short")
++			settle(e, func() { e.start(t) })
++			if got := bodiesOf(ringed(t, waiter)); !slices.Equal(got, []string{"short"}) {
++				t.Errorf("the ring carried %q; want the short post alone", got)
++			}
++		}},
++		{"APauseReadAtTheRingRingsNothingAndKeepsTheWaiter", func(t *testing.T, e *env) {
++			e.start(t)
++			waiter := registerTaking(t, e, alpha)
++			e.del.SetIdleHook(func(string) { e.del.SetPaused(alpha, true) })
++			settle(e, func() { e.post(t, strand(beta), alpha, "one") })
++			wantSilent(t, waiter)
++			e.del.SetIdleHook(nil)
++			e.del.SetPaused(alpha, false)
++			settle(e, func() { e.post(t, strand(beta), alpha, "two") })
++			if got := bodiesOf(ringed(t, waiter)); !slices.Equal(got, []string{"one", "two"}) {
++				t.Errorf("the ring carried %q; want both posts", got)
++			}
++		}},
++		{"APauseReadErrorAtTheRingRingsNothingAndKeepsTheWaiter", func(t *testing.T, e *env) {
++			e.start(t)
++			waiter := registerTaking(t, e, alpha)
++			e.del.SetIdleHook(func(string) { e.del.SetPausedError(errors.New("pause record unreadable")) })
++			settle(e, func() { e.post(t, strand(beta), alpha, "one") })
++			wantSilent(t, waiter)
++			e.del.SetIdleHook(nil)
++			e.del.SetPausedError(nil)
++			settle(e, func() { e.post(t, strand(beta), alpha, "two") })
++			if got := bodiesOf(ringed(t, waiter)); !slices.Equal(got, []string{"one", "two"}) {
++				t.Errorf("the ring carried %q; want both posts", got)
++			}
++		}},
++		{"AClaimTakingTheSetBeforeTheRingRingsNothingAndKeepsTheWaiter", func(t *testing.T, e *env) {
++			e.start(t)
++			waiter := registerTaking(t, e, alpha)
++			var held atomic.Pointer[creelengine.Reading]
++			e.del.SetIdleHook(func(string) {
++				if held.Load() != nil {
++					return
++				}
++				reading, err := e.store.ClaimAtBoundary(strand(alpha), creelengine.Boundary{})
++				if err != nil {
++					t.Errorf("ClaimAtBoundary during the probe: %v", err)
++					return
++				}
++				held.Store(reading)
++			})
++			settle(e, func() { e.post(t, strand(beta), alpha, "one") })
++			wantSilent(t, waiter)
++			e.del.SetIdleHook(nil)
++			if reading := held.Load(); reading == nil || len(reading.Messages) != 1 {
++				t.Fatalf("the claim during the probe held %+v; want the set", reading)
++			} else {
++				reading.Release()
++			}
++			settle(e, func() { e.post(t, strand(beta), alpha, "two") })
++			if got := bodiesOf(ringed(t, waiter)); !slices.Equal(got, []string{"one", "two"}) {
++				t.Errorf("the ring carried %q; want both posts", got)
++			}
++		}},
++		{"ARingOutcomeNeverTakenIsReleasedWhenItsWaitIsCancelled", func(t *testing.T, e *env) {
++			e.start(t)
++			waiter := registerTaking(t, e, alpha)
++			ringAt := e.clock.Now()
++			settle(e, func() { e.post(t, strand(beta), alpha, "one") })
++			if got := len(waiter.C); got != 1 {
++				t.Fatalf("the waiter's channel holds %d outcomes after the ring; want one", got)
++			}
++			waiter.Cancel()
++			if elapsed := untilBell(t, e, ringAt); elapsed < 30*time.Second {
++				t.Errorf("the bell came %v after the ring; want at least the 30s window", elapsed)
++			}
++			if got := boundaryClaim(t, e); !slices.Equal(got, []string{"one"}) {
++				t.Errorf("a claim after the cancelled wait handed out %q; want the mail the ring reserved", got)
++			}
++		}},
++		{"AReleasedRingClaimLeavesTheMailUnreadAndTheBellFollows", func(t *testing.T, e *env) {
++			e.start(t)
++			waiter := registerTaking(t, e, alpha)
++			ringAt := e.clock.Now()
++			settle(e, func() { e.post(t, strand(beta), alpha, "one") })
++			ringed(t, waiter).Release()
++			if elapsed := untilBell(t, e, ringAt); elapsed < 30*time.Second {
++				t.Errorf("the bell came %v after the ring; want at least the 30s window", elapsed)
++			}
++			if got := boundaryClaim(t, e); !slices.Equal(got, []string{"one"}) {
++				t.Errorf("a claim after the released ring handed out %q; want the mail", got)
++			}
++		}},
++		{"AJournalFailureAtTheRingsAckLeavesTheRingUnanswered", func(t *testing.T, e *env) {
++			e.start(t)
++			waiter := registerTaking(t, e, alpha)
++			ringAt := e.clock.Now()
++			settle(e, func() { e.post(t, strand(beta), alpha, "one") })
++			reading := ringed(t, waiter)
++			e.store.FailJournalWrites(0)
++			if err := reading.Ack(); err == nil {
++				t.Fatal("Ack with the journal write failing returned nil; want an error")
++			}
++			e.store.FailJournalWrites(-1)
++			if elapsed := untilBell(t, e, ringAt); elapsed < 30*time.Second {
++				t.Errorf("the bell came %v after the ring; want at least the 30s window, since the failed ack answered nothing", elapsed)
++			}
++		}},
++		{"AnAcknowledgedRingLeavesAnEchoTheNextClaimHandsOutAheadOfItsMail", func(t *testing.T, e *env) {
++			ring := ackedRing(t, e, "one")
++			settle(e, func() { e.post(t, strand(beta), alpha, "two") })
++			reading := claimOnce(t, e, creelengine.Boundary{})
++			if !slices.Equal(reading.Echo, ring) || !slices.Equal(bodiesOf(reading), []string{"two"}) {
++				t.Fatalf("the claim handed out echo %q and messages %q; want %q and the second post", reading.Echo, bodiesOf(reading), ring)
++			}
++			if err := reading.Ack(); err != nil {
++				t.Fatalf("Ack: %v", err)
++			}
++			if again := claimOnce(t, e, creelengine.Boundary{}); len(again.Echo) != 0 || len(again.Messages) != 0 {
++				t.Errorf("the claim after the acknowledged one handed out echo %q and messages %q; want nothing", again.Echo, bodiesOf(again))
++			}
++		}},
++		{"ThePausedOrHeldStrandsClaimStillHandsOutTheEcho", func(t *testing.T, e *env) {
++			ring := ackedRing(t, e, "one")
++			e.del.SetPaused(alpha, true)
++			paused := claimOnce(t, e, creelengine.Boundary{})
++			if !slices.Equal(paused.Echo, ring) || len(paused.Messages) != 0 {
++				t.Fatalf("the paused claim handed out echo %q and messages %q; want the echo alone", paused.Echo, bodiesOf(paused))
++			}
++			paused.Release()
++			e.del.SetPaused(alpha, false)
++			if _, err := e.store.Hold(program(batten), alpha, time.Hour); err != nil {
++				t.Fatalf("Hold: %v", err)
++			}
++			settle(e, func() { e.post(t, strand(beta), alpha, "not the owner's") })
++			held := claimOnce(t, e, creelengine.Boundary{})
++			if !slices.Equal(held.Echo, ring) || len(held.Messages) != 0 {
++				t.Errorf("the held claim handed out echo %q and messages %q; want the echo alone", held.Echo, bodiesOf(held))
++			}
++		}},
++		{"TheStopCapKeepsTheMailBackButNotTheEcho", func(t *testing.T, e *env) {
++			ring := ackedRing(t, e, "short")
++			settle(e, func() { e.post(t, strand(beta), alpha, bigBody) })
++			for i := range 6 {
++				reading := claimOnce(t, e, creelengine.Boundary{Stop: true, StopHookActive: i > 0})
++				if !slices.Equal(reading.Echo, ring) || !slices.Equal(bodiesOf(reading), []string{bigBody}) {
++					t.Fatalf("Stop claim %d handed out echo %q and %d messages; want the echo and the big post", i+1, reading.Echo, len(reading.Messages))
++				}
++				reading.Release()
++			}
++			capped := claimOnce(t, e, creelengine.Boundary{Stop: true, StopHookActive: true})
++			if !slices.Equal(capped.Echo, ring) || len(capped.Messages) != 0 {
++				t.Errorf("the seventh Stop claim handed out echo %q and %d messages; want the echo alone", capped.Echo, len(capped.Messages))
++			}
++		}},
++		{"TheEchoSharesTheBudgetAndAReleaseKeepsIt", func(t *testing.T, e *env) {
++			ring := ackedRing(t, e, bigBody)
++			settle(e, func() { e.post(t, strand(beta), alpha, bigBody) })
++			for range 2 {
++				reading := claimOnce(t, e, creelengine.Boundary{})
++				if !slices.Equal(reading.Echo, ring) || len(reading.Messages) != 0 {
++					t.Fatalf("the claim handed out echo %d lines and %d messages; want the echo alone, since the big post passes the shared budget", len(reading.Echo), len(reading.Messages))
++				}
++				reading.Release()
++			}
++		}},
++		{"AJournalFailureAtTheRingsAckEchoesOnlyTheIdsBeforeTheFailingWrite", func(t *testing.T, e *env) {
++			waiter := registerTaking(t, e, alpha)
++			for _, body := range []string{"one", "two", "three"} {
++				e.post(t, strand(beta), alpha, body)
++			}
++			settle(e, func() { e.start(t) })
++			ring := ringed(t, waiter)
++			e.store.FailJournalWrites(1)
++			if err := ring.Ack(); err == nil {
++				t.Fatal("Ack with the second journal write failing returned nil; want an error")
++			}
++			e.store.FailJournalWrites(-1)
++			reading := claimOnce(t, e, creelengine.Boundary{})
++			if want := linesOf(ring.Messages[:1]); !slices.Equal(reading.Echo, want) || !slices.Equal(bodiesOf(reading), []string{"two", "three"}) {
++				t.Errorf("the claim handed out echo %q and messages %q; want the first line and the two released posts", reading.Echo, bodiesOf(reading))
++			}
++		}},
++		{"AJournalFailureAtAClaimsAckDropsTheEchoItHandedOut", func(t *testing.T, e *env) {
++			ring := ackedRing(t, e, "one")
++			settle(e, func() { e.post(t, strand(beta), alpha, "two") })
++			reading := claimOnce(t, e, creelengine.Boundary{})
++			if !slices.Equal(reading.Echo, ring) || !slices.Equal(bodiesOf(reading), []string{"two"}) {
++				t.Fatalf("the claim handed out echo %q and messages %q; want the echo and the second post", reading.Echo, bodiesOf(reading))
++			}
++			e.store.FailJournalWrites(0)
++			if err := reading.Ack(); err == nil {
++				t.Fatal("Ack with the journal write failing returned nil; want an error")
++			}
++			e.store.FailJournalWrites(-1)
++			after := claimOnce(t, e, creelengine.Boundary{})
++			if len(after.Echo) != 0 || !slices.Equal(bodiesOf(after), []string{"two"}) {
++				t.Errorf("the claim after the failed ack handed out echo %q and messages %q; want no echo and the released post", after.Echo, bodiesOf(after))
++			}
++		}},
++		{"ARingAckEchoesAnIdThatLeftTheHolderBeforeTheAck", func(t *testing.T, e *env) {
++			waiter := registerTaking(t, e, alpha)
++			e.post(t, strand(beta), alpha, "one")
++			e.post(t, strand(beta), alpha, "two")
++			settle(e, func() { e.start(t) })
++			ring := ringed(t, waiter)
++			if err := e.store.Forward(strand(alpha), 2, beta); err != nil {
++				t.Fatalf("Forward: %v", err)
++			}
++			if err := ring.Ack(); err != nil {
++				t.Fatalf("Ack: %v", err)
++			}
++			reading := claimOnce(t, e, creelengine.Boundary{})
++			if want := linesOf(ring.Messages); !slices.Equal(reading.Echo, want) || len(reading.Messages) != 0 {
++				t.Errorf("the claim handed out echo %q and messages %q; want both lines of the ring and no mail", reading.Echo, bodiesOf(reading))
++			}
+ 		}},
+ 		{"APauseRingsNothing", func(t *testing.T, e *env) {
+ 			e.del.SetPaused(alpha, true)
+@@ -1886,7 +2239,7 @@ func TestScheduler_HookWake(t *testing.T) {
+ 				{program(batten), "lym creel read"},
+ 				{external(), "lym creel post --wait-reply"},
+ 			} {
+-				_, err := e.store.HookWait(sender.name)
++				_, err := e.store.HookWait(sender.name, false)
+ 				if err == nil || !strings.Contains(err.Error(), "is no strand") || !strings.Contains(err.Error(), sender.wantErr) {
+ 					t.Errorf("HookWait(%s) = %v; want a refusal naming %q", sender.name.Name, err, sender.wantErr)
+ 				}
+@@ -2656,3 +3009,235 @@ func TestScheduler_Chases(t *testing.T) {
+ 		})
+ 	}
+ }
++
++// TestStore_ClaimLog pins the daemon log line of each hook delivery attempt and each bell send: its level, path, ids, echo ids, outcome and reason.
++// It is not parallel because it redirects the process-global logger.
++func TestStore_ClaimLog(t *testing.T) {
++	logs := logcapture.Capture(t)
++	logger.SetVerbosity(2)
++	bigBody := strings.Repeat("x", 5000)
++	hookEnv := func(t *testing.T) *env {
++		t.Helper()
++		e := newEnv(t)
++		e.del.SetStrands(creelfake.HookStrand(alpha), creelfake.HookStrand(beta), creelfake.LiveStrand(orch))
++		return e
++	}
++	// settle runs trigger and waits until a worker has probed after it and gone back to sleep.
++	settle := func(e *env, trigger func()) {
++		seen := len(e.probeWaits(0))
++		trigger()
++		e.probeWaits(seen + 1)
++	}
++	registerTaking := func(t *testing.T, e *env) *creelengine.Waiter {
++		t.Helper()
++		waiter, err := e.store.HookWait(strand(alpha), true)
++		if err != nil {
++			t.Fatalf("HookWait: %v", err)
++		}
++		return waiter
++	}
++	// ring registers a marked waiter of alpha, posts one short message and returns the ring's claim.
++	ring := func(t *testing.T, e *env) *creelengine.Reading {
++		t.Helper()
++		waiter := registerTaking(t, e)
++		e.post(t, strand(beta), alpha, "one")
++		settle(e, func() { e.start(t) })
++		outcome := awaitOutcome(t, waiter)
++		if outcome.Reading == nil {
++			t.Fatalf("the marked waiter was answered %+v; want a ring carrying a claim", outcome)
++		}
++		return outcome.Reading
++	}
++	claim := func(t *testing.T, e *env, boundary creelengine.Boundary) *creelengine.Reading {
++		t.Helper()
++		reading, err := e.store.ClaimAtBoundary(strand(alpha), boundary)
++		if err != nil {
++			t.Fatalf("ClaimAtBoundary: %v", err)
++		}
++		return reading
++	}
++	// owedEcho acknowledges a ring of one message, leaving its line owed as an echo, and clears the log of the ring's own line.
++	owedEcho := func(t *testing.T, e *env) {
++		t.Helper()
++		if err := ring(t, e).Ack(); err != nil {
++			t.Fatalf("Ack of the ring: %v", err)
++		}
++		logs.Reset()
++	}
++	// untilBellAttempt steps probes until a bell was sent into alpha; the fake-time minute only bounds a failing test.
++	untilBellAttempt := func(t *testing.T, e *env) {
++		t.Helper()
++		start := e.clock.Now()
++		for e.clock.Now().Sub(start) < time.Minute {
++			waits := e.probeWaits(1)
++			e.tick(waits[len(waits)-1])
++			if slices.Contains(e.typed(alpha), creelengine.BellLine) {
++				return
++			}
++		}
++		t.Fatal("no bell was sent within a minute of fake time")
++	}
++	postBellSet := func(t *testing.T, e *env) {
++		t.Helper()
++		e.start(t)
++		settle(e, func() { e.post(t, strand(beta), alpha, "one") })
++		untilBellAttempt(t, e)
++	}
++	failure := errors.New("pane exploded")
++	tests := []struct {
++		name string
++		run  func(t *testing.T, e *env)
++		// msg is the one log message the row expects exactly once, and fields what its line carries, the level included.
++		msg    string
++		fields map[string]string
++	}{
++		{"AToolBoundaryClaimAcknowledged", func(t *testing.T, e *env) {
++			e.post(t, strand(beta), alpha, "one")
++			if err := claim(t, e, creelengine.Boundary{}).Ack(); err != nil {
++				t.Fatalf("Ack: %v", err)
++			}
++		}, "creel claim", map[string]string{"level": "INFO", "strand": alpha, "path": "tool", "ids": "[1]", "echo_ids": "[]", "outcome": "acknowledged"}},
++		{"AStopClaimAcknowledged", func(t *testing.T, e *env) {
++			e.post(t, strand(beta), alpha, "one")
++			if err := claim(t, e, creelengine.Boundary{Stop: true}).Ack(); err != nil {
++				t.Fatalf("Ack: %v", err)
++			}
++		}, "creel claim", map[string]string{"level": "INFO", "path": "stop", "ids": "[1]", "echo_ids": "[]", "outcome": "acknowledged"}},
++		{"AClaimReleased", func(t *testing.T, e *env) {
++			e.post(t, strand(beta), alpha, "one")
++			claim(t, e, creelengine.Boundary{}).Release()
++		}, "creel claim", map[string]string{"level": "INFO", "path": "tool", "ids": "[1]", "outcome": "released"}},
++		{"AnEmptyClaimReleasedLogsTheNothingLineAlone", func(t *testing.T, e *env) {
++			claim(t, e, creelengine.Boundary{}).Release()
++		}, "creel claim", map[string]string{"level": "DEBUG", "path": "tool", "outcome": "nothing", "reason": "nothing-claimable"}},
++		{"AClaimWhoseAckFailsNamesTheReleasedIdsAndTheDroppedEcho", func(t *testing.T, e *env) {
++			owedEcho(t, e)
++			settle(e, func() { e.post(t, strand(beta), alpha, "two") })
++			e.post(t, strand(beta), alpha, "three")
++			reading := claim(t, e, creelengine.Boundary{})
++			e.store.FailJournalWrites(0)
++			if err := reading.Ack(); err == nil {
++				t.Fatal("Ack with the journal write failing returned nil; want an error")
++			}
++		}, "creel claim", map[string]string{
++			"level": "WARN", "path": "tool", "ids": "[2 3]", "echo_ids": "[1]", "outcome": "ack-failed",
++			"released_ids": "[2 3]", "dropped_echo_ids": "[1]", "error": "creel journal: injected write fault",
++		}},
++		{"ARingWhoseAckFailsNamesTheReleasedIdsAndNoEcho", func(t *testing.T, e *env) {
++			reading := ring(t, e)
++			e.store.FailJournalWrites(0)
++			if err := reading.Ack(); err == nil {
++				t.Fatal("Ack with the journal write failing returned nil; want an error")
++			}
++		}, "creel claim", map[string]string{
++			"level": "WARN", "path": "ring", "ids": "[1]", "echo_ids": "[]", "outcome": "ack-failed",
++			"released_ids": "[1]", "dropped_echo_ids": "[]",
++		}},
++		{"AClaimHandingOutAnEchoIsAcknowledgedWithItsEchoIds", func(t *testing.T, e *env) {
++			owedEcho(t, e)
++			if err := claim(t, e, creelengine.Boundary{}).Ack(); err != nil {
++				t.Fatalf("Ack: %v", err)
++			}
++		}, "creel claim", map[string]string{"level": "INFO", "path": "tool", "ids": "[]", "echo_ids": "[1]", "outcome": "acknowledged"}},
++		{"ARingAcknowledged", func(t *testing.T, e *env) {
++			if err := ring(t, e).Ack(); err != nil {
++				t.Fatalf("Ack: %v", err)
++			}
++		}, "creel claim", map[string]string{"level": "INFO", "path": "ring", "ids": "[1]", "echo_ids": "[]", "outcome": "acknowledged"}},
++		{"ARingReleased", func(t *testing.T, e *env) {
++			ring(t, e).Release()
++		}, "creel claim", map[string]string{"level": "INFO", "path": "ring", "ids": "[1]", "outcome": "released"}},
++		{"APausedRingLogsTheNothingLineWithThePathRing", func(t *testing.T, e *env) {
++			e.start(t)
++			registerTaking(t, e)
++			e.del.SetIdleHook(func(string) { e.del.SetPaused(alpha, true) })
++			settle(e, func() { e.post(t, strand(beta), alpha, "one") })
++		}, "creel claim", map[string]string{"level": "DEBUG", "path": "ring", "outcome": "nothing", "reason": "paused"}},
++		{"APausedStrandsClaimHandsOutNothing", func(t *testing.T, e *env) {
++			e.post(t, strand(beta), alpha, "one")
++			e.del.SetPaused(alpha, true)
++			claim(t, e, creelengine.Boundary{})
++		}, "creel claim", map[string]string{"level": "DEBUG", "path": "tool", "outcome": "nothing", "reason": "paused"}},
++		{"AnotherSendersHoldKeepsTheClaimFromMailThatIsNotTheOwners", func(t *testing.T, e *env) {
++			if _, err := e.store.Hold(program(batten), alpha, time.Hour); err != nil {
++				t.Fatalf("Hold: %v", err)
++			}
++			e.post(t, strand(beta), alpha, "not the owner's")
++			claim(t, e, creelengine.Boundary{})
++		}, "creel claim", map[string]string{"level": "DEBUG", "path": "tool", "outcome": "nothing", "reason": "held"}},
++		{"TheStopCapHandsOutNothing", func(t *testing.T, e *env) {
++			for range 8 {
++				e.post(t, strand(beta), alpha, bigBody)
++			}
++			for i := range 6 {
++				if err := claim(t, e, creelengine.Boundary{Stop: true, StopHookActive: i > 0}).Ack(); err != nil {
++					t.Fatalf("Ack of Stop claim %d: %v", i+1, err)
++				}
++			}
++			logs.Reset()
++			claim(t, e, creelengine.Boundary{Stop: true, StopHookActive: true})
++		}, "creel claim", map[string]string{"level": "DEBUG", "path": "stop", "outcome": "nothing", "reason": "stop-cap"}},
++		{"AStopCountNoClaimSetHandsOutNothing", func(t *testing.T, e *env) {
++			e.post(t, strand(beta), alpha, "one")
++			claim(t, e, creelengine.Boundary{Stop: true, StopHookActive: true})
++		}, "creel claim", map[string]string{"level": "DEBUG", "path": "stop", "outcome": "nothing", "reason": "stop-count-unknown"}},
++		{"NoMailHandsOutNothing", func(t *testing.T, e *env) {
++			claim(t, e, creelengine.Boundary{})
++		}, "creel claim", map[string]string{"level": "DEBUG", "path": "tool", "outcome": "nothing", "reason": "nothing-claimable"}},
++		{"ABellSentAfterTheGraceWithNoWaiter", func(t *testing.T, e *env) {
++			postBellSet(t, e)
++		}, "creel bell", map[string]string{"level": "INFO", "strand": alpha, "ids": "[1]", "outcome": "sent"}},
++		{"ABellWhoseSendDidNotLand", func(t *testing.T, e *env) {
++			e.del.SetSendError(creelengine.ErrNotLanded)
++			postBellSet(t, e)
++		}, "creel bell", map[string]string{"level": "INFO", "ids": "[1]", "outcome": "not-landed"}},
++		{"ABusyBell", func(t *testing.T, e *env) {
++			e.del.SetSendError(creelengine.ErrBusy)
++			postBellSet(t, e)
++		}, "creel bell", map[string]string{"level": "INFO", "ids": "[1]", "outcome": "busy"}},
++		{"AFailedBellNamesItsError", func(t *testing.T, e *env) {
++			e.del.SetSendError(failure)
++			postBellSet(t, e)
++		}, "creel bell", map[string]string{"level": "INFO", "ids": "[1]", "outcome": "failed", "error": failure.Error()}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			logs.Reset()
++			tt.run(t, hookEnv(t))
++			lines := logLinesWithMessage(logs.String(), tt.msg)
++			if len(lines) != 1 {
++				t.Fatalf("%d %q lines; want exactly one:\n%s", len(lines), tt.msg, strings.Join(lines, "\n"))
++			}
++			for key, want := range tt.fields {
++				if got := logField(lines[0], key); got != want {
++					t.Errorf("%s of %q = %q; want %q", key, lines[0], got, want)
++				}
++			}
++		})
++	}
++}
++
++// logLinesWithMessage returns the lines of text, logger output in its text form, whose message is msg.
++func logLinesWithMessage(text, msg string) []string {
++	var lines []string
++	for _, line := range strings.Split(text, "\n") {
++		if strings.Contains(line, `msg="`+msg+`"`) {
++			lines = append(lines, line)
++		}
++	}
++	return lines
++}
++
++// logField returns the value of key in a logger text line, unquoted, and empty when the line carries no such key.
++func logField(line, key string) string {
++	_, rest, found := strings.Cut(" "+line, " "+key+"=")
++	if !found {
++		return ""
++	}
++	if strings.HasPrefix(rest, `"`) {
++		quoted, _, _ := strings.Cut(rest[1:], `"`)
++		return quoted
++	}
++	value, _, _ := strings.Cut(rest, " ")
++	return value
++}
+diff --git a/internal/creelengine/doc.go b/internal/creelengine/doc.go
+index 4af77f05..89f81804 100644
+--- a/internal/creelengine/doc.go
++++ b/internal/creelengine/doc.go
+@@ -122,33 +122,56 @@
+ // ClaimAtBoundary hands the strand its unread mail no read has reserved, oldest first and agent mail included, as a read does: reserved until the client acknowledges it on the same connection, and journaled read only then.
+ // Under a hold it hands out only the owner's mail, and while a pause covers the strand nothing.
+ // One claim stops before the message whose line would take its lines, with the newlines joining them, past an 8 KiB budget, though it always hands out the first, and what it leaves stays unread with its flag standing.
++// A journal write that fails at a claim's acknowledgement releases the id it failed on and every id after it, so a later claim hands them out once more; a read's acknowledgement keeps them reserved, since its client already printed the mail.
+ // Each message is one MessageLine, the line a notice is typed as: the plain form, or the marked form for a message that expects a reply.
+ //
+-// The Stop hook claims through the same verb with the Stop flag and the hook input's stop_hook_active, and blocks the turn end while it hands out mail.
+-// The store counts, per strand, the consecutive Stop blocks of the strand's current turn: a Stop whose stop_hook_active is false resets the count to 0, a Stop at 6 blocks or more claims nothing so the turn end is recorded, a Stop that hands out mail adds one before the client writes it, and a tool-boundary claim that hands out mail resets the count to 0.
+-// A strand with no count is at the cap, so a daemon that just started, a restart included, blocks no Stop until one of those resets; the count is never journaled.
+-// The cap of 6 stays below the 8 Claude Code allows, so no override discards a block whose mail was journaled read.
++// The Stop hook claims through the same verb with the Stop flag and the hook input's stop_hook_active, and hands the mail out as additional context that continues the turn while it hands out mail.
++// The store counts, per strand, the consecutive Stop claims that handed out mail in the strand's current turn: a Stop whose stop_hook_active is false resets the count to 0, a Stop at 6 continuations or more claims nothing so the turn end is recorded, a Stop that hands out mail adds one before the client writes it, and a tool-boundary claim that hands out mail resets the count to 0.
++// A strand with no count is at the cap, so a daemon that just started, a restart included, hands out no Stop mail until one of those resets; the count is never journaled.
++// The cap of 6 stays below the 8 Claude Code allows, so no override discards a continuation whose mail was journaled read.
+ // Bound: an agent strand's text reaches the session in full here, where the pane path only reminds it; the line opens with the sender creel stamps, and only mail the strand already holds is handed over.
+ //
+-// Each message is delivered once, by whichever path reserves it first: the claim during a turn, or the pane path, which reserves a notice before it types it.
++// Each message is delivered once, by whichever path reserves it first: the claim during a turn, the ring's claim to a marked idle waiter, or the pane path, which reserves a notice before it types it.
++// Two paths show mail whatever the outcome of its acknowledgement: `hook-read`, and `hook-wait` once its acknowledgement is written, so mail the daemon did not journal is handed out once more.
++// The ring's mail is journaled read before it is shown, so the loss window below loses it as read.
+ // A turn that ends with no tool call is reached by the pane path.
+ //
+ // # Idle wake
+ //
+ // A hook strand, one marked `CreelHooks`, has an idle waiter: the `hook-wait` verb registers a wait for the calling strand, and only a strand may register one.
+ // A newer waiter of the same strand ends the older, which is answered `superseded` before the new one registers, and a waiter lives exactly as long as its connection.
+-// A dropped hook-wait is resumed by sending the same request again, up to MaxReconnects.
++// A dropped hook-wait is resumed by sending the same request again, up to MaxReconnects, until a ring reaches the caller's handler; after that a lost connection ends the call, since the daemon may already have journaled the ring's mail.
++// A call whose acknowledgement line could not be written returns an error matching ErrAckUnsent, which tells it apart from an acknowledgement the daemon never confirmed.
+ //
+ // A worker rings the waiter, answering it `ring`, when the strand's claimable messages are non-empty and differ from those of its last ring, a waiter is registered, and the delivery reads no turn in progress, whatever the input box holds, so a draft does not hold the ring.
+ // The claimable messages are the unread ones a boundary claim would hand out if its byte budget were unlimited.
+-// A ring carries no mail and claims nothing; the woken turn's first tool call or its Stop takes the mail.
+-// It starts the strand's Stop count over and records the claimable ids and the clock time, in memory alone.
++// A waiter whose `hook-wait` request sets `takes_mail` is marked: only a strand registers one, and it takes only its own strand's mail.
++// A ring to a marked waiter claims the claimable set under the boundary rules, hold, `hookFieldCap` and the 8 KiB budget included, skipping only the Stop cap and the Stop count, and carries the claimed messages with `ack_required` on the same connection, as a read and a claim do.
++// The waiter acknowledges them, they are journaled read then, and the acknowledgement answers the ring.
++// A marked ring is made only when the pause read just before the locked step ran for a marked waiter and found no pause; a pause, a failed pause read, a claimable set that changed meanwhile, or a marked waiter that registered after the read rings nothing and leaves the waiter registered, and its registration's wake has the worker probe again.
++// A claim that comes back unacknowledged is released: a client that leaves or answers anything but the acknowledgement, a failed write of the ring, a failed journal write at the acknowledgement, a wait cancelled while its ring still stands unread in its channel, and a daemon that stops all release the mail unread, and the bell follows the ring's window.
++// An unmarked waiter, an older binary's, is rung as before: it carries no mail and claims nothing, and the woken turn's first tool call or its Stop takes the mail.
++// Either ring starts the strand's Stop count over and records the claimable ids and the clock time, in memory alone.
+ // A woken turn records no prompt submit, so from a ring on the no-turn reading holds false until the reading carries a turn end recorded after the ring; a reading the pane decided has no turn end time and is taken as it reads.
+ // The same claimable set is never rung twice, a restarted daemon has no marks and may ring a set once more, and a pause or a hold from another sender silences the ring as it does the pane path.
+-// Bound: one ring costs one short model turn before the mail turn, and a ring that races a turn the operator starts delivers nothing and leaves one stale bell reminder.
++// Bound: a pause starting between the pause read and the locked step lets one ring deliver, and a ring that races a turn the operator starts leaves one stale bell reminder.
++// Bound: the mail is journaled read before Claude Code shows it, so a session that dies, or a hook Claude Code ends at its timeout or at session end, between the journaled read and Claude Code reading the exit loses it as read.
++// An acknowledgement whose confirmation is refused or lost shows the mail the daemon did not journal twice, once in the wake and once at a later claim, and the bell may follow the woken turn.
++// Claude Code escapes `system-reminder` tags and replaces its own marker patterns in the wake body, so such mail reaches the model altered.
++//
++// The operator sees the ring's mail as an echo.
++// The wake reaches the model alone, drawn as one `creel mail` row, so the acknowledgement of a ring leaves the strand an echo: in memory, one item per id the ring passed, oldest first, whether the id was journaled read or skipped because it left the holder before the acknowledgement.
++// An acknowledgement whose journal write fails echoes the ids before the failing one and none from it on, since the ids from it on were released and a later claim hands them out as mail.
++// A claim hands out the strand's unreserved echo lines before its mail, under EchoHeading, so the echo reaches the operator and the mail reaches both;
++// a pause, a hold, the Stop cap and an unknown Stop count keep mail back and never the echo, and a claim that hands out an echo alone neither marks a ring answered nor counts a Stop, so it continues no turn.
++// The echo and the mail share boundaryClaimBudget, the first line, echo or message, always handed out, and what does not fit stays owed.
++// A ring hands out no echo, so with an echo owed it can claim mail the budget of a boundary claim would leave for later.
++// The acknowledgement of a claim drops the echo items it handed out, whether or not its journal writes succeed, since the hook already showed them, and the release of a claim keeps them owed.
++// A strand owed an echo, reserved or not, keeps its mail flag, so the tool-boundary hook and the Stop command claim while an echo is owed.
++// Bound: the echo is shown after the model has the mail, a StopFailure claims nothing and a session that ends first never shows it; a restart of the daemon drops it, and the daemon log's claim line of a ring, path `ring`, records the ids.
+ //
+ // A user interrupt fires no Stop, so a hook strand can sit idle with mail no waiter reaches; the worker then types the fixed bell line into its pane, `[creel] Mail is waiting for you. End this turn now; creel hands the mail to you as the turn ends. Do not run lym creel read for it.`, which carries no sender text, so no post is typed.
+-// A ring is answered by a claim of the strand that hands out at least one message, or by a probe that reads a turn in progress after the ring.
++// A ring is answered by the acknowledgement of its own claim, by a claim of the strand that hands out at least one message, or by a probe that reads a turn in progress after the ring.
+ // When the worker does not ring, it types the bell for a claimable set no bell was typed for, in one of two cases.
+ // With no unanswered ring standing, it types it when no waiter is live and none has been for 5 seconds, counted from the later of the store's opening and the end of the strand's last waiter, so the bell stays out of the moment between a Stop and its waiter's connection.
+ // With the last ring unanswered, the grace does not apply, since a ring ends the waiter it rings, and it types the bell once the ring has gone unanswered for 30 seconds.
+@@ -157,6 +180,19 @@
+ // Only a strand marked `CreelHooks` gets the bell: every other strand is a pane-mail strand and has its notice and reminder, so mail to an idle strand always wakes it.
+ // Bound: one fixed line per claimable set; a waiter whose session died rings into nothing once and the window hands the set to the bell; a restarted daemon may type the bell once more for a set it already woke.
+ //
++// # Delivery log
++//
++// The daemon logs each hook delivery attempt and each bell send through internal/logger, so the daemon log shows what reached a session.
++// A claim or ring that handed something out logs one `creel claim` line with `strand`, `path` (`tool`, `stop` or `ring`), `ids` (the message ids handed out), `echo_ids` (the echo ids handed out) and `outcome`.
++// The outcome `acknowledged`, at Info, means its acknowledgement was journaled, a confirmation lost after the journaled read included, and records the ids the loss window above loses as read.
++// The outcome `ack-failed`, at Warn, means a journal write failed, and adds `error`, `released_ids` (the ids released for a later claim) and `dropped_echo_ids` (the echo ids dropped, none for a ring).
++// The outcome `released`, at Info, means the claim ended before its acknowledgement, whether the client dropped or failed, a write failed or a ring's wait was cancelled, and is logged only when the claim held ids or echo items.
++// A failed journal write at a claim's or a ring's acknowledgement logs once, as `ack-failed`; only a read's logs the daemon's own warning.
++// A claim that hands out nothing logs at Debug with `outcome` `nothing` and a `reason`, since a standing flag runs the claim at every tool call: `paused`, `held` (a live hold from another sender while none of the strand's unread mail is the owner's), `stop-cap`, `stop-count-unknown` or `nothing-claimable`.
++// A ring of a marked waiter that a pause or an unreadable pause record keeps from claiming logs the same Debug line with path `ring` and reason `paused`; a claimable set that changed before the locked step claims nothing and logs nothing, since the next probe decides afresh.
++// Every bell send logs one `creel bell` line at Info with `strand`, `ids` (the claimable ids) and `outcome` `sent`, `not-landed`, `busy` or `failed`, adding `error` on the last.
++// Bound: a hook that never reaches the daemon is not logged by it.
++//
+ // # Inject and interrupt
+ //
+ // inject queues one line, without control characters, to be typed into the receiver's pane when it is idle.
+@@ -200,7 +236,7 @@
+ // A strand a pause covers is claimed into that pause and then interrupted, so `lym tender resume` gives it its resume line.
+ // An unreadable pause record, a pause lifted before the key and another sender's hold refuse it.
+ //
+-// post --interrupt stops the receiver's running turn and then posts, so a scope change that must not wait for the next tool call lands as the input of the next turn: the Stop block delivers it, through the bell when the turn's stop fired no waiter.
++// post --interrupt stops the receiver's running turn and then posts, so a scope change that must not wait for the next tool call lands as the input of the next turn: the Stop claim delivers it, through the bell when the turn's stop fired no waiter.
+ // It is one request: it validates the post, then applies the privilege rule of interrupt, so a sender stops a turn only where interrupt already lets it, and refuses a receiver not marked `CreelHooks`, since no hook delivery or bell would hand the post to the stopped session.
+ // The refusals of the interrupt come back worded for the post and say that nothing was interrupted or posted; a receiver with no running turn still gets the post and the answer says it was not interrupted.
+ // A post that fails to store after the turn was stopped says so and names a post without `--interrupt` as the way forward.
+diff --git a/internal/creelengine/export_test.go b/internal/creelengine/export_test.go
+index 900720f7..34f4ec7b 100644
+--- a/internal/creelengine/export_test.go
++++ b/internal/creelengine/export_test.go
+@@ -1,6 +1,6 @@
+ //go:build tier0
+ 
+-// export_test.go exposes the store internals the external tests drive: a callback that journals and then fails.
++// export_test.go exposes the store internals the external tests drive: a callback that journals and then fails, and an injected journal write fault.
+ 
+ package creelengine
+ 
+@@ -19,6 +19,43 @@ func (s *Store) ReadThenFail(id int64, holder string) error {
+ 	})
+ }
+ 
++// FailJournalWrites lets after more journal writes pass and fails every later one with an injected error, and removes the fault for a negative after.
++func (s *Store) FailJournalWrites(after int) {
++	s.mu.Lock()
++	defer s.mu.Unlock()
++	if after < 0 {
++		s.writer.writeFault = nil
++		return
++	}
++	passed := 0
++	s.writer.writeFault = func() error {
++		if passed < after {
++			passed++
++			return nil
++		}
++		return errors.New("creel journal: injected write fault")
++	}
++}
++
++// WithBeforeOutcomeWait returns opts with hook called, for each waiting verb, after the daemon answered it pending and before it selects over the outcome, the client closing and the shutdown.
++// The hook's arguments report whether an outcome already stands unread in the waiter's channel and whether the daemon's close watch has seen the client leave.
++func WithBeforeOutcomeWait(opts Options, hook func(outcomeQueued, clientLeft func() bool)) Options {
++	opts.beforeOutcomeWait = func(waiter *Waiter, clientClosed <-chan struct{}) {
++		hook(
++			func() bool { return len(waiter.ch) > 0 },
++			func() bool {
++				select {
++				case <-clientClosed:
++					return true
++				default:
++					return false
++				}
++			},
++		)
++	}
++	return opts
++}
++
+ // PostUnchecked journals a posted record from sender to receiver and delivers it as post does, without the line check, as a binary before the check did.
+ func (s *Store) PostUnchecked(sender Sender, receiver, body string) (int64, error) {
+ 	strands, err := s.readStrands()
+diff --git a/internal/creelengine/flags.go b/internal/creelengine/flags.go
+index ad9fffb9..93ddffa9 100644
+--- a/internal/creelengine/flags.go
++++ b/internal/creelengine/flags.go
+@@ -13,9 +13,12 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ )
+ 
+-// flaggedFilesLocked returns the flag file names the pool asks for: one per strand holding unread mail a claim can hand out, and none for a program.
++// flaggedFilesLocked returns the flag file names the pool asks for: one per strand holding unread mail a claim can hand out or owed an echo, reserved or not, and none for a program.
+ func (s *Store) flaggedFilesLocked() map[string]bool {
+ 	want := map[string]bool{}
++	for strand := range s.echoes {
++		want[agentname.FileName(strand)] = true
++	}
+ 	for _, msg := range s.state.messages {
+ 		if msg.Status == StatusUnread && deliverableReceiver(msg.Holder) && !lineOverHookField(msg) {
+ 			want[agentname.FileName(msg.Holder)] = true
+diff --git a/internal/creelengine/flags_test.go b/internal/creelengine/flags_test.go
+index ed1b934d..1ad7e27b 100644
+--- a/internal/creelengine/flags_test.go
++++ b/internal/creelengine/flags_test.go
+@@ -11,6 +11,7 @@ import (
+ 	"slices"
+ 	"strings"
+ 	"testing"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/agentname"
+ 	"github.com/Knatte18/loomyard/internal/creelengine"
+@@ -135,6 +136,59 @@ func TestStore_MailFlags(t *testing.T) {
+ 				t.Errorf("flags after mail to a program = %q; want none", got)
+ 			}
+ 		}},
++		{"AnOwedEchoKeepsTheFlagUntilTheClaimThatShowsItIsAcknowledged", nil, func(t *testing.T, e *env) {
++			// newFlaggedEnv scripts pane-mail strands that are never rung, so the row re-scripts alpha as a hook strand before the scheduler starts.
++			e.del.SetStrands(creelfake.HookStrand(alpha), creelfake.LiveStrand(beta))
++			ringAndAck := func() {
++				t.Helper()
++				waiter, err := e.store.HookWait(strand(alpha), true)
++				if err != nil {
++					t.Fatalf("HookWait: %v", err)
++				}
++				outcome := awaitOutcome(t, waiter)
++				if outcome.Reading == nil {
++					t.Fatalf("the marked waiter was answered %+v; want a ring carrying a claim", outcome)
++				}
++				if err := outcome.Reading.Ack(); err != nil {
++					t.Fatalf("Ack of the ring: %v", err)
++				}
++			}
++			claimAndAck := func() {
++				t.Helper()
++				reading, err := e.store.ClaimAtBoundary(strand(alpha), creelengine.Boundary{})
++				if err != nil {
++					t.Fatalf("ClaimAtBoundary: %v", err)
++				}
++				if err := reading.Ack(); err != nil {
++					t.Fatalf("Ack: %v", err)
++				}
++			}
++			wantFlags := func(want []string, when string) {
++				t.Helper()
++				if got := e.flags(t); !slices.Equal(got, want) {
++					t.Errorf("flags %s = %q; want %q", when, got, want)
++				}
++			}
++			e.start(t)
++			e.post(t, strand(beta), alpha, "one")
++			ringAndAck()
++			wantFlags([]string{alphaFlag}, "after the acknowledged ring, with no unread mail but an echo owed")
++			claimAndAck()
++			wantFlags(nil, "after the claim that showed the echo was acknowledged")
++
++			// Two posts of 5000 bytes pass the claim budget together, so the ring takes the first and leaves the second unread.
++			// The first ring's woken turn recorded no prompt submit, so a turn end after the ring stands in for the next turn's end.
++			e.del.SetTurn(alpha, false, e.clock.Now().Add(time.Second))
++			big := strings.Repeat("x", 5000)
++			e.post(t, strand(beta), alpha, big)
++			e.post(t, strand(beta), alpha, big)
++			ringAndAck()
++			wantFlags([]string{alphaFlag}, "after a ring that left the second post unread and owes the echo of the first")
++			claimAndAck()
++			wantFlags([]string{alphaFlag}, "after the echo claim, which the budget kept from the second post")
++			claimAndAck()
++			wantFlags(nil, "after the claim of the second post")
++		}},
+ 		{"ReconcileRestoresALostFlag", nil, func(t *testing.T, e *env) {
+ 			e.post(t, strand(alpha), beta, "kept unread")
+ 			if err := os.RemoveAll(e.geom.FlagDir); err != nil {
+diff --git a/internal/creelengine/journal.go b/internal/creelengine/journal.go
+index a17e9269..468d3f36 100644
+--- a/internal/creelengine/journal.go
++++ b/internal/creelengine/journal.go
+@@ -153,6 +153,8 @@ type journalWriter struct {
+ 	file  *os.File
+ 	// appended counts the records append folded into the pool, so a caller tells whether a change of its own reached the pool.
+ 	appended uint64
++	// writeFault, when set, is called before each line write and fails the write with its error; a test seam, nil in production.
++	writeFault func() error
+ }
+ 
+ // openJournal prepares the writer over the pool folded from dir.
+@@ -254,6 +256,11 @@ func (w *journalWriter) close() error {
+ 
+ // writeLine writes rec as one line to the open day file and syncs it.
+ func (w *journalWriter) writeLine(rec record) error {
++	if w.writeFault != nil {
++		if err := w.writeFault(); err != nil {
++			return err
++		}
++	}
+ 	line, err := json.Marshal(rec)
+ 	if err != nil {
+ 		return fmt.Errorf("creel journal: encode a %s record: %w", rec.Event, err)
+diff --git a/internal/creelengine/pool.go b/internal/creelengine/pool.go
+index 84e8eda6..20c1cd40 100644
+--- a/internal/creelengine/pool.go
++++ b/internal/creelengine/pool.go
+@@ -48,10 +48,12 @@ type Store struct {
+ 	paneLocks map[string]*sync.Mutex
+ 	// flags holds the file names of the flags the flag directory holds, as this store last set or found them.
+ 	flags map[string]bool
+-	// stopBlocks maps a strand to the Stop blocks of its current turn; a strand with no entry counts as at the cap, and the count is never journaled.
++	// stopBlocks maps a strand to the Stop claims that handed out mail in its current turn; a strand with no entry counts as at the cap, and the count is never journaled.
+ 	stopBlocks map[string]int
+ 	// wakeMarks maps a hook strand to the claimable set its last ring was for, the clock time of that ring, whether it was answered and the set its bell was typed for; it is kept in memory alone.
+ 	wakeMarks map[string]wakeMark
++	// echoes maps a strand to the ring mail its operator is still owed as an echo, oldest first; it is kept in memory alone, so a restart drops it.
++	echoes map[string][]echoItem
+ 	// opened is the clock time the store opened, from which a strand whose hook waiter never registered counts its bell grace.
+ 	opened time.Time
+ 	// waiterEnds maps a hook strand to the clock time its last hook waiter ended.
+@@ -115,7 +117,7 @@ func OpenStore(geom Geometry, delivery Delivery, clock Clock) (*Store, error) {
+ 		geom: geom, delivery: delivery, clock: clock, state: state, writer: writer,
+ 		reserved: map[int64]string{}, waiters: map[waitKey][]*Waiter{}, agedWritten: map[int64]int64{},
+ 		stalls: map[string]stallNote{}, paneLocks: map[string]*sync.Mutex{}, flags: map[string]bool{}, stopBlocks: map[string]int{}, wakeMarks: map[string]wakeMark{},
+-		opened: clock.Now(), waiterEnds: map[string]time.Time{},
++		echoes: map[string][]echoItem{}, opened: clock.Now(), waiterEnds: map[string]time.Time{},
+ 		chaseWritten: map[int64]int64{}, chaseBase: map[int64]time.Duration{},
+ 	}
+ 	store.seedChaseClock()
+@@ -255,7 +257,8 @@ const (
+ 	OutcomeUnanswered OutcomeKind = "unanswered"
+ 	// OutcomeMail means the waited-on holder now holds unread mail.
+ 	OutcomeMail OutcomeKind = "mail"
+-	// OutcomeRing means the daemon woke the idle strand whose waiter this was; it carries no mail and claims nothing.
++	// OutcomeRing means the daemon woke the idle strand whose waiter this was.
++	// A ring to a waiter marked as taking mail carries the claimed mail in Outcome.Reading, and one to an unmarked waiter carries none.
+ 	OutcomeRing OutcomeKind = "ring"
+ 	// OutcomeSuperseded means a newer waiter of the same strand replaced this one.
+ 	OutcomeSuperseded OutcomeKind = "superseded"
+@@ -263,11 +266,13 @@ const (
+ 
+ // Outcome is the answer to a Waiter; Message is the reply or the returned message, and zero for the others.
+ // Stall and StallAt are the receiver's fresh stall when an inject expired and the time it began, empty and zero when none stood.
++// Reading is the claim a ring to a marked waiter carries, reserved until its taker acknowledges or releases it, and nil for every other outcome.
+ type Outcome struct {
+ 	Kind    OutcomeKind
+ 	Message Message
+ 	Stall   Stall
+ 	StallAt time.Time
++	Reading *Reading
+ }
+ 
+ // StallNote is a stall a probe read for a receiver and the time the stall began.
+@@ -304,6 +309,8 @@ type Waiter struct {
+ 	key      waitKey
+ 	// told is the stall the waiter was last told, empty when none; a reading that differs from it is notified.
+ 	told Stall
++	// takesMail marks an idle waiter whose ring carries the strand's claimed mail; it is set under the store's mutex when the waiter registers.
++	takesMail bool
+ }
+ 
+ // notify hands note to the waiter's progress channel, replacing a note nobody has read.
+@@ -324,9 +331,9 @@ func (w *Waiter) notify(note StallNote) {
+ 
+ // Cancel unregisters the wait; a waiter already answered is unaffected.
+ // A hook waiter's end, answered or not, is recorded at the clock time, from which its strand's bell grace runs.
++// A hook waiter's ring outcome still unread in its channel is drained and its claim released, so a ring nobody took returns its mail.
+ func (w *Waiter) Cancel() {
+ 	w.store.mu.Lock()
+-	defer w.store.mu.Unlock()
+ 	if w.key.kind == waitHook {
+ 		w.store.waiterEnds[w.key.holder] = w.store.clock.Now()
+ 	}
+@@ -342,6 +349,17 @@ func (w *Waiter) Cancel() {
+ 	} else {
+ 		w.store.waiters[w.key] = list
+ 	}
++	w.store.mu.Unlock()
++	if w.key.kind != waitHook {
++		return
++	}
++	select {
++	case outcome := <-w.ch:
++		if outcome.Reading != nil {
++			outcome.Reading.Release()
++		}
++	default:
++	}
+ }
+ 
+ // addWaiterLocked registers a wait on key, and answers it at once when its outcome already stands in the pool.
+@@ -452,7 +470,7 @@ func (s *Store) unreadLocked(holder, from string) []*Message {
+ }
+ 
+ // wakeMark is the record of a hook strand's last ring and bell: the claimable message ids the ring was for, the clock time of the ring and whether the ring was answered.
+-// A ring is answered by a claim that handed out mail, or by a probe reading a turn in progress after it.
++// A ring is answered by the acknowledgement of its own claim, by a claim that handed out mail, or by a probe that reads a turn in progress after it.
+ // The time and the answer stay until the next ring replaces them, whatever the set does meanwhile.
+ // bellIDs are the claimable ids the typed bell was for, empty when none was typed; a different set is a set no bell was typed for.
+ type wakeMark struct {
+diff --git a/internal/creelengine/protocol.go b/internal/creelengine/protocol.go
+index bfeceac7..5a56122c 100644
+--- a/internal/creelengine/protocol.go
++++ b/internal/creelengine/protocol.go
+@@ -31,6 +31,7 @@ const (
+ 	// VerbClaim hands a strand's tool-boundary hook its unread mail, acknowledged on the same connection as a read is.
+ 	VerbClaim = "claim"
+ 	// VerbHookWait holds a strand's idle waiter: it is answered with a ring when the daemon wakes the idle strand, and with a supersede when a newer waiter of the same strand replaces it.
++	// A ring to a waiter whose request set takes_mail carries the claimed messages and asks their acknowledgement on the same connection, as a read and a claim do.
+ 	VerbHookWait = "hook-wait"
+ )
+ 
+@@ -72,6 +73,9 @@ type Request struct {
+ 	Stop bool `json:"stop,omitempty"`
+ 	// StopHookActive is the Stop hook input's stop_hook_active, read by the claim verb alone.
+ 	StopHookActive bool `json:"stop_hook_active,omitempty"`
++	// TakesMail marks a hook-wait request's waiter as taking mail: its ring carries the claimed messages, which the client acknowledges.
++	// A daemon that predates it ignores the key and rings with no mail.
++	TakesMail bool `json:"takes_mail,omitempty"`
+ }
+ 
+ // Response is what the daemon answers on a connection; every one carries the hub path.
+@@ -93,8 +97,10 @@ type Response struct {
+ 	Sender string `json:"sender,omitempty"`
+ 	// ID is the id of the message or inject the verb created or waits on.
+ 	ID int64 `json:"id,omitempty"`
+-	// Messages are the messages a read hands out; AckRequired says the client must ack them on the same connection.
+-	Messages    []Message    `json:"messages,omitempty"`
++	// Messages are the messages a read or a claim hands out, and a ring to a marked hook waiter carries; AckRequired says the client must ack them on the same connection.
++	Messages []Message `json:"messages,omitempty"`
++	// Echo are the lines of ring mail a claim hands out ahead of its messages, shown to the operator alone; AckRequired covers them too.
++	Echo        []string     `json:"echo,omitempty"`
+ 	AckRequired bool         `json:"ack_required,omitempty"`
+ 	Inbox       *InboxResult `json:"inbox,omitempty"`
+ 	Log         []LogEntry   `json:"log,omitempty"`
+diff --git a/internal/creelengine/server.go b/internal/creelengine/server.go
+index 5db7fff0..09e8831d 100644
+--- a/internal/creelengine/server.go
++++ b/internal/creelengine/server.go
+@@ -42,6 +42,8 @@ type Options struct {
+ 	Replaced func() bool
+ 	// Ready, when set, is called once the daemon listens on its socket.
+ 	Ready func()
++	// beforeOutcomeWait, when set, is called with each waiting verb's waiter and the channel its close watch closes, after the interim response and ahead of the wait's select; a test seam, nil in production.
++	beforeOutcomeWait func(waiter *Waiter, clientClosed <-chan struct{})
+ }
+ 
+ // Run serves the hub until ctx ends or its binary is replaced, then returns nil.
+@@ -304,7 +306,7 @@ func (d *daemon) dispatch(conn *net.UnixConn, reader *bufio.Reader, sender Sende
+ 		}
+ 		return d.handOut(conn, reader, sender, reading)
+ 	case VerbHookWait:
+-		waiter, err := store.HookWait(sender)
++		waiter, err := store.HookWait(sender, req.TakesMail)
+ 		if err != nil {
+ 			return err
+ 		}
+@@ -392,6 +394,9 @@ func (d *daemon) awaitOutcome(conn net.Conn, reader *bufio.Reader, waiter *Waite
+ 	}
+ 	watcher := watchClose(conn, reader)
+ 	defer watcher.stop()
++	if d.opts.beforeOutcomeWait != nil {
++		d.opts.beforeOutcomeWait(waiter, watcher.closed)
++	}
+ 	for {
+ 		select {
+ 		case note := <-waiter.Progress:
+@@ -407,6 +412,13 @@ func (d *daemon) awaitOutcome(conn net.Conn, reader *bufio.Reader, waiter *Waite
+ 				}
+ 			default:
+ 			}
++			if reading := outcome.Reading; reading != nil {
++				// The close watch reads the connection the acknowledgement arrives on, so it ends first.
++				watcher.stop()
++				_ = d.write(conn, Response{OK: true, ID: id, Sender: sender.Name, Outcome: outcome.Kind, Messages: reading.Messages, AckRequired: true})
++				// Handed over even when the write failed: the ack line's failed read then releases the reading.
++				return d.awaitAck(conn, reader, sender, reading)
++			}
+ 			resp := Response{OK: true, ID: id, Sender: sender.Name, Interrupted: interrupted, Outcome: outcome.Kind, Stall: outcome.Stall, StallAt: outcome.StallAt}
+ 			if outcome.Kind == OutcomeReply || outcome.Kind == OutcomeReturned || outcome.Kind == OutcomeUnanswered {
+ 				resp.Message = &outcome.Message
+@@ -452,7 +464,7 @@ func (d *daemon) read(conn *net.UnixConn, reader *bufio.Reader, sender Sender, r
+ 
+ // handOut answers the messages of reading, and journals them read only once the client acknowledges them on the same connection; any other answer, or none in time, releases them.
+ func (d *daemon) handOut(conn *net.UnixConn, reader *bufio.Reader, sender Sender, reading *Reading) error {
+-	resp := Response{OK: true, Sender: sender.Name, Messages: reading.Messages, AckRequired: len(reading.ids) > 0}
++	resp := Response{OK: true, Sender: sender.Name, Messages: reading.Messages, Echo: reading.Echo, AckRequired: len(reading.ids) > 0 || len(reading.echoIDs) > 0}
+ 	if err := d.write(conn, resp); err != nil {
+ 		reading.Release()
+ 		return nil
+@@ -460,6 +472,11 @@ func (d *daemon) handOut(conn *net.UnixConn, reader *bufio.Reader, sender Sender
+ 	if !resp.AckRequired {
+ 		return nil
+ 	}
++	return d.awaitAck(conn, reader, sender, reading)
++}
++
++// awaitAck reads the client's acknowledgement of reading under ackReadTimeout and journals the messages read, answering the confirmation or the refusal; any other answer, or none in time, releases them.
++func (d *daemon) awaitAck(conn net.Conn, reader *bufio.Reader, sender Sender, reading *Reading) error {
+ 	_ = conn.SetReadDeadline(time.Now().Add(ackReadTimeout))
+ 	line, err := readLine(reader, maxRequestBytes)
+ 	var ack ackLine
+@@ -468,7 +485,10 @@ func (d *daemon) handOut(conn *net.UnixConn, reader *bufio.Reader, sender Sender
+ 		return nil
+ 	}
+ 	if err := reading.Ack(); err != nil {
+-		logger.Warn("creel daemon: could not journal an acknowledged read", "error", err)
++		// A claim's and a ring's Ack logged its failure itself, so the one line a failed claim leaves is its ack-failed line.
++		if reading.read {
++			logger.Warn("creel daemon: could not journal an acknowledged read", "error", err)
++		}
+ 		return d.write(conn, Response{OK: false, Error: err.Error()})
+ 	}
+ 	return d.write(conn, Response{OK: true, Sender: sender.Name})
+diff --git a/internal/creelengine/server_test.go b/internal/creelengine/server_test.go
+index e5303d72..e62e67ee 100644
+--- a/internal/creelengine/server_test.go
++++ b/internal/creelengine/server_test.go
+@@ -43,6 +43,8 @@ type rig struct {
+ 	// serving is closed when the first daemon of the rig listens.
+ 	serving     chan struct{}
+ 	servingOnce sync.Once
++	// beforeOutcomeWait, when set before start, runs in the daemon ahead of each waiting verb's select.
++	beforeOutcomeWait func(outcomeQueued, clientLeft func() bool)
+ }
+ 
+ // newRig returns a rig over a socket in the process run directory.
+@@ -76,7 +78,7 @@ func newRig(t *testing.T, asStrand bool) *rig {
+ }
+ 
+ func (r *rig) options(ready func()) creelengine.Options {
+-	return creelengine.Options{
++	opts := creelengine.Options{
+ 		Geometry: r.geom, Delivery: r.del, Clock: r.clock, PollClock: r.pollClock, ParentPID: proc.ParentPID, GOOS: runtime.GOOS,
+ 		Replaced: r.replaced.Load,
+ 		Ready: func() {
+@@ -87,6 +89,10 @@ func (r *rig) options(ready func()) creelengine.Options {
+ 			}
+ 		},
+ 	}
++	if r.beforeOutcomeWait != nil {
++		opts = creelengine.WithBeforeOutcomeWait(opts, r.beforeOutcomeWait)
++	}
++	return opts
+ }
+ 
+ // running is one daemon started by a rig.
+@@ -219,6 +225,44 @@ func mustCall(t *testing.T, c *creelengine.Client, req creelengine.Request) cree
+ 	return got.resp
+ }
+ 
++// dialHookWait re-scripts alpha as a hook strand with the test process's pane, since the rig's default strand is a pane-mail strand that never rings.
++// It starts the daemon and sends alpha's raw hook-wait request with extraKeys, a JSON fragment of further keys, on a connection it returns with a reader of the daemon's responses.
++func dialHookWait(t *testing.T, r *rig, extraKeys string) (net.Conn, func() creelengine.Response) {
++	t.Helper()
++	hook := creelfake.HookStrand(alpha)
++	hook.PanePID = os.Getpid()
++	r.del.SetStrands(hook, creelfake.LiveStrand(beta))
++	r.start()
++	return sendHookWait(t, r, extraKeys)
++}
++
++// sendHookWait sends alpha's raw hook-wait request with extraKeys on a new connection to the running daemon and returns the connection with a reader of its responses.
++func sendHookWait(t *testing.T, r *rig, extraKeys string) (net.Conn, func() creelengine.Response) {
++	t.Helper()
++	conn, err := net.Dial("unix", r.geom.SocketPath)
++	if err != nil {
++		t.Fatalf("dial: %v", err)
++	}
++	t.Cleanup(func() { _ = conn.Close() })
++	if err := conn.SetReadDeadline(time.Now().Add(10 * time.Second)); err != nil {
++		t.Fatalf("SetReadDeadline: %v", err)
++	}
++	if _, err := conn.Write([]byte(`{"verb":"hook-wait","claim":{"strand_name":"` + alpha + `"},"wait":true` + extraKeys + `}` + "\n")); err != nil {
++		t.Fatalf("write: %v", err)
++	}
++	reader := bufio.NewReader(conn)
++	next := func() creelengine.Response {
++		t.Helper()
++		line, err := reader.ReadBytes('\n')
++		var resp creelengine.Response
++		if err != nil || json.Unmarshal(line, &resp) != nil {
++			t.Fatalf("read %q: %v", line, err)
++		}
++		return resp
++	}
++	return conn, next
++}
++
+ func journalText(t *testing.T, geom creelengine.Geometry) string {
+ 	t.Helper()
+ 	entries, err := os.ReadDir(geom.JournalDir)
+@@ -342,38 +386,98 @@ func TestDaemon_Protocol(t *testing.T) {
+ 			}
+ 		}},
+ 		{"HookWaitIsPendingAtOnceAndAPostToTheIdleStrandRingsIt", true, func(t *testing.T, r *rig) {
+-			// The rig's default strand is a pane-mail strand that never rings, so alpha is re-scripted as a hook strand with the test process's pane.
+-			hook := creelfake.HookStrand(alpha)
+-			hook.PanePID = os.Getpid()
+-			r.del.SetStrands(hook, creelfake.LiveStrand(beta))
+-			r.start()
+-			conn, err := net.Dial("unix", r.geom.SocketPath)
+-			if err != nil {
+-				t.Fatalf("dial: %v", err)
++			conn, next := dialHookWait(t, r, "")
++			defer conn.Close()
++			if pending := next(); !pending.OK || !pending.Pending {
++				t.Fatalf("hook-wait answered %+v; want a pending response", pending)
+ 			}
++			mustCall(t, r.client(externalClaim(), nil, creelfake.NewClock(epoch)), creelengine.Request{Verb: creelengine.VerbPost, Receiver: alpha, Text: "wake up"})
++			if rung := next(); !rung.OK || rung.Outcome != creelengine.OutcomeRing || len(rung.Messages) != 0 || rung.AckRequired {
++				t.Errorf("hook-wait after a post answered %+v; want the ring with no messages and no ack_required", rung)
++			}
++		}},
++		{"AMarkedHookWaitIsRungWithTheMailAndItsAckJournalsTheRead", true, func(t *testing.T, r *rig) {
++			conn, next := dialHookWait(t, r, `,"takes_mail":true`)
+ 			defer conn.Close()
+-			if err := conn.SetReadDeadline(time.Now().Add(10 * time.Second)); err != nil {
+-				t.Fatalf("SetReadDeadline: %v", err)
++			if pending := next(); !pending.OK || !pending.Pending {
++				t.Fatalf("hook-wait answered %+v; want a pending response", pending)
+ 			}
+-			if _, err := conn.Write([]byte(`{"verb":"hook-wait","claim":{"strand_name":"` + alpha + `"},"wait":true}` + "\n")); err != nil {
+-				t.Fatalf("write: %v", err)
++			c := r.client(externalClaim(), nil, creelfake.NewClock(epoch))
++			mustCall(t, c, creelengine.Request{Verb: creelengine.VerbPost, Receiver: alpha, Text: "wake up"})
++			rung := next()
++			if !rung.OK || rung.Outcome != creelengine.OutcomeRing || len(rung.Messages) != 1 || rung.Messages[0].Body != "wake up" || !rung.AckRequired {
++				t.Fatalf("marked hook-wait after a post answered %+v; want the ring with the message and ack_required", rung)
+ 			}
+-			reader := bufio.NewReader(conn)
+-			next := func() creelengine.Response {
+-				t.Helper()
+-				line, err := reader.ReadBytes('\n')
+-				var resp creelengine.Response
+-				if err != nil || json.Unmarshal(line, &resp) != nil {
+-					t.Fatalf("read %q: %v", line, err)
+-				}
+-				return resp
++			if _, err := conn.Write([]byte(`{"ack":true}` + "\n")); err != nil {
++				t.Fatalf("write the ack: %v", err)
+ 			}
++			if confirmed := next(); !confirmed.OK {
++				t.Fatalf("the ack was answered %+v; want ok", confirmed)
++			}
++			var events []string
++			for _, entry := range mustCall(t, c, creelengine.Request{Verb: creelengine.VerbLog, Receiver: alpha}).Log {
++				events = append(events, entry.Event)
++			}
++			if !slices.Equal(events, []string{"posted", "read"}) {
++				t.Errorf("log to alpha events = %v; want the post and its read", events)
++			}
++		}},
++		{"AMarkedHookWaitWhoseClientLeavesBeforeTheAckLeavesTheMailUnread", true, func(t *testing.T, r *rig) {
++			conn, next := dialHookWait(t, r, `,"takes_mail":true`)
+ 			if pending := next(); !pending.OK || !pending.Pending {
+ 				t.Fatalf("hook-wait answered %+v; want a pending response", pending)
+ 			}
+ 			mustCall(t, r.client(externalClaim(), nil, creelfake.NewClock(epoch)), creelengine.Request{Verb: creelengine.VerbPost, Receiver: alpha, Text: "wake up"})
+-			if rung := next(); !rung.OK || rung.Outcome != creelengine.OutcomeRing {
+-				t.Errorf("hook-wait after a post answered %+v; want the ring", rung)
++			if rung := next(); len(rung.Messages) != 1 || !rung.AckRequired {
++				t.Fatalf("marked hook-wait after a post answered %+v; want the ring with the message and ack_required", rung)
++			}
++			_ = conn.Close()
++			c := r.client(strandClaim(alpha), nil, creelfake.NewClock(epoch))
++			got := mustCall(t, c, creelengine.Request{Verb: creelengine.VerbRead, Wait: true})
++			if len(got.Messages) != 1 || got.Messages[0].Body != "wake up" {
++				t.Errorf("read --wait after the leaving client = %+v; want the message back", got.Messages)
++			}
++		}},
++		{"AMarkedHookWaitWhoseClientLeavesAfterTheRingWasQueuedLeavesTheMailUnread", true, func(t *testing.T, r *rig) {
++			// The daemon holds each wait until the ring stands in the waiter's channel and its close watch saw the client leave, so the select sees both ready and picks at random.
++			// Rounds repeat so a missing release on either pick fails the row.
++			const rounds = 8
++			clientConn := make(chan net.Conn, 1)
++			ordered := make(chan struct{})
++			r.beforeOutcomeWait = func(outcomeQueued, clientLeft func() bool) {
++				conn := <-clientConn
++				deadline := time.Now().Add(10 * time.Second)
++				for !outcomeQueued() && time.Now().Before(deadline) {
++					time.Sleep(time.Millisecond)
++				}
++				_ = conn.Close()
++				for !clientLeft() && time.Now().Before(deadline) {
++					time.Sleep(time.Millisecond)
++				}
++				ordered <- struct{}{}
++			}
++			hook := creelfake.HookStrand(alpha)
++			hook.PanePID = os.Getpid()
++			r.del.SetStrands(hook, creelfake.LiveStrand(beta))
++			r.start()
++			poster := r.client(externalClaim(), nil, creelfake.NewClock(epoch))
++			reader := r.client(strandClaim(alpha), nil, creelfake.NewClock(epoch))
++			for round := 1; round <= rounds; round++ {
++				conn, next := sendHookWait(t, r, `,"takes_mail":true`)
++				clientConn <- conn
++				if pending := next(); !pending.OK || !pending.Pending {
++					t.Fatalf("round %d: hook-wait answered %+v; want a pending response", round, pending)
++				}
++				mustCall(t, poster, creelengine.Request{Verb: creelengine.VerbPost, Receiver: alpha, Text: "wake up"})
++				select {
++				case <-ordered:
++				case <-time.After(10 * time.Second):
++					t.Fatalf("round %d: the daemon never reached the wait", round)
++				}
++				got := mustCall(t, reader, creelengine.Request{Verb: creelengine.VerbRead, Wait: true})
++				if len(got.Messages) != 1 || got.Messages[0].Body != "wake up" {
++					t.Fatalf("round %d: read --wait after the ring was queued and the client left = %+v; want the message back", round, got.Messages)
++				}
+ 			}
+ 		}},
+ 		{"ClaimHandsOutTheStrandsMailAndItsFlagFollowsTheMail", true, func(t *testing.T, r *rig) {
+@@ -1263,6 +1367,50 @@ func TestDaemon_Lifecycle(t *testing.T) {
+ 				t.Errorf("events of the in-flight inject = %v; want its outcome journaled", events)
+ 			}
+ 		}},
++		{"AHookWaitWhoseConfirmationIsLostAfterItsRingReachedTheHandlerIsNotResumed", func(t *testing.T, r *rig) {
++			fake := listenRingingFake(t, r)
++			fake.serve(func(conn net.Conn, reader *bufio.Reader) {
++				_, _ = reader.ReadString('\n')
++				_ = conn.Close()
++			})
++			clock := creelfake.NewClock(epoch)
++			results := make(chan callResult, 1)
++			go func() {
++				resp, err := r.client(strandClaim(alpha), nil, clock).Call(creelengine.Request{Verb: creelengine.VerbHookWait, Wait: true, TakesMail: true}, 0, func(creelengine.Response) error { return nil })
++				results <- callResult{resp, err}
++			}()
++			got := result(t, results)
++			if got.err == nil || errors.Is(got.err, creelengine.ErrAckUnsent) {
++				t.Errorf("Call error = %v; want the lost confirmation, which is not ErrAckUnsent", got.err)
++			}
++			if accepted := fake.accepted.Load(); accepted != 1 {
++				t.Errorf("the fake accepted %d connections; want 1, the wait never resumed", accepted)
++			}
++		}},
++		{"AHookWaitWhoseAckCannotBeSentReturnsErrAckUnsent", func(t *testing.T, r *rig) {
++			fake := listenRingingFake(t, r)
++			closed := make(chan struct{})
++			fake.serve(func(conn net.Conn, _ *bufio.Reader) {
++				_ = conn.Close()
++				close(closed)
++			})
++			clock := creelfake.NewClock(epoch)
++			results := make(chan callResult, 1)
++			go func() {
++				resp, err := r.client(strandClaim(alpha), nil, clock).Call(creelengine.Request{Verb: creelengine.VerbHookWait, Wait: true, TakesMail: true}, 0, func(creelengine.Response) error {
++					<-closed
++					return nil
++				})
++				results <- callResult{resp, err}
++			}()
++			got := result(t, results)
++			if !errors.Is(got.err, creelengine.ErrAckUnsent) {
++				t.Errorf("Call error = %v; want ErrAckUnsent", got.err)
++			}
++			if accepted := fake.accepted.Load(); accepted != 1 {
++				t.Errorf("the fake accepted %d connections; want 1, the wait never resumed", accepted)
++			}
++		}},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -1272,6 +1420,60 @@ func TestDaemon_Lifecycle(t *testing.T) {
+ 	}
+ }
+ 
++// ringingFake is a stand-in daemon on the rig's socket that answers every request line with a pending line and a ring line of one message asking an acknowledgement.
++type ringingFake struct {
++	t        *testing.T
++	r        *rig
++	listener net.Listener
++	accepted atomic.Int32
++}
++
++// listenRingingFake listens on the rig's socket path and closes the listener when the test ends.
++func listenRingingFake(t *testing.T, r *rig) *ringingFake {
++	t.Helper()
++	if err := os.MkdirAll(filepath.Dir(r.geom.SocketPath), 0o755); err != nil {
++		t.Fatalf("mkdir: %v", err)
++	}
++	listener, err := net.Listen("unix", r.geom.SocketPath)
++	if err != nil {
++		t.Fatalf("listen on %s: %v", r.geom.SocketPath, err)
++	}
++	t.Cleanup(func() { _ = listener.Close() })
++	return &ringingFake{t: t, r: r, listener: listener}
++}
++
++// serve answers each accepted connection with the pending and ring lines, then hands it to after, which owns closing it.
++func (f *ringingFake) serve(after func(conn net.Conn, reader *bufio.Reader)) {
++	go func() {
++		for {
++			conn, err := f.listener.Accept()
++			if err != nil {
++				return
++			}
++			f.accepted.Add(1)
++			go func() {
++				reader := bufio.NewReader(conn)
++				if _, err := reader.ReadString('\n'); err != nil {
++					_ = conn.Close()
++					return
++				}
++				lines := []creelengine.Response{
++					{OK: true, HubPath: f.r.geom.HubPath, Pending: true},
++					{OK: true, HubPath: f.r.geom.HubPath, Outcome: creelengine.OutcomeRing, Messages: []creelengine.Message{{ID: 1, From: beta, Holder: alpha, Body: "mail"}}, AckRequired: true},
++				}
++				for _, line := range lines {
++					data, _ := json.Marshal(line)
++					if _, err := conn.Write(append(data, '\n')); err != nil {
++						_ = conn.Close()
++						return
++					}
++				}
++				after(conn, reader)
++			}()
++		}
++	}()
++}
++
+ // linuxOnly returns run on Linux and nil elsewhere, so a table loop that passes over a nil run generates no subtest for the row off Linux.
+ func linuxOnly(run func(*testing.T, *rig)) func(*testing.T, *rig) {
+ 	if runtime.GOOS != "linux" {
+diff --git a/internal/creelengine/verbs.go b/internal/creelengine/verbs.go
+index 9d2b7ea8..f0ad8ce3 100644
+--- a/internal/creelengine/verbs.go
++++ b/internal/creelengine/verbs.go
+@@ -245,13 +245,37 @@ func (s *Store) Reply(sender Sender, id int64, text string) (int64, error) {
+ 	return replyID, err
+ }
+ 
+-// Reading is the set of messages a read handed out; they are unread messages, reserved until Ack or Release.
++// EchoHeading is the line hook-read puts above the echoed lines.
++// The echo reaches the operator alone: it is the mail an idle ring already put in the model's context, shown at the woken turn's first claim.
++const EchoHeading = "[creel] Delivered while idle:"
++
++// echoItem is one line of ring mail the operator is still owed, with the id of the message it carries.
++// reserved is true while a claim that handed the line out has not yet been acknowledged or released.
++type echoItem struct {
++	id       int64
++	line     string
++	reserved bool
++}
++
++// Reading is the set of messages a read or a claim handed out; they are unread messages, reserved until Ack or Release.
+ type Reading struct {
+ 	// Messages are the messages handed out, oldest first.
+ 	Messages []Message
+-	store    *Store
+-	holder   string
+-	ids      []int64
++	// Echo are the echoed lines a claim handed out ahead of its messages, oldest first.
++	Echo   []string
++	store  *Store
++	holder string
++	ids    []int64
++	// echoIDs are the ids of the echo items handed out, kept after the reading settles them so its log line can name them; echoSettled is true once it has.
++	echoIDs     []int64
++	echoSettled bool
++	// path names the claim that made the reading for its log line: tool, stop or ring.
++	// A read's reading has none and logs nothing.
++	path string
++	// read is true for a read verb's reading, whose client already printed the mail, and false for a claim's.
++	read bool
++	// ring is true for the claim an idle waiter's ring carries, whose acknowledgement answers that ring.
++	ring bool
+ }
+ 
+ // Read returns the caller's unread mail, oldest first, that no other read has reserved: every message, or with from only that sender's.
+@@ -261,7 +285,7 @@ func (s *Store) Read(sender Sender, from string) (*Reading, error) {
+ 	if sender.Kind == KindExternal {
+ 		return nil, errExternalHoldsNothing
+ 	}
+-	reading := &Reading{store: s, holder: sender.Name}
++	reading := &Reading{store: s, holder: sender.Name, read: true}
+ 	err := s.do(func() error {
+ 		if sender.Kind == KindProgram && !s.state.programs[sender.Name] {
+ 			if err := s.writer.append(record{Event: eventRead, By: sender.Name}); err != nil {
+@@ -291,25 +315,30 @@ const boundaryClaimBudget = 8 << 10
+ type Boundary struct {
+ 	// Stop is true for the turn-end Stop hook and false for the tool-boundary hook.
+ 	Stop bool
+-	// StopHookActive is the Stop hook input's stop_hook_active: true when an earlier Stop block of the same turn already continued it.
++	// StopHookActive is the Stop hook input's stop_hook_active: true when an earlier Stop claim that handed out mail already continued the turn.
+ 	StopHookActive bool
+ }
+ 
+-// stopBlockCap is the number of consecutive Stop blocks creel allows one turn, below the 8 Claude Code allows before it overrides a block.
++// stopBlockCap is the number of consecutive Stop claims that hand out mail, each continuing the turn, creel allows one turn, below the 8 continuations Claude Code allows before it overrides a Stop hook.
+ const stopBlockCap = 6
+ 
+ // ClaimAtBoundary hands a strand's tool-boundary hook the strand's unread mail no read has reserved, oldest first and agent mail included, reserved until Ack or Release like a read's.
+ // Under a hold it hands out only the hold owner's mail, and while a pause covers the strand it hands out nothing.
+ // It never claims a message whose MessageLine is longer than hookFieldCap UTF-16 units, which stays unread for `lym creel read`.
+ // It stops before the message whose MessageLine, and the newline joining it to the line before, would take the lines past boundaryClaimBudget, but always hands out the first, and what it leaves stays unread for the next boundary.
+-// A Stop claim hands out nothing once the strand's current turn has had stopBlockCap Stop blocks, or when no Stop or tool-boundary claim of this daemon has set its count, so the turn end is recorded.
++// A Stop claim hands out nothing once the strand's current turn has had stopBlockCap Stop claims that handed out mail, or when no Stop or tool-boundary claim of this daemon has set its count, so the turn end is recorded.
+ // A claim that hands out at least one message also marks the strand's last ring answered.
++// A strand owed an echo gets its unreserved echo lines first, oldest first, whatever a pause, a hold or the Stop cap keeps from its mail; the echo and the messages share boundaryClaimBudget, and an echo alone continues no turn.
+ // Only a strand sender may claim; any other sender is refused with the read verb as the way forward.
+ func (s *Store) ClaimAtBoundary(sender Sender, boundary Boundary) (*Reading, error) {
+ 	if sender.Kind != KindStrand {
+ 		return nil, fmt.Errorf("creel: only a strand's tool-boundary hook claims mail, and %s is no strand; read with `lym creel read`", sender.Name)
+ 	}
+-	reading := &Reading{store: s, holder: sender.Name}
++	path := "tool"
++	if boundary.Stop {
++		path = "stop"
++	}
++	reading := &Reading{store: s, holder: sender.Name, path: path}
+ 	strand, err := s.strandTarget(sender.Name)
+ 	if err != nil {
+ 		return nil, err
+@@ -318,53 +347,119 @@ func (s *Store) ClaimAtBoundary(sender Sender, boundary Boundary) (*Reading, err
+ 	if err != nil {
+ 		return nil, fmt.Errorf("creel: could not read the pause record for %s: %w", sender.Name, err)
+ 	}
+-	if paused {
+-		return reading, nil
+-	}
++	// reason names why the mail steps handed no mail out, for the Debug line of a claim that handed out nothing at all.
++	reason := ""
+ 	err = s.do(func() error {
++		s.claimEchoLocked(sender.Name, reading)
++		if paused {
++			reason = "paused"
++			return nil
++		}
+ 		if boundary.Stop && !boundary.StopHookActive {
+ 			s.stopBlocks[sender.Name] = 0
+ 		}
+ 		if boundary.Stop {
+-			if blocks, known := s.stopBlocks[sender.Name]; !known || blocks >= stopBlockCap {
++			blocks, known := s.stopBlocks[sender.Name]
++			switch {
++			case !known:
++				reason = "stop-count-unknown"
++				return nil
++			case blocks >= stopBlockCap:
++				reason = "stop-cap"
+ 				return nil
+ 			}
+ 		}
+-		used := 0
+-		for _, msg := range s.claimableLocked(sender.Name) {
+-			size := len(MessageLine(*msg))
+-			if len(reading.ids) > 0 {
+-				// The newline the hook joins this line to the one before with counts against the budget too.
+-				size++
+-				if used+size > boundaryClaimBudget {
+-					break
+-				}
+-			}
+-			used += size
+-			s.reserved[msg.ID] = sender.Name
+-			reading.ids = append(reading.ids, msg.ID)
+-			reading.Messages = append(reading.Messages, *msg)
++		s.claimLocked(sender.Name, reading)
++		if len(reading.ids) == 0 {
++			reason = s.nothingClaimableReasonLocked(sender.Name)
++			return nil
+ 		}
+-		if len(reading.ids) > 0 {
+-			if mark, rung := s.wakeMarks[sender.Name]; rung && !mark.at.IsZero() {
+-				mark.answered = true
+-				s.wakeMarks[sender.Name] = mark
+-			}
+-			// Counted before the client writes the lines, so the count errs early and never late.
+-			if boundary.Stop {
+-				s.stopBlocks[sender.Name]++
+-			} else {
+-				s.stopBlocks[sender.Name] = 0
+-			}
++		if mark, rung := s.wakeMarks[sender.Name]; rung && !mark.at.IsZero() {
++			mark.answered = true
++			s.wakeMarks[sender.Name] = mark
++		}
++		// Counted before the client writes the lines, so the count errs early and never late.
++		if boundary.Stop {
++			s.stopBlocks[sender.Name]++
++		} else {
++			s.stopBlocks[sender.Name] = 0
+ 		}
+ 		return nil
+ 	})
+ 	if err != nil {
+ 		return nil, err
+ 	}
++	if len(reading.ids) == 0 && len(reading.echoIDs) == 0 {
++		// A standing flag runs the claim at every tool call, so an empty claim logs at Debug.
++		logger.Debug("creel claim", "strand", sender.Name, "path", path, "outcome", "nothing", "reason", reason)
++	}
+ 	return reading, nil
+ }
+ 
++// nothingClaimableReasonLocked names why a claim found no mail for holder: a live hold from another sender while the holder's unread mail is none of the owner's, or no claimable mail at all.
++func (s *Store) nothingClaimableReasonLocked(holder string) string {
++	if hold := s.liveHoldLocked(holder); hold != nil {
++		unread := s.unreadLocked(holder, "")
++		if len(unread) > 0 && !slices.ContainsFunc(unread, func(msg *Message) bool { return msg.From == hold.Owner }) {
++			return "held"
++		}
++	}
++	return "nothing-claimable"
++}
++
++// claimEchoLocked reserves to reading the holder's unreserved echo items, oldest first, and stops before the line that would take the echo lines past boundaryClaimBudget; it always takes the first.
++func (s *Store) claimEchoLocked(holder string, reading *Reading) {
++	items := s.echoes[holder]
++	used := 0
++	for i := range items {
++		if items[i].reserved {
++			continue
++		}
++		size := len(items[i].line)
++		if len(reading.Echo) > 0 {
++			size++
++			if used+size > boundaryClaimBudget {
++				break
++			}
++		}
++		used += size
++		items[i].reserved = true
++		reading.Echo = append(reading.Echo, items[i].line)
++		reading.echoIDs = append(reading.echoIDs, items[i].id)
++	}
++}
++
++// echoBytes is the byte length of lines joined by newlines.
++func echoBytes(lines []string) int {
++	total := 0
++	for i, line := range lines {
++		if i > 0 {
++			total++
++		}
++		total += len(line)
++	}
++	return total
++}
++
++// claimLocked reserves to reading the holder's claimable messages, oldest first, and stops before the message whose line and joining newline would take the echo and message lines already in reading past boundaryClaimBudget; it always takes the first line, echo or message.
++func (s *Store) claimLocked(holder string, reading *Reading) {
++	used := echoBytes(reading.Echo)
++	for _, msg := range s.claimableLocked(holder) {
++		size := len(MessageLine(*msg))
++		if len(reading.ids) > 0 || len(reading.Echo) > 0 {
++			// The newline the hook joins this line to the one before with counts against the budget too.
++			size++
++			if used+size > boundaryClaimBudget {
++				break
++			}
++		}
++		used += size
++		s.reserved[msg.ID] = holder
++		reading.ids = append(reading.ids, msg.ID)
++		reading.Messages = append(reading.Messages, *msg)
++	}
++}
++
+ // claimableLocked returns the unread messages ClaimAtBoundary would hand holder if the byte budget were unlimited, oldest first.
+ // They are the messages no read has reserved, the hold owner's alone under a live hold, and none whose line passes hookFieldCap.
+ func (s *Store) claimableLocked(holder string) []*Message {
+@@ -390,9 +485,10 @@ func (s *Store) resetStopBlocks(strand string) {
+ }
+ 
+ // HookWait registers the idle waiter of the calling strand: a wait the daemon answers with OutcomeRing when it wakes the idle strand.
++// With takesMail the waiter is marked: its ring carries the strand's claimed mail, which the waiter acknowledges.
+ // A newer waiter of the same strand ends the older, which is answered OutcomeSuperseded before the new one registers.
+ // Only a strand sender may wait; any other sender is refused with the way forward for its kind.
+-func (s *Store) HookWait(sender Sender) (*Waiter, error) {
++func (s *Store) HookWait(sender Sender, takesMail bool) (*Waiter, error) {
+ 	if sender.Kind != KindStrand {
+ 		message := fmt.Sprintf("creel: only a strand's idle waiter hook waits for a wake, and %s is no strand", sender.Name)
+ 		switch sender.Kind {
+@@ -410,6 +506,7 @@ func (s *Store) HookWait(sender Sender) (*Waiter, error) {
+ 		var err error
+ 		waiter, err = s.addWaiterLocked(key)
+ 		if err == nil {
++			waiter.takesMail = takesMail
+ 			s.wakeLocked(sender.Name)
+ 		}
+ 		return err
+@@ -430,26 +527,64 @@ func (s *Store) hookWakeState(strand string) (ids []int64, mark wakeMark, waitin
+ 	return ids, s.wakeMarks[strand], len(s.waiters[waitKey{kind: waitHook, holder: strand}]) > 0
+ }
+ 
++// hookWaiterTakesMail reports whether a registered idle waiter of strand is marked as taking mail.
++func (s *Store) hookWaiterTakesMail(strand string) bool {
++	s.mu.Lock()
++	defer s.mu.Unlock()
++	return anyTakesMail(s.waiters[waitKey{kind: waitHook, holder: strand}])
++}
++
++// anyTakesMail reports whether one of waiters is marked as taking mail.
++func anyTakesMail(waiters []*Waiter) bool {
++	for _, waiter := range waiters {
++		if waiter.takesMail {
++			return true
++		}
++	}
++	return false
++}
++
+ // ringHook answers strand's registered waiters with OutcomeRing and records the mark of the ring at now, provided the claimable set is still ids and a waiter is still registered.
++// A marked waiter's ring carries a claim of the set through claimLocked, in a Reading the waiter acknowledges, and is made only when the pause read just before the locked step ran for a marked waiter and found no pause; a pause, a failed pause read or a marked waiter that registered after the read rings nothing and leaves the waiter registered.
++// A pause that keeps a marked ring from claiming logs it at Debug, and the ring's claim logs its outcome like any other.
+ // It reports whether it rang, and starts the strand's Stop count over when it did.
+-func (s *Store) ringHook(strand string, ids []int64, now time.Time) bool {
++func (s *Store) ringHook(strand Strand, ids []int64, now time.Time) bool {
++	pauseRead := s.hookWaiterTakesMail(strand.Name)
++	if pauseRead {
++		if paused, err := s.delivery.Paused(strand); err != nil || paused {
++			logger.Debug("creel claim", "strand", strand.Name, "path", "ring", "outcome", "nothing", "reason", "paused")
++			return false
++		}
++	}
+ 	rang := false
+ 	_ = s.do(func() error {
+ 		var current []int64
+-		for _, msg := range s.claimableLocked(strand) {
++		for _, msg := range s.claimableLocked(strand.Name) {
+ 			current = append(current, msg.ID)
+ 		}
+ 		if !slices.Equal(current, ids) {
+ 			return nil
+ 		}
+-		rang = s.answerLocked(waitKey{kind: waitHook, holder: strand}, Outcome{Kind: OutcomeRing}) > 0
+-		if rang {
+-			s.wakeMarks[strand] = wakeMark{ids: ids, at: now}
++		key := waitKey{kind: waitHook, holder: strand.Name}
++		waiters := s.waiters[key]
++		if len(waiters) == 0 {
++			return nil
+ 		}
++		outcome := Outcome{Kind: OutcomeRing}
++		if anyTakesMail(waiters) {
++			if !pauseRead {
++				return nil
++			}
++			reading := &Reading{store: s, holder: strand.Name, ring: true, path: "ring"}
++			s.claimLocked(strand.Name, reading)
++			outcome.Reading = reading
++		}
++		rang = s.answerLocked(key, outcome) > 0
++		s.wakeMarks[strand.Name] = wakeMark{ids: ids, at: now}
+ 		return nil
+ 	})
+ 	if rang {
+-		s.resetStopBlocks(strand)
++		s.resetStopBlocks(strand.Name)
+ 	}
+ 	return rang
+ }
+@@ -468,32 +603,137 @@ func (s *Store) journalReadLocked(msg *Message, holder string) error {
+ }
+ 
+ // Ack marks the reserved messages read and journals each; a message that left the holder meanwhile stays as it is.
++// Once every id is journaled, the Ack of a ring's claim marks the strand's last ring answered.
++// When a journal write fails, a claim's Ack releases the id it failed on and every id after it, so a later claim hands them out once more, and answers the holder's mail waiters;
++// a read's Ack leaves them reserved, since its client already printed the mail.
++// The ids before the failing one stay journaled read, and the error is returned.
++// A claim's Ack drops the echo items it handed out, whatever the journal writes do, since the hook already showed them.
++// A ring's Ack appends to the strand's echo one item per id it passed, journaled read or skipped as no longer the holder's unread mail, and none from a failing id on.
++// The Ack of a claim or a ring that handed something out logs its outcome once.
+ func (r *Reading) Ack() error {
+ 	return r.store.do(func() error {
+-		for _, id := range r.ids {
+-			delete(r.store.reserved, id)
++		var dropped []int64
++		if len(r.echoIDs) > 0 && !r.echoSettled {
++			dropped = r.echoIDs
++		}
++		changedEcho := r.settleEchoLocked(true)
++		defer func() {
++			if changedEcho {
++				r.store.syncFlagsLocked()
++			}
++		}()
++		echo := func(i int) {
++			if r.ring {
++				r.store.echoes[r.holder] = append(r.store.echoes[r.holder], echoItem{id: r.ids[i], line: MessageLine(r.Messages[i])})
++				changedEcho = true
++			}
++		}
++		for i, id := range r.ids {
+ 			msg := r.store.state.messages[id]
+ 			if msg == nil || msg.Holder != r.holder || msg.Status != StatusUnread {
++				delete(r.store.reserved, id)
++				echo(i)
+ 				continue
+ 			}
+ 			if err := r.store.journalReadLocked(msg, r.holder); err != nil {
++				var released []int64
++				if !r.read {
++					released = slices.Clone(r.ids[i:])
++					for _, unjournaled := range r.ids[i:] {
++						delete(r.store.reserved, unjournaled)
++					}
++					r.store.answerLocked(waitKey{kind: waitHolder, holder: r.holder}, Outcome{Kind: OutcomeMail})
++					r.ids = nil
++				}
++				r.logOutcome(claimAckFailed, released, dropped, err)
+ 				return err
+ 			}
++			delete(r.store.reserved, id)
++			echo(i)
++		}
++		if r.ring {
++			if mark, rung := r.store.wakeMarks[r.holder]; rung && !mark.at.IsZero() {
++				mark.answered = true
++				r.store.wakeMarks[r.holder] = mark
++			}
++		}
++		if len(r.Messages) > 0 || len(r.echoIDs) > 0 {
++			r.logOutcome(claimAcknowledged, nil, nil, nil)
+ 		}
+ 		r.ids = nil
+ 		return nil
+ 	})
+ }
+ 
++// The outcomes a delivered claim's log line carries.
++const (
++	claimAcknowledged = "acknowledged"
++	claimAckFailed    = "ack-failed"
++	claimReleased     = "released"
++)
++
++// logOutcome writes the one daemon log line of this claim's delivery attempt: the strand, the path that claimed (tool, stop or ring), the message ids and echo ids it handed out, and the outcome.
++// An acknowledged claim logs at Info, a released one at Info, and one whose journal write failed at Warn with the error, the message ids released for a later claim and the echo ids dropped.
++// A reading no claim made, a read's, has no path and logs nothing.
++func (r *Reading) logOutcome(outcome string, released, dropped []int64, err error) {
++	if r.path == "" {
++		return
++	}
++	ids := make([]int64, len(r.Messages))
++	for i, msg := range r.Messages {
++		ids[i] = msg.ID
++	}
++	attrs := []any{"strand", r.holder, "path", r.path, "ids", ids, "echo_ids", r.echoIDs, "outcome", outcome}
++	if outcome == claimAckFailed {
++		logger.Warn("creel claim", append(attrs, "error", err, "released_ids", released, "dropped_echo_ids", dropped)...)
++		return
++	}
++	logger.Info("creel claim", attrs...)
++}
++
++// settleEchoLocked ends this reading's hold on the echo items it handed out, once: it drops them, or with drop false leaves them owed and unreserved.
++// It reports whether the holder's echo had any, and syncs nothing; the caller does.
++func (r *Reading) settleEchoLocked(drop bool) bool {
++	if len(r.echoIDs) == 0 || r.echoSettled {
++		return false
++	}
++	r.echoSettled = true
++	var kept []echoItem
++	for _, item := range r.store.echoes[r.holder] {
++		if item.reserved && slices.Contains(r.echoIDs, item.id) {
++			if drop {
++				continue
++			}
++			item.reserved = false
++		}
++		kept = append(kept, item)
++	}
++	if len(kept) == 0 {
++		delete(r.store.echoes, r.holder)
++	} else {
++		r.store.echoes[r.holder] = kept
++	}
++	return true
++}
++
+ // Release drops the reservation and leaves the messages unread; a wait for the holder's mail is answered, since the mail is back.
++// The echo items the claim handed out are unreserved, so they stay owed.
++// A release of a claim or a ring that still held ids or echo items logs its outcome once.
+ func (r *Reading) Release() {
+ 	_ = r.store.do(func() error {
++		held := len(r.ids) > 0 || (len(r.echoIDs) > 0 && !r.echoSettled)
++		if r.settleEchoLocked(false) {
++			r.store.syncFlagsLocked()
++		}
+ 		for _, id := range r.ids {
+ 			delete(r.store.reserved, id)
+ 		}
+ 		if len(r.ids) > 0 {
+ 			r.store.answerLocked(waitKey{kind: waitHolder, holder: r.holder}, Outcome{Kind: OutcomeMail})
+ 		}
++		if held {
++			r.logOutcome(claimReleased, nil, nil, nil)
++		}
+ 		r.ids = nil
+ 		return nil
+ 	})
+diff --git a/internal/creelengine/verbs_test.go b/internal/creelengine/verbs_test.go
+index b8d4440f..29805131 100644
+--- a/internal/creelengine/verbs_test.go
++++ b/internal/creelengine/verbs_test.go
+@@ -144,6 +144,29 @@ func TestStore_Mail(t *testing.T) {
+ 			}
+ 			wantBodies(t, e.readBodies(t, strand(beta), ""), "hello", "again")
+ 		}},
++		{"AJournalFailureAtAReadsAckKeepsTheIdsItLeftUnjournaledReserved", func(t *testing.T, e *env) {
++			for _, body := range []string{"one", "two", "three"} {
++				e.post(t, strand(alpha), beta, body)
++			}
++			reading, err := e.store.Read(strand(beta), "")
++			if err != nil {
++				t.Fatalf("Read: %v", err)
++			}
++			if len(reading.Messages) != 3 {
++				t.Fatalf("Read handed out %d messages; want 3", len(reading.Messages))
++			}
++			e.store.FailJournalWrites(1)
++			if err := reading.Ack(); err == nil {
++				t.Fatal("Ack with the second journal write failing returned nil; want an error")
++			}
++			e.store.FailJournalWrites(-1)
++			if got := eventsOf(e.store.Log(creelengine.LogFilter{To: beta})); !slices.Equal(got, []string{"posted", "posted", "posted", "read"}) {
++				t.Errorf("Log(to beta) events = %v; want three posts and the one read of #1", got)
++			}
++			if again := e.readBodies(t, strand(beta), ""); len(again) != 0 {
++				t.Errorf("a read after the failed ack handed out %q; want nothing", again)
++			}
++		}},
+ 		{"Post_RefusesEmptyAndOversizedBody", func(t *testing.T, e *env) {
+ 			_, err := e.store.Post(strand(alpha), beta, "  ")
+ 			wantErr(t, err, "empty")
+@@ -1129,6 +1152,27 @@ func TestStore_ClaimAtBoundary(t *testing.T) {
+ 				t.Errorf("claimed %q; want %q", lines, want)
+ 			}
+ 		}},
++		{"AJournalFailureAtTheAckReleasesEveryIdItLeftUnjournaled", func(t *testing.T, e *env) {
++			for _, body := range []string{"one", "two", "three"} {
++				e.post(t, strand(alpha), beta, body)
++			}
++			reading, lines := claimLines(t, e, beta)
++			if len(lines) != 3 {
++				t.Fatalf("claimed %q; want all three", lines)
++			}
++			e.store.FailJournalWrites(1)
++			if err := reading.Ack(); err == nil {
++				t.Fatal("Ack with the second journal write failing returned nil; want an error")
++			}
++			e.store.FailJournalWrites(-1)
++			if got := eventsOf(e.store.Log(creelengine.LogFilter{To: beta})); !slices.Equal(got, []string{"posted", "posted", "posted", "read"}) {
++				t.Errorf("Log(to beta) events = %v; want three posts and the one read of #1", got)
++			}
++			_, again := claimLines(t, e, beta)
++			if len(again) != 2 || !strings.HasPrefix(again[0], "[creel] #2 ") || !strings.HasPrefix(again[1], "[creel] #3 ") {
++				t.Errorf("a claim after the failed ack handed out %q; want #2 and #3", again)
++			}
++		}},
+ 		{"ReleasedClaimLeavesTheMailUnread", func(t *testing.T, e *env) {
+ 			e.post(t, strand(alpha), beta, "kept")
+ 			reading, _ := claimLines(t, e, beta)
+diff --git a/internal/shuttleengine/claudeengine/capabilities.go b/internal/shuttleengine/claudeengine/capabilities.go
+index 9a20f39b..a81e3af3 100644
+--- a/internal/shuttleengine/claudeengine/capabilities.go
++++ b/internal/shuttleengine/claudeengine/capabilities.go
+@@ -1,5 +1,5 @@
+ // capabilities.go implements Claude's optional engine capabilities.
+-// They are requirement support, project instruction files, resume-context rendering and creel's hook delivery: the hook-input parse, the visible block and the wake output.
++// They are requirement support, project instruction files, resume-context rendering and creel's hook delivery: the hook-input parse, the hook output and the wake output.
+ 
+ package claudeengine
+ 
+@@ -63,30 +63,33 @@ func (c *Claude) HookInput(payload []byte) (shuttleengine.HookInput, error) {
+ 	return input, nil
+ }
+ 
+-// stopBlockReason is the reason of creel's Stop block, which points the model at the mail in the block's additional context.
+-const stopBlockReason = "[creel] Mail for you arrived as this turn ended; it is in this Stop hook's additional context. Act on it now."
+-
+-// BoundaryBlock renders text as the JSON a PostToolUse or Stop hook prints to block, handing text to the model once and showing it to the operator as the system message.
+-// After a tool call text is the block's reason.
+-// On a Stop text is the additional context and the reason is stopBlockReason, since Claude Code hands a Stop block's reason to the model twice, once after the hook's command text.
+-func (c *Claude) BoundaryBlock(event shuttleengine.HookEvent, text string) ([]byte, error) {
++// HookOutput renders the JSON a PostToolUse or Stop hook prints to hand mail to the model as additional context, never as a block.
++// After a tool call the operator's system message is echo and a newline before mail, or mail alone with no echo;
++// on a Stop it is echo alone, absent with no echo.
++// With echo and no mail the output is the system message alone, and every empty key is omitted.
++func (c *Claude) HookOutput(event shuttleengine.HookEvent, mail, echo string) ([]byte, error) {
+ 	type specificOutput struct {
+ 		HookEventName     string `json:"hookEventName"`
+ 		AdditionalContext string `json:"additionalContext"`
+ 	}
+-	block := struct {
+-		Decision           string          `json:"decision"`
+-		Reason             string          `json:"reason"`
+-		SystemMessage      string          `json:"systemMessage"`
++	output := struct {
++		SystemMessage      string          `json:"systemMessage,omitempty"`
+ 		HookSpecificOutput *specificOutput `json:"hookSpecificOutput,omitempty"`
+-	}{Decision: "block", Reason: text, SystemMessage: text}
+-	if event == shuttleengine.HookEventStop {
+-		block.Reason = stopBlockReason
+-		block.HookSpecificOutput = &specificOutput{HookEventName: hookEventStop, AdditionalContext: text}
++	}{SystemMessage: echo}
++	if mail != "" {
++		eventName := hookEventPostToolUse
++		if event == shuttleengine.HookEventStop {
++			eventName = hookEventStop
++		} else if echo == "" {
++			output.SystemMessage = mail
++		} else {
++			output.SystemMessage = echo + "\n" + mail
++		}
++		output.HookSpecificOutput = &specificOutput{HookEventName: eventName, AdditionalContext: mail}
+ 	}
+-	data, err := json.Marshal(block)
++	data, err := json.Marshal(output)
+ 	if err != nil {
+-		return nil, fmt.Errorf("marshal boundary block: %w", err)
++		return nil, fmt.Errorf("marshal hook output: %w", err)
+ 	}
+ 	return data, nil
+ }
+diff --git a/internal/shuttleengine/claudeengine/doc.go b/internal/shuttleengine/claudeengine/doc.go
+index c5789397..9cc538ec 100644
+--- a/internal/shuttleengine/claudeengine/doc.go
++++ b/internal/shuttleengine/claudeengine/doc.go
+@@ -130,18 +130,20 @@
+ // The settings leave Claude Code's `autoContinueAtUsageLimit` unset, so a session the usage limit stopped waits for the orch's wake and revive rather than racing it.
+ // An engine told a hub board directory also installs a second PostToolUse entry with no matcher, creel's mail hook; an engine told none, a standalone run, installs the stamp alone.
+ // Its command is plain POSIX `sh`: it forms the strand's flag name from `$LYM_STRAND_NAME` by parameter expansion alone, turning every `:` into `.` as agentname.FileName does, and exits 0 at once unless that flag stands in CreelFlagDir of the board directory, so a tool call with no mail starts no process.
+-// When the flag stands it changes to `$CLAUDE_PROJECT_DIR` and runs `lym creel hook-read claude`, whose standard output, BoundaryBlock's `{"decision":"block","reason":<text>,"systemMessage":<text>}`, hands the strand's mail to the session after the tool call as the reason and shows it to the operator as the system message.
+-// On a Stop, BoundaryBlock moves the text into `hookSpecificOutput.additionalContext` and makes the reason a fixed line pointing at it, beside the same system message.
+-// Claude Code hands a blocking Stop hook's reason to the model twice, as `Stop hook feedback:` and as `Stop hook blocking error from command: "<command>": <reason>`, and shows it to the operator as `Stop hook error:`;
+-// with the mail in the additional context the model reads it once, as `Stop hook additional context:`, and the operator once, as `Stop says:`.
+-// Bound: the block still names the hook's command to the model, beside the fixed reason, since every blocking Stop hook's does; the block is what keeps the turn going.
++// When the flag stands it changes to `$CLAUDE_PROJECT_DIR` and runs `lym creel hook-read claude`, whose standard output, HookOutput's `{"systemMessage":<echo and mail>,"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":<mail>}}`, hands the strand's mail to the session after the tool call as additional context and shows it to the operator as the system message.
++// On a Stop, HookOutput prints `{"systemMessage":<echo>,"hookSpecificOutput":{"hookEventName":"Stop","additionalContext":<mail>}}`, the system message absent with no echo, and with an echo and no mail on either event only `{"systemMessage":<echo>}`; no output carries `decision` or `reason`.
++// A blocking hook would reach the model twice, as `Stop hook feedback:` and as `Stop hook blocking error from command: "<command>": <reason>`, and the operator as `Stop hook error:`, naming the hook's command;
++// with the mail in the additional context alone the model reads it once, as `Stop hook additional context:`, and the turn continues through it.
+ // HookInput parses a hook's payload: `PostToolUse` and `Stop` map to the tool-boundary and stop events, a non-empty `agent_id` marks a subagent, and `stop_hook_active` is carried; RewakeOutput returns the text plus a newline and exit code 2, the `asyncRewake` wake.
+-// Claude Code runs an event's matching hooks in parallel, so a separate creel Stop hook could not keep the recording from logging a turn end its block then cancels, and ParseEvents would read every blocked Stop as a turn end.
++// Claude Code runs an event's matching hooks in parallel, so a separate creel Stop hook could not keep the recording from logging a turn end its mail then continues, and ParseEvents would read every Stop that handed out mail as a turn end.
+ // An engine told a board directory therefore replaces the plain Stop recording with one merged command, and adds the idle waiter as a second Stop entry; a standalone run keeps the plain recording.
+-// The merged command reads the hook input once, and only when the strand's flag stands it pipes the input to `lym creel hook-read claude` from `$CLAUDE_PROJECT_DIR`, writing straight to the hook's standard output, so the mail is acknowledged only after the block reached Claude Code.
+-// When that exits 0 a block was written, and the command exits 0 having appended nothing to the events file; otherwise, or with the flag absent, it appends the Stop stamp and the payload as the recording command does, and exits with that append's status.
++// The merged command reads the hook input once, and only when the strand's flag stands it pipes the input to `lym creel hook-read claude` from `$CLAUDE_PROJECT_DIR`, writing straight to the hook's standard output, so the mail is acknowledged only after the hook output reached Claude Code.
++// When that exits 0 mail was handed out, and the command exits 0 having appended nothing to the events file; otherwise, or with the flag absent, it appends the Stop stamp and the payload as the recording command does, and exits with that append's status.
++// An exit other than 0 records the turn end with whatever hook-read printed left on the hook's standard output, which the echo of mail an idle ring already delivered relies on: hook-read prints it as a system message and exits 1, so the operator sees it and the turn ends.
+ // Bound: a merged command killed at its timeout after the write never reaches its record step, so when Claude Code drops the killed hook's output the turn ends with no Stop record.
+ // The waiter entry runs `lym creel hook-wait claude` from `$CLAUDE_PROJECT_DIR` whether or not a flag stands, with `asyncRewake` true and a timeout of 86400 seconds, so Claude Code runs it in the background and wakes the idle session when it exits 2.
++// It also sets `rewakeMessage` to `[creel] Mail that arrived while you were idle:` and `rewakeSummary` to `creel mail`, so the model reads the wake under creel's label rather than Claude Code's default naming the hook's command, and the terminal draws the wake as one `creel mail` row and never its body, which the operator gets from the echo.
++// Bound: a session launched before this change keeps the default labels until it is relaunched.
+ // Prepare marks the launch CreelHooks exactly when it passes the board directory's flag directory, so a strand is marked only when its settings carry the PostToolUse, Stop and waiter hooks.
+ // On Windows the flag directory takes the same git-bash POSIX conversion as the events path.
+ //
+diff --git a/internal/shuttleengine/claudeengine/hookcmd_integration_test.go b/internal/shuttleengine/claudeengine/hookcmd_integration_test.go
+index 6cb903a1..5f237ab8 100644
+--- a/internal/shuttleengine/claudeengine/hookcmd_integration_test.go
++++ b/internal/shuttleengine/claudeengine/hookcmd_integration_test.go
+@@ -329,15 +329,17 @@ func TestCreelMailHook_RunsLymOnlyWhenTheStrandsFlagStands(t *testing.T) {
+ 	}
+ }
+ 
+-// TestCreelStopHook_RecordsATurnEndOnlyWithoutABlock runs the merged Stop command under sh with a stub `lym` on PATH that records the standard input it got, prints a fixed block and exits as the row says.
+-// A block written (the stub exits 0) leaves the events file empty and the block on standard output; otherwise, with the flag absent as well, the file holds the Stop stamp and then the payload byte for byte, which ParseEvents reads as the payload alone.
++// TestCreelStopHook_RecordsATurnEndOnlyWithoutABlock runs the merged Stop command under sh with a stub `lym` on PATH that records the standard input it got, prints a fixed output and exits as the row says.
++// Mail written (the stub exits 0) leaves the events file empty and the output on standard output; otherwise, with the flag absent as well, the file holds the Stop stamp and then the payload byte for byte, which ParseEvents reads as the payload alone.
++// An exit 1 that printed an echo alone records the turn end and leaves the printed output as the hook's.
+ // An unwritable events file fails the command as the plain recording command does.
+ func TestCreelStopHook_RecordsATurnEndOnlyWithoutABlock(t *testing.T) {
+ 	t.Parallel()
+ 
+ 	const (
+-		name  = "ly:creel-stop:driver"
+-		block = `{"decision":"block","reason":"mail","systemMessage":"mail"}`
++		name = "ly:creel-stop:driver"
++		mail = `{"hookSpecificOutput":{"hookEventName":"Stop","additionalContext":"mail"}}`
++		echo = `{"systemMessage":"echo"}`
+ 	)
+ 	payload := paddedPayload(t, map[string]any{"hook_event_name": "Stop", "session_id": "s1", "last_assistant_message": "done"}, 20000)
+ 	tests := []struct {
+@@ -351,9 +353,10 @@ func TestCreelStopHook_RecordsATurnEndOnlyWithoutABlock(t *testing.T) {
+ 		wantStubRun bool
+ 		wantFailure bool
+ 	}{
+-		{"FlagStandsAndABlockIsWritten", true, "0", block, "", block + "\n", false, true, false},
++		{"FlagStandsAndMailIsWritten", true, "0", mail, "", mail + "\n", false, true, false},
++		{"FlagStandsAndAnEchoAloneIsWritten", true, "1", echo, "", echo + "\n", true, true, false},
+ 		{"FlagStandsAndNothingIsClaimed", true, "1", "", "", "", true, true, false},
+-		{"FlagAbsent", false, "0", block, "", "", true, false, false},
++		{"FlagAbsent", false, "0", mail, "", "", true, false, false},
+ 		{"UnwritableEventsFile", true, "1", "", "missing-dir", "", false, true, true},
+ 	}
+ 	for _, tt := range tests {
+diff --git a/internal/shuttleengine/claudeengine/settings.go b/internal/shuttleengine/claudeengine/settings.go
+index 8e337f97..a9ef393b 100644
+--- a/internal/shuttleengine/claudeengine/settings.go
++++ b/internal/shuttleengine/claudeengine/settings.go
+@@ -1,6 +1,6 @@
+ // settings.go composes the Claude Code settings.json document Prepare writes for each run:
+ // a Stop hook that appends every turn-end event to the run's events.jsonl (the only channel ParseEvents reads).
+-// A session in a hub also gets creel's hook delivery: the PostToolUse mail hook, a Stop hook that merges the turn-end recording with creel's turn-end delivery so a blocked Stop records no turn end, and the idle waiter hook that wakes an idle session.
++// A session in a hub also gets creel's hook delivery: the PostToolUse mail hook, a Stop hook that merges the turn-end recording with creel's turn-end delivery so a Stop that handed mail to the session records no turn end, and the idle waiter hook that wakes an idle session.
+ // The UserPromptSubmit, StopFailure, Notification, SessionEnd, SessionStart and PermissionRequest hooks append their payloads to the same file for ParseSessionSignals;
+ // the SessionStart hook of a run whose spec sets a context-after-compaction command runs that command on the compaction source, so its output joins the session's context.
+ // Every recording hook writes a stamp line with the hook-side time before its payload, which ParseEvents skips.
+@@ -56,12 +56,16 @@ const noticeAgentForkDeny = "The Agent tool accepts only fork subagents and refu
+ const noticeAskUserQuestionDeny = "AskUserQuestion is unavailable: when blocked or needing operator input, state the question as your final message and end your turn without writing the result file; the run then waits for the answer, which arrives as your next turn."
+ 
+ // hookCommand is one Claude Code hook invocation, run under git-bash on Windows.
+-// AsyncRewake runs the command in the background and wakes the idle session when it exits 2, and Timeout bounds it in seconds; both are omitted when unset.
++// AsyncRewake runs the command in the background and wakes the idle session when it exits 2, and Timeout bounds it in seconds.
++// RewakeMessage and RewakeSummary label that wake for the model and the operator's notification row.
++// Every one of them is omitted when unset.
+ type hookCommand struct {
+-	Type        string `json:"type"`
+-	Command     string `json:"command"`
+-	AsyncRewake bool   `json:"asyncRewake,omitempty"`
+-	Timeout     int    `json:"timeout,omitempty"`
++	Type          string `json:"type"`
++	Command       string `json:"command"`
++	AsyncRewake   bool   `json:"asyncRewake,omitempty"`
++	Timeout       int    `json:"timeout,omitempty"`
++	RewakeMessage string `json:"rewakeMessage,omitempty"`
++	RewakeSummary string `json:"rewakeSummary,omitempty"`
+ }
+ 
+ // hookEntry is one matcher/hooks pair in a settings.json hook event list.
+@@ -138,11 +142,11 @@ func strandFlagName() string {
+ 	return `n="${` + agentname.StrandNameEnv + `:-}"; f=; while :; do case "$n" in *:*) f="$f${n%%:*}."; n="${n#*:}";; *) break;; esac; done`
+ }
+ 
+-// creelStopHookCommand returns the Stop hook command that merges the turn-end recording with creel's turn-end delivery, so the record is written only when no block was.
+-// Claude Code runs an event's hooks in parallel, so a separate creel hook could not keep the recording from logging a turn end the block then cancels.
++// creelStopHookCommand returns the Stop hook command that merges the turn-end recording with creel's turn-end delivery, so the record is written only when no mail was handed to the session.
++// Claude Code runs an event's hooks in parallel, so a separate creel hook could not keep the recording from logging a turn end the mail then continues.
+ // The command reads the hook input once, and when the strand's flag stands in the directory at quotedFlagDir it pipes the input to creelMailCommand from the session's project directory, whose output is the hook's.
+-// An exit 0 of that step means a block was written, and the command then exits 0 having appended nothing to the events file at quotedEventsPath.
+-// Otherwise, or when the flag is absent, it appends the Stop stamp and the input as recordingCommand does and exits with that append's status.
++// An exit 0 of that step means mail was handed to the session, which continues the turn, and the command then exits 0 having appended nothing to the events file at quotedEventsPath.
++// Otherwise, or when the flag is absent, it appends the Stop stamp and the input as recordingCommand does and exits with that append's status, leaving whatever the delivery step printed as the hook's output, which an echo printed with exit 1 relies on to reach the operator.
+ func creelStopHookCommand(quotedFlagDir, quotedEventsPath string) string {
+ 	deliver := `if [ -f ` + quotedFlagDir + `/"$f$n" ]; then cd "${CLAUDE_PROJECT_DIR:-.}" 2>/dev/null; printf '%s' "$in" | ` + creelMailCommand + ` && exit 0; fi`
+ 	record := `printf '%s' "$in" | { ` + recordingCommand(hookEventStop, quotedEventsPath) + `; }`
+@@ -155,6 +159,15 @@ const creelWaitCommand = "lym creel hook-wait claude"
+ // creelWaitTimeout is the idle waiter hook's timeout in seconds, a day: well under the 2^31-1 ms ceiling of the timers Claude Code arms, and long enough to outlive any idle spell.
+ const creelWaitTimeout = 86400
+ 
++// creelRewakeMessage is the label the idle waiter's wake carries for the model, in place of Claude Code's default naming the hook's command.
++// Both rewake keys are in Claude Code 2.1.312's hook schema marked `@internal`.
++// The message opens with `[creel]` so the wake's first line matches the creel trust sentence.
++const creelRewakeMessage = "[creel] Mail that arrived while you were idle:"
++
++// creelRewakeSummary is the row the operator's terminal draws for the idle waiter's wake.
++// It is fixed for the session because Claude Code takes a per-wake summary only from a hook of an Anthropic-marketplace plugin.
++const creelRewakeSummary = "creel mail"
++
+ // creelWaitHookCommand returns the Stop hook command of the idle waiter: it changes to the session's project directory, so a session that moved out of the hub still reaches it, and runs creelWaitCommand.
+ // It runs whether or not the strand's mail flag stands, since the waiter is what wakes an idle session for mail that arrives later.
+ func creelWaitHookCommand() string {
+@@ -400,7 +413,7 @@ func buildSettings(eventsPathPosix string, interactive bool, cfg shuttleengine.C
+ 		doc.Hooks.PostToolUse = append(doc.Hooks.PostToolUse, hookEntry{Hooks: []hookCommand{{Type: "command", Command: creelMailHookCommand(quotedFlagDir)}}})
+ 		doc.Hooks.Stop = []hookEntry{
+ 			{Hooks: []hookCommand{{Type: "command", Command: creelStopHookCommand(quotedFlagDir, quotedEventsPath)}}},
+-			{Hooks: []hookCommand{{Type: "command", Command: creelWaitHookCommand(), AsyncRewake: true, Timeout: creelWaitTimeout}}},
++			{Hooks: []hookCommand{{Type: "command", Command: creelWaitHookCommand(), AsyncRewake: true, Timeout: creelWaitTimeout, RewakeMessage: creelRewakeMessage, RewakeSummary: creelRewakeSummary}}},
+ 		}
+ 	}
+ 
+diff --git a/internal/shuttleengine/claudeengine/settings_test.go b/internal/shuttleengine/claudeengine/settings_test.go
+index b0353e0e..652c49f5 100644
+--- a/internal/shuttleengine/claudeengine/settings_test.go
++++ b/internal/shuttleengine/claudeengine/settings_test.go
+@@ -198,24 +198,31 @@ func TestBuildSettings_SessionStartHook(t *testing.T) {
+ 	}
+ }
+ 
+-// TestHookContext pins the exact JSON the session-start hook and creel's boundary blocks print, with the text escaped:
+-// after a tool call the text is the reason, and on a Stop it is the additional context and appears in no reason.
++// TestHookContext pins the exact JSON the session-start hook and creel's hook output print, with the text escaped:
++// the mail is the additional context and the operator's system message is the echo, the mail after a tool call with no echo, and no output carries a decision or a reason.
+ func TestHookContext(t *testing.T) {
+ 	t.Parallel()
+-	boundaryBlock := func(event shuttleengine.HookEvent) func(string) ([]byte, error) {
+-		return func(text string) ([]byte, error) { return New().BoundaryBlock(event, text) }
++	const mail = `read "role.md"`
++	const echo = "[creel] Delivered while idle:\nread \"role.md\""
++	hookOutput := func(event shuttleengine.HookEvent, mail, echo string) func() ([]byte, error) {
++		return func() ([]byte, error) { return New().HookOutput(event, mail, echo) }
+ 	}
++	sessionStart := func() ([]byte, error) { return SessionStartContext(mail) }
+ 	tests := []struct {
+ 		name   string
+-		render func(string) ([]byte, error)
++		render func() ([]byte, error)
+ 		want   string
+ 	}{
+-		{"SessionStart", SessionStartContext, `{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"read \"role.md\""}}`},
+-		{"ToolBoundaryBlock", boundaryBlock(shuttleengine.HookEventToolBoundary), `{"decision":"block","reason":"read \"role.md\"","systemMessage":"read \"role.md\""}`},
+-		{"StopBlock", boundaryBlock(shuttleengine.HookEventStop), `{"decision":"block","reason":"` + stopBlockReason + `","systemMessage":"read \"role.md\"","hookSpecificOutput":{"hookEventName":"Stop","additionalContext":"read \"role.md\""}}`},
++		{"SessionStart", sessionStart, `{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"read \"role.md\""}}`},
++		{"ToolBoundaryWithMail", hookOutput(shuttleengine.HookEventToolBoundary, mail, ""), `{"systemMessage":"read \"role.md\"","hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"read \"role.md\""}}`},
++		{"ToolBoundaryWithMailAndEcho", hookOutput(shuttleengine.HookEventToolBoundary, mail, echo), `{"systemMessage":"[creel] Delivered while idle:\nread \"role.md\"\nread \"role.md\"","hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"read \"role.md\""}}`},
++		{"ToolBoundaryWithEchoAlone", hookOutput(shuttleengine.HookEventToolBoundary, "", echo), `{"systemMessage":"[creel] Delivered while idle:\nread \"role.md\""}`},
++		{"StopWithMail", hookOutput(shuttleengine.HookEventStop, mail, ""), `{"hookSpecificOutput":{"hookEventName":"Stop","additionalContext":"read \"role.md\""}}`},
++		{"StopWithMailAndEcho", hookOutput(shuttleengine.HookEventStop, mail, echo), `{"systemMessage":"[creel] Delivered while idle:\nread \"role.md\"","hookSpecificOutput":{"hookEventName":"Stop","additionalContext":"read \"role.md\""}}`},
++		{"StopWithEchoAlone", hookOutput(shuttleengine.HookEventStop, "", echo), `{"systemMessage":"[creel] Delivered while idle:\nread \"role.md\""}`},
+ 	}
+ 	for _, tt := range tests {
+-		got, err := tt.render(`read "role.md"`)
++		got, err := tt.render()
+ 		if err != nil {
+ 			t.Fatalf("%s context error: %v", tt.name, err)
+ 		}
+@@ -233,9 +240,11 @@ func TestBuildSettings_CreelMailHook(t *testing.T) {
+ 	const eventsPath = "/c/run/events.jsonl"
+ 	quotedEventsPath := shQuote(eventsPath)
+ 	type stopHook struct {
+-		command     string
+-		asyncRewake bool
+-		timeout     float64
++		command       string
++		asyncRewake   bool
++		timeout       float64
++		rewakeMessage string
++		rewakeSummary string
+ 	}
+ 	tests := []struct {
+ 		name     string
+@@ -248,7 +257,7 @@ func TestBuildSettings_CreelMailHook(t *testing.T) {
+ 			[]string{"touch '/c/run/activity-stamp'; true", creelMailHookCommand(`'/c/hub'\''s/_board/.lym/creel/flags'`)},
+ 			[]stopHook{
+ 				{command: creelStopHookCommand(`'/c/hub'\''s/_board/.lym/creel/flags'`, quotedEventsPath)},
+-				{command: creelWaitHookCommand(), asyncRewake: true, timeout: 86400},
++				{command: creelWaitHookCommand(), asyncRewake: true, timeout: 86400, rewakeMessage: creelRewakeMessage, rewakeSummary: creelRewakeSummary},
+ 			},
+ 		},
+ 		{"Standalone", "", []string{"touch '/c/run/activity-stamp'; true"}, []stopHook{{command: recordingCommand(hookEventStop, quotedEventsPath)}}},
+@@ -285,7 +294,9 @@ func TestBuildSettings_CreelMailHook(t *testing.T) {
+ 				command, _ := hook["command"].(string)
+ 				asyncRewake, _ := hook["asyncRewake"].(bool)
+ 				timeout, _ := hook["timeout"].(float64)
+-				gotStop = append(gotStop, stopHook{command, asyncRewake, timeout})
++				rewakeMessage, _ := hook["rewakeMessage"].(string)
++				rewakeSummary, _ := hook["rewakeSummary"].(string)
++				gotStop = append(gotStop, stopHook{command, asyncRewake, timeout, rewakeMessage, rewakeSummary})
+ 			}
+ 		}
+ 		if !reflect.DeepEqual(gotStop, tt.wantStop) {
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index 9385a22a..28280049 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -24,7 +24,7 @@
+ // shuttleengine defines the Engine interface and its value types, and never imports a concrete
+ // engine implementation — concrete engines import shuttleengine, not the reverse.
+ // Only internal/shuttleengines and an engine's own directory import a concrete engine (the provider-seam import rule, enforced module-wide by seam_enforcement_test.go).
+-// Requirement support, fork audit, resume-context rendering, creel hook delivery (the hook-input parse, the visible block and the wake output) and instruction files are optional capabilities beside Engine, which an engine without them lacks.
++// Requirement support, fork audit, resume-context rendering, creel hook delivery (the hook-input parse, the hook output and the wake output) and instruction files are optional capabilities beside Engine, which an engine without them lacks.
+ // A ForkSubagents run whose engine cannot audit forks finishes with its classified result, a nil ForkAudit and an error, and keeps its run directory.
+ // Spec.Requires lists what a run requires of its engine, and a ForkSubagents spec requires fork support without listing it.
+ // Start checks it right after resolving the spec's engine, and attach checks it against the engine the run's record names unless every output file is already on disk.
+diff --git a/internal/shuttleengine/engine.go b/internal/shuttleengine/engine.go
+index 60a212c3..c80b8a2a 100644
+--- a/internal/shuttleengine/engine.go
++++ b/internal/shuttleengine/engine.go
+@@ -229,18 +229,19 @@ type HookInput struct {
+ 	Event HookEvent
+ 	// Subagent is true when the call comes from a subagent or fork rather than the session's main thread.
+ 	Subagent bool
+-	// StopHookActive is true when the turn-end input says the session already continues because of an earlier Stop block.
++	// StopHookActive is true when the turn-end input says the session already continues because of an earlier Stop hook's output.
+ 	StopHookActive bool
+ }
+ 
+ // ToolBoundaryContextRenderer is an optional capability beside Engine: the provider's side of creel's hook delivery.
+-// It parses a hook's input, renders the block that hands text to the session and shows it to the operator, and renders what an idle waiter hook writes to wake the session.
++// It parses a hook's input, renders the hook output that hands mail to the session and shows the operator the echo, and renders what an idle waiter hook writes to wake the session.
+ // An engine without it delivers creel mail by no hook.
+ type ToolBoundaryContextRenderer interface {
+ 	// HookInput parses the provider's hook input payload, refusing a payload that is not a hook input.
+ 	HookInput(payload []byte) (HookInput, error)
+-	// BoundaryBlock renders text as the provider's hook output for event that hands it to the session once and shows it to the operator.
+-	BoundaryBlock(event HookEvent, text string) ([]byte, error)
++	// HookOutput renders the provider's hook output for event: mail, the claimed lines joined by newlines, goes to the session once, and echo, the operator-only text of a mail an idle wake already handed over, goes to the operator.
++	// Either may be empty.
++	HookOutput(event HookEvent, mail, echo string) ([]byte, error)
+ 	// RewakeOutput returns what an idle waiter hook writes to standard error and exits with to wake the session with text.
+ 	RewakeOutput(text string) (stderr []byte, exitCode int)
+ }
+diff --git a/internal/shuttleengines/doc.go b/internal/shuttleengines/doc.go
+index 23ab0b6d..e92c6e12 100644
+--- a/internal/shuttleengines/doc.go
++++ b/internal/shuttleengines/doc.go
+@@ -18,6 +18,6 @@
+ // RecordReaders returns each registered engine's offline read capabilities keyed by engine name, built with a zero shuttle config and no config directories as SessionNamers builds its engines.
+ // A capability is set only when the engine implements it, and each set one is its own adapter, one per capability rather than one per engine:
+ // a reader of finished session records gets reading alone, and no type assertion on a value in the set recovers an engine that can start, open, send to or stop a run.
+-// ToolBoundaryRenderer returns one registered engine's creel hook-delivery capability by name, built the same way: the hook-input parse, the visible block and the wake output the creel hook verbs render.
++// ToolBoundaryRenderer returns one registered engine's creel hook-delivery capability by name, built the same way: the hook-input parse, the hook output and the wake output the creel hook verbs render.
+ // The package is told its Config and never imports internal/lymcwd.
+ package shuttleengines
+diff --git a/internal/shuttleengines/shuttleengines_test.go b/internal/shuttleengines/shuttleengines_test.go
+index 600a1bf8..a8f1a3ba 100644
+--- a/internal/shuttleengines/shuttleengines_test.go
++++ b/internal/shuttleengines/shuttleengines_test.go
+@@ -333,7 +333,7 @@ func TestRecordReaders(t *testing.T) {
+ 	}
+ }
+ 
+-// TestToolBoundaryRenderer pins that the claude entry renders the boundary block as the engine does and that an unknown name renders none.
++// TestToolBoundaryRenderer pins that the claude entry renders the hook output as the engine does and that an unknown name renders none.
+ func TestToolBoundaryRenderer(t *testing.T) {
+ 	t.Parallel()
+ 
+@@ -341,10 +341,10 @@ func TestToolBoundaryRenderer(t *testing.T) {
+ 	if !ok {
+ 		t.Fatal("ToolBoundaryRenderer(claude) found none")
+ 	}
+-	got, err := renderer.BoundaryBlock(shuttleengine.HookEventStop, "mail")
+-	want, wantErr := claudeengine.New().BoundaryBlock(shuttleengine.HookEventStop, "mail")
++	got, err := renderer.HookOutput(shuttleengine.HookEventStop, "mail", "")
++	want, wantErr := claudeengine.New().HookOutput(shuttleengine.HookEventStop, "mail", "")
+ 	if err != nil || wantErr != nil || string(got) != string(want) {
+-		t.Errorf("BoundaryBlock = %s, %v; want the engine's %s", got, err, want)
++		t.Errorf("HookOutput = %s, %v; want the engine's %s", got, err, want)
+ 	}
+ 	if _, ok := ToolBoundaryRenderer("nope"); ok {
+ 		t.Error("ToolBoundaryRenderer(nope) found one; want none")
