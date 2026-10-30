@@ -1,7 +1,7 @@
 # Card 17 — quiet-check-pr-review-wait
 
 **Create:**
-- `plan:internal/battencli#childAtWaitingRow` -> `func childAtWaitingRow(taskLocation *lymcwd.Location) bool`
+- `internal/battencli#childAtWaitingRow`
 
 **Delete:**
 - `internal/battencli#childAtBeamAwait`

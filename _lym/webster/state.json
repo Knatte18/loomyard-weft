@@ -1,6 +1,6 @@
 {
   "runGuid": "ae29f98bec581d819b832c361e9a6884",
-  "planFingerprint": "47902d1f89d6d36292f28e82ad2c6d77025060a4ed7d0b977907ae60c2af1f15",
+  "planFingerprint": "99b56d41b9e4e2ec700adc4c400723d7638caf45fff9108885bd8b538c564dce",
   "planFileHashes": {
     "00-overview.md": "20a30a1e1326a3a4fcd4072a7859b5064c10aa3191f23ce2f114fe7402e88a48",
     "01-parse-owner-repo-shapes.md": "9cb3abb43c4aa314409ef811cfb9e94c99c52d2ed8d2d092c1bbd884757e1dfe",
@@ -19,7 +19,7 @@
     "14-pr-review-session.md": "1047ad5bdc2da4b5d91da92526a9dffb29772ec6ea3790aeaa487efd1cdbbb87",
     "15-finalize-through-pull-request.md": "355341d45e34a799a08ad29f4df13a691fe987843324cf1f8a0e97b469b11e71",
     "16-teardown-closes-pull-request.md": "8a6f58963e4f184f6b4ea1bb28ddd2eafa2c874cebfbcd4d5265239d612719f2",
-    "17-quiet-check-pr-review-wait.md": "f304a783a2c220123fb033636febe048b1940f51a38399088b84f1e6a9cd02a0"
+    "17-quiet-check-pr-review-wait.md": "9a1c28501652a99ea05b256b8ca83448f4e1168a6f7542201196eaccd4b10a7b"
   },
   "planOverviewFrameHash": "1883bd414f481dba6c5ef66de3a153df13682a57db71a580cea0ed69873044e9",
   "partition": [
@@ -492,7 +492,7 @@
       }
     }
   ],
-  "currentBatch": 17,
+  "currentBatch": 0,
   "masterStrand": "efb265ffaadca694a9a3376c136ee485",
   "masterSessionId": "bb34478a-90e2-48df-9565-cbd15855e3d8",
   "masterEngine": "claude",
@@ -671,15 +671,29 @@
         "17-quiet-check-pr-review-wait"
       ],
       "cardHashes": {
-        "17-quiet-check-pr-review-wait": "f304a783a2c220123fb033636febe048b1940f51a38399088b84f1e6a9cd02a0"
+        "17-quiet-check-pr-review-wait": "9a1c28501652a99ea05b256b8ca83448f4e1168a6f7542201196eaccd4b10a7b"
       },
       "startSha": "bb4dfd773383e9367de7509d8701517ebad5a192",
       "kind": "fork",
       "spawnedAt": "2026-10-30T07:54:26Z",
       "sessionId": "bb34478a-90e2-48df-9565-cbd15855e3d8",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "17-quiet-check-pr-review-wait",
+        "status": "done",
+        "head_sha": "f2af6eb12afef41eec8f1e9378ffdb18218acc73"
+      },
+      "cardShas": [
+        "f2af6eb12afef41eec8f1e9378ffdb18218acc73"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-ac923506ef883d44a.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-ac923506ef883d44a.jsonl"
+      ]
     },
     "6": {
       "slug": "publish-shell-guard",
@@ -729,6 +743,7 @@
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-a8c3a2ee1602a596c.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-ae68f54d64eb45da9.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-a34d5a79d3659b210.jsonl",
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-a5c386d779918ba44.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-a5c386d779918ba44.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-ac923506ef883d44a.jsonl"
   ]
 }
