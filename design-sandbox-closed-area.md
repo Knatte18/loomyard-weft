@@ -37,6 +37,5 @@ It reads the lym source itself, and reads current documentation for each method 
 ## Limits
 
 - Exactly one agent run, Opus, effort high; no sub-agent beyond the forks the run's own recipe uses.
-- At most five trial runs of a sandbox tool on this machine (`bwrap`, `landrun`, `systemd-run`, `podman` or `unshare`), each a short read-only probe such as a version or capability check; no sandbox is adopted, no lym code is changed and no setting of this machine is changed.
-- At most thirty web searches or page fetches in all.
+- The run may search and fetch as much as the job needs, and may try each sandbox tool (`bwrap`, `landrun`, `systemd-run`, `podman`, `unshare`) with short probes on this machine; no sandbox is adopted, no lym code is changed and no setting of this machine is changed.
 - The Models hub and every other hub stay untouched.

@@ -30,7 +30,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Research: a closed area for lym so bypass permissions is safe**<br>• Weigh ways to run the whole lym process tree in a sandbox on Linux, with controlled exits, and what each costs lym<br>• `profile: docs`<br>• `darn: writer opus[high]`<br>• `darn: writer_timeout_min 240` | [`sandbox-closed-area`](design-sandbox-closed-area.md) | darn |  | 0m<br>0m | shuttle, reed, fabric, batten, dobby, creel, claude, deploy |
+| T1 | `draft` **Research: a closed area for lym so bypass permissions is safe**<br>• Weigh ways to run the whole lym process tree in a sandbox on Linux, with controlled exits, and what each costs lym<br>• `profile: docs`<br>• `darn: writer opus[high]`<br>• `darn: writer_timeout_min 240` | [`sandbox-closed-area`](design-sandbox-closed-area.md) | darn |  | 1m<br>0m | shuttle, reed, fabric, batten, dobby, creel, claude, deploy |
 
 ## Notes (30)
 
