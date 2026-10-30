@@ -12,8 +12,8 @@
 - `internal/shuttleengine/doc.go`
 
 **Create:**
-- `plan:internal/shuttleengine#Runner.StartSession` -> `func (r *Runner) StartSession(spec Spec) (OpenResult, error)`
-- `plan:internal/shuttleengine#TestRunner_StartSession` -> `func TestRunner_StartSession(t *testing.T)`
+- `internal/shuttleengine#Runner.StartSession`
+- `internal/shuttleengine#TestRunner_StartSession`
 
 **Uses:**
 - `internal/shuttleengine#Runner.start`
