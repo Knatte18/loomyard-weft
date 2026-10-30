@@ -1,12 +1,12 @@
 {
   "current_producer": "Worktree-Teardown",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "worktree removal failed (session shutdown already succeeded): the pair for \"pawl-starts-at-preflight\" was removed but its other-side branch's remote copy was not deleted: delete remote branch \"pawl-starts-at-preflight-weft\" on \"origin\" failed: gitrepo: git push --delete: git push origin --delete pawl-starts-at-preflight-weft: exit 1: remote: Internal Server Error         remote: Request ID EFC2:1CF24A:1B6BF8:232E00:6AE4A871         remote: Time 2026-10-30T14:23:46Z To https://github.com/Knatte18/loomyard-weft.git  ! [remote rejected]     pawl-starts-at-preflight-weft (Internal Server Error) error: failed to push some refs to 'https://github.com/Knatte18/loomyard-weft.git'; resume this run to retry the deletion",
   "pause_requested": false,
   "activity": {
     "now": "Worktree-Teardown",
-    "last": "Land → done",
-    "wait": ""
+    "last": "Worktree-Teardown → stuck",
+    "wait": "worktree removal failed (session shutdown already succeeded): the pair for \"pawl-starts-at-preflight\" was removed but its other-side branch's remote copy was not deleted: delete remote branch \"pawl-starts-at-preflight-weft\" on \"origin\" failed: gitrepo: git push --delete: git push origin --delete pawl-starts-at-preflight-weft: exit 1: remote: Internal Server Error         remote: Request ID EFC2:1CF24A:1B6BF8:232E00:6AE4A871         remote: Time 2026-10-30T14:23:46Z To https://github.com/Knatte18/loomyard-weft.git  ! [remote rejected]     pawl-starts-at-preflight-weft (Internal Server Error) error: failed to push some refs to 'https://github.com/Knatte18/loomyard-weft.git'; resume this run to retry the deletion"
   },
   "history": [
     {
@@ -66,6 +66,14 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-30T14:23:20Z",
+      "machine": "osl-1046"
+    },
+    {
+      "producer": "Worktree-Teardown",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-30T14:23:57Z",
+      "budget_exempt": true,
       "machine": "osl-1046"
     }
   ]
