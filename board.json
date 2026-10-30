@@ -602,40 +602,6 @@
       "body": "## Seen (operator and hub orch, 2026-10-29)\n\nThe sandbox hub `lym-csharp-LYMHUB` (shortname `cs`, anchor `lym-csharp/dotnet`, over `Knatte18/lym-csharp`) ran its first darn run, `friction-colebrook`, end to end, and it landed as `7f50ffe`.\nIts gate is the simple form: `tier0` runs `dotnet test` without `Category=Slow` and `tier1` with it, with no `scoper`, no `build` step and no `--no-build`.\nSo the dotnet scoper, the shared build and Drift are not proved on a C# repository.\nThe first `tier1` gate run on Neve died with \"Internal CLR error (0x80131506)\" after 900 s and passed on a rerun; the cause is unknown.\n\n## Idea\n\nSwitch the sandbox gate to `scoper: dotnet`, a `build` step and `--no-build`, so the scoper and the shared build are proved there, then turn on `drift.enabled` there to prove Drift, before any C# hub that holds proprietary code relies on them.\nThe hub's setup is in `docs/dotnet-hub.md`; the sandbox stays the place to reproduce a lym fault another C# hub shows.\n",
       "created": "2026-10-29T13:53:36Z",
       "revised": "2026-10-29T13:53:36Z"
-    },
-    {
-      "id": 911,
-      "handle": "T1",
-      "slug": "sandbox-closed-area",
-      "title": "Research: a closed area for lym so bypass permissions is safe",
-      "kind": "task",
-      "labels": [
-        "research",
-        "shuttle",
-        "reed",
-        "fabric",
-        "batten",
-        "dobby",
-        "creel",
-        "claude",
-        "deploy"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Weigh ways to run the whole lym process tree in a sandbox on Linux, with controlled exits, and what each costs lym",
-      "body": "## Seen (operator, 2026-10-30)\n\nEvery agent lym starts runs with bypass permissions on.\nMany people do not accept that, so a repository that says it supports safe sandboxing is worth more than one that does not.\nThe operator uses lym alone, on Linux (OSL-1046: Ubuntu 24.04; Neve: Kubuntu on Ubuntu 26.04, Plasma 6), and wants no effort spent on colleagues' Windows 11 machines.\nThe repository may still state that it supports safe sandboxing, and how.\n\n## Idea\n\nRun the whole lym process tree inside a closed area and let the agents act freely inside it, with a short, controlled list of exits.\n\n- Inside the area: the checked-out repositories (the hubs), the Go toolchain and its caches, and lym's own processes (reed and its tmux server, dobby, the orch, every run), running as they do now.\n- Outside the area, reachable only through a controlled exit: network to `api.anthropic.com` and GitHub, the GitHub token and the push, the Claude Code config directory and its OAuth credentials, the landing deploy that installs `lym` into `~/go/bin`, the desktop windows and VS Code that `lym reed window` and `lym ide` open, and any git run on the host over a checked-out repository (hooks, `core.fsmonitor`).\n- Failing closed: when the sandbox does not start, nothing starts, and there is no fallback to an unsandboxed run.\n\nAn outline from a web discussion lists these building blocks: `bwrap` with `--unshare-all`, tmux server inside the sandbox, a cgroup scope per session, an egress allowlist proxy, read-only `.git/hooks` and `.git/config`, a narrow socket API for the verbs that spawn, and an `/sandbox` of Claude Code's own.\nUbuntu 24.04 and later restrict unprivileged user namespaces through AppArmor, so `bwrap` needs a profile there.\n\n## What the research must answer\n\nOne darn run, one Opus writer, writes one report to `docs/research/sandboxing-options-2026-10-30.md`.\nIt reads the lym source itself, and reads current documentation for each method it weighs.\n\n1. Which ways of building the closed area exist for this setup, and what does each cost lym to adopt, in work and in what it breaks?\n   The report weighs at most these six methods, each by name: `bwrap`; Landlock through a wrapper; a dedicated Linux user; systemd sandboxing properties on a user scope; a rootless container (podman); Claude Code's own `/sandbox` and its permission and managed-settings features used instead of bypass.\n2. For each method: the Ubuntu 24.04 and 26.04 requirements (AppArmor, user namespaces, kernel version), how the lym process tree starts inside it (reed's tmux server and the operator's `lym reed attach`, dobby, creel's daemon and its sockets, shuttle's agent sessions), and what stops working.\n3. For each exit on the list above, the smallest controlled way to give it, and which methods can do it.\n   In particular the landing `deploy` step, the GitHub token and push, the Claude config directory, and the desktop windows.\n4. Which lym code must change for each method, named by package, and an estimate of the work as a count of tasks or cards, never as hours.\n5. What a repository can state to say it supports safe sandboxing, and what it can claim only for the method it ships.\n6. A recommendation: the method to build first, the order of the rest, and what to leave out.\n\n## Limits\n\n- Exactly one agent run, Opus, effort high; no sub-agent beyond the forks the run's own recipe uses.\n- The run may search and fetch as much as the job needs, and may try each sandbox tool (`bwrap`, `landrun`, `systemd-run`, `podman`, `unshare`) with short probes on this machine; no sandbox is adopted, no lym code is changed and no setting of this machine is changed.\n- The Models hub and every other hub stay untouched.\n",
-      "status": "done",
-      "created": "2026-10-30T06:48:54Z",
-      "revised": "2026-10-30T06:49:58Z",
-      "run_settings": {
-        "darn": {
-          "writer": "opus[high]",
-          "writer_timeout_min": 240
-        }
-      },
-      "profile": "docs"
     }
   ],
   "prime_owner": "osl-1046",
