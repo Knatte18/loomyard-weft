@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -37,6 +37,7 @@ The mode comes from the receiving branch's `beam.yaml` `pull_request`, with a pe
 - **The session's start.** `Runner.Open` passes no settings, so it cannot install the publish shell guard; the session instead uses shuttle's new unawaited start (card 5), which goes through the engine's prepared settings, so `Spec.DenyPublish` installs the guard (card 6).
 - **The blocking push** of D6 is `fabricengine.PushPairAnchored`, the synchronous both-sides push `commit-records` uses (`PATTERN-push-both-sides`).
 - **A covering pause holds the row in process.** D9 asks a covering pause to stop the session and end the call with a transient mark, so the shed loop's pause check holds the run and the next call resumes the wait. The mark does not fit `PATTERN-transient-stop` ("Marking a failure transient: only `internal/shedengine`'s mark, translated by `internal/shedtransient` at a producer or step-bootstrap boundary; never on a gate verdict"), whose classes are a closed set of infrastructure failures, none of which a pause is; and a returned `shedengine.Yield` ends the loop and the driver pass with nothing to re-drive the run after the pause lifts (`internal/shedengine/run.go`, `internal/sheddriver/drive.go`). So the row holds in its own call instead, as shuttle's Wait holds a covered run: a covered wake stops a live session and does no gate, push or GitHub call, the wait keeps sleeping, and the first uncovered wake resumes the session and goes on. That is the effect D9 asks for: the session is stopped for the pause and the wait resumes after it, with no new stop class.
+- **One immediate poll on the continue flag.** D9 bounds GitHub polls to at most once a minute; card 13 departs from it by one poll per appearance of the flag, bounded to the first wake whose fresh record reads `Continue` where the wake before it did not, which polls `Status` at once so the operator's ending is not held up a minute. Every other poll, later wakes of a `Continue` that keeps waiting included, keeps the once-a-minute bound, and the entry's `Status` read on a re-entry counts as the wait's first poll, so the wait's first wake makes no second one.
 - **GitHub failures.** Every caller judges a failed GitHub call with `errors.Is(err, githubclient.ErrTokenUnresolvable)` first, since `http.Client` wraps the token error in a `*url.Error` that `githubclient.IsTransient` reads as transient; then the transient check; then any other failure halts naming the token and repository access.
 - **Nil seams.** The row treats a nil pull-request seam as a wiring error; Finalize treats a nil `PullRequest.ParentMode` as no pull request, following the package's nil-is-absent convention, so its existing struct-literal tests land locally; loomcli's `landingDeps` fills both and its drift guard keeps them filled.
 

@@ -5,7 +5,7 @@
 - `plan:contracts/stencils#LandingTemplatePRReview` -> `var LandingTemplatePRReview []byte`
 
 **Edit:**
-- `contracts/stencils#registry`
+- `contracts/stencils#entries`
 - `contracts/stencils#roleOpeningStencils`
 
 **Uses:**
@@ -20,7 +20,7 @@ Its markers, each a top-level substitution with no conditional: `slug`, `pr_url`
 It tells the session, in paths only: it is the agent the operator discusses pull request `{{.pr_url}}` with; it reads the change (`git diff {{.parent_branch}}...HEAD` in `{{.task_worktree}}`), the change description and the listed material itself; it may commit to the task branch `{{.task_branch}}` and lym gates and pushes its commits, and mails it here when a commit fails the gate; it never pushes, never approves, merges or closes the pull request and never calls GitHub, which its settings also deny; the run ends on the pull request's state, not on the session, so it waits for the operator's next message after each answer.
 It names the operator's ending: when the operator says they are satisfied and asks it to continue, it commits or discards its work so the worktree is clean, then runs `lym loom pr-continue`, which closes the pull request and lands the task through the ordinary landing with its gate.
 It never tells the session to ask the operator anything outside its own pane conversation, so `TestStencils_NoUnboundedAskOperator` holds.
-`stencils.go` embeds it as `LandingTemplatePRReview` beside `LandingTemplateFixReview`, lists it in `registry` as `landing-template-pr-review`, and maps the role `pr-reviewer` to it in `roleOpeningStencils`, so the parent-directive and edit-directive scans cover it.
+`stencils.go` embeds it as `LandingTemplatePRReview` beside `LandingTemplateFixReview`, lists it in `entries` as `landing-template-pr-review`, and maps the role `pr-reviewer` to it in `roleOpeningStencils`, so the parent-directive and edit-directive scans cover it.
 `TestRegistry_MatchesOnDiskTree` covers the new file through the registry.
 
 **ImpactSummary:** One new embedded stencil registered in the two tables; the existing stencils and their scans are unchanged.

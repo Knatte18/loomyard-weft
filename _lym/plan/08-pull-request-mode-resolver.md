@@ -7,6 +7,10 @@
 - `plan:internal/landingshed#ResolvePullRequest` -> `func ResolvePullRequest(slug, parentMode, entryField string, origin Origin) PullRequestDecision`
 - `plan:internal/landingshed#TestResolvePullRequest` -> `func TestResolvePullRequest(t *testing.T)`
 
+**Edit:**
+- `internal/landingshed#landingshedAllowedImports`
+- `internal/landingshed#TestToldGeometryInvariant_AllowlistOnly`
+
 **Extends:**
 - `internal/landingshed/doc.go`
 - `PATTERN.md`
@@ -24,11 +28,13 @@ D2, D3 and D4: one landingshed function decides whether a landing goes through a
 - a field `off` under `required` logs one Warn naming both values and still wants one;
 - not wanted is `Open: false` with a reason such as `pull request off: the parent's beam.yaml pull_request is off and the entry's pull_request is empty`;
 - wanted, the origin facts are checked in order: an origin URL whose host is not `github.com`, an origin on `github.com` that `githubclient.ParseOwnerRepo` refuses, no upstream for the parent, and the push skip; the first missing fact is named;
+- the host is the part after any `scheme://` and any `user-info@`, up to the first `:` or `/`, or for the `user@host:path` scp form the part between `@` and `:`; an origin is on `github.com` when that host equals `github.com` compared case-insensitively, as host names are, and only then does a `ParseOwnerRepo` refusal give the halt; any other host, a local path included, is the not-`github.com` fact;
 - a missing fact where the want came from parent `on` alone (field empty) is `Open: false` with the missing fact in the reason, except that an origin on `github.com` that `ParseOwnerRepo` refuses is always the halt below, never a no;
 - a missing fact under parent `required`, or under a field `on`, is `Halt`: `a pull request is required here (<which value demands it>) but <the missing fact>; way forward: give the hub a GitHub origin, an upstream for the parent branch and no push skip, then run lym loom resume`, and for a field `on` under a parent that is not `required` it adds `, or run lym batten cancel <slug> and start a new run with the entry's pull_request changed` with the told slug;
 - otherwise `Open: true` with a reason naming parent mode, field and origin repository.
 The resolver reads no file: its callers read the parent's `beam.yaml` and the entry and tell the values, so an unreadable `beam.yaml` is the caller's halt.
-`TestResolvePullRequest` (in a new file `internal/landingshed/pullrequestmode_test.go`, `//go:build tier0`, serial since it captures the logger) is table-driven over the nine parent and field combinations on a GitHub origin with an upstream, asserting `Open` for each, the Warn for `off` under `required` and its absence elsewhere; then over the origin rows: a local-path origin under parent `on` and empty field is a no naming the origin; the same origin under `required` and under field `on` each halt with their ways forward; `https://github.com/onlyowner` halts under parent `on`; no upstream and the push skip each give a no under parent `on` and a halt under `required`.
+`landingshedAllowedImports` gains `github.com/Knatte18/loomyard/internal/githubclient`, which the resolver imports for `ParseOwnerRepo`; this card is the first whose landingshed production code imports it, so `TestToldGeometryInvariant_AllowlistOnly`, which fails on an unlisted import and on a listed one no production file imports, passes at this card.
+`TestResolvePullRequest` (in a new file `internal/landingshed/pullrequestmode_test.go`, `//go:build tier0`, serial since it captures the logger) is table-driven over the nine parent and field combinations on a GitHub origin with an upstream, asserting `Open` for each, the Warn for `off` under `required` and its absence elsewhere; then over the origin rows: a local-path origin under parent `on` and empty field is a no naming the origin; the same origin under `required` and under field `on` each halt with their ways forward; `https://github.com/onlyowner`, `https://@github.com/o/r`, `ssh://git@github.com:22/o/r.git`, `git://github.com/o/r` and `https://GitHub.com/o/r` each halt under parent `on`; `ssh://git@gitlab.com/o/r.git` under parent `on` is a no naming the origin; no upstream and the push skip each give a no under parent `on` and a halt under `required`.
 The landingshed doc gains a paragraph on the resolver.
 `PATTERN.md` gains, under `## Shed and loom`, this entry line, verbatim:
 
