@@ -23,22 +23,23 @@ Held by a run; its scope is locked until the run ends.
 | T2 | **README shows each project's slug**<br>• A project section in the README, and its page, show the project slug beside handle and title.<br>• `profile: speed` | [`readme-project-slug`](design-readme-project-slug.md) | darn | Finalize | osl-1046 | 27m<br>27m | board |
 | T3 | **Dobby posts the can-land notice only once the beam is flagged ready**<br>• A new beam with no work yet made its dobby ask the orch to land it; dobby should wait for a flag set from the beam worktree.<br>• `profile: solid` | [`dobby-land-notice-needs-flag`](design-dobby-land-notice-needs-flag.md) | darn | Darn-Write | osl-1046 | 18m<br>10m | dobby, workspaces |
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T4 | **A beam run is seeded at Preflight, a row its pawl recipe lacks**<br>• The shared seed starts every inner run at Preflight; pawl has no such row, so a new beam stops at once. Pawl gets a Preflight row.<br>• `profile: light` | [`pawl-starts-at-preflight`](design-pawl-starts-at-preflight.md) | darn |  | 1m<br>0m | pawl, preflight |
 
-#### Draft (2)
+#### Layer A (1)
 
-Not released; nothing starts it until its status is cleared.
+Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Dobby says why a task is not started, and tells the orch of a failing start in time**<br>• A start that failed every pass for an hour showed no reason in beam status and reached the orch an hour late.<br>• `profile: solid` | [`dobby-start-failures`](design-dobby-start-failures.md) | darn | T3 | 1d<br>0m | dobby, batten, creel |
-| T4 | `draft` **A beam run is seeded at Preflight, a row its pawl recipe lacks**<br>• The shared seed starts every inner run at Preflight; pawl has no such row, so a new beam stops at once. Pawl gets a Preflight row.<br>• `profile: light` | [`pawl-starts-at-preflight`](design-pawl-starts-at-preflight.md) | darn |  | 1m<br>0m | pawl, preflight |
+| T1 | **Dobby says why a task is not started, and tells the orch of a failing start in time**<br>• A start that failed every pass for an hour showed no reason in beam status and reached the orch an hour late.<br>• `profile: solid` | [`dobby-start-failures`](design-dobby-start-failures.md) | darn | T3 | 1d<br>0m | dobby, batten, creel |
 
-### Notes (29)
+### Notes (28)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -49,12 +50,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R5 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 8d<br>3d | webster |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 7d<br>2d | loom, stencil |
 | R8 |  | **Ideas from r/ClaudeCode "one line in your CLAUDE.md": fit for LoomYard and bench measures**<br>• About 30 ideas judged against our stencils and rules; top 8 ranked for a bench, a few cheap enough without one | [`claude-md-thread-ideas`](design-claude-md-thread-ideas.md) | 3d<br>6h | stencil, loom, burler |
-
-#### Bugs (1)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| B1 |  | **Stop-hook creel mail arrives twice and is labelled as an error**<br>• One creel mail shows twice at the Stop hook, once as feedback and once as Stop hook error, with the hook command text in the model context | [`stop-hook-mail-doubled`](design-stop-hook-mail-doubled.md) | 1d<br>6h | creel |
 
 #### Enhancements (10)
 
