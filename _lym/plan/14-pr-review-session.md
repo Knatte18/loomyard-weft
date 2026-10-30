@@ -11,9 +11,9 @@
 **Edit:**
 - `internal/landingshed#PullRequestDeps`
 - `internal/landingshed#PRReview.Call`
-- `plan:internal/landingshed#PRReview.wait`
-- `plan:internal/landingshed#TestPRReview_Wait`
-- `plan:internal/landingshed#prReviewTestDeps`
+- `internal/landingshed#PRReview.wait`
+- `internal/landingshed#TestPRReview_Wait`
+- `internal/landingshed#prReviewTestDeps`
 - `internal/landingshed/doc.go`
 - `internal/landingshed#landingshedAllowedImports`
 - `internal/landingshed#TestToldGeometryInvariant_AllowlistOnly`
@@ -36,7 +36,7 @@
 - `internal/runproc#ChildRecord`
 - `internal/runproc#Register`
 - `internal/testkit/stencilkit#SeedInto`
-- `plan:internal/landingshed#PRReview.holdWhileCovered`
+- `internal/landingshed#PRReview.holdWhileCovered`
 - `internal/loomcli#driverWaitMark`
 - `internal/pullrequest#UpdateRecord`
 - `internal/loomshed/doc.go`

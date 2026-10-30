@@ -1,12 +1,12 @@
 # Card 13 — pr-review-row-waits
 
 **Create:**
-- `plan:internal/landingshed#PRReview.wait` -> `func (p *PRReview) wait(ctx context.Context, api pullrequest.API, rec pullrequest.Record, entryStatus *pullrequest.Status, entryReadAt time.Time) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/landingshed#PRReview.holdWhileCovered` -> `func (p *PRReview) holdWhileCovered(ctx context.Context) error`
-- `plan:internal/landingshed#nextPRWait` -> `func nextPRWait(current time.Duration, moved bool) time.Duration`
-- `plan:internal/landingshed#verifyGate.checkHead` -> `func (g verifyGate) checkHead(ctx context.Context, producer string) (string, error)`
-- `plan:internal/landingshed#prReviewTestDeps` -> `func prReviewTestDeps(t *testing.T, api *fakePullRequestAPI) Deps`
-- `plan:internal/landingshed#TestPRReview_Wait` -> `func TestPRReview_Wait(t *testing.T)`
+- `internal/landingshed#PRReview.wait`
+- `internal/landingshed#PRReview.holdWhileCovered`
+- `internal/landingshed#nextPRWait`
+- `internal/landingshed#verifyGate.checkHead`
+- `internal/landingshed#prReviewTestDeps`
+- `internal/landingshed#TestPRReview_Wait`
 
 **Edit:**
 - `internal/landingshed#PullRequestDeps`
