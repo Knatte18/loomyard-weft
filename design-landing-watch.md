@@ -7,17 +7,20 @@
 A run that lands sends nothing: the orch learns of a landing only when something else wakes it, and the orch never polls runs.
 When the operator asks the orch to report a run's result as soon as it lands, the orch cannot keep that promise, and the operator has to ask again.
 
-## Design (operator, 2026-10-30)
+## Design (operator, 2026-10-28 and 2026-10-30)
 
-The wait already exists in `lym hibernate request`: its detached daemon waits until a named batten run has finished its Land row (`--after <slug>`), or until no batten run is in flight (`--after-all`), and then mails the orch through creel.
-The landing notice reuses that wait: it is taken out of the hibernate package into one shared piece that both the hibernate daemon and a new watch use, never copied.
+Dobby sends the notice, never batten: dobby drives each run to its end, knows its outcome and landing commit, and already mails the orch.
+No process of its own is needed, since dobby only keeps a list of watches and reads the run state it already has.
 
-- The orch sets a watch when the operator asks, through a verb of its own, for one slug or for no run in flight; it is never on by default for every run, and it can be withdrawn.
-- A watch is a detached process like the hibernate daemon, which waits on the shared trigger, posts one short creel line to the orch naming the slug, the outcome and the landing commit, and ends.
+- The orch sets a watch when the operator asks, through a verb of its own, for one slug; it is never on by default for every run, and it can be withdrawn.
+- When the watched run lands, or ends without landing, dobby posts one short creel line to the orch naming the slug, the outcome and the landing commit.
 - The watch ends when it has fired once.
-- Hibernate keeps its own behaviour: after the trigger it pauses the hub and hibernates; only the wait is shared.
+- The test for a run past its Land row is the one `lym hibernate request --after` already has (`landFinished` in `internal/hibernateengine`); it is taken out into one shared piece that hibernate and dobby both use, never copied.
+- The hibernate daemon stays as it is: only its wait is shared.
 
 ## Open
 
-- Whether the shared trigger already tells a run that ended without landing from one that landed, or must learn to, since the notice names the outcome.
-- The verb's name and whether it lives beside `lym hibernate` or in `lym beam`.
+- Where dobby keeps the watch: a flag on the board entry or a record of its own.
+- The shared test says only that a run is past Land, so it must also tell a run that landed from one that ended without landing, since the notice names the outcome.
+- The verb's name and where it lives.
+- Whether the hibernate request should move into dobby as well: it spans every beam, since `--after-all` waits on all runs while a dobby sees its own, and a hub pause must leave the dobby that waits outside it.
