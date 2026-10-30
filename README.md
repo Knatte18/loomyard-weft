@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-30 06:49 UTC; every age below is as of then.
+Rendered 2026-10-30 06:53 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -18,19 +18,13 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **PR-Review opens a pull request and starts an interactive agent to discuss it**<br>• Build the PR-Review stub: a pull request per parent branch setting, a talkable agent on its own configured model, and a landing that follows the pull request | [`pr-review-row`](design-pr-review-row.md) | loom | Webster | osl-1046 | 18h<br>17h | loom, shed, batten, shuttle, config |
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
-
-### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Research: a closed area for lym so bypass permissions is safe**<br>• Weigh ways to run the whole lym process tree in a sandbox on Linux, with controlled exits, and what each costs lym<br>• `profile: docs`<br>• `darn: writer opus[high]`<br>• `darn: writer_timeout_min 240` | [`sandbox-closed-area`](design-sandbox-closed-area.md) | darn |  | 1m<br>0m | shuttle, reed, fabric, batten, dobby, creel, claude, deploy |
+| T1 | **Research: a closed area for lym so bypass permissions is safe**<br>• Weigh ways to run the whole lym process tree in a sandbox on Linux, with controlled exits, and what each costs lym<br>• `profile: docs`<br>• `darn: writer opus[high]`<br>• `darn: writer_timeout_min 240` | [`sandbox-closed-area`](design-sandbox-closed-area.md) | darn |  | 4m<br>3m | shuttle, reed, fabric, batten, dobby, creel, claude, deploy |
 
 ## Notes (30)
 
@@ -49,8 +43,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Stop-hook creel mail arrives twice and is labelled as an error**<br>• One creel mail shows twice at the Stop hook, once as feedback and once as Stop hook error, with the hook command text in the model context | [`stop-hook-mail-doubled`](design-stop-hook-mail-doubled.md) | 17h<br>17h | creel |
-| B2 |  | **Dobby never starts a task whose slug has an old finished run record, and status gives no reason**<br>• A ready task sat unstarted for over an hour: batten refused its slug every pass, and beam status read ready to start | [`dobby-start-blocked-silently`](design-dobby-start-blocked-silently.md) | 16h<br>16h | dobby, batten |
-| B3 |  | **Dobby's notice for a start that keeps failing reached the orch over an hour late**<br>• Dobby failed to start a task every pass from 13:43Z, but its mail reached the orch only an hour later | [`dobby-start-notice-late`](design-dobby-start-notice-late.md) | 16h<br>16h | dobby, creel |
+| B2 |  | **Dobby never starts a task whose slug has an old finished run record, and status gives no reason**<br>• A ready task sat unstarted for over an hour: batten refused its slug every pass, and beam status read ready to start | [`dobby-start-blocked-silently`](design-dobby-start-blocked-silently.md) | 17h<br>17h | dobby, batten |
+| B3 |  | **Dobby's notice for a start that keeps failing reached the orch over an hour late**<br>• Dobby failed to start a task every pass from 13:43Z, but its mail reached the orch only an hour later | [`dobby-start-notice-late`](design-dobby-start-notice-late.md) | 17h<br>17h | dobby, creel |
 
 ### Enhancements (11)
 
@@ -83,5 +77,5 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F12 |  | **Spawn audit log: every process lym starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | 3w<br>2d | reed, shuttle, config |
 | F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 2w<br>1d | webster |
 | F15 |  | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 2w<br>2d | reed, config, batten |
-| F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 13d<br>1d | burler, shed, orch, quarry, report |
+| F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>1d | burler, shed, orch, quarry, report |
 | F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 7d<br>2d | loom, shed, batten, workspaces, burler |
