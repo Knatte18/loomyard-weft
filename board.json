@@ -469,44 +469,6 @@
       "revised": "2026-10-30T07:10:30Z"
     },
     {
-      "id": 908,
-      "handle": "B2",
-      "slug": "dobby-start-blocked-silently",
-      "title": "Dobby never starts a task whose slug has an old finished run record, and status gives no reason",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "dobby",
-        "batten"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A ready task sat unstarted for over an hour: batten refused its slug every pass, and beam status read ready to start",
-      "body": "## Seen (operator and hub orch, 2026-10-29)\n\nThe released task `claude-md-lym-rules-out` did not start for over an hour.\n`lym beam status` showed it as `ready to start`, with room under the run limit and no dependency, and gave no reason.\n`.lym/beam/dobby.log` showed dobby trying to start it about every 30 seconds from 13:43:17Z, each pass failing with `battencli: \"claude-md-lym-rules-out\" has already completed; to run it again, run \"lym batten cleanup --apply\" from the prime ...`.\nThe cause was an old run record for the same slug, `_lym/shed/claude-md-lym-rules-out/`, from machine `neve`, 2026-10-28, ended at Worktree-Teardown.\nThis hub's prime is on `osl-1046`, and the operator knows of no run of that slug on Neve; why the record read as done is not known.\n`lym batten cleanup --apply` removed the record, after which no branch of that name was left locally or on the remote.\n\n## Idea\n\n- `lym beam status` states why a ready task is not started, with the refusal dobby last got, so `ready to start` is never shown with no reason.\n- The start of a task whose slug has an old finished run record is handled where the task is released or where dobby starts it, with a message that names the way forward, instead of failing every pass.\n- Find out where a run record of another machine came from for a slug this hub had not run.\n",
-      "created": "2026-10-29T13:50:51Z",
-      "revised": "2026-10-29T13:50:51Z"
-    },
-    {
-      "id": 909,
-      "handle": "B3",
-      "slug": "dobby-start-notice-late",
-      "title": "Dobby's notice for a start that keeps failing reached the orch over an hour late",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "dobby",
-        "creel"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Dobby failed to start a task every pass from 13:43Z, but its mail reached the orch only an hour later",
-      "body": "## Seen (operator and hub orch, 2026-10-29)\n\nDobby failed to start the released task `claude-md-lym-rules-out` on every pass from 13:43:17Z, about every 30 seconds, and the orch heard nothing.\nIts mail, creel #34 from `ly:DOBBY` with the text `dobby could not start the task`, reached the orch only after more than an hour, right after the orch ran `lym batten cleanup --apply`.\nThe orch found the cause by asking `lym beam status` and reading `.lym/beam/dobby.log` through a fork, after the operator noticed the task had not started.\nThe role says dobby sends a line for a refused start and for a pass that keeps failing, so the notice should have come within a few passes.\n\n## Idea\n\n- Find out why the notice came late: whether dobby sends it only after many failed passes, whether the send was held, or whether creel delivered it late.\n- A refused start or a pass that keeps failing reaches the orch within a few passes, and a start that keeps failing with the same error does not resend it every pass.\n",
-      "created": "2026-10-29T13:50:51Z",
-      "revised": "2026-10-29T13:50:51Z"
-    },
-    {
       "id": 910,
       "handle": "E4",
       "slug": "sandbox-dotnet-gate",
@@ -669,6 +631,31 @@
       "body": "## Seen (operator, 2026-10-30)\n\nA beam made under the Models hub stopped at once with `current_producer \"Preflight\" in \"_lym/shed/loomyard-setup/status.json\" names no producer in the list`.\nThe run's `seed.json` named the recipe `pawl`, but its status file was seeded at `Preflight`: `loomshed.Seed` in `internal/loomshed/seed.go` always sets `CurrentProducer` to `Preflight`, and the bootstrap shared by every inner recipe calls it (`internal/loomcli/sharedbootstrap.go`).\nLoom and darn both start with the Preflight row, and the inner shed of a pawl run expects the same start, but the pawl recipe's first row is Beam-Up and it has no Preflight row.\nThe error text says \"the producer list has changed\", which is wrong here: nothing was removed.\nThe Models orch moved the run on with a `goto` to Beam-Up.\n\n## Design (operator, 2026-10-30)\n\n- Pawl starts with a Preflight row, as loom and darn do, so the seed and the recipe agree.\n- The Preflight row is the general one in `internal/preflightshed`, which any producer list may name.\n",
       "created": "2026-10-30T13:53:02Z",
       "revised": "2026-10-30T13:53:02Z"
+    },
+    {
+      "id": 918,
+      "handle": "T1",
+      "slug": "dobby-start-failures",
+      "title": "Dobby says why a task is not started, and tells the orch of a failing start in time",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "dobby",
+        "batten",
+        "creel"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "dobby-land-notice-needs-flag"
+      ],
+      "isolated": false,
+      "brief": "A start that failed every pass for an hour showed no reason in beam status and reached the orch an hour late.",
+      "body": "## Seen (operator and hub orch, 2026-10-29)\n\nThe released task `claude-md-lym-rules-out` did not start for over an hour.\n`lym beam status` showed it as `ready to start`, with room under the run limit and no dependency, and gave no reason.\n`.lym/beam/dobby.log` showed dobby trying to start it about every 30 seconds from 13:43:17Z, each pass failing with `battencli: \"claude-md-lym-rules-out\" has already completed; to run it again, run \"lym batten cleanup --apply\" from the prime ...`.\nThe cause was an old run record for the same slug, `_lym/shed/claude-md-lym-rules-out/`, from machine `neve`, 2026-10-28, ended at Worktree-Teardown.\nThis hub's prime is on `osl-1046`, and the operator knows of no run of that slug on Neve; why the record read as done is not known.\n`lym batten cleanup --apply` removed the record, after which no branch of that name was left locally or on the remote.\n\nThe orch heard nothing of the failing start: its mail, creel #34 from `ly:DOBBY` with the text `dobby could not start the task`, reached it only after more than an hour, right after it ran `lym batten cleanup --apply`.\nThe orch found the cause by asking `lym beam status` and reading `.lym/beam/dobby.log` through a fork, after the operator noticed the task had not started.\nThe role says dobby sends a line for a refused start and for a pass that keeps failing, so the notice should have come within a few passes.\n\n## Design\n\n- `lym beam status` states why a ready task is not started, with the refusal dobby last got, so `ready to start` is never shown with no reason.\n- The start of a task whose slug has an old finished run record is handled where the task is released or where dobby starts it, with a message that names the way forward, instead of failing every pass.\n- A refused start or a pass that keeps failing reaches the orch within a few passes, and a start that keeps failing with the same error does not resend it every pass.\n- Find out why the notice came late: whether dobby sends it only after many failed passes, whether the send was held, or whether creel delivered it late.\n- Find out where a run record of another machine came from for a slug this hub had not run.\n",
+      "status": "draft",
+      "created": "2026-10-29T13:50:51Z",
+      "revised": "2026-10-30T13:54:42Z",
+      "profile": "solid"
     }
   ],
   "prime_owner": "osl-1046",
