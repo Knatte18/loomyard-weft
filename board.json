@@ -639,6 +639,24 @@
       "body": "## Seen (operator, 2026-10-30)\n\nA new beam stopped at once because the shared seed set its status file's `current_producer` to `Preflight`, a row the pawl recipe lacked.\nThe seed names the producer an inner run starts at, so each recipe's first row must match a name hard-coded in `loomshed.Seed` (`internal/loomshed/seed.go`), which the bootstrap shared by every inner recipe calls.\n\n## Design (operator, 2026-10-30)\n\n- The seed names no producer: it says only that the run starts at its start, and the recipe's first row is the start.\n- A seed can then never name a row its recipe lacks, whatever recipe a run is seeded for.\n- The change reaches the shared seeding for loom, darn and pawl, how the status file records the current producer before the first pass, and the verbs that move a run (`goto`, resume), which the task checks.\n",
       "created": "2026-10-30T13:58:16Z",
       "revised": "2026-10-30T13:58:16Z"
+    },
+    {
+      "id": 920,
+      "handle": "E9",
+      "slug": "commit-signature-credit",
+      "title": "Landing commits credit LoomYard and list the engines used, with no co-author",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "landing"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Replace the Co-Authored-By line per engine with one credit to LoomYard that lists the LLM services the task used.",
+      "body": "## Seen (operator, 2026-10-30)\n\nA landing commit ends with `Co-Authored-By: Claude \u003cnoreply@anthropic.com\u003e`, from `engine_trailers.claude` in the landing config (`internal/landingshed/template.yaml`), and a Codex run would add `Co-Authored-By: Codex` the same way.\nThat makes each engine a co-author of the commit, which the operator does not want.\nThe commit's last line is `Lym-Task: \u003cslug\u003e`, added by `taskTrailer` in `internal/landingshed/finalize.go`.\n\n## Design (operator, 2026-10-30)\n\n- No engine is credited as a co-author: no `Co-Authored-By` line for Claude, Codex or any other engine.\n- The commit ends with a credit line to LoomYard followed by the LLM services the task actually used, for instance `Created using LoomYard (\u003cdomain\u003e), running Claude (\u003cdomain\u003e), Codex (\u003cdomain\u003e)`.\n- An engine is listed only when it ran a session in the task, as `engine_trailers` already decides.\n- The wording and the domains are configurable in the landing config; the default carries the credit to LoomYard.\n- The same line serves the pull request's body, so a commit and its pull request carry one signature.\n\n## Open\n\n- The domain written after LoomYard and after each engine.\n- Whether `Lym-Task: \u003cslug\u003e` stays as the last line, and whether the signature is a plain line or a git trailer: a plain line is never read as a co-author.\n",
+      "created": "2026-10-30T14:11:42Z",
+      "revised": "2026-10-30T14:11:42Z"
     }
   ],
   "prime_owner": "osl-1046",
