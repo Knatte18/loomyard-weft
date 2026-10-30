@@ -1,6 +1,6 @@
 # Dobby sends the run notices, not a row of the batten recipe
 
-`notices-from-dobby` · Task · enhancement, dobby, batten · running · Code-Bouncer
+`notices-from-dobby` · Task · enhancement, dobby, batten · running · Describe
 
 ## Seen
 
