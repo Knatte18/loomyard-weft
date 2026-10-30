@@ -492,7 +492,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "efb265ffaadca694a9a3376c136ee485",
   "masterSessionId": "bb34478a-90e2-48df-9565-cbd15855e3d8",
   "masterEngine": "claude",
@@ -538,6 +538,28 @@
       "bracketTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-afa7f3c83f3dcfa69.jsonl"
       ]
+    },
+    "6": {
+      "slug": "publish-shell-guard",
+      "cards": [
+        "06-publish-shell-guard",
+        "07-pullrequest-record-and-client",
+        "08-pull-request-mode-resolver",
+        "09-pr-continue-verb"
+      ],
+      "cardHashes": {
+        "06-publish-shell-guard": "10d3c6feed6485588a5e1be63574ba23826b0e903fb4f147038f9579670752bc",
+        "07-pullrequest-record-and-client": "f8ad2ea04c3653da33327b043d4f92bcbc769ebbbfc08117da5c75af08cc3978",
+        "08-pull-request-mode-resolver": "f987958f3b95b4af93e25f65e14046f663c18a6c6f1691aff032231031c8f3a2",
+        "09-pr-continue-verb": "7b17194aaf8d3d48ac1cea23123477e2581fbbdbe14d022c5a47f6f6725ea6f4"
+      },
+      "startSha": "71215e0f950a6b3c3c527160af08aa0b9dd1d90e",
+      "kind": "fork",
+      "spawnedAt": "2026-10-30T06:58:52Z",
+      "sessionId": "bb34478a-90e2-48df-9565-cbd15855e3d8",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
