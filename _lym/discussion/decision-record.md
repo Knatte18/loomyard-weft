@@ -52,6 +52,12 @@ A non-beam project page shows its brief and nothing in place of the `grouping` w
 
 - Demoting the prime's headings changes every README heading level, which any external reader keyed on `## Tasks` would notice; no Go code reads the rendered README.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - open-project-under-done-project-has-no-readme-section (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: a README golden row with root-level and nested projects shows one section per open project, depth-first in order then by handle, each with linked heading, member count, brief and a members table with the Prio column; an empty project shows `_None._`; no Projects bullet list remains in the README.
