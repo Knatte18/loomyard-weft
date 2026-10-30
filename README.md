@@ -10,19 +10,13 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
-
-### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **A module label for every package group under internal/**<br>• Several lym modules have no label, so entries take the nearest one that says something else<br>• `profile: docs` | [`label-coverage`](design-label-coverage.md) | darn |  | 1d<br>0m | board |
+| T1 | **A module label for every package group under internal/**<br>• Several lym modules have no label, so entries take the nearest one that says something else<br>• `profile: docs` | [`label-coverage`](design-label-coverage.md) | darn |  | 1d<br>0m | board |
 
 ## Notes (31)
 
