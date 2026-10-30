@@ -1,6 +1,6 @@
 # README shows each project's slug
 
-`readme-project-slug` · Task · enhancement, board · running · Worktree-Create
+`readme-project-slug` · Task · enhancement, board · running · Drift-Baseline
 
 ## Seen (operator, 2026-10-30)
 
