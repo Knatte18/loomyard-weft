@@ -14,9 +14,5 @@ Dobby detects and sends these notices itself, in its loop over the runs it drive
 A run waiting on a person, such as a pull request, is read by the same loop through the wait markers it already honours, so a long wait never reads as a stall.
 The detection logic, its keys and its idle clocks move as they are; only the place that runs them changes.
 
-- Which notices dobby looks for, and the key and stamp of each notice already sent, are written to a file, so they survive a dobby re-exec.
+- Which notices dobby looks for, and the key and stamp of each notice already sent, are written to a file under `_lym`, so they survive a dobby re-exec and a machine switch.
 - The notices of a run stay with the dobby of the machine that drives it; the orch is not the same on another machine either.
-
-## Open
-
-- Whether that file lives under `_lym`, which a machine switch carries along, or machine-local beside dobby's other state.
