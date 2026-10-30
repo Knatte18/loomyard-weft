@@ -22,7 +22,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **README shows each project's slug**<br>• A project section in the README, and its page, show the project slug beside handle and title.<br>• `profile: speed` | [`readme-project-slug`](design-readme-project-slug.md) | darn | Finalize | osl-1046 | 27m<br>27m | board |
 | T3 | **Dobby posts the can-land notice only once the beam is flagged ready**<br>• A new beam with no work yet made its dobby ask the orch to land it; dobby should wait for a flag set from the beam worktree.<br>• `profile: solid` | [`dobby-land-notice-needs-flag`](design-dobby-land-notice-needs-flag.md) | darn | Darn-Write | osl-1046 | 18m<br>11m | dobby, workspaces |
-| T4 | **A beam run is seeded at Preflight, a row its pawl recipe lacks**<br>• The shared seed starts every inner run at Preflight; pawl has no such row, so a new beam stops at once. Pawl gets a Preflight row.<br>• `profile: light` | [`pawl-starts-at-preflight`](design-pawl-starts-at-preflight.md) | darn | Drift-Baseline | osl-1046 | 2m<br>0m | pawl, preflight |
+| T4 | **A beam run is seeded at Preflight, a row its pawl recipe lacks**<br>• The shared seed starts every inner run at Preflight; pawl has no such row, so a new beam stops at once. Pawl gets a Preflight row.<br>• `profile: light` | [`pawl-starts-at-preflight`](design-pawl-starts-at-preflight.md) | darn | Darn-Write | osl-1046 | 2m<br>0m | pawl, preflight |
 
 #### Ready (0)
 
