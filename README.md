@@ -10,21 +10,20 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running (1)
+### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Dobby sends the run notices, not a row of the batten recipe**<br>• Move quiet, driver-dead and api-error detection from battenshed/notice.go into dobby loop over the runs it drives<br>• `profile: solid` | [`notices-from-dobby`](design-notices-from-dobby.md) | darn | Worktree-Create | osl-1046 | 23h<br>1m | dobby, batten |
 | T3 | **Revise the board README rendering**<br>• The README hides project members behind a bare link and has other unclear spots; the operator wants the rendering revised.<br>• `profile: light` | [`readme-omits-csharp-note`](design-readme-omits-csharp-note.md) | darn | Code-Burler-Fix | osl-1046 | 1d<br>24m | board |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Dobby sends the run notices, not a row of the batten recipe**<br>• Move quiet, driver-dead and api-error detection from battenshed/notice.go into dobby loop over the runs it drives<br>• `profile: solid` | [`notices-from-dobby`](design-notices-from-dobby.md) | darn |  | 23h<br>1m | dobby, batten |
+_None._
 
 ## Notes (31)
 
