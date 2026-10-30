@@ -668,7 +668,7 @@
       "isolated": false,
       "brief": "A new beam with no work yet made its dobby ask the orch to land it; dobby should wait for a flag set from the beam worktree.",
       "body": "## Seen (operator, 2026-10-30)\n\nA beam was created under the Models hub.\nOnce its orch was up, the beam's dobby told the orch that nothing runs under the beam and asked it to run `lym beam land \u003cslug\u003e`, though the beam had only just been made and had no work yet.\nThe notice is `landNotice` in `internal/dobbyengine/landnotice.go`: it goes out whenever the landing's refusal finds nothing working under the beam, so an empty new beam reads as a finished one.\n\n## Design (operator, 2026-10-30)\n\n- The flag says the beam is ready to be merged; it does not say the project is finished, and dobby starts the landing and the teardown as soon as it is set.\n- Dobby waits with the can-land notice until the flag is set.\n  Without it, nothing working under the beam is no cause for a notice, however long the beam has been idle.\n- The flag is a record in the beam's `_lym`, beside the other information about the merge, such as the describe field, and not a field on the board.\n- `lym beam ready \u003cslug\u003e` sets it.\n  The beam's orch runs it, or the operator; which of them does not matter.\n  Dobby never sets it.\n- `lym beam land` refuses without the flag.\n",
-      "status": "running · Drift-Baseline",
+      "status": "running · Darn-Write",
       "created": "2026-10-30T13:36:18Z",
       "revised": "2026-10-30T13:43:57Z",
       "profile": "solid"
