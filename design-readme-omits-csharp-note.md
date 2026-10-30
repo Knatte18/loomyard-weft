@@ -1,6 +1,6 @@
 # Revise the board README rendering
 
-`readme-omits-csharp-note` · Task · enhancement, board · running · Darn-Write
+`readme-omits-csharp-note` · Task · enhancement, board · running · Drift-Verify
 
 ## Seen (operator, 2026-10-29)
 
