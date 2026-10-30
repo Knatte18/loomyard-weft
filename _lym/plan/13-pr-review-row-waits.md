@@ -23,9 +23,9 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/pullrequest#Status`
-- `plan:internal/pullrequest#ReadRecord`
-- `plan:internal/pullrequest#UpdateRecord`
+- `internal/pullrequest#Status`
+- `internal/pullrequest#ReadRecord`
+- `internal/pullrequest#UpdateRecord`
 - `internal/landingshed#verifyGate`
 - `internal/landingshed#newVerifyGate`
 - `internal/landingshed#verifyGate.readBase`

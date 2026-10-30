@@ -1,9 +1,9 @@
 # Card 9 — pr-continue-verb
 
 **Create:**
-- `plan:internal/loomcli#loomCLI.prContinueCmd` -> `func (c *loomCLI) prContinueCmd() *cobra.Command`
-- `plan:internal/loomcli#prContinueVerb` -> `func prContinueVerb(out io.Writer, recordPath, lockPath string) int`
-- `plan:internal/loomcli#TestPRContinueVerb` -> `func TestPRContinueVerb(t *testing.T)`
+- `internal/loomcli#loomCLI.prContinueCmd`
+- `internal/loomcli#prContinueVerb`
+- `internal/loomcli#TestPRContinueVerb`
 
 **Edit:**
 - `internal/loomcli#Command`
@@ -12,11 +12,11 @@
 - `internal/loomcli/doc.go`
 
 **Uses:**
-- `plan:internal/pullrequest#UpdateRecord`
-- `plan:internal/pullrequest#ReadRecord`
-- `plan:internal/pullrequest#ErrNoRecord`
-- `plan:internal/shedrun#PullRequestRecord`
-- `plan:internal/shedrun#PullRequestRecordLock`
+- `internal/pullrequest#UpdateRecord`
+- `internal/pullrequest#ReadRecord`
+- `internal/pullrequest#ErrNoRecord`
+- `internal/shedrun#PullRequestRecord`
+- `internal/shedrun#PullRequestRecordLock`
 - `internal/loomcli#loomCLI.commitRecordsCmd`
 
 **Intent:**

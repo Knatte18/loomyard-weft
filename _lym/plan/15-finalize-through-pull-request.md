@@ -13,13 +13,13 @@
 - `PATTERN.md`
 
 **Uses:**
-- `plan:internal/landingshed#ResolvePullRequest`
+- `internal/landingshed#ResolvePullRequest`
 - `plan:internal/landingshed#PullRequestDeps`
 - `plan:internal/landingshed#fakePullRequestAPI`
-- `plan:internal/pullrequest#MergeRefusal`
-- `plan:internal/pullrequest#RefusalKind`
-- `plan:internal/pullrequest#ReadRecord`
-- `plan:internal/pullrequest#RemoveRecord`
+- `internal/pullrequest#MergeRefusal`
+- `internal/pullrequest#RefusalKind`
+- `internal/pullrequest#ReadRecord`
+- `internal/pullrequest#RemoveRecord`
 - `internal/landingshed#recordingParentMerger`
 - `internal/landingshed#LandingStopPrefix`
 - `internal/landingshed#Finalize.halt`

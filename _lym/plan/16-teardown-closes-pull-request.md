@@ -19,11 +19,11 @@
 - `PATTERN.md`
 
 **Uses:**
-- `plan:internal/pullrequest#API`
-- `plan:internal/pullrequest#Open`
-- `plan:internal/pullrequest#ReadRecord`
-- `plan:internal/shedrun#PullRequestRecord`
-- `plan:internal/shedrun#PullRequestRecordLock`
+- `internal/pullrequest#API`
+- `internal/pullrequest#Open`
+- `internal/pullrequest#ReadRecord`
+- `internal/shedrun#PullRequestRecord`
+- `internal/shedrun#PullRequestRecordLock`
 - `internal/pairteardown#Teardown.taskLocation`
 - `internal/testkit/logcapture#CaptureVerbose`
 - `cmd/lym#TestGHGuard_NoShellOutOutsideGithubclient`

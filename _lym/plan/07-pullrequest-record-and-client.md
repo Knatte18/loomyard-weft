@@ -5,33 +5,33 @@
 - `internal/pullrequest/testmain_test.go`
 - `internal/pullrequest/record_test.go`
 - `internal/pullrequest/client_test.go`
-- `plan:internal/pullrequest#Record` -> `type Record struct`
-- `plan:internal/pullrequest#ReadRecord` -> `func ReadRecord(path, lockPath string) (Record, bool, error)`
-- `plan:internal/pullrequest#WriteRecord` -> `func WriteRecord(path, lockPath string, rec Record) error`
-- `plan:internal/pullrequest#UpdateRecord` -> `func UpdateRecord(path, lockPath string, mutate func(rec *Record) error) error`
-- `plan:internal/pullrequest#RemoveRecord` -> `func RemoveRecord(path, lockPath string) error`
-- `plan:internal/pullrequest#ErrNoRecord` -> `var ErrNoRecord error`
-- `plan:internal/pullrequest#State` -> `type State string`
-- `plan:internal/pullrequest#Status` -> `type Status struct`
-- `plan:internal/pullrequest#Ref` -> `type Ref struct`
-- `plan:internal/pullrequest#API` -> `type API interface`
-- `plan:internal/pullrequest#Client` -> `type Client struct`
-- `plan:internal/pullrequest#Open` -> `func Open(originURL string) (*Client, error)`
-- `plan:internal/pullrequest#NewWithClient` -> `func NewWithClient(gh *github.Client, owner, repo string) *Client`
-- `plan:internal/pullrequest#Client.FindOpen` -> `func (c *Client) FindOpen(ctx context.Context, head, base string) (Ref, bool, error)`
-- `plan:internal/pullrequest#Client.Create` -> `func (c *Client) Create(ctx context.Context, head, base, title, body string) (Ref, error)`
-- `plan:internal/pullrequest#Client.Edit` -> `func (c *Client) Edit(ctx context.Context, number int, title, body string) error`
-- `plan:internal/pullrequest#Client.Status` -> `func (c *Client) Status(ctx context.Context, number int) (Status, error)`
-- `plan:internal/pullrequest#Client.Close` -> `func (c *Client) Close(ctx context.Context, number int, comment string) error`
-- `plan:internal/pullrequest#Client.Merge` -> `func (c *Client) Merge(ctx context.Context, number int, expectedHead string, squash bool, title, message string) error`
-- `plan:internal/pullrequest#standingReviews` -> `func standingReviews(reviews []*github.PullRequestReview, head string) (approved, changesRequested bool)`
-- `plan:internal/pullrequest#MergeRefusal` -> `type MergeRefusal struct`
-- `plan:internal/pullrequest#RefusalKind` -> `type RefusalKind string`
-- `plan:internal/pullrequest#TestRecord_RoundTripAndUpdate` -> `func TestRecord_RoundTripAndUpdate(t *testing.T)`
-- `plan:internal/pullrequest_test#TestClient_Calls` -> `func TestClient_Calls(t *testing.T)`
-- `plan:internal/pullrequest#TestStandingReviews` -> `func TestStandingReviews(t *testing.T)`
-- `plan:internal/shedrun#PullRequestRecord` -> `func PullRequestRecord(l *lymcwd.Location, runID string) string`
-- `plan:internal/shedrun#PullRequestRecordLock` -> `func PullRequestRecordLock(l *lymcwd.Location, runID string) string`
+- `internal/pullrequest#Record`
+- `internal/pullrequest#ReadRecord`
+- `internal/pullrequest#WriteRecord`
+- `internal/pullrequest#UpdateRecord`
+- `internal/pullrequest#RemoveRecord`
+- `internal/pullrequest#ErrNoRecord`
+- `internal/pullrequest#State`
+- `internal/pullrequest#Status`
+- `internal/pullrequest#Ref`
+- `internal/pullrequest#API`
+- `internal/pullrequest#Client`
+- `internal/pullrequest#Open`
+- `internal/pullrequest#NewWithClient`
+- `internal/pullrequest#Client.FindOpen`
+- `internal/pullrequest#Client.Create`
+- `internal/pullrequest#Client.Edit`
+- `internal/pullrequest#Client.Status`
+- `internal/pullrequest#Client.Close`
+- `internal/pullrequest#Client.Merge`
+- `internal/pullrequest#standingReviews`
+- `internal/pullrequest#MergeRefusal`
+- `internal/pullrequest#RefusalKind`
+- `internal/pullrequest#TestRecord_RoundTripAndUpdate`
+- `internal/pullrequest_test#TestClient_Calls`
+- `internal/pullrequest#TestStandingReviews`
+- `internal/shedrun#PullRequestRecord`
+- `internal/shedrun#PullRequestRecordLock`
 
 **Edit:**
 - `internal/shedrun#TestPathConstructors`
