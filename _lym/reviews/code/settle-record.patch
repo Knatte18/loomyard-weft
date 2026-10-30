@@ -1,0 +1,775 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 2a9935e6..640fc74f 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -358,7 +358,8 @@ User-facing modules each get one `lym <module>` namespace:
+   `types` and `labels` in `board.yaml` are maps from label to description, and `lym board labels` prints both in file order.
+   `lym board intake` lists the open issues of the hub's own GitHub repository not yet on the board, imports one as a note or folds it into an entry, and closes noise with a stated reason.
+   The hub's repository is the one its recorded binding names, else its origin remote, so only the loomyard hub's intake reads LoomYard's issues; intake never goes through selfreport.
+-  The README renders Tasks split into Running, Ready (waiting on nothing open) and dependency layers whose entries can run in parallel, then Notes grouped by type label, each subsection one numbered table that links each slug to its design doc.
++  The README renders Tasks split into Running, Ready (waiting on nothing open) and dependency layers whose entries can run in parallel, then Notes grouped by type label, each subsection one numbered table that links each slug to its design doc;
++  it opens with one section per open project, listing that project's members, so no entry of an open project leaves its view, and holds the root's own entries under Prime below them.
+   An entry may carry a priority, `high` or `low`, absent meaning normal, which orders it first or last within its subsection.
+   A task may name a run profile in its `profile` field, and `lym board profiles` prints the hub's profiles with their settings and each recipe's default profile.
+   Agents use the board through the `ly:board` skill.
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index 19af8b9e..6e8260eb 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -72,7 +72,7 @@
+ // A normal priority is stored as no key, so board.json names a priority only on a high or low note;
+ // a write of "normal" clears the field, and a write of any other value is refused.
+ // A write that leaves a task with a priority is refused, Promote clears the note's priority, and a task stored with one loses it on load, so the next write drops it and a run-held such task is still writable.
+-// The README shows a note's priority as H or L in the Notes tables' P column, and no view orders by it.
++// The README shows a note's priority as H or L in the Prio column of the Notes tables and the project sections, and no view orders by it.
+ // Priority is part of an entry's scope, so the run lock refuses a change to it on a run-held note.
+ //
+ // # Run settings
+@@ -163,16 +163,21 @@
+ //
+ // # README
+ //
+-// Every write renders one board file per project: README.md is the root project's, holding the entries whose project is empty, and every project, open or done, renders to project-<slug>.md beside it.
++// Every write renders one board file per project: README.md is the root project's, holding under Prime the entries whose project is empty, and every project, open or done, renders to project-<slug>.md beside it.
+ // The split is rendering only: every entry stays in the one store, handles stay numbered across the hub, so a file's handles have gaps, and layers, After cells and owners read the whole board.
+ // README.md opens with the UTC date and time it was rendered, so its ages read as of that moment, and the prime owner;
+-// a project file opens with its handle and title, the render time, a link up to its parent's file, its brief, `beam` or `grouping`, and for a beam its effective owner, its recorded owner_machine else its parent's, resolved through ParentBeam over the rendered entries with the prime owner as the root's.
++// a project file opens with its handle and title, the render time, a link up to its parent's file, its brief, and for a beam the word `beam` and its effective owner, its recorded owner_machine else its parent's, resolved through ParentBeam over the rendered entries with the prime owner as the root's.
+ // The Running table's Owner column shows a task's effective owner the same way.
+-// Each file then holds, for its own entries only, a Projects section when an open project sits directly under it, a Tasks section, a Notes section grouped by type label, research first under the heading `Research`, then the other types in the order of the types list and the remainder under Other, and a Done section.
++// After its header, README.md holds one section per open project on the board, nested ones included, so the entries of every open project show in the README:
++// the projects under the root by handle, each followed by the sections of the projects under it in their parent's order key, then by handle.
++// An open project under a done project counts as under the root, since a done project has no section.
++// A project section's `##` heading links the project's handle and title to its file and counts its open members, and under it come the brief and one table of those members, every kind in RenderOrder's order, laid out as a Notes table with the Entry column in place of Note, or `_None._` when it has none.
++// Below them, a `## Prime` section with one meaning line holds the root's own Tasks, Notes and Done sections, each one heading level below a project file's.
++// Each file then holds, for its own entries only, a Projects section in a project file when an open project sits directly under it, a Tasks section, a Notes section grouped by type label, research first under the heading `Research`, then the other types in the order of the types list and the remainder under Other, and a Done section.
+ // Projects lists each open project directly under the file's project as a bullet linking its handle and title to its file, followed by its brief, in the order of the parent's order key, then by handle, and carries no meaning line.
+ // An open project is in none of the Tasks layers: ComputeLayers puts it in its own Project layer, a run-held one in Running and a done one in the done layer, and RenderOrder places open projects by handle between open tasks and open notes, and a done project between done tasks and done notes.
+ // No project is a row of Tasks or Notes; a done project is a row of its parent file's Done table, its title linked to its file.
+-// Every section heading ends in the number of entries listed under it in parentheses, such as `## Tasks (10)` or `### Ready (0)`, never the highest handle number, since handles have gaps.
++// Every section heading but Prime ends in the number of entries listed under it in parentheses, such as `## Tasks (10)` or `### Ready (0)` in a project file, never the highest handle number, since handles have gaps.
+ // Tasks splits into Running, Ready, the dependency layers A, B and on, Independent for an isolated task, and Draft for an unreleased one.
+ // A task a run holds, by RunHolds as the run lock decides it, goes under Running and in no layer; Running is omitted when no task runs.
+ // An open draft task a run does not hold goes under Draft, whatever its dependencies or isolation, since nothing starts it until it is released;
+@@ -181,7 +186,7 @@
+ // A dependency on a done task does not count, and one on a running task does, so a task waiting on a run is not Ready.
+ // Layer A holds the tasks that wait only on Running, Ready or Draft entries, Layer B those that wait on something in Layer A, and so on; ComputeLayers names each task's subsection, and the same name is the layer field of `lym board list`.
+ // Each subsection, Done included, is one markdown table in RenderOrder's order: a task subsection and a Notes type subsection by handle, and Done its tasks before its notes, each by handle, so `lym board list` and `find` follow the same order.
+-// A row opens with the entry's handle, and a Notes row adds the P column after it, H for a high priority, L for a low one and blank for normal.
++// A row opens with the entry's handle, and a Notes or project-section row adds the Prio column after it, H for a high priority, L for a low one and blank for normal.
+ // The row then holds the bold title, with the brief as a `• ` bullet under it in the same cell, then a `• ` bullet `profile: <name>` when the task names a run profile, and then one `• ` bullet per run setting, a code span such as `loom: code_max_bounces 1` with a nested key as its dotted path, sorted, so the settings stack in height and add no column, the slug linked to its design doc when the entry has a body, the one `Age<br>Revised` cell, the entry's age above the time since its last revision, blank for an unknown date, and the labels that are not type labels.
+ // The Running, Ready, layer and Draft tables add a Recipe column after the slug, the recipe the task runs, `loom` when its recipe field is empty; the Notes and Done tables have none.
+ // Running adds an At column, the run status without the state when the state is `running`, and an Owner column, the entry's effective owner machine, blank when none is recorded, and Ready, the layers and Draft add an After column, the handles of the open entries named in depends_on, one per line, an entry with no handle or no longer on the board named by its slug.
+diff --git a/internal/boardengine/render.go b/internal/boardengine/render.go
+index 9cf22041..fad70248 100644
+--- a/internal/boardengine/render.go
++++ b/internal/boardengine/render.go
+@@ -1,9 +1,10 @@
+ // render.go — turns the entry list into the wiki's output files.
+ //
+-// Render is a pure function: entries in, a map of filename → content out (README.md for the root project and project-<slug>.md for each project, both built by renderBoardFile, plus design-*.md for any entry with a body).
+-// Each board file reads like a roadmap of its project's own entries: the projects directly under it, Tasks split into Running, Ready, dependency layers, Independent and Draft, Notes with one subsection per type label, research first, then Done.
+-// Each subsection holds one markdown table in RenderOrder's order, each row opening with the entry's handle, and a Notes table adds the priority as H or L after it;
+-// README.md opens with the time it was rendered and the machine that owns the hub's prime, and a project file with the time, a link up to its parent's file and the project's brief, kind and owner;
++// Render is a pure function: entries in, a map of filename → content out (README.md for the root project, built by renderReadme, and project-<slug>.md for each project, built by renderProjectFile, plus design-*.md for any entry with a body).
++// Under its header, README.md holds one section per open project on the board, its members in one table, then a Prime section holding the root's own entries;
++// each board file reads like a roadmap of its project's own entries: in a project file the projects directly under it, then Tasks split into Running, Ready, dependency layers, Independent and Draft, Notes with one subsection per type label, research first, then Done.
++// Each subsection holds one markdown table in RenderOrder's order, each row opening with the entry's handle, and a Notes or project-section table adds the priority as H or L after it, under Prio;
++// README.md opens with the time it was rendered and the machine that owns the hub's prime, and a project file with the time, a link up to its parent's file and the project's brief and, for a beam, its owner;
+ // the rows show the bold title with the brief, the run profile and each run setting as a bullet under it, the linked slug, the entry's age above its time since its last revision as of that time, and the labels that are not type labels;
+ // every Tasks table adds the recipe after the slug, loom for an empty one;
+ // Running adds where its run stands and the entry's recorded owner machine, and Ready and the layers add the handles of the open entries each waits on.
+@@ -97,11 +98,11 @@ func Render(tasks []Task, primeOwner string, out Outputs, now time.Time) (map[st
+ 
+ 	board := newBoardView(ordered, primeOwner, out, now)
+ 	result := map[string]string{
+-		out.Readme: board.renderBoardFile(Task{}),
++		out.Readme: board.renderReadme(),
+ 	}
+ 	for _, twl := range ordered {
+ 		if twl.Kind == KindProject {
+-			result[projectFileName(twl.Slug)] = board.renderBoardFile(twl.Task)
++			result[projectFileName(twl.Slug)] = board.renderProjectFile(twl.Task)
+ 		}
+ 	}
+ 
+@@ -117,11 +118,19 @@ type readmeSection struct {
+ 	meaning string
+ }
+ 
+-// projectsHeading names the section listing the projects directly under a board file's project; it has no meaning line, since most projects only group entries.
++// projectsHeading names the section of a project file listing the projects directly under its project; it has no meaning line, since most projects only group entries.
+ const projectsHeading = "Projects"
+ 
+-// The board files' Tasks, Notes and Done sections and the Running and Ready subsections of Tasks, declared here alone.
++// boardIntro is the paragraph every board file holds under its header.
++var boardIntro = []string{
++	"Tasks are grouped by dependency layer and notes by type.",
++	"An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.",
++	"",
++}
++
++// The README's Prime section, the board files' Tasks, Notes and Done sections and the Running and Ready subsections of Tasks, declared here alone.
+ var (
++	primeSection   = readmeSection{"Prime", "The root project: the entries under no other project."}
+ 	tasksSection   = readmeSection{"Tasks", "Concrete and claimable; only a task can run."}
+ 	runningSection = readmeSection{"Running", "Held by a run; its scope is locked until the run ends."}
+ 	readySection   = readmeSection{"Ready", "Waits on nothing open; can start now."}
+@@ -151,7 +160,7 @@ const emptySectionLine = "_None._"
+ // The README table columns: each table opens with the handle, the entry and the linked slug, and closes with the entry's age above the time since its last revision, and its labels.
+ const (
+ 	columnHandle     = "#"
+-	columnPriority   = "P"
++	columnPriority   = "Prio"
+ 	columnSlug       = "Slug"
+ 	columnRecipe     = "Recipe"
+ 	columnTask       = "Task"
+@@ -164,11 +173,8 @@ const (
+ 	columnLabels     = "Labels"
+ )
+ 
+-// The lines under a project's heading that say whether it is a beam or only a grouping.
+-const (
+-	projectBeamText     = "beam"
+-	projectGroupingText = "grouping"
+-)
++// projectBeamText is the line under a beam project's brief that says it is a beam.
++const projectBeamText = "beam"
+ 
+ // cellBreak stacks two lines inside one table cell, where a newline would end the row.
+ const cellBreak = "<br>"
+@@ -310,7 +316,7 @@ func (b boardView) fileLink(project Task) string {
+ 	return "[" + cellText(project.Handle+" "+project.Title) + "](" + projectFileName(project.Slug) + ")"
+ }
+ 
+-// fileHeader is the opening of project's board file, the zero Task naming the root: the title, the render time, then the prime owner for the root, or for a project a link up to its parent's file, its brief, whether it is a beam or a grouping and a beam's effective owner.
++// fileHeader is the opening of project's board file, the zero Task naming the root: the title, the render time, then the prime owner for the root, or for a project a link up to its parent's file, its brief, and for a beam the word beam and its effective owner.
+ func (b boardView) fileHeader(project Task) []string {
+ 	rendered := "Rendered " + b.now.UTC().Format(renderedTimeLayout) + "; every age below is as of then."
+ 	if project.Slug == "" {
+@@ -321,60 +327,76 @@ func (b boardView) fileHeader(project Task) []string {
+ 		lines = append(lines, project.Brief, "")
+ 	}
+ 	if !project.Beam {
+-		return append(lines, projectGroupingText, "")
++		return lines
+ 	}
+ 	return append(lines, projectBeamText, "", "Owner: "+primeOwnerText(b.ownerOf(project.Slug))+".", "")
+ }
+ 
+-// renderBoardFile builds the board file of project, the zero Task naming the root: its header, an intro, Projects when an open project sits directly under it, Tasks split into Running, Ready, dependency layers, Independent and Draft, Notes split by type label, then Done when any of its entries is done.
+-// Every section holds only the entries whose project is this file's project, while layers, After cells and owners read the whole board.
+-func (b boardView) renderBoardFile(project Task) string {
+-	lines := append(b.fileHeader(project),
+-		"Tasks are grouped by dependency layer and notes by type.",
+-		"An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.",
+-		"",
+-	)
++// renderReadme builds the root project's board file: its header, the intro, one section per open project on the board, then the Prime section holding the root's own Tasks, Notes and Done one heading level down.
++func (b boardView) renderReadme() string {
++	lines := append(b.fileHeader(Task{}), boardIntro...)
++	lines = append(lines, b.projectSections(Task{})...)
++	lines = append(lines, "## "+primeSection.name, "", primeSection.meaning, "")
++	lines = append(lines, b.entrySections(Task{}, "###")...)
++	return joinLines(lines)
++}
+ 
++// renderProjectFile builds project's board file: its header, the intro, Projects when an open project sits directly under it, then its own Tasks, Notes and Done.
++func (b boardView) renderProjectFile(project Task) string {
++	lines := append(b.fileHeader(project), boardIntro...)
++	lines = append(lines, b.projectsSection(project)...)
++	lines = append(lines, b.entrySections(project, "##")...)
++	return joinLines(lines)
++}
++
++// joinLines joins a board file's lines into its content, ending in exactly one newline.
++func joinLines(lines []string) string {
++	return strings.TrimRight(strings.Join(lines, "\n"), "\n") + "\n"
++}
++
++// table is one markdown table, a row per entry in the order given, followed by a blank line.
++func (b boardView) table(entries []TaskWithLayer, table readmeTable) []string {
++	lead := []string{columnHandle}
++	if table.priority {
++		lead = append(lead, columnPriority)
++	}
++	// The slug goes second among the middle columns, right after the entry.
++	header := append(append(lead, slices.Insert(slices.Clone(table.columns), 1, columnSlug)...), columnAgeRevised, columnLabels)
++	lines := []string{tableRow(header), tableRow(slices.Repeat([]string{"---"}, len(header)))}
++	for _, twl := range entries {
++		row := []string{cellText(twl.Handle)}
++		if table.priority {
++			row = append(row, priorityCell(twl.Priority))
++		}
++		row = append(row, slices.Insert(table.cells(twl.Task), 1, slugCell(twl.Task, b.out.DesignPrefix))...)
++		row = append(row, ageCell(twl.Task, b.now), labelsCell(twl.Task, b.out.Types))
++		lines = append(lines, tableRow(row))
++	}
++	return append(lines, "")
++}
++
++// entrySections builds the Tasks, Notes and Done sections of project, the zero Task naming the root, with level the markdown level of their headings: Tasks split into Running, Ready, dependency layers, Independent and Draft, Notes split by type label, then Done when any of its entries is done.
++// Every section holds only the entries whose project is project, while layers, After cells and owners read the whole board.
++func (b boardView) entrySections(project Task, level string) []string {
++	sublevel := level + "#"
+ 	var own []TaskWithLayer
+ 	for _, twl := range b.ordered {
+ 		if twl.Project == project.Slug {
+ 			own = append(own, twl)
+ 		}
+ 	}
+-	designPrefix, types, now := b.out.DesignPrefix, b.out.Types, b.now
+-	// writeTable writes one table, a row per entry in the order given.
+-	writeTable := func(entries []TaskWithLayer, table readmeTable) {
+-		lead := []string{columnHandle}
+-		if table.priority {
+-			lead = append(lead, columnPriority)
+-		}
+-		// The slug goes second among the middle columns, right after the entry.
+-		header := append(append(lead, slices.Insert(slices.Clone(table.columns), 1, columnSlug)...), columnAgeRevised, columnLabels)
+-		lines = append(lines, tableRow(header), tableRow(slices.Repeat([]string{"---"}, len(header))))
+-		for _, twl := range entries {
+-			row := []string{cellText(twl.Handle)}
+-			if table.priority {
+-				row = append(row, priorityCell(twl.Priority))
+-			}
+-			row = append(row, slices.Insert(table.cells(twl.Task), 1, slugCell(twl.Task, designPrefix))...)
+-			row = append(row, ageCell(twl.Task, now), labelsCell(twl.Task, types))
+-			lines = append(lines, tableRow(row))
+-		}
+-		lines = append(lines, "")
+-	}
++	types := b.out.Types
+ 	waitTable := readmeTable{columns: []string{columnTask, columnRecipe, columnAfter}, cells: func(t Task) []string {
+ 		return []string{entryCell(t), recipeCell(t), b.afterCell(t)}
+ 	}}
+ 
+-	lines = append(lines, b.projectsSection(own, project)...)
+-
+ 	var tasks []TaskWithLayer
+ 	for _, twl := range own {
+ 		if !isDone(twl.Task) && twl.Kind == KindTask {
+ 			tasks = append(tasks, twl)
+ 		}
+ 	}
+-	lines = append(lines, countedHeading("##", tasksSection.name, len(tasks)), "", tasksSection.meaning, "")
++	lines := []string{countedHeading(level, tasksSection.name, len(tasks)), "", tasksSection.meaning, ""}
+ 	byLayer := func(layer string) []TaskWithLayer {
+ 		var entries []TaskWithLayer
+ 		for _, twl := range tasks {
+@@ -385,15 +407,15 @@ func (b boardView) renderBoardFile(project Task) string {
+ 		return entries
+ 	}
+ 	if running := byLayer(runningLayer); len(running) > 0 {
+-		lines = append(lines, countedHeading("###", runningSection.name, len(running)), "", runningSection.meaning, "")
+-		writeTable(running, readmeTable{columns: []string{columnTask, columnRecipe, columnAt, columnOwner}, cells: func(t Task) []string {
++		lines = append(lines, countedHeading(sublevel, runningSection.name, len(running)), "", runningSection.meaning, "")
++		lines = append(lines, b.table(running, readmeTable{columns: []string{columnTask, columnRecipe, columnAt, columnOwner}, cells: func(t Task) []string {
+ 			return []string{entryCell(t), recipeCell(t), atCell(*t.Status), cellText(b.ownerOf(t.Slug))}
+-		}})
++		}})...)
+ 	}
+ 	ready := byLayer(readyLayer)
+-	lines = append(lines, countedHeading("###", readySection.name, len(ready)), "", readySection.meaning, "")
++	lines = append(lines, countedHeading(sublevel, readySection.name, len(ready)), "", readySection.meaning, "")
+ 	if len(ready) > 0 {
+-		writeTable(ready, waitTable)
++		lines = append(lines, b.table(ready, waitTable)...)
+ 	} else {
+ 		lines = append(lines, emptySectionLine, "")
+ 	}
+@@ -405,8 +427,8 @@ func (b boardView) renderBoardFile(project Task) string {
+ 		}
+ 		if layer := tasks[start].Layer; layer != runningLayer && layer != readyLayer {
+ 			section := layerSection(layer)
+-			lines = append(lines, countedHeading("###", section.name, end-start), "", section.meaning, "")
+-			writeTable(tasks[start:end], waitTable)
++			lines = append(lines, countedHeading(sublevel, section.name, end-start), "", section.meaning, "")
++			lines = append(lines, b.table(tasks[start:end], waitTable)...)
+ 		}
+ 		start = end
+ 	}
+@@ -420,7 +442,7 @@ func (b boardView) renderBoardFile(project Task) string {
+ 			noteCount++
+ 		}
+ 	}
+-	lines = append(lines, countedHeading("##", notesSection.name, noteCount), "", notesSection.meaning, "")
++	lines = append(lines, countedHeading(level, notesSection.name, noteCount), "", notesSection.meaning, "")
+ 	noteTable := readmeTable{columns: []string{columnNote}, cells: func(t Task) []string { return []string{entryCell(t)} }, priority: true}
+ 	for _, typeLabel := range notesTypeOrder(types) {
+ 		entries := byType[typeLabel]
+@@ -431,8 +453,8 @@ func (b boardView) renderBoardFile(project Task) string {
+ 		if typeLabel != "" {
+ 			heading = typeHeading(typeLabel)
+ 		}
+-		lines = append(lines, countedHeading("###", heading, len(entries)), "")
+-		writeTable(entries, noteTable)
++		lines = append(lines, countedHeading(sublevel, heading, len(entries)), "")
++		lines = append(lines, b.table(entries, noteTable)...)
+ 	}
+ 
+ 	var done []TaskWithLayer
+@@ -442,31 +464,29 @@ func (b boardView) renderBoardFile(project Task) string {
+ 		}
+ 	}
+ 	if len(done) > 0 {
+-		lines = append(lines, countedHeading("##", doneSection.name, len(done)), "", doneSection.meaning, "")
+-		writeTable(done, readmeTable{columns: []string{columnEntry}, cells: func(t Task) []string {
++		lines = append(lines, countedHeading(level, doneSection.name, len(done)), "", doneSection.meaning, "")
++		lines = append(lines, b.table(done, readmeTable{columns: []string{columnEntry}, cells: func(t Task) []string {
+ 			if t.Kind == KindProject {
+ 				return []string{"**[" + cellText(t.Title) + "](" + projectFileName(t.Slug) + ")**"}
+ 			}
+ 			return []string{entryCell(t)}
+-		}})
++		}})...)
+ 	}
+-
+-	return strings.TrimRight(strings.Join(lines, "\n"), "\n") + "\n"
++	return lines
+ }
+ 
+-// projectsSection builds the Projects section of project's board file from own, the entries directly under it: a heading counting its open projects, then one bullet per open project linking to its file, followed by its brief.
+-// The projects follow project's order, then by handle.
+-// It returns no lines when no open project sits under it.
+-func (b boardView) projectsSection(own []TaskWithLayer, project Task) []string {
++// childProjects returns the open projects directly under project, in project's order, then by handle.
++// The zero Task names the root, which has no order, so its children run by handle;
++// an open project under a done project counts as directly under the root, since a done project has no README section to hold it.
++func (b boardView) childProjects(project Task) []TaskWithLayer {
+ 	var children []TaskWithLayer
+-	for _, twl := range own {
+-		if !isDone(twl.Task) && twl.Kind == KindProject {
++	for _, twl := range b.ordered {
++		parent, parentOnBoard := b.bySlug[twl.Project]
++		under := twl.Project == project.Slug || (project.Slug == "" && parentOnBoard && isDone(parent.Task))
++		if under && !isDone(twl.Task) && twl.Kind == KindProject {
+ 			children = append(children, twl)
+ 		}
+ 	}
+-	if len(children) == 0 {
+-		return nil
+-	}
+ 	position := func(slug string) int {
+ 		if index := slices.Index(project.Order, slug); index >= 0 {
+ 			return index
+@@ -482,7 +502,16 @@ func (b boardView) projectsSection(own []TaskWithLayer, project Task) []string {
+ 		}
+ 		return x.ID - y.ID
+ 	})
++	return children
++}
+ 
++// projectsSection builds the Projects section of project's file: a heading counting the open projects directly under it, then one bullet per such project, in childProjects' order, linking to its file, followed by its brief.
++// It returns no lines when no open project sits under it.
++func (b boardView) projectsSection(project Task) []string {
++	children := b.childProjects(project)
++	if len(children) == 0 {
++		return nil
++	}
+ 	lines := []string{countedHeading("##", projectsHeading, len(children)), ""}
+ 	for _, child := range children {
+ 		line := "- " + b.fileLink(child.Task)
+@@ -494,6 +523,32 @@ func (b boardView) projectsSection(own []TaskWithLayer, project Task) []string {
+ 	return append(lines, "")
+ }
+ 
++// projectSections builds one README section per open project under parent, the zero Task naming the root, at any depth: each in childProjects' order, followed by the sections of the projects under it.
++// A section's heading links the project's handle and title to its file and counts its open members; under it come the brief and one table of those members in RenderOrder's order, laid out as a Notes type table, or _None._ when it has none.
++func (b boardView) projectSections(parent Task) []string {
++	memberTable := readmeTable{columns: []string{columnEntry}, cells: func(t Task) []string { return []string{entryCell(t)} }, priority: true}
++	var lines []string
++	for _, child := range b.childProjects(parent) {
++		var members []TaskWithLayer
++		for _, twl := range b.ordered {
++			if twl.Project == child.Slug && !isDone(twl.Task) {
++				members = append(members, twl)
++			}
++		}
++		lines = append(lines, countedHeading("##", b.fileLink(child.Task), len(members)), "")
++		if child.Brief != "" {
++			lines = append(lines, child.Brief, "")
++		}
++		if len(members) > 0 {
++			lines = append(lines, b.table(members, memberTable)...)
++		} else {
++			lines = append(lines, emptySectionLine, "")
++		}
++		lines = append(lines, b.projectSections(child.Task)...)
++	}
++	return lines
++}
++
+ // afterCell is the handles of the open entries t depends on, one per line in depends_on order, a dependency the board holds no handle for shown by its slug.
+ func (b boardView) afterCell(t Task) string {
+ 	var after []string
+diff --git a/internal/boardengine/render_test.go b/internal/boardengine/render_test.go
+index d09fb67e..85cd6763 100644
+--- a/internal/boardengine/render_test.go
++++ b/internal/boardengine/render_test.go
+@@ -260,18 +260,20 @@ func readmeFixture() []boardengine.Task {
+ 
+ // TestRenderReadmeGolden pins the README tables for a fixture with tasks and notes, notes grouped by type with research first, headed Research, then the other types in Outputs.Types order and an Other group, a done entry, an abandoned note, a slug linked to its design doc, only non-type labels, an After cell naming the open dependency by handle and leaving out a done one, an isolated task, and a Ready task with one in Layer A after it.
+ // The same row pins that every row opens with the entry's handle and that each group is one table sorted by handle, a note with a lower handle and a higher ID first.
+-// It pins that only the Notes tables carry the priority column, H for high, L for low and blank for normal.
++// It pins that among the root's tables only the Notes tables carry the priority column, headed Prio, H for high, L for low and blank for normal.
+ // It pins that a pipe in a title is escaped and a line break in a brief becomes a space, so each row stays one table row.
+ // The same row pins that each run setting stacks as a code-span bullet in the entry cell after any brief, sorted, a nested key as its dotted path, a non-string value as JSON and a pipe escaped, adding no column.
+ // Every Tasks table pins a Recipe column after the slug, loom for an empty recipe and the stored name otherwise, and the Notes and Done tables pin its absence.
++// Every README pins the root's own sections under a Prime heading with its meaning line, one heading level below a project file's.
+ // Every README pins the render time at its top and the prime owner under it, the machine in a code span and none recorded when the board records none;
+ // every table pins the one column before Labels holding the age above the time since revision, as of that time and blank for unknown dates.
+ // A second row pins that Ready renders _None._ when empty, and that the Done section and every empty Notes subsection are omitted when no entry is done and no note exists for them.
+ // Neither row has a run status, the first only the hand-set word "running", so neither renders a Running subsection.
+ // A third row pins that a task with a run status renders under Running, before Ready and in no layer, ordered by handle over ID, its At cell dropping the state `running` and keeping any other, and its Owner cell holding the prime owner for a task outside every beam.
+ // The same row pins that a task waiting on a running one lands in Layer A, not Ready, still naming its handle under After, and that a task after that one lands in Layer B.
+-// A fourth row pins that README.md holds only the entries under no project, its Projects section a linked bullet with the brief per open root project and a done project a linked Done row, and that every project, open or done, renders to project-<slug>.md.
+-// A project file opens with its handle and title, a link up to its parent's file, the brief, beam or grouping and a beam's recorded owner, lists its nested projects in its order and then by handle, and holds its own entries.
++// A fourth row pins that README.md holds one section per open project, nested ones included, depth-first, root-level ones by handle and nested ones in their parent's order and then by handle, with an open project under a done one counted as root-level, before Prime, each heading linking the project and counting its open members, with its brief and a Prio table of its open members of every kind, or _None._.
++// The same row pins that Prime holds only the entries under no project, a done project a linked Done row there, and that every project, open or done, renders to project-<slug>.md.
++// A project file opens with its handle and title, a link up to its parent's file, the brief, and for a beam only, beam and its recorded owner, lists its nested projects in its order and then by handle, and holds its own entries.
+ // A task there waiting on a running member and a root task stands in Layer A, its After cell one handle per line, and the running member shows the beam's recorded owner.
+ // A dependency naming no board entry shows in the After cell as a code span of its slug, and a draft task in a project file stands in its own Draft subsection after Ready.
+ // A fifth row pins that a beam with a recorded owner on a board with no prime owner shows that owner in its own file.
+@@ -299,17 +301,21 @@ func TestRenderReadmeGolden(t *testing.T) {
+ 				"Tasks are grouped by dependency layer and notes by type.\n" +
+ 				"An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.\n" +
+ 				"\n" +
+-				"## Tasks (3)\n" +
++				"## Prime\n" +
++				"\n" +
++				"The root project: the entries under no other project.\n" +
++				"\n" +
++				"### Tasks (3)\n" +
+ 				"\n" +
+ 				"Concrete and claimable; only a task can run.\n" +
+ 				"\n" +
+-				"### Ready (0)\n" +
++				"#### Ready (0)\n" +
+ 				"\n" +
+ 				"Waits on nothing open; can start now.\n" +
+ 				"\n" +
+ 				"_None._\n" +
+ 				"\n" +
+-				"### Layer A (1)\n" +
++				"#### Layer A (1)\n" +
+ 				"\n" +
+ 				"Waits only on Running, Ready or Draft entries.\n" +
+ 				"\n" +
+@@ -317,7 +323,7 @@ func TestRenderReadmeGolden(t *testing.T) {
+ 				"| --- | --- | --- | --- | --- | --- | --- |\n" +
+ 				"| T2 | **Top \\| work**<br>• Builds on base. Second brief line.<br>• `darn: models.writer opus\\|fast`<br>• `` darn: note use `x` ``<br>• `darn: skip [\"a&b\",\"<c>\"]` | [`top`](design-top.md) | loom | T1 |  | area |\n" +
+ 				"\n" +
+-				"### Independent (1)\n" +
++				"#### Independent (1)\n" +
+ 				"\n" +
+ 				"Depends on nothing and nothing depends on it, by design.\n" +
+ 				"\n" +
+@@ -325,7 +331,7 @@ func TestRenderReadmeGolden(t *testing.T) {
+ 				"| --- | --- | --- | --- | --- | --- | --- |\n" +
+ 				"| T3 | **Alone work**<br>• `profile: docs`<br>• `darn: review_max_bounces 1` | `alone` | darn |  |  |  |\n" +
+ 				"\n" +
+-				"### Draft (1)\n" +
++				"#### Draft (1)\n" +
+ 				"\n" +
+ 				"Not released; nothing starts it until its status is cleared.\n" +
+ 				"\n" +
+@@ -333,36 +339,36 @@ func TestRenderReadmeGolden(t *testing.T) {
+ 				"| --- | --- | --- | --- | --- | --- | --- |\n" +
+ 				"| T1 | `draft` **Base work**<br>• The foundation.<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | `base` | loom |  | 5w<br>3d |  |\n" +
+ 				"\n" +
+-				"## Notes (5)\n" +
++				"### Notes (5)\n" +
+ 				"\n" +
+ 				"Not tasks: ideas and observations, merged into a task when one is promoted.\n" +
+ 				"\n" +
+-				"### Research (1)\n" +
++				"#### Research (1)\n" +
+ 				"\n" +
+-				"| # | P | Note | Slug | Age<br>Revised | Labels |\n" +
++				"| # | Prio | Note | Slug | Age<br>Revised | Labels |\n" +
+ 				"| --- | --- | --- | --- | --- | --- |\n" +
+ 				"| R1 |  | **A measurement** | `measure` |  |  |\n" +
+ 				"\n" +
+-				"### Bugs (1)\n" +
++				"#### Bugs (1)\n" +
+ 				"\n" +
+-				"| # | P | Note | Slug | Age<br>Revised | Labels |\n" +
++				"| # | Prio | Note | Slug | Age<br>Revised | Labels |\n" +
+ 				"| --- | --- | --- | --- | --- | --- |\n" +
+ 				"| B1 | H | **Dropped idea**<br>• No longer wanted. | `dropped` |  |  |\n" +
+ 				"\n" +
+-				"### Enhancements (2)\n" +
++				"#### Enhancements (2)\n" +
+ 				"\n" +
+-				"| # | P | Note | Slug | Age<br>Revised | Labels |\n" +
++				"| # | Prio | Note | Slug | Age<br>Revised | Labels |\n" +
+ 				"| --- | --- | --- | --- | --- | --- |\n" +
+ 				"| E1 |  | **Plain idea** | `plain` |  |  |\n" +
+ 				"| E2 | L | **An idea** | `idea` |  | undecided |\n" +
+ 				"\n" +
+-				"### Other (1)\n" +
++				"#### Other (1)\n" +
+ 				"\n" +
+-				"| # | P | Note | Slug | Age<br>Revised | Labels |\n" +
++				"| # | Prio | Note | Slug | Age<br>Revised | Labels |\n" +
+ 				"| --- | --- | --- | --- | --- | --- |\n" +
+ 				"| X1 |  | **Stray note** | `stray` |  | retired |\n" +
+ 				"\n" +
+-				"## Done (1)\n" +
++				"### Done (1)\n" +
+ 				"\n" +
+ 				"Finished, awaiting `lym board prune --apply`.\n" +
+ 				"\n" +
+@@ -381,23 +387,27 @@ func TestRenderReadmeGolden(t *testing.T) {
+ 				"Tasks are grouped by dependency layer and notes by type.\n" +
+ 				"An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.\n" +
+ 				"\n" +
+-				"## Tasks (0)\n" +
++				"## Prime\n" +
++				"\n" +
++				"The root project: the entries under no other project.\n" +
++				"\n" +
++				"### Tasks (0)\n" +
+ 				"\n" +
+ 				"Concrete and claimable; only a task can run.\n" +
+ 				"\n" +
+-				"### Ready (0)\n" +
++				"#### Ready (0)\n" +
+ 				"\n" +
+ 				"Waits on nothing open; can start now.\n" +
+ 				"\n" +
+ 				"_None._\n" +
+ 				"\n" +
+-				"## Notes (1)\n" +
++				"### Notes (1)\n" +
+ 				"\n" +
+ 				"Not tasks: ideas and observations, merged into a task when one is promoted.\n" +
+ 				"\n" +
+-				"### Enhancements (1)\n" +
++				"#### Enhancements (1)\n" +
+ 				"\n" +
+-				"| # | P | Note | Slug | Age<br>Revised | Labels |\n" +
++				"| # | Prio | Note | Slug | Age<br>Revised | Labels |\n" +
+ 				"| --- | --- | --- | --- | --- | --- |\n" +
+ 				"| E1 |  | **A** | `a` |  |  |\n",
+ 		},
+@@ -419,11 +429,15 @@ func TestRenderReadmeGolden(t *testing.T) {
+ 				"Tasks are grouped by dependency layer and notes by type.\n" +
+ 				"An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.\n" +
+ 				"\n" +
+-				"## Tasks (5)\n" +
++				"## Prime\n" +
++				"\n" +
++				"The root project: the entries under no other project.\n" +
++				"\n" +
++				"### Tasks (5)\n" +
+ 				"\n" +
+ 				"Concrete and claimable; only a task can run.\n" +
+ 				"\n" +
+-				"### Running (2)\n" +
++				"#### Running (2)\n" +
+ 				"\n" +
+ 				"Held by a run; its scope is locked until the run ends.\n" +
+ 				"\n" +
+@@ -432,7 +446,7 @@ func TestRenderReadmeGolden(t *testing.T) {
+ 				"| T2 | **Halted work** | `halted` | darn | paused · Plan-Write | neve |  |  |\n" +
+ 				"| T5 | **Held work** | `held` | loom | Webster | neve |  | area |\n" +
+ 				"\n" +
+-				"### Ready (1)\n" +
++				"#### Ready (1)\n" +
+ 				"\n" +
+ 				"Waits on nothing open; can start now.\n" +
+ 				"\n" +
+@@ -440,7 +454,7 @@ func TestRenderReadmeGolden(t *testing.T) {
+ 				"| --- | --- | --- | --- | --- | --- | --- |\n" +
+ 				"| T1 | **Base work** | `base` | loom |  |  |  |\n" +
+ 				"\n" +
+-				"### Layer A (1)\n" +
++				"#### Layer A (1)\n" +
+ 				"\n" +
+ 				"Waits only on Running, Ready or Draft entries.\n" +
+ 				"\n" +
+@@ -448,7 +462,7 @@ func TestRenderReadmeGolden(t *testing.T) {
+ 				"| --- | --- | --- | --- | --- | --- | --- |\n" +
+ 				"| T3 | **Next work** | `next` | loom | T5 |  |  |\n" +
+ 				"\n" +
+-				"### Layer B (1)\n" +
++				"#### Layer B (1)\n" +
+ 				"\n" +
+ 				"Starts when every entry it names under After is done.\n" +
+ 				"\n" +
+@@ -456,7 +470,7 @@ func TestRenderReadmeGolden(t *testing.T) {
+ 				"| --- | --- | --- | --- | --- | --- | --- |\n" +
+ 				"| T4 | **Last work** | `last` | loom | T3 |  |  |\n" +
+ 				"\n" +
+-				"## Notes (0)\n" +
++				"### Notes (0)\n" +
+ 				"\n" +
+ 				"Not tasks: ideas and observations, merged into a task when one is promoted.\n",
+ 		},
+@@ -468,13 +482,14 @@ func TestRenderReadmeGolden(t *testing.T) {
+ 				{ID: 3, Handle: "P3", Slug: "old", Title: "Old project", Kind: boardengine.KindProject, Status: stringPtr("done")},
+ 				{ID: 10, Handle: "P4", Slug: "inner", Title: "Inner", Kind: boardengine.KindProject, Project: "ship", Brief: "Nested work."},
+ 				{ID: 11, Handle: "P5", Slug: "later", Title: "Later", Kind: boardengine.KindProject, Project: "ship"},
+-				{ID: 4, Handle: "T1", Slug: "first", Title: "First step", Kind: boardengine.KindTask, Project: "ship"},
+-				{ID: 5, Handle: "T2", Slug: "second", Title: "Second step", Kind: boardengine.KindTask, Project: "ship", Status: stringPtr(boardengine.RunStatus("running", "Webster"))},
++				{ID: 4, Handle: "T1", Slug: "first", Title: "First step", Kind: boardengine.KindTask, Project: "ship", Priority: boardengine.PriorityLow},
++				{ID: 5, Handle: "T2", Slug: "second", Title: "Second step", Kind: boardengine.KindTask, Project: "ship", Status: stringPtr(boardengine.RunStatus("running", "Webster")), Priority: boardengine.PriorityHigh, Body: "Second design."},
+ 				{ID: 6, Handle: "T3", Slug: "third", Title: "Third step", Kind: boardengine.KindTask, Project: "ship", DependsOn: []string{"second", "base", "ghost", "shipped"}},
+ 				{ID: 7, Handle: "E1", Slug: "thought", Title: "A thought", Kind: boardengine.KindNote, Project: "ship"},
+ 				{ID: 8, Handle: "T4", Slug: "shipped", Title: "Shipped step", Kind: boardengine.KindTask, Project: "ship", Status: stringPtr("done")},
+ 				{ID: 9, Handle: "T5", Slug: "chore", Title: "Chore", Kind: boardengine.KindTask, Project: "tidy", Status: stringPtr(boardengine.StatusDraft)},
+ 				{ID: 12, Handle: "T7", Slug: "base", Title: "Base", Kind: boardengine.KindTask},
++				{ID: 13, Handle: "P6", Slug: "orphan", Title: "Orphan", Kind: boardengine.KindProject, Project: "old", Brief: "Outlived its parent."},
+ 			},
+ 			primeOwner: "neve",
+ 			want: "# Board\n" +
+@@ -485,16 +500,52 @@ func TestRenderReadmeGolden(t *testing.T) {
+ 				"Tasks are grouped by dependency layer and notes by type.\n" +
+ 				"An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.\n" +
+ 				"\n" +
+-				"## Projects (2)\n" +
++				"## [P1 Ship it](project-ship.md) (6)\n" +
++				"\n" +
++				"Ships the thing.\n" +
++				"\n" +
++				"| # | Prio | Entry | Slug | Age<br>Revised | Labels |\n" +
++				"| --- | --- | --- | --- | --- | --- |\n" +
++				"| T2 | H | **Second step** | [`second`](design-second.md) |  |  |\n" +
++				"| T1 | L | **First step** | `first` |  |  |\n" +
++				"| T3 |  | **Third step** | `third` |  |  |\n" +
++				"| P4 |  | **Inner**<br>• Nested work. | `inner` |  |  |\n" +
++				"| P5 |  | **Later** | `later` |  |  |\n" +
++				"| E1 |  | **A thought** | `thought` |  |  |\n" +
++				"\n" +
++				"## [P5 Later](project-later.md) (0)\n" +
++				"\n" +
++				"_None._\n" +
++				"\n" +
++				"## [P4 Inner](project-inner.md) (0)\n" +
++				"\n" +
++				"Nested work.\n" +
++				"\n" +
++				"_None._\n" +
++				"\n" +
++				"## [P2 Tidy up](project-tidy.md) (1)\n" +
++				"\n" +
++				"Loose ends.\n" +
++				"\n" +
++				"| # | Prio | Entry | Slug | Age<br>Revised | Labels |\n" +
++				"| --- | --- | --- | --- | --- | --- |\n" +
++				"| T5 |  | `draft` **Chore** | `chore` |  |  |\n" +
++				"\n" +
++				"## [P6 Orphan](project-orphan.md) (0)\n" +
+ 				"\n" +
+-				"- [P1 Ship it](project-ship.md) — Ships the thing.\n" +
+-				"- [P2 Tidy up](project-tidy.md) — Loose ends.\n" +
++				"Outlived its parent.\n" +
++				"\n" +
++				"_None._\n" +
+ 				"\n" +
+-				"## Tasks (1)\n" +
++				"## Prime\n" +
++				"\n" +
++				"The root project: the entries under no other project.\n" +
++				"\n" +
++				"### Tasks (1)\n" +
+ 				"\n" +
+ 				"Concrete and claimable; only a task can run.\n" +
+ 				"\n" +
+-				"### Ready (1)\n" +
++				"#### Ready (1)\n" +
+ 				"\n" +
+ 				"Waits on nothing open; can start now.\n" +
+ 				"\n" +
+@@ -502,11 +553,11 @@ func TestRenderReadmeGolden(t *testing.T) {
+ 				"| --- | --- | --- | --- | --- | --- | --- |\n" +
+ 				"| T7 | **Base** | `base` | loom |  |  |  |\n" +
+ 				"\n" +
+-				"## Notes (0)\n" +
++				"### Notes (0)\n" +
+ 				"\n" +
+ 				"Not tasks: ideas and observations, merged into a task when one is promoted.\n" +
+ 				"\n" +
+-				"## Done (1)\n" +
++				"### Done (1)\n" +
+ 				"\n" +
+ 				"Finished, awaiting `lym board prune --apply`.\n" +
+ 				"\n" +
+@@ -543,7 +594,7 @@ func TestRenderReadmeGolden(t *testing.T) {
+ 					"\n" +
+ 					"| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |\n" +
+ 					"| --- | --- | --- | --- | --- | --- | --- | --- |\n" +
+-					"| T2 | **Second step** | `second` | loom | Webster | box |  |  |\n" +
++					"| T2 | **Second step** | [`second`](design-second.md) | loom | Webster | box |  |  |\n" +
+ 					"\n" +
+ 					"### Ready (1)\n" +
+ 					"\n" +
+@@ -567,7 +618,7 @@ func TestRenderReadmeGolden(t *testing.T) {
+ 					"\n" +
+ 					"### Other (1)\n" +
+ 					"\n" +
+-					"| # | P | Note | Slug | Age<br>Revised | Labels |\n" +
++					"| # | Prio | Note | Slug | Age<br>Revised | Labels |\n" +
+ 					"| --- | --- | --- | --- | --- | --- |\n" +
+ 					"| E1 |  | **A thought** | `thought` |  |  |\n" +
+ 					"\n" +
+@@ -585,8 +636,6 @@ func TestRenderReadmeGolden(t *testing.T) {
+ 					"\n" +
+ 					"Nested work.\n" +
+ 					"\n" +
+-					"grouping\n" +
+-					"\n" +
+ 					"Tasks are grouped by dependency layer and notes by type.\n" +
+ 					"An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.\n" +
+ 					"\n" +
+@@ -610,8 +659,6 @@ func TestRenderReadmeGolden(t *testing.T) {
+ 					"\n" +
+ 					"Loose ends.\n" +
+ 					"\n" +
+-					"grouping\n" +
+-					"\n" +
+ 					"Tasks are grouped by dependency layer and notes by type.\n" +
+ 					"An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.\n" +
+ 					"\n" +
+@@ -637,7 +684,7 @@ func TestRenderReadmeGolden(t *testing.T) {
+ 					"\n" +
+ 					"Not tasks: ideas and observations, merged into a task when one is promoted.\n",
+ 			},
+-			projectFiles: []string{"project-inner.md", "project-later.md", "project-old.md", "project-ship.md", "project-tidy.md"},
++			projectFiles: []string{"project-inner.md", "project-later.md", "project-old.md", "project-orphan.md", "project-ship.md", "project-tidy.md"},
+ 		},
+ 		{
+ 			name: "a beam with a recorded owner on a board with no prime owner shows that owner",
+@@ -652,21 +699,25 @@ func TestRenderReadmeGolden(t *testing.T) {
+ 				"Tasks are grouped by dependency layer and notes by type.\n" +
+ 				"An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.\n" +
+ 				"\n" +
+-				"## Projects (1)\n" +
++				"## [P1 Lone beam](project-lone.md) (0)\n" +
++				"\n" +
++				"_None._\n" +
++				"\n" +
++				"## Prime\n" +
+ 				"\n" +
+-				"- [P1 Lone beam](project-lone.md)\n" +
++				"The root project: the entries under no other project.\n" +
+ 				"\n" +
+-				"## Tasks (0)\n" +
++				"### Tasks (0)\n" +
+ 				"\n" +
+ 				"Concrete and claimable; only a task can run.\n" +
+ 				"\n" +
+-				"### Ready (0)\n" +
++				"#### Ready (0)\n" +
+ 				"\n" +
+ 				"Waits on nothing open; can start now.\n" +
+ 				"\n" +
+ 				"_None._\n" +
+ 				"\n" +
+-				"## Notes (0)\n" +
++				"### Notes (0)\n" +
+ 				"\n" +
+ 				"Not tasks: ideas and observations, merged into a task when one is promoted.\n",
+ 			files: map[string]string{
