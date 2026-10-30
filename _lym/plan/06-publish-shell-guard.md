@@ -27,14 +27,17 @@
 - `internal/shellguard#commandPositionPattern`
 - `internal/shuttleengine/claudeengine#TestStandingDenies_RenderEveryShellGuardRow`
 - `internal/shuttleengine/claudeengine#TestShellGuardDenies_RenderedCommandsGrepThePayload`
-- `internal/shellguard/doc.go`
 - `internal/shuttleengine/doc.go`
+
+**Extends:**
+- `internal/shellguard/doc.go`
 - `internal/shuttleengine/claudeengine/doc.go`
 
 **Intent:**
 D7: the PR-Review session's launch spec installs shell-guard denies of `git push` and `gh` for that session alone, through a new `internal/shellguard` row hung on a launch-spec switch.
 `shellguard` gains `SwitchDenyPublish Switch = "deny_publish"` and, appended to `rowsAfterRawGo`, the row `publish` on that switch: one pattern, `commandPositionPattern` followed by either `git`, any flag words (`-C <dir>` and other `-x` words), whitespace and `push` as a whole word, or `gh` as a whole word; its steer `git push and gh are refused in this session: lym pushes the task branch after it gates your commits, and only lym opens, merges or closes the pull request; commit your change and tell the operator` and its notice the steer plus a period; no `Forms`, since no stencil names the denied step as a way forward.
 Its row comment states the bound: a guardrail over static text, not a barrier, so `bash -c`, a script, `env` forms the pattern does not list, a `git` alias or `hub` pass, and a `gh` spelling after a separator inside a quote `commandPositionPattern` misreads is falsely denied.
+The comment also names that a lym verb that pushes the task branch, such as `lym fabric push` or the detached both-sides push a run-record commit fires, reaches origin from the session too, so the row gates what lands, not what reaches the pull request.
 `shuttleengine.Spec` gains `DenyPublish bool`, engine vocabulary that validate does not inspect.
 claudeengine: `denyInputs` gains `denyPublish`; `shellSwitchInstalled` maps `SwitchDenyPublish` to `in.denyPublish`; `buildSettings` and `buildDenyNotice` take `denyPublish` after `allowAgentTool` and set it on their `denyInputs`; `Claude.Prepare` passes `spec.DenyPublish` to both.
 Every other caller passes `false`, so every existing run installs and announces exactly what it does today; the listed tests change only their call sites, bar the two below.
