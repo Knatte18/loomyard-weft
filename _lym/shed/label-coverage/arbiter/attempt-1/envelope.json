@@ -1,0 +1,12 @@
+{
+  "verdict": "hand-on",
+  "reason": "The 422 \"No commits between main and label-coverage\" is the expected result of this task's design, not a lost commit or an auth fault.\nDecision record D1 and the scope line say the run edits no file: the labels live in the hub's _board/_lym/config/board.yaml, outside the worktree, and the parent applies them with lym config board --set.\nThe writer's summary (_lym/landing/summary.md) says the parent added 22 labels, and `lym board labels` now lists all of them (tender, hibernate, drift, darn, arbiter, landing, cleanup, termwindow, logger, git, cwd, friction, lenses, reconcile, preflight, parsers, process, fsutil, cli, pawl, lint, profiles), each naming its packages.\nmain, label-coverage and origin/main all sit at 9c23208e, and the worktree is clean, so the task's work is done and there is no change to open a pull request for.\nA plain re-launch re-runs PR-Review on the same branch and gets the same 422.\nA goto can only name a row at or before PR-Review, and re-running Darn-Write would again produce no commit by design.\nNo repair verb this run allows moves past PR-Review or closes the run without a pull request, so this needs the parent.",
+  "question": "Task label-coverage is finished, but it has nothing to merge: by design (decision D1) the run edits no repository file, and the 22 labels are already in the hub board.yaml, as `lym board labels` shows. Its branch equals main at 9c23208e, so PR-Review fails with GitHub's 422 \"No commits between main and label-coverage\" on every retry. Will you close the run and mark the board entry done without a pull request (skipping PR-Review, Finalize and Friction-Reflect, or running Finalize alone if the run allows it), or would you rather drop the run and its worktree?",
+  "goto": "",
+  "verbs": [],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/label-coverage/_lym/shed/label-coverage/arbiter/attempt-1",
+  "verdict_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/label-coverage/_lym/shed/label-coverage/arbiter/attempt-1/verdict.yaml",
+  "relaunch": ""
+}
