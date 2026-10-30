@@ -1,6 +1,6 @@
 # PR-Review opens a pull request and starts an interactive agent to discuss it
 
-`pr-review-row` · Task · feature, loom, shed, batten, shuttle, config · running · Parent-Align
+`pr-review-row` · Task · feature, loom, shed, batten, shuttle, config · running · Code-Bouncer
 
 ## Goal
 
