@@ -10,17 +10,18 @@ A task can still turn out too large while its Discussion runs, and then it has t
 
 ## Idea (operator, 2026-10-30)
 
-The agent that finds this out, in Discussion or in a research or darn run, files the project on the board itself and ends its turn.
-The whole run then ends, and the project is spawned as a new project and beam from the parent, never from the old task's worktree.
+The agent that finds this out, in Discussion or in a research or darn run, files a note on the board with everything it found, tells its parent, the orch, and ends its turn.
+It never files a project or a task, and starts nothing: only the operator decides what becomes a task or a project.
+The orch puts the finding to the operator; when the operator decides on a project, the old run ends and the project is created and spawned as a new beam from the parent, never from the old task's worktree.
 Nothing is switched in place.
 
-What the agent files must keep what it learned: the project entry's body holds the Discussion writer's findings and decisions as the beam's starting design, so they are not left behind in the old run's records history.
+The note must keep what the agent learned: its body holds the Discussion writer's findings and decisions, so they become the beam's starting design and are not left behind in the old run's records history.
 Note `loom-beam-darns` is a related shape, where a large loom task turns into a beam and runs its pieces as darn runs inside it.
 
 ## Open design points
 
-- How the agent files the project: a run session may file only notes today, since only the operator decides what becomes a task, so the agent may need a verb or a rule for a project entry that carries its findings.
-- How the run ends once the agent has filed: its own verb, or an escalation to the orch, which ends the run with `lym batten cancel <slug> --remove` after the operator agrees.
-- Who creates the beam from the project entry, and when: `lym beam create` after the operator's go-ahead, with the old task's entry removed or marked superseded in the same step.
+- How the agent tells its parent: a message to the orch with the note's slug, and whether the run stops by itself afterwards or waits for the orch to end it.
+- How the run ends once the operator has decided: the orch ends it with `lym batten cancel <slug> --remove`.
+- How the note becomes the project entry and its beam: the orch turns it into a project entry after the operator's go-ahead and runs `lym beam create`, with the old task's entry removed or marked superseded in the same step.
 - Whether the old run's code commits, if any, are kept or dropped.
 - With dobby as the only driver of a beam's runs (only beams have a dobby, and the prime is the root beam), a worktree that is to have worktrees under it must be a beam from the start, so this route is the only way a task's scope grows into a tree of runs.
