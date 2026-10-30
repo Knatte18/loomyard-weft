@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Dobby sends the run notices, not a row of the batten recipe**<br>• Move quiet, driver-dead and api-error detection from battenshed/notice.go into dobby loop over the runs it drives<br>• `profile: solid` | [`notices-from-dobby`](design-notices-from-dobby.md) | darn | Finalize | osl-1046 | 1d<br>1h | dobby, batten |
-| T2 | **README shows each project's slug**<br>• A project section in the README, and its page, show the project slug beside handle and title.<br>• `profile: speed` | [`readme-project-slug`](design-readme-project-slug.md) | darn | Drift-Verify | osl-1046 | 16m<br>16m | board |
+| T2 | **README shows each project's slug**<br>• A project section in the README, and its page, show the project slug beside handle and title.<br>• `profile: speed` | [`readme-project-slug`](design-readme-project-slug.md) | darn | Finalize | osl-1046 | 16m<br>16m | board |
 | T3 | **Dobby posts the can-land notice only once the beam is flagged ready**<br>• A new beam with no work yet made its dobby ask the orch to land it; dobby should wait for a flag set from the beam worktree.<br>• `profile: solid` | [`dobby-land-notice-needs-flag`](design-dobby-land-notice-needs-flag.md) | darn | Darn-Write | osl-1046 | 8m<br>0m | dobby, workspaces |
 
 #### Ready (0)
