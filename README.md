@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Dobby posts the can-land notice only once the beam is flagged ready**<br>• A new beam with no work yet made its dobby ask the orch to land it; dobby should wait for a flag set from the beam worktree.<br>• `profile: solid` | [`dobby-land-notice-needs-flag`](design-dobby-land-notice-needs-flag.md) | darn | Darn-Write | osl-1046 | 35m<br>27m | dobby, workspaces |
-| T4 | **A beam run is seeded at Preflight, a row its pawl recipe lacks**<br>• The shared seed starts every inner run at Preflight; pawl has no such row, so a new beam stops at once. Pawl gets a Preflight row.<br>• `profile: light` | [`pawl-starts-at-preflight`](design-pawl-starts-at-preflight.md) | darn | Describe | osl-1046 | 18m<br>16m | pawl, preflight |
+| T4 | **A beam run is seeded at Preflight, a row its pawl recipe lacks**<br>• The shared seed starts every inner run at Preflight; pawl has no such row, so a new beam stops at once. Pawl gets a Preflight row.<br>• `profile: light` | [`pawl-starts-at-preflight`](design-pawl-starts-at-preflight.md) | darn | Describe | osl-1046 | 18m<br>17m | pawl, preflight |
 
 #### Ready (0)
 
@@ -35,9 +35,9 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Dobby says why a task is not started, and tells the orch of a failing start in time**<br>• A start that failed every pass for an hour showed no reason in beam status and reached the orch an hour late.<br>• `profile: solid` | [`dobby-start-failures`](design-dobby-start-failures.md) | darn | T3 | 1d<br>16m | dobby, batten, creel |
+| T1 | **Dobby says why a task is not started, and tells the orch of a failing start in time**<br>• A start that failed every pass for an hour showed no reason in beam status and reached the orch an hour late.<br>• `profile: solid` | [`dobby-start-failures`](design-dobby-start-failures.md) | darn | T3 | 1d<br>17m | dobby, batten, creel |
 
-### Notes (29)
+### Notes (30)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -49,7 +49,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 7d<br>2d | loom, stencil |
 | R8 |  | **Ideas from r/ClaudeCode "one line in your CLAUDE.md": fit for LoomYard and bench measures**<br>• About 30 ideas judged against our stencils and rules; top 8 ranked for a bench, a few cheap enough without one | [`claude-md-thread-ideas`](design-claude-md-thread-ideas.md) | 3d<br>7h | stencil, loom, burler |
 
-#### Enhancements (11)
+#### Enhancements (12)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -61,6 +61,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E6 |  | **Gate runs spend much of their time starting processes: start fewer**<br>• launch_seconds is a large share of a gate run on OSL-1046, where each process start is slow; the aim is a faster gate by starting fewer processes | [`gate-fewer-launches`](design-gate-fewer-launches.md) | 1h<br>1h | gate |
 | E7 |  | **loom names the general run; today's loom is one variant**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | 2w<br>1d | shed, loom |
 | E8 |  | **A seed says only that a run starts at its start, with no producer name**<br>• The shared seed names Preflight as the first producer for every recipe; the seed should name none, and the recipe supplies its first row. | [`seed-starts-at-start`](design-seed-starts-at-start.md) | 13m<br>13m | loom, pawl, shed |
+| E9 |  | **Landing commits credit LoomYard and list the engines used, with no co-author**<br>• Replace the Co-Authored-By line per engine with one credit to LoomYard that lists the LLM services the task used. | [`commit-signature-credit`](design-commit-signature-credit.md) | 0m<br>0m | landing |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 12d<br>3d | webster, fabric, loom |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 11d<br>3d | fabric, batten |
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 7d<br>1d | burler, claude |
