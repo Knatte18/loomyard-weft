@@ -1,15 +1,15 @@
-# Cortex XDR slows every process start of a gate run on OSL-1046
+# Gate runs spend much of their time starting processes: start fewer
 
 `gate-fewer-launches` · Note · enhancement, gate
 
 ## Seen (operator and hub orch, 2026-10-30)
 
-Cortex XDR runs on OSL-1046 and the operator finds every run slow, gates above all.
-`lym gate report --slug pr-review-empty-branch` shows `launch_seconds` of 266 of 639 s wall for `code-burler-fix` and 153 of 516 s for `darn-write`, with a wait for a gate slot of about zero, so the time is in the test runs, and a large part of it in starting processes.
-The scanner is not visible to `ps` as a process the orch can name, so the cause is the operator's knowledge, not a measurement.
+Runs are slow on OSL-1046, gates above all, and every process start there is expensive.
+`lym gate report --slug pr-review-empty-branch` shows `launch_seconds` of 266 of 639 s wall for `code-burler-fix` and 153 of 516 s for `darn-write`, with a wait for a gate slot of about zero: the time is in the test runs, and a large part of it in starting processes.
 
 ## Idea
 
-- Ask IT for exclusions of the hub directories under `~/Code/Knatte18/loomyard-LYMHUB`, the Go build and module caches, `/tmp/lym-<uid>`, the installed `lym` binaries and `claude`.
-- Measure a cold and a warm gate run before and after, so the gain is known; the measurement runs as a darn task with profile `docs`.
-- Cut the launches themselves: fewer test binaries started per gate run, if the gate can link tests together or reuse a built binary.
+The aim is a faster gate run, by starting fewer processes per run.
+- Find what a gate run launches: how many test binaries, `go` invocations and helper processes per tier, and which of them repeat from one gate key to the next.
+- Cut the launches: link several packages' tests into fewer binaries, or reuse a built test binary across the gate keys of one run, wherever the result stays the same.
+- Measure a gate run before and after, so the gain is known; the measurement runs as a darn task with profile `docs`.
