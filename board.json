@@ -633,7 +633,7 @@
     {
       "id": 914,
       "handle": "E6",
-      "slug": "gate-cortex-launch-cost",
+      "slug": "gate-fewer-launches",
       "title": "Cortex XDR slows every process start of a gate run on OSL-1046",
       "kind": "note",
       "labels": [
