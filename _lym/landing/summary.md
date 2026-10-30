@@ -1,35 +1,42 @@
-# Dobby sends a running child's run notices, not batten's Run-Shed row
+# Dobby sends the running-run notices as [dobby notice] lines
 
-The quiet, driver-dead, api-error and usage-limit notices of a running child now come from the dobby that drives the run, not from batten's Run-Shed row.
-Batten is a profile of a shed that dobby drives, and these notices need a continuous watch over a run whose state is not changing, which is the daemon's job.
+Dobby now detects and sends the notices for a running child itself, in its probe-tick loop over the runs it drives.
+Batten's Run-Shed row no longer detects them.
+Batten is a profile of a shed and drives nothing; dobby is the common driver of every run under its beam and already reads each run's state, so the watch belongs there.
 
 ## What changes
 
-- `internal/dobbyengine/runnotice.go` holds the detection, moved from `internal/battenshed/notice.go` with its checks, their order, the episode keys, the quiet window, the two-minute API-error idle, the idle clocks that leave out recorded sleeps and paused intervals, and the api-error revive streak.
-  Each probe tick runs it, after the scheduling steps, for every listed run whose batten state is running with no cancel marker.
-  A child that is not running, or that a pause covers, is in no condition.
-- dobbyengine declares its own reading types (`ChildReading`, `AgentRun`) and seams (`RunNoticeDeps` on `Deps.RunNotices`), since its import allowlist admits neither battenshed nor shedengine.
-  `internal/battencli/dobbynotice.go` fills them from the reads batten's wiring already made: the child status, driver liveness with the driver and run locks, the agent activity with its wait markers, the pause coverage, `tendercli.ReviveStalled`, and whether batten respawned the child the cap of times (`battenshed.RespawnCapReached`).
-  `internal/beamcli/dobbydeps.go` wires them, reading the quiet window from the Run-Shed row's `notice_quiet_min` as it already reads `notice_probe_s`.
-- A moved notice reads `[dobby notice] <slug>: running at <row>; <condition>; …` and goes through dobby's existing Notice seam, from `<shortname>:DOBBY` or `<shortname>:<beam>:DOBBY`.
-- The marker of the notices sent moved from batten's scratch directory to the run's records directory under `_lym` (`shedrun.NoticeEpisodeFile`), and batten's status commit carries it beside the status and seed, so it reaches the next machine.
-  The child's state, its since and the revive streak ride in the run's entry of dobby's state record, so a re-exec sends nothing twice.
-- Batten keeps only the notices that follow a step its pass takes: the state change with its report, arbiter and relay holds, the driver-not-revived follow-up of a halted child, the busy-pane notice and the owner notice, all still `[batten notice]`.
-  `InnerRunDeps` loses `Activity`, `Sleeps`, `ReviveAPIError` and `NoticeQuiet`, and battenshed loses `AgentActivity`.
-- The orch role stencil lists the `[dobby notice]` lines and counts them as stops.
-  The battenshed, dobbyengine, orchcli and shuttleengine docs and `docs/overview.md` follow the move.
+- Dobby sends four notices for a running child: a dead driver, an API-error stall, a usage limit and a quiet child.
+  They read `[dobby notice] <slug>: <condition>; …` and go through dobby's Notice seam, from `<shortname>:DOBBY` or `<shortname>:<beam>:DOBBY`, to the nearest live orch.
+- The api-error revive that precedes an API-error notice moves to dobby with it.
+- Batten keeps the notices tied to a step its own pass takes or holds, under `[batten notice]`: state-changed with its holds, driver-not-revived, busy-pane, owner-elsewhere, and the Land, Worktree-Teardown and hand-back stops.
+- The orch role stencil (`contracts/stencils/orch/orch-template-role.md`) lists the `[dobby notice]` lines and counts them as a stop.
+  `docs/overview.md`, the `battenshed`, `dobbyengine`, `orchcli` and `shuttleengine` package docs and the `notice_quiet_min` recipe comments follow the move.
 
 ## Design decisions
 
-- The marker is emptied rather than removed when its keys end, so a tracked marker is never left as a deleted file that batten's status commit, which stages it only when present, would not commit.
-- Delivery attempts are kept in process: a notice not posted is tried on each probe tick, at most three times, then dropped with a Warn.
-  A missing orch strand counts as a failed attempt, since dobby's Notice seam reports it as an error.
-- A child lock that cannot be read makes the driver read as alive, logged at Debug, as batten treated it.
-- `innerRunEntry` still validates `notice_quiet_min` on the Run-Shed row, though no producer reads it now: the row stays the one place the key is set.
-- The batten tests of the moved conditions are replaced by dobby tests over a fake child reading; batten's tests now assert that a running child gets no notice from the row and that the respawn cap is readable from the memory record.
+- Detection lives in a new `internal/dobbyengine/runnotice.go` and runs on each probe tick for every listed run whose batten state is running with no cancel marker.
+  A child that is absent, not running or covered by a pause is in no condition, as in batten.
+- Checks, precedence (dead driver, usage limit, API error, quiet), episode keys, the quiet window, the API-error idle time and the idle clocks that subtract recorded sleeps and paused intervals move unchanged.
+  A live wait marker still holds quiet, so a run waiting on a pull request never reads as a stall.
+- `dobbyengine` declares its own reading types, since its import allowlist admits neither `battenshed` nor `shedengine`.
+  The hub wiring in `internal/beamcli/dobbydeps.go` fills new Deps seams over the reads `internal/battencli/wire.go` already makes: one run's child by slug, the api-error revive, and the quiet window.
+- The quiet window stays the Run-Shed `notice_quiet_min`, read as `notice_probe_s` already is.
+  The driver-dead text names the respawn cap when batten's memory shows it reached, through an exported `battenshed` reader.
+- The sent-notice marker, one episode key per line, moves to `notice-episode` in the run's durable directory under `_lym`; its path is declared in `internal/shedrun/paths.go`.
+  Batten's status commit carries it beside the status and seed when it exists, and `lym batten cleanup` removes it with the run directory.
+- Dobby's episode memory (the child state it last saw, when the episode began, the revive streak) rides in the run's entry of dobby's state record, so a re-exec keeps it.
+- A notice that is not posted is retried on later probe ticks, at most three times, then dropped with a Warn, as batten dropped one.
+- Cost: one child read per running run per probe tick, the same reads a pass made per probe.
 
-## Bounds
+## Known limits
 
-- Between a marker write and the next batten transition, the marker is an uncommitted file in the prime, as the status file already is while a run is watched.
-- A machine that takes a run over dates the child's since from its own first sight, so a driver-dead notice the other machine sent can go once more.
-- No run notice goes while an anchor change stands on the dobby's records worktree or the prime's.
+- Between a marker write and the next batten transition the marker is an uncommitted change in the prime, as the status file already is during a watch.
+  A machine switch in that gap can repeat one notice.
+- Dobby's first sight of a running child after a machine switch dates the episode from that sight, so a driver-dead key the other machine sent can be sent once more.
+
+## To check by hand
+
+- The hub's deployed stencil copies are not edited here; the landing's deploy rewrites them from `contracts/`.
+  After it, confirm no deployed rule or stencil still names the moved notices as `[batten notice]`.
+- Run `lym gate test` over `./internal/dobbyengine`, `./internal/battenshed`, `./internal/battencli` and `./internal/beamcli`, and a live dobby against a real running child, since no test here sends a notice through a real orch.
