@@ -1,6 +1,6 @@
 {
   "runGuid": "ae29f98bec581d819b832c361e9a6884",
-  "planFingerprint": "2752d62ac89c6f7e7c9551c34b6b3f103bc25845abd11cd78f3602b8a0caa6c2",
+  "planFingerprint": "47902d1f89d6d36292f28e82ad2c6d77025060a4ed7d0b977907ae60c2af1f15",
   "planFileHashes": {
     "00-overview.md": "20a30a1e1326a3a4fcd4072a7859b5064c10aa3191f23ce2f114fe7402e88a48",
     "01-parse-owner-repo-shapes.md": "9cb3abb43c4aa314409ef811cfb9e94c99c52d2ed8d2d092c1bbd884757e1dfe",
@@ -16,9 +16,9 @@
     "11-pr-review-row-opens.md": "7ae6d7f5bc4dcb8ff14518e611145eb823b56643950d1215ccc26a68523185ce",
     "12-retire-pr-review-keys.md": "7e19ca63cd8a7548c648bc6ffaeddb3f64bf4ea35f75c2beffd82259134751cc",
     "13-pr-review-row-waits.md": "bbada028e4cd910de915b8fd9b4a84676c54cf527a9662f086795225e9ffb3c4",
-    "14-pr-review-session.md": "49d56037663c8706d3f2b02c31b31411a7becc06ba4f6e86e21b410c9daf3db9",
-    "15-finalize-through-pull-request.md": "07dd0a7b42af390fbedb43a31a57f5fb2f1b95d9dcdfb944d62935561787b65a",
-    "16-teardown-closes-pull-request.md": "71f673931aed5a1936d6c8dbdf271efc8fa2b23f2bcacce92795fc52074e6a9a",
+    "14-pr-review-session.md": "1047ad5bdc2da4b5d91da92526a9dffb29772ec6ea3790aeaa487efd1cdbbb87",
+    "15-finalize-through-pull-request.md": "355341d45e34a799a08ad29f4df13a691fe987843324cf1f8a0e97b469b11e71",
+    "16-teardown-closes-pull-request.md": "8a6f58963e4f184f6b4ea1bb28ddd2eafa2c874cebfbcd4d5265239d612719f2",
     "17-quiet-check-pr-review-wait.md": "f304a783a2c220123fb033636febe048b1940f51a38399088b84f1e6a9cd02a0"
   },
   "planOverviewFrameHash": "1883bd414f481dba6c5ef66de3a153df13682a57db71a580cea0ed69873044e9",
@@ -492,7 +492,7 @@
       }
     }
   ],
-  "currentBatch": 14,
+  "currentBatch": 0,
   "masterStrand": "efb265ffaadca694a9a3376c136ee485",
   "masterSessionId": "bb34478a-90e2-48df-9565-cbd15855e3d8",
   "masterEngine": "claude",
@@ -625,17 +625,45 @@
         "16-teardown-closes-pull-request"
       ],
       "cardHashes": {
-        "14-pr-review-session": "49d56037663c8706d3f2b02c31b31411a7becc06ba4f6e86e21b410c9daf3db9",
-        "15-finalize-through-pull-request": "07dd0a7b42af390fbedb43a31a57f5fb2f1b95d9dcdfb944d62935561787b65a",
-        "16-teardown-closes-pull-request": "71f673931aed5a1936d6c8dbdf271efc8fa2b23f2bcacce92795fc52074e6a9a"
+        "14-pr-review-session": "1047ad5bdc2da4b5d91da92526a9dffb29772ec6ea3790aeaa487efd1cdbbb87",
+        "15-finalize-through-pull-request": "355341d45e34a799a08ad29f4df13a691fe987843324cf1f8a0e97b469b11e71",
+        "16-teardown-closes-pull-request": "8a6f58963e4f184f6b4ea1bb28ddd2eafa2c874cebfbcd4d5265239d612719f2"
       },
       "startSha": "57c0e718819fb110b696c5498d1163f8650a04a9",
       "kind": "fork",
       "spawnedAt": "2026-10-30T07:34:15Z",
       "sessionId": "bb34478a-90e2-48df-9565-cbd15855e3d8",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "14-pr-review-session",
+        "status": "done",
+        "head_sha": "bb4dfd773383e9367de7509d8701517ebad5a192",
+        "deviations": [
+          "cmd/lym/ghguard_test.go",
+          "internal/landingshed/finalize_pr.go",
+          "internal/landingshed/prreview.go",
+          "internal/landingshed/prreview_session_test.go",
+          "internal/landingshed/prreview_test.go",
+          "internal/landingshed/prreview_wait_test.go",
+          "internal/landingshed/prsession.go",
+          "internal/loomcli/landingdeps.go",
+          "internal/loomcli/landingdeps_test.go",
+          "internal/pairteardown/pullrequest.go",
+          "internal/pairteardown/teardown_test.go",
+          "internal/testkit/envkit/envkit.go"
+        ]
+      },
+      "cardShas": [
+        "bb4dfd773383e9367de7509d8701517ebad5a192"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-a5c386d779918ba44.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-a5c386d779918ba44.jsonl"
+      ]
     },
     "6": {
       "slug": "publish-shell-guard",
@@ -684,6 +712,7 @@
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-afa7f3c83f3dcfa69.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-a8c3a2ee1602a596c.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-ae68f54d64eb45da9.jsonl",
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-a34d5a79d3659b210.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-a34d5a79d3659b210.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-a5c386d779918ba44.jsonl"
   ]
 }

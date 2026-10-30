@@ -1,12 +1,12 @@
 # Card 14 — pr-review-session
 
 **Create:**
-- `plan:internal/landingshed#prReviewerRole` -> `const prReviewerRole = "pr-reviewer"`
-- `plan:internal/landingshed#prSessions` -> `type prSessions interface`
-- `plan:internal/landingshed#PRReview.ensureSession` -> `func (p *PRReview) ensureSession(rec pullrequest.Record) (pullrequest.Record, error)`
-- `plan:internal/landingshed#fakePRSessions` -> `type fakePRSessions struct`
-- `plan:internal/landingshed#TestPRReview_Session` -> `func TestPRReview_Session(t *testing.T)`
-- `plan:internal/runproc#RoleSession` -> `const RoleSession = "session"`
+- `internal/landingshed#prReviewerRole`
+- `internal/landingshed#prSessions`
+- `internal/landingshed#PRReview.ensureSession`
+- `internal/landingshed#fakePRSessions`
+- `internal/landingshed#TestPRReview_Session`
+- `internal/runproc#RoleSession`
 
 **Edit:**
 - `internal/landingshed#PullRequestDeps`

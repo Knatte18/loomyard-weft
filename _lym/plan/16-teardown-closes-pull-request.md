@@ -1,10 +1,10 @@
 # Card 16 — teardown-closes-pull-request
 
 **Create:**
-- `plan:internal/pairteardown#closeOpenPullRequest` -> `func closeOpenPullRequest(ctx context.Context, slug string, gone bool, rec pullrequest.Record, found bool, api func(originURL string) (pullrequest.API, error), originURL string)`
-- `plan:internal/pairteardown#Teardown.closePairPullRequest` -> `func (t *Teardown) closePairPullRequest(slug string)`
-- `plan:internal/pairteardown#TestCloseOpenPullRequest` -> `func TestCloseOpenPullRequest(t *testing.T)`
-- `plan:cmd/lym#TestPullRequestGuard_OnlyLandingAndTeardown` -> `func TestPullRequestGuard_OnlyLandingAndTeardown(t *testing.T)`
+- `internal/pairteardown#closeOpenPullRequest`
+- `internal/pairteardown#Teardown.closePairPullRequest`
+- `internal/pairteardown#TestCloseOpenPullRequest`
+- `cmd/lym#TestPullRequestGuard_OnlyLandingAndTeardown`
 
 **Edit:**
 - `internal/pairteardown#Teardown`
