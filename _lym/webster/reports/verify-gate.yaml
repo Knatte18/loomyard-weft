@@ -1,0 +1,11 @@
+attempt: 1
+cap: 2
+failures:
+    - id: github.com/Knatte18/loomyard/cmd/lym.TestCLIForm_EveryCommand
+      kind: test
+      package: github.com/Knatte18/loomyard/cmd/lym
+      tail: ""
+log_path: /home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/pr-review-row/.lym/verify/verify-2.log
+hint:
+    - 14-pr-review-session
+fixer: fork
