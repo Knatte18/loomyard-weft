@@ -1,6 +1,6 @@
 # README shows each project's slug
 
-`readme-project-slug` · Task · enhancement, board · running · Drift-Verify
+`readme-project-slug` · Task · enhancement, board · running · Finalize
 
 ## Seen (operator, 2026-10-30)
 
