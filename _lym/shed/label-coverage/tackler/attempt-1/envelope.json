@@ -1,0 +1,11 @@
+{
+  "verdict": "escalate",
+  "reason": "The PR-Review row failed with a 422 \"No commits between main and label-coverage\". The branch equals main (9c23208e), so there is nothing to open a pull request for. A plain resume re-runs PR-Review on the same state and gets the same 422. The stop's auth advice does not match this error. Whether the darn writer committed anything, or whether the work is already on main, needs the writer's trace, which is outside the files I may read. See the case brief.",
+  "question": "",
+  "goto": "",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/label-coverage/_lym/shed/label-coverage/tackler/attempt-1",
+  "verdict_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/label-coverage/_lym/shed/label-coverage/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/label-coverage/_lym/shed/label-coverage/tackler/attempt-1/case-brief.md"
+}

@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "PR-Review",
+    "history_length": 8,
+    "state": "blocked"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "9c23208ec377f1796c24e175335ee28b700bb0de",
+    "branch": "label-coverage",
+    "dirty": {}
+  },
+  "spawned_at": "2026-10-30T11:30:04.003185488+01:00",
+  "deadline": "2026-10-30T11:40:04.003185488+01:00",
+  "envelope_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/label-coverage/_lym/shed/label-coverage/drive-reports/drive-envelope-20261030-113003-f709.json",
+  "report_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/label-coverage/_lym/shed/label-coverage/drive-reports/drive-report-20261030-113003-a719.md",
+  "strand_guid": "b697cddcf1191b9e1ba803fb2f1536cd"
+}
