@@ -64,6 +64,13 @@ Bound: only the two token sentinels skip the transient check; every other failur
 
 - Finalize's gate runs over an unchanged tree on an empty landing; the existing already-landed path is trusted to pass it.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - taskhascommits-error-path-untested (class scope, severity MEDIUM, open in rounds 1)
+  - taskhascommits-wiring-untested (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: the resolver returns no pull request and no halt for an empty branch under each mode and field that would otherwise want one, including a required parent and an origin that would halt; a non-empty branch keeps every existing answer.
