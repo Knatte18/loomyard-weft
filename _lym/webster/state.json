@@ -1,0 +1,525 @@
+{
+  "runGuid": "ae29f98bec581d819b832c361e9a6884",
+  "planFingerprint": "c6b0b276b3024abcf8757fafdadaf4acb10d9d98f34cc357efb5569557a02b8f",
+  "planFileHashes": {
+    "00-overview.md": "20a30a1e1326a3a4fcd4072a7859b5064c10aa3191f23ce2f114fe7402e88a48",
+    "01-parse-owner-repo-shapes.md": "9cb3abb43c4aa314409ef811cfb9e94c99c52d2ed8d2d092c1bbd884757e1dfe",
+    "02-beam-pull-request-key.md": "dbe93d07019ee9233de84e728ae3e3a1f9b104928c3885d40c2ba77370638383",
+    "03-board-pull-request-field.md": "127fd37db3c9ea785d8183fdf139645799bfe277ed6106240201a6870165c5ca",
+    "04-pr-review-config-keys.md": "acec77843c0351b48cfb415099166887a1122b21ec407d481e10bfaea5a9317e",
+    "05-shuttle-unawaited-session.md": "8f37917ca794b10c821ab6c90bb214e0e28ee05e4091fc26c8ef613b351d166f",
+    "06-publish-shell-guard.md": "10d3c6feed6485588a5e1be63574ba23826b0e903fb4f147038f9579670752bc",
+    "07-pullrequest-record-and-client.md": "f8ad2ea04c3653da33327b043d4f92bcbc769ebbbfc08117da5c75af08cc3978",
+    "08-pull-request-mode-resolver.md": "f987958f3b95b4af93e25f65e14046f663c18a6c6f1691aff032231031c8f3a2",
+    "09-pr-continue-verb.md": "7b17194aaf8d3d48ac1cea23123477e2581fbbdbe14d022c5a47f6f6725ea6f4",
+    "10-pr-review-stencil.md": "419b2abb0b25729f6caf1910fc7d2446f3193c7807507cc995a0581fb4a95a87",
+    "11-pr-review-row-opens.md": "5d7f68c3c2ee2a90875f2bf5ff819f1fe339f95bcd8a4daf6049b70c5f99bcf0",
+    "12-retire-pr-review-keys.md": "7e19ca63cd8a7548c648bc6ffaeddb3f64bf4ea35f75c2beffd82259134751cc",
+    "13-pr-review-row-waits.md": "0ab8eed1422d5fba894f2dc67814fda56fd0d1b9f735c68d1e273e87efb2b5d3",
+    "14-pr-review-session.md": "84dbfd00eb775033c8ecbbd3aade6bc94ca091146a33e7203c1efd4b3c09049e",
+    "15-finalize-through-pull-request.md": "817fe729ca832cb1275ab0f0f4692af0e0171f06022296927ef146071d8d5b58",
+    "16-teardown-closes-pull-request.md": "5b1e3dc12262132e52fcc82ba59dde1baf2182b0f0e24eff6465384c98ef6522",
+    "17-quiet-check-pr-review-wait.md": "f304a783a2c220123fb033636febe048b1940f51a38399088b84f1e6a9cd02a0"
+  },
+  "planOverviewFrameHash": "1883bd414f481dba6c5ef66de3a153df13682a57db71a580cea0ed69873044e9",
+  "partition": [
+    {
+      "cards": [
+        "01-parse-owner-repo-shapes",
+        "02-beam-pull-request-key",
+        "03-board-pull-request-field",
+        "04-pr-review-config-keys",
+        "05-shuttle-unawaited-session"
+      ],
+      "profile": "wide",
+      "estimate": 269584,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54700,
+        "read_union": 100740,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 264,
+            "reads": {
+              "file:internal/githubclient/doc.go": 1488,
+              "package:internal/githubclient": 2000,
+              "tests:internal/githubclient": 2000
+            },
+            "messages": 23,
+            "written": 7164
+          },
+          {
+            "card": 2,
+            "card_text": 324,
+            "reads": {
+              "file:internal/dobbyengine/doc.go": 1644,
+              "file:internal/dobbyengine/template.yaml": 48,
+              "package:internal/configreg": 2000,
+              "package:internal/dobbyengine": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/dobbyengine": 2000
+            },
+            "messages": 52.5,
+            "written": 16074
+          },
+          {
+            "card": 3,
+            "card_text": 408,
+            "reads": {
+              "file:internal/boardcli/doc.go": 1164,
+              "file:internal/boardengine/doc.go": 3828,
+              "package:internal/boardcli": 2000,
+              "package:internal/boardengine": 2000,
+              "tests:internal/boardcli": 2000,
+              "tests:internal/boardengine": 2000
+            },
+            "messages": 81,
+            "written": 24708
+          },
+          {
+            "card": 4,
+            "card_text": 456,
+            "reads": {
+              "file:docs/dotnet-hub.md": 2184,
+              "file:internal/gatecli/doc.go": 4008,
+              "file:internal/gateslot/doc.go": 1680,
+              "file:internal/gateslot/template.yaml": 528,
+              "file:internal/landingshed/doc.go": 2508,
+              "file:internal/landingshed/template.yaml": 192,
+              "file:pattern/PATTERN-gate-slot.md": 948,
+              "file:pattern/PATTERN-test-speed.md": 1980,
+              "package:docs": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/gatecli": 2000,
+              "package:internal/gateslot": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "package:pattern": 2000,
+              "tests:docs": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/gateslot": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/testkit/envkit": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 134.5,
+            "written": 40806
+          },
+          {
+            "card": 5,
+            "card_text": 492,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 6324,
+              "file:internal/shuttleengine/wait.go": 22272,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 83,
+            "written": 25392
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-publish-shell-guard",
+        "07-pullrequest-record-and-client",
+        "08-pull-request-mode-resolver",
+        "09-pr-continue-verb"
+      ],
+      "profile": "wide",
+      "estimate": 296636,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61700,
+        "read_union": 66276,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 600,
+            "reads": {
+              "file:internal/shellguard/doc.go": 216,
+              "file:internal/shuttleengine/claudeengine/doc.go": 3252,
+              "file:internal/shuttleengine/doc.go": 6324,
+              "package:internal/shellguard": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shellguard": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 184.5,
+            "written": 55950
+          },
+          {
+            "card": 7,
+            "card_text": 876,
+            "reads": {
+              "file:docs/overview.md": 10356,
+              "file:internal/shedrun/doc.go": 660,
+              "package:docs": 2000,
+              "package:internal/pullrequest": 2000,
+              "package:internal/shedrun": 2000,
+              "tests:docs": 2000,
+              "tests:internal/pullrequest": 2000,
+              "tests:internal/shedrun": 2000
+            },
+            "messages": 209,
+            "written": 63576
+          },
+          {
+            "card": 8,
+            "card_text": 564,
+            "reads": {
+              "file:PATTERN.md": 744,
+              "file:internal/landingshed/doc.go": 2508,
+              "package:.": 2000,
+              "package:internal/landingshed": 2000,
+              "tests:.": 2000,
+              "tests:internal/landingshed": 2000
+            },
+            "messages": 75.5,
+            "written": 23214
+          },
+          {
+            "card": 9,
+            "card_text": 420,
+            "reads": {
+              "file:internal/loomcli/doc.go": 3756,
+              "package:internal/loomcli": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 85,
+            "written": 25920
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "10-pr-review-stencil",
+        "11-pr-review-row-opens"
+      ],
+      "profile": "wide",
+      "estimate": 291844,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68700,
+        "read_union": 88228,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 336,
+            "reads": {
+              "file:contracts/stencils/landing/landing-template-fix-review.md": 552,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/landing": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/landing": 2000
+            },
+            "messages": 34,
+            "written": 10536
+          },
+          {
+            "card": 11,
+            "card_text": 1380,
+            "reads": {
+              "file:PATTERN.md": 744,
+              "file:README.md": 3000,
+              "file:contracts/recipes/darn-recipe.yaml": 2952,
+              "file:contracts/recipes/loom-recipe.yaml": 6744,
+              "file:contracts/recipes/pawl-recipe.yaml": 1860,
+              "file:docs/overview.md": 10356,
+              "file:internal/landingshed/doc.go": 2508,
+              "file:internal/loomcli/doc.go": 3756,
+              "file:internal/loomrecipe/doc.go": 576,
+              "file:internal/shedrecipe/doc.go": 1188,
+              "file:pattern/PATTERN-shed-recipe-registry.md": 276,
+              "package:.": 2000,
+              "package:contracts/recipes": 2000,
+              "package:docs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomrecipe": 2000,
+              "package:internal/shedbuild": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:docs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomrecipe": 2000,
+              "tests:internal/shedbuild": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 410,
+            "written": 124380
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "12-retire-pr-review-keys",
+        "13-pr-review-row-waits"
+      ],
+      "profile": "wide",
+      "estimate": 218418,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75700,
+        "read_union": 51212,
+        "cards": [
+          {
+            "card": 12,
+            "card_text": 324,
+            "reads": {
+              "file:internal/darnengine/doc.go": 408,
+              "file:internal/darnengine/template.yaml": 144,
+              "file:internal/loomengine/template.yaml": 684,
+              "package:internal/configreg": 2000,
+              "package:internal/darnengine": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/darnengine": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 76,
+            "written": 23124
+          },
+          {
+            "card": 13,
+            "card_text": 1032,
+            "reads": {
+              "file:docs/overview.md": 10356,
+              "file:internal/landingshed/doc.go": 2508,
+              "file:internal/loomcli/doc.go": 3756,
+              "package:docs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:docs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 224.5,
+            "written": 68382
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "14-pr-review-session",
+        "15-finalize-through-pull-request",
+        "16-teardown-closes-pull-request"
+      ],
+      "profile": "wide",
+      "estimate": 284084,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82700,
+        "read_union": 51648,
+        "cards": [
+          {
+            "card": 14,
+            "card_text": 852,
+            "reads": {
+              "file:README.md": 3000,
+              "file:internal/landingshed/doc.go": 2508,
+              "file:internal/loomcli/doc.go": 3756,
+              "file:internal/loomshed/doc.go": 1164,
+              "file:internal/runproc/doc.go": 348,
+              "package:.": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/runproc": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:.": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/runproc": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 266.5,
+            "written": 80802
+          },
+          {
+            "card": 15,
+            "card_text": 684,
+            "reads": {
+              "file:PATTERN.md": 744,
+              "file:internal/landingshed/doc.go": 2508,
+              "package:.": 2000,
+              "package:internal/landingshed": 2000,
+              "tests:.": 2000,
+              "tests:internal/landingshed": 2000
+            },
+            "messages": 89.5,
+            "written": 27534
+          },
+          {
+            "card": 16,
+            "card_text": 600,
+            "reads": {
+              "file:PATTERN.md": 744,
+              "file:internal/pairteardown/doc.go": 1992,
+              "package:.": 2000,
+              "package:cmd/lym": 2000,
+              "package:internal/pairteardown": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/pairteardown": 2000
+            },
+            "messages": 136,
+            "written": 41400
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "17-quiet-check-pr-review-wait"
+      ],
+      "profile": "wide",
+      "estimate": 122264,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 89700,
+        "read_union": 10952,
+        "cards": [
+          {
+            "card": 17,
+            "card_text": 312,
+            "reads": {
+              "file:internal/battenshed/doc.go": 2640,
+              "package:internal/battencli": 2000,
+              "package:internal/battenshed": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenshed": 2000
+            },
+            "messages": 71,
+            "written": 21612
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "efb265ffaadca694a9a3376c136ee485",
+  "masterSessionId": "bb34478a-90e2-48df-9565-cbd15855e3d8",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "parse-owner-repo-shapes",
+      "cards": [
+        "01-parse-owner-repo-shapes",
+        "02-beam-pull-request-key",
+        "03-board-pull-request-field",
+        "04-pr-review-config-keys",
+        "05-shuttle-unawaited-session"
+      ],
+      "cardHashes": {
+        "01-parse-owner-repo-shapes": "9cb3abb43c4aa314409ef811cfb9e94c99c52d2ed8d2d092c1bbd884757e1dfe",
+        "02-beam-pull-request-key": "dbe93d07019ee9233de84e728ae3e3a1f9b104928c3885d40c2ba77370638383",
+        "03-board-pull-request-field": "127fd37db3c9ea785d8183fdf139645799bfe277ed6106240201a6870165c5ca",
+        "04-pr-review-config-keys": "acec77843c0351b48cfb415099166887a1122b21ec407d481e10bfaea5a9317e",
+        "05-shuttle-unawaited-session": "8f37917ca794b10c821ab6c90bb214e0e28ee05e4091fc26c8ef613b351d166f"
+      },
+      "startSha": "db5c48ffbae5344320a3ce756bc4c2fcfba52292",
+      "kind": "fork",
+      "spawnedAt": "2026-10-30T06:49:41Z",
+      "sessionId": "bb34478a-90e2-48df-9565-cbd15855e3d8",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
