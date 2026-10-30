@@ -273,6 +273,13 @@ Rationale: PATTERN-transient-stop's classes are failures and a pause is not one,
   - operator-cannot-approve-own-pr (class decision, severity BLOCKING, open in rounds 1)
 <!-- /lym:carry-over Discussion-Review -->
 
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/plan/round-3-review.md; fixer report: _lym/reviews/plan/round-3-fixer-report.md.
+  - continue-poll-breaks-once-a-minute-bound (class consistency, severity MEDIUM, open in rounds 1, 2, 3)
+  - landingshed-import-allowlist-unedited (class scope, severity BLOCKING, open in rounds 2, 3)
+<!-- /lym:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - D1: `beam.yaml` resolves `pull_request` to `on` when no layer sets it, refuses a value outside the three with its way forward, and refuses it in a local layer.
