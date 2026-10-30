@@ -1,6 +1,6 @@
 # Cortex XDR slows every process start of a gate run on OSL-1046
 
-`gate-cortex-launch-cost` · Note · enhancement, gate
+`gate-fewer-launches` · Note · enhancement, gate
 
 ## Seen (operator and hub orch, 2026-10-30)
 
