@@ -644,7 +644,7 @@
       "id": 920,
       "handle": "E9",
       "slug": "commit-signature-credit",
-      "title": "Landing commits credit LoomYard and list the engines used, with no co-author",
+      "title": "Landing commits drop Co-Authored-By and Lym-Task, and carry an optional credit listing the engines used",
       "kind": "note",
       "labels": [
         "enhancement",
@@ -653,10 +653,10 @@
       "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "Replace the Co-Authored-By line per engine with one credit to LoomYard that lists the LLM services the task used.",
-      "body": "## Seen (operator, 2026-10-30)\n\nA landing commit ends with `Co-Authored-By: Claude \u003cnoreply@anthropic.com\u003e`, from `engine_trailers.claude` in the landing config (`internal/landingshed/template.yaml`), and a Codex run would add `Co-Authored-By: Codex` the same way.\nThat makes each engine a co-author of the commit, which the operator does not want.\nThe commit's last line is `Lym-Task: \u003cslug\u003e`, added by `taskTrailer` in `internal/landingshed/finalize.go`.\n\n## Design (operator, 2026-10-30)\n\n- No engine is credited as a co-author: no `Co-Authored-By` line for Claude, Codex or any other engine.\n- The commit ends with a credit line to LoomYard followed by the LLM services the task actually used, for instance `Created using LoomYard (\u003cdomain\u003e), running Claude (\u003cdomain\u003e), Codex (\u003cdomain\u003e)`.\n- An engine is listed only when it ran a session in the task, as `engine_trailers` already decides.\n- The wording and the domains are configurable in the landing config; the default carries the credit to LoomYard.\n- The same line serves the pull request's body, so a commit and its pull request carry one signature.\n\n## Open\n\n- The domain written after LoomYard and after each engine.\n- Whether `Lym-Task: \u003cslug\u003e` stays as the last line, and whether the signature is a plain line or a git trailer: a plain line is never read as a co-author.\n",
+      "brief": "Replace the per-engine Co-Authored-By line and the Lym-Task line with one optional credit block that lists the LLM services the task used.",
+      "body": "## Seen (operator, 2026-10-30)\n\nA landing commit ends with `Co-Authored-By: Claude \u003cnoreply@anthropic.com\u003e`, from `engine_trailers.claude` in the landing config (`internal/landingshed/template.yaml`), and a Codex run would add `Co-Authored-By: Codex` the same way.\nThat makes each engine a co-author of the commit, which the operator does not want.\nThe commit's last line is `Lym-Task: \u003cslug\u003e`, added by `taskTrailer` in `internal/landingshed/finalize.go`; the operator sees no reason for it.\n\n## Design (operator, 2026-10-30)\n\n- No engine is credited as a co-author: no `Co-Authored-By` line for Claude, Codex or any other engine.\n- `Lym-Task: \u003cslug\u003e` is removed.\n  A landing commit and its pull request carry no trace of LoomYard or of its use, bar the optional credit below.\n- The commit ends with an optional credit block, written as plain lines, never as git trailers:\n\n  ```\n  Created using Loomyard, running\n   - Claude \u003cnoreply@anthropic.com\u003e\n   - Codex \u003ccodex@openai.com\u003e\n  ```\n\n- An engine's line appears only when that engine ran a session in the task, as `engine_trailers` already decides.\n  With no engine used, the block reads `Created using Loomyard` with no `running` and no list.\n- The credit is optional and its wording and each engine's line are configurable in the landing config.\n- The same block serves the pull request's body, so a commit and its pull request carry one signature.\n",
       "created": "2026-10-30T14:11:42Z",
-      "revised": "2026-10-30T14:11:42Z"
+      "revised": "2026-10-30T14:16:43Z"
     }
   ],
   "prime_owner": "osl-1046",
