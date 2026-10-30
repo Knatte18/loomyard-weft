@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **A module label for every package group under internal/**<br>• Several lym modules have no label, so entries take the nearest one that says something else<br>• `profile: docs` | [`label-coverage`](design-label-coverage.md) | darn | blocked · PR-Review | osl-1046 | 1d<br>1h | board |
 | T2 | **Land a run whose branch has no commits beyond its parent without a pull request**<br>• PR-Review fails with 422 on an empty branch; it must skip the pull request and land empty, and the failure text must not blame the token<br>• `profile: light` | [`pr-review-empty-branch`](design-pr-review-empty-branch.md) | darn | PR-Review | osl-1046 | 1h<br>48m | landing |
-| T3 | **Revise the board README rendering**<br>• The README hides project members behind a bare link and has other unclear spots; the operator wants the rendering revised.<br>• `profile: light` | [`readme-omits-csharp-note`](design-readme-omits-csharp-note.md) | darn | Drift-Baseline | osl-1046 | 1d<br>1m | board |
+| T3 | **Revise the board README rendering**<br>• The README hides project members behind a bare link and has other unclear spots; the operator wants the rendering revised.<br>• `profile: light` | [`readme-omits-csharp-note`](design-readme-omits-csharp-note.md) | darn | Darn-Write | osl-1046 | 1d<br>1m | board |
 
 ### Ready (0)
 
