@@ -650,6 +650,25 @@
       "created": "2026-10-30T13:27:39Z",
       "revised": "2026-10-30T13:27:39Z",
       "profile": "speed"
+    },
+    {
+      "id": 916,
+      "handle": "B4",
+      "slug": "dobby-land-notice-needs-flag",
+      "title": "Dobby posts the can-land notice only once the beam is flagged ready",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "dobby",
+        "workspaces"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A new beam with no work yet made its dobby ask the orch to land it; dobby should wait for a flag set from the beam worktree.",
+      "body": "## Seen (operator, 2026-10-30)\n\nA beam was created under the Models hub.\nOnce its orch was up, the beam's dobby told the orch that nothing runs under the beam and asked it to run `lym beam land \u003cslug\u003e`, though the beam had only just been made and had no work yet.\nThe notice is `landNotice` in `internal/dobbyengine/landnotice.go`: it goes out whenever the landing's refusal finds nothing working under the beam, so an empty new beam reads as a finished one.\n\n## Design (operator, 2026-10-30)\n\n- Dobby waits with the can-land notice until the beam's own worktree has set a flag saying the beam is considered finished and ready to merge.\n- Without the flag, nothing working under the beam is no cause for a notice, however long the beam has been idle.\n- The flag is set from the beam's worktree, never by dobby.\n\n## Open\n\n- Who sets the flag and through which verb: the beam's orch on the operator's word, or a verb of its own.\n- Where the flag lives: a field on the beam's project entry or a record in the beam's `_lym`.\n- Whether `lym beam land` itself refuses without the flag, or only the notice depends on it.\n",
+      "created": "2026-10-30T13:36:18Z",
+      "revised": "2026-10-30T13:36:18Z"
     }
   ],
   "prime_owner": "osl-1046",
