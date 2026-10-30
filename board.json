@@ -648,7 +648,7 @@
       "isolated": false,
       "brief": "PR-Review fails with 422 on an empty branch; it must skip the pull request and land empty, and the failure text must not blame the token",
       "body": "## Seen (hub orch and operator, 2026-10-30)\n\nRun `label-coverage` (darn, `pull_request` on) edited no repository file: the labels it added live in the hub `board.yaml`, outside the worktree, so it has nothing to land.\nIts branch equalled `main`, so PR-Review failed with GitHub's 422 \"No commits between main and label-coverage\" on every retry, and the run stopped with a question to the orch.\nThe stop report's way forward told the operator to check the GitHub token (`GH_TOKEN`, `GITHUB_TOKEN`, `gh auth login`) although the call reached GitHub and was refused on validation: the text names the token for every failed open.\n\n## Design (operator, 2026-10-30)\n\nA run whose task branch has no commits beyond its parent needs no pull request, and lym must support it: PR-Review skips the push and the pull request, and the landing goes on to finish as an empty landing.\nFinalize then lands nothing, marks the board entry done and lets Worktree-Teardown run as for any landing, with no new commit on `main`.\nThe way-forward text of a failed open names the token only for an authentication failure (401, 403), and says what a 422 means.\nThe check that the branch has commits is made by git, never by reading GitHub's error.\n\n## Check\n\nThe stuck run `label-coverage` resumes and lands empty with the fixed binary.\n",
-      "status": "running · PR-Review",
+      "status": "running · Finalize",
       "created": "2026-10-30T10:31:16Z",
       "revised": "2026-10-30T11:30:52Z",
       "profile": "light"
