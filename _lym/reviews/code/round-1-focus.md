@@ -1,0 +1,15 @@
+---
+round: 1
+focus:
+  - "internal/creelengine/verbs.go, deliver.go, pool.go: does every end of the ring's answer path before the journaled acknowledgement (client gone, daemon stopping after the outcome was queued but before it was written, connection drop) release the ring's claim, and does a ring with an empty claim leave the waiter registered without ringing?"
+  - "internal/creelengine/verbs.go handOut and the acknowledgement path: on a journal write failure, does it release every id left unjournaled, and does the ring's echo keep exactly the lines of ids acknowledged before the failing write (journaled or skipped as no longer the holder's), none of the failing id and later ones?"
+  - "internal/creelengine echo handling (verbs.go, flags.go): is the echo handed out ahead of mail under the shared 8 KiB budget with the first item always handed out, kept back by neither pause, hold nor Stop cap, dropped at acknowledgement and kept at release, and does the standing flag in flaggedFilesLocked include an owed echo?"
+  - "internal/creelcli/hookwait.go and internal/creelengine/client.go: once a ring carrying mail reaches the handler, is the resume path off for every connection-loss error at the acknowledgement write or confirmation; are the exit codes right (wake code after the acknowledgement is written whether confirmed, refused or lost; 0 when the lines or acknowledgement write fails or the ring has no lines)?"
+  - "internal/creelcli/hookread.go and internal/shuttleengine/claudeengine: do the Stop and PostToolUse outputs match D1, D2 and D6 exactly (JSON keys, no decision or reason, systemMessage only where owed, exit 0 vs 1 including the echo-only Stop exit 1), and does every Claude-specific shape stay in claudeengine with creelcli engine-neutral?"
+  - "internal/shuttleengine/claudeengine/settings.go: do rewakeMessage and rewakeSummary land on the waiter entry only with the specified text, and does the merged Stop command still record the turn end on any exit other than 0?"
+  - "D5 logging in internal/creelengine: one line per claim path (tool, stop, ring) and per bell send, with the right levels (Info for handed out or released and bells, Warn for ack-failed replacing the old journal-failure Warn, Debug for nothing handed out), every nothing-handed-out reason covered, and ring lines listing no echo ids; is the marked-waiter request field tolerant of an older daemon and an unmarked waiter rung without mail?"
+  - "Doc comments and package docs (creelengine/doc.go, creelcli/doc.go, claudeengine/doc.go, pool.go ring outcome comment, shuttleengine docs): do they state the new renderings and bounds, including the changed hook-wait resume sentence, and drop the superseded block design?"
+  - "Test economy in the new creelengine/creelcli tests (deliver_test.go, server_test.go, hookread_test.go, cli_test.go, smoke_llm_test.go): any new test duplicating an existing test's coverage, and any behavior the diff adds without coverage, each named."
+---
+
+Seed focus from the decision record's D1 to D6 and the diff's file list; no round has been judged.
