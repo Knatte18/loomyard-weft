@@ -10,7 +10,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 The root project: the entries under no other project.
 
-### Tasks (3)
+### Tasks (4)
 
 Concrete and claimable; only a task can run.
 
@@ -29,15 +29,16 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Draft (1)
+#### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Dobby says why a task is not started, and tells the orch of a failing start in time**<br>• A start that failed every pass for an hour showed no reason in beam status and reached the orch an hour late.<br>• `profile: solid` | [`dobby-start-failures`](design-dobby-start-failures.md) | darn | T3 | 1d<br>0m | dobby, batten, creel |
+| T4 | `draft` **A beam run is seeded at Preflight, a row its pawl recipe lacks**<br>• The shared seed starts every inner run at Preflight; pawl has no such row, so a new beam stops at once. Pawl gets a Preflight row.<br>• `profile: light` | [`pawl-starts-at-preflight`](design-pawl-starts-at-preflight.md) | darn |  | 1m<br>0m | pawl, preflight |
 
-### Notes (30)
+### Notes (29)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -49,12 +50,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 7d<br>2d | loom, stencil |
 | R8 |  | **Ideas from r/ClaudeCode "one line in your CLAUDE.md": fit for LoomYard and bench measures**<br>• About 30 ideas judged against our stencils and rules; top 8 ranked for a bench, a few cheap enough without one | [`claude-md-thread-ideas`](design-claude-md-thread-ideas.md) | 3d<br>6h | stencil, loom, burler |
 
-#### Bugs (2)
+#### Bugs (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Stop-hook creel mail arrives twice and is labelled as an error**<br>• One creel mail shows twice at the Stop hook, once as feedback and once as Stop hook error, with the hook command text in the model context | [`stop-hook-mail-doubled`](design-stop-hook-mail-doubled.md) | 1d<br>6h | creel |
-| B4 |  | **A beam run is seeded at Preflight, a row its pawl recipe lacks**<br>• The shared seed starts every inner run at Preflight; pawl has no such row, so a new beam stops at once. Pawl gets a Preflight row. | [`pawl-starts-at-preflight`](design-pawl-starts-at-preflight.md) | 1m<br>1m | pawl, preflight |
 
 #### Enhancements (10)
 
