@@ -1,0 +1,13 @@
+{
+  "subject": {
+    "kind": "code",
+    "merge_base": "9c23208ec377f1796c24e175335ee28b700bb0de",
+    "head": "9c23208ec377f1796c24e175335ee28b700bb0de",
+    "full_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "base": "9c23208ec377f1796c24e175335ee28b700bb0de",
+  "generation": 1,
+  "round": 0,
+  "settled_at": "2026-10-30T10:29:53Z",
+  "settled": true
+}
