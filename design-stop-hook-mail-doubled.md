@@ -2,6 +2,11 @@
 
 `stop-hook-mail-doubled` · Note · bug, creel
 
+## Fixed (2026-10-30)
+
+The `creel-mail-delivered-once` landing fixed this: a Stop delivery now prints `additionalContext` alone with no error label, the idle ring hands the mail over once, and the model and the operator each see a mail once.
+The note stays until the operator confirms with the tier3 `TestSmokeCreelHookDelivery` smoke on a real session.
+
 ## Seen (operator and hub orch, 2026-10-29)
 
 Each creel mail reaches the operator's terminal twice at a Stop hook:

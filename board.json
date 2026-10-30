@@ -542,9 +542,9 @@
       "depends_on": [],
       "isolated": false,
       "brief": "One creel mail shows twice at the Stop hook, once as feedback and once as Stop hook error, with the hook command text in the model context",
-      "body": "## Seen (operator and hub orch, 2026-10-29)\n\nEach creel mail reaches the operator's terminal twice at a Stop hook:\n\n- a `Stop hook feedback` block headed `Stop says: [creel] #N from ...` with the mail text;\n- then `Ran 2 stop hooks` with a `Stop hook error: [creel] Mail for you arrived... additional context` line and a second `Stop hook feedback: [creel] #N ...` with the mail text again.\n\nA normal delivery is labelled `Stop hook error`, and the hook command text reaches the model.\nThe installed `lym` carries the fix of `creel-hook-delivery-fixes`, so the bug stands in the current build.\n\n## Expected\n\nOne message per mail, delivered once, labelled as a delivery and not as an error, with no hook command text in the model's context.\n",
+      "body": "## Fixed (2026-10-30)\n\nThe `creel-mail-delivered-once` landing fixed this: a Stop delivery now prints `additionalContext` alone with no error label, the idle ring hands the mail over once, and the model and the operator each see a mail once.\nThe note stays until the operator confirms with the tier3 `TestSmokeCreelHookDelivery` smoke on a real session.\n\n## Seen (operator and hub orch, 2026-10-29)\n\nEach creel mail reaches the operator's terminal twice at a Stop hook:\n\n- a `Stop hook feedback` block headed `Stop says: [creel] #N from ...` with the mail text;\n- then `Ran 2 stop hooks` with a `Stop hook error: [creel] Mail for you arrived... additional context` line and a second `Stop hook feedback: [creel] #N ...` with the mail text again.\n\nA normal delivery is labelled `Stop hook error`, and the hook command text reaches the model.\nThe installed `lym` carries the fix of `creel-hook-delivery-fixes`, so the bug stands in the current build.\n\n## Expected\n\nOne message per mail, delivered once, labelled as a delivery and not as an error, with no hook command text in the model's context.\n",
       "created": "2026-10-29T13:23:27Z",
-      "revised": "2026-10-29T13:23:56Z"
+      "revised": "2026-10-30T07:10:30Z"
     },
     {
       "id": 908,
