@@ -24,14 +24,15 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (30)
+## Notes (31)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Research (3)
+### Research (4)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
+| R1 |  | **Research: a closed area for lym so bypass permissions is safe**<br>• Weigh ways to run the whole lym process tree in a sandbox on Linux, with controlled exits, and what each costs lym | [`sandbox-closed-area`](design-sandbox-closed-area.md) | 0m<br>0m | shuttle, reed, fabric, batten, dobby, creel, claude, deploy |
 | R5 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 7d<br>2d | webster |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 7d<br>1d | loom, stencil |
 | R8 |  | **Ideas from r/ClaudeCode "one line in your CLAUDE.md": fit for LoomYard and bench measures**<br>• About 30 ideas judged against our stencils and rules; top 8 ranked for a bench, a few cheap enough without one | [`claude-md-thread-ideas`](design-claude-md-thread-ideas.md) | 3d<br>1d | stencil, loom, burler |
