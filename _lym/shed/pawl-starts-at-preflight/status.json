@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -28,6 +28,33 @@
       "output": "",
       "at": "2026-10-30T13:55:06Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/pawl-starts-at-preflight/_lym/landing/summary.md",
+      "at": "2026-10-30T14:08:38Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-30T13:59:38.343805097Z",
+          "end": "2026-10-30T14:00:01.147273917Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-30T14:00:01.227659208Z",
+          "end": "2026-10-30T14:08:37.56285679Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-30T14:08:37.65443883Z",
+          "end": "2026-10-30T14:08:37.65449439Z"
+        }
+      ]
     }
   ],
   "product": {
