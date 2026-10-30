@@ -1,6 +1,6 @@
 # A beam run is seeded at Preflight, a row its pawl recipe lacks
 
-`pawl-starts-at-preflight` · Task · bug, pawl, preflight · running · Code-Burler-Fix
+`pawl-starts-at-preflight` · Task · bug, pawl, preflight · running · Code-Bouncer
 
 ## Seen (operator, 2026-10-30)
 
