@@ -17,10 +17,25 @@ The file a message becomes carries its sender: the path of the sender hub's inbo
 A message needs a receiver, so the daemon knows whom to give it to.
 A reply is addressed from those two fields, so the replier knows which agent in which hub to answer.
 
+## Verifying the sender (operator, 2026-10-30)
+
+A file cannot prove its sender: any process of the same user can write one, so a prompt-injected agent could write `ly:orch` in the sender field.
+The sending daemon, which reads the caller from `SO_PEERCRED` as it does today, writes the file.
+The receiving daemon then asks the sending hub's daemon to confirm it:
+
+1. The file names the sender hub's path, and the receiver derives that hub's socket name from it, as `creel-<shortname>-<hash>.sock`, with no registry.
+2. The receiver sends one call in creel's JSON-lines protocol, such as `confirm`, with the message id, the receiver and a hash of the text.
+3. The sender's daemon looks in its own journal for a message from that strand to that receiver with that hash, and answers yes or no, never the text.
+4. Only on yes does the receiver show the sender as that strand; otherwise the message shows as unverified.
+
+This is a call and not a signature on the file, since a signature needs a secret and every agent of the same user can read a secret file; the sending daemon cannot be fooled, because it reads its caller from the process and knows what it sent.
+A message can be confirmed once, so a copied file cannot be reused.
+The journal's retention bounds how late a confirmation can come, so the receiver confirms when the message arrives.
+A sending daemon that is down is started as a client starts it today, or the message stays unverified.
+The check works only within one user, since the sockets do.
+
 ## Open design points
 
-- Whether a file is enough to name the sender: any process of the same user can write a file, so a file's sender field can be forged by a prompt-injected agent.
-  One way: the sending daemon, which reads the caller from `SO_PEERCRED` as it does today, writes the file, and the receiving daemon asks the sending hub's daemon through its socket to confirm the message before showing the sender as that strand; an unconfirmed file shows as unverified.
 - Where the folder lives and how a sender addresses a hub: a path derived from the hub path, like the socket, and a record on the machine that maps a shortname to a hub path.
 - What a reply does across the hub border: it goes to the sender's inbox folder, addressed to the agent the file names.
 - How a role treats mail from another hub: as data to weigh, never as the operator's instruction, since it is a channel for prompt injection into the receiving orch.
