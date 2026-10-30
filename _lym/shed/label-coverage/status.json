@@ -53,6 +53,15 @@
       "budget_exempt": true,
       "routed_to": "Run-Shed",
       "machine": "osl-1046"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child blocked → running at Finalize",
+      "at": "2026-10-30T12:25:00Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "machine": "osl-1046"
     }
   ]
 }
