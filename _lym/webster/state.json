@@ -1,6 +1,6 @@
 {
   "runGuid": "ae29f98bec581d819b832c361e9a6884",
-  "planFingerprint": "052414ab40876b70d7881940dc846c9a376ad1310c2e27b5484a0b189e2a1012",
+  "planFingerprint": "2752d62ac89c6f7e7c9551c34b6b3f103bc25845abd11cd78f3602b8a0caa6c2",
   "planFileHashes": {
     "00-overview.md": "20a30a1e1326a3a4fcd4072a7859b5064c10aa3191f23ce2f114fe7402e88a48",
     "01-parse-owner-repo-shapes.md": "9cb3abb43c4aa314409ef811cfb9e94c99c52d2ed8d2d092c1bbd884757e1dfe",
@@ -15,8 +15,8 @@
     "10-pr-review-stencil.md": "066a0799d5dfdc901f5f064cec9efc5af889a786d723f7bf5aa7c71206b7098e",
     "11-pr-review-row-opens.md": "7ae6d7f5bc4dcb8ff14518e611145eb823b56643950d1215ccc26a68523185ce",
     "12-retire-pr-review-keys.md": "7e19ca63cd8a7548c648bc6ffaeddb3f64bf4ea35f75c2beffd82259134751cc",
-    "13-pr-review-row-waits.md": "aa95e7e8f3d87bef31413ef674665ad1af024c0c9517ab437eb86d2b24520e43",
-    "14-pr-review-session.md": "1af3964c04f0b4fb76a6e7eb22f52fb967560f7c784dce3cc5d88a683900ce5d",
+    "13-pr-review-row-waits.md": "bbada028e4cd910de915b8fd9b4a84676c54cf527a9662f086795225e9ffb3c4",
+    "14-pr-review-session.md": "49d56037663c8706d3f2b02c31b31411a7becc06ba4f6e86e21b410c9daf3db9",
     "15-finalize-through-pull-request.md": "07dd0a7b42af390fbedb43a31a57f5fb2f1b95d9dcdfb944d62935561787b65a",
     "16-teardown-closes-pull-request.md": "71f673931aed5a1936d6c8dbdf271efc8fa2b23f2bcacce92795fc52074e6a9a",
     "17-quiet-check-pr-review-wait.md": "f304a783a2c220123fb033636febe048b1940f51a38399088b84f1e6a9cd02a0"
@@ -492,7 +492,7 @@
       }
     }
   ],
-  "currentBatch": 12,
+  "currentBatch": 0,
   "masterStrand": "efb265ffaadca694a9a3376c136ee485",
   "masterSessionId": "bb34478a-90e2-48df-9565-cbd15855e3d8",
   "masterEngine": "claude",
@@ -586,15 +586,36 @@
       ],
       "cardHashes": {
         "12-retire-pr-review-keys": "7e19ca63cd8a7548c648bc6ffaeddb3f64bf4ea35f75c2beffd82259134751cc",
-        "13-pr-review-row-waits": "aa95e7e8f3d87bef31413ef674665ad1af024c0c9517ab437eb86d2b24520e43"
+        "13-pr-review-row-waits": "bbada028e4cd910de915b8fd9b4a84676c54cf527a9662f086795225e9ffb3c4"
       },
       "startSha": "91820d42393a913d857c9d16bc93b1c1209c95c3",
       "kind": "fork",
       "spawnedAt": "2026-10-30T07:21:43Z",
       "sessionId": "bb34478a-90e2-48df-9565-cbd15855e3d8",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "12-retire-pr-review-keys",
+        "status": "done",
+        "head_sha": "57c0e718819fb110b696c5498d1163f8650a04a9",
+        "deviations": [
+          "internal/landingshed/prreview.go",
+          "internal/landingshed/prreview_test.go",
+          "internal/landingshed/prreview_wait_test.go",
+          "internal/landingshed/verifygate.go",
+          "internal/loomcli/landingdeps.go"
+        ]
+      },
+      "cardShas": [
+        "57c0e718819fb110b696c5498d1163f8650a04a9"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-a34d5a79d3659b210.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-a34d5a79d3659b210.jsonl"
+      ]
     },
     "6": {
       "slug": "publish-shell-guard",
@@ -642,6 +663,7 @@
   "seenForkTranscripts": [
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-afa7f3c83f3dcfa69.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-a8c3a2ee1602a596c.jsonl",
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-ae68f54d64eb45da9.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-ae68f54d64eb45da9.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-a34d5a79d3659b210.jsonl"
   ]
 }
