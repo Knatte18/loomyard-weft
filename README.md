@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-30 13:44 UTC; every age below is as of then.
+Rendered 2026-10-30 13:45 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -10,19 +10,18 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 The root project: the entries under no other project.
 
-### Tasks (3)
+### Tasks (2)
 
 Concrete and claimable; only a task can run.
 
-#### Running (3)
+#### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Dobby sends the run notices, not a row of the batten recipe**<br>• Move quiet, driver-dead and api-error detection from battenshed/notice.go into dobby loop over the runs it drives<br>• `profile: solid` | [`notices-from-dobby`](design-notices-from-dobby.md) | darn | Finalize | osl-1046 | 1d<br>1h | dobby, batten |
-| T2 | **README shows each project's slug**<br>• A project section in the README, and its page, show the project slug beside handle and title.<br>• `profile: speed` | [`readme-project-slug`](design-readme-project-slug.md) | darn | Finalize | osl-1046 | 16m<br>16m | board |
-| T3 | **Dobby posts the can-land notice only once the beam is flagged ready**<br>• A new beam with no work yet made its dobby ask the orch to land it; dobby should wait for a flag set from the beam worktree.<br>• `profile: solid` | [`dobby-land-notice-needs-flag`](design-dobby-land-notice-needs-flag.md) | darn | Darn-Write | osl-1046 | 8m<br>0m | dobby, workspaces |
+| T2 | **README shows each project's slug**<br>• A project section in the README, and its page, show the project slug beside handle and title.<br>• `profile: speed` | [`readme-project-slug`](design-readme-project-slug.md) | darn | Finalize | osl-1046 | 18m<br>18m | board |
+| T3 | **Dobby posts the can-land notice only once the beam is flagged ready**<br>• A new beam with no work yet made its dobby ask the orch to land it; dobby should wait for a flag set from the beam worktree.<br>• `profile: solid` | [`dobby-land-notice-needs-flag`](design-dobby-land-notice-needs-flag.md) | darn | Darn-Write | osl-1046 | 9m<br>1m | dobby, workspaces |
 
 #### Ready (0)
 
@@ -84,3 +83,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F15 |  | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 2w<br>6h | reed, config, batten |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>1d | burler, shed, orch, quarry, report |
 | F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 7d<br>3d | loom, shed, batten, workspaces, burler |
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T1 | **Dobby sends the run notices, not a row of the batten recipe**<br>• Move quiet, driver-dead and api-error detection from battenshed/notice.go into dobby loop over the runs it drives<br>• `profile: solid` | [`notices-from-dobby`](design-notices-from-dobby.md) | 1d<br>1h | dobby, batten |
