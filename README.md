@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-30 13:42 UTC; every age below is as of then.
+Rendered 2026-10-30 13:43 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -10,7 +10,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 The root project: the entries under no other project.
 
-### Tasks (2)
+### Tasks (3)
 
 Concrete and claimable; only a task can run.
 
@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Dobby sends the run notices, not a row of the batten recipe**<br>• Move quiet, driver-dead and api-error detection from battenshed/notice.go into dobby loop over the runs it drives<br>• `profile: solid` | [`notices-from-dobby`](design-notices-from-dobby.md) | darn | Finalize | osl-1046 | 1d<br>1h | dobby, batten |
-| T2 | **README shows each project's slug**<br>• A project section in the README, and its page, show the project slug beside handle and title.<br>• `profile: speed` | [`readme-project-slug`](design-readme-project-slug.md) | darn | Darn-Write | osl-1046 | 14m<br>14m | board |
+| T2 | **README shows each project's slug**<br>• A project section in the README, and its page, show the project slug beside handle and title.<br>• `profile: speed` | [`readme-project-slug`](design-readme-project-slug.md) | darn | Darn-Write | osl-1046 | 16m<br>16m | board |
 
 #### Ready (0)
 
@@ -29,7 +29,15 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Notes (32)
+#### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T3 | `draft` **Dobby posts the can-land notice only once the beam is flagged ready**<br>• A new beam with no work yet made its dobby ask the orch to land it; dobby should wait for a flag set from the beam worktree. | [`dobby-land-notice-needs-flag`](design-dobby-land-notice-needs-flag.md) | loom |  | 7m<br>1m | dobby, workspaces |
+
+### Notes (31)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -41,14 +49,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 7d<br>2d | loom, stencil |
 | R8 |  | **Ideas from r/ClaudeCode "one line in your CLAUDE.md": fit for LoomYard and bench measures**<br>• About 30 ideas judged against our stencils and rules; top 8 ranked for a bench, a few cheap enough without one | [`claude-md-thread-ideas`](design-claude-md-thread-ideas.md) | 3d<br>6h | stencil, loom, burler |
 
-#### Bugs (4)
+#### Bugs (3)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Stop-hook creel mail arrives twice and is labelled as an error**<br>• One creel mail shows twice at the Stop hook, once as feedback and once as Stop hook error, with the hook command text in the model context | [`stop-hook-mail-doubled`](design-stop-hook-mail-doubled.md) | 1d<br>6h | creel |
 | B2 |  | **Dobby never starts a task whose slug has an old finished run record, and status gives no reason**<br>• A ready task sat unstarted for over an hour: batten refused its slug every pass, and beam status read ready to start | [`dobby-start-blocked-silently`](design-dobby-start-blocked-silently.md) | 23h<br>23h | dobby, batten |
 | B3 |  | **Dobby's notice for a start that keeps failing reached the orch over an hour late**<br>• Dobby failed to start a task every pass from 13:43Z, but its mail reached the orch only an hour later | [`dobby-start-notice-late`](design-dobby-start-notice-late.md) | 23h<br>23h | dobby, creel |
-| B4 |  | **Dobby posts the can-land notice only once the beam is flagged ready**<br>• A new beam with no work yet made its dobby ask the orch to land it; dobby should wait for a flag set from the beam worktree. | [`dobby-land-notice-needs-flag`](design-dobby-land-notice-needs-flag.md) | 5m<br>0m | dobby, workspaces |
 
 #### Enhancements (10)
 
