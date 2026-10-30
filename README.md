@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-30 13:43 UTC; every age below is as of then.
+Rendered 2026-10-30 13:44 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -14,7 +14,7 @@ The root project: the entries under no other project.
 
 Concrete and claimable; only a task can run.
 
-#### Running (2)
+#### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -22,14 +22,13 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Dobby sends the run notices, not a row of the batten recipe**<br>• Move quiet, driver-dead and api-error detection from battenshed/notice.go into dobby loop over the runs it drives<br>• `profile: solid` | [`notices-from-dobby`](design-notices-from-dobby.md) | darn | Finalize | osl-1046 | 1d<br>1h | dobby, batten |
 | T2 | **README shows each project's slug**<br>• A project section in the README, and its page, show the project slug beside handle and title.<br>• `profile: speed` | [`readme-project-slug`](design-readme-project-slug.md) | darn | Darn-Write | osl-1046 | 16m<br>16m | board |
+| T3 | **Dobby posts the can-land notice only once the beam is flagged ready**<br>• A new beam with no work yet made its dobby ask the orch to land it; dobby should wait for a flag set from the beam worktree.<br>• `profile: solid` | [`dobby-land-notice-needs-flag`](design-dobby-land-notice-needs-flag.md) | darn | Worktree-Create | osl-1046 | 7m<br>0m | dobby, workspaces |
 
-#### Ready (1)
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Dobby posts the can-land notice only once the beam is flagged ready**<br>• A new beam with no work yet made its dobby ask the orch to land it; dobby should wait for a flag set from the beam worktree.<br>• `profile: solid` | [`dobby-land-notice-needs-flag`](design-dobby-land-notice-needs-flag.md) | darn |  | 7m<br>0m | dobby, workspaces |
+_None._
 
 ### Notes (31)
 
