@@ -16,7 +16,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Creel mail reaches the model and the operator once, in one message, and is logged**<br>• Fix the doubled Stop-hook delivery and its error label, let the idle ring carry the mail, and log each delivery attempt<br>• `profile: solid` | [`creel-mail-delivered-once`](design-creel-mail-delivered-once.md) | loom | Code-Burler-Fix | osl-1046 | 1d<br>18h | creel |
+| T1 | **Creel mail reaches the model and the operator once, in one message, and is logged**<br>• Fix the doubled Stop-hook delivery and its error label, let the idle ring carry the mail, and log each delivery attempt<br>• `profile: solid` | [`creel-mail-delivered-once`](design-creel-mail-delivered-once.md) | loom | Code-Bouncer | osl-1046 | 1d<br>18h | creel |
 | T2 | **PR-Review opens a pull request and starts an interactive agent to discuss it**<br>• Build the PR-Review stub: a pull request per parent branch setting, a talkable agent on its own configured model, and a landing that follows the pull request | [`pr-review-row`](design-pr-review-row.md) | loom | Plan-Bouncer | osl-1046 | 18h<br>17h | loom, shed, batten, shuttle, config |
 
 ### Ready (0)
