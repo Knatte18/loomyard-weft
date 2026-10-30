@@ -1,10 +1,10 @@
 # Card 15 — finalize-through-pull-request
 
 **Create:**
-- `plan:internal/landingshed#Finalize.pullRequestLanding` -> `func (fz *Finalize) pullRequestLanding(ctx context.Context) (prLanding, shedengine.Outcome, shedengine.OutputPointer, error, bool)`
-- `plan:internal/landingshed#prLanding` -> `type prLanding struct`
-- `plan:internal/landingshed#Finalize.mergeOnGitHub` -> `func (fz *Finalize) mergeOnGitHub(ctx context.Context, parentHandle parentMerger, landing prLanding, title, message string) (shedengine.Outcome, shedengine.OutputPointer, error, bool)`
-- `plan:internal/landingshed#TestFinalize_PullRequest` -> `func TestFinalize_PullRequest(t *testing.T)`
+- `internal/landingshed#Finalize.pullRequestLanding`
+- `internal/landingshed#prLanding`
+- `internal/landingshed#Finalize.mergeOnGitHub`
+- `internal/landingshed#TestFinalize_PullRequest`
 
 **Edit:**
 - `internal/landingshed#Finalize.Call`
