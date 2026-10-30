@@ -6,47 +6,51 @@ Prime owner: `osl-1046`.
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (1)
+## Prime
+
+The root project: the entries under no other project.
+
+### Tasks (1)
 
 Concrete and claimable; only a task can run.
 
-### Running (1)
+#### Running (1)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Dobby sends the run notices, not a row of the batten recipe**<br>• Move quiet, driver-dead and api-error detection from battenshed/notice.go into dobby loop over the runs it drives<br>• `profile: solid` | [`notices-from-dobby`](design-notices-from-dobby.md) | darn | Drift-Verify | osl-1046 | 1d<br>32m | dobby, batten |
+| T1 | **Dobby sends the run notices, not a row of the batten recipe**<br>• Move quiet, driver-dead and api-error detection from battenshed/notice.go into dobby loop over the runs it drives<br>• `profile: solid` | [`notices-from-dobby`](design-notices-from-dobby.md) | darn | Code-Bouncer | osl-1046 | 1d<br>32m | dobby, batten |
 
-### Ready (0)
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
 _None._
 
-## Notes (31)
+### Notes (31)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Research (3)
+#### Research (3)
 
-| # | P | Note | Slug | Age<br>Revised | Labels |
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R5 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 7d<br>3d | webster |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 7d<br>2d | loom, stencil |
 | R8 |  | **Ideas from r/ClaudeCode "one line in your CLAUDE.md": fit for LoomYard and bench measures**<br>• About 30 ideas judged against our stencils and rules; top 8 ranked for a bench, a few cheap enough without one | [`claude-md-thread-ideas`](design-claude-md-thread-ideas.md) | 3d<br>6h | stencil, loom, burler |
 
-### Bugs (3)
+#### Bugs (3)
 
-| # | P | Note | Slug | Age<br>Revised | Labels |
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Stop-hook creel mail arrives twice and is labelled as an error**<br>• One creel mail shows twice at the Stop hook, once as feedback and once as Stop hook error, with the hook command text in the model context | [`stop-hook-mail-doubled`](design-stop-hook-mail-doubled.md) | 23h<br>6h | creel |
 | B2 |  | **Dobby never starts a task whose slug has an old finished run record, and status gives no reason**<br>• A ready task sat unstarted for over an hour: batten refused its slug every pass, and beam status read ready to start | [`dobby-start-blocked-silently`](design-dobby-start-blocked-silently.md) | 23h<br>23h | dobby, batten |
 | B3 |  | **Dobby's notice for a start that keeps failing reached the orch over an hour late**<br>• Dobby failed to start a task every pass from 13:43Z, but its mail reached the orch only an hour later | [`dobby-start-notice-late`](design-dobby-start-notice-late.md) | 23h<br>23h | dobby, creel |
 
-### Enhancements (10)
+#### Enhancements (10)
 
-| # | P | Note | Slug | Age<br>Revised | Labels |
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **A task that turns out to be a project is refiled as a project, keeping its Discussion findings**<br>• The agent files a note with its findings and tells the orch; the operator decides, then the run ends and a new beam spawns from the parent | [`beam-promote-keeps-discussion`](design-beam-promote-keeps-discussion.md) | 5d<br>5h | workspaces, batten, loom |
 | E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>1d | shuttle, codex |
@@ -59,9 +63,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 11d<br>3d | fabric, batten |
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 7d<br>1d | burler, claude |
 
-### Features (15)
+#### Features (15)
 
-| # | P | Note | Slug | Age<br>Revised | Labels |
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 3w<br>3d | burler |
 | F2 | H | **warp-visibility: LoomYard adds no instruction file to a repository**<br>• No CLAUDE.md or CLAUDE.local.md of lym in any repo; open: where a repo own rules for lym agents live out of sight of its team | [`warp-visibility`](design-warp-visibility.md) | 3w<br>1d | ide, fabric |
