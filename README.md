@@ -10,21 +10,20 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running (1)
+### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Research: a closed area for lym so bypass permissions is safe**<br>• Weigh ways to run the whole lym process tree in a sandbox on Linux, with controlled exits, and what each costs lym<br>• `profile: docs`<br>• `darn: writer opus[high]`<br>• `darn: writer_timeout_min 240` | [`sandbox-closed-area`](design-sandbox-closed-area.md) | darn | Worktree-Create | osl-1046 | 4m<br>3m | shuttle, reed, fabric, batten, dobby, creel, claude, deploy |
 | T2 | **PR-Review opens a pull request and starts an interactive agent to discuss it**<br>• Build the PR-Review stub: a pull request per parent branch setting, a talkable agent on its own configured model, and a landing that follows the pull request | [`pr-review-row`](design-pr-review-row.md) | loom | Webster | osl-1046 | 18h<br>17h | loom, shed, batten, shuttle, config |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Research: a closed area for lym so bypass permissions is safe**<br>• Weigh ways to run the whole lym process tree in a sandbox on Linux, with controlled exits, and what each costs lym<br>• `profile: docs`<br>• `darn: writer opus[high]`<br>• `darn: writer_timeout_min 240` | [`sandbox-closed-area`](design-sandbox-closed-area.md) | darn |  | 4m<br>3m | shuttle, reed, fabric, batten, dobby, creel, claude, deploy |
+_None._
 
 ## Notes (30)
 
