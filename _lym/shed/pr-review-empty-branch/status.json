@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -28,6 +28,51 @@
       "output": "",
       "at": "2026-10-30T11:32:09Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/pr-review-empty-branch/_lym/landing/summary.md",
+      "at": "2026-10-30T11:51:32Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-30T11:41:39.076862156Z",
+          "end": "2026-10-30T11:42:00.410446856Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-30T11:42:30.80321033Z",
+          "end": "2026-10-30T11:42:52.392829435Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-30T11:42:00.500433923Z",
+          "end": "2026-10-30T11:42:01.072982359Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-30T11:42:01.623725891Z",
+          "end": "2026-10-30T11:42:30.752541371Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-30T11:42:52.506667704Z",
+          "end": "2026-10-30T11:51:31.687844882Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-30T11:51:31.785756616Z",
+          "end": "2026-10-30T11:51:31.785825476Z"
+        }
+      ]
     }
   ],
   "product": {
