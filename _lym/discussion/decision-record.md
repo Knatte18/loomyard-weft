@@ -69,6 +69,12 @@ The entry says both that dobby starts the landing once the flag is set and that 
 This run builds the notice gate, option (A), the reading its title states.
 The parent took the choice between (A) and dobby writing the land request itself, (B), to the operator and asked for the parts both share to be built meanwhile; an `Added after Discussion` entry that picks (B) overrides this decision.
 
+### Added after Discussion (parent, 2026-10-30): Dobby lands a flagged beam itself
+
+Decision: Option B overrides D6: once the beam is flagged ready with lym beam ready and nothing works under it, dobby itself writes the land request, the same one lym beam land writes. Dobby posts a notice to the beam's orch only when it cannot, for instance when another machine owns the beam's parent. lym beam ready writes the record under the beam's _lym/landing/ and lym beam land refuses without it.
+
+Rationale: Operator, 2026-10-30: as soon as the flag is set, dobby starts the landing and teardown.
+
 ## Constraints
 
 - `PATTERN-durable-vs-ephemeral-state`: the record is tracked under `_lym`, its lock under `.lym` at the same subpath, both named through `internal/lymdirs` in `internal/loomengine`.
