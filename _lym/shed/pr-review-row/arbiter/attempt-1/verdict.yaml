@@ -1,0 +1,8 @@
+verdict: resume
+reason: |-
+  Cause hard-cap at round 3 of Plan-Bouncer. The one open design-wrong key, continue-poll-breaks-once-a-minute-bound (F2), is answered by the round-3 fix now in the plan: card 13 (13-pr-review-row-waits) gives `wait` the parameters `entryStatus *pullrequest.Status` and `entryReadAt time.Time`, starts the poll clock at the entry read, and makes the first wake use the handed status without a `Status` call. `TestPRReview_Wait` gains a re-entry row pinning exactly one `Status` call in the first minute, and the overview's `One immediate poll on the continue flag` bullet records that the entry read counts as the first poll. Card 11's step 6 stays consistent with it.
+  The other open keys are mechanical and also fixed. F1: card 14 (14-pr-review-session) adds internal/stencil, internal/languageconfig, internal/parentdirective and internal/editdirective to landingshedAllowedImports. internal/mergeresolve/spec.go imports stencil (line 95) and languageconfig.AppendSkills (line 107), and that function exists at internal/languageconfig/config.go:146. F3: card 11 (11-pr-review-row-opens) quotes and rewrites the two header sentences found in contracts/recipes/loom-recipe.yaml:36-37 and darn-recipe.yaml:27.
+  Severity fell from 12 to 6 to 3 findings across rounds, and no gating finding remains. Accepted per the hard-cap rule (the fix in place answers the finding).
+verbs:
+  - |-
+    lym loom circling accept pr-review-row
