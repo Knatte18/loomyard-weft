@@ -12,7 +12,3 @@ Note `landing-watch` took `workspaces` for dobby until the `dobby` label was add
 
 Every module gets its own label.
 Go through the packages under `internal/` once and add a label for each module that has none, with a description naming its packages, so the label an entry needs exists when the entry is written.
-
-## Open
-
-- Whether a label names its packages in its description, which a path-to-label check could read.
