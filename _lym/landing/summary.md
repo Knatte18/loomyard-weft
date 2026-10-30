@@ -1,33 +1,43 @@
-# Board README: a section per project, Prime below them, a Prio column
+# Board README: a section per open project, Prime below, Prio column
 
-The board README listed each project as one bullet with its brief, so a project's members showed only on its own `project-<slug>.md` page.
-A note filed under a project looked gone from the README, and a project with members looked as empty as one without.
+A note that was a member of a project rendered only on that project's page and left the README's type groups, while the README listed the project as a single line with its brief.
+The note looked gone, and a project with members looked as empty as one without.
+The README now gives every open project its own section, so no entry of an open project leaves its view.
 
-## What changes
+## What changes in the rendered board
 
-- **Project sections.**
-  After its header and intro, `README.md` holds one `##` section per open project on the board, nested projects included.
-  The heading links the project's handle and title to its page and counts its open members.
-  Under it come the brief and one table of the open members of every kind, laid out as a Notes type table (`#`, `Prio`, `Entry`, `Slug`, `Age<br>Revised`, `Labels`), or `_None._` when there are none.
-  Sections run depth-first: the root's projects in the root's order key and then by handle, each followed by its own nested projects in the same order.
-  The README's old Projects bullet list is gone; project pages keep theirs.
-- **Prime section.**
-  The root's own Tasks, Notes and Done move under a `## Prime` heading with a one-line meaning, below the project sections, each one heading level deeper (`### Tasks`, `#### Running`).
+- `README.md` opens, after its header and intro, with one `##` section per open project, nested projects included.
+  The heading links the project's handle and title to its file and counts its open members.
+  Under it come the brief, when there is one, and one table of its open members of every kind, laid out as a Notes type-group table with the Entry column in place of Note; an empty project shows `_None._`.
+  This replaces the README's Projects bullet list.
+  Project pages keep their Projects list of nested projects.
+- The root project's own Tasks, Notes and Done sections sit under a `## Prime` heading below the project sections, with one line saying it holds the entries under no other project.
+  Their headings drop one level (`### Tasks`, `#### Running`), and the Prime heading carries no count.
   Project pages keep their heading levels.
-- **Prio column.**
-  The priority column of the Notes tables, and of the new project tables, is headed `Prio` so it no longer shares the letter `P` with project handles.
-- **No `grouping` line.**
-  A non-beam project page shows its brief and nothing after it; a beam page still shows `beam` and its owner.
+- The priority column of the Notes tables, and of the new project-section tables, is headed `Prio` instead of `P`, so it no longer shares a letter with a project's handle.
+- A non-beam project page no longer shows the stray `grouping` line under its brief; a beam page still shows `beam` and its owner.
 
-In `internal/boardengine/render.go`, the shared `renderBoardFile` splits into `renderReadme` and `renderProjectFile` over common `entrySections` (with a heading level), `table` and `childProjects` helpers; `projectSections` builds the new README sections.
-The package doc in `internal/boardengine/doc.go` and the board entry in `docs/overview.md` describe the new layout.
+The change is in `internal/boardengine/render.go`, with its golden tests in `render_test.go`, the README description in `doc.go` and `docs/overview.md`.
+The store, `lym board list` and every other view are untouched.
 
 ## Design decisions
 
-- Nested projects get their own README section too, since the reported failure was an entry hidden from the README; the sections are flat `##` in depth-first order rather than nested heading levels, so a deep project never sinks below the type-group levels.
-- The prime's section is its existing Tasks, Notes and Done content under a Prime heading, not a second table of the same entries, which would list every root entry twice.
-- Project sections list open members only, as the type groups do; a project's done members stay in its page's Done section.
+- Project sections run depth-first: each project under the root by handle, each followed by the sections of the projects under it in its own order key, then by handle.
+  The root has no order key, so its children sort by handle only.
+- An open project under a done project counts as directly under the root, since a done project has no README section, and the project page still lists it.
+  Without this, its open members would be missing from the README again.
+- Done members stay out of project sections, as they do in the type groups; the project page's Done section lists them.
+- The prime's section is its existing Tasks, Notes and Done content under a Prime heading, not a second table of the same entries.
+- `renderBoardFile` is split into `renderReadme` and `renderProjectFile`, sharing `entrySections`, `table` and `boardIntro`, so the README and project pages differ only in what they put around the shared sections.
+  Render stays a pure function, with section names and column headings declared in `render.go` alone.
+- Demoting the prime's headings changes every README heading level.
+  No Go code reads the rendered README, so only an external reader keyed on `## Tasks` would notice.
 
-## Tests
+## To check by hand
 
-`TestRenderReadmeGolden` in `internal/boardengine/render_test.go` now pins the Prime heading and demoted levels on every README row, the `Prio` header on every Notes table, project sections with a linked counted heading, brief, member table and `_None._`, their depth-first order by order key then handle, and project pages without the `grouping` line.
+Not run by hand; the golden tests in `internal/boardengine/render_test.go` cover the layout.
+Open a rendered `README.md` on a board with nested projects and confirm the following.
+
+- An open project under a done project has its own section, in `render.go` `childProjects`.
+- Root-level project sections run by handle, as the README paragraph in `doc.go` and the `projectSections` comment say, rather than by the root's order key.
+- A project-section member with a high or low priority and a body shows its `H` or `L` cell and a linked slug, in the project-section tables of `render_test.go`.
