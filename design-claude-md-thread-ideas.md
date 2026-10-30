@@ -4,6 +4,7 @@
 
 # r/ClaudeCode "What's the one line in your CLAUDE.md that made the biggest difference?" — review for LoomYard
 
+Status (2026-10-30): the repository's `CLAUDE.md` is deleted (`claude-md-lym-rules-out`), so each `CLAUDE.md:N` citation below names a line that no longer exists; its rule now lives in PATTERN, the stencils or `lym orch rules`.
 Status: the operator decides whether a research task with a bench is drafted from section 1; nothing is promoted yet (2026-10-26).
 
 Source: the r/ClaudeCode thread named in the title, read from a 17-page PDF export kept only on OSL-1046.
@@ -231,7 +232,7 @@ The OP replied that banning em dashes made the model use " - " instead: "swapped
 ### Keep CLAUDE.md under a page or it gets ignored (OP)
 
 - Verdict: partly.
-- Have: `CLAUDE.md` is short and PATTERN growth is linted, `internal/pattern/headroom.go:7`.
+- Have: no `CLAUDE.md` any more, and PATTERN growth is linted, `internal/pattern/headroom.go:7`.
 - Missing: the orch role is 530 lines with hub rules inlined, and the stencils are long; nothing measures whether length costs compliance.
 - Bench: possible and useful: a trimmed against a full orch role on replayed scenarios, counting violations of a fixed set of role rules.
   It is expensive to set up, so it ranks below the eight above.
