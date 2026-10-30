@@ -1,6 +1,6 @@
 # Revise the board README rendering
 
-`readme-omits-csharp-note` · Task · enhancement, board · running · PR-Review
+`readme-omits-csharp-note` · Task · enhancement, board · running · Finalize
 
 ## Seen (operator, 2026-10-29)
 
