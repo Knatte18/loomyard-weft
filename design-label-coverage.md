@@ -1,6 +1,6 @@
 # A module label for every package group under internal/
 
-`label-coverage` · Note · enhancement, board
+`label-coverage` · Task · enhancement, board · draft
 
 ## Seen (operator and hub orch, 2026-10-28)
 
