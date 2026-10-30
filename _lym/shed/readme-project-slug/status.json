@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -28,6 +28,33 @@
       "output": "",
       "at": "2026-10-30T13:28:04Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/readme-project-slug/_lym/landing/summary.md",
+      "at": "2026-10-30T13:44:26Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-30T13:32:20.938456711Z",
+          "end": "2026-10-30T13:32:42.48504919Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-30T13:32:42.652594866Z",
+          "end": "2026-10-30T13:44:25.12254007Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-30T13:44:25.416982445Z",
+          "end": "2026-10-30T13:44:25.417213064Z"
+        }
+      ]
     }
   ],
   "product": {
