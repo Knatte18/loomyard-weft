@@ -553,27 +553,6 @@
       "revised": "2026-10-30T12:34:20Z"
     },
     {
-      "id": 915,
-      "handle": "T2",
-      "slug": "readme-project-slug",
-      "title": "README shows each project's slug",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "board"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A project section in the README, and its page, show the project slug beside handle and title.",
-      "body": "## Seen (operator, 2026-10-30)\n\nThe README's section for a project shows its handle and title but not its slug, so the reader cannot tell which slug to name in a command.\n\n## Design (operator, 2026-10-30)\n\n- Each project section in the README shows the project's slug beside its handle and title, for instance in the section heading.\n- A project page shows the slug too, if it does not already.\n- Nothing else in the rendering changes.\n",
-      "status": "done",
-      "created": "2026-10-30T13:27:39Z",
-      "revised": "2026-10-30T13:27:39Z",
-      "profile": "speed"
-    },
-    {
       "id": 916,
       "handle": "T3",
       "slug": "dobby-land-notice-needs-flag",
