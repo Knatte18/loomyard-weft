@@ -451,27 +451,6 @@
       "revised": "2026-10-30T11:34:32Z"
     },
     {
-      "id": 888,
-      "handle": "T1",
-      "slug": "label-coverage",
-      "title": "A module label for every package group under internal/",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "board"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Several lym modules have no label, so entries take the nearest one that says something else",
-      "body": "## Seen (operator and hub orch, 2026-10-28)\n\nSome lym modules have no module label, so an entry that touches them takes the nearest label, which says something else.\nNote `landing-watch` took `workspaces` for dobby until the `dobby` label was added on 2026-10-28.\n`lym board labels` lists the module labels; `ls internal/` lists the modules, and a package with no label covering it today includes, among others, `tender` and `hibernate`, `drift`, `darn`, `shedarbiter` and `arbiterstop`, `landingshed`, `cleanup`, `termwindow` and `logger`.\n\n## Design (operator, 2026-10-29)\n\nEvery module gets its own label.\nGo through the packages under `internal/` once and add a label for each module that has none, with a description naming its packages, so the label an entry needs exists when the entry is written.\n",
-      "status": "done",
-      "created": "2026-10-28T18:44:52Z",
-      "revised": "2026-10-30T10:27:43Z",
-      "profile": "docs"
-    },
-    {
       "id": 900,
       "handle": "T3",
       "slug": "readme-omits-csharp-note",
