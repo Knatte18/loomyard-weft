@@ -1,23 +1,26 @@
-# Beam promote keeps the Discussion record as part of the beam
+# A task that turns out to be a project is refiled as a project, keeping its Discussion findings
 
 `beam-promote-keeps-discussion` · Note · enhancement, workspaces, batten, loom
 
-## Seen (2026-10-25)
+## Seen (2026-10-25, operator 2026-10-30)
 
-`lym beam promote <slug>` ends the task's run for good, keeps the code commits on the pair's branch, and resets the pair's records to a fresh fork of its parent's.
-The run's discussion, plan and run records leave the worktree and stay only in the records history.
+A beam is made from a project entry with `lym beam create`, and its life is one batten run over that entry with the `pawl` recipe.
+`lym beam promote` is removed: switching a running task's worktree into a beam halfway proved messy.
+A task can still turn out too large while its Discussion runs, and then it has to become a project instead.
 
-## Idea (operator, 2026-10-25)
+## Idea (operator, 2026-10-30)
 
-The likely moment to promote is Discussion finding that the task is so large it should be a project.
-Then everything the Discussion writer found must be kept: its decision record and what it learned become part of the beam, as the beam's starting design, not something left behind in history.
-Note `loom-beam-darns` is a related shape, where a large loom task turns its own worktree into a beam and runs the pieces inside it.
+The agent that finds this out, in Discussion or in a research or darn run, files the project on the board itself and ends its turn.
+The whole run then ends, and the project is spawned as a new project and beam from the parent, never from the old task's worktree.
+Nothing is switched in place.
 
-## Until then (operator, 2026-10-25)
+What the agent files must keep what it learned: the project entry's body holds the Discussion writer's findings and decisions as the beam's starting design, so they are not left behind in the old run's records history.
+Note `loom-beam-darns` is a related shape, where a large loom task turns into a beam and runs its pieces as darn runs inside it.
 
-Beams are made with `lym beam create` on a project entry only; `lym beam promote` is not used.
+## Open design points
 
-## Landed since (beam-start-and-ownership)
-
-`lym beam promote` is removed, so the Seen and Until-then sections above describe a verb that no longer exists.
-A beam's life is now one batten run over its project entry with the `pawl` recipe; the idea here, keeping Discussion's record as a beam's starting design, still stands but needs a new route.
+- How the agent files the project: a run session may file only notes today, since only the operator decides what becomes a task, so the agent may need a verb or a rule for a project entry that carries its findings.
+- How the run ends once the agent has filed: its own verb, or an escalation to the orch, which ends the run with `lym batten cancel <slug> --remove` after the operator agrees.
+- Who creates the beam from the project entry, and when: `lym beam create` after the operator's go-ahead, with the old task's entry removed or marked superseded in the same step.
+- Whether the old run's code commits, if any, are kept or dropped.
+- With dobby as the only driver of a beam's runs (only beams have a dobby, and the prime is the root beam), a worktree that is to have worktrees under it must be a beam from the start, so this route is the only way a task's scope grows into a tree of runs.
