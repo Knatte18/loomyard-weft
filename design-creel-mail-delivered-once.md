@@ -1,6 +1,6 @@
 # Creel mail reaches the model and the operator once, in one message, and is logged
 
-`creel-mail-delivered-once` · Task · bug, enhancement, creel · running · Describe
+`creel-mail-delivered-once` · Task · bug, enhancement, creel · running · PR-Review
 
 ## Goal
 
