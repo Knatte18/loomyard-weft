@@ -629,6 +629,27 @@
       "body": "## Seen (operator and hub orch, 2026-10-30)\n\nRuns are slow on OSL-1046, gates above all, and every process start there is expensive.\n`lym gate report --slug pr-review-empty-branch` shows `launch_seconds` of 266 of 639 s wall for `code-burler-fix` and 153 of 516 s for `darn-write`, with a wait for a gate slot of about zero: the time is in the test runs, and a large part of it in starting processes.\n\n## Idea\n\nThe aim is a faster gate run, by starting fewer processes per run.\n- Find what a gate run launches: how many test binaries, `go` invocations and helper processes per tier, and which of them repeat from one gate key to the next.\n- Cut the launches: link several packages' tests into fewer binaries, or reuse a built test binary across the gate keys of one run, wherever the result stays the same.\n- Measure a gate run before and after, so the gain is known; the measurement runs as a darn task with profile `docs`.\n",
       "created": "2026-10-30T12:33:00Z",
       "revised": "2026-10-30T12:34:20Z"
+    },
+    {
+      "id": 915,
+      "handle": "T2",
+      "slug": "readme-project-slug",
+      "title": "README shows each project's slug",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "board"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A project section in the README, and its page, show the project slug beside handle and title.",
+      "body": "## Seen (operator, 2026-10-30)\n\nThe README's section for a project shows its handle and title but not its slug, so the reader cannot tell which slug to name in a command.\n\n## Design (operator, 2026-10-30)\n\n- Each project section in the README shows the project's slug beside its handle and title, for instance in the section heading.\n- A project page shows the slug too, if it does not already.\n- Nothing else in the rendering changes.\n",
+      "status": "draft",
+      "created": "2026-10-30T13:27:39Z",
+      "revised": "2026-10-30T13:27:39Z",
+      "profile": "speed"
     }
   ],
   "prime_owner": "osl-1046",
