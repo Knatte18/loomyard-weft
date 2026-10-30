@@ -1,6 +1,6 @@
 # Research: a closed area for lym so bypass permissions is safe
 
-`sandbox-closed-area` · Task · research, shuttle, reed, fabric, batten, dobby, creel, claude, deploy · running · Drift-Verify
+`sandbox-closed-area` · Task · research, shuttle, reed, fabric, batten, dobby, creel, claude, deploy · running · Finalize
 
 ## Seen (operator, 2026-10-30)
 
