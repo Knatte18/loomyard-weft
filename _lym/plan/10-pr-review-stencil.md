@@ -2,7 +2,7 @@
 
 **Create:**
 - `contracts/stencils/landing/landing-template-pr-review.md`
-- `plan:contracts/stencils#LandingTemplatePRReview` -> `var LandingTemplatePRReview []byte`
+- `contracts/stencils#LandingTemplatePRReview`
 
 **Edit:**
 - `contracts/stencils#entries`

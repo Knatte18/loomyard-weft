@@ -1,9 +1,9 @@
 # Card 11 — pr-review-row-opens
 
 **Create:**
-- `plan:internal/landingshed#PullRequestDeps` -> `type PullRequestDeps struct`
-- `plan:internal/landingshed#fakePullRequestAPI` -> `type fakePullRequestAPI struct`
-- `plan:internal/loomcli#TestLandingDeps_PullRequestModeReadsTheParent` -> `func TestLandingDeps_PullRequestModeReadsTheParent(t *testing.T)`
+- `internal/landingshed#PullRequestDeps`
+- `internal/landingshed#fakePullRequestAPI`
+- `internal/loomcli#TestLandingDeps_PullRequestModeReadsTheParent`
 
 **Edit:**
 - `internal/landingshed#Deps`
