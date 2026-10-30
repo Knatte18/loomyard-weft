@@ -473,10 +473,10 @@
     },
     {
       "id": 905,
-      "handle": "E8",
+      "handle": "T1",
       "slug": "notices-from-dobby",
       "title": "Dobby sends the batten notices, not a row of the batten recipe",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "dobby",
@@ -487,6 +487,7 @@
       "isolated": false,
       "brief": "Move quiet, driver-dead and api-error detection from battenshed/notice.go into dobby loop over the runs it drives",
       "body": "## Seen\n\nThe quiet, driver-dead, api-error and usage-limit notices are built in `internal/battenshed/notice.go`, as a row of each batten run's own recipe, and run inside the pass dobby spawns for that run (operator, 2026-10-29).\nDobby is the common driver of every batten run under its beam, the pawl run of a beam included, which the dobby of the beam's parent drives.\nIts loop already reads every run's state, writes a heartbeat and posts its own notices, so it sees what each notice needs.\n\n## Design (operator, 2026-10-29 and 2026-10-30)\n\nDobby detects and sends these notices itself, in its loop over the runs it drives, and the batten recipe keeps no notice row.\nA run waiting on a person, such as a pull request, is read by the same loop through the wait markers it already honours, so a long wait never reads as a stall.\nThe detection logic, its keys and its idle clocks move as they are; only the place that runs them changes.\n\n- Which notices dobby looks for, and the key and stamp of each notice already sent, are written to a file under `_lym`, so they survive a dobby re-exec and a machine switch.\n- The notices of a run stay with the dobby of the machine that drives it; the orch is not the same on another machine either.\n",
+      "status": "draft",
       "created": "2026-10-29T13:08:11Z",
       "revised": "2026-10-30T12:38:04Z"
     },

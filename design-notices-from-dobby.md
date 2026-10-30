@@ -1,6 +1,6 @@
 # Dobby sends the batten notices, not a row of the batten recipe
 
-`notices-from-dobby` · Note · enhancement, dobby, batten
+`notices-from-dobby` · Task · enhancement, dobby, batten · draft
 
 ## Seen
 
