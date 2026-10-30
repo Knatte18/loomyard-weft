@@ -2,10 +2,10 @@
 
 **Create:**
 - `internal/landingshed/pullrequestmode_test.go`
-- `plan:internal/landingshed#Origin` -> `type Origin struct`
-- `plan:internal/landingshed#PullRequestDecision` -> `type PullRequestDecision struct`
-- `plan:internal/landingshed#ResolvePullRequest` -> `func ResolvePullRequest(slug, parentMode, entryField string, origin Origin) PullRequestDecision`
-- `plan:internal/landingshed#TestResolvePullRequest` -> `func TestResolvePullRequest(t *testing.T)`
+- `internal/landingshed#Origin`
+- `internal/landingshed#PullRequestDecision`
+- `internal/landingshed#ResolvePullRequest`
+- `internal/landingshed#TestResolvePullRequest`
 
 **Edit:**
 - `internal/landingshed#landingshedAllowedImports`

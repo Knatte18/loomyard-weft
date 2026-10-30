@@ -38,7 +38,7 @@
 - `internal/testkit/stencilkit#SeedInto`
 - `plan:internal/landingshed#PRReview.holdWhileCovered`
 - `internal/loomcli#driverWaitMark`
-- `plan:internal/pullrequest#UpdateRecord`
+- `internal/pullrequest#UpdateRecord`
 - `internal/loomshed/doc.go`
 - `internal/loomcli/doc.go`
 
