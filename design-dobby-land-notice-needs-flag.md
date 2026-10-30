@@ -1,6 +1,6 @@
 # Dobby posts the can-land notice only once the beam is flagged ready
 
-`dobby-land-notice-needs-flag` · Task · bug, dobby, workspaces · running · Drift-Verify
+`dobby-land-notice-needs-flag` · Task · bug, dobby, workspaces · running · Code-Bouncer
 
 ## Seen (operator, 2026-10-30)
 
