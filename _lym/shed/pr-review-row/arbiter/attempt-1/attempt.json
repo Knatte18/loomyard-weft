@@ -1,0 +1,15 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Plan-Bouncer",
+    "history_length": 20,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-10-30T07:48:23.079879883+01:00",
+  "deadline": "2026-10-30T08:18:23.079879883+01:00",
+  "strand_guid": "8da5907ee54d6aa540bb726ae024d243",
+  "envelope_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/pr-review-row/_lym/shed/pr-review-row/drive-reports/drive-envelope-20261030-074823-1107.json",
+  "report_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/pr-review-row/_lym/shed/pr-review-row/drive-reports/drive-report-20261030-074823-d2a8.md"
+}
