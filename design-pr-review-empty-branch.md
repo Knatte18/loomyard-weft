@@ -10,4 +10,6 @@ Its branch equalled `main`, so PR-Review failed with GitHub's 422 "No commits be
 ## Idea
 
 PR-Review (and Finalize) treat a branch with no commits beyond the parent as nothing to land: skip the pull request and finish the landing as an empty one, marking the board entry done.
+The stop report's way forward told the operator to check the GitHub token (`GH_TOKEN`, `GITHUB_TOKEN`, `gh auth login`) although the call reached GitHub and was refused on validation, so the text misled: it names the token for every failed open, whatever the status code.
+The way-forward text should tell a 422 from an authentication failure (401, 403).
 Open: whether a run that changes no file is itself a fault the darn writer should report, since a task is normally a repository change.
