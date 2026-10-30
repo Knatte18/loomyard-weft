@@ -9,7 +9,7 @@
 - `plan:internal/runproc#RoleSession` -> `const RoleSession = "session"`
 
 **Edit:**
-- `plan:internal/landingshed#PullRequestDeps`
+- `internal/landingshed#PullRequestDeps`
 - `internal/landingshed#PRReview.Call`
 - `plan:internal/landingshed#PRReview.wait`
 - `plan:internal/landingshed#TestPRReview_Wait`
@@ -32,7 +32,7 @@
 - `internal/shuttleengine#Runner.StartSession`
 - `internal/shuttleengine#Runner.StopStrand`
 - `internal/shuttleengine#OpenResult`
-- `plan:contracts/stencils#LandingTemplatePRReview`
+- `contracts/stencils#LandingTemplatePRReview`
 - `internal/runproc#ChildRecord`
 - `internal/runproc#Register`
 - `internal/testkit/stencilkit#SeedInto`

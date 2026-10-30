@@ -1,6 +1,6 @@
 {
   "runGuid": "ae29f98bec581d819b832c361e9a6884",
-  "planFingerprint": "7b1346998effc58a58bdc90ce70a0ad73f0d4101184e23154da21a21f1b9e5fe",
+  "planFingerprint": "052414ab40876b70d7881940dc846c9a376ad1310c2e27b5484a0b189e2a1012",
   "planFileHashes": {
     "00-overview.md": "20a30a1e1326a3a4fcd4072a7859b5064c10aa3191f23ce2f114fe7402e88a48",
     "01-parse-owner-repo-shapes.md": "9cb3abb43c4aa314409ef811cfb9e94c99c52d2ed8d2d092c1bbd884757e1dfe",
@@ -12,12 +12,12 @@
     "07-pullrequest-record-and-client.md": "9790edb6e4e0c2360ac31940921bc9bf61342fbd03e6d5a1c5ce27826f9c879a",
     "08-pull-request-mode-resolver.md": "d24d745c9741702b503f121564acb9f1e01b49d6c53523bde68e0f38e0d69849",
     "09-pr-continue-verb.md": "9341ced4788466fbd1bd4f2f34ebe325792ca1933a47c4848c2b512524574770",
-    "10-pr-review-stencil.md": "419b2abb0b25729f6caf1910fc7d2446f3193c7807507cc995a0581fb4a95a87",
-    "11-pr-review-row-opens.md": "d7fad9e6953def3fe55b4b53455736dc3637fcf2661c50b407bc5c43397105b1",
+    "10-pr-review-stencil.md": "066a0799d5dfdc901f5f064cec9efc5af889a786d723f7bf5aa7c71206b7098e",
+    "11-pr-review-row-opens.md": "7ae6d7f5bc4dcb8ff14518e611145eb823b56643950d1215ccc26a68523185ce",
     "12-retire-pr-review-keys.md": "7e19ca63cd8a7548c648bc6ffaeddb3f64bf4ea35f75c2beffd82259134751cc",
-    "13-pr-review-row-waits.md": "8b43b8c73ad92ec942b2acc3050408b3d1a77e15ed0f28fddfe28eed7e4af441",
-    "14-pr-review-session.md": "816901566149e42c6137a10c665c636059e74faf4fd935a0e25d703dd93bf78f",
-    "15-finalize-through-pull-request.md": "75d834c391f2811a97366a28948161aeaee0336294d818cfd0918f16d2726e6c",
+    "13-pr-review-row-waits.md": "aa95e7e8f3d87bef31413ef674665ad1af024c0c9517ab437eb86d2b24520e43",
+    "14-pr-review-session.md": "1af3964c04f0b4fb76a6e7eb22f52fb967560f7c784dce3cc5d88a683900ce5d",
+    "15-finalize-through-pull-request.md": "07dd0a7b42af390fbedb43a31a57f5fb2f1b95d9dcdfb944d62935561787b65a",
     "16-teardown-closes-pull-request.md": "71f673931aed5a1936d6c8dbdf271efc8fa2b23f2bcacce92795fc52074e6a9a",
     "17-quiet-check-pr-review-wait.md": "f304a783a2c220123fb033636febe048b1940f51a38399088b84f1e6a9cd02a0"
   },
@@ -492,7 +492,7 @@
       }
     }
   ],
-  "currentBatch": 10,
+  "currentBatch": 0,
   "masterStrand": "efb265ffaadca694a9a3376c136ee485",
   "masterSessionId": "bb34478a-90e2-48df-9565-cbd15855e3d8",
   "masterEngine": "claude",
@@ -546,16 +546,37 @@
         "11-pr-review-row-opens"
       ],
       "cardHashes": {
-        "10-pr-review-stencil": "419b2abb0b25729f6caf1910fc7d2446f3193c7807507cc995a0581fb4a95a87",
-        "11-pr-review-row-opens": "d7fad9e6953def3fe55b4b53455736dc3637fcf2661c50b407bc5c43397105b1"
+        "10-pr-review-stencil": "066a0799d5dfdc901f5f064cec9efc5af889a786d723f7bf5aa7c71206b7098e",
+        "11-pr-review-row-opens": "7ae6d7f5bc4dcb8ff14518e611145eb823b56643950d1215ccc26a68523185ce"
       },
       "startSha": "fad3f508bb43d08787eb1434327a150271f11480",
       "kind": "fork",
       "spawnedAt": "2026-10-30T07:09:49Z",
       "sessionId": "bb34478a-90e2-48df-9565-cbd15855e3d8",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "10-pr-review-stencil",
+        "status": "done",
+        "head_sha": "91820d42393a913d857c9d16bc93b1c1209c95c3",
+        "deviations": [
+          "internal/landingshed/prreview.go",
+          "internal/landingshed/prreview_test.go",
+          "internal/loomcli/landingdeps.go",
+          "internal/loomrecipe/pawlrecipe_test.go",
+          "internal/shedrecipe/entries_prreview.go"
+        ]
+      },
+      "cardShas": [
+        "91820d42393a913d857c9d16bc93b1c1209c95c3"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-ae68f54d64eb45da9.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-ae68f54d64eb45da9.jsonl"
+      ]
     },
     "6": {
       "slug": "publish-shell-guard",
@@ -602,6 +623,7 @@
   },
   "seenForkTranscripts": [
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-afa7f3c83f3dcfa69.jsonl",
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-a8c3a2ee1602a596c.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-a8c3a2ee1602a596c.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-ae68f54d64eb45da9.jsonl"
   ]
 }

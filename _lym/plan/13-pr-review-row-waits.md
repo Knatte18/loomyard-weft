@@ -9,8 +9,8 @@
 - `plan:internal/landingshed#TestPRReview_Wait` -> `func TestPRReview_Wait(t *testing.T)`
 
 **Edit:**
-- `plan:internal/landingshed#PullRequestDeps`
-- `plan:internal/landingshed#fakePullRequestAPI`
+- `internal/landingshed#PullRequestDeps`
+- `internal/landingshed#fakePullRequestAPI`
 - `internal/landingshed#PRReview`
 - `internal/landingshed#NewPRReview`
 - `internal/landingshed#PRReview.Call`

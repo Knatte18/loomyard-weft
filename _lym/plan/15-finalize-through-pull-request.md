@@ -14,8 +14,8 @@
 
 **Uses:**
 - `internal/landingshed#ResolvePullRequest`
-- `plan:internal/landingshed#PullRequestDeps`
-- `plan:internal/landingshed#fakePullRequestAPI`
+- `internal/landingshed#PullRequestDeps`
+- `internal/landingshed#fakePullRequestAPI`
 - `internal/pullrequest#MergeRefusal`
 - `internal/pullrequest#RefusalKind`
 - `internal/pullrequest#ReadRecord`
