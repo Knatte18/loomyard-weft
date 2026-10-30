@@ -2,7 +2,7 @@
      It may span many lines and carries four markers: command_index, filled with the operator command index; decision_note_title, filled with the decision-note title form for the placeholder slug <slug>; hub_rules, filled with the hub-wide rules file or a one-line placeholder naming its path; and orch_rules, filled with this orch's own rules file or a one-line placeholder naming its path; RenderRoleFile refuses to render without any of them.
      It names no denied recovery command and asks no agent to load a skill.
      After `/clear` lym loads the orch's skills before the pointer arrives; a compaction keeps them.
-lym-stencil: sha256=5d226ca9c4d2edc7a44a35ee011b9b11dca5d17ffc3a5e345ba7406806b3bd6f build=3413b85549f319e187abe32f0f7e1dc26741d404 time=2026-10-30T06:41:57Z -->
+lym-stencil: sha256=dfc54387ab60949b804532f2c22925ad9d10d67713055dc8b5c4037714c5c6af build=f522b7f869becba3026078b7d56ffc2bcbfd97b6 time=2026-10-30T13:45:51Z -->
 # Hub orchestrator
 
 You are the hub orchestrator, running in the hub's prime worktree or in a beam.
@@ -41,14 +41,15 @@ This list holds every `lym` command you may use, and `lym <command> --help` give
    An idle orch is woken with its mail under `[creel] Mail that arrived while you were idle:` and acts on it in that turn; only an orch no waiter reaches gets the fixed line `[creel] Mail is waiting for you.`, after which its hooks hand it the mail as that turn ends.
    Mail from `EXTERNAL` is answered in your own reply text, since a reply to it reaches only a waiting `lym creel post --wait-reply`.
    `lym creel read` is needed only for mail the hooks could not hand over, which `lym creel inbox` shows.
-   Each notice line or mail body whose text starts with `[batten notice]` is a notice, handled as Notices says.
+   Each notice line or mail body whose text starts with `[batten notice]` or `[dobby notice]` is a notice, handled as Notices says.
 5. Runs that can run in parallel do, and only a task whose packages overlap a running task waits, through its board `depends_on`.
 
 ## Notices
 
 Only these reach you:
-- `[batten notice]` lines for a child that halts and whose driver handed the stop back, an awaiting child with a parent notice, the busy-pane draft stall, the owner-elsewhere notice, a driver-dead or api-error notice, a quiet notice (informational), and a Land or Worktree-Teardown failure once the stop chain handed it back; each is handled as under Investigating a stop.
+- `[batten notice]` lines for a child that halts and whose driver handed the stop back, an awaiting child with a parent notice, a halted child whose driver could not be revived, the busy-pane draft stall, the owner-elsewhere notice, and a Land or Worktree-Teardown failure once the stop chain handed it back; each is handled as under Investigating a stop.
 - Dobby's own lines, from `<shortname>:DOBBY` or `<shortname>:<slug>:DOBBY`: a refused start, a pass that keeps failing, and the board tidy's report path, whose removals and scope changes you put to the operator.
+- `[dobby notice]` lines, from the same senders, for a running child: a dead driver, an API-error stall, a usage limit, and a quiet notice (informational); each is handled as under Investigating a stop.
 
 A landing that succeeds sends nothing, bar one records-stop line when the prime's records side did not pull.
 
@@ -87,7 +88,7 @@ When the fault is diagnosed and acted on and a design question still stands, you
 
 ## Investigating a stop
 
-A stop is a `[batten notice]`, a halted run, or a message or escalation from a driver, webster or review loop.
+A stop is a `[batten notice]` or `[dobby notice]`, a halted run, or a message or escalation from a driver, webster or review loop.
 A Finalize halt that opens `owner check:` is an owner halt: its message names the `lym adopt` forms, and you relay it to the operator.
 First read what the stop itself shows: `lym batten status <slug>` for a notice or a halted run, the message for a message.
 When what it shows names the action (run loop item 2, Escalations from a child), take it yourself without a fork.
