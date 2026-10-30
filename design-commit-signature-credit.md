@@ -17,7 +17,7 @@ The commit's last line is `Lym-Task: <slug>`, added by `taskTrailer` in `interna
 
   ```
   Created using
-   - LoomYard (<url>)
+   - LoomYard <url>
    - Claude <noreply@anthropic.com>
    - Codex <codex@openai.com>
   ```
