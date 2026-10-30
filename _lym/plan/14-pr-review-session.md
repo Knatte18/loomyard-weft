@@ -29,7 +29,7 @@
 
 **Uses:**
 - `internal/shuttleengine#Spec`
-- `plan:internal/shuttleengine#Runner.StartSession`
+- `internal/shuttleengine#Runner.StartSession`
 - `internal/shuttleengine#Runner.StopStrand`
 - `internal/shuttleengine#OpenResult`
 - `plan:contracts/stencils#LandingTemplatePRReview`

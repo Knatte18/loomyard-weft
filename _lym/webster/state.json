@@ -1,13 +1,13 @@
 {
   "runGuid": "ae29f98bec581d819b832c361e9a6884",
-  "planFingerprint": "c6b0b276b3024abcf8757fafdadaf4acb10d9d98f34cc357efb5569557a02b8f",
+  "planFingerprint": "a885c1d34ced5bfa78e829c74dc9fa9b2267d39fb711899ed8b5daf2c7e52cc5",
   "planFileHashes": {
     "00-overview.md": "20a30a1e1326a3a4fcd4072a7859b5064c10aa3191f23ce2f114fe7402e88a48",
     "01-parse-owner-repo-shapes.md": "9cb3abb43c4aa314409ef811cfb9e94c99c52d2ed8d2d092c1bbd884757e1dfe",
     "02-beam-pull-request-key.md": "dbe93d07019ee9233de84e728ae3e3a1f9b104928c3885d40c2ba77370638383",
     "03-board-pull-request-field.md": "127fd37db3c9ea785d8183fdf139645799bfe277ed6106240201a6870165c5ca",
     "04-pr-review-config-keys.md": "acec77843c0351b48cfb415099166887a1122b21ec407d481e10bfaea5a9317e",
-    "05-shuttle-unawaited-session.md": "8f37917ca794b10c821ab6c90bb214e0e28ee05e4091fc26c8ef613b351d166f",
+    "05-shuttle-unawaited-session.md": "1e23b7177f4db3369cef3d383b95bb9287ac0b6f95d9152911b043497cb3ee10",
     "06-publish-shell-guard.md": "10d3c6feed6485588a5e1be63574ba23826b0e903fb4f147038f9579670752bc",
     "07-pullrequest-record-and-client.md": "f8ad2ea04c3653da33327b043d4f92bcbc769ebbbfc08117da5c75af08cc3978",
     "08-pull-request-mode-resolver.md": "f987958f3b95b4af93e25f65e14046f663c18a6c6f1691aff032231031c8f3a2",
@@ -16,7 +16,7 @@
     "11-pr-review-row-opens.md": "5d7f68c3c2ee2a90875f2bf5ff819f1fe339f95bcd8a4daf6049b70c5f99bcf0",
     "12-retire-pr-review-keys.md": "7e19ca63cd8a7548c648bc6ffaeddb3f64bf4ea35f75c2beffd82259134751cc",
     "13-pr-review-row-waits.md": "0ab8eed1422d5fba894f2dc67814fda56fd0d1b9f735c68d1e273e87efb2b5d3",
-    "14-pr-review-session.md": "84dbfd00eb775033c8ecbbd3aade6bc94ca091146a33e7203c1efd4b3c09049e",
+    "14-pr-review-session.md": "552d70e464937d24a24a12733a3bbe5467d2684ba55ba00fe5f017a54a02264e",
     "15-finalize-through-pull-request.md": "817fe729ca832cb1275ab0f0f4692af0e0171f06022296927ef146071d8d5b58",
     "16-teardown-closes-pull-request.md": "5b1e3dc12262132e52fcc82ba59dde1baf2182b0f0e24eff6465384c98ef6522",
     "17-quiet-check-pr-review-wait.md": "f304a783a2c220123fb033636febe048b1940f51a38399088b84f1e6a9cd02a0"
@@ -492,7 +492,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "efb265ffaadca694a9a3376c136ee485",
   "masterSessionId": "bb34478a-90e2-48df-9565-cbd15855e3d8",
   "masterEngine": "claude",
@@ -511,15 +511,36 @@
         "02-beam-pull-request-key": "dbe93d07019ee9233de84e728ae3e3a1f9b104928c3885d40c2ba77370638383",
         "03-board-pull-request-field": "127fd37db3c9ea785d8183fdf139645799bfe277ed6106240201a6870165c5ca",
         "04-pr-review-config-keys": "acec77843c0351b48cfb415099166887a1122b21ec407d481e10bfaea5a9317e",
-        "05-shuttle-unawaited-session": "8f37917ca794b10c821ab6c90bb214e0e28ee05e4091fc26c8ef613b351d166f"
+        "05-shuttle-unawaited-session": "1e23b7177f4db3369cef3d383b95bb9287ac0b6f95d9152911b043497cb3ee10"
       },
       "startSha": "db5c48ffbae5344320a3ce756bc4c2fcfba52292",
       "kind": "fork",
       "spawnedAt": "2026-10-30T06:49:41Z",
       "sessionId": "bb34478a-90e2-48df-9565-cbd15855e3d8",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-parse-owner-repo-shapes",
+        "status": "done",
+        "head_sha": "71215e0f950a6b3c3c527160af08aa0b9dd1d90e",
+        "deviations": [
+          "internal/githubclient/parseownerrepo.go",
+          "internal/shuttleengine/stop.go"
+        ]
+      },
+      "cardShas": [
+        "71215e0f950a6b3c3c527160af08aa0b9dd1d90e"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-afa7f3c83f3dcfa69.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-afa7f3c83f3dcfa69.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-afa7f3c83f3dcfa69.jsonl"
+  ]
 }
