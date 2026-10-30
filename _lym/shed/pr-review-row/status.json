@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Burler-Fix",
+  "current_producer": "Plan-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Burler-Fix",
-    "last": "Plan-Burler-Review → bounced to Plan-Burler-Fix",
+    "now": "Plan-Bouncer",
+    "last": "Plan-Burler-Fix → bounced to Plan-Bouncer",
     "wait": ""
   },
   "history": [
@@ -230,6 +230,23 @@
       ],
       "budget_exempt": true,
       "routed_to": "Plan-Burler-Fix"
+    },
+    {
+      "producer": "Plan-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/pr-review-row/_lym/reviews/plan/round-3-review.md",
+      "at": "2026-10-30T06:47:50Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "plan",
+          "kind": "gate",
+          "start": "2026-10-30T06:47:41.74941157Z",
+          "end": "2026-10-30T06:47:49.866420977Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Plan-Bouncer"
     }
   ],
   "product": {
