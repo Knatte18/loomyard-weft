@@ -10,21 +10,20 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running (1)
+### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **A module label for every package group under internal/**<br>• Several lym modules have no label, so entries take the nearest one that says something else<br>• `profile: docs` | [`label-coverage`](design-label-coverage.md) | darn | blocked · PR-Review | osl-1046 | 1d<br>1h | board |
+| T2 | **Land a run whose branch has no commits beyond its parent without a pull request**<br>• PR-Review fails with 422 on an empty branch; it must skip the pull request and land empty, and the failure text must not blame the token<br>• `profile: light` | [`pr-review-empty-branch`](design-pr-review-empty-branch.md) | darn | Worktree-Create | osl-1046 | 1h<br>1m | landing |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Land a run whose branch has no commits beyond its parent without a pull request**<br>• PR-Review fails with 422 on an empty branch; it must skip the pull request and land empty, and the failure text must not blame the token<br>• `profile: light` | [`pr-review-empty-branch`](design-pr-review-empty-branch.md) | darn |  | 1h<br>1m | landing |
+_None._
 
 ## Notes (31)
 
