@@ -7,46 +7,45 @@
 tmux status lines support clickable ranges (`#[range=user|<name>]` with a `MouseDown1Status` binding), and reed already uses them for its window buttons.
 The same mechanism can carry action buttons that run a command when clicked.
 
-Examples the operator named on 2026-10-15:
+Buttons the operator named:
 
-- open the pair in VS Code (`lym ide spawn <slug>`),
-- `lym orch distill` and `lym orch refresh` for the orch session,
-- the follow toggle of note `viewer-off-shell`,
+- HALT for a run: stop it from the run's own window.
+  Today a run can be ended only from the prime with `lym batten cancel <slug>`, and paused with `lym batten pause <slug>` or `lym tender pause <slug>`, so the operator has no quick way to halt a run from where they watch it.
+  This matters most when a run has to stop because its task turns out to be a project (note `beam-promote-keeps-discussion`).
+- Open the pair in VS Code (`lym ide spawn <slug>`).
+- `lym orch distill` and `lym orch refresh` for the orch session.
+- The follow toggle of note `viewer-off-shell`.
 - "and much else".
 
 ## Operator view, not a decision (2026-10-15)
 
 The button set must be highly and easily configurable, not a fixed list in code.
 
+## Placement (operator, 2026-10-30)
+
+The action buttons go on a row of their own, and the `follow` button leaves the row that holds the session names and joins the action buttons.
+Reed's status bar has two lines today: line 0 holds the window buttons (overview, agents, shell), line 1 the session buttons, `follow` and the time.
+So the action row is a third line, never mixed with the window buttons or the session names.
+The operator worried earlier (2026-10-15) that buttons next to others invite misclicks on actions that cannot be undone, such as `lym orch distill`, `lym orch refresh` and ending a run, so the destructive ones need `confirm-before`.
+
 ## Open design points
 
+- What HALT does: pause the run at its next producer boundary (`lym batten pause`), interrupt the running turns at once (`lym tender pause <slug>`), or end it for good (`lym batten cancel <slug>`).
+  A pause is reversible and an end is not, so the two may be separate buttons, the end behind `confirm-before`.
 - Where the set lives: presumably reed's module config, with a hub default and per-session overrides (the orch session needs other buttons than a task pair).
 - What a button entry holds: a label, the command, and which sessions show it.
 - How a command runs: `run-shell` in the pair's worktree, with its output and failure visible somewhere.
 - Whether the follow toggle is a built-in entry in the same set.
 
-## Placement: options discussed on 2026-10-15, none chosen
-
-Reed's status bar today has two lines: line 0 holds the window buttons (overview, agents, shell), line 1 the session buttons and the time.
-The action buttons must not mix with the window buttons.
-The operator worries that a separate line next to the others invites misclicks, above all on actions that cannot be undone, such as `lym orch distill` and `lym orch refresh`.
-
-1. One menu button (my recommendation, the orch's call, not the operator's): a single button with a distinct look opens a tmux `display-menu` holding the configured actions.
-   A misclick only opens the menu.
-   The follow toggle, which is harmless to click, can sit beside it as a button of its own.
-2. A third status line of action buttons, with `confirm-before` on the destructive ones.
-   It is quicker to use, but each misclick costs a dismissal.
-3. The right side of line 1, before the time: no extra row, but cramped with many sessions and buttons.
-
 ## Operator view, not a decision (2026-10-15)
 
-Prototype the placement and the menu by hand in a separate throwaway tmux server, never in a live reed session, before this becomes a task.
+Prototype the placement by hand in a separate throwaway tmux server, never in a live reed session, before this becomes a task.
 
 ## Prototype (folded in from note `reed-status-buttons-prototype`, 2026-10-24)
 
 Operator decision (2026-10-15): a fresh agent builds the prototype when the operator says so, not before.
 - A separate throwaway tmux server (its own `-L` socket), never reed's server and never the prime's session `loomyard`.
-- A status bar shaped like reed's two lines, with one menu button opening a `display-menu` of sample actions (option 1), a follow toggle button (note `viewer-off-shell`), and a third line of action buttons, the destructive ones behind `confirm-before` (option 2).
+- A status bar shaped like reed's two lines, with a third line of action buttons (HALT, open in VS Code, a follow toggle), the destructive ones behind `confirm-before`.
 - The sample actions only echo or display a message; none runs a real `lym` verb.
 - The agent opens the server in a Konsole window for the operator to click through, and tears it down when the operator is done.
 - The tmux config used goes into git under `docs/research/` through a docs-only commit, so the chosen layout can seed the task.
