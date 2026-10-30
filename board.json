@@ -629,6 +629,24 @@
       "body": "## Seen (operator and hub orch, 2026-10-30)\n\nOn the first PR-Review run, the reviewer agent ran `lym loom pr-continue` and the run went on only after a while.\nThe wait sleeps between wakes, from a floor of one second up to a ceiling of one minute while nothing changes (`prWaitFloor`, `prWaitCeiling` in `internal/landingshed/prreview.go`), and `pr-continue` only sets a flag that the next wake reads.\nFinalize's gate then runs on the landed tree as for any landing, which takes minutes by itself.\n\n## Design (operator, 2026-10-30)\n\n`lym loom pr-continue` wakes the waiting row at once, so the PR is closed and Finalize begins with no wait of up to a minute.\n",
       "created": "2026-10-30T12:24:28Z",
       "revised": "2026-10-30T12:24:28Z"
+    },
+    {
+      "id": 914,
+      "handle": "E6",
+      "slug": "gate-cortex-launch-cost",
+      "title": "Cortex XDR slows every process start of a gate run on OSL-1046",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "gate"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Gate runs spend a large share of their time launching processes, which fits a security scanner on each start; exclusions and fewer launches would cut it",
+      "body": "## Seen (operator and hub orch, 2026-10-30)\n\nCortex XDR runs on OSL-1046 and the operator finds every run slow, gates above all.\n`lym gate report --slug pr-review-empty-branch` shows `launch_seconds` of 266 of 639 s wall for `code-burler-fix` and 153 of 516 s for `darn-write`, with a wait for a gate slot of about zero, so the time is in the test runs, and a large part of it in starting processes.\nThe scanner is not visible to `ps` as a process the orch can name, so the cause is the operator's knowledge, not a measurement.\n\n## Idea\n\n- Ask IT for exclusions of the hub directories under `~/Code/Knatte18/loomyard-LYMHUB`, the Go build and module caches, `/tmp/lym-\u003cuid\u003e`, the installed `lym` binaries and `claude`.\n- Measure a cold and a warm gate run before and after, so the gain is known; the measurement runs as a darn task with profile `docs`.\n- Cut the launches themselves: fewer test binaries started per gate run, if the gate can link tests together or reuse a built binary.\n",
+      "created": "2026-10-30T12:33:00Z",
+      "revised": "2026-10-30T12:33:00Z"
     }
   ],
   "prime_owner": "osl-1046",
