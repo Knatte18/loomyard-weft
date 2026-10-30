@@ -66,7 +66,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 3w<br>3d | burler |
 | F2 | H | **warp-visibility: LoomYard adds no instruction file to a repository**<br>• No CLAUDE.md or CLAUDE.local.md of lym in any repo; open: where a repo own rules for lym agents live out of sight of its team | [`warp-visibility`](design-warp-visibility.md) | 3w<br>23h | ide, fabric |
 | F3 |  | **Windows lym opens land tiled on the right KDE virtual desktop**<br>• Konsole and VS Code windows opened by lym placed by desktop and tile on KDE Plasma | [`kde-window-placement`](design-kde-window-placement.md) | 1d<br>22h | reed, ide, config |
-| F4 |  | **A landing notice on request, per task**<br>• A landing notice from dobby on request, per task, reusing the wait that lym hibernate request --after has | [`landing-watch`](design-landing-watch.md) | 1d<br>47m | dobby, creel, orch |
+| F4 |  | **A landing notice on request, per task**<br>• A landing notice from dobby on request, per task, reusing the wait that lym hibernate request --after has | [`landing-watch`](design-landing-watch.md) | 1d<br>48m | dobby, creel, orch |
 | F5 |  | **Fabric's ordinary-monorepo verb surface**<br>• Against plain git, fabric still lacks log, show, branch, tag, stash, revert, restore, rm/mv, rebase, cherry-pick and blame | [`fabric-monorepo-verbs`](design-fabric-monorepo-verbs.md) | 3w<br>3w | fabric |
 | F6 |  | **Talk to the orch through Slack**<br>• A Slack relay so the operator can reach the orch from a phone where Claude's own app is not allowed | [`reed-slack-relay`](design-reed-slack-relay.md) | 3w<br> | reed |
 | F7 |  | **Creel mail between hubs through an inbox folder, with a verified sender**<br>• A shared inbox folder takes mail from other hubs; each file names the sender hub and agent so a reply knows where to go | [`creel-cross-hub-mail`](design-creel-cross-hub-mail.md) | 3h<br>3h | creel, orch |
@@ -78,11 +78,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F15 |  | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 2w<br>5h | reed, config, batten |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>1d | burler, shed, orch, quarry, report |
 | F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 7d<br>3d | loom, shed, batten, workspaces, burler |
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T2 | **Land a run whose branch has no commits beyond its parent without a pull request**<br>• PR-Review fails with 422 on an empty branch; it must skip the pull request and land empty, and the failure text must not blame the token<br>• `profile: light` | [`pr-review-empty-branch`](design-pr-review-empty-branch.md) | 1h<br>51m | landing |
