@@ -9,10 +9,11 @@ The same mechanism can carry action buttons that run a command when clicked.
 
 Buttons the operator named:
 
-- HALT for a run: stop it from the run's own window.
-  Today a run can be ended only from the prime with `lym batten cancel <slug>`, and paused with `lym batten pause <slug>` or `lym tender pause <slug>`, so the operator has no quick way to halt a run from where they watch it.
-  This matters most when a run has to stop because its task turns out to be a project (note `beam-promote-keeps-discussion`).
+- HALT for a run: `lym tender pause <slug>`, which holds agent and network work and interrupts the running turns at once; `lym tender resume <slug>` lifts it.
+  `lym batten pause <slug>` waits for the next producer boundary, which can take very long, so it is no halt.
+  Today the operator has no quick way to do either from where they watch the run.
 - Open the pair in VS Code (`lym ide spawn <slug>`).
+- A new, empty agent in a window of its own: `lym shuttle open --role <role> --model opus[high]`, which opens an interactive session with no prompt and no run record (tried by hand on 2026-10-30).
 - `lym orch distill` and `lym orch refresh` for the orch session.
 - The follow toggle of note `viewer-off-shell`.
 - "and much else".
@@ -30,8 +31,8 @@ The operator worried earlier (2026-10-15) that buttons next to others invite mis
 
 ## Open design points
 
-- What HALT does: pause the run at its next producer boundary (`lym batten pause`), interrupt the running turns at once (`lym tender pause <slug>`), or end it for good (`lym batten cancel <slug>`).
-  A pause is reversible and an end is not, so the two may be separate buttons, the end behind `confirm-before`.
+- Whether ending a run for good (`lym batten cancel <slug>`) gets a button of its own beside HALT, behind `confirm-before`, since a halt is reversible and an end is not.
+- Which role and model the new-agent button opens, and whether the role name is asked for or fixed.
 - Where the set lives: presumably reed's module config, with a hub default and per-session overrides (the orch session needs other buttons than a task pair).
 - What a button entry holds: a label, the command, and which sessions show it.
 - How a command runs: `run-shell` in the pair's worktree, with its output and failure visible somewhere.

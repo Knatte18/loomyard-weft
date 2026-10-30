@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-30 06:59 UTC; every age below is as of then.
+Rendered 2026-10-30 07:04 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -16,7 +16,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Research: a closed area for lym so bypass permissions is safe**<br>• Weigh ways to run the whole lym process tree in a sandbox on Linux, with controlled exits, and what each costs lym<br>• `profile: docs`<br>• `darn: writer opus[high]`<br>• `darn: writer_timeout_min 240` | [`sandbox-closed-area`](design-sandbox-closed-area.md) | darn | Darn-Write | osl-1046 | 10m<br>9m | shuttle, reed, fabric, batten, dobby, creel, claude, deploy |
+| T1 | **Research: a closed area for lym so bypass permissions is safe**<br>• Weigh ways to run the whole lym process tree in a sandbox on Linux, with controlled exits, and what each costs lym<br>• `profile: docs`<br>• `darn: writer opus[high]`<br>• `darn: writer_timeout_min 240` | [`sandbox-closed-area`](design-sandbox-closed-area.md) | darn | Darn-Write | osl-1046 | 15m<br>14m | shuttle, reed, fabric, batten, dobby, creel, claude, deploy |
 | T2 | **PR-Review opens a pull request and starts an interactive agent to discuss it**<br>• Build the PR-Review stub: a pull request per parent branch setting, a talkable agent on its own configured model, and a landing that follows the pull request | [`pr-review-row`](design-pr-review-row.md) | loom | Webster | osl-1046 | 18h<br>18h | loom, shed, batten, shuttle, config |
 
 ### Ready (0)
