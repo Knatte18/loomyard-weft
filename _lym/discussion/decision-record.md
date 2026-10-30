@@ -37,6 +37,12 @@ The board entry asks for the slug only; the parent, `ly:orch`, relayed an operat
 D1 to D3 apply it.
 Rationale: an `ly:orch` message is the operator's delegate, and the addition stays inside the same two places the entry names.
 
+### Added after Discussion (parent, 2026-10-30): Project sections also show age and owner
+
+Decision: Beside the slug, each project section in the README, and its project page, also shows the project's age and its owner.
+
+Rationale: Operator, 2026-10-30: the reader needs age and owner of a project at a glance.
+
 ## Constraints
 
 - `Render` stays a pure function, with section names and fixed text declared in `render.go`.
