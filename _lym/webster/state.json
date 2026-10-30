@@ -492,7 +492,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 17,
   "masterStrand": "efb265ffaadca694a9a3376c136ee485",
   "masterSessionId": "bb34478a-90e2-48df-9565-cbd15855e3d8",
   "masterEngine": "claude",
@@ -664,6 +664,22 @@
       "bracketTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-pr-review-row/bb34478a-90e2-48df-9565-cbd15855e3d8/subagents/agent-a5c386d779918ba44.jsonl"
       ]
+    },
+    "17": {
+      "slug": "quiet-check-pr-review-wait",
+      "cards": [
+        "17-quiet-check-pr-review-wait"
+      ],
+      "cardHashes": {
+        "17-quiet-check-pr-review-wait": "f304a783a2c220123fb033636febe048b1940f51a38399088b84f1e6a9cd02a0"
+      },
+      "startSha": "bb4dfd773383e9367de7509d8701517ebad5a192",
+      "kind": "fork",
+      "spawnedAt": "2026-10-30T07:54:26Z",
+      "sessionId": "bb34478a-90e2-48df-9565-cbd15855e3d8",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "6": {
       "slug": "publish-shell-guard",
