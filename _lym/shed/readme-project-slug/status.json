@@ -1,11 +1,11 @@
 {
-  "current_producer": "Run-Shed",
+  "current_producer": "Land",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Run-Shed",
-    "last": "Open-IDE → skipped",
+    "now": "Land",
+    "last": "Run-Shed → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,22 @@
       "output": "",
       "at": "2026-10-30T13:28:03Z",
       "reason": "batten.open_ide = false",
+      "machine": "osl-1046"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → done at Friction-Reflect",
+      "at": "2026-10-30T13:55:52Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "machine": "osl-1046"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-30T13:56:25Z",
       "machine": "osl-1046"
     }
   ]
