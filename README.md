@@ -48,7 +48,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **A task that turns out to be a project is refiled as a project, keeping its Discussion findings**<br>• The agent files the project with its findings and ends its turn; the run ends and a new beam spawns from the parent | [`beam-promote-keeps-discussion`](design-beam-promote-keeps-discussion.md) | 4d<br>13m | workspaces, batten, loom |
+| E1 |  | **A task that turns out to be a project is refiled as a project, keeping its Discussion findings**<br>• The agent files a note with its findings and tells the orch; the operator decides, then the run ends and a new beam spawns from the parent | [`beam-promote-keeps-discussion`](design-beam-promote-keeps-discussion.md) | 4d<br>0m | workspaces, batten, loom |
 | E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>1d | shuttle, codex |
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 2d<br>2d | batten, stencil, config |
 | E4 |  | **Prove the dotnet scoper, shared build and Drift on the C# sandbox hub**<br>• Switch the sandbox gate to scoper dotnet, a build step and --no-build, then enable Drift there | [`sandbox-dotnet-gate`](design-sandbox-dotnet-gate.md) | 17h<br>17h | dotnet, gate |
