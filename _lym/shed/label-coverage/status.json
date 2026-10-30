@@ -1,12 +1,11 @@
 {
-  "current_producer": "PR-Review",
+  "current_producer": "Finalize",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "PR-Review",
-    "last": "PR-Review → stuck",
+    "now": "Finalize",
+    "last": "PR-Review → done",
     "wait": ""
   },
   "history": [
@@ -83,6 +82,13 @@
       "output": "",
       "at": "2026-10-30T10:30:03Z",
       "budget_exempt": true
+    },
+    {
+      "producer": "PR-Review",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-30T12:24:59Z",
+      "by": "shed"
     }
   ],
   "product": {
