@@ -1,0 +1,899 @@
+diff --git a/PATTERN.md b/PATTERN.md
+index bb96d900..34d9e4d7 100644
+--- a/PATTERN.md
++++ b/PATTERN.md
+@@ -31,7 +31,7 @@
+ ## Shed and loom
+ 
+ - `PATTERN-shed-recipe-registry` — Adding producer or recipe row: one `Constructor` map in `internal/shedrecipe`, bar `Implementer`'s; a row's value looked up by key, a side action a `Command` row, a row off by one config key its `entry_gate`, one whose off reads more its own call. — [background](pattern/PATTERN-shed-recipe-registry.md)
+-- `PATTERN-pull-request-mode` — Deciding whether a landing goes through a pull request: only landingshed's one resolver, from the receiving worktree's `beam.pull_request`, the landing entry's `pull_request` field and the origin; no profile or run setting carries it.
++- `PATTERN-pull-request-mode` — Deciding whether a landing goes through a pull request: only landingshed's one resolver, from the receiving worktree's `beam.pull_request`, the entry's `pull_request` field, the origin and whether git sees task commits past the parent; no profile or run setting carries it.
+ - `PATTERN-shed-driver` — Driving a shed run: generic verb bodies only in `internal/shedverbs`, the step-until-stop loop only in `internal/sheddriver`, run paths, ids and `Seed` only in `internal/shedrun`. (test) — [background](pattern/PATTERN-shed-driver.md)
+ - `PATTERN-shed-stop-chain` — A shed run's stop: rule table, tackler, arbiter, then parent, for every recipe; a blocked stop the driver's arbiter seam marks as judged first, by its row and reason, goes rule table, arbiter, then parent; arbiter keys in shed.yaml with module overrides.
+ - `PATTERN-dobby-starts-runs` — Starting or driving a board task's run: its parent's dobby, from an empty status, in batten passes; a hand `lym batten run` is one pass.
+diff --git a/internal/battencli/wire_seams_test.go b/internal/battencli/wire_seams_test.go
+index 7693b0f2..f8503556 100644
+--- a/internal/battencli/wire_seams_test.go
++++ b/internal/battencli/wire_seams_test.go
+@@ -98,6 +98,7 @@ var intentionallyNil = map[string]string{
+ 	"Landing.PullRequest.API":             "loom-only seam, batten lands no branch",
+ 	"Landing.PullRequest.PushTask":        "loom-only seam, batten lands no branch",
+ 	"Landing.PullRequest.CommitsMissing":  "loom-only seam, batten lands no branch",
++	"Landing.PullRequest.TaskHasCommits":  "loom-only seam, batten lands no branch",
+ 	"Landing.PullRequest.DirtyPaths":      "loom-only seam, batten lands no branch",
+ 	"Landing.PullRequest.MailAgent":       "loom-only seam, batten lands no branch",
+ 	"Landing.PullRequest.PauseCovered":    "loom-only seam, batten lands no branch",
+diff --git a/internal/fabricengine/parenttips.go b/internal/fabricengine/parenttips.go
+index 8d68a61e..bbfed0f3 100644
+--- a/internal/fabricengine/parenttips.go
++++ b/internal/fabricengine/parenttips.go
+@@ -161,6 +161,24 @@ func (f *Fabric) CommitLog(from, to string) ([]string, error) {
+ 	return lines, nil
+ }
+ 
++// HeadHoldsCommitsNotIn reports whether the pair's code HEAD holds a commit that ref lacks.
++// A ref that does not resolve is an error naming it.
++func (f *Fabric) HeadHoldsCommitsNotIn(ref string) (bool, error) {
++	refSHA, err := f.code.ResolveSHA(ref)
++	if err != nil {
++		return false, fmt.Errorf("fabricengine: HEAD commits not in %s: %w", ref, err)
++	}
++	headSHA, err := f.code.ResolveSHA("HEAD")
++	if err != nil {
++		return false, fmt.Errorf("fabricengine: HEAD commits not in %s: %w", ref, err)
++	}
++	shas, err := f.code.CommitsNotIn(headSHA, refSHA)
++	if err != nil {
++		return false, fmt.Errorf("fabricengine: HEAD commits not in %s: %w", ref, err)
++	}
++	return len(shas) > 0, nil
++}
++
+ // shortSHALength is how many leading characters of a SHA CommitLog prints.
+ const shortSHALength = 7
+ 
+diff --git a/internal/fabricengine/parenttips_integration_test.go b/internal/fabricengine/parenttips_integration_test.go
+index 7db73cd2..32492b93 100644
+--- a/internal/fabricengine/parenttips_integration_test.go
++++ b/internal/fabricengine/parenttips_integration_test.go
+@@ -321,6 +321,34 @@ func TestCommitLog_ListsTheRangeNewestFirst(t *testing.T) {
+ 	}
+ }
+ 
++// TestHeadHoldsCommitsNotIn asserts HEAD level with a ref reads false, a commit past the ref reads true, the HEAD tip as the ref reads false, and an unknown ref is an error naming it.
++func TestHeadHoldsCommitsNotIn(t *testing.T) {
++	t.Parallel()
++
++	f, warpPath, _, _, _, _, _ := buildReconcileFixture(t, t.TempDir(), 1)
++	base := fabricengine.CurrentSHAForTest(t, warpPath)
++
++	level, err := f.HeadHoldsCommitsNotIn(base)
++	if err != nil || level {
++		t.Errorf("HeadHoldsCommitsNotIn(base) = %v, %v; want false, nil", level, err)
++	}
++
++	ahead := gitkit.CommitFile(t, warpPath, "a.txt", "a", "first change")
++	past, err := f.HeadHoldsCommitsNotIn(base)
++	if err != nil || !past {
++		t.Errorf("HeadHoldsCommitsNotIn(base) = %v, %v; want true, nil", past, err)
++	}
++
++	atTip, err := f.HeadHoldsCommitsNotIn(ahead)
++	if err != nil || atTip {
++		t.Errorf("HeadHoldsCommitsNotIn(HEAD tip) = %v, %v; want false, nil", atTip, err)
++	}
++
++	if _, err := f.HeadHoldsCommitsNotIn("no-such-ref"); err == nil || !strings.Contains(err.Error(), "no-such-ref") {
++		t.Errorf("HeadHoldsCommitsNotIn(unknown ref) error = %v; want it to name the ref", err)
++	}
++}
++
+ // TestHoldsWork covers a source the base lacks, one the base holds after a squash, and a conflicting one.
+ func TestHoldsWork(t *testing.T) {
+ 	t.Parallel()
+diff --git a/internal/githubclient/doc.go b/internal/githubclient/doc.go
+index a4aec52c..f35e13aa 100644
+--- a/internal/githubclient/doc.go
++++ b/internal/githubclient/doc.go
+@@ -80,6 +80,7 @@
+ // environment value -- a replay in that case is a guaranteed-identical
+ // second failure, not a chance at recovery, so authRT discards the response
+ // and returns an error naming the rejected environment variable instead.
++// That error wraps ErrTokenRejected, so a caller can tell a refused token from a transport failure inside the same *url.Error.
+ //
+ // # The two deadlines
+ //
+diff --git a/internal/githubclient/githubclient_test.go b/internal/githubclient/githubclient_test.go
+index bdcdb5fd..4aba5f94 100644
+--- a/internal/githubclient/githubclient_test.go
++++ b/internal/githubclient/githubclient_test.go
+@@ -366,7 +366,7 @@ func TestCache_ConcurrentWriters(t *testing.T) {
+ 	}
+ }
+ 
+-// TestAuthRT_401Handling covers the transport's 401 contract: a 401 on a cache-sourced token invalidates it, resolves a fresh one exactly once and replays with it -- never in a loop -- with the request body rewound byte-identical (the req.GetBody rewind a drained replay would silently skip); a second consecutive 401 goes back to the caller unchanged; and an environment-sourced token is never replayed, since replaying it reproduces the identical value, so the 401 surfaces as an error naming the rejected variable.
++// TestAuthRT_401Handling covers the transport's 401 contract: a 401 on a cache-sourced token invalidates it, resolves a fresh one exactly once and replays with it -- never in a loop -- with the request body rewound byte-identical (the req.GetBody rewind a drained replay would silently skip); a second consecutive 401 goes back to the caller unchanged; and an environment-sourced token is never replayed, since replaying it reproduces the identical value, so the 401 surfaces as an error naming the rejected variable and wrapping ErrTokenRejected.
+ func TestAuthRT_401Handling(t *testing.T) {
+ 	tests := []struct {
+ 		name       string
+@@ -436,6 +436,9 @@ func TestAuthRT_401Handling(t *testing.T) {
+ 				if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
+ 					t.Fatalf("client.Do() error = %v; want it to name %q as the rejected source", err, tt.wantErr)
+ 				}
++				if !errors.Is(err, ErrTokenRejected) {
++					t.Errorf("client.Do() error = %v; want it to wrap ErrTokenRejected", err)
++				}
+ 			} else {
+ 				if err != nil {
+ 					t.Fatalf("client.Do() error = %v", err)
+diff --git a/internal/githubclient/token.go b/internal/githubclient/token.go
+index 9db81d56..c40844ca 100644
+--- a/internal/githubclient/token.go
++++ b/internal/githubclient/token.go
+@@ -76,6 +76,10 @@ func realRunGHAuthToken(ctx context.Context) (string, error) {
+ 	return strings.TrimSpace(string(out)), nil
+ }
+ 
++// ErrTokenRejected is wrapped into the error a call returns when GitHub answers 401 to a token taken from GH_TOKEN or GITHUB_TOKEN, which no replay can change.
++// The error reaches the caller inside a *url.Error, so a caller that classifies transient failures checks for it first.
++var ErrTokenRejected = errors.New("githubclient: GitHub rejected the token")
++
+ // ErrTokenUnresolvable is returned by resolveToken when no credential source produced a usable
+ // token.
+ // Callers surface this as a typed error rather than waiting or prompting — there is no code path
+diff --git a/internal/githubclient/transient.go b/internal/githubclient/transient.go
+index 81cac6b6..08569851 100644
+--- a/internal/githubclient/transient.go
++++ b/internal/githubclient/transient.go
+@@ -1,5 +1,4 @@
+-// transient.go classifies a failed GitHub API call as transient:
+-// the call failed for a reason a retry a moment later is likely to clear.
++// transient.go classifies a failed GitHub API call: whether it is transient, failed for a reason a retry a moment later is likely to clear, and which HTTP status GitHub answered it with.
+ 
+ package githubclient
+ 
+@@ -45,6 +44,16 @@ func IsTransient(err error) bool {
+ 	return urlErr.Op != "parse" && !isCertificateFailure(urlErr)
+ }
+ 
++// StatusCode returns the HTTP status of the *github.ErrorResponse in err's chain, or 0 when the chain holds none.
++// A rate-limit refusal is its own error type and reads 0, so a 403 it carries is never taken for a refused token.
++func StatusCode(err error) int {
++	var resp *github.ErrorResponse
++	if !errors.As(err, &resp) || resp.Response == nil {
++		return 0
++	}
++	return resp.Response.StatusCode
++}
++
+ // isCertificateFailure reports whether err's chain holds a TLS certificate verification failure.
+ // Such a failure is a persistent misconfiguration, never cleared by a retry.
+ func isCertificateFailure(err error) bool {
+diff --git a/internal/githubclient/transient_test.go b/internal/githubclient/transient_test.go
+index 2c61218c..d872da36 100644
+--- a/internal/githubclient/transient_test.go
++++ b/internal/githubclient/transient_test.go
+@@ -66,3 +66,29 @@ func TestIsTransient(t *testing.T) {
+ 		})
+ 	}
+ }
++
++func TestStatusCode(t *testing.T) {
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		err  error
++		want int
++	}{
++		{"422", errResponse(http.StatusUnprocessableEntity), http.StatusUnprocessableEntity},
++		{"wrapped 403", fmt.Errorf("x: %w", errResponse(http.StatusForbidden)), http.StatusForbidden},
++		{"response without an http response", &github.ErrorResponse{Message: "m"}, 0},
++		{"rate limit carrying a 403", &github.RateLimitError{Response: &http.Response{StatusCode: http.StatusForbidden}}, 0},
++		{"transport failure", &url.Error{Op: "Get", Err: errors.New("connection refused")}, 0},
++		{"nil", nil, 0},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			if got := StatusCode(tt.err); got != tt.want {
++				t.Errorf("StatusCode(%v) = %d; want %d", tt.err, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/githubclient/transport.go b/internal/githubclient/transport.go
+index 060b133e..d4ec7cd0 100644
+--- a/internal/githubclient/transport.go
++++ b/internal/githubclient/transport.go
+@@ -139,7 +139,7 @@ func (rt *authRT) authenticate(req *http.Request) (*http.Response, error) {
+ 		// anyway, so closing the body and returning (nil, err) is
+ 		// behavior-preserving while staying contract-compliant.
+ 		resp.Body.Close()
+-		return nil, fmt.Errorf("githubclient: GitHub rejected the token from %s (401)", source.envName())
++		return nil, fmt.Errorf("%w: the token from %s (401)", ErrTokenRejected, source.envName())
+ 	}
+ 
+ 	// The rejected token was cache- or gh-CLI-sourced: invalidate it so the
+diff --git a/internal/landingshed/deps.go b/internal/landingshed/deps.go
+index fb327f3d..4b88c668 100644
+--- a/internal/landingshed/deps.go
++++ b/internal/landingshed/deps.go
+@@ -344,6 +344,8 @@ type PullRequestDeps struct {
+ 	PushTask func() error
+ 	// CommitsMissing lists the task commits not reachable from merged, the head GitHub merged.
+ 	CommitsMissing func(merged, task string) ([]string, error)
++	// TaskHasCommits reports whether the task branch holds a commit the local parent branch lacks, read by git.
++	TaskHasCommits func() (bool, error)
+ 	// DirtyPaths lists the task worktree's uncommitted paths.
+ 	DirtyPaths func() ([]string, error)
+ 	// MailAgent posts line to the creel strand named strandName.
+diff --git a/internal/landingshed/doc.go b/internal/landingshed/doc.go
+index 035016c4..00c2da80 100644
+--- a/internal/landingshed/doc.go
++++ b/internal/landingshed/doc.go
+@@ -1,7 +1,7 @@
+ // Package landingshed owns landing's general producers, Parent-Align, the PR-Review row and Finalize, which any producer list may name -- none is special-cased by the engine that drives them.
+ //
+ // PR-Review lands a run through a GitHub pull request when ResolvePullRequest says so; PRReview names it for a recipe row.
+-// It reads the receiving branch's beam.yaml `pull_request`, the landing entry's field and the origin through Deps.PullRequest, and takes no parent lock.
++// It reads the receiving branch's beam.yaml `pull_request`, the landing entry's field, the origin and whether the task branch has commits beyond its parent through Deps.PullRequest, and takes no parent lock.
+ // A beam.yaml it cannot read is Stuck with Halt naming the worktree and `lym config beam`, and a resolver Halt is Stuck with Halt.
+ // A no logs the reason, closes a recorded pull request GitHub reports open with the comment `lym closed this pull request: <reason>`, drops the record and ends Done.
+ // A yes pushes the task branch, then finds the pull request the record names or the open one on the task branch, else opens one, sets its title and body from the change description and records its number, URL, base and head, and then waits on it in process.
+@@ -27,13 +27,15 @@
+ // It stops it at the first wake a pause covers and resumes it at the first uncovered wake, and on every verdict, Stuck and error, and it leaves it running when the context is cancelled.
+ // The wait's wakes start no session, so an operator who closes the window ends the agent until the next entry of the row.
+ // The driver strand's wait mark reads `PR #<n>` while the wait runs.
+-// A transient push or GitHub failure is an error the driver re-steps; an unresolvable token, a push the fabric refuses and any other GitHub failure are Stuck with Halt naming their way forward.
++// A transient push or GitHub failure is an error the driver re-steps; an unresolvable or rejected token, a push the fabric refuses and any other GitHub failure are Stuck with Halt naming their way forward.
++// The way forward names the token only for a token failure or a 401 or 403 response, and a 422 says GitHub accepted the token but refused the request's content.
+ // A nil seam, an empty record path and a cancelled context are errors.
+ //
+ // ResolvePullRequest is the one decision of whether a landing goes through a pull request, so PR-Review and Finalize cannot disagree.
+-// It takes the receiving branch's beam.yaml `pull_request` (`on`, `off` or `required`), the landing entry's `pull_request` field (empty, `on` or `off`) and the origin facts, and reads no file: its callers read the parent's beam.yaml and the entry and tell the values.
++// It takes the receiving branch's beam.yaml `pull_request` (`on`, `off` or `required`), the landing entry's `pull_request` field (empty, `on` or `off`), the origin facts and whether the task branch has commits beyond its parent, and reads no file: its callers read the parent's beam.yaml, the entry and the task branch through git and tell the values.
+ // A required parent wants a pull request whatever the field says, an on parent wants one unless the field is off, and an off parent wants one only when the field is on.
+ // A wanted pull request needs an origin on github.com that the owner and repository parse from, an upstream for the parent and no push skip.
++// A wanted pull request on a task branch with no commit beyond its parent is a no, before any origin fact is judged, since GitHub opens none on an empty branch; both rows then take the no path, and Finalize's parent-side merge commits nothing.
+ // A missing fact is a Halt when the parent is required or the field is on, and a no with the fact named when the parent is on alone; an origin on github.com that names no repository is a Halt in every mode that wants a pull request.
+ //
+ // A merge or test failure at Parent-Align or Finalize is owned by the recipe: it ends in the row's fixer, a reroute or a halt to the orch.
+@@ -211,7 +213,7 @@
+ // After the parent-side merge and before the push, Finalize marks the board task done.
+ //
+ // Finalize lands through the run's pull request, which it merges on GitHub only here, under the parent lock.
+-// Right after it takes the lock it asks ResolvePullRequest the question PR-Review asked, from the same beam.yaml, entry field and origin, and a Finalize with no `ParentMode` seam skips the step and lands locally.
++// Right after it takes the lock it asks ResolvePullRequest the question PR-Review asked, from the same beam.yaml, entry field, origin and task-branch commits, and a Finalize with no `ParentMode` seam skips the step and lands locally.
+ // A no closes a recorded pull request GitHub reports open with the comment `lym closed this pull request: <reason>`, removes the record, and lands locally.
+ // A yes with no record is Stuck with Halt naming `lym loom goto PR-Review`, and a yes whose pull request GitHub reports closed while the record is not marked closed for continue is Stuck with Halt naming a reopen on GitHub and `lym batten cancel`; only PR-Review writes that mark.
+ // A yes whose record is marked closed for continue and whose pull request is closed is the operator's ending, and lands locally with Finalize's gate and trailer.
+diff --git a/internal/landingshed/finalize_pr.go b/internal/landingshed/finalize_pr.go
+index b5658022..9499cc7f 100644
+--- a/internal/landingshed/finalize_pr.go
++++ b/internal/landingshed/finalize_pr.go
+@@ -6,6 +6,7 @@ import (
+ 	"context"
+ 	"errors"
+ 	"fmt"
++	"net/http"
+ 	"strings"
+ 	"time"
+ 
+@@ -39,13 +40,27 @@ func pushHaltReason(worktreeRoot string, err error) string {
+ 	return fmt.Sprintf("pushing the task branch failed: %v; way forward: run lym fabric push in the task worktree %s, then run lym loom resume", err, worktreeRoot)
+ }
+ 
++// tokenFailure reports whether err is a GitHub token that could not be resolved or that GitHub rejected.
++// The HTTP client wraps both in an error the transient classifier reads as transient, so callers check this first.
++func tokenFailure(err error) bool {
++	return errors.Is(err, githubclient.ErrTokenUnresolvable) || errors.Is(err, githubclient.ErrTokenRejected)
++}
++
+ // githubHaltReason is the Stuck reason of a failed GitHub call named by action that is not transient.
+-// An unresolvable token names gh auth login, and any other failure names the token and repository access.
++// Only an authentication failure names the token: an unresolvable token names gh auth login, and a rejected token or a 401 or 403 response names the token and repository access.
++// A 422 says GitHub refused the request's content, and any other failure names GitHub's message.
+ func githubHaltReason(action string, err error) string {
+ 	if errors.Is(err, githubclient.ErrTokenUnresolvable) {
+ 		return fmt.Sprintf("no GitHub token is available to %s: %v; way forward: the operator runs gh auth login --hostname github.com, then lym loom resume", action, err)
+ 	}
+-	return fmt.Sprintf("the GitHub call to %s failed: %v; way forward: make sure the gh user's token (GH_TOKEN, GITHUB_TOKEN, or gh auth login --hostname github.com) is valid and can reach the repository, then run lym loom resume", action, err)
++	status := githubclient.StatusCode(err)
++	switch {
++	case errors.Is(err, githubclient.ErrTokenRejected), status == http.StatusUnauthorized, status == http.StatusForbidden:
++		return fmt.Sprintf("GitHub refused the token for the call to %s: %v; way forward: make sure the gh user's token (GH_TOKEN, GITHUB_TOKEN, or gh auth login --hostname github.com) is valid and can reach the repository, then run lym loom resume", action, err)
++	case status == http.StatusUnprocessableEntity:
++		return fmt.Sprintf("GitHub refused the call to %s as invalid (422): %v; a 422 means GitHub accepted the token but not the request, such as a pull request between branches with no commits between them; way forward: fix what GitHub's message names in the task or parent branch, then run lym loom resume", action, err)
++	}
++	return fmt.Sprintf("the GitHub call to %s failed: %v; way forward: fix what GitHub's message names, then run lym loom resume", action, err)
+ }
+ 
+ // pullRequestMergeMessage composes the commit message of a pull request's merge: the change description's body, then the trailer block.
+@@ -62,10 +77,10 @@ func pullRequestMergeMessage(body, trailer string) string {
+ }
+ 
+ // githubFailure judges a failed GitHub call named by action, which is the whole of Finalize's disposition of one.
+-// An unresolvable token halts first, since the HTTP client wraps that error in a type the transient classifier reads as transient; then a transient failure is an error the driver re-steps; any other failure halts.
++// A token failure halts first, since the HTTP client wraps it in a type the transient classifier reads as transient; then a transient failure is an error the driver re-steps; any other failure halts.
+ // Each halt opens with LandingStopPrefix.
+ func (fz *Finalize) githubFailure(ctx context.Context, action string, err error) (shedengine.Outcome, shedengine.OutputPointer, error, bool) {
+-	if !errors.Is(err, githubclient.ErrTokenUnresolvable) {
++	if !tokenFailure(err) {
+ 		if terr := transientFailure(ctx, finalizeName, action, err); terr != nil {
+ 			return "", shedengine.OutputPointer{}, terr, true
+ 		}
+@@ -103,7 +118,11 @@ func (fz *Finalize) pullRequestLanding(ctx context.Context) (prLanding, shedengi
+ 	if err != nil {
+ 		return ended(fz.errorStop(ctx, fmt.Errorf("landingshed: %s: read the origin: %w", finalizeName, err)))
+ 	}
+-	decision := ResolvePullRequest(fz.deps.Slug, mode, field, origin)
++	hasCommits, err := pr.TaskHasCommits()
++	if err != nil {
++		return ended(fz.errorStop(ctx, fmt.Errorf("landingshed: %s: read whether the task branch has commits beyond its parent: %w", finalizeName, err)))
++	}
++	decision := ResolvePullRequest(fz.deps.Slug, mode, field, origin, hasCommits)
+ 	if decision.Halt != "" {
+ 		return halt(decision.Halt)
+ 	}
+diff --git a/internal/landingshed/finalize_pr_test.go b/internal/landingshed/finalize_pr_test.go
+index a34a8973..458ba868 100644
+--- a/internal/landingshed/finalize_pr_test.go
++++ b/internal/landingshed/finalize_pr_test.go
+@@ -7,6 +7,7 @@ package landingshed
+ import (
+ 	"context"
+ 	"errors"
++	"fmt"
+ 	"net/url"
+ 	"path/filepath"
+ 	"slices"
+@@ -63,15 +64,23 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 		pushErr    error
+ 		merges     []mergeCallResult
+ 		ffErr      error
++		// taskEmpty makes the task branch hold no commit beyond its parent.
++		taskEmpty bool
++		// taskErr makes the TaskHasCommits seam fail.
++		taskErr error
+ 
+-		wantOutcome  shedengine.Outcome
+-		wantHalt     bool
+-		wantReason   []string
+-		wantErr      bool
+-		wantCalls    []string
+-		wantOrder    string
+-		wantMerges   int
+-		wantNoRecord bool
++		wantOutcome shedengine.Outcome
++		wantHalt    bool
++		wantReason  []string
++		wantErr     bool
++		// wantErrText is a substring the returned error must hold.
++		wantErrText string
++		wantCalls   []string
++		wantOrder   string
++		wantMerges  int
++		// wantNotInReason are substrings the reason must not hold.
++		wantNotInReason []string
++		wantNoRecord    bool
+ 	}{
+ 		{
+ 			name: "UnreadableParentModeHaltsNamingTheWorktreeBehindTheLandingPrefix", parentErr: errors.New("bad yaml"),
+@@ -153,9 +162,28 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"gh auth login --hostname github.com", "lym loom resume"}, wantCalls: []string{"Status 7"},
+ 		},
+ 		{
+-			name: "AFailingStatusReadHaltsNamingTheTokenAndRepositoryAccess", parentMode: "on", record: recorded(),
++			name: "ARejectedTokenWrappedInAURLErrorHaltsNamingTheTokenAndNotATransientError", parentMode: "on", record: recorded(),
++			scripts:     statusScript(scriptedCall{err: &url.Error{Op: "Get", URL: "https://api.github.com", Err: fmt.Errorf("%w: the token from GH_TOKEN (401)", githubclient.ErrTokenRejected)}}),
++			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"GH_TOKEN, GITHUB_TOKEN", "lym loom resume"}, wantCalls: []string{"Status 7"},
++		},
++		{
++			name: "AFailingTaskCommitReadIsAnErrorStopWithNoGitHubCallAndNoMerge", parentMode: "on", record: recorded(),
++			taskErr: errors.New("rev-list failed"),
++			wantErr: true, wantErrText: "read whether the task branch has commits beyond its parent",
++		},
++		{
++			name: "AFailingStatusReadHaltsNamingGitHubsMessageAndNotTheToken", parentMode: "on", record: recorded(),
+ 			scripts:     statusScript(scriptedCall{err: errors.New("404 Not Found")}),
+-			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"404 Not Found", "GH_TOKEN", "can reach the repository"}, wantCalls: []string{"Status 7"},
++			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"404 Not Found", "fix what GitHub's message names"}, wantNotInReason: []string{"GH_TOKEN"}, wantCalls: []string{"Status 7"},
++		},
++		{
++			name: "AnEmptyTaskBranchUnderOnWithNoRecordLandsLocallyWithNoGitHubCall", parentMode: "on", taskEmpty: true,
++			wantOutcome: shedengine.Done, wantMerges: 1, wantOrder: "merge,mark,push",
++		},
++		{
++			name: "AnEmptyTaskBranchClosesAnOpenRecordedPullRequestAndLandsLocally", parentMode: "on", taskEmpty: true, record: recorded(), scripts: statusScript(open),
++			wantOutcome: shedengine.Done, wantMerges: 1, wantNoRecord: true, wantOrder: "merge,mark,push",
++			wantCalls: []string{"Status 7", "Close 7 lym closed this pull request: " + emptyBranchReason},
+ 		},
+ 		{
+ 			name: "AFailingPushHaltsNamingFabricPushAndMergesNothing", parentMode: "on", record: recorded(), scripts: mergeScript(open, scriptedCall{}), pushErr: errors.New("rejected"),
+@@ -194,9 +222,10 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 					lockHeldAtMode = found && rec.Owner.Slug == "me"
+ 					return mode, "wt-parent", tt.parentErr
+ 				},
+-				EntryField: func() (string, error) { return "", nil },
+-				Origin:     func() (Origin, error) { return origin, nil },
+-				API:        func(string) (pullrequest.API, error) { return api, nil },
++				EntryField:     func() (string, error) { return "", nil },
++				Origin:         func() (Origin, error) { return origin, nil },
++				TaskHasCommits: func() (bool, error) { return !tt.taskEmpty, tt.taskErr },
++				API:            func(string) (pullrequest.API, error) { return api, nil },
+ 				PushTask: func() error {
+ 					order = append(order, "task-push")
+ 					return tt.pushErr
+@@ -225,6 +254,9 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 			if (err != nil) != tt.wantErr {
+ 				t.Fatalf("Call() error = %v; want error %v", err, tt.wantErr)
+ 			}
++			if err != nil && !strings.Contains(err.Error(), tt.wantErrText) {
++				t.Errorf("Call() error = %q; want it to hold %q", err, tt.wantErrText)
++			}
+ 			if err == nil {
+ 				if outcome != tt.wantOutcome || pointer.Halt != tt.wantHalt {
+ 					t.Fatalf("Call() = %q, halt %v; want %q, halt %v (reason %q)", outcome, pointer.Halt, tt.wantOutcome, tt.wantHalt, pointer.Reason)
+@@ -237,6 +269,11 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 						t.Errorf("Call() reason %q lacks %q", pointer.Reason, want)
+ 					}
+ 				}
++				for _, unwanted := range tt.wantNotInReason {
++					if strings.Contains(pointer.Reason, unwanted) {
++						t.Errorf("Call() reason %q holds %q", pointer.Reason, unwanted)
++					}
++				}
+ 			}
+ 			if diff := cmp.Diff(tt.wantCalls, api.calls); diff != "" {
+ 				t.Errorf("GitHub calls mismatch (-want +got):\n%s", diff)
+diff --git a/internal/landingshed/prreview.go b/internal/landingshed/prreview.go
+index b433f494..79f0a58f 100644
+--- a/internal/landingshed/prreview.go
++++ b/internal/landingshed/prreview.go
+@@ -8,7 +8,6 @@ import (
+ 	"fmt"
+ 	"time"
+ 
+-	"github.com/Knatte18/loomyard/internal/githubclient"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/pullrequest"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+@@ -82,8 +81,12 @@ func (p *PRReview) decide(ctx context.Context) (shedengine.Outcome, shedengine.O
+ 	if err != nil {
+ 		return "", shedengine.OutputPointer{}, fmt.Errorf("landingshed: %s: read the origin: %w", p.name, err)
+ 	}
++	hasCommits, err := pr.TaskHasCommits()
++	if err != nil {
++		return "", shedengine.OutputPointer{}, fmt.Errorf("landingshed: %s: read whether the task branch has commits beyond its parent: %w", p.name, err)
++	}
+ 
+-	decision := ResolvePullRequest(p.deps.Slug, mode, field, origin)
++	decision := ResolvePullRequest(p.deps.Slug, mode, field, origin, hasCommits)
+ 	if decision.Halt != "" {
+ 		return stuckVerdict(ctx, p.name, decision.Halt, true)
+ 	}
+@@ -114,6 +117,8 @@ func (p *PRReview) checkWiring() error {
+ 		missing = "PullRequest.PushTask"
+ 	case pr.CommitsMissing == nil:
+ 		missing = "PullRequest.CommitsMissing"
++	case pr.TaskHasCommits == nil:
++		missing = "PullRequest.TaskHasCommits"
+ 	case pr.DirtyPaths == nil:
+ 		missing = "PullRequest.DirtyPaths"
+ 	case pr.MailAgent == nil:
+@@ -579,13 +584,13 @@ func (p *PRReview) pollStatus(ctx context.Context, api pullrequest.API, state *p
+ }
+ 
+ // pollFailure judges a failed GitHub call of the wait named by action.
+-// An unresolvable token and any other failure but a transient one end the call as githubFailure judges them; a transient failure logs one Warn per episode and lets the wait go on.
++// A token failure and any other failure but a transient one end the call as githubFailure judges them; a transient failure logs one Warn per episode and lets the wait go on.
+ // It reports whether it ended the call.
+ func (p *PRReview) pollFailure(ctx context.Context, state *prWaitState, action string, err error) (shedengine.Outcome, shedengine.OutputPointer, bool, error) {
+ 	if cerr := cancelErr(ctx, p.name); cerr != nil {
+ 		return "", shedengine.OutputPointer{}, true, cerr
+ 	}
+-	if !errors.Is(err, githubclient.ErrTokenUnresolvable) && shedtransient.Class(err) != "" {
++	if !tokenFailure(err) && shedtransient.Class(err) != "" {
+ 		if !state.transientWarned {
+ 			logger.Warn("landingshed: a GitHub call failed transiently, the wait goes on", "row", p.name, "action", action, "cause", err)
+ 			state.transientWarned = true
+@@ -671,9 +676,9 @@ func (p *PRReview) dirtyEndReason(number int, dirty []string) string {
+ }
+ 
+ // githubFailure judges a failed GitHub call named by action.
+-// An unresolvable token is Stuck with Halt first, since the HTTP client wraps that error in a type the transient classifier reads as transient; then a transient failure is an error the driver re-steps; any other failure is Stuck with Halt.
++// A token failure is Stuck with Halt first, since the HTTP client wraps it in a type the transient classifier reads as transient; then a transient failure is an error the driver re-steps; any other failure is Stuck with Halt.
+ func (p *PRReview) githubFailure(ctx context.Context, action string, err error) (shedengine.Outcome, shedengine.OutputPointer, error) {
+-	if !errors.Is(err, githubclient.ErrTokenUnresolvable) {
++	if !tokenFailure(err) {
+ 		if terr := transientFailure(ctx, p.name, action, err); terr != nil {
+ 			return "", shedengine.OutputPointer{}, terr
+ 		}
+diff --git a/internal/landingshed/prreview_test.go b/internal/landingshed/prreview_test.go
+index 95e82891..c24e4757 100644
+--- a/internal/landingshed/prreview_test.go
++++ b/internal/landingshed/prreview_test.go
+@@ -8,6 +8,7 @@ import (
+ 	"context"
+ 	"errors"
+ 	"fmt"
++	"net/http"
+ 	"net/url"
+ 	"os"
+ 	"path/filepath"
+@@ -17,6 +18,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/google/go-cmp/cmp"
++	"github.com/google/go-github/v75/github"
+ 
+ 	"github.com/Knatte18/loomyard/internal/githubclient"
+ 	"github.com/Knatte18/loomyard/internal/parentlock"
+@@ -121,11 +123,19 @@ func TestPRReview_Call(t *testing.T) {
+ 		dirty      []string
+ 		scripts    map[string][]scriptedCall
+ 		pushErr    error
++		// taskEmpty makes the task branch hold no commit beyond its parent.
++		taskEmpty bool
++		// taskErr makes the TaskHasCommits seam fail.
++		taskErr error
+ 
+ 		wantOutcome shedengine.Outcome
+ 		wantHalt    bool
+ 		wantReason  []string
+-		wantErr     bool
++		// wantNotInReason are substrings the reason must not hold.
++		wantNotInReason []string
++		wantErr         bool
++		// wantErrText is a substring the returned error must hold.
++		wantErrText string
+ 		wantCalls   []string
+ 		wantPushes  int
+ 		wantRecord  *pullrequest.Record
+@@ -219,11 +229,57 @@ func TestPRReview_Call(t *testing.T) {
+ 			wantReason: []string{"gh auth login --hostname github.com", "lym loom resume"},
+ 		},
+ 		{
+-			name: "NotFoundHaltsNamingTheTokenAndRepositoryAccess", parentMode: "on", origin: githubOrigin,
+-			scripts:     map[string][]scriptedCall{"FindOpen": {{err: errors.New("404 Not Found")}}},
++			name: "EmptyTaskBranchUnderOnIsDoneWithNoPushAndNoGitHubCall", parentMode: "on", origin: githubOrigin, taskEmpty: true,
++			wantOutcome: shedengine.Done, wantNoRecord: true,
++		},
++		{
++			name: "EmptyTaskBranchClosesTheRecordedOpenPullRequestAndRemovesTheRecord", parentMode: "on", origin: githubOrigin, taskEmpty: true,
++			record:      &pullrequest.Record{Number: 7},
++			scripts:     map[string][]scriptedCall{"Status": {open}},
++			wantOutcome: shedengine.Done, wantNoRecord: true,
++			wantCalls: []string{"Status 7", "Close 7 lym closed this pull request: " + emptyBranchReason},
++		},
++		{
++			name: "FailingTaskCommitReadIsAnErrorNamingItWithNoPushAndNoGitHubCall", parentMode: "on", origin: githubOrigin,
++			taskErr: errors.New("rev-list failed"),
++			wantErr: true, wantErrText: "read whether the task branch has commits beyond its parent",
++		},
++		{
++			name: "RejectedTokenWrappedInAURLErrorHaltsNamingTheToken", parentMode: "on", origin: githubOrigin,
++			scripts:     map[string][]scriptedCall{"FindOpen": {{err: &url.Error{Op: "Get", URL: "https://api.github.com", Err: fmt.Errorf("%w: the token from GH_TOKEN (401)", githubclient.ErrTokenRejected)}}}},
++			wantOutcome: shedengine.Stuck, wantHalt: true, wantPushes: 1,
++			wantCalls:  []string{"FindOpen task main"},
++			wantReason: []string{"GH_TOKEN, GITHUB_TOKEN", "lym loom resume"},
++		},
++		{
++			name: "UnauthorizedResponseHaltsNamingTheToken", parentMode: "on", origin: githubOrigin,
++			scripts:     map[string][]scriptedCall{"FindOpen": {{err: githubErrorResponse(http.StatusUnauthorized, "Bad credentials")}}},
++			wantOutcome: shedengine.Stuck, wantHalt: true, wantPushes: 1,
++			wantCalls:  []string{"FindOpen task main"},
++			wantReason: []string{"Bad credentials", "GH_TOKEN", "can reach the repository", "lym loom resume"},
++		},
++		{
++			name: "ForbiddenResponseHaltsNamingTheToken", parentMode: "on", origin: githubOrigin,
++			scripts:     map[string][]scriptedCall{"FindOpen": {{err: githubErrorResponse(http.StatusForbidden, "Resource not accessible")}}},
+ 			wantOutcome: shedengine.Stuck, wantHalt: true, wantPushes: 1,
+ 			wantCalls:  []string{"FindOpen task main"},
+-			wantReason: []string{"404 Not Found", "GH_TOKEN", "can reach the repository", "lym loom resume"},
++			wantReason: []string{"Resource not accessible", "GH_TOKEN", "lym loom resume"},
++		},
++		{
++			name: "UnprocessableResponseHaltsSayingWhatA422MeansAndNotNamingTheToken", parentMode: "on", origin: githubOrigin,
++			scripts:     map[string][]scriptedCall{"Create": {{err: githubErrorResponse(http.StatusUnprocessableEntity, "No commits between main and task")}}},
++			wantOutcome: shedengine.Stuck, wantHalt: true, wantPushes: 1,
++			wantCalls:       []string{"FindOpen task main", wantCreateCall},
++			wantReason:      []string{"No commits between main and task", "(422)", "accepted the token but not the request", "lym loom resume"},
++			wantNotInReason: []string{"GH_TOKEN"},
++		},
++		{
++			name: "NotFoundHaltsNamingGitHubsMessageAndNotTheToken", parentMode: "on", origin: githubOrigin,
++			scripts:     map[string][]scriptedCall{"FindOpen": {{err: githubErrorResponse(http.StatusNotFound, "Not Found")}}},
++			wantOutcome: shedengine.Stuck, wantHalt: true, wantPushes: 1,
++			wantCalls:       []string{"FindOpen task main"},
++			wantReason:      []string{"Not Found", "fix what GitHub's message names", "lym loom resume"},
++			wantNotInReason: []string{"GH_TOKEN"},
+ 		},
+ 		{
+ 			name: "TransientGitHubErrorIsAnError", parentMode: "on", origin: githubOrigin,
+@@ -237,12 +293,16 @@ func TestPRReview_Call(t *testing.T) {
+ 			t.Parallel()
+ 			fx := newPRReviewFixture(t, tt.parentMode, tt.parentErr, tt.field, tt.origin, tt.record, tt.scripts, tt.pushErr)
+ 			fx.dirty = tt.dirty
++			fx.deps.PullRequest.TaskHasCommits = func() (bool, error) { return !tt.taskEmpty, tt.taskErr }
+ 
+ 			outcome, pointer, err := NewPRReview("PR-Review", fx.deps).Call(context.Background())
+ 
+ 			if (err != nil) != tt.wantErr {
+ 				t.Fatalf("Call() error = %v; want error %v", err, tt.wantErr)
+ 			}
++			if err != nil && !strings.Contains(err.Error(), tt.wantErrText) {
++				t.Errorf("Call() error = %q; want it to hold %q", err, tt.wantErrText)
++			}
+ 			if err == nil {
+ 				if outcome != tt.wantOutcome || pointer.Halt != tt.wantHalt {
+ 					t.Errorf("Call() = %q, halt %v; want %q, halt %v (reason %q)", outcome, pointer.Halt, tt.wantOutcome, tt.wantHalt, pointer.Reason)
+@@ -252,6 +312,11 @@ func TestPRReview_Call(t *testing.T) {
+ 						t.Errorf("Call() reason %q lacks %q", pointer.Reason, want)
+ 					}
+ 				}
++				for _, unwanted := range tt.wantNotInReason {
++					if strings.Contains(pointer.Reason, unwanted) {
++						t.Errorf("Call() reason %q holds %q", pointer.Reason, unwanted)
++					}
++				}
+ 			}
+ 			if diff := cmp.Diff(tt.wantCalls, fx.api.calls); diff != "" {
+ 				t.Errorf("GitHub calls mismatch (-want +got):\n%s", diff)
+@@ -290,6 +355,7 @@ func TestPRReview_Call(t *testing.T) {
+ 			"PullRequest.API":             func(d *Deps) { d.PullRequest.API = nil },
+ 			"PullRequest.PushTask":        func(d *Deps) { d.PullRequest.PushTask = nil },
+ 			"PullRequest.CommitsMissing":  func(d *Deps) { d.PullRequest.CommitsMissing = nil },
++			"PullRequest.TaskHasCommits":  func(d *Deps) { d.PullRequest.TaskHasCommits = nil },
+ 			"PullRequest.DirtyPaths":      func(d *Deps) { d.PullRequest.DirtyPaths = nil },
+ 			"PullRequest.MailAgent":       func(d *Deps) { d.PullRequest.MailAgent = nil },
+ 			"PullRequest.PauseCovered":    func(d *Deps) { d.PullRequest.PauseCovered = nil },
+@@ -326,6 +392,14 @@ func TestPRReview_Call(t *testing.T) {
+ 	})
+ }
+ 
++// emptyBranchReason is the resolver's reason for an on parent whose task branch holds no commit beyond it.
++const emptyBranchReason = "no pull request: the parent's beam.yaml pull_request is on, but the task branch has no commits beyond its parent, so the landing is empty"
++
++// githubErrorResponse is the error go-github returns for a response GitHub answered with status and message.
++func githubErrorResponse(status int, message string) *github.ErrorResponse {
++	return &github.ErrorResponse{Response: &http.Response{StatusCode: status}, Message: message}
++}
++
+ // prReviewFixture is the Deps a PR-Review test runs under, with the fake API, the push count and the dirty paths it reads back.
+ type prReviewFixture struct {
+ 	deps   Deps
+@@ -374,6 +448,7 @@ func prReviewTestDeps(t *testing.T, api *fakePullRequestAPI) Deps {
+ 			API:             func(string) (pullrequest.API, error) { return api, nil },
+ 			PushTask:        func() error { return nil },
+ 			CommitsMissing:  func(string, string) ([]string, error) { return nil, nil },
++			TaskHasCommits:  func() (bool, error) { return true, nil },
+ 			DirtyPaths:      func() ([]string, error) { return nil, nil },
+ 			MailAgent:       func(string, string) error { return nil },
+ 			PauseCovered:    func() (bool, error) { return false, nil },
+diff --git a/internal/landingshed/prreview_wait_test.go b/internal/landingshed/prreview_wait_test.go
+index bd360933..2565b267 100644
+--- a/internal/landingshed/prreview_wait_test.go
++++ b/internal/landingshed/prreview_wait_test.go
+@@ -7,6 +7,7 @@ package landingshed
+ import (
+ 	"context"
+ 	"errors"
++	"net/http"
+ 	"net/url"
+ 	"strings"
+ 	"testing"
+@@ -427,7 +428,7 @@ func TestPRReview_Wait(t *testing.T) {
+ 			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"gh auth login --hostname github.com", "lym loom resume"},
+ 		},
+ 		{
+-			name: "AForbiddenPollHaltsNamingTheTokenAndRepositoryAccess", scripts: createdAndStatus(scriptedCall{err: errors.New("403 Forbidden")}),
++			name: "AForbiddenPollHaltsNamingTheTokenAndRepositoryAccess", scripts: createdAndStatus(scriptedCall{err: githubErrorResponse(http.StatusForbidden, "Forbidden")}),
+ 			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"403 Forbidden", "GH_TOKEN", "can reach the repository"},
+ 		},
+ 		{
+diff --git a/internal/landingshed/pullrequestmode.go b/internal/landingshed/pullrequestmode.go
+index 7753c637..ecb44aeb 100644
+--- a/internal/landingshed/pullrequestmode.go
++++ b/internal/landingshed/pullrequestmode.go
+@@ -46,8 +46,9 @@ type PullRequestDecision struct {
+ // A field off under a required parent logs one Warn and still wants one.
+ // A wanted pull request needs, in this order, an origin on github.com, an origin ParseOwnerRepo accepts, an upstream for the parent and no push skip.
+ // A missing fact is a Halt when the parent is required or the field is on, and an origin on github.com that ParseOwnerRepo refuses is always a Halt; any other missing fact under an on parent alone is no pull request, naming the fact.
+-// It reads no file: the caller reads the parent's beam.yaml and the entry and tells the values.
+-func ResolvePullRequest(slug, parentMode, entryField string, origin Origin) PullRequestDecision {
++// A wanted pull request on a task branch with no commit beyond its parent, taskHasCommits false, is no pull request before any origin fact is judged, since GitHub opens none on an empty branch.
++// It reads no file: the caller reads the parent's beam.yaml, the entry and the task branch and tells the values.
++func ResolvePullRequest(slug, parentMode, entryField string, origin Origin, taskHasCommits bool) PullRequestDecision {
+ 	if parentMode == pullRequestRequired && entryField == pullRequestOff {
+ 		logger.Warn("landingshed: the entry's pull_request is off but the parent's beam.yaml pull_request is required, so a pull request is still required", "slug", slug)
+ 	}
+@@ -69,6 +70,9 @@ func ResolvePullRequest(slug, parentMode, entryField string, origin Origin) Pull
+ 	if !wanted {
+ 		return PullRequestDecision{Reason: fmt.Sprintf("pull request off: the parent's beam.yaml pull_request is %s and the entry's pull_request is %s", parentMode, field)}
+ 	}
++	if !taskHasCommits {
++		return PullRequestDecision{Reason: fmt.Sprintf("no pull request: %s, but the task branch has no commits beyond its parent, so the landing is empty", demand)}
++	}
+ 
+ 	owner, repo, missing, alwaysHalt := checkOrigin(origin)
+ 	if missing == "" {
+diff --git a/internal/landingshed/pullrequestmode_test.go b/internal/landingshed/pullrequestmode_test.go
+index de6a7f42..371a7a91 100644
+--- a/internal/landingshed/pullrequestmode_test.go
++++ b/internal/landingshed/pullrequestmode_test.go
+@@ -1,6 +1,6 @@
+ //go:build tier0
+ 
+-// pullrequestmode_test.go covers ResolvePullRequest: the nine mode and field combinations, the warning for an off field under a required parent, and each origin fact that blocks a pull request.
++// pullrequestmode_test.go covers ResolvePullRequest: the nine mode and field combinations, the warning for an off field under a required parent, each origin fact that blocks a pull request, and an empty task branch.
+ 
+ package landingshed
+ 
+@@ -29,7 +29,7 @@ func TestResolvePullRequest(t *testing.T) {
+ 		for _, tt := range tests {
+ 			t.Run(tt.parent+"_"+tt.field, func(t *testing.T) {
+ 				logs := logcapture.CaptureVerbose(t)
+-				got := ResolvePullRequest("slug", tt.parent, tt.field, githubOrigin)
++				got := ResolvePullRequest("slug", tt.parent, tt.field, githubOrigin, true)
+ 				if got.Open != tt.wantOpen || got.Halt != "" || got.Reason == "" {
+ 					t.Errorf("ResolvePullRequest(%q, %q) = %+v; want Open %v, no halt and a reason", tt.parent, tt.field, got, tt.wantOpen)
+ 				}
+@@ -39,7 +39,7 @@ func TestResolvePullRequest(t *testing.T) {
+ 				}
+ 			})
+ 		}
+-		off := ResolvePullRequest("slug", "off", "", githubOrigin)
++		off := ResolvePullRequest("slug", "off", "", githubOrigin, true)
+ 		if want := "pull request off: the parent's beam.yaml pull_request is off and the entry's pull_request is empty"; off.Reason != want {
+ 			t.Errorf("off reason = %q; want %q", off.Reason, want)
+ 		}
+@@ -80,7 +80,7 @@ func TestResolvePullRequest(t *testing.T) {
+ 		for _, tt := range tests {
+ 			t.Run(tt.name, func(t *testing.T) {
+ 				logcapture.CaptureVerbose(t)
+-				got := ResolvePullRequest("slug", tt.parent, tt.field, tt.origin)
++				got := ResolvePullRequest("slug", tt.parent, tt.field, tt.origin, true)
+ 				if got.Open {
+ 					t.Fatalf("ResolvePullRequest() = %+v; want no pull request", got)
+ 				}
+@@ -99,4 +99,32 @@ func TestResolvePullRequest(t *testing.T) {
+ 			})
+ 		}
+ 	})
++
++	t.Run("EmptyTaskBranch", func(t *testing.T) {
++		const emptyClause = "the task branch has no commits beyond its parent"
++		tests := []struct {
++			name   string
++			parent string
++			field  string
++			origin Origin
++			// wantIn is a substring the reason holds.
++			wantIn string
++		}{
++			{"OnParentIsNo", "on", "", githubOrigin, emptyClause},
++			{"FieldOnIsNo", "off", "on", githubOrigin, emptyClause},
++			{"RequiredParentIsNo", "required", "", githubOrigin, emptyClause},
++			{"RequiredParentWithALocalOriginIsNoRatherThanAHalt", "required", "", Origin{URL: "/srv/hub.git", Upstream: true}, emptyClause},
++			{"GitHubOriginNamingNoRepositoryIsNoRatherThanAHalt", "on", "", Origin{URL: "https://github.com/onlyowner", Upstream: true}, emptyClause},
++			{"OffParentKeepsItsOffReason", "off", "", githubOrigin, "pull request off:"},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				logcapture.CaptureVerbose(t)
++				got := ResolvePullRequest("slug", tt.parent, tt.field, tt.origin, false)
++				if got.Open || got.Halt != "" || !strings.Contains(got.Reason, tt.wantIn) {
++					t.Errorf("ResolvePullRequest(%q, %q, %+v, false) = %+v; want no pull request, no halt and a reason holding %q", tt.parent, tt.field, tt.origin, got, tt.wantIn)
++				}
++			})
++		}
++	})
+ }
+diff --git a/internal/loomcli/landingdeps.go b/internal/loomcli/landingdeps.go
+index b3872cc8..c1c74417 100644
+--- a/internal/loomcli/landingdeps.go
++++ b/internal/loomcli/landingdeps.go
+@@ -333,6 +333,14 @@ func pullRequestDeps(l *lymcwd.Location, parentBranch string, pushSkipped bool,
+ 			}
+ 			return f.CommitLog(merged, task)
+ 		},
++		// TaskHasCommits reports whether the task pair's HEAD holds a commit the local parent branch lacks.
++		TaskHasCommits: func() (bool, error) {
++			f, err := fabricengine.Open(l)
++			if err != nil {
++				return false, err
++			}
++			return f.HeadHoldsCommitsNotIn("refs/heads/" + parentBranch)
++		},
+ 		DirtyPaths: func() ([]string, error) { return verifytree.DirtyPaths(l.WorktreePath()) },
+ 		MailAgent: func(strandName, line string) error {
+ 			client, err := creelcli.NewProgramClient(l, loomProgram)
+diff --git a/internal/loomcli/landingdeps_integration_test.go b/internal/loomcli/landingdeps_integration_test.go
+index 84ac0652..1b8d47f0 100644
+--- a/internal/loomcli/landingdeps_integration_test.go
++++ b/internal/loomcli/landingdeps_integration_test.go
+@@ -1,7 +1,9 @@
+ //go:build tier1
+ 
+-// landingdeps_integration_test.go drives landingDeps' config-change seams over a real hub: ConfigChanges reads a pair's committed config files through real branches,
+-// and Notify posts creel mail to the prime's orch.
++// landingdeps_integration_test.go drives landingDeps' seams over a real hub.
++// ConfigChanges reads a pair's committed config files through real branches.
++// Notify posts creel mail to the prime's orch.
++// The PullRequest seams read the receiving branch's mode, the run's board entry and the task branch's commits.
+ // This package's own testmain_test.go arms the hermetic git test environment for the whole binary,
+ // so this file adds no TestMain.
+ 
+@@ -254,3 +256,45 @@ func TestLandingDeps_PullRequestModeReadsTheParent(t *testing.T) {
+ 		}
+ 	})
+ }
++
++// TestLandingDeps_TaskHasCommitsReadsTheTaskHeadAgainstTheParent asserts the TaskHasCommits seam is false for a task branch level with its parent, true once the task branch holds a commit the parent lacks, and an error when the parent branch does not resolve.
++func TestLandingDeps_TaskHasCommitsReadsTheTaskHeadAgainstTheParent(t *testing.T) {
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hubforge.AddPair(t, h, "task")
++	taskWorktree := h.PairCodeWorktree("task")
++	taskLocation, err := lymcwd.ResolveWorktree(taskWorktree)
++	if err != nil {
++		t.Fatalf("lymcwd.ResolveWorktree(task) error = %v; want nil", err)
++	}
++	taskHasCommits := func(parentBranch string) (bool, error) {
++		deps := landingDeps(taskLocation, shedrun.RecipeLoom, websterengine.Geometry{}, "task", parentBranch,
++			true, modelspec.Registry{}, &shuttleengine.Runner{}, landingshed.Config{}, "", nil, nil, nil, planVerifySource(taskLocation), parentLockDeps(taskLocation, shedrun.SelfRunID, "", ""))
++		return deps.PullRequest.TaskHasCommits()
++	}
++
++	if !t.Run("LevelWithTheParentHasNoCommits", func(t *testing.T) {
++		got, err := taskHasCommits("main")
++		if err != nil || got {
++			t.Errorf("TaskHasCommits() = %v, %v; want false, nil for a task branch level with its parent", got, err)
++		}
++	}) {
++		return
++	}
++
++	t.Run("OneCommitBeyondTheParentHasCommits", func(t *testing.T) {
++		gitkit.CommitFile(t, taskWorktree, "task.txt", "work\n", "task: add work")
++		got, err := taskHasCommits("main")
++		if err != nil || !got {
++			t.Errorf("TaskHasCommits() = %v, %v; want true, nil after one commit on the task branch", got, err)
++		}
++	})
++
++	t.Run("AParentBranchThatDoesNotResolveIsAnError", func(t *testing.T) {
++		got, err := taskHasCommits("no-such-branch")
++		if err == nil || !strings.Contains(err.Error(), "no-such-branch") || got {
++			t.Errorf("TaskHasCommits() = %v, %v; want false and an error naming the parent branch", got, err)
++		}
++	})
++}
+diff --git a/internal/loomcli/wiring_seams_test.go b/internal/loomcli/wiring_seams_test.go
+index c0589394..05554b31 100644
+--- a/internal/loomcli/wiring_seams_test.go
++++ b/internal/loomcli/wiring_seams_test.go
+@@ -41,6 +41,7 @@ var intentionallyNil = map[string]string{
+ 	"Landing.PullRequest.API":             "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+ 	"Landing.PullRequest.PushTask":        "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+ 	"Landing.PullRequest.CommitsMissing":  "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.PullRequest.TaskHasCommits":  "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+ 	"Landing.PullRequest.DirtyPaths":      "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+ 	"Landing.PullRequest.MailAgent":       "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+ 	"Landing.PullRequest.PauseCovered":    "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+diff --git a/internal/testkit/envkit/envkit.go b/internal/testkit/envkit/envkit.go
+index b2773ff8..58ceb139 100644
+--- a/internal/testkit/envkit/envkit.go
++++ b/internal/testkit/envkit/envkit.go
+@@ -207,6 +207,7 @@ func LandingDeps(dir string) landingshed.Deps {
+ 			},
+ 			PushTask:        func() error { return nil },
+ 			CommitsMissing:  func(string, string) ([]string, error) { return nil, nil },
++			TaskHasCommits:  func() (bool, error) { return true, nil },
+ 			DirtyPaths:      func() ([]string, error) { return nil, nil },
+ 			MailAgent:       func(string, string) error { return nil },
+ 			PauseCovered:    func() (bool, error) { return false, nil },
