@@ -1,6 +1,6 @@
 # README shows each project's slug
 
-`readme-project-slug` · Task · enhancement, board · running · Finalize
+`readme-project-slug` · Task · enhancement, board · done
 
 ## Seen (operator, 2026-10-30)
 
