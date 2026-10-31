@@ -46,6 +46,11 @@ The variants keep:
 - `tapestry`: Loom-Preflight, Plan and its perch, Webster, Parent-Align, plan amendments, the PATTERN record and PR rework.
 - darn: its writer, tree-scoped verify and the prior-work respawn.
 
+The `lym loom` verbs tell the variants apart, which three gaps the study found show they do not today; the task checks each and fixes what is real:
+- `lym loom peers` reports a darn run's row position against loom's rows (`internal/loomcli/peers.go`, `hubPeersDeps`).
+- `lym loom decision add` seems to accept `--pattern-*` on a darn run, which has no PATTERN record (not verified).
+- `validate-plan`, `insert-card`, `remove-card` and `restore-renumber` seem to carry no recipe check, so on a run without a plan they fail on a missing plan instead of saying the verb does not apply (not verified).
+
 The row order is one for every variant: Drift-Verify runs before Code-Review, as darn does today, since Drift-Verify can change the code a good deal, in `tapestry` especially, and the review must see those changes (operator, 2026-10-31).
 
 ## Open
