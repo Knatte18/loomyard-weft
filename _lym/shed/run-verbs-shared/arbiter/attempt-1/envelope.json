@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Cause hard-cap at round 3 of Discussion-Bouncer. The open design-wrong keys are F1 (d4-inflight-darn-halt-unreachable), F4 (d13-retired-key-refusal-mechanism), F3 (d4-differs-from-committed-restore-loses-answer) and F5 (d5-darn-guard-damaged-record-no-recovery). The round-3 fixer edited the decision record after the review, and each fix now in place answers its finding when checked against the code.\nF1: D4, its acceptance criterion and Open risks now name one route, goto --to Record-Write then resume. internal/shedengine/goto.go gotoAdmitted admits a row before the current one. settledGuard in internal/loomcli/settledguard.go admits Record-Write, a row outside every review segment. internal/driftengine/doc.go confirms that Drift-Baseline takes no capture with scope off or awaited_at set, spawns its agent only when the scope record or baseline.md is missing, and that Drift-Await is Done with awaited_at set whatever HEAD is. The step/goto Darn-Write hop that Shed refuses is gone.\nF3: D4's differs-from-committed bullet now covers the failed-commit case that internal/loomcli/decision.go:700 leaves (\"the entry is appended but the commit failed\", way forward lym fabric commit). The way forward there is lym fabric commit, then re-running the refused call alone, so the appended answer is kept.\nF4: D13 drops the module-level load check. It places the way-forward text in configengine's own ValidateLocal retired-key refusal (internal/configengine/layers.go:276), as the finding asked, with PrepareRunSettings sharing the same Spec text.\nF5: D5 now states that a guard failure halts Stuck with no re-prompt, naming the findings and a way forward. The way forward restores the latest accepted version in the _lym weft, commits it with lym fabric commit, then resumes. This differs from the proposed way forward, removing the file and re-running Record-Write, because that route would drop committed Added after Discussion entries. The fixer's reason is sound. No step of the run forbids the restore, since D6 bars only the writer from editing the record.\nThe remaining open keys are mechanical consistency findings and were also fixed. The segment is accepted, unconverged on round 3.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym loom circling accept run-verbs-shared"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/run-verbs-shared/_lym/shed/run-verbs-shared/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/run-verbs-shared/_lym/shed/run-verbs-shared/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lym shed step run-verbs-shared --until-stop --arbiter-attempt 1"
+}
