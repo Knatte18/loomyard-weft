@@ -1,11 +1,11 @@
 {
-  "current_producer": "Record-Write",
+  "current_producer": "Drift-Baseline",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Record-Write",
-    "last": "Preflight → done",
+    "now": "Drift-Baseline",
+    "last": "Record-Write → done",
     "wait": ""
   },
   "history": [
@@ -13,6 +13,12 @@
       "producer": "Preflight",
       "outcome": "done",
       "output": "",
+      "at": "2026-10-31T18:44:46Z"
+    },
+    {
+      "producer": "Record-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/pawl-loom-recipe/_lym/discussion/decision-record.md",
       "at": "2026-10-31T18:44:46Z"
     }
   ],
