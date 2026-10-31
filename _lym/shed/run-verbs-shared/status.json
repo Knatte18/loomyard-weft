@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Parent-Align",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Drift-Await → skipped",
+    "now": "Parent-Align",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -343,6 +343,33 @@
       "output": "",
       "at": "2026-10-31T16:33:06Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/run-verbs-shared/_lym/webster/summary.md",
+      "at": "2026-10-31T18:10:55Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-31T18:02:31.213459103Z",
+          "end": "2026-10-31T18:05:43.192142092Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-31T18:05:43.567829779Z",
+          "end": "2026-10-31T18:08:35.041271369Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-31T18:08:35.066168841Z",
+          "end": "2026-10-31T18:10:54.758410099Z"
+        }
+      ]
     }
   ],
   "product": {
