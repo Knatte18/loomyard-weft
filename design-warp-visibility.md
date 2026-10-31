@@ -1,4 +1,4 @@
-# warp-visibility: LoomYard adds no instruction file to a repository
+# warp-visibility: lym renders its instruction files from one Bolt store, leaving no trace in warp
 
 `warp-visibility` · Note · feature, ide, fabric
 
