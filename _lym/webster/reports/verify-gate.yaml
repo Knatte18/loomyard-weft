@@ -1,0 +1,55 @@
+attempt: 1
+cap: 2
+failures:
+    - id: github.com/Knatte18/loomyard/internal/loomrecipe
+      kind: package
+      package: github.com/Knatte18/loomyard/internal/loomrecipe
+      tail: |-
+        === CONT  TestNewPawl/RefusesAMissingBeamDescribeSeam
+        --- PASS: TestRecipeKeys/PawlIsServedButNotLoom (0.01s)
+        === CONT  TestNewPawl/RefusesDivergentStatusPaths
+        --- PASS: TestApproveSeam_FailsToBuild/unrecognized_value (0.01s)
+        === CONT  TestNewPawl/RefusesAMissingCodeReviewBudget
+        --- PASS: TestApproveSeam_FailsToBuild (0.00s)
+        --- PASS: TestPawlRouting/AppliesTheBudgetToThePerchAndKeepsTheEdges (0.02s)
+        --- PASS: TestPawlRouting (0.00s)
+        === CONT  TestNewPawl/ABudgetOfZeroSettlesCodeBouncerAtOnce
+        --- PASS: TestRecipeKeys/Darn (0.02s)
+        === CONT  TestShippedRecipe_SeamsWiredOnPlanBouncerOnly/approve_seam
+        --- PASS: TestShippedRecipe_SeamsWiredOnPlanBouncerOnly/approve_seam (0.00s)
+        === CONT  TestShippedRecipe_SeamsWiredOnPlanBouncerOnly/skip_seam
+        --- PASS: TestShippedRecipe_SeamsWiredOnPlanBouncerOnly/skip_seam (0.00s)
+        --- PASS: TestShippedRecipe_SeamsWiredOnPlanBouncerOnly (0.00s)
+        === CONT  TestRouting_ProgressAt/every_row_maps_to_a_step
+        --- PASS: TestRouting_ProgressAt/every_row_maps_to_a_step (0.00s)
+        === CONT  TestRouting_ProgressAt/Friction-Reflect_is_last
+        --- PASS: TestRouting_ProgressAt/Friction-Reflect_is_last (0.00s)
+        === CONT  TestRouting_ProgressAt/the_tail_after_Webster_runs_Parent-Align,_Drift-Verify,_the_Code-Review_perch,_Describe,_PR-Review_and_Finalize
+        --- PASS: TestRouting_ProgressAt/the_tail_after_Webster_runs_Parent-Align,_Drift-Verify,_the_Code-Review_perch,_Describe,_PR-Review_and_Finalize (0.00s)
+        === CONT  TestRouting_ProgressAt/review_segments_share_a_step
+        --- PASS: TestRecipeKeys/EmptyReadsAsTapestry (0.02s)
+        --- PASS: TestRouting_ProgressAt/review_segments_share_a_step (0.00s)
+        --- PASS: TestRouting_ProgressAt (0.01s)
+        --- PASS: TestNewPawl/RefusesAMissingCodeReviewBudget (0.01s)
+        --- PASS: TestNewPawl/RefusesDivergentStatusPaths (0.01s)
+        --- PASS: TestNewPawl/RefusesAMissingBeamDescribeSeam (0.02s)
+        --- PASS: TestRecipeKeys/Tapestry (0.03s)
+        --- PASS: TestRecipeKeys (0.00s)
+        --- PASS: TestNewPawl/BuildsTheRowsAndTheirEdges (0.04s)
+        --- PASS: TestNewPawl/ABudgetOfZeroSettlesCodeBouncerAtOnce (0.03s)
+        --- PASS: TestNewPawl (0.00s)
+        --- PASS: TestDriftRows_EntryGate/entered_Drift-Await (0.05s)
+        --- PASS: TestDriftRows_EntryGate/darn (0.05s)
+        --- PASS: TestDriftRows_EntryGate/entered_Drift-Verify (0.05s)
+        --- PASS: TestDriftRows_EntryGate/loom (0.06s)
+        --- PASS: TestDriftRows_EntryGate (0.00s)
+        FAIL
+        FAIL	github.com/Knatte18/loomyard/internal/loomrecipe	0.798s
+log_path: /home/knatte/Code/loomyard-LYMHUB/run-verbs-shared/.lym/verify/verify-2.log
+hint:
+    - 06-tapestry-config-module
+    - 07-recipe-key-accessors
+    - 09-drop-tapestry-preflight
+    - 10-drift-verify-before-review
+    - 12-darn-review-answer-key
+fixer: fork
