@@ -1,11 +1,11 @@
 {
-  "current_producer": "Drift-Await",
+  "current_producer": "Darn-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Drift-Await",
-    "last": "Drift-Baseline → skipped",
+    "now": "Darn-Write",
+    "last": "Drift-Await → skipped",
     "wait": ""
   },
   "history": [
@@ -17,6 +17,13 @@
     },
     {
       "producer": "Drift-Baseline",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-10-31T14:51:52Z",
+      "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Drift-Await",
       "outcome": "skipped",
       "output": "",
       "at": "2026-10-31T14:51:52Z",
