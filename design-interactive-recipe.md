@@ -1,4 +1,4 @@
-# An interactive recipe: the operator iterates with an agent in the run's own worktree until done
+# sampler: an interactive loom recipe, the operator iterating with an agent in the run's worktree until done
 
 `interactive-recipe` · Task · feature, shed, batten, reed, shuttle · draft
 
@@ -11,7 +11,7 @@ Darn's writer is non-interactive, and tapestry's `discussion_interactive` only i
 
 ## Idea
 
-A new loom recipe beside `tapestry` and darn, under the loom contract `run-verbs-shared` builds: an interactive agent the operator iterates with in the run's own worktree.
+A new loom recipe, `sampler`, beside `tapestry` and darn, under the loom contract `run-verbs-shared` builds: an interactive agent the operator iterates with in the run's own worktree.
 Batten stays the same for it as for every recipe.
 
 - The record is written mechanically from the board entry, as darn's is without Discussion; what the operator and the agent settle on the way the agent appends with `lym loom decision add`, so Describe and any review measure against it.
@@ -36,6 +36,6 @@ It shares only the mechanism with Discussion-Write's interactive mode: an intera
 While the agent waits for the operator, dobby's quiet notice and shuttle's idle timeout are off for this recipe.
 A run is started only when the operator means to work with it.
 
-## Open
+## Name (operator, 2026-10-31)
 
-- The recipe's name.
+The recipe is named `sampler`: a weaver's sampler is the cloth patterns are tried and adjusted on.
