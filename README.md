@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Rename today's loom recipe to tapestry with a rename program**<br>• A Go program under tools/ renames the loom variant to tapestry, so every loom left is the general run | [`tapestry-rename`](design-tapestry-rename.md) | darn | Drift-Baseline | neve | 27m<br>25m | loom, shed, stencil, config, board |
+| T3 | **Rename today's loom recipe to tapestry with a rename program**<br>• A Go program under tools/ renames the loom variant to tapestry, so every loom left is the general run | [`tapestry-rename`](design-tapestry-rename.md) | darn | Darn-Write | neve | 27m<br>25m | loom, shed, stencil, config, board |
 
 #### Ready (0)
 
