@@ -776,6 +776,26 @@
       "body": "## Seen (operator, 2026-10-31)\n\nAdding, changing or removing board entries is done today by talking to the orch, a long-lived session that carries every run's notices, escalations and rules, which is heavy for a talk about one or a few notes.\n\n## Idea\n\nA reed status-bar button of its own, beside the buttons of note `reed-status-buttons`, opens a short-lived agent for board work.\n- The button opens an ordinary agent, as `lym shuttle open` does, with a skill loaded that makes it a board agent; no new role, so the same way can make other kinds of agent later (operator, 2026-10-31).\n- The agent reads the board and the code it needs, talks one or a few cases through with the operator, writes, merges or removes notes, promotes notes to tasks and releases tasks on the operator's named go-ahead (operator, 2026-10-31), and exits.\n  The board holds its state, so it needs no handoff and no context cycle.\n- `ly:board` holds the mechanics of the board only; the policy, today the orch role's \"The board\" section (one finding per note, discuss before writing, a body holds the current design only, propose bundles and wait for approval, release only on a named go-ahead), moves into a skill of its own that the button loads and the orch role points to, so the policy lives in one place.\n  It does not go into `ly:board`, which run agents load to file notes.\n",
       "created": "2026-10-31T19:10:09Z",
       "revised": "2026-10-31T19:10:09Z"
+    },
+    {
+      "id": 942,
+      "handle": "F4",
+      "slug": "dormant-orch",
+      "title": "The orch lies dormant and wakes only when a run needs help",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "orch",
+        "dobby",
+        "arbiter"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Dobby takes the mechanics and a spawned agent the doubtful cases; one orch per beam stays for phone use",
+      "body": "## Seen (operator, 2026-10-31)\n\nThe orch is a long-lived, heavy session that handles board work, run notices and escalations alike.\nBoard work can move to a short-lived board agent (note `board-agent-button`), and dobby already does the mechanical run work.\n\n## Idea (long term)\n\nThe orch is woken only when a run needs help: dobby takes everything mechanical, and a capable agent spawned per case, as the arbiter is for a halted stop, settles the doubtful ones.\nOne orch per beam, the prime included, is kept all the same, since it is how the operator runs the hub from the phone; it lies dormant most of the time (operator, 2026-10-31).\n",
+      "created": "2026-10-31T19:10:09Z",
+      "revised": "2026-10-31T19:10:09Z"
     }
   ],
   "prime_owner": "neve",
