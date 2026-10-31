@@ -1,6 +1,6 @@
 # The adopt check shows that it runs, and how far it has come
 
-`adopt-check-visible` · Task · enhancement, reed, gate, workspaces · running · Drift-Baseline
+`adopt-check-visible` · Task · enhancement, reed, gate, workspaces · running · Darn-Write
 
 ## Seen (operator, 2026-10-31)
 
