@@ -1,6 +1,6 @@
 # README rewritten as a teaching text, with the overview figure brought up to date
 
-`readme-rewrite` · Task · enhancement, docs · draft
+`readme-rewrite` · Task · enhancement, docs
 
 ## Goal
 

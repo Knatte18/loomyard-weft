@@ -14,21 +14,21 @@ The root project: the entries under no other project.
 
 Concrete and claimable; only a task can run.
 
-#### Ready (1)
+#### Ready (2)
 
 Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Dobby says why a task is not started, and tells the orch of a failing start in time**<br>• A start that failed every pass for an hour showed no reason in beam status and reached the orch an hour late.<br>• `profile: solid` | [`dobby-start-failures`](design-dobby-start-failures.md) | darn |  | 1d<br>22h | dobby, batten, creel |
+| T2 | **README rewritten as a teaching text, with the overview figure brought up to date**<br>• A new README that teaches LoomYard step by step, and an up-to-date overview figure<br>• `profile: docs` | [`readme-rewrite`](design-readme-rewrite.md) | darn |  | 36m<br>0m | docs |
 
-#### Draft (2)
+#### Draft (1)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **README rewritten as a teaching text, with the overview figure brought up to date**<br>• A new README that teaches LoomYard step by step, and an up-to-date overview figure<br>• `profile: docs` | [`readme-rewrite`](design-readme-rewrite.md) | darn |  | 36m<br>0m | docs |
 | T3 | `draft` **Rename today's loom recipe to tapestry with a rename program**<br>• A Go program under tools/ renames the loom variant to tapestry, so every loom left is the general run | [`tapestry-rename`](design-tapestry-rename.md) | darn |  | 0m<br>0m | loom, shed, stencil |
 
 ### Notes (34)
