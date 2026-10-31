@@ -829,6 +829,26 @@
       "body": "## Seen\n\n`docs/research/gate-fewer-launches-2026-10-31/report.md` counted the test binaries a gate run links and launches.\nGo links one test binary per package per tier, since the tiers select their test files by build tag: 532 on a cold tree, 143 new to the cache on a warm whole-suite run.\nOn OSL-1046 the endpoint scanner holds each new binary about 10 s, so a change of mean fan-in, about 100 new binaries across three tiers, costs about 1000 s there.\nFive packages are imported by every test binary through the shared `TestMain` path (`internal/testkit/tmuxkit`, `internal/proc`, `internal/lymtemp`, `internal/lock`, `internal/agentname`), so a change to one of them rebuilds every binary.\n\n## Idea\n\nTry the report's cuts in practice before any of them is made permanent (operator, 2026-10-31), as a bench in a worktree of its own, measured on OSL-1046 as well as Neve:\n- One test binary per package for all tiers, the tier chosen at run time instead of by build tag: the largest saving the report rates medium risk.\n- Cut the five universal imports out of the common `TestMain` path: low risk, helps only when one of them changes.\n- Merge small leaf test packages into shared binaries within a tier.\n- One binary for the whole module per tier is rated high risk, since packages then share one process and Go's per-package test cache is lost; bench it only if the others fall short.\n\nEach trial reports the new binaries and scanner hold it saves and whether the test results stay the same.\n",
       "created": "2026-10-31T18:12:46Z",
       "revised": "2026-10-31T18:13:50Z"
+    },
+    {
+      "id": 940,
+      "handle": "E13",
+      "slug": "gate-run-keeps-cache-warm",
+      "title": "A long gate run answers within the cache lifetime, so the waiting agent keeps its prompt cache warm",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "gate",
+        "shuttle",
+        "config"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "lym gate test caps the run wait like the slot wait, with the cap a config value beside the engine cache lifetime",
+      "body": "## Seen (operator, 2026-10-31)\n\nGates on OSL-1046 take more than five minutes, a Webster gate there about 11, and an agent blocked on one comes back to a cold prompt cache: the whole context is written to the cache again.\n`lym gate test` already caps its wait for a free slot and answers \"run the same command again\" (exit 75), so that wait keeps the cache warm; the run itself, once the slots are held, blocks the call to its end.\n`lym shuttle await` is the capped keep-warm wait for a file, but an agent may not start a gate in the background, so nothing writes a file it could await.\nThe cap is a constant, `shuttleengine.DefaultAwaitCap` (250 s), shared by `lym shuttle await` and the gate's slot wait, and sized for the 5-minute prompt-cache lifetime; a session may run with a 1-hour cache lifetime instead.\n\n## Idea\n\n- The gate run gets the same cap as the slot wait: when the cap passes with the tiers still running, `lym gate test` answers that the run goes on and to run the same command again, while the tiers carry on in a process of their own.\n  The same command again joins that run, waits up to the cap once more, and prints the result when the run has ended.\n  Agents learn nothing new: the gate rule already says to re-run the same command in a turn that does nothing else.\n- The cap is a config value, not a constant, set beside the engine's prompt-cache lifetime it serves, and read by every keep-warm wait: the slot wait, the run wait and `lym shuttle await`.\n- Find the other waits that block an agent past the cache lifetime and give them the same capped form; the driver blocked on `lym shed step` through a long producer is the first to check.\n",
+      "created": "2026-10-31T18:20:12Z",
+      "revised": "2026-10-31T18:20:12Z"
     }
   ],
   "prime_owner": "neve",
