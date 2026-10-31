@@ -9,5 +9,6 @@ Board work can move to a short-lived board agent (note `board-agent-button`), an
 
 ## Idea (long term)
 
-The orch is woken only when a run needs help: dobby takes everything mechanical, and a capable agent spawned per case, as the arbiter is for a halted stop, settles the doubtful ones.
-One orch per beam, the prime included, is kept all the same, since it is how the operator runs the hub from the phone; it lies dormant most of the time (operator, 2026-10-31).
+Dobby takes everything mechanical, and a capable agent spawned per case, as the arbiter is for a halted stop, settles the doubtful ones.
+One orch per beam, the prime included, is kept, since it is how the operator runs the hub from the phone.
+It is not started on demand: it lives as today but lies dormant, and is woken only when a run needs help or the operator talks to it (operator, 2026-10-31).
