@@ -1,11 +1,11 @@
 {
-  "current_producer": "Drift-Baseline",
+  "current_producer": "Drift-Await",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Drift-Baseline",
-    "last": "Record-Write → done",
+    "now": "Drift-Await",
+    "last": "Drift-Baseline → skipped",
     "wait": ""
   },
   "history": [
@@ -20,6 +20,13 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYMHUB/pawl-loom-recipe/_lym/discussion/decision-record.md",
       "at": "2026-10-31T18:44:46Z"
+    },
+    {
+      "producer": "Drift-Baseline",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-10-31T18:44:46Z",
+      "reason": "drift.enabled = false"
     }
   ],
   "product": {
