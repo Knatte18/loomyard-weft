@@ -76,6 +76,12 @@ Rationale: the bar format is reed's, so the option names and the setter live the
 - tmux evaluates `%s` in a status format through strftime, as the wait mark already relies on; a platform whose strftime lacks `%s` shows no seconds.
 - psmux on Windows may refuse user options, which the setter returns as an error the check logs.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - adopt-gate-tiers-wiring-untested (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: an adopt that starts the check returns a `message` naming the start, the tiers and the status bar; a check found running is named as already running; a gate config without tiers leaves them out; a failed start keeps `suite_warning` and has no message.
