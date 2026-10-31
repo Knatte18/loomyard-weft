@@ -25,13 +25,15 @@ Today the two variants keep the same decision record, in the same format and che
 
 The design:
 - Discussion, a writer and its perch, becomes one block of the general run that a variant turns on or off: always on in `tapestry`, off by default in darn.
-- Every run starts by turning the board entry's body into the record's format, a cheap step for a small model such as Haiku, checked by `lym loom validate-discussion`: the task text is the record's first draft.
-- With Discussion on, the writer takes that draft as a first version and makes it thorough, and the perch reviews it; Plan and Webster work from the final record.
-- With Discussion off, the draft is the final record: darn treats the board entry as already discussed and plans and writes the code from it in one session.
+- With Discussion on, the writer starts from the board entry and makes the record thorough, and the perch reviews it, as `tapestry` does today.
+- With Discussion off, the run writes the record mechanically, with no LLM: the board entry's body verbatim under `## Goal` and every other section empty.
+  darn treats the entry as already discussed and plans and writes the code from that record in one session.
   This fits `loom-beam-darns`, whose darns are pieces a loom Discussion already cut.
+- Either way `lym loom decision add` appends later decisions to the record as `Added after Discussion` entries, as today.
+- The record is the decided scope: Code-Review checks the change against the record, never against the board entry's text, so darn's separate snapshot of the entry is no longer what the review compares with.
 
 ## Open
 
-- The conversion only translates: it adds, interprets and fills in nothing, and what the entry lacks stays empty or open in the record.
-- Where the check that the entry is not outdated (landed work or another entry contradicting it) lives once the record comes ready-made: in the conversion step, or in darn's writer as today.
+- Whether `lym loom validate-discussion` accepts a record whose sections bar `## Goal` are empty, or the skeleton needs a fixed line in each.
+- Where the check that the entry is not outdated (landed work or another entry contradicting it) lives once the record is written mechanically: in darn's writer, as today, or a step of its own.
 - How `loom` as the general driver relates to `shed`: `lym shed` already carries `run`, `step`, `status`, `pause` and `goto`, which the general `lym loom` verbs would overlap.
