@@ -88,10 +88,10 @@
       "priority": "high",
       "depends_on": [],
       "isolated": false,
-      "brief": "No CLAUDE.md or CLAUDE.local.md of lym in any repo; open: where a repo own rules for lym agents live out of sight of its team",
+      "brief": "LoomYard puts no CLAUDE.md in a repository; lym renders its own gitignored instruction files into each worktree from one Bolt store",
       "body": "## Seen\n\nUsing LoomYard on a repository should be invisible: nothing lym-related in the repository's own git history, and no lym text in a file the repository's own people read (operator, 2026-10-29).\nSome repositories, Models among them, are restrictive without a `CLAUDE.md`, so lym's agents still need an instruction file of lym's own beside the team's (operator, 2026-10-31).\n\n## Design (operator, 2026-10-31)\n\nPATTERN.md stays tracked in warp: it holds rules for all development in the repository, by hand or by any agent, not only LoomYard's.\nA repository's own `CLAUDE.md`, if it has one, is its team's and is read as usual.\n\nLym renders its own instruction files into each worktree from one source in Bolt:\n- Bolt holds one JSON store of render entries beside the board's, the only source of these files.\n  Each entry names the files it renders into, such as `CLAUDE.local.md` for Claude and Codex's own file for Codex, and possibly when it renders.\n  Claude and Codex need different text, so an entry names its targets rather than every entry going to every file.\n  The same store can later render other per-worktree files, such as a `PATTERN.local.md` should PATTERN ever leave warp.\n- The store is written only through `lym` verbs, with the same safe concurrent writes the board's store has; never by hand.\n- Each worktree lym makes gets the rendered files seeded into its warp, ignored through `.git/info/exclude`, never `.gitignore`, so warp alone carries no trace of LoomYard or of the engines used.\n- An entry holds only what is specific to using LoomYard on the repository: its text goes into every agent that runs, so anything that fits PATTERN, a stencil, a skill or a hook goes there instead.\n\n## Open\n\n- Which file Codex reads for local instructions that stays out of the team's history, to be checked.\n- When rendering happens: at worktree creation only, or also into live worktrees when the store changes.\n- The verbs that write the store.\n",
       "created": "2026-10-04T12:45:43Z",
-      "revised": "2026-10-31T15:57:22Z"
+      "revised": "2026-10-31T16:00:05Z"
     },
     {
       "id": 83,
@@ -509,13 +509,15 @@
         "gate"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "launch_seconds is a large share of a gate run on OSL-1046, where each process start is slow; the aim is a faster gate by starting fewer processes",
       "body": "## Seen (operator and hub orch, 2026-10-30)\n\nRuns are slow on OSL-1046, gates above all, and every process start there is expensive.\n`lym gate report --slug pr-review-empty-branch` shows `launch_seconds` of 266 of 639 s wall for `code-burler-fix` and 153 of 516 s for `darn-write`, with a wait for a gate slot of about zero: the time is in the test runs, and a large part of it in starting processes.\n\n## Cause (operator, 2026-10-31)\n\nOSL-1046 runs Cortex XDR, which holds back a binary with a hash it has not seen, a newly built one, for about 10 s before it runs.\nA process start of a known binary is cheap; the cost is each new binary a gate run builds and launches.\n\n## Idea\n\nThe aim is a faster gate run on OSL-1046, by building and launching fewer new binaries per run.\n- Find what a gate run builds and launches: how many test binaries per tier, which are rebuilt with a new hash from one gate key or run to the next, and how many `go` invocations and helper processes start.\n- Cut the new binaries: link several packages' tests into fewer binaries, or reuse a built test binary across the gate keys of one run, wherever the result stays the same.\n\n## Measurement (operator, 2026-10-31)\n\nThe measurement runs on Neve, not OSL-1046, as a darn task with profile `docs`: the count of new binaries and launches is the same on both machines, since the code and tiers are the same.\nThe gain on OSL-1046 is computed from that count at about 10 s per new binary.\nExact cap: two gate runs on Neve, one `--upto 2` and one of the whole suite, each measured once.\n",
       "status": "draft",
       "created": "2026-10-30T12:33:00Z",
-      "revised": "2026-10-31T15:57:12Z"
+      "revised": "2026-10-31T16:00:05Z",
+      "profile": "docs"
     },
     {
       "id": 919,
