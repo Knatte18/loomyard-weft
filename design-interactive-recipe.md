@@ -1,6 +1,6 @@
 # An interactive recipe: the operator iterates with an agent in the run's own worktree until done
 
-`interactive-recipe` · Note · feature, shed, batten, reed, shuttle
+`interactive-recipe` · Task · feature, shed, batten, reed, shuttle · draft
 
 ## Seen (operator, 2026-10-31)
 
