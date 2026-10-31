@@ -1,0 +1,36 @@
+# Relevant code
+
+- `contracts/recipes/tapestry-recipe.yaml` — tapestry's rows, Tapestry-Preflight, the Drift-Verify placement and Code-Review answer key
+- `contracts/recipes/darn-recipe.yaml` — darn's rows, Darn-Write gates and the board-entry answer key D7 replaces
+- `contracts/recipes/pawl-recipe.yaml` — pawl's rows, which stay a non-loom recipe
+- `internal/shedbuild/recipe.go` `Recipe`, `Row` — the recipe schema that gains `contract` and `verify_source`
+- `internal/shedbuild/doc.go` — the recipe loader's contract and its import of shedrecipe
+- `internal/shedrecipe/doc.go` — the registry the contract's engine sets sit beside
+- `internal/shedrun/seed.go` `RecipeNames`, `decodeSeed` — the recipe vocabulary and the `beam` alias D11 removes
+- `internal/loomcli/cli.go` `Command`, `verbUsesLightweightWiring` — the `lym loom` verb set D2 and D3 gate
+- `internal/loomcli/arm.go` `resolveRecipe`, `armAt`, `recipeRouting`, `newShed`, `verifySource` — recipe-name branches D8 replaces
+- `internal/loomcli/peers.go` `hubPeersDeps` — reads every peer against tapestry's rows (D3)
+- `internal/loomcli/decision.go` — `--amends-plan` darn refusal and `--pattern-*` handling (D3)
+- `internal/loomcli/validate.go` — `validate-discussion`'s darn and tapestry branches (D5)
+- `internal/loomcli/wiring.go` — remaining recipe-name branches in the wiring (D8)
+- `internal/loomcli/landingdeps.go` — recipe-name branches in the landing deps (D8)
+- `internal/shedcli/table.go` — `lym shed`'s recipe table, which serves every recipe (D14)
+- `internal/battencli/wire.go` — Run-Shed starts every child recipe with `lym loom start` (D2)
+- `internal/loomshed/gates.go` `NewDiscussionGate`, `NewDarnDiscussionGate`, `ValidateLoomDiscussion`, `ValidateDarnDiscussion` — the two validators D5 merges
+- `internal/loomshed/darnwrite.go` `NewDarnWrite` — darn's writer wrapper (D8)
+- `internal/loomshed/discussionwrite.go` `NewDiscussionWrite` — Discussion-Write's wrapper (D8)
+- `internal/loomshed/tapestrypreflight.go` `NewTapestryPreflight` — the row D10 removes, with the `batcher.yaml` load
+- `internal/loomshed/seed.go` `Seed` — the shared seed naming Preflight
+- `internal/loomrecipe/loomrecipe.go` `New`, `Routing`, `TapestryRetiredRows` — tapestry's builders D8 merges
+- `internal/loomrecipe/darnrecipe.go` `NewDarn`, `DarnRouting`, `DarnRetiredRows` — darn's builders D8 merges
+- `internal/loomrecipe/names.go` `RowNames`, `Rows` — the recipe-name switch over embedded recipes
+- `internal/landingshed/describe.go` `DescribeTable`, `DarnDescribeTable` — the two Describe tables D8 merges
+- `internal/loomengine/template.yaml` — loom.yaml keys D12 and D13 split
+- `internal/darnengine/template.yaml` — darn.yaml keys D13 trims
+- `internal/sheddriver/template.yaml` — shed.yaml's arbiter, tackler and driver-kind keys
+- `internal/configreg/keymove.go` `KeyMoves` — the declared route for D12's key moves
+- `internal/hubreconcile/doc.go` — how a hub's config is reconciled after a binary change
+- `internal/discussionparser/validate.go` — the section check, which has no empty-section finding (D5)
+- `contracts/stencils/darn/darn-template-write.md` — the writer stencil D4 and D6 change
+- `internal/loomengine/seed.go` `CheckSeed` — the seed check D10 drops, with its step-1 pre-emption note
+- `internal/driftengine/doc.go` — Drift-Verify's re-entry behaviour D9 relies on
