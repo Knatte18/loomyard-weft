@@ -19,7 +19,7 @@ light:
     tapestry: {loom: {discussion_max_bounces: 1, discussion_hard_max_bounces: 2, code_max_bounces: 1, code_hard_max_bounces: 2}, tapestry: {plan_max_bounces: 1, plan_hard_max_bounces: 2}}
     darn: {loom: {code_max_bounces: 1, code_hard_max_bounces: 2}}
 solid:
-    tapestry: {loom: {discussion_max_bounces: 2, discussion_hard_max_bounces: 3, plan_max_bounces: 2, plan_hard_max_bounces: 3, code_max_bounces: 1, code_hard_max_bounces: 2}}
+    tapestry: {loom: {discussion_max_bounces: 2, discussion_hard_max_bounces: 3, code_max_bounces: 1, code_hard_max_bounces: 2}, tapestry: {plan_max_bounces: 2, plan_hard_max_bounces: 3}}
     darn: {loom: {code_max_bounces: 2, code_hard_max_bounces: 3}}
 wide:
     tapestry: {loom: {discussion_max_bounces: 3, discussion_hard_max_bounces: 4, plan_max_bounces: 2, plan_hard_max_bounces: 3, code_max_bounces: 1, code_hard_max_bounces: 2}}
