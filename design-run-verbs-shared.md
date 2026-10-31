@@ -1,6 +1,8 @@
 # loom names the general run, and Discussion becomes a block every variant can turn on
 
-`run-verbs-shared` · Note · enhancement, shed, loom, darn
+`run-verbs-shared` · Task · enhancement, shed, loom, darn · draft
+
+Depends on: [`tapestry-rename`](design-tapestry-rename.md)
 
 ## Seen (operator, 2026-10-14)
 
