@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-31 20:22 UTC; every age below is as of then.
+Rendered 2026-10-31 20:26 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -10,7 +10,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 The root project: the entries under no other project.
 
-### Tasks (3)
+### Tasks (4)
 
 Concrete and claimable; only a task can run.
 
@@ -36,12 +36,13 @@ Waits only on Running, Ready or Draft entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Rename the Bolt checkout directory _board to _bolt, by script alone**<br>• A pure, mechanical rename of _board to _bolt everywhere, with a rename program for existing hubs | [`bolt-dir-rename`](design-bolt-dir-rename.md) | darn | T8 | 4h<br>2h | fabric, board, config, cwd, stencil |
 
-#### Draft (1)
+#### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
+| T1 | `draft` **Measure what the batching sentences did to the Plan and Discussion writers**<br>• Transcript analysis of writer turns, calls per turn, context and cost before and after 2026-10-28<br>• `profile: docs` | [`batching-effect-audit`](design-batching-effect-audit.md) | darn |  | 0m<br>0m | stencil, shuttle, loom |
 | T2 | `draft` **warp-visibility: heddle, a Bolt database lym renders its instruction files from, leaving no trace in warp**<br>• LoomYard puts no CLAUDE.md in a repository; lym renders its own git-excluded instruction files into each worktree from _board/heddle.json | [`warp-visibility`](design-warp-visibility.md) | tapestry | T3 | 3w<br>3h | fabric, board, config, claude, codex, cwd, process, stencil, shuttle |
 
 ### Notes (35)
