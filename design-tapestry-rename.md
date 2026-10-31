@@ -1,6 +1,6 @@
 # Rename today's loom recipe to tapestry with a rename program
 
-`tapestry-rename` · Task · enhancement, loom, shed, stencil, config, board · running · Drift-Verify
+`tapestry-rename` · Task · enhancement, loom, shed, stencil, config, board · running · Code-Bouncer
 
 ## Goal
 
