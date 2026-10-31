@@ -670,6 +670,27 @@
       "body": "## Seen (operator, 2026-10-31)\n\n`lym adopt root` starts the adopt check, a run of test tiers 0 to 2, detached in the prime, and the operator does not see that it runs.\nIts help names it as step 8, its envelope carries `suite` (pid, log, record) among other JSON, `lym beam status` shows it, and each tier's result is mailed to the orch; nothing the operator looks at says that a suite is running, nor how far it has come.\nOn 2026-10-31 it took about 40 s, 104 s and 53 s for tiers 0, 1 and 2, while the operator went on with other steps.\n\n## Idea\n\nThe adopt check is visible where the operator looks while it runs, with its progress:\n- `lym adopt` ends with a plain line saying the check started, which tiers it runs, and where to watch it.\n- While it runs, the reed status bar of the prime, or a strand of its own, shows the tier it is at, the time spent and the tiers done with their results.\n- The end result, green or red, shows in the same place, not only in the orch's mail.\n\n## Open\n\n- Which place: the reed status bar, a strand in the prime's session, or both.\n",
       "created": "2026-10-31T11:41:57Z",
       "revised": "2026-10-31T11:41:57Z"
+    },
+    {
+      "id": 924,
+      "handle": "T2",
+      "slug": "readme-rewrite",
+      "title": "README rewritten as a teaching text, with the overview figure brought up to date",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "docs"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A new README that teaches LoomYard step by step, and an up-to-date overview figure",
+      "body": "## Goal\n\n`README.md` is rewritten from scratch as a teaching text for a reader new to LoomYard; the current one does not teach well and is out of date.\n\n## What it covers, in this order\n\n- What LoomYard is and the problem it solves, in plain words.\n- The core concepts in the order a reader meets them: hub, worktree, board, task, run, orch and dobby.\n- How a task goes from the board to a landed commit.\n- How to get started.\n- Detail goes to `docs/` by link, never repeated in the README.\n\n## What it leaves out\n\n- No list of modules by their weaving names: the names tell a new reader nothing.\n  A weaving term appears only where the reader needs it, explained where it first appears.\n\n## Up to date\n\nEvery claim is checked against the code and `lym help`: what is wrong is corrected, what no longer exists is dropped.\n\n## The overview figure\n\n`docs/loomyard-overview.svg`, linked from `docs/overview.md`, is out of date as well: for one, it has the orch start the runs, which dobby does now, and it shows landing rows that changed.\nIt is brought in line with the code, and the README shows it where it helps the reader.\n",
+      "status": "draft",
+      "created": "2026-10-31T11:58:14Z",
+      "revised": "2026-10-31T11:58:14Z",
+      "profile": "docs"
     }
   ],
   "prime_owner": "neve",
