@@ -14,7 +14,7 @@
 
 **Uses:**
 - `internal/loomrecipe#parseEmbeddedRecipe`
-- `plan:internal/shedrecipe#LoomRecordEngines`
+- `internal/shedrecipe#LoomRecordEngines`
 
 **Intent:** Give every consumer one place to read a recipe's contract, keys and rows by recipe name, so later cards replace branches on `RecipeDarn`/`RecipeTapestry` with these reads (D2, D3, D8). Each parses the embedded recipe through `parseEmbeddedRecipe`, which refuses a name that selects no embedded recipe; an empty name reads as `tapestry`, as an unseeded run does everywhere.
 

@@ -10,11 +10,11 @@
 - `contracts/specs/shed-recipe-spec.md`
 
 **Create:**
-- `plan:internal/shedrecipe#LoomRecordEngines` -> `var LoomRecordEngines = []string{"DiscussionWrite", "RecordWrite"}`
-- `plan:internal/shedrecipe#LoomBuildEngines` -> `var LoomBuildEngines = []string{"Implementer", "DarnWrite"}`
-- `plan:internal/shedrecipe#LoomFinalizeEngine` -> `const LoomFinalizeEngine = "Finalize"`
-- `plan:internal/shedbuild#checkLoomContract` -> `func checkLoomContract(r Recipe) error`
-- `plan:internal/shedbuild#TestBuild_LoomContract` -> `func TestBuild_LoomContract(t *testing.T)`
+- `internal/shedrecipe#LoomRecordEngines`
+- `internal/shedrecipe#LoomBuildEngines`
+- `internal/shedrecipe#LoomFinalizeEngine`
+- `internal/shedbuild#checkLoomContract`
+- `internal/shedbuild#TestBuild_LoomContract`
 
 **Intent:** A recipe declares itself a loom with a top-level `contract: loom` key, and Shed checks the contract when it builds the recipe (D1).
 

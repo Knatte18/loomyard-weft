@@ -1,15 +1,15 @@
 {
   "runGuid": "70b74597f60114cf7e710db8c48b4b9f",
-  "planFingerprint": "4d01f2d6a38efa40967c8dd16c1d3f312e3dd11f9abda6286e5163fa1d728420",
+  "planFingerprint": "7af2145f28244872641a355e8cbd248c7d945a079a1d13de13bb3aafdc438728",
   "planFileHashes": {
     "00-overview.md": "fe43c1c7a63ffd9eb9b9d473e77eeac8b2798f5782d4f2375428c2f413791564",
     "01-discussion-fence-rule.md": "34c82d7c1ec45c6c95d38ea3e6f7762952db65309cbabec21c6e360714a02cfd",
     "02-drop-beam-alias.md": "8b731e3242fd6d91b93535512fe5bb881149da7fbd82a4bb8a89ea86f5228d6c",
-    "03-loom-contract-check.md": "b20f19365439f1d2d5be32cfa65d36ec32139bb2567f2b03e492d4332979a752",
+    "03-loom-contract-check.md": "1b74ed183bbfcc61955ea523239437c868f4b25bab19bb970007989962d3ab70",
     "04-retired-key-way-forward.md": "cd499ee8bca84c41021df095422b0bc294537caf3c850dc276c5884466af4a76",
     "05-shed-keys-in-shed-only.md": "ffd7340730037e59a6d5c35183c62e25dd7c4656fca0b40df0ce589cf9c927c6",
     "06-tapestry-config-module.md": "51f512b68628386856fc710f738f0546b639a1f9f17af7e639b15a32f7ebf142",
-    "07-recipe-key-accessors.md": "c0b86e520e14d311284c85f9e273bd3f5c2ce4d13d0797e6b65960f56cda2112",
+    "07-recipe-key-accessors.md": "a2aae06a4c2cbc2fe93a3bd02057cb0d4a0511b258e96f0e6de2d4e1fe0c2f68",
     "08-one-loom-builder.md": "5140e5f74f23115839252b25619e1924beb65c4acd0887f23a1d878c7e48cd08",
     "09-drop-tapestry-preflight.md": "24ff85d9725ba7fda8f62c1fd98e4bd5c7466e672c9079d6932bdac8995dfe0b",
     "10-drift-verify-before-review.md": "b6263ee8770cad85241884f3c18a7a8f9ee9b8b746082ba4188a8f6a01cc7bb1",
@@ -773,7 +773,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "fcb1d2c3aa9b807f159196347a0467d8",
   "masterSessionId": "455fcd5a-9d78-42d3-90cf-321460494edd",
   "masterEngine": "claude",
@@ -789,7 +789,7 @@
       "cardHashes": {
         "01-discussion-fence-rule": "34c82d7c1ec45c6c95d38ea3e6f7762952db65309cbabec21c6e360714a02cfd",
         "02-drop-beam-alias": "8b731e3242fd6d91b93535512fe5bb881149da7fbd82a4bb8a89ea86f5228d6c",
-        "03-loom-contract-check": "b20f19365439f1d2d5be32cfa65d36ec32139bb2567f2b03e492d4332979a752",
+        "03-loom-contract-check": "1b74ed183bbfcc61955ea523239437c868f4b25bab19bb970007989962d3ab70",
         "04-retired-key-way-forward": "cd499ee8bca84c41021df095422b0bc294537caf3c850dc276c5884466af4a76"
       },
       "startSha": "52b6984877826c631cb136734cbf9afe3959bf18",
@@ -797,8 +797,30 @@
       "spawnedAt": "2026-10-31T16:33:29Z",
       "sessionId": "455fcd5a-9d78-42d3-90cf-321460494edd",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-discussion-fence-rule",
+        "status": "done",
+        "head_sha": "8d8e5856c9185f90798a152b3be8b9e7de180250",
+        "deviations": [
+          "internal/discussionparser/append.go",
+          "internal/shedbuild/loomcontract.go",
+          "internal/shedbuild/parse.go"
+        ]
+      },
+      "cardShas": [
+        "8d8e5856c9185f90798a152b3be8b9e7de180250"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-ac4d9ca8ccf7839e8.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-ac4d9ca8ccf7839e8.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-ac4d9ca8ccf7839e8.jsonl"
+  ]
 }
