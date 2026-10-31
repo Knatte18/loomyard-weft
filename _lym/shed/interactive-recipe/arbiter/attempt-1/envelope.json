@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Hard-cap at round 2 with two open design-wrong keys; the round-2 fixes in the committed decision record answer both.\npublish-guard-steer-text-false: D5's fourth bullet now only says the spec sets DenyPublish and gets internal/shellguard's existing publish row and steer. That matches the code: rows.go has the one steerPublishDeny constant, which names committing and telling the operator, and shuttleengine/spec.go has DenyPublish bool. The unsupported per-session steer, blocked forms and push-ordering claim are gone.\nentry-path-live-session-not-stopped: D6's On entry bullet now stops the recorded session when its strand is live before it judges a current-stamp flag. The uncommitted-change outcome ensures the session before mailing it, and the acceptance bullet covers a session reopened while halted ending Done with the session stopped. That closes the window the finding named.\nThe two mechanical findings (F3, F4) were fixed too. No finding is BLOCKING, so accepting widens no scope.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym loom circling accept interactive-recipe"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/interactive-recipe/_lym/shed/interactive-recipe/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/interactive-recipe/_lym/shed/interactive-recipe/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lym shed step interactive-recipe --until-stop --arbiter-attempt 1"
+}
