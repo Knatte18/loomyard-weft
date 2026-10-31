@@ -557,29 +557,6 @@
       "revised": "2026-10-30T12:34:20Z"
     },
     {
-      "id": 918,
-      "handle": "T1",
-      "slug": "dobby-start-failures",
-      "title": "Dobby says why a task is not started, and tells the orch of a failing start in time",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "dobby",
-        "batten",
-        "creel"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A start that failed every pass for an hour showed no reason in beam status and reached the orch an hour late.",
-      "body": "## Seen (operator and hub orch, 2026-10-29)\n\nThe released task `claude-md-lym-rules-out` did not start for over an hour.\n`lym beam status` showed it as `ready to start`, with room under the run limit and no dependency, and gave no reason.\n`.lym/beam/dobby.log` showed dobby trying to start it about every 30 seconds from 13:43:17Z, each pass failing with `battencli: \"claude-md-lym-rules-out\" has already completed; to run it again, run \"lym batten cleanup --apply\" from the prime ...`.\nThe cause was an old run record for the same slug, `_lym/shed/claude-md-lym-rules-out/`, from machine `neve`, 2026-10-28, ended at Worktree-Teardown.\nThis hub's prime is on `osl-1046`, and the operator knows of no run of that slug on Neve; why the record read as done is not known.\n`lym batten cleanup --apply` removed the record, after which no branch of that name was left locally or on the remote.\n\nThe orch heard nothing of the failing start: its mail, creel #34 from `ly:DOBBY` with the text `dobby could not start the task`, reached it only after more than an hour, right after it ran `lym batten cleanup --apply`.\nThe orch found the cause by asking `lym beam status` and reading `.lym/beam/dobby.log` through a fork, after the operator noticed the task had not started.\nThe role says dobby sends a line for a refused start and for a pass that keeps failing, so the notice should have come within a few passes.\n\n## Design\n\n- `lym beam status` states why a ready task is not started, with the refusal dobby last got, so `ready to start` is never shown with no reason.\n- The start of a task whose slug has an old finished run record is handled where the task is released or where dobby starts it, with a message that names the way forward, instead of failing every pass.\n- A refused start or a pass that keeps failing reaches the orch within a few passes, and a start that keeps failing with the same error does not resend it every pass.\n- Find out why the notice came late: whether dobby sends it only after many failed passes, whether the send was held, or whether creel delivered it late.\n- Find out where a run record of another machine came from for a slug this hub had not run.\n",
-      "status": "done",
-      "created": "2026-10-29T13:50:51Z",
-      "revised": "2026-10-30T13:54:42Z",
-      "profile": "solid"
-    },
-    {
       "id": 919,
       "handle": "E8",
       "slug": "seed-starts-at-start",
@@ -712,9 +689,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "dobby-start-failures"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "A Go program under tools/ renames the loom variant to tapestry, so every loom left is the general run",
       "body": "## Goal\n\nToday's loom recipe is renamed `tapestry`, mechanically, so that every `loom` left afterwards is a candidate for the general run (`run-verbs-shared`).\n`loom` becomes the name of the general run in Shed; what is called loom today is one variant of it, darn another (operator, 2026-10-29).\n`tapestry` is a picture woven to a full-size drawing made first: the discuss-and-plan-before-building path.\n\n## Change\n\n- A Go program under `tools/`, like `tools/wordswap` for the `lyx` to `lym` rename (`ef912d41`), carries out the rename, and the run applies it and commits the result.\n- The `lym loom ...` verbs keep their names, since they become the general ones.\n- No behaviour changes: this is a rename only.\n\n## Bolt as well\n\nThe rename covers the records side, Bolt, not only the code: what lym keeps there for the variant is renamed with it, so code and records agree after landing.\nThat includes the hub-wide config (such as `_lym/config/loom.yaml`), the board copies of stencils and specs (`_lym/stencils/loom`, `_lym/specs`), the orch rules, and the board entries and run records that name the variant, such as a `recipe` of `loom`.\nThe program renames Bolt the same way it renames the code, and a hub on another machine, or another hub, picks the rename up by a migration lym runs itself, never by hand.\n\n## Open, settled by the run\n\n- Which packages, docs and stencils are the variant's and which are general; the program's inclusion and exclusion lists follow from it.\n  `internal/loomcli` already serves darn runs, so it stays `loom`.\n- What the board's `recipe` field and an empty `recipe` mean, since existing entries and runs carry `loom` or nothing.\n- The strand names such as `ly:LOOM` and the texts that name them.\n- Every stencil, way-forward text and doc that says \"loom\" for the variant changes with it.\n",

@@ -2,8 +2,6 @@
 
 `tapestry-rename` · Task · enhancement, loom, shed, stencil, config, board · draft
 
-Depends on: [`dobby-start-failures`](design-dobby-start-failures.md)
-
 ## Goal
 
 Today's loom recipe is renamed `tapestry`, mechanically, so that every `loom` left afterwards is a candidate for the general run (`run-verbs-shared`).
