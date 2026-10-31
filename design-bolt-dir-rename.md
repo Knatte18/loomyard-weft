@@ -2,7 +2,7 @@
 
 `bolt-dir-rename` · Task · enhancement, fabric, board, config, cwd, stencil
 
-Depends on: [`pawl-loom-recipe`](design-pawl-loom-recipe.md), [`interactive-recipe`](design-interactive-recipe.md)
+Depends on: [`interactive-recipe`](design-interactive-recipe.md)
 
 ## Seen (operator, 2026-10-31)
 
