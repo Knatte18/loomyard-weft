@@ -1,6 +1,6 @@
 # The adopt check shows that it runs, and how far it has come
 
-`adopt-check-visible` · Task · enhancement, reed, gate, workspaces · running · Describe
+`adopt-check-visible` · Task · enhancement, reed, gate, workspaces · running · PR-Review
 
 ## Seen (operator, 2026-10-31)
 
