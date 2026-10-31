@@ -1,30 +1,28 @@
-# Count the hook's resume mark from the baseline before the compaction
+# Skip the typed resume pointer when the hook already delivered it
 
-After a compaction the orch's resume pointer reached the session twice: once as session-start hook context and once typed by the watcher.
-The hook writes its resume mark with its own clock while it runs, and Claude Code writes the `compact_boundary` record only after the hook finished.
-The watcher's pointer step counted the mark as a delivery only when it was not older than `State.CompactionBaseline`, which the reload had already moved to that boundary,
-so a mark some tens of milliseconds older than the boundary was rejected and the pointer typed.
+After a compaction of the orch session, the resume pointer reached the session twice: once as session-start hook context and once typed by the watcher.
+The watcher's `hookDelivered` check compared the hook's resume mark with `State.CompactionBaseline`, which is set from the `compact_boundary` record.
+Claude Code writes that record after the hook has run, so the mark was some tens of milliseconds older than the baseline and the check failed.
 
-## What changes
-
-- `State` gains `PointerMarkSince`, persisted as `pointer_mark_since`: the earliest time a resume mark counts as the hook delivering the pending pointer.
-- Both compaction reloads, the requested compact cycle in `tickCompacting` and the automatic one in `startAutoReload`, set it to the compaction baseline as it stood before they move the baseline to the new boundary.
-  The reload after `/clear` sets it to the unchanged baseline, which keeps that path's behavior.
-- `hookDelivered` compares the mark with `PointerMarkSince` instead of `CompactionBaseline`; the text match stays.
-- Every return to idle and every fresh launch zero the field.
-- The package doc's description of the pointer step names the new bound and why it holds.
+The check now compares the mark with a new persisted field, `State.PointerMarkSince`, in `internal/orchengine`.
+A reload records in it the compaction baseline as it stood before the reload moved it to the new boundary.
+A mark counts as the hook's delivery when its time is at or after that field and its text equals the pending pointer.
+The text match is unchanged, and the hook verb, `ResumeContext` and the mark file's format are untouched.
 
 ## Design decisions
 
-- The lower bound is the previous baseline, not the compacting phase's entry time.
-  The automatic compaction has no phase entered before its hook runs, so only the previous baseline serves both paths.
-  It still rejects a stale mark: the hook fires only after a compaction, every return to idle clears the mark, and an earlier compaction's hook ran before its own boundary, which is at or before the previous baseline.
-- The bound is persisted in `State` rather than kept in memory, so a watcher restarted mid-reload reads the same bound when its pointer step runs again.
-- A state file an older binary wrote decodes the field as zero, which accepts any mark holding the pending pointer's text; the clear at idle and the text match still guard that case.
+- Both compaction paths record the field: the requested compact cycle (`tickCompacting`) and the automatic compaction read at a turn end (`startAutoReload`).
+  The previous baseline precedes this compaction's hook and follows every earlier compaction's hook, so a stale mark with the same text cannot pass.
+- The reload after `/clear` (`tickClearing`) records the baseline unchanged, which keeps its current behavior.
+- The field is persisted so a watcher restarted mid-reload reads the same bound.
+  `toIdle` and `ResetForFreshLaunch` zero it.
+- A state file from an older binary decodes the field as zero, and a zero field accepts any mark whose text matches.
+  The cleared mark on return to idle and the text match still guard that case.
+- The hook's clock and the transcript's clock are assumed to be the same host's wall clock, as the existing check already assumed.
 
-## Tests
+The package doc in `doc.go` describes the new check.
+Tests cover a mark stamped between the previous baseline and the new boundary after both an automatic compaction and a requested cycle, a mark older than the previous baseline or with other text still typing the pointer, and the field returning to zero after the reload.
 
-- `TestWatcher_HookDeliveredPointerIsSkippedAndAnythingElseIsTyped` now starts from a previous baseline and adds a row for a mark stamped 30 ms before the boundary, which is skipped;
-  the row for a stale mark now dates it before the previous baseline, which still types the pointer.
-  Every row asserts the bound is zero after the reload ends.
-- `TestCompact_HookMarkStampedBeforeTheBoundaryIsNotTypedAgain` covers the requested compact cycle with a mark stamped before the boundary.
+## To check by hand
+
+- Run a real requested compact cycle of the orch and confirm in the transcript that the pointer arrives once, through the hook, and the log shows `orch: pointer delivered by the session-start hook`.
