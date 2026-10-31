@@ -27,7 +27,9 @@ New pieces: the Pre-Plan producer, its format, validator and perch; the filing r
 Darn's fixed cost is about $2.60.
 Split this way, each darn reads only its piece once, plans and implements it, and Discussion and the whole-task review keep loom's scope and overall check.
 It came out of discussing sub-planners for the Plan writer (note `plan-writer-context`).
-Whether it pays at all is open (operator, 2026-10-31): measure it against a loom run of the same size before building more on it.
+Whether it pays at all is open (operator, 2026-10-31), so the first step builds nothing: a test project done by hand with the projects and beams that exist.
+A large task gets its Discussion, its pieces are filed by hand as darn tasks with review off in a beam project, and the whole course's tokens are measured against tapestry runs of the same size from the token audit.
+The recipe is built only if the test shows tokens to save.
 
 ## Review and tests
 
