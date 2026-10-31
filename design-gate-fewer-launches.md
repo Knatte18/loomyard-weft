@@ -20,6 +20,7 @@ The aim is a faster gate run on OSL-1046, by building and launching fewer new bi
 
 ## Measurement (operator, 2026-10-31)
 
+This task measures only: it changes no code, and its report lands in `docs/research/` with the count per tier and the candidate cuts ranked by the new binaries each saves; the cut itself is a later task.
 The measurement runs on Neve, not OSL-1046, as a darn task with profile `docs`: the count of new binaries and launches is the same on both machines, since the code and tiers are the same.
 The gain on OSL-1046 is computed from that count at about 10 s per new binary.
 Exact cap: two gate runs on Neve, one `--upto 2` and one of the whole suite, each measured once.
