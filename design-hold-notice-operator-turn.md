@@ -1,6 +1,6 @@
 # No hold notice for a turn the operator started in the pane
 
-`hold-notice-operator-turn` · Task · enhancement, shuttle, creel · running · PR-Review
+`hold-notice-operator-turn` · Task · enhancement, shuttle, creel · running · Finalize
 
 ## Seen (operator, 2026-10-31)
 
