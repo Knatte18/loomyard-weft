@@ -47,7 +47,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T8 | `draft` **An interactive recipe: the operator iterates with an agent in the run's own worktree until done**<br>• A Shed recipe whose agent waits for the operator and iterates on the result, then lands as usual | [`interactive-recipe`](design-interactive-recipe.md) | tapestry |  | 2h<br>0m | shed, batten, reed, shuttle |
+| T8 | `draft` **An interactive recipe: the operator iterates with an agent in the run's own worktree until done**<br>• A Shed recipe whose agent waits for the operator and iterates on the result, then lands as usual | [`interactive-recipe`](design-interactive-recipe.md) | tapestry | T4<br>T3 | 2h<br>0m | shed, batten, reed, shuttle |
 
 ### Notes (30)
 
