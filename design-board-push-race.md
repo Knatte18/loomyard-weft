@@ -1,6 +1,6 @@
 # A rejected board push is retried after a fetch, and called a divergence only when one exists
 
-`board-push-race` · Note · bug, fabric
+`board-push-race` · Task · bug, fabric · draft
 
 ## Seen (operator and hub orch, 2026-10-30)
 
