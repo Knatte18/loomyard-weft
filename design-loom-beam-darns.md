@@ -30,6 +30,8 @@ It came out of discussing sub-planners for the Plan writer (note `plan-writer-co
 Whether it pays at all is open (operator, 2026-10-31), so the first step builds nothing: a test project done by hand with the projects and beams that exist.
 A large task gets its Discussion, its pieces are filed by hand as darn tasks with review off in a beam project, and the whole course's tokens are measured against tapestry runs of the same size from the token audit.
 The recipe is built only if the test shows tokens to save.
+The risk to weigh (operator, 2026-10-31): tapestry's implementation is cheap because Webster runs on Sonnet medium, following cards an Opus plan writer wrote; pieces under a coarse pre-plan design their own inside and likely need Opus writers, so Opus does more of the work and the course may cost more, not less.
+The test therefore compares the whole course, pieces' writers included, against tapestry's Opus plan plus Sonnet Webster.
 
 ## Review and tests
 
