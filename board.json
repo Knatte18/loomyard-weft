@@ -670,6 +670,25 @@
       "body": "## Seen (operator, 2026-10-31)\n\n`lym adopt root` starts the adopt check, a run of test tiers 0 to 2, detached in the prime, and the operator does not see that it runs.\nIts help names it as step 8, its envelope carries `suite` (pid, log, record) among other JSON, `lym beam status` shows it, and each tier's result is mailed to the orch; nothing the operator looks at says that a suite is running, nor how far it has come.\nOn 2026-10-31 it took about 40 s, 104 s and 53 s for tiers 0, 1 and 2, while the operator went on with other steps.\n\n## Idea\n\nThe adopt check is visible where the operator looks while it runs, with its progress:\n- `lym adopt` ends with a plain line saying the check started, which tiers it runs, and where to watch it.\n- While it runs, the reed status bar of the prime, or a strand of its own, shows the tier it is at, the time spent and the tiers done with their results.\n- The end result, green or red, shows in the same place, not only in the orch's mail.\n\n## Open\n\n- Which place: the reed status bar, a strand in the prime's session, or both.\n",
       "created": "2026-10-31T11:41:57Z",
       "revised": "2026-10-31T11:41:57Z"
+    },
+    {
+      "id": 924,
+      "handle": "E11",
+      "slug": "pull-request-default-off",
+      "title": "Runs land without a pull request unless the hub turns it on",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "dobby",
+        "landing"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The beam config pull_request template default becomes off",
+      "body": "## Seen (operator, 2026-10-31)\n\nThe beam module's `pull_request` key defaults to `on` in its template (`internal/dobbyengine/template.yaml`), so a hub that has not set it lands every run through a GitHub pull request and the PR-Review row.\nThe operator wants no pull request unless a hub asks for one: the default is `off`.\nOn 2026-10-31 the loomyard hub's own `pull_request: off` was lost (issue #907), and the template's `on` took over at once.\n\n## Change\n\n- The template default of `pull_request` becomes `off`, with its comment, the package docs and the tests that pin `on` brought in line.\n- `on` and `required` keep their meaning for a hub that sets them.\n",
+      "created": "2026-10-31T11:55:25Z",
+      "revised": "2026-10-31T11:55:25Z"
     }
   ],
   "prime_owner": "neve",
