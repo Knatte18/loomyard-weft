@@ -728,13 +728,16 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [],
+      "depends_on": [
+        "dobby-start-failures",
+        "readme-rewrite"
+      ],
       "isolated": false,
       "brief": "A Go program under tools/ renames the loom variant to tapestry, so every loom left is the general run",
       "body": "## Goal\n\nToday's loom recipe is renamed `tapestry`, mechanically, so that every `loom` left afterwards is a candidate for the general run (`run-verbs-shared`).\n`loom` becomes the name of the general run in Shed; what is called loom today is one variant of it, darn another (operator, 2026-10-29).\n`tapestry` is a picture woven to a full-size drawing made first: the discuss-and-plan-before-building path.\n\n## Change\n\n- A Go program under `tools/`, like `tools/wordswap` for the `lyx` to `lym` rename (`ef912d41`), carries out the rename, and the run applies it and commits the result.\n- The `lym loom ...` verbs keep their names, since they become the general ones.\n- No behaviour changes: this is a rename only.\n\n## Open, settled by the run\n\n- Which packages, docs and stencils are the variant's and which are general; the program's inclusion and exclusion lists follow from it.\n  `internal/loomcli` already serves darn runs, so it stays `loom`.\n- What the board's `recipe` field and an empty `recipe` mean, since existing entries and runs carry `loom` or nothing.\n- The strand names such as `ly:LOOM` and the texts that name them.\n- Every stencil, way-forward text and doc that says \"loom\" for the variant changes with it.\n",
       "status": "draft",
       "created": "2026-10-31T12:34:55Z",
-      "revised": "2026-10-31T12:34:55Z"
+      "revised": "2026-10-31T12:35:44Z"
     }
   ],
   "prime_owner": "neve",
