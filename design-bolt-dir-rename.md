@@ -1,6 +1,6 @@
 # Rename the Bolt checkout directory _board to _bolt, by script alone
 
-`bolt-dir-rename` · Task · enhancement, fabric, board, config, cwd, stencil · draft
+`bolt-dir-rename` · Task · enhancement, fabric, board, config, cwd, stencil
 
 Depends on: [`run-verbs-shared`](design-run-verbs-shared.md), [`commit-signature-credit`](design-commit-signature-credit.md), [`pawl-loom-recipe`](design-pawl-loom-recipe.md), [`interactive-recipe`](design-interactive-recipe.md)
 
