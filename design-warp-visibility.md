@@ -1,6 +1,6 @@
 # warp-visibility: heddle, a Bolt database lym renders its instruction files from, leaving no trace in warp
 
-`warp-visibility` · Task · feature, fabric, board, config, claude, codex, cwd, process, stencil · draft
+`warp-visibility` · Task · feature, fabric, board, config, claude, codex, cwd, process, stencil, shuttle · draft
 
 Depends on: [`bolt-dir-rename`](design-bolt-dir-rename.md)
 
@@ -21,6 +21,10 @@ Lym renders its own instruction files into each worktree from one database in Bo
 - An entry is one instruction passage: a slug, its text, its place in the order, and the files it renders into, such as `CLAUDE.local.md`, Codex's own file, or both; possibly also when it renders.
   Claude and Codex need different text, so an entry names its targets rather than every entry going to every file.
 - Rendering a target joins every entry that names it, in order.
+- Each entry also names how it is delivered (operator, 2026-10-31):
+  - as a file in the worktree (`CLAUDE.local.md` for Claude, `AGENTS.override.md` for Codex), easy to read on disk and reaching sessions lym does not launch too;
+  - or in the system prompt of each session shuttle launches, beside what shuttle already puts there (Claude's `--append-system-prompt-file`; for Codex its `developer_instructions` config key, when Codex gets an engine).
+- Heddle holds instructions specific to the repository, owned per hub; lym's own instructions that lym needs to work at all, such as the creel trust sentence and the deny notices shuttle appends today, stay in lym's code and are not moved into heddle (operator, 2026-10-31).
 - Codex reads no `AGENTS.local.md`: in each directory it loads one file only, `AGENTS.override.md` before `AGENTS.md` before the names in `project_doc_fallback_filenames` (OpenAI's AGENTS.md guide, checked 2026-10-31).
   So heddle renders Codex's target as `AGENTS.override.md`: the repository's own `AGENTS.md`, when it has one, followed by lym's entries for Codex, so the team's instructions are not hidden (operator, 2026-10-31).
   A team edit of `AGENTS.md` reaches a worktree when a fabric sync finds commits on the remote that the worktree lacks and settles them locally; that is when heddle renders `AGENTS.override.md` again (operator, 2026-10-31).
