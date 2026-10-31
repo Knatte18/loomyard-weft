@@ -38,6 +38,6 @@ The sampler strand with `--by arbiter` takes the arbiter branch the existing "ar
 `TestSamplerStrandReader` (`//go:build tier0`, in `decision_test.go`) writes a sampler seed's status and record in a temp location and asserts: the recorded strand at a running Sampler-Session row is admitted; at a blocked Sampler-Session row (halted, after `lym reed resume`) still admitted; once the current row is Code-Bouncer refused; a different name refused; after the record names a new strand (a resume under a new strand) the new name admitted and the old refused; no record refused; a darn seed refused.
 `loomcli/doc.go`'s caller-rule sentences gain the sampler session.
 
-**ImpactSummary:** widens one guard of `decision add` by one caller and one label; every existing caller's verdict is unchanged, and the change stays inside decision.go and its tests.
+**ImpactSummary:** widens one guard of `decision add` by one caller and one label; every existing caller's verdict is unchanged, and the change stays inside decision.go, its tests and the caller-rule sentences of `loomcli/doc.go`.
 
 **Commit:** 11: decision add admits the sampler session with --by operator

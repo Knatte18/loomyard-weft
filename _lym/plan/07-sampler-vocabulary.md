@@ -27,7 +27,7 @@
 - `contracts/stencils#LoomRubricCodeReview`
 - `internal/landingshed#EscalateStopPrefix`
 - `internal/landingshed#fixerOutcome.haltReason`
-- `internal/landingshed#EscalateHalt`
+- `internal/landingshed/handback.go`
 - `internal/landingshed#Deps`
 - `internal/landingshed#Finalize.gateAndFix`
 - `internal/landingshed#ParentAlign.Call`
@@ -40,6 +40,8 @@
 - `internal/battenshed/doc.go`
 - `internal/battencli#battenCLI.wire`
 - `internal/battencli#restepSkips`
+- `internal/battencli#childSeedParams`
+- `internal/battenshed#InnerRunDeps`
 - `internal/loomcli#loomArbiterSeam`
 - `internal/loomcli#loomCLI.specFor`
 - `internal/loomcli/settledguard.go`
@@ -66,8 +68,9 @@ The board already accepts any task recipe and refuses any project recipe but `pa
 `runprofile/doc.go` names sampler among the recipes and says the sampler blocks carry darn's perch values with the review on from light up.
 `tacklerFor` returns `samplerTacklerRecipe` for a recipe with a `SamplerSession` row, judged by `loomrecipe.HasEngine` before the Plan-Write branch, and `arbiterRecipeDescription` describes such a run as a task's result made with the operator in one interactive session, then its optional review and landing, with the repair verbs; `TestTacklerFor` and `TestRecipeKeyedWiring` gain a sampler row (tree scope true, no plan, the sampler fragment).
 The doc lines that state a rule for "tapestry or darn" runs that a sampler run now falls under gain sampler: the fixer escalate and hand-back sentences of `landing-fixer-report-spec.md` and `loom-status-spec.md`, the leading comment of `landing-template-pr-review.md`, the Code-Burler-Fix, PR-Review and Finalize rows of `gateslot/doc.go`'s site table, the Describe sentence of `loom-final-summary-spec.md`, the orch role's two lines (the run batten drives as the entry's recipe says, and the fixer escalate that reaches the orch through the arbiter), the Code-Review rubric's leading comment and its `LoomRubricCodeReview` doc, and the escalate, hand-back, admitted-recipe and arbiter-seam comments of `EscalateStopPrefix`, `fixerOutcome.haltReason`, `EscalateHalt`, the `EscalateJudgedFirst` field of landingshed's `Deps`, `Finalize.gateAndFix`, `ParentAlign.Call`, `handback.go`'s file comment, `arbiterstop.Eligibility`, `ErrUnsupportedChildRecipe`, `innerRunProducer.binaryRestep`, battencli's `battenCLI.wire` and `restepSkips`, loomcli's `loomArbiterSeam`, `specFor`'s hand-back comment, and the file comments of `settledguard.go` and `subjects.go`, plus the package docs of landingshed, arbiterstop, sheddriver and battenshed and `docs/overview.md`'s batten lines naming the admitted recipes.
+The `childSeedParams` doc lists sampler among the recipes that declare `params.parent`, since the shared loom bootstrap writes it for every loom recipe, and the `HandBack` field doc of `InnerRunDeps` says a tapestry, darn or sampler escalate halt; a struct field is not a glyph of its own, so the struct carries the target.
 Comments that describe only the tapestry and darn recipes' own embedded files stay: `IsFinalizeRow`, `BouncerRunSubdir`, `loomrecipe/doc.go`'s role-prefix pin and loomcli's subject-key sentence remain true.
 
-**ImpactSummary:** widens five recipe lists and their tests; no behaviour changes for tapestry, darn or pawl runs, and the board's only change is one refusal's wording.
+**ImpactSummary:** widens five recipe lists and their tests; no behaviour changes for tapestry, darn or pawl runs, and the board's only change is one refusal's wording; beside the doc comments, the sweep edits agent-facing text: the orch role stencil's two lines and the PR-Review stencil's leading comment.
 
 **Commit:** 7: sampler reaches batten's seeding, the board, the run profiles and the run descriptions

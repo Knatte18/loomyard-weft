@@ -48,6 +48,6 @@ D3, D5 and D6: a sampler run's Sampler-Session row gets its seams.
 `TestWire_SamplerRecipe` (in `wiring_darn_test.go`, `//go:build tier0`, carrying the same `//lym:seam` marker lines as `TestWire_DarnRecipe` plus `//lym:seam internal/loomshed#SamplerDeps`) wires a sampler seed over a hub holding darn.yaml (`verify_attempts` 5), gate.yaml and the sampler template, and asserts: the sampler seams `wire` owns are set and the four `wireLanding` owns are nil; `VerifyTreeScope` and `VerifyMergeBase` are set and `DarnVerifyAttempts` is 5 (D6 acceptance: Code-Burler-Fix gets darn's tree scope and budget); `Sampler.CheckRecord` is set and `DarnTable` nil; `Sampler.Stamp()` answers 1 after a status file with a Record-Write Done is written; and a hub `sampler.yaml` with `agent: "opus[[bad"` fails `wire` naming the key and `lym config sampler`.
 `loomcli/doc.go` gains a paragraph on a sampler run's wiring, and `docs/overview.md` a sentence that the row's session is kept like PR-Review's and wakes on the record's file event.
 
-**ImpactSummary:** new sampler-only wiring branches in wire, wireLanding and buildLoomShed taken only for a recipe with a SamplerSession row; tapestry, darn and pawl wiring is unchanged.
+**ImpactSummary:** new sampler-only wiring branches in wire and wireLanding, taken only for a recipe with a SamplerSession row; tapestry, darn and pawl wiring is unchanged.
 
 **Commit:** 9: loom wiring fills the Sampler-Session row's seams

@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -15,8 +15,8 @@ The cards build the hub-wide `sampler.yaml`, the row's record, stencil and produ
 2 — sampler-record — the Sampler-Session record, its done flag and the entry stamp, with shedrun paths
 3 — sampler-stencil — the sampler-template-agent stencil and the session's spec builder
 4 — sampler-session-row — loomshed's Sampler-Session producer: its session, wait and done judgement
-5 — sampler-registry-entry — register SamplerSession as a loom build engine with Env.Sampler
-6 — sampler-recipe — the sampler recipe file and its name in the recipe vocabulary and lym shed
+5 — sampler-registry-entry — register SamplerSession as a loom build engine with Env.Sampler, and embed the sampler recipe file
+6 — sampler-recipe — the sampler recipe's name in the recipe vocabulary, lym shed and loomrecipe's accessors
 7 — sampler-vocabulary — sampler in batten seeding, the board, run profiles and run descriptions
 8 — rows-keyed-wiring — tree-scope, record and perch-off wiring keyed on the recipe's rows
 9 — sampler-wiring — wire the Sampler-Session row's seams for a sampler run

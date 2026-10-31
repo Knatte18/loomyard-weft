@@ -41,6 +41,6 @@ A halt, a failure and a resume write no entry from another row, so they leave th
 `TestEntryStamp` is a table over histories with `row` `Sampler-Session` and predecessor `Record-Write`: empty history 0; `Record-Write` Done 1; that plus a `Sampler-Session` Stuck (a halt) still 1; plus a goto onto `Sampler-Session` right after its own Stuck still 1; a `Sampler-Session` Done, a `Describe` Stuck and a goto onto `Sampler-Session` 2; a `Sampler-Session` Stuck then a goto to `Describe` then a goto back onto `Sampler-Session` with no Done between 2; a goto right after a `Sampler-Session` Done (the run had left the row) 2; a `Record-Write` Done then a goto onto `Sampler-Session` with nothing between (the row failed with no history entry) still 1; a `Record-Write` Done entry folding two calls 2.
 `samplerengine/doc.go` gains a paragraph on the record, its done flag and the entry stamp.
 
-**ImpactSummary:** adds two shedrun path accessors beside the pull-request ones and one test row; the samplerengine additions have no caller yet.
+**ImpactSummary:** adds two shedrun path accessors beside the pull-request ones and a test row for each; the samplerengine additions have no caller yet.
 
 **Commit:** 2: samplerengine: the Sampler-Session record, its done flag and entry stamp
