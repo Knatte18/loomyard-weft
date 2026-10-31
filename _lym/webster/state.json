@@ -773,7 +773,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 18,
   "masterStrand": "fcb1d2c3aa9b807f159196347a0467d8",
   "masterSessionId": "455fcd5a-9d78-42d3-90cf-321460494edd",
   "masterEngine": "claude",
@@ -1011,6 +1011,26 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-a6b61825cecb443d9.jsonl"
       ]
+    },
+    "18": {
+      "slug": "recipe-keyed-wiring",
+      "cards": [
+        "18-recipe-keyed-wiring",
+        "19-loom-verbs-loom-only",
+        "20-peers-per-recipe"
+      ],
+      "cardHashes": {
+        "18-recipe-keyed-wiring": "d71545383381590c1473e962761dcc7f7ef401b2f7b79a56dfa56916b0580f5d",
+        "19-loom-verbs-loom-only": "386d5025dcf6fb8b78e765642d8256ba7decd82113af7cbf80c0d18336bac567",
+        "20-peers-per-recipe": "b1d42393227e5314a16615739388f6ba2e935f760b455e219f28f4745cc0bcaa"
+      },
+      "startSha": "b469425a89cda056e8f19287f54854262a3bd9fc",
+      "kind": "fork",
+      "spawnedAt": "2026-10-31T17:52:47Z",
+      "sessionId": "455fcd5a-9d78-42d3-90cf-321460494edd",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "5": {
       "slug": "shed-keys-in-shed-only",
