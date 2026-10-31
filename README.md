@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-31 18:42 UTC; every age below is as of then.
+Rendered 2026-10-31 18:43 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -42,7 +42,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **sampler: an interactive loom recipe, the operator iterating with an agent in the run's worktree until done**<br>• A Shed recipe whose agent waits for the operator and iterates on the result, then lands as usual<br>• `profile: light` | [`interactive-recipe`](design-interactive-recipe.md) | tapestry | T1 | 6h<br>27m | shed, batten, reed, shuttle |
+| T8 | **sampler: an interactive loom recipe, the operator iterating with an agent in the run's worktree until done**<br>• A Shed recipe whose agent waits for the operator and iterates on the result, then lands as usual<br>• `profile: light` | [`interactive-recipe`](design-interactive-recipe.md) | tapestry | T1 | 6h<br>28m | shed, batten, reed, shuttle |
 
 #### Layer C (1)
 
@@ -50,7 +50,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Rename the Bolt checkout directory _board to _bolt, by script alone**<br>• A pure, mechanical rename of _board to _bolt everywhere, with a rename program for existing hubs | [`bolt-dir-rename`](design-bolt-dir-rename.md) | darn | T6<br>T1<br>T8 | 2h<br>27m | fabric, board, config, cwd, stencil |
+| T3 | **Rename the Bolt checkout directory _board to _bolt, by script alone**<br>• A pure, mechanical rename of _board to _bolt everywhere, with a rename program for existing hubs | [`bolt-dir-rename`](design-bolt-dir-rename.md) | darn | T6<br>T1<br>T8 | 2h<br>28m | fabric, board, config, cwd, stencil |
 
 #### Draft (1)
 
@@ -68,7 +68,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 | H | **Trial the cuts that make a gate run link fewer new test binaries**<br>• Bench the report's cuts on Neve and OSL-1046 before any is made permanent | [`gate-fewer-binaries-trial`](design-gate-fewer-binaries-trial.md) | 29m<br>28m | gate, testkit |
+| R1 | H | **Trial the cuts that make a gate run link fewer new test binaries**<br>• Bench the report's cuts on Neve and OSL-1046 before any is made permanent | [`gate-fewer-binaries-trial`](design-gate-fewer-binaries-trial.md) | 30m<br>29m | gate, testkit |
 | R5 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 9d<br>4d | webster |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 9d<br>3d | loom, stencil |
 
@@ -85,10 +85,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E7 |  | **Finalize settles a rejected fixer change in place and never sends the run back**<br>• A fix review loop inside Finalize that escalates at its cap, in place of on_reroute | [`finalize-fix-in-place`](design-finalize-fix-in-place.md) | 5h<br>3h | landing, shed, loom, darn |
 | E8 |  | **A seed says only that a run starts at its start, with no producer name**<br>• The shared seed names Preflight as the first producer for every recipe; the seed should name none, and the recipe supplies its first row. | [`seed-starts-at-start`](design-seed-starts-at-start.md) | 1d<br>3h | loom, pawl, shed |
 | E9 |  | **An idle interactive run saves its work and pauses, to go on another time**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 4h<br>4h | shed, shuttle, batten |
-| E10 |  | **The hibernate request is carried by dobby, not a daemon of its own**<br>• Move lym hibernate request into dobby, once dobby and hibernate share the past-Land test | [`hibernate-in-dobby`](design-hibernate-in-dobby.md) | 4h<br>4h | dobby |
+| E10 |  | **The hibernate request is carried by dobby, not a daemon of its own**<br>• Move lym hibernate request into dobby; the past-Land test is already shared | [`hibernate-in-dobby`](design-hibernate-in-dobby.md) | 4h<br>0m | dobby |
 | E11 |  | **Merge in from parent as a task of its own in a beam, in place of pawl's perch round**<br>• A ready-made command starts a run that brings the parent into a beam, with Drift; pawl drops its own Code-Review perch | [`parent-merge-task`](design-parent-merge-task.md) | 5h<br>5h | pawl, workspaces, drift, landing |
 | E12 |  | **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | 2h<br>2h | fabric |
-| E13 |  | **A long gate run answers within the cache lifetime, so the waiting agent keeps its prompt cache warm**<br>• lym gate test caps the run wait like the slot wait, with the cap a config value beside the engine cache lifetime | [`gate-run-keeps-cache-warm`](design-gate-run-keeps-cache-warm.md) | 22m<br>20m | gate, shuttle, config |
+| E13 |  | **A long gate run answers within the cache lifetime, so the waiting agent keeps its prompt cache warm**<br>• lym gate test caps the run wait like the slot wait, with the cap a config value beside the engine cache lifetime | [`gate-run-keeps-cache-warm`](design-gate-run-keeps-cache-warm.md) | 22m<br>21m | gate, shuttle, config |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 13d<br>4d | webster, fabric, loom |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 13d<br>4d | fabric, batten |
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 9d<br>3d | burler, claude |
