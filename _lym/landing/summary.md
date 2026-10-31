@@ -1,34 +1,38 @@
-# No shuttle hold notice for a turn the operator started in the pane
+# shuttleengine: no hold notice for a turn the operator typed in the pane
 
-When an autonomous run's agent ends a turn without its output files, shuttle sends the parent a hold notice.
-That notice also went out when the turn was the operator's own conversation with the agent in its pane, so the orch received a stall report it could not act on and had to ask the operator what happened.
+A held turn end whose turn began with an instruction the operator typed into the agent's pane now sends the parent no hold notice.
+Before, an operator talking to a held agent made lym tell the orch the agent "ended a turn without its output files and is held", and the notice did not say who the agent had talked to.
+A held end of a turn lym started, by the run's prompt, a re-prompt, a continue line or a creel message, is notified as before.
 
-A held turn end now sends no notice when its turn began with an instruction the operator typed.
-The check reuses the reading the carry-over of operator instructions already makes.
-A turn start past the run's prompt offset counts as the operator's when it carries a typed instruction, is not the run's prompt, and its text is not in the run's sent-texts file.
-Every verified send into a run writes its text to that file before typing, including creel mail, gate re-prompts and the API-error continue line.
-The turn a held end closes began at the newest turn start before the turn end's line in the events file.
+## Design
 
-## Changes
+- A turn start past the run's prompt offset is the operator's when it carries a typed instruction, is not the run's prompt turn start, and its text is not in the run's sent-texts file.
+  This is the reading the carry-over of operator instructions already made, so both consumers now share it: `runTurnStarts` in `carryover.go` produces it, and `operatorInstructions` is built on it with the same result as before.
+- The turn a held end closes began at the newest turn start whose line lies before the turn end's offset.
+  The events file holds the lines in order, so no in-memory tracking is needed and the reading survives an attach.
+  With no such turn start, the turn is not the operator's and the notice is sent.
+- `Wait`'s held branch gains one case beside the usage-limit and background-wake skips.
+  It logs one Info line, sends nothing, defers nothing and leaves `RunState.NotifiedOffset` alone.
+  The hold, the wait mark and the deadline are unchanged.
+- `positionedTurnStarts` in `wait.go` now returns each turn start's signal with its end offset; `turnStartOffsets` is a thin wrapper over it.
+- The reading stays provider-neutral through the optional `SessionSignalParser`.
+  An engine without it, or an unreadable events file, reads no operator turn and notifies as before.
+- The package doc's hold-notice paragraph, which said shuttle cannot tell an operator's typed text from a parent's answer, is rewritten.
 
-- `internal/shuttleengine/carryover.go`: `runTurnStarts` returns each turn start past the prompt offset with its offset, and carries its instruction only when the operator typed it.
-  `operatorInstructions` now filters that list, so the carry-over reads the same instructions as before.
-- `internal/shuttleengine/wait.go`: the turn-start offset reading becomes `positionedTurnStarts`, which keeps each signal beside its offset, and `turnStartOffsets` maps over it.
-  Wait's held-turn-end branch adds a case beside the usage-limit and background-wake skips: an operator-started turn logs one Info line, sends nothing, defers nothing and leaves `RunState.NotifiedOffset` alone.
-- `internal/shuttleengine/hold.go`: `operatorStartedTurn` decides whether a held turn end's turn was the operator's.
-- `internal/shuttleengine/doc.go`: the hold-notice paragraph used to say shuttle cannot tell an operator's typed text from a parent's answer. It now states the new rule.
+## Bounds
 
-## Design decisions
-
-- The held end of a later turn started by lym or by mail is notified as before, so a real stall after an operator conversation still reaches the parent.
-- A turn start with no typed instruction, such as a task notification or a slash command, does not count as the operator's, and its held end is notified.
-- If writing the sent-texts file fails, that send reads as the operator's and its turn's held end sends no notice. The failed write is already logged at Warn, and the next held end of a turn lym starts is notified.
-- An engine without the session-signal capability, and an unreadable events file, read no operator turn, so their held ends are notified as before.
+- A send whose sent-texts write failed reads as the operator's, so that turn's held end sends no notice.
+  The failed write is already logged at Warn, and the next held end of a turn lym starts is notified.
+- An operator who types the exact text of an earlier lym send reads as lym's send, and that turn's held end is notified.
+- A turn start whose Raw line the events file does not hold is not read.
+  The test engine in `carryover_test.go` now sets `Raw` on its signals for this reason.
 
 ## Tests
 
-- New rows in `TestWait_HeldTurnEndNotice`:
-  - An operator-typed turn sends no notice and leaves the notified offset.
-  - Around an operator turn, three held ends are each notified: the prompt turn's, one from a turn with no instruction, and one from a turn a recorded send started.
-- The fake session engine reads `START:<text>` as a turn start carrying a typed instruction.
-- The carry-over test's fake engine now sets `Raw` on its turn starts, as production engines do, because the positioned reading matches signals to lines by it.
+Rows in the tier0 `TestWait_HeldTurnEndNotice` table, on the fake engine and an injected clock, pin:
+
+- an operator-typed turn sends no notice and leaves the offset;
+- a deferred run after an operator turn neither queues nor sends;
+- the prompt turn, a turn start with no instruction and a turn a recorded send started are notified around an operator turn.
+
+I did not run the tests here; run them with `lym gate test ./internal/shuttleengine`.
