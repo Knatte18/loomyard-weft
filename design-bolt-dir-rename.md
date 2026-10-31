@@ -1,4 +1,4 @@
-# The Bolt checkout directory _board is renamed _bolt
+# The Bolt checkout directory is named in one place only, and renamed _bolt
 
 `bolt-dir-rename` · Note · enhancement, fabric, board, config
 
@@ -7,10 +7,18 @@
 The hub's Bolt checkout is the directory `_board`, but it holds far more than the board: `board.json`, its README and design files, the hub's `_lym` config and orch rules, and soon heddle's database (note `warp-visibility`).
 The name says board where the directory is Bolt.
 
+The name is also spelled out in too many places (operator, 2026-10-31).
+The path itself comes from one constant, `fabricengine.BoardDirName`, but:
+- `lymcwd` declares its own copy of the constant;
+- user-facing messages in `configcli` and `fabricengine` spell `_board` in their text;
+- many comments and test files spell it, the tests in place of the constant;
+- stencils (landing, burler, drift), the `ly:board` skill and docs spell `_board/...` paths to agents and readers.
+
 ## Idea
 
-Rename the directory `_board` to `_bolt`, the name of the repository it checks out.
-- The name sits in `fabricengine.BoardDirName` and `lymcwd`'s own constant, and in many Go files, stencils, skills, contracts and docs that spell the path.
+- The name lives in one constant only: `lymcwd` and every message and test take it from there, and a comment names "the Bolt checkout" rather than the path.
+- Stencils and skills name the path through what lym already resolves for them, or as "the Bolt checkout", not as a literal.
+- Then rename the directory to `_bolt`, the name of the repository it checks out.
 - Existing hubs on Neve and OSL-1046 have `_board` on disk, so the rename needs a rename program as `tapestry-rename` had, run once per hub.
-- It touches nearly every package, so it runs alone, with no other run in flight.
+- It touches many packages, so it runs alone, with no other run in flight.
 - `runproc.HubOwner`, also spelled `_board`, is an owner name, not the directory; whether it follows is to be decided.
