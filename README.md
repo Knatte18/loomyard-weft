@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-31 14:47 UTC; every age below is as of then.
+Rendered 2026-10-31 14:48 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -36,7 +36,7 @@ Waits only on Running, Ready or Draft entries.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **A landing notice on request, per task**<br>• A landing notice from dobby on request, per task, reusing the wait that lym hibernate request --after has<br>• `profile: solid` | [`landing-watch`](design-landing-watch.md) | darn | T7 | 2d<br>7m | dobby, creel, orch, board, reed, config |
-| T5 | **Second recurring test-time and growth audit**<br>• Re-time tier0 to tier2 by the first audit's method and append the section<br>• `profile: docs` | [`test-time-audit-2`](design-test-time-audit-2.md) | darn | T7 | 31m<br>6m | gate |
+| T5 | **Second recurring test-time and growth audit**<br>• Re-time tier0 to tier2 by the first audit's method and append the section<br>• `profile: docs` | [`test-time-audit-2`](design-test-time-audit-2.md) | darn | T7 | 32m<br>6m | gate |
 | T6 | **Landing commits drop Co-Authored-By and Lym-Task, and carry an optional credit listing the engines used**<br>• Replace the per-engine Co-Authored-By line and the Lym-Task line with one optional credit block that lists the LLM services the task used. | [`commit-signature-credit`](design-commit-signature-credit.md) | darn | T4 | 1d<br>26m | landing |
 
 #### Layer B (1)
@@ -104,11 +104,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F15 |  | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 2w<br>22m | reed, config, batten |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>2d | burler, shed, orch, quarry, report |
 | F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 8d<br>4d | loom, shed, batten, workspaces, burler |
-
-### Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T2 | **A rejected board push is retried after a fetch, and called a divergence only when one exists**<br>• Two overlapping pushes of the board from this hub made one fail, and the mail named a divergence that did not exist. | [`board-push-race`](design-board-push-race.md) | 1d<br>33m | fabric |
