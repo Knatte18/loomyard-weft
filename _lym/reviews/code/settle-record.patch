@@ -1,0 +1,1122 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 874aaef2..e1beb75f 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -443,7 +443,7 @@ User-facing modules each get one `lym <module>` namespace:
+   ✅ Implemented. See the `internal/cleanupcli` package documentation.
+ - **adopt** — the takeover of beam projects, or of root, and of the runs under them from another machine of the operator, as one verb (`internal/adoptcli`; `lym adopt <beam>...`, `lym adopt root` and `lym adopt --all`, with `--keep-local` and `--drop-local`, from the prime and from any beam).
+   It reconciles the hub against origin, stops a beam or a run under it whose pair holds local commits origin lacks or is live, adds the missing pairs, records this machine as the owner of the beams and of the prime in one pushed owner write, lifts the owner pauses and resumes each moved run as a detached first pass, driven on by its parent's dobby.
+-  A call that recorded an owner then starts the adopt check once, detached, in the prime, which runs the hub's `adopt` gate, reports each tier to the orch and shows in `lym beam status`, so a break this machine brings to the landed code shows at adopt time.
++  A call that recorded an owner then starts the adopt check once, detached, in the prime, which runs the hub's `adopt` gate, reports each tier to the orch, shows its tier in flight, time, tiers done and result on the prime's reed status bar, and shows in `lym beam status`, so a break this machine brings to the landed code shows at adopt time.
+   It calls each owning module's function in-process and has no engine package of its own.
+   ✅ Implemented. See the `internal/adoptcli` package documentation.
+ - **beam** — the making, landing, starting and stopping of a beam, a long-lived pair that groups board work, and dobby, the daemon every beam and the prime run (`internal/beamcli` + `internal/dobbyengine`; `lym beam create <slug>`, `lym beam ready <slug>`, which flags the beam ready to merge so its dobby writes the land request once nothing works under it, `lym beam land <slug>`, which writes the land request the beam's pawl run consumes at Beam-Await and refuses a beam not flagged ready, `lym beam start [slug] [--all]`, `lym beam stop [slug]` and `lym beam status`, from the prime and from any beam, and the hidden `lym beam dobby`).
+diff --git a/internal/adoptcli/adopt.go b/internal/adoptcli/adopt.go
+index c4051e17..59a0c533 100644
+--- a/internal/adoptcli/adopt.go
++++ b/internal/adoptcli/adopt.go
+@@ -6,6 +6,7 @@ import (
+ 	"errors"
+ 	"fmt"
+ 	"slices"
++	"strconv"
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+@@ -87,15 +88,19 @@ func beamStepsOf(report orchcli.BeamUpReport) *beamStepsOutcome {
+ 	}
+ }
+ 
+-// suiteStart names the detached adopt check an adopt started or found running: its pid, the log of its gate and the record of its progress.
++// suiteStart names the detached adopt check an adopt started or found running: its pid, the log of its gate, the record of its progress, the tiers its gate key names and whether it was found running.
+ type suiteStart struct {
+ 	PID int    `json:"pid"`
+ 	Log string `json:"log"`
+ 	// Record is the path of the check's progress record.
+ 	Record string `json:"record"`
++	// Tiers are the tiers of the hub's adopt gate key as the adopt read them, empty when the gate config did not read or holds no adopt key.
++	Tiers []int `json:"tiers,omitempty"`
++	// AlreadyRunning is set when the adopt found a check running and started none.
++	AlreadyRunning bool `json:"already_running,omitempty"`
+ }
+ 
+-// outcome is the verb's envelope: the reconcile's report, the mutation record of every step, whether that record is non-empty, the prime's owner write, each entry's slugOutcome, the beam steps of the prime and the warning of a prime start that failed, and the adopt check started or the warning of a start that failed.
++// outcome is the verb's envelope: the reconcile's report, the mutation record of every step, whether that record is non-empty, the prime's owner write, each entry's slugOutcome, the beam steps of the prime and the warning of a prime start that failed, and the adopt check started with its plain message, or the warning of a start that failed.
+ type outcome struct {
+ 	Reconcile        fabricengine.OriginReport
+ 	Mutations        []fabricengine.Mutation
+@@ -106,6 +111,7 @@ type outcome struct {
+ 	PrimeBeamSteps   *beamStepsOutcome
+ 	PrimeBeamWarning string
+ 	Suite            *suiteStart
++	SuiteMessage     string
+ 	SuiteWarning     string
+ }
+ 
+@@ -329,6 +335,7 @@ func adopt(deps adoptDeps, req request) (outcome, error) {
+ 			result.SuiteWarning = fmt.Sprintf("the adopt check was not started (%v); way forward: run lym fabric reconcile in the prime, then lym gate test --gate adopt there", err)
+ 		} else {
+ 			result.Suite = &suite
++			result.SuiteMessage = suiteMessage(suite)
+ 		}
+ 	}
+ 
+@@ -336,6 +343,23 @@ func adopt(deps adoptDeps, req request) (outcome, error) {
+ 	return finish(), nil
+ }
+ 
++// suiteMessage is the plain line naming the adopt check suite stands for: started or already running, the tiers it runs when known, and that the prime's reed status bar shows it.
++func suiteMessage(suite suiteStart) string {
++	verb := "started"
++	if suite.AlreadyRunning {
++		verb = "already running"
++	}
++	tiers := ""
++	if len(suite.Tiers) > 0 {
++		numbers := make([]string, len(suite.Tiers))
++		for i, tier := range suite.Tiers {
++			numbers[i] = strconv.Itoa(tier)
++		}
++		tiers = ", tiers " + strings.Join(numbers, ", ")
++	}
++	return fmt.Sprintf("adopt check %s in the prime%s; the prime's reed status bar shows its progress and result", verb, tiers)
++}
++
+ // namedEntries resolves the request to the beam project slugs it adopts and whether it adopts root.
+ // --all names root and every beam project that is not done.
+ // It refuses a slug the board does not hold, a note, a done entry, a task, naming the beam or `root` that moves its run, and a grouping project, naming the same adopt and `lym beam create`.
+diff --git a/internal/adoptcli/adopt_test.go b/internal/adoptcli/adopt_test.go
+index d3f979e5..e5dddb24 100644
+--- a/internal/adoptcli/adopt_test.go
++++ b/internal/adoptcli/adopt_test.go
+@@ -6,6 +6,7 @@ package adoptcli
+ 
+ import (
+ 	"errors"
++	"reflect"
+ 	"slices"
+ 	"strings"
+ 	"testing"
+@@ -49,8 +50,9 @@ type world struct {
+ 	childResumed []string
+ 	// moving is the target anchor of the move record standing in each worktree, "" keying the prime.
+ 	moving map[string]string
+-	// order is the run resumes, child resumes, beam steps and suite starts in the order they came, and suiteErr what the suite start answers.
++	// order is the run resumes, child resumes, beam steps and suite starts in the order they came, and suite and suiteErr what the suite start answers.
+ 	order    []string
++	suite    suiteStart
+ 	suiteErr error
+ 	// beamUps are the worktrees the beam steps were run for, and beamUpErr what the steps of each worktree answer.
+ 	beamUps   []string
+@@ -66,6 +68,7 @@ type world struct {
+ func newWorld() *world {
+ 	running := shedengine.Status{State: shedengine.StateRunning}
+ 	return &world{
++		suite: testSuite,
+ 		owners: boardengine.Owners{Prime: here, Entries: map[string]boardengine.OwnerEntry{
+ 			"alpha": {Owner: there, IsProject: true, Beam: true, RunHeld: true},
+ 			"beta":  {Owner: there, IsProject: true, Beam: true, RunHeld: true},
+@@ -194,13 +197,13 @@ func (w *world) deps() adoptDeps {
+ 			if w.suiteErr != nil {
+ 				return suiteStart{}, w.suiteErr
+ 			}
+-			return testSuite, nil
++			return w.suite, nil
+ 		},
+ 	}
+ }
+ 
+-// testSuite is what the fake suite start answers.
+-var testSuite = suiteStart{PID: 42, Log: "suite.log"}
++// testSuite is what the fake suite start answers unless a case sets another.
++var testSuite = suiteStart{PID: 42, Log: "suite.log", Tiers: []int{0, 1, 2}}
+ 
+ // slugOf returns the outcome of slug, failing the test when the envelope lacks it.
+ func slugOf(t *testing.T, got outcome, slug string) slugOutcome {
+@@ -606,9 +609,12 @@ func TestAdopt(t *testing.T) {
+ 					t.Errorf("%s beam steps = %+v; want the beam's report", slug, steps)
+ 				}
+ 			}
+-			if got.Suite == nil || *got.Suite != testSuite || got.SuiteWarning != "" {
++			if got.Suite == nil || !reflect.DeepEqual(*got.Suite, testSuite) || got.SuiteWarning != "" {
+ 				t.Errorf("suite = %+v, warning = %q; want %+v and no warning", got.Suite, got.SuiteWarning, testSuite)
+ 			}
++			if want := "adopt check started in the prime, tiers 0, 1, 2; the prime's reed status bar shows its progress and result"; got.SuiteMessage != want {
++				t.Errorf("suite message = %q; want %q", got.SuiteMessage, want)
++			}
+ 		}},
+ 		{name: "PrimeOwnerRecordedAloneRunsThePrimesBeamStepsAndStartsTheSuiteLast", req: request{Root: true}, setup: withoutAlphaAndBeta, check: func(t *testing.T, w *world, got outcome) {
+ 			if !w.ownerReq.Prime || len(w.ownerReq.Slugs) != 0 {
+@@ -672,10 +678,15 @@ func TestAdopt(t *testing.T) {
+ 				t.Errorf("steps = %v, suite = %+v, warning = %q; want no suite start", w.order, got.Suite, got.SuiteWarning)
+ 			}
+ 		}},
++		{name: "CheckFoundRunningWithNoTiersReadIsNamedAlreadyRunning", req: request{Slugs: []string{"alpha"}}, setup: func(w *world) { w.suite = suiteStart{PID: 7, AlreadyRunning: true} }, check: func(t *testing.T, _ *world, got outcome) {
++			if want := "adopt check already running in the prime; the prime's reed status bar shows its progress and result"; got.SuiteMessage != want {
++				t.Errorf("suite message = %q; want %q", got.SuiteMessage, want)
++			}
++		}},
+ 		{name: "FailedSuiteStartIsTheWarningNamingTheGate", req: request{Slugs: []string{"alpha"}}, setup: func(w *world) { w.suiteErr = errors.New("exec failed") }, check: func(t *testing.T, w *world, got outcome) {
+ 			want := "the adopt check was not started (exec failed); way forward: run lym fabric reconcile in the prime, then lym gate test --gate adopt there"
+-			if got.SuiteWarning != want || got.Suite != nil {
+-				t.Errorf("suite = %+v, warning = %q; want no suite and %q", got.Suite, got.SuiteWarning, want)
++			if got.SuiteWarning != want || got.Suite != nil || got.SuiteMessage != "" {
++				t.Errorf("suite = %+v, warning = %q, message = %q; want no suite, no message and %q", got.Suite, got.SuiteWarning, got.SuiteMessage, want)
+ 			}
+ 			if alpha := slugOf(t, got, "alpha"); !alpha.OwnerRecorded || alpha.Run != "resumed" || alpha.Error != "" {
+ 				t.Errorf("alpha = %+v, want it adopted and resumed beside the failed suite start", alpha)
+diff --git a/internal/adoptcli/check.go b/internal/adoptcli/check.go
+index 4107507c..5a41041a 100644
+--- a/internal/adoptcli/check.go
++++ b/internal/adoptcli/check.go
+@@ -28,6 +28,8 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/orchcli"
+ 	"github.com/Knatte18/loomyard/internal/output"
+ 	"github.com/Knatte18/loomyard/internal/proc"
++	"github.com/Knatte18/loomyard/internal/reedengine"
++	"github.com/Knatte18/loomyard/internal/shuttleengines"
+ 	"github.com/Knatte18/loomyard/internal/state"
+ )
+ 
+@@ -101,7 +103,7 @@ func ReadCheck(recordPath string) (CheckRecord, bool, error) {
+ 	return record, found, err
+ }
+ 
+-// checkDeps holds the seams of one check run: the scratch directory its files sit in, the clock, the process identity it records, the hub reconcile, the gate and the notice to the orch.
++// checkDeps holds the seams of one check run: the scratch directory its files sit in, the clock, the process identity it records, the hub reconcile, the gate, the notice to the orch and the mark on the prime's status bar.
+ // RunGate runs the check's gate key with log as its output and returns its exit code.
+ type checkDeps struct {
+ 	Dir        string
+@@ -111,12 +113,13 @@ type checkDeps struct {
+ 	Reconcile  func() error
+ 	RunGate    func(ctx context.Context, log io.Writer, observer gatecli.TierObserver) int
+ 	Notice     func(line string) error
++	Mark       func(mark checkMark) error
+ }
+ 
+ // runCheck runs the check under check.lock and returns the final record and whether this call ran it.
+ // A held lock returns at once with nothing written or posted.
+ // A failing reconcile ends the check failed before any tier runs, so no check goes green on the template's tiers.
+-// The record is rewritten as each tier starts and ends; a post that fails is logged and changes nothing.
++// The record is rewritten, and the prime's status bar marked, as the check starts, as each tier starts and ends, and at its end; a post or mark that fails is logged and changes nothing.
+ func runCheck(ctx context.Context, deps checkDeps) (CheckRecord, bool, error) {
+ 	if err := os.MkdirAll(deps.Dir, 0o755); err != nil {
+ 		return CheckRecord{}, false, fmt.Errorf("create the adopt scratch directory: %w", err)
+@@ -142,6 +145,14 @@ func runCheck(ctx context.Context, deps checkDeps) (CheckRecord, bool, error) {
+ 	if err := writeCheck(recordPath, record); err != nil {
+ 		return CheckRecord{}, false, err
+ 	}
++	// tierStart is when the tier in flight started, which the record does not keep.
++	var tierStart time.Time
++	mark := func() {
++		if err := deps.Mark(checkMarkOf(record, tierStart)); err != nil {
++			logger.Warn("adoptcli: the adopt check mark was not set", "error", err)
++		}
++	}
++	mark()
+ 	post := func(line string) {
+ 		if err := deps.Notice(line); err != nil {
+ 			logger.Warn("adoptcli: the adopt check notice was not posted", "line", line, "error", err)
+@@ -152,11 +163,14 @@ func runCheck(ctx context.Context, deps checkDeps) (CheckRecord, bool, error) {
+ 		if err := writeCheck(recordPath, record); err != nil {
+ 			logger.Warn("adoptcli: the adopt check record was not written", "path", recordPath, "error", err)
+ 		}
++		mark()
+ 	}
+ 	finish := func() (CheckRecord, bool, error) {
+ 		record.Running = nil
+ 		record.EndedAt = deps.Now()
+-		return record, true, writeCheck(recordPath, record)
++		err := writeCheck(recordPath, record)
++		mark()
++		return record, true, err
+ 	}
+ 
+ 	rerun := "lym gate test --gate " + checkGateKey
+@@ -170,6 +184,7 @@ func runCheck(ctx context.Context, deps checkDeps) (CheckRecord, bool, error) {
+ 	observer := gatecli.TierObserver{
+ 		Started: func(tier int) {
+ 			record.Running = &tier
++			tierStart = deps.Now()
+ 			save()
+ 		},
+ 		Ended: func(ended gateslot.RunRecord) {
+@@ -213,6 +228,49 @@ func runCheck(ctx context.Context, deps checkDeps) (CheckRecord, bool, error) {
+ 	return finish()
+ }
+ 
++// checkMark is what the check shows on the prime's status bar: its state, a one-line text and the start of its step in flight, zero for none.
++type checkMark struct {
++	State string
++	Text  string
++	Start time.Time
++}
++
++// checkMarkOf renders record as its status bar mark, where tierStart is when the tier in flight started.
++// A running check shows its done tiers with their outcomes and wall times, then the tier in flight timed from tierStart, or `starting` timed from the check's start before any tier;
++// an ended one shows its result and every tier it ran.
++func checkMarkOf(record CheckRecord, tierStart time.Time) checkMark {
++	parts := make([]string, 0, len(record.Tiers)+1)
++	for _, tier := range record.Tiers {
++		if record.State == checkGreen {
++			parts = append(parts, fmt.Sprintf("tier%d %.0fs", tier.Tier, tier.WallSeconds))
++			continue
++		}
++		parts = append(parts, fmt.Sprintf("tier%d %s %.0fs", tier.Tier, tier.Outcome, tier.WallSeconds))
++	}
++	listed := func(head string) string {
++		if len(parts) == 0 {
++			return head
++		}
++		return head + ": " + strings.Join(parts, " · ")
++	}
++
++	switch {
++	case record.State == checkGreen:
++		return checkMark{State: checkGreen, Text: listed("adopt check green")}
++	case record.State == checkFailed && len(parts) == 0:
++		return checkMark{State: checkFailed, Text: "adopt check failed before any tier ended; lym beam status shows why"}
++	case record.State == checkFailed:
++		return checkMark{State: checkFailed, Text: listed("adopt check failed")}
++	case record.Running != nil:
++		parts = append(parts, "tier"+strconv.Itoa(*record.Running))
++		return checkMark{State: checkRunning, Text: listed("adopt check"), Start: tierStart}
++	case len(parts) == 0:
++		return checkMark{State: checkRunning, Text: "adopt check: starting", Start: record.Start}
++	default:
++		return checkMark{State: checkRunning, Text: listed("adopt check")}
++	}
++}
++
+ // tierNotice renders the notice of one ended tier: its outcome and counts on the first line, and for a failed tier one line per failed test with the first line it printed, at most maxListedFailures, then the log at logPath.
+ func tierNotice(tier CheckTier, logPath string) string {
+ 	lines := []string{fmt.Sprintf("adopt check: tier%d %s, passed %d failed %d skipped %d, %.1fs", tier.Tier, tier.Outcome, tier.Passed, tier.Failed, tier.Skipped, tier.WallSeconds)}
+@@ -239,10 +297,12 @@ func writeCheck(recordPath string, record CheckRecord) error {
+ 	return state.WriteJSON(recordPath, recordPath+".lock", record)
+ }
+ 
+-// hubCheckDeps fills checkDeps over the prime: the reconcile is the hub's, which reads an absent board-level lym directory as an error since an adopt runs only in a hub, the gate is the hub's adopt key in the prime's anchor, and the notice goes to the nearest live orch.
++// hubCheckDeps fills checkDeps over the prime: the reconcile is the hub's, which reads an absent board-level lym directory as an error since an adopt runs only in a hub, the gate is the hub's adopt key in the prime's anchor, the notice goes to the nearest live orch, and the mark goes on the prime's reed session.
++// A reed config or geometry that does not read is each mark's error.
+ func hubCheckDeps(prime *lymcwd.Location) checkDeps {
+ 	pid := os.Getpid()
+ 	ticks, _ := proc.StartTime(pid)
++	reed, reedErr := primeReed(prime)
+ 	return checkDeps{
+ 		Dir:        fabricengine.AdoptScratchDir(prime.HubPath),
+ 		Now:        time.Now,
+@@ -265,7 +325,26 @@ func hubCheckDeps(prime *lymcwd.Location) checkDeps {
+ 			}
+ 			return err
+ 		},
++		Mark: func(mark checkMark) error {
++			if reedErr != nil {
++				return reedErr
++			}
++			return reed.SetCheckMark(mark.State, mark.Text, mark.Start)
++		},
++	}
++}
++
++// primeReed returns the reed engine of the prime's session.
++func primeReed(prime *lymcwd.Location) (*reedengine.Engine, error) {
++	cfg, err := reedengine.LoadConfig(fabricengine.ConfigDirs(prime), "reed")
++	if err != nil {
++		return nil, err
++	}
++	geom, err := hubgeom.ReedGeometry(prime)
++	if err != nil {
++		return nil, err
+ 	}
++	return reedengine.New(cfg, geom, shuttleengines.EnvScrub()), nil
+ }
+ 
+ // checkCmd is the hidden `check` verb, which `lym adopt` spawns detached in the prime.
+diff --git a/internal/adoptcli/check_integration_test.go b/internal/adoptcli/check_integration_test.go
+index e21ff3eb..1ab2ce73 100644
+--- a/internal/adoptcli/check_integration_test.go
++++ b/internal/adoptcli/check_integration_test.go
+@@ -55,6 +55,7 @@ func TestHubCheckDeps_StaleStampRunsTheTunedFinalizeTiers(t *testing.T) {
+ 		return 0
+ 	}
+ 	deps.Notice = func(string) error { return nil }
++	deps.Mark = func(checkMark) error { return nil }
+ 
+ 	record, ran, err := runCheck(context.Background(), deps)
+ 	if err != nil || !ran || record.State != checkGreen {
+diff --git a/internal/adoptcli/check_test.go b/internal/adoptcli/check_test.go
+index d33553b0..c03ef5e7 100644
+--- a/internal/adoptcli/check_test.go
++++ b/internal/adoptcli/check_test.go
+@@ -28,13 +28,27 @@ type scriptedTier struct {
+ 	record gateslot.RunRecord
+ }
+ 
+-// checkFixture is a runCheck over a temp directory with a fake gate, recording the notices and the gate calls.
++// checkFixture is a runCheck over a temp directory with a fake gate, recording the notices, the status bar marks and the gate calls.
+ type checkFixture struct {
+ 	dir        string
+ 	deps       checkDeps
+ 	notices    []string
++	marks      []checkMark
+ 	gateCalls  int
+ 	reconciled int
++	clockReads int
++}
++
++// tick is the fixture's clock: its nth read, counting from zero, returns the time checkFixtureAfter(n), so every read differs.
++func (f *checkFixture) tick() time.Time {
++	now := checkFixtureAfter(f.clockReads)
++	f.clockReads++
++	return now
++}
++
++// checkFixtureAfter returns the time a fixture's clock reads at its nth read.
++func checkFixtureAfter(read int) time.Time {
++	return checkFixtureNow.Add(time.Duration(read) * time.Second)
+ }
+ 
+ // newCheckFixture returns a fixture whose gate drives tiers through the observer and returns exit.
+@@ -43,7 +57,7 @@ func newCheckFixture(t *testing.T, tiers []scriptedTier, exit int) *checkFixture
+ 	f := &checkFixture{dir: filepath.Join(t.TempDir(), "adopt")}
+ 	f.deps = checkDeps{
+ 		Dir:        f.dir,
+-		Now:        func() time.Time { return time.Date(2026, 10, 27, 12, 0, 0, 0, time.UTC) },
++		Now:        f.tick,
+ 		PID:        4242,
+ 		StartTicks: "777",
+ 		Reconcile:  func() error { f.reconciled++; return nil },
+@@ -56,10 +70,14 @@ func newCheckFixture(t *testing.T, tiers []scriptedTier, exit int) *checkFixture
+ 			return exit
+ 		},
+ 		Notice: func(line string) error { f.notices = append(f.notices, line); return nil },
++		Mark:   func(mark checkMark) error { f.marks = append(f.marks, mark); return nil },
+ 	}
+ 	return f
+ }
+ 
++// checkFixtureNow is the time of a fixture clock's first read, which the check's start takes.
++var checkFixtureNow = time.Date(2026, 10, 27, 12, 0, 0, 0, time.UTC)
++
+ func passedTier(tier, passed, skipped int) gateslot.RunRecord {
+ 	return gateslot.RunRecord{Tier: tier, Outcome: "passed", Passed: passed, Skipped: skipped, WallSec: 1.5}
+ }
+@@ -174,10 +192,11 @@ func TestRunCheck(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("a notice that fails changes nothing in the record", func(t *testing.T) {
++	t.Run("a notice or mark that fails changes nothing in the record", func(t *testing.T) {
+ 		t.Parallel()
+ 		f := newCheckFixture(t, []scriptedTier{{0, passedTier(0, 1, 0)}, {1, passedTier(1, 1, 0)}}, 0)
+ 		f.deps.Notice = func(string) error { return errors.New("no orch") }
++		f.deps.Mark = func(checkMark) error { return errors.New("no reed session") }
+ 
+ 		record, ran, err := runCheck(context.Background(), f.deps)
+ 		if err != nil || !ran || record.State != checkGreen || len(record.Tiers) != 2 {
+@@ -350,3 +369,71 @@ func TestRunCheck(t *testing.T) {
+ 		}
+ 	})
+ }
++
++// TestRunCheckMarks pins the status bar marks of a check run, in order: its start, each tier in flight and ended, and its end.
++// The clock reads once for the check's start, then once as each tier starts, so tier n starts at read n+1 and a mark timed from the check's start instead fails.
++func TestRunCheckMarks(t *testing.T) {
++	t.Parallel()
++	timed := func(tier int, outcome string, wall float64) scriptedTier {
++		return scriptedTier{tier, gateslot.RunRecord{Tier: tier, Outcome: outcome, WallSec: wall}}
++	}
++	starting := checkMark{State: checkRunning, Text: "adopt check: starting", Start: checkFixtureNow}
++
++	tests := []struct {
++		name      string
++		tiers     []scriptedTier
++		exit      int
++		reconcile error
++		want      []checkMark
++	}{
++		{
++			name:  "GreenShowsEachTierInFlightThenEveryTierWithItsTime",
++			tiers: []scriptedTier{timed(0, "passed", 40), timed(1, "passed", 104)},
++			want: []checkMark{
++				starting,
++				{State: checkRunning, Text: "adopt check: tier0", Start: checkFixtureAfter(1)},
++				{State: checkRunning, Text: "adopt check: tier0 green 40s"},
++				{State: checkRunning, Text: "adopt check: tier0 green 40s · tier1", Start: checkFixtureAfter(2)},
++				{State: checkRunning, Text: "adopt check: tier0 green 40s · tier1 green 104s"},
++				{State: checkGreen, Text: "adopt check green: tier0 40s · tier1 104s"},
++			},
++		},
++		{
++			name:  "FailedEndsWithEveryTierAndItsOutcome",
++			tiers: []scriptedTier{timed(0, "passed", 40), timed(1, "failed", 104)},
++			exit:  1,
++			want: []checkMark{
++				starting,
++				{State: checkRunning, Text: "adopt check: tier0", Start: checkFixtureAfter(1)},
++				{State: checkRunning, Text: "adopt check: tier0 green 40s"},
++				{State: checkRunning, Text: "adopt check: tier0 green 40s · tier1", Start: checkFixtureAfter(2)},
++				{State: checkRunning, Text: "adopt check: tier0 green 40s · tier1 failed 104s"},
++				{State: checkFailed, Text: "adopt check failed: tier0 green 40s · tier1 failed 104s"},
++			},
++		},
++		{
++			name:      "FailedBeforeAnyTierNamesBeamStatus",
++			reconcile: errors.New("config invalid"),
++			want: []checkMark{
++				starting,
++				{State: checkFailed, Text: "adopt check failed before any tier ended; lym beam status shows why"},
++			},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			f := newCheckFixture(t, tt.tiers, tt.exit)
++			if tt.reconcile != nil {
++				f.deps.Reconcile = func() error { return tt.reconcile }
++			}
++
++			if _, _, err := runCheck(context.Background(), f.deps); err != nil {
++				t.Fatalf("runCheck() error = %v", err)
++			}
++			if !reflect.DeepEqual(f.marks, tt.want) {
++				t.Errorf("marks = %+v; want %+v", f.marks, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/adoptcli/cli.go b/internal/adoptcli/cli.go
+index 3232e703..a70f527c 100644
+--- a/internal/adoptcli/cli.go
++++ b/internal/adoptcli/cli.go
+@@ -42,11 +42,11 @@ Steps, in order:
+      Finalize's owner check is resumed
+   7. the beam steps of the prime with root and of each adopted beam, as "lym beam start"
+      runs them: its dobby and orch; a beam whose landing holds it gets none
+-  8. the adopt check starts detached in the prime and reports each tier to the orch; it shows
+-     in lym beam status, and red only reports
++  8. the adopt check starts detached in the prime; the prime's status bar shows its
++     progress and result, the orch gets each tier, and red only reports
+ 
+ The envelope carries reconcile, mutations, partial, per slug what happened and its
+-beam_steps, prime_beam_steps, and suite (pid, log, record) or suite_warning.
++beam_steps, prime_beam_steps, and suite with message, or suite_warning.
+ A slug's error never stops the others.
+ 
+ Example:
+@@ -83,28 +83,7 @@ Example:
+ 
+ 			req.Slugs = args
+ 			result, err := adopt(deps, req)
+-			fields := map[string]any{
+-				"reconcile":      result.Reconcile,
+-				"mutations":      result.Mutations,
+-				"partial":        result.Partial,
+-				"slugs":          result.Slugs,
+-				"prime_recorded": result.PrimeRecorded,
+-			}
+-			if result.PrimeLost != "" {
+-				fields["prime_lost_to"] = result.PrimeLost
+-			}
+-			if result.PrimeBeamSteps != nil {
+-				fields["prime_beam_steps"] = result.PrimeBeamSteps
+-			}
+-			if result.PrimeBeamWarning != "" {
+-				fields["prime_beam_warning"] = result.PrimeBeamWarning
+-			}
+-			if result.Suite != nil {
+-				fields["suite"] = result.Suite
+-			}
+-			if result.SuiteWarning != "" {
+-				fields["suite_warning"] = result.SuiteWarning
+-			}
++			fields := adoptFields(result)
+ 			if err != nil {
+ 				clihelp.SetExit(ctx, output.ErrFields(out, err.Error(), fields))
+ 				return nil
+@@ -120,6 +99,37 @@ Example:
+ 	return cmd
+ }
+ 
++// adoptFields returns the fields of the adopt envelope for result.
++// The always-present fields are reconcile, mutations, partial, slugs and prime_recorded; every other field appears only when result holds its value.
++func adoptFields(result outcome) map[string]any {
++	fields := map[string]any{
++		"reconcile":      result.Reconcile,
++		"mutations":      result.Mutations,
++		"partial":        result.Partial,
++		"slugs":          result.Slugs,
++		"prime_recorded": result.PrimeRecorded,
++	}
++	if result.PrimeLost != "" {
++		fields["prime_lost_to"] = result.PrimeLost
++	}
++	if result.PrimeBeamSteps != nil {
++		fields["prime_beam_steps"] = result.PrimeBeamSteps
++	}
++	if result.PrimeBeamWarning != "" {
++		fields["prime_beam_warning"] = result.PrimeBeamWarning
++	}
++	if result.Suite != nil {
++		fields["suite"] = result.Suite
++	}
++	if result.SuiteMessage != "" {
++		fields["message"] = result.SuiteMessage
++	}
++	if result.SuiteWarning != "" {
++		fields["suite_warning"] = result.SuiteWarning
++	}
++	return fields
++}
++
+ // RunCLI is the public seam for the adopt module CLI, delegating to clihelp.Execute for output capture.
+ func RunCLI(out io.Writer, args []string) int {
+ 	return RunCLIIn("", out, args)
+diff --git a/internal/adoptcli/cli_test.go b/internal/adoptcli/cli_test.go
+new file mode 100644
+index 00000000..2b1be6da
+--- /dev/null
++++ b/internal/adoptcli/cli_test.go
+@@ -0,0 +1,51 @@
++//go:build tier0
++
++// cli_test.go pins the fields of the adopt envelope that depend on the outcome of the adopt check's start.
++
++package adoptcli
++
++import "testing"
++
++func TestAdoptFields(t *testing.T) {
++	t.Parallel()
++
++	tests := []struct {
++		name        string
++		result      outcome
++		wantMessage string
++		wantWarning string
++		wantSuite   bool
++	}{
++		{
++			name:        "StartedCheckCarriesItsMessageAndSuite",
++			result:      outcome{Suite: &suiteStart{PID: 42}, SuiteMessage: "the adopt check runs"},
++			wantMessage: "the adopt check runs",
++			wantSuite:   true,
++		},
++		{
++			name:        "FailedStartCarriesOnlyTheWarning",
++			result:      outcome{SuiteWarning: "the adopt check was not started"},
++			wantWarning: "the adopt check was not started",
++		},
++		{name: "NoCheckCarriesNone"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			fields := adoptFields(tt.result)
++
++			for key, want := range map[string]string{"message": tt.wantMessage, "suite_warning": tt.wantWarning} {
++				got, present := fields[key]
++				if want == "" && present {
++					t.Errorf("adoptFields()[%q] = %v; want it absent", key, got)
++				}
++				if want != "" && got != want {
++					t.Errorf("adoptFields()[%q] = %v; want %q", key, got, want)
++				}
++			}
++			if _, present := fields["suite"]; present != tt.wantSuite {
++				t.Errorf("adoptFields() holds suite = %v; want %v", present, tt.wantSuite)
++			}
++		})
++	}
++}
+diff --git a/internal/adoptcli/deps.go b/internal/adoptcli/deps.go
+index a808902a..4ef51601 100644
+--- a/internal/adoptcli/deps.go
++++ b/internal/adoptcli/deps.go
+@@ -14,6 +14,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/battencli"
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+@@ -148,7 +149,7 @@ func hubDepsAs(prime *lymcwd.Location, machine func() (string, error)) (adoptDep
+ 		PrimeName: prime.WorktreeName,
+ 		StartSuite: func() (suiteStart, error) {
+ 			dir := fabricengine.AdoptScratchDir(prime.HubPath)
+-			return ensureCheck(dir, checkAlive, func() (int, error) {
++			return startCheckWithTiers(prime, dir, checkAlive, func() (int, error) {
+ 				return startSuite(prime.AnchorPath(), filepath.Join(dir, checkOutName))
+ 			})
+ 		},
+@@ -229,6 +230,31 @@ func startSuite(dir, outPath string) (int, error) {
+ 	return pid, nil
+ }
+ 
++// startCheckWithTiers returns the adopt check of the scratch directory dir as ensureCheck finds or starts it, with the tiers of the prime's adopt gate key set.
++func startCheckWithTiers(prime *lymcwd.Location, dir string, alive func(CheckRecord) bool, spawn func() (int, error)) (suiteStart, error) {
++	start, err := ensureCheck(dir, alive, spawn)
++	if err != nil {
++		return suiteStart{}, err
++	}
++	start.Tiers = adoptGateTiers(prime)
++	return start, nil
++}
++
++// adoptGateTiers returns the tiers of the hub's adopt gate key as the prime's gate config reads now, or none when the config does not read or its adopt key names no tier the hub declares, which the check's own reconcile may still repair.
++func adoptGateTiers(prime *lymcwd.Location) []int {
++	cfg, err := gateslot.LoadConfig(fabricengine.ConfigDirs(prime))
++	if err != nil {
++		logger.Warn("adoptcli: the gate config did not read for the adopt check's tiers", "error", err)
++		return nil
++	}
++	tiers, err := cfg.TierList(checkGateKey)
++	if err != nil {
++		logger.Warn("adoptcli: the gate config names no adopt tiers yet", "error", err)
++		return nil
++	}
++	return tiers
++}
++
+ // checkAlive reports whether the process that wrote record is still running: its pid is alive and, when both sides can read it, the live process started when the record says.
+ // A record without start ticks, or a platform that cannot read a start time, reads alive on the pid alone; a reused pid after a reboot reads dead.
+ func checkAlive(record CheckRecord) bool {
+@@ -243,7 +269,7 @@ func checkAlive(record CheckRecord) bool {
+ }
+ 
+ // ensureCheck returns the adopt check of the scratch directory dir: the running one when check.json reads running and alive passes, else a new one started by spawn.
+-// The returned suiteStart names the check's pid and the paths of its log and record.
++// The returned suiteStart names the check's pid, the paths of its log and record, and whether it was found running.
+ func ensureCheck(dir string, alive func(CheckRecord) bool, spawn func() (int, error)) (suiteStart, error) {
+ 	start := suiteStart{Log: filepath.Join(dir, suiteLogName), Record: filepath.Join(dir, checkRecordName)}
+ 	record, found, err := ReadCheck(start.Record)
+@@ -252,6 +278,7 @@ func ensureCheck(dir string, alive func(CheckRecord) bool, spawn func() (int, er
+ 	}
+ 	if found && record.State == checkRunning && alive(record) {
+ 		start.PID = record.PID
++		start.AlreadyRunning = true
+ 		return start, nil
+ 	}
+ 	pid, err := spawn()
+diff --git a/internal/adoptcli/deps_test.go b/internal/adoptcli/deps_test.go
+index 8b936af9..5e7fbc88 100644
+--- a/internal/adoptcli/deps_test.go
++++ b/internal/adoptcli/deps_test.go
+@@ -1,6 +1,6 @@
+ //go:build tier0
+ 
+-// deps_test.go covers the hub-only pause reading that makes a pair under a slug-scope pause read live, the adopt check start's guard under go test, its alive skip and its liveness reading.
++// deps_test.go covers the hub-only pause reading that makes a pair under a slug-scope pause read live, the adopt check start's guard under go test, its alive skip and its liveness reading, and the adopt gate tiers it carries.
+ 
+ package adoptcli
+ 
+@@ -9,10 +9,13 @@ import (
+ 	"math"
+ 	"os"
+ 	"path/filepath"
++	"reflect"
+ 	"runtime"
++	"slices"
+ 	"testing"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/Knatte18/loomyard/internal/state"
+@@ -84,9 +87,11 @@ func TestEnsureCheck(t *testing.T) {
+ 		wantPID   int
+ 		wantSpawn int
+ 		wantErr   bool
++		// wantRunning says the check was found running rather than started.
++		wantRunning bool
+ 	}{
+ 		{name: "NoRecordSpawnsOnce", wantPID: 900, wantSpawn: 1},
+-		{name: "RunningAliveSpawnsNone", record: &runningRecord, alive: true, wantPID: 77},
++		{name: "RunningAliveSpawnsNone", record: &runningRecord, alive: true, wantPID: 77, wantRunning: true},
+ 		{name: "RunningDeadSpawnsOnce", record: &runningRecord, wantPID: 900, wantSpawn: 1},
+ 		{name: "GreenRecordSpawnsOnce", record: &CheckRecord{PID: 77, State: checkGreen}, alive: true, wantPID: 900, wantSpawn: 1},
+ 		{name: "FailedSpawnReturnsItsError", spawnErr: errors.New("exec failed"), wantSpawn: 1, wantErr: true},
+@@ -109,17 +114,80 @@ func TestEnsureCheck(t *testing.T) {
+ 			if (err != nil) != tt.wantErr || spawns != tt.wantSpawn {
+ 				t.Fatalf("ensureCheck() error = %v, spawns = %d; want error %v and %d spawns", err, spawns, tt.wantErr, tt.wantSpawn)
+ 			}
+-			want := suiteStart{PID: tt.wantPID, Log: filepath.Join(dir, suiteLogName), Record: filepath.Join(dir, checkRecordName)}
++			want := suiteStart{PID: tt.wantPID, Log: filepath.Join(dir, suiteLogName), Record: filepath.Join(dir, checkRecordName), AlreadyRunning: tt.wantRunning}
+ 			if tt.wantErr {
+ 				want = suiteStart{}
+ 			}
+-			if got != want {
++			if !reflect.DeepEqual(got, want) {
+ 				t.Errorf("ensureCheck() = %+v; want %+v", got, want)
+ 			}
+ 		})
+ 	}
+ }
+ 
++func TestAdoptGateTiers(t *testing.T) {
++	t.Parallel()
++
++	const declaredTiers = "slots: 2\ntiers:\n  tier0: {command: x, timeout_min: 5, counter: vstest}\n  tier1: {command: y, timeout_min: 5, counter: vstest}\n"
++	tests := []struct {
++		name string
++		gate string
++		want []int
++	}{
++		{name: "AdoptKeyReturnsItsTiers", gate: declaredTiers + "gates:\n  adopt: {tiers: [0, 1], scope: all}\n", want: []int{0, 1}},
++		{name: "AdoptKeyNamingAnUndeclaredTierReturnsNone", gate: declaredTiers + "gates:\n  adopt: {tiers: [5], scope: all}\n"},
++		{name: "ConfigThatDoesNotReadReturnsNone", gate: "slots: 0\n"},
++		{name: "AbsentConfigReturnsNone"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			prime := &lymcwd.Location{HubPath: t.TempDir(), WorktreeName: "prime"}
++			if tt.gate != "" {
++				configDir := filepath.Join(prime.AnchorPath(), "_lym", "config")
++				if err := os.MkdirAll(configDir, 0o755); err != nil {
++					t.Fatal(err)
++				}
++				if err := os.WriteFile(filepath.Join(configDir, "gate.yaml"), []byte(tt.gate), 0o644); err != nil {
++					t.Fatal(err)
++				}
++			}
++
++			if got := adoptGateTiers(prime); !slices.Equal(got, tt.want) {
++				t.Errorf("adoptGateTiers() = %v; want %v", got, tt.want)
++			}
++		})
++	}
++}
++
++func TestStartCheckWithTiers(t *testing.T) {
++	t.Parallel()
++
++	prime := &lymcwd.Location{HubPath: t.TempDir(), WorktreeName: "prime"}
++	configDir := filepath.Join(prime.AnchorPath(), "_lym", "config")
++	if err := os.MkdirAll(configDir, 0o755); err != nil {
++		t.Fatal(err)
++	}
++	gate := "slots: 2\ntiers:\n  tier0: {command: x, timeout_min: 5, counter: vstest}\n  tier1: {command: y, timeout_min: 5, counter: vstest}\ngates:\n  adopt: {tiers: [0, 1], scope: all}\n"
++	if err := os.WriteFile(filepath.Join(configDir, "gate.yaml"), []byte(gate), 0o644); err != nil {
++		t.Fatal(err)
++	}
++	dir := filepath.Join(t.TempDir(), "adopt")
++	running := CheckRecord{PID: 77, State: checkRunning, Gate: checkGateKey}
++	if err := state.WriteJSON(filepath.Join(dir, checkRecordName), filepath.Join(dir, checkRecordName+".lock"), running); err != nil {
++		t.Fatalf("write the record: %v", err)
++	}
++
++	got, err := startCheckWithTiers(prime, dir, func(CheckRecord) bool { return true }, func() (int, error) {
++		t.Error("startCheckWithTiers spawned a check over a running one")
++		return 0, nil
++	})
++
++	if err != nil || got.PID != 77 || !got.AlreadyRunning || !slices.Equal(got.Tiers, []int{0, 1}) {
++		t.Errorf("startCheckWithTiers() = %+v, %v; want the running check 77 with tiers [0 1]", got, err)
++	}
++}
++
+ func TestCheckAlive(t *testing.T) {
+ 	t.Parallel()
+ 
+diff --git a/internal/adoptcli/doc.go b/internal/adoptcli/doc.go
+index 15b33c33..681c26e5 100644
+--- a/internal/adoptcli/doc.go
++++ b/internal/adoptcli/doc.go
+@@ -74,7 +74,8 @@
+ // The check's stdout and stderr go to `check.out`, created for append and never `suite.log`, so the gate's output alone reaches `suite.log`, a losing check's envelope goes to `check.out` and a panic of the check is on disk.
+ // One call is one adoption session: adopting the prime and two beams together starts one check, and a tier the gate's green record holds green for the prime's tree is carried and runs nothing.
+ // `checkAlive` reads a pid that is alive and whose start ticks equal the record's as alive, a pid with other ticks, as after a reboot that reused it, as dead, and a record without ticks, or a platform where the start time is unreadable, as alive on the pid alone.
+-// The envelope's `suite` names the check's pid, `suite.log` and `check.json`.
++// The envelope's `suite` names the check's pid, `suite.log`, `check.json`, the tiers of the hub's `adopt` gate key as the gate config reads before the check's own reconcile, none when it does not read, and `already_running` for a check found running;
++// its `message` is one plain sentence naming the check started or already running, those tiers, and that the prime's reed status bar shows its progress and result.
+ // A red check only reports, since the owner write and the resumes have already taken effect.
+ // A spawn that fails is the envelope's `suite_warning`, naming `lym fabric reconcile` in the prime and then `lym gate test --gate adopt` there, since no reconcile of the hub's config ran and `lym gate test` runs none, and it changes no slug's outcome.
+ // Bound: between a spawn and the child's lock, `lym beam status` can show the previous record and a second `lym adopt` can spawn a check that loses the lock and exits, so either envelope's pid can name the check that lost, both naming the same log and record.
+@@ -102,7 +103,9 @@
+ // a failed tier's notice adds one line per failed test, `<package> <test>: <first line>`, at most `maxListedFailures` and then `and <n> more`, and a last line naming `suite.log`.
+ // A green gate ends the record green and posts the tiers and `suite.log`; any other exit ends it failed, with the first failed tier, or with the gate's exit code as the error when no tier ended, and posts the failure, `suite.log` and the rerun `lym gate test --gate adopt` in the prime.
+ // A tier that refuses after it started returns without ending, so the end clears the tier in flight.
+-// A post that fails is logged and changes nothing.
++// At its start, as each tier starts and ends, and at its end it also sets the check mark on the prime's reed session through `reedengine.Engine.SetCheckMark`, built by `checkMarkOf` from the record: `adopt check: starting`, the done tiers with their outcomes and wall seconds then the tier in flight timed from its start, and at the end `adopt check green` or `adopt check failed` with every tier it ran, or a failure before any tier ended naming `lym beam status`.
++// A post or mark that fails is logged and changes nothing.
++// Bound: a check killed before its end leaves its last running mark, its seconds still growing, until the next check sets one or the prime's session ends.
+ //
+ // Bound: the gate slots do not serialize two checks, the lock does, so one check at a time writes the record, the log and the posts.
+ //
+@@ -114,7 +117,7 @@
+ //
+ // # The envelope
+ //
+-// It carries `reconcile`, `mutations` and `partial`, `prime_beam_steps` and `prime_beam_warning` for the prime's beam steps, `suite` or `suite_warning` for the adopt check, and per slug what happened: a stop with its branches, pair added, owner recorded, pause lifted or standing, run resumed, none or owned elsewhere by `owned_by`, the `beam_steps` run, the error, and a warning when this machine does not own the slug's parent, since that run halts at Finalize here; the warning names `lym adopt <project of the parent>`, `lym adopt root` for the prime.
++// It carries `reconcile`, `mutations` and `partial`, `prime_beam_steps` and `prime_beam_warning` for the prime's beam steps, `suite` and `message`, or `suite_warning`, for the adopt check, and per slug what happened: a stop with its branches, pair added, owner recorded, pause lifted or standing, run resumed, none or owned elsewhere by `owned_by`, the `beam_steps` run, the error, and a warning when this machine does not own the slug's parent, since that run halts at Finalize here; the warning names `lym adopt <project of the parent>`, `lym adopt root` for the prime.
+ //
+ // # The bounds
+ //
+diff --git a/internal/reedengine/bar.go b/internal/reedengine/bar.go
+index d394223a..08594e8a 100644
+--- a/internal/reedengine/bar.go
++++ b/internal/reedengine/bar.go
+@@ -5,7 +5,8 @@
+ // Line 1 follows window index order: the overview, the agents in start order, then the shell button.
+ // A window carrying the window user option @lym_hidden still gets no button.
+ // Line 2 lists the session carrying the session user option @lym_prime_session first, then every other session in the #{S:} loop's own order.
+-// Every option read here is display only but one: no Go decision reads @strand_color, @lym_unseen or @lym_prime_session, while @lym_follow, which the follow button shows, is the follow state that followingLocked reads.
++// Line 2 ends with the current session's check mark, the session user options @lym_check, @lym_check_state and @lym_check_start, before the clock.
++// Every option read here is display only but one: no Go decision reads @strand_color, @lym_unseen, @lym_prime_session or a check mark's options, while @lym_follow, which the follow button shows, is the follow state that followingLocked reads.
+ 
+ package reedengine
+ 
+@@ -56,6 +57,19 @@ const (
+ 	// Like the bar's other options it is display only, and no Go decision reads it.
+ 	primeSessionOption = "@lym_prime_session"
+ 
++	// checkMarkOption, checkMarkStateOption and checkMarkStartOption are the session user options of a check mark: its text, its state (running, green or failed) and the epoch seconds the step in flight started.
++	// Like the bar's other options they are display only, and no Go decision reads them.
++	checkMarkOption      = "@lym_check"
++	checkMarkStateOption = "@lym_check_state"
++	checkMarkStartOption = "@lym_check_start"
++
++	// checkMarkStyleFormat expands to a check mark's style by its state: black on green for green, white on red for failed, and yellow on dark grey otherwise.
++	checkMarkStyleFormat = "#{?#{==:#{" + checkMarkStateOption + "},green},bg=green fg=black bold,#{?#{==:#{" + checkMarkStateOption + "},failed},bg=red fg=white bold,bg=colour236 fg=yellow}}"
++
++	// checkMarkFormat expands to the current session's check mark, its text then, while a start is set, the seconds since it, and to nothing when no mark is set.
++	// The seconds are the status refresh's own strftime epoch (%s) minus the start, computed by tmux at each refresh.
++	checkMarkFormat = "#{?#{" + checkMarkOption + "},#[" + checkMarkStyleFormat + "] #{" + checkMarkOption + "}#{?#{" + checkMarkStartOption + "}, #{e|-:%s,#{" + checkMarkStartOption + "}}s,} #[default] ,}"
++
+ 	// sessionButtonFormat is one session button, a session range.
+ 	// The client's session shows its full name lit, every other session its name cut to 12 characters.
+ 	sessionButtonFormat = "#{?#{==:#{session_name},#{client_session}},#[range=session|#{session_id} list=focus bg=yellow fg=black bold] #{session_name} #[norange list=on default] ,#[range=session|#{session_id} " + unlitButtonStyle + "] #{=12:session_name} #[norange list=on default] }"
+@@ -63,12 +77,12 @@ const (
+ 	// followButtonFormat is the follow button, a user range labelled follow, lit green while the current session's @lym_follow is not off and unlit while it is.
+ 	followButtonFormat = "#[range=user|follow #{?#{!=:#{@lym_follow},off},bg=green fg=black bold," + unlitButtonStyle + "}] follow #[norange list=on default] "
+ 
+-	// statusFormatSessions is status-format[1]: the prime's session button, then one button per other session, then the follow button, then the time right-aligned.
++	// statusFormatSessions is status-format[1]: the prime's session button, then one button per other session, then the follow button, then, right-aligned, the current session's check mark and the time.
+ 	// The first loop draws only a session matching both reedSessionFilter and the prime mark, and draws nothing when no session is marked.
+ 	// The second draws every other session matching reedSessionFilter, in the #{S:} loop's own order: session name on tmux 3.4 and session id on newer tmux.
+ 	// Each loop takes one format, the only shape tmux 3.4 accepts.
+ 	statusFormatSessions = listPrologueFormat +
+ 		"#{S:#{?#{&&:" + reedSessionFilter + ",#{==:#{" + primeSessionOption + "},1}}," + sessionButtonFormat + ",}}" +
+ 		"#{S:#{?#{&&:" + reedSessionFilter + ",#{!=:#{" + primeSessionOption + "},1}}," + sessionButtonFormat + ",}}" +
+-		followButtonFormat + "#[nolist align=right]%H:%M "
++		followButtonFormat + "#[nolist align=right]" + checkMarkFormat + "%H:%M "
+ )
+diff --git a/internal/reedengine/bar_integration_test.go b/internal/reedengine/bar_integration_test.go
+index 8ab78bea..1cbd00ae 100644
+--- a/internal/reedengine/bar_integration_test.go
++++ b/internal/reedengine/bar_integration_test.go
+@@ -9,6 +9,7 @@ package reedengine
+ 
+ import (
+ 	"regexp"
++	"strconv"
+ 	"strings"
+ 	"testing"
+ 	"time"
+@@ -287,3 +288,54 @@ func TestBar_LineTwoListsSessionsPrimeFirst(t *testing.T) {
+ 		}
+ 	}
+ }
++
++// TestBar_LineTwoShowsTheCheckMarkBeforeTheClock pins the check mark on line 2: absent while unset, its text and growing seconds styled by its running state, the green style without seconds once ended, and gone once cleared.
++func TestBar_LineTwoShowsTheCheckMarkBeforeTheClock(t *testing.T) {
++	t.Parallel()
++	f := newBarFixture(t)
++
++	if line := f.expand(t, "#{T:status-format[1]}"); strings.Contains(line, "adopt check") {
++		t.Fatalf("line 2 with no mark = %q, want no check mark", line)
++	}
++
++	if err := f.e.SetCheckMark("running", "adopt check: tier0 green 40s · tier1", time.Now().Add(-90*time.Second)); err != nil {
++		t.Fatalf("SetCheckMark(running): %v", err)
++	}
++	line := f.expand(t, "#{T:status-format[1]}")
++	running := regexp.MustCompile(`bg=colour236 fg=yellow\] adopt check: tier0 green 40s · tier1 (\d+)s `)
++	match := running.FindStringSubmatch(line)
++	if match == nil {
++		t.Fatalf("line 2 running = %q, want the yellow mark with its seconds", line)
++	}
++	if seconds, err := strconv.Atoi(match[1]); err != nil || seconds < 90 || seconds > 150 {
++		t.Errorf("line 2 running seconds = %s, want the 90 seconds since the start, give or take the test's own time", match[1])
++	}
++	if strings.Index(line, "adopt check") < strings.Index(line, "nolist align=right") {
++		t.Errorf("line 2 running = %q, want the mark right-aligned after the follow button", line)
++	}
++	clock := regexp.MustCompile(`\d\d:\d\d`).FindAllStringIndex(line, -1)
++	if len(clock) == 0 || strings.Index(line, "adopt check") > clock[len(clock)-1][0] {
++		t.Errorf("line 2 running = %q, want the mark before the clock", line)
++	}
++
++	if err := f.e.SetCheckMark("green", "adopt check green: tier0 40s", time.Time{}); err != nil {
++		t.Fatalf("SetCheckMark(green): %v", err)
++	}
++	if line := f.expand(t, "#{T:status-format[1]}"); !strings.Contains(line, "bg=green fg=black bold] adopt check green: tier0 40s #[default]") {
++		t.Errorf("line 2 green = %q, want the green mark with no seconds", line)
++	}
++
++	if err := f.e.SetCheckMark("failed", "adopt check failed: tier0 failed 40s", time.Time{}); err != nil {
++		t.Fatalf("SetCheckMark(failed): %v", err)
++	}
++	if line := f.expand(t, "#{T:status-format[1]}"); !strings.Contains(line, "bg=red fg=white bold] adopt check failed: tier0 failed 40s ") {
++		t.Errorf("line 2 failed = %q, want the red mark", line)
++	}
++
++	if err := f.e.SetCheckMark("", "", time.Time{}); err != nil {
++		t.Fatalf("SetCheckMark(clear): %v", err)
++	}
++	if line := f.expand(t, "#{T:status-format[1]}"); strings.Contains(line, "adopt check") {
++		t.Errorf("line 2 cleared = %q, want no check mark", line)
++	}
++}
+diff --git a/internal/reedengine/checkmark.go b/internal/reedengine/checkmark.go
+new file mode 100644
+index 00000000..a009667b
+--- /dev/null
++++ b/internal/reedengine/checkmark.go
+@@ -0,0 +1,45 @@
++// checkmark.go sets the session check mark that line 2 of the status bar shows: a check's text, state and the start of its step in flight, as session user options.
++
++package reedengine
++
++import (
++	"fmt"
++	"strconv"
++	"time"
++)
++
++// SetCheckMark sets this session's check mark to text in state, its step in flight started at start, or clears the mark when text is empty.
++// A zero start clears the start alone, so the bar shows no seconds.
++// The mark is display only: nothing is persisted and it dies with the session.
++// A failure, a session that is not up among them, is returned for the caller to log.
++func (e *Engine) SetCheckMark(state, text string, start time.Time) error {
++	return e.withOpLock(func() error {
++		if err := e.requireSessionLocked(); err != nil {
++			return err
++		}
++		target := exactSessionWindowTarget(e.SessionName())
++
++		if text == "" {
++			for _, option := range []string{checkMarkOption, checkMarkStateOption, checkMarkStartOption} {
++				if err := e.tmux.run("set-option", "-u", "-t", target, option); err != nil {
++					return fmt.Errorf("clear check mark: %w", err)
++				}
++			}
++			return nil
++		}
++		argvs := [][]string{
++			{"set-option", "-t", target, checkMarkOption, text},
++			{"set-option", "-t", target, checkMarkStateOption, state},
++			{"set-option", "-u", "-t", target, checkMarkStartOption},
++		}
++		if !start.IsZero() {
++			argvs[2] = []string{"set-option", "-t", target, checkMarkStartOption, strconv.FormatInt(start.Unix(), 10)}
++		}
++		for _, argv := range argvs {
++			if err := e.tmux.run(argv...); err != nil {
++				return fmt.Errorf("set check mark: %w", err)
++			}
++		}
++		return nil
++	})
++}
+diff --git a/internal/reedengine/checkmark_test.go b/internal/reedengine/checkmark_test.go
+new file mode 100644
+index 00000000..c533f67d
+--- /dev/null
++++ b/internal/reedengine/checkmark_test.go
+@@ -0,0 +1,75 @@
++//go:build tier0
++
++// checkmark_test.go pins the tmux argument lists SetCheckMark issues on the engine's session.
++
++package reedengine
++
++import (
++	"reflect"
++	"testing"
++	"time"
++)
++
++// TestSetCheckMark pins the exact set-option calls of a mark with a start, a mark without one, and a clear.
++func TestSetCheckMark(t *testing.T) {
++	t.Parallel()
++
++	tests := []struct {
++		name  string
++		state string
++		text  string
++		start time.Time
++		want  func(target string) [][]string
++	}{
++		{
++			name:  "a mark with a start sets the text, the state and the start in epoch seconds",
++			state: "running",
++			text:  "adopt check: tier1",
++			start: time.Unix(1787000000, 0),
++			want: func(target string) [][]string {
++				return [][]string{
++					{"set-option", "-t", target, "@lym_check", "adopt check: tier1"},
++					{"set-option", "-t", target, "@lym_check_state", "running"},
++					{"set-option", "-t", target, "@lym_check_start", "1787000000"},
++				}
++			},
++		},
++		{
++			name:  "a mark without a start unsets the start",
++			state: "green",
++			text:  "adopt check green: tier0 40s",
++			want: func(target string) [][]string {
++				return [][]string{
++					{"set-option", "-t", target, "@lym_check", "adopt check green: tier0 40s"},
++					{"set-option", "-t", target, "@lym_check_state", "green"},
++					{"set-option", "-u", "-t", target, "@lym_check_start"},
++				}
++			},
++		},
++		{
++			name: "an empty text unsets all three options",
++			want: func(target string) [][]string {
++				return [][]string{
++					{"set-option", "-u", "-t", target, "@lym_check"},
++					{"set-option", "-u", "-t", target, "@lym_check_state"},
++					{"set-option", "-u", "-t", target, "@lym_check_start"},
++				}
++			},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			e := newTestEngine(t)
++			fake := installFakeTmux(t, e)
++
++			if err := e.SetCheckMark(tt.state, tt.text, tt.start); err != nil {
++				t.Fatalf("SetCheckMark: %v", err)
++			}
++			want := tt.want(exactSessionWindowTarget(e.SessionName()))
++			if got := fake.ArgvFor("set-option"); !reflect.DeepEqual(got, want) {
++				t.Errorf("set-option calls = %v; want %v", got, want)
++			}
++		})
++	}
++}
+diff --git a/internal/reedengine/doc.go b/internal/reedengine/doc.go
+index 03ead782..710400c2 100644
+--- a/internal/reedengine/doc.go
++++ b/internal/reedengine/doc.go
+@@ -54,6 +54,11 @@
+ // and no Go decision reads it (PATTERN-wait-mark-display-only).
+ // The options are set only through SetWaitMark, by shuttleengine and the landing wait-mark callback, which marks the verify and the parent lock wait with the label `parent lock <branch>`.
+ //
++// Engine.SetCheckMark marks the session with a check's progress: it sets the session user options @lym_check (the text), @lym_check_state (running, green or failed) and @lym_check_start (epoch seconds the step in flight started, unset for none), or unsets all three on an empty text.
++// Like the wait mark it is display only and dies with the session;
++// line 2 of the status bar renders the current session's mark right-aligned before the clock, styled by its state, with tmux computing the seconds since the start at each refresh.
++// The adopt check sets it on the prime's session.
++//
+ // Engine.CapturePaneStyled returns a pane's screen with its SGR attributes beside the plain CapturePane, for a caller that reads cell styles; reed interprets none of it.
+ //
+ // Segment colors are read from reed.yaml's segment_colors block, resolved only through Engine.segmentColor, and refused only at boot.
