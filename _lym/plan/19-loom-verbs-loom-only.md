@@ -1,9 +1,9 @@
 # Card 19 — loom-verbs-loom-only
 
 **Create:**
-- `plan:internal/loomcli#refuseUnservedRecipe` -> `func refuseUnservedRecipe(recipe string) error`
-- `plan:internal/loomcli#refuseVerbOffRecipe` -> `func refuseVerbOffRecipe(verb, recipe string) error`
-- `plan:internal/loomcli#TestArmAt_RefusesOffLoomRecipes` -> `func TestArmAt_RefusesOffLoomRecipes(t *testing.T)`
+- `internal/loomcli#refuseUnservedRecipe`
+- `internal/loomcli#refuseVerbOffRecipe`
+- `internal/loomcli#TestArmAt_RefusesOffLoomRecipes`
 
 **Edit:**
 - `internal/loomcli#loomCLI`
