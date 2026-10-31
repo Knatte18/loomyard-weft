@@ -505,26 +505,6 @@
       "revised": "2026-10-31T15:05:43Z"
     },
     {
-      "id": 920,
-      "handle": "T6",
-      "slug": "commit-signature-credit",
-      "title": "Landing commits drop Co-Authored-By and Lym-Task, and carry an optional credit listing the engines used",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "landing"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Replace the per-engine Co-Authored-By line and the Lym-Task line with one optional credit block that lists the LLM services the task used.",
-      "body": "## Seen (operator, 2026-10-30)\n\nA landing commit ends with `Co-Authored-By: Claude \u003cnoreply@anthropic.com\u003e`, from `engine_trailers.claude` in the landing config (`internal/landingshed/template.yaml`), and a Codex run would add `Co-Authored-By: Codex` the same way.\nThat makes each engine a co-author of the commit, which the operator does not want.\nThe commit's last line is `Lym-Task: \u003cslug\u003e`, added by `taskTrailer` in `internal/landingshed/finalize.go`; the operator sees no reason for it.\n\n## Design (operator, 2026-10-30 and 2026-10-31)\n\n- No engine is credited as a co-author: no `Co-Authored-By` line for Claude, Codex or any other engine.\n- `Lym-Task: \u003cslug\u003e` is removed.\n  A landing commit and its pull request carry no trace of LoomYard or of its use, bar the credit below.\n- The commit ends with a credit block, written as plain lines, never as git trailers, by default:\n\n  ```\n  Created using\n   - LoomYard https://github.com/Knatte18/loomyard\n   - Claude \u003cnoreply@anthropic.com\u003e\n   - Codex \u003ccodex@openai.com\u003e\n  ```\n\n- Each line is a config text of its own in the landing config: the heading, the LoomYard line, and one line per engine.\n- The LoomYard line is always in the block.\n- An engine's line appears only when that engine ran a session in the task, detected automatically as `engine_trailers` decides today; an engine that ran nothing in the task is not listed.\n- The same block serves the pull request's body, so a commit and its pull request carry one signature.\n",
-      "status": "done",
-      "created": "2026-10-30T14:11:42Z",
-      "revised": "2026-10-31T14:21:07Z"
-    },
-    {
       "id": 922,
       "handle": "F10",
       "slug": "machine-switch",
@@ -625,9 +605,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "commit-signature-credit"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "Pawl joins the loom contract; a project record written at beam create and changed only through decision add",
       "body": "## Seen (operator, 2026-10-31)\n\nPawl takes one board entry, a project, and ends with its beam merged into the parent, as a loom recipe takes a task and lands it.\nIt has no decision record: its Code-Review perch compares against a snapshot of the project's board entry, and `lym loom decision add` cannot change a beam's scope.\n\n## Design (operator, 2026-10-31)\n\nPawl becomes a loom recipe under the contract `run-verbs-shared` builds, with the members' runs in the writer's place.\nIts Code-Review rounds are zero: pawl has no review round of its own (the note `parent-merge-task` replaces the perch).\n\nPawl gets a decision record that holds only what binds the whole project: its goal, its bounds and the constraints every member follows.\nIt is no log of what landed; git and the board hold that, and a member landing never touches it.\n- `lym beam create` writes it mechanically: the project entry's body verbatim under `## Goal`, every other section empty.\n- After that only a scope change touches it, through `lym loom decision add \u003cbeam-slug\u003e`, which the beam's own orch runs.\n- `decision add` on a beam tells the live agents of every member run under it that the project record holds a new decision.\n- Each member's Discussion and writer read the project record as constraints, and the beam's Describe reads it when the beam lands.\n\nlym enforces the route:\n- Once a project has a record, `lym board upsert` refuses a change to its body and names `lym loom decision add \u003cbeam-slug\u003e`, as the board already refuses scope edits on a run-held task.\n- The orch role lym ships says that a beam's scope change goes through `decision add` on the beam.\n",
@@ -691,7 +669,6 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "commit-signature-credit",
         "pawl-loom-recipe",
         "interactive-recipe"
       ],
