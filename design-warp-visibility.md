@@ -25,6 +25,8 @@ Lym renders its own instruction files into each worktree from one database in Bo
   Fabric knows nothing of heddle: it declares a general seam for "warp took in remote commits, and these paths changed", which heddle implements and the lym root pre-run installs, the way `InstallBoardReplay` and `InstallPushNotifier` are installed today; a sync running detached reaches it too, since that process is lym with the same pre-run.
 - The database is written only through `lym heddle` verbs, under the write lock of `internal/lock` as the board's store is; never by hand.
 - Each worktree lym makes gets the rendered files seeded into its warp, ignored through `.git/info/exclude`, never `.gitignore`, so warp alone carries no trace of LoomYard or of the engines used.
+  Fabric already seeds `.git/info/exclude`, anchored and idempotent, with an unseed beside it, but only for the names it makes junctions of (`junctionNames`, `seedGitExclude`).
+  The excludes become a list of their own in fabric's config, separate from the junction list: fabric seeds every path on it when it creates a warp and weft, through the same seeding, and heddle's target files are put on that list in config, so fabric names no heddle file (operator, 2026-10-31).
 - An entry holds only what is specific to using LoomYard on the repository: its text goes into every agent that runs, so anything that fits PATTERN, a stencil, a skill or a hook goes there instead.
 
 - A worktree's file is rendered again only when something in that worktree changed that makes re-rendering that very file meaningful, such as a sync that took in a new `AGENTS.md`; a change to `heddle.json` is not pushed into live worktrees, so an agent's rules do not shift mid-run (operator, 2026-10-31).
