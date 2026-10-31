@@ -709,6 +709,24 @@
       "body": "## Seen (operator, 2026-10-31)\n\nThe hub's Bolt checkout is the directory `_board`, but it holds far more than the board: `board.json`, its README and design files, the hub's `_lym` config and orch rules, and soon heddle's database (note `warp-visibility`).\nThe name says board where the directory is Bolt.\n\nThe name is also spelled out in too many places (operator, 2026-10-31).\nThe path itself comes from one constant, `fabricengine.BoardDirName`, but:\n- `lymcwd` declares its own copy of the constant;\n- user-facing messages in `configcli` and `fabricengine` spell `_board` in their text;\n- many comments and test files spell it, the tests in place of the constant;\n- stencils (landing, burler, drift), the `ly:board` skill and docs spell `_board/...` paths to agents and readers.\n\n## Idea\n\n- Two names for two things (operator, 2026-10-31): `fabricengine.BoltDirName` says where Bolt is checked out, and `fabricengine.BoardDirName` says where the board is.\n  Today the board sits at Bolt's root, so `BoardDirName` is set from `BoltDirName`; what lives in Bolt beside the board, such as heddle's database, takes its place from `BoltDirName`, never from `BoardDirName`.\n- The directory name lives in that one constant only: `lymcwd` and every message and test take it from there, and a comment names \"the Bolt checkout\" rather than the path.\n- Stencils and skills name the path through what lym already resolves for them, or as \"the Bolt checkout\", not as a literal.\n- Then rename the directory to `_bolt`, the name of the repository it checks out.\n- Existing hubs on Neve and OSL-1046 have `_board` on disk, so the rename needs a rename program as `tapestry-rename` had, run once per hub.\n- It touches many packages, so it runs alone, with no other run in flight.\n- `runproc.HubOwner`, also spelled `_board`, is an owner name, not the directory; whether it follows is to be decided.\n",
       "created": "2026-10-31T16:11:22Z",
       "revised": "2026-10-31T16:17:01Z"
+    },
+    {
+      "id": 935,
+      "handle": "E12",
+      "slug": "comment-cleanup",
+      "title": "Comment cleanup: parallel agents fix stale comments across the repository",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics",
+      "body": "## Seen (operator and hub orch, 2026-10-31)\n\nComments in the Go source go stale as the code moves on.\nTwo found today: `internal/fabricengine/weftwiring.go` still speaks of a future `_lym/raddle/` squash-merge-back, though raddle will never be built; and many comments spell the `_board` path instead of naming its constant (note `bolt-dir-rename`).\nThere are surely more, in every package, against `scribe:prose`'s rule never to pin a perishable specific.\n\n## Idea\n\nA comment-cleanup campaign over the whole repository:\n- An orchestrating agent splits the work by package and hands each package to a worker agent, many in parallel.\n- A worker reads its package's code and comments and fixes each comment that no longer matches the code, names something gone or planned and dropped, or pins a perishable specific: a count, a list of current callers, a path or name spelled where a constant or identifier should be named.\n- Comments only: a worker changes no code.\n- Haiku 5.5 is a candidate worker model: fast and cheap while its context stays under about 100k, which a single package's read fits (operator, 2026-10-31).\n\nRelated: note `hardener` is another autonomous campaign run by an orchestrating agent, and note `loom-beam-darns` runs a large task's pieces as darn runs in a beam.\n\n## Open\n\n- How the campaign runs under lym: as darn runs per package inside a beam, or as one run whose agent spawns the workers.\n- How a worker's result is checked before it lands, and by which model.\n- Whether doc.go files, stencils and docs are in scope, or Go comments only.\n",
+      "created": "2026-10-31T16:29:05Z",
+      "revised": "2026-10-31T16:29:05Z"
     }
   ],
   "prime_owner": "neve",
