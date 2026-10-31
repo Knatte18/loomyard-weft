@@ -654,6 +654,26 @@
       "body": "## Seen (operator and hub orch, 2026-10-30)\n\nAt 15:22 a push of the board's `main` was rejected and creel mail #75 from `ly:FABRIC` told the orch that \"origin/main holds commits this branch lacks\", with the way forward `git reset --keep origin/main` or `git merge origin/main`.\nOnly this hub writes to the board's remote, so origin could hold nothing the local branch lacked.\nOrigin's reflog shows the rejected commit `3b6ed10c` arriving by a successful push at 15:23:07 and the next commit `54901f76` at 15:23:39, and a fetch right after the mail found the local branch only ahead of origin.\nThe rejection was thus between two pushes from this hub that overlapped, and no side had diverged.\nThe advice in the mail would have dropped a local commit (`reset --keep`) or merged a history that did not exist.\n\n## Design (operator, 2026-10-30)\n\n- A push rejected as not a fast-forward is retried after a fetch: when the fetch shows origin holding nothing the local branch lacks, the push goes through, and no mail is sent.\n- A rejection is called a divergence, and its mail sent, only when the fetch shows origin holding commits the local branch lacks.\n- Find out which two processes of the hub pushed the board at the same time, and whether the board's commit and push should hold one lock, so two pushes never overlap.\n",
       "created": "2026-10-30T14:26:48Z",
       "revised": "2026-10-30T14:26:48Z"
+    },
+    {
+      "id": 922,
+      "handle": "F10",
+      "slug": "machine-switch",
+      "title": "One verb to take work over on another machine, leaving every run in a known state",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "fabric",
+        "dobby",
+        "batten"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Moving to another machine is many hand steps, and afterwards run states are unclear",
+      "body": "## Seen (operator, 2026-10-31)\n\nMoving work from one machine to another is a string of hand steps, and afterwards the operator cannot tell what state the runs are in.\nOn 2026-10-31 the operator moved from OSL-1046 to Neve: `lym fabric pull`, `lym s`, a `lym adopt` whose tier0 check mailed the orch, and more by hand.\nTask `dobby-land-notice-needs-flag` had started on OSL-1046 on 2026-10-30 and stood at `running · Code-Bouncer`, unlanded.\nAfter the move, dobby on Neve reported its driver strand dead, then a fresh Go driver took it on, and neither the operator nor the orch could say at once whether the run was finished, should run or should not.\n\n## Idea\n\nOne verb takes a machine over and leaves it in a known state, in place of the hand steps.\n- It pulls warp and weft, adopts the runs and beams the operator names, and starts the dobby and orch, each step idempotent.\n- It starts no run by itself: every adopted run stays held until the operator lets it go on, so nothing runs that the operator does not expect.\n- It prints one line per run: landed, running here, held for a go-ahead, or owned by another machine, with the row it stands at.\n\n## Open\n\n- Which steps the move took on 2026-10-31 in full; the operator's account is the source.\n- Whether the old machine releases its runs first, by a verb of its own, before the new one adopts them.\n",
+      "created": "2026-10-31T11:40:10Z",
+      "revised": "2026-10-31T11:40:10Z"
     }
   ],
   "prime_owner": "neve",
