@@ -1,6 +1,6 @@
 # The orch resume pointer arrives twice after a compact cycle
 
-`resume-pointer-twice` · Task · bug, orch · running · Drift-Baseline
+`resume-pointer-twice` · Task · bug, orch · running · Darn-Write
 
 ## Seen
 
