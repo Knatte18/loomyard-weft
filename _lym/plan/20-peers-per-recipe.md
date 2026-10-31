@@ -1,7 +1,7 @@
 # Card 20 — peers-per-recipe
 
 **Create:**
-- `plan:internal/loomcli#peerRecipe` -> `func peerRecipe(peer *lymcwd.Location, task boardengine.Task) string`
+- `internal/loomcli#peerRecipe`
 
 **Edit:**
 - `internal/loomcli#peersDeps`

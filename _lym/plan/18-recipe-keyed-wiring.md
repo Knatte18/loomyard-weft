@@ -1,7 +1,7 @@
 # Card 18 — recipe-keyed-wiring
 
 **Create:**
-- `plan:internal/loomcli#TestRecipeKeyedWiring` -> `func TestRecipeKeyedWiring(t *testing.T)`
+- `internal/loomcli#TestRecipeKeyedWiring`
 
 **Edit:**
 - `internal/loomcli#loomCLI.verifySource`

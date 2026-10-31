@@ -1,6 +1,6 @@
 {
   "runGuid": "70b74597f60114cf7e710db8c48b4b9f",
-  "planFingerprint": "72bac573dcb404945e2deaa0982752a034f654031d9e2ac1977e4cca6c9fd522",
+  "planFingerprint": "8e4391aaa2521d1efd7cd6fb0cad642552f642c81a998169cc710698d6a494ca",
   "planFileHashes": {
     "00-overview.md": "fe43c1c7a63ffd9eb9b9d473e77eeac8b2798f5782d4f2375428c2f413791564",
     "01-discussion-fence-rule.md": "34c82d7c1ec45c6c95d38ea3e6f7762952db65309cbabec21c6e360714a02cfd",
@@ -20,9 +20,9 @@
     "15-darn-write-scope-guards.md": "799473f9324a6f60f0eb55ad03fc7c3ce560df049786bd5de1a5e643dfa10647",
     "16-decision-add-by-rows.md": "f773d1694288d8d3ea82815cff64a13311e066ea3c2a651a02421503e7664d8c",
     "17-one-describe.md": "393cb686bb969f8bcf5a468812c7b4e2a7df4ff91b37c4565478abecd71a2772",
-    "18-recipe-keyed-wiring.md": "d71545383381590c1473e962761dcc7f7ef401b2f7b79a56dfa56916b0580f5d",
-    "19-loom-verbs-loom-only.md": "386d5025dcf6fb8b78e765642d8256ba7decd82113af7cbf80c0d18336bac567",
-    "20-peers-per-recipe.md": "b1d42393227e5314a16615739388f6ba2e935f760b455e219f28f4745cc0bcaa"
+    "18-recipe-keyed-wiring.md": "7ab3353c6e4031e162228218655a0bc55603b97072f001866707af6451b4aa56",
+    "19-loom-verbs-loom-only.md": "8527f248b32e4a1f6a2fdadd180a80505b97a6c9ea7ee56ac999d7df7a49b2d1",
+    "20-peers-per-recipe.md": "f4279af827370e5283260b008d23a48229880be5a615e1ade98db92dc78c4f50"
   },
   "planOverviewFrameHash": "9062e9be39efcfd856849e8c4e596e6c93a780b9903894fd7ed59b1379a46098",
   "partition": [
@@ -773,7 +773,7 @@
       }
     }
   ],
-  "currentBatch": 18,
+  "currentBatch": 0,
   "masterStrand": "fcb1d2c3aa9b807f159196347a0467d8",
   "masterSessionId": "455fcd5a-9d78-42d3-90cf-321460494edd",
   "masterEngine": "claude",
@@ -1020,17 +1020,39 @@
         "20-peers-per-recipe"
       ],
       "cardHashes": {
-        "18-recipe-keyed-wiring": "d71545383381590c1473e962761dcc7f7ef401b2f7b79a56dfa56916b0580f5d",
-        "19-loom-verbs-loom-only": "386d5025dcf6fb8b78e765642d8256ba7decd82113af7cbf80c0d18336bac567",
-        "20-peers-per-recipe": "b1d42393227e5314a16615739388f6ba2e935f760b455e219f28f4745cc0bcaa"
+        "18-recipe-keyed-wiring": "7ab3353c6e4031e162228218655a0bc55603b97072f001866707af6451b4aa56",
+        "19-loom-verbs-loom-only": "8527f248b32e4a1f6a2fdadd180a80505b97a6c9ea7ee56ac999d7df7a49b2d1",
+        "20-peers-per-recipe": "f4279af827370e5283260b008d23a48229880be5a615e1ade98db92dc78c4f50"
       },
       "startSha": "b469425a89cda056e8f19287f54854262a3bd9fc",
       "kind": "fork",
       "spawnedAt": "2026-10-31T17:52:47Z",
       "sessionId": "455fcd5a-9d78-42d3-90cf-321460494edd",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "18-recipe-keyed-wiring",
+        "status": "done",
+        "head_sha": "757f1200078bd6dd0bcf57cb451ce5cdb51fc482",
+        "deviations": [
+          "internal/loomcli/arbiterprompt.go",
+          "internal/loomcli/arm.go",
+          "internal/loomcli/peers.go",
+          "internal/loomcli/peers_test.go",
+          "internal/loomcli/review.go",
+          "internal/loomcli/wiring_test.go"
+        ]
+      },
+      "cardShas": [
+        "757f1200078bd6dd0bcf57cb451ce5cdb51fc482"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-ae66305d1e5ccbaa4.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-ae66305d1e5ccbaa4.jsonl"
+      ]
     },
     "5": {
       "slug": "shed-keys-in-shed-only",
@@ -1203,6 +1225,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-a436f985ebed46236.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-a581498e851089b62.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-a93a508821c471fc7.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-a6b61825cecb443d9.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-a6b61825cecb443d9.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-ae66305d1e5ccbaa4.jsonl"
   ]
 }
