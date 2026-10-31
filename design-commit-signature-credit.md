@@ -2,8 +2,6 @@
 
 `commit-signature-credit` · Task · enhancement, landing · running · Darn-Write
 
-Depends on: [`run-verbs-shared`](design-run-verbs-shared.md)
-
 ## Seen (operator, 2026-10-30)
 
 A landing commit ends with `Co-Authored-By: Claude <noreply@anthropic.com>`, from `engine_trailers.claude` in the landing config (`internal/landingshed/template.yaml`), and a Codex run would add `Co-Authored-By: Codex` the same way.
