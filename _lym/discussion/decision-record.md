@@ -172,6 +172,12 @@ Parent decision (orch, 2026-10-31): `lym loom` keeps its run verbs for loom runs
 
 Rationale: settles the last of the entry's Open items as the parent decided it.
 
+### Added after Discussion (parent, 2026-10-31): The contract names a build segment, not a writer
+
+Decision: The loom contract says: a record before, a build segment, and the landing rows after. The build segment is the rows a variant owns that turn the record into the change: Plan-Write, its perch and Webster in tapestry, Darn-Write in darn. The contract and the code do not call this slot 'the writer', since Discussion-Write, Plan-Write, Describe and the fixers are writers too.
+
+Rationale: Operator, 2026-10-31: 'writer' names many agents; tapestry's plan is part of making the change.
+
 ## Constraints
 
 - PATTERN-shed-recipe-registry: `RecordWrite` is one more `Constructor` in the one map in `internal/shedrecipe`; the contract's engine sets sit beside it.
