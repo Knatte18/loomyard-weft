@@ -2,7 +2,7 @@
 
 `bolt-dir-rename` · Task · enhancement, fabric, board, config, cwd, stencil
 
-Depends on: [`run-verbs-shared`](design-run-verbs-shared.md), [`commit-signature-credit`](design-commit-signature-credit.md), [`pawl-loom-recipe`](design-pawl-loom-recipe.md), [`interactive-recipe`](design-interactive-recipe.md)
+Depends on: [`run-verbs-shared`](design-run-verbs-shared.md), [`commit-signature-credit`](design-commit-signature-credit.md), [`pawl-loom-recipe`](design-pawl-loom-recipe.md), [`interactive-recipe`](design-interactive-recipe.md), [`teardown-retry-no-pair`](design-teardown-retry-no-pair.md), [`resume-pointer-twice`](design-resume-pointer-twice.md)
 
 ## Seen (operator, 2026-10-31)
 
