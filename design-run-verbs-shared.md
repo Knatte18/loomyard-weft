@@ -2,8 +2,6 @@
 
 `run-verbs-shared` · Task · enhancement, shed, loom, darn, landing, drift · draft
 
-Depends on: [`tapestry-rename`](design-tapestry-rename.md)
-
 ## Seen (operator, 2026-10-14)
 
 Since `0850f76e` a darn run has a decision record, and `lym loom decision add` works on it.
