@@ -196,6 +196,13 @@ Bound: the agent's adherence to the stencil is the only guard; nothing in lym st
   - publish-guard-steer-text-false (class design, severity MEDIUM, open in rounds 1, 2)
 <!-- /lym:carry-over Discussion-Review -->
 
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/plan/round-2-review.md; fixer report: _lym/reviews/plan/round-2-fixer-report.md.
+  - card3-stencil-bare-citation (class consistency, severity MEDIUM, open in rounds 2)
+  - card5-testnames-pin-missing (class scope, severity BLOCKING, open in rounds 2)
+<!-- /lym:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - D1: the sampler recipe builds and passes the loom contract check; its `on_done` path runs Preflight, Record-Write, Sampler-Session, the Code-Review segment, Describe, PR-Review, Finalize and Friction-Reflect in that order.
