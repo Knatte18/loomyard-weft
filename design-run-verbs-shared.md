@@ -1,6 +1,6 @@
 # loom names the general run; today's loom is one variant
 
-`run-verbs-shared` · Note · enhancement, shed, loom
+`run-verbs-shared` · Note · enhancement, shed, loom, darn
 
 ## Seen (operator, 2026-10-14)
 
