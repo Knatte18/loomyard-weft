@@ -29,7 +29,12 @@ Lym renders its own instruction files into each worktree from one database in Bo
 
 - A worktree's file is rendered again only when something in that worktree changed that makes re-rendering that very file meaningful, such as a sync that took in a new `AGENTS.md`; a change to `heddle.json` is not pushed into live worktrees, so an agent's rules do not shift mid-run (operator, 2026-10-31).
 - No one edits `AGENTS.md` by hand inside a worktree, so heddle watches for no such edit (operator, 2026-10-31).
-- Two machines writing `heddle.json` at once are settled by the entry-level replay `board.json` already has in fabric (`fabricengine.BoardReplay`): the task reuses that mechanism for heddle and writes no second one (operator, 2026-10-31).
+- Two machines writing `heddle.json` at once are settled by the entry-level replay `board.json` already has, reused and not written again (operator, 2026-10-31).
+  Fabric holding a seam tailored to the board makes no sense, so the task makes it general (operator, 2026-10-31):
+  - fabric's seam (`fabricengine.BoardReplay`, its request and result types, `InstallBoardReplay`, and the board paths `replayBolt` recognises) is renamed and reshaped so that no board name or board path is left in fabric;
+  - fabric knows only that a file in Bolt has an entry-level replayer registered for it, walks the local commits and cherry-picks the rest as today;
+  - the board and heddle each register a replayer for their own file;
+  - the entry-by-entry merge in `boardengine`'s `FabricReplay` that both need is drawn out and shared, not copied.
 - The verbs of `lym heddle` are the task's to shape.
 
 ## Open
