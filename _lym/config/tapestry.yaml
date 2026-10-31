@@ -1,0 +1,1 @@
+plan_max_bounces: 2 # bounce budget of the Plan-Review perch: N gives N judged Burler rounds; null takes loom.yaml's review_max_bounces; 0 runs no review round: the perch's Bouncer settles approved at once; a checkpoint above this budget means the perch never rules CIRCLING and reaches the soft-cap rule, or the accept, instead
