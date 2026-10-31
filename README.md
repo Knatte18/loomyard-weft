@@ -30,17 +30,31 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Layer A (5)
+#### Layer A (3)
 
 Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Pawl becomes a loom recipe, with a project decision record and no review rounds**<br>• Pawl joins the loom contract; a project record written at beam create and changed only through decision add<br>• `profile: solid` | [`pawl-loom-recipe`](design-pawl-loom-recipe.md) | darn | T4 | 39m<br>32m | pawl, loom, board, workspaces |
 | T3 | **A landing notice on request, per task**<br>• A landing notice from dobby on request, per task, reusing the wait that lym hibernate request --after has<br>• `profile: solid` | [`landing-watch`](design-landing-watch.md) | darn | T7 | 2d<br>0m | dobby, creel, orch, board, reed, config |
 | T5 | **Second recurring test-time and growth audit**<br>• Re-time tier0 to tier2 by the first audit's method and append the section<br>• `profile: docs` | [`test-time-audit-2`](design-test-time-audit-2.md) | darn | T2<br>T7 | 25m<br>0m | gate |
 | T6 | **Landing commits drop Co-Authored-By and Lym-Task, and carry an optional credit listing the engines used**<br>• Replace the per-engine Co-Authored-By line and the Lym-Task line with one optional credit block that lists the LLM services the task used. | [`commit-signature-credit`](design-commit-signature-credit.md) | darn | T4 | 1d<br>20m | landing |
-| T8 | **sampler: an interactive loom recipe, the operator iterating with an agent in the run's worktree until done**<br>• A Shed recipe whose agent waits for the operator and iterates on the result, then lands as usual | [`interactive-recipe`](design-interactive-recipe.md) | tapestry | T4 | 2h<br>7m | shed, batten, reed, shuttle |
+
+#### Layer B (1)
+
+Starts when every entry it names under After is done.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Pawl becomes a loom recipe, with a project decision record and no review rounds**<br>• Pawl joins the loom contract; a project record written at beam create and changed only through decision add<br>• `profile: solid` | [`pawl-loom-recipe`](design-pawl-loom-recipe.md) | darn | T4<br>T6<br>T3 | 39m<br>0m | pawl, loom, board, workspaces |
+
+#### Layer C (1)
+
+Starts when every entry it names under After is done.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T8 | **sampler: an interactive loom recipe, the operator iterating with an agent in the run's worktree until done**<br>• A Shed recipe whose agent waits for the operator and iterates on the result, then lands as usual | [`interactive-recipe`](design-interactive-recipe.md) | tapestry | T4<br>T1 | 2h<br>0m | shed, batten, reed, shuttle |
 
 ### Notes (31)
 

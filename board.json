@@ -661,13 +661,14 @@
       ],
       "issues": [],
       "depends_on": [
-        "run-verbs-shared"
+        "run-verbs-shared",
+        "pawl-loom-recipe"
       ],
       "isolated": false,
       "brief": "A Shed recipe whose agent waits for the operator and iterates on the result, then lands as usual",
       "body": "## Seen (operator, 2026-10-31)\n\nSome work needs many rounds between the operator and an agent on the result itself, and a one-shot writer makes it badly: a README written as a teaching text (task `readme-rewrite`), the board's README (note `board-viewer`), and trying out the reed status bar's buttons (note `reed-status-buttons`).\nDarn's writer is non-interactive, and tapestry's `discussion_interactive` only interviews the operator before anything is written.\n\n## Idea\n\nA new loom recipe, `sampler`, beside `tapestry` and darn, under the loom contract `run-verbs-shared` builds: an interactive agent the operator iterates with in the run's own worktree.\nBatten stays the same for it as for every recipe.\n\n- The record is written mechanically from the board entry, as darn's is without Discussion; what the operator and the agent settle on the way the agent appends with `lym loom decision add`, so Describe and any review measure against it.\n- The build segment is the interactive agent alone.\n- Batten makes the worktree, opens the window and starts the agent with the task's body as its brief; the agent waits for the operator in its pane.\n- The operator and the agent go as many rounds as the operator wants; the agent commits as it goes.\n- The operator tells the agent the work is done, and the agent runs a `lym` verb that ends the build segment, as the PR-Review agent runs `lym loom pr-continue` when the operator says so.\n- The run then goes on as usual: the Code-Review perch, off by default, then Describe, Finalize and Land.\n- The result is one of:\n  - a change to the repository, such as the README or `docs/`, landed as an ordinary commit;\n  - an entry on the board, written by the agent through `lym board`, in which case the run has no commits and lands empty, which lym already supports;\n  - a trial, as `reed-status-buttons` needs, in which case the run can use a tmux server of its own, so that what it tries does not disturb the operator's strands.\n\n## The agent (operator, 2026-10-31)\n\nThe agent is not Discussion-Write: Discussion-Write's stencil binds it to explore the code, ask and write the decision record, never to make the work itself.\nThis agent makes the result with the operator, and gets a short stencil of its own: stay in the run's worktree, commit as it goes, and write board results through `lym board`.\nIt shares only the mechanism with Discussion-Write's interactive mode: an interactive shuttle session (`lym shuttle run --interactive`) in a pane that waits for the operator.\n\n## Waiting on the operator (operator, 2026-10-31)\n\nWhile the agent waits for the operator, dobby's quiet notice and shuttle's idle timeout are off for this recipe.\nA run is started only when the operator means to work with it.\n\n## Name (operator, 2026-10-31)\n\nThe recipe is named `sampler`: a weaver's sampler is the cloth patterns are tried and adjusted on.\n",
       "created": "2026-10-31T12:06:31Z",
-      "revised": "2026-10-31T14:33:57Z"
+      "revised": "2026-10-31T14:41:31Z"
     },
     {
       "id": 927,
@@ -727,13 +728,15 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "run-verbs-shared"
+        "run-verbs-shared",
+        "commit-signature-credit",
+        "landing-watch"
       ],
       "isolated": false,
       "brief": "Pawl joins the loom contract; a project record written at beam create and changed only through decision add",
       "body": "## Seen (operator, 2026-10-31)\n\nPawl takes one board entry, a project, and ends with its beam merged into the parent, as a loom recipe takes a task and lands it.\nIt has no decision record: its Code-Review perch compares against a snapshot of the project's board entry, and `lym loom decision add` cannot change a beam's scope.\n\n## Design (operator, 2026-10-31)\n\nPawl becomes a loom recipe under the contract `run-verbs-shared` builds, with the members' runs in the writer's place.\nIts Code-Review rounds are zero: pawl has no review round of its own (the note `parent-merge-task` replaces the perch).\n\nPawl gets a decision record that holds only what binds the whole project: its goal, its bounds and the constraints every member follows.\nIt is no log of what landed; git and the board hold that, and a member landing never touches it.\n- `lym beam create` writes it mechanically: the project entry's body verbatim under `## Goal`, every other section empty.\n- After that only a scope change touches it, through `lym loom decision add \u003cbeam-slug\u003e`, which the beam's own orch runs.\n- `decision add` on a beam tells the live agents of every member run under it that the project record holds a new decision.\n- Each member's Discussion and writer read the project record as constraints, and the beam's Describe reads it when the beam lands.\n\nlym enforces the route:\n- Once a project has a record, `lym board upsert` refuses a change to its body and names `lym loom decision add \u003cbeam-slug\u003e`, as the board already refuses scope edits on a run-held task.\n- The orch role lym ships says that a beam's scope change goes through `decision add` on the beam.\n",
       "created": "2026-10-31T14:02:22Z",
-      "revised": "2026-10-31T14:09:13Z",
+      "revised": "2026-10-31T14:41:31Z",
       "profile": "solid"
     },
     {
