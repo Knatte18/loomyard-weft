@@ -723,7 +723,7 @@
       "isolated": false,
       "brief": "The shuttle hold notice is held back when the operator typed the turn's prompt",
       "body": "## Seen (operator, 2026-10-31)\n\nThe operator talked to the writer of `tapestry-rename` in its pane, and the writer answered and ended its turn without its output files.\nlym then sent the orch a shuttle hold notice (\"ended a turn without its output files and is held\"), though the turn was the operator's own conversation, not a stall.\nThe notice does not say who the agent talked to, so the orch could not tell and had to ask the operator.\n\n## Idea\n\nA turn that began with the operator's own input in the pane sends no hold notice: lym tells an operator-typed prompt from the injects and mail it sends itself, and holds back the notice for that turn.\nThe notice still goes out when a later turn, started by lym or by mail, ends without the output files.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Describe",
       "created": "2026-10-31T13:11:36Z",
       "revised": "2026-10-31T14:14:07Z"
     },
