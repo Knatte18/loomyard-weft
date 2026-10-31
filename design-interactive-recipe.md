@@ -2,7 +2,7 @@
 
 `interactive-recipe` · Task · feature, shed, batten, reed, shuttle
 
-Depends on: [`pawl-loom-recipe`](design-pawl-loom-recipe.md), [`teardown-retry-no-pair`](design-teardown-retry-no-pair.md)
+Depends on: [`pawl-loom-recipe`](design-pawl-loom-recipe.md)
 
 ## Seen (operator, 2026-10-31)
 

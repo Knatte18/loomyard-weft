@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-31 18:41 UTC; every age below is as of then.
+Rendered 2026-10-31 18:42 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -42,7 +42,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **sampler: an interactive loom recipe, the operator iterating with an agent in the run's worktree until done**<br>• A Shed recipe whose agent waits for the operator and iterates on the result, then lands as usual<br>• `profile: light` | [`interactive-recipe`](design-interactive-recipe.md) | tapestry | T1 | 6h<br>26m | shed, batten, reed, shuttle |
+| T8 | **sampler: an interactive loom recipe, the operator iterating with an agent in the run's worktree until done**<br>• A Shed recipe whose agent waits for the operator and iterates on the result, then lands as usual<br>• `profile: light` | [`interactive-recipe`](design-interactive-recipe.md) | tapestry | T1 | 6h<br>27m | shed, batten, reed, shuttle |
 
 #### Layer C (1)
 
@@ -50,7 +50,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Rename the Bolt checkout directory _board to _bolt, by script alone**<br>• A pure, mechanical rename of _board to _bolt everywhere, with a rename program for existing hubs | [`bolt-dir-rename`](design-bolt-dir-rename.md) | darn | T6<br>T1<br>T8 | 2h<br>26m | fabric, board, config, cwd, stencil |
+| T3 | **Rename the Bolt checkout directory _board to _bolt, by script alone**<br>• A pure, mechanical rename of _board to _bolt everywhere, with a rename program for existing hubs | [`bolt-dir-rename`](design-bolt-dir-rename.md) | darn | T6<br>T1<br>T8 | 2h<br>27m | fabric, board, config, cwd, stencil |
 
 #### Draft (1)
 
@@ -88,7 +88,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E10 |  | **The hibernate request is carried by dobby, not a daemon of its own**<br>• Move lym hibernate request into dobby, once dobby and hibernate share the past-Land test | [`hibernate-in-dobby`](design-hibernate-in-dobby.md) | 4h<br>4h | dobby |
 | E11 |  | **Merge in from parent as a task of its own in a beam, in place of pawl's perch round**<br>• A ready-made command starts a run that brings the parent into a beam, with Drift; pawl drops its own Code-Review perch | [`parent-merge-task`](design-parent-merge-task.md) | 5h<br>5h | pawl, workspaces, drift, landing |
 | E12 |  | **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | 2h<br>2h | fabric |
-| E13 |  | **A long gate run answers within the cache lifetime, so the waiting agent keeps its prompt cache warm**<br>• lym gate test caps the run wait like the slot wait, with the cap a config value beside the engine cache lifetime | [`gate-run-keeps-cache-warm`](design-gate-run-keeps-cache-warm.md) | 21m<br>20m | gate, shuttle, config |
+| E13 |  | **A long gate run answers within the cache lifetime, so the waiting agent keeps its prompt cache warm**<br>• lym gate test caps the run wait like the slot wait, with the cap a config value beside the engine cache lifetime | [`gate-run-keeps-cache-warm`](design-gate-run-keeps-cache-warm.md) | 22m<br>20m | gate, shuttle, config |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 13d<br>4d | webster, fabric, loom |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 13d<br>4d | fabric, batten |
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 9d<br>3d | burler, claude |
@@ -111,11 +111,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F15 |  | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 2w<br>3h | reed, config, batten |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>3d | burler, shed, orch, quarry, report |
 | F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 9d<br>3h | loom, shed, batten, workspaces, burler |
-
-### Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T5 | **A finished run blocked at Worktree-Teardown with its pair gone can be neither retried nor cancelled**<br>• batten run refuses a teardown retry with no pair worktree, though the pair removal already succeeded and only the remote branch delete is left | [`teardown-retry-no-pair`](design-teardown-retry-no-pair.md) | 2h<br>26m | batten, fabric |
