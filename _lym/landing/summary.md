@@ -1,43 +1,39 @@
-# Dobby lands a beam once it is flagged ready and nothing works under it
+# Dobby lands a beam only once it is flagged ready with `lym beam ready`
 
-A beam's dobby read "nothing works under the beam" as "the beam is done".
-So a newly created beam with no work yet made its dobby ask the orch to run `lym beam land`.
-A beam now carries a ready flag, and only a flagged beam is landed.
+A new beam with no work yet made its dobby ask the orch to run `lym beam land`, because the landing's refusal found nothing working under the beam and an empty beam read as a finished one.
+A beam now carries a ready flag, and the dobby's landing step, `lym beam land` and the landing's re-check at Beam-Await all wait for it.
 
 ## What changes
 
-- **`lym beam ready <slug>`** (new) flags a beam ready to be merged into its parent.
-  It writes a `pawlengine.ReadyRecord` (`slug`, `set_at`) to `_lym/landing/beam-ready.json` in the beam's pair, beside the change description, and commits the landing directory.
-  It runs from anywhere in the hub, as `lym beam land` does, and refuses what `land`'s entry check refuses.
-  A beam already flagged is reported as `already`, and nothing is written.
-  The beam's orch or the operator runs it; dobby never does.
-- **Dobby's landing step** replaces the can-land notice (`internal/dobbyengine/land.go`, renamed from `landnotice.go`).
-  Once per episode in which the beam is flagged and nothing works under it, the dobby calls the new `Deps.Land` seam.
-  That seam runs the `lym beam land` sequence itself and writes the land request the pawl run consumes at Beam-Await.
-  The dobby posts a notice to the beam's orch only when it cannot land the beam: another machine owns the parent (naming `lym adopt <subject>`), or `Land` refused (carrying the refusal and its way forward).
-  An unflagged beam reads as not passing however long it has been idle, so it gets neither a landing nor a notice.
-  The state record's `land_notice` is replaced by `land` (`State.Land`, `LandState{At}`).
-- **`lym beam land`** refuses an unflagged beam after its owner checks and before the work-remaining refusal, naming `lym beam ready <slug>`.
-- **Beam-Await's re-check** (`pawlRecheckLines`) adds a line for an unflagged beam, so a land request written by any route cannot land one.
+- New verb `lym beam ready <slug>`, run by the beam's orch or the operator, sets the flag.
+  It writes `beam-ready.json` (`slug`, `set_at`) in the beam worktree's `_lym/landing/` and commits it through `fabricengine.CommitAnchoredPaths`.
+  A beam already flagged is reported as already ready; the verb only commits a record an earlier failed commit left behind.
+  It refuses what `lym beam land`'s entry check refuses.
+- `lym beam land` refuses an unflagged beam, after the owner checks and before the work-remaining refusal, and names `lym beam ready <slug>` as the way forward.
+- Beam-Await's landing re-check adds a line for an unflagged beam, so a land request written past the verb cannot land one.
+- The dobby no longer posts a "can land" notice for an idle beam.
+  Its `CanLand` reading passes only for a flagged beam with nothing working under it, and no flag means no step, however long the beam has been idle.
+  Once the reading passes, the dobby writes the land request itself, the one `lym beam land` writes, through the new `Deps.Land` seam.
+  It posts to the beam's orch only when it cannot: another machine owns the parent (the notice names `lym adopt <subject>`), or `Land` refuses (the notice carries the refusal).
+- `internal/dobbyengine/landnotice.go` and its test become `land.go` and `land_test.go`.
+  The state record's `LandNotice` becomes `Land`, which also records whether the episode ended in a refusal.
 
 ## Design decisions
 
-- The record names its beam.
-  A pair forked from a flagged beam inherits the beam's `_lym` content, and `pawlengine.ReadyFor` reads a record naming another slug as no flag.
-  `_lym` never merges into the parent, so a landed beam does not mark its parent ready either.
-- The record's paths, `loomengine.BeamReadyPath` and `BeamReadyLockPath`, sit with the landing directory that `loomengine` already owns.
-  The lock is at the mirrored `.lym/landing/` path.
-  The record goes through `internal/state`.
-- A refused landing is not retried within the same episode.
-  The notice carries the refusal's way forward, and a reading that stops passing re-arms the step.
-- No verb clears the flag.
-  A beam flagged early still lands only once nothing works under it, because the work-remaining refusal and Beam-Await's re-check still stand.
-- `onHubLandDeps` in `internal/beamcli/cli.go` (renamed from `landFromHub`) resolves the hub for both `land` and `ready`.
-  `judgeLandEntry` now takes the verb name that opens its refusals.
+- The flag lives in the beam's tracked `_lym`, not on the board, so it survives a machine change.
+  Weft content never merges into the parent, so a landed beam does not flag its parent.
+  A pair forked from a flagged beam inherits the record, so a record naming another slug reads as no flag (`pawlengine.ReadyFor`).
+  The paths are declared in `internal/loomengine` beside the landing directory; the record type and its write and read are in `internal/pawlengine`, through `internal/state`.
+- The flag says the beam is ready to merge, not that the project is finished.
+  The dobby never sets it, and no verb clears it: a beam flagged too early still lands only once nothing works under it.
+- A refused landing stays an open episode, because the refusal may only be waiting for the run to reach Beam-Await.
+  `Land` is asked again each tick, and the refusal is posted once.
+  An episode closes when the land request is written, or when the notice about the parent's owner goes out.
+  A reading that stops passing clears the episode, and a restarted dobby reads the record and does not act twice.
+- The dobby lands nothing by itself: Beam-Await re-checks the beam before anything lands.
+- `judgeLandEntry` takes the verb name, so the shared entry refusals open with `lym beam ready` or `lym beam land` as called.
 
-## Tests
+## To check by hand
 
-- `TestReadyFor`: an absent record, the beam's own record and another beam's record.
-- `TestLand` gains an unflagged-beam row; `TestMarkReady` covers the entry refusals, the first write and an already-flagged beam.
-- `TestPawlRecheckLines` gains an unflagged-beam row.
-- `TestLandBeam` covers landing once per episode, no step for a reading that does not pass, the parent-owned-elsewhere and refused-landing notices, re-arming, a restart, the prime's dobby, a failed post and a failed read.
+- A beam created before this change has no record, so its landing needs `lym beam ready <slug>` first.
+- The flow on a real hub was not run: create a beam, confirm its dobby stays silent, run `lym beam ready`, and confirm the dobby writes the land request once nothing works under the beam.
