@@ -1,6 +1,6 @@
 # warp-visibility: heddle, a Bolt database lym renders its instruction files from, leaving no trace in warp
 
-`warp-visibility` · Task · feature, fabric, board, config, claude, codex · draft
+`warp-visibility` · Task · feature, fabric, board, config, claude, codex, cwd, process, stencil · draft
 
 Depends on: [`bolt-dir-rename`](design-bolt-dir-rename.md)
 
@@ -16,7 +16,7 @@ PATTERN.md stays tracked in warp: it holds rules for all development in the repo
 This task takes PATTERN into heddle in no form, but builds heddle so that a further target such as `PATTERN.local.md` is easy to add later.
 
 Lym renders its own instruction files into each worktree from one database in Bolt, named heddle:
-- `_board/heddle.json` is a JSON database beside `board.json`, and the only source of these files.
+- `heddle.json` is a JSON database in the Bolt checkout beside `board.json`, and the only source of these files.
   As with the board, the data is kept apart from how it is shown, so it can be rendered and handled in any number of ways later.
 - An entry is one instruction passage: a slug, its text, its place in the order, and the files it renders into, such as `CLAUDE.local.md`, Codex's own file, or both; possibly also when it renders.
   Claude and Codex need different text, so an entry names its targets rather than every entry going to every file.
@@ -41,3 +41,12 @@ Lym renders its own instruction files into each worktree from one database in Bo
   - the entry-by-entry merge in `boardengine`'s `FabricReplay` that both need is drawn out and shared, not copied.
 - A re-render after a sync takes lym's text from `heddle.json` as it stands then; a worktree keeping the version it was created with belongs to a separate note and is not this task's (operator, 2026-10-31).
 - The verbs of `lym heddle` are the task's to shape.
+
+## Bolt directory name (operator, 2026-10-31)
+
+The rename of `_board` to `_bolt` lands first as a task of its own; this task then makes the name live in one place, since heddle's database takes its place from it.
+- Two names for two things: `fabricengine.BoltDirName` says where Bolt is checked out, and `fabricengine.BoardDirName` says where the board is.
+  Today the board sits at Bolt's root, so `BoardDirName` is set from `BoltDirName`; what lives in Bolt beside the board, heddle's database included, takes its place from `BoltDirName`, never from `BoardDirName`.
+- `runproc.HubOwner` is an owner name, not the directory, and is set from `BoltDirName`.
+- The directory name lives in that one constant only: `lymcwd` drops its own copy, and every message and test takes the name from the constant.
+- A comment names "the Bolt checkout" rather than the path; stencils and skills name the path through what lym already resolves for them, or as "the Bolt checkout", not as a literal.
