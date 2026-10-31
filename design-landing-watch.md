@@ -1,6 +1,6 @@
 # A landing notice on request, per task
 
-`landing-watch` · Task · feature, dobby, creel, orch, board, reed, config · running · Finalize
+`landing-watch` · Task · feature, dobby, creel, orch, board, reed, config · done
 
 ## Seen (operator, 2026-10-28)
 
