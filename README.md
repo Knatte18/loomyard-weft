@@ -10,7 +10,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 The root project: the entries under no other project.
 
-### Tasks (3)
+### Tasks (4)
 
 Concrete and claimable; only a task can run.
 
@@ -29,15 +29,16 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Draft (1)
+#### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | `draft` **Rename today's loom recipe to tapestry with a rename program**<br>• A Go program under tools/ renames the loom variant to tapestry, so every loom left is the general run | [`tapestry-rename`](design-tapestry-rename.md) | darn | T1<br>T2 | 2m<br>0m | loom, shed, stencil, config, board |
+| T4 | `draft` **loom names the general run, and Discussion becomes a block every variant can turn on**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | loom | T3 | 2w<br>0m | shed, loom, darn |
 
-### Notes (34)
+### Notes (33)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -55,7 +56,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **A rejected board push is retried after a fetch, and called a divergence only when one exists**<br>• Two overlapping pushes of the board from this hub made one fail, and the mail named a divergence that did not exist. | [`board-push-race`](design-board-push-race.md) | 22h<br>22h | fabric |
 
-#### Enhancements (13)
+#### Enhancements (12)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -65,7 +66,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E4 |  | **Prove the dotnet scoper, shared build and Drift on the C# sandbox hub**<br>• Switch the sandbox gate to scoper dotnet, a build step and --no-build, then enable Drift there | [`sandbox-dotnet-gate`](design-sandbox-dotnet-gate.md) | 1d<br>1d | dotnet, gate |
 | E5 |  | **pr-continue wakes the PR-Review wait at once**<br>• The PR-Review wait sleeps up to a minute between wakes, so lym loom pr-continue takes effect up to a minute late | [`pr-continue-wakes-row`](design-pr-continue-wakes-row.md) | 1d<br>1d | landing, batten |
 | E6 |  | **Gate runs spend much of their time starting processes: start fewer**<br>• launch_seconds is a large share of a gate run on OSL-1046, where each process start is slow; the aim is a faster gate by starting fewer processes | [`gate-fewer-launches`](design-gate-fewer-launches.md) | 1d<br>1d | gate |
-| E7 |  | **loom names the general run, and Discussion becomes a block every variant can turn on**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | 2w<br>2m | shed, loom, darn |
 | E8 |  | **A seed says only that a run starts at its start, with no producer name**<br>• The shared seed names Preflight as the first producer for every recipe; the seed should name none, and the recipe supplies its first row. | [`seed-starts-at-start`](design-seed-starts-at-start.md) | 22h<br>22h | loom, pawl, shed |
 | E9 |  | **Landing commits drop Co-Authored-By and Lym-Task, and carry an optional credit listing the engines used**<br>• Replace the per-engine Co-Authored-By line and the Lym-Task line with one optional credit block that lists the LLM services the task used. | [`commit-signature-credit`](design-commit-signature-credit.md) | 22h<br>22h | landing |
 | E10 |  | **The adopt check shows that it runs, and how far it has come**<br>• lym adopt starts a test suite detached and nothing the operator looks at shows it or its progress | [`adopt-check-visible`](design-adopt-check-visible.md) | 55m<br>55m | reed, gate, workspaces |
