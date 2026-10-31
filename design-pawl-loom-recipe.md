@@ -2,6 +2,8 @@
 
 `pawl-loom-recipe` · Task · enhancement, pawl, loom, board, workspaces · draft
 
+Depends on: [`run-verbs-shared`](design-run-verbs-shared.md)
+
 ## Seen (operator, 2026-10-31)
 
 Pawl takes one board entry, a project, and ends with its beam merged into the parent, as a loom recipe takes a task and lands it.
