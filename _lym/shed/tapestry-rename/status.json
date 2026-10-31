@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -28,6 +28,81 @@
       "output": "",
       "at": "2026-10-31T13:02:38Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/tapestry-rename/_lym/landing/summary.md",
+      "at": "2026-10-31T13:32:23Z",
+      "gate_attempts": 2,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-31T13:18:19.241289195Z",
+          "end": "2026-10-31T13:18:30.496226107Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-31T13:18:59.870276852Z",
+          "end": "2026-10-31T13:19:11.320356919Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-31T13:25:46.98774415Z",
+          "end": "2026-10-31T13:25:58.258303047Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-31T13:30:50.403156153Z",
+          "end": "2026-10-31T13:31:01.659935621Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-31T13:18:30.536224098Z",
+          "end": "2026-10-31T13:18:31.160051988Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-31T13:18:39.437471002Z",
+          "end": "2026-10-31T13:18:40.439242377Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-31T13:19:11.374743329Z",
+          "end": "2026-10-31T13:22:29.730272565Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-31T13:25:58.298184891Z",
+          "end": "2026-10-31T13:28:42.667080968Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-31T13:28:43.063702668Z",
+          "end": "2026-10-31T13:30:50.377930618Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-31T13:31:01.703763481Z",
+          "end": "2026-10-31T13:32:23.2585936Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-31T13:32:23.293342098Z",
+          "end": "2026-10-31T13:32:23.293383676Z"
+        }
+      ]
     }
   ],
   "product": {
