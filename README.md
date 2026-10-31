@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-31 13:42 UTC; every age below is as of then.
+Rendered 2026-10-31 13:43 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -10,17 +10,9 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 The root project: the entries under no other project.
 
-### Tasks (2)
+### Tasks (1)
 
 Concrete and claimable; only a task can run.
-
-#### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Rename today's loom recipe to tapestry with a rename program**<br>• A Go program under tools/ renames the loom variant to tapestry, so every loom left is the general run | [`tapestry-rename`](design-tapestry-rename.md) | darn | Finalize | neve | 1h<br>1h | loom, shed, stencil, config, board |
 
 #### Ready (0)
 
@@ -34,7 +26,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **loom names the general run, and Discussion becomes a block every variant can turn on**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | loom | T3 | 2w<br>40m | shed, loom, darn, landing, drift |
+| T4 | `draft` **loom names the general run, and Discussion becomes a block every variant can turn on**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | loom |  | 2w<br>40m | shed, loom, darn, landing, drift |
 
 ### Notes (36)
 
@@ -64,11 +56,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E4 |  | **Prove the dotnet scoper, shared build and Drift on the C# sandbox hub**<br>• Switch the sandbox gate to scoper dotnet, a build step and --no-build, then enable Drift there | [`sandbox-dotnet-gate`](design-sandbox-dotnet-gate.md) | 1d<br>1d | dotnet, gate |
 | E5 |  | **pr-continue wakes the PR-Review wait at once**<br>• The PR-Review wait sleeps up to a minute between wakes, so lym loom pr-continue takes effect up to a minute late | [`pr-continue-wakes-row`](design-pr-continue-wakes-row.md) | 1d<br>1d | landing, batten |
 | E6 |  | **Gate runs spend much of their time starting processes: start fewer**<br>• launch_seconds is a large share of a gate run on OSL-1046, where each process start is slow; the aim is a faster gate by starting fewer processes | [`gate-fewer-launches`](design-gate-fewer-launches.md) | 1d<br>1d | gate |
-| E7 |  | **Finalize settles a rejected fixer change in place and never sends the run back**<br>• A fix review loop inside Finalize that escalates at its cap, in place of on_reroute | [`finalize-fix-in-place`](design-finalize-fix-in-place.md) | 50m<br>47m | landing, shed, loom, darn |
+| E7 |  | **Finalize settles a rejected fixer change in place and never sends the run back**<br>• A fix review loop inside Finalize that escalates at its cap, in place of on_reroute | [`finalize-fix-in-place`](design-finalize-fix-in-place.md) | 51m<br>47m | landing, shed, loom, darn |
 | E8 |  | **A seed says only that a run starts at its start, with no producer name**<br>• The shared seed names Preflight as the first producer for every recipe; the seed should name none, and the recipe supplies its first row. | [`seed-starts-at-start`](design-seed-starts-at-start.md) | 23h<br>23h | loom, pawl, shed |
 | E9 |  | **Landing commits drop Co-Authored-By and Lym-Task, and carry an optional credit listing the engines used**<br>• Replace the per-engine Co-Authored-By line and the Lym-Task line with one optional credit block that lists the LLM services the task used. | [`commit-signature-credit`](design-commit-signature-credit.md) | 23h<br>23h | landing |
 | E10 |  | **The adopt check shows that it runs, and how far it has come**<br>• lym adopt starts a test suite detached and nothing the operator looks at shows it or its progress | [`adopt-check-visible`](design-adopt-check-visible.md) | 2h<br>2h | reed, gate, workspaces |
-| E11 |  | **Merge in from parent as a task of its own in a beam, in place of pawl's perch round**<br>• A ready-made command starts a run that brings the parent into a beam, with Drift; pawl drops its own Code-Review perch | [`parent-merge-task`](design-parent-merge-task.md) | 50m<br>50m | pawl, workspaces, drift, landing |
+| E11 |  | **Merge in from parent as a task of its own in a beam, in place of pawl's perch round**<br>• A ready-made command starts a run that brings the parent into a beam, with Drift; pawl drops its own Code-Review perch | [`parent-merge-task`](design-parent-merge-task.md) | 51m<br>51m | pawl, workspaces, drift, landing |
 | E12 |  | **No hold notice for a turn the operator started in the pane**<br>• The shuttle hold notice is held back when the operator typed the turn's prompt | [`hold-notice-operator-turn`](design-hold-notice-operator-turn.md) | 31m<br>31m | shuttle, creel |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 13d<br>4d | webster, fabric, loom |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 12d<br>4d | fabric, batten |
@@ -95,3 +87,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F15 |  | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 2w<br>1d | reed, config, batten |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>2d | burler, shed, orch, quarry, report |
 | F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 8d<br>4d | loom, shed, batten, workspaces, burler |
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T3 | **Rename today's loom recipe to tapestry with a rename program**<br>• A Go program under tools/ renames the loom variant to tapestry, so every loom left is the general run | [`tapestry-rename`](design-tapestry-rename.md) | 1h<br>1h | loom, shed, stencil, config, board |
