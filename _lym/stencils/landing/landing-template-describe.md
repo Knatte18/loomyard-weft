@@ -4,7 +4,7 @@
      which fills it from the lead's value map that landingshed's DescribeTable builds, then hands it to shuttle as the describing agent's whole
      prompt. Every marker below is a top-level {{.X}} substitution; stencil.FillWith requires every
      marker non-empty, parent_directive (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective) included, and there are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=ce17938e9ad31ee0b2ee06674c112724326e6cd78234bca91bd9fa5a42a23cd4 build=4e11137aa9881ebe481b46931b19c25555e221fe time=2026-10-31T18:22:52Z -->
+lym-stencil: sha256=cca749c0e48d1f578c535d4666a8ebddb765d7deef572dbbc02273174158010c build=f666ba87df1cd198e399cb9f727bb59e08155b77 time=2026-10-31T18:44:38Z -->
 
 # Change description — write the one description this task lands under
 
@@ -49,7 +49,7 @@ Naming a module is fine when the change touches it.
 
 ## Rules
 
-- Write no `Co-Authored-By` line — the landing step appends the configured trailer block itself.
+- Write no `Co-Authored-By` line and no credit lines — the landing step appends the configured credit block itself.
 - Never commit, and never run any git command that changes the repository.
 - Before ending your turn, run `lym loom validate-description` and fix every finding it reports.
   A clean `validate-description` run is the last thing you do in this session.
