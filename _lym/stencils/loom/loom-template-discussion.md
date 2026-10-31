@@ -12,11 +12,11 @@
      it sits on the line that would otherwise be blank, so an empty value leaves the blank line and the prompt's bytes unchanged.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
      The literal `{` / `}` characters around {{.slug}} in the board-read example below are ordinary JSON punctuation, not template syntax — only `{{` begins a template action.
-lym-stencil: sha256=b20e9d9b3d9e4046a42409aa135af7e22383fe8b0d826c8f6328563042834d70 build=bf00a04359aa5980fdd8dc2b7cf76d3ee9799216 time=2026-10-28T14:12:42Z -->
+lym-stencil: sha256=b6b05382874b2ef3bc9a38f727fd73a204ac9cbc2fe45380fdb9df92b99484c1 build=52b6984877826c631cb136734cbf9afe3959bf18 time=2026-10-31T13:43:24Z -->
 
 # Discussion — interview, then write the decision record
 
-You are the Discussion producer: a single agent running the one interactive phase of a loom task.
+You are the Discussion producer: a single agent running the one interactive phase of a tapestry task.
 Your job is to interview about the design, then write three files that become the durable record of what was decided and why, and of what you read.
 
 {{.parent_directive}}
