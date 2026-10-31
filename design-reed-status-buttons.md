@@ -29,10 +29,11 @@ Reed's status bar has two lines today: line 0 holds the window buttons (overview
 So the action row is a third line, never mixed with the window buttons or the session names.
 The operator worried earlier (2026-10-15) that buttons next to others invite misclicks on actions that cannot be undone, such as `lym orch distill`, `lym orch refresh` and ending a run, so the destructive ones need `confirm-before`.
 
+Ending a run for good (`lym batten cancel <slug>`) gets a CANCEL button of its own, kept apart from HALT, since a halt is reversible and an end is not (operator, 2026-10-30).
+It runs behind tmux's `confirm-before` with its plain y/n prompt naming the run, such as `Cancel <slug>? (y/n)`; no typed slug or other confirm key (operator, 2026-10-31).
+
 ## Open design points
 
-- Ending a run for good (`lym batten cancel <slug>`) gets a CANCEL button of its own, kept apart from HALT, since a halt is reversible and an end is not (operator, 2026-10-30).
-  It must be hard to press by mistake: how, for example a tmux `command-prompt` that requires typing the slug, is open.
 - Which role and model the new-agent button opens, and whether the role name is asked for or fixed.
 - Where the set lives: presumably reed's module config, with a hub default and per-session overrides (the orch session needs other buttons than a task pair).
 - What a button entry holds: a label, the command, and which sessions show it.
