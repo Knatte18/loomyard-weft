@@ -1,6 +1,6 @@
 # Rename today's loom recipe to tapestry with a rename program
 
-`tapestry-rename` · Task · enhancement, loom, shed, stencil · draft
+`tapestry-rename` · Task · enhancement, loom, shed, stencil, config, board · draft
 
 Depends on: [`dobby-start-failures`](design-dobby-start-failures.md), [`readme-rewrite`](design-readme-rewrite.md)
 
@@ -15,6 +15,12 @@ Today's loom recipe is renamed `tapestry`, mechanically, so that every `loom` le
 - A Go program under `tools/`, like `tools/wordswap` for the `lyx` to `lym` rename (`ef912d41`), carries out the rename, and the run applies it and commits the result.
 - The `lym loom ...` verbs keep their names, since they become the general ones.
 - No behaviour changes: this is a rename only.
+
+## Bolt as well
+
+The rename covers the records side, Bolt, not only the code: what lym keeps there for the variant is renamed with it, so code and records agree after landing.
+That includes the hub-wide config (such as `_lym/config/loom.yaml`), the board copies of stencils and specs (`_lym/stencils/loom`, `_lym/specs`), the orch rules, and the board entries and run records that name the variant, such as a `recipe` of `loom`.
+The program renames Bolt the same way it renames the code, and a hub on another machine, or another hub, picks the rename up by a migration lym runs itself, never by hand.
 
 ## Open, settled by the run
 
