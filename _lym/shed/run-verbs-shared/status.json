@@ -1,14 +1,21 @@
 {
-  "current_producer": "Preflight",
+  "current_producer": "Tapestry-Preflight",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "",
-    "last": "",
+    "now": "Tapestry-Preflight",
+    "last": "Preflight → done",
     "wait": ""
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Preflight",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-31T14:10:12Z"
+    }
+  ],
   "product": {
     "slug": "run-verbs-shared",
     "parent": "main",
