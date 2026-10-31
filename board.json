@@ -733,6 +733,25 @@
       "body": "## Seen (operator, 2026-10-31)\n\nThe operator talked to the writer of `tapestry-rename` in its pane, and the writer answered and ended its turn without its output files.\nlym then sent the orch a shuttle hold notice (\"ended a turn without its output files and is held\"), though the turn was the operator's own conversation, not a stall.\nThe notice does not say who the agent talked to, so the orch could not tell and had to ask the operator.\n\n## Idea\n\nA turn that began with the operator's own input in the pane sends no hold notice: lym tells an operator-typed prompt from the injects and mail it sends itself, and holds back the notice for that turn.\nThe notice still goes out when a later turn, started by lym or by mail, ends without the output files.\n",
       "created": "2026-10-31T13:11:36Z",
       "revised": "2026-10-31T13:11:36Z"
+    },
+    {
+      "id": 930,
+      "handle": "E13",
+      "slug": "pawl-loom-recipe",
+      "title": "Pawl as a loom recipe, with a decision record and no review rounds",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "pawl",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Pawl gains a decision record and decision add once loom is the task-run contract",
+      "body": "## Seen (operator, 2026-10-31)\n\nPawl takes one board entry, a project, and ends with its beam merged into the parent, as a loom recipe takes a task and lands it.\nIt has no decision record: its Code-Review perch compares against a snapshot of the project's board entry, and `lym loom decision add` cannot change a beam's scope.\n\n## Idea\n\nPawl becomes a loom recipe once `run-verbs-shared` has made `loom` the task-run contract, with the members' runs in the writer's place.\nIt gains a decision record, so `lym loom decision add \u003cbeam-slug\u003e` changes a beam's scope as it does a task's.\nIts Code-Review rounds are set to zero, since pawl is to have no review round of its own (the note `parent-merge-task`).\n",
+      "created": "2026-10-31T14:02:22Z",
+      "revised": "2026-10-31T14:02:22Z"
     }
   ],
   "prime_owner": "neve",
