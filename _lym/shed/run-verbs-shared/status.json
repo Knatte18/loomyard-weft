@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Write",
+  "current_producer": "Discussion-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Write",
-    "last": "Tapestry-Preflight → done",
+    "now": "Discussion-Bouncer",
+    "last": "Discussion-Write → done",
     "wait": ""
   },
   "history": [
@@ -20,6 +20,21 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-31T14:10:13Z"
+    },
+    {
+      "producer": "Discussion-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/run-verbs-shared/_lym/discussion/decision-record.md",
+      "at": "2026-10-31T14:20:05Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-31T14:20:04.798243169Z",
+          "end": "2026-10-31T14:20:04.82470925Z"
+        }
+      ]
     }
   ],
   "product": {
