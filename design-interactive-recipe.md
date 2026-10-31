@@ -2,6 +2,8 @@
 
 `interactive-recipe` · Task · feature, shed, batten, reed, shuttle · draft
 
+Depends on: [`run-verbs-shared`](design-run-verbs-shared.md), [`hold-notice-operator-turn`](design-hold-notice-operator-turn.md)
+
 ## Seen (operator, 2026-10-31)
 
 Some work needs many rounds between the operator and an agent on the result itself, and a one-shot writer makes it badly: a README written as a teaching text (task `readme-rewrite`), the board's README (note `board-viewer`), and trying out the reed status bar's buttons (note `reed-status-buttons`).
