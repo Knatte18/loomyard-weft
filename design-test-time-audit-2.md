@@ -1,6 +1,8 @@
 # Second recurring test-time and growth audit
 
-`test-time-audit-2` · Task · research, gate · draft
+`test-time-audit-2` · Task · research, gate
+
+Depends on: [`board-push-race`](design-board-push-race.md), [`hold-notice-operator-turn`](design-hold-notice-operator-turn.md)
 
 ## Goal
 
