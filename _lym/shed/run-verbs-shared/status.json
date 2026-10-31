@@ -1,11 +1,11 @@
 {
-  "current_producer": "Tapestry-Preflight",
+  "current_producer": "Discussion-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Tapestry-Preflight",
-    "last": "Preflight → done",
+    "now": "Discussion-Write",
+    "last": "Tapestry-Preflight → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-31T14:10:12Z"
+    },
+    {
+      "producer": "Tapestry-Preflight",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-31T14:10:13Z"
     }
   ],
   "product": {
