@@ -721,6 +721,27 @@
       "status": "draft",
       "created": "2026-10-31T12:34:55Z",
       "revised": "2026-10-31T12:37:03Z"
+    },
+    {
+      "id": 927,
+      "handle": "E7",
+      "slug": "finalize-fix-in-place",
+      "title": "Finalize settles a rejected fixer change in place and never sends the run back",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "landing",
+        "shed",
+        "loom",
+        "darn"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A fix review loop inside Finalize, merging at its cap with the open findings in the description, in place of on_reroute",
+      "body": "## Seen (operator, 2026-10-31)\n\nFinalize still sends a run back in one case: when its merge fixer spent its cap, or made an over-cap change, and Finalize's own solo fix review does not approve that change.\nloom's Finalize then reroutes to Parent-Align and darn's to Code-Bouncer (`on_reroute` in `contracts/recipes/loom-recipe.yaml` and `darn-recipe.yaml`), bounded by Shed's reroute cap.\nThe operator does not want a run bounced back to earlier rows, and a halt handed to the orch helps no one either, since the orch can do little with it: the run must settle it itself.\n\n## Idea\n\nFinalize settles a fixer change in place, under the parent lock, and never reroutes.\n- A fix review that does not approve hands its findings to the fixer, which fixes them in place, and the review checks again: a small perch inside Finalize.\n- The loop has a cap; at the cap Finalize merges anyway and writes the unresolved findings into the change description, as `lym loom circling accept` does for a review loop.\n- Parent-Align and Code-Review are not run again, and `on_reroute` goes from Finalize in every recipe.\n",
+      "created": "2026-10-31T12:52:24Z",
+      "revised": "2026-10-31T12:52:24Z"
     }
   ],
   "prime_owner": "neve",
