@@ -1,7 +1,7 @@
-# Landing commits end with a plain credit block, not co-author trailers
+# Landing commits end with a plain credit block, not Co-Authored-By
 
-A landing commit no longer names an engine as a co-author, and no longer ends with a `Lym-Task: <slug>` line.
-Instead the commit, the pull request's body and the pull request's merge message end with one credit block, written as plain lines rather than git trailers:
+A landing commit and its pull request no longer carry `Co-Authored-By` or `Lym-Task` lines.
+They end instead with one plain-text credit block, on by default:
 
 ```
 Created using
@@ -9,41 +9,39 @@ Created using
  - Claude <noreply@anthropic.com>
 ```
 
-## Configuration
+The operator does not want an engine credited as a co-author, and sees no use for the `Lym-Task: <slug>` line.
 
-`landing.yaml` replaces `trailer_text` and `engine_trailers` with four cross-pair keys:
+## What changes
 
-- `credit` (default `true`) turns the block on or off.
-- `credit_heading` is the first line.
-- `credit_loomyard` is the LoomYard item, listed whatever engines ran.
-- `credit_engines` is an open map from engine name to that engine's item, listed only when the engine ran a session in the task, detected through the same engines-run read as before.
+- The block is the heading, the LoomYard line, then one line per engine that ran a session in the task, in engine-name order, each once.
+  The engine detection is the existing engines-run read, unchanged.
+- The block is written after a blank line as plain text, never as git trailers.
+- The landing commit message, the pull-request merge message at Finalize and the pull-request body PR-Review sets all come from one composition, so a commit and its pull request carry one signature.
+- PR-Review sets the body on every entry that edits it, so a fixer session added later shows on the next edit.
+- `taskTrailer` and the `Lym-Task` line are removed.
+- Docs that named the trailer are updated: `internal/landingshed/doc.go`, `docs/overview.md`, `contracts/specs/loom-final-summary-spec.md` and `contracts/stencils/landing/landing-template-describe.md`.
+  The `summaryparser` Co-Authored-By finding detail and the `envkit` seam list follow.
 
-Go renders each item as a ` - <text>` line, engines in name order.
-An empty text adds no line, and a block with no item left, or with `credit` off, is empty, so the message then ends at the body.
-`credit_engines` keeps the old load check: a key naming no known engine fails the load and names the key.
+## Config
 
-`co_authored_by`, `trailer_text` and `engine_trailers` become retired keys.
-A hub file still holding them loads, and `lym config reconcile` prunes them.
-The old migration that moved `co_authored_by` into `engine_trailers.claude` is gone, since those values are the co-author lines this change removes.
+Four `landing.yaml` keys replace `trailer_text` and `engine_trailers`, all cross-pair keys:
 
-## Pull request body
-
-PR-Review now sets the pull request's body to the change description's trimmed body, a blank line and the credit block, so the commit and its pull request carry the same signature.
-It reads the engines-run list each time it sets the body; a read failure is an error, as at Finalize.
-Finalize's GitHub merge message is built by the same function.
+- `credit` (bool, default `true`) turns the block on or off.
+- `credit_heading` (default `Created using`), `credit_loomyard` and the map `credit_engines` hold one line's text each.
+- `credit_engines` keeps the engine-name check: a key naming no engine fails the load.
+- An empty or whitespace-only text adds no line; a block with no item lines, or with `credit` off, is empty and the message ends in the body.
 
 ## Design decisions
 
-- The block is optional through an explicit `credit` bool rather than by emptying texts, since the LoomYard line is meant to be present whenever the block is.
-- The template carries only the Claude engine line.
-  `codex` is not yet an engine `modelspec` knows, so a `codex` entry would fail the engine-name check; the Codex engine's task adds `codex: "Codex <codex@openai.com>"` with the engine.
-- The description gate's Co-Authored-By finding stays; only its detail text changes.
+- A bool states "off" plainly, where emptying the texts would be an implicit switch.
+- `trailer_text`, `engine_trailers` and `co_authored_by` are retired keys: a hub file still holding them loads, and reconcile prunes them.
+  The `co_authored_by` to `engine_trailers` migration is removed, since carrying those values over would keep the co-author text this change removes.
+- The template carries the Claude line only.
+  `credit_engines` refuses an engine name `modelspec` does not know and `codex` is not one yet, so the Codex engine's task adds `codex: "Codex <codex@openai.com>"` with the engine.
+- `fabricengine`'s `Warp-SHA` trailer is untouched; it is weft bookkeeping and never lands in the code repository.
 
-## Tests
+## To check by hand
 
-- `TestConfig_CreditBlock` covers the block's order, deduplication, empty texts, an empty heading, no item line and `credit` off.
-- `TestLoadConfig_TemplateDefaults` pins the new defaults and loads a file holding every retired key.
-- `TestMigrateConfig` checks that the retired co-author and trailer keys are left for reconcile's prune with nothing carried into `credit_engines`.
-- The Finalize message test asserts that neither `Lym-Task` nor `Co-Authored-By` appears.
-- The PR-Review fixtures now run with the credit on, so every created and edited body carries the block.
-- `TestFinalize_OverRealHub` checks the block in a real landing commit.
+- A pull request opened before this change keeps its old body until PR-Review next edits it.
+- PR-Review with `credit` on but an empty block, in `internal/landingshed/prreview.go`: confirm the empty-block test covers the created and edited body.
+- PR-Review's engines-run read failure in `internal/landingshed/prreview.go`: confirm the test covers it as an error, as at Finalize.
