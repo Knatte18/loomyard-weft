@@ -1,7 +1,7 @@
 # Card 15 — darn-write-scope-guards
 
 **Create:**
-- `plan:internal/shedrun#StopMarker` -> `func StopMarker(l *lymcwd.Location, runID string) string`
+- `internal/shedrun#StopMarker`
 
 **Edit:**
 - `internal/loomshed#DarnDeps`
