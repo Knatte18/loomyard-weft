@@ -814,12 +814,13 @@
         "testkit"
       ],
       "issues": [],
+      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "Bench the report's cuts on Neve and OSL-1046 before any is made permanent",
       "body": "## Seen\n\n`docs/research/gate-fewer-launches-2026-10-31/report.md` counted the test binaries a gate run links and launches.\nGo links one test binary per package per tier, since the tiers select their test files by build tag: 532 on a cold tree, 143 new to the cache on a warm whole-suite run.\nOn OSL-1046 the endpoint scanner holds each new binary about 10 s, so a change of mean fan-in, about 100 new binaries across three tiers, costs about 1000 s there.\nFive packages are imported by every test binary through the shared `TestMain` path (`internal/testkit/tmuxkit`, `internal/proc`, `internal/lymtemp`, `internal/lock`, `internal/agentname`), so a change to one of them rebuilds every binary.\n\n## Idea\n\nTry the report's cuts in practice before any of them is made permanent (operator, 2026-10-31), as a bench in a worktree of its own, measured on OSL-1046 as well as Neve:\n- One test binary per package for all tiers, the tier chosen at run time instead of by build tag: the largest saving the report rates medium risk.\n- Cut the five universal imports out of the common `TestMain` path: low risk, helps only when one of them changes.\n- Merge small leaf test packages into shared binaries within a tier.\n- One binary for the whole module per tier is rated high risk, since packages then share one process and Go's per-package test cache is lost; bench it only if the others fall short.\n\nEach trial reports the new binaries and scanner hold it saves and whether the test results stay the same.\n",
       "created": "2026-10-31T18:12:46Z",
-      "revised": "2026-10-31T18:12:46Z"
+      "revised": "2026-10-31T18:13:50Z"
     }
   ],
   "prime_owner": "neve",
