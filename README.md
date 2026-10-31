@@ -14,21 +14,20 @@ The root project: the entries under no other project.
 
 Concrete and claimable; only a task can run.
 
-#### Running (1)
+#### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Dobby says why a task is not started, and tells the orch of a failing start in time**<br>• A start that failed every pass for an hour showed no reason in beam status and reached the orch an hour late.<br>• `profile: solid` | [`dobby-start-failures`](design-dobby-start-failures.md) | darn | Worktree-Create | neve | 1d<br>22h | dobby, batten, creel |
+| T2 | **README rewritten as a teaching text, with the overview figure brought up to date**<br>• A new README that teaches LoomYard step by step, and an up-to-date overview figure<br>• `profile: docs` | [`readme-rewrite`](design-readme-rewrite.md) | darn | Worktree-Create | neve | 36m<br>0m | docs |
 
-#### Ready (1)
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T2 | **README rewritten as a teaching text, with the overview figure brought up to date**<br>• A new README that teaches LoomYard step by step, and an up-to-date overview figure<br>• `profile: docs` | [`readme-rewrite`](design-readme-rewrite.md) | darn |  | 36m<br>0m | docs |
+_None._
 
 #### Draft (1)
 
