@@ -1,6 +1,6 @@
 # A landing notice on request, per task
 
-`landing-watch` · Task · feature, dobby, creel, orch, board, reed, config
+`landing-watch` · Task · feature, dobby, creel, orch, board, reed, config · running · Worktree-Create
 
 Depends on: [`adopt-check-visible`](design-adopt-check-visible.md)
 
