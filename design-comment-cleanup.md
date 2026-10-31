@@ -10,16 +10,20 @@ There are surely more, in every package, against `scribe:prose`'s rule never to 
 
 ## Idea
 
-A comment-cleanup campaign over the whole repository:
-- An orchestrating agent splits the work by package and hands each package to a worker agent, many in parallel.
-- A worker reads its package's code and comments and fixes each comment that no longer matches the code, names something gone or planned and dropped, or pins a perishable specific: a count, a list of current callers, a path or name spelled where a constant or identifier should be named.
-- Comments only: a worker changes no code.
-- Haiku 5.5 is a candidate worker model: fast and cheap while its context stays under about 100k, which a single package's read fits (operator, 2026-10-31).
+A comment-cleanup campaign over the whole repository.
+- A worker fixes each comment or text that no longer matches the code, names something gone or planned and dropped, or pins a perishable specific: a count, a list of current callers, a path or name spelled where a constant or identifier should be named.
+- Workers change comments and text only, never code.
 
-Related: note `hardener` is another autonomous campaign run by an orchestrating agent, and note `loom-beam-darns` runs a large task's pieces as darn runs in a beam.
+## Design (operator, 2026-10-31)
+
+- One darn run, whose agent orchestrates the whole campaign: it splits the work and spawns the workers, many in parallel; not one darn per package, which would be far too many runs.
+- Scope: Go comments and docstrings, each package's `doc.go`, the stencils and the docs.
+- Models by scope: Haiku 5.5 takes the comments and docstrings of code files, being fast and cheap while its context stays under about 100k, which one package's read fits; `doc.go`, stencils and docs need a stronger model.
+- No review step of its own: most comments are assumed sound, and this run is itself the check on them; the darn's usual Code-Review is enough.
+
+Related: note `hardener` is another autonomous campaign run by an orchestrating agent.
 
 ## Open
 
-- How the campaign runs under lym: as darn runs per package inside a beam, or as one run whose agent spawns the workers.
-- How a worker's result is checked before it lands, and by which model.
-- Whether doc.go files, stencils and docs are in scope, or Go comments only.
+- Which stronger model takes `doc.go`, stencils and docs.
+- How the orchestrating agent spawns its workers under lym, with Haiku 5.5 as their model.
