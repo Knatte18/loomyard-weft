@@ -1,6 +1,6 @@
 {
   "runGuid": "70b74597f60114cf7e710db8c48b4b9f",
-  "planFingerprint": "41ac35e4a08980048478c352ca5741b20721f14fce6ee839553311895071af98",
+  "planFingerprint": "bab74b14d94a88915c09c47c2966665a286e359073092a7af248f3136f914e19",
   "planFileHashes": {
     "00-overview.md": "fe43c1c7a63ffd9eb9b9d473e77eeac8b2798f5782d4f2375428c2f413791564",
     "01-discussion-fence-rule.md": "34c82d7c1ec45c6c95d38ea3e6f7762952db65309cbabec21c6e360714a02cfd",
@@ -9,19 +9,19 @@
     "04-retired-key-way-forward.md": "cd499ee8bca84c41021df095422b0bc294537caf3c850dc276c5884466af4a76",
     "05-shed-keys-in-shed-only.md": "ffd7340730037e59a6d5c35183c62e25dd7c4656fca0b40df0ce589cf9c927c6",
     "06-tapestry-config-module.md": "bdcde6381a54d47e5c1ba79a86193f489b0c4092060b97d2f847197599718536",
-    "07-recipe-key-accessors.md": "a2aae06a4c2cbc2fe93a3bd02057cb0d4a0511b258e96f0e6de2d4e1fe0c2f68",
+    "07-recipe-key-accessors.md": "9f5bc472970ed949cb4a7c28bed27c790cdb9e72aa00c75199e2361ca2aefc5b",
     "08-one-loom-builder.md": "5140e5f74f23115839252b25619e1924beb65c4acd0887f23a1d878c7e48cd08",
-    "09-drop-tapestry-preflight.md": "24ff85d9725ba7fda8f62c1fd98e4bd5c7466e672c9079d6932bdac8995dfe0b",
+    "09-drop-tapestry-preflight.md": "3fd3d019c41aa451c73fc2bdea0af0fe529a9d731f8a8810eec254baec75abb7",
     "10-drift-verify-before-review.md": "b6263ee8770cad85241884f3c18a7a8f9ee9b8b746082ba4188a8f6a01cc7bb1",
-    "11-record-write-row.md": "daa74075b859a282ff1000c02695b29db01d705a267452b8b3c6ab36730b6448",
+    "11-record-write-row.md": "fdba31bf38a7789d2a130dc02102270c72e302c25d5bf7026435a16fe5b43eca",
     "12-darn-review-answer-key.md": "0c70424d342461ba9fa66fc1cd86f35443952c38eeb2a132b6292c13d395d8dd",
-    "13-one-discussion-validator.md": "552ef9d9c5a9c56631db5cd262d70eac2902dfc36a44c5bb54fcf1813902a57b",
+    "13-one-discussion-validator.md": "092b92aab37b887e5ef2d63598b38380017a1d4ef7655272511c6b80e979f9e6",
     "14-shared-writer-wrapper.md": "77c8a2605bb787d0893a2697258233a9961bc2b7f5dc9bcb076837f82f2ce118",
     "15-darn-write-scope-guards.md": "603b804b993941f135af9c88d820f34a4af9e5fc6d1ce2db5e3232e6ca21f5ca",
-    "16-decision-add-by-rows.md": "302386cc3f0ecad6492e10a8f950bdc1c89d311fdd216c22427105f668bc2879",
+    "16-decision-add-by-rows.md": "f773d1694288d8d3ea82815cff64a13311e066ea3c2a651a02421503e7664d8c",
     "17-one-describe.md": "b9310d80caaac7ca59199378af41ab8a1ebb0d9e4d47ff1e81c2e11a3736d26c",
-    "18-recipe-keyed-wiring.md": "0d07d2812b0507b5e95af2b917fad7461eea45d1625d5df9ee4ad610dcff4068",
-    "19-loom-verbs-loom-only.md": "c722f3f3a23c0331da5ba27d0d7c99e00ad05442fddfbf037fdc5e06f81755f0",
+    "18-recipe-keyed-wiring.md": "d71545383381590c1473e962761dcc7f7ef401b2f7b79a56dfa56916b0580f5d",
+    "19-loom-verbs-loom-only.md": "386d5025dcf6fb8b78e765642d8256ba7decd82113af7cbf80c0d18336bac567",
     "20-peers-per-recipe.md": "b1d42393227e5314a16615739388f6ba2e935f760b455e219f28f4745cc0bcaa"
   },
   "planOverviewFrameHash": "9062e9be39efcfd856849e8c4e596e6c93a780b9903894fd7ed59b1379a46098",
@@ -773,7 +773,7 @@
       }
     }
   ],
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "fcb1d2c3aa9b807f159196347a0467d8",
   "masterSessionId": "455fcd5a-9d78-42d3-90cf-321460494edd",
   "masterEngine": "claude",
@@ -910,7 +910,7 @@
         "08-one-loom-builder"
       ],
       "cardHashes": {
-        "07-recipe-key-accessors": "a2aae06a4c2cbc2fe93a3bd02057cb0d4a0511b258e96f0e6de2d4e1fe0c2f68",
+        "07-recipe-key-accessors": "9f5bc472970ed949cb4a7c28bed27c790cdb9e72aa00c75199e2361ca2aefc5b",
         "08-one-loom-builder": "5140e5f74f23115839252b25619e1924beb65c4acd0887f23a1d878c7e48cd08"
       },
       "startSha": "90483ac0d1c5bca66421c76ace3c026e7b8db867",
@@ -918,13 +918,28 @@
       "spawnedAt": "2026-10-31T17:02:26Z",
       "sessionId": "455fcd5a-9d78-42d3-90cf-321460494edd",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-recipe-key-accessors",
+        "status": "done",
+        "head_sha": "3909ddf9f8dc9d5d23ba25c09ca09915c8cdabb4"
+      },
+      "cardShas": [
+        "3909ddf9f8dc9d5d23ba25c09ca09915c8cdabb4"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-ae969e51519f6cf31.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-ae969e51519f6cf31.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-ac4d9ca8ccf7839e8.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-a3f6cde0f2e7c1b1f.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-a1d64a59b270648d6.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-a1d64a59b270648d6.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-ae969e51519f6cf31.jsonl"
   ]
 }

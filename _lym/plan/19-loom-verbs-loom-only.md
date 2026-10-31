@@ -19,8 +19,8 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/loomrecipe#ServedByLoom`
-- `plan:internal/loomrecipe#HasEngine`
+- `internal/loomrecipe#ServedByLoom`
+- `internal/loomrecipe#HasEngine`
 
 **Intent:** The `lym loom` verbs serve loom runs only (D2), and a plan verb refuses on a recipe with no plan by its rows (D3).
 

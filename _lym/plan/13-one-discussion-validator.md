@@ -57,7 +57,7 @@
 - `internal/testkit/envkit#TestSeamMarkers_ReflectiveTestsAreMarked`
 - `internal/loomcli#TestWire_EverySeamFilled`
 - `internal/shedrecipe/doc.go`
-- `plan:internal/loomrecipe#RecordEngine`
+- `internal/loomrecipe#RecordEngine`
 
 **Intent:** One discussion validator and one gate for every loom record (D5), and Darn-Write's validate-only guard.
 

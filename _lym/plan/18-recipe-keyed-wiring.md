@@ -23,9 +23,9 @@
 - `internal/loomcli#codeReviewOff`
 
 **Uses:**
-- `plan:internal/loomrecipe#IsLoom`
-- `plan:internal/loomrecipe#HasEngine`
-- `plan:internal/loomrecipe#VerifySource`
+- `internal/loomrecipe#IsLoom`
+- `internal/loomrecipe#HasEngine`
+- `internal/loomrecipe#VerifySource`
 
 **Intent:** Every remaining branch on `RecipeDarn` or `RecipeTapestry` in `internal/loomcli` reads the recipe's rows or keys instead, and the verify source follows the recipe's `verify_source` key (D8). Pawl's branches stay, under D2's exception. Each read goes through card 7's accessors on `c.recipe`, an empty recipe read as tapestry; an accessor error is returned where the caller returns errors, and elsewhere reads as the tapestry answer.
 
