@@ -2,7 +2,7 @@
 
 `interactive-recipe` · Task · feature, shed, batten, reed, shuttle · draft
 
-Depends on: [`run-verbs-shared`](design-run-verbs-shared.md), [`hold-notice-operator-turn`](design-hold-notice-operator-turn.md)
+Depends on: [`run-verbs-shared`](design-run-verbs-shared.md)
 
 ## Seen (operator, 2026-10-31)
 
