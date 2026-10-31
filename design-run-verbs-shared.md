@@ -1,6 +1,6 @@
 # loom names the general run, and Discussion becomes a block every variant can turn on
 
-`run-verbs-shared` · Task · enhancement, shed, loom, darn · draft
+`run-verbs-shared` · Task · enhancement, shed, loom, darn, landing, drift · draft
 
 Depends on: [`tapestry-rename`](design-tapestry-rename.md)
 
@@ -31,6 +31,22 @@ The design:
   This fits `loom-beam-darns`, whose darns are pieces a loom Discussion already cut.
 - Either way `lym loom decision add` appends later decisions to the record as `Added after Discussion` entries, as today.
 - The record is the decided scope: Code-Review checks the change against the record, never against the board entry's text, so darn's separate snapshot of the entry is no longer what the review compares with.
+
+## What the general run holds (study of the code, 2026-10-31)
+
+Both recipes already share one CLI (`lym loom`), one wiring path (`internal/loomcli/wiring.go`, with `wireDarn` overriding fields), one recipe builder (`internal/loomrecipe`) and the same row engines; darn is loom with another writer and a set of recipe branches.
+
+The general run holds:
+- The frame both run with the same engine today: Preflight, the Drift rows, the Code-Review perch, Describe, PR-Review, Finalize and Friction-Reflect.
+- The Discussion block above, one gate and one validator in place of `NewDiscussionGate` and `NewDarnDiscussionGate` (`internal/loomshed/gates.go`).
+- A writer slot each variant fills.
+- One copy of each mechanism written twice today: Describe (`DescribeTable` and `DarnDescribeTable` in `internal/landingshed/describe.go`, with two stencils), the description commit, the writer wrappers (`loomshed/darnwrite.go` and `loomshed/discussionwrite.go`), the verify source, and routing, shed and retired-row lists (`Routing` and `DarnRouting`, `New` and `NewDarn`), each driven by the variant.
+
+The variants keep:
+- `tapestry`: Loom-Preflight, Plan and its perch, Webster, Parent-Align, plan amendments, the PATTERN record and PR rework.
+- darn: its writer, tree-scoped verify and the prior-work respawn.
+
+The row order is one for every variant: Drift-Verify runs before Code-Review, as darn does today, since Drift-Verify can change the code a good deal, in `tapestry` especially, and the review must see those changes (operator, 2026-10-31).
 
 ## Open
 
