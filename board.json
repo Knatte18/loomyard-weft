@@ -775,11 +775,13 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [],
+      "depends_on": [
+        "board-push-race",
+        "hold-notice-operator-turn"
+      ],
       "isolated": false,
       "brief": "Re-time tier0 to tier2 by the first audit's method and append the section",
       "body": "## Goal\n\nRepeat the recurring test-time and growth audit and append its section to `docs/benchmarks/test-suite-timing.md`, measured the same way as the first audit (`31d9ae96`, 2026-10-28) so the numbers compare.\n\n## Method\n\n- Tiers `tier0`, `tier1` and `tier2`, each through `lym gate test --tier N --all -- -count=1`.\n- Per tier: one cold run, discarded, then three warm runs; the median of the three warm runs is the tier's wall.\n- That is twelve gate runs in all, and no more: no other tiers, no repeats beyond these.\n- Record the load and quiet-machine checks as the first audit did, and name any run that was in flight on the machine during the measurement.\n\n## The section records\n\n- The walls per tier, against the 2026-10-28 audit.\n- Top-level test counts per tier and the packages that grew or shrank most since then.\n- What `test-prune-audit-leads` (landed 2026-10-29) changed in the counts and walls.\n- Prune candidates as lines, as the first audit did; no board task is filed.\n",
-      "status": "draft",
       "created": "2026-10-31T14:15:58Z",
       "revised": "2026-10-31T14:15:58Z",
       "profile": "docs"
