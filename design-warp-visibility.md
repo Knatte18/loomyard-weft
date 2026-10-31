@@ -21,13 +21,14 @@ Lym renders its own instruction files into each worktree from one database in Bo
 - Rendering a target joins every entry that names it, in order.
 - Codex reads no `AGENTS.local.md`: in each directory it loads one file only, `AGENTS.override.md` before `AGENTS.md` before the names in `project_doc_fallback_filenames` (OpenAI's AGENTS.md guide, checked 2026-10-31).
   So heddle renders Codex's target as `AGENTS.override.md`: the repository's own `AGENTS.md`, when it has one, followed by lym's entries for Codex, so the team's instructions are not hidden (operator, 2026-10-31).
+  A team edit of `AGENTS.md` reaches a worktree when a fabric sync finds commits on the remote that the worktree lacks and settles them locally; that is when heddle renders `AGENTS.override.md` again (operator, 2026-10-31).
 - The database is written only through `lym heddle` verbs, under the write lock of `internal/lock` as the board's store is; never by hand.
 - Each worktree lym makes gets the rendered files seeded into its warp, ignored through `.git/info/exclude`, never `.gitignore`, so warp alone carries no trace of LoomYard or of the engines used.
 - An entry holds only what is specific to using LoomYard on the repository: its text goes into every agent that runs, so anything that fits PATTERN, a stencil, a skill or a hook goes there instead.
 
 ## Open
 
-- Whether the Codex file is rendered again before each Codex spawn, so a team edit of `AGENTS.md` in a long-lived worktree reaches it.
+- Whether a hand edit of `AGENTS.md` inside a worktree also re-renders `AGENTS.override.md`, which the fabric sync below does not see.
 - When rendering happens: at worktree creation only, or also into live worktrees when the database changes.
 - Whether a heddle commit needs an entry-level replay in fabric as `board.json` has, or whether its rare writes make a plain git conflict acceptable.
 - The verbs of `lym heddle`.
