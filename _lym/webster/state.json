@@ -1,6 +1,6 @@
 {
   "runGuid": "70b74597f60114cf7e710db8c48b4b9f",
-  "planFingerprint": "2e482fdefed136210b19325e95a218140a012c63a5af1de58ff9852ba8c7cfd5",
+  "planFingerprint": "3f2443b85a17c5528e88bdfb967be7a6d18ea12512b3e44572627c2b60598993",
   "planFileHashes": {
     "00-overview.md": "fe43c1c7a63ffd9eb9b9d473e77eeac8b2798f5782d4f2375428c2f413791564",
     "01-discussion-fence-rule.md": "34c82d7c1ec45c6c95d38ea3e6f7762952db65309cbabec21c6e360714a02cfd",
@@ -13,7 +13,7 @@
     "08-one-loom-builder.md": "5140e5f74f23115839252b25619e1924beb65c4acd0887f23a1d878c7e48cd08",
     "09-drop-tapestry-preflight.md": "3c614326a4c58adcfade46ec19d81b64303f0899b479b303bf977207f4dc3196",
     "10-drift-verify-before-review.md": "b6263ee8770cad85241884f3c18a7a8f9ee9b8b746082ba4188a8f6a01cc7bb1",
-    "11-record-write-row.md": "fdba31bf38a7789d2a130dc02102270c72e302c25d5bf7026435a16fe5b43eca",
+    "11-record-write-row.md": "b83bd2ad71261311e046499a19b6e0857b05eba70383811f769e3f291d8f6eac",
     "12-darn-review-answer-key.md": "0c70424d342461ba9fa66fc1cd86f35443952c38eeb2a132b6292c13d395d8dd",
     "13-one-discussion-validator.md": "092b92aab37b887e5ef2d63598b38380017a1d4ef7655272511c6b80e979f9e6",
     "14-shared-writer-wrapper.md": "77c8a2605bb787d0893a2697258233a9961bc2b7f5dc9bcb076837f82f2ce118",
@@ -773,7 +773,7 @@
       }
     }
   ],
-  "currentBatch": 10,
+  "currentBatch": 0,
   "masterStrand": "fcb1d2c3aa9b807f159196347a0467d8",
   "masterSessionId": "455fcd5a-9d78-42d3-90cf-321460494edd",
   "masterEngine": "claude",
@@ -827,15 +827,41 @@
       ],
       "cardHashes": {
         "10-drift-verify-before-review": "b6263ee8770cad85241884f3c18a7a8f9ee9b8b746082ba4188a8f6a01cc7bb1",
-        "11-record-write-row": "fdba31bf38a7789d2a130dc02102270c72e302c25d5bf7026435a16fe5b43eca"
+        "11-record-write-row": "b83bd2ad71261311e046499a19b6e0857b05eba70383811f769e3f291d8f6eac"
       },
       "startSha": "126f5c14a5bbff1014dae1b8ab9ebe2da28a4712",
       "kind": "fork",
       "spawnedAt": "2026-10-31T17:17:53Z",
       "sessionId": "455fcd5a-9d78-42d3-90cf-321460494edd",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "10-drift-verify-before-review",
+        "status": "done",
+        "head_sha": "0f08629613643e6d59eba00fe4a64ecf7dc297fa",
+        "deviations": [
+          "internal/battencli/wire_seams_test.go",
+          "internal/loomcli/wiring_beam_test.go",
+          "internal/loomrecipe/darnrecipe.go",
+          "internal/loomrecipe/recipe_test.go",
+          "internal/loomrecipe/reviewbudget_test.go",
+          "internal/loomshed/recordwrite.go",
+          "internal/loomshed/recordwrite_test.go",
+          "internal/loomshed/seam_enforcement_test.go",
+          "internal/shedrecipe/registry_test.go",
+          "internal/testkit/envkit/envkit_test.go"
+        ]
+      },
+      "cardShas": [
+        "0f08629613643e6d59eba00fe4a64ecf7dc297fa"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-ab6f65f6d03ea8e28.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-ab6f65f6d03ea8e28.jsonl"
+      ]
     },
     "5": {
       "slug": "shed-keys-in-shed-only",
@@ -1003,6 +1029,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-a3f6cde0f2e7c1b1f.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-a1d64a59b270648d6.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-ae969e51519f6cf31.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-a547c616b0dacb3bb.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-a547c616b0dacb3bb.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-ab6f65f6d03ea8e28.jsonl"
   ]
 }
