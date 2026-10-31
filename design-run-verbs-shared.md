@@ -51,6 +51,15 @@ The `lym loom` verbs tell the variants apart, which three gaps the study found s
 
 The row order is one for every variant: Drift-Verify runs before Code-Review, as darn does today, since Drift-Verify can change the code a good deal, in `tapestry` especially, and the review must see those changes (operator, 2026-10-31).
 
+## Config split (operator, 2026-10-31)
+
+`loom.yaml` today holds three kinds of keys: the general run's, `tapestry`'s alone, and some that `darn.yaml` repeats.
+The task splits it by the general run's line:
+- `loom.yaml` keeps what the general run owns: the Discussion block (`discussion_*`, with a per-variant switch), Code-Review (`code_*`), the arbiter, tackler, driver, friction and `review_*` keys.
+- A new `tapestry.yaml` takes what only `tapestry` has: `plan_*`, `implementer` and the other Plan and Webster keys.
+- `darn.yaml` keeps darn's own keys and drops those it repeats from `loom.yaml`.
+The hub's `profiles.yaml` blocks then name the module each key now sits in; the orch rewrites the hub's own copy after landing, and the run writes no migration for it.
+
 ## Open
 
 - Whether `lym loom validate-discussion` accepts a record whose sections bar `## Goal` are empty, or the skeleton needs a fixed line in each.
