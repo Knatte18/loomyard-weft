@@ -27,3 +27,7 @@ Every claim is checked against the code and `lym help`: what is wrong is correct
 
 `docs/loomyard-overview.svg`, linked from `docs/overview.md`, is out of date as well: for one, it has the orch start the runs, which dobby does now, and it shows landing rows that changed.
 It is brought in line with the code, and the README shows it where it helps the reader.
+
+## The old README
+
+The current `README.md` is kept beside the new one as a backup file of its own, `README.old.md`, unchanged, so the operator can compare the two.
