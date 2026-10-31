@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=8eaa4cc7633c4800f9f83a60b69f4c7ccb69e236bed3bf1902652a09fccc25e1 build=26f0d9dc38fcc22b3e7767531448a3a5dc64d183 time=2026-10-28T13:52:59Z -->
+<!-- lym-stencil: sha256=b303657fed15db8c5e65f4fd625fede63118e33892d48ce684ddca605665c3eb build=52b6984877826c631cb136734cbf9afe3959bf18 time=2026-10-31T13:43:24Z -->
 
 # Discussion spec — the decision record, the support log and the relevant list
 
@@ -50,12 +50,12 @@ An `### Added after Discussion` entry carries no id.
 Any other H3 there is refused, as a `decision-heading-malformed` finding, and a repeated id as a `decision-id-duplicate` finding.
 Each id appears as a whole word in a bullet of `## Acceptance criteria`, so `D1` is not met by `D10`, and a range such as "D1 to D4" covers only the ids it spells.
 An id no bullet names is a `decision-not-in-acceptance` finding.
-Both checks run for loom and darn records alike, in the discussion gates and `lym loom validate-discussion`, and not in `lym loom decision add`.
+Both checks run for tapestry and darn records alike, in the discussion gates and `lym loom validate-discussion`, and not in `lym loom decision add`.
 Lines inside fenced blocks are not read.
 
 ### Citations in a loom record
 
-On a loom run, the discussion check tests the paths and symbols the record cites in backticks; a darn record's citations are not tested.
+On a tapestry run, the discussion check tests the paths and symbols the record cites in backticks; a darn record's citations are not tested.
 
 - A token is a path when it holds a `/`, none of `#>*{}$:`, no `...` segment, and its first segment is a root entry git tracks, an entry staged and never committed included; `_lym/` and `.lym/` paths are never tested.
   It must exist in the worktree, and a token ending in `/` must be a directory; otherwise the check reports `citation-path-missing`.
@@ -91,7 +91,7 @@ The Discussion-Write and Discussion-Burler-Fix gates halt on a quarry outage as 
   A writer never edits or removes one, and a record that drops an entry its history held fails the format check.
 - A `## PATTERN changes` bullet carrying the ` — added after Discussion (<by>, <date>)` suffix is appended only by `lym loom decision add`.
   A writer never edits or removes one, and a record that drops a bullet its history held fails the format check wherever the check for dropped `### Added after Discussion` entries runs: the darn discussion gate, `lym loom validate-discussion` on a darn run and the verb's darn-record check.
-  A loom run's discussion check reads no history for either.
+  A tapestry run's discussion check reads no history for either.
 - `<!-- lym:carry-over … -->` blocks under `## Open risks` are written only by Go.
   A writer never authors, edits or removes one.
 
