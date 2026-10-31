@@ -36,7 +36,7 @@ A dead strand halts with `lym loom resume`, since the agent is the whole work of
 
 ### Turn 6 — Quiet notice and watchdog
 
-Dobby's quiet notice is suppressed by a hard-coded list of waiting rows in `battencli`; the loom loop's step watchdog has no such list and counts a held turn end as no activity, so a sampler step would be killed after `step_idle_timeout_min`.
+Dobby's quiet notice is suppressed by a hard-coded list of waiting rows in `battencli`; the loom loop's step watchdog has no such list, and a session started through `StartSession` writes no wait marker, so a step whose agent is quiet, a sampler step as much as a Beam-Await or PR-Review one, is killed after `step_idle_timeout_min`.
 Both readers now read one list holding Beam-Await, PR-Review and Sampler-Session (D7).
 
 ### Turn 7 — Trials
@@ -52,7 +52,7 @@ Note `interactive-idle-park` will build on this recipe's wait; D6's done record 
 All six forks returned a report. One fact was checked before judging: the Describe description gate checks only the file's format (`internal/summaryparser/description.go`), so a description of an empty diff passes it.
 
 - interactions 1, existing-paths 1, walkthrough 1 (merged): Describe skipped under a zero Code-Review budget leaves no description — fixed, Describe carries no `entry_gate` (D1).
-- interactions 2: Finalize's reroute and `CodeReviewOff` read the budget, not `sampler.code_review` — fixed, every perch-off reading follows the rows' entry gate too (D3).
+- interactions 2: Finalize's reroute reads the budget, not `sampler.code_review` — fixed, every perch-off reading follows the rows' entry gate too (D3).
 - interactions 3, walkthrough 2, bound-breaker 5 (merged): a pause could halt the row on a session it stopped — fixed, covered wakes judge nothing and the uncovered wake resumes first (D6).
 - interactions 4: the admitted strand after a resume — fixed, the row re-records the strand and D4 reads the current one.
 - interactions 5: dirty-tree way forward wrong for a failed weft commit — fixed, the check covers the code checkout only, which a `_lym` commit never dirties (D6).
@@ -112,5 +112,5 @@ _No rounds yet._
 - Q13 (resolved, auto-pick): Does the build row run a verify gate? No; Finalize's gate checks the merged tree.
 - Q14 (resolved, auto-pick): Name of the verb: `sampler-done`, beside `pr-continue`.
 - Q15 (resolved, auto-pick, after lens review): Does Describe keep darn's budget gate? No; the sampler agent writes no description, so Describe always runs.
-- Q16 (resolved, auto-pick, after lens review): What is the entry stamp? The count of the row's Done entries in the status history.
+- Q16 (resolved, auto-pick, after lens review): What is the entry stamp? The count of the run's entries into the row in the status history, so a return by a `goto` raises it with no Done between.
 - Q17 (open, for the run's parent): Does another hub plus a stencil rule meet "a tmux server of its own" for a trial? Recorded under Open risks.
