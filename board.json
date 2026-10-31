@@ -424,16 +424,21 @@
         "feature",
         "dobby",
         "creel",
-        "orch"
+        "orch",
+        "board",
+        "reed",
+        "config"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "A landing notice from dobby on request, per task, reusing the wait that lym hibernate request --after has",
-      "body": "## Seen (operator, 2026-10-28)\n\nA run that lands sends nothing: the orch learns of a landing only when something else wakes it, and the orch never polls runs.\nWhen the operator asks the orch to report a run's result as soon as it lands, the orch cannot keep that promise, and the operator has to ask again.\n\n## Design (operator, 2026-10-28 and 2026-10-30)\n\nDobby sends the notice, never batten: dobby drives each run to its end, knows its outcome and landing commit, and already mails the orch.\nNo process of its own is needed, since dobby only keeps a list of watches and reads the run state it already has.\n\n- The orch sets a watch when the operator asks, through a verb of its own, for one slug; it is never on by default for every run, and it can be withdrawn.\n- When the watched run lands, or ends without landing, dobby posts one short creel line to the orch naming the slug, the outcome and the landing commit.\n- The watch ends when it has fired once.\n- The test for a run past its Land row is the one `lym hibernate request --after` already has (`landFinished` in `internal/hibernateengine`); it is taken out into one shared piece that hibernate and dobby both use, never copied.\n- The hibernate daemon stays as it is: only its wait is shared.\n\n## Open\n\n- Where dobby keeps the watch: a flag on the board entry or a record of its own.\n- The shared test says only that a run is past Land, so it must also tell a run that landed from one that ended without landing, since the notice names the outcome.\n- The verb's name and where it lives.\n- Whether the hibernate request should move into dobby as well: it spans every beam, since `--after-all` waits on all runs while a dobby sees its own, and a hub pause must leave the dobby that waits outside it.\n",
+      "body": "## Seen (operator, 2026-10-28)\n\nA run that lands sends nothing: the orch learns of a landing only when something else wakes it, and the orch never polls runs.\nWhen the operator asks the orch to report a run's result as soon as it lands, the orch cannot keep that promise, and the operator has to ask again.\n\n## Design (operator, 2026-10-28 to 2026-10-31)\n\nDobby sends the notice, never batten: dobby drives each run to its end, knows its outcome and landing commit, and already mails the orch.\nNo process of its own is needed, since dobby only reads the run state it already has.\n\nA notice goes out in two cases, both supported:\n- Per task: a field on the task's board entry, such as `notify_on_land`, set with `lym board upsert`, asks for a notice when that run ends; it ends when it has fired once.\n- Per dobby: a switch in the dobby's own config, the `beam` module (`beam.yaml`, beside `max_runs`) in the worktree's `_lym/config`, asks for a notice on every run that dobby drives; it is off by default, and each beam's dobby has its own.\n\nThe notice:\n- When the run lands, or ends without landing, dobby posts one short creel line to the orch naming the slug, the outcome and the landing commit.\n- A beam counts as a run: a watch or the switch also fires when a dobby lands a beam into its parent after `lym beam ready`.\n- The test for a run past its Land row is the one `lym hibernate request --after` already has (`landFinished` in `internal/hibernateengine`); it is taken out into one shared piece that hibernate and dobby both use, never copied, and it also tells a run that landed from one that ended without landing, since the notice names the outcome.\n\nThe worktree's reed overview, which already shows its runs and its dobby, shows whether the dobby's switch is on, and which tasks carry a per-task watch.\n",
       "status": "draft",
       "created": "2026-10-28T18:40:56Z",
-      "revised": "2026-10-30T11:34:32Z"
+      "revised": "2026-10-31T14:39:51Z",
+      "profile": "solid"
     },
     {
       "id": 910,
