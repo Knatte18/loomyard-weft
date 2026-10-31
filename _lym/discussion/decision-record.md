@@ -236,6 +236,12 @@ Decision: The loom contract says: a record before, a build segment, and the land
 
 Rationale: Operator, 2026-10-31: 'writer' names many agents; tapestry's plan is part of making the change.
 
+### Added after Discussion (parent, 2026-10-31): A beam seed names no recipe this lym knows
+
+Decision: A seed whose recipe is beam is refused by lym loom and lym shed alike as naming no embedded recipe, and the refusal names the re-seed way forward. This replaces the part of D2 and D11 (and D11's acceptance criterion) that had lym loom refuse it as a non-loom recipe naming the lym shed verbs.
+
+Rationale: D11 also has lym shed refuse beam, so pointing a beam seed at the lym shed verbs would send it to another refusal (PATTERN-refusal-way-forward); a re-seed is the only way forward that works.
+
 ## Constraints
 
 - PATTERN-shed-recipe-registry: `RecordWrite` is one more `Constructor` in the one map in `internal/shedrecipe`; the contract's engine sets sit beside it.
