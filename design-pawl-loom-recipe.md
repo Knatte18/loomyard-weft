@@ -2,8 +2,6 @@
 
 `pawl-loom-recipe` · Task · enhancement, pawl, loom, board, workspaces · running · Darn-Write
 
-Depends on: [`commit-signature-credit`](design-commit-signature-credit.md)
-
 ## Seen (operator, 2026-10-31)
 
 Pawl takes one board entry, a project, and ends with its beam merged into the parent, as a loom recipe takes a task and lands it.
