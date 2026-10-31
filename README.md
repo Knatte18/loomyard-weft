@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-31 14:14 UTC; every age below is as of then.
+Rendered 2026-10-31 14:15 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -10,7 +10,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 The root project: the entries under no other project.
 
-### Tasks (4)
+### Tasks (5)
 
 Concrete and claimable; only a task can run.
 
@@ -20,9 +20,9 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **A rejected board push is retried after a fetch, and called a divergence only when one exists**<br>• Two overlapping pushes of the board from this hub made one fail, and the mail named a divergence that did not exist. | [`board-push-race`](design-board-push-race.md) | darn | Darn-Write | neve | 23h<br>0m | fabric |
-| T3 | **No hold notice for a turn the operator started in the pane**<br>• The shuttle hold notice is held back when the operator typed the turn's prompt | [`hold-notice-operator-turn`](design-hold-notice-operator-turn.md) | darn | Darn-Write | neve | 1h<br>0m | shuttle, creel |
-| T4 | **loom becomes the task-run contract that tapestry and darn fulfil**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | tapestry | Discussion-Write | neve | 2w<br>12m | shed, loom, darn, landing, drift |
+| T2 | **A rejected board push is retried after a fetch, and called a divergence only when one exists**<br>• Two overlapping pushes of the board from this hub made one fail, and the mail named a divergence that did not exist. | [`board-push-race`](design-board-push-race.md) | darn | Darn-Write | neve | 23h<br>1m | fabric |
+| T3 | **No hold notice for a turn the operator started in the pane**<br>• The shuttle hold notice is held back when the operator typed the turn's prompt | [`hold-notice-operator-turn`](design-hold-notice-operator-turn.md) | darn | Darn-Write | neve | 1h<br>1m | shuttle, creel |
+| T4 | **loom becomes the task-run contract that tapestry and darn fulfil**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | tapestry | Discussion-Write | neve | 2w<br>13m | shed, loom, darn, landing, drift |
 
 #### Ready (0)
 
@@ -36,7 +36,15 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Pawl becomes a loom recipe, with a project decision record and no review rounds**<br>• Pawl joins the loom contract; a project record written at beam create and changed only through decision add<br>• `profile: solid` | [`pawl-loom-recipe`](design-pawl-loom-recipe.md) | darn | T4 | 12m<br>5m | pawl, loom, board, workspaces |
+| T1 | **Pawl becomes a loom recipe, with a project decision record and no review rounds**<br>• Pawl joins the loom contract; a project record written at beam create and changed only through decision add<br>• `profile: solid` | [`pawl-loom-recipe`](design-pawl-loom-recipe.md) | darn | T4 | 13m<br>6m | pawl, loom, board, workspaces |
+
+#### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T5 | `draft` **Second recurring test-time and growth audit**<br>• Re-time tier0 to tier2 by the first audit's method and append the section<br>• `profile: docs` | [`test-time-audit-2`](design-test-time-audit-2.md) | darn |  | 0m<br>0m | gate |
 
 ### Notes (34)
 
