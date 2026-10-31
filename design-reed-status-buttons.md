@@ -13,6 +13,8 @@ Buttons the operator named:
   `lym batten pause <slug>` waits for the next producer boundary, which can take very long, so it is no halt.
   Today the operator has no quick way to do either from where they watch the run.
 - Open the pair in VS Code (`lym ide spawn <slug>`).
+- Open one more terminal on the same worktree, beside the one the operator watches: a desktop terminal window whose shell sits in the worktree's directory and runs `lym reed attach`, so it shows the same reed session (operator, 2026-10-31).
+  `lym reed window <worktree-dir>` already opens such a window, so the button only calls it with the session's worktree.
 - A new, empty agent in a window of its own: `lym shuttle open --role <role> --model opus[high]`, which opens an interactive session with no prompt and no run record (tried by hand on 2026-10-30).
 - `lym orch distill` and `lym orch refresh` for the orch session.
 - The follow toggle of note `viewer-off-shell`.
