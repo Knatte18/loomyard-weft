@@ -691,7 +691,7 @@
       "isolated": false,
       "brief": "A new README that teaches LoomYard step by step, and an up-to-date overview figure",
       "body": "## Goal\n\n`README.md` is rewritten from scratch as a teaching text for a reader new to LoomYard; the current one does not teach well and is out of date.\n\n## What it covers, in this order\n\n- What LoomYard is and the problem it solves, in plain words.\n- The core concepts in the order a reader meets them: hub, worktree, board, task, run, orch and dobby.\n- How a task goes from the board to a landed commit.\n- How to get started.\n- Detail goes to `docs/` by link, never repeated in the README.\n\n## What it leaves out\n\n- No list of modules by their weaving names: the names tell a new reader nothing.\n  A weaving term appears only where the reader needs it, explained where it first appears.\n\n## Up to date\n\nEvery claim is checked against the code and `lym help`: what is wrong is corrected, what no longer exists is dropped.\n\n## The overview figure\n\n`docs/loomyard-overview.svg`, linked from `docs/overview.md`, is out of date as well: for one, it has the orch start the runs, which dobby does now, and it shows landing rows that changed.\nIt is brought in line with the code, and the README shows it where it helps the reader.\n\n## The old README\n\nThe current `README.md` is kept beside the new one as a backup file of its own, `README.old.md`, unchanged, so the operator can compare the two.\n",
-      "status": "running · Darn-Write",
+      "status": "running · Drift-Verify",
       "created": "2026-10-31T11:58:14Z",
       "revised": "2026-10-31T12:34:55Z",
       "profile": "docs"
