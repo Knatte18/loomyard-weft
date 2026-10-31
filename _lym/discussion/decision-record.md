@@ -64,6 +64,13 @@ Bound: overlapping pushes still cost a retry, and in the worst case an `other` n
 
 - A fetch that fails for a non-transport reason during the judgment yields `other`, which loses the divergence call for a branch that did diverge; the next push's rejection, with a working fetch, records it.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - fetch-failure-branch-untested (class consistency, severity MEDIUM, open in rounds 1)
+  - missing-upstream-judged-divergence (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: on the code, records and bolt sides, a rejection that outlasts the backoff while origin holds nothing the branch lacks writes an `other` record, not `not_fast_forward`, and its notice names no divergence.
