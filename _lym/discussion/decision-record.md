@@ -288,6 +288,13 @@ Rationale: A darn run in flight that halted at Darn-Write on its old discussion 
   - d5-darn-guard-damaged-record-no-recovery (class design, severity MEDIUM, open in rounds 3)
 <!-- /lym:carry-over Discussion-Review -->
 
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/plan/round-3-review.md; fixer report: _lym/reviews/plan/round-3-fixer-report.md.
+  - card6-missed-moved-key-readers (class design, severity BLOCKING, open in rounds 1, 2, 3)
+  - tapestry-run-wide-key-routing (class design, severity MEDIUM, open in rounds 2, 3)
+<!-- /lym:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - D1: loading `tapestry` and darn passes the contract check; a recipe declaring `contract: loom` without a record row, without a build segment, with the build segment before the record row, without Finalize ending its `on_done` path, or without `verify_source` is refused, naming the clause and the way forward.
