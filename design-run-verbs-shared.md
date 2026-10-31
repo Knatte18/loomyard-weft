@@ -1,4 +1,4 @@
-# loom names the general run; today's loom is one variant
+# loom names the general run, and Discussion becomes a block every variant can turn on
 
 `run-verbs-shared` · Note · enhancement, shed, loom, darn
 
@@ -12,35 +12,24 @@ A third recipe is planned, `Hardener` (the note `hardener`), which would make th
 ## Direction (operator, 2026-10-29)
 
 `loom` becomes the name of the general run in Shed, the generic driver of a run, and `lym loom ...` stays as it is today.
-`loom` is the name of the hub itself, loomyard, so it fits the general run.
-What is called loom today is one variant of it, darn is another, and `Hardener` becomes a third.
-This replaces moving the run verbs to a new shared namespace.
-
-Today's variant is renamed `tapestry` (operator, 2026-10-29): a picture woven to a full-size drawing made first, which is the discuss-and-plan-before-building path.
-`weave` was rejected for sitting too close to `Webster`, who weaves.
-
-## Staging (operator, 2026-10-29)
-
-Two steps, so that no search has to tell the family from the variant:
-
-1. A mechanical rename of today's variant from `loom` to `tapestry`, done by a Go program under `tools/` like the `lyx` to `lym` rename (`ef912d41`, `tools/wordswap`).
-   The `lym loom ...` verbs stay as they are, since they become the general ones.
-2. Move the generic parts back under `loom`, as design work, once every remaining `loom` is a candidate for the family.
+What is called loom today is one variant of it, `tapestry`, darn is another, and `Hardener` becomes a third.
+The mechanical rename of today's variant to `tapestry` is task `tapestry-rename`; this note is the design work after it: moving the generic parts under `loom`, built once that rename has landed.
 
 ## Discussion as a shared block (operator, 2026-10-31)
 
 Today the two variants keep the same decision record, in the same format and checked by the same parser, but make it differently:
 - loom's Discussion-Write writes it alone, and Discussion-Review's perch reviews it before Plan starts;
-- darn's one writer writes it first and then the code in the same session, and no perch reviews the record itself.
+- darn's one writer turns the board entry into the record after a coarse reading of the code, asks the orch only when the entry is outdated, and then writes the code in the same session; no perch reviews the record itself.
+
+The design:
+- Discussion, a writer and its perch, becomes one block of the general run that a variant turns on or off: always on in `tapestry`, off by default in darn.
+- Every run starts by turning the board entry's body into the record's format, a cheap step for a small model such as Haiku, checked by `lym loom validate-discussion`: the task text is the record's first draft.
+- With Discussion on, the writer takes that draft as a first version and makes it thorough, and the perch reviews it; Plan and Webster work from the final record.
+- With Discussion off, the draft is the final record: darn treats the board entry as already discussed and plans and writes the code from it in one session.
+  This fits `loom-beam-darns`, whose darns are pieces a loom Discussion already cut.
 
 ## Open
 
-- Whether Discussion becomes one block of the general run, the same rows, record and perch in every variant, which a variant turns on or off, with darn off by default.
-  Against it: darn is meant for a simple task whose text is already discussed, and in `loom-beam-darns` the darns are pieces a loom Discussion already cut, so a Discussion of their own would discuss again what is settled (operator, 2026-10-31, undecided).
-
-- Which packages, docs and stencils are the variant's and which are general; the rename program's inclusion and exclusion lists follow from it.
-- What the board's `recipe` field and an empty `recipe` mean during step 1, since existing entries and runs carry `loom` or nothing.
-- The strand names `ly:LOOM` and the texts that name them.
+- The conversion only translates: it adds, interprets and fills in nothing, and what the entry lacks stays empty or open in the record.
+- Where the check that the entry is not outdated (landed work or another entry contradicting it) lives once the record comes ready-made: in the conversion step, or in darn's writer as today.
 - How `loom` as the general driver relates to `shed`: `lym shed` already carries `run`, `step`, `status`, `pause` and `goto`, which the general `lym loom` verbs would overlap.
-- Which packages take the general name: `internal/loomcli` already serves darn runs, while the packages and docs that mean today's variant need the new name.
-- Every stencil, way-forward text and doc that says "loom" for the variant changes with it.
