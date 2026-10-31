@@ -689,6 +689,26 @@
       "body": "## Seen (operator, 2026-10-31)\n\n`lym hibernate request` runs a daemon of its own that waits for the runs to land and every session to pause before it hibernates the machine.\nDobby already drives every run of its worktree to its end, and `landing-watch` gives dobby and the hibernate daemon one shared test for a run past its Land row.\n\n## Idea\n\nThe hibernate request moves into dobby, so no daemon of its own waits on the runs.\n\n## Open\n\n- A request spans every beam, since `--after-all` waits on all runs while a dobby sees only its own: which dobby carries it, or how the dobbies agree.\n- A hub pause must leave the dobby that waits outside it.\n",
       "created": "2026-10-31T14:39:51Z",
       "revised": "2026-10-31T14:39:51Z"
+    },
+    {
+      "id": 934,
+      "handle": "E6",
+      "slug": "bolt-dir-rename",
+      "title": "The Bolt checkout directory _board is renamed _bolt",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "board",
+        "config"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "_board holds all of Bolt, not only the board; rename it _bolt with a rename program for existing hubs",
+      "body": "## Seen (operator, 2026-10-31)\n\nThe hub's Bolt checkout is the directory `_board`, but it holds far more than the board: `board.json`, its README and design files, the hub's `_lym` config and orch rules, and soon heddle's database (note `warp-visibility`).\nThe name says board where the directory is Bolt.\n\n## Idea\n\nRename the directory `_board` to `_bolt`, the name of the repository it checks out.\n- The name sits in `fabricengine.BoardDirName` and `lymcwd`'s own constant, and in many Go files, stencils, skills, contracts and docs that spell the path.\n- Existing hubs on Neve and OSL-1046 have `_board` on disk, so the rename needs a rename program as `tapestry-rename` had, run once per hub.\n- It touches nearly every package, so it runs alone, with no other run in flight.\n- `runproc.HubOwner`, also spelled `_board`, is an owner name, not the directory; whether it follows is to be decided.\n",
+      "created": "2026-10-31T16:11:22Z",
+      "revised": "2026-10-31T16:11:22Z"
     }
   ],
   "prime_owner": "neve",
