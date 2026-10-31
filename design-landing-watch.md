@@ -1,6 +1,6 @@
 # A landing notice on request, per task
 
-`landing-watch` · Task · feature, dobby, creel, orch, board, reed, config · running · Darn-Write
+`landing-watch` · Task · feature, dobby, creel, orch, board, reed, config · running · Drift-Verify
 
 ## Seen (operator, 2026-10-28)
 
