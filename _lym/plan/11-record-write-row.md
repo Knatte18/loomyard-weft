@@ -1,14 +1,14 @@
 # Card 11 — record-write-row
 
 **Create:**
-- `plan:internal/loomshed#NameRecordWrite` -> `const NameRecordWrite = "Record-Write"`
-- `plan:internal/loomshed#RecordWriteDeps` -> `type RecordWriteDeps struct`
-- `plan:internal/loomshed#NewRecordWrite` -> `func NewRecordWrite(name string, deps RecordWriteDeps) shedengine.ShedProducer`
-- `plan:internal/loomshed#BoardRecord` -> `func BoardRecord(body string) []byte`
-- `plan:internal/loomshed#TestRecordWrite_Call` -> `func TestRecordWrite_Call(t *testing.T)`
-- `plan:internal/shedrecipe#recordWriteEntry` -> `func recordWriteEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error)`
-- `plan:internal/shedrecipe#TestRecordWriteEntry` -> `func TestRecordWriteEntry(t *testing.T)`
-- `plan:internal/loomcli#recordWriteDeps` -> `func recordWriteDeps(l *lymcwd.Location) loomshed.RecordWriteDeps`
+- `internal/loomshed#NameRecordWrite`
+- `internal/loomshed#RecordWriteDeps`
+- `internal/loomshed#NewRecordWrite`
+- `internal/loomshed#BoardRecord`
+- `internal/loomshed#TestRecordWrite_Call`
+- `internal/shedrecipe#recordWriteEntry`
+- `internal/shedrecipe#TestRecordWriteEntry`
+- `internal/loomcli#recordWriteDeps`
 
 **Edit:**
 - `internal/shedrecipe#registry`
