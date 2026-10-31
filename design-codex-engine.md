@@ -109,8 +109,8 @@ Forks are no longer a blocker for a fan: `docs/research/codex-twill-spike-2026-1
 
 ## Groundwork
 
-The engine-neutral groundwork of the operator's 2026-10-15 decision (engine registry, config seams, model choice, usage readers, creel in three stages) has only creel stage 3, note `creel-agents`, left on the board; it matters only once Codex takes a role beyond Burler review, since such roles message through Claude Code's SendMessage today (operator, 2026-10-24).
-The review-only first step waits on no creel work.
+The engine-neutral groundwork of the operator's 2026-10-15 decision (engine registry, config seams, model choice, usage readers, creel in three stages) is built: creel stage 3 (`creel-agents`, `ba2a346b`, 2026-10-31) moved every agent from Claude Code's SendMessage to `lym creel`, so a role beyond Burler review no longer waits on creel work for Codex.
+The review-only first step never did.
 
 ## Model aliases (operator, 2026-10-15)
 
