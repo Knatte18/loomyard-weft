@@ -1,6 +1,6 @@
 # The Bolt checkout directory is named in one place only, and renamed _bolt
 
-`bolt-dir-rename` · Task · enhancement, fabric, board, config · draft
+`bolt-dir-rename` · Task · enhancement, fabric, board, config, cwd, stencil · draft
 
 Depends on: [`run-verbs-shared`](design-run-verbs-shared.md), [`commit-signature-credit`](design-commit-signature-credit.md), [`pawl-loom-recipe`](design-pawl-loom-recipe.md), [`interactive-recipe`](design-interactive-recipe.md)
 
