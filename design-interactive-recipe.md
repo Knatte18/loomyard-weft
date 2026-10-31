@@ -2,8 +2,6 @@
 
 `interactive-recipe` · Task · feature, shed, batten, reed, shuttle · running · Discussion-Write
 
-Depends on: [`pawl-loom-recipe`](design-pawl-loom-recipe.md)
-
 ## Seen (operator, 2026-10-31)
 
 Some work needs many rounds between the operator and an agent on the result itself, and a one-shot writer makes it badly: a README written as a teaching text (task `readme-rewrite`), the board's README (note `board-viewer`), and trying out the reed status bar's buttons (note `reed-status-buttons`).
