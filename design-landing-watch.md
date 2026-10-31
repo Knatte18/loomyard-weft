@@ -1,6 +1,6 @@
 # A landing notice on request, per task
 
-`landing-watch` · Note · feature, dobby, creel, orch
+`landing-watch` · Task · feature, dobby, creel, orch · draft
 
 ## Seen (operator, 2026-10-28)
 
