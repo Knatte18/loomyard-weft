@@ -60,6 +60,12 @@ The task splits it by the general run's line:
 - `darn.yaml` keeps darn's own keys and drops those it repeats from `loom.yaml`.
 The hub's `profiles.yaml` blocks then name the module each key now sits in; the orch rewrites the hub's own copy after landing, and the run writes no migration for it.
 
+## Tapestry-Preflight goes (operator, 2026-10-31)
+
+The Tapestry-Preflight row is removed.
+Its seed check repeats what Shed's own status read before every row already refuses (`internal/loomengine/seed.go`, `CheckSeed`), so it goes with the row.
+Its check that `batcher.yaml` loads moves to where Webster is used: into Preflight for a variant that runs Webster, or into the Webster row itself.
+
 ## Old recipe alias goes (operator, 2026-10-31)
 
 `legacyRecipeBeam` in `internal/shedrun/seed.go`, which reads a seed recording the pawl recipe's former name `beam` as pawl, is removed with its handling in `decodeSeed`: no run seed on this machine records `beam`.
