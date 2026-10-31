@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Dobby says why a task is not started, and tells the orch of a failing start in time**<br>• A start that failed every pass for an hour showed no reason in beam status and reached the orch an hour late.<br>• `profile: solid` | [`dobby-start-failures`](design-dobby-start-failures.md) | darn | Darn-Write | neve | 1d<br>22h | dobby, batten, creel |
-| T2 | **README rewritten as a teaching text, with the overview figure brought up to date**<br>• A new README that teaches LoomYard step by step, and an up-to-date overview figure<br>• `profile: docs` | [`readme-rewrite`](design-readme-rewrite.md) | darn | Drift-Baseline | neve | 37m<br>0m | docs |
+| T2 | **README rewritten as a teaching text, with the overview figure brought up to date**<br>• A new README that teaches LoomYard step by step, and an up-to-date overview figure<br>• `profile: docs` | [`readme-rewrite`](design-readme-rewrite.md) | darn | Darn-Write | neve | 37m<br>0m | docs |
 
 #### Ready (0)
 
