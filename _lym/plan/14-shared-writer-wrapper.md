@@ -1,7 +1,7 @@
 # Card 14 — shared-writer-wrapper
 
 **Create:**
-- `plan:internal/loomshed#runAndCommit` -> `func runAndCommit(ctx context.Context, name string, session shedengine.ShedProducer, commit func() error) (shedengine.Outcome, shedengine.OutputPointer, error)`
+- `internal/loomshed#runAndCommit`
 
 **Edit:**
 - `internal/loomshed/doc.go`
