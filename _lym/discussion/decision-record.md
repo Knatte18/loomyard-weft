@@ -53,6 +53,14 @@ Rationale: the error is shown to the operator and dobby's overview, and D1 makes
 
 - A run whose task worktree vanished by hand before Worktree-Teardown ever ran resumes without an origin judgement; the teardown row then removes what is left, which is the same outcome `lym fabric remove` gives such a pair.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - battenshed-doc-stale-on-resume-preflight (class consistency, severity MEDIUM, open in rounds 1)
+  - pattern-owner-machine-stale-on-teardown-skip (class consistency, severity MEDIUM, open in rounds 1)
+  - teardown-resume-pair-present-reconcile-untested (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: a resume at Worktree-Teardown with the task worktree absent runs no reconcile and resumes when the local board shows the run owned here or unowned.
