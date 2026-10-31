@@ -1,8 +1,8 @@
 # Card 13 — one-discussion-validator
 
 **Create:**
-- `plan:internal/loomshed#DiscussionCheck` -> `type DiscussionCheck struct`
-- `plan:internal/loomshed#ValidateDiscussion` -> `func ValidateDiscussion(check DiscussionCheck) ([]discussionparser.Finding, error)`
+- `internal/loomshed#DiscussionCheck`
+- `internal/loomshed#ValidateDiscussion`
 
 **Edit:**
 - `internal/loomshed#NewDiscussionGate` -> `func NewDiscussionGate(check DiscussionCheck) shuttleengine.Gate`
