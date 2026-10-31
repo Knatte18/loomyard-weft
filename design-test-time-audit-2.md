@@ -1,6 +1,6 @@
 # Second recurring test-time and growth audit
 
-`test-time-audit-2` · Task · research, gate · running · Worktree-Create
+`test-time-audit-2` · Task · research, gate · running · Drift-Baseline
 
 Depends on: [`adopt-check-visible`](design-adopt-check-visible.md)
 
