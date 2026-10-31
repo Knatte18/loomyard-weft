@@ -2,8 +2,6 @@
 
 `teardown-retry-no-pair` · Task · bug, batten, fabric · running · Darn-Write
 
-Depends on: [`run-verbs-shared`](design-run-verbs-shared.md)
-
 ## Seen (hub orch, 2026-10-31)
 
 Run `pawl-starts-at-preflight` landed on OSL-1046 on 2026-10-30, and its Worktree-Teardown removed the pair but failed to delete the remote weft branch `pawl-starts-at-preflight-weft`: GitHub answered the `git push --delete` with an Internal Server Error.

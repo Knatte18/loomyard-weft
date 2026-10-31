@@ -180,29 +180,6 @@
       "revised": "2026-10-28T09:26:44Z"
     },
     {
-      "id": 504,
-      "handle": "T4",
-      "slug": "run-verbs-shared",
-      "title": "loom becomes the task-run contract that tapestry and darn fulfil",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "shed",
-        "loom",
-        "darn",
-        "landing",
-        "drift"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is.",
-      "body": "## Seen (operator, 2026-10-14)\n\nSince `0850f76e` a darn run has a decision record, and `lym loom decision add` works on it.\nThe operator found it absurd that a `loom` command acts on something that is not a loom run.\nThe same holds for the other run verbs the orch uses on darn runs: `lym loom status`, `goto`, `resume`, `start` and `circling`.\nA further recipe is planned, `Hardener` (the note `hardener`).\n`tapestry-rename` renamed today's loom recipe to `tapestry`; this task gives `loom` its new meaning.\n\n## Three layers (operator, 2026-10-31)\n\n- Shed is the engine: the state machine, the recipe loader and the producer registry (`internal/shedrecipe/registry.go`), seeds, the perch machinery, arbiter, tackler and driver, and the `lym shed` verbs.\n- Batten is the frame around a run, the same for every recipe: it makes the worktree, runs the recipe, deploys after landing and tears the worktree down.\n- Loom is the task run, and `loom` names a contract rather than a body of producers:\n  a loom recipe takes one board task in, holds a decision record as the task's decided scope, has a writer that writes the code, and ends with Finalize landing one change in the parent.\n  Shed checks a recipe that declares itself a loom against that contract when it loads it.\n  The `lym loom` verbs act on every run whose recipe is a loom, and nowhere else.\n\n`tapestry` and darn are the loom recipes; this task does not touch pawl.\nA recipe is a recipe file choosing producers from the registry, and a producer stays in the module that owns it: Parent-Align, Finalize, PR-Review, Describe and the merge fixer in `landing`, the Drift rows in `drift`, the perch in `shed`.\nA variant owns only the producers no other recipe uses: Plan, its perch and Webster for `tapestry`, Darn-Write, tree-scoped verify and the prior-work respawn for darn.\nAny recipe may take any other producer, so darn can add Parent-Align later with no code change.\n\n## The decision record\n\nThe record keeps today's format and parser, and a recipe makes it one of two ways:\n- with Discussion: a Discussion writer makes the record thorough from the board entry and a perch reviews it, as `tapestry` does today and always will;\n- without: the run writes the record mechanically, with no LLM, the board entry's body verbatim under `## Goal` and every other section empty, and the writer plans and writes the code from it in one session, as darn does by default.\n  This fits `loom-beam-darns`, whose darns are pieces a Discussion already cut.\n\nEither way `lym loom decision add` appends later decisions to the record as `Added after Discussion` entries, as today.\nThe record is the decided scope: Code-Review checks the change against the record, never against the board entry's text, so darn's snapshot of the entry is no longer what its review compares with.\n\n## Shared code written once\n\nBoth recipes already share one CLI (`lym loom`), one wiring path (`internal/loomcli/wiring.go`, with `wireDarn` overriding fields) and one recipe builder (`internal/loomrecipe`).\nWhat each writes twice today becomes one copy driven by the recipe: Describe (`DescribeTable` and `DarnDescribeTable` in `internal/landingshed/describe.go`, with two stencils), the description commit, the writer wrappers (`loomshed/darnwrite.go` and `loomshed/discussionwrite.go`), the Discussion gate and validator (`NewDiscussionGate` and `NewDarnDiscussionGate` in `internal/loomshed/gates.go`), the verify source, and the routing, shed and retired-row lists (`Routing` and `DarnRouting`, `New` and `NewDarn`).\n\nThe row order is one for every loom recipe: Drift-Verify runs before Code-Review, as darn does today, since Drift-Verify can change the code a good deal, in `tapestry` especially, and the review must see those changes.\n\n## Verbs that apply to one recipe\n\nA `lym loom` verb that applies to one recipe refuses on another, saying it does not apply; the task checks each gap below and fixes what is real:\n- `lym loom peers` reports a darn run's row position against tapestry's rows (`internal/loomcli/peers.go`, `hubPeersDeps`).\n- `lym loom decision add` seems to accept `--pattern-*` and `--amends-plan` on a darn run, which has no PATTERN record or plan (not verified).\n- `validate-plan`, `insert-card`, `remove-card` and `restore-renumber` seem to carry no recipe check, so on a run without a plan they fail on a missing plan (not verified).\n\n## Config split\n\n`loom.yaml` holds what every loom recipe shares: `discussion_*`, `code_*`, `review_*` and `friction`.\nA new `tapestry.yaml` takes what only `tapestry` has: `plan_*`, `implementer` and the other Plan and Webster keys.\n`darn.yaml` keeps darn's own keys: `writer`, `writer_timeout_min`, `tree_scope` and `verify_attempts`.\nThe hub's `profiles.yaml` blocks then name the module each key now sits in; the orch rewrites the hub's own copy after landing, and the run writes no migration for it.\n\n## Tapestry-Preflight goes\n\nThe Tapestry-Preflight row is removed.\nIts seed check repeats what Shed's own status read before every row already refuses (`internal/loomengine/seed.go`, `CheckSeed`), so it goes with the row.\nIts check that `batcher.yaml` loads moves to where Webster is used: into Preflight for a recipe that runs Webster, or into the Webster row itself.\n\n## Old recipe alias goes\n\n`legacyRecipeBeam` in `internal/shedrun/seed.go`, which reads a seed recording the pawl recipe's former name `beam` as pawl, is removed with its handling in `decodeSeed`: no run seed records `beam`.\n\n## Open\n\n- `arbiter*`, `tackler*` and `driver_kind` sit today in `shed.yaml`, `loom.yaml` and `darn.yaml`; whether they live in `shed.yaml` alone, a recipe setting its own through its profile block.\n- Whether `lym loom validate-discussion` accepts a record whose sections bar `## Goal` are empty, or the skeleton needs a fixed line in each.\n- Where the check that the entry is not outdated (landed work or another entry contradicting it) lives once the record is written mechanically: in darn's writer, as today, or a step of its own.\n- How `lym loom` relates to `lym shed`, which already carries `run`, `step`, `status`, `pause` and `goto`.\n",
-      "status": "done",
-      "created": "2026-10-14T17:23:45Z",
-      "revised": "2026-10-31T14:02:15Z"
-    },
-    {
       "id": 540,
       "handle": "F15",
       "slug": "reed-status-buttons",
@@ -539,9 +516,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "run-verbs-shared"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "Replace the per-engine Co-Authored-By line and the Lym-Task line with one optional credit block that lists the LLM services the task used.",
       "body": "## Seen (operator, 2026-10-30)\n\nA landing commit ends with `Co-Authored-By: Claude \u003cnoreply@anthropic.com\u003e`, from `engine_trailers.claude` in the landing config (`internal/landingshed/template.yaml`), and a Codex run would add `Co-Authored-By: Codex` the same way.\nThat makes each engine a co-author of the commit, which the operator does not want.\nThe commit's last line is `Lym-Task: \u003cslug\u003e`, added by `taskTrailer` in `internal/landingshed/finalize.go`; the operator sees no reason for it.\n\n## Design (operator, 2026-10-30 and 2026-10-31)\n\n- No engine is credited as a co-author: no `Co-Authored-By` line for Claude, Codex or any other engine.\n- `Lym-Task: \u003cslug\u003e` is removed.\n  A landing commit and its pull request carry no trace of LoomYard or of its use, bar the credit below.\n- The commit ends with a credit block, written as plain lines, never as git trailers, by default:\n\n  ```\n  Created using\n   - LoomYard https://github.com/Knatte18/loomyard\n   - Claude \u003cnoreply@anthropic.com\u003e\n   - Codex \u003ccodex@openai.com\u003e\n  ```\n\n- Each line is a config text of its own in the landing config: the heading, the LoomYard line, and one line per engine.\n- The LoomYard line is always in the block.\n- An engine's line appears only when that engine ran a session in the task, detected automatically as `engine_trailers` decides today; an engine that ran nothing in the task is not listed.\n- The same block serves the pull request's body, so a commit and its pull request carry one signature.\n",
@@ -584,7 +559,6 @@
       ],
       "issues": [],
       "depends_on": [
-        "run-verbs-shared",
         "pawl-loom-recipe",
         "teardown-retry-no-pair"
       ],
@@ -653,7 +627,6 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "run-verbs-shared",
         "commit-signature-credit"
       ],
       "isolated": false,
@@ -718,7 +691,6 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "run-verbs-shared",
         "commit-signature-credit",
         "pawl-loom-recipe",
         "interactive-recipe",
@@ -762,9 +734,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "run-verbs-shared"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "batten run refuses a teardown retry with no pair worktree, though the pair removal already succeeded and only the remote branch delete is left",
       "body": "## Seen (hub orch, 2026-10-31)\n\nRun `pawl-starts-at-preflight` landed on OSL-1046 on 2026-10-30, and its Worktree-Teardown removed the pair but failed to delete the remote weft branch `pawl-starts-at-preflight-weft`: GitHub answered the `git push --delete` with an Internal Server Error.\nThe run stayed `blocked` at Worktree-Teardown, and its error said \"resume this run to retry the deletion\".\nOn Neve a day later, `lym batten run pawl-starts-at-preflight` refused before the retry: `origin reconcile of run pawl-starts-at-preflight: no pair worktree /home/knatte/Code/loomyard-LYMHUB/pawl-starts-at-preflight`.\nThe pair was already removed, so the way forward the error named can never work, on either machine.\n\nWorkaround used: the remote weft branch was deleted by hand (its commit is kept by the tag `archive/pawl-starts-at-preflight/6c0f8a26a141`); ending the run then failed, as below.\n\n## Expected\n\nA Worktree-Teardown retry whose pair is already removed skips the origin reconcile that needs the pair and retries only what is left, here the remote branch deletion, on any machine.\nThe way forward a teardown error names must be one that works.\n\n## Deadlock (hub orch, 2026-10-31)\n\nAfter the remote branch was deleted by hand, `lym batten cancel pawl-starts-at-preflight` refused too: \"the work of pawl-starts-at-preflight reached its parent; way forward: run lym batten run pawl-starts-at-preflight to finish the landing\", which is the verb that refuses for want of the pair.\n`lym batten cleanup` removes only done runs' records, so no verb can end the run, and it stays `blocked` at Worktree-Teardown in dobby's overview.\n",

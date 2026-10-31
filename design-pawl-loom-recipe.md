@@ -2,7 +2,7 @@
 
 `pawl-loom-recipe` · Task · enhancement, pawl, loom, board, workspaces
 
-Depends on: [`run-verbs-shared`](design-run-verbs-shared.md), [`commit-signature-credit`](design-commit-signature-credit.md)
+Depends on: [`commit-signature-credit`](design-commit-signature-credit.md)
 
 ## Seen (operator, 2026-10-31)
 
