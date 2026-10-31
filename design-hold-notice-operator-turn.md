@@ -1,6 +1,6 @@
 # No hold notice for a turn the operator started in the pane
 
-`hold-notice-operator-turn` · Task · enhancement, shuttle, creel · running · Code-Burler-Review
+`hold-notice-operator-turn` · Task · enhancement, shuttle, creel · running · Code-Burler-Fix
 
 ## Seen (operator, 2026-10-31)
 
