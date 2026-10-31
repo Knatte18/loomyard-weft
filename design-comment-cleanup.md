@@ -18,12 +18,11 @@ A comment-cleanup campaign over the whole repository.
 
 - One darn run, whose agent orchestrates the whole campaign: it splits the work and spawns the workers, many in parallel; not one darn per package, which would be far too many runs.
 - Scope: Go comments and docstrings, each package's `doc.go`, the stencils and the docs.
-- Models by scope: Haiku 5.5 takes the comments and docstrings of code files, being fast and cheap while its context stays under about 100k, which one package's read fits; `doc.go`, stencils and docs need a stronger model.
+- Models by scope: Haiku 5.5 takes the comments and docstrings of code files, being fast and cheap while its context stays under about 100k, which one package's read fits; `doc.go`, stencils and docs need a stronger model, Sonnet 5.5, as the `docs` profile's writer is.
 - No review step of its own: most comments are assumed sound, and this run is itself the check on them; the darn's usual Code-Review is enough.
 
 Related: note `hardener` is another autonomous campaign run by an orchestrating agent.
 
 ## Open
 
-- Which stronger model takes `doc.go`, stencils and docs.
 - How the orchestrating agent spawns its workers under lym, with Haiku 5.5 as their model.
