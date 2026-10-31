@@ -35,8 +35,5 @@ Lym renders its own instruction files into each worktree from one database in Bo
   - fabric knows only that a file in Bolt has an entry-level replayer registered for it, walks the local commits and cherry-picks the rest as today;
   - the board and heddle each register a replayer for their own file;
   - the entry-by-entry merge in `boardengine`'s `FabricReplay` that both need is drawn out and shared, not copied.
+- A re-render after a sync takes lym's text from `heddle.json` as it stands then; a worktree keeping the version it was created with belongs to a separate note and is not this task's (operator, 2026-10-31).
 - The verbs of `lym heddle` are the task's to shape.
-
-## Open
-
-- Which lym text a re-render after a sync takes: `heddle.json` as it stands then, or the text the worktree was created with, kept per worktree.
