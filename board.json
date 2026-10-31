@@ -748,6 +748,7 @@
         "workspaces"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "Pawl joins the loom contract; a project record written at beam create and changed only through decision add",
