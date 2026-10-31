@@ -27,9 +27,10 @@ Lym renders its own instruction files into each worktree from one database in Bo
 - Each worktree lym makes gets the rendered files seeded into its warp, ignored through `.git/info/exclude`, never `.gitignore`, so warp alone carries no trace of LoomYard or of the engines used.
 - An entry holds only what is specific to using LoomYard on the repository: its text goes into every agent that runs, so anything that fits PATTERN, a stencil, a skill or a hook goes there instead.
 
+- Rendering is cheap, so heddle renders again into every live worktree whenever `heddle.json` changes, not only at worktree creation (operator, 2026-10-31).
+- No one edits `AGENTS.md` by hand inside a worktree, so heddle watches for no such edit (operator, 2026-10-31).
+- The verbs of `lym heddle` are the task's to shape.
+
 ## Open
 
-- Whether a hand edit of `AGENTS.md` inside a worktree also re-renders `AGENTS.override.md`, which the fabric sync below does not see.
-- When rendering happens: at worktree creation only, or also into live worktrees when the database changes.
 - Whether a heddle commit needs an entry-level replay in fabric as `board.json` has, or whether its rare writes make a plain git conflict acceptable.
-- The verbs of `lym heddle`.
