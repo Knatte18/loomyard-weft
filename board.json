@@ -600,7 +600,7 @@
       "isolated": false,
       "brief": "Two overlapping pushes of the board from this hub made one fail, and the mail named a divergence that did not exist.",
       "body": "## Seen (operator and hub orch, 2026-10-30)\n\nAt 15:22 a push of the board's `main` was rejected and creel mail #75 from `ly:FABRIC` told the orch that \"origin/main holds commits this branch lacks\", with the way forward `git reset --keep origin/main` or `git merge origin/main`.\nOnly this hub writes to the board's remote, so origin could hold nothing the local branch lacked.\nOrigin's reflog shows the rejected commit `3b6ed10c` arriving by a successful push at 15:23:07 and the next commit `54901f76` at 15:23:39, and a fetch right after the mail found the local branch only ahead of origin.\nThe rejection was thus between two pushes from this hub that overlapped, and no side had diverged.\nThe advice in the mail would have dropped a local commit (`reset --keep`) or merged a history that did not exist.\n\n## Design (operator, 2026-10-30)\n\n- A push rejected as not a fast-forward is retried after a fetch: when the fetch shows origin holding nothing the local branch lacks, the push goes through, and no mail is sent.\n- A rejection is called a divergence, and its mail sent, only when the fetch shows origin holding commits the local branch lacks.\n- Find out which two processes of the hub pushed the board at the same time, and whether the board's commit and push should hold one lock, so two pushes never overlap.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Describe",
       "created": "2026-10-30T14:26:48Z",
       "revised": "2026-10-31T14:14:06Z"
     },
