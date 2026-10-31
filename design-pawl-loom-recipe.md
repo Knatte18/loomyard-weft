@@ -1,6 +1,6 @@
 # Pawl becomes a loom recipe, with a project decision record and no review rounds
 
-`pawl-loom-recipe` · Task · enhancement, pawl, loom, board, workspaces · draft
+`pawl-loom-recipe` · Task · enhancement, pawl, loom, board, workspaces
 
 Depends on: [`run-verbs-shared`](design-run-verbs-shared.md)
 
