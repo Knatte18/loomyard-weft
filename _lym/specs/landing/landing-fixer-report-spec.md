@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=ddc31fd498768caee70ddd50dce5a71d1db4bc8a7c0fc925b20ae711261bc391 build=71a46b116782d6d26b494fb5f745efa8a50d756d time=2026-10-28T10:55:47Z -->
+<!-- lym-stencil: sha256=6b9a845202392bd2f7714ffcf3b8b4ffb5938132af68d096de0b2565872bf3ba build=52b6984877826c631cb136734cbf9afe3959bf18 time=2026-10-31T13:43:24Z -->
 
 # Landing fixer report spec — what the merge fixer writes when a turn ends
 
@@ -25,7 +25,7 @@ An empty section is its heading with no bullet under it.
 ## Verdicts
 
 - `fixed` — the fixer made every change the failure needed, and the row goes on to re-check.
-- `escalate` — a parent change conflicts with a decision of the record, which the fixer does not settle; the row halts to the arbiter first on a loom or darn run and to the orch on a pawl run with the `## Conflict` text.
+- `escalate` — a parent change conflicts with a decision of the record, which the fixer does not settle; the row halts to the arbiter first on a tapestry or darn run and to the orch on a pawl run with the `## Conflict` text.
   An `escalate` report with no `## Conflict` section is invalid.
 
 ## Sole parser
