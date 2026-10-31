@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-31 14:02 UTC; every age below is as of then.
+Rendered 2026-10-31 14:09 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -26,7 +26,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **loom becomes the task-run contract that tapestry and darn fulfil**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | tapestry |  | 2w<br>0m | shed, loom, darn, landing, drift |
+| T4 | `draft` **loom becomes the task-run contract that tapestry and darn fulfil**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | tapestry |  | 2w<br>6m | shed, loom, darn, landing, drift |
 
 ### Notes (37)
 
@@ -61,8 +61,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E9 |  | **Landing commits drop Co-Authored-By and Lym-Task, and carry an optional credit listing the engines used**<br>• Replace the per-engine Co-Authored-By line and the Lym-Task line with one optional credit block that lists the LLM services the task used. | [`commit-signature-credit`](design-commit-signature-credit.md) | 23h<br>23h | landing |
 | E10 |  | **The adopt check shows that it runs, and how far it has come**<br>• lym adopt starts a test suite detached and nothing the operator looks at shows it or its progress | [`adopt-check-visible`](design-adopt-check-visible.md) | 2h<br>2h | reed, gate, workspaces |
 | E11 |  | **Merge in from parent as a task of its own in a beam, in place of pawl's perch round**<br>• A ready-made command starts a run that brings the parent into a beam, with Drift; pawl drops its own Code-Review perch | [`parent-merge-task`](design-parent-merge-task.md) | 1h<br>1h | pawl, workspaces, drift, landing |
-| E12 |  | **No hold notice for a turn the operator started in the pane**<br>• The shuttle hold notice is held back when the operator typed the turn's prompt | [`hold-notice-operator-turn`](design-hold-notice-operator-turn.md) | 50m<br>50m | shuttle, creel |
-| E13 |  | **Pawl as a loom recipe, with a decision record and no review rounds**<br>• Pawl gains a decision record and decision add once loom is the task-run contract | [`pawl-loom-recipe`](design-pawl-loom-recipe.md) | 0m<br>0m | pawl, loom |
+| E12 |  | **No hold notice for a turn the operator started in the pane**<br>• The shuttle hold notice is held back when the operator typed the turn's prompt | [`hold-notice-operator-turn`](design-hold-notice-operator-turn.md) | 57m<br>57m | shuttle, creel |
+| E13 |  | **Pawl becomes a loom recipe, with a project decision record and no review rounds**<br>• Pawl joins the loom contract; a project record written at beam create and changed only through decision add | [`pawl-loom-recipe`](design-pawl-loom-recipe.md) | 6m<br>0m | pawl, loom, board, workspaces |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 13d<br>4d | webster, fabric, loom |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 12d<br>4d | fabric, batten |
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 8d<br>2d | burler, claude |
@@ -84,7 +84,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 3w<br>1d | board, ide, orch |
 | F12 |  | **Spawn audit log: every process lym starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | 3w<br>4d | reed, shuttle, config |
 | F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 2w<br>3d | webster |
-| F14 |  | **An interactive recipe: the operator iterates with an agent in the run's own worktree until done**<br>• A Shed recipe whose agent waits for the operator and iterates on the result, then lands as usual | [`interactive-recipe`](design-interactive-recipe.md) | 1h<br>1h | shed, batten, reed, shuttle |
+| F14 |  | **An interactive recipe: the operator iterates with an agent in the run's own worktree until done**<br>• A Shed recipe whose agent waits for the operator and iterates on the result, then lands as usual | [`interactive-recipe`](design-interactive-recipe.md) | 2h<br>2h | shed, batten, reed, shuttle |
 | F15 |  | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 2w<br>1d | reed, config, batten |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>2d | burler, shed, orch, quarry, report |
 | F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 8d<br>4d | loom, shed, batten, workspaces, burler |
