@@ -1,6 +1,6 @@
 # loom becomes the task-run contract that tapestry and darn fulfil
 
-`run-verbs-shared` · Task · enhancement, shed, loom, darn, landing, drift · running · Worktree-Create
+`run-verbs-shared` · Task · enhancement, shed, loom, darn, landing, drift · running · Tapestry-Preflight
 
 ## Seen (operator, 2026-10-14)
 
