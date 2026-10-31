@@ -1,6 +1,6 @@
 # Gate runs spend much of their time starting processes: start fewer
 
-`gate-fewer-launches` · Task · enhancement, gate
+`gate-fewer-launches` · Task · enhancement, gate · running · Worktree-Create
 
 ## Seen (operator and hub orch, 2026-10-30)
 
