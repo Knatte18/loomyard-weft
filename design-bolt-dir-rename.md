@@ -23,4 +23,4 @@ The path itself comes from one constant, `fabricengine.BoardDirName`, but:
 - Then rename the directory to `_bolt`, the name of the repository it checks out.
 - Existing hubs on Neve and OSL-1046 have `_board` on disk, so the rename needs a rename program as `tapestry-rename` had, run once per hub.
 - It touches many packages, so it runs alone, with no other run in flight.
-- `runproc.HubOwner`, also spelled `_board`, is an owner name, not the directory; whether it follows is to be decided.
+- `runproc.HubOwner`, also spelled `_board`, is an owner name, not the directory; it is set from `BoltDirName`, so it follows the rename (operator, 2026-10-31).
