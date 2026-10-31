@@ -106,3 +106,9 @@ An agent must read the source files directly to work from the original material;
 
 When forks fail with "resource temporarily unavailable" while a .NET hub runs, check `pids.current` against `pids.max` of `/sys/fs/cgroup/user.slice/user-<uid>.slice`, and end idle MSBuild reuse nodes with `pkill -u <user> -f 'MSBuild.dll .*nodeReuse:true'`; then re-launch the stopped runs plainly.
 Remove this section once #885 is fixed.
+
+## A rename runs alone
+
+A rename is its own task: mechanical, done by script, and nothing else in the same task (operator, 2026-10-31).
+It runs alone, with no other run in flight: it depends on every task released before it, and every task made before it lands depends on it.
+Never fold a rename into a task that does other work.
