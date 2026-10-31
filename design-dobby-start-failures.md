@@ -2,8 +2,6 @@
 
 `dobby-start-failures` · Task · bug, dobby, batten, creel · draft
 
-Depends on: [`dobby-land-notice-needs-flag`](design-dobby-land-notice-needs-flag.md)
-
 ## Seen (operator and hub orch, 2026-10-29)
 
 The released task `claude-md-lym-rules-out` did not start for over an hour.
