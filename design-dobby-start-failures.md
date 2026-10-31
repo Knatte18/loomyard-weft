@@ -1,6 +1,6 @@
 # Dobby says why a task is not started, and tells the orch of a failing start in time
 
-`dobby-start-failures` · Task · bug, dobby, batten, creel · running · Worktree-Create
+`dobby-start-failures` · Task · bug, dobby, batten, creel · running · Darn-Write
 
 ## Seen (operator and hub orch, 2026-10-29)
 
