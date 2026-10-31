@@ -13,7 +13,7 @@ defaults:
     tapestry: solid
     darn: light
 speed:
-    tapestry: {loom: {discussion_max_bounces: 0, discussion_hard_max_bounces: 1, plan_max_bounces: 0, plan_hard_max_bounces: 1, code_max_bounces: 1, code_hard_max_bounces: 2}}
+    tapestry: {loom: {discussion_max_bounces: 0, discussion_hard_max_bounces: 1, code_max_bounces: 1, code_hard_max_bounces: 2}, tapestry: {plan_max_bounces: 0, plan_hard_max_bounces: 1}}
     darn: {loom: {code_max_bounces: 0, code_hard_max_bounces: 1}}
 light:
     tapestry: {loom: {discussion_max_bounces: 1, discussion_hard_max_bounces: 2, plan_max_bounces: 1, plan_hard_max_bounces: 2, code_max_bounces: 1, code_hard_max_bounces: 2}}
