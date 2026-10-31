@@ -58,8 +58,8 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **warp-visibility: heddle, a Bolt database lym renders its instruction files from, leaving no trace in warp**<br>• LoomYard puts no CLAUDE.md in a repository; lym renders its own git-excluded instruction files into each worktree from _board/heddle.json | [`warp-visibility`](design-warp-visibility.md) | tapestry | T4<br>T6<br>T1<br>T8 | 3w<br>2m | fabric, board, config, claude, codex |
-| T3 | `draft` **The Bolt checkout directory is named in one place only, and renamed _bolt**<br>• _board holds all of Bolt, not only the board; rename it _bolt with a rename program for existing hubs | [`bolt-dir-rename`](design-bolt-dir-rename.md) | tapestry |  | 41m<br>13m | fabric, board, config |
+| T2 | `draft` **warp-visibility: heddle, a Bolt database lym renders its instruction files from, leaving no trace in warp**<br>• LoomYard puts no CLAUDE.md in a repository; lym renders its own git-excluded instruction files into each worktree from _board/heddle.json | [`warp-visibility`](design-warp-visibility.md) | tapestry | T3 | 3w<br>0m | fabric, board, config, claude, codex |
+| T3 | `draft` **The Bolt checkout directory is named in one place only, and renamed _bolt**<br>• _board holds all of Bolt, not only the board; rename it _bolt with a rename program for existing hubs | [`bolt-dir-rename`](design-bolt-dir-rename.md) | tapestry | T4<br>T6<br>T1<br>T8 | 41m<br>0m | fabric, board, config |
 
 ### Notes (31)
 
