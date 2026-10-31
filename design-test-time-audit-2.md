@@ -2,7 +2,7 @@
 
 `test-time-audit-2` · Task · research, gate
 
-Depends on: [`board-push-race`](design-board-push-race.md), [`hold-notice-operator-turn`](design-hold-notice-operator-turn.md)
+Depends on: [`board-push-race`](design-board-push-race.md)
 
 ## Goal
 
