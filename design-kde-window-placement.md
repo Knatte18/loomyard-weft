@@ -1,4 +1,4 @@
-# Windows lym opens land tiled on the right KDE virtual desktop
+# A window lym opens is snapped into the active desktop tiling by a configured command
 
 `kde-window-placement` · Note · feature, reed, ide, config
 
@@ -7,20 +7,11 @@
 The operator runs KDE Plasma with virtual desktops and tiling.
 The Konsole windows lym opens on a run's worktree (`lym reed window`, batten's terminal for each run) and the VS Code windows it opens (`lym ide`) land wherever KWin puts them, untiled and on the current desktop, so the operator moves and tiles each by hand.
 
-## Idea
+## Design (operator, 2026-10-31)
 
-A window lym opens lands tiled on the right virtual desktop by itself.
-How the placement rules are written and kept is open (operator, 2026-10-28); the candidates:
-
-- KWin window rules (`kwinrulesrc`) that match the window title or class lym already sets, such as the reed window's `--title` and the VS Code window title `lym ide seed` writes (a hub or beam workspace file now sets `window.title` to `<SHORTNAME>: <name> workspace`, since `ide-seed-workspace-and-keys`), and assign desktop and position.
-  KWin keeps them, and lym only names its windows predictably; lym could write or check the rules from a config of its own.
-- lym places each window after opening it, through KWin's D-Bus or a KWin script, from a config that maps a window kind (orch, run, IDE) to a desktop and a tile.
-- Plasma 6 tiling: whether a rule or a script can put a window into a named custom tile, or only on a desktop and screen edge, is to be found out first.
-
-Whatever the route, lym hard-codes no desktop environment: the placement is a config choice that does nothing on a machine without KDE.
-
-## Open
-
-- Which windows: run terminals only, or the orch's and VS Code too.
-- The mapping: one desktop per run, per hub, or per window kind.
-- Whether lym writes the rules or the operator does, with lym only keeping its window titles stable.
+Lym places no window itself: the operator's own tiling script does it.
+Neve's `~/.local/bin/arrange-to-tiles.sh` (Meta+Alt+A, run through xremap) fills the active desktop's existing Custom Tiling grid with the windows on it, without changing the grid's shape.
+- A machine-local config key names a command lym runs after it opens a window, such as `~/.local/bin/arrange-to-tiles.sh`: after a run's terminal window, `lym reed window` and `lym ide`.
+- The window lands on the active desktop, as KWin puts it today, and the command snaps it into the grid.
+- Lym knows nothing about KDE: with the key unset nothing runs, and each machine names its own script (OSL-1046 runs Plasma 5).
+- Lym runs the command only once the new window is mapped, or after a short wait, so the script sees it.

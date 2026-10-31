@@ -398,7 +398,7 @@
       "id": 885,
       "handle": "F3",
       "slug": "kde-window-placement",
-      "title": "Windows lym opens land tiled on the right KDE virtual desktop",
+      "title": "A window lym opens is snapped into the active desktop tiling by a configured command",
       "kind": "note",
       "labels": [
         "feature",
@@ -409,10 +409,10 @@
       "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "Konsole and VS Code windows opened by lym placed by desktop and tile on KDE Plasma",
-      "body": "## Seen (operator, 2026-10-28)\n\nThe operator runs KDE Plasma with virtual desktops and tiling.\nThe Konsole windows lym opens on a run's worktree (`lym reed window`, batten's terminal for each run) and the VS Code windows it opens (`lym ide`) land wherever KWin puts them, untiled and on the current desktop, so the operator moves and tiles each by hand.\n\n## Idea\n\nA window lym opens lands tiled on the right virtual desktop by itself.\nHow the placement rules are written and kept is open (operator, 2026-10-28); the candidates:\n\n- KWin window rules (`kwinrulesrc`) that match the window title or class lym already sets, such as the reed window's `--title` and the VS Code window title `lym ide seed` writes (a hub or beam workspace file now sets `window.title` to `\u003cSHORTNAME\u003e: \u003cname\u003e workspace`, since `ide-seed-workspace-and-keys`), and assign desktop and position.\n  KWin keeps them, and lym only names its windows predictably; lym could write or check the rules from a config of its own.\n- lym places each window after opening it, through KWin's D-Bus or a KWin script, from a config that maps a window kind (orch, run, IDE) to a desktop and a tile.\n- Plasma 6 tiling: whether a rule or a script can put a window into a named custom tile, or only on a desktop and screen edge, is to be found out first.\n\nWhatever the route, lym hard-codes no desktop environment: the placement is a config choice that does nothing on a machine without KDE.\n\n## Open\n\n- Which windows: run terminals only, or the orch's and VS Code too.\n- The mapping: one desktop per run, per hub, or per window kind.\n- Whether lym writes the rules or the operator does, with lym only keeping its window titles stable.\n",
+      "brief": "After opening a window lym runs a machine-local configured command, such as the operator tiling script; lym knows nothing about KDE",
+      "body": "## Seen (operator, 2026-10-28)\n\nThe operator runs KDE Plasma with virtual desktops and tiling.\nThe Konsole windows lym opens on a run's worktree (`lym reed window`, batten's terminal for each run) and the VS Code windows it opens (`lym ide`) land wherever KWin puts them, untiled and on the current desktop, so the operator moves and tiles each by hand.\n\n## Design (operator, 2026-10-31)\n\nLym places no window itself: the operator's own tiling script does it.\nNeve's `~/.local/bin/arrange-to-tiles.sh` (Meta+Alt+A, run through xremap) fills the active desktop's existing Custom Tiling grid with the windows on it, without changing the grid's shape.\n- A machine-local config key names a command lym runs after it opens a window, such as `~/.local/bin/arrange-to-tiles.sh`: after a run's terminal window, `lym reed window` and `lym ide`.\n- The window lands on the active desktop, as KWin puts it today, and the command snaps it into the grid.\n- Lym knows nothing about KDE: with the key unset nothing runs, and each machine names its own script (OSL-1046 runs Plasma 5).\n- Lym runs the command only once the new window is mapped, or after a short wait, so the script sees it.\n",
       "created": "2026-10-28T15:26:02Z",
-      "revised": "2026-10-29T13:44:24Z"
+      "revised": "2026-10-31T16:03:57Z"
     },
     {
       "id": 910,
