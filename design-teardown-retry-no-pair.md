@@ -1,6 +1,6 @@
 # A finished run blocked at Worktree-Teardown with its pair gone can be neither retried nor cancelled
 
-`teardown-retry-no-pair` · Task · bug, batten, fabric · draft
+`teardown-retry-no-pair` · Task · bug, batten, fabric
 
 Depends on: [`run-verbs-shared`](design-run-verbs-shared.md)
 

@@ -22,18 +22,21 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **loom becomes the task-run contract that tapestry and darn fulfil**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | tapestry | Parent-Align | neve | 2w<br>4h | shed, loom, darn, landing, drift |
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T7 | **The orch resume pointer arrives twice after a compact cycle**<br>• hookDelivered compares the hook mark with the compaction boundary, which is stamped after the hook ran | [`resume-pointer-twice`](design-resume-pointer-twice.md) | darn |  | 6m<br>0m | orch |
 
-#### Layer A (1)
+#### Layer A (2)
 
 Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
+| T5 | **A finished run blocked at Worktree-Teardown with its pair gone can be neither retried nor cancelled**<br>• batten run refuses a teardown retry with no pair worktree, though the pair removal already succeeded and only the remote branch delete is left | [`teardown-retry-no-pair`](design-teardown-retry-no-pair.md) | darn | T4 | 1h<br>0m | batten, fabric |
 | T6 | **Landing commits drop Co-Authored-By and Lym-Task, and carry an optional credit listing the engines used**<br>• Replace the per-engine Co-Authored-By line and the Lym-Task line with one optional credit block that lists the LLM services the task used. | [`commit-signature-credit`](design-commit-signature-credit.md) | darn | T4 | 1d<br>3h | landing |
 
 #### Layer B (1)
@@ -60,15 +63,13 @@ Starts when every entry it names under After is done.
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Rename the Bolt checkout directory _board to _bolt, by script alone**<br>• A pure, mechanical rename of _board to _bolt everywhere, with a rename program for existing hubs | [`bolt-dir-rename`](design-bolt-dir-rename.md) | darn | T4<br>T6<br>T1<br>T8<br>T5<br>T7 | 2h<br>0m | fabric, board, config, cwd, stencil |
 
-#### Draft (3)
+#### Draft (1)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | `draft` **warp-visibility: heddle, a Bolt database lym renders its instruction files from, leaving no trace in warp**<br>• LoomYard puts no CLAUDE.md in a repository; lym renders its own git-excluded instruction files into each worktree from _board/heddle.json | [`warp-visibility`](design-warp-visibility.md) | tapestry | T3 | 3w<br>1h | fabric, board, config, claude, codex, cwd, process, stencil, shuttle |
-| T5 | `draft` **A finished run blocked at Worktree-Teardown with its pair gone can be neither retried nor cancelled**<br>• batten run refuses a teardown retry with no pair worktree, though the pair removal already succeeded and only the remote branch delete is left | [`teardown-retry-no-pair`](design-teardown-retry-no-pair.md) | darn | T4 | 1h<br>0m | batten, fabric |
-| T7 | `draft` **The orch resume pointer arrives twice after a compact cycle**<br>• hookDelivered compares the hook mark with the compaction boundary, which is stamped after the hook ran | [`resume-pointer-twice`](design-resume-pointer-twice.md) | darn |  | 6m<br>0m | orch |
 
 ### Notes (32)
 
