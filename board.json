@@ -776,6 +776,24 @@
       "body": "## Seen (operator, 2026-10-31)\n\nAn interactive run (task `interactive-recipe`) waits for the operator in its pane, and has dobby's quiet notice and shuttle's idle timeout off while it does.\nSince lym runs the agent, it can watch how long the agent has waited.\n\n## Idea\n\nWhen the agent has been idle for a set time, lym asks it to write down what it has, commit it, and end its session; the run pauses, and the operator picks it up another time with the agent resumed from that state.\n",
       "created": "2026-10-31T14:33:35Z",
       "revised": "2026-10-31T14:33:35Z"
+    },
+    {
+      "id": 933,
+      "handle": "E10",
+      "slug": "hibernate-in-dobby",
+      "title": "The hibernate request is carried by dobby, not a daemon of its own",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "dobby"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Move lym hibernate request into dobby, once dobby and hibernate share the past-Land test",
+      "body": "## Seen (operator, 2026-10-31)\n\n`lym hibernate request` runs a daemon of its own that waits for the runs to land and every session to pause before it hibernates the machine.\nDobby already drives every run of its worktree to its end, and `landing-watch` gives dobby and the hibernate daemon one shared test for a run past its Land row.\n\n## Idea\n\nThe hibernate request moves into dobby, so no daemon of its own waits on the runs.\n\n## Open\n\n- A request spans every beam, since `--after-all` waits on all runs while a dobby sees only its own: which dobby carries it, or how the dobbies agree.\n- A hub pause must leave the dobby that waits outside it.\n",
+      "created": "2026-10-31T14:39:51Z",
+      "revised": "2026-10-31T14:39:51Z"
     }
   ],
   "prime_owner": "neve",
