@@ -8,11 +8,13 @@
      specs_dir is a required marker, naming the directory the discussion format spec is deployed to;
      stencil.FillOptional requires the four original markers non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive (PATTERN for pattern_directive, Tier 2 for friction_directive).
      parent_directive is a third optional marker, rendered by internal/parentdirective.
+     project_directive is a further optional marker, rendered by internal/loomengine.ProjectRecordDirective for a run under a beam;
+     it shares the pattern directive's line, so an empty value leaves the prompt's bytes unchanged.
      twill_directive is a fourth optional marker, rendered by internal/twilldirective through internal/loomengine;
      it sits on the line that would otherwise be blank, so an empty value leaves the blank line and the prompt's bytes unchanged.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
      The literal `{` / `}` characters around {{.slug}} in the board-read example below are ordinary JSON punctuation, not template syntax — only `{{` begins a template action.
-lym-stencil: sha256=b6b05382874b2ef3bc9a38f727fd73a204ac9cbc2fe45380fdb9df92b99484c1 build=52b6984877826c631cb136734cbf9afe3959bf18 time=2026-10-31T13:43:24Z -->
+lym-stencil: sha256=037f7137f5819e1bf085aaa5f3f9b1781d1e1f74b6ae1b04c55713ba6d077416 build=4f7d099d1c17a09e41cd8483c4dd6725023d9484 time=2026-10-31T19:22:44Z -->
 
 # Discussion — interview, then write the decision record
 
@@ -21,7 +23,7 @@ Your job is to interview about the design, then write three files that become th
 
 {{.parent_directive}}
 {{.edit_directive}}
-{{.pattern_directive}}
+{{.pattern_directive}}{{.project_directive}}
 {{.friction_directive}}
 ## Step 1 — Read the task from the board
 

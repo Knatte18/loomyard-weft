@@ -3,11 +3,12 @@
      and read from there at call time by internal/seatengine, which fills it from the lead's value map that darnengine's DarnTable builds, then hands it to
      shuttle as the writer's whole prompt.
      Every marker below is a top-level {{.X}} substitution;
-     stencil.FillWith requires every marker except pattern_directive, friction_directive and parent_directive non-empty, and there are no {{if}}/{{range}} conditionals anywhere in this file.
+     stencil.FillWith requires every marker except pattern_directive, project_directive, friction_directive and parent_directive non-empty, and there are no {{if}}/{{range}} conditionals anywhere in this file.
+     project_directive is rendered by internal/loomengine.ProjectRecordDirective for a run under a beam, and shares the pattern directive's line so an empty value leaves the prompt's bytes unchanged.
      decision_record_path is a required marker, naming the decision record the writer reads as its scope; stop_marker_path is a required marker, naming the file the writer creates when it stops.
      prior_work is never empty: DarnTable fills it with (none) when it has nothing to tell.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lym-stencil: sha256=bfe7caaf6701b6a4dd3404ed6ffd9b96e8dfe433495154e3491819ef80b128c2 build=4e11137aa9881ebe481b46931b19c25555e221fe time=2026-10-31T18:22:52Z -->
+lym-stencil: sha256=af62da9fb1d4633b00e28a7fd7d143bfb4b8bf0a98315db66f16fd85da46d32b build=4f7d099d1c17a09e41cd8483c4dd6725023d9484 time=2026-10-31T19:22:44Z -->
 
 # Darn — make the change a board entry asks for, in one session
 
@@ -16,7 +17,7 @@ No operator is present, so make best-judgment calls and never block on a dialog.
 
 {{.parent_directive}}
 {{.edit_directive}}
-{{.pattern_directive}}
+{{.pattern_directive}}{{.project_directive}}
 {{.friction_directive}}
 ## Step 1 — Read the task
 
