@@ -1,6 +1,6 @@
 # Second recurring test-time and growth audit
 
-`test-time-audit-2` · Task · research, gate · running · Darn-Write
+`test-time-audit-2` · Task · research, gate · running · Drift-Verify
 
 ## Goal
 
