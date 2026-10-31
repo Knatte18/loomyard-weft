@@ -668,10 +668,10 @@
       "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "Move lym hibernate request into dobby, once dobby and hibernate share the past-Land test",
-      "body": "## Seen (operator, 2026-10-31)\n\n`lym hibernate request` runs a daemon of its own that waits for the runs to land and every session to pause before it hibernates the machine.\nDobby already drives every run of its worktree to its end, and `landing-watch` gives dobby and the hibernate daemon one shared test for a run past its Land row.\n\n## Idea\n\nThe hibernate request moves into dobby, so no daemon of its own waits on the runs.\n\n## Open\n\n- A request spans every beam, since `--after-all` waits on all runs while a dobby sees only its own: which dobby carries it, or how the dobbies agree.\n- A hub pause must leave the dobby that waits outside it.\n",
+      "brief": "Move lym hibernate request into dobby; the past-Land test is already shared",
+      "body": "## Seen (operator, 2026-10-31)\n\n`lym hibernate request` runs a daemon of its own that waits for the runs to land and every session to pause before it hibernates the machine.\nDobby already drives every run of its worktree to its end, and `battenrecipe.PastLand` is the one past-Land test that dobby and the hibernate daemon share (built by `landing-watch`).\n\n## Idea\n\nThe hibernate request moves into dobby, so no daemon of its own waits on the runs.\n\n## Open\n\n- The shared test is built; moving the request is the open part.\n- A request spans every beam, since `--after-all` waits on all runs while a dobby sees only its own: which dobby carries it, or how the dobbies agree.\n- A hub pause must leave the dobby that waits outside it.\n",
       "created": "2026-10-31T14:39:51Z",
-      "revised": "2026-10-31T14:39:51Z"
+      "revised": "2026-10-31T18:43:08Z"
     },
     {
       "id": 934,
