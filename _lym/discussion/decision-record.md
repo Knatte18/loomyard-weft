@@ -67,6 +67,12 @@ A verb that takes a recipe name, such as `lym shed seed --recipe`, accepts only 
 Bound: only a record already written is migrated (D3); new input must use the new name.
 Rationale: the alias exists so old records keep working, and accepting the old name for new input would keep it alive in new records.
 
+### Added after Discussion (parent, 2026-10-31): No compatibility or migration code for the old loom name
+
+Decision: Add no code that accepts the old name: no legacyRecipeLoom, no decodeSeed mapping of "loom" to tapestry, and no migration lym runs on another machine or hub. Rename the code and Bolt in this change and nothing more. The board body's line about a migration lym runs itself is withdrawn.
+
+Rationale: The only run on the old name is this one, and it ends before the new binary is deployed; no other run or seed will meet the new binary under the old name (operator, 2026-10-31).
+
 ## Constraints
 
 - No behaviour changes: rows, routing, config keys, verbs and gates stay as they are, bar the names D1 renames.
