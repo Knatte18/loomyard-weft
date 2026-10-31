@@ -295,6 +295,12 @@ Rationale: A darn run in flight that halted at Darn-Write on its old discussion 
   - tapestry-run-wide-key-routing (class design, severity MEDIUM, open in rounds 2, 3)
 <!-- /lym:carry-over Plan-Review -->
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - implementer-spec-stale-loom-implementer-sentence (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: loading `tapestry` and darn passes the contract check; a recipe declaring `contract: loom` without a record row, without a build segment, with the build segment before the record row, without Finalize ending its `on_done` path, or without `verify_source` is refused, naming the clause and the way forward.
