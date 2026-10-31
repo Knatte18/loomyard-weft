@@ -1,8 +1,8 @@
 # Card 9 — drop-tapestry-preflight
 
 **Create:**
-- `plan:internal/preflightshed#NewPreflightWithBatcher` -> `func NewPreflightWithBatcher(name, cwd string, batcher func() error) shedengine.ShedProducer`
-- `plan:internal/preflightshed#TestPreflight_BatcherCheck` -> `func TestPreflight_BatcherCheck(t *testing.T)`
+- `internal/preflightshed#NewPreflightWithBatcher`
+- `internal/preflightshed#TestPreflight_BatcherCheck`
 
 **Edit:**
 - `internal/preflightshed#NewPreflight`
