@@ -14,5 +14,8 @@ The name says board where the directory is Bolt.
 A pure rename of `_board` to `_bolt`, the name of the repository it checks out, done mechanically by script and nothing else.
 - Every spelling of `_board` becomes `_bolt`: the constants (`fabricengine.BoardDirName`, the copy in `lymcwd`, `runproc.HubOwner`), user-facing messages, comments, tests, stencils, the `ly:board` skill and docs.
 - Existing hubs on Neve and OSL-1046 have `_board` on disk, so the task ships a rename program as `tapestry-rename` had, run once per hub.
+  It also re-points everything that holds an absolute path into `_board`, such as config, stored reed commands and VS Code setup, and refuses to run while any lym process or run is alive.
+- No compatibility: lym itself knows `_bolt` only, with no fallback to `_board`, no detection of the old name and no migration case in its code, since no run on the old name meets the new binary (operator, 2026-10-31).
+  The one-shot rename program is the only place the old name appears.
 - No refactor rides along: splitting a `BoltDirName` from `BoardDirName` and routing every spelling through one constant belong to another task.
 - It runs alone, with no other run in flight.
