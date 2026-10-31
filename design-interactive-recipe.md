@@ -1,6 +1,6 @@
 # sampler: an interactive loom recipe, the operator iterating with an agent in the run's worktree until done
 
-`interactive-recipe` · Task · feature, shed, batten, reed, shuttle · running · Plan-Write
+`interactive-recipe` · Task · feature, shed, batten, reed, shuttle · running · Plan-Bouncer
 
 ## Seen (operator, 2026-10-31)
 
