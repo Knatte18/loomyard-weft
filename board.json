@@ -584,13 +584,14 @@
       "issues": [],
       "depends_on": [
         "run-verbs-shared",
-        "pawl-loom-recipe"
+        "pawl-loom-recipe",
+        "teardown-retry-no-pair"
       ],
       "isolated": false,
       "brief": "A Shed recipe whose agent waits for the operator and iterates on the result, then lands as usual",
       "body": "## Seen (operator, 2026-10-31)\n\nSome work needs many rounds between the operator and an agent on the result itself, and a one-shot writer makes it badly: a README written as a teaching text (task `readme-rewrite`), the board's README (note `board-viewer`), and trying out the reed status bar's buttons (note `reed-status-buttons`).\nDarn's writer is non-interactive, and tapestry's `discussion_interactive` only interviews the operator before anything is written.\n\n## Idea\n\nA new loom recipe, `sampler`, beside `tapestry` and darn, under the loom contract `run-verbs-shared` builds: an interactive agent the operator iterates with in the run's own worktree.\nBatten stays the same for it as for every recipe.\n\n- The record is written mechanically from the board entry, as darn's is without Discussion; what the operator and the agent settle on the way the agent appends with `lym loom decision add`, so Describe and any review measure against it.\n- The build segment is the interactive agent alone.\n- Batten makes the worktree, opens the window and starts the agent with the task's body as its brief; the agent waits for the operator in its pane.\n- The operator and the agent go as many rounds as the operator wants; the agent commits as it goes.\n- The operator tells the agent the work is done, and the agent runs a `lym` verb that ends the build segment, as the PR-Review agent runs `lym loom pr-continue` when the operator says so.\n- The run then goes on as usual: the Code-Review perch, off by default, then Describe, Finalize and Land.\n- The result is one of:\n  - a change to the repository, such as the README or `docs/`, landed as an ordinary commit;\n  - an entry on the board, written by the agent through `lym board`, in which case the run has no commits and lands empty, which lym already supports;\n  - a trial, as `reed-status-buttons` needs, in which case the run can use a tmux server of its own, so that what it tries does not disturb the operator's strands.\n\n## The agent (operator, 2026-10-31)\n\nThe agent is not Discussion-Write: Discussion-Write's stencil binds it to explore the code, ask and write the decision record, never to make the work itself.\nThis agent makes the result with the operator, and gets a short stencil of its own: stay in the run's worktree, commit as it goes, and write board results through `lym board`.\nIt shares only the mechanism with Discussion-Write's interactive mode: an interactive shuttle session (`lym shuttle run --interactive`) in a pane that waits for the operator.\n\n## Waiting on the operator (operator, 2026-10-31)\n\nWhile the agent waits for the operator, dobby's quiet notice and shuttle's idle timeout are off for this recipe.\nA run is started only when the operator means to work with it.\n\n## Name (operator, 2026-10-31)\n\nThe recipe is named `sampler`: a weaver's sampler is the cloth patterns are tried and adjusted on.\n",
       "created": "2026-10-31T12:06:31Z",
-      "revised": "2026-10-31T14:41:31Z",
+      "revised": "2026-10-31T18:14:55Z",
       "profile": "light"
     },
     {
@@ -719,13 +720,15 @@
         "run-verbs-shared",
         "commit-signature-credit",
         "pawl-loom-recipe",
-        "interactive-recipe"
+        "interactive-recipe",
+        "teardown-retry-no-pair",
+        "resume-pointer-twice"
       ],
       "isolated": false,
       "brief": "A pure, mechanical rename of _board to _bolt everywhere, with a rename program for existing hubs",
       "body": "## Seen (operator, 2026-10-31)\n\nThe hub's Bolt checkout is the directory `_board`, but it holds far more than the board: `board.json`, its README and design files, the hub's `_lym` config and orch rules, and soon heddle's database.\nThe name says board where the directory is Bolt.\n\n## Design (operator, 2026-10-31)\n\nA pure rename of `_board` to `_bolt`, the name of the repository it checks out, done mechanically by script and nothing else.\n- Every spelling of `_board` becomes `_bolt`: the constants (`fabricengine.BoardDirName`, the copy in `lymcwd`, `runproc.HubOwner`), user-facing messages, comments, tests, stencils, the `ly:board` skill and docs.\n- Existing hubs on Neve and OSL-1046 have `_board` on disk, so the task ships a rename program as `tapestry-rename` had, run once per hub.\n  It also re-points everything that holds an absolute path into `_board`, such as config, stored reed commands and VS Code setup, and refuses to run while any lym process or run is alive.\n- No compatibility: lym itself knows `_bolt` only, with no fallback to `_board`, no detection of the old name and no migration case in its code, since no run on the old name meets the new binary (operator, 2026-10-31).\n  The one-shot rename program is the only place the old name appears.\n- The rename program stays short, with no what-if code (operator, 2026-10-31): it handles the hubs on Neve and OSL-1046 as they are today, stops and says what it found when anything looks other than expected, leaving that to be fixed by hand, and is deleted from the repository once both hubs are migrated.\n- No refactor rides along: splitting a `BoltDirName` from `BoardDirName` and routing every spelling through one constant belong to another task.\n- It runs alone, with no other run in flight.\n",
       "created": "2026-10-31T16:11:22Z",
-      "revised": "2026-10-31T17:00:13Z"
+      "revised": "2026-10-31T18:14:55Z"
     },
     {
       "id": 935,
@@ -757,13 +760,16 @@
         "fabric"
       ],
       "issues": [],
-      "depends_on": [],
+      "recipe": "darn",
+      "depends_on": [
+        "run-verbs-shared"
+      ],
       "isolated": false,
       "brief": "batten run refuses a teardown retry with no pair worktree, though the pair removal already succeeded and only the remote branch delete is left",
       "body": "## Seen (hub orch, 2026-10-31)\n\nRun `pawl-starts-at-preflight` landed on OSL-1046 on 2026-10-30, and its Worktree-Teardown removed the pair but failed to delete the remote weft branch `pawl-starts-at-preflight-weft`: GitHub answered the `git push --delete` with an Internal Server Error.\nThe run stayed `blocked` at Worktree-Teardown, and its error said \"resume this run to retry the deletion\".\nOn Neve a day later, `lym batten run pawl-starts-at-preflight` refused before the retry: `origin reconcile of run pawl-starts-at-preflight: no pair worktree /home/knatte/Code/loomyard-LYMHUB/pawl-starts-at-preflight`.\nThe pair was already removed, so the way forward the error named can never work, on either machine.\n\nWorkaround used: the remote weft branch was deleted by hand (its commit is kept by the tag `archive/pawl-starts-at-preflight/6c0f8a26a141`); ending the run then failed, as below.\n\n## Expected\n\nA Worktree-Teardown retry whose pair is already removed skips the origin reconcile that needs the pair and retries only what is left, here the remote branch deletion, on any machine.\nThe way forward a teardown error names must be one that works.\n\n## Deadlock (hub orch, 2026-10-31)\n\nAfter the remote branch was deleted by hand, `lym batten cancel pawl-starts-at-preflight` refused too: \"the work of pawl-starts-at-preflight reached its parent; way forward: run lym batten run pawl-starts-at-preflight to finish the landing\", which is the verb that refuses for want of the pair.\n`lym batten cleanup` removes only done runs' records, so no verb can end the run, and it stays `blocked` at Worktree-Teardown in dobby's overview.\n",
       "status": "draft",
       "created": "2026-10-31T16:33:18Z",
-      "revised": "2026-10-31T16:33:34Z"
+      "revised": "2026-10-31T18:14:55Z"
     },
     {
       "id": 937,
@@ -787,21 +793,23 @@
     },
     {
       "id": 938,
-      "handle": "B2",
+      "handle": "T7",
       "slug": "resume-pointer-twice",
       "title": "The orch resume pointer arrives twice after a compact cycle",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "orch"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "hookDelivered compares the hook mark with the compaction boundary, which is stamped after the hook ran",
       "body": "## Seen\n\nAfter a requested compact cycle of the orch (2026-10-31), the resume pointer reached the session twice: once as SessionStart hook context and once typed by the watcher.\n\n- The hook runs `orchengine.ResumeContext` (`internal/orchengine/resumecontext.go`), which writes the resume mark with `At` from the hook's own clock.\n- The watcher's skip check `hookDelivered` (`internal/orchengine/watcher.go`) counts the pointer delivered only when `mark.At` is not before `st.CompactionBaseline`.\n- `tickCompacting` sets that baseline from the transcript's `compact_boundary` record, which Claude Code writes only after the SessionStart hook finished.\n- Transcript times for the cycle: hook output 17:15:49.369–.384, `compact_boundary` 17:15:49.402, typed pointer 17:15:55.340.\n  The mark is some 20–30 ms older than the baseline, so `hookDelivered` returns false and the watcher types the pointer.\n\n## Idea\n\nCompare the mark against a time taken before the hook can run, such as the moment the watcher entered the compacting phase or typed `/compact`, instead of the boundary record written after the hook; keep the text match.\nA test covers a boundary stamped after the hook's mark.\n",
+      "status": "draft",
       "created": "2026-10-31T18:08:04Z",
-      "revised": "2026-10-31T18:08:04Z"
+      "revised": "2026-10-31T18:14:55Z"
     },
     {
       "id": 939,
