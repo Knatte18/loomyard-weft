@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-31 18:13 UTC; every age below is as of then.
+Rendered 2026-10-31 18:14 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -10,7 +10,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 The root project: the entries under no other project.
 
-### Tasks (6)
+### Tasks (7)
 
 Concrete and claimable; only a task can run.
 
@@ -60,15 +60,16 @@ Starts when every entry it names under After is done.
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Rename the Bolt checkout directory _board to _bolt, by script alone**<br>• A pure, mechanical rename of _board to _bolt everywhere, with a rename program for existing hubs | [`bolt-dir-rename`](design-bolt-dir-rename.md) | darn | T4<br>T6<br>T1<br>T8 | 2h<br>1h | fabric, board, config, cwd, stencil |
 
-#### Draft (1)
+#### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | `draft` **warp-visibility: heddle, a Bolt database lym renders its instruction files from, leaving no trace in warp**<br>• LoomYard puts no CLAUDE.md in a repository; lym renders its own git-excluded instruction files into each worktree from _board/heddle.json | [`warp-visibility`](design-warp-visibility.md) | tapestry | T3 | 3w<br>1h | fabric, board, config, claude, codex, cwd, process, stencil, shuttle |
+| T5 | `draft` **A finished run blocked at Worktree-Teardown with its pair gone can be neither retried nor cancelled**<br>• batten run refuses a teardown retry with no pair worktree, though the pair removal already succeeded and only the remote branch delete is left | [`teardown-retry-no-pair`](design-teardown-retry-no-pair.md) | tapestry |  | 1h<br>1h | batten, fabric |
 
-### Notes (34)
+### Notes (33)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -76,16 +77,15 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 | H | **Trial the cuts that make a gate run link fewer new test binaries**<br>• Bench the report's cuts on Neve and OSL-1046 before any is made permanent | [`gate-fewer-binaries-trial`](design-gate-fewer-binaries-trial.md) | 1m<br>0m | gate, testkit |
+| R1 | H | **Trial the cuts that make a gate run link fewer new test binaries**<br>• Bench the report's cuts on Neve and OSL-1046 before any is made permanent | [`gate-fewer-binaries-trial`](design-gate-fewer-binaries-trial.md) | 2m<br>1m | gate, testkit |
 | R5 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 9d<br>4d | webster |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 9d<br>3d | loom, stencil |
 
-#### Bugs (2)
+#### Bugs (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **A finished run blocked at Worktree-Teardown with its pair gone can be neither retried nor cancelled**<br>• batten run refuses a teardown retry with no pair worktree, though the pair removal already succeeded and only the remote branch delete is left | [`teardown-retry-no-pair`](design-teardown-retry-no-pair.md) | 1h<br>1h | batten, fabric |
-| B2 |  | **The orch resume pointer arrives twice after a compact cycle**<br>• hookDelivered compares the hook mark with the compaction boundary, which is stamped after the hook ran | [`resume-pointer-twice`](design-resume-pointer-twice.md) | 5m<br>5m | orch |
+| B2 |  | **The orch resume pointer arrives twice after a compact cycle**<br>• hookDelivered compares the hook mark with the compaction boundary, which is stamped after the hook ran | [`resume-pointer-twice`](design-resume-pointer-twice.md) | 6m<br>6m | orch |
 
 #### Enhancements (15)
 
