@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-31 11:55 UTC; every age below is as of then.
+Rendered 2026-10-31 11:56 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -28,7 +28,7 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Dobby says why a task is not started, and tells the orch of a failing start in time**<br>• A start that failed every pass for an hour showed no reason in beam status and reached the orch an hour late.<br>• `profile: solid` | [`dobby-start-failures`](design-dobby-start-failures.md) | darn |  | 1d<br>22h | dobby, batten, creel |
 
-### Notes (34)
+### Notes (33)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -46,7 +46,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **A rejected board push is retried after a fetch, and called a divergence only when one exists**<br>• Two overlapping pushes of the board from this hub made one fail, and the mail named a divergence that did not exist. | [`board-push-race`](design-board-push-race.md) | 21h<br>21h | fabric |
 
-#### Enhancements (14)
+#### Enhancements (13)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -59,8 +59,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E7 |  | **loom names the general run; today's loom is one variant**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | 2w<br>2d | shed, loom |
 | E8 |  | **A seed says only that a run starts at its start, with no producer name**<br>• The shared seed names Preflight as the first producer for every recipe; the seed should name none, and the recipe supplies its first row. | [`seed-starts-at-start`](design-seed-starts-at-start.md) | 21h<br>21h | loom, pawl, shed |
 | E9 |  | **Landing commits drop Co-Authored-By and Lym-Task, and carry an optional credit listing the engines used**<br>• Replace the per-engine Co-Authored-By line and the Lym-Task line with one optional credit block that lists the LLM services the task used. | [`commit-signature-credit`](design-commit-signature-credit.md) | 21h<br>21h | landing |
-| E10 |  | **The adopt check shows that it runs, and how far it has come**<br>• lym adopt starts a test suite detached and nothing the operator looks at shows it or its progress | [`adopt-check-visible`](design-adopt-check-visible.md) | 13m<br>13m | reed, gate, workspaces |
-| E11 |  | **Runs land without a pull request unless the hub turns it on**<br>• The beam config pull_request template default becomes off | [`pull-request-default-off`](design-pull-request-default-off.md) | 0m<br>0m | dobby, landing |
+| E10 |  | **The adopt check shows that it runs, and how far it has come**<br>• lym adopt starts a test suite detached and nothing the operator looks at shows it or its progress | [`adopt-check-visible`](design-adopt-check-visible.md) | 14m<br>14m | reed, gate, workspaces |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 13d<br>4d | webster, fabric, loom |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 12d<br>4d | fabric, batten |
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 8d<br>2d | burler, claude |
