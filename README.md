@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Dobby says why a task is not started, and tells the orch of a failing start in time**<br>• A start that failed every pass for an hour showed no reason in beam status and reached the orch an hour late.<br>• `profile: solid` | [`dobby-start-failures`](design-dobby-start-failures.md) | darn | Code-Bouncer | neve | 1d<br>22h | dobby, batten, creel |
+| T1 | **Dobby says why a task is not started, and tells the orch of a failing start in time**<br>• A start that failed every pass for an hour showed no reason in beam status and reached the orch an hour late.<br>• `profile: solid` | [`dobby-start-failures`](design-dobby-start-failures.md) | darn | Describe | neve | 1d<br>22h | dobby, batten, creel |
 
 #### Ready (0)
 
@@ -34,7 +34,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **Rename today's loom recipe to tapestry with a rename program**<br>• A Go program under tools/ renames the loom variant to tapestry, so every loom left is the general run | [`tapestry-rename`](design-tapestry-rename.md) | darn | T1 | 15m<br>12m | loom, shed, stencil, config, board |
+| T3 | `draft` **Rename today's loom recipe to tapestry with a rename program**<br>• A Go program under tools/ renames the loom variant to tapestry, so every loom left is the general run | [`tapestry-rename`](design-tapestry-rename.md) | darn | T1 | 15m<br>13m | loom, shed, stencil, config, board |
 | T4 | `draft` **loom names the general run, and Discussion becomes a block every variant can turn on**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | loom | T3 | 2w<br>7m | shed, loom, darn |
 
 ### Notes (33)
