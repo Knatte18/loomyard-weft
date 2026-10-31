@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -28,6 +28,33 @@
       "output": "",
       "at": "2026-10-31T14:14:21Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/board-push-race/_lym/landing/summary.md",
+      "at": "2026-10-31T14:29:22Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-31T14:25:42.027965586Z",
+          "end": "2026-10-31T14:25:53.886590837Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-31T14:25:53.934011516Z",
+          "end": "2026-10-31T14:29:21.482812599Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-31T14:29:21.541336621Z",
+          "end": "2026-10-31T14:29:21.541389801Z"
+        }
+      ]
     }
   ],
   "product": {
