@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-31 14:39 UTC; every age below is as of then.
+Rendered 2026-10-31 14:40 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -20,9 +20,9 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **A rejected board push is retried after a fetch, and called a divergence only when one exists**<br>• Two overlapping pushes of the board from this hub made one fail, and the mail named a divergence that did not exist. | [`board-push-race`](design-board-push-race.md) | darn | Code-Burler-Fix | neve | 1d<br>25m | fabric |
-| T4 | **loom becomes the task-run contract that tapestry and darn fulfil**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | tapestry | Discussion-Burler-Review | neve | 2w<br>37m | shed, loom, darn, landing, drift |
-| T7 | **The adopt check shows that it runs, and how far it has come**<br>• lym adopt starts a test suite detached and nothing the operator looks at shows it or its progress | [`adopt-check-visible`](design-adopt-check-visible.md) | darn | Code-Burler-Review | neve | 2h<br>18m | reed, gate, workspaces |
+| T2 | **A rejected board push is retried after a fetch, and called a divergence only when one exists**<br>• Two overlapping pushes of the board from this hub made one fail, and the mail named a divergence that did not exist. | [`board-push-race`](design-board-push-race.md) | darn | Code-Burler-Fix | neve | 1d<br>26m | fabric |
+| T4 | **loom becomes the task-run contract that tapestry and darn fulfil**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | tapestry | Discussion-Burler-Review | neve | 2w<br>38m | shed, loom, darn, landing, drift |
+| T7 | **The adopt check shows that it runs, and how far it has come**<br>• lym adopt starts a test suite detached and nothing the operator looks at shows it or its progress | [`adopt-check-visible`](design-adopt-check-visible.md) | darn | Code-Burler-Fix | neve | 2h<br>18m | reed, gate, workspaces |
 
 #### Ready (0)
 
@@ -36,10 +36,10 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Pawl becomes a loom recipe, with a project decision record and no review rounds**<br>• Pawl joins the loom contract; a project record written at beam create and changed only through decision add<br>• `profile: solid` | [`pawl-loom-recipe`](design-pawl-loom-recipe.md) | darn | T4 | 37m<br>30m | pawl, loom, board, workspaces |
-| T5 | **Second recurring test-time and growth audit**<br>• Re-time tier0 to tier2 by the first audit's method and append the section<br>• `profile: docs` | [`test-time-audit-2`](design-test-time-audit-2.md) | darn | T2 | 23m<br>23m | gate |
-| T6 | **Landing commits drop Co-Authored-By and Lym-Task, and carry an optional credit listing the engines used**<br>• Replace the per-engine Co-Authored-By line and the Lym-Task line with one optional credit block that lists the LLM services the task used. | [`commit-signature-credit`](design-commit-signature-credit.md) | darn | T4 | 1d<br>18m | landing |
-| T8 | **sampler: an interactive loom recipe, the operator iterating with an agent in the run's worktree until done**<br>• A Shed recipe whose agent waits for the operator and iterates on the result, then lands as usual | [`interactive-recipe`](design-interactive-recipe.md) | tapestry | T4 | 2h<br>5m | shed, batten, reed, shuttle |
+| T1 | **Pawl becomes a loom recipe, with a project decision record and no review rounds**<br>• Pawl joins the loom contract; a project record written at beam create and changed only through decision add<br>• `profile: solid` | [`pawl-loom-recipe`](design-pawl-loom-recipe.md) | darn | T4 | 38m<br>31m | pawl, loom, board, workspaces |
+| T5 | **Second recurring test-time and growth audit**<br>• Re-time tier0 to tier2 by the first audit's method and append the section<br>• `profile: docs` | [`test-time-audit-2`](design-test-time-audit-2.md) | darn | T2 | 24m<br>24m | gate |
+| T6 | **Landing commits drop Co-Authored-By and Lym-Task, and carry an optional credit listing the engines used**<br>• Replace the per-engine Co-Authored-By line and the Lym-Task line with one optional credit block that lists the LLM services the task used. | [`commit-signature-credit`](design-commit-signature-credit.md) | darn | T4 | 1d<br>19m | landing |
+| T8 | **sampler: an interactive loom recipe, the operator iterating with an agent in the run's worktree until done**<br>• A Shed recipe whose agent waits for the operator and iterates on the result, then lands as usual | [`interactive-recipe`](design-interactive-recipe.md) | tapestry | T4 | 2h<br>6m | shed, batten, reed, shuttle |
 
 #### Draft (1)
 
@@ -72,7 +72,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E6 |  | **Gate runs spend much of their time starting processes: start fewer**<br>• launch_seconds is a large share of a gate run on OSL-1046, where each process start is slow; the aim is a faster gate by starting fewer processes | [`gate-fewer-launches`](design-gate-fewer-launches.md) | 1d<br>1d | gate |
 | E7 |  | **Finalize settles a rejected fixer change in place and never sends the run back**<br>• A fix review loop inside Finalize that escalates at its cap, in place of on_reroute | [`finalize-fix-in-place`](design-finalize-fix-in-place.md) | 1h<br>1h | landing, shed, loom, darn |
 | E8 |  | **A seed says only that a run starts at its start, with no producer name**<br>• The shared seed names Preflight as the first producer for every recipe; the seed should name none, and the recipe supplies its first row. | [`seed-starts-at-start`](design-seed-starts-at-start.md) | 1d<br>1d | loom, pawl, shed |
-| E9 |  | **An idle interactive run saves its work and pauses, to go on another time**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 6m<br>6m | shed, shuttle, batten |
+| E9 |  | **An idle interactive run saves its work and pauses, to go on another time**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 7m<br>7m | shed, shuttle, batten |
 | E10 |  | **The hibernate request is carried by dobby, not a daemon of its own**<br>• Move lym hibernate request into dobby, once dobby and hibernate share the past-Land test | [`hibernate-in-dobby`](design-hibernate-in-dobby.md) | 0m<br>0m | dobby |
 | E11 |  | **Merge in from parent as a task of its own in a beam, in place of pawl's perch round**<br>• A ready-made command starts a run that brings the parent into a beam, with Drift; pawl drops its own Code-Review perch | [`parent-merge-task`](design-parent-merge-task.md) | 1h<br>1h | pawl, workspaces, drift, landing |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 13d<br>4d | webster, fabric, loom |
@@ -91,10 +91,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F7 |  | **Creel mail between hubs through an inbox folder, with a verified sender**<br>• A shared inbox folder takes mail from other hubs; each file names the sender hub and agent so a reply knows where to go | [`creel-cross-hub-mail`](design-creel-cross-hub-mail.md) | 1d<br>1d | creel, orch |
 | F8 |  | **fabric: two-sided reset-to-SHA verb**<br>• The post-conclude undo the merge surface does not ship: reset to a warp SHA, resolve the paired weft SHA through the correspondence index, gate both sides | [`fabric-reset-to-sha`](design-fabric-reset-to-sha.md) | 3w<br>3w | fabric |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 1d<br>1d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
-| F10 |  | **One verb to take work over on another machine, leaving every run in a known state**<br>• Moving to another machine is many hand steps, and afterwards run states are unclear | [`machine-switch`](design-machine-switch.md) | 2h<br>2h | fabric, dobby, batten |
+| F10 |  | **One verb to take work over on another machine, leaving every run in a known state**<br>• Moving to another machine is many hand steps, and afterwards run states are unclear | [`machine-switch`](design-machine-switch.md) | 3h<br>2h | fabric, dobby, batten |
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 3w<br>1d | board, ide, orch |
 | F12 |  | **Spawn audit log: every process lym starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | 3w<br>4d | reed, shuttle, config |
 | F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 2w<br>3d | webster |
-| F15 |  | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 2w<br>14m | reed, config, batten |
+| F15 |  | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 2w<br>15m | reed, config, batten |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>2d | burler, shed, orch, quarry, report |
 | F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 8d<br>4d | loom, shed, batten, workspaces, burler |
