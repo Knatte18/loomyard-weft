@@ -1,7 +1,7 @@
 # Card 17 — one-describe
 
 **Create:**
-- `plan:internal/loomcli#commitDescription` -> `func commitDescription(location *lymcwd.Location) error`
+- `internal/loomcli#commitDescription`
 
 **Edit:**
 - `internal/loomcli#darnDeps`
