@@ -33,12 +33,10 @@ Today the two variants keep the same decision record, in the same format and che
 - loom's Discussion-Write writes it alone, and Discussion-Review's perch reviews it before Plan starts;
 - darn's one writer writes it first and then the code in the same session, and no perch reviews the record itself.
 
-Discussion becomes one block of the general run, the same rows, record and perch in every variant, which a variant turns on or off.
-`tapestry` always runs it.
-darn has it off by default and works as today; turned on, darn runs the same Discussion as `tapestry`, and its writer implements from the approved record.
-The record is then written and checked in one place.
-
 ## Open
+
+- Whether Discussion becomes one block of the general run, the same rows, record and perch in every variant, which a variant turns on or off, with darn off by default.
+  Against it: darn is meant for a simple task whose text is already discussed, and in `loom-beam-darns` the darns are pieces a loom Discussion already cut, so a Discussion of their own would discuss again what is settled (operator, 2026-10-31, undecided).
 
 - Which packages, docs and stencils are the variant's and which are general; the rename program's inclusion and exclusion lists follow from it.
 - What the board's `recipe` field and an empty `recipe` mean during step 1, since existing entries and runs carry `loom` or nothing.
