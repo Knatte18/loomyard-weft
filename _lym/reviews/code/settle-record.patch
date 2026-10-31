@@ -1,0 +1,401 @@
+diff --git a/internal/fabricengine/boltpullfirst_integration_test.go b/internal/fabricengine/boltpullfirst_integration_test.go
+index 5dbf4346..e5472a10 100644
+--- a/internal/fabricengine/boltpullfirst_integration_test.go
++++ b/internal/fabricengine/boltpullfirst_integration_test.go
+@@ -616,7 +616,7 @@ func TestBolt_PushRecorded_DropsSeedCommitsOnRebaseConflict(t *testing.T) {
+ 		if want := len(gitrepo.PushBackoffDelays()); sleeps < want {
+ 			t.Errorf("backoff sleeps = %d, want at least %d, the whole backoff waited out before the record", sleeps, want)
+ 		}
+-		requireOneFailedPush(t, f.hub.Path, "bolt", fabricengine.PushFailureNotFastForward)
++		requireOneFailedPush(t, f.hub.Path, "bolt", fabricengine.PushFailureOther)
+ 		if gitkit.IsAncestor(t, f.board, seed, "HEAD") || !gitkit.IsAncestor(t, f.board, upstream, "HEAD") {
+ 			t.Errorf("seed %s under HEAD or upstream %s missing from it; want the drop kept", seed, upstream)
+ 		}
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index f9064233..14b1b04d 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -937,11 +937,14 @@
+ // so `settleRejection` runs the retry again, one delay of `gitrepo.PushBackoffDelays` apart slept through `SyncOptions.BackoffSleep`, while it fails with a bare rejection or an error no class names, such as a failed fetch, and records the failure only once the backoff runs out.
+ // A held write lock or an uncommitted change on a path the replay touches is a deferral:
+ // the push returns nil, writes a `deferred` record that mails nothing, and leaves the commits to the next push of the branch, whose landing removes the record.
+-// A replay that stops on a conflict, or a rejection that outlasts the backoff, is a `not_fast_forward` failure carrying the conflicting paths, if any, and the local commits.
+-// Its way forward names no machine, since no commit names the machine that wrote it, and names paths only when a replay stopped on some.
++// A replay that stops on a conflict is a `not_fast_forward` failure carrying the conflicting paths and the local commits, since a replay runs only when origin held commits the branch lacked.
++// A rejection that outlasts the backoff is judged by a fresh fetch (`failRejection`): origin holding commits the branch lacks is a `not_fast_forward` failure carrying the local commits;
++// origin holding nothing the branch lacks, as after two pushes of the hub overlapped or under a declining hook, is an `other` failure whose way forward is a plain retry, so no notice names a divergence that does not exist;
++// a failed fetch, or a branch whose origin tip cannot be read after it, leaves origin unknown and is an `other` failure too.
++// A `not_fast_forward` way forward names no machine, since no commit names the machine that wrote it, and names paths only when a replay stopped on some.
+ // An auth refusal (`gitrepo.ErrPushAuthRefused`) is class `auth` at once, and a transport failure of the push call, or an exhausted push retry, is class `transport`.
+ // Any other failure of the push call is class `other`, so no refused push is left to a log line.
+-// A retry that stops before it pushes, through the whole backoff, keeps the rejection as the class and joins the retry's error into the record.
++// A retry that stops before it pushes, through the whole backoff, keeps the rejection, joined with the retry's error, for that judgment.
+ //
+ // A failure `pushClassified` records returns a `*PushFailedError` holding the `FailedPush` record and the push's own error, which `Unwrap` returns, so `errors.Is` against `gitrepo.ErrPushRejected` or `gitrepo.ErrPushAuthRefused` still holds.
+ // Its text is the push's error followed by `; way forward: ` and `FailedPushWayForward` of the record, so a caller that appends a way forward of its own does so only when `HasUnclassifiedFailure` reports a failure without one.
+diff --git a/internal/fabricengine/pushanchored.go b/internal/fabricengine/pushanchored.go
+index 5c8fba72..58b84fb0 100644
+--- a/internal/fabricengine/pushanchored.go
++++ b/internal/fabricengine/pushanchored.go
+@@ -74,7 +74,7 @@ func pushLockBusyError(lockDir string, lockWait time.Duration) error {
+ // The push marks the records side pending before it takes the lock and re-reads the flag after releasing it,
+ // so a push that landed returns nil even when a later holder took the lock first.
+ // A rejection is retried over the push backoff, through a fetch or a replay, before it is reported;
+-// a rejection that stays still surfaces gitrepo.ErrPushRejected UNWRAPPED,
++// a rejection that stays still satisfies errors.Is(err, gitrepo.ErrPushRejected),
+ // so a caller can discriminate it from every other push failure with errors.Is.
+ // The underlying primitive is gitrepo.PushRebaseFree, never gitrepo.PushCoalesced, whose rejected-push path runs `git pull --rebase` and would rewrite this side's SHAs under a running weft.
+ //
+diff --git a/internal/fabricengine/pushanchored_integration_test.go b/internal/fabricengine/pushanchored_integration_test.go
+index 95903f89..cccae8d4 100644
+--- a/internal/fabricengine/pushanchored_integration_test.go
++++ b/internal/fabricengine/pushanchored_integration_test.go
+@@ -1,10 +1,10 @@
+ //go:build tier1
+ 
+ // pushanchored_integration_test.go covers PushAnchored and PushPairAnchored against real hubforge pairs, the push lock both take, and PushAnchored against a hub's weft sibling:
+-// SkipGit and SkipPush each short-circuit to an empty result and push nothing; a weft carrying an
+-// unpushed commit is genuinely pushed and the mutation record carries exactly one KindBranchPushed
+-// entry; and a diverged weft remote surfaces gitrepo.ErrPushRejected unwrapped, distinguishable via
+-// errors.Is from a push error of a different kind.
++// SkipGit and SkipPush each short-circuit to an empty result and push nothing;
++// a weft carrying an unpushed commit is genuinely pushed and the mutation record carries exactly one KindBranchPushed entry.
++// A diverged weft remote surfaces an error satisfying errors.Is(err, gitrepo.ErrPushRejected) through the failed-push error.
++// That error is distinguishable via errors.Is from a push error of a different kind.
+ // Reuses gitsha_integration_test.go's BareBranchSHAForTest re-export.
+ 
+ package fabricengine_test
+@@ -149,14 +149,14 @@ func TestPushAnchored_PushesAndRecordsBranchPush(t *testing.T) {
+ 	}
+ }
+ 
+-// TestPushAnchored_DivergedWeftRemote_ReturnsErrPushRejectedUnwrapped covers the rejection path a
++// TestPushAnchored_DivergedWeftRemote_ReturnsErrPushRejected covers the rejection path a
+ // diverged weft remote produces: a second clone of the weft bare changes `status.json`, as this weft sibling does,
+ // so this weft's next PushAnchored push is rejected and its replay stops on a conflict.
+ // The returned error must satisfy errors.Is(err, gitrepo.ErrPushRejected) through the failed-push error that wraps it.
+ // Every caller that discriminates a rejection depends on that, and the failed-push record names the conflicting path.
+ //
+ //testtiming:keep a diverged weft remote returning gitrepo.ErrPushRejected through its failed-push error; coverage of its blocks by other tests does not show an assertion of this
+-func TestPushAnchored_DivergedWeftRemote_ReturnsErrPushRejectedUnwrapped(t *testing.T) {
++func TestPushAnchored_DivergedWeftRemote_ReturnsErrPushRejected(t *testing.T) {
+ 	t.Parallel()
+ 	boardkit.InstallReplay(t)
+ 
+@@ -364,7 +364,7 @@ func TestPushPairAnchored_PushesBothSidesRetriesAndReportsEachSide(t *testing.T)
+ 	if want := len(gitrepo.PushBackoffDelays()); sleeps < want {
+ 		t.Errorf("backoff sleeps = %d; want at least %d, the whole backoff waited out before the record", sleeps, want)
+ 	}
+-	requireOneFailedPush(t, p.hub.Location.HubPath, "code", fabricengine.PushFailureNotFastForward)
++	requireOneFailedPush(t, p.hub.Location.HubPath, "code", fabricengine.PushFailureOther)
+ 	if got := fabricengine.BareBranchSHAForTest(t, p.hub.CodeBare, p.warpBranch); got != declinedWarpBare {
+ 		t.Errorf("warp bare = %q; want it unmoved at %q", got, declinedWarpBare)
+ 	}
+diff --git a/internal/fabricengine/pushclasses_integration_test.go b/internal/fabricengine/pushclasses_integration_test.go
+index 6211266d..e568d3cb 100644
+--- a/internal/fabricengine/pushclasses_integration_test.go
++++ b/internal/fabricengine/pushclasses_integration_test.go
+@@ -241,50 +241,122 @@ func TestPushFailureClasses(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("ARecordsRetryWhoseSecondPushIsRejectedAgainWritesANotFastForwardRecord", func(t *testing.T) {
++	t.Run("ARejectionThatOutlastsTheBackoffWithOriginHoldingNothingTheBranchLacksIsNoDivergence", func(t *testing.T) {
++		// Every push the hook sees is declined, so the rejection outlasts the backoff while origin keeps no commit the branch lacks.
++		const declining = "#!/bin/sh\necho 'declined' >&2\nexit 1\n"
++		tests := []struct {
++			name string
++			push func(t *testing.T, f *recordsFixture, opts fabricengine.SyncOptions) (side string, err error)
++		}{
++			{"Code", func(t *testing.T, f *recordsFixture, opts fabricengine.SyncOptions) (string, error) {
++				gitkit.CommitFile(t, f.hub.PrimeWorktree(), "local.txt", "local\n", "local")
++				installPreReceive(t, f.hub.CodeBare, declining)
++				_, err := hubforge.OpenFabric(t, f.hub).PushBranch(opts)
++				return "code", err
++			}},
++			{"Records", func(t *testing.T, f *recordsFixture, opts fabricengine.SyncOptions) (string, error) {
++				weft, branch := f.primeWeft()
++				f.originCommit(branch, "other.txt", "other\n", "other machine")
++				gitkit.CommitFile(t, weft, "local.txt", "local\n", "local")
++				// The first push never reaches the hook, since git refuses it against the other machine's tip; the replay retry's pushes do.
++				installPreReceive(t, f.hub.RecordsBare, declining)
++				if _, err := fabricengine.CoalescePushRequest(fabricengine.PushSpawn{WeftPath: weft}, opts); err != nil {
++					t.Fatalf("CoalescePushRequest() error = %v; want nil", err)
++				}
++				return "records", nil
++			}},
++			{"Bolt", func(t *testing.T, f *recordsFixture, opts fabricengine.SyncOptions) (string, error) {
++				board := f.hub.BoardDir()
++				gitkit.CommitFile(t, board, "notes/a.md", "a\n", "board change")
++				installPreReceive(t, f.hub.RecordsBare, declining)
++				return "bolt", fabricengine.NewBolt(board).Push(opts)
++			}},
++			// A branch never pushed has no upstream to compare with, so the rejection cannot be judged a divergence.
++			{"RecordsWithNoUpstream", func(t *testing.T, f *recordsFixture, opts fabricengine.SyncOptions) (string, error) {
++				weft := f.hub.PrimeRecords()
++				gitkit.CommitFile(t, weft, "local.txt", "local\n", "local")
++				installPreReceive(t, f.hub.RecordsBare, declining)
++				if _, err := fabricengine.CoalescePushRequest(fabricengine.PushSpawn{WeftPath: weft}, opts); err != nil {
++					t.Fatalf("CoalescePushRequest() error = %v; want nil", err)
++				}
++				return "records", nil
++			}},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				f, fake := newFailureFixture(t)
++				sleeps := 0
++
++				side, err := tt.push(t, f, fabricengine.SyncOptions{BackoffSleep: countingBackoff(&sleeps, nil)})
++
++				if err != nil && !fabricengine.IsPushRejected(err) {
++					t.Errorf("push error = %v; want nil or IsPushRejected", err)
++				}
++				record := requireOneFailedPush(t, f.hub.Location.HubPath, side, fabricengine.PushFailureOther)
++				if want := "(pre-receive hook declined)"; !strings.Contains(record.Error, want) {
++					t.Errorf("record error = %q; want git's refusal line holding %q", record.Error, want)
++				}
++				if len(fake.lines) != 1 {
++					t.Fatalf("mails = %q; want one", fake.lines)
++				}
++				if mail := fake.lines[0]; strings.Contains(mail, "holds commits this branch lacks") || strings.Contains(mail, "git merge") {
++					t.Errorf("mail = %q; want no divergence and no merge named", mail)
++				}
++				if wayForward := fabricengine.FailedPushWayForward(record); !strings.Contains(wayForward, "to retry the push") || !strings.Contains(fake.lines[0], wayForward) {
++					t.Errorf("mail = %q; want it to carry the plain-retry way forward %q", fake.lines[0], wayForward)
++				}
++				if want := len(gitrepo.PushBackoffDelays()); sleeps < want {
++					t.Errorf("backoff sleeps = %d; want at least %d, the whole backoff waited out before the record", sleeps, want)
++				}
++			})
++		}
++	})
++
++	t.Run("ARejectionOfABranchWithNoUpstreamWhoseNameOriginAlreadyHoldsIsADivergence", func(t *testing.T) {
+ 		f, fake := newFailureFixture(t)
+-		weft, branch := f.primeWeft()
+-		f.originCommit(branch, "other.txt", "other\n", "other machine")
++		weft := f.hub.PrimeRecords()
++		branch := gitkit.CurrentBranch(t, weft)
++		other := filepath.Join(t.TempDir(), "other")
++		gitkit.Git(t, filepath.Dir(other), "clone", f.hub.RecordsBare, other)
++		gitkit.Git(t, other, "checkout", "-B", branch)
++		gitkit.CommitFile(t, other, "other.txt", "other\n", "other machine")
++		gitkit.Git(t, other, "push", "origin", branch)
+ 		gitkit.CommitFile(t, weft, "local.txt", "local\n", "local")
+-		// The first push never reaches the hook, since git refuses it against the other machine's tip; only the retry's push does.
+-		installPreReceive(t, f.hub.RecordsBare, "#!/bin/sh\necho 'declined' >&2\nexit 1\n")
+-		sleeps := 0
+ 
+-		if _, err := fabricengine.CoalescePushRequest(fabricengine.PushSpawn{WeftPath: weft}, fabricengine.SyncOptions{BackoffSleep: countingBackoff(&sleeps, nil)}); err != nil {
++		if _, err := fabricengine.CoalescePushRequest(fabricengine.PushSpawn{WeftPath: weft}, fabricengine.SyncOptions{BackoffSleep: countingBackoff(new(int), nil)}); err != nil {
+ 			t.Fatalf("CoalescePushRequest() error = %v; want nil", err)
+ 		}
+ 
+-		record := requireOneFailedPush(t, f.hub.Location.HubPath, "records", fabricengine.PushFailureNotFastForward)
+-		if len(record.Commits) == 0 {
+-			t.Errorf("record = %+v; want the unpushed local commits", record)
+-		}
++		requireOneFailedPush(t, f.hub.Location.HubPath, "records", fabricengine.PushFailureNotFastForward)
+ 		if len(fake.lines) != 1 {
+ 			t.Errorf("mails = %q; want one", fake.lines)
+ 		}
+-		if want := len(gitrepo.PushBackoffDelays()); sleeps < want {
+-			t.Errorf("backoff sleeps = %d; want at least %d, the whole backoff waited out before the record", sleeps, want)
+-		}
+ 	})
+ 
+-	t.Run("ACodeRetryWhoseEveryPushIsRejectedWritesANotFastForwardRecordAndOneMail", func(t *testing.T) {
++	t.Run("AJudgmentFetchThatFailsAfterTheFinalRejectionIsRecordedAsOtherWithTheFetchError", func(t *testing.T) {
+ 		f, fake := newFailureFixture(t)
+-		prime := f.hub.PrimeWorktree()
+-		gitkit.CommitFile(t, prime, "local.txt", "local\n", "local")
+-		installPreReceive(t, f.hub.CodeBare, "#!/bin/sh\necho 'declined' >&2\nexit 1\n")
+-		sleeps := 0
++		gitkit.CommitFile(t, f.hub.PrimeWorktree(), "local.txt", "local\n", "local")
++		// Every push is declined; the last one the backoff allows also breaks the bare repository, so the fetch that judges the rejection fails.
++		finalPush := len(gitrepo.PushBackoffDelays()) + 2
++		bare := filepath.ToSlash(f.hub.CodeBare)
++		marker := bare + "/declines"
++		installPreReceive(t, f.hub.CodeBare, fmt.Sprintf("#!/bin/sh\nn=$(cat '%s' 2>/dev/null || echo 0)\nn=$((n + 1))\necho $n > '%s'\nif [ \"$n\" -ge %d ]; then\n  rm '%s/HEAD'\nfi\necho 'declined' >&2\nexit 1\n", marker, marker, finalPush, bare))
+ 
+-		_, err := hubforge.OpenFabric(t, f.hub).PushBranch(fabricengine.SyncOptions{BackoffSleep: countingBackoff(&sleeps, nil)})
++		_, err := hubforge.OpenFabric(t, f.hub).PushBranch(fabricengine.SyncOptions{BackoffSleep: countingBackoff(new(int), nil)})
+ 
+-		if !fabricengine.IsPushRejected(err) {
+-			t.Errorf("PushBranch() error = %v; want IsPushRejected", err)
++		var failed *fabricengine.PushFailedError
++		if !errors.As(err, &failed) {
++			t.Fatalf("PushBranch() error = %v; want a *PushFailedError", err)
++		}
++		record := requireOneFailedPush(t, f.hub.Location.HubPath, "code", fabricengine.PushFailureOther)
++		for _, want := range []string{"(pre-receive hook declined)", "gitrepo: fetch in"} {
++			if !strings.Contains(record.Error, want) {
++				t.Errorf("record error = %q; want it to hold both the rejection line and the fetch error, missing %q", record.Error, want)
++			}
+ 		}
+-		requireOneFailedPush(t, f.hub.Location.HubPath, "code", fabricengine.PushFailureNotFastForward)
+ 		if len(fake.lines) != 1 {
+ 			t.Errorf("mails = %q; want one", fake.lines)
+ 		}
+-		if want := len(gitrepo.PushBackoffDelays()); sleeps < want {
+-			t.Errorf("backoff sleeps = %d; want at least %d, the whole backoff waited out before the record", sleeps, want)
+-		}
+ 	})
+ 
+ 	t.Run("ACodeRejectionWhoseRetryIsRefusedForAuthIsNotRetriedAgain", func(t *testing.T) {
+diff --git a/internal/fabricengine/pushclassified.go b/internal/fabricengine/pushclassified.go
+index ec77695e..228dabd5 100644
+--- a/internal/fabricengine/pushclassified.go
++++ b/internal/fabricengine/pushclassified.go
+@@ -89,6 +89,7 @@ type pushJob struct {
+ // A records retry runs retryRecords, which replays the local commits onto origin's and pushes again;
+ // a deferral it reports writes a deferred record and returns nil, leaving the commits to the next push of the branch.
+ // A code-side retry fetches and pushes again only while origin's tip is contained in the local tip, and reports the rejection at once when origin holds commits the branch lacks.
++// A rejection the retry does not settle is recorded as not_fast_forward only when a fresh fetch shows origin holding commits the branch lacks, and as other otherwise.
+ // Every other failure is recorded and returned as a *PushFailedError holding the push's own error, under the "other" class when it matches none.
+ // A push that lands removes the record of its side and branch.
+ func pushClassified(rec *Mutations, hubPath, side, path string, opts SyncOptions, retryRecords func() (deferred bool, err error)) error {
+@@ -302,7 +303,7 @@ func (j *pushJob) classifyFailure(err error) (failed error, classified bool) {
+ 	case errors.Is(err, gitrepo.ErrPushAuthRefused):
+ 		return j.fail(PushFailureAuth, err, nil, nil, ""), true
+ 	case errors.Is(err, gitrepo.ErrPushRejected):
+-		return j.fail(PushFailureNotFastForward, err, nil, j.unpushedCommits(), ""), true
++		return j.failRejection(err), true
+ 	case errors.Is(err, ErrReplayConflict), errors.As(err, &refusal):
+ 		var paths []string
+ 		if errors.As(err, &conflict) {
+@@ -316,6 +317,37 @@ func (j *pushJob) classifyFailure(err error) (failed error, classified bool) {
+ 	}
+ }
+ 
++// failRejection records a rejection the retry did not settle, classed by what a fresh fetch shows origin holding.
++// Only origin holding commits the branch lacks is a divergence, recorded as not_fast_forward with the local commits;
++// origin holding nothing the branch lacks, as after a push that overlapped another or under a declining hook, is recorded as other, so its notice names a retry and no merge.
++// Origin's tip is the branch's upstream, or origin's branch of the same name for a branch never given one.
++// A failed fetch, or a tip that cannot be read because origin has no such branch, leaves origin unknown, and is recorded as other with that error joined.
++func (j *pushJob) failRejection(rejected error) error {
++	if err := j.repo.Fetch(); err != nil {
++		return j.fail(PushFailureOther, errors.Join(rejected, err), nil, nil, "")
++	}
++	originTip, err := j.repo.UpstreamSHA()
++	if errors.Is(err, gitrepo.ErrNoUpstream) {
++		originTip, err = j.repo.ResolveSHA("refs/remotes/" + originRemoteName + "/" + j.branch)
++	}
++	if err != nil {
++		return j.fail(PushFailureOther, errors.Join(rejected, err), nil, nil, "")
++	}
++	head, err := j.repo.CurrentSHA()
++	if err != nil {
++		return j.fail(PushFailureOther, errors.Join(rejected, err), nil, nil, "")
++	}
++	originOnly, err := j.repo.CommitsNotIn(originTip, head)
++	switch {
++	case err != nil:
++		return j.fail(PushFailureOther, errors.Join(rejected, err), nil, nil, "")
++	case len(originOnly) > 0:
++		return j.fail(PushFailureNotFastForward, rejected, nil, j.unpushedCommits(), "")
++	default:
++		return j.fail(PushFailureOther, fmt.Errorf("%w; a fetch found origin holding nothing this branch lacks", rejected), nil, nil, "")
++	}
++}
++
+ // unpushedCommits returns the local commits the upstream, as last fetched, lacks, newest first.
+ func (j *pushJob) unpushedCommits() []string {
+ 	upstream, err := j.repo.UpstreamSHA()
+diff --git a/internal/gitrepo/push.go b/internal/gitrepo/push.go
+index 40c3ac56..9441a589 100644
+--- a/internal/gitrepo/push.go
++++ b/internal/gitrepo/push.go
+@@ -13,9 +13,9 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ )
+ 
+-// ErrPushRejected is returned by PushRebaseFree when push is rejected due to remote divergence.
+-// It is a distinguishable error, not a failure.
+-var ErrPushRejected = errors.New("gitrepo: push rejected (remote diverged)")
++// ErrPushRejected is matched with errors.Is against the error PushRebaseFree returns when the remote rejected the push, as not a fast-forward or for a remote reason such as a declining hook.
++// A rejection alone does not show that origin holds commits the branch lacks; a caller that must know fetches and compares.
++var ErrPushRejected = errors.New("gitrepo: push rejected")
+ 
+ // ErrLeaseRejected is returned by UpdateRemoteBranchLeased when the remote branch no longer sits at the expected SHA.
+ // It is a distinguishable error, not a failure of the push itself.
+@@ -141,7 +141,8 @@ func (r *Repo) pushPlainWithRetry() error {
+ 
+ // PushRebaseFree runs git push without rebasing, establishing upstream via
+ // push.autoSetupRemote=true.
+-// Returns ErrPushRejected on divergence, and an error satisfying errors.Is(err, ErrLocalBranch) for a branch carrying the local-only mark.
++// A rejection, as not a fast-forward or for a remote reason such as a declining hook, returns an error wrapping ErrPushRejected with git's rejection line;
++// it returns an error satisfying errors.Is(err, ErrLocalBranch) for a branch carrying the local-only mark.
+ // A remote "(failed)" or "cannot lock ref" refusal is retried a bounded number of times, and an exhausted retry wraps ErrPushRetriesExhausted rather than mapping to ErrPushRejected.
+ // A refusal for want of authentication or permission wraps ErrPushAuthRefused with git's refusal line, is never retried, and never maps to ErrPushRejected.
+ // Lock-free.
+@@ -156,24 +157,21 @@ func (r *Repo) PushRebaseFree() error {
+ 	var gitErr *gitexec.GitError
+ 	if errors.As(err, &gitErr) {
+ 		// A declined push prints a "rejected" line too, so the auth class is checked before the rejection class.
+-		if line, found := authRefusalLine(gitErr.Stderr); found {
++		if line, found := lastLineHolding(gitErr.Stderr, authRefusalTriggers); found {
+ 			return fmt.Errorf("%w: %s", ErrPushAuthRefused, line)
+ 		}
+-		// ErrPushRejected is a sentinel consumers match with errors.Is, so it is
+-		// returned bare rather than wrapped with %w — a wrapper here would break
+-		// internal/fabricengine/coalesce.go's identity check.
+-		if containsAny(gitErr.Stderr, rebaseRetryTriggers) {
+-			return ErrPushRejected
++		if line, found := lastLineHolding(gitErr.Stderr, rebaseRetryTriggers); found {
++			return fmt.Errorf("%w: %s", ErrPushRejected, line)
+ 		}
+ 	}
+ 	return fmt.Errorf("gitrepo: git push: %w", err)
+ }
+ 
+-// authRefusalLine returns the last line of stderr that holds an authRefusalTriggers substring, trimmed.
+-func authRefusalLine(stderr string) (line string, found bool) {
++// lastLineHolding returns the last line of stderr that holds one of triggers, trimmed.
++func lastLineHolding(stderr string, triggers []string) (line string, found bool) {
+ 	lines := strings.Split(stderr, "\n")
+ 	for i := len(lines) - 1; i >= 0; i-- {
+-		if candidate := strings.TrimSpace(lines[i]); containsAny(candidate, authRefusalTriggers) {
++		if candidate := strings.TrimSpace(lines[i]); containsAny(candidate, triggers) {
+ 			return candidate, true
+ 		}
+ 	}
+@@ -232,7 +230,7 @@ func (r *Repo) UpdateRemoteBranchLeased(remote, branch, sha, expectSHA string) e
+ 	if err == nil {
+ 		return nil
+ 	}
+-	// ErrLeaseRejected is a sentinel consumers match with errors.Is, so it is returned bare rather than wrapped with %w, as ErrPushRejected is.
++	// ErrLeaseRejected is a sentinel consumers match with errors.Is, so it is returned bare.
+ 	var gitErr *gitexec.GitError
+ 	if errors.As(err, &gitErr) && strings.Contains(gitErr.Stderr, leaseRejectedTrigger) {
+ 		return ErrLeaseRejected
+diff --git a/internal/gitrepo/push_test.go b/internal/gitrepo/push_test.go
+index 668e731b..cfa3ddcd 100644
+--- a/internal/gitrepo/push_test.go
++++ b/internal/gitrepo/push_test.go
+@@ -256,6 +256,11 @@ func TestPush(t *testing.T) {
+ 				t.Errorf("PushRebaseFree() error = %v; want it to satisfy errors.Is(err, gitrepo.ErrPushRejected)", err)
+ 			}
+ 
++			// A rejection names git's own line and claims no divergence, since a declining hook is rejected the same way.
++			if line := strings.TrimPrefix(err.Error(), gitrepo.ErrPushRejected.Error()+": "); strings.Contains(err.Error(), "remote diverged") || line == "" || line == err.Error() {
++				t.Errorf("PushRebaseFree() error = %q; want git's rejection line and no \"remote diverged\" claim", err)
++			}
++
+ 			// No pull --rebase ever ran, so the dirty tracked file must be exactly as left, and no rebase state must exist.
+ 			got, readErr := os.ReadFile(filepath.Join(cloneAPath, "a.txt"))
+ 			if readErr != nil {
+diff --git a/internal/loomcli/commitrecords_test.go b/internal/loomcli/commitrecords_test.go
+index 916dab92..f24a3254 100644
+--- a/internal/loomcli/commitrecords_test.go
++++ b/internal/loomcli/commitrecords_test.go
+@@ -94,7 +94,7 @@ func TestCommitRecordsVerb_ErrorEnvelopes(t *testing.T) {
+ 		{"push rejected", nil, nil, rejected, []string{pushFailedPrefix, rejectionWayForward, refusedVerbClause}, nil},
+ 		{"push failed", nil, nil, boom, []string{pushFailedPrefix, transientWayForward}, nil},
+ 		{"push lock busy", nil, nil, fmt.Errorf("push: %w", fabricengine.ErrPushLockBusy), []string{pushFailedPrefix, transientWayForward}, nil},
+-		{"rejected beside another failure", nil, nil, errors.Join(rejected, boom), []string{pushFailedPrefix, rejectionWayForward, "boom", "remote diverged"}, nil},
++		{"rejected beside another failure", nil, nil, errors.Join(rejected, boom), []string{pushFailedPrefix, rejectionWayForward, "boom", "push rejected"}, nil},
+ 		{"push gone", nil, nil, gone, []string{pushFailedPrefix}, []string{goneLine}},
+ 		{"push rewound", nil, nil, rewound, []string{pushFailedPrefix}, []string{rewoundLine}},
+ 		{"push auth", nil, nil, auth, []string{pushFailedPrefix}, []string{authLine}},
