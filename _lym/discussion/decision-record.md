@@ -71,6 +71,13 @@ Bound: no Codex session can run before then, so no landing misses its line.
 
 - An existing pull request opened before the change keeps its old body until PR-Review next edits it.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - prreview-empty-credit-untested (class design, severity MEDIUM, open in rounds 1)
+  - prreview-engines-run-failure-untested (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: the template loads with `credit` true and the three texts; a `credit_engines` key naming no engine fails the load naming the key.
