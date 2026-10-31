@@ -2,6 +2,8 @@
 
 `bolt-dir-rename` · Task · enhancement, fabric, board, config · draft
 
+Depends on: [`run-verbs-shared`](design-run-verbs-shared.md), [`commit-signature-credit`](design-commit-signature-credit.md), [`pawl-loom-recipe`](design-pawl-loom-recipe.md), [`interactive-recipe`](design-interactive-recipe.md)
+
 ## Seen (operator, 2026-10-31)
 
 The hub's Bolt checkout is the directory `_board`, but it holds far more than the board: `board.json`, its README and design files, the hub's `_lym` config and orch rules, and soon heddle's database (note `warp-visibility`).

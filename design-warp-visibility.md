@@ -2,7 +2,7 @@
 
 `warp-visibility` · Task · feature, fabric, board, config, claude, codex · draft
 
-Depends on: [`run-verbs-shared`](design-run-verbs-shared.md), [`commit-signature-credit`](design-commit-signature-credit.md), [`pawl-loom-recipe`](design-pawl-loom-recipe.md), [`interactive-recipe`](design-interactive-recipe.md)
+Depends on: [`bolt-dir-rename`](design-bolt-dir-rename.md)
 
 ## Seen
 
