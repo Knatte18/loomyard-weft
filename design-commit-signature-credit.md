@@ -1,6 +1,6 @@
 # Landing commits drop Co-Authored-By and Lym-Task, and carry an optional credit listing the engines used
 
-`commit-signature-credit` · Task · enhancement, landing · running · Code-Burler-Fix
+`commit-signature-credit` · Task · enhancement, landing · running · Code-Bouncer
 
 ## Seen (operator, 2026-10-30)
 
