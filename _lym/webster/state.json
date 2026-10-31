@@ -1,6 +1,6 @@
 {
   "runGuid": "70b74597f60114cf7e710db8c48b4b9f",
-  "planFingerprint": "2df874c830415384272cc02da22d240cf1797fef323595fcba04edc6993e750f",
+  "planFingerprint": "72bac573dcb404945e2deaa0982752a034f654031d9e2ac1977e4cca6c9fd522",
   "planFileHashes": {
     "00-overview.md": "fe43c1c7a63ffd9eb9b9d473e77eeac8b2798f5782d4f2375428c2f413791564",
     "01-discussion-fence-rule.md": "34c82d7c1ec45c6c95d38ea3e6f7762952db65309cbabec21c6e360714a02cfd",
@@ -19,7 +19,7 @@
     "14-shared-writer-wrapper.md": "79ad605bcb5c8980962cb4a83ac44f8e7038fd82b67a398364966c470a1a6d7f",
     "15-darn-write-scope-guards.md": "799473f9324a6f60f0eb55ad03fc7c3ce560df049786bd5de1a5e643dfa10647",
     "16-decision-add-by-rows.md": "f773d1694288d8d3ea82815cff64a13311e066ea3c2a651a02421503e7664d8c",
-    "17-one-describe.md": "b9310d80caaac7ca59199378af41ab8a1ebb0d9e4d47ff1e81c2e11a3736d26c",
+    "17-one-describe.md": "393cb686bb969f8bcf5a468812c7b4e2a7df4ff91b37c4565478abecd71a2772",
     "18-recipe-keyed-wiring.md": "d71545383381590c1473e962761dcc7f7ef401b2f7b79a56dfa56916b0580f5d",
     "19-loom-verbs-loom-only.md": "386d5025dcf6fb8b78e765642d8256ba7decd82113af7cbf80c0d18336bac567",
     "20-peers-per-recipe.md": "b1d42393227e5314a16615739388f6ba2e935f760b455e219f28f4745cc0bcaa"
@@ -773,7 +773,7 @@
       }
     }
   ],
-  "currentBatch": 16,
+  "currentBatch": 0,
   "masterStrand": "fcb1d2c3aa9b807f159196347a0467d8",
   "masterSessionId": "455fcd5a-9d78-42d3-90cf-321460494edd",
   "masterEngine": "claude",
@@ -983,15 +983,34 @@
       ],
       "cardHashes": {
         "16-decision-add-by-rows": "f773d1694288d8d3ea82815cff64a13311e066ea3c2a651a02421503e7664d8c",
-        "17-one-describe": "b9310d80caaac7ca59199378af41ab8a1ebb0d9e4d47ff1e81c2e11a3736d26c"
+        "17-one-describe": "393cb686bb969f8bcf5a468812c7b4e2a7df4ff91b37c4565478abecd71a2772"
       },
       "startSha": "4b373e0e02ff5727b1740d190c0f820c58c700e1",
       "kind": "fork",
       "spawnedAt": "2026-10-31T17:45:34Z",
       "sessionId": "455fcd5a-9d78-42d3-90cf-321460494edd",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "16-decision-add-by-rows",
+        "status": "done",
+        "head_sha": "b469425a89cda056e8f19287f54854262a3bd9fc",
+        "deviations": [
+          "internal/landingshed/describe_test.go",
+          "internal/loomcli/decision.go",
+          "internal/loomcli/decision_test.go"
+        ]
+      },
+      "cardShas": [
+        "b469425a89cda056e8f19287f54854262a3bd9fc"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-a6b61825cecb443d9.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-a6b61825cecb443d9.jsonl"
+      ]
     },
     "5": {
       "slug": "shed-keys-in-shed-only",
@@ -1163,6 +1182,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-ab6f65f6d03ea8e28.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-a436f985ebed46236.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-a581498e851089b62.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-a93a508821c471fc7.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-a93a508821c471fc7.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-a6b61825cecb443d9.jsonl"
   ]
 }
