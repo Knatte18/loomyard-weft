@@ -92,6 +92,15 @@ Rationale: The only run on the old name is this one, and it ends before the new 
 - Prose that says "loom" for the variant in a phrase the program does not list stays `loom` until `run-verbs-shared` reads it.
 - A hand-edited board copy of a stencil keeps its old text, as with any stencil change.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - d6-old-recipe-refusal-untested (class scope, severity MEDIUM, open in rounds 1)
+  - readme-overview-default-recipe-loom (class scope, severity MEDIUM, open in rounds 1)
+  - retired-row-loom-preflight-missing (class design, severity BLOCKING, open in rounds 1)
+  - sandbox-suite-seed-recipe-loom (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: the recipe vocabulary holds `tapestry` in place of `loom`, and the general packages, `loom.yaml`, the stencil directory and the `lym loom` verbs keep their names.
