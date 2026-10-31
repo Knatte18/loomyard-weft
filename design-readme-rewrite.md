@@ -1,6 +1,6 @@
 # README rewritten as a teaching text, with the overview figure brought up to date
 
-`readme-rewrite` · Task · enhancement, docs · running · Finalize
+`readme-rewrite` · Task · enhancement, docs · done
 
 ## Goal
 
