@@ -2,7 +2,7 @@
 
 `tapestry-rename` · Task · enhancement, loom, shed, stencil, config, board · draft
 
-Depends on: [`dobby-start-failures`](design-dobby-start-failures.md), [`readme-rewrite`](design-readme-rewrite.md)
+Depends on: [`dobby-start-failures`](design-dobby-start-failures.md)
 
 ## Goal
 
