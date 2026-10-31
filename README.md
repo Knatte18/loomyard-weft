@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-31 18:16 UTC; every age below is as of then.
+Rendered 2026-10-31 18:19 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -20,8 +20,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **loom becomes the task-run contract that tapestry and darn fulfil**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | tapestry | Code-Burler-Review | neve | 2w<br>4h | shed, loom, darn, landing, drift |
-| T7 | **The orch resume pointer arrives twice after a compact cycle**<br>• hookDelivered compares the hook mark with the compaction boundary, which is stamped after the hook ran | [`resume-pointer-twice`](design-resume-pointer-twice.md) | darn | Darn-Write | neve | 8m<br>1m | orch |
+| T4 | **loom becomes the task-run contract that tapestry and darn fulfil**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | tapestry | Code-Burler-Fix | neve | 2w<br>4h | shed, loom, darn, landing, drift |
+| T7 | **The orch resume pointer arrives twice after a compact cycle**<br>• hookDelivered compares the hook mark with the compaction boundary, which is stamped after the hook ran | [`resume-pointer-twice`](design-resume-pointer-twice.md) | darn | Darn-Write | neve | 10m<br>4m | orch |
 
 #### Ready (0)
 
@@ -35,7 +35,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **A finished run blocked at Worktree-Teardown with its pair gone can be neither retried nor cancelled**<br>• batten run refuses a teardown retry with no pair worktree, though the pair removal already succeeded and only the remote branch delete is left | [`teardown-retry-no-pair`](design-teardown-retry-no-pair.md) | darn | T4 | 1h<br>1m | batten, fabric |
+| T5 | **A finished run blocked at Worktree-Teardown with its pair gone can be neither retried nor cancelled**<br>• batten run refuses a teardown retry with no pair worktree, though the pair removal already succeeded and only the remote branch delete is left | [`teardown-retry-no-pair`](design-teardown-retry-no-pair.md) | darn | T4 | 1h<br>4m | batten, fabric |
 | T6 | **Landing commits drop Co-Authored-By and Lym-Task, and carry an optional credit listing the engines used**<br>• Replace the per-engine Co-Authored-By line and the Lym-Task line with one optional credit block that lists the LLM services the task used. | [`commit-signature-credit`](design-commit-signature-credit.md) | darn | T4 | 1d<br>3h | landing |
 
 #### Layer B (1)
@@ -52,7 +52,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **sampler: an interactive loom recipe, the operator iterating with an agent in the run's worktree until done**<br>• A Shed recipe whose agent waits for the operator and iterates on the result, then lands as usual<br>• `profile: light` | [`interactive-recipe`](design-interactive-recipe.md) | tapestry | T4<br>T1<br>T5 | 6h<br>1m | shed, batten, reed, shuttle |
+| T8 | **sampler: an interactive loom recipe, the operator iterating with an agent in the run's worktree until done**<br>• A Shed recipe whose agent waits for the operator and iterates on the result, then lands as usual<br>• `profile: light` | [`interactive-recipe`](design-interactive-recipe.md) | tapestry | T4<br>T1<br>T5 | 6h<br>4m | shed, batten, reed, shuttle |
 
 #### Layer D (1)
 
@@ -60,7 +60,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Rename the Bolt checkout directory _board to _bolt, by script alone**<br>• A pure, mechanical rename of _board to _bolt everywhere, with a rename program for existing hubs | [`bolt-dir-rename`](design-bolt-dir-rename.md) | darn | T4<br>T6<br>T1<br>T8<br>T5<br>T7 | 2h<br>1m | fabric, board, config, cwd, stencil |
+| T3 | **Rename the Bolt checkout directory _board to _bolt, by script alone**<br>• A pure, mechanical rename of _board to _bolt everywhere, with a rename program for existing hubs | [`bolt-dir-rename`](design-bolt-dir-rename.md) | darn | T4<br>T6<br>T1<br>T8<br>T5<br>T7 | 2h<br>4m | fabric, board, config, cwd, stencil |
 
 #### Draft (1)
 
@@ -78,7 +78,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 | H | **Trial the cuts that make a gate run link fewer new test binaries**<br>• Bench the report's cuts on Neve and OSL-1046 before any is made permanent | [`gate-fewer-binaries-trial`](design-gate-fewer-binaries-trial.md) | 3m<br>2m | gate, testkit |
+| R1 | H | **Trial the cuts that make a gate run link fewer new test binaries**<br>• Bench the report's cuts on Neve and OSL-1046 before any is made permanent | [`gate-fewer-binaries-trial`](design-gate-fewer-binaries-trial.md) | 6m<br>5m | gate, testkit |
 | R5 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 9d<br>4d | webster |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 9d<br>3d | loom, stencil |
 
