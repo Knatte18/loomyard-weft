@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-31 14:20 UTC; every age below is as of then.
+Rendered 2026-10-31 14:21 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **A rejected board push is retried after a fetch, and called a divergence only when one exists**<br>• Two overlapping pushes of the board from this hub made one fail, and the mail named a divergence that did not exist. | [`board-push-race`](design-board-push-race.md) | darn | Darn-Write | neve | 23h<br>6m | fabric |
+| T2 | **A rejected board push is retried after a fetch, and called a divergence only when one exists**<br>• Two overlapping pushes of the board from this hub made one fail, and the mail named a divergence that did not exist. | [`board-push-race`](design-board-push-race.md) | darn | Darn-Write | neve | 23h<br>7m | fabric |
 | T3 | **No hold notice for a turn the operator started in the pane**<br>• The shuttle hold notice is held back when the operator typed the turn's prompt | [`hold-notice-operator-turn`](design-hold-notice-operator-turn.md) | darn | Darn-Write | neve | 1h<br>6m | shuttle, creel |
 | T4 | **loom becomes the task-run contract that tapestry and darn fulfil**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | tapestry | Discussion-Burler-Review | neve | 2w<br>18m | shed, loom, darn, landing, drift |
 
@@ -37,7 +37,7 @@ Waits only on Running, Ready or Draft entries.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Pawl becomes a loom recipe, with a project decision record and no review rounds**<br>• Pawl joins the loom contract; a project record written at beam create and changed only through decision add<br>• `profile: solid` | [`pawl-loom-recipe`](design-pawl-loom-recipe.md) | darn | T4 | 18m<br>11m | pawl, loom, board, workspaces |
-| T5 | **Second recurring test-time and growth audit**<br>• Re-time tier0 to tier2 by the first audit's method and append the section<br>• `profile: docs` | [`test-time-audit-2`](design-test-time-audit-2.md) | darn | T2<br>T3 | 4m<br>4m | gate |
+| T5 | **Second recurring test-time and growth audit**<br>• Re-time tier0 to tier2 by the first audit's method and append the section<br>• `profile: docs` | [`test-time-audit-2`](design-test-time-audit-2.md) | darn | T2<br>T3 | 5m<br>5m | gate |
 
 ### Notes (33)
 
@@ -62,7 +62,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E6 |  | **Gate runs spend much of their time starting processes: start fewer**<br>• launch_seconds is a large share of a gate run on OSL-1046, where each process start is slow; the aim is a faster gate by starting fewer processes | [`gate-fewer-launches`](design-gate-fewer-launches.md) | 1d<br>1d | gate |
 | E7 |  | **Finalize settles a rejected fixer change in place and never sends the run back**<br>• A fix review loop inside Finalize that escalates at its cap, in place of on_reroute | [`finalize-fix-in-place`](design-finalize-fix-in-place.md) | 1h<br>1h | landing, shed, loom, darn |
 | E8 |  | **A seed says only that a run starts at its start, with no producer name**<br>• The shared seed names Preflight as the first producer for every recipe; the seed should name none, and the recipe supplies its first row. | [`seed-starts-at-start`](design-seed-starts-at-start.md) | 1d<br>1d | loom, pawl, shed |
-| E9 |  | **Landing commits drop Co-Authored-By and Lym-Task, and carry an optional credit listing the engines used**<br>• Replace the per-engine Co-Authored-By line and the Lym-Task line with one optional credit block that lists the LLM services the task used. | [`commit-signature-credit`](design-commit-signature-credit.md) | 1d<br>1d | landing |
+| E9 |  | **Landing commits drop Co-Authored-By and Lym-Task, and carry an optional credit listing the engines used**<br>• Replace the per-engine Co-Authored-By line and the Lym-Task line with one optional credit block that lists the LLM services the task used. | [`commit-signature-credit`](design-commit-signature-credit.md) | 1d<br>0m | landing |
 | E10 |  | **The adopt check shows that it runs, and how far it has come**<br>• lym adopt starts a test suite detached and nothing the operator looks at shows it or its progress | [`adopt-check-visible`](design-adopt-check-visible.md) | 2h<br>2h | reed, gate, workspaces |
 | E11 |  | **Merge in from parent as a task of its own in a beam, in place of pawl's perch round**<br>• A ready-made command starts a run that brings the parent into a beam, with Drift; pawl drops its own Code-Review perch | [`parent-merge-task`](design-parent-merge-task.md) | 1h<br>1h | pawl, workspaces, drift, landing |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 13d<br>4d | webster, fabric, loom |
