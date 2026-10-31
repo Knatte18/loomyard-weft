@@ -9,6 +9,9 @@ On 2026-10-31 the operator moved from OSL-1046 to Neve: `lym fabric pull`, `lym 
 Task `dobby-land-notice-needs-flag` had started on OSL-1046 on 2026-10-30 and stood at `running · Code-Bouncer`, unlanded.
 After the move, dobby on Neve reported its driver strand dead, then a fresh Go driver took it on, and neither the operator nor the orch could say at once whether the run was finished, should run or should not.
 
+The run went on because `lym adopt` resumes it: step 6 of its help resumes each moved run not done as a detached first pass, so adopting is also starting.
+Bolt itself is reconciled with origin first by each of `lym fabric pull`, `lym adopt` (its step 1) and `lym beam start`, so the board was current; what was missing is a view of the runs.
+
 ## Idea
 
 One verb takes a machine over and leaves it in a known state, in place of the hand steps.
