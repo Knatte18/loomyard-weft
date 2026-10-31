@@ -1,0 +1,411 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index a8d2026f..3e681b8b 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -701,7 +701,7 @@ User-facing modules each get one `lym <module>` namespace:
+   and the bootstrap itself is idempotent against a driver already alive.
+   `Worktree-Teardown` is idempotent against its own post-condition just as `Worktree-Create` is: re-entered after its own removal already succeeded (a process killed before the transition persisted), it finds the pair gone and reports done.
+   That post-condition is the pair's, not the task worktree's alone: fabric removes the task worktree before its sibling, so a removal interrupted between the two halves leaves the sibling, its launcher entries, and both branches behind — re-entered there, the row halts `blocked` naming the leftover and `lym fabric prune --apply` as the remedy rather than reporting done over the debris.
+-  Teardown first pushes an `archive/<slug>/<tip>` tag of the pair's other-side branch's tip to its remote, so the run's committed records stay reachable after the branch is gone, then deletes that branch locally and on the remote (the task branch stays on the remote, and locally unless `remove` proved its work pushed or landed), and a re-entered row whose worktrees are already gone finishes that deletion rather than reporting done over a surviving copy, which would make a later create of the slug refuse its push; a failed remote deletion halts the row `blocked`, and resuming once the remote is reachable retries it.
++  Teardown first pushes an `archive/<slug>/<tip>` tag of the pair's other-side branch's tip to its remote, so the run's committed records stay reachable after the branch is gone, then deletes that branch locally and on the remote (the task branch stays on the remote, and locally unless `remove` proved its work pushed or landed), and a re-entered row whose worktrees are already gone finishes that deletion rather than reporting done over a surviving copy, which would make a later create of the slug refuse its push; a failed remote deletion halts the row `blocked`, and `lym batten run <slug>` once the remote is reachable retries it on any machine that owns the run, since a resume at this row whose task worktree is gone runs no origin reconcile and judges the owner on the local board alone.
+   A failed archive push halts the row the same way before anything is removed, and its reason names the resume.
+   Teardown is one row sequencing session shutdown before worktree removal, and never forces: anything an agent left uncommitted or untracked in the child (a build artefact, a note) blocks the row after the session is already down, with fabric's own refusal as the `stuck_reason` — the operator cleans the child and re-steps, never `--force`;
+   an uncommitted change in the pair's sibling, where the run records live, instead names batten's own recovery (`lym loom commit-records` in the task worktree, then resume the batten run), and, should the resumed teardown refuse again, committing or removing the leftover by hand, since it is then not a run record;
+diff --git a/internal/battencli/arm.go b/internal/battencli/arm.go
+index 172b0ff1..d79be406 100644
+--- a/internal/battencli/arm.go
++++ b/internal/battencli/arm.go
+@@ -710,7 +710,7 @@ func (c *battenCLI) pausedExtras() map[string]any {
+ 
+ // battenPreRun implements the PreRun hook for batten's spec: run's whole existing pre-flight, in today's order: checkRunStatus, then seeding a fresh status when absent.
+ // Each step's error becomes a returned error the generic body reports on the error envelope exactly as run's own inline handling did.
+-// A found status file is resumed only after the owner pre-flight (ownerPreflight) lets it, which is the run-scope origin reconcile (reconcileResume) bar a run still at Worktree-Create whose pair is absent; a fresh start runs no reconcile, and armAt has already run its owner check.
++// A found status file is resumed only after the owner pre-flight (ownerPreflight) lets it, which is the run-scope origin reconcile (reconcileResume) bar a run still at Worktree-Create, or at Worktree-Teardown, whose pair is absent; a fresh start runs no reconcile, and armAt has already run its owner check.
+ // Once the owner pre-flight lets a found status resume, reopenWindow reopens the terminal window when no client is attached, unless --no-reopen is set.
+ // Under --continue-pass, refuseContinuePass runs first, and a run it lets through skips the pause refusal, the owner pre-flight and the reopening: the run is one dobby already drives, and the pass is not a resume.
+ //
+diff --git a/internal/battencli/cli.go b/internal/battencli/cli.go
+index 149ce240..25be2fc2 100644
+--- a/internal/battencli/cli.go
++++ b/internal/battencli/cli.go
+@@ -61,6 +61,7 @@
+ // A machine starts, resumes and claims only what it owns.
+ // A start (no status file, or one still at Worktree-Create whose pair this machine does not hold) pulls the board, which needs origin, claims the hub's prime when none is recorded, and refuses a task another machine owns.
+ // A resume refuses a task the origin reconcile or, with origin unreachable, the local board shows owned elsewhere; with origin answering it records this machine as the owner of a run-held entry with none.
++// A resume at Worktree-Teardown whose task worktree is gone runs no origin reconcile, since nothing of the pair is left to judge, and judges the owner on the local board alone, so the teardown retries what is left of the pair, such as its remote branch deletion, on any machine that owns the run.
+ // Every such refusal names the owner and "lym adopt <slug>" as the way forward.
+ // "lym batten status" reports the slug's effective owner as owner_machine and whether this machine holds it as owned_here.
+ //
+diff --git a/internal/battencli/lifecycle_integration_test.go b/internal/battencli/lifecycle_integration_test.go
+index 5fc53a13..c82bf6dd 100644
+--- a/internal/battencli/lifecycle_integration_test.go
++++ b/internal/battencli/lifecycle_integration_test.go
+@@ -702,7 +702,7 @@ func stepTeardown_FailedRemoteDeletionHaltsResumably(t *testing.T, h *hubforge.H
+ 	if err == nil {
+ 		t.Fatal("Teardown.Remove() = nil with a remote refusing the deletion; want the failed remote deletion reported")
+ 	}
+-	if !strings.Contains(err.Error(), "resume this run") {
++	if !strings.Contains(err.Error(), "re-run lym batten run "+slug+" to retry the deletion") {
+ 		t.Errorf("Teardown.Remove() error = %q; want it to name the resume", err.Error())
+ 	}
+ 	if pathExists(h.PairCodeWorktree(slug)) {
+diff --git a/internal/battencli/owner.go b/internal/battencli/owner.go
+index b45f34b9..754990fc 100644
+--- a/internal/battencli/owner.go
++++ b/internal/battencli/owner.go
+@@ -227,9 +227,21 @@ func (c *battenCLI) claimBoardEntry(slug string) error {
+ 
+ // ownerPreflight is the owner check of a run about to be driven.
+ // With no status file, or a status still at Worktree-Create whose pair this machine does not hold, it is the start check;
++// a status at Worktree-Teardown whose task worktree is gone takes no reconcile, since the run-scope reconcile refuses a slug with no pair worktree and the teardown only finishes what is left of the pair:
++// the local board alone judges its owner, and no origin-owed marker is written;
+ // otherwise it is the resume reconcile, which also judges the owner.
+-// A receiver with no owner seams runs the resume reconcile for a found status and checks nothing for an absent one.
++// A receiver with no owner seams runs the resume reconcile for a found status bar that teardown, and checks nothing for an absent one.
+ func (c *battenCLI) ownerPreflight(found bool, status shedengine.Status) error {
++	if found && status.CurrentProducer == battenrecipe.NameWorktreeTeardown {
++		present, err := taskWorktreePresent(c.location, c.slug)
++		if err != nil {
++			return err
++		}
++		if !present {
++			logger.Info("battencli: teardown resume with its pair gone, judging the owner on the local board only", "slug", c.slug)
++			return c.refuseOwnedElsewhereOnLocalBoard("")
++		}
++	}
+ 	if c.owner.Machine == nil {
+ 		if !found {
+ 			return nil
+@@ -260,9 +272,10 @@ func (c *battenCLI) preflightRunOwner() error {
+ 	return c.ownerPreflight(found, status)
+ }
+ 
+-// refuseResumeUnreachable judges a resume whose reconcile could not reach origin against the local Bolt.
+-// A task the local board shows owned elsewhere refuses; a task owned here, run-held with no owner or unjudgeable resumes with the Warn the caller logged, and no owner write.
+-func (c *battenCLI) refuseResumeUnreachable() error {
++// refuseOwnedElsewhereOnLocalBoard judges a resume that ran no origin reconcile against the local Bolt.
++// A task the local board shows owned elsewhere refuses naming its owner, then retry, a clause ending in ", or " or empty, then the adopt that takes the task over;
++// a task owned here, run-held with no owner or unjudgeable resumes with no owner write.
++func (c *battenCLI) refuseOwnedElsewhereOnLocalBoard(retry string) error {
+ 	if c.owner.Machine == nil {
+ 		return nil
+ 	}
+@@ -290,7 +303,7 @@ func (c *battenCLI) refuseResumeUnreachable() error {
+ 			Slug:    c.slug,
+ 			Owner:   owner,
+ 			Subject: subject,
+-			text:    fmt.Sprintf("battencli: the local board shows %q owned by %q; re-run `lym batten run %s` once origin answers, or run `lym adopt %s` from this machine's prime to take it over", c.slug, owner, c.slug, subject),
++			text:    fmt.Sprintf("battencli: the local board shows %q owned by %q; %srun `lym adopt %s` from this machine's prime to take it over", c.slug, owner, retry, subject),
+ 		}
+ 	}
+ 	return nil
+diff --git a/internal/battencli/owner_test.go b/internal/battencli/owner_test.go
+index 443a6828..0ab3d3eb 100644
+--- a/internal/battencli/owner_test.go
++++ b/internal/battencli/owner_test.go
+@@ -1,15 +1,18 @@
+ //go:build tier0
+ 
+-// owner_test.go covers batten's owner checks over fake owner seams: the start check, and the owner keys of the status envelope.
++// owner_test.go covers batten's owner checks over fake owner seams: the start check, the Worktree-Teardown owner pre-flight, the pass exit codes of the owner refusals, and the owner keys of the status envelope.
+ 
+ package battencli
+ 
+ import (
+ 	"errors"
+ 	"fmt"
++	"os"
++	"path/filepath"
+ 	"strings"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/battenrecipe"
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/dobbyengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+@@ -162,6 +165,107 @@ func TestRefuseStartOwnedElsewhere(t *testing.T) {
+ 	})
+ }
+ 
++// TestOwnerPreflight_TeardownResume covers a resume at Worktree-Teardown whose task worktree is gone.
++// It runs no origin reconcile and writes no origin-owed marker.
++// It resumes when the local board shows the run owned here, and refuses naming the owner and the adopt, with no wait for origin, when it shows another.
++// A resume at another row with its pair gone, and a Worktree-Teardown resume with its pair present, still run the reconcile.
++func TestOwnerPreflight_TeardownResume(t *testing.T) {
++	t.Parallel()
++
++	tests := []struct {
++		name          string
++		producer      string
++		owners        boardengine.Owners
++		wantErrors    []string
++		wantReconcile bool
++		// pairPresent creates the task worktree before the call.
++		pairPresent bool
++	}{
++		{
++			name:     "OwnedHereResumes",
++			producer: battenrecipe.NameWorktreeTeardown,
++			owners:   ownedBy("here", "here", true),
++		},
++		{
++			name:     "UnownedResumes",
++			producer: battenrecipe.NameWorktreeTeardown,
++			owners:   ownedBy("here", "", true),
++		},
++		{
++			name:          "TeardownWithPairPresentRunsTheReconcile",
++			producer:      battenrecipe.NameWorktreeTeardown,
++			owners:        ownedBy("here", "here", true),
++			wantReconcile: true,
++			pairPresent:   true,
++		},
++		{
++			name:       "OwnedElsewhereRefusesNamingTheAdopt",
++			producer:   battenrecipe.NameWorktreeTeardown,
++			owners:     ownedBy("here", "there", true),
++			wantErrors: []string{`"there"`, "`lym adopt some-beam`"},
++		},
++		{
++			name:          "OtherRowRunsTheReconcile",
++			producer:      battenrecipe.NameLand,
++			owners:        ownedBy("here", "here", true),
++			wantReconcile: true,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			c := newFakeReceiver(t, nil)
++			if tt.pairPresent {
++				// A directory whose .git holds HEAD, objects and refs is a worktree root to lymcwd.ResolveWorktree.
++				gitDir := filepath.Join(fabricengine.WorktreePath(c.location, c.slug), ".git")
++				for _, sub := range []string{"objects", "refs"} {
++					if err := os.MkdirAll(filepath.Join(gitDir, sub), 0o755); err != nil {
++						t.Fatal(err)
++					}
++				}
++				if err := os.WriteFile(filepath.Join(gitDir, "HEAD"), []byte("ref: refs/heads/main\n"), 0o644); err != nil {
++					t.Fatal(err)
++				}
++			}
++			fake := fakeOwners{machine: "here", owners: tt.owners}
++			c.owner = fake.seams()
++			reconciled := false
++			c.reconcile = func(string) (fabricengine.OriginReport, error) {
++				reconciled = true
++				return fabricengine.OriginReport{}, nil
++			}
++
++			err := c.ownerPreflight(true, shedengine.Status{CurrentProducer: tt.producer})
++
++			if len(tt.wantErrors) == 0 && err != nil {
++				t.Fatalf("ownerPreflight() = %v; want nil", err)
++			}
++			if len(tt.wantErrors) > 0 {
++				var owned *OwnedElsewhereError
++				if !errors.As(err, &owned) {
++					t.Fatalf("ownerPreflight() = %v; want an *OwnedElsewhereError", err)
++				}
++				for _, want := range tt.wantErrors {
++					if !strings.Contains(err.Error(), want) {
++						t.Errorf("ownerPreflight() = %q; want it to carry %q", err.Error(), want)
++					}
++				}
++				if strings.Contains(err.Error(), "once origin answers") {
++					t.Errorf("ownerPreflight() = %q; want no re-run once origin answers, since a re-run skips the reconcile again", err.Error())
++				}
++			}
++			if reconciled != tt.wantReconcile {
++				t.Errorf("reconcile ran = %v; want %v", reconciled, tt.wantReconcile)
++			}
++			stands, standsErr := OriginOwed(c.location, c.slug)
++			if standsErr != nil || stands {
++				t.Errorf("OriginOwed() = %v, %v; want false, nil", stands, standsErr)
++			}
++		})
++	}
++}
++
+ // TestPassExitCode asserts a pass exits 77 for each refusal of a run another machine owns that the pre-run reaches, wrapped or not, 78 for a covered run, 79 for a continue pass of a run dobby may not continue, and 1 for any other error.
+ // A claim the Worktree-Create row loses is not a row here, since no pre-run wraps it and its stop ends in the driver's own envelope.
+ func TestPassExitCode(t *testing.T) {
+@@ -181,7 +285,7 @@ func TestPassExitCode(t *testing.T) {
+ 		}, dobbyengine.PassExitOwnedElsewhere},
+ 		{"ResumeWithOriginUnreachableAndLocalBoardElsewhere", func() error {
+ 			fake := fakeOwners{machine: "here", owners: ownedBy("here", "there", true)}
+-			return (&battenCLI{slug: slug, owner: fake.seams()}).refuseResumeUnreachable()
++			return (&battenCLI{slug: slug, owner: fake.seams()}).refuseOwnedElsewhereOnLocalBoard("")
+ 		}, dobbyengine.PassExitOwnedElsewhere},
+ 		{"WrappedOwnedElsewhere", func() error { return fmt.Errorf("outer: %w", ownedElsewhereFor(slug, "there", "some-beam")) }, dobbyengine.PassExitOwnedElsewhere},
+ 		{"Covered", func() error { return &coveredRefusal{err: errors.New("pause: held")} }, dobbyengine.PassExitCovered},
+diff --git a/internal/battencli/resumereconcile.go b/internal/battencli/resumereconcile.go
+index 1445c5d7..c9c093d6 100644
+--- a/internal/battencli/resumereconcile.go
++++ b/internal/battencli/resumereconcile.go
+@@ -89,7 +89,7 @@ func (c *battenCLI) reconcileResume() error {
+ 	}
+ 	if report.Unreachable {
+ 		logger.Warn("battencli: origin was unreachable, resuming without judging the run against it", "slug", c.slug)
+-		if err := c.refuseResumeUnreachable(); err != nil {
++		if err := c.refuseOwnedElsewhereOnLocalBoard(fmt.Sprintf("re-run `lym batten run %s` once origin answers, or ", c.slug)); err != nil {
+ 			return err
+ 		}
+ 		if err := c.markOriginOwed(); err != nil {
+diff --git a/internal/battencli/run_test.go b/internal/battencli/run_test.go
+index f5e58bbe..4db72c0b 100644
+--- a/internal/battencli/run_test.go
++++ b/internal/battencli/run_test.go
+@@ -189,7 +189,7 @@ func TestRunCmd_ResumeDispositions(t *testing.T) {
+ 	t.Parallel()
+ 
+ 	const slug = "some-slug"
+-	teardown := battenrecipe.NameWorktreeTeardown
++	land := battenrecipe.NameLand
+ 	activeReport := fabricengine.OriginReport{Entries: []fabricengine.EntryOutcome{{Slug: slug, State: fabricengine.EntryActive}}}
+ 	elsewhereReport := fabricengine.OriginReport{Entries: []fabricengine.EntryOutcome{{Slug: slug, State: fabricengine.EntryOwnedElsewhere, Owner: "there", AdoptSubject: "some-beam"}}}
+ 	unreachableReport := fabricengine.OriginReport{Unreachable: true}
+@@ -231,7 +231,7 @@ func TestRunCmd_ResumeDispositions(t *testing.T) {
+ 		{name: "paused", state: shedengine.StatePaused, wantOutcome: "done", wantReconcile: 1},
+ 		{name: "absent_status_file", wantOutcome: "done"},
+ 		{name: "pause_after_the_first_row", state: shedengine.StateRunning, pauseAfter: battenrecipe.NameWorktreeCreate, wantOutcome: "paused", wantReconcile: 1},
+-		{name: "failed_again", state: shedengine.StateFailed, producer: battenrecipe.NameWorktreeTeardown, lockErr: errors.New("prime lock unavailable"), wantErrors: []string{"prime lock unavailable"}, wantReconcile: 1},
++		{name: "failed_again", state: shedengine.StateFailed, producer: battenrecipe.NameLand, lockErr: errors.New("prime lock unavailable"), wantErrors: []string{"prime lock unavailable"}, wantReconcile: 1},
+ 		{
+ 			name: "reconcile_active", state: shedengine.StateRunning, wantOutcome: "done", wantReconcile: 1,
+ 			report: fabricengine.OriginReport{Entries: []fabricengine.EntryOutcome{{Slug: slug, State: fabricengine.EntryActive}}},
+@@ -259,7 +259,7 @@ func TestRunCmd_ResumeDispositions(t *testing.T) {
+ 			report: unreachableReport, markerBefore: true, wantMarker: true,
+ 		},
+ 		{
+-			name: "a_pass_that_reached_origin_and_exits_non_zero_keeps_the_origin_owed_marker", state: shedengine.StateFailed, producer: battenrecipe.NameWorktreeTeardown, wantReconcile: 1,
++			name: "a_pass_that_reached_origin_and_exits_non_zero_keeps_the_origin_owed_marker", state: shedengine.StateFailed, producer: battenrecipe.NameLand, wantReconcile: 1,
+ 			lockErr: errors.New("prime lock unavailable"), wantErrors: []string{"prime lock unavailable"},
+ 			report: activeReport, markerBefore: true, wantMarker: true,
+ 		},
+@@ -269,42 +269,42 @@ func TestRunCmd_ResumeDispositions(t *testing.T) {
+ 			wantErrors:   []string{"origin refused the credentials", "fix the cause it names, then re-run lym batten run " + slug},
+ 		},
+ 		{
+-			name: "owner_elsewhere_verdict_refuses_naming_the_adopt", state: shedengine.StateRunning, producer: teardown, wantReconcile: 1,
++			name: "owner_elsewhere_verdict_refuses_naming_the_adopt", state: shedengine.StateRunning, producer: land, wantReconcile: 1,
+ 			owner:      owning(fakeOwners{machine: "here", owners: ownedBy("here", "", false)}),
+ 			report:     elsewhereReport,
+ 			wantExit:   dobbyengine.PassExitOwnedElsewhere,
+ 			wantErrors: []string{"there", "`lym adopt some-beam`"},
+ 		},
+ 		{
+-			name: "run_held_entry_with_no_owner_resumes_writing_no_owner", state: shedengine.StateRunning, producer: teardown, wantOutcome: "done", wantReconcile: 1,
++			name: "run_held_entry_with_no_owner_resumes_writing_no_owner", state: shedengine.StateRunning, producer: land, wantOutcome: "done", wantReconcile: 1,
+ 			owner:  owning(fakeOwners{machine: "here", owners: ownedBy("here", "", true)}),
+ 			report: activeReport,
+ 		},
+ 		{
+-			name: "unreachable_origin_with_the_local_board_owned_elsewhere_refuses", state: shedengine.StateRunning, producer: teardown, wantReconcile: 1,
++			name: "unreachable_origin_with_the_local_board_owned_elsewhere_refuses", state: shedengine.StateRunning, producer: land, wantReconcile: 1,
+ 			owner:      owning(fakeOwners{machine: "here", owners: ownedBy("here", "there", true)}),
+ 			report:     unreachableReport,
+ 			wantExit:   dobbyengine.PassExitOwnedElsewhere,
+ 			wantErrors: []string{"the local board shows", "there", "once origin answers", "lym batten run " + slug, "`lym adopt some-beam`"},
+ 		},
+ 		{
+-			name: "unreachable_origin_with_an_unowned_run_held_entry_resumes_without_a_write", state: shedengine.StateRunning, producer: teardown, wantOutcome: "done", wantReconcile: 1,
++			name: "unreachable_origin_with_an_unowned_run_held_entry_resumes_without_a_write", state: shedengine.StateRunning, producer: land, wantOutcome: "done", wantReconcile: 1,
+ 			owner:  owning(fakeOwners{machine: "here", owners: ownedBy("here", "", true)}),
+ 			report: unreachableReport, wantMarker: true,
+ 		},
+ 		{
+-			name: "hub_with_no_prime_owner_records_this_machine_as_the_prime_owner", state: shedengine.StateRunning, producer: teardown, wantOutcome: "done", wantReconcile: 1,
++			name: "hub_with_no_prime_owner_records_this_machine_as_the_prime_owner", state: shedengine.StateRunning, producer: land, wantOutcome: "done", wantReconcile: 1,
+ 			owner:    owning(fakeOwners{machine: "here", owners: ownedBy("", "", false)}),
+ 			report:   activeReport,
+ 			wantSets: []string{"prime"},
+ 		},
+ 		{
+-			name: "unreachable_origin_with_no_prime_owner_resumes_without_a_write", state: shedengine.StateRunning, producer: teardown, wantOutcome: "done", wantReconcile: 1,
++			name: "unreachable_origin_with_no_prime_owner_resumes_without_a_write", state: shedengine.StateRunning, producer: land, wantOutcome: "done", wantReconcile: 1,
+ 			owner:  owning(fakeOwners{machine: "here", owners: ownedBy("", "", false)}),
+ 			report: unreachableReport, wantMarker: true,
+ 		},
+ 		{
+-			name: "failed_prime_claim_warns_and_still_reaches_the_owner_verdict", state: shedengine.StateRunning, producer: teardown, wantReconcile: 1,
++			name: "failed_prime_claim_warns_and_still_reaches_the_owner_verdict", state: shedengine.StateRunning, producer: land, wantReconcile: 1,
+ 			owner:      owning(fakeOwners{machine: "here", owners: ownedBy("", "", false), primeSetErr: errors.New("push refused")}),
+ 			report:     elsewhereReport,
+ 			wantSets:   []string{"prime"},
+diff --git a/internal/battencli/step_test.go b/internal/battencli/step_test.go
+index 22a7176b..4170cebf 100644
+--- a/internal/battencli/step_test.go
++++ b/internal/battencli/step_test.go
+@@ -111,7 +111,7 @@ func TestBattenPreStep_RefusalKinds(t *testing.T) {
+ 			name: "RunOwnedElsewhereIsBootstrap",
+ 			arrange: func(t *testing.T, c *battenCLI) {
+ 				writeStatus(t, c, shedengine.Status{
+-					CurrentProducer: battenrecipe.NameWorktreeTeardown,
++					CurrentProducer: battenrecipe.NameLand,
+ 					State:           shedengine.StateRunning,
+ 				})
+ 				c.reconcile = func(string) (fabricengine.OriginReport, error) {
+diff --git a/internal/battencli/wire.go b/internal/battencli/wire.go
+index ba3691b0..bec53920 100644
+--- a/internal/battencli/wire.go
++++ b/internal/battencli/wire.go
+@@ -381,7 +381,7 @@ func finishRemoval(res fabricengine.RemoveResult, err error, slug string) error
+ 		return teardownRefusal(err, slug)
+ 	}
+ 	if res.RemoteBranchError != "" {
+-		return fmt.Errorf("the pair for %q was removed but its other-side branch's remote copy was not deleted: %s; resume this run to retry the deletion", slug, res.RemoteBranchError)
++		return fmt.Errorf("the pair for %q was removed but its other-side branch's remote copy was not deleted: %s; re-run lym batten run %s to retry the deletion", slug, res.RemoteBranchError, slug)
+ 	}
+ 	return nil
+ }
+diff --git a/internal/battencli/wire_test.go b/internal/battencli/wire_test.go
+index 3f0fb2b0..a32a74d2 100644
+--- a/internal/battencli/wire_test.go
++++ b/internal/battencli/wire_test.go
+@@ -837,7 +837,7 @@ func TestFinishRemoval(t *testing.T) {
+ 			name:       "RemoteBranchErrorHaltsResumable",
+ 			result:     fabricengine.RemoveResult{RemoteBranchError: "push refused"},
+ 			wantErr:    true,
+-			wantSubstr: []string{slug, "push refused", "resume this run"},
++			wantSubstr: []string{slug, "push refused", "re-run lym batten run " + slug + " to retry the deletion"},
+ 		},
+ 	}
+ 	for _, tt := range tests {
+diff --git a/internal/battenshed/doc.go b/internal/battenshed/doc.go
+index 6ad6558f..efd8c34f 100644
+--- a/internal/battenshed/doc.go
++++ b/internal/battenshed/doc.go
+@@ -61,6 +61,7 @@
+ // an entry another machine owns refuses, naming the owner and "lym adopt <subject>", the beam or `root` that takes it over; an active entry resumes, and so does an unreachable origin, with a Warn.
+ // With origin answering, the resume first records this machine as the hub's prime owner when none is recorded, and as the owner of a run-held entry that has none; a failed write refuses, naming the re-run once origin answers or the push's own way forward.
+ // With origin unreachable the resume reads the local board instead, refuses a task it shows owned elsewhere, and writes no owner.
++// A resume at Worktree-Teardown whose task worktree is gone runs no reconcile and judges the owner on the local board alone, so the teardown retries what is left of the pair.
+ // A reconcile error refuses, with fixing its cause and then the re-run as the way forward.
+ // A fresh start runs no reconcile: creating the pair probes origin for it, and a parent behind origin costs only Parent-Align's merge.
+ // It pulls the board instead, which needs origin, and refuses a task another machine owns before anything is seeded or claimed.
+diff --git a/pattern/PATTERN-owner-machine.md b/pattern/PATTERN-owner-machine.md
+index 87e93a11..8c615842 100644
+--- a/pattern/PATTERN-owner-machine.md
++++ b/pattern/PATTERN-owner-machine.md
+@@ -18,15 +18,17 @@ Starting, resuming or landing a run, bar the rest of a Finalize already past its
+ ## Origin reconcile first
+ 
+ Acting on a run or a hub after an absence starts with `fabricengine`'s origin reconcile, so every verdict above reads the state origin holds.
++The one exception is a resume at Worktree-Teardown whose task worktree is gone: it runs no origin reconcile, judges the owner on the local board alone and writes no origin-owed marker, since the teardown only finishes what is left of the pair.
+ 
+ ## Passes
+ 
+ A run is driven in passes, one `lym batten run` each, and a pass is either full or a continue pass.
+ 
+ - A continue pass is the one dobby schedules into a run it already drives, and it is not a resume: it needs no origin verdict, so it skips the resume's origin reconcile, the Open-Window re-run and the pre-run pause refusal.
+-- The first pass of a run after a dobby start or a machine wake, every pass while a full pass is owed, and every hand pass is a resume and gets the origin reconcile, which every full pass keeps first.
++- The first pass of a run after a dobby start or a machine wake, every pass while a full pass is owed, and every hand pass is a resume and gets the origin reconcile, which every full pass keeps first, bar a resume at Worktree-Teardown whose task worktree is gone.
+ - A continue pass is refused unless batten's status reads `running` at Run-Shed, the parent worktree's dobby state names the run as one it drives with no full pass owed, and no origin-owed marker stands; the refusal reads to dobby as a full pass owed.
+-- A resume that judged its owner without origin leaves the origin-owed marker, which stays until a pass that reached origin exits 0, so the passes stay full until origin has been reached.
++- A resume that judged its owner without origin leaves the origin-owed marker, bar a Worktree-Teardown resume whose task worktree is gone, which writes none;
++  the marker stays until a pass that reached origin exits 0, so the passes stay full until origin has been reached.
+ 
+ ## Enforcement
+ 
