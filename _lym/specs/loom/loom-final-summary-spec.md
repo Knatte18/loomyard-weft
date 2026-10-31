@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=fa8fd4a02eb9b1e02444b3422e0f23714b0e92199bb2098543ba50179b3f6b22 build=52b6984877826c631cb136734cbf9afe3959bf18 time=2026-10-31T13:43:24Z -->
+<!-- lym-stencil: sha256=78426e9a9d25d150c889fd1582d25d46a8c80ac209fbc8cf55aedaeb3ea7b211 build=f666ba87df1cd198e399cb9f727bb59e08155b77 time=2026-10-31T18:44:38Z -->
 
 # Final-summary spec — the producer-agnostic final-summary artifact
 
@@ -35,7 +35,8 @@ The contract names no location: the artifact's directory belongs to whichever pr
 The artifact has two consumers today, both in `internal/landingshed`:
 
 - **`Publish`** uses the parsed title and body as the pull request's own title and body fields.
-- **`Finalize`** uses `LandingMessage` — the title, a blank line, the body with its leading whitespace trimmed, then, after a blank line, the trailer block Go composes from `landing.yaml`'s `trailer_text` and the `engine_trailers` entries of the engines that ran a session in the task — as the landing merge commit's message.
+- **`Finalize`** uses `LandingMessage` — the title, a blank line, the body with its leading whitespace trimmed, then, after a blank line, the credit block Go composes from `landing.yaml`'s `credit_*` keys and the engines that ran a session in the task — as the landing merge commit's message.
+  The pull request's body carries the same body and credit block.
 
 `Finalize`'s read is unconditional: a missing or malformed artifact there is a hard error.
 `Publish`'s read is reached only when the parent branch requires a pull request: it opens one from the artifact, or refreshes an open one's title and body, so a re-run Publish carries a rewritten description onto the pull request.
