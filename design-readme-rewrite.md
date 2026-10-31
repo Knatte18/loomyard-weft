@@ -1,6 +1,6 @@
 # README rewritten as a teaching text, with the overview figure brought up to date
 
-`readme-rewrite` · Task · enhancement, docs · running · Worktree-Create
+`readme-rewrite` · Task · enhancement, docs · running · Drift-Baseline
 
 ## Goal
 
