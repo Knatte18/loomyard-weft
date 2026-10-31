@@ -773,7 +773,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 10,
   "masterStrand": "fcb1d2c3aa9b807f159196347a0467d8",
   "masterSessionId": "455fcd5a-9d78-42d3-90cf-321460494edd",
   "masterEngine": "claude",
@@ -818,6 +818,24 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-verbs-shared/455fcd5a-9d78-42d3-90cf-321460494edd/subagents/agent-ac4d9ca8ccf7839e8.jsonl"
       ]
+    },
+    "10": {
+      "slug": "drift-verify-before-review",
+      "cards": [
+        "10-drift-verify-before-review",
+        "11-record-write-row"
+      ],
+      "cardHashes": {
+        "10-drift-verify-before-review": "b6263ee8770cad85241884f3c18a7a8f9ee9b8b746082ba4188a8f6a01cc7bb1",
+        "11-record-write-row": "fdba31bf38a7789d2a130dc02102270c72e302c25d5bf7026435a16fe5b43eca"
+      },
+      "startSha": "126f5c14a5bbff1014dae1b8ab9ebe2da28a4712",
+      "kind": "fork",
+      "spawnedAt": "2026-10-31T17:17:53Z",
+      "sessionId": "455fcd5a-9d78-42d3-90cf-321460494edd",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "5": {
       "slug": "shed-keys-in-shed-only",
