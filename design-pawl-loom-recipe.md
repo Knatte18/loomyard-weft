@@ -1,6 +1,6 @@
 # Pawl becomes a loom recipe, with a project decision record and no review rounds
 
-`pawl-loom-recipe` · Task · enhancement, pawl, loom, board, workspaces
+`pawl-loom-recipe` · Task · enhancement, pawl, loom, board, workspaces · running · Worktree-Create
 
 Depends on: [`commit-signature-credit`](design-commit-signature-credit.md)
 
