@@ -2,8 +2,6 @@
 
 `test-time-audit-2` · Task · research, gate · running · Darn-Write
 
-Depends on: [`adopt-check-visible`](design-adopt-check-visible.md)
-
 ## Goal
 
 Repeat the recurring test-time and growth audit and append its section to `docs/benchmarks/test-suite-timing.md`, measured the same way as the first audit (`31d9ae96`, 2026-10-28) so the numbers compare.

@@ -2,8 +2,6 @@
 
 `landing-watch` · Task · feature, dobby, creel, orch, board, reed, config · running · Darn-Write
 
-Depends on: [`adopt-check-visible`](design-adopt-check-visible.md)
-
 ## Seen (operator, 2026-10-28)
 
 A run that lands sends nothing: the orch learns of a landing only when something else wakes it, and the orch never polls runs.

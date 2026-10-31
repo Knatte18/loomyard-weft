@@ -431,9 +431,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "adopt-check-visible"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "A landing notice from dobby on request, per task, reusing the wait that lym hibernate request --after has",
       "body": "## Seen (operator, 2026-10-28)\n\nA run that lands sends nothing: the orch learns of a landing only when something else wakes it, and the orch never polls runs.\nWhen the operator asks the orch to report a run's result as soon as it lands, the orch cannot keep that promise, and the operator has to ask again.\n\n## Design (operator, 2026-10-28 to 2026-10-31)\n\nDobby sends the notice, never batten: dobby drives each run to its end, knows its outcome and landing commit, and already mails the orch.\nNo process of its own is needed, since dobby only reads the run state it already has.\n\nOne setting in the dobby's own config decides which runs get a notice: the `beam` module (`beam.yaml`, beside `max_runs`) in the worktree's `_lym/config`, so each beam's dobby has its own.\nIt takes three values:\n- `all`: a notice for every run that dobby drives;\n- `per-task`, the default: a notice only for a task whose board entry carries a field such as `notify_on_land`, set with `lym board upsert`; the field is cleared once its notice has gone out;\n- `off`: no notice at all, a task's field included.\n\nThe notice:\n- When the run lands, or ends without landing, dobby posts one short creel line to the orch naming the slug, the outcome and the landing commit.\n- A beam counts as a run: a notice also goes out when a dobby lands a beam into its parent after `lym beam ready`.\n- The test for a run past its Land row is the one `lym hibernate request --after` already has (`landFinished` in `internal/hibernateengine`); it is taken out into one shared piece that hibernate and dobby both use, never copied, and it also tells a run that landed from one that ended without landing, since the notice names the outcome.\n\nThe worktree's reed overview, which already shows its runs and its dobby, shows which of the three values the dobby's setting holds, and which tasks carry the field.\n",
@@ -606,28 +604,6 @@
       "revised": "2026-10-31T11:41:05Z"
     },
     {
-      "id": 923,
-      "handle": "T7",
-      "slug": "adopt-check-visible",
-      "title": "The adopt check shows that it runs, and how far it has come",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "reed",
-        "gate",
-        "workspaces"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "lym adopt starts a test suite detached and nothing the operator looks at shows it or its progress",
-      "body": "## Seen (operator, 2026-10-31)\n\n`lym adopt root` starts the adopt check, a run of test tiers 0 to 2, detached in the prime, and the operator does not see that it runs.\nIts help names it as step 8, its envelope carries `suite` (pid, log, record) among other JSON, `lym beam status` shows it, and each tier's result is mailed to the orch; nothing the operator looks at says that a suite is running, nor how far it has come.\nOn 2026-10-31 it took about 40 s, 104 s and 53 s for tiers 0, 1 and 2, while the operator went on with other steps.\n\n## Design (operator, 2026-10-31)\n\nThe adopt check is visible where the operator looks while it runs, with its progress:\n- `lym adopt` ends with a plain line saying the check started, which tiers it runs, and that the prime's reed status bar shows it.\n- While it runs, the prime's reed status bar shows the tier it is at, the time spent and the tiers done with their results; no strand of its own is added.\n- The end result, green or red, shows on the same status bar, not only in the orch's mail.\n",
-      "status": "done",
-      "created": "2026-10-31T11:41:57Z",
-      "revised": "2026-10-31T14:21:54Z"
-    },
-    {
       "id": 925,
       "handle": "T8",
       "slug": "interactive-recipe",
@@ -732,9 +708,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "adopt-check-visible"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "Re-time tier0 to tier2 by the first audit's method and append the section",
       "body": "## Goal\n\nRepeat the recurring test-time and growth audit and append its section to `docs/benchmarks/test-suite-timing.md`, measured the same way as the first audit (`31d9ae96`, 2026-10-28) so the numbers compare.\n\n## Method\n\n- Tiers `tier0`, `tier1` and `tier2`, each through `lym gate test --tier N --all -- -count=1`.\n- Per tier: one cold run, discarded, then three warm runs; the median of the three warm runs is the tier's wall.\n- That is twelve gate runs in all, and no more: no other tiers, no repeats beyond these.\n- Record the load and quiet-machine checks as the first audit did, and name any run that was in flight on the machine during the measurement.\n\n## The section records\n\n- The walls per tier, against the 2026-10-28 audit.\n- Top-level test counts per tier and the packages that grew or shrank most since then.\n- What `test-prune-audit-leads` (landed 2026-10-29) changed in the counts and walls.\n- Prune candidates as lines, as the first audit did; no board task is filed.\n",
