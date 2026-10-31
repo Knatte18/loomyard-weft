@@ -1,6 +1,6 @@
 # sampler: an interactive loom recipe, the operator iterating with an agent in the run's worktree until done
 
-`interactive-recipe` · Task · feature, shed, batten, reed, shuttle
+`interactive-recipe` · Task · feature, shed, batten, reed, shuttle · running · Worktree-Create
 
 Depends on: [`pawl-loom-recipe`](design-pawl-loom-recipe.md)
 
