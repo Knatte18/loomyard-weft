@@ -1,6 +1,6 @@
 # The Bolt checkout directory is named in one place only, and renamed _bolt
 
-`bolt-dir-rename` · Note · enhancement, fabric, board, config
+`bolt-dir-rename` · Task · enhancement, fabric, board, config · draft
 
 ## Seen (operator, 2026-10-31)
 
