@@ -77,9 +77,9 @@ _No rounds yet._
 - Where the `batcher.yaml` load goes — auto-pick: Preflight, for a recipe with an Implementer row (D10).
 - Which shared keys stay in `loom.yaml` — auto-pick: the review, judge, seed, driver-model and step-idle keys every loom run reads (D12).
 - How a tuned `plan_*` key reaches `tapestry.yaml` — resolved by research: `KeyMoves` in `internal/configreg/keymove.go` is the declared route (D12).
-- Whether `batten.yaml`'s overrides go too — auto-pick: no, the parent named `loom.yaml` and `darn.yaml`; raised under Open risks (D13).
+- Whether `batten.yaml`'s overrides go too — auto-pick: no, the parent named `loom.yaml` and `darn.yaml`, and Scope Out records it (D13).
 - Retire or move the removed arbiter keys — auto-pick: retire, refused in profiles and run settings (D13).
-- How a writer stop halts once the record is mechanical — auto-pick: a handoff with no commit halts (D6).
-- What in-flight darn runs with no record do — auto-pick: halt naming `goto --to Record-Write` (D4).
+- How a writer stop halts once the record is mechanical — auto-pick: a stop marker Darn-Write reads after the handoff halts the run (D6).
+- What in-flight darn runs with no record do — auto-pick: handled by parked row, with Darn-Write refusing a missing record before its session, naming a route that skips Drift-Baseline (D4).
 - Whether Tapestry-Preflight's seed check is redundant — resolved by research: `CheckSeed`'s doc says Shed's step-1 read pre-empts four of its verdicts (D10).
 - Whether Drift-Verify tolerates a second pass — resolved by research: it compares the HEAD it meets and is Done on a pass (D9).
