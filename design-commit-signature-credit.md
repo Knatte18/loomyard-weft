@@ -1,6 +1,8 @@
 # Landing commits drop Co-Authored-By and Lym-Task, and carry an optional credit listing the engines used
 
-`commit-signature-credit` · Note · enhancement, landing
+`commit-signature-credit` · Task · enhancement, landing
+
+Depends on: [`run-verbs-shared`](design-run-verbs-shared.md)
 
 ## Seen (operator, 2026-10-30)
 
