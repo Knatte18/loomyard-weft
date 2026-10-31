@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -34,6 +34,27 @@
       "output": "",
       "at": "2026-10-31T18:44:46Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/pawl-loom-recipe/_lym/landing/summary.md",
+      "at": "2026-10-31T19:07:55Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-31T19:04:35.717617727Z",
+          "end": "2026-10-31T19:07:43.591920827Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-31T19:07:43.631488988Z",
+          "end": "2026-10-31T19:07:43.631777887Z"
+        }
+      ]
     }
   ],
   "product": {
