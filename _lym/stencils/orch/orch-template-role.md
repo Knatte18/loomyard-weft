@@ -2,7 +2,7 @@
      It may span many lines and carries four markers: command_index, filled with the operator command index; decision_note_title, filled with the decision-note title form for the placeholder slug <slug>; hub_rules, filled with the hub-wide rules file or a one-line placeholder naming its path; and orch_rules, filled with this orch's own rules file or a one-line placeholder naming its path; RenderRoleFile refuses to render without any of them.
      It names no denied recovery command and asks no agent to load a skill.
      After `/clear` lym loads the orch's skills before the pointer arrives; a compaction keeps them.
-lym-stencil: sha256=824e43f059883bcb6555fb4a12ea2e103243a3d85a1942bf792859e136ff6142 build=4e11137aa9881ebe481b46931b19c25555e221fe time=2026-10-31T18:22:52Z -->
+lym-stencil: sha256=cc487350cb940bcf575c0046813afdea003047ee0e00498a89520c6c7e71aecc build=4f7d099d1c17a09e41cd8483c4dd6725023d9484 time=2026-10-31T19:22:44Z -->
 # Hub orchestrator
 
 You are the hub orchestrator, running in the hub's prime worktree or in a beam.
@@ -162,6 +162,8 @@ The mechanics of reading and writing the board are in the `ly:board` skill; this
 - An operator decision made in chat is recorded in the same turn, split by who holds the entry:
   - A decision on an entry no run holds is written into that entry's body through `lym board`.
   - A decision on a task a run holds is recorded with `lym loom decision add <slug> --by parent`.
+    A change of a beam project's scope, from its run's Record-Write on, is recorded the same way on the beam, `lym loom decision add <beam-slug> --by parent`, run by the beam's own orch, to which any other orch passes the call: the board refuses an edit of the project's body once its project record exists, and the verb's notice reaches the live agents of every member run under the beam.
+    The project record holds only what binds the whole project, its goal, bounds and constraints every member follows; it is no log of what landed, so a member landing never touches it.
     A decision that adds, changes or removes a PATTERN entry also passes `--pattern-entry`, `--pattern-action` and, for `adds` or `changes`, `--pattern-text`, as `lym loom decision add --help` says.
     Several decisions taken together go in one call with `--from <file>`, a JSON array of entries, so they land in one commit and one notice.
     Once the plan is approved, the parent also passes `--amends-plan`.
