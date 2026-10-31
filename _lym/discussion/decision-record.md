@@ -62,7 +62,7 @@ Its keys:
 - `code_review`: whether the Code-Review perch runs, default `false`.
 
 A task turns the perch on with `run_settings` `{"sampler":{"code_review":true}}` or a profile block carrying the same; the perch then reads loom's `code_*` keys as darn's does.
-Every reading of whether the Code-Review perch is off on a run follows the perch rows' `entry_gate` as well as the segment budget: Finalize's `rerouteReviewed` and `codeBudgetZero` and the landing's `CodeReviewOff` in `internal/loomcli/landingdeps.go` read a perch whose rows the gate leaves out as off, so a Finalize reroute on a sampler run with `code_review` false halts for the orch as on any run with the perch off.
+Every reading of whether the Code-Review perch is off on a run follows the perch rows' `entry_gate` as well as the segment budget: Finalize's `rerouteReviewed` and `codeBudgetZero` read a perch whose rows the gate leaves out as off, so a Finalize reroute on a sampler run with `code_review` false halts for the orch as on any run with the perch off.
 The package also builds the agent's session spec from told paths and values, as `internal/darnengine/` builds the darn writer's table, and imports no resolver.
 
 Rationale: the template default reaches every hub through the sparse hub base.
@@ -72,11 +72,12 @@ Rationale: the template default reaches every hub through the sparse hub base.
 `Record-Write` writes the sampler run's decision record and support log from the board entry, as it does for darn: the body verbatim under `## Goal`, the other sections empty, both committed.
 What the operator and the agent settle on the way, the agent appends with `lym loom decision add --by operator`, so Describe and the Code-Review perch measure against the amended record.
 The caller rule in `internal/loomcli/decision.go` admits one more caller: the strand the target run's `Sampler-Session` row has recorded as its session at the time of the call, while the run's current row is that row, and only with `--by operator`.
-The row re-records the strand on every resume or restart of the session, so the admitted strand is always the live one.
+The row re-records the strand on every resume or restart of the session it makes itself, so after any of the row's own starts and resumes the admitted strand is the live one.
+A session reopened while the run is halted keeps the recorded strand either way: `lym reed resume` replays the persisted strand under its persisted name, and the stop chain reopens it only by running `lym loom resume`, which is the row's own resume.
 Any other label from that strand, and that strand once the row has ended, are refused with a way forward naming `--by operator` or the run's parent.
 `--amends-plan` refuses on a sampler run by its rows, as on darn.
 
-Bound: the label is still unverified, as the caller rule's own doc says, so a sampler agent can record a decision the operator did not settle; what bounds it is that the operator watches the pane, the stencil allows only what the operator settled, and Describe shows every added entry.
+Bound: the label is still unverified, as the caller rule's own doc says, so a sampler agent can record a decision the operator did not settle; what bounds it is that the operator watches the pane, the stencil allows only what the operator settled, and each entry is append-only, labelled, dated and committed in the call's one diff, as the caller rule's package doc says, so the operator can read every entry in the record's history.
 
 ### D5 — The `Sampler-Session` row starts one interactive session
 
@@ -85,7 +86,7 @@ The row keeps one interactive agent session per run, in a window of its own in t
 - A recorded strand that is live is reused, a recorded session id whose strand is not live is resumed, and otherwise a new session starts; each resume or start re-records the strand's name, guid and session id.
 - The session starts from a new stencil, `sampler-template-agent`, read through `stencilstore` at call time and filled with paths and values only: the slug, the decision record, the worktree.
 - It runs under `sampler.agent`, loads `scribe:prose` and `scribe:conversation`, carries the build segment's colour and the role constant `sampler` from `internal/samplerengine/` (new), and renders the parent directive in its interactive form and the edit directive (`PATTERN-parent-directive`, `PATTERN-agent-name`).
-- Its pane process is registered under the run (`PATTERN-run-process-owner`), and it gets the publish shell guard PR-Review's session gets.
+- Its pane process is registered under the run (`PATTERN-run-process-owner`), and its spec sets `DenyPublish`, so it gets the existing publish row of `internal/shellguard` with that row's existing steer, which already names a commit and telling the operator as the way forward; D8's stencil names `lym loom sampler-done` as the step once the operator says the work is done.
 - A start that fails transiently is an error the driver re-steps; any other start failure is Stuck with Halt naming `lym loom resume`.
 
 No shuttle deadline applies, because nothing awaits the session: an unawaited start has no timeout classification.
@@ -96,8 +97,12 @@ Rationale: PR-Review's session is the existing shape of an agent that talks with
 
 The row waits in process with no timeout, on a done record under the run's never-tracked scratch, named through `internal/lymdirs` and written through `internal/state` (`PATTERN-durable-vs-ephemeral-state`, `PATTERN-tolerant-records`).
 
-- The record carries an entry stamp: the number of Done entries the run's status history holds for the row.
-  A halt and a resume leave it unchanged, and a return to the row after it ended Done, by Finalize's reroute or a `goto`, raises it.
+- The record carries an entry stamp: the number of times the run's status history shows the run entering the row, each a Done of the row whose `on_done` names it or a `goto` onto the row from another row.
+  A halt and a resume write no such entry and leave it unchanged, and every return to the row by a `goto` raises it, whether or not the row ended Done before.
+- On entry, before it ensures a session, the row reads the done flag; on one carrying the current stamp it first stops the recorded session when its strand is live, as the wake does before its deciding read, then judges the flag:
+  - a clean checkout and an intact record end the row Done without starting or resuming a session;
+  - a record that fails the record check below is Stuck with Halt naming its restore steps, also without a session;
+  - an uncommitted change clears the flag, and the session is then ensured, resumed when the row stopped it, before the row mails it the reason through creel and waits.
 - `lym loom sampler-done` writes the done flag beside the stamp it computes.
   It refuses, each with a way forward and a test reaching it (`PATTERN-refusal-way-forward`):
   - a run whose recipe has no `SamplerSession` row, judged by its rows (`PATTERN-loom-contract`);
@@ -107,15 +112,15 @@ The row waits in process with no timeout, on a done record under the run's never
 - A wake covered by a pause stops the session if it is running and judges nothing else.
   The first uncovered wake after a covered one resumes the session before any other check, as PR-Review's does.
 - An uncovered wake that finds the recorded strand not live, when the row did not stop it, is Stuck with Halt naming `lym loom resume`, which re-enters the row and resumes the recorded session.
-- A wake that reads a done flag carrying the current stamp checks the code checkout and the record:
-  - a clean checkout and an intact record stop the session and end the row Done;
-  - an uncommitted change clears the flag, mails the session the reason through creel and keeps waiting;
+- A wake that reads a done flag carrying the current stamp first stops the session, as PR-Review's wake does before its deciding read, then checks the code checkout and the record:
+  - a clean checkout and an intact record end the row Done;
+  - an uncommitted change clears the flag, resumes the session, then mails it the reason through creel and keeps waiting;
   - a record that fails the check Darn-Write's post-session guard runs is Stuck with Halt naming its restore steps.
   A flag carrying an older stamp is ignored.
 - The record check and the verify, budget and tree-scope seams that `internal/loomcli/darnwiring.go` fills today only for a recipe with a `DarnWrite` row are wired for every recipe whose rows need them: a Record-Write record row, a Code-Review segment, `verify_source: tree_scope`.
 
 Bound: the verb is the only way the build segment ends besides a halt or `lym batten cancel`.
-It is not limited to the agent's strand, so the operator's own shell may run it too, and it is accepted while the run is halted at the row, so the next `lym loom resume` ends the row Done at once on a clean checkout.
+It is not limited to the agent's strand, so the operator's own shell may run it too, and it is accepted while the run is halted at the row, so the next `lym loom resume` ends the row Done at once on a clean checkout and an intact record, without starting a session, even when the recorded session can no longer be resumed.
 A dirty checkout never ends the row, so Describe and Finalize always start from a committed tree.
 An operator who closes the agent's window to stop gets a halt, and the stop chain or `lym reed resume` may reopen the session; ending the run for good is `lym batten cancel`.
 
@@ -125,7 +130,7 @@ The rows a run's child may wait in with no agent working are named in one list: 
 Dobby's wait-live reading in `internal/battencli/wire.go`, which today names the first two, reads the list, so a child at `Sampler-Session` sends no quiet notice.
 The loom loop's step-watchdog activity reading in `internal/loomcli/looparm.go` reads the same list and reports activity now while the child is at a listed row, so the watchdog never kills a step waiting on the operator.
 
-Bound: a wedged step at a listed row is no longer ended by the watchdog; it is ended only by `lym batten cancel` or the row's own halts, as batten's Run-Shed step already is.
+Bound: a wedged step at a listed row is no longer ended by the watchdog; it is ended only by `lym batten cancel` or the row's own halts.
 
 ### D8 — What the agent's stencil tells it
 
@@ -166,7 +171,10 @@ Bound: the agent's adherence to the stencil is the only guard; nothing in lym st
 - Fact, from the code at this branch's base: a run's agent may write notes and never a task, from `internal/boardengine/doc.go`'s "Run agents file notes, never tasks"; a run with no commits beyond its parent lands with no pull request, from commit `5f444b56`.
 - Fact, from the code: the Describe description gate checks only the file's format, a non-empty file, a `# ` title and a non-empty body (`internal/summaryparser/description.go`), never the diff, so a description of an empty diff passes it.
 - Fact, from the code: `decision add` refuses every task session but the run's parent orch and its arbiter strand, from `internal/loomcli/decision.go`'s package comment, which D4 widens.
-- Fact, from the code: the step watchdog's activity reading counts a shuttle wait only when it is not a held turn end, and an interactive session waiting on the operator is held, so a row waiting in process with no exemption is killed after `step_idle_timeout_min` (`internal/loomengine/template.yaml`, default 60); D7's list exempts `Beam-Await` and `PR-Review` from it too.
+- Fact, from the code: the step watchdog has no row exemption today.
+  `agentActivityFor` in `internal/loomcli/looparm.go` counts only a non-held shuttle wait marker, a live verify, a parent lock wait, a drift lock and the transcript or events times of a live agent run.
+  A session started through `StartSession` writes no wait marker, PR-Review's and Beam-Await's wakes write no trace line, and `reviewWaitingFor` only feeds the status display.
+  So a Beam-Await step and a PR-Review step with no agent activity are killed after `step_idle_timeout_min` (`internal/loomengine/template.yaml`, default 60) today, and D7's list ends that for both.
 
 ## Auto-mode assumptions
 
@@ -178,21 +186,27 @@ Bound: the agent's adherence to the stencil is the only guard; nothing in lym st
 ## Open risks
 
 - For the run's parent: the entry says a trial run "can use a tmux server of its own". D9 meets it with another hub, the machine's shared sandbox hub on lym's repository, and a stencil rule, with no per-run server in lym. Is that what the operator meant, or should lym give each trial run a server of its own?
-- D7 changes the watchdog's reading for `Beam-Await` and `PR-Review` as well. If those rows were in fact protected some other way, the change is a no-op for them; if they were not, long PR reviews were being killed, which this fixes. Neither was checked in a live run.
 - An existing hub's `profiles.yaml` is seed-only and gains no `sampler` block; a sampler task naming a profile there is refused at seed until the orch adds one with `lym config profiles`. A check by hand belongs in the change description.
 - The trial rule rests on a sandbox hub the operator keeps per machine; two trials on one machine share it.
+
+<!-- lym:carry-over Discussion-Review -->
+- Discussion-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/discussion/round-2-review.md; fixer report: _lym/reviews/discussion/round-2-fixer-report.md.
+  - entry-path-live-session-not-stopped (class design, severity MEDIUM, open in rounds 2)
+  - publish-guard-steer-text-false (class design, severity MEDIUM, open in rounds 1, 2)
+<!-- /lym:carry-over Discussion-Review -->
 
 ## Acceptance criteria
 
 - D1: the sampler recipe builds and passes the loom contract check; its `on_done` path runs Preflight, Record-Write, Sampler-Session, the Code-Review segment, Describe, PR-Review, Finalize and Friction-Reflect in that order.
-- D1, D2, D3: with `code_review` false the three Code-Review rows are recorded Skipped and spawn nothing, and Describe still runs and writes the description, also under a Code-Review budget of 0 such as `speed`'s; with it true the perch runs with loom's `code_*` values.
+- D1, D2, D3: with `code_review` false Code-Bouncer is recorded Skipped, the run goes on to Describe, and no Code-Review row spawns anything, and Describe still runs and writes the description, also under a Code-Review budget of 0 such as `speed`'s; with it true the perch runs with loom's `code_*` values.
 - D3: on a sampler run with `code_review` false and a non-zero hub budget, a Finalize reroute reads the perch as off and halts for the orch rather than rerouting past skipped rows.
 - D2: a seed for `sampler` is accepted, `lym shed` arms it, a board task with `recipe: sampler` is accepted and a project with it refused, a task naming `light` seeds with `code_review` true, and a task naming no profile runs with the perch off.
 - D3: `sampler.yaml` loads from its template, refuses an unresolvable `agent`, and reaches a hub with no file of its own.
-- D4: on a sampler run at Sampler-Session, `decision add --by operator` from the row's recorded strand appends and commits an entry, also after the session was resumed under a new strand; another label from that strand, that strand after the row ended, and another task strand are refused with their way forward.
+- D4: on a sampler run at Sampler-Session, `decision add --by operator` from the row's recorded strand appends and commits an entry, also after the session was resumed under a new strand and after `lym reed resume` reopened it while the run was halted; another label from that strand, that strand after the row ended, and another task strand are refused with their way forward.
 - D5: the row starts a session on first entry, reuses a live strand, resumes a recorded session id whose strand is gone and re-records it, and a non-transient start failure is Stuck with Halt naming `lym loom resume`.
 - D6: `sampler-done` refuses on a darn run, on a sampler run at another row, before a session is recorded, and on a dirty code checkout; on a clean checkout it ends the row Done and the session is stopped.
-- D6: a done flag written before a reroute or `goto` back to the row is ignored after it; a flag written before a halt ends the row at the resume; a flag read with a dirty checkout is cleared and the session is mailed; a damaged record at the flag is Stuck with Halt; a strand that died unstopped is Stuck with Halt naming `lym loom resume`.
+- D6: a done flag written before a `goto` back to the row is ignored after it, also when the flag was written while halted at the row and the run went away by a `goto` and returned with no Done in between; a flag written before a halt ends the row at the resume without starting a session, also when the recorded session can no longer be resumed, and also when the session was reopened while halted, by `lym reed resume` or an interrupt that left it live, in which case the resume ends the row Done with the session stopped; a flag read with a dirty checkout is cleared and leaves the session live and mailed; a damaged record at the flag is Stuck with Halt naming its restore steps, also on entry when the recorded session can no longer be resumed; a strand that died unstopped is Stuck with Halt naming `lym loom resume`.
 - D6: a covering pause stops the session, and the first uncovered wake resumes it with no halt.
 - D6: the verb's write ends the wait within a second, with no wait for the backed-off timer.
 - D6: on a sampler run with `code_review` true, the Code-Burler-Fix verify gate gets the tree scope and `verify_attempts` budget a darn run's gets, and the row's record check is wired.
