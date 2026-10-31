@@ -2,7 +2,7 @@
 
 `test-time-audit-2` · Task · research, gate
 
-Depends on: [`board-push-race`](design-board-push-race.md)
+Depends on: [`board-push-race`](design-board-push-race.md), [`adopt-check-visible`](design-adopt-check-visible.md)
 
 ## Goal
 
