@@ -1,0 +1,32 @@
+# Relevant files
+
+- `contracts/recipes/darn-recipe.yaml` — the closest sibling recipe; sampler copies its Code-Review segment, Describe, PR-Review and Finalize rows
+- `contracts/recipes/recipes.go` — embeds each recipe file; the sampler recipe joins it
+- `contracts/specs/shed-recipe-spec.md` — states the loom contract's clauses the sampler recipe must pass
+- `internal/shedrecipe/registry.go` `LoomRecordEngines`, `LoomBuildEngines`, `LoomFinalizeEngine` — the engine sets the loom contract checks; SamplerSession joins the build set
+- `internal/shedrecipe/entries_prreview.go` `prReviewEntry` — registry entry over landing deps, the shape of a row with no config key
+- `internal/shedrecipe/entries_darnwrite.go` `darnWriteEntry` — registry entry of darn's build row, its seams and gates
+- `internal/landingshed/prsession.go` `prSessions`, `ensureSession` — the unawaited interactive session the sampler row models its own on
+- `internal/landingshed/prreview.go` — the in-process wait on a flag a `lym loom` verb writes, with its back-off and pause handling
+- `internal/landingshed/doc.go` — documents PR-Review's session, wait and empty-landing behaviour
+- `internal/loomcli/prcontinue.go` — the `pr-continue` verb, the model for `sampler-done`
+- `internal/loomcli/decision.go` — the `decision add` caller rule D4 widens
+- `internal/loomcli/looparm.go` `agentActivityFor`, `loopSpecFor` — the step watchdog's activity reading D7 extends
+- `internal/battencli/wire.go` `readAgentActivity`, `childAtWaitingRow` — dobby's wait-live reading and its list of waiting rows
+- `internal/dobbyengine/runnotice.go` `judgeAgents` — the quiet notice, suppressed while a wait is live
+- `internal/shedverbs/doc.go` — the loop watchdog's idle window and activity rules
+- `internal/loomengine/template.yaml` — `step_idle_timeout_min`, the watchdog window
+- `internal/loomengine/discussiontable.go` — interactive Discussion-Write's table, which carries a run deadline the sampler session avoids
+- `internal/darnengine/doc.go` — darn's config module and session table, the model for the sampler module
+- `internal/darnengine/template.yaml` — darn's config keys
+- `internal/loomcli/darnwiring.go` — how darn's config and table are wired into a run
+- `internal/shedrun/seed.go` `RecipeDarn`, `RecipeNames`, `ValidateRecipe` — the closed recipe vocabulary
+- `internal/shedcli/table.go` — maps recipe names to arming functions
+- `internal/runprofile/runprofile.go` `Profiles.Settings` — refuses a profile with no block for the task's recipe
+- `internal/runprofile/template.yaml` — the ladder profiles and recipe defaults
+- `internal/boardengine/doc.go` — run agents file notes, never tasks; the recipe field's allowed values
+- `internal/boardcli/runsettings.go` `prepareRunSettings` — refuses run_settings changes from a task session
+- `internal/reedengine/server.go` `ServerName` — one tmux server per hub path
+- `internal/reedengine/doc.go` — server-wide bindings re-pinned by a newer build, and `TMUX_TMPDIR` handling
+- `internal/summaryparser/description.go` — the description gate's checks, format only, so an empty-diff description passes
+- `docs/sandbox-howto.md` — the sandbox hub where a dev lym build is tried
