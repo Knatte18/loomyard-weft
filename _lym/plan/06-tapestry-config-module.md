@@ -2,14 +2,14 @@
 
 **Create:**
 - `internal/loomengine/tapestry.yaml`
-- `plan:internal/loomengine#TapestryConfig` -> `type TapestryConfig struct`
-- `plan:internal/loomengine#TapestryConfigTemplate` -> `func TapestryConfigTemplate() string`
-- `plan:internal/loomengine#TapestryConfigOpenMaps` -> `func TapestryConfigOpenMaps() []string`
-- `plan:internal/loomengine#TapestryConfigSpec` -> `func TapestryConfigSpec() configengine.Spec`
-- `plan:internal/loomengine#LoadTapestryConfig` -> `func LoadTapestryConfig(dirs configengine.Dirs, module string) (TapestryConfig, error)`
-- `plan:internal/loomengine#ValidateTapestryLocalValues` -> `func ValidateTapestryLocalValues(document []byte) error`
-- `plan:internal/loomengine#Config.WithTapestry` -> `func (c Config) WithTapestry(t TapestryConfig) Config`
-- `plan:internal/loomengine#TestLoadTapestryConfig` -> `func TestLoadTapestryConfig(t *testing.T)`
+- `internal/loomengine#TapestryConfig`
+- `internal/loomengine#TapestryConfigTemplate`
+- `internal/loomengine#TapestryConfigOpenMaps`
+- `internal/loomengine#TapestryConfigSpec`
+- `internal/loomengine#LoadTapestryConfig`
+- `internal/loomengine#ValidateTapestryLocalValues`
+- `internal/loomengine#Config.WithTapestry`
+- `internal/loomengine#TestLoadTapestryConfig`
 
 **Edit:**
 - `internal/loomengine#Config`
