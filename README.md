@@ -59,7 +59,7 @@ Not released; nothing starts it until its status is cleared.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | `draft` **warp-visibility: heddle, a Bolt database lym renders its instruction files from, leaving no trace in warp**<br>• LoomYard puts no CLAUDE.md in a repository; lym renders its own git-excluded instruction files into each worktree from _board/heddle.json | [`warp-visibility`](design-warp-visibility.md) | tapestry | T3 | 3w<br>0m | fabric, board, config, claude, codex |
-| T3 | `draft` **The Bolt checkout directory is named in one place only, and renamed _bolt**<br>• _board holds all of Bolt, not only the board; rename it _bolt with a rename program for existing hubs | [`bolt-dir-rename`](design-bolt-dir-rename.md) | tapestry | T4<br>T6<br>T1<br>T8 | 41m<br>0m | fabric, board, config |
+| T3 | `draft` **The Bolt checkout directory is named in one place only, and renamed _bolt**<br>• _board holds all of Bolt, not only the board; rename it _bolt with a rename program for existing hubs | [`bolt-dir-rename`](design-bolt-dir-rename.md) | tapestry | T4<br>T6<br>T1<br>T8 | 42m<br>0m | fabric, board, config, cwd, stencil |
 
 ### Notes (31)
 
@@ -76,7 +76,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **A finished run blocked at Worktree-Teardown with its pair gone can be neither retried nor cancelled**<br>• batten run refuses a teardown retry with no pair worktree, though the pair removal already succeeded and only the remote branch delete is left | [`teardown-retry-no-pair`](design-teardown-retry-no-pair.md) | 19m<br>19m | batten, fabric |
+| B1 |  | **A finished run blocked at Worktree-Teardown with its pair gone can be neither retried nor cancelled**<br>• batten run refuses a teardown retry with no pair worktree, though the pair removal already succeeded and only the remote branch delete is left | [`teardown-retry-no-pair`](design-teardown-retry-no-pair.md) | 20m<br>19m | batten, fabric |
 
 #### Enhancements (14)
 
