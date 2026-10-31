@@ -1,6 +1,6 @@
 # Pawl becomes a loom recipe, with a project decision record and no review rounds
 
-`pawl-loom-recipe` · Task · enhancement, pawl, loom, board, workspaces · running · Code-Bouncer
+`pawl-loom-recipe` · Task · enhancement, pawl, loom, board, workspaces · running · Code-Burler-Review
 
 ## Seen (operator, 2026-10-31)
 
