@@ -1,0 +1,1079 @@
+diff --git a/contracts/specs/loom-final-summary-spec.md b/contracts/specs/loom-final-summary-spec.md
+index 4a12b183..e186849e 100644
+--- a/contracts/specs/loom-final-summary-spec.md
++++ b/contracts/specs/loom-final-summary-spec.md
+@@ -33,7 +33,8 @@ The contract names no location: the artifact's directory belongs to whichever pr
+ The artifact has two consumers today, both in `internal/landingshed`:
+ 
+ - **`Publish`** uses the parsed title and body as the pull request's own title and body fields.
+-- **`Finalize`** uses `LandingMessage` — the title, a blank line, the body with its leading whitespace trimmed, then, after a blank line, the trailer block Go composes from `landing.yaml`'s `trailer_text` and the `engine_trailers` entries of the engines that ran a session in the task — as the landing merge commit's message.
++- **`Finalize`** uses `LandingMessage` — the title, a blank line, the body with its leading whitespace trimmed, then, after a blank line, the credit block Go composes from `landing.yaml`'s `credit_*` keys and the engines that ran a session in the task — as the landing merge commit's message.
++  The pull request's body carries the same body and credit block.
+ 
+ `Finalize`'s read is unconditional: a missing or malformed artifact there is a hard error.
+ `Publish`'s read is reached only when the parent branch requires a pull request: it opens one from the artifact, or refreshes an open one's title and body, so a re-run Publish carries a rewritten description onto the pull request.
+diff --git a/contracts/stencils/landing/landing-template-describe.md b/contracts/stencils/landing/landing-template-describe.md
+index baa3821e..47f23301 100644
+--- a/contracts/stencils/landing/landing-template-describe.md
++++ b/contracts/stencils/landing/landing-template-describe.md
+@@ -48,7 +48,7 @@ Naming a module is fine when the change touches it.
+ 
+ ## Rules
+ 
+-- Write no `Co-Authored-By` line — the landing step appends the configured trailer block itself.
++- Write no `Co-Authored-By` line and no credit lines — the landing step appends the configured credit block itself.
+ - Never commit, and never run any git command that changes the repository.
+ - Before ending your turn, run `lym loom validate-description` and fix every finding it reports.
+   A clean `validate-description` run is the last thing you do in this session.
+diff --git a/docs/overview.md b/docs/overview.md
+index a8d2026f..54b0fdf7 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -584,18 +584,18 @@ User-facing modules each get one `lym <module>` namespace:
+   `Parent-Align` merges the parent's upstream tip into the task with no parent lock, verifies the merged tree through the `parent-align` gate key and runs the merge fixer in parent-align mode, which settles a conflict or a failing tree and aligns the task to what the parent brought in; it writes the merge record with the aligned tip, and the Code-Perch then reviews the task's code against that.
+   `PR-Review` lands the task through a GitHub pull request when the resolver says so: it pushes the task branch, opens or finds the pull request, sets its title and body from the change description, records it and waits on it, and otherwise passes.
+   The wait takes no parent lock: it gates and pushes the agent's commits through the `pr-review` gate key, never onto a merged pull request, and mails a failure to the agent, reads the pull request at most once a minute and before each gate, and ends Done when the pull request is merged or approved at the gated head, or when the operator's `lym loom pr-continue` makes the row close it, and Stuck on any other ending; a pause that covers the run holds it, and the driver strand's mark reads `PR #<n>`.
+-  `Finalize` takes the parent lock first, merges the parent into the task in place, resolving a conflict with the conflict session under the lock, with no reroute on a conflict or a large merge; it runs the `finalize` gate key and the merge fixer in finalize mode, lands on the parent with the task trailer and releases the lock on every exit.
++  `Finalize` takes the parent lock first, merges the parent into the task in place, resolving a conflict with the conflict session under the lock, with no reroute on a conflict or a large merge; it runs the `finalize` gate key and the merge fixer in finalize mode, lands on the parent with the credit block and releases the lock on every exit.
+   A fixer change over the caps, on a run whose reroute reaches a review, goes first to Finalize's solo fix review, which reads only the fixer's commits: an approval lands it, and a rejection or a missing verdict reroutes as a spent fixer does.
+   A halt at `Parent-Align` or `Finalize` (a spent or over-cap fixer, a reroute-cap stop) is handed back to the orch through every driver, and the status marks it `hand_back`.
+   On a tapestry or darn run a fixer's escalate halts with `EscalateStopPrefix` instead, is not marked `hand_back` and goes to the arbiter first, reaching the orch only as the arbiter's hand-on; on a pawl run it is a landing halt like the rest.
+   `Webster` reroutes to `Plan-Burler-Review` when begin-batch left a new plan conflict that the plan fixer `lym webster fix-plan` could not clear.
+-  `Describe` writes the change description at `_lym/landing/summary.md`, the single source for the landing commit, whose message ends in the trailer block Go appends: `landing.yaml`'s `trailer_text`, then the `engine_trailers` text of each engine that ran a session in the task, each copied verbatim and each switchable off by an empty value.
++  `Describe` writes the change description at `_lym/landing/summary.md`, the single source for the landing commit, whose message, like the pull request's body, ends in the plain-line credit block Go appends while `landing.yaml`'s `credit` is on: `credit_heading`, then a ` - ` line for `credit_loomyard` and for the `credit_engines` text of each engine that ran a session in the task, an empty text adding no line.
+   `Finalize` tolerates an already-landed parent and marks the board task `done` after the parent merge.
+   Every run transition before that writes the board task's status as `<state> · <producer>` (for example `awaiting · Code-Bouncer`), so the board README shows where each run stands; a failed board write only warns.
+   `Parent-Align` and `Finalize` each run the plan's verify command after a parent merge-in that changed the task tree, and halt Stuck on a failure, with the command's output in the loom verify-output log;
+   a pending-verify marker keeps the gate armed across a resume until a verify passes.
+   `landing.yaml` also holds the `fixer` model-spec and `fixer_timeout_min` (those of the merge fixer and of the fix review session Finalize runs over an over-cap fixer change), `parent_align_fix_attempts`, `finalize_fix_attempts` and `finalize_fix_max_lines`, and `deploy_branches`, the base branches whose landing runs `deploy`, which `lym config reconcile` renames from the retired `require_pr_to_base`; reconcile also renames the retired `merge_fix_attempts` key to `parent_align_fix_attempts` and `gate.yaml`'s `merge-in` gate key to `parent-align`.
+-  `landing.yaml` gains `describe` (the row's model), `describe_timeout_min`, `trailer_text` and `engine_trailers`; an existing hub takes their template defaults until `lym config reconcile --apply` writes them, moving a retired `co_authored_by` value into `engine_trailers.claude`, and an in-flight run parked past `Webster-Bouncer` is restarted rather than migrated.
++  `landing.yaml` gains `describe` (the row's model), `describe_timeout_min` and the `credit` keys; an existing hub takes their template defaults until `lym config reconcile --apply` writes them, pruning the retired `co_authored_by`, `trailer_text` and `engine_trailers` keys, and an in-flight run parked past `Webster-Bouncer` is restarted rather than migrated.
+   `lym loom status --watch` is this module's registered interactive-handoff exception ([PATTERN-cli-cobra](../pattern/PATTERN-cli-cobra.md)): it self-displays the polled status line then blocks forever as its own keepalive tail, with every fallible step running pre-flight, on the envelope, and only that tail exempt from emitting JSON.
+   ✅ Implemented. loom's config module (`loom.yaml`, holding what every loom recipe shares: the `discussion`/`judge` role model-specs and the shared `reviewer_model`/`fixer_model`, where `seed` names the Bouncer seed pass model, `discussion_judge`/`code_judge` and `discussion_seed`/`code_seed` override the judge and seed per review segment, an empty one taking its fallback, and `reviewer_model` and `fixer_model` each take one model-spec or a per-round list, and `<segment>_reviewer_model`/`<segment>_fixer_model` for Discussion and Code override them per review segment, `discussion_reviewer_fan`/`code_reviewer_fan`, which name a `lenses.yaml` fan, or list one per round, to cluster-review Discussion-Review or Code-Review, `discussion_fixer_fan`/`code_fixer_fan`, which do the same for the fixer, an empty entry running the single fixer, `code_reviewer_fan` open to the local layer and the other three closed to it, `discussion_timeout_min`/`review_timeout_min`, `discussion_interactive`, `discussion_advisors`, the Discussion-Write advisors, one `{name, model}` entry each, where an empty list runs the lead alone, deciding each question itself, `discussion_lenses`, which names the `lenses.yaml` fan whose lenses the Discussion-Write lead forks itself for, empty turning the forks off, closed to the local layer, `review_circling_checkpoint`, `review_max_bounces`, `review_amend_max_bounces`, the amendment allowance a review segment re-entered over a changed subject runs under, the per-perch `discussion_max_bounces`/`code_max_bounces`, where null takes `review_max_bounces` and 0 runs no review round, `review_hard_max_bounces` and the per-perch `discussion_hard_max_bounces`/`code_hard_max_bounces`, where 0 takes `review_hard_max_bounces` and a hard cap below its perch's budget is refused at load, and `discussion_auto_accept`/`code_auto_accept`, which make a perch accept a harvested round at a spent budget instead of running the soft-cap rule) and the tapestry recipe's module (`tapestry.yaml`, per-worktree, holding the plan perch's own keys: the `plan` model-spec, `plan_timeout_min`, `implementer`, `plan_lenses`, `plan_reviewer_model`/`plan_fixer_model`, `plan_reviewer_fan`/`plan_fixer_fan`, `plan_judge`/`plan_seed`, `plan_max_bounces`, `plan_hard_max_bounces` and `plan_auto_accept`, where an unset model list, judge or seed, a null budget and a hard cap of 0 take `loom.yaml`'s value) exist and reconcile via `lym config reconcile --apply` (the bare verb is a dry run that only reports added and removed keys and writes nothing).
+   Reconcile renames the retired `review`, `fix`, `<segment>_review`, `<segment>_fix`, `<segment>_fan` and `<segment>_fix_fan` keys of `loom.yaml` to their new names, and the retired `webster_*` perch keys to `code_*`; it moves a value `loom.yaml` tuned for a plan perch key, or for `implementer`, into `tapestry.yaml`; `darn.yaml`'s perch keys, `review_fan` and `review_fix_fan` among them, move to `loom.yaml`'s `code_*` keys; the retired `merge_*` perch keys, `rework`, `alignment_pr_approve`, `alignment`, `alignment_timeout_min`, `skip_alignment` and `parent_review_wait_min` are dropped.
+diff --git a/internal/landingshed/config.go b/internal/landingshed/config.go
+index 4044a45e..32d63fc1 100644
+--- a/internal/landingshed/config.go
++++ b/internal/landingshed/config.go
+@@ -12,7 +12,6 @@
+ package landingshed
+ 
+ import (
+-	"bytes"
+ 	"fmt"
+ 	"slices"
+ 	"strings"
+@@ -43,11 +42,15 @@ type Config struct {
+ 	DescribeTimeoutMin int `yaml:"describe_timeout_min"`
+ 	// PRReviewer is the model-spec string selecting the model the PR-Review row's interactive session runs under.
+ 	PRReviewer string `yaml:"pr_reviewer"`
+-	// TrailerText is the landing commit's fixed trailer lines, copied verbatim; empty adds none.
+-	TrailerText string `yaml:"trailer_text"`
+-	// EngineTrailers maps an engine name to the trailer text the landing commit carries when that engine ran a session in the task.
++	// Credit selects whether the landing commit and the pull request's body end with the credit block.
++	Credit bool `yaml:"credit"`
++	// CreditHeading is the credit block's first line; empty leaves the items without a heading.
++	CreditHeading string `yaml:"credit_heading"`
++	// CreditLoomYard is the credit block's LoomYard item, listed whatever engines ran; empty adds none.
++	CreditLoomYard string `yaml:"credit_loomyard"`
++	// CreditEngines maps an engine name to the credit block's item for that engine, listed only when the engine ran a session in the task.
+ 	// An engine left out, or mapped to empty text, adds nothing.
+-	EngineTrailers map[string]string `yaml:"engine_trailers"`
++	CreditEngines map[string]string `yaml:"credit_engines"`
+ 	// Deploy is the shell command batten's Land row runs in the prime after a landing into the prime's branch.
+ 	// Empty runs nothing.
+ 	Deploy string `yaml:"deploy"`
+@@ -80,28 +83,42 @@ func (c Config) IdleRelease() time.Duration {
+ 	return time.Duration(c.ParentLockIdleReleaseMin) * time.Minute
+ }
+ 
+-// TrailerBlock returns the landing commit's trailer block: the trimmed TrailerText, then the trimmed EngineTrailers text of each name in enginesRun, in sorted name order, one per line.
+-// An empty or whitespace-only text adds nothing, and an empty block means the commit carries no trailer block.
+-func (c Config) TrailerBlock(enginesRun []string) string {
+-	names := slices.Sorted(slices.Values(enginesRun))
+-	var parts []string
+-	if text := strings.TrimSpace(c.TrailerText); text != "" {
+-		parts = append(parts, text)
+-	}
+-	for _, name := range slices.Compact(names) {
+-		if text := strings.TrimSpace(c.EngineTrailers[name]); text != "" {
+-			parts = append(parts, text)
++// CreditBlock returns the plain-text credit block that ends the landing commit and the pull request's body.
++// The block is the trimmed CreditHeading, then one ` - <item>` line for the trimmed CreditLoomYard and for the trimmed CreditEngines text of each name in enginesRun, in sorted name order, each name once.
++// An empty or whitespace-only text adds no line.
++// The block is empty when Credit is off or no item line remains, and an empty block means nothing follows the body.
++func (c Config) CreditBlock(enginesRun []string) string {
++	if !c.Credit {
++		return ""
++	}
++	var items []string
++	if text := strings.TrimSpace(c.CreditLoomYard); text != "" {
++		items = append(items, text)
++	}
++	for _, name := range slices.Compact(slices.Sorted(slices.Values(enginesRun))) {
++		if text := strings.TrimSpace(c.CreditEngines[name]); text != "" {
++			items = append(items, text)
+ 		}
+ 	}
+-	return strings.Join(parts, "\n")
++	if len(items) == 0 {
++		return ""
++	}
++	var lines []string
++	if heading := strings.TrimSpace(c.CreditHeading); heading != "" {
++		lines = append(lines, heading)
++	}
++	for _, item := range items {
++		lines = append(lines, " - "+item)
++	}
++	return strings.Join(lines, "\n")
+ }
+ 
+-// engineTrailersKey is the landing.yaml key whose entries map engine names to trailer text.
+-const engineTrailersKey = "engine_trailers"
++// creditEnginesKey is the landing.yaml key whose entries map engine names to credit block items.
++const creditEnginesKey = "credit_engines"
+ 
+ // ConfigOpenMaps returns the landing.yaml keys whose entries belong to the operator, which configengine carries whole through reconcile and the layer stack.
+ func ConfigOpenMaps() []string {
+-	return []string{engineTrailersKey}
++	return []string{creditEnginesKey}
+ }
+ 
+ // ConfigSpec returns landing's layered-load spec.
+@@ -120,8 +137,10 @@ func ConfigSpec() configengine.Spec {
+ 			"describe":             configengine.CategoryNone,
+ 			"describe_timeout_min": configengine.CategoryNone,
+ 			"pr_reviewer":          configengine.CategoryNone,
+-			"trailer_text":         configengine.CategoryCrossPair,
+-			engineTrailersKey:      configengine.CategoryCrossPair,
++			"credit":               configengine.CategoryCrossPair,
++			"credit_heading":       configengine.CategoryCrossPair,
++			"credit_loomyard":      configengine.CategoryCrossPair,
++			creditEnginesKey:       configengine.CategoryCrossPair,
+ 			"deploy":               configengine.CategoryExecutable,
+ 			// The idle bound decides when one pair's parent lock frees for the next pair waiting on it.
+ 			"parent_lock_idle_release_min": configengine.CategoryCrossPair,
+@@ -132,15 +151,20 @@ func ConfigSpec() configengine.Spec {
+ 			"finalize_fix_attempts":     configengine.CategoryCrossPair,
+ 			"finalize_fix_max_lines":    configengine.CategoryCrossPair,
+ 		},
+-		// publish_verify moved to the hub's publish gate; a file still holding it loads and reconcile prunes it.
++		// A file still holding a retired key loads and reconcile prunes it.
++		// publish_verify moved to the hub's publish gate.
++		// The co-author and trailer keys gave way to the credit keys; their values are co-author lines, so none is carried over.
+ 		RetiredKeys: map[string]configengine.Category{
+-			"publish_verify": configengine.CategoryExecutable,
++			"publish_verify":  configengine.CategoryExecutable,
++			"co_authored_by":  configengine.CategoryCrossPair,
++			"trailer_text":    configengine.CategoryCrossPair,
++			"engine_trailers": configengine.CategoryCrossPair,
+ 		},
+ 	}
+ }
+ 
+ // LoadConfig loads and unmarshals configuration for the landing module strictly through the hub-wide layer stack under dirs.
+-// It validates the conflict, describe, pr_reviewer and fixer keys' model-spec grammar at load time, refuses a fixer timeout, fixer attempt cap or fixer line cap below 1, and refuses an engine_trailers entry whose key names no engine.
++// It validates the conflict, describe, pr_reviewer and fixer keys' model-spec grammar at load time, refuses a fixer timeout, fixer attempt cap or fixer line cap below 1, and refuses a credit_engines entry whose key names no engine.
+ func LoadConfig(dirs configengine.Dirs, module string) (Config, error) {
+ 	spec := ConfigSpec()
+ 	spec.Name = module
+@@ -186,9 +210,9 @@ func LoadConfig(dirs configengine.Dirs, module string) (Config, error) {
+ 		}
+ 	}
+ 	engines := modelspec.EngineNames()
+-	for name := range cfg.EngineTrailers {
++	for name := range cfg.CreditEngines {
+ 		if !slices.Contains(engines, name) {
+-			return Config{}, fmt.Errorf("landing config key %q: %q is no engine; use one of %v, or remove the entry", engineTrailersKey+"."+name, name, engines)
++			return Config{}, fmt.Errorf("landing config key %q: %q is no engine; use one of %v, or remove the entry", creditEnginesKey+"."+name, name, engines)
+ 		}
+ 	}
+ 
+@@ -202,87 +226,16 @@ var retiredKeyRenames = []yamlengine.KeyRename{
+ }
+ 
+ // MigrateConfig rewrites a landing.yaml document for lym config reconcile and returns the rewritten bytes with one line per rewrite.
+-// It moves a retired co_authored_by value into engine_trailers as the claude entry `Co-Authored-By: <value>`;
+-// a document already holding engine_trailers keeps it and drops co_authored_by,
+-// and an empty or non-scalar co_authored_by is dropped without an entry, as empty means off.
+-// It then renames the retired require_pr_to_base key to deploy_branches, keeping its value, an empty list included;
++// It renames the retired require_pr_to_base key to deploy_branches, keeping its value, an empty list included;
+ // a document already holding deploy_branches keeps it and drops the old key.
+ // It likewise renames the retired merge_fix_attempts key to parent_align_fix_attempts, keeping its value;
+ // a document already holding parent_align_fix_attempts keeps it and drops the old key.
+ // A document without a retired key is returned unchanged, so a migrated file is unchanged on a second pass.
+ // A document that does not parse, or whose root is not a mapping, returns an error marked configengine.ErrInvalid.
+ func MigrateConfig(existing []byte) ([]byte, []string, error) {
+-	migrated, line, err := migrateCoAuthoredBy(existing)
++	migrated, lines, err := yamlengine.RenameKeys([]byte(ConfigTemplate()), existing, retiredKeyRenames)
+ 	if err != nil {
+ 		return nil, nil, configengine.MarkInvalid(fmt.Errorf("migrate landing config: %w", err))
+ 	}
+-	var rewrites []string
+-	if line == "" {
+-		migrated = existing
+-	} else {
+-		rewrites = append(rewrites, line)
+-	}
+-	migrated, renameLines, err := yamlengine.RenameKeys([]byte(ConfigTemplate()), migrated, retiredKeyRenames)
+-	if err != nil {
+-		return nil, nil, configengine.MarkInvalid(fmt.Errorf("migrate landing config: %w", err))
+-	}
+-	return migrated, append(rewrites, renameLines...), nil
+-}
+-
+-// migrateCoAuthoredBy rewrites a top-level co_authored_by key in place into an engine_trailers mapping holding its claude line, or drops it beside an existing engine_trailers.
+-// It returns the rewritten document and one line describing the rewrite, or the document unchanged and an empty line when the key is absent.
+-func migrateCoAuthoredBy(existing []byte) ([]byte, string, error) {
+-	var document yaml.Node
+-	if err := yaml.Unmarshal(existing, &document); err != nil {
+-		return nil, "", fmt.Errorf("unmarshal yaml: %w", err)
+-	}
+-	if document.Kind != yaml.DocumentNode || len(document.Content) == 0 {
+-		return existing, "", nil
+-	}
+-	root := document.Content[0]
+-	if root.Kind != yaml.MappingNode {
+-		return nil, "", fmt.Errorf("yaml root is not a mapping")
+-	}
+-
+-	legacyIndex, currentIndex := -1, -1
+-	for i := 0; i+1 < len(root.Content); i += 2 {
+-		switch root.Content[i].Value {
+-		case "co_authored_by":
+-			legacyIndex = i
+-		case engineTrailersKey:
+-			currentIndex = i
+-		}
+-	}
+-	if legacyIndex < 0 {
+-		return existing, "", nil
+-	}
+-
+-	value := root.Content[legacyIndex+1].Value
+-	var line string
+-	switch {
+-	case strings.TrimSpace(value) == "":
+-		line = "co_authored_by: empty, dropped"
+-		root.Content = append(root.Content[:legacyIndex], root.Content[legacyIndex+2:]...)
+-	case currentIndex >= 0:
+-		line = fmt.Sprintf("co_authored_by: %s dropped, %s already set", value, engineTrailersKey)
+-		root.Content = append(root.Content[:legacyIndex], root.Content[legacyIndex+2:]...)
+-	default:
+-		root.Content[legacyIndex] = &yaml.Node{Kind: yaml.ScalarNode, Tag: "!!str", Value: engineTrailersKey}
+-		root.Content[legacyIndex+1] = &yaml.Node{Kind: yaml.MappingNode, Tag: "!!map", Content: []*yaml.Node{
+-			{Kind: yaml.ScalarNode, Tag: "!!str", Value: "claude"},
+-			{Kind: yaml.ScalarNode, Tag: "!!str", Value: "Co-Authored-By: " + value},
+-		}}
+-		line = fmt.Sprintf("co_authored_by: moved to %s.claude", engineTrailersKey)
+-	}
+-
+-	var out bytes.Buffer
+-	encoder := yaml.NewEncoder(&out)
+-	encoder.SetIndent(2)
+-	if err := encoder.Encode(&document); err != nil {
+-		return nil, "", fmt.Errorf("encode yaml: %w", err)
+-	}
+-	if err := encoder.Close(); err != nil {
+-		return nil, "", fmt.Errorf("encode yaml: %w", err)
+-	}
+-	return out.Bytes(), line, nil
++	return migrated, lines, nil
+ }
+diff --git a/internal/landingshed/config_test.go b/internal/landingshed/config_test.go
+index e09e9abe..545b58b7 100644
+--- a/internal/landingshed/config_test.go
++++ b/internal/landingshed/config_test.go
+@@ -66,11 +66,17 @@ func TestLoadConfig_TemplateDefaults(t *testing.T) {
+ 	if cfg.PRReviewer != "opus[high]" {
+ 		t.Errorf("cfg.PRReviewer = %q; want %q", cfg.PRReviewer, "opus[high]")
+ 	}
+-	if cfg.TrailerText != "" {
+-		t.Errorf("cfg.TrailerText = %q; want empty", cfg.TrailerText)
++	if !cfg.Credit {
++		t.Error("cfg.Credit = false; want true")
+ 	}
+-	if want := map[string]string{"claude": "Co-Authored-By: Claude <noreply@anthropic.com>"}; !maps.Equal(cfg.EngineTrailers, want) {
+-		t.Errorf("cfg.EngineTrailers = %v; want %v", cfg.EngineTrailers, want)
++	if cfg.CreditHeading != "Created using" {
++		t.Errorf("cfg.CreditHeading = %q; want %q", cfg.CreditHeading, "Created using")
++	}
++	if want := "LoomYard https://github.com/Knatte18/loomyard"; cfg.CreditLoomYard != want {
++		t.Errorf("cfg.CreditLoomYard = %q; want %q", cfg.CreditLoomYard, want)
++	}
++	if want := map[string]string{"claude": "Claude <noreply@anthropic.com>"}; !maps.Equal(cfg.CreditEngines, want) {
++		t.Errorf("cfg.CreditEngines = %v; want %v", cfg.CreditEngines, want)
+ 	}
+ 	if cfg.Deploy != "" {
+ 		t.Errorf("cfg.Deploy = %q; want empty", cfg.Deploy)
+@@ -93,19 +99,25 @@ func TestLoadConfig_TemplateDefaults(t *testing.T) {
+ 	if cfg.FinalizeFixMaxLines != 40 {
+ 		t.Errorf("cfg.FinalizeFixMaxLines = %d; want 40", cfg.FinalizeFixMaxLines)
+ 	}
+-	if strings.Contains(ConfigTemplate(), "publish_verify") {
+-		t.Error("ConfigTemplate() holds publish_verify; want the retired key gone from the template")
++	retiredKeys := []string{"publish_verify", "co_authored_by", "trailer_text", "engine_trailers"}
++	for _, key := range retiredKeys {
++		if strings.Contains(ConfigTemplate(), key) {
++			t.Errorf("ConfigTemplate() holds %s; want the retired key gone from the template", key)
++		}
+ 	}
+ 
+ 	retiredDir := t.TempDir()
+-	seedLandingConfig(t, retiredDir, ConfigTemplate()+"publish_verify: go test -tags tmux ./...\n")
++	seedLandingConfig(t, retiredDir, ConfigTemplate()+"publish_verify: go test -tags tmux ./...\nco_authored_by: Someone <s@x>\ntrailer_text: Fixed\nengine_trailers:\n  claude: \"Co-Authored-By: Someone <s@x>\"\n")
+ 	retired, err := LoadConfig(configengine.Dirs{Board: retiredDir}, "landing")
+ 	if err != nil {
+-		t.Fatalf("LoadConfig() over a file holding the retired publish_verify = _, %v; want nil error", err)
++		t.Fatalf("LoadConfig() over a file holding the retired keys %v = _, %v; want nil error", retiredKeys, err)
+ 	}
+ 	if retired.Conflict != cfg.Conflict {
+ 		t.Errorf("retired-key file cfg.Conflict = %q; want %q", retired.Conflict, cfg.Conflict)
+ 	}
++	if !maps.Equal(retired.CreditEngines, cfg.CreditEngines) {
++		t.Errorf("retired-key file cfg.CreditEngines = %v; want the template's %v", retired.CreditEngines, cfg.CreditEngines)
++	}
+ }
+ 
+ // TestConfig_IdleRelease verifies the idle bound is the configured minutes, and that a value below 1 reads as the default.
+@@ -128,61 +140,65 @@ func TestConfig_IdleRelease(t *testing.T) {
+ 	}
+ }
+ 
+-// TestConfig_TrailerBlock verifies the trailer block holds the fixed text, then the text of each engine that ran in name order, and drops an empty or whitespace-only text and an engine with no entry.
+-func TestConfig_TrailerBlock(t *testing.T) {
++// TestConfig_CreditBlock verifies the credit block is the heading, then the LoomYard item, then the item of each engine that ran in name order, each once, and drops an empty or whitespace-only text, an engine with no entry, and the whole block when credit is off or no item remains.
++func TestConfig_CreditBlock(t *testing.T) {
+ 	t.Parallel()
+ 
+-	engineTrailers := map[string]string{"alpha": "Co-Authored-By: Alpha <a@x>\n", "beta": "Co-Authored-By: Beta <b@x>", "blank": "  "}
++	engines := map[string]string{"alpha": "Alpha <a@x>\n", "beta": "Beta <b@x>", "blank": "  "}
++	full := Config{Credit: true, CreditHeading: "Created using\n", CreditLoomYard: "LoomYard https://x/loomyard", CreditEngines: engines}
++	withoutLoomYard := full
++	withoutLoomYard.CreditLoomYard = " "
++	withoutHeading := full
++	withoutHeading.CreditHeading = ""
++	off := full
++	off.Credit = false
+ 	tests := []struct {
+ 		name       string
+ 		cfg        Config
+ 		enginesRun []string
+ 		want       string
+ 	}{
+-		{"FixedThenEnginesInNameOrder", Config{TrailerText: "Created using Loomyard\nSecond line\n", EngineTrailers: engineTrailers}, []string{"beta", "alpha"}, "Created using Loomyard\nSecond line\nCo-Authored-By: Alpha <a@x>\nCo-Authored-By: Beta <b@x>"},
+-		{"EngineThatDidNotRunAddsNothing", Config{EngineTrailers: engineTrailers}, []string{"beta"}, "Co-Authored-By: Beta <b@x>"},
+-		{"EngineWithoutEntryOrWithBlankTextAddsNothing", Config{TrailerText: "Fixed", EngineTrailers: engineTrailers}, []string{"gamma", "blank"}, "Fixed"},
+-		{"EngineNamedTwiceAddsOneLine", Config{EngineTrailers: engineTrailers}, []string{"alpha", "alpha"}, "Co-Authored-By: Alpha <a@x>"},
+-		{"BothEmpty", Config{TrailerText: " \n"}, []string{"alpha"}, ""},
+-		{"NoEngineRan", Config{EngineTrailers: engineTrailers}, nil, ""},
++		{"HeadingLoomYardThenEnginesInNameOrder", full, []string{"beta", "alpha"}, "Created using\n - LoomYard https://x/loomyard\n - Alpha <a@x>\n - Beta <b@x>"},
++		{"EngineThatDidNotRunAddsNothing", full, []string{"beta"}, "Created using\n - LoomYard https://x/loomyard\n - Beta <b@x>"},
++		{"EngineWithoutEntryOrWithBlankTextAddsNothing", full, []string{"gamma", "blank"}, "Created using\n - LoomYard https://x/loomyard"},
++		{"EngineNamedTwiceAddsOneLine", full, []string{"alpha", "alpha"}, "Created using\n - LoomYard https://x/loomyard\n - Alpha <a@x>"},
++		{"NoEngineRanKeepsLoomYard", full, nil, "Created using\n - LoomYard https://x/loomyard"},
++		{"EmptyLoomYardAddsNoLine", withoutLoomYard, []string{"alpha"}, "Created using\n - Alpha <a@x>"},
++		{"EmptyHeadingLeavesItemsAlone", withoutHeading, []string{"alpha"}, " - LoomYard https://x/loomyard\n - Alpha <a@x>"},
++		{"NoItemLineIsEmpty", withoutLoomYard, nil, ""},
++		{"CreditOffIsEmpty", off, []string{"alpha"}, ""},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			if got := tt.cfg.TrailerBlock(tt.enginesRun); got != tt.want {
+-				t.Errorf("TrailerBlock(%v) = %q; want %q", tt.enginesRun, got, tt.want)
++			if got := tt.cfg.CreditBlock(tt.enginesRun); got != tt.want {
++				t.Errorf("CreditBlock(%v) = %q; want %q", tt.enginesRun, got, tt.want)
+ 			}
+ 		})
+ 	}
+ }
+ 
+-// TestMigrateConfig verifies a retired co_authored_by moves into engine_trailers as the claude line, an engine_trailers already set wins over it, a retired require_pr_to_base moves to deploy_branches keeping its value, and a migrated document passes unchanged.
++// TestMigrateConfig verifies a retired require_pr_to_base moves to deploy_branches and a retired merge_fix_attempts to parent_align_fix_attempts keeping their values, the retired co-author and trailer keys are left for reconcile's prune with no value carried into credit_engines, and a migrated document passes unchanged.
+ func TestMigrateConfig(t *testing.T) {
+ 	t.Parallel()
+ 
+ 	tests := []struct {
+-		name         string
+-		existing     string
+-		wantTrailers map[string]string
+-		wantLines    int
++		name      string
++		existing  string
++		wantLines int
+ 		// wantDeploy is deploy_branches as fmt.Sprint renders the decoded value; empty skips the check.
+ 		wantDeploy string
+ 		// wantAttempts is parent_align_fix_attempts as fmt.Sprint renders the decoded value; empty skips the check.
+ 		wantAttempts string
+ 	}{
+-		{"MovesToClaudeLine", "squash: true\nco_authored_by: Someone <s@x>\n", map[string]string{"claude": "Co-Authored-By: Someone <s@x>"}, 1, "", ""},
+-		{"ExistingEngineTrailersWins", "co_authored_by: Someone <s@x>\nengine_trailers: {}\n", map[string]string{}, 1, "", ""},
+-		{"ExistingEntriesKept", "co_authored_by: Someone <s@x>\nengine_trailers:\n  claude: \"Co-Authored-By: Kept <k@x>\"\n", map[string]string{"claude": "Co-Authored-By: Kept <k@x>"}, 1, "", ""},
+-		{"EmptyValueDroppedWithoutEntry", "squash: true\nco_authored_by: \"  \"\n", nil, 1, "", ""},
+-		{"NonScalarValueDroppedWithoutEntry", "co_authored_by: [a, b]\n", nil, 1, "", ""},
+-		{"NoRetiredKeyUnchanged", "engine_trailers:\n  claude: \"Co-Authored-By: Kept <k@x>\"\n", map[string]string{"claude": "Co-Authored-By: Kept <k@x>"}, 0, "", ""},
+-		{"RetiredPublishVerifyLeftToReconcilesPrune", "publish_verify: go test -tags tmux ./...\n", nil, 0, "", ""},
+-		{"RequirePRToBaseListMovesToDeployBranches", "require_pr_to_base: [main, develop]\nsquash: true\n", nil, 1, "[main develop]", ""},
+-		{"RequirePRToBaseEmptyListStaysEmpty", "require_pr_to_base: []\nsquash: true\n", nil, 1, "[]", ""},
+-		{"ExistingDeployBranchesWins", "require_pr_to_base: [old]\ndeploy_branches: [main]\n", nil, 1, "[main]", ""},
+-		{"CoAuthoredByAndRequirePRToBaseBothMove", "co_authored_by: Someone <s@x>\nrequire_pr_to_base: [main]\n", map[string]string{"claude": "Co-Authored-By: Someone <s@x>"}, 2, "[main]", ""},
+-		{"MergeFixAttemptsMovesToParentAlignFixAttempts", "merge_fix_attempts: 5\nsquash: true\n", nil, 1, "", "5"},
+-		{"ExistingParentAlignFixAttemptsWins", "merge_fix_attempts: 5\nparent_align_fix_attempts: 3\n", nil, 1, "", "3"},
++		{"RetiredCoAuthorAndTrailerKeysLeftToReconcilesPrune", "squash: true\nco_authored_by: Someone <s@x>\ntrailer_text: Fixed\nengine_trailers:\n  claude: \"Co-Authored-By: Kept <k@x>\"\n", 0, "", ""},
++		{"RetiredPublishVerifyLeftToReconcilesPrune", "publish_verify: go test -tags tmux ./...\n", 0, "", ""},
++		{"RequirePRToBaseListMovesToDeployBranches", "require_pr_to_base: [main, develop]\nsquash: true\n", 1, "[main develop]", ""},
++		{"RequirePRToBaseEmptyListStaysEmpty", "require_pr_to_base: []\nsquash: true\n", 1, "[]", ""},
++		{"ExistingDeployBranchesWins", "require_pr_to_base: [old]\ndeploy_branches: [main]\n", 1, "[main]", ""},
++		{"CoAuthoredByLeftAndRequirePRToBaseMoves", "co_authored_by: Someone <s@x>\nrequire_pr_to_base: [main]\n", 1, "[main]", ""},
++		{"MergeFixAttemptsMovesToParentAlignFixAttempts", "merge_fix_attempts: 5\nsquash: true\n", 1, "", "5"},
++		{"ExistingParentAlignFixAttemptsWins", "merge_fix_attempts: 5\nparent_align_fix_attempts: 3\n", 1, "", "3"},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -194,12 +210,15 @@ func TestMigrateConfig(t *testing.T) {
+ 			if len(lines) != tt.wantLines {
+ 				t.Errorf("MigrateConfig() lines = %q; want %d line(s)", lines, tt.wantLines)
+ 			}
++			if tt.wantLines == 0 && string(migrated) != tt.existing {
++				t.Errorf("MigrateConfig() = %q; want the document unchanged", migrated)
++			}
+ 			var got map[string]any
+ 			if err := yaml.Unmarshal(migrated, &got); err != nil {
+ 				t.Fatalf("unmarshal migrated document: %v", err)
+ 			}
+-			if _, ok := got["co_authored_by"]; ok {
+-				t.Errorf("migrated document %q still holds co_authored_by", migrated)
++			if _, ok := got[creditEnginesKey]; ok {
++				t.Errorf("migrated document %q holds %s; want no value carried into it", migrated, creditEnginesKey)
+ 			}
+ 			if _, ok := got["require_pr_to_base"]; ok {
+ 				t.Errorf("migrated document %q still holds require_pr_to_base", migrated)
+@@ -217,15 +236,6 @@ func TestMigrateConfig(t *testing.T) {
+ 					t.Errorf("migrated deploy_branches = %s; want %s", gotDeploy, tt.wantDeploy)
+ 				}
+ 			}
+-			var trailers struct {
+-				EngineTrailers map[string]string `yaml:"engine_trailers"`
+-			}
+-			if err := yaml.Unmarshal(migrated, &trailers); err != nil {
+-				t.Fatalf("unmarshal migrated engine_trailers: %v", err)
+-			}
+-			if !maps.Equal(trailers.EngineTrailers, tt.wantTrailers) {
+-				t.Errorf("migrated engine_trailers = %v; want %v", trailers.EngineTrailers, tt.wantTrailers)
+-			}
+ 			again, againLines, err := MigrateConfig(migrated)
+ 			if err != nil || len(againLines) != 0 || string(again) != string(migrated) {
+ 				t.Errorf("second MigrateConfig() = %q, %q, %v; want the document unchanged with no lines", again, againLines, err)
+@@ -263,20 +273,20 @@ func TestMigrateConfig_InvalidDocument(t *testing.T) {
+ 	}
+ }
+ 
+-// TestLoadConfig_InvalidKeys verifies a hand-edited landing.yaml with an ungrammatical model-spec or an engine_trailers key naming no engine fails loud at load time, naming the key, rather than being silently carried into the site that reads it.
++// TestLoadConfig_InvalidKeys verifies a hand-edited landing.yaml with an ungrammatical model-spec or a credit_engines key naming no engine fails loud at load time, naming the key, rather than being silently carried into the site that reads it.
+ func TestLoadConfig_InvalidKeys(t *testing.T) {
+ 	t.Parallel()
+ 
+ 	const wellFormed = "deploy_branches: [\"main\"]\nsquash: true\nconflict: opus[high]\nconflict_timeout_min: 60\n" +
+ 		"describe: sonnet[medium]\ndescribe_timeout_min: 30\npr_reviewer: opus[high]\nfixer: opus[high]\nfixer_timeout_min: 60\nparent_align_fix_attempts: 2\n" +
+-		"finalize_fix_attempts: 2\nfinalize_fix_max_lines: 40\nengine_trailers:\n  claude: \"Co-Authored-By: Claude <noreply@anthropic.com>\"\n"
++		"finalize_fix_attempts: 2\nfinalize_fix_max_lines: 40\ncredit_engines:\n  claude: \"Claude <noreply@anthropic.com>\"\n"
+ 	cases := []struct {
+ 		name, valid, invalid, key string
+ 	}{
+ 		{"malformed conflict", "conflict: opus[high]", "conflict: \"opus[high\"", "conflict"},
+ 		{"malformed describe", "describe: sonnet[medium]", "describe: \"sonnet[medium\"", "describe"},
+ 		{"malformed pr_reviewer", "pr_reviewer: opus[high]", "pr_reviewer: not-a-spec[", "pr_reviewer"},
+-		{"engine_trailers key naming no engine", "  claude:", "  claud:", "engine_trailers.claud"},
++		{"credit_engines key naming no engine", "  claude:", "  claud:", "credit_engines.claud"},
+ 		{"malformed fixer", "fixer: opus[high]", "fixer: \"opus[high\"", "fixer"},
+ 		{"fixer timeout below 1", "fixer_timeout_min: 60", "fixer_timeout_min: 0", "fixer_timeout_min"},
+ 		{"parent align fix attempts below 1", "parent_align_fix_attempts: 2", "parent_align_fix_attempts: 0", "parent_align_fix_attempts"},
+@@ -378,9 +388,8 @@ func TestLoadConfig_OptionalStringKeys(t *testing.T) {
+ 		name, contents, want string
+ 		field                func(Config) string
+ 	}{
+-		{"trailer_text set", withoutKeys + "trailer_text: |\n  Created using Loomyard\n  Second line\n", "Created using Loomyard\nSecond line\n", func(c Config) string { return c.TrailerText }},
+-		{"trailer_text absent", withoutKeys, "", func(c Config) string { return c.TrailerText }},
+-		{"engine_trailers empty names no engine", withoutKeys + "engine_trailers: {}\n", "map[]", func(c Config) string { return fmt.Sprint(c.EngineTrailers) }},
++		{"credit_heading set", withoutKeys + "credit_heading: Made with\n", "Made with", func(c Config) string { return c.CreditHeading }},
++		{"credit_engines empty names no engine", withoutKeys + "credit_engines: {}\n", "map[]", func(c Config) string { return fmt.Sprint(c.CreditEngines) }},
+ 		{"deploy set", withoutKeys + "deploy: ./update-plugins.sh\n", "./update-plugins.sh", func(c Config) string { return c.Deploy }},
+ 		{"deploy absent", withoutKeys, "", func(c Config) string { return c.Deploy }},
+ 	}
+diff --git a/internal/landingshed/deps.go b/internal/landingshed/deps.go
+index b453d9fb..8bb9ade3 100644
+--- a/internal/landingshed/deps.go
++++ b/internal/landingshed/deps.go
+@@ -275,10 +275,11 @@ type Deps struct {
+ 	// session could never spawn.
+ 	Shuttle mergeresolve.Shuttle
+ 
+-	// EnginesRun returns the names of the engines the task's sessions ran under, which pick Config.EngineTrailers' lines for the landing commit.
+-	// Finalize calls it once per Call, before any parent-side mutation, and a returned error is returned from Call.
++	// EnginesRun returns the names of the engines the task's sessions ran under, which pick the credit block's engine lines.
++	// Finalize calls it once per Call, before any parent-side mutation, and PR-Review calls it each time it sets the pull request's body;
++	// a returned error is returned from Call.
+ 	//
+-	// Nil means "no engine ran", so the commit carries no engine line.
++	// Nil means "no engine ran", so the credit block carries no engine line.
+ 	EnginesRun func() ([]string, error)
+ 
+ 	// Registry is the resolved model-spec registry both producers' resolver constructions read the
+diff --git a/internal/landingshed/doc.go b/internal/landingshed/doc.go
+index ce6eaa4c..a395f8ad 100644
+--- a/internal/landingshed/doc.go
++++ b/internal/landingshed/doc.go
+@@ -4,7 +4,7 @@
+ // It reads the receiving branch's beam.yaml `pull_request`, the landing entry's field, the origin and whether the task branch has commits beyond its parent through Deps.PullRequest, and takes no parent lock.
+ // A beam.yaml it cannot read is Stuck with Halt naming the worktree and `lym config beam`, and a resolver Halt is Stuck with Halt.
+ // A no logs the reason, closes a recorded pull request GitHub reports open with the comment `lym closed this pull request: <reason>`, drops the record and ends Done.
+-// A yes pushes the task branch, then finds the pull request the record names or the open one on the task branch, else opens one, sets its title and body from the change description and records its number, URL, base and head, and then waits on it in process.
++// A yes pushes the task branch, then finds the pull request the record names or the open one on the task branch, else opens one, sets its title from the change description and its body from the description's body and the credit block, and records its number, URL, base and head, and then waits on it in process.
+ // The record's gated head is set to the task head on the first entry only, so a re-entry keeps it, and a record the operator's ending marked closed keeps the run's ending when the task head is still the gated one and starts a new review when it is not.
+ //
+ // The wait has no timeout and wakes at least a second apart, doubling to a minute while nothing changes and back to a second when the task head moves.
+@@ -196,11 +196,12 @@
+ // and a dirty tree is Stuck with the parent branch untouched, while a failing gate runs the merge fixer.
+ // After each merge of the parent and before the parent-side merge, Finalize commits the parent pair's own run records through the told Deps.CommitParentRecords, so a sibling run's uncommitted status record does not trip the merge guard;
+ // a clean subtree is a no-op, an absent seam skips the step, and a commit failure is Stuck naming the parent pair and its run records, with nothing merged.
+-// The landing commit carries the change description, then a blank line and the trailer block.
+-// The block is landing.yaml's trailer_text, then the engine_trailers text of each engine the task's sessions ran under, in engine-name order, each copied verbatim with no prefix, and then a `Lym-Task: <slug>` line naming the task.
++// The landing commit carries the change description, then a blank line and the credit block, written as plain lines, never as git trailers.
++// With landing.yaml's credit on, the block is credit_heading, then one ` - <item>` line for credit_loomyard and for the credit_engines text of each engine the task's sessions ran under, in engine-name order.
+ // Finalize reads those engines through the told Deps.EnginesRun before any parent-side mutation, and a read failure is an error with nothing merged.
+-// An empty trailer_text adds no fixed line, and an engine left out of engine_trailers or mapped to empty text adds no engine line, so the block is the task line alone.
+-// lym config reconcile moves a retired co_authored_by value into engine_trailers as the claude entry `Co-Authored-By: <value>`, and drops an empty one without an entry.
++// An empty text adds no line, and a block left with no item line, or with credit off, is empty, so the message ends at the body.
++// PR-Review sets the pull request's body to the same body and block, so the commit and its pull request carry one credit.
++// The retired co_authored_by, trailer_text and engine_trailers keys load and lym config reconcile prunes them, carrying no value over.
+ // Before the merge of the parent, Finalize reads the per-worktree config files the task changed away from both its fork point and the parent's current tip, so a parent-side change never reads as a task edit, and, at Done, queues one notice about them naming the base, task tip and parent tip for the hub's orchestrator;
+ // it never carries those files to the parent,
+ // and a read failure or a failed notice never stops the landing.
+@@ -216,9 +217,9 @@
+ // Right after it takes the lock it asks ResolvePullRequest the question PR-Review asked, from the same beam.yaml, entry field, origin and task-branch commits, and a Finalize with no `ParentMode` seam skips the step and lands locally.
+ // A no closes a recorded pull request GitHub reports open with the comment `lym closed this pull request: <reason>`, removes the record, and lands locally.
+ // A yes with no record is Stuck with Halt naming `lym loom goto PR-Review`, and a yes whose pull request GitHub reports closed while the record is not marked closed for continue is Stuck with Halt naming a reopen on GitHub and `lym batten cancel`; only PR-Review writes that mark.
+-// A yes whose record is marked closed for continue and whose pull request is closed is the operator's ending, and lands locally with Finalize's gate and trailer.
++// A yes whose record is marked closed for continue and whose pull request is closed is the operator's ending, and lands locally with Finalize's gate and credit block.
+ // A merged pull request makes no GitHub merge, and the parent sync fast-forwards to the merged upstream so the parent-side merge takes the already-landed path.
+-// An open one is merged on GitHub after the lock re-check and before the parent-side merge: Finalize pushes the task branch, merges with the pushed head as the expected head, `squash` choosing the method, the change description's title as the commit title and its body and the trailer block as the commit message, then fetches and fast-forwards the parent pair.
++// An open one is merged on GitHub after the lock re-check and before the parent-side merge: Finalize pushes the task branch, merges with the pushed head as the expected head, `squash` choosing the method, the change description's title as the commit title and its body and the credit block as the commit message, then fetches and fast-forwards the parent pair.
+ // A merge GitHub refuses as pending is retried for at most a minute under the lock, a method refusal names `lym config landing --set squash=<true|false>`, and any other refusal names a second person's approval and, for the operator alone, `lym loom goto PR-Review`.
+ // The retry after a merge-in-required error never merges on GitHub a second time.
+ // Every GitHub failure is judged as PR-Review judges one, with each halt opening with LandingStopPrefix.
+diff --git a/internal/landingshed/finalize.go b/internal/landingshed/finalize.go
+index c51405cb..5aa362d7 100644
+--- a/internal/landingshed/finalize.go
++++ b/internal/landingshed/finalize.go
+@@ -161,11 +161,11 @@ func NewFinalize(deps Deps) (*Finalize, error) {
+ //
+ // Immediately before each landing attempt it re-reads the parent lock record, so a lock something released lands nothing and is a halting Stuck.
+ // The re-read and the landing are not atomic: a release between them is caught only by the parent push's rejection.
+-// The landing commit carries the change description and a trailer block ending in a `Lym-Task: <slug>` line.
++// The landing commit carries the change description and, after a blank line, the credit block, when the config yields one.
+ //
+ // Right after the lock it follows the pull-request resolver: a no closes a recorded open pull request, drops the record and lands locally;
+ // a yes needs the recorded pull request and halts without one, and halts on one closed without the operator's ending;
+-// the operator's ending, a closed pull request whose record is marked closed for continue, lands locally with the gate and trailer, and a merged one lands through the already-landed path.
++// the operator's ending, a closed pull request whose record is marked closed for continue, lands locally with the gate and credit block, and a merged one lands through the already-landed path.
+ // An open pull request is merged on GitHub just before the parent-side merge, with the pushed task head as its expected head, and the parent pair is fast-forwarded to the merge, so the parent-side merge then finds the parent holding the task's work.
+ //
+ // Finalize is idempotent over an already-landed parent: when the parent already contains the task's
+@@ -187,15 +187,12 @@ func (fz *Finalize) Call(ctx context.Context) (shedengine.Outcome, shedengine.Ou
+ 		return "", shedengine.OutputPointer{}, fmt.Errorf("landingshed: %s: parse change description: %w", finalizeName, err)
+ 	}
+ 
+-	// Step 1a2: read the engines the task ran under, for the same reason: the trailer block is part of step 4's message.
+-	var enginesRun []string
+-	if fz.deps.EnginesRun != nil {
+-		if enginesRun, err = fz.deps.EnginesRun(); err != nil {
+-			return "", shedengine.OutputPointer{}, fmt.Errorf("landingshed: %s: read the engines the task ran under: %w", finalizeName, err)
+-		}
++	// Step 1a2: read the engines the task ran under, for the same reason: the credit block is part of step 4's message.
++	credit, err := fz.deps.creditBlock()
++	if err != nil {
++		return "", shedengine.OutputPointer{}, fmt.Errorf("landingshed: %s: %w", finalizeName, err)
+ 	}
+-	trailer := taskTrailer(fz.deps.Config.TrailerBlock(enginesRun), fz.deps.Slug)
+-	landingMessage := summary.LandingMessage(trailer)
++	landingMessage := summary.LandingMessage(credit)
+ 
+ 	// Step 1b: commit the product's own status file, so the pair carries no tracked modification
+ 	// when the merge guard below runs. This must happen inside Call rather than once at bootstrap:
+@@ -276,7 +273,7 @@ func (fz *Finalize) Call(ctx context.Context) (shedengine.Outcome, shedengine.Ou
+ 	// Step 5b: a landing through an open pull request merges it on GitHub first, once, so the parent-side merge below finds the parent holding the task's work.
+ 	// The retry after a merge-in-required error never comes back here, since the GitHub merge is done.
+ 	if landing.merge {
+-		if outcome, out, err, stop := fz.mergeOnGitHub(ctx, parentHandle, landing, summary.Title, pullRequestMergeMessage(summary.Body, trailer)); stop {
++		if outcome, out, err, stop := fz.mergeOnGitHub(ctx, parentHandle, landing, summary.Title, bodyWithCredit(summary.Body, credit)); stop {
+ 			return outcome, out, err
+ 		}
+ 	}
+@@ -586,15 +583,6 @@ func (fz *Finalize) pushParent(ctx context.Context, parentHandle parentMerger, n
+ 	return shedengine.Done, shedengine.OutputPointer{}, nil
+ }
+ 
+-// taskTrailer appends the `Lym-Task: <slug>` line to block, the landing commit's trailer block, which is empty when the commit carries no other trailer.
+-func taskTrailer(block, slug string) string {
+-	line := "Lym-Task: " + slug
+-	if block == "" {
+-		return line
+-	}
+-	return block + "\n" + line
+-}
+-
+ // recheckLock re-reads the parent lock record immediately before a landing attempt.
+ // stop is false when the record still names this run, so Call lands.
+ // Otherwise the other values are what Call returns at once: a halting Stuck for a release or an unreadable record, an error for an infrastructure fault.
+diff --git a/internal/landingshed/finalize_integration_test.go b/internal/landingshed/finalize_integration_test.go
+index 648560df..c0ae348c 100644
+--- a/internal/landingshed/finalize_integration_test.go
++++ b/internal/landingshed/finalize_integration_test.go
+@@ -122,10 +122,12 @@ func newFinalizeAt(t *testing.T, taskBranch, taskCode, parentCode string, shuttl
+ 		Squash:             squash,
+ 		Conflict:           "claude:test-model",
+ 		ConflictTimeoutMin: 1,
+-		TrailerText:        "Created using Loomyard\n",
+-		EngineTrailers: map[string]string{
+-			"claude": "Co-Authored-By: Test Author <test@example.com>",
+-			"other":  "Co-Authored-By: Other <other@example.com>",
++		Credit:             true,
++		CreditHeading:      "Created using",
++		CreditLoomYard:     "LoomYard https://x/loomyard",
++		CreditEngines: map[string]string{
++			"claude": "Test Author <test@example.com>",
++			"other":  "Other <other@example.com>",
+ 		},
+ 	}
+ 	deps.EnginesRun = func() ([]string, error) { return []string{"claude"}, nil }
+@@ -214,14 +216,14 @@ func TestFinalize_OverRealHub(t *testing.T) {
+ 		}
+ 
+ 		// The landing commit's subject is the description title, its body is the description body,
+-		// and its trailer block is the fixed line, then the line of the one engine that ran, then the task's `Lym-Task` line.
++		// and its credit block is the heading, the LoomYard line and the line of the one engine that ran, as plain lines with no trailer.
+ 		msgCmd := exec.Command("git", "log", "-1", "--format=%B")
+ 		msgCmd.Dir = parentCode
+ 		msgOut, err := msgCmd.Output()
+ 		if err != nil {
+ 			t.Fatalf("git log -1 --format=%%B in %s: %v", parentCode, err)
+ 		}
+-		wantMsg := "A landing title\n\nA landing body.\n\nCreated using Loomyard\nCo-Authored-By: Test Author <test@example.com>\nLym-Task: task"
++		wantMsg := "A landing title\n\nA landing body.\n\nCreated using\n - LoomYard https://x/loomyard\n - Test Author <test@example.com>"
+ 		if got := strings.TrimSpace(string(msgOut)); got != wantMsg {
+ 			t.Errorf("landing commit message = %q; want %q", got, wantMsg)
+ 		}
+diff --git a/internal/landingshed/finalize_pr.go b/internal/landingshed/finalize_pr.go
+index 9499cc7f..61ed02e2 100644
+--- a/internal/landingshed/finalize_pr.go
++++ b/internal/landingshed/finalize_pr.go
+@@ -63,17 +63,29 @@ func githubHaltReason(action string, err error) string {
+ 	return fmt.Sprintf("the GitHub call to %s failed: %v; way forward: fix what GitHub's message names, then run lym loom resume", action, err)
+ }
+ 
+-// pullRequestMergeMessage composes the commit message of a pull request's merge: the change description's body, then the trailer block.
+-// The title travels separately as the commit title.
+-func pullRequestMergeMessage(body, trailer string) string {
++// creditBlock reads the engines the task's sessions ran under and returns the credit block Config composes from them.
++func (d Deps) creditBlock() (string, error) {
++	var enginesRun []string
++	if d.EnginesRun != nil {
++		var err error
++		if enginesRun, err = d.EnginesRun(); err != nil {
++			return "", fmt.Errorf("read the engines the task ran under: %w", err)
++		}
++	}
++	return d.Config.CreditBlock(enginesRun), nil
++}
++
++// bodyWithCredit composes a pull request's body and its merge's commit message alike: the change description's trimmed body, then a blank line and the credit block when the block is not empty.
++// The title travels separately.
++func bodyWithCredit(body, credit string) string {
+ 	body = strings.TrimSpace(body)
+-	if trailer == "" {
++	if credit == "" {
+ 		return body
+ 	}
+ 	if body == "" {
+-		return trailer
++		return credit
+ 	}
+-	return body + "\n\n" + trailer
++	return body + "\n\n" + credit
+ }
+ 
+ // githubFailure judges a failed GitHub call named by action, which is the whole of Finalize's disposition of one.
+diff --git a/internal/landingshed/finalize_pr_test.go b/internal/landingshed/finalize_pr_test.go
+index 458ba868..9b21de68 100644
+--- a/internal/landingshed/finalize_pr_test.go
++++ b/internal/landingshed/finalize_pr_test.go
+@@ -29,8 +29,8 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 
+ 	githubOrigin := Origin{URL: "https://github.com/acme/widgets.git", Upstream: true}
+ 	const recordedURL = "https://github.com/acme/widgets/pull/7"
+-	const wantTrailer = "Co-Authored-By: Test Author <test@example.com>\nLym-Task: me"
+-	const wantGitHubMerge = "Merge 7|task-head|true|A landing title|A landing body.\n\n" + wantTrailer
++	const wantCredit = "Created using\n - LoomYard\n - Test Author <test@example.com>"
++	const wantGitHubMerge = "Merge 7|task-head|true|A landing title|A landing body.\n\n" + wantCredit
+ 	statusScript := func(calls ...scriptedCall) map[string][]scriptedCall {
+ 		return map[string][]scriptedCall{"Status": calls}
+ 	}
+diff --git a/internal/landingshed/finalize_test.go b/internal/landingshed/finalize_test.go
+index f78b7f7c..9437d5b9 100644
+--- a/internal/landingshed/finalize_test.go
++++ b/internal/landingshed/finalize_test.go
+@@ -260,7 +260,7 @@ func TestFinalize_MergeMarkPushOrderAndVerdict(t *testing.T) {
+ 
+ // TestFinalize_MergeOptionsCarriesComposedMessage asserts the merge-in runs first and a successful parent-side merge passes MergeOptions carrying the task branch as its source, both the composed final-summary message and the configured Squash value, for both merge shapes -- the message is set whether or not Squash is true.
+ //
+-//testtiming:keep pins the composed MergeOptions.Message, its engine trailer and the Squash value for both merge shapes, which its covering tests do not assert
++//testtiming:keep pins the composed MergeOptions.Message, its engine credit line and the Squash value for both merge shapes, which its covering tests do not assert
+ func TestFinalize_MergeOptionsCarriesComposedMessage(t *testing.T) {
+ 	tests := []struct {
+ 		name   string
+@@ -301,16 +301,18 @@ func TestFinalize_MergeOptionsCarriesComposedMessage(t *testing.T) {
+ 				t.Errorf("parent-side merge source = %q; want %q", merger.calls[0].source, deps.TaskBranch)
+ 			}
+ 			got := merger.calls[0].opts
+-			want := summary.LandingMessage(taskTrailer(deps.Config.TrailerBlock(enginesRun), "me"))
++			want := summary.LandingMessage(deps.Config.CreditBlock(enginesRun))
+ 			if got.Message != want {
+ 				t.Errorf("MergeOptions.Message = %q; want %q", got.Message, want)
+ 			}
+-			trailer := deps.Config.EngineTrailers["claude"]
+-			if hasLine := strings.HasSuffix(got.Message, "\n\n"+trailer+"\nLym-Task: me"); hasLine == tt.nilEnginesRun {
+-				t.Errorf("MergeOptions.Message = %q; engine line %q present = %v; want %v", got.Message, trailer, hasLine, !tt.nilEnginesRun)
++			engineLine := " - " + deps.Config.CreditEngines["claude"]
++			if hasLine := strings.HasSuffix(got.Message, "\n"+engineLine); hasLine == tt.nilEnginesRun {
++				t.Errorf("MergeOptions.Message = %q; engine line %q present = %v; want %v", got.Message, engineLine, hasLine, !tt.nilEnginesRun)
+ 			}
+-			if !strings.HasSuffix(got.Message, "\nLym-Task: me") {
+-				t.Errorf("MergeOptions.Message = %q; want it to end in the Lym-Task trailer line", got.Message)
++			for _, absent := range []string{"Lym-Task", "Co-Authored-By"} {
++				if strings.Contains(got.Message, absent) {
++					t.Errorf("MergeOptions.Message = %q; want no %s line", got.Message, absent)
++				}
+ 			}
+ 			if got.Squash != tt.squash {
+ 				t.Errorf("MergeOptions.Squash = %v; want %v (threaded from configuration)", got.Squash, tt.squash)
+@@ -438,7 +440,7 @@ func TestFinalize_MergeInRequiredRetry(t *testing.T) {
+ 			if ptr.Reroute != tt.wantReroute {
+ 				t.Errorf("OutputPointer.Reroute = %v; want %v", ptr.Reroute, tt.wantReroute)
+ 			}
+-			want := summary.LandingMessage(taskTrailer(deps.Config.TrailerBlock([]string{"claude"}), deps.Slug))
++			want := summary.LandingMessage(deps.Config.CreditBlock([]string{"claude"}))
+ 			for i, call := range merger.calls {
+ 				if call.opts.Message != want {
+ 					t.Errorf("attempt %d MergeOptions.Message = %q; want %q (the same composed message every attempt)", i+1, call.opts.Message, want)
+diff --git a/internal/landingshed/prreview.go b/internal/landingshed/prreview.go
+index 79f0a58f..f90eca6a 100644
+--- a/internal/landingshed/prreview.go
++++ b/internal/landingshed/prreview.go
+@@ -25,7 +25,7 @@ const (
+ )
+ 
+ // PRReview is the ShedProducer that lands a run through a GitHub pull request when ResolvePullRequest says so.
+-// A no closes any pull request the run recorded and passes; a yes pushes the task branch, finds or opens the pull request, sets its title and body from the change description, records it, keeps one interactive session for the operator to discuss it in, and waits on it.
++// A no closes any pull request the run recorded and passes; a yes pushes the task branch, finds or opens the pull request, sets its title from the change description and its body from the description's body and the credit block, records it, keeps one interactive session for the operator to discuss it in, and waits on it.
+ // The wait gates and pushes the agent's commits, and ends when the pull request is merged or approved, or closed or continued by the operator.
+ // It takes no parent lock.
+ type PRReview struct {
+@@ -181,7 +181,7 @@ func (p *PRReview) closeRecordedPullRequest(ctx context.Context, origin Origin,
+ 	return shedengine.Done, shedengine.OutputPointer{}, nil
+ }
+ 
+-// openPullRequest pushes the task branch, then finds or opens the run's pull request, sets its title and body from the change description, records it and waits on it.
++// openPullRequest pushes the task branch, then finds or opens the run's pull request, sets its title from the change description and its body from the description's body and the credit block, records it and waits on it.
+ // A pause that covers the run holds the call before the push.
+ func (p *PRReview) openPullRequest(ctx context.Context, origin Origin) (shedengine.Outcome, shedengine.OutputPointer, error) {
+ 	pr := p.deps.PullRequest
+@@ -224,6 +224,11 @@ func (p *PRReview) openPullRequest(ctx context.Context, origin Origin) (shedengi
+ 	if err != nil {
+ 		return "", shedengine.OutputPointer{}, fmt.Errorf("landingshed: %s: read the change description: %w", p.name, err)
+ 	}
++	credit, err := p.deps.creditBlock()
++	if err != nil {
++		return "", shedengine.OutputPointer{}, fmt.Errorf("landingshed: %s: %w", p.name, err)
++	}
++	body := bodyWithCredit(summary.Body, credit)
+ 
+ 	// A recorded pull request GitHub no longer reports open is left as it is, for the wait to judge.
+ 	var ref pullrequest.Ref
+@@ -254,7 +259,7 @@ func (p *PRReview) openPullRequest(ctx context.Context, origin Origin) (shedengi
+ 		}
+ 		ref = existing
+ 		if !open {
+-			ref, err = api.Create(ctx, p.deps.TaskBranch, p.deps.ParentBranch, summary.Title, summary.Body)
++			ref, err = api.Create(ctx, p.deps.TaskBranch, p.deps.ParentBranch, summary.Title, body)
+ 			if err != nil {
+ 				return p.githubFailure(ctx, "open the pull request", err)
+ 			}
+@@ -262,7 +267,7 @@ func (p *PRReview) openPullRequest(ctx context.Context, origin Origin) (shedengi
+ 		}
+ 	}
+ 	if editTitleAndBody {
+-		if err := api.Edit(ctx, ref.Number, summary.Title, summary.Body); err != nil {
++		if err := api.Edit(ctx, ref.Number, summary.Title, body); err != nil {
+ 			return p.githubFailure(ctx, "set the pull request's title and body", err)
+ 		}
+ 	}
+diff --git a/internal/landingshed/prreview_test.go b/internal/landingshed/prreview_test.go
+index c24e4757..b9e86c65 100644
+--- a/internal/landingshed/prreview_test.go
++++ b/internal/landingshed/prreview_test.go
+@@ -103,8 +103,8 @@ func TestPRReview_Call(t *testing.T) {
+ 	created := scriptedCall{ref: pullrequest.Ref{Number: 7, URL: "https://github.com/acme/widgets/pull/7"}}
+ 	closed := scriptedCall{status: pullrequest.Status{State: pullrequest.StateClosed}}
+ 	const (
+-		wantCreateCall  = "Create task main|Change title|\nChange body\n"
+-		wantEditSeven   = "Edit 7|Change title|\nChange body\n"
++		wantCreateCall  = "Create task main|Change title|" + wantPRBody
++		wantEditSeven   = "Edit 7|Change title|" + wantPRBody
+ 		localNoReason   = "no pull request: the parent's beam.yaml pull_request is on and the task pair has no origin remote"
+ 		taskHead        = "head-new"
+ 		recordedGated   = "head-old"
+@@ -191,7 +191,7 @@ func TestPRReview_Call(t *testing.T) {
+ 			name: "YesWithNoneRecordedButOneOpenReusesIt", parentMode: "on", origin: githubOrigin,
+ 			scripts:     map[string][]scriptedCall{"FindOpen": {{ref: pullrequest.Ref{Number: 9, URL: "u9"}, found: true}}, "Status": {mergedAtHead}},
+ 			wantOutcome: shedengine.Done, wantPushes: 1,
+-			wantCalls:  []string{"FindOpen task main", "Edit 9|Change title|\nChange body\n", "Status 9"},
++			wantCalls:  []string{"FindOpen task main", "Edit 9|Change title|" + wantPRBody, "Status 9"},
+ 			wantRecord: &pullrequest.Record{Number: 9, URL: "u9", Base: "main", Head: "task", GatedHead: taskHead},
+ 		},
+ 		{
+@@ -378,6 +378,37 @@ func TestPRReview_Call(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("CreditOffOpensThePullRequestWithTheDescriptionBodyAlone", func(t *testing.T) {
++		t.Parallel()
++		fx := newPRReviewFixture(t, "on", nil, "", githubOrigin, nil, map[string][]scriptedCall{"Create": {created}, "Status": {mergedAtHead}}, nil)
++		fx.deps.Config.Credit = false
++
++		if _, _, err := NewPRReview("PR-Review", fx.deps).Call(context.Background()); err != nil {
++			t.Fatalf("Call() error = %v", err)
++		}
++
++		want := []string{"FindOpen task main", "Create task main|Change title|Change body", "Status 7"}
++		if diff := cmp.Diff(want, fx.api.calls); diff != "" {
++			t.Errorf("GitHub calls mismatch (-want +got):\n%s", diff)
++		}
++	})
++
++	t.Run("FailingEnginesRunReadIsAnErrorWithNoPullRequestCall", func(t *testing.T) {
++		t.Parallel()
++		fx := newPRReviewFixture(t, "on", nil, "", githubOrigin, nil, nil, nil)
++		readErr := errors.New("engines run unreadable")
++		fx.deps.EnginesRun = func() ([]string, error) { return nil, readErr }
++
++		_, _, err := NewPRReview("PR-Review", fx.deps).Call(context.Background())
++
++		if !errors.Is(err, readErr) {
++			t.Errorf("Call() error = %v; want one wrapping %v", err, readErr)
++		}
++		if len(fx.api.calls) != 0 {
++			t.Errorf("Call() made GitHub calls %v; want none", fx.api.calls)
++		}
++	})
++
+ 	t.Run("CancelledContextIsAnError", func(t *testing.T) {
+ 		t.Parallel()
+ 		fx := newPRReviewFixture(t, "on", nil, "", githubOrigin, nil, nil, nil)
+@@ -412,7 +443,10 @@ type prReviewFixture struct {
+ // prReviewFixtureNow is the instant every fake clock of the PR-Review tests starts at.
+ var prReviewFixtureNow = time.Date(2026, 10, 30, 12, 0, 0, 0, time.UTC)
+ 
+-// prReviewTestDeps builds a Deps over a temp record path and a change description titled "Change title" whose body, as summaryparser reads it, is "\nChange body\n".
++// wantPRBody is the pull request body prReviewTestDeps yields: the description's trimmed body, a blank line and the credit block of the one engine that ran.
++const wantPRBody = "Change body\n\nCreated using\n - LoomYard\n - Claude <c@x>"
++
++// prReviewTestDeps builds a Deps over a temp record path and a change description titled "Change title" whose body, as summaryparser reads it, is "\nChange body\n", with the credit on and claude the one engine that ran.
+ // Every PullRequest seam is filled: the origin is a GitHub one, the parent's mode is on, the task head is "head-new", the worktree is clean, no pause covers the run, and the clock moves only when the wait sleeps.
+ // A test replaces the seams it scripts.
+ func prReviewTestDeps(t *testing.T, api *fakePullRequestAPI) Deps {
+@@ -432,10 +466,17 @@ func prReviewTestDeps(t *testing.T, api *fakePullRequestAPI) Deps {
+ 		DescriptionPath: description,
+ 		StencilsDir:     stencilkit.Seed(t),
+ 		ParentName:      "parent-session",
+-		Config:          Config{PRReviewer: "claude:fixture-model"},
+-		TaskHead:        func() (string, error) { return "head-new", nil },
+-		GateTiers:       func(string) ([]int, error) { return []int{0, 1}, nil },
+-		Lock:            ParentLockDeps{Store: &parentlock.Store{Dir: filepath.Join(dir, "parent-lock")}},
++		Config: Config{
++			PRReviewer:     "claude:fixture-model",
++			Credit:         true,
++			CreditHeading:  "Created using",
++			CreditLoomYard: "LoomYard",
++			CreditEngines:  map[string]string{"claude": "Claude <c@x>"},
++		},
++		EnginesRun: func() ([]string, error) { return []string{"claude"}, nil },
++		TaskHead:   func() (string, error) { return "head-new", nil },
++		GateTiers:  func(string) ([]int, error) { return []int{0, 1}, nil },
++		Lock:       ParentLockDeps{Store: &parentlock.Store{Dir: filepath.Join(dir, "parent-lock")}},
+ 		PullRequest: PullRequestDeps{
+ 			Sessions:        sessions,
+ 			SessionLive:     sessions.isLive,
+diff --git a/internal/landingshed/prreview_wait_test.go b/internal/landingshed/prreview_wait_test.go
+index 2565b267..79d26d26 100644
+--- a/internal/landingshed/prreview_wait_test.go
++++ b/internal/landingshed/prreview_wait_test.go
+@@ -122,7 +122,7 @@ func once(fn func()) func() {
+ func TestPRReview_Wait(t *testing.T) {
+ 	// The wait captures the process-global logger, so this test and its subtests stay serial.
+ 	const continueClose = "Close 7 " + continueComment
+-	const editSeven = "Edit 7|Change title|\nChange body\n"
++	const editSeven = "Edit 7|Change title|" + wantPRBody
+ 	open := scriptedCall{status: pullrequest.Status{State: pullrequest.StateOpen}}
+ 	closed := scriptedCall{status: pullrequest.Status{State: pullrequest.StateClosed}}
+ 	mergedAt := func(head string) scriptedCall {
+@@ -310,7 +310,7 @@ func TestPRReview_Wait(t *testing.T) {
+ 					return w.dirty, nil
+ 				}
+ 			},
+-			wantOutcome: shedengine.Done, wantCalls: []string{"FindOpen task main", "Create task main|Change title|\nChange body\n", "Status 7"},
++			wantOutcome: shedengine.Done, wantCalls: []string{"FindOpen task main", "Create task main|Change title|" + wantPRBody, "Status 7"},
+ 			check: func(t *testing.T, w *waitWorld, _ string) {
+ 				if diff := cmp.Diff([]bool{true, false}, w.liveAtRead); diff != "" {
+ 					t.Errorf("session liveness at each tree read mismatch (-want +got):\n%s", diff)
+@@ -488,7 +488,7 @@ func TestPRReview_Wait(t *testing.T) {
+ 					}
+ 				}
+ 			},
+-			wantOutcome: shedengine.Done, wantCalls: []string{"FindOpen task main", "Create task main|Change title|\nChange body\n", "Status 7"},
++			wantOutcome: shedengine.Done, wantCalls: []string{"FindOpen task main", "Create task main|Change title|" + wantPRBody, "Status 7"},
+ 		},
+ 		{
+ 			name: "TheContinueFlagWrittenBetweenWakesPollsAtOnceAndClosesThePullRequest", record: seed("h1"), scripts: statusScript(open),
+diff --git a/internal/landingshed/publish_test.go b/internal/landingshed/publish_test.go
+index fd482579..df9d90f3 100644
+--- a/internal/landingshed/publish_test.go
++++ b/internal/landingshed/publish_test.go
+@@ -59,7 +59,10 @@ func newTestDeps(t *testing.T) Deps {
+ 			Squash:             true,
+ 			Conflict:           "sonnet",
+ 			ConflictTimeoutMin: 30,
+-			EngineTrailers:     map[string]string{"claude": "Co-Authored-By: Test Author <test@example.com>"},
++			Credit:             true,
++			CreditHeading:      "Created using",
++			CreditLoomYard:     "LoomYard",
++			CreditEngines:      map[string]string{"claude": "Test Author <test@example.com>"},
+ 		},
+ 		EnginesRun: func() ([]string, error) { return []string{"claude"}, nil },
+ 		Lock: ParentLockDeps{
+diff --git a/internal/landingshed/template.yaml b/internal/landingshed/template.yaml
+index 57c262e3..4e005912 100644
+--- a/internal/landingshed/template.yaml
++++ b/internal/landingshed/template.yaml
+@@ -5,9 +5,11 @@ conflict_timeout_min: 60  # minutes the conflict-resolution session's shuttle ru
+ describe: sonnet[medium]  # model-spec for the Describe row's session, which writes the change description that becomes the PR title and body and the landing commit message (see contracts/specs/llm-model-spec.md)
+ describe_timeout_min: 30  # minutes the Describe session's shuttle run is allowed to run
+ pr_reviewer: opus[high]  # model-spec for the PR-Review row's interactive session, the agent the operator discusses the pull request with (see contracts/specs/llm-model-spec.md)
+-trailer_text: ""  # fixed lines copied verbatim into every landing commit's trailer block, before any engine line; empty adds none
+-engine_trailers:  # engine name to the trailer text copied verbatim into the landing commit when that engine ran a session in the task; an engine left out or set to "" adds nothing
+-  claude: "Co-Authored-By: Claude <noreply@anthropic.com>"
++credit: true  # whether the landing commit and the pull request's body end with the credit block: credit_heading, then the credit_loomyard item, then the credit_engines item of each engine that ran a session in the task
++credit_heading: "Created using"  # first line of the credit block; empty leaves the items without a heading
++credit_loomyard: "LoomYard https://github.com/Knatte18/loomyard"  # credit block item listed whatever engines ran; empty adds none
++credit_engines:  # engine name to the credit block item listed when that engine ran a session in the task; an engine left out or set to "" adds nothing
++  claude: "Claude <noreply@anthropic.com>"
+ deploy: ""  # shell command batten's Land row runs in the prime after a landing into a branch listed in deploy_branches; empty runs nothing
+ fixer: opus[high]  # model-spec for the merge fixer session that Parent-Align and Finalize run to fix a merge or test failure, and for the fix review Finalize runs over a fixer change past the caps (see contracts/specs/llm-model-spec.md)
+ fixer_timeout_min: 60  # minutes one fixer turn, or the fix review session, may run
+diff --git a/internal/loomcli/prcontinue.go b/internal/loomcli/prcontinue.go
+index 1e90fe4d..6fcef0ac 100644
+--- a/internal/loomcli/prcontinue.go
++++ b/internal/loomcli/prcontinue.go
+@@ -1,6 +1,6 @@
+ // prcontinue.go implements the `pr-continue` loom verb: the PR-Review agent's flag that the operator is satisfied with the review and the run goes on.
+ // The verb only sets Continue in the run's pull-request record.
+-// The PR-Review row reads the flag, closes the pull request and ends the row, and Finalize then lands the run locally under its own gate and trailer.
++// The PR-Review row reads the flag, closes the pull request and ends the row, and Finalize then lands the run locally under its own gate and credit block.
+ 
+ package loomcli
+ 
+diff --git a/internal/summaryparser/description.go b/internal/summaryparser/description.go
+index 856ba34d..bb6edcd7 100644
+--- a/internal/summaryparser/description.go
++++ b/internal/summaryparser/description.go
+@@ -65,7 +65,7 @@ func ValidateDescription(path string) ([]Finding, error) {
+ 	}
+ 	for _, line := range strings.Split(s.Body, "\n") {
+ 		if strings.HasPrefix(strings.ToLower(strings.TrimSpace(line)), "co-authored-by:") {
+-			findings = append(findings, Finding{CheckCoAuthorTrail, "body contains a Co-Authored-By trailer; Go appends it at landing"})
++			findings = append(findings, Finding{CheckCoAuthorTrail, "body contains a Co-Authored-By trailer; the landing appends its own credit block"})
+ 			break
+ 		}
+ 	}
+diff --git a/internal/summaryparser/description_test.go b/internal/summaryparser/description_test.go
+index f4f4f977..db4f2765 100644
+--- a/internal/summaryparser/description_test.go
++++ b/internal/summaryparser/description_test.go
+@@ -75,21 +75,21 @@ func TestLandingMessage(t *testing.T) {
+ 	withBody := &summaryparser.Summary{Title: "T", Body: "\nbody\n"}
+ 	titleOnly := &summaryparser.Summary{Title: "T"}
+ 	tests := []struct {
+-		name     string
+-		summary  *summaryparser.Summary
+-		trailers string
+-		want     string
++		name    string
++		summary *summaryparser.Summary
++		credit  string
++		want    string
+ 	}{
+-		{"BodyAndTrailers", withBody, "Created using Loomyard\nCo-Authored-By: A <a@b>", "T\n\nbody\n\n\nCreated using Loomyard\nCo-Authored-By: A <a@b>"},
+-		{"BodyNoTrailers", withBody, "", "T\n\nbody\n"},
+-		{"TitleOnlyAndTrailers", titleOnly, "Co-Authored-By: A", "T\n\nCo-Authored-By: A"},
+-		{"TitleOnlyNoTrailers", titleOnly, "", "T"},
++		{"BodyAndCredit", withBody, "Created using Loomyard\nCo-Authored-By: A <a@b>", "T\n\nbody\n\n\nCreated using Loomyard\nCo-Authored-By: A <a@b>"},
++		{"BodyNoCredit", withBody, "", "T\n\nbody\n"},
++		{"TitleOnlyAndCredit", titleOnly, "Co-Authored-By: A", "T\n\nCo-Authored-By: A"},
++		{"TitleOnlyNoCredit", titleOnly, "", "T"},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			if got := tt.summary.LandingMessage(tt.trailers); got != tt.want {
+-				t.Errorf("LandingMessage(%q) = %q; want %q", tt.trailers, got, tt.want)
++			if got := tt.summary.LandingMessage(tt.credit); got != tt.want {
++				t.Errorf("LandingMessage(%q) = %q; want %q", tt.credit, got, tt.want)
+ 			}
+ 		})
+ 	}
+diff --git a/internal/summaryparser/summary.go b/internal/summaryparser/summary.go
+index 89998969..1d799528 100644
+--- a/internal/summaryparser/summary.go
++++ b/internal/summaryparser/summary.go
+@@ -84,12 +84,12 @@ func (s *Summary) CommitMessage() string {
+ 	return s.Title + "\n\n" + strings.TrimLeft(s.Body, " \t\r\n")
+ }
+ 
+-// LandingMessage composes the landing commit message: CommitMessage's title/blank/body, then a blank line and trailers verbatim when trailers is non-empty.
+-// An empty trailers yields CommitMessage alone.
++// LandingMessage composes the landing commit message: CommitMessage's title/blank/body, then a blank line and the credit block verbatim when credit is non-empty.
++// An empty credit yields CommitMessage alone.
+ // It never inspects the body for an existing trailer; the description gate guarantees there is none.
+-func (s *Summary) LandingMessage(trailers string) string {
+-	if trailers == "" {
++func (s *Summary) LandingMessage(credit string) string {
++	if credit == "" {
+ 		return s.CommitMessage()
+ 	}
+-	return s.CommitMessage() + "\n\n" + trailers
++	return s.CommitMessage() + "\n\n" + credit
+ }
+diff --git a/internal/testkit/envkit/envkit.go b/internal/testkit/envkit/envkit.go
+index ca86c0ac..855abeab 100644
+--- a/internal/testkit/envkit/envkit.go
++++ b/internal/testkit/envkit/envkit.go
+@@ -81,7 +81,7 @@ var nilLegal = map[string]bool{
+ 	"Landing.FailingTests":             true,
+ 	"Landing.TraceFailure":             true,
+ 	"Landing.Registry":                 true,
+-	"Landing.Config.EngineTrailers":    true,
++	"Landing.Config.CreditEngines":     true,
+ 	"WebsterDeps.Batcher":              true,
+ 	"WebsterDeps.Roles":                true,
+ 	"WebsterDeps.ParentBranch":         true,
