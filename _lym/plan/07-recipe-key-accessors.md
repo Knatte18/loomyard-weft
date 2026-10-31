@@ -1,13 +1,13 @@
 # Card 7 — recipe-key-accessors
 
 **Create:**
-- `plan:internal/loomrecipe#IsLoom` -> `func IsLoom(recipe string) (bool, error)`
-- `plan:internal/loomrecipe#ServedByLoom` -> `func ServedByLoom(recipe string) (bool, error)`
-- `plan:internal/loomrecipe#HasEngine` -> `func HasEngine(recipe, engine string) (bool, error)`
-- `plan:internal/loomrecipe#RecordEngine` -> `func RecordEngine(recipe string) (string, error)`
-- `plan:internal/loomrecipe#VerifySource` -> `func VerifySource(recipe string) (string, error)`
-- `plan:internal/loomrecipe#RetiredRows` -> `func RetiredRows(recipe string) map[string]string`
-- `plan:internal/loomrecipe#TestRecipeKeys` -> `func TestRecipeKeys(t *testing.T)`
+- `internal/loomrecipe#IsLoom`
+- `internal/loomrecipe#ServedByLoom`
+- `internal/loomrecipe#HasEngine`
+- `internal/loomrecipe#RecordEngine`
+- `internal/loomrecipe#VerifySource`
+- `internal/loomrecipe#RetiredRows`
+- `internal/loomrecipe#TestRecipeKeys`
 
 **Extends:**
 - `internal/loomrecipe/doc.go`

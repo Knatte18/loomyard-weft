@@ -27,7 +27,7 @@
 - `internal/loomrecipe#TestEntryNumbers`
 - `internal/loomcli#TestRenderChecklist`
 - `internal/battencli#intentionallyNil`
-- `plan:internal/loomrecipe#TestRecipeKeys`
+- `internal/loomrecipe#TestRecipeKeys`
 - `internal/reportengine#darnPhases`
 - `internal/reportengine/doc.go`
 - `internal/loomrecipe#New`

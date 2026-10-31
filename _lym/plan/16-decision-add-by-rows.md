@@ -21,8 +21,8 @@
 - `internal/loomcli#decisionWayDarnWriter`
 
 **Uses:**
-- `plan:internal/loomrecipe#HasEngine`
-- `plan:internal/loomrecipe#RecordEngine`
+- `internal/loomrecipe#HasEngine`
+- `internal/loomrecipe#RecordEngine`
 
 **Intent:** `lym loom decision add` keys its recipe-specific refusals on the recipe's rows (D3), and its refusals on a record Record-Write wrote name ways forward that can succeed now that no Darn-Write session writes the record (D4).
 

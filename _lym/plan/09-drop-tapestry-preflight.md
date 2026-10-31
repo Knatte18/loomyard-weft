@@ -23,7 +23,7 @@
 - `internal/loomshed/doc.go`
 - `internal/loomengine/status.go`
 - `internal/loomengine#TestVerifySeedOwnership`
-- `plan:internal/loomrecipe#RetiredRows`
+- `internal/loomrecipe#RetiredRows`
 - `internal/loomrecipe#wantProducerTable`
 - `internal/loomrecipe#TestRecipe_SeedAndResumeRowNamesExist`
 - `internal/loomrecipe#TestRecipe_StructuralCheckHasNoFindings`
@@ -32,7 +32,7 @@
 - `internal/loomrecipe#TestBounceRouting_EmptyTargetBlocksInstead`
 - `internal/loomrecipe#TestResume_CrashRecoveryRecallsUnconditionally`
 - `internal/loomrecipe#TestSequence_FullRunBlocksAtMergeIn`
-- `plan:internal/loomrecipe#TestRecipeKeys`
+- `internal/loomrecipe#TestRecipeKeys`
 - `internal/loomcli#loomCLI.wire`
 - `internal/loomcli#awaitRunLock`
 - `internal/loomcli#TestRenameRetiredRows`
@@ -81,7 +81,7 @@
 - `internal/testkit/envkit#TestNilSeams_ReportsExactPaths`
 - `internal/testkit/envkit#TestNilSeams_SkipsNilLegalPaths`
 - `internal/testkit/envkit#TestSeamMarkers_ReflectiveTestsAreMarked`
-- `plan:internal/loomrecipe#HasEngine`
+- `internal/loomrecipe#HasEngine`
 
 **Intent:** The Tapestry-Preflight row and its producer go, with its seed check, and its `batcher.yaml` load moves into Preflight for a recipe holding an `Implementer` row (D10).
 
