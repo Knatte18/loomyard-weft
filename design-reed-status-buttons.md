@@ -28,6 +28,7 @@ The button set must be highly and easily configurable, not a fixed list in code.
 
 The action buttons go on a row of their own, and the `follow` button leaves the row that holds the session names and joins the action buttons.
 Reed's status bar has two lines today: line 0 holds the window buttons (overview, agents, shell), line 1 the session buttons, `follow` and the time.
+Since the adopt check landed (2026-10-31), line 2 also renders the prime's adopt-check mark right-aligned before the clock, set by `Engine.SetCheckMark`; the action row must make room for it.
 So the action row is a third line, never mixed with the window buttons or the session names.
 The operator worried earlier (2026-10-15) that buttons next to others invite misclicks on actions that cannot be undone, such as `lym orch distill`, `lym orch refresh` and ending a run, so the destructive ones need `confirm-before`.
 

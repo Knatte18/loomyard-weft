@@ -4,7 +4,7 @@
 
 ## Idea (operator, 2026-10-22)
 
-A large task runs as a loom whose implementation is a set of darn runs inside its own beam:
+A large task runs as a tapestry whose implementation is a set of darn runs inside its own beam:
 
 1. Task A runs Discussion as today; Discussion stays the one agent that talks with the operator and decides scope.
 2. A pre-planner breaks the decided scope into smaller pieces that together make up the whole scope.
