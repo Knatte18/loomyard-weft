@@ -26,7 +26,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Pawl becomes a loom recipe, with a project decision record and no review rounds**<br>• Pawl joins the loom contract; a project record written at beam create and changed only through decision add | [`pawl-loom-recipe`](design-pawl-loom-recipe.md) | darn |  | 6m<br>0m | pawl, loom, board, workspaces |
+| T1 | `draft` **Pawl becomes a loom recipe, with a project decision record and no review rounds**<br>• Pawl joins the loom contract; a project record written at beam create and changed only through decision add | [`pawl-loom-recipe`](design-pawl-loom-recipe.md) | darn | T4 | 6m<br>0m | pawl, loom, board, workspaces |
 | T4 | `draft` **loom becomes the task-run contract that tapestry and darn fulfil**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | tapestry |  | 2w<br>6m | shed, loom, darn, landing, drift |
 
 ### Notes (36)
