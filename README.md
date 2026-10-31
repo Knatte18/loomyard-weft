@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **loom becomes the task-run contract that tapestry and darn fulfil**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | tapestry | Describe | neve | 2w<br>4h | shed, loom, darn, landing, drift |
+| T4 | **loom becomes the task-run contract that tapestry and darn fulfil**<br>• loom becomes the general driver of a Shed run, today's loom, darn and Hardener its variants, and lym loom stays as it is. | [`run-verbs-shared`](design-run-verbs-shared.md) | tapestry | PR-Review | neve | 2w<br>4h | shed, loom, darn, landing, drift |
 | T7 | **The orch resume pointer arrives twice after a compact cycle**<br>• hookDelivered compares the hook mark with the compaction boundary, which is stamped after the hook ran | [`resume-pointer-twice`](design-resume-pointer-twice.md) | darn | Darn-Write | neve | 13m<br>6m | orch |
 
 #### Ready (0)
@@ -78,7 +78,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 | H | **Trial the cuts that make a gate run link fewer new test binaries**<br>• Bench the report's cuts on Neve and OSL-1046 before any is made permanent | [`gate-fewer-binaries-trial`](design-gate-fewer-binaries-trial.md) | 8m<br>7m | gate, testkit |
+| R1 | H | **Trial the cuts that make a gate run link fewer new test binaries**<br>• Bench the report's cuts on Neve and OSL-1046 before any is made permanent | [`gate-fewer-binaries-trial`](design-gate-fewer-binaries-trial.md) | 9m<br>8m | gate, testkit |
 | R5 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 9d<br>4d | webster |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 9d<br>3d | loom, stencil |
 
