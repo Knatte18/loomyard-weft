@@ -27,6 +27,17 @@ Two steps, so that no search has to tell the family from the variant:
    The `lym loom ...` verbs stay as they are, since they become the general ones.
 2. Move the generic parts back under `loom`, as design work, once every remaining `loom` is a candidate for the family.
 
+## Discussion as a shared block (operator, 2026-10-31)
+
+Today the two variants keep the same decision record, in the same format and checked by the same parser, but make it differently:
+- loom's Discussion-Write writes it alone, and Discussion-Review's perch reviews it before Plan starts;
+- darn's one writer writes it first and then the code in the same session, and no perch reviews the record itself.
+
+Discussion becomes one block of the general run, the same rows, record and perch in every variant, which a variant turns on or off.
+`tapestry` always runs it.
+darn has it off by default and works as today; turned on, darn runs the same Discussion as `tapestry`, and its writer implements from the approved record.
+The record is then written and checked in one place.
+
 ## Open
 
 - Which packages, docs and stencils are the variant's and which are general; the rename program's inclusion and exclusion lists follow from it.
