@@ -49,6 +49,16 @@
 - `contracts/recipes/tapestry-recipe.yaml`
 - `contracts/specs/loom-status-spec.md`
 - `docs/overview.md`
+- `internal/reportengine/doc.go`
+- `internal/loomengine#VerifySeedOwnership`
+- `internal/loomrecipe#New`
+- `internal/loomcli#lockFree`
+- `pattern/PATTERN-cwd-resolution.md`
+- `internal/loomrecipe/doc.go`
+- `internal/loomrecipe#TestEntryNumbers`
+- `internal/battencli#TestOverviewRunCells`
+- `internal/battencli#TestDobbyRunCells_ReadsTheRunsFromDisk`
+- `internal/battencli#TestDobbyRunCells_ResolvesTheChildPairAgainInEachRunShedSpell`
 
 **Delete:**
 - `internal/loomshed/tapestrypreflight.go`
@@ -72,7 +82,6 @@
 - `internal/testkit/envkit#TestNilSeams_SkipsNilLegalPaths`
 - `internal/testkit/envkit#TestSeamMarkers_ReflectiveTestsAreMarked`
 - `plan:internal/loomrecipe#HasEngine`
-- `internal/reportengine/doc.go`
 
 **Intent:** The Tapestry-Preflight row and its producer go, with its seed check, and its `batcher.yaml` load moves into Preflight for a recipe holding an `Implementer` row (D10).
 
@@ -95,9 +104,10 @@ Tests:
 - `TestPreflight_BatcherCheck` (tier0) drives a producer over a temporary non-repository cwd: a failing seam is Stuck with the batchifier reason and its way forward; an error wrapping `batcher.ErrRetiredKey` ends with `, then re-step`; a nil seam and a passing one never yield that reason.
 - `TestResume_DoesNotRestartAtRowOne` and `TestBounceRouting_EmptyTargetBlocksInstead` drop their `shed1.Producers[1]` substitution, which stood in for Tapestry-Preflight and would now replace Discussion-Write. The D10 bound, a Preflight-current status with history past Preflight proceeding, needs no row of its own: after this card no row of the recipe reads that history, which `wantProducerTable` pins by holding no Tapestry-Preflight row.
 - `TestWire_DefaultConfig` asserts `env.PreflightBatcher` is set on a tapestry seed, and `TestWire_DarnRecipe` that it is nil on a darn seed, so a broken `batcher.yaml` fails Preflight on tapestry and not on darn.
-- `TestPreflight_BatcherCheck` also holds a row with a cancelled context and a failing seam, which returns the cancellation error rather than Stuck, and asserts the failing row logs the row's name and the batcher error text, as Tapestry-Preflight logged it; it captures the process-global logger, so it does not call `t.Parallel`.
+- `TestPreflight_BatcherCheck` also holds a row whose seam cancels the context and then returns an error, so the call passes the entry check and reaches the cancel check after the batcher seam; it asserts the returned error is the cancellation error and the outcome is not Stuck. The test also asserts the failing row logs the row's name and the batcher error text, as Tapestry-Preflight logged it; it captures the process-global logger, so it does not call `t.Parallel`.
 - `TestRenameRetiredRows` gains a row renaming a status parked on `Tapestry-Preflight` to `Preflight`; `TestRecipeKeys`' tapestry `RetiredRows` row adds it.
-- The table and literal fixtures that name the row or its producer drop it (`wantProducerTable`, the shedrecipe entry tables and `TestNames`, the loomrecipe tests listed, `TestCancellation_RealProducersReturnErrorNotStuck`, `TestComputeTiming`, `TestObserveEntry_GotoIsNotACrashResume`, `TestResume_CrashRecoveryRecallsUnconditionally`'s doc, `TestSequence_FullRunBlocksAtMergeIn`'s fixture, rewritten onto Preflight then Discussion-Write, and `TestVerifySeedOwnership`'s comment); `awaitRunLock`'s, `waitForCurrentProducer`'s and the webster producer's comments drop the row. `internal/shedrun/doc.go` stops naming `CheckSeed`, `internal/hubreconcile/doc.go` names Preflight's batcher load as the retired-key backstop, and `shed-recipe-spec.md` drops the row. `tools/tapestryrename` keeps the old names, since it records a rename already made.
+- The table and literal fixtures that name the row or its producer drop it (`wantProducerTable`, the shedrecipe entry tables and `TestNames`, the loomrecipe tests listed, `TestCancellation_RealProducersReturnErrorNotStuck`, `TestComputeTiming`, `TestObserveEntry_GotoIsNotACrashResume`, `TestResume_CrashRecoveryRecallsUnconditionally`'s doc, `TestSequence_FullRunBlocksAtMergeIn`'s fixture, rewritten onto Preflight then Discussion-Write, and `TestVerifySeedOwnership`'s comment); `awaitRunLock`'s, `waitForCurrentProducer`'s and the webster producer's comments drop the row. `internal/shedrun/doc.go` stops naming `CheckSeed`; `VerifySeedOwnership`'s doc drops its `CheckSeed` and Tapestry-Preflight comparisons and keeps what the function answers; `New`'s doc in `internal/loomrecipe` drops `tapestryPreflightEntry` and the Tapestry-Preflight hazard, stating the status-path check as keeping `env`'s copy equal to Shed's paths; `internal/loomrecipe/doc.go`'s retired-row sentence maps `Loom-Preflight` and `Tapestry-Preflight` onto `Preflight`; `lockFree`'s comment drops the row, and so does the file comment of `TestTapestryPreflight_StuckSurfacesItsFailures`' file, which that deletion leaves; `internal/reportengine/doc.go`'s tapestry setup sentence drops Tapestry-Preflight; `pattern/PATTERN-cwd-resolution.md` lists two tiers, `lymcwd.Resolve` then `preflight.Check`, and says an orchestrator needs tier 2; `internal/hubreconcile/doc.go` names Preflight's batcher load as the retired-key backstop, and `shed-recipe-spec.md` drops the row. `tools/tapestryrename` keeps the old names, since it records a rename already made.
+- With Tapestry-Preflight gone every tapestry entry number after Preflight drops by one, so `TestEntryNumbers`' tapestry map renumbers (Discussion-Write 2 through Friction-Reflect 15), and the battencli stage cells built from those numbers follow: `TestOverviewRunCells`, `TestDobbyRunCells_ReadsTheRunsFromDisk` and `TestDobbyRunCells_ResolvesTheChildPairAgainInEachRunShedSpell` expect `6.5 Plan-Write` in place of `6.6 Plan-Write`, and `TestOverviewRunCells` expects `6.6 Plan-Burler-Review` in place of `6.7 Plan-Burler-Review`.
 `loom-status-spec.md` drops the Tapestry-Preflight row and CheckSeed's verdicts; `docs/overview.md`'s tapestry row list drops it.
 
 **ImpactSummary:** One row, its producer and the seed check go; Preflight gains an optional batcher seam the wiring fills for Implementer recipes, and fixtures naming the row lose it.
