@@ -1,0 +1,1797 @@
+diff --git a/internal/battencli/cli.go b/internal/battencli/cli.go
+index 882f952b..149ce240 100644
+--- a/internal/battencli/cli.go
++++ b/internal/battencli/cli.go
+@@ -22,9 +22,10 @@
+ // "lym batten overview" (overview.go) is the hidden pane verb `lym beam start` runs in the runs strand of the prime and of each beam, whose window reed names `beam: prime` or `beam: <slug>`.
+ // It draws the window's dobby section, then a blank line and its orch section; each run shows once, in the dobby section.
+ // The dobby section is the lines of the dobby of the worktree the pane runs in (overviewdobby.go), rendered by `DobbyLines` from the `dobbyengine.View` a `DobbyViewReader` reads:
+-// a header saying whether the dobby is alive, with its `max_runs`, or not running with `lym beam start` as the way forward;
++// a header saying whether the dobby is alive, with its `max_runs` and `land_notice`, or not running with `lym beam start` as the way forward;
+ // one line per run it drives that is not done, in slug order, with the run's cells `DobbyRunCells` reads, then the pass cell: a pass in flight while the driver lock is held, else the minutes since the last pass exited, then a full pass owed, an owner elsewhere and a failing count from the dobby's state record;
+ // and one line per released task it has not started, `ready to start`, with the last refused start's text when one is recorded, or `waits on` each of open dependencies, another machine's ownership, a pause, a start batten refuses with its text, a refused start with its text and the minutes to its retry, and `max_runs`.
++// A run or task whose board entry asks for a landing notice ends its line with `notify_on_land`.
+ // A dobby view that does not read shows `dobby <label>: unreadable`.
+ // A run's cells are batten's state, the stage and the time in that stage.
+ // A run with a seed and no status shows as `starting`; the stage is the task worktree's current producer while batten is in Run-Shed and that status is found, and batten's own producer otherwise.
+diff --git a/internal/battencli/dobbyreading_test.go b/internal/battencli/dobbyreading_test.go
+index 4652bcd2..ea742fa1 100644
+--- a/internal/battencli/dobbyreading_test.go
++++ b/internal/battencli/dobbyreading_test.go
+@@ -83,11 +83,11 @@ func writeDobbyState(pid int, sleeps ...pauserecord.Interval) func(t *testing.T,
+ 	}
+ }
+ 
+-func TestDobbyTasks_ReadsDependenciesAndParentOfAReleasedTask(t *testing.T) {
++func TestDobbyTasks_ReadsDependenciesParentAndNotifyOnLand(t *testing.T) {
+ 	t.Parallel()
+ 	boardDir := t.TempDir()
+ 	entries := strings.Join([]string{
+-		`{"id":0,"slug":"released","title":"R","kind":"task","labels":["bug"],"depends_on":["open-dep","done-dep","pruned-dep"]}`,
++		`{"id":0,"slug":"released","title":"R","kind":"task","labels":["bug"],"depends_on":["open-dep","done-dep","pruned-dep"],"notify_on_land":true}`,
+ 		`{"id":1,"slug":"open-dep","title":"O","kind":"task","labels":["bug"],"status":"draft"}`,
+ 		`{"id":2,"slug":"done-dep","title":"D","kind":"task","labels":["bug"],"status":"done"}`,
+ 	}, ",")
+@@ -114,6 +114,9 @@ func TestDobbyTasks_ReadsDependenciesAndParentOfAReleasedTask(t *testing.T) {
+ 	if released.Parent != "beam-a" {
+ 		t.Errorf("DobbyTasks() released Parent = %q; want %q", released.Parent, "beam-a")
+ 	}
++	if !released.NotifyOnLand || bySlug["open-dep"].NotifyOnLand {
++		t.Errorf("DobbyTasks() NotifyOnLand = %v, %v; want true for the entry carrying it and false for the other", released.NotifyOnLand, bySlug["open-dep"].NotifyOnLand)
++	}
+ 	if draft := bySlug["open-dep"]; draft.Parent != "" {
+ 		t.Errorf("DobbyTasks() draft Parent = %q; want none read for a task with a status", draft.Parent)
+ 	}
+diff --git a/internal/battencli/dobbyreads.go b/internal/battencli/dobbyreads.go
+index ad653644..5936418d 100644
+--- a/internal/battencli/dobbyreads.go
++++ b/internal/battencli/dobbyreads.go
+@@ -122,6 +122,7 @@ func readDobbyRunStatus(path string) (shedengine.Status, bool, error) {
+ }
+ 
+ // DobbyRuns builds the RunView of every batten run whose parent worktree is geom's, with the pause coverage read from the record at pauseRecord.
++// A run's place against its Land row is battenrecipe.LandOutcomeOf's, and a landed run carries the landing commit its landing recorded, empty when none is readable.
+ // A run's slot reading comes from its board entry on the local board at geom.BoardDir, which runTakesNoSlot judges.
+ func DobbyRuns(prime *lymcwd.Location, geom dobbyengine.Geometry, parents *DobbyParents, pauseRecord string) ([]dobbyengine.RunView, error) {
+ 	runs, err := dobbyParentRuns(prime, geom, parents)
+@@ -151,6 +152,8 @@ func DobbyRuns(prime *lymcwd.Location, geom dobbyengine.Geometry, parents *Dobby
+ 			Covered:  record.CoverageOf(slug, now).Covered,
+ 			NoSlot:   runTakesNoSlot(entryOf[slug]),
+ 		}
++		outcome := battenrecipe.LandOutcomeOf(run.status)
++		view.PastLand, view.Landed = outcome != battenrecipe.LandOutcomeAhead, outcome == battenrecipe.LandOutcomeLanded
+ 		pair, err := lymcwd.NamedWorktree(prime.HubPath, slug)
+ 		if err != nil {
+ 			return nil, fmt.Errorf("locate the pair %s: %w", slug, err)
+@@ -164,6 +167,18 @@ func DobbyRuns(prime *lymcwd.Location, geom dobbyengine.Geometry, parents *Dobby
+ 			func() (err error) { view.CancelMarker, err = markerExists(shedrun.CancelMarker(prime, slug)); return },
+ 			func() (err error) { view.OriginOwed, err = markerExists(shedrun.OriginOwedMarker(prime, slug)); return },
+ 			func() (err error) { view.DriverLockHeld, err = lockHeld(shedrun.DriverLock(prime, slug)); return },
++			func() error {
++				if !view.Landed {
++					return nil
++				}
++				commit, err := shedrun.ReadLandedCommit(prime, slug)
++				if err != nil {
++					logger.Warn("battencli: a landed run's landing commit is unreadable and stays unknown", "slug", slug, "error", err)
++					return nil
++				}
++				view.LandingCommit = commit
++				return nil
++			},
+ 		}
+ 		for _, read := range reads {
+ 			if err := read(); err != nil {
+@@ -250,7 +265,7 @@ func DobbyTasks(prime *lymcwd.Location, boardDir string, parents *DobbyParents)
+ 	}
+ 	views := make([]dobbyengine.TaskView, 0, len(tasks))
+ 	for _, task := range tasks {
+-		view := dobbyengine.TaskView{Slug: task.Slug, Kind: task.Kind, Status: task.Status}
++		view := dobbyengine.TaskView{Slug: task.Slug, Kind: task.Kind, Status: task.Status, NotifyOnLand: task.NotifyOnLand}
+ 		for _, dep := range task.DependsOn {
+ 			if status, present := statusOf[dep]; present && (status == nil || *status != "done") {
+ 				view.PendingDependencies = append(view.PendingDependencies, dep)
+diff --git a/internal/battencli/overview.go b/internal/battencli/overview.go
+index 3362062f..100a88b8 100644
+--- a/internal/battencli/overview.go
++++ b/internal/battencli/overview.go
+@@ -482,9 +482,10 @@ func (c *battenCLI) overviewCmd() *cobra.Command {
+ 		Hidden:      true,
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceInternal},
+ 		Long: `overview draws the window of the worktree it runs in, the prime or a beam.
+-First comes the worktree's dobby: whether it is alive and its max_runs, each run
+-it drives with its state, stage, time in the stage and last pass, and each
+-released task it has not started with what the task waits on. Below it comes one
++First comes the worktree's dobby: whether it is alive, its max_runs and its
++land_notice, each run it drives with its state, stage, time in the stage and
++last pass, and each released task it has not started with what the task waits
++on; a run or task that asks for a landing notice shows notify_on_land. Below it comes one
+ orch line per orch -- the session's context reading against the soft and hard
+ thresholds, its cycle phase and cycle count -- for the worktree's own orch and
+ the orch of every beam below it; the prime's window shows every orch. It redraws
+diff --git a/internal/battencli/overviewdobby.go b/internal/battencli/overviewdobby.go
+index 688d98be..bf4240d5 100644
+--- a/internal/battencli/overviewdobby.go
++++ b/internal/battencli/overviewdobby.go
+@@ -17,16 +17,19 @@ const (
+ 	dobbyIndent = "  "
+ 	// dobbyNoRuns is the line of a dobby that drives no run.
+ 	dobbyNoRuns = "no runs driven"
++	// dobbyNotifyOnLand ends the line of a run or task whose board entry asks for a landing notice.
++	dobbyNotifyOnLand = "notify_on_land"
+ 	// dobbyUnreadableFormat is the one line of a dobby whose view does not read, filled with its label.
+ 	dobbyUnreadableFormat = "dobby %s: unreadable"
+ )
+ 
+ // DobbyLines renders view, the View of the dobby label names, as lines at now:
+-// a header saying whether the dobby lives and its max_runs, one line per run it drives with its cells from runCells and its last pass, and one line per released task it has not started with everything that holds the task back.
++// a header saying whether the dobby lives with its max_runs and land_notice, one line per run it drives with its cells from runCells and its last pass, and one line per released task it has not started with everything that holds the task back;
++// a run or task whose board entry asks for a landing notice ends its line with notify_on_land.
+ // A run whose cells are unreadable draws `status unreadable` in their place and takes no part in their column widths.
+ // Every time still growing renders in whole minutes, so the lines change at most once a minute.
+ func DobbyLines(label string, view dobbyengine.View, runCells map[string]RunCells, now time.Time) []string {
+-	header := fmt.Sprintf("dobby %s: alive, max_runs %d", label, view.MaxRuns)
++	header := fmt.Sprintf("dobby %s: alive, max_runs %d, land_notice %s", label, view.MaxRuns, view.LandNotice)
+ 	if !view.Alive {
+ 		header = fmt.Sprintf("dobby %s: not running; way forward: lym beam start", label)
+ 	}
+@@ -65,7 +68,11 @@ func DobbyLines(label string, view dobbyengine.View, runCells map[string]RunCell
+ 		lines = append(lines, dobbyIndent+strings.Join(drawn, overviewColumnGap))
+ 	}
+ 	for _, task := range view.Waiting {
+-		lines = append(lines, dobbyIndent+padRight(task.Slug, slugWidth)+overviewColumnGap+dobbyTaskWait(task, view.MaxRuns, now))
++		wait := dobbyTaskWait(task, view.MaxRuns, now)
++		if task.NotifyOnLand {
++			wait += ", " + dobbyNotifyOnLand
++		}
++		lines = append(lines, dobbyIndent+padRight(task.Slug, slugWidth)+overviewColumnGap+wait)
+ 	}
+ 	return lines
+ }
+@@ -99,6 +106,9 @@ func dobbyRunPass(run dobbyengine.ViewRun, now time.Time) string {
+ 	if run.FailingPassCount > 0 {
+ 		notes = append(notes, fmt.Sprintf("failing %d× in a row: %s", run.FailingPassCount, firstLine(run.FailingPassError)))
+ 	}
++	if run.NotifyOnLand {
++		notes = append(notes, dobbyNotifyOnLand)
++	}
+ 	return strings.Join(notes, ", ")
+ }
+ 
+diff --git a/internal/battencli/overviewdobby_test.go b/internal/battencli/overviewdobby_test.go
+index a7e1ce57..13d93216 100644
+--- a/internal/battencli/overviewdobby_test.go
++++ b/internal/battencli/overviewdobby_test.go
+@@ -31,13 +31,13 @@ func TestDobbyLines(t *testing.T) {
+ 		{
+ 			name: "AnAliveDobbyShowsItsRunsWithTheirCellsAndWhyEachTaskWaits",
+ 			view: dobbyengine.View{
+-				Alive: true, MaxRuns: 2,
++				Alive: true, MaxRuns: 2, LandNotice: dobbyengine.LandNoticePerTask,
+ 				Runs: []dobbyengine.ViewRun{
+-					{Slug: "flying", PassInFlight: true},
++					{Slug: "flying", PassInFlight: true, NotifyOnLand: true},
+ 					{Slug: "failing", LastPassExit: minutesAgo(12), FullPassOwed: true, FailingPassCount: 2, FailingPassError: "pre-run refused\nmore detail"},
+ 				},
+ 				Waiting: []dobbyengine.WaitingTask{
+-					{Slug: "ready"},
++					{Slug: "ready", NotifyOnLand: true},
+ 					{Slug: "deps", Dependencies: []string{"x", "y"}, Paused: true},
+ 					{Slug: "refused", Refusal: "dirty source", NextTry: overviewNow.Add(4 * time.Minute)},
+ 					{Slug: "owned", OwnedElsewhere: true},
+@@ -51,10 +51,10 @@ func TestDobbyLines(t *testing.T) {
+ 				"failing": {State: "blocked", Stage: "7. Land", InStage: "1h12m"},
+ 			},
+ 			want: []string{
+-				"dobby prime: alive, max_runs 2",
+-				"  flying   running  6.6 Plan-Write  30m    pass in flight",
++				"dobby prime: alive, max_runs 2, land_notice per-task",
++				"  flying   running  6.6 Plan-Write  30m    pass in flight, notify_on_land",
+ 				"  failing  blocked  7. Land         1h12m  last pass 12m ago, full pass owed, failing 2× in a row: pre-run refused",
+-				"  ready    ready to start",
++				"  ready    ready to start, notify_on_land",
+ 				"  deps     waits on dependencies x, y; a pause",
+ 				"  refused  waits on a refused start (dirty source), retry in 4m",
+ 				"  owned    waits on another machine's ownership",
+@@ -74,21 +74,21 @@ func TestDobbyLines(t *testing.T) {
+ 		},
+ 		{
+ 			name: "AnUnreadableRunTakesNoPartInTheColumnWidths",
+-			view: dobbyengine.View{Alive: true, MaxRuns: 3, Runs: []dobbyengine.ViewRun{{Slug: "broken"}, {Slug: "ok"}}},
++			view: dobbyengine.View{Alive: true, MaxRuns: 3, LandNotice: dobbyengine.LandNoticeAll, Runs: []dobbyengine.ViewRun{{Slug: "broken"}, {Slug: "ok"}}},
+ 			cells: map[string]RunCells{
+ 				"broken": {Unreadable: true},
+ 				"ok":     {State: "running", Stage: "Plan", InStage: "5m"},
+ 			},
+ 			want: []string{
+-				"dobby prime: alive, max_runs 3",
++				"dobby prime: alive, max_runs 3, land_notice all",
+ 				"  broken  status unreadable  no pass yet",
+ 				"  ok      running  Plan  5m  no pass yet",
+ 			},
+ 		},
+ 		{
+ 			name: "NoRunsSaysSo",
+-			view: dobbyengine.View{Alive: true, MaxRuns: 3},
+-			want: []string{"dobby prime: alive, max_runs 3", "  no runs driven"},
++			view: dobbyengine.View{Alive: true, MaxRuns: 3, LandNotice: dobbyengine.LandNoticeOff},
++			want: []string{"dobby prime: alive, max_runs 3, land_notice off", "  no runs driven"},
+ 		},
+ 	}
+ 	for _, tt := range tests {
+diff --git a/internal/battenrecipe/doc.go b/internal/battenrecipe/doc.go
+index e83d1ec3..f66875ca 100644
+--- a/internal/battenrecipe/doc.go
++++ b/internal/battenrecipe/doc.go
+@@ -1,6 +1,9 @@
+ // Package battenrecipe owns the batten recipe's construction: parsing
+ // contracts/recipes.BattenRecipe and assembling it into a *shedengine.Shed against a
+-// caller-supplied shedrecipe.Env. internal/battencli is its only production caller.
++// caller-supplied shedrecipe.Env. internal/battencli is its only production caller of New.
++//
++// It also holds the one test of where a batten run stands against its Land row: PastLand, past the row or not, and LandOutcomeOf, which tells a run that landed from one that ended without landing.
++// The hibernate request and dobby both read a run past Land through them.
+ //
+ // It takes every absolute path from its caller and has no direct production import of internal/lymcwd, per PATTERN-cwd-resolution.
+ //
+diff --git a/internal/battenrecipe/land.go b/internal/battenrecipe/land.go
+new file mode 100644
+index 00000000..0809b60d
+--- /dev/null
++++ b/internal/battenrecipe/land.go
+@@ -0,0 +1,40 @@
++// land.go is the one test of where a batten run stands against its Land row: past it or not, and when past it, whether it landed.
++
++package battenrecipe
++
++import (
++	"slices"
++
++	"github.com/Knatte18/loomyard/internal/shedengine"
++)
++
++// LandOutcome is how a batten run stands against its Land row.
++type LandOutcome string
++
++// The outcomes LandOutcomeOf reports.
++const (
++	// LandOutcomeAhead is a run not yet past its Land row.
++	LandOutcomeAhead LandOutcome = ""
++	// LandOutcomeLanded is a run past its Land row whose history holds a Land Done.
++	LandOutcomeLanded LandOutcome = "landed"
++	// LandOutcomeUnlanded is a run past its Land row whose history holds no Land Done, as a goto onto the teardown row leaves it.
++	LandOutcomeUnlanded LandOutcome = "ended without landing"
++)
++
++// PastLand reports whether a batten run whose status reads state at producer is past its Land row: done, or at the one row after Land in any state.
++func PastLand(state shedengine.State, producer string) bool {
++	return state == shedengine.StateDone || producer == NameWorktreeTeardown
++}
++
++// LandOutcomeOf reports how the batten run whose status is status stands against its Land row.
++func LandOutcomeOf(status shedengine.Status) LandOutcome {
++	if !PastLand(status.State, status.CurrentProducer) {
++		return LandOutcomeAhead
++	}
++	if slices.ContainsFunc(status.History, func(entry shedengine.HistoryEntry) bool {
++		return entry.Producer == NameLand && entry.Outcome == shedengine.Done
++	}) {
++		return LandOutcomeLanded
++	}
++	return LandOutcomeUnlanded
++}
+diff --git a/internal/battenrecipe/land_test.go b/internal/battenrecipe/land_test.go
+new file mode 100644
+index 00000000..49f573bd
+--- /dev/null
++++ b/internal/battenrecipe/land_test.go
+@@ -0,0 +1,49 @@
++//go:build tier0
++
++// land_test.go pins the past-Land test and the outcome it tells apart.
++
++package battenrecipe_test
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/battenrecipe"
++	"github.com/Knatte18/loomyard/internal/shedengine"
++)
++
++func TestLandOutcomeOf(t *testing.T) {
++	t.Parallel()
++	landDone := []shedengine.HistoryEntry{
++		{Producer: battenrecipe.NameRunShed, Outcome: shedengine.Done},
++		{Producer: battenrecipe.NameLand, Outcome: shedengine.Done},
++	}
++	landStuck := []shedengine.HistoryEntry{
++		{Producer: battenrecipe.NameRunShed, Outcome: shedengine.Done},
++		{Producer: battenrecipe.NameLand, Outcome: shedengine.Stuck},
++	}
++	tests := []struct {
++		name     string
++		status   shedengine.Status
++		wantPast bool
++		want     battenrecipe.LandOutcome
++	}{
++		{"RunningAtRunShed", shedengine.Status{State: shedengine.StateRunning, CurrentProducer: battenrecipe.NameRunShed}, false, battenrecipe.LandOutcomeAhead},
++		{"BlockedAtLand", shedengine.Status{State: shedengine.StateBlocked, CurrentProducer: battenrecipe.NameLand, History: landStuck}, false, battenrecipe.LandOutcomeAhead},
++		{"RunningAtTeardownAfterLand", shedengine.Status{State: shedengine.StateRunning, CurrentProducer: battenrecipe.NameWorktreeTeardown, History: landDone}, true, battenrecipe.LandOutcomeLanded},
++		{"BlockedAtTeardownAfterLand", shedengine.Status{State: shedengine.StateBlocked, CurrentProducer: battenrecipe.NameWorktreeTeardown, History: landDone}, true, battenrecipe.LandOutcomeLanded},
++		{"DoneAfterLand", shedengine.Status{State: shedengine.StateDone, CurrentProducer: battenrecipe.NameWorktreeTeardown, History: landDone}, true, battenrecipe.LandOutcomeLanded},
++		{"DoneWithoutLandDone", shedengine.Status{State: shedengine.StateDone, CurrentProducer: battenrecipe.NameWorktreeTeardown, History: landStuck}, true, battenrecipe.LandOutcomeUnlanded},
++		{"DoneAtLandWithNoHistory", shedengine.Status{State: shedengine.StateDone, CurrentProducer: battenrecipe.NameLand}, true, battenrecipe.LandOutcomeUnlanded},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := battenrecipe.PastLand(tt.status.State, tt.status.CurrentProducer); got != tt.wantPast {
++				t.Errorf("PastLand(%q, %q) = %v; want %v", tt.status.State, tt.status.CurrentProducer, got, tt.wantPast)
++			}
++			if got := battenrecipe.LandOutcomeOf(tt.status); got != tt.want {
++				t.Errorf("LandOutcomeOf() = %q; want %q", got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/beamcli/cli.go b/internal/beamcli/cli.go
+index 254a1649..beef3b05 100644
+--- a/internal/beamcli/cli.go
++++ b/internal/beamcli/cli.go
+@@ -68,8 +68,8 @@ func statusCmd() *cobra.Command {
+ 		Short:       "show the dobby and the orch of the prime and of every local beam",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `Prints, once, what a beam's window draws for a dobby, for the hub's prime and
+-for every local beam: whether the dobby is alive and its max_runs, each run it
+-drives with its state, stage, time in the stage and last pass, and each released task it has not
++for every local beam: whether the dobby is alive with its max_runs and
++land_notice, each run it drives with its state, stage, time in the stage and last pass, and each released task it has not
+ started with what the task waits on -- open dependencies, another machine's
+ ownership, a pause, a start batten refuses, a refused start and its retry, or max_runs.
+ A ready task shows its last refused start when one is recorded. Each entry
+diff --git a/internal/beamcli/dobbydeps.go b/internal/beamcli/dobbydeps.go
+index bdccb1c9..8cdbc394 100644
+--- a/internal/beamcli/dobbydeps.go
++++ b/internal/beamcli/dobbydeps.go
+@@ -158,6 +158,13 @@ func hubDobbyDeps(prime *lymcwd.Location, geom dobbyengine.Geometry) (dobbyengin
+ 			return coverage.Covered, err
+ 		},
+ 		RunNotices: battencli.DobbyRunNotices(prime, pause.RecordPath, quiet),
++		ClearNotifyOnLand: func(slug string) error {
++			board, err := boardengine.OpenHub(prime.HubPath)
++			if err != nil {
++				return err
++			}
++			return board.ClearNotifyOnLand(slug)
++		},
+ 		Landings: machineLandings(machinename.Name, func(machine string) ([]string, error) {
+ 			return battencli.DobbyLandings(prime, geom, parents, machine)
+ 		}),
+diff --git a/internal/beamcli/dobbydeps_integration_test.go b/internal/beamcli/dobbydeps_integration_test.go
+index 0a397413..be8d50da 100644
+--- a/internal/beamcli/dobbydeps_integration_test.go
++++ b/internal/beamcli/dobbydeps_integration_test.go
+@@ -203,3 +203,30 @@ func TestHubLandDeps_MarkReadyCommitsAnUncommittedFlaggedRecord(t *testing.T) {
+ 		t.Errorf("ready record = %+v, %v, %v; want the original, not rewritten", record, found, err)
+ 	}
+ }
++
++func TestHubDobbyDeps_ClearNotifyOnLandClearsTheHubBoardEntry(t *testing.T) {
++	t.Parallel()
++
++	h, deps := landingHub(t)
++	cfg, err := boardengine.LoadConfig(configengine.Dirs{Board: h.BoardDir()}, "board")
++	if err != nil {
++		t.Fatalf("load board config: %v", err)
++	}
++	cfg.Path = h.BoardDir()
++	board := boardengine.New(cfg)
++	if _, err := board.UpsertTask(map[string]any{"slug": "b", "notify_on_land": true}); err != nil {
++		t.Fatalf("set notify_on_land on b: %v", err)
++	}
++
++	if err := deps.ClearNotifyOnLand("b"); err != nil {
++		t.Fatalf("ClearNotifyOnLand(b) = %v; want nil", err)
++	}
++
++	task, found, err := board.GetTask("b")
++	if err != nil || !found {
++		t.Fatalf("GetTask(b) = found %v, err %v; want found", found, err)
++	}
++	if task.NotifyOnLand {
++		t.Errorf("b.NotifyOnLand = true; want it cleared")
++	}
++}
+diff --git a/internal/beamcli/dobbypairanchor_test.go b/internal/beamcli/dobbypairanchor_test.go
+index f52a52d0..6fa3b5b4 100644
+--- a/internal/beamcli/dobbypairanchor_test.go
++++ b/internal/beamcli/dobbypairanchor_test.go
+@@ -1,6 +1,6 @@
+ //go:build tier1
+ 
+-// dobbypairanchor_test.go pins that dobby's two pair-reading callers place a task pair at the pair's own anchor, over a hubforge hub.
++// dobbypairanchor_test.go pins that dobby's two pair-reading callers place a task pair at the pair's own anchor, and what DobbyRuns reads of a run's place against its Land row, over a hubforge hub.
+ 
+ package beamcli
+ 
+@@ -148,3 +148,48 @@ func TestDobbyLandings_CountsOnlyThisMachine(t *testing.T) {
+ 		t.Errorf("DobbyLandings(m1) = %v, %v; want [here], nil", got, err)
+ 	}
+ }
++
++func TestDobbyRuns_ReadsTheLandOutcomeAndTheLandingCommit(t *testing.T) {
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	prime := h.Location
++	statuses := map[string]string{
++		"ahead":      `{"state":"running","current_producer":"Run-Shed"}`,
++		"landed":     `{"state":"done","current_producer":"Worktree-Teardown","history":[{"producer":"Land","outcome":"done","output":"","at":"2026-10-31T10:00:00Z"}]}`,
++		"unlanded":   `{"state":"done","current_producer":"Worktree-Teardown"}`,
++		"unreadable": `{"state":"done","current_producer":"Worktree-Teardown","history":[{"producer":"Land","outcome":"done","output":"","at":"2026-10-31T10:00:00Z"}]}`,
++	}
++	for slug, status := range statuses {
++		hubforge.AddPair(t, h, slug)
++		seedBattenRun(t, prime, slug)
++		if err := os.WriteFile(shedrun.StatusFile(prime, slug), []byte(status), 0o644); err != nil {
++			t.Fatalf("write the status of %s: %v", slug, err)
++		}
++	}
++	if err := shedrun.WriteLandedCommit(prime, "landed", "abc123"); err != nil {
++		t.Fatalf("WriteLandedCommit() = %v; want nil", err)
++	}
++
++	// A directory where the landed-commit file belongs makes the read fail for a reason other than a missing file.
++	if err := os.MkdirAll(shedrun.LandedCommitFile(prime, "unreadable"), 0o755); err != nil {
++		t.Fatalf("make the landed-commit path a directory: %v", err)
++	}
++
++	views, err := battencli.DobbyRuns(prime, dobbyengine.Geometry{}, battencli.NewDobbyParents(prime), filepath.Join(t.TempDir(), "pause.json"))
++	if err != nil {
++		t.Fatalf("DobbyRuns() = _, %v; want nil", err)
++	}
++	type landing struct {
++		pastLand, landed bool
++		commit           string
++	}
++	got := map[string]landing{}
++	for _, view := range views {
++		got[view.Slug] = landing{view.PastLand, view.Landed, view.LandingCommit}
++	}
++	want := map[string]landing{"ahead": {}, "landed": {true, true, "abc123"}, "unlanded": {pastLand: true}, "unreadable": {pastLand: true, landed: true}}
++	if !reflect.DeepEqual(got, want) {
++		t.Errorf("DobbyRuns() land readings = %+v; want %+v", got, want)
++	}
++}
+diff --git a/internal/beamcli/doc.go b/internal/beamcli/doc.go
+index dd1d6e4a..660094e3 100644
+--- a/internal/beamcli/doc.go
++++ b/internal/beamcli/doc.go
+@@ -130,6 +130,7 @@
+ // `hubDobbyDeps` fills every seam of the engine from told paths, the dobby's working directory being the hub root and never a worktree:
+ //   - the local batten status files of the prime and the board's tasks through `battencli.DobbyRuns`, `battencli.DobbyLandings`, which reads the landings of this machine's name only, and `battencli.DobbyTasks`, which a beam's window reads too, and each run's parent through `hubgeom.ParentOf`;
+ //   - `battencli.DobbyRuns` also marks each run `NoSlot` through the run's board entry, so a pawl run without its landing hold takes no slot under `max_runs`;
++//   - `battencli.DobbyRuns` also reads each run's place against its Land row through `battenrecipe.LandOutcomeOf`, with the landing commit through `shedrun.ReadLandedCommit`, and `ClearNotifyOnLand` clears a landed entry's request through `boardengine`;
+ //   - the landing step of a beam's dobby: `CanLand` through `beamLandReading`, where the beam's ready record says whether it is flagged ready, `battencli.ReadBeamLandBlockers` whether nothing works under it, and the parent through `hubgeom.ParentOf` with `Owners.Effective` and `Owners.AdoptSubject` says which other machine owns it and what `lym adopt` takes, and `Land`, the `land` sequence of `lym beam land` itself; the prime's dobby is given neither;
+ //   - the board and the owners through `boardengine`, and the pause record through `pauserecord`;
+ //   - the file watch through `internal/fswatch`, one watcher per directory merged into the loop's one channel;
+diff --git a/internal/boardcli/cli.go b/internal/boardcli/cli.go
+index 8cead232..b3dd906f 100644
+--- a/internal/boardcli/cli.go
++++ b/internal/boardcli/cli.go
+@@ -476,7 +476,7 @@ func storeVerbs(board func() *boardengine.Board, profiles func() (runprofile.Pro
+ 	// upsert subcommand: create or update a single task.
+ 	var bodyFile string
+ 	upsertCmd := &cobra.Command{
+-		Use:         "upsert {slug, title?, brief?, body?, depends_on?, isolated?, status?, kind?, labels?, recipe?, priority?, short_name?, issues?, created?, revised?, run_settings?, profile?, pull_request?, owner_machine?, project?, order?, beam?}",
++		Use:         "upsert {slug, title?, brief?, body?, depends_on?, isolated?, status?, kind?, labels?, recipe?, priority?, short_name?, issues?, created?, revised?, run_settings?, profile?, pull_request?, notify_on_land?, owner_machine?, project?, order?, beam?}",
+ 		Short:       "create or update a single task",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `Create or update a task identified by its slug.
+@@ -487,13 +487,13 @@ Required field:
+ 
+ Optional fields:
+   "title"      string — human-readable title
+-  "brief"      string — one-line summary shown in board listings
++  "brief"      string — one-line summary
+   "body"       string — full markdown body
+   "depends_on" array  — slugs this task depends on
+-  "isolated"   bool   — true if no dependencies by design
+-  "status"     string — lifecycle status, e.g. "active"
++  "isolated"   bool   — no dependencies by design
++  "status"     string — lifecycle status
+   "kind"       string — "task", "note" or "project", default "note"
+-  "labels"     array  — labels replacing the whole list; a task needs a type label, a note exactly one
++  "labels"     array  — replaces the list; a task needs a type label, a note exactly one
+   "recipe"    string — "darn" or "tapestry", the default
+   "priority"   string — a note's "high", "normal" or "low"; "normal" clears it
+   "short_name" string — display label; falls back to the slug
+@@ -503,6 +503,7 @@ Optional fields:
+   "run_settings" object — module name to config keys for the pair's local config; {} clears it
+   "profile"    string — a "lym board profiles" name laid under run_settings; "" clears it
+   "pull_request" string — "on" or "off" overrides beam.yaml's pull_request mode; "" clears it
++  "notify_on_land" bool — a line to the orch once the run lands
+   "owner_machine" string — the effective owner only; "lym adopt" moves it
+   "project"    string — slug of the open project holding the entry; "" leaves none
+   "order"      array  — a project's member slugs in plan order
+diff --git a/internal/boardcli/help_test.go b/internal/boardcli/help_test.go
+index fceea70b..f1e88a40 100644
+--- a/internal/boardcli/help_test.go
++++ b/internal/boardcli/help_test.go
+@@ -60,6 +60,7 @@ func TestHelpSchema_LeafCommands(t *testing.T) {
+ 				"recipe",
+ 				"priority",
+ 				"pull_request",
++				"notify_on_land",
+ 				"notice",
+ 				"Example",
+ 			},
+diff --git a/internal/boardengine/board.go b/internal/boardengine/board.go
+index 7271567a..7fcfc628 100644
+--- a/internal/boardengine/board.go
++++ b/internal/boardengine/board.go
+@@ -193,6 +193,19 @@ func (b *Board) SetRunStatus(slug, status string) error {
+ 	return err
+ }
+ 
++// ClearNotifyOnLand clears the notify_on_land field of the entry slug under the write lock, and writes nothing when the entry is absent or does not carry it.
++func (b *Board) ClearNotifyOnLand(slug string) error {
++	_, err := b.boardCriticalSection(func(store *Store) (any, error) {
++		i, found := store.index(slug)
++		if !found || !store.tasks[i].NotifyOnLand {
++			return noWrite{}, nil
++		}
++		store.tasks[i].NotifyOnLand = false
++		return nil, nil
++	}, nil)
++	return err
++}
++
+ func (b *Board) RemoveTask(idOrSlug any) error {
+ 	_, err := b.boardCriticalSection(func(store *Store) (any, error) {
+ 		return nil, store.RemoveTask(idOrSlug)
+diff --git a/internal/boardengine/board_test.go b/internal/boardengine/board_test.go
+index 30c079f4..13f34b29 100644
+--- a/internal/boardengine/board_test.go
++++ b/internal/boardengine/board_test.go
+@@ -739,6 +739,85 @@ func TestSetRunStatus(t *testing.T) {
+ 	}
+ }
+ 
++// TestNotifyOnLand pins the notify_on_land field: an upsert stores it only when true, and a note carrying it is refused.
++// ClearNotifyOnLand clears it, and leaves board.json byte-identical when the entry is absent or does not carry it.
++func TestNotifyOnLand(t *testing.T) {
++	t.Parallel()
++	rows := []struct {
++		name string
++		// seed is the entry written first; act runs on the board after it.
++		seed       map[string]any
++		act        func(b *boardengine.Board) error
++		wantErr    string
++		wantStored bool
++		// unchanged requires board.json to read byte-identical after act.
++		unchanged bool
++	}{
++		{name: "upsert sets it on a task", seed: map[string]any{"slug": "x", "kind": "task", "labels": bugLabels},
++			act: func(b *boardengine.Board) error {
++				_, err := b.UpsertTask(map[string]any{"slug": "x", "notify_on_land": true})
++				return err
++			}, wantStored: true},
++		{name: "upsert sets it on a project", seed: map[string]any{"slug": "x", "kind": "project", "labels": bugLabels},
++			act: func(b *boardengine.Board) error {
++				_, err := b.UpsertTask(map[string]any{"slug": "x", "notify_on_land": true})
++				return err
++			}, wantStored: true},
++		{name: "upsert false clears it", seed: map[string]any{"slug": "x", "kind": "task", "labels": bugLabels, "notify_on_land": true},
++			act: func(b *boardengine.Board) error {
++				_, err := b.UpsertTask(map[string]any{"slug": "x", "notify_on_land": false})
++				return err
++			}},
++		{name: "a note carrying it is refused", seed: map[string]any{"slug": "x", "kind": "note", "labels": bugLabels},
++			act: func(b *boardengine.Board) error {
++				_, err := b.UpsertTask(map[string]any{"slug": "x", "notify_on_land": true})
++				return err
++			}, wantErr: `note "x" has notify_on_land`, unchanged: true},
++		{name: "clear clears it", seed: map[string]any{"slug": "x", "kind": "task", "labels": bugLabels, "notify_on_land": true},
++			act: func(b *boardengine.Board) error { return b.ClearNotifyOnLand("x") }},
++		{name: "clear of an entry without it writes nothing", seed: map[string]any{"slug": "x", "kind": "task", "labels": bugLabels},
++			act: func(b *boardengine.Board) error { return b.ClearNotifyOnLand("x") }, unchanged: true},
++		{name: "clear of an absent slug writes nothing", seed: map[string]any{"slug": "x", "kind": "task", "labels": bugLabels, "notify_on_land": true},
++			act: func(b *boardengine.Board) error { return b.ClearNotifyOnLand("ghost") }, wantStored: true, unchanged: true},
++	}
++	for _, tc := range rows {
++		t.Run(tc.name, func(t *testing.T) {
++			t.Parallel()
++			boardPath := t.TempDir()
++			b := boardengine.New(boardengine.Config{Path: boardPath, Readme: "Home.md", DesignPrefix: "proposal-", Types: testTypes, Labels: testLabels, SkipGit: true})
++			if _, err := b.UpsertTask(tc.seed); err != nil {
++				t.Fatalf("seed: %v", err)
++			}
++			before, err := os.ReadFile(filepath.Join(boardPath, "board.json"))
++			if err != nil {
++				t.Fatalf("read board.json: %v", err)
++			}
++
++			err = tc.act(b)
++			switch {
++			case tc.wantErr == "" && err != nil:
++				t.Fatalf("act = %v; want nil", err)
++			case tc.wantErr != "" && (err == nil || !strings.Contains(err.Error(), tc.wantErr)):
++				t.Fatalf("act = %v; want an error containing %q", err, tc.wantErr)
++			}
++
++			after, err := os.ReadFile(filepath.Join(boardPath, "board.json"))
++			if err != nil {
++				t.Fatalf("read board.json: %v", err)
++			}
++			if tc.unchanged && string(after) != string(before) {
++				t.Errorf("board.json changed:\n%s\nwant:\n%s", after, before)
++			}
++			if got := strings.Contains(string(after), `"notify_on_land": true`); got != tc.wantStored {
++				t.Errorf("board.json stores notify_on_land = %v; want %v:\n%s", got, tc.wantStored, after)
++			}
++			if strings.Contains(string(after), `"notify_on_land": false`) {
++				t.Errorf("board.json stores a false notify_on_land:\n%s", after)
++			}
++		})
++	}
++}
++
+ // TestPriorityRoundTrip pins that every Board write path keeps a note's priority, and that board.json names it only on a high or low note.
+ // It also pins that a write giving a task a priority is refused and that a promote clears the priority.
+ //
+@@ -825,7 +904,7 @@ func TestPriorityRoundTrip(t *testing.T) {
+ }
+ 
+ // TestEntryDates pins how every write stamps an entry's dates from the configured clock:
+-// a new entry gets both, a status change or a promote revises nothing, a scope change revises (an upsert flipping a note to a task included), an upsert's own dates are kept even on a run-held entry, and a merge keeps the oldest creation date of the entries it joins.
++// a new entry gets both, a status change, a promote or a notify_on_land change revises nothing, a scope change revises (an upsert flipping a note to a task included), an upsert's own dates are kept even on a run-held entry, and a merge keeps the oldest creation date of the entries it joins.
+ func TestEntryDates(t *testing.T) {
+ 	t.Parallel()
+ 	start := time.Date(2026, 10, 12, 9, 30, 0, 0, time.UTC)
+@@ -872,6 +951,10 @@ func TestEntryDates(t *testing.T) {
+ 			_, err := b.UpsertTask(map[string]any{"slug": "n", "kind": boardengine.KindTask})
+ 			return err
+ 		}, "n", start.Add(6 * time.Hour), start.Add(7 * time.Hour)},
++		{"notify_on_land revises nothing", func() error {
++			_, err := b.UpsertTask(map[string]any{"slug": "n", "notify_on_land": true})
++			return err
++		}, "n", start.Add(6 * time.Hour), start.Add(7 * time.Hour)},
+ 	}
+ 	for i, step := range steps {
+ 		now = start.Add(time.Duration(i) * time.Hour)
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index cc20669d..87033723 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -209,6 +209,12 @@
+ // The field is scope for the run lock, so a held entry takes no change to it.
+ // A landing reads it against the parent's beam.yaml `pull_request` mode to decide whether the landing goes through a pull request.
+ //
++// # Landing notice
++//
++// A task or project may carry `notify_on_land`, true asking the dobby that drives its run for a creel line once the run lands or ends without landing, as the dobby's beam.yaml `land_notice` decides; false stores no key, and a note carrying it is refused.
++// The field is not scope, so the run lock and the revised date ignore it and a run-held entry takes it.
++// ClearNotifyOnLand clears it once the line went out, and writes nothing when the entry is gone or does not carry it.
++//
+ // # Run lock
+ //
+ // A run holds a board entry while the entry's status has the run-status form "<state> · <producer>", which RunStatus composes and IsRunStatus recognizes.
+diff --git a/internal/boardengine/replay.go b/internal/boardengine/replay.go
+index 3c315ae3..5c10d339 100644
+--- a/internal/boardengine/replay.go
++++ b/internal/boardengine/replay.go
+@@ -51,6 +51,7 @@ var replayFields = []replayField{
+ 	{"run_settings", func(t Task) any { return orNilSettings(t.RunSettings) }, func(dst *Task, src Task) { dst.RunSettings = cloneSettings(src.RunSettings) }},
+ 	{"profile", func(t Task) any { return t.Profile }, func(dst *Task, src Task) { dst.Profile = src.Profile }},
+ 	{"pull_request", func(t Task) any { return t.PullRequest }, func(dst *Task, src Task) { dst.PullRequest = src.PullRequest }},
++	{"notify_on_land", func(t Task) any { return t.NotifyOnLand }, func(dst *Task, src Task) { dst.NotifyOnLand = src.NotifyOnLand }},
+ 	{"owner_machine", func(t Task) any { return t.OwnerMachine }, func(dst *Task, src Task) { dst.OwnerMachine = src.OwnerMachine }},
+ 	{"project", func(t Task) any { return t.Project }, func(dst *Task, src Task) { dst.Project = src.Project }},
+ 	{"order", func(t Task) any { return orEmpty(t.Order) }, func(dst *Task, src Task) { dst.Order = slices.Clone(src.Order) }},
+diff --git a/internal/boardengine/replay_test.go b/internal/boardengine/replay_test.go
+index 2ba237e1..76d48f0d 100644
+--- a/internal/boardengine/replay_test.go
++++ b/internal/boardengine/replay_test.go
+@@ -83,6 +83,8 @@ func withOrder(slugs ...string) func(*Task) {
+ 
+ func asBeam(task *Task) { task.Beam = true }
+ 
++func asNotifyOnLand(task *Task) { task.NotifyOnLand = true }
++
+ func withBeamColor(color string) func(*Task) {
+ 	return func(task *Task) { task.BeamColor = color }
+ }
+@@ -409,6 +411,19 @@ func TestFabricReplay(t *testing.T) {
+ 			wantRefused: map[string]string{"task-order": "order", "note-order": "order", "task-beam": "beam", "note-beam": "beam"},
+ 			wantEntries: map[string]string{"b": "B2", "task-order": "", "note-order": "", "task-beam": "", "note-beam": ""},
+ 		},
++		{
++			name:        "NotifyOnLandSetByTheCommitLandsOnTheEntry",
++			base:        []Task{replayEntry("a")},
++			origin:      []Task{replayEntry("a")},
++			parent:      []Task{replayEntry("a")},
++			commit:      []Task{replayEntry("a", asNotifyOnLand)},
++			wantEntries: map[string]string{"a": "a"},
++			check: func(t *testing.T, _ string, got map[string]Task) {
++				if !got["a"].NotifyOnLand {
++					t.Errorf("a.notify_on_land = false; want true")
++				}
++			},
++		},
+ 		{
+ 			name:        "PrimeOwnerChangedOnBothSidesKeepsOriginsAndReportsItLost",
+ 			base:        []Task{replayEntry("a")},
+diff --git a/internal/boardengine/runlock.go b/internal/boardengine/runlock.go
+index 6c244758..5997d1d5 100644
+--- a/internal/boardengine/runlock.go
++++ b/internal/boardengine/runlock.go
+@@ -146,7 +146,7 @@ func removedDoneSlugs(loaded, after []Task) map[string]bool {
+ // before's DependsOn and Order are first stripped of the slugs in removedDone.
+ // Project, Order and Beam are compared, so a held entry takes no membership or beam change.
+ // PullRequest is compared too, so a held entry takes no change to its pull-request override.
+-// RunSettings, Profile and OwnerMachine are never compared: a run settings, profile or owner change is not a scope change, so a run-held entry takes it.
++// RunSettings, Profile, NotifyOnLand and OwnerMachine are never compared: a run settings, profile, landing-notice or owner change is not a scope change, so a run-held entry takes it.
+ // Unknown is never compared either, since this binary cannot change a kept key.
+ func scopeChanged(before, now Task, removedDone map[string]bool) bool {
+ 	dependsOn := slices.DeleteFunc(slices.Clone(before.DependsOn), func(slug string) bool {
+diff --git a/internal/boardengine/runlock_test.go b/internal/boardengine/runlock_test.go
+index 2332e9ae..9245d772 100644
+--- a/internal/boardengine/runlock_test.go
++++ b/internal/boardengine/runlock_test.go
+@@ -110,6 +110,7 @@ func TestRunLock(t *testing.T) {
+ 		{name: "status-only upsert", act: upsertLocked(map[string]any{"status": "done"})},
+ 		{name: "run settings change", act: upsertLocked(map[string]any{"run_settings": map[string]any{"loom": map[string]any{"review_max_bounces": 2}}})},
+ 		{name: "profile change", act: upsertLocked(map[string]any{"profile": "light"})},
++		{name: "notify_on_land change", act: upsertLocked(map[string]any{"notify_on_land": true})},
+ 		{name: "upsert naming the held entry's own effective owner", primeOwner: "box", unchanged: true, act: upsertLocked(map[string]any{"owner_machine": "box"})},
+ 		{name: "normal priority on an entry without one", act: upsertLocked(map[string]any{"priority": "normal"})},
+ 		{name: "batch whose only item on it is status-only", extra: []map[string]any{other}, act: func(b *boardengine.Board) error {
+diff --git a/internal/boardengine/store.go b/internal/boardengine/store.go
+index ba76a09d..e1087d2b 100644
+--- a/internal/boardengine/store.go
++++ b/internal/boardengine/store.go
+@@ -456,7 +456,7 @@ type MergeStatusUpdate struct {
+ // "owner_machine" is accepted only as the entry's effective owner, a no-op, and "beam" only as the entry's stored flag.
+ // "beam_color" is output only: a beam carries it in what is read back, the owner setter records it, and an upsert naming it is refused as an unknown field.
+ func UpsertPayloadKeys() (required, optional []string) {
+-	return []string{"slug"}, []string{"title", "brief", "body", "depends_on", "isolated", "status", "kind", "labels", "recipe", "priority", "short_name", "issues", "created", "revised", "run_settings", "profile", "pull_request", "owner_machine", "project", "order", "beam"}
++	return []string{"slug"}, []string{"title", "brief", "body", "depends_on", "isolated", "status", "kind", "labels", "recipe", "priority", "short_name", "issues", "created", "revised", "run_settings", "profile", "pull_request", "notify_on_land", "owner_machine", "project", "order", "beam"}
+ }
+ 
+ // upsertAllowedKeys is the set of field names every upsert path accepts, enforced at the store boundary.
+diff --git a/internal/boardengine/task.go b/internal/boardengine/task.go
+index c7ca7be2..212d77b4 100644
+--- a/internal/boardengine/task.go
++++ b/internal/boardengine/task.go
+@@ -44,6 +44,8 @@ type Task struct {
+ 	Profile string `json:"profile,omitempty"`
+ 	// PullRequest overrides the receiving branch's beam.yaml pull_request mode for this entry's landing: "on" or "off"; empty means no override.
+ 	PullRequest string `json:"pull_request,omitempty"`
++	// NotifyOnLand asks the dobby that drives the entry's run for a creel line once the run lands or ends without landing; the dobby clears it once the line went out, and a note never carries it.
++	NotifyOnLand bool `json:"notify_on_land,omitempty"`
+ 	// OwnerMachine names the machine that owns the entry; empty means none is recorded, and a note never carries one.
+ 	OwnerMachine string `json:"owner_machine,omitempty"`
+ 	// Project names the project entry this entry belongs to; empty means it belongs to none.
+@@ -266,6 +268,7 @@ const (
+ 
+ // normalizeTask stores a normal priority and an empty run settings object as the empty value, clears the owner of every entry but a beam project and stores the dates in whole UTC seconds, then checks that the Kind is one of the three kinds, the Priority one of the accepted values and a task without one.
+ // A PullRequest other than empty, on and off is refused for a task and a project alike.
++// A note carrying NotifyOnLand is refused.
+ // A project carries none of depends_on, profile, run_settings or priority, and a recipe only when it is the project recipe; only a project carries order or beam, and only a project carries the project recipe.
+ func normalizeTask(t *Task) error {
+ 	if t.Kind != KindTask && t.Kind != KindNote && t.Kind != KindProject {
+@@ -294,6 +297,9 @@ func normalizeTask(t *Task) error {
+ 	if t.PullRequest != "" && t.PullRequest != "on" && t.PullRequest != "off" {
+ 		return fmt.Errorf("entry %q has pull_request %q, and pull_request is on, off or empty: correct it, or set \"\" to clear it", t.Slug, t.PullRequest)
+ 	}
++	if t.Kind == KindNote && t.NotifyOnLand {
++		return fmt.Errorf("note %q has notify_on_land, and only a task or a project runs and lands: set it to false, or make the note a task with \"lym board promote\"", t.Slug)
++	}
+ 	if t.Kind == KindProject {
+ 		return checkProjectFields(*t)
+ 	}
+diff --git a/internal/dobbyengine/config.go b/internal/dobbyengine/config.go
+index 13e8e69c..6b0ebe9d 100644
+--- a/internal/dobbyengine/config.go
++++ b/internal/dobbyengine/config.go
+@@ -19,6 +19,16 @@ func ConfigTemplate() string {
+ 	return configTemplate
+ }
+ 
++// The values of beam.yaml's land_notice.
++const (
++	// LandNoticeAll sends a landing notice for every run the dobby drives.
++	LandNoticeAll = "all"
++	// LandNoticePerTask sends one only for a run whose board entry carried notify_on_land.
++	LandNoticePerTask = "per-task"
++	// LandNoticeOff sends none.
++	LandNoticeOff = "off"
++)
++
+ // Config is the resolved beam.yaml.
+ type Config struct {
+ 	// MaxRuns is the most runs dobby drives at once; 0 starts none.
+@@ -31,6 +41,8 @@ type Config struct {
+ 	TaskHeadroom int `yaml:"task_headroom"`
+ 	// PullRequest is the receiving branch's pull-request mode: "on", "off" or "required".
+ 	PullRequest string `yaml:"pull_request"`
++	// LandNotice decides which runs the dobby sends a landing notice for: LandNoticeAll, LandNoticePerTask or LandNoticeOff.
++	LandNotice string `yaml:"land_notice"`
+ }
+ 
+ // ConfigSpec returns beam's layered-load spec: a per-worktree module whose keys are open to every layer but pull_request.
+@@ -45,12 +57,13 @@ func ConfigSpec() configengine.Spec {
+ 			"board_tidy_timeout_min": configengine.CategoryNone,
+ 			"task_headroom":          configengine.CategoryNone,
+ 			"pull_request":           configengine.CategoryCrossPair,
++			"land_notice":            configengine.CategoryNone,
+ 		},
+ 	}
+ }
+ 
+ // LoadConfig resolves beam.yaml strictly from the layer stack under dirs, since dobby only ever runs inside a hub.
+-// A negative value is refused naming its key, and so is a pull_request other than on, off or required.
++// A negative value is refused naming its key, and so is a pull_request other than on, off or required and a land_notice other than all, per-task or off.
+ func LoadConfig(dirs configengine.Dirs) (Config, error) {
+ 	resolved, err := configengine.Load(dirs, ConfigSpec())
+ 	if err != nil {
+@@ -78,5 +91,10 @@ func LoadConfig(dirs configengine.Dirs) (Config, error) {
+ 	default:
+ 		return Config{}, configengine.MarkInvalid(fmt.Errorf("beam config key %q is %q: must be on, off or required; way forward: fix it with lym config beam --set pull_request=<on|off|required>", "pull_request", cfg.PullRequest))
+ 	}
++	switch cfg.LandNotice {
++	case LandNoticeAll, LandNoticePerTask, LandNoticeOff:
++	default:
++		return Config{}, configengine.MarkInvalid(fmt.Errorf("beam config key %q is %q: must be all, per-task or off; way forward: fix it with lym config beam --set land_notice=<all|per-task|off>", "land_notice", cfg.LandNotice))
++	}
+ 	return cfg, nil
+ }
+diff --git a/internal/dobbyengine/config_test.go b/internal/dobbyengine/config_test.go
+index 42609cb8..a5d61d05 100644
+--- a/internal/dobbyengine/config_test.go
++++ b/internal/dobbyengine/config_test.go
+@@ -34,11 +34,14 @@ func TestLoadConfig(t *testing.T) {
+ 		want     Config
+ 		wantErr  []string
+ 	}{
+-		{name: "the template defaults", want: Config{MaxRuns: 3, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30, TaskHeadroom: 500, PullRequest: "on"}},
+-		{name: "a worktree layer's max_runs of 0 starts none", worktree: "max_runs: 0\n", want: Config{MaxRuns: 0, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30, TaskHeadroom: 500, PullRequest: "on"}},
+-		{name: "a worktree layer's pull_request of required resolves as set", worktree: "pull_request: required\n", want: Config{MaxRuns: 3, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30, TaskHeadroom: 500, PullRequest: "required"}},
+-		{name: "a worktree layer's pull_request of off resolves as set", worktree: "pull_request: \"off\"\n", want: Config{MaxRuns: 3, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30, TaskHeadroom: 500, PullRequest: "off"}},
++		{name: "the template defaults", want: Config{MaxRuns: 3, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30, TaskHeadroom: 500, PullRequest: "on", LandNotice: "per-task"}},
++		{name: "a worktree layer's max_runs of 0 starts none", worktree: "max_runs: 0\n", want: Config{MaxRuns: 0, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30, TaskHeadroom: 500, PullRequest: "on", LandNotice: "per-task"}},
++		{name: "a worktree layer's pull_request of required resolves as set", worktree: "pull_request: required\n", want: Config{MaxRuns: 3, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30, TaskHeadroom: 500, PullRequest: "required", LandNotice: "per-task"}},
++		{name: "a worktree layer's pull_request of off resolves as set", worktree: "pull_request: \"off\"\n", want: Config{MaxRuns: 3, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30, TaskHeadroom: 500, PullRequest: "off", LandNotice: "per-task"}},
+ 		{name: "an unknown pull_request is refused naming the key and the way forward", worktree: "pull_request: maybe\n", wantErr: []string{"pull_request", "must be on, off or required", "lym config beam --set pull_request="}},
++		{name: "a worktree layer's land_notice of all resolves as set", worktree: "land_notice: all\n", want: Config{MaxRuns: 3, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30, TaskHeadroom: 500, PullRequest: "on", LandNotice: "all"}},
++		{name: "a worktree layer's land_notice of off resolves as set", worktree: "land_notice: \"off\"\n", want: Config{MaxRuns: 3, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30, TaskHeadroom: 500, PullRequest: "on", LandNotice: "off"}},
++		{name: "an unknown land_notice is refused naming the key and the way forward", worktree: "land_notice: some\n", wantErr: []string{"land_notice", "must be all, per-task or off", "lym config beam --set land_notice="}},
+ 		{name: "a negative board_tidy_every is refused naming the key", worktree: "board_tidy_every: -1\n", wantErr: []string{"board_tidy_every", "lym config beam --set"}},
+ 		{name: "a negative task_headroom is refused naming the key", worktree: "task_headroom: -1\n", wantErr: []string{"task_headroom", "lym config beam --set"}},
+ 	}
+diff --git a/internal/dobbyengine/doc.go b/internal/dobbyengine/doc.go
+index 69cc37b4..02b83683 100644
+--- a/internal/dobbyengine/doc.go
++++ b/internal/dobbyengine/doc.go
+@@ -17,6 +17,7 @@
+ //     A worktree with an anchor change standing on its own records worktree or the prime's is refused with the change's way forward and starts nothing, through StartDeps.MoveInProgress, and a nil one reads as no change standing.
+ //   - Config is beam.yaml, loaded strictly because dobby only ever runs inside a hub.
+ //     Its `pull_request` key is the receiving branch's pull-request mode, on, off or required, read with the receiving branch's worktree as the anchor.
++//     Its `land_notice` key, all, per-task or off, decides which runs get a landing notice.
+ //   - Run is the daemon loop, with every seam it reads in Deps.
+ //   - `dobby.log` holds the dobby's own lines only, each appended by AppendLog through its own open, which creates no directory, so a removed worktree gets nothing back.
+ //     Only the holder of the file's dobby lock passes `rotate`: a write that would take the file past 1 MiB first renames it to `dobby.log.1`, replacing an older one.
+@@ -134,6 +135,17 @@
+ //   - A failed read is logged once per episode and sends nothing.
+ //   - Bound: while an anchor change stands no notice goes, and a machine that takes a run over dates the child's since from its own first sight, so a driver-dead notice the other machine sent can go once more.
+ //
++// The landing notice:
++//
++//   - Each tick with no anchor change standing, after the run notices, dobby remembers in the state record every listed run ahead of its Land row, with whether its board entry carries `notify_on_land`, refreshed while the entry is on the board, since Land prunes a landed entry.
++//     A RunView tells a run past its Land row, and whether it landed, from `battenrecipe.LandOutcomeOf`, with the landing commit Finalize recorded.
++//   - A remembered run seen past its Land row gets one line to the nearest live orch through Deps.Notice when beam.yaml's `land_notice` is all, or per-task with the entry's request, and none under off:
++//     `[dobby notice] <slug>: landed as <commit>`, `landed, commit unknown` with no commit recorded, or `ended without landing` with `lym batten status <slug>`.
++//     A beam's batten run is driven by its parent's dobby, so a beam's landing gets its line the same way.
++//   - Once a line for a run whose entry asked for it went out, Deps.ClearNotifyOnLand clears the entry's field, and a failed clear is only logged.
++//   - A failed post is tried on the next tick, at most three times, then dropped with a Warn; the run's memory goes once its notice is settled or the run is no longer listed.
++//   - Bound: a run first seen past its Land row gets no line, so a fresh state record notices no old landing; a request set after the run passed Land is not read.
++//
+ // The board tidy:
+ //
+ //   - Each tick reads the batten history of every run whose parent worktree is this dobby's, whatever the run's state, and records each Land Done that names this machine as counted in the state record, so a landing a hand pass or a pass a dead dobby left made is counted and a restart counts none twice.
+@@ -149,6 +161,7 @@
+ //
+ // The view:
+ //
++//   - It carries beam.yaml's `max_runs` and `land_notice`, and marks each run and waiting task whose board entry asks for a landing notice, a run also when the state record remembers the request.
+ //   - The runs are the listed ones that are not done, each with batten's state and producer, a pass in flight while its driver lock is held, and its last pass exit, owed full pass, owner mark and failing count from the state record.
+ //   - A task waits while it is released to the worktree, a task with an empty status whose parent is the worktree, and not started.
+ //     Its reasons are the start step's own conditions: the dependencies not done, another machine's ownership, a covering pause, a refused start whose backoff has not run out for the entry as it reads now, and `max_runs`.
+diff --git a/internal/dobbyengine/landnotice.go b/internal/dobbyengine/landnotice.go
+new file mode 100644
+index 00000000..72fea828
+--- /dev/null
++++ b/internal/dobbyengine/landnotice.go
+@@ -0,0 +1,174 @@
++// landnotice.go implements the landing notice: one creel line to the nearest live orch once a run the dobby saw ahead of its Land row lands or ends without landing, as beam.yaml's land_notice and the run's board entry decide.
++
++package dobbyengine
++
++import (
++	"context"
++	"fmt"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/logger"
++)
++
++// landNoticeMaxAttempts is how many ticks try a landing notice that was not posted before it is dropped.
++const landNoticeMaxAttempts = 3
++
++// landingCommitWidth is how many leading characters of the landing commit the notice names.
++const landingCommitWidth = 12
++
++// LandNoticeState is dobby's memory of one run for its landing notice, kept from the first sight of the run ahead of its Land row until the notice is settled.
++type LandNoticeState struct {
++	// Requested reports whether the run's board entry carried notify_on_land at the last tick that found the entry on the board.
++	Requested bool `json:"requested,omitempty"`
++	// Attempts counts the posts of the notice that failed.
++	Attempts int `json:"attempts,omitempty"`
++}
++
++// landNoticeDue is one run past its Land row whose notice this tick settles.
++type landNoticeDue struct {
++	run       RunView
++	requested bool
++	attempts  int
++}
++
++// landNotices remembers every listed run ahead of its Land row, with whether its board entry asks for a notice.
++// It settles each remembered run now past it: a line goes out when land_notice is all, or per-task with the entry's request, and none under off.
++// A run first seen past its Land row is never remembered, so it gets no notice.
++// The memory of a run no longer listed is dropped.
++// A failed read of the board keeps each remembered request as it was, and a failed read of beam.yaml settles nothing this tick; both are logged once per episode.
++func (d *daemon) landNotices(ctx context.Context, now time.Time, runs []RunView) {
++	requests, tasksRead := d.landNoticeRequests(runs)
++	var due []landNoticeDue
++	err := UpdateState(d.geom.StatePath, func(s *State) error {
++		due = nil
++		listed := make(map[string]bool, len(runs))
++		for _, run := range runs {
++			listed[run.Slug] = true
++			memory, remembered := s.LandNotices[run.Slug]
++			if run.PastLand {
++				if remembered {
++					due = append(due, landNoticeDue{run: run, requested: memory.Requested, attempts: memory.Attempts})
++				}
++				continue
++			}
++			if requested, onBoard := requests[run.Slug]; tasksRead && onBoard {
++				memory.Requested = requested
++			}
++			if s.LandNotices == nil {
++				s.LandNotices = map[string]LandNoticeState{}
++			}
++			s.LandNotices[run.Slug] = memory
++		}
++		for slug := range s.LandNotices {
++			if !listed[slug] {
++				delete(s.LandNotices, slug)
++			}
++		}
++		return nil
++	})
++	if err != nil {
++		logger.Warn("dobbyengine: the landing-notice memory could not be recorded", "worktree", d.geom.WorktreeName, "error", err)
++		return
++	}
++	if len(due) == 0 {
++		return
++	}
++	cfg, err := d.deps.LoadConfig()
++	if err != nil {
++		d.landNoticeConfig.Fail("dobbyengine: beam.yaml does not load; no landing notice is settled", "worktree", d.geom.WorktreeName, "error", err)
++		return
++	}
++	d.landNoticeConfig.Recover("dobbyengine: beam.yaml loads again; landing notices are settled", "worktree", d.geom.WorktreeName)
++	for _, notice := range due {
++		d.settleLandNotice(ctx, now, cfg.LandNotice, notice)
++	}
++}
++
++// landNoticeRequests reads, for every listed run ahead of its Land row, whether its board entry carries notify_on_land, keyed by the slugs on the board.
++// It reads the board only when such a run is listed, and reports whether the read succeeded.
++func (d *daemon) landNoticeRequests(runs []RunView) (map[string]bool, bool) {
++	ahead := false
++	for _, run := range runs {
++		ahead = ahead || !run.PastLand
++	}
++	if !ahead {
++		return nil, false
++	}
++	tasks, err := d.deps.Tasks()
++	if err != nil {
++		d.landNoticeBoard.Fail("dobbyengine: the board is unreadable; the landing-notice requests keep their last reading", "worktree", d.geom.WorktreeName, "error", err)
++		return nil, false
++	}
++	d.landNoticeBoard.Recover("dobbyengine: the board reads again for the landing-notice requests", "worktree", d.geom.WorktreeName)
++	requests := make(map[string]bool, len(tasks))
++	for _, task := range tasks {
++		requests[task.Slug] = task.NotifyOnLand
++	}
++	return requests, true
++}
++
++// settleLandNotice posts the notice of one run past its Land row when mode calls for it and drops its memory, or counts a failed post and drops it at the last attempt.
++// Once a notice for a run whose entry asked for it went out, the entry's request is cleared through Deps.ClearNotifyOnLand, and a failed clear is only logged.
++func (d *daemon) settleLandNotice(ctx context.Context, now time.Time, mode string, notice landNoticeDue) {
++	slug := notice.run.Slug
++	send := mode == LandNoticeAll || (mode == LandNoticePerTask && notice.requested)
++	if send {
++		line := landNoticeLine(notice.run)
++		if err := d.deps.Notice(ctx, line); err != nil {
++			attempts := notice.attempts + 1
++			logger.Warn("dobbyengine: the landing notice did not go out", "slug", slug, "attempt", attempts, "error", err)
++			if attempts < landNoticeMaxAttempts {
++				d.updateLandNotice(slug, func(memory *LandNoticeState) { memory.Attempts = attempts })
++				return
++			}
++			logger.Warn("dobbyengine: the landing notice is dropped after its last attempt", "slug", slug)
++		} else {
++			d.logLine(now, "land notice "+slug+": "+landNoticeOutcome(notice.run))
++			if notice.requested && d.deps.ClearNotifyOnLand != nil {
++				if err := d.deps.ClearNotifyOnLand(slug); err != nil {
++					logger.Warn("dobbyengine: the board entry's notify_on_land could not be cleared", "slug", slug, "error", err)
++				}
++			}
++		}
++	}
++	d.updateLandNotice(slug, nil)
++}
++
++// updateLandNotice applies mutate to slug's landing-notice memory, or drops the memory when mutate is nil.
++func (d *daemon) updateLandNotice(slug string, mutate func(*LandNoticeState)) {
++	err := UpdateState(d.geom.StatePath, func(s *State) error {
++		memory, remembered := s.LandNotices[slug]
++		if !remembered {
++			return nil
++		}
++		if mutate == nil {
++			delete(s.LandNotices, slug)
++			return nil
++		}
++		mutate(&memory)
++		s.LandNotices[slug] = memory
++		return nil
++	})
++	if err != nil {
++		logger.Warn("dobbyengine: the landing-notice memory could not be recorded", "slug", slug, "error", err)
++	}
++}
++
++// landNoticeLine is the line a run's landing notice posts: the slug, the outcome and, for a landing, the head of its landing commit.
++func landNoticeLine(run RunView) string {
++	if !run.Landed {
++		return fmt.Sprintf("%s %s: %s; lym batten status %s shows the run", runNoticePrefix, run.Slug, landNoticeOutcome(run), run.Slug)
++	}
++	if run.LandingCommit == "" {
++		return fmt.Sprintf("%s %s: landed, commit unknown", runNoticePrefix, run.Slug)
++	}
++	return fmt.Sprintf("%s %s: landed as %s", runNoticePrefix, run.Slug, run.LandingCommit[:min(len(run.LandingCommit), landingCommitWidth)])
++}
++
++// landNoticeOutcome names how a run past its Land row ended.
++func landNoticeOutcome(run RunView) string {
++	if run.Landed {
++		return "landed"
++	}
++	return "ended without landing"
++}
+diff --git a/internal/dobbyengine/landnotice_test.go b/internal/dobbyengine/landnotice_test.go
+new file mode 100644
+index 00000000..d779bbf1
+--- /dev/null
++++ b/internal/dobbyengine/landnotice_test.go
+@@ -0,0 +1,126 @@
++//go:build tier0
++
++// landnotice_test.go pins the landing notice over a pass harness: which runs get a line under each land_notice value, the line's text, the request's clearing, the retry of a failed post and the memory's upkeep.
++
++package dobbyengine
++
++import (
++	"context"
++	"errors"
++	"slices"
++	"testing"
++	"time"
++)
++
++func TestLandNotices(t *testing.T) {
++	t.Parallel()
++	const commit = "0123456789abcdef0123456789abcdef01234567"
++	running := RunView{Slug: "task", State: runStateRunning, Producer: producerRunShed}
++	landed := RunView{Slug: "task", State: runStateDone, Producer: "Worktree-Teardown", PastLand: true, Landed: true, LandingCommit: commit}
++	tearingDown := RunView{Slug: "task", State: runStateRunning, Producer: "Worktree-Teardown", PastLand: true, Landed: true, LandingCommit: commit}
++	unlanded := RunView{Slug: "task", State: runStateDone, Producer: "Worktree-Teardown", PastLand: true}
++	landedNoCommit := RunView{Slug: "task", State: runStateDone, Producer: "Worktree-Teardown", PastLand: true, Landed: true}
++	const landedLine = "[dobby notice] task: landed as 0123456789ab"
++
++	tests := []struct {
++		name string
++		mode string
++		// requested is the board entry's notify_on_land while the run is ahead of Land; the entry is pruned once the run is past it.
++		requested bool
++		// requestedByTick, when set, replaces requested with the entry's notify_on_land at each tick.
++		requestedByTick []bool
++		// failBoardOnTick is the one-based tick whose board read fails; zero fails none.
++		failBoardOnTick int
++		// ticks are the run listings of successive ticks.
++		ticks [][]RunView
++		// failPosts is how many posts fail before the Notice seam succeeds.
++		failPosts  int
++		want       []string
++		wantClears []string
++		// wantPosts counts the calls of the Notice seam, failed ones included, when it differs from len(want).
++		wantPosts int
++	}{
++		{name: "AllLandedNamesTheCommitOnce", mode: LandNoticeAll, ticks: [][]RunView{{running}, {landed}, {landed}}, want: []string{landedLine}},
++		{name: "AllTeardownRowCountsAsPastLand", mode: LandNoticeAll, ticks: [][]RunView{{running}, {tearingDown}, {landed}}, want: []string{landedLine}},
++		{name: "AllUnlandedNamesTheOutcome", mode: LandNoticeAll, ticks: [][]RunView{{running}, {unlanded}}, want: []string{"[dobby notice] task: ended without landing; lym batten status task shows the run"}},
++		{name: "AllLandedWithNoCommitRecorded", mode: LandNoticeAll, ticks: [][]RunView{{running}, {landedNoCommit}}, want: []string{"[dobby notice] task: landed, commit unknown"}},
++		{name: "AllFirstSeenPastLandSendsNothing", mode: LandNoticeAll, ticks: [][]RunView{{landed}, {landed}}},
++		{name: "PerTaskRequestedSendsAndClearsAfterThePrune", mode: LandNoticePerTask, requested: true, ticks: [][]RunView{{running}, {landed}}, want: []string{landedLine}, wantClears: []string{"task"}},
++		{name: "PerTaskUnrequestedSendsNothing", mode: LandNoticePerTask, ticks: [][]RunView{{running}, {landed}}},
++		{name: "OffSendsNothingAndKeepsTheRequest", mode: LandNoticeOff, requested: true, ticks: [][]RunView{{running}, {landed}}},
++		{name: "AllRequestedClearsTheRequest", mode: LandNoticeAll, requested: true, ticks: [][]RunView{{running}, {landed}}, want: []string{landedLine}, wantClears: []string{"task"}},
++		{name: "AFailedPostIsRetriedOnTheNextTick", mode: LandNoticeAll, ticks: [][]RunView{{running}, {landed}, {landed}}, failPosts: 1, want: []string{landedLine}, wantPosts: 2},
++		{name: "APostIsDroppedAfterItsLastAttempt", mode: LandNoticeAll, ticks: [][]RunView{{running}, {landed}, {landed}, {landed}, {landed}}, failPosts: 9, wantPosts: landNoticeMaxAttempts},
++		{name: "PerTaskFollowsARequestWithdrawnBetweenTicks", mode: LandNoticePerTask, requestedByTick: []bool{true, false}, ticks: [][]RunView{{running}, {running}, {landed}}},
++		{name: "PerTaskFollowsARequestRaisedBetweenTicks", mode: LandNoticePerTask, requestedByTick: []bool{false, true}, ticks: [][]RunView{{running}, {running}, {landed}}, want: []string{landedLine}, wantClears: []string{"task"}},
++		{name: "AFailedBoardReadKeepsTheFirstReading", mode: LandNoticePerTask, requestedByTick: []bool{true, false}, failBoardOnTick: 2, ticks: [][]RunView{{running}, {running}, {landed}}, want: []string{landedLine}, wantClears: []string{"task"}},
++		{name: "ARunNoLongerListedIsForgotten", mode: LandNoticeAll, ticks: [][]RunView{{running}, {}, {landed}}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			h := newPassHarness(t)
++			h.d.deps.LoadConfig = func() (Config, error) { return Config{MaxRuns: 3, LandNotice: tt.mode}, nil }
++			var posts int
++			var sent, clears []string
++			h.d.deps.Notice = func(_ context.Context, line string) error {
++				posts++
++				if posts <= tt.failPosts {
++					return errors.New("no orch strand is recorded")
++				}
++				sent = append(sent, line)
++				return nil
++			}
++			h.d.deps.ClearNotifyOnLand = func(slug string) error {
++				clears = append(clears, slug)
++				return nil
++			}
++			status := "running · Run-Shed"
++			var tickNumber int
++			h.d.deps.Tasks = func() ([]TaskView, error) {
++				if tickNumber == tt.failBoardOnTick {
++					return nil, errors.New("the board is unreadable")
++				}
++				return append([]TaskView(nil), h.fake.tasks...), nil
++			}
++			for i, runs := range tt.ticks {
++				tickNumber = i + 1
++				h.fake.runs = runs
++				h.fake.tasks = nil
++				requested := tt.requested
++				if i < len(tt.requestedByTick) {
++					requested = tt.requestedByTick[i]
++				}
++				if slices.ContainsFunc(runs, func(run RunView) bool { return !run.PastLand }) {
++					h.fake.tasks = []TaskView{{Slug: "task", Kind: "task", Status: &status, NotifyOnLand: requested}}
++				}
++				if tickNumber == tt.failBoardOnTick {
++					// The tick's own start step reads the board after the notice step, so a failed read fails the tick; the notice step has run by then.
++					h.clock.sleep(context.Background(), 10*time.Second)
++					if err := h.d.tick(context.Background(), h.clock.now()); err == nil {
++						t.Fatalf("tick() = nil on a failed board read; want the start step's error")
++					}
++					continue
++				}
++				h.tick(false)
++			}
++
++			if !slices.Equal(sent, tt.want) {
++				t.Errorf("notices = %q; want %q", sent, tt.want)
++			}
++			if !slices.Equal(clears, tt.wantClears) {
++				t.Errorf("cleared = %q; want %q", clears, tt.wantClears)
++			}
++			wantPosts := tt.wantPosts
++			if wantPosts == 0 {
++				wantPosts = len(tt.want)
++			}
++			if posts != wantPosts {
++				t.Errorf("Notice calls = %d; want %d", posts, wantPosts)
++			}
++			if memory := h.stateRecord().LandNotices; len(memory) != 0 {
++				t.Errorf("state LandNotices = %+v; want none once the notice is settled", memory)
++			}
++		})
++	}
++}
+diff --git a/internal/dobbyengine/loop.go b/internal/dobbyengine/loop.go
+index 98132e91..c6af229e 100644
+--- a/internal/dobbyengine/loop.go
++++ b/internal/dobbyengine/loop.go
+@@ -125,6 +125,8 @@ type Deps struct {
+ 	// Land asks the beam's pawl run to land the beam by writing its land request, and returns the refusal that kept it from writing one.
+ 	// It is set whenever CanLand is.
+ 	Land func() error
++	// ClearNotifyOnLand clears the notify_on_land field of the board entry slug once its landing notice went out; nil clears nothing.
++	ClearNotifyOnLand func(slug string) error
+ 	// Log writes one line to the dobby's log file at path; rotate is set for the dobby's own lines while it holds its lock.
+ 	// A nil Log logs nothing.
+ 	Log func(path, line string, rotate bool)
+@@ -283,6 +285,11 @@ type daemon struct {
+ 	moveStands logger.Episode
+ 	landRead   logger.Episode
+ 	landPost   logger.Episode
++	// landNoticeConfig and landNoticeBoard are the failure episodes of the landing notices' beam.yaml and board reads.
++	landNoticeConfig logger.Episode
++	landNoticeBoard  logger.Episode
++	// listedRuns is the run listing of the tick's pass step, done runs included.
++	listedRuns []RunView
+ 
+ 	// tickCtx is the context of the tick in flight, for the seams a pass exit reaches.
+ 	tickCtx context.Context
+@@ -568,6 +575,7 @@ func (d *daemon) tick(ctx context.Context, now time.Time) error {
+ 			return err
+ 		}
+ 		d.runNotices(ctx, now)
++		d.landNotices(ctx, now, d.listedRuns)
+ 		if err := d.startReady(ctx, now); err != nil {
+ 			return err
+ 		}
+diff --git a/internal/dobbyengine/loop_test.go b/internal/dobbyengine/loop_test.go
+index ce7b1aa1..bd0c36fe 100644
+--- a/internal/dobbyengine/loop_test.go
++++ b/internal/dobbyengine/loop_test.go
+@@ -154,6 +154,7 @@ func newLoopHarness(t *testing.T, stopAt int) *loopHarness {
+ 		ProbeInterval: 10 * time.Second,
+ 		Runs:          func() ([]RunView, error) { return nil, nil },
+ 		LoadConfig:    func() (Config, error) { return Config{}, nil },
++		Tasks:         func() ([]TaskView, error) { return nil, nil },
+ 		Tick: func(_ context.Context, in TickInput) (bool, error) {
+ 			h.ticks = append(h.ticks, in)
+ 			var err error
+diff --git a/internal/dobbyengine/passes.go b/internal/dobbyengine/passes.go
+index 6369479e..f5a5cb67 100644
+--- a/internal/dobbyengine/passes.go
++++ b/internal/dobbyengine/passes.go
+@@ -43,6 +43,11 @@ type RunView struct {
+ 	Covered bool
+ 	// NoSlot reports whether the run takes no slot under max_runs: a pawl run whose landing hold does not stand.
+ 	NoSlot bool
++	// PastLand reports whether the run is past its Land row, and Landed whether it landed there rather than ending without landing.
++	PastLand bool
++	Landed   bool
++	// LandingCommit is the commit the run's landing put on its parent branch, empty when none is recorded.
++	LandingCommit string
+ }
+ 
+ // PassExit is how a `lym batten run` pass ended: its exit code and its last error text.
+@@ -138,6 +143,7 @@ func (d *daemon) drivePasses(ctx context.Context, now time.Time) error {
+ 		return fmt.Errorf("list the runs: %w", err)
+ 	}
+ 	d.logRunChanges(now, runs)
++	d.listedRuns = slices.Clone(runs)
+ 	runs = slices.DeleteFunc(runs, func(run RunView) bool {
+ 		_, inFlight := d.flights[run.Slug]
+ 		return run.State == runStateDone && !inFlight
+diff --git a/internal/dobbyengine/starts.go b/internal/dobbyengine/starts.go
+index 1e8c8d9a..d6357e50 100644
+--- a/internal/dobbyengine/starts.go
++++ b/internal/dobbyengine/starts.go
+@@ -32,6 +32,8 @@ type TaskView struct {
+ 	// StartRefusal is the refusal every start of the slug gets now, such as for a finished run record of the same slug, with its way forward; empty when none.
+ 	// Dobby spawns no pass for a task that carries one, and starts it on the first tick after the refusal is gone; read only for a released task.
+ 	StartRefusal string
++	// NotifyOnLand reports whether the entry carries notify_on_land, a request for a landing notice.
++	NotifyOnLand bool
+ 	// Fingerprint changes whenever the entry does.
+ 	Fingerprint string
+ }
+diff --git a/internal/dobbyengine/state.go b/internal/dobbyengine/state.go
+index 393343d5..9178987e 100644
+--- a/internal/dobbyengine/state.go
++++ b/internal/dobbyengine/state.go
+@@ -37,6 +37,8 @@ type State struct {
+ 	LandingsMachineOnly bool `json:"landings_machine_only,omitempty"`
+ 	// Tidy is the board-tidy agent in flight, nil when none is.
+ 	Tidy *TidyState `json:"tidy,omitempty"`
++	// LandNotices is the memory of the landing notices of the runs seen ahead of their Land row, keyed by slug.
++	LandNotices map[string]LandNoticeState `json:"land_notices,omitempty"`
+ 	// Land is the landing step taken in the episode now standing, a land request asked for or a notice posted, nil when none was taken or the beam can no longer land, and open to a retry when it holds only a posted refusal of Land.
+ 	Land *LandState `json:"land,omitempty"`
+ }
+diff --git a/internal/dobbyengine/template.yaml b/internal/dobbyengine/template.yaml
+index 288f228d..e5c6d299 100644
+--- a/internal/dobbyengine/template.yaml
++++ b/internal/dobbyengine/template.yaml
+@@ -3,3 +3,4 @@ board_tidy_every: 5  # dobby starts the board-tidy agent after this many landing
+ board_tidy_timeout_min: 30  # the minutes the board-tidy agent may run before dobby gives up on it
+ task_headroom: 500  # the fewest free tasks under the cgroup task limit (pids.max) for dobby to start a run; 0 never holds a start
+ pull_request: "on"  # whether a landing into this worktree's branch goes through a GitHub pull request: on (unless the entry's pull_request field is off), off (only when the entry's field is on) or required (always, whatever the field says)
++land_notice: per-task  # which runs dobby posts a line to the orch for once they land or end without landing: all, per-task (only a task whose board entry carries notify_on_land) or off
+diff --git a/internal/dobbyengine/view.go b/internal/dobbyengine/view.go
+index c095c992..ee20075f 100644
+--- a/internal/dobbyengine/view.go
++++ b/internal/dobbyengine/view.go
+@@ -8,12 +8,14 @@ import (
+ 	"time"
+ )
+ 
+-// View is what one reading of a dobby shows: whether it lives, the runs it drives and the released tasks it has not started.
++// View is what one reading of a dobby shows: whether it lives, its max_runs and land_notice, the runs it drives and the released tasks it has not started, each with whether it asks for a landing notice.
+ type View struct {
+ 	// Alive reports whether the dobby's lock is held.
+ 	Alive bool `json:"alive"`
+ 	// MaxRuns is beam.yaml's cap on the runs in flight.
+ 	MaxRuns int `json:"max_runs"`
++	// LandNotice is beam.yaml's land_notice: which runs get a landing notice.
++	LandNotice string `json:"land_notice"`
+ 	// Runs are the runs the dobby drives that are not done, by slug.
+ 	Runs []ViewRun `json:"runs"`
+ 	// Waiting are the released tasks not yet started, in board order.
+@@ -33,6 +35,8 @@ type ViewRun struct {
+ 	OwnedElsewhere   bool      `json:"owned_elsewhere,omitempty"`
+ 	FailingPassError string    `json:"failing_pass_error,omitempty"`
+ 	FailingPassCount int       `json:"failing_pass_count,omitempty"`
++	// NotifyOnLand reports whether the run's board entry asks for a landing notice, or asked for it while the dobby saw the run ahead of its Land row.
++	NotifyOnLand bool `json:"notify_on_land,omitempty"`
+ }
+ 
+ // WaitingTask is one released task a dobby has not started, with everything that holds it back.
+@@ -51,6 +55,8 @@ type WaitingTask struct {
+ 	NextTry time.Time `json:"next_try,omitzero"`
+ 	// AtMaxRuns reports whether the runs in flight fill max_runs before this task's turn.
+ 	AtMaxRuns bool `json:"at_max_runs,omitempty"`
++	// NotifyOnLand reports whether the task's board entry asks for a landing notice.
++	NotifyOnLand bool `json:"notify_on_land,omitempty"`
+ }
+ 
+ // Ready reports whether nothing holds the task back, so the dobby starts it on its next tick.
+@@ -75,7 +81,11 @@ type ViewInput struct {
+ // BuildView returns the View of the dobby in.
+ // The runs are the listed ones that are not done, and a done run takes a slot only while its driver lock is held; a task waits while it is released to the worktree and not started, and its reasons are the conditions the dobby's start step checks, in the start step's own order for max_runs.
+ func BuildView(in ViewInput) View {
+-	view := View{Alive: in.Alive, MaxRuns: in.Config.MaxRuns, Runs: []ViewRun{}, Waiting: []WaitingTask{}}
++	view := View{Alive: in.Alive, MaxRuns: in.Config.MaxRuns, LandNotice: in.Config.LandNotice, Runs: []ViewRun{}, Waiting: []WaitingTask{}}
++	requested := make(map[string]bool, len(in.Tasks))
++	for _, task := range in.Tasks {
++		requested[task.Slug] = task.NotifyOnLand
++	}
+ 	// A done run whose driver lock is held has a pass in flight, which keeps it in the scheduler's list and so in its slot count.
+ 	// A reader outside the dobby's process cannot tell the dobby's own pass from a hand-run driver, so the count is the closest the held lock gives.
+ 	slotRuns := slices.DeleteFunc(slices.Clone(in.Runs), func(run RunView) bool { return run.State == runStateDone && !run.DriverLockHeld })
+@@ -88,6 +98,7 @@ func BuildView(in ViewInput) View {
+ 			PassInFlight: run.DriverLockHeld, LastPassExit: rs.LastPassExit,
+ 			FullPassOwed: rs.FullPassOwed, OwnedElsewhere: rs.OwnedElsewhere,
+ 			FailingPassError: rs.FailingPassError, FailingPassCount: rs.FailingPassCount,
++			NotifyOnLand: requested[run.Slug] || in.Record.LandNotices[run.Slug].Requested,
+ 		})
+ 	}
+ 
+@@ -97,7 +108,7 @@ func BuildView(in ViewInput) View {
+ 			continue
+ 		}
+ 		covered := in.Covers(task.Slug)
+-		waiting := WaitingTask{Slug: task.Slug, Dependencies: task.PendingDependencies, OwnedElsewhere: task.OwnedElsewhere, Paused: covered, StartRefusal: task.StartRefusal}
++		waiting := WaitingTask{Slug: task.Slug, Dependencies: task.PendingDependencies, OwnedElsewhere: task.OwnedElsewhere, Paused: covered, StartRefusal: task.StartRefusal, NotifyOnLand: task.NotifyOnLand}
+ 		if attempt, found := in.Record.Starts[task.Slug]; found && attempt.EntryFingerprint == task.Fingerprint {
+ 			waiting.Refusal = attempt.Refusal
+ 			if in.Now.Before(attempt.NextTry) {
+diff --git a/internal/dobbyengine/view_test.go b/internal/dobbyengine/view_test.go
+index d1b1fd4d..f2dbfdda 100644
+--- a/internal/dobbyengine/view_test.go
++++ b/internal/dobbyengine/view_test.go
+@@ -152,6 +152,25 @@ func TestBuildView(t *testing.T) {
+ 			},
+ 			want: View{Alive: true, MaxRuns: 2, Runs: []ViewRun{}, Waiting: []WaitingTask{}},
+ 		},
++		{
++			name: "TheLandNoticeValueAndEachRequestShow",
++			mutate: func(in *ViewInput) {
++				in.Config.LandNotice = LandNoticePerTask
++				onBoard, remembered, plain := runningRun("on-board"), runningRun("remembered"), runningRun("plain")
++				in.Runs = []RunView{onBoard, remembered, plain}
++				in.Record.LandNotices = map[string]LandNoticeState{"remembered": {Requested: true}, "plain": {}}
++				asking := readyTask("asking")
++				asking.NotifyOnLand = true
++				running := "running · Run-Shed"
++				in.Tasks = []TaskView{{Slug: "on-board", Kind: "task", Status: &running, NotifyOnLand: true}, asking}
++				in.Config.MaxRuns = 4
++			},
++			want: View{Alive: true, MaxRuns: 4, LandNotice: LandNoticePerTask, Runs: []ViewRun{
++				{Slug: "on-board", State: runStateRunning, Producer: producerRunShed, NotifyOnLand: true},
++				{Slug: "plain", State: runStateRunning, Producer: producerRunShed},
++				{Slug: "remembered", State: runStateRunning, Producer: producerRunShed, NotifyOnLand: true},
++			}, Waiting: []WaitingTask{{Slug: "asking", NotifyOnLand: true}}},
++		},
+ 		{
+ 			name:   "ADeadDobbyReadsNotAlive",
+ 			mutate: func(in *ViewInput) { in.Alive = false },
+diff --git a/internal/hibernateengine/doc.go b/internal/hibernateengine/doc.go
+index 0dcb3409..3ddaaebb 100644
+--- a/internal/hibernateengine/doc.go
++++ b/internal/hibernateengine/doc.go
+@@ -52,7 +52,7 @@
+ //
+ // The trigger wait reads the trigger and writes the reason it still waits into the request, so status shows it.
+ // `now` fires at once.
+-// `after` fires once the run is done or at the row after Land in any state; a run halted before Land keeps the wait going with the halt reason, and a status that is gone fails the request.
++// `after` fires once the run is past Land as `battenrecipe.PastLand` reads it, done or at the row after Land in any state; a run halted before Land keeps the wait going with the halt reason, and a status that is gone fails the request.
+ // `after-all` fires once no run reads running, at once with none, and skips a listed slug whose status is missing.
+ // The poll starts at one second, doubles to thirty seconds while the reason is unchanged and returns to one second when it changes.
+ // Bound: the wait has no deadline, since the operator cancels a request whose run halted.
+diff --git a/internal/hibernateengine/watch.go b/internal/hibernateengine/watch.go
+index c2ce3615..cc4c99cc 100644
+--- a/internal/hibernateengine/watch.go
++++ b/internal/hibernateengine/watch.go
+@@ -298,7 +298,7 @@ func triggerReading(deps Deps, r Request) (fire bool, reason string, err error)
+ 			return false, "", err
+ 		case !found:
+ 			return false, "", runGoneError{slug: r.Slug}
+-		case landFinished(status):
++		case battenrecipe.PastLand(status.State, status.Producer):
+ 			return true, "", nil
+ 		case status.State == shedengine.StateRunning:
+ 			return false, fmt.Sprintf("waiting for %s to finish Land, now at %s", r.Slug, status.Producer), nil
+@@ -327,11 +327,6 @@ func triggerReading(deps Deps, r Request) (fire bool, reason string, err error)
+ 	return true, "", nil
+ }
+ 
+-// landFinished reports whether a run is past its Land row: done, or at the one row after Land in any state.
+-func landFinished(s RunStatus) bool {
+-	return s.State == shedengine.StateDone || s.Producer == battenrecipe.NameWorktreeTeardown
+-}
+-
+ // confirmation is how the wait for a confirmed pause ended.
+ type confirmation int
+ 
+diff --git a/internal/landingshed/deps.go b/internal/landingshed/deps.go
+index 052b0111..b453d9fb 100644
+--- a/internal/landingshed/deps.go
++++ b/internal/landingshed/deps.go
+@@ -193,6 +193,10 @@ type Deps struct {
+ 	// its drift guard keeps it filled.
+ 	MarkTaskDone func() error
+ 
++	// RecordLanding records commit, the parent pair's head right after a parent-side merge that landed, as the run's landing commit, so the dobby driving the run can name it.
++	// Finalize calls it after MarkTaskDone and before the push, and only logs a failure, of the head read or of the record; nil records nothing.
++	RecordLanding func(commit string) error
++
+ 	// ConfigChanges returns the task's changes to its own per-worktree config files since its fork point.
+ 	// Finalize calls it before the catch-up merge-in, so before any parent-side mutation, and only reports the result through Notify:
+ 	// landing never carries those files to the parent.
+diff --git a/internal/landingshed/doc.go b/internal/landingshed/doc.go
+index 479d83bc..2c8ac08a 100644
+--- a/internal/landingshed/doc.go
++++ b/internal/landingshed/doc.go
+@@ -210,7 +210,7 @@
+ // An unreadable record is a Stuck with Halt too, as at the acquire, and both halts open with LandingStopPrefix, so only the orch's resume lifts them.
+ // The resume re-runs Finalize from its first step under a lock taken afresh, so a resume made before the cause clears lands nothing.
+ // The re-read and the landing are not atomic: a release between them is caught only by the parent push's rejection.
+-// After the parent-side merge and before the push, Finalize marks the board task done.
++// After the parent-side merge and before the push, Finalize marks the board task done and hands the parent pair's head, the landing commit, to the told Deps.RecordLanding, whose failure is only logged.
+ //
+ // Finalize lands through the run's pull request, which it merges on GitHub only here, under the parent lock.
+ // Right after it takes the lock it asks ResolvePullRequest the question PR-Review asked, from the same beam.yaml, entry field, origin and task-branch commits, and a Finalize with no `ParentMode` seam skips the step and lands locally.
+diff --git a/internal/landingshed/finalize.go b/internal/landingshed/finalize.go
+index 297d181b..c51405cb 100644
+--- a/internal/landingshed/finalize.go
++++ b/internal/landingshed/finalize.go
+@@ -288,6 +288,7 @@ func (fz *Finalize) Call(ctx context.Context) (shedengine.Outcome, shedengine.Ou
+ 	_, mergeErr := parentHandle.Merge(fz.deps.TaskBranch, mergeOpts)
+ 	if mergeErr == nil {
+ 		fz.markTaskDone()
++		fz.recordLanding(parentHandle)
+ 		return fz.pushParent(ctx, parentHandle, notice)
+ 	}
+ 
+@@ -307,6 +308,7 @@ func (fz *Finalize) Call(ctx context.Context) (shedengine.Outcome, shedengine.Ou
+ 		_, retryErr := parentHandle.Merge(fz.deps.TaskBranch, mergeOpts)
+ 		if retryErr == nil {
+ 			fz.markTaskDone()
++			fz.recordLanding(parentHandle)
+ 			return fz.pushParent(ctx, parentHandle, notice)
+ 		}
+ 		mergeErr = retryErr
+@@ -532,6 +534,21 @@ func (fz *Finalize) markTaskDone() {
+ 	}
+ }
+ 
++// recordLanding hands the parent pair's head, the commit the landing put on the parent branch, to Deps.RecordLanding.
++// A failed head read or record is logged and never changes the verdict.
++func (fz *Finalize) recordLanding(parentHandle parentMerger) {
++	if fz.deps.RecordLanding == nil {
++		return
++	}
++	commit, err := parentHandle.HeadSHA()
++	if err == nil {
++		err = fz.deps.RecordLanding(commit)
++	}
++	if err != nil {
++		logger.Warn("landingshed: record the landing commit failed", "producer", finalizeName, "cause", err)
++	}
++}
++
+ // pushParent publishes the parent branch the merge just landed on to its upstream, so a landing
+ // reaches the remote rather than only this hub's parent worktree, and reports Done.
+ // A transient push failure (shedtransient.Class non-empty) is returned as an error, so the driver re-steps once;
+diff --git a/internal/landingshed/finalize_test.go b/internal/landingshed/finalize_test.go
+index fd1f2887..f78b7f7c 100644
+--- a/internal/landingshed/finalize_test.go
++++ b/internal/landingshed/finalize_test.go
+@@ -377,7 +377,8 @@ func (r *orderedResolver) Resolve(ctx context.Context, source, tip string) (merg
+ }
+ 
+ // TestFinalize_MergeInRequiredRetry pins that an ErrMergeInRequired merge is retried exactly once with the same composed message, and that the board seam runs once, after the retry that lands, never after a failed attempt.
+-// It also pins that the parent run records are committed after each merge-in and before the parent-side merge, on the first pass and on the retry alike.
++// It also pins that the parent run records are committed after each merge-in and before the parent-side merge, on the first pass and on the retry alike,
++// and that the parent pair's head is recorded as the landing commit after the board seam and before the push.
+ func TestFinalize_MergeInRequiredRetry(t *testing.T) {
+ 	tests := []struct {
+ 		name        string
+@@ -389,15 +390,16 @@ func TestFinalize_MergeInRequiredRetry(t *testing.T) {
+ 		// parentMoves makes the parent tip read p2 until the first parent-side merge call and p3 after it, as a code-side commit arriving between the passes does.
+ 		parentMoves bool
+ 	}{
+-		{"retry lands", mergeCallResult{result: fabricengine.MergeResult{Committed: true}}, shedengine.Done, "merge-in,records,merge,merge-in,records,merge,mark,push", 2, false, false},
++		{"retry lands", mergeCallResult{result: fabricengine.MergeResult{Committed: true}}, shedengine.Done, "merge-in,records,merge,merge-in,records,merge,mark,record landed1,push", 2, false, false},
+ 		{"retry also required stays Stuck", mergeCallResult{err: &fabricengine.ErrMergeInRequired{}}, shedengine.Stuck, "merge-in,records,merge,merge-in,records,merge", 2, false, false},
+-		{"a code-side parent commit between the passes lands through the retry", mergeCallResult{result: fabricengine.MergeResult{Committed: true}}, shedengine.Done, "merge-in,records,merge,merge-in,records,merge,mark,push", 2, false, true},
++		{"a code-side parent commit between the passes lands through the retry", mergeCallResult{result: fabricengine.MergeResult{Committed: true}}, shedengine.Done, "merge-in,records,merge,merge-in,records,merge,mark,record landed1,push", 2, false, true},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			var order []string
+ 			deps := newTestDeps(t)
+ 			deps.MarkTaskDone = func() error { order = append(order, "mark"); return nil }
++			deps.RecordLanding = func(commit string) error { order = append(order, "record "+commit); return nil }
+ 			deps.CommitParentRecords = func() error { order = append(order, "records"); return nil }
+ 			summary, err := summaryparser.Parse(deps.DescriptionPath)
+ 			if err != nil {
+@@ -407,6 +409,7 @@ func TestFinalize_MergeInRequiredRetry(t *testing.T) {
+ 			merger := &recordingParentMerger{
+ 				results: []mergeCallResult{{err: &fabricengine.ErrMergeInRequired{Source: deps.TaskBranch}}, tt.secondTry},
+ 				order:   &order,
++				headSHA: "landed1",
+ 			}
+ 			var changed []string
+ 			if tt.parentMoves {
+@@ -451,6 +454,48 @@ func TestFinalize_MergeInRequiredRetry(t *testing.T) {
+ 	}
+ }
+ 
++// TestFinalize_RecordsTheLandingCommitOnTheFirstTry pins that a parent-side merge landing at the first call records the parent pair's head after the board seam and before the push.
++func TestFinalize_RecordsTheLandingCommitOnTheFirstTry(t *testing.T) {
++	t.Parallel()
++
++	var order []string
++	deps := newTestDeps(t)
++	deps.MarkTaskDone = func() error { order = append(order, "mark"); return nil }
++	deps.RecordLanding = func(commit string) error { order = append(order, "record "+commit); return nil }
++	merger := &recordingParentMerger{results: []mergeCallResult{{result: fabricengine.MergeResult{Committed: true}}}, order: &order, headSHA: "landed1"}
++	fz := &Finalize{deps: deps, resolver: &recordingResolver{result: mergeresolve.Result{Outcome: mergeresolve.OutcomeResolved}}, guard: newParentGuard(deps), parentOpener: func() (parentMerger, error) { return merger, nil }}
++
++	shedfake.RequireOutcome(t, fz, shedengine.Done)
++	if got, want := strings.Join(order, ","), "merge,mark,record landed1,push"; got != want {
++		t.Errorf("call order = %q; want %q", got, want)
++	}
++}
++
++// TestFinalize_RecordLandingFailureKeepsDone pins that a failed head read or landing record is only logged: the landing pushes and is Done.
++func TestFinalize_RecordLandingFailureKeepsDone(t *testing.T) {
++	tests := []struct {
++		name      string
++		headErr   error
++		recordErr error
++	}{
++		{"HeadReadFails", errors.New("no head"), nil},
++		{"RecordFails", nil, errors.New("disk full")},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			deps := newTestDeps(t)
++			deps.RecordLanding = func(string) error { return tt.recordErr }
++			merger := &recordingParentMerger{results: []mergeCallResult{{result: fabricengine.MergeResult{Committed: true}}}, headSHA: "landed1", headErr: tt.headErr}
++			fz := &Finalize{deps: deps, resolver: &recordingResolver{result: mergeresolve.Result{Outcome: mergeresolve.OutcomeResolved}}, guard: newParentGuard(deps), parentOpener: func() (parentMerger, error) { return merger, nil }}
++
++			shedfake.RequireOutcome(t, fz, shedengine.Done)
++			if len(merger.pushCalls) != 1 {
++				t.Errorf("parent push calls = %d; want 1", len(merger.pushCalls))
++			}
++		})
++	}
++}
++
+ // TestFinalize_StuckReasons pins, for each way a landing stops Stuck, the reason it surfaces, that the board seam is never called, and that no stuck-reason file is written.
+ func TestFinalize_StuckReasons(t *testing.T) {
+ 	numberedPaths := func(n int) []string {
+@@ -619,6 +664,7 @@ func TestFinalize_StuckReasons(t *testing.T) {
+ 			deps := newTestDeps(t)
+ 			markCalled := false
+ 			deps.MarkTaskDone = func() error { markCalled = true; return nil }
++			deps.RecordLanding = func(string) error { markCalled = true; return nil }
+ 			if tt.recordsErr != nil {
+ 				deps.CommitParentRecords = func() error { return tt.recordsErr }
+ 			}
+@@ -663,7 +709,7 @@ func TestFinalize_StuckReasons(t *testing.T) {
+ 				t.Errorf("parent-side merge calls = %d; want %d", len(merger.calls), tt.wantMerges)
+ 			}
+ 			if markCalled {
+-				t.Error("MarkTaskDone was called on a stuck landing; want it never called")
++				t.Error("MarkTaskDone or RecordLanding was called on a stuck landing; want neither called")
+ 			}
+ 			matches, err := filepath.Glob(filepath.Join(deps.ScratchDir, "*-stuck.md"))
+ 			if err != nil {
+diff --git a/internal/loomcli/landingdeps.go b/internal/loomcli/landingdeps.go
+index b48295f8..dccc08f9 100644
+--- a/internal/loomcli/landingdeps.go
++++ b/internal/loomcli/landingdeps.go
+@@ -196,6 +196,14 @@ func landingDeps(
+ 			done := "done"
+ 			return board.SetStatus(seedSlug(l.WorktreeName), &done)
+ 		},
++		// RecordLanding records the landing commit in the prime's scratch of the batten run of this worktree's slug, where that run's dobby reads it.
++		RecordLanding: func(commit string) error {
++			prime, err := primeOfHub(l)
++			if err != nil {
++				return err
++			}
++			return shedrun.WriteLandedCommit(prime, seedSlug(l.WorktreeName), commit)
++		},
+ 		// ConfigChanges reads the task's changes to its per-worktree config files since its fork point.
+ 		// A hub-wide module's file is never read: its worktree copy is not the one in force.
+ 		ConfigChanges: func() (fabricengine.ConfigChanges, error) {
+diff --git a/internal/loomcli/landingdeps_integration_test.go b/internal/loomcli/landingdeps_integration_test.go
+index ccf136be..7abbe211 100644
+--- a/internal/loomcli/landingdeps_integration_test.go
++++ b/internal/loomcli/landingdeps_integration_test.go
+@@ -298,3 +298,26 @@ func TestLandingDeps_TaskHasCommitsReadsTheTaskHeadAgainstTheParent(t *testing.T
+ 		}
+ 	})
+ }
++
++// TestLandingDeps_RecordLandingWritesWhereTheDobbyReads asserts the RecordLanding seam of a pair writes the commit into the prime's scratch of the run named for that pair, where shedrun.ReadLandedCommit reads it.
++func TestLandingDeps_RecordLandingWritesWhereTheDobbyReads(t *testing.T) {
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hubforge.AddPair(t, h, "task")
++	taskLocation, err := lymcwd.ResolveWorktree(h.PairCodeWorktree("task"))
++	if err != nil {
++		t.Fatalf("lymcwd.ResolveWorktree(task) error = %v; want nil", err)
++	}
++	deps := landingDeps(taskLocation, shedrun.RecipeTapestry, websterengine.Geometry{}, "task", "main",
++		true, modelspec.Registry{}, &shuttleengine.Runner{}, landingshed.Config{}, "", nil, nil, nil, planVerifySource(taskLocation), parentLockDeps(taskLocation, shedrun.SelfRunID, "", ""))
++
++	if err := deps.RecordLanding("abc123"); err != nil {
++		t.Fatalf("RecordLanding() error = %v; want nil", err)
++	}
++
++	got, err := shedrun.ReadLandedCommit(h.Location, "task")
++	if err != nil || got != "abc123" {
++		t.Errorf("ReadLandedCommit(prime, task) = %q, %v; want abc123, nil", got, err)
++	}
++}
+diff --git a/internal/shedrun/doc.go b/internal/shedrun/doc.go
+index 9041bd73..aab45c05 100644
+--- a/internal/shedrun/doc.go
++++ b/internal/shedrun/doc.go
+@@ -32,6 +32,7 @@
+ // DriverLock is the ephemeral Go-driver lock under ScratchDir, distinct from the run lock and the status lock.
+ // TacklerDir is the durable directory of a run's tackler attempts, TacklerRel its anchor-relative form and TacklerAttemptDir one attempt's directory (attempt-<N>, 1-based).
+ // TacklerMarker is the ephemeral in-flight marker under ScratchDir.
++// LandedCommitFile is the ephemeral file under ScratchDir holding the commit a run's landing put on its parent branch, which WriteLandedCommit writes and ReadLandedCommit reads, empty when none is recorded.
+ // CancelMarker is the ephemeral marker `lym batten cancel` writes, and CancelMarkerLock the lock whose holder is its live writer.
+ // Both sit directly under ScratchRoot beside the per-slug scratch directories, never inside RunDir or ScratchDir, so a slug's records removal leaves them.
+ // Batten's verbs read the marker.
+diff --git a/internal/shedrun/landed.go b/internal/shedrun/landed.go
+new file mode 100644
+index 00000000..339d3139
+--- /dev/null
++++ b/internal/shedrun/landed.go
+@@ -0,0 +1,39 @@
++// landed.go declares the landed-commit file: the commit a run's landing put on its parent branch, written by the landing and read by the dobby that drives the run.
++
++package shedrun
++
++import (
++	"errors"
++	"io/fs"
++	"os"
++	"path/filepath"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++)
++
++// LandedCommitFile returns the path of the ephemeral file holding the commit runID's landing put on its parent branch, under ScratchDir(l, runID).
++func LandedCommitFile(l *lymcwd.Location, runID string) string {
++	return filepath.Join(ScratchDir(l, runID), "landed-commit")
++}
++
++// WriteLandedCommit records commit as the commit runID's landing put on its parent branch, replacing any recorded before.
++func WriteLandedCommit(l *lymcwd.Location, runID, commit string) error {
++	path := LandedCommitFile(l, runID)
++	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++		return err
++	}
++	return os.WriteFile(path, []byte(commit+"\n"), 0o644)
++}
++
++// ReadLandedCommit returns the commit recorded for runID's landing, empty when none is recorded.
++func ReadLandedCommit(l *lymcwd.Location, runID string) (string, error) {
++	data, err := os.ReadFile(LandedCommitFile(l, runID))
++	if errors.Is(err, fs.ErrNotExist) {
++		return "", nil
++	}
++	if err != nil {
++		return "", err
++	}
++	return strings.TrimSpace(string(data)), nil
++}
+diff --git a/internal/shedrun/landed_test.go b/internal/shedrun/landed_test.go
+new file mode 100644
+index 00000000..87dd0ff6
+--- /dev/null
++++ b/internal/shedrun/landed_test.go
+@@ -0,0 +1,32 @@
++//go:build tier0
++
++// landed_test.go pins the landed-commit file's place and its round trip.
++
++package shedrun
++
++import (
++	"path/filepath"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/lymdirs"
++)
++
++func TestLandedCommit(t *testing.T) {
++	t.Parallel()
++	l := syntheticLocation(t)
++
++	if want := filepath.Join(l.AnchorPath(), lymdirs.DotLymDirName, "shed", "slug", "landed-commit"); LandedCommitFile(l, "slug") != want {
++		t.Errorf("LandedCommitFile() = %q; want %q", LandedCommitFile(l, "slug"), want)
++	}
++	if got, err := ReadLandedCommit(l, "slug"); err != nil || got != "" {
++		t.Errorf("ReadLandedCommit() before a write = %q, %v; want empty and nil", got, err)
++	}
++	for _, commit := range []string{"abc123", "def456"} {
++		if err := WriteLandedCommit(l, "slug", commit); err != nil {
++			t.Fatalf("WriteLandedCommit(%q) = %v; want nil", commit, err)
++		}
++		if got, err := ReadLandedCommit(l, "slug"); err != nil || got != commit {
++			t.Errorf("ReadLandedCommit() = %q, %v; want %q and nil", got, err, commit)
++		}
++	}
++}
+diff --git a/internal/testkit/envkit/envkit.go b/internal/testkit/envkit/envkit.go
+index ca24f2bf..0a8954e6 100644
+--- a/internal/testkit/envkit/envkit.go
++++ b/internal/testkit/envkit/envkit.go
+@@ -61,6 +61,7 @@ var nilLegal = map[string]bool{
+ 	"Landing.AbortMerge":               true,
+ 	"Landing.StopConflictSession":      true,
+ 	"Landing.MarkTaskDone":             true,
++	"Landing.RecordLanding":            true,
+ 	"Landing.ConfigChanges":            true,
+ 	"Landing.Notify":                   true,
+ 	"Landing.Reconcile":                true,
