@@ -242,6 +242,12 @@ Decision: A seed whose recipe is beam is refused by lym loom and lym shed alike 
 
 Rationale: D11 also has lym shed refuse beam, so pointing a beam seed at the lym shed verbs would send it to another refusal (PATTERN-refusal-way-forward); a re-seed is the only way forward that works.
 
+### Added after Discussion (parent, 2026-10-31): A record not committed names its way forward by the current row
+
+Decision: This amends D4's Not-committed bullet and its acceptance clause. When the decision record is written but not committed, the refusal names the way forward by the run's current row: at Record-Write it names lym loom resume; at any later row it names lym loom goto --to Record-Write, then lym loom resume, then re-running the verb.
+
+Rationale: A darn run in flight that halted at Darn-Write on its old discussion gate also holds a written, uncommitted record, and a bare lym loom resume would repeat forever on that run (PATTERN-refusal-way-forward).
+
 ## Constraints
 
 - PATTERN-shed-recipe-registry: `RecordWrite` is one more `Constructor` in the one map in `internal/shedrecipe`; the contract's engine sets sit beside it.
