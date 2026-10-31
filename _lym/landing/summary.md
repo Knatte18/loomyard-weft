@@ -1,58 +1,43 @@
-# A rejected push is a divergence only when a fetch shows origin ahead
+# Call a rejected push a divergence only when a fetch shows one
 
-A push whose rejection outlasted the retry was always recorded as `not_fast_forward`.
-Its notice then said "origin/<branch> holds commits this branch lacks" and advised `git reset --keep` or `git merge`, even when origin held nothing the branch lacked.
-That is what happened to the board's `main` on 2026-10-30: two pushes from this hub overlapped, the loser's retry failed, and the mail named a divergence that did not exist.
-Following its advice would have dropped a local commit or merged a history that was never there.
+A push the remote rejected was always recorded as `not_fast_forward` and mailed with the `git reset --keep origin/main` or `git merge origin/main` way forward, whether or not origin held anything the branch lacked.
+Two pushes of the board from one hub overlapped, the loser ran out of retries, and creel mail told the orch about a divergence that did not exist.
+Following that advice would have dropped a local commit or merged a history that never existed.
 
-## What changes
+A rejection that outlasts the retry backoff is now judged by a fresh fetch, in `failRejection` in `internal/fabricengine/pushclassified.go`.
 
-- `pushClassified` (`internal/fabricengine/pushclassified.go`) judges a rejection the retry did not settle with a fresh fetch, in the new `failRejection`, on the code, records and bolt sides alike.
-  - Origin holds commits the branch lacks: `not_fast_forward`, with the local commits and the merge or reset way forward, as before.
-  - Origin holds nothing the branch lacks: `other`, whose way forward is a plain retry of the side's push step. The error says a fetch found origin holding nothing this branch lacks.
-  - The fetch fails: `other`, with the fetch error joined to the rejection, since origin's state is unknown.
-  - A replay conflict or destructive refusal stays `not_fast_forward` unjudged, because a replay only runs when origin held commits the branch lacked.
-- `gitrepo.PushRebaseFree` (`internal/gitrepo/push.go`) now wraps `ErrPushRejected` with git's rejection line, such as `! [remote rejected] main -> main (pre-receive hook declined)`. Before, it returned the bare sentinel.
-  The sentinel's text drops `(remote diverged)` and is now `gitrepo: push rejected`, because a rejection alone says nothing about what origin holds.
-  `errors.Is` matching is unchanged, and no caller compared the sentinel by identity.
-- The `fabricengine` package doc's push-classification section, and the doc comments of `pushClassified`, `PushAnchored` and `PushRebaseFree`, describe the judged class.
+- Origin holds commits the branch lacks: `not_fast_forward`, with the local commits and the divergence way forward, as before.
+- Origin holds nothing the branch lacks: class `other`, whose way forward is a plain retry of the side's push step.
+- The fetch fails, or origin's tip cannot be read after it: class `other` with that error joined to the rejection.
+  Origin's tip is the branch's upstream, or origin's branch of the same name for a branch never given an upstream, so a branch with neither is not called a divergence.
 
-A non-divergent rejection that never lands, such as one from a declining hook, still writes a record and sends its one notice, under `other`.
-Its error still satisfies `IsPushRejected`.
+This applies on the code, records and bolt sides.
+A replay conflict or a destructive refusal stays `not_fast_forward` unjudged, since a replay runs only when origin held commits the branch lacked.
+The judgment adds one fetch on the failure path after the backoff ran out; it never pushes, merges, rebases or forces, so it changes only a record's class and way forward.
 
-## Which processes overlap, and why no new lock
+A non-divergent rejection, such as a declining remote hook, still writes a record and sends its one notice, and its error still satisfies `IsPushRejected` and `errors.Is(err, gitrepo.ErrPushRejected)`.
 
-The board checkout is the records repository's main worktree.
-`lym board sync` commits under `board.lock` and pushes under `board.push.lock`, so two board syncs never overlap each other.
-These other callers push the board with neither lock:
-- the owner setter
-- the hub config commit and reconcile
-- `lym orch rules`
-- fabric's hub-config paths
-- the anchor marker
+In `internal/gitrepo/push.go`, `PushRebaseFree` now returns `ErrPushRejected` wrapped with git's last rejection line, such as `! [remote rejected] main -> main (pre-receive hook declined)`, so the notice says why git refused.
+The sentinel's text drops `(remote diverged)` and reads `gitrepo: push rejected`.
+No caller compared the sentinel by identity, so wrapping it changes no match.
+The package docs of `fabricengine` and `gitrepo` describe the judged class.
 
-Separately, every weft push and fetch of the hub runs in the same repository and touches the same remote-tracking refs.
-Only the Bolt retry takes `.gitrepo-push.lock`.
-The hub's logs and creel journal for 2026-10-30 have been pruned, so the two processes cannot be named by pid.
-Any of these lock-free pushers, or a weft push's fetch, overlapping a board sync fits origin's reflog.
+## Decision: no lock around the board's commit and push
 
-The fix adds no lock that covers both commit and push:
-- Holding `board.lock` through the push would make every board write wait on the network.
-- Making every Bolt push take `board.push.lock` would deadlock `Bolt.Sync`, which already holds that lock around its own push.
+The board's pushers are `lym board sync`, which commits under `board.lock` and pushes under `board.push.lock`, and the callers of `Bolt.PushRecorded` and `Bolt.Push` outside it (owner set, hub config commit and reconcile, orch rules, fabric hub-config paths, the anchor marker), which push under neither; the Bolt retry alone takes `.gitrepo-push.lock`.
+The board checkout is the records repository's main worktree, so every weft push and fetch of the hub works in the same repository and its remote-tracking refs.
+The logs and creel journal of the incident are pruned, so the two overlapping processes are not identified by pid; any lock-free pusher, or a weft push's fetch, overlapping a board sync fits the reflog.
 
-Two overlapping fast-forward pushes of one linear history leave nothing to settle.
-The existing retry lands the push that lost the race, and the fetch judgment keeps one that runs out of retries from claiming a divergence.
+No lock is added.
+Holding the board write lock across a network push would make every board write wait on origin, and making every Bolt push take `board.push.lock` would deadlock `Bolt.Sync`, which already holds it around its push.
+Two overlapping fast-forward pushes of one linear history leave nothing to settle: the existing retry lands the loser, and the judgment keeps a loser that runs out of retries from naming a divergence.
+Overlapping pushes still cost a retry, and in the worst case an `other` notice with a plain-retry way forward.
 
-## Design decisions
+## To check by hand
 
-- A failed judgment fetch is always recorded as `other`, never `transport` as decision D1 first said: `gitrepo.Repo.Fetch` reports a failed fetch by its exit code rather than as a `*gitexec.GitError`, so an unreachable origin cannot be told apart there.
-- The judgment adds one fetch, only on the failure path after the backoff has run out. It never pushes, merges, rebases or forces, so it can change only a record's class and way forward.
-
-## Tests
-
-- `TestPushFailureClasses` covers the new judgment in one table, `ARejectionThatOutlastsTheBackoffWithOriginHoldingNothingTheBranchLacksIsNoDivergence`, with code, records and bolt rows.
-  It replaces the two subtests that pinned a declining hook as `not_fast_forward`.
-  Each row checks for an `other` record quoting git's refusal line, exactly one notice that names no divergence and no merge, and the full backoff waited out before the record.
-- The declining-hook assertions in `pushanchored_integration_test.go` and `boltpullfirst_integration_test.go` now expect `other`.
-- The real-divergence cases are unchanged and still record `not_fast_forward`: a code push that another machine got to first, and records or bolt replay conflicts.
-- The `loomcli` commit-records row matches the new sentinel text.
+- Run the integration tests of `internal/fabricengine` and `internal/gitrepo`, including `TestPushFailureClasses`; this description was written without running them.
+- A branch with no upstream and no origin branch of its name must record `other`, not `not_fast_forward` (`failRejection`, `internal/fabricengine/pushclassified.go`); check that `TestPushFailureClasses` has a row for it.
+- A judgment fetch that fails must record `other` with the rejection line and the fetch error; check that `TestPushFailureClasses` has a row for it.
+- Rejection text no longer claims a divergence: check that `internal/gitrepo/push_test.go` asserts the error holds git's rejection line and not `remote diverged`, since the assertion in `internal/loomcli/commitrecords_test.go` matches the old text too.
+- The `other` notice must name a plain retry: check that the rejection table in `internal/fabricengine/pushclasses_integration_test.go` asserts the `FailedPushWayForward` text for class `other`.
+- `internal/fabricengine/pushanchored_integration_test.go` must not say the rejection surfaces unwrapped, in its header or its diverged-weft test name and comment.
