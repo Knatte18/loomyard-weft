@@ -1,6 +1,6 @@
 # A finished run blocked at Worktree-Teardown with its pair gone can be neither retried nor cancelled
 
-`teardown-retry-no-pair` · Task · bug, batten, fabric · running · Code-Burler-Fix
+`teardown-retry-no-pair` · Task · bug, batten, fabric · running · Code-Bouncer
 
 ## Seen (hub orch, 2026-10-31)
 
