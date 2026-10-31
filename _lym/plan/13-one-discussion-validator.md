@@ -40,6 +40,7 @@
 - `contracts/recipes/darn-recipe.yaml`
 - `contracts/specs/loom-discussion-spec.md`
 - `docs/overview.md`
+- `pattern/PATTERN-gate-slot.md`
 
 **Delete:**
 - `internal/loomshed#ValidateLoomDiscussion`
@@ -69,7 +70,7 @@ Findings come in that order, each stamped with its path; any read, history or qu
 
 - `NewDiscussionGate(check)` maps `ValidateDiscussion` onto the gate contract as today's loom gate does (findings re-prompt, an error returns as is) and commits nothing. `ValidateLoomDiscussion`, `ValidateDarnDiscussion` and `NewDarnDiscussionGate` go.
 - `resolvePlainGateClosure`'s `"discussion"` requires the record and support-log paths absolute and `Env.DiscussionHistory` non-nil, and, when `Env.RecordEngine` is `DiscussionWrite`, the relevant path, worktree root and plan index; it no longer branches on `DiscussionHistory`'s presence.
-- `Env` gains `RecordEngine string`, the engine of the run's record row, and `DiscussionHistory`'s doc says every loom wiring sets it. `envkit`'s `nilLegal` drops `DiscussionHistory`; `FullEnv` and `newTestEnv` fill both.
+- `Env` gains `RecordEngine string`, the engine of the run's record row, and `DiscussionHistory`'s doc says every loom wiring sets it. `envkit`'s `nilLegal` drops `DiscussionHistory`; `FullEnv` and `newTestEnv` fill both. battencli's `intentionallyNil` lists `DiscussionHistory`, since batten wires no loom record.
 - `wire` and `wireLightweight` set `DiscussionHistory` and `RecordEngine` (from `loomrecipe.RecordEngine(c.recipe)`, empty recipe read as tapestry) and `PatternRecordPath`'s darn branch stays for card 18; `wireDarn` stops setting them.
 - `lym loom validate-discussion` runs `ValidateDiscussion` over the same fields (Gate Self-Check Parity) and commits nothing on either recipe; its help text drops the darn commit. A Discussion-written record with an unclosed fence now reports every later section missing, and the gate re-prompts its writer to close the fence.
 
@@ -82,7 +83,7 @@ Tests:
 - `TestValidateLoomDiscussion_Citations` calls `ValidateDiscussion` with `Citations` set and keeps its citing rows (missing path, malformed relevant list).
 - `TestDarnWrite_Call`: a guard finding after the session halts Stuck naming the findings, `lym fabric commit` and `lym loom resume`, with one session spawn; a clean guard is Done.
 - `TestValidateDiscussionCmd`: its darn row reports the same findings as the gate and commits nothing.
-- `TestGateRows_StopsNameAWayForward` covers the guard's reason; `TestResolveGateSpec_ValidOneEntryPerVocabularyName` builds `discussion` both ways; `TestResolveGateSpec_Rejections` gains a row with a nil `Env.DiscussionHistory` refused by field name; `TestDarnWriteEntry_ConstructionFailures` drops its discussion-gate case and gains a nil `Darn.CheckRecord` row; `intentionallyNil` in loomcli and battencli lists `Darn.CheckRecord`, which only a darn seed fills; `TestWire_DarnRecipe` and `TestWireLightweight_FillsThePathsWithoutLoadingAnyConfig` assert `DiscussionHistory` and `RecordEngine` on both recipes.
-The discussion spec says the history check runs on every loom record, the citation and relevant-list checks follow the record row's engine, and `validate-discussion` commits nothing; `docs/overview.md`'s validate-discussion lines follow.
+- `TestGateRows_StopsNameAWayForward` covers the guard's reason; `TestResolveGateSpec_ValidOneEntryPerVocabularyName` builds `discussion` both ways; `TestResolveGateSpec_Rejections` gains a row with a nil `Env.DiscussionHistory` refused by field name; `TestDarnWriteEntry_ConstructionFailures` drops its discussion-gate case and gains a nil `Darn.CheckRecord` row; `intentionallyNil` in loomcli and battencli lists `Darn.CheckRecord`, which only a darn seed fills, and battencli's also lists `DiscussionHistory`, so `TestWire_EverySeamFilled` holds both ways; `TestWire_DarnRecipe` and `TestWireLightweight_FillsThePathsWithoutLoadingAnyConfig` assert `DiscussionHistory` and `RecordEngine` on both recipes.
+The discussion spec says the history check runs on every loom record, the citation and relevant-list checks follow the record row's engine, and `validate-discussion` commits nothing; `docs/overview.md`'s validate-discussion lines follow. `pattern/PATTERN-gate-slot.md`'s Pairs section names `loomshed.ValidateDiscussion` as the function Discussion-Write's and Discussion-Burler-Fix's gates and `validate-discussion` all call, and drops the Darn-Write `discussion` gate pair, since Darn-Write's check is now a post-session guard.
 
 **ImpactSummary:** Two validators and two gates become one; the gate resolver, both wirings, the verb and Darn-Write's producer switch to it, and darn's writer gate becomes a post-session guard.

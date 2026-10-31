@@ -8,12 +8,14 @@
 - `internal/loomengine#MigrateConfig`
 - `internal/loomengine#TestMigrateConfig`
 - `internal/loomengine#TestLoadConfig_Refuses`
+- `internal/loomengine#TestLoadConfig_Loads`
 - `internal/loomengine/template.yaml`
 
 - `internal/darnengine#Config`
 - `internal/darnengine#ConfigSpec`
 - `internal/darnengine#LoadConfig`
 - `internal/darnengine#TestLoadConfig`
+- `internal/darnengine#TestMigrateConfig`
 - `internal/darnengine/template.yaml`
 - `internal/darnengine/doc.go`
 - `internal/configreg#KeyCopies`
@@ -25,11 +27,13 @@
 - `internal/loomcli#loomCLI.arbiterDepsFor`
 - `internal/loomcli#tacklerFor`
 - `internal/loomcli#TestTacklerFor`
+- `internal/loomcli#seedGoDriverRun`
 - `internal/battencli#childDriverKind`
 - `internal/battencli#TestChildDriverKind`
 - `internal/arbiterstop#HoldReading`
 - `internal/arbiterstop#TestHoldReading`
 - `internal/sheddriver/doc.go`
+- `internal/loomcli/doc.go`
 - `docs/overview.md`
 - `PATTERN.md`
 
@@ -45,7 +49,6 @@
 - `internal/configsync#TestReconcile_CopiesLoomArbiterKeysIntoDarn`
 
 **Uses:**
-- `internal/loomengine#TestConfigTemplate_ContainsEveryConfigYAMLTag`
 - `internal/configreg/doc.go`
 - `internal/arbiterstop/doc.go`
 - `internal/configengine#Spec`
@@ -69,10 +72,13 @@ Readers: the per-recipe override read goes, and every recipe, pawl included, rea
 Tests:
 - `TestPrepareRunSettings`: `{"loom":{"driver_kind":"go"}}` and `{"darn":{"arbiter":"opus"}}` are refused, each message ending in exactly the module Spec's `RetiredWayForward` text for the key, the text the local-file refusal carries; `{"shed":{"driver_kind":"go"}}` passes.
 - `TestLoadConfig_Refuses` (loom) and `TestLoadConfig` (darn): a local file holding `driver_kind` is refused naming the file, the key and `shed.yaml`; a hub base file holding `arbiter` loads, the value dropped.
+- `TestLoadConfig_Loads` (loom) drops its rows that set the arbiter, tackler and `driver_kind` keys, whose `Config` fields go, and its local `driver_kind` row, which `TestLoadConfig_Refuses` now covers as a refusal.
+- darn's `TestMigrateConfig` builds its `tree_scope_verify` fixture by inserting the key before the template's `verify_attempts:` line in place of `driver_kind:`, which the template no longer holds.
 - `TestModules_EveryTemplateKeyClassified`'s darn and loom key lists lose the seven keys.
 - `TestMigrateConfig` drops its shed-override rows; `TestMigrateConfig_ShedOverrides`, `TestRecipeOverride` and `TestReconcile_CopiesLoomArbiterKeysIntoDarn` go.
+- The smoke helper `seedGoDriverRun` writes `tackler_max_spawns: 0` and `arbiter_max_spawns: 0` into the pair's local `shed.yaml` in place of its local `loom.yaml`, which would now be refused at load.
 - `TestTacklerFor`, `TestChildDriverKind` and `TestHoldReading` stop writing the keys into `loom.yaml`/`darn.yaml` and assert the `shed.yaml` value is taken for a darn, a tapestry and a pawl run alike.
-`batten.yaml`'s arbiter and tackler overrides stay. `sheddriver/doc.go` drops `loomengine.RecipeOverride` and says a loom recipe's own values come through its profile block's `shed` object.
+`batten.yaml`'s arbiter and tackler overrides stay. `sheddriver/doc.go` drops `loomengine.RecipeOverride` and says a loom recipe's own values come through its profile block's `shed` object. `internal/loomcli/doc.go`'s three sentences on the seeded driver, the arbiter keys and the seed writer's `driver_kind` read say those keys come from `shed.yaml` and its layers, a loom recipe's own values coming through its profile block's `shed` object.
 
 `docs/overview.md`'s shed.yaml paragraph drops the sentence that `loom.yaml` and `darn.yaml` override its driver and tackler keys, and names the profile block's `shed` object as a loom recipe's route.
 
