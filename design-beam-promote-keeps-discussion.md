@@ -16,7 +16,7 @@ The orch puts the finding to the operator; when the operator decides on a projec
 Nothing is switched in place.
 
 The note must keep what the agent learned: its body holds the Discussion writer's findings and decisions, so they become the beam's starting design and are not left behind in the old run's records history.
-Note `loom-beam-darns` is a related shape, where a large loom task turns into a beam and runs its pieces as darn runs inside it.
+Note `loom-beam-darns` is a related shape, where a large tapestry task turns into a beam and runs its pieces as darn runs inside it.
 
 ## Open design points
 
