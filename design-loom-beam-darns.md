@@ -48,6 +48,9 @@ Operator view, not a decision (2026-10-24): Codex could run the pre-planner, as 
 
 ## Open
 
+- The choice between `stitch` and tapestry is made before the run starts, as darn against tapestry is today, while only Discussion reads the code that shows whether the task splits into pieces with clear seams (operator, 2026-10-31).
+  `stitch` fits a large task over many packages that splits into parts with clear boundaries; tapestry fits a change woven tight, whose contracts would be as large as a full plan.
+  Measure how often the choice is right; switching after Discussion is the fix if it is often wrong.
 - Contract precision: too loose and pieces collide, too tight and the pre-planner becomes today's Plan writer.
 - A darn that finds its contract wrong stops and escalates to the `stitch` run instead of improvising; dependent pieces wait.
 - How large the whole-task review's fixes may be before they mean a piece failed.
