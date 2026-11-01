@@ -1,6 +1,6 @@
 # lym's design invariants as PATTERN entries
 
-`pattern-design-principles` · Task · enhancement, pattern · running · PR-Review
+`pattern-design-principles` · Task · enhancement, pattern · running · Finalize
 
 ## Seen (orch, 2026-11-01)
 
