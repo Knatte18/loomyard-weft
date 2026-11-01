@@ -482,7 +482,7 @@
       "isolated": false,
       "brief": "The PR-Review wait sleeps up to a minute between wakes, so lym loom pr-continue takes effect up to a minute late",
       "body": "## Seen (operator and hub orch, 2026-10-30)\n\nOn the first PR-Review run, the reviewer agent ran `lym loom pr-continue` and the run went on only after a while.\nThe wait sleeps between wakes, from a floor of one second up to a ceiling of one minute while nothing changes (`prWaitFloor`, `prWaitCeiling` in `internal/landingshed/prreview.go`), and `pr-continue` only sets a flag that the next wake reads.\nFinalize's gate then runs on the landed tree as for any landing, which takes minutes by itself.\n\n## Design (operator, 2026-10-30)\n\n`lym loom pr-continue` wakes the waiting row at once, so the PR is closed and Finalize begins with no wait of up to a minute.\n",
-      "status": "running · Finalize",
+      "status": "done",
       "created": "2026-10-30T12:24:28Z",
       "revised": "2026-11-01T06:18:33Z"
     },
