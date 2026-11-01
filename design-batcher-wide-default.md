@@ -1,6 +1,6 @@
 # The batcher template makes the wide profile, budget 300k, its active default
 
-`batcher-wide-default` · Task · enhancement, webster · running · Drift-Verify
+`batcher-wide-default` · Task · enhancement, webster · running · Code-Bouncer
 
 ## Decision (operator, 2026-11-01)
 
