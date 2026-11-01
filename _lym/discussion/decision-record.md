@@ -26,4 +26,13 @@ Neve's `~/.local/bin/arrange-to-tiles.sh` (Meta+Alt+A, run through xremap) fills
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - opentask-and-failed-launch-untested (class scope, severity MEDIUM, open in rounds 1)
+  - prime-spawn-window-dir-is-file (class design, severity BLOCKING, open in rounds 1)
+  - window-command-timeout-untestable (class design, severity MEDIUM, open in rounds 1)
+  - window-wait-unpinned (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
