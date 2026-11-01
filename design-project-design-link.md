@@ -1,6 +1,6 @@
 # A project slug on the board links to its design file
 
-`project-design-link` · Task · enhancement, board · running · PR-Review
+`project-design-link` · Task · enhancement, board · running · Finalize
 
 ## Seen (operator, 2026-11-01)
 
