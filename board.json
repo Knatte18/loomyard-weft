@@ -766,7 +766,7 @@
       "isolated": false,
       "brief": "Read a file to change with Read and edit it with Edit, all its edits in one message; a guard refuses sed -i and its kin",
       "body": "## Seen (orch, 2026-11-01)\n\nIn the three heaviest Webster forks of `run-verbs-shared`, 66 to 90% of the edits were shell edits (`sed -i` 74, 54 and 22 times), often in two steps through a scratch file, at about one edit a turn; the two forks that used the Edit tool made 2.3 to 2.4 edits a turn.\nNone of them was ever refused by the Edit tool: they read with `sed -n` and wrote with `sed -i` from the start.\nThe deny-and-steer sentence every agent gets, `steerPythonDeny` in `internal/shellguard/rows.go`, says \"edit files with Edit or Write, search and read with grep, awk, cat or sed -n\"; nothing stops a shell edit, and the Edit tool takes only a file read with the Read tool.\n\n## Idea\n\n- A file an agent will change is read with the Read tool, a span through offset and limit, and changed with Edit; all of one file's edits go in one message.\n- grep and `sed -n` stay for searching and glancing at files the agent does not change.\n- The steering sentence says so, and a PreToolUse guard refuses `sed -i`, `perl -i` and a heredoc or redirect into a tracked source file, as the Python guard refuses Python today, with the same steer.\n",
-      "status": "running · Describe",
+      "status": "running · PR-Review",
       "created": "2026-11-01T14:16:30Z",
       "revised": "2026-11-01T14:27:05Z",
       "project": "agent-turns"
