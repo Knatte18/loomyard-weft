@@ -293,6 +293,16 @@ Rationale: Parent, 2026-11-01: ending the row Stuck and rewriting a whole part a
 - A part writer working from contracts may still need to read a neighbouring part's code to get a seam right; the stencil forbids it beyond signature lookups with `lym quarry glyphs` or `expand`, so the cost shows up as contract questions to the chair or as seam findings in Plan-Review.
 - The parts check guarantees each shared spot a valid range in part order (D3), but the chair still judges the card position within it, inside one part included; a misplacement is caught by `uses-later-target` only where the card's refs show it.
 
+<!-- lym:carry-over Discussion-Review -->
+- Discussion-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/discussion/round-2-review.md; fixer report: _lym/reviews/discussion/round-2-fixer-report.md.
+  - chair-timeout-equals-writer-timeout (class design, severity MEDIUM, open in rounds 2)
+  - failed-writer-ends-as-error-not-stuck (class design, severity MEDIUM, open in rounds 1, 2)
+  - join-parts-unbounded-by-current-row (class design, severity BLOCKING, open in rounds 1, 2)
+  - parts-write-self-check-has-no-command (class design, severity MEDIUM, open in rounds 2)
+  - resume-mid-fix-loses-fix (class design, severity MEDIUM, open in rounds 2)
+<!-- /lym:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - D1: with `plan_split` false a tapestry run records `Parts-Write` and `Parts-Plan-Write` Skipped and runs `Plan-Write`; with it true the run records `Plan-Write` Skipped after `Parts-Plan-Write`'s Done and reaches `Plan-Bouncer`; a goto onto `Plan-Write` in a split run runs it; the settled-verdict refusal names `Parts-Plan-Write` in a split run, `Plan-Write` in a split run recovered by a goto onto `Plan-Write`, and `Plan-Write` otherwise.
