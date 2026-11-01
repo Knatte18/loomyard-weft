@@ -1,4 +1,4 @@
-# Card 16 — heddle-bolt-replayer
+# Card 17 — heddle-bolt-replayer
 
 **Create:**
 - `plan:internal/heddleengine#Replayer` -> `type Replayer struct`
@@ -52,4 +52,4 @@ one local commit touching `board.json` and `heddle.json` is applied by both repl
 such a commit whose board change belongs only to an ended entry keeps its `heddle.json` change on the tip and tags the original `set-aside/<slug>/<short sha>`;
 a `heddle.json` field changed on both sides keeps origin's value and tags the original `set-aside/replayer/heddle/<short sha>`.
 
-**ImpactSummary:** Adds rows to one fabric test and a new replayer in heddle with no production registration yet (card 19 registers it).
+**ImpactSummary:** Adds rows to one fabric test and a new replayer in heddle with no production registration yet (card 20 registers it).

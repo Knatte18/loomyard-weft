@@ -3,6 +3,9 @@
 **Edit:**
 - `//PATTERN.md`
 - `//pattern/PATTERN-durable-vs-ephemeral-state.md`
+- `//pattern/PATTERN-config-layers.md`
+- `//pattern/PATTERN-cwd-resolution.md`
+- `//pattern/PATTERN-fabric-git.md`
 
 **Extends:**
 - `//pattern/PATTERN-leaf-packages.md`
@@ -36,6 +39,12 @@ In `pattern/PATTERN-leaf-packages.md`, extend the `internal/runproc` section's i
 
 Create `pattern/PATTERN-heddle-instructions.md`: heddle's store is `heddle.json` at the Bolt checkout's root; the `lym heddle` verbs and heddle's Bolt replayer are its only writers; `internal/heddleengine` is the only package that reads it and renders it, into file targets at a worktree's root through fabric's worktree seam or `lym heddle render`, and into a session's appended system prompt through shuttle's prompt seam; fabric hands heddle paths and events and names no heddle file.
 
+Background lines that place a Bolt-checkout thing through `BoardDir` or `_board` name `BoltDir` or the Bolt checkout instead (D9), wording otherwise unchanged:
+`PATTERN-config-layers.md`'s machine config file becomes `<BoltDir>/.lym/config/<module>.machine.yaml`;
+`PATTERN-cwd-resolution.md`'s hub-only containers line names the Bolt checkout and `_launchers`;
+`PATTERN-fabric-git.md`'s one weft-side `.gitignore` writer is `boardengine`'s lock and manifest patterns in the Bolt checkout, the weft's `main` worktree;
+and `PATTERN-durable-vs-ephemeral-state.md`'s hub sibling is `BoltDir(hub)`.
+
 The overview grows by the new line and the longer durable line, well under the headroom line (the overview is far below it today).
 
-**ImpactSummary:** Prose only: three PATTERN lines and three background files; no code or test reads the changed wording.
+**ImpactSummary:** Prose only: three PATTERN lines and the background files listed above; no code or test reads the changed wording.

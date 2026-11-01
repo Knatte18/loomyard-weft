@@ -26,7 +26,6 @@
 **Uses:**
 - `plan:internal/fabricengine#BoltDirName`
 - `internal/creelengine/doc.go`
-- `internal/hubforge/doc.go`
 - `internal/reedcli/doc.go`
 - `internal/reedengine/doc.go`
 - `internal/webstercli/doc.go`
@@ -37,6 +36,6 @@
   Where the sentence reads better without the name, it says "the Bolt checkout" instead, which also satisfies D9.
 - Every comment that spells the path (`<hub>/_board`, `_board/.lym/...`, `_board/_lym/...`, `committed in _board`) names "the Bolt checkout" (or "the Bolt checkout's `_lym/config`" and the like) instead, in each listed file and doc comment.
 - The help texts' wording changes nowhere a test pins it with the literal; the tests that did spell it move to the constant in card 6, whose assertions compare the same strings.
-- `boardengine/doc.go`'s replay paragraph is not reworded here; card 12 rewrites it.
+- `boardengine/doc.go`'s replay paragraph is not reworded here; card 13 rewrites it.
 
 **ImpactSummary:** Comment, help-text and message spelling only across 21 files in about a dozen packages; every printed value stays the same string.

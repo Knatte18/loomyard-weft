@@ -1,4 +1,4 @@
-# Card 17 — shuttle-prompt-seam
+# Card 18 — shuttle-prompt-seam
 
 **Create:**
 - `plan:internal/shuttleengine#PassageReader` -> `type PassageReader func(boltDir, engine string) ([]string, error)`
@@ -22,8 +22,8 @@
 **Intent:** Deliver the `claude-prompt` entries into every Claude session shuttle launches in a hub (D4), through a process-wide seam so heddle knows no Claude flag and `claudeengine` parses no `heddle.json` (PATTERN-shuttle-provider-seam).
 
 - `internal/shuttleengine` declares `PassageReader`, the standing passages for a hub's Bolt checkout and an engine name, and `InstallPassageReader`, an `atomic.Pointer` install returning its restore, as `fabricengine.InstallPushNotifier` does.
-  `StandingPassages(boltDir, engine)` returns none for an empty `boltDir` (a session outside a hub) or with no reader installed; a reader error returns none and is logged at Warn naming the error and `lym heddle list` as the way to inspect the store, so a broken `heddle.json` never blocks a launch and lym's own sentences still reach it; for a file that does not decode, the error is card 13's refusal, which names restoring the committed file as the repair.
-  Heddle's reader is `heddleengine.Renderer{}.Passages`, which reads `<engine>-prompt`; card 19 installs it, and `codex-engine` will read `codex` through the same seam when it is built.
+  `StandingPassages(boltDir, engine)` returns none for an empty `boltDir` (a session outside a hub) or with no reader installed; a reader error returns none and is logged at Warn naming the error and `lym heddle list` as the way to inspect the store, so a broken `heddle.json` never blocks a launch and lym's own sentences still reach it; for a file that does not decode, the error is card 14's refusal, which names restoring the committed file as the repair.
+  Heddle's reader is `heddleengine.Renderer{}.Passages`, which reads `<engine>-prompt`; card 20 installs it, and `codex-engine` will read `codex` through the same seam when it is built.
 - `Prepare` reads `shuttleengine.StandingPassages(c.dirs.Board, "claude")` (the told `Board` dir is the Bolt checkout) and passes them to `appendPromptText`, which keeps lym's notice and sentences on their one line as today and appends each passage after a blank line, in order.
   The one-line rule the package's `init` check applies stays on lym's own sentences; passages may span lines, since the file reaches Claude Code through `--append-system-prompt-file` and is echoed nowhere.
 - A resume through the launch's own resume line reuses the file its launch wrote, so its passages stay; a resume that runs `Prepare` again, as an adopted session does, reads the store afresh.

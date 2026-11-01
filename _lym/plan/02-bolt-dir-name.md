@@ -13,6 +13,7 @@
 - `internal/lymcwd#readRecordedAnchor`
 - `internal/lymcwd#TestEnforcement_GeometryLiterals`
 - `internal/runproc#HubOwner`
+- `internal/runproc#allowedImports`
 - `internal/runproc/doc.go`
 - `internal/fabricengine#BoardDirName`
 - `internal/fabricengine#BoardWriteLockPath`
@@ -34,6 +35,7 @@
   The private `boardDirName` goes; `boardDir` and `readRecordedAnchor`'s stale-marker message take `BoltDirName`, and every comment in `anchor.go` names "the Bolt checkout", never the path.
 - `runproc.HubOwner` is set from `lymcwd.BoltDirName`; `runproc` gains the `lymcwd` import, which closes no cycle since `lymcwd` imports only the standard library, `internal/dotgit` and `internal/weftname` (card 1 records it in PATTERN-leaf-packages's background).
   `internal/runproc/doc.go` says `HubOwner` is the Bolt checkout's directory name, without spelling the path.
+  `allowedImports` in `leaf_enforcement_test.go` gains `github.com/Knatte18/loomyard/internal/lymcwd`, admitted for the one Bolt directory name, so `TestLeafInvariant_AllowlistOnly` passes; its comment and the file header, which list the leaf's import set, name `internal/lymcwd` in it.
 - `internal/fabricengine` re-exports it as `BoltDirName`, the name every package outside `lymcwd` and `runproc` uses, and adds `BoltDir(hub)`, `filepath.Join(hub, BoltDirName)`, the Bolt checkout's path.
   `BoardDirName` is set from `BoltDirName` and `BoardDir` stays built from `BoardDirName`; their comments say `BoardDir` names the board's own data (`board.json`, its overview and design files) and `BoltDir` the checkout everything else lives in.
 - What lives in Bolt beside the board takes its place from `BoltDir`/`BoltDirName`: `BoardWriteLockPath` (the Bolt write lock), `StencilsDir`, `SpecsDir`, `HubScratchDir` and the scratch paths built on it (their comments name "the Bolt checkout's `.lym`" and the like, no `<hub>/_board` path), `HubReservedNames` (whose comment and `filterHubReserved`'s name the Bolt directory, not `_board`), and `ConfigDirs`, whose `Board` field is now `BoltDir(l.HubPath)`.
@@ -42,4 +44,4 @@
   The scan passes because `fabricengine` and `runproc` now hold no `_board` string in a path-construction context.
 - `TestBoardDir` gains a row asserting `BoltDir(hub)` equals `filepath.Join(hub, lymcwd.BoltDirName)` and equals `BoardDir(hub)`, so a later value change of the constant moves both.
 
-**ImpactSummary:** Values unchanged; the deleted private constant has its only callers inside `anchor.go`; the geometry guard's `_board` row narrows to `internal/lymcwd`.
+**ImpactSummary:** Values unchanged; the deleted private constant has its only callers inside `anchor.go`; the geometry guard's `_board` row narrows to `internal/lymcwd`, and runproc's leaf allowlist admits `internal/lymcwd`.

@@ -1,8 +1,10 @@
-# Card 18 — heddle-cli
+# Card 19 — heddle-cli
 
 **Create:**
 - `internal/heddlecli/doc.go`
 - `plan:internal/heddlecli#Command` -> `func Command() *cobra.Command`
+- `plan:internal/heddlecli#RunCLI` -> `func RunCLI(out io.Writer, args []string) int`
+- `plan:internal/heddlecli#RunCLIIn` -> `func RunCLIIn(cwd string, out io.Writer, args []string) int`
 - `plan:internal/heddlecli#heddleCLI` -> `type heddleCLI struct`
 - `plan:internal/heddlecli#commandOf` -> `func commandOf(c *heddleCLI) *cobra.Command`
 - `plan:internal/heddlecli#heddleCLI.wire` -> `func (c *heddleCLI) wire(cwd string) error`
@@ -15,6 +17,7 @@
 - `plan:internal/heddlecli#heddleCLI.write` -> `func (c *heddleCLI) write(change func(*heddleengine.Store) error) error`
 - `plan:internal/heddlecli#heddleCLI.namedWorktree` -> `func (c *heddleCLI) namedWorktree(name string) (*lymcwd.Location, error)`
 - `plan:internal/heddlecli#TestHeddleCLI` -> `func TestHeddleCLI(t *testing.T)`
+- `plan:internal/heddlecli#TestMain` -> `func TestMain(m *testing.M)`
 
 **Edit:**
 - `cmd/lym#newRoot`
@@ -45,6 +48,7 @@ A cwd that does not resolve refuses every verb with the resolve error and "run l
 A nil `save` means `heddleengine.Save` and a nil `spawnSync` means `boardengine.SpawnSync`, and a zero `Renderer` waits `DefaultBoltLockWait`, so a receiver a test builds by hand through `commandOf` behaves as `Command()`'s.
 Every file of the package spells no fabric side token (PATTERN-fabric-vocabulary), so it says "worktree" and calls only fabric names that carry none.
 Each verb carries the operator audience annotation, which `TestCLITree_EveryCommand` checks with the help text.
+`RunCLI(out, args)` runs the subtree from the process cwd and `RunCLIIn(cwd, out, args)` from the given cwd, as the other cli modules do (PATTERN-cli-cobra).
 
 Verbs:
 
@@ -60,7 +64,14 @@ Verbs:
   `namedWorktree` takes the name as the last element of a path `lym fabric list` prints: it lists the worktrees through `fabricengine.List(location.WorktreePath())`, refuses a name matching no listed entry, or only one git marks prunable, naming `lym fabric list` and, for a prunable one, that its directory is gone and `git worktree prune` in the hub's prime clears the stale entry, and otherwise builds the location with `lymcwd.NamedWorktree`, so the verb writes and seeds only in an existing worktree of its own hub.
   It then builds the event with `fabricengine.EventFor(location, nil)`, which seeds the exclude lines first, and renders it; a render that fails, as when the Bolt write lock stays held past the wait, refuses naming the error and running `lym heddle render` again, and render warnings are printed.
 
+`set` and `remove` let any lym caller in the hub, an agent included, change the text every later Claude launch appends to its system prompt and every later render writes into a worktree's root.
+The operator audience annotation is help text and denies nothing, and no agent deny is added, as the decision record adds none.
+The bound: a write lands only through `heddleengine`'s validation under the Bolt write lock, and the board's sync commits it to Bolt's history, where it can be read and reverted.
+A worktree takes it only when lym makes the worktree, at a take-in render or at a hand render; a Claude session takes it only at its launch or adoption, or at its next compaction after a file render.
+
 `newRoot` adds `heddlecli.Command()` and `heddle` to its `Long`'s module list; `doc.go` describes the module.
+
+`TestMain` lives in an untagged `internal/heddlecli/testmain_test.go`: it calls `gitkit.HermeticGitEnv()`, since the tier1 tests spawn git through `hubforge`, then runs the tests under `tmuxkit.Main`, as `internal/fabricengine/testmain_test.go` does (PATTERN-test-isolation).
 
 `TestHeddleCLI` (tier1, in a new `internal/heddlecli/cli_integration_test.go` with `//go:build tier1`, over `hubforge.CopyHub` hubs) rows:
 `set` creates an entry from a text file and another from stdin, `list` prints them in order without text, `get` prints one in full, a partial `set` changes only its flag, and `remove` drops one;
@@ -70,6 +81,7 @@ a `spawnSync` fake returning an error leaves the `set` succeeded with `heddle.js
 a verb run from the prime of a hub whose Bolt checkout directory was moved away refuses naming the missing Bolt checkout and `lym fabric clone`;
 a `set` runs its save with the Bolt write lock held (the fake `save` finds it taken with `lock.TryAcquireWriteLock`), calls the fake `spawnSync` once with the Bolt checkout after the lock is released, and leaves Bolt's `HEAD` and status of tracked files as they were apart from `heddle.json`, so no foreground commit or pull ran, and no worktree file changed;
 a verb run from a temp directory outside any hub refuses naming the way forward;
+`list` run from the hub's Bolt checkout, and from the prime's records sibling, each refuses with `RequireDrivableWorktree`'s text and writes nothing;
 `render` naming no listed worktree, and naming a worktree whose directory was deleted so git marks it prunable, refuses naming `lym fabric list` and writes no file and seeds no exclude line anywhere;
 `render` with no name, in a prime whose `info/exclude` lacks the three lines, leaves the lines seeded and both files written;
 `render` in a prime holding an unmarked `CLAUDE.local.md` prints the render's warning naming that file;

@@ -1,4 +1,4 @@
-# Card 9 — fabric-worktree-seam
+# Card 10 — fabric-worktree-seam
 
 **Create:**
 - `plan:internal/fabricengine#WorktreeEvent` -> `type WorktreeEvent struct`
@@ -16,6 +16,7 @@
 - `internal/fabricengine#PullResult`
 - `internal/fabricengine#Fabric.pullWarpArm`
 - `internal/fabricengine#Fabric.reanchorAfterRewrite`
+- `internal/fabricengine#Fabric.FastForwardPair`
 - `internal/fabricengine#BranchOutcome`
 - `internal/fabricengine#originMover.move`
 - `internal/fabricengine#OriginReport.Summary`
@@ -45,7 +46,7 @@ The seam (in a new file `internal/fabricengine/worktreeseam.go`; its names carry
   Fabric hands paths and names no heddle file.
 - `WorktreeSeam` has `Made(WorktreeEvent) error` and `TookIn(WorktreeEvent) error`.
   `InstallWorktreeSeam` stores it in an `atomic.Pointer` and returns a restore function, as `InstallPushNotifier` does; a missing seam is no event, so a test binary needs no install.
-- `EventFor(l, paths)` first seeds the exclude list through `SeedWarpExclude(l)`, under the exclude lock, then builds the event; `lym heddle render` builds its event through it too (card 18), so every render writes only after the lines are seeded.
+- `EventFor(l, paths)` first seeds the exclude list through `SeedWarpExclude(l)`, under the exclude lock, then builds the event; `lym heddle render` builds its event through it too (card 19), so every render writes only after the lines are seeded.
 - `fireWorktreeEvent(l, paths, made)` returns "" with no seam installed, else builds the event and calls `Made` or `TookIn`.
   A failure to build the event or a seam error is never returned as an error: it is logged at Warn naming the worktree and `lym heddle render` as the way forward, and returned as that warning text for the caller's result.
   It is called with no Bolt write lock held, since the seam's render takes that lock and a second acquire in one process blocks.
@@ -59,6 +60,7 @@ Where it fires:
   The weft arm and every Bolt or records move fire nothing.
   The results that print a pull carry the warning: `fabriccli`'s `pullResultMap` adds a `seam_warning` key when it is set, so `lym fabric pull` prints it, and `pullPairSide` appends it to the pair side's `Detail`, so a hub pull prints it on that pair's line.
   `battencli`'s land pull prints no pull result, so there the warning stays in the log, as D6 allows for a process that prints none.
+- `Fabric.FastForwardPair`, after its `ResetHard` to the upstream, fires "took in" with `pathsChangedBetween(warpPath, localHEAD, upstreamSHA)`, since it moves a checked-out code branch to origin's commits; D6's landing exception covers a parent merge or landing bringing commits into a beam, while this call, though only Finalize makes it, moves the parent pair to origin's commits, a take-in; the warning is logged only, since `FastForwardResult` is not printed.
 - `originMover.move`'s code-side branch fires "took in" once `ffWorktree` returns `BranchLevel`, with the paths between the head it read before the move and `OriginHead`, for the location `lymcwd.ResolveWorktree(target.worktree)`; `BranchOutcome` gains `Warning string`, and `OriginReport.Summary` prints a line `warning: <branch>: <warning>` for each branch carrying one.
   Records and Bolt branches moved by `reconcileRecordsBranch` fire nothing.
 
@@ -69,10 +71,11 @@ Where it fires:
 - a `Fabric.Pull` that fast-forwards warp over a commit, pushed from `hubforge.CloneSecond`'s hub, changing `AGENTS.md` records one "took in" with exactly `["AGENTS.md"]`, and one over a commit changing `src/x.go` records `["src/x.go"]`;
 - a `Fabric.Pull` over a rewritten warp history, built as `TestPull_ReanchorsSingleCommitBack` builds it through `buildReconcileFixture`, records one "took in" with the paths between the old and new head;
 - a Bolt pull and a weft-only fast-forward record nothing;
+- `Fabric.FastForwardPair` moving a pair over an upstream commit, pushed from `hubforge.CloneSecond`'s hub, changing `AGENTS.md` records one "took in" with exactly `["AGENTS.md"]`, and with a failing seam it still returns the upstream as `NewHead` and the captured log holds the warning naming the worktree and `lym heddle render`;
 - `ReconcileOrigin` moving a pair's code branch by fast-forward records one "took in" with the paths the moved commits change, while its fast-forwards of that pair's records branch and of Bolt in the same reconcile record nothing;
 - with a failing seam, the pull still reports `WarpAdvanced` and `NewWarpHEAD` with warp at the new head, `SeamWarning` names the worktree and `lym heddle render`, the captured log holds the same warning, and `pullResultMap` of that result holds it under `seam_warning`;
 - with the hub's fabric config made unparseable after the pair was added, so `EventFor` cannot build the event, the pull still moves warp and `SeamWarning` names the worktree and `lym heddle render`;
 - with a failing seam, `ReconcileOrigin` moving a pair's code branch leaves the outcome `Moved` at `BranchLevel`, its `Warning` set, `Summary()` holding the warning line, and the log holding it;
 - with no seam installed, the same pull returns an empty `SeamWarning`.
 
-**ImpactSummary:** Adds two optional seam calls to fabric's add, clone, pull and origin-reconcile code moves plus two result fields that `lym fabric pull`, hub pull and `OriginReport.Summary` print; with no seam installed every verb behaves and prints as before.
+**ImpactSummary:** Adds optional seam calls to fabric's add, clone, pull, origin-reconcile and parent-pair fast-forward code moves plus two result fields that `lym fabric pull`, hub pull and `OriginReport.Summary` print; with no seam installed every verb behaves and prints as before.

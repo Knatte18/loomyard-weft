@@ -1,8 +1,7 @@
-# Card 14 — heddle-render
+# Card 15 — heddle-render
 
 **Create:**
 - `plan:internal/lymdirs#HeddleDirName` -> `const HeddleDirName = "heddle"`
-- `plan:internal/fabricengine#ExcludeWayForward` -> `func ExcludeWayForward(path string) string`
 - `plan:internal/heddleengine#Marker` -> `const Marker = "<!-- rendered by lym heddle: change it with lym heddle set, never by hand -->"`
 - `plan:internal/heddleengine#DefaultBoltLockWait` -> `const DefaultBoltLockWait = 30 * time.Second`
 - `plan:internal/heddleengine#RenderRequest` -> `type RenderRequest struct`
@@ -18,7 +17,6 @@
 
 **Extends:**
 - `internal/lymdirs/doc.go`
-- `internal/fabricengine/doc.go`
 
 **Uses:**
 - `plan:internal/heddleengine#Store`
@@ -27,6 +25,7 @@
 - `plan:internal/heddleengine#LookupTarget`
 - `internal/fabricengine#BoardWriteLockFile`
 - `plan:internal/fabricengine#EventFor`
+- `plan:internal/fabricengine#ExcludeWayForward`
 - `internal/lock#AcquireWriteLockWithin`
 - `internal/gitkit#Git`
 
@@ -49,7 +48,7 @@ It reports false when the target has no entry.
 `Show` returns the text a target renders to now for a root, the prompt passages joined by blank lines for a prompt target, and writes nothing.
 `Passages(boltDir, engine)` returns the `<engine>-prompt` entries' texts in order, read through `read`, and none for an engine with no prompt target.
 
-`fabricengine.ExcludeWayForward(path)` returns the refusal text naming the path and its return to fabric's `warp_exclude` key through `lym config fabric`, so heddle's code never spells the key; `fabricengine/doc.go` notes it beside the exclude list.
+The refusal text comes from `fabricengine.ExcludeWayForward` (card 9), so heddle's code never spells fabric's exclude-list key.
 `lymdirs.HeddleDirName` is declared beside the other `.lym` subdirectory names, and `lymdirs/doc.go` lists it.
 
 `TestRender` (tier0, in a new `internal/heddleengine/render_test.go` with `//go:build tier0`, temp directories as the root, scratch and Bolt directories, no git) rows:
@@ -68,4 +67,4 @@ with the test holding `<ScratchDir>/heddle/render.lock`, a `Render` started in a
 
 `TestRender_LeavesNoUntrackedFile` (tier1, in a new `internal/heddleengine/render_integration_test.go` with `//go:build tier1`) builds a `hubforge.CopyHub` hub, writes a `heddle.json` with a `claude-file` and a `codex-file` entry into its Bolt checkout, builds the prime's request from `fabricengine.EventFor`, renders, and asserts `git status --porcelain --untracked-files=all` in the prime is empty while both files exist.
 
-**ImpactSummary:** New heddle rendering code; the two extended doc files gain one line each and `lymdirs` and `fabricengine` gain one declaration each with no caller yet.
+**ImpactSummary:** New heddle rendering code; `lymdirs/doc.go` gains one line and `lymdirs` one declaration.

@@ -1,4 +1,4 @@
-# Card 19 — root-prerun-installs
+# Card 20 — root-prerun-installs
 
 **Edit:**
 - `cmd/lym#newRoot`

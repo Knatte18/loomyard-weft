@@ -1,4 +1,4 @@
-# Card 10 — entrymerge-package
+# Card 11 — entrymerge-package
 
 **Create:**
 - `internal/entrymerge/doc.go`
@@ -11,6 +11,7 @@
 - `plan:internal/entrymerge#Table.Same` -> `func (t Table[T]) Same(a, b T) bool`
 - `plan:internal/entrymerge#Render` -> `func Render(value any) string`
 - `plan:internal/entrymerge#TestTable` -> `func TestTable(t *testing.T)`
+- `plan:internal/entrymerge#TestMain` -> `func TestMain(m *testing.M)`
 
 **Intent:** Draw the board replay's three-way by-entry merge out into a package of its own, parameterised by the record's key and field table (D8), so the board and heddle share it rather than copy it.
 
@@ -27,5 +28,8 @@
 - `Render` renders a value as JSON, falling back to `fmt.Sprint`, as `replayValue` does.
 - Unknown keys, ids, handles and dates are not fields: a caller merges the table's fields and keeps everything else as origin holds it.
 
-`TestTable` (tier0, in a new `internal/entrymerge/entrymerge_test.go` with `//go:build tier0`) drives a two-field test record through rows: a field only the commit changed is applied; a field both sides changed keeps origin's value and is reported lost with the commit's rendered value; a field origin already holds is neither applied nor lost; an origin value equal to the parent's counts as unchanged by origin; `Changed` lists only differing fields and treats a nil and an empty slice alike through the getter; `AddClash` reports each differing field; `Same` is true for equal records and false when one field differs.
+`TestMain` lives in an untagged `internal/entrymerge/testmain_test.go` and runs the tests under `tmuxkit.Main` (PATTERN-test-isolation); the package spawns no git, so it calls no `gitkit.HermeticGitEnv()`.
+
+`TestTable` (tier0, in a new `internal/entrymerge/entrymerge_test.go` with `//go:build tier0`) drives a two-field test record through the rows no existing test covers: an origin value equal to the parent's counts as unchanged by origin, so the commit's value is applied; `Changed` lists only differing fields and treats a nil and an empty slice alike through the getter; `AddClash` reports each differing field.
+A field only the commit changed being applied, a field both sides changed keeping origin's value and being reported lost, a field origin already holds being neither applied nor lost, and `Same` failing on one differing field are covered by `boardengine`'s `TestFabricReplay`, which card 12 runs over this merge unchanged.
 

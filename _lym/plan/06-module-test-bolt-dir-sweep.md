@@ -60,7 +60,7 @@
 **Intent:** Make the other packages' tests take the Bolt directory name from the constant and name the Bolt checkout in their comments (D9).
 
 - Each `"_board"` string these members build a path, a fixture or an expected message from becomes `fabricengine.BoltDirName`, and a hand join of a hub and that name becomes `fabricengine.BoltDir(hub)`.
-  A package that cannot import `fabricengine` without a cycle takes `lymcwd.BoltDirName`, which is the same value.
+  `internal/yamlengine#TestSetValues` and `internal/vscode#TestBuildWorkspace` take `lymcwd.BoltDirName`, the same value, since they are in-package tests of packages `fabricengine` imports, so importing `fabricengine` there closes a cycle; every other listed member takes `fabricengine.BoltDirName`.
 - Each comment in these members that spells `_board` names "the Bolt checkout" instead; `internal/boardcli/cli_test.go` and `internal/reedcli/smoke_debuglog_test.go` carry the token in their file headers, so every member of those two files is listed.
 - No assertion changes meaning, since each compared value is the same string.
 

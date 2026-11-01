@@ -1,4 +1,4 @@
-# Card 12 — bolt-replayer-registry
+# Card 13 — bolt-replayer-registry
 
 **Delete:**
 - `//internal/fabricengine/boardreplay.go`
@@ -69,6 +69,7 @@
 - `internal/fabricengine#addLocalCreatedStamps`
 - `internal/fabricengine#OwnerReader`
 - `internal/fabricengine#readOriginOwners`
+- `internal/fabricengine#restoreReplayTip`
 - `internal/fabricengine/doc.go`
 - `internal/fabricengine_test#TestRecordsReplay`
 - `internal/fabricengine_test#scribbleThenFailReplay`
@@ -91,7 +92,6 @@
 - `internal/fabricengine#ReadEndedSetForTest`
 - `internal/fabricengine#ReconcileOrigin`
 - `internal/fabricengine#blobAt`
-- `internal/fabricengine#restoreReplayTip`
 - `internal/fabricengine_test#newRecordsFixture`
 
 **Intent:** Replace the board-tailored replay seam with a general registry of Bolt replayers (D7), so fabric's replay, ended set and owner read hold no board file name, board status or board-named type.
@@ -117,7 +117,7 @@ The registry, in a new `internal/fabricengine/boltreplay.go` that replaces `boar
 - `replayClaimedCommit` groups the commit's paths by claiming replayer, builds one `ReplayRequest` per replayer from the merge base, the parent and the commit, calls each `Apply`, then stages and commits what they kept as one commit with the original message.
   A loss or refusal tags the original: under the finding's entry when it comes from the run ledger (the run's slug), else `set-aside/replayer/<name>/<short sha>`.
   `setAsideTag`'s empty-slug fallback no longer names the board: a ledger set-aside with no slug takes `replayer/<ledger name>`, a shape no `set-aside/<slug>/...` takes since a slug holds no slash.
-  The tip restore on a failure works as today.
+  The tip restore on a failure works as today; `restoreReplayTip`'s message says "after a failed Bolt replay", since it now follows any replayer's failure.
 - `localLedgerRuns` replaces `localBoardEntries` through `commitLedgerRuns` and `Runs`; `hubLocationOfBolt` replaces `hubLocationOfBoard`; `ReplayOutcome.Lost` and `Refused` hold `ReplayFinding`; `Bolt.logReplay` says "Bolt" where it said "board".
 - The other ended-set and owner readers (`Bolt.endedByOrigin`, `Fabric.weftEndedByOrigin`, `goneEntryEnded`, `readOriginEnded`, `addLocalCreatedStamps`, `readOriginOwners`) read the ledger's file and `Runs` instead of `board.json` and `Entries`; `OwnerReader`'s byte argument is renamed from `boardJSON` to `ledger`, its doc naming the run ledger's file, with its type unchanged.
 - `doc.go`'s replay, ended-set and owner sections describe the registry, the run ledger and the tag shapes.
@@ -136,7 +136,7 @@ Tests:
 - `TestRecordsReplay` keeps every row; `scribbleThenFailReplay` embeds `boardengine.FabricReplay`, so it keeps the board's name, claims and ledger, and its `Apply` takes the new request, and the row registers it with `RegisterBoltReplayer` and restores the board's after.
 - `TestBoltReplayers` (tier1, not parallel, since it empties and fills the process-wide registry) asserts: with no replayer registered, a diverged Bolt whose local commit touches only a stencil file replays by cherry-pick with no error, while with only `fakeReplayer` registered a claimed `notes/fake.json` commit fails `ReplayBoltForTest` with `ErrReplayerMissing` naming the registration and leaves the tip; with no replayer registered `ReadEndedSetForTest` fails the same way, and `ReconcileOrigin` with an `OwnerOf` seam over a recorded pair fails wrapping it; with the board's replayer registered beside `fakeReplayer`, named `fake`, claiming `notes/fake.json` and reporting a loss, its kept change is committed and the original tagged `set-aside/replayer/fake/<short sha>`; and with `emptyEntryLedger` registered in the board's place, a ledger loss with an empty entry tags `set-aside/replayer/board/<short sha>`.
   `fakeReplayer` is a test type whose `Apply` writes the commit's `notes/fake.json` bytes and reports one loss; `emptyEntryLedger` embeds `boardengine.FabricReplay`, so it keeps the name `board`, its claims and its ledger, and its `Apply` reports one loss with an empty `Entry`, the one way to reach that fallback, since the board's own findings always carry a slug, `prime` or a design file name.
-- `TestBoltReplay_NamesNoBoardFile` (tier0, in a new `internal/fabricengine/boltreplay_test.go` with `//go:build tier0`) parses `replay.go` and `boltreplay.go` and fails naming each string literal equal to `board.json` or `README.md`, or opening with `project-` or `design-`, and each top-level declaration whose name holds `board` in any case, so no board file name or board-named replay type returns to the replay, ended-set and owner-read code; it first checks its matcher against planted sources that hold one of each and one that holds none.
+- `TestBoltReplay_NamesNoBoardFile` (tier0, in a new `internal/fabricengine/boltreplay_test.go` with `//go:build tier0`) parses `replay.go` and `boltreplay.go` and fails naming each string literal equal to `board.json` or `README.md`, or opening with `project-` or `design-`, and each top-level declaration whose name holds `board` in any case; it also parses `pull.go`, `pushclassified.go`, `originreconcilemoves.go`, `originreconcile.go` and `bolt.go` and fails on the same literals inside the bodies of the ended-set and owner readers and the replay log this card edits there (`Fabric.weftEndedByOrigin`, `goneEntryEnded`, `readOriginEnded`, `addLocalCreatedStamps`, `readOriginOwners`, `Bolt.endedByOrigin` and `Bolt.logReplay`), failing too when one of those functions is not found, so a rename cannot empty the scan; so no board file name or board-named replay type returns to the replay, ended-set and owner-read code; it first checks its matcher against planted sources that hold one of each and one that holds none.
   The ended set's `"done"` how-value and a run state `"done"` stay, being the ended set's own vocabulary and batten's, not a board status; the board status leaves as `boardEntryDone`'s delete and the ledger's `Ended`.
 
 **ImpactSummary:** Replaces fabric's board replay seam and its three readers with the registry across fabricengine's replay, Bolt, pull, push and origin-reconcile code, boardengine's replay, boardkit and the root pre-run; every existing replay, ended-set and owner case keeps its outcome.
