@@ -105,7 +105,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **The board marks the own entries of a project apart from its sub-projects**<br>• A No project heading in the README, an Own entries heading in a project file with sub-projects | [`board-no-project-heading`](design-board-no-project-heading.md) | darn | Finalize | neve | 21m<br>20m | board |
-| T2 | **A concurrent fetch of the same ref fails a batten pass and spawns a tackler**<br>• A fetch into tracking refs waits under the push lock, as fabric's writes wait under theirs<br>• `profile: solid` | [`reconcile-fetch-race`](design-reconcile-fetch-race.md) | darn | Record-Write | neve | 3h<br>42m | batten, fabric |
+| T2 | **A concurrent fetch of the same ref fails a batten pass and spawns a tackler**<br>• A fetch into tracking refs waits under the push lock, as fabric's writes wait under theirs<br>• `profile: solid` | [`reconcile-fetch-race`](design-reconcile-fetch-race.md) | darn | Darn-Write | neve | 3h<br>42m | batten, fabric |
 
 #### Ready (0)
 
