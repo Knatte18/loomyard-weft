@@ -55,10 +55,10 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **The gate reports every failure at once, lint included, in one readable result**<br>• lym gate test prints a compact list of every build, test and lint failure with file:line and values, and the log path | [`gate-failure-report`](design-gate-failure-report.md) | darn | Darn-Write | neve | 1h<br>1h | gate, lint |
-| T8 | **A card that retires a name sweeps the whole tree, tests included, first**<br>• The implementer greps every retired name across the tree and test data before its first edit, and reads and edits all hits in one message each | [`retired-name-sweep`](design-retired-name-sweep.md) | darn | Finalize | neve | 1h<br>37m | webster, stencil |
-| T12 | **Agents still try the forms lym's guards refuse, at a turn each**<br>• Python and raw go build or go vet attempts are refused and retried; find why the steering does not hold and close it | [`hook-refused-turns`](design-hook-refused-turns.md) | darn | Finalize | neve | 1h<br>37m | process, claude |
-| T13 | **Trial: the batching instruction in the rendered CLAUDE.local.md through heddle**<br>• Put the batching instruction into heddle's claude-file target and measure calls per turn with forkaudit against today's 1.7 | [`batching-in-claude-local`](design-batching-in-claude-local.md) | darn | Darn-Write | neve | 1h<br>37m | claude, heddle |
-| T15 | **A reviewer or fixer wakes once for all its forks, not once per fork**<br>• 79 no-call wake-up turns at full context over three runs, 8-9% of the forking review roles weight | [`fork-results-one-wake`](design-fork-results-one-wake.md) | darn | Finalize | neve | 56m<br>37m | burler, stencil |
+| T8 | **A card that retires a name sweeps the whole tree, tests included, first**<br>• The implementer greps every retired name across the tree and test data before its first edit, and reads and edits all hits in one message each | [`retired-name-sweep`](design-retired-name-sweep.md) | darn | Finalize | neve | 1h<br>38m | webster, stencil |
+| T12 | **Agents still try the forms lym's guards refuse, at a turn each**<br>• Python and raw go build or go vet attempts are refused and retried; find why the steering does not hold and close it | [`hook-refused-turns`](design-hook-refused-turns.md) | darn | Finalize | neve | 1h<br>38m | process, claude |
+| T13 | **Trial: the batching instruction in the rendered CLAUDE.local.md through heddle**<br>• Put the batching instruction into heddle's claude-file target and measure calls per turn with forkaudit against today's 1.7 | [`batching-in-claude-local`](design-batching-in-claude-local.md) | darn | Darn-Write | neve | 1h<br>38m | claude, heddle |
+| T15 | **A reviewer or fixer wakes once for all its forks, not once per fork**<br>• 79 no-call wake-up turns at full context over three runs, 8-9% of the forking review roles weight | [`fork-results-one-wake`](design-fork-results-one-wake.md) | darn | Finalize | neve | 57m<br>38m | burler, stencil |
 
 ##### Ready (0)
 
@@ -72,9 +72,9 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T9 | **Agents read a file whole or all its spans in one message, not in slices**<br>• No reading one file in three to five slices over as many turns, nor re-reading it | [`read-whole-not-slices`](design-read-whole-not-slices.md) | darn | T8 | 1h<br>37m | webster, stencil |
+| T9 | **Agents read a file whole or all its spans in one message, not in slices**<br>• No reading one file in three to five slices over as many turns, nor re-reading it | [`read-whole-not-slices`](design-read-whole-not-slices.md) | darn | T8 | 1h<br>38m | webster, stencil |
 | T14 | **Trial: agents settle every edit before the first, then gate once**<br>• An imperative heddle instruction: read, decide all edits, make them, gate once and fix the whole report in one round | [`plan-edits-before-gate`](design-plan-edits-before-gate.md) | darn | T13 | 1h<br>22m | heddle, stencil, claude |
-| T16 | **The round-1 Plan reviewer gathers in one call a turn**<br>• 1.05 calls a turn and 41% of its weight removable by merging, though it carries the batching sentence | [`plan-reviewer-batching`](design-plan-reviewer-batching.md) | darn | T15 | 56m<br>37m | burler, stencil |
+| T16 | **The round-1 Plan reviewer gathers in one call a turn**<br>• 1.05 calls a turn and 41% of its weight removable by merging, though it carries the batching sentence | [`plan-reviewer-batching`](design-plan-reviewer-batching.md) | darn | T15 | 57m<br>38m | burler, stencil |
 
 #### Notes (1)
 
@@ -100,8 +100,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **A project slug on the board links to its design file**<br>• The facts line links a project slug to design-slug.md when the project has a body | [`project-design-link`](design-project-design-link.md) | darn | Code-Burler-Review | neve | 8m<br>8m | board |
-| T2 | **A concurrent fetch of the same ref fails a batten pass and spawns a tackler**<br>• A fetch into tracking refs waits under the push lock, as fabric's writes wait under theirs<br>• `profile: solid` | [`reconcile-fetch-race`](design-reconcile-fetch-race.md) | darn | Code-Bouncer | neve | 3h<br>1h | batten, fabric |
+| T1 | **A project slug on the board links to its design file**<br>• The facts line links a project slug to design-slug.md when the project has a body | [`project-design-link`](design-project-design-link.md) | darn | Code-Burler-Review | neve | 9m<br>9m | board |
+| T2 | **A concurrent fetch of the same ref fails a batten pass and spawns a tackler**<br>• A fetch into tracking refs waits under the push lock, as fabric's writes wait under theirs<br>• `profile: solid` | [`reconcile-fetch-race`](design-reconcile-fetch-race.md) | darn | Code-Burler-Review | neve | 3h<br>1h | batten, fabric |
 
 ##### Ready (0)
 
@@ -115,8 +115,8 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **One test binary per package, the tier chosen at run time**<br>• LYM_TEST_TIER selects the tier instead of build tags, taking a cold gate run from 532 test binaries to 182 | [`gate-one-binary-per-package`](design-gate-one-binary-per-package.md) | tapestry |  | 56m<br>56m | gate, testkit, pattern |
-| T5 | `draft` **Study: Parts-Write and Parts-Plan-Write against Plan-Write**<br>• Write the plans of two landed runs both ways and compare cost, time, gate pass and one Plan-Review round<br>• `profile: docs` | [`plan-split-bench`](design-plan-split-bench.md) | darn |  | 56m<br>56m | loom |
+| T3 | `draft` **One test binary per package, the tier chosen at run time**<br>• LYM_TEST_TIER selects the tier instead of build tags, taking a cold gate run from 532 test binaries to 182 | [`gate-one-binary-per-package`](design-gate-one-binary-per-package.md) | tapestry |  | 57m<br>57m | gate, testkit, pattern |
+| T5 | `draft` **Study: Parts-Write and Parts-Plan-Write against Plan-Write**<br>• Write the plans of two landed runs both ways and compare cost, time, gate pass and one Plan-Review round<br>• `profile: docs` | [`plan-split-bench`](design-plan-split-bench.md) | darn |  | 57m<br>57m | loom |
 
 #### Notes (32)
 
@@ -126,7 +126,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Measure the effect of the agent-turns project**<br>• Turns, calls per turn and cost before and after P2 agent-turns, for darn writers, Webster forks and review roles | [`agent-turns-effect`](design-agent-turns-effect.md) | 42m<br>42m | tools |
+| R1 |  | **Measure the effect of the agent-turns project**<br>• Turns, calls per turn and cost before and after P2 agent-turns, for darn writers, Webster forks and review roles | [`agent-turns-effect`](design-agent-turns-effect.md) | 43m<br>43m | tools |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 9d<br>1h | loom, stencil |
 
 ##### Bugs (2)
