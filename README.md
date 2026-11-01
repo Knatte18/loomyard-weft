@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Parts-Write and Parts-Plan-Write: the plan written in two steps, beside Plan-Write**<br>• A coarse splitter and a seat table of part writers joined by a chair, as an opt-in alternative to Plan-Write, built to be benched against it<br>• `profile: light` | [`plan-split-producers`](design-plan-split-producers.md) | tapestry | Discussion-Write | neve | 41m<br>0m | loom, stencil, shed, profiles |
-| T2 | **Delete the one-shot boltrename program**<br>• Both hubs are on _bolt, so the rename program goes | [`boltrename-remove`](design-boltrename-remove.md) | darn | Drift-Verify | neve | 1m<br>1m | cwd |
+| T2 | **Delete the one-shot boltrename program**<br>• Both hubs are on _bolt, so the rename program goes | [`boltrename-remove`](design-boltrename-remove.md) | darn | Code-Bouncer | neve | 1m<br>1m | cwd |
 
 #### Ready (0)
 
