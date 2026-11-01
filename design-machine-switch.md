@@ -2,8 +2,6 @@
 
 `machine-switch` · Task · feature, fabric, dobby, batten · running · Discussion-Write
 
-Depends on: [`dobby-orch-pair-start`](design-dobby-orch-pair-start.md)
-
 ## Seen (operator, 2026-10-31)
 
 Moving work from one machine to another is a string of hand steps, and afterwards the operator cannot tell what state the runs are in.
