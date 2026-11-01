@@ -408,7 +408,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "ca8276f66e9b20d7c09da1e96efdfb2b",
   "masterSessionId": "566bb234-7446-4cad-8229-a99ff031ef6c",
   "masterEngine": "claude",
@@ -486,6 +486,24 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-switch/566bb234-7446-4cad-8229-a99ff031ef6c/subagents/agent-a49cd7172fa71e705.jsonl"
       ]
+    },
+    "6": {
+      "slug": "front-task-package",
+      "cards": [
+        "06-front-task-package",
+        "07-dobby-front-starts"
+      ],
+      "cardHashes": {
+        "06-front-task-package": "ea49c76eb78eb9a0f5bf54ed9c2557c673ecebb221a0a8d761a52fa1967fb7f6",
+        "07-dobby-front-starts": "5a1795759752ae9aa0f3a489fbee73d3979e0193cc4d195cc4dd9bc8283c234f"
+      },
+      "startSha": "fc88eb7c401de8d706416d16f4ccb972a1ecaea4",
+      "kind": "fork",
+      "spawnedAt": "2026-11-01T13:54:23Z",
+      "sessionId": "566bb234-7446-4cad-8229-a99ff031ef6c",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
