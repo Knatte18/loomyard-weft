@@ -1,6 +1,8 @@
 # A concurrent fetch of the same ref fails a batten pass and spawns a tackler
 
-`reconcile-fetch-race` · Task · bug, batten, fabric · draft
+`reconcile-fetch-race` · Task · bug, batten, fabric
+
+Depends on: [`machine-switch`](design-machine-switch.md)
 
 ## Seen (orch, 2026-11-01)
 
