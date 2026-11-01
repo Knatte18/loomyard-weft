@@ -23,7 +23,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Agents may use subagents and forks; only headless claude -p stays refused**<br>• Remove the Agent tool deny, refuse headless claude -p launches instead, and tell writers when to hand work to Sonnet subagents | [`darn-sonnet-helpers`](design-darn-sonnet-helpers.md) | darn | Darn-Write | neve | 1h<br>17m | claude, shuttle, stencil |
-| T4 | **Shorten the plan spec and split it into sub-files read by need**<br>• loom-plan-spec.md is 112 KB, half of it a catalogue of validation checks; cut it down and split it so each role reads only what it uses | [`plan-spec-split`](design-plan-spec-split.md) | darn | Darn-Write | neve | 41m<br>10m | loom, stencil, webster |
+| T4 | **Shorten the plan spec and split it into sub-files read by need**<br>• loom-plan-spec.md is 112 KB, half of it a catalogue of validation checks; cut it down and split it so each role reads only what it uses | [`plan-spec-split`](design-plan-spec-split.md) | darn | Darn-Write | neve | 42m<br>10m | loom, stencil, webster |
 
 #### Ready (0)
 
@@ -83,14 +83,21 @@ Waits on nothing open; can start now.
 | T8 | **batten cancel hangs on a step held by its own pause, and --remove fails on removed records**<br>• A cancel during Open-IDE deadlocks with the step waiting on the cancel's pause; cancel --remove errors when the records are already gone | [`cancel-hangs-on-own-pause`](design-cancel-hangs-on-own-pause.md) | darn |  | 10m<br>0m | batten |
 | T10 | **The board README shows a task's profile in the Recipe column**<br>• Move the profile from a bullet under the task title into the Recipe column | [`readme-profile-in-recipe-column`](design-readme-profile-in-recipe-column.md) | darn |  | 6h<br>0m | board |
 
-#### Draft (2)
+#### Layer A (1)
+
+Waits only on Running, Ready or Draft entries.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T9 | **A writer session can end with untracked files in the worktree, which halt Finalize**<br>• A producing session's end gate refuses to end while the worktree holds untracked files outside its outputs | [`writer-leaves-stray-files`](design-writer-leaves-stray-files.md) | darn | T3 | 5h<br>0m | shuttle, darn, loom |
+
+#### Draft (1)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Tune the plan-split writers until a split plan joins with no hand edit**<br>• Tune, replay on two inputs, tune again, at most 3 rounds, starting from the plan-split-bench report | [`plan-split-tune`](design-plan-split-tune.md) | darn | T2<br>T4<br>T3 | 1h<br>1m | loom, stencil, pattern |
-| T9 | `draft` **A writer session can end with untracked files in the worktree, which halt Finalize**<br>• A producing session's end gate refuses to end while the worktree holds untracked files outside its outputs | [`writer-leaves-stray-files`](design-writer-leaves-stray-files.md) | darn | T3 | 5h<br>0m | shuttle, darn, loom |
 
 ### Notes (30)
 
