@@ -1,6 +1,6 @@
 # P1 Orch instructions in two layers: lym's role and the repository's rules in heddle
 
-Rendered 2026-11-01 15:52 UTC; every age below is as of then.
+Rendered 2026-11-01 15:53 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 `orch-instructions` · Age 2h · Owner `neve`
@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T11 | **One fixed orch role for every repository, brought up to date**<br>• The rules for every orch move into the shipped role, which settles run-level calls itself and has no board copy | [`orch-role-current`](design-orch-role-current.md) | darn | Darn-Write | neve | 2h<br>54m | orch, stencil |
+| T11 | **One fixed orch role for every repository, brought up to date**<br>• The rules for every orch move into the shipped role, which settles run-level calls itself and has no board copy | [`orch-role-current`](design-orch-role-current.md) | darn | Darn-Write | neve | 2h<br>55m | orch, stencil |
 
 ### Ready (0)
 
