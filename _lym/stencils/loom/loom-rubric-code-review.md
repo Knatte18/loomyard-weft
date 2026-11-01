@@ -1,4 +1,4 @@
-<!-- This is the Code-Review rubric. It is read by the Bouncer row and the review row of the Code-Review perch, in the tapestry and darn recipes alike:
+<!-- This is the Code-Review rubric. It is read by the Bouncer row and the review row of the Code-Review perch, in the tapestry, darn and sampler recipes alike:
      the Code-Bouncer row interpolates it as bouncer-template-seed.md's and
      bouncer-template-judge.md's rubric marker value, and the Code-Burler-Review row interpolates it
      the same way into internal/burlerengine's own review prompt.
@@ -6,7 +6,7 @@
      It is a marker VALUE, never a template -- it carries no top-level stencil markers of its own, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lym-stencil: sha256=56131bd5dd4581e44627f5cd7250c2ec78bfd102442353a0f5803f57e35e176e build=4f7d099d1c17a09e41cd8483c4dd6725023d9484 time=2026-10-31T19:22:44Z -->
+lym-stencil: sha256=80bb7ae7867ed485e7e5bcd450e2bc25d3f9541c606d0b82a979d05f8f2cfdff build=37a51dba758b110412336381bb35ddab66416153 time=2026-11-01T16:26:10Z -->
 
 # Code-Review rubric
 
@@ -68,7 +68,7 @@ Do not flag any of the following as a finding:
 - **Comment-convention compliance.**
   Any new or changed doc comment follows the target repository's own conventions — its own constraints document if it has one, and the conventions the surrounding code already follows.
   A line width is never inferred from the surrounding code.
-  A comment's line breaks and wrapping are never a finding; the gate's `lym loom lint-comments` alone checks them.
+  A comment's line breaks and wrapping are never a finding; the gate's comment lint alone checks them.
   This rubric checks compliance with the target repository's own standard, not loomyard's.
 - **Per-card mechanical check, with a plan.**
   Confirm every one of the card's own groups' type-specific mechanical checks actually ran and passed, each against that group's own targets, not just the first label's, per the per-type table in `{{.specs_dir}}/loom/loom-plan-spec.md` — not merely that the diff compiles and its tests pass.

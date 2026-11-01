@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=3a2edcc5af0362d6341370aab4d63cd672831d47138eb40cd18e0a690ac85b51 build=dcbe858ee71120dbe941c6cdd29a0dbddc2290c0 time=2026-11-01T15:56:58Z -->
+<!-- lym-stencil: sha256=6bfbabcd141dffc5d7bc229766f02d505b72817b6ea983ab060a08f91401e844 build=37a51dba758b110412336381bb35ddab66416153 time=2026-11-01T16:26:10Z -->
 
 # Webster implementer job — read your cards, implement, commit, report
 
@@ -67,6 +67,7 @@ Make exactly the changes the card describes, in exactly the targets its type lab
 
 {{.card_gates}}
 
+   A failing gate call closes with a failure report that lists every failure at once, its lint findings included, with each failure's `file:line` and the log path; fix every failure it lists before you run the gate again.
    The gate call computes the card's packages from the plan and runs the guard step itself, the step over the repository's `//lym:guard` tests, which can fail on a file the card does not list, such as the pinned set in a `cmd/lym` test.
    Fix it under the card's commit.
    Fix the code that broke the guard where that is the right fix, and change a pinned set or an allowlist only when the pin itself must move.
