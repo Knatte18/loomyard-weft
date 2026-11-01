@@ -14,13 +14,19 @@ The root project: the entries under no other project.
 
 Concrete and claimable; only a task can run.
 
-#### Ready (1)
+#### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T2 | **Delete the one-shot boltrename program**<br>• Both hubs are on _bolt, so the rename program goes | [`boltrename-remove`](design-boltrename-remove.md) | darn | Worktree-Create | neve | 0m<br>0m | cwd |
+
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Delete the one-shot boltrename program**<br>• Both hubs are on _bolt, so the rename program goes | [`boltrename-remove`](design-boltrename-remove.md) | darn |  | 0m<br>0m | cwd |
+_None._
 
 #### Draft (1)
 
@@ -46,8 +52,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **A hub rename program must tolerate its own landing run and the new binary**<br>• Lesson from boltrename: the landed run pair and an early _bolt/.lym blocked it | [`boltrename-landing-order`](design-boltrename-landing-order.md) | 0m<br>0m | cwd, fabric |
-| B2 |  | **A landing commit message ends with a stray Created using block**<br>• The landing message of 229638f7 repeats body lines after Created using | [`landing-message-stray-block`](design-landing-message-stray-block.md) | 0m<br>0m | landing |
+| B1 |  | **A hub rename program must tolerate its own landing run and the new binary**<br>• Lesson from boltrename: the landed run pair and an early _bolt/.lym blocked it | [`boltrename-landing-order`](design-boltrename-landing-order.md) | 1m<br>0m | cwd, fabric |
+| B2 |  | **A landing commit message ends with a stray Created using block**<br>• The landing message of 229638f7 repeats body lines after Created using | [`landing-message-stray-block`](design-landing-message-stray-block.md) | 1m<br>1m | landing |
 
 #### Enhancements (13)
 
