@@ -1,6 +1,6 @@
 # Study: turns and context of the Discussion and Plan review sessions
 
-`review-turn-audit` · Task · research, burler · running · Record-Write
+`review-turn-audit` · Task · research, burler · running · Darn-Write
 
 ## Seen (orch, 2026-11-01)
 
