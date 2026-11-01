@@ -856,6 +856,25 @@
       "status": "running · Code-Burler-Fix",
       "created": "2026-11-01T18:38:13Z",
       "revised": "2026-11-01T18:48:34Z"
+    },
+    {
+      "id": 990,
+      "handle": "E1",
+      "slug": "finalize-fix-outside-lock",
+      "title": "Finalize releases the parent lock while its fixer works",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "landing",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A red verify in Finalize frees the parent lock before the fixer starts, then requeues, merges and verifies again, so green runs land while one run fixes",
+      "body": "## Seen (orch, 2026-11-01)\n\nFinalize takes the parent lock (`landingshed/parentguard.go`) before it merges the parent in and verifies, and holds it through the whole row: verify, and on a red verify the fixer session and the re-verify.\n`plan-spec-split` held the lock on `main` for 12 minutes: its first verify failed tier0, a fixer worked about 5 minutes, then the re-verify ran every tier.\nMeanwhile four green runs queued behind it (`darn-sonnet-helpers`, `readme-profile-in-recipe-column`, `dobby-idle-notice-row-end`, `reed-loses-parts-chair`), each to verify under the lock in turn.\n\n## Design (operator, 2026-11-01)\n\n- Finalize keeps taking the lock before its merge and verify, so a run that verifies green lands what it verified, with no second merge.\n- When verify fails, Finalize releases the lock before the fixer starts, so the next run in the queue can land meanwhile.\n- When the fixer is done, the run queues for the lock again, merges the parent anew, and verifies under the lock as on its first try.\n- Taking the lock only at the very end was weighed and rejected: the parent moves between the run's merge and its landing, so the run would merge, verify and fix again, and could starve while much lands.\n\n## Open\n\n- Whether a run that failed once goes to the back of the queue or ahead of runs queued while it fixed.\n- How the wait mark and `lym loom status` show a run fixing outside the lock, and how the recovery ladder counts a second failed verify.\n",
+      "created": "2026-11-01T19:20:29Z",
+      "revised": "2026-11-01T19:20:29Z"
     }
   ],
   "prime_owner": "neve",
