@@ -1,24 +1,24 @@
 # Card 17 — heddle-bolt-replayer
 
 **Create:**
-- `plan:internal/heddleengine#Replayer` -> `type Replayer struct`
-- `plan:internal/heddleengine#Replayer.Name` -> `func (Replayer) Name() string`
-- `plan:internal/heddleengine#Replayer.Claims` -> `func (Replayer) Claims(path string) bool`
-- `plan:internal/heddleengine#Replayer.Apply` -> `func (Replayer) Apply(req fabricengine.ReplayRequest) (fabricengine.ReplayResult, error)`
-- `plan:internal/heddleengine#entryFields` -> `var entryFields = entrymerge.Table[Entry]{}`
-- `plan:internal/heddleengine#TestReplayer` -> `func TestReplayer(t *testing.T)`
-- `plan:internal/fabricengine_test#registerHeddleReplayer` -> `func registerHeddleReplayer()`
+- `internal/heddleengine#Replayer`
+- `internal/heddleengine#Replayer.Name`
+- `internal/heddleengine#Replayer.Claims`
+- `internal/heddleengine#Replayer.Apply`
+- `internal/heddleengine#entryFields`
+- `internal/heddleengine#TestReplayer`
+- `internal/fabricengine_test#registerHeddleReplayer`
 
 **Edit:**
 - `internal/fabricengine_test#TestRecordsReplay`
 
 **Uses:**
-- `plan:internal/heddleengine#Store`
-- `plan:internal/heddleengine#Decode`
-- `plan:internal/heddleengine#Load`
-- `plan:internal/heddleengine#Save`
-- `plan:internal/heddleengine#ValidateEntry`
-- `plan:internal/heddleengine#FileName`
+- `internal/heddleengine#Store`
+- `internal/heddleengine#Decode`
+- `internal/heddleengine#Load`
+- `internal/heddleengine#Save`
+- `internal/heddleengine#ValidateEntry`
+- `internal/heddleengine#FileName`
 - `internal/entrymerge#Table`
 - `internal/entrymerge#Table.Changed`
 - `internal/entrymerge#Table.Change`

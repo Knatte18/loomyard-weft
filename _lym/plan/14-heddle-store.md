@@ -2,28 +2,28 @@
 
 **Create:**
 - `internal/heddleengine/doc.go`
-- `plan:internal/heddleengine#FileName` -> `const FileName = "heddle.json"`
-- `plan:internal/heddleengine#Target` -> `type Target struct`
-- `plan:internal/heddleengine#targetTable` -> `var targetTable = []Target{}`
-- `plan:internal/heddleengine#LookupTarget` -> `func LookupTarget(name string) (Target, bool)`
-- `plan:internal/heddleengine#TargetNames` -> `func TargetNames() []string`
-- `plan:internal/heddleengine#Entry` -> `type Entry struct`
-- `plan:internal/heddleengine#Entry.MarshalJSON` -> `func (e Entry) MarshalJSON() ([]byte, error)`
-- `plan:internal/heddleengine#Entry.UnmarshalJSON` -> `func (e *Entry) UnmarshalJSON(data []byte) error`
-- `plan:internal/heddleengine#Store` -> `type Store struct`
-- `plan:internal/heddleengine#Store.MarshalJSON` -> `func (s Store) MarshalJSON() ([]byte, error)`
-- `plan:internal/heddleengine#Store.UnmarshalJSON` -> `func (s *Store) UnmarshalJSON(data []byte) error`
-- `plan:internal/heddleengine#Decode` -> `func Decode(data []byte) (Store, error)`
-- `plan:internal/heddleengine#Load` -> `func Load(boltDir string) (Store, error)`
-- `plan:internal/heddleengine#Save` -> `func Save(boltDir string, s Store) error`
-- `plan:internal/heddleengine#Store.Ordered` -> `func (s Store) Ordered() []Entry`
-- `plan:internal/heddleengine#Store.Get` -> `func (s Store) Get(slug string) (Entry, bool)`
-- `plan:internal/heddleengine#Patch` -> `type Patch struct`
-- `plan:internal/heddleengine#Store.Set` -> `func (s *Store) Set(slug string, p Patch) error`
-- `plan:internal/heddleengine#Store.Remove` -> `func (s *Store) Remove(slug string) error`
-- `plan:internal/heddleengine#ValidateEntry` -> `func ValidateEntry(e Entry) error`
-- `plan:internal/heddleengine#TestStore` -> `func TestStore(t *testing.T)`
-- `plan:internal/heddleengine#TestMain` -> `func TestMain(m *testing.M)`
+- `internal/heddleengine#FileName`
+- `internal/heddleengine#Target`
+- `internal/heddleengine#targetTable`
+- `internal/heddleengine#LookupTarget`
+- `internal/heddleengine#TargetNames`
+- `internal/heddleengine#Entry`
+- `internal/heddleengine#Entry.MarshalJSON`
+- `internal/heddleengine#Entry.UnmarshalJSON`
+- `internal/heddleengine#Store`
+- `internal/heddleengine#Store.MarshalJSON`
+- `internal/heddleengine#Store.UnmarshalJSON`
+- `internal/heddleengine#Decode`
+- `internal/heddleengine#Load`
+- `internal/heddleengine#Save`
+- `internal/heddleengine#Store.Ordered`
+- `internal/heddleengine#Store.Get`
+- `internal/heddleengine#Patch`
+- `internal/heddleengine#Store.Set`
+- `internal/heddleengine#Store.Remove`
+- `internal/heddleengine#ValidateEntry`
+- `internal/heddleengine#TestStore`
+- `internal/heddleengine#TestMain`
 
 **Intent:** Add heddle's store, `heddle.json` at the Bolt checkout's root (D1), in a new `internal/heddleengine` package.
 

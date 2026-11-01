@@ -11,9 +11,9 @@
 - `internal/fabricengine#InstallWorktreeSeam`
 - `internal/fabricengine#RegisterBoltReplayer`
 - `plan:internal/shuttleengine#InstallPassageReader`
-- `plan:internal/heddleengine#Seam`
-- `plan:internal/heddleengine#Replayer`
-- `plan:internal/heddleengine#Renderer.Passages`
+- `internal/heddleengine#Seam`
+- `internal/heddleengine#Replayer`
+- `internal/heddleengine#Renderer.Passages`
 
 **Intent:** Have every lym process install heddle's seams in the root pre-run (D4, D6, D7), beside the push notifier and the board's replayer, so every fabric move, Bolt replay and Claude launch in any lym process, detached or not, reaches heddle.
 

@@ -24,15 +24,15 @@
 
 **Uses:**
 - `cmd/lym#TestCLITree_EveryCommand`
-- `plan:internal/heddleengine#Load`
-- `plan:internal/heddleengine#Save`
-- `plan:internal/heddleengine#Store.Set`
-- `plan:internal/heddleengine#Store.Remove`
-- `plan:internal/heddleengine#Store.Get`
-- `plan:internal/heddleengine#Store.Ordered`
-- `plan:internal/heddleengine#Patch`
-- `plan:internal/heddleengine#Renderer.Render`
-- `plan:internal/heddleengine#Renderer.Show`
+- `internal/heddleengine#Load`
+- `internal/heddleengine#Save`
+- `internal/heddleengine#Store.Set`
+- `internal/heddleengine#Store.Remove`
+- `internal/heddleengine#Store.Get`
+- `internal/heddleengine#Store.Ordered`
+- `internal/heddleengine#Patch`
+- `internal/heddleengine#Renderer.Render`
+- `internal/heddleengine#Renderer.Show`
 - `internal/fabricengine#EventFor`
 - `internal/fabricengine#List`
 - `internal/fabricengine#BoltDir`

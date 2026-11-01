@@ -1,18 +1,18 @@
 # Card 16 — heddle-worktree-seam
 
 **Create:**
-- `plan:internal/heddleengine#Seam` -> `type Seam struct`
-- `plan:internal/heddleengine#Seam.Made` -> `func (s Seam) Made(ev fabricengine.WorktreeEvent) error`
-- `plan:internal/heddleengine#Seam.TookIn` -> `func (s Seam) TookIn(ev fabricengine.WorktreeEvent) error`
-- `plan:internal/heddleengine#requestOf` -> `func requestOf(ev fabricengine.WorktreeEvent, only []string) RenderRequest`
-- `plan:internal/heddleengine#TestSeam` -> `func TestSeam(t *testing.T)`
-- `plan:internal/heddleengine_test#TestSeam_PullTakeIn` -> `func TestSeam_PullTakeIn(t *testing.T)`
+- `internal/heddleengine#Seam`
+- `internal/heddleengine#Seam.Made`
+- `internal/heddleengine#Seam.TookIn`
+- `internal/heddleengine#requestOf`
+- `internal/heddleengine#TestSeam`
+- `internal/heddleengine_test#TestSeam_PullTakeIn`
 
 **Uses:**
-- `plan:internal/heddleengine#Renderer`
-- `plan:internal/heddleengine#Renderer.Render`
-- `plan:internal/heddleengine#RenderRequest`
-- `plan:internal/heddleengine#Target`
+- `internal/heddleengine#Renderer`
+- `internal/heddleengine#Renderer.Render`
+- `internal/heddleengine#RenderRequest`
+- `internal/heddleengine#Target`
 - `internal/fabricengine#WorktreeEvent`
 - `internal/fabricengine#WorktreeSeam`
 - `internal/fabricengine#InstallWorktreeSeam`

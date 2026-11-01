@@ -16,7 +16,7 @@
 - `internal/shuttleengine/claudeengine/doc.go`
 
 **Uses:**
-- `plan:internal/heddleengine#Renderer.Passages`
+- `internal/heddleengine#Renderer.Passages`
 - `internal/testkit/logcapture#Capture`
 
 **Intent:** Deliver the `claude-prompt` entries into every Claude session shuttle launches in a hub (D4), through a process-wide seam so heddle knows no Claude flag and `claudeengine` parses no `heddle.json` (PATTERN-shuttle-provider-seam).

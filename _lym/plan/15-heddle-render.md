@@ -1,28 +1,28 @@
 # Card 15 — heddle-render
 
 **Create:**
-- `plan:internal/lymdirs#HeddleDirName` -> `const HeddleDirName = "heddle"`
-- `plan:internal/heddleengine#Marker` -> `const Marker = "<!-- rendered by lym heddle: change it with lym heddle set, never by hand -->"`
-- `plan:internal/heddleengine#DefaultBoltLockWait` -> `const DefaultBoltLockWait = 30 * time.Second`
-- `plan:internal/heddleengine#RenderRequest` -> `type RenderRequest struct`
-- `plan:internal/heddleengine#Report` -> `type Report struct`
-- `plan:internal/heddleengine#Renderer` -> `type Renderer struct`
-- `plan:internal/heddleengine#Renderer.Render` -> `func (r Renderer) Render(req RenderRequest) (Report, error)`
-- `plan:internal/heddleengine#Renderer.read` -> `func (r Renderer) read(boltDir string) (Store, error)`
-- `plan:internal/heddleengine#fileText` -> `func fileText(target Target, root string, entries []Entry) (string, bool, error)`
-- `plan:internal/heddleengine#Renderer.Show` -> `func (r Renderer) Show(boltDir, target, root string) (string, error)`
-- `plan:internal/heddleengine#Renderer.Passages` -> `func (r Renderer) Passages(boltDir, engine string) ([]string, error)`
-- `plan:internal/heddleengine#TestRender` -> `func TestRender(t *testing.T)`
-- `plan:internal/heddleengine_test#TestRender_LeavesNoUntrackedFile` -> `func TestRender_LeavesNoUntrackedFile(t *testing.T)`
+- `internal/lymdirs#HeddleDirName`
+- `internal/heddleengine#Marker`
+- `internal/heddleengine#DefaultBoltLockWait`
+- `internal/heddleengine#RenderRequest`
+- `internal/heddleengine#Report`
+- `internal/heddleengine#Renderer`
+- `internal/heddleengine#Renderer.Render`
+- `internal/heddleengine#Renderer.read`
+- `internal/heddleengine#fileText`
+- `internal/heddleengine#Renderer.Show`
+- `internal/heddleengine#Renderer.Passages`
+- `internal/heddleengine#TestRender`
+- `internal/heddleengine_test#TestRender_LeavesNoUntrackedFile`
 
 **Extends:**
 - `internal/lymdirs/doc.go`
 
 **Uses:**
-- `plan:internal/heddleengine#Store`
-- `plan:internal/heddleengine#Store.Ordered`
-- `plan:internal/heddleengine#Decode`
-- `plan:internal/heddleengine#LookupTarget`
+- `internal/heddleengine#Store`
+- `internal/heddleengine#Store.Ordered`
+- `internal/heddleengine#Decode`
+- `internal/heddleengine#LookupTarget`
 - `internal/fabricengine#BoardWriteLockFile`
 - `internal/fabricengine#EventFor`
 - `internal/fabricengine#ExcludeWayForward`
