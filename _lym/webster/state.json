@@ -1,19 +1,19 @@
 {
   "runGuid": "b5bb1b27fceec6bcbc64e4d6f6722dd2",
-  "planFingerprint": "abcc8145cb0ef3c6a873ab9285554dc06f888d954d1c2e3a3780a4a8d0f998ea",
+  "planFingerprint": "440e5846749fc16d50555193e2e6a23c7955ae2f766022fd65e37f2f8d182005",
   "planFileHashes": {
     "00-overview.md": "2d74acc5e1c4f57f909ae631c384ae4466448cce32f6e0eff800bff8c9ad5992",
     "01-sampler-config.md": "6261f7d769ae6cf31598eeee62f5a31a04579aa1616839ebb8809e2c9018da30",
     "02-sampler-record.md": "b9161c1193e53e1b0031c9db23a8a8c2bd7dce96e14ecd5a1d2ba8efbf7fd558",
     "03-sampler-stencil.md": "0d05e7a677a0f89f8088c1859440bc73200336eadf31e9100556de91e8a77581",
     "04-sampler-session-row.md": "e1e368b4c14218a46d10afd399d12e342c140b0fd3c3de4e6453aeed7ce8161b",
-    "05-sampler-registry-entry.md": "46d82454ba03e62e2d8f0fc06210b39fe5bfc2377ac569b54f96601403f05b7c",
-    "06-sampler-recipe.md": "580c825b1e7c8ad840d9bb118a1d2770bfe997c451bf9848cf584c361658ce49",
+    "05-sampler-registry-entry.md": "0b56e7798bce130392239928fe9409c90e2b500428cbd7c260b49f4471929eca",
+    "06-sampler-recipe.md": "b8dcab556e75679081992905538c61dfedce07bf6eb39a3ef377867c97fa7e20",
     "07-sampler-vocabulary.md": "f7cbebbf86ccea9a1fe09a9b3e4f6f4a285ce5fa8c3aa12ef1e124c614bafa57",
-    "08-rows-keyed-wiring.md": "905f05a86f69e5f8adf348b1bb98a97b0725130c09493cdd75feca1560aab3d6",
-    "09-sampler-wiring.md": "a17a24e533cf4352f696fe7a67c59450ac14e392dd6bea63ad513993cfe69b4a",
-    "10-sampler-done-verb.md": "b524ef6332062b902fc30ed53b8a4ef176f3f6d6494be9e358212bb0a5350fc4",
-    "11-decision-sampler-caller.md": "1f46e0bef43e9acd6b6f346ba147a1773274b33b0c6fb1bcb620a580cecaa838",
+    "08-rows-keyed-wiring.md": "b054ad1f8080663a6b664bf51d82a058a7c799da30fc4784fe63691c41205cee",
+    "09-sampler-wiring.md": "258e57f2762533e40742cb0ab74c7e1a845b5c21ad7c666ea3b991cc5e62ff46",
+    "10-sampler-done-verb.md": "8f5a46159409dbfb458c13aaf0f40521ce81022f996d7433e3b2fe173dd45668",
+    "11-decision-sampler-caller.md": "5301abe1307f45201b3eafc1e0eab4a01b5a9c1e880bb23f0a5ab53bbf3dcf51",
     "12-operator-wait-rows.md": "6661cbffc9c3e6b2f8ecd2c1f74b4de609fc6bfd2401ad71525a7e91e6ac5790"
   },
   "planOverviewFrameHash": "23c0370a95c7a8aa9793d67cf5e3fcad36163e02589d7953e5dc287c5b8d77a0",
@@ -396,7 +396,7 @@
       }
     }
   ],
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "027a2687ba3886e3aa7a401f5599025c",
   "masterSessionId": "571c4288-9a6a-4d69-a3bf-ad611ab3ea00",
   "masterEngine": "claude",
@@ -451,19 +451,40 @@
         "06-sampler-recipe"
       ],
       "cardHashes": {
-        "05-sampler-registry-entry": "46d82454ba03e62e2d8f0fc06210b39fe5bfc2377ac569b54f96601403f05b7c",
-        "06-sampler-recipe": "580c825b1e7c8ad840d9bb118a1d2770bfe997c451bf9848cf584c361658ce49"
+        "05-sampler-registry-entry": "0b56e7798bce130392239928fe9409c90e2b500428cbd7c260b49f4471929eca",
+        "06-sampler-recipe": "b8dcab556e75679081992905538c61dfedce07bf6eb39a3ef377867c97fa7e20"
       },
       "startSha": "959521fd079b86074407c1b0dc61b2d793cb3861",
       "kind": "fork",
       "spawnedAt": "2026-11-01T06:14:36Z",
       "sessionId": "571c4288-9a6a-4d69-a3bf-ad611ab3ea00",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-sampler-registry-entry",
+        "status": "done",
+        "head_sha": "7f1f5d0dc794af535c71acd6383129fb9809dda0",
+        "deviations": [
+          "internal/loomrecipe/darnrecipe.go",
+          "internal/shedrecipe/entries_samplersession.go",
+          "internal/shedrecipe/fixture_test.go",
+          "internal/testkit/envkit/envkit.go"
+        ]
+      },
+      "cardShas": [
+        "7f1f5d0dc794af535c71acd6383129fb9809dda0"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-interactive-recipe/571c4288-9a6a-4d69-a3bf-ad611ab3ea00/subagents/agent-aac0f9e495c544261.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-interactive-recipe/571c4288-9a6a-4d69-a3bf-ad611ab3ea00/subagents/agent-aac0f9e495c544261.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-interactive-recipe/571c4288-9a6a-4d69-a3bf-ad611ab3ea00/subagents/agent-a388696df514a7fff.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-interactive-recipe/571c4288-9a6a-4d69-a3bf-ad611ab3ea00/subagents/agent-a388696df514a7fff.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-interactive-recipe/571c4288-9a6a-4d69-a3bf-ad611ab3ea00/subagents/agent-aac0f9e495c544261.jsonl"
   ]
 }

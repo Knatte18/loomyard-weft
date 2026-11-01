@@ -17,7 +17,7 @@
 - `internal/loomcli#TestDarnDeps_LatestOutcomeNamesTheRowsFindingsFile`
 - `internal/loomcli#TestWire_DarnRecipe`
 - `internal/loomcli/doc.go`
-- `plan:internal/loomrecipe#TestSamplerRecipe`
+- `internal/loomrecipe#TestSamplerRecipe`
 - `internal/landingshed#Deps`
 
 **Extends:**

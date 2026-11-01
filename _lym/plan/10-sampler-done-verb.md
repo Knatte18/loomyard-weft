@@ -18,7 +18,7 @@
 - `internal/loomcli#prContinueVerb`
 - `internal/loomcli#TestPRContinueVerb`
 - `plan:internal/loomcli#samplerStamp`
-- `plan:internal/loomrecipe#EngineRow`
+- `internal/loomrecipe#EngineRow`
 - `internal/samplerengine#UpdateRecord`
 - `internal/samplerengine#ReadRecord`
 

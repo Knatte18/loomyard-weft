@@ -1,9 +1,9 @@
 # Card 6 — sampler-recipe
 
 **Create:**
-- `plan:internal/shedrun#RecipeSampler` -> `const RecipeSampler = "sampler"`
-- `plan:internal/loomrecipe#EngineRow` -> `func EngineRow(recipe, engine string) (string, bool, error)`
-- `plan:internal/loomrecipe#TestSamplerRecipe` -> `func TestSamplerRecipe(t *testing.T)`
+- `internal/shedrun#RecipeSampler`
+- `internal/loomrecipe#EngineRow`
+- `internal/loomrecipe#TestSamplerRecipe`
 
 **Edit:**
 - `internal/shedrun#RecipeNames`
@@ -28,7 +28,7 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:contracts/recipes#SamplerRecipe`
+- `contracts/recipes#SamplerRecipe`
 - `internal/shedrun/doc.go`
 - `internal/loomrecipe#testEnv`
 - `internal/loomrecipe#TestDriftRows_EntryGate`

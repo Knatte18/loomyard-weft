@@ -16,7 +16,7 @@
 - `internal/loomcli/doc.go`
 
 **Uses:**
-- `plan:internal/loomrecipe#EngineRow`
+- `internal/loomrecipe#EngineRow`
 - `internal/samplerengine#ReadRecord`
 - `internal/shedrun#SamplerRecord`
 

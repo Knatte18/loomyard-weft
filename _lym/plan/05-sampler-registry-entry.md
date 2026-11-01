@@ -2,9 +2,9 @@
 
 **Create:**
 - `contracts/recipes/sampler-recipe.yaml`
-- `plan:contracts/recipes#SamplerRecipe` -> `var SamplerRecipe []byte`
-- `plan:internal/shedrecipe#samplerSessionEntry` -> `func samplerSessionEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error)`
-- `plan:internal/shedrecipe#TestSamplerSessionEntry` -> `func TestSamplerSessionEntry(t *testing.T)`
+- `contracts/recipes#SamplerRecipe`
+- `internal/shedrecipe#samplerSessionEntry`
+- `internal/shedrecipe#TestSamplerSessionEntry`
 
 **Edit:**
 - `internal/shedrecipe#registry`

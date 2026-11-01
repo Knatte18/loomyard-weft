@@ -30,7 +30,7 @@
 - `internal/loomcli#TestWire_DarnRecipe`
 - `internal/loomcli#intentionallyNil`
 - `plan:internal/loomcli#discussionRecordCheck`
-- `plan:internal/loomrecipe#EngineRow`
+- `internal/loomrecipe#EngineRow`
 - `internal/samplerengine#SessionSpec`
 - `internal/samplerengine#EntryStamp`
 - `internal/shedrun#SamplerRecord`
