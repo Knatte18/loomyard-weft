@@ -6,6 +6,12 @@ lenses:
     - affected-set
     - guard-reach
     - repo-invariants
+fix_lenses:
+    - fix-consistency
+    - fix-claims
+    - fix-proposal
+    - fix-affected-set
+fix_forks: 4
 review:
     engine: claude
     model: opus
@@ -20,6 +26,16 @@ review:
     fork_fresh_tokens: 60725
     fork_cache_read_tokens: 3225216
     fork_fresh_share: 0.16948750439592952
+fix:
+    engine: claude
+    model: opus
+    effort: medium
+    start: 2026-11-01T13:18:14Z
+    end: 2026-11-01T14:23:37.33620754+01:00
+    wall_seconds: 323.33620754
+    tokens_known: true
+    fresh_tokens: 187118
+    cache_read_tokens: 3899894
 seed:
     - engine: claude
       model: sonnet
