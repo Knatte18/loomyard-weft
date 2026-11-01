@@ -2,13 +2,13 @@
 
 **Create:**
 - `internal/loomshed/samplersession_test.go`
-- `plan:internal/loomshed#NameSamplerSession` -> `const NameSamplerSession = "Sampler-Session"`
-- `plan:internal/loomshed#SamplerSessions` -> `type SamplerSessions interface`
-- `plan:internal/loomshed#SamplerDeps` -> `type SamplerDeps struct`
-- `plan:internal/loomshed#NewSamplerSession` -> `func NewSamplerSession(name string, deps SamplerDeps) shedengine.ShedProducer`
-- `plan:internal/loomshed#fakeSamplerSessions` -> `type fakeSamplerSessions struct`
-- `plan:internal/loomshed#TestSamplerSession` -> `func TestSamplerSession(t *testing.T)`
-- `plan:internal/loomshed#samplerWorld` -> `type samplerWorld struct`
+- `internal/loomshed#NameSamplerSession`
+- `internal/loomshed#SamplerSessions`
+- `internal/loomshed#SamplerDeps`
+- `internal/loomshed#NewSamplerSession`
+- `internal/loomshed#fakeSamplerSessions`
+- `internal/loomshed#TestSamplerSession`
+- `internal/loomshed#samplerWorld`
 
 **Edit:**
 - `internal/loomshed#loomshedAllowedImports`
@@ -20,8 +20,8 @@
 - `internal/landingshed#PRReview.ensureSession`
 - `internal/landingshed#PRReview.holdWhileCovered`
 - `internal/pawlengine#BeamAwait.pause`
-- `plan:internal/samplerengine#ReadRecord`
-- `plan:internal/samplerengine#UpdateRecord`
+- `internal/samplerengine#ReadRecord`
+- `internal/samplerengine#UpdateRecord`
 - `internal/loomshed#NamePRReview`
 
 **Intent:**

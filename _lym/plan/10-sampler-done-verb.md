@@ -19,8 +19,8 @@
 - `internal/loomcli#TestPRContinueVerb`
 - `plan:internal/loomcli#samplerStamp`
 - `plan:internal/loomrecipe#EngineRow`
-- `plan:internal/samplerengine#UpdateRecord`
-- `plan:internal/samplerengine#ReadRecord`
+- `internal/samplerengine#UpdateRecord`
+- `internal/samplerengine#ReadRecord`
 
 **Intent:**
 D6: `lym loom sampler-done` writes the done flag that ends the Sampler-Session row, beside the entry stamp it computes.

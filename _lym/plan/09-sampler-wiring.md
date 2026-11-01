@@ -31,9 +31,9 @@
 - `internal/loomcli#intentionallyNil`
 - `plan:internal/loomcli#discussionRecordCheck`
 - `plan:internal/loomrecipe#EngineRow`
-- `plan:internal/samplerengine#SessionSpec`
-- `plan:internal/samplerengine#EntryStamp`
-- `plan:internal/shedrun#SamplerRecord`
+- `internal/samplerengine#SessionSpec`
+- `internal/samplerengine#EntryStamp`
+- `internal/shedrun#SamplerRecord`
 
 **Intent:**
 D3, D5 and D6: a sampler run's Sampler-Session row gets its seams.

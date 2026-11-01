@@ -2,14 +2,14 @@
 
 **Create:**
 - `internal/samplerengine/record_test.go`
-- `plan:internal/samplerengine#Record` -> `type Record struct`
-- `plan:internal/samplerengine#ReadRecord` -> `func ReadRecord(path, lockPath string) (Record, bool, error)`
-- `plan:internal/samplerengine#UpdateRecord` -> `func UpdateRecord(path, lockPath string, mutate func(*Record)) error`
-- `plan:internal/samplerengine#EntryStamp` -> `func EntryStamp(history []shedengine.HistoryEntry, row string, predecessors []string) int`
-- `plan:internal/samplerengine#TestRecord` -> `func TestRecord(t *testing.T)`
-- `plan:internal/samplerengine#TestEntryStamp` -> `func TestEntryStamp(t *testing.T)`
-- `plan:internal/shedrun#SamplerRecord` -> `func SamplerRecord(l *lymcwd.Location, runID string) string`
-- `plan:internal/shedrun#SamplerRecordLock` -> `func SamplerRecordLock(l *lymcwd.Location, runID string) string`
+- `internal/samplerengine#Record`
+- `internal/samplerengine#ReadRecord`
+- `internal/samplerengine#UpdateRecord`
+- `internal/samplerengine#EntryStamp`
+- `internal/samplerengine#TestRecord`
+- `internal/samplerengine#TestEntryStamp`
+- `internal/shedrun#SamplerRecord`
+- `internal/shedrun#SamplerRecordLock`
 
 **Edit:**
 - `internal/shedrun#TestPathConstructors`

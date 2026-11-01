@@ -5,11 +5,11 @@
 - `internal/samplerengine/template.yaml`
 - `internal/samplerengine/testmain_test.go`
 - `internal/samplerengine/config_test.go`
-- `plan:internal/samplerengine#Config` -> `type Config struct`
-- `plan:internal/samplerengine#ConfigTemplate` -> `func ConfigTemplate() string`
-- `plan:internal/samplerengine#ConfigSpec` -> `func ConfigSpec() configengine.Spec`
-- `plan:internal/samplerengine#LoadConfig` -> `func LoadConfig(dirs configengine.Dirs, module string) (Config, error)`
-- `plan:internal/samplerengine#TestLoadConfig` -> `func TestLoadConfig(t *testing.T)`
+- `internal/samplerengine#Config`
+- `internal/samplerengine#ConfigTemplate`
+- `internal/samplerengine#ConfigSpec`
+- `internal/samplerengine#LoadConfig`
+- `internal/samplerengine#TestLoadConfig`
 
 **Edit:**
 - `internal/configreg#Modules`

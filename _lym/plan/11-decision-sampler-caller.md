@@ -17,8 +17,8 @@
 
 **Uses:**
 - `plan:internal/loomrecipe#EngineRow`
-- `plan:internal/samplerengine#ReadRecord`
-- `plan:internal/shedrun#SamplerRecord`
+- `internal/samplerengine#ReadRecord`
+- `internal/shedrun#SamplerRecord`
 
 **Intent:**
 D4: `lym loom decision add` admits one more caller, the strand the target run's Sampler-Session row has recorded as its session, while the run's current row is that row, and only with `--by operator`.

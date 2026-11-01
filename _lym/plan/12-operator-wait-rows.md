@@ -24,7 +24,7 @@
 **Uses:**
 - `internal/pawlengine#NameBeamAwait`
 - `internal/loomshed#NamePRReview`
-- `plan:internal/loomshed#NameSamplerSession`
+- `internal/loomshed#NameSamplerSession`
 - `internal/loomengine#TestConfigTemplate_ContainsEveryConfigYAMLTag`
 
 **Intent:**

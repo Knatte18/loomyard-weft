@@ -3,11 +3,11 @@
 **Create:**
 - `contracts/stencils/sampler/sampler-template-agent.md`
 - `internal/samplerengine/spec_test.go`
-- `plan:contracts/stencils#SamplerTemplateAgent` -> `var SamplerTemplateAgent []byte`
-- `plan:internal/samplerengine#Role` -> `const Role = "sampler"`
-- `plan:internal/samplerengine#SessionInputs` -> `type SessionInputs struct`
-- `plan:internal/samplerengine#SessionSpec` -> `func SessionSpec(in SessionInputs, cfg Config, reg modelspec.Registry) (shuttleengine.Spec, error)`
-- `plan:internal/samplerengine#TestSessionSpec` -> `func TestSessionSpec(t *testing.T)`
+- `contracts/stencils#SamplerTemplateAgent`
+- `internal/samplerengine#Role`
+- `internal/samplerengine#SessionInputs`
+- `internal/samplerengine#SessionSpec`
+- `internal/samplerengine#TestSessionSpec`
 
 **Edit:**
 - `contracts/stencils#entries`
