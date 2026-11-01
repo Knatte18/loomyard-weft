@@ -1,6 +1,6 @@
 # warp-visibility: heddle, a Bolt database lym renders its instruction files from, leaving no trace in warp
 
-`warp-visibility` · Task · feature, fabric, board, config, claude, codex, cwd, process, stencil, shuttle · draft
+`warp-visibility` · Task · feature, fabric, board, config, claude, codex, cwd, process, stencil, shuttle
 
 Depends on: [`interactive-recipe`](design-interactive-recipe.md), [`gate-rule-stated-once`](design-gate-rule-stated-once.md)
 
