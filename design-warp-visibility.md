@@ -48,7 +48,7 @@ Lym renders its own instruction files into each worktree from one database in Bo
 
 ## Bolt directory name (operator, 2026-10-31)
 
-The rename of `_board` to `_bolt` lands first as a task of its own; this task then makes the name live in one place, since heddle's database takes its place from it.
+This task makes the Bolt directory name live in one place, since heddle's database takes its place from it, and keeps today's name `_board`; the rename to `_bolt` is a task of its own that lands after this one, and then changes only the constant's value and migrates the hubs (operator, 2026-11-01).
 - Two names for two things: `fabricengine.BoltDirName` says where Bolt is checked out, and `fabricengine.BoardDirName` says where the board is.
   Today the board sits at Bolt's root, so `BoardDirName` is set from `BoltDirName`; what lives in Bolt beside the board, heddle's database included, takes its place from `BoltDirName`, never from `BoardDirName`.
 - `runproc.HubOwner` is an owner name, not the directory, and is set from `BoltDirName`.
