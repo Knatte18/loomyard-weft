@@ -86,11 +86,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F15 |  | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 2w<br>16h | reed, config, batten |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>3d | burler, shed, orch, quarry, report |
 | F20 |  | **stitch: a loom recipe that splits a large task into darn runs inside its own beam**<br>• Discussion, a pre-planner, the pieces filed as darn tasks in the task's project, and an inner pawl run that builds and lands the beam | [`loom-beam-darns`](design-loom-beam-darns.md) | 9d<br>10h | loom, shed, batten, workspaces, burler |
-
-### Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T6 | **Finalize settles a rejected fixer change in place and never sends the run back**<br>• A fix review loop inside Finalize that escalates at its cap, in place of on_reroute<br>• `profile: solid` | [`finalize-fix-in-place`](design-finalize-fix-in-place.md) | 18h<br>1h | landing, shed, loom, darn |
