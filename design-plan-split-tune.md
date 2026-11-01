@@ -2,7 +2,7 @@
 
 `plan-split-tune` · Task · enhancement, loom, stencil, pattern · draft
 
-Depends on: [`reed-loses-parts-chair`](design-reed-loses-parts-chair.md), [`plan-spec-split`](design-plan-spec-split.md)
+Depends on: [`reed-loses-parts-chair`](design-reed-loses-parts-chair.md), [`plan-spec-split`](design-plan-spec-split.md), [`darn-sonnet-helpers`](design-darn-sonnet-helpers.md)
 
 ## Seen (orch, plan-split-bench, 2026-11-01)
 
