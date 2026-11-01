@@ -11,3 +11,6 @@ The operator wanted it to hand per-package fixes to cheaper Sonnet subagents, bu
 
 A darn writer may hand batches of per-package work to Sonnet subagents, so a wide mechanical change does not run every fix through one large Opus context.
 The design question is how this fits the rule that every agent's work stays visible in a pane: either allow the Agent tool with model `sonnet` for the darn writer (as `AllowAgentTool` or a fork-like allowance), or launch each batch as its own visible lym session at a Sonnet model.
+
+The second way may need little new code: `lym shuttle run --model <sonnet> --role <role> --prompt-file <file>` starts one agent in its own visible pane and blocks until it ends, and no task-session guard refuses it today (only `lym fabric` verbs, hub-wide config writes and run-settings changes are refused), so a darn writer could launch one per batch as background calls (operator, 2026-11-01).
+What is untested: which role such a helper takes and what its stencil tells it, how its gate runs share the slots, how its cost is counted with the run's, and whether the writer waits on several at once without one turn per helper.
