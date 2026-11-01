@@ -960,6 +960,26 @@
       "body": "## Idea (operator, 2026-11-01)\n\nMeasure the effect of project `agent-turns` as a whole, once its members have landed and runs have gone through with them, rather than one member at a time.\n\n## Measure\n\n- Baseline: the numbers in `agent-turns`' body (`tools/tokencount` and `tools/forkaudit` on `warp-visibility`, `interactive-recipe` and `run-verbs-shared`), and `docs/research/review-turn-audit-2026-11-01` for the review roles.\n- After: the darn and tapestry runs that landed after the members, as many as there are; darns weigh most, since they run most.\n- Darn writers: turns, calls per turn, shell edits against Edit-tool edits and gate-loop turns, with the scripts of `docs/research/turn-audit-2026-10-28`.\n- Webster forks: turns per card, calls per turn and peak context, with `tools/forkaudit`; cost with `tools/tokencount`.\n- Review roles: calls per turn, fork wake-up turns and removable turns, with the scripts of `docs/research/review-turn-audit-2026-11-01`.\n- The report names which members' behaviour shows in the transcripts and states the sample size beside each number.\n",
       "created": "2026-11-01T15:05:52Z",
       "revised": "2026-11-01T15:05:52Z"
+    },
+    {
+      "id": 978,
+      "handle": "T1",
+      "slug": "project-design-link",
+      "title": "A project slug on the board links to its design file",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "board"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The facts line links a project slug to design-slug.md when the project has a body",
+      "body": "## Seen (operator, 2026-11-01)\n\nA project's body, such as `agent-turns`' waves, renders to `design-\u003cslug\u003e.md`, but nothing on the rendered board links to it, so it cannot be read there.\n`board-project-render` and `board-no-project-heading` both landed without the link.\n\n## Design (operator and orch, 2026-11-01)\n\n- In a project's facts line, in `README.md` and in project files alike, the project's slug links to its `design-\u003cslug\u003e.md` when the project has a body, the way `slugCell` links a task's or note's slug.\n- A project without a body keeps the plain slug.\n",
+      "status": "draft",
+      "created": "2026-11-01T15:39:22Z",
+      "revised": "2026-11-01T15:39:22Z"
     }
   ],
   "prime_owner": "neve",
