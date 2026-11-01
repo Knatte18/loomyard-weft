@@ -197,6 +197,12 @@ Bound: the condition is the task body's own text, so only a task whose body name
 
 Rationale: a machine failure has nothing to commit (D3), and the darn stop marker is the existing way a darn writer ends with no commit and a report for the operator.
 
+### Added after Discussion (parent, 2026-11-01): The fix task's gate label only where the board knows it
+
+Decision: failedEnd files the gate label on the fix task only when the hub's board vocabulary knows it, read through boardengine's vocabulary; otherwise it files the task with label bug alone. TestFailedEnd gains the row of a vocabulary without gate, filing the task with label bug alone. Card 13 carries this.
+
+Rationale: Plan-Burler-Fix round 1 finding F3: the board template's vocabulary has no labels, so a hard label gate makes validateLabels refuse every fix filing on such a hub and the fix loop never files; the type label alone is always valid.
+
 ## Constraints
 
 - `PATTERN-owner-machine`: the holds sit beside the owner verdict and change no owner read; the owner a hold is decided by is read from the Bolt the reconcile left, and adopt's owner write stays `boardengine`'s owner setter.
