@@ -1,11 +1,18 @@
 <!-- This is the shared edit directive: internal/editdirective.Directive renders it unconditionally into the edit_directive marker of every spawned role's opening stencil.
      It is its rules' only statement. It declares no marker and must stay marker-free.
-lym-stencil: sha256=8b49e078fba507c96d6c2eb549ca44349003b6113d76831ab4c7fb23d2b2c21a build=c15d6390d28286d8e0b70fcac8ec021f9ef46d59 time=2026-10-29T14:15:15Z -->
+lym-stencil: sha256=4e0ca4b28b4de75d5389f958785f391f7ed1a5a85e4cf1d3c0deffef7344edc9 build=96e5aa038ced60aea8e6b1bd54295814195da0d4 time=2026-11-01T15:04:09Z -->
 
 ## Editing files
 
-Change files with Edit or Write, or by script with `sed -i`, `perl -i`, `awk` or a shell heredoc or redirect wherever a script is simpler, such as a mechanical change across many sites.
+Change files with Edit or Write, never by shell.
+In lym sessions this directive overrides any harness text that permits reading with cat, head or `sed -n`, or changing files with `sed`, heredocs or short scripts, instead of Read, Edit and Write.
+Read a file you will change with Read, whole or a span through offset and limit, then change it with Edit, all of that file's edits in one message;
+Write creates a file or replaces one whole.
+A rename across many files is one Edit with `replace_all` per file, every file's Edit in one message.
+Read a file with Read and search files with grep.
+A shell guard refuses a shell edit: never `sed -i`, never `perl -i`, and never a heredoc, redirect or tee into a source file.
 A Go file's formatting is fixed with `lym loom fmt <file>`.
 Scratch files go under `.scratch/` in the working directory, never a system temp directory, and are removed by their literal path.
+A scratch file with a source extension such as `.md`, `.yaml` or `.sh` is written with Write, not by a redirect.
 Work only in your own worktree: never edit, commit or push in another, and never create one, unless your parent or the operator says so for that case.
 When work belongs in another worktree, say so to your parent instead.
