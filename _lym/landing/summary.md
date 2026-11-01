@@ -1,40 +1,38 @@
-# Fetches and pushes of a repository wait under one remote-refs lock
+# Serialise remote-tracking ref writes under a per-repository lock
 
-Two lym processes that fetch or push the same branch of one repository both write its remote-tracking ref, and the loser failed.
-A batten pass's origin reconcile failed this way with `incorrect old value provided` and spawned a tackler for nothing.
-In a second case the reconcile read origin while a writer's push was still in flight and judged a healthy branch rewound.
+A batten pass could fail its origin reconcile with `incorrect old value provided` when another lym process fetched or pushed the same remote-tracking ref at the same moment.
+It could also judge a branch rewound against origin because it read origin while the writer's own push was still in flight.
+Either way the driver spawned a tackler that had nothing to fix, or that could not tell a real rewind from a push in flight.
+
+Every lym git call that writes a repository's remote-tracking refs now runs under one lock and waits for it while it is held, instead of failing or retrying.
 
 ## What changes
 
-- `gitrepo` gains a remote-refs lock, `lym-remote-refs.lock` in the repository's common git dir, so every worktree of a repository shares it.
-  `Repo.HoldRemoteRefs` takes it, waiting while another process holds it.
-- `Fetch`, `Pull`, the new `FetchWithArgs` and every push method (`Push`, `PushRebaseFree`, `PushCoalesced`, the remote deletions and the leased update) run each git call under the lock.
-  A push's retry backoff sleeps outside it.
-- Every fabricengine fetch from origin that writes a tracking ref now goes through `FetchWithArgs` instead of a bare `gitexec.Run`.
-  This covers pair creation, checkout, archive, removal, task-branch discard, remote-only commits and remote cleanup.
-- `ReconcileOrigin` judges in a new `judgeAgainstOrigin`, which holds the code repository's lock and then the records repository's lock from the `ls-remote` pair through the last branch verdict.
-  A push or fetch of either repository waits for the verdicts, and a push already in flight lands before origin is read.
-  The reconcile's moves, teardowns and owner reads run after the locks are released.
-- `PATTERN.md` gains `PATTERN-remote-refs-lock`.
-  The `gitrepo` and `fabricengine` package docs describe the lock, and the gitrepo boundary guard pins `FetchWithArgs`.
+- `internal/gitrepo/remoterefslock.go` adds the remote-refs lock: `lym-remote-refs.lock` (`RemoteRefsLockFileName`) in the repository's common git dir, so it orders every worktree of the repository.
+  `Repo.HoldRemoteRefs` takes it for callers that need to hold it across several steps, and `Repo.FetchWithArgs` is the fetch for callers that name their own remote and refspecs.
+- `Fetch`, `Pull`, the plain push paths, the rebase inside the push retry, and the branch-delete and leased-update pushes in `internal/gitrepo` each run git under the lock.
+  A push's retry backoff sleeps outside the lock.
+- The fetches in `internal/fabricengine` (`add.go`, `weftbranch.go`, `remoteonly.go`, `archive.go`) go through `gitrepo` instead of raw `gitexec`, and so take the lock.
+- `ReconcileOrigin` now holds the lock of the code repository and then of the records repository from the `ls-remote` pair through the last branch verdict (`judgeAgainstOrigin`).
+  A push in flight lands before origin is read, and a push or fetch that arrives later waits for the verdicts.
+- `PATTERN.md` gains `PATTERN-remote-refs-lock`, pinned by a test in `cmd/lym`, so a new fetch, pull or push written outside `gitrepo` is caught.
+  A tag push, a `--refmap=` fetch and a probe-clone fetch write no tracking ref and are exempt.
 
 ## Design decisions
 
-- The record asked fetches to take "the push lock that already orders that repository's pushes".
-  No such lock exists per repository.
-  `fabric.push.lock` lives under each records worktree, and `.gitrepo-push.lock` lives in one checkout, so neither orders two worktrees of one repository, and both are held across a whole coalescing loop.
-  That loop fetches inside it (`retryWeftPush`, `retryBoltPush`), so taking the same lock for each fetch would deadlock in-process.
-  The new lock is repository-wide and is held only for each git call, or for the reconcile's read-to-verdict window.
-  It sits beside the existing push locks and does not replace them.
-- A fetch with `--refmap=` writes no tracking ref and stays unlocked: the remote-leftover probes and the judge-only reconcile's fetch by SHA.
-  The records probe fetches into a throwaway repository and stays unlocked too.
-  The reconcile's own `fetchMovedHeads` runs while its caller already holds the lock.
-- The lock waits rather than failing.
-  Only the reconcile ever holds two remote-refs locks at once, always in the same order, so a wait cannot deadlock.
+- **A repository-wide lock, not the existing push lock.**
+  The push locks are per checkout, so they do not order two worktrees of one repository, and `PushCoalesced` holds its lock across a loop that fetches, so reusing it would deadlock in-process.
+  The per-checkout push locks are unchanged.
+- **The lock is not reentrant.**
+  A holder of `HoldRemoteRefs` runs no `gitrepo` fetch, pull or push, since each takes the lock itself.
+  The reconcile's own `fetchMovedHeads` runs bare git for that reason.
+- **An unreachable origin blocks other fetches and pushes for the retry bound.**
+  The reconcile keeps both locks through the `ls-remote` retries and their sleeps, so an unreachable origin holds up every fetch and push of both repositories for at most `RetryBound`.
+- **`resolveArchiveTip` fetches by SHA.**
+  It now picks the exact `refs/heads/<branch>` line from `ls-remote` and fetches that SHA, because `FETCH_HEAD` can be rewritten by another fetch once the lock is released.
 
-## Tests
+## To check by hand
 
-- `TestHoldRemoteRefs_OneLockServesEveryWorktreeOfARepository`: a lock held from a linked worktree is held for the primary worktree.
-- `TestRemoteRefsLock_ConcurrentFetchesAndPushesOfOneRepositoryAllSucceed`: concurrent fetches and pushes from worktrees of one clone all succeed, and the tracking ref ends at origin's head.
-  This reproduces the incident's race, which without the lock fails only some of the time.
-- A new `TestReconcileOrigin_Judge` row checks both locks inside every `ls-remote` and fetch the reconcile makes, through the origin call hook, and checks that both are free once it returns.
+- The lock also covers pushes, `pull --rebase` and branch deletes, which goes beyond the original wording that only fetches and the reconcile's `ls-remote` take it.
+  Confirm that is the intended reach (`internal/gitrepo/remoterefslock.go:11`).
+- A real two-process race between a landing and a batten pass was not reproduced; the tests pin lock waiting and release, not the original timing.
