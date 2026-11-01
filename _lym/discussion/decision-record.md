@@ -28,6 +28,24 @@ On the module's package graph it takes a cold run from 532 test binaries to 182,
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-01): The tier falls back to the build tag until the hub gate config names it
+
+Decision: The hub's gate.yaml is not changed during this run: lym config --set cannot write a key inside a tier's env map, and the editor needs an interactive terminal. The run-time selector therefore reads LYM_TEST_TIER when it is set and otherwise falls back to the tier of the build tag the binary was built with, through one small non-test file per tier tag in the selector package (for example a //go:build tier1 file setting the default to 1). With the hub's current commands, -tags tierN, every tier call then runs its own tier's tests. Once the run has landed, the orch has gate.yaml give each tier env LYM_TEST_TIER and drops -tags and the per-tag go vet calls, which is when one binary per package takes effect; the change description says so.
+
+Rationale: Keeps every worktree's gate correct without a hub config edit that lym cannot make non-interactively today.
+
+### Added after Discussion (parent, 2026-11-01): A Go rewrite program makes the mechanical change
+
+Decision: The writer may write a Go program under .scratch/ that drops the tier term from the test files' //go:build lines and opens each Test function with the Require call, and run it once with go run over the module's test files; it is not committed. Everything else changes through Edit and Write.
+
+Rationale: The record asks for one script over about 1645 test files; the repository's convention for mechanical rewrites is a Go program, and the shell-edit guard does not refuse go run.
+
+### Added after Discussion (parent, 2026-11-01): No Sonnet subagents in this session
+
+Decision: The darn session has no Agent tool, so the writer fixes failing packages itself instead of handing batches to Sonnet subagents; it batches the fixes per gate report as the session's instructions say.
+
+Rationale: The record's subagent batching cannot run in this session.
+
 ## Constraints
 
 ## Auto-mode assumptions
