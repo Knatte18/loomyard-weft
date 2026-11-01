@@ -2,8 +2,6 @@
 
 `bolt-dir-rename` · Task · enhancement, fabric, board, config, cwd, stencil · draft
 
-Depends on: [`warp-visibility`](design-warp-visibility.md)
-
 ## Seen (operator, 2026-10-31)
 
 The hub's Bolt checkout is the directory `_board`, but it holds far more than the board: `board.json`, its README and design files, the hub's `_lym` config and orch rules, and soon heddle's database.
