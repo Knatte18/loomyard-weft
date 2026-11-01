@@ -2,8 +2,6 @@
 
 `gate-run-keeps-cache-warm` · Task · enhancement, gate, shuttle, config · running · Discussion-Write
 
-Depends on: [`gate-fewer-binaries-trial`](design-gate-fewer-binaries-trial.md)
-
 ## Seen (operator, 2026-10-31)
 
 Gates on OSL-1046 take more than five minutes, a Webster gate there about 11, and an agent blocked on one comes back to a cold prompt cache: the whole context is written to the cache again.

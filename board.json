@@ -437,28 +437,6 @@
       "revised": "2026-11-01T12:04:29Z"
     },
     {
-      "id": 939,
-      "handle": "T2",
-      "slug": "gate-fewer-binaries-trial",
-      "title": "Trial the cuts that make a gate run link fewer new test binaries",
-      "kind": "task",
-      "labels": [
-        "research",
-        "gate",
-        "testkit"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Bench the report's cuts on Neve and OSL-1046 before any is made permanent",
-      "body": "## Seen\n\n`docs/research/gate-fewer-launches-2026-10-31/report.md` counted the test binaries a gate run links and launches.\nGo links one test binary per package per tier, since the tiers select their test files by build tag: 532 on a cold tree, 143 new to the cache on a warm whole-suite run.\nOn OSL-1046 the endpoint scanner holds each new binary about 10 s, so a change of mean fan-in, about 100 new binaries across three tiers, costs about 1000 s there.\nFive packages are imported by every test binary through the shared `TestMain` path (`internal/testkit/tmuxkit`, `internal/proc`, `internal/lymtemp`, `internal/lock`, `internal/agentname`), so a change to one of them rebuilds every binary.\n\n## Idea\n\nTry the report's cuts in practice before any of them is made permanent (operator, 2026-10-31), as a bench in a worktree of its own, measured on OSL-1046 as well as Neve:\n- One test binary per package for all tiers, the tier chosen at run time instead of by build tag: the largest saving the report rates medium risk.\n- Cut the five universal imports out of the common `TestMain` path: low risk, helps only when one of them changes.\n- Merge small leaf test packages into shared binaries within a tier.\n- One binary for the whole module per tier is rated high risk, since packages then share one process and Go's per-package test cache is lost; bench it only if the others fall short.\n\nEach trial reports the new binaries and scanner hold it saves and whether the test results stay the same.\n\n## Bench (operator, 2026-11-01)\n\n- Measured on Neve: the count of new test binaries a gate run links is the same on both machines, so OSL-1046's hold is that count times about 10 s; no agent runs on OSL-1046, and one check run there by the operator at the end confirms it.\n- Trials, in this order, each in this task's own worktree, none of them landed:\n  1. the five universal imports cut out of the common `TestMain` path;\n  2. one test binary per package for all tiers, tier chosen at run time, tried on a sample of the ten packages with the most tiers, the saving scaled to the whole repository from that sample;\n  3. merging small leaf test packages, only if 1 and 2 fall short.\n  One binary for the whole module is not trialled.\n- Cap: per trial, three gate runs on a warm tree before the change and three after; every run counts the new binaries linked and checks the test results are unchanged.\n- The task lands a report under `docs/research/` with its scripts and tables, never the trial changes themselves.\n",
-      "status": "done",
-      "created": "2026-10-31T18:12:46Z",
-      "revised": "2026-11-01T11:06:02Z",
-      "profile": "docs"
-    },
-    {
       "id": 940,
       "handle": "T6",
       "slug": "gate-run-keeps-cache-warm",
@@ -471,9 +449,7 @@
         "config"
       ],
       "issues": [],
-      "depends_on": [
-        "gate-fewer-binaries-trial"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "lym gate test caps the run wait like the slot wait, with the cap a config value beside the engine cache lifetime",
       "body": "## Seen (operator, 2026-10-31)\n\nGates on OSL-1046 take more than five minutes, a Webster gate there about 11, and an agent blocked on one comes back to a cold prompt cache: the whole context is written to the cache again.\n`lym gate test` already caps its wait for a free slot and answers \"run the same command again\" (exit 75), so that wait keeps the cache warm; the run itself, once the slots are held, blocks the call to its end.\n`lym shuttle await` is the capped keep-warm wait for a file, but an agent may not start a gate in the background, so nothing writes a file it could await.\nThe cap is a constant, `shuttleengine.DefaultAwaitCap` (250 s), shared by `lym shuttle await` and the gate's slot wait, and sized for the 5-minute prompt-cache lifetime; a session may run with a 1-hour cache lifetime instead.\n\n## Idea\n\n- The gate run gets the same cap as the slot wait: when the cap passes with the tiers still running, `lym gate test` answers that the run goes on and to run the same command again, while the tiers carry on in a process of their own.\n  The same command again joins that run, waits up to the cap once more, and prints the result when the run has ended.\n  Agents learn nothing new: the gate rule already says to re-run the same command in a turn that does nothing else.\n- The cap is config, not a constant, read by every keep-warm wait: the slot wait, the run wait and `lym shuttle await`.\n  It is set by where in a run the wait happens, not in one place: a darn run may want another cap than Webster, so it can differ per recipe, row or role, with a hub-wide default beside the engine's prompt-cache lifetime (operator, 2026-10-31).\n- Keeping the cache warm pays only up to a break-even wait: each re-run costs a cache read of the whole context, about a tenth of its price, while a cold return costs one cache write, about 1.25 times its price at the 5-minute lifetime, so past roughly ten re-runs, some 45 minutes, a cold cache is cheaper.\n  A wait known to be longer than that, such as a gate that takes two hours, blocks to its end without re-runs (operator, 2026-10-31).\n  The expected length can come from the gate's own records of earlier runs of the same gate key on the machine, which `lym gate report` already totals; the break-even itself is config too.\n- Find the other waits that block an agent past the cache lifetime and give them the same capped form; the driver blocked on `lym shed step` through a long producer is the first to check.\n",
