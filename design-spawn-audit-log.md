@@ -1,6 +1,8 @@
 # Spawn audit log: every process lym starts is recorded and traceable
 
-`spawn-audit-log` · Task · feature, reed, shuttle, config · draft
+`spawn-audit-log` · Task · feature, reed, shuttle, config
+
+Depends on: [`kde-window-placement`](design-kde-window-placement.md), [`gate-run-keeps-cache-warm`](design-gate-run-keeps-cache-warm.md)
 
 ## Seen
 
