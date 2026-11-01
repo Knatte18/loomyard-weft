@@ -2,7 +2,7 @@
 
 `plan-split-producers` · Task · feature, loom, stencil, shed, profiles · draft
 
-Depends on: [`warp-visibility`](design-warp-visibility.md)
+Depends on: [`bolt-dir-rename`](design-bolt-dir-rename.md)
 
 ## Seen
 
