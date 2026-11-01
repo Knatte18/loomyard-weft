@@ -2,8 +2,6 @@
 
 `seed-starts-at-start` · Task · enhancement, loom, pawl, shed · running · Darn-Write
 
-Depends on: [`interactive-recipe`](design-interactive-recipe.md)
-
 ## Seen (operator, 2026-10-30)
 
 A new beam stopped at once because the shared seed set its status file's `current_producer` to `Preflight`, a row the pawl recipe lacked.

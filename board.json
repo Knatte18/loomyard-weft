@@ -93,7 +93,6 @@
       ],
       "issues": [],
       "depends_on": [
-        "interactive-recipe",
         "gate-rule-stated-once"
       ],
       "isolated": false,
@@ -479,9 +478,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "interactive-recipe"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "The shared seed names Preflight as the first producer for every recipe; the seed should name none, and the recipe supplies its first row.",
       "body": "## Seen (operator, 2026-10-30)\n\nA new beam stopped at once because the shared seed set its status file's `current_producer` to `Preflight`, a row the pawl recipe lacked.\nThe seed names the producer an inner run starts at, so each recipe's first row must match a name hard-coded in `loomshed.Seed` (`internal/loomshed/seed.go`), which the bootstrap shared by every inner recipe calls.\n\n## Design (operator, 2026-10-30)\n\n- The seed names no producer: it says only that the run starts at its start, and the recipe's first row is the start.\n- A seed can then never name a row its recipe lacks, whatever recipe a run is seeded for.\n- The change reaches the shared seeding for tapestry, darn and pawl, how the status file records the current producer before the first pass, and the verbs that move a run (`goto`, resume), which the task checks.\n",
@@ -510,29 +507,6 @@
       "revised": "2026-10-31T11:41:05Z"
     },
     {
-      "id": 925,
-      "handle": "T8",
-      "slug": "interactive-recipe",
-      "title": "sampler: an interactive loom recipe, the operator iterating with an agent in the run's worktree until done",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "shed",
-        "batten",
-        "reed",
-        "shuttle"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A Shed recipe whose agent waits for the operator and iterates on the result, then lands as usual",
-      "body": "## Seen (operator, 2026-10-31)\n\nSome work needs many rounds between the operator and an agent on the result itself, and a one-shot writer makes it badly: a README written as a teaching text (task `readme-rewrite`), the board's README (note `board-viewer`), and trying out the reed status bar's buttons (note `reed-status-buttons`).\nDarn's writer is non-interactive, and tapestry's `discussion_interactive` only interviews the operator before anything is written.\n\n## Idea\n\nA new loom recipe, `sampler`, beside `tapestry` and darn, under the loom contract `run-verbs-shared` builds: an interactive agent the operator iterates with in the run's own worktree.\nBatten stays the same for it as for every recipe.\n\n- The record is written mechanically from the board entry, as darn's is without Discussion; what the operator and the agent settle on the way the agent appends with `lym loom decision add`, so Describe and any review measure against it.\n- The build segment is the interactive agent alone.\n- Batten makes the worktree, opens the window and starts the agent with the task's body as its brief; the agent waits for the operator in its pane.\n- The operator and the agent go as many rounds as the operator wants; the agent commits as it goes.\n- The operator tells the agent the work is done, and the agent runs a `lym` verb that ends the build segment, as the PR-Review agent runs `lym loom pr-continue` when the operator says so.\n- The run then goes on as usual: the Code-Review perch, off by default, then Describe, Finalize and Land.\n- The result is one of:\n  - a change to the repository, such as the README or `docs/`, landed as an ordinary commit;\n  - an entry on the board, written by the agent through `lym board`, in which case the run has no commits and lands empty, which lym already supports;\n  - a trial, as `reed-status-buttons` needs, in which case the run can use a tmux server of its own, so that what it tries does not disturb the operator's strands.\n\n## The agent (operator, 2026-10-31)\n\nThe agent is not Discussion-Write: Discussion-Write's stencil binds it to explore the code, ask and write the decision record, never to make the work itself.\nThis agent makes the result with the operator, and gets a short stencil of its own: stay in the run's worktree, commit as it goes, and write board results through `lym board`.\nIt shares only the mechanism with Discussion-Write's interactive mode: an interactive shuttle session (`lym shuttle run --interactive`) in a pane that waits for the operator.\n\n## Waiting on the operator (operator, 2026-10-31)\n\nWhile the agent waits for the operator, dobby's quiet notice and shuttle's idle timeout are off for this recipe.\nA run is started only when the operator means to work with it.\n\n## Name (operator, 2026-10-31)\n\nThe recipe is named `sampler`: a weaver's sampler is the cloth patterns are tried and adjusted on.\n",
-      "status": "done",
-      "created": "2026-10-31T12:06:31Z",
-      "revised": "2026-10-31T18:14:55Z",
-      "profile": "light"
-    },
-    {
       "id": 927,
       "handle": "T6",
       "slug": "finalize-fix-in-place",
@@ -547,13 +521,11 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "interactive-recipe"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "A fix review loop inside Finalize that escalates at its cap, in place of on_reroute",
       "body": "## Seen (operator, 2026-10-31)\n\nFinalize still sends a run back in one case: when its merge fixer spent its cap, or made an over-cap change, and Finalize's own solo fix review does not approve that change.\ntapestry's Finalize then reroutes to Parent-Align and darn's to Code-Bouncer (`on_reroute` in `contracts/recipes/tapestry-recipe.yaml` and `darn-recipe.yaml`), bounded by Shed's reroute cap.\nThe operator does not want a run bounced back to earlier rows, and a halt handed to the orch helps no one either, since the orch can do little with it: the run must settle it itself.\n\n## Idea\n\nFinalize settles a fixer change in place, under the parent lock, and never reroutes.\n- A fix review that does not approve hands its findings to the fixer, which fixes them in place, and the review checks again: a small perch inside Finalize.\n- The loop has a cap; at the cap Finalize escalates with the unresolved findings, as a review loop that ran out of rounds does, and the operator decides.\n  The operator can accept the change as it stands, and the run then lands with the unresolved findings written into the change description, as `lym loom circling accept` does for a review loop.\n- Parent-Align and Code-Review are not run again, and `on_reroute` goes from Finalize in every recipe.\n",
-      "status": "running · Worktree-Create",
+      "status": "running · Darn-Write",
       "created": "2026-10-31T12:52:24Z",
       "revised": "2026-11-01T06:18:33Z",
       "profile": "solid"
@@ -634,7 +606,6 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "interactive-recipe",
         "gate-rule-stated-once",
         "warp-visibility",
         "seed-starts-at-start",
@@ -680,9 +651,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "interactive-recipe"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "The raw-go and refuse-raw deny notices both carry the full gate rule into every session",
       "body": "## Seen (hub orch, 2026-10-31)\n\nThe deny notices shuttle appends to every Claude session's system prompt carry the whole gate rule twice.\nThe raw go row (`raw-go` in `internal/shellguard/rows.go`) and the refuse-raw row each end in the same text, from \"Gate rule: run lym gate test in the foreground\" to \"so the prompt cache stays warm between calls\", so a session reads it twice in its system prompt.\n\n## Idea\n\nState the gate rule once in the appended notice, and let the second row's notice say only what it refuses.\nEach row's steer, the reason shown when a call is denied, keeps the full rule, since a denied call needs the way forward at hand.\n",
@@ -785,7 +754,6 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "interactive-recipe",
         "seed-starts-at-start"
       ],
       "isolated": false,

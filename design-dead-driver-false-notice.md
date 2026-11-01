@@ -2,7 +2,7 @@
 
 `dead-driver-false-notice` · Task · bug, dobby, loom
 
-Depends on: [`interactive-recipe`](design-interactive-recipe.md), [`seed-starts-at-start`](design-seed-starts-at-start.md)
+Depends on: [`seed-starts-at-start`](design-seed-starts-at-start.md)
 
 ## Seen (hub orch, 2026-11-01)
 

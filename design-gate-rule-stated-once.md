@@ -2,8 +2,6 @@
 
 `gate-rule-stated-once` · Task · enhancement, shuttle, gate, claude · running · Darn-Write
 
-Depends on: [`interactive-recipe`](design-interactive-recipe.md)
-
 ## Seen (hub orch, 2026-10-31)
 
 The deny notices shuttle appends to every Claude session's system prompt carry the whole gate rule twice.

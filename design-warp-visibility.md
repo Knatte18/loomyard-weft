@@ -2,7 +2,7 @@
 
 `warp-visibility` · Task · feature, fabric, board, config, claude, codex, cwd, process, stencil, shuttle
 
-Depends on: [`interactive-recipe`](design-interactive-recipe.md), [`gate-rule-stated-once`](design-gate-rule-stated-once.md)
+Depends on: [`gate-rule-stated-once`](design-gate-rule-stated-once.md)
 
 ## Seen
 
