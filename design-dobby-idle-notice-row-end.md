@@ -1,6 +1,6 @@
 # Dobby reports a healthy run idle in the seconds after its agent session ends
 
-`dobby-idle-notice-row-end` · Task · bug, dobby, shuttle · running · Code-Burler-Fix
+`dobby-idle-notice-row-end` · Task · bug, dobby, shuttle · running · Code-Bouncer
 
 ## Seen (orch, 2026-11-01)
 
