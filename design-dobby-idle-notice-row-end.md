@@ -1,6 +1,6 @@
 # Dobby reports a healthy run idle in the seconds after its agent session ends
 
-`dobby-idle-notice-row-end` · Note · bug, dobby, shuttle
+`dobby-idle-notice-row-end` · Task · bug, dobby, shuttle · draft
 
 ## Seen (orch, 2026-11-01)
 
