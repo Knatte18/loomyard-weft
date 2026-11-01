@@ -2,7 +2,7 @@
      loom-template-plan, loom-template-part-writer and loom-template-parts-chair pull it in with the bare {{template "loom-block-plan-format"}}, with no pipeline.
      The fill hands it the including seat's value map, so it declares one required marker: {{.specs_dir}}.
      It names no step of the stencil around it; each including stencil states its own rule for the lines this block leaves out.
-lym-stencil: sha256=31d0fdc64669c9cfe5697e0c5201d3f916131d40ff5bb3d2d11a379cef62f215 build=4ce42a8d6ab9bd70bec8bce9f559ee3941f94197 time=2026-11-01T14:06:50Z -->
+lym-stencil: sha256=f418829e3d128eb5544c180ae241ebd3faf0a92297d989714573cae982b97c42 build=7999007f5d7f20b4b81bff698790313feaa68d25 time=2026-11-01T19:18:14Z -->
 
 ### What a card is
 
@@ -22,9 +22,9 @@ The plan runs strictly in card order, and the Card Index lists the cards in that
 `{{.specs_dir}}/loom/loom-plan-spec.md`'s "Plan vs. schedule" section holds the rule.
 
 A card that needs a corpus or a fixture takes it from committed test data in the tree, created by an earlier card where it does not exist yet, never from the live files of other worktrees or the fabric repo.
-`card-fabric-reference` in `{{.specs_dir}}/loom/loom-plan-spec.md` names what the plan gate refuses.
+`card-fabric-reference` in `{{.specs_dir}}/loom/loom-plan-checks-spec.md` names what the plan gate refuses.
 
-The plan gate also refuses a card for `test-tier-unstated`, `seam-test-unlisted` and `doc-go-unlisted`; `{{.specs_dir}}/loom/loom-plan-spec.md`'s validation checks hold their rules.
+The plan gate also refuses a card for `test-tier-unstated`, `seam-test-unlisted` and `doc-go-unlisted`; `{{.specs_dir}}/loom/loom-plan-checks-spec.md` holds their rules.
 
 A card that prescribes an addition to a `PATTERN.md` entry line leaves the line's rule text under the cap, `pattern-entry-line-cap` in the same spec: the gate fails a fenced verbatim entry line whose rule text is over it.
 A declared `adds` or `changes` entry is prescribed verbatim as its whole overview line in a fenced block on a card that edits `PATTERN.md`.

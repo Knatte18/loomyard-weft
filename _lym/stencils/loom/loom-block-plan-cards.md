@@ -2,7 +2,7 @@
      loom-template-plan, loom-template-part-writer and loom-template-parts-chair pull it in with the bare {{template "loom-block-plan-cards"}}, with no pipeline.
      The fill hands it the including seat's value map, so it declares two required markers: {{.specs_dir}} and {{.gate_tiers}}.
      It names no step of the stencil around it; each including stencil states its own rule for the lines this block leaves out.
-lym-stencil: sha256=dbefae6c24779a95a126bb892b7a0ce12b2ac9138d1412cb3839b95a8b7df1a4 build=4ce42a8d6ab9bd70bec8bce9f559ee3941f94197 time=2026-11-01T14:06:50Z -->
+lym-stencil: sha256=385a1b52ebfb80ddb81174b7f88653980c7eb655d97fab5b09e80b37da2ffb19 build=7999007f5d7f20b4b81bff698790313feaa68d25 time=2026-11-01T19:18:14Z -->
 
 A symbol `Rename` needs the hub's `rename_tools` in `language.yaml`; the plan gate refuses one when the list is empty.
 
@@ -19,18 +19,18 @@ An implementation card lists the implementation's member glyphs under `**Edit:**
 A new test file is a `**Create:**` path, written only for a surface no existing test file covers.
 
 `**Edit:**` lists the member glyphs the card changes, and a file path only for a file with no symbol to name: a non-Go file, or a whole file the card creates or deletes.
-A `_test.go` path under `**Edit:**` is refused by `edit-test-file` in `{{.specs_dir}}/loom/loom-plan-spec.md`, which holds the way forward.
+A `_test.go` path under `**Edit:**` is refused by `edit-test-file` in `{{.specs_dir}}/loom/loom-plan-checks-spec.md`, which holds the way forward.
 A card names an existing test function, fake or helper it changes as a member glyph, for example `internal/x#TestFoo` or `internal/x#fakeClock`.
 A new test function is a `**Create:**` declaration with a `plan:` handle whose unit is the package directory, or `<dir>_test` for an external test package, never a file, so the plan does not pin the file a new test goes in.
 A card whose new tests reuse an existing test's setup, or call existing test helpers or fakes, names those members as glyphs under `**Uses:**`.
-Listing a file or a package beside a member of it on one card is refused: `redundant-package-target` and `redundant-file-target` in `{{.specs_dir}}/loom/loom-plan-spec.md` say what counts and the way forward.
+Listing a file or a package beside a member of it on one card is refused: `redundant-package-target` and `redundant-file-target` in `{{.specs_dir}}/loom/loom-plan-checks-spec.md` say what counts and the way forward.
 
 A card that changes a member's parameters, results, type parameters or receiver writes that `**Edit:**` bullet with the re-sign arrow, `` `<glyph>` -> `<new declaration head>` ``, the head written like a `Create` head.
 An interface method or a struct field takes no arrow, and the card's `**Intent:**` states its change.
 
 A card that deletes or re-signs a member lists every caller of it: the file, or the member glyph whose body holds the call, on the same card for a re-sign and on the same or an earlier card for a delete.
 For a caller in a `_test.go` file the card lists only the member glyph whose body holds the call.
-`caller-uncovered` in `{{.specs_dir}}/loom/loom-plan-spec.md` says what counts.
+`caller-uncovered` in `{{.specs_dir}}/loom/loom-plan-checks-spec.md` says what counts.
 
 `**Extends:**` lists a ref that already exists and that the card only adds to, without changing anything already there: a flag, a list line, a doc paragraph, a spec entry, a verb in a wire function.
 A ref whose existing content the card rewrites, reorders or removes goes under `**Edit:**`, and a re-sign arrow never goes under `**Extends:**`.
@@ -53,7 +53,7 @@ A field with no content is omitted entirely — never write a `none` sentinel on
 
 **`Uses:` names what the card reads but does not change — never a target.**
 An entry appearing in both a card's own target list and its own `Uses:` is a contradiction: is it being changed, or only read?
-That is the `card-field-overlap` finding — see `{{.specs_dir}}/loom/loom-plan-spec.md`'s own Card fields section for the full grammar and the complete validation-check set.
+That is the `card-field-overlap` finding — see `{{.specs_dir}}/loom/loom-plan-spec.md`'s own Card fields section for the full grammar, and `{{.specs_dir}}/loom/loom-plan-checks-spec.md` for the validation checks.
 
 The gates run the hub's tier lists over scopes lym computes, so the plan carries no plan-level verify section and asks for none.
 The hub's tiers and gate lists follow:
@@ -111,7 +111,7 @@ approved: false
 
 **Intent:** <the change to make, concretely>
 
-**ImpactSummary:** <one line: the blast radius across this card's Edit/Delete targets>
+**ImpactSummary:** <one line: the blast radius across this card's Edit/Extends/Delete targets>
 ```
 
 `**ImpactSummary:**` is in the skeleton because the skeleton's own label is `**Edit:**`, and

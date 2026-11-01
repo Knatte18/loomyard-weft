@@ -2,7 +2,7 @@
      loom-template-plan, loom-template-part-writer and loom-template-parts-chair pull it in with the bare {{template "loom-block-plan-overview"}}, with no pipeline.
      The fill hands it the including seat's value map, so it declares one required marker: {{.specs_dir}}.
      It names no step of the stencil around it; each including stencil states its own rule for the lines this block leaves out.
-lym-stencil: sha256=b1db43e60a89758c9014937a3e18492f5b900699dae2b9c4dc7028cca2d72edb build=4ce42a8d6ab9bd70bec8bce9f559ee3941f94197 time=2026-11-01T14:06:50Z -->
+lym-stencil: sha256=3e7691432d1caa773e7e085e4eedd0f743522c7faa2d4e7ac29d00828e47433f build=7999007f5d7f20b4b81bff698790313feaa68d25 time=2026-11-01T19:18:14Z -->
 
 ### `00-overview.md`
 
@@ -20,7 +20,7 @@ Omit `root:` when there is no shared prefix.
 Card paths are always worktree-relative and clean: never absolute, never containing `..`.
 
 `language:` is `"go"` (the default — you may omit the key entirely), `"csharp"` or `"none"`.
-Set `"csharp"` when the code the cards change is C#, read from the files' extension; `{{.specs_dir}}/loom/loom-plan-spec.md` holds the C# rules.
+Set `"csharp"` when the code the cards change is C#, read from the files' extension; `{{.specs_dir}}/loom/loom-plan-csharp-spec.md` holds the C# rules.
 Otherwise leave it at `"go"` unless the task is explicitly non-Go.
 
 **A symbol target is always spelled as a glyph, never as a bare `pkg.Symbol` string.** A glyph is `<unit>#<member>` — the package or file's own repository-relative path, a `#`, then the symbol's own name (e.g. `internal/boardcli#newListCmd`, or `internal/boardcli#` to name the whole package). A bare package-qualified symbol is a hard finding (`bare-symbol-target`) because it is the one spelling that cannot have come verbatim from a quarry answer — not because the form is uglier. A file path (`list.go`, `internal/boardcli/list.go`) stays a plain path — the parser canonicalizes it into its own file self glyph automatically; you never hand-write the `#`-suffixed form for a plain file.
