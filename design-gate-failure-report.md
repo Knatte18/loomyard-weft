@@ -1,6 +1,6 @@
 # The gate reports every failure at once, lint included, in one readable result
 
-`gate-failure-report` · Task · enhancement, gate, lint · running · Record-Write
+`gate-failure-report` · Task · enhancement, gate, lint · running · Darn-Write
 
 ## Seen (orch, 2026-11-01)
 
