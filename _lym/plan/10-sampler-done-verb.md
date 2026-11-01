@@ -1,10 +1,10 @@
 # Card 10 — sampler-done-verb
 
 **Create:**
-- `plan:internal/loomcli#samplerDoneDeps` -> `type samplerDoneDeps struct`
-- `plan:internal/loomcli#samplerDoneVerb` -> `func samplerDoneVerb(out io.Writer, deps samplerDoneDeps) int`
-- `plan:internal/loomcli#loomCLI.samplerDoneCmd` -> `func (c *loomCLI) samplerDoneCmd() *cobra.Command`
-- `plan:internal/loomcli#TestSamplerDoneVerb` -> `func TestSamplerDoneVerb(t *testing.T)`
+- `internal/loomcli#samplerDoneDeps`
+- `internal/loomcli#samplerDoneVerb`
+- `internal/loomcli#loomCLI.samplerDoneCmd`
+- `internal/loomcli#TestSamplerDoneVerb`
 
 **Edit:**
 - `internal/loomcli#Command`
@@ -17,7 +17,7 @@
 - `internal/loomcli#loomCLI.prContinueCmd`
 - `internal/loomcli#prContinueVerb`
 - `internal/loomcli#TestPRContinueVerb`
-- `plan:internal/loomcli#samplerStamp`
+- `internal/loomcli#samplerStamp`
 - `internal/loomrecipe#EngineRow`
 - `internal/samplerengine#UpdateRecord`
 - `internal/samplerengine#ReadRecord`

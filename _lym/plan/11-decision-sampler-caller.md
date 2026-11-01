@@ -1,8 +1,8 @@
 # Card 11 — decision-sampler-caller
 
 **Create:**
-- `plan:internal/loomcli#samplerStrandReader` -> `func samplerStrandReader(target *lymcwd.Location, recipe string) func(name string) (bool, error)`
-- `plan:internal/loomcli#TestSamplerStrandReader` -> `func TestSamplerStrandReader(t *testing.T)`
+- `internal/loomcli#samplerStrandReader`
+- `internal/loomcli#TestSamplerStrandReader`
 
 **Edit:**
 - `internal/loomcli#decisionDeps`

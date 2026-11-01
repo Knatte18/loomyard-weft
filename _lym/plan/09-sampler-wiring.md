@@ -1,13 +1,13 @@
 # Card 9 — sampler-wiring
 
 **Create:**
-- `plan:internal/loomcli#samplerStamp` -> `func samplerStamp(l *lymcwd.Location, runID, recipe, row string) func() (int, error)`
-- `plan:internal/loomcli#samplerDeps` -> `func samplerDeps(l *lymcwd.Location, runID, recipe, row string, spec func() (shuttleengine.Spec, error)) loomshed.SamplerDeps`
-- `plan:internal/loomcli#openRecordWatch` -> `func openRecordWatch(path string) <-chan struct{}`
-- `plan:internal/loomcli#TestWire_SamplerRecipe` -> `func TestWire_SamplerRecipe(t *testing.T)`
+- `internal/loomcli#samplerStamp`
+- `internal/loomcli#samplerDeps`
+- `internal/loomcli#openRecordWatch`
+- `internal/loomcli#TestWire_SamplerRecipe`
 - `internal/loomcli/samplerwiring_test.go`
-- `plan:internal/loomcli#TestOpenRecordWatch` -> `func TestOpenRecordWatch(t *testing.T)`
-- `plan:internal/loomcli#TestWireLanding_FillsSamplerSessionSeams` -> `func TestWireLanding_FillsSamplerSessionSeams(t *testing.T)`
+- `internal/loomcli#TestOpenRecordWatch`
+- `internal/loomcli#TestWireLanding_FillsSamplerSessionSeams`
 
 **Edit:**
 - `internal/loomcli#loomCLI.wire`
@@ -29,7 +29,7 @@
 - `internal/loomcli#writeHubGateConfig`
 - `internal/loomcli#TestWire_DarnRecipe`
 - `internal/loomcli#intentionallyNil`
-- `plan:internal/loomcli#discussionRecordCheck`
+- `internal/loomcli#discussionRecordCheck`
 - `internal/loomrecipe#EngineRow`
 - `internal/samplerengine#SessionSpec`
 - `internal/samplerengine#EntryStamp`

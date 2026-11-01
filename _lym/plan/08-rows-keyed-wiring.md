@@ -1,10 +1,10 @@
 # Card 8 — rows-keyed-wiring
 
 **Create:**
-- `plan:internal/shedbuild#RowEntryGate` -> `func RowEntryGate(row Row, env shedrecipe.Env) (shedengine.EntryGate, error)`
-- `plan:internal/loomrecipe#CodePerchGate` -> `func CodePerchGate(recipe string, env shedrecipe.Env) (shedengine.EntryGate, error)`
-- `plan:internal/loomcli#loomCLI.wireTreeScope` -> `func (c *loomCLI) wireTreeScope(location *lymcwd.Location) error`
-- `plan:internal/loomcli#discussionRecordCheck` -> `func discussionRecordCheck(l *lymcwd.Location, recipe string) func() ([]discussionparser.Finding, error)`
+- `internal/shedbuild#RowEntryGate`
+- `internal/loomrecipe#CodePerchGate`
+- `internal/loomcli#loomCLI.wireTreeScope`
+- `internal/loomcli#discussionRecordCheck`
 
 **Edit:**
 - `internal/loomcli#codeBudgetZero` -> `func codeBudgetZero(l *lymcwd.Location, recipe string) func() (bool, error)`
