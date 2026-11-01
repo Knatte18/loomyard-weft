@@ -470,7 +470,7 @@
       "isolated": false,
       "brief": "Move the profile from a bullet under the task title into the Recipe column",
       "body": "## Seen (operator, 2026-11-01)\n\nThe board's rendered README shows a task's profile as a bullet under its title in the Task column, such as `` `profile: light` ``, while the Recipe column holds only `tapestry` or `darn`.\nThe profile is the lower level of the recipe, so it belongs in the same column.\n\n## Idea\n\nThe Recipe column shows recipe and profile together, such as `tapestry · light`, or the recipe alone when the task takes its recipe's default profile; the profile bullet under the title goes.\n",
-      "status": "running · Code-Burler-Fix",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-01T12:04:33Z",
       "revised": "2026-11-01T18:48:34Z"
     },
