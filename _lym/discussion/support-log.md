@@ -70,7 +70,32 @@ Six forks, all reported; findings merged across lenses and judged together.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+Review BLOCKING, eleven findings, all fixed; the fixer-report holds the dispositions.
+
+- F1: D1 joins only a run with an exit file or a live runner, read from a process file the runner claims at start; D3 records 128 plus the signal and supersedes a runner killed without an exit file.
+- F2: D3 keeps the latest deadline any front wrote.
+- F3: D5 records today's missing cancel mark, adds `Abandoned` set by `execution.report` after a cancel, and defines a call's wall time.
+- F4: D6 states each line kind's slot, phase and cancel path, with `cardverify.Runner` taking the caller's context.
+- F5 and F6: the runner verb refuses without a live lease or once claimed, and the front writes the lease before the spawn.
+- F7: every `verifyrun.Run` caller removes the strand, batten's two included.
+- F8 and F9: D1's Bound states the second-front rerun and the 75 exception.
+- F10: D9 names the `DefaultAwaitCap` doc comment, not the stencils.
+- F11: D4 cites Claude Code 2.1.316's built-in settings text for the fork lifetime.
+
+### Round 2
+
+Review BLOCKING, ten findings, all fixed; the fixer-report holds the dispositions.
+
+- F1: the process file holds a start reading on every platform, `proc.StartTime` on Linux and `proc.CreationTime` on Windows, and the join compares it with the same reader.
+- F2: a front's cap counts from its start; it takes the key lock only while 30 s of the cap remain, and D4 sets a 60 s floor on the cap.
+- F3: D6 ties a card-verify line to its runner, a parent-death SIGKILL and a recorded process group a superseding front kills on Linux, a kill-on-close job on Windows, with the remaining Linux bound.
+- F4: `execution.writeRecord` sets `Abandoned`.
+- F5: at a start failure the front makes the same exclusive create as the runner, so one of the two claims wins.
+- F6: `lym gate report` counts records carrying `Abandoned` apart, so cut runs stop counting as full runs while their slot time stays visible.
+- F7: card-verify keys by `card.ID()`.
+- F8 to F10: D1's runner paragraph per verb, D3's two lease-shortening writes, D5's wall-time span.
 
 ## Question ledger
 
