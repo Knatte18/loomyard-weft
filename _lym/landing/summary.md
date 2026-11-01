@@ -1,7 +1,11 @@
 # Delete the one-shot boltrename program
 
-`tools/boltrename` moved an existing hub's Bolt checkout from `_board` to `_bolt`, rewriting the git worktree links, process records and workspace paths that named the old directory.
-Every hub that needed it has moved: Neve is migrated, and OSL-1046 is re-cloned rather than migrated.
-The program has no hub left to run on, so it is deleted together with its tests.
+`tools/boltrename` moved existing hubs from the `_board` checkout directory to `_bolt`.
+Neve is already migrated and OSL-1046 is re-cloned rather than migrated, so no hub is left for it to run on.
 
-No other file in the repository names the program or the `_board` directory, so nothing else changes.
+This removes the program, its tests and its test main (`main.go`, `rename_test.go`, `testmain_test.go`).
+No other file mentioned it, so nothing else changes and no refactor rides along.
+
+## Check
+
+A repository-wide search for `boltrename` finds nothing outside git history.
