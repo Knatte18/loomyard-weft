@@ -1,0 +1,344 @@
+diff --git a/docs/research/batch-budget-trial-2026-11-01/README.md b/docs/research/batch-budget-trial-2026-11-01/README.md
+new file mode 100644
+index 00000000..8fa21ee9
+--- /dev/null
++++ b/docs/research/batch-budget-trial-2026-11-01/README.md
+@@ -0,0 +1,86 @@
++# Batcher budget trial: cautious versus wide, recheck of 2026-11-01
++
++The recheck of audit `batch-budget-300k-trial`, due once many `wide` runs had landed.
++The figures record one run of `compare.sh` on one machine and are not claiming to stay true.
++The baseline of 2026-10-24 sits in `../batch-budget-trial-2026-10-24/`.
++
++## Method
++
++`compare.sh` here is the baseline script with one change: it reads both archive layouts, `_lyx/` (runs to 2026-10-26) and `_lym/` (later runs), including the newer `batches` object in `state.json` and the review rounds under `reviews/code/`.
++It ran as `compare.sh 2026-10-15` after `git fetch --tags` in the records repo clone.
++`runs.tsv` and `forks.tsv` beside this file are its outputs.
++
++Two limits of the data:
++
++- The Claude transcripts of the `cautious` runs, which ended 2026-10-22, are no longer on this machine, so this run measured nothing for `cautious`.
++  The `cautious` measured figures below are the 2026-10-24 baseline's, from the same script.
++- `wide` runs have a measured fork peak only when their transcripts are on this machine: 8 of 23 runs, 34 forks with an estimate and a peak.
++  The other runs ran on another machine or lost their transcripts.
++  Their structural columns (cards, batches, estimate, review rounds and findings, recoveries) are complete.
++
++## Runs
++
++23 `wide` runs against 59 `cautious` runs (51 in the baseline; the fetch added older tags).
++The `wide` runs span 2026-10-22 to 2026-11-01.
++
++| metric (median) | cautious | cautious >=10 cards | wide |
++|---|---|---|---|
++| runs | 59 | 22 | 23 |
++| cards | 7 | 14 | 18 |
++| batches | 3 | 7 | 5 |
++| cards/fork | 2.29 | 1.92 | 3.50 |
++| est_median_peak | 177798 | 185025 | 254718 |
++| measured_median_peak | 170984 (baseline, n=48) | 191997 (baseline, n=16) | 174488 (n=8) |
++| measured_max_peak | 232948 (baseline, n=48) | 276642 (baseline, n=16) | 309870 (n=8) |
++| webster_cost$ | 9.84 (baseline, n=51) | 19.6 (baseline, n=18) | 16.13 (n=9) |
++| $/card | 1.15 (baseline, n=51) | 1.495 (baseline, n=18) | 1.13 (n=9) |
++| webster_min | 26.6 (baseline, n=51) | 51.65 (baseline, n=18) | 49.7 (n=9) |
++| recoveries | 0 | 0 | 0 |
++| notdone_batches | 0 | 0 | 0 |
++| webster_review_rounds | 1 | 1 | 1 |
++| review_findings | 1 | 2 | 3 |
++| gating_findings | 0 | 0 | 0 |
++
++Cost per card of the six `wide` runs of 10 cards or more has median 1.13 (range 1.01 to 2.60), against 1.495 for the `cautious` runs of that size.
++The `wide` runs are bigger runs (median 18 cards against 7), which accounts for part of their higher median finding count.
++
++## Fork peak against the batcher's estimate
++
++Forks with an estimate and a measured peak: 34 `wide` here; 173 `cautious` and 3 `wide` in the baseline.
++
++| forks estimated above 200k | cautious (baseline) | wide |
++|---|---|---|
++| forks | 51 | 29 |
++| median peak/estimate | 0.89 | 0.89 |
++| mean peak/estimate | 0.92 | 0.86 |
++| 90th percentile peak/estimate | not computed | 1.27 |
++| highest peak/estimate | 1.95 | 1.34 |
++| forks peaking above their estimate | 15 | 9 |
++| forks peaking over 300k | 16 | 4 |
++
++Within the `wide` forks estimated above 200k:
++
++- The 20 multi-card forks have mean peak/estimate 1.01; 9 peaked above their estimate and the 4 over 300k are among them.
++- The 9 single-card forks have mean 0.61, none above the estimate: the estimate of a lone large card is high.
++- The multi-card overshoots reach 1.34 of the estimate; the highest peak is 381k.
++
++`wide` forks overall: mean peak/estimate 0.89, 10 of 34 above their estimate, 20 peaking over 200k, 4 over 300k.
++
++## Findings
++
++- No quality regression: no recoveries, no batch left not done, one review round at the median, no gating finding at the median.
++- Cost per card is level with `cautious` overall and lower than `cautious` on runs of 10 cards or more, where the identity-batcher fork cost hurt most.
++- The first check's worry, forks 31-39% over the estimate, does not hold up: that was one run.
++  Across 29 forks above 200k the median peak is 0.89 of the estimate and the 90th percentile 1.27.
++- The 300k budget is overrun by the multi-card tail: 4 of 20 multi-card forks peaked over 300k, the highest at 381k.
++
++## Recommendation
++
++1. **Put `wide` into `internal/batcher/template.yaml`: yes, as the active profile.**
++   It costs no more per card, shows no quality loss over 23 runs, and the hub has run it since 2026-10-22 without a recovery.
++   Keep `cautious` in the template as the fallback profile.
++2. **Calibrate the estimator above 200k: no scaling change now.**
++   The median estimate is about 11% high and the mean for multi-card forks is 1.01, so a global factor would shift the tail the wrong way.
++   The error is the spread, not the bias: single-card forks run about 40% under their estimate and multi-card forks reach 1.3 to 1.4 over.
++   If a calibration is wanted, it is a correction of about -40% to the estimate of a lone card above 200k, which would let the batcher pair such cards; the multi-card tail needs headroom of about 30%, not a lower estimate.
++   Recheck both with `compare.sh` once the transcripts of the 15 `wide` runs without measured peaks, or 10 more measured runs, are available.
+diff --git a/docs/research/batch-budget-trial-2026-11-01/compare.sh b/docs/research/batch-budget-trial-2026-11-01/compare.sh
+new file mode 100755
+index 00000000..b60ec90d
+--- /dev/null
++++ b/docs/research/batch-budget-trial-2026-11-01/compare.sh
+@@ -0,0 +1,98 @@
++#!/usr/bin/env bash
++# Webster runs under batcher profile cautious vs wide, from the weft archive tags; reads both the _lyx and the _lym archive layout (2026-11-01 revision).
++# Read-only on the repos; writes only under OUT (default <repo>/.scratch/batch-budget-trial/), never beside this script.
++# Run from anywhere: docs/research/batch-budget-trial-2026-11-01/compare.sh [FROM-date]
++# Env: FORCE=1 re-runs tokencount for slugs already cached; WEFT=<records repo> (default <repo>/../loomyard-weft);
++# OUT=<work dir> for the cache, the built tokencount binary and the outputs.
++# Switch to wide: 2026-10-22T15:50:17+02:00 (commit 216c22a12 in the records repo, batcher.yaml "active: wide").
++# A run's profile is read from its own state.json partition (the profile Webster actually used), not guessed from dates.
++# Outputs: runs.tsv (one row per run), forks.tsv (one row per fork with estimate vs measured peak), summary.md.
++set -u
++HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
++REPO="$(cd "$HERE/../../.." && pwd)"
++WEFT="${WEFT:-$REPO/../loomyard-weft}"
++FROM="${1:-2026-10-15}"
++OUT="${OUT:-$REPO/.scratch/batch-budget-trial}"; TC="$OUT/tc"; mkdir -p "$TC"
++[ -x "$OUT/tokencount-bin" ] || (cd "$REPO" && go build -o "$OUT/tokencount-bin" ./tools/tokencount) || exit 1
++
++mins() { awk -v s="$1" 'BEGIN{h=m=x=0; if(match(s,/[0-9]+h/))h=substr(s,RSTART,RLENGTH-1); if(match(s,/[0-9]+m/))m=substr(s,RSTART,RLENGTH-1); if(match(s,/[0-9]+s/))x=substr(s,RSTART,RLENGTH-1); printf "%.1f",h*60+m+x/60}'; }
++
++: > "$OUT/runs.tsv"; : > "$OUT/forks.tsv"
++printf 'slug\ttag_date\tprofile\tcards\tbatches\tcards_per_fork\test_median\tpeak_median\tpeak_max\twebster_cost\twebster_forks_cost\twebster_min\tcost_per_card\trecoveries\tnotdone\tverify_attempts\treview_rounds\treview_findings\tgating\n' > "$OUT/runs.tsv"
++printf 'slug\tprofile\tfirst_card\tcards\testimate\tpeak\tpeak_over_est\n' > "$OUT/forks.tsv"
++
++# prefetch: tokencount per slug, 6 in parallel, cached in tc/ (runs without local transcripts leave no file)
++git -C "$WEFT" for-each-ref --sort=creatordate --format='%(creatordate:iso8601-strict) %(refname:short)' refs/tags/archive |
++awk -v f="$FROM" '$1>=f{print $2}' | while read -r t; do
++  { git -C "$WEFT" cat-file -e "$t:_lyx/webster/state.json" 2>/dev/null || git -C "$WEFT" cat-file -e "$t:_lym/webster/state.json" 2>/dev/null; } && echo "$t"; done |
++xargs -P6 -I{} bash -c 't={}; slug=${t#archive/}; slug=${slug%/*}; md="'"$TC"'/$slug-${t##*/}.md"
++  [ -s "$md" ] && [ "'"${FORCE:-}"'" != 1 ] && exit 0
++  (cd "'"$REPO"'" && "'"$OUT"'/tokencount-bin" -out "$md" "$slug" >/dev/null 2>&1) || rm -f "$md"'
++
++git -C "$WEFT" for-each-ref --sort=creatordate --format='%(creatordate:iso8601-strict) %(refname:short)' refs/tags/archive |
++awk -v f="$FROM" '$1>=f' | while read -r d t; do
++  R=_lyx; git -C "$WEFT" cat-file -e "$t:_lyx/webster/state.json" 2>/dev/null || R=_lym
++  st=$(git -C "$WEFT" show "$t:$R/webster/state.json" 2>/dev/null) || continue
++  slug=${t#archive/}; slug=${slug%/*}
++  prof=$(jq -r '[.partition[]?.profile]|unique|join("+")' <<<"$st")
++  cards=$(jq '[.partition[]?.cards|length]|add // 0' <<<"$st")
++  batches=$(jq '.partition|length' <<<"$st")
++  rec=$(jq '[.batches|if type=="object" then to_entries[].value else .[]? end|(.recoveries//0)]|add // 0' <<<"$st")
++  notdone=$(jq '[.batches|if type=="object" then to_entries[].value else .[]? end|select(.status!="done")]|length' <<<"$st")
++  files=$(git -C "$WEFT" ls-tree -r --name-only "$t")
++  vatt=$(grep -cE "^$R/webster/reports/verify-gate" <<<"$files")
++  rounds=$(grep -cE "^$R/reviews/(webster|code)/round-[0-9]+-review\.md$" <<<"$files")
++  fnd=0; gat=0
++  for f in $(grep -E "^$R/reviews/(webster|code)/round-[0-9]+-facts\.md$" <<<"$files"); do
++    r=$(git -C "$WEFT" show "$t:$f" | awk -F'|' '/^\| [0-9]+ \|/{a+=$3; g+=$13} END{print a+0, g+0}')
++    fnd=$((fnd+${r% *})); gat=$((gat+${r#* }))
++  done
++  # tokencount: cost, time, fork peaks (needs the run's transcripts on this machine)
++  md="$TC/$slug-${t##*/}.md"
++  if [ ! -s "$md" ] || [ "${FORCE:-}" = 1 ]; then (cd "$REPO" && "$OUT/tokencount-bin" -out "$md" "$slug" >/dev/null 2>&1) || rm -f "$md"; fi
++  wc_=NA; wf=NA; wm=NA
++  if [ -s "$md" ]; then
++    wc_=$(awk -F'|' '$2~/\*\*Webster\*\*/{gsub(/[ $]/,"",$3); print $3; exit}' "$md")
++    wf=$(awk -F'|' '$2~/forks/ && p{gsub(/[ $]/,"",$3); print $3; exit} $2~/\*\*Webster\*\*/{p=1}' "$md")
++    wt=$(awk -F'|' '$2~/\*\*Webster\*\*/{gsub(/ /,"",$5); print $5; exit}' "$md"); wm=$(mins "$wt")
++    # fork rows -> forks.tsv, paired with the partition entry whose first card the fork opens with
++    awk -F'|' '/^## Webster forks/{p=1;next} /^## /{p=0} p && $2!~/run|---/ && NF>5 {gsub(/^ +| +$/,"",$3); gsub(/ /,"",$6); print $3 "\t" $6}' "$md" |
++    while IFS=$'\t' read -r cl pk; do
++      fc=${cl%%,*}
++      es=$(jq -r --arg c "$fc" '[.partition[]|select(.cards[0]==$c)|.estimate][0] // "NA"' <<<"$st")
++      ratio=NA; [ "$es" != NA ] && ratio=$(awk -v p="$pk" -v e="$es" 'BEGIN{printf "%.2f",p/e}')
++      printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$slug" "$prof" "$fc" "$(tr ',' '\n' <<<"$cl" | wc -l)" "$es" "$pk" "$ratio" >> "$OUT/forks.tsv"
++    done
++  fi
++  esm=$(jq -r '[.partition[].estimate]|sort|.[(length/2|floor)]' <<<"$st")
++  pm=NA; px=NA
++  if [ -s "$md" ]; then
++    read -r pm px < <(awk -F'\t' -v s="$slug" '$1==s && $6!="" {print $6}' "$OUT/forks.tsv" | sort -n | awk '{v[++n]=$1} END{if(!n){print "NA NA";exit} print v[int((n+1)/2)], v[n]}')
++  fi
++  cpc=NA; [ "$wc_" != NA ] && cpc=$(awk -v c="$wc_" -v n="$cards" 'BEGIN{printf "%.2f",c/n}')
++  cpf=$(awk -v c="$cards" -v b="$batches" 'BEGIN{printf "%.2f",c/b}')
++  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$slug" "${d%%T*}" "$prof" "$cards" "$batches" "$cpf" "$esm" "$pm" "$px" "$wc_" "$wf" "$wm" "$cpc" "$rec" "$notdone" "$vatt" "$rounds" "$fnd" "$gat" >> "$OUT/runs.tsv"
++done
++
++# summary: medians per group
++awk -F'\t' -v OFS='\t' '
++function med(a,n,  i,k,t){ if(n==0) return "NA"; for(i=1;i<=n;i++)s[i]=a[i]; for(i=1;i<=n;i++)for(k=i+1;k<=n;k++)if(s[k]+0<s[i]+0){t=s[i];s[i]=s[k];s[k]=t}; return (n%2)?s[(n+1)/2]:(s[n/2]+s[n/2+1])/2 }
++function add(g,col,val){ if(val!="NA"&&val!=""){ N[g,col]++; V[g,col,N[g,col]]=val } }
++NR>1 { g=($3~/wide/)?"wide":"cautious"; G[g]++; cols="4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19"
++  split(cols,cs," "); for(i in cs){c=cs[i]; add(g,c,$c); if(g=="cautious" && $4>=10) add("cautious>=10cards",c,$c)}
++  if(g=="cautious" && $4>=10) G["cautious>=10cards"]++ }
++END{
++  split("cards batches cards/fork est_median_peak measured_median_peak measured_max_peak webster_cost$ webster_forks_cost$ webster_min $/card recoveries notdone_batches verify_gate_reports webster_review_rounds review_findings gating_findings",nm," ")
++  split("4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19",cs," ")
++  printf "| metric (median) | cautious | cautious >=10 cards | wide |\n|---|---|---|---|\n"
++  printf "| runs | %d | %d | %d |\n",G["cautious"],G["cautious>=10cards"],G["wide"]
++  for(i=1;i<=16;i++){ c=cs[i]; r=nm[i]; row="| " r " (n"
++    out=""; split("cautious cautious>=10cards wide",gs," ")
++    for(j=1;j<=3;j++){ g=gs[j]; n=N[g,c]+0; for(k=1;k<=n;k++)tmp[k]=V[g,c,k]; out=out " | " med(tmp,n) " (n=" n ")"; delete tmp }
++    print "| " r out " |" }
++}' "$OUT/runs.tsv" > "$OUT/summary.md"
++
++# fork-level: peak/estimate and forks over the cautious budget, per group
++awk -F'\t' 'NR>1 && $7!="NA"{g=($2~/wide/)?"wide":"cautious"; n[g]++; r[g]+=$7; if($6>200000)o2[g]++; if($6>300000)o3[g]++; if($7>1)u[g]++}
++ END{print "\n| fork-level | cautious | wide |\n|---|---|---|"; printf "| forks with estimate+peak | %d | %d |\n",n["cautious"],n["wide"]; printf "| mean peak/estimate | %.2f | %.2f |\n",r["cautious"]/n["cautious"],r["wide"]/n["wide"]; printf "| forks peaking over 200k | %d | %d |\n",o2["cautious"],o2["wide"]; printf "| forks peaking over 300k | %d | %d |\n",o3["cautious"],o3["wide"]; printf "| forks peaking above their estimate | %d | %d |\n",u["cautious"],u["wide"]}' "$OUT/forks.tsv" >> "$OUT/summary.md"
++cat "$OUT/summary.md"
+diff --git a/docs/research/batch-budget-trial-2026-11-01/forks.tsv b/docs/research/batch-budget-trial-2026-11-01/forks.tsv
+new file mode 100644
+index 00000000..fe3fd87b
+--- /dev/null
++++ b/docs/research/batch-budget-trial-2026-11-01/forks.tsv
+@@ -0,0 +1,39 @@
++slug	profile	first_card	cards	estimate	peak	peak_over_est
++dobby-and-adopt-hardening	wide	01-shed-history-machine	6	215698	210968	0.98
++dobby-and-adopt-hardening	wide	07-dobby-start-and-exits	5	297278	378439	1.27
++dobby-and-adopt-hardening	wide	12-gate-run-in-process	4	254622	262219	1.03
++dobby-and-adopt-hardening	wide	unattributed	1	NA	96553	NA
++landing-settles-in-place	wide	01-finalize-merges-in-place	1	202490	177464	0.88
++landing-settles-in-place	wide	02-escalate-halt-prefix	1	204700	152335	0.74
++landing-settles-in-place	wide	03-arbiter-judges-escalate-first	2	185854	141317	0.76
++landing-settles-in-place	wide	unattributed	1	NA	79725	NA
++review-setup-tuning	wide	01-code-reviewer-fan-local	5	189070	154906	0.82
++creel-hook-post	wide	01-reed-creel-hooks-mark	6	231660	206997	0.89
++creel-hook-post	wide	07-shuttle-idle-no-turn	4	218810	282759	1.29
++creel-hook-post	wide	11-creel-bell	4	238934	293743	1.23
++creel-hook-post	wide	15-creel-post-interrupt	4	247026	320275	1.30
++validator-checks	wide	01-decision-id-check	4	272504	265391	0.97
++validator-checks	wide	05-seam-marker-parser	2	222098	149388	0.67
++validator-checks	wide	07-test-tier-check	3	250016	299464	1.20
++validator-checks	wide	unattributed	1	NA	92375	NA
++creel-agents	wide	01-orchroute-walk	4	238086	186612	0.78
++creel-agents	wide	05-expect-reply-engine	3	284392	381215	1.34
++creel-agents	wide	08-chase-reply-forward	5	265564	259280	0.98
++creel-agents	wide	13-drop-peer-messaging	4	269354	200516	0.74
++interactive-recipe	wide	01-sampler-config	4	196550	273338	1.39
++interactive-recipe	wide	05-sampler-registry-entry	2	260986	232578	0.89
++interactive-recipe	wide	07-sampler-vocabulary	1	291762	166002	0.57
++interactive-recipe	wide	08-rows-keyed-wiring	4	290766	330620	1.14
++interactive-recipe	wide	12-operator-wait-rows	1	190606	144602	0.76
++interactive-recipe	wide	unattributed	1	NA	102793	NA
++warp-visibility	wide	01-pattern-entries	2	170268	142200	0.84
++warp-visibility	wide	03-fabric-bolt-dir-sweep	1	294510	124174	0.42
++warp-visibility	wide	04-fabric-test-bolt-dir-sweep	1	215542	148003	0.69
++warp-visibility	wide	05-module-bolt-dir-sweep	1	344334	123024	0.36
++warp-visibility	wide	06-module-test-bolt-dir-sweep	1	326304	161370	0.49
++warp-visibility	wide	07-module-bolt-dir-uses	1	334660	182973	0.55
++warp-visibility	wide	08-stencil-skill-bolt-dir-sweep	2	284380	200941	0.71
++warp-visibility	wide	10-fabric-worktree-seam	3	262794	276161	1.05
++warp-visibility	wide	13-bolt-replayer-registry	1	348886	289717	0.83
++warp-visibility	wide	14-heddle-store	4	278326	248162	0.89
++warp-visibility	wide	18-shuttle-prompt-seam	3	249384	228172	0.91
+diff --git a/docs/research/batch-budget-trial-2026-11-01/runs.tsv b/docs/research/batch-budget-trial-2026-11-01/runs.tsv
+new file mode 100644
+index 00000000..21acc52d
+--- /dev/null
++++ b/docs/research/batch-budget-trial-2026-11-01/runs.tsv
+@@ -0,0 +1,83 @@
++slug	tag_date	profile	cards	batches	cards_per_fork	est_median	peak_median	peak_max	webster_cost	webster_forks_cost	webster_min	cost_per_card	recoveries	notdone	verify_attempts	review_rounds	review_findings	gating
++overview-seats	2026-10-15	cautious	20	6	3.33	364840	NA	NA	NA	NA	NA	NA	0	0	0	1	2	0
++twill-fork0	2026-10-15	cautious	1	1	1.00	135024	NA	NA	NA	NA	NA	NA	0	0	0	1	0	0
++webster-pack-layout-switch	2026-10-15	cautious	4	1	4.00	193830	NA	NA	NA	NA	NA	NA	0	0	0	1	1	0
++shed-tackler	2026-10-15	cautious	14	4	3.50	360836	NA	NA	NA	NA	NA	NA	0	0	1	1	0	0
++refusal-route-config-empty	2026-10-15	cautious	6	1	6.00	356606	NA	NA	NA	NA	NA	NA	0	0	0	1	0	0
++run-pane-timing	2026-10-15	cautious	14	3	4.67	248576	NA	NA	NA	NA	NA	NA	0	0	0	1	0	0
++orch-context-overview	2026-10-15	cautious	2	1	2.00	139756	NA	NA	NA	NA	NA	NA	0	0	0	1	1	0
++glyph-audit-tool	2026-10-15	cautious	6	1	6.00	214916	NA	NA	NA	NA	NA	NA	0	0	0	1	1	0
++role-language-skills	2026-10-15	cautious	9	2	4.50	277014	NA	NA	NA	NA	NA	NA	0	0	0	1	1	0
++kickstart-per-card	2026-10-15	cautious	4	1	4.00	326810	NA	NA	NA	NA	NA	NA	0	0	0	1	0	0
++webster-master-no-code	2026-10-15	cautious	4	1	4.00	183384	NA	NA	NA	NA	NA	NA	0	0	0	1	2	0
++viewer-off-shell	2026-10-15	cautious	6	1	6.00	315970	NA	NA	NA	NA	NA	NA	0	0	0	3	4	4
++report-timing	2026-10-15	cautious	12	3	4.00	320138	NA	NA	NA	NA	NA	NA	1	0	0	1	3	0
++sibling-overlap-check	2026-10-15	cautious	2	1	2.00	138710	NA	NA	NA	NA	NA	NA	0	0	1	1	0	0
++plan-test-file-path	2026-10-15	cautious	3	1	3.00	175454	NA	NA	NA	NA	NA	NA	0	0	0	1	2	1
++engine-registry	2026-10-15	cautious	14	4	3.50	358058	NA	NA	NA	NA	NA	NA	0	0	0	1	1	0
++creel-core	2026-10-15	cautious	1	1	1.00	81006	NA	NA	NA	NA	NA	NA	0	0	0	1	0	0
++lighter-test-rules	2026-10-15	cautious	8	3	2.67	149732	NA	NA	NA	NA	NA	NA	0	0	0	1	0	0
++discussion-relevant-list	2026-10-15	cautious	7	2	3.50	195722	NA	NA	NA	NA	NA	NA	0	0	1	1	2	0
++engine-config-seams	2026-10-15	cautious	11	9	1.22	203690	NA	NA	NA	NA	NA	NA	0	0	0	1	2	0
++engine-model-choice	2026-10-15	cautious	14	13	1.08	174480	NA	NA	NA	NA	NA	NA	0	0	0	1	2	0
++card-own-entry-edit	2026-10-15	cautious	4	1	4.00	106700	NA	NA	NA	NA	NA	NA	0	0	0	1	0	0
++engine-usage-readers	2026-10-15	cautious	6	5	1.20	141220	NA	NA	NA	NA	NA	NA	0	0	0	1	1	0
++webster-deviations-list	2026-10-15	cautious	4	1	4.00	127926	NA	NA	NA	NA	NA	NA	0	0	0	1	2	0
++orch-continue	2026-10-16	cautious	4	1	4.00	175280	NA	NA	NA	NA	NA	NA	0	0	0	1	0	0
++creel-stage1-fixes	2026-10-16	cautious	14	7	2.00	165500	NA	NA	NA	NA	NA	NA	0	0	0	1	0	0
++shuttle-open-permission	2026-10-16	cautious	3	1	3.00	134870	NA	NA	NA	NA	NA	NA	0	0	0	1	0	0
++orch-intake-fork	2026-10-16	cautious	3	1	3.00	112432	NA	NA	NA	NA	NA	NA	0	0	0	1	0	0
++creel-sandbox-suite	2026-10-16	cautious	3	1	3.00	111704	NA	NA	NA	NA	NA	NA	0	0	0	1	0	0
++orch-role-stencil-fixes	2026-10-16	cautious	4	1	4.00	158882	NA	NA	NA	NA	NA	NA	0	0	0	1	2	0
++loom-stencil-wording	2026-10-16	cautious	7	4	1.75	164000	NA	NA	NA	NA	NA	NA	0	0	0	1	1	0
++reed-add-parentless-placement	2026-10-16	cautious	8	6	1.33	268352	NA	NA	NA	NA	NA	NA	0	0	0	3	16	2
++creel-stage1-fixes	2026-10-16	cautious	11	3	3.67	180018	NA	NA	NA	NA	NA	NA	0	0	0	1	0	0
++reed-down-and-pane-path	2026-10-16	cautious	6	2	3.00	165940	NA	NA	NA	NA	NA	NA	0	0	0	1	0	0
++webster-fork-stencil-fixes	2026-10-16	cautious	17	12	1.42	184002	NA	NA	NA	NA	NA	NA	0	0	1	1	2	0
++fan-prompt-tuning	2026-10-16	cautious	8	4	2.00	191280	NA	NA	NA	NA	NA	NA	0	0	0	1	1	0
++pr-gate-run-identity	2026-10-17	cautious	6	2	3.00	183040	NA	NA	NA	NA	NA	NA	0	0	0	1	3	1
++creel-cli-output-fixes	2026-10-17	cautious	3	1	3.00	150886	NA	NA	NA	NA	NA	NA	0	0	0	1	0	0
++shedrecipe-capabilities	2026-10-17	cautious	8	6	1.33	167632	NA	NA	NA	NA	NA	NA	0	0	0	1	5	0
++creel-notices	2026-10-18	cautious	11	9	1.22	186048	NA	NA	NA	NA	NA	NA	0	0	0	1	5	3
++orch-rules-files	2026-10-18	cautious	4	2	2.00	155996	NA	NA	NA	NA	NA	NA	1	0	0	1	1	0
++batten-start-speed	2026-10-18	cautious	16	10	1.60	196030	NA	NA	NA	NA	NA	NA	0	0	0	1	7	2
++hub-workspaces	2026-10-19	cautious	5	4	1.25	229384	NA	NA	NA	NA	NA	NA	0	0	0	1	2	0
++ubuntu-2404-support	2026-10-19	cautious	10	5	2.00	162770	NA	NA	NA	NA	NA	NA	1	0	0	1	1	1
++verify-diff-scope	2026-10-20	cautious	9	4	2.25	162028	NA	NA	NA	NA	NA	NA	0	0	0	1	7	2
++lenses-module	2026-10-20	cautious	8	6	1.33	174194	NA	NA	NA	NA	NA	NA	0	0	0	1	2	0
++gate-machine-local-config	2026-10-21	cautious	4	3	1.33	140412	NA	NA	NA	NA	NA	NA	0	0	0	1	6	2
++run-reentry	2026-10-21	cautious	20	13	1.54	180372	NA	NA	NA	NA	NA	NA	1	0	1	1	3	1
++scratch-defeats-test-cache	2026-10-21	cautious	4	2	2.00	184386	NA	NA	NA	NA	NA	NA	0	0	0	1	4	0
++origin-reconcile	2026-10-21	cautious	23	16	1.44	186346	NA	NA	NA	NA	NA	NA	1	0	1	4	58	29
++tuned-defaults-template	2026-10-21	cautious	11	6	1.83	155244	NA	NA	NA	NA	NA	NA	0	0	0	1	4	2
++test-tiers	2026-10-21	cautious	19	13	1.46	228944	NA	NA	NA	NA	NA	NA	1	0	1	1	7	0
++darn-verify-fixes	2026-10-22	cautious	11	4	2.75	194202	NA	NA	NA	NA	NA	NA	0	0	0	1	1	0
++lenses-language-sets	2026-10-22	cautious	6	2	3.00	198738	NA	NA	NA	NA	NA	NA	0	0	0	1	4	0
++quarry-csharp	2026-10-22	cautious	15	5	3.00	176914	NA	NA	NA	NA	NA	NA	0	0	1	1	6	1
++tender-pause-holds-reprompt	2026-10-22	cautious	16	7	2.29	169874	NA	NA	NA	NA	NA	NA	0	0	1	1	4	1
++machine-handover	2026-10-22	cautious	25	14	1.79	174864	NA	NA	NA	NA	NA	NA	2	0	1	1	0	0
++finalize-dirty-names-paths	2026-10-22	cautious	6	3	2.00	185036	NA	NA	NA	NA	NA	NA	0	0	0	1	0	0
++run-process-ownership	2026-10-22	cautious	17	14	1.21	177798	NA	NA	NA	NA	NA	NA	1	0	0	1	4	1
++orch-strand-cycle	2026-10-22	wide	13	3	4.33	227178	NA	NA	NA	NA	NA	NA	0	0	0	1	0	0
++plan-card-rules	2026-10-23	wide	27	5	5.40	255836	NA	NA	NA	NA	NA	NA	2	0	1	1	2	0
++batten-cancel-verb	2026-10-23	wide	20	4	5.00	223500	NA	NA	NA	NA	NA	NA	0	0	1	1	5	0
++loom-tail-review	2026-10-24	wide	52	27	1.93	273948	NA	NA	NA	NA	NA	NA	2	0	1	1	4	1
++gate-runs-once	2026-10-24	wide	31	17	1.82	259184	NA	NA	NA	NA	NA	NA	2	0	1	1	6	1
++dotnet-scoped-verify	2026-10-24	wide	13	3	4.33	194136	NA	NA	NA	NA	NA	NA	0	0	1	1	3	1
++umbrella-groundwork	2026-10-24	wide	37	9	4.11	254718	NA	NA	NA	NA	NA	NA	0	0	1	1	4	0
++discussion-scope-in-lenses	2026-10-25	wide	18	9	2.00	237836	NA	NA	NA	NA	NA	NA	0	0	1	1	3	0
++umbrella-daemon	2026-10-25	wide	42	12	3.50	261148	NA	NA	NA	NA	NA	NA	0	0	1	1	4	2
++regression-baseline-verify	2026-10-25	wide	14	3	4.67	278528	NA	NA	NA	NA	NA	NA	0	0	1	1	4	1
++umbrella-anchor	2026-10-25	wide	19	8	2.38	254622	NA	NA	NA	NA	NA	NA	0	0	1	1	0	0
++beam-start-and-ownership	2026-10-26	wide	26	14	1.86	278280	NA	NA	NA	NA	NA	NA	0	0	1	1	3	0
++dobby-and-adopt-hardening	2026-10-27	wide	15	3	5.00	254622	210968	378439	16.99	16.36	50.1	1.13	0	0	1	1	4	0
++landing-settles-in-place	2026-10-28	wide	4	3	1.33	202490	141317	177464	5.34	4.70	14.7	1.33	0	0	1	1	1	0
++review-setup-tuning	2026-10-28	wide	5	1	5.00	189070	154906	154906	2.40	2.06	6.8	0.48	0	0	0	1	2	0
++creel-hook-post	2026-10-28	wide	18	4	4.50	238934	282759	320275	18.47	17.79	57.1	1.03	0	0	0	1	1	0
++validator-checks	2026-10-28	wide	9	3	3.00	250016	149388	299464	13.74	13.06	40.5	1.53	0	0	1	1	2	0
++creel-agents	2026-10-28	wide	16	4	4.00	269354	200516	381215	16.13	15.45	49.7	1.01	0	0	0	1	3	0
++creel-mail-delivered-once	2026-10-30	wide	10	2	5.00	240910	NA	NA	NA	NA	NA	NA	0	0	1	1	2	0
++pr-review-row	2026-10-30	wide	17	6	2.83	284084	NA	NA	NA	NA	NA	NA	0	0	1	1	6	1
++run-verbs-shared	2026-10-31	wide	20	11	1.82	262176	NA	NA	51.93	50.17	92.2	2.60	0	0	1	1	1	0
++interactive-recipe	2026-11-01	wide	12	5	2.40	260986	166002	330620	14.90	13.70	34.0	1.24	0	0	1	1	2	1
++warp-visibility	2026-11-01	wide	20	11	1.82	284380	182973	289717	22.48	20.98	63.0	1.12	0	0	0	1	3	0
+diff --git a/200k b/200k
+new file mode 100644
+index 00000000..4579dba0
+--- /dev/null
++++ b/200k
+@@ -0,0 +1 @@
++cautious base est
+diff --git a/250k b/250k
+new file mode 100644
+index 00000000..d5f35094
+--- /dev/null
++++ b/250k
+@@ -0,0 +1 @@
++wide est
