@@ -659,25 +659,6 @@
       "profile": "light"
     },
     {
-      "id": 945,
-      "handle": "B1",
-      "slug": "boltrename-landing-order",
-      "title": "A hub rename program must tolerate its own landing run and the new binary",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "cwd",
-        "fabric"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Lesson from boltrename: the landed run pair and an early _bolt/.lym blocked it",
-      "body": "## Seen (orch, 2026-11-01)\n\n`bolt-dir-rename` landed a lym binary that knows only `_bolt` while the hub was still on `_board`, and its one-shot `tools/boltrename` could not run as shipped:\n- lym processes on the new binary (dobby, the reed watchdog) made an empty `_bolt/.lym` before the migration, and the program refuses a hub holding `_bolt`;\n- the landed run's own pair was still in the hub, since teardown comes after Land, and the program refuses any directory but the prime, its weft, `_launchers` and the Bolt checkout.\nNeve was migrated by hand around both; the program is being deleted.\n\n## Lesson for a later rename\n\nA program that renames a hub's directories after a rename task lands must tolerate the landed run's own pair and state the new binary has already written, or the task must say to run it before anything starts the new binary and before the run's teardown.\n",
-      "created": "2026-11-01T10:59:23Z",
-      "revised": "2026-11-01T11:00:22Z"
-    },
-    {
       "id": 946,
       "handle": "B2",
       "slug": "landing-message-stray-block",
