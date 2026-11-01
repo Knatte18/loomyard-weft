@@ -1,6 +1,6 @@
 # pr-continue wakes the PR-Review wait at once
 
-`pr-continue-wakes-row` · Task · enhancement, landing, batten · running · Describe
+`pr-continue-wakes-row` · Task · enhancement, landing, batten · running · PR-Review
 
 ## Seen (operator and hub orch, 2026-10-30)
 
