@@ -105,7 +105,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **The board marks the own entries of a project apart from its sub-projects**<br>• A No project heading in the README, an Own entries heading in a project file with sub-projects | [`board-no-project-heading`](design-board-no-project-heading.md) | darn | Finalize | neve | 14m<br>13m | board |
+| T1 | **The board marks the own entries of a project apart from its sub-projects**<br>• A No project heading in the README, an Own entries heading in a project file with sub-projects | [`board-no-project-heading`](design-board-no-project-heading.md) | darn | Finalize | neve | 14m<br>14m | board |
 | T7 | **One verb to take work over on another machine, leaving every run in a known state**<br>• Moving to another machine is many hand steps, and afterwards run states are unclear | [`machine-switch`](design-machine-switch.md) | tapestry | Finalize | neve | 1d<br>3h | fabric, dobby, batten |
 
 #### Ready (0)
@@ -186,11 +186,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 3w<br>4d | webster |
 | F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 9d<br>4h | loom, board, batten, workspaces |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>4d | burler, shed, orch, quarry, report |
-
-### Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T6 | **A long gate run answers within the cache lifetime, so the waiting agent keeps its prompt cache warm**<br>• lym gate test caps the run wait like the slot wait, with the cap a config value beside the engine cache lifetime<br>• `profile: light` | [`gate-run-keeps-cache-warm`](design-gate-run-keeps-cache-warm.md) | 21h<br>3h | gate, shuttle, config |

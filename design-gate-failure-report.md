@@ -2,8 +2,6 @@
 
 `gate-failure-report` · Task · enhancement, gate, lint
 
-Depends on: [`gate-run-keeps-cache-warm`](design-gate-run-keeps-cache-warm.md)
-
 ## Seen (orch, 2026-11-01)
 
 In the five heaviest Webster forks of the three latest tapestry runs, about 10 turns went only to reading gate output: the result was too large for one tool result and was saved to a file, or a `tail` showed only passing tests.
