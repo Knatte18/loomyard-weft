@@ -3,8 +3,8 @@
      <hub>/_board/_lym/stencils/landing/, and read from there at call time by internal/seatengine,
      which fills it from the lead's value map that landingshed's FixerTable builds, then hands it to shuttle as the fixing agent's whole
      prompt. Every marker below is a top-level {{.X}} substitution; stencil.FillWith requires every
-     marker non-empty except the table's Optional values (plan_dir, failure_record_path and, in finalize mode, aligned_tip), parent_directive (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective) included, and there are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=520c3eff39ca5c0213d0d99c3120ea72dc14945b4bc1b6e61880e579e44b272b build=bf00a04359aa5980fdd8dc2b7cf76d3ee9799216 time=2026-10-28T14:12:42Z -->
+     marker non-empty except the table's Optional values (plan_dir, failure_record_path, fix_review_path and, in finalize mode, aligned_tip), parent_directive (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective) included, and there are no {{if}}/{{range}} conditionals anywhere in this file.
+lym-stencil: sha256=9c15b610d117f4e2fe4fbe0880ad3415b4ee9fef3f35219f2a226d0563836819 build=61e42505c2de95169af0036a15fc1e3f025f81fe time=2026-11-01T07:33:14Z -->
 
 # Merge fixer — fix the merge or the failing tests on the task branch
 
@@ -22,6 +22,7 @@ The task branch is `{{.task_branch}}` and it lands on `{{.parent_branch}}`.
 - The plan directory, when this line names one: `{{.plan_dir}}`.
 - The landing failure record, when this line names one: `{{.failure_record_path}}`.
   It names the gate's log, which you read as well.
+- The fix review report, when this line names one: `{{.fix_review_path}}`.
 
 Issue every search and read you can name in one message; wait for a result only to choose the next call.
 
@@ -33,6 +34,7 @@ When a change of the parent conflicts with a decision of the record, do not choo
 
 In `finalize` mode fix the failing tests only.
 Judge no parent change and align nothing.
+When the fix review report is named above, Finalize's fix review rejected the merge fixer's change: fix each finding of its `## Findings` section on the task branch, keeping every test's meaning, and keep the landing gate passing.
 
 When the landing failure record holds `build: true`, the gate failed in its build step before any test ran, so in either mode fix the compile error the record's log names, in place of failing tests.
 

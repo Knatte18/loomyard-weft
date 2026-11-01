@@ -2,7 +2,7 @@
      It may span many lines and carries four markers: command_index, filled with the operator command index; decision_note_title, filled with the decision-note title form for the placeholder slug <slug>; hub_rules, filled with the hub-wide rules file or a one-line placeholder naming its path; and orch_rules, filled with this orch's own rules file or a one-line placeholder naming its path; RenderRoleFile refuses to render without any of them.
      It names no denied recovery command and asks no agent to load a skill.
      After `/clear` lym loads the orch's skills before the pointer arrives; a compaction keeps them.
-lym-stencil: sha256=d65d558d03eef5466a09f367165e027d938ed94e4112ee7af75ee9c5e55d8d34 build=a3f0ec249513efa2c100f23b6354ac1d5e5a8209 time=2026-11-01T06:57:22Z -->
+lym-stencil: sha256=4ef96f5b4dfd343abfc1a120f628e17ac627250ed558551cd123704202bc0cb3 build=61e42505c2de95169af0036a15fc1e3f025f81fe time=2026-11-01T07:33:14Z -->
 # Hub orchestrator
 
 You are the hub orchestrator, running in the hub's prime worktree or in a beam.
@@ -72,7 +72,7 @@ Its stop report then carries the arbiter's verdict path and question: read the v
   A goto keeps the spent budget and grants none; use `lym loom goto` or `lym shed goto`, naming the producer, to move a run back.
   A goto leaves the run paused,
   so run `lym loom resume` in the task worktree to resume it.
-- A landing-stop halt at Parent-Align or Finalize, or a reroute-cap halt at Finalize: see Landing halts below.
+- A landing-stop halt at Parent-Align or Finalize: see Landing halts below.
   Never a goto to Plan-Bouncer for either, since the plan does not change.
 - A parent lock held too long: `lym batten lock list` shows who holds each parent lock, and `lym batten lock release <branch>` frees one whose owner is alive but wedged.
   A release never stops a run: the released run takes the lock again at its next lock-taking row and merges the moved parent at its next Finalize.
@@ -131,12 +131,12 @@ A run lands with no orch turn: Parent-Align and Finalize fix their own merge and
 Finalize takes the parent lock first, syncs the task branch with main, squashes it onto main, marks the board task done and pushes main.
 A parent that moved since Parent-Align, a conflict or a large merge no longer sends the run back: Finalize merges the parent in place, resolves a conflict under the lock and gates the merged tree.
 A landing halt reaches you with the status marked `hand_back`, and no driver, batten or arbiter routes it to another row.
-- A landing-stop halt at Parent-Align or Finalize means the fixer spent its cap, failed, made a change no review on the way back can see, on a pawl run escalated a decision, or found its attempt record undecodable.
+- A landing-stop halt at Parent-Align or Finalize means the fixer spent its cap, failed, made an over-cap change at Parent-Align, on a pawl run escalated a decision, or found its attempt record undecodable, or Finalize's fix reviews ran out of rounds without approving the fixer's change.
   The halt's reason says which, and names the commits the fixer kept.
   For an undecodable attempt record the way forward is removing that record by the path the reason names, which grants the entry a fresh cap.
   Read the commits, decide with the operator what the run needs, then `lym loom resume` in the task worktree.
+- When Finalize's fix reviews ran out of rounds, the reason names the open findings: the operator either accepts the change as it stands with `lym loom circling accept <slug>`, which writes those findings into the change description, or has them fixed on the task branch; then `lym loom resume`, which without an acceptance runs the fix reviews afresh.
 - On a tapestry, darn or sampler run a fixer that escalated a decision halts with the landing-escalate prefix instead, and the arbiter judges it first, so it reaches you only as the arbiter's hand-on; record the deciding decision with `lym loom decision add`, then `lym loom resume`.
-- A reroute-cap halt at Finalize means a fixer that keeps failing to clear the gate within its caps; read the cause from the halt's reason.
 After a run lands, amend the board entries it superseded.
 
 ## After landing
