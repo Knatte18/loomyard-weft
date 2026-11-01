@@ -1,6 +1,6 @@
 # tokencount counts darn runs and compares recipes
 
-`tokencount-darn-runs` · Task · enhancement, tools · draft
+`tokencount-darn-runs` · Task · enhancement, tools
 
 ## Seen (orch, 2026-11-01)
 

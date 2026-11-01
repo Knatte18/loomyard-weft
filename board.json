@@ -571,13 +571,14 @@
         "tools"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "Count darns with their own segments, so a darn's cost stands beside a tapestry's",
       "body": "## Seen (orch, 2026-11-01)\n\n`tools/tokencount` with no slugs counts only finished full tapestry runs, those that reached Finalize under the tapestry recipe.\nOn 2026-11-01 it skipped the 80 most recent runs, most of them darns, and counted three tapestry runs from 2026-10-31 and 2026-11-01.\nThe operator prefers parallel darns to one long loom as cheaper and faster, but no report gives a darn's cost beside a tapestry's.\n\n## Idea\n\ntokencount counts darn runs too, with darn's own segments (writer, Code-Review rounds, landing), and can compare recipes, for example the cost per run and per changed line of darns against tapestries over the same period.\n",
-      "status": "draft",
       "created": "2026-11-01T14:18:14Z",
-      "revised": "2026-11-01T14:18:14Z"
+      "revised": "2026-11-01T18:52:40Z",
+      "project": "turn-savings"
     },
     {
       "id": 976,
@@ -786,12 +787,13 @@
       "brief": "Token savings by cutting agent turns, above all late turns at large context",
       "body": "",
       "created": "2026-11-01T18:17:27Z",
-      "revised": "2026-11-01T18:22:44Z",
+      "revised": "2026-11-01T18:52:40Z",
       "order": [
         "batching-breach-nudge",
         "plan-spec-split",
         "darn-sonnet-helpers",
         "cold-gate-fixer",
+        "tokencount-darn-runs",
         "planner-fork-lookups",
         "agent-turns-effect"
       ]
