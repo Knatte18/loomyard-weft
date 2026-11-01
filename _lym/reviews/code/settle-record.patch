@@ -1,0 +1,412 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 188a20ec..4f094b7f 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -420,7 +420,7 @@ User-facing modules each get one `lym <module>` namespace:
+ - **orch** — the hub orchestrator hosted as an interactive Claude session in a reed strand of the prime worktree or of a beam, cycled before its context fills (`internal/orchcli` + `internal/orchengine`; `lym orch stop|status|refresh|distill|withdraw|rules`, in the prime and in any beam). `lym beam start` first ensures the worktree's `runs` strand, which runs `lym batten overview` as the beam's window, named `beam: prime` or `beam: <slug>`, and `stop` leaves it; the orchestrator has a window of its own, and the session's windows run the beam window, agents, shell. A detached watcher has the session write a note, then clears it and resumes it from that note (`refresh`) or compacts it in place (`distill`), never clearing or compacting without one. ✅ Implemented. See the `internal/orchengine` package documentation.
+ - **webster** — the implementer module: one long-lived Master session that reads the plan and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool), each fork reading its cards' code itself, instead of spawning a fresh reed/tmux strand per batch;
+   bracket verbs (`begin-batch`/`record-batch`) drive each in-session fork (Master ends its turn while a backgrounded fork works and records the batch on the fork's completion notification, shuttle reading that turn end as waiting rather than done), and a genuine model escalation (recovery after a stuck/report-less fork) spawns a cold strand.
+-  Consumes the flat card-list plan (pinned in `contracts/stencils/loom/loom-template-plan.md`, the Plan producer's own stencil) via its own sole parser, `internal/planparser`, groups cards into execution batches via `internal/batcher`, a separate config-selected registry module webster consumes (profiles in `batcher.yaml`, the `cautious` cost profile by default), then runs those batches in card order, refusing a backward dependency derived from the cards' own `Targets`/`Uses` refs, records the partition in `state.json` at first init, and carries the plan's `## verify:` command as a must-pass gate on Merriam's strand: a failure is rerun once (a pass on the rerun records the identities as flaky;
++  Consumes the flat card-list plan (pinned in `contracts/stencils/loom/loom-template-plan.md`, the Plan producer's own stencil) via its own sole parser, `internal/planparser`, groups cards into execution batches via `internal/batcher`, a separate config-selected registry module webster consumes (profiles in `batcher.yaml`, the `wide` cost profile by default), then runs those batches in card order, refusing a backward dependency derived from the cards' own `Targets`/`Uses` refs, records the partition in `state.json` at first init, and carries the plan's `## verify:` command as a must-pass gate on Merriam's strand: a failure is rerun once (a pass on the rerun records the identities as flaky;
+   a run that exceeds the verify timeout is not rerun, since a hang is not flakiness, and fails the gate at once with the timeout, the log path and the log tail as findings),
+   and a failure that survives goes back to Merriam, who fixes it through one fixer fork, or on the gate's last attempt and after a fixer that committed nothing through the cold fixer `lym webster fix-verify` spawns at the recovery role, up to `verify_gate_attempts` attempts (`internal/websterengine` + `internal/webstercli`). ✅ Implemented.
+   `lym webster verify` runs the same plan-level verify on demand through `internal/verifytree`;
+@@ -508,7 +508,7 @@ User-facing modules each get one `lym <module>` namespace:
+ - **summaryparser** — the sole declarer of the final-summary artifact's filename and the sole parser of its format (see [loom-final-summary-spec.md](../contracts/specs/loom-final-summary-spec.md));
+   it takes told paths and declares no directory of its own, and is stdlib-only so neither consumer depends on a producer.
+   Consumed by `internal/landingshed`'s `Finalize`, by `internal/websterengine`, by the `description` gate on loom's `Describe` row, and by the `lym loom validate-description` verb (`internal/summaryparser`). ✅ Implemented.
+-- **batcher** — the batchifier registry that groups a plan's flat card list into webster's execution batches, through named profiles in `batcher.yaml` picked by its `active:` key (template default: the `cautious` profile, the cost batchifier; an empty value resolves to identity, one card per batch); its own standalone configreg module, separate from webster's (`internal/batcher`). ✅ Implemented.
++- **batcher** — the batchifier registry that groups a plan's flat card list into webster's execution batches, through named profiles in `batcher.yaml` picked by its `active:` key (template default: the `wide` profile, the cost batchifier; an empty value resolves to identity, one card per batch); its own standalone configreg module, separate from webster's (`internal/batcher`). ✅ Implemented.
+ - **stencil** — the operator surface over the hub's producer-prompt stencils (`internal/stencilcli` + `internal/stencilstore`; `lym stencil list|validate|diff|sync|promote`): `list` reports every registered stencil's board-copy path and edit state, `validate` reports marker mismatches between a board copy and its shipped default, `diff` shows upstream changes not yet taken or (`--all`/`--exit-code`) board edits not yet ported back, `sync` force-refreshes every stencil against the shipped registry even from a `-dev` or unstamped build, committing under its own `lym: sync <subtree> (...)` subject, and `promote` copies a board-copy edit back into the worktree's `contracts/stencils/` source tree. The port-back drift warning classifies a differing board copy five ways (hand-edited, source-ahead, both, neither, behind) and names the matching remedy: `promote` for a hand edit, a production deploy for a source-ahead copy, a manual reconcile for both, `lym stencil sync` for neither, and syncing the worktree with main for behind, a worktree whose HEAD lacks the binary's build commit. `list` and `sync` also cover the deployed `contracts/specs` registry; `validate`, `diff`, and `promote` do not — a spec declares no markers for `validate` to compare, and `diff`/`promote` both need the worktree source directory a deployed spec deliberately does not have. The root pre-run seeds both subtrees only when a write is due: a board copy moves forward only, by the build ancestry or commit time recorded in its banner (the writer keys), and only from a clean, stamped production binary, while an unstamped or dev build seeds an absent file and warns instead of refreshing. A due write pulls Bolt first and writes nothing when Bolt cannot be brought up to date; each seed commit is labelled `lym: seed <subtree> (<revision> <channel> <executable>)` with the binary that made it, and a seed commit that conflicts at push is dropped and regenerated. ✅ Implemented.
+ - **loom** — phased orchestrator: drives its flat, ordered producer list (`contracts/recipes/tapestry-recipe.yaml`, assembled by `internal/loomrecipe`), each gated by a `Bouncer` review segment (`internal/loomcli` + `internal/loomengine` + `internal/loomshed` + `internal/loomrecipe` + `internal/shedverbs`; `lym loom start|resume|run|step|status|pause|commit-records|validate-discussion|validate-plan|insert-card|remove-card|restore-renumber|validate-description|lint-comments|lint-pattern|fmt|circling accept|continue|decision add|peers|peers show`).
+   `internal/shedverbs` owns the generic `run`/`step`/`status`/`pause` verb bodies loomcli arms; `internal/loomcli` hosts only `start` and the arming glue.
+diff --git a/internal/batcher/config.go b/internal/batcher/config.go
+index 5a019d7b..baed317b 100644
+--- a/internal/batcher/config.go
++++ b/internal/batcher/config.go
+@@ -81,7 +81,7 @@ func ConfigSpec() configengine.Spec {
+ // Active loads batcher.yaml through the layer stack under dirs and builds the batchifier its active: profile names.
+ // An empty active: and active: identity resolve to the identity batchifier even when no profile of that name is configured;
+ // a configured profile named identity wins over that default.
+-// An absent base layer resolves the embedded ConfigTemplate(), whose active: names the cautious profile, instead of erroring;
++// An absent base layer resolves the embedded ConfigTemplate(), whose active: names the wide profile, instead of erroring;
+ // a layer file that exists but is invalid still errors, and so does an active: naming no profile, a profile of an unknown batchifier kind, or a cost profile with a missing or invalid parameter, or a retired alone_above, master_base or startup_context in any layer, each marked configengine.ErrInvalid.
+ // A retired-key error names the layer file that carries the key and the way forward that file calls for.
+ // dirs must already be told by the caller — Active never resolves cwd itself (see
+diff --git a/internal/batcher/config_test.go b/internal/batcher/config_test.go
+index 33eb0caf..8cf286c6 100644
+--- a/internal/batcher/config_test.go
++++ b/internal/batcher/config_test.go
+@@ -50,13 +50,13 @@ func seedConfig(t *testing.T, baseDir, module, content string) {
+ }
+ 
+ // TestActive asserts Active resolves the configured profile from batcher.yaml:
+-// the template verbatim (which must itself parse as plain YAML) builds a cost batcher named after its cautious profile, an empty active: resolves identity both on the template's profiles and without a profiles: block, an identity active: resolves identity without a profiles: block, an absent batcher.yaml or an absent _lym/ degrades to the embedded template's cautious batchifier rather than erroring, and every load error names batcher.yaml.
++// the template verbatim (which must itself parse as plain YAML) builds a cost batcher named after its wide profile, an empty active: resolves identity both on the template's profiles and without a profiles: block, an identity active: resolves identity without a profiles: block, an absent batcher.yaml or an absent _lym/ degrades to the embedded template's wide batchifier rather than erroring, and every load error names batcher.yaml.
+ // A layer's profiles add to the template's by name, each merging key by key, so the error rows tune a profile the template lacks.
+ func TestActive(t *testing.T) {
+ 	t.Parallel()
+ 	template := batcher.ConfigTemplate()
+-	if !strings.HasPrefix(template, `active: "cautious"`) {
+-		t.Fatalf("ConfigTemplate() does not open with active: \"cautious\":\n%s", template)
++	if !strings.HasPrefix(template, `active: "wide"`) {
++		t.Fatalf("ConfigTemplate() does not open with active: \"wide\":\n%s", template)
+ 	}
+ 	tests := []struct {
+ 		name string
+@@ -68,7 +68,7 @@ func TestActive(t *testing.T) {
+ 		wantRetired bool
+ 	}{
+ 		{
+-			name: "templateDefaultResolvesCautious",
++			name: "templateDefaultResolvesWide",
+ 			seed: func(t *testing.T, baseDir string) {
+ 				var out map[string]any
+ 				if err := yaml.Unmarshal([]byte(template), &out); err != nil {
+@@ -76,12 +76,12 @@ func TestActive(t *testing.T) {
+ 				}
+ 				seedConfig(t, baseDir, "batcher", template)
+ 			},
+-			wantName: "cautious",
++			wantName: "wide",
+ 		},
+ 		{
+ 			name: "emptyActiveOnTemplateResolvesIdentity",
+ 			seed: func(t *testing.T, baseDir string) {
+-				seedConfig(t, baseDir, "batcher", strings.Replace(template, `active: "cautious"`, `active: ""`, 1))
++				seedConfig(t, baseDir, "batcher", strings.Replace(template, `active: "wide"`, `active: ""`, 1))
+ 			},
+ 			wantName: batcher.DefaultName,
+ 		},
+@@ -106,11 +106,11 @@ func TestActive(t *testing.T) {
+ 					t.Fatalf("mkdir _lym: %v", err)
+ 				}
+ 			},
+-			wantName: "cautious",
++			wantName: "wide",
+ 		},
+ 		{
+ 			name:     "absentLymDirResolvesTemplate",
+-			wantName: "cautious",
++			wantName: "wide",
+ 		},
+ 		{
+ 			name: "noSuchProfileErrors",
+@@ -143,7 +143,7 @@ func TestActive(t *testing.T) {
+ 		{
+ 			name: "missingThresholdErrors",
+ 			seed: func(t *testing.T, baseDir string) {
+-				operatorCopy := strings.NewReplacer(`active: "cautious"`, `active: "mine"`, "  cautious:", "  mine:", "    budget: ", "    renamed_budget: ").Replace(template)
++				operatorCopy := strings.NewReplacer(`active: "wide"`, `active: "mine"`, "  wide:", "  mine:", "    budget: ", "    renamed_budget: ").Replace(template)
+ 				seedConfig(t, baseDir, "batcher", operatorCopy)
+ 			},
+ 			wantErrWith: []string{"batcher.yaml", "mine", "budget"},
+@@ -151,16 +151,16 @@ func TestActive(t *testing.T) {
+ 		{
+ 			name: "nonPositiveBudgetErrors",
+ 			seed: func(t *testing.T, baseDir string) {
+-				seedConfig(t, baseDir, "batcher", strings.Replace(template, "budget: 200000", "budget: 0", 1))
++				seedConfig(t, baseDir, "batcher", strings.Replace(template, "budget: 300000", "budget: 0", 1))
+ 			},
+-			wantErrWith: []string{"batcher.yaml", "cautious", "budget"},
++			wantErrWith: []string{"batcher.yaml", "wide", "budget"},
+ 		},
+ 		{
+ 			name: "retiredAloneAboveErrors",
+ 			seed: func(t *testing.T, baseDir string) {
+ 				seedConfig(t, baseDir, "batcher", strings.Replace(template, "    budget: ", "    alone_above: 1200000\n    budget: ", 1))
+ 			},
+-			wantErrWith: []string{"batcher.yaml", "cautious", "alone_above"},
++			wantErrWith: []string{"batcher.yaml", "wide", "alone_above"},
+ 			wantRetired: true,
+ 		},
+ 		{
+@@ -168,7 +168,7 @@ func TestActive(t *testing.T) {
+ 			seed: func(t *testing.T, baseDir string) {
+ 				seedConfig(t, baseDir, "batcher", strings.Replace(template, "orientation: 31400", "master_base: 52000", 1))
+ 			},
+-			wantErrWith: []string{"batcher.yaml", "cautious", "master_base"},
++			wantErrWith: []string{"batcher.yaml", "wide", "master_base"},
+ 			wantRetired: true,
+ 		},
+ 		{
+@@ -176,7 +176,7 @@ func TestActive(t *testing.T) {
+ 			seed: func(t *testing.T, baseDir string) {
+ 				seedConfig(t, baseDir, "batcher", strings.Replace(template, "max_cards: 6", "max_cards: 1", 1))
+ 			},
+-			wantErrWith: []string{"batcher.yaml", "cautious", "max_cards"},
++			wantErrWith: []string{"batcher.yaml", "wide", "max_cards"},
+ 		},
+ 	}
+ 	for _, tt := range tests {
+@@ -231,17 +231,17 @@ func TestActive(t *testing.T) {
+ 			name:         "worktreeProfilesAddToTheDefaults",
+ 			repoDefault:  template,
+ 			worktreeFile: "profiles:\n  mine:\n    batchifier: identity\n",
+-			wantName:     "cautious",
++			wantName:     "wide",
+ 		},
+ 		{
+ 			name:        "repoDefaultTuningOneKeyKeepsTheTemplatesOthers",
+-			repoDefault: "profiles:\n  cautious:\n    budget: 300000\n",
+-			wantName:    "cautious",
++			repoDefault: "profiles:\n  wide:\n    budget: 250000\n",
++			wantName:    "wide",
+ 		},
+ 		{
+ 			name:        "repoDefaultTunedKeyReachesTheProfile",
+-			repoDefault: "profiles:\n  cautious:\n    max_cards: 1\n",
+-			wantErrWith: []string{"batcher.yaml", "cautious", "max_cards"},
++			repoDefault: "profiles:\n  wide:\n    max_cards: 1\n",
++			wantErrWith: []string{"batcher.yaml", "wide", "max_cards"},
+ 		},
+ 		{
+ 			name:                   "retiredKeyInRepoDefaultNamesDefaultFileAndFabricReconcile",
+@@ -290,7 +290,8 @@ func TestActive(t *testing.T) {
+ 	}
+ }
+ 
+-// TestProfileWeights asserts ProfileWeights returns a valid profile's coefficients and errors naming batcher.yaml for an absent profile, a missing coefficient, a negative one and an unknown key.
++// TestProfileWeights asserts ProfileWeights returns a valid profile's coefficients and errors naming batcher.yaml for an absent profile, a missing coefficient, a negative one and an unknown key,
++// and that the template's wide and cautious profiles carry the same measured weights.
+ func TestProfileWeights(t *testing.T) {
+ 	t.Parallel()
+ 	const valid = `profiles:
+@@ -402,14 +403,43 @@ func TestProfileWeights(t *testing.T) {
+ 			}
+ 		})
+ 	}
+-	t.Run("templateCautiousCarriesTheMeasuredStart", func(t *testing.T) {
++	t.Run("templateProfilesShareTheMeasuredWeights", func(t *testing.T) {
+ 		t.Parallel()
+-		got, err := batcher.ProfileWeights(configengine.Dirs{Anchor: t.TempDir()}, "cautious")
++		dirs := configengine.Dirs{Anchor: t.TempDir()}
++		wide, err := batcher.ProfileWeights(dirs, "wide")
+ 		if err != nil {
+-			t.Fatalf("ProfileWeights = _, %v; want nil error", err)
++			t.Fatalf("ProfileWeights(wide) = _, %v; want nil error", err)
++		}
++		cautious, err := batcher.ProfileWeights(dirs, "cautious")
++		if err != nil {
++			t.Fatalf("ProfileWeights(cautious) = _, %v; want nil error", err)
++		}
++		if wide != cautious {
++			t.Errorf("template wide weights = %+v; want cautious's %+v", wide, cautious)
++		}
++		if wide.Orientation != 31400 || wide.BatchGrowth != 7000 || wide.RetiredMasterBase != 0 || wide.RetiredStartupContext != 0 {
++			t.Errorf("template wide start = orientation %v, batch_growth %v, master_base %v, startup_context %v; want 31400, 7000, 0, 0", wide.Orientation, wide.BatchGrowth, wide.RetiredMasterBase, wide.RetiredStartupContext)
++		}
++	})
++	// No accessor exposes a profile's budget or max_cards, so the template is decoded directly.
++	t.Run("templateWideDiffersFromCautiousOnlyByBudget", func(t *testing.T) {
++		t.Parallel()
++		var template struct {
++			Profiles map[string]struct {
++				Batchifier string `yaml:"batchifier"`
++				MaxCards   int    `yaml:"max_cards"`
++				Budget     int    `yaml:"budget"`
++			} `yaml:"profiles"`
++		}
++		if err := yaml.Unmarshal([]byte(batcher.ConfigTemplate()), &template); err != nil {
++			t.Fatalf("unmarshal template: %v", err)
++		}
++		wide, cautious := template.Profiles["wide"], template.Profiles["cautious"]
++		if wide.Budget != 300000 || cautious.Budget != 200000 {
++			t.Errorf("template budgets = wide %d, cautious %d; want 300000, 200000", wide.Budget, cautious.Budget)
+ 		}
+-		if got.Orientation != 31400 || got.BatchGrowth != 7000 || got.RetiredMasterBase != 0 || got.RetiredStartupContext != 0 {
+-			t.Errorf("template cautious start = orientation %v, batch_growth %v, master_base %v, startup_context %v; want 31400, 7000, 0, 0", got.Orientation, got.BatchGrowth, got.RetiredMasterBase, got.RetiredStartupContext)
++		if wide.MaxCards != cautious.MaxCards || wide.Batchifier != cautious.Batchifier {
++			t.Errorf("template wide = batchifier %q, max_cards %d; want cautious's %q, %d", wide.Batchifier, wide.MaxCards, cautious.Batchifier, cautious.MaxCards)
+ 		}
+ 	})
+ }
+diff --git a/internal/batcher/doc.go b/internal/batcher/doc.go
+index 8cc3bd9d..848dff22 100644
+--- a/internal/batcher/doc.go
++++ b/internal/batcher/doc.go
+@@ -9,7 +9,7 @@
+ // batcher.yaml holds named profiles under profiles:, each a batchifier kind (identity or cost) with that kind's parameters;
+ // its active: key names the profile in force (see contracts/specs/loom-plan-spec.md).
+ // profiles: is a per-name map, keyed by names the operator chooses:
+-// a layer's profiles add to or override the template's identity and cautious by name, each profile merging key by key, so a layer holds only the profiles and keys it tunes.
++// a layer's profiles add to or override the template's by name, each profile merging key by key, so a layer holds only the profiles and keys it tunes.
+ // `lym config batcher --set profiles.<name>.<key>=<value>` sets one key of any profile.
+ // Active resolves the active profile at config-load time and builds it through the registry.
+ // An empty active: and active: identity resolve to the identity batcher even when no profile of that name is configured, so a batcher.yaml without profiles: keeps working;
+@@ -23,8 +23,10 @@
+ // Every load error is marked configengine.ErrInvalid, so a caller tells a file's content from an unreadable file.
+ // MigrateConfig is that migration: a pure rewrite of a batcher.yaml document that drops the retired keys from every profile and adds weights.orientation at the template's value where a retired weights key stood and the profile had none.
+ // It touches only those keys, carries every other entry and comment through yaml node editing, and is never called by the loader.
+-// The template ships active: cautious, so a fresh repo groups cards with the cost batchifier without configuring it;
++// The template ships active: wide, so a fresh repo groups cards with the cost batchifier without configuring it;
+ // across 14 measured runs, card batching cost about 60% less Webster weight per card than identity.
++// Its cautious profile is the same cost batchifier at a tighter budget, kept for a repo that chooses it;
++// in the 2026-11-01 budget trial, wide cost no more per card than cautious and showed no quality loss (docs/research/batch-budget-trial-2026-11-01).
+ // An operator who wants one card per batch sets active: to identity or to an empty value.
+ //
+ // The identity batcher (identity.go) — one card, one batch — is one library entry among future
+@@ -48,7 +50,7 @@
+ // A card's own estimate is the PeakContext of its one-card segment.
+ // The coefficients are a Weights value, read by ProfileWeights from a profile's weights: map in batcher.yaml.
+ //
+-// The template's cautious start coefficients are measured, the in-fork coefficients are not.
++// The template's cost profiles share their coefficients: the start coefficients are measured, the in-fork coefficients are not.
+ // orientation is 31400: the measured 52000 first-fork start minus the measured 20.6K Merriam session start, the context Merriam gains reading the codebase and plan before its first fork.
+ // batch_growth is 7000, the mean measured growth per batch (2.5K to 13.0K), over three cautious runs and twelve forks with each start measured, one of them in a resumed Merriam session.
+ // Growth counts batches, not cards: Merriam gains context per fork it spawns and records, whatever the fork's size.
+diff --git a/internal/batcher/registry.go b/internal/batcher/registry.go
+index 5489e28f..1c36f249 100644
+--- a/internal/batcher/registry.go
++++ b/internal/batcher/registry.go
+@@ -9,7 +9,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ )
+ 
+-// DefaultName is the profile an empty active: key resolves to; the template's own active: names the cautious profile instead.
++// DefaultName is the profile an empty active: key resolves to; the template's own active: names the wide profile instead.
+ const DefaultName = "identity"
+ 
+ // constructors maps a profile's batchifier kind to the constructor that builds it, given the profile's name and settings.
+diff --git a/internal/batcher/template.yaml b/internal/batcher/template.yaml
+index 4f47cf75..2616700a 100644
+--- a/internal/batcher/template.yaml
++++ b/internal/batcher/template.yaml
+@@ -1,11 +1,11 @@
+-active: "cautious"  # name of the active profile under profiles: (internal/batcher.Active); the template default is the cautious profile, and an empty value resolves to the identity batchifier (one card, one batch)
++active: "wide"  # name of the active profile under profiles: (internal/batcher.Active); the template default is the wide profile, and an empty value resolves to the identity batchifier (one card, one batch)
+ profiles:   # named batchifier settings, each chosen by active:; the operator may add profiles of their own
+   identity:   # one card, one batch
+     batchifier: identity
+-  cautious:   # the cost batchifier: the fewest contiguous batches whose estimated peak fork context fits the budget
++  wide:   # the cost batchifier: the fewest contiguous batches whose estimated peak fork context fits the budget
+     batchifier: cost
+     max_cards: 6   # most cards one batch holds, at least 2
+-    budget: 200000  # a batch of two or more cards never exceeds this peak context, in tokens; a card over it runs alone
++    budget: 300000  # a batch of two or more cards never exceeds this peak context, in tokens; a card over it runs alone
+     weights:   # the estimator's coefficients, in context tokens or messages
+       orientation: 31400   # context Merriam gains between loading its start base and spawning its first fork; the start base itself is computed from what Merriam loads
+       batch_growth: 7000   # context Merriam gains per finished batch, so a fork at position k starts at the start base + orientation + (k-1) * batch_growth
+@@ -17,3 +17,18 @@ profiles:   # named batchifier settings, each chosen by active:; the operator ma
+       context_per_line: 12   # context a read file adds per line
+       package_context: 2000   # context a target directory adds, once for its package and once for its tests
+       write_per_card_line: 12   # context a card's output adds per line of its card text, which carries the code the fork writes
++  cautious:   # the cost batchifier with the wide profile's estimator at a tighter budget
++    batchifier: cost
++    max_cards: 6
++    budget: 200000
++    weights:
++      orientation: 31400
++      batch_growth: 7000
++      fork_messages: 4
++      message_context: 300
++      target_messages: 6
++      test_file_messages: 0.5
++      uses_messages: 2
++      context_per_line: 12
++      package_context: 2000
++      write_per_card_line: 12
+diff --git a/internal/configsync/configsync.go b/internal/configsync/configsync.go
+index 881517cd..e2ad09f9 100644
+--- a/internal/configsync/configsync.go
++++ b/internal/configsync/configsync.go
+@@ -49,7 +49,10 @@ var formerTemplateValues = map[string]map[string]string{
+ 		"soft_threshold_tokens": "300000",
+ 		"threshold_tokens":      "400000",
+ 	},
+-	"batcher": {"profiles": "cautious:\n  budget: 450000\n"},
++	"batcher": {
++		"active":   `"cautious"`,
++		"profiles": "cautious:\n  budget: 450000\n",
++	},
+ }
+ 
+ // formerLoomValues returns loom's former template values.
+diff --git a/internal/configsync/configsync_test.go b/internal/configsync/configsync_test.go
+index beb1974a..1e3778e3 100644
+--- a/internal/configsync/configsync_test.go
++++ b/internal/configsync/configsync_test.go
+@@ -158,7 +158,7 @@ func TestReconcileAll(t *testing.T) {
+ 	modelsTemplate := modelspec.ConfigTemplate()
+ 	batcherTemplate := batcher.ConfigTemplate()
+ 	retiredBatcher := strings.Replace(batcherTemplate, "orientation: 31400", "master_base: 52000", 1)
+-	masterBaseRewrites := []string{"profiles.cautious.weights.master_base: removed", "profiles.cautious.weights.orientation: added 31400"}
++	masterBaseRewrites := []string{"profiles.wide.weights.master_base: removed", "profiles.wide.weights.orientation: added 31400"}
+ 	lensesLacksSecurity := lensesFixture(t, func(cfg *lenses.Config) {
+ 		delete(cfg.Lenses, "security")
+ 		cfg.Lenses["hub-lens"] = "Hub emphasis.\n"
+@@ -1546,11 +1546,24 @@ func TestReconcileAll_MigratesToSparse(t *testing.T) {
+ 			wantStripped: []string{
+ 				"active", "profiles.cautious.batchifier", "profiles.cautious.budget", "profiles.cautious.max_cards",
+ 				"profiles.cautious.weights.batch_growth", "profiles.cautious.weights.context_per_line", "profiles.cautious.weights.fork_messages",
+-				"profiles.cautious.weights.message_context", "profiles.cautious.weights.package_context", "profiles.cautious.weights.target_messages",
+-				"profiles.cautious.weights.test_file_messages", "profiles.cautious.weights.uses_messages", "profiles.cautious.weights.write_per_card_line",
++				"profiles.cautious.weights.message_context", "profiles.cautious.weights.orientation", "profiles.cautious.weights.package_context",
++				"profiles.cautious.weights.target_messages", "profiles.cautious.weights.test_file_messages", "profiles.cautious.weights.uses_messages",
++				"profiles.cautious.weights.write_per_card_line",
+ 				"profiles.identity.batchifier",
++				"profiles.wide.batchifier", "profiles.wide.budget", "profiles.wide.max_cards",
++				"profiles.wide.weights.batch_growth", "profiles.wide.weights.context_per_line", "profiles.wide.weights.fork_messages",
++				"profiles.wide.weights.message_context", "profiles.wide.weights.package_context", "profiles.wide.weights.target_messages",
++				"profiles.wide.weights.test_file_messages", "profiles.wide.weights.uses_messages", "profiles.wide.weights.write_per_card_line",
+ 			},
+ 		},
++		{
++			name: "the former batcher default active cautious is stripped so the worktree resolves to wide", module: "batcher", opts: migrate,
++			worktreeFile: "active: \"cautious\"\n", wantStripped: []string{"active"}, wantDeleted: true, wantMarker: true, resolutionChanges: true,
++		},
++		{
++			name: "a marked worktree keeps active cautious as a pin", module: "batcher", opts: migrate, marked: true,
++			worktreeFile: "active: \"cautious\"\n", wantFile: ptr("active: \"cautious\"\n"),
++		},
+ 		{
+ 			name: "a literal equal to the expansion of a marker below is kept", module: "loom", opts: migrate,
+ 			defaultFile: loomTemplateWith(loomTemplate(), "discussion", markerDiscussion), worktreeFile: literalDiscussion,
+diff --git a/internal/webstercli/verbs_test.go b/internal/webstercli/verbs_test.go
+index 1879c704..4ef36612 100644
+--- a/internal/webstercli/verbs_test.go
++++ b/internal/webstercli/verbs_test.go
+@@ -1417,7 +1417,7 @@ func seedPersistentPreRunConfig(t *testing.T, h *hubforge.Hub, batcherConfig str
+ }
+ 
+ // TestPersistentPreRunE_BatcherSelection proves the load-time batcher selection (batcher.Active(baseDir), wired into PersistentPreRunE) through the `status` verb, which never itself touches the batcher, over one hub whose batcher.yaml each step rewrites:
+-// an active: naming no profile is a true fail-fast gate that aborts before any verb's RunE ever runs, with an output.Err envelope naming batcher.yaml and the bad key, a rebaseline under a profile with a negative coefficient is refused the same way and leaves state.json byte-identical, and the template's default active: key resolves its cautious profile, so the command proceeds normally through the rest of PersistentPreRunE and into the verb's own RunE.
++// an active: naming no profile is a true fail-fast gate that aborts before any verb's RunE ever runs, with an output.Err envelope naming batcher.yaml and the bad key, a rebaseline under a profile with a negative coefficient is refused the same way and leaves state.json byte-identical, and the template's default active: key resolves its wide profile, so the command proceeds normally through the rest of PersistentPreRunE and into the verb's own RunE.
+ // A last step drives the config-load refusals of batcher.yaml and webster.yaml: broken content (including a retired key, whose way forward is the reconcile) carries `config_invalid: true`, an unreadable file and a broken shuttle.yaml carry none, and state.json stays byte-identical.
+ // The steps share one hub and each rewrites its own config, so none relies on another's result.
+ // The scenario calls t.Parallel as a whole and no step does, since the steps share the one hub.
+@@ -1427,7 +1427,7 @@ func TestPersistentPreRunE_BatcherSelection(t *testing.T) {
+ 	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 
+ 	if !t.Run("unknown batcher fails fast", func(t *testing.T) {
+-		seedPersistentPreRunConfig(t, h, strings.Replace(batcher.ConfigTemplate(), `active: "cautious"`, `active: "bogus"`, 1))
++		seedPersistentPreRunConfig(t, h, strings.Replace(batcher.ConfigTemplate(), `active: "wide"`, `active: "bogus"`, 1))
+ 
+ 		var out strings.Builder
+ 		exitCode := RunCLIIn(h.PrimeWorktree(), &out, []string{"status"})
+diff --git a/internal/websterengine/doc.go b/internal/websterengine/doc.go
+index 3bacb3ed..c6a6df86 100644
+--- a/internal/websterengine/doc.go
++++ b/internal/websterengine/doc.go
+@@ -18,7 +18,7 @@
+ // A plan's flat, unordered Cards list is grouped into the execution units
+ // Master actually forks by internal/batcher: a name-keyed registry of
+ // Batcher implementations, selected once at config-load time via
+-// batcher.yaml's `active:` key (template default: the cautious profile,
++// batcher.yaml's `active:` key (template default: the wide profile,
+ // the cost batchifier; an empty value resolves to the identity batcher —
+ // one card, one batch), resolved by internal/webstercli and handed to Run via
+ // RunDeps.Batcher — this package loads no batcher config itself. Batching
+diff --git a/tools/sandbox/SANDBOX-WEBSTER-SUITE.md b/tools/sandbox/SANDBOX-WEBSTER-SUITE.md
+index ce1187d4..eb6dfeba 100644
+--- a/tools/sandbox/SANDBOX-WEBSTER-SUITE.md
++++ b/tools/sandbox/SANDBOX-WEBSTER-SUITE.md
+@@ -2,7 +2,7 @@
+ 
+ ## What this is
+ 
+-A structured test-loop for exercising `lym webster` against a **live tmux server and a logged-in claude** in the sandbox Hub's Fabric repo. `webster` is the implementer module, with its own plan format and report contract: instead of spawning a fresh reed/tmux strand per batch, one long-lived **Master** session reads the whole flat card-list plan (plan-format, parsed by `internal/planparser`, grouped into execution batches by `internal/batcher`'s config-selected batchifier -- the `cautious` cost profile by default) and the repo's rules once, never the code, then forks one implementer per batch in-session (Claude Code's Agent tool, `subagent_type: "fork"`), each fork reading its cards' code itself -- no `spawn-batch`/`poll` verbs exist here;
++A structured test-loop for exercising `lym webster` against a **live tmux server and a logged-in claude** in the sandbox Hub's Fabric repo. `webster` is the implementer module, with its own plan format and report contract: instead of spawning a fresh reed/tmux strand per batch, one long-lived **Master** session reads the whole flat card-list plan (plan-format, parsed by `internal/planparser`, grouped into execution batches by `internal/batcher`'s config-selected batchifier -- the `wide` cost profile by default) and the repo's rules once, never the code, then forks one implementer per batch in-session (Claude Code's Agent tool, `subagent_type: "fork"`), each fork reading its cards' code itself -- no `spawn-batch`/`poll` verbs exist here;
+ Master itself brackets each fork with `begin-batch`/`await-batch`/`record-batch` calls (forks are BACKGROUNDED agents on current Claude Code -- the Agent call returns immediately, so Master long-polls `await-batch` for the batch report instead of relying on a synchronous fork return, and never ends its turn while a batch is open).
+ This suite is deliberately narrow: one scenario, because webster's pure Go-level mechanics (fingerprinting, `--fresh` archiving, `run.lock` contention, plan validation) are webster-local code already covered by the hermetic and `-tags integration` test tiers -- what is genuinely live-only here is the fork loop itself (W1).
+ 
