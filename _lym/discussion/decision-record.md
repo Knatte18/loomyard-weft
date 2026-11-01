@@ -321,6 +321,12 @@ Rationale: Parent, 2026-11-01: PATTERN changes are the chair's, written after th
   - card7-spec-extends-should-be-edit (class consistency, severity MEDIUM, open in rounds 2)
 <!-- /lym:carry-over Plan-Review -->
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - seatengine-lost-writer-end-step-untested (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: with `plan_split` false a tapestry run records `Parts-Write` and `Parts-Plan-Write` Skipped and runs `Plan-Write`; with it true the run records `Plan-Write` Skipped after `Parts-Plan-Write`'s Done and reaches `Plan-Bouncer`; a goto onto `Plan-Write` in a split run runs it; the settled-verdict refusal names `Parts-Plan-Write` in a split run, `Plan-Write` in a split run recovered by a goto onto `Plan-Write`, and `Plan-Write` otherwise.
