@@ -1,6 +1,6 @@
 # Configurable action buttons on the reed status bar
 
-`reed-status-buttons` · Task · feature, reed, config, batten · running · Finalize
+`reed-status-buttons` · Task · feature, reed, config, batten · done
 
 ## Seen
 
