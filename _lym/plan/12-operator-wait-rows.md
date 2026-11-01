@@ -1,8 +1,8 @@
 # Card 12 — operator-wait-rows
 
 **Create:**
-- `plan:internal/loomshed#OperatorWaitRows` -> `var OperatorWaitRows = []string{pawlengine.NameBeamAwait, NamePRReview, NameSamplerSession}`
-- `plan:internal/loomshed#WaitsOnOperator` -> `func WaitsOnOperator(row string) bool`
+- `internal/loomshed#OperatorWaitRows`
+- `internal/loomshed#WaitsOnOperator`
 
 **Edit:**
 - `internal/battencli#childAtWaitingRow`
