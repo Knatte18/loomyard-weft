@@ -32,6 +32,12 @@ Decision: The orch created four local scratch worktrees from the prime with lym 
 
 Rationale: lym fabric add is refused from a task session, and its refusal names the orch as the one to run it.
 
+### Added after Discussion (parent, 2026-11-01): The failed rv split arm stops; no extra writing
+
+Decision: psb-rv-split failed at Parts-Plan-Write when reed lost the chair's strand. The orch touched no reed state. The arm stops there: the report gives its partial cost, its interventions and the failure, marked as an infrastructure failure (reed strand loss) rather than a Parts-Plan-Write result, and compares the split arm on the wv input alone. No rerun beyond the entry's cap of 4 writings unless the operator approves one.
+
+Rationale: The entry caps the study at 4 writings; extra spend is the operator's call.
+
 ## Constraints
 
 ## Auto-mode assumptions
