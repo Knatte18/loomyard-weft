@@ -20,7 +20,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (2)
+## Notes (3)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -35,3 +35,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E7 |  | **A hook nudges an agent back to batching the moment it breaks the rule**<br>• Above about 150k context agents drift into grep-then-slice chains and one-fix-per-turn edits, about a third of context tokens in a 28-session sample; a PostToolUse hook adds one line on a breach, with sharper rule wording | [`batching-breach-nudge`](design-batching-breach-nudge.md) | 8m<br>0m | claude, shuttle |
+
+### Features (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| F12 |  | **A darn writer hands per-package batches to Sonnet helpers**<br>• lym denies the Agent tool in darn on a visibility reasoning that fits claude -p, not subagents | [`darn-sonnet-helpers`](design-darn-sonnet-helpers.md) | 38m<br>0m | darn, claude, shuttle |
