@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=888736331942708c99aea6f07eb8c56e6dc7d32f30dbfdaa223e8f92cfbb9fec build=bf00a04359aa5980fdd8dc2b7cf76d3ee9799216 time=2026-10-28T14:12:42Z -->
+<!-- lym-stencil: sha256=2677ca4bbaf527b9be2d9e9929d74bc28d09eb38864171d435676377b8f30893 build=76b3d1f732a1ca8b05dce8a1024b52a6866ba44c time=2026-11-01T15:20:40Z -->
 
 # Webster implementer job — read your cards, implement, commit, report
 
@@ -99,9 +99,8 @@ A failure counts as a gate failure under the self-fix bound below and makes the 
 
 ## Slot-busy exits and test runs
 
-A gate call made without `--wait` that exits with code `75`, answering `slot_free: false` and naming the slot holders, found every gate slot held: that is not a failure.
-It costs no self-fix attempt, never makes the report `FAILED`, and you re-run the same call in a turn that does nothing else, so the prompt cache stays warm between calls.
-A call made with `--wait` queues for its slot and never exits `75`.
+A `lym gate test` or `lym gate card-verify` call that exits with code `75`, answering `done: false` with the run's phase and, while the run waits for slots, `slot_free: false` naming the slot holders, is not a failure: the run goes on.
+It costs no self-fix attempt, never makes the report `FAILED`, and you run the same command again in a turn that does nothing else, so the prompt cache stays warm between calls; the next call prints the run's result once it ended.
 
 The one route to a test run is `lym gate test` with a gate's tier list and a scope form, such as `--tier <n>` with `--card <card id>` or explicit packages, never a raw test command.
 The hub's tiers and gate lists follow:

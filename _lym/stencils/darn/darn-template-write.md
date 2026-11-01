@@ -1,5 +1,5 @@
 <!-- This is the darn writer's entire instruction set. It is shipped as an embedded default in the
-     top-level stencils package (stencils/stencils.go), seeded to <hub>/_board/_lym/stencils/darn/
+     top-level stencils package (stencils/stencils.go), seeded to the Bolt checkout's `_lym/stencils/darn/`
      and read from there at call time by internal/seatengine, which fills it from the lead's value map that darnengine's DarnTable builds, then hands it to
      shuttle as the writer's whole prompt.
      Every marker below is a top-level {{.X}} substitution;
@@ -8,7 +8,7 @@
      decision_record_path is a required marker, naming the decision record the writer reads as its scope; stop_marker_path is a required marker, naming the file the writer creates when it stops.
      prior_work is never empty: DarnTable fills it with (none) when it has nothing to tell.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lym-stencil: sha256=af62da9fb1d4633b00e28a7fd7d143bfb4b8bf0a98315db66f16fd85da46d32b build=4f7d099d1c17a09e41cd8483c4dd6725023d9484 time=2026-10-31T19:22:44Z -->
+lym-stencil: sha256=581de7f6bc19183af48fb661f2a0a12fd5e168f57a6a7b12e8c48809d471885c build=76b3d1f732a1ca8b05dce8a1024b52a6866ba44c time=2026-11-01T15:20:40Z -->
 
 # Darn — make the change a board entry asks for, in one session
 
@@ -55,7 +55,7 @@ Check whether landed work, another board entry or another run overtook or contra
 1. Edit the repository to make the change.
    Follow the existing patterns, and the PATTERN entries in this prompt.
    Read every file the change touches, with the greps that find them, in one message before the first edit of each commit, and make independent edits in one message.
-2. Test with `lym gate test --wait` once, after the last edit of each commit, never after each edit; it computes its scope from your changes; never run a raw test command or a module-wide run.
+2. Test with `lym gate test` once, after the last edit of each commit, never after each edit; it computes its scope from your changes, and when it answers `done: false` with exit 75 the run goes on, so run the same command again; never run a raw test command or a module-wide run.
 3. Update, in the same commits as the code, the docs the change makes stale: the package doc of each package whose behavior changes, `doc.go` for a Go package;
    the repository's overview doc when a module table or execution stack it shows changes;
    and, when the repository has a `PATTERN.md`, its entry for a cross-cutting invariant the change adds or changes.

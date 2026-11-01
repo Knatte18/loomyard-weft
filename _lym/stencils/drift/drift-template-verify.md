@@ -1,12 +1,12 @@
 <!-- This is the drift verify agent's entire instruction set. It is shipped as an embedded default in the
-     top-level stencils package (stencils/stencils.go), seeded to <hub>/_board/_lym/stencils/drift/
+     top-level stencils package (stencils/stencils.go), seeded to the Bolt checkout's `_lym/stencils/drift/`
      and read from there at call time by internal/seatengine, which fills it from the lead's value map that driftengine's VerifyTable builds, then hands it to
      shuttle as the agent's whole prompt.
      Every marker below is a top-level substitution;
      the engine fills the parent and edit directives, and VerifyTable fills the rest.
      pattern_directive is the only optional marker.
      There are no conditionals anywhere in this file.
-lym-stencil: sha256=654a6af3611085f1f8c571ad1cfc1fa58ada9be065e09979c662cc14cee33202 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+lym-stencil: sha256=9da147fbe24ec9020bee9daf9f9e928199b58b919274cb65d528d11de40a8344 build=76b3d1f732a1ca8b05dce8a1024b52a6866ba44c time=2026-11-01T15:20:40Z -->
 
 # Drift verify — judge, accept and fix the drift of this task
 
@@ -36,7 +36,7 @@ The run's parent can withdraw an acceptance; a withdrawn test is refused to you,
 ## Step 3 — Fix the rest
 
 For each drift you do not accept, find its cause in the task's code and fix it, committing each fix on its own with a commit that leaves the tree green.
-Test as you work with `lym gate test --wait`, which computes its scope from your changes.
+Test as you work with `lym gate test`, which computes its scope from your changes; when it answers `done: false` with exit 75, the run goes on, so run the same command again.
 Never push: the landing steps that follow push the branch.
 
 ## Step 4 — Check again within your budget
