@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -11,7 +11,7 @@ The hub geometry tells reed the session's place and placeholder values lazily, r
 
 ## Card Index
 
-1 — shell-detached-forms — add output discard, zero exit and command flag to the pane-shell seam
+1 — shell-detached-forms — add output discard, zero exit, command flag and a quoted-word directory change to the pane-shell seam
 2 — buttons-config-keys — add the buttons key to reed.yaml and desktop.yaml with the shipped default set
 3 — button-entries — decode, validate and fill button entries
 4 — geometry-button-context — tell reed the session's place, placeholder values and machine buttons lazily
@@ -24,5 +24,5 @@ The hub geometry tells reed the session's place and placeholder values lazily, r
 ## Shared Decisions
 
 - The `buttons` value stays an uninterpreted `yaml.Node` in both config structs; only reedengine's `placeButtons` decodes it, at render, so a bad button costs only itself (D2).
-- Button rendering and the click verb use `shell.ForGOOS()`, the dialect every other composed reed line uses, and its new `DiscardOutput`, `ExitSuccess` and `CommandFlag` forms (`PATTERN-shell-guard-table`).
+- Button rendering and the click verb use `shell.ForGOOS()`, the dialect every other composed reed line uses, and its new `DiscardOutput`, `ExitSuccess`, `CommandFlag` and `ChangeDirToWord` forms (`PATTERN-shell-guard-table`).
 - The status-format and row option pins stay non-fatal, like every geometry pin.

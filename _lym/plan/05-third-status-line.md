@@ -20,6 +20,7 @@
 - `internal/reedengine#TestBar_LineTwoShowsTheCheckMarkBeforeTheClock`
 - `internal/reedengine#bindingsFixture.click`
 - `internal/reedengine#TestBindings_StatusBarClicksSelectAndZoomByRangeType`
+- `internal/reedcli#TestSmokeSelvage`
 
 **Uses:**
 - `internal/reedengine#listPrologueFormat`
@@ -48,6 +49,7 @@ Give the bar a third line, the action row, and move `follow` there as its first 
   Bound, from D1: between an older binary's boot or attach and the newest binary's next op, `follow` can show on lines 2 and 3; a session an older binary boots or attaches keeps `status 2`, without line 3, until the newest binary next attaches it, since the re-pin restores only the global options.
 
 `doc.go` (reedengine) changes every sentence that says two-line bar, that puts the follow button on line 2 or left of the time, and that says "the global status-bar options refresh only at boot and attach", which now reads that they also refresh with the bindings' stale-build re-pin; it states the Bound above.
+The header comment of `internal/reedengine/bar_integration_test.go`, which says it expands the two-line status bar, reads three-line.
 
 Tests:
 - `TestPinGeometryOptionsLocked` (`tier0`): `wantOptions` gains `set-option -g status-format[2] statusFormatActions` after `[1]` and reads `status 3`; the two counts of every attempted pin, 8 and 9 in `OneOptionFailureDoesNotStopTheRest` and 8 in `FailedUnpinsAreNonFatal`, each grow by one.
@@ -59,8 +61,9 @@ Tests:
 - `TestBar_LineTwoListsSessionsPrimeFirst` (`tier2 && linux`): its helper `assertSessionButtonsOnce` asserts line 2 holds no `range=user|follow`, and its no-comma check, which sliced the line up to the follow button, takes `nolist align=right` as its anchor instead, so the session buttons sit directly before the right-aligned segment with no comma between; the follow rows expand `#{T:status-format[2]}` and assert the lit and unlit follow button is the first range of line 3.
 - `TestBar_LineTwoShowsTheCheckMarkBeforeTheClock` (`tier2 && linux`): its running-mark error text, "want the mark right-aligned after the follow button", reads "after the session buttons"; the assertions are unchanged.
 - `bindingsFixture.click` takes the row among three status lines, the line `row` sitting `2 - row` lines above the client's last row.
-- `TestBindings_StatusBarClicksSelectAndZoomByRangeType` (`tier2 && linux`) clicks `follow` on row 2, and gives its odd session `status 3`.
+- `TestBindings_StatusBarClicksSelectAndZoomByRangeType` (`tier2 && linux`) clicks `follow` on row 2, and gives its odd session `status 3`, with the comment above it saying three status lines and its `Fatalf` text `status 3 on %q`.
+- `TestSmokeSelvage` (`tier2`, `internal/reedcli`): its `StatusLinePinsIdentityAndPosition` subtest asserts `#{status}` reads `3`, and the comment above it says the three-line bar.
 
-**ImpactSummary:** the bar's line 2 format and the geometry pin's option list change, and the op lock's stale re-pin issues the global formats; the tests asserting the pin list, its counts, line 2's follow button and the click rows change with it; no production caller outside reedengine reads these formats.
+**ImpactSummary:** the bar's line 2 format and the geometry pin's option list change, and the op lock's stale re-pin issues the global formats; the tests asserting the pin list, its counts, line 2's follow button, the click rows and reedcli's smoke status read change with it; no production caller outside reedengine reads these formats.
 
 **Commit:** 5: Add a third status line and move the follow button to it

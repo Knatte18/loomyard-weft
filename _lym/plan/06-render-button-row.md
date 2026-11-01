@@ -39,7 +39,7 @@
 Render the session's buttons into session options at the status pins (D5), so line 3 draws them and a click (cards 8 and 9) runs the command drawn under it.
 
 A new file `internal/reedengine/buttonrow.go`:
-- `buttonSpec` is the JSON stored in `@lym_button_spec`: `shell`, the absolute path of reed's configured shell (`resolveShellPath(e.cfg.Shell)`); `flag`, `shell.ForGOOS().CommandFlag()`; `dir`, the run directory; and `entries`, one `buttonSpecEntry` per drawn button: `index`, `label`, `run` with the static placeholders filled, `confirm` filled the same way, and `strand`, true for a `window: agents` entry.
+- `buttonSpec` is the JSON stored in `@lym_button_spec`: `shell`, the absolute path of reed's configured shell (`resolveShellPath(e.cfg.Shell)`); `flag`, `shell.ForGOOS().CommandFlag()`; `dir`, the run directory; and `entries`, one `buttonSpecEntry` per drawn button: `index`, `label`, `run` with the static placeholders filled, `confirm` filled the same way, and `strand`, true for an entry whose `run` or `confirm` still holds `{strand}` after the static fill, which only a `window: agents` entry may (card 3).
 - `composeButtonRowLocked` composes the row:
   - A nil `geom.Buttons` (standalone) gives empty rows and a zero spec, so line 3 shows `follow` alone.
   - Otherwise it calls `geom.Buttons()`; an error is logged at Warn naming it, and gives the same empty result (D4).
@@ -52,7 +52,7 @@ A new file `internal/reedengine/buttonrow.go`:
   - The kept entries are numbered `0..` in row order; entry `N` is drawn `#[range=user|lymbtn<N> ` + `unlitButtonStyle` + `] <label> #[norange list=on default] `, `lymbtn<N>` staying within tmux's 15-byte limit for `range=user|X`.
     The plain row holds the entries without `window: agents`, the agent row every entry, both in config order.
   - Each entry's `run` is `fillRunPlaceholders(shell.ForGOOS(), run, values)` and its `confirm` `fillConfirmPlaceholders(confirm, values)`; `{strand}` stays for the click.
-- `pinButtonRowLocked(target)` sets, in one tmux invocation of four `set-option -t <target>` commands joined by `;` argv separators, `buttonRowPlainOption`, `buttonRowAgentOption`, `buttonSpecOption` (the spec's JSON, or the empty string for the empty result) and `buttonDirOption` (the run directory, or empty), so no click sees a row and a spec from different renders.
+- `pinButtonRowLocked(target)` sets, in one tmux invocation of four `set-option -t <target>` commands joined by `;` argv separators, `buttonRowPlainOption`, `buttonRowAgentOption`, `buttonSpecOption` (the spec's JSON, or the empty string for the empty result) and `buttonDirOption` (the run directory as one word quoted by `shell.ForGOOS().Quote`, which the click line's directory change reads as is (card 9), or empty), so no click sees a row and a spec from different renders.
   A failure is logged at Warn and ignored, like the other status pins.
 - `pinGeometryOptionsLocked` calls `pinButtonRowLocked(target)` right after the status option pins, so boot and every attach pre-flight render it, and a config edit or a pair marked a beam after boot reaches a live session at its next attach or boot.
 
@@ -68,9 +68,9 @@ Tests, `tier0`:
   `e.cfg.Shell` `no-such-shell-lym` with valid entries → the same, and a Warn naming `shell`;
   a task whose `Beam` returns an error → the same, and a Warn;
   a prime with reed's `prime: []` and `beam: [A]` plus machine `beam: [M]` → rows `lymbtn0` A then `lymbtn1` M;
-  an entry with `window: agents` → in the agent row and not the plain row, `strand` true in the spec;
+  a `window: agents` entry with `{strand}` → `strand` true in the spec, and a `window: agents` entry without `{strand}` → `strand` false, both in the agent row and not the plain row;
   an invalid entry beside a valid one → only the valid one drawn, as `lymbtn0`;
-  a task whose `Beam` returns `Anchor` `/b eam` → spec `dir` `/b eam` and a `{beam}` entry's run holding `sh.Quote("/b eam")`;
+  a task whose `Beam` returns `Anchor` `/b eam` → spec `dir` `/b eam`, `@lym_button_dir` `sh.Quote("/b eam")` and a `{beam}` entry's run holding `sh.Quote("/b eam")`;
   a task whose `Beam` returns an empty `Anchor` → its `{beam}` entries left out with a Warn naming the beam and `lym adopt`, `dir` the `PrimeAnchor`;
   a prime whose entries use no `{beam}` → `Beam` never called (the stub counts calls), `dir` the geometry's anchor;
   a `{slug}` value `a#b` in `confirm` → spec confirm holds `a##b`;

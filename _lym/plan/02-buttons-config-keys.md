@@ -1,5 +1,8 @@
 # Card 2 — buttons-config-keys
 
+**Create:**
+- `plan:internal/reedengine#ConfigOpenMaps` -> `func ConfigOpenMaps() []string`
+
 **Edit:**
 - `internal/reedengine#Config`
 - `internal/reedengine#ConfigSpec`
@@ -12,22 +15,28 @@
 - `internal/desktophook/template.yaml`
 - `internal/desktophook_test#TestLoadConfig`
 - `internal/configreg#TestModules_EveryTemplateKeyClassified`
+- `internal/configreg#Modules`
+- `internal/configreg#TestLookup`
+- `docs/overview.md`
 
 **Extends:**
-- `docs/overview.md`
 - `internal/reedengine/doc.go`
 
 **Uses:**
 - `internal/reedengine#LoadConfig`
 - `internal/desktophook#LoadConfig`
 - `internal/desktophook_test#newDirsWithMachineConfig`
+- `internal/configreg/doc.go`
 
 **Intent:**
-Add the `buttons` key to `reed.yaml` (D2) and to `desktop.yaml` (D3), carried as an uninterpreted YAML node so no load ever fails on a button's content.
+Add the `buttons` key to `reed.yaml` (D2) and to `desktop.yaml` (D3), carried as an uninterpreted YAML node; reed declares its three groups as open maps, so a group of any shape loads, while `buttons` itself must stay a mapping.
 
 reed:
 - `Config` gains `Buttons yaml.Node` with tag `yaml:"buttons"`; its doc comment says the node is the `buttons` mapping of groups `task`, `beam` and `prime`, decoded and validated only at render (card 3), never by `LoadConfig`.
 - `ConfigSpec` classifies `"buttons"` as `configengine.CategoryExecutable`, since an entry runs a command: the hub base and the worktree file may hold it and the local layer refuses it (`PATTERN-config-layers`).
+- `ConfigOpenMaps` returns `buttons.task`, `buttons.beam` and `buttons.prime`, with a doc comment saying each is the operator's own button list, which a layer replaces whole; `ConfigSpec` sets `OpenMaps: ConfigOpenMaps()`, as darn does for `tree_scope`.
+  Without open maps `configengine.Load` runs `yamlengine.MissingKeys` over the template's list elements, so a layer's group would have to repeat `buttons.task[N].label`, `.run` and the confirm key of the same position, and a hub tuning `task` to a shorter list, or a group written as a mapping, would fail every `LoadConfig` caller.
+- `internal/configreg#Modules`' reed row gains `OpenMaps: reedengine.ConfigOpenMaps()`, which `TestModules_SeedOnlyAndHubWideFlags` requires to equal the Spec's open maps.
 - Both templates gain the shipped default set of D8 in the same order, with a line comment on `buttons:` naming the groups, the entry keys (`label`, `run`, optional `confirm`, optional `window: agents`), the placeholders `{slug}`, `{worktree}`, `{beam}`, `{session}` and `{strand}`, the prime's fallback to `beam` while `prime` is empty, and that an edit reaches a live session at its next attach or boot:
   - `task`: `HALT` `lym tender pause {slug}`; `CANCEL` `lym batten cancel {slug}` with confirm `Cancel {slug}?`; `code` `lym ide spawn {slug}`; `term` `lym reed window {worktree} --title {slug}`; `agent` `cd {worktree} && lym shuttle open --role agent --model 'opus[high]'`.
   - `beam`: `code`, `term` and `agent` as above, then `distill` `lym orch distill` with confirm `Distill the orch?`, and `refresh` `lym orch refresh` with confirm `Refresh the orch?`.
@@ -48,10 +57,11 @@ desktop:
 Tests (all existing files keep their tier tags, `tier0`):
 - `TestLoadConfig_TemplateDefaultsResolve` asserts the resolved `Buttons` node decodes to exactly the D8 set: the `task` group's five entries in order, each with its `label`, `run` and `confirm` (CANCEL's `lym batten cancel {slug}` with `Cancel {slug}?`, the `agent` entry's `run` exactly `cd {worktree} && lym shuttle open --role agent --model 'opus[high]'`), the `beam` group's `code`, `term`, `agent`, `distill` and `refresh` with the two orch confirms, and `prime` an empty list.
   A subtest `BothTemplatesShipTheSameButtons` reads `template_posix.yaml` and `template_windows.yaml` from the package directory, decodes each file's `buttons` node and asserts the two are equal to that set, so the Windows template is checked on a Linux gate; it reads only its own package directory.
-  Its rows gain: a worktree file `buttons: null` fails with `configengine.ErrInvalid` naming `buttons` (the template fill's shape mismatch, `yamlengine.FillMissing`); a worktree file holding `buttons: {task: {label: x}}`, a group written as a mapping, loads with no error; and the existing `LocalExecutableKeyIsRefused` row's shape repeated for a local file `buttons: {task: []}`, refused with `ErrInvalid` naming the local file and `"buttons.task"`, the unit `ValidateLocal` refuses.
+  Its rows gain: a worktree file `buttons: null` fails with `configengine.ErrInvalid` naming `buttons` (the template fill's shape mismatch, `yamlengine.FillMissing`); a worktree file holding `buttons: {task: {label: x}}`, a group written as a mapping, loads with no error; a worktree file `buttons: {task: [{label: x, run: y}]}` loads and the resolved `task` group is that one entry, replacing the default group whole, while `beam` keeps the template's default; and the existing `LocalExecutableKeyIsRefused` row's shape repeated for a local file `buttons: {task: []}`, refused with `ErrInvalid` naming the local file and `"buttons.task"`, the unit `ValidateLocal` refuses.
 - `internal/desktophook_test#TestLoadConfig` compares `WindowCommand` and `WindowWaitMs` field by field, since `Config` holding a `yaml.Node` is no longer comparable with `!=`, and gains rows: a machine override with `buttons: {task: [{label: x, run: y}]}` loads and its `Buttons` node's `task` group holds that entry; a machine override with `buttons: {task: {}}` fails with `ErrInvalid` naming `buttons.task` and "different shape"; one with `buttons: {task: {label: x}}` fails with `ErrInvalid` naming `buttons.task.label` and "not in the desktop template"; a local override `buttons: {task: []}` fails with `ErrInvalid` naming `buttons.task`.
 - `TestModules_EveryTemplateKeyClassified`: reed's `wantLocalDenied` gains `"buttons"` and desktop's `wantMachineKeys` becomes `{"buttons", "window_command", "window_wait_ms"}`.
+- `internal/configreg#TestLookup` (`tier0`) gains a `reed` row whose `wantOpenMaps` is `buttons.task`, `buttons.beam` and `buttons.prime`.
 
-**ImpactSummary:** two config structs gain a field no existing code reads, two specs gain one classification each, three templates gain a key; the desktophook test's struct comparison changes because `Config` stops being comparable, and no production code compares either `Config`.
+**ImpactSummary:** two config structs gain a field no existing code reads, two specs gain one classification each, reed's spec and its registry row gain three open maps, three templates gain a key; the desktophook test's struct comparison changes because `Config` stops being comparable, and no production code compares either `Config`.
 
 **Commit:** 2: Add the buttons key to reed.yaml and desktop.yaml
