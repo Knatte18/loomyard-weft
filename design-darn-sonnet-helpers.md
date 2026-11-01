@@ -1,6 +1,6 @@
 # A darn writer hands per-package batches to Sonnet helpers
 
-`darn-sonnet-helpers` · Note · feature, darn, claude, shuttle
+`darn-sonnet-helpers` · Task · feature, darn, claude, shuttle · draft
 
 ## Seen (orch, 2026-11-01)
 
