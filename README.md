@@ -23,7 +23,7 @@ Held by a run; its scope is locked until the run ends.
 | T1 | **Parts-Write and Parts-Plan-Write: the plan written in two steps, beside Plan-Write**<br>• A coarse splitter and a seat table of part writers joined by a chair, as an opt-in alternative to Plan-Write, built to be benched against it<br>• `profile: light` | [`plan-split-producers`](design-plan-split-producers.md) | tapestry | Webster | neve | 2h<br>2h | loom, stencil, shed, profiles |
 | T3 | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more<br>• `profile: light` | [`reed-status-buttons`](design-reed-status-buttons.md) | tapestry | Plan-Burler-Review | neve | 2w<br>1h | reed, config, batten |
 | T6 | **A long gate run answers within the cache lifetime, so the waiting agent keeps its prompt cache warm**<br>• lym gate test caps the run wait like the slot wait, with the cap a config value beside the engine cache lifetime<br>• `profile: light` | [`gate-run-keeps-cache-warm`](design-gate-run-keeps-cache-warm.md) | tapestry | Plan-Write | neve | 18h<br>1h | gate, shuttle, config |
-| T7 | **One verb to take work over on another machine, leaving every run in a known state**<br>• Moving to another machine is many hand steps, and afterwards run states are unclear | [`machine-switch`](design-machine-switch.md) | tapestry | Plan-Bouncer | neve | 1d<br>1h | fabric, dobby, batten |
+| T7 | **One verb to take work over on another machine, leaving every run in a known state**<br>• Moving to another machine is many hand steps, and afterwards run states are unclear | [`machine-switch`](design-machine-switch.md) | tapestry | Plan-Burler-Review | neve | 1d<br>1h | fabric, dobby, batten |
 
 #### Ready (0)
 
@@ -54,7 +54,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **A writer session can end with untracked files in the worktree, which halt Finalize**<br>• A producing session's end gate refuses to end while the worktree holds untracked files outside its outputs | [`writer-leaves-stray-files`](design-writer-leaves-stray-files.md) | 16m<br>16m | shuttle, darn, loom |
-| B2 |  | **Dobby reports a healthy run idle in the seconds after its agent session ends**<br>• The no-agent idle clock falls back to the row start in the gap between the session ending and the row writing its history | [`dobby-idle-notice-row-end`](design-dobby-idle-notice-row-end.md) | 39m<br>39m | dobby, shuttle |
+| B2 |  | **Dobby reports a healthy run idle in the seconds after its agent session ends**<br>• The no-agent idle clock falls back to the row start in the gap between the session ending and the row writing its history | [`dobby-idle-notice-row-end`](design-dobby-idle-notice-row-end.md) | 40m<br>40m | dobby, shuttle |
 
 #### Enhancements (12)
 
