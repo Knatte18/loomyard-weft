@@ -1,18 +1,35 @@
-# Webster forks sweep every retired name, tests included, before editing
+# Webster implementer sweeps every retired name across the tree first
 
-A card that removes or renames a name used to leave its fork to find the stale references one gate failure at a time.
-In one run, a card that dropped the `loom.plan_*` config keys grepped only non-test files, and stale test fixtures then failed across about ten packages, costing 69 of the fork's 165 turns.
+The Webster implementer stencil (`contracts/stencils/webster/webster-body-implementer.md`) gains a sweep step for cards that remove or rename a name.
+Such a card now retires the old name: a symbol, file, config key or string literal.
 
-The Webster implementer stencil, `contracts/stencils/webster/webster-body-implementer.md`, now carries a sweep step in each card's step 2.
-When a card retires a name, such as a symbol, file, config key or string literal, the fork greps the whole worktree for every retired name in one Bash call before its first hand edit, test files, `testdata/` and other fixtures included.
-It reads every hit's span in one message and edits every hit in one message.
-For a symbol rename the sweep runs after the hub's rename tool, so it catches what the tool leaves, such as string keys, comments and test data.
+In `run-verbs-shared`, the fork for card `06-tapestry-config-module` removed the `loom.plan_*` keys, but its first grep left out `_test` files.
+Stale fixtures carrying the old keys then failed across about ten packages, found one gate failure at a time: 69 gate-loop turns of the fork's 165.
+Another fork read and edited each file of one grep hit list one at a time over some twenty turns.
+
+## What changes
+
+Before the card's first hand edit, and after any rename tool run, the fork:
+
+1. Greps the whole worktree for every retired name in one Bash call, test files, `testdata/` and other fixtures included.
+2. Reads every hit's span in one message.
+3. Edits every hit in one message.
+
+For a symbol rename this is the same grep the stencil's rename paragraph already requires for zero references to the old name, widened to the test and fixture files.
+It is one grep, not two.
 
 ## Design decisions
 
-- An edit to a hit outside the card's targets counts as a fix to a failure the card caused, the existing second sanctioned deviation, so the sweep adds no new deviation kind and the scope guard still records each one.
-- The step sits beside the quarry-resolve reading rule rather than in the `Rename` sentence, because a card can retire a name without a `Rename` pair, such as by deleting a config key.
+- The sweep edit is a third sanctioned deviation from the card's targets, next to the guard-step fix and the fix to a failure the card caused.
+  It is bounded to hits that reference a name the card retires.
+  A hit that matches a retired string by accident, such as a generic literal, is left alone.
+- The sweep edit is not a fix to a failure, so the bounded self-fix section's attempt cap does not apply to it.
+- The scope guard still records the edits as deviations; they never make a report `FAILED` on their own.
 
-## Tests
+## To check by hand
 
-`TestRenderPrompts` in `internal/websterengine/template_test.go` now pins the sweep's grep and its one-message read and edit, in order after the quarry-resolve line, in the rendered fork prompt.
+- The prose is the only change; no code or test was run against it.
+  Run a card that retires a name used in a test fixture and confirm the fork sweeps once and the gate finds no stale reference.
+- Check that the wording bounding the sweep edit (`sweep-edit-unbounded-failure-fix`, in the added paragraph of step 2 of the stencil) is tight enough:
+  a reader should not be able to take it as licence to edit hits unrelated to a retired name, or as exempt from the cap on failure fixes.
+  The fix for this finding has not been re-reviewed.
