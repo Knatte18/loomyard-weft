@@ -37,7 +37,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | `draft` **A cold, cheap fixer clears a failed writer gate instead of the writer at full context**<br>• When the Webster card gate, the plan gate or the discussion gate fails, Go spawns a cold fixer with the gate report rather than the writer fixing at its large context | [`cold-gate-fixer`](design-cold-gate-fixer.md) | tapestry |  | 22m<br>22m | webster, loom, gate |
+| T5 | `draft` **One cold, cheap fixer clears a failed writer gate instead of the writer at full context**<br>• When the Darn-Write, plan, discussion or Webster card gate fails, Go spawns one shared cold fixer with the gate report, generalised from webster fix-verify<br>• `profile: light` | [`cold-gate-fixer`](design-cold-gate-fixer.md) | tapestry | T4 | 22m<br>0m | webster, loom, darn, gate |
 
 ### Notes (3)
 

@@ -827,22 +827,27 @@
       "id": 987,
       "handle": "T5",
       "slug": "cold-gate-fixer",
-      "title": "A cold, cheap fixer clears a failed writer gate instead of the writer at full context",
+      "title": "One cold, cheap fixer clears a failed writer gate instead of the writer at full context",
       "kind": "task",
       "labels": [
         "enhancement",
         "webster",
         "loom",
+        "darn",
         "gate"
       ],
       "issues": [],
-      "depends_on": [],
+      "recipe": "tapestry",
+      "depends_on": [
+        "plan-spec-split"
+      ],
       "isolated": false,
-      "brief": "When the Webster card gate, the plan gate or the discussion gate fails, Go spawns a cold fixer with the gate report rather than the writer fixing at its large context",
-      "body": "## Seen (orch, 2026-11-01)\n\nA writer that fails its own gate fixes the failures in its own session, at its full context per turn.\nBefore project `agent-turns`, one Webster fork spent 69 turns at 150k to 450k fixing its card gate.\nThe Plan writer runs `validate-plan` through its gate at 400k to 670k context in large runs, and the Discussion writer runs `validate-discussion` the same way.\nThe gate reports name each failing check and its place, so most fixes are mechanical.\nR1 (`agent-turns-effect`) measures how much the card gate loop still costs after `gate-failure-report` and `plan-edits-before-gate`.\n\n## Idea (operator, 2026-11-01)\n\n- When a writer's gate fails, Go spawns a cold, cheap fixer with the gate report and the files it names, instead of the writer fixing in its large session.\n  The fixer reads the failing source itself, fixes every failure in one go and reruns the gate; when it clears the gate the run goes on, and when it does not the failure goes back to the writer as today.\n- Three places: the Webster card gate (as R1's measure may recommend), the Plan writer's plan gate, and the Discussion writer's gate.\n- Webster's `lym webster fix-verify` (`webster-prefix-verify-fix-cold.md`) is such a fixer for the plan-level verify gate already, and the pattern to follow.\n- Open: which failures a cold fixer may take (format and machine checks) and which need the writer (a check whose fix changes a design choice), and the fixer's model.\n- R1's numbers for the card gate, and a count of plan and discussion gate loops in landed runs, decide whether each place is worth it.\n",
+      "brief": "When the Darn-Write, plan, discussion or Webster card gate fails, Go spawns one shared cold fixer with the gate report, generalised from webster fix-verify",
+      "body": "## Seen (orch, 2026-11-01)\n\nA writer that fails its own gate fixes the failures in its own session, at its full context per turn.\nBefore project `agent-turns`, one Webster fork spent 69 turns at 150k to 450k fixing its card gate.\nThe Plan writer runs `validate-plan` through its gate at 400k to 670k context in large runs, and the Discussion writer runs `validate-discussion` the same way.\nThe darn writer of `gate-one-binary-per-package` fixed its own `darn-write` gate failures at about 274k context, and darn is the recipe that runs most.\nThe gate reports name each failing check and its place, so most fixes are mechanical.\n\n## Design (operator, 2026-11-01)\n\n- One shared cold gate fixer, not four: when a writer's gate fails, Go spawns a fresh, cheap fixer with the gate report and the files it names, instead of the writer fixing in its large session.\n  The fixer reads the failing source itself, fixes every failure in one go and reruns the gate, the failed packages first and then the whole gate; when it clears the gate the run goes on, and when it does not the failure goes back to the writer, or up the recovery ladder, as today.\n- Webster's `lym webster fix-verify` (`webster-prefix-verify-fix-cold.md`), the cold fixer of the plan-level verify gate, is generalised into the shared one rather than built beside.\n- Four callers:\n  - the Darn-Write gate (`darn-write`);\n  - the Plan writer's plan gate;\n  - the Discussion writer's gate;\n  - the Webster card gate, where Go spawns the fixer in the fork's worktree with the gate report, the card and the card's diff.\n- Which failures the fixer takes: the failures a gate reports as machine checks go to it; a failure whose fix changes a design choice goes back to the writer. The Discussion settles the line from what the gate reports contain.\n- The fixer's model and effort are config, one key per caller, with a cheap default; the Discussion picks the default.\n- R1 (`agent-turns-effect`) measures the card gate loop after this lands.\n",
       "status": "draft",
       "created": "2026-11-01T18:22:44Z",
-      "revised": "2026-11-01T18:22:44Z",
+      "revised": "2026-11-01T18:45:33Z",
+      "profile": "light",
       "project": "turn-savings"
     },
     {
