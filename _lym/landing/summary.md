@@ -1,29 +1,29 @@
 # Render every board project, Prime included, through one project section
 
-The board README showed each open project as one flat member table, so a running member of a project never showed as running, and its ready, layered and draft tasks and its notes by type were not told apart.
-Only the root's own entries under Prime and a project's own file got the full Tasks, Notes and Done split.
+The board README showed each open project as one flat member table, so a running member did not show as running, and its ready, layered and draft tasks and its notes by type were not told apart.
+Only the root's own entries and a project's own file got the full Tasks (Running, Ready, layers, Independent, Draft), Notes by type and Done split.
+A project file listed its sub-projects only as bullet links, and the README rendered projects through a third path.
 
-## What changes
+Now `internal/boardengine` has one project render, and the root is a project like any other, Prime:
 
-`internal/boardengine/render.go` now renders every project through one recursive pair, `projectSection` and `projectBody`:
-
-- `projectSection(project, level)` writes the project's heading, then its body.
-  For the root the heading is `Prime` with its meaning line;
-  for any other project it links the handle and title to the project's file and counts its open members, followed by the facts line and brief.
-- `projectBody(project, level)` writes a section per open project directly under it, one heading level down and in `childProjects`' order, then the project's own entries through `entrySections`, one level down.
-
-README.md is the file header, the intro, then `projectSection` of Prime at level two: Prime's sub-projects first, nested to any depth, each with its own Running, Ready, layers, Draft, Notes by type and Done, then Prime's own entries last.
-A project file is its header, the intro, then `projectBody` of its project at level one, so its sub-projects and its own Tasks, Notes and Done sit at `##`, as the own entries did before.
-`projectSections` (the README's flat member tables) and `projectsSection` (a project file's bullet list) are removed, along with the `projectsHeading` constant.
-
-Headings take an integer level through a new `heading` helper capped at `maxHeadingLevel` (six), so a deeply nested project still renders; `countedHeading` and `entrySections` take that integer level instead of a `#` string.
+- `projectSection` renders a project at a heading level: its heading, facts line and brief, then `projectBody`.
+- `projectBody` renders the open projects directly under it, each through `projectSection` one level down, then the project's own Tasks, Notes and Done through `entrySections`.
+- `README.md` is `projectSection` applied to Prime, so every open project shows its own Running, Ready, Tasks, Notes and Done, and the root's own entries come last.
+- A project file keeps its header as the project's heading, then shows its sub-projects and own entries through `projectBody`.
+- `projectSections` (the flat member table) and `projectsSection` (the bullet list) are removed; `fileHeader` and the intro stay.
+- Heading levels nest with project depth and stop at six, so a deep project still renders.
+  `entrySections` and `countedHeading` now take an integer level, and a new `heading` helper applies the cap.
+- The doc comments in `internal/boardengine/doc.go` and `render.go`, and the board paragraph in `docs/overview.md`, describe what the files now hold.
+  The Prio column now belongs to Notes tables only, since the project member table is gone.
 
 ## Design decisions
 
-- A project file calls `projectBody`, not `projectSection`: its file header already carries the project's H1, facts line and brief, so rendering the section heading again would repeat them.
-- A sub-project's heading keeps the open-member count it carried before, matching the rule that every section heading but Prime ends in a count.
+- An open project under a done project still counts as under the root, since a done project has no section.
+- A non-root project's heading keeps its link to the project file and its open-member count; Prime keeps its meaning line.
 
-## Docs and tests
+## To check
 
-The `# README` section of the `boardengine` package doc, the `render.go` file header and the board paragraph of `docs/overview.md` describe the nested layout.
-`TestRenderReadmeGolden` pins the nested README and project files for the existing project fixtures and adds a row with a chain of four nested projects whose headings stop at level six.
+- The board entry's `Added after Discussion` decision says a project with a body should link its slug in the facts line to `design-<slug>.md`, the way `slugCell` links a task's slug.
+  This diff does not do that: `projectFacts` is unchanged, so a project's body (for example P2 agent-turns' wave order) is still not reachable from the rendered board.
+  Decide whether to land that here or follow up.
+- Run `lym board` render on a real board with nested projects and read the README and a project file, since the new goldens in `render_test.go` cover synthetic boards only.
