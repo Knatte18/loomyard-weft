@@ -973,6 +973,67 @@
       "status": "draft",
       "created": "2026-11-01T14:51:40Z",
       "revised": "2026-11-01T14:51:40Z"
+    },
+    {
+      "id": 973,
+      "handle": "T5",
+      "slug": "plan-split-bench",
+      "title": "Study: Parts-Write and Parts-Plan-Write against Plan-Write",
+      "kind": "task",
+      "labels": [
+        "research",
+        "loom"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Write the plans of two landed runs both ways and compare cost, time, gate pass and one Plan-Review round",
+      "body": "## Seen (orch, 2026-11-01)\n\n`Parts-Write` and `Parts-Plan-Write` landed behind the tapestry flag `plan_split`, off by default: `Parts-Write` splits a task into parts with contracts and shared spots, and `Parts-Plan-Write` writes one plan part per fresh session under a joining chair.\nNothing has benched them against `Plan-Write`; note `plan-writer-context` holds the background (the Plan writer is the costliest session, about 83 turns at a mean context of 183k tokens).\n\n## The study\n\nA darn with profile docs writes the plan of the same input twice, once with `Plan-Write` and once with `Parts-Write` then `Parts-Plan-Write`, and compares the two.\n- Inputs: two landed tapestry runs' approved decision records and discussions, `warp-visibility` and `run-verbs-shared`, each replayed at the start of Plan on a scratch branch at its own base commit.\n- Per plan: cost and wall time of the writing sessions and their forks, turns and context per session, whether the joined plan passes the ordinary `plan` gate first time, its card count, and the cards that read the same files.\n- Quality: one round of the hub's Plan-Review per plan, its finding count and severity.\n- Cap: 2 inputs times 2 arms, one repeat, the models and efforts the hub's config gives each producer today: 4 plan writings and 4 Plan-Review rounds, no other agent or model run beyond the darn writer.\n- The report goes to `docs/research/` with its scripts; it recommends, it decides nothing.\n",
+      "status": "draft",
+      "created": "2026-11-01T14:51:40Z",
+      "revised": "2026-11-01T14:51:40Z",
+      "profile": "docs"
+    },
+    {
+      "id": 974,
+      "handle": "E14",
+      "slug": "fork-results-one-wake",
+      "title": "A reviewer or fixer wakes once for all its forks, not once per fork",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "burler",
+        "stencil"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "79 no-call wake-up turns at full context over three runs, 8-9% of the forking review roles weight",
+      "body": "## Seen (research, landed 2026-11-01)\n\n`docs/research/review-turn-audit-2026-11-01/report.md`: a Discussion reviewer, Discussion fixer or Plan fixer that forks its lenses wakes once per fork, since each fork's result arrives as its own message, and each wake-up is a turn with no call at the parent's full context.\nOn three tapestry runs that was 79 turns, 8% to 9% of the three roles' weight and 13% to 19% of their time.\nThe Plan reviewer works on after its spawn, so its wake-ups are mixed into its other turns.\n\n## Idea\n\nThe parent gets every fork's result in one turn: it spawns its forks in one message and is woken once they are all done, rather than once per fork.\nFirst read how the review stencils spawn the forks and how their results reach the parent, then pick the form that keeps the forks running in parallel.\nMeasured with the scripts of `docs/research/review-turn-audit-2026-11-01`: the `fork-wait` turns per session.\n",
+      "created": "2026-11-01T14:51:40Z",
+      "revised": "2026-11-01T14:51:40Z",
+      "project": "agent-turns"
+    },
+    {
+      "id": 975,
+      "handle": "E23",
+      "slug": "plan-reviewer-batching",
+      "title": "The round-1 Plan reviewer gathers in one call a turn",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "burler",
+        "stencil"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "1.05 calls a turn and 41% of its weight removable by merging, though it carries the batching sentence",
+      "body": "## Seen (research, landed 2026-11-01)\n\n`docs/research/review-turn-audit-2026-11-01/report.md`: the round-1 Plan reviewer on Opus is the largest single cost of the review segment, $15.68 over three runs.\n89% of its turns make one call, 1.05 calls a turn, and 33 of its 77 turns a session could have been merged into others, 41% of its weight; the estimated saving is $6.43 of $15.68 (n = 3).\nIt already carried the batching sentence of `bf00a043`, and the sentence did not move it; the Sonnet rounds, which have no forks, batched better.\n\n## Idea\n\nFind what makes round 1 gather serially and trial one change at a time, each measured on the Plan reviewer's calls per turn and removable turns:\n- a different instruction, such as naming the gathers to issue together at the start of the review, in its stencil or as a heddle line;\n- running round 1 on the model that batched.\nMeasured with the scripts of `docs/research/review-turn-audit-2026-11-01`.\n",
+      "created": "2026-11-01T14:51:40Z",
+      "revised": "2026-11-01T14:51:40Z",
+      "project": "agent-turns"
     }
   ],
   "prime_owner": "neve",
