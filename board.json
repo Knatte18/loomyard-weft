@@ -666,6 +666,25 @@
       "body": "## Seen (operator, 2026-10-31)\n\nThe orch is a long-lived, heavy session that handles board work, run notices and escalations alike.\nBoard work can move to a short-lived board agent (note `board-agent-button`), and dobby already does the mechanical run work.\n\n## Idea (long term)\n\nDobby takes everything mechanical, and a capable agent spawned per case, as the arbiter is for a halted stop, settles the doubtful ones.\nOne orch per beam, the prime included, is kept, since it is how the operator runs the hub from the phone.\nIt is not started on demand: it lives as today but lies dormant, and is woken only when a run needs help or the operator talks to it (operator, 2026-10-31).\n",
       "created": "2026-10-31T19:10:09Z",
       "revised": "2026-10-31T19:15:50Z"
+    },
+    {
+      "id": 943,
+      "handle": "E5",
+      "slug": "landing-watch-limits",
+      "title": "A landing notice is not lost when set late, when dobby was down, or when the orch is absent",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "dobby",
+        "orch"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Close the known limits landing-watch left: a late notify_on_land, a Land passed while dobby was down, and a dropped line when no orch is live",
+      "body": "## Seen (orch, 2026-11-01)\n\n`landing-watch` (commit `c9d52bdb`) has dobby send the orch a line when a task with `notify_on_land` set lands.\nIts commit lists known limits that no note covered:\n- A `notify_on_land` set after the run passed Land gets no line.\n- A run that passes Land while dobby is down long enough for a fresh state record to be written gets no line.\n- The line needs a live orch; after three failed posts it is dropped.\n\nThe commit also records that the notice was never run end to end against a live orch.\n\n## Open\n\n- Whether any of these matter in practice, and which to close (operator to look at them).\n- Setting the field on a run already past Land could answer at once instead of staying silent.\n- A dropped line could wait in creel for the orch rather than be lost, which fits the dormant orch in `dormant-orch`.\n",
+      "created": "2026-11-01T07:43:17Z",
+      "revised": "2026-11-01T07:43:17Z"
     }
   ],
   "prime_owner": "neve",
