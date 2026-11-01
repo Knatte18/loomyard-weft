@@ -759,13 +759,16 @@
       "brief": "Cut the turns agents spend on shell edits, piecemeal gate loops and sliced reads, one measured fix at a time",
       "body": "## Goal (operator, 2026-11-01)\n\nAgents, Webster's implementer forks first, finish their work in fewer turns.\nA session's cost grows with its turns times its context, and a Webster fork's context runs at 75k to 475k tokens a turn, so every turn cut is worth much.\nThe members are taken one at a time, each measured against the numbers below before the next.\n\n## Seen (orch, 2026-11-01)\n\n`tools/tokencount` on the three latest full tapestry runs (`warp-visibility`, `interactive-recipe`, `run-verbs-shared`): Webster forks cost $85 of $308, the largest part, almost all of it cache reads.\nFork starts are 74k to 119k (Merriam's base, inherited cheaply), peaks 125k to 476k, and 20 to 164 messages a fork; the growth inside a fork is the cost, not its base.\n`tools/forkaudit` on the same runs' 27 forks: 31 turns, 23 partial reads, 18 greps and 6 whole-file reads per card; about 1.7 read, grep and edit calls per turn, against 1.37 before `turn-batching`.\n\nA turn-by-turn reading of the five heaviest forks (165, 116, 103, 90 and 84 turns) found where the turns went:\n- Edits made with `sed -i`, awk, perl or scratch-file splices, about one a turn; 66 to 90% of the edits in the three heaviest forks, against 2.3 edits a turn in the two forks that used the Edit tool.\n- A sweep for a retired key that skipped test files, so stale fixtures in about ten packages surfaced one gate failure at a time: 69 gate-loop turns in one fork.\n- Gate output too large to read in one result, about 10 turns spent only reading it, and 14 lint-only turns.\n- One file read in three to five slices over as many turns; about 80 of 208 single-call read turns could have gone a turn earlier.\n\nMeasures already rejected: shorter forks (the 300k batch trial showed fewer, larger forks cost less), quarry lookups (agents used them on top of their own searching), and cold-start batches (Weaver), which would pay full price for what forks inherit from Merriam.\n",
       "created": "2026-11-01T14:16:30Z",
-      "revised": "2026-11-01T14:16:30Z",
+      "revised": "2026-11-01T14:18:14Z",
       "order": [
         "edit-with-edit-tool",
         "gate-failure-report",
         "card-gate-cold-fixer",
         "retired-name-sweep",
-        "read-whole-not-slices"
+        "read-whole-not-slices",
+        "hook-refused-turns",
+        "batching-in-claude-local",
+        "review-turn-audit"
       ]
     },
     {
@@ -868,6 +871,83 @@
       "created": "2026-11-01T14:16:30Z",
       "revised": "2026-11-01T14:16:30Z",
       "project": "agent-turns"
+    },
+    {
+      "id": 966,
+      "handle": "E18",
+      "slug": "hook-refused-turns",
+      "title": "Agents still try the forms lym's guards refuse, at a turn each",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "process",
+        "claude"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Python and raw go build or go vet attempts are refused and retried; find why the steering does not hold and close it",
+      "body": "## Seen (orch, 2026-11-01)\n\nIn the five heaviest Webster forks of the three latest tapestry runs, 6 turns were refused by lym's PreToolUse guards: four Python attempts and two raw `go build` or `go vet` runs.\nEach refusal costs a turn at the fork's full context, and the fork then makes the call again in the allowed form.\nThe forks inherit Merriam's system prompt, which carries the guards' steering sentences, yet still reach for the refused forms first.\n\n## Idea\n\nFind why an agent that is told the rules still tries the refused forms, from the transcripts of the refused turns, and close the gap where it lies: the steering sentence's wording or place, the stencil's own instructions for building and vetting, or a guard that answers with the allowed command ready to run.\n",
+      "created": "2026-11-01T14:18:14Z",
+      "revised": "2026-11-01T14:18:14Z",
+      "project": "agent-turns"
+    },
+    {
+      "id": 967,
+      "handle": "E21",
+      "slug": "batching-in-claude-local",
+      "title": "Trial: the batching instruction in the rendered CLAUDE.local.md through heddle",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "claude",
+        "heddle"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Put the batching instruction into heddle's claude-file target and measure calls per turn with forkaudit against today's 1.7",
+      "body": "## Seen (orch, 2026-11-01)\n\nThe batching sentence every shuttle-launched Claude session gets (\"Request every call whose arguments you already know in one message, …\", `batchingSentence` in `internal/shuttleengine/claudeengine/settings.go`) sits at the end of Claude Code's long system prompt, which already asks for parallel tool calls itself.\nAfter `turn-batching` landed, Webster forks went from 1.37 to about 1.7 read, grep and edit calls a turn (`tools/forkaudit`, 27 forks of `warp-visibility`, `interactive-recipe` and `run-verbs-shared`).\nClaude Code puts a project's CLAUDE files into the conversation as a context block under \"These instructions OVERRIDE any default behavior and you MUST follow them exactly as written\", a stronger frame than an appended system-prompt sentence; another user reported cutting token use by putting such an instruction there.\n\n## Idea (operator, 2026-11-01)\n\nTest it with heddle, with no code change: a heddle entry aimed at the `claude-file` target puts the batching instruction into the rendered `CLAUDE.local.md` at every worktree's root, which every Claude session in the hub reads, Webster's forks through Merriam's context included.\nAfter two or three tapestry runs, `tools/forkaudit` measures calls per turn against the 1.7 above.\nThe test is best run after note `edit-with-edit-tool` has landed, or measured on read and search calls alone, so that the edit change does not confound it.\n",
+      "created": "2026-11-01T14:18:14Z",
+      "revised": "2026-11-01T14:18:14Z",
+      "project": "agent-turns"
+    },
+    {
+      "id": 968,
+      "handle": "R1",
+      "slug": "review-turn-audit",
+      "title": "Study: turns and context of the Discussion and Plan review sessions",
+      "kind": "note",
+      "labels": [
+        "research",
+        "burler"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Measure where reviewer, fixer and judge turns and context go on three tapestry runs, and what Sonnet fixers would cost",
+      "body": "## Seen (orch, 2026-11-01)\n\n`tools/tokencount` on the three latest full tapestry runs (`warp-visibility`, `interactive-recipe`, `run-verbs-shared`): the review rounds' main sessions cost more than their forks.\n- Plan reviewer $31 and 1h13m, the longest part of Plan, at about 175k tokens of context a message; Discussion reviewer $18.\n- The Discussion and Plan fixers, on Opus, about $25 together; all review and fixer forks of both segments about $24.\n\n## Idea: a study (orch, 2026-11-01)\n\nA darn with profile docs measures, on those same three runs' transcripts, the turns and context per turn of the Discussion and Plan reviewer, fixer and judge sessions and their forks, where their turns go (reads, searches, writes, waits), and which of the turns could have been merged.\nIt reuses the method of `docs/research/turn-audit-2026-10-28`, and states what Sonnet fixers would have cost, beside note `fixers-on-sonnet`.\nCap: the three runs named, no agent or model run beyond the darn writer.\n",
+      "created": "2026-11-01T14:18:14Z",
+      "revised": "2026-11-01T14:18:14Z",
+      "project": "agent-turns"
+    },
+    {
+      "id": 969,
+      "handle": "E22",
+      "slug": "tokencount-darn-runs",
+      "title": "tokencount counts darn runs and compares recipes",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "tools"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Count darns with their own segments, so a darn's cost stands beside a tapestry's",
+      "body": "## Seen (orch, 2026-11-01)\n\n`tools/tokencount` with no slugs counts only finished full tapestry runs, those that reached Finalize under the tapestry recipe.\nOn 2026-11-01 it skipped the 80 most recent runs, most of them darns, and counted three tapestry runs from 2026-10-31 and 2026-11-01.\nThe operator prefers parallel darns to one long loom as cheaper and faster, but no report gives a darn's cost beside a tapestry's.\n\n## Idea\n\ntokencount counts darn runs too, with darn's own segments (writer, Code-Review rounds, landing), and can compare recipes, for example the cost per run and per changed line of darns against tapestries over the same period.\n",
+      "created": "2026-11-01T14:18:14Z",
+      "revised": "2026-11-01T14:18:14Z"
     }
   ],
   "prime_owner": "neve",
