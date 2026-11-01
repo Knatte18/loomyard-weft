@@ -19,6 +19,12 @@ Nothing marks where P2 ends and the root's own entries begin, so the README read
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-01): A project with a body links its slug to its design file
+
+Decision: Taken over from board-project-render, which landed without it: in a project's facts line, in the README and in project files alike, the project's slug links to its design-<slug>.md when the project has a body, the way slugCell links a task's or note's slug; a project without a body keeps the plain slug.
+
+Rationale: Operator, 2026-11-01: a project's body, such as agent-turns' waves, is not reachable anywhere on the rendered board; the change sits in the same render file as this task.
+
 ## Constraints
 
 ## Auto-mode assumptions
