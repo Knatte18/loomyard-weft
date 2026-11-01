@@ -1,41 +1,33 @@
-# tokencount counts darn runs and compares recipes
+# tokencount counts darn runs and compares recipes by cost
 
-`tools/tokencount` with no slugs counted only finished tapestry runs, so it skipped every darn run and gave no darn cost to set beside a tapestry's.
-It now counts finished darn runs as well, places darn's sessions in their own segments, and adds a Recipes section that compares the cost per run and per changed line of each recipe over the same runs.
+`tools/tokencount` with no slugs counted only finished tapestry runs, so it skipped most recent runs, most of them darns, and no report put a darn's cost beside a tapestry's.
+It now counts finished darn runs too and adds a recipe comparison.
 
 ## What changes
 
-- **Selection.** A torn-down run counts when its archived seed names the tapestry or the darn recipe and its status holds a Finalize entry (`finishedRun` in `shed.go`, which replaces `fullLoomRun`).
-  The header and the "Skipped" line now say "finished tapestry and darn runs".
-- **`-since YYYY-MM-DD`.** With no slugs named, counts every finished run whose sessions changed on or after the start of that local day, and ignores `-last`, so both recipes over one period are counted together.
-  A value that is not a date is refused before anything is read.
-- **Segments.** New prefix segments `Darn` (`darn`), `Drift` (`drift-*`) and `Code-Review` (`code-*`, labelled reviewer, fixer, judge and seed like the other perches).
-  A `Landing` segment holds `describe`, `pr-reviewer`, `fixer` and `fix-reviewer`, each labelled by its role name.
-  The Code-Review and Landing roles of tapestry runs, which used to fall into `Other`, land in these segments too.
-- **Cost per run.** Gains a `recipe` column, and shows only the segment columns that some counted run holds, so the table stays narrow now that there are more segments.
-- **Recipes section** (`recipes.go`), after Cost per run: one row per recipe with runs, cost per run (the orch charge included), awake span per run, landed runs, changed lines per landed run, and cost per changed line (cost of the runs that landed a commit divided by the lines those commits changed).
-  Runs with no landed commit are listed with the reason.
-  A run with no archived seed, such as one in flight, is listed under `unknown`.
-- **Landed commit** (`landed.go`): the change description archived at the run's tag (`_lym/landing/summary.md`) gives a title.
-  The landed commit is the newest commit in the code repository whose subject equals that title and whose committer date falls within the run's span, widened by a minute each way.
-  Its changed lines are the added plus deleted lines of `git diff --numstat` against its first parent, with binary files left out.
-- **`-code <dir>`** names the code repository, used for the landed commits and for `-calibrate`'s base trees.
-  It defaults to the current directory, which was the hard-coded choice before.
-- **`summaryparser.ParseData(data, source)`** parses final-summary content read from somewhere other than a file, here an archived git revision.
-  `Parse` now reads the file and delegates to it, with unchanged errors.
-  The package doc and `contracts/specs/loom-final-summary-spec.md` now mention content as well as a told path.
+- With no slugs, tokencount counts finished runs of the tapestry and the darn recipe, a run being finished when its archived seed names one of them and its status holds a Finalize entry.
+  Slugs named on the command line are still counted as given.
+- `-since YYYY-MM-DD` counts every finished run whose sessions changed on or after the start of that local day, whatever `-last` says, so both recipes over one period stand side by side.
+  `-last` below 1 is refused unless `-since` or slugs are given.
+- New segments: Darn, Drift and Code-Review hold the roles of those names and their `-` suffixes, and Landing holds the `describe`, `pr-reviewer`, `fixer` and `fix-reviewer` roles, each a part labelled by its own name.
+- "Cost per run" gains a recipe column, and its segment columns are the segments some counted run holds.
+- A new "Recipes" section gives one row per recipe: runs, cost per run, span per run, runs that landed a commit, changed lines per landed run, and cost per changed line.
+  A run whose archived seed was not read, such as one in flight, is listed under `unknown`.
+  The section names each run without a landed commit and why.
+- `-code` names the code repository read for landed commits and for the calibration's base trees, default the current directory.
 
 ## Design decisions
 
-- The landed commit is matched by its title rather than through reportengine's landing join.
-  That join finds no task commit for a darn run, since a darn run has no task-commit trailer of its own.
-  Its time join needs the board history.
-  A squash landing, the default, titles its commit after the change description, so the title plus the span is enough, and a real count since 2026-10-31 matched all 54 runs (47 darn, 7 tapestry).
-  A run landed without squashing would match only if its merge commit carries the title.
-- Darn's writer, Code-Review rounds and landing roles each get a segment, as the board entry asks.
-  Drift has its own segment because its roles are darn rows too.
-- `-since` filters by session modification time, the same recency `-last` already ranks by, so both flags pick runs the same way.
+- A run's landed commit is found in `tools/tokencount/landed.go`: the newest commit whose subject is the title of the change description archived at the run's tag (`_lym/landing/summary.md`) and whose committer date lies within the run's span widened by a minute each way.
+  The slack covers a pull request merged on GitHub, whose server clock stamps the commit.
+  This assumes the landing default of one squashed commit titled after the change description.
+- Changed lines are the lines added plus deleted against the commit's first parent, binary files left out; a root commit counts every line it holds.
+- Cost per changed line divides the cost of the runs that landed a commit by the lines those commits changed, so runs with no landed commit do not inflate it.
+- `internal/summaryparser` gains `ParseData`, which validates change-description content read from an archived revision; `Parse` now reads the file and delegates to it.
+  `contracts/specs/loom-final-summary-spec.md` and the package doc say the parser takes content a caller read elsewhere.
 
 ## To check by hand
 
-- `go run ./tools/tokencount -since <date>`: in the Recipes table, check that the darn and tapestry rows look plausible against what you expect from recent runs.
+- Run `tools/tokencount.sh -since <date>` against a real hub with both darn and tapestry runs, and check the Recipes section's landed-commit matches against the code repository's history; the matching is covered by unit and fixture tests, not run against live archives.
+- The `-since` path in `recentRuns`: check it counts the runs on and after the start of the given local day and no others, and that `-last` has no effect when it is given.
+- A run whose archived change description does not parse: `findLanding` records it as having no landed commit with the parse reason, so the report lists the run instead of aborting; check that this holds for a real archive.
