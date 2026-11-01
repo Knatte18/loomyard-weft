@@ -1,6 +1,6 @@
 # Trial: the batching instruction in the rendered CLAUDE.local.md through heddle
 
-`batching-in-claude-local` · Note · enhancement, claude, heddle
+`batching-in-claude-local` · Task · enhancement, claude, heddle · draft
 
 ## Seen (orch, 2026-11-01)
 

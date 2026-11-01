@@ -1,6 +1,6 @@
 # Agents still try the forms lym's guards refuse, at a turn each
 
-`hook-refused-turns` · Note · enhancement, process, claude
+`hook-refused-turns` · Task · enhancement, process, claude · draft
 
 ## Seen (orch, 2026-11-01)
 
