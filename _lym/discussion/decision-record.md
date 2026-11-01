@@ -38,6 +38,12 @@ Decision: psb-rv-split failed at Parts-Plan-Write when reed lost the chair's str
 
 Rationale: The entry caps the study at 4 writings; extra spend is the operator's call.
 
+### Added after Discussion (parent, 2026-11-01): Hand edits to a replay only to unblock a gate
+
+Decision: A bench replay's files are hand-edited only when a gate would otherwise refuse the run, as with the two export fixes. A quality defect no gate refuses, such as the warp vocabulary in psb-wv-split's parts.md (PATTERN-fabric-vocabulary), is left in place: the chair goes on without it and Plan-Review's finding records it, counted in the report as a Parts-Write defect. The writer applies this rule itself to later such questions without asking the orch.
+
+Rationale: Hand fixes distort the comparison; letting Plan-Review find the defect measures the arm as it is.
+
 ## Constraints
 
 ## Auto-mode assumptions
