@@ -2,8 +2,6 @@
 
 `plan-edits-before-gate` · Task · enhancement, heddle, stencil, claude · running · Darn-Write
 
-Depends on: [`batching-in-claude-local`](design-batching-in-claude-local.md)
-
 ## Seen (orch, 2026-11-01)
 
 The five heaviest Webster forks of the three latest tapestry runs worked in small steps: a few edits, a gate run, the next failure read, a few edits more, though each fork's card already names what to change.
