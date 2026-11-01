@@ -28,6 +28,12 @@ A fetch that writes remote-tracking refs waits its turn under a lock, as fabric'
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-01): A repository-wide remote-refs lock, not the push lock
+
+Decision: The new lym-remote-refs.lock in the common git dir (RemoteRefsLockFileName) is the settled way: every lym fetch and the rewind check's ls-remote take it, and the per-checkout push locks stay as they are. This replaces the entry's wording that the fetch takes the push lock.
+
+Rationale: The push locks are per checkout, so they do not order two worktrees of one repository, and PushCoalesced holds its lock across a loop that fetches, so reusing it would deadlock in-process; the reviewer checked both against the code.
+
 ## Constraints
 
 ## Auto-mode assumptions
