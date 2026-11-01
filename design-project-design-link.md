@@ -1,6 +1,6 @@
 # A project slug on the board links to its design file
 
-`project-design-link` · Task · enhancement, board · running · Darn-Write
+`project-design-link` · Task · enhancement, board · running · Drift-Verify
 
 ## Seen (operator, 2026-11-01)
 
