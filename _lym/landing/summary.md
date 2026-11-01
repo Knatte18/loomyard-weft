@@ -12,8 +12,8 @@ That matters most on a machine whose virus scanner holds each new binary for sec
 - **Every test file.**
   The tier term is gone from every test file's `//go:build` line; platform terms such as `!windows` stay.
   Every `Test`, `Benchmark` and `Fuzz` function now opens with `tiergate.Require(t, N)`, where N is its old tag's tier.
-  A one-off Go program made this change over 1632 files and was not committed.
-  The 13 `!tier1` `TestMain` files are removed, since each of those packages keeps its tier1 `TestMain`, now untagged.
+  A one-off Go program made this change over the module's test files and was not committed.
+  The `!tier1` `TestMain` files are removed, since each of those packages keeps its tier1 `TestMain`, now untagged.
 - **`tmuxkit`.**
   It reads whether tests may start tmux servers from the selection (tier2 or tier3) instead of the `allow_tmux.go` tag file.
 - **Static readers of a file's tier.**
@@ -34,14 +34,14 @@ That matters most on a machine whose virus scanner holds each new binary for sec
   The `test-tier-unstated` way forward now asks for the file's tier, not its `//go:build` line.
   The plan spec says the same, and adds that a card's `Verify:` line runs only the tier0 tests it names.
 - **Docs.**
-  `PATTERN-test-speed` (its `PATTERN.md` line and background file), `PATTERN-test-isolation` and `docs/benchmarks/running-tests.md` now describe the run-time selector.
+  `PATTERN-test-speed` (its `PATTERN.md` line and background file), `PATTERN-test-isolation`, `crucible/` and `docs/benchmarks/running-tests.md` now describe the run-time selector.
 
 ## Design decisions
 
 - **The hub's `gate.yaml` changes outside this diff, in two steps.**
   The orch has set `LYM_TEST_TIER` (0 to 3) in each tier's `env` and kept the commands' `-tags tierN`; the main branch ignores both the variable and the tags.
   After landing, the orch drops `-tags` from the commands and the per-tag `go vet` calls; only then does one binary per package take effect on the build cache.
-- **No build-tag fallback in the selector**, by parent decision.
+- **No build-tag fallback in the selector.**
   An unset variable selects tier0, so a plain `go test` of a package runs its offline tests.
 - **Support files are not scanned by the tier0 purity guard.**
   A support file holds no test function, such as `TestMain` and helpers.
@@ -51,19 +51,33 @@ That matters most on a machine whose virus scanner holds each new binary for sec
 - **`cmd/testtiming` names `LYM_TEST_TIER` in a constant of its own.**
   A production package may not import a test kit, so it cannot use `tiergate.EnvVar`.
 - **Left as they are:**
-  - `crucible/`'s smoke commands, which still select a tier with `-tags`; under the selector those runs execute tier0 only.
   - The plan checks that read `-tags` in a `Verify:` line (`verify-module-wide`).
   - The gate's `--card` vet step, which follows tags generically for any hub.
-- **Known costs, as the record names them.**
+- **Known costs.**
   - Tier3 dependencies such as `llmkit` link into every binary of their package.
   - Binaries are larger.
   - Each tier's run of an unchanged binary misses the Go test cache once, because the test cache keys on `LYM_TEST_TIER`.
 
+## To check by hand
+
+- The 6 extra tier0 passes below that no named test accounts for.
+- The mechanical rewrite is not meant to be read file by file; the per-tier counts below are its evidence.
+  Read `tiergate`, `impactset/guards.go`, the `cmd/lym` guards and `tmuxkit` instead.
+
 ## Verification
 
-`lym gate test --gate darn-write` over the diff passes:
-- tier0: 22521 passed, 1043 skipped;
-- tier1: 3790 passed, 3990 skipped;
-- tier2: 268 passed, 4852 skipped.
+`lym gate test --upto 2 ./...` passes on the branch and on main, over the same module-wide target:
 
-The skips are the other tiers' tests, which the selector skips.
+| tier | main passed | main skipped | branch passed | branch skipped |
+| --- | --- | --- | --- | --- |
+| tier0 | 22502 | 1 | 22547 | 1043 |
+| tier1 | 3790 | 0 | 3790 | 3994 |
+| tier2 | 268 | 0 | 268 | 4856 |
+
+The branch's skips are the other tiers' tests, which the selector skips; main's binaries hold one tier each, so they skip almost nothing.
+Tier1 and tier2 pass counts are equal.
+Tier0 passes 45 more on the branch:
+- 10 fewer from the retired `TestIsTierTagged_RecognizesKnownTagsList` and its nine subtests;
+- 23 more from the new `tiergate` tests and `TestTierSelection`, counted with their subtests;
+- 26 more from guard and selector tests added alongside, counted with their subtests;
+- 6 more that no named test accounts for. A static check found every `Require` tier equal to the tier its file's old tag gave it, so these 6 are not a test moved between tiers.
