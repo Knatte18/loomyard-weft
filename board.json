@@ -773,6 +773,26 @@
       "body": "## Seen (orch, 2026-11-01)\n\nThe darn writer of `gate-one-binary-per-package` reached about 274k tokens of context doing a change across about 1650 test files alone.\nThe operator wanted it to hand per-package fixes to cheaper Sonnet subagents, but `claudeengine` denies the Agent tool in every non-fork run by a PreToolUse hook (`steerAgentDeny`, `noticeAgentDeny` in `settings.go`), on the reasoning that all work must stay visible in the run's own pane; `Spec.AllowAgentTool` exists but no darn run sets it.\n\n## Idea (operator, 2026-11-01)\n\n- Subagents are visible enough: Claude Code shows them in the session's own pane, and lym already reads fork transcripts under the session's `subagents` directory for activity and usage limits.\n  What hides an agent's work is a headless `claude -p` launch, not an in-process subagent.\n- A darn writer may use the Agent tool to hand batches of per-package work to Sonnet subagents, so a wide change does not run every fix through one large Opus context.\n- The deny and its system-prompt notice change to match: the darn writer gets the Agent tool, with the stencil telling it when to use Sonnet subagents (batches of packages, each owning its packages, launched in one message, with the gate rule and its timeout) and when to do the work itself.\n- Whether other roles get the same allowance, and whether the hook's visibility reasoning still holds anywhere, is weighed in the same task.\n",
       "created": "2026-11-01T17:39:20Z",
       "revised": "2026-11-01T17:42:31Z"
+    },
+    {
+      "id": 983,
+      "handle": "E6",
+      "slug": "plan-spec-split",
+      "title": "Shorten the plan spec and split it into sub-files read by need",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom",
+        "stencil",
+        "webster"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "loom-plan-spec.md is 112 KB, half of it a catalogue of validation checks; cut it down and split it so each role reads only what it uses",
+      "body": "## Seen (orch, 2026-11-01)\n\n`contracts/specs/loom-plan-spec.md` is 112 KB, about 28k tokens, so no agent can read it whole and every reader slices it.\nIts \"Validation checks\" section alone is about 54 KB, half the file: a catalogue of every check `internal/planparser` runs.\nThe next largest sections are \"Plan: handles\", \"The shape classifier\", \"Card fields and order\", \"verify model\" and \"Card types\", each 4 to 7 KB.\nThe Plan writer, Plan-Review, Code-Review and Webster's fixers all point at this one file.\n\n## Idea (operator, 2026-11-01)\n\n- Shorten the spec: cut what restates code, history (\"Batch is gone\"), rationale a reader does not act on, and anything the gate already reports with its fix.\n- Split it into sub-files by reader and by need, so each role reads only the parts it uses, for example the card format a writer needs, the validation-check catalogue read only when a check refuses, and the joined-plan and part rules.\n- The validation-check catalogue in particular shrinks or moves out, since `lym loom validate-plan` names each failing check; a reader needs a check's entry only when it fails.\n- Every stencil, rubric and Go reference to the spec (`specs.go`, `planparser`, `websterengine`, the loom rubrics) follows the new files.\n",
+      "created": "2026-11-01T18:06:48Z",
+      "revised": "2026-11-01T18:06:48Z"
     }
   ],
   "prime_owner": "neve",
