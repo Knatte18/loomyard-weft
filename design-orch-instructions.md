@@ -18,4 +18,4 @@ Rules meant for every orch sat in the loomyard hub's rules, and loomyard-only ru
 ## Bounds
 
 The members change different packages and run as separate tasks; this project only groups them.
-Once the heddle target and the role have landed, the orch moves the remaining loomyard-only orch rules into heddle through `lym orch rules`; that move is no task.
+The loomyard hub's rules stand in heddle's `orch-rules` entry, carried over from `_lym/orch/rules.md` with `lym orch rules` once the heddle target landed (orch, 2026-11-01); once the role has landed, the orch drops from that entry every rule the role now states, so only loomyard-only rules remain.
