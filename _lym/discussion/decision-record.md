@@ -58,6 +58,12 @@ Decision: Superseding the no-subagents decision: the writer's session does offer
 
 Rationale: The operator asked for Sonnet subagents; the earlier decision rested on the writer's belief that it had no Agent tool, which its transcript contradicts.
 
+### Added after Discussion (parent, 2026-11-01): No subagents after all
+
+Decision: Superseding the Sonnet-subagent decision: lym's claudeengine denies the Agent tool in this session by a PreToolUse hook and says so in the system prompt; the tool's presence in the tool list does not make it usable. The writer fixes failing packages itself, batched per gate report.
+
+Rationale: The orch misread the tool list; the writer's reading of its system prompt was right.
+
 ## Constraints
 
 ## Auto-mode assumptions
