@@ -70,6 +70,12 @@ Decision: The change must not leave any test skipped in every tier. Before Descr
 
 Rationale: A wrong Require call skips a test silently and leaves the gate green; the counts catch that, and they make the review of a 1650-file mechanical diff cheap.
 
+### Added after Discussion (parent, 2026-11-01): F8: main's per-tier counts beside the branch's
+
+Decision: Take F8. The fixer adds main's passed counts for tier0, tier1 and tier2 to the Verification section of _lym/landing/summary.md beside the branch's, over the same targets, and names and explains each difference. Main's counts come from one lym gate test --upto 2 run over the whole module in the prime worktree, which is on main (-C /home/knatte/Code/loomyard-LYMHUB/loomyard with explicit target ./...), and the branch's from the same call with ./... in the task worktree, so both cover the same targets; the prime run only reads and edits nothing there.
+
+Rationale: The no-silent-test decision asks for the equality, and only both counts over the same targets show it.
+
 ## Constraints
 
 ## Auto-mode assumptions
