@@ -186,6 +186,14 @@ Rationale: Parent, 2026-11-01: the driver read layers.go and found the empty-map
 
 None.
 
+<!-- lym:carry-over Discussion-Review -->
+- Discussion-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/discussion/round-2-review.md; fixer report: _lym/reviews/discussion/round-2-fixer-report.md.
+  - mistyped-buttons-group-fails-config-loads (class design, severity MEDIUM, open in rounds 1, 2)
+  - nonzero-exit-opens-view-mode (class design, severity MEDIUM, open in rounds 1, 2)
+  - task-command-anchor-run-dir-not-in-auto-assumptions (class consistency, severity MEDIUM, open in rounds 2)
+<!-- /lym:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - D1: a booted or attached session shows three status lines; line 2 has no `follow` button and keeps the check mark and clock; line 3 starts with `follow`, whose click still toggles the follow state; after an older binary re-pins `status-format[1]`, the newest binary's next reed op restores it.
