@@ -46,19 +46,20 @@ The entries under no project.
 
 Concrete and claimable; only a task can run.
 
-##### Ready (0)
+##### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Board renders root as project P0 with its own file, last in the README**<br>• Every project heading alike; root becomes P0 with project-root.md, and the README keeps every table | [`board-root-p0`](design-board-root-p0.md) | darn |  | 8m<br>8m | board |
 
-##### Draft (3)
+##### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Board renders root as project P0 with its own file, last in the README**<br>• Every project heading alike; root becomes P0 with project-root.md, and the README keeps every table | [`board-root-p0`](design-board-root-p0.md) | darn |  | 8m<br>8m | board |
 | T3 | `draft` **One test binary per package, the tier chosen at run time**<br>• LYM_TEST_TIER selects the tier instead of build tags, taking a cold gate run from 532 test binaries to 182 | [`gate-one-binary-per-package`](design-gate-one-binary-per-package.md) | tapestry |  | 2h<br>2h | gate, testkit, pattern |
 | T5 | `draft` **Study: Parts-Write and Parts-Plan-Write against Plan-Write**<br>• Write the plans of two landed runs both ways and compare cost, time, gate pass and one Plan-Review round<br>• `profile: docs` | [`plan-split-bench`](design-plan-split-bench.md) | darn |  | 2h<br>2h | loom |
 
