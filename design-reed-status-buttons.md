@@ -1,6 +1,6 @@
 # Configurable action buttons on the reed status bar
 
-`reed-status-buttons` · Task · feature, reed, config, batten · blocked · Parent-Align
+`reed-status-buttons` · Task · feature, reed, config, batten · running · Parent-Align
 
 ## Seen
 
