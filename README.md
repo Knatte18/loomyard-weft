@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-01 10:17 UTC; every age below is as of then.
+Rendered 2026-11-01 10:18 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **warp-visibility: heddle, a Bolt database lym renders its instruction files from, leaving no trace in warp**<br>• LoomYard puts no CLAUDE.md in a repository; lym renders its own git-excluded instruction files into each worktree from _board/heddle.json | [`warp-visibility`](design-warp-visibility.md) | tapestry | Code-Bouncer | neve | 3w<br>4h | fabric, board, config, claude, codex, cwd, process, stencil, shuttle |
+| T2 | **warp-visibility: heddle, a Bolt database lym renders its instruction files from, leaving no trace in warp**<br>• LoomYard puts no CLAUDE.md in a repository; lym renders its own git-excluded instruction files into each worktree from _board/heddle.json | [`warp-visibility`](design-warp-visibility.md) | tapestry | Code-Burler-Review | neve | 3w<br>4h | fabric, board, config, claude, codex, cwd, process, stencil, shuttle |
 
 #### Ready (0)
 
