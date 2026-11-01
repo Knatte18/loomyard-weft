@@ -818,6 +818,25 @@
       "body": "## Idea (operator, 2026-11-01)\n\nMeasure the effect of project `agent-turns` as a whole, once its members have landed and runs have gone through with them, rather than one member at a time.\n\n## Measure\n\n- Baseline: the numbers in `agent-turns`' body (`tools/tokencount` and `tools/forkaudit` on `warp-visibility`, `interactive-recipe` and `run-verbs-shared`), and `docs/research/review-turn-audit-2026-11-01` for the review roles.\n- After: the darn and tapestry runs that landed after the members, as many as there are; darns weigh most, since they run most.\n- Darn writers: turns, calls per turn, shell edits against Edit-tool edits and gate-loop turns, with the scripts of `docs/research/turn-audit-2026-10-28`.\n- Webster forks: turns per card, calls per turn and peak context, with `tools/forkaudit`; cost with `tools/tokencount`.\n- Review roles: calls per turn, fork wake-up turns and removable turns, with the scripts of `docs/research/review-turn-audit-2026-11-01`.\n- Refused turns: the baseline is 6 turns refused by lym's guards across the five heaviest forks; count them again, and count `awk ... \u003e file \u0026\u0026 mv` edits, the route the shell-edit guard leaves open.\n- The report names which members' behaviour shows in the transcripts and states the sample size beside each number.\n",
       "created": "2026-11-01T15:05:52Z",
       "revised": "2026-11-01T16:16:54Z"
+    },
+    {
+      "id": 978,
+      "handle": "B3",
+      "slug": "false-rewind-after-finalize",
+      "title": "A batten pass after a landed child reports a false rewind against origin",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "batten",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Origin equals local, yet batten stops asking which history to keep",
+      "body": "## Seen (orch, 2026-11-01)\n\nTwice today a batten pass after a done child stopped with \"branch \u003cslug\u003e is rewound against origin\", first `heddle-orch-target`, then `batching-in-claude-local`.\nBoth times origin's task branch equalled the local one (`batching-in-claude-local` at 792a340a), and the commit the stop called origin's rewound head (31119e4e) was an ancestor of it.\nThe dropped list held commits of main that Finalize had merged into the task branch.\nThe orch re-ran `lym batten run \u003cslug\u003e` from the prime without touching git, and both runs landed.\n\n## Idea\n\nThe rewind check reads origin's head from a stale ref, likely one read before the push Finalize made, or during a concurrent fetch of the same ref.\nIt re-reads origin's head after a fresh fetch, and calls a branch rewound only when the local head is not an ancestor of origin's head.\nIt may share its cause with `reconcile-fetch-race`; check that fix first.\n",
+      "created": "2026-11-01T16:36:44Z",
+      "revised": "2026-11-01T16:36:44Z"
     }
   ],
   "prime_owner": "neve",
