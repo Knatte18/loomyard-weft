@@ -1,0 +1,2714 @@
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/launched/t2-after-leaf-tier0.txt b/docs/research/gate-fewer-binaries-trial-2026-11-01/launched/t2-after-leaf-tier0.txt
+new file mode 100644
+index 00000000..783d851b
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/launched/t2-after-leaf-tier0.txt
+@@ -0,0 +1,2 @@
++github.com/Knatte18/loomyard/internal/loomcli
++github.com/Knatte18/loomyard/internal/pairteardown
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/launched/t2-after-leaf-tier1.txt b/docs/research/gate-fewer-binaries-trial-2026-11-01/launched/t2-after-leaf-tier1.txt
+new file mode 100644
+index 00000000..f316ea70
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/launched/t2-after-leaf-tier1.txt
+@@ -0,0 +1,2 @@
++github.com/Knatte18/loomyard/internal/loomcli
++github.com/Knatte18/loomyard/internal/webstercli
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/launched/t2-after-leaf-tier2.txt b/docs/research/gate-fewer-binaries-trial-2026-11-01/launched/t2-after-leaf-tier2.txt
+new file mode 100644
+index 00000000..68de951a
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/launched/t2-after-leaf-tier2.txt
+@@ -0,0 +1,2 @@
++github.com/Knatte18/loomyard/internal/loomcli
++github.com/Knatte18/loomyard/internal/reedcli
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/launched/t2-after-mid-tier0.txt b/docs/research/gate-fewer-binaries-trial-2026-11-01/launched/t2-after-mid-tier0.txt
+new file mode 100644
+index 00000000..e8fd5eed
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/launched/t2-after-mid-tier0.txt
+@@ -0,0 +1,8 @@
++github.com/Knatte18/loomyard/internal/creelcli
++github.com/Knatte18/loomyard/internal/fabricengine
++github.com/Knatte18/loomyard/internal/loomcli
++github.com/Knatte18/loomyard/internal/orchcli
++github.com/Knatte18/loomyard/internal/pairteardown
++github.com/Knatte18/loomyard/internal/reedcli
++github.com/Knatte18/loomyard/internal/treadleengine
++github.com/Knatte18/loomyard/internal/webstercli
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/launched/t2-after-mid-tier1.txt b/docs/research/gate-fewer-binaries-trial-2026-11-01/launched/t2-after-mid-tier1.txt
+new file mode 100644
+index 00000000..e8fd5eed
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/launched/t2-after-mid-tier1.txt
+@@ -0,0 +1,8 @@
++github.com/Knatte18/loomyard/internal/creelcli
++github.com/Knatte18/loomyard/internal/fabricengine
++github.com/Knatte18/loomyard/internal/loomcli
++github.com/Knatte18/loomyard/internal/orchcli
++github.com/Knatte18/loomyard/internal/pairteardown
++github.com/Knatte18/loomyard/internal/reedcli
++github.com/Knatte18/loomyard/internal/treadleengine
++github.com/Knatte18/loomyard/internal/webstercli
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/launched/t2-after-mid-tier2.txt b/docs/research/gate-fewer-binaries-trial-2026-11-01/launched/t2-after-mid-tier2.txt
+new file mode 100644
+index 00000000..e8fd5eed
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/launched/t2-after-mid-tier2.txt
+@@ -0,0 +1,8 @@
++github.com/Knatte18/loomyard/internal/creelcli
++github.com/Knatte18/loomyard/internal/fabricengine
++github.com/Knatte18/loomyard/internal/loomcli
++github.com/Knatte18/loomyard/internal/orchcli
++github.com/Knatte18/loomyard/internal/pairteardown
++github.com/Knatte18/loomyard/internal/reedcli
++github.com/Knatte18/loomyard/internal/treadleengine
++github.com/Knatte18/loomyard/internal/webstercli
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/launched/t2-after-universal-tier0.txt b/docs/research/gate-fewer-binaries-trial-2026-11-01/launched/t2-after-universal-tier0.txt
+new file mode 100644
+index 00000000..258f8ac0
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/launched/t2-after-universal-tier0.txt
+@@ -0,0 +1,10 @@
++github.com/Knatte18/loomyard/internal/creelcli
++github.com/Knatte18/loomyard/internal/fabricengine
++github.com/Knatte18/loomyard/internal/loomcli
++github.com/Knatte18/loomyard/internal/orchcli
++github.com/Knatte18/loomyard/internal/pairteardown
++github.com/Knatte18/loomyard/internal/reedcli
++github.com/Knatte18/loomyard/internal/reedengine
++github.com/Knatte18/loomyard/internal/standalonegeom
++github.com/Knatte18/loomyard/internal/treadleengine
++github.com/Knatte18/loomyard/internal/webstercli
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/launched/t2-after-universal-tier1.txt b/docs/research/gate-fewer-binaries-trial-2026-11-01/launched/t2-after-universal-tier1.txt
+new file mode 100644
+index 00000000..258f8ac0
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/launched/t2-after-universal-tier1.txt
+@@ -0,0 +1,10 @@
++github.com/Knatte18/loomyard/internal/creelcli
++github.com/Knatte18/loomyard/internal/fabricengine
++github.com/Knatte18/loomyard/internal/loomcli
++github.com/Knatte18/loomyard/internal/orchcli
++github.com/Knatte18/loomyard/internal/pairteardown
++github.com/Knatte18/loomyard/internal/reedcli
++github.com/Knatte18/loomyard/internal/reedengine
++github.com/Knatte18/loomyard/internal/standalonegeom
++github.com/Knatte18/loomyard/internal/treadleengine
++github.com/Knatte18/loomyard/internal/webstercli
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/launched/t2-after-universal-tier2.txt b/docs/research/gate-fewer-binaries-trial-2026-11-01/launched/t2-after-universal-tier2.txt
+new file mode 100644
+index 00000000..258f8ac0
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/launched/t2-after-universal-tier2.txt
+@@ -0,0 +1,10 @@
++github.com/Knatte18/loomyard/internal/creelcli
++github.com/Knatte18/loomyard/internal/fabricengine
++github.com/Knatte18/loomyard/internal/loomcli
++github.com/Knatte18/loomyard/internal/orchcli
++github.com/Knatte18/loomyard/internal/pairteardown
++github.com/Knatte18/loomyard/internal/reedcli
++github.com/Knatte18/loomyard/internal/reedengine
++github.com/Knatte18/loomyard/internal/standalonegeom
++github.com/Knatte18/loomyard/internal/treadleengine
++github.com/Knatte18/loomyard/internal/webstercli
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/report.md b/docs/research/gate-fewer-binaries-trial-2026-11-01/report.md
+new file mode 100644
+index 00000000..12aa201b
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/report.md
+@@ -0,0 +1,167 @@
++# Gate trials: fewer new test binaries per run, 2026-11-01
++
++## Verdict
++
++One test binary per package for all tiers, the tier chosen at run time, is the cut worth making permanent.
++On the module's package graph it takes a cold run from 532 test binaries to 182 and a change of mean fan-in from about 101 new binaries to about 35, and on a ten-package sample every test that passed before still passed.
++At about 10 s of scanner hold per new binary on OSL-1046, that is about 660 s saved per mean change and about 3600 s per change to a universally imported package.
++Cutting the five universal imports out of the common `TestMain` path saves only when one of the five changes (about a third of the binaries for `internal/agentname`, nothing for any other change), leaves every tier2 binary untouched, and breaks one test whose contract it cannot keep.
++Merging small leaf test packages was not trialled: the entry made it conditional on trials 1 and 2 falling short, and trial 2 does not.
++The OSL-1046 hold is the Neve count times about 10 s; the operator's one check run there is described under Check on OSL-1046.
++
++## Method
++
++Every number comes from `lym gate test` records on Neve, from this task's worktree, with the hub's gate config (`go` scoper, `-trimpath -p=4`).
++A test binary counts as new when its package is listed in a tier record's `launches`, which is a package the Go test cache missed.
++Each run is one call per tier (`--tier 0`, `--tier 1`, `--tier 2`) over the same targets, by `scripts/gate-run.sh` (trial 1's first runs used one `--upto 2` call, the same tiers), which appends one row per tier to the trial's `results.tsv`: label, tier, launches, discovered, passed, failed, skipped, wall seconds, launch seconds.
++Per trial the cap was three gate runs on a warm tree before the change and three after, one run per perturbed package.
++A run perturbs one package with `scripts/perturb.sh`, which adds a file whose `init` stores a fresh constant in a package variable.
++An unused variable does not work: the linker drops it and most binaries stay identical (the first attempt, 54 of 182 tier0 binaries, showed it).
++Each perturbation value is used once, so no run is answered from an earlier run's cache.
++The three perturbed packages are:
++
++- `internal/agentname`, imported by every test binary (universal);
++- `internal/hubforge`, imported by 34 of 181 tier1 binaries (mid);
++- a package with few importers (leaf): `internal/boardcli` in trial 1, `internal/arbiterstop` in trial 2.
++
++A run with no perturbation (none) gives the floor of binaries that launch on an unchanged tree.
++Those are mostly tests that read the prebuilt `lym`, which changes with any tree change, and so miss the test cache although their test binary is the same file the scanner has seen.
++The record cannot tell those from a new link, so a launch count is an upper bound on new binaries; the floor is subtracted below where it matters.
++The trial changes were never committed; their patches, the scripts and the tables are beside this report.
++
++## Trial 1: the five universal imports out of `TestMain`
++
++### Change
++
++`tmuxkit.Main` imports `lymtemp` (which imports `lock`), `proc` and `agentname`.
++The trial compiles `tmuxkit.go` only under `tier2` or `tier3` and adds `main_light.go`, which supplies `Main` and `ServerEnviron` for tier0 and tier1: a private run directory in the `<system temp>/lym-<uid>/r<random>` layout, the temp and git-ceiling variables, no sweep, no socket check, no leftover scan.
++The kit's own tier0 tests need the full kit, so three of its test files move to tier2.
++Tier2 binaries keep the full kit, because their tests start tmux servers.
++Patch: `trial1/trial1.patch`.
++
++### Fan-in of the five
++
++Test binaries importing each package, tier0, tier1, tier2, from the package graph (`tables/fanin-tier<N>-before.tsv` and `-trial1.tsv`):
++
++| Package | Before | After |
++|---|---|---|
++| `internal/agentname` | 182, 181, 181 | 88, 85, 181 |
++| `internal/lock` | 182, 181, 181 | 114, 110, 181 |
++| `internal/lymtemp` | 182, 181, 181 | 99, 96, 181 |
++| `internal/proc` | 182, 181, 181 | 136, 133, 181 |
++
++The production code of the other packages still imports each of the four, so the cut lowers the fan-in without removing it.
++`internal/testkit/tmuxkit` itself stays imported by every binary, as before.
++
++### Measured
++
++New binaries per tier (tier0, tier1, tier2) and their sum, from `trial1/results.tsv`:
++
++| Perturbed | Before | After | Saved | OSL-1046 hold saved |
++|---|---|---|---|---|
++| none (floor) | 13, 2, 0 = 15 | 7, 3, 0 = 10 | 5 | about 50 s |
++| `internal/agentname` | 182, 181, 181 = 544 | 91, 88, 181 = 360 | 184 | about 1840 s |
++| `internal/hubforge` | 14, 34, 5 = 53 | 14, 36, 5 = 55 | -2 | none |
++| leaf (`internal/boardcli`) | 13, 14, 4 = 31 | 13, 15, 4 = 32 | -1 | none |
++
++The after counts for `internal/agentname` match the graph (88 and 85 plus the floor).
++
++### Test results
++
++The three tiers discover 25737 tests before and after; 25 tier0 tests of `tmuxkit` move to tier2 (tier0 21803 to 21778, tier2 266 to 291).
++Results are not the same:
++
++- `TestRunDirectory_HoldsEveryTempFileAndIsGoneAfterTheRun` in `internal/gitkit` (tier1) fails.
++  It requires that the temp files of the test process land in the one run directory `lymtemp` made for it.
++  The light `Main` makes its own directory without `lymtemp`, so `lymtemp.Dir` in the test process makes a second one.
++  Sharing the directory needs `lymtemp`, which imports `lock`, so the contract and the cut conflict.
++- A first attempt that created the directory with `os.MkdirTemp("", ...)` also failed `TestBareTemp_NoCreationInTheBareSystemTempDirectory` (`PATTERN-lym-temp-root`), and a second that used a flat sub-path failed three tier1 tests that read the run directory's place (`t1-attempt1-*` and `t1-attempt2-*` rows).
++
++The light path also drops the socket check and the leftover-process scan that `tmuxkit.Main` runs at the end of every tier0 and tier1 package.
++Those are what `PATTERN-test-speed` names as the end-of-package check for tier1; a permanent cut would need them back without the five imports.
++
++### Reading
++
++The cut saves only when one of the five changes, which is rare, and then about a third of the binaries.
++It does nothing for tier2, and it costs the end-of-package check and one contract test as built.
++
++## Trial 2: one test binary per package, the tier chosen at run time
++
++### Change
++
++The sample is the ten packages with the most tiers among test files, ties broken by test file count (`trial2/sample.txt`): `internal/reedcli`, `webstercli`, `creelcli`, `loomcli`, `orchcli`, `pairteardown`, `treadleengine`, `standalonegeom`, `fabricengine` and `reedengine`.
++The change has three parts:
++
++- `internal/testkit/tiergate` (new, stdlib only) reads `LYM_TEST_TIER`; `Require(t, tier)` skips a test whose tier is not the running one.
++- `tmuxkit` reads its tmux-server switch from `tiergate` at run time instead of from `allow_tmux.go`'s `tier2 || tier3` tag, since a tag-dependent file would make the tier2 binary differ from the others.
++- `scripts/untag.sh` drops the `tierN` term from every `//go:build` line of the sample's test files and opens each `Test` function with `tiergate.Require(t, N)` for its file's tier.
++  The three packages with a `!tier1` `TestMain` beside a tier1 one keep the tier1 one.
++
++The hand-written part is `trial2/trial2-handwritten.patch`; `untag.sh` regenerates the rest.
++`scripts/gate-run.sh` sets `LYM_TEST_TIER` to the tier of each call, since the hub's `gate.yaml` passes only tags.
++Compiled sets are identical across tiers: no non-test file of the sample's dependencies carries a tier tag once `allow_tmux.go` is runtime, so the three tier calls link the same binary per package.
++
++### Measured on the sample
++
++New binaries per tier and their sum; for the after rows the distinct column counts each package once across tiers, since the three tier calls run the same binary (`launched/` holds the package lists), from `trial2/results.tsv`:
++
++| Perturbed | Before | After, summed | After, distinct | Saved | OSL-1046 hold saved |
++|---|---|---|---|---|---|
++| none (floor) | 6, 1, 3 = 10 | 2, 0, 0 = 2 | 2 | 8 | about 80 s |
++| `internal/agentname` | 10, 10, 10 = 30 | 10, 10, 10 = 30 | 10 | 20 | about 200 s |
++| `internal/hubforge` | 6, 6, 5 = 17 | 8, 8, 8 = 24 | 8 | 9 | about 90 s |
++| leaf (`internal/arbiterstop`) | 5, 2, 2 = 9 | 2, 2, 2 = 6 | 4 | 5 | about 50 s |
++
++The summed after figure is what the gate records: the test cache keys on `LYM_TEST_TIER`, so each tier call reruns the binary and counts it as a launch although the file is the same one.
++A scanner that holds a file by content hash holds it once; the hold saved above assumes that, and the OSL-1046 check below tests it.
++The first run after applying the change linked all ten packages once (10 in each tier call), as any change does.
++
++### Scaling to the whole module
++
++The package graph gives the binary count and fan-in of the one-binary layout without building it: `scripts/fanin-union.sh` unions the dependencies of a package's test binary over tiers 0 to 3, as one untagged binary links them.
++Over the sample it predicts 10 for `internal/agentname` and 8 for `internal/hubforge`, which the runs confirm (leaf: 1 predicted, 4 measured with the floor).
++Over the whole module (`tables/fanin-union-all.tsv`):
++
++| Measure | Before (tiers 0 to 2) | After |
++|---|---|---|
++| Test binaries on a cold tree | 532 | 182 |
++| Mean binaries a package change relinks | 101.3 (32.8, 35.3, 33.3) | 35.3 |
++| `internal/agentname` change | 544 | 182 |
++
++That is 350 fewer on a cold tree (about 3500 s on OSL-1046), about 66 fewer per mean change (about 660 s) and 362 fewer per universal change (about 3620 s).
++The after fan-in includes the dependencies of tier3 files, which now link into every binary.
++
++### Test results
++
++On the sample, passed tests per tier are 3813, 1930 and 256 before and after, with 0 failures; the selector skips 716, 775 and 1349 tests in tier0, tier1 and tier2 (`discovered` counts them).
++Not the same:
++
++- `TestLLMTier_OnlyLLMFilesReachAnLLM` and `TestTierPurity_UntaggedTestsSpawnNothing` in `cmd/lym` fail, since they read tier tags to find a file's tier (`trial2/guard-findings.txt`).
++  `TestTierTags_OneTagPerTestFile` asserts a tag on every test file and would fail too.
++- The tier tag no longer shows what a file may do, so the `tier0` rule "no spawn" holds by the runtime skip and review alone, not by a guard.
++
++### Costs of a permanent change
++
++- `PATTERN-test-speed` changes from disjoint tags to a run-time selector; the tag guards, `go vet` per tag and the gate's `tier` command must pass `LYM_TEST_TIER` (an `env` entry on each tier in `gate.yaml`).
++- Every Test function of about 180 packages needs the `Require` call.
++- Tier3 dependencies (`llmkit`) join every binary and raise its fan-in.
++- A binary is larger and its test cache entry per tier is lost when a test reads `LYM_TEST_TIER`, so each tier call reruns the binary.
++
++## Trial 3: merging small leaf packages
++
++Not trialled.
++Trial 2 takes the mean change from about 101 to about 35, and the entry made trial 3 conditional on both earlier trials falling short; the operator decides whether the remaining 182 binaries on a cold tree call for it.
++For scale only: 84 of the module's test packages hold three or fewer test files, an upper bound of 83 binaries saved on a cold tree, with each merge losing the per-package test cache.
++The one-binary-for-the-whole-module cut was not trialled, as the entry says.
++
++## Check on OSL-1046
++
++The Neve count of new binaries is the OSL-1046 count; the hold is that count times about 10 s.
++To confirm it, the operator runs `scripts/perturb.sh internal/agentname <value>` and then `scripts/gate-run.sh <label>` on OSL-1046 once on the baseline tree and once on the trial 2 tree, and compares the scanner hold of each run with the launches column times 10 s.
++
++## Limits
++
++- Each row is one run on one machine; the noise floor (15 and 10 binaries on an unchanged tree in trial 1, 10 and 2 in trial 2) is larger than the leaf and mid differences.
++- Trial 2 ran on a ten-package sample; the whole-module figures come from the package graph, validated against the sample.
++- The launch count includes tests that read the prebuilt `lym` and miss the test cache with an unchanged test binary.
++- Whether the scanner holds by content hash was not measured.
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/scripts/fanin-sample.sh b/docs/research/gate-fewer-binaries-trial-2026-11-01/scripts/fanin-sample.sh
+new file mode 100755
+index 00000000..bc84c8c4
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/scripts/fanin-sample.sh
+@@ -0,0 +1,20 @@
++#!/usr/bin/env bash
++# fanin-sample.sh <packages file>: prints "<fan-in>\t<package>" over the test binaries of the listed packages
++# (module-relative directories, one per line) for tiers 0 to 2 together, sorted descending.
++# Fan-in counts a package once per (sample package, tier) test binary that imports it.
++set -euo pipefail
++list=${1:?file of module-relative package directories}
++module=$(go list -m)
++for tier in 0 1 2; do
++  go list -tags "tier${tier}" -test -f '{{.ImportPath}}|{{join .Deps " "}}' ./... |
++  awk -F'|' -v mod="$module" -v list="$list" '
++    BEGIN { while ((getline line < list) > 0) want[mod "/" line ".test"] = 1 }
++    ($1 in want) {
++      n = split($2, deps, " ")
++      delete seen
++      for (i = 1; i <= n; i++) {
++        d = deps[i]; sub(/ \[.*$/, "", d)
++        if (index(d, mod) == 1 && !(d in seen)) { seen[d] = 1; print d }
++      }
++    }'
++done | sort | uniq -c | awk '{print $1 "\t" $2}' | sort -t$'\t' -k1,1nr -k2,2
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/scripts/fanin-union.sh b/docs/research/gate-fewer-binaries-trial-2026-11-01/scripts/fanin-union.sh
+new file mode 100755
+index 00000000..cd0db613
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/scripts/fanin-union.sh
+@@ -0,0 +1,25 @@
++#!/usr/bin/env bash
++# fanin-union.sh [packages file]: prints "<fan-in>\t<package>" where fan-in is the number of test binaries that import
++# the package when every tier's test files compile into one binary per package (tiers 0 to 3 unioned, the
++# one-binary-per-package layout). With a packages file (module-relative directories, one per line) only those
++# packages' binaries count; without it all do. A first line "#binaries\t<n>" gives the binary count.
++set -euo pipefail
++list=${1:-}
++module=$(go list -m)
++for tier in 0 1 2 3; do
++  go list -tags "tier${tier}" -test -f '{{.ImportPath}}|{{join .Deps " "}}' ./... |
++  awk -F'|' -v mod="$module" -v list="$list" '
++    BEGIN { if (list != "") while ((getline line < list) > 0) want[mod "/" line ".test"] = 1 }
++    $1 ~ /\.test$/ && (list == "" || ($1 in want)) {
++      n = split($2, deps, " ")
++      print $1 "\t" $1
++      for (i = 1; i <= n; i++) {
++        d = deps[i]; sub(/ \[.*$/, "", d)
++        if (index(d, mod) == 1) print $1 "\t" d
++      }
++    }'
++done | sort -u | awk -F'\t' '
++  $1 == $2 { binaries++; next }
++  { fan[$2]++ }
++  END { printf "#binaries\t%d\n", binaries; for (d in fan) printf "%d\t%s\n", fan[d], d }' |
++  { read -r head; echo "$head"; sort -t$'\t' -k1,1nr -k2,2; }
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/scripts/fanin.sh b/docs/research/gate-fewer-binaries-trial-2026-11-01/scripts/fanin.sh
+new file mode 100755
+index 00000000..85e3704d
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/scripts/fanin.sh
+@@ -0,0 +1,24 @@
++#!/usr/bin/env bash
++# fanin.sh <tier>: prints "<fan-in>\t<package>" for every module package, sorted descending,
++# where fan-in is the number of test binaries the tier links that import the package.
++# A first line "#binaries\t<n>" gives the tier's test-binary count.
++# Reads the package graph only (go list); nothing is built or run.
++set -euo pipefail
++tier=${1:?tier number}
++module=$(go list -m)
++go list -tags "tier${tier}" -test -f '{{.ImportPath}}|{{join .Deps " "}}' ./... |
++awk -F'|' -v mod="$module" '
++  $1 ~ /\.test$/ {
++    binaries++
++    n = split($2, deps, " ")
++    delete seen
++    for (i = 1; i <= n; i++) {
++      d = deps[i]
++      sub(/ \[.*$/, "", d)
++      if (index(d, mod) == 1 && !(d in seen)) { seen[d] = 1; fan[d]++ }
++    }
++  }
++  END {
++    printf "#binaries\t%d\n", binaries
++    for (d in fan) printf "%d\t%s\n", fan[d], d
++  }' | { read -r head; echo "$head"; sort -t$'\t' -k1,1nr -k2,2; }
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/scripts/gate-run.sh b/docs/research/gate-fewer-binaries-trial-2026-11-01/scripts/gate-run.sh
+new file mode 100755
+index 00000000..24ef8c28
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/scripts/gate-run.sh
+@@ -0,0 +1,31 @@
++#!/usr/bin/env bash
++# gate-run.sh <label> [target...]: runs tier0, tier1 and tier2 of the gate once each, over the given targets
++# (default --all, the whole suite), and appends one TSV row per tier to $RESULTS:
++# label, tier, launches (test binaries new to the cache), discovered, passed, failed, skipped, wall_seconds, launch_seconds.
++# Each tier runs with LYM_TEST_TIER set to its number, the run-time tier selector trial 2 reads; trial 1 ignores it.
++# A tier's gate output replaces $here/last-gate-output-tier<N>.txt.
++# The packages each tier launched are listed in launched/<label>-tier<N>.txt beside the results.
++set -uo pipefail
++label=${1:?label}
++shift
++targets=("$@")
++[ ${#targets[@]} -gt 0 ] || targets=(--all)
++here=$(cd "$(dirname "$0")/.." && pwd)
++results=${RESULTS:-$here/results.tsv}
++runs=/home/knatte/Code/loomyard-LYMHUB/_bolt/.lym/gate/runs
++status=0
++for tier in 0 1 2; do
++  marker=$(mktemp -p .scratch marker.XXXXXX)
++  LYM_TEST_TIER=$tier lym gate test --wait --tier "$tier" "${targets[@]}" >"$here/last-gate-output-tier${tier}.txt" 2>&1 || status=1
++  record=$(find "$runs" -name "*-tier${tier}-*.json" -newer "$marker" | sort | while read -r candidate; do
++    [ "$(jq -r .worktree "$candidate")" = "$PWD" ] && echo "$candidate"
++  done | tail -1)
++  [ -n "$record" ] || { echo "no tier$tier record after $label" >&2; continue; }
++  jq -r --arg label "$label" --argjson tier "$tier" '
++    [$label, $tier, (.launches // [] | length), .discovered, .passed, .failed, .skipped,
++     (.wall_seconds * 10 | round / 10), ((.launches // []) | map(.launch_seconds) | add // 0 | . * 10 | round / 10)] | @tsv' \
++    "$record" >>"$results"
++  mkdir -p "$here/launched"
++  jq -r '.launches[]?.package' "$record" | sort >"$here/launched/${label}-tier${tier}.txt"
++done
++exit $status
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/scripts/perturb.sh b/docs/research/gate-fewer-binaries-trial-2026-11-01/scripts/perturb.sh
+new file mode 100755
+index 00000000..935ffdad
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/scripts/perturb.sh
+@@ -0,0 +1,25 @@
++#!/usr/bin/env bash
++# perturb.sh <package dir> <value>: adds <dir>/zz_benchperturb.go, whose init stores <value> in a package variable,
++# so the package's object code changes and every test binary that links the package is relinked.
++# (An unused variable would not do: the linker drops it and most binaries stay identical.)
++# perturb.sh --revert removes every such file.
++set -euo pipefail
++if [ "${1:-}" = "--revert" ]; then
++  git clean -fq -- '*zz_benchperturb.go'
++  exit 0
++fi
++dir=${1:?package dir}
++value=${2:?value}
++pkg=$(go list -f '{{.Name}}' "./$dir")
++cat >"$dir/zz_benchperturb.go" <<GO
++// zz_benchperturb.go changes the package for a gate-binary trial and is never committed.
++
++package $pkg
++
++// BenchPerturb is written by init so the linker keeps it.
++var BenchPerturb int
++
++func init() {
++	BenchPerturb = $value
++}
++GO
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/scripts/untag.sh b/docs/research/gate-fewer-binaries-trial-2026-11-01/scripts/untag.sh
+new file mode 100755
+index 00000000..6ac256cb
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/scripts/untag.sh
+@@ -0,0 +1,34 @@
++#!/usr/bin/env bash
++# untag.sh <package dir>...: makes each package's test files tier-agnostic for the one-binary-per-package trial.
++# The tierN term leaves every //go:build line (a line left with none is dropped), and each Test function of a file
++# that carried a tier tag opens with tiergate.Require(t, N) for that file's tier.
++# A package whose tier1 and non-tier1 TestMain files differ keeps the tier1 one, untagged.
++set -euo pipefail
++import='"github.com/Knatte18/loomyard/internal/testkit/tiergate"'
++for dir in "$@"; do
++  if [ -f "$dir/testmain_integration_test.go" ] && head -1 "$dir/testmain_test.go" | grep -q '^//go:build !tier1'; then
++    git rm -q "$dir/testmain_test.go"
++  fi
++  for file in "$dir"/*_test.go; do
++    [ -f "$file" ] || continue
++    first=$(head -1 "$file")
++    case "$first" in //go:build*) ;; *) continue ;; esac
++    expr=${first#//go:build }
++    tier=$(echo "$expr" | grep -o 'tier[0-3]' | head -1 | tr -d 'a-z')
++    [ -n "$tier" ] || continue
++    rest=$(echo "$expr" | sed -E 's/ && tier[0-3]//g; s/tier[0-3] && //g')
++    if echo "$rest" | grep -Eq '^tier[0-3]( \|\| tier[0-3])*$'; then
++      sed -i '1,2d' "$file"
++    else
++      sed -i "1s|.*|//go:build $rest|" "$file"
++    fi
++    if grep -Eq '^func Test[A-Za-z0-9_]*\(t \*testing\.T\) \{$' "$file"; then
++      sed -i -E "s/^(func Test[A-Za-z0-9_]*\(t \*testing\.T\) \{)\$/\1\n\ttiergate.Require(t, $tier)/" "$file"
++      if grep -q '^import ($' "$file"; then
++        sed -i "0,/^import (\$/s||import (\n\t$import|" "$file"
++      else
++        sed -i "0,/^package .*\$/s||&\n\nimport $import|" "$file"
++      fi
++    fi
++  done
++done
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/tables/fanin-sample-before.tsv b/docs/research/gate-fewer-binaries-trial-2026-11-01/tables/fanin-sample-before.tsv
+new file mode 100644
+index 00000000..bb2a454a
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/tables/fanin-sample-before.tsv
+@@ -0,0 +1,152 @@
++30	github.com/Knatte18/loomyard/internal/agentname
++30	github.com/Knatte18/loomyard/internal/buildinfo
++30	github.com/Knatte18/loomyard/internal/buildvcs
++30	github.com/Knatte18/loomyard/internal/configengine
++30	github.com/Knatte18/loomyard/internal/dotgit
++30	github.com/Knatte18/loomyard/internal/envsource
++30	github.com/Knatte18/loomyard/internal/fabricengine
++30	github.com/Knatte18/loomyard/internal/fslink
++30	github.com/Knatte18/loomyard/internal/fsx
++30	github.com/Knatte18/loomyard/internal/gitexec
++30	github.com/Knatte18/loomyard/internal/gitrepo
++30	github.com/Knatte18/loomyard/internal/lock
++30	github.com/Knatte18/loomyard/internal/logger
++30	github.com/Knatte18/loomyard/internal/lymcwd
++30	github.com/Knatte18/loomyard/internal/lymdirs
++30	github.com/Knatte18/loomyard/internal/lymtemp
++30	github.com/Knatte18/loomyard/internal/parentlock
++30	github.com/Knatte18/loomyard/internal/pauserecord
++30	github.com/Knatte18/loomyard/internal/proc
++30	github.com/Knatte18/loomyard/internal/runproc
++30	github.com/Knatte18/loomyard/internal/shedengine
++30	github.com/Knatte18/loomyard/internal/shedrun
++30	github.com/Knatte18/loomyard/internal/state
++30	github.com/Knatte18/loomyard/internal/stencil
++30	github.com/Knatte18/loomyard/internal/stencilstore
++30	github.com/Knatte18/loomyard/internal/testkit/tmuxkit
++30	github.com/Knatte18/loomyard/internal/toolfloor
++30	github.com/Knatte18/loomyard/internal/vscode
++30	github.com/Knatte18/loomyard/internal/weftname
++30	github.com/Knatte18/loomyard/internal/yamlengine
++28	github.com/Knatte18/loomyard/internal/fswatch
++28	github.com/Knatte18/loomyard/internal/reedengine
++28	github.com/Knatte18/loomyard/internal/reedengine/render
++28	github.com/Knatte18/loomyard/internal/segmentcolor
++28	github.com/Knatte18/loomyard/internal/shell
++27	github.com/Knatte18/loomyard/internal/gitkit
++25	github.com/Knatte18/loomyard/internal/editdirective
++25	github.com/Knatte18/loomyard/internal/modelspec
++25	github.com/Knatte18/loomyard/internal/parentdirective
++25	github.com/Knatte18/loomyard/internal/shuttleengine
++22	github.com/Knatte18/loomyard/internal/batcher
++22	github.com/Knatte18/loomyard/internal/burlerengine
++22	github.com/Knatte18/loomyard/internal/cardverify
++22	github.com/Knatte18/loomyard/internal/discussionparser
++22	github.com/Knatte18/loomyard/internal/fabricvocab
++22	github.com/Knatte18/loomyard/internal/friction
++22	github.com/Knatte18/loomyard/internal/gateslot
++22	github.com/Knatte18/loomyard/internal/languageconfig
++22	github.com/Knatte18/loomyard/internal/lenses
++22	github.com/Knatte18/loomyard/internal/lensreport
++22	github.com/Knatte18/loomyard/internal/pattern
++22	github.com/Knatte18/loomyard/internal/planindex
++22	github.com/Knatte18/loomyard/internal/planparser
++22	github.com/Knatte18/loomyard/internal/seatengine
++22	github.com/Knatte18/loomyard/internal/summaryparser
++22	github.com/Knatte18/loomyard/internal/verifyrun
++22	github.com/Knatte18/loomyard/internal/verifytree
++22	github.com/Knatte18/loomyard/internal/websterengine
++20	github.com/Knatte18/loomyard/internal/shellguard
++20	github.com/Knatte18/loomyard/internal/shuttleengine/claudeengine
++20	github.com/Knatte18/loomyard/internal/shuttleengines
++19	github.com/Knatte18/loomyard/internal/battenshed
++19	github.com/Knatte18/loomyard/internal/boardengine
++19	github.com/Knatte18/loomyard/internal/clihelp
++19	github.com/Knatte18/loomyard/internal/configreg
++19	github.com/Knatte18/loomyard/internal/configsync
++19	github.com/Knatte18/loomyard/internal/creelengine
++19	github.com/Knatte18/loomyard/internal/darnengine
++19	github.com/Knatte18/loomyard/internal/dobbyengine
++19	github.com/Knatte18/loomyard/internal/driftengine
++19	github.com/Knatte18/loomyard/internal/entrymerge
++19	github.com/Knatte18/loomyard/internal/githubclient
++19	github.com/Knatte18/loomyard/internal/hubgeom
++19	github.com/Knatte18/loomyard/internal/hubreconcile
++19	github.com/Knatte18/loomyard/internal/landingshed
++19	github.com/Knatte18/loomyard/internal/loggerconfig
++19	github.com/Knatte18/loomyard/internal/loomengine
++19	github.com/Knatte18/loomyard/internal/machinename
++19	github.com/Knatte18/loomyard/internal/mergeresolve
++19	github.com/Knatte18/loomyard/internal/orchengine
++19	github.com/Knatte18/loomyard/internal/output
++19	github.com/Knatte18/loomyard/internal/pawlengine
++19	github.com/Knatte18/loomyard/internal/preflight
++19	github.com/Knatte18/loomyard/internal/pullrequest
++19	github.com/Knatte18/loomyard/internal/reviewbudget
++19	github.com/Knatte18/loomyard/internal/runprofile
++19	github.com/Knatte18/loomyard/internal/samplerengine
++19	github.com/Knatte18/loomyard/internal/shedadapters
++19	github.com/Knatte18/loomyard/internal/sheddriver
++19	github.com/Knatte18/loomyard/internal/shedtransient
++19	github.com/Knatte18/loomyard/internal/shedverbs
++19	github.com/Knatte18/loomyard/internal/twilldirective
++18	github.com/Knatte18/loomyard/internal/commentlint
++18	github.com/Knatte18/loomyard/internal/impactset
++18	github.com/Knatte18/loomyard/internal/loomshed
++18	github.com/Knatte18/loomyard/internal/pairteardown
++18	github.com/Knatte18/loomyard/internal/patternlint
++12	github.com/Knatte18/loomyard/internal/creelcli
++12	github.com/Knatte18/loomyard/internal/orchroute
++12	github.com/Knatte18/loomyard/internal/selfexec
++12	github.com/Knatte18/loomyard/internal/testkit/logcapture
++10	github.com/Knatte18/loomyard/internal/fabriccli
++10	github.com/Knatte18/loomyard/internal/hubforge
++9	github.com/Knatte18/loomyard/contracts/stencils
++9	github.com/Knatte18/loomyard/internal/orchcli
++9	github.com/Knatte18/loomyard/internal/statuspane
++9	github.com/Knatte18/loomyard/internal/testkit/scankit
++7	github.com/Knatte18/loomyard/internal/testkit/stencilkit
++6	github.com/Knatte18/loomyard/internal/planglyph
++6	github.com/Knatte18/loomyard/internal/standalonegeom
++6	github.com/Knatte18/loomyard/internal/standalonestate
++6	github.com/Knatte18/loomyard/internal/testkit/envelope
++6	github.com/Knatte18/loomyard/internal/testkit/shuttlefake
++5	github.com/Knatte18/loomyard/internal/testkit/plankit
++4	github.com/Knatte18/loomyard/internal/reedcli
++4	github.com/Knatte18/loomyard/internal/termwindow
++4	github.com/Knatte18/loomyard/internal/testkit/locationkit
++4	github.com/Knatte18/loomyard/internal/testkit/lymbin
++3	github.com/Knatte18/loomyard/contracts/recipes
++3	github.com/Knatte18/loomyard/contracts/specs
++3	github.com/Knatte18/loomyard/internal/arbiterstop
++3	github.com/Knatte18/loomyard/internal/battencli
++3	github.com/Knatte18/loomyard/internal/battenrecipe
++3	github.com/Knatte18/loomyard/internal/cliwire
++3	github.com/Knatte18/loomyard/internal/durfmt
++3	github.com/Knatte18/loomyard/internal/fabricengine_test
++3	github.com/Knatte18/loomyard/internal/failuretrace
++3	github.com/Knatte18/loomyard/internal/frictionengine
++3	github.com/Knatte18/loomyard/internal/haltnote
++3	github.com/Knatte18/loomyard/internal/loomcli
++3	github.com/Knatte18/loomyard/internal/loomrecipe
++3	github.com/Knatte18/loomyard/internal/preflightshed
++3	github.com/Knatte18/loomyard/internal/shedarbiter
++3	github.com/Knatte18/loomyard/internal/shedbuild
++3	github.com/Knatte18/loomyard/internal/shedcheck
++3	github.com/Knatte18/loomyard/internal/shedrecipe
++3	github.com/Knatte18/loomyard/internal/statuscommit
++3	github.com/Knatte18/loomyard/internal/tendercli
++3	github.com/Knatte18/loomyard/internal/tenderengine
++3	github.com/Knatte18/loomyard/internal/testkit/boardkit
++3	github.com/Knatte18/loomyard/internal/treadleengine
++3	github.com/Knatte18/loomyard/internal/webstercli
++2	github.com/Knatte18/loomyard/internal/testkit/creelfake
++2	github.com/Knatte18/loomyard/internal/testkit/indexkit
++1	github.com/Knatte18/loomyard/internal/heddleengine
++1	github.com/Knatte18/loomyard/internal/loomcli_test
++1	github.com/Knatte18/loomyard/internal/orchcli_test
++1	github.com/Knatte18/loomyard/internal/pairteardown_test
++1	github.com/Knatte18/loomyard/internal/reedengine_test
++1	github.com/Knatte18/loomyard/internal/standalonegeom_test
++1	github.com/Knatte18/loomyard/internal/testkit/envkit
++1	github.com/Knatte18/loomyard/internal/testkit/shedfake
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/tables/fanin-tier0-before.tsv b/docs/research/gate-fewer-binaries-trial-2026-11-01/tables/fanin-tier0-before.tsv
+new file mode 100644
+index 00000000..56d80f75
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/tables/fanin-tier0-before.tsv
+@@ -0,0 +1,232 @@
++#binaries	182
++182	github.com/Knatte18/loomyard/internal/agentname
++182	github.com/Knatte18/loomyard/internal/lock
++182	github.com/Knatte18/loomyard/internal/lymtemp
++182	github.com/Knatte18/loomyard/internal/proc
++182	github.com/Knatte18/loomyard/internal/testkit/tmuxkit
++142	github.com/Knatte18/loomyard/internal/dotgit
++142	github.com/Knatte18/loomyard/internal/weftname
++141	github.com/Knatte18/loomyard/internal/lymcwd
++134	github.com/Knatte18/loomyard/internal/lymdirs
++133	github.com/Knatte18/loomyard/internal/logger
++109	github.com/Knatte18/loomyard/internal/fsx
++105	github.com/Knatte18/loomyard/internal/envsource
++105	github.com/Knatte18/loomyard/internal/yamlengine
++104	github.com/Knatte18/loomyard/internal/configengine
++104	github.com/Knatte18/loomyard/internal/state
++99	github.com/Knatte18/loomyard/internal/stencil
++98	github.com/Knatte18/loomyard/internal/pauserecord
++98	github.com/Knatte18/loomyard/internal/stencilstore
++92	github.com/Knatte18/loomyard/internal/toolfloor
++91	github.com/Knatte18/loomyard/internal/gitexec
++89	github.com/Knatte18/loomyard/internal/shedengine
++87	github.com/Knatte18/loomyard/internal/fslink
++86	github.com/Knatte18/loomyard/internal/buildvcs
++85	github.com/Knatte18/loomyard/internal/buildinfo
++85	github.com/Knatte18/loomyard/internal/gitrepo
++85	github.com/Knatte18/loomyard/internal/parentlock
++85	github.com/Knatte18/loomyard/internal/runproc
++85	github.com/Knatte18/loomyard/internal/shedrun
++85	github.com/Knatte18/loomyard/internal/vscode
++84	github.com/Knatte18/loomyard/internal/fabricengine
++74	github.com/Knatte18/loomyard/internal/fswatch
++74	github.com/Knatte18/loomyard/internal/shell
++73	github.com/Knatte18/loomyard/internal/reedengine/render
++73	github.com/Knatte18/loomyard/internal/segmentcolor
++72	github.com/Knatte18/loomyard/internal/reedengine
++71	github.com/Knatte18/loomyard/internal/modelspec
++70	github.com/Knatte18/loomyard/internal/shuttleengine
++69	github.com/Knatte18/loomyard/internal/testkit/scankit
++68	github.com/Knatte18/loomyard/internal/pattern
++66	github.com/Knatte18/loomyard/internal/fabricvocab
++66	github.com/Knatte18/loomyard/internal/lensreport
++64	github.com/Knatte18/loomyard/internal/editdirective
++64	github.com/Knatte18/loomyard/internal/gateslot
++64	github.com/Knatte18/loomyard/internal/parentdirective
++64	github.com/Knatte18/loomyard/internal/planparser
++59	github.com/Knatte18/loomyard/internal/friction
++59	github.com/Knatte18/loomyard/internal/languageconfig
++58	github.com/Knatte18/loomyard/internal/discussionparser
++58	github.com/Knatte18/loomyard/internal/verifyrun
++57	github.com/Knatte18/loomyard/internal/gitkit
++57	github.com/Knatte18/loomyard/internal/output
++57	github.com/Knatte18/loomyard/internal/planindex
++57	github.com/Knatte18/loomyard/internal/seatengine
++56	github.com/Knatte18/loomyard/internal/batcher
++56	github.com/Knatte18/loomyard/internal/cardverify
++56	github.com/Knatte18/loomyard/internal/lenses
++56	github.com/Knatte18/loomyard/internal/summaryparser
++56	github.com/Knatte18/loomyard/internal/verifytree
++55	github.com/Knatte18/loomyard/internal/burlerengine
++55	github.com/Knatte18/loomyard/internal/clihelp
++55	github.com/Knatte18/loomyard/internal/websterengine
++51	github.com/Knatte18/loomyard/internal/githubclient
++48	github.com/Knatte18/loomyard/internal/entrymerge
++48	github.com/Knatte18/loomyard/internal/shedverbs
++47	github.com/Knatte18/loomyard/internal/sheddriver
++47	github.com/Knatte18/loomyard/internal/shellguard
++46	github.com/Knatte18/loomyard/internal/boardengine
++46	github.com/Knatte18/loomyard/internal/reviewbudget
++46	github.com/Knatte18/loomyard/internal/shedadapters
++46	github.com/Knatte18/loomyard/internal/shedtransient
++46	github.com/Knatte18/loomyard/internal/shuttleengine/claudeengine
++46	github.com/Knatte18/loomyard/internal/twilldirective
++45	github.com/Knatte18/loomyard/internal/loomengine
++45	github.com/Knatte18/loomyard/internal/samplerengine
++44	github.com/Knatte18/loomyard/internal/mergeresolve
++44	github.com/Knatte18/loomyard/internal/pullrequest
++44	github.com/Knatte18/loomyard/internal/shuttleengines
++43	github.com/Knatte18/loomyard/internal/battenshed
++43	github.com/Knatte18/loomyard/internal/darnengine
++43	github.com/Knatte18/loomyard/internal/dobbyengine
++43	github.com/Knatte18/loomyard/internal/driftengine
++43	github.com/Knatte18/loomyard/internal/landingshed
++43	github.com/Knatte18/loomyard/internal/loggerconfig
++43	github.com/Knatte18/loomyard/internal/orchengine
++43	github.com/Knatte18/loomyard/internal/runprofile
++42	github.com/Knatte18/loomyard/internal/configreg
++42	github.com/Knatte18/loomyard/internal/pawlengine
++41	github.com/Knatte18/loomyard/internal/configsync
++41	github.com/Knatte18/loomyard/internal/preflight
++40	github.com/Knatte18/loomyard/internal/creelengine
++40	github.com/Knatte18/loomyard/internal/hubreconcile
++40	github.com/Knatte18/loomyard/internal/machinename
++39	github.com/Knatte18/loomyard/internal/hubgeom
++34	github.com/Knatte18/loomyard/contracts/stencils
++34	github.com/Knatte18/loomyard/internal/impactset
++32	github.com/Knatte18/loomyard/internal/testkit/logcapture
++31	github.com/Knatte18/loomyard/internal/commentlint
++30	github.com/Knatte18/loomyard/internal/loomshed
++30	github.com/Knatte18/loomyard/internal/patternlint
++30	github.com/Knatte18/loomyard/internal/testkit/stencilkit
++20	github.com/Knatte18/loomyard/internal/preflightshed
++20	github.com/Knatte18/loomyard/internal/shedcheck
++19	github.com/Knatte18/loomyard/internal/shedbuild
++19	github.com/Knatte18/loomyard/internal/shedrecipe
++18	github.com/Knatte18/loomyard/contracts/recipes
++17	github.com/Knatte18/loomyard/internal/battenrecipe
++17	github.com/Knatte18/loomyard/internal/pairteardown
++16	github.com/Knatte18/loomyard/internal/selfexec
++15	github.com/Knatte18/loomyard/internal/orchroute
++15	github.com/Knatte18/loomyard/internal/testkit/shedfake
++14	github.com/Knatte18/loomyard/internal/creelcli
++13	github.com/Knatte18/loomyard/internal/loomrecipe
++13	github.com/Knatte18/loomyard/internal/statuspane
++12	github.com/Knatte18/loomyard/internal/orchcli
++12	github.com/Knatte18/loomyard/internal/testkit/shuttlefake
++11	github.com/Knatte18/loomyard/internal/tenderengine
++11	github.com/Knatte18/loomyard/internal/testkit/plankit
++10	github.com/Knatte18/loomyard/internal/durfmt
++9	github.com/Knatte18/loomyard/internal/arbiterstop
++9	github.com/Knatte18/loomyard/internal/planglyph
++9	github.com/Knatte18/loomyard/internal/tendercli
++9	github.com/Knatte18/loomyard/internal/testkit/locationkit
++8	github.com/Knatte18/loomyard/internal/shedarbiter
++8	github.com/Knatte18/loomyard/internal/statuscommit
++8	github.com/Knatte18/loomyard/internal/testkit/envelope
++7	github.com/Knatte18/loomyard/internal/battencli
++7	github.com/Knatte18/loomyard/internal/testkit/envkit
++6	github.com/Knatte18/loomyard/contracts/specs
++6	github.com/Knatte18/loomyard/internal/dotnetimpact
++6	github.com/Knatte18/loomyard/internal/haltnote
++6	github.com/Knatte18/loomyard/internal/standalonestate
++5	github.com/Knatte18/loomyard/internal/gatecli
++5	github.com/Knatte18/loomyard/internal/standalonegeom
++4	github.com/Knatte18/loomyard/internal/cliwire
++4	github.com/Knatte18/loomyard/internal/fabriccli
++4	github.com/Knatte18/loomyard/internal/failuretrace
++4	github.com/Knatte18/loomyard/internal/frictionengine
++4	github.com/Knatte18/loomyard/internal/hibernateengine
++4	github.com/Knatte18/loomyard/internal/sleepjournal
++3	github.com/Knatte18/loomyard/internal/adoptcli
++3	github.com/Knatte18/loomyard/internal/heddleengine
++3	github.com/Knatte18/loomyard/internal/hubissues
++3	github.com/Knatte18/loomyard/internal/ideengine
++3	github.com/Knatte18/loomyard/internal/loomcli
++3	github.com/Knatte18/loomyard/internal/reportengine
++3	github.com/Knatte18/loomyard/internal/selfreportengine
++3	github.com/Knatte18/loomyard/internal/termwindow
++3	github.com/Knatte18/loomyard/tools/internal/devbin
++2	github.com/Knatte18/loomyard/internal/beamcli
++2	github.com/Knatte18/loomyard/internal/boardcli
++2	github.com/Knatte18/loomyard/internal/burlercli
++2	github.com/Knatte18/loomyard/internal/cleanupcli
++2	github.com/Knatte18/loomyard/internal/configcli
++2	github.com/Knatte18/loomyard/internal/driftcli
++2	github.com/Knatte18/loomyard/internal/heddlecli
++2	github.com/Knatte18/loomyard/internal/helpcli
++2	github.com/Knatte18/loomyard/internal/hibernatecli
++2	github.com/Knatte18/loomyard/internal/idecli
++2	github.com/Knatte18/loomyard/internal/quarrycli
++2	github.com/Knatte18/loomyard/internal/reedcli
++2	github.com/Knatte18/loomyard/internal/reportcli
++2	github.com/Knatte18/loomyard/internal/selfreportcli
++2	github.com/Knatte18/loomyard/internal/shedcli
++2	github.com/Knatte18/loomyard/internal/shortcutcli
++2	github.com/Knatte18/loomyard/internal/shuttlecli
++2	github.com/Knatte18/loomyard/internal/stencilcli
++2	github.com/Knatte18/loomyard/internal/testkit/boardkit
++2	github.com/Knatte18/loomyard/internal/testkit/indexkit
++2	github.com/Knatte18/loomyard/internal/treadleengine
++2	github.com/Knatte18/loomyard/internal/webstercli
++1	github.com/Knatte18/loomyard/cmd/lym
++1	github.com/Knatte18/loomyard/cmd/testtiming
++1	github.com/Knatte18/loomyard/internal/agentname_test
++1	github.com/Knatte18/loomyard/internal/batcher_test
++1	github.com/Knatte18/loomyard/internal/battenrecipe_test
++1	github.com/Knatte18/loomyard/internal/boardcli_test
++1	github.com/Knatte18/loomyard/internal/boardengine/boardtest
++1	github.com/Knatte18/loomyard/internal/boardengine_test
++1	github.com/Knatte18/loomyard/internal/configengine_test
++1	github.com/Knatte18/loomyard/internal/configreg_test
++1	github.com/Knatte18/loomyard/internal/creelengine_test
++1	github.com/Knatte18/loomyard/internal/entrymerge_test
++1	github.com/Knatte18/loomyard/internal/fabriccli_test
++1	github.com/Knatte18/loomyard/internal/fabricengine_test
++1	github.com/Knatte18/loomyard/internal/fsx_test
++1	github.com/Knatte18/loomyard/internal/gitexec_test
++1	github.com/Knatte18/loomyard/internal/gitrepo/internal/gitoracle
++1	github.com/Knatte18/loomyard/internal/gitrepo_test
++1	github.com/Knatte18/loomyard/internal/hubforge
++1	github.com/Knatte18/loomyard/internal/hubgeom_test
++1	github.com/Knatte18/loomyard/internal/hubissues_test
++1	github.com/Knatte18/loomyard/internal/landingshed_test
++1	github.com/Knatte18/loomyard/internal/languageconfig_test
++1	github.com/Knatte18/loomyard/internal/lensreport_test
++1	github.com/Knatte18/loomyard/internal/lock_test
++1	github.com/Knatte18/loomyard/internal/loggerconfig_test
++1	github.com/Knatte18/loomyard/internal/logger_test
++1	github.com/Knatte18/loomyard/internal/lymcwd_test
++1	github.com/Knatte18/loomyard/internal/lymtemp_test
++1	github.com/Knatte18/loomyard/internal/orchcli_test
++1	github.com/Knatte18/loomyard/internal/orchengine_test
++1	github.com/Knatte18/loomyard/internal/output_test
++1	github.com/Knatte18/loomyard/internal/pauserecord_test
++1	github.com/Knatte18/loomyard/internal/pawlengine_test
++1	github.com/Knatte18/loomyard/internal/planparser_test
++1	github.com/Knatte18/loomyard/internal/proc_test
++1	github.com/Knatte18/loomyard/internal/pullrequest_test
++1	github.com/Knatte18/loomyard/internal/reedengine_test
++1	github.com/Knatte18/loomyard/internal/runprofile_test
++1	github.com/Knatte18/loomyard/internal/shedrecipe_test
++1	github.com/Knatte18/loomyard/internal/shuttleengine/claudeengine_test
++1	github.com/Knatte18/loomyard/internal/shuttleengine_test
++1	github.com/Knatte18/loomyard/internal/state_test
++1	github.com/Knatte18/loomyard/internal/stencil_test
++1	github.com/Knatte18/loomyard/internal/summaryparser_test
++1	github.com/Knatte18/loomyard/internal/testkit
++1	github.com/Knatte18/loomyard/internal/testkit/creelfake
++1	github.com/Knatte18/loomyard/internal/testkit/llmkit
++1	github.com/Knatte18/loomyard/internal/testkit/lymbin
++1	github.com/Knatte18/loomyard/internal/websterengine_test
++1	github.com/Knatte18/loomyard/internal/weftname_test
++1	github.com/Knatte18/loomyard/tools/codestats
++1	github.com/Knatte18/loomyard/tools/deploy
++1	github.com/Knatte18/loomyard/tools/forkaudit
++1	github.com/Knatte18/loomyard/tools/godocreflow
++1	github.com/Knatte18/loomyard/tools/mdreflow
++1	github.com/Knatte18/loomyard/tools/plandag
++1	github.com/Knatte18/loomyard/tools/sandbox
++1	github.com/Knatte18/loomyard/tools/tapestryrename
++1	github.com/Knatte18/loomyard/tools/tokencount
++1	github.com/Knatte18/loomyard/tools/wordswap
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/tables/fanin-tier0-trial1.tsv b/docs/research/gate-fewer-binaries-trial-2026-11-01/tables/fanin-tier0-trial1.tsv
+new file mode 100644
+index 00000000..96dfff2d
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/tables/fanin-tier0-trial1.tsv
+@@ -0,0 +1,232 @@
++#binaries	182
++182	github.com/Knatte18/loomyard/internal/testkit/tmuxkit
++141	github.com/Knatte18/loomyard/internal/dotgit
++141	github.com/Knatte18/loomyard/internal/weftname
++140	github.com/Knatte18/loomyard/internal/lymcwd
++135	github.com/Knatte18/loomyard/internal/proc
++133	github.com/Knatte18/loomyard/internal/lymdirs
++132	github.com/Knatte18/loomyard/internal/logger
++113	github.com/Knatte18/loomyard/internal/lock
++108	github.com/Knatte18/loomyard/internal/fsx
++104	github.com/Knatte18/loomyard/internal/envsource
++104	github.com/Knatte18/loomyard/internal/yamlengine
++103	github.com/Knatte18/loomyard/internal/configengine
++103	github.com/Knatte18/loomyard/internal/state
++98	github.com/Knatte18/loomyard/internal/lymtemp
++98	github.com/Knatte18/loomyard/internal/stencil
++97	github.com/Knatte18/loomyard/internal/pauserecord
++97	github.com/Knatte18/loomyard/internal/stencilstore
++91	github.com/Knatte18/loomyard/internal/toolfloor
++90	github.com/Knatte18/loomyard/internal/gitexec
++88	github.com/Knatte18/loomyard/internal/shedengine
++87	github.com/Knatte18/loomyard/internal/agentname
++86	github.com/Knatte18/loomyard/internal/fslink
++85	github.com/Knatte18/loomyard/internal/buildvcs
++84	github.com/Knatte18/loomyard/internal/buildinfo
++84	github.com/Knatte18/loomyard/internal/gitrepo
++84	github.com/Knatte18/loomyard/internal/parentlock
++84	github.com/Knatte18/loomyard/internal/runproc
++84	github.com/Knatte18/loomyard/internal/shedrun
++84	github.com/Knatte18/loomyard/internal/vscode
++83	github.com/Knatte18/loomyard/internal/fabricengine
++73	github.com/Knatte18/loomyard/internal/fswatch
++73	github.com/Knatte18/loomyard/internal/shell
++72	github.com/Knatte18/loomyard/internal/reedengine/render
++72	github.com/Knatte18/loomyard/internal/segmentcolor
++71	github.com/Knatte18/loomyard/internal/modelspec
++71	github.com/Knatte18/loomyard/internal/reedengine
++70	github.com/Knatte18/loomyard/internal/shuttleengine
++69	github.com/Knatte18/loomyard/internal/testkit/scankit
++68	github.com/Knatte18/loomyard/internal/pattern
++66	github.com/Knatte18/loomyard/internal/fabricvocab
++66	github.com/Knatte18/loomyard/internal/lensreport
++64	github.com/Knatte18/loomyard/internal/editdirective
++64	github.com/Knatte18/loomyard/internal/gateslot
++64	github.com/Knatte18/loomyard/internal/parentdirective
++64	github.com/Knatte18/loomyard/internal/planparser
++59	github.com/Knatte18/loomyard/internal/friction
++59	github.com/Knatte18/loomyard/internal/languageconfig
++58	github.com/Knatte18/loomyard/internal/discussionparser
++58	github.com/Knatte18/loomyard/internal/verifyrun
++57	github.com/Knatte18/loomyard/internal/gitkit
++57	github.com/Knatte18/loomyard/internal/output
++57	github.com/Knatte18/loomyard/internal/planindex
++57	github.com/Knatte18/loomyard/internal/seatengine
++56	github.com/Knatte18/loomyard/internal/batcher
++56	github.com/Knatte18/loomyard/internal/cardverify
++56	github.com/Knatte18/loomyard/internal/lenses
++56	github.com/Knatte18/loomyard/internal/summaryparser
++56	github.com/Knatte18/loomyard/internal/verifytree
++55	github.com/Knatte18/loomyard/internal/burlerengine
++55	github.com/Knatte18/loomyard/internal/clihelp
++55	github.com/Knatte18/loomyard/internal/websterengine
++51	github.com/Knatte18/loomyard/internal/githubclient
++48	github.com/Knatte18/loomyard/internal/entrymerge
++48	github.com/Knatte18/loomyard/internal/shedverbs
++47	github.com/Knatte18/loomyard/internal/sheddriver
++47	github.com/Knatte18/loomyard/internal/shellguard
++46	github.com/Knatte18/loomyard/internal/boardengine
++46	github.com/Knatte18/loomyard/internal/reviewbudget
++46	github.com/Knatte18/loomyard/internal/shedadapters
++46	github.com/Knatte18/loomyard/internal/shedtransient
++46	github.com/Knatte18/loomyard/internal/shuttleengine/claudeengine
++46	github.com/Knatte18/loomyard/internal/twilldirective
++45	github.com/Knatte18/loomyard/internal/loomengine
++45	github.com/Knatte18/loomyard/internal/samplerengine
++44	github.com/Knatte18/loomyard/internal/mergeresolve
++44	github.com/Knatte18/loomyard/internal/pullrequest
++44	github.com/Knatte18/loomyard/internal/shuttleengines
++43	github.com/Knatte18/loomyard/internal/battenshed
++43	github.com/Knatte18/loomyard/internal/darnengine
++43	github.com/Knatte18/loomyard/internal/dobbyengine
++43	github.com/Knatte18/loomyard/internal/driftengine
++43	github.com/Knatte18/loomyard/internal/landingshed
++43	github.com/Knatte18/loomyard/internal/loggerconfig
++43	github.com/Knatte18/loomyard/internal/orchengine
++43	github.com/Knatte18/loomyard/internal/runprofile
++42	github.com/Knatte18/loomyard/internal/configreg
++42	github.com/Knatte18/loomyard/internal/pawlengine
++41	github.com/Knatte18/loomyard/internal/configsync
++41	github.com/Knatte18/loomyard/internal/preflight
++40	github.com/Knatte18/loomyard/internal/creelengine
++40	github.com/Knatte18/loomyard/internal/hubreconcile
++40	github.com/Knatte18/loomyard/internal/machinename
++39	github.com/Knatte18/loomyard/internal/hubgeom
++34	github.com/Knatte18/loomyard/contracts/stencils
++34	github.com/Knatte18/loomyard/internal/impactset
++32	github.com/Knatte18/loomyard/internal/testkit/logcapture
++31	github.com/Knatte18/loomyard/internal/commentlint
++30	github.com/Knatte18/loomyard/internal/loomshed
++30	github.com/Knatte18/loomyard/internal/patternlint
++30	github.com/Knatte18/loomyard/internal/testkit/stencilkit
++20	github.com/Knatte18/loomyard/internal/preflightshed
++20	github.com/Knatte18/loomyard/internal/shedcheck
++19	github.com/Knatte18/loomyard/internal/shedbuild
++19	github.com/Knatte18/loomyard/internal/shedrecipe
++18	github.com/Knatte18/loomyard/contracts/recipes
++17	github.com/Knatte18/loomyard/internal/battenrecipe
++17	github.com/Knatte18/loomyard/internal/pairteardown
++16	github.com/Knatte18/loomyard/internal/selfexec
++15	github.com/Knatte18/loomyard/internal/orchroute
++15	github.com/Knatte18/loomyard/internal/testkit/shedfake
++14	github.com/Knatte18/loomyard/internal/creelcli
++13	github.com/Knatte18/loomyard/internal/loomrecipe
++13	github.com/Knatte18/loomyard/internal/statuspane
++12	github.com/Knatte18/loomyard/internal/orchcli
++12	github.com/Knatte18/loomyard/internal/testkit/shuttlefake
++11	github.com/Knatte18/loomyard/internal/tenderengine
++11	github.com/Knatte18/loomyard/internal/testkit/plankit
++10	github.com/Knatte18/loomyard/internal/durfmt
++9	github.com/Knatte18/loomyard/internal/arbiterstop
++9	github.com/Knatte18/loomyard/internal/planglyph
++9	github.com/Knatte18/loomyard/internal/tendercli
++9	github.com/Knatte18/loomyard/internal/testkit/locationkit
++8	github.com/Knatte18/loomyard/internal/shedarbiter
++8	github.com/Knatte18/loomyard/internal/statuscommit
++8	github.com/Knatte18/loomyard/internal/testkit/envelope
++7	github.com/Knatte18/loomyard/internal/battencli
++7	github.com/Knatte18/loomyard/internal/testkit/envkit
++6	github.com/Knatte18/loomyard/contracts/specs
++6	github.com/Knatte18/loomyard/internal/dotnetimpact
++6	github.com/Knatte18/loomyard/internal/haltnote
++6	github.com/Knatte18/loomyard/internal/standalonestate
++5	github.com/Knatte18/loomyard/internal/gatecli
++5	github.com/Knatte18/loomyard/internal/standalonegeom
++4	github.com/Knatte18/loomyard/internal/cliwire
++4	github.com/Knatte18/loomyard/internal/fabriccli
++4	github.com/Knatte18/loomyard/internal/failuretrace
++4	github.com/Knatte18/loomyard/internal/frictionengine
++4	github.com/Knatte18/loomyard/internal/hibernateengine
++4	github.com/Knatte18/loomyard/internal/sleepjournal
++3	github.com/Knatte18/loomyard/internal/adoptcli
++3	github.com/Knatte18/loomyard/internal/heddleengine
++3	github.com/Knatte18/loomyard/internal/hubissues
++3	github.com/Knatte18/loomyard/internal/ideengine
++3	github.com/Knatte18/loomyard/internal/loomcli
++3	github.com/Knatte18/loomyard/internal/reportengine
++3	github.com/Knatte18/loomyard/internal/selfreportengine
++3	github.com/Knatte18/loomyard/internal/termwindow
++3	github.com/Knatte18/loomyard/tools/internal/devbin
++2	github.com/Knatte18/loomyard/internal/beamcli
++2	github.com/Knatte18/loomyard/internal/boardcli
++2	github.com/Knatte18/loomyard/internal/burlercli
++2	github.com/Knatte18/loomyard/internal/cleanupcli
++2	github.com/Knatte18/loomyard/internal/configcli
++2	github.com/Knatte18/loomyard/internal/driftcli
++2	github.com/Knatte18/loomyard/internal/heddlecli
++2	github.com/Knatte18/loomyard/internal/helpcli
++2	github.com/Knatte18/loomyard/internal/hibernatecli
++2	github.com/Knatte18/loomyard/internal/idecli
++2	github.com/Knatte18/loomyard/internal/quarrycli
++2	github.com/Knatte18/loomyard/internal/reedcli
++2	github.com/Knatte18/loomyard/internal/reportcli
++2	github.com/Knatte18/loomyard/internal/selfreportcli
++2	github.com/Knatte18/loomyard/internal/shedcli
++2	github.com/Knatte18/loomyard/internal/shortcutcli
++2	github.com/Knatte18/loomyard/internal/shuttlecli
++2	github.com/Knatte18/loomyard/internal/stencilcli
++2	github.com/Knatte18/loomyard/internal/testkit/boardkit
++2	github.com/Knatte18/loomyard/internal/testkit/indexkit
++2	github.com/Knatte18/loomyard/internal/treadleengine
++2	github.com/Knatte18/loomyard/internal/webstercli
++1	github.com/Knatte18/loomyard/cmd/lym
++1	github.com/Knatte18/loomyard/cmd/testtiming
++1	github.com/Knatte18/loomyard/internal/agentname_test
++1	github.com/Knatte18/loomyard/internal/batcher_test
++1	github.com/Knatte18/loomyard/internal/battenrecipe_test
++1	github.com/Knatte18/loomyard/internal/boardcli_test
++1	github.com/Knatte18/loomyard/internal/boardengine/boardtest
++1	github.com/Knatte18/loomyard/internal/boardengine_test
++1	github.com/Knatte18/loomyard/internal/configengine_test
++1	github.com/Knatte18/loomyard/internal/configreg_test
++1	github.com/Knatte18/loomyard/internal/creelengine_test
++1	github.com/Knatte18/loomyard/internal/entrymerge_test
++1	github.com/Knatte18/loomyard/internal/fabriccli_test
++1	github.com/Knatte18/loomyard/internal/fabricengine_test
++1	github.com/Knatte18/loomyard/internal/fsx_test
++1	github.com/Knatte18/loomyard/internal/gitexec_test
++1	github.com/Knatte18/loomyard/internal/gitrepo/internal/gitoracle
++1	github.com/Knatte18/loomyard/internal/gitrepo_test
++1	github.com/Knatte18/loomyard/internal/hubforge
++1	github.com/Knatte18/loomyard/internal/hubgeom_test
++1	github.com/Knatte18/loomyard/internal/hubissues_test
++1	github.com/Knatte18/loomyard/internal/landingshed_test
++1	github.com/Knatte18/loomyard/internal/languageconfig_test
++1	github.com/Knatte18/loomyard/internal/lensreport_test
++1	github.com/Knatte18/loomyard/internal/lock_test
++1	github.com/Knatte18/loomyard/internal/loggerconfig_test
++1	github.com/Knatte18/loomyard/internal/logger_test
++1	github.com/Knatte18/loomyard/internal/lymcwd_test
++1	github.com/Knatte18/loomyard/internal/lymtemp_test
++1	github.com/Knatte18/loomyard/internal/orchcli_test
++1	github.com/Knatte18/loomyard/internal/orchengine_test
++1	github.com/Knatte18/loomyard/internal/output_test
++1	github.com/Knatte18/loomyard/internal/pauserecord_test
++1	github.com/Knatte18/loomyard/internal/pawlengine_test
++1	github.com/Knatte18/loomyard/internal/planparser_test
++1	github.com/Knatte18/loomyard/internal/proc_test
++1	github.com/Knatte18/loomyard/internal/pullrequest_test
++1	github.com/Knatte18/loomyard/internal/reedengine_test
++1	github.com/Knatte18/loomyard/internal/runprofile_test
++1	github.com/Knatte18/loomyard/internal/shedrecipe_test
++1	github.com/Knatte18/loomyard/internal/shuttleengine/claudeengine_test
++1	github.com/Knatte18/loomyard/internal/shuttleengine_test
++1	github.com/Knatte18/loomyard/internal/state_test
++1	github.com/Knatte18/loomyard/internal/stencil_test
++1	github.com/Knatte18/loomyard/internal/summaryparser_test
++1	github.com/Knatte18/loomyard/internal/testkit
++1	github.com/Knatte18/loomyard/internal/testkit/creelfake
++1	github.com/Knatte18/loomyard/internal/testkit/llmkit
++1	github.com/Knatte18/loomyard/internal/testkit/lymbin
++1	github.com/Knatte18/loomyard/internal/websterengine_test
++1	github.com/Knatte18/loomyard/internal/weftname_test
++1	github.com/Knatte18/loomyard/tools/codestats
++1	github.com/Knatte18/loomyard/tools/deploy
++1	github.com/Knatte18/loomyard/tools/forkaudit
++1	github.com/Knatte18/loomyard/tools/godocreflow
++1	github.com/Knatte18/loomyard/tools/mdreflow
++1	github.com/Knatte18/loomyard/tools/plandag
++1	github.com/Knatte18/loomyard/tools/sandbox
++1	github.com/Knatte18/loomyard/tools/tapestryrename
++1	github.com/Knatte18/loomyard/tools/tokencount
++1	github.com/Knatte18/loomyard/tools/wordswap
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/tables/fanin-tier1-before.tsv b/docs/research/gate-fewer-binaries-trial-2026-11-01/tables/fanin-tier1-before.tsv
+new file mode 100644
+index 00000000..e53c33cd
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/tables/fanin-tier1-before.tsv
+@@ -0,0 +1,223 @@
++#binaries	181
++181	github.com/Knatte18/loomyard/internal/agentname
++181	github.com/Knatte18/loomyard/internal/lock
++181	github.com/Knatte18/loomyard/internal/lymtemp
++181	github.com/Knatte18/loomyard/internal/proc
++181	github.com/Knatte18/loomyard/internal/testkit/tmuxkit
++138	github.com/Knatte18/loomyard/internal/dotgit
++138	github.com/Knatte18/loomyard/internal/weftname
++137	github.com/Knatte18/loomyard/internal/lymcwd
++131	github.com/Knatte18/loomyard/internal/lymdirs
++130	github.com/Knatte18/loomyard/internal/logger
++105	github.com/Knatte18/loomyard/internal/fsx
++104	github.com/Knatte18/loomyard/internal/envsource
++104	github.com/Knatte18/loomyard/internal/yamlengine
++103	github.com/Knatte18/loomyard/internal/configengine
++100	github.com/Knatte18/loomyard/internal/state
++97	github.com/Knatte18/loomyard/internal/stencil
++96	github.com/Knatte18/loomyard/internal/stencilstore
++94	github.com/Knatte18/loomyard/internal/pauserecord
++89	github.com/Knatte18/loomyard/internal/toolfloor
++88	github.com/Knatte18/loomyard/internal/gitexec
++85	github.com/Knatte18/loomyard/internal/shedengine
++83	github.com/Knatte18/loomyard/internal/fslink
++82	github.com/Knatte18/loomyard/internal/buildinfo
++82	github.com/Knatte18/loomyard/internal/buildvcs
++82	github.com/Knatte18/loomyard/internal/gitrepo
++82	github.com/Knatte18/loomyard/internal/runproc
++82	github.com/Knatte18/loomyard/internal/shedrun
++82	github.com/Knatte18/loomyard/internal/vscode
++81	github.com/Knatte18/loomyard/internal/fabricengine
++81	github.com/Knatte18/loomyard/internal/parentlock
++79	github.com/Knatte18/loomyard/internal/shell
++78	github.com/Knatte18/loomyard/internal/fswatch
++78	github.com/Knatte18/loomyard/internal/reedengine/render
++78	github.com/Knatte18/loomyard/internal/segmentcolor
++77	github.com/Knatte18/loomyard/internal/modelspec
++77	github.com/Knatte18/loomyard/internal/reedengine
++76	github.com/Knatte18/loomyard/internal/shuttleengine
++70	github.com/Knatte18/loomyard/internal/editdirective
++70	github.com/Knatte18/loomyard/internal/parentdirective
++70	github.com/Knatte18/loomyard/internal/pattern
++69	github.com/Knatte18/loomyard/internal/lensreport
++68	github.com/Knatte18/loomyard/internal/fabricvocab
++67	github.com/Knatte18/loomyard/internal/gateslot
++67	github.com/Knatte18/loomyard/internal/planparser
++64	github.com/Knatte18/loomyard/internal/gitkit
++63	github.com/Knatte18/loomyard/internal/friction
++63	github.com/Knatte18/loomyard/internal/languageconfig
++61	github.com/Knatte18/loomyard/internal/discussionparser
++61	github.com/Knatte18/loomyard/internal/verifyrun
++60	github.com/Knatte18/loomyard/internal/output
++60	github.com/Knatte18/loomyard/internal/planindex
++60	github.com/Knatte18/loomyard/internal/seatengine
++59	github.com/Knatte18/loomyard/internal/batcher
++59	github.com/Knatte18/loomyard/internal/cardverify
++59	github.com/Knatte18/loomyard/internal/clihelp
++59	github.com/Knatte18/loomyard/internal/lenses
++59	github.com/Knatte18/loomyard/internal/summaryparser
++59	github.com/Knatte18/loomyard/internal/verifytree
++58	github.com/Knatte18/loomyard/internal/burlerengine
++58	github.com/Knatte18/loomyard/internal/websterengine
++57	github.com/Knatte18/loomyard/internal/githubclient
++54	github.com/Knatte18/loomyard/internal/sheddriver
++54	github.com/Knatte18/loomyard/internal/shedverbs
++53	github.com/Knatte18/loomyard/internal/reviewbudget
++53	github.com/Knatte18/loomyard/internal/shedadapters
++53	github.com/Knatte18/loomyard/internal/shellguard
++53	github.com/Knatte18/loomyard/internal/twilldirective
++52	github.com/Knatte18/loomyard/internal/entrymerge
++52	github.com/Knatte18/loomyard/internal/loomengine
++52	github.com/Knatte18/loomyard/internal/samplerengine
++52	github.com/Knatte18/loomyard/internal/shedtransient
++52	github.com/Knatte18/loomyard/internal/shuttleengine/claudeengine
++51	github.com/Knatte18/loomyard/internal/boardengine
++51	github.com/Knatte18/loomyard/internal/shuttleengines
++50	github.com/Knatte18/loomyard/internal/battenshed
++50	github.com/Knatte18/loomyard/internal/darnengine
++50	github.com/Knatte18/loomyard/internal/dobbyengine
++50	github.com/Knatte18/loomyard/internal/driftengine
++50	github.com/Knatte18/loomyard/internal/impactset
++50	github.com/Knatte18/loomyard/internal/loggerconfig
++50	github.com/Knatte18/loomyard/internal/mergeresolve
++50	github.com/Knatte18/loomyard/internal/orchengine
++50	github.com/Knatte18/loomyard/internal/pawlengine
++50	github.com/Knatte18/loomyard/internal/pullrequest
++50	github.com/Knatte18/loomyard/internal/runprofile
++49	github.com/Knatte18/loomyard/internal/commentlint
++49	github.com/Knatte18/loomyard/internal/configreg
++49	github.com/Knatte18/loomyard/internal/landingshed
++48	github.com/Knatte18/loomyard/internal/configsync
++48	github.com/Knatte18/loomyard/internal/creelengine
++48	github.com/Knatte18/loomyard/internal/loomshed
++48	github.com/Knatte18/loomyard/internal/machinename
++48	github.com/Knatte18/loomyard/internal/patternlint
++48	github.com/Knatte18/loomyard/internal/preflight
++47	github.com/Knatte18/loomyard/internal/hubgeom
++47	github.com/Knatte18/loomyard/internal/hubreconcile
++36	github.com/Knatte18/loomyard/internal/pairteardown
++34	github.com/Knatte18/loomyard/internal/fabriccli
++34	github.com/Knatte18/loomyard/internal/hubforge
++21	github.com/Knatte18/loomyard/internal/preflightshed
++20	github.com/Knatte18/loomyard/internal/shedrecipe
++19	github.com/Knatte18/loomyard/internal/shedcheck
++18	github.com/Knatte18/loomyard/internal/shedbuild
++17	github.com/Knatte18/loomyard/contracts/recipes
++16	github.com/Knatte18/loomyard/internal/battenrecipe
++16	github.com/Knatte18/loomyard/internal/selfexec
++16	github.com/Knatte18/loomyard/internal/testkit/envelope
++15	github.com/Knatte18/loomyard/internal/orchroute
++14	github.com/Knatte18/loomyard/internal/creelcli
++13	github.com/Knatte18/loomyard/contracts/stencils
++13	github.com/Knatte18/loomyard/internal/statuspane
++12	github.com/Knatte18/loomyard/internal/loomrecipe
++12	github.com/Knatte18/loomyard/internal/orchcli
++11	github.com/Knatte18/loomyard/internal/tenderengine
++11	github.com/Knatte18/loomyard/internal/testkit/logcapture
++11	github.com/Knatte18/loomyard/internal/testkit/scankit
++10	github.com/Knatte18/loomyard/internal/durfmt
++10	github.com/Knatte18/loomyard/internal/testkit/plankit
++9	github.com/Knatte18/loomyard/internal/arbiterstop
++9	github.com/Knatte18/loomyard/internal/planglyph
++9	github.com/Knatte18/loomyard/internal/tendercli
++9	github.com/Knatte18/loomyard/internal/testkit/lymbin
++8	github.com/Knatte18/loomyard/internal/shedarbiter
++8	github.com/Knatte18/loomyard/internal/statuscommit
++8	github.com/Knatte18/loomyard/internal/testkit/boardkit
++8	github.com/Knatte18/loomyard/internal/testkit/stencilkit
++7	github.com/Knatte18/loomyard/internal/battencli
++6	github.com/Knatte18/loomyard/contracts/specs
++6	github.com/Knatte18/loomyard/internal/haltnote
++6	github.com/Knatte18/loomyard/internal/standalonestate
++6	github.com/Knatte18/loomyard/internal/testkit/shedfake
++5	github.com/Knatte18/loomyard/internal/dotnetimpact
++5	github.com/Knatte18/loomyard/internal/standalonegeom
++4	github.com/Knatte18/loomyard/internal/cliwire
++4	github.com/Knatte18/loomyard/internal/failuretrace
++4	github.com/Knatte18/loomyard/internal/frictionengine
++4	github.com/Knatte18/loomyard/internal/gatecli
++4	github.com/Knatte18/loomyard/internal/heddleengine
++4	github.com/Knatte18/loomyard/internal/hibernateengine
++4	github.com/Knatte18/loomyard/internal/hubissues
++4	github.com/Knatte18/loomyard/internal/sleepjournal
++4	github.com/Knatte18/loomyard/internal/testkit/shuttlefake
++3	github.com/Knatte18/loomyard/internal/adoptcli
++3	github.com/Knatte18/loomyard/internal/boardcli
++3	github.com/Knatte18/loomyard/internal/ideengine
++3	github.com/Knatte18/loomyard/internal/loomcli
++3	github.com/Knatte18/loomyard/internal/reportengine
++3	github.com/Knatte18/loomyard/internal/selfreportengine
++3	github.com/Knatte18/loomyard/internal/termwindow
++3	github.com/Knatte18/loomyard/internal/testkit/envkit
++3	github.com/Knatte18/loomyard/tools/internal/devbin
++2	github.com/Knatte18/loomyard/internal/beamcli
++2	github.com/Knatte18/loomyard/internal/burlercli
++2	github.com/Knatte18/loomyard/internal/cleanupcli
++2	github.com/Knatte18/loomyard/internal/configcli
++2	github.com/Knatte18/loomyard/internal/driftcli
++2	github.com/Knatte18/loomyard/internal/gitrepo/internal/gitoracle
++2	github.com/Knatte18/loomyard/internal/heddlecli
++2	github.com/Knatte18/loomyard/internal/helpcli
++2	github.com/Knatte18/loomyard/internal/hibernatecli
++2	github.com/Knatte18/loomyard/internal/idecli
++2	github.com/Knatte18/loomyard/internal/quarrycli
++2	github.com/Knatte18/loomyard/internal/reedcli
++2	github.com/Knatte18/loomyard/internal/reportcli
++2	github.com/Knatte18/loomyard/internal/selfreportcli
++2	github.com/Knatte18/loomyard/internal/shedcli
++2	github.com/Knatte18/loomyard/internal/shortcutcli
++2	github.com/Knatte18/loomyard/internal/shuttlecli
++2	github.com/Knatte18/loomyard/internal/stencilcli
++2	github.com/Knatte18/loomyard/internal/testkit/creelfake
++2	github.com/Knatte18/loomyard/internal/webstercli
++1	github.com/Knatte18/loomyard/cmd/lym
++1	github.com/Knatte18/loomyard/cmd/testtiming
++1	github.com/Knatte18/loomyard/internal/adoptcli_test
++1	github.com/Knatte18/loomyard/internal/agentname_test
++1	github.com/Knatte18/loomyard/internal/beamcli_test
++1	github.com/Knatte18/loomyard/internal/boardcli_test
++1	github.com/Knatte18/loomyard/internal/boardengine/boardtest
++1	github.com/Knatte18/loomyard/internal/driftcli_test
++1	github.com/Knatte18/loomyard/internal/entrymerge_test
++1	github.com/Knatte18/loomyard/internal/fabriccli_test
++1	github.com/Knatte18/loomyard/internal/fabricengine_test
++1	github.com/Knatte18/loomyard/internal/fsx_test
++1	github.com/Knatte18/loomyard/internal/gitexec_test
++1	github.com/Knatte18/loomyard/internal/gitrepo_test
++1	github.com/Knatte18/loomyard/internal/heddleengine_test
++1	github.com/Knatte18/loomyard/internal/hubgeom_test
++1	github.com/Knatte18/loomyard/internal/hubissues_test
++1	github.com/Knatte18/loomyard/internal/hubreconcile_test
++1	github.com/Knatte18/loomyard/internal/landingshed_test
++1	github.com/Knatte18/loomyard/internal/languageconfig_test
++1	github.com/Knatte18/loomyard/internal/lensreport_test
++1	github.com/Knatte18/loomyard/internal/lock_test
++1	github.com/Knatte18/loomyard/internal/loggerconfig_test
++1	github.com/Knatte18/loomyard/internal/logger_test
++1	github.com/Knatte18/loomyard/internal/loomcli_test
++1	github.com/Knatte18/loomyard/internal/lymcwd_test
++1	github.com/Knatte18/loomyard/internal/lymtemp_test
++1	github.com/Knatte18/loomyard/internal/output_test
++1	github.com/Knatte18/loomyard/internal/pauserecord_test
++1	github.com/Knatte18/loomyard/internal/pawlengine_test
++1	github.com/Knatte18/loomyard/internal/preflight_test
++1	github.com/Knatte18/loomyard/internal/proc_test
++1	github.com/Knatte18/loomyard/internal/pullrequest_test
++1	github.com/Knatte18/loomyard/internal/runprofile_test
++1	github.com/Knatte18/loomyard/internal/shedverbs_test
++1	github.com/Knatte18/loomyard/internal/testkit
++1	github.com/Knatte18/loomyard/internal/testkit/llmkit
++1	github.com/Knatte18/loomyard/internal/testkit/locationkit
++1	github.com/Knatte18/loomyard/internal/treadleengine
++1	github.com/Knatte18/loomyard/internal/websterengine_test
++1	github.com/Knatte18/loomyard/internal/weftname_test
++1	github.com/Knatte18/loomyard/tools/codestats
++1	github.com/Knatte18/loomyard/tools/deploy
++1	github.com/Knatte18/loomyard/tools/forkaudit
++1	github.com/Knatte18/loomyard/tools/godocreflow
++1	github.com/Knatte18/loomyard/tools/mdreflow
++1	github.com/Knatte18/loomyard/tools/plandag
++1	github.com/Knatte18/loomyard/tools/sandbox
++1	github.com/Knatte18/loomyard/tools/tapestryrename
++1	github.com/Knatte18/loomyard/tools/tokencount
++1	github.com/Knatte18/loomyard/tools/wordswap
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/tables/fanin-tier1-trial1.tsv b/docs/research/gate-fewer-binaries-trial-2026-11-01/tables/fanin-tier1-trial1.tsv
+new file mode 100644
+index 00000000..25758aed
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/tables/fanin-tier1-trial1.tsv
+@@ -0,0 +1,223 @@
++#binaries	181
++181	github.com/Knatte18/loomyard/internal/testkit/tmuxkit
++138	github.com/Knatte18/loomyard/internal/dotgit
++138	github.com/Knatte18/loomyard/internal/weftname
++137	github.com/Knatte18/loomyard/internal/lymcwd
++133	github.com/Knatte18/loomyard/internal/proc
++131	github.com/Knatte18/loomyard/internal/lymdirs
++130	github.com/Knatte18/loomyard/internal/logger
++110	github.com/Knatte18/loomyard/internal/lock
++105	github.com/Knatte18/loomyard/internal/fsx
++104	github.com/Knatte18/loomyard/internal/envsource
++104	github.com/Knatte18/loomyard/internal/yamlengine
++103	github.com/Knatte18/loomyard/internal/configengine
++100	github.com/Knatte18/loomyard/internal/state
++97	github.com/Knatte18/loomyard/internal/stencil
++96	github.com/Knatte18/loomyard/internal/lymtemp
++96	github.com/Knatte18/loomyard/internal/stencilstore
++94	github.com/Knatte18/loomyard/internal/pauserecord
++89	github.com/Knatte18/loomyard/internal/toolfloor
++88	github.com/Knatte18/loomyard/internal/gitexec
++85	github.com/Knatte18/loomyard/internal/agentname
++85	github.com/Knatte18/loomyard/internal/shedengine
++83	github.com/Knatte18/loomyard/internal/fslink
++82	github.com/Knatte18/loomyard/internal/buildinfo
++82	github.com/Knatte18/loomyard/internal/buildvcs
++82	github.com/Knatte18/loomyard/internal/gitrepo
++82	github.com/Knatte18/loomyard/internal/runproc
++82	github.com/Knatte18/loomyard/internal/shedrun
++82	github.com/Knatte18/loomyard/internal/vscode
++81	github.com/Knatte18/loomyard/internal/fabricengine
++81	github.com/Knatte18/loomyard/internal/parentlock
++79	github.com/Knatte18/loomyard/internal/shell
++78	github.com/Knatte18/loomyard/internal/fswatch
++78	github.com/Knatte18/loomyard/internal/reedengine/render
++78	github.com/Knatte18/loomyard/internal/segmentcolor
++77	github.com/Knatte18/loomyard/internal/modelspec
++77	github.com/Knatte18/loomyard/internal/reedengine
++76	github.com/Knatte18/loomyard/internal/shuttleengine
++70	github.com/Knatte18/loomyard/internal/editdirective
++70	github.com/Knatte18/loomyard/internal/parentdirective
++70	github.com/Knatte18/loomyard/internal/pattern
++69	github.com/Knatte18/loomyard/internal/lensreport
++68	github.com/Knatte18/loomyard/internal/fabricvocab
++67	github.com/Knatte18/loomyard/internal/gateslot
++67	github.com/Knatte18/loomyard/internal/planparser
++64	github.com/Knatte18/loomyard/internal/gitkit
++63	github.com/Knatte18/loomyard/internal/friction
++63	github.com/Knatte18/loomyard/internal/languageconfig
++61	github.com/Knatte18/loomyard/internal/discussionparser
++61	github.com/Knatte18/loomyard/internal/verifyrun
++60	github.com/Knatte18/loomyard/internal/output
++60	github.com/Knatte18/loomyard/internal/planindex
++60	github.com/Knatte18/loomyard/internal/seatengine
++59	github.com/Knatte18/loomyard/internal/batcher
++59	github.com/Knatte18/loomyard/internal/cardverify
++59	github.com/Knatte18/loomyard/internal/clihelp
++59	github.com/Knatte18/loomyard/internal/lenses
++59	github.com/Knatte18/loomyard/internal/summaryparser
++59	github.com/Knatte18/loomyard/internal/verifytree
++58	github.com/Knatte18/loomyard/internal/burlerengine
++58	github.com/Knatte18/loomyard/internal/websterengine
++57	github.com/Knatte18/loomyard/internal/githubclient
++54	github.com/Knatte18/loomyard/internal/sheddriver
++54	github.com/Knatte18/loomyard/internal/shedverbs
++53	github.com/Knatte18/loomyard/internal/reviewbudget
++53	github.com/Knatte18/loomyard/internal/shedadapters
++53	github.com/Knatte18/loomyard/internal/shellguard
++53	github.com/Knatte18/loomyard/internal/twilldirective
++52	github.com/Knatte18/loomyard/internal/entrymerge
++52	github.com/Knatte18/loomyard/internal/loomengine
++52	github.com/Knatte18/loomyard/internal/samplerengine
++52	github.com/Knatte18/loomyard/internal/shedtransient
++52	github.com/Knatte18/loomyard/internal/shuttleengine/claudeengine
++51	github.com/Knatte18/loomyard/internal/boardengine
++51	github.com/Knatte18/loomyard/internal/shuttleengines
++50	github.com/Knatte18/loomyard/internal/battenshed
++50	github.com/Knatte18/loomyard/internal/darnengine
++50	github.com/Knatte18/loomyard/internal/dobbyengine
++50	github.com/Knatte18/loomyard/internal/driftengine
++50	github.com/Knatte18/loomyard/internal/impactset
++50	github.com/Knatte18/loomyard/internal/loggerconfig
++50	github.com/Knatte18/loomyard/internal/mergeresolve
++50	github.com/Knatte18/loomyard/internal/orchengine
++50	github.com/Knatte18/loomyard/internal/pawlengine
++50	github.com/Knatte18/loomyard/internal/pullrequest
++50	github.com/Knatte18/loomyard/internal/runprofile
++49	github.com/Knatte18/loomyard/internal/commentlint
++49	github.com/Knatte18/loomyard/internal/configreg
++49	github.com/Knatte18/loomyard/internal/landingshed
++48	github.com/Knatte18/loomyard/internal/configsync
++48	github.com/Knatte18/loomyard/internal/creelengine
++48	github.com/Knatte18/loomyard/internal/loomshed
++48	github.com/Knatte18/loomyard/internal/machinename
++48	github.com/Knatte18/loomyard/internal/patternlint
++48	github.com/Knatte18/loomyard/internal/preflight
++47	github.com/Knatte18/loomyard/internal/hubgeom
++47	github.com/Knatte18/loomyard/internal/hubreconcile
++36	github.com/Knatte18/loomyard/internal/pairteardown
++34	github.com/Knatte18/loomyard/internal/fabriccli
++34	github.com/Knatte18/loomyard/internal/hubforge
++21	github.com/Knatte18/loomyard/internal/preflightshed
++20	github.com/Knatte18/loomyard/internal/shedrecipe
++19	github.com/Knatte18/loomyard/internal/shedcheck
++18	github.com/Knatte18/loomyard/internal/shedbuild
++17	github.com/Knatte18/loomyard/contracts/recipes
++16	github.com/Knatte18/loomyard/internal/battenrecipe
++16	github.com/Knatte18/loomyard/internal/selfexec
++16	github.com/Knatte18/loomyard/internal/testkit/envelope
++15	github.com/Knatte18/loomyard/internal/orchroute
++14	github.com/Knatte18/loomyard/internal/creelcli
++13	github.com/Knatte18/loomyard/contracts/stencils
++13	github.com/Knatte18/loomyard/internal/statuspane
++12	github.com/Knatte18/loomyard/internal/loomrecipe
++12	github.com/Knatte18/loomyard/internal/orchcli
++11	github.com/Knatte18/loomyard/internal/tenderengine
++11	github.com/Knatte18/loomyard/internal/testkit/logcapture
++11	github.com/Knatte18/loomyard/internal/testkit/scankit
++10	github.com/Knatte18/loomyard/internal/durfmt
++10	github.com/Knatte18/loomyard/internal/testkit/plankit
++9	github.com/Knatte18/loomyard/internal/arbiterstop
++9	github.com/Knatte18/loomyard/internal/planglyph
++9	github.com/Knatte18/loomyard/internal/tendercli
++9	github.com/Knatte18/loomyard/internal/testkit/lymbin
++8	github.com/Knatte18/loomyard/internal/shedarbiter
++8	github.com/Knatte18/loomyard/internal/statuscommit
++8	github.com/Knatte18/loomyard/internal/testkit/boardkit
++8	github.com/Knatte18/loomyard/internal/testkit/stencilkit
++7	github.com/Knatte18/loomyard/internal/battencli
++6	github.com/Knatte18/loomyard/contracts/specs
++6	github.com/Knatte18/loomyard/internal/haltnote
++6	github.com/Knatte18/loomyard/internal/standalonestate
++6	github.com/Knatte18/loomyard/internal/testkit/shedfake
++5	github.com/Knatte18/loomyard/internal/dotnetimpact
++5	github.com/Knatte18/loomyard/internal/standalonegeom
++4	github.com/Knatte18/loomyard/internal/cliwire
++4	github.com/Knatte18/loomyard/internal/failuretrace
++4	github.com/Knatte18/loomyard/internal/frictionengine
++4	github.com/Knatte18/loomyard/internal/gatecli
++4	github.com/Knatte18/loomyard/internal/heddleengine
++4	github.com/Knatte18/loomyard/internal/hibernateengine
++4	github.com/Knatte18/loomyard/internal/hubissues
++4	github.com/Knatte18/loomyard/internal/sleepjournal
++4	github.com/Knatte18/loomyard/internal/testkit/shuttlefake
++3	github.com/Knatte18/loomyard/internal/adoptcli
++3	github.com/Knatte18/loomyard/internal/boardcli
++3	github.com/Knatte18/loomyard/internal/ideengine
++3	github.com/Knatte18/loomyard/internal/loomcli
++3	github.com/Knatte18/loomyard/internal/reportengine
++3	github.com/Knatte18/loomyard/internal/selfreportengine
++3	github.com/Knatte18/loomyard/internal/termwindow
++3	github.com/Knatte18/loomyard/internal/testkit/envkit
++3	github.com/Knatte18/loomyard/tools/internal/devbin
++2	github.com/Knatte18/loomyard/internal/beamcli
++2	github.com/Knatte18/loomyard/internal/burlercli
++2	github.com/Knatte18/loomyard/internal/cleanupcli
++2	github.com/Knatte18/loomyard/internal/configcli
++2	github.com/Knatte18/loomyard/internal/driftcli
++2	github.com/Knatte18/loomyard/internal/gitrepo/internal/gitoracle
++2	github.com/Knatte18/loomyard/internal/heddlecli
++2	github.com/Knatte18/loomyard/internal/helpcli
++2	github.com/Knatte18/loomyard/internal/hibernatecli
++2	github.com/Knatte18/loomyard/internal/idecli
++2	github.com/Knatte18/loomyard/internal/quarrycli
++2	github.com/Knatte18/loomyard/internal/reedcli
++2	github.com/Knatte18/loomyard/internal/reportcli
++2	github.com/Knatte18/loomyard/internal/selfreportcli
++2	github.com/Knatte18/loomyard/internal/shedcli
++2	github.com/Knatte18/loomyard/internal/shortcutcli
++2	github.com/Knatte18/loomyard/internal/shuttlecli
++2	github.com/Knatte18/loomyard/internal/stencilcli
++2	github.com/Knatte18/loomyard/internal/testkit/creelfake
++2	github.com/Knatte18/loomyard/internal/webstercli
++1	github.com/Knatte18/loomyard/cmd/lym
++1	github.com/Knatte18/loomyard/cmd/testtiming
++1	github.com/Knatte18/loomyard/internal/adoptcli_test
++1	github.com/Knatte18/loomyard/internal/agentname_test
++1	github.com/Knatte18/loomyard/internal/beamcli_test
++1	github.com/Knatte18/loomyard/internal/boardcli_test
++1	github.com/Knatte18/loomyard/internal/boardengine/boardtest
++1	github.com/Knatte18/loomyard/internal/driftcli_test
++1	github.com/Knatte18/loomyard/internal/entrymerge_test
++1	github.com/Knatte18/loomyard/internal/fabriccli_test
++1	github.com/Knatte18/loomyard/internal/fabricengine_test
++1	github.com/Knatte18/loomyard/internal/fsx_test
++1	github.com/Knatte18/loomyard/internal/gitexec_test
++1	github.com/Knatte18/loomyard/internal/gitrepo_test
++1	github.com/Knatte18/loomyard/internal/heddleengine_test
++1	github.com/Knatte18/loomyard/internal/hubgeom_test
++1	github.com/Knatte18/loomyard/internal/hubissues_test
++1	github.com/Knatte18/loomyard/internal/hubreconcile_test
++1	github.com/Knatte18/loomyard/internal/landingshed_test
++1	github.com/Knatte18/loomyard/internal/languageconfig_test
++1	github.com/Knatte18/loomyard/internal/lensreport_test
++1	github.com/Knatte18/loomyard/internal/lock_test
++1	github.com/Knatte18/loomyard/internal/loggerconfig_test
++1	github.com/Knatte18/loomyard/internal/logger_test
++1	github.com/Knatte18/loomyard/internal/loomcli_test
++1	github.com/Knatte18/loomyard/internal/lymcwd_test
++1	github.com/Knatte18/loomyard/internal/lymtemp_test
++1	github.com/Knatte18/loomyard/internal/output_test
++1	github.com/Knatte18/loomyard/internal/pauserecord_test
++1	github.com/Knatte18/loomyard/internal/pawlengine_test
++1	github.com/Knatte18/loomyard/internal/preflight_test
++1	github.com/Knatte18/loomyard/internal/proc_test
++1	github.com/Knatte18/loomyard/internal/pullrequest_test
++1	github.com/Knatte18/loomyard/internal/runprofile_test
++1	github.com/Knatte18/loomyard/internal/shedverbs_test
++1	github.com/Knatte18/loomyard/internal/testkit
++1	github.com/Knatte18/loomyard/internal/testkit/llmkit
++1	github.com/Knatte18/loomyard/internal/testkit/locationkit
++1	github.com/Knatte18/loomyard/internal/treadleengine
++1	github.com/Knatte18/loomyard/internal/websterengine_test
++1	github.com/Knatte18/loomyard/internal/weftname_test
++1	github.com/Knatte18/loomyard/tools/codestats
++1	github.com/Knatte18/loomyard/tools/deploy
++1	github.com/Knatte18/loomyard/tools/forkaudit
++1	github.com/Knatte18/loomyard/tools/godocreflow
++1	github.com/Knatte18/loomyard/tools/mdreflow
++1	github.com/Knatte18/loomyard/tools/plandag
++1	github.com/Knatte18/loomyard/tools/sandbox
++1	github.com/Knatte18/loomyard/tools/tapestryrename
++1	github.com/Knatte18/loomyard/tools/tokencount
++1	github.com/Knatte18/loomyard/tools/wordswap
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/tables/fanin-tier2-before.tsv b/docs/research/gate-fewer-binaries-trial-2026-11-01/tables/fanin-tier2-before.tsv
+new file mode 100644
+index 00000000..166ef492
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/tables/fanin-tier2-before.tsv
+@@ -0,0 +1,215 @@
++#binaries	181
++181	github.com/Knatte18/loomyard/internal/agentname
++181	github.com/Knatte18/loomyard/internal/lock
++181	github.com/Knatte18/loomyard/internal/lymtemp
++181	github.com/Knatte18/loomyard/internal/proc
++181	github.com/Knatte18/loomyard/internal/testkit/tmuxkit
++139	github.com/Knatte18/loomyard/internal/dotgit
++139	github.com/Knatte18/loomyard/internal/weftname
++138	github.com/Knatte18/loomyard/internal/lymcwd
++132	github.com/Knatte18/loomyard/internal/lymdirs
++131	github.com/Knatte18/loomyard/internal/logger
++104	github.com/Knatte18/loomyard/internal/fsx
++102	github.com/Knatte18/loomyard/internal/envsource
++102	github.com/Knatte18/loomyard/internal/yamlengine
++101	github.com/Knatte18/loomyard/internal/configengine
++99	github.com/Knatte18/loomyard/internal/state
++95	github.com/Knatte18/loomyard/internal/stencil
++94	github.com/Knatte18/loomyard/internal/stencilstore
++93	github.com/Knatte18/loomyard/internal/pauserecord
++87	github.com/Knatte18/loomyard/internal/toolfloor
++86	github.com/Knatte18/loomyard/internal/gitexec
++83	github.com/Knatte18/loomyard/internal/shedengine
++80	github.com/Knatte18/loomyard/internal/buildvcs
++79	github.com/Knatte18/loomyard/internal/buildinfo
++79	github.com/Knatte18/loomyard/internal/fslink
++79	github.com/Knatte18/loomyard/internal/gitrepo
++79	github.com/Knatte18/loomyard/internal/runproc
++79	github.com/Knatte18/loomyard/internal/shedrun
++79	github.com/Knatte18/loomyard/internal/vscode
++78	github.com/Knatte18/loomyard/internal/fabricengine
++78	github.com/Knatte18/loomyard/internal/parentlock
++72	github.com/Knatte18/loomyard/internal/fswatch
++72	github.com/Knatte18/loomyard/internal/shell
++71	github.com/Knatte18/loomyard/internal/reedengine/render
++71	github.com/Knatte18/loomyard/internal/segmentcolor
++70	github.com/Knatte18/loomyard/internal/modelspec
++70	github.com/Knatte18/loomyard/internal/reedengine
++69	github.com/Knatte18/loomyard/internal/shuttleengine
++63	github.com/Knatte18/loomyard/internal/editdirective
++63	github.com/Knatte18/loomyard/internal/parentdirective
++62	github.com/Knatte18/loomyard/internal/pattern
++61	github.com/Knatte18/loomyard/internal/lensreport
++60	github.com/Knatte18/loomyard/internal/fabricvocab
++60	github.com/Knatte18/loomyard/internal/gateslot
++59	github.com/Knatte18/loomyard/internal/planparser
++57	github.com/Knatte18/loomyard/internal/gitkit
++56	github.com/Knatte18/loomyard/internal/languageconfig
++55	github.com/Knatte18/loomyard/internal/friction
++55	github.com/Knatte18/loomyard/internal/output
++54	github.com/Knatte18/loomyard/internal/clihelp
++54	github.com/Knatte18/loomyard/internal/verifyrun
++53	github.com/Knatte18/loomyard/internal/discussionparser
++53	github.com/Knatte18/loomyard/internal/seatengine
++52	github.com/Knatte18/loomyard/internal/planindex
++52	github.com/Knatte18/loomyard/internal/summaryparser
++52	github.com/Knatte18/loomyard/internal/verifytree
++51	github.com/Knatte18/loomyard/internal/batcher
++51	github.com/Knatte18/loomyard/internal/cardverify
++51	github.com/Knatte18/loomyard/internal/lenses
++50	github.com/Knatte18/loomyard/internal/burlerengine
++50	github.com/Knatte18/loomyard/internal/githubclient
++50	github.com/Knatte18/loomyard/internal/websterengine
++47	github.com/Knatte18/loomyard/internal/entrymerge
++47	github.com/Knatte18/loomyard/internal/shedverbs
++46	github.com/Knatte18/loomyard/internal/sheddriver
++46	github.com/Knatte18/loomyard/internal/shellguard
++45	github.com/Knatte18/loomyard/internal/boardengine
++45	github.com/Knatte18/loomyard/internal/reviewbudget
++45	github.com/Knatte18/loomyard/internal/shedadapters
++45	github.com/Knatte18/loomyard/internal/shedtransient
++45	github.com/Knatte18/loomyard/internal/shuttleengine/claudeengine
++45	github.com/Knatte18/loomyard/internal/twilldirective
++44	github.com/Knatte18/loomyard/internal/loomengine
++44	github.com/Knatte18/loomyard/internal/samplerengine
++44	github.com/Knatte18/loomyard/internal/shuttleengines
++43	github.com/Knatte18/loomyard/internal/mergeresolve
++43	github.com/Knatte18/loomyard/internal/pullrequest
++42	github.com/Knatte18/loomyard/internal/battenshed
++42	github.com/Knatte18/loomyard/internal/darnengine
++42	github.com/Knatte18/loomyard/internal/dobbyengine
++42	github.com/Knatte18/loomyard/internal/driftengine
++42	github.com/Knatte18/loomyard/internal/landingshed
++42	github.com/Knatte18/loomyard/internal/loggerconfig
++42	github.com/Knatte18/loomyard/internal/orchengine
++42	github.com/Knatte18/loomyard/internal/runprofile
++41	github.com/Knatte18/loomyard/internal/configreg
++41	github.com/Knatte18/loomyard/internal/pawlengine
++40	github.com/Knatte18/loomyard/internal/configsync
++40	github.com/Knatte18/loomyard/internal/preflight
++39	github.com/Knatte18/loomyard/internal/creelengine
++39	github.com/Knatte18/loomyard/internal/hubreconcile
++39	github.com/Knatte18/loomyard/internal/machinename
++38	github.com/Knatte18/loomyard/internal/hubgeom
++34	github.com/Knatte18/loomyard/internal/impactset
++32	github.com/Knatte18/loomyard/internal/commentlint
++31	github.com/Knatte18/loomyard/internal/loomshed
++31	github.com/Knatte18/loomyard/internal/patternlint
++20	github.com/Knatte18/loomyard/internal/preflightshed
++19	github.com/Knatte18/loomyard/internal/shedrecipe
++18	github.com/Knatte18/loomyard/internal/pairteardown
++18	github.com/Knatte18/loomyard/internal/shedcheck
++17	github.com/Knatte18/loomyard/internal/shedbuild
++16	github.com/Knatte18/loomyard/contracts/recipes
++16	github.com/Knatte18/loomyard/internal/selfexec
++15	github.com/Knatte18/loomyard/internal/battenrecipe
++15	github.com/Knatte18/loomyard/internal/orchroute
++14	github.com/Knatte18/loomyard/internal/creelcli
++13	github.com/Knatte18/loomyard/contracts/stencils
++13	github.com/Knatte18/loomyard/internal/statuspane
++12	github.com/Knatte18/loomyard/internal/loomrecipe
++12	github.com/Knatte18/loomyard/internal/orchcli
++11	github.com/Knatte18/loomyard/internal/tenderengine
++10	github.com/Knatte18/loomyard/internal/durfmt
++9	github.com/Knatte18/loomyard/internal/arbiterstop
++9	github.com/Knatte18/loomyard/internal/tendercli
++8	github.com/Knatte18/loomyard/internal/fabriccli
++8	github.com/Knatte18/loomyard/internal/planglyph
++8	github.com/Knatte18/loomyard/internal/shedarbiter
++8	github.com/Knatte18/loomyard/internal/statuscommit
++7	github.com/Knatte18/loomyard/internal/battencli
++7	github.com/Knatte18/loomyard/internal/testkit/plankit
++6	github.com/Knatte18/loomyard/contracts/specs
++6	github.com/Knatte18/loomyard/internal/haltnote
++6	github.com/Knatte18/loomyard/internal/standalonestate
++6	github.com/Knatte18/loomyard/internal/testkit/scankit
++6	github.com/Knatte18/loomyard/internal/testkit/stencilkit
++5	github.com/Knatte18/loomyard/internal/dotnetimpact
++5	github.com/Knatte18/loomyard/internal/hubforge
++5	github.com/Knatte18/loomyard/internal/standalonegeom
++4	github.com/Knatte18/loomyard/internal/cliwire
++4	github.com/Knatte18/loomyard/internal/failuretrace
++4	github.com/Knatte18/loomyard/internal/frictionengine
++4	github.com/Knatte18/loomyard/internal/gatecli
++4	github.com/Knatte18/loomyard/internal/hibernateengine
++4	github.com/Knatte18/loomyard/internal/sleepjournal
++4	github.com/Knatte18/loomyard/internal/termwindow
++4	github.com/Knatte18/loomyard/internal/testkit/shedfake
++4	github.com/Knatte18/loomyard/internal/testkit/shuttlefake
++3	github.com/Knatte18/loomyard/internal/adoptcli
++3	github.com/Knatte18/loomyard/internal/heddleengine
++3	github.com/Knatte18/loomyard/internal/hubissues
++3	github.com/Knatte18/loomyard/internal/ideengine
++3	github.com/Knatte18/loomyard/internal/loomcli
++3	github.com/Knatte18/loomyard/internal/reedcli
++3	github.com/Knatte18/loomyard/internal/reportengine
++3	github.com/Knatte18/loomyard/internal/selfreportengine
++3	github.com/Knatte18/loomyard/internal/testkit/envelope
++3	github.com/Knatte18/loomyard/internal/testkit/envkit
++3	github.com/Knatte18/loomyard/internal/testkit/logcapture
++3	github.com/Knatte18/loomyard/internal/testkit/lymbin
++3	github.com/Knatte18/loomyard/tools/internal/devbin
++2	github.com/Knatte18/loomyard/internal/beamcli
++2	github.com/Knatte18/loomyard/internal/boardcli
++2	github.com/Knatte18/loomyard/internal/burlercli
++2	github.com/Knatte18/loomyard/internal/cleanupcli
++2	github.com/Knatte18/loomyard/internal/configcli
++2	github.com/Knatte18/loomyard/internal/driftcli
++2	github.com/Knatte18/loomyard/internal/heddlecli
++2	github.com/Knatte18/loomyard/internal/helpcli
++2	github.com/Knatte18/loomyard/internal/hibernatecli
++2	github.com/Knatte18/loomyard/internal/idecli
++2	github.com/Knatte18/loomyard/internal/quarrycli
++2	github.com/Knatte18/loomyard/internal/reportcli
++2	github.com/Knatte18/loomyard/internal/selfreportcli
++2	github.com/Knatte18/loomyard/internal/shedcli
++2	github.com/Knatte18/loomyard/internal/shortcutcli
++2	github.com/Knatte18/loomyard/internal/shuttlecli
++2	github.com/Knatte18/loomyard/internal/stencilcli
++2	github.com/Knatte18/loomyard/internal/webstercli
++1	github.com/Knatte18/loomyard/cmd/lym
++1	github.com/Knatte18/loomyard/cmd/testtiming
++1	github.com/Knatte18/loomyard/internal/agentname_test
++1	github.com/Knatte18/loomyard/internal/boardcli_test
++1	github.com/Knatte18/loomyard/internal/boardengine/boardtest
++1	github.com/Knatte18/loomyard/internal/entrymerge_test
++1	github.com/Knatte18/loomyard/internal/fabriccli_test
++1	github.com/Knatte18/loomyard/internal/fabricengine_test
++1	github.com/Knatte18/loomyard/internal/fsx_test
++1	github.com/Knatte18/loomyard/internal/gitexec_test
++1	github.com/Knatte18/loomyard/internal/gitrepo/internal/gitoracle
++1	github.com/Knatte18/loomyard/internal/gitrepo_test
++1	github.com/Knatte18/loomyard/internal/hubgeom_test
++1	github.com/Knatte18/loomyard/internal/hubissues_test
++1	github.com/Knatte18/loomyard/internal/landingshed_test
++1	github.com/Knatte18/loomyard/internal/languageconfig_test
++1	github.com/Knatte18/loomyard/internal/lensreport_test
++1	github.com/Knatte18/loomyard/internal/lock_test
++1	github.com/Knatte18/loomyard/internal/loggerconfig_test
++1	github.com/Knatte18/loomyard/internal/logger_test
++1	github.com/Knatte18/loomyard/internal/lymcwd_test
++1	github.com/Knatte18/loomyard/internal/lymtemp_test
++1	github.com/Knatte18/loomyard/internal/output_test
++1	github.com/Knatte18/loomyard/internal/pairteardown_test
++1	github.com/Knatte18/loomyard/internal/pauserecord_test
++1	github.com/Knatte18/loomyard/internal/pawlengine_test
++1	github.com/Knatte18/loomyard/internal/proc_test
++1	github.com/Knatte18/loomyard/internal/pullrequest_test
++1	github.com/Knatte18/loomyard/internal/runprofile_test
++1	github.com/Knatte18/loomyard/internal/standalonegeom_test
++1	github.com/Knatte18/loomyard/internal/testkit
++1	github.com/Knatte18/loomyard/internal/testkit/llmkit
++1	github.com/Knatte18/loomyard/internal/testkit/locationkit
++1	github.com/Knatte18/loomyard/internal/treadleengine
++1	github.com/Knatte18/loomyard/internal/websterengine_test
++1	github.com/Knatte18/loomyard/internal/weftname_test
++1	github.com/Knatte18/loomyard/tools/codestats
++1	github.com/Knatte18/loomyard/tools/deploy
++1	github.com/Knatte18/loomyard/tools/forkaudit
++1	github.com/Knatte18/loomyard/tools/godocreflow
++1	github.com/Knatte18/loomyard/tools/mdreflow
++1	github.com/Knatte18/loomyard/tools/plandag
++1	github.com/Knatte18/loomyard/tools/sandbox
++1	github.com/Knatte18/loomyard/tools/tapestryrename
++1	github.com/Knatte18/loomyard/tools/tokencount
++1	github.com/Knatte18/loomyard/tools/wordswap
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/tables/fanin-tier2-trial1.tsv b/docs/research/gate-fewer-binaries-trial-2026-11-01/tables/fanin-tier2-trial1.tsv
+new file mode 100644
+index 00000000..a846744b
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/tables/fanin-tier2-trial1.tsv
+@@ -0,0 +1,215 @@
++#binaries	181
++181	github.com/Knatte18/loomyard/internal/agentname
++181	github.com/Knatte18/loomyard/internal/lock
++181	github.com/Knatte18/loomyard/internal/lymtemp
++181	github.com/Knatte18/loomyard/internal/proc
++181	github.com/Knatte18/loomyard/internal/testkit/tmuxkit
++139	github.com/Knatte18/loomyard/internal/dotgit
++139	github.com/Knatte18/loomyard/internal/weftname
++138	github.com/Knatte18/loomyard/internal/lymcwd
++132	github.com/Knatte18/loomyard/internal/lymdirs
++131	github.com/Knatte18/loomyard/internal/logger
++105	github.com/Knatte18/loomyard/internal/fsx
++103	github.com/Knatte18/loomyard/internal/envsource
++103	github.com/Knatte18/loomyard/internal/yamlengine
++102	github.com/Knatte18/loomyard/internal/configengine
++100	github.com/Knatte18/loomyard/internal/state
++96	github.com/Knatte18/loomyard/internal/stencil
++95	github.com/Knatte18/loomyard/internal/stencilstore
++94	github.com/Knatte18/loomyard/internal/pauserecord
++88	github.com/Knatte18/loomyard/internal/toolfloor
++87	github.com/Knatte18/loomyard/internal/gitexec
++84	github.com/Knatte18/loomyard/internal/shedengine
++81	github.com/Knatte18/loomyard/internal/buildvcs
++80	github.com/Knatte18/loomyard/internal/buildinfo
++80	github.com/Knatte18/loomyard/internal/fslink
++80	github.com/Knatte18/loomyard/internal/gitrepo
++80	github.com/Knatte18/loomyard/internal/runproc
++80	github.com/Knatte18/loomyard/internal/shedrun
++80	github.com/Knatte18/loomyard/internal/vscode
++79	github.com/Knatte18/loomyard/internal/fabricengine
++79	github.com/Knatte18/loomyard/internal/parentlock
++73	github.com/Knatte18/loomyard/internal/fswatch
++73	github.com/Knatte18/loomyard/internal/shell
++72	github.com/Knatte18/loomyard/internal/reedengine/render
++72	github.com/Knatte18/loomyard/internal/segmentcolor
++71	github.com/Knatte18/loomyard/internal/reedengine
++70	github.com/Knatte18/loomyard/internal/modelspec
++69	github.com/Knatte18/loomyard/internal/shuttleengine
++63	github.com/Knatte18/loomyard/internal/editdirective
++63	github.com/Knatte18/loomyard/internal/parentdirective
++62	github.com/Knatte18/loomyard/internal/pattern
++61	github.com/Knatte18/loomyard/internal/lensreport
++60	github.com/Knatte18/loomyard/internal/fabricvocab
++60	github.com/Knatte18/loomyard/internal/gateslot
++59	github.com/Knatte18/loomyard/internal/planparser
++57	github.com/Knatte18/loomyard/internal/gitkit
++56	github.com/Knatte18/loomyard/internal/languageconfig
++55	github.com/Knatte18/loomyard/internal/friction
++55	github.com/Knatte18/loomyard/internal/output
++54	github.com/Knatte18/loomyard/internal/clihelp
++54	github.com/Knatte18/loomyard/internal/verifyrun
++53	github.com/Knatte18/loomyard/internal/discussionparser
++53	github.com/Knatte18/loomyard/internal/seatengine
++52	github.com/Knatte18/loomyard/internal/planindex
++52	github.com/Knatte18/loomyard/internal/summaryparser
++52	github.com/Knatte18/loomyard/internal/verifytree
++51	github.com/Knatte18/loomyard/internal/batcher
++51	github.com/Knatte18/loomyard/internal/cardverify
++51	github.com/Knatte18/loomyard/internal/lenses
++50	github.com/Knatte18/loomyard/internal/burlerengine
++50	github.com/Knatte18/loomyard/internal/githubclient
++50	github.com/Knatte18/loomyard/internal/websterengine
++47	github.com/Knatte18/loomyard/internal/entrymerge
++47	github.com/Knatte18/loomyard/internal/shedverbs
++46	github.com/Knatte18/loomyard/internal/sheddriver
++46	github.com/Knatte18/loomyard/internal/shellguard
++45	github.com/Knatte18/loomyard/internal/boardengine
++45	github.com/Knatte18/loomyard/internal/reviewbudget
++45	github.com/Knatte18/loomyard/internal/shedadapters
++45	github.com/Knatte18/loomyard/internal/shedtransient
++45	github.com/Knatte18/loomyard/internal/shuttleengine/claudeengine
++45	github.com/Knatte18/loomyard/internal/twilldirective
++44	github.com/Knatte18/loomyard/internal/loomengine
++44	github.com/Knatte18/loomyard/internal/samplerengine
++44	github.com/Knatte18/loomyard/internal/shuttleengines
++43	github.com/Knatte18/loomyard/internal/mergeresolve
++43	github.com/Knatte18/loomyard/internal/pullrequest
++42	github.com/Knatte18/loomyard/internal/battenshed
++42	github.com/Knatte18/loomyard/internal/darnengine
++42	github.com/Knatte18/loomyard/internal/dobbyengine
++42	github.com/Knatte18/loomyard/internal/driftengine
++42	github.com/Knatte18/loomyard/internal/landingshed
++42	github.com/Knatte18/loomyard/internal/loggerconfig
++42	github.com/Knatte18/loomyard/internal/orchengine
++42	github.com/Knatte18/loomyard/internal/runprofile
++41	github.com/Knatte18/loomyard/internal/configreg
++41	github.com/Knatte18/loomyard/internal/pawlengine
++40	github.com/Knatte18/loomyard/internal/configsync
++40	github.com/Knatte18/loomyard/internal/preflight
++39	github.com/Knatte18/loomyard/internal/creelengine
++39	github.com/Knatte18/loomyard/internal/hubreconcile
++39	github.com/Knatte18/loomyard/internal/machinename
++38	github.com/Knatte18/loomyard/internal/hubgeom
++34	github.com/Knatte18/loomyard/internal/impactset
++32	github.com/Knatte18/loomyard/internal/commentlint
++31	github.com/Knatte18/loomyard/internal/loomshed
++31	github.com/Knatte18/loomyard/internal/patternlint
++20	github.com/Knatte18/loomyard/internal/preflightshed
++19	github.com/Knatte18/loomyard/internal/shedrecipe
++18	github.com/Knatte18/loomyard/internal/pairteardown
++18	github.com/Knatte18/loomyard/internal/shedcheck
++17	github.com/Knatte18/loomyard/internal/shedbuild
++16	github.com/Knatte18/loomyard/contracts/recipes
++16	github.com/Knatte18/loomyard/internal/selfexec
++15	github.com/Knatte18/loomyard/internal/battenrecipe
++15	github.com/Knatte18/loomyard/internal/orchroute
++14	github.com/Knatte18/loomyard/internal/creelcli
++13	github.com/Knatte18/loomyard/contracts/stencils
++13	github.com/Knatte18/loomyard/internal/statuspane
++12	github.com/Knatte18/loomyard/internal/loomrecipe
++12	github.com/Knatte18/loomyard/internal/orchcli
++11	github.com/Knatte18/loomyard/internal/tenderengine
++10	github.com/Knatte18/loomyard/internal/durfmt
++9	github.com/Knatte18/loomyard/internal/arbiterstop
++9	github.com/Knatte18/loomyard/internal/tendercli
++8	github.com/Knatte18/loomyard/internal/fabriccli
++8	github.com/Knatte18/loomyard/internal/planglyph
++8	github.com/Knatte18/loomyard/internal/shedarbiter
++8	github.com/Knatte18/loomyard/internal/statuscommit
++7	github.com/Knatte18/loomyard/internal/battencli
++7	github.com/Knatte18/loomyard/internal/testkit/plankit
++6	github.com/Knatte18/loomyard/contracts/specs
++6	github.com/Knatte18/loomyard/internal/haltnote
++6	github.com/Knatte18/loomyard/internal/standalonestate
++6	github.com/Knatte18/loomyard/internal/testkit/scankit
++6	github.com/Knatte18/loomyard/internal/testkit/stencilkit
++5	github.com/Knatte18/loomyard/internal/dotnetimpact
++5	github.com/Knatte18/loomyard/internal/hubforge
++5	github.com/Knatte18/loomyard/internal/standalonegeom
++4	github.com/Knatte18/loomyard/internal/cliwire
++4	github.com/Knatte18/loomyard/internal/failuretrace
++4	github.com/Knatte18/loomyard/internal/frictionengine
++4	github.com/Knatte18/loomyard/internal/gatecli
++4	github.com/Knatte18/loomyard/internal/hibernateengine
++4	github.com/Knatte18/loomyard/internal/sleepjournal
++4	github.com/Knatte18/loomyard/internal/termwindow
++4	github.com/Knatte18/loomyard/internal/testkit/shedfake
++4	github.com/Knatte18/loomyard/internal/testkit/shuttlefake
++3	github.com/Knatte18/loomyard/internal/adoptcli
++3	github.com/Knatte18/loomyard/internal/heddleengine
++3	github.com/Knatte18/loomyard/internal/hubissues
++3	github.com/Knatte18/loomyard/internal/ideengine
++3	github.com/Knatte18/loomyard/internal/loomcli
++3	github.com/Knatte18/loomyard/internal/reedcli
++3	github.com/Knatte18/loomyard/internal/reportengine
++3	github.com/Knatte18/loomyard/internal/selfreportengine
++3	github.com/Knatte18/loomyard/internal/testkit/envelope
++3	github.com/Knatte18/loomyard/internal/testkit/envkit
++3	github.com/Knatte18/loomyard/internal/testkit/logcapture
++3	github.com/Knatte18/loomyard/internal/testkit/lymbin
++3	github.com/Knatte18/loomyard/tools/internal/devbin
++2	github.com/Knatte18/loomyard/internal/beamcli
++2	github.com/Knatte18/loomyard/internal/boardcli
++2	github.com/Knatte18/loomyard/internal/burlercli
++2	github.com/Knatte18/loomyard/internal/cleanupcli
++2	github.com/Knatte18/loomyard/internal/configcli
++2	github.com/Knatte18/loomyard/internal/driftcli
++2	github.com/Knatte18/loomyard/internal/heddlecli
++2	github.com/Knatte18/loomyard/internal/helpcli
++2	github.com/Knatte18/loomyard/internal/hibernatecli
++2	github.com/Knatte18/loomyard/internal/idecli
++2	github.com/Knatte18/loomyard/internal/quarrycli
++2	github.com/Knatte18/loomyard/internal/reportcli
++2	github.com/Knatte18/loomyard/internal/selfreportcli
++2	github.com/Knatte18/loomyard/internal/shedcli
++2	github.com/Knatte18/loomyard/internal/shortcutcli
++2	github.com/Knatte18/loomyard/internal/shuttlecli
++2	github.com/Knatte18/loomyard/internal/stencilcli
++2	github.com/Knatte18/loomyard/internal/webstercli
++1	github.com/Knatte18/loomyard/cmd/lym
++1	github.com/Knatte18/loomyard/cmd/testtiming
++1	github.com/Knatte18/loomyard/internal/agentname_test
++1	github.com/Knatte18/loomyard/internal/boardcli_test
++1	github.com/Knatte18/loomyard/internal/boardengine/boardtest
++1	github.com/Knatte18/loomyard/internal/entrymerge_test
++1	github.com/Knatte18/loomyard/internal/fabriccli_test
++1	github.com/Knatte18/loomyard/internal/fabricengine_test
++1	github.com/Knatte18/loomyard/internal/fsx_test
++1	github.com/Knatte18/loomyard/internal/gitexec_test
++1	github.com/Knatte18/loomyard/internal/gitrepo/internal/gitoracle
++1	github.com/Knatte18/loomyard/internal/gitrepo_test
++1	github.com/Knatte18/loomyard/internal/hubgeom_test
++1	github.com/Knatte18/loomyard/internal/hubissues_test
++1	github.com/Knatte18/loomyard/internal/landingshed_test
++1	github.com/Knatte18/loomyard/internal/languageconfig_test
++1	github.com/Knatte18/loomyard/internal/lensreport_test
++1	github.com/Knatte18/loomyard/internal/lock_test
++1	github.com/Knatte18/loomyard/internal/loggerconfig_test
++1	github.com/Knatte18/loomyard/internal/logger_test
++1	github.com/Knatte18/loomyard/internal/lymcwd_test
++1	github.com/Knatte18/loomyard/internal/lymtemp_test
++1	github.com/Knatte18/loomyard/internal/output_test
++1	github.com/Knatte18/loomyard/internal/pairteardown_test
++1	github.com/Knatte18/loomyard/internal/pauserecord_test
++1	github.com/Knatte18/loomyard/internal/pawlengine_test
++1	github.com/Knatte18/loomyard/internal/proc_test
++1	github.com/Knatte18/loomyard/internal/pullrequest_test
++1	github.com/Knatte18/loomyard/internal/runprofile_test
++1	github.com/Knatte18/loomyard/internal/standalonegeom_test
++1	github.com/Knatte18/loomyard/internal/testkit
++1	github.com/Knatte18/loomyard/internal/testkit/llmkit
++1	github.com/Knatte18/loomyard/internal/testkit/locationkit
++1	github.com/Knatte18/loomyard/internal/treadleengine
++1	github.com/Knatte18/loomyard/internal/websterengine_test
++1	github.com/Knatte18/loomyard/internal/weftname_test
++1	github.com/Knatte18/loomyard/tools/codestats
++1	github.com/Knatte18/loomyard/tools/deploy
++1	github.com/Knatte18/loomyard/tools/forkaudit
++1	github.com/Knatte18/loomyard/tools/godocreflow
++1	github.com/Knatte18/loomyard/tools/mdreflow
++1	github.com/Knatte18/loomyard/tools/plandag
++1	github.com/Knatte18/loomyard/tools/sandbox
++1	github.com/Knatte18/loomyard/tools/tapestryrename
++1	github.com/Knatte18/loomyard/tools/tokencount
++1	github.com/Knatte18/loomyard/tools/wordswap
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/tables/fanin-union-all.tsv b/docs/research/gate-fewer-binaries-trial-2026-11-01/tables/fanin-union-all.tsv
+new file mode 100644
+index 00000000..1eeebf90
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/tables/fanin-union-all.tsv
+@@ -0,0 +1,246 @@
++#binaries	182
++182	github.com/Knatte18/loomyard/internal/agentname
++182	github.com/Knatte18/loomyard/internal/lock
++182	github.com/Knatte18/loomyard/internal/lymtemp
++182	github.com/Knatte18/loomyard/internal/proc
++182	github.com/Knatte18/loomyard/internal/testkit/tiergate
++182	github.com/Knatte18/loomyard/internal/testkit/tmuxkit
++142	github.com/Knatte18/loomyard/internal/dotgit
++142	github.com/Knatte18/loomyard/internal/weftname
++141	github.com/Knatte18/loomyard/internal/lymcwd
++134	github.com/Knatte18/loomyard/internal/lymdirs
++133	github.com/Knatte18/loomyard/internal/logger
++109	github.com/Knatte18/loomyard/internal/fsx
++107	github.com/Knatte18/loomyard/internal/envsource
++107	github.com/Knatte18/loomyard/internal/yamlengine
++106	github.com/Knatte18/loomyard/internal/configengine
++104	github.com/Knatte18/loomyard/internal/state
++100	github.com/Knatte18/loomyard/internal/stencil
++99	github.com/Knatte18/loomyard/internal/stencilstore
++98	github.com/Knatte18/loomyard/internal/pauserecord
++93	github.com/Knatte18/loomyard/internal/toolfloor
++92	github.com/Knatte18/loomyard/internal/gitexec
++89	github.com/Knatte18/loomyard/internal/fslink
++89	github.com/Knatte18/loomyard/internal/shedengine
++86	github.com/Knatte18/loomyard/internal/buildinfo
++86	github.com/Knatte18/loomyard/internal/buildvcs
++86	github.com/Knatte18/loomyard/internal/gitrepo
++86	github.com/Knatte18/loomyard/internal/parentlock
++86	github.com/Knatte18/loomyard/internal/runproc
++86	github.com/Knatte18/loomyard/internal/shedrun
++86	github.com/Knatte18/loomyard/internal/vscode
++85	github.com/Knatte18/loomyard/internal/fabricengine
++81	github.com/Knatte18/loomyard/internal/shell
++80	github.com/Knatte18/loomyard/internal/fswatch
++80	github.com/Knatte18/loomyard/internal/reedengine/render
++80	github.com/Knatte18/loomyard/internal/segmentcolor
++79	github.com/Knatte18/loomyard/internal/reedengine
++78	github.com/Knatte18/loomyard/internal/modelspec
++77	github.com/Knatte18/loomyard/internal/pattern
++77	github.com/Knatte18/loomyard/internal/shuttleengine
++76	github.com/Knatte18/loomyard/internal/fabricvocab
++75	github.com/Knatte18/loomyard/internal/lensreport
++75	github.com/Knatte18/loomyard/internal/testkit/scankit
++74	github.com/Knatte18/loomyard/internal/gateslot
++74	github.com/Knatte18/loomyard/internal/planparser
++71	github.com/Knatte18/loomyard/internal/editdirective
++71	github.com/Knatte18/loomyard/internal/parentdirective
++68	github.com/Knatte18/loomyard/internal/friction
++68	github.com/Knatte18/loomyard/internal/languageconfig
++68	github.com/Knatte18/loomyard/internal/verifyrun
++67	github.com/Knatte18/loomyard/internal/discussionparser
++67	github.com/Knatte18/loomyard/internal/planindex
++66	github.com/Knatte18/loomyard/internal/batcher
++66	github.com/Knatte18/loomyard/internal/cardverify
++66	github.com/Knatte18/loomyard/internal/summaryparser
++66	github.com/Knatte18/loomyard/internal/verifytree
++65	github.com/Knatte18/loomyard/internal/lenses
++65	github.com/Knatte18/loomyard/internal/output
++65	github.com/Knatte18/loomyard/internal/seatengine
++65	github.com/Knatte18/loomyard/internal/websterengine
++64	github.com/Knatte18/loomyard/internal/burlerengine
++64	github.com/Knatte18/loomyard/internal/gitkit
++63	github.com/Knatte18/loomyard/internal/clihelp
++61	github.com/Knatte18/loomyard/internal/githubclient
++59	github.com/Knatte18/loomyard/internal/shellguard
++58	github.com/Knatte18/loomyard/internal/sheddriver
++58	github.com/Knatte18/loomyard/internal/shedverbs
++58	github.com/Knatte18/loomyard/internal/shuttleengine/claudeengine
++57	github.com/Knatte18/loomyard/internal/reviewbudget
++57	github.com/Knatte18/loomyard/internal/shedadapters
++57	github.com/Knatte18/loomyard/internal/twilldirective
++56	github.com/Knatte18/loomyard/internal/entrymerge
++56	github.com/Knatte18/loomyard/internal/loomengine
++56	github.com/Knatte18/loomyard/internal/samplerengine
++56	github.com/Knatte18/loomyard/internal/shedtransient
++56	github.com/Knatte18/loomyard/internal/shuttleengines
++55	github.com/Knatte18/loomyard/internal/boardengine
++55	github.com/Knatte18/loomyard/internal/impactset
++54	github.com/Knatte18/loomyard/internal/battenshed
++54	github.com/Knatte18/loomyard/internal/darnengine
++54	github.com/Knatte18/loomyard/internal/dobbyengine
++54	github.com/Knatte18/loomyard/internal/driftengine
++54	github.com/Knatte18/loomyard/internal/loggerconfig
++54	github.com/Knatte18/loomyard/internal/mergeresolve
++54	github.com/Knatte18/loomyard/internal/orchengine
++54	github.com/Knatte18/loomyard/internal/pawlengine
++54	github.com/Knatte18/loomyard/internal/pullrequest
++54	github.com/Knatte18/loomyard/internal/runprofile
++53	github.com/Knatte18/loomyard/internal/commentlint
++53	github.com/Knatte18/loomyard/internal/configreg
++53	github.com/Knatte18/loomyard/internal/landingshed
++52	github.com/Knatte18/loomyard/internal/configsync
++52	github.com/Knatte18/loomyard/internal/creelengine
++52	github.com/Knatte18/loomyard/internal/loomshed
++52	github.com/Knatte18/loomyard/internal/machinename
++52	github.com/Knatte18/loomyard/internal/patternlint
++52	github.com/Knatte18/loomyard/internal/preflight
++51	github.com/Knatte18/loomyard/internal/hubgeom
++51	github.com/Knatte18/loomyard/internal/hubreconcile
++40	github.com/Knatte18/loomyard/internal/pairteardown
++39	github.com/Knatte18/loomyard/internal/fabriccli
++39	github.com/Knatte18/loomyard/internal/hubforge
++38	github.com/Knatte18/loomyard/internal/testkit/logcapture
++35	github.com/Knatte18/loomyard/contracts/stencils
++30	github.com/Knatte18/loomyard/internal/testkit/stencilkit
++21	github.com/Knatte18/loomyard/internal/preflightshed
++21	github.com/Knatte18/loomyard/internal/shedcheck
++20	github.com/Knatte18/loomyard/internal/shedbuild
++20	github.com/Knatte18/loomyard/internal/shedrecipe
++19	github.com/Knatte18/loomyard/contracts/recipes
++18	github.com/Knatte18/loomyard/internal/battenrecipe
++18	github.com/Knatte18/loomyard/internal/testkit/envelope
++16	github.com/Knatte18/loomyard/internal/selfexec
++16	github.com/Knatte18/loomyard/internal/testkit/shedfake
++15	github.com/Knatte18/loomyard/internal/orchroute
++15	github.com/Knatte18/loomyard/internal/testkit/shuttlefake
++14	github.com/Knatte18/loomyard/internal/creelcli
++13	github.com/Knatte18/loomyard/internal/loomrecipe
++13	github.com/Knatte18/loomyard/internal/statuspane
++12	github.com/Knatte18/loomyard/internal/orchcli
++12	github.com/Knatte18/loomyard/internal/testkit/plankit
++11	github.com/Knatte18/loomyard/internal/tenderengine
++11	github.com/Knatte18/loomyard/internal/testkit/lymbin
++10	github.com/Knatte18/loomyard/internal/durfmt
++9	github.com/Knatte18/loomyard/internal/arbiterstop
++9	github.com/Knatte18/loomyard/internal/planglyph
++9	github.com/Knatte18/loomyard/internal/tendercli
++9	github.com/Knatte18/loomyard/internal/testkit/llmkit
++9	github.com/Knatte18/loomyard/internal/testkit/locationkit
++8	github.com/Knatte18/loomyard/internal/shedarbiter
++8	github.com/Knatte18/loomyard/internal/statuscommit
++8	github.com/Knatte18/loomyard/internal/termwindow
++8	github.com/Knatte18/loomyard/internal/testkit/boardkit
++7	github.com/Knatte18/loomyard/internal/battencli
++7	github.com/Knatte18/loomyard/internal/reedcli
++7	github.com/Knatte18/loomyard/internal/testkit/envkit
++6	github.com/Knatte18/loomyard/contracts/specs
++6	github.com/Knatte18/loomyard/internal/dotnetimpact
++6	github.com/Knatte18/loomyard/internal/haltnote
++6	github.com/Knatte18/loomyard/internal/standalonestate
++5	github.com/Knatte18/loomyard/internal/gatecli
++5	github.com/Knatte18/loomyard/internal/standalonegeom
++4	github.com/Knatte18/loomyard/internal/cliwire
++4	github.com/Knatte18/loomyard/internal/failuretrace
++4	github.com/Knatte18/loomyard/internal/frictionengine
++4	github.com/Knatte18/loomyard/internal/heddleengine
++4	github.com/Knatte18/loomyard/internal/hibernateengine
++4	github.com/Knatte18/loomyard/internal/hubissues
++4	github.com/Knatte18/loomyard/internal/sleepjournal
++3	github.com/Knatte18/loomyard/internal/adoptcli
++3	github.com/Knatte18/loomyard/internal/boardcli
++3	github.com/Knatte18/loomyard/internal/ideengine
++3	github.com/Knatte18/loomyard/internal/loomcli
++3	github.com/Knatte18/loomyard/internal/reportengine
++3	github.com/Knatte18/loomyard/internal/selfreportengine
++3	github.com/Knatte18/loomyard/internal/testkit/creelfake
++3	github.com/Knatte18/loomyard/tools/internal/devbin
++2	github.com/Knatte18/loomyard/internal/beamcli
++2	github.com/Knatte18/loomyard/internal/burlercli
++2	github.com/Knatte18/loomyard/internal/cleanupcli
++2	github.com/Knatte18/loomyard/internal/configcli
++2	github.com/Knatte18/loomyard/internal/driftcli
++2	github.com/Knatte18/loomyard/internal/gitrepo/internal/gitoracle
++2	github.com/Knatte18/loomyard/internal/heddlecli
++2	github.com/Knatte18/loomyard/internal/helpcli
++2	github.com/Knatte18/loomyard/internal/hibernatecli
++2	github.com/Knatte18/loomyard/internal/idecli
++2	github.com/Knatte18/loomyard/internal/quarrycli
++2	github.com/Knatte18/loomyard/internal/reportcli
++2	github.com/Knatte18/loomyard/internal/selfreportcli
++2	github.com/Knatte18/loomyard/internal/shedcli
++2	github.com/Knatte18/loomyard/internal/shortcutcli
++2	github.com/Knatte18/loomyard/internal/shuttlecli
++2	github.com/Knatte18/loomyard/internal/stencilcli
++2	github.com/Knatte18/loomyard/internal/testkit/indexkit
++2	github.com/Knatte18/loomyard/internal/treadleengine
++2	github.com/Knatte18/loomyard/internal/webstercli
++1	github.com/Knatte18/loomyard/cmd/lym
++1	github.com/Knatte18/loomyard/cmd/testtiming
++1	github.com/Knatte18/loomyard/internal/adoptcli_test
++1	github.com/Knatte18/loomyard/internal/agentname_test
++1	github.com/Knatte18/loomyard/internal/batcher_test
++1	github.com/Knatte18/loomyard/internal/battenrecipe_test
++1	github.com/Knatte18/loomyard/internal/beamcli_test
++1	github.com/Knatte18/loomyard/internal/boardcli_test
++1	github.com/Knatte18/loomyard/internal/boardengine/boardtest
++1	github.com/Knatte18/loomyard/internal/boardengine_test
++1	github.com/Knatte18/loomyard/internal/burlerengine_test
++1	github.com/Knatte18/loomyard/internal/configengine_test
++1	github.com/Knatte18/loomyard/internal/configreg_test
++1	github.com/Knatte18/loomyard/internal/creelengine_test
++1	github.com/Knatte18/loomyard/internal/driftcli_test
++1	github.com/Knatte18/loomyard/internal/entrymerge_test
++1	github.com/Knatte18/loomyard/internal/fabriccli_test
++1	github.com/Knatte18/loomyard/internal/fabricengine_test
++1	github.com/Knatte18/loomyard/internal/fsx_test
++1	github.com/Knatte18/loomyard/internal/gitexec_test
++1	github.com/Knatte18/loomyard/internal/gitrepo_test
++1	github.com/Knatte18/loomyard/internal/heddleengine_test
++1	github.com/Knatte18/loomyard/internal/hubgeom_test
++1	github.com/Knatte18/loomyard/internal/hubissues_test
++1	github.com/Knatte18/loomyard/internal/hubreconcile_test
++1	github.com/Knatte18/loomyard/internal/landingshed_test
++1	github.com/Knatte18/loomyard/internal/languageconfig_test
++1	github.com/Knatte18/loomyard/internal/lensreport_test
++1	github.com/Knatte18/loomyard/internal/lock_test
++1	github.com/Knatte18/loomyard/internal/loggerconfig_test
++1	github.com/Knatte18/loomyard/internal/logger_test
++1	github.com/Knatte18/loomyard/internal/loomcli_test
++1	github.com/Knatte18/loomyard/internal/lymcwd_test
++1	github.com/Knatte18/loomyard/internal/lymtemp_test
++1	github.com/Knatte18/loomyard/internal/orchcli_test
++1	github.com/Knatte18/loomyard/internal/orchengine_test
++1	github.com/Knatte18/loomyard/internal/output_test
++1	github.com/Knatte18/loomyard/internal/pairteardown_test
++1	github.com/Knatte18/loomyard/internal/pauserecord_test
++1	github.com/Knatte18/loomyard/internal/pawlengine_test
++1	github.com/Knatte18/loomyard/internal/planparser_test
++1	github.com/Knatte18/loomyard/internal/preflight_test
++1	github.com/Knatte18/loomyard/internal/proc_test
++1	github.com/Knatte18/loomyard/internal/pullrequest_test
++1	github.com/Knatte18/loomyard/internal/reedengine_test
++1	github.com/Knatte18/loomyard/internal/runprofile_test
++1	github.com/Knatte18/loomyard/internal/seatengine_test
++1	github.com/Knatte18/loomyard/internal/shedrecipe_test
++1	github.com/Knatte18/loomyard/internal/shedverbs_test
++1	github.com/Knatte18/loomyard/internal/shuttleengine/claudeengine_test
++1	github.com/Knatte18/loomyard/internal/shuttleengine_test
++1	github.com/Knatte18/loomyard/internal/standalonegeom_test
++1	github.com/Knatte18/loomyard/internal/state_test
++1	github.com/Knatte18/loomyard/internal/stencil_test
++1	github.com/Knatte18/loomyard/internal/summaryparser_test
++1	github.com/Knatte18/loomyard/internal/testkit
++1	github.com/Knatte18/loomyard/internal/treadleengine_test
++1	github.com/Knatte18/loomyard/internal/websterengine_test
++1	github.com/Knatte18/loomyard/internal/weftname_test
++1	github.com/Knatte18/loomyard/tools/codestats
++1	github.com/Knatte18/loomyard/tools/deploy
++1	github.com/Knatte18/loomyard/tools/forkaudit
++1	github.com/Knatte18/loomyard/tools/godocreflow
++1	github.com/Knatte18/loomyard/tools/mdreflow
++1	github.com/Knatte18/loomyard/tools/plandag
++1	github.com/Knatte18/loomyard/tools/sandbox
++1	github.com/Knatte18/loomyard/tools/tapestryrename
++1	github.com/Knatte18/loomyard/tools/tokencount
++1	github.com/Knatte18/loomyard/tools/wordswap
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/tables/fanin-union-sample.tsv b/docs/research/gate-fewer-binaries-trial-2026-11-01/tables/fanin-union-sample.tsv
+new file mode 100644
+index 00000000..ec018dce
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/tables/fanin-union-sample.tsv
+@@ -0,0 +1,156 @@
++#binaries	10
++10	github.com/Knatte18/loomyard/internal/agentname
++10	github.com/Knatte18/loomyard/internal/buildinfo
++10	github.com/Knatte18/loomyard/internal/buildvcs
++10	github.com/Knatte18/loomyard/internal/configengine
++10	github.com/Knatte18/loomyard/internal/dotgit
++10	github.com/Knatte18/loomyard/internal/envsource
++10	github.com/Knatte18/loomyard/internal/fabricengine
++10	github.com/Knatte18/loomyard/internal/fslink
++10	github.com/Knatte18/loomyard/internal/fswatch
++10	github.com/Knatte18/loomyard/internal/fsx
++10	github.com/Knatte18/loomyard/internal/gitexec
++10	github.com/Knatte18/loomyard/internal/gitrepo
++10	github.com/Knatte18/loomyard/internal/lock
++10	github.com/Knatte18/loomyard/internal/logger
++10	github.com/Knatte18/loomyard/internal/lymcwd
++10	github.com/Knatte18/loomyard/internal/lymdirs
++10	github.com/Knatte18/loomyard/internal/lymtemp
++10	github.com/Knatte18/loomyard/internal/parentlock
++10	github.com/Knatte18/loomyard/internal/pauserecord
++10	github.com/Knatte18/loomyard/internal/proc
++10	github.com/Knatte18/loomyard/internal/reedengine
++10	github.com/Knatte18/loomyard/internal/reedengine/render
++10	github.com/Knatte18/loomyard/internal/runproc
++10	github.com/Knatte18/loomyard/internal/segmentcolor
++10	github.com/Knatte18/loomyard/internal/shedengine
++10	github.com/Knatte18/loomyard/internal/shedrun
++10	github.com/Knatte18/loomyard/internal/shell
++10	github.com/Knatte18/loomyard/internal/state
++10	github.com/Knatte18/loomyard/internal/stencil
++10	github.com/Knatte18/loomyard/internal/stencilstore
++10	github.com/Knatte18/loomyard/internal/testkit/tiergate
++10	github.com/Knatte18/loomyard/internal/testkit/tmuxkit
++10	github.com/Knatte18/loomyard/internal/toolfloor
++10	github.com/Knatte18/loomyard/internal/vscode
++10	github.com/Knatte18/loomyard/internal/weftname
++10	github.com/Knatte18/loomyard/internal/yamlengine
++9	github.com/Knatte18/loomyard/internal/batcher
++9	github.com/Knatte18/loomyard/internal/burlerengine
++9	github.com/Knatte18/loomyard/internal/cardverify
++9	github.com/Knatte18/loomyard/internal/discussionparser
++9	github.com/Knatte18/loomyard/internal/editdirective
++9	github.com/Knatte18/loomyard/internal/fabricvocab
++9	github.com/Knatte18/loomyard/internal/friction
++9	github.com/Knatte18/loomyard/internal/gateslot
++9	github.com/Knatte18/loomyard/internal/gitkit
++9	github.com/Knatte18/loomyard/internal/languageconfig
++9	github.com/Knatte18/loomyard/internal/lenses
++9	github.com/Knatte18/loomyard/internal/lensreport
++9	github.com/Knatte18/loomyard/internal/modelspec
++9	github.com/Knatte18/loomyard/internal/parentdirective
++9	github.com/Knatte18/loomyard/internal/pattern
++9	github.com/Knatte18/loomyard/internal/planindex
++9	github.com/Knatte18/loomyard/internal/planparser
++9	github.com/Knatte18/loomyard/internal/seatengine
++9	github.com/Knatte18/loomyard/internal/shellguard
++9	github.com/Knatte18/loomyard/internal/shuttleengine
++9	github.com/Knatte18/loomyard/internal/shuttleengine/claudeengine
++9	github.com/Knatte18/loomyard/internal/shuttleengines
++9	github.com/Knatte18/loomyard/internal/summaryparser
++9	github.com/Knatte18/loomyard/internal/verifyrun
++9	github.com/Knatte18/loomyard/internal/verifytree
++9	github.com/Knatte18/loomyard/internal/websterengine
++8	github.com/Knatte18/loomyard/internal/battenshed
++8	github.com/Knatte18/loomyard/internal/boardengine
++8	github.com/Knatte18/loomyard/internal/clihelp
++8	github.com/Knatte18/loomyard/internal/commentlint
++8	github.com/Knatte18/loomyard/internal/configreg
++8	github.com/Knatte18/loomyard/internal/configsync
++8	github.com/Knatte18/loomyard/internal/creelengine
++8	github.com/Knatte18/loomyard/internal/darnengine
++8	github.com/Knatte18/loomyard/internal/dobbyengine
++8	github.com/Knatte18/loomyard/internal/driftengine
++8	github.com/Knatte18/loomyard/internal/entrymerge
++8	github.com/Knatte18/loomyard/internal/fabriccli
++8	github.com/Knatte18/loomyard/internal/githubclient
++8	github.com/Knatte18/loomyard/internal/hubforge
++8	github.com/Knatte18/loomyard/internal/hubgeom
++8	github.com/Knatte18/loomyard/internal/hubreconcile
++8	github.com/Knatte18/loomyard/internal/impactset
++8	github.com/Knatte18/loomyard/internal/landingshed
++8	github.com/Knatte18/loomyard/internal/loggerconfig
++8	github.com/Knatte18/loomyard/internal/loomengine
++8	github.com/Knatte18/loomyard/internal/loomshed
++8	github.com/Knatte18/loomyard/internal/machinename
++8	github.com/Knatte18/loomyard/internal/mergeresolve
++8	github.com/Knatte18/loomyard/internal/orchengine
++8	github.com/Knatte18/loomyard/internal/output
++8	github.com/Knatte18/loomyard/internal/pairteardown
++8	github.com/Knatte18/loomyard/internal/patternlint
++8	github.com/Knatte18/loomyard/internal/pawlengine
++8	github.com/Knatte18/loomyard/internal/preflight
++8	github.com/Knatte18/loomyard/internal/pullrequest
++8	github.com/Knatte18/loomyard/internal/reviewbudget
++8	github.com/Knatte18/loomyard/internal/runprofile
++8	github.com/Knatte18/loomyard/internal/samplerengine
++8	github.com/Knatte18/loomyard/internal/shedadapters
++8	github.com/Knatte18/loomyard/internal/sheddriver
++8	github.com/Knatte18/loomyard/internal/shedtransient
++8	github.com/Knatte18/loomyard/internal/shedverbs
++8	github.com/Knatte18/loomyard/internal/testkit/logcapture
++8	github.com/Knatte18/loomyard/internal/testkit/scankit
++8	github.com/Knatte18/loomyard/internal/twilldirective
++5	github.com/Knatte18/loomyard/contracts/stencils
++5	github.com/Knatte18/loomyard/internal/testkit/llmkit
++5	github.com/Knatte18/loomyard/internal/testkit/shuttlefake
++4	github.com/Knatte18/loomyard/internal/creelcli
++4	github.com/Knatte18/loomyard/internal/orchroute
++4	github.com/Knatte18/loomyard/internal/selfexec
++4	github.com/Knatte18/loomyard/internal/testkit/locationkit
++4	github.com/Knatte18/loomyard/internal/testkit/lymbin
++4	github.com/Knatte18/loomyard/internal/testkit/stencilkit
++3	github.com/Knatte18/loomyard/internal/orchcli
++3	github.com/Knatte18/loomyard/internal/reedcli
++3	github.com/Knatte18/loomyard/internal/statuspane
++3	github.com/Knatte18/loomyard/internal/termwindow
++3	github.com/Knatte18/loomyard/internal/testkit/envelope
++2	github.com/Knatte18/loomyard/internal/planglyph
++2	github.com/Knatte18/loomyard/internal/standalonegeom
++2	github.com/Knatte18/loomyard/internal/standalonestate
++2	github.com/Knatte18/loomyard/internal/testkit/boardkit
++2	github.com/Knatte18/loomyard/internal/testkit/creelfake
++2	github.com/Knatte18/loomyard/internal/testkit/indexkit
++2	github.com/Knatte18/loomyard/internal/testkit/plankit
++1	github.com/Knatte18/loomyard/contracts/recipes
++1	github.com/Knatte18/loomyard/contracts/specs
++1	github.com/Knatte18/loomyard/internal/arbiterstop
++1	github.com/Knatte18/loomyard/internal/battencli
++1	github.com/Knatte18/loomyard/internal/battenrecipe
++1	github.com/Knatte18/loomyard/internal/cliwire
++1	github.com/Knatte18/loomyard/internal/durfmt
++1	github.com/Knatte18/loomyard/internal/fabricengine_test
++1	github.com/Knatte18/loomyard/internal/failuretrace
++1	github.com/Knatte18/loomyard/internal/frictionengine
++1	github.com/Knatte18/loomyard/internal/haltnote
++1	github.com/Knatte18/loomyard/internal/heddleengine
++1	github.com/Knatte18/loomyard/internal/loomcli
++1	github.com/Knatte18/loomyard/internal/loomcli_test
++1	github.com/Knatte18/loomyard/internal/loomrecipe
++1	github.com/Knatte18/loomyard/internal/orchcli_test
++1	github.com/Knatte18/loomyard/internal/pairteardown_test
++1	github.com/Knatte18/loomyard/internal/preflightshed
++1	github.com/Knatte18/loomyard/internal/reedengine_test
++1	github.com/Knatte18/loomyard/internal/shedarbiter
++1	github.com/Knatte18/loomyard/internal/shedbuild
++1	github.com/Knatte18/loomyard/internal/shedcheck
++1	github.com/Knatte18/loomyard/internal/shedrecipe
++1	github.com/Knatte18/loomyard/internal/standalonegeom_test
++1	github.com/Knatte18/loomyard/internal/statuscommit
++1	github.com/Knatte18/loomyard/internal/tendercli
++1	github.com/Knatte18/loomyard/internal/tenderengine
++1	github.com/Knatte18/loomyard/internal/testkit/envkit
++1	github.com/Knatte18/loomyard/internal/testkit/shedfake
++1	github.com/Knatte18/loomyard/internal/treadleengine
++1	github.com/Knatte18/loomyard/internal/treadleengine_test
++1	github.com/Knatte18/loomyard/internal/webstercli
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/trial1/results.tsv b/docs/research/gate-fewer-binaries-trial-2026-11-01/trial1/results.tsv
+new file mode 100644
+index 00000000..90c443d3
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/trial1/results.tsv
+@@ -0,0 +1,30 @@
++t1-before-none	0	13	21803	21802	0	1	9.1	1.5
++t1-before-none	1	2	3668	3668	0	0	38.6	0.2
++t1-before-none	2	0	266	266	0	0	5.7	0
++t1-before-universal	0	182	21803	21802	0	1	40.1	0.7
++t1-before-universal	1	181	3668	3668	0	0	111.3	0.6
++t1-before-universal	2	181	266	266	0	0	63	0.6
++t1-before-mid	0	14	21803	21802	0	1	8.9	1.7
++t1-before-mid	1	34	3668	3668	0	0	86.6	0.2
++t1-before-mid	2	5	266	266	0	0	54.1	0
++t1-before-leaf	0	13	21803	21802	0	1	8.4	1.1
++t1-before-leaf	1	14	3668	3668	0	0	43.3	2.9
++t1-before-leaf	2	4	266	266	0	0	55.8	2.8
++t1-attempt1-universal-failed	0	182	21778	21776	1	1	38.9	0.6
++t1-attempt1-universal-failed	1	0	0	0	0	0	7.6	0
++t1-attempt1-universal-failed	2	181	266	266	0	0	64	0.6
++t1-attempt2-none-failed	0	182	21778	21777	0	1	36.3	0.7
++t1-attempt2-none-failed	1	181	3668	3665	3	0	119.4	0.7
++t1-attempt2-none-failed	2	181	291	291	0	0	63.8	0.6
++t1-after-none	0	7	21778	21777	0	1	10.8	1.7
++t1-after-none	1	3	3668	3667	1	0	49.4	0.3
++t1-after-none	2	0	291	291	0	0	5	0
++t1-after-mid	0	14	21778	21777	0	1	17.5	3.3
++t1-after-mid	1	36	3668	3667	1	0	160.1	0.3
++t1-after-mid	2	5	291	291	0	0	58.2	0
++t1-after-leaf	0	13	21778	21777	0	1	11.4	1.4
++t1-after-leaf	1	15	3668	3667	1	0	66.1	4.6
++t1-after-leaf	2	4	291	291	0	0	60.4	3.2
++t1-after-universal	0	91	21778	21777	0	1	44.1	0.6
++t1-after-universal	1	88	3668	3667	1	0	110.3	0.5
++t1-after-universal	2	181	291	291	0	0	72.4	0.9
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/trial1/trial1.patch b/docs/research/gate-fewer-binaries-trial-2026-11-01/trial1/trial1.patch
+new file mode 100644
+index 00000000..907524a5
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/trial1/trial1.patch
+@@ -0,0 +1,97 @@
++diff --git a/internal/testkit/tmuxkit/main_light.go b/internal/testkit/tmuxkit/main_light.go
++new file mode 100644
++index 00000000..8251d247
++--- /dev/null
+++++ b/internal/testkit/tmuxkit/main_light.go
++@@ -0,0 +1,51 @@
+++//go:build !tier2 && !tier3
+++
+++package tmuxkit
+++
+++import (
+++	"os"
+++	"path/filepath"
+++	"strconv"
+++	"strings"
+++	"testing"
+++)
+++
+++// Main is the trial's light TestMain path for the tiers with no tmux: a private temp directory, no import of lymtemp, proc, lock or agentname.
+++func Main(m *testing.M) int {
+++	dir, err := lightDir()
+++	if err != nil {
+++		return 1
+++	}
+++	_ = os.Setenv("TMPDIR", dir)
+++	_ = os.Setenv("TMUX_TMPDIR", dir)
+++	_ = os.Setenv("GIT_CEILING_DIRECTORIES", dir)
+++	_ = os.Unsetenv("LYM_REED_TMUX_CONF")
+++	code := m.Run()
+++	_ = os.RemoveAll(dir)
+++	return code
+++}
+++
+++// ServerEnviron mirrors the full kit's scrub with the agent variable names spelled out.
+++func ServerEnviron(environ []string) []string {
+++	clean := make([]string, 0, len(environ))
+++	for _, entry := range environ {
+++		key, _, _ := strings.Cut(entry, "=")
+++		switch {
+++		case key == "CLAUDECODE", strings.HasPrefix(key, "CLAUDE_CODE_"):
+++		case key == "LYM_TRACE_ID", key == "LYM_STRAND_NAME", key == "LYM_PARENT":
+++		default:
+++			clean = append(clean, entry)
+++		}
+++	}
+++	return clean
+++}
+++
+++// lightDir creates the private temp directory in the layout lymtemp uses, <system temp>/lym-<uid>/r<random>, so tests that read the run directory's place find it where they expect.
+++// The directory is created without lymtemp, whose lock import the light path cuts, so it has no owner lock and no dead-owner sweep.
+++func lightDir() (string, error) {
+++	base := filepath.Join(os.TempDir(), "lym-"+strconv.Itoa(os.Getuid()))
+++	if err := os.MkdirAll(base, 0o700); err != nil {
+++		return "", err
+++	}
+++	return os.MkdirTemp(base, "r")
+++}
++diff --git a/internal/testkit/tmuxkit/proc_test.go b/internal/testkit/tmuxkit/proc_test.go
++index 44d03e79..4a4c0a1d 100644
++--- a/internal/testkit/tmuxkit/proc_test.go
+++++ b/internal/testkit/tmuxkit/proc_test.go
++@@ -1,4 +1,4 @@
++-//go:build tier0 && linux
+++//go:build tier2 && linux
++ 
++ // proc_test.go checks the kit's stat and comm probes against the test's own process.
++ 
++diff --git a/internal/testkit/tmuxkit/tmuxkit.go b/internal/testkit/tmuxkit/tmuxkit.go
++index b9fd1e40..ab50c1b1 100644
++--- a/internal/testkit/tmuxkit/tmuxkit.go
+++++ b/internal/testkit/tmuxkit/tmuxkit.go
++@@ -1,3 +1,5 @@
+++//go:build tier2 || tier3
+++
++ // Package tmuxkit gives each test package one isolated tmux socket directory.
++ //
++ // A package's TestMain calls Main, which points `TMUX_TMPDIR` at a private directory, so no test reaches the caller's own tmux server or leaves a socket in the default directory.
++diff --git a/internal/testkit/tmuxkit/tmuxkit_test.go b/internal/testkit/tmuxkit/tmuxkit_test.go
++index ef1c0090..a4faf81b 100644
++--- a/internal/testkit/tmuxkit/tmuxkit_test.go
+++++ b/internal/testkit/tmuxkit/tmuxkit_test.go
++@@ -1,4 +1,4 @@
++-//go:build tier0
+++//go:build tier2
++ 
++ package tmuxkit
++ 
++diff --git a/internal/testkit/tmuxkit/tmuxkit_unix_test.go b/internal/testkit/tmuxkit/tmuxkit_unix_test.go
++index 57f73708..4e1b083f 100644
++--- a/internal/testkit/tmuxkit/tmuxkit_unix_test.go
+++++ b/internal/testkit/tmuxkit/tmuxkit_unix_test.go
++@@ -1,4 +1,4 @@
++-//go:build tier0 && !windows
+++//go:build tier2 && !windows
++ 
++ // tmuxkit_unix_test.go holds the socket tests; tmux keeps its unix sockets under TMUX_TMPDIR, which Windows does not use.
++ 
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/trial2/guard-findings.txt b/docs/research/gate-fewer-binaries-trial-2026-11-01/trial2/guard-findings.txt
+new file mode 100644
+index 00000000..5517b0ce
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/trial2/guard-findings.txt
+@@ -0,0 +1,10 @@
++Guard tests of cmd/lym run over the trial 2 tree (LYM_TEST_TIER=0 lym gate test --wait --tier 0 --guards ./cmd/lym):
++
++--- FAIL: TestLLMTier_OnlyLLMFilesReachAnLLM
++    internal/webstercli/smoke_test.go: imports llmkit but can compile without the `tier3` tag; constrain it to `//go:build tier3`
++--- FAIL: TestTierPurity_UntaggedTestsSpawnNothing
++    panic: interface conversion: ast.Expr is *ast.Ident, not *ast.SelectorExpr
++    (the guard reads a test file's tag to know its tier; the untagged files now carry tiergate.Require calls it does not expect)
++
++No other test in the run failed.
++Whether TestTierTags_OneTagPerTestFile ran in that scope was not checked; it asserts a tag on every test file, so the untagged sample files would break it too.
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/trial2/results.tsv b/docs/research/gate-fewer-binaries-trial-2026-11-01/trial2/results.tsv
+new file mode 100644
+index 00000000..cfeb3197
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/trial2/results.tsv
+@@ -0,0 +1,33 @@
++t2-before-none	0	6	3813	3813	0	0	3.7	0.8
++t2-before-none	1	1	1930	1930	0	0	28.1	0.8
++t2-before-none	2	3	256	256	0	0	57	4.7
++t2-before-universal	0	10	3813	3813	0	0	10.3	0
++t2-before-universal	1	10	1930	1930	0	0	111.3	0.1
++t2-before-universal	2	10	256	256	0	0	61.3	0.1
++t2-before-mid	0	6	3813	3813	0	0	3.3	0.7
++t2-before-mid	1	6	1930	1930	0	0	85.3	0
++t2-before-mid	2	5	256	256	0	0	56.3	1.7
++t2-before-leaf	0	5	3813	3813	0	0	4.8	0.3
++t2-before-leaf	1	2	1930	1930	0	0	37.6	1.1
++t2-before-leaf	2	2	256	256	0	0	57.8	2.5
++t2-after-none	0	2	4529	3813	0	716	4	0.5
++t2-after-none	1	0	2705	1930	0	775	27.7	0
++t2-after-none	2	0	1605	256	0	1349	4.7	0
++t2-after-universal-nolist	0	10	4529	3813	0	716	12.7	0.1
++t2-after-universal-nolist	1	10	2705	1930	0	775	82.5	0.1
++t2-after-universal-nolist	2	10	1605	256	0	1349	54.2	0
++t2-after-mid-nolist	0	8	4529	3813	0	716	5.8	0
++t2-after-mid-nolist	1	8	2705	1930	0	775	80.2	0
++t2-after-mid-nolist	2	8	1605	256	0	1349	53.1	0
++t2-after-leaf-nolist	0	2	4529	3813	0	716	4.4	0
++t2-after-leaf-nolist	1	2	2705	1930	0	775	29.3	0.6
++t2-after-leaf-nolist	2	2	1605	256	0	1349	55.2	2.2
++t2-after-universal	0	10	4529	3813	0	716	8.6	0
++t2-after-universal	1	10	2705	1930	0	775	81.7	0
++t2-after-universal	2	10	1605	256	0	1349	54.3	0
++t2-after-mid	0	8	4529	3813	0	716	5.7	0
++t2-after-mid	1	8	2705	1930	0	775	78	0
++t2-after-mid	2	8	1605	256	0	1349	53.2	0
++t2-after-leaf	0	2	4529	3813	0	716	4.3	0
++t2-after-leaf	1	2	2705	1930	0	775	31.7	0.7
++t2-after-leaf	2	2	1605	256	0	1349	56.2	2.2
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/trial2/sample.txt b/docs/research/gate-fewer-binaries-trial-2026-11-01/trial2/sample.txt
+new file mode 100644
+index 00000000..71900a03
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/trial2/sample.txt
+@@ -0,0 +1,10 @@
++internal/reedcli
++internal/webstercli
++internal/creelcli
++internal/loomcli
++internal/orchcli
++internal/pairteardown
++internal/treadleengine
++internal/standalonegeom
++internal/fabricengine
++internal/reedengine
+diff --git a/docs/research/gate-fewer-binaries-trial-2026-11-01/trial2/trial2-handwritten.patch b/docs/research/gate-fewer-binaries-trial-2026-11-01/trial2/trial2-handwritten.patch
+new file mode 100644
+index 00000000..1232f178
+--- /dev/null
++++ b/docs/research/gate-fewer-binaries-trial-2026-11-01/trial2/trial2-handwritten.patch
+@@ -0,0 +1,68 @@
++diff --git a/internal/testkit/tiergate/tiergate.go b/internal/testkit/tiergate/tiergate.go
++new file mode 100644
++index 00000000..d8c78392
++--- /dev/null
+++++ b/internal/testkit/tiergate/tiergate.go
++@@ -0,0 +1,28 @@
+++// Package tiergate selects at run time which tier's tests a test binary runs, for the one-binary-per-package trial.
+++//
+++// The tier comes from the LYM_TEST_TIER environment variable, set by the gate to the number of the tier it runs.
+++// Require skips a test whose tier is not the running one, so a package's tiers share one test binary.
+++package tiergate
+++
+++import (
+++	"os"
+++	"strconv"
+++	"testing"
+++)
+++
+++// Current returns the running tier, or -1 when LYM_TEST_TIER is unset or not a number.
+++func Current() int {
+++	tier, err := strconv.Atoi(os.Getenv("LYM_TEST_TIER"))
+++	if err != nil {
+++		return -1
+++	}
+++	return tier
+++}
+++
+++// Require skips t unless the running tier is tier.
+++func Require(t testing.TB, tier int) {
+++	t.Helper()
+++	if Current() != tier {
+++		t.Skipf("tier%d test; running tier%d", tier, Current())
+++	}
+++}
++diff --git a/internal/testkit/tmuxkit/allow_tmux.go b/internal/testkit/tmuxkit/allow_tmux.go
++index a15711bb..e498e3ab 100644
++--- a/internal/testkit/tmuxkit/allow_tmux.go
+++++ b/internal/testkit/tmuxkit/allow_tmux.go
++@@ -1,10 +1,10 @@
++-//go:build tier2 || tier3
++-
++-// allow_tmux.go turns on the tmux-server switch in a test binary built with the tier2 or tier3 tag.
+++// allow_tmux.go reads the tmux-server switch from the running tier, so one test binary serves every tier.
++ 
++ package tmuxkit
++ 
++-// init allows tmux servers in a test binary built with the tier2 or tier3 tag.
++-func init() {
++-	tmuxAllowed = true
+++import "github.com/Knatte18/loomyard/internal/testkit/tiergate"
+++
+++// tmuxAllowed reports whether this test binary's tests may start tmux servers: tier2 and tier3 allow them.
+++func tmuxAllowed() bool {
+++	return tiergate.Current() >= 2
++ }
++diff --git a/internal/testkit/tmuxkit/tmuxkit.go b/internal/testkit/tmuxkit/tmuxkit.go
++index b9fd1e40..ab42d843 100644
++--- a/internal/testkit/tmuxkit/tmuxkit.go
+++++ b/internal/testkit/tmuxkit/tmuxkit.go
++@@ -103,7 +103,7 @@ func Main(m *testing.M) int {
++ // It returns code unless a socket finding or a leftover forces 1, and names each on w.
++ // A failed remove is named on w and leaves the code unchanged, since the next start's sweep removes the directory.
++ func afterRun(w io.Writer, dir string, code int, grace time.Duration, sweep func(), remove func() error) int {
++-	if findings := checkSockets(dir, tmuxAllowed); len(findings) > 0 {
+++	if findings := checkSockets(dir, tmuxAllowed()); len(findings) > 0 {
++ 		for _, finding := range findings {
++ 			fmt.Fprintln(w, finding)
++ 		}
