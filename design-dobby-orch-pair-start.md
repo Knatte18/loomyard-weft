@@ -13,6 +13,6 @@ Meanwhile dobby's mail to the orch had no reader.
 Dobby and orch are started in pairs, by beam: every path that brings a worktree's dobby up brings its orch up with it, through `lym beam start`'s way, never dobby alone.
 - `ensureParentDobby` and any other lone dobby spawn go through that one start, or stop and name `lym s` instead of spawning.
 
-## Open
+## Out of scope
 
-- Whether dobby, finding its orch gone while it runs, brings it up again or says so; this touches note `dormant-orch`, where the orch lies dormant and is woken when needed.
+Whether dobby, finding its orch gone while it runs, brings it up again belongs to note `dormant-orch`, where the orch lies dormant and is woken when needed (operator, 2026-11-01).
