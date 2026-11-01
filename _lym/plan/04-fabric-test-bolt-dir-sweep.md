@@ -63,8 +63,8 @@
 - `internal/fabricengine/livestate_doc_test.go`
 
 **Uses:**
-- `plan:internal/fabricengine#BoltDir`
-- `plan:internal/fabricengine#BoltDirName`
+- `internal/fabricengine#BoltDir`
+- `internal/fabricengine#BoltDirName`
 
 **Intent:** Make fabric's tests take the Bolt directory name from the constant and name the Bolt checkout in their comments (D9: every test takes the name from the constant, a comment never names the path).
 

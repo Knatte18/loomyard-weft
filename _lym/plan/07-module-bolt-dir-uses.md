@@ -52,7 +52,7 @@
 - `internal/cleanupcli/doc.go`
 
 **Uses:**
-- `plan:internal/fabricengine#BoltDir`
+- `internal/fabricengine#BoltDir`
 - `internal/fabricengine#BoardDir`
 - `internal/fabriccli/doc.go`
 - `internal/orchcli/doc.go`

@@ -54,8 +54,8 @@
 - `internal/yamlengine#TestSetValues`
 
 **Uses:**
-- `plan:internal/fabricengine#BoltDir`
-- `plan:internal/fabricengine#BoltDirName`
+- `internal/fabricengine#BoltDir`
+- `internal/fabricengine#BoltDirName`
 
 **Intent:** Make the other packages' tests take the Bolt directory name from the constant and name the Bolt checkout in their comments (D9).
 

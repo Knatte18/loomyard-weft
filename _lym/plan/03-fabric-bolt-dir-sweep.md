@@ -27,8 +27,8 @@
 - `internal/fabricengine/teardownlock.go`
 
 **Uses:**
-- `plan:internal/fabricengine#BoltDir`
-- `plan:internal/fabricengine#BoltDirName`
+- `internal/fabricengine#BoltDir`
+- `internal/fabricengine#BoltDirName`
 
 **Intent:** Move fabric's own uses of the board names that mean the Bolt checkout onto the Bolt names (D9), with no behaviour change.
 

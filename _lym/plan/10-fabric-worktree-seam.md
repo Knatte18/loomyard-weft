@@ -30,7 +30,7 @@
 - `plan:internal/fabricengine#SeedWarpExclude`
 - `internal/fabricengine#pathsChangedBetween`
 - `internal/fabricengine#RecordsWorktreePath`
-- `plan:internal/fabricengine#BoltDir`
+- `internal/fabricengine#BoltDir`
 - `internal/fabricengine#ReconcileOrigin`
 - `internal/fabricengine#Bolt.Pull`
 - `internal/hubforge#CloneSecond`

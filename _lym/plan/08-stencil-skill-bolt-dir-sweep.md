@@ -26,7 +26,7 @@
 - `plan:internal/lymcwd#TestEnforcement_BoltDirNameDeclaredOnce` -> `func TestEnforcement_BoltDirNameDeclaredOnce(t *testing.T)`
 
 **Uses:**
-- `plan:internal/lymcwd#BoltDirName`
+- `internal/lymcwd#BoltDirName`
 - `internal/testkit/scankit#Root`
 
 **Intent:** Finish D9: no stencil or skill spells the Bolt directory, and a guard keeps the literal to its one declaration.

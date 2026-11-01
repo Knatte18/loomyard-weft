@@ -1,9 +1,9 @@
 # Card 2 — bolt-dir-name
 
 **Create:**
-- `plan:internal/lymcwd#BoltDirName` -> `const BoltDirName = "_board"`
-- `plan:internal/fabricengine#BoltDirName` -> `const BoltDirName = lymcwd.BoltDirName`
-- `plan:internal/fabricengine#BoltDir` -> `func BoltDir(hub string) string`
+- `internal/lymcwd#BoltDirName`
+- `internal/fabricengine#BoltDirName`
+- `internal/fabricengine#BoltDir`
 
 **Delete:**
 - `internal/lymcwd#boardDirName`

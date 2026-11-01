@@ -35,7 +35,7 @@
 - `plan:internal/heddleengine#Renderer.Show`
 - `plan:internal/fabricengine#EventFor`
 - `internal/fabricengine#List`
-- `plan:internal/fabricengine#BoltDir`
+- `internal/fabricengine#BoltDir`
 - `internal/fabricengine#BoardWriteLockFile`
 - `internal/fabricengine#RequireDrivableWorktree`
 - `internal/boardengine#SpawnSync`

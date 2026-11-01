@@ -24,7 +24,7 @@
 - `internal/webstercli/wiring.go`
 
 **Uses:**
-- `plan:internal/fabricengine#BoltDirName`
+- `internal/fabricengine#BoltDirName`
 - `internal/creelengine/doc.go`
 - `internal/reedcli/doc.go`
 - `internal/reedengine/doc.go`
