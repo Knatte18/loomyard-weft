@@ -14,8 +14,10 @@ The arbiter, a cold stronger-model agent the Go driver spawns at a stop it canno
 ## Idea (operator, 2026-11-01)
 
 The arbiter settles these calls itself, so they never reach the orch.
+The chain stays as it is: the driver's rules, then the tackler, a cheap agent for mechanical stops, then the arbiter, a strong agent for judgment, and the parent last; a review escalation is a judgment call, so it goes to the arbiter, as it does today.
 - A `decision` escalation becomes eligible for the arbiter as `hard-cap` and `circling` are.
 - The arbiter may record a decision with `lym loom decision add`, under its own `--by`, and choose `circling accept` or `continue`, as the orch does today.
+- The arbiter may make the one edit its stop asks for and nothing beyond it, such as the correction of a false clause in the decision record it has found; anything wider it records as a decision for the run's own agents to carry out.
 - It passes on only a question the board entry's design and the record's decisions do not settle; that goes to the operator through the orch.
 - The orch hears only the outcome, so a quiet orch, as in note `dormant-orch`, need not wake for it.
 
