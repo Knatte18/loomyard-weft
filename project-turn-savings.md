@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Agents may use subagents and forks; only headless claude -p stays refused**<br>• Remove the Agent tool deny, refuse headless claude -p launches instead, and tell writers when to hand work to Sonnet subagents | [`darn-sonnet-helpers`](design-darn-sonnet-helpers.md) | darn | Darn-Write | neve | 1h<br>18m | claude, shuttle, stencil |
-| T4 | **Shorten the plan spec and split it into sub-files read by need**<br>• loom-plan-spec.md is 112 KB, half of it a catalogue of validation checks; cut it down and split it so each role reads only what it uses | [`plan-spec-split`](design-plan-spec-split.md) | darn | Darn-Write | neve | 42m<br>11m | loom, stencil, webster |
+| T4 | **Shorten the plan spec and split it into sub-files read by need**<br>• loom-plan-spec.md is 112 KB, half of it a catalogue of validation checks; cut it down and split it so each role reads only what it uses | [`plan-spec-split`](design-plan-spec-split.md) | darn | Darn-Write | neve | 43m<br>11m | loom, stencil, webster |
 
 ### Ready (0)
 
@@ -35,7 +35,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | `draft` **One cold, cheap fixer clears a failed writer gate instead of the writer at full context**<br>• When the Darn-Write, plan, discussion or Webster card gate fails, Go spawns one shared cold fixer with the gate report, generalised from webster fix-verify<br>• `profile: light` | [`cold-gate-fixer`](design-cold-gate-fixer.md) | tapestry | T4 | 26m<br>4m | webster, loom, darn, gate |
+| T5 | `draft` **One cold, cheap fixer clears a failed writer gate instead of the writer at full context**<br>• When the Darn-Write, plan, discussion or Webster card gate fails, Go spawns one shared cold fixer with the gate report, generalised from webster fix-verify<br>• `profile: light` | [`cold-gate-fixer`](design-cold-gate-fixer.md) | tapestry | T4 | 27m<br>4m | webster, loom, darn, gate |
 
 ## Notes (3)
 
@@ -46,7 +46,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R1 |  | **Measure the effect of the agent-turns project**<br>• Turns, calls per turn and cost before and after P2 agent-turns, for darn writers, Webster forks and review roles | [`agent-turns-effect`](design-agent-turns-effect.md) | 4h<br>4m | tools |
-| R2 |  | **Plan writer hands its code lookups to fresh subagents and keeps the overview**<br>• The Plan writer pays its whole context for each late grep; research whether forks answering batched questions cut that cost without losing the plan overview | [`planner-fork-lookups`](design-planner-fork-lookups.md) | 26m<br>17m | loom |
+| R2 |  | **Plan writer hands its code lookups to fresh subagents and keeps the overview**<br>• The Plan writer pays its whole context for each late grep; research whether forks answering batched questions cut that cost without losing the plan overview | [`planner-fork-lookups`](design-planner-fork-lookups.md) | 27m<br>17m | loom |
 
 ### Enhancements (1)
 
