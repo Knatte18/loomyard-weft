@@ -655,7 +655,7 @@
       "isolated": false,
       "brief": "An orch cannot change a gate tier env or command without an interactive editor",
       "body": "## Seen (orch, 2026-11-01)\n\n`lym config gate --set tiers.tier0.env.LYM_TEST_TIER=0` was refused: the value landed one level too high and the gate config no longer loaded (\"cannot unmarshal !!str `0` into gateslot.tierFile\").\n`--set` writes only a top-level key or one entry of an open map, and the editor refuses a non-interactive terminal, so an orch cannot change a key inside a gate tier, such as its `env` or `command`, at all.\nWorkaround for `gate-one-binary-per-package`: the run's test selector falls back to the build tag's tier, and the gate.yaml switch waits for the operator or a later fix.\n\n## Idea\n\n`--set` takes a dotted path to any key the module's schema reaches, nested maps included, and writes a scalar there; a path into a struct field the schema lacks is refused naming the key.\n",
-      "status": "running · Code-Burler-Review",
+      "status": "running · Code-Burler-Fix",
       "created": "2026-11-01T17:23:38Z",
       "revised": "2026-11-01T18:48:34Z"
     },
