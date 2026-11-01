@@ -1,0 +1,26 @@
+# Relevant files — warp-visibility
+
+- `internal/fabricengine/boardreplay.go` `BoardReplay`, `BoardReplayRequest`, `BoardReplayResult`, `BoardEntry`, `InstallBoardReplay`, `InstalledBoardReplay`, `ErrBoardReplayMissing` — the board-tailored seam D7 replaces
+- `internal/fabricengine/replay.go` `replayBolt`, `replayBoardCommit`, `readEndedSet`, `isBoardPath`, `isBoardOverview`, `boardDesignSlug`, `boardCommitSlugs`, `localBoardEntries`, `boardEntriesBySlug` — every board file name and status fabric reads today
+- `internal/fabricengine/originreconcile.go` — reads `board.json` at origin's Bolt tip for the owner read
+- `internal/fabricengine/originreconcilemoves.go` `ffWorktree` — the code-branch fast-forward D6 fires from, and a third ended-set reader
+- `internal/fabricengine/pull.go` `Fabric.Pull` — the warp arm D6 fires from, and an ended-set reader
+- `internal/fabricengine/pushclassified.go` — another reader of `board.json` through the replay seam
+- `internal/fabricengine/bolt.go` `Bolt`, `Bolt.Commit`, `Bolt.PullThenCommitWritten`, `Bolt.Sync`, `Bolt.endedByOrigin` — the Bolt write path heddle shares
+- `internal/fabricengine/junction.go` `seedGitExclude`, `unseedGitExclude`, `excludePatternFor` — the exclude seeding D5 reuses
+- `internal/fabricengine/junctionnames.go` `BoardDirName`, `BoardDir`, `BoardWriteLockFile`, `StencilsDir`, `SpecsDir`, `HubScratchDir`, `HubReservedNames`, `ConfigDirs` — where D9 splits Bolt from board
+- `internal/fabricengine/template.yaml` — fabric's config template the `warp_exclude` key joins
+- `internal/fabricengine/add.go` `Topology.Add`, `Topology.AddLocal` — worktree creation that fires D6's "made"
+- `internal/fabricengine/clone.go` `CloneHub` — hub clone that fires D6's "made"
+- `internal/fabricengine/failedpush.go` `InstallPushNotifier` — the install pattern D4 and D6 follow
+- `internal/boardengine/replay.go` `FabricReplay`, `FabricReplay.Apply`, `FabricReplay.Entries`, `replayFields` — the by-entry merge D8 draws out
+- `internal/boardengine/sync.go` `Sync`, `commitDirty` — the board's lock and detached sync heddle's writes share
+- `internal/lymcwd/anchor.go` `boardDirName`, `boardDir` — the private literal D9 makes the one declaration
+- `internal/lymcwd/enforcement_test.go` `TestEnforcement_GeometryLiterals` — the owner row D9 narrows
+- `internal/runproc/record.go` `HubOwner` — set from the constant under D9
+- `internal/shuttleengine/claudeengine/settings.go` `appendPromptText`, `creelTrustSentence`, `batchingSentence` — lym's own appended sentences heddle's passages follow
+- `internal/shuttleengine/claudeengine/claudeengine.go` — Prepare writes the append-system-prompt file on launch and resume
+- `internal/shuttleengine/claudeengine/command.go` `buildLaunchCmd`, `buildResumeCmd` — both lines carry the append-system-prompt file
+- `internal/shuttleengine/claudeengine/capabilities.go` `Claude.InstructionFiles` — evidence Claude reads `CLAUDE.local.md`
+- `cmd/lym/main.go` — the root pre-run that installs the seams
+- `docs/research/claude-md-rule-map-2026-10-29.md` — how instruction text reached agents before `CLAUDE.md` was deleted
