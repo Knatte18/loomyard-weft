@@ -45,7 +45,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **boltrename refused the hub its own landing left: a stray _bolt and the run pair**<br>• The rename program could not run as shipped; migrated by hand on Neve | [`boltrename-landing-order`](design-boltrename-landing-order.md) | 0m<br>0m | cwd, fabric |
+| B1 |  | **A hub rename program must tolerate its own landing run and the new binary**<br>• Lesson from boltrename: the landed run pair and an early _bolt/.lym blocked it | [`boltrename-landing-order`](design-boltrename-landing-order.md) | 0m<br>0m | cwd, fabric |
 | B2 |  | **A landing commit message ends with a stray Created using block**<br>• The landing message of 229638f7 repeats body lines after Created using | [`landing-message-stray-block`](design-landing-message-stray-block.md) | 0m<br>0m | landing |
 
 #### Enhancements (13)

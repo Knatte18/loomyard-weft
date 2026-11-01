@@ -1,19 +1,14 @@
-# boltrename refused the hub its own landing left: a stray _bolt and the run pair
+# A hub rename program must tolerate its own landing run and the new binary
 
 `boltrename-landing-order` · Note · bug, cwd, fabric
 
 ## Seen (orch, 2026-11-01)
 
-`bolt-dir-rename` (commit `229638f7`) landed a lym binary that knows only `_bolt` while the hub was still on `_board`, and its run then stuck at Worktree-Teardown (board config under `_bolt` not found).
-`tools/boltrename` could not run as shipped:
-- lym processes started on the new binary (dobby, the reed watchdog, a reed discover signal) made an empty `_bolt/.lym` before the migration, twice; boltrename refuses a hub holding `_bolt`.
-- The landed run's own pair (`bolt-dir-rename` and its weft) was still in the hub, since teardown comes after Land; boltrename refuses any directory but the prime, its weft, `_launchers` and the Bolt checkout.
-- Every live process in the hub blocks it, including an idle tmux server reed made and a plain shell.
+`bolt-dir-rename` landed a lym binary that knows only `_bolt` while the hub was still on `_board`, and its one-shot `tools/boltrename` could not run as shipped:
+- lym processes on the new binary (dobby, the reed watchdog) made an empty `_bolt/.lym` before the migration, and the program refuses a hub holding `_bolt`;
+- the landed run's own pair was still in the hub, since teardown comes after Land, and the program refuses any directory but the prime, its weft, `_launchers` and the Bolt checkout.
+Neve was migrated by hand around both; the program is being deleted.
 
-Done by hand on Neve: the stray `_bolt` removed, the pair moved out of the hub, boltrename run, the pair moved back, `lym batten run bolt-dir-rename` finished the teardown.
+## Lesson for a later rename
 
-## For OSL-1046
-
-The same steps apply there, unless no run pair is in its hub.
-A rename task's landing order (deploy at Land, teardown after) is worth stating in the rename program's own instructions, or the program should tolerate a landed run's pair and an empty `_bolt/.lym`.
-`boltrename` is deleted once OSL-1046 is migrated, so this may only be a note for the next such rename.
+A program that renames a hub's directories after a rename task lands must tolerate the landed run's own pair and state the new binary has already written, or the task must say to run it before anything starts the new binary and before the run's teardown.
