@@ -1,6 +1,6 @@
 # The arbiter settles review escalations and records their decisions, so they never reach the orch
 
-`escalation-decider-agent` · Note · feature, burler, arbiter, dobby, orch
+`arbiter-settles-escalations` · Note · feature, burler, arbiter, dobby, orch
 
 ## Seen (operator and orch, 2026-11-01)
 

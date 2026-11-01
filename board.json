@@ -646,7 +646,7 @@
     {
       "id": 954,
       "handle": "F10",
-      "slug": "escalation-decider-agent",
+      "slug": "arbiter-settles-escalations",
       "title": "The arbiter settles review escalations and records their decisions, so they never reach the orch",
       "kind": "note",
       "labels": [
