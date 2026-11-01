@@ -22,7 +22,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Parts-Write and Parts-Plan-Write: the plan written in two steps, beside Plan-Write**<br>• A coarse splitter and a seat table of part writers joined by a chair, as an opt-in alternative to Plan-Write, built to be benched against it<br>• `profile: light` | [`plan-split-producers`](design-plan-split-producers.md) | tapestry | Plan-Write | neve | 1h<br>1h | loom, stencil, shed, profiles |
 | T2 | **Trial the cuts that make a gate run link fewer new test binaries**<br>• Bench the report's cuts on Neve and OSL-1046 before any is made permanent<br>• `profile: docs` | [`gate-fewer-binaries-trial`](design-gate-fewer-binaries-trial.md) | darn | Darn-Write | neve | 17h<br>58m | gate, testkit |
-| T3 | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more<br>• `profile: light` | [`reed-status-buttons`](design-reed-status-buttons.md) | tapestry | Discussion-Write | neve | 2w<br>1m | reed, config, batten |
+| T3 | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more<br>• `profile: light` | [`reed-status-buttons`](design-reed-status-buttons.md) | tapestry | Discussion-Write | neve | 2w<br>2m | reed, config, batten |
 | T7 | **One verb to take work over on another machine, leaving every run in a known state**<br>• Moving to another machine is many hand steps, and afterwards run states are unclear | [`machine-switch`](design-machine-switch.md) | tapestry | Discussion-Write | neve | 1d<br>23m | fabric, dobby, batten |
 
 #### Ready (0)
@@ -39,7 +39,7 @@ Waits only on Running, Ready or Draft entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T6 | **A long gate run answers within the cache lifetime, so the waiting agent keeps its prompt cache warm**<br>• lym gate test caps the run wait like the slot wait, with the cap a config value beside the engine cache lifetime<br>• `profile: light` | [`gate-run-keeps-cache-warm`](design-gate-run-keeps-cache-warm.md) | tapestry | T2 | 17h<br>34m | gate, shuttle, config |
 
-### Notes (25)
+### Notes (26)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -48,6 +48,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 9d<br>5h | loom, stencil |
+
+#### Bugs (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| B1 |  | **A concurrent fetch of the same ref fails a batten pass and spawns a tackler**<br>• Origin reconcile retries a fetch whose ref moved under it instead of failing the pass | [`reconcile-fetch-race`](design-reconcile-fetch-race.md) | 0m<br>0m | batten, fabric |
 
 #### Enhancements (12)
 

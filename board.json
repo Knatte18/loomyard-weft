@@ -602,6 +602,25 @@
       "body": "## Seen (operator, 2026-11-01)\n\nThe board's rendered README shows a task's profile as a bullet under its title in the Task column, such as `` `profile: light` ``, while the Recipe column holds only `tapestry` or `darn`.\nThe profile is the lower level of the recipe, so it belongs in the same column.\n\n## Idea\n\nThe Recipe column shows recipe and profile together, such as `tapestry · light`, or the recipe alone when the task takes its recipe's default profile; the profile bullet under the title goes.\n",
       "created": "2026-11-01T12:04:33Z",
       "revised": "2026-11-01T12:04:33Z"
+    },
+    {
+      "id": 950,
+      "handle": "B1",
+      "slug": "reconcile-fetch-race",
+      "title": "A concurrent fetch of the same ref fails a batten pass and spawns a tackler",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "batten",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Origin reconcile retries a fetch whose ref moved under it instead of failing the pass",
+      "body": "## Seen (orch, 2026-11-01)\n\nAt 13:03:50 a `lym batten run gate-fewer-binaries-trial --continue-pass` failed its origin reconcile: `git fetch origin +refs/heads/main-weft:refs/remotes/origin/main-weft` in the prime's weft exited 1 with `error: fetching ref refs/remotes/origin/main-weft failed: incorrect old value provided`.\nThat is git's answer when another process updated the same remote-tracking ref between this fetch reading it and writing it; `kde-window-placement` was landing and `board-tidy` ran at the same moment, so another fetch of `main-weft` in the same weft is the likely cause.\nThe pass exited 1, the driver spawned a tackler (a Claude session, about 20 s), which found nothing to do, and the loop went on.\n\n## Idea\n\nThe fetch in batten's origin reconcile, and any other fetch of a shared ref in a prime's warp or weft, retries once or twice when git reports `incorrect old value provided`, or serialises those fetches under a lock, so a race between two lym processes never fails a pass or costs a tackler.\n",
+      "created": "2026-11-01T12:04:54Z",
+      "revised": "2026-11-01T12:04:54Z"
     }
   ],
   "prime_owner": "neve",
