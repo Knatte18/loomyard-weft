@@ -9,7 +9,7 @@
 **Uses:**
 - `cmd/lym#findPersistentPreRunELit`
 - `internal/fabricengine#InstallWorktreeSeam`
-- `plan:internal/fabricengine#RegisterBoltReplayer`
+- `internal/fabricengine#RegisterBoltReplayer`
 - `plan:internal/shuttleengine#InstallPassageReader`
 - `plan:internal/heddleengine#Seam`
 - `plan:internal/heddleengine#Replayer`

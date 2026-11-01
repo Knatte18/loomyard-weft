@@ -21,39 +21,39 @@
 - `internal/boardengine#FabricReplay.Entries`
 
 **Create:**
-- `plan:internal/fabricengine#BoltReplayer` -> `type BoltReplayer interface`
-- `plan:internal/fabricengine#RunLedger` -> `type RunLedger interface`
-- `plan:internal/fabricengine#LedgerRun` -> `type LedgerRun struct`
-- `plan:internal/fabricengine#ReplayFile` -> `type ReplayFile struct`
-- `plan:internal/fabricengine#ReplayRequest` -> `type ReplayRequest struct`
-- `plan:internal/fabricengine#ReplayResult` -> `type ReplayResult struct`
-- `plan:internal/fabricengine#ReplayFinding` -> `type ReplayFinding struct`
-- `plan:internal/fabricengine#ErrReplayerMissing` -> `var ErrReplayerMissing = errors.New("fabricengine: no Bolt replayer registered")`
-- `plan:internal/fabricengine#boltReplayerSet` -> `var boltReplayerSet atomic.Pointer[[]BoltReplayer]`
-- `plan:internal/fabricengine#RegisterBoltReplayer` -> `func RegisterBoltReplayer(r BoltReplayer) (restore func())`
-- `plan:internal/fabricengine#registeredReplayers` -> `func registeredReplayers() []BoltReplayer`
-- `plan:internal/fabricengine#claimantOf` -> `func claimantOf(path string) (BoltReplayer, bool)`
-- `plan:internal/fabricengine#runLedger` -> `func runLedger() (RunLedger, string, error)`
-- `plan:internal/fabricengine#ledgerRunsAt` -> `func ledgerRunsAt(repo *gitrepo.Repo, ledger RunLedger, rev string) ([]LedgerRun, error)`
-- `plan:internal/fabricengine#commitLedgerRuns` -> `func commitLedgerRuns(repo *gitrepo.Repo, ledger RunLedger, sha, parent string, paths []string) ([]string, error)`
-- `plan:internal/fabricengine#localLedgerRuns` -> `func localLedgerRuns(repo *gitrepo.Repo, head string, ahead []string) (slugs []string, created map[string]string, err error)`
-- `plan:internal/fabricengine#hubLocationOfBolt` -> `func hubLocationOfBolt(boltDir string) (*lymcwd.Location, error)`
-- `plan:internal/fabricengine#boltStep` -> `type boltStep struct`
-- `plan:internal/fabricengine#replayClaimedCommit` -> `func replayClaimedCommit(rec *Mutations, repo *gitrepo.Repo, boltDir, mergeBase string, baseline []string, step boltStep, live EndedSet, outcome *ReplayOutcome) error`
-- `plan:internal/fabricengine#WithoutBoltReplayersForTest` -> `func WithoutBoltReplayersForTest() (restore func())`
-- `plan:internal/fabricengine_test#TestBoltReplayers` -> `func TestBoltReplayers(t *testing.T)`
-- `plan:internal/fabricengine_test#fakeReplayer` -> `type fakeReplayer struct`
-- `plan:internal/fabricengine_test#emptyEntryLedger` -> `type emptyEntryLedger struct`
-- `plan:internal/fabricengine#TestBoltReplay_NamesNoBoardFile` -> `func TestBoltReplay_NamesNoBoardFile(t *testing.T)`
-- `plan:internal/boardengine#FabricReplay.Name` -> `func (FabricReplay) Name() string`
-- `plan:internal/boardengine#FabricReplay.Claims` -> `func (FabricReplay) Claims(path string) bool`
-- `plan:internal/boardengine#FabricReplay.File` -> `func (FabricReplay) File() string`
-- `plan:internal/boardengine#FabricReplay.Runs` -> `func (FabricReplay) Runs(data []byte) ([]fabricengine.LedgerRun, error)`
-- `plan:internal/boardengine#FabricReplay.CommitRuns` -> `func (FabricReplay) CommitRuns(before, after []byte, paths []string) ([]string, error)`
-- `plan:internal/boardengine#boardDesignSlug` -> `func boardDesignSlug(path string) (string, bool)`
-- `plan:internal/boardengine#isBoardOverview` -> `func isBoardOverview(path string) bool`
-- `plan:internal/boardengine#entriesBySlug` -> `func entriesBySlug(data []byte) (map[string]string, error)`
-- `plan:internal/boardengine#TestFabricReplay_Ledger` -> `func TestFabricReplay_Ledger(t *testing.T)`
+- `internal/fabricengine#BoltReplayer`
+- `internal/fabricengine#RunLedger`
+- `internal/fabricengine#LedgerRun`
+- `internal/fabricengine#ReplayFile`
+- `internal/fabricengine#ReplayRequest`
+- `internal/fabricengine#ReplayResult`
+- `internal/fabricengine#ReplayFinding`
+- `internal/fabricengine#ErrReplayerMissing`
+- `internal/fabricengine#boltReplayerSet`
+- `internal/fabricengine#RegisterBoltReplayer`
+- `internal/fabricengine#registeredReplayers`
+- `internal/fabricengine#claimantOf`
+- `internal/fabricengine#runLedger`
+- `internal/fabricengine#ledgerRunsAt`
+- `internal/fabricengine#commitLedgerRuns`
+- `internal/fabricengine#localLedgerRuns`
+- `internal/fabricengine#hubLocationOfBolt`
+- `internal/fabricengine#boltStep`
+- `internal/fabricengine#replayClaimedCommit`
+- `internal/fabricengine#WithoutBoltReplayersForTest`
+- `internal/fabricengine_test#TestBoltReplayers`
+- `internal/fabricengine_test#fakeReplayer`
+- `internal/fabricengine_test#emptyEntryLedger`
+- `internal/fabricengine#TestBoltReplay_NamesNoBoardFile`
+- `internal/boardengine#FabricReplay.Name`
+- `internal/boardengine#FabricReplay.Claims`
+- `internal/boardengine#FabricReplay.File`
+- `internal/boardengine#FabricReplay.Runs`
+- `internal/boardengine#FabricReplay.CommitRuns`
+- `internal/boardengine#boardDesignSlug`
+- `internal/boardengine#isBoardOverview`
+- `internal/boardengine#entriesBySlug`
+- `internal/boardengine#TestFabricReplay_Ledger`
 
 **Edit:**
 - `internal/fabricengine#ReplayOutcome`

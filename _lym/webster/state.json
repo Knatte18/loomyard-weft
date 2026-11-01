@@ -1,6 +1,6 @@
 {
   "runGuid": "804ac92368d89a2185bb3a1a370005bc",
-  "planFingerprint": "edb368af5a32db8bb920cd1c03b2ed5b5a985b434132b93b920fc11f3673128e",
+  "planFingerprint": "cf9426b9637371125968471ef7e20a17ca8c6e6649e6dc71016c9459ae5b5fb0",
   "planFileHashes": {
     "00-overview.md": "f3afa09ebed7b5239b6f251ed566ba34699e985870132e22eb3edabcfd944dcb",
     "01-pattern-entries.md": "c67f2b956f2a472d256a3c00f4f6fb7592e979d105fd2abc13125a49da730be5",
@@ -15,14 +15,14 @@
     "10-fabric-worktree-seam.md": "e154ddee75cfd2beafbd9fd67264687955c42f264e9fa3d57a977647c38812af",
     "11-entrymerge-package.md": "9b938d26edade5b4134dea6bb5f743d7f9e9b92307b643760677bbc2007e29d8",
     "12-board-replay-entrymerge.md": "44938930ce8c22b4720de0e156cf22b6ca6f7396a69835b0731589015bed6ab9",
-    "13-bolt-replayer-registry.md": "6f9f16ad1659c7e037db4c06f8439780bc18b8041efa686341349f94e1ca2b4d",
+    "13-bolt-replayer-registry.md": "a398427ec581b87719d8372ece124b0ca55b1f070131035deb9f0c567df020fb",
     "14-heddle-store.md": "a8f5c8f8f53ae048fbe24d81bdadec1d5deaa683d938ee2f3530e5347220b0f1",
     "15-heddle-render.md": "9089a6975f4b0529c2ef56ad7fe931f88eae16dc7447f5eb45d35e29a68435b4",
     "16-heddle-worktree-seam.md": "873b829ef4e3ece462121799da30d95f0a1cf8164c5eb4f7c21c1372fdea4521",
-    "17-heddle-bolt-replayer.md": "696663ae223b01f1830a67624233b8ac932ad7e2a75741f1e9c7cb98137294cd",
+    "17-heddle-bolt-replayer.md": "47677a3d5da27bbb38f3b18efa5d58795a0972e64a62a70547eec770a2ebe0db",
     "18-shuttle-prompt-seam.md": "ab8a7ff50b722c1b480066ee120d1c373df08d5737e96fb454b425f51bc169d1",
     "19-heddle-cli.md": "f77c0dee8af3bfed86efacd09eec63b44560a2732dd6955f8debde48950c2fc4",
-    "20-root-prerun-installs.md": "72c7dd711d89b9ded8f705d3662dbc1141c50a4516acc05a76f11dbb5cdc0cac"
+    "20-root-prerun-installs.md": "24fd981f1939a460f40d0d08bd73d8deb6ff3caa739b76396bd6567a5b9a6c99"
   },
   "planOverviewFrameHash": "599bee72e749bc530d924ff3f9b7a6e3e97d5c474edaa6e9129ebf864c560dbb",
   "partition": [
@@ -770,7 +770,7 @@
       }
     }
   ],
-  "currentBatch": 13,
+  "currentBatch": 0,
   "masterStrand": "a60f187b995579173bb137e0f792d82c",
   "masterSessionId": "182615f8-c2d3-4e66-9c5a-db5c8744d6b1",
   "masterEngine": "claude",
@@ -858,15 +858,37 @@
         "13-bolt-replayer-registry"
       ],
       "cardHashes": {
-        "13-bolt-replayer-registry": "6f9f16ad1659c7e037db4c06f8439780bc18b8041efa686341349f94e1ca2b4d"
+        "13-bolt-replayer-registry": "a398427ec581b87719d8372ece124b0ca55b1f070131035deb9f0c567df020fb"
       },
       "startSha": "6eca0995c2bb2e124308542f28182eb5d78ac621",
       "kind": "fork",
       "spawnedAt": "2026-11-01T09:44:29Z",
       "sessionId": "182615f8-c2d3-4e66-9c5a-db5c8744d6b1",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "13-bolt-replayer-registry",
+        "status": "done",
+        "head_sha": "f95147cbf40d464294e07ba84440993068474094",
+        "deviations": [
+          "internal/boardengine/render.go",
+          "internal/boardengine/replay.go",
+          "internal/fabricengine/boltreplay.go",
+          "internal/fabricengine/boltreplay_test.go",
+          "internal/fabricengine/boltreplayers_integration_test.go",
+          "internal/fabricengine/replay.go"
+        ]
+      },
+      "cardShas": [
+        "f95147cbf40d464294e07ba84440993068474094"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-warp-visibility/182615f8-c2d3-4e66-9c5a-db5c8744d6b1/subagents/agent-ab57e4993bd579494.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-warp-visibility/182615f8-c2d3-4e66-9c5a-db5c8744d6b1/subagents/agent-ab57e4993bd579494.jsonl"
+      ]
     },
     "3": {
       "slug": "fabric-bolt-dir-sweep",
@@ -1063,6 +1085,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-warp-visibility/182615f8-c2d3-4e66-9c5a-db5c8744d6b1/subagents/agent-a9bc95a7cdda0bef8.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-warp-visibility/182615f8-c2d3-4e66-9c5a-db5c8744d6b1/subagents/agent-adaa23f850f784cd3.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-warp-visibility/182615f8-c2d3-4e66-9c5a-db5c8744d6b1/subagents/agent-a883d68c703e2581b.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-warp-visibility/182615f8-c2d3-4e66-9c5a-db5c8744d6b1/subagents/agent-a515e24bab2491d27.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-warp-visibility/182615f8-c2d3-4e66-9c5a-db5c8744d6b1/subagents/agent-a515e24bab2491d27.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-warp-visibility/182615f8-c2d3-4e66-9c5a-db5c8744d6b1/subagents/agent-ab57e4993bd579494.jsonl"
   ]
 }

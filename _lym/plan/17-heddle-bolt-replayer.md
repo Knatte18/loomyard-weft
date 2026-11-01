@@ -24,7 +24,7 @@
 - `internal/entrymerge#Table.Change`
 - `internal/entrymerge#Table.AddClash`
 - `internal/entrymerge#Table.Same`
-- `plan:internal/fabricengine#RegisterBoltReplayer`
+- `internal/fabricengine#RegisterBoltReplayer`
 - `internal/fabricengine#ReplayBoltForTest`
 - `internal/fabricengine_test#newRecordsFixture`
 
