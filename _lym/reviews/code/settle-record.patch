@@ -1,0 +1,465 @@
+diff --git a/internal/battencli/dobbynotice.go b/internal/battencli/dobbynotice.go
+index ee06f3ac..94db5420 100644
+--- a/internal/battencli/dobbynotice.go
++++ b/internal/battencli/dobbynotice.go
+@@ -47,6 +47,13 @@ func DobbyRunNotices(prime *lymcwd.Location, pauseRecordPath string, quiet time.
+ 			}
+ 			return readAgentActivity(taskLocation)
+ 		},
++		NewestAgentEnd: func(_ context.Context, slug string) (time.Time, error) {
++			taskLocation, err := locate(slug)()
++			if err != nil {
++				return time.Time{}, err
++			}
++			return readNewestAgentEnd(taskLocation)
++		},
+ 		Pause: func(slug string) (pauserecord.Coverage, error) {
+ 			return pauserecord.ReadCoverage(pauseRecordPath, slug, time.Now())
+ 		},
+diff --git a/internal/battencli/dobbynotice_test.go b/internal/battencli/dobbynotice_test.go
+index 83761e74..18ce2289 100644
+--- a/internal/battencli/dobbynotice_test.go
++++ b/internal/battencli/dobbynotice_test.go
+@@ -1,8 +1,10 @@
+-// dobbynotice_test.go pins what the run notices read of a child over a task worktree on disk: the mapping of its status file and respawn memory record into dobby's reading, and the held-lock reading of a child's driver.
++// dobbynotice_test.go pins what the run notices read of a child over a task worktree on disk: the mapping of its status file and respawn memory record into dobby's reading, the held-lock reading of a child's driver, and the end time of its newest ended shuttle run.
+ 
+ package battencli
+ 
+ import (
++	"context"
++	"fmt"
+ 	"os"
+ 	"path/filepath"
+ 	"testing"
+@@ -36,6 +38,51 @@ func noticeTaskWorktree(t *testing.T, slug string) *lymcwd.Location {
+ 	return locationkit.Location(hub, "prime", ".")
+ }
+ 
++// TestDobbyRunNotices_NewestAgentEndReadsOnlyTheTaskWorktreesEndedRuns asserts the end-time seam returns the latest end of the ended runs under the slug's task worktree.
++// It ignores a run still running there and an ended run of a sibling worktree, and returns the zero time when the task worktree has none.
++func TestDobbyRunNotices_NewestAgentEndReadsOnlyTheTaskWorktreesEndedRuns(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	const slug = "run-a"
++	prime := noticeTaskWorktree(t, slug)
++	notices := DobbyRunNotices(prime, filepath.Join(prime.HubPath, "pause.json"), time.Minute)
++
++	if ended, err := notices.NewestAgentEnd(context.Background(), slug); err != nil || !ended.IsZero() {
++		t.Fatalf("NewestAgentEnd() = %v, %v with no run record; want the zero time, nil", ended, err)
++	}
++
++	writeRun := func(runsRoot, name, outcome string, modified time.Time) {
++		t.Helper()
++		dir := filepath.Join(runsRoot, name)
++		if err := os.MkdirAll(dir, 0o755); err != nil {
++			t.Fatal(err)
++		}
++		record := fmt.Sprintf(`{"runId":%q,"strandName":"hub:task:impl","outcome":%q,"pid":1,"createdAt":"2026-01-01T09:00:00Z"}`, name, outcome)
++		recordPath := filepath.Join(dir, "run.json")
++		if err := os.WriteFile(recordPath, []byte(record), 0o644); err != nil {
++			t.Fatal(err)
++		}
++		if err := os.Chtimes(recordPath, modified, modified); err != nil {
++			t.Fatal(err)
++		}
++	}
++	taskLocation, err := taskWorktreeLocator(prime, slug)()
++	if err != nil {
++		t.Fatalf("locate the task worktree: %v", err)
++	}
++	taskRuns := filepath.Join(taskLocation.AnchorPath(), ".lym", "shuttle")
++	siblingRuns := filepath.Join(prime.HubPath, "sibling", ".lym", "shuttle")
++	taskEnded := time.Date(2026, 1, 1, 10, 0, 0, 0, time.UTC)
++	writeRun(taskRuns, "older", "stopped", taskEnded.Add(-time.Hour))
++	writeRun(taskRuns, "newest", "stopped", taskEnded)
++	writeRun(taskRuns, "live", "running", taskEnded.Add(time.Hour))
++	writeRun(siblingRuns, "elsewhere", "stopped", taskEnded.Add(2*time.Hour))
++
++	if ended, err := notices.NewestAgentEnd(context.Background(), slug); err != nil || !ended.Equal(taskEnded) {
++		t.Errorf("NewestAgentEnd() = %v, %v; want %v, nil, the newest ended run of the task worktree alone", ended, err, taskEnded)
++	}
++}
++
+ func TestReadNoticeChild(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/battencli/wire.go b/internal/battencli/wire.go
+index bade22c7..df73fd4f 100644
+--- a/internal/battencli/wire.go
++++ b/internal/battencli/wire.go
+@@ -670,6 +670,15 @@ func readAgentActivity(taskLocation *lymcwd.Location) (runs []dobbyengine.AgentR
+ 	return runs, false, nil
+ }
+ 
++// readNewestAgentEnd reads when the task worktree's newest ended shuttle run ended, through the shuttle config, zero when none has.
++func readNewestAgentEnd(taskLocation *lymcwd.Location) (time.Time, error) {
++	cfg, err := shuttleengine.LoadConfig(fabricengine.ConfigDirs(taskLocation), "shuttle")
++	if err != nil {
++		return time.Time{}, err
++	}
++	return shuttleengine.ReadNewestRunEnd(cfg, taskLocation.AnchorPath())
++}
++
+ // childAtWaitingRow reports whether the child's own status file reads running at a row of loomshed.OperatorWaitRows, which wait with no agent running.
+ // The wait is live for as long as the status reads running at such a row.
+ // An unreadable child status reads as no such wait, as an absent one does.
+diff --git a/internal/battencli/wire_seams_test.go b/internal/battencli/wire_seams_test.go
+index 1382ec98..64460843 100644
+--- a/internal/battencli/wire_seams_test.go
++++ b/internal/battencli/wire_seams_test.go
+@@ -358,7 +358,7 @@ func TestWire_BattenStatusSeamsReadBattensOwnStatus(t *testing.T) {
+ 	}
+ }
+ 
+-// TestWire_MarkerAndReportSeamsRefuseAnAbsentTaskWorktree asserts the watched-marker seams, the stop-report seam, the run notices' agent seam and the terminal window seam return an error, rather than reporting not held or not found, when the task worktree their files live in is absent.
++// TestWire_MarkerAndReportSeamsRefuseAnAbsentTaskWorktree asserts the watched-marker seams, the stop-report seam, the run notices' agent and agent-end seams and the terminal window seam return an error, rather than reporting not held or not found, when the task worktree their files live in is absent.
+ // The run notices read an absent task worktree's child as not found.
+ func TestWire_MarkerAndReportSeamsRefuseAnAbsentTaskWorktree(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -379,6 +379,9 @@ func TestWire_MarkerAndReportSeamsRefuseAnAbsentTaskWorktree(t *testing.T) {
+ 	if runs, _, err := notices.Agents(context.Background(), "a-slug"); err == nil || runs != nil || !strings.Contains(err.Error(), "a-slug") {
+ 		t.Errorf("Agents() runs=%v, error=%v; want the absent-worktree refusal naming the slug", runs, err)
+ 	}
++	if ended, err := notices.NewestAgentEnd(context.Background(), "a-slug"); err == nil || !ended.IsZero() || !strings.Contains(err.Error(), "a-slug") {
++		t.Errorf("NewestAgentEnd() = %v, %v; want the absent-worktree refusal naming the slug", ended, err)
++	}
+ 	if _, found, err := notices.ReadChild("a-slug"); err != nil || found {
+ 		t.Errorf("ReadChild() found=%v, error=%v; want an absent task worktree's child not found", found, err)
+ 	}
+diff --git a/internal/beamcli/dobbydeps_integration_test.go b/internal/beamcli/dobbydeps_integration_test.go
+index 3a51a142..2702ddb8 100644
+--- a/internal/beamcli/dobbydeps_integration_test.go
++++ b/internal/beamcli/dobbydeps_integration_test.go
+@@ -72,7 +72,7 @@ func TestHubDobbyDeps_PrimeTidyShuttle(t *testing.T) {
+ 
+ 	// Both dobbies send the run notices, with the batten recipe's quiet window and the marker in the run's records directory.
+ 	for name, notices := range map[string]dobbyengine.RunNoticeDeps{"beam": beamDeps.RunNotices, "prime": primeDeps.RunNotices} {
+-		if notices.ReadChild == nil || notices.DriverAlive == nil || notices.Agents == nil || notices.Pause == nil || notices.ReviveAPIError == nil || notices.MarkerPath == nil {
++		if notices.ReadChild == nil || notices.DriverAlive == nil || notices.Agents == nil || notices.NewestAgentEnd == nil || notices.Pause == nil || notices.ReviveAPIError == nil || notices.MarkerPath == nil {
+ 			t.Errorf("%s RunNotices = %+v; want every seam filled", name, notices)
+ 			continue
+ 		}
+diff --git a/internal/dobbyengine/doc.go b/internal/dobbyengine/doc.go
+index 441f73ed..b3d955e8 100644
+--- a/internal/dobbyengine/doc.go
++++ b/internal/dobbyengine/doc.go
+@@ -135,7 +135,7 @@
+ //   - On each probe tick, after the scheduling steps, dobby reads the child of every listed run whose batten state is running with no cancel marker, through Deps.RunNotices, and sends the notice its condition calls for; a nil RunNotices.ReadChild sends none.
+ //   - A child that is not running, or that a pause covers, is in no condition.
+ //     A dead driver, no live driver strand and no held driver, run or loom bootstrap lock, is checked first once the child has been running for a minute of awake time, so a driver still starting is no dead one, and names the respawn cap and `lym loom start` once batten respawned the child the cap of times with no progress.
+-//     With a live driver, an agent run on the provider's usage limit, then one stalled on an API error, each inactive for two minutes, then every agent idle for the quiet window with no live wait, give the usage-limit, api-error and quiet notices; with no agent run read, quiet counts from the later of the child's newest history entry and its state's since.
++//     With a live driver, an agent run on the provider's usage limit, then one stalled on an API error, each inactive for two minutes, then every agent idle for the quiet window with no live wait, give the usage-limit, api-error and quiet notices; with no agent run read, quiet counts from the latest of the child's newest history entry, the end of its newest ended agent run, which RunNotices.NewestAgentEnd reads, and its state's since, so a session ending before its row writes its history entry is no idle row.
+ //     The idle clocks leave out the machine sleeps in the state record and the paused intervals, so a sleep or a pause can delay a notice and never raise one earlier.
+ //   - With RunNotices.ReviveAPIError set, the first sight of an api-error episode revives the stalled sessions and notices nothing; the notice goes when the episode still stands at a later probe tick, or at the third revived episode in a row with no write of the child's status file between.
+ //   - A notice reads `[dobby notice] <slug>: <state> at <row>; <condition>`, then the child's reason as `waiting:`, `since` and `history`, with paths under the task pair rendered relative to it, and goes through Deps.Notice; one not posted is tried on each probe tick, at most three times, then dropped with a Warn.
+diff --git a/internal/dobbyengine/runnotice.go b/internal/dobbyengine/runnotice.go
+index 7c3816bd..dc43380a 100644
+--- a/internal/dobbyengine/runnotice.go
++++ b/internal/dobbyengine/runnotice.go
+@@ -103,6 +103,9 @@ type RunNoticeDeps struct {
+ 	DriverAlive func(ctx context.Context, slug string) (bool, error)
+ 	// Agents reads the child's agent runs, and whether a Go-side wait is live, such as a verify, a parent lock wait or a pull request's review.
+ 	Agents func(ctx context.Context, slug string) (runs []AgentRun, waitLive bool, err error)
++	// NewestAgentEnd reads when the child's newest ended agent run ended, zero when none has; it is read only when Agents reads no run.
++	// A nil NewestAgentEnd reads none.
++	NewestAgentEnd func(ctx context.Context, slug string) (time.Time, error)
+ 	// Pause reads the pause record's coverage of the slug, with its paused intervals.
+ 	Pause func(slug string) (pauserecord.Coverage, error)
+ 	// ReviveAPIError sends the revive line to the child's sessions stalled on an API error.
+@@ -263,22 +266,34 @@ func (d *daemon) noticeCondition(ctx context.Context, now time.Time, slug string
+ 		return noticeFinding{}, activityStamp{}
+ 	}
+ 	d.noticeFailures.Recover(slug+"|agents", "dobbyengine: the child's agent activity reads again", "slug", slug)
+-	return judgeAgents(now, slug, child, memory.Since, runs, waitLive, seams.Quiet, sleeps, pause.Intervals)
++	var newestEnd time.Time
++	if len(runs) == 0 && seams.NewestAgentEnd != nil {
++		newestEnd, err = seams.NewestAgentEnd(ctx, slug)
++		if err != nil {
++			d.noticeFailures.Fail(slug+"|agent-end", "dobbyengine: the child's ended agent runs are unreadable; no activity notice", "slug", slug, "error", err)
++			return noticeFinding{}, activityStamp{}
++		}
++		d.noticeFailures.Recover(slug+"|agent-end", "dobbyengine: the child's ended agent runs read again", "slug", slug)
++	}
++	return judgeAgents(now, slug, child, memory.Since, runs, newestEnd, waitLive, seams.Quiet, sleeps, pause.Intervals)
+ }
+ 
+ // judgeAgents returns the usage-limit, api-error or quiet finding of a running child with a live driver, and the newest agent activity.
+ // With several runs read, usage-limit and api-error need any one and quiet needs every run idle.
+-// With no run read, quiet falls back to the later of the child's newest history entry and the state episode's since.
++// With no run read, quiet falls back to the latest of the child's newest history entry, newestEnd, when its newest ended agent run ended, and the state episode's since,
++// so a session that has ended before its row writes the history entry is not read as idle since the row began.
+ // Both idle clocks measure awake unpaused time: every recorded sleep and every paused interval after an activity is subtracted from the time since it, so a sleep or a pause can delay a notice and never raise one earlier.
+-func judgeAgents(now time.Time, slug string, child ChildReading, since time.Time, runs []AgentRun, waitLive bool, quiet time.Duration, sleeps, paused []pauserecord.Interval) (noticeFinding, activityStamp) {
++func judgeAgents(now time.Time, slug string, child ChildReading, since time.Time, runs []AgentRun, newestEnd time.Time, waitLive bool, quiet time.Duration, sleeps, paused []pauserecord.Interval) (noticeFinding, activityStamp) {
+ 	awakeSince := func(at time.Time) time.Duration {
+ 		return pauserecord.AwakeSince(at, now, sleeps, paused)
+ 	}
+ 
+ 	if len(runs) == 0 {
+ 		newest := since
+-		if child.NewestHistory.After(newest) {
+-			newest = child.NewestHistory
++		for _, at := range []time.Time{child.NewestHistory, newestEnd} {
++			if at.After(newest) {
++				newest = at
++			}
+ 		}
+ 		stamp := activityStamp{nanos: newest.UnixNano(), known: true}
+ 		if idle := awakeSince(newest); quiet > 0 && !waitLive && idle >= quiet {
+diff --git a/internal/dobbyengine/runnotice_test.go b/internal/dobbyengine/runnotice_test.go
+index dea420b0..256d6829 100644
+--- a/internal/dobbyengine/runnotice_test.go
++++ b/internal/dobbyengine/runnotice_test.go
+@@ -26,9 +26,12 @@ type noticeFake struct {
+ 	runs         []AgentRun
+ 	waitLive     bool
+ 	agentsErr    error
+-	pause        pauserecord.Coverage
+-	marker       string
+-	revives      int
++	// newestEnd and endErr are what NewestAgentEnd reports.
++	newestEnd time.Time
++	endErr    error
++	pause     pauserecord.Coverage
++	marker    string
++	revives   int
+ }
+ 
+ // newNoticeHarness returns a pass harness over one running run, task, whose child is running at Plan-Write with a live driver and no agent run, and the fake its notice seams read.
+@@ -46,9 +49,10 @@ func newNoticeHarness(t *testing.T) (*passHarness, *noticeFake) {
+ 		Agents: func(context.Context, string) ([]AgentRun, bool, error) {
+ 			return f.runs, f.waitLive, f.agentsErr
+ 		},
+-		Pause:      func(string) (pauserecord.Coverage, error) { return f.pause, nil },
+-		MarkerPath: func(string) string { return f.marker },
+-		Quiet:      45 * time.Minute,
++		NewestAgentEnd: func(context.Context, string) (time.Time, error) { return f.newestEnd, f.endErr },
++		Pause:          func(string) (pauserecord.Coverage, error) { return f.pause, nil },
++		MarkerPath:     func(string) string { return f.marker },
++		Quiet:          45 * time.Minute,
+ 	}
+ 	return h, f
+ }
+@@ -242,6 +246,48 @@ func TestRunNotice_Conditions(t *testing.T) {
+ 				h.advance(60 * time.Minute)
+ 			},
+ 		},
++		{
++			name: "NoRunReadCountsAnAgentRunThatHasJustEnded",
++			act: func(h *passHarness, f *noticeFake) {
++				f.newestEnd = start.Add(74 * time.Minute)
++				h.advance(75 * time.Minute)
++			},
++		},
++		{
++			name: "NoRunReadFallsBackToTheNewestEndedAgentRun",
++			act: func(h *passHarness, f *noticeFake) {
++				f.child.NewestHistory = start.Add(10 * time.Minute)
++				f.newestEnd = start.Add(30 * time.Minute)
++				h.advance(75 * time.Minute)
++			},
++			want: []string{"running at Plan-Write; no agent activity readable for 45m10s"},
++		},
++		{
++			name: "ARunReadLeavesTheEndedAgentRunsUnread",
++			act: func(h *passHarness, f *noticeFake) {
++				f.runs = []AgentRun{{Producer: "t:task:impl", LastActivity: start}}
++				f.endErr = errors.New("run root unreadable")
++				h.advance(45 * time.Minute)
++			},
++			want: []string{"running at Plan-Write; agents idle for 45m10s"},
++		},
++		{
++			name: "ANilEndedAgentRunSeamFallsBackToTheNewestHistoryEntry",
++			act: func(h *passHarness, f *noticeFake) {
++				h.d.deps.RunNotices.NewestAgentEnd = nil
++				f.newestEnd = start.Add(74 * time.Minute)
++				f.child.NewestHistory = start.Add(30 * time.Minute)
++				h.advance(75 * time.Minute)
++			},
++			want: []string{"running at Plan-Write; no agent activity readable for 45m10s"},
++		},
++		{
++			name: "AnUnreadableEndedAgentRunSendsNothing",
++			act: func(h *passHarness, f *noticeFake) {
++				f.endErr = errors.New("run root unreadable")
++				h.advance(2 * time.Hour)
++			},
++		},
+ 		{
+ 			name: "AnAPIErrorGoesOnceItHasStoodItsIdleTime",
+ 			act: func(h *passHarness, f *noticeFake) {
+diff --git a/internal/shuttleengine/activity.go b/internal/shuttleengine/activity.go
+index 196fff58..8f6f6d07 100644
+--- a/internal/shuttleengine/activity.go
++++ b/internal/shuttleengine/activity.go
+@@ -1,6 +1,6 @@
+ // activity.go declares the provider-neutral reading of what a worktree's running shuttle runs have been doing:
+ // when each last showed activity, and whether its newest turn end is an API error.
+-// A caller that judges a run quiet, or stalled on an API error, reads it through ReadAgentActivity.
++// A caller that judges a run quiet, or stalled on an API error, reads it through ReadAgentActivity, and when the newest ended run ended through ReadNewestRunEnd.
+ // Like ReadWaitMarker it reads files only, so any process may call it.
+ 
+ package shuttleengine
+@@ -121,6 +121,46 @@ func ReadAgentActivity(cfg Config, anchorPath string, engines EngineSet) ([]Agen
+ 	return readings, nil
+ }
+ 
++// ReadNewestRunEnd returns when the newest ended run under the run-directory root of anchorPath ended: the latest modification time of a run record whose outcome reads anything but running, since a run's finalize is its record's last write.
++// It lets a caller that finds no running run tell a session that has just ended, before its caller records the end, from a worktree whose agents have long been idle.
++// A directory that is not a run directory and a run with no record are skipped, and an undecodable record is skipped and logged once per episode.
++// It returns the zero time when no ended run is found, and no error for an absent root.
++func ReadNewestRunEnd(cfg Config, anchorPath string) (time.Time, error) {
++	root := runDirRoot(cfg, anchorPath)
++	entries, err := os.ReadDir(root)
++	if os.IsNotExist(err) {
++		return time.Time{}, nil
++	}
++	if err != nil {
++		return time.Time{}, err
++	}
++	var newest time.Time
++	for _, entry := range entries {
++		if !entry.IsDir() {
++			continue
++		}
++		runDir := filepath.Join(root, entry.Name())
++		rs, found, err := loadRunState(runDir)
++		if err != nil {
++			unreadableFiles.Fail(runDir, "shuttle: skipping an unreadable run record", "runDir", runDir, "cause", err)
++			continue
++		}
++		unreadableFiles.Recover(runDir, "shuttle: run record readable again", "runDir", runDir)
++		if !found || rs.Outcome == runOutcomeRunning {
++			continue
++		}
++		// A run directory the orphan sweep removes between the read and the stat has no end to count.
++		info, err := os.Stat(filepath.Join(runDir, runStateFileName))
++		if err != nil {
++			continue
++		}
++		if info.ModTime().After(newest) {
++			newest = info.ModTime()
++		}
++	}
++	return newest, nil
++}
++
+ // runIsLive reports whether rs names a run still waited on: it reads running and its recorded pid is alive.
+ func runIsLive(rs RunState) bool {
+ 	return rs.Outcome == runOutcomeRunning && rs.PID > 0 && isAlive(rs.PID)
+diff --git a/internal/shuttleengine/activity_test.go b/internal/shuttleengine/activity_test.go
+index a8553a54..10273404 100644
+--- a/internal/shuttleengine/activity_test.go
++++ b/internal/shuttleengine/activity_test.go
+@@ -441,6 +441,97 @@ func TestReadAgentActivity(t *testing.T) {
+ 	})
+ }
+ 
++// TestReadNewestRunEnd covers the end-time reading over run directories written by the test.
++// It reads no liveness seam, so it runs in parallel.
++func TestReadNewestRunEnd(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	created := time.Date(2026, 11, 1, 11, 0, 0, 0, time.UTC)
++	type endedRun struct {
++		outcome   string
++		recordAt  time.Time
++		noRecord  bool
++		corrupted bool
++	}
++	tests := []struct {
++		name string
++		runs map[string]endedRun
++		want time.Time
++	}{
++		{
++			name: "NoRunReadsZero",
++		},
++		{
++			name: "OnlyARunningRunReadsZero",
++			runs: map[string]endedRun{"run-a": {outcome: runOutcomeRunning, recordAt: created.Add(time.Hour)}},
++		},
++		{
++			name: "TheNewestEndedRecordWins",
++			runs: map[string]endedRun{
++				"run-a": {outcome: "done", recordAt: created.Add(10 * time.Minute)},
++				"run-b": {outcome: "died", recordAt: created.Add(20 * time.Minute)},
++				"run-c": {outcome: runOutcomeStopped, recordAt: created.Add(15 * time.Minute)},
++			},
++			want: created.Add(20 * time.Minute),
++		},
++		{
++			name: "ANewerRunningRecordIsNoEnd",
++			runs: map[string]endedRun{
++				"run-a": {outcome: "done", recordAt: created.Add(10 * time.Minute)},
++				"run-b": {outcome: runOutcomeRunning, recordAt: created.Add(time.Hour)},
++			},
++			want: created.Add(10 * time.Minute),
++		},
++		{
++			name: "ADirectoryWithNoRecordOrAnUndecodableRecordIsSkipped",
++			runs: map[string]endedRun{
++				"run-a": {outcome: "done", recordAt: created.Add(10 * time.Minute)},
++				"run-b": {noRecord: true},
++				"run-c": {corrupted: true, recordAt: created.Add(time.Hour)},
++			},
++			want: created.Add(10 * time.Minute),
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			root := t.TempDir()
++			for name, run := range tt.runs {
++				runDir := filepath.Join(root, name)
++				if err := os.MkdirAll(runDir, 0o755); err != nil {
++					t.Fatal(err)
++				}
++				if run.noRecord {
++					continue
++				}
++				recordPath := filepath.Join(runDir, runStateFileName)
++				if run.corrupted {
++					if err := os.WriteFile(recordPath, []byte("{not json"), 0o644); err != nil {
++						t.Fatal(err)
++					}
++				} else if err := saveRunState(runDir, RunState{RunID: name, Outcome: run.outcome, CreatedAt: created.Format(time.RFC3339)}); err != nil {
++					t.Fatal(err)
++				}
++				if err := os.Chtimes(recordPath, run.recordAt, run.recordAt); err != nil {
++					t.Fatal(err)
++				}
++			}
++			got, err := ReadNewestRunEnd(Config{RunDir: root}, t.TempDir())
++			if err != nil || !got.Equal(tt.want) {
++				t.Errorf("ReadNewestRunEnd() = %v, %v; want %v, nil", got, err, tt.want)
++			}
++		})
++	}
++
++	t.Run("AnAbsentRootReadsZero", func(t *testing.T) {
++		t.Parallel()
++		got, err := ReadNewestRunEnd(Config{RunDir: filepath.Join(t.TempDir(), "missing")}, t.TempDir())
++		if err != nil || !got.IsZero() {
++			t.Errorf("ReadNewestRunEnd() = %v, %v; want the zero time, nil", got, err)
++		}
++	})
++}
++
+ // writeActivityRun writes the run directory name under root: its run.json, its activity stamp when the run sets one, and its events file stamped with eventsWritten unless the run has none.
+ func writeActivityRun(t *testing.T, root, name string, run activityRun, created, eventsWritten time.Time) {
+ 	t.Helper()
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index 3b276a1b..d469d75a 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -462,6 +462,7 @@
+ // so a first turn spent in a fork reads active before it ends.
+ // An engine without the capability, and a run with no turn end at all, are judged by the events file alone.
+ // Like ReadWaitMarker it reads files only, so a process that runs no shuttle may call it.
++// ReadNewestRunEnd returns when the newest run whose record reads anything but running ended, its record's modification time, so a caller that reads no running run still counts a session that has just ended as activity; it reads files only too.
+ //
+ // Operator instructions carried over: every verified send into a run appends the text it types, as one JSON string line, to the run directory's sent-texts file before typing.
+ // A run's operator instructions are the SessionSignal.Instruction texts of its turn starts past its prompt offset, without the turn start of the run's prompt, and without any text the sent-texts file holds.
