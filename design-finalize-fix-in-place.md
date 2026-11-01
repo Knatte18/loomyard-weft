@@ -2,7 +2,7 @@
 
 `finalize-fix-in-place` · Task · enhancement, landing, shed, loom, darn
 
-Depends on: [`interactive-recipe`](design-interactive-recipe.md), [`pr-continue-wakes-row`](design-pr-continue-wakes-row.md)
+Depends on: [`interactive-recipe`](design-interactive-recipe.md)
 
 ## Seen (operator, 2026-10-31)
 
