@@ -1,18 +1,17 @@
 # Board README shows a task's profile in the Recipe column
 
-The board's rendered tables showed a task's run profile as a `` `profile: <name>` `` bullet under the title in the Task column, while the Recipe column held only the recipe.
-A profile is the lower level of a recipe, so the two now share one cell.
-
-## What changes
-
-- `recipeCell` in `internal/boardengine/render.go` renders the recipe, `tapestry` when the field is empty, followed by ` · ` and the profile when the task names one, such as `tapestry · light` or `darn · docs`.
-  A task naming no profile takes its recipe's default profile at seeding, so its cell shows the recipe alone.
-  The separator is the named constant `recipeProfileSeparator`.
-- `entryCell` no longer adds the profile bullet; the brief and run-setting bullets are unchanged.
-- The package doc in `internal/boardengine/doc.go` describes the new Recipe cell and drops the profile bullet.
-- The render test's darn task with profile `docs` now expects `darn · docs` in the Recipe column and no profile bullet.
+The rendered board README showed a task's run profile as a `profile: <name>` bullet under its title in the Task column, while the Recipe column held only the recipe.
+The profile is the lower level of the recipe, so it now sits in the same column: `tapestry · light`, or the recipe alone when the task names no profile and takes its recipe's default.
+The profile bullet under the title is gone; run-setting bullets are unchanged.
 
 ## Design decisions
 
-- The cell shows the recipe alone whenever the task's `profile` field is empty, rather than resolving the hub's default profile from `profiles.yaml`.
-  The renderer reads only the board, and the idea asks for the recipe alone exactly when the task takes the default.
+- `recipeCell` in `internal/boardengine/render.go` appends the separator `recipeProfileSeparator` (` · `) and the profile to the recipe, which is still `tapestry` when the recipe field is empty.
+  A profile on a task with no recipe therefore renders as `tapestry · <profile>`.
+- The profile goes through `cellText`, so a pipe in it is escaped and the entry stays one table row.
+- `entryCell` no longer reads the profile. The Notes and Done tables have no Recipe column and show no profile.
+- The `doc.go` layout description and the `render_test.go` golden are updated to match. The fixture gains a profile with a pipe on a task with no recipe, beside the existing recipe with a profile.
+
+## To check by hand
+
+Nothing was left open. Regenerate a README from a real board to see the column on live tasks if wanted.
