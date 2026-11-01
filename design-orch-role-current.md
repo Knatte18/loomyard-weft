@@ -1,6 +1,6 @@
 # One fixed orch role for every repository, brought up to date
 
-`orch-role-current` · Task · enhancement, orch, stencil
+`orch-role-current` · Task · enhancement, orch, stencil · running · Worktree-Create
 
 Depends on: [`heddle-orch-target`](design-heddle-orch-target.md)
 
