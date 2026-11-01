@@ -467,22 +467,23 @@
     },
     {
       "id": 913,
-      "handle": "E5",
+      "handle": "T7",
       "slug": "pr-continue-wakes-row",
       "title": "pr-continue wakes the PR-Review wait at once",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "landing",
         "batten"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "The PR-Review wait sleeps up to a minute between wakes, so lym loom pr-continue takes effect up to a minute late",
       "body": "## Seen (operator and hub orch, 2026-10-30)\n\nOn the first PR-Review run, the reviewer agent ran `lym loom pr-continue` and the run went on only after a while.\nThe wait sleeps between wakes, from a floor of one second up to a ceiling of one minute while nothing changes (`prWaitFloor`, `prWaitCeiling` in `internal/landingshed/prreview.go`), and `pr-continue` only sets a flag that the next wake reads.\nFinalize's gate then runs on the landed tree as for any landing, which takes minutes by itself.\n\n## Design (operator, 2026-10-30)\n\n`lym loom pr-continue` wakes the waiting row at once, so the PR is closed and Finalize begins with no wait of up to a minute.\n",
       "created": "2026-10-30T12:24:28Z",
-      "revised": "2026-10-30T12:24:28Z"
+      "revised": "2026-11-01T06:18:33Z"
     },
     {
       "id": 919,
@@ -497,13 +498,15 @@
         "shed"
       ],
       "issues": [],
-      "depends_on": [],
+      "recipe": "darn",
+      "depends_on": [
+        "interactive-recipe"
+      ],
       "isolated": false,
       "brief": "The shared seed names Preflight as the first producer for every recipe; the seed should name none, and the recipe supplies its first row.",
       "body": "## Seen (operator, 2026-10-30)\n\nA new beam stopped at once because the shared seed set its status file's `current_producer` to `Preflight`, a row the pawl recipe lacked.\nThe seed names the producer an inner run starts at, so each recipe's first row must match a name hard-coded in `loomshed.Seed` (`internal/loomshed/seed.go`), which the bootstrap shared by every inner recipe calls.\n\n## Design (operator, 2026-10-30)\n\n- The seed names no producer: it says only that the run starts at its start, and the recipe's first row is the start.\n- A seed can then never name a row its recipe lacks, whatever recipe a run is seeded for.\n- The change reaches the shared seeding for tapestry, darn and pawl, how the status file records the current producer before the first pass, and the verbs that move a run (`goto`, resume), which the task checks.\n",
-      "status": "draft",
       "created": "2026-10-30T13:58:16Z",
-      "revised": "2026-10-31T15:05:43Z"
+      "revised": "2026-11-01T06:18:33Z"
     },
     {
       "id": 922,
@@ -550,10 +553,10 @@
     },
     {
       "id": 927,
-      "handle": "E7",
+      "handle": "T6",
       "slug": "finalize-fix-in-place",
       "title": "Finalize settles a rejected fixer change in place and never sends the run back",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "landing",
@@ -562,12 +565,17 @@
         "darn"
       ],
       "issues": [],
-      "depends_on": [],
+      "recipe": "darn",
+      "depends_on": [
+        "interactive-recipe",
+        "pr-continue-wakes-row"
+      ],
       "isolated": false,
       "brief": "A fix review loop inside Finalize that escalates at its cap, in place of on_reroute",
       "body": "## Seen (operator, 2026-10-31)\n\nFinalize still sends a run back in one case: when its merge fixer spent its cap, or made an over-cap change, and Finalize's own solo fix review does not approve that change.\ntapestry's Finalize then reroutes to Parent-Align and darn's to Code-Bouncer (`on_reroute` in `contracts/recipes/tapestry-recipe.yaml` and `darn-recipe.yaml`), bounded by Shed's reroute cap.\nThe operator does not want a run bounced back to earlier rows, and a halt handed to the orch helps no one either, since the orch can do little with it: the run must settle it itself.\n\n## Idea\n\nFinalize settles a fixer change in place, under the parent lock, and never reroutes.\n- A fix review that does not approve hands its findings to the fixer, which fixes them in place, and the review checks again: a small perch inside Finalize.\n- The loop has a cap; at the cap Finalize escalates with the unresolved findings, as a review loop that ran out of rounds does, and the operator decides.\n  The operator can accept the change as it stands, and the run then lands with the unresolved findings written into the change description, as `lym loom circling accept` does for a review loop.\n- Parent-Align and Code-Review are not run again, and `on_reroute` goes from Finalize in every recipe.\n",
       "created": "2026-10-31T12:52:24Z",
-      "revised": "2026-10-31T15:05:43Z"
+      "revised": "2026-11-01T06:18:33Z",
+      "profile": "solid"
     },
     {
       "id": 928,
@@ -648,14 +656,17 @@
         "interactive-recipe",
         "batching-effect-audit",
         "gate-rule-stated-once",
-        "warp-visibility"
+        "warp-visibility",
+        "seed-starts-at-start",
+        "finalize-fix-in-place",
+        "pr-continue-wakes-row"
       ],
       "isolated": false,
       "brief": "A pure, mechanical rename of _board to _bolt everywhere, with a rename program for existing hubs",
       "body": "## Seen (operator, 2026-10-31)\n\nThe hub's Bolt checkout is the directory `_board`, but it holds far more than the board: `board.json`, its README and design files, the hub's `_lym` config and orch rules, and soon heddle's database.\nThe name says board where the directory is Bolt.\n\n## Design (operator, 2026-10-31)\n\nA pure rename of `_board` to `_bolt`, the name of the repository it checks out, done mechanically by script and nothing else.\n- Task `warp-visibility` lands first and makes the name live in one constant, `fabricengine.BoltDirName`, still `_board` (operator, 2026-11-01); this task changes that constant's value to `_bolt`, and every spelling of `_board` still left, in docs and anywhere else, becomes `_bolt`.\n- Existing hubs on Neve and OSL-1046 have `_board` on disk, so the task ships a rename program as `tapestry-rename` had, run once per hub.\n  It also re-points everything that holds an absolute path into `_board`, such as config, stored reed commands and VS Code setup, and refuses to run while any lym process or run is alive.\n- No compatibility: lym itself knows `_bolt` only, with no fallback to `_board`, no detection of the old name and no migration case in its code, since no run on the old name meets the new binary (operator, 2026-10-31).\n  The one-shot rename program is the only place the old name appears.\n- The rename program stays short, with no what-if code (operator, 2026-10-31): it handles the hubs on Neve and OSL-1046 as they are today, stops and says what it found when anything looks other than expected, leaving that to be fixed by hand, and is deleted from the repository once both hubs are migrated.\n- No refactor rides along.\n- It runs alone, with no other run in flight.\n",
       "status": "draft",
       "created": "2026-10-31T16:11:22Z",
-      "revised": "2026-11-01T06:15:18Z"
+      "revised": "2026-11-01T06:18:33Z"
     },
     {
       "id": 935,
