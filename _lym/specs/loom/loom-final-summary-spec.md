@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=78426e9a9d25d150c889fd1582d25d46a8c80ac209fbc8cf55aedaeb3ea7b211 build=f666ba87df1cd198e399cb9f727bb59e08155b77 time=2026-10-31T18:44:38Z -->
+<!-- lym-stencil: sha256=611f881932505ed567f18d00bf53b43b07a5d4142536ee7254b4c3e46af41d2d build=a3f0ec249513efa2c100f23b6354ac1d5e5a8209 time=2026-11-01T06:57:22Z -->
 
 # Final-summary spec — the producer-agnostic final-summary artifact
 
@@ -8,7 +8,7 @@
 ## What it is
 
 The final-summary artifact is the prose final-summary a run's last content-producing step writes: a first non-blank line `# <title>`, then free-form prose describing the change.
-Today that step is the `Describe` row of the tapestry and darn recipes, or the darn writer when the darn review is off, which writes `_lym/landing/summary.md`; its body is a change description — what the change does and why, for a PR reviewer — rather than a run narrative.
+Today that step is the `Describe` row of the tapestry, darn and sampler recipes, or the darn writer when the darn review is off, which writes `_lym/landing/summary.md`; its body is a change description — what the change does and why, for a PR reviewer — rather than a run narrative.
 The contract names no producer — a future last-content-producing step (e.g. Tenter) can satisfy it too.
 
 ## Format and validation
