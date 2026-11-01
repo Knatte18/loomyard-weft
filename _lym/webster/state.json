@@ -396,7 +396,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "027a2687ba3886e3aa7a401f5599025c",
   "masterSessionId": "571c4288-9a6a-4d69-a3bf-ad611ab3ea00",
   "masterEngine": "claude",
@@ -481,6 +481,22 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-interactive-recipe/571c4288-9a6a-4d69-a3bf-ad611ab3ea00/subagents/agent-aac0f9e495c544261.jsonl"
       ]
+    },
+    "7": {
+      "slug": "sampler-vocabulary",
+      "cards": [
+        "07-sampler-vocabulary"
+      ],
+      "cardHashes": {
+        "07-sampler-vocabulary": "f7cbebbf86ccea9a1fe09a9b3e4f6f4a285ce5fa8c3aa12ef1e124c614bafa57"
+      },
+      "startSha": "7f1f5d0dc794af535c71acd6383129fb9809dda0",
+      "kind": "fork",
+      "spawnedAt": "2026-11-01T06:21:34Z",
+      "sessionId": "571c4288-9a6a-4d69-a3bf-ad611ab3ea00",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
