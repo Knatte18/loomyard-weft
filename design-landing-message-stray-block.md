@@ -1,6 +1,6 @@
 # A landing commit message ends with a stray Created using block
 
-`landing-message-stray-block` · Task · bug, landing · running · Record-Write
+`landing-message-stray-block` · Task · bug, landing · running · Darn-Write
 
 ## Seen (orch, 2026-11-01)
 
