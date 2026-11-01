@@ -2,7 +2,7 @@
 
 `bolt-dir-rename` · Task · enhancement, fabric, board, config, cwd, stencil · draft
 
-Depends on: [`interactive-recipe`](design-interactive-recipe.md), [`batching-effect-audit`](design-batching-effect-audit.md)
+Depends on: [`interactive-recipe`](design-interactive-recipe.md), [`batching-effect-audit`](design-batching-effect-audit.md), [`gate-rule-stated-once`](design-gate-rule-stated-once.md)
 
 ## Seen (operator, 2026-10-31)
 

@@ -1,6 +1,8 @@
 # The appended system prompt states the gate rule once, not twice
 
-`gate-rule-stated-once` · Task · enhancement, shuttle, gate, claude · draft
+`gate-rule-stated-once` · Task · enhancement, shuttle, gate, claude
+
+Depends on: [`interactive-recipe`](design-interactive-recipe.md)
 
 ## Seen (hub orch, 2026-10-31)
 
