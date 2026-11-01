@@ -4,7 +4,7 @@
 
 ## Seen (operator, 2026-10-31)
 
-The hub's Bolt checkout is the directory `_board`, but it holds far more than the board: `board.json`, its README and design files, the hub's `_lym` config and orch rules, and soon heddle's database.
+The hub's Bolt checkout is the directory `_board`, but it holds far more than the board: `board.json`, its README and design files, the hub's `_lym` config and orch rules, and heddle's database.
 The name says board where the directory is Bolt.
 
 ## Design (operator, 2026-10-31)
