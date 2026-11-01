@@ -12,6 +12,6 @@ A Reddit report the operator read cut agents' turns by having them plan every ch
 
 ## Idea (operator and orch, 2026-11-01)
 
-- An imperative instruction, delivered as a heddle entry in the rendered `CLAUDE.local.md`: read what the change needs, decide every edit across every file the card or task touches, make them all, then run the gate once and fix everything its report shows in one round.
-- It is a heddle text with no code change, so it runs as a trial in wave 3, measured alone: gate runs per card and edit-and-gate rounds, on Webster forks with `tools/forkaudit` and on darn writers with the scripts of `docs/research/turn-audit-2026-10-28`.
-- Should the trial show the effect, the instruction moves into the stencils lym ships, since it holds for every hub.
+- An imperative instruction to every shuttle-launched Claude session: read what the change needs, decide every edit across every file the card or task touches, make them all, then run the gate once and fix everything its report shows in one round.
+- It is lym's own instruction, so it lives in lym's code (`PATTERN-lym-instructions-in-code`), never in heddle: it goes through the CLAUDE-file channel `batching-in-claude-local` builds in claudeengine, beside the batching sentence (orch, 2026-11-01).
+- Checked in the transcripts of the first runs it reaches: whether the agents settle their edits before the first gate run; its effect on turns is measured with the rest of `agent-turns` by note `agent-turns-effect`.
