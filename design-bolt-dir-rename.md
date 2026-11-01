@@ -1,6 +1,6 @@
 # Rename the Bolt checkout directory _board to _bolt, by script alone
 
-`bolt-dir-rename` · Task · enhancement, fabric, board, config, cwd, stencil · running · PR-Review
+`bolt-dir-rename` · Task · enhancement, fabric, board, config, cwd, stencil · running · Finalize
 
 ## Seen (operator, 2026-10-31)
 
