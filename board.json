@@ -618,27 +618,6 @@
       "revised": "2026-11-01T18:48:34Z"
     },
     {
-      "id": 980,
-      "handle": "T2",
-      "slug": "reed-loses-parts-chair",
-      "title": "Reed loses the Parts-Plan-Write chair strand while its part writers run",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "reed",
-        "loom"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The chair vanished from reed, then the row failed on two missed liveness checks",
-      "body": "## Seen (orch, 2026-11-01)\n\nIn scratch worktree `psb-rv-split` of the `plan-split-bench` study, Parts-Plan-Write failed with \"chair wait: reed did not track strand a6fd47d6... on 2 consecutive liveness checks; reed's strand table no longer holds this run's strand\".\nEarlier the chair strand `ly:psb-rv-split:parts-plan` had already vanished from `lym reed list` while its part writers still ran, and a creel reply to it could not be delivered; afterwards `lym reed status` in that worktree listed no strands at all.\nNobody ran a reed remove or down there.\nThe worktree was made with `lym fabric add --local` from the prime and its loom run seeded by hand, so a local pair or a hand-seeded run may be a factor.\n\nThe `plan-split-bench` study (landed 2026-11-01, `docs/research/plan-split-bench-2026-11-01/`) stopped its `run-verbs-shared` split arm at this failure, so that input has no split-versus-plan comparison; the other input, `warp-visibility`, ran the split to its end.\n\n## Idea\n\nFind what removes a live chair strand from reed's table during Parts-Plan-Write, and keep the chair tracked while its part writers run.\n",
-      "status": "done",
-      "created": "2026-11-01T17:27:03Z",
-      "revised": "2026-11-01T18:47:04Z"
-    },
-    {
       "id": 981,
       "handle": "T1",
       "slug": "plan-split-tune",
@@ -652,9 +631,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "reed-loses-parts-chair"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "Tune, replay on two inputs, tune again, at most 3 rounds, starting from the plan-split-bench report",
       "body": "## Seen (orch, plan-split-bench, 2026-11-01)\n\nIn the `plan-split-bench` replays, Parts-Write fixed export names in `parts.md` that the repository's PATTERN entries forbid, and the part writers, who may not change `parts.md`, could not correct them:\n- `internal/heddlecli#NewCommand`, where `PATTERN-cli-cobra` gives every CLI package `Command()`;\n- names spelling `warp` in `heddleengine`, `fabricengine` and `cmd/lym`, which `PATTERN-fabric-vocabulary` bars and `validate-plan --part` refuses as `fabric-vocabulary-name`;\n- two members that keep their signatures listed as exports, which `part-export-missing` cannot accept.\n\nEach needed a hand edit of `parts.md` before the parts could join.\nParts-Write's prompt (`loom-template-parts.md`) carries the PATTERN directive, but nothing has it read the PATTERN entries that govern the names it fixes, and its own gate does not run the name checks the part gate runs.\n\n## Goal (operator, 2026-11-01)\n\nTune the instructions of the plan-split writers, Parts-Write, the part writers and the joining chair, test them, and tune again, until a split plan joins and passes its gates with no hand edit.\nStart from the `plan-split-bench` report's findings, which this task reads first.\n\n## Changes to try first\n\n- Parts-Write reads the PATTERN entries for every package a part exports from before it names an export, as the Plan writer does in its longer session.\n- Parts-Write's gate runs the name checks `validate-plan --part` runs on export names, `fabric-vocabulary-name` included, and refuses an export naming an existing member whose signature the part keeps, so such a defect stops at Parts-Write, where it can still be fixed.\n- Whatever else the bench report names as a cause of a hand edit or a failed join.\n\n## Loop and cap\n\n- Inputs: the two replays `plan-split-bench` used (`warp-visibility` and `run-verbs-shared`), at the same base commits.\n- One round: tune the instructions, then replay Parts-Write and Parts-Plan-Write on both inputs with `plan_split` on, and record per input whether the parts joined, which gates refused, and every hand edit needed.\n- At most 3 rounds, so at most 6 split writings; one Plan-Review round per input on the last round's plans only, 2 in all.\n- The loop ends early at the first round where both inputs join and pass their gates with no hand edit.\n- The orch creates and removes the scratch worktrees on the writer's request, since `lym fabric add` is refused from a task session.\n- The instruction changes land in the stencils and gates; a report in `docs/research/` gives each round's results and the cost.\n",

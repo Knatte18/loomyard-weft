@@ -2,8 +2,6 @@
 
 `plan-split-tune` · Task · enhancement, loom, stencil, pattern · draft
 
-Depends on: [`reed-loses-parts-chair`](design-reed-loses-parts-chair.md)
-
 ## Seen (orch, plan-split-bench, 2026-11-01)
 
 In the `plan-split-bench` replays, Parts-Write fixed export names in `parts.md` that the repository's PATTERN entries forbid, and the part writers, who may not change `parts.md`, could not correct them:
