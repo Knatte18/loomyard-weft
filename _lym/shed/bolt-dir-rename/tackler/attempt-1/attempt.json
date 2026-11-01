@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Worktree-Teardown",
+    "history_length": 9,
+    "state": "blocked"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "",
+    "branch": "",
+    "dirty": null
+  },
+  "spawned_at": "2026-11-01T11:50:40.323742261+01:00",
+  "deadline": "2026-11-01T12:00:40.323742261+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/bolt-dir-rename/drive-reports/drive-envelope-20261101-115040-501d.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/bolt-dir-rename/drive-reports/drive-report-20261101-115040-fd4c.md",
+  "strand_guid": "4e85b7ef57f5b4d722844c96e0cab65b"
+}
