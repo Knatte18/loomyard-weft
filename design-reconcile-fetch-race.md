@@ -8,6 +8,13 @@ At 13:03:50 a `lym batten run gate-fewer-binaries-trial --continue-pass` failed 
 That is git's answer when another process updated the same remote-tracking ref between this fetch reading it and writing it; `kde-window-placement` was landing and `board-tidy` ran at the same moment, so another fetch of `main-weft` in the same weft is the likely cause.
 The pass exited 1, the driver spawned a tackler (a Claude session, about 20 s), which found nothing to do, and the loop went on.
 
-## Idea
+## Cause in the code
 
-The fetch in batten's origin reconcile, and any other fetch of a shared ref in a prime's warp or weft, retries once or twice when git reports `incorrect old value provided`, or serialises those fetches under a lock, so a race between two lym processes never fails a pass or costs a tackler.
+Fabric serialises its writes under locks (the weft write lock, the board write lock, the push lock), but `fetchMovedHeads` in `internal/fabricengine/originreconcile.go` runs a plain forced `git fetch` into the tracking refs with no lock and no retry; only the `ls-remote` before it retries, and only on a transport failure.
+A remote-tracking ref is written by a fetch and by a push, so two lym processes fetching or pushing the same branch in one repository race on it.
+
+## Idea (operator, 2026-11-01)
+
+A fetch that writes remote-tracking refs waits its turn under a lock, as fabric's writes do, rather than retrying.
+- Every lym fetch into a repository's tracking refs, the origin reconcile's included, takes the lock that already orders that repository's pushes (the push lock), since a push writes the same refs; it waits for the lock rather than failing when it is held.
+- Find every fetch fabric and batten run into a shared repository's tracking refs and put each under the same lock.
