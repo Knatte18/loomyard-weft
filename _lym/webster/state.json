@@ -369,7 +369,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 13,
   "masterStrand": "46e7be2b6eaf853643f0d14aab73b07f",
   "masterSessionId": "6c8372cc-0276-4e08-a1ef-a58cb9a44e5a",
   "masterEngine": "claude",
@@ -453,6 +453,26 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-gate-run-keeps-cache-warm/6c8372cc-0276-4e08-a1ef-a58cb9a44e5a/subagents/agent-ae3fec75545205212.jsonl"
       ]
+    },
+    "13": {
+      "slug": "card-verify-capped",
+      "cards": [
+        "13-card-verify-capped",
+        "14-agent-gate-calls",
+        "15-agent-keep-warm-text"
+      ],
+      "cardHashes": {
+        "13-card-verify-capped": "28d970c9b5019e55370c9a4b1a452151db3588afcdff4b2ae946f5de65526088",
+        "14-agent-gate-calls": "fa7589b9e8a6bf7e72efc654aed9ccf5bef51d912b97cd42134bb96b8586efd4",
+        "15-agent-keep-warm-text": "a3e825188c205a6f9731b5b4101f408fd31ceb8c0ad1c97988b112ead6f051fa"
+      },
+      "startSha": "784a418256d0971fc663e24c70e94eec620a5182",
+      "kind": "fork",
+      "spawnedAt": "2026-11-01T14:26:46Z",
+      "sessionId": "6c8372cc-0276-4e08-a1ef-a58cb9a44e5a",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "6": {
       "slug": "verifyrun-tied-line",
