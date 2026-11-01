@@ -40,13 +40,13 @@ Waits only on Running, Ready or Draft entries.
 | T6 | **A long gate run answers within the cache lifetime, so the waiting agent keeps its prompt cache warm**<br>• lym gate test caps the run wait like the slot wait, with the cap a config value beside the engine cache lifetime<br>• `profile: light` | [`gate-run-keeps-cache-warm`](design-gate-run-keeps-cache-warm.md) | tapestry | T2 | 17h<br>21m | gate, shuttle, config |
 | T7 | **One verb to take work over on another machine, leaving every run in a known state**<br>• Moving to another machine is many hand steps, and afterwards run states are unclear | [`machine-switch`](design-machine-switch.md) | tapestry | T4 | 1d<br>10m | fabric, dobby, batten |
 
-#### Layer B (1)
+#### Draft (1)
 
-Starts when every entry it names under After is done.
+Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Spawn audit log: every process lym starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | tapestry | T5<br>T6 | 3w<br>0m | process, logger, reed, shuttle, config |
+| T3 | `draft` **Spawn audit log: every process lym starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | tapestry | T5<br>T6 | 3w<br>0m | process, logger, reed, shuttle, config |
 
 ### Notes (25)
 
