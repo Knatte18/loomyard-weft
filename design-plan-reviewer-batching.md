@@ -1,6 +1,6 @@
 # The round-1 Plan reviewer gathers in one call a turn
 
-`plan-reviewer-batching` · Task · enhancement, burler, stencil · running · Describe
+`plan-reviewer-batching` · Task · enhancement, burler, stencil · running · PR-Review
 
 ## Seen (research, landed 2026-11-01)
 
