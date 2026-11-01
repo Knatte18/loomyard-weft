@@ -1,6 +1,6 @@
 # The board marks the own entries of a project apart from its sub-projects
 
-`board-no-project-heading` · Task · enhancement, board · running · Code-Burler-Review
+`board-no-project-heading` · Task · enhancement, board · running · Code-Burler-Fix
 
 ## Seen (operator, 2026-11-01)
 
