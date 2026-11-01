@@ -1,7 +1,7 @@
 <!-- This is burler's fork-reading part: the pre-read a fanned round's handler does in the explore step, so every fork inherits the reading instead of repeating it.
      internal/burlerengine's forkReadingBlock (prompt.go) reads and fills it, and composeReviewPrompt injects it as burler-step-1-explore's optional fork_reading marker value in a fanned round only.
      It declares no marker.
-lym-stencil: sha256=02f5aa62981ca38962a369ba457627069755044fe9fab5520088a7cc3213ff0a build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+lym-stencil: sha256=1ea5fda2c348674d6bf6f929919badfc1d2116229021d642fa18d824e5636ad6 build=5227aeaaf8e9428d23e2e93efa469273761426db time=2026-11-01T16:49:12Z -->
 ## Reading for the fork reviewers
 
 This round fans out: in step 2 you spawn fork reviewers, and each fork inherits your context as it stands at the spawn.
@@ -16,6 +16,15 @@ Before you leave this step, read:
 - the board entry of the task the target belongs to, through `lym board get`;
 - the `pattern/` background file of every PATTERN entry the target names or touches;
 - the failure, restart and resume paths of each change the target makes.
+
+Gather this list in waves of parallel calls, never one item or one symbol a message:
+
+1. Once you have read the target, list every symbol, state, output and PATTERN entry it names.
+   Then issue, together in one message, a separate tool call for each: one search per file the target names for the definitions of the symbols it cites, one search per symbol or output for its callers, tests, docs and fixtures, one search per changed symbol for the paths that reach it from another process, one search per state or setting for its writers and readers, `lym board get`, and the read of each `pattern/` background file.
+2. In the next message, read together every definition and call site the first wave's results point to, with the callees of each changed symbol and the failure, restart and resume paths of each change that those definitions show.
+3. Make a further wave only for a hop the second wave opened, such as a spawned process or a restart path, again with all its calls in one message.
+
+A call goes to a later message only when its arguments come from an earlier result.
 
 Read definitions and call sites, not whole files: a fork re-reads its inherited context on every turn.
 Judge nothing while you read: write no finding, verdict or assessment, not even in a status line or a note to yourself.
