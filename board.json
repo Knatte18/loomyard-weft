@@ -730,6 +730,25 @@
       "body": "## Seen (orch, 2026-11-01)\n\n`lym config gate --set tiers.tier0.env.LYM_TEST_TIER=0` was refused: the value landed one level too high and the gate config no longer loaded (\"cannot unmarshal !!str `0` into gateslot.tierFile\").\n`--set` writes only a top-level key or one entry of an open map, and the editor refuses a non-interactive terminal, so an orch cannot change a key inside a gate tier, such as its `env` or `command`, at all.\nWorkaround for `gate-one-binary-per-package`: the run's test selector falls back to the build tag's tier, and the gate.yaml switch waits for the operator or a later fix.\n\n## Idea\n\n`--set` takes a dotted path to any key the module's schema reaches, nested maps included, and writes a scalar there; a path into a struct field the schema lacks is refused naming the key.\n",
       "created": "2026-11-01T17:23:38Z",
       "revised": "2026-11-01T17:23:38Z"
+    },
+    {
+      "id": 980,
+      "handle": "B5",
+      "slug": "reed-loses-parts-chair",
+      "title": "Reed loses the Parts-Plan-Write chair strand while its part writers run",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "reed",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The chair vanished from reed, then the row failed on two missed liveness checks",
+      "body": "## Seen (orch, 2026-11-01)\n\nIn scratch worktree `psb-rv-split` of the `plan-split-bench` study, Parts-Plan-Write failed with \"chair wait: reed did not track strand a6fd47d6... on 2 consecutive liveness checks; reed's strand table no longer holds this run's strand\".\nEarlier the chair strand `ly:psb-rv-split:parts-plan` had already vanished from `lym reed list` while its part writers still ran, and a creel reply to it could not be delivered; afterwards `lym reed status` in that worktree listed no strands at all.\nNobody ran a reed remove or down there.\nThe worktree was made with `lym fabric add --local` from the prime and its loom run seeded by hand, so a local pair or a hand-seeded run may be a factor.\n\n## Idea\n\nFind what removes a live chair strand from reed's table during Parts-Plan-Write, and keep the chair tracked while its part writers run.\n",
+      "created": "2026-11-01T17:27:03Z",
+      "revised": "2026-11-01T17:27:03Z"
     }
   ],
   "prime_owner": "neve",
