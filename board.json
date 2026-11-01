@@ -663,6 +663,26 @@
       "body": "## Seen (operator and orch, 2026-11-01)\n\nReview escalations reached the orch four times in a few hours for `plan-split-producers` and `reed-status-buttons`, and the orch read each through a fork of its own session and recorded the answer with `lym loom decision add`, `lym loom circling accept|continue` and `lym loom resume`.\nThe calls were run-level: whether a fix in the record holds, whether to accept at the hard cap, small rulings inside the board entry's design.\nThe arbiter, a cold stronger-model agent the Go driver spawns at a stop it cannot settle (`internal/shedarbiter`), exists for such calls, but two limits sent them on:\n- `internal/arbiterstop` makes only a review escalation of cause `hard-cap` or `circling` eligible; a `decision` escalation, such as a fixer's decision findings or a bouncer that wants the parent's ruling, goes to the run's parent without the arbiter.\n- An eligible arbiter may only resume (a goto) or hand on: it records no decision and edits nothing.\n  At `reed-status-buttons`' hard cap it found the false clause, wrote the exact three-line correction, and still had to hand on, since \"I may edit nothing beyond this verdict, and no recorded operator decision covers it\".\n\n## Idea (operator, 2026-11-01)\n\nThe arbiter settles these calls itself, so they never reach the orch.\n- A `decision` escalation becomes eligible for the arbiter as `hard-cap` and `circling` are.\n- The arbiter may record a decision with `lym loom decision add`, under its own `--by`, and choose `circling accept` or `continue`, as the orch does today.\n- It passes on only a question the board entry's design and the record's decisions do not settle; that goes to the operator through the orch.\n- The orch hears only the outcome, so a quiet orch, as in note `dormant-orch`, need not wake for it.\n\n## Open\n\n- How far the arbiter may decide alone: within the board entry's design and the record's decisions, and where that line is drawn in its stencil.\n- Whether `--by arbiter` is a new decision author, shown as such in the record.\n",
       "created": "2026-11-01T12:47:29Z",
       "revised": "2026-11-01T12:48:33Z"
+    },
+    {
+      "id": 955,
+      "handle": "B1",
+      "slug": "writer-leaves-stray-files",
+      "title": "A writer session can end with untracked files in the worktree, which halt Finalize",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shuttle",
+        "darn",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A producing session's end gate refuses to end while the worktree holds untracked files outside its outputs",
+      "body": "## Seen (orch, 2026-11-01)\n\nThe darn writer of `batch-budget-300k-trial` left two untracked files at its worktree root, `200k` and `250k`, each one stray line (\"cautious base est\", \"wide est\"), most likely from a shell redirect in a command it ran.\nIts session ended and the run went on through review to Finalize, which refused the merge-in over the uncommitted files; the tackler handed the stop back and the orch removed them by hand.\nSuch files should never exist at the end of a writing session.\n\n## Idea\n\nA producing session (darn writer, Webster fork, fixers) cannot end while its worktree holds untracked or uncommitted files it did not commit: its end gate, beside the verify and description gates shuttle already runs, names the files and tells the agent to commit what belongs to the change and delete the rest, so the stop is fixed by the agent that made it, not at Finalize.\n",
+      "created": "2026-11-01T12:52:37Z",
+      "revised": "2026-11-01T12:52:37Z"
     }
   ],
   "prime_owner": "neve",
