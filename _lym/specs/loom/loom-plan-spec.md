@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=5d9d2b0b7dde288ce2316b191dc1105ca4f70858626211546cd0100cce9d165b build=76b3d1f732a1ca8b05dce8a1024b52a6866ba44c time=2026-11-01T15:20:40Z -->
+<!-- lym-stencil: sha256=bb613aba9238752f51e7b97afa9d65f549ee5ad6880d3866438c3a372c3d05d8 build=c2817ac0e690d4305b31eaa4a046091cd813ada8 time=2026-11-01T16:08:30Z -->
 
 # Loom plan-spec — flat card list
 
@@ -17,7 +17,7 @@ It is reviewed by `Plan-Review`.
 
 The smallest change that:
 
-1. **Compiles/builds on its own** — `go build ./...` succeeds immediately after the card's commit.
+1. **Compiles/builds on its own** — the whole module builds immediately after the card's commit.
    No broken syntax, no reference to a symbol that doesn't yet exist.
 2. **Is independently committable** — a meaningful, revertible git commit on its own.
 3. **Carries the coverage for any new behavior it introduces**; the card's own targets include the test that covers it.
