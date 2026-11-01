@@ -24,7 +24,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Tune the plan-split writers until a split plan joins with no hand edit**<br>• Tune, replay on two inputs, tune again, at most 3 rounds, starting from the plan-split-bench report | [`plan-split-tune`](design-plan-split-tune.md) | darn | T2 | 1h<br>20m | loom, stencil, pattern |
+| T1 | `draft` **Tune the plan-split writers until a split plan joins with no hand edit**<br>• Tune, replay on two inputs, tune again, at most 3 rounds, starting from the plan-split-bench report | [`plan-split-tune`](design-plan-split-tune.md) | darn | T2<br>T4 | 1h<br>0m | loom, stencil, pattern |
 | T2 | `draft` **Reed loses the Parts-Plan-Write chair strand while its part writers run**<br>• The chair vanished from reed, then the row failed on two missed liveness checks | [`reed-loses-parts-chair`](design-reed-loses-parts-chair.md) | tapestry |  | 1h<br>24m | reed, loom |
 
 ## Notes (33)
