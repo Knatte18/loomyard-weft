@@ -16,6 +16,12 @@ Note `edit-with-edit-tool` removes part of this, since the Read tool reads whole
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-01): Read-whole wording moves into the shipped heddle entry
+
+Decision: The merge resolver carries this branch's read-whole wording into the lym-batching entry of internal/heddleengine/shipped.json and updates the pinned sentence in the ShippedBatchingEntryIsPinned subtest of internal/heddleengine/store_test.go.
+
+Rationale: Main moved the batching sentence from claudeengine into heddle's shipped layer; dropping the wording would leave this task's change shipped nowhere.
+
 ## Constraints
 
 ## Auto-mode assumptions
