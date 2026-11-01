@@ -621,6 +621,26 @@
       "body": "## Seen (orch, 2026-11-01)\n\nAt 13:03:50 a `lym batten run gate-fewer-binaries-trial --continue-pass` failed its origin reconcile: `git fetch origin +refs/heads/main-weft:refs/remotes/origin/main-weft` in the prime's weft exited 1 with `error: fetching ref refs/remotes/origin/main-weft failed: incorrect old value provided`.\nThat is git's answer when another process updated the same remote-tracking ref between this fetch reading it and writing it; `kde-window-placement` was landing and `board-tidy` ran at the same moment, so another fetch of `main-weft` in the same weft is the likely cause.\nThe pass exited 1, the driver spawned a tackler (a Claude session, about 20 s), which found nothing to do, and the loop went on.\n\n## Idea\n\nThe fetch in batten's origin reconcile, and any other fetch of a shared ref in a prime's warp or weft, retries once or twice when git reports `incorrect old value provided`, or serialises those fetches under a lock, so a race between two lym processes never fails a pass or costs a tackler.\n",
       "created": "2026-11-01T12:04:54Z",
       "revised": "2026-11-01T12:04:54Z"
+    },
+    {
+      "id": 951,
+      "handle": "T4",
+      "slug": "batcher-wide-default",
+      "title": "The batcher template makes the wide profile, budget 300k, its active default",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "webster"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "internal/batcher/template.yaml gains the wide profile and makes it active; cautious stays as the fallback",
+      "body": "## Decision (operator, 2026-11-01)\n\nLoomYard's own batcher template, `internal/batcher/template.yaml`, makes `wide` its active profile, for every hub and not only this one.\n- `wide` is `cautious` with `budget: 300000`, the same profile this hub's `batcher.yaml` has run since 2026-10-22.\n- `active:` names `wide`; `cautious` and `identity` stay in the template as profiles a hub may choose.\n- The comments that name `cautious` as the template default, in the template and anywhere else that says so, follow.\n- No estimator weight changes.\n\n`docs/research/batch-budget-trial-2026-11-01/report.md` is the evidence: over 23 `wide` runs it costs no more per card and shows no quality loss.\n",
+      "status": "draft",
+      "created": "2026-11-01T12:16:35Z",
+      "revised": "2026-11-01T12:16:35Z"
     }
   ],
   "prime_owner": "neve",
