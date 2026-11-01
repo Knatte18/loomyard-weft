@@ -26,7 +26,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **One test binary per package, the tier chosen at run time**<br>• LYM_TEST_TIER selects the tier instead of build tags, taking a cold gate run from 532 test binaries to 182<br>• `profile: solid` | [`gate-one-binary-per-package`](design-gate-one-binary-per-package.md) | darn |  | 2h<br>18m | gate, testkit, pattern |
+| T3 | `draft` **One test binary per package, the tier chosen at run time**<br>• LYM_TEST_TIER selects the tier instead of build tags, taking a cold gate run from 532 test binaries to 182<br>• `profile: solid` | [`gate-one-binary-per-package`](design-gate-one-binary-per-package.md) | darn | T5 | 2h<br>0m | gate, testkit, pattern |
 
 ## Notes (33)
 
