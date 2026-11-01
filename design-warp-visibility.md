@@ -2,8 +2,6 @@
 
 `warp-visibility` · Task · feature, fabric, board, config, claude, codex, cwd, process, stencil, shuttle · running · Discussion-Write
 
-Depends on: [`gate-rule-stated-once`](design-gate-rule-stated-once.md)
-
 ## Seen
 
 Using LoomYard on a repository should be invisible: nothing lym-related in the repository's own git history, and no lym text in a file the repository's own people read (operator, 2026-10-29).
