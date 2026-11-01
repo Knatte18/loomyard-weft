@@ -52,16 +52,16 @@
 - `PATTERN.md`
 
 **Uses:**
-- `plan:internal/gatecli#detachRequest`
-- `plan:internal/gatecli#detachExit`
-- `plan:internal/gatecli#runPhase`
-- `plan:internal/gatecli#detachDirName`
-- `plan:internal/gatecli#detachRun.writeLease`
-- `plan:internal/gatecli#detachRun.expireLease`
-- `plan:internal/gatecli#detachRun.leaseHolds`
-- `plan:internal/gatecli#detachRun.claim`
-- `plan:internal/gatecli#startReading`
-- `plan:internal/runproc#RoleGate`
+- `internal/gatecli#detachRequest`
+- `internal/gatecli#detachExit`
+- `internal/gatecli#runPhase`
+- `internal/gatecli#detachDirName`
+- `internal/gatecli#detachRun.writeLease`
+- `internal/gatecli#detachRun.expireLease`
+- `internal/gatecli#detachRun.leaseHolds`
+- `internal/gatecli#detachRun.claim`
+- `internal/gatecli#startReading`
+- `internal/runproc#RoleGate`
 - `internal/shuttleengines#KeepWarm`
 - `internal/shuttleengines#KeepWarmAnswer`
 - `internal/runproc#Register`
@@ -79,7 +79,7 @@
 - `internal/hubgeom#GateSlots`
 - `internal/lock#TryAcquireWriteLock`
 - `internal/lock#AcquireWriteLock`
-- `plan:internal/gatecli#helperDelayEnv`
+- `internal/gatecli#helperDelayEnv`
 - `internal/runproc#EndSparing`
 - `internal/state#WriteJSON`
 

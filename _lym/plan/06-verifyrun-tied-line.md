@@ -5,10 +5,10 @@
 - `internal/verifyrun#TestMain`
 
 **Create:**
-- `plan:internal/verifyrun#RunTied` -> `func RunTied(ctx context.Context, command, dir string, env []string, out io.Writer, started func(proc.TreeRecord)) (int, error)`
-- `plan:internal/verifyrun#runTied` -> `func runTied(ctx context.Context, command, dir string, env []string, out io.Writer, delay time.Duration, started func(proc.TreeRecord)) (int, error)`
-- `plan:internal/verifyrun#tieToParent` -> `func tieToParent(cmd *exec.Cmd)`
-- `plan:internal/verifyrun#TestRunTied` -> `func TestRunTied(t *testing.T)`
+- `internal/verifyrun#RunTied`
+- `internal/verifyrun#runTied`
+- `internal/verifyrun#tieToParent`
+- `internal/verifyrun#TestRunTied`
 
 **Uses:**
 - `internal/proc#TreeRecord`

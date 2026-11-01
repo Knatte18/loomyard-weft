@@ -13,7 +13,7 @@
 - `internal/websterengine#rerunCardVerifies`
 
 **Uses:**
-- `plan:internal/verifyrun#RunTied`
+- `internal/verifyrun#RunTied`
 
 **Intent:** D6: `cardverify.Runner` takes the caller's context in place of its own `context.Background()`, for the slot acquire and the line, so a lease cancel reaches both, and it can tell its caller where it stands and which process tree runs the line.
 

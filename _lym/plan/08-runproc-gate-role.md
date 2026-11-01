@@ -1,7 +1,7 @@
 # Card 8 — runproc-gate-role
 
 **Create:**
-- `plan:internal/runproc#RoleGate` -> `const RoleGate = "gate"`
+- `internal/runproc#RoleGate`
 
 **Edit:**
 - `//internal/runproc/doc.go`

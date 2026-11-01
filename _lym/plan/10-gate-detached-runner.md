@@ -2,23 +2,23 @@
 
 **Create:**
 - `//internal/gatecli/detachrun.go`
-- `plan:internal/gatecli#detachDirName` -> `const detachDirName = "detach"`
-- `plan:internal/gatecli#detachRun` -> `type detachRun struct`
-- `plan:internal/gatecli#detachRequest` -> `type detachRequest struct`
-- `plan:internal/gatecli#runPhase` -> `type runPhase struct`
-- `plan:internal/gatecli#detachExit` -> `type detachExit struct`
-- `plan:internal/gatecli#detachRun.writeLease` -> `func (d detachRun) writeLease(deadline time.Time) error`
-- `plan:internal/gatecli#detachRun.expireLease` -> `func (d detachRun) expireLease(now time.Time) error`
-- `plan:internal/gatecli#detachRun.leaseHolds` -> `func (d detachRun) leaseHolds(now time.Time) bool`
-- `plan:internal/gatecli#detachRun.claim` -> `func (d detachRun) claim(pid int, start string) error`
-- `plan:internal/gatecli#detachRun.writePhase` -> `func (d detachRun) writePhase(phase runPhase)`
-- `plan:internal/gatecli#detachRun.writeExit` -> `func (d detachRun) writeExit(exit detachExit) error`
-- `plan:internal/gatecli#startReading` -> `func startReading(goos string, pid int, startTime func(int) (string, bool), creationTime func(int) (time.Time, bool)) (string, bool)`
-- `plan:internal/gatecli#runnerCmd` -> `func runnerCmd(gateTree func() *cobra.Command) *cobra.Command`
-- `plan:internal/gatecli#runDetached` -> `func runDetached(ctx context.Context, out io.Writer, runDir string, gateTree func() *cobra.Command) int`
-- `plan:internal/gatecli#TestGateRunner_Refusals` -> `func TestGateRunner_Refusals(t *testing.T)`
-- `plan:internal/gatecli#TestGateRunner` -> `func TestGateRunner(t *testing.T)`
-- `plan:internal/gatecli#helperDelayEnv` -> `const helperDelayEnv = "GATECLI_TEST_DELAY"`
+- `internal/gatecli#detachDirName`
+- `internal/gatecli#detachRun`
+- `internal/gatecli#detachRequest`
+- `internal/gatecli#runPhase`
+- `internal/gatecli#detachExit`
+- `internal/gatecli#detachRun.writeLease`
+- `internal/gatecli#detachRun.expireLease`
+- `internal/gatecli#detachRun.leaseHolds`
+- `internal/gatecli#detachRun.claim`
+- `internal/gatecli#detachRun.writePhase`
+- `internal/gatecli#detachRun.writeExit`
+- `internal/gatecli#startReading`
+- `internal/gatecli#runnerCmd`
+- `internal/gatecli#runDetached`
+- `internal/gatecli#TestGateRunner_Refusals`
+- `internal/gatecli#TestGateRunner`
+- `internal/gatecli#helperDelayEnv`
 
 **Edit:**
 - `internal/gatecli#newCommand`

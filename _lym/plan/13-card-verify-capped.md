@@ -7,9 +7,9 @@
 - `internal/gatecli#cardVerifyCmd` -> `func cardVerifyCmd(seams detachSeams) *cobra.Command`
 - `internal/gatecli#runCardVerify` -> `func runCardVerify(ctx context.Context, out, stderr io.Writer, id string, seams detachSeams) int`
 - `internal/gatecli#newCommand`
-- `plan:internal/gatecli#runDetached`
+- `internal/gatecli#runDetached`
 - `plan:internal/gatecli#runFront`
-- `plan:internal/gatecli#detachRun`
+- `internal/gatecli#detachRun`
 - `plan:internal/gatecli#TestGateTest_DetachedRun`
 - `internal/gatecli#TestGateCardVerify`
 - `//internal/gatecli/doc.go`
@@ -17,9 +17,9 @@
 **Uses:**
 - `plan:internal/gatecli#frontDecision`
 - `plan:internal/gatecli#detachKeyDir`
-- `plan:internal/gatecli#detachRequest`
-- `plan:internal/gatecli#runPhase`
-- `plan:internal/gatecli#detachRun.writePhase`
+- `internal/gatecli#detachRequest`
+- `internal/gatecli#runPhase`
+- `internal/gatecli#detachRun.writePhase`
 - `internal/cardverify#Runner`
 - `internal/cardverify#IsGateCall`
 - `internal/proc#KillTree`
