@@ -789,7 +789,7 @@
       "isolated": false,
       "brief": "Read a file to change with Read and edit it with Edit, all its edits in one message; a guard refuses sed -i and its kin",
       "body": "## Seen (orch, 2026-11-01)\n\nIn the three heaviest Webster forks of `run-verbs-shared`, 66 to 90% of the edits were shell edits (`sed -i` 74, 54 and 22 times), often in two steps through a scratch file, at about one edit a turn; the two forks that used the Edit tool made 2.3 to 2.4 edits a turn.\nNone of them was ever refused by the Edit tool: they read with `sed -n` and wrote with `sed -i` from the start.\nThe deny-and-steer sentence every agent gets, `steerPythonDeny` in `internal/shellguard/rows.go`, says \"edit files with Edit or Write, search and read with grep, awk, cat or sed -n\"; nothing stops a shell edit, and the Edit tool takes only a file read with the Read tool.\n\n## Idea\n\n- A file an agent will change is read with the Read tool, a span through offset and limit, and changed with Edit; all of one file's edits go in one message.\n- grep and `sed -n` stay for searching and glancing at files the agent does not change.\n- The steering sentence says so, and a PreToolUse guard refuses `sed -i`, `perl -i` and a heredoc or redirect into a tracked source file, as the Python guard refuses Python today, with the same steer.\n",
-      "status": "draft",
+      "status": "running · Worktree-Create",
       "created": "2026-11-01T14:16:30Z",
       "revised": "2026-11-01T14:27:05Z",
       "project": "agent-turns"
@@ -813,7 +813,6 @@
       "isolated": false,
       "brief": "lym gate test prints a compact list of every build, test and lint failure with file:line and values, and the log path",
       "body": "## Seen (orch, 2026-11-01)\n\nIn the five heaviest Webster forks of the three latest tapestry runs, about 10 turns went only to reading gate output: the result was too large for one tool result and was saved to a file, or a `tail` showed only passing tests.\nLint ran in turns of its own after the gate (`lym loom lint-comments`, `lint-pattern`): 14 lint-only turns, and fixed-column comment findings cost about 8 more.\nA fork fixed one failure, ran the whole gate again and read the next, rather than fixing every failure at once.\n\n## Idea (operator, 2026-11-01)\n\nThe gate's report is written so that every failure can be fixed in one go:\n- `lym gate test` prints one compact list of every failure: build errors, test failures and lint findings, the gate's own lint steps included.\n- Each failure names its package, test and `file:line`, the expected and actual values or the first lines of the panic or build error.\n- It names the files the change touches and the path of the full log, and stays small enough to read as one tool result.\n",
-      "status": "draft",
       "created": "2026-11-01T14:16:30Z",
       "revised": "2026-11-01T14:27:05Z",
       "project": "agent-turns"
@@ -934,7 +933,6 @@
       "isolated": false,
       "brief": "Measure where reviewer, fixer and judge turns and context go on three tapestry runs, and what Sonnet fixers would cost",
       "body": "## Seen (orch, 2026-11-01)\n\n`tools/tokencount` on the three latest full tapestry runs (`warp-visibility`, `interactive-recipe`, `run-verbs-shared`): the review rounds' main sessions cost more than their forks.\n- Plan reviewer $31 and 1h13m, the longest part of Plan, at about 175k tokens of context a message; Discussion reviewer $18.\n- The Discussion and Plan fixers, on Opus, about $25 together; all review and fixer forks of both segments about $24.\n\n## Idea: a study (orch, 2026-11-01)\n\nA darn with profile docs measures, on those same three runs' transcripts, the turns and context per turn of the Discussion and Plan reviewer, fixer and judge sessions and their forks, where their turns go (reads, searches, writes, waits), and which of the turns could have been merged.\nIt reuses the method of `docs/research/turn-audit-2026-10-28`, and states what Sonnet fixers would have cost, beside note `fixers-on-sonnet`.\nCap: the three runs named, no agent or model run beyond the darn writer.\n",
-      "status": "draft",
       "created": "2026-11-01T14:18:14Z",
       "revised": "2026-11-01T14:27:05Z",
       "profile": "docs",
