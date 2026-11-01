@@ -31,6 +31,12 @@ Decision: Option A: orch-template-role is taken out of the stencil registry, so 
 
 Rationale: The operator's design for P1 is one fixed orch role with the repository's rules in heddle; a seeded copy a hub can edit is what that design removes, and overwriting edited copies would break the entry's other promise instead of naming one exception.
 
+### Added after Discussion (parent, 2026-11-01): The closed workaround sections left through lym orch rules
+
+Decision: The closed #799, #849 and #885 sections are out of the hub's orch rules: the parent carried the rules into heddle's orch-rules entry with lym orch rules without them, and the old _lym/orch/rules.md is no longer read since heddle-orch-target. The diff makes no change for this.
+
+Rationale: The rules live in the Bolt checkout and heddle, outside this repository's diff; the step is done.
+
 ## Constraints
 
 ## Auto-mode assumptions
