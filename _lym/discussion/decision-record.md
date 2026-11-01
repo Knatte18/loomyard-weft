@@ -222,6 +222,12 @@ None.
   - lease-and-pointer-outside-state (class consistency, severity BLOCKING, open in rounds 1)
 <!-- /lym:carry-over Plan-Review -->
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - line-group-killed-outside-runproc (class decision, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: an agent-strand `lym gate test` call whose tiers outlast its cap exits 75 with `done: false` and the running tier while the tiers go on; the same command again after the run ended prints the run's stdout, stderr and exit code; a third call starts a fresh run.
