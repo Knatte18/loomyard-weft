@@ -952,6 +952,27 @@
       "created": "2026-11-01T14:46:04Z",
       "revised": "2026-11-01T14:46:04Z",
       "project": "agent-turns"
+    },
+    {
+      "id": 972,
+      "handle": "T3",
+      "slug": "gate-one-binary-per-package",
+      "title": "One test binary per package, the tier chosen at run time",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "gate",
+        "testkit",
+        "pattern"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "LYM_TEST_TIER selects the tier instead of build tags, taking a cold gate run from 532 test binaries to 182",
+      "body": "## Seen (research, landed 2026-11-01)\n\n`docs/research/gate-fewer-binaries-trial-2026-11-01/report.md` measured three ways to cut the new test binaries a gate run builds, each of which costs about 10 s of scanner hold on OSL-1046.\nIts verdict: one test binary per package for all tiers, the tier chosen at run time, is the cut worth making permanent.\nOn the module's package graph it takes a cold run from 532 test binaries to 182, and a change of mean fan-in from about 101 new binaries to about 35; on a ten-package sample every test that passed before still passed.\nThat is about 660 s saved per mean change on OSL-1046, and about 3600 s per change to a universally imported package.\nCutting the five universal imports out of `TestMain` saves only when one of the five changes; merging small leaf packages was not needed.\n\n## Design (from the report, operator 2026-11-01)\n\n- The test tier is chosen at run time by `LYM_TEST_TIER`, not by build tags, so each package builds one test binary that holds every tier's tests.\n- Every Test function calls the tier's `Require`, which skips it outside its tier; the report's trial 2 shows the form.\n- `gate.yaml` gives each tier an `env` entry setting `LYM_TEST_TIER`; the tag guards, `go vet` per tag and the gate's `tier` command follow.\n- `PATTERN-test-speed` changes from disjoint tags to the run-time selector.\n- Known costs the report names: tier3 dependencies (`llmkit`) join every binary and raise its fan-in, a binary is larger, and a test that reads `LYM_TEST_TIER` loses its test-cache entry per tier, so each tier call reruns the binary.\n\n## Shape of the run\n\nThe `Require` call reaches the Test functions of about 180 packages: that part is mechanical and touches nearly every test file, so like a rename it runs alone, with no other run in flight.\n",
+      "status": "draft",
+      "created": "2026-11-01T14:51:40Z",
+      "revised": "2026-11-01T14:51:40Z"
     }
   ],
   "prime_owner": "neve",
