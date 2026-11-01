@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Parent-Align",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Drift-Await → skipped",
+    "now": "Parent-Align",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -201,6 +201,33 @@
       "output": "",
       "at": "2026-11-01T13:45:53Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/gate-run-keeps-cache-warm/_lym/webster/summary.md",
+      "at": "2026-11-01T14:50:53Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-01T14:40:03.443352134Z",
+          "end": "2026-11-01T14:46:32.93824797Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-01T14:46:33.328104832Z",
+          "end": "2026-11-01T14:50:14.155171053Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-01T14:50:14.22335353Z",
+          "end": "2026-11-01T14:50:52.682075665Z"
+        }
+      ]
     }
   ],
   "product": {
