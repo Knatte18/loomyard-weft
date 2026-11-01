@@ -1,6 +1,6 @@
 # Parts-Write and Parts-Plan-Write: the plan written in two steps, beside Plan-Write
 
-`plan-split-producers` · Task · feature, loom, stencil, shed, profiles
+`plan-split-producers` · Task · feature, loom, stencil, shed, profiles · running · Worktree-Create
 
 ## Seen
 
