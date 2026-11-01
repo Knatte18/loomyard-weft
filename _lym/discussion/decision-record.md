@@ -242,6 +242,12 @@ Rationale: D9 allows the literal only in the one declaration and TestEnforcement
   - in-place-render-reread-at-compaction (class design, severity MEDIUM, open in rounds 2)
 <!-- /lym:carry-over Discussion-Review -->
 
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/plan/round-2-review.md; fixer report: _lym/reviews/plan/round-2-fixer-report.md.
+  - livestate-doc-test-board-literal (class consistency, severity MEDIUM, open in rounds 1, 2)
+<!-- /lym:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - D1: a store round-trip keeps an unknown top-level key and an unknown entry key, on an entry `set` updates and on its neighbours after an add and a remove; an absent `heddle.json` lists no entry; entries render in `order`, ties by slug.
