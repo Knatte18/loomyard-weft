@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=24783fbc0c8ca56e76c599d0cc5c34b8963b6b4ac63969b54af657a304fddf26 build=52b6984877826c631cb136734cbf9afe3959bf18 time=2026-10-31T13:43:24Z -->
+<!-- lym-stencil: sha256=d673ae54b3027dd1658b217696b53fbdde651234587bde0e32a9eca2cd61c820 build=61e42505c2de95169af0036a15fc1e3f025f81fe time=2026-11-01T07:33:14Z -->
 
 # Loom plan-spec — flat card list
 
@@ -329,7 +329,7 @@ A `**Verify:**` line that tests is one `lym gate test --wait` call with a gate k
 The plan-level `## verify:` body section in `00-overview.md` is accepted and ignored: the parser still reads it, and the plan gate reports an informational finding, because the `webster` gate key has replaced it.
 
 Parent-Align and Finalize run their own gate keys, `parent-align` and `finalize`, in the task worktree whenever the tree differs from the last verified tree, which `internal/verifytree` records,
-and, on a failure, run the merge fixer before anything is landed, halting only when the fixer's cap is spent or its change is over the caps.
+and, on a failure, run the merge fixer before anything is landed, halting only when the fixer's cap is spent, a Parent-Align fixer change is over the caps, or Finalize's fix reviews run out of rounds.
 Both also halt Stuck on a dirty tree, so only committed content is ever verified or landed.
 
 The tiers below match this repo's own test-tier discipline:

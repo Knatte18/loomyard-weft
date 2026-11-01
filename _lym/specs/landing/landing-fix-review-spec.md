@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=0b73857d15aeed37a5d967c8a7114c9dd2d906893fe059f055cd8a9deed933e8 build=90d09fc7dbe93da40035b2bcf0872d4f937517e0 time=2026-10-28T14:25:53Z -->
+<!-- lym-stencil: sha256=b7cb5d37a7e17fd790c8886531b97df2b1b4821b4c84d519e84e5a1fc6aa493a build=61e42505c2de95169af0036a15fc1e3f025f81fe time=2026-11-01T07:33:14Z -->
 
 # Landing fix review spec — what the fix review writes
 
@@ -6,9 +6,10 @@
 
 ## What it is
 
-The fix review is the one solo session Finalize spawns when the merge fixer's change is over the caps and a review follows Finalize's reroute.
+The fix review is the solo session Finalize spawns when the merge fixer's change is over the caps.
 It reads only the fixer's commits and ends by writing one report, a markdown file at the path its prompt names.
-An approval lets Finalize land; a rejection sends the run back along Finalize's reroute edge.
+An approval lets Finalize land; a rejection hands the report's findings to the merge fixer, which fixes them in place, and the fix review then judges the fixed change again.
+Once `finalize_fix_review_rounds` reviews have not approved, Finalize halts for the operator with the last report's findings open.
 
 ## Format
 
