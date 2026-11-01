@@ -1,0 +1,1979 @@
+diff --git a/contracts/specs/loom-plan-spec.md b/contracts/specs/loom-plan-spec.md
+index 4386406d..5eb53ba1 100644
+--- a/contracts/specs/loom-plan-spec.md
++++ b/contracts/specs/loom-plan-spec.md
+@@ -333,7 +333,7 @@ Both also halt Stuck on a dirty tree, so only committed content is ever verified
+ The tiers below match this repo's own test-tier discipline:
+ 
+ - **Tier 1 (per card, automatic, no author action).**
+-  Implemented as the Go-rendered per-card gate: the hub's `card` key call, `lym gate test --gate card --card <card id>` without `--wait`, then the comment line-break lint and the PATTERN headroom lint.
++  Implemented as the Go-rendered per-card gate: the hub's `card` key call, `lym gate test --gate card --card <card id>` without `--wait`, which also runs the comment line-break lint and the PATTERN headroom lint the key lists.
+   The gate call computes the card's packages per module from the plan and runs the guard step over the `//lym:guard` tests itself, so the prompt names no package.
+   The card gate does not build or test the rest of the module; a card that breaks a package outside its targets passes it unless the break is in a `//lym:guard` test, and the batch gate or the `webster` gate catches that.
+   It runs only the tiers the `card` key lists, so a card that breaks a higher-tier test passes it too, and a passing call closes with a line naming the declared tiers it did not run, so its pass is never read as green for them.
+@@ -420,7 +420,7 @@ It runs only on a tapestry run, and an absent record adds nothing; a record whos
+ The four PATTERN checks run only in a worktree holding a `PATTERN.md` and with a base overview told to the gate, and read the overview at the task branch's merge base with its parent, or at `HEAD` with no parent recorded.
+ `pattern-removes-prescribed` is one blocking finding per `removes` entry of the overview's `## PATTERN changes` section that a card not recorded done fences a line for; its way forward is to drop the fenced line from the card.
+ `pattern-headroom` is one blocking finding when the overview projected from every card's fenced entry lines and the `removes` entries grows past the headroom line; its way forward is to shorten the prescribed lines or move detail into background files, and when that is not enough to record a `changes` decision that shortens other entries with `lym loom decision add`, passing `--amends-plan` once the plan is approved.
+-`pattern-card-headroom` is one blocking finding per card not recorded done whose own step grows the projected overview past the headroom line, the bound that card's `lint-pattern` gate step applies against the commit before it, so a plan whose final size passes still fails when an intermediate card does not.
++`pattern-card-headroom` is one blocking finding per card not recorded done whose own step grows the projected overview past the headroom line, the bound that card's gate applies in its pattern lint against the commit before it, so a plan whose final size passes still fails when an intermediate card does not.
+ The projection starts at the worktree's overview and takes those cards in plan order; a card's step applies its fenced entry lines, then drops each `removes` entry whose backticked ID it is the first such card to name, and a `removes` entry no such card names is dropped before the first card.
+ Its way forward is `pattern-headroom`'s.
+ `pattern-line-unprescribed` runs only on a tapestry run: it is one blocking finding per `adds` or `changes` entry that no card fences a line for and whose overview bullet still equals the base's; its way forward is to prescribe the entry's whole overview line in a fenced block on a pending card that edits `PATTERN.md`, or on a card inserted with `lym loom insert-card` when that card is done.
+diff --git a/contracts/stencils/loom/loom-rubric-code-review.md b/contracts/stencils/loom/loom-rubric-code-review.md
+index 2c588737..994ec5ba 100644
+--- a/contracts/stencils/loom/loom-rubric-code-review.md
++++ b/contracts/stencils/loom/loom-rubric-code-review.md
+@@ -67,7 +67,7 @@ Do not flag any of the following as a finding:
+ - **Comment-convention compliance.**
+   Any new or changed doc comment follows the target repository's own conventions — its own constraints document if it has one, and the conventions the surrounding code already follows.
+   A line width is never inferred from the surrounding code.
+-  A comment's line breaks and wrapping are never a finding; the gate's `lym loom lint-comments` alone checks them.
++  A comment's line breaks and wrapping are never a finding; the gate's comment lint alone checks them.
+   This rubric checks compliance with the target repository's own standard, not loomyard's.
+ - **Per-card mechanical check, with a plan.**
+   Confirm every one of the card's own groups' type-specific mechanical checks actually ran and passed, each against that group's own targets, not just the first label's, per the per-type table in `{{.specs_dir}}/loom/loom-plan-spec.md` — not merely that the diff compiles and its tests pass.
+diff --git a/contracts/stencils/webster/webster-body-implementer.md b/contracts/stencils/webster/webster-body-implementer.md
+index 6bbb7eb5..4e228eb5 100644
+--- a/contracts/stencils/webster/webster-body-implementer.md
++++ b/contracts/stencils/webster/webster-body-implementer.md
+@@ -59,6 +59,7 @@ Make exactly the changes the card describes, in exactly the targets its type lab
+ 
+ {{.card_gates}}
+ 
++   A failing gate call closes with a failure report that lists every failure at once, its lint findings included, with each failure's `file:line` and the log path; fix every failure it lists before you run the gate again.
+    The gate call computes the card's packages from the plan and runs the guard step itself, the step over the repository's `//lym:guard` tests, which can fail on a file the card does not list, such as the pinned set in a `cmd/lym` test.
+    Fix it under the card's commit.
+    Fix the code that broke the guard where that is the right fix, and change a pinned set or an allowlist only when the pin itself must move.
+diff --git a/docs/overview.md b/docs/overview.md
+index 23509168..d95afc57 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -491,7 +491,7 @@ User-facing modules each get one `lym <module>` namespace:
+   A post that expects a reply (`post --expect-reply`, or `--wait-reply`) is chased when its holder read it and did not answer: two content-free `CREEL` chases a quarter of an hour of the holder's running time apart, then a journaled `unanswered` outcome that answers a waiting `--wait-reply` and, for a sender that will read it, a notice.
+   Notices and the orch's typed lines go through creel: batten, loom, burler, webster and hibernate post their notices as mail to the orch strand, signed as their own program.
+   ✅ Implemented. See the `internal/creelengine` and `internal/creelcli` package documentation.
+-- **gate** — the tier runner: `lym gate test` runs the numbered tiers the hub declares in `gate.yaml` over explicit targets or `--all`, each tier taking the hub-wide gate slots it asks for, bounded by its `timeout_min`, counted by its `go-json` or `vstest` counter, and logged with a summary line and a run record under the board; a `--card` scope under the `go` scoper also vets the card's packages under each other tier tag that adds a file to one of them, so a tag-set compile break fails at the card; a failing tier stops no later tier, vet or guard run, a closing line names every failed run, and the call exits with the first failing run's code. A call from an agent strand without `--wait` runs in a detached runner it starts or joins, answers `done: false` and exits 75, which is no failure, when the caller's keep-warm cap passes before the run ended, and the same command again prints the run's result once it ended; `--wait`, and a call with no strand, run in-process and block until the slots free and the tiers end (`internal/gatecli`; `lym gate test [-C <dir>] [--gate <key>] [--tier N]... [--all] [--guards] [--wait] [<targets>...] [-- <args>]`; `--gate <key>` runs the tiers and scope `gate.yaml`'s gate key names, and with `--guards` the verb also runs every `//lym:guard` test of the module under the command of the tier its file belongs to). `lym gate card-verify <card id>` runs a plan card's `**Verify:**` line through the shared `internal/cardverify` runner and exits with the line's code. A run inside a slot an enclosing gate run holds takes no second one, and a git worktree outside every hub runs unslotted under its own `gate.yaml`. A Go test binary that keeps a core busy past `busy_quit_sec` gets one SIGQUIT, so its goroutine stacks reach the log long before the tier's own timeout.
++- **gate** — the tier runner: `lym gate test` runs the numbered tiers the hub declares in `gate.yaml` over explicit targets or `--all`, each tier taking the hub-wide gate slots it asks for, bounded by its `timeout_min`, counted by its `go-json` or `vstest` counter, and logged with a summary line and a run record under the board; a `--card` scope under the `go` scoper also vets the card's packages under each other tier tag that adds a file to one of them, so a tag-set compile break fails at the card; a failing tier stops no later tier, vet or guard run, the gate key's lint steps run after the tiers, a failure report lists every failure with its package, test and first lines, the files the change touches and each failed run's log, a closing line names every failed run, and the call exits with the first failing run's code. A call from an agent strand without `--wait` runs in a detached runner it starts or joins, answers `done: false` and exits 75, which is no failure, when the caller's keep-warm cap passes before the run ended, and the same command again prints the run's result once it ended; `--wait`, and a call with no strand, run in-process and block until the slots free and the tiers end (`internal/gatecli`; `lym gate test [-C <dir>] [--gate <key>] [--tier N]... [--all] [--guards] [--wait] [<targets>...] [-- <args>]`; `--gate <key>` runs the tiers and scope `gate.yaml`'s gate key names, and with `--guards` the verb also runs every `//lym:guard` test of the module under the command of the tier its file belongs to). `lym gate card-verify <card id>` runs a plan card's `**Verify:**` line through the shared `internal/cardverify` runner and exits with the line's code. A run inside a slot an enclosing gate run holds takes no second one, and a git worktree outside every hub runs unslotted under its own `gate.yaml`. A Go test binary that keeps a core busy past `busy_quit_sec` gets one SIGQUIT, so its goroutine stacks reach the log long before the tier's own timeout.
+   The `dotnet` scoper narrows a C# hub's computed, `--base` and `--card` scopes to the test projects and classes that name a changed type, rendered into the tier's `{filter}` placeholder (`internal/dotnetimpact`), and a hub's `build` step runs once per call inside the slots of the first tier that sets `shared_build`, with its own summary line and run record.
+   `inert_paths` makes a diff of files no test reads run no tier, and a tier with `carry: false` runs whole under every scope form but explicit targets and never carries.
+   [dotnet-hub.md](dotnet-hub.md) sets a .NET hub up. ✅ Implemented. See the `internal/gatecli` package documentation.
+@@ -574,7 +574,7 @@ User-facing modules each get one `lym <module>` namespace:
+   `join-parts` is the chair's one call that joins the parts' plans into the plan directory; it runs only from the chair of a running Parts-Plan-Write row, so a halted or later run, a part writer, a Plan-Burler-Fix fixer and Webster cannot reach it, and it overwrites only the plan directory.
+   `validate-description` runs the same checks the `Describe` row's `description` gate runs over `_lym/landing/summary.md`, standalone, with the same exit-code and findings-envelope contract.
+   `lint-comments [--base <commit>]` runs `internal/commentlint` over the worktree: the fixed-column-wrapped breaks the working tree, or the range from `--base` to HEAD, creates in `//` comment blocks.
+-  Every card gate ends with the two lints, and both only read git and files.
++  Both lints only read git and files, and the same functions run as the lint steps a `gate.yaml` gate key lists, such as the template's `card` key, inside its `lym gate test` call.
+   `fmt <file>...` rewrites each named `.go` file inside the worktree to its `go/format` form in-process, and refuses the whole call, writing nothing, when any named path is missing, outside the worktree, not a `.go` file or unparsable.
+   `lint-pattern [--base <commit>]` runs `internal/patternlint` over the worktree: it compares `PATTERN.md` at HEAD with the working tree's, or at `--base` with HEAD's, and fails when the overview grew past its headroom line, naming the bytes to cut.
+   An overview that stays above the line or shrinks passes.
+diff --git a/internal/gatecli/build.go b/internal/gatecli/build.go
+index 83dfcf1a..fb431f01 100644
+--- a/internal/gatecli/build.go
++++ b/internal/gatecli/build.go
+@@ -72,6 +72,7 @@ func (e *execution) runBuild(run tierRun, env []string) (result tierResult, ok b
+ 	if exit == 0 {
+ 		return tierResult{}, true
+ 	}
++	e.failed = append(e.failed, buildFailedRun(exit, timedOut, logPath, logBuffer.Bytes()))
+ 	e.buildFailure, e.buildExit = logPath, exit
+ 	return tierResult{buildFailed: true}, false
+ }
+diff --git a/internal/gatecli/counters.go b/internal/gatecli/counters.go
+index 7c986553..b37ef60d 100644
+--- a/internal/gatecli/counters.go
++++ b/internal/gatecli/counters.go
+@@ -46,10 +46,29 @@ type counter interface {
+ 	TestsRun() map[string]int
+ 	// Launches returns, per package whose test binary ran, how long the binary took to launch and how long the package took, in the order the packages started; nil for a counter that does not read packages.
+ 	Launches() []gateslot.PackageLaunch
+-	// Failures returns the failed tests so far, leaves only, in the order they failed; nil for a counter that does not read tests.
+-	Failures() []gateslot.TestFailure
++	// Failures returns the failures so far in the order they failed: the failed tests, leaves only, and the failed packages no failed test of theirs explains; nil for a counter that does not read tests.
++	Failures() []runFailure
++	// Unparsed returns the first non-empty lines of output that no test event carried, such as a `go build` or `go vet` step's errors, at most unparsedLines of them; nil for a counter that does not read events.
++	Unparsed() []string
+ }
+ 
++// runFailure is one failure the failure report lists: a failed test, a failed package no failed test of it explains, or one lint finding.
++type runFailure struct {
++	// pkg is the import path of the failed test's or package's package, empty for a lint finding.
++	pkg string
++	// test is the failed test's path, subtests included; empty for a package failure and a lint finding.
++	test string
++	// lines are the first lines the failure printed beside go test's own status and summary lines, trimmed, at most failureLines of them; a lint finding's one line.
++	lines []string
++}
++
++const (
++	// failureLines caps the lines one failure keeps: enough for an error with its got and want, or a panic with its first frames.
++	failureLines = 8
++	// unparsedLines caps the lines a counter keeps of output no test event carried.
++	unparsedLines = 12
++)
++
+ // newCounter returns the counter kind names, writing the tier's text output to out.
+ // Any kind but `go-json` and `vstest` is an error.
+ func newCounter(kind string, out io.Writer) (counter, error) {
+@@ -114,7 +133,7 @@ func (r *lineReader) passThrough(line []byte, terminated bool) error {
+ }
+ 
+ // goJSONCounter reads `go test -json` events and writes their output text, so failures, panics and build errors read as plain `go test` prints them.
+-// A line that is no JSON event, such as a `go build` or `go vet` step's output, passes through verbatim.
++// A line that is no JSON event, such as a `go build` or `go vet` step's output, passes through verbatim, and its first lines are kept for the failure report.
+ type goJSONCounter struct {
+ 	lines  lineReader
+ 	counts tierCounts
+@@ -123,10 +142,17 @@ type goJSONCounter struct {
+ 	order    []string
+ 	// testsRun holds, per package any event named, the number of tests that sent a run event.
+ 	testsRun map[string]int
+-	// firstLines holds, per test in flight, the first line it printed beside go test's status lines; a test leaves it when it ends.
+-	firstLines map[testKey]string
+-	// failures holds every failed test, parents of failed subtests included, in the order they failed.
+-	failures []gateslot.TestFailure
++	// testLines holds, per test in flight, the first lines it printed beside go test's status lines; a test leaves it when it ends.
++	testLines map[testKey][]string
++	// packageLines holds, per package, the first lines of its output outside any test, and buildLines, per build-output import path, the first lines of its build output.
++	packageLines map[string][]string
++	buildLines   map[string][]string
++	// failedPackages holds the packages with a failed test, whose own fail event the test explains.
++	failedPackages map[string]bool
++	// failures holds every failed test, parents of failed subtests included, and every failed package no test explains, in the order they failed.
++	failures []runFailure
++	// unparsed holds the first non-empty lines that were no JSON event.
++	unparsed []string
+ }
+ 
+ // testKey names one test of one package.
+@@ -158,6 +184,9 @@ type goTestEvent struct {
+ 	// Time is the event's RFC 3339 timestamp, kept as text so a missing or odd one never turns the line into plain output.
+ 	Time    string
+ 	Elapsed float64
++	// ImportPath names the package a `build-output` event's line belongs to, and FailedBuild, on a package's fail event, the import path whose build failed.
++	ImportPath  string
++	FailedBuild string
+ }
+ 
+ func (c *goJSONCounter) Write(p []byte) (int, error) { return c.lines.Write(p) }
+@@ -193,14 +222,14 @@ func (c *goJSONCounter) Launches() []gateslot.PackageLaunch {
+ 	return launches
+ }
+ 
+-// Failures returns the failed tests, leaving out a test with a failed subtest in the same package, since its own failure carries no line of its own.
+-func (c *goJSONCounter) Failures() []gateslot.TestFailure {
++// Failures returns the failures, leaving out a test with a failed subtest in the same package, since its own failure carries no line of its own.
++func (c *goJSONCounter) Failures() []runFailure {
+ 	c.lines.mu.Lock()
+ 	defer c.lines.mu.Unlock()
+-	var leaves []gateslot.TestFailure
++	var leaves []runFailure
+ 	for _, failure := range c.failures {
+-		parent := slices.ContainsFunc(c.failures, func(other gateslot.TestFailure) bool {
+-			return other.Package == failure.Package && strings.HasPrefix(other.Test, failure.Test+"/")
++		parent := failure.test != "" && slices.ContainsFunc(c.failures, func(other runFailure) bool {
++			return other.pkg == failure.pkg && strings.HasPrefix(other.test, failure.test+"/")
+ 		})
+ 		if !parent {
+ 			leaves = append(leaves, failure)
+@@ -209,25 +238,74 @@ func (c *goJSONCounter) Failures() []gateslot.TestFailure {
+ 	return leaves
+ }
+ 
+-// observeTest folds a test's event into its first line and, on its fail event, into the failures.
++// Unparsed returns a copy of the first non-empty lines that were no JSON event.
++func (c *goJSONCounter) Unparsed() []string {
++	c.lines.mu.Lock()
++	defer c.lines.mu.Unlock()
++	return slices.Clone(c.unparsed)
++}
++
++// observeTest folds a test's event into its first lines and, on its fail event, into the failures.
+ func (c *goJSONCounter) observeTest(event goTestEvent) {
+ 	key := testKey{event.Package, event.Test}
+ 	switch event.Action {
+ 	case "output":
+-		line := strings.TrimSpace(event.Output)
+-		if _, seen := c.firstLines[key]; seen || line == "" || strings.HasPrefix(line, "=== ") || strings.HasPrefix(line, "--- ") {
+-			return
++		if line := strings.TrimSpace(event.Output); !isStatusLine(line) && len(c.testLines[key]) < failureLines {
++			if c.testLines == nil {
++				c.testLines = map[testKey][]string{}
++			}
++			c.testLines[key] = append(c.testLines[key], line)
+ 		}
+-		if c.firstLines == nil {
+-			c.firstLines = map[testKey]string{}
+-		}
+-		c.firstLines[key] = line
+ 	case "fail":
+-		c.failures = append(c.failures, gateslot.TestFailure{Package: event.Package, Test: event.Test, FirstLine: c.firstLines[key]})
+-		delete(c.firstLines, key)
++		c.failures = append(c.failures, runFailure{pkg: event.Package, test: event.Test, lines: c.testLines[key]})
++		if c.failedPackages == nil {
++			c.failedPackages = map[string]bool{}
++		}
++		c.failedPackages[event.Package] = true
++		delete(c.testLines, key)
+ 	case "pass", "skip":
+-		delete(c.firstLines, key)
++		delete(c.testLines, key)
++	}
++}
++
++// observePackageOutcome folds a package-level output or build-output event into that package's first lines and, on a package's fail event that no failed test of it explains, adds the package to the failures with its own lines and those of its failed build.
++func (c *goJSONCounter) observePackageOutcome(event goTestEvent) {
++	switch {
++	case event.Action == "build-output" && event.ImportPath != "":
++		c.buildLines = appendCapped(c.buildLines, event.ImportPath, strings.TrimSpace(event.Output))
++	case event.Package == "" || event.Test != "":
++	case event.Action == "output":
++		c.packageLines = appendCapped(c.packageLines, event.Package, strings.TrimSpace(event.Output))
++	case event.Action == "fail" && !c.failedPackages[event.Package]:
++		lines := slices.Concat(c.packageLines[event.Package], c.buildLines[event.FailedBuild])
++		if len(lines) > failureLines {
++			lines = lines[:failureLines]
++		}
++		c.failures = append(c.failures, runFailure{pkg: event.Package, lines: lines})
++	}
++}
++
++// appendCapped appends line to the lines held under key, unless it is a status or summary line or key already holds failureLines lines, and returns the map, made when nil.
++func appendCapped(held map[string][]string, key, line string) map[string][]string {
++	if isStatusLine(line) || strings.HasPrefix(line, "# ") || len(held[key]) >= failureLines {
++		return held
+ 	}
++	if held == nil {
++		held = map[string][]string{}
++	}
++	held[key] = append(held[key], line)
++	return held
++}
++
++// isStatusLine reports whether line, trimmed, is empty or one of go test's own status and summary lines, which name no cause: a `=== ` or `--- ` test status, a bare `PASS` or `FAIL`, or a package's `ok`, `FAIL` or `?` result line.
++func isStatusLine(line string) bool {
++	switch {
++	case line == "", line == "PASS", line == "FAIL":
++		return true
++	case strings.HasPrefix(line, "=== "), strings.HasPrefix(line, "--- "), strings.HasPrefix(line, "ok  "), strings.HasPrefix(line, "FAIL\t"), strings.HasPrefix(line, "?   "):
++		return true
++	}
++	return false
+ }
+ 
+ // observePackage folds event into the launch timing of its package.
+@@ -270,9 +348,13 @@ func (c *goJSONCounter) observePackage(event goTestEvent) {
+ func (c *goJSONCounter) handle(line []byte, terminated bool) error {
+ 	var event goTestEvent
+ 	if len(line) == 0 || line[0] != '{' || json.Unmarshal(line, &event) != nil || event.Action == "" {
++		if text := strings.TrimSpace(string(line)); !isStatusLine(text) && len(c.unparsed) < unparsedLines {
++			c.unparsed = append(c.unparsed, text)
++		}
+ 		return c.lines.passThrough(line, terminated)
+ 	}
+ 	c.observePackage(event)
++	c.observePackageOutcome(event)
+ 	if event.Package != "" {
+ 		if c.testsRun == nil {
+ 			c.testsRun = map[string]int{}
+@@ -327,7 +409,10 @@ func (c *vstestCounter) TestsRun() map[string]int { return nil }
+ func (c *vstestCounter) Launches() []gateslot.PackageLaunch { return nil }
+ 
+ // Failures returns nil: a VSTest summary line names no test.
+-func (c *vstestCounter) Failures() []gateslot.TestFailure { return nil }
++func (c *vstestCounter) Failures() []runFailure { return nil }
++
++// Unparsed returns nil: a VSTest run's output is all text, so the failure report points at its log instead.
++func (c *vstestCounter) Unparsed() []string { return nil }
+ 
+ // handle runs under the line reader's lock.
+ func (c *vstestCounter) handle(line []byte, terminated bool) error {
+diff --git a/internal/gatecli/counters_test.go b/internal/gatecli/counters_test.go
+index 99d666bc..a5c537c2 100644
+--- a/internal/gatecli/counters_test.go
++++ b/internal/gatecli/counters_test.go
+@@ -14,9 +14,20 @@ import (
+ 	"testing"
+ 	"time"
+ 
++	"github.com/google/go-cmp/cmp"
++
+ 	"github.com/Knatte18/loomyard/internal/gateslot"
+ )
+ 
++// buildEvent renders one `go test -json` event line of a package's build, which names its package by ImportPath, without its newline.
++func buildEvent(action, output string) string {
++	line := fmt.Sprintf(`{"Action":%q,"ImportPath":"example.com/p [example.com/p.test]"`, action)
++	if output != "" {
++		line += fmt.Sprintf(`,"Output":%q`, output)
++	}
++	return line + "}"
++}
++
+ // goEvent renders one `go test -json` event line, without its newline.
+ func goEvent(action, test, output string) string {
+ 	line := fmt.Sprintf(`{"Action":%q,"Package":"example.com/p"`, action)
+@@ -66,8 +77,10 @@ func TestCounters(t *testing.T) {
+ 		wantLaunches []gateslot.PackageLaunch
+ 		// wantTestsRun is the per-package count of tests that ran.
+ 		wantTestsRun map[string]int
+-		// wantFailures is the failed leaf tests the counter reports.
+-		wantFailures []gateslot.TestFailure
++		// wantFailures is the failed leaf tests and unexplained failed packages the counter reports.
++		wantFailures []runFailure
++		// wantUnparsed is the first lines that were no JSON event.
++		wantUnparsed []string
+ 	}{
+ 		{
+ 			name: "a package with start, a later event and a closing pass has one launch entry",
+@@ -79,6 +92,7 @@ func TestCounters(t *testing.T) {
+ 			wantOut:      "ok  \texample.com/p\t1.5s\nFAIL\texample.com/q\t0.5s\n",
+ 			wantLaunches: []gateslot.PackageLaunch{{Package: "example.com/p", LaunchSeconds: 0.25, ElapsedSeconds: 1.5}, {Package: "example.com/q", LaunchSeconds: 0.75, ElapsedSeconds: 0.5}},
+ 			wantTestsRun: map[string]int{"example.com/p": 0, "example.com/q": 0},
++			wantFailures: []runFailure{{pkg: "example.com/q"}},
+ 		},
+ 		{
+ 			name: "a cached package and a package with no test files have no launch entry",
+@@ -101,7 +115,7 @@ func TestCounters(t *testing.T) {
+ 			wantOut:      "=== RUN   TestA\n--- FAIL: TestB (0.00s)\nFAIL\n",
+ 			wantCounts:   tierCounts{discovered: 2, passed: 1, failed: 1},
+ 			wantTestsRun: map[string]int{"example.com/p": 2},
+-			wantFailures: []gateslot.TestFailure{{Package: "example.com/p", Test: "TestB"}},
++			wantFailures: []runFailure{{pkg: "example.com/p", test: "TestB"}},
+ 		},
+ 		{
+ 			name:         "a skipped test",
+@@ -120,7 +134,7 @@ func TestCounters(t *testing.T) {
+ 			wantTestsRun: map[string]int{"example.com/p": 2},
+ 		},
+ 		{
+-			name: "a failed subtest is named with its first error line and its failed parent is left out",
++			name: "a failed subtest is named with its error lines and its failed parent is left out",
+ 			kind: "go-json",
+ 			writes: []string{strings.Join([]string{
+ 				goEvent("run", "TestA", ""), goEvent("output", "TestA", "=== RUN   TestA\n"),
+@@ -134,7 +148,43 @@ func TestCounters(t *testing.T) {
+ 				"    b_test.go:5: passing note\n",
+ 			wantCounts:   tierCounts{discovered: 3, passed: 1, failed: 2},
+ 			wantTestsRun: map[string]int{"example.com/p": 3},
+-			wantFailures: []gateslot.TestFailure{{Package: "example.com/p", Test: "TestA/sub", FirstLine: "a_test.go:12: got 1; want 2"}},
++			wantFailures: []runFailure{{pkg: "example.com/p", test: "TestA/sub", lines: []string{"a_test.go:12: got 1; want 2", "a_test.go:13: second"}}},
++		},
++		{
++			name: "a failed test keeps its first failureLines lines",
++			kind: "go-json",
++			writes: []string{strings.Join(append(
++				[]string{goEvent("run", "TestA", "")},
++				goEvent("output", "TestA", "l1\n"), goEvent("output", "TestA", "l2\n"), goEvent("output", "TestA", "l3\n"), goEvent("output", "TestA", "l4\n"), goEvent("output", "TestA", "l5\n"),
++				goEvent("output", "TestA", "l6\n"), goEvent("output", "TestA", "l7\n"), goEvent("output", "TestA", "l8\n"), goEvent("output", "TestA", "l9\n"), goEvent("fail", "TestA", ""),
++			), "\n") + "\n"},
++			wantOut:      "l1\nl2\nl3\nl4\nl5\nl6\nl7\nl8\nl9\n",
++			wantCounts:   tierCounts{discovered: 1, failed: 1},
++			wantTestsRun: map[string]int{"example.com/p": 1},
++			wantFailures: []runFailure{{pkg: "example.com/p", test: "TestA", lines: []string{"l1", "l2", "l3", "l4", "l5", "l6", "l7", "l8"}}},
++		},
++		{
++			name: "a package whose build failed is a failure with its build output",
++			kind: "go-json",
++			writes: []string{strings.Join([]string{
++				buildEvent("build-output", "# example.com/p\n"), buildEvent("build-output", "x.go:3:2: undefined: y\n"), buildEvent("build-fail", ""),
++				goEvent("start", "", ""), goEvent("output", "", "FAIL\texample.com/p [build failed]\n"),
++				`{"Action":"fail","Package":"example.com/p","FailedBuild":"example.com/p [example.com/p.test]"}`,
++			}, "\n") + "\n"},
++			wantOut:      "# example.com/p\nx.go:3:2: undefined: y\nFAIL\texample.com/p [build failed]\n",
++			wantTestsRun: map[string]int{"example.com/p": 0},
++			wantFailures: []runFailure{{pkg: "example.com/p", lines: []string{"x.go:3:2: undefined: y"}}},
++		},
++		{
++			name: "a package that panics outside any test is a failure with its own lines",
++			kind: "go-json",
++			writes: []string{strings.Join([]string{
++				goEvent("start", "", ""), goEvent("output", "", "panic: init failed\n"), goEvent("output", "", "goroutine 1 [running]:\n"),
++				goEvent("output", "", "FAIL\texample.com/p\t0.01s\n"), goEvent("fail", "", ""),
++			}, "\n") + "\n"},
++			wantOut:      "panic: init failed\ngoroutine 1 [running]:\nFAIL\texample.com/p\t0.01s\n",
++			wantTestsRun: map[string]int{"example.com/p": 0},
++			wantFailures: []runFailure{{pkg: "example.com/p", lines: []string{"panic: init failed", "goroutine 1 [running]:"}}},
+ 		},
+ 		{
+ 			name: "a failed test whose name prefixes another failed test's name without a slash is still named",
+@@ -145,10 +195,10 @@ func TestCounters(t *testing.T) {
+ 			}, "\n") + "\n"},
+ 			wantCounts:   tierCounts{discovered: 2, failed: 2},
+ 			wantTestsRun: map[string]int{"example.com/p": 2},
+-			wantFailures: []gateslot.TestFailure{{Package: "example.com/p", Test: "TestA"}, {Package: "example.com/p", Test: "TestAB"}},
++			wantFailures: []runFailure{{pkg: "example.com/p", test: "TestA"}, {pkg: "example.com/p", test: "TestAB"}},
+ 		},
+ 		{
+-			name: "a panic's output and a build error's non-JSON lines read as text",
++			name: "a panic's output and a build error's non-JSON lines read as text, the non-JSON ones kept as unparsed bar status lines",
+ 			kind: "go-json",
+ 			writes: []string{
+ 				"# example.com/p\nx.go:1:1: undefined: y\n" + goEvent("output", "TestA", "panic: boom\n") + "\n" + goEvent("fail", "TestA", "") + "\nFAIL\texample.com/p [build failed]\n",
+@@ -156,7 +206,8 @@ func TestCounters(t *testing.T) {
+ 			wantOut:      "# example.com/p\nx.go:1:1: undefined: y\npanic: boom\nFAIL\texample.com/p [build failed]\n",
+ 			wantCounts:   tierCounts{failed: 1},
+ 			wantTestsRun: map[string]int{"example.com/p": 0},
+-			wantFailures: []gateslot.TestFailure{{Package: "example.com/p", Test: "TestA", FirstLine: "panic: boom"}},
++			wantFailures: []runFailure{{pkg: "example.com/p", test: "TestA", lines: []string{"panic: boom"}}},
++			wantUnparsed: []string{"# example.com/p", "x.go:1:1: undefined: y"},
+ 		},
+ 		{
+ 			name:         "a line split across two writes",
+@@ -167,12 +218,13 @@ func TestCounters(t *testing.T) {
+ 			wantTestsRun: map[string]int{"example.com/p": 0},
+ 		},
+ 		{
+-			name:       "a trailing line with no newline comes out on Flush",
+-			kind:       "go-json",
+-			writes:     []string{"ok\n", "tail"},
+-			held:       "tail",
+-			wantOut:    "ok\ntail",
+-			wantCounts: tierCounts{},
++			name:         "a trailing line with no newline comes out on Flush",
++			kind:         "go-json",
++			writes:       []string{"ok\n", "tail"},
++			held:         "tail",
++			wantOut:      "ok\ntail",
++			wantCounts:   tierCounts{},
++			wantUnparsed: []string{"ok", "tail"},
+ 		},
+ 		{
+ 			name: "package-level events alone, as an untagged TestMain gives, discover zero and count the package at zero",
+@@ -231,8 +283,11 @@ func TestCounters(t *testing.T) {
+ 			if got := c.TestsRun(); !maps.Equal(got, tt.wantTestsRun) {
+ 				t.Errorf("TestsRun() = %v; want %v", got, tt.wantTestsRun)
+ 			}
+-			if got := c.Failures(); !slices.Equal(got, tt.wantFailures) {
+-				t.Errorf("Failures() = %+v; want %+v", got, tt.wantFailures)
++			if diff := cmp.Diff(tt.wantFailures, c.Failures(), cmp.AllowUnexported(runFailure{})); diff != "" {
++				t.Errorf("Failures() mismatch (-want +got):\n%s", diff)
++			}
++			if got := c.Unparsed(); !slices.Equal(got, tt.wantUnparsed) {
++				t.Errorf("Unparsed() = %q; want %q", got, tt.wantUnparsed)
+ 			}
+ 		})
+ 	}
+diff --git a/internal/gatecli/detachfront.go b/internal/gatecli/detachfront.go
+index 794ba549..07f34370 100644
+--- a/internal/gatecli/detachfront.go
++++ b/internal/gatecli/detachfront.go
+@@ -512,7 +512,7 @@ func (f *front) answerGoing(run detachRun) int {
+ // A run whose output could not be copied in full is not marked delivered, so the next call joins it again.
+ // A recorded SlotBusyExit is a test's own code and exits 1, since the caller reads SlotBusyExit as a run still going.
+ func (f *front) replay(run detachRun, exit detachExit) int {
+-	copyErr := errors.Join(copyRunFile(f.out, run.path(stdoutFile)), copyRunFile(f.stderr, run.path(stderrFile)))
++	copyErr := errors.Join(replayStdout(f.out, f.stderr, f.call.verb, run.path(stdoutFile)), copyRunFile(f.stderr, run.path(stderrFile)))
+ 	if copyErr != nil {
+ 		logger.Warn("gate test: could not copy the run's output, so the run stays undelivered", "dir", run.dir, "cause", copyErr)
+ 	} else if err := os.WriteFile(run.path(deliveredFile), nil, 0o644); err != nil {
+@@ -525,6 +525,34 @@ func (f *front) replay(run detachRun, exit detachExit) int {
+ 	return exit.Code
+ }
+ 
++// replayStdoutBytes is the most of a run's stdout a front prints, so its answer reads as one tool result; a longer stdout stays in the run's file, and the run's stderr carries the summary lines and the failure report.
++const replayStdoutBytes = 4096
++
++// replayStdout prints the run's stdout file at path to out when it holds at most replayStdoutBytes, and otherwise writes a line to stderr naming the file and its size, the run of verb, and prints the file's last line to out when that line is a JSON envelope, such as a refusal.
++// A file that does not exist prints nothing and is no error.
++func replayStdout(out, stderr io.Writer, verb, path string) error {
++	info, err := os.Stat(path)
++	if errors.Is(err, os.ErrNotExist) {
++		return nil
++	}
++	if err != nil {
++		return err
++	}
++	if info.Size() <= replayStdoutBytes {
++		return copyRunFile(out, path)
++	}
++	data, err := os.ReadFile(path)
++	if err != nil {
++		return err
++	}
++	printLine(stderr, fmt.Sprintf("%s: the run's output, %d bytes, is too long to print and stays in %s; the lines below hold its summary and, on a failure, the failure report", gateVerbName(verb), info.Size(), path))
++	trimmed := strings.TrimRight(string(data), "\n")
++	if last := trimmed[strings.LastIndexByte(trimmed, '\n')+1:]; strings.HasPrefix(last, "{") {
++		printLine(out, last)
++	}
++	return nil
++}
++
+ // copyRunFile copies the run file at path to w and returns the error of a failed open or copy; a file that does not exist is no error.
+ func copyRunFile(w io.Writer, path string) error {
+ 	file, err := os.Open(path)
+diff --git a/internal/gatecli/detachfront_test.go b/internal/gatecli/detachfront_test.go
+index de0d59b8..34cbed6d 100644
+--- a/internal/gatecli/detachfront_test.go
++++ b/internal/gatecli/detachfront_test.go
+@@ -5,12 +5,14 @@
+ package gatecli
+ 
+ import (
++	"bytes"
+ 	"errors"
+ 	"io"
+ 	"os"
+ 	"path/filepath"
+ 	"slices"
+ 	"strconv"
++	"strings"
+ 	"testing"
+ 	"time"
+ 
+@@ -362,6 +364,31 @@ func TestFrontReplay_DeliveredMark(t *testing.T) {
+ 	}
+ }
+ 
++func TestFrontReplay_NamesALongStdoutOnStderrInsteadOfPrintingIt(t *testing.T) {
++	t.Parallel()
++
++	run := detachRun{dir: t.TempDir()}
++	body := strings.Repeat("=== RUN   TestA\n", replayStdoutBytes/8)
++	if err := os.WriteFile(run.path(stdoutFile), []byte(body), 0o644); err != nil {
++		t.Fatal(err)
++	}
++
++	var out, stderr bytes.Buffer
++	f := &front{out: &out, stderr: &stderr}
++	if code := f.replay(run, detachExit{Code: 3}); code != 3 {
++		t.Errorf("replay = %d; want the run's code 3", code)
++	}
++	if out.Len() != 0 {
++		t.Errorf("replay printed %q to stdout; want the long stdout kept out of it", out.String())
++	}
++	if want := "is too long to print and stays in " + run.path(stdoutFile); !strings.Contains(stderr.String(), want) {
++		t.Errorf("replay stderr = %q; want it to hold %q", stderr.String(), want)
++	}
++	if _, err := os.Stat(run.path(deliveredFile)); err != nil {
++		t.Errorf("delivered mark: %v; want the run marked delivered", err)
++	}
++}
++
+ func TestFrontPruneOldRuns(t *testing.T) {
+ 	t.Parallel()
+ 
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 7aa3d232..cb14af2c 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -6,7 +6,7 @@
+ //
+ // `lym gate test [-C <dir>] [--gate <key>] [--tier N]... [--upto N] [--card <id>]... [--base <rev>] [--all] [--guards] [--wait] [<targets>...] [-- <args>]` runs the tiers the hub declares in gate.yaml, in ascending tier number, and then the vet step and the guard step below when they are planned.
+ // A run that fails does not stop the call: every later tier, vet and guard run still runs, so a failure the change under test did not cause, such as one present at the base, hides no later check.
+-// When a run failed, the verb closes with one stderr line naming each failed run, a vet run as `vet tierN` and a guard run as `guard tierN`, with its exit code.
++// When a run failed, the verb closes with one stderr line naming each failed run, a vet run as `vet tierN`, a guard run as `guard tierN` and a lint step as `lint <name>`, with its exit code or its finding count, after the failure report the Failure report section describes.
+ // When no run failed under the `--card` scope form, the verb closes with one stderr line naming each declared tier that no listed tier is or covers, manual tiers included, and saying the pass is not green for them, so a card gate that runs tier0 is never read as fully green;
+ // a vet or guard run under a tier does not count as running it.
+ // Bound: the line is output only and changes no exit code or record, and no other scope form prints it, since their tier lists are the coverage the hub chose for that site.
+@@ -22,7 +22,7 @@
+ // a key of scope `all` is the `--all` form, and a key of scope `diff` is the computed form.
+ // `--card` ids beside a key of another scope are ignored, and explicit `<targets>` beside `--gate` replace the key's scope.
+ // Each run record carries the key as `gate_key`, empty for a call with manual flags.
+-// `--gate` opens no flag combination the manual flags lack.
++// `--gate` opens no flag combination the manual flags lack, bar the key's lint steps the Lint steps section describes.
+ // `--tier` names a tier and may repeat; the default is tier0 when neither `--tier` nor `--upto` is given, and a tier another listed tier covers is dropped and named as covered on stderr.
+ // `--upto N` adds every declared tier numbered 0 through N to the `--tier` values, skipping a gap in the numbers and a tier marked `manual`, which it names on stderr unless `--tier` names it.
+ // A manual tier runs only when `--tier` names it, so a tier that spends tokens never starts from a range; a negative N is refused before hub resolution.
+@@ -222,12 +222,30 @@
+ // A write failure is logged and decides nothing.
+ // The `go-json` counter also keeps, per package, the gap from its `start` event to its next event and its closing event's elapsed time, and the record carries them as `launches`; a cached package and one with no test files are left out, and a `vstest` run records none.
+ // The `go-json` counter also keeps, per package, the number of tests that ran in it, and a `vstest` run keeps none.
+-// The `go-json` counter also records each failed test with the first line it printed beside `go test`'s `=== ` and `--- ` status lines, leaving out a test whose subtest failed, and the record carries them as `failures`; a `vstest` run records none.
++// The `go-json` counter also keeps each failed test with the first lines it printed beside `go test`'s status and summary lines, leaving out a test whose subtest failed, each failed package no failed test of it explains with its own and its build's first lines, and the first lines that were no JSON event, for the failure report; the record carries each failed test with its first line as `failures`, and a `vstest` run keeps none.
+ // A `go-json` tier under the `go` scoper fails when a package holding a test under the tier's tag ran none, since the tier's command then lacks its tag: a package with a `Test` function in a file whose build constraint holds under `tierN` on the host's GOOS and GOARCH.
+ // The failure exits 1 and its line, naming the tier, the package and `lym config gate`, goes to stderr and the log before the summary line.
+ // A run whose words after `--` carry `-run`, `-skip`, `-list` or `-bench` is exempt, since its filter may match nothing; the guard step's own `-run` filter exempts nothing.
+ // Otherwise a tier that discovers no tests passes with zero counted, as a package with only a `TestMain` does.
+ //
++// # Lint steps
++//
++// A `--gate` key's `lints` run after every tier, vet and guard run of a call that was not cancelled, in the key's order, each over the worktree against HEAD, untracked files included: `comments` through `commentlint.Lint` and `pattern` through `patternlint.Lint`.
++// A step that finds something, or cannot run, is a failed run labelled `lint <name>` with exit code 1 when no earlier run failed, and its findings go into the failure report with the step's way forward.
++// The template's `card` key lists both, so a card gate is one call, and a call with manual flags runs none.
++// Bound: a step reads only the working tree against HEAD, so on a clean tree it finds nothing; the round and darn gates lint their own range through `loomshed`.
++//
++// # Failure report
++//
++// A call with a failed run, a halted call included, prints the failure report to stderr before its closing line, so one read of the call's result shows every failure.
++// It opens with `gate test: failure report, every failure of this call:`, then names each failed run in plan order, lint steps last, with its outcome, the way forward of a lint step and its log path.
++// Under a run each failure follows: a failed test as its package and test path, a package that failed outside any test, such as a build error or a crash in `TestMain`, as its package, and a lint finding as its own `file:line` line.
++// Each carries up to `failureLines` lines it printed beside go test's own status and summary lines, so an error's got and want or a panic's first frames show, and a bare file name a test printed is prefixed with its package's worktree-relative directory.
++// A path a build error prints relative to the run directory, in a package that failed outside any test, is prefixed with that directory's worktree-relative path.
++// A run lists the verb's own cause line, such as a timeout, whether or not a failure was read; a run with no failure read also lists up to `unparsedLines` lines of its output that no test event carried, such as a `go vet` or `go build` error, or says its log holds the cause; a build step's run lists the last `unparsedLines` lines of its output.
++// The report holds at most `failureReportLines` lines below its header, each cut at `failureReportLineBytes`; past that a line names the lines each run lost, points at the logs for a run with one and at the standalone lint verb for a lint step, which has no log, and the report closes with the files the change touches, the diff from the merge base with the pair's parent branch, or from HEAD outside a hub or without a parent, untracked files included, at most `touchedFilesListed` named.
++// A failed test's first line is also its run record's `failures` entry.
++//
+ // # Trimpath
+ //
+ // A hub's tiers set `-trimpath` in their GOFLAGS on purpose, as the example below does, so a fresh worktree reuses the build and test cache.
+@@ -343,7 +361,8 @@
+ // It holds the lock until the runner claimed the run, checking once a second for at most the claim bound.
+ // A launch that failed, or a runner that ended or did not claim by the bound, is a failed start: the front claims the run itself so no runner can, expires the lease, prints the runner's log to stderr and exits 1 with an error whose way forward is to run the same command again and, when that fails again, to run it with `--wait`.
+ // It then waits for the run's `exit.json` for what remains of its cap.
+-// A result without the abandoned mark is printed: `stdout`, then `stderr`, then `delivered` is created, unless copying the output failed, which leaves the run joinable, and the call exits with the recorded code, except that a recorded 75 exits 1 after a stderr line saying the code was a test's own.
++// A result without the abandoned mark is printed: `stdout`, then `stderr`, then `delivered` is created;
++// a `stdout` past `replayStdoutBytes` is not printed but named on stderr with its size, its last line printed when it is a JSON envelope, so the answer reads as one tool result and the failure report on `stderr` carries the failures, unless copying the output failed, which leaves the run joinable, and the call exits with the recorded code, except that a recorded 75 exits 1 after a stderr line saying the code was a test's own.
+ // A passed cap, and a result with the abandoned mark, answer ok with `done: false`, the phase from `phase.json` (`starting` when there is none), a message to run the same command again in a turn that does nothing else, and, while the run waits for its slots, `slot_free: false` with each holder's worktree, site and tier; the exit code is SlotBusyExit.
+ // A fresh run removes the key directory's other run directories older than 14 days whose runner is not live.
+ // A call with `--gate <key>` may wait one long call in place of many short ones.
+diff --git a/internal/gatecli/failurereport.go b/internal/gatecli/failurereport.go
+new file mode 100644
+index 00000000..e73b39ea
+--- /dev/null
++++ b/internal/gatecli/failurereport.go
+@@ -0,0 +1,324 @@
++// failurereport.go builds the failure report a failing `lym gate test` call prints before its closing line: every failure of its tier, vet, guard and build runs and of its gate key's lint steps, the files the change touches and each failed run's log.
++
++package gatecli
++
++import (
++	"context"
++	"fmt"
++	"io"
++	"path"
++	"path/filepath"
++	"regexp"
++	"slices"
++	"strings"
++	"unicode/utf8"
++
++	"github.com/Knatte18/loomyard/internal/commentlint"
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/impactset"
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/patternlint"
++)
++
++const (
++	// failureReportHeader opens the failure report.
++	failureReportHeader = "gate test: failure report, every failure of this call:"
++	// failureReportLines caps the report's lines below its header, so it reads as one tool result; the line that closes a cut report says where to read the rest.
++	failureReportLines = 80
++	// failureReportLineBytes caps one line of the report, so a long panic value or a long diff line cannot crowd out the failures after it.
++	failureReportLineBytes = 300
++	// touchedFilesListed caps the files the report's touched-files line names.
++	touchedFilesListed = 20
++	// lintLabelPrefix opens the label of a lint step's failed run; the rest of the label is the lint's name.
++	lintLabelPrefix = "lint "
++)
++
++// lintWayForward is the fix each lint step's findings call for.
++var lintWayForward = map[string]string{
++	gateslot.LintComments: "break each such comment at its sentence boundaries, one sentence per line",
++	gateslot.LintPattern:  patternlint.WayForward,
++}
++
++// bareGoFile matches a line that opens with a Go file's bare name and a line number, as a test's own error lines print them, so the report can prefix the package's directory.
++var bareGoFile = regexp.MustCompile(`^[A-Za-z0-9_.\-]+\.go:[0-9]+`)
++
++// runRelativeGoFile matches a line that opens with a Go file's path relative to the run directory, with a leading `./` or at least one directory, as the go command prints a compile error.
++// Either path separator is accepted, since the go command prints the platform's own.
++var runRelativeGoFile = regexp.MustCompile(`^(\.[/\\]|[A-Za-z0-9_.\-]+[/\\])([A-Za-z0-9_.\-]+[/\\])*[A-Za-z0-9_.\-]+\.go:[0-9]+`)
++
++// failedRun is one failed run of a call as the failure report lists it: a tier, vet, guard or build run, or a lint step.
++type failedRun struct {
++	// label names the run as the closing line of failed runs does, such as `tier0`, `vet tier1`, `build` or `lint comments`.
++	label string
++	// outcome says how the run failed, such as `exit 1`, `timed out` or `2 findings`.
++	outcome string
++	// wayForward is the fix a lint step's findings call for, empty for any other run.
++	wayForward string
++	// log is the run's log path, empty for a lint step.
++	log string
++	// modulePath is the module path of the run's directory and moduleDir that directory relative to the worktree root, slash-separated, so a bare file name a test printed reads as a worktree path; both are empty when unknown.
++	modulePath, moduleDir string
++	failures              []runFailure
++	// causes are the lines the gate itself states the run's failure with, such as a timeout, listed whether or not a failure was read.
++	causes []string
++	// unparsed are the first lines of the run's output no test event carried, listed when no failure was read.
++	unparsed []string
++}
++
++// tierFailedRun returns the failed run the report lists for the tier, vet or guard run that ended as result, its log at logPath, with root the worktree root its run directory resolves against.
++func tierFailedRun(run tierRun, result tierResult, logPath, root string) failedRun {
++	outcome := fmt.Sprintf("exit %d", result.record.ExitCode)
++	if result.record.TimedOut {
++		outcome = "timed out"
++	}
++	failed := failedRun{label: runLabel(run), outcome: outcome, log: logPath, failures: result.failures, causes: result.causes, unparsed: result.unparsed}
++	if result.record.RunDir != "" {
++		if rel, err := filepath.Rel(root, result.record.RunDir); err == nil {
++			failed.modulePath, failed.moduleDir = modulePathOf(result.record.RunDir), filepath.ToSlash(rel)
++		}
++	}
++	return failed
++}
++
++// buildFailedRun returns the failed run the report lists for the build step that exited with code, or timed out, with its log at logPath and output its whole output, of which it keeps the last non-empty lines, where a build states its errors.
++func buildFailedRun(code int, timedOut bool, logPath string, output []byte) failedRun {
++	outcome := fmt.Sprintf("exit %d", code)
++	if timedOut {
++		outcome = "timed out"
++	}
++	var lines []string
++	for _, line := range strings.Split(string(output), "\n") {
++		if text := strings.TrimSpace(line); text != "" {
++			lines = append(lines, text)
++		}
++	}
++	if len(lines) > unparsedLines {
++		lines = lines[len(lines)-unparsedLines:]
++	}
++	return failedRun{label: "build", outcome: outcome, log: logPath, unparsed: lines}
++}
++
++// runLints runs the lint steps names over the worktree at root, each against HEAD, in order, and returns the steps that found something or could not run as failed runs.
++func runLints(root string, names []string) []failedRun {
++	var failed []failedRun
++	for _, name := range names {
++		var findings []string
++		var err error
++		switch name {
++		case gateslot.LintComments:
++			var found []commentlint.Finding
++			found, err = commentlint.Lint(root, "")
++			for _, finding := range found {
++				findings = append(findings, fmt.Sprintf("%s:%d: %s", finding.File, finding.Line, finding.Text))
++			}
++		case gateslot.LintPattern:
++			finding, found, lintErr := patternlint.Lint(root, "")
++			err = lintErr
++			if found {
++				findings = []string{"PATTERN.md: " + finding.Message}
++			}
++		}
++		if run, ok := lintFailedRun(name, findings, err); ok {
++			failed = append(failed, run)
++		}
++	}
++	return failed
++}
++
++// lintFailedRun returns the failed run of the lint step name, which found findings or failed to run with err, and false when it found nothing and ran.
++func lintFailedRun(name string, findings []string, err error) (failedRun, bool) {
++	label := lintLabelPrefix + name
++	if err != nil {
++		logger.Warn("gate test: a lint step could not run", "lint", name, "cause", err)
++		return failedRun{label: label, outcome: "could not run", unparsed: []string{err.Error()}, wayForward: "re-run the same command"}, true
++	}
++	if len(findings) == 0 {
++		return failedRun{}, false
++	}
++	outcome := fmt.Sprintf("%d findings", len(findings))
++	if len(findings) == 1 {
++		outcome = "1 finding"
++	}
++	failures := make([]runFailure, len(findings))
++	for i, finding := range findings {
++		failures[i] = runFailure{lines: []string{finding}}
++	}
++	return failedRun{label: label, outcome: outcome, wayForward: lintWayForward[name], failures: failures}, true
++}
++
++// touchedFiles returns the files the change under test touches, sorted and worktree-relative: those that differ between the working tree, untracked files included, and the merge base with the pair's parent branch inside a hub, or HEAD where no parent applies.
++// A read that fails is logged and returns nil, since the list only orients the reader.
++func touchedFiles(ctx context.Context, location *lymcwd.Location, root string, inHub bool) []string {
++	base := "HEAD"
++	if inHub {
++		mergeBase, found, err := parentMergeBase(location)
++		switch {
++		case err != nil:
++			logger.Warn("gate test: could not read the merge base for the failure report; it lists the files changed since HEAD", "cause", err)
++		case found:
++			base = mergeBase
++		}
++	}
++	paths, err := impactset.ChangedPaths(ctx, root, base)
++	if err != nil {
++		logger.Warn("gate test: could not list the changed files for the failure report", "base", base, "cause", err)
++		return nil
++	}
++	slices.Sort(paths)
++	return slices.Compact(paths)
++}
++
++// renderFailureReport returns the failure report's lines for runs, with touched the files the change touches, or nil when no run failed.
++// Each run names its outcome and its log, then each failure its package and test, or its package alone for a failure outside any test, over the lines it printed, a path prefixed with the worktree-relative directory it is relative to, as qualify says.
++// A run lists its cause lines, such as a timeout, then, when no failure was read, the first lines of output no test event carried, or says its log holds the cause.
++// Past failureReportLines lines the report stops with a line saying how many lines each run lost and where to read them, and touched closes it, at most touchedFilesListed of them named.
++func renderFailureReport(runs []failedRun, touched []string) []string {
++	if len(runs) == 0 {
++		return nil
++	}
++	lines := []string{failureReportHeader}
++	budget := failureReportLines
++	var cut []cutRun
++	for _, run := range runs {
++		block := run.reportLines()
++		kept := min(len(block), budget)
++		for _, line := range block[:kept] {
++			lines = append(lines, capLine(line))
++		}
++		budget -= kept
++		if kept < len(block) {
++			cut = append(cut, cutRun{label: run.label, lines: len(block) - kept})
++		}
++	}
++	if len(cut) > 0 {
++		// Uncapped: its hints are the only place a cut lint step's findings can be recovered from.
++		lines = append(lines, cutLine(cut))
++	}
++	if len(touched) > 0 {
++		named := touched
++		suffix := ""
++		if len(named) > touchedFilesListed {
++			named = named[:touchedFilesListed]
++			suffix = fmt.Sprintf(" and %d more", len(touched)-touchedFilesListed)
++		}
++		lines = append(lines, capLine("gate test: the change touches "+strings.Join(named, ", ")+suffix))
++	}
++	return lines
++}
++
++// cutRun is how many lines of the failed run labelled label the report cut.
++type cutRun struct {
++	label string
++	lines int
++}
++
++// reportLines returns the report's lines for the run: its header, its failures, then its causes and the output no test event carried.
++func (run failedRun) reportLines() []string {
++	header := fmt.Sprintf("%s (%s)", run.label, run.outcome)
++	if run.wayForward != "" {
++		header += "; way forward: " + run.wayForward
++	}
++	if run.log != "" {
++		header += ", log " + run.log
++	}
++	body := []string{header + ":"}
++	for _, failure := range run.failures {
++		indent := "  "
++		switch {
++		case failure.test != "":
++			body = append(body, fmt.Sprintf("  %s %s:", failure.pkg, failure.test))
++			indent = "    "
++		case failure.pkg != "":
++			body = append(body, fmt.Sprintf("  %s, failed outside any test:", failure.pkg))
++			indent = "    "
++		}
++		for _, line := range failure.lines {
++			body = append(body, indent+run.qualify(failure, line))
++		}
++	}
++	for _, cause := range run.causes {
++		body = append(body, "  "+cause)
++	}
++	switch {
++	case len(run.failures) > 0:
++	case len(run.unparsed) > 0:
++		body = append(body, "  its output:")
++		for _, line := range run.unparsed {
++			body = append(body, "    "+line)
++		}
++	case len(run.causes) == 0:
++		body = append(body, "  no failing test or error line was read from its output; its log holds the cause")
++	}
++	return body
++}
++
++// cutLine returns the line that closes a report which lost the lines of the runs in cut: the lines each lost, where a run with a log holds them and the lint to re-run for the findings of a lint step, which has no log.
++func cutLine(cut []cutRun) string {
++	total := 0
++	var counts, hints []string
++	logged := false
++	for _, run := range cut {
++		total += run.lines
++		counts = append(counts, fmt.Sprintf("%s: %d", run.label, run.lines))
++		if lint, isLint := strings.CutPrefix(run.label, lintLabelPrefix); isLint {
++			hints = append(hints, fmt.Sprintf("%s has no log, so re-run `lym loom lint-%s` for its findings", run.label, lint))
++		} else {
++			logged = true
++		}
++	}
++	if logged {
++		hints = slices.Insert(hints, 0, "the logs named above hold the cut lines of a run with a log")
++	}
++	return fmt.Sprintf("... %d more lines cut (%s); %s", total, strings.Join(counts, ", "), strings.Join(hints, "; "))
++}
++
++// qualify returns line with a Go file path it opens with prefixed by the worktree-relative directory it is relative to, or line unchanged when it opens with none.
++// A bare file name is relative to the directory of failure's package, which must lie inside the run's module.
++// A failure outside any test prints a compile error's path relative to the run directory, so a path with a leading `./` or a directory is relative to that directory.
++func (run failedRun) qualify(failure runFailure, line string) string {
++	if run.modulePath == "" {
++		return line
++	}
++	if failure.test == "" {
++		if matched := runRelativeGoFile.FindString(line); matched != "" {
++			if run.moduleDir == "." || run.moduleDir == "" {
++				return line
++			}
++			located := strings.TrimPrefix(strings.ReplaceAll(matched, `\`, "/"), "./")
++			return run.moduleDir + "/" + located + line[len(matched):]
++		}
++	}
++	pkg := failure.pkg
++	if pkg == "" || !bareGoFile.MatchString(line) {
++		return line
++	}
++	rest, inModule := strings.CutPrefix(pkg, run.modulePath)
++	if !inModule || (rest != "" && !strings.HasPrefix(rest, "/")) {
++		return line
++	}
++	dir := path.Join(run.moduleDir, strings.TrimPrefix(rest, "/"))
++	if dir == "." {
++		return line
++	}
++	return dir + "/" + line
++}
++
++// capLine returns line cut to failureReportLineBytes at a rune boundary, marked with an ellipsis when cut.
++func capLine(line string) string {
++	if len(line) <= failureReportLineBytes {
++		return line
++	}
++	cut := failureReportLineBytes
++	for cut > 0 && !utf8.RuneStart(line[cut]) {
++		cut--
++	}
++	return line[:cut] + "..."
++}
++
++// printFailureReport writes the failure report of runs, with touched the files the change touches, to stderr, and nothing when no run failed.
++func printFailureReport(stderr io.Writer, runs []failedRun, touched []string) {
++	for _, line := range renderFailureReport(runs, touched) {
++		printLine(stderr, line)
++	}
++}
+diff --git a/internal/gatecli/failurereport_integration_test.go b/internal/gatecli/failurereport_integration_test.go
+new file mode 100644
+index 00000000..715d034f
+--- /dev/null
++++ b/internal/gatecli/failurereport_integration_test.go
+@@ -0,0 +1,94 @@
++//go:build tier1
++
++// failurereport_integration_test.go covers the failure report's reads of a real repository: the files the change touches, from the merge base with the pair's parent branch, and the lint steps a gate key lists.
++// It is Tier 2: it builds a real hub and spawns git.
++
++package gatecli
++
++import (
++	"bytes"
++	"context"
++	"fmt"
++	"os"
++	"path/filepath"
++	"testing"
++
++	"github.com/google/go-cmp/cmp"
++
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/pattern"
++	"github.com/Knatte18/loomyard/internal/patternlint"
++)
++
++func TestTouchedFiles(t *testing.T) {
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		// renameParent renames the parent branch the pair's origin record names, so the merge base cannot be read.
++		renameParent bool
++		want         []string
++	}{
++		{name: "MergeBaseWithTheParentListsCommittedAndUntrackedFiles", want: []string{"committed/c.go", "untracked/u.go"}},
++		{name: "UnreadableMergeBaseFallsBackToTheFilesChangedSinceHEAD", renameParent: true, want: []string{"untracked/u.go"}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: ".", Pairs: []string{hubforge.TemplatePairSlug}})
++			pair := h.PairCodeWorktree(hubforge.TemplatePairSlug)
++			for rel, content := range map[string]string{"committed/c.go": "package committed\n", "untracked/u.go": "package untracked\n"} {
++				full := filepath.Join(pair, filepath.FromSlash(rel))
++				if err := os.MkdirAll(filepath.Dir(full), 0o755); err != nil {
++					t.Fatal(err)
++				}
++				if err := os.WriteFile(full, []byte(content), 0o644); err != nil {
++					t.Fatal(err)
++				}
++			}
++			gitkit.Git(t, pair, "add", "committed")
++			gitkit.Git(t, pair, "commit", "-q", "-m", "commit one file after the merge base")
++			location, err := lymcwd.ResolveWorktree(pair)
++			if err != nil {
++				t.Fatal(err)
++			}
++			if tt.renameParent {
++				gitkit.Git(t, h.PrimeWorktree(), "branch", "-m", "main", "main-renamed")
++			}
++
++			got := touchedFiles(context.Background(), location, pair, true)
++			if diff := cmp.Diff(tt.want, got); diff != "" {
++				t.Errorf("touchedFiles() mismatch (-want +got):\n%s", diff)
++			}
++		})
++	}
++}
++
++func TestRunLints_PatternHeadroom(t *testing.T) {
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	prime := h.PrimeWorktree()
++	base, err := patternlint.OverviewAt(prime, "HEAD")
++	if err != nil {
++		t.Fatal(err)
++	}
++	head := bytes.Repeat([]byte("x"), len(base)+pattern.HeadroomBytes+500)
++	if err := os.WriteFile(filepath.Join(prime, "PATTERN.md"), head, 0o644); err != nil {
++		t.Fatal(err)
++	}
++
++	got := runLints(prime, []string{gateslot.LintPattern})
++	message := fmt.Sprintf("PATTERN.md: overview grew to %d bytes from %d, past the %d-byte headroom line; cut %d bytes", len(head), len(base), pattern.HeadroomBytes, len(head)-max(len(base), pattern.HeadroomBytes))
++	want := []failedRun{{
++		label: "lint pattern", outcome: "1 finding", wayForward: patternlint.WayForward,
++		failures: []runFailure{{lines: []string{message}}},
++	}}
++	if diff := cmp.Diff(want, got, cmp.AllowUnexported(failedRun{}, runFailure{})); diff != "" {
++		t.Errorf("runLints() mismatch (-want +got):\n%s", diff)
++	}
++}
+diff --git a/internal/gatecli/failurereport_test.go b/internal/gatecli/failurereport_test.go
+new file mode 100644
+index 00000000..d4591559
+--- /dev/null
++++ b/internal/gatecli/failurereport_test.go
+@@ -0,0 +1,309 @@
++//go:build tier0
++
++// failurereport_test.go covers the failure report's rendering, the failed runs it is built from and the bound on a capped call's replayed stdout.
++
++package gatecli
++
++import (
++	"bytes"
++	"errors"
++	"fmt"
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++
++	"github.com/google/go-cmp/cmp"
++
++	"github.com/Knatte18/loomyard/internal/gateslot"
++)
++
++func TestRenderFailureReport(t *testing.T) {
++	t.Parallel()
++
++	tests := []struct {
++		name    string
++		runs    []failedRun
++		touched []string
++		want    []string
++	}{
++		{name: "no failed run renders nothing"},
++		{
++			name: "a tier's failed test, with its bare file named by its package's directory, and a package failure, then the touched files",
++			runs: []failedRun{{
++				label: "tier0", outcome: "exit 1", log: "/logs/tier0.log", modulePath: "example.com/m", moduleDir: "sub",
++				failures: []runFailure{
++					{pkg: "example.com/m/p", test: "TestA/sub", lines: []string{"a_test.go:12: got 1; want 2", "dir/x.go:3: kept as printed"}},
++					{pkg: "example.com/m/q", lines: []string{"q.go:3:2: undefined: y"}},
++					{pkg: "example.com/other", test: "TestB", lines: []string{"b_test.go:4: outside the module"}},
++				},
++			}},
++			touched: []string{"sub/p/a.go", "sub/p/a_test.go"},
++			want: []string{
++				failureReportHeader,
++				"tier0 (exit 1), log /logs/tier0.log:",
++				"  example.com/m/p TestA/sub:",
++				"    sub/p/a_test.go:12: got 1; want 2",
++				"    dir/x.go:3: kept as printed",
++				"  example.com/m/q, failed outside any test:",
++				"    sub/q/q.go:3:2: undefined: y",
++				"  example.com/other TestB:",
++				"    b_test.go:4: outside the module",
++				"gate test: the change touches sub/p/a.go, sub/p/a_test.go",
++			},
++		},
++		{
++			name: "a build error of a nested module is named by its worktree path only in a package that failed outside any test",
++			runs: []failedRun{{
++				label: "tier0", outcome: "exit 1", log: "/logs/tier0.log", modulePath: "example.com/m", moduleDir: "sub",
++				failures: []runFailure{
++					{pkg: "example.com/m/q", lines: []string{"q/q.go:3:2: undefined: y", "./root.go:4:1: syntax error", `.\win.go:6:1: undefined: w`, "/abs/z.go:5: kept as printed"}},
++					{pkg: "example.com/m/p", test: "TestA", lines: []string{"x/x.go:7: kept as printed"}},
++				},
++			}, {
++				label: "tier1", outcome: "exit 1", log: "/logs/tier1.log", modulePath: "example.com/top", moduleDir: ".",
++				failures: []runFailure{{pkg: "example.com/top/q", lines: []string{"q/q.go:3:2: undefined: y"}}},
++			}},
++			want: []string{
++				failureReportHeader,
++				"tier0 (exit 1), log /logs/tier0.log:",
++				"  example.com/m/q, failed outside any test:",
++				"    sub/q/q.go:3:2: undefined: y",
++				"    sub/root.go:4:1: syntax error",
++				"    sub/win.go:6:1: undefined: w",
++				"    /abs/z.go:5: kept as printed",
++				"  example.com/m/p TestA:",
++				"    x/x.go:7: kept as printed",
++				"tier1 (exit 1), log /logs/tier1.log:",
++				"  example.com/top/q, failed outside any test:",
++				"    q/q.go:3:2: undefined: y",
++			},
++		},
++		{
++			name: "a run's cause lines are listed beside its failures, and alone when nothing else was read",
++			runs: []failedRun{
++				{
++					label: "tier0", outcome: "timed out", log: "/logs/tier0.log", causes: []string{"tier0 timeout"},
++					failures: []runFailure{{pkg: "example.com/m/p", test: "TestA", lines: []string{"a_test.go:1: boom"}}},
++				},
++				{label: "tier1", outcome: "exit 1", log: "/logs/tier1.log", causes: []string{"no tests ran"}},
++			},
++			want: []string{
++				failureReportHeader,
++				"tier0 (timed out), log /logs/tier0.log:",
++				"  example.com/m/p TestA:",
++				"    a_test.go:1: boom",
++				"  tier0 timeout",
++				"tier1 (exit 1), log /logs/tier1.log:",
++				"  no tests ran",
++			},
++		},
++		{
++			name: "a run with no failure read lists its unparsed lines, or says its log holds the cause, and a lint step names its way forward",
++			runs: []failedRun{
++				{label: "vet tier1", outcome: "exit 1", log: "/logs/vet.log", unparsed: []string{"# example.com/m/p", "p.go:3:2: unreachable code"}},
++				{label: "tier2", outcome: "timed out", log: "/logs/tier2.log"},
++				{label: "lint comments", outcome: "1 finding", wayForward: "fix it", failures: []runFailure{{lines: []string{"a.go:3: // wrapped at the"}}}},
++			},
++			want: []string{
++				failureReportHeader,
++				"vet tier1 (exit 1), log /logs/vet.log:",
++				"  its output:",
++				"    # example.com/m/p",
++				"    p.go:3:2: unreachable code",
++				"tier2 (timed out), log /logs/tier2.log:",
++				"  no failing test or error line was read from its output; its log holds the cause",
++				"lint comments (1 finding); way forward: fix it:",
++				"  a.go:3: // wrapped at the",
++			},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if diff := cmp.Diff(tt.want, renderFailureReport(tt.runs, tt.touched)); diff != "" {
++				t.Errorf("renderFailureReport() mismatch (-want +got):\n%s", diff)
++			}
++		})
++	}
++
++	t.Run("a long report stops at its line cap, a long line is cut and the touched files are capped", func(t *testing.T) {
++		t.Parallel()
++		failures := make([]runFailure, failureReportLines)
++		for i := range failures {
++			failures[i] = runFailure{pkg: "example.com/p", test: fmt.Sprintf("Test%d", i), lines: []string{strings.Repeat("x", failureReportLineBytes+10)}}
++		}
++		touched := make([]string, touchedFilesListed+3)
++		for i := range touched {
++			touched[i] = fmt.Sprintf("f%d.go", i)
++		}
++		got := renderFailureReport([]failedRun{{label: "tier0", outcome: "exit 1", log: "/l", failures: failures}}, touched)
++
++		// The header, the capped body, the more line and the touched line.
++		if len(got) != failureReportLines+3 {
++			t.Fatalf("renderFailureReport() = %d lines; want %d", len(got), failureReportLines+3)
++		}
++		wantMore := fmt.Sprintf("... %d more lines cut (tier0: %d); the logs named above hold the cut lines of a run with a log", failureReportLines+1, failureReportLines+1)
++		if more := got[failureReportLines+1]; more != wantMore {
++			t.Errorf("more line = %q; want %q", more, wantMore)
++		}
++		if cut := got[3]; cut != "    "+strings.Repeat("x", failureReportLineBytes-4)+"..." {
++			t.Errorf("long line = %q; want it cut at %d bytes and marked", cut, failureReportLineBytes)
++		}
++		if last := got[len(got)-1]; !strings.HasSuffix(last, fmt.Sprintf("f%d.go and 3 more", touchedFilesListed-1)) {
++			t.Errorf("touched line = %q; want the first %d files and the count of the rest", last, touchedFilesListed)
++		}
++	})
++
++	t.Run("a lint step a tier flood cuts is named in the cut line with the lint to re-run, since it has no log", func(t *testing.T) {
++		t.Parallel()
++		failures := make([]runFailure, failureReportLines)
++		for i := range failures {
++			failures[i] = runFailure{pkg: "example.com/p", test: fmt.Sprintf("Test%d", i), lines: []string{"x"}}
++		}
++		lint := failedRun{label: "lint comments", outcome: "2 findings", failures: []runFailure{{lines: []string{"a.go:3: // x"}}, {lines: []string{"b.go:4: // y"}}}}
++		pattern := failedRun{label: "lint pattern", outcome: "1 finding", failures: []runFailure{{lines: []string{"PATTERN.md: grew"}}}}
++		vet := failedRun{label: "vet tier1", outcome: "exit 1", log: "/v", unparsed: []string{"a", "b"}}
++		guard := failedRun{label: "guard tier1", outcome: "exit 1", log: "/g", unparsed: []string{"a", "b"}}
++		got := renderFailureReport([]failedRun{{label: "tier0", outcome: "exit 1", log: "/l", failures: failures}, vet, guard, lint, pattern}, nil)
++
++		// The header and the capped body, which the tier fills, then the cut line.
++		if len(got) != failureReportLines+2 {
++			t.Fatalf("renderFailureReport() = %d lines; want %d", len(got), failureReportLines+2)
++		}
++		// The tier's header and 80 failures are 1+2*80 lines, 1+2*80-80 of them cut, the vet and guard runs' 4 lines each, the comments lint's 3 lines and the pattern lint's 2 all cut.
++		want := fmt.Sprintf("... %d more lines cut (tier0: %d, vet tier1: 4, guard tier1: 4, lint comments: 3, lint pattern: 2); the logs named above hold the cut lines of a run with a log; lint comments has no log, so re-run `lym loom lint-comments` for its findings; lint pattern has no log, so re-run `lym loom lint-pattern` for its findings", failureReportLines+1+4+4+3+2, failureReportLines+1)
++		if cut := got[len(got)-1]; cut != want {
++			t.Errorf("cut line = %q; want %q", cut, want)
++		}
++		if len(want) <= failureReportLineBytes {
++			t.Errorf("cut line is %d bytes; want a case longer than the %d-byte line cap, which the cut line is exempt from", len(want), failureReportLineBytes)
++		}
++	})
++}
++
++func TestLintFailedRun(t *testing.T) {
++	t.Parallel()
++
++	tests := []struct {
++		name     string
++		lint     string
++		findings []string
++		err      error
++		want     failedRun
++		wantOK   bool
++	}{
++		{name: "no finding is no failed run", lint: gateslot.LintComments},
++		{
++			name: "findings are counted and carry the lint's way forward", lint: gateslot.LintComments, findings: []string{"a.go:3: // x", "b.go:4: // y"}, wantOK: true,
++			want: failedRun{label: "lint comments", outcome: "2 findings", wayForward: lintWayForward[gateslot.LintComments], failures: []runFailure{{lines: []string{"a.go:3: // x"}}, {lines: []string{"b.go:4: // y"}}}},
++		},
++		{
++			name: "one finding reads in the singular", lint: gateslot.LintPattern, findings: []string{"PATTERN.md: grew"}, wantOK: true,
++			want: failedRun{label: "lint pattern", outcome: "1 finding", wayForward: lintWayForward[gateslot.LintPattern], failures: []runFailure{{lines: []string{"PATTERN.md: grew"}}}},
++		},
++		{
++			name: "a lint that cannot run is a failed run naming the error", lint: gateslot.LintPattern, err: errors.New("git broke"), wantOK: true,
++			want: failedRun{label: "lint pattern", outcome: "could not run", wayForward: "re-run the same command", unparsed: []string{"git broke"}},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got, ok := lintFailedRun(tt.lint, tt.findings, tt.err)
++			if ok != tt.wantOK {
++				t.Fatalf("lintFailedRun() ok = %v; want %v", ok, tt.wantOK)
++			}
++			if diff := cmp.Diff(tt.want, got, cmp.AllowUnexported(failedRun{}, runFailure{})); diff != "" {
++				t.Errorf("lintFailedRun() mismatch (-want +got):\n%s", diff)
++			}
++		})
++	}
++}
++
++func TestBuildFailedRun_KeepsTheLastLinesOfItsOutput(t *testing.T) {
++	t.Parallel()
++
++	var output strings.Builder
++	for i := range unparsedLines + 2 {
++		fmt.Fprintf(&output, "line %d\n\n", i)
++	}
++	got := buildFailedRun(2, false, "/logs/build.log", []byte(output.String()))
++	if got.label != "build" || got.outcome != "exit 2" || got.log != "/logs/build.log" {
++		t.Errorf("buildFailedRun() = %+v; want the build labelled with its exit code and log", got)
++	}
++	if len(got.unparsed) != unparsedLines || got.unparsed[0] != "line 2" || got.unparsed[unparsedLines-1] != fmt.Sprintf("line %d", unparsedLines+1) {
++		t.Errorf("buildFailedRun() unparsed = %q; want the last %d non-empty lines", got.unparsed, unparsedLines)
++	}
++	if timedOut := buildFailedRun(1, true, "/l", nil); timedOut.outcome != "timed out" {
++		t.Errorf("buildFailedRun(timed out) outcome = %q; want timed out", timedOut.outcome)
++	}
++}
++
++func TestTierFailedRun_NamesTheModuleOfItsRunDirectory(t *testing.T) {
++	t.Parallel()
++
++	root := t.TempDir()
++	module := filepath.Join(root, "sub")
++	if err := os.MkdirAll(module, 0o755); err != nil {
++		t.Fatal(err)
++	}
++	if err := os.WriteFile(filepath.Join(module, "go.mod"), []byte("module example.com/m\n\ngo 1.26\n"), 0o644); err != nil {
++		t.Fatal(err)
++	}
++	result := tierResult{
++		record:   gateslot.RunRecord{ExitCode: 1, RunDir: module},
++		failures: []runFailure{{pkg: "example.com/m/p", test: "TestA"}},
++		causes:   []string{"cause"},
++		unparsed: []string{"output"},
++	}
++	got := tierFailedRun(tierRun{number: 1, vetStep: true}, result, "/logs/vet.log", root)
++	want := failedRun{label: "vet tier1", outcome: "exit 1", log: "/logs/vet.log", modulePath: "example.com/m", moduleDir: "sub", failures: result.failures, causes: result.causes, unparsed: result.unparsed}
++	if diff := cmp.Diff(want, got, cmp.AllowUnexported(failedRun{}, runFailure{})); diff != "" {
++		t.Errorf("tierFailedRun() mismatch (-want +got):\n%s", diff)
++	}
++}
++
++func TestReplayStdout(t *testing.T) {
++	t.Parallel()
++
++	long := strings.Repeat("=== RUN   TestA\n", replayStdoutBytes/8)
++	tests := []struct {
++		name string
++		// content is the stdout file's content; nil leaves no file.
++		content    []byte
++		wantOut    string
++		wantStderr []string
++	}{
++		{name: "an absent file prints nothing"},
++		{name: "a short stdout is printed whole", content: []byte("ok\n"), wantOut: "ok\n"},
++		{name: "a long stdout is named on stderr, not printed", content: []byte(long), wantStderr: []string{"bytes, is too long to print and stays in "}},
++		{name: "a long stdout's closing JSON envelope is printed", content: []byte(long + `{"ok":false,"error":"refused"}` + "\n"), wantOut: `{"ok":false,"error":"refused"}` + "\n", wantStderr: []string{"is too long to print"}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			path := filepath.Join(t.TempDir(), "stdout")
++			if tt.content != nil {
++				if err := os.WriteFile(path, tt.content, 0o644); err != nil {
++					t.Fatal(err)
++				}
++			}
++			var out, stderr bytes.Buffer
++			if err := replayStdout(&out, &stderr, "test", path); err != nil {
++				t.Fatalf("replayStdout() error = %v; want nil", err)
++			}
++			if out.String() != tt.wantOut {
++				t.Errorf("replayStdout() out = %q; want %q", out.String(), tt.wantOut)
++			}
++			if len(tt.wantStderr) == 0 && stderr.Len() > 0 {
++				t.Errorf("replayStdout() stderr = %q; want none", stderr.String())
++			}
++			for _, want := range tt.wantStderr {
++				if !strings.Contains(stderr.String(), want) || !strings.Contains(stderr.String(), path) {
++					t.Errorf("replayStdout() stderr = %q; want it to hold %q and the file's path", stderr.String(), want)
++				}
++			}
++		})
++	}
++}
+diff --git a/internal/gatecli/run.go b/internal/gatecli/run.go
+index 1a4b3dcf..333cc70f 100644
+--- a/internal/gatecli/run.go
++++ b/internal/gatecli/run.go
+@@ -166,10 +166,22 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 			if end.ran && code == 0 {
+ 				printLine(request.stderr, "gate test: the call was cancelled while its last run ended without a failure, so it exits 1; way forward: re-run the same command")
+ 			}
++			exe.printReport(inHub)
+ 			printFailedRuns(request.stderr, failures, firstFailed, true)
+ 			return exitAfterSignal(caught, haltExitCode(end, code))
+ 		}
+ 	}
++	// The lint steps run after the tiers, so a call that fails both reports the two in one go.
++	if request.gate != "" && runCtx.Err() == nil {
++		for _, lint := range runLints(request.root, cfg.Gates[request.gate].Lints) {
++			exe.failed = append(exe.failed, lint)
++			failures = append(failures, fmt.Sprintf("%s (%s)", lint.label, lint.outcome))
++			if code == 0 {
++				code, firstFailed = 1, lint.label
++			}
++		}
++	}
++	exe.printReport(inHub)
+ 	printFailedRuns(request.stderr, failures, firstFailed, false)
+ 	if code == 0 && sc.form == scopeCard {
+ 		printNotRunTiers(request.stderr, notRunTiers(cfg, plan))
+@@ -389,6 +401,16 @@ type execution struct {
+ 	buildExit int
+ 	// callID identifies this call; every record the call writes carries it.
+ 	callID string
++	// failed holds the call's failed runs in plan order, its lint steps last, for the failure report.
++	failed []failedRun
++}
++
++// printReport writes the failure report of the call's failed runs to stderr, with the files the change touches, and nothing when no run failed.
++func (e *execution) printReport(inHub bool) {
++	if len(e.failed) == 0 {
++		return
++	}
++	printFailureReport(e.request.stderr, e.failed, touchedFiles(e.ctx, e.location, e.request.root, inHub))
+ }
+ 
+ // runListed runs one listed tier with its slots held, and returns how it ended.
+@@ -496,6 +518,9 @@ func (e *execution) report(run tierRun, result tierResult, waitStart time.Time)
+ 		printLine(e.request.stderr, result.trimpathNote)
+ 	}
+ 	printLine(e.request.stderr, gateslot.TierSummaryLine(record, logPath))
++	if record.ExitCode != 0 {
++		e.failed = append(e.failed, tierFailedRun(run, result, logPath, e.request.root))
++	}
+ 	if e.request.observer.Ended != nil {
+ 		e.request.observer.Ended(record)
+ 	}
+diff --git a/internal/gatecli/test_integration_test.go b/internal/gatecli/test_integration_test.go
+index 7e6ba562..73294829 100644
+--- a/internal/gatecli/test_integration_test.go
++++ b/internal/gatecli/test_integration_test.go
+@@ -48,7 +48,8 @@ const (
+ 	// helperRoleStandIn records how it was invoked, then exits with helperExitEnv or, under helperHoldEnv, sleeps until killed with a sleeper child.
+ 	// Under helperShortageEnv a tier invocation prints a resource-shortage error and exits 1 instead.
+ 	// A build invocation instead writes helperBuildContentEnv to its `-o` file when it succeeds and exits with helperBuildExitEnv.
+-	// The hub's shared build step is such an invocation too, with `sharedbuild` as its first argument, and holds under helperHoldEnv like a tier does.
++	// The hub's shared build step is such an invocation too, with `sharedbuild` as its first argument, and holds under helperHoldEnv like a tier does;
++	// when it exits non-zero it first prints helperBuildFailureLine.
+ 	helperRoleStandIn = "standin"
+ 	// helperRoleSleeper sleeps until killed.
+ 	helperRoleSleeper = "sleeper"
+@@ -61,7 +62,9 @@ const (
+ 	helperGuardExitEnv    = "GATECLI_TEST_GUARD_EXIT"
+ 	helperBuildExitEnv    = "GATECLI_TEST_BUILD_EXIT"
+ 	helperBuildContentEnv = "GATECLI_TEST_BUILD_CONTENT"
+-	helperHoldEnv         = "GATECLI_TEST_HOLD"
++	// helperBuildFailureLine is the line the shared build step prints before it exits non-zero.
++	helperBuildFailureLine = "sharedbuild: compile failed"
++	helperHoldEnv          = "GATECLI_TEST_HOLD"
+ 	// helperShortageEnv makes a tier invocation print a resource-shortage error and exit 1, on its first run when the value is `once` and on every run when it is `always`.
+ 	helperShortageEnv = "GATECLI_TEST_SHORTAGE"
+ 	// helperCeilingEnv and helperUnitEnv are durations the gate helper passes to newCommand in place of its defaults, and the helper always passes a shortage-rerun delay of 0.
+@@ -295,6 +298,9 @@ func runStandIn() int {
+ 	}
+ 	if isBuild {
+ 		code, _ := strconv.Atoi(os.Getenv(helperBuildExitEnv))
++		if sharedBuild && code != 0 {
++			fmt.Println(helperBuildFailureLine)
++		}
+ 		if output := slices.Index(os.Args, "-o"); code == 0 && output >= 0 && output+1 < len(os.Args) {
+ 			if err := os.WriteFile(os.Args[output+1], []byte(os.Getenv(helperBuildContentEnv)), 0o755); err != nil {
+ 				return 1
+@@ -823,6 +829,11 @@ func TestGateTest_Scenario(t *testing.T) {
+ 		if !strings.Contains(output, want+"\n") {
+ 			t.Errorf("stdout = %q; want the closing line %q", output, want)
+ 		}
++		wantReport := "build (exit 3), log " + buildLog + ":\n  its output:\n    " + helperBuildFailureLine + "\n"
++		report, closing := strings.Index(output, failureReportHeader), strings.Index(output, want)
++		if at := strings.Index(output, wantReport); report < 0 || at < report || closing < at {
++			t.Errorf("stdout = %q; want the failure report listing %q between its header and the closing line", output, wantReport)
++		}
+ 		requireFree(t)
+ 	})
+ 
+@@ -1296,6 +1307,119 @@ func TestGateTest_Scenario(t *testing.T) {
+ 		requireFree(t)
+ 	})
+ 
++	t.Run("a real go test tier's failed test and broken package are both in the failure report, with file:line, values, the log and the touched files", func(t *testing.T) {
++		module := writeModule(t, "report", map[string]string{
++			"p/p.go":                "package p\n",
++			"p/p_test.go":           "package p\n\nimport \"testing\"\n\nfunc TestFails(t *testing.T) {\n\tt.Errorf(\"got %d; want %d\", 1, 2)\n}\n",
++			"broken/broken.go":      "package broken\n\nvar x = undefinedThing\n",
++			"broken/broken_test.go": "package broken\n\nimport \"testing\"\n\nfunc TestBuilds(t *testing.T) {}\n",
++		})
++		code, stdout := runGate(t, gateRun{cwd: t.TempDir(), realGo: true, args: []string{"test", "--tier", "5", "-C", module, "./..."}})
++		if code != 1 {
++			t.Errorf("exit code = %d, stdout %q; want 1", code, stdout)
++		}
++		logPath := summaryLogPath(t, stdout, 5)
++		for _, want := range []string{
++			failureReportHeader,
++			"tier5 (exit 1), log " + logPath + ":",
++			"  example.com/report/p TestFails:",
++			"    report/p/p_test.go:6: got 1; want 2",
++			"  example.com/report/broken, failed outside any test:",
++			"undefined: undefinedThing",
++			"gate test: the change touches ",
++			"report/p/p_test.go",
++		} {
++			if !strings.Contains(stdout, want) {
++				t.Errorf("stdout %q lacks %q", stdout, want)
++			}
++		}
++		if report, closing := strings.Index(stdout, failureReportHeader), strings.Index(stdout, gateslot.FailedRunsPrefix); report < 0 || closing < report {
++			t.Errorf("stdout %q; want the failure report before the closing line", stdout)
++		}
++		requireFree(t)
++	})
++
++	// wrapComment writes a Go file into the prime whose new comment wraps in the middle of a sentence, so the comments lint finds it, and removes the file when the test ends.
++	wrapComment := func(t *testing.T) {
++		t.Helper()
++		wrapped := filepath.Join(prime, "wrapped.go")
++		if err := os.WriteFile(wrapped, []byte("package hub\n\n// a fresh comment that wraps in the\n// middle of a sentence.\nfunc Fresh() {}\n"), 0o644); err != nil {
++			t.Fatal(err)
++		}
++		t.Cleanup(func() { _ = os.Remove(wrapped) })
++	}
++
++	t.Run("a gate key's lint step runs after its tiers and fails the call with its findings in the report", func(t *testing.T) {
++		writeConfig(t, scenarioConfig(t, func(cfg map[string]any) {
++			cfg["gates"] = map[string]any{"linted": map[string]any{"tiers": []int{6}, "scope": "all", "lints": []string{"comments"}}}
++		}))
++		defer writeConfig(t, gateConfig)
++		wrapComment(t)
++
++		code, stdout := runGate(t, gateRun{cwd: prime, args: []string{"test", "--gate", "linted"}})
++		if code != 1 {
++			t.Errorf("exit code = %d, stdout %q; want 1 from the lint step", code, stdout)
++		}
++		for _, want := range []string{
++			"lint comments (1 finding); way forward: " + lintWayForward[gateslot.LintComments] + ":",
++			"  wrapped.go:3: // a fresh comment that wraps in the",
++			gateslot.FailedRunsPrefix + "lint comments (1 finding); the exit code is lint comments's",
++		} {
++			if !strings.Contains(stdout, want) {
++				t.Errorf("stdout %q lacks %q", stdout, want)
++			}
++		}
++		requireFree(t)
++	})
++
++	t.Run("a failing lint after a failing tier keeps the tier's exit code and is named last in the closing line", func(t *testing.T) {
++		writeConfig(t, scenarioConfig(t, func(cfg map[string]any) {
++			cfg["gates"] = map[string]any{"linted": map[string]any{"tiers": []int{6}, "scope": "all", "lints": []string{"comments"}}}
++		}))
++		defer writeConfig(t, gateConfig)
++		wrapComment(t)
++
++		g := startGate(t, gateRun{cwd: prime, args: []string{"test", "--gate", "linted"}, env: []string{helperExitEnv + "=7"}})
++		if code := g.wait(t); code != 7 {
++			t.Errorf("exit code = %d, stdout %q; want the failing tier's 7", code, g.stdout.String())
++		}
++		want := "gate test: failed runs: tier6 (exit 7), lint comments (1 finding); the exit code is tier6's"
++		if !strings.Contains(g.stdout.String(), want+"\n") {
++			t.Errorf("stdout = %q; want the closing line %q", g.stdout.String(), want)
++		}
++		requireFree(t)
++	})
++
++	t.Run("a halted call prints its failure report before the closing line and runs no lint", func(t *testing.T) {
++		if err := os.MkdirAll(filepath.Join(prime, "cmd", "lym"), 0o755); err != nil {
++			t.Fatal(err)
++		}
++		t.Cleanup(func() { _ = os.RemoveAll(filepath.Join(prime, "cmd")) })
++		writeConfig(t, scenarioConfig(t, func(cfg map[string]any) {
++			cfg["gates"] = map[string]any{"halting": map[string]any{"tiers": []int{0, 3}, "scope": "all", "lints": []string{"comments"}}}
++		}))
++		defer writeConfig(t, gateConfig)
++		wrapComment(t)
++
++		g := startGate(t, gateRun{cwd: prime, args: []string{"test", "--gate", "halting"}, env: []string{helperExitEnv + "=7", helperBuildExitEnv + "=1"}})
++		if code := g.wait(t); code != 1 {
++			t.Errorf("exit code = %d, stdout %q; want the refusal's 1", code, g.stdout.String())
++		}
++		stdout := g.stdout.String()
++		closing := gateslot.FailedRunsPrefix + "tier0 (exit 7); the exit code is tier0's; the call stopped there, so later runs did not run"
++		report, end := strings.Index(stdout, failureReportHeader), strings.Index(stdout, closing)
++		if report < 0 || end < report {
++			t.Errorf("stdout = %q; want the failure report before the closing line %q", stdout, closing)
++		}
++		if !strings.Contains(stdout, "tier0 (exit 7), log ") {
++			t.Errorf("stdout = %q; want tier0 in the failure report", stdout)
++		}
++		if strings.Contains(stdout, "lint comments") {
++			t.Errorf("stdout = %q; want no lint run after the call halted", stdout)
++		}
++		requireFree(t)
++	})
++
+ 	if runtime.GOOS == "linux" {
+ 		t.Run("a test binary that keeps cores busy past busy_quit_sec is quit with its stacks printed", func(t *testing.T) {
+ 			spinModule := writeModule(t, "spin", map[string]string{
+diff --git a/internal/gatecli/tierrun.go b/internal/gatecli/tierrun.go
+index 1dccc075..0c4fe472 100644
+--- a/internal/gatecli/tierrun.go
++++ b/internal/gatecli/tierrun.go
+@@ -43,6 +43,10 @@ type tierResult struct {
+ 	buildFailed bool
+ 	// shortage is the resource-shortage marker of a tier that failed on one in its run and again in its one rerun; empty otherwise.
+ 	shortage string
++	// failures are the failed tests and packages the counter read, causes the lines the verb itself states a failure with, such as a timeout, and unparsed the first lines of output no test event carried, all for the failure report.
++	failures []runFailure
++	causes   []string
++	unparsed []string
+ }
+ 
+ // runTier runs the tier of run in ctx with its slots held: it prebuilds `lym` when the tier asks, then runs each invocation's command through the platform shell as a tied child, stopping at the first non-zero exit.
+@@ -80,12 +84,14 @@ func runTier(ctx context.Context, out io.Writer, run tierRun, env []string, requ
+ 		logger.Warn("gate test: could not flush the tier's output", "tier", tierName(run.number), "cause", err)
+ 	}
+ 
++	var causes []string
+ 	timedOut := ctx.Err() == nil && errors.Is(tierCtx.Err(), context.DeadlineExceeded) && exit != 0
+ 	if timedOut {
+ 		exit = 1
+ 		line := gateslot.TierTimeoutLine(tierName(run.number), timeout)
+ 		logBuffer.WriteString(line + "\n")
+ 		printLine(request.stderr, line)
++		causes = append(causes, line)
+ 	}
+ 
+ 	if exit == 0 {
+@@ -93,6 +99,7 @@ func runTier(ctx context.Context, out io.Writer, run tierRun, env []string, requ
+ 			exit = 1
+ 			logBuffer.WriteString(line + "\n")
+ 			printLine(request.stderr, line)
++			causes = append(causes, line)
+ 		}
+ 	}
+ 
+@@ -112,8 +119,25 @@ func runTier(ctx context.Context, out io.Writer, run tierRun, env []string, requ
+ 	}
+ 	record.Discovered, record.Passed, record.Failed, record.Skipped = counts.discovered, counts.passed, counts.failed, counts.skipped
+ 	record.Launches = counter.Launches()
+-	record.Failures = counter.Failures()
+-	return tierResult{record: record, log: logBuffer.Bytes(), trimpathNote: trimpathNote}
++	failures := counter.Failures()
++	record.Failures = testFailures(failures)
++	return tierResult{record: record, log: logBuffer.Bytes(), trimpathNote: trimpathNote, failures: failures, causes: causes, unparsed: counter.Unparsed()}
++}
++
++// testFailures returns the failed tests of failures as the run record carries them, each with its first line, leaving out the package failures.
++func testFailures(failures []runFailure) []gateslot.TestFailure {
++	var tests []gateslot.TestFailure
++	for _, failure := range failures {
++		if failure.test == "" {
++			continue
++		}
++		first := ""
++		if len(failure.lines) > 0 {
++			first = failure.lines[0]
++		}
++		tests = append(tests, gateslot.TestFailure{Package: failure.pkg, Test: failure.test, FirstLine: first})
++	}
++	return tests
+ }
+ 
+ // shortageMarkers are lowercase fragments of the errors a process or thread creation prints when the user's task limit or the machine's process table is momentarily exhausted:
+diff --git a/internal/gateslot/config.go b/internal/gateslot/config.go
+index ad2c26e8..99444911 100644
+--- a/internal/gateslot/config.go
++++ b/internal/gateslot/config.go
+@@ -362,6 +362,11 @@ func decodeGates(entries map[string]yaml.Node) (map[string]GateKey, error) {
+ 		default:
+ 			return nil, guidedError{fmt.Errorf("gate config key %q: scope %q; want card, diff or all; fix it with \"lym config gate\" from the prime%s", path, key.Scope, roleClause)}
+ 		}
++		for _, lint := range key.Lints {
++			if lint != LintComments && lint != LintPattern {
++				return nil, guidedError{fmt.Errorf("gate config key %q: lint %q; want %s or %s; fix it with \"lym config gate\" from the prime%s", path, lint, LintComments, LintPattern, roleClause)}
++			}
++		}
+ 		gates[name] = key
+ 	}
+ 	return gates, nil
+diff --git a/internal/gateslot/config_test.go b/internal/gateslot/config_test.go
+index affc17a9..92875786 100644
+--- a/internal/gateslot/config_test.go
++++ b/internal/gateslot/config_test.go
+@@ -24,7 +24,7 @@ import (
+ var templateDefaults = Config{
+ 	Slots: 2, BusyQuitSec: 120,
+ 	Gates: map[string]GateKey{
+-		"card":            {Tiers: []int{0}, Scope: "card"},
++		"card":            {Tiers: []int{0}, Scope: "card", Lints: []string{"comments", "pattern"}},
+ 		"batch":           {Tiers: []int{0}, Scope: "card"},
+ 		"webster":         {Tiers: []int{0}, Scope: "all"},
+ 		"parent-align":    {Tiers: []int{0}, Scope: "all"},
+@@ -118,15 +118,23 @@ func TestLoadConfig(t *testing.T) {
+ 			}), "",
+ 		},
+ 		{
+-			"gate keys naming an undeclared tier still load", baseKeys + "gates:\n  card: {tiers: [3], scope: card}\n  push: {tiers: [0, 1], scope: diff}\n",
++			"gate keys naming an undeclared tier still load, a tuned key keeping the template's lints", baseKeys + "gates:\n  card: {tiers: [3], scope: card}\n  push: {tiers: [0, 1], scope: diff}\n",
+ 			hubWith(func(c *Config) {
+ 				c.Gates = maps.Clone(templateDefaults.Gates)
+-				c.Gates["card"] = GateKey{Tiers: []int{3}, Scope: "card"}
++				c.Gates["card"] = GateKey{Tiers: []int{3}, Scope: "card", Lints: []string{"comments", "pattern"}}
+ 				c.Gates["push"] = GateKey{Tiers: []int{0, 1}, Scope: "diff"}
+ 			}), "",
+ 		},
+ 		{"scope card on a key but card and batch", baseKeys + "gates:\n  parent-align: {tiers: [0], scope: card}\n", Config{}, `gate config key "gates.parent-align": scope card is only for the card and batch keys` + fixIt},
+ 		{"an unknown scope", baseKeys + "gates:\n  parent-align: {tiers: [0], scope: some}\n", Config{}, `gate config key "gates.parent-align": scope "some"; want card, diff or all` + fixIt},
++		{"an unknown lint", baseKeys + "gates:\n  parent-align: {tiers: [0], scope: all, lints: [spelling]}\n", Config{}, `gate config key "gates.parent-align": lint "spelling"; want comments or pattern` + fixIt},
++		{
++			"a key's lints load in order", baseKeys + "gates:\n  parent-align: {tiers: [0], scope: all, lints: [pattern, comments]}\n",
++			hubWith(func(c *Config) {
++				c.Gates = maps.Clone(templateDefaults.Gates)
++				c.Gates["parent-align"] = GateKey{Tiers: []int{0}, Scope: "all", Lints: []string{"pattern", "comments"}}
++			}), "",
++		},
+ 		{"a key in the retired list shape", baseKeys + "gates:\n  card: [0]\n", Config{}, `gate config key "gates.card": the retired list shape; fix it with "lym fabric reconcile" (or "lym config reconcile --layer default --apply") from the prime, which migrates it` + roleClause},
+ 		{
+ 			"a manual tier above tier0 loads", baseKeys + `tiers: {tier0: {command: x, timeout_min: 5, counter: vstest}, tier3: {command: y, timeout_min: 5, counter: vstest, manual: true}}`,
+diff --git a/internal/gateslot/doc.go b/internal/gateslot/doc.go
+index f1a13e4d..02f2388b 100644
+--- a/internal/gateslot/doc.go
++++ b/internal/gateslot/doc.go
+@@ -58,6 +58,7 @@
+ // The tier keys are `tiers`, `gates`, `scoper`, `refuse_raw`, `tier_parallel`, `build` and `inert_paths`.
+ // `tiers` is an open map keyed `tier0`, `tier1`, and so on, each a Tier written whole with one `lym config gate --set 'tiers.tierN={...}'` flow mapping;
+ // `gates` is a per-name map from a gate key to a GateKey written `{tiers: [<n>...], scope: card|diff|all}`, so a hub file that sets one key keeps the template's value for every other, and `tier_parallel` an open map from a tier name to this machine's parallel for it.
++// A GateKey may also hold `lints`, the lint steps its call runs after its tiers, each LintComments or LintPattern; the template's `card` key lists both.
+ // The keys lym reads are `card` and `batch` (scope `card`), `webster`, `parent-align`, `finalize` and `adopt` (scope `all`), and `webster-fix`, `darn-write`, `code-burler-fix`, `drift-verify` and `pr-review` (scope `diff`).
+ // `tiers` and `build` are executable keys, since a tier or build command runs any shell command in a task worktree, and `gates`, `scoper`, `refuse_raw` and `inert_paths` are guard keys, so all of them are hub-file only.
+ // `build` is an open map, so its sub-keys travel whole through the layer stack and reconcile never prunes a hub's build.
+@@ -74,7 +75,7 @@
+ // `manual: true` on `tier0`, the tier a call with no tier flag runs; `parallel` or `timeout_min` below 1, `slots` neither `all` nor at least 1, a counter other than `go-json` or `vstest`, a scoper other than `go`, `none` or `dotnet`;
+ // a tier `filter` whose command holds no `{filter}`, a non-empty `build` lacking `command` or `timeout_min`, a build `timeout_min` below 1, and a tier with `shared_build: true` while the hub declares no build step;
+ // a `covers` entry not lower than its tier's number, a tier key not spelled `tier<N>`, a `refuse_raw` entry that is not words of letters, digits, `.`, `_` and `-` separated by single spaces, and a `tier_parallel` entry that is no integer of at least 1;
+-// a gate key whose scope is not `card`, `diff` or `all`, and a `card` scope on any key but `card` and `batch`.
++// a gate key whose scope is not `card`, `diff` or `all`, a `card` scope on any key but `card` and `batch`, and a lint other than `comments` or `pattern`.
+ // A `gates` entry still in the retired list shape, such as `card: [0]`, is refused naming `lym fabric reconcile` as the way forward, since the reconcile runs MigrateConfig.
+ // A `tier_parallel` entry for a tier the config does not declare is dropped with a logged warning, so a tier the hub removes leaves no entry that fails the load.
+ // Cross-references are checked at use, never at load, so the template and a hub whose gate keys name an undeclared tier both load.
+diff --git a/internal/gateslot/template.yaml b/internal/gateslot/template.yaml
+index 2a161a15..b5d35801 100644
+--- a/internal/gateslot/template.yaml
++++ b/internal/gateslot/template.yaml
+@@ -12,9 +12,10 @@ tiers: {}
+ # Gate key to the tiers that site runs and the scope it runs them over, written {tiers: [<n>...], scope: card|diff|all}.
+ # The keys lym reads: card and batch (scope card, the card's own packages), webster, parent-align, finalize and adopt (scope all, the whole tree), and webster-fix, darn-write, code-burler-fix, drift-verify and pr-review (scope diff, the diff from the merge base).
+ # The scope card is only for the card and batch keys.
++# A key may also hold lints, the lint steps its call runs after the tiers against HEAD: comments (fixed-column-wrapped breaks in // comments) and pattern (PATTERN.md grown past its headroom line).
+ # No tier list may be empty, and a tier a key names must be declared above when the gate runs.
+ gates:
+-  card: {tiers: [0], scope: card}
++  card: {tiers: [0], scope: card, lints: [comments, pattern]}
+   batch: {tiers: [0], scope: card}
+   webster: {tiers: [0], scope: all}
+   parent-align: {tiers: [0], scope: all}
+diff --git a/internal/gateslot/tiers.go b/internal/gateslot/tiers.go
+index 0de7a45f..38f1ff33 100644
+--- a/internal/gateslot/tiers.go
++++ b/internal/gateslot/tiers.go
+@@ -68,12 +68,14 @@ type tierFile struct {
+ 	Carry       *bool             `yaml:"carry"`
+ }
+ 
+-// GateKey is one gate.yaml key: the tier numbers a site runs and the scope form its call runs them over.
++// GateKey is one gate.yaml key: the tier numbers a site runs, the scope form its call runs them over and the lint steps it runs after them.
+ type GateKey struct {
+ 	// Tiers are the tier numbers the key runs, in order.
+ 	Tiers []int `yaml:"tiers"`
+ 	// Scope is card, diff or all.
+ 	Scope string `yaml:"scope"`
++	// Lints are the lint steps the key's call runs after its tiers, in order, each LintComments or LintPattern; empty runs none.
++	Lints []string `yaml:"lints"`
+ }
+ 
+ // Scope values a gate key may hold.
+@@ -83,6 +85,14 @@ const (
+ 	scopeAll  = "all"
+ )
+ 
++// Lint step names a gate key's lints may hold.
++const (
++	// LintComments is the comment line-break lint: the fixed-column-wrapped breaks the working tree adds to `//` comment blocks against HEAD.
++	LintComments = "comments"
++	// LintPattern is the PATTERN headroom lint: growth of the working tree's PATTERN.md past its headroom line against HEAD's.
++	LintPattern = "pattern"
++)
++
+ // goReadGates are the gate keys the Go verify sites read, in the order TiersValue lists them.
+ var goReadGates = []string{"card", "batch", "webster", "parent-align", "finalize", "adopt", "webster-fix", "darn-write", "code-burler-fix", "drift-verify", "pr-review"}
+ 
+@@ -290,7 +300,7 @@ func (c Config) Gate(key string) (GateKey, error) {
+ 			return GateKey{}, useRefusal("gates.%s lists %s, which the hub does not declare", key, tierKey(number))
+ 		}
+ 	}
+-	return GateKey{Tiers: slices.Clone(gate.Tiers), Scope: gate.Scope}, nil
++	return GateKey{Tiers: slices.Clone(gate.Tiers), Scope: gate.Scope, Lints: slices.Clone(gate.Lints)}, nil
+ }
+ 
+ // TierList returns the tier numbers the named gate key runs, in order, with the refusals Gate gives.
+diff --git a/internal/loomcli/lintcomments.go b/internal/loomcli/lintcomments.go
+index c9b2ec06..2bf8ac0b 100644
+--- a/internal/loomcli/lintcomments.go
++++ b/internal/loomcli/lintcomments.go
+@@ -1,4 +1,4 @@
+-// lintcomments.go implements the `lint-comments` loom verb, the standalone form of the comment line-break lint every card gate runs.
++// lintcomments.go implements the `lint-comments` loom verb, the standalone form of the comment line-break lint that a gate key's `comments` lint step also runs inside `lym gate test`.
+ // It is a caller of the same commentlint.Lint the round gate calls.
+ 
+ package loomcli
+@@ -31,7 +31,7 @@ func (c *loomCLI) lintCommentsCmd() *cobra.Command {
+ 		Short:       "find fixed-column-wrapped line breaks in the comments the current change creates",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `lint-comments runs commentlint.Lint over the current worktree -- the check
+-every card gate runs after its tests -- and reports the result as one JSON
++a gate key's comments lint step also runs inside lym gate test -- and reports the result as one JSON
+ envelope. Without --base it lints the working tree against HEAD, untracked Go
+ files included; with --base it lints that commit against HEAD. A finding is
+ a line of a // comment block that a new break leaves ending in the middle of
+diff --git a/internal/loomcli/lintpattern.go b/internal/loomcli/lintpattern.go
+index 5fac9858..5a9db45e 100644
+--- a/internal/loomcli/lintpattern.go
++++ b/internal/loomcli/lintpattern.go
+@@ -1,4 +1,4 @@
+-// lintpattern.go implements the `lint-pattern` loom verb, the standalone form of the PATTERN headroom lint every card gate runs.
++// lintpattern.go implements the `lint-pattern` loom verb, the standalone form of the PATTERN headroom lint that a gate key's `pattern` lint step also runs inside `lym gate test`.
+ // It is a caller of the same patternlint.Lint the round gate calls.
+ 
+ package loomcli
+@@ -20,7 +20,7 @@ func (c *loomCLI) lintPatternCmd() *cobra.Command {
+ 		Short:       "find growth of the PATTERN overview past its headroom line in the current change",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `lint-pattern runs patternlint.Lint over the current worktree -- the check
+-every card gate runs after lint-comments -- and reports the result as one JSON
++a gate key's pattern lint step also runs inside lym gate test -- and reports the result as one JSON
+ envelope. Without --base it compares the working tree's PATTERN.md with
+ HEAD's; with --base it compares HEAD's with that commit's. A finding is an
+ overview that grew past the headroom line below its size cap; the envelope
+diff --git a/internal/loomshed/doc.go b/internal/loomshed/doc.go
+index 7826775b..b598050c 100644
+--- a/internal/loomshed/doc.go
++++ b/internal/loomshed/doc.go
+@@ -39,7 +39,7 @@
+ // Four PATTERN checks follow them, in this order, each reading `PATTERN.md` in the worktree and the overview PlanContext.PatternBase returns for the task branch's merge base, or for HEAD with no parent recorded.
+ // `pattern-removes-prescribed` is one finding per removed entry that a card not recorded done fences a line for.
+ // `pattern-headroom` is one finding when the overview projected from every card's fenced entry lines and the removed entries grows past the headroom line.
+-// `pattern-card-headroom` is one finding per card not recorded done whose own step grows past the line, the bound its card gate's `lint-pattern` step applies:
++// `pattern-card-headroom` is one finding per card not recorded done whose own step grows past the line, the bound its card gate's pattern lint applies:
+ // the projection starts at the worktree overview and takes those cards in plan order, each applying its fenced entry lines and dropping the removed entries it is the first to name in backticks, and a removed entry no such card names is dropped before the first.
+ // `pattern-line-unprescribed` runs only with a decision record path, and is one finding per added or changed entry that no card fences a line for and whose bullet equals the base's.
+ // A worktree with no `PATTERN.md`, or a nil PatternBase, runs none of the four and reads no base.
+diff --git a/internal/loomshed/patternplan.go b/internal/loomshed/patternplan.go
+index 9a7f55b2..618c0073 100644
+--- a/internal/loomshed/patternplan.go
++++ b/internal/loomshed/patternplan.go
+@@ -118,7 +118,7 @@ func patternPlanFindings(plan *planparser.Plan, cards []planparser.Card, worktre
+ 	return findings, nil
+ }
+ 
+-// cardHeadroomFindings returns one pattern-card-headroom finding per card of cards whose own step grows the projected overview past the headroom line, the bound each card's lint-pattern step applies against the commit before it.
++// cardHeadroomFindings returns one pattern-card-headroom finding per card of cards whose own step grows the projected overview past the headroom line, the bound each card's gate applies in its pattern lint against the commit before it.
+ // The projection starts at overview and takes cards in order.
+ // A card's step applies its fenced entry lines, then drops each entry of removed whose ID the card is the first of cards to name;
+ // a removed entry no card names is dropped before the first card, so the check never flags a step its card gate would pass.
+@@ -146,7 +146,7 @@ func cardHeadroomFindings(overview []byte, cards []planparser.Card, removed []st
+ 			findings = append(findings, planindex.Finding{
+ 				Check:    patternCardHeadroomCheck,
+ 				Card:     card.ID(),
+-				Detail:   fmt.Sprintf("card %d: %s, so its lint-pattern step fails against the overview the cards before it leave; way forward: %s", card.Number, finding.Message, patternHeadroomWayForward),
++				Detail:   fmt.Sprintf("card %d: %s, so its card gate's pattern lint fails against the overview the cards before it leave; way forward: %s", card.Number, finding.Message, patternHeadroomWayForward),
+ 				Severity: planindex.SeverityBlocking,
+ 			})
+ 		}
+diff --git a/internal/websterengine/beginbatch_test.go b/internal/websterengine/beginbatch_test.go
+index 26617e8e..9421a092 100644
+--- a/internal/websterengine/beginbatch_test.go
++++ b/internal/websterengine/beginbatch_test.go
+@@ -401,10 +401,10 @@ func TestBeginBatch_PromptFile(t *testing.T) {
+ 			want:   []string{"- rename Go symbols with `gopls rename`\n"},
+ 		},
+ 		{
+-			name:   "each card carries its gate call and the two lints, and the batch carries the batch gate call",
++			name:   "each card carries its gate call, and the batch carries the batch gate call",
+ 			number: 1,
+ 			want: []string{
+-				"  - `lym gate test --gate card --card 1-json-flag`\n  - `lym loom lint-comments`\n  - `lym loom lint-pattern`",
++				"  - `lym gate test --gate card --card 1-json-flag`\n",
+ 				"- `lym gate test --gate batch --card 1-json-flag`",
+ 			},
+ 			wantNot: []string{"{{.", "## verify:", "-run '^("},
+diff --git a/internal/websterengine/cardgate.go b/internal/websterengine/cardgate.go
+index a459d31d..57aa2326 100644
+--- a/internal/websterengine/cardgate.go
++++ b/internal/websterengine/cardgate.go
+@@ -12,14 +12,14 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/planparser"
+ )
+ 
+-// cardGateCommand returns the gate for card as its ordered steps: the hub's `card` gate call over the card's own scope, then the comment line-break lint and the PATTERN headroom lint.
++// cardGateCommand returns the gate for card as its ordered steps: the hub's `card` gate call over the card's own scope, which also runs the lint steps the `card` key lists.
+ // It refuses, with the config's way forward, a hub whose `card` list the config does not hold.
+ func cardGateCommand(card planparser.Card, gate gateslot.Config) ([]string, error) {
+ 	call, err := gate.AgentGateCall("card", card.ID())
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	return []string{call, "lym loom lint-comments", "lym loom lint-pattern"}, nil
++	return []string{call}, nil
+ }
+ 
+ // renderCardGates renders each card in declared order as its pointer bullet with one indented sub-bullet per gate step.
+diff --git a/internal/websterengine/cardgate_test.go b/internal/websterengine/cardgate_test.go
+index 6d133f2b..e1b1f43d 100644
+--- a/internal/websterengine/cardgate_test.go
++++ b/internal/websterengine/cardgate_test.go
+@@ -33,18 +33,13 @@ func gateCard(groups ...planparser.TargetGroup) planparser.Card {
+ func TestCardGateCommand(t *testing.T) {
+ 	t.Parallel()
+ 
+-	const (
+-		lintComments = "lym loom lint-comments"
+-		lintPattern  = "lym loom lint-pattern"
+-	)
+-
+-	t.Run("a card's gate call is followed by the two lints", func(t *testing.T) {
++	t.Run("a card's gate is its one gate call, which runs the key's lints itself", func(t *testing.T) {
+ 		t.Parallel()
+ 		got, err := cardGateCommand(gateCard(), gateTestConfig())
+ 		if err != nil {
+ 			t.Fatalf("cardGateCommand() error = %v; want nil", err)
+ 		}
+-		want := []string{"lym gate test --gate card --card 1-gate", lintComments, lintPattern}
++		want := []string{"lym gate test --gate card --card 1-gate"}
+ 		if !slices.Equal(got, want) {
+ 			t.Errorf("cardGateCommand() = %q; want %q", got, want)
+ 		}
+@@ -77,12 +72,8 @@ func TestRenderCardGates_OneBulletPerCardWithAStepSubBulletEach(t *testing.T) {
+ 	}
+ 	want := "- `_lym/plan/01-gate.md`:\n" +
+ 		"  - `lym gate test --gate card --card 1-gate`\n" +
+-		"  - `lym loom lint-comments`\n" +
+-		"  - `lym loom lint-pattern`\n" +
+ 		"- `_lym/plan/02-docs.md`:\n" +
+-		"  - `lym gate test --gate card --card 2-docs`\n" +
+-		"  - `lym loom lint-comments`\n" +
+-		"  - `lym loom lint-pattern`"
++		"  - `lym gate test --gate card --card 2-docs`"
+ 	if got != want {
+ 		t.Errorf("renderCardGates() =\n%s\nwant\n%s", got, want)
+ 	}
+diff --git a/internal/websterengine/doc.go b/internal/websterengine/doc.go
+index 96583011..9435063d 100644
+--- a/internal/websterengine/doc.go
++++ b/internal/websterengine/doc.go
+@@ -77,7 +77,7 @@
+ // After the last card the fork runs the batch gate once;
+ // Go never runs it, and Webster's plan-level `webster` gate catches a fork that skips it.
+ // The fork runs every card gate step, `lym gate card-verify` call and the batch gate in the foreground under the gate rule in its system prompt and never backgrounds a call, so its only turn end is its final report.
+-// A card's own gate, which begin-batch and recover-batch render into the fork's prompt, is the hub's `card` gate call, `lym gate test --gate card --card <card id>` from `gateslot.Config.AgentGateCall`, which carries no `--wait` since an agent runs it, then `lym loom lint-comments`, the comment line-break lint, then `lym loom lint-pattern`, the PATTERN headroom lint, one step per line.
++// A card's own gate, which begin-batch and recover-batch render into the fork's prompt, is the hub's `card` gate call, `lym gate test --gate card --card <card id>` from `gateslot.Config.AgentGateCall`, which carries no `--wait` since an agent runs it, as its one step; the call itself runs the lint steps the hub's `card` key lists, the template's being the comment line-break lint and the PATTERN headroom lint.
+ // The gate call computes the card's packages and runs the guard step itself, so Go renders no package list and scans for no guard test.
+ // The batch gate is the hub's `batch` gate call, `lym gate test --gate batch`, over every card of the batch, `--card <card id>` once per card.
+ // Both calls are rendered from `BeginDeps.Gate` and `RecoverDeps.Gate`, which `webstercli` loads from the hub's `gate.yaml`;
+diff --git a/internal/websterengine/recoverbatch_test.go b/internal/websterengine/recoverbatch_test.go
+index ada3dbbf..8153d2ae 100644
+--- a/internal/websterengine/recoverbatch_test.go
++++ b/internal/websterengine/recoverbatch_test.go
+@@ -1689,7 +1689,7 @@ func TestRecoverSpawnOrAttach(t *testing.T) {
+ 				requireSpawned(t, spawned, err)
+ 				for _, want := range []string{
+ 					"- rename Go symbols with `gopls rename`\n",
+-					"  - `lym gate test --gate card --card 1-json-flag`\n  - `lym loom lint-comments`",
++					"  - `lym gate test --gate card --card 1-json-flag`\n",
+ 					"- `lym gate test --gate batch --card 1-json-flag`",
+ 				} {
+ 					if !strings.Contains(fx.Engine.LastPrompt, want) {
+diff --git a/pattern/PATTERN-gate-slot.md b/pattern/PATTERN-gate-slot.md
+index 4798faeb..20591d5c 100644
+--- a/pattern/PATTERN-gate-slot.md
++++ b/pattern/PATTERN-gate-slot.md
+@@ -33,9 +33,9 @@ A mechanical gate's **closure** and its CLI self-check verb call the same packag
+ - Describe's gate and `validate-description`: `summaryparser.ValidateDescription`.
+ - The webster `verify` gate (`websterengine.NewVerifyGate`) and `lym webster verify`: `verifytree.Verify`.
+   Webster-Burler-Fix's `verify` gate (`loomshed.NewVerifyGate`) runs the comment lint and the derived round command through `verifytree.Verify`.
+-- Every card gate's comment lint and `lym loom lint-comments`: `commentlint.Lint`.
++- A gate key's `comments` lint step in `lym gate test` and `lym loom lint-comments`: `commentlint.Lint`.
+   The Webster-Burler-Fix round gate (`loomshed.NewVerifyGate`) joins this pair when it runs the lint.
+-- Every card gate's headroom lint and `lym loom lint-pattern`: `patternlint.Lint` over `pattern.Headroom`.
++- A gate key's `pattern` lint step in `lym gate test` and `lym loom lint-pattern`: `patternlint.Lint` over `pattern.Headroom`.
+   The Webster-Burler-Fix round gate (`loomshed.NewVerifyGate`) is the pair's third caller when it is told a merge base.
+ - Every burler round's `review` gate and `lym burler validate-review`: `burlerengine.CheckReviewFile`, over `ParseReview`.
+ 
