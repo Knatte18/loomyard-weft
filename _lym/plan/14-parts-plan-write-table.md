@@ -16,13 +16,13 @@
 - `contracts/stencils#TestStencils_TopLevelMarkers`
 
 **Uses:**
-- `plan:internal/partsparser#Parse`
-- `plan:internal/partsparser#File`
-- `plan:internal/partsparser#Dir`
-- `plan:internal/partsparser#PartDir`
-- `plan:internal/partsparser#PartOverview`
-- `plan:internal/partsparser#JoinRecord`
-- `plan:internal/loomengine#Config.PartsChairTimeout`
+- `internal/partsparser#Parse`
+- `internal/partsparser#File`
+- `internal/partsparser#Dir`
+- `internal/partsparser#PartDir`
+- `internal/partsparser#PartOverview`
+- `internal/partsparser#JoinRecord`
+- `internal/loomengine#Config.PartsChairTimeout`
 - `plan:internal/loomengine#TestPartsTable`
 - `internal/loomengine#PlanTable`
 

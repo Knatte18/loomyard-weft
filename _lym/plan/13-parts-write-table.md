@@ -18,8 +18,8 @@
 - `contracts/stencils#TestStencils_TopLevelMarkers`
 
 **Uses:**
-- `plan:internal/partsparser#File`
-- `plan:internal/partsparser#Dir`
+- `internal/partsparser#File`
+- `internal/partsparser#Dir`
 - `internal/loomengine#PlanTable`
 - `internal/loomengine#TestPlanTable`
 

@@ -1,13 +1,13 @@
 # Card 6 — planparser-join
 
 **Create:**
-- `plan:internal/planparser#JoinPart` -> `type JoinPart struct`
-- `plan:internal/planparser#JoinedCard` -> `type JoinedCard struct`
-- `plan:internal/planparser#JoinResult` -> `type JoinResult struct`
-- `plan:internal/planparser#ErrJoinRefused` -> `var ErrJoinRefused = errors.New("planparser: join refused")`
-- `plan:internal/planparser#JoinParts` -> `func JoinParts(planDir, title string, parts []JoinPart) (*JoinResult, error)`
-- `plan:internal/planparser#ExportMet` -> `func ExportMet(plan *Plan, export string) bool`
-- `plan:internal/planparser#TestJoinParts` -> `func TestJoinParts(t *testing.T)`
+- `internal/planparser#JoinPart`
+- `internal/planparser#JoinedCard`
+- `internal/planparser#JoinResult`
+- `internal/planparser#ErrJoinRefused`
+- `internal/planparser#JoinParts`
+- `internal/planparser#ExportMet`
+- `internal/planparser_test#TestJoinParts`
 
 **Edit:**
 - `internal/planparser/doc.go`

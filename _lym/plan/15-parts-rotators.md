@@ -9,9 +9,9 @@
 **Uses:**
 - `internal/loomshed#NewPlanDirRotator`
 - `internal/loomshed#TestNewPlanDirRotator`
-- `plan:internal/partsparser#Dir`
-- `plan:internal/partsparser#File`
-- `plan:internal/partsparser#ArchivePrefix`
+- `internal/partsparser#Dir`
+- `internal/partsparser#File`
+- `internal/partsparser#ArchivePrefix`
 - `internal/loomshed/doc.go`
 
 **Intent:** Add the fresh-spawn preparations of the two new rows (D4, D6), so an earlier attempt's parts file, part cards and join record never read as a new session's output.

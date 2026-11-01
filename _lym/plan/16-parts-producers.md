@@ -35,7 +35,7 @@
 - `plan:internal/loomshed#NewPartAccept`
 - `plan:internal/loomshed#NewPartsDirRotator`
 - `plan:internal/loomshed#NewPartsPlanRotator`
-- `plan:internal/partsparser#DirRel`
+- `internal/partsparser#DirRel`
 - `internal/loomshed#NewPlanWrite`
 - `internal/shedrecipe#planContextOf`
 - `internal/shedrecipe#resolveGateSpec`

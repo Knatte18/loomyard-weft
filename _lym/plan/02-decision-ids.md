@@ -1,8 +1,8 @@
 # Card 2 — decision-ids
 
 **Create:**
-- `plan:internal/discussionparser#DecisionIDs` -> `func DecisionIDs(record []byte) []string`
-- `plan:internal/discussionparser#TestDecisionIDs` -> `func TestDecisionIDs(t *testing.T)`
+- `internal/discussionparser#DecisionIDs`
+- `internal/discussionparser#TestDecisionIDs`
 
 **Extends:**
 - `internal/discussionparser/doc.go`

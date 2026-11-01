@@ -10,8 +10,8 @@
 - `internal/loomengine#TestLoadTapestryConfig`
 
 **Create:**
-- `plan:internal/loomengine#Config.PlanTimeout` -> `func (c Config) PlanTimeout(runTimeout time.Duration) time.Duration`
-- `plan:internal/loomengine#Config.PartsChairTimeout` -> `func (c Config) PartsChairTimeout(runTimeout time.Duration) (time.Duration, error)`
+- `internal/loomengine#Config.PlanTimeout`
+- `internal/loomengine#Config.PartsChairTimeout`
 
 **Uses:**
 - `internal/loomengine#TestConfigTemplate_ContainsEveryConfigYAMLTag`

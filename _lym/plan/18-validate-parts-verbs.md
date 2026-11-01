@@ -17,7 +17,7 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/partsparser#Validate`
+- `internal/partsparser#Validate`
 - `plan:internal/loomshed#ValidatePart`
 - `plan:internal/loomshed#ErrPartUnknown`
 - `internal/loomcli#planVerbs`

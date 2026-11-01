@@ -2,29 +2,29 @@
 
 **Create:**
 - `internal/partsparser/doc.go`
-- `plan:internal/partsparser#DirName` -> `const DirName = "parts"`
-- `plan:internal/partsparser#Dir` -> `func Dir(anchorPath string) string`
-- `plan:internal/partsparser#DirRel` -> `func DirRel() string`
-- `plan:internal/partsparser#File` -> `func File(anchorPath string) string`
-- `plan:internal/partsparser#PartDir` -> `func PartDir(anchorPath, part string) string`
-- `plan:internal/partsparser#PartOverview` -> `func PartOverview(anchorPath, part string) string`
-- `plan:internal/partsparser#JoinRecord` -> `func JoinRecord(anchorPath string) string`
-- `plan:internal/partsparser#ArchivePrefix` -> `const ArchivePrefix = "archive-"`
-- `plan:internal/partsparser#Parts` -> `type Parts struct`
-- `plan:internal/partsparser#Part` -> `type Part struct`
-- `plan:internal/partsparser#SharedSpot` -> `type SharedSpot struct`
-- `plan:internal/partsparser#Parts.Part` -> `func (p *Parts) Part(name string) (Part, bool)`
-- `plan:internal/partsparser#Parts.External` -> `func (p *Parts) External(name string) []string`
-- `plan:internal/partsparser#Parts.SpotPaths` -> `func (p *Parts) SpotPaths() []string`
-- `plan:internal/partsparser#Parse` -> `func Parse(data []byte) (*Parts, error)`
-- `plan:internal/partsparser#Finding` -> `type Finding struct`
-- `plan:internal/partsparser#Check` -> `func Check(parts *Parts, decisionIDs []string, max int) []Finding`
-- `plan:internal/partsparser#Validate` -> `func Validate(anchorPath, recordPath string, max int) ([]Finding, error)`
-- `plan:internal/partsparser#TestParse` -> `func TestParse(t *testing.T)`
-- `plan:internal/partsparser#TestCheck` -> `func TestCheck(t *testing.T)`
-- `plan:internal/partsparser#TestValidate` -> `func TestValidate(t *testing.T)`
+- `internal/partsparser#DirName`
+- `internal/partsparser#Dir`
+- `internal/partsparser#DirRel`
+- `internal/partsparser#File`
+- `internal/partsparser#PartDir`
+- `internal/partsparser#PartOverview`
+- `internal/partsparser#JoinRecord`
+- `internal/partsparser#ArchivePrefix`
+- `internal/partsparser#Parts`
+- `internal/partsparser#Part`
+- `internal/partsparser#SharedSpot`
+- `internal/partsparser#Parts.Part`
+- `internal/partsparser#Parts.External`
+- `internal/partsparser#Parts.SpotPaths`
+- `internal/partsparser#Parse`
+- `internal/partsparser#Finding`
+- `internal/partsparser#Check`
+- `internal/partsparser#Validate`
+- `internal/partsparser#TestParse`
+- `internal/partsparser#TestCheck`
+- `internal/partsparser#TestValidate`
 - `contracts/specs/loom-parts-spec.md`
-- `plan:contracts/specs#LoomPartsSpec` -> `var LoomPartsSpec []byte`
+- `contracts/specs#LoomPartsSpec`
 
 **Edit:**
 - `PATTERN.md`
@@ -35,7 +35,7 @@
 - `contracts/specs#entries`
 
 **Uses:**
-- `plan:internal/discussionparser#DecisionIDs`
+- `internal/discussionparser#DecisionIDs`
 - `internal/seatengine#ValidateSeatName`
 - `internal/lymdirs#LymDirName`
 

@@ -7,13 +7,13 @@
 - `internal/planglyph/doc.go`
 
 **Create:**
-- `plan:internal/planglyph#TestValidateFormat_PartScope` -> `func TestValidateFormat_PartScope(t *testing.T)`
+- `internal/planglyph#TestValidateFormat_PartScope`
 
 **Extends:**
 - `contracts/specs/loom-plan-spec.md`
 
 **Uses:**
-- `plan:internal/planparser#PartScope`
+- `internal/planparser#PartScope`
 - `internal/planglyph#TestResolvePass_ForthcomingCreateTargetExcludedFromStatus`
 
 **Intent:** Make the resolve-backed half of the plan checks honour a part scope (D7), so a part check over `index.ValidateFormat` reports neither a dependency's export as missing nor `caller-uncovered`.

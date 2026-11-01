@@ -1,9 +1,9 @@
 # Card 4 — planparser-part-scope
 
 **Create:**
-- `plan:internal/planparser#PartScope` -> `type PartScope struct`
-- `plan:internal/planparser#checkPartSpotTarget` -> `func checkPartSpotTarget(plan *Plan) []ValidationError`
-- `plan:internal/planparser#TestValidate_PartScope` -> `func TestValidate_PartScope(t *testing.T)`
+- `internal/planparser#PartScope`
+- `internal/planparser#checkPartSpotTarget`
+- `internal/planparser_test#TestValidate_PartScope`
 
 **Edit:**
 - `internal/planparser#Plan`

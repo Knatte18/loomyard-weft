@@ -21,17 +21,17 @@
 - `internal/loomshed/doc.go`
 
 **Uses:**
-- `plan:internal/partsparser#Validate`
-- `plan:internal/partsparser#Parse`
-- `plan:internal/partsparser#File`
-- `plan:internal/partsparser#PartDir`
-- `plan:internal/partsparser#PartOverview`
-- `plan:internal/partsparser#Parts.External`
-- `plan:internal/partsparser#Parts.SpotPaths`
-- `plan:internal/planparser#PartScope`
-- `plan:internal/planparser#JoinParts`
-- `plan:internal/planparser#JoinPart`
-- `plan:internal/planparser#ExportMet`
+- `internal/partsparser#Validate`
+- `internal/partsparser#Parse`
+- `internal/partsparser#File`
+- `internal/partsparser#PartDir`
+- `internal/partsparser#PartOverview`
+- `internal/partsparser#Parts.External`
+- `internal/partsparser#Parts.SpotPaths`
+- `internal/planparser#PartScope`
+- `internal/planparser#JoinParts`
+- `internal/planparser#JoinPart`
+- `internal/planparser#ExportMet`
 - `internal/loomshed#planContextFindings`
 - `internal/loomshed#TestNewPlanGate`
 - `internal/planparser#IsHandleRef`
