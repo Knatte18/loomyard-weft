@@ -1,9 +1,9 @@
 # P2 Fewer agent turns, Webster forks first
 
-Rendered 2026-11-01 17:14 UTC; every age below is as of then.
+Rendered 2026-11-01 17:17 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`agent-turns`](design-agent-turns.md) · Age 2h · Owner `neve`
+[`agent-turns`](design-agent-turns.md) · Age 3h · Owner `neve`
 
 Cut the turns agents spend on shell edits, piecemeal gate loops and sliced reads, one measured fix at a time
 
