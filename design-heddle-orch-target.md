@@ -1,6 +1,6 @@
 # Heddle gains an orch-prompt target, and lym orch rules stores in heddle
 
-`heddle-orch-target` · Task · enhancement, heddle, orch · draft
+`heddle-orch-target` · Task · enhancement, heddle, orch · running · Worktree-Create
 
 ## Seen (orch, 2026-11-01)
 

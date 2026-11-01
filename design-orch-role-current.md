@@ -1,6 +1,8 @@
 # One fixed orch role for every repository, brought up to date
 
-`orch-role-current` · Task · enhancement, orch, stencil · draft
+`orch-role-current` · Task · enhancement, orch, stencil
+
+Depends on: [`heddle-orch-target`](design-heddle-orch-target.md)
 
 ## Seen (orch, 2026-11-01)
 
