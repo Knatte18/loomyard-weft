@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -34,6 +34,51 @@
       "output": "",
       "at": "2026-11-01T06:57:33Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/seed-starts-at-start/_lym/landing/summary.md",
+      "at": "2026-11-01T07:10:59Z",
+      "gate_attempts": 2,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-01T07:03:50.617736227Z",
+          "end": "2026-11-01T07:03:50.670572077Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-01T07:03:51.074157118Z",
+          "end": "2026-11-01T07:04:34.210791397Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-01T07:04:34.238527522Z",
+          "end": "2026-11-01T07:07:38.104531898Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-01T07:07:38.532616664Z",
+          "end": "2026-11-01T07:08:53.70542024Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-01T07:08:53.730380764Z",
+          "end": "2026-11-01T07:10:46.569314083Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-01T07:10:46.617181901Z",
+          "end": "2026-11-01T07:10:46.617221265Z"
+        }
+      ]
     }
   ],
   "product": {
