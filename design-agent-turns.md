@@ -6,7 +6,7 @@
 
 Agents, Webster's implementer forks first, finish their work in fewer turns.
 A session's cost grows with its turns times its context, and a Webster fork's context runs at 75k to 475k tokens a turn, so every turn cut is worth much.
-The members are taken one at a time, each measured against the numbers below before the next.
+The members run several at a time; each is checked in the transcripts of the first runs it reaches, and the effect on turns and cost is measured once for the project as a whole (operator, 2026-11-01).
 
 ## Seen (orch, 2026-11-01)
 
@@ -24,13 +24,10 @@ Measures already rejected: shorter forks (the 300k batch trial showed fewer, lar
 
 ## Waves (operator and orch, 2026-11-01)
 
-Members run as small darns, a few at a time: members that move different measures run together, and members that move the same measure run one after another, so each effect can be told apart.
-The baseline is the numbers above; the tapestry runs in flight on 2026-11-01 add to it.
+Members run as small darns, several at a time; only a member that rests on another waits for it to land.
+Each member is checked as soon as it lands, by reading the transcripts of the next darn and tapestry runs it reaches: whether the agents do what the change asks (edit with the Edit tool, read one gate report, read a file whole, settle edits before the first gate, wake once for their forks).
+A member the agents do not follow goes back as a note; one they follow stands.
+The effect on turns and cost is measured once for the project, against the baseline above, by the research note `agent-turns-effect`.
 
-1. `edit-with-edit-tool` (measured by the share of shell edits and edits per edit turn, on darn writers as well as Webster forks) and `gate-failure-report` (turns in gate loops and spent reading gate output); `review-turn-audit` beside them, since it changes no agent.
-2. `card-gate-cold-fixer`, which rests on `gate-failure-report`, and `retired-name-sweep` (turns before the first edit and in gate loops).
-3. `read-whole-not-slices`, then `batching-in-claude-local` and `hook-refused-turns` together as one heddle trial, then `plan-edits-before-gate` as a heddle trial of its own; all of them move reading and instructions, so each is measured alone.
-4. The review roles, from `docs/research/review-turn-audit-2026-11-01`: `fork-results-one-wake`, then `plan-reviewer-batching`, measured with that study's scripts.
-
-Webster's effects show only in tapestry runs; `edit-with-edit-tool` and `hook-refused-turns` also show in darn writers, which run more often.
-The darn-writer measure uses the scripts of `docs/research/turn-audit-2026-10-28`, the Webster measure `tools/forkaudit`.
+1. `edit-with-edit-tool` and `gate-failure-report`; `review-turn-audit` beside them (landed).
+2. Everything else at once: `retired-name-sweep`, `read-whole-not-slices`, `hook-refused-turns`, `batching-in-claude-local`, `plan-edits-before-gate`, `fork-results-one-wake`, `plan-reviewer-batching`; `card-gate-cold-fixer` once `gate-failure-report` has landed.
