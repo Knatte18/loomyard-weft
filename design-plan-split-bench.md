@@ -1,6 +1,6 @@
 # Study: Parts-Write and Parts-Plan-Write against Plan-Write
 
-`plan-split-bench` · Task · research, loom · running · Darn-Write
+`plan-split-bench` · Task · research, loom · running · Drift-Verify
 
 ## Seen (orch, 2026-11-01)
 
