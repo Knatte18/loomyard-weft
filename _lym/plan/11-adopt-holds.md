@@ -45,7 +45,7 @@
 
 **Uses:**
 - `internal/pauserecord#HoldCaller`
-- `plan:internal/adoptcli#subjectDir`
+- `internal/adoptcli#subjectDir`
 - `internal/adoptcli#movedRuns`
 - `internal/adoptcli#projectOf`
 - `internal/adoptcli_test#holdOwnerPause`

@@ -24,7 +24,7 @@
 **Uses:**
 - `plan:internal/adoptcli#readTries`
 - `plan:internal/adoptcli#writeTries`
-- `plan:internal/adoptcli#subjectDir`
+- `internal/adoptcli#subjectDir`
 - `plan:internal/fronttask#File`
 - `plan:internal/fronttask#Remove`
 - `plan:internal/fronttask#FrontOf`

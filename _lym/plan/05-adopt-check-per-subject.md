@@ -1,10 +1,10 @@
 # Card 5 — One adopt check per subject
 
 **Create:**
-- `plan:internal/adoptcli#subjectDir` -> `func subjectDir(hubPath, subject string) string`
-- `plan:internal/adoptcli#primeMark` -> `func primeMark(adoptDir, subject string, own checkMark) checkMark`
-- `plan:internal/adoptcli#ReadCheckViews` -> `func ReadCheckViews(hubPath string) ([]CheckView, error)`
-- `plan:internal/adoptcli#TestPrimeMark` -> `func TestPrimeMark(t *testing.T)`
+- `internal/adoptcli#subjectDir`
+- `internal/adoptcli#primeMark`
+- `internal/adoptcli#ReadCheckViews`
+- `internal/adoptcli#TestPrimeMark`
 
 **Delete:**
 - `internal/adoptcli#ReadCheckView`
