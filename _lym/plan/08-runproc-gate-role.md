@@ -3,7 +3,7 @@
 **Create:**
 - `plan:internal/runproc#RoleGate` -> `const RoleGate = "gate"`
 
-**Extends:**
+**Edit:**
 - `//internal/runproc/doc.go`
 
 **Intent:** D3's gate role for the owner record: a detached gate runner registers under its task's slug with `RoleGate`, so pair teardown's `runproc.EndSparing`, which spares only `RoleDobby`, and a session end that ends the slug's processes end it (PATTERN-run-process-owner).

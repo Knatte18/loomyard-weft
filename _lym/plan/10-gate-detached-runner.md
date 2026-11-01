@@ -16,8 +16,6 @@
 - `plan:internal/gatecli#startReading` -> `func startReading(goos string, pid int, startTime func(int) (string, bool), creationTime func(int) (time.Time, bool)) (string, bool)`
 - `plan:internal/gatecli#runnerCmd` -> `func runnerCmd(gateTree func() *cobra.Command) *cobra.Command`
 - `plan:internal/gatecli#runDetached` -> `func runDetached(ctx context.Context, out io.Writer, runDir string, gateTree func() *cobra.Command) int`
-- `plan:internal/gatecli#TestDetachStore` -> `func TestDetachStore(t *testing.T)`
-- `plan:internal/gatecli#TestStartReading` -> `func TestStartReading(t *testing.T)`
 - `plan:internal/gatecli#TestGateRunner_Refusals` -> `func TestGateRunner_Refusals(t *testing.T)`
 - `plan:internal/gatecli#TestGateRunner` -> `func TestGateRunner(t *testing.T)`
 - `plan:internal/gatecli#helperDelayEnv` -> `const helperDelayEnv = "GATECLI_TEST_DELAY"`
@@ -45,12 +43,13 @@
 - `internal/proc#StartTime`
 - `internal/proc#CreationTime`
 - `internal/clihelp#RunRootCtx`
+- `internal/state#UpdateJSON`
 
 **Intent:** D1's runner half and D3's lease, as a hidden internal-audience verb under `lym gate` (PATTERN-cli-cobra), in the new file `internal/gatecli/detachrun.go`. Card 11 adds the front that starts and joins it.
 
 **Run directory.** A run lives in a subdirectory of a key directory under the worktree's never-tracked gate directory, `gateslot.WaitDir(anchor)/detach/<key>/<run id>` (PATTERN-durable-vs-ephemeral-state: the `.lym` part is `gateslot`'s, and `detachDirName` is gatecli's own subpath, as `greenFileName` is).
 `detachRun` holds the subdirectory and names its files: `request.json` (a `detachRequest`: `Verb`, `test` here and `card-verify` from card 13, `Args`, the call's words after the verb, and `Cwd`), `lease.json` (the deadline), `process.json` (pid and start reading), `tree.json` (HEAD's tree and the sorted dirty paths the front recorded), `phase.json` (a `runPhase`: `State`, one of `starting`, `slots` or `running`, the tier's name for a tier run, and `Line` for a card's line), `stdout`, `stderr`, `runner.log` (the runner process's own output), `exit.json` (a `detachExit`: `Code` and `Abandoned`) and `delivered`.
-`writeLease` writes the deadline only when it is later than the lease already there, under the run's lock file, so the lease is the latest deadline any front wrote; `expireLease` writes `now` less a second, the one write that moves it earlier; `leaseHolds` is true while a lease exists and lies after `now`.
+`writeLease` and `expireLease` rewrite `lease.json` through `state.UpdateJSON(<lease path>, <lease path>.lock, mutate)` (PATTERN-tolerant-records, since fronts of different `lym` binaries rewrite one lease): `writeLease`'s mutate keeps the later of the stored and the new deadline, so the lease is the latest deadline any front wrote; `expireLease`'s writes `now` less a second, the one write that moves it earlier; `leaseHolds` is true while a lease exists and lies after `now`.
 `claim` creates `process.json` exclusively (`O_CREATE|O_EXCL`), holding the pid and the start reading, and fails when it exists, so of two creates the second fails.
 `writePhase` writes atomically and logs a failure; `writeExit` writes atomically through `fsx.AtomicWriteBytes`, the runner's last write.
 `startReading(goos, pid, ...)` reads a start that tells a reused pid apart: `proc.StartTime` off Windows, and `proc.CreationTime` in Unix nanoseconds, as a decimal string, on Windows, where `StartTime` is unreadable.
@@ -72,8 +71,6 @@ The tiers' trees are killed and the slots released by the cancelled call as a si
 The doc gains a `# Detached run` section describing the run directory, the runner verb, its refusal and bound, the lease read and the exit file.
 
 Tests:
-- `TestDetachStore`, tier0, over a temp run directory: `writeLease` keeps the later of two deadlines whichever comes first; `expireLease` moves it earlier and `leaseHolds` turns false; a second `claim` fails while the first stands; `writeExit` reads back with its mark.
-- `TestStartReading`, tier0, with injected readers: `linux` answers the `StartTime` reading and never asks `CreationTime`; `windows` answers the creation time as Unix nanoseconds and is false when `CreationTime` is; two different creation times give different readings, the reused-pid case.
 - `TestGateRunner_Refusals`, tier0, runs `RunCLIIn(dir, out, []string{"run-detached", runDir})` over a run directory with no lease, one with a passed lease, one with a live lease and no `request.json`, one with a live lease and a request of verb `bogus`, and one with a live lease, a valid request and a `process.json` a front already created (D1's late claim, refused by the claim's exclusive create): each exits 1 with an envelope naming `lym gate test` and `lym gate card-verify`, the claimed row saying the run is already claimed, and writes no exit file.
 - `TestGateRunner`, tier1, in `test_integration_test.go`'s harness with its own hubforge hub: it writes a request and a lease itself and starts the gate helper with `run-detached <run-dir>`.
   `runStandIn` gains `helperDelayEnv`: a tier invocation sleeps that long before it exits with its code, for a tier that runs a while and still ends.

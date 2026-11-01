@@ -11,8 +11,6 @@
 - `internal/gatecli#TestGateReport`
 - `internal/gatecli#TestGateTest_Scenario`
 - `//internal/gatecli/doc.go`
-
-**Extends:**
 - `//internal/gateslot/doc.go`
 
 **Intent:** D5's record changes: every record of one call carries the call's id, and a record written after the call's context was cancelled is marked abandoned and counted apart.
