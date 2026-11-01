@@ -26,6 +26,12 @@ Decision: The writer may create up to 4 scratch worktrees with lym fabric add (n
 
 Rationale: The entry's study replays two landed runs at the start of Plan on scratch branches; worktrees are the only way to run them, and the cap bounds them.
 
+### Added after Discussion (parent, 2026-11-01): The orch creates the scratch worktrees
+
+Decision: The orch created four local scratch worktrees from the prime with lym fabric add --local: psb-wv-plan, psb-wv-split, psb-rv-plan and psb-rv-split. The writer resets each to its input's base, checks out the records, sets plan_split in each worktree's own tapestry config and runs the Plan producers there. When the numbers are taken, the writer reports and the orch removes the four with lym fabric remove; the writer does not remove them.
+
+Rationale: lym fabric add is refused from a task session, and its refusal names the orch as the one to run it.
+
 ## Constraints
 
 ## Auto-mode assumptions
