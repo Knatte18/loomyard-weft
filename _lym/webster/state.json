@@ -369,7 +369,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "46e7be2b6eaf853643f0d14aab73b07f",
   "masterSessionId": "6c8372cc-0276-4e08-a1ef-a58cb9a44e5a",
   "masterEngine": "claude",
@@ -416,6 +416,30 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-gate-run-keeps-cache-warm/6c8372cc-0276-4e08-a1ef-a58cb9a44e5a/subagents/agent-ac5eb4813962cb787.jsonl"
       ]
+    },
+    "6": {
+      "slug": "verifyrun-tied-line",
+      "cards": [
+        "06-verifyrun-tied-line",
+        "07-cardverify-context-and-tie",
+        "08-runproc-gate-role",
+        "09-run-records-call-id",
+        "10-gate-detached-runner"
+      ],
+      "cardHashes": {
+        "06-verifyrun-tied-line": "2de3b4daf4aac9b2a7a82b5ae50c5e90c1a361dceecc0d9a78eda0cd142d5d69",
+        "07-cardverify-context-and-tie": "755ab2c128cff6f6d577fd42a8ace85f067bbdc9f3eecac5b382100fabc56367",
+        "08-runproc-gate-role": "a1944107f81257954875abfca41bffc80c8166a088a0c617fe9608743413f5d6",
+        "09-run-records-call-id": "f42ae71ee7b9ac42a532260a95d7622702d711433dd41053e4f8151cd6cf820c",
+        "10-gate-detached-runner": "d35d792e4fdb1f64205913ee25ce7de854c3e2b5ccec1f5345381c349cc78469"
+      },
+      "startSha": "56481af1885dfa2867478c8cd9482fea3e4c739e",
+      "kind": "fork",
+      "spawnedAt": "2026-11-01T13:53:47Z",
+      "sessionId": "6c8372cc-0276-4e08-a1ef-a58cb9a44e5a",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
