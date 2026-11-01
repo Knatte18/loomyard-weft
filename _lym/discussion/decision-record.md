@@ -208,6 +208,14 @@ None.
   - windows-join-start-time (class design, severity BLOCKING, open in rounds 2)
 <!-- /lym:carry-over Discussion-Review -->
 
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/plan/round-1-review.md; fixer report: _lym/reviews/plan/round-1-fixer-report.md.
+  - card10-tests-unexported-helpers (class design, severity MEDIUM, open in rounds 1)
+  - card11-breaks-help-subtest (class consistency, severity MEDIUM, open in rounds 1)
+  - lease-and-pointer-outside-state (class consistency, severity BLOCKING, open in rounds 1)
+<!-- /lym:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - D1: an agent-strand `lym gate test` call whose tiers outlast its cap exits 75 with `done: false` and the running tier while the tiers go on; the same command again after the run ended prints the run's stdout, stderr and exit code; a third call starts a fresh run.
