@@ -1,6 +1,6 @@
 # One test binary per package, the tier chosen at run time
 
-`gate-one-binary-per-package` · Task · enhancement, gate, testkit, pattern · running · Finalize
+`gate-one-binary-per-package` · Task · enhancement, gate, testkit, pattern · done
 
 ## Seen (research, landed 2026-11-01)
 
