@@ -497,28 +497,6 @@
       "revised": "2026-11-01T12:52:43Z"
     },
     {
-      "id": 955,
-      "handle": "T9",
-      "slug": "writer-leaves-stray-files",
-      "title": "A writer session can end with untracked files in the worktree, which halt Finalize",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "shuttle",
-        "darn",
-        "loom"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A producing session's end gate refuses to end while the worktree holds untracked files outside its outputs",
-      "body": "## Seen (orch, 2026-11-01)\n\nThe darn writer of `batch-budget-300k-trial` left two untracked files at its worktree root, `200k` and `250k`, each one stray line (\"cautious base est\", \"wide est\"), most likely from a shell redirect in a command it ran.\nIts session ended and the run went on through review to Finalize, which refused the merge-in over the uncommitted files; the tackler handed the stop back and the orch removed them by hand.\nAgain the same day, the Parent-Align fixer of `reed-status-buttons` wrote its report with verdict `fixed` but left `.scratch-task.txt`, a list of the task's changed paths, untracked at the worktree root; the run halted at Parent-Align with \"the fixer session ended without a usable turn (dirty)\", and the orch removed the file by hand and resumed.\nSuch files should never exist at the end of a writing session.\n\n## Idea\n\nA producing session (darn writer, Webster fork, fixers) cannot end while its worktree holds untracked or uncommitted files it did not commit: its end gate, beside the verify and description gates shuttle already runs, names the files and tells the agent to commit what belongs to the change and delete the rest, so the stop is fixed by the agent that made it, not at Finalize.\n",
-      "status": "done",
-      "created": "2026-11-01T12:52:37Z",
-      "revised": "2026-11-01T18:48:34Z"
-    },
-    {
       "id": 976,
       "handle": "E24",
       "slug": "button-ask-name",
