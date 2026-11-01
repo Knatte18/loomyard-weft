@@ -638,6 +638,7 @@
       "isolated": false,
       "brief": "internal/batcher/template.yaml gains the wide profile and makes it active; cautious stays as the fallback",
       "body": "## Decision (operator, 2026-11-01)\n\nLoomYard's own batcher template, `internal/batcher/template.yaml`, makes `wide` its active profile, for every hub and not only this one.\n- `wide` is `cautious` with `budget: 300000`, the same profile this hub's `batcher.yaml` has run since 2026-10-22.\n- `active:` names `wide`; `cautious` and `identity` stay in the template as profiles a hub may choose.\n- The comments that name `cautious` as the template default, in the template and anywhere else that says so, follow.\n- No estimator weight changes.\n\n`docs/research/batch-budget-trial-2026-11-01/report.md` is the evidence: over 23 `wide` runs it costs no more per card and shows no quality loss.\n",
+      "status": "running · Worktree-Create",
       "created": "2026-11-01T12:16:35Z",
       "revised": "2026-11-01T12:16:35Z"
     }
