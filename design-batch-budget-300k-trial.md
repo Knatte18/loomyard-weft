@@ -1,6 +1,6 @@
 # Trial: batcher profile wide (budget 300k)
 
-`batch-budget-300k-trial` · Task · research, webster · running · Finalize
+`batch-budget-300k-trial` · Task · research, webster · done
 
 ## Seen
 
