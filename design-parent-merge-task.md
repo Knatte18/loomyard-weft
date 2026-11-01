@@ -1,4 +1,4 @@
-# Merge in from parent as a task of its own in a beam, in place of pawl's perch round
+# Merge in from parent as a task of its own in a beam, before pawl lands it
 
 `parent-merge-task` · Note · enhancement, pawl, workspaces, drift, landing
 
