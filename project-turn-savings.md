@@ -26,7 +26,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **A darn writer hands per-package batches to Sonnet helpers**<br>• lym denies the Agent tool in darn on a visibility reasoning that fits claude -p, not subagents | [`darn-sonnet-helpers`](design-darn-sonnet-helpers.md) | tapestry |  | 51m<br>13m | darn, claude, shuttle |
+| T3 | `draft` **Agents may use subagents and forks; only headless claude -p stays refused**<br>• Remove the Agent tool deny, refuse headless claude -p launches instead, and tell writers when to hand work to Sonnet subagents | [`darn-sonnet-helpers`](design-darn-sonnet-helpers.md) | darn |  | 51m<br>0m | claude, shuttle, stencil |
 
 ## Notes (5)
 
