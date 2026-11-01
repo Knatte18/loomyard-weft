@@ -1,12 +1,13 @@
 {
   "current_producer": "Worktree-Teardown",
-  "state": "blocked",
-  "error": "session shutdown failed: board config /home/knatte/Code/loomyard-LYMHUB/_bolt/_lym/config/board.yaml not initialized; run \"lym fabric reconcile\"; a session lym refuses the verb from reports status: FAILED and the orch runs it",
+  "state": "running",
+  "error": "",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Worktree-Teardown",
     "last": "Worktree-Teardown → stuck",
-    "wait": "session shutdown failed: board config /home/knatte/Code/loomyard-LYMHUB/_bolt/_lym/config/board.yaml not initialized; run \"lym fabric reconcile\"; a session lym refuses the verb from reports status: FAILED and the orch runs it"
+    "wait": ""
   },
   "history": [
     {
