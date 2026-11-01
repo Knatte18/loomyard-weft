@@ -1,6 +1,8 @@
 # Parts-Write and Parts-Plan-Write: the plan written in two steps, beside Plan-Write
 
-`plan-split-producers` · Task · feature, loom, stencil, shed, profiles · draft
+`plan-split-producers` · Task · feature, loom, stencil, shed, profiles
+
+Depends on: [`boltrename-remove`](design-boltrename-remove.md)
 
 ## Seen
 
