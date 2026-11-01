@@ -25,6 +25,11 @@
 - `internal/adoptcli#slugOutcome`
 - `internal/adoptcli#resumeSlug`
 - `internal/adoptcli#liftOwnerPauses`
+- `internal/adoptcli#heldBeamWayForward`
+- `internal/adoptcli#ownerWriteError`
+- `internal/adoptcli#runBeamSteps`
+- `internal/beamcli#createCmd`
+- `internal/battencli#OwnedElsewhereError.Error`
 - `internal/adoptcli#adoptFields`
 - `internal/adoptcli#Command`
 - `internal/adoptcli#hubDepsAs`
@@ -35,6 +40,7 @@
 - `internal/adoptcli#TestAdoptFields`
 - `internal/adoptcli_test#TestAdoptIntegration_SecondCloneTakesOver`
 - `internal/adoptcli/doc.go`
+- `internal/beamcli/doc.go`
 - `docs/overview.md`
 
 **Uses:**
@@ -64,9 +70,15 @@ After the owner write: `resumeSlug` no longer resumes; a held slug's outcome rea
 `resumeHaltedChildren` and `adoptedUnder` go, with the `ResumeRun`, `ChildStatus` and `ResumeChild` seams of `adoptDeps`, which card 12's check takes over; `resumeChild` and `readStatus` in `deps.go` stay for it.
 New seams `Tasks` (the board's entries, `boardengine.ReadTasks`), `UpdatePause`, `Holds` (read, append and remove over a subject's holds file) and `ResetTries` are filled by `hubDepsAs` over the hub.
 
+Texts that say adopt resumes: `heldBeamWayForward`'s parent takeover and `runBeamSteps`' doc comment that mirrors it, `ownerWriteError`'s two errors, inside `adopt` the lost-owner error and the read-back error, `OwnedElsewhereError.Error`'s standard refusal, and `adoptcli/doc.go`'s nested-beam bound and landing-hold paragraph each name the subject's adopt check, which resumes the runs at its green end, in place of adopt resuming them or nothing being resumed; `beamcli/doc.go`'s line and `createCmd`'s long help line that only the create verb, a hand pass or `lym adopt` starts or resumes a beam's run name the adopt check's green end in place of `lym adopt`.
+`adopt.go`'s file header names the hold before the owner write and no lift or resume; `deps.go`'s header drops the run and child resume seams.
+
 Checks: adopt starts the check of each subject it recorded an owner for and of each named subject, `root` included when named, whose holds file lists a slug a live `HoldCaller` entry of its own scope still covers, so a re-run after a failure starts a new check even when no owner changes; before each start it writes the subject's try count to 0 through `ResetTries` (D5: a hand adopt resets it; a check started otherwise does not).
 
-D2: `reconcileWarnings` returns, for each branch the reconcile report holds whose outcome reads `Prime`, or whose `Slug` is an adopted beam, in state `rewritten`, `diverged` or `ahead`, that no stop of that slug already reported and that `sharedStopText` did not refuse on, `<branch> is <state> against origin and was left unmoved: <way forward>, then re-run lym adopt with the same arguments`, where the way forward is the branch outcome's own `WayForward` when the reconcile set one, as it does per state, and `run lym fabric pull in that worktree` otherwise; adopt goes on and `outcome.Warnings` carries them as the envelope's `warnings`.
+D2: `reconcileWarnings` returns, for each branch the reconcile report holds whose outcome reads `Prime`, or whose `Slug` is an adopted beam, in state `rewritten` or `diverged`, or `ahead` with `Moved` unset, that no stop of that slug already reported and that `sharedStopText` did not refuse on, `<branch> is <state> against origin and was left unmoved: run lym fabric pull in <worktree>, then re-run lym adopt with the same arguments`, with the branch outcome's own `WayForward`, when the reconcile set one, following as detail in parentheses after the worktree, so every line names `lym fabric pull` as D2 requires.
+The worktree named after `lym fabric pull in` is the outcome's `CodeWorktree` for a records branch, where its fabric verbs run, and its `Worktree` for a code branch.
+A records branch the reconcile replayed reads `ahead` with `Moved` set, its replayed commits sitting on origin's head, so it gets no warning.
+Adopt goes on and `outcome.Warnings` carries them as the envelope's `warnings`.
 Adopt runs no `lym fabric pull`.
 
 `Command`'s help lists the steps in D1's order: reconcile, the local-commit stop, the pairs, the holds, the owner write, the beam steps, one check per subject; and that red no longer only reports.
@@ -74,13 +86,13 @@ Adopt runs no `lym fabric pull`.
 Tests:
 - `TestHoldStore` over a temp dir: append twice keeps one of each slug; remove drops only the named; tries read 0 when absent and the written count otherwise; a file holding an unknown key reads.
 - `TestHoldEntries`: an owner entry turns into a hold with its pause time kept, leaving one live entry of the scope; an existing hold stays one; an operator's entry stays and the slug is returned paused with its caller; an uncovered slug gets a new hold.
-- `TestAdopt`: the `world` gains tasks, the pause updates and the holds and tries files per subject, an `afterReconcile func(*boardengine.Owners)` hook its `Reconcile` runs on `w.owners`, as `race` runs after the owner write, and `order` entries `holds:<subject>` for a holds append, `pause` for the pause update and `owners` for the owner write; rows: a moved run under a beam owned elsewhere gets a hold listed in the beam's holds file, `holds:<beam>` and `pause` coming before `owners` in `order`; a beam the pre-reconcile `w.owners` names as this machine's and `afterReconcile` turns to another's gets its runs held; a released task under the adopted beam is held and a released front task is not; a run with an owner entry ends with one live entry, of `HoldCaller`; a run with an operator's entry keeps it, is not held and its standing line names the caller; a live pair, and a nested beam owned elsewhere, are not held; a refused owner write leaves the holds and lists them; no run is resumed; a second adopt right after changes no owner and reports the same held slugs; a re-run with holds standing and no owner change starts the subject's check and resets its tries; a rewritten branch of the prime with no `WayForward` is a warning naming `lym fabric pull`; a diverged branch of an adopted beam's pair carrying a `WayForward` is a warning naming that way forward; an ahead branch of the prime is a warning; a branch of a run the adopt stopped on gets no second warning; a shared Bolt stop refuses as before with no warning; a branch of a beam not adopted gets none.
+- `TestAdopt`: the `world` gains tasks, the pause updates and the holds and tries files per subject, an `afterReconcile func(*boardengine.Owners)` hook its `Reconcile` runs on `w.owners`, as `race` runs after the owner write, and `order` entries `holds:<subject>` for a holds append, `pause` for the pause update and `owners` for the owner write; rows: a moved run under a beam owned elsewhere gets a hold listed in the beam's holds file, `holds:<beam>` and `pause` coming before `owners` in `order`; a beam the pre-reconcile `w.owners` names as this machine's and `afterReconcile` turns to another's gets its runs held; a released task under the adopted beam is held and a released front task is not; a run with an owner entry ends with one live entry, of `HoldCaller`; a run with an operator's entry keeps it, is not held and its standing line names the caller; an adopt with `--keep-local` over a live pair under a beam owned elsewhere leaves that run unheld and reports it running here, and a nested beam owned elsewhere is not held; a refused owner write leaves the holds and lists them; no run is resumed; a second adopt right after changes no owner and reports the same held slugs; a re-run with holds standing and no owner change starts the subject's check and resets its tries; a rewritten branch of the prime with no `WayForward` is a warning naming `lym fabric pull`; a diverged branch of an adopted beam's pair carrying a `WayForward` is a warning naming `lym fabric pull`, with that way forward following it; an ahead branch of the prime with `Moved` unset is a warning; a records branch of an adopted beam's pair the reconcile left unmoved in state diverged, its `Worktree` the records sibling and its `CodeWorktree` the pair's code worktree, is a warning naming `lym fabric pull` in the `CodeWorktree` path and not in the `Worktree` path; a records branch of the prime the reconcile replayed, reading ahead with `Moved` set, gets no warning; a branch of a run the adopt stopped on gets no second warning; a shared Bolt stop refuses as before with no warning; a branch of a beam not adopted gets none.
 - `TestAdoptFields` asserts `warnings`.
 - `TestAdoptIntegration_SecondCloneTakesOver`: the second clone's adopt holds the task, its owner pause turned into a `HoldCaller` entry, and resumes nothing; with the first clone's commit pushed to the prime's code branch and to the task's pair branch before the second clone adopts, the second clone's prime and task pair branches read origin's tip after the adopt, through the reconcile step alone, D2's criterion that adopt runs no `lym fabric pull`.
 
 `adoptcli/doc.go` replaces steps 4 to 6 with the hold, the owner write, the beam steps and the per-subject checks, and states the holds and tries files.
 `docs/overview.md`'s adopt paragraph replaces the owner-pause lift and the resumes with the holds, which the subject's green check lifts.
 
-**ImpactSummary:** adopt's sequence gains the hold before the owner write and loses its resumes; its envelope gains held slugs and warnings; all inside adoptcli and its tests.
+**ImpactSummary:** adopt's sequence gains the hold before the owner write and loses its resumes; its envelope gains held slugs and warnings; inside adoptcli and its tests, plus the texts in beamcli's doc and create help and battencli's owned-elsewhere refusal that said adopt resumes.
 
 **Commit:** 11: adopt holds the runs it takes over until their subject's check

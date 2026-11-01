@@ -45,7 +45,7 @@ Reached by `lym board upsert`, `upsert-batch` and `merge` naming an existing fro
 
 `Store.Rename` refuses an entry whose `Front` is true, with the same fixed-fields text, after its absent-entry and run-held checks; reached by `lym board rename` of a released front task.
 
-`Board.FileFrontTask` is the one write that sets the two fields: under the write lock it upserts the task `fields` describe through the same store path, with `Front` true and `OnLand` set to onLand on the stored entry, skipping only `checkFrontPayload`; the payload itself must carry neither key, and one that does is refused as the upsert paths refuse it.
+`Board.FileFrontTask` is the one write that sets the two fields: under the write lock it upserts the task `fields` describe through the same store path, with `Front` true and `OnLand` set to onLand on the stored entry, skipping only `checkFrontPayload`; the payload itself must carry neither key: before the upsert, `FileFrontTask` refuses a payload carrying `front` or `on_land` with `checkFrontPayload`'s payload refusal text, then upserts with `checkFrontPayload` skipped.
 The board's draft rule makes the new task draft, so a caller releases it with a later `SetStatus(slug, nil)`.
 It carries no strand name of its own, so the run-agent task guard judges the Board's configured `StrandName`, which `fronttask` leaves empty.
 Bound: only `internal/fronttask` calls it (PATTERN-front-task, written on card 7); a board edit cannot set either field, change a front task's project or kind, or rename it.

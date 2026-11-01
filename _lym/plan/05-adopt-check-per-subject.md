@@ -14,7 +14,7 @@
 - `internal/adoptcli#checkDeps`
 - `internal/adoptcli#runCheck`
 - `internal/adoptcli#checkMarkOf`
-- `internal/adoptcli#tierNotice`
+- `internal/adoptcli#tierNotice` -> `func tierNotice(subject string, tier CheckTier, logPath string) string`
 - `internal/adoptcli#hubCheckDeps` -> `func hubCheckDeps(prime *lymcwd.Location, subject string) (checkDeps, error)`
 - `internal/adoptcli#checkCmd`
 - `internal/adoptcli#CheckView`
@@ -23,7 +23,7 @@
 - `internal/adoptcli#outcome`
 - `internal/adoptcli#adoptDeps`
 - `internal/adoptcli#adopt`
-- `internal/adoptcli#suiteMessage`
+- `internal/adoptcli#suiteMessage` -> `func suiteMessage(checks []suiteStart) string`
 - `internal/adoptcli#adoptFields`
 - `internal/adoptcli#Command`
 - `internal/adoptcli#hubDepsAs`
@@ -53,6 +53,7 @@
 - `internal/beamcli/doc.go`
 - `docs/overview.md`
 - `pattern/PATTERN-test-speed.md`
+- `internal/gateslot/doc.go`
 
 **Uses:**
 - `internal/adoptcli#ensureCheck`
@@ -73,7 +74,8 @@ The verb: `checkCmd` becomes `check <subject>`, `cobra.ExactArgs(1)`, still hidd
 
 `runCheck`: before taking the lock, an `OwnedElsewhere` that names a machine posts `adopt check of <subject>: <subject> is owned by <owner>, so no check ran; way forward: run lym adopt <subject> on this machine` and returns that text as its error, having written no record.
 It is reached by a hand `lym adopt check <subject>` on a machine that does not own the subject, and by a front task's `adopt-check` action whose settle read this machine as the owner just before another machine's adopt moved the owner (D8). A read error is returned likewise, writing nothing.
-Every notice opens `adopt check of <subject>:` in place of `adopt check:`, and `tierNotice` and `checkMarkOf` take the subject the same way, so the orch and the status bar tell two subjects' checks apart.
+Every notice opens `adopt check of <subject>:` in place of `adopt check:`, `tierNotice` takes the subject as its first parameter to open its line the same way, and `checkMarkOf` reads the subject from `CheckRecord.Subject`, so its signature stays; the orch and the status bar then tell two subjects' checks apart.
+`check.go`'s file header names the gate run in the subject's worktree in place of in-process in the prime.
 
 `primeMark(adoptDir, subject, own)` returns the prime's mark: own's text prefixed by the subject, then, for each other subject directory whose record reads running, that record's `checkMarkOf` text, joined by ` | `, sorted by subject; its state is running while any joined record runs, else own's state; a record that does not read is skipped with one Warn.
 
@@ -95,7 +97,7 @@ Tests:
 - `TestStartSuiteStartsNothingUnderTest`, `TestHubCheckDeps_StaleStampRunsTheTunedFinalizeTiers` and `TestCheckCmd_FromABeamExitsZeroWhileOneRuns` follow the subject (`check root`, the lock under `root`).
 - `TestStatus_PrintsThePrimesDobbyAndEachLocalBeams` reads `adopt_checks`, absent with no record and one green item naming its subject and log with one.
 
-Docs: `adoptcli/doc.go` and `beamcli/doc.go` state the per-subject check, its files and view; `docs/overview.md`'s adopt paragraph says one check per adopted subject in that subject's worktree, and its `lym beam status` paragraph one adopt check item per subject; `pattern/PATTERN-test-speed.md`'s gate table names `lym adopt check <subject>`, in the subject's worktree.
+Docs: `adoptcli/doc.go` and `beamcli/doc.go` state the per-subject check, its files and view; `docs/overview.md`'s adopt paragraph says one check per adopted subject in that subject's worktree, and its `lym beam status` paragraph one adopt check item per subject; `pattern/PATTERN-test-speed.md`'s gate table and `gateslot/doc.go`'s gate table's `adopt` row name `lym adopt check <subject>`, run in the subject's worktree.
 
 **ImpactSummary:** the check's verb, files, notices, mark and view become per subject inside adoptcli, plus beam status's one reader and help; the envelope renames suite to checks; two docs follow.
 

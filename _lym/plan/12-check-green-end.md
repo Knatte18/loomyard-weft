@@ -14,6 +14,9 @@
 - `internal/adoptcli#checkFixture`
 - `internal/adoptcli#TestRunCheck`
 - `internal/adoptcli/doc.go`
+- `internal/landingshed#ownerHaltReason`
+- `internal/battenshed/doc.go`
+- `docs/overview.md`
 
 **Extends:**
 - `PATTERN.md`
@@ -31,6 +34,7 @@
 - `plan:internal/fronttask#ActionAdoptCheck`
 - `internal/adoptcli#resumeChild`
 - `internal/adoptcli#readStatus`
+- `internal/landingshed/doc.go`
 
 **Intent:**
 D5's green end, which takes over the resumes card 11 took out of adopt.
@@ -64,7 +68,10 @@ Tests:
 ```
 
 `adoptcli/doc.go`'s check section states the green end's steps and bounds.
+`ownerHaltReason`'s refusal for a parent owned elsewhere says the adopt's green check resumes the halted run, in place of the adopt resuming it.
+`battenshed/doc.go`'s line on detached first passes names the adopt check's green end, not `lym adopt`, beside `lym beam land`, as starting a first pass detached.
+`docs/overview.md`'s batten paragraph that says `lym adopt` starts a run's first pass detached names the adopt check's green end in its place, beside `lym beam land`.
 
-**ImpactSummary:** runCheck gains one seam called at green; the new green end lifts, starts, resumes and removes inside adoptcli over existing tender, batten, orch and fronttask calls.
+**ImpactSummary:** runCheck gains one seam called at green; the new green end lifts, starts, resumes and removes inside adoptcli over existing tender, batten, orch and fronttask calls; landingshed's owner refusal, battenshed's doc and the overview's batten paragraph name the green end as what resumes and starts.
 
 **Commit:** 12: adopt check: a green end lifts the holds and starts the runs
