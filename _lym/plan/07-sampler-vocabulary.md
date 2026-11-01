@@ -1,7 +1,7 @@
 # Card 7 — sampler-vocabulary
 
 **Create:**
-- `plan:internal/loomcli#samplerTacklerRecipe` -> `const samplerTacklerRecipe = "sampler: an interactive task run (one agent session working with the operator, its optional review, description and landing)"`
+- `internal/loomcli#samplerTacklerRecipe`
 
 **Edit:**
 - `internal/battencli#childRecipeSupported`
