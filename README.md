@@ -106,11 +106,13 @@ Held by a run; its scope is locked until the run ends.
 | T6 | **A long gate run answers within the cache lifetime, so the waiting agent keeps its prompt cache warm**<br>• lym gate test caps the run wait like the slot wait, with the cap a config value beside the engine cache lifetime<br>• `profile: light` | [`gate-run-keeps-cache-warm`](design-gate-run-keeps-cache-warm.md) | tapestry | Code-Burler-Fix | neve | 20h<br>3h | gate, shuttle, config |
 | T7 | **One verb to take work over on another machine, leaving every run in a known state**<br>• Moving to another machine is many hand steps, and afterwards run states are unclear | [`machine-switch`](design-machine-switch.md) | tapestry | Code-Burler-Fix | neve | 1d<br>3h | fabric, dobby, batten |
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T1 | **The board marks the own entries of a project apart from its sub-projects**<br>• A No project heading in the README, an Own entries heading in a project file with sub-projects | [`board-no-project-heading`](design-board-no-project-heading.md) | darn |  | 0m<br>0m | board |
 
 #### Layer A (1)
 
@@ -120,13 +122,12 @@ Waits only on Running, Ready or Draft entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **A concurrent fetch of the same ref fails a batten pass and spawns a tackler**<br>• A fetch into tracking refs waits under the push lock, as fabric's writes wait under theirs<br>• `profile: solid` | [`reconcile-fetch-race`](design-reconcile-fetch-race.md) | darn | T7 | 3h<br>21m | batten, fabric |
 
-#### Draft (3)
+#### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **The board marks the own entries of a project apart from its sub-projects**<br>• A No project heading in the README, an Own entries heading in a project file with sub-projects | [`board-no-project-heading`](design-board-no-project-heading.md) | darn |  | 0m<br>0m | board |
 | T3 | `draft` **One test binary per package, the tier chosen at run time**<br>• LYM_TEST_TIER selects the tier instead of build tags, taking a cold gate run from 532 test binaries to 182 | [`gate-one-binary-per-package`](design-gate-one-binary-per-package.md) | tapestry |  | 16m<br>16m | gate, testkit, pattern |
 | T5 | `draft` **Study: Parts-Write and Parts-Plan-Write against Plan-Write**<br>• Write the plans of two landed runs both ways and compare cost, time, gate pass and one Plan-Review round<br>• `profile: docs` | [`plan-split-bench`](design-plan-split-bench.md) | darn |  | 16m<br>16m | loom |
 
