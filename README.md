@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Measure what the batching sentences did to the Plan and Discussion writers**<br>• Transcript analysis of writer turns, calls per turn, context and cost before and after 2026-10-28<br>• `profile: docs` | [`batching-effect-audit`](design-batching-effect-audit.md) | darn | Record-Write | neve | 9h<br>9h | stencil, shuttle, loom |
+| T1 | **Measure what the batching sentences did to the Plan and Discussion writers**<br>• Transcript analysis of writer turns, calls per turn, context and cost before and after 2026-10-28<br>• `profile: docs` | [`batching-effect-audit`](design-batching-effect-audit.md) | darn | Darn-Write | neve | 9h<br>9h | stencil, shuttle, loom |
 | T8 | **sampler: an interactive loom recipe, the operator iterating with an agent in the run's worktree until done**<br>• A Shed recipe whose agent waits for the operator and iterates on the result, then lands as usual<br>• `profile: light` | [`interactive-recipe`](design-interactive-recipe.md) | tapestry | Webster | neve | 18h<br>11h | shed, batten, reed, shuttle |
 
 #### Ready (0)
