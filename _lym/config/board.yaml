@@ -55,3 +55,4 @@ labels:
     profiles: run profiles and review budgets (internal/runprofile, reviewbudget, languageconfig)
     docs: the README and docs/, the repository documentation outside the code
     heddle: the instruction store and its rendering, lym heddle (internal/heddlecli, heddleengine)
+    tools: the developer programs under tools/, such as tokencount and forkaudit
