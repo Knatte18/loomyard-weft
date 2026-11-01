@@ -40,7 +40,7 @@ All six forks returned; reports are in the `support-log.lens-<lens>.md` files be
 - existing-paths 2 (outside-fabric packages use the removed seam): rejected — the matches in `battencli`, `driftengine`, `loomcli` and `shedrecipe` are unrelated names (`claimBoardEntry`, `SubjectBoardEntry`), checked by grep.
 - existing-paths 3 (Merriam's base counts `CLAUDE.local.md` but not prompt passages): rejected — the base's existing rule counts instruction files only; prompt passages are the same class as lym's appended sentences, which it does not count either.
 - walkthrough 4 and bound-breaker 6 (`ffWorktree` also moves records and Bolt branches): fixed — D6 fires at code-branch call sites only; acceptance case added.
-- bound-breaker 5 (the temporary file of an atomic write shows as untracked): fixed — D3 writes in place; the text is read only at session start and concurrent renders write the same text.
+- bound-breaker 5 (the temporary file of an atomic write shows as untracked): fixed — D3 writes atomically through a `.heddle` directory at the warp root that fabric's exclude list carries; the in-place write first chosen here rested on a session reading the file only at start, which Claude Code's re-read after compaction falsifies (round 2, F1).
 - leanness 1 (Constraints repeating decisions): fixed — cut to the constraints no decision states.
 - leanness 2 (D1's "when" condition is a rejected alternative): fixed — cut from D1.
 - leanness 3 (D9's import argument stated three times): fixed — kept in D9's first bullet only.
@@ -53,7 +53,8 @@ All six forks returned; reports are in the `support-log.lens-<lens>.md` files be
 ## Rejected alternatives
 
 - An entry naming `engines` and one `delivery`: first picked, then rejected in the lens review, since a file belonging to no engine, such as `PATTERN.local.md`, would need a new axis rather than one target-table row.
-- An atomic write by a temporary file renamed into place: rejected, since the temporary file shows as untracked in warp while it exists.
+- A render written in place: rejected, since Claude Code re-reads a project-root instruction file after compaction and could read a half-written one.
+- A render's temporary file under the pair's `.lym` tree: rejected, since that tree is a junction into weft, so a rename onto the warp root may cross a filesystem.
 - Keeping a resumed session's passages across an adopted resume: rejected, since an adopted resume prepares a new run directory that holds no earlier passages.
 - A heddle write that pulls and commits in the foreground: rejected, since the board's writes leave commit and push to the detached sync.
 - Entry order by position in the JSON array: rejected, since a replay merges by field and a position has no field to merge.
@@ -65,13 +66,25 @@ All six forks returned; reports are in the `support-log.lens-<lens>.md` files be
 - Callers of `Topology.Add` calling heddle themselves: rejected, since fabric is the one place every worktree is made, and a caller-side call is forgotten at the next caller.
 - A heddle write lock of its own: rejected, since Bolt's pull and replay serialize against the board's write lock, and a second lock would let a pull interleave with a heddle write.
 - `claudeengine` reading `heddle.json` itself: rejected under PATTERN-shuttle-provider-seam.
-- Re-reading heddle on resume: rejected, since a resumed session's system prompt would change under it.
+- Re-reading heddle on a resume through the launch's own resume line: rejected, since a resumed session's system prompt would change under it.
+- Setting Claude Code's `instructionFiles` to `claude-md-and-agents-md` in shuttle's settings file so a `CLAUDE.local.md` render keeps `AGENTS.md` loading: rejected, since it reaches only sessions launched with shuttle's `--settings`, and in a repository with its own `CLAUDE.md` it loads an `AGENTS.md` the team's setup leaves out.
 - Leaving the ended set and owner read on `board.json` inside fabric: rejected, since the operator wants no board path left in the replay seam and both read through it.
 - Declaring the literal in `fabricengine` with `lymcwd` keeping a private copy: rejected, since the operator wants one declaration; declaring it in a new leaf package: rejected, since `lymcwd` already declares it and adding an import to `lymcwd` changes PATTERN-cwd-resolution.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+The review raised F1 to F14; every finding is fixed, and `_lym/reviews/discussion/round-1-fixer-report.md` records each disposition.
+F1 settled that a `CLAUDE.local.md` hides `AGENTS.md` from Claude, so the `claude-file` render imports a root `AGENTS.md` (D3, Q12).
+F2 admitted `internal/lymcwd` into `runproc`'s closed import set (D9, Constraints), which settled Q11 and removed the Open risk Turn 4's board-scope 2 line kept for the parent.
+F4 replaced Turn 4's bound-breaker 5 claim that concurrent renders write the same text with a per-worktree render lock (D3).
+
+### Round 2
+
+The review raised F1 to F7; every finding is fixed, and `_lym/reviews/discussion/round-2-fixer-report.md` records each disposition.
+F1 made the render atomic through an excluded `.heddle` directory, since Claude re-reads a root instruction file after compaction (D3, D5).
+F2 has a render read `heddle.json` under the Bolt write lock (D3).
 
 ## Question ledger
 
@@ -85,4 +98,5 @@ _No rounds yet._
 - Q8 (resolved, auto-pick): does a seam failure fail the fabric verb — no, a warning (D6).
 - Q9 (resolved, auto-pick): how the ended set and owner read lose the board file name — a run-ledger role on one replayer (D7).
 - Q10 (resolved, auto-pick): where the shared merge lives — `internal/entrymerge` (D8).
-- Q11 (open, for the parent): the literal's one home is `lymcwd`, not `fabricengine`, against the entry's wording — recorded under Open risks (D9).
+- Q11 (resolved, auto-pick): the literal's one home is `lymcwd`, not `fabricengine`, since `fabricengine` imports `lymcwd` and `runproc` and `runproc` may import `lymcwd` (D9's import argument).
+- Q12 (resolved, auto-pick): how a `CLAUDE.local.md` render keeps a repository's `AGENTS.md` reaching Claude — an `@AGENTS.md` import line when the root holds no `CLAUDE.md` (D3).
