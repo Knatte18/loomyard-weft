@@ -1,0 +1,402 @@
+{
+  "runGuid": "981dcfc4af2a226e537181dcdc0e6575",
+  "planFingerprint": "406ea2df7eb910f36981e12a368a60a407770f7a31a2107cd27ddbc46f9fd393",
+  "planFileHashes": {
+    "00-overview.md": "c37d9bbce623cf8357475a48bb827df6e5c0f3b67fc433e691b67e02ca784974",
+    "01-shuttle-max-reruns-key.md": "09b093237446c4cfa9eb169284e7bc300440405e3c825be50ace952e6c074dce",
+    "02-engine-keep-warm-caps.md": "3475b6a53be061538c2adfdc1f5ef158a91f06e177e6077ed6500fed94080f7c",
+    "03-keep-warm-resolver.md": "b7c9ddbc38621f8293cf820b3c37c509e34f70f087416e8889925d2e1129005a",
+    "04-await-resolved-cap.md": "d9d6d429a58772fe528a9d92242f662bda5104de1504e45ce6c01b5c7564ae53",
+    "05-strand-free-verify-commands.md": "aa182b2ba4a17b03c6d5231d1bf49304f3632e96c23f772e01ea21be9d050e9d",
+    "06-verifyrun-tied-line.md": "2de3b4daf4aac9b2a7a82b5ae50c5e90c1a361dceecc0d9a78eda0cd142d5d69",
+    "07-cardverify-context-and-tie.md": "755ab2c128cff6f6d577fd42a8ace85f067bbdc9f3eecac5b382100fabc56367",
+    "08-runproc-gate-role.md": "a1944107f81257954875abfca41bffc80c8166a088a0c617fe9608743413f5d6",
+    "09-run-records-call-id.md": "f42ae71ee7b9ac42a532260a95d7622702d711433dd41053e4f8151cd6cf820c",
+    "10-gate-detached-runner.md": "d35d792e4fdb1f64205913ee25ce7de854c3e2b5ccec1f5345381c349cc78469",
+    "11-gate-capped-front.md": "ce75015ffd13bd3917aa19a27a92d68e99071f31833e832c8765528612bad0f2",
+    "12-gate-long-wait.md": "ee753e8c14396c5da2c1418bd4b9ef6cecfc2c21fe1e4c8d00286d5eb9b9166b",
+    "13-card-verify-capped.md": "58daf22019e9fb7491e963b07bd61241b463ecbfd3a20201471634c8f330070c",
+    "14-agent-gate-calls.md": "fa7589b9e8a6bf7e72efc654aed9ccf5bef51d912b97cd42134bb96b8586efd4",
+    "15-agent-keep-warm-text.md": "a3e825188c205a6f9731b5b4101f408fd31ceb8c0ad1c97988b112ead6f051fa"
+  },
+  "planOverviewFrameHash": "d1a956700516307b4b8537efc512b8c7f8df4ef57e5da97d2045f28c07e0265e",
+  "partition": [
+    {
+      "cards": [
+        "01-shuttle-max-reruns-key",
+        "02-engine-keep-warm-caps",
+        "03-keep-warm-resolver",
+        "04-await-resolved-cap",
+        "05-strand-free-verify-commands"
+      ],
+      "profile": "wide",
+      "estimate": 248148,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 53956,
+        "read_union": 58484,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 444,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 6504,
+              "file:internal/shuttleengine/template.yaml": 156,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 79,
+            "written": 24144
+          },
+          {
+            "card": 2,
+            "card_text": 720,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/doc.go": 3348,
+              "file:internal/shuttleengine/claudeengine/template.yaml": 96,
+              "file:internal/shuttleengines/doc.go": 276,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:internal/shuttleengines": 2000,
+              "package:internal/testkit/shuttlefake": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengines": 2000,
+              "tests:internal/testkit/shuttlefake": 2000
+            },
+            "messages": 161.5,
+            "written": 49170
+          },
+          {
+            "card": 3,
+            "card_text": 540,
+            "reads": {
+              "file:internal/shuttleengines/doc.go": 276,
+              "package:internal/shuttleengines": 2000,
+              "tests:internal/shuttleengines": 2000
+            },
+            "messages": 55.5,
+            "written": 17190
+          },
+          {
+            "card": 4,
+            "card_text": 444,
+            "reads": {
+              "file:docs/overview.md": 10608,
+              "file:internal/shuttlecli/await.go": 996,
+              "file:internal/shuttlecli/cli.go": 1812,
+              "file:internal/shuttleengine/doc.go": 6504,
+              "package:docs": 2000,
+              "package:internal/shuttlecli": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:docs": 2000,
+              "tests:internal/shuttlecli": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 73,
+            "written": 22344
+          },
+          {
+            "card": 5,
+            "card_text": 360,
+            "reads": {
+              "file:internal/cardverify/doc.go": 180,
+              "package:internal/battencli": 2000,
+              "package:internal/cardverify": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/cardverify": 2000
+            },
+            "messages": 75,
+            "written": 22860
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-verifyrun-tied-line",
+        "07-cardverify-context-and-tie",
+        "08-runproc-gate-role",
+        "09-run-records-call-id",
+        "10-gate-detached-runner"
+      ],
+      "profile": "wide",
+      "estimate": 240916,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 60956,
+        "read_union": 41204,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 372,
+            "reads": {
+              "package:internal/verifyrun": 2000,
+              "tests:internal/verifyrun": 2000
+            },
+            "messages": 44,
+            "written": 13572
+          },
+          {
+            "card": 7,
+            "card_text": 396,
+            "reads": {
+              "file:internal/cardverify/doc.go": 180,
+              "package:internal/cardverify": 2000,
+              "package:internal/gatecli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:internal/cardverify": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 104.5,
+            "written": 31746
+          },
+          {
+            "card": 8,
+            "card_text": 168,
+            "reads": {
+              "file:internal/runproc/doc.go": 348,
+              "package:internal/runproc": 2000,
+              "tests:internal/runproc": 2000
+            },
+            "messages": 14,
+            "written": 4368
+          },
+          {
+            "card": 9,
+            "card_text": 336,
+            "reads": {
+              "file:internal/gatecli/doc.go": 4056,
+              "file:internal/gateslot/doc.go": 1692,
+              "package:internal/gatecli": 2000,
+              "package:internal/gateslot": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/gateslot": 2000
+            },
+            "messages": 77,
+            "written": 23436
+          },
+          {
+            "card": 10,
+            "card_text": 984,
+            "reads": {
+              "file:internal/gatecli/doc.go": 4056,
+              "file:pattern/PATTERN-daemon-wakeups.md": 672,
+              "package:cmd/lym": 2000,
+              "package:internal/gatecli": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 215.5,
+            "written": 65634
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "11-gate-capped-front",
+        "12-gate-long-wait"
+      ],
+      "profile": "wide",
+      "estimate": 248334,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 67956,
+        "read_union": 46440,
+        "cards": [
+          {
+            "card": 11,
+            "card_text": 1884,
+            "reads": {
+              "file:PATTERN.md": 828,
+              "file:docs/dotnet-hub.md": 2196,
+              "file:docs/overview.md": 10608,
+              "file:internal/gatecli/doc.go": 4056,
+              "file:internal/gateslot/doc.go": 1692,
+              "file:pattern/PATTERN-daemon-wakeups.md": 672,
+              "package:.": 2000,
+              "package:cmd/lym": 2000,
+              "package:docs": 2000,
+              "package:internal/gatecli": 2000,
+              "package:internal/gateslot": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:docs": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/gateslot": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 358.5,
+            "written": 109434
+          },
+          {
+            "card": 12,
+            "card_text": 504,
+            "reads": {
+              "file:internal/gatecli/doc.go": 4056,
+              "package:internal/gatecli": 2000,
+              "tests:internal/gatecli": 2000
+            },
+            "messages": 80,
+            "written": 24504
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "13-card-verify-capped",
+        "14-agent-gate-calls",
+        "15-agent-keep-warm-text"
+      ],
+      "profile": "wide",
+      "estimate": 246282,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 74956,
+        "read_union": 78128,
+        "cards": [
+          {
+            "card": 13,
+            "card_text": 732,
+            "reads": {
+              "file:internal/gatecli/doc.go": 4056,
+              "package:internal/gatecli": 2000,
+              "tests:internal/gatecli": 2000
+            },
+            "messages": 90,
+            "written": 27732
+          },
+          {
+            "card": 14,
+            "card_text": 540,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 9984,
+              "file:internal/gateslot/doc.go": 1692,
+              "file:internal/loomshed/doc.go": 1476,
+              "file:internal/websterengine/doc.go": 9300,
+              "file:pattern/PATTERN-test-speed.md": 1992,
+              "package:contracts/specs": 2000,
+              "package:internal/gateslot": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "package:pattern": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/gateslot": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 176,
+            "written": 53340
+          },
+          {
+            "card": 15,
+            "card_text": 276,
+            "reads": {
+              "file:contracts/stencils/darn/darn-template-write.md": 1176,
+              "file:contracts/stencils/drift/drift-template-verify.md": 624,
+              "file:contracts/stencils/webster/webster-body-implementer.md": 1980,
+              "file:internal/shellguard/doc.go": 300,
+              "package:contracts/stencils/darn": 2000,
+              "package:contracts/stencils/drift": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/shellguard": 2000,
+              "tests:contracts/stencils/darn": 2000,
+              "tests:contracts/stencils/drift": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/shellguard": 2000
+            },
+            "messages": 39.5,
+            "written": 12126
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "46e7be2b6eaf853643f0d14aab73b07f",
+  "masterSessionId": "6c8372cc-0276-4e08-a1ef-a58cb9a44e5a",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "shuttle-max-reruns-key",
+      "cards": [
+        "01-shuttle-max-reruns-key",
+        "02-engine-keep-warm-caps",
+        "03-keep-warm-resolver",
+        "04-await-resolved-cap",
+        "05-strand-free-verify-commands"
+      ],
+      "cardHashes": {
+        "01-shuttle-max-reruns-key": "09b093237446c4cfa9eb169284e7bc300440405e3c825be50ace952e6c074dce",
+        "02-engine-keep-warm-caps": "3475b6a53be061538c2adfdc1f5ef158a91f06e177e6077ed6500fed94080f7c",
+        "03-keep-warm-resolver": "b7c9ddbc38621f8293cf820b3c37c509e34f70f087416e8889925d2e1129005a",
+        "04-await-resolved-cap": "d9d6d429a58772fe528a9d92242f662bda5104de1504e45ce6c01b5c7564ae53",
+        "05-strand-free-verify-commands": "aa182b2ba4a17b03c6d5231d1bf49304f3632e96c23f772e01ea21be9d050e9d"
+      },
+      "startSha": "3466ce205f727597db0f319a89d4d78d7e44978b",
+      "kind": "fork",
+      "spawnedAt": "2026-11-01T13:46:25Z",
+      "sessionId": "6c8372cc-0276-4e08-a1ef-a58cb9a44e5a",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
