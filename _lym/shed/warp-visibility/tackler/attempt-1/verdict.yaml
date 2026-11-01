@@ -1,4 +1,0 @@
-verdict: resume
-reason: >-
-  The stop is a transient network failure. Worktree-Create could not fetch origin for the board at /home/knatte/Code/loomyard-LYMHUB/_board (git exited 1), so the owner write was not pushed. The reason text itself says to re-run once the remote is reachable. A read-only `git ls-remote origin` against https://github.com/Knatte18/loomyard-weft.git now succeeds and lists refs, so the remote is reachable. No code or run state is wrong. Resume with goto Worktree-Create to re-run the claim.
-goto: Worktree-Create
