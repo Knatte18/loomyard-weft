@@ -1,9 +1,9 @@
 # P1 Fewer agent turns, fewer tokens
 
-Rendered 2026-11-01 18:18 UTC; every age below is as of then.
+Rendered 2026-11-01 18:22 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-`turn-savings` · Age 0m · Owner `neve`
+`turn-savings` · Age 5m · Owner `neve`
 
 Token savings by cutting agent turns, above all late turns at large context
 
@@ -20,25 +20,26 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (4)
+## Notes (5)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Research (1)
+### Research (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Measure the effect of the agent-turns project**<br>• Turns, calls per turn and cost before and after P2 agent-turns, for darn writers, Webster forks and review roles | [`agent-turns-effect`](design-agent-turns-effect.md) | 4h<br>0m | tools |
+| R1 |  | **Measure the effect of the agent-turns project**<br>• Turns, calls per turn and cost before and after P2 agent-turns, for darn writers, Webster forks and review roles | [`agent-turns-effect`](design-agent-turns-effect.md) | 4h<br>5m | tools |
+| R2 |  | **Plan writer hands its code lookups to forks and keeps the overview**<br>• The Plan writer pays its whole context for each late grep; research whether forks answering batched questions cut that cost without losing the plan overview | [`planner-fork-lookups`](design-planner-fork-lookups.md) | 0m<br>0m | loom |
 
 ### Enhancements (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E6 |  | **Shorten the plan spec and split it into sub-files read by need**<br>• loom-plan-spec.md is 112 KB, half of it a catalogue of validation checks; cut it down and split it so each role reads only what it uses | [`plan-spec-split`](design-plan-spec-split.md) | 11m<br>0m | loom, stencil, webster |
-| E7 |  | **A hook nudges an agent back to batching the moment it breaks the rule**<br>• Above about 150k context agents drift into grep-then-slice chains and one-fix-per-turn edits, about a third of context tokens in a 28-session sample; a PostToolUse hook adds one line on a breach, with sharper rule wording | [`batching-breach-nudge`](design-batching-breach-nudge.md) | 8m<br>0m | claude, shuttle |
+| E6 |  | **Shorten the plan spec and split it into sub-files read by need**<br>• loom-plan-spec.md is 112 KB, half of it a catalogue of validation checks; cut it down and split it so each role reads only what it uses | [`plan-spec-split`](design-plan-spec-split.md) | 15m<br>4m | loom, stencil, webster |
+| E7 |  | **A hook nudges an agent back to batching the moment it breaks the rule**<br>• Above about 150k context agents drift into grep-then-slice chains and one-fix-per-turn edits, about a third of context tokens in a 28-session sample; a PostToolUse hook adds one line on a breach, with sharper rule wording | [`batching-breach-nudge`](design-batching-breach-nudge.md) | 13m<br>5m | claude, shuttle |
 
 ### Features (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F12 |  | **A darn writer hands per-package batches to Sonnet helpers**<br>• lym denies the Agent tool in darn on a visibility reasoning that fits claude -p, not subagents | [`darn-sonnet-helpers`](design-darn-sonnet-helpers.md) | 38m<br>0m | darn, claude, shuttle |
+| F12 |  | **A darn writer hands per-package batches to Sonnet helpers**<br>• lym denies the Agent tool in darn on a visibility reasoning that fits claude -p, not subagents | [`darn-sonnet-helpers`](design-darn-sonnet-helpers.md) | 43m<br>4m | darn, claude, shuttle |
