@@ -455,7 +455,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 16,
   "masterStrand": "26b852aa3de8205aac1ff3f3536f5ee1",
   "masterSessionId": "a7a887cd-0cc1-41a7-9a61-01bf0f126612",
   "masterEngine": "claude",
@@ -557,6 +557,24 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-plan-split-producers/a7a887cd-0cc1-41a7-9a61-01bf0f126612/subagents/agent-a26d158607ce407d3.jsonl"
       ]
+    },
+    "16": {
+      "slug": "parts-producers",
+      "cards": [
+        "16-parts-producers",
+        "17-parts-recipe-rows"
+      ],
+      "cardHashes": {
+        "16-parts-producers": "88cd78379558a660db8efc93546b10e02105aee840a9678c2bf8210cebd30f4a",
+        "17-parts-recipe-rows": "352eb4e7e9c8477a561282933e2467edddf501de8f9b1bb0c4eb19cf727525dd"
+      },
+      "startSha": "d50cea7cd178fc2943523a47c89d1b7106714a5e",
+      "kind": "fork",
+      "spawnedAt": "2026-11-01T13:21:16Z",
+      "sessionId": "a7a887cd-0cc1-41a7-9a61-01bf0f126612",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "loomshed-part-checks",
