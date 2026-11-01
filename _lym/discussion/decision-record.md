@@ -18,6 +18,12 @@ The test is best run after note `edit-with-edit-tool` has landed, or measured on
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-01): The trial moves into code: lym's instructions reach the CLAUDE-file context from claudeengine
+
+Decision: Option (b). claudeengine delivers the batching sentence through the CLAUDE-file context every shuttle-launched Claude session reads, the frame Claude Code marks as overriding defaults, instead of the appended system prompt, with no heddle entry. Build it as a channel lym owns for its own agent instructions, so plan-edits-before-gate, which waits on this task, adds its instruction through the same channel. Read how heddle renders CLAUDE.local.md and pick the form that keeps lym's text apart from the repository's heddle entries; the sentence leaves the appended system prompt in the same change, so a session never gets it twice.
+
+Rationale: PATTERN-lym-instructions-in-code, landed after the entry was written, keeps lym's own instructions in lym's code and heddle for a repository's own; the trial's question, whether the CLAUDE-file frame moves agents more than the system prompt, survives the move. The effect is measured for the whole project by note agent-turns-effect.
+
 ## Constraints
 
 ## Auto-mode assumptions
