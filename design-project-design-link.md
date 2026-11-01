@@ -1,6 +1,6 @@
 # A project slug on the board links to its design file
 
-`project-design-link` · Task · enhancement, board · running · Code-Bouncer
+`project-design-link` · Task · enhancement, board · running · Describe
 
 ## Seen (operator, 2026-11-01)
 
