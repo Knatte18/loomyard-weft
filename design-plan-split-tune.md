@@ -2,7 +2,7 @@
 
 `plan-split-tune` · Task · enhancement, loom, stencil, pattern · draft
 
-Depends on: [`gate-one-binary-per-package`](design-gate-one-binary-per-package.md), [`reed-loses-parts-chair`](design-reed-loses-parts-chair.md)
+Depends on: [`reed-loses-parts-chair`](design-reed-loses-parts-chair.md)
 
 ## Seen (orch, plan-split-bench, 2026-11-01)
 
