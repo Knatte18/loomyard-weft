@@ -1,6 +1,6 @@
 # Agents read a file whole or all its spans in one message, not in slices
 
-`read-whole-not-slices` · Task · enhancement, webster, stencil · running · PR-Review
+`read-whole-not-slices` · Task · enhancement, webster, stencil · running · Finalize
 
 ## Seen (orch, 2026-11-01)
 
