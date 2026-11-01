@@ -290,48 +290,6 @@
       "revised": "2026-10-28T14:19:43Z"
     },
     {
-      "id": 765,
-      "handle": "F20",
-      "slug": "loom-beam-darns",
-      "title": "stitch: a loom recipe that splits a large task into darn runs inside its own beam",
-      "kind": "note",
-      "labels": [
-        "feature",
-        "loom",
-        "shed",
-        "batten",
-        "workspaces",
-        "burler"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Discussion, a pre-planner, the pieces filed as darn tasks in the task's project, and an inner pawl run that builds and lands the beam",
-      "body": "## Idea\n\nA large task runs on `stitch`, a stand-alone loom recipe that covers the whole course: it decides the scope, splits it into pieces, and has the pieces built as darn runs inside a beam that its own worktree becomes (operator, 2026-10-31).\nA task gets `stitch` on the board before its run starts; switching a running tapestry to `stitch` after Discussion is a later idea, not this one.\n\n1. Preflight, as in every loom recipe.\n2. Discussion-Write, as tapestry's: the one agent that talks with the operator and decides scope.\n3. Pre-Plan: an agent splits the decided scope into pieces that together make up the whole scope, and writes them to a file.\n   Each piece gets a contract: what it takes in, the behaviour it delivers, the names it exports to other pieces, and which pieces it depends on; not the inside, which the darn finds itself.\n   The pre-plan gets a perch, but it is far smaller than today's plan format: pieces and their contracts, not cards.\n4. A Go row with no agent, like pawl's Record-Write, turns the task's board entry into a project and files each piece as a darn task in it, with its contract, its part of the decision record and `relevant.md`, and `depends_on` between pieces.\n   No agent creates a task, so the rule that only the operator decides what becomes a task holds: the operator approved the split by releasing the `stitch` task, and the pieces come from a reviewed pre-plan.\n   The row may wait for the operator's go-ahead on the pieces first.\n5. A row runs pawl as an inner shed run in the same worktree, the way batten runs its recipe through `battenshed.NewInnerRun`.\n   Pawl's Record-Write finds the record written and adds nothing, Beam-Up brings up the beam's dobby, which starts the darn tasks already filed, Beam-Await waits until every piece has landed in the beam, and Parent-Align, Finalize and Beam-Down land the beam in its parent.\n6. `stitch` ends when its inner pawl run ends.\n\nNew pieces: the Pre-Plan producer, its format, validator and perch; the filing row; Beam-Await ending when every member has landed rather than on a land request; and the whole-task review below.\n\n## Why\n\n`docs/research/token-audit-2026-10-22`: a loom run carries a fixed cost of about $23, mostly Plan and the review rounds, and the Plan writer reads about 250k of context before it writes (91% of its peak).\nDarn's fixed cost is about $2.60.\nSplit this way, each darn reads only its piece once, plans and implements it, and Discussion and the whole-task review keep loom's scope and overall check.\nIt came out of discussing sub-planners for the Plan writer (note `plan-writer-context`).\nWhether it pays at all is open (operator, 2026-10-31), so the first step builds nothing: a test project done by hand with the projects and beams that exist.\nA large task gets its Discussion, its pieces are filed by hand as darn tasks with review off in a beam project, and the whole course's tokens are measured against tapestry runs of the same size from the token audit.\nThe recipe is built only if the test shows tokens to save.\nThe risk to weigh (operator, 2026-10-31): tapestry's implementation is cheap because Webster runs on Sonnet medium, following cards an Opus plan writer wrote; pieces under a coarse pre-plan design their own inside and likely need Opus writers, so Opus does more of the work and the course may cost more, not less.\nThe test therefore compares the whole course, pieces' writers included, against tapestry's Opus plan plus Sonnet Webster.\n\n## Review and tests\n\n- No perch per piece: a review per batch proved far too expensive in Millhouse, and a perch per piece is the same.\n  The pieces run as darn with review off (`code_max_bounces: 0`), each passing its own gate and tests.\n- One review over the whole task's diff after the last piece lands is the code review, as Webster's round over the whole diff is today; where it sits, in pawl before Parent-Align or as a row of its own, is open.\n- A piece does not run the full suite before it lands; the beam runs it once, after every piece has landed.\n  Which tiers a piece's own gates run is open; the gate key per recipe row is stated in `internal/gateslot`'s doc.\n\n## Pre-plan depth (orch, 2026-10-24, not decided)\n\n- A coarse pre-plan leaves design to the pieces, so each piece needs an Opus writer.\n- A detailed pre-plan carries the design, so Sonnet pieces may do, at the cost of a heavier pre-planner.\n- Pieces cannot be counted on to run in parallel: `tools/plandag/plandag.sh` on `loom-tail-review`'s plan found 52 cards, a critical path of 20 and a mean parallelism of 2.6.\n  A beam's gain is then mostly smaller review scopes, not wall time.\n\nOperator view, not a decision (2026-10-24): Codex could run the pre-planner, as a role apart from the Claude-written code (see note `codex-engine`).\n\n## Open\n\n- The choice between `stitch` and tapestry is made before the run starts, as darn against tapestry is today, while only Discussion reads the code that shows whether the task splits into pieces with clear seams (operator, 2026-10-31).\n  `stitch` fits a large task over many packages that splits into parts with clear boundaries; tapestry fits a change woven tight, whose contracts would be as large as a full plan.\n  Measure how often the choice is right; switching after Discussion is the fix if it is often wrong.\n- Contract precision: too loose and pieces collide, too tight and the pre-planner becomes today's Plan writer.\n- A darn that finds its contract wrong stops and escalates to the `stitch` run instead of improvising; dependent pieces wait.\n- How large the whole-task review's fixes may be before they mean a piece failed.\n- Quality against full loom: measure follow-up fixes against loom runs.\n- Cost: Discussion, pre-planner, N darns and the whole-task review against a loom run of the same size.\n",
-      "created": "2026-10-22T16:54:26Z",
-      "revised": "2026-10-31T20:53:22Z"
-    },
-    {
-      "id": 814,
-      "handle": "E1",
-      "slug": "beam-promote-keeps-discussion",
-      "title": "A task that turns out to be a project is refiled as a project, keeping its Discussion findings",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "workspaces",
-        "batten",
-        "loom"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The agent files a note with its findings and tells the orch; the operator decides, then the run ends and a new beam spawns from the parent",
-      "body": "## Seen (2026-10-25, operator 2026-10-30)\n\nA beam is made from a project entry with `lym beam create`, and its life is one batten run over that entry with the `pawl` recipe.\n`lym beam promote` is removed: switching a running task's worktree into a beam halfway proved messy.\nA task can still turn out too large while its Discussion runs, and then it has to become a project instead.\n\n## Idea (operator, 2026-10-30)\n\nThe agent that finds this out, in Discussion or in a research or darn run, files a note on the board with everything it found, tells its parent, the orch, and ends its turn.\nIt never files a project or a task, and starts nothing: only the operator decides what becomes a task or a project.\nThe orch puts the finding to the operator; when the operator decides on a project, the old run ends and the project is created and spawned as a new beam from the parent, never from the old task's worktree.\nNothing is switched in place.\n\nThe note must keep what the agent learned: its body holds the Discussion writer's findings and decisions, so they become the beam's starting design and are not left behind in the old run's records history.\nNote `loom-beam-darns` is a related shape, where a large tapestry task turns into a beam and runs its pieces as darn runs inside it.\n\n## Open design points\n\n- How the agent tells its parent: a message to the orch with the note's slug, and whether the run stops by itself afterwards or waits for the orch to end it.\n- How the run ends once the operator has decided: the orch ends it with `lym batten cancel \u003cslug\u003e --remove`.\n- How the note becomes the project entry and its beam: the orch turns it into a project entry after the operator's go-ahead and runs `lym beam create`, with the old task's entry removed or marked superseded in the same step.\n- Whether the old run's code commits, if any, are kept or dropped.\n- With dobby as the only driver of a beam's runs (only beams have a dobby, and the prime is the root beam), a worktree that is to have worktrees under it must be a beam from the start, so this route is the only way a task's scope grows into a tree of runs.\n",
-      "created": "2026-10-25T12:46:33Z",
-      "revised": "2026-10-31T15:05:43Z"
-    },
-    {
       "id": 849,
       "handle": "E3",
       "slug": "run-pins-its-version",
@@ -695,6 +653,27 @@
       "body": "## Seen (operator and orch, 2026-11-01)\n\nAfter the hub's tmux server was killed, `lym batten run bolt-dir-rename`, run by hand to finish a teardown, brought the prime's dobby up alone: `ensureParentDobby` in `internal/battencli/cli.go` starts the parent worktree's dobby when it is down, and nothing starts its orch.\n`lym a` then found no orch in reed while dobby ran; only `lym s` (`lym beam start`) brought the orch up.\nMeanwhile dobby's mail to the orch had no reader.\n\n## Design (operator, 2026-11-01)\n\nDobby and orch are started in pairs, by beam: every path that brings a worktree's dobby up brings its orch up with it, through `lym beam start`'s way, never dobby alone.\n- `ensureParentDobby` and any other lone dobby spawn go through that one start, or stop and name `lym s` instead of spawning.\n\n## Open\n\n- Whether dobby, finding its orch gone while it runs, brings it up again or says so; this touches note `dormant-orch`, where the orch lies dormant and is woken when needed.\n",
       "created": "2026-11-01T11:04:44Z",
       "revised": "2026-11-01T11:04:44Z"
+    },
+    {
+      "id": 948,
+      "handle": "F14",
+      "slug": "discussed-task-split",
+      "title": "The decision record on the board, and splitting a discussed task",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "loom",
+        "board",
+        "batten",
+        "workspaces"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch",
+      "body": "## Seen\n\nA task's decision record lives only in its run's weft (`_lym/discussion/decision-record.md`): a cancelled run leaves it in the records history, and no new task takes it along.\nSo when Discussion finds a task too large, or the operator decides a tapestry run should rather be split, what Discussion found is lost or must be copied out by hand.\nSeveral notes circled the same question (where the decision record lives, how a task is split); this note joins them.\n\n## Core: the decision record on the board (operator, 2026-11-01)\n\n- When Discussion is approved, after its review, the decision record is copied into the task's board entry, and the entry is flagged as discussed.\n- A task flagged discussed skips Discussion: tapestry starts at Plan from the record, and darn takes the record as final, as darn takes its task text as already discussed today.\n- Changing one's mind loses nothing: the run is cancelled, the record stays on the board, and it can be split into discussed tasks or made a project.\n- lym itself writes the record field, at Discussion's approval and at each `lym loom decision add`, so the field is exempt from the lock on a claimed entry.\n  That lock exists only so the orch does not change a task's text after its agents have read it; a record written by lym is not that.\n\n## Ways to split, simplest first\n\n1. The operator, or the board agent of note `board-agent-button`, splits a discussed entry into tasks with `depends_on`, each with its part of the record and flagged discussed.\n   The same agent can split an undiscussed entry before it runs, but then each part runs its own Discussion and rereads much of the same code; a tapestry part carries about $23 of fixed cost, so this pays best when the parts are darn-sized.\n2. Discussion finds the task too large or proposes a split: it writes its findings and the proposed parts into the record, tells its parent and ends its turn.\n   It files no task or project and starts nothing; the operator decides, and the parts become plain tasks in the prime or, for a large one, a project and beam spawned from the parent, never from the old task's worktree.\n   Its prompt must hold back: one part is the default, a split only where the seams are clear and each part pays for its own Plan and review, and small parts go to darn.\n3. `stitch`: a stand-alone loom recipe for a large task's whole course, chosen before the run starts.\n   Preflight, Discussion, a Pre-Plan producer that splits the decided scope into parts with contracts (what each takes in, delivers and exports, and which parts it depends on), a row with no agent that turns the entry into a project and files each part as a darn task, then an inner pawl run through `battenshed.NewInnerRun` that brings up the beam, waits until every part has landed and lands the beam.\n   Parts run with review off; one review covers the whole diff after the last lands.\n   It is tried first as a hand-run test project with the projects and beams that exist, measured against tapestry runs of the same size (`docs/research/token-audit-2026-10-22`), and built only if it saves tokens.\n   The risk: tapestry's build is cheap because Webster runs on Sonnet following an Opus plan, while parts under a coarse pre-plan likely need Opus writers.\n\n## Open\n\n- Where the records live: in `board.json`, or in a file of their own in the Bolt checkout beside it with the same entry-level replay, since a record is often 10–30 KB.\n- A split record's format: each part must still pass the discussion check.\n- Whether the old run's commits, if any, are kept when a run is cancelled for a split.\n- `stitch`: contract precision, how large the whole-task review's fixes may be, and how often the choice between `stitch` and tapestry before the run is right.\n",
+      "created": "2026-10-22T16:54:26Z",
+      "revised": "2026-11-01T11:14:15Z"
     }
   ],
   "prime_owner": "neve",
