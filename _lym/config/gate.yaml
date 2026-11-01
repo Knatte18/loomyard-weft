@@ -6,7 +6,7 @@ tiers:
     about: untagged tests
     command: "go test -json -tags tier0 {targets} {args}"
     all_targets: ./...
-    env: {GOFLAGS: "-trimpath -p={parallel}"}
+    env: {GOFLAGS: "-trimpath -p={parallel}", LYM_TEST_TIER: "0"}
     counter: go-json
     parallel: 4
     timeout_min: 10
@@ -14,7 +14,7 @@ tiers:
     about: integration tests with build and vet under each tag first
     command: "go build ./... && go vet -tags tier0 {targets} && go vet -tags tier1 {targets} && go vet -tags tier2 {targets} && go vet -tags tier3 {targets} && go test -json -tags tier1 {targets} {args}"
     all_targets: ./...
-    env: {GOFLAGS: "-trimpath -p={parallel}"}
+    env: {GOFLAGS: "-trimpath -p={parallel}", LYM_TEST_TIER: "1"}
     counter: go-json
     parallel: 4
     timeout_min: 30
@@ -23,7 +23,7 @@ tiers:
     about: tmux tests
     command: "go test -json -tags tier2 {targets} {args}"
     all_targets: ./...
-    env: {GOFLAGS: "-trimpath -p={parallel}"}
+    env: {GOFLAGS: "-trimpath -p={parallel}", LYM_TEST_TIER: "2"}
     counter: go-json
     parallel: 4
     timeout_min: 30
@@ -32,7 +32,7 @@ tiers:
     about: llm tests run by hand only
     command: "go test -json -tags tier3 {targets} {args}"
     all_targets: ./...
-    env: {GOFLAGS: "-trimpath -p={parallel}"}
+    env: {GOFLAGS: "-trimpath -p={parallel}", LYM_TEST_TIER: "3"}
     counter: go-json
     parallel: 1
     timeout_min: 60
