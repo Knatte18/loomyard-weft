@@ -2,6 +2,8 @@
 
 `read-whole-not-slices` · Task · enhancement, webster, stencil · draft
 
+Depends on: [`retired-name-sweep`](design-retired-name-sweep.md)
+
 ## Seen (orch, 2026-11-01)
 
 The five heaviest Webster forks read one file in three to five slices over as many turns, such as `sed -n 200,380p`, `380,560p` and `560,760p` of `internal/loomcli/decision_test.go` in three turns, and re-read the same files in four to seven separate turns.
