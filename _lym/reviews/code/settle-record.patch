@@ -1,0 +1,721 @@
+diff --git a/PATTERN.md b/PATTERN.md
+index 879b99a9..ad5ee568 100644
+--- a/PATTERN.md
++++ b/PATTERN.md
+@@ -37,6 +37,7 @@
+ - `PATTERN-shed-driver` — Driving a shed run: generic verb bodies only in `internal/shedverbs`, the step-until-stop loop only in `internal/sheddriver`, run paths, ids and `Seed` only in `internal/shedrun`. (test) — [background](pattern/PATTERN-shed-driver.md)
+ - `PATTERN-shed-stop-chain` — A shed run's stop: rule table, tackler, arbiter, then parent, for every recipe; a stop the driver's arbiter seam marks as judged first, by row and reason, skips the tackler; arbiter keys in shed.yaml, batten's overridable in batten.yaml, a loom recipe's own via its profile block.
+ - `PATTERN-dobby-starts-runs` — Starting or driving a board task's run: its parent's dobby, from an empty status, in batten passes; a hand `lym batten run` is one pass.
++- `PATTERN-dobby-orch-pair` — Starting a worktree's dobby: only with its orch, through `orchcli.BeamUp`, or `orchcli.BeamUpWorktree` or a `lym beam start` child from a verb that needs the dobby live; never `dobbyengine.EnsureLive` or `SpawnDetached` alone.
+ - `PATTERN-transient-stop` — Marking a failure transient: only `internal/shedengine`'s mark, translated by `internal/shedtransient` at a producer or step-bootstrap boundary; never on a gate verdict.
+ - `PATTERN-friction-capture` — Halting or crash-resuming a run, or refusing in webster: Go writes a note via `internal/friction`; none is archived before a reflection covers it. (test)
+ - `PATTERN-tolerant-records` — Go-written JSON records: never refuse an unknown key; rewrite via `internal/state`. (test) — [background](pattern/PATTERN-tolerant-records.md)
+diff --git a/internal/battencli/cli.go b/internal/battencli/cli.go
+index 84ceea7e..0cd88abb 100644
+--- a/internal/battencli/cli.go
++++ b/internal/battencli/cli.go
+@@ -41,7 +41,7 @@
+ // dobbyreads.go holds the reads of what a worktree's dobby drives, exported for the dobby's own wiring and for the overview: `DobbyRuns`, `DobbyLandings` and `DobbyTasks` over a `DobbyParents` cache, and `DobbyViewReader`, which builds the dobby's view from outside its process.
+ //
+ // "lym batten run <slug>" is one pass: it runs the run to its next halt or yield and exits, started by its parent worktree's dobby or by hand.
+-// After the pass it makes sure the parent worktree's dobby is live.
++// After the pass it makes sure the parent worktree's dobby is live, bringing a dobby that is down up with its orch through `orchcli.BeamUpWorktree`, as `lym beam start` does, never alone.
+ // `StartFirstPass` is the in-process start of a first pass for the verbs that take a run over or start a beam project's:
+ // it runs the status check, the pause refusal and the owner pre-flight of a plain run, refuses a done slug, a covered one or one another machine owns before starting anything, then starts the pass detached.
+ // Its `FirstPassOptions.Anchor` is recorded as the seed's `anchor` param on the first pass only, so it rides in the run record and a resume keeps it.
+@@ -89,6 +89,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/orchcli"
+ 	"github.com/Knatte18/loomyard/internal/output"
+ 	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/Knatte18/loomyard/internal/shedbuild"
+@@ -151,8 +152,8 @@ type battenCLI struct {
+ 	passSpawn func(dir string, args []string) (int, error)
+ 	// dobbyLive reports whether the dobby described by the geometry is running; nil selects dobbyengine.Live.
+ 	dobbyLive func(dobbyengine.Geometry) (bool, error)
+-	// dobbySpawn starts the dobby described by the geometry as a detached process; nil selects dobbyengine.SpawnDetached.
+-	dobbySpawn func(dobbyengine.Geometry) error
++	// pairStart brings up the worktree named parent, its dobby with its orch; nil selects orchcli.BeamUpWorktree over this receiver's prime.
++	pairStart func(parent string) error
+ 	// reconcile runs the run-scope origin reconcile of a slug the pre-run resumes; Command wires it to reconcileRun, and nil reads as no reconcile, which only a hand-populated receiver has.
+ 	reconcile func(slug string) (fabricengine.OriginReport, error)
+ 	// continuePass carries "run"'s hidden --continue-pass value: the pass is one dobby schedules into a run it already drives, so the pre-run skips the resume's origin reconcile, the Open-Window re-run and the pause refusal.
+@@ -518,13 +519,14 @@ func parentWorktree(prime *lymcwd.Location, slug string) (string, error) {
+ }
+ 
+ // ensureParentDobby makes sure the dobby of slug's parent worktree is running, so a run started by hand or in a first pass is driven on.
++// A dobby that is down is brought up with its orch, never alone, so its notices have a reader.
+ // ownerElsewhere names the other machine that owns the parent worktree on the board's owners, or is empty;
+ // when another machine owns it, nothing is spawned and the error names `lym adopt <parent>`, or `lym adopt root` for the prime, since that dobby would exit at once on its owner read and leave the run undriven.
+ // landingHeld reports whether the parent beam's landing hold stands;
+ // when it does, nothing is spawned and the error names `lym batten status <parent>`.
+-// Otherwise live reads whether the dobby runs and spawn starts it when it does not;
+-// a failed geometry, read or spawn is returned naming `lym beam start <parent>`, or `lym beam start root` for the prime.
+-func ensureParentDobby(prime *lymcwd.Location, slug string, ownerElsewhere func(parent string) (string, error), landingHeld func(parent string) (bool, error), live func(dobbyengine.Geometry) (bool, error), spawn func(dobbyengine.Geometry) error) error {
++// Otherwise live reads whether the dobby runs, and start brings the parent worktree up, its dobby with its orch, when it does not;
++// a failed geometry, read or start is returned naming `lym beam start <parent>`, or `lym beam start root` for the prime.
++func ensureParentDobby(prime *lymcwd.Location, slug string, ownerElsewhere func(parent string) (string, error), landingHeld func(parent string) (bool, error), live func(dobbyengine.Geometry) (bool, error), start func(parent string) error) error {
+ 	parent, err := parentWorktree(prime, slug)
+ 	if err != nil {
+ 		return fmt.Errorf("battencli: resolve the parent worktree of %q: %w; way forward: fix the cause, then run `lym batten run %s` again", slug, err, slug)
+@@ -562,13 +564,13 @@ func ensureParentDobby(prime *lymcwd.Location, slug string, ownerElsewhere func(
+ 	if running {
+ 		return nil
+ 	}
+-	if err := spawn(geometry); err != nil {
+-		return fmt.Errorf("battencli: start the dobby of %q: %w; way forward: %s", parent, err, startWay)
++	if err := start(parent); err != nil {
++		return fmt.Errorf("battencli: start the dobby and orch of %q: %w; way forward: %s", parent, err, startWay)
+ 	}
+ 	return nil
+ }
+ 
+-// ensureDobby is ensureParentDobby over this receiver's seams, the board's owners and landing hold and dobbyengine's liveness read and detached spawn where a seam is nil.
++// ensureDobby is ensureParentDobby over this receiver's seams, the board's owners and landing hold, dobbyengine's liveness read and orchcli's worktree bring-up where a seam is nil.
+ func (c *battenCLI) ensureDobby() error {
+ 	ownerElsewhere := c.parentOwner
+ 	if ownerElsewhere == nil {
+@@ -582,11 +584,11 @@ func (c *battenCLI) ensureDobby() error {
+ 	if live == nil {
+ 		live = dobbyengine.Live
+ 	}
+-	spawn := c.dobbySpawn
+-	if spawn == nil {
+-		spawn = dobbyengine.SpawnDetached
++	start := c.pairStart
++	if start == nil {
++		start = func(parent string) error { return orchcli.BeamUpWorktree(c.location, parent) }
+ 	}
+-	return ensureParentDobby(c.location, c.slug, ownerElsewhere, landingHeld, live, spawn)
++	return ensureParentDobby(c.location, c.slug, ownerElsewhere, landingHeld, live, start)
+ }
+ 
+ // otherMachineOwning names the machine other than this one that owns the worktree parent on the local board, the prime's name reading the prime owner.
+diff --git a/internal/battencli/cli_test.go b/internal/battencli/cli_test.go
+index 0088e8ea..baeacdfa 100644
+--- a/internal/battencli/cli_test.go
++++ b/internal/battencli/cli_test.go
+@@ -164,10 +164,10 @@ func TestCommand_HelpCarriesNoTeardownGotoExample(t *testing.T) {
+ 	walk(Command())
+ }
+ 
+-// TestStartFirstPass covers the detached first pass over a hand-populated receiver with fake pass, dobby-liveness, dobby-spawn and parent-owner seams:
++// TestStartFirstPass covers the detached first pass over a hand-populated receiver with fake pass, dobby-liveness, pair-start and parent-owner seams:
+ // a done slug and a slug a pause covers return an envelope whose ok is false naming their way forward and start nothing;
+-// a startable slug starts one pass with the prime's anchor as its working directory and starts its parent's dobby once when that reads not live and never when it reads live;
+-// a failed dobby spawn still returns the started pass's envelope with a warning naming `lym beam start` for the parent;
++// a startable slug starts one pass with the prime's anchor as its working directory and brings its parent worktree up once, its dobby with its orch, when that dobby reads not live and never when it reads live;
++// a failed pair start still returns the started pass's envelope with a warning naming `lym beam start` for the parent;
+ // a parent another machine owns starts no dobby and warns naming `lym adopt` for the parent, or `lym adopt root` for the prime;
+ // a parent beam whose landing hold stands starts no dobby and warns naming `lym batten status`.
+ func TestStartFirstPass(t *testing.T) {
+@@ -178,28 +178,28 @@ func TestStartFirstPass(t *testing.T) {
+ 		otherHost = "elsewhere"
+ 	)
+ 	tests := []struct {
+-		name          string
+-		status        shedengine.State
+-		pauseCovers   bool
+-		driverSet     bool
+-		childSet      bool
+-		beamParent    bool
+-		dobbyLive     bool
+-		dobbySpawnErr error
+-		parentOwner   string
+-		landingHeld   bool
++		name         string
++		status       shedengine.State
++		pauseCovers  bool
++		driverSet    bool
++		childSet     bool
++		beamParent   bool
++		dobbyLive    bool
++		pairStartErr error
++		parentOwner  string
++		landingHeld  bool
+ 		// anchor is the first pass's anchor option, which the seed the pass arms records as its anchor param.
+ 		anchor         string
+ 		wantRefusal    []string
+ 		wantPassArgs   []string
+-		wantDobbySpawn int
++		wantPairStarts int
+ 		wantWarning    []string
+ 		wantParent     string
+ 	}{
+ 		{
+ 			name:           "StartableSlugStartsItsPassAndTheDobbyOnce",
+ 			wantPassArgs:   []string{"batten", "run", "some-slug"},
+-			wantDobbySpawn: 1,
++			wantPairStarts: 1,
+ 			wantParent:     "hub-repo",
+ 		},
+ 		{
+@@ -213,35 +213,35 @@ func TestStartFirstPass(t *testing.T) {
+ 			driverSet:      true,
+ 			childSet:       true,
+ 			wantPassArgs:   []string{"batten", "run", "some-slug", "--driver", "go", "--child-driver", "go"},
+-			wantDobbySpawn: 1,
++			wantPairStarts: 1,
+ 			wantParent:     "hub-repo",
+ 		},
+ 		{
+ 			name:           "AnchorOptionIsRecordedAsTheSeedsAnchorParam",
+ 			anchor:         "sub/dir",
+ 			wantPassArgs:   []string{"batten", "run", "some-slug"},
+-			wantDobbySpawn: 1,
++			wantPairStarts: 1,
+ 			wantParent:     "hub-repo",
+ 		},
+ 		{
+ 			name:           "BlockedStatusResumesAsAPass",
+ 			status:         shedengine.StateBlocked,
+ 			wantPassArgs:   []string{"batten", "run", "some-slug"},
+-			wantDobbySpawn: 1,
++			wantPairStarts: 1,
+ 			wantParent:     "hub-repo",
+ 		},
+ 		{
+ 			name:           "BeamParentGetsItsOwnDobby",
+ 			beamParent:     true,
+ 			wantPassArgs:   []string{"batten", "run", "some-slug"},
+-			wantDobbySpawn: 1,
++			wantPairStarts: 1,
+ 			wantParent:     beam,
+ 		},
+ 		{
+-			name:           "FailedDobbySpawnWarnsAndKeepsThePass",
+-			dobbySpawnErr:  errors.New("exec failed"),
++			name:           "FailedPairStartWarnsAndKeepsThePass",
++			pairStartErr:   errors.New("exec failed"),
+ 			wantPassArgs:   []string{"batten", "run", "some-slug"},
+-			wantDobbySpawn: 1,
++			wantPairStarts: 1,
+ 			wantWarning:    []string{"exec failed", "lym beam start root"},
+ 			wantParent:     "hub-repo",
+ 		},
+@@ -330,7 +330,7 @@ func TestStartFirstPass(t *testing.T) {
+ 
+ 			var passDir string
+ 			var passArgs []string
+-			dobbySpawns := 0
++			var pairStarts []string
+ 			c.passSpawn = func(dir string, args []string) (int, error) {
+ 				passDir, passArgs = dir, args
+ 				return 4242, nil
+@@ -338,9 +338,9 @@ func TestStartFirstPass(t *testing.T) {
+ 			c.parentOwner = func(string) (string, error) { return tt.parentOwner, nil }
+ 			c.landingHeld = func(string) (bool, error) { return tt.landingHeld, nil }
+ 			c.dobbyLive = func(dobbyengine.Geometry) (bool, error) { return tt.dobbyLive, nil }
+-			c.dobbySpawn = func(dobbyengine.Geometry) error {
+-				dobbySpawns++
+-				return tt.dobbySpawnErr
++			c.pairStart = func(parent string) error {
++				pairStarts = append(pairStarts, parent)
++				return tt.pairStartErr
+ 			}
+ 
+ 			cmd := &cobra.Command{Use: "run", RunE: func(cmd *cobra.Command, args []string) error { return c.startFirstPass(cmd) }}
+@@ -360,8 +360,8 @@ func TestStartFirstPass(t *testing.T) {
+ 						t.Errorf("error %q does not name its way forward %q", msg, want)
+ 					}
+ 				}
+-				if passArgs != nil || dobbySpawns != 0 {
+-					t.Errorf("a refused slug started a pass %v and %d dobbies; want nothing started", passArgs, dobbySpawns)
++				if passArgs != nil || pairStarts != nil {
++					t.Errorf("a refused slug started a pass %v and brought up %v; want nothing started", passArgs, pairStarts)
+ 				}
+ 				return
+ 			}
+@@ -374,8 +374,13 @@ func TestStartFirstPass(t *testing.T) {
+ 			if envelope["pid"] != float64(4242) || envelope["parent_worktree"] != tt.wantParent {
+ 				t.Errorf("envelope %v; want pid 4242 and parent_worktree %q", envelope, tt.wantParent)
+ 			}
+-			if dobbySpawns != tt.wantDobbySpawn {
+-				t.Errorf("dobby spawns = %d; want %d", dobbySpawns, tt.wantDobbySpawn)
++			if len(pairStarts) != tt.wantPairStarts {
++				t.Errorf("pair starts = %v; want %d", pairStarts, tt.wantPairStarts)
++			}
++			for _, started := range pairStarts {
++				if started != tt.wantParent {
++					t.Errorf("pair start brought up %q; want the parent worktree %q", started, tt.wantParent)
++				}
+ 			}
+ 			seed, seeded, err := shedrun.ReadSeed(c.location, c.slug)
+ 			if err != nil {
+diff --git a/internal/fabriccli/anchor.go b/internal/fabriccli/anchor.go
+index 7af7e6b6..17674aa4 100644
+--- a/internal/fabriccli/anchor.go
++++ b/internal/fabriccli/anchor.go
+@@ -137,7 +137,7 @@ type anchorDeps struct {
+ 	AcquireParentLock func(ctx context.Context, location *lymcwd.Location) (release func(), err error)
+ 	// EndDobbies ends the dobbies of the worktrees, leaving alone the processes registered with a role in spare, and returns the ones it ended.
+ 	EndDobbies func(worktrees []string, spare ...string) (ended []string, err error)
+-	// EnsureDobbies starts the dobby of each worktree named that is not live, refusing one this machine does not own or whose landing hold stands.
++	// EnsureDobbies brings up each worktree named, its dobby with its orch, as `lym beam start` does, and returns every refusal and failure.
+ 	EnsureDobbies func(worktrees []string) error
+ 	// Begin begins the change of the worktree's anchor in the engine.
+ 	Begin func(location *lymcwd.Location, target string) (anchorChange, error)
+@@ -441,12 +441,12 @@ func moveAnchor(ctx context.Context, deps anchorDeps, location *lymcwd.Location,
+ 		result.PushError = finishErr.Error()
+ 	}
+ 	result.From, result.Anchor, result.Changed = change.From(), change.To(), true
+-	if startErr := startDobbies(deps, dobbies); startErr != nil {
+-		result.DobbyStartError = startErr.Error()
+-	}
+ 	releaseParentLock()
+ 	releaseParentLock = nil
+ 	change.Close()
++	if startErr := startDobbies(deps, dobbies); startErr != nil {
++		result.DobbyStartError = startErr.Error()
++	}
+ 	result.Mutations = rec.Snapshot()
+ 	return result, nil
+ }
+diff --git a/internal/fabriccli/anchor_test.go b/internal/fabriccli/anchor_test.go
+index 4a985adc..370bdc91 100644
+--- a/internal/fabriccli/anchor_test.go
++++ b/internal/fabriccli/anchor_test.go
+@@ -508,9 +508,9 @@ func TestChangeAnchor(t *testing.T) {
+ 			"apply",
+ 			"reopen-log " + f.logsDir("beam1", "sub"),
+ 			"finish",
+-			"ensure-dobbies beam1",
+ 			"release-parent-lock",
+ 			"close",
++			"ensure-dobbies beam1",
+ 		}
+ 		if !slices.Equal(f.calls, want) {
+ 			t.Errorf("calls =\n%s\nwant\n%s", strings.Join(f.calls, "\n"), strings.Join(want, "\n"))
+@@ -781,3 +781,55 @@ func TestChangeAnchor(t *testing.T) {
+ 		}
+ 	})
+ }
++
++// TestStartDobbiesThroughBeamStart pins that the prime is started under the argument `root` and any other worktree under its name, that a failed start does not stop the others, and that the joined error names each failed argument with the verb's output.
++func TestStartDobbiesThroughBeamStart(t *testing.T) {
++	t.Parallel()
++
++	tests := []struct {
++		name      string
++		worktrees []string
++		// failing maps an argument to the output its start fails with.
++		failing   map[string]string
++		wantRuns  []string
++		wantErr   []string
++		wantNoErr bool
++	}{
++		{name: "PrimeIsRootAndBeamIsItsSlug", worktrees: []string{"main", "some-beam"}, wantRuns: []string{"root", "some-beam"}, wantNoErr: true},
++		{
++			name: "AFailureDoesNotStopTheOthers", worktrees: []string{"main", "first", "second"},
++			failing:  map[string]string{"first": "refused by owner", "second": "no orch"},
++			wantRuns: []string{"root", "first", "second"},
++			wantErr:  []string{"`lym beam start first` failed", "refused by owner", "`lym beam start second` failed", "no orch"},
++		},
++		{name: "NoWorktreesStartsNothing", wantNoErr: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			var runs []string
++			run := func(label string) ([]byte, error) {
++				runs = append(runs, label)
++				if output, failed := tt.failing[label]; failed {
++					return []byte(output + "\n"), errors.New("exit status 1")
++				}
++				return nil, nil
++			}
++
++			err := startDobbiesThroughBeamStart("main", tt.worktrees, run)
++
++			if !slices.Equal(runs, tt.wantRuns) {
++				t.Errorf("startDobbiesThroughBeamStart(main, %v) ran %v; want %v", tt.worktrees, runs, tt.wantRuns)
++			}
++			if tt.wantNoErr && err != nil {
++				t.Errorf("startDobbiesThroughBeamStart(main, %v) = %v; want no error", tt.worktrees, err)
++			}
++			for _, want := range tt.wantErr {
++				if err == nil || !strings.Contains(err.Error(), want) {
++					t.Errorf("startDobbiesThroughBeamStart(main, %v) = %v; want it to contain %q", tt.worktrees, err, want)
++				}
++			}
++		})
++	}
++}
+diff --git a/internal/fabriccli/anchordeps.go b/internal/fabriccli/anchordeps.go
+index 047e52a9..33bfc78e 100644
+--- a/internal/fabriccli/anchordeps.go
++++ b/internal/fabriccli/anchordeps.go
+@@ -1,4 +1,4 @@
+-// anchordeps.go fills the verb's anchorDeps over a hub: the board's owners, the reed, run, gate and hibernate readers, the parent lock, the dobby end and start, and the engine's change.
++// anchordeps.go fills the verb's anchorDeps over a hub: the board's owners, the reed, run, gate and hibernate readers, the parent lock, the dobby end, the dobby and orch start through `lym beam start`, and the engine's change.
+ // Every dobby, reed and run reader goes through the same internal package the rest of lym reads that state with.
+ 
+ package fabriccli
+@@ -10,14 +10,16 @@ import (
+ 	"fmt"
+ 	"io/fs"
+ 	"os"
++	"os/exec"
+ 	"path/filepath"
+ 	"runtime"
+ 	"slices"
+ 	"sort"
++	"strings"
++	"testing"
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+-	"github.com/Knatte18/loomyard/internal/dobbyengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gitrepo"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+@@ -256,8 +258,7 @@ func hubAnchorDeps(acting *lymcwd.Location) (anchorDeps, error) {
+ 			if err != nil {
+ 				return err
+ 			}
+-			_, err = dobbyengine.EnsureLive(hubgeom.DobbyStart(primeLocation), worktrees)
+-			return err
++			return startDobbiesThroughBeamStart(primeLocation.WorktreeName, worktrees, beamStartChild(primeLocation))
+ 		},
+ 		Begin: func(location *lymcwd.Location, target string) (anchorChange, error) {
+ 			cfg, err := fabricengine.LoadConfig(fabricengine.ConfigDirs(location))
+@@ -277,6 +278,44 @@ func hubAnchorDeps(acting *lymcwd.Location) (anchorDeps, error) {
+ 	}, nil
+ }
+ 
++// startDobbiesThroughBeamStart starts each of worktrees by running `lym beam start` through run, so each dobby comes up with its orch.
++// run takes the verb's argument, `root` for the prime named primeName and the worktree's name otherwise, and returns the verb's output with its failure.
++// A worktree whose start fails does not stop the others; the returned error joins every failure, each naming its argument and carrying the verb's output.
++func startDobbiesThroughBeamStart(primeName string, worktrees []string, run func(label string) ([]byte, error)) error {
++	var failures []error
++	for _, worktree := range worktrees {
++		label := worktree
++		if worktree == primeName {
++			label = "root"
++		}
++		output, err := run(label)
++		if err != nil {
++			failures = append(failures, fmt.Errorf("`lym beam start %s` failed: %w: %s", label, err, strings.TrimSpace(string(output))))
++		}
++	}
++	return errors.Join(failures...)
++}
++
++// beamStartChild returns the run function that executes `lym beam start <label>` as a child process from the prime's anchor and waits for it.
++// The verb is run as a child process because this package cannot import the orch bring-up: a test fixture imports this package from the orch packages' own tests.
++// The returned function fails, starting nothing, in a test binary, where the executable is the test binary.
++func beamStartChild(prime *lymcwd.Location) func(label string) ([]byte, error) {
++	return func(label string) ([]byte, error) {
++		if testing.Testing() {
++			return nil, errors.New("fabriccli: `lym beam start` not run under test")
++		}
++		executable, err := os.Executable()
++		if err != nil {
++			return nil, fmt.Errorf("locate the lym executable: %w", err)
++		}
++		args := []string{"beam", "start", label}
++		cmd := exec.Command(executable, args...)
++		cmd.Dir = prime.AnchorPath()
++		logger.Info("fabriccli: running beam start", "exe", executable, "args", args, "dir", cmd.Dir)
++		return cmd.Output()
++	}
++}
++
+ // pairPresent reports whether the hub holds a pair called slug on this machine: a registered, unpruned worktree whose directory exists.
+ func pairPresent(acting *lymcwd.Location, slug string) (bool, error) {
+ 	worktrees, err := hubWorktrees(acting)
+diff --git a/internal/fabriccli/doc.go b/internal/fabriccli/doc.go
+index 1df1e18f..b7040f77 100644
+--- a/internal/fabriccli/doc.go
++++ b/internal/fabriccli/doc.go
+@@ -109,7 +109,7 @@
+ // with the record gone the dobbies it ended start again and the error is returned;
+ // with it standing nothing starts and the error names the re-run of the same `--set`, which recovers the record.
+ // A `Finish` error after it removed the record fails nothing: the envelope reports it as `push_error` and the dobby start goes on.
+-// The dobbies the move ends then start through `EnsureLive`, named one by one, the prime's move naming the prime and every local beam and a beam's move that beam alone, so a beam this machine does not own or whose landing hold stands is refused there; a move that fails restarts only the dobbies it ended, and a start that fails is `dobby_start_error` with the way forward `lym beam start`, the verb exiting 0.
++// Once the parent lock is released and the change closed, the dobbies the move ends start again with their orchs through a `lym beam start` child per worktree, `root` for the prime, waited for one by one, the prime's move naming the prime and every local beam and a beam's move that beam alone, so a beam this machine does not own or whose landing hold stands is refused there and reported in `dobby_start_error`; a move that fails restarts only the dobbies it ended, and a start that fails is `dobby_start_error` with the way forward `lym beam start`, the verb exiting 0.
+ // The verb holds no lock against a session, a hand pass or a hidden `lym beam dobby` started meanwhile, and its help says so.
+ //
+ // # Hub pull
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index c40ef198..3761e93a 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -28,7 +28,7 @@
+ // Its shed reads Preflight, Record-Write, Beam-Up, Beam-Await, Parent-Align, Beam-Describe, PR-Review, Finalize and Beam-Down, with no plan, no review round and no reroute edge.
+ // Its Record-Write writes the project record and its support log from the project entry's body and commits them under the beam's slug.
+ // wire fills `Env.Pawl` for it through `pawlDeps`: the run's seed id is the seed's start time, the status is written on the beam's project entry through the board, and Beam-Up's one step is `orchcli.BeamUp` with no prepare, since the run already judged origin.
+-// The beam's dobby is stopped through `runproc.EndRole` by its `RoleDobby` record, and restarted through `dobbyengine.EnsureLive` naming the beam alone.
++// The beam's dobby is stopped through `runproc.EndRole` by its `RoleDobby` record, and restarted through `orchcli.BeamUpWorktree` naming the beam, which brings the beam's orch up with it.
+ // Beam-Await's re-check reads `battencli.ReadBeamLandBlockers` and `battencli.BeamLandRefusal` with the beam's owner, its parent's owner and the beam's ready record, and words each failure as `pawlRecheckLines` does, naming `lym adopt <beam>` or the parent's adopt subject, `root` for the prime, and `lym beam ready <slug>` for a beam not flagged ready.
+ // A running shed also watches the land request's directory, so a request wakes Beam-Await at once.
+ // Beam-Describe writes the change description from the beam's board entry, the commits the beam adds over the parent branch its pair records and the project record's added entries.
+diff --git a/internal/loomcli/pawlwiring.go b/internal/loomcli/pawlwiring.go
+index 51ca7a2d..864f7260 100644
+--- a/internal/loomcli/pawlwiring.go
++++ b/internal/loomcli/pawlwiring.go
+@@ -3,7 +3,6 @@
+ package loomcli
+ 
+ import (
+-	"errors"
+ 	"fmt"
+ 	"os"
+ 	"path/filepath"
+@@ -116,7 +115,7 @@ func pawlDeps(location *lymcwd.Location, slug string) (pawlengine.Deps, error) {
+ 			if err != nil {
+ 				return err
+ 			}
+-			return startBeamDobbyAlone(hub, slug)
++			return orchcli.BeamUpWorktree(hub, slug)
+ 		},
+ 		DobbyLive: func() (bool, error) {
+ 			hub, err := prime()
+@@ -276,22 +275,6 @@ func stopBeamDobby(prime *lymcwd.Location, slug string) error {
+ 	return err
+ }
+ 
+-// startBeamDobbyAlone starts the dobby of the beam slug unless it is live, naming no other worktree.
+-// A refusal, such as a beam another machine owns, is returned as an error carrying its detail.
+-func startBeamDobbyAlone(prime *lymcwd.Location, slug string) error {
+-	report, err := dobbyengine.EnsureLive(hubgeom.DobbyStart(prime), []string{slug})
+-	if err != nil {
+-		return err
+-	}
+-	var refusals []error
+-	for _, entry := range report.Entries {
+-		if entry.Outcome == dobbyengine.OutcomeRefused {
+-			refusals = append(refusals, fmt.Errorf("the dobby of %s was not started: %s", entry.Worktree, entry.Detail))
+-		}
+-	}
+-	return errors.Join(refusals...)
+-}
+-
+ // beamParentWorktree returns the name of the parent worktree the beam slug records in its origin record, the prime's name when the record names none.
+ func beamParentWorktree(prime *lymcwd.Location, slug string) (string, error) {
+ 	origin, found, err := fabricengine.ReadOriginFor(prime, slug)
+diff --git a/internal/orchcli/doc.go b/internal/orchcli/doc.go
+index 4b7e1710..99f22213 100644
+--- a/internal/orchcli/doc.go
++++ b/internal/orchcli/doc.go
+@@ -8,8 +8,9 @@
+ // `BeamUp` refuses a worktree another machine owns, naming the owner and `lym adopt <slug>` (`lym adopt root` for the prime), a worktree with an anchor change standing on it or on the prime, naming the change's way forward, and a beam whose board entry its landing holds, naming `lym batten status <slug>`.
+ // It judges them from the local Bolt, after the reconcile when `Prepare` ran and before it starts any dobby, window or orch, and `beamUpRefusal` is the pure judgment over the facts `readBeamFacts` reads.
+ // The hub-scope origin reconcile runs from the prime whichever orch is brought up.
+-// After the refusals `BeamUp` starts this worktree's dobby alone through `dobbyengine.EnsureLive`, only when it is not live, then ensures the runs strand and starts the orch and its watcher.
++// After the refusals `BeamUp` starts this worktree's dobby through `dobbyengine.EnsureLive`, only when it is not live, as the first step of the pair it brings up with the runs strand, the orch and its watcher.
+ // A dobby that does not start never stops the bring-up: it becomes a warning naming the cause and `lym beam start`.
++// `BeamUpWorktree` is the bring-up for any other verb that needs a worktree's dobby live: it names the worktree from the prime, runs `BeamUp` without `Prepare`, and returns a dobby that was refused or failed as an error, so no verb starts a dobby without its orch.
+ // `BeamDown` removes the orch strand, after which the watcher exits on its own, and ends the worktree's dobby through `runproc.EndRole`, so no other process of the beam is signalled; each part stops only when live.
+ // `OrchLive` is the liveness predicate other modules call: the worktree's orch state records a strand that reed tracks and reports live.
+ //
+diff --git a/internal/orchcli/start.go b/internal/orchcli/start.go
+index ab6aa6c9..12ed1236 100644
+--- a/internal/orchcli/start.go
++++ b/internal/orchcli/start.go
+@@ -5,10 +5,12 @@
+ package orchcli
+ 
+ import (
++	"errors"
+ 	"fmt"
+ 	"os"
+ 	"path/filepath"
+ 	"strings"
++	"testing"
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/agentname"
+@@ -96,6 +98,55 @@ func BeamUp(location *lymcwd.Location, opts BeamUpOptions) (BeamUpReport, error)
+ 	return c.beamUp(opts)
+ }
+ 
++// ErrBeamUpUnderTest is returned by BeamUpWorktree in a test binary, where bringing a worktree up would start a real dobby, tmux session and agent.
++var ErrBeamUpUnderTest = errors.New("orch: no worktree brought up under test")
++
++// BeamUpWorktree brings up the worktree named worktree of the hub whose prime is prime, the prime's own name naming the prime, as `lym beam start` does without its reconcile:
++// its dobby, its runs strand and its orch with the watcher bound to it.
++// It is the one way a verb that needs a worktree's dobby live starts it, so a dobby never comes up without its orch.
++// BeamUp's refusal or failure is returned, and so is a dobby that was refused or failed to start, carrying its detail.
++// It returns ErrBeamUpUnderTest, starting nothing, in a test binary.
++func BeamUpWorktree(prime *lymcwd.Location, worktree string) error {
++	if testing.Testing() {
++		return ErrBeamUpUnderTest
++	}
++	location, err := bringUpLocation(prime, worktree, lymcwd.ResolveWorktree)
++	if err != nil {
++		return err
++	}
++	report, err := BeamUp(location, BeamUpOptions{})
++	if err != nil {
++		return err
++	}
++	return dobbyStartError(worktree, report)
++}
++
++// bringUpLocation returns the location to bring up for the worktree named worktree: prime itself when worktree is the prime's name, else the location resolve gives for the worktree's directory in the prime's hub.
++func bringUpLocation(prime *lymcwd.Location, worktree string, resolve func(worktreeRoot string) (*lymcwd.Location, error)) (*lymcwd.Location, error) {
++	if worktree == prime.WorktreeName {
++		return prime, nil
++	}
++	resolved, err := resolve(fabricengine.WorktreePath(prime, worktree))
++	if err != nil {
++		return nil, fmt.Errorf("orch: resolve the worktree of %s: %w", worktree, err)
++	}
++	return resolved, nil
++}
++
++// dobbyStartError returns an error naming worktree and the detail of report's dobby outcome when the dobby was neither started nor found live, and nil otherwise.
++// A start that never reported an outcome carries the report's warnings as its detail.
++func dobbyStartError(worktree string, report BeamUpReport) error {
++	switch report.Dobby {
++	case dobbyengine.OutcomeStarted, dobbyengine.OutcomeLive:
++		return nil
++	}
++	detail := report.DobbyDetail
++	if detail == "" {
++		detail = strings.Join(report.Warnings, "; ")
++	}
++	return fmt.Errorf("orch: the dobby of %s was not started: %s", worktree, detail)
++}
++
+ // startedSession is what a started orchestrator run reports back.
+ type startedSession struct {
+ 	// GUID is the run's strand guid.
+diff --git a/internal/orchcli/startdobbies_test.go b/internal/orchcli/startdobbies_test.go
+index 6a2080f1..8a793099 100644
+--- a/internal/orchcli/startdobbies_test.go
++++ b/internal/orchcli/startdobbies_test.go
+@@ -1,16 +1,19 @@
+ //go:build tier0
+ 
+-// startdobbies_test.go pins that `lym beam start` starts the worktree's dobby once, before it touches a strand, and that a dobby that does not start only warns.
++// startdobbies_test.go pins that `lym beam start` starts the worktree's dobby once, before it touches a strand, that a dobby that does not start only warns, and that a bring-up for another verb reads a dobby that did not start as an error.
+ 
+ package orchcli
+ 
+ import (
+ 	"errors"
++	"path/filepath"
+ 	"slices"
+ 	"strings"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/dobbyengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/orchengine"
+ )
+ 
+@@ -89,3 +92,82 @@ func TestStart_StartsTheDobbiesFirst(t *testing.T) {
+ 		})
+ 	}
+ }
++
++// TestBringUpLocation pins that the prime's name brings up the prime without resolving anything, and that any other name brings up the location resolved from that worktree's directory.
++func TestBringUpLocation(t *testing.T) {
++	t.Parallel()
++
++	prime := &lymcwd.Location{HubPath: filepath.Join("hubs", "app.hub"), WorktreeName: "main", AnchorRel: "."}
++	beam := &lymcwd.Location{HubPath: prime.HubPath, WorktreeName: "some-beam", AnchorRel: "."}
++	tests := []struct {
++		name       string
++		worktree   string
++		resolveErr error
++		want       *lymcwd.Location
++		// wantResolved is the directory resolve was asked for, empty when it was not called.
++		wantResolved string
++		wantErr      string
++	}{
++		{name: "Prime", worktree: "main", want: prime},
++		{name: "Beam", worktree: "some-beam", want: beam, wantResolved: fabricengine.WorktreePath(prime, "some-beam")},
++		{name: "BeamResolveFails", worktree: "some-beam", resolveErr: errors.New("no such worktree"), wantResolved: fabricengine.WorktreePath(prime, "some-beam"), wantErr: "orch: resolve the worktree of some-beam: no such worktree"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			resolved := ""
++			resolve := func(worktreeRoot string) (*lymcwd.Location, error) {
++				resolved = worktreeRoot
++				return beam, tt.resolveErr
++			}
++
++			got, err := bringUpLocation(prime, tt.worktree, resolve)
++
++			gotErr := ""
++			if err != nil {
++				gotErr = err.Error()
++			}
++			if gotErr != tt.wantErr {
++				t.Errorf("bringUpLocation(%s) error = %q; want %q", tt.worktree, gotErr, tt.wantErr)
++			}
++			if got != tt.want {
++				t.Errorf("bringUpLocation(%s) = %+v; want %+v", tt.worktree, got, tt.want)
++			}
++			if resolved != tt.wantResolved {
++				t.Errorf("bringUpLocation(%s) resolved %q; want %q", tt.worktree, resolved, tt.wantResolved)
++			}
++		})
++	}
++}
++
++// TestDobbyStartError pins that a bring-up whose dobby started or was live passes, and that a refused, failed or unreported dobby start is an error naming the worktree and its cause.
++func TestDobbyStartError(t *testing.T) {
++	t.Parallel()
++
++	tests := []struct {
++		name   string
++		report BeamUpReport
++		// wantErr is the error's text, empty for no error.
++		wantErr string
++	}{
++		{"Started", BeamUpReport{Dobby: dobbyengine.OutcomeStarted}, ""},
++		{"Live", BeamUpReport{Dobby: dobbyengine.OutcomeLive}, ""},
++		{"Refused", BeamUpReport{Dobby: dobbyengine.OutcomeRefused, DobbyDetail: "owned by elsewhere"}, "orch: the dobby of some-beam was not started: owned by elsewhere"},
++		{"Failed", BeamUpReport{Dobby: dobbyengine.OutcomeFailed, DobbyDetail: "exec failed"}, "orch: the dobby of some-beam was not started: exec failed"},
++		{"Unreported_CarriesTheWarnings", BeamUpReport{Warnings: []string{"first", "second"}}, "orch: the dobby of some-beam was not started: first; second"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			err := dobbyStartError("some-beam", tt.report)
++			got := ""
++			if err != nil {
++				got = err.Error()
++			}
++			if got != tt.wantErr {
++				t.Errorf("dobbyStartError(some-beam, %+v) = %q; want %q", tt.report, got, tt.wantErr)
++			}
++		})
++	}
++}
+diff --git a/internal/pawlengine/deps.go b/internal/pawlengine/deps.go
+index ef9d744e..2ae64c72 100644
+--- a/internal/pawlengine/deps.go
++++ b/internal/pawlengine/deps.go
+@@ -41,7 +41,7 @@ type Deps struct {
+ 	Steps []Step
+ 	// StopDobby stops the beam's dobby so it starts no new member.
+ 	StopDobby func() error
+-	// StartDobby starts the beam's dobby again.
++	// StartDobby starts the beam's dobby again, with its orch.
+ 	StartDobby func() error
+ 	// DobbyLive reports whether the beam's dobby runs.
+ 	DobbyLive func() (bool, error)
+diff --git a/internal/pawlengine/doc.go b/internal/pawlengine/doc.go
+index e154c36b..6694b1d2 100644
+--- a/internal/pawlengine/doc.go
++++ b/internal/pawlengine/doc.go
+@@ -11,7 +11,7 @@
+ // Beam-Await spawns no agent.
+ // It holds the run until a land request naming this run passes the re-check, waking on a change in the request's directory and on a timer that starts at one second and doubles to one minute while idle.
+ // An accepted request writes the status naming Parent-Align, so the landing hold stands, then writes the dobby-stop marker, stops the dobby and re-checks the beam through the told Recheck seam: its members and pairs, its owners and its ready record.
+-// A passing re-check ends the row; a failing one lifts the hold again, restarts the dobby the marker says was stopped, removes the request and posts the blockers to the beam's orch.
++// A passing re-check ends the row; a failing one lifts the hold again, restarts the dobby the marker says was stopped, with its orch, removes the request and posts the blockers to the beam's orch.
+ // An await marker tells a re-entry from the first entry: a re-entry whose dobby is down (once until a re-entry sees it live, recorded in the marker), and a re-entry that finds the hold standing after a crash, post one notice naming `lym beam start` and `lym beam land`.
+ // A beam another machine owns removes any request and yields, deciding nothing.
+ //
