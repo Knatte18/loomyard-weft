@@ -2,6 +2,7 @@
   "current_producer": "Parent-Align",
   "state": "blocked",
   "error": "landing stop: the fixer session of Parent-Align ended without a usable turn (dirty); session log: /home/knatte/Code/loomyard-LYMHUB/reed-status-buttons/.lym/shuttle/54e69e334a8e9843d2a0fc9e21a9e2ae; report: /home/knatte/Code/loomyard-LYMHUB/reed-status-buttons/.lym/loom/Parent-Align-fixer-report.md; way forward: fix or clean the task branch, then `lym loom resume`",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Parent-Align",
