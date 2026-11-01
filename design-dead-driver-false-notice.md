@@ -1,6 +1,6 @@
 # Dobby sends a dead-driver notice for a run that has just started
 
-`dead-driver-false-notice` · Task · bug, dobby, loom
+`dead-driver-false-notice` · Task · bug, dobby, loom · running · Worktree-Create
 
 Depends on: [`seed-starts-at-start`](design-seed-starts-at-start.md)
 
