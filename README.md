@@ -6,13 +6,17 @@ Prime owner: `neve`.
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## [P1 Orch instructions in two layers: lym's role and the repository's rules in heddle](project-orch-instructions.md) (0)
+## [P1 Orch instructions in two layers: lym's role and the repository's rules in heddle](project-orch-instructions.md) (3)
 
 `orch-instructions` · Age 0m · Owner `neve`
 
 One fixed orch role for every repository, repository orch rules in heddle through lym orch rules, and the orch note for run state only
 
-_None._
+| # | Prio | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| E6 |  | **Heddle gains an orch-prompt target, and lym orch rules stores in heddle**<br>• A heddle target for orch sessions only replaces the hub-wide and local orch rules files | [`heddle-orch-target`](design-heddle-orch-target.md) | 0m<br>0m | heddle, orch |
+| E7 |  | **One fixed orch role for every repository, brought up to date**<br>• The rules for every orch move into the shipped role, which settles run-level calls itself and has no board copy | [`orch-role-current`](design-orch-role-current.md) | 0m<br>0m | orch, stencil |
+| E8 |  | **lym's design invariants as PATTERN entries**<br>• doc.go as documentation only, fabric's isolation, no hard-coded names and the other code invariants become PATTERN entries | [`pattern-design-principles`](design-pattern-design-principles.md) | 0m<br>0m | pattern |
 
 ## Prime
 

@@ -20,6 +20,14 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (0)
+## Notes (3)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+### Enhancements (3)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| E6 |  | **Heddle gains an orch-prompt target, and lym orch rules stores in heddle**<br>• A heddle target for orch sessions only replaces the hub-wide and local orch rules files | [`heddle-orch-target`](design-heddle-orch-target.md) | 0m<br>0m | heddle, orch |
+| E7 |  | **One fixed orch role for every repository, brought up to date**<br>• The rules for every orch move into the shipped role, which settles run-level calls itself and has no board copy | [`orch-role-current`](design-orch-role-current.md) | 0m<br>0m | orch, stencil |
+| E8 |  | **lym's design invariants as PATTERN entries**<br>• doc.go as documentation only, fabric's isolation, no hard-coded names and the other code invariants become PATTERN entries | [`pattern-design-principles`](design-pattern-design-principles.md) | 0m<br>0m | pattern |
