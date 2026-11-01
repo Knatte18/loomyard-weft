@@ -551,9 +551,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "darn-sonnet-helpers"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "A producing session's end gate refuses to end while the worktree holds untracked files outside its outputs",
       "body": "## Seen (orch, 2026-11-01)\n\nThe darn writer of `batch-budget-300k-trial` left two untracked files at its worktree root, `200k` and `250k`, each one stray line (\"cautious base est\", \"wide est\"), most likely from a shell redirect in a command it ran.\nIts session ended and the run went on through review to Finalize, which refused the merge-in over the uncommitted files; the tackler handed the stop back and the orch removed them by hand.\nAgain the same day, the Parent-Align fixer of `reed-status-buttons` wrote its report with verdict `fixed` but left `.scratch-task.txt`, a list of the task's changed paths, untracked at the worktree root; the run halted at Parent-Align with \"the fixer session ended without a usable turn (dirty)\", and the orch removed the file by hand and resumed.\nSuch files should never exist at the end of a writing session.\n\n## Idea\n\nA producing session (darn writer, Webster fork, fixers) cannot end while its worktree holds untracked or uncommitted files it did not commit: its end gate, beside the verify and description gates shuttle already runs, names the files and tells the agent to commit what belongs to the change and delete the rest, so the stop is fixed by the agent that made it, not at Finalize.\n",
@@ -696,8 +694,7 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "reed-loses-parts-chair",
-        "darn-sonnet-helpers"
+        "reed-loses-parts-chair"
       ],
       "isolated": false,
       "brief": "Tune, replay on two inputs, tune again, at most 3 rounds, starting from the plan-split-bench report",
@@ -705,29 +702,6 @@
       "status": "draft",
       "created": "2026-11-01T17:30:40Z",
       "revised": "2026-11-01T18:47:04Z"
-    },
-    {
-      "id": 982,
-      "handle": "T3",
-      "slug": "darn-sonnet-helpers",
-      "title": "Agents may use subagents and forks; only headless claude -p stays refused",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "claude",
-        "shuttle",
-        "stencil"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Remove the Agent tool deny, refuse headless claude -p launches instead, and tell writers when to hand work to Sonnet subagents",
-      "body": "## Seen (orch, 2026-11-01)\n\n`claudeengine` denied the in-process Agent tool in every run by a PreToolUse hook, or let only forks through in fork-mode runs (`steerAgentDeny`, `steerAgentNonForkDeny` and their notices in `settings.go`), on the reasoning that all work must stay visible in the run's pane.\nSo a darn writer at 274k context could not hand per-package work to Sonnet helpers, and a Plan writer could not hand its lookups to a fresh subagent: a fork inherits the whole context, so it saves nothing.\nThe orch set `deny_agent_tool: false` in the hub's `claude.yaml` on 2026-11-01 as a stopgap.\n\n## Design (operator, 2026-11-01)\n\n- Subagents and forks are allowed in every run: Claude Code shows them in the session's own pane, and lym reads their transcripts under the session's `subagents` directory.\n- What hides work is a headless `claude -p` (or `--print`) launch, and that stays refused: a PreToolUse Bash deny refuses a command that launches `claude` headless, with a notice saying why and that subagents are the way.\n- The Agent deny, its notices and the `deny_agent_tool` key go, with `Spec.AllowAgentTool` and whatever else only served them; the Webster fork guard (`steerWebsterForkDeny`) stays.\n- The stencils say when to use a subagent: a fresh Sonnet subagent for lookups and for batches of independent per-package work, each owning its files, launched together in one message, with the gate rule and its timeout; the work that needs the overview stays in the session.\n- Docs and the system-prompt notices describe the new rule.\n",
-      "status": "done",
-      "created": "2026-11-01T17:39:20Z",
-      "revised": "2026-11-01T18:31:14Z",
-      "project": "turn-savings"
     },
     {
       "id": 984,
@@ -768,7 +742,6 @@
       "revised": "2026-11-01T18:52:40Z",
       "order": [
         "batching-breach-nudge",
-        "darn-sonnet-helpers",
         "cold-gate-fixer",
         "tokencount-darn-runs",
         "planner-fork-lookups",

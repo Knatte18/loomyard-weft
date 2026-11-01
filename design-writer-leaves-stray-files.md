@@ -2,8 +2,6 @@
 
 `writer-leaves-stray-files` · Task · bug, shuttle, darn, loom · running · Darn-Write
 
-Depends on: [`darn-sonnet-helpers`](design-darn-sonnet-helpers.md)
-
 ## Seen (orch, 2026-11-01)
 
 The darn writer of `batch-budget-300k-trial` left two untracked files at its worktree root, `200k` and `250k`, each one stray line ("cautious base est", "wide est"), most likely from a shell redirect in a command it ran.
