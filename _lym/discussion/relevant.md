@@ -1,0 +1,23 @@
+# Relevant code
+
+- `internal/reedengine/bar.go` `statusFormatSessions`, `followButtonFormat`, `listPrologueFormat`, `unlitButtonStyle` — the status line formats; follow moves out of line 2 and line 3 joins
+- `internal/reedengine/windowsize.go` `pinGeometryOptionsLocked`, `primeGeometry` — the status pins run at boot and attach, where line 3 and the row render
+- `internal/reedengine/bindings.go` `bindingArgvs`, `statusClickBranches`, `followClickCommand`, `pinBindingsLocked`, `switchBindingCommandsLocked` — the left-click dispatch gaining the button branch
+- `internal/reedengine/panebin.go` `composeFollowCommand`, `nameExports` — model for the pinned click line; the strand-name variables to remove
+- `internal/reedengine/follow.go` `followSessionVia` — model for a verb reading tmux facts alone
+- `internal/reedengine/config.go` `Config`, `ConfigSpec`, `validateWindowConfig`, `LoadConfig` — gains the buttons key, its category and validation
+- `internal/reedengine/template_posix.yaml` — gains the default button set; the Windows template beside it too
+- `internal/reedengine/geometry.go` `Geometry` — gains the lazy button closure beside `SpawnOrder`
+- `internal/reedengine/checkmark.go` `SetCheckMark` — stays on line 2
+- `internal/hubgeom/hubgeom.go` `ReedGeometry`, `reedGeometry` — tells place, placeholder values and machine buttons
+- `internal/hubgeom/parentof.go` `ParentOf` — a task's parent beam for `{beam}`
+- `internal/fabricengine/origin.go` `Origin`, `ReadOriginFor` — the beam mark deciding the place
+- `internal/desktophook/config.go` `Config`, `ConfigSpec`, `LoadConfig` — gains the machine buttons key
+- `internal/desktophook/template.yaml` — gains empty button groups
+- `internal/reedcli/follow.go` `followCmd` — model for the role-audience `reed button` verb
+- `internal/configengine/doc.go` — layer, machine and local rules the two keys follow
+- `internal/battencli/refusal.go` `ResolveBattenPrime` — why CANCEL runs from the beam's worktree
+- `internal/agentname/agentname.go` `StrandNameEnv` — the caller variable lym verbs read
+- `internal/reedengine/paneoptions.go` `setStrandPaneOptionsLocked`, `strandLabel` — `@strand` holds the role; the full-name pane option joins here
+- `internal/reedengine/lock.go` `withOpLock` — runs the stale-build re-pin the status formats join
+- `internal/yamlengine/layers.go` `LeafPaths` — a list is one unit, so machine button groups pass the shape check
