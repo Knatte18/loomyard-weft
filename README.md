@@ -52,7 +52,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T6 | **A long gate run answers within the cache lifetime, so the waiting agent keeps its prompt cache warm**<br>• lym gate test caps the run wait like the slot wait, with the cap a config value beside the engine cache lifetime<br>• `profile: light` | [`gate-run-keeps-cache-warm`](design-gate-run-keeps-cache-warm.md) | tapestry | Code-Burler-Review | neve | 20h<br>3h | gate, shuttle, config |
-| T7 | **One verb to take work over on another machine, leaving every run in a known state**<br>• Moving to another machine is many hand steps, and afterwards run states are unclear | [`machine-switch`](design-machine-switch.md) | tapestry | Parent-Align | neve | 1d<br>3h | fabric, dobby, batten |
+| T7 | **One verb to take work over on another machine, leaving every run in a known state**<br>• Moving to another machine is many hand steps, and afterwards run states are unclear | [`machine-switch`](design-machine-switch.md) | tapestry | Drift-Verify | neve | 1d<br>3h | fabric, dobby, batten |
 
 #### Ready (0)
 
@@ -138,4 +138,4 @@ Finished, awaiting `lym board prune --apply`.
 
 | # | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- |
-| T8 | **One project render for the board README and project files**<br>• Every project, Prime included, renders through one function with its sub-projects and its own Running, Ready, Tasks, Notes and Done | [`board-project-render`](design-board-project-render.md) | 24m<br>24m | board |
+| T8 | **One project render for the board README and project files**<br>• Every project, Prime included, renders through one function with its sub-projects and its own Running, Ready, Tasks, Notes and Done | [`board-project-render`](design-board-project-render.md) | 25m<br>25m | board |
