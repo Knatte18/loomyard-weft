@@ -1,6 +1,6 @@
 # Configurable action buttons on the reed status bar
 
-`reed-status-buttons` · Task · feature, reed, config, batten · running · Plan-Bouncer
+`reed-status-buttons` · Task · feature, reed, config, batten · running · Webster
 
 ## Seen
 
