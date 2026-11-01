@@ -1,17 +1,17 @@
 {
   "runGuid": "3358185f1250fb75052ecfb8c4df0a6c",
-  "planFingerprint": "9ee21b0ccfc3c9a63dc202b4e50db407b6511ba596cc40c9c150168bae9ba5cd",
+  "planFingerprint": "88c9d7a72bce197c566a6ffe5a75ff0276f6188f38cb521faa48c454029284bb",
   "planFileHashes": {
     "00-overview.md": "a02e701e4470d011cc8ac7493d8d89e76a7bd019b4c59e507b62ae05b1f03201",
-    "01-shell-detached-forms.md": "9e85e2675594ccc264c380299b10df858c9eaeb6309ad9ffcaeb4155a87750c8",
-    "02-buttons-config-keys.md": "c9c451f45577b34679fefe508bd1e3f69abe39a5a1cb12f3a87ba067d15487e3",
-    "03-button-entries.md": "b2d1058902dec762d478ba3f2380d181ca920bd9bfe2dc69125381e2259d3a9a",
-    "04-geometry-button-context.md": "0bf741f3a44774814544e5f47949a63740d39b0a2d6f05b2d154f8ab03c5aa3b",
-    "05-third-status-line.md": "fe40e6e6cd5e7825c04a79284c0ed16afb7721622750386150e5471d285cfe8b",
-    "06-render-button-row.md": "c3eac47fbbfa37c4feed8f06bd7534ed7666b85fb15a95e58cdad333cf08020a",
+    "01-shell-detached-forms.md": "ae619757cf237b34431021a30c773c4d0441c9945e5b9431758b4035dd0581dc",
+    "02-buttons-config-keys.md": "8a41b21281252bcbd9a38cadf22128e7048af2d07691836c01524850e6772ca4",
+    "03-button-entries.md": "55bc615d4bdec9c3720e318bd750df00542fcc582459858d1cdcc403aa0fbf91",
+    "04-geometry-button-context.md": "ec58072b16e9e23bf3e0fc578b4e19d7a4fe3d9c4396486544972ed26392a939",
+    "05-third-status-line.md": "212e5b61a0728ad00d4f4c65d45abd7f6ab43476fe173167e6a0f4d21ad4fb0c",
+    "06-render-button-row.md": "3f595e45fa6454ab188b142b1d5adb09ab453c2f2a45ca6dab0a346b825e6848",
     "07-strand-name-pane-option.md": "3fccda0bf79d2c68ce9283ae1179a3c755136fc89d25eb5f5460c83b83d3c397",
-    "08-reed-button-verb.md": "8f5e84d01c8d093041eb3e3382d7e30270d4b19ca8919540d6e6499f3397c8b8",
-    "09-button-click-binding.md": "f29a2d3ba017821b90700651ff0659ef5738218118ab555b7872f90384ef69a6"
+    "08-reed-button-verb.md": "79e68400622e4a5e77bf7285fe3a8f401d1ddc46cd3b75fca6dee994588723ad",
+    "09-button-click-binding.md": "999bf38c53368e011a840f1ff2012bd6bafa63c1cd9db61aa9b556a2a416fa20"
   },
   "planOverviewFrameHash": "1260aaf31fefaffa105f2238a85cf9c4b94885d378824b8a7981fddf304a11a9",
   "partition": [
@@ -199,7 +199,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "6f68250bdc4be449309d8d356608c0c4",
   "masterSessionId": "e252c0c4-0986-44c0-9706-0291defd0a23",
   "masterEngine": "claude",
@@ -214,19 +214,43 @@
         "05-third-status-line"
       ],
       "cardHashes": {
-        "01-shell-detached-forms": "9e85e2675594ccc264c380299b10df858c9eaeb6309ad9ffcaeb4155a87750c8",
-        "02-buttons-config-keys": "c9c451f45577b34679fefe508bd1e3f69abe39a5a1cb12f3a87ba067d15487e3",
-        "03-button-entries": "b2d1058902dec762d478ba3f2380d181ca920bd9bfe2dc69125381e2259d3a9a",
-        "04-geometry-button-context": "0bf741f3a44774814544e5f47949a63740d39b0a2d6f05b2d154f8ab03c5aa3b",
-        "05-third-status-line": "fe40e6e6cd5e7825c04a79284c0ed16afb7721622750386150e5471d285cfe8b"
+        "01-shell-detached-forms": "ae619757cf237b34431021a30c773c4d0441c9945e5b9431758b4035dd0581dc",
+        "02-buttons-config-keys": "8a41b21281252bcbd9a38cadf22128e7048af2d07691836c01524850e6772ca4",
+        "03-button-entries": "55bc615d4bdec9c3720e318bd750df00542fcc582459858d1cdcc403aa0fbf91",
+        "04-geometry-button-context": "ec58072b16e9e23bf3e0fc578b4e19d7a4fe3d9c4396486544972ed26392a939",
+        "05-third-status-line": "212e5b61a0728ad00d4f4c65d45abd7f6ab43476fe173167e6a0f4d21ad4fb0c"
       },
       "startSha": "1b72aa3db2e8bc9916cf379b5473cced1b800dd1",
       "kind": "fork",
       "spawnedAt": "2026-11-01T13:39:49Z",
       "sessionId": "e252c0c4-0986-44c0-9706-0291defd0a23",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-shell-detached-forms",
+        "status": "done",
+        "head_sha": "a423899bdfe20bba4c38857502bc303fca232cf9",
+        "deviations": [
+          "internal/hubgeom/hubgeom_test.go",
+          "internal/reedengine/buttons.go",
+          "internal/reedengine/buttons_test.go",
+          "internal/reedengine/config_test.go",
+          "internal/shell/shell.go"
+        ]
+      },
+      "cardShas": [
+        "a423899bdfe20bba4c38857502bc303fca232cf9"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-reed-status-buttons/e252c0c4-0986-44c0-9706-0291defd0a23/subagents/agent-a25b61d894c50aa3f.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-reed-status-buttons/e252c0c4-0986-44c0-9706-0291defd0a23/subagents/agent-a25b61d894c50aa3f.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-reed-status-buttons/e252c0c4-0986-44c0-9706-0291defd0a23/subagents/agent-a25b61d894c50aa3f.jsonl"
+  ]
 }

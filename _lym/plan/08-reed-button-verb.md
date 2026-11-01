@@ -29,8 +29,8 @@
 - `plan:internal/reedengine#buttonSpecOption`
 - `plan:internal/reedengine#buttonRangePrefix`
 - `plan:internal/reedengine#strandNamePaneOption`
-- `plan:internal/reedengine#fillRunPlaceholders`
-- `plan:internal/reedengine#fillConfirmPlaceholders`
+- `internal/reedengine#fillRunPlaceholders`
+- `internal/reedengine#fillConfirmPlaceholders`
 - `internal/reedengine#newTmuxCmdForSocketPath`
 - `internal/reedengine#installFakeTmuxOn`
 - `internal/reedengine#newIntegrationEngine`

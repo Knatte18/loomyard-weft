@@ -1,7 +1,7 @@
 # Card 2 — buttons-config-keys
 
 **Create:**
-- `plan:internal/reedengine#ConfigOpenMaps` -> `func ConfigOpenMaps() []string`
+- `internal/reedengine#ConfigOpenMaps`
 
 **Edit:**
 - `internal/reedengine#Config`

@@ -22,9 +22,9 @@
 - `plan:internal/reedengine#buttonDirOption`
 - `plan:internal/reedengine#buttonRangePrefix`
 - `plan:internal/reedengine#Engine.pinButtonRowLocked`
-- `plan:internal/reedengine#ButtonContext`
-- `plan:internal/reedengine#ButtonBeam`
-- `plan:internal/reedengine#ButtonPlaceTask`
+- `internal/reedengine#ButtonContext`
+- `internal/reedengine#ButtonBeam`
+- `internal/reedengine#ButtonPlaceTask`
 - `internal/reedengine#newBindingsFixture`
 - `internal/reedengine#bindingsFixture.click`
 - `internal/reedengine#clickArgv`

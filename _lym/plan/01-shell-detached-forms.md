@@ -1,15 +1,15 @@
 # Card 1 — shell-detached-forms
 
 **Create:**
-- `plan:internal/shell#posixShell.DiscardOutput` -> `func (posixShell) DiscardOutput(cmd string) string`
-- `plan:internal/shell#pwshShell.DiscardOutput` -> `func (pwshShell) DiscardOutput(cmd string) string`
-- `plan:internal/shell#posixShell.ExitSuccess` -> `func (posixShell) ExitSuccess() string`
-- `plan:internal/shell#pwshShell.ExitSuccess` -> `func (pwshShell) ExitSuccess() string`
-- `plan:internal/shell#posixShell.CommandFlag` -> `func (posixShell) CommandFlag() string`
-- `plan:internal/shell#pwshShell.CommandFlag` -> `func (pwshShell) CommandFlag() string`
-- `plan:internal/shell#posixShell.ChangeDirToWord` -> `func (posixShell) ChangeDirToWord(word string) string`
-- `plan:internal/shell#pwshShell.ChangeDirToWord` -> `func (pwshShell) ChangeDirToWord(word string) string`
-- `plan:internal/shell#TestShell_DiscardOutputAndCommandFlag` -> `func TestShell_DiscardOutputAndCommandFlag(t *testing.T)`
+- `internal/shell#posixShell.DiscardOutput`
+- `internal/shell#pwshShell.DiscardOutput`
+- `internal/shell#posixShell.ExitSuccess`
+- `internal/shell#pwshShell.ExitSuccess`
+- `internal/shell#posixShell.CommandFlag`
+- `internal/shell#pwshShell.CommandFlag`
+- `internal/shell#posixShell.ChangeDirToWord`
+- `internal/shell#pwshShell.ChangeDirToWord`
+- `internal/shell#TestShell_DiscardOutputAndCommandFlag`
 
 **Edit:**
 - `internal/shell#Shell`

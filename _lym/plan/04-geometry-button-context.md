@@ -1,10 +1,10 @@
 # Card 4 — geometry-button-context
 
 **Create:**
-- `plan:internal/reedengine#ButtonContext` -> `type ButtonContext struct`
-- `plan:internal/reedengine#ButtonBeam` -> `type ButtonBeam struct`
-- `plan:internal/hubgeom#buttonContext` -> `func buttonContext(l *lymcwd.Location, prime bool) func() (reedengine.ButtonContext, error)`
-- `plan:internal/hubgeom#buttonBeam` -> `func buttonBeam(l *lymcwd.Location, place reedengine.ButtonPlace) func() (reedengine.ButtonBeam, error)`
+- `internal/reedengine#ButtonContext`
+- `internal/reedengine#ButtonBeam`
+- `internal/hubgeom#buttonContext`
+- `internal/hubgeom#buttonBeam`
 
 **Edit:**
 - `internal/reedengine#Geometry`
@@ -17,7 +17,7 @@
 - `internal/reedengine/doc.go`
 
 **Uses:**
-- `plan:internal/reedengine#ButtonPlace`
+- `internal/reedengine#ButtonPlace`
 - `internal/hubgeom#ParentOf`
 - `internal/hubgeom#hubWithOrigin`
 - `internal/desktophook#LoadConfig`

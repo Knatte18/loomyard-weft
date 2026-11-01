@@ -1,17 +1,17 @@
 # Card 3 — button-entries
 
 **Create:**
-- `plan:internal/reedengine#ButtonPlace` -> `type ButtonPlace string`
-- `plan:internal/reedengine#ButtonPlaceTask` -> `const ButtonPlaceTask ButtonPlace = "task"`
-- `plan:internal/reedengine#ButtonPlaceBeam` -> `const ButtonPlaceBeam ButtonPlace = "beam"`
-- `plan:internal/reedengine#ButtonPlacePrime` -> `const ButtonPlacePrime ButtonPlace = "prime"`
-- `plan:internal/reedengine#buttonEntry` -> `type buttonEntry struct`
-- `plan:internal/reedengine#placeButtons` -> `func placeButtons(groups yaml.Node, place ButtonPlace, source string) []buttonEntry`
-- `plan:internal/reedengine#buttonEntryProblem` -> `func buttonEntryProblem(entry buttonEntry) string`
-- `plan:internal/reedengine#fillRunPlaceholders` -> `func fillRunPlaceholders(sh shell.Shell, run string, values map[string]string) string`
-- `plan:internal/reedengine#fillConfirmPlaceholders` -> `func fillConfirmPlaceholders(confirm string, values map[string]string) string`
-- `plan:internal/reedengine#TestPlaceButtons` -> `func TestPlaceButtons(t *testing.T)`
-- `plan:internal/reedengine#TestFillButtonPlaceholders` -> `func TestFillButtonPlaceholders(t *testing.T)`
+- `internal/reedengine#ButtonPlace`
+- `internal/reedengine#ButtonPlaceTask`
+- `internal/reedengine#ButtonPlaceBeam`
+- `internal/reedengine#ButtonPlacePrime`
+- `internal/reedengine#buttonEntry`
+- `internal/reedengine#placeButtons`
+- `internal/reedengine#buttonEntryProblem`
+- `internal/reedengine#fillRunPlaceholders`
+- `internal/reedengine#fillConfirmPlaceholders`
+- `internal/reedengine#TestPlaceButtons`
+- `internal/reedengine#TestFillButtonPlaceholders`
 
 **Extends:**
 - `internal/reedengine/doc.go`

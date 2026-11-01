@@ -1,10 +1,10 @@
 # Card 5 — third-status-line
 
 **Create:**
-- `plan:internal/reedengine#buttonRowPlainOption` -> `const buttonRowPlainOption = "@lym_buttons_plain"`
-- `plan:internal/reedengine#buttonRowAgentOption` -> `const buttonRowAgentOption = "@lym_buttons_agent"`
-- `plan:internal/reedengine#statusFormatActions` -> `const statusFormatActions = listPrologueFormat + followButtonFormat`
-- `plan:internal/reedengine#statusFormatPinArgvs` -> `func statusFormatPinArgvs() [][]string`
+- `internal/reedengine#buttonRowPlainOption`
+- `internal/reedengine#buttonRowAgentOption`
+- `internal/reedengine#statusFormatActions`
+- `internal/reedengine#statusFormatPinArgvs`
 
 **Edit:**
 - `internal/reedengine#statusFormatSessions`

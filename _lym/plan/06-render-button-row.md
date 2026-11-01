@@ -20,16 +20,16 @@
 - `internal/reedengine#TestUp_BootValidation`
 
 **Uses:**
-- `plan:internal/reedengine#placeButtons`
-- `plan:internal/reedengine#fillRunPlaceholders`
-- `plan:internal/reedengine#fillConfirmPlaceholders`
-- `plan:internal/reedengine#ButtonContext`
-- `plan:internal/reedengine#ButtonBeam`
+- `internal/reedengine#placeButtons`
+- `internal/reedengine#fillRunPlaceholders`
+- `internal/reedengine#fillConfirmPlaceholders`
+- `internal/reedengine#ButtonContext`
+- `internal/reedengine#ButtonBeam`
 - `internal/reedengine#Geometry`
 - `internal/reedengine#Config`
 - `internal/reedengine#unlitButtonStyle`
-- `plan:internal/reedengine#buttonRowPlainOption`
-- `plan:internal/reedengine#buttonRowAgentOption`
+- `internal/reedengine#buttonRowPlainOption`
+- `internal/reedengine#buttonRowAgentOption`
 - `internal/reedengine#resolveShellPath`
 - `internal/reedengine#installFakeTmux`
 - `internal/reedengine#newTestEngine`
