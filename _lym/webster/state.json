@@ -770,7 +770,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 14,
   "masterStrand": "a60f187b995579173bb137e0f792d82c",
   "masterSessionId": "182615f8-c2d3-4e66-9c5a-db5c8744d6b1",
   "masterEngine": "claude",
@@ -889,6 +889,28 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-warp-visibility/182615f8-c2d3-4e66-9c5a-db5c8744d6b1/subagents/agent-ab57e4993bd579494.jsonl"
       ]
+    },
+    "14": {
+      "slug": "heddle-store",
+      "cards": [
+        "14-heddle-store",
+        "15-heddle-render",
+        "16-heddle-worktree-seam",
+        "17-heddle-bolt-replayer"
+      ],
+      "cardHashes": {
+        "14-heddle-store": "a8f5c8f8f53ae048fbe24d81bdadec1d5deaa683d938ee2f3530e5347220b0f1",
+        "15-heddle-render": "9089a6975f4b0529c2ef56ad7fe931f88eae16dc7447f5eb45d35e29a68435b4",
+        "16-heddle-worktree-seam": "873b829ef4e3ece462121799da30d95f0a1cf8164c5eb4f7c21c1372fdea4521",
+        "17-heddle-bolt-replayer": "47677a3d5da27bbb38f3b18efa5d58795a0972e64a62a70547eec770a2ebe0db"
+      },
+      "startSha": "f95147cbf40d464294e07ba84440993068474094",
+      "kind": "fork",
+      "spawnedAt": "2026-11-01T09:53:52Z",
+      "sessionId": "182615f8-c2d3-4e66-9c5a-db5c8744d6b1",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "3": {
       "slug": "fabric-bolt-dir-sweep",
