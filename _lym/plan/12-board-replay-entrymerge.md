@@ -12,13 +12,13 @@
 - `internal/boardengine#replayRun.changePrimeOwner`
 
 **Uses:**
-- `plan:internal/entrymerge#Table`
-- `plan:internal/entrymerge#Field`
-- `plan:internal/entrymerge#Table.Changed`
-- `plan:internal/entrymerge#Table.Change`
-- `plan:internal/entrymerge#Table.AddClash`
-- `plan:internal/entrymerge#Table.Same`
-- `plan:internal/entrymerge#Render`
+- `internal/entrymerge#Table`
+- `internal/entrymerge#Field`
+- `internal/entrymerge#Table.Changed`
+- `internal/entrymerge#Table.Change`
+- `internal/entrymerge#Table.AddClash`
+- `internal/entrymerge#Table.Same`
+- `internal/entrymerge#Render`
 
 **Intent:** Run the board's by-entry replay over the shared merge (D8), keeping around it what is the board's own.
 

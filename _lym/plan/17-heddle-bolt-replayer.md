@@ -19,11 +19,11 @@
 - `plan:internal/heddleengine#Save`
 - `plan:internal/heddleengine#ValidateEntry`
 - `plan:internal/heddleengine#FileName`
-- `plan:internal/entrymerge#Table`
-- `plan:internal/entrymerge#Table.Changed`
-- `plan:internal/entrymerge#Table.Change`
-- `plan:internal/entrymerge#Table.AddClash`
-- `plan:internal/entrymerge#Table.Same`
+- `internal/entrymerge#Table`
+- `internal/entrymerge#Table.Changed`
+- `internal/entrymerge#Table.Change`
+- `internal/entrymerge#Table.AddClash`
+- `internal/entrymerge#Table.Same`
 - `plan:internal/fabricengine#RegisterBoltReplayer`
 - `internal/fabricengine#ReplayBoltForTest`
 - `internal/fabricengine_test#newRecordsFixture`

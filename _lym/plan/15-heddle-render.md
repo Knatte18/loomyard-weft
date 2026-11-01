@@ -24,7 +24,7 @@
 - `plan:internal/heddleengine#Decode`
 - `plan:internal/heddleengine#LookupTarget`
 - `internal/fabricengine#BoardWriteLockFile`
-- `plan:internal/fabricengine#EventFor`
+- `internal/fabricengine#EventFor`
 - `internal/fabricengine#ExcludeWayForward`
 - `internal/lock#AcquireWriteLockWithin`
 - `internal/gitkit#Git`

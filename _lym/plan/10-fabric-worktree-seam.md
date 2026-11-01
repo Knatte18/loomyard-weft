@@ -1,14 +1,14 @@
 # Card 10 — fabric-worktree-seam
 
 **Create:**
-- `plan:internal/fabricengine#WorktreeEvent` -> `type WorktreeEvent struct`
-- `plan:internal/fabricengine#WorktreeSeam` -> `type WorktreeSeam interface`
-- `plan:internal/fabricengine#installedWorktreeSeam` -> `var installedWorktreeSeam atomic.Pointer[WorktreeSeam]`
-- `plan:internal/fabricengine#InstallWorktreeSeam` -> `func InstallWorktreeSeam(s WorktreeSeam) (restore func())`
-- `plan:internal/fabricengine#EventFor` -> `func EventFor(l *lymcwd.Location, paths []string) (WorktreeEvent, error)`
-- `plan:internal/fabricengine#fireWorktreeEvent` -> `func fireWorktreeEvent(l *lymcwd.Location, paths []string, made bool) string`
-- `plan:internal/fabricengine#NotifyWorktreeMade` -> `func NotifyWorktreeMade(l *lymcwd.Location) string`
-- `plan:internal/fabricengine_test#TestWorktreeSeam_Events` -> `func TestWorktreeSeam_Events(t *testing.T)`
+- `internal/fabricengine#WorktreeEvent`
+- `internal/fabricengine#WorktreeSeam`
+- `internal/fabricengine#installedWorktreeSeam`
+- `internal/fabricengine#InstallWorktreeSeam`
+- `internal/fabricengine#EventFor`
+- `internal/fabricengine#fireWorktreeEvent`
+- `internal/fabricengine#NotifyWorktreeMade`
+- `internal/fabricengine_test#TestWorktreeSeam_Events`
 
 **Edit:**
 - `internal/fabricengine#Topology.add`

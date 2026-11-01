@@ -2,16 +2,16 @@
 
 **Create:**
 - `internal/entrymerge/doc.go`
-- `plan:internal/entrymerge#Field` -> `type Field[T any] struct`
-- `plan:internal/entrymerge#Table` -> `type Table[T any] struct`
-- `plan:internal/entrymerge#Finding` -> `type Finding struct`
-- `plan:internal/entrymerge#Table.Changed` -> `func (t Table[T]) Changed(before, commit T) []Field[T]`
-- `plan:internal/entrymerge#Table.Change` -> `func (t Table[T]) Change(base, before, origin, commit T) (merged T, applied []string, lost []Finding)`
-- `plan:internal/entrymerge#Table.AddClash` -> `func (t Table[T]) AddClash(origin, commit T) []Finding`
-- `plan:internal/entrymerge#Table.Same` -> `func (t Table[T]) Same(a, b T) bool`
-- `plan:internal/entrymerge#Render` -> `func Render(value any) string`
-- `plan:internal/entrymerge#TestTable` -> `func TestTable(t *testing.T)`
-- `plan:internal/entrymerge#TestMain` -> `func TestMain(m *testing.M)`
+- `internal/entrymerge#Field`
+- `internal/entrymerge#Table`
+- `internal/entrymerge#Finding`
+- `internal/entrymerge#Table.Changed`
+- `internal/entrymerge#Table.Change`
+- `internal/entrymerge#Table.AddClash`
+- `internal/entrymerge#Table.Same`
+- `internal/entrymerge#Render`
+- `internal/entrymerge_test#TestTable`
+- `internal/entrymerge_test#TestMain`
 
 **Intent:** Draw the board replay's three-way by-entry merge out into a package of its own, parameterised by the record's key and field table (D8), so the board and heddle share it rather than copy it.
 

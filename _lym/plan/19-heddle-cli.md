@@ -33,7 +33,7 @@
 - `plan:internal/heddleengine#Patch`
 - `plan:internal/heddleengine#Renderer.Render`
 - `plan:internal/heddleengine#Renderer.Show`
-- `plan:internal/fabricengine#EventFor`
+- `internal/fabricengine#EventFor`
 - `internal/fabricengine#List`
 - `internal/fabricengine#BoltDir`
 - `internal/fabricengine#BoardWriteLockFile`

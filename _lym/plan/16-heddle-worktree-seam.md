@@ -13,9 +13,9 @@
 - `plan:internal/heddleengine#Renderer.Render`
 - `plan:internal/heddleengine#RenderRequest`
 - `plan:internal/heddleengine#Target`
-- `plan:internal/fabricengine#WorktreeEvent`
-- `plan:internal/fabricengine#WorktreeSeam`
-- `plan:internal/fabricengine#InstallWorktreeSeam`
+- `internal/fabricengine#WorktreeEvent`
+- `internal/fabricengine#WorktreeSeam`
+- `internal/fabricengine#InstallWorktreeSeam`
 - `internal/fabricengine#Fabric.Pull`
 - `internal/fabricengine#Bolt.Pull`
 - `internal/hubforge#CloneSecond`
