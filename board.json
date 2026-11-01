@@ -692,26 +692,6 @@
       "body": "## Seen (orch, 2026-11-01)\n\nThe landing commit `229638f7` (\"Rename the Bolt checkout directory from _board to _bolt\") ends with a stray block after the \"To check by hand\" list: a line \"Created using\", then the subject again and several lines copied from the message's own body, before the credit lines.\n`git log -1 --format=%B 229638f7` shows it.\nThe plain credit block of `commit-signature-credit` should be the only thing after the body; something in how the landing message is assembled appended a fragment of the description.\n",
       "created": "2026-11-01T10:59:23Z",
       "revised": "2026-11-01T10:59:23Z"
-    },
-    {
-      "id": 947,
-      "handle": "T2",
-      "slug": "boltrename-remove",
-      "title": "Delete the one-shot boltrename program",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "cwd"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Both hubs are on _bolt, so the rename program goes",
-      "body": "## Seen (operator, 2026-11-01)\n\n`tools/boltrename` was a one-shot program for moving existing hubs from `_board` to `_bolt`.\nNeve is migrated, and OSL-1046 is re-cloned rather than migrated, so the program has no hub left to run on.\n\n## Design\n\nDelete `tools/boltrename` and every mention of it in the repository, so the old directory name appears nowhere.\nNothing else changes, and no refactor rides along.\n",
-      "status": "done",
-      "created": "2026-11-01T11:00:14Z",
-      "revised": "2026-11-01T11:00:14Z"
     }
   ],
   "prime_owner": "neve",
