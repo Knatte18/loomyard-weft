@@ -1,6 +1,6 @@
 # The board README shows a task's profile in the Recipe column
 
-`readme-profile-in-recipe-column` · Task · enhancement, board · running · Darn-Write
+`readme-profile-in-recipe-column` · Task · enhancement, board · running · Drift-Verify
 
 ## Seen (operator, 2026-11-01)
 
