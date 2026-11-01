@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-01 13:57 UTC; every age below is as of then.
+Rendered 2026-11-01 14:02 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -8,15 +8,15 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 ## [P1 Orch instructions in two layers: lym's role and the repository's rules in heddle](project-orch-instructions.md) (3)
 
-`orch-instructions` · Age 41m · Owner `neve`
+`orch-instructions` · Age 46m · Owner `neve`
 
 One fixed orch role for every repository, repository orch rules in heddle through lym orch rules, and the orch note for run state only
 
 | # | Prio | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E6 |  | **Heddle gains an orch-prompt target, and lym orch rules stores in heddle**<br>• A heddle target for orch sessions only replaces the hub-wide and local orch rules files | [`heddle-orch-target`](design-heddle-orch-target.md) | 41m<br>41m | heddle, orch |
-| E7 |  | **One fixed orch role for every repository, brought up to date**<br>• The rules for every orch move into the shipped role, which settles run-level calls itself and has no board copy | [`orch-role-current`](design-orch-role-current.md) | 41m<br>41m | orch, stencil |
-| E8 |  | **lym's design invariants as PATTERN entries**<br>• doc.go as documentation only, fabric's isolation, no hard-coded names and the other code invariants become PATTERN entries | [`pattern-design-principles`](design-pattern-design-principles.md) | 41m<br>41m | pattern |
+| E6 |  | **Heddle gains an orch-prompt target, and lym orch rules stores in heddle**<br>• A heddle target for orch sessions only replaces the hub-wide and local orch rules files | [`heddle-orch-target`](design-heddle-orch-target.md) | 46m<br>46m | heddle, orch |
+| E7 |  | **One fixed orch role for every repository, brought up to date**<br>• The rules for every orch move into the shipped role, which settles run-level calls itself and has no board copy | [`orch-role-current`](design-orch-role-current.md) | 46m<br>46m | orch, stencil |
+| E8 |  | **lym's design invariants as PATTERN entries**<br>• doc.go as documentation only, fabric's isolation, no hard-coded names and the other code invariants become PATTERN entries | [`pattern-design-principles`](design-pattern-design-principles.md) | 46m<br>46m | pattern |
 
 ## Prime
 
@@ -32,7 +32,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Parts-Write and Parts-Plan-Write: the plan written in two steps, beside Plan-Write**<br>• A coarse splitter and a seat table of part writers joined by a chair, as an opt-in alternative to Plan-Write, built to be benched against it<br>• `profile: light` | [`plan-split-producers`](design-plan-split-producers.md) | tapestry | Code-Burler-Review | neve | 3h<br>2h | loom, stencil, shed, profiles |
+| T1 | **Parts-Write and Parts-Plan-Write: the plan written in two steps, beside Plan-Write**<br>• A coarse splitter and a seat table of part writers joined by a chair, as an opt-in alternative to Plan-Write, built to be benched against it<br>• `profile: light` | [`plan-split-producers`](design-plan-split-producers.md) | tapestry | Code-Burler-Fix | neve | 3h<br>3h | loom, stencil, shed, profiles |
 | T3 | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more<br>• `profile: light` | [`reed-status-buttons`](design-reed-status-buttons.md) | tapestry | Webster | neve | 2w<br>1h | reed, config, batten |
 | T6 | **A long gate run answers within the cache lifetime, so the waiting agent keeps its prompt cache warm**<br>• lym gate test caps the run wait like the slot wait, with the cap a config value beside the engine cache lifetime<br>• `profile: light` | [`gate-run-keeps-cache-warm`](design-gate-run-keeps-cache-warm.md) | tapestry | Webster | neve | 19h<br>2h | gate, shuttle, config |
 | T7 | **One verb to take work over on another machine, leaving every run in a known state**<br>• Moving to another machine is many hand steps, and afterwards run states are unclear | [`machine-switch`](design-machine-switch.md) | tapestry | Webster | neve | 1d<br>2h | fabric, dobby, batten |
@@ -59,7 +59,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 9d<br>6h | loom, stencil |
+| R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 9d<br>7h | loom, stencil |
 
 #### Bugs (2)
 
@@ -77,7 +77,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 4d<br>1h | batten, stencil, config |
 | E4 |  | **Prove the dotnet scoper, shared build and Drift on the C# sandbox hub**<br>• Switch the sandbox gate to scoper dotnet, a build step and --no-build, then enable Drift there | [`sandbox-dotnet-gate`](design-sandbox-dotnet-gate.md) | 3d<br>3d | dotnet, gate |
 | E5 |  | **A landing notice is not lost when set late, when dobby was down, or when the orch is absent**<br>• Close the known limits landing-watch left: a late notify_on_land, a Land passed while dobby was down, and a dropped line when no orch is live | [`landing-watch-limits`](design-landing-watch-limits.md) | 6h<br>6h | dobby, orch |
-| E9 |  | **An idle interactive run saves its work and pauses, to go on another time**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 23h<br>6h | shed, shuttle, batten |
+| E9 |  | **An idle interactive run saves its work and pauses, to go on another time**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 23h<br>7h | shed, shuttle, batten |
 | E10 |  | **The hibernate request is carried by dobby, not a daemon of its own**<br>• Move lym hibernate request into dobby; the past-Land test is already shared | [`hibernate-in-dobby`](design-hibernate-in-dobby.md) | 23h<br>19h | dobby |
 | E11 |  | **Merge in from parent as a task of its own in a beam, before pawl lands it**<br>• A command on a beam files a merge-in-from-parent task, run as darn with its perch on | [`parent-merge-task`](design-parent-merge-task.md) | 1d<br>3h | pawl, workspaces, drift, landing |
 | E12 |  | **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | 21h<br>1h | fabric |
