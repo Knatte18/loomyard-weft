@@ -1,6 +1,6 @@
 # Agents change files with the Edit tool, never shell edits
 
-`edit-with-edit-tool` · Task · enhancement, process, stencil, claude · running · Worktree-Create
+`edit-with-edit-tool` · Task · enhancement, process, stencil, claude · running · Record-Write
 
 ## Seen (orch, 2026-11-01)
 

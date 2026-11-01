@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Agents change files with the Edit tool, never shell edits**<br>• Read a file to change with Read and edit it with Edit, all its edits in one message; a guard refuses sed -i and its kin | [`edit-with-edit-tool`](design-edit-with-edit-tool.md) | darn | Worktree-Create | neve | 10m<br>0m | process, stencil, claude |
+| T1 | **Agents change files with the Edit tool, never shell edits**<br>• Read a file to change with Read and edit it with Edit, all its edits in one message; a guard refuses sed -i and its kin | [`edit-with-edit-tool`](design-edit-with-edit-tool.md) | darn | Record-Write | neve | 10m<br>0m | process, stencil, claude |
 | T5 | **Study: turns and context of the Discussion and Plan review sessions**<br>• Measure where reviewer, fixer and judge turns and context go on three tapestry runs, and what Sonnet fixers would cost<br>• `profile: docs` | [`review-turn-audit`](design-review-turn-audit.md) | darn | Worktree-Create | neve | 9m<br>0m | burler |
 
 ### Ready (0)
