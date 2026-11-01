@@ -29,7 +29,7 @@ The baseline is the numbers above; the tapestry runs in flight on 2026-11-01 add
 
 1. `edit-with-edit-tool` (measured by the share of shell edits and edits per edit turn, on darn writers as well as Webster forks) and `gate-failure-report` (turns in gate loops and spent reading gate output); `review-turn-audit` beside them, since it changes no agent.
 2. `card-gate-cold-fixer`, which rests on `gate-failure-report`, and `retired-name-sweep` (turns before the first edit and in gate loops).
-3. `read-whole-not-slices`, then `batching-in-claude-local` and `hook-refused-turns` together as one heddle trial; all three move reading and instructions, so each is measured alone.
+3. `read-whole-not-slices`, then `batching-in-claude-local` and `hook-refused-turns` together as one heddle trial, then `plan-edits-before-gate` as a heddle trial of its own; all of them move reading and instructions, so each is measured alone.
 
 Webster's effects show only in tapestry runs; `edit-with-edit-tool` and `hook-refused-turns` also show in darn writers, which run more often.
 The darn-writer measure uses the scripts of `docs/research/turn-audit-2026-10-28`, the Webster measure `tools/forkaudit`.
