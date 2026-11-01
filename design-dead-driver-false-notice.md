@@ -1,6 +1,6 @@
 # Dobby sends a dead-driver notice for a run that has just started
 
-`dead-driver-false-notice` · Task · bug, dobby, loom · running · Darn-Write
+`dead-driver-false-notice` · Task · bug, dobby, loom · running · Drift-Verify
 
 ## Seen (hub orch, 2026-11-01)
 
