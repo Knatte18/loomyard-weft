@@ -1,0 +1,10 @@
+verdict: resume
+reason: >-
+  The bootstrap stop came from a race on origin's main-weft. The step's fetch
+  read origin at 9a8abf9f5, but the ref had moved from 9301f9dbe, and git refused
+  the fetch because its expected old value no longer matched. Read-only check
+  now: origin/main-weft and the local refs/remotes/origin/main-weft both point at
+  3dc63d57c175afd25f78b1422ee6bdb13f3d44ea, so the mismatch has cleared. A plain
+  re-launch of lym batten run gate-fewer-binaries-trial should reconcile. No
+  lock file blocks the fetch; the only .lock files in loomyard-weft/.git are
+  empty and dated October 27.
