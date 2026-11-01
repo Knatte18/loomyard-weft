@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Dobby sends a dead-driver notice for a run that has just started**<br>• Dobby reads a go-driven child as dead in the gap between loom start writing its running status and the driver taking its lock<br>• `profile: solid` | [`dead-driver-false-notice`](design-dead-driver-false-notice.md) | darn | Code-Bouncer | neve | 1h<br>1h | dobby, loom |
+| T1 | **Dobby sends a dead-driver notice for a run that has just started**<br>• Dobby reads a go-driven child as dead in the gap between loom start writing its running status and the driver taking its lock<br>• `profile: solid` | [`dead-driver-false-notice`](design-dead-driver-false-notice.md) | darn | Describe | neve | 1h<br>1h | dobby, loom |
 | T2 | **warp-visibility: heddle, a Bolt database lym renders its instruction files from, leaving no trace in warp**<br>• LoomYard puts no CLAUDE.md in a repository; lym renders its own git-excluded instruction files into each worktree from _board/heddle.json | [`warp-visibility`](design-warp-visibility.md) | tapestry | Discussion-Burler-Fix | neve | 3w<br>1h | fabric, board, config, claude, codex, cwd, process, stencil, shuttle |
 
 #### Ready (0)
