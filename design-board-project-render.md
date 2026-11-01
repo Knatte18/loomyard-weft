@@ -1,6 +1,6 @@
 # One project render for the board README and project files
 
-`board-project-render` · Task · enhancement, board · running · Code-Bouncer
+`board-project-render` · Task · enhancement, board · running · Describe
 
 ## Seen (operator, 2026-11-01)
 
