@@ -634,7 +634,7 @@
       "isolated": false,
       "brief": "The landing message of 229638f7 repeats body lines after Created using",
       "body": "## Seen (orch, 2026-11-01)\n\nThe landing commit `229638f7` (\"Rename the Bolt checkout directory from _board to _bolt\") ends with a stray block after the \"To check by hand\" list: a line \"Created using\", then the subject again and several lines copied from the message's own body, before the credit lines.\n`git log -1 --format=%B 229638f7` shows it.\nThe plain credit block of `commit-signature-credit` should be the only thing after the body; something in how the landing message is assembled appended a fragment of the description.\n",
-      "status": "running · Worktree-Create",
+      "status": "running · Record-Write",
       "created": "2026-11-01T10:59:23Z",
       "revised": "2026-11-01T11:26:23Z"
     },
