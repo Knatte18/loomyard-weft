@@ -38,7 +38,24 @@ The stencils of `Parts-Write`, the part writers and `Parts-Plan-Write`'s chair a
 - Discussion settles each stencil's content with the operator before Plan.
 - `Parts-Write` stays coarse: it decides parts and contracts, never cards, and states how fine a split is too fine.
 - A part writer writes cards for its part only, never edits another part's, and raises a contract it finds wrong to the chair instead of improvising.
-- The chair reads no more code than the shared spots need.
+- The chair reads cards, not code, beyond what the shared spots need.
+- A part writer reads only its own part and the shared spots it touches, never another part's code.
+
+## Parts-Write reading depth (operator, 2026-11-01)
+
+How much `Parts-Write` reads is its main knob, set by a value its stencil takes from config, so the bench can try more than one:
+- light: the decision record, `relevant.md` and `lym quarry`'s symbols only;
+- medium: light, plus the signatures and package docs of the packages the task touches;
+- heavy, reading the code as Discussion did, is not offered: it approaches today's Plan writer.
+Discussion-Write already read the code and wrote down what matters, so at either depth a `Parts-Write` that cannot split without reading code says so rather than reading on.
+
+## The chair's work
+
+The chair writes no part of its own; it joins the parts:
+- it numbers every part's cards into one sequence;
+- it sets a card's dependency on the card of another part that makes a name it uses, and checks that what a part delivers matches its contract;
+- it writes the shared spots `Parts-Write` named (a registry, a config, `PATTERN.md`, shared docs) as cards of their own;
+- it writes what today's plan format needs at the top, so the `plan` gate passes.
 
 ## Open
 
@@ -46,3 +63,4 @@ The stencils of `Parts-Write`, the part writers and `Parts-Plan-Write`'s chair a
 - Whether `Parts-Write` gets a review of its own; the default is none, the whole-plan review catching what a bad split causes.
 - How the config flag swaps `Plan-Write` for the two rows (`entry_gate` exists today for `Drift-Baseline`).
 - Models: `Parts-Write` and the part writers on Opus as `Plan-Write` is; the chair possibly lighter.
+- The chair as an agent, as above, or the shared spots as a part of their own written by a seat, with numbering and cross-part dependencies joined in Go from the names the contracts export, leaving the lead only to wait and check.
