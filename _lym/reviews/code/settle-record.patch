@@ -1,0 +1,99 @@
+diff --git a/internal/shellguard/doc.go b/internal/shellguard/doc.go
+index d009b2a1..c23cb4a3 100644
+--- a/internal/shellguard/doc.go
++++ b/internal/shellguard/doc.go
+@@ -14,6 +14,9 @@
+ // A command substitution inside a double-quoted string and a < before a quote or a backslash, as in <"f" or <<<"f", are not read as command position either, so a command behind them passes.
+ // Every row is a guardrail over static text and not a barrier; each pattern's comment states what it lets through and what it falsely denies.
+ //
++// The gate rule, how to run lym gate test, is stated once in the system prompt, in the raw go row's notice;
++// the refuse-raw row's notice names only what it refuses, while the steers of the raw go and refuse-raw rows each carry the full rule, so a denied call has the way forward at hand.
++//
+ // A row hangs on a Switch.
+ // A SwitchNone row is installed for every run, and SwitchDenyPython follows the shuttle config's python key.
+ // SwitchDenyPublish, which the publish row hangs on, is turned on only by a launch spec, so only the session that sets it cannot run git push or gh.
+diff --git a/internal/shellguard/rows.go b/internal/shellguard/rows.go
+index 11338d1d..215a2a86 100644
+--- a/internal/shellguard/rows.go
++++ b/internal/shellguard/rows.go
+@@ -155,7 +155,7 @@ const forbiddenSteerChars = `'"\`
+ const forbiddenNoticeChars = forbiddenSteerChars + "\n\r"
+ 
+ // Rows returns a fresh slice of the shell guard rows in table order.
+-// foreground is the engine's phrase for running a long command in the foreground, which the raw go and refuse-raw rows' steers and notices carry.
++// foreground is the engine's phrase for running a long command in the foreground, which the gate rule in the raw go row's steer and notice and the refuse-raw row's steer carries.
+ // refuseRaw lists the command prefixes the hub refuses to run raw; a non-empty list adds the refuse-raw row after the raw go row, and an empty one adds none.
+ func Rows(foreground string, refuseRaw []string) []Row {
+ 	rawGoSteer := "raw module-wide, tmux-tier and llm-tier go runs are refused here. Gate rule: run lym gate test in the foreground " + foreground + ", never in the background, for example lym gate test ./internal/x, and use its --tier flag for a tier. When it answers that no gate slot is free yet, run the same command again in a turn that does nothing else, so the prompt cache stays warm between calls. Run every other check in the foreground too, and never cd into the directory you already work in. The slot, strand and prebuilt-binary environment variables belong to lym, and a command setting or reading any of them is refused"
+@@ -172,16 +172,18 @@ func refuseRawRow(foreground string, refuseRaw []string) Row {
+ 	for i, prefix := range refuseRaw {
+ 		forms[i] = strings.Fields(prefix)
+ 	}
+-	steer := "a raw " + strings.Join(refuseRaw, " or ") + " run is refused here. Gate rule: run lym gate test in the foreground " + foreground + ", never in the background, with --tier to name the tiers or --card to name a card, for example lym gate test ./internal/x. When it answers that no gate slot is free yet, run the same command again in a turn that does nothing else, so the prompt cache stays warm between calls"
++	refused := "a raw " + strings.Join(refuseRaw, " or ") + " run is refused here"
++	steer := refused + ". Gate rule: run lym gate test in the foreground " + foreground + ", never in the background, with --tier to name the tiers or --card to name a card, for example lym gate test ./internal/x. When it answers that no gate slot is free yet, run the same command again in a turn that does nothing else, so the prompt cache stays warm between calls"
+ 	return Row{
+ 		// Installed for every run, the orch included, when the hub's gate config lists a prefix.
+ 		// A guardrail, not a barrier: refuseRawPattern states what it lets through.
+ 		Name:     "refuse-raw",
+ 		Patterns: []string{refuseRawPattern(refuseRaw)},
+ 		Steer:    steer,
+-		Notice:   steer + ".",
+-		Switch:   SwitchNone,
+-		Forms:    forms,
++		// The notice names only what is refused and the scopes it adds.
++		Notice: refused + "; run it through lym gate test, with --tier to name the tiers or --card to name a card.",
++		Switch: SwitchNone,
++		Forms:  forms,
+ 	}
+ }
+ 
+diff --git a/internal/shellguard/rows_test.go b/internal/shellguard/rows_test.go
+index 2bcfc130..f9813c7b 100644
+--- a/internal/shellguard/rows_test.go
++++ b/internal/shellguard/rows_test.go
+@@ -24,29 +24,40 @@ func TestLeafInvariant_AllowlistOnly(t *testing.T) {
+ }
+ 
+ // TestCheckTexts plants each forbidden character in a row's steer and notice and asserts checkTexts refuses it naming the row;
+-// it also asserts the shipped refuse-raw row, rendered over a sample list, passes checkTexts and names the gate verb, its tier and card scopes, the foreground phrase and the no-free-slot re-run.
++// it also asserts the shipped rows, rendered over a sample refuse list, pass checkTexts and state the gate rule in one notice, and that the refuse-raw steer carries the full rule while its notice names only the refusal and the tier and card scopes.
+ func TestCheckTexts(t *testing.T) {
+ 	t.Parallel()
+ 	t.Run("ShippedRefuseRawRow", func(t *testing.T) {
+ 		t.Parallel()
+ 		found := false
++		gateRuleNotices := 0
+ 		for _, row := range Rows("with a long timeout", []string{"go test", "dotnet test"}) {
+ 			if err := checkTexts([]Row{row}); err != nil {
+ 				t.Errorf("checkTexts(%q row) = %v; want nil", row.Name, err)
+ 			}
++			if strings.Contains(row.Notice, "Gate rule") {
++				gateRuleNotices++
++			}
+ 			if row.Name != "refuse-raw" {
+ 				continue
+ 			}
+ 			found = true
+-			for _, want := range []string{"lym gate test", "--tier", "--card", "with a long timeout", "no gate slot is free"} {
+-				if !strings.Contains(row.Steer, want) || !strings.Contains(row.Notice, want) {
+-					t.Errorf("refuse-raw steer %q and notice %q: want both to name %q", row.Steer, row.Notice, want)
++			for _, want := range []string{"Gate rule", "lym gate test", "--tier", "--card", "with a long timeout", "no gate slot is free"} {
++				if !strings.Contains(row.Steer, want) {
++					t.Errorf("refuse-raw steer %q: want it to name %q", row.Steer, want)
+ 				}
+ 			}
++			wantNotice := "a raw go test or dotnet test run is refused here; run it through lym gate test, with --tier to name the tiers or --card to name a card."
++			if row.Notice != wantNotice {
++				t.Errorf("refuse-raw notice = %q; want %q", row.Notice, wantNotice)
++			}
+ 		}
+ 		if !found {
+ 			t.Error("Rows() with a non-empty refuse list has no refuse-raw row")
+ 		}
++		if gateRuleNotices != 1 {
++			t.Errorf("Rows() notices state the gate rule %d times; want once", gateRuleNotices)
++		}
+ 	})
+ 	tests := []struct {
+ 		name   string
