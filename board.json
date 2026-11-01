@@ -753,7 +753,7 @@
       "isolated": false,
       "brief": "loom-plan-spec.md is 112 KB, half of it a catalogue of validation checks; cut it down and split it so each role reads only what it uses",
       "body": "## Seen (orch, 2026-11-01)\n\n`contracts/specs/loom-plan-spec.md` is 112 KB, about 28k tokens, so no agent can read it whole and every reader slices it.\nIts \"Validation checks\" section alone is about 54 KB, half the file: a catalogue of every check `internal/planparser` runs.\nThe next largest sections are \"Plan: handles\", \"The shape classifier\", \"Card fields and order\", \"verify model\" and \"Card types\", each 4 to 7 KB.\nThe Plan writer, Plan-Review, Code-Review and Webster's fixers all point at this one file.\n\n## Idea (operator, 2026-11-01)\n\n- Shorten the spec: cut what restates code, history (\"Batch is gone\"), rationale a reader does not act on, and anything the gate already reports with its fix.\n- Split it into sub-files by reader and by need, so each role reads only the parts it uses, for example the card format a writer needs, the validation-check catalogue read only when a check refuses, and the joined-plan and part rules.\n- The validation-check catalogue in particular shrinks or moves out, since `lym loom validate-plan` names each failing check; a reader needs a check's entry only when it fails.\n- Every stencil, rubric and Go reference to the spec (`specs.go`, `planparser`, `websterengine`, the loom rubrics) follows the new files.\n",
-      "status": "running · Record-Write",
+      "status": "running · Darn-Write",
       "created": "2026-11-01T18:06:48Z",
       "revised": "2026-11-01T18:37:54Z",
       "project": "turn-savings"
