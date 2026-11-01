@@ -464,28 +464,6 @@
       "revised": "2026-10-30T09:39:39Z"
     },
     {
-      "id": 919,
-      "handle": "T5",
-      "slug": "seed-starts-at-start",
-      "title": "A seed says only that a run starts at its start, with no producer name",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "loom",
-        "pawl",
-        "shed"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The shared seed names Preflight as the first producer for every recipe; the seed should name none, and the recipe supplies its first row.",
-      "body": "## Seen (operator, 2026-10-30)\n\nA new beam stopped at once because the shared seed set its status file's `current_producer` to `Preflight`, a row the pawl recipe lacked.\nThe seed names the producer an inner run starts at, so each recipe's first row must match a name hard-coded in `loomshed.Seed` (`internal/loomshed/seed.go`), which the bootstrap shared by every inner recipe calls.\n\n## Design (operator, 2026-10-30)\n\n- The seed names no producer: it says only that the run starts at its start, and the recipe's first row is the start.\n- A seed can then never name a row its recipe lacks, whatever recipe a run is seeded for.\n- The change reaches the shared seeding for tapestry, darn and pawl, how the status file records the current producer before the first pass, and the verbs that move a run (`goto`, resume), which the task checks.\n",
-      "status": "done",
-      "created": "2026-10-30T13:58:16Z",
-      "revised": "2026-11-01T06:18:33Z"
-    },
-    {
       "id": 922,
       "handle": "F10",
       "slug": "machine-switch",
@@ -606,7 +584,6 @@
       "recipe": "darn",
       "depends_on": [
         "warp-visibility",
-        "seed-starts-at-start",
         "finalize-fix-in-place",
         "dead-driver-false-notice"
       ],
@@ -729,9 +706,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "seed-starts-at-start"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "Dobby reads a go-driven child as dead in the gap between loom start writing its running status and the driver taking its lock",
       "body": "## Seen (hub orch, 2026-11-01)\n\nDobby sent `[dobby notice] pr-continue-wakes-row: running at Preflight; driver strand is dead; since 2026-11-01T06:18:50Z; history 0` (creel #183) a second after the child run started; the go-driven darn run was healthy and reached Darn-Write moments later.\n\n- `noticeCondition` in `internal/dobbyengine/runnotice.go` reports a dead driver the first time `DriverAlive` returns false, with no grace and no start-up window; `memory.Since` is only the episode stamp.\n- `noticeDriverAlive` and `childDriverLockHeld` in `internal/battencli/dobbynotice.go` count a child alive only through a live driver strand, a held `DriverLock` or a held `RunLock`, never the bootstrap lock `lym loom start` holds.\n- `lym loom start` (`runDriverSpawnAndWait` in `internal/loomcli/start.go`, with `internal/loomcli/drivewiring.go`) writes the child status as running at Preflight with history 0 first, and only then spawns a detached `lym loom drive`, which takes `DriverLock` as it starts.\n  In between, the child reads as running with no strand and no lock.\n- Times: child status episode 06:18:50, creel #183 at 06:18:50.99, Preflight done 06:18:51.\n  A dobby tick fell inside that sub-second window; `batching-effect-audit` passed the same window with no tick in it and got no notice.\n\n## Idea\n\nDobby calls a driver dead only once the child has had the chance to start one.\nThe smallest fixes: count the bootstrap lock `lym loom start` holds as alive beside the driver and run locks, or require a dead reading to hold across two ticks or a short configured grace from `memory.Since`.\nA cleaner one: `lym loom start` takes the driver lock before it writes the running status and hands it to the spawned driver.\nA test covers a child running with history 0 and no lock held yet, and asserts no notice.\n",

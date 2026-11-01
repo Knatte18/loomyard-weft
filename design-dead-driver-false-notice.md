@@ -2,8 +2,6 @@
 
 `dead-driver-false-notice` · Task · bug, dobby, loom · running · Darn-Write
 
-Depends on: [`seed-starts-at-start`](design-seed-starts-at-start.md)
-
 ## Seen (hub orch, 2026-11-01)
 
 Dobby sent `[dobby notice] pr-continue-wakes-row: running at Preflight; driver strand is dead; since 2026-11-01T06:18:50Z; history 0` (creel #183) a second after the child run started; the go-driven darn run was healthy and reached Darn-Write moments later.
