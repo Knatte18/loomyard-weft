@@ -71,7 +71,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Dobby sends a dead-driver notice for a run that has just started**<br>• The notice fired three seconds into Run-Shed of a go-driven darn run that was healthy | [`dead-driver-false-notice`](design-dead-driver-false-notice.md) | 1m<br>1m | dobby |
+| B1 |  | **Dobby sends a dead-driver notice for a run that has just started**<br>• Dobby reads a go-driven child as dead in the gap between loom start writing its running status and the driver taking its lock | [`dead-driver-false-notice`](design-dead-driver-false-notice.md) | 1m<br>0m | dobby, loom |
 
 #### Enhancements (12)
 
