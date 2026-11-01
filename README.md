@@ -23,20 +23,21 @@ Held by a run; its scope is locked until the run ends.
 | T1 | **Parts-Write and Parts-Plan-Write: the plan written in two steps, beside Plan-Write**<br>• A coarse splitter and a seat table of part writers joined by a chair, as an opt-in alternative to Plan-Write, built to be benched against it<br>• `profile: light` | [`plan-split-producers`](design-plan-split-producers.md) | tapestry | Discussion-Bouncer | neve | 1h<br>26m | loom, stencil, shed, profiles |
 | T2 | **Trial the cuts that make a gate run link fewer new test binaries**<br>• Bench the report's cuts on Neve and OSL-1046 before any is made permanent<br>• `profile: docs` | [`gate-fewer-binaries-trial`](design-gate-fewer-binaries-trial.md) | darn | Darn-Write | neve | 17h<br>22m | gate, testkit |
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T3 | **A landing commit message ends with a stray Created using block**<br>• The landing message of 229638f7 repeats body lines after Created using | [`landing-message-stray-block`](design-landing-message-stray-block.md) | darn |  | 29m<br>2m | landing |
 
-#### Draft (2)
+#### Draft (1)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **A landing commit message ends with a stray Created using block**<br>• The landing message of 229638f7 repeats body lines after Created using | [`landing-message-stray-block`](design-landing-message-stray-block.md) | darn |  | 28m<br>1m | landing |
-| T4 | `draft` **Dobby and orch start in pairs: a batten run brought dobby up alone**<br>• ensureParentDobby spawns a lone dobby; every start goes through beam start and brings the orch too | [`dobby-orch-pair-start`](design-dobby-orch-pair-start.md) | darn |  | 23m<br>1m | dobby, batten, orch |
+| T4 | `draft` **Dobby and orch start in pairs: a batten run brought dobby up alone**<br>• ensureParentDobby spawns a lone dobby; every start goes through beam start and brings the orch too | [`dobby-orch-pair-start`](design-dobby-orch-pair-start.md) | darn |  | 24m<br>2m | dobby, batten, orch |
 
 ### Notes (30)
 
