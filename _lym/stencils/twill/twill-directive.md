@@ -4,7 +4,7 @@
      {{.reviewed_files}}, {{.rubric_path}}, {{.lens_list}}, {{.final_self_check_command}}, {{.spawn_point}}, {{.severity_rule}}, {{.lens_report_path}}, {{.lens_report_spec_path}} and {{.judge_steps}}.
      {{.judge_steps}} is filled by Directive with one of the two judge part stencils.
      It also names two optional markers, {{.writer_fork}} and {{.relaunch_rules}}, each filled by Directive with one part stencil and left empty otherwise.
-lym-stencil: sha256=8ef39e414c8d7f815531a6cce852df14ad83f0725754144102bb234364a87428 build=bf00a04359aa5980fdd8dc2b7cf76d3ee9799216 time=2026-10-28T14:12:42Z -->
+lym-stencil: sha256=d23988dc8d1e807ae77a1102926f55517135e9e2f4f4e328f2f3913edc2bff21 build=a687567d2fd87a67c9a0cf6d30c1923a4ee8b4b8 time=2026-11-01T16:14:30Z -->
 
 ## Lens review by forks
 
@@ -13,7 +13,9 @@ lym-stencil: sha256=8ef39e414c8d7f815531a6cce852df14ad83f0725754144102bb234364a8
 {{.writer_fork}}1. Read the rubric at `{{.rubric_path}}`, so every fork you spawn inherits it.
 2. Spawn every lens below in one message through the Agent tool with `subagent_type: "fork"`, one fork per lens, and never pass a `name`.
    Each fork's prompt is the fork boilerplate below plus its lens text and nothing else: no design hint, no direction to read code.
-3. Wait for every fork to return; ending your turn while forks are outstanding is allowed.
+3. Wait for every fork to return: in the message after the spawn, run `lym shuttle await-forks` in the foreground with the Bash tool's `timeout` at 300000, and never end your turn while a fork is outstanding, so every fork result reaches you together, in the turn after it answers `ready: true`.
+   While it answers `ready: false`, run it again in a turn that does nothing else, until it has answered `ready: false` five times in a row.
+   When it fails, or has answered `ready: false` five times in a row, end your turn instead, and take each fork's result as it arrives.
    Edit nothing while any fork is outstanding, whatever an early report says: start judging only once the last fork has returned, judge all findings together, and only then edit.
    Once the last fork has returned, and before you judge, save each fork's final message verbatim to `{{.lens_report_path}}`, with its lens name for `<lens>`, in the format `{{.lens_report_spec_path}}` defines; a fork that returned no report gets its file too.
 {{.judge_steps}}

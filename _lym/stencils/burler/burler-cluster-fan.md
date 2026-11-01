@@ -1,7 +1,7 @@
 <!-- This is burler's fanned cluster-rules part: the spawn mechanics, the fork rules, the handler's holistic review and the consolidation rules the review step carries when the round names a fan.
      internal/burlerengine's clusterRulesBlock (prompt.go) reads and fills it, and the result becomes the review step's cluster_rules marker value.
      It declares three required markers: {{.lens_list}}, the round's lenses as one bullet per lens in fan order, {{.lens_report_path}}, the path each fork's report is saved at, and {{.lens_report_spec_path}}, the deployed spec of that report's format.
-lym-stencil: sha256=57e5323c22c12dfabad2a5d5892709cb127e09786d2e285c839fab0fe7c6fe03 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+lym-stencil: sha256=7d6e9c3c53f3ca4be386c328bb07af9d29aeb1e9f6792caede620f13101e2f2e build=a687567d2fd87a67c9a0cf6d30c1923a4ee8b4b8 time=2026-11-01T16:14:30Z -->
 This is a cluster round: after exploring the target fully, spawn ALL of the fork reviewers below in a SINGLE message via the Agent tool with `subagent_type: "fork"`, one per lens listed here — never pass a `name` (named forks silently lose inherited context).
 
 Lenses for this round:
@@ -19,6 +19,9 @@ Boilerplate:
 While the forks run, YOU (the handler) do your own HOLISTIC review: what no lens owns, such as the target against its fasit and its board entry, the rubric's leanness and relocation rules, architecture and PATTERN-fit, reading further only where your review needs it.
 Then prepare the ground truths and the severity rubric you will judge every finding against.
 Write nothing to the review file while any fork is outstanding, whatever an early report says: consolidate only once the last fork has returned, with every finding in view.
+Then wait for the forks with `lym shuttle await-forks`, run in the foreground with the Bash tool's `timeout` at 300000, and never end your turn while a fork is outstanding: every fork result reaches you together, in the turn after it answers `ready: true`.
+While it answers `ready: false`, run it again in a turn that does nothing else, until it has answered `ready: false` five times in a row.
+When it fails, or has answered `ready: false` five times in a row, end your turn instead, and take each fork's result as it arrives.
 
 Once the last fork has returned, and before you consolidate, save each fork's final message verbatim to `{{.lens_report_path}}`, with its lens name for `<lens>`, in the format `{{.lens_report_spec_path}}` defines; a fork that returned no report gets its file too.
 These lens reports are part of your write surface, beside the review file, and are the one exception to the "nothing else" and "no other file" of the write-surface rules in your prompt.

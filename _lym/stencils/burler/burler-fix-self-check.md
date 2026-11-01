@@ -1,7 +1,7 @@
 <!-- This is burler's fix self-check part: the procedure by which a twill fixer has read-only forks check its own change set before it writes the fixer-report.
      internal/burlerengine's selfCheckBlock (prompt.go) reads and fills it, and composeFixPrompt injects it as burler-step-fix's optional self_check marker value in a round whose profile names a fixer fan.
      It declares four required markers, {{.rubric_path}}, {{.lens_list}}, {{.lens_report_path}} and {{.lens_report_spec_path}}: the deployed fix-check rubric's path, the fixer fan's lenses as one bullet per lens in fan order, the path each fork's report is saved at, and the deployed spec of that report's format.
-lym-stencil: sha256=b0a5804a5dca546bddc41aaab8e8a632999d1b2c0dcd1cae1bca4658d68b0a91 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+lym-stencil: sha256=6ae28621ad3c158e5a36bc3a45003ad8374b07c093ce5087f81470a8ff53fe66 build=a687567d2fd87a67c9a0cf6d30c1923a4ee8b4b8 time=2026-11-01T16:14:30Z -->
 ## Self-check of your fix by forks (BLOCKING — after every fix, before the fixer-report)
 
 Once every finding has its disposition and every change is made, and before you write the fixer-report, run this procedure once.
@@ -10,7 +10,9 @@ It checks the change set you just made, which no later step of this round review
 1. Read the fix-check rubric at `{{.rubric_path}}`, so every fork you spawn inherits it.
 2. Spawn the lenses below in one message through the Agent tool with `subagent_type: "fork"`, one fork per lens, and never pass a `name`.
    Each fork's prompt is the fork boilerplate below plus its lens text and nothing else: no hint at what you think is wrong, no direction to read code.
-3. Wait for every fork to return; ending your turn while forks are outstanding is allowed.
+3. Wait for every fork to return: in the message after the spawn, run `lym shuttle await-forks` in the foreground with the Bash tool's `timeout` at 300000, and never end your turn while a fork is outstanding, so every fork result reaches you together, in the turn after it answers `ready: true`.
+   While it answers `ready: false`, run it again in a turn that does nothing else, until it has answered `ready: false` five times in a row.
+   When it fails, or has answered `ready: false` five times in a row, end your turn instead, and take each fork's result as it arrives.
    Edit nothing while any fork is outstanding, whatever an early report says: start judging only once the last fork has returned, judge all findings together, and only then edit.
    Once the last fork has returned, and before you judge, save each fork's final message verbatim to `{{.lens_report_path}}`, with its lens name for `<lens>`, in the format `{{.lens_report_spec_path}}` defines; a fork that returned no report gets its file too.
    These lens reports are part of your write surface, beside the fixer-report.
