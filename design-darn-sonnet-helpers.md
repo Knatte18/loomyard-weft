@@ -1,6 +1,6 @@
 # Agents may use subagents and forks; only headless claude -p stays refused
 
-`darn-sonnet-helpers` · Task · enhancement, claude, shuttle, stencil · running · PR-Review
+`darn-sonnet-helpers` · Task · enhancement, claude, shuttle, stencil · running · Finalize
 
 ## Seen (orch, 2026-11-01)
 
