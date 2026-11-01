@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=611f881932505ed567f18d00bf53b43b07a5d4142536ee7254b4c3e46af41d2d build=a3f0ec249513efa2c100f23b6354ac1d5e5a8209 time=2026-11-01T06:57:22Z -->
+<!-- lym-stencil: sha256=56cb2e877a75d7f718dc8a9c67a61e98e6a5dfc826d1ec664c5761b36bdecf56 build=d61520ed6ad9c04140f3f83993f58b19ec0691c3 time=2026-11-01T19:57:38Z -->
 
 # Final-summary spec — the producer-agnostic final-summary artifact
 
@@ -26,7 +26,7 @@ Everything after the heading line is the body, carried verbatim.
 ## Sole declarer, sole parser
 
 `internal/summaryparser` is the sole declarer of the artifact's filename and the sole parser of its format.
-It takes a told path — a caller resolves the containing directory and hands it in — and declares no location of its own.
+It takes a told path — a caller resolves the containing directory and hands it in — or content the caller read elsewhere, such as from an archived revision, and declares no location of its own.
 
 The contract names no location: the artifact's directory belongs to whichever producer writes it, and the consumer is handed the path, never a directory it derives itself.
 
