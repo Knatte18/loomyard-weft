@@ -238,6 +238,12 @@ Decision: D10 (loom-template-parts), D11 (loom-template-part-writer) and D12 (lo
 
 Rationale: Parent review of the stencil content (2026-11-01), since Discussion ran without the operator. Without signature lookups, every seam between parts becomes a question to the chair or a Plan-Review finding. Reading signatures keeps the reading low, which is the point of the split.
 
+### Added after Discussion (parent, 2026-11-01): Every review reads the three new stencils with special care
+
+Decision: The stencil text of loom-template-parts, loom-template-part-writer and loom-template-parts-chair, and the shared block loom-block-plan-format, is this task's core deliverable. Every review of this run (Discussion review, Plan review, Code review) reads that text line by line and checks it as a prompt an agent will follow: each instruction is unambiguous and can be done with the tools and files the agent has, nothing contradicts another stencil or the plan format, each stopping condition and hand-off between Parts-Write, part writer and chair is stated, and nothing invites the extra code reading the split is meant to avoid. The Plan cards and the code must carry the stencil text in full, never as a summary left to Webster.
+
+Rationale: Operator, 2026-11-01: the stencils of the two producers must be reviewed very carefully. Discussion ran without the operator, so the reviews are the only close reading the stencils get.
+
 ## Constraints
 
 - PATTERN-shed-recipe-registry: the two rows are `Constructor` rows in `internal/shedrecipe`, each value looked up by key, switched by `entry_gate`.
