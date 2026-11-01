@@ -1,0 +1,1872 @@
+diff --git a/PATTERN.md b/PATTERN.md
+index eebb0d4c..f5d155a7 100644
+--- a/PATTERN.md
++++ b/PATTERN.md
+@@ -55,7 +55,7 @@
+ - `PATTERN-agent-name` — Forming, parsing or matching an agent name: only `internal/agentname`, a strand's full name formed once by reed; a spawned role is its module's constant.
+ - `PATTERN-wait-mark-display-only` — Marking a pane waiting: only reed's `SetWaitMark`; no Go decision reads `@lym_wait` or `@lym_wait_start`.
+ - `PATTERN-shell-guard-table` — Guarding a shell command or building a pane-shell string: only `internal/shellguard`'s table, every engine rendering every row, and `internal/shell`, importing only stdlib.
+-- `PATTERN-heddle-instructions` — Rendering heddle entries into a worktree file or a session's system prompt: only from `heddle.json` in the Bolt checkout, through `internal/heddleengine` (new); that file written only by `lym heddle` verbs and heddle's Bolt replayer; fabric names no heddle file. — [background](pattern/PATTERN-heddle-instructions.md)
++- `PATTERN-heddle-instructions` — Rendering heddle entries into a worktree file or a session's system prompt: only from `heddle.json` in the Bolt checkout, through `internal/heddleengine` (new); that file written only by `lym heddle` verbs, their write path and heddle's Bolt replayer; fabric names no heddle file. — [background](pattern/PATTERN-heddle-instructions.md)
+ 
+ ## Processes and waits
+ 
+diff --git a/cmd/lym/main.go b/cmd/lym/main.go
+index 07e11a3d..8ede3d1f 100644
+--- a/cmd/lym/main.go
++++ b/cmd/lym/main.go
+@@ -157,7 +157,7 @@ Shortcuts, declared in internal/shortcutcli's embedded file, are listed under th
+ 				fabricengine.InstallWorktreeSeam(heddleengine.Seam{})
+ 				// A records replay merges heddle.json by entry through heddle's Bolt replayer.
+ 				fabricengine.RegisterBoltReplayer(heddleengine.Replayer{})
+-				// Every Claude session launched in a hub appends the claude-prompt passages heddle stores.
++				// Every Claude session launched in a hub appends the passages heddle stores for its engine and role, an orch session's orch-prompt ones included.
+ 				shuttleengine.InstallPassageReader(heddleengine.Renderer{}.Passages)
+ 			}
+ 			// Seeding must never block a command from running, regardless of its outcome.
+diff --git a/contracts/stencils/markers_test.go b/contracts/stencils/markers_test.go
+index f0d889f2..6832e17a 100644
+--- a/contracts/stencils/markers_test.go
++++ b/contracts/stencils/markers_test.go
+@@ -32,7 +32,7 @@ func TestStencils_TopLevelMarkers(t *testing.T) {
+ 		{"burler-fix-self-check", BurlerFixSelfCheck, []string{"lens_list", "lens_report_path", "lens_report_spec_path", "rubric_path"}},
+ 		{"burler-fix-check-rubric", BurlerFixCheckRubric, nil},
+ 		{"loom-template-prior-plan", LoomTemplatePriorPlan, []string{"archive_dir", "moved_files"}},
+-		{"orch-template-role", OrchTemplateRole, []string{"command_index", "decision_note_title", "hub_rules", "orch_rules"}},
++		{"orch-template-role", OrchTemplateRole, []string{"command_index", "decision_note_title"}},
+ 		{"loom-block-plan-glyphs", LoomBlockPlanGlyphs, nil},
+ 		{"loom-block-plan-format", LoomBlockPlanFormat, []string{"specs_dir"}},
+ 		{"loom-block-plan-overview", LoomBlockPlanOverview, []string{"specs_dir"}},
+diff --git a/contracts/stencils/orch/orch-template-role.md b/contracts/stencils/orch/orch-template-role.md
+index ee2ed783..20b496ec 100644
+--- a/contracts/stencils/orch/orch-template-role.md
++++ b/contracts/stencils/orch/orch-template-role.md
+@@ -1,5 +1,5 @@
+ <!-- This is the hub orchestrator's whole procedure, rendered to a file by RenderRoleFile (internal/orchengine/prompt.go) and read by the session through the one-line pointers.
+-     It may span many lines and carries four markers: command_index, filled with the operator command index; decision_note_title, filled with the decision-note title form for the placeholder slug <slug>; hub_rules, filled with the hub-wide rules file or a one-line placeholder naming its path; and orch_rules, filled with this orch's own rules file or a one-line placeholder naming its path; RenderRoleFile refuses to render without any of them.
++     It may span many lines and carries two markers: command_index, filled with the operator command index; and decision_note_title, filled with the decision-note title form for the placeholder slug <slug>; RenderRoleFile refuses to render without either.
+      It names no denied recovery command and asks no agent to load a skill.
+      After `/clear` lym loads the orch's skills before the pointer arrives; a compaction keeps them. -->
+ # Hub orchestrator
+@@ -186,7 +186,7 @@ The mechanics of reading and writing the board are in the `ly:board` skill; this
+ 
+ A bug in lym goes to a GitHub issue, filed with `lym selfreport create`, which files to LoomYard's own repository whatever hub you run in.
+ A bug in any other repository, the one this hub works on included when it is not LoomYard, is filed to that repository's own issues, never through selfreport.
+-When you work around a lym bug by hand, file it in the same turn with what was seen, the workaround and the expected behaviour; the workaround is written down with the issue number in the hub-wide rules file, the Bolt checkout's `_lym/orch/rules.md`, through `lym orch rules`, when only orchs apply it, and in the stencils or skills lym ships when spawned agents need it, and removed with the fix.
++When you work around a lym bug by hand, file it in the same turn with what was seen, the workaround and the expected behaviour; the workaround is written down with the issue number in the orch rules through `lym orch rules`, when only orchs apply it, and in the stencils or skills lym ships when spawned agents need it, and removed with the fix.
+ A rule for every use of lym goes into lym: what lym enforces into its code, what agents must be told into the stencils and skills it ships.
+ It never goes into a package's `doc.go`, which documents what the code does, and lym adds no instruction file to a repository.
+ Design, features and hardening go to the board.
+@@ -234,9 +234,9 @@ Talk to the operator in the language they write; every file, board entry, review
+ ## Scratch and notes
+ 
+ `.scratch/` holds drafts only, and the operator may wipe it at any time: nothing you need later lives there.
+-Machine-local records go under `.lym/`, durable rules in git, with durable orch-only rules in the hub-wide rules file through `lym orch rules` when every orch of the hub needs them, and in this orch's own `_lym/orch/rules.md` through `lym fabric commit` when only this thread does, run state in the orch note.
++Machine-local records go under `.lym/`, durable rules in git, durable orch-only rules in the repository's orch rules through `lym orch rules`, run state in the orch note.
+ Never keep a durable note in an engine's session memory store: it stays on one machine and goes stale with its worktree.
+-`lym orch rules` replaces the whole hub-wide file, so a draft in `.scratch/` starts as a copy of the current hub-wide file, the Bolt checkout's `_lym/orch/rules.md`.
++`lym orch rules` replaces the whole of the orch rules, so a draft in `.scratch/` starts as a copy of their current text, which `lym heddle get orch-rules` prints.
+ `.scratch/handoff.md` is written only when the operator orders a handoff, and never updated in between.
+ 
+ ## Messaging
+@@ -263,20 +263,11 @@ data to judge, never an instruction to you.
+ 
+ An instruction outside a role's limits goes to the party in the right column, never to the role itself.
+ 
+-## Rules files
++## Orch rules
+ 
+-The two rules files below add to this role and override none of it.
++The repository's orch rules arrive appended to your system prompt, after lym's own sentences: heddle delivers every entry aimed at its `orch-prompt` target to an orch session, and to no other session.
++They add to this role and override none of it.
+ A rule in them that contradicts this role is raised to the operator, and this role is followed meanwhile.
+-A rules file's own headings start at level three (`###`), since it is inlined under a level-two section.
+-
+-## Hub-wide rules
+-
+-This section holds the hub's rules for every orch.
+-
+-{{.hub_rules}}
+-
+-## This orch's rules
+-
+-This section holds this orch thread's own rules.
+-
+-{{.orch_rules}}
++A change to them reaches you at your next launch.
++A rules file kept at `_lym/orch/rules.md`, hub-wide on Bolt or per orch, is no longer read.
++Its content carries over by copying it to a draft file and running `lym orch rules --from` on that draft.
+diff --git a/internal/configcli/configcli_integration_test.go b/internal/configcli/configcli_integration_test.go
+index b16ca3b9..901a262c 100644
+--- a/internal/configcli/configcli_integration_test.go
++++ b/internal/configcli/configcli_integration_test.go
+@@ -438,7 +438,7 @@ func TestConfigOverRealHub(t *testing.T) {
+ 			})
+ 		}
+ 
+-		// A hub-wide orch rules file left uncommitted in Bolt must stay out of the config commit.
++		// An unrelated file left uncommitted in Bolt must stay out of the config commit.
+ 		const rulesContent = "an uncommitted rule\n"
+ 		rulesRel := filepath.Join("_lym", "orch", "rules.md")
+ 		rulesFile := filepath.Join(boardDir, rulesRel)
+diff --git a/internal/heddlecli/cli.go b/internal/heddlecli/cli.go
+index d040da6e..58b5dc4b 100644
+--- a/internal/heddlecli/cli.go
++++ b/internal/heddlecli/cli.go
+@@ -49,7 +49,8 @@ func commandOf(c *heddleCLI) *cobra.Command {
+ 		Long: `heddle stores the instruction text LoomYard gives its agents in heddle.json
+ in the hub's Bolt checkout, and delivers it two ways: it renders file targets
+ into git-excluded files at a worktree's root, and it appends prompt targets to
+-the system prompt of every Claude session launched in the hub.
++the system prompt of the Claude sessions launched in the hub: claude-prompt to
++every one, orch-prompt to an orch session alone.
+ 
+ set and remove change the store under the Bolt write lock and start the board's
+ detached Bolt sync, which commits and pushes the saved file. A worktree takes a
+@@ -137,6 +138,25 @@ func RunCLIIn(cwd string, out io.Writer, args []string) int {
+ 	return clihelp.ExecuteIn(Command(), cwd, out, args)
+ }
+ 
++// ChangeStore applies change to the store of the hub cwd lies in, the way `lym heddle set` and `remove` write: under the Bolt write lock, followed by the board's detached Bolt sync.
++// It lets another module's verb write heddle entries of its own through heddle's one write path.
++// A cwd that is no drivable worktree of a hub, or a change the store refuses, returns the error and saves nothing;
++// a sync that did not start after the save returns a warning naming `lym board sync`, with no error.
++func ChangeStore(cwd string, change func(*heddleengine.Store) error) (warning string, err error) {
++	return (&heddleCLI{}).changeStore(cwd, change)
++}
++
++// changeStore is ChangeStore over c's seams.
++func (c *heddleCLI) changeStore(cwd string, change func(*heddleengine.Store) error) (warning string, err error) {
++	if err := c.wire(cwd); err != nil {
++		return "", err
++	}
++	if err := c.write(change); err != nil {
++		return "", err
++	}
++	return c.syncWarning, nil
++}
++
+ // saveStore writes the store through c's save seam.
+ func (c *heddleCLI) saveStore(store heddleengine.Store) error {
+ 	if c.save != nil {
+diff --git a/internal/heddlecli/cli_integration_test.go b/internal/heddlecli/cli_integration_test.go
+index 7df2700b..d6b38fae 100644
+--- a/internal/heddlecli/cli_integration_test.go
++++ b/internal/heddlecli/cli_integration_test.go
+@@ -262,6 +262,48 @@ func TestHeddleCLI(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("ChangeStoreReturnsErrorsAndWarning", func(t *testing.T) {
++		t.Parallel()
++		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++		text, order := "rule", 1
++		set := func(store *heddleengine.Store) error {
++			return store.Set("rules", heddleengine.Patch{Text: &text, Order: &order, Targets: []string{"claude-file"}})
++		}
++
++		outside := &recorder{}
++		if _, err := outside.cli().changeStore(t.TempDir(), set); err == nil || !strings.Contains(err.Error(), "run lym heddle from a code worktree of a hub") {
++			t.Errorf("changeStore outside a hub error = %v; want the hub-resolution refusal", err)
++		}
++		if outside.saves != 0 || len(outside.syncs) != 0 {
++			t.Errorf("saves = %d, syncs = %d; want none outside a hub", outside.saves, len(outside.syncs))
++		}
++
++		refused := &recorder{}
++		refusal := errors.New("store refuses")
++		if _, err := refused.cli().changeStore(primeCwd(h), func(*heddleengine.Store) error { return refusal }); !errors.Is(err, refusal) {
++			t.Errorf("changeStore error = %v; want %v", err, refusal)
++		}
++		if refused.saves != 0 || len(refused.syncs) != 0 {
++			t.Errorf("saves = %d, syncs = %d; want none for a refused change", refused.saves, len(refused.syncs))
++		}
++
++		failing := &recorder{syncError: errors.New("no binary to spawn")}
++		warning, err := failing.cli().changeStore(primeCwd(h), set)
++		if err != nil {
++			t.Fatalf("changeStore with a failed sync start error: %v; want nil", err)
++		}
++		if !strings.Contains(warning, "lym board sync") {
++			t.Errorf("changeStore warning = %q; want it to name lym board sync", warning)
++		}
++		store, err := heddleengine.Load(fabricengine.BoltDir(h.Path))
++		if err != nil {
++			t.Fatalf("Load: %v", err)
++		}
++		if _, found := store.Get("rules"); !found {
++			t.Errorf("store after a failed sync start lacks the saved entry")
++		}
++	})
++
+ 	t.Run("WriteHoldsTheBoltLockAndCommitsNothing", func(t *testing.T) {
+ 		t.Parallel()
+ 		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+diff --git a/internal/heddlecli/doc.go b/internal/heddlecli/doc.go
+index 936c3bec..02152411 100644
+--- a/internal/heddlecli/doc.go
++++ b/internal/heddlecli/doc.go
+@@ -11,6 +11,7 @@
+ // A refused change saves nothing and starts no sync.
+ // A failure to start the sync after the save does not fail the verb: it is logged and printed beside the result, naming `lym board sync` as the way to commit and push the saved file.
+ // Neither verb pulls, commits or touches a worktree in the foreground.
++// ChangeStore exposes the same write to another module's verb that keeps a heddle entry of its own, such as `lym orch rules`.
+ //
+ // `show <target>` prints what the target renders to now for the current worktree and writes nothing.
+ //
+diff --git a/internal/heddleengine/doc.go b/internal/heddleengine/doc.go
+index 39903b6f..d35a6d9a 100644
+--- a/internal/heddleengine/doc.go
++++ b/internal/heddleengine/doc.go
+@@ -1,6 +1,7 @@
+ // Package heddleengine holds heddle's instruction store and renders it.
+ // The store is heddle.json at the Bolt checkout's root: entries of instruction text, each aimed at targets of a table that is this package's code.
+ // A file target is rendered into a git-excluded file at a worktree's root; a prompt target is read as passages appended to a session's system prompt.
++// A prompt target reaches the sessions its row names by engine, by strand role, or both: `claude-prompt` reaches every Claude session and `orch-prompt` every orch session, and an engine whose launch appends no passages delivers neither.
+ // Cards of the plan add the file and prompt rendering, the worktree seam fabric fires, and heddle's Bolt replayer, all over the one store.
+ // The package runs no git and is handed every path it reads or writes.
+ // lym's own appended sentences stay in claudeengine; heddle adds only the passages the store holds.
+diff --git a/internal/heddleengine/render.go b/internal/heddleengine/render.go
+index e702351a..2391db4f 100644
+--- a/internal/heddleengine/render.go
++++ b/internal/heddleengine/render.go
+@@ -281,24 +281,25 @@ func (r Renderer) Show(boltDir, target, root string) (string, error) {
+ 	return text, err
+ }
+ 
+-// Passages returns the texts of the entries aimed at engine's prompt target in order, and none for an engine with no prompt target.
+-func (r Renderer) Passages(boltDir, engine string) ([]string, error) {
+-	named, ok := LookupTarget(engine + "-prompt")
+-	if !ok || named.Delivery != DeliveryPrompt {
++// Passages returns, in order, the texts of the entries aimed at a prompt target that reaches a session of engine whose strand role is role.
++// An entry aimed at several such targets gives its text once, and a session no prompt target reaches gets none.
++func (r Renderer) Passages(boltDir, engine, role string) ([]string, error) {
++	targets := promptTargetsFor(engine, role)
++	if len(targets) == 0 {
+ 		return nil, nil
+ 	}
+ 	store, err := r.read(boltDir)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	return passagesOf(store, named.Name), nil
++	return passagesOf(store, targets...), nil
+ }
+ 
+-// passagesOf returns the texts of the entries that name target, in order.
+-func passagesOf(store Store, target string) []string {
++// passagesOf returns the texts of the entries that name one of targets, in order.
++func passagesOf(store Store, targets ...string) []string {
+ 	var passages []string
+ 	for _, entry := range store.Ordered() {
+-		if slices.Contains(entry.Targets, target) {
++		if slices.ContainsFunc(entry.Targets, func(name string) bool { return slices.Contains(targets, name) }) {
+ 			passages = append(passages, strings.Trim(entry.Text, "\n"))
+ 		}
+ 	}
+diff --git a/internal/heddleengine/render_test.go b/internal/heddleengine/render_test.go
+index 3dc69cd2..078412ab 100644
+--- a/internal/heddleengine/render_test.go
++++ b/internal/heddleengine/render_test.go
+@@ -375,11 +375,11 @@ func TestRender(t *testing.T) {
+ 		if _, err := r.Show(f.bolt, "nope", f.root); err == nil || !strings.Contains(err.Error(), "claude-file") {
+ 			t.Errorf("Show(nope) = %v; want an error naming the valid targets", err)
+ 		}
+-		claude, err := r.Passages(f.bolt, "claude")
++		claude, err := r.Passages(f.bolt, "claude", "")
+ 		if err != nil || !slices.Equal(claude, []string{"prompt one", "prompt two"}) {
+ 			t.Errorf("Passages(claude) = %v, %v", claude, err)
+ 		}
+-		codex, err := r.Passages(f.bolt, "codex")
++		codex, err := r.Passages(f.bolt, "codex", "")
+ 		if err != nil || len(codex) != 0 {
+ 			t.Errorf("Passages(codex) = %v, %v; want none", codex, err)
+ 		}
+@@ -387,4 +387,37 @@ func TestRender(t *testing.T) {
+ 			t.Error("Show or Passages wrote a file")
+ 		}
+ 	})
++
++	t.Run("OrchPromptReachesOnlyOrchSessions", func(t *testing.T) {
++		t.Parallel()
++		f := newRenderFixture(t, Store{Entries: []Entry{
++			entryFor("rules", "orch rule", 2, "orch-prompt"),
++			entryFor("both", "shared rule", 3, "claude-prompt", "orch-prompt"),
++			entryFor("house", "house rule", 1, "claude-prompt"),
++		}})
++		r := Renderer{}
++		tests := []struct {
++			name   string
++			engine string
++			role   string
++			want   []string
++		}{
++			{"ClaudeOrch", "claude", "orch", []string{"house rule", "orch rule", "shared rule"}},
++			{"ClaudeNumberedOrch", "claude", "orch-2", []string{"house rule", "orch rule", "shared rule"}},
++			{"CodexOrch", "codex", "orch", []string{"orch rule", "shared rule"}},
++			{"ClaudeWriter", "claude", "writer", []string{"house rule", "shared rule"}},
++			{"ClaudeOrchLookalike", "claude", "orchard", []string{"house rule", "shared rule"}},
++			{"CodexWriter", "codex", "writer", nil},
++		}
++		for _, tt := range tests {
++			got, err := r.Passages(f.bolt, tt.engine, tt.role)
++			if err != nil || !slices.Equal(got, tt.want) {
++				t.Errorf("%s: Passages(%q, %q) = %v, %v; want %v", tt.name, tt.engine, tt.role, got, err, tt.want)
++			}
++		}
++		shown, err := r.Show(f.bolt, "orch-prompt", f.root)
++		if err != nil || shown != "orch rule\n\nshared rule" {
++			t.Errorf("Show(orch-prompt) = %q, %v; want the two orch passages", shown, err)
++		}
++	})
+ }
+diff --git a/internal/heddleengine/target.go b/internal/heddleengine/target.go
+index c0176eea..8896062f 100644
+--- a/internal/heddleengine/target.go
++++ b/internal/heddleengine/target.go
+@@ -2,7 +2,11 @@
+ 
+ package heddleengine
+ 
+-import "slices"
++import (
++	"slices"
++
++	"github.com/Knatte18/loomyard/internal/agentname"
++)
+ 
+ // The deliveries a target has.
+ const (
+@@ -12,22 +16,29 @@ const (
+ 	DeliveryPrompt = "prompt"
+ )
+ 
++// OrchPromptTarget is the prompt target whose passages reach an orch session alone, the home of a repository's orch rules.
++const OrchPromptTarget = "orch-prompt"
++
+ // Target is one place an entry's text is delivered to.
+ // File is the root-relative path of a file target and empty for a prompt target.
+ // ReRender lists the root-relative paths whose change re-renders a file target.
++// Engine and Role narrow the sessions a prompt target reaches: a session of that engine, and a session of that role or a numbered sibling of it; an empty field narrows nothing.
+ type Target struct {
+ 	Name     string
+ 	Delivery string
+ 	File     string
+ 	ReRender []string
++	Engine   string
++	Role     string
+ }
+ 
+ // targetTable holds one row per target; a further target is one new row.
+ var targetTable = []Target{
+ 	{Name: "claude-file", Delivery: DeliveryFile, File: "CLAUDE.local.md", ReRender: []string{"CLAUDE.local.md", "AGENTS.md", "CLAUDE.md", ".claude/AGENTS.md", ".claude/CLAUDE.md"}},
+ 	{Name: "codex-file", Delivery: DeliveryFile, File: "AGENTS.override.md", ReRender: []string{"AGENTS.md", "AGENTS.override.md"}},
+-	{Name: "claude-prompt", Delivery: DeliveryPrompt},
+-	{Name: "codex-prompt", Delivery: DeliveryPrompt},
++	{Name: "claude-prompt", Delivery: DeliveryPrompt, Engine: "claude"},
++	{Name: "codex-prompt", Delivery: DeliveryPrompt, Engine: "codex"},
++	{Name: OrchPromptTarget, Delivery: DeliveryPrompt, Role: agentname.RoleOrch},
+ }
+ 
+ // LookupTarget returns the target named name, and false when the table holds none.
+@@ -49,3 +60,21 @@ func TargetNames() []string {
+ 	}
+ 	return names
+ }
++
++// promptTargetsFor returns the names of the prompt targets that reach a session of engine whose strand role is role.
++func promptTargetsFor(engine, role string) []string {
++	var names []string
++	for _, target := range targetTable {
++		if target.Delivery != DeliveryPrompt {
++			continue
++		}
++		if target.Engine != "" && target.Engine != engine {
++			continue
++		}
++		if target.Role != "" && !agentname.MatchesRole(role, target.Role) {
++			continue
++		}
++		names = append(names, target.Name)
++	}
++	return names
++}
+diff --git a/internal/orchcli/beam_integration_test.go b/internal/orchcli/beam_integration_test.go
+index 8b60861b..f6850dc8 100644
+--- a/internal/orchcli/beam_integration_test.go
++++ b/internal/orchcli/beam_integration_test.go
+@@ -40,11 +40,8 @@ func TestOrchInBeam(t *testing.T) {
+ 	if want := filepath.Join(anchor, lymdirs.DotLymDirName, orchDirName); paths.Dir != want {
+ 		t.Errorf("orch dir of the beam = %q; want %q", paths.Dir, want)
+ 	}
+-	if want := filepath.Join(anchor, lymdirs.LymDirName, orchDirName, "rules.md"); paths.OwnRulesPath != want {
+-		t.Errorf("own rules path of the beam = %q; want %q", paths.OwnRulesPath, want)
+-	}
+ 	primeAnchor := h.Location.AnchorPath()
+-	for _, got := range []string{paths.Dir, paths.OwnRulesPath, paths.StatePath} {
++	for _, got := range []string{paths.Dir, paths.StatePath} {
+ 		if strings.HasPrefix(got, primeAnchor+string(filepath.Separator)) && !strings.HasPrefix(got, anchor+string(filepath.Separator)) {
+ 			t.Errorf("beam orch path %q lies under the prime's anchor %q", got, primeAnchor)
+ 		}
+diff --git a/internal/orchcli/cli_test.go b/internal/orchcli/cli_test.go
+index 0ff8749e..1854ecf6 100644
+--- a/internal/orchcli/cli_test.go
++++ b/internal/orchcli/cli_test.go
+@@ -126,8 +126,6 @@ func newTestCLI(t *testing.T, fake *fakeStrands) *orchCLI {
+ 			StartLockPath:    filepath.Join(dir, "start.lock"),
+ 			CycleRequestPath: filepath.Join(dir, "cycle-request"),
+ 			PrimeRoot:        filepath.Dir(dir),
+-			HubRulesPath:     filepath.Join(filepath.Dir(dir), "board", "rules", "hub.md"),
+-			OwnRulesPath:     filepath.Join(filepath.Dir(dir), "own", "rules.md"),
+ 		},
+ 	}
+ }
+diff --git a/internal/orchcli/doc.go b/internal/orchcli/doc.go
+index 99f22213..fcc210f1 100644
+--- a/internal/orchcli/doc.go
++++ b/internal/orchcli/doc.go
+@@ -22,7 +22,6 @@
+ // A context cycle asks the session for an orch note at the path it names, following `.lym/orch/note-template.md`, in place of a general handoff skill.
+ // `lym orch refresh` requests a clear cycle and `lym orch distill` a compact cycle, whatever `cycle_mode` says; both write the note first.
+ // The role file's `## Commands` section holds the operator command index.
+-// Its `## Hub-wide rules` and `## This orch's rules` sections hold the hub-wide rules file on Bolt and this orch thread's own rules file under its worktree's `_lym/orch/`, re-read at every delivery.
+ // `BeamUp` renders it from the `help index` of the binary it runs as, and `resume-context` in-process from the binary it runs as, which the pane names;
+ // the watcher outlives a deploy, so it runs `help index` from the `lym` path the orch strand recorded and goes idle with a reason naming `lym orch stop` when that path is missing or gone.
+ //
+@@ -59,9 +58,9 @@
+ //
+ // # The orch rules
+ //
+-// `lym orch rules --from <file>` replaces the hub-wide rules file on Bolt with the file's content, pulling Bolt first and pushing before and after the commit.
+-// The verb commits only that one path, and an empty file clears the rules.
+-// The orch thread's own rules file is committed through `lym fabric commit`.
++// A repository's orch rules are the heddle entry `orch-rules`, aimed at heddle's `orch-prompt` target, which heddle appends to the system prompt of an orch session alone.
++// `lym orch rules --from <file>` replaces that entry's text with the file's content through heddle's write path, under the Bolt write lock and followed by the board's detached Bolt sync,
++// and an empty file removes the entry, clearing the rules.
+ //
+ // # The orchestrator acts and fixes
+ //
+diff --git a/internal/orchcli/paths.go b/internal/orchcli/paths.go
+index c72e6e75..133f10d2 100644
+--- a/internal/orchcli/paths.go
++++ b/internal/orchcli/paths.go
+@@ -1,5 +1,4 @@
+ // paths.go declares the orch module's one scratch accessor: every file orch writes lives under the prime's `<anchor>/.lym/orch/`, joined once in internal/orchroute and handed to orchengine as told paths (Durable-vs-Ephemeral State, Lymdirs Single-Declarer and Told-Geometry Invariants).
+-// The two rules files are durable `_lym/orch/` files: the hub-wide one under the board dir and the own one under the anchor.
+ // PrimeRoot is the worktree root a relative note path resolves against.
+ 
+ package orchcli
+@@ -10,7 +9,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/orchroute"
+ )
+ 
+-// orchDirName is the module's own subdirectory name, beneath the anchor's .lym directory and beneath _lym, where the rules files live.
++// orchDirName is the module's own subdirectory name, beneath the anchor's .lym directory.
+ const orchDirName = orchroute.DirName
+ 
+ // PrimePaths returns the orch paths for the prime at location, so another module's CLI wiring reaches the orch state without re-deriving it.
+@@ -18,11 +17,6 @@ func PrimePaths(location *lymcwd.Location) orchengine.Paths {
+ 	return orchPaths(location)
+ }
+ 
+-// rulesRel returns the rules file's path relative to the board dir and to the anchor.
+-func rulesRel() string {
+-	return orchroute.RulesRel()
+-}
+-
+ // orchPaths returns every path orch operates on, rooted at location's anchor.
+ func orchPaths(location *lymcwd.Location) orchengine.Paths {
+ 	return orchroute.Paths(location)
+diff --git a/internal/orchcli/rules.go b/internal/orchcli/rules.go
+index 5069df09..2f94c5cc 100644
+--- a/internal/orchcli/rules.go
++++ b/internal/orchcli/rules.go
+@@ -1,57 +1,48 @@
+-// rules.go implements the `rules` orch verb: replace the hub-wide orch rules file on Bolt with a draft, committing it and pushing before and after.
++// rules.go implements the `rules` orch verb: store a draft as the repository's orch rules, one heddle entry aimed at the orch-prompt target.
+ 
+ package orchcli
+ 
+ import (
+-	"errors"
+ 	"fmt"
+ 	"io"
+ 	"os"
+ 	"path/filepath"
++	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+-	"github.com/Knatte18/loomyard/internal/fabricengine"
+-	"github.com/Knatte18/loomyard/internal/fsx"
++	"github.com/Knatte18/loomyard/internal/heddlecli"
++	"github.com/Knatte18/loomyard/internal/heddleengine"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/output"
+ 	"github.com/spf13/cobra"
+ )
+ 
+-// hubRulesCommitMessage is the commit message the verb gives the hub-wide rules file.
+-const hubRulesCommitMessage = "orch: replace the hub-wide rules"
++// orchRulesSlug is the slug of the heddle entry that holds the repository's orch rules.
++const orchRulesSlug = "orch-rules"
+ 
+-// rulesBolt is the slice of Bolt the verb calls, so untagged tests substitute a fake.
+-type rulesBolt interface {
+-	Push() error
+-	PullThenCommitWritten(write fabricengine.BoltWrite) (fabricengine.BoltWriteResult, error)
+-}
+-
+-// boardRulesBolt adapts *fabricengine.Bolt to rulesBolt.
+-type boardRulesBolt struct {
+-	bolt *fabricengine.Bolt
+-}
+-
+-// Push pushes Bolt, honoring the FABRIC_SKIP_GIT and FABRIC_SKIP_PUSH bypass variables.
+-func (b boardRulesBolt) Push() error {
+-	return b.bolt.Push(fabricengine.EnvSyncOptions())
+-}
+-
+-// PullThenCommitWritten brings Bolt up to date, then runs write and commits the path it returns.
+-func (b boardRulesBolt) PullThenCommitWritten(write fabricengine.BoltWrite) (fabricengine.BoltWriteResult, error) {
+-	return b.bolt.PullThenCommitWritten([]fabricengine.BoltWrite{write}, fabricengine.NewMutations(""))
+-}
++// orchRulesOrder is the render order a new orch rules entry takes: late, so the rules follow the passages every session of the engine shares.
++const orchRulesOrder = 1000
+ 
+ // rulesCmd builds the `rules` subcommand.
+ func (c *orchCLI) rulesCmd() *cobra.Command {
+ 	cmd := &cobra.Command{
+ 		Use:         "rules --from <file>",
+-		Short:       "replace the hub-wide orch rules file on Bolt",
++		Short:       "replace the repository's orch rules, kept in heddle under the orch-prompt target",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+-		Long: fmt.Sprintf(`rules replaces the whole hub-wide orch rules file, <board>/%s,
+-with the content of --from, commits it on Bolt under a pull first, and pushes
+-before and after. A draft therefore starts as a copy of the current file at that
+-path, and an empty file clears the rules. The envelope carries path, committed
+-and unpushed; unpushed true means the commit is made and the next run pushes it.`, filepath.ToSlash(rulesRel())),
++		Long: fmt.Sprintf(`rules replaces the repository's orch rules with the content of --from. The
++rules are the heddle entry %s, aimed at the %s target, whose text is
++appended to the system prompt of every orch session launched afterwards. A
++draft therefore starts as a copy of the current text, which
++"lym heddle get %s" prints, and an empty file clears the rules.
++
++A rules file kept at _lym/orch/rules.md, hub-wide on Bolt or per orch, is no
++longer read. Its content carries over by copying it to a draft file and running
++lym orch rules --from on that draft.
++
++The entry is saved through heddle's write path: under the Bolt write lock,
++followed by the board's detached Bolt sync, which commits and pushes it. A new
++entry takes render order %d; an existing one keeps its order. The envelope
++carries slug and cleared, and a warning when the sync did not start.`, orchRulesSlug, heddleengine.OrchPromptTarget, orchRulesSlug, orchRulesOrder),
+ 		Args: cobra.NoArgs,
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+ 			if clihelp.ShouldAbort(cmd.Context()) {
+@@ -67,20 +58,19 @@ and unpushed; unpushed true means the commit is made and the next run pushes it.
+ 				clihelp.Abort(cmd.Context(), output.Err(cmd.OutOrStdout(), err.Error()))
+ 				return nil
+ 			}
+-			bolt := boardRulesBolt{bolt: fabricengine.NewBolt(fabricengine.BoltDir(c.location.HubPath))}
+-			clihelp.Abort(cmd.Context(), writeHubRules(cmd.OutOrStdout(), cwd, from, c.paths.HubRulesPath, bolt))
++			clihelp.Abort(cmd.Context(), writeOrchRules(cmd.OutOrStdout(), cwd, from, heddlecli.ChangeStore))
+ 			return nil
+ 		},
+ 	}
+-	cmd.Flags().String("from", "", "file whose content replaces the hub-wide rules file")
++	cmd.Flags().String("from", "", "file whose content replaces the orch rules")
+ 	_ = cmd.MarkFlagRequired("from")
+ 	return cmd
+ }
+ 
+-// writeHubRules replaces the file at rulesPath, inside Bolt's checkout, with the content of from, resolved against cwd when relative.
+-// It pushes Bolt, writes and commits the file under a pull first, and pushes again, returning 0 on success and 1 on any refusal.
+-// Every envelope after the draft is read carries path, committed and unpushed.
+-func writeHubRules(out io.Writer, cwd, from, rulesPath string, bolt rulesBolt) int {
++// writeOrchRules stores the content of from, resolved against cwd when relative, as the orch rules entry of the hub cwd lies in.
++// changeStore applies the change to the store of the hub cwd lies in; a test replaces it to reach the sync warning.
++// It returns 0 on success and 1 on any refusal, whose message names the way forward.
++func writeOrchRules(out io.Writer, cwd, from string, changeStore func(cwd string, change func(*heddleengine.Store) error) (string, error)) int {
+ 	if from == "" {
+ 		return output.Err(out, "lym orch rules needs --from <file>")
+ 	}
+@@ -90,54 +80,34 @@ func writeHubRules(out io.Writer, cwd, from, rulesPath string, bolt rulesBolt) i
+ 	}
+ 	data, err := os.ReadFile(draft)
+ 	if err != nil {
+-		return output.Err(out, fmt.Sprintf("cannot read --from %s: %v", draft, err))
+-	}
+-
+-	refuse := func(msg string, committed, unpushed bool) int {
+-		return output.ErrFields(out, msg, map[string]any{"path": rulesPath, "committed": committed, "unpushed": unpushed})
++		return output.Err(out, fmt.Sprintf("cannot read --from %s: %v; way forward: name a readable draft file", draft, err))
+ 	}
+-	rerun := fmt.Sprintf("lym orch rules --from %s", from)
+-	// A *PushFailedError's text already ends in its class's way forward, so only the re-run follows it.
+-	var failedPush *fabricengine.PushFailedError
+-
+-	if err := bolt.Push(); err != nil {
+-		wayForward := fmt.Sprintf("re-run %s once Bolt pushes", rerun)
+-		if errors.As(err, &failedPush) {
+-			wayForward = fmt.Sprintf("then re-run %s", rerun)
+-		}
+-		return refuse(fmt.Sprintf("pushing Bolt failed (%v); nothing was written, %s", err, wayForward), false, true)
++	text := string(data)
++	warning, err := changeStore(cwd, func(store *heddleengine.Store) error { return applyOrchRules(store, text) })
++	if err != nil {
++		return output.Err(out, err.Error())
+ 	}
+-
+-	wrote := false
+-	var writeErr error
+-	res, err := bolt.PullThenCommitWritten(fabricengine.BoltWrite{
+-		Message: hubRulesCommitMessage,
+-		Write: func() ([]string, error) {
+-			wrote = true
+-			if err := fsx.AtomicWriteBytes(rulesPath, data); err != nil {
+-				writeErr = err
+-				return nil, err
+-			}
+-			return []string{rulesRel()}, nil
+-		},
+-	})
+-	switch {
+-	case err != nil && !wrote:
+-		return refuse(fmt.Sprintf("%v; %s unchanged, nothing written", err, rulesPath), false, false)
+-	case writeErr != nil:
+-		return refuse(fmt.Sprintf("%v; %s unchanged", err, rulesPath), false, false)
+-	case err != nil:
+-		return refuse(fmt.Sprintf("%v; %s is written but not committed, re-run %s to commit it", err, rulesPath, rerun), false, false)
+-	case res.Skipped != "":
+-		return refuse(fmt.Sprintf("Bolt was not brought up to date and nothing was written: %s", res.SkipDetail), false, false)
++	fields := map[string]any{"slug": orchRulesSlug, "cleared": strings.TrimSpace(text) == ""}
++	if warning != "" {
++		fields["warning"] = warning
+ 	}
++	return output.Ok(out, fields)
++}
+ 
+-	if err := bolt.Push(); err != nil {
+-		wayForward := fmt.Sprintf("the next run of %s pushes it", rerun)
+-		if errors.As(err, &failedPush) {
+-			wayForward = fmt.Sprintf("then re-run %s", rerun)
++// applyOrchRules makes text the orch rules entry's text, aimed at the orch-prompt target alone, or removes the entry when text is blank.
++// A new entry takes orchRulesOrder and an existing one keeps its order.
++func applyOrchRules(store *heddleengine.Store, text string) error {
++	_, exists := store.Get(orchRulesSlug)
++	if strings.TrimSpace(text) == "" {
++		if !exists {
++			return nil
+ 		}
+-		return refuse(fmt.Sprintf("%s is committed on Bolt but pushing failed (%v); %s", rulesPath, err, wayForward), res.Committed, true)
++		return store.Remove(orchRulesSlug)
++	}
++	patch := heddleengine.Patch{Text: &text, Targets: []string{heddleengine.OrchPromptTarget}}
++	if !exists {
++		order := orchRulesOrder
++		patch.Order = &order
+ 	}
+-	return output.Ok(out, map[string]any{"path": rulesPath, "committed": res.Committed, "unpushed": false})
++	return store.Set(orchRulesSlug, patch)
+ }
+diff --git a/internal/orchcli/rules_integration_test.go b/internal/orchcli/rules_integration_test.go
+index 97837944..50d7fba5 100644
+--- a/internal/orchcli/rules_integration_test.go
++++ b/internal/orchcli/rules_integration_test.go
+@@ -1,6 +1,6 @@
+ //go:build tier1
+ 
+-// rules_integration_test.go proves `lym orch rules` over a real hub: it commits only the hub-wide rules file on Bolt, pushes it, and commits nothing for unchanged content.
++// rules_integration_test.go proves `lym orch rules` over a real hub: the draft becomes the orch rules entry of heddle.json in the Bolt checkout, aimed at the orch-prompt target, and an empty draft removes it.
+ 
+ package orchcli
+ 
+@@ -9,60 +9,58 @@ import (
+ 	"encoding/json"
+ 	"os"
+ 	"path/filepath"
++	"slices"
+ 	"testing"
+ 
+-	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/heddleengine"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+ )
+ 
+-// TestOrchIntegration_RulesCommitsOnBolt does not call t.Parallel: it clears FABRIC_SKIP_GIT and FABRIC_SKIP_PUSH with t.Setenv, which is process-global state.
+-func TestOrchIntegration_RulesCommitsOnBolt(t *testing.T) {
+-	t.Setenv("FABRIC_SKIP_GIT", "")
+-	t.Setenv("FABRIC_SKIP_PUSH", "")
+-
++func TestOrchIntegration_RulesStoreInHeddle(t *testing.T) {
++	t.Parallel()
+ 	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 	anchor := h.Location.AnchorPath()
+-	boardDir := h.BoardDir()
+-	rulesPath := filepath.Join(boardDir, rulesRel())
++	boltDir := fabricengine.BoltDir(h.Path)
+ 	draft := filepath.Join(t.TempDir(), "draft.md")
+-	if err := os.WriteFile(draft, []byte("### Rule\n\nDo the thing.\n"), 0o644); err != nil {
+-		t.Fatalf("write draft: %v", err)
++	run := func(content string) map[string]any {
++		t.Helper()
++		if err := os.WriteFile(draft, []byte(content), 0o644); err != nil {
++			t.Fatalf("write draft: %v", err)
++		}
++		var out bytes.Buffer
++		if code := RunCLIIn(anchor, &out, []string{"rules", "--from", draft}); code != 0 {
++			t.Fatalf("rules exit = %d; want 0; output: %s", code, out.String())
++		}
++		var envelope map[string]any
++		if err := json.Unmarshal(out.Bytes(), &envelope); err != nil {
++			t.Fatalf("envelope %q is not JSON: %v", out.String(), err)
++		}
++		return envelope
+ 	}
+-	commitCount := func() int { return gitkit.RevListCount(t, boardDir, "HEAD") }
+ 
+-	before := commitCount()
+-	var out bytes.Buffer
+-	if code := RunCLIIn(anchor, &out, []string{"rules", "--from", draft}); code != 0 {
+-		t.Fatalf("rules exit = %d; want 0; output: %s", code, out.String())
+-	}
+-	got, err := os.ReadFile(rulesPath)
+-	if err != nil || string(got) != "### Rule\n\nDo the thing.\n" {
+-		t.Errorf("board rules file = %q (err %v); want the draft", got, err)
++	envelope := run("### Rule\n\nDo the thing.\n")
++	if envelope["slug"] != orchRulesSlug || envelope["cleared"] != false {
++		t.Errorf("envelope = %v; want slug %q and cleared false", envelope, orchRulesSlug)
+ 	}
+-	if after := commitCount(); after != before+1 {
+-		t.Errorf("board commit count = %d; want %d", after, before+1)
++	store, err := heddleengine.Load(boltDir)
++	if err != nil {
++		t.Fatalf("load heddle.json: %v", err)
+ 	}
+-	touched := gitkit.Git(t, boardDir, "show", "--name-only", "--format=", "HEAD")
+-	if want := filepath.ToSlash(rulesRel()); touched != want {
+-		t.Errorf("HEAD touches %q; want only %q", touched, want)
+-	}
+-	head := gitkit.RevParse(t, boardDir, "HEAD")
+-	if upstream := gitkit.RevParse(t, boardDir, "@{u}"); upstream != head {
+-		t.Errorf("@{u} = %s; want HEAD %s", upstream, head)
++	entry, ok := store.Get(orchRulesSlug)
++	if !ok || entry.Text != "### Rule\n\nDo the thing.\n" || entry.Order != orchRulesOrder || !slices.Equal(entry.Targets, []string{heddleengine.OrchPromptTarget}) {
++		t.Errorf("orch rules entry = %+v, %v; want the draft aimed at %s with order %d", entry, ok, heddleengine.OrchPromptTarget, orchRulesOrder)
+ 	}
+ 
+-	out.Reset()
+-	if code := RunCLIIn(anchor, &out, []string{"rules", "--from", draft}); code != 0 {
+-		t.Fatalf("second rules exit = %d; want 0; output: %s", code, out.String())
+-	}
+-	var envelope map[string]any
+-	if err := json.Unmarshal(out.Bytes(), &envelope); err != nil {
+-		t.Fatalf("envelope %q is not JSON: %v", out.String(), err)
++	envelope = run("")
++	if envelope["cleared"] != true {
++		t.Errorf("envelope = %v; want cleared true", envelope)
+ 	}
+-	if envelope["committed"] != false || envelope["unpushed"] != false {
+-		t.Errorf("second envelope = %v; want committed false and unpushed false", envelope)
++	store, err = heddleengine.Load(boltDir)
++	if err != nil {
++		t.Fatalf("load heddle.json: %v", err)
+ 	}
+-	if again := gitkit.RevParse(t, boardDir, "HEAD"); again != head {
+-		t.Errorf("HEAD moved to %s on unchanged content; want %s", again, head)
++	if entry, ok := store.Get(orchRulesSlug); ok {
++		t.Errorf("orch rules entry = %+v after an empty draft; want none", entry)
+ 	}
+ }
+diff --git a/internal/orchcli/rules_test.go b/internal/orchcli/rules_test.go
+index 3e5095f2..77201e1f 100644
+--- a/internal/orchcli/rules_test.go
++++ b/internal/orchcli/rules_test.go
+@@ -1,6 +1,6 @@
+ //go:build tier0
+ 
+-// rules_test.go covers writeHubRules over a fake Bolt: every refusal branch, the success envelope and the file left behind.
++// rules_test.go covers the orch rules entry's store change and the refusals writeOrchRules raises before it reaches the store, a cwd outside a hub included.
+ 
+ package orchcli
+ 
+@@ -8,262 +8,136 @@ import (
+ 	"bytes"
+ 	"encoding/json"
+ 	"errors"
+-	"fmt"
+ 	"os"
+ 	"path/filepath"
+-	"runtime"
+ 	"slices"
+ 	"strings"
+ 	"testing"
+ 
+-	"github.com/Knatte18/loomyard/internal/fabricengine"
+-	"github.com/Knatte18/loomyard/internal/gitrepo"
++	"github.com/Knatte18/loomyard/internal/heddlecli"
++	"github.com/Knatte18/loomyard/internal/heddleengine"
+ )
+ 
+-// fakeRulesBolt is a rulesBolt that records its calls and models Bolt's unpushed commits.
+-type fakeRulesBolt struct {
+-	rulesPath string
+-	calls     []string
+-
+-	// pushErrs is the queue Push draws its errors from; an empty queue means success.
+-	pushErrs []error
+-	// preWriteErr fails PullThenCommitWritten before the write runs.
+-	preWriteErr error
+-	// skip, with skipDetail, makes PullThenCommitWritten skip the write.
+-	skip       fabricengine.BoltSkip
+-	skipDetail string
+-	// commitErr fails PullThenCommitWritten after the write ran.
+-	commitErr error
+-	// upstreamMoved makes a pull skip as diverged while commits are unpushed.
+-	upstreamMoved bool
+-	// unpushed counts the commits not yet pushed.
+-	unpushed int
+-}
+-
+-// Push pops the next queued error and, on success, clears the unpushed commits.
+-func (f *fakeRulesBolt) Push() error {
+-	f.calls = append(f.calls, "push")
+-	if len(f.pushErrs) > 0 {
+-		err := f.pushErrs[0]
+-		f.pushErrs = f.pushErrs[1:]
+-		if err != nil {
+-			return err
+-		}
+-	}
+-	f.unpushed = 0
+-	return nil
+-}
+-
+-// PullThenCommitWritten stands in for the pull-first, the write and the commit, which it reports only when the file's bytes changed.
+-func (f *fakeRulesBolt) PullThenCommitWritten(write fabricengine.BoltWrite) (fabricengine.BoltWriteResult, error) {
+-	f.calls = append(f.calls, "pull")
+-	if f.preWriteErr != nil {
+-		return fabricengine.BoltWriteResult{}, f.preWriteErr
+-	}
+-	if f.skip != "" {
+-		return fabricengine.BoltWriteResult{Skipped: f.skip, SkipDetail: f.skipDetail}, nil
+-	}
+-	if f.upstreamMoved && f.unpushed > 0 {
+-		return fabricengine.BoltWriteResult{Skipped: fabricengine.BoltSkipDiverged, SkipDetail: "diverged"}, nil
+-	}
+-	before, readErr := os.ReadFile(f.rulesPath)
+-	if _, err := write.Write(); err != nil {
+-		return fabricengine.BoltWriteResult{}, err
+-	}
+-	if f.commitErr != nil {
+-		return fabricengine.BoltWriteResult{}, f.commitErr
++func TestWriteOrchRules_ReportsTheStoreOutcome(t *testing.T) {
++	t.Parallel()
++	dir := t.TempDir()
++	if err := os.WriteFile(filepath.Join(dir, "draft.md"), []byte("rule"), 0o644); err != nil {
++		t.Fatal(err)
+ 	}
+-	after, err := os.ReadFile(f.rulesPath)
+-	if err != nil {
+-		return fabricengine.BoltWriteResult{}, err
++	tests := []struct {
++		name        string
++		warning     string
++		storeErr    error
++		wantCode    int
++		wantWarning string
++		wantError   string
++	}{
++		{name: "SyncWarningReachesTheEnvelope", warning: "sync did not start", wantWarning: "sync did not start"},
++		{name: "CleanSaveCarriesNoWarning"},
++		{name: "StoreErrorIsRefused", storeErr: errors.New("store refuses"), wantCode: 1, wantError: "store refuses"},
+ 	}
+-	committed := readErr != nil || !bytes.Equal(before, after)
+-	if committed {
+-		f.unpushed++
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			var out bytes.Buffer
++			changeStore := func(string, func(*heddleengine.Store) error) (string, error) { return tt.warning, tt.storeErr }
++			if code := writeOrchRules(&out, dir, "draft.md", changeStore); code != tt.wantCode {
++				t.Fatalf("writeOrchRules exit = %d; want %d; output: %s", code, tt.wantCode, out.String())
++			}
++			var envelope map[string]any
++			if err := json.Unmarshal(out.Bytes(), &envelope); err != nil {
++				t.Fatalf("envelope %q is not JSON: %v", out.String(), err)
++			}
++			if got, _ := envelope["warning"].(string); got != tt.wantWarning {
++				t.Errorf("envelope warning = %q; want %q", got, tt.wantWarning)
++			}
++			if got, _ := envelope["error"].(string); got != tt.wantError {
++				t.Errorf("envelope error = %q; want %q", got, tt.wantError)
++			}
++		})
+ 	}
+-	return fabricengine.BoltWriteResult{Committed: committed}, nil
+ }
+ 
+-func TestWriteHubRules(t *testing.T) {
++func TestApplyOrchRules(t *testing.T) {
+ 	t.Parallel()
+-
+-	str := func(s string) *string { return &s }
+-	conflictRecord := fabricengine.FailedPush{
+-		Repo: "bolt", RepoPath: "/hub/" + fabricengine.BoltDirName, Branch: "main",
+-		Class: fabricengine.PushFailureNotFastForward, Paths: []string{"board.json"}, Commits: []string{"abc1234"},
+-	}
+-	rebaseFailed := &fabricengine.PushFailedError{Record: conflictRecord, Err: fmt.Errorf("push: %w", gitrepo.ErrPushRejected)}
+-	conflictWayForward := fabricengine.FailedPushWayForward(conflictRecord)
++	otherText, otherOrder := "house rule", 5
+ 	tests := []struct {
+ 		name string
+-		// prior is the rules file before the call; nil means absent.
+-		prior *string
+-		// draft is the draft file's content; nil means no draft file exists.
+-		draft *string
+-		// from is the --from value; "{abs}" stands for the draft's absolute path.
+-		from     string
+-		readOnly bool
+-		fake     fakeRulesBolt
+-
+-		wantExit int
+-		// wantFields is whether the envelope carries path, committed and unpushed.
+-		wantFields    bool
+-		wantCommitted bool
+-		wantUnpushed  bool
+-		wantErr       []string
+-		// wantFile is the rules file afterwards; nil means absent.
+-		wantFile        *string
+-		wantCalls       []string
+-		wantFakePending int
++		// prior is the orch rules entry's text and order before the change; empty text means no entry.
++		priorText  string
++		priorOrder int
++		text       string
++		// wantText is the entry's text after the change; empty means no entry.
++		wantText  string
++		wantOrder int
+ 	}{
+-		{
+-			name: "NewFileUnderAbsentDirectory", draft: str("rules\n"), from: "draft.md",
+-			wantFields: true, wantCommitted: true, wantFile: str("rules\n"),
+-			wantCalls: []string{"push", "pull", "push"},
+-		},
+-		{
+-			name: "EmptyDraftCommitsEmptyFile", draft: str(""), from: "{abs}",
+-			wantFields: true, wantCommitted: true, wantFile: str(""),
+-			wantCalls: []string{"push", "pull", "push"},
+-		},
+-		{
+-			name: "EmptyFromRefused", from: "", prior: str("old"),
+-			wantExit: 1, wantErr: []string{"needs --from"}, wantFile: str("old"),
+-		},
+-		{
+-			name: "MissingFromFileRefused", from: "missing.md", prior: str("old"),
+-			wantExit: 1, wantErr: []string{"--from", "missing.md"}, wantFile: str("old"),
+-		},
+-		{
+-			name: "FirstPushFailure", draft: str("new"), from: "draft.md", prior: str("old"),
+-			fake:     fakeRulesBolt{pushErrs: []error{errors.New("boom")}},
+-			wantExit: 1, wantFields: true, wantUnpushed: true, wantErr: []string{"boom", "nothing was written"},
+-			wantFile: str("old"), wantCalls: []string{"push"},
+-		},
+-		{
+-			name: "FirstPushRebaseConflict", draft: str("new"), from: "draft.md", prior: str("old"),
+-			fake:     fakeRulesBolt{pushErrs: []error{rebaseFailed}},
+-			wantExit: 1, wantFields: true, wantUnpushed: true, wantErr: []string{conflictWayForward, "then re-run lym orch rules --from draft.md"},
+-			wantFile: str("old"), wantCalls: []string{"push"},
+-		},
+-		{
+-			name: "PreWriteError", draft: str("new"), from: "draft.md", prior: str("old"),
+-			fake:     fakeRulesBolt{preWriteErr: errors.New("board lock held")},
+-			wantExit: 1, wantFields: true, wantErr: []string{"board lock held", "unchanged, nothing written"},
+-			wantFile: str("old"), wantCalls: []string{"push", "pull"},
+-		},
+-		{
+-			name: "PullSkip", draft: str("new"), from: "draft.md", prior: str("old"),
+-			fake:     fakeRulesBolt{skip: fabricengine.BoltSkipDirty, skipDetail: "run lym board sync first"},
+-			wantExit: 1, wantFields: true, wantErr: []string{"run lym board sync first"},
+-			wantFile: str("old"), wantCalls: []string{"push", "pull"},
+-		},
+-		{
+-			name: "FailedWriteKeepsPriorContent", draft: str("new"), from: "draft.md", prior: str("old"), readOnly: true,
+-			wantExit: 1, wantFields: true, wantErr: []string{"unchanged"},
+-			wantFile: str("old"), wantCalls: []string{"push", "pull"},
+-		},
+-		{
+-			name: "FailedCommitKeepsNewContent", draft: str("new"), from: "draft.md", prior: str("old"),
+-			fake:     fakeRulesBolt{commitErr: errors.New("commit failed")},
+-			wantExit: 1, wantFields: true, wantErr: []string{"commit failed", "lym orch rules --from draft.md"},
+-			wantFile: str("new"), wantCalls: []string{"push", "pull"},
+-		},
+-		{
+-			name: "LastPushFailure", draft: str("new"), from: "draft.md", prior: str("old"),
+-			fake:     fakeRulesBolt{pushErrs: []error{nil, errors.New("boom")}},
+-			wantExit: 1, wantFields: true, wantCommitted: true, wantUnpushed: true, wantErr: []string{"boom", "committed"},
+-			wantFile: str("new"), wantCalls: []string{"push", "pull", "push"}, wantFakePending: 1,
+-		},
+-		{
+-			name: "LastPushRebaseConflict", draft: str("new"), from: "draft.md", prior: str("old"),
+-			fake:     fakeRulesBolt{pushErrs: []error{nil, rebaseFailed}},
+-			wantExit: 1, wantFields: true, wantCommitted: true, wantUnpushed: true, wantErr: []string{conflictWayForward, "then re-run lym orch rules --from draft.md"},
+-			wantFile: str("new"), wantCalls: []string{"push", "pull", "push"}, wantFakePending: 1,
+-		},
+-		{
+-			name: "RerunAfterFailedPushCommitsNothing", draft: str("same"), from: "draft.md", prior: str("same"),
+-			fake:       fakeRulesBolt{unpushed: 1, upstreamMoved: true},
+-			wantFields: true, wantFile: str("same"), wantCalls: []string{"push", "pull", "push"},
+-		},
++		{name: "NewEntry", text: "### Rule\n", wantText: "### Rule\n", wantOrder: orchRulesOrder},
++		{name: "ReplaceKeepsOrder", priorText: "old", priorOrder: 7, text: "new", wantText: "new", wantOrder: 7},
++		{name: "BlankClears", priorText: "old", priorOrder: 7, text: " \n"},
++		{name: "BlankWithNoEntry", text: ""},
+ 	}
+ 	for _, tt := range tests {
+-		// A read-only directory does not stop a write on Windows, so Windows generates no subtest for a read-only row.
+-		if tt.readOnly && runtime.GOOS == "windows" {
+-			continue
+-		}
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-
+-			dir := t.TempDir()
+-			rulesPath := filepath.Join(dir, "board", rulesRel())
+-			if tt.prior != nil {
+-				if err := os.MkdirAll(filepath.Dir(rulesPath), 0o755); err != nil {
+-					t.Fatalf("mkdir rules dir: %v", err)
+-				}
+-				if err := os.WriteFile(rulesPath, []byte(*tt.prior), 0o644); err != nil {
+-					t.Fatalf("seed rules file: %v", err)
+-				}
++			var store heddleengine.Store
++			if err := store.Set("house", heddleengine.Patch{Text: &otherText, Order: &otherOrder, Targets: []string{"claude-prompt"}}); err != nil {
++				t.Fatal(err)
+ 			}
+-			draftPath := filepath.Join(dir, "draft.md")
+-			if tt.draft != nil {
+-				if err := os.WriteFile(draftPath, []byte(*tt.draft), 0o644); err != nil {
+-					t.Fatalf("write draft: %v", err)
++			if tt.priorText != "" {
++				prior := heddleengine.Patch{Text: &tt.priorText, Order: &tt.priorOrder, Targets: []string{"claude-prompt", heddleengine.OrchPromptTarget}}
++				if err := store.Set(orchRulesSlug, prior); err != nil {
++					t.Fatal(err)
+ 				}
+ 			}
+-			if tt.readOnly {
+-				if os.Geteuid() == 0 {
+-					t.Skip("a read-only directory does not stop a write as root")
+-				}
+-				if err := os.Chmod(filepath.Dir(rulesPath), 0o500); err != nil {
+-					t.Fatalf("chmod rules dir: %v", err)
++			if err := applyOrchRules(&store, tt.text); err != nil {
++				t.Fatalf("applyOrchRules(%q) error: %v; want nil", tt.text, err)
++			}
++			entry, ok := store.Get(orchRulesSlug)
++			switch {
++			case tt.wantText == "" && ok:
++				t.Errorf("applyOrchRules(%q) left entry %+v; want none", tt.text, entry)
++			case tt.wantText != "" && !ok:
++				t.Errorf("applyOrchRules(%q) left no entry; want text %q", tt.text, tt.wantText)
++			case ok:
++				if entry.Text != tt.wantText || entry.Order != tt.wantOrder || !slices.Equal(entry.Targets, []string{heddleengine.OrchPromptTarget}) {
++					t.Errorf("entry = %+v; want text %q, order %d, targets [%s]", entry, tt.wantText, tt.wantOrder, heddleengine.OrchPromptTarget)
+ 				}
+-				t.Cleanup(func() { _ = os.Chmod(filepath.Dir(rulesPath), 0o755) })
+ 			}
+-			from := strings.ReplaceAll(tt.from, "{abs}", draftPath)
+-			fake := tt.fake
+-			fake.rulesPath = rulesPath
++			if house, ok := store.Get("house"); !ok || house.Text != otherText {
++				t.Errorf("house entry = %+v, %v; want it unchanged", house, ok)
++			}
++		})
++	}
++}
+ 
++func TestWriteOrchRules_RefusesBeforeTheStore(t *testing.T) {
++	t.Parallel()
++	dir := t.TempDir()
++	if err := os.WriteFile(filepath.Join(dir, "draft.md"), []byte("rule"), 0o644); err != nil {
++		t.Fatal(err)
++	}
++	tests := []struct {
++		name    string
++		from    string
++		wantErr string
++	}{
++		{"NoFrom", "", "needs --from"},
++		{"UnreadableDraft", "missing.md", filepath.Join(dir, "missing.md")},
++		{"CwdOutsideAHub", "draft.md", "run lym heddle from a code worktree of a hub"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
+ 			var out bytes.Buffer
+-			code := writeHubRules(&out, dir, from, rulesPath, &fake)
+-
+-			if code != tt.wantExit {
+-				t.Fatalf("writeHubRules() exit = %d; want %d; output: %s", code, tt.wantExit, out.String())
++			if code := writeOrchRules(&out, dir, tt.from, heddlecli.ChangeStore); code != 1 {
++				t.Fatalf("writeOrchRules(%q) exit = %d; want 1; output: %s", tt.from, code, out.String())
+ 			}
+ 			var envelope map[string]any
+ 			if err := json.Unmarshal(out.Bytes(), &envelope); err != nil {
+ 				t.Fatalf("envelope %q is not JSON: %v", out.String(), err)
+ 			}
+-			if envelope["ok"] != (tt.wantExit == 0) {
+-				t.Errorf("envelope ok = %v; want %v", envelope["ok"], tt.wantExit == 0)
+-			}
+-			for _, want := range tt.wantErr {
+-				if got, _ := envelope["error"].(string); !strings.Contains(got, want) {
+-					t.Errorf("envelope error = %q; want it to contain %q", got, want)
+-				}
+-			}
+-			if got, _ := envelope["error"].(string); strings.Contains(got, "git pull --rebase") {
+-				t.Errorf("envelope error = %q; want no `git pull --rebase`, which no push path runs", got)
+-			}
+-			if tt.wantFields {
+-				if envelope["path"] != rulesPath || envelope["committed"] != tt.wantCommitted || envelope["unpushed"] != tt.wantUnpushed {
+-					t.Errorf("envelope fields = %v; want path %q, committed %v, unpushed %v", envelope, rulesPath, tt.wantCommitted, tt.wantUnpushed)
+-				}
+-			} else if _, has := envelope["unpushed"]; has {
+-				t.Errorf("envelope %v carries unpushed; want none before the draft is read", envelope)
+-			}
+-			got, err := os.ReadFile(rulesPath)
+-			switch {
+-			case tt.wantFile == nil && err == nil:
+-				t.Errorf("rules file exists with %q; want it absent", got)
+-			case tt.wantFile != nil && (err != nil || string(got) != *tt.wantFile):
+-				t.Errorf("rules file = %q (err %v); want %q", got, err, *tt.wantFile)
+-			}
+-			if !slices.Equal(fake.calls, tt.wantCalls) {
+-				t.Errorf("Bolt calls = %v; want %v", fake.calls, tt.wantCalls)
+-			}
+-			if fake.unpushed != tt.wantFakePending {
+-				t.Errorf("unpushed commits = %d; want %d", fake.unpushed, tt.wantFakePending)
++			if got, _ := envelope["error"].(string); !strings.Contains(got, tt.wantErr) {
++				t.Errorf("envelope error = %q; want it to contain %q", got, tt.wantErr)
+ 			}
+ 		})
+ 	}
+diff --git a/internal/orchcli/start.go b/internal/orchcli/start.go
+index 12ed1236..313c4613 100644
+--- a/internal/orchcli/start.go
++++ b/internal/orchcli/start.go
+@@ -577,7 +577,7 @@ func (c *orchCLI) startOrch(index func() (string, error), note string) (BeamUpRe
+ 		if err != nil {
+ 			return report, err
+ 		}
+-		if err := orchengine.RenderRoleFile(c.stencilsDir, c.paths.RolePath, operatorIndex, c.paths.HubRulesPath, c.paths.OwnRulesPath); err != nil {
++		if err := orchengine.RenderRoleFile(c.stencilsDir, c.paths.RolePath, operatorIndex); err != nil {
+ 			return report, err
+ 		}
+ 		started, source, abandoned, err := c.launchOrch(st, note)
+diff --git a/internal/orchcli/start_test.go b/internal/orchcli/start_test.go
+index 271cada9..17bbc282 100644
+--- a/internal/orchcli/start_test.go
++++ b/internal/orchcli/start_test.go
+@@ -23,7 +23,6 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+-	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/orchengine"
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+@@ -796,18 +795,13 @@ func TestStart_FreshLaunchResetsAbandonedPhase(t *testing.T) {
+ 
+ const recordedTestSessionID = "11111111-2222-3333-4444-555555555555"
+ 
+-func TestPrimePaths_JoinsRuleFilesAndPrimeRoot(t *testing.T) {
++func TestPrimePaths_JoinsPrimeRoot(t *testing.T) {
+ 	t.Parallel()
+ 
+ 	hub := t.TempDir()
+ 	got := PrimePaths(locationkit.Location(hub, "main", "sub/dir"))
+-	want := orchengine.Paths{
+-		HubRulesPath: filepath.Join(fabricengine.BoardDir(hub), lymdirs.LymDirName, "orch", "rules.md"),
+-		OwnRulesPath: filepath.Join(hub, "main", "sub", "dir", lymdirs.LymDirName, "orch", "rules.md"),
+-		PrimeRoot:    filepath.Join(hub, "main"),
+-	}
+-	if got.HubRulesPath != want.HubRulesPath || got.OwnRulesPath != want.OwnRulesPath || got.PrimeRoot != want.PrimeRoot {
+-		t.Errorf("PrimePaths() rules paths and prime root = %q, %q, %q; want %q, %q, %q", got.HubRulesPath, got.OwnRulesPath, got.PrimeRoot, want.HubRulesPath, want.OwnRulesPath, want.PrimeRoot)
++	if want := filepath.Join(hub, "main"); got.PrimeRoot != want {
++		t.Errorf("PrimePaths().PrimeRoot = %q; want %q", got.PrimeRoot, want)
+ 	}
+ }
+ 
+@@ -820,29 +814,9 @@ func TestStart_Refusals(t *testing.T) {
+ 		wantIn  []string
+ 		// seed, when set, writes the state file before start runs.
+ 		seed func(t *testing.T, h *startHarness)
+-		// rulesPath, when set, picks the rules path that seed makes unreadable and the refusal must name.
+-		rulesPath func(p orchengine.Paths) string
+ 		// wantNothingStarted asserts the refusal came before the dobby, the runs strand and the orch.
+ 		wantNothingStarted bool
+ 	}{
+-		{
+-			name: "unreadable hub rules",
+-			seed: func(t *testing.T, h *startHarness) {
+-				if err := os.MkdirAll(h.cli.paths.HubRulesPath, 0o755); err != nil {
+-					t.Fatal(err)
+-				}
+-			},
+-			rulesPath: func(p orchengine.Paths) string { return p.HubRulesPath },
+-		},
+-		{
+-			name: "unreadable own rules",
+-			seed: func(t *testing.T, h *startHarness) {
+-				if err := os.MkdirAll(h.cli.paths.OwnRulesPath, 0o755); err != nil {
+-					t.Fatal(err)
+-				}
+-			},
+-			rulesPath: func(p orchengine.Paths) string { return p.OwnRulesPath },
+-		},
+ 		{
+ 			name: "two orch strands",
+ 			strands: []reedengine.StrandStatus{
+@@ -946,9 +920,6 @@ func TestStart_Refusals(t *testing.T) {
+ 					t.Errorf("refusal %q missing %q", msg, want)
+ 				}
+ 			}
+-			if c.rulesPath != nil && !strings.Contains(msg, c.rulesPath(h.cli.paths)) {
+-				t.Errorf("refusal %q missing %q", msg, c.rulesPath(h.cli.paths))
+-			}
+ 			if len(h.starter.specs) != 0 || h.spawns != 0 {
+ 				t.Errorf("starts = %d, spawns = %d; want none", len(h.starter.specs), h.spawns)
+ 			}
+diff --git a/internal/orchengine/doc.go b/internal/orchengine/doc.go
+index 183e968e..e36403e2 100644
+--- a/internal/orchengine/doc.go
++++ b/internal/orchengine/doc.go
+@@ -51,11 +51,8 @@
+ //
+ // The role file's `## Commands` section carries the operator command index, which every role-file render is handed as a string;
+ // a role stencil without the `command_index` marker fails the render naming the stencil.
+-// The role file's last two sections, `## Hub-wide rules` and `## This orch's rules`, carry the files at `Paths.HubRulesPath` and `Paths.OwnRulesPath`, read at every role-file render;
+-// each absent or whitespace-only file renders a placeholder line naming its path, any other read failure fails the render naming the file,
+-// and a stencil without the `hub_rules` or `orch_rules` marker fails naming the stencil.
+-// The file at `Paths.HubRulesPath` is written only through `lym orch rules`, and the one at `Paths.OwnRulesPath` is committed through `lym fabric commit`.
+-// A role stencil without the `decision_note_title` marker fails the render naming the stencil, as for the other two.
++// A role stencil without the `decision_note_title` marker fails the render naming the stencil the same way.
++// The role file carries no repository rules: a repository's orch rules reach the session appended to its system prompt, through heddle's `orch-prompt` target.
+ // The watcher is told an index source through NewWatcher, calls it before each of its three role-file renders, and returns to idle with the reason when the source or the render fails.
+ //
+ // DecideStart maps the strand and watcher liveness pair onto the branch `start` takes:
+diff --git a/internal/orchengine/prompt.go b/internal/orchengine/prompt.go
+index 39affa3f..5754c323 100644
+--- a/internal/orchengine/prompt.go
++++ b/internal/orchengine/prompt.go
+@@ -8,9 +8,7 @@
+ package orchengine
+ 
+ import (
+-	"errors"
+ 	"fmt"
+-	"io/fs"
+ 	"os"
+ 	"path/filepath"
+ 	"slices"
+@@ -41,24 +39,15 @@ const (
+ 	commandIndexMarker = "command_index"
+ 	// decisionNoteTitleMarker is the role stencil's marker that the decision-note title form fills.
+ 	decisionNoteTitleMarker = "decision_note_title"
+-	// hubRulesMarker is the role stencil's marker that the hub-wide rules file fills.
+-	hubRulesMarker = "hub_rules"
+-	// orchRulesMarker is the role stencil's marker that this orch's own rules file fills.
+-	orchRulesMarker = "orch_rules"
+-	// noHubRules fills hubRulesMarker when the hub-wide rules file is absent or blank; its verb is the path.
+-	noHubRules = "This hub has no hub-wide orch rules; they go in %s."
+-	// noOwnRules fills orchRulesMarker when this orch's own rules file is absent or blank; its verb is the path.
+-	noOwnRules = "This orch has no rules of its own; they go in %s."
+ )
+ 
+ // RenderRoleFile renders the role stencil to path, creating its directory.
+-// The command-index marker is filled with index, the hub-rules marker with the file at hubRulesPath and the orch-rules marker with the file at ownRulesPath.
++// The command-index marker is filled with index.
+ // The decision-note title marker is filled with the title form for the placeholder slug "<slug>", since the role stencil is hub-wide.
+-// A role stencil that lacks any of the four markers fails the render naming the stencil, so an operator-edited copy never silently renders without them.
+-// A rules file that cannot be read returns its error and writes no file.
++// A role stencil that lacks either marker fails the render naming the stencil, so an operator-edited copy never silently renders without them.
+ // The write is a temporary file and a rename, so a reader never sees a partial file when two renders overlap.
+ // The session reads the file through the one-line pointers, so a stencil edit applies from the next delivery.
+-func RenderRoleFile(stencilsDir, path, index, hubRulesPath, ownRulesPath string) error {
++func RenderRoleFile(stencilsDir, path, index string) error {
+ 	template, err := stencilstore.Read(stencilsDir, roleStencilName)
+ 	if err != nil {
+ 		return fmt.Errorf("orch: read %s: %w", roleStencilName, err)
+@@ -67,20 +56,12 @@ func RenderRoleFile(stencilsDir, path, index, hubRulesPath, ownRulesPath string)
+ 	if err != nil {
+ 		return fmt.Errorf("orch: read markers of %s: %w", roleStencilName, err)
+ 	}
+-	for _, marker := range []string{commandIndexMarker, hubRulesMarker, orchRulesMarker, decisionNoteTitleMarker} {
++	for _, marker := range []string{commandIndexMarker, decisionNoteTitleMarker} {
+ 		if !slices.Contains(markers, marker) {
+ 			return fmt.Errorf("orch: %s declares no {{.%s}} marker: restore the marker, or delete the override so the shipped stencil applies", roleStencilName, marker)
+ 		}
+ 	}
+-	hubRules, err := readRules(hubRulesPath, noHubRules)
+-	if err != nil {
+-		return err
+-	}
+-	ownRules, err := readRules(ownRulesPath, noOwnRules)
+-	if err != nil {
+-		return err
+-	}
+-	return renderFile(stencilsDir, roleStencilName, path, map[string]string{commandIndexMarker: index, hubRulesMarker: hubRules, orchRulesMarker: ownRules, decisionNoteTitleMarker: DecisionNoteTitle("<slug>")})
++	return renderFile(stencilsDir, roleStencilName, path, map[string]string{commandIndexMarker: index, decisionNoteTitleMarker: DecisionNoteTitle("<slug>")})
+ }
+ 
+ // DecisionNoteTitle returns the title prefix a decision note for the held task slug starts with: "Decision for <slug>:".
+@@ -90,22 +71,6 @@ func DecisionNoteTitle(slug string) string {
+ 	return "Decision for " + slug + ":"
+ }
+ 
+-// readRules returns the content of the rules file at path, as it stands.
+-// A missing file, or one holding only whitespace, yields placeholder with path filled in.
+-func readRules(path, placeholder string) (string, error) {
+-	data, err := os.ReadFile(path)
+-	if errors.Is(err, fs.ErrNotExist) {
+-		return fmt.Sprintf(placeholder, path), nil
+-	}
+-	if err != nil {
+-		return "", fmt.Errorf("orch: read rules %s: %w; fix the file or remove it", path, err)
+-	}
+-	if strings.TrimSpace(string(data)) == "" {
+-		return fmt.Sprintf(placeholder, path), nil
+-	}
+-	return string(data), nil
+-}
+-
+ // RenderNoteTemplateFile renders the note template stencil to path, creating its directory.
+ func RenderNoteTemplateFile(stencilsDir, path string) error {
+ 	return renderFile(stencilsDir, noteStencilName, path, nil)
+diff --git a/internal/orchengine/prompt_test.go b/internal/orchengine/prompt_test.go
+index beacad6e..3e55d42e 100644
+--- a/internal/orchengine/prompt_test.go
++++ b/internal/orchengine/prompt_test.go
+@@ -3,7 +3,6 @@
+ package orchengine
+ 
+ import (
+-	"fmt"
+ 	"os"
+ 	"path/filepath"
+ 	"strings"
+@@ -29,92 +28,27 @@ func TestRenderFiles_WriteWithoutLeadingComment(t *testing.T) {
+ 	cases := []struct {
+ 		name   string
+ 		file   string
+-		render func(dir, path, hubRulesPath, ownRulesPath string) error
++		render func(dir, path string) error
+ 		want   []string
+-		// hubRules and ownRules are the rules file contents to seed, none when empty; secondOwnRules rewrites the own file before a second render.
+-		hubRules, ownRules, secondOwnRules string
+-		// wantOrder lists text the last render carries, each after the previous one.
+-		wantOrder func(hubPath, ownPath string) []string
+-		// wantGone is text the last render must not carry.
+-		wantGone string
++		// gone lists text the render must not carry.
++		gone []string
+ 	}{
+-		{name: "role with both rules", file: "role.md", render: renderRole,
+-			want:     []string{"## Commands\n", testIndex, "Decision for <slug>:"},
+-			hubRules: "Only the orch deploys.\n", ownRules: "This thread owns the board.\n",
+-			wantOrder: func(string, string) []string {
+-				return []string{"## Hub-wide rules\n", "Only the orch deploys.\n", "## This orch's rules\n", "This thread owns the board.\n"}
+-			}},
+-		{name: "role with only hub rules", file: "role.md", render: renderRole,
+-			hubRules: "Only the orch deploys.\n",
+-			wantOrder: func(_, ownPath string) []string {
+-				return []string{"Only the orch deploys.\n", fmt.Sprintf(noOwnRules, ownPath)}
+-			}},
+-		{name: "role with only own rules", file: "role.md", render: renderRole,
+-			ownRules: "This thread owns the board.\n",
+-			wantOrder: func(hubPath, _ string) []string {
+-				return []string{fmt.Sprintf(noHubRules, hubPath), "This thread owns the board.\n"}
+-			}},
+-		{name: "role whitespace-only hub rules", file: "role.md", render: renderRole,
+-			hubRules: "  \n\t\n", ownRules: "This thread owns the board.\n",
+-			wantOrder: func(hubPath, _ string) []string {
+-				return []string{fmt.Sprintf(noHubRules, hubPath), "This thread owns the board.\n"}
+-			}},
+-		{name: "role own rules rewritten", file: "role.md", render: renderRole,
+-			ownRules: "Only the orch deploys.\n", secondOwnRules: "Only the operator deploys.\n",
+-			wantOrder: func(string, string) []string {
+-				return []string{"## This orch's rules\n", "Only the operator deploys.\n"}
+-			},
+-			wantGone: "Only the orch deploys."},
+-		{name: "note template", file: "note-template.md", render: func(dir, path, _, _ string) error { return RenderNoteTemplateFile(dir, path) }},
++		{name: "role", file: "role.md", render: func(dir, path string) error { return RenderRoleFile(dir, path, testIndex) },
++			want: []string{"## Commands\n", testIndex, "Decision for <slug>:"},
++			gone: []string{"## Hub-wide rules", "## This orch's rules"}},
++		{name: "note template", file: "note-template.md", render: RenderNoteTemplateFile},
+ 	}
+ 	for _, c := range cases {
+ 		t.Run(c.name, func(t *testing.T) {
+ 			t.Parallel()
+-			root := t.TempDir()
+-			path := filepath.Join(root, "orch", c.file)
+-			hubPath, ownPath := filepath.Join(root, "board", "hub-rules.md"), filepath.Join(root, "own", "rules.md")
+-			seedRules := func(rulesPath, content string) {
+-				t.Helper()
+-				if content == "" {
+-					return
+-				}
+-				if err := os.MkdirAll(filepath.Dir(rulesPath), 0o755); err != nil {
+-					t.Fatal(err)
+-				}
+-				if err := os.WriteFile(rulesPath, []byte(content), 0o644); err != nil {
+-					t.Fatal(err)
+-				}
+-			}
+-			seedRules(hubPath, c.hubRules)
+-			seedRules(ownPath, c.ownRules)
+-			dir := seedStencils(t)
+-			if err := c.render(dir, path, hubPath, ownPath); err != nil {
++			path := filepath.Join(t.TempDir(), "orch", c.file)
++			if err := c.render(seedStencils(t), path); err != nil {
+ 				t.Fatal(err)
+ 			}
+-			if c.secondOwnRules != "" {
+-				seedRules(ownPath, c.secondOwnRules)
+-				if err := c.render(dir, path, hubPath, ownPath); err != nil {
+-					t.Fatal(err)
+-				}
+-			}
+ 			data, err := os.ReadFile(path)
+ 			if err != nil {
+ 				t.Fatal(err)
+ 			}
+-			if c.wantOrder != nil {
+-				rest := string(data)
+-				for _, want := range c.wantOrder(hubPath, ownPath) {
+-					i := strings.Index(rest, want)
+-					if i < 0 {
+-						t.Errorf("%s file lacks %q after the previous wanted text", c.name, want)
+-						break
+-					}
+-					rest = rest[i+len(want):]
+-				}
+-			}
+-			if c.wantGone != "" && strings.Contains(string(data), c.wantGone) {
+-				t.Errorf("%s file keeps %q after the rules were rewritten", c.name, c.wantGone)
+-			}
+ 			if len(data) == 0 {
+ 				t.Errorf("%s file is empty", c.name)
+ 			}
+@@ -126,56 +60,40 @@ func TestRenderFiles_WriteWithoutLeadingComment(t *testing.T) {
+ 					t.Errorf("%s file lacks %q", c.name, want)
+ 				}
+ 			}
++			for _, gone := range c.gone {
++				if strings.Contains(string(data), gone) {
++					t.Errorf("%s file carries %q", c.name, gone)
++				}
++			}
+ 		})
+ 	}
+ }
+ 
+-func renderRole(dir, path, hubRulesPath, ownRulesPath string) error {
+-	return RenderRoleFile(dir, path, testIndex, hubRulesPath, ownRulesPath)
+-}
+-
+ func TestRenderRoleFile_RefusalsWriteNoFile(t *testing.T) {
+ 	t.Parallel()
+ 	cases := []struct {
+ 		name string
+-		// override replaces the shipped role stencil when non-empty.
++		// override replaces the shipped role stencil.
+ 		override string
+-		// dirAt picks which rules path gets a directory in place of a file: "hub", "own" or none.
+-		dirAt string
+ 		// wantNamed lists substrings the error carries.
+-		wantNamed func(hubPath, ownPath string) []string
++		wantNamed []string
+ 	}{
+-		{"no marker", "# Hub orchestrator\n\nNo marker here.\n", "", func(string, string) []string { return []string{roleStencilName, commandIndexMarker} }},
+-		{"no hub rules marker", "# Hub orchestrator\n\n{{.command_index}}\n", "", func(string, string) []string { return []string{roleStencilName, hubRulesMarker} }},
+-		{"no orch rules marker", "# Hub orchestrator\n\n{{.command_index}}\n\n{{.hub_rules}}\n", "", func(string, string) []string { return []string{roleStencilName, orchRulesMarker} }},
+-		{"no decision note title marker", "# Hub orchestrator\n\n{{.command_index}}\n\n{{.hub_rules}}\n\n{{.orch_rules}}\n", "", func(string, string) []string { return []string{roleStencilName, decisionNoteTitleMarker} }},
+-		{"unreadable hub rules", "", "hub", func(hubPath, _ string) []string { return []string{hubPath} }},
+-		{"unreadable own rules", "", "own", func(_, ownPath string) []string { return []string{ownPath} }},
++		{"no marker", "# Hub orchestrator\n\nNo marker here.\n", []string{roleStencilName, commandIndexMarker}},
++		{"no decision note title marker", "# Hub orchestrator\n\n{{.command_index}}\n", []string{roleStencilName, decisionNoteTitleMarker}},
+ 	}
+ 	for _, c := range cases {
+ 		t.Run(c.name, func(t *testing.T) {
+ 			t.Parallel()
+ 			dir := seedStencils(t)
+-			if c.override != "" {
+-				if err := os.WriteFile(stencilstore.Path(dir, roleStencilName), []byte(c.override), 0o644); err != nil {
+-					t.Fatal(err)
+-				}
+-			}
+-			root := t.TempDir()
+-			path := filepath.Join(root, "role.md")
+-			hubPath, ownPath := filepath.Join(root, "board", "hub-rules.md"), filepath.Join(root, "own", "rules.md")
+-			for dirAt, rulesPath := range map[string]string{"hub": hubPath, "own": ownPath} {
+-				if c.dirAt == dirAt {
+-					if err := os.MkdirAll(rulesPath, 0o755); err != nil {
+-						t.Fatal(err)
+-					}
+-				}
++			if err := os.WriteFile(stencilstore.Path(dir, roleStencilName), []byte(c.override), 0o644); err != nil {
++				t.Fatal(err)
+ 			}
+-			err := RenderRoleFile(dir, path, testIndex, hubPath, ownPath)
++			path := filepath.Join(t.TempDir(), "role.md")
++			err := RenderRoleFile(dir, path, testIndex)
+ 			if err == nil {
+ 				t.Fatal("RenderRoleFile = nil; want a refusal")
+ 			}
+-			for _, want := range c.wantNamed(hubPath, ownPath) {
++			for _, want := range c.wantNamed {
+ 				if !strings.Contains(err.Error(), want) {
+ 					t.Errorf("RenderRoleFile error = %v; want it to name %q", err, want)
+ 				}
+diff --git a/internal/orchengine/resumecontext.go b/internal/orchengine/resumecontext.go
+index 201166f2..27443c5d 100644
+--- a/internal/orchengine/resumecontext.go
++++ b/internal/orchengine/resumecontext.go
+@@ -24,7 +24,7 @@ func ResumeContext(p Paths, stencilsDir, index string, now time.Time) (string, e
+ 	}
+ 	text := st.PendingResume
+ 	if st.Phase != PhaseResuming || text == "" {
+-		if err := RenderRoleFile(stencilsDir, p.RolePath, index, p.HubRulesPath, p.OwnRulesPath); err != nil {
++		if err := RenderRoleFile(stencilsDir, p.RolePath, index); err != nil {
+ 			return "", err
+ 		}
+ 		if st.Phase == PhaseCompacting {
+diff --git a/internal/orchengine/resumecontext_test.go b/internal/orchengine/resumecontext_test.go
+index a03ba934..6c0033f7 100644
+--- a/internal/orchengine/resumecontext_test.go
++++ b/internal/orchengine/resumecontext_test.go
+@@ -87,8 +87,6 @@ func TestResumeContext_FailureReturnsErrorAndWritesNoMark(t *testing.T) {
+ 	tests := []struct {
+ 		name  string
+ 		setup func(t *testing.T, p Paths, stencils string)
+-		// wantInError is an optional substring the error carries, built from the case's paths.
+-		wantInError func(p Paths) string
+ 	}{
+ 		{"missing stencil", func(t *testing.T, p Paths, stencils string) {
+ 			if err := SaveState(p, State{Strand: "s1", Phase: PhaseIdle}); err != nil {
+@@ -97,24 +95,8 @@ func TestResumeContext_FailureReturnsErrorAndWritesNoMark(t *testing.T) {
+ 			if err := os.Remove(stencilstore.Path(stencils, reloadStencilName)); err != nil {
+ 				t.Fatal(err)
+ 			}
+-		}, nil},
+-		{"unreadable hub rules", func(t *testing.T, p Paths, stencils string) {
+-			if err := SaveState(p, State{Strand: "s1", Phase: PhaseIdle}); err != nil {
+-				t.Fatal(err)
+-			}
+-			if err := os.MkdirAll(p.HubRulesPath, 0o755); err != nil {
+-				t.Fatal(err)
+-			}
+-		}, func(p Paths) string { return p.HubRulesPath }},
+-		{"unreadable own rules", func(t *testing.T, p Paths, stencils string) {
+-			if err := SaveState(p, State{Strand: "s1", Phase: PhaseIdle}); err != nil {
+-				t.Fatal(err)
+-			}
+-			if err := os.MkdirAll(p.OwnRulesPath, 0o755); err != nil {
+-				t.Fatal(err)
+-			}
+-		}, func(p Paths) string { return p.OwnRulesPath }},
+-		{"no state file", func(*testing.T, Paths, string) {}, nil},
++		}},
++		{"no state file", func(*testing.T, Paths, string) {}},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -125,9 +107,6 @@ func TestResumeContext_FailureReturnsErrorAndWritesNoMark(t *testing.T) {
+ 			if err == nil {
+ 				t.Fatalf("ResumeContext = %q, nil; want an error", text)
+ 			}
+-			if tt.wantInError != nil && !strings.Contains(err.Error(), tt.wantInError(p)) {
+-				t.Errorf("ResumeContext error = %v; want it to name %s", err, tt.wantInError(p))
+-			}
+ 			if _, found, err := ReadResumeMark(p); err != nil || found {
+ 				t.Errorf("mark found = %v, %v; want none", found, err)
+ 			}
+diff --git a/internal/orchengine/state.go b/internal/orchengine/state.go
+index 60d57050..528c7657 100644
+--- a/internal/orchengine/state.go
++++ b/internal/orchengine/state.go
+@@ -36,8 +36,6 @@ type Paths struct {
+ 
+ 	RolePath         string // Role file rendered from the role stencil before every delivery.
+ 	NoteTemplatePath string // Note template file rendered before every note request.
+-	HubRulesPath     string // The hub-wide orch rules file on Bolt, read at every role-file render.
+-	OwnRulesPath     string // This orch thread's own rules file under its worktree's `_lym/orch/`, read at every role-file render.
+ 	PrimeRoot        string // The prime's worktree root, which a relative note path resolves against.
+ }
+ 
+diff --git a/internal/orchengine/state_test.go b/internal/orchengine/state_test.go
+index 49d81963..34fcd35f 100644
+--- a/internal/orchengine/state_test.go
++++ b/internal/orchengine/state_test.go
+@@ -27,8 +27,6 @@ func testPaths(t *testing.T) Paths {
+ 		RolePath:         filepath.Join(dir, "role.md"),
+ 		NoteTemplatePath: filepath.Join(dir, "note-template.md"),
+ 		PrimeRoot:        filepath.Dir(dir),
+-		HubRulesPath:     filepath.Join(filepath.Dir(dir), "board", "rules", "hub.md"),
+-		OwnRulesPath:     filepath.Join(filepath.Dir(dir), "own", "rules.md"),
+ 	}
+ }
+ 
+diff --git a/internal/orchengine/watcher.go b/internal/orchengine/watcher.go
+index 0529a9b9..5edf4852 100644
+--- a/internal/orchengine/watcher.go
++++ b/internal/orchengine/watcher.go
+@@ -184,13 +184,13 @@ func NewWatcher(session Session, creel Creel, cfg Config, paths Paths, stencilsD
+ }
+ 
+ // renderRoleFile fetches the command index and renders the role file with it.
+-// Its error is worded as an abort reason naming the failing source, the index, the role stencil or a rules file.
++// Its error is worded as an abort reason naming the failing source, the index or the role stencil.
+ func (w *Watcher) renderRoleFile() error {
+ 	index, err := w.index()
+ 	if err != nil {
+ 		return fmt.Errorf("command index unavailable: %w", err)
+ 	}
+-	if err := RenderRoleFile(w.stencilsDir, w.paths.RolePath, index, w.paths.HubRulesPath, w.paths.OwnRulesPath); err != nil {
++	if err := RenderRoleFile(w.stencilsDir, w.paths.RolePath, index); err != nil {
+ 		return fmt.Errorf("role file failed to render: %w", err)
+ 	}
+ 	return nil
+diff --git a/internal/orchengine/watcher_test.go b/internal/orchengine/watcher_test.go
+index 3d65bab1..ad8e6382 100644
+--- a/internal/orchengine/watcher_test.go
++++ b/internal/orchengine/watcher_test.go
+@@ -1745,16 +1745,12 @@ func TestWatcher_FailingRenderAbortsWithoutClear(t *testing.T) {
+ 		content string
+ 		// indexErr makes the index source fail instead of the stencil, which stays as shipped.
+ 		indexErr error
+-		// rulesDir makes a rules file unreadable by creating a directory at the path it returns, and wants the reason to name that path.
+-		rulesDir func(Paths) string
+ 		// wantReason is the abort reason's prefix, which names the failing source.
+ 		wantReason string
+ 	}{
+ 		{name: "role", stencil: roleStencilName, content: "{{.nope}}", wantReason: "role file failed to render: orch: " + roleStencilName},
+ 		{name: "resume", stencil: resumeStencilName, content: "line one\nline two\n", wantReason: "resume stencil " + resumeStencilName},
+ 		{name: "index source", stencil: roleStencilName, indexErr: errBoom, wantReason: "command index unavailable: " + errBoom.Error()},
+-		{name: "hub rules", rulesDir: func(p Paths) string { return p.HubRulesPath }, wantReason: "role file failed to render: "},
+-		{name: "own rules", rulesDir: func(p Paths) string { return p.OwnRulesPath }, wantReason: "role file failed to render: "},
+ 	}
+ 	for _, c := range cases {
+ 		t.Run(c.name, func(t *testing.T) {
+@@ -1763,10 +1759,6 @@ func TestWatcher_FailingRenderAbortsWithoutClear(t *testing.T) {
+ 			e.injectHandoff()
+ 			if c.indexErr != nil {
+ 				e.indexErr = c.indexErr
+-			} else if c.rulesDir != nil {
+-				if err := os.MkdirAll(c.rulesDir(e.paths), 0o755); err != nil {
+-					t.Fatal(err)
+-				}
+ 			} else if err := os.WriteFile(stencilstore.Path(e.stDir, c.stencil), []byte(c.content), 0o644); err != nil {
+ 				t.Fatal(err)
+ 			}
+@@ -1775,9 +1767,6 @@ func TestWatcher_FailingRenderAbortsWithoutClear(t *testing.T) {
+ 			if st.Phase != PhaseIdle || e.s.count("clear") != 0 || !strings.HasPrefix(st.LastAbortReason, c.wantReason) {
+ 				t.Fatalf("state = %+v calls = %v", st, e.s.calls)
+ 			}
+-			if c.rulesDir != nil && !strings.Contains(st.LastAbortReason, c.rulesDir(e.paths)) {
+-				t.Errorf("abort reason %q does not name %s", st.LastAbortReason, c.rulesDir(e.paths))
+-			}
+ 		})
+ 	}
+ }
+diff --git a/internal/orchroute/paths.go b/internal/orchroute/paths.go
+index 48a0980e..7a98a435 100644
+--- a/internal/orchroute/paths.go
++++ b/internal/orchroute/paths.go
+@@ -5,20 +5,14 @@ package orchroute
+ import (
+ 	"path/filepath"
+ 
+-	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/orchengine"
+ )
+ 
+-// DirName is the orch module's own subdirectory name, beneath the anchor's .lym directory and beneath _lym, where the rules files live.
++// DirName is the orch module's own subdirectory name, beneath the anchor's .lym directory.
+ const DirName = "orch"
+ 
+-// RulesRel returns the rules file's path relative to the board dir and to the anchor.
+-func RulesRel() string {
+-	return filepath.Join(lymdirs.LymDirName, DirName, "rules.md")
+-}
+-
+ // Paths returns every path orch operates on, rooted at location's anchor.
+ func Paths(location *lymcwd.Location) orchengine.Paths {
+ 	dotLym := filepath.Join(location.AnchorPath(), lymdirs.DotLymDirName)
+@@ -36,8 +30,6 @@ func Paths(location *lymcwd.Location) orchengine.Paths {
+ 		WatchLogPath:     filepath.Join(dir, "watch.log"),
+ 		RolePath:         filepath.Join(dir, "role.md"),
+ 		NoteTemplatePath: filepath.Join(dir, "note-template.md"),
+-		HubRulesPath:     filepath.Join(fabricengine.BoltDir(location.HubPath), RulesRel()),
+-		OwnRulesPath:     filepath.Join(location.AnchorPath(), RulesRel()),
+ 		PrimeRoot:        location.WorktreePath(),
+ 
+ 		RetiredNoticeLogPath: filepath.Join(dotLym, "notices.log"),
+diff --git a/internal/shuttleengine/claudeengine/claudeengine.go b/internal/shuttleengine/claudeengine/claudeengine.go
+index 0cbdd5ea..d494f745 100644
+--- a/internal/shuttleengine/claudeengine/claudeengine.go
++++ b/internal/shuttleengine/claudeengine/claudeengine.go
+@@ -230,7 +230,7 @@ func (c *Claude) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengi
+ 	}
+ 	notice := buildDenyNotice(spec.Interactive, cfg, claude, spec.ForkSubagents, spec.AllowAgentTool, spec.DenyPublish)
+ 	// The told Board dir is the hub's Bolt checkout, empty outside a hub.
+-	passages := shuttleengine.StandingPassages(c.dirs.Board, "claude")
++	passages := shuttleengine.StandingPassages(c.dirs.Board, "claude", spec.Role)
+ 	if err := os.WriteFile(appendPromptPath, []byte(appendPromptText(notice, passages)), 0o644); err != nil {
+ 		return shuttleengine.Launch{}, fmt.Errorf("write append system prompt: %w", err)
+ 	}
+diff --git a/internal/shuttleengine/claudeengine/prepare_test.go b/internal/shuttleengine/claudeengine/prepare_test.go
+index 4a3bd79c..4d9a60ea 100644
+--- a/internal/shuttleengine/claudeengine/prepare_test.go
++++ b/internal/shuttleengine/claudeengine/prepare_test.go
+@@ -440,7 +440,7 @@ func TestPrepare_LogsResolvedPromptCacheTTL(t *testing.T) {
+ 	}
+ }
+ 
+-// TestPrepare_AppendsStandingPassages proves the append-system-prompt file carries the hub's standing passages after lym's own sentences, each after a blank line and in order.
++// TestPrepare_AppendsStandingPassages proves the append-system-prompt file carries the standing passages the reader finds for the claude engine and the spec's role after lym's own sentences, each after a blank line and in order.
+ // With no reader installed, or outside a hub, the file holds lym's sentences only and the reader is never called;
+ // a reader error leaves the launch succeeded with lym's sentences only and logs the way to inspect the store.
+ // It installs the process-wide passage reader and captures the logger, so it does not run in parallel.
+@@ -450,6 +450,8 @@ func TestPrepare_AppendsStandingPassages(t *testing.T) {
+ 		name string
+ 		// board is the told Bolt checkout; empty means a session outside a hub.
+ 		board string
++		// role is the spec's strand role.
++		role string
+ 		// reader is nil when no reader is installed.
+ 		reader      shuttleengine.PassageReader
+ 		want        string
+@@ -459,16 +461,25 @@ func TestPrepare_AppendsStandingPassages(t *testing.T) {
+ 		{
+ 			name:  "two_passages",
+ 			board: "bolt",
+-			reader: func(string, string) ([]string, error) {
++			reader: func(string, string, string) ([]string, error) {
+ 				return []string{"first passage", "second\nspans lines"}, nil
+ 			},
+ 			want: sentences + "\n\nfirst passage\n\nsecond\nspans lines",
+ 		},
++		{
++			name:  "role_reaches_reader",
++			board: "bolt",
++			role:  "orch",
++			reader: func(_, engine, role string) ([]string, error) {
++				return []string{engine + " " + role}, nil
++			},
++			want: sentences + "\n\nclaude orch",
++		},
+ 		{name: "no_reader", board: "bolt", want: sentences},
+ 		{
+ 			name:  "outside_hub",
+ 			board: "",
+-			reader: func(string, string) ([]string, error) {
++			reader: func(string, string, string) ([]string, error) {
+ 				return []string{"never read"}, nil
+ 			},
+ 			want:        sentences,
+@@ -477,7 +488,7 @@ func TestPrepare_AppendsStandingPassages(t *testing.T) {
+ 		{
+ 			name:  "reader_error",
+ 			board: "bolt",
+-			reader: func(string, string) ([]string, error) {
++			reader: func(string, string, string) ([]string, error) {
+ 				return nil, errors.New("heddle.json does not decode")
+ 			},
+ 			want:       sentences,
+@@ -490,9 +501,9 @@ func TestPrepare_AppendsStandingPassages(t *testing.T) {
+ 			calls := 0
+ 			if tt.reader != nil {
+ 				reader := tt.reader
+-				t.Cleanup(shuttleengine.InstallPassageReader(func(boltDir, engine string) ([]string, error) {
++				t.Cleanup(shuttleengine.InstallPassageReader(func(boltDir, engine, role string) ([]string, error) {
+ 					calls++
+-					return reader(boltDir, engine)
++					return reader(boltDir, engine, role)
+ 				}))
+ 			}
+ 			engine := engineWith(t, templateConfig(t))
+@@ -501,7 +512,7 @@ func TestPrepare_AppendsStandingPassages(t *testing.T) {
+ 			}
+ 			runDir := t.TempDir()
+ 			claude := templateConfig(t)
+-			spec := shuttleengine.Spec{Prompt: "do the thing"}
++			spec := shuttleengine.Spec{Prompt: "do the thing", Role: tt.role}
+ 			notice := buildDenyNotice(spec.Interactive, shuttleengine.Config{}, claude, false, false, false)
+ 			if _, err := engine.Prepare(runDir, spec, shuttleengine.Config{}); err != nil {
+ 				t.Fatalf("Prepare() error: %v; want nil", err)
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index bb4ed9fc..f58a1976 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -24,7 +24,7 @@
+ // shuttleengine defines the Engine interface and its value types, and never imports a concrete
+ // engine implementation — concrete engines import shuttleengine, not the reverse.
+ // Only internal/shuttleengines and an engine's own directory import a concrete engine (the provider-seam import rule, enforced module-wide by seam_enforcement_test.go).
+-// StandingPassages returns the instruction passages a hub's Bolt checkout holds for an engine, read through the reader InstallPassageReader installs for the process;
++// StandingPassages returns the instruction passages a hub's Bolt checkout holds for a session of an engine and a strand role, read through the reader InstallPassageReader installs for the process;
+ // it returns none outside a hub, with no reader installed or when the reader fails, which is logged at Warn, so a launch never waits on the store.
+ // An engine appends them to the system prompt it launches with, and shuttle itself parses no store.
+ // Requirement support, fork audit, resume-context rendering, creel hook delivery (the hook-input parse, the hook output and the wake output) and instruction files are optional capabilities beside Engine, which an engine without them lacks.
+diff --git a/internal/shuttleengine/passages.go b/internal/shuttleengine/passages.go
+index 3ae6b0a4..aa5342cc 100644
+--- a/internal/shuttleengine/passages.go
++++ b/internal/shuttleengine/passages.go
+@@ -8,8 +8,8 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ )
+ 
+-// PassageReader returns the standing passages a hub's Bolt checkout holds for engine, in the order they are appended.
+-type PassageReader func(boltDir, engine string) ([]string, error)
++// PassageReader returns the standing passages a hub's Bolt checkout holds for a session of engine whose strand role is role, in the order they are appended.
++type PassageReader func(boltDir, engine, role string) ([]string, error)
+ 
+ var installedPassageReader atomic.Pointer[PassageReader]
+ 
+@@ -19,10 +19,10 @@ func InstallPassageReader(r PassageReader) (restore func()) {
+ 	return func() { installedPassageReader.Store(previous) }
+ }
+ 
+-// StandingPassages returns the passages the installed reader finds for engine in the hub whose Bolt checkout is boltDir.
++// StandingPassages returns the passages the installed reader finds for a session of engine and strand role role in the hub whose Bolt checkout is boltDir.
+ // It returns none for an empty boltDir (a session outside a hub) or with no reader installed.
+ // A reader error also returns none and is logged at Warn, so an unreadable store never blocks a launch.
+-func StandingPassages(boltDir, engine string) []string {
++func StandingPassages(boltDir, engine, role string) []string {
+ 	if boltDir == "" {
+ 		return nil
+ 	}
+@@ -30,7 +30,7 @@ func StandingPassages(boltDir, engine string) []string {
+ 	if reader == nil {
+ 		return nil
+ 	}
+-	passages, err := (*reader)(boltDir, engine)
++	passages, err := (*reader)(boltDir, engine, role)
+ 	if err != nil {
+ 		logger.Warn("shuttleengine: the standing passages are unreadable, so the launch carries lym's own sentences only; run `lym heddle list` to inspect the store", "engine", engine, "error", err)
+ 		return nil
+diff --git a/pattern/PATTERN-heddle-instructions.md b/pattern/PATTERN-heddle-instructions.md
+index 261ce456..92d1183c 100644
+--- a/pattern/PATTERN-heddle-instructions.md
++++ b/pattern/PATTERN-heddle-instructions.md
+@@ -3,7 +3,7 @@
+ Heddle's instruction text is stored once and rendered from that one store, never from a copy.
+ 
+ - The store is `heddle.json` at the Bolt checkout's root.
+-- The `lym heddle` verbs and heddle's Bolt replayer are its only writers.
++- The `lym heddle` verbs and heddle's Bolt replayer are its only writers; another module's verb, such as `lym orch rules`, writes only through the write path the `lym heddle` verbs share.
+ - `internal/heddleengine` is the only package that reads the store and renders it.
+ - It renders file targets at a worktree's root, through fabric's worktree seam or `lym heddle render`.
+ - It renders a session's appended system prompt through shuttle's prompt seam.
