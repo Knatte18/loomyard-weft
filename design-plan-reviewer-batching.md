@@ -1,6 +1,6 @@
 # The round-1 Plan reviewer gathers in one call a turn
 
-`plan-reviewer-batching` · Task · enhancement, burler, stencil · running · Code-Burler-Review
+`plan-reviewer-batching` · Task · enhancement, burler, stencil · running · Code-Burler-Fix
 
 ## Seen (research, landed 2026-11-01)
 
