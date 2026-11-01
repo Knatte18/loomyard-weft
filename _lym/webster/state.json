@@ -396,7 +396,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 5,
   "masterStrand": "027a2687ba3886e3aa7a401f5599025c",
   "masterSessionId": "571c4288-9a6a-4d69-a3bf-ad611ab3ea00",
   "masterEngine": "claude",
@@ -443,6 +443,24 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-interactive-recipe/571c4288-9a6a-4d69-a3bf-ad611ab3ea00/subagents/agent-a388696df514a7fff.jsonl"
       ]
+    },
+    "5": {
+      "slug": "sampler-registry-entry",
+      "cards": [
+        "05-sampler-registry-entry",
+        "06-sampler-recipe"
+      ],
+      "cardHashes": {
+        "05-sampler-registry-entry": "46d82454ba03e62e2d8f0fc06210b39fe5bfc2377ac569b54f96601403f05b7c",
+        "06-sampler-recipe": "580c825b1e7c8ad840d9bb118a1d2770bfe997c451bf9848cf584c361658ce49"
+      },
+      "startSha": "959521fd079b86074407c1b0dc61b2d793cb3861",
+      "kind": "fork",
+      "spawnedAt": "2026-11-01T06:14:36Z",
+      "sessionId": "571c4288-9a6a-4d69-a3bf-ad611ab3ea00",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
