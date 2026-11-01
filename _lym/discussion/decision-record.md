@@ -64,6 +64,12 @@ Decision: Superseding the Sonnet-subagent decision: lym's claudeengine denies th
 
 Rationale: The orch misread the tool list; the writer's reading of its system prompt was right.
 
+### Added after Discussion (parent, 2026-11-01): No test may go silent
+
+Decision: The change must not leave any test skipped in every tier. Before Describe, the run shows that every Test function runs in exactly the tier its file was tagged with on main: the count of tests that pass per tier (0, 1 and 2) on the branch equals main's, read from lym gate test records over the same targets, or each difference is named and explained. The Code-Review round checks this evidence and the hand-written selector, guard and gate changes; it does not review the mechanical rewrite file by file.
+
+Rationale: A wrong Require call skips a test silently and leaves the gate green; the counts catch that, and they make the review of a 1650-file mechanical diff cheap.
+
 ## Constraints
 
 ## Auto-mode assumptions
