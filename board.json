@@ -860,7 +860,7 @@
       "isolated": false,
       "brief": "Put the batching instruction into heddle's claude-file target and measure calls per turn with forkaudit against today's 1.7",
       "body": "## Seen (orch, 2026-11-01)\n\nThe batching sentence every shuttle-launched Claude session gets (\"Request every call whose arguments you already know in one message, …\", `batchingSentence` in `internal/shuttleengine/claudeengine/settings.go`) sits at the end of Claude Code's long system prompt, which already asks for parallel tool calls itself.\nAfter `turn-batching` landed, Webster forks went from 1.37 to about 1.7 read, grep and edit calls a turn (`tools/forkaudit`, 27 forks of `warp-visibility`, `interactive-recipe` and `run-verbs-shared`).\nClaude Code puts a project's CLAUDE files into the conversation as a context block under \"These instructions OVERRIDE any default behavior and you MUST follow them exactly as written\", a stronger frame than an appended system-prompt sentence; another user reported cutting token use by putting such an instruction there.\n\n## Idea (operator, 2026-11-01)\n\nTest it with heddle, with no code change: a heddle entry aimed at the `claude-file` target puts the batching instruction into the rendered `CLAUDE.local.md` at every worktree's root, which every Claude session in the hub reads, Webster's forks through Merriam's context included.\nAfter two or three tapestry runs, `tools/forkaudit` measures calls per turn against the 1.7 above.\nThe test is best run after note `edit-with-edit-tool` has landed, or measured on read and search calls alone, so that the edit change does not confound it.\n",
-      "status": "running · Record-Write",
+      "status": "running · Darn-Write",
       "created": "2026-11-01T14:18:14Z",
       "revised": "2026-11-01T15:10:26Z",
       "project": "agent-turns"
@@ -966,7 +966,7 @@
       "isolated": false,
       "brief": "79 no-call wake-up turns at full context over three runs, 8-9% of the forking review roles weight",
       "body": "## Seen (research, landed 2026-11-01)\n\n`docs/research/review-turn-audit-2026-11-01/report.md`: a Discussion reviewer, Discussion fixer or Plan fixer that forks its lenses wakes once per fork, since each fork's result arrives as its own message, and each wake-up is a turn with no call at the parent's full context.\nOn three tapestry runs that was 79 turns, 8% to 9% of the three roles' weight and 13% to 19% of their time.\nThe Plan reviewer works on after its spawn, so its wake-ups are mixed into its other turns.\n\n## Idea\n\nThe parent gets every fork's result in one turn: it spawns its forks in one message and is woken once they are all done, rather than once per fork.\nFirst read how the review stencils spawn the forks and how their results reach the parent, then pick the form that keeps the forks running in parallel.\nMeasured with the scripts of `docs/research/review-turn-audit-2026-11-01`: the `fork-wait` turns per session.\n",
-      "status": "running · Worktree-Create",
+      "status": "running · Darn-Write",
       "created": "2026-11-01T14:51:40Z",
       "revised": "2026-11-01T15:10:27Z",
       "project": "agent-turns"
