@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **sampler: an interactive loom recipe, the operator iterating with an agent in the run's worktree until done**<br>• A Shed recipe whose agent waits for the operator and iterates on the result, then lands as usual<br>• `profile: light` | [`interactive-recipe`](design-interactive-recipe.md) | tapestry | Describe | neve | 18h<br>12h | shed, batten, reed, shuttle |
+| T8 | **sampler: an interactive loom recipe, the operator iterating with an agent in the run's worktree until done**<br>• A Shed recipe whose agent waits for the operator and iterates on the result, then lands as usual<br>• `profile: light` | [`interactive-recipe`](design-interactive-recipe.md) | tapestry | PR-Review | neve | 18h<br>12h | shed, batten, reed, shuttle |
 
 #### Ready (0)
 
@@ -35,8 +35,8 @@ Waits only on Running, Ready or Draft entries.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **The appended system prompt states the gate rule once, not twice**<br>• The raw-go and refuse-raw deny notices both carry the full gate rule into every session | [`gate-rule-stated-once`](design-gate-rule-stated-once.md) | darn | T8 | 13h<br>42m | shuttle, gate, claude |
-| T5 | **A seed says only that a run starts at its start, with no producer name**<br>• The shared seed names Preflight as the first producer for every recipe; the seed should name none, and the recipe supplies its first row. | [`seed-starts-at-start`](design-seed-starts-at-start.md) | darn | T8 | 1d<br>37m | loom, pawl, shed |
-| T6 | **Finalize settles a rejected fixer change in place and never sends the run back**<br>• A fix review loop inside Finalize that escalates at its cap, in place of on_reroute<br>• `profile: solid` | [`finalize-fix-in-place`](design-finalize-fix-in-place.md) | darn | T8 | 18h<br>37m | landing, shed, loom, darn |
+| T5 | **A seed says only that a run starts at its start, with no producer name**<br>• The shared seed names Preflight as the first producer for every recipe; the seed should name none, and the recipe supplies its first row. | [`seed-starts-at-start`](design-seed-starts-at-start.md) | darn | T8 | 1d<br>38m | loom, pawl, shed |
+| T6 | **Finalize settles a rejected fixer change in place and never sends the run back**<br>• A fix review loop inside Finalize that escalates at its cap, in place of on_reroute<br>• `profile: solid` | [`finalize-fix-in-place`](design-finalize-fix-in-place.md) | darn | T8 | 18h<br>38m | landing, shed, loom, darn |
 
 #### Layer B (2)
 
@@ -44,8 +44,8 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Dobby sends a dead-driver notice for a run that has just started**<br>• Dobby reads a go-driven child as dead in the gap between loom start writing its running status and the driver taking its lock<br>• `profile: solid` | [`dead-driver-false-notice`](design-dead-driver-false-notice.md) | darn | T8<br>T5 | 36m<br>32m | dobby, loom |
-| T2 | **warp-visibility: heddle, a Bolt database lym renders its instruction files from, leaving no trace in warp**<br>• LoomYard puts no CLAUDE.md in a repository; lym renders its own git-excluded instruction files into each worktree from _board/heddle.json | [`warp-visibility`](design-warp-visibility.md) | tapestry | T8<br>T4 | 3w<br>40m | fabric, board, config, claude, codex, cwd, process, stencil, shuttle |
+| T1 | **Dobby sends a dead-driver notice for a run that has just started**<br>• Dobby reads a go-driven child as dead in the gap between loom start writing its running status and the driver taking its lock<br>• `profile: solid` | [`dead-driver-false-notice`](design-dead-driver-false-notice.md) | darn | T8<br>T5 | 37m<br>33m | dobby, loom |
+| T2 | **warp-visibility: heddle, a Bolt database lym renders its instruction files from, leaving no trace in warp**<br>• LoomYard puts no CLAUDE.md in a repository; lym renders its own git-excluded instruction files into each worktree from _board/heddle.json | [`warp-visibility`](design-warp-visibility.md) | tapestry | T8<br>T4 | 3w<br>41m | fabric, board, config, claude, codex, cwd, process, stencil, shuttle |
 
 #### Draft (1)
 
