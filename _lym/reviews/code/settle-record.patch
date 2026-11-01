@@ -1,0 +1,162 @@
+diff --git a/contracts/stencils/burler/burler-step-1-explore.md b/contracts/stencils/burler/burler-step-1-explore.md
+index ff286c17..d96c4544 100644
+--- a/contracts/stencils/burler/burler-step-1-explore.md
++++ b/contracts/stencils/burler/burler-step-1-explore.md
+@@ -36,6 +36,6 @@ Each finding also carries one of the four classes — `design`, `scope`, `decisi
+ 
+ ## Tool-use rules — how you gather evidence
+ 
+-Make the reads your focus needs, or the whole target when no focus is set, in one message.
++Read what your focus needs, or the whole target when no focus is set.
+ 
+ {{.tool_use_rules}}{{.fork_reading}}
+diff --git a/contracts/stencils/burler/burler-template-fixer.md b/contracts/stencils/burler/burler-template-fixer.md
+index f41bf820..ea84dc79 100644
+--- a/contracts/stencils/burler/burler-template-fixer.md
++++ b/contracts/stencils/burler/burler-template-fixer.md
+@@ -25,10 +25,9 @@ The review is already written and accepted on disk; you hold none of the reviewe
+ 2. **Validate.**
+    Check each finding's premise against the code you read and, separately, the change its `fix` key proposes.
+    `{{.instruction_fix_path}}` says what to do with each result.
+-   Read the files the findings name together, in one message.
++   Read the files the findings name.
+ 3. **Fix.**
+    Read and execute `{{.instruction_fix_path}}`: the fix-everything rule, your write surface and the fixer-report.
+-   Apply the corrections to one file in one message.
+ 
+ Read the fix step only when its step is reached, never early.
+ 
+diff --git a/contracts/stencils/darn/darn-template-write.md b/contracts/stencils/darn/darn-template-write.md
+index ae6f6bef..7a64b21c 100644
+--- a/contracts/stencils/darn/darn-template-write.md
++++ b/contracts/stencils/darn/darn-template-write.md
+@@ -58,8 +58,8 @@ Check whether landed work, another board entry or another run overtook or contra
+ 
+ 1. Edit the repository to make the change.
+    Follow the existing patterns, and the PATTERN entries in this prompt.
+-   Read every file the change touches, with the greps that find them, in one message before the first edit of each commit, and make independent edits in one message.
+-2. Test with `lym gate test` once, after the last edit of each commit, never after each edit; it computes its scope from your changes, and when it answers `done: false` with exit 75 the run goes on, so run the same command again; never run a raw test command or a module-wide run.
++   Each commit is one change, with its own reads, edits and gate run.
++2. Test with `lym gate test` after the last edit of each commit; it computes its scope from your changes, and when it answers `done: false` with exit 75 the run goes on, so run the same command again; never run a raw test command or a module-wide run.
+ 3. Update, in the same commits as the code, the docs the change makes stale: the package doc of each package whose behavior changes, `doc.go` for a Go package;
+    the repository's overview doc when a module table or execution stack it shows changes;
+    and, when the repository has a `PATTERN.md`, its entry for a cross-cutting invariant the change adds or changes.
+diff --git a/contracts/stencils/landing/landing-template-fixer.md b/contracts/stencils/landing/landing-template-fixer.md
+index d0b56c9a..f618d6e6 100644
+--- a/contracts/stencils/landing/landing-template-fixer.md
++++ b/contracts/stencils/landing/landing-template-fixer.md
+@@ -23,8 +23,6 @@ The task branch is `{{.task_branch}}` and it lands on `{{.parent_branch}}`.
+   It names the gate's log, which you read as well.
+ - The fix review report, when this line names one: `{{.fix_review_path}}`.
+ 
+-Issue every search and read you can name in one message; wait for a result only to choose the next call.
+-
+ ## What to do in each mode
+ 
+ In `parent-align` mode the parent has moved since the task was aligned, and its changes are in the tree now.
+diff --git a/contracts/stencils/loom/loom-template-discussion.md b/contracts/stencils/loom/loom-template-discussion.md
+index 894d64cc..901123ed 100644
+--- a/contracts/stencils/loom/loom-template-discussion.md
++++ b/contracts/stencils/loom/loom-template-discussion.md
+@@ -53,7 +53,6 @@ Read each such note `lym board list` shows.
+ 
+ Read the relevant parts of the codebase before asking the operator anything.
+ Do not ask a question the codebase already answers — read the files and check recent commits.
+-Issue every search and read you can name in one message; wait for a result only to choose the next call.
+ Only unresolved design questions belong in the interview.
+ 
+ This exploration is bounded, the same way Step 3's interview categories are: at a coarse level you MAY establish which module boundary the work falls under and whether the design conflicts with an existing pattern.
+diff --git a/contracts/stencils/loom/loom-template-plan.md b/contracts/stencils/loom/loom-template-plan.md
+index 35af2b49..3d83bbf3 100644
+--- a/contracts/stencils/loom/loom-template-plan.md
++++ b/contracts/stencils/loom/loom-template-plan.md
+@@ -50,7 +50,6 @@ A follow-up a card files goes on the board as a note, never as a task, and no ca
+ ## Step 2 — Explore the codebase
+ 
+ Before planning, start from the code the relevant list names, then read the other relevant parts of the codebase: check recent commits, and follow existing patterns and any PATTERN entries in this prompt rather than inventing new ones.
+-Issue every search and read you can name in one message; wait for a result only to choose the next call.
+ 
+ {{template "loom-block-plan-glyphs"}}
+ This is the hard rule behind the glyph spelling rules Step 3 spells out below: a bare package-qualified symbol (`pkg.Symbol`) is a hard finding precisely because it is the one spelling that cannot have come verbatim from a quarry answer.
+diff --git a/contracts/stencils/twill/twill-directive.md b/contracts/stencils/twill/twill-directive.md
+index d83a309e..7c2a712d 100644
+--- a/contracts/stencils/twill/twill-directive.md
++++ b/contracts/stencils/twill/twill-directive.md
+@@ -34,7 +34,6 @@ Copy these lines verbatim into every fork's prompt, ahead of its lens text.
+   Review them through your lens as an outsider, as your context holds them, and never read them again.
+ - Your context already holds the writer's exploration, the reviewed files and the rubric, so never re-read what your context shows.
+   Make at most 6 further tool calls, each for something your lens needs that your context lacks.
+-  Issue every such call you can name in one message; wait for a result only to choose the next call.
+   End your report with one line per such call, saying what you read and why your context lacked it.
+ - You are read-only: never write, edit or delete a file, run no git command, and never call the Agent tool.
+ - Return your findings only as your final message, each with {{.severity_rule}}, the section or decision it concerns, a one-line summary and the evidence.
+diff --git a/contracts/stencils/webster/webster-body-implementer.md b/contracts/stencils/webster/webster-body-implementer.md
+index c58136d5..37b350f5 100644
+--- a/contracts/stencils/webster/webster-body-implementer.md
++++ b/contracts/stencils/webster/webster-body-implementer.md
+@@ -51,7 +51,7 @@ Make exactly the changes the card describes, in exactly the targets its type lab
+ {{.rename_tools}}
+ 
+    Locate them with one `lym quarry resolve <glyph>...` call over the card's target and `Uses:` glyphs: each answer gives the member's `file` and its `start` and `end` lines, so read those spans instead of grepping for them or reading whole files.
+-   Read every span it names in one message before the card's first edit, put the card's edits that do not depend on each other in one message, and run the card's gate, as step 3 lists it, after the card's last edit rather than after each edit.
++   The card is one change: the spans it names are its reads, and its gate, as step 3 lists it, runs after its last edit.
+    A card that removes or renames a name, such as a symbol, file, config key or string literal, retires the old name: sweep for it before the card's first hand edit, after any rename tool run.
+    Grep the whole worktree for every retired name in one Bash call, test files, `testdata/` and other fixtures included, never only the card's targets or the non-test files.
+    For a symbol rename this is the same grep the rename paragraph above requires for zero references to the old name, widened to those files, so run one grep rather than two.
+diff --git a/internal/heddleengine/shipped.json b/internal/heddleengine/shipped.json
+index 4c5c72ad..1bc3870f 100644
+--- a/internal/heddleengine/shipped.json
++++ b/internal/heddleengine/shipped.json
+@@ -7,6 +7,14 @@
+       "targets": [
+         "claude-file"
+       ]
++    },
++    {
++      "slug": "lym-plan-edits-before-gate",
++      "text": "Make every change in this order, and do not deviate from it.\n\n1. Read everything the change needs in one message: every Read and grep call together, a file whole when it fits and every span of it you need otherwise. Make a second round of reads only for files the first round named.\n2. Decide every edit across every file the card or task touches before you make any of them.\n3. Make all of those edits in one message, every Edit and Write call together in one turn.\n4. Run the gate once. Fix everything its report shows the same way: read what the fixes need in one message, decide every fix, make all of them in one message, then run the gate again.\n\nNever read one file per turn. Never read one file in slices over several turns. Never spread an edit, a read and another edit over turns. Never run the gate between the edits of one change.",
++      "order": 20,
++      "targets": [
++        "claude-file"
++      ]
+     }
+   ]
+ }
+diff --git a/internal/heddleengine/store_test.go b/internal/heddleengine/store_test.go
+index dc30e16f..6cdad760 100644
+--- a/internal/heddleengine/store_test.go
++++ b/internal/heddleengine/store_test.go
+@@ -166,12 +166,29 @@ func TestStore(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("ShippedBatchingEntryIsPinned", func(t *testing.T) {
++	t.Run("ShippedEntriesArePinned", func(t *testing.T) {
+ 		t.Parallel()
+ 		const batchingSentence = "Request every call whose arguments you already know in one message, and read what you need before you edit; wait for a result only to choose the next call."
+-		first := shippedStore.Ordered()[0]
+-		if first.Slug != "lym-batching" || len(first.Targets) != 1 || first.Targets[0] != "claude-file" || first.Text != batchingSentence {
+-			t.Errorf("first shipped entry = %+v; want slug lym-batching aimed at claude-file with the batching sentence unchanged", first)
++		// The rows are the shipped layer in render order; wantText is empty for an entry whose text is not pinned.
++		tests := []struct {
++			slug     string
++			wantText string
++		}{
++			{"lym-batching", batchingSentence},
++			{"lym-plan-edits-before-gate", ""},
++		}
++		ordered := shippedStore.Ordered()
++		if len(ordered) != len(tests) {
++			t.Fatalf("shipped layer holds %d entries; want %d", len(ordered), len(tests))
++		}
++		for i, tt := range tests {
++			got := ordered[i]
++			if got.Slug != tt.slug || len(got.Targets) != 1 || got.Targets[0] != "claude-file" {
++				t.Errorf("shipped entry %d = %+v; want slug %s aimed at claude-file alone", i, got, tt.slug)
++			}
++			if tt.wantText != "" && got.Text != tt.wantText {
++				t.Errorf("shipped entry %s text = %q; want %q", tt.slug, got.Text, tt.wantText)
++			}
+ 		}
+ 	})
+ 
