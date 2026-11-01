@@ -649,7 +649,8 @@
       "brief": "Turns, calls per turn and cost before and after P2 agent-turns, for darn writers, Webster forks and review roles",
       "body": "## Idea (operator, 2026-11-01)\n\nMeasure the effect of project `agent-turns` as a whole, once its members have landed and runs have gone through with them, rather than one member at a time.\n\n## Measure\n\n- Baseline: the numbers in `agent-turns`' body (`tools/tokencount` and `tools/forkaudit` on `warp-visibility`, `interactive-recipe` and `run-verbs-shared`), and `docs/research/review-turn-audit-2026-11-01` for the review roles.\n- After: the darn and tapestry runs that landed after the members, as many as there are; darns weigh most, since they run most.\n- Darn writers: turns, calls per turn, shell edits against Edit-tool edits and gate-loop turns, with the scripts of `docs/research/turn-audit-2026-10-28`.\n- Webster forks: turns per card, calls per turn and peak context, with `tools/forkaudit`; cost with `tools/tokencount`.\n- Review roles: calls per turn, fork wake-up turns and removable turns, with the scripts of `docs/research/review-turn-audit-2026-11-01`.\n  This includes `plan-reviewer-batching`, which has the fanned Plan reviewer gather its fork pre-read in parallel waves: count its pre-read turns against the baseline.\n- Refused turns: the baseline is 6 turns refused by lym's guards across the five heaviest forks; count them again, and count `awk ... \u003e file \u0026\u0026 mv` edits, the route the shell-edit guard leaves open.\n- The report names which members' behaviour shows in the transcripts and states the sample size beside each number.\n\n## Card gate fix loops decide a cold fixer (operator, 2026-11-01)\n\nBefore `agent-turns`, a Webster fork fixed its own card gate's failures in its own session, at 150k to 450k tokens of context a turn; one fork spent 69 turns in that loop.\nSince then `gate-failure-report` gives one report listing every failure, and `plan-edits-before-gate` tells agents to fix everything a report shows in one message.\n\n- The report counts, per fork, the turns spent between a failing card gate and its next green one, and their tokens and peak context, beside the 69-turn baseline.\n- When that loop still costs much, the report recommends a cold, cheap card gate fixer, and the orch puts it to the operator as a note:\n  Go spawns a fresh fixer in the fork's worktree with the gate report, the card and the card's diff; it reads the failing source itself, fixes every failure in one go, reruns only the failed packages and then the card's whole gate; when it clears the gate the fork goes on, and when it does not the failure goes back to the fork or up the recovery ladder as today.\n  Webster already has such a fixer for the plan-level verify gate (`lym webster fix-verify`, `webster-prefix-verify-fix-cold.md`), which inherits nothing.\n",
       "created": "2026-11-01T14:16:30Z",
-      "revised": "2026-11-01T18:12:18Z"
+      "revised": "2026-11-01T18:17:30Z",
+      "project": "turn-savings"
     },
     {
       "id": 978,
@@ -810,7 +811,11 @@
       "brief": "Token savings by cutting agent turns, above all late turns at large context",
       "body": "",
       "created": "2026-11-01T18:17:27Z",
-      "revised": "2026-11-01T18:17:27Z"
+      "revised": "2026-11-01T18:17:30Z",
+      "order": [
+        "batching-breach-nudge",
+        "agent-turns-effect"
+      ]
     }
   ],
   "prime_owner": "neve",

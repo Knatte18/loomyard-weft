@@ -20,9 +20,15 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (1)
+## Notes (2)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+### Research (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| R1 |  | **Measure the effect of the agent-turns project**<br>• Turns, calls per turn and cost before and after P2 agent-turns, for darn writers, Webster forks and review roles | [`agent-turns-effect`](design-agent-turns-effect.md) | 4h<br>0m | tools |
 
 ### Enhancements (1)
 
