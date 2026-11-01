@@ -907,7 +907,7 @@
       "isolated": false,
       "brief": "The facts line links a project slug to design-slug.md when the project has a body",
       "body": "## Seen (operator, 2026-11-01)\n\nA project's body, such as `agent-turns`' waves, renders to `design-\u003cslug\u003e.md`, but nothing on the rendered board links to it, so it cannot be read there.\n`board-project-render` and `board-no-project-heading` both landed without the link.\n\n## Design (operator and orch, 2026-11-01)\n\n- In a project's facts line, in `README.md` and in project files alike, the project's slug links to its `design-\u003cslug\u003e.md` when the project has a body, the way `slugCell` links a task's or note's slug.\n- A project without a body keeps the plain slug.\n",
-      "status": "running · Finalize",
+      "status": "done",
       "created": "2026-11-01T15:39:22Z",
       "revised": "2026-11-01T15:39:22Z"
     }
