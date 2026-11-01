@@ -745,8 +745,7 @@
         "retired-name-sweep",
         "read-whole-not-slices",
         "hook-refused-turns",
-        "batching-in-claude-local",
-        "review-turn-audit"
+        "batching-in-claude-local"
       ]
     },
     {
@@ -893,28 +892,6 @@
       "body": "## Seen (orch, 2026-11-01)\n\nThe batching sentence every shuttle-launched Claude session gets (\"Request every call whose arguments you already know in one message, …\", `batchingSentence` in `internal/shuttleengine/claudeengine/settings.go`) sits at the end of Claude Code's long system prompt, which already asks for parallel tool calls itself.\nAfter `turn-batching` landed, Webster forks went from 1.37 to about 1.7 read, grep and edit calls a turn (`tools/forkaudit`, 27 forks of `warp-visibility`, `interactive-recipe` and `run-verbs-shared`).\nClaude Code puts a project's CLAUDE files into the conversation as a context block under \"These instructions OVERRIDE any default behavior and you MUST follow them exactly as written\", a stronger frame than an appended system-prompt sentence; another user reported cutting token use by putting such an instruction there.\n\n## Idea (operator, 2026-11-01)\n\nTest it with heddle, with no code change: a heddle entry aimed at the `claude-file` target puts the batching instruction into the rendered `CLAUDE.local.md` at every worktree's root, which every Claude session in the hub reads, Webster's forks through Merriam's context included.\nAfter two or three tapestry runs, `tools/forkaudit` measures calls per turn against the 1.7 above.\nThe test is best run after note `edit-with-edit-tool` has landed, or measured on read and search calls alone, so that the edit change does not confound it.\n",
       "created": "2026-11-01T14:18:14Z",
       "revised": "2026-11-01T14:18:14Z",
-      "project": "agent-turns"
-    },
-    {
-      "id": 968,
-      "handle": "T5",
-      "slug": "review-turn-audit",
-      "title": "Study: turns and context of the Discussion and Plan review sessions",
-      "kind": "task",
-      "labels": [
-        "research",
-        "burler"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Measure where reviewer, fixer and judge turns and context go on three tapestry runs, and what Sonnet fixers would cost",
-      "body": "## Seen (orch, 2026-11-01)\n\n`tools/tokencount` on the three latest full tapestry runs (`warp-visibility`, `interactive-recipe`, `run-verbs-shared`): the review rounds' main sessions cost more than their forks.\n- Plan reviewer $31 and 1h13m, the longest part of Plan, at about 175k tokens of context a message; Discussion reviewer $18.\n- The Discussion and Plan fixers, on Opus, about $25 together; all review and fixer forks of both segments about $24.\n\n## Idea: a study (orch, 2026-11-01)\n\nA darn with profile docs measures, on those same three runs' transcripts, the turns and context per turn of the Discussion and Plan reviewer, fixer and judge sessions and their forks, where their turns go (reads, searches, writes, waits), and which of the turns could have been merged.\nIt reuses the method of `docs/research/turn-audit-2026-10-28`, and states what Sonnet fixers would have cost, beside note `fixers-on-sonnet`.\nCap: the three runs named, no agent or model run beyond the darn writer.\n",
-      "status": "done",
-      "created": "2026-11-01T14:18:14Z",
-      "revised": "2026-11-01T14:27:05Z",
-      "profile": "docs",
       "project": "agent-turns"
     },
     {
