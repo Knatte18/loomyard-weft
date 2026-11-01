@@ -1,0 +1,1939 @@
+diff --git a/PATTERN.md b/PATTERN.md
+index 8957607f..97cbe2cf 100644
+--- a/PATTERN.md
++++ b/PATTERN.md
+@@ -63,8 +63,8 @@
+ - `PATTERN-agent-name` — Forming, parsing or matching an agent name: only `internal/agentname`, a strand's full name formed once by reed; a spawned role is its module's constant.
+ - `PATTERN-wait-mark-display-only` — Marking a pane waiting: only reed's `SetWaitMark`; no Go decision reads `@lym_wait` or `@lym_wait_start`.
+ - `PATTERN-shell-guard-table` — Guarding a shell command or building a pane-shell string: only `internal/shellguard`'s table, every engine rendering every row, and `internal/shell`, importing only stdlib.
+-- `PATTERN-heddle-instructions` — Rendering heddle entries into a worktree file or a session's system prompt: only from `heddle.json` in the Bolt checkout, through `internal/heddleengine` (new); that file written only by `lym heddle` verbs and heddle's Bolt replayer; fabric names no heddle file. — [background](pattern/PATTERN-heddle-instructions.md)
+-- `PATTERN-lym-instructions-in-code` — Writing lym's own instructions to agents: in lym's code, its stencils and specs, never in heddle, which holds only a repository's own instructions.
++- `PATTERN-heddle-instructions` — Rendering heddle entries into a worktree file or a session's system prompt: only from heddle's shipped layer and `heddle.json` in the Bolt checkout, with a hub's lym overrides only under `heddle.yaml`'s `lym_override`, through `internal/heddleengine` (new); `heddle.json` written only by `lym heddle` verbs and heddle's Bolt replayer, the override file only by the verbs; fabric names no heddle file. — [background](pattern/PATTERN-heddle-instructions.md)
++- `PATTERN-lym-instructions-in-code` — Writing lym's own instructions to agents: in lym's code, its stencils and specs, or an entry of heddle's shipped layer in `internal/heddleengine`; never in a hub's `heddle.json`, which holds only a repository's own instructions.
+ 
+ ## Processes and waits
+ 
+diff --git a/cmd/lym/configstrictness_test.go b/cmd/lym/configstrictness_test.go
+index dd2ee601..7e8ac7ba 100644
+--- a/cmd/lym/configstrictness_test.go
++++ b/cmd/lym/configstrictness_test.go
+@@ -57,6 +57,7 @@ var configStrictnessDegradingSet = map[string]bool{
+ 	"internal/languageconfig":             true,
+ 	"internal/lenses":                     true,
+ 	"internal/desktophook":                true,
++	"internal/heddleengine":               true,
+ }
+ 
+ // configStrictnessStrictSet is the pinned set of module-relative, slash-separated package directories that call configengine.Load -- the strict loading policy, where an absent _lym/ directory or absent config file is an error.
+diff --git a/docs/overview.md b/docs/overview.md
+index 45fbd37b..2ddddc72 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -273,6 +273,7 @@ github.com/Knatte18/loomyard/
+ ├── internal/darnengine/          the darn recipe's hub-wide `darn.yaml` config and the verify command every darn verify reads
+ ├── internal/desktophook/         the hub-wide `desktop.yaml` config and the machine's window command, run after `lym reed window` and `lym ide` open a window, and the machine's added status-bar buttons
+ ├── internal/samplerengine/       the sampler recipe's hub-wide `sampler.yaml` config
++├── internal/heddleengine/        heddle's instruction layers, the one lym ships in its binary and the repository's `heddle.json`, their rendering into a worktree's CLAUDE and AGENTS files and a session's system prompt, and the hub-wide `heddle.yaml` that turns the hub's overrides of shipped entries on
+ ├── internal/driftengine/         regression around a task: the hub-wide `drift.yaml` config, the drift paths and records, the capture and compare runs and the Drift rows' producers
+ ├── internal/driftcli/            the `lym drift` commands (`scope`, `accept`, `withdraw`, `compare`, `capture`, `defer`, `waive`, `status` and the hidden `capture-child`) and their worktree wiring over `internal/driftengine`
+ ├── internal/languageconfig/      the hub-wide `language.yaml` config: the skills every code role loads after its own, the verify tiers the plan, review and implementer prompts render, and the hub's structure-aware rename tools the Webster implementer prompt renders
+@@ -416,7 +417,7 @@ User-facing modules each get one `lym <module>` namespace:
+   defaults to `bug`.
+   Callable from any sandbox agent context with no config. ✅ Implemented.
+ - **reed** — **the window to the world**: tmux overlay + **strand** bookkeeping + render (`internal/reedcli` + `internal/reedengine` + `internal/reedengine/render`). Hosts every managed process as a strand in a window of its own or its group's, persists to `.lym/reed.json` (`lym reed up|add|remove|status|list|attach|switch|resume|watchdog|down`); `lym reed add` places a strand `--anchor own-window` by default. Every strand carries a hierarchical full name (see the `internal/agentname` package documentation), mirrored into its pane title and Claude session name and exported to its process as `LYM_STRAND_NAME` and `LYM_PARENT`, with the watchdog repairing drift; `list` is the hub-wide name directory. Built on what its proof-of-concept, `muxpoc`, proved first (env hygiene, native `--resume`); `muxpoc` has since been deleted, its job done. `reed attach` and `reed watchdog` are this module's two registered interactive-handoff exceptions ([PATTERN-cli-cobra](../pattern/PATTERN-cli-cobra.md)): `attach` hands the operator's stdio to a `tmux attach-session` child in place, pre-flighting through checking tmux's floor version, booting the session if cold and checking server/session liveness, and `watchdog` is the detached per-hub name-repair and reap daemon that blocks for its process lifetime — in both cases every fallible step runs pre-flight, on the envelope, and only the terminal-handover/daemon tail itself is exempt from emitting JSON. `add` and `attach` boot this worktree's session when none is up, with `up`'s own semantics — a bare substrate, with no persisted strand relaunched — instead of refusing; every other reed verb still refuses on a cold worktree. ✅ Implemented. See the `internal/reedengine` package documentation.
+-- **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengines` + `internal/shuttlecli`; `lym shuttle run|open|state|await`). `lym shuttle open` starts a named session with no turn in its own window, which closes when the session exits; `--model` takes a model spec naming the engine, model and effort, `--list-models` prints the model registry's aliases with their engine, model and default effort, and the output names the engine, model and effort the session got. Every session shuttle launches, run or opened, starts in its engine's bypass mode unless the caller passes `prompt`, which an interactive session accepts. `lym shuttle await <path>... [--cap]` is the read-only capped wait on one or more files, the keep-cache-warm wait any agent can run, needing no hub or git repository. `lym shuttle state` is read-only: it lists the session state of each running run (busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with its cause, since and history), read from the run's files, in shadow mode where no stop or notice depends on it. `Stop`-hook completion is read off an events file and classified into three outcomes — `done`/`died`/`timeout`. A turn end without every output file never ends a run: `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call). An autonomous run notifies its parent once per held turn end as creel mail to the orch, and once per permission or input dialog its pane shows past 60 s, and an interactive run is answered in its pane; a line typed into a run's pane goes through `lym creel post`, `lym creel inject` or `lym creel interrupt`, never a shuttle verb. Background work is read off the Stop payload's `background_tasks` first, with the transcript as the fallback when the payload carries no list; a turn end with outstanding work is waiting, not held, unless its only outstanding work is non-awaited shells, which a gated run judges as a plain turn end and an ungated run holds once they pass the shell wait bound. `Attach` waits on a held run, and on a legacy `asking` record whose strand is still live, instead of respawning beside it. `died` is narrow: it means a strand reed STILL TRACKS has a pane that is not alive, the provider never came up inside the startup window, or the provider's process is proven gone behind a live pane shell (by the process registry, or a process-ending `SessionEnd` line past the wait's first liveness tick), with `done` instead when every output file exists. Reed's strand table losing the strand entirely — a `reed down`/`remove`, a deleted or rebuilt `reed.json`, a worktree renamed under an in-flight run — is reported as a mechanism failure carrying the run's identity, never as `died`, because reed's bookkeeping going away says nothing about the agent, whose process is often still working in its pane. `PreToolUse` guardrails deny the in-process `Agent` tool in both interactive and autonomous runs (on by default, switchable off via `claude.yaml`'s `deny_agent_tool`, and narrowed in a `ForkSubagents` run to permit fork subagents while still refusing every other subagent type), and `AskUserQuestion` too when the run is autonomous (`Interactive: false`, the default); a `PreToolUse(Bash)` guardrail denies `python`, `python3` and `python3.<minor>` in command position in every run mode (on by default, switchable off via `shuttle.yaml`'s `deny_python`), and a second `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a raw module-wide `go test`, `go build` or `go vet`, a raw `go test` over the `tmux` or `llm` tier, and any command naming the gate-slot or strand-name environment variable, steering the session to `lym gate test`, and a third `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies an `rm` on a computed path (a command substitution or a variable expansion in the command) so no permission dialog stalls the run, and a fourth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies `sed -i`, `perl -i`, and a redirect, heredoc or `tee` into a source file, steering the session to read a file with Read and change it with Edit or Write; the python deny's steer carries the same edit rule. The engine announces each deny it installs to the session's system prompt, and every Claude session it launches with a run directory also gets the creel trust sentence and a sentence asking it to request every call whose arguments it already knows in one message, through one `append-system-prompt.txt` file named by `--append-system-prompt-file` on launch and resume, so a session knows the tool is unavailable before it tries one, follows `[creel]` mail from its hooks and batches independent calls. The engine sets the prompt-cache TTL per role on launch and resume from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role). The provider is swappable behind an **engine** seam; the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, Claude being the one registered engine. Per-run `Model`/`Effort` knobs (`lym shuttle run --model`/`--effort`; effort values `low|medium|high|xhigh|max`, empty = provider default) are engine-validated, not policed by `Spec.validate`. `Spec.Version` is a programmatic engine-validated version pin (claudeengine composes the pinned model id; no CLI flag — consumers drive it via the model-spec notation's `v=` param). Starting a run returns only once its provider is past its startup gates, and a provider that never comes up is torn down (run dir and last pane capture kept) and reported as an error from `Start`, or as `died`/`timeout` from `Run`. ✅ Implemented. See the `internal/shuttleengine` package documentation.
++- **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengines` + `internal/shuttlecli`; `lym shuttle run|open|state|await`). `lym shuttle open` starts a named session with no turn in its own window, which closes when the session exits; `--model` takes a model spec naming the engine, model and effort, `--list-models` prints the model registry's aliases with their engine, model and default effort, and the output names the engine, model and effort the session got. Every session shuttle launches, run or opened, starts in its engine's bypass mode unless the caller passes `prompt`, which an interactive session accepts. `lym shuttle await <path>... [--cap]` is the read-only capped wait on one or more files, the keep-cache-warm wait any agent can run, needing no hub or git repository. `lym shuttle state` is read-only: it lists the session state of each running run (busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with its cause, since and history), read from the run's files, in shadow mode where no stop or notice depends on it. `Stop`-hook completion is read off an events file and classified into three outcomes — `done`/`died`/`timeout`. A turn end without every output file never ends a run: `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call). An autonomous run notifies its parent once per held turn end as creel mail to the orch, and once per permission or input dialog its pane shows past 60 s, and an interactive run is answered in its pane; a line typed into a run's pane goes through `lym creel post`, `lym creel inject` or `lym creel interrupt`, never a shuttle verb. Background work is read off the Stop payload's `background_tasks` first, with the transcript as the fallback when the payload carries no list; a turn end with outstanding work is waiting, not held, unless its only outstanding work is non-awaited shells, which a gated run judges as a plain turn end and an ungated run holds once they pass the shell wait bound. `Attach` waits on a held run, and on a legacy `asking` record whose strand is still live, instead of respawning beside it. `died` is narrow: it means a strand reed STILL TRACKS has a pane that is not alive, the provider never came up inside the startup window, or the provider's process is proven gone behind a live pane shell (by the process registry, or a process-ending `SessionEnd` line past the wait's first liveness tick), with `done` instead when every output file exists. Reed's strand table losing the strand entirely — a `reed down`/`remove`, a deleted or rebuilt `reed.json`, a worktree renamed under an in-flight run — is reported as a mechanism failure carrying the run's identity, never as `died`, because reed's bookkeeping going away says nothing about the agent, whose process is often still working in its pane. `PreToolUse` guardrails deny the in-process `Agent` tool in both interactive and autonomous runs (on by default, switchable off via `claude.yaml`'s `deny_agent_tool`, and narrowed in a `ForkSubagents` run to permit fork subagents while still refusing every other subagent type), and `AskUserQuestion` too when the run is autonomous (`Interactive: false`, the default); a `PreToolUse(Bash)` guardrail denies `python`, `python3` and `python3.<minor>` in command position in every run mode (on by default, switchable off via `shuttle.yaml`'s `deny_python`), and a second `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a raw module-wide `go test`, `go build` or `go vet`, a raw `go test` over the `tmux` or `llm` tier, and any command naming the gate-slot or strand-name environment variable, steering the session to `lym gate test`, and a third `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies an `rm` on a computed path (a command substitution or a variable expansion in the command) so no permission dialog stalls the run, and a fourth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies `sed -i`, `perl -i`, and a redirect, heredoc or `tee` into a source file, steering the session to read a file with Read and change it with Edit or Write; the python deny's steer carries the same edit rule. The engine announces each deny it installs to the session's system prompt, and every Claude session it launches with a run directory also gets the creel trust sentence, through one `append-system-prompt.txt` file named by `--append-system-prompt-file` on launch and resume, so a session knows the tool is unavailable before it tries one and follows `[creel]` mail from its hooks. The engine sets the prompt-cache TTL per role on launch and resume from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role). The provider is swappable behind an **engine** seam; the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, Claude being the one registered engine. Per-run `Model`/`Effort` knobs (`lym shuttle run --model`/`--effort`; effort values `low|medium|high|xhigh|max`, empty = provider default) are engine-validated, not policed by `Spec.validate`. `Spec.Version` is a programmatic engine-validated version pin (claudeengine composes the pinned model id; no CLI flag — consumers drive it via the model-spec notation's `v=` param). Starting a run returns only once its provider is past its startup gates, and a provider that never comes up is torn down (run dir and last pane capture kept) and reported as an error from `Start`, or as `died`/`timeout` from `Run`. ✅ Implemented. See the `internal/shuttleengine` package documentation.
+ - **orch** — the hub orchestrator hosted as an interactive Claude session in a reed strand of the prime worktree or of a beam, cycled before its context fills (`internal/orchcli` + `internal/orchengine`; `lym orch stop|status|refresh|distill|withdraw|rules`, in the prime and in any beam). `lym beam start` first ensures the worktree's `runs` strand, which runs `lym batten overview` as the beam's window, named `beam: prime` or `beam: <slug>`, and `stop` leaves it; the orchestrator has a window of its own, and the session's windows run the beam window, agents, shell. A detached watcher has the session write a note, then clears it and resumes it from that note (`refresh`) or compacts it in place (`distill`), never clearing or compacting without one. ✅ Implemented. See the `internal/orchengine` package documentation.
+ - **webster** — the implementer module: one long-lived Master session that reads the plan and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool), each fork reading its cards' code itself, instead of spawning a fresh reed/tmux strand per batch;
+   bracket verbs (`begin-batch`/`record-batch`) drive each in-session fork (Master ends its turn while a backgrounded fork works and records the batch on the fork's completion notification, shuttle reading that turn end as waiting rather than done), and a genuine model escalation (recovery after a stuck/report-less fork) spawns a cold strand.
+@@ -486,7 +487,7 @@ User-facing modules each get one `lym <module>` namespace:
+   A hook strand gets each post in full, quoted with its sender, at its next tool call in the `PostToolUse` hook's additional context and at its turn end in the `Stop` hook's additional context, which continues the turn and records no turn end, at most 6 a turn; the hooks test the strand's flag file, which creel keeps while the strand holds unread mail, and only the main thread takes mail, so a subagent's hook claims nothing.
+   An idle hook strand is woken by an `asyncRewake` waiter the daemon rings once per claimable set, which wakes it with the mail itself, or by a typed fixed bell line where no waiter reaches, and the woken turn's hooks hand it the mail.
+   Every line a claim hands out fits one hook field, so `lym creel post` refuses a longer one with the way forward of writing the text to a file and posting its path, and `lym creel post --interrupt` stops the receiver's running turn and then posts.
+-  Every Claude session shuttle launches gets the sentence that tells it to follow `[creel]` mail and how to reply, and one further sentence that asks for batched calls, through one `append-system-prompt.txt` file.
++  Every Claude session shuttle launches gets the sentence that tells it to follow `[creel]` mail and how to reply through one `append-system-prompt.txt` file.
+   The first verb of a hub starts its daemon, which folds its pool from an append-only journal, names a sender from the connecting process's ancestry, and delivers through shuttle only into a pane that reads idle.
+   A post that expects a reply (`post --expect-reply`, or `--wait-reply`) is chased when its holder read it and did not answer: two content-free `CREEL` chases a quarter of an hour of the holder's running time apart, then a journaled `unanswered` outcome that answers a waiting `--wait-reply` and, for a sender that will read it, a notice.
+   Notices and the orch's typed lines go through creel: batten, loom, burler, webster and hibernate post their notices as mail to the orch strand, signed as their own program.
+diff --git a/internal/configcli/configcli.go b/internal/configcli/configcli.go
+index d188e93d..76b47b18 100644
+--- a/internal/configcli/configcli.go
++++ b/internal/configcli/configcli.go
+@@ -482,7 +482,7 @@ func buildConfigLong() string {
+ 		"  lym config board --set labels.quarry=\"glyphs and the quarry index\"\n" +
+ 		"A value the module's loader refuses is refused, naming the key.\n" +
+ 		"Keys the template lacks are\n" +
+-		"preserved and reported in the JSON success output's \"preserved\" field;\n" +
++		"preserved and reported in the JSON output's \"preserved\" field;\n" +
+ 		"run \"lym config reconcile --layer default --apply\" from the prime to remove them from the\n" +
+ 		"board dir's files, and \"lym config reconcile --apply\" to remove them from a worktree file.\n\n" +
+ 		"--layer default|worktree|machine|local picks the file to print or write: default is the board's\n" +
+diff --git a/internal/configreg/configreg.go b/internal/configreg/configreg.go
+index 3214e3c7..e7c1bd52 100644
+--- a/internal/configreg/configreg.go
++++ b/internal/configreg/configreg.go
+@@ -25,6 +25,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/driftengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/heddleengine"
+ 	"github.com/Knatte18/loomyard/internal/landingshed"
+ 	"github.com/Knatte18/loomyard/internal/languageconfig"
+ 	"github.com/Knatte18/loomyard/internal/lenses"
+@@ -132,6 +133,7 @@ func Modules() []Module {
+ 		{Name: "drift", Template: driftengine.ConfigTemplate, OpenMaps: driftengine.ConfigOpenMaps(), HubWide: true, CheckLoad: checkLoad(driftengine.LoadConfig), Spec: driftengine.ConfigSpec},
+ 		{Name: "fabric", Template: fabricengine.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(fabricengine.LoadConfig), Spec: fabricengine.ConfigSpec},
+ 		{Name: "gate", Template: gateslot.ConfigTemplate, OpenMaps: gateslot.ConfigOpenMaps(), PerNameMaps: gateslot.ConfigPerNameMaps(), HubWide: true, Migrate: gateslot.MigrateConfig, MigrateHubBase: gateslot.SeedAdoptGate, CheckLoad: checkLoad(gateslot.LoadConfig), Spec: gateslot.ConfigSpec},
++		{Name: "heddle", Template: heddleengine.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(heddleengine.LoadConfig), Spec: heddleengine.ConfigSpec},
+ 		{Name: "landing", Template: landingshed.ConfigTemplate, OpenMaps: landingshed.ConfigOpenMaps(), HubWide: true, SeedsFromPrime: true, Migrate: landingshed.MigrateConfig, CheckLoad: checkLoadNamed(landingshed.LoadConfig, "landing"), Spec: landingshed.ConfigSpec},
+ 		{Name: "language", Template: languageconfig.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(languageconfig.Load), Spec: languageconfig.ConfigSpec},
+ 		{Name: "lenses", Template: lenses.ConfigTemplate, PerNameMaps: lenses.ConfigPerNameMaps(), CheckLoad: lenses.CheckLoad, Spec: lenses.ConfigSpec},
+diff --git a/internal/configreg/configreg_test.go b/internal/configreg/configreg_test.go
+index 667c7391..60d8b53b 100644
+--- a/internal/configreg/configreg_test.go
++++ b/internal/configreg/configreg_test.go
+@@ -44,7 +44,7 @@ func TestNames(t *testing.T) {
+ 	}
+ }
+ 
+-// TestModules_SeedOnlyAndHubWideFlags pins the two flags: "models" and "profiles" carry an open-ended, operator-owned key set (model aliases and run profiles respectively), so they are the only entries with SeedOnly == true, "fabric", "board", "gate", "landing", "darn", "desktop", "drift", "language", "sampler" and "profiles" describe hub-level facts, so they are the only entries with HubWide == true, and "landing", whose per-worktree copy was in effect before it moved hub-wide, is the only entry with SeedsFromPrime == true.
++// TestModules_SeedOnlyAndHubWideFlags pins the two flags: "models" and "profiles" carry an open-ended, operator-owned key set (model aliases and run profiles respectively), so they are the only entries with SeedOnly == true, "fabric", "board", "gate", "heddle", "landing", "darn", "desktop", "drift", "language", "sampler" and "profiles" describe hub-level facts, so they are the only entries with HubWide == true, and "landing", whose per-worktree copy was in effect before it moved hub-wide, is the only entry with SeedsFromPrime == true.
+ //
+ //testtiming:keep pins which modules carry the SeedOnly and HubWide flags, which the covering TestFill never asserts
+ func TestModules_SeedOnlyAndHubWideFlags(t *testing.T) {
+@@ -54,7 +54,7 @@ func TestModules_SeedOnlyAndHubWideFlags(t *testing.T) {
+ 		if m.SeedOnly != wantSeedOnly {
+ 			t.Errorf("Modules(): module %q SeedOnly = %v; want %v", m.Name, m.SeedOnly, wantSeedOnly)
+ 		}
+-		wantHubWide := m.Name == "fabric" || m.Name == "board" || m.Name == "gate" || m.Name == "landing" || m.Name == "darn" || m.Name == "desktop" || m.Name == "drift" || m.Name == "language" || m.Name == "profiles" || m.Name == "sampler"
++		wantHubWide := m.Name == "fabric" || m.Name == "board" || m.Name == "gate" || m.Name == "heddle" || m.Name == "landing" || m.Name == "darn" || m.Name == "desktop" || m.Name == "drift" || m.Name == "language" || m.Name == "profiles" || m.Name == "sampler"
+ 		if m.HubWide != wantHubWide {
+ 			t.Errorf("Modules(): module %q HubWide = %v; want %v", m.Name, m.HubWide, wantHubWide)
+ 		}
+diff --git a/internal/heddlecli/cli.go b/internal/heddlecli/cli.go
+index d040da6e..0e07d48b 100644
+--- a/internal/heddlecli/cli.go
++++ b/internal/heddlecli/cli.go
+@@ -46,10 +46,13 @@ func commandOf(c *heddleCLI) *cobra.Command {
+ 	heddle := &cobra.Command{
+ 		Use:   groupName,
+ 		Short: "list, set, remove, show and render the instruction entries heddle stores for the hub",
+-		Long: `heddle stores the instruction text LoomYard gives its agents in heddle.json
+-in the hub's Bolt checkout, and delivers it two ways: it renders file targets
+-into git-excluded files at a worktree's root, and it appends prompt targets to
+-the system prompt of every Claude session launched in the hub.
++		Long: `heddle delivers the instruction text agents get from two layers: the entries
++lym ships in its binary, read-only, and the repository's own in heddle.json in
++the hub's Bolt checkout. It renders file targets into git-excluded files at a
++worktree's root, the shipped entries first, and it appends prompt targets to
++the system prompt of every Claude session launched in the hub. A hub whose
++heddle.yaml sets lym_override may override a shipped entry's text with
++set --layer lym.
+ 
+ set and remove change the store under the Bolt write lock and start the board's
+ detached Bolt sync, which commits and pushes the saved file. A worktree takes a
+diff --git a/internal/heddlecli/cli_integration_test.go b/internal/heddlecli/cli_integration_test.go
+index 7df2700b..e4ee10bc 100644
+--- a/internal/heddlecli/cli_integration_test.go
++++ b/internal/heddlecli/cli_integration_test.go
+@@ -14,6 +14,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gitexec"
+ 	"github.com/Knatte18/loomyard/internal/heddleengine"
+@@ -152,6 +153,47 @@ func seedStore(t *testing.T, h *hubforge.Hub, entries map[string][]string) {
+ 
+ func ptr[T any](v T) *T { return &v }
+ 
++// shippedSlugs returns the slugs of the entries lym ships, in render order.
++func shippedSlugs() []string {
++	var slugs []string
++	for _, entry := range (heddleengine.Layers{}).Ordered() {
++		slugs = append(slugs, entry.Slug)
++	}
++	return slugs
++}
++
++// listedWithShipped returns the slugs list prints for a store holding the repository slugs: the shipped ones first.
++func listedWithShipped(repository ...string) string {
++	return strings.Join(append(shippedSlugs(), repository...), ",")
++}
++
++// listedEntry returns the entry list prints under slug, failing when none is listed.
++func listedEntry(t *testing.T, env envelope.Envelope, slug string) map[string]any {
++	t.Helper()
++	list, _ := env.Raw["entries"].([]any)
++	for _, item := range list {
++		if entry, _ := item.(map[string]any); entry["slug"] == slug {
++			return entry
++		}
++	}
++	t.Fatalf("list = %v; want an entry %q", list, slug)
++	return nil
++}
++
++// setHubOverride writes the hub's heddle.yaml with lym_override set to on.
++func setHubOverride(t *testing.T, h *hubforge.Hub, on bool) {
++	t.Helper()
++	path := configengine.ConfigFile(fabricengine.BoltDir(h.Path), "heddle")
++	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++		t.Fatalf("MkdirAll: %v", err)
++	}
++	value := "false"
++	if on {
++		value = "true"
++	}
++	writeFile(t, path, heddleengine.LymOverrideKey+": "+value+"\n")
++}
++
+ func entrySlugs(t *testing.T, env envelope.Envelope) []string {
+ 	t.Helper()
+ 	list, _ := env.Raw["entries"].([]any)
+@@ -183,8 +225,11 @@ func TestHeddleCLI(t *testing.T) {
+ 		requireOK(t, runVerb(c, cwd, "text from stdin", "set", "intro", "--text-file", "-", "--order", "10", "--targets", "claude-prompt,claude-file"))
+ 
+ 		listed := requireOK(t, runVerb(c, cwd, "", "list"))
+-		if got := strings.Join(entrySlugs(t, listed), ","); got != "intro,rules" {
+-			t.Errorf("list slugs = %q; want intro,rules in render order", got)
++		if got, want := strings.Join(entrySlugs(t, listed), ","), listedWithShipped("intro", "rules"); got != want {
++			t.Errorf("list slugs = %q; want %q, the shipped entries first, in render order", got, want)
++		}
++		if layer := listedEntry(t, listed, "rules")["layer"]; layer != heddleengine.LayerRepository {
++			t.Errorf("list layer of rules = %v; want %s", layer, heddleengine.LayerRepository)
+ 		}
+ 
+ 		got := requireOK(t, runVerb(c, cwd, "", "get", "rules"))
+@@ -202,14 +247,105 @@ func TestHeddleCLI(t *testing.T) {
+ 
+ 		requireOK(t, runVerb(c, cwd, "", "remove", "intro"))
+ 		listed = requireOK(t, runVerb(c, cwd, "", "list"))
+-		if got := strings.Join(entrySlugs(t, listed), ","); got != "rules" {
+-			t.Errorf("list slugs after remove = %q; want rules", got)
++		if got, want := strings.Join(entrySlugs(t, listed), ","), listedWithShipped("rules"); got != want {
++			t.Errorf("list slugs after remove = %q; want %q", got, want)
+ 		}
+ 		if len(rec.syncs) != 4 {
+ 			t.Errorf("syncs = %d; want one per write", len(rec.syncs))
+ 		}
+ 	})
+ 
++	t.Run("EntryCollidingWithAShippedSlugIsListedAndRemoved", func(t *testing.T) {
++		t.Parallel()
++		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++		cwd := primeCwd(h)
++		c := (&recorder{}).cli()
++		shipped := shippedSlugs()[0]
++		colliding := heddleengine.Store{Entries: []heddleengine.Entry{{Slug: shipped, Text: "mine", Order: 1, Targets: []string{"claude-file"}}}}
++		if err := heddleengine.Save(fabricengine.BoltDir(h.Path), colliding); err != nil {
++			t.Fatalf("Save: %v", err)
++		}
++
++		listed := requireOK(t, runVerb(c, cwd, "", "list"))
++		if got, want := strings.Join(entrySlugs(t, listed), ","), listedWithShipped(shipped); got != want {
++			t.Errorf("list slugs = %q; want %q, the shipped entry and the colliding one", got, want)
++		}
++		got := requireOK(t, runVerb(c, cwd, "", "get", shipped))
++		shadowed, _ := got.Raw["shadowed"].([]any)
++		if len(shadowed) != 1 || shadowed[0].(map[string]any)["text"] != "mine" {
++			t.Errorf("get %s shadowed = %v; want the colliding repository entry with its text", shipped, shadowed)
++		}
++		requireOK(t, runVerb(c, cwd, "", "set", shipped, "--order", "5"))
++		requireOK(t, runVerb(c, cwd, "", "remove", shipped))
++		if got, want := strings.Join(entrySlugs(t, requireOK(t, runVerb(c, cwd, "", "list"))), ","), listedWithShipped(); got != want {
++			t.Errorf("list slugs after remove = %q; want %q", got, want)
++		}
++		requireRefusal(t, runVerb(c, cwd, "", "remove", shipped), "ships with lym")
++	})
++
++	t.Run("MalformedOverrideFileIsWarnedOfAndListStillWorks", func(t *testing.T) {
++		t.Parallel()
++		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++		cwd := primeCwd(h)
++		c := (&recorder{}).cli()
++		setHubOverride(t, h, true)
++		writeFile(t, filepath.Join(fabricengine.BoltDir(h.Path), heddleengine.OverrideFileName), `{"entries": [`)
++
++		listed := requireOK(t, runVerb(c, cwd, "", "list"))
++		if got, want := strings.Join(entrySlugs(t, listed), ","), listedWithShipped(); got != want {
++			t.Errorf("list slugs = %q; want %q", got, want)
++		}
++		warnings, _ := listed.Raw["warnings"].([]any)
++		if len(warnings) != 1 || !strings.Contains(warnings[0].(string), heddleengine.OverrideFileName) {
++			t.Errorf("list warnings = %v; want one naming %s", warnings, heddleengine.OverrideFileName)
++		}
++	})
++
++	t.Run("OverrideVerbs", func(t *testing.T) {
++		t.Parallel()
++		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++		cwd := primeCwd(h)
++		rec := &recorder{}
++		c := rec.cli()
++		shipped := shippedSlugs()[0]
++		overridePath := filepath.Join(fabricengine.BoltDir(h.Path), heddleengine.OverrideFileName)
++
++		requireRefusal(t, runVerb(c, cwd, "t", "set", shipped, "--text-file", "-", "--order", "1", "--targets", "claude-file"), "ships with lym", "--layer lym")
++		requireRefusal(t, runVerb(c, cwd, "", "remove", shipped), "ships with lym")
++		requireRefusal(t, runVerb(c, cwd, "tuned", "set", shipped, "--layer", "lym", "--text-file", "-"), "lym config heddle --set lym_override=true")
++		requireRefusal(t, runVerb(c, cwd, "tuned", "set", shipped, "--layer", "nope", "--text-file", "-"), "--layer lym")
++		if _, err := os.Stat(overridePath); !errors.Is(err, os.ErrNotExist) {
++			t.Errorf("stat %s: %v; want no override saved after refusals", overridePath, err)
++		}
++
++		setHubOverride(t, h, true)
++		requireRefusal(t, runVerb(c, cwd, "tuned", "set", shipped, "--layer", "lym", "--text-file", "-", "--order", "3"), "--text-file only")
++		requireRefusal(t, runVerb(c, cwd, "", "set", shipped, "--layer", "lym"), "--text-file")
++		requireRefusal(t, runVerb(c, cwd, "tuned", "set", "house-rules", "--layer", "lym", "--text-file", "-"), "lym heddle list")
++		if len(rec.syncs) != 0 {
++			t.Errorf("syncs = %d; want none after refusals", len(rec.syncs))
++		}
++
++		requireOK(t, runVerb(c, cwd, "tuned", "set", shipped, "--layer", "lym", "--text-file", "-"))
++		if listed := listedEntry(t, requireOK(t, runVerb(c, cwd, "", "list")), shipped); listed["layer"] != heddleengine.LayerShipped || listed["overridden"] != true {
++			t.Errorf("list entry %v; want layer %s, overridden", listed, heddleengine.LayerShipped)
++		}
++		got := requireOK(t, runVerb(c, cwd, "", "get", shipped))
++		if entry, _ := got.Raw["entry"].(map[string]any); entry["text"] != "tuned" {
++			t.Errorf("get %s = %v; want the override's text", shipped, entry)
++		}
++
++		setHubOverride(t, h, false)
++		if listed := listedEntry(t, requireOK(t, runVerb(c, cwd, "", "list")), shipped); listed["overridden"] != nil {
++			t.Errorf("list entry %v with the setting off; want it not overridden", listed)
++		}
++		requireOK(t, runVerb(c, cwd, "", "remove", shipped, "--layer", "lym"))
++		requireRefusal(t, runVerb(c, cwd, "", "remove", shipped, "--layer", "lym"), "lym heddle list")
++		if len(rec.syncs) != 2 || rec.saves != 0 {
++			t.Errorf("syncs = %d, repository saves = %d; want one sync per override write and no heddle.json save", len(rec.syncs), rec.saves)
++		}
++	})
++
+ 	t.Run("RefusalsSaveAndSyncNothing", func(t *testing.T) {
+ 		t.Parallel()
+ 		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+diff --git a/internal/heddlecli/doc.go b/internal/heddlecli/doc.go
+index 936c3bec..e8d1d3b1 100644
+--- a/internal/heddlecli/doc.go
++++ b/internal/heddlecli/doc.go
+@@ -3,9 +3,13 @@
+ //
+ // # The verbs
+ //
+-// `list` prints every entry in render order with its slug, order and targets, without its text, and `get <slug>` prints one entry in full.
++// `list` prints every entry in render order with its slug, layer, order and targets, without its text: the entries lym ships first, then the repository's, a shipped entry an override replaces marked overridden.
++// An override file that does not load is reported in warnings and ignored.
++// `get <slug>` prints one entry in full, a shipped entry with the text renders use, and lists in shadowed any repository entry that shares its slug.
+ //
+-// `set <slug>` and `remove <slug>` change the store.
++// `set <slug>` and `remove <slug>` change the repository's store, and refuse a new entry under a slug lym ships; an entry the store already holds under one stays open to both.
++// With `--layer lym` they change the hub's override of a shipped entry instead, in its own file beside the store:
++// `set` takes `--text-file` alone and is refused while the hub's heddle.yaml leaves lym_override off, and `remove` drops an override whatever the setting holds.
+ // `set` takes `--text-file <path>` (`-` reads stdin), `--order <n>` and `--targets <a,b>` and changes only the fields given; a new entry needs all three.
+ // Both take the Bolt write lock, load the store, apply the change, save it and release the lock, then start the board's detached Bolt sync, which commits what is dirty under that lock and pushes.
+ // A refused change saves nothing and starts no sync.
+diff --git a/internal/heddlecli/verbs.go b/internal/heddlecli/verbs.go
+index 20c15d02..a000dfe5 100644
+--- a/internal/heddlecli/verbs.go
++++ b/internal/heddlecli/verbs.go
+@@ -10,6 +10,7 @@ import (
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/heddleengine"
+ 	"github.com/Knatte18/loomyard/internal/lock"
+@@ -26,10 +27,43 @@ var operatorAnnotation = map[string]string{clihelp.AudienceAnnotation: clihelp.A
+ 
+ // entryView is the JSON form of an entry the verbs print.
+ type entryView struct {
+-	Slug    string   `json:"slug"`
+-	Order   int      `json:"order"`
+-	Targets []string `json:"targets"`
+-	Text    string   `json:"text,omitempty"`
++	Slug       string   `json:"slug"`
++	Layer      string   `json:"layer"`
++	Overridden bool     `json:"overridden,omitempty"`
++	Order      int      `json:"order"`
++	Targets    []string `json:"targets"`
++	Text       string   `json:"text,omitempty"`
++}
++
++// viewOf returns the view of a layered entry, its text left out.
++func viewOf(entry heddleengine.LayeredEntry) entryView {
++	return entryView{Slug: entry.Slug, Layer: entry.Layer, Overridden: entry.Overridden, Order: entry.Order, Targets: entry.Targets}
++}
++
++// layerFlagUsage is the help text of the --layer flag set and remove share.
++const layerFlagUsage = "the layer to change: empty for the repository's entries, " + heddleengine.OverrideLayer + " for the hub's override of a shipped entry"
++
++// overrideLayer reports whether layer names the lym overrides, refusing any value but empty and heddleengine.OverrideLayer.
++func overrideLayer(layer string) (bool, error) {
++	switch layer {
++	case "":
++		return false, nil
++	case heddleengine.OverrideLayer:
++		return true, nil
++	}
++	return false, fmt.Errorf("heddle: unknown layer %q; way forward: omit --layer for a repository entry, or give --layer %s to override a shipped entry", layer, heddleengine.OverrideLayer)
++}
++
++// requireOverrideOn refuses a new override while the hub's heddle.yaml leaves lym_override off, since every render would ignore it.
++func (c *heddleCLI) requireOverrideOn() error {
++	cfg, err := heddleengine.LoadConfig(configengine.Dirs{Board: c.boltDir})
++	if err != nil {
++		return fmt.Errorf("heddle: %w", err)
++	}
++	if !cfg.LymOverride {
++		return fmt.Errorf("heddle: the hub's heddle.yaml leaves %s off, so renders would ignore the override; way forward: run `lym config heddle --set %s=true`, then this verb again", heddleengine.LymOverrideKey, heddleengine.LymOverrideKey)
++	}
++	return nil
+ }
+ 
+ // fail prints err as the verb's JSON refusal and records exit code 1.
+@@ -42,9 +76,13 @@ func (c *heddleCLI) fail(cmd *cobra.Command, err error) error {
+ func (c *heddleCLI) listCmd() *cobra.Command {
+ 	return &cobra.Command{
+ 		Use:         "list",
+-		Short:       "list every entry in render order with its order and targets",
++		Short:       "list every entry in render order with its layer, order and targets",
+ 		Annotations: operatorAnnotation,
+-		Long: `Prints every entry in render order with its slug, order and targets, without its text.
++		Long: `Prints every entry in render order with its slug, layer, order and targets,
++without its text: the entries lym ships first, layer shipped, then the
++repository's, layer repository. A shipped entry whose text the hub's override
++replaces is marked overridden. An override file that does not load is reported
++in warnings and ignored.
+ 
+ Example:
+   lym heddle list`,
+@@ -53,15 +91,19 @@ Example:
+ 			if clihelp.ShouldAbort(cmd.Context()) {
+ 				return nil
+ 			}
+-			store, err := heddleengine.Load(c.boltDir)
++			layers, err := heddleengine.ReadLayers(c.boltDir)
+ 			if err != nil {
+ 				return c.fail(cmd, err)
+ 			}
+ 			entries := []entryView{}
+-			for _, entry := range store.Ordered() {
+-				entries = append(entries, entryView{Slug: entry.Slug, Order: entry.Order, Targets: entry.Targets})
++			for _, entry := range layers.Ordered() {
++				entries = append(entries, viewOf(entry))
+ 			}
+-			clihelp.SetExit(cmd.Context(), output.Ok(c.out, map[string]any{"entries": entries}))
++			fields := map[string]any{"entries": entries}
++			if layers.OverrideWarning != "" {
++				fields["warnings"] = []string{layers.OverrideWarning}
++			}
++			clihelp.SetExit(cmd.Context(), output.Ok(c.out, fields))
+ 			return nil
+ 		},
+ 	}
+@@ -73,7 +115,10 @@ func (c *heddleCLI) getCmd() *cobra.Command {
+ 		Use:         "get <slug>",
+ 		Short:       "print one entry in full",
+ 		Annotations: operatorAnnotation,
+-		Long: `Prints the entry with the given slug in full, its text included.
++		Long: `Prints the entry with the given slug in full, its layer and text included,
++a shipped entry with the text renders use now. A repository entry that
++shares the slug of a shipped one is printed in shadowed, and an override file
++that does not load is reported in warnings and ignored.
+ 
+ Example:
+   lym heddle get house-rules`,
+@@ -82,17 +127,29 @@ Example:
+ 			if clihelp.ShouldAbort(cmd.Context()) {
+ 				return nil
+ 			}
+-			store, err := heddleengine.Load(c.boltDir)
++			layers, err := heddleengine.ReadLayers(c.boltDir)
+ 			if err != nil {
+ 				return c.fail(cmd, err)
+ 			}
+-			entry, found := store.Get(args[0])
+-			if !found {
++			var views []entryView
++			for _, entry := range layers.Ordered() {
++				if entry.Slug == args[0] {
++					view := viewOf(entry)
++					view.Text = entry.Text
++					views = append(views, view)
++				}
++			}
++			if len(views) == 0 {
+ 				return c.fail(cmd, fmt.Errorf("heddle: no entry %q; way forward: run `lym heddle list` to see the entries", args[0]))
+ 			}
+-			clihelp.SetExit(cmd.Context(), output.Ok(c.out, map[string]any{
+-				"entry": entryView{Slug: entry.Slug, Order: entry.Order, Targets: entry.Targets, Text: entry.Text},
+-			}))
++			fields := map[string]any{"entry": views[0]}
++			if len(views) > 1 {
++				fields["shadowed"] = views[1:]
++			}
++			if layers.OverrideWarning != "" {
++				fields["warnings"] = []string{layers.OverrideWarning}
++			}
++			clihelp.SetExit(cmd.Context(), output.Ok(c.out, fields))
+ 			return nil
+ 		},
+ 	}
+@@ -100,29 +157,42 @@ Example:
+ 
+ // setCmd returns the `heddle set` verb.
+ func (c *heddleCLI) setCmd() *cobra.Command {
+-	var textFile, targets string
++	var textFile, targets, layer string
+ 	var order int
+ 	cmd := &cobra.Command{
+ 		Use:         "set <slug>",
+ 		Short:       "create an entry or change the fields given",
+ 		Annotations: operatorAnnotation,
+-		Long: `Creates the entry with the given slug, or changes the fields given of an
+-existing one. A new entry needs all three flags.
++		Long: `Creates the repository entry with the given slug, or changes the fields given
++of an existing one. A new entry needs all three flags. A new entry under a
++slug lym ships is refused: shipped entries change only with a lym release.
+ 
+   --text-file <path>   the entry's text from a file, or from stdin for -
+   --order <n>          the entry's place in render order
+   --targets <a,b>      the targets the entry is delivered to
++  --layer lym          override the text of the shipped entry with the given
++                       slug instead; it takes --text-file alone, and only a hub
++                       whose heddle.yaml sets lym_override takes it
+ 
+ The change is saved under the Bolt write lock, and the board's detached Bolt
+ sync then commits and pushes it. A refused change saves nothing.
+ 
+-Example:
+-  lym heddle set house-rules --text-file rules.md --order 10 --targets claude-file,claude-prompt`,
++Examples:
++  lym heddle set house-rules --text-file rules.md --order 10 --targets claude-file,claude-prompt
++  lym heddle set lym-batching --layer lym --text-file tuned.md`,
+ 		Args: cobra.ExactArgs(1),
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+ 			if clihelp.ShouldAbort(cmd.Context()) {
+ 				return nil
+ 			}
++			override, err := overrideLayer(layer)
++			if err != nil {
++				return c.fail(cmd, err)
++			}
++			slug := args[0]
++			if override {
++				return c.setOverride(cmd, slug, textFile)
++			}
+ 			var patch heddleengine.Patch
+ 			if cmd.Flags().Changed("text-file") {
+ 				text, err := readText(cmd.InOrStdin(), textFile)
+@@ -141,36 +211,69 @@ Example:
+ 					patch.Targets = []string{}
+ 				}
+ 			}
+-			slug := args[0]
+-			return c.finishWrite(cmd, slug, func(store *heddleengine.Store) error { return store.Set(slug, patch) })
++			return c.finishWrite(cmd, slug, c.repositoryFile(), func(store *heddleengine.Store) error { return store.Set(slug, patch) })
+ 		},
+ 	}
+ 	cmd.Flags().StringVar(&textFile, "text-file", "", "read the entry's text from this file, or from stdin for -")
+ 	cmd.Flags().IntVar(&order, "order", 0, "the entry's place in render order")
+ 	cmd.Flags().StringVar(&targets, "targets", "", "comma-separated targets the entry is delivered to")
++	cmd.Flags().StringVar(&layer, "layer", "", layerFlagUsage)
+ 	return cmd
+ }
+ 
++// setOverride stores the text of textFile as the hub's override of the shipped entry slug.
++// It refuses --order and --targets, a missing --text-file and a hub whose heddle.yaml leaves lym_override off, saving nothing.
++func (c *heddleCLI) setOverride(cmd *cobra.Command, slug, textFile string) error {
++	if cmd.Flags().Changed("order") || cmd.Flags().Changed("targets") {
++		return c.fail(cmd, fmt.Errorf("heddle: --layer %s overrides a shipped entry's text alone, so it takes no --order or --targets; way forward: give --text-file only", heddleengine.OverrideLayer))
++	}
++	if !cmd.Flags().Changed("text-file") {
++		return c.fail(cmd, fmt.Errorf("heddle: --layer %s needs the override's text; way forward: give it with --text-file", heddleengine.OverrideLayer))
++	}
++	if err := c.requireOverrideOn(); err != nil {
++		return c.fail(cmd, err)
++	}
++	text, err := readText(cmd.InOrStdin(), textFile)
++	if err != nil {
++		return c.fail(cmd, err)
++	}
++	return c.finishWrite(cmd, slug, c.overrideFile(), func(overrides *heddleengine.Store) error { return overrides.SetOverride(slug, text) })
++}
++
+ // removeCmd returns the `heddle remove` verb.
+ func (c *heddleCLI) removeCmd() *cobra.Command {
+-	return &cobra.Command{
++	var layer string
++	cmd := &cobra.Command{
+ 		Use:         "remove <slug>",
+ 		Short:       "remove an entry",
+ 		Annotations: operatorAnnotation,
+-		Long: `Removes the entry with the given slug, saves the store under the Bolt write
+-lock, and lets the board's detached Bolt sync commit and push it.
++		Long: `Removes the repository entry with the given slug, saves the store under the
++Bolt write lock, and lets the board's detached Bolt sync commit and push it.
++A slug lym ships is refused unless the repository holds an entry under it.
++With --layer lym it removes the hub's override of
++the shipped entry instead, whatever heddle.yaml's lym_override holds.
+ 
+-Example:
+-  lym heddle remove house-rules`,
++Examples:
++  lym heddle remove house-rules
++  lym heddle remove lym-batching --layer lym`,
+ 		Args: cobra.ExactArgs(1),
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+ 			if clihelp.ShouldAbort(cmd.Context()) {
+ 				return nil
+ 			}
++			override, err := overrideLayer(layer)
++			if err != nil {
++				return c.fail(cmd, err)
++			}
+ 			slug := args[0]
+-			return c.finishWrite(cmd, slug, func(store *heddleengine.Store) error { return store.Remove(slug) })
++			if override {
++				return c.finishWrite(cmd, slug, c.overrideFile(), func(overrides *heddleengine.Store) error { return overrides.RemoveOverride(slug) })
++			}
++			return c.finishWrite(cmd, slug, c.repositoryFile(), func(store *heddleengine.Store) error { return store.Remove(slug) })
+ 		},
+ 	}
++	cmd.Flags().StringVar(&layer, "layer", "", layerFlagUsage)
++	return cmd
+ }
+ 
+ // showCmd returns the `heddle show` verb.
+@@ -253,11 +356,32 @@ Example:
+ 	}
+ }
+ 
+-// finishWrite applies change through write and prints the result for slug.
++// storeFile is a Bolt file a write changes: how it is loaded and saved, and its name.
++type storeFile struct {
++	name string
++	load func(boltDir string) (heddleengine.Store, error)
++	save func(store heddleengine.Store) error
++}
++
++// repositoryFile returns heddle.json, saved through c's save seam.
++func (c *heddleCLI) repositoryFile() storeFile {
++	return storeFile{name: heddleengine.FileName, load: heddleengine.Load, save: c.saveStore}
++}
++
++// overrideFile returns the file of the hub's lym overrides.
++func (c *heddleCLI) overrideFile() storeFile {
++	return storeFile{
++		name: heddleengine.OverrideFileName,
++		load: heddleengine.LoadOverrides,
++		save: func(store heddleengine.Store) error { return heddleengine.SaveOverrides(c.boltDir, store) },
++	}
++}
++
++// finishWrite applies change to file through write and prints the result for slug.
+ // A refusal prints as the verb's error; a sync that did not start prints beside the result.
+-func (c *heddleCLI) finishWrite(cmd *cobra.Command, slug string, change func(*heddleengine.Store) error) error {
++func (c *heddleCLI) finishWrite(cmd *cobra.Command, slug string, file storeFile, change func(*heddleengine.Store) error) error {
+ 	c.syncWarning = ""
+-	if err := c.write(change); err != nil {
++	if err := c.write(file, change); err != nil {
+ 		return c.fail(cmd, err)
+ 	}
+ 	fields := map[string]any{"slug": slug}
+@@ -268,22 +392,22 @@ func (c *heddleCLI) finishWrite(cmd *cobra.Command, slug string, change func(*he
+ 	return nil
+ }
+ 
+-// write applies change to the store under the Bolt write lock and saves it, then starts the board's detached Bolt sync once the lock is released.
++// write applies change to file under the Bolt write lock and saves it, then starts the board's detached Bolt sync once the lock is released.
+ // It pulls and commits nothing in the foreground and touches no worktree.
+ // A change the store refuses saves nothing and starts no sync; a sync that fails to start leaves the saved file in place and sets syncWarning, because the board's own write path ignores that failure the same way.
+-func (c *heddleCLI) write(change func(*heddleengine.Store) error) error {
+-	if err := c.saveLocked(change); err != nil {
++func (c *heddleCLI) write(file storeFile, change func(*heddleengine.Store) error) error {
++	if err := c.saveLocked(file, change); err != nil {
+ 		return err
+ 	}
+ 	if err := c.startSync(); err != nil {
+-		logger.Warn("heddle: the Bolt sync did not start after the save", "error", err)
+-		c.syncWarning = fmt.Sprintf("heddle.json is saved but the Bolt sync did not start (%v); way forward: run `lym board sync` to commit and push it", err)
++		logger.Warn("heddle: the Bolt sync did not start after the save", "file", file.name, "error", err)
++		c.syncWarning = fmt.Sprintf("%s is saved but the Bolt sync did not start (%v); way forward: run `lym board sync` to commit and push it", file.name, err)
+ 	}
+ 	return nil
+ }
+ 
+-// saveLocked loads the store, applies change and saves it, all under the Bolt write lock.
+-func (c *heddleCLI) saveLocked(change func(*heddleengine.Store) error) error {
++// saveLocked loads file, applies change and saves it, all under the Bolt write lock.
++func (c *heddleCLI) saveLocked(file storeFile, change func(*heddleengine.Store) error) error {
+ 	boltLock, acquired, err := lock.AcquireWriteLockWithin(filepath.Join(c.boltDir, fabricengine.BoardWriteLockFile), heddleengine.DefaultBoltLockWait)
+ 	if err != nil {
+ 		return fmt.Errorf("heddle: %w", err)
+@@ -293,14 +417,14 @@ func (c *heddleCLI) saveLocked(change func(*heddleengine.Store) error) error {
+ 	}
+ 	defer func() { _ = boltLock.Release() }()
+ 
+-	store, err := heddleengine.Load(c.boltDir)
++	store, err := file.load(c.boltDir)
+ 	if err != nil {
+ 		return err
+ 	}
+ 	if err := change(&store); err != nil {
+ 		return err
+ 	}
+-	return c.saveStore(store)
++	return file.save(store)
+ }
+ 
+ // readText returns the text of the file at path, or of stdin for the stdin marker.
+diff --git a/internal/heddleengine/config.go b/internal/heddleengine/config.go
+new file mode 100644
+index 00000000..fc7dfb70
+--- /dev/null
++++ b/internal/heddleengine/config.go
+@@ -0,0 +1,58 @@
++// config.go defines heddle.yaml: the Config type, the template and spec accessors, and LoadConfig.
++
++package heddleengine
++
++import (
++	_ "embed"
++	"fmt"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"gopkg.in/yaml.v3"
++)
++
++//go:embed template.yaml
++var configTemplate string
++
++// ConfigTemplate returns the default YAML template for the heddle config module.
++func ConfigTemplate() string {
++	return configTemplate
++}
++
++// configModule is the config module name heddle.yaml is loaded under.
++const configModule = "heddle"
++
++// LymOverrideKey is the heddle.yaml key that switches the hub's lym overrides on.
++const LymOverrideKey = "lym_override"
++
++// Config represents the resolved heddle.yaml configuration.
++type Config struct {
++	// LymOverride reports whether renders use the hub's overrides of shipped entries in place of the shipped texts.
++	LymOverride bool `yaml:"lym_override"`
++}
++
++// ConfigSpec returns the heddle module's layered-load spec.
++// The module is hub-wide, and its one key changes what every worktree of the hub renders, so the local layer refuses it.
++func ConfigSpec() configengine.Spec {
++	return configengine.Spec{
++		Name:     configModule,
++		Template: []byte(ConfigTemplate()),
++		HubWide:  true,
++		Categories: map[string]configengine.Category{
++			LymOverrideKey: configengine.CategoryCrossPair,
++		},
++	}
++}
++
++// LoadConfig loads and unmarshals the heddle module's configuration through the hub-wide layer stack under dirs.
++// A hub whose base file is absent resolves the template, so a render never fails on a hub not yet reconciled.
++func LoadConfig(dirs configengine.Dirs) (Config, error) {
++	resolved, err := configengine.LoadOrTemplate(dirs, ConfigSpec())
++	if err != nil {
++		return Config{}, err
++	}
++	var cfg Config
++	if err := yaml.Unmarshal(resolved, &cfg); err != nil {
++		return Config{}, configengine.MarkInvalid(fmt.Errorf("unmarshal heddle config: %w", err))
++	}
++	return cfg, nil
++}
+diff --git a/internal/heddleengine/doc.go b/internal/heddleengine/doc.go
+index 39903b6f..9a0145a3 100644
+--- a/internal/heddleengine/doc.go
++++ b/internal/heddleengine/doc.go
+@@ -1,7 +1,13 @@
+-// Package heddleengine holds heddle's instruction store and renders it.
+-// The store is heddle.json at the Bolt checkout's root: entries of instruction text, each aimed at targets of a table that is this package's code.
+-// A file target is rendered into a git-excluded file at a worktree's root; a prompt target is read as passages appended to a session's system prompt.
+-// Cards of the plan add the file and prompt rendering, the worktree seam fabric fires, and heddle's Bolt replayer, all over the one store.
++// Package heddleengine holds heddle's instruction layers and renders them.
++// Two layers hold entries of instruction text, each aimed at targets of a table that is this package's code.
++// The shipped layer is lym's own: shipped.json, embedded in the binary, read-only and changed only by a lym release.
++// The repository layer is heddle.json at the Bolt checkout's root, which the `lym heddle` verbs write.
++// A file target is rendered into a git-excluded file at a worktree's root, the shipped entries first under a heading of their own and the repository's after under theirs;
++// a prompt target is read as passages appended to a session's system prompt, the shipped ones first.
++// A hub whose heddle.yaml sets lym_override renders a shipped entry with the text of its override in heddle-lym-override.json beside heddle.json, so lym's own text is tuned there with no build;
++// with the setting off every override is ignored.
++// The override file is not claimed by heddle's Bolt replayer, so fabric replays a commit of it as a plain cherry-pick.
++// Cards of the plan add the file and prompt rendering, the worktree seam fabric fires, and heddle's Bolt replayer over heddle.json.
+ // The package runs no git and is handed every path it reads or writes.
+-// lym's own appended sentences stay in claudeengine; heddle adds only the passages the store holds.
++// lym's appended deny notice and creel sentence stay in claudeengine; heddle adds only the passages its layers hold.
+ package heddleengine
+diff --git a/internal/heddleengine/override.go b/internal/heddleengine/override.go
+new file mode 100644
+index 00000000..317defd2
+--- /dev/null
++++ b/internal/heddleengine/override.go
+@@ -0,0 +1,57 @@
++// override.go holds the lym overrides: a hub's tuning texts for shipped entries, stored in the Bolt checkout beside heddle.json and read only while the hub's lym_override setting is on.
++
++package heddleengine
++
++import (
++	"fmt"
++	"slices"
++	"strings"
++)
++
++// OverrideFileName is the file at the Bolt checkout's root that holds the lym overrides, in heddle.json's format.
++// An override's slug and text are read; its order and targets stay those of the shipped entry it overrides.
++const OverrideFileName = "heddle-lym-override.json"
++
++// OverrideLayer is the --layer value that names the lym overrides on `lym heddle set` and `remove`.
++const OverrideLayer = "lym"
++
++// LoadOverrides reads the lym overrides from the Bolt checkout boltDir, an absent file holding none.
++// It takes no lock; the caller does.
++func LoadOverrides(boltDir string) (Store, error) {
++	return loadFile(boltDir, OverrideFileName)
++}
++
++// SaveOverrides writes the lym overrides as their file in the Bolt checkout boltDir, atomically.
++// It takes no lock; the caller does.
++func SaveOverrides(boltDir string, s Store) error {
++	return saveFile(boltDir, OverrideFileName, s)
++}
++
++// SetOverride stores text as the override of the shipped entry slug.
++// It refuses a slug the shipped layer does not hold and an empty text, changing nothing.
++func (s *Store) SetOverride(slug, text string) error {
++	if _, found := shippedStore.Get(slug); !found {
++		return fmt.Errorf("no shipped entry %q to override; way forward: run `lym heddle list` for the shipped slugs, or drop --layer %s to set a repository entry", slug, OverrideLayer)
++	}
++	if strings.TrimSpace(text) == "" {
++		return fmt.Errorf("the override of %q has an empty text; way forward: give a non-empty --text-file", slug)
++	}
++	entries := slices.Clone(s.Entries)
++	if index := slices.IndexFunc(entries, func(entry Entry) bool { return entry.Slug == slug }); index >= 0 {
++		entries[index].Text = text
++	} else {
++		entries = append(entries, Entry{Slug: slug, Text: text})
++	}
++	s.Entries = entries
++	return nil
++}
++
++// RemoveOverride deletes the override of slug, and refuses a slug no override holds.
++func (s *Store) RemoveOverride(slug string) error {
++	index := slices.IndexFunc(s.Entries, func(entry Entry) bool { return entry.Slug == slug })
++	if index < 0 {
++		return fmt.Errorf("no override of %q; way forward: run `lym heddle list` to see which entries are overridden", slug)
++	}
++	s.Entries = slices.Delete(slices.Clone(s.Entries), index, index+1)
++	return nil
++}
+diff --git a/internal/heddleengine/override_test.go b/internal/heddleengine/override_test.go
+new file mode 100644
+index 00000000..8f1a861a
+--- /dev/null
++++ b/internal/heddleengine/override_test.go
+@@ -0,0 +1,68 @@
++//go:build tier0
++
++// override_test.go drives the lym overrides through their file contract: setting, replacing and removing an override of a shipped entry, and the refusals.
++
++package heddleengine
++
++import (
++	"strings"
++	"testing"
++)
++
++func TestOverrides(t *testing.T) {
++	t.Parallel()
++	shipped := shippedStore.Ordered()[0].Slug
++
++	t.Run("SetRefusals", func(t *testing.T) {
++		t.Parallel()
++		tests := []struct {
++			name string
++			slug string
++			text string
++			want string
++		}{
++			{"UnshippedSlug", "house-rules", "t", "drop --layer " + OverrideLayer},
++			{"EmptyText", shipped, "  \n", "--text-file"},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				var overrides Store
++				err := overrides.SetOverride(tt.slug, tt.text)
++				if err == nil || !strings.Contains(err.Error(), tt.want) {
++					t.Errorf("SetOverride(%q) = %v; want an error naming %q", tt.slug, err, tt.want)
++				}
++				if len(overrides.Entries) != 0 {
++					t.Errorf("overrides changed on a refused SetOverride: %v", overrides.Entries)
++				}
++			})
++		}
++	})
++
++	t.Run("SetReplacesAndRemoveDrops", func(t *testing.T) {
++		t.Parallel()
++		dir := t.TempDir()
++		var overrides Store
++		for _, text := range []string{"first", "second"} {
++			if err := overrides.SetOverride(shipped, text); err != nil {
++				t.Fatalf("SetOverride(%s, %s) = %v", shipped, text, err)
++			}
++		}
++		if err := SaveOverrides(dir, overrides); err != nil {
++			t.Fatalf("SaveOverrides: %v", err)
++		}
++		loaded, err := LoadOverrides(dir)
++		if err != nil {
++			t.Fatalf("LoadOverrides: %v", err)
++		}
++		if len(loaded.Entries) != 1 || loaded.Entries[0].Slug != shipped || loaded.Entries[0].Text != "second" {
++			t.Errorf("LoadOverrides() = %v; want one override of %s holding the second text", loaded.Entries, shipped)
++		}
++		if err := loaded.RemoveOverride(shipped); err != nil || len(loaded.Entries) != 0 {
++			t.Errorf("RemoveOverride(%s) = %v, leaving %v; want none left", shipped, err, loaded.Entries)
++		}
++		if err := loaded.RemoveOverride(shipped); err == nil || !strings.Contains(err.Error(), "lym heddle list") {
++			t.Errorf("RemoveOverride of an absent override = %v; want an error naming lym heddle list", err)
++		}
++	})
++}
+diff --git a/internal/heddleengine/render.go b/internal/heddleengine/render.go
+index e702351a..af030e06 100644
+--- a/internal/heddleengine/render.go
++++ b/internal/heddleengine/render.go
+@@ -57,7 +57,7 @@ type Renderer struct {
+ 	BoltLockWait time.Duration
+ }
+ 
+-// Render writes the file targets of req into its root from the entries of the store.
++// Render writes the file targets of req into its root from the entries of the shipped layer and the store.
+ // It holds the worktree's render lock for the whole read and write, so two renders of one worktree serialize and the last one's text stands whole.
+ // A target with no entry loses its marked file; a target the exclude list does not cover, or whose file lacks the marker, is left alone with a warning.
+ // The lock wait running out fails the render before it writes anything.
+@@ -73,11 +73,14 @@ func (r Renderer) Render(req RenderRequest) (Report, error) {
+ 	}
+ 	defer func() { _ = renderLock.Release() }()
+ 
+-	store, err := r.read(req.BoltDir)
++	layers, err := r.read(req.BoltDir)
+ 	if err != nil {
+ 		return report, err
+ 	}
+-	entries := store.Ordered()
++	if layers.OverrideWarning != "" {
++		report.warn(layers.OverrideWarning)
++	}
++	entries := layers.Ordered()
+ 
+ 	tempDir := filepath.Join(req.Root, tempDirName)
+ 	blocked, err := tempDirBlocked(tempDir)
+@@ -141,22 +144,22 @@ func (r *Report) warn(text string) {
+ 	}
+ }
+ 
+-// read loads the store from boltDir while holding the Bolt write lock, so it sees the old store or the new, never an absent file in mid-move.
++// read loads the layers from boltDir while holding the Bolt write lock, so it sees the old store or the new, never an absent file in mid-move.
+ // The lock wait running out is an error naming the render verb as the way to run it again.
+-func (r Renderer) read(boltDir string) (Store, error) {
++func (r Renderer) read(boltDir string) (Layers, error) {
+ 	wait := r.BoltLockWait
+ 	if wait == 0 {
+ 		wait = DefaultBoltLockWait
+ 	}
+ 	boltLock, acquired, err := lock.AcquireWriteLockWithin(filepath.Join(boltDir, fabricengine.BoardWriteLockFile), wait)
+ 	if err != nil {
+-		return Store{}, err
++		return Layers{}, err
+ 	}
+ 	if !acquired {
+-		return Store{}, fmt.Errorf("the Bolt checkout stayed locked for %s, so %s was not read; way forward: run `%s` again", wait, FileName, renderVerb)
++		return Layers{}, fmt.Errorf("the Bolt checkout stayed locked for %s, so %s was not read; way forward: run `%s` again", wait, FileName, renderVerb)
+ 	}
+ 	defer func() { _ = boltLock.Release() }()
+-	return Load(boltDir)
++	return ReadLayers(boltDir)
+ }
+ 
+ // tempDirBlocked reports whether dir is a file, or a directory holding anything but files that end in tempSuffix.
+@@ -218,16 +221,31 @@ func removeTempDir(dir string) error {
+ 	return nil
+ }
+ 
+-// fileText builds the text a file target renders to at root from the ordered entries that name it, and reports false when none does.
++// fileText builds the text a file target renders to at root from the layered entries that name it, and reports false when none does.
+ // It opens with Marker.
++// The shipped layer's texts follow under their own heading, then the repository's, under a heading of their own only when shipped texts precede them.
+ // The claude-file target imports the AGENTS.md files the root holds when the root holds no CLAUDE.md, and the codex-file target opens with the root's AGENTS.md.
+-func fileText(target Target, root string, entries []Entry) (string, bool, error) {
+-	var texts []string
++func fileText(target Target, root string, entries []LayeredEntry) (string, bool, error) {
++	var shipped, repository []string
+ 	for _, entry := range entries {
+-		if slices.Contains(entry.Targets, target.Name) {
+-			texts = append(texts, strings.Trim(entry.Text, "\n"))
++		if !slices.Contains(entry.Targets, target.Name) {
++			continue
++		}
++		text := strings.Trim(entry.Text, "\n")
++		if entry.Layer == LayerShipped {
++			shipped = append(shipped, text)
++		} else {
++			repository = append(repository, text)
++		}
++	}
++	var texts []string
++	if len(shipped) > 0 {
++		texts = append(append(texts, shippedHeading), shipped...)
++		if len(repository) > 0 {
++			texts = append(texts, repositoryHeading)
+ 		}
+ 	}
++	texts = append(texts, repository...)
+ 	if len(texts) == 0 {
+ 		return "", false, nil
+ 	}
+@@ -263,41 +281,41 @@ func fileExists(path string) bool {
+ 	return err == nil
+ }
+ 
+-// Show returns the text the named target renders to now for root, and writes nothing.
++// Show returns the text the named target renders to now for root, from the shipped layer and the store, and writes nothing.
+ // A prompt target gives its passages joined by blank lines, and a target with no entry gives no text.
+ func (r Renderer) Show(boltDir, target, root string) (string, error) {
+ 	named, ok := LookupTarget(target)
+ 	if !ok {
+ 		return "", fmt.Errorf("unknown target %q; way forward: use one of %s", target, strings.Join(TargetNames(), ", "))
+ 	}
+-	store, err := r.read(boltDir)
++	layers, err := r.read(boltDir)
+ 	if err != nil {
+ 		return "", err
+ 	}
+ 	if named.Delivery == DeliveryPrompt {
+-		return strings.Join(passagesOf(store, named.Name), "\n\n"), nil
++		return strings.Join(passagesOf(layers, named.Name), "\n\n"), nil
+ 	}
+-	text, _, err := fileText(named, root, store.Ordered())
++	text, _, err := fileText(named, root, layers.Ordered())
+ 	return text, err
+ }
+ 
+-// Passages returns the texts of the entries aimed at engine's prompt target in order, and none for an engine with no prompt target.
++// Passages returns the texts of the entries aimed at engine's prompt target, the shipped layer's first, each layer in order, and none for an engine with no prompt target.
+ func (r Renderer) Passages(boltDir, engine string) ([]string, error) {
+ 	named, ok := LookupTarget(engine + "-prompt")
+ 	if !ok || named.Delivery != DeliveryPrompt {
+ 		return nil, nil
+ 	}
+-	store, err := r.read(boltDir)
++	layers, err := r.read(boltDir)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	return passagesOf(store, named.Name), nil
++	return passagesOf(layers, named.Name), nil
+ }
+ 
+-// passagesOf returns the texts of the entries that name target, in order.
+-func passagesOf(store Store, target string) []string {
++// passagesOf returns the texts of the layered entries that name target, in render order.
++func passagesOf(layers Layers, target string) []string {
+ 	var passages []string
+-	for _, entry := range store.Ordered() {
++	for _, entry := range layers.Ordered() {
+ 		if slices.Contains(entry.Targets, target) {
+ 			passages = append(passages, strings.Trim(entry.Text, "\n"))
+ 		}
+diff --git a/internal/heddleengine/render_test.go b/internal/heddleengine/render_test.go
+index 3dc69cd2..45d619ae 100644
+--- a/internal/heddleengine/render_test.go
++++ b/internal/heddleengine/render_test.go
+@@ -12,6 +12,7 @@ import (
+ 	"testing"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
+@@ -69,6 +70,36 @@ func (f renderFixture) rootHas(rel string) bool {
+ 	return err == nil
+ }
+ 
++// claudeFileWant returns the CLAUDE.local.md a render writes: the marker, imports when non-empty, the shipped layer's section, then the repository's texts under their heading when any are given.
++func claudeFileWant(imports string, texts ...string) string {
++	parts := []string{Marker}
++	if imports != "" {
++		parts = append(parts, imports)
++	}
++	parts = append(parts, shippedHeading)
++	for _, entry := range shippedStore.Ordered() {
++		if slices.Contains(entry.Targets, "claude-file") {
++			parts = append(parts, entry.Text)
++		}
++	}
++	if len(texts) > 0 {
++		parts = append(append(parts, repositoryHeading), texts...)
++	}
++	return strings.Join(parts, "\n\n") + "\n"
++}
++
++// writeHeddleConfig writes content as the hub's heddle.yaml in the Bolt checkout bolt.
++func writeHeddleConfig(t *testing.T, bolt, content string) {
++	t.Helper()
++	path := configengine.ConfigFile(bolt, configModule)
++	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++		t.Fatal(err)
++	}
++	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
++		t.Fatal(err)
++	}
++}
++
+ // entryFor builds an entry aimed at one or more targets.
+ func entryFor(slug, text string, order int, targets ...string) Entry {
+ 	return Entry{Slug: slug, Text: text, Order: order, Targets: targets}
+@@ -124,6 +155,69 @@ func mustRender(t *testing.T, f renderFixture, only ...string) Report {
+ 	return report
+ }
+ 
++// useShippedLayer replaces the package's shipped layer with the entries in json until the test ends.
++func useShippedLayer(t *testing.T, json string) {
++	t.Helper()
++	previous := shippedStore
++	shippedStore = decodeShipped([]byte(json))
++	t.Cleanup(func() { shippedStore = previous })
++}
++
++// TestShowAndPassagesReadTheShippedLayerFirst is not parallel: it replaces shippedStore, which every render reads.
++func TestShowAndPassagesReadTheShippedLayerFirst(t *testing.T) {
++	useShippedLayer(t, `{"entries": [
++  {"slug": "ship-file", "text": "shipped file text", "order": 10, "targets": ["claude-file"]},
++  {"slug": "ship-prompt", "text": "shipped prompt", "order": 5, "targets": ["claude-prompt"]}
++]}`)
++	repository := Store{Entries: []Entry{entryFor("mine", "repository prompt", 1, "claude-prompt")}}
++
++	tests := []struct {
++		name         string
++		config       string
++		override     string
++		wantPrompt   string
++		wantFileText string
++	}{
++		{"NoOverride", "", "", "shipped prompt\n\nrepository prompt", "shipped file text"},
++		{"OverrideOn", LymOverrideKey + ": true\n", "tuned prompt", "tuned prompt\n\nrepository prompt", "tuned file text"},
++		{"OverrideOff", LymOverrideKey + ": false\n", "tuned prompt", "shipped prompt\n\nrepository prompt", "shipped file text"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			f := newRenderFixture(t, repository)
++			if tt.config != "" {
++				writeHeddleConfig(t, f.bolt, tt.config)
++			}
++			if tt.override != "" {
++				var overrides Store
++				if err := overrides.SetOverride("ship-prompt", tt.override); err != nil {
++					t.Fatal(err)
++				}
++				if err := overrides.SetOverride("ship-file", strings.Replace(tt.override, "prompt", "file text", 1)); err != nil {
++					t.Fatal(err)
++				}
++				if err := SaveOverrides(f.bolt, overrides); err != nil {
++					t.Fatal(err)
++				}
++			}
++			r := Renderer{}
++
++			shown, err := r.Show(f.bolt, "claude-prompt", f.root)
++			if err != nil || shown != tt.wantPrompt {
++				t.Errorf("Show(claude-prompt) = %q, %v; want %q", shown, err, tt.wantPrompt)
++			}
++			passages, err := r.Passages(f.bolt, "claude")
++			if want := strings.Split(tt.wantPrompt, "\n\n"); err != nil || !slices.Equal(passages, want) {
++				t.Errorf("Passages(claude) = %q, %v; want %q", passages, err, want)
++			}
++			shown, err = r.Show(f.bolt, "claude-file", f.root)
++			if want := strings.Join([]string{Marker, shippedHeading, tt.wantFileText}, "\n\n") + "\n"; err != nil || shown != want {
++				t.Errorf("Show(claude-file) = %q, %v; want %q", shown, err, want)
++			}
++		})
++	}
++}
++
+ func TestRender(t *testing.T) {
+ 	t.Parallel()
+ 
+@@ -136,7 +230,7 @@ func TestRender(t *testing.T) {
+ 		t.Parallel()
+ 		f := newRenderFixture(t, claudeStore)
+ 		report := mustRender(t, f)
+-		if want := Marker + "\n\none\n\ntwo\n"; f.readRoot(t, "CLAUDE.local.md") != want {
++		if want := claudeFileWant("", "one", "two"); f.readRoot(t, "CLAUDE.local.md") != want {
+ 			t.Errorf("CLAUDE.local.md = %q; want %q", f.readRoot(t, "CLAUDE.local.md"), want)
+ 		}
+ 		if !slices.Equal(report.Written, []string{"CLAUDE.local.md"}) || len(report.Warnings) != 0 {
+@@ -154,9 +248,9 @@ func TestRender(t *testing.T) {
+ 			files []string
+ 			want  string
+ 		}{
+-			{"RootAgents", []string{"AGENTS.md"}, "@AGENTS.md\n\n"},
+-			{"ClaudeDirAgents", []string{".claude/AGENTS.md"}, "@.claude/AGENTS.md\n\n"},
+-			{"BothAgents", []string{"AGENTS.md", ".claude/AGENTS.md"}, "@AGENTS.md\n@.claude/AGENTS.md\n\n"},
++			{"RootAgents", []string{"AGENTS.md"}, "@AGENTS.md"},
++			{"ClaudeDirAgents", []string{".claude/AGENTS.md"}, "@.claude/AGENTS.md"},
++			{"BothAgents", []string{"AGENTS.md", ".claude/AGENTS.md"}, "@AGENTS.md\n@.claude/AGENTS.md"},
+ 			{"RootClaude", []string{"AGENTS.md", "CLAUDE.md"}, ""},
+ 			{"ClaudeDirClaude", []string{"AGENTS.md", ".claude/CLAUDE.md"}, ""},
+ 		}
+@@ -168,7 +262,7 @@ func TestRender(t *testing.T) {
+ 					f.writeRoot(t, rel, "base\n")
+ 				}
+ 				mustRender(t, f)
+-				if want := Marker + "\n\n" + tt.want + "text\n"; f.readRoot(t, "CLAUDE.local.md") != want {
++				if want := claudeFileWant(tt.want, "text"); f.readRoot(t, "CLAUDE.local.md") != want {
+ 					t.Errorf("CLAUDE.local.md = %q; want %q", f.readRoot(t, "CLAUDE.local.md"), want)
+ 				}
+ 			})
+@@ -183,18 +277,136 @@ func TestRender(t *testing.T) {
+ 		if want := Marker + "\n\nrepository rules\n\ncodex text\n"; f.readRoot(t, "AGENTS.override.md") != want {
+ 			t.Errorf("AGENTS.override.md = %q; want %q", f.readRoot(t, "AGENTS.override.md"), want)
+ 		}
+-		if f.rootHas("CLAUDE.local.md") {
+-			t.Error("CLAUDE.local.md written with no claude-file entry")
++	})
++
++	t.Run("ClaudeFileHoldsTheShippedLayerWithNoEntry", func(t *testing.T) {
++		t.Parallel()
++		f := newRenderFixture(t, Store{})
++		report := mustRender(t, f)
++		if want := claudeFileWant(""); f.readRoot(t, "CLAUDE.local.md") != want {
++			t.Errorf("CLAUDE.local.md = %q; want %q", f.readRoot(t, "CLAUDE.local.md"), want)
++		}
++		if !slices.Equal(report.Written, []string{"CLAUDE.local.md"}) || f.rootHas("AGENTS.override.md") {
++			t.Errorf("report = %+v; want only CLAUDE.local.md written", report)
++		}
++	})
++
++	t.Run("RepositoryEntryUnderAShippedSlugRendersUnderTheRepositoryHeading", func(t *testing.T) {
++		t.Parallel()
++		f := newRenderFixture(t, Store{Entries: []Entry{entryFor(shippedStore.Ordered()[0].Slug, "mine", 1, "claude-file")}})
++		mustRender(t, f)
++		if want := claudeFileWant("", "mine"); f.readRoot(t, "CLAUDE.local.md") != want {
++			t.Errorf("CLAUDE.local.md = %q; want %q", f.readRoot(t, "CLAUDE.local.md"), want)
++		}
++	})
++
++	t.Run("OverrideReplacesTheShippedTextOnlyWhileTheSettingIsOn", func(t *testing.T) {
++		t.Parallel()
++		shipped := shippedStore.Ordered()[0]
++		tests := []struct {
++			name         string
++			config       string
++			wantOverride bool
++		}{
++			{"SettingOn", LymOverrideKey + ": true\n", true},
++			{"SettingOff", LymOverrideKey + ": false\n", false},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				f := newRenderFixture(t, Store{})
++				writeHeddleConfig(t, f.bolt, tt.config)
++				var overrides Store
++				if err := overrides.SetOverride(shipped.Slug, "tuned text"); err != nil {
++					t.Fatal(err)
++				}
++				if err := SaveOverrides(f.bolt, overrides); err != nil {
++					t.Fatal(err)
++				}
++				mustRender(t, f)
++				want := claudeFileWant("")
++				if tt.wantOverride {
++					want = strings.Replace(want, shipped.Text, "tuned text", 1)
++				}
++				if got := f.readRoot(t, "CLAUDE.local.md"); got != want {
++					t.Errorf("CLAUDE.local.md = %q; want %q", got, want)
++				}
++			})
++		}
++	})
++
++	t.Run("OverrideWithoutEffectLeavesTheShippedText", func(t *testing.T) {
++		t.Parallel()
++		tests := []struct {
++			name   string
++			config string
++			slug   string
++		}{
++			{"NoHeddleConfigDefaultsOff", "", shippedStore.Ordered()[0].Slug},
++			{"StaleOverrideOfAnUnshippedSlug", LymOverrideKey + ": true\n", "no-longer-shipped"},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				f := newRenderFixture(t, Store{})
++				if tt.config != "" {
++					writeHeddleConfig(t, f.bolt, tt.config)
++				}
++				if err := SaveOverrides(f.bolt, Store{Entries: []Entry{{Slug: tt.slug, Text: "tuned text"}}}); err != nil {
++					t.Fatal(err)
++				}
++				report := mustRender(t, f)
++				if want := claudeFileWant(""); f.readRoot(t, "CLAUDE.local.md") != want {
++					t.Errorf("CLAUDE.local.md = %q; want %q", f.readRoot(t, "CLAUDE.local.md"), want)
++				}
++				if len(report.Warnings) != 0 {
++					t.Errorf("warnings = %v; want none", report.Warnings)
++				}
++			})
++		}
++	})
++
++	t.Run("UnusableOverrideFileLeavesTheShippedTextStanding", func(t *testing.T) {
++		t.Parallel()
++		shipped := shippedStore.Ordered()[0]
++		tests := []struct {
++			name        string
++			file        string
++			wantWarning bool
++		}{
++			{"MalformedJSON", `{"entries": [`, true},
++			{"BlankText", `{"entries": [{"slug": "` + shipped.Slug + `", "text": "  \n"}]}`, false},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				f := newRenderFixture(t, claudeStore)
++				writeHeddleConfig(t, f.bolt, LymOverrideKey+": true\n")
++				if err := os.WriteFile(filepath.Join(f.bolt, OverrideFileName), []byte(tt.file), 0o644); err != nil {
++					t.Fatal(err)
++				}
++				report := mustRender(t, f)
++				if want := claudeFileWant("", "one", "two"); f.readRoot(t, "CLAUDE.local.md") != want {
++					t.Errorf("CLAUDE.local.md = %q; want %q", f.readRoot(t, "CLAUDE.local.md"), want)
++				}
++				if tt.wantWarning {
++					if len(report.Warnings) != 1 || !strings.Contains(report.Warnings[0], OverrideFileName) {
++						t.Errorf("warnings = %v; want one naming %s", report.Warnings, OverrideFileName)
++					}
++				} else if len(report.Warnings) != 0 {
++					t.Errorf("warnings = %v; want none", report.Warnings)
++				}
++			})
+ 		}
+ 	})
+ 
+ 	t.Run("StaleMarkedRenderIsRemovedEvenOffExcluded", func(t *testing.T) {
+ 		t.Parallel()
+-		f := newRenderFixture(t, Store{Entries: []Entry{entryFor("c", "codex text", 1, "codex-file")}})
++		f := newRenderFixture(t, Store{})
+ 		f.excluded = nil
+-		f.writeRoot(t, "CLAUDE.local.md", Marker+"\n\nold\n")
++		f.writeRoot(t, "AGENTS.override.md", Marker+"\n\nold\n")
+ 		report := mustRender(t, f)
+-		if f.rootHas("CLAUDE.local.md") || !slices.Equal(report.Removed, []string{"CLAUDE.local.md"}) {
++		if f.rootHas("AGENTS.override.md") || !slices.Equal(report.Removed, []string{"AGENTS.override.md"}) {
+ 			t.Errorf("stale render kept or not reported: removed %v", report.Removed)
+ 		}
+ 	})
+@@ -326,7 +538,7 @@ func TestRender(t *testing.T) {
+ 			t.Fatal(err)
+ 		}
+ 		requireFinished(t, done)
+-		if want := Marker + "\n\none\n\ntwo\n"; f.readRoot(t, "CLAUDE.local.md") != want {
++		if want := claudeFileWant("", "one", "two"); f.readRoot(t, "CLAUDE.local.md") != want {
+ 			t.Errorf("CLAUDE.local.md = %q; want the new store's text", f.readRoot(t, "CLAUDE.local.md"))
+ 		}
+ 	})
+@@ -365,7 +577,7 @@ func TestRender(t *testing.T) {
+ 		}})
+ 		r := Renderer{}
+ 		shown, err := r.Show(f.bolt, "claude-file", f.root)
+-		if err != nil || shown != Marker+"\n\nfile text\n" {
++		if err != nil || shown != claudeFileWant("", "file text") {
+ 			t.Errorf("Show(claude-file) = %q, %v", shown, err)
+ 		}
+ 		shown, err = r.Show(f.bolt, "claude-prompt", f.root)
+diff --git a/internal/heddleengine/replayer.go b/internal/heddleengine/replayer.go
+index 326814f3..02f0503d 100644
+--- a/internal/heddleengine/replayer.go
++++ b/internal/heddleengine/replayer.go
+@@ -21,6 +21,7 @@ var _ fabricengine.BoltReplayer = Replayer{}
+ func (Replayer) Name() string { return "heddle" }
+ 
+ // Claims reports whether path, a Bolt-root-relative slash path, is the store file.
++// The lym override file is left unclaimed, since its entries carry no order or targets for the by-entry merge.
+ func (Replayer) Claims(path string) bool { return path == FileName }
+ 
+ // entryFields is the merge's table over Entry, keyed by slug.
+diff --git a/internal/heddleengine/replayer_test.go b/internal/heddleengine/replayer_test.go
+index 16ee1642..9d969740 100644
+--- a/internal/heddleengine/replayer_test.go
++++ b/internal/heddleengine/replayer_test.go
+@@ -60,8 +60,8 @@ func TestReplayer(t *testing.T) {
+ 	t.Run("NameAndClaims", func(t *testing.T) {
+ 		t.Parallel()
+ 		r := Replayer{}
+-		if r.Name() != "heddle" || !r.Claims("heddle.json") || r.Claims("board.json") || r.Claims("sub/heddle.json") {
+-			t.Error("Replayer must be named heddle and claim exactly heddle.json at the root")
++		if r.Name() != "heddle" || !r.Claims("heddle.json") || r.Claims("board.json") || r.Claims("sub/heddle.json") || r.Claims(OverrideFileName) {
++			t.Error("Replayer must be named heddle and claim exactly heddle.json at the root, leaving the override file unclaimed")
+ 		}
+ 		if _, isLedger := any(r).(fabricengine.RunLedger); isLedger {
+ 			t.Error("Replayer is a run ledger")
+diff --git a/internal/heddleengine/shipped.go b/internal/heddleengine/shipped.go
+new file mode 100644
+index 00000000..8847793e
+--- /dev/null
++++ b/internal/heddleengine/shipped.go
+@@ -0,0 +1,117 @@
++// shipped.go holds the shipped layer: lym's own instruction entries, embedded in the binary in heddle.json's format, and the layered read that sets them, with any lym override in force, before a repository's entries.
++
++package heddleengine
++
++import (
++	_ "embed"
++	"fmt"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++)
++
++// The layers an entry comes from.
++const (
++	// LayerShipped is the read-only layer lym ships in its binary, changed only by a lym release.
++	LayerShipped = "shipped"
++	// LayerRepository is the repository's own layer, heddle.json in the Bolt checkout.
++	LayerRepository = "repository"
++)
++
++// Headings open the two sections of a file target both layers write to, so the repository's text stays apart from lym's.
++const (
++	// shippedHeading opens the shipped layer's section.
++	shippedHeading = "# LoomYard's own instructions"
++	// repositoryHeading opens the repository layer's section when a shipped section precedes it.
++	repositoryHeading = "# This repository's instructions"
++)
++
++//go:embed shipped.json
++var shippedJSON []byte
++
++// shippedStore is the shipped layer, decoded and checked once at package load.
++var shippedStore = decodeShipped(shippedJSON)
++
++// decodeShipped decodes the embedded shipped layer and panics when it does not decode, an entry fails ValidateEntry or two entries share a slug, since a malformed shipped layer is a defect of the lym build itself.
++func decodeShipped(data []byte) Store {
++	store, err := decodeBytes(data)
++	if err != nil {
++		panic(fmt.Sprintf("heddleengine: the shipped layer does not decode: %v", err))
++	}
++	seen := map[string]bool{}
++	for _, entry := range store.Entries {
++		if err := ValidateEntry(entry); err != nil {
++			panic(fmt.Sprintf("heddleengine: the shipped layer holds an invalid entry: %v", err))
++		}
++		if seen[entry.Slug] {
++			panic(fmt.Sprintf("heddleengine: the shipped layer holds the slug %q twice", entry.Slug))
++		}
++		seen[entry.Slug] = true
++	}
++	return store
++}
++
++// Layers is what a render reads besides the shipped layer: the repository's store, and the lym overrides in force, none while the hub's lym_override setting is off.
++// OverrideWarning is set when the setting is on but the override file did not load, in which case Overrides is empty and the shipped texts stand.
++type Layers struct {
++	Repository      Store
++	Overrides       Store
++	OverrideWarning string
++}
++
++// LayeredEntry is an entry with the layer it comes from.
++// Overridden reports whether its text is a lym override's in place of the shipped one.
++type LayeredEntry struct {
++	Entry
++	Layer      string
++	Overridden bool
++}
++
++// Ordered returns the shipped layer's entries in order, each carrying the text of its override when Overrides holds one that is not blank, then the repository's entries in order, each marked with its layer.
++// This is the render order of every target.
++func (l Layers) Ordered() []LayeredEntry {
++	var layered []LayeredEntry
++	for _, entry := range shippedStore.Ordered() {
++		item := LayeredEntry{Entry: entry, Layer: LayerShipped}
++		if override, found := l.Overrides.Get(entry.Slug); found && strings.TrimSpace(override.Text) != "" {
++			item.Text = override.Text
++			item.Overridden = true
++		}
++		layered = append(layered, item)
++	}
++	for _, entry := range l.Repository.Ordered() {
++		layered = append(layered, LayeredEntry{Entry: entry, Layer: LayerRepository})
++	}
++	return layered
++}
++
++// ReadLayers loads the repository's store from the Bolt checkout boltDir, and the lym overrides when the hub's heddle.yaml sets lym_override.
++// An override file that does not load leaves the overrides empty and sets OverrideWarning, since the setting only tunes lym's own text and must not stop the repository's entries from reading.
++// It takes no lock; the caller does.
++func ReadLayers(boltDir string) (Layers, error) {
++	repository, err := Load(boltDir)
++	if err != nil {
++		return Layers{}, err
++	}
++	cfg, err := LoadConfig(configengine.Dirs{Board: boltDir})
++	if err != nil {
++		return Layers{}, err
++	}
++	layers := Layers{Repository: repository}
++	if cfg.LymOverride {
++		if layers.Overrides, err = LoadOverrides(boltDir); err != nil {
++			layers.Overrides = Store{}
++			layers.OverrideWarning = fmt.Sprintf("the lym overrides are ignored and the shipped texts stand: %v", err)
++		}
++	}
++	return layers, nil
++}
++
++// refuseShipped refuses a new repository entry under slug when the shipped layer holds it, naming the way forward.
++// The caller asks it only for a slug the repository store holds no entry under, so an entry that collides with a shipped slug stays open to change and removal.
++func refuseShipped(slug string) error {
++	if _, found := shippedStore.Get(slug); found {
++		return fmt.Errorf("entry %q ships with lym and is read-only, so no repository entry can be created under it; way forward: give the new repository entry another slug, or tune the shipped text with `lym heddle set %s --layer %s` in a hub whose heddle.yaml sets %s", slug, slug, OverrideLayer, LymOverrideKey)
++	}
++	return nil
++}
+diff --git a/internal/heddleengine/shipped.json b/internal/heddleengine/shipped.json
+new file mode 100644
+index 00000000..4c5c72ad
+--- /dev/null
++++ b/internal/heddleengine/shipped.json
+@@ -0,0 +1,12 @@
++{
++  "entries": [
++    {
++      "slug": "lym-batching",
++      "text": "Request every call whose arguments you already know in one message, and read what you need before you edit; wait for a result only to choose the next call.",
++      "order": 10,
++      "targets": [
++        "claude-file"
++      ]
++    }
++  ]
++}
+diff --git a/internal/heddleengine/shipped_test.go b/internal/heddleengine/shipped_test.go
+new file mode 100644
+index 00000000..eb4f7679
+--- /dev/null
++++ b/internal/heddleengine/shipped_test.go
+@@ -0,0 +1,45 @@
++//go:build tier0
++
++// shipped_test.go drives the shipped layer's decoding checks.
++
++package heddleengine
++
++import (
++	"fmt"
++	"strings"
++	"testing"
++)
++
++// recoverPanic returns the message decodeShipped panicked with on data, or "" when it did not panic.
++func recoverPanic(data string) (message string) {
++	defer func() {
++		if recovered := recover(); recovered != nil {
++			message = fmt.Sprint(recovered)
++		}
++	}()
++	decodeShipped([]byte(data))
++	return ""
++}
++
++func TestDecodeShipped(t *testing.T) {
++	t.Parallel()
++	tests := []struct {
++		name string
++		data string
++		want string
++	}{
++		{"MalformedJSON", `{"entries": [`, "does not decode"},
++		{"InvalidEntry", `{"entries": [{"slug": "a", "text": "t", "order": 1, "targets": []}]}`, "invalid entry"},
++		{"DuplicateSlug", `{"entries": [
++			{"slug": "a", "text": "t", "order": 1, "targets": ["claude-file"]},
++			{"slug": "a", "text": "u", "order": 2, "targets": ["claude-file"]}]}`, `"a" twice`},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := recoverPanic(tt.data); !strings.Contains(got, tt.want) {
++				t.Errorf("decodeShipped panicked with %q; want a panic naming %q", got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/heddleengine/store.go b/internal/heddleengine/store.go
+index 4b8f53ac..b26c51ca 100644
+--- a/internal/heddleengine/store.go
++++ b/internal/heddleengine/store.go
+@@ -181,16 +181,21 @@ func decodeBytes(data []byte) (Store, error) {
+ // Load reads heddle.json from the Bolt checkout boltDir, an absent file holding no entry.
+ // It takes no lock; the caller does.
+ func Load(boltDir string) (Store, error) {
+-	data, err := os.ReadFile(filepath.Join(boltDir, FileName))
++	return loadFile(boltDir, FileName)
++}
++
++// loadFile reads the store file name from boltDir, an absent file holding no entry.
++func loadFile(boltDir, name string) (Store, error) {
++	data, err := os.ReadFile(filepath.Join(boltDir, name))
+ 	if errors.Is(err, os.ErrNotExist) {
+ 		return Store{}, nil
+ 	}
+ 	if err != nil {
+-		return Store{}, fmt.Errorf("read %s: %w", FileName, err)
++		return Store{}, fmt.Errorf("read %s: %w", name, err)
+ 	}
+ 	store, err := decodeBytes(data)
+ 	if err != nil {
+-		return Store{}, fmt.Errorf("%s does not decode: %w; way forward: restore the last committed file with `git -C %s checkout HEAD -- %s`, or an earlier commit found with `git -C %s log -- %s`", FileName, err, boltDir, FileName, boltDir, FileName)
++		return Store{}, fmt.Errorf("%s does not decode: %w; way forward: restore the last committed file with `git -C %s checkout HEAD -- %s`, or an earlier commit found with `git -C %s log -- %s`", name, err, boltDir, name, boltDir, name)
+ 	}
+ 	return store, nil
+ }
+@@ -198,11 +203,16 @@ func Load(boltDir string) (Store, error) {
+ // Save writes s as heddle.json in the Bolt checkout boltDir, indented and ending in a newline, atomically.
+ // It takes no lock; the caller does.
+ func Save(boltDir string, s Store) error {
++	return saveFile(boltDir, FileName, s)
++}
++
++// saveFile writes s as the store file name in boltDir, indented and ending in a newline, atomically.
++func saveFile(boltDir, name string, s Store) error {
+ 	data, err := json.MarshalIndent(s, "", "  ")
+ 	if err != nil {
+-		return fmt.Errorf("encode %s: %w", FileName, err)
++		return fmt.Errorf("encode %s: %w", name, err)
+ 	}
+-	return fsx.AtomicWrite(boltDir, FileName, string(data)+"\n")
++	return fsx.AtomicWrite(boltDir, name, string(data)+"\n")
+ }
+ 
+ // Ordered returns the entries by ascending order, a tie broken by slug.
+@@ -235,13 +245,15 @@ type Patch struct {
+ }
+ 
+ // Set updates the entry with slug by the fields p gives, or creates it, which needs all three fields.
+-// The result must pass ValidateEntry or nothing changes.
++// The result must pass ValidateEntry or nothing changes, and a new entry under a slug the shipped layer holds is refused.
+ func (s *Store) Set(slug string, p Patch) error {
+ 	index := slices.IndexFunc(s.Entries, func(entry Entry) bool { return entry.Slug == slug })
+ 	candidate := Entry{Slug: slug}
+ 	if index >= 0 {
+ 		candidate = s.Entries[index]
+ 		candidate.Targets = slices.Clone(candidate.Targets)
++	} else if err := refuseShipped(slug); err != nil {
++		return err
+ 	} else if p.Text == nil || p.Order == nil || p.Targets == nil {
+ 		return fmt.Errorf("entry %q is new, so it needs %s; way forward: give them all in the same call", slug, missingFlags(p))
+ 	}
+@@ -283,9 +295,13 @@ func missingFlags(p Patch) string {
+ }
+ 
+ // Remove deletes the entry with slug, and refuses a slug the store does not hold.
++// A slug the shipped layer holds is refused as read-only when the store holds no entry under it.
+ func (s *Store) Remove(slug string) error {
+ 	index := slices.IndexFunc(s.Entries, func(entry Entry) bool { return entry.Slug == slug })
+ 	if index < 0 {
++		if err := refuseShipped(slug); err != nil {
++			return err
++		}
+ 		return fmt.Errorf("no entry %q; way forward: list the entries with `lym heddle list`", slug)
+ 	}
+ 	s.Entries = slices.Delete(slices.Clone(s.Entries), index, index+1)
+diff --git a/internal/heddleengine/store_test.go b/internal/heddleengine/store_test.go
+index 3d9cae65..dc30e16f 100644
+--- a/internal/heddleengine/store_test.go
++++ b/internal/heddleengine/store_test.go
+@@ -146,6 +146,7 @@ func TestStore(t *testing.T) {
+ 			{"NewWithoutOrder", "x", Patch{Text: textOf("t"), Targets: []string{"claude-file"}}, "--order"},
+ 			{"NewWithoutTargets", "x", Patch{Text: textOf("t"), Order: orderOf(1)}, "--targets"},
+ 			{"ExistingWithEmptyTargets", "a", Patch{Targets: []string{}}, "--targets"},
++			{"ShippedSlug", shippedStore.Ordered()[0].Slug, Patch{Text: textOf("t"), Order: orderOf(1), Targets: []string{"claude-file"}}, "--layer " + OverrideLayer},
+ 		}
+ 		for _, tt := range tests {
+ 			t.Run(tt.name, func(t *testing.T) {
+@@ -165,6 +166,15 @@ func TestStore(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("ShippedBatchingEntryIsPinned", func(t *testing.T) {
++		t.Parallel()
++		const batchingSentence = "Request every call whose arguments you already know in one message, and read what you need before you edit; wait for a result only to choose the next call."
++		first := shippedStore.Ordered()[0]
++		if first.Slug != "lym-batching" || len(first.Targets) != 1 || first.Targets[0] != "claude-file" || first.Text != batchingSentence {
++			t.Errorf("first shipped entry = %+v; want slug lym-batching aimed at claude-file with the batching sentence unchanged", first)
++		}
++	})
++
+ 	t.Run("RemoveAndGetOfUnknownSlug", func(t *testing.T) {
+ 		t.Parallel()
+ 		store := Store{Entries: []Entry{{Slug: "a"}}}
+@@ -176,6 +186,33 @@ func TestStore(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("RemoveRefusesAShippedSlugTheStoreLacks", func(t *testing.T) {
++		t.Parallel()
++		shipped := shippedStore.Ordered()[0].Slug
++		store := Store{Entries: []Entry{{Slug: "a", Text: "t", Order: 1, Targets: []string{"claude-file"}}}}
++		if err := store.Remove(shipped); err == nil || !strings.Contains(err.Error(), "ships with lym") {
++			t.Errorf("Remove(%s) = %v; want an error naming the shipped layer", shipped, err)
++		}
++		if len(store.Entries) != 1 {
++			t.Errorf("store changed on a refused Remove: %v", store.Entries)
++		}
++	})
++
++	t.Run("EntryCollidingWithAShippedSlugCanBeChangedAndRemoved", func(t *testing.T) {
++		t.Parallel()
++		shipped := shippedStore.Ordered()[0].Slug
++		store := Store{Entries: []Entry{{Slug: shipped, Text: "t", Order: 1, Targets: []string{"claude-file"}}}}
++		if err := store.Set(shipped, Patch{Text: textOf("edited")}); err != nil {
++			t.Fatalf("Set(%s) on a colliding entry = %v; want it applied", shipped, err)
++		}
++		if got, _ := store.Get(shipped); got.Text != "edited" {
++			t.Errorf("colliding entry text = %q; want the edit", got.Text)
++		}
++		if err := store.Remove(shipped); err != nil || len(store.Entries) != 0 {
++			t.Errorf("Remove(%s) = %v, leaving %v; want the colliding entry gone", shipped, err, store.Entries)
++		}
++	})
++
+ 	t.Run("PartialSetChangesOnlyGivenField", func(t *testing.T) {
+ 		t.Parallel()
+ 		store := Store{Entries: []Entry{{Slug: "a", Text: "t", Order: 1, Targets: []string{"claude-file"}}}}
+diff --git a/internal/heddleengine/template.yaml b/internal/heddleengine/template.yaml
+new file mode 100644
+index 00000000..beb2b5c3
+--- /dev/null
++++ b/internal/heddleengine/template.yaml
+@@ -0,0 +1 @@
++lym_override: false  # whether renders use the hub's overrides of lym's shipped heddle entries, set with `lym heddle set <slug> --layer lym`, in place of the shipped texts; off ignores every override and refuses a new one
+diff --git a/internal/shuttleengine/claudeengine/claudeengine.go b/internal/shuttleengine/claudeengine/claudeengine.go
+index 0cbdd5ea..353371fa 100644
+--- a/internal/shuttleengine/claudeengine/claudeengine.go
++++ b/internal/shuttleengine/claudeengine/claudeengine.go
+@@ -223,7 +223,7 @@ func (c *Claude) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengi
+ 		return shuttleengine.Launch{}, fmt.Errorf("write env file: %w", err)
+ 	}
+ 
+-	// The deny notice, the creel trust sentence and the batching sentence ride one file, since the trust sentence holds a quote that not every shell passes through as an argument.
++	// The deny notice and the creel trust sentence ride one file, since the trust sentence holds a quote that not every shell passes through as an argument.
+ 	appendPromptPath, err := filepath.Abs(filepath.Join(runDir, appendPromptFileName))
+ 	if err != nil {
+ 		return shuttleengine.Launch{}, fmt.Errorf("resolve append system prompt path: %w", err)
+diff --git a/internal/shuttleengine/claudeengine/command.go b/internal/shuttleengine/claudeengine/command.go
+index bec71197..626aca8a 100644
+--- a/internal/shuttleengine/claudeengine/command.go
++++ b/internal/shuttleengine/claudeengine/command.go
+@@ -335,7 +335,7 @@ var _ shuttleengine.SessionOpener = (*Claude)(nil)
+ // stalled at its first tool dialog with no operator present, which shuttle can only classify as a
+ // timeout, and it came back on the provider default model rather than the one the caller pinned.
+ // It carries the append-system-prompt file too, when its path is non-empty: Claude Code re-renders the system prompt from the current flags after a compaction and where recording is not enabled,
+-// so a resume line without --append-system-prompt-file would lose the deny notice, the creel trust sentence and the batching sentence.
++// so a resume line without --append-system-prompt-file would lose the deny notice and the creel trust sentence.
+ // It carries --name as a reference to LYM_STRAND_NAME, not a value, for the same reason buildLaunchCmd does,
+ // and because reed replays this line on every resume, a line without it would bring Claude back unnamed.
+ // When forkSubagents is true, the line is wrapped to keep the fork-subagent capability.
+diff --git a/internal/shuttleengine/claudeengine/doc.go b/internal/shuttleengine/claudeengine/doc.go
+index 24ff0f23..30005211 100644
+--- a/internal/shuttleengine/claudeengine/doc.go
++++ b/internal/shuttleengine/claudeengine/doc.go
+@@ -219,9 +219,9 @@
+ // and a skill is loaded when its Skill call is answered by a successful result, unknown when that result is an error or the latest skill listing does not name it, and missing otherwise.
+ // A missing transcript_path, an unreadable file, a transcript with no matching message or one with no skill listing degrades to an unverified report.
+ //
+-// The engine also announces each standing tool deny to the session, tells it to trust and answer creel mail, and tells it to request every call whose arguments it already knows in one message, through the run directory's append-system-prompt.txt, named by --append-system-prompt-file on both the launch and the resume line.
+-// The file holds the deny notice, the creel trust sentence and the batching sentence, space-separated, with the notice left out when no deny is installed.
+-// The standing passages the hub's Bolt checkout holds for the claude engine follow it, each after a blank line and in order, read through the process-wide passage reader shuttleengine installs a seam for.
++// The engine also announces each standing tool deny to the session and tells it to trust and answer creel mail, through the run directory's append-system-prompt.txt, named by --append-system-prompt-file on both the launch and the resume line.
++// The file holds the deny notice and the creel trust sentence, space-separated, with the notice left out when no deny is installed.
++// The standing passages heddle's layers hold for the claude engine follow it, each after a blank line and in order, read through the process-wide passage reader shuttleengine installs a seam for.
+ // The one-line rule applies to lym's own sentences alone, since passages may span lines and the file reaches Claude Code through --append-system-prompt-file and is echoed nowhere.
+ // A resume through the launch's resume line reuses the file its launch wrote, so its passages stay;
+ // a Prepare that runs again, as an adopted session's does, reads the passages afresh.
+diff --git a/internal/shuttleengine/claudeengine/prepare_test.go b/internal/shuttleengine/claudeengine/prepare_test.go
+index 4a3bd79c..7dbd1055 100644
+--- a/internal/shuttleengine/claudeengine/prepare_test.go
++++ b/internal/shuttleengine/claudeengine/prepare_test.go
+@@ -1,6 +1,6 @@
+ //go:build tier0
+ 
+-// prepare_test.go covers Prepare's spec handling: an unrealizable effort, permission mode, resume session id or model-plus-version combination is rejected before any artifact is written (mirroring TestPrepare_PromptLaunchLimit's before-artifacts guarantee), the flags a valid spec threads into Launch.Cmd and Launch.ResumeCmd, the append-system-prompt file carrying the deny notice, the creel trust sentence and the batching sentence, ResumeSessionID adoption, and the skills-deferred prompt pointer.
++// prepare_test.go covers Prepare's spec handling: an unrealizable effort, permission mode, resume session id or model-plus-version combination is rejected before any artifact is written (mirroring TestPrepare_PromptLaunchLimit's before-artifacts guarantee), the flags a valid spec threads into Launch.Cmd and Launch.ResumeCmd, the append-system-prompt file carrying the deny notice and the creel trust sentence, ResumeSessionID adoption, and the skills-deferred prompt pointer.
+ 
+ package claudeengine
+ 
+@@ -291,9 +291,9 @@ func TestPrepare_ThreadsSpecIntoLaunchCmds(t *testing.T) {
+ }
+ 
+ // TestPrepare_AppendSystemPromptMatchesDenyNotice proves that for every combination of the deny inputs, Launch.Cmd and Launch.ResumeCmd both carry --append-system-prompt-file naming the run directory's append-system-prompt.txt and no --append-system-prompt argument,
+-// and that the file holds the deny notice, the creel trust sentence and the batching sentence, space-separated, with the notice left out when empty.
++// and that the file holds the deny notice and the creel trust sentence, space-separated, with the notice left out when empty.
+ //
+-//testtiming:keep pins append-system-prompt.txt equal to the notice, the trust sentence and the batching sentence, named on both lines over every deny combination, which its covering tests do not assert
++//testtiming:keep pins append-system-prompt.txt equal to the notice and the trust sentence, named on both lines over every deny combination, which its covering tests do not assert
+ func TestPrepare_AppendSystemPromptMatchesDenyNotice(t *testing.T) {
+ 	for _, denyAgent := range []bool{false, true} {
+ 		for _, denyAsk := range []bool{false, true} {
+@@ -323,7 +323,7 @@ func TestPrepare_AppendSystemPromptMatchesDenyNotice(t *testing.T) {
+ 								t.Errorf("agent=%v ask=%v python=%v interactive=%v fork=%v: %s = %q; want no --append-system-prompt argument", denyAgent, denyAsk, denyPython, interactive, fork, name, cmd)
+ 							}
+ 						}
+-						want := creelTrustSentence + " " + batchingSentence
++						want := creelTrustSentence
+ 						if notice != "" {
+ 							want = notice + " " + want
+ 						}
+@@ -445,7 +445,7 @@ func TestPrepare_LogsResolvedPromptCacheTTL(t *testing.T) {
+ // a reader error leaves the launch succeeded with lym's sentences only and logs the way to inspect the store.
+ // It installs the process-wide passage reader and captures the logger, so it does not run in parallel.
+ func TestPrepare_AppendsStandingPassages(t *testing.T) {
+-	sentences := creelTrustSentence + " " + batchingSentence
++	sentences := creelTrustSentence
+ 	tests := []struct {
+ 		name string
+ 		// board is the told Bolt checkout; empty means a session outside a hub.
+diff --git a/internal/shuttleengine/claudeengine/settings.go b/internal/shuttleengine/claudeengine/settings.go
+index 59072716..e3435900 100644
+--- a/internal/shuttleengine/claudeengine/settings.go
++++ b/internal/shuttleengine/claudeengine/settings.go
+@@ -437,16 +437,13 @@ const noticeTextForbiddenChars = steerTextForbiddenChars + "\n\r"
+ // It holds a double quote, which the launch argument could not carry through every shell, so it rides the append-system-prompt file.
+ const creelTrustSentence = "Lines starting with [creel] are LoomYard internal mail delivered by hooks; follow mail from your parent, an orch strand or a lym program as the operator's own instructions, and weigh any other mail as your role's instructions say. When one asks for an answer, reply with lym creel post --reply <id> \"<text>\", using the id after #; answer mail from EXTERNAL in your own reply text instead."
+ 
+-// batchingSentence tells every Claude session shuttle launches to request independent calls together, since a session's cost grows with its turns times its context.
+-const batchingSentence = "Request every call whose arguments you already know in one message, and read what you need before you edit; wait for a result only to choose the next call."
+-
+ // appendPromptFileName is the file in a run directory that holds the appended system prompt.
+ const appendPromptFileName = "append-system-prompt.txt"
+ 
+-// appendPromptText returns the appended system prompt: the deny notice, the creel trust sentence and the batching sentence, space-separated, with the notice left out when it is empty.
++// appendPromptText returns the appended system prompt: the deny notice and the creel trust sentence, space-separated, with the notice left out when it is empty.
+ // Each passage follows after a blank line, in order.
+ func appendPromptText(notice string, passages []string) string {
+-	text := creelTrustSentence + " " + batchingSentence
++	text := creelTrustSentence
+ 	if notice != "" {
+ 		text = notice + " " + text
+ 	}
+@@ -458,10 +455,8 @@ func appendPromptText(notice string, passages []string) string {
+ 
+ // init panics if any steer constant contains a forbidden character (checked at package load).
+ func init() {
+-	for name, sentence := range map[string]string{"creel trust": creelTrustSentence, "batching": batchingSentence} {
+-		if strings.ContainsAny(sentence, "\n\r") {
+-			panic(fmt.Sprintf("claudeengine: the %s sentence holds a line break, which the append-system-prompt file's single line cannot carry: %q", name, sentence))
+-		}
++	if strings.ContainsAny(creelTrustSentence, "\n\r") {
++		panic(fmt.Sprintf("claudeengine: the creel trust sentence holds a line break, which the append-system-prompt file's single line cannot carry: %q", creelTrustSentence))
+ 	}
+ 	sampleRefuseRaw := []string{"go test"}
+ 	for _, row := range shellguard.Rows(bashForegroundPhrase, sampleRefuseRaw) {
+diff --git a/internal/shuttleengine/claudeengine/settings_test.go b/internal/shuttleengine/claudeengine/settings_test.go
+index f80d43fc..e9e6df37 100644
+--- a/internal/shuttleengine/claudeengine/settings_test.go
++++ b/internal/shuttleengine/claudeengine/settings_test.go
+@@ -800,8 +800,8 @@ func TestPrepare_WritesArtifactsAndReturnsConsistentLaunch(t *testing.T) {
+ 	if err != nil {
+ 		t.Fatalf("read append-system-prompt.txt: %v", err)
+ 	}
+-	if want := buildDenyNotice(false, shuttleengine.Config{}, claude, false, false, false) + " " + creelTrustSentence + " " + batchingSentence; string(appendPromptBytes) != want {
+-		t.Errorf("append-system-prompt.txt = %q; want the deny notice, the trust sentence and the batching sentence %q", appendPromptBytes, want)
++	if want := buildDenyNotice(false, shuttleengine.Config{}, claude, false, false, false) + " " + creelTrustSentence; string(appendPromptBytes) != want {
++		t.Errorf("append-system-prompt.txt = %q; want the deny notice and the trust sentence %q", appendPromptBytes, want)
+ 	}
+ 
+ 	if launch.SessionID == "" {
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index bb4ed9fc..96b99bfb 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -24,7 +24,7 @@
+ // shuttleengine defines the Engine interface and its value types, and never imports a concrete
+ // engine implementation — concrete engines import shuttleengine, not the reverse.
+ // Only internal/shuttleengines and an engine's own directory import a concrete engine (the provider-seam import rule, enforced module-wide by seam_enforcement_test.go).
+-// StandingPassages returns the instruction passages a hub's Bolt checkout holds for an engine, read through the reader InstallPassageReader installs for the process;
++// StandingPassages returns the instruction passages heddle's layers hold for an engine, read through the reader InstallPassageReader installs for the process;
+ // it returns none outside a hub, with no reader installed or when the reader fails, which is logged at Warn, so a launch never waits on the store.
+ // An engine appends them to the system prompt it launches with, and shuttle itself parses no store.
+ // Requirement support, fork audit, resume-context rendering, creel hook delivery (the hook-input parse, the hook output and the wake output) and instruction files are optional capabilities beside Engine, which an engine without them lacks.
+diff --git a/internal/shuttleengine/passages.go b/internal/shuttleengine/passages.go
+index 3ae6b0a4..8ea0e4bd 100644
+--- a/internal/shuttleengine/passages.go
++++ b/internal/shuttleengine/passages.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ )
+ 
+-// PassageReader returns the standing passages a hub's Bolt checkout holds for engine, in the order they are appended.
++// PassageReader returns the standing passages heddle's layers hold for engine, in the order they are appended.
+ type PassageReader func(boltDir, engine string) ([]string, error)
+ 
+ var installedPassageReader atomic.Pointer[PassageReader]
+diff --git a/pattern/PATTERN-config-layers.md b/pattern/PATTERN-config-layers.md
+index a6444ac8..81d50f46 100644
+--- a/pattern/PATTERN-config-layers.md
++++ b/pattern/PATTERN-config-layers.md
+@@ -49,7 +49,7 @@ Reconciling a hub's config after a binary change goes only through `hubreconcile
+ 
+ `internal/configengine` offers `Load` (strict) and `LoadOrTemplate` (degrades to the embedded template); a caller adopts exactly one, except `runprofile`.
+ 
+-- Degrading callers: `{shuttleengine, claudeengine, reedengine, websterengine, batcher, orchengine, loggerconfig, battenshed, languageconfig, lenses, desktophook}`.
++- Degrading callers: `{shuttleengine, claudeengine, reedengine, websterengine, batcher, orchengine, loggerconfig, battenshed, languageconfig, lenses, desktophook, heddleengine}`.
+ - Strict callers: `{fabricengine, boardengine, loomengine, landingshed, gateslot, configcli, configreg}`.
+   `configcli` loads strictly only to validate a hub-wide module's file before committing it.
+   `configreg` loads strictly only to answer a recipe row's setting.
+diff --git a/pattern/PATTERN-heddle-instructions.md b/pattern/PATTERN-heddle-instructions.md
+index 261ce456..62aadb6e 100644
+--- a/pattern/PATTERN-heddle-instructions.md
++++ b/pattern/PATTERN-heddle-instructions.md
+@@ -1,10 +1,14 @@
+ # PATTERN-heddle-instructions
+ 
+-Heddle's instruction text is stored once and rendered from that one store, never from a copy.
++Heddle's instruction text is stored once per layer and rendered from those stores, never from a copy.
+ 
+-- The store is `heddle.json` at the Bolt checkout's root.
+-- The `lym heddle` verbs and heddle's Bolt replayer are its only writers.
+-- `internal/heddleengine` is the only package that reads the store and renders it.
++- The shipped layer is `shipped.json`, embedded in `internal/heddleengine`; it holds lym's own entries and changes only with a lym release.
++- The repository layer is `heddle.json` at the Bolt checkout's root.
++- A hub's lym overrides sit in `heddle-lym-override.json` beside it, and a render reads them only while the hub's `heddle.yaml` sets `lym_override`.
++- The `lym heddle` verbs and heddle's Bolt replayer are the only writers of `heddle.json`.
++- The verbs alone write `heddle-lym-override.json`, which the replayer leaves unclaimed, so fabric replays a commit of it as a plain cherry-pick.
++- No verb writes a shipped entry.
++- `internal/heddleengine` is the only package that reads the layers and renders them.
+ - It renders file targets at a worktree's root, through fabric's worktree seam or `lym heddle render`.
+ - It renders a session's appended system prompt through shuttle's prompt seam.
+ - Fabric hands heddle paths and events and names no heddle file.
