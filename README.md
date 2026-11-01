@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-01 06:56 UTC; every age below is as of then.
+Rendered 2026-11-01 06:57 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -10,42 +10,28 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 The root project: the entries under no other project.
 
-### Tasks (7)
+### Tasks (6)
 
 Concrete and claimable; only a task can run.
 
-#### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **sampler: an interactive loom recipe, the operator iterating with an agent in the run's worktree until done**<br>• A Shed recipe whose agent waits for the operator and iterates on the result, then lands as usual<br>• `profile: light` | [`interactive-recipe`](design-interactive-recipe.md) | tapestry | Finalize | neve | 18h<br>12h | shed, batten, reed, shuttle |
-
-#### Ready (0)
+#### Ready (3)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T4 | **The appended system prompt states the gate rule once, not twice**<br>• The raw-go and refuse-raw deny notices both carry the full gate rule into every session | [`gate-rule-stated-once`](design-gate-rule-stated-once.md) | darn |  | 13h<br>43m | shuttle, gate, claude |
+| T5 | **A seed says only that a run starts at its start, with no producer name**<br>• The shared seed names Preflight as the first producer for every recipe; the seed should name none, and the recipe supplies its first row. | [`seed-starts-at-start`](design-seed-starts-at-start.md) | darn |  | 1d<br>38m | loom, pawl, shed |
+| T6 | **Finalize settles a rejected fixer change in place and never sends the run back**<br>• A fix review loop inside Finalize that escalates at its cap, in place of on_reroute<br>• `profile: solid` | [`finalize-fix-in-place`](design-finalize-fix-in-place.md) | darn |  | 18h<br>38m | landing, shed, loom, darn |
 
-#### Layer A (3)
+#### Layer A (2)
 
 Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **The appended system prompt states the gate rule once, not twice**<br>• The raw-go and refuse-raw deny notices both carry the full gate rule into every session | [`gate-rule-stated-once`](design-gate-rule-stated-once.md) | darn | T8 | 13h<br>42m | shuttle, gate, claude |
-| T5 | **A seed says only that a run starts at its start, with no producer name**<br>• The shared seed names Preflight as the first producer for every recipe; the seed should name none, and the recipe supplies its first row. | [`seed-starts-at-start`](design-seed-starts-at-start.md) | darn | T8 | 1d<br>38m | loom, pawl, shed |
-| T6 | **Finalize settles a rejected fixer change in place and never sends the run back**<br>• A fix review loop inside Finalize that escalates at its cap, in place of on_reroute<br>• `profile: solid` | [`finalize-fix-in-place`](design-finalize-fix-in-place.md) | darn | T8 | 18h<br>38m | landing, shed, loom, darn |
-
-#### Layer B (2)
-
-Starts when every entry it names under After is done.
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Dobby sends a dead-driver notice for a run that has just started**<br>• Dobby reads a go-driven child as dead in the gap between loom start writing its running status and the driver taking its lock<br>• `profile: solid` | [`dead-driver-false-notice`](design-dead-driver-false-notice.md) | darn | T8<br>T5 | 37m<br>33m | dobby, loom |
-| T2 | **warp-visibility: heddle, a Bolt database lym renders its instruction files from, leaving no trace in warp**<br>• LoomYard puts no CLAUDE.md in a repository; lym renders its own git-excluded instruction files into each worktree from _board/heddle.json | [`warp-visibility`](design-warp-visibility.md) | tapestry | T8<br>T4 | 3w<br>41m | fabric, board, config, claude, codex, cwd, process, stencil, shuttle |
+| T1 | **Dobby sends a dead-driver notice for a run that has just started**<br>• Dobby reads a go-driven child as dead in the gap between loom start writing its running status and the driver taking its lock<br>• `profile: solid` | [`dead-driver-false-notice`](design-dead-driver-false-notice.md) | darn | T5 | 37m<br>33m | dobby, loom |
+| T2 | **warp-visibility: heddle, a Bolt database lym renders its instruction files from, leaving no trace in warp**<br>• LoomYard puts no CLAUDE.md in a repository; lym renders its own git-excluded instruction files into each worktree from _board/heddle.json | [`warp-visibility`](design-warp-visibility.md) | tapestry | T4 | 3w<br>42m | fabric, board, config, claude, codex, cwd, process, stencil, shuttle |
 
 #### Draft (1)
 
@@ -53,7 +39,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **Rename the Bolt checkout directory _board to _bolt, by script alone**<br>• A pure, mechanical rename of _board to _bolt everywhere, with a rename program for existing hubs | [`bolt-dir-rename`](design-bolt-dir-rename.md) | darn | T8<br>T4<br>T2<br>T5<br>T6<br>T1 | 14h<br>33m | fabric, board, config, cwd, stencil |
+| T3 | `draft` **Rename the Bolt checkout directory _board to _bolt, by script alone**<br>• A pure, mechanical rename of _board to _bolt everywhere, with a rename program for existing hubs | [`bolt-dir-rename`](design-bolt-dir-rename.md) | darn | T4<br>T2<br>T5<br>T6<br>T1 | 14h<br>34m | fabric, board, config, cwd, stencil |
 
 ### Notes (31)
 
@@ -104,3 +90,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F15 |  | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 2w<br>15h | reed, config, batten |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>3d | burler, shed, orch, quarry, report |
 | F20 |  | **stitch: a loom recipe that splits a large task into darn runs inside its own beam**<br>• Discussion, a pre-planner, the pieces filed as darn tasks in the task's project, and an inner pawl run that builds and lands the beam | [`loom-beam-darns`](design-loom-beam-darns.md) | 9d<br>10h | loom, shed, batten, workspaces, burler |
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T8 | **sampler: an interactive loom recipe, the operator iterating with an agent in the run's worktree until done**<br>• A Shed recipe whose agent waits for the operator and iterates on the result, then lands as usual<br>• `profile: light` | [`interactive-recipe`](design-interactive-recipe.md) | 18h<br>12h | shed, batten, reed, shuttle |
