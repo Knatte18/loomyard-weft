@@ -683,6 +683,24 @@
       "body": "## Seen (orch, 2026-11-01)\n\nThe darn writer of `batch-budget-300k-trial` left two untracked files at its worktree root, `200k` and `250k`, each one stray line (\"cautious base est\", \"wide est\"), most likely from a shell redirect in a command it ran.\nIts session ended and the run went on through review to Finalize, which refused the merge-in over the uncommitted files; the tackler handed the stop back and the orch removed them by hand.\nSuch files should never exist at the end of a writing session.\n\n## Idea\n\nA producing session (darn writer, Webster fork, fixers) cannot end while its worktree holds untracked or uncommitted files it did not commit: its end gate, beside the verify and description gates shuttle already runs, names the files and tells the agent to commit what belongs to the change and delete the rest, so the stop is fixed by the agent that made it, not at Finalize.\n",
       "created": "2026-11-01T12:52:37Z",
       "revised": "2026-11-01T12:52:37Z"
+    },
+    {
+      "id": 956,
+      "handle": "P1",
+      "slug": "orch-instructions",
+      "title": "Orch instructions in two layers: lym's role and the repository's rules in heddle",
+      "kind": "project",
+      "labels": [
+        "enhancement",
+        "orch"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "One fixed orch role for every repository, repository orch rules in heddle through lym orch rules, and the orch note for run state only",
+      "body": "## Goal (operator and orch, 2026-11-01)\n\nOrch instructions live in two layers, each in one place:\n- The orch role lym ships, the same for every orch in every repository.\n- The rules for one repository's orchs, kept in heddle and managed with `lym orch rules`.\n\nThe orch note holds run state only, as its template's three sections say.\n\n## Seen\n\nThe orch's instructions had spread over four places that disagree: the shipped role stencil, the hub-wide rules file on Bolt, an unused per-orch rules file, and standing rules the orch copied from note to note.\nRules meant for every orch sat in the loomyard hub's rules, and loomyard-only rules and code invariants sat only in the orch note.\n\n## Bounds\n\nThe members change different packages and run as separate tasks; this project only groups them.\nOnce the heddle target and the role have landed, the orch moves the remaining loomyard-only orch rules into heddle through `lym orch rules`; that move is no task.\n",
+      "created": "2026-11-01T13:15:54Z",
+      "revised": "2026-11-01T13:15:54Z"
     }
   ],
   "prime_owner": "neve",
