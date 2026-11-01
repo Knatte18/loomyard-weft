@@ -618,28 +618,30 @@
     },
     {
       "id": 946,
-      "handle": "B2",
+      "handle": "T3",
       "slug": "landing-message-stray-block",
       "title": "A landing commit message ends with a stray Created using block",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "landing"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "The landing message of 229638f7 repeats body lines after Created using",
       "body": "## Seen (orch, 2026-11-01)\n\nThe landing commit `229638f7` (\"Rename the Bolt checkout directory from _board to _bolt\") ends with a stray block after the \"To check by hand\" list: a line \"Created using\", then the subject again and several lines copied from the message's own body, before the credit lines.\n`git log -1 --format=%B 229638f7` shows it.\nThe plain credit block of `commit-signature-credit` should be the only thing after the body; something in how the landing message is assembled appended a fragment of the description.\n",
+      "status": "draft",
       "created": "2026-11-01T10:59:23Z",
-      "revised": "2026-11-01T10:59:23Z"
+      "revised": "2026-11-01T11:26:23Z"
     },
     {
       "id": 947,
-      "handle": "B3",
+      "handle": "T4",
       "slug": "dobby-orch-pair-start",
       "title": "Dobby and orch start in pairs: a batten run brought dobby up alone",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "dobby",
@@ -647,10 +649,12 @@
         "orch"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "ensureParentDobby spawns a lone dobby; every start goes through beam start and brings the orch too",
       "body": "## Seen (operator and orch, 2026-11-01)\n\nAfter the hub's tmux server was killed, `lym batten run bolt-dir-rename`, run by hand to finish a teardown, brought the prime's dobby up alone: `ensureParentDobby` in `internal/battencli/cli.go` starts the parent worktree's dobby when it is down, and nothing starts its orch.\n`lym a` then found no orch in reed while dobby ran; only `lym s` (`lym beam start`) brought the orch up.\nMeanwhile dobby's mail to the orch had no reader.\n\n## Design (operator, 2026-11-01)\n\nDobby and orch are started in pairs, by beam: every path that brings a worktree's dobby up brings its orch up with it, through `lym beam start`'s way, never dobby alone.\n- `ensureParentDobby` and any other lone dobby spawn go through that one start, or stop and name `lym s` instead of spawning.\n\n## Out of scope\n\nWhether dobby, finding its orch gone while it runs, brings it up again belongs to note `dormant-orch`, where the orch lies dormant and is woken when needed (operator, 2026-11-01).\n",
+      "status": "draft",
       "created": "2026-11-01T11:04:44Z",
       "revised": "2026-11-01T11:26:23Z"
     },
