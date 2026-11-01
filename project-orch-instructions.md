@@ -1,6 +1,6 @@
 # P1 Orch instructions in two layers: lym's role and the repository's rules in heddle
 
-Rendered 2026-11-01 15:02 UTC; every age below is as of then.
+Rendered 2026-11-01 15:03 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 `orch-instructions` · Age 1h · Owner `neve`
@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T9 | **lym's design invariants as PATTERN entries**<br>• doc.go as documentation only, fabric's isolation, no hard-coded names and the other code invariants become PATTERN entries | [`pattern-design-principles`](design-pattern-design-principles.md) | darn | Code-Burler-Review | neve | 1h<br>5m | pattern |
+| T9 | **lym's design invariants as PATTERN entries**<br>• doc.go as documentation only, fabric's isolation, no hard-coded names and the other code invariants become PATTERN entries | [`pattern-design-principles`](design-pattern-design-principles.md) | darn | Code-Burler-Fix | neve | 1h<br>5m | pattern |
 | T10 | **Heddle gains an orch-prompt target, and lym orch rules stores in heddle**<br>• A heddle target for orch sessions only replaces the hub-wide and local orch rules files<br>• `profile: solid` | [`heddle-orch-target`](design-heddle-orch-target.md) | darn | Darn-Write | neve | 1h<br>5m | heddle, orch |
 
 ### Ready (0)
