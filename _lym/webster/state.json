@@ -1,0 +1,232 @@
+{
+  "runGuid": "3358185f1250fb75052ecfb8c4df0a6c",
+  "planFingerprint": "9ee21b0ccfc3c9a63dc202b4e50db407b6511ba596cc40c9c150168bae9ba5cd",
+  "planFileHashes": {
+    "00-overview.md": "a02e701e4470d011cc8ac7493d8d89e76a7bd019b4c59e507b62ae05b1f03201",
+    "01-shell-detached-forms.md": "9e85e2675594ccc264c380299b10df858c9eaeb6309ad9ffcaeb4155a87750c8",
+    "02-buttons-config-keys.md": "c9c451f45577b34679fefe508bd1e3f69abe39a5a1cb12f3a87ba067d15487e3",
+    "03-button-entries.md": "b2d1058902dec762d478ba3f2380d181ca920bd9bfe2dc69125381e2259d3a9a",
+    "04-geometry-button-context.md": "0bf741f3a44774814544e5f47949a63740d39b0a2d6f05b2d154f8ab03c5aa3b",
+    "05-third-status-line.md": "fe40e6e6cd5e7825c04a79284c0ed16afb7721622750386150e5471d285cfe8b",
+    "06-render-button-row.md": "c3eac47fbbfa37c4feed8f06bd7534ed7666b85fb15a95e58cdad333cf08020a",
+    "07-strand-name-pane-option.md": "3fccda0bf79d2c68ce9283ae1179a3c755136fc89d25eb5f5460c83b83d3c397",
+    "08-reed-button-verb.md": "8f5e84d01c8d093041eb3e3382d7e30270d4b19ca8919540d6e6499f3397c8b8",
+    "09-button-click-binding.md": "f29a2d3ba017821b90700651ff0659ef5738218118ab555b7872f90384ef69a6"
+  },
+  "planOverviewFrameHash": "1260aaf31fefaffa105f2238a85cf9c4b94885d378824b8a7981fddf304a11a9",
+  "partition": [
+    {
+      "cards": [
+        "01-shell-detached-forms",
+        "02-buttons-config-keys",
+        "03-button-entries",
+        "04-geometry-button-context",
+        "05-third-status-line"
+      ],
+      "profile": "wide",
+      "estimate": 299342,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 53608,
+        "read_union": 51880,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 456,
+            "reads": {
+              "package:internal/shell": 2000,
+              "tests:internal/shell": 2000
+            },
+            "messages": 73,
+            "written": 22356
+          },
+          {
+            "card": 2,
+            "card_text": 804,
+            "reads": {
+              "file:docs/overview.md": 10608,
+              "file:internal/configreg/doc.go": 216,
+              "file:internal/desktophook/template.yaml": 24,
+              "file:internal/reedengine/doc.go": 8424,
+              "file:internal/reedengine/template_posix.yaml": 252,
+              "file:internal/reedengine/template_windows.yaml": 252,
+              "package:docs": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/desktophook": 2000,
+              "package:internal/reedengine": 2000,
+              "tests:docs": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/desktophook": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 150,
+            "written": 45804
+          },
+          {
+            "card": 3,
+            "card_text": 588,
+            "reads": {
+              "file:internal/reedengine/doc.go": 8424,
+              "package:internal/reedengine": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 116.5,
+            "written": 35538
+          },
+          {
+            "card": 4,
+            "card_text": 828,
+            "reads": {
+              "file:internal/hubgeom/doc.go": 600,
+              "file:internal/reedengine/doc.go": 8424,
+              "package:internal/hubgeom": 2000,
+              "package:internal/reedengine": 2000,
+              "tests:internal/hubgeom": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 121.5,
+            "written": 37278
+          },
+          {
+            "card": 5,
+            "card_text": 828,
+            "reads": {
+              "file:internal/reedengine/doc.go": 8424,
+              "package:internal/reedcli": 2000,
+              "package:internal/reedengine": 2000,
+              "tests:internal/reedcli": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 173.5,
+            "written": 52878
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-render-button-row",
+        "07-strand-name-pane-option",
+        "08-reed-button-verb",
+        "09-button-click-binding"
+      ],
+      "profile": "wide",
+      "estimate": 273996,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 60608,
+        "read_union": 31204,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 1032,
+            "reads": {
+              "file:internal/reedengine/bar.go": 1056,
+              "file:internal/reedengine/doc.go": 8424,
+              "file:internal/reedengine/follow.go": 1356,
+              "package:internal/reedengine": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 158.5,
+            "written": 48582
+          },
+          {
+            "card": 7,
+            "card_text": 360,
+            "reads": {
+              "file:internal/reedengine/doc.go": 8424,
+              "package:internal/reedengine": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 72.5,
+            "written": 22110
+          },
+          {
+            "card": 8,
+            "card_text": 1188,
+            "reads": {
+              "file:internal/reedcli/doc.go": 492,
+              "file:internal/reedengine/doc.go": 8424,
+              "package:cmd/lym": 2000,
+              "package:internal/reedcli": 2000,
+              "package:internal/reedengine": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/reedcli": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 219,
+            "written": 66888
+          },
+          {
+            "card": 9,
+            "card_text": 804,
+            "reads": {
+              "file:internal/reedengine/doc.go": 8424,
+              "file:internal/toolfloor/doc.go": 492,
+              "package:internal/reedengine": 2000,
+              "package:internal/toolfloor": 2000,
+              "tests:internal/reedengine": 2000,
+              "tests:internal/toolfloor": 2000
+            },
+            "messages": 146,
+            "written": 44604
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "6f68250bdc4be449309d8d356608c0c4",
+  "masterSessionId": "e252c0c4-0986-44c0-9706-0291defd0a23",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "shell-detached-forms",
+      "cards": [
+        "01-shell-detached-forms",
+        "02-buttons-config-keys",
+        "03-button-entries",
+        "04-geometry-button-context",
+        "05-third-status-line"
+      ],
+      "cardHashes": {
+        "01-shell-detached-forms": "9e85e2675594ccc264c380299b10df858c9eaeb6309ad9ffcaeb4155a87750c8",
+        "02-buttons-config-keys": "c9c451f45577b34679fefe508bd1e3f69abe39a5a1cb12f3a87ba067d15487e3",
+        "03-button-entries": "b2d1058902dec762d478ba3f2380d181ca920bd9bfe2dc69125381e2259d3a9a",
+        "04-geometry-button-context": "0bf741f3a44774814544e5f47949a63740d39b0a2d6f05b2d154f8ab03c5aa3b",
+        "05-third-status-line": "fe40e6e6cd5e7825c04a79284c0ed16afb7721622750386150e5471d285cfe8b"
+      },
+      "startSha": "1b72aa3db2e8bc9916cf379b5473cced1b800dd1",
+      "kind": "fork",
+      "spawnedAt": "2026-11-01T13:39:49Z",
+      "sessionId": "e252c0c4-0986-44c0-9706-0291defd0a23",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
