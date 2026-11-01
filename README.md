@@ -71,7 +71,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T6 | **lym config --set cannot write a key inside a nested map, such as a gate tier env**<br>• An orch cannot change a gate tier env or command without an interactive editor | [`config-set-nested-keys`](design-config-set-nested-keys.md) | darn | Finalize | neve | 2h<br>55m | config, gate |
 | T8 | **batten cancel hangs on a step held by its own pause, and --remove fails on removed records**<br>• A cancel during Open-IDE deadlocks with the step waiting on the cancel's pause; cancel --remove errors when the records are already gone | [`cancel-hangs-on-own-pause`](design-cancel-hangs-on-own-pause.md) | darn | Finalize | neve | 1h<br>55m | batten |
-| T9 | **A writer session can end with untracked files in the worktree, which halt Finalize**<br>• A producing session's end gate refuses to end while the worktree holds untracked files outside its outputs | [`writer-leaves-stray-files`](design-writer-leaves-stray-files.md) | darn | PR-Review | neve | 6h<br>55m | shuttle, darn, loom |
+| T9 | **A writer session can end with untracked files in the worktree, which halt Finalize**<br>• A producing session's end gate refuses to end while the worktree holds untracked files outside its outputs | [`writer-leaves-stray-files`](design-writer-leaves-stray-files.md) | darn | Finalize | neve | 6h<br>55m | shuttle, darn, loom |
 
 #### Ready (0)
 
