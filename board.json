@@ -333,7 +333,7 @@
       "isolated": false,
       "brief": "Moving to another machine is many hand steps, and afterwards run states are unclear",
       "body": "## Seen (operator, 2026-10-31)\n\nMoving work from one machine to another is a string of hand steps, and afterwards the operator cannot tell what state the runs are in.\nOn 2026-10-31 the operator moved from OSL-1046 to Neve: `lym fabric pull`, `lym s`, a `lym adopt` whose tier0 check mailed the orch, and more by hand.\nTask `dobby-land-notice-needs-flag` had started on OSL-1046 on 2026-10-30 and stood at `running · Code-Bouncer`, unlanded.\nAfter the move, dobby on Neve reported its driver strand dead, then a fresh Go driver took it on, and neither the operator nor the orch could say at once whether the run was finished, should run or should not.\n\nThe run went on because `lym adopt` resumes it: step 6 of its help resumes each moved run not done as a detached first pass, so adopting is also starting.\nBolt itself is reconciled with origin first by each of `lym fabric pull`, `lym adopt` (its step 1) and `lym beam start`, so the board was current; what was missing is a view of the runs.\n\n## Design (operator, 2026-11-01)\n\nOne verb takes a beam, or root, over onto this machine and leaves it in a known state, in place of the hand steps.\n- The unit is the beam: the operator names the beams (or root) to take over, and lym supports one beam owned and run on one machine while another beam is owned and run on another.\n- The verb does every step the move needs, each idempotent: sync Bolt, sync warp and weft of the named beams, adopt them, settle what conflicts on the way, and start each beam's dobby and orch as a pair.\n  Which steps those are is for this task to find out from the code (`lym fabric pull`, `lym adopt`, `lym beam start` and what they leave to the operator today); the operator does not list them.\n- The old machine releases nothing: it loses ownership when the new one adopts, and the operator never works one beam on two machines at once.\n- It starts no run by itself: every adopted run stays held until the operator lets it go on, so nothing runs that the operator does not expect.\n  The hold is released per beam, by a verb; a button on reed's action row in that beam's session calls the same verb once note `reed-status-buttons` is built.\n- It prints one line per run: landed, running here, held for a go-ahead, or owned by another machine, with the row it stands at.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Code-Burler-Review",
       "created": "2026-10-31T11:40:10Z",
       "revised": "2026-11-01T11:41:30Z"
     },
@@ -919,26 +919,6 @@
       "body": "## Seen (orch, 2026-11-01)\n\n`tools/tokencount` with no slugs counts only finished full tapestry runs, those that reached Finalize under the tapestry recipe.\nOn 2026-11-01 it skipped the 80 most recent runs, most of them darns, and counted three tapestry runs from 2026-10-31 and 2026-11-01.\nThe operator prefers parallel darns to one long loom as cheaper and faster, but no report gives a darn's cost beside a tapestry's.\n\n## Idea\n\ntokencount counts darn runs too, with darn's own segments (writer, Code-Review rounds, landing), and can compare recipes, for example the cost per run and per changed line of darns against tapestries over the same period.\n",
       "created": "2026-11-01T14:18:14Z",
       "revised": "2026-11-01T14:18:14Z"
-    },
-    {
-      "id": 970,
-      "handle": "T8",
-      "slug": "board-project-render",
-      "title": "One project render for the board README and project files",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "board"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Every project, Prime included, renders through one function with its sub-projects and its own Running, Ready, Tasks, Notes and Done",
-      "body": "## Seen (operator, 2026-11-01)\n\nThe board README shows each open project as one flat member table, so a running member of a project does not show as running, and its ready, layered and draft tasks and its notes by type are not told apart.\nOnly the root's own entries, under the README's Prime section, and a project's own file get the full Tasks (Running, Ready, layers, Independent, Draft), Notes by type label and Done split of `entrySections`.\nA project file lists the projects under it only as bullet links (`projectsSection`), and the README renders projects through a third path (`projectSections`).\n\n## Design (operator, 2026-11-01)\n\n- The root is a project like any other, Prime, rendered the same way as every other project.\n- One shared project render function in `internal/boardengine` turns a project into markdown at a given heading level: its heading and facts, its brief, then the projects directly under it, each rendered by the same function one level down, then its own Tasks, Notes and Done exactly as `entrySections` splits them today.\n- README.md is that function applied to Prime: its sub-projects first, each with Running, Ready, Tasks, Notes by type and Done of its own, then Prime's own entries at the bottom.\n- A project's own file shows only that project and the projects under it, through the same function.\n- `projectSections`' flat member table and `projectsSection`'s bullet list go; the file header (`fileHeader`) and the intro stay.\n- Heading levels nest with the project depth and stop at level six, so a deep project still renders.\n- The render package's doc comments say what the files now hold.\n",
-      "status": "done",
-      "created": "2026-11-01T14:35:37Z",
-      "revised": "2026-11-01T14:35:37Z"
     },
     {
       "id": 971,
