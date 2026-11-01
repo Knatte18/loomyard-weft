@@ -1,6 +1,6 @@
 # Configurable action buttons on the reed status bar
 
-`reed-status-buttons` · Task · feature, reed, config, batten · running · Drift-Verify
+`reed-status-buttons` · Task · feature, reed, config, batten · running · Code-Bouncer
 
 ## Seen
 
