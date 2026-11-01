@@ -2,7 +2,7 @@
 
 `plan-split-tune` · Task · enhancement, loom, stencil, pattern · draft
 
-Depends on: [`plan-split-bench`](design-plan-split-bench.md)
+Depends on: [`plan-split-bench`](design-plan-split-bench.md), [`gate-one-binary-per-package`](design-gate-one-binary-per-package.md)
 
 ## Seen (orch, plan-split-bench, 2026-11-01)
 
