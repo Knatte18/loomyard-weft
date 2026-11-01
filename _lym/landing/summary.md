@@ -1,34 +1,35 @@
-# Start a worktree's dobby only with its orch
+# Start a worktree's dobby only together with its orch
 
-A dobby that comes up without its orch posts notices nobody reads.
-`lym batten run`, run by hand, did exactly that: after its pass, `ensureParentDobby` in `internal/battencli/cli.go` spawned the parent worktree's dobby through `dobbyengine.SpawnDetached` when it was down, and nothing started the orch, so only a later `lym beam start` brought the pair back together.
+A hand `lym batten run <slug>` after the hub's tmux server was killed brought the parent worktree's dobby up alone.
+`ensureParentDobby` spawned it, nothing started its orch, and the dobby's mail to the orch had no reader.
+Now every path that brings a worktree's dobby up brings its orch up with it, the way `lym beam start` does.
 
-Every path that starts a dobby now brings the worktree up the way `lym beam start` does, through `orchcli.BeamUp`.
+## What changes
 
-## What changed
-
-- `orchcli.BeamUpWorktree(prime, worktree)` is new.
-  It resolves the named worktree from the prime, the prime's own name naming the prime, runs `BeamUp` without `Prepare`, and returns a dobby start that was refused or failed as an error carrying its detail, since `BeamUp` itself only warns there.
-  In a test binary it returns `ErrBeamUpUnderTest` and starts nothing, as `dobbyengine.SpawnDetached` does.
-- `ensureParentDobby` (batten's first pass and every hand pass) keeps its owner, landing-hold and liveness checks, and brings a down parent up through `BeamUpWorktree` in place of the lone spawn.
-  Its seam `dobbySpawn` became `pairStart`, which takes the parent worktree's name.
-  A live dobby is still left alone, so an orch that died beside a live dobby is not revived here.
-- Pawl's `StartDobby`, the Beam-Await restart after a refused land request, calls `BeamUpWorktree` for the beam; `startBeamDobbyAlone` is removed.
-- The anchor move's `EnsureDobbies` in `internal/fabriccli/anchordeps.go` runs `lym beam start <worktree>` (`root` for the prime) as a child process per worktree it restarts, joining every failure into `dobby_start_error`.
-  It runs once the parent lock is released and the anchor change closed, since `lym beam start` runs the hub's origin reconcile.
-- `PATTERN.md` gains `PATTERN-dobby-orch-pair`.
+- `orchcli.BeamUpWorktree(prime, worktree)` is new: it runs `BeamUp` without `Prepare` for the named worktree (the prime's own name names the prime).
+  It returns `BeamUp`'s refusal or failure, and a dobby that was refused or failed to start, as an error carrying its detail.
+  It returns `ErrBeamUpUnderTest` in a test binary, so no test starts a real dobby, tmux session or agent.
+- `battencli`: `ensureParentDobby` takes a `start(parent)` seam in place of the dobby spawn, wired to `orchcli.BeamUpWorktree`.
+  Its owner and landing-hold refusals and the `lym beam start` way forward are unchanged.
+- `loomcli`: a beam's dobby restart after a failed Beam-Await re-check goes through `orchcli.BeamUpWorktree`.
+  `startBeamDobbyAlone` is deleted.
+- `fabriccli` (`lym fabric anchor`): the dobbies a move ends start again through one `lym beam start <worktree>` child per worktree (`root` for the prime), waited for one by one.
+  A failed child does not stop the others; `dobby_start_error` joins every failure with the child's output.
+- `PATTERN.md` gains `PATTERN-dobby-orch-pair`: never `dobbyengine.EnsureLive` or `SpawnDetached` alone to start a worktree's dobby.
+  The affected package docs are updated to match.
 
 ## Design decisions
 
-- `BeamUp` is run without `Prepare`: the hub-wide origin reconcile, prime claim and owner pauses belong to `lym beam start` itself, and pawl's Beam-Up step already runs `BeamUp` this way.
-- A refused start of a beam during an anchor move, such as a beam another machine owns, now shows up in `dobby_start_error`; `dobbyengine.EnsureLive` used to drop such a refusal without a word.
-  The verb still exits 0.
-- `fabriccli` runs `lym beam start` as a child rather than calling `orchcli.BeamUpWorktree`: `hubforge`, the test fixture that the orch and creel packages' tests import, imports `fabriccli`, so that import would make an import cycle in those tests.
-  The child is the full `lym beam start`, origin reconcile and prime claim included.
-- Whether a running dobby revives a missing orch is left to the `dormant-orch` note, as the board entry says.
+- The anchor move starts its dobbies through a child process because `fabriccli` cannot import `orchcli`: a test fixture imports `fabriccli` from the orch packages' own tests, so the import would cycle.
+  The child runs from the prime's anchor, and fails without starting anything in a test binary.
+- The move now releases the parent lock and closes the change before it restarts the dobbies.
+  A `lym beam start` child runs the same refusals as a hand start and would otherwise meet the move's own standing anchor change.
+- `BeamUp` itself still starts the dobby through `dobbyengine.EnsureLive`, as the first step of the pair it brings up.
+- Out of scope, as the task says: whether a running dobby brings back an orch that has gone is note `dormant-orch`.
 
-## Tests
+## To check by hand
 
-`TestChangeAnchor` now expects the dobby restart after the parent lock is released and the change is closed.
-`TestStartFirstPass` now asserts that the pair start receives the parent worktree's name, and that a refused slug starts no pass and brings no worktree up.
-The new `TestDobbyStartError` pins the outcome translation: a started or live dobby passes, while a refused, failed or unreported start becomes an error that names the worktree and the cause.
+- The anchor move's restart through `beamStartChild` (`internal/fabriccli/anchordeps.go`) is not exercised against a real `lym beam start`: the child is refused under test, and the tests cover only the loop in `startDobbiesThroughBeamStart` and the order of the unlock and the restart in `moveAnchor`.
+  Run `lym fabric anchor` on a hub with live dobbies and confirm each comes back with its orch (`lym a` finds the orch in reed).
+- Kill the hub's tmux server, run `lym batten run <slug>` by hand, and confirm the parent worktree's dobby and orch both come up.
+- The same for a beam whose Beam-Await re-check fails: the restarted dobby has its orch.
