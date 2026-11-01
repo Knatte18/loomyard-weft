@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Run-Shed",
+    "history_length": 5,
+    "state": "failed"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "",
+    "branch": "",
+    "dirty": null
+  },
+  "spawned_at": "2026-11-01T15:46:14.618031284+01:00",
+  "deadline": "2026-11-01T15:56:14.618031284+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/board-project-render/drive-reports/drive-envelope-20261101-154614-1ec6.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/board-project-render/drive-reports/drive-report-20261101-154614-2071.md",
+  "strand_guid": "8fec3e62605f0d533cbfe20d79c8797e"
+}
