@@ -1,6 +1,6 @@
 # P2 Fewer agent turns, Webster forks first
 
-Rendered 2026-11-01 16:06 UTC; every age below is as of then.
+Rendered 2026-11-01 16:07 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 `agent-turns` · Age 1h · Owner `neve`
@@ -38,7 +38,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T14 | **Trial: agents settle every edit before the first, then gate once**<br>• An imperative heddle instruction: read, decide all edits, make them, gate once and fix the whole report in one round | [`plan-edits-before-gate`](design-plan-edits-before-gate.md) | darn | T13 | 1h<br>40m | heddle, stencil, claude |
+| T14 | **Trial: agents settle every edit before the first, then gate once**<br>• An imperative heddle instruction: read, decide all edits, make them, gate once and fix the whole report in one round | [`plan-edits-before-gate`](design-plan-edits-before-gate.md) | darn | T13 | 1h<br>41m | heddle, stencil, claude |
 | T16 | **The round-1 Plan reviewer gathers in one call a turn**<br>• 1.05 calls a turn and 41% of its weight removable by merging, though it carries the batching sentence | [`plan-reviewer-batching`](design-plan-reviewer-batching.md) | darn | T15 | 1h<br>56m | burler, stencil |
 
 ## Notes (1)
