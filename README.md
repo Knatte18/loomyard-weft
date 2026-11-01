@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-01 12:23 UTC; every age below is as of then.
+Rendered 2026-11-01 12:24 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -22,8 +22,8 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Parts-Write and Parts-Plan-Write: the plan written in two steps, beside Plan-Write**<br>• A coarse splitter and a seat table of part writers joined by a chair, as an opt-in alternative to Plan-Write, built to be benched against it<br>• `profile: light` | [`plan-split-producers`](design-plan-split-producers.md) | tapestry | Plan-Burler-Review | neve | 2h<br>1h | loom, stencil, shed, profiles |
 | T3 | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more<br>• `profile: light` | [`reed-status-buttons`](design-reed-status-buttons.md) | tapestry | Discussion-Burler-Review | neve | 2w<br>21m | reed, config, batten |
-| T4 | **The batcher template makes the wide profile, budget 300k, its active default**<br>• internal/batcher/template.yaml gains the wide profile and makes it active; cautious stays as the fallback | [`batcher-wide-default`](design-batcher-wide-default.md) | darn | Code-Bouncer | neve | 7m<br>7m | webster |
-| T6 | **A long gate run answers within the cache lifetime, so the waiting agent keeps its prompt cache warm**<br>• lym gate test caps the run wait like the slot wait, with the cap a config value beside the engine cache lifetime<br>• `profile: light` | [`gate-run-keeps-cache-warm`](design-gate-run-keeps-cache-warm.md) | tapestry | Discussion-Write | neve | 18h<br>53m | gate, shuttle, config |
+| T4 | **The batcher template makes the wide profile, budget 300k, its active default**<br>• internal/batcher/template.yaml gains the wide profile and makes it active; cautious stays as the fallback | [`batcher-wide-default`](design-batcher-wide-default.md) | darn | Code-Burler-Review | neve | 7m<br>7m | webster |
+| T6 | **A long gate run answers within the cache lifetime, so the waiting agent keeps its prompt cache warm**<br>• lym gate test caps the run wait like the slot wait, with the cap a config value beside the engine cache lifetime<br>• `profile: light` | [`gate-run-keeps-cache-warm`](design-gate-run-keeps-cache-warm.md) | tapestry | Discussion-Write | neve | 18h<br>54m | gate, shuttle, config |
 | T7 | **One verb to take work over on another machine, leaving every run in a known state**<br>• Moving to another machine is many hand steps, and afterwards run states are unclear | [`machine-switch`](design-machine-switch.md) | tapestry | Discussion-Burler-Review | neve | 1d<br>42m | fabric, dobby, batten |
 
 #### Ready (0)
