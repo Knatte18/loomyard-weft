@@ -14,22 +14,21 @@ The root project: the entries under no other project.
 
 Concrete and claimable; only a task can run.
 
-#### Running (2)
+#### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Measure what the batching sentences did to the Plan and Discussion writers**<br>• Transcript analysis of writer turns, calls per turn, context and cost before and after 2026-10-28<br>• `profile: docs` | [`batching-effect-audit`](design-batching-effect-audit.md) | darn | Darn-Write | neve | 9h<br>9h | stencil, shuttle, loom |
+| T7 | **pr-continue wakes the PR-Review wait at once**<br>• The PR-Review wait sleeps up to a minute between wakes, so lym loom pr-continue takes effect up to a minute late | [`pr-continue-wakes-row`](design-pr-continue-wakes-row.md) | darn | Worktree-Create | neve | 1d<br>0m | landing, batten |
 | T8 | **sampler: an interactive loom recipe, the operator iterating with an agent in the run's worktree until done**<br>• A Shed recipe whose agent waits for the operator and iterates on the result, then lands as usual<br>• `profile: light` | [`interactive-recipe`](design-interactive-recipe.md) | tapestry | Webster | neve | 18h<br>12h | shed, batten, reed, shuttle |
 
-#### Ready (1)
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T7 | **pr-continue wakes the PR-Review wait at once**<br>• The PR-Review wait sleeps up to a minute between wakes, so lym loom pr-continue takes effect up to a minute late | [`pr-continue-wakes-row`](design-pr-continue-wakes-row.md) | darn |  | 1d<br>0m | landing, batten |
+_None._
 
 #### Layer A (3)
 
