@@ -1,0 +1,527 @@
+diff --git a/PATTERN.md b/PATTERN.md
+index a7cdd125..df0a9efc 100644
+--- a/PATTERN.md
++++ b/PATTERN.md
+@@ -27,7 +27,7 @@
+ - `PATTERN-fabric-vocabulary` — Naming the wired composite: "fabric". (test) — [background](pattern/PATTERN-fabric-vocabulary.md)
+ - `PATTERN-fabric-git` — Running git on warp or weft: only `internal/fabricengine`, in-process; destroying only in its `destroy.go`, hub writes via a hub `os.Root`, store gc only in `housekeeping.go`. — [background](pattern/PATTERN-fabric-git.md)
+ - `PATTERN-gitrepo-client-boundary` — Running git: `gitexec.Run`/`runChecked`, raw only at pinned `//gitexec:raw` sites; in `internal/gitrepo`, local reads via `readGoGit` and `dotgit`; transients via `.git/info/exclude`, never `git add -f`. (test) — [background](pattern/PATTERN-gitrepo-client-boundary.md)
+-- `PATTERN-remote-refs-lock` — Writing remote-tracking refs by fetch, pull or push: under the repository's remote-refs lock via `gitrepo`, waiting while held; a tag push, a `--refmap=` fetch and a probe-clone fetch write none; a judge of origin against tracking refs holds it from reading origin to its verdict. (test)
++- `PATTERN-remote-refs-lock` — Writing remote-tracking refs by fetch, pull or push: under the repository's remote-refs lock via `gitrepo`, waiting while held, the pause gate passed before the lock is taken, and the process's network calls all pass the gate until the lock is released; a tag push, a `--refmap=` fetch and a probe-clone fetch write none; a judge of origin against tracking refs holds it from reading origin to its verdict. (test)
+ - `PATTERN-push-both-sides` — Pushing run records from Go: code branch goes along; a push refused after retry leaves a failed-push record and creel notice. (test) — [background](pattern/PATTERN-push-both-sides.md)
+ - `PATTERN-pair-teardown` — Tearing down a pair: only via `internal/pairteardown`; a producer creating or destroying a task worktree never runs inside it. (test) — [background](pattern/PATTERN-pair-teardown.md)
+ - `PATTERN-parent-lock` — Moving, merging into or landing on a local parent branch, or merging a run's pull request: only in a run's Finalize, under `internal/parentlock`'s lock for that parent.
+diff --git a/internal/battencli/cancelcmd.go b/internal/battencli/cancelcmd.go
+index ed5e79ee..c194149e 100644
+--- a/internal/battencli/cancelcmd.go
++++ b/internal/battencli/cancelcmd.go
+@@ -238,13 +238,9 @@ func hubCancelDeps(location *lymcwd.Location, slug string) (cancelDeps, error) {
+ 				return false, err
+ 			}
+ 			// A run directory deleted on disk but still tracked at the records HEAD has its deletion outstanding, which the cancel's records removal commits.
+-			for _, rel := range []string{shedrun.StatusRel(location, slug), shedrun.SeedRel(location, slug)} {
+-				_, tracked, err := fabricengine.CommittedAnchoredFile(location, rel)
+-				if err != nil || tracked {
+-					return tracked, err
+-				}
+-			}
+-			return false, nil
++			return runRecordsTracked(location, slug, func(rel string) ([]byte, bool, error) {
++				return fabricengine.CommittedAnchoredFile(location, rel)
++			})
+ 		},
+ 		ChildReachedParent: func(batten shedengine.Status, battenFound bool) (bool, error) {
+ 			child, childFound := reader.readChildStatus()
+diff --git a/internal/battencli/cleanup.go b/internal/battencli/cleanup.go
+index 5ade04e7..a4a0a31e 100644
+--- a/internal/battencli/cleanup.go
++++ b/internal/battencli/cleanup.go
+@@ -256,6 +256,17 @@ func cleanupSlug(location *lymcwd.Location, slug string, apply bool, deps cleanu
+ 	return false, nil
+ }
+ 
++// runRecordsTracked reports whether the records HEAD holds the status or the seed of slug's run, each read through committed.
++func runRecordsTracked(location *lymcwd.Location, slug string, committed func(relPath string) ([]byte, bool, error)) (bool, error) {
++	for _, rel := range []string{shedrun.StatusRel(location, slug), shedrun.SeedRel(location, slug)} {
++		_, tracked, err := committed(rel)
++		if err != nil || tracked {
++			return tracked, err
++		}
++	}
++	return false, nil
++}
++
+ // removalCommitError marks the records commit failure of removeRunRecords, which stops a cleanup pass.
+ type removalCommitError struct{ error }
+ 
+@@ -268,18 +279,25 @@ type scratchEmptyError struct{ error }
+ // Unwrap returns the emptying failure.
+ func (e scratchEmptyError) Unwrap() error { return e.error }
+ 
+-// removeRunRecords removes the records run directory of slug when it is on disk, commits that directory's removal on the records side with msg, and empties the slug's scratch contents beside its lock files.
++// removeRunRecords removes the records run directory of slug when it is on disk, commits that directory's removal on the records side with msg while the records HEAD tracks the run, and empties the slug's scratch contents beside its lock files.
+ // It takes no lock and judges nothing; the caller holds the slug's locks and has decided the removal.
+-// An already absent run directory still commits, so a removal whose commit failed earlier finishes on a re-run.
++// An already absent run directory the records HEAD still tracks commits, so a removal whose commit failed earlier finishes on a re-run;
++// one the records HEAD no longer tracks commits nothing and succeeds, so a removal that already finished succeeds again.
+ // committed reports whether a records commit was made.
+ // A commit failure is a removalCommitError and an emptying failure, which follows the commit, a scratchEmptyError.
+ func removeRunRecords(location *lymcwd.Location, slug, msg string, deps cleanupDeps) (committed bool, err error) {
+ 	if err := os.RemoveAll(shedrun.RunDir(location, slug)); err != nil {
+ 		return false, fmt.Errorf("remove run directory: %w", err)
+ 	}
+-	committed, err = deps.Commit([]string{shedrun.RunDirRel(location, slug)}, msg)
++	tracked, err := runRecordsTracked(location, slug, deps.Committed)
+ 	if err != nil {
+-		return committed, removalCommitError{fmt.Errorf("battencli: commit the removal of %s: %w", slug, err)}
++		return false, fmt.Errorf("read whether the records HEAD tracks the run of %s: %w", slug, err)
++	}
++	if tracked {
++		committed, err = deps.Commit([]string{shedrun.RunDirRel(location, slug)}, msg)
++		if err != nil {
++			return committed, removalCommitError{fmt.Errorf("battencli: commit the removal of %s: %w", slug, err)}
++		}
+ 	}
+ 	if err := emptyScratch(shedrun.ScratchDir(location, slug), true); err != nil {
+ 		return committed, scratchEmptyError{fmt.Errorf("empty scratch directory: %w", err)}
+diff --git a/internal/battencli/cleanup_test.go b/internal/battencli/cleanup_test.go
+index 021f6d13..674b971d 100644
+--- a/internal/battencli/cleanup_test.go
++++ b/internal/battencli/cleanup_test.go
+@@ -40,12 +40,14 @@ type cleanupFixture struct {
+ 
+ // cleanupStubs records what cleanup asked of its deps.
+ type cleanupStubs struct {
+-	committed  map[string][]byte
+-	commits    [][]string
+-	messages   []string
+-	spawns     int
+-	spawnErr   error
+-	commitHook func()
++	committed map[string][]byte
++	// committedErr, when set, is what the Committed stub returns.
++	committedErr error
++	commits      [][]string
++	messages     []string
++	spawns       int
++	spawnErr     error
++	commitHook   func()
+ }
+ 
+ func newCleanupStubs() *cleanupStubs {
+@@ -56,7 +58,7 @@ func (s *cleanupStubs) deps() cleanupDeps {
+ 	return cleanupDeps{
+ 		Committed: func(relPath string) ([]byte, bool, error) {
+ 			data, found := s.committed[relPath]
+-			return data, found, nil
++			return data, found, s.committedErr
+ 		},
+ 		Commit: func(relPaths []string, msg string) (bool, error) {
+ 			if s.commitHook != nil {
+@@ -86,6 +88,7 @@ func buildCleanupFixture(t *testing.T, location *lymcwd.Location, stubs *cleanup
+ 		}
+ 		writeCleanupFile(t, shedrun.StatusFile(location, slug), status)
+ 		writeCleanupFile(t, shedrun.SeedFile(location, slug), []byte("{}"))
++		stubs.committed[shedrun.SeedRel(location, slug)] = []byte("{}")
+ 	}
+ 	if fixture.committedStatus != "" {
+ 		stubs.committed[shedrun.StatusRel(location, slug)] = statusJSON(t, fixture.committedStatus)
+@@ -356,6 +359,83 @@ func TestCleanup(t *testing.T) {
+ 	}
+ }
+ 
++func TestRemoveRunRecords_CommitsTheRemovalOnlyWhileTheRecordsHeadTracksTheRun(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name          string
++		onDisk        bool
++		trackedRel    func(*lymcwd.Location, string) string
++		wantCommitted bool
++	}{
++		{name: "a tracked run directory on disk is removed and committed", onDisk: true, trackedRel: shedrun.SeedRel, wantCommitted: true},
++		{name: "a deleted run directory whose status is tracked commits its removal", trackedRel: shedrun.StatusRel, wantCommitted: true},
++		{name: "a run directory already gone and untracked commits nothing and succeeds"},
++		{name: "an untracked run directory on disk is removed with no commit", onDisk: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			location := newCleanupLocation(t)
++			stubs := newCleanupStubs()
++			const slug = "alpha"
++			if tt.onDisk {
++				writeCleanupFile(t, shedrun.SeedFile(location, slug), []byte("{}"))
++			}
++			if tt.trackedRel != nil {
++				stubs.committed[tt.trackedRel(location, slug)] = []byte("{}")
++			}
++			scratchFile := filepath.Join(shedrun.ScratchDir(location, slug), "last-commit")
++			writeCleanupFile(t, scratchFile, []byte("x"))
++
++			committed, err := removeRunRecords(location, slug, "remove "+slug, stubs.deps())
++			if err != nil {
++				t.Fatalf("removeRunRecords() error = %v", err)
++			}
++			if committed != tt.wantCommitted {
++				t.Errorf("removeRunRecords() committed = %v; want %v", committed, tt.wantCommitted)
++			}
++			wantCommits := 0
++			if tt.wantCommitted {
++				wantCommits = 1
++			}
++			if len(stubs.commits) != wantCommits {
++				t.Errorf("commits = %v; want %d", stubs.commits, wantCommits)
++			}
++			if entryExists(shedrun.RunDir(location, slug)) {
++				t.Errorf("run directory %s still exists; want it removed", shedrun.RunDir(location, slug))
++			}
++			if entryExists(scratchFile) {
++				t.Errorf("scratch file %s still exists; want the scratch emptied", scratchFile)
++			}
++		})
++	}
++}
++
++func TestRemoveRunRecords_ReturnsTheErrorOfAFailedRecordsHeadReadWithoutCommitting(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	location := newCleanupLocation(t)
++	stubs := newCleanupStubs()
++	stubs.committedErr = errors.New("records HEAD unreadable")
++	const slug = "alpha"
++	scratchFile := filepath.Join(shedrun.ScratchDir(location, slug), "last-commit")
++	writeCleanupFile(t, scratchFile, []byte("x"))
++
++	committed, err := removeRunRecords(location, slug, "remove "+slug, stubs.deps())
++	if !errors.Is(err, stubs.committedErr) {
++		t.Errorf("removeRunRecords() error = %v; want it to wrap %v", err, stubs.committedErr)
++	}
++	if committed || len(stubs.commits) != 0 {
++		t.Errorf("removeRunRecords() committed = %v, commits = %v; want no commit", committed, stubs.commits)
++	}
++	if !entryExists(scratchFile) {
++		t.Errorf("scratch file %s was removed; want the scratch left in place", scratchFile)
++	}
++}
++
+ func TestCleanup_DryRunListsExactlyWhatApplyRemovesAndChangesNothing(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/battencli/cli.go b/internal/battencli/cli.go
+index 0cd88abb..2d33638a 100644
+--- a/internal/battencli/cli.go
++++ b/internal/battencli/cli.go
+@@ -15,6 +15,7 @@
+ // It then takes the cancel marker, a record whose writer's liveness is a lock it holds, which every driving verb refuses on and a second cancel reads to finish an interrupted one.
+ // The order is: end the registered processes, take batten's locks, stop the pair's strands and the tackler, remove the pair and its task branches with --remove, remove the records, leave the claim draft, lift the slug's own pauses, push and notify, and remove the marker last.
+ // Without --remove the pair is kept and the cancel names "lym batten cancel <slug> --remove" as the step before the slug runs again.
++// Records already removed and no longer tracked at the records HEAD count as removed, with no records commit, so "--remove" after a plain cancel succeeds.
+ // An unreachable origin ends only the processes and strands, leaves the marker and posts a notice naming the cancel to run once origin answers.
+ // The cancel of a beam project first runs the hub's origin reconcile and refuses while the beam has members, naming each to land or cancel first, or, once the beam's pawl run holds its entry, to cancel and move off the beam; with origin unreachable it refuses naming the reconcile's way forward.
+ // A beam with no members is ended like a task, its dobby with its run, and its orch and watcher are then stopped, a failure there only a warning on the report; `lym beam create <slug>` starts the run again.
+diff --git a/internal/gitrepo/doc.go b/internal/gitrepo/doc.go
+index 1d554e36..b3d5eebe 100644
+--- a/internal/gitrepo/doc.go
++++ b/internal/gitrepo/doc.go
+@@ -57,6 +57,7 @@
+ //     Fetch, FetchWithArgs, Pull and every push method run git under it, waiting while it is held,
+ //     since a fetch and a push both write the shared remote-tracking refs and two concurrent writers of one ref make the loser fail.
+ //     A caller that reads origin and then judges the tracking refs holds it across both.
++//     It passes the process's pause gate before it takes the lock and stays admitted until the release, so a pause never holds a lock holder that other processes wait on.
+ //   - IsAncestor is the ancestry/reachability primitive: it answers "is sha
+ //     an ancestor of ref" via `git merge-base --is-ancestor`, mapping git's
+ //     tri-state exit code directly rather than folding any non-zero exit
+diff --git a/internal/gitrepo/remoterefslock.go b/internal/gitrepo/remoterefslock.go
+index 5999bb5d..1ca7587f 100644
+--- a/internal/gitrepo/remoterefslock.go
++++ b/internal/gitrepo/remoterefslock.go
+@@ -7,13 +7,19 @@ import (
+ 	"path/filepath"
+ 
+ 	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/pauserecord"
+ )
+ 
+ // RemoteRefsLockFileName names the remote-refs lock file in a repository's common git dir.
+ // A fetch and a push both write the remote-tracking refs every worktree of the repository shares, so two such calls racing on one ref make the loser fail with git's "incorrect old value provided" or "cannot lock ref".
+ const RemoteRefsLockFileName = "lym-remote-refs.lock"
+ 
++// remoteRefsGateOp names the in-flight operation the pause gate marks while a process wants or holds the remote-refs lock.
++const remoteRefsGateOp = "remote-refs"
++
+ // HoldRemoteRefs takes the remote-refs lock of the repository this checkout belongs to, waiting while another holder has it, and returns its release.
++// It passes the process's pause gate before it takes the lock and stays admitted until the release,
++// so a pause never holds a git call made under the lock while other processes wait on it.
+ // A holder that reads origin and then judges the tracking refs sees no push or fetch of the repository land in between.
+ // The lock is not reentrant: a holder runs no fetch, pull or push through this package, since each takes the lock itself.
+ func (r *Repo) HoldRemoteRefs() (release func() error, err error) {
+@@ -21,11 +27,17 @@ func (r *Repo) HoldRemoteRefs() (release func() error, err error) {
+ 	if err != nil {
+ 		return nil, fmt.Errorf("gitrepo: hold the remote-refs lock of %s: %w", r.path, err)
+ 	}
++	leaveGate := pauserecord.Admit(remoteRefsGateOp)
+ 	held, err := lock.AcquireWriteLock(filepath.Join(commonDir, RemoteRefsLockFileName))
+ 	if err != nil {
++		leaveGate()
+ 		return nil, fmt.Errorf("gitrepo: hold the remote-refs lock of %s: %w", r.path, err)
+ 	}
+-	return held.Release, nil
++	return func() error {
++		err := held.Release()
++		leaveGate()
++		return err
++	}, nil
+ }
+ 
+ // withRemoteRefs runs call under the remote-refs lock, releasing it once call returns.
+diff --git a/internal/gitrepo/remoterefslock_integration_test.go b/internal/gitrepo/remoterefslock_integration_test.go
+index 3d50159a..9a928e54 100644
+--- a/internal/gitrepo/remoterefslock_integration_test.go
++++ b/internal/gitrepo/remoterefslock_integration_test.go
+@@ -1,8 +1,9 @@
+-// remoterefslock_integration_test.go covers the remote-refs lock against real git repositories: one lock per repository, every fetch, pull and push method waiting on it, and concurrent fetches and pushes of one repository that all succeed under it.
++// remoterefslock_integration_test.go covers the remote-refs lock against real git repositories: one lock per repository, the pause gate passed before it is taken, every fetch, pull and push method waiting on it, and concurrent fetches and pushes of one repository that all succeed under it.
+ 
+ package gitrepo_test
+ 
+ import (
++	"context"
+ 	"fmt"
+ 	"path/filepath"
+ 	"strings"
+@@ -13,6 +14,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/gitrepo"
+ 	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -72,6 +74,64 @@ func TestHoldRemoteRefs_OneLockServesEveryWorktreeOfARepository(t *testing.T) {
+ 	_ = probe.Release()
+ }
+ 
++// TestHoldRemoteRefs_PassesThePauseGateBeforeTheLockAndStaysAdmittedUntilTheRelease is not parallel: it installs the process-wide network gate.
++func TestHoldRemoteRefs_PassesThePauseGateBeforeTheLockAndStaysAdmittedUntilTheRelease(t *testing.T) {
++	tiergate.Require(t, 1)
++	clone, _ := publishedClone(t)
++	lockPath := remoteRefsLockPath(t, clone)
++	recordPath := filepath.Join(t.TempDir(), pauserecord.RecordFileName)
++	pausedAt := time.Date(2026, 1, 1, 12, 0, 0, 0, time.UTC)
++	setLive := func(live ...pauserecord.Entry) {
++		t.Helper()
++		if _, err := pauserecord.Update(recordPath, pausedAt, func(record *pauserecord.Record) error {
++			record.Live = live
++			return nil
++		}); err != nil {
++			t.Fatalf("pauserecord.Update: %v", err)
++		}
++	}
++	setLive(pauserecord.Entry{Scope: pauserecord.ScopeHub, PausedAt: pausedAt})
++	waits := 0
++	t.Cleanup(pauserecord.InstallGate(pauserecord.Gate{
++		Geometry: pauserecord.Geometry{RecordPath: recordPath, Slug: "a"},
++		Notify:   func(string) {},
++		Sleep: func(context.Context, time.Duration) error {
++			waits++
++			probe, acquired, err := lock.TryAcquireWriteLock(lockPath)
++			if err != nil || !acquired {
++				t.Errorf("TryAcquireWriteLock while held at the gate = %v, %v; want the lock free until the gate is passed", acquired, err)
++			} else {
++				_ = probe.Release()
++			}
++			setLive()
++			return nil
++		},
++	}))
++
++	release, err := gitrepo.New(clone).HoldRemoteRefs()
++	if err != nil {
++		t.Fatalf("HoldRemoteRefs() error = %v", err)
++	}
++	if waits != 1 {
++		t.Fatalf("gate waits before the lock = %d; want 1", waits)
++	}
++	setLive(pauserecord.Entry{Scope: pauserecord.ScopeHub, PausedAt: pausedAt.Add(time.Minute)})
++	_, done := pauserecord.Network("fetch")
++	done()
++	if waits != 1 {
++		t.Errorf("gate waits for a call under the lock = %d; want the holder's calls to pass at once", waits-1)
++	}
++
++	if err := release(); err != nil {
++		t.Fatalf("release() error = %v", err)
++	}
++	_, done = pauserecord.Network("fetch")
++	done()
++	if waits != 2 {
++		t.Errorf("gate waits after the release = %d; want the next call held again", waits)
++	}
++}
++
+ // remoteRefsHeldWindow is how long a call must stay blocked behind a held remote-refs lock to count as waiting on it.
+ // A call that ignored the lock finishes a local git operation well inside it; a blocked call can never fail the check, so the window only bounds how fast a missing lock is caught.
+ const remoteRefsHeldWindow = 500 * time.Millisecond
+diff --git a/internal/pauserecord/doc.go b/internal/pauserecord/doc.go
+index 3248d7ca..d1aa7b93 100644
+--- a/internal/pauserecord/doc.go
++++ b/internal/pauserecord/doc.go
+@@ -31,12 +31,15 @@
+ //
+ // Network is the process gate that holds network calls: the CLI root installs a Gate once per process, and a call waits at entry while a pause covers the process, then writes a marker under `NetDir` that its returned function removes.
+ // ListNetOps lists the markers of live processes, which are the operations in flight.
++// An operation named remote-refs marks a lock hold, which lasts from before the lock is taken until its release and covers the git calls and retries made under it.
+ // It also returns the time it held the call, zero unless the wait slept, so a caller can move its own deadline later by that time; Network keeps its context-free signature and takes only the operation name.
+ // With no gate installed, as in every test binary, Network does nothing and reports zero.
+ // The gate only waits and marks; it fails no call.
+ // While a call waits it also keeps a `WaitingMarker` (pid, start time and slug) under `WaitingDir`, a sibling of `NetDir` that `ListNetOps` never reads, removed as soon as the wait returns.
+ // `ListWaiting` lists the markers of live processes and removes the rest.
+ // The marker records only what the gate waits on, and no gate decision reads it.
++// Admit passes the gate as Network does and admits the process until its release runs; while an admission stands, every network call of the process passes at once, still marked in flight, whichever goroutine or repository makes the call.
++// A caller takes it before a lock other processes wait on, so a pause never holds the lock's holder.
+ // SetGateExemptAll sets `Gate.ExemptAll` on the installed gate, so its waiter lets every live entry pass, for the one process an explicit operator verb runs in; it does nothing with no gate installed, and the returned function restores the previous value.
+ // The exemption never reaches a child, which installs its own gate.
+ // A gate with `Defer` set, which only a detached push or board-sync child installs, hands off to the function `SetGateDeferral` stored when `GateCovered` reads a live entry covering the process, before any wait; that function is the child's exit and does not return.
+diff --git a/internal/pauserecord/hold.go b/internal/pauserecord/hold.go
+index e15cd6a9..e2e3dc06 100644
+--- a/internal/pauserecord/hold.go
++++ b/internal/pauserecord/hold.go
+@@ -122,6 +122,7 @@ func sleepOnTimer(ctx context.Context, d time.Duration) error {
+ }
+ 
+ // NetOp is the marker of one network operation in flight.
++// An operation named remote-refs marks a lock hold: it lasts from before the lock is taken until its release, and covers the git calls and retries made under it.
+ type NetOp struct {
+ 	PID       int    `json:"pid"`
+ 	StartTime string `json:"start_time"`
+@@ -238,6 +239,7 @@ var (
+ 	gateDeferral   atomic.Pointer[func()]
+ 	netOpCounter   atomic.Int64
+ 	waitingCounter atomic.Int64
++	admissions     atomic.Int64
+ )
+ 
+ // SetGateDeferral stores the function a deferring gate calls when a live entry covers its process, and returns the function that restores the previous one.
+@@ -377,18 +379,21 @@ func replaceGateExempt(scope string, pausedAt time.Time) gateExempt {
+ // While it waits it keeps a waiting marker under WaitingDir, removed as soon as the wait returns and before the in-flight marker is written.
+ // It returns held, the time from entry until the wait returned, which is zero unless the wait slept at least once.
+ // With no gate installed it returns zero and a no-op at once.
++// While an admission of the process stands it marks the operation without waiting, whichever goroutine asks and whatever the call is, including a call unrelated to the admitted caller.
+ // It only waits at entry: it fails no call, and a marker it cannot write is skipped.
+ func Network(op string) (held time.Duration, done func()) {
+ 	gate := installedGate.Load()
+ 	if gate == nil {
+ 		return 0, func() {}
+ 	}
++	if admissions.Load() > 0 {
++		return 0, markInFlight(gate, op)
++	}
+ 	now := gate.Now
+ 	if now == nil {
+ 		now = time.Now
+ 	}
+ 	slug := gate.Geometry.Slug
+-	holdsParentLock := func() bool { return gate.HoldsParentLock != nil && gate.HoldsParentLock(slug) }
+ 	slept := false
+ 	waiter := gate.waiter(func() { slept = true })
+ 	if gate.Defer && GateCovered() {
+@@ -410,21 +415,41 @@ func Network(op string) (held time.Duration, done func()) {
+ 	if slept {
+ 		held = now().Sub(entered)
+ 	}
++	return held, markInFlight(gate, op)
++}
++
++// Admit passes the gate as Network does, marking op in flight, and admits the process until the returned release runs.
++// While an admission stands, every network call of the process passes the gate at once, still marked in flight;
++// the pass-through is process-wide for the length of the admission, so a call on another goroutine or in another repository passes too.
++// It serves a caller that takes a lock other processes wait on and makes network calls under it:
++// admitted before it takes the lock, the holder is never held by a pause while it holds the lock, and a pause that starts meanwhile reads its calls in flight.
++// With no gate installed it waits for nothing and marks nothing.
++func Admit(op string) (release func()) {
++	_, done := Network(op)
++	admissions.Add(1)
++	return func() {
++		admissions.Add(-1)
++		done()
++	}
++}
+ 
++// markInFlight writes the in-flight marker of op for the gate's process and returns the function that removes it; a marker it cannot write is skipped.
++func markInFlight(gate *Gate, op string) (done func()) {
++	slug := gate.Geometry.Slug
+ 	marker := NetOp{
+ 		PID:             gate.PID,
+ 		StartTime:       gate.StartTime,
+ 		Slug:            slug,
+ 		Strand:          gate.Strand,
+ 		Op:              op,
+-		UnderParentLock: holdsParentLock(),
++		UnderParentLock: gate.HoldsParentLock != nil && gate.HoldsParentLock(slug),
+ 		StartedAt:       time.Now(),
+ 	}
+ 	markerPath := filepath.Join(NetDir(gate.Geometry.RecordPath), fmt.Sprintf("%d-%d.json", gate.PID, netOpCounter.Add(1)))
+ 	if err := writeMarker(markerPath, marker); err != nil {
+-		return held, func() {}
++		return func() {}
+ 	}
+-	return held, func() { os.Remove(markerPath) }
++	return func() { os.Remove(markerPath) }
+ }
+ 
+ // writeMarker writes the marker to path, creating its directory.
+diff --git a/internal/pauserecord/hold_test.go b/internal/pauserecord/hold_test.go
+index 58ee50bc..3b34bd2e 100644
+--- a/internal/pauserecord/hold_test.go
++++ b/internal/pauserecord/hold_test.go
+@@ -449,6 +449,47 @@ func TestNetwork(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("an admission passes every call of the process at once, still marked in flight, until it is released", func(t *testing.T) {
++		recordPath := filepath.Join(t.TempDir(), RecordFileName)
++		setLive(t, recordPath, Entry{Scope: ScopeHub, PausedAt: epoch})
++		sleeps := 0
++		defer InstallGate(Gate{
++			Geometry: Geometry{RecordPath: recordPath, Slug: "a"},
++			PID:      42,
++			Notify:   func(string) {},
++			Sleep: func(ctx context.Context, d time.Duration) error {
++				sleeps++
++				resumeLive(t, recordPath)
++				return nil
++			},
++		})()
++
++		release := Admit("remote-refs")
++		if sleeps != 1 {
++			t.Fatalf("sleeps = %d after Admit, want the admission held once by the live entry", sleeps)
++		}
++		setLive(t, recordPath, Entry{Scope: ScopeHub, PausedAt: epoch.Add(time.Minute)})
++		_, done := Network("fetch")
++		if sleeps != 1 {
++			t.Fatalf("sleeps = %d for a call under the admission, want it to pass at once", sleeps)
++		}
++		ops, err := ListNetOps(recordPath, alive)
++		if err != nil || len(ops) != 2 || ops[0].Op == ops[1].Op {
++			t.Fatalf("ListNetOps under the admission = %+v, %v; want the admission's and the call's markers", ops, err)
++		}
++		done()
++		release()
++		if ops, err := ListNetOps(recordPath, alive); err != nil || len(ops) != 0 {
++			t.Fatalf("ListNetOps after the release = %+v, %v; want none", ops, err)
++		}
++
++		_, done = Network("fetch")
++		done()
++		if sleeps != 2 {
++			t.Fatalf("sleeps = %d after the release, want the call held again", sleeps)
++		}
++	})
++
+ 	t.Run("SetGateExemptAll with no gate installed installs none", func(t *testing.T) {
+ 		restore := SetGateExemptAll()
+ 		restore()
