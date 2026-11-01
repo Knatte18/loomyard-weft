@@ -22,17 +22,16 @@ One fixed orch role for every repository, repository orch rules in heddle throug
 
 The root project: the entries under no other project.
 
-### Tasks (5)
+### Tasks (4)
 
 Concrete and claimable; only a task can run.
 
-#### Running (4)
+#### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Parts-Write and Parts-Plan-Write: the plan written in two steps, beside Plan-Write**<br>• A coarse splitter and a seat table of part writers joined by a chair, as an opt-in alternative to Plan-Write, built to be benched against it<br>• `profile: light` | [`plan-split-producers`](design-plan-split-producers.md) | tapestry | Finalize | neve | 3h<br>3h | loom, stencil, shed, profiles |
 | T3 | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more<br>• `profile: light` | [`reed-status-buttons`](design-reed-status-buttons.md) | tapestry | Webster | neve | 2w<br>2h | reed, config, batten |
 | T6 | **A long gate run answers within the cache lifetime, so the waiting agent keeps its prompt cache warm**<br>• lym gate test caps the run wait like the slot wait, with the cap a config value beside the engine cache lifetime<br>• `profile: light` | [`gate-run-keeps-cache-warm`](design-gate-run-keeps-cache-warm.md) | tapestry | Webster | neve | 19h<br>2h | gate, shuttle, config |
 | T7 | **One verb to take work over on another machine, leaving every run in a known state**<br>• Moving to another machine is many hand steps, and afterwards run states are unclear | [`machine-switch`](design-machine-switch.md) | tapestry | Webster | neve | 1d<br>2h | fabric, dobby, batten |
@@ -103,3 +102,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 3w<br>4d | webster |
 | F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 9d<br>2h | loom, board, batten, workspaces |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>3d | burler, shed, orch, quarry, report |
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T1 | **Parts-Write and Parts-Plan-Write: the plan written in two steps, beside Plan-Write**<br>• A coarse splitter and a seat table of part writers joined by a chair, as an opt-in alternative to Plan-Write, built to be benched against it<br>• `profile: light` | [`plan-split-producers`](design-plan-split-producers.md) | 3h<br>3h | loom, stencil, shed, profiles |
