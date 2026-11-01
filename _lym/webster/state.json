@@ -1,6 +1,6 @@
 {
   "runGuid": "981dcfc4af2a226e537181dcdc0e6575",
-  "planFingerprint": "a7fe103d81e4ccd8b7d2b22855fb88b61051a414d5d74eb3695316205c250852",
+  "planFingerprint": "49e06f711ecbde9d6b6b98b42b3854ca7b5184ebfc5e8b588ce6d4579ccbaa86",
   "planFileHashes": {
     "00-overview.md": "c37d9bbce623cf8357475a48bb827df6e5c0f3b67fc433e691b67e02ca784974",
     "01-shuttle-max-reruns-key.md": "5ef928ac4b432ec7b271b17fd103070fa8824d17227338af5ae0c9f618250ea4",
@@ -15,8 +15,8 @@
     "10-gate-detached-runner.md": "88bffb27a8522207ca8c80bc20e13d463139aeacf4b4c9a42eb9f9eb90ddb769",
     "11-gate-capped-front.md": "8524f5021f88fd43f03c61227de0de1b12936a26bcaedc5b24878a000f59680d",
     "12-gate-long-wait.md": "b0eb167facbd5a5ffedcfcf27100f2017b6875235e8d17a1861a8d02dc68a4e2",
-    "13-card-verify-capped.md": "28d970c9b5019e55370c9a4b1a452151db3588afcdff4b2ae946f5de65526088",
-    "14-agent-gate-calls.md": "fa7589b9e8a6bf7e72efc654aed9ccf5bef51d912b97cd42134bb96b8586efd4",
+    "13-card-verify-capped.md": "af1b787531db75504bd698c21d25c39e53dcbfb39b36ae5a24eed6250bf9ad1f",
+    "14-agent-gate-calls.md": "04379d549bfcc0a47378150c6756ea7d89b82bcb322554760172dd0fd8b57652",
     "15-agent-keep-warm-text.md": "a3e825188c205a6f9731b5b4101f408fd31ceb8c0ad1c97988b112ead6f051fa"
   },
   "planOverviewFrameHash": "d1a956700516307b4b8537efc512b8c7f8df4ef57e5da97d2045f28c07e0265e",
@@ -369,7 +369,7 @@
       }
     }
   ],
-  "currentBatch": 13,
+  "currentBatch": 0,
   "masterStrand": "46e7be2b6eaf853643f0d14aab73b07f",
   "masterSessionId": "6c8372cc-0276-4e08-a1ef-a58cb9a44e5a",
   "masterEngine": "claude",
@@ -462,8 +462,8 @@
         "15-agent-keep-warm-text"
       ],
       "cardHashes": {
-        "13-card-verify-capped": "28d970c9b5019e55370c9a4b1a452151db3588afcdff4b2ae946f5de65526088",
-        "14-agent-gate-calls": "fa7589b9e8a6bf7e72efc654aed9ccf5bef51d912b97cd42134bb96b8586efd4",
+        "13-card-verify-capped": "af1b787531db75504bd698c21d25c39e53dcbfb39b36ae5a24eed6250bf9ad1f",
+        "14-agent-gate-calls": "04379d549bfcc0a47378150c6756ea7d89b82bcb322554760172dd0fd8b57652",
         "15-agent-keep-warm-text": "a3e825188c205a6f9731b5b4101f408fd31ceb8c0ad1c97988b112ead6f051fa"
       },
       "startSha": "784a418256d0971fc663e24c70e94eec620a5182",
@@ -471,8 +471,30 @@
       "spawnedAt": "2026-11-01T14:26:46Z",
       "sessionId": "6c8372cc-0276-4e08-a1ef-a58cb9a44e5a",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "13-card-verify-capped",
+        "status": "done",
+        "head_sha": "b85254c1f4105d466f027644b7f1e61edd8e19a7",
+        "deviations": [
+          "internal/gatecli/cardverify.go",
+          "internal/gatecli/cardverify_integration_test.go",
+          "internal/gatecli/detachfront.go",
+          "internal/gatecli/detachfront_integration_test.go",
+          "internal/gatecli/detachrun.go",
+          "internal/gateslot/tiers.go"
+        ]
+      },
+      "cardShas": [
+        "b85254c1f4105d466f027644b7f1e61edd8e19a7"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-gate-run-keeps-cache-warm/6c8372cc-0276-4e08-a1ef-a58cb9a44e5a/subagents/agent-a9d4f5293b158ce90.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-gate-run-keeps-cache-warm/6c8372cc-0276-4e08-a1ef-a58cb9a44e5a/subagents/agent-a9d4f5293b158ce90.jsonl"
+      ]
     },
     "6": {
       "slug": "verifyrun-tied-line",
@@ -526,6 +548,7 @@
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-gate-run-keeps-cache-warm/6c8372cc-0276-4e08-a1ef-a58cb9a44e5a/subagents/agent-ac5eb4813962cb787.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-gate-run-keeps-cache-warm/6c8372cc-0276-4e08-a1ef-a58cb9a44e5a/subagents/agent-a0121419ed0d1497c.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-gate-run-keeps-cache-warm/6c8372cc-0276-4e08-a1ef-a58cb9a44e5a/subagents/agent-ae3fec75545205212.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-gate-run-keeps-cache-warm/6c8372cc-0276-4e08-a1ef-a58cb9a44e5a/subagents/agent-ae3fec75545205212.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-gate-run-keeps-cache-warm/6c8372cc-0276-4e08-a1ef-a58cb9a44e5a/subagents/agent-a9d4f5293b158ce90.jsonl"
   ]
 }

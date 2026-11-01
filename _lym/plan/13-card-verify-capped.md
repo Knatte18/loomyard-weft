@@ -1,7 +1,7 @@
 # Card 13 — card-verify-capped
 
 **Create:**
-- `plan:internal/gatecli#runCardLine` -> `func runCardLine(out io.Writer, card planparser.Card, how string) int`
+- `internal/gatecli#runCardLine`
 
 **Edit:**
 - `internal/gatecli#cardVerifyCmd` -> `func cardVerifyCmd(seams detachSeams) *cobra.Command`

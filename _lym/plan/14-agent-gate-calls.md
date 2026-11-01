@@ -1,7 +1,7 @@
 # Card 14 — agent-gate-calls
 
 **Create:**
-- `plan:internal/gateslot#Config.AgentGateCall` -> `func (c Config) AgentGateCall(key string, cards ...string) (string, error)`
+- `internal/gateslot#Config.AgentGateCall`
 
 **Edit:**
 - `internal/websterengine#cardGateCommand`
