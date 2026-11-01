@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 | T2 | **Reed loses the Parts-Plan-Write chair strand while its part writers run**<br>• The chair vanished from reed, then the row failed on two missed liveness checks | [`reed-loses-parts-chair`](design-reed-loses-parts-chair.md) | darn | Finalize | neve | 1h<br>29m | reed, loom |
 | T6 | **lym config --set cannot write a key inside a nested map, such as a gate tier env**<br>• An orch cannot change a gate tier env or command without an interactive editor | [`config-set-nested-keys`](design-config-set-nested-keys.md) | darn | Code-Burler-Fix | neve | 1h<br>28m | config, gate |
 | T7 | **Dobby reports a healthy run idle in the seconds after its agent session ends**<br>• The no-agent idle clock falls back to the row start in the gap between the session ending and the row writing its history | [`dobby-idle-notice-row-end`](design-dobby-idle-notice-row-end.md) | darn | Finalize | neve | 6h<br>28m | dobby, shuttle |
-| T8 | **batten cancel hangs on a step held by its own pause, and --remove fails on removed records**<br>• A cancel during Open-IDE deadlocks with the step waiting on the cancel's pause; cancel --remove errors when the records are already gone | [`cancel-hangs-on-own-pause`](design-cancel-hangs-on-own-pause.md) | darn | Code-Burler-Review | neve | 38m<br>28m | batten |
+| T8 | **batten cancel hangs on a step held by its own pause, and --remove fails on removed records**<br>• A cancel during Open-IDE deadlocks with the step waiting on the cancel's pause; cancel --remove errors when the records are already gone | [`cancel-hangs-on-own-pause`](design-cancel-hangs-on-own-pause.md) | darn | Code-Burler-Fix | neve | 38m<br>28m | batten |
 | T10 | **The board README shows a task's profile in the Recipe column**<br>• Move the profile from a bullet under the task title into the Recipe column | [`readme-profile-in-recipe-column`](design-readme-profile-in-recipe-column.md) | darn | Finalize | neve | 7h<br>28m | board |
 
 ### Ready (0)
@@ -66,7 +66,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 4w<br>2h | shuttle, codex |
+| E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 4w<br>3h | shuttle, codex |
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 5d<br>7h | batten, stencil, config |
 | E4 |  | **Prove the dotnet scoper, shared build and Drift on the C# sandbox hub**<br>• Switch the sandbox gate to scoper dotnet, a build step and --no-build, then enable Drift there | [`sandbox-dotnet-gate`](design-sandbox-dotnet-gate.md) | 3d<br>3d | dotnet, gate |
 | E5 |  | **A landing notice is not lost when set late, when dobby was down, or when the orch is absent**<br>• Close the known limits landing-watch left: a late notify_on_land, a Land passed while dobby was down, and a dropped line when no orch is live | [`landing-watch-limits`](design-landing-watch-limits.md) | 11h<br>11h | dobby, orch |
