@@ -1,6 +1,6 @@
 # Board renders root as project P0 with its own file, last in the README
 
-`board-root-p0` · Task · enhancement, board · running · Describe
+`board-root-p0` · Task · enhancement, board · running · PR-Review
 
 ## Seen (operator, 2026-11-01)
 
