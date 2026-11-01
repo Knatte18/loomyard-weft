@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Burler-Review",
+  "current_producer": "Plan-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Burler-Review",
-    "last": "Plan-Bouncer → bounced to Plan-Burler-Review",
+    "now": "Plan-Burler-Fix",
+    "last": "Plan-Burler-Review → bounced to Plan-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -199,6 +199,59 @@
       "output": "/home/knatte/Code/loomyard-LYMHUB/warp-visibility/_lym/reviews/plan/round-1-bouncer-ledger.md",
       "at": "2026-11-01T08:49:50Z",
       "routed_to": "Plan-Burler-Review"
+    },
+    {
+      "producer": "Plan-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/warp-visibility/_lym/reviews/plan/round-2-review.md",
+      "at": "2026-11-01T09:04:23Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-01T08:57:06.14584164Z",
+          "end": "2026-11-01T08:57:06.145981131Z"
+        },
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-01T08:58:07.258839253Z",
+          "end": "2026-11-01T08:58:07.259001516Z"
+        },
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-01T08:59:08.387465767Z",
+          "end": "2026-11-01T08:59:08.387657144Z"
+        },
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-01T09:00:09.502304014Z",
+          "end": "2026-11-01T09:00:09.502439016Z"
+        },
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-01T09:01:10.616410844Z",
+          "end": "2026-11-01T09:01:10.616555044Z"
+        },
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-01T09:02:11.729034729Z",
+          "end": "2026-11-01T09:02:11.729166465Z"
+        },
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-01T09:04:23.333221643Z",
+          "end": "2026-11-01T09:04:23.333532334Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Plan-Burler-Fix"
     }
   ],
   "product": {
