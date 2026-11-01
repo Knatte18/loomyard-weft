@@ -1,6 +1,6 @@
 # Trial: batcher profile wide (budget 300k)
 
-`batch-budget-300k-trial` · Task · research, webster · running · Worktree-Create
+`batch-budget-300k-trial` · Task · research, webster · running · Record-Write
 
 ## Seen
 
