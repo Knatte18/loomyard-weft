@@ -770,7 +770,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "a60f187b995579173bb137e0f792d82c",
   "masterSessionId": "182615f8-c2d3-4e66-9c5a-db5c8744d6b1",
   "masterEngine": "claude",
@@ -900,6 +900,22 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-warp-visibility/182615f8-c2d3-4e66-9c5a-db5c8744d6b1/subagents/agent-a73c6cf38bb7c1c8f.jsonl"
       ]
+    },
+    "6": {
+      "slug": "module-test-bolt-dir-sweep",
+      "cards": [
+        "06-module-test-bolt-dir-sweep"
+      ],
+      "cardHashes": {
+        "06-module-test-bolt-dir-sweep": "a018154c055fe9ec4ea5bb814b3635666e21cde3f17a0c9ca4019d45535526d4"
+      },
+      "startSha": "2de4c4c64e4328bca253f336104c6501988d998b",
+      "kind": "fork",
+      "spawnedAt": "2026-11-01T09:22:19Z",
+      "sessionId": "182615f8-c2d3-4e66-9c5a-db5c8744d6b1",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
