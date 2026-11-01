@@ -1,0 +1,28 @@
+# Relevant files
+
+- `internal/gatecli/doc.go` — the gate verbs' contract: slots, keep-warm slot wait, child lifetime, exit codes, in-process run
+- `internal/gatecli/rungate.go` `RunGate`, `TierObserver` — in-process gate entry that must stay blocking
+- `internal/gatecli/cli.go` `SlotBusyExit` — the exit code the capped answer reuses
+- `internal/gatecli/run.go` `runTest` — slot wait and the slot-busy answer the front reproduces
+- `internal/gatecli/child.go` `runTiedChild` — tiers tied to the verb's life, which the runner now owns
+- `internal/shuttleengine/await.go` `DefaultAwaitCap`, `AwaitAny` — the constant cap and the capped poll
+- `internal/shuttleengine/engine.go` `Engine` — `PromptCacheLifetime`, the seam the cap resolves through
+- `internal/shuttleengine/config.go` `Config`, `ConfigSpec`, `LoadConfig` — shuttle.yaml where the new keys go
+- `internal/shuttleengine/template.yaml` — shuttle.yaml template
+- `internal/shuttleengine/claudeengine/command.go` `PromptCacheLifetime` — role's lifetime from claude.yaml
+- `internal/shuttleengine/claudeengine/doc.go` — prompt-cache TTL and one-hour Bash ceiling
+- `internal/shuttleengine/claudeengine/template.yaml` — per-role cache lifetimes
+- `internal/shuttlecli/await.go` `awaitCmd` — `lym shuttle await`, the other keep-warm wait
+- `internal/shuttleengines/shuttleengines.go` `New` — the one place a concrete engine is built
+- `internal/agentname/agentname.go` `StrandNameEnv`, `Parse` — caller's strand and role
+- `internal/runproc/doc.go` — process owner record and end sequence the runner joins
+- `internal/gateslot/tiers.go` `Config.GateCall` — the `--wait` gate call render
+- `internal/gateslot/runlog.go` `RunRecord`, `ReadRunRecords` — run records the break-even reads
+- `internal/websterengine/verifyfixer.go` — renders the fixer's gate call into its prompt
+- `internal/websterengine/cardgate.go` — renders the implementer's card and batch gate calls
+- `internal/websterengine/runlevel.go` — renders the verify fixer's gate call
+- `internal/loomcli/roundgate.go` — gate call source for verify gates and the Publish failure note
+- `internal/verifytree/verify.go` `DirtyPaths` — dirty path set the join compares
+- `internal/shellguard/rows.go` — the gate rule text
+- `internal/loomcli/doc.go` — llm driver versus Go driver
+- `internal/loomcli/sharedbootstrap.go` — llm is the default driver kind for loom start
