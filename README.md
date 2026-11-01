@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Parts-Write and Parts-Plan-Write: the plan written in two steps, beside Plan-Write**<br>• A coarse splitter and a seat table of part writers joined by a chair, as an opt-in alternative to Plan-Write, built to be benched against it<br>• `profile: light` | [`plan-split-producers`](design-plan-split-producers.md) | tapestry | Discussion-Write | neve | 43m<br>1m | loom, stencil, shed, profiles |
-| T2 | **Delete the one-shot boltrename program**<br>• Both hubs are on _bolt, so the rename program goes | [`boltrename-remove`](design-boltrename-remove.md) | darn | Code-Bouncer | neve | 3m<br>3m | cwd |
+| T2 | **Delete the one-shot boltrename program**<br>• Both hubs are on _bolt, so the rename program goes | [`boltrename-remove`](design-boltrename-remove.md) | darn | Describe | neve | 3m<br>3m | cwd |
 
 #### Ready (0)
 
@@ -45,8 +45,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **A hub rename program must tolerate its own landing run and the new binary**<br>• Lesson from boltrename: the landed run pair and an early _bolt/.lym blocked it | [`boltrename-landing-order`](design-boltrename-landing-order.md) | 3m<br>2m | cwd, fabric |
-| B2 |  | **A landing commit message ends with a stray Created using block**<br>• The landing message of 229638f7 repeats body lines after Created using | [`landing-message-stray-block`](design-landing-message-stray-block.md) | 3m<br>3m | landing |
+| B1 |  | **A hub rename program must tolerate its own landing run and the new binary**<br>• Lesson from boltrename: the landed run pair and an early _bolt/.lym blocked it | [`boltrename-landing-order`](design-boltrename-landing-order.md) | 4m<br>3m | cwd, fabric |
+| B2 |  | **A landing commit message ends with a stray Created using block**<br>• The landing message of 229638f7 repeats body lines after Created using | [`landing-message-stray-block`](design-landing-message-stray-block.md) | 4m<br>4m | landing |
 
 #### Enhancements (13)
 
@@ -71,7 +71,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 4w<br>5d | burler |
-| F2 |  | **A status-bar button opens a short-lived board agent, so board talks need no orch**<br>• An ordinary agent with a board-policy skill loaded, for discussing and filing notes and releasing tasks on go-ahead | [`board-agent-button`](design-board-agent-button.md) | 15h<br>36m | reed, board, shuttle, orch |
+| F2 |  | **A status-bar button opens a short-lived board agent, so board talks need no orch**<br>• An ordinary agent with a board-policy skill loaded, for discussing and filing notes and releasing tasks on go-ahead | [`board-agent-button`](design-board-agent-button.md) | 15h<br>37m | reed, board, shuttle, orch |
 | F3 |  | **A window lym opens is snapped into the active desktop tiling by a configured command**<br>• After opening a window lym runs a machine-local configured command, such as the operator tiling script; lym knows nothing about KDE | [`kde-window-placement`](design-kde-window-placement.md) | 3d<br>18h | reed, ide, config |
 | F4 |  | **The orch lies dormant and wakes only when a run needs help**<br>• Dobby takes the mechanics and a spawned agent the doubtful cases; one orch per beam lives on, dormant, woken when needed | [`dormant-orch`](design-dormant-orch.md) | 15h<br>15h | orch, dobby, arbiter |
 | F5 |  | **Fabric's ordinary-monorepo verb surface**<br>• Against plain git, fabric still lacks log, show, branch, tag, stash, revert, restore, rm/mv, rebase, cherry-pick and blame | [`fabric-monorepo-verbs`](design-fabric-monorepo-verbs.md) | 4w<br>3w | fabric |
