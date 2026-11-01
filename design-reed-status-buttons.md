@@ -1,6 +1,8 @@
 # Configurable action buttons on the reed status bar
 
-`reed-status-buttons` · Note · feature, reed, config, batten
+`reed-status-buttons` · Task · feature, reed, config, batten · draft
+
+Depends on: [`kde-window-placement`](design-kde-window-placement.md)
 
 ## Seen
 
