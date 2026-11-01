@@ -39,7 +39,7 @@ buttons:
 - A failing command shows a short tmux message on the status line; its output goes to a log.
 - Layering: the hub's config holds the default set, and a machine-local override may add buttons of its own.
 - The hub's default set holds the buttons the operator named: HALT (`lym tender pause <slug>`, which holds agent and network work and interrupts the running turns at once; `lym batten pause` waits for a producer boundary, so it is no halt), CANCEL (kept apart from HALT, behind `confirm`), open the pair in VS Code, one more terminal on the same worktree (`lym reed window <worktree-dir>`), a new empty agent (`lym shuttle open --role <role> --model opus[high]`), and `lym orch distill` and `lym orch refresh` on the orch session, both behind `confirm`.
-- Later buttons are entries too, such as releasing a beam's held runs from note `machine-switch` and the board agent of note `board-agent-button`.
+- Later buttons are entries too, such as the board agent of note `board-agent-button`.
 
 ## Placement (operator, 2026-10-30)
 
