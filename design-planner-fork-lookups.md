@@ -29,4 +29,9 @@ Discussion-Write explores the code more than any other role, so the same cost ap
 The `psb-rv-plan` writer ran on `opus[medium]`; its Agent calls were one fork writing the plan and the `twill-plan` lens reviews, none for lookups.
 Plan-Write ran in fork mode, where lym's hook (`steerAgentNonForkDeny` in `claudeengine/settings.go`) allowed only fork subagents, so a fresh explore agent was refused.
 
-The bench runs after task `darn-sonnet-helpers` lands, which removes that hook for every role.
+## Built since (tidy, 2026-11-01)
+
+Task `darn-sonnet-helpers` landed.
+No run denies the Agent tool any more: `steerAgentNonForkDeny` and `deny_agent_tool` are gone, and a Plan writer may start a fresh subagent.
+The loom plan stencil now says when to hand lookups to a fresh Sonnet subagent, so the stencil guidance exists in a first form; the Discussion-Write stencil was not named in the landing.
+The bench no longer waits on that task: run it, with the guided writer against one given no guidance.
