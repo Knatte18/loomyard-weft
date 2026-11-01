@@ -770,7 +770,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 13,
   "masterStrand": "a60f187b995579173bb137e0f792d82c",
   "masterSessionId": "182615f8-c2d3-4e66-9c5a-db5c8744d6b1",
   "masterEngine": "claude",
@@ -851,6 +851,22 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-warp-visibility/182615f8-c2d3-4e66-9c5a-db5c8744d6b1/subagents/agent-a515e24bab2491d27.jsonl"
       ]
+    },
+    "13": {
+      "slug": "bolt-replayer-registry",
+      "cards": [
+        "13-bolt-replayer-registry"
+      ],
+      "cardHashes": {
+        "13-bolt-replayer-registry": "6f9f16ad1659c7e037db4c06f8439780bc18b8041efa686341349f94e1ca2b4d"
+      },
+      "startSha": "6eca0995c2bb2e124308542f28182eb5d78ac621",
+      "kind": "fork",
+      "spawnedAt": "2026-11-01T09:44:29Z",
+      "sessionId": "182615f8-c2d3-4e66-9c5a-db5c8744d6b1",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "3": {
       "slug": "fabric-bolt-dir-sweep",
