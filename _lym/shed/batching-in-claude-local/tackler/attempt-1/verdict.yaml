@@ -1,0 +1,10 @@
+verdict: hand-back
+reason: |
+  The stop is a bootstrap refusal (envelope step 4f7667733120c55c; trace log line 4). battencli refuses to resume because the local branch batching-in-claude-local is rewound against origin. Origin was moved to 31119e4e0af72f01b36f49262010101fcbeb8bf1, and 13 local commits past that point are no longer on origin. A plain re-launch cannot clear this: the branch stays diverged until someone picks a side. The two ways out both change git state, and they are not equivalent:
+  (a) accept origin's rewind: `git reset --keep 31119e4e0af72f01b36f49262010101fcbeb8bf1` in /home/knatte/Code/loomyard-LYMHUB/batching-in-claude-local, then `lym fabric push`. This drops the 13 local commits.
+  (b) restore origin: `git push origin batching-in-claude-local`, a fast-forward that puts the 13 commits back on origin and overrides the rewind.
+  Choosing between them is a scope and data decision about which history the run keeps, so it belongs to the run's parent. I have not run either command; both are outside what this tackler may do.
+question: |
+  Origin's batching-in-claude-local was rewound to 31119e4e0af72f01b36f49262010101fcbeb8bf1, which drops 13 local commits (the list is in drive-envelope-20261101-173545-b9fe.json, error field). Which history should the run keep?
+  1) Accept the rewind (Recommended only if the 13 commits are known to be superseded): run `git reset --keep 31119e4e0af72f01b36f49262010101fcbeb8bf1` in /home/knatte/Code/loomyard-LYMHUB/batching-in-claude-local, then `lym fabric push`, then re-run `lym batten run batching-in-claude-local`.
+  2) Restore the 13 commits (keeps origin's rewind overridden): run `git push origin batching-in-claude-local` in /home/knatte/Code/loomyard-LYMHUB/batching-in-claude-local, then re-run `lym batten run batching-in-claude-local`.
