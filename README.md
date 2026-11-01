@@ -34,7 +34,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Parts-Write and Parts-Plan-Write: the plan written in two steps, beside Plan-Write**<br>• A coarse splitter and a seat table of part writers joined by a chair, as an opt-in alternative to Plan-Write, built to be benched against it | [`plan-split-producers`](design-plan-split-producers.md) | tapestry |  | 0m<br>0m | loom, stencil, shed, profiles |
+| T1 | `draft` **Parts-Write and Parts-Plan-Write: the plan written in two steps, beside Plan-Write**<br>• A coarse splitter and a seat table of part writers joined by a chair, as an opt-in alternative to Plan-Write, built to be benched against it | [`plan-split-producers`](design-plan-split-producers.md) | tapestry | T2 | 0m<br>0m | loom, stencil, shed, profiles |
 | T3 | `draft` **Rename the Bolt checkout directory _board to _bolt, by script alone**<br>• A pure, mechanical rename of _board to _bolt everywhere, with a rename program for existing hubs | [`bolt-dir-rename`](design-bolt-dir-rename.md) | darn | T2 | 18h<br>3h | fabric, board, config, cwd, stencil |
 
 ### Notes (32)

@@ -2,6 +2,8 @@
 
 `plan-split-producers` · Task · feature, loom, stencil, shed, profiles · draft
 
+Depends on: [`warp-visibility`](design-warp-visibility.md)
+
 ## Seen
 
 The Plan writer is the costliest session of a tapestry run: it reads the code for the whole task in one session, and its mean context grows with the task (334k on the latest landed runs, peaks to 576k), paid again on every turn and inherited by every twill lens fork.
