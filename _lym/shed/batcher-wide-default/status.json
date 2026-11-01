@@ -1,14 +1,21 @@
 {
-  "current_producer": "",
+  "current_producer": "Record-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "",
-    "last": "",
+    "now": "Record-Write",
+    "last": "Preflight → done",
     "wait": ""
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Preflight",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-01T12:16:47Z"
+    }
+  ],
   "product": {
     "slug": "batcher-wide-default",
     "parent": "main",
