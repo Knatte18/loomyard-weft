@@ -24,7 +24,7 @@ Held by a run; its scope is locked until the run ends.
 | T3 | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more<br>• `profile: light` | [`reed-status-buttons`](design-reed-status-buttons.md) | tapestry | Discussion-Burler-Review | neve | 2w<br>18m | reed, config, batten |
 | T4 | **The batcher template makes the wide profile, budget 300k, its active default**<br>• internal/batcher/template.yaml gains the wide profile and makes it active; cautious stays as the fallback | [`batcher-wide-default`](design-batcher-wide-default.md) | darn | Darn-Write | neve | 4m<br>4m | webster |
 | T6 | **A long gate run answers within the cache lifetime, so the waiting agent keeps its prompt cache warm**<br>• lym gate test caps the run wait like the slot wait, with the cap a config value beside the engine cache lifetime<br>• `profile: light` | [`gate-run-keeps-cache-warm`](design-gate-run-keeps-cache-warm.md) | tapestry | Worktree-Create | neve | 18h<br>51m | gate, shuttle, config |
-| T7 | **One verb to take work over on another machine, leaving every run in a known state**<br>• Moving to another machine is many hand steps, and afterwards run states are unclear | [`machine-switch`](design-machine-switch.md) | tapestry | Discussion-Burler-Fix | neve | 1d<br>39m | fabric, dobby, batten |
+| T7 | **One verb to take work over on another machine, leaving every run in a known state**<br>• Moving to another machine is many hand steps, and afterwards run states are unclear | [`machine-switch`](design-machine-switch.md) | tapestry | Discussion-Bouncer | neve | 1d<br>39m | fabric, dobby, batten |
 
 #### Ready (0)
 
