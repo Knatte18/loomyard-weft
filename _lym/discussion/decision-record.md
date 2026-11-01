@@ -271,6 +271,12 @@ Decision: D12's exception stands as written: when a part's writer no longer answ
 
 Rationale: Parent, 2026-11-01: ending the row Stuck and rewriting a whole part after every reinvoke costs more than the chair reading one part's area once; the reading limit still holds in the normal path. The strand name already identifies a session everywhere in lym, so the bound holds on every OS with no new mechanism.
 
+### Added after Discussion (parent, 2026-11-01): Plan-Write's prompt stays line for line; parts file is never edited by the chair; part check flags a missing export
+
+Decision: (1) Plan-Write's composed prompt stays the same line for line, in today's order: card 12 must not move the glyph subsection or the two kept sentences. Split the shared text into as many included blocks as the order needs (such as a second block for the glyph subsection, included where it stands today), and the part writer and chair include the same blocks. (2) The chair never edits the parts file. ValidatePart and planparser.JoinParts compare each contract export with the part's created, re-signed and deleted refs by the canonical spelling the resolve pass gives, so a respelled handle still matches; drop the respell clause and the stencil bullets that let the chair respell, as finding F3 lists. (3) part-export-missing stays in ValidatePart as a fourth D7 difference: a part writer whose part lacks an export its contract names learns it from its own check and fixes its own cards before the join.
+
+Rationale: Parent, 2026-11-01: Plan-Write is the baseline the bench measures the split against, so its prompt must not change at all. The parts file is Parts-Write's output and a canonical comparison makes respelling needless. Catching a missing export at the writer is cheaper than the chair finding it at the join and sending the part back.
+
 ## Constraints
 
 - PATTERN-shed-recipe-registry: the two rows are `Constructor` rows in `internal/shedrecipe`, each value looked up by key, switched by `entry_gate`.
