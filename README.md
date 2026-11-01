@@ -53,7 +53,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Dobby sends a dead-driver notice for a run that has just started**<br>• Dobby reads a go-driven child as dead in the gap between loom start writing its running status and the driver taking its lock | [`dead-driver-false-notice`](design-dead-driver-false-notice.md) | tapestry |  | 3m<br>1m | dobby, loom |
+| T1 | `draft` **Dobby sends a dead-driver notice for a run that has just started**<br>• Dobby reads a go-driven child as dead in the gap between loom start writing its running status and the driver taking its lock | [`dead-driver-false-notice`](design-dead-driver-false-notice.md) | tapestry | T8<br>T7<br>T5 | 3m<br>0m | dobby, loom |
 | T3 | `draft` **Rename the Bolt checkout directory _board to _bolt, by script alone**<br>• A pure, mechanical rename of _board to _bolt everywhere, with a rename program for existing hubs | [`bolt-dir-rename`](design-bolt-dir-rename.md) | darn | T8<br>T4<br>T2<br>T5<br>T6<br>T7 | 14h<br>4m | fabric, board, config, cwd, stencil |
 
 ### Notes (31)
