@@ -1,0 +1,217 @@
+diff --git a/internal/battencli/dobbynotice.go b/internal/battencli/dobbynotice.go
+index d93c41a0..ee06f3ac 100644
+--- a/internal/battencli/dobbynotice.go
++++ b/internal/battencli/dobbynotice.go
+@@ -12,6 +12,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/battenshed"
+ 	"github.com/Knatte18/loomyard/internal/dobbyengine"
+ 	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+@@ -109,7 +110,7 @@ func readNoticeChild(prime *lymcwd.Location, slug string, locateTask func() (*ly
+ 	return child, true, nil
+ }
+ 
+-// noticeDriverAlive reports whether the child of slug has a live driver: a live driver strand, or a held driver lock or run lock.
++// noticeDriverAlive reports whether the child of slug has a live driver: a live driver strand, or a held driver, run or bootstrap lock.
+ // A lock that cannot be read reads as held, since a lock read must not make a working driver look dead.
+ func noticeDriverAlive(prime *lymcwd.Location, slug string, locateTask func() (*lymcwd.Location, error)) (bool, error) {
+ 	alive, err := childDriverAlive(prime, slug, locateTask)
+@@ -123,10 +124,11 @@ func noticeDriverAlive(prime *lymcwd.Location, slug string, locateTask func() (*
+ 	return childDriverLockHeld(slug, taskLocation), nil
+ }
+ 
+-// childDriverLockHeld reports whether the driver lock or the run lock of the child in taskLocation is held.
++// childDriverLockHeld reports whether the driver lock, the run lock or the loom bootstrap lock of the child in taskLocation is held.
++// The bootstrap lock counts because a loom bootstrap holds it from before it spawns the driver until the driver holds its own lock.
+ // A lock that cannot be read reads as held, since a lock read must not make a working driver look dead.
+ func childDriverLockHeld(slug string, taskLocation *lymcwd.Location) bool {
+-	for _, lockPath := range []string{shedrun.DriverLock(taskLocation, shedrun.SelfRunID), shedrun.RunLock(taskLocation, shedrun.SelfRunID)} {
++	for _, lockPath := range []string{shedrun.DriverLock(taskLocation, shedrun.SelfRunID), shedrun.RunLock(taskLocation, shedrun.SelfRunID), loomengine.LoomBootstrapLock(taskLocation)} {
+ 		held, err := runLockHeld(lockPath)
+ 		if err != nil {
+ 			logger.Debug("battencli: a child lock is unreadable; the driver reads as alive", "slug", slug, "lock", lockPath, "error", err)
+diff --git a/internal/battencli/dobbynotice_test.go b/internal/battencli/dobbynotice_test.go
+index 24ca1670..bce523fa 100644
+--- a/internal/battencli/dobbynotice_test.go
++++ b/internal/battencli/dobbynotice_test.go
+@@ -13,6 +13,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/battenrecipe"
+ 	"github.com/Knatte18/loomyard/internal/battenshed"
+ 	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+@@ -161,6 +162,14 @@ func TestChildDriverLockHeld(t *testing.T) {
+ 			},
+ 			want: true,
+ 		},
++		{
++			name: "AHeldLoomBootstrapLockReadsAlive",
++			arrange: func(t *testing.T, taskLocation *lymcwd.Location) {
++				t.Helper()
++				holdLock(t, loomengine.LoomBootstrapLock(taskLocation))
++			},
++			want: true,
++		},
+ 		{
+ 			name: "AnUnreadableLockReadsAlive",
+ 			arrange: func(t *testing.T, taskLocation *lymcwd.Location) {
+diff --git a/internal/battenshed/doc.go b/internal/battenshed/doc.go
+index bd13f7c1..707cca93 100644
+--- a/internal/battenshed/doc.go
++++ b/internal/battenshed/doc.go
+@@ -116,7 +116,7 @@
+ // and a marker from another pid or in the old layout reads as unconfirmed.
+ // A child with a live or retiring driver strand in its reed state, a held run lock, or a held Go driver lock, is adopted instead, with the confirmation recorded for this process,
+ // so a second driver is never stacked.
+-// The driver lock is a liveness signal of its own: a Go driver holds it for life while the run lock is free between steps, so a running go child whose driver lock is held has a driver at work and sends no driver-dead notice, and one with neither lock and no strand is noticed as driver-dead.
++// The driver lock is a liveness signal of its own: a Go driver holds it for life while the run lock is free between steps, so a running go child whose driver lock is held has a driver at work and sends no driver-dead notice, and one with neither lock, no loom bootstrap lock and no strand is noticed as driver-dead once it has been running for a minute of awake time from its running episode's since.
+ //
+ // A child that halts (blocked, paused or failed) is a budget-exempt wait, not a failure of the Run-Shed row:
+ // batten never spawns or resumes a halted child, bar the binary re-step below, logs one Info line per halt episode, and keeps yielding with the child's state, error, current producer and the resume command ("lym loom resume" in the task worktree) as its reason.
+diff --git a/internal/dobbyengine/doc.go b/internal/dobbyengine/doc.go
+index 02b83683..3b420401 100644
+--- a/internal/dobbyengine/doc.go
++++ b/internal/dobbyengine/doc.go
+@@ -124,7 +124,7 @@
+ //
+ //   - On each probe tick, after the scheduling steps, dobby reads the child of every listed run whose batten state is running with no cancel marker, through Deps.RunNotices, and sends the notice its condition calls for; a nil RunNotices.ReadChild sends none.
+ //   - A child that is not running, or that a pause covers, is in no condition.
+-//     A dead driver, no live driver strand and no held driver or run lock, is checked first, and names the respawn cap and `lym loom start` once batten respawned the child the cap of times with no progress.
++//     A dead driver, no live driver strand and no held driver, run or loom bootstrap lock, is checked first once the child has been running for a minute of awake time, so a driver still starting is no dead one, and names the respawn cap and `lym loom start` once batten respawned the child the cap of times with no progress.
+ //     With a live driver, an agent run on the provider's usage limit, then one stalled on an API error, each inactive for two minutes, then every agent idle for the quiet window with no live wait, give the usage-limit, api-error and quiet notices; with no agent run read, quiet counts from the later of the child's newest history entry and its state's since.
+ //     The idle clocks leave out the machine sleeps in the state record and the paused intervals, so a sleep or a pause can delay a notice and never raise one earlier.
+ //   - With RunNotices.ReviveAPIError set, the first sight of an api-error episode revives the stalled sessions and notices nothing; the notice goes when the episode still stands at a later probe tick, or at the third revived episode in a row with no write of the child's status file between.
+@@ -133,7 +133,7 @@
+ //     A driver-dead key ends when the child's state or its since changes, a quiet or api-error key when the newest agent activity moves, and a usage-limit key once no run reads usage-limited.
+ //     The child's state, its since and the revive streak ride in the run's entry of the state record, so a re-exec sends no notice twice.
+ //   - A failed read is logged once per episode and sends nothing.
+-//   - Bound: while an anchor change stands no notice goes, and a machine that takes a run over dates the child's since from its own first sight, so a driver-dead notice the other machine sent can go once more.
++//   - Bound: while an anchor change stands no notice goes, and a machine that takes a run over dates the child's since from its own first sight, so a driver-dead notice the other machine sent can go once more, after the start grace counted from that first sight.
+ //
+ // The landing notice:
+ //
+diff --git a/internal/dobbyengine/runnotice.go b/internal/dobbyengine/runnotice.go
+index ed69d807..7c3816bd 100644
+--- a/internal/dobbyengine/runnotice.go
++++ b/internal/dobbyengine/runnotice.go
+@@ -36,6 +36,10 @@ const apiErrorReviveStreak = 3
+ // childStateRunning is the child's state while its run has not halted, paused, failed or finished.
+ const childStateRunning = "running"
+ 
++// driverStartGrace is how long a running child may read with no live driver before the driver-dead notice goes, measured in awake time from the since of its running episode.
++// A bootstrap writes the running status before its driver takes a lock, so a dead reading inside this grace is a driver still starting.
++const driverStartGrace = time.Minute
++
+ // loomStartRemedy is the step the operator takes to bring a child's driver back, which `lym loom resume` does not: it never spawns an LLM driver.
+ const loomStartRemedy = `run "lym loom start" in the task worktree to bring a driver back`
+ 
+@@ -95,7 +99,7 @@ type AgentRun struct {
+ type RunNoticeDeps struct {
+ 	// ReadChild reads the child of the run slug; found is false while the child has no status file.
+ 	ReadChild func(slug string) (child ChildReading, found bool, err error)
+-	// DriverAlive reports whether the child has a live driver: a live driver strand, or a held driver or run lock.
++	// DriverAlive reports whether the child has a live driver: a live driver strand, or a held driver, run or bootstrap lock.
+ 	DriverAlive func(ctx context.Context, slug string) (bool, error)
+ 	// Agents reads the child's agent runs, and whether a Go-side wait is live, such as a verify, a parent lock wait or a pull request's review.
+ 	Agents func(ctx context.Context, slug string) (runs []AgentRun, waitLive bool, err error)
+@@ -220,6 +224,7 @@ func (d *daemon) runNotice(ctx context.Context, now time.Time, slug string, memo
+ 
+ // noticeCondition returns the condition the child is in, with the stamp of its episode key, and the newest agent activity it could read.
+ // Only a running child that no pause covers is in a condition, and a dead driver is checked before the agents, so an agent-based condition needs a live driver.
++// A dead driver is a condition only once the child has been running for driverStartGrace of awake time.
+ // A dead driver respawned the cap of times names the cap and `lym loom start`.
+ func (d *daemon) noticeCondition(ctx context.Context, now time.Time, slug string, child ChildReading, memory RunNoticeState, sleeps []pauserecord.Interval) (noticeFinding, activityStamp) {
+ 	if child.State != childStateRunning {
+@@ -243,6 +248,9 @@ func (d *daemon) noticeCondition(ctx context.Context, now time.Time, slug string
+ 	}
+ 	d.noticeFailures.Recover(slug+"|driver", "dobbyengine: the child's driver liveness reads again", "slug", slug)
+ 	if !alive {
++		if pauserecord.AwakeSince(memory.Since, now, sleeps, pause.Intervals) < driverStartGrace {
++			return noticeFinding{}, activityStamp{}
++		}
+ 		finding := noticeFinding{condition: conditionDriverDead, stamp: memory.Since.UnixNano(), text: "driver strand is dead"}
+ 		if child.RespawnCap > 0 {
+ 			finding.text = fmt.Sprintf("driver strand is dead; respawned %d times without progress; %s", child.RespawnCap, loomStartRemedy)
+diff --git a/internal/dobbyengine/runnotice_test.go b/internal/dobbyengine/runnotice_test.go
+index f0f23e37..c767cc8e 100644
+--- a/internal/dobbyengine/runnotice_test.go
++++ b/internal/dobbyengine/runnotice_test.go
+@@ -100,8 +100,9 @@ func TestRunNotice_Conditions(t *testing.T) {
+ 	}{
+ 		{
+ 			name: "ADeadDriverReadsTheChildsStateAndReasonRelativeToThePair",
+-			act: func(_ *passHarness, f *noticeFake) {
++			act: func(h *passHarness, f *noticeFake) {
+ 				f.alive = false
++				h.advance(driverStartGrace)
+ 				f.child.Error, f.child.HistoryLen = "waits on /wt/task/_lym/x.md", 4
+ 			},
+ 			want:  []string{"[dobby notice] task: running at Plan-Write; driver strand is dead; waiting: waits on _lym/x.md; since 2026-10-25T12:00:00Z; history 4"},
+@@ -109,12 +110,37 @@ func TestRunNotice_Conditions(t *testing.T) {
+ 		},
+ 		{
+ 			name: "ADeadDriverAtTheRespawnCapNamesTheCapAndLoomStart",
+-			act: func(_ *passHarness, f *noticeFake) {
++			act: func(h *passHarness, f *noticeFake) {
+ 				f.alive = false
++				h.advance(driverStartGrace)
+ 				f.child.RespawnCap = 3
+ 			},
+ 			want: []string{`running at Plan-Write; driver strand is dead; respawned 3 times without progress; run "lym loom start" in the task worktree`},
+ 		},
++		{
++			name: "AJustStartedChildWithNoDriverLockYetSendsNothing",
++			act: func(h *passHarness, f *noticeFake) {
++				f.alive = false
++				h.advance(driverStartGrace / 2)
++			},
++		},
++		{
++			name: "AMachineSleepDoesNotCountTowardTheStartGrace",
++			act: func(h *passHarness, f *noticeFake) {
++				f.alive = false
++				h.tick(false)
++				h.clock.suspend(3 * time.Hour)
++				h.tick(false)
++			},
++		},
++		{
++			name: "PausedTimeDoesNotCountTowardTheStartGrace",
++			act: func(h *passHarness, f *noticeFake) {
++				f.alive = false
++				f.pause = pauserecord.Coverage{Intervals: []pauserecord.Interval{{Start: start, End: start.Add(2 * driverStartGrace)}}}
++				h.advance(2 * driverStartGrace)
++			},
++		},
+ 		{
+ 			name: "ACoveredChildSendsNothing",
+ 			act: func(_ *passHarness, f *noticeFake) {
+@@ -333,6 +359,7 @@ func TestRunNotice_OncePerEpisode(t *testing.T) {
+ 	h, f := newNoticeHarness(t)
+ 	f.alive = false
+ 	since := f.child.Modified
++	h.advance(driverStartGrace)
+ 
+ 	h.tick(false)
+ 	if got := h.runNotices(); len(got) != 0 {
+@@ -365,6 +392,7 @@ func TestRunNotice_OncePerEpisode(t *testing.T) {
+ 		t.Fatalf("marker keys after the child halted = %q; want none", keys)
+ 	}
+ 	f.child.State, f.child.Modified = childStateRunning, h.clock.now()
++	h.advance(driverStartGrace)
+ 	h.tick(true)
+ 	if got := h.runNotices(); len(got) != 2 {
+ 		t.Fatalf("run notices = %q; want a second notice for the new running episode", got)
+@@ -470,6 +498,7 @@ func TestRunNotice_DeliveryIsRetriedOnProbeTicksThenDropped(t *testing.T) {
+ 	t.Parallel()
+ 	h, f := newNoticeHarness(t)
+ 	f.alive = false
++	h.advance(driverStartGrace)
+ 	attempts := 0
+ 	h.d.deps.Notice = func(_ context.Context, line string) error {
+ 		if strings.HasPrefix(line, runNoticePrefix) {
