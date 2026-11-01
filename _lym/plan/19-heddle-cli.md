@@ -2,22 +2,22 @@
 
 **Create:**
 - `internal/heddlecli/doc.go`
-- `plan:internal/heddlecli#Command` -> `func Command() *cobra.Command`
-- `plan:internal/heddlecli#RunCLI` -> `func RunCLI(out io.Writer, args []string) int`
-- `plan:internal/heddlecli#RunCLIIn` -> `func RunCLIIn(cwd string, out io.Writer, args []string) int`
-- `plan:internal/heddlecli#heddleCLI` -> `type heddleCLI struct`
-- `plan:internal/heddlecli#commandOf` -> `func commandOf(c *heddleCLI) *cobra.Command`
-- `plan:internal/heddlecli#heddleCLI.wire` -> `func (c *heddleCLI) wire(cwd string) error`
-- `plan:internal/heddlecli#heddleCLI.listCmd` -> `func (c *heddleCLI) listCmd() *cobra.Command`
-- `plan:internal/heddlecli#heddleCLI.getCmd` -> `func (c *heddleCLI) getCmd() *cobra.Command`
-- `plan:internal/heddlecli#heddleCLI.setCmd` -> `func (c *heddleCLI) setCmd() *cobra.Command`
-- `plan:internal/heddlecli#heddleCLI.removeCmd` -> `func (c *heddleCLI) removeCmd() *cobra.Command`
-- `plan:internal/heddlecli#heddleCLI.showCmd` -> `func (c *heddleCLI) showCmd() *cobra.Command`
-- `plan:internal/heddlecli#heddleCLI.renderCmd` -> `func (c *heddleCLI) renderCmd() *cobra.Command`
-- `plan:internal/heddlecli#heddleCLI.write` -> `func (c *heddleCLI) write(change func(*heddleengine.Store) error) error`
-- `plan:internal/heddlecli#heddleCLI.namedWorktree` -> `func (c *heddleCLI) namedWorktree(name string) (*lymcwd.Location, error)`
-- `plan:internal/heddlecli#TestHeddleCLI` -> `func TestHeddleCLI(t *testing.T)`
-- `plan:internal/heddlecli#TestMain` -> `func TestMain(m *testing.M)`
+- `internal/heddlecli#Command`
+- `internal/heddlecli#RunCLI`
+- `internal/heddlecli#RunCLIIn`
+- `internal/heddlecli#heddleCLI`
+- `internal/heddlecli#commandOf`
+- `internal/heddlecli#heddleCLI.wire`
+- `internal/heddlecli#heddleCLI.listCmd`
+- `internal/heddlecli#heddleCLI.getCmd`
+- `internal/heddlecli#heddleCLI.setCmd`
+- `internal/heddlecli#heddleCLI.removeCmd`
+- `internal/heddlecli#heddleCLI.showCmd`
+- `internal/heddlecli#heddleCLI.renderCmd`
+- `internal/heddlecli#heddleCLI.write`
+- `internal/heddlecli#heddleCLI.namedWorktree`
+- `internal/heddlecli#TestHeddleCLI`
+- `internal/heddlecli#TestMain`
 
 **Edit:**
 - `cmd/lym#newRoot`

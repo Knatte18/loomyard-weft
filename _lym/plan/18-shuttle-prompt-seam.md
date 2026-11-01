@@ -1,11 +1,11 @@
 # Card 18 — shuttle-prompt-seam
 
 **Create:**
-- `plan:internal/shuttleengine#PassageReader` -> `type PassageReader func(boltDir, engine string) ([]string, error)`
-- `plan:internal/shuttleengine#installedPassageReader` -> `var installedPassageReader atomic.Pointer[PassageReader]`
-- `plan:internal/shuttleengine#InstallPassageReader` -> `func InstallPassageReader(r PassageReader) (restore func())`
-- `plan:internal/shuttleengine#StandingPassages` -> `func StandingPassages(boltDir, engine string) []string`
-- `plan:internal/shuttleengine/claudeengine#TestPrepare_AppendsStandingPassages` -> `func TestPrepare_AppendsStandingPassages(t *testing.T)`
+- `internal/shuttleengine#PassageReader`
+- `internal/shuttleengine#installedPassageReader`
+- `internal/shuttleengine#InstallPassageReader`
+- `internal/shuttleengine#StandingPassages`
+- `internal/shuttleengine/claudeengine#TestPrepare_AppendsStandingPassages`
 
 **Edit:**
 - `internal/shuttleengine/claudeengine#Claude.Prepare`

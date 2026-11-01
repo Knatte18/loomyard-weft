@@ -4,13 +4,13 @@
 - `cmd/lym#newRoot`
 
 **Create:**
-- `plan:cmd/lym#TestPersistentPreRunE_InstallsSeams` -> `func TestPersistentPreRunE_InstallsSeams(t *testing.T)`
+- `cmd/lym#TestPersistentPreRunE_InstallsSeams`
 
 **Uses:**
 - `cmd/lym#findPersistentPreRunELit`
 - `internal/fabricengine#InstallWorktreeSeam`
 - `internal/fabricengine#RegisterBoltReplayer`
-- `plan:internal/shuttleengine#InstallPassageReader`
+- `internal/shuttleengine#InstallPassageReader`
 - `internal/heddleengine#Seam`
 - `internal/heddleengine#Replayer`
 - `internal/heddleengine#Renderer.Passages`
