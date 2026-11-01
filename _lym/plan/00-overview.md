@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -23,7 +23,7 @@ The cards build bottom-up: config keys, the parts parser and the plan checks' pa
 9 — seat-writer-kind — add the writer seat kind to the seat engine's validation, watch and spec
 10 — seat-writer-resume-join — finish writers in resume, the hold deferral and the join
 11 — multillm-writer-mapping — map a writer that ended the step onto Stuck or an error naming it
-12 — plan-format-block — move the card format and glyph rule into loom-block-plan-format
+12 — plan-format-block — move the card format and glyph rule into four included plan-format blocks, keeping Plan-Write's prompt line for line
 13 — parts-write-table — build the Parts-Write table and ship its stencil and depth fragments
 14 — parts-plan-write-table — build the Parts-Plan-Write table and ship the writer and chair stencils
 15 — parts-rotators — add the fresh-spawn preparations of the two rows
@@ -47,11 +47,11 @@ The cards build bottom-up: config keys, the parts parser and the plan checks' pa
 - **Rationale:** One check set serves the plan gate, the part gate, a writer's Accept and the join, and no index fake changes.
 - **Applies to:** cards 4, 5 and 7
 
-### Decision: plan-prompt-keeps-every-line
+### Decision: plan-format-blocks-keep-today-s-order
 
-- **Decision:** "Plan-Write's composed prompt keeps its content" (D12 and its added decision) is held as: the composed prompt keeps every line, bar the one cross-reference the move rewrites, pinned by a line-multiset golden; the glyph subsection moves from Step 2 to the head of Step 3's card format, and the two sentences a part writer must not follow stay in the template right after the block.
-- **Rationale:** The seat engine includes a block whole at one position and one level deep (`internal/seatengine#validateStencil`), so one block cannot sit both in Step 2 and in Step 3; D12 names one block.
-- **Applies to:** card 12
+- **Decision:** The shared card-format and glyph text splits into four blocks, `loom-block-plan-glyphs`, `loom-block-plan-format`, `loom-block-plan-overview` and `loom-block-plan-cards`, cut at the three lines that do not fit every including stencil, and each block is included where its text stands in `loom-template-plan.md` today, so `Plan-Write`'s composed prompt stays the same line for line (the parent's added decision on Plan-Write's prompt); the part writer and the chair include the same four blocks and state their own rule for the three lines.
+- **Rationale:** The seat engine includes a block whole at one position and one level deep (`internal/seatengine#validateStencil`), so one block cannot keep today's order and also leave out the lines a part writer must not follow.
+- **Applies to:** cards 12 and 14
 
 ### Decision: chair-timeout-against-the-effective-plan-timeout
 

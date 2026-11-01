@@ -39,7 +39,7 @@ A `gates(part)` error fails the table; it is a fail-loud wiring guard in `refusa
 Skills are `planSkills`; no seat forks.
 The table carries no chair gate; the producer entry sets it.
 
-`TestPartsPlanTable` (tier0, built as `TestPartsTable` is, over a written parts file of two parts) covers: one writer seat per part in file order with its name, output, inputs, gate and findings path, and an Accept that is the told one, observed by a told `accept` hook that records the part it was built for and returns an Accept recording its own call, which the test calls on each seat; the chair's inputs listing every part overview and its output the join record; the writers' table timeout and the chair's seat timeout, unset (twice `plan_timeout_min`, and twice `runTimeout` with a 0 `plan_timeout_min`) and set, and a set one not above `runTimeout` with a 0 `plan_timeout_min` failing the table; `part_writer` and `parts_chair` reaching their seats' model choices; each seat's composed prompt from `seatengine.Prompts` holding its part name, its plan directory and the plan-format block, with no `{{`; and an absent and a malformed parts file refused with their ways forward.
+`TestPartsPlanTable` (tier0, built as `TestPartsTable` is, over a written parts file of two parts) covers: one writer seat per part in file order with its name, output, inputs, gate and findings path, and an Accept that is the told one, observed by a told `accept` hook that records the part it was built for and returns an Accept recording its own call, which the test calls on each seat; the chair's inputs listing every part overview and its output the join record; the writers' table timeout and the chair's seat timeout, unset (twice `plan_timeout_min`, and twice `runTimeout` with a 0 `plan_timeout_min`) and set, and a set one not above `runTimeout` with a 0 `plan_timeout_min` failing the table; `part_writer` and `parts_chair` reaching their seats' model choices; each seat's composed prompt from `seatengine.Prompts` holding its part name and its plan directory, with no `{{`; and an absent and a malformed parts file refused with their ways forward.
 `TestStencils_TopLevelMarkers` gains `loom-template-part-writer` with `decision_record_path`, `edit_directive`, `friction_directive`, `overview_path`, `parent_directive`, `part_name`, `parts_path`, `pattern_directive`, `plan_dir`, `relevant_path` and `specs_dir`, and `loom-template-parts-chair` with `decision_record_path`, `edit_directive`, `friction_directive`, `join_path`, `overview_path`, `parent_directive`, `parts_dir`, `parts_path`, `pattern_directive`, `plan_dir` and `specs_dir`; the two stencils embed beside `LoomTemplatePlan`, with entries in `entries`.
 
 `contracts/stencils/loom/loom-template-part-writer.md`, in full:
@@ -48,7 +48,7 @@ The table carries no chair gate; the producer entry sets it.
 <!-- This is a part writer's opening prompt: one writer seat per part of the parts file, in the Parts-Plan-Write row's table that internal/loomengine's PartsPlanTable builds, filled by internal/seatengine from the seat's value map.
      part_name, plan_dir (the part's own directory) and overview_path (its 00-overview.md) are seat values; decision_record_path, relevant_path, parts_path and specs_dir are table values;
      parent_directive and edit_directive are rendered by the seat engine, and pattern_directive and friction_directive are optional.
-     It includes seat-directive-writer and loom-block-plan-format, each rendered from the same map; the block's gate_tiers and specs_dir come from the table. -->
+     It includes seat-directive-writer and the plan-format blocks loom-block-plan-glyphs, loom-block-plan-format, loom-block-plan-overview and loom-block-plan-cards, each rendered from the same map; the blocks' gate_tiers and specs_dir come from the table. -->
 
 # Part writer — turn one part's contract into plan cards
 
@@ -77,6 +77,10 @@ The shared spots whose `Needed by` names your part are the ones it touches.
   Where your contract names code outside your area, such as an export of a part you depend on or a member it re-signs, look up its signature with `lym quarry glyphs --text <dir>` or `lym quarry expand <glyph>`, and never read that code in full.
 - Take the design from the decision record and the seams between parts from the parts file.
 
+{{template "loom-block-plan-glyphs"}}
+This is the hard rule behind the glyph spelling rules Step 3 spells out below: a bare package-qualified symbol (`pkg.Symbol`) is a hard finding precisely because it is the one spelling that cannot have come verbatim from a quarry answer.
+The verbs above are the whole of what `lym quarry` offers you — there is no further verb to ask for.
+
 ## Step 3 — Write your part's cards into `{{.plan_dir}}`
 
 Create `{{.plan_dir}}` if it does not exist, and write your part there as a plan of its own: one `00-overview.md` and one card file per card, numbered from 1, in the format below.
@@ -92,6 +96,9 @@ Create `{{.plan_dir}}` if it does not exist, and write your part there as a plan
 
 {{template "loom-block-plan-format"}}
 
+{{template "loom-block-plan-overview"}}
+{{template "loom-block-plan-cards"}}
+
 ## Step 4 — Write `{{.overview_path}}` last, then check your part
 
 Write `{{.overview_path}}` only after every card file of your part exists.
@@ -99,9 +106,8 @@ Then run `lym loom validate-plan --part {{.part_name}}` and fix every finding un
 It checks your part as the plan gate checks a plan, counts the exports of the parts you depend on and of the shared spots that name your part as declared, refuses a card that targets a shared spot, and refuses an export of your contract that no card of yours creates, re-signs or deletes.
 Your output existing with that check passed is what tells the chair your part is ready.
 
-Two findings are not yours to fix in your cards; report each to the chair as Step 5 says, and wait for its ruling:
-- a `part-export-missing` finding saying the check rewrote an export's handle to another spelling: the contract's spelling must change, which only the chair rules on;
-- a refusal saying the parts file is gone or malformed.
+One finding is not yours to fix in your cards: a refusal saying the parts file is gone or malformed.
+Report it to the chair as Step 5 says, and wait for its ruling.
 
 ## Step 5 — When a contract is wrong
 
@@ -124,7 +130,7 @@ Never call the `AskUserQuestion` tool: this session is autonomous, and no operat
 <!-- This is the Parts-Plan-Write chair's opening prompt: the lead of the table internal/loomengine's PartsPlanTable builds, filled by internal/seatengine from the lead's value map.
      plan_dir, overview_path and join_path are seat values; decision_record_path, parts_path, parts_dir and specs_dir are table values;
      parent_directive and edit_directive are rendered by the seat engine, and pattern_directive and friction_directive are optional.
-     It includes seat-directive-writer-chair and loom-block-plan-format, each rendered from the same map; the block's gate_tiers and specs_dir come from the table.
+     It includes seat-directive-writer-chair and the plan-format blocks loom-block-plan-glyphs, loom-block-plan-format, loom-block-plan-overview and loom-block-plan-cards, each rendered from the same map; the blocks' gate_tiers and specs_dir come from the table.
      On a fresh start after a plan rotation the seat engine appends the prior-plan block to this prompt. -->
 
 # Parts chair — join the parts into one plan
@@ -142,7 +148,7 @@ You write no part of your own.
 
 - Read `{{.decision_record_path}}`, the decision record: the design and scope of the whole task.
   Never read the support log or the board.
-- Read `{{.parts_path}}`, the parts file, which you change only to respell an export as Step 1 says, whose format `{{.specs_dir}}/loom/loom-parts-spec.md` defines: each part's contract, and the shared spots no part owns.
+- Read `{{.parts_path}}`, the parts file, which you never change, whose format `{{.specs_dir}}/loom/loom-parts-spec.md` defines: each part's contract, and the shared spots no part owns.
 - Read each part's cards under `{{.parts_dir}}/<part>/` once its writer's ready line has arrived.
 - Read cards, not code.
   Read only the code each shared spot's cards need, and, when you fix a part yourself because its writer no longer answers, only the code of that part's area the fix needs.
@@ -153,7 +159,6 @@ You write no part of your own.
 - A writer may raise a contract it finds wrong.
   Rule on it from the decision record and the parts file, reply to that writer, and tell every other writer the ruling affects, naming the contract line and the ruling.
   Keep every ruling for the join record.
-- When a writer reports that its part check rewrote an export's handle to another spelling, change that export in `{{.parts_path}}` to the spelling the check gave, the one edit of the parts file you make, and tell every writer whose part uses the export to use the new spelling.
 - When a writer, or your own check, reports that the parts file is gone or malformed, tell your parent, whose way forward is to run the parts step again, and end your turn; you cannot write the parts file.
 
 ## Step 2 — Check each part against its contract
@@ -181,9 +186,17 @@ Once you have written anything into `{{.plan_dir}}` yourself after a join that s
   Place them after every card that makes what the spot uses, and before the first card that uses what the spot creates.
 - Insert or remove a card in `{{.plan_dir}}` only with `lym loom insert-card` or `lym loom remove-card`, which renumber the later cards, never by renaming, rewriting under a new name or deleting a card file by hand.
 - Rewrite the framing paragraph of `{{.overview_path}}` so it frames the whole task.
+- Once every shared spot's cards are inserted, rewrite each carried decision's `Applies to` line in `## Shared Decisions` to the joined plan's card numbers: `lym loom join-parts` printed which joined card each part card became, and `{{.overview_path}}`'s Card Index, which `lym loom insert-card` keeps current, gives that card's number now, matched by its slug.
 - When the decision record has a `## PATTERN changes` section, copy its bullets into the overview's `## PATTERN changes` section, one per entry, without the added-after-Discussion suffix; the plan gate refuses a mismatch.
 
+{{template "loom-block-plan-glyphs"}}
+This is the hard rule behind the glyph spelling rules below: a bare package-qualified symbol (`pkg.Symbol`) is a hard finding precisely because it is the one spelling that cannot have come verbatim from a quarry answer.
+The verbs above are the whole of what `lym quarry` offers you — there is no further verb to ask for.
+
 {{template "loom-block-plan-format"}}
+
+{{template "loom-block-plan-overview"}}
+{{template "loom-block-plan-cards"}}
 
 ## Step 5 — Check the plan, then write the join record last
 

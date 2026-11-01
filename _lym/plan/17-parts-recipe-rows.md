@@ -19,10 +19,10 @@
 - `internal/loomrecipe#writeLoomOutputs`
 - `internal/loomrecipe/doc.go`
 - `docs/overview.md`
+- `internal/reportengine/doc.go`
 
 **Uses:**
 - `internal/loomshed/doc.go`
-- `internal/reportengine/doc.go`
 - `internal/loomrecipe#TestDriftRows_EntryGate`
 - `internal/shedengine#TestGoto_StepResumesAtTarget`
 - `internal/loomrecipe#buildSequenceFixture`
@@ -67,6 +67,7 @@ The header comment's main line gains `Parts-Write` and `Parts-Plan-Write` before
 Bound, stated in that comment: each row reads the flag when the run enters it and a goto bypasses only its target's gate, so a flag flipped mid-branch routes the rest of the run by the new value; the flag is meant to be set before a run starts, in its profile or `run_settings`.
 
 **Plumbing.** `NamePartsWrite` and `NamePartsPlanWrite` join loomshed's row names; `InterruptPolicies` maps both to `shedverbs.InterruptPolicyReinvoke`, with a comment that each probes for a live chair and resumes it through the seat probe; `loomPhases` maps both to `PhasePlan`, so a bench reads one plan-phase span whichever producer ran.
+`internal/reportengine/doc.go`'s list of a tapestry run's plan-phase rows ("plan every Plan row, Drift-Baseline and Drift-Await") names `Parts-Write` and `Parts-Plan-Write`.
 `TestInterruptPolicyFor` gains a row for each, and `loomRowPhases`, the timing test's list of every loom row and its phase, gains both with `PhasePlan`.
 `gatedRowFanViolations` admits `PartsWrite` and `PartsPlanWrite` among the writer engines whose gated rows may carry no fan, and its refusal message, which lists the writer engines, names both.
 `internal/loomrecipe/doc.go`'s sentence that `Drift-Baseline` sits between the Discussion-Review ring and `Plan-Write` says it sits before `Parts-Write`, with the two parts rows between it and `Plan-Write`.

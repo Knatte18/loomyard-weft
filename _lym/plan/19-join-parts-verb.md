@@ -32,7 +32,7 @@
    - at the row in any halted state (blocked, failed, paused or awaiting), a run moved onto it by goto included: "the join runs only while Parts-Plan-Write is the running row; way forward: \"lym loom resume\", after which the row's chair runs the join: a live chair is resumed and joins itself, and otherwise the fresh spawn archives every part, rotates the plan directory and has the new chair join";
    - at another row, or with no status, which means no run has started here: "the join is the chair's alone, and a running Parts-Plan-Write row's chair runs it; past Parts-Plan-Write the joined plan is edited in place, for example with \"lym loom insert-card\"".
 2. The caller is not the chair's strand name: the same "the join is the chair's alone" refusal, naming the caller, which covers a part writer, the operator's shell, orch, a tackler and an arbiter.
-3. `join`'s refusal (a missing parts file or part overview, a failing part, an unmet export, a handle or path two parts create, a `language:` or `root:` mismatch) is passed through with its part and way forward.
+3. `join`'s refusal (a missing parts file or part overview, a failing part, which carries `part-export-missing` for an unmet export, a handle or path two parts create, a `language:` or `root:` mismatch) is passed through with its part and way forward.
 Otherwise it prints `ok` with `plan_dir` and the joined cards, one `{part, from, to, file}` each.
 `joinPartsCmd` runs on the full wiring, which tells it the reed geometry, takes no arguments, and is registered by `Command`; its help states the bound below.
 

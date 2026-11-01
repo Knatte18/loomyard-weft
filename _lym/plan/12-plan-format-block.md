@@ -1,39 +1,53 @@
 # Card 12 — plan-format-block
 
 **Create:**
+- `contracts/stencils/loom/loom-block-plan-glyphs.md`
 - `contracts/stencils/loom/loom-block-plan-format.md`
-- `internal/loomengine/testdata/plan-prompt.golden`
+- `contracts/stencils/loom/loom-block-plan-overview.md`
+- `contracts/stencils/loom/loom-block-plan-cards.md`
+- `plan:contracts/stencils#LoomBlockPlanGlyphs` -> `var LoomBlockPlanGlyphs []byte`
 - `plan:contracts/stencils#LoomBlockPlanFormat` -> `var LoomBlockPlanFormat []byte`
+- `plan:contracts/stencils#LoomBlockPlanOverview` -> `var LoomBlockPlanOverview []byte`
+- `plan:contracts/stencils#LoomBlockPlanCards` -> `var LoomBlockPlanCards []byte`
 
 **Edit:**
 - `contracts/stencils/loom/loom-template-plan.md`
+- `contracts/stencils/loom/loom-rubric-plan-review.md`
+- `contracts/specs/loom-plan-spec.md`
+- `contracts/specs/webster-spec.md`
+- `docs/overview.md`
 - `contracts/stencils#TestStencils_TopLevelMarkers`
 - `contracts/stencils#TestHubGenericStencils_NameNoGoTiers`
-- `internal/loomengine#TestPlanTable`
 
 **Extends:**
 - `contracts/stencils#entries`
 
-**Intent:** Move the card format and the glyph lookup rule out of the Plan-Write stencil into one included block, `loom-block-plan-format` (D12), so `Plan-Write`, the part writer and the parts chair read one copy (PATTERN-stencil-ownership).
-`Plan-Write`'s composed prompt keeps its content: the moved text is byte-identical except the cross-references the move rewrites, named below.
+**Intent:** Move the card format and the glyph lookup rule out of the Plan-Write stencil into included blocks (D12), so `Plan-Write`, the part writer and the parts chair read one copy (PATTERN-stencil-ownership).
+`Plan-Write`'s composed prompt stays the same line for line, in today's order (the parent's added decision on Plan-Write's prompt): the moved text is byte-identical, no cross-reference is rewritten, and each block is included where its text stands today.
 
-**The block.** `contracts/stencils/loom/loom-block-plan-format.md` opens with an HTML comment saying it is the plan-format block that `loom-template-plan`, `loom-template-part-writer` and `loom-template-parts-chair` pull in with the bare `{{template "loom-block-plan-format"}}`, that the fill hands it the including seat's value map, that it declares the two required markers `{{.specs_dir}}` and `{{.gate_tiers}}`, and that it names no step of the stencil around it.
-Its body, in this order, is moved verbatim out of `loom-template-plan.md`:
-1. the `### Look up glyphs with `lym quarry` — never spell one from memory` subsection (today's lines 54-70 of Step 2), with one rewrite: "This is the hard rule behind the glyph spelling rules Step 3 spells out below:" becomes "This is the hard rule behind the glyph spelling rules below:";
-2. every subsection from `### What a card is` through `### Minimal skeleton` and the three lines after its skeleton (today's lines 78-279), with two sentences left out and kept in the template, as below: the `### On-disk layout` sentence "Insert or remove a card only with `lym loom insert-card` or `lym loom remove-card`, …, never by renaming, rewriting under a new name or deleting a card file by hand.", and the `### 00-overview.md` sentence "When the decision record has a `## PATTERN changes` section, copy its bullets into the overview's `## PATTERN changes` section, one per entry, without the added-after-Discussion suffix; the plan gate refuses a mismatch."
-Those two sentences are the only moved text that binds `Plan-Write` and the chair but not a part writer, which is why each including stencil states its own rule for them.
-The block names no `Step`.
+**The blocks.** The seat engine includes a block whole at one position and one level deep (`internal/seatengine#validateStencil`), and three lines inside the moved text do not fit every including stencil, one naming `Plan-Write`'s Step 3 and two binding `Plan-Write` and the chair but not a part writer, so the text splits into four blocks at those lines, each moved verbatim out of `loom-template-plan.md`:
+1. `loom-block-plan-glyphs`: the `### Look up glyphs with `lym quarry` — never spell one from memory` subsection of Step 2 from its heading through "**You never spell a glyph — you copy a line verbatim out of a quarry answer.**" (today's lines 54–68), with no marker;
+2. `loom-block-plan-format`: from `### What a card is` through the `### On-disk layout` line "cards run `1..M` with no gaps." (today's lines 78–110), with the marker `{{.specs_dir}}`;
+3. `loom-block-plan-overview`: from `### `00-overview.md`` through "Body: a short task-framing paragraph, …" (today's lines 113–165), with the marker `{{.specs_dir}}`;
+4. `loom-block-plan-cards`: from "A symbol `Rename` needs the hub's `rename_tools` in `language.yaml`; …" through the three lines after the `### Minimal skeleton` skeleton (today's lines 167–279), with the markers `{{.specs_dir}}` and `{{.gate_tiers}}`.
 
-**The template.** In `loom-template-plan.md`, Step 2 ends at "Issue every search and read you can name in one message; wait for a result only to choose the next call.", followed by `{{.twill_directive}}` on its own line as today.
-Step 3 keeps its heading and its three opening lines, then holds `{{template "loom-block-plan-format"}}`, then the two kept sentences verbatim as one paragraph with no heading of its own; Step 4 follows unchanged.
-The template engine includes a block whole at one position and one level deep (`internal/seatengine#validateStencil`), so the glyph subsection, which sat in Step 2, now opens the card-format text in Step 3: the composed prompt keeps every line, and only the order of that subsection and the place of the two kept sentences change.
-The header comment adds that the stencil includes the plan-format block, and that `specs_dir` and `gate_tiers` reach it through that block.
-`LoomBlockPlanFormat` embeds the block beside `LoomTemplatePlan`, with an entry in `entries`.
+The three lines left in the template are the glyph rule's "This is the hard rule behind the glyph spelling rules Step 3 spells out below: …", which names a step, the `### On-disk layout` sentence "Insert or remove a card only with `lym loom insert-card` or `lym loom remove-card`, …", and the `### 00-overview.md` sentence "When the decision record has a `## PATTERN changes` section, copy its bullets into the overview's `## PATTERN changes` section, …".
+Each including stencil states its own rule for them.
+No block names a `Step`.
 
-**Tests.** `TestStencils_TopLevelMarkers` gains `{"loom-block-plan-format", LoomBlockPlanFormat, []string{"gate_tiers", "specs_dir"}}`.
-`TestHubGenericStencils_NameNoGoTiers` adds `loom-block-plan-format` to the stencils it scans, since the gate-tier text moved there.
-`TestPlanTable` gains an assertion on the lead's composed prompt from `seatengine.Prompts` over its fixed table values: its lines, as a multiset, equal those of `internal/loomengine/testdata/plan-prompt.golden`, the composed prompt for the same values captured from the stencil before the move, except the one rewritten cross-reference line; so a dropped, added or altered line in any moved section fails it.
-The card writes that golden file first, from the unmoved stencil, then moves the text.
-It also asserts that the block's registered default holds no `Step ` and no `{{.` marker but `specs_dir` and `gate_tiers`, the rule that the block names no step of the stencil around it.
+Each block file opens with an HTML comment saying which plan-format block it is, that `loom-template-plan`, `loom-template-part-writer` and `loom-template-parts-chair` pull it in with the bare `{{template "<name>"}}`, that the fill hands it the including seat's value map, which markers it declares, and that it names no step of the stencil around it.
+The fill strips that leading comment, and the file ends without a trailing newline, as `contracts/stencils/seat/seat-directive-chair.md` does, so an include on its own line gives back exactly the lines it replaced.
 
-**ImpactSummary:** Plan-Write's prompt keeps every line, the glyph subsection now heading Step 3's card format; the block is new and registered.
+**The template.** In `loom-template-plan.md`, `{{template "loom-block-plan-glyphs"}}` replaces today's lines 54–68, followed by the kept hard-rule line, the line "The verbs above are the whole of what `lym quarry` offers you …" and `{{.twill_directive}}`, as today.
+Step 3 keeps its heading, the blank line after it, its three opening lines and the blank line after them, then holds `{{template "loom-block-plan-format"}}`, the kept insert-card sentence, a blank line, `{{template "loom-block-plan-overview"}}`, the kept `PATTERN changes` sentence and `{{template "loom-block-plan-cards"}}`, each on its own line; Step 4 follows unchanged.
+The header comment adds that the stencil includes the four plan-format blocks, and that `specs_dir` and `gate_tiers` reach them through the same value map.
+Each block embeds beside `LoomTemplatePlan` under its own variable above, with an entry in `entries`.
+
+**Pointers to the format.** Each place that says the LLM-facing plan format is pinned in `contracts/stencils/loom/loom-template-plan.md` is reworded to say it is pinned in the plan-format blocks `loom-block-plan-format`, `loom-block-plan-overview` and `loom-block-plan-cards`, which `loom-template-plan.md` includes: `contracts/specs/loom-plan-spec.md`'s status line, its "This format is produced by `Plan-Write`" line and its reference-list entry for the stencil; `contracts/specs/webster-spec.md`'s opening pointer and its reference-list entry; and `docs/overview.md`'s webster entry.
+In `contracts/stencils/loom/loom-rubric-plan-review.md`, only the pointer "The plan writer's own stencil is `{{.stencils_dir}}/loom/loom-template-plan.md`." changes, so it also names the three blocks under `{{.stencils_dir}}/loom/` that the stencil includes, with no other rubric change.
+
+**Tests.** `TestStencils_TopLevelMarkers` gains `{"loom-block-plan-glyphs", LoomBlockPlanGlyphs, nil}`, `{"loom-block-plan-format", LoomBlockPlanFormat, []string{"specs_dir"}}`, `{"loom-block-plan-overview", LoomBlockPlanOverview, []string{"specs_dir"}}` and `{"loom-block-plan-cards", LoomBlockPlanCards, []string{"gate_tiers", "specs_dir"}}`.
+`TestHubGenericStencils_NameNoGoTiers` adds the four blocks to the stencils it scans, since the moved text, the gate-tier text among it, now lives there.
+While it moves the text, the card checks once that the move kept the prompt: it composes the lead's prompt of `loomengine.PlanTable` with `seatengine.Prompts` over the same table values before and after the move and compares the two line for line; nothing is committed for it.
+
+**ImpactSummary:** Plan-Write's composed prompt is unchanged line for line; four blocks are new and registered, and the pointers to the format name them.

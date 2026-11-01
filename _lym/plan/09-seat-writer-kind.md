@@ -14,6 +14,7 @@
 - `internal/seatengine#Result`
 - `internal/seatengine#Table`
 - `internal/seatengine#Table.Validate`
+- `internal/seatengine#chairDirectiveBlock`
 - `internal/seatengine#validateSeatRoles`
 - `internal/seatengine#seatRun`
 - `internal/seatengine#newSeatRun`
@@ -21,6 +22,9 @@
 - `internal/seatengine#seatRun.result`
 - `internal/seatengine#Engine.Run`
 - `internal/seatengine#seatSpec`
+- `internal/seatengine#stepEnder`
+- `internal/seatengine#stepEnder.end`
+- `internal/seatengine#stepEnder.fired`
 - `internal/seatengine#TestTable_Validate`
 - `internal/seatengine#TestSeatPrompts_ValuesPromptsAndSpecs`
 - `internal/seatengine#TestEngine_Run_RequiredAdvisorEndsTheStep`
@@ -55,9 +59,13 @@ A writer keeps its pane after done, as every seat after the lead does.
 `TestTable_Validate` gains rows: a writer table whose lead includes `seat-directive-writer-chair` and whose writers include `seat-directive-writer` is accepted; a mixed table, a writer table whose lead includes only `seat-directive-chair`, a writer whose stencil lacks `seat-directive-writer`, and a writer lead are each refused; a writer with an Accept hook is accepted.
 `seatedStencils` already seeds the shipped stencils, which hold the two directives, and the new rows write their test stencils with `writeStencil`.
 `TestSeatPrompts_ValuesPromptsAndSpecs` gains a writer seat: its spec has `QuietHold` and `KeepPane` true and a seat `Timeout` overriding the table's.
-`TestEngine_Run_RequiredAdvisorEndsTheStep` already has one row per end of a required advisor (died, timeout, wait error, failed gate, Accept error, failed start, not found at resume); it gains a writer variant of each end of a fresh run, a writer seat in place of the required advisor, asserting the same step end plus `Writer` and `Outputs` on the writer's result and nothing queued.
+`TestEngine_Run_RequiredAdvisorEndsTheStep` already has one row per end of a required advisor (died, timeout, wait error, failed gate, Accept error, failed start, not found at resume); it gains two writer rows, a failed gate (the `seatRun.watch` site) and a failed start (the `Engine.Run` site), each with a writer seat in place of the required advisor and asserting `EndedStep`, `Writer` and `Outputs` on the writer's result and nothing queued; the died, timeout, wait-error and Accept-error ends reach the same `Seat.endsStep` predicate at `seatRun.watch` and stay covered by the advisor rows, and the end at resume is card 10's.
 `TestEngine_Run_WriterSeat` (tier0, over `fakeShuttle`) covers only what that table does not reach: a writer ending done with its gate passed and Accept passing queues the done line, and no up line is queued for it at start.
 The `Table` doc comment's `Timeout` field and the `Result` doc comment's `Advisors` field are reworded: a seat's own timeout overrides the table's, and `Advisors` holds one entry per seat after the lead, advisor or writer.
-`doc.go` gains a `# Writers` section stating these rules.
+The `Seat.Required` and `Seat.Accept` doc comments are reworded so Accept belongs to a seat that ends the step, a required advisor or a writer, and the `Table.Validate` doc comment's lead-directive rule says a writer table's lead includes `seat-directive-writer-chair` and an advisor table's lead `seat-directive-chair`.
+`doc.go` gains a `# Writers` section stating these rules, and its existing sentences that writers falsify are reworded for writer seats: the lead-include sentence ("The lead's stencil of a table of more than one seat includes seat-directive-chair; …") says a writer table's lead includes `seat-directive-writer-chair`, the up-line sentence ("Once each advisor's start ends, the chair is told in one line …") says a writer gets no up line, and the step-end sentence ("Only a required advisor can end the step before the chair, …") says a writer can end the step before the chair too.
+The other advisor-only comments are reworded the same way: the `Table.Validate` comment's "Accept belongs to a Required advisor", the `validateSeatRoles` comment's "Accept only on a Required advisor", the `Table` `Seats` field's "then the named advisors", the `chairDirectiveBlock` comment's rule that a lead of more than one seat includes `seat-directive-chair`, and `doc.go`'s "every later seat is an advisor with a unique valid name".
+The `stepEnder` type and its `end` and `fired` methods are reworded the same way: their comments name the seat that ends the step, a required advisor or a writer.
+So are the `SeatResult` comment's `EndedStep` line, which holds for a writer too, the `newSeatRun` comment, whose seat that ends the step on ender is a required advisor or a writer, and the `seatSpec` comment, which says every seat after the lead keeps its pane and holds its turn end quietly unless it is a required advisor.
 
 **ImpactSummary:** Adds a seat kind and two seat fields read in the engine's validation, watch, start and spec; advisor tables and tables without a seat timeout behave as before.
