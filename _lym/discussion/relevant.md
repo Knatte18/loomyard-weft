@@ -1,0 +1,30 @@
+# Relevant files
+
+- `contracts/recipes/tapestry-recipe.yaml` — the tapestry rows the two new rows join, with `Drift-Baseline`'s entry gate as the model
+- `internal/loomengine/tapestry.yaml` — the tapestry config template the new keys join
+- `internal/loomengine/plan.go` `PlanTable` — Plan-Write's table builder, the model for both new table builders
+- `internal/loomengine/discussiontable.go` `DiscussionAdvisorNotes`, `resolveModelChoice` — a table with seats beyond the lead and its per-seat output paths
+- `internal/shedrecipe/entries_planwrite.go` `planWriteEntry`, `planWriteGateSpec` — the registry entry the new entries follow
+- `internal/shedrecipe/entries_multillm.go` `multiLLMEntry`, `multiLLMSeat` — how seats are built from row config
+- `internal/shedrecipe/recipe.go` — the Env seams, `PlanTable` and `CommitPlan`, the new rows need counterparts of
+- `internal/loomcli/wiring.go` — where the table sources and commit seams are wired
+- `internal/seatengine/doc.go` — the seat model, required advisors, the notice sender and resume rules D5 changes
+- `internal/seatengine/table.go` `Seat`, `Table`, `chairDirectiveBlock`, `validateSeatRoles` — the seat fields and validation D5 changes
+- `internal/seatengine/prompt.go` `seatValues` — the markers the directives take
+- `internal/seatengine/notice.go` `advisorNotice`, `advisorUpNotice` — the lines the writer done line joins
+- `internal/shedbuild/entrygate.go` `entryGateOf`, `entryCheck.evaluate` — entry gate checks, `!=` and bool reads
+- `internal/shedengine/entry.go` — skip routing by `on_done` and skip chains
+- `internal/shedengine/goto.go` — a goto bypasses the entry gate
+- `internal/loomshed/planwrite.go` `NewPlanWrite`, `NewPlanDirRotator` — commit decorator and fresh-spawn rotation the new rows reuse
+- `internal/loomshed/loomshed.go` — the row name constants
+- `internal/loomshed/interruptpolicy.go` — per-row interrupt policy
+- `internal/reportengine/timingspans.go` — the row-to-phase map for `lym report timing`
+- `internal/loomshed/gates.go` `NewPlanGate` — the plan gate the joined plan passes
+- `internal/planparser/renumber.go` `InsertCard` — the renumbering the join reuses
+- `internal/planparser/parse.go` `PlanDir`, `ParsePlan` — the plan directory and a parser that takes any directory
+- `contracts/specs/loom-plan-spec.md` — plan layout, numbering, handles and the check list the part check filters
+- `contracts/stencils/loom/loom-template-plan.md` — the card-format sections that move into the shared block
+- `contracts/stencils/seat/seat-directive-chair.md` — today's chair directive, kept for advisor tables
+- `contracts/stencils/seat/seat-directive-advisor.md` — today's advisor directive, the model for the writer directive
+- `internal/runprofile/doc.go` — how a profile's tapestry block sets the new flag
+- `pattern/PATTERN-sole-parsers.md` — the sole-parser entry the parts parser joins
