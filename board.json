@@ -709,7 +709,7 @@
       "isolated": false,
       "brief": "Both hubs are on _bolt, so the rename program goes",
       "body": "## Seen (operator, 2026-11-01)\n\n`tools/boltrename` was a one-shot program for moving existing hubs from `_board` to `_bolt`.\nNeve is migrated, and OSL-1046 is re-cloned rather than migrated, so the program has no hub left to run on.\n\n## Design\n\nDelete `tools/boltrename` and every mention of it in the repository, so the old directory name appears nowhere.\nNothing else changes, and no refactor rides along.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Code-Burler-Review",
       "created": "2026-11-01T11:00:14Z",
       "revised": "2026-11-01T11:00:14Z"
     }
