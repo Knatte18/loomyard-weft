@@ -1,0 +1,11 @@
+verdict: resume
+reason: |-
+  Hard-cap escalation at round 2 of Discussion-Bouncer. The open design-wrong findings are F1, F2, F3 and F5, and the round-2 fixer's changes in the decision record answer each one.
+  F1: D1's process file now holds a start reading on every platform, proc.StartTime on Linux and proc.CreationTime on Windows, and the join compares the two with the same reader. proc.CreationTime exists at internal/proc/proc_windows.go:60. D3's Windows bound now names the join.
+  F2: D1 counts the cap from the front's start, spends the lock and claim waits inside it, takes the key lock only while 30 s of the cap remain, and has AwaitAny wait what remains. D4 refuses a cap below 60 s.
+  F3: D6 ties each card-verify line to its runner. On Linux the line's shell gets a parent-death SIGKILL, and a recorded proc.TreeRecord group lets a superseding front run proc.KillTree. On Windows the runner holds a proc.HoldNamedJob kill-on-close job. All three exist in internal/proc/tied.go. D3's killed-runner sentence is narrowed per verb, and the remaining Linux bound is stated.
+  F5: at a start failure the front makes the same exclusive create of the process file as the runner, so whichever create comes second loses and a late claim is refused.
+  The remaining open entries, F4 and F6 to F10, are mechanical or LOW, and the fixer applied them too.
+verbs:
+  - |-
+    lym loom circling accept gate-run-keeps-cache-warm

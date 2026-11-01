@@ -1,0 +1,15 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Discussion-Bouncer",
+    "history_length": 9,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-11-01T14:03:02.181854789+01:00",
+  "deadline": "2026-11-01T14:33:02.181854789+01:00",
+  "strand_guid": "864807efa7c9f8fd87869166f2f70764",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/gate-run-keeps-cache-warm/_lym/shed/gate-run-keeps-cache-warm/drive-reports/drive-envelope-20261101-140302-4190.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/gate-run-keeps-cache-warm/_lym/shed/gate-run-keeps-cache-warm/drive-reports/drive-report-20261101-140302-4dc5.md"
+}
