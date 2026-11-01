@@ -1,6 +1,6 @@
 # The appended system prompt states the gate rule once, not twice
 
-`gate-rule-stated-once` · Task · enhancement, shuttle, gate, claude · running · Drift-Verify
+`gate-rule-stated-once` · Task · enhancement, shuttle, gate, claude · running · Code-Bouncer
 
 ## Seen (hub orch, 2026-10-31)
 
