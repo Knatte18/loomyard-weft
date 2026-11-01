@@ -1,0 +1,569 @@
+diff --git a/contracts/recipes/darn-recipe.yaml b/contracts/recipes/darn-recipe.yaml
+index 34cb23a8..a8019270 100644
+--- a/contracts/recipes/darn-recipe.yaml
++++ b/contracts/recipes/darn-recipe.yaml
+@@ -100,8 +100,11 @@ producers:
+       # the hub's gate.yaml. The verify gate's attempts here is a
+       # placeholder: the builder stamps darn.yaml's verify_attempts at every build.
+       # The decision record is no gate: Go checks it once the session returns and halts the run
+-      # when the writer left it invalid.
++      # when the writer left it invalid. The clean gate goes first, so a writer that left an
++      # uncommitted or untracked file commits or deletes it before its session ends.
+       gates:
++        - name: clean
++          attempts: 3
+         - name: verify
+           attempts: 3
+         - name: description
+@@ -198,7 +201,11 @@ producers:
+       # and re-prompts the fix session with the findings until it passes. The row runs its own key
+       # and shares no pass with the writer's; gate_key names another key of the hub's gate.yaml.
+       # Its attempts here is a placeholder: the builder stamps darn.yaml's verify_attempts at every build.
++      # The clean gate goes first, so a fixer that left an uncommitted or untracked file commits or
++      # deletes it before its session ends.
+       gates:
++        - name: clean
++          attempts: 3
+         - name: verify
+           attempts: 3
+       profile:
+diff --git a/contracts/recipes/sampler-recipe.yaml b/contracts/recipes/sampler-recipe.yaml
+index 916917ce..24c42f53 100644
+--- a/contracts/recipes/sampler-recipe.yaml
++++ b/contracts/recipes/sampler-recipe.yaml
+@@ -145,7 +145,11 @@ producers:
+       # and re-prompts the fix session with the findings until it passes. The row runs its own key
+       # and shares no pass with the build row; gate_key names another key of the hub's gate.yaml.
+       # Its attempts here is a placeholder: the builder stamps darn.yaml's verify_attempts at every build.
++      # The clean gate goes first, so a fixer that left an uncommitted or untracked file commits or
++      # deletes it before its session ends.
+       gates:
++        - name: clean
++          attempts: 3
+         - name: verify
+           attempts: 3
+       profile:
+diff --git a/contracts/recipes/tapestry-recipe.yaml b/contracts/recipes/tapestry-recipe.yaml
+index f4c48a40..26a11194 100644
+--- a/contracts/recipes/tapestry-recipe.yaml
++++ b/contracts/recipes/tapestry-recipe.yaml
+@@ -550,8 +550,11 @@ producers:
+       # whose scope the gate derives itself. The row runs its own key and shares no pass with
+       # Webster's end gate; gate_key names another key of the hub's gate.yaml. A tree the
+       # record already names passes without running, so a round that changed no code costs
+-      # nothing.
++      # nothing. The clean gate goes first, so a fixer that left an uncommitted or untracked file
++      # commits or deletes it before its session ends.
+       gates:
++        - name: clean
++          attempts: 3
+         - name: verify
+           attempts: 3
+       profile:
+diff --git a/contracts/specs/shed-recipe-spec.md b/contracts/specs/shed-recipe-spec.md
+index 3a0183f9..68637cf8 100644
+--- a/contracts/specs/shed-recipe-spec.md
++++ b/contracts/specs/shed-recipe-spec.md
+@@ -71,7 +71,8 @@ The row drives `Env.Seats`, and a nil seam is a construction error.
+ 
+ A gate-capable row's `gates` key selects validators by name from a closed vocabulary, in order, each element carrying its own `attempts` budget (0 means off) and an optional `pass_on_cap`.
+ An absent key is ungated, while an empty list, a duplicate name, or a negative budget is a construction error.
+-The vocabulary is `discussion`, `plan`, `description` and `verify`.
++The vocabulary is `clean`, `discussion`, `plan`, `parts`, `description` and `verify`.
++`clean` fails while git reports an uncommitted or untracked path in the worktree, and requires the absolute `Env.WorktreeRoot`.
+ `verify` lints the comments, then runs the verify command the wiring tells in `Env.VerifyCommand`, which it requires.
+ `Env.VerifyTreeScope`, when set, selects the darn form, which runs the tree-scoped command it answers for a diff wholly under the configured trees and the impact-scoped command otherwise, and the round form is the default.
+ `Env.VerifyMergeBase`, when set, is the base of the headroom lint, which runs before the comment lint, or of both lints under the darn form, which requires it.
+diff --git a/internal/landingshed/doc.go b/internal/landingshed/doc.go
+index 3e471382..c808c9ca 100644
+--- a/internal/landingshed/doc.go
++++ b/internal/landingshed/doc.go
+@@ -133,6 +133,7 @@
+ // The row's gate key is the told Deps.GateKey, which each row's registry entry sets from its optional `gate_key` config key, else its row name in lower case.
+ // The told call, that key's `lym gate test` call rendered from the hub's gate config at each run, runs through internal/verifytree, unless its verified-tree record already names the tree and the command.
+ // The merge fixer a row spawns judges each turn through that row's gate, so it runs the same key.
++// A fixer turn that leaves the tree dirty is re-prompted with the paths, on a charged turn, to commit what belongs to the fix and delete the rest; only a dirty tree after the last turn ends the fixer.
+ // Its base command is the told Deps.BaseCommand, the fix rows' `code-burler-fix` call, so a landing pass keeps the entry the Code-Burler-Fix lint base reads.
+ // A refusal of the gate config or of the key is the producer's returned error, carrying the refusal's way forward.
+ // A verify that does not finish within the verify timeout is killed and halts the run Stuck with the log path.
+diff --git a/internal/landingshed/fixerrun.go b/internal/landingshed/fixerrun.go
+index ce54168d..a55dcd04 100644
+--- a/internal/landingshed/fixerrun.go
++++ b/internal/landingshed/fixerrun.go
+@@ -50,7 +50,7 @@ const (
+ 	fixerEndTimeout fixerEnd = "timeout"
+ 	// fixerEndNoReport is a turn that left no report, or one that does not parse.
+ 	fixerEndNoReport fixerEnd = "no-report"
+-	// fixerEndDirty is a turn that left the working tree dirty.
++	// fixerEndDirty is a turn that left the working tree dirty with no turn left to clean it.
+ 	fixerEndDirty fixerEnd = "dirty"
+ 	// fixerEndPushed is a session during which the task branch's remote ref moved.
+ 	fixerEndPushed fixerEnd = "pushed"
+@@ -230,6 +230,7 @@ func (s *fixerSession) halt(end fixerEnd, findings string) (shuttleengine.GateRe
+ 
+ // check is the gate closure run after every turn.
+ // It judges the turn's duration, then the tree, then the report, and on a fixed verdict the landing gate.
++// A dirty tree with a turn left charges it and re-prompts naming the paths, so the fixer commits or deletes what it left; one with none left is the dirty end.
+ // A failing gate with a turn left charges it and re-prompts; one with none left is the spent end.
+ func (s *fixerSession) check() (shuttleengine.GateResult, error) {
+ 	result, err := s.judge()
+@@ -248,12 +249,19 @@ func (s *fixerSession) judge() (shuttleengine.GateResult, error) {
+ 	if gate.now().Sub(s.turnStart) > s.turnLimit {
+ 		return s.halt(fixerEndTimeout, "the fixer's turn ran past fixer_timeout_min")
+ 	}
+-	reason, err := gate.clean(s.run.row, "after the fixer's turn")
++	const point = "after the fixer's turn"
++	dirty, err := gate.dirtyPaths(s.run.row, point)
+ 	if err != nil {
+ 		return shuttleengine.GateResult{}, err
+ 	}
+-	if reason != "" {
+-		return s.halt(fixerEndDirty, reason)
++	if len(dirty) > 0 {
++		if s.rec.Spent >= s.cap {
++			return s.halt(fixerEndDirty, dirtyReason(point, dirty))
++		}
++		if err := s.chargeTurn(); err != nil {
++			return shuttleengine.GateResult{}, err
++		}
++		return shuttleengine.GateResult{Findings: verifytree.UncommittedFindings(dirty)}, nil
+ 	}
+ 	report, err := ParseFixerReport(s.outcome.reportPath)
+ 	if err != nil {
+@@ -268,7 +276,7 @@ func (s *fixerSession) judge() (shuttleengine.GateResult, error) {
+ 		return s.halt(fixerEndEscalate, report.Conflict)
+ 	}
+ 
+-	reason, err = gate.check(s.ctx, s.run.row, s.run.deps.ParentBranch)
++	reason, err := gate.check(s.ctx, s.run.row, s.run.deps.ParentBranch)
+ 	if err != nil {
+ 		return shuttleengine.GateResult{}, err
+ 	}
+diff --git a/internal/landingshed/fixerrun_test.go b/internal/landingshed/fixerrun_test.go
+index 4acc232d..d1b8d4e1 100644
+--- a/internal/landingshed/fixerrun_test.go
++++ b/internal/landingshed/fixerrun_test.go
+@@ -43,6 +43,8 @@ type fakeFixerSeats struct {
+ 
+ 	// tables records every table Run was given.
+ 	tables []seatengine.Table
++	// findings records the findings of every re-prompting gate result, in order.
++	findings []string
+ 	// turnsRun counts the turns Run ran.
+ 	turnsRun int
+ }
+@@ -82,6 +84,7 @@ func (f *fakeFixerSeats) Run(table seatengine.Table) (seatengine.Result, error)
+ 		if result.Passed || result.Terminal {
+ 			break
+ 		}
++		f.findings = append(f.findings, result.Findings)
+ 	}
+ 	return seatengine.Result{Chair: shuttleengine.Result{Outcome: shuttleengine.OutcomeDone, RunDir: fakeFixerRunDir}}, nil
+ }
+@@ -168,14 +171,15 @@ func TestFixerRun_Outcomes(t *testing.T) {
+ 
+ 	failing := verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 1}
+ 	tests := []struct {
+-		name        string
+-		start       FixerAttempts
+-		setup       func(t *testing.T, fx *fixerRunFixture)
+-		wantEnd     fixerEnd
+-		wantSpent   int
+-		wantTurns   int
+-		wantReason  []string
+-		avoidReason []string
++		name         string
++		start        FixerAttempts
++		setup        func(t *testing.T, fx *fixerRunFixture)
++		wantEnd      fixerEnd
++		wantSpent    int
++		wantTurns    int
++		wantFindings []string
++		wantReason   []string
++		avoidReason  []string
+ 	}{
+ 		{
+ 			name: "fixed over a passing gate with an unmoved remote tip",
+@@ -268,13 +272,24 @@ func TestFixerRun_Outcomes(t *testing.T) {
+ 			wantEnd: fixerEndNoReport, wantSpent: 1, wantTurns: 1,
+ 		},
+ 		{
+-			name: "a dirty tree after a turn is the dirty end",
++			name: "a dirty tree with a turn left re-prompts naming the paths, and a clean next turn is fixed",
++			setup: func(t *testing.T, fx *fixerRunFixture) {
++				fx.gate.fake.dirtyAt(0, ".scratch-task.txt")
++				report := func() { fx.writeReport(t, fixedReport) }
++				fx.seats.turns = []func(){report, report}
++			},
++			wantEnd: fixerEndFixed, wantSpent: fixerTestCap, wantTurns: 2,
++			wantFindings: []string{".scratch-task.txt", "delete the rest"},
++		},
++		{
++			name:  "a dirty tree after the last turn left is the dirty end",
++			start: FixerAttempts{Entry: 1, Spent: fixerTestCap - 1},
+ 			setup: func(t *testing.T, fx *fixerRunFixture) {
+ 				fx.gate.fake.dirtyAt(0, "a.go")
+ 				fx.seats.turns = []func(){func() { fx.writeReport(t, fixedReport) }}
+ 			},
+-			wantEnd: fixerEndDirty, wantSpent: 1, wantTurns: 1,
+-			wantReason: []string{LandingStopPrefix, "`lym loom resume`"},
++			wantEnd: fixerEndDirty, wantSpent: fixerTestCap, wantTurns: 1,
++			wantReason: []string{LandingStopPrefix, "(dirty)", "`lym loom resume`"},
+ 		},
+ 		{
+ 			name: "a remote tip that moved during the session is the pushed end",
+@@ -318,6 +333,11 @@ func TestFixerRun_Outcomes(t *testing.T) {
+ 			if outcome.reportPath != fx.reportPath() {
+ 				t.Errorf("run() report path = %q; want %q", outcome.reportPath, fx.reportPath())
+ 			}
++			for _, want := range tt.wantFindings {
++				if found := strings.Join(fx.seats.findings, "\n"); !strings.Contains(found, want) {
++					t.Errorf("re-prompt findings = %q; want them to contain %q", found, want)
++				}
++			}
+ 			reason := outcome.haltReason(fixerTestRow, false)
+ 			judged := outcome.haltReason(fixerTestRow, true)
+ 			if tt.wantEnd == fixerEndFixed {
+diff --git a/internal/landingshed/verifygate.go b/internal/landingshed/verifygate.go
+index a4dbb778..c35c0118 100644
+--- a/internal/landingshed/verifygate.go
++++ b/internal/landingshed/verifygate.go
+@@ -162,17 +162,23 @@ func (g verifyGate) markWait(label string) {
+ // It returns a non-empty Stuck reason naming the dirty paths, a non-nil error when git cannot report the status,
+ // and ("", nil) when the tree is clean.
+ func (g verifyGate) clean(producer, point string) (string, error) {
++	paths, err := g.dirtyPaths(producer, point)
++	if err != nil || len(paths) == 0 {
++		return "", err
++	}
++	return dirtyReason(point, paths), nil
++}
++
++// dirtyPaths returns the task worktree's uncommitted or untracked paths at point, none for a gate told no dirty check, and a non-nil error when git cannot report the status.
++func (g verifyGate) dirtyPaths(producer, point string) ([]string, error) {
+ 	if g.dirty == nil {
+-		return "", nil
++		return nil, nil
+ 	}
+ 	paths, err := g.dirty(g.paths.Worktree)
+ 	if err != nil {
+-		return "", fmt.Errorf("landingshed: %s: check the worktree is clean %s: %w", producer, point, err)
+-	}
+-	if len(paths) == 0 {
+-		return "", nil
++		return nil, fmt.Errorf("landingshed: %s: check the worktree is clean %s: %w", producer, point, err)
+ 	}
+-	return dirtyReason(point, paths), nil
++	return paths, nil
+ }
+ 
+ // dirtyWayForward ends every dirty-tree reason with what the operator does about it.
+diff --git a/internal/loomrecipe/darnrecipe_test.go b/internal/loomrecipe/darnrecipe_test.go
+index 3c3a32d5..30b420d0 100644
+--- a/internal/loomrecipe/darnrecipe_test.go
++++ b/internal/loomrecipe/darnrecipe_test.go
+@@ -288,8 +288,8 @@ func TestDarnVerifyBudget(t *testing.T) {
+ 			}
+ 		}
+ 		want := map[string]map[any]any{
+-			loomshed.NameDarnWrite:     {"verify": 7, "description": 3},
+-			loomshed.NameCodeBurlerFix: {"verify": 7},
++			loomshed.NameDarnWrite:     {"clean": 3, "verify": 7, "description": 3},
++			loomshed.NameCodeBurlerFix: {"clean": 3, "verify": 7},
+ 			loomshed.NameDescribe:      {"description": 3},
+ 		}
+ 		for _, row := range recipe.Producers {
+@@ -320,7 +320,7 @@ func TestDarnVerifyBudget(t *testing.T) {
+ 			}
+ 		}
+ 		want := map[string]map[any]any{
+-			loomshed.NameCodeBurlerFix: {"verify": 7},
++			loomshed.NameCodeBurlerFix: {"clean": 3, "verify": 7},
+ 			loomshed.NameDescribe:      {"description": 3},
+ 		}
+ 		for _, row := range recipe.Producers {
+@@ -336,6 +336,26 @@ func TestDarnVerifyBudget(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("on the tapestry recipe Code-Burler-Fix runs the clean gate before verify", func(t *testing.T) {
++		recipe, err := shedbuild.Parse(recipes.TapestryRecipe)
++		if err != nil {
++			t.Fatalf("shedbuild.Parse() error = %v; want nil", err)
++		}
++		var names []any
++		for _, row := range recipe.Producers {
++			if row.Name != loomshed.NameCodeBurlerFix {
++				continue
++			}
++			gates, _ := row.Config["gates"].([]any)
++			for _, g := range gates {
++				names = append(names, g.(map[string]any)["name"])
++			}
++		}
++		if want := []any{"clean", "verify"}; !reflect.DeepEqual(names, want) {
++			t.Errorf("tapestry Code-Burler-Fix gate names = %v; want %v", names, want)
++		}
++	})
++
+ 	t.Run("a missing row or gate entry is an error", func(t *testing.T) {
+ 		recipe, err := shedbuild.Parse(recipes.DarnRecipe)
+ 		if err != nil {
+diff --git a/internal/loomshed/cleangate.go b/internal/loomshed/cleangate.go
+new file mode 100644
+index 00000000..f14ce13e
+--- /dev/null
++++ b/internal/loomshed/cleangate.go
+@@ -0,0 +1,27 @@
++// cleangate.go implements the clean gate, which holds a producing session at its turn end until its worktree holds no uncommitted or untracked path.
++
++package loomshed
++
++import (
++	"fmt"
++
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/verifytree"
++)
++
++// NewCleanGate returns a must-pass shuttleengine.Gate that fails while git reports any uncommitted or untracked path in worktreeRoot, ignored files excluded.
++// It exists so a writing session cannot end with a stray file, such as a shell redirect's output, that would halt a later row such as Finalize.
++// The findings name every path and ask the session to commit what belongs to its change and delete the rest.
++// A failure to read git is a returned error, since it is no defect the session can fix.
++func NewCleanGate(worktreeRoot string) shuttleengine.Gate {
++	return func() (shuttleengine.GateResult, error) {
++		dirty, err := verifytree.DirtyPaths(worktreeRoot)
++		if err != nil {
++			return shuttleengine.GateResult{}, fmt.Errorf("loomshed: clean gate: %w", err)
++		}
++		if len(dirty) == 0 {
++			return shuttleengine.GateResult{Passed: true}, nil
++		}
++		return shuttleengine.GateResult{Findings: verifytree.UncommittedFindings(dirty)}, nil
++	}
++}
+diff --git a/internal/loomshed/cleangate_integration_test.go b/internal/loomshed/cleangate_integration_test.go
+new file mode 100644
+index 00000000..0acfe3ef
+--- /dev/null
++++ b/internal/loomshed/cleangate_integration_test.go
+@@ -0,0 +1,86 @@
++// cleangate_integration_test.go exercises NewCleanGate against a real scratch repo, so it carries the integration tier.
++
++package loomshed
++
++import (
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestCleanGate(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	tests := []struct {
++		name         string
++		dirty        func(t *testing.T, worktree string)
++		wantPassed   bool
++		wantFindings []string
++	}{
++		{
++			name:       "a clean tree passes",
++			dirty:      func(t *testing.T, worktree string) {},
++			wantPassed: true,
++		},
++		{
++			name: "an ignored file passes",
++			dirty: func(t *testing.T, worktree string) {
++				writeTestFile(t, filepath.Join(worktree, ".scratch", "notes.md"), "scratch\n")
++			},
++			wantPassed: true,
++		},
++		{
++			name: "an untracked file fails naming it",
++			dirty: func(t *testing.T, worktree string) {
++				writeTestFile(t, filepath.Join(worktree, "200k"), "cautious base est\n")
++			},
++			wantFindings: []string{"200k", "Commit each one that belongs to the change, delete the rest"},
++		},
++		{
++			name:         "a modified tracked file fails naming it",
++			dirty:        func(t *testing.T, worktree string) { writeTestFile(t, filepath.Join(worktree, "a.txt"), "changed\n") },
++			wantFindings: []string{"a.txt"},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			worktree := t.TempDir()
++			gitkit.Git(t, worktree, "init", "-b", "main")
++			gitkit.Git(t, worktree, "config", "user.email", "test@test.com")
++			gitkit.Git(t, worktree, "config", "user.name", "Test")
++			gitkit.CommitFile(t, worktree, ".gitignore", ".scratch/\n", "ignore scratch")
++			gitkit.CommitFile(t, worktree, "a.txt", "a\n", "init")
++			tt.dirty(t, worktree)
++
++			got, err := NewCleanGate(worktree)()
++			if err != nil {
++				t.Fatalf("NewCleanGate()() error = %v; want nil", err)
++			}
++			if got.Passed != tt.wantPassed {
++				t.Errorf("NewCleanGate()() Passed = %v; want %v (findings %q)", got.Passed, tt.wantPassed, got.Findings)
++			}
++			for _, want := range tt.wantFindings {
++				if !strings.Contains(got.Findings, want) {
++					t.Errorf("NewCleanGate()() Findings = %q; want it to contain %q", got.Findings, want)
++				}
++			}
++		})
++	}
++}
++
++// writeTestFile writes content at path, creating its directory.
++func writeTestFile(t *testing.T, path, content string) {
++	t.Helper()
++	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++		t.Fatal(err)
++	}
++	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
++		t.Fatal(err)
++	}
++}
+diff --git a/internal/loomshed/doc.go b/internal/loomshed/doc.go
+index 4408c8d4..403065a1 100644
+--- a/internal/loomshed/doc.go
++++ b/internal/loomshed/doc.go
+@@ -48,6 +48,9 @@
+ // A gate told no scratch directory, such as a standalone validate, and a gate whose file cannot be written keep the findings inline in the log line.
+ // The blocking path is unchanged: the findings go to the writer and the log line in full.
+ //
++// The clean gate (NewCleanGate) fails while the worktree holds any uncommitted or untracked path that git does not ignore, naming every path and asking the session to commit what belongs to its change and delete the rest.
++// A row lists it before its verify gate, so a writer or fixer that left a stray file is re-prompted to remove it before its session ends, not halted at a later row.
++//
+ // The verify gate (NewVerifyGate) is told its verify command by the recipe's wiring and reads it at each arrival; it never parses the plan itself.
+ // The command is the row's own `lym gate test --wait --gate <key>` call, the `code-burler-fix` key at Code-Burler-Fix, the `darn-write` key at Darn-Write and the `drift-verify` key at Drift-Verify, so each fix row and writer runs its own key and shares no pass with Webster's end gate.
+ // Told a tree scope reader, it takes the darn form; otherwise it takes the round form.
+diff --git a/internal/shedrecipe/entries_gate.go b/internal/shedrecipe/entries_gate.go
+index c73e391a..d0336007 100644
+--- a/internal/shedrecipe/entries_gate.go
++++ b/internal/shedrecipe/entries_gate.go
+@@ -25,7 +25,8 @@ var gateEntryKeys = []string{"name", "attempts", "pass_on_cap"}
+ // An absent key returns the empty GateSpec, which is what every ungated row carries by saying nothing;
+ // a present empty list is an error, since it is an author mistake rather than an ungated row.
+ //
+-// Each element carries a required "name", resolved against a closed five-value vocabulary:
++// Each element carries a required "name", resolved against a closed vocabulary:
++// "clean" requires env.WorktreeRoot to pass requireAbsRoot and returns loomshed.NewCleanGate over it;
+ // "discussion" requires env.DecisionRecordPath and env.SupportLogPath to pass requireAbsRoot and a non-nil env.DiscussionHistory, and returns loomshed.NewDiscussionGate over them;
+ // when env.RecordEngine is DiscussionWrite, "discussion" also requires env.RelevantPath and env.WorktreeRoot to pass requireAbsRoot and a non-nil env.PlanIndex, and passes them to the gate with the citation checks on, which read the worktree and the index;
+ // "plan" requires env.AnchorPath, env.WorktreeRoot and a non-nil env.PlanIndex and returns loomshed.NewPlanGate over them;
+@@ -34,7 +35,7 @@ var gateEntryKeys = []string{"name", "attempts", "pass_on_cap"}
+ // "verify" requires the absolute env.WorktreeRoot and env.VerifyDir and a non-nil env.VerifyCommand, takes the optional env.VerifyMergeBase and env.VerifyTreeScope, and returns loomshed.NewVerifyGate over them, with the site label "<row name> gate";
+ // the gate's told command is env.VerifyCommand read for the row's gate key, and its tree scope is env.VerifyTreeScope read for that key, so the row runs its own key of the hub's gate.yaml;
+ // env.VerifyTreeScope alone selects the darn form, which requires env.VerifyMergeBase, the base of both lints in that form, and otherwise env.VerifyMergeBase is the base of the headroom lint;
+-// any other value is an error naming the key and all five legal values.
++// any other value is an error naming the key and every legal value.
+ // A name may appear once per list.
+ //
+ // "attempts" is required, a non-negative integer read via configInt so 0 is a present value:
+@@ -135,11 +136,16 @@ func planContextOf(env Env) loomshed.PlanContext {
+ 	}
+ }
+ 
+-// resolvePlainGateClosure resolves the five validator names of the gate vocabulary.
++// resolvePlainGateClosure resolves the validator names of the gate vocabulary.
+ // The "parts" gate requires the absolute env.AnchorPath and env.DecisionRecordPath and a non-nil env.Setting, and reads its cap from the tapestry.parts_max setting.
+ // The "verify" gate is told env.VerifyHold, which holds its verify under a pause.
+ func resolvePlainGateClosure(entry, row, gateKey string, index int, name string, env Env) (shuttleengine.Gate, error) {
+ 	switch name {
++	case "clean":
++		if err := requireAbsRoot(entry, "WorktreeRoot", env.WorktreeRoot); err != nil {
++			return nil, err
++		}
++		return loomshed.NewCleanGate(env.WorktreeRoot), nil
+ 	case "discussion":
+ 		if err := requireAbsRoot(entry, "DecisionRecordPath", env.DecisionRecordPath); err != nil {
+ 			return nil, err
+@@ -223,6 +229,6 @@ func resolvePlainGateClosure(entry, row, gateKey string, index int, name string,
+ 		}
+ 		return loomshed.NewVerifyGate(env.WorktreeRoot, env.VerifyDir, row+" gate", command, env.VerifyMergeBase, treeScope, env.VerifyHold), nil
+ 	default:
+-		return nil, fmt.Errorf("shedrecipe: %s: config key %q element %d: config key %q must be %q, %q, %q, %q or %q, got %q", entry, "gates", index, "name", "discussion", "plan", "parts", "description", "verify", name)
++		return nil, fmt.Errorf("shedrecipe: %s: config key %q element %d: config key %q must be %q, %q, %q, %q, %q or %q, got %q", entry, "gates", index, "name", "clean", "discussion", "plan", "parts", "description", "verify", name)
+ 	}
+ }
+diff --git a/internal/shedrecipe/entries_gate_test.go b/internal/shedrecipe/entries_gate_test.go
+index f7b8077f..bc460aef 100644
+--- a/internal/shedrecipe/entries_gate_test.go
++++ b/internal/shedrecipe/entries_gate_test.go
+@@ -59,7 +59,7 @@ func TestResolveGateSpec_AbsentKeyIsUngated(t *testing.T) {
+ 
+ func TestResolveGateSpec_ValidOneEntryPerVocabularyName(t *testing.T) {
+ 	tiergate.Require(t, 0)
+-	for _, name := range []string{"discussion", "plan", "parts", "description"} {
++	for _, name := range []string{"clean", "discussion", "plan", "parts", "description"} {
+ 		t.Run(name, func(t *testing.T) {
+ 			env := reworkTestEnv(t)
+ 			env.DescriptionPath = filepath.Join(t.TempDir(), "summary.md")
+@@ -336,13 +336,25 @@ func TestResolveGateSpec_UnknownNameListsTheLegalValues(t *testing.T) {
+ 	for _, unknown := range []string{"bogus", "rework-plan", "parent-review"} {
+ 		t.Run(unknown, func(t *testing.T) {
+ 			_, err := resolveGateSpec("Row", gatesCfg(unknown, 1), newTestEnv(t))
+-			for _, want := range []string{"discussion", "plan", "parts", "description", "verify"} {
++			for _, want := range []string{"clean", "discussion", "plan", "parts", "description", "verify"} {
+ 				assertErrContains(t, err, want)
+ 			}
+ 		})
+ 	}
+ }
+ 
++func TestResolveGateSpec_CleanRequiresAbsoluteWorktreeRoot(t *testing.T) {
++	tiergate.Require(t, 0)
++	for _, root := range []string{"", "relative/worktree"} {
++		t.Run(root, func(t *testing.T) {
++			env := newTestEnv(t)
++			env.WorktreeRoot = root
++			_, err := resolveGateSpec("Row", gatesCfg("clean", 3), env)
++			assertErrContains(t, err, "WorktreeRoot")
++		})
++	}
++}
++
+ func TestResolveGateSpec_VerifyRequiresAbsoluteEnvRoots(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	for _, field := range []string{"VerifyCommand", "WorktreeRoot", "VerifyDir"} {
+diff --git a/internal/verifytree/doc.go b/internal/verifytree/doc.go
+index 685a7c6d..d41013b9 100644
+--- a/internal/verifytree/doc.go
++++ b/internal/verifytree/doc.go
+@@ -26,6 +26,8 @@
+ // A held Verify removes its marker on every return, its dirty and skipped returns included.
+ // The hold reads an unreadable record as uncovered, so a corrupt file never stops a verify, and while the site's slug-entry exemption reports true, as it does for a run holding its parent lock, only a hub entry holds it.
+ //
++// DirtyPaths is the dirty check every caller shares, and UncommittedFindings is the one finding a producing session gets when its turn ends with such paths: commit what belongs to the change and delete the rest.
++//
+ // Each run that spawns its command writes its own log, `verify-<n>.log` in the verify directory with n one above the highest existing number, and names it on Result.Log, so a later verify never overwrites an earlier run's evidence.
+ // After each such run the directory keeps the newest verifyLogKeep logs plus the one the landing failure record names, and removes the rest.
+ //
+diff --git a/internal/verifytree/verify.go b/internal/verifytree/verify.go
+index b6aec939..a1b7ca0b 100644
+--- a/internal/verifytree/verify.go
++++ b/internal/verifytree/verify.go
+@@ -257,6 +257,12 @@ func pruneLogs(p Paths) error {
+ 	return nil
+ }
+ 
++// UncommittedFindings is the gate finding for a producing session whose turn ended with paths, as DirtyPaths reports them, uncommitted or untracked in its worktree.
++// It names every path and asks the session to commit each one that belongs to its change and delete the rest, so the session that made a stray file removes it.
++func UncommittedFindings(paths []string) string {
++	return fmt.Sprintf("Your turn ended with uncommitted or untracked paths in the worktree: %s.\nCommit each one that belongs to the change, delete the rest, such as a scratch file or a shell redirect's output, and end your turn again.", strings.Join(paths, ", "))
++}
++
+ // DirtyPaths returns the paths `git status --porcelain -z` reports in worktree, ignored files excluded.
+ func DirtyPaths(worktree string) ([]string, error) {
+ 	out, err := gitexec.Run([]string{"status", "--porcelain", "-z"}, worktree)
