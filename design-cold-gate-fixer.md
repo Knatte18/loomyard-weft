@@ -2,8 +2,6 @@
 
 `cold-gate-fixer` · Task · enhancement, webster, loom, darn, gate · draft
 
-Depends on: [`plan-spec-split`](design-plan-spec-split.md)
-
 ## Seen (orch, 2026-11-01)
 
 A writer that fails its own gate fixes the failures in its own session, at its full context per turn.
