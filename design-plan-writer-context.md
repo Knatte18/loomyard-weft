@@ -88,3 +88,9 @@ The turn audit's recommendation above was applied (the batching sentences of `bf
 It finds no batching effect, and the sample cannot show a small one: the Plan writer issued 1.14 calls per turn after against 1.29 before, its single-call turn share was 83% against 75%, and its serial read and search turns were 44% of its turns against 41%.
 The Discussion writer is level on every measure.
 The 33-of-101 serial turns the turn audit found are still there, so the ideas above keep their value.
+
+## Split writing built (landed 2026-11-01)
+
+The second variant above exists as two opt-in producers: `Parts-Write` splits the task into parts with contracts and shared spots, and `Parts-Plan-Write` runs one fresh writer session per part under a joining chair.
+Both sit behind the tapestry flag `plan_split` (off by default; `Plan-Write` stays the default), and the joined plan passes the ordinary `plan` gate.
+Nothing is benched yet: the split-writing bench against `Plan-Write`, twill and the solo writers is still open.
