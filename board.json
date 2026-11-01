@@ -596,24 +596,6 @@
       "revised": "2026-11-01T14:25:40Z"
     },
     {
-      "id": 956,
-      "handle": "P1",
-      "slug": "orch-instructions",
-      "title": "Orch instructions in two layers: lym's role and the repository's rules in heddle",
-      "kind": "project",
-      "labels": [
-        "enhancement",
-        "orch"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "One fixed orch role for every repository, repository orch rules in heddle through lym orch rules, and the orch note for run state only",
-      "body": "## Goal (operator and orch, 2026-11-01)\n\nOrch instructions live in two layers, each in one place:\n- The orch role lym ships, the same for every orch in every repository.\n- The rules for one repository's orchs, kept in heddle and managed with `lym orch rules`.\n\nThe orch note holds run state only, as its template's three sections say.\n\n## Seen\n\nThe orch's instructions had spread over four places that disagree: the shipped role stencil, the hub-wide rules file on Bolt, an unused per-orch rules file, and standing rules the orch copied from note to note.\nRules meant for every orch sat in the loomyard hub's rules, and loomyard-only rules and code invariants sat only in the orch note.\n\n## Bounds\n\nThe members change different packages and run as separate tasks; this project only groups them.\nThe loomyard hub's rules stand in heddle's `orch-rules` entry, carried over from `_lym/orch/rules.md` with `lym orch rules` once the heddle target landed (orch, 2026-11-01); the orch drops from that entry every rule the role now states, so only loomyard-only rules remain.\nThe role has landed (`orch-role-current`: one fixed orch role for every repository), so that drop is now due.\n",
-      "created": "2026-11-01T13:15:54Z",
-      "revised": "2026-11-01T16:43:43Z"
-    },
-    {
       "id": 960,
       "handle": "P2",
       "slug": "agent-turns",
