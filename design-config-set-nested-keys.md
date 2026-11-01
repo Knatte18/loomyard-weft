@@ -1,6 +1,6 @@
 # lym config --set cannot write a key inside a nested map, such as a gate tier env
 
-`config-set-nested-keys` · Task · bug, config, gate · running · Worktree-Create
+`config-set-nested-keys` · Task · bug, config, gate · running · Record-Write
 
 ## Seen (orch, 2026-11-01)
 
