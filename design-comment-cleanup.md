@@ -5,7 +5,7 @@
 ## Seen (operator and hub orch, 2026-10-31)
 
 Comments in the Go source go stale as the code moves on.
-Two found today: `internal/fabricengine/weftwiring.go` still speaks of a future `_lym/raddle/` squash-merge-back, though raddle will never be built; and many comments spell the `_board` path instead of naming its constant (note `bolt-dir-rename`).
+Two found today: `internal/fabricengine/weftwiring.go` still speaks of a future `_lym/raddle/` squash-merge-back, though raddle will never be built; and many comments spelled the `_board` path instead of naming its constant (the rename to `_bolt` in `bolt-dir-rename` has since replaced the spelling itself).
 There are surely more, in every package, against `scribe:prose`'s rule never to pin a perishable specific.
 
 ## Idea
