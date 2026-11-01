@@ -24,3 +24,5 @@ The `psb-rv-plan` writer ran on `opus[medium]`; its Agent calls were one fork wr
 Plan-Write runs in fork mode, where lym's hook (`steerAgentNonForkDeny` in `claudeengine/settings.go`) allows only fork subagents.
 A fork inherits the writer's whole context, so a lookup fork at 500k pays as much per turn as the writer; a cheap lookup needs a fresh subagent, such as a Sonnet Explore agent, which the hook denies.
 So this research weighs letting the Plan writer start fresh lookup subagents, the same allowance F12 (`darn-sonnet-helpers`) weighs for darn writers.
+
+The bench runs after task `darn-sonnet-helpers` lands, since the Plan writer can start fresh subagents only from then on.

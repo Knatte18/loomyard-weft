@@ -8,7 +8,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 ## [P1 Fewer agent turns, fewer tokens](project-turn-savings.md) (6)
 
-`turn-savings` · Age 13m · Owner `neve`
+`turn-savings` · Age 14m · Owner `neve`
 
 Token savings by cutting agent turns, above all late turns at large context
 
@@ -28,7 +28,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **Agents may use subagents and forks; only headless claude -p stays refused**<br>• Remove the Agent tool deny, refuse headless claude -p launches instead, and tell writers when to hand work to Sonnet subagents | [`darn-sonnet-helpers`](design-darn-sonnet-helpers.md) | darn |  | 51m<br>0m | claude, shuttle, stencil |
+| T3 | `draft` **Agents may use subagents and forks; only headless claude -p stays refused**<br>• Remove the Agent tool deny, refuse headless claude -p launches instead, and tell writers when to hand work to Sonnet subagents | [`darn-sonnet-helpers`](design-darn-sonnet-helpers.md) | darn |  | 52m<br>0m | claude, shuttle, stencil |
 
 ### Notes (5)
 
@@ -38,16 +38,16 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Measure the effect of the agent-turns project**<br>• Turns, calls per turn and cost before and after P2 agent-turns, for darn writers, Webster forks and review roles | [`agent-turns-effect`](design-agent-turns-effect.md) | 4h<br>13m | tools |
-| R2 |  | **Plan writer hands its code lookups to fresh subagents and keeps the overview**<br>• The Plan writer pays its whole context for each late grep; research whether forks answering batched questions cut that cost without losing the plan overview | [`planner-fork-lookups`](design-planner-fork-lookups.md) | 8m<br>2m | loom |
+| R1 |  | **Measure the effect of the agent-turns project**<br>• Turns, calls per turn and cost before and after P2 agent-turns, for darn writers, Webster forks and review roles | [`agent-turns-effect`](design-agent-turns-effect.md) | 4h<br>14m | tools |
+| R2 |  | **Plan writer hands its code lookups to fresh subagents and keeps the overview**<br>• The Plan writer pays its whole context for each late grep; research whether forks answering batched questions cut that cost without losing the plan overview | [`planner-fork-lookups`](design-planner-fork-lookups.md) | 9m<br>0m | loom |
 
 #### Enhancements (3)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E6 |  | **Shorten the plan spec and split it into sub-files read by need**<br>• loom-plan-spec.md is 112 KB, half of it a catalogue of validation checks; cut it down and split it so each role reads only what it uses | [`plan-spec-split`](design-plan-spec-split.md) | 24m<br>13m | loom, stencil, webster |
-| E7 |  | **A hook nudges an agent back to batching the moment it breaks the rule**<br>• Above about 150k context agents drift into grep-then-slice chains and one-fix-per-turn edits, about a third of context tokens in a 28-session sample; a PostToolUse hook adds one line on a breach, with sharper rule wording | [`batching-breach-nudge`](design-batching-breach-nudge.md) | 21m<br>13m | claude, shuttle |
-| E8 |  | **A cold, cheap fixer clears a failed writer gate instead of the writer at full context**<br>• When the Webster card gate, the plan gate or the discussion gate fails, Go spawns a cold fixer with the gate report rather than the writer fixing at its large context | [`cold-gate-fixer`](design-cold-gate-fixer.md) | 8m<br>8m | webster, loom, gate |
+| E6 |  | **Shorten the plan spec and split it into sub-files read by need**<br>• loom-plan-spec.md is 112 KB, half of it a catalogue of validation checks; cut it down and split it so each role reads only what it uses | [`plan-spec-split`](design-plan-spec-split.md) | 25m<br>13m | loom, stencil, webster |
+| E7 |  | **A hook nudges an agent back to batching the moment it breaks the rule**<br>• Above about 150k context agents drift into grep-then-slice chains and one-fix-per-turn edits, about a third of context tokens in a 28-session sample; a PostToolUse hook adds one line on a breach, with sharper rule wording | [`batching-breach-nudge`](design-batching-breach-nudge.md) | 22m<br>14m | claude, shuttle |
+| E8 |  | **A cold, cheap fixer clears a failed writer gate instead of the writer at full context**<br>• When the Webster card gate, the plan gate or the discussion gate fails, Go spawns a cold fixer with the gate report rather than the writer fixing at its large context | [`cold-gate-fixer`](design-cold-gate-fixer.md) | 9m<br>9m | webster, loom, gate |
 
 ## [P0 Root: entries under no project](project-root.md) (35)
 
