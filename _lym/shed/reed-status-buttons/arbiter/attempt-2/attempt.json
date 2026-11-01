@@ -1,0 +1,15 @@
+{
+  "number": 2,
+  "stop_key": {
+    "current_producer": "Plan-Bouncer",
+    "history_length": 19,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-11-01T14:38:12.419115689+01:00",
+  "deadline": "2026-11-01T15:08:12.419115689+01:00",
+  "strand_guid": "1ec52ec58c5f95b3c36b75c806fd4a65",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/reed-status-buttons/_lym/shed/reed-status-buttons/drive-reports/drive-envelope-20261101-143812-aebb.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/reed-status-buttons/_lym/shed/reed-status-buttons/drive-reports/drive-report-20261101-143812-4f23.md"
+}

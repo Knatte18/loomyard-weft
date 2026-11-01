@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Plan review round 2 stopped at the hard cap with one open design-wrong finding, F1 (reed-button-groups-need-open-maps). F2 and F3 are mechanical and non-gating. The round-2 fixer applied F1's proposed fix to card 2 (02-buttons-config-keys), so I read that fix against the code. It answers F1.\n\n- Card 2 now creates `reedengine.ConfigOpenMaps` returning `buttons.task`, `buttons.beam` and `buttons.prime`, sets `ConfigSpec.OpenMaps` from it, and adds the same open maps to reed's `configreg.Modules` row. That matches the comparison in `TestModules_SeedOnlyAndHubWideFlags` (internal/configreg/configreg_test.go:66). Tapestry and darn already declare open maps the same way.\n- Under those open maps, `yamlengine.MissingKeys` skips a template leaf such as `buttons.task[0].label` whenever the stacked document holds `buttons.task` (internal/yamlengine/reconcile.go:179, `openMapOf` via `underPath`, which matches the `[` element suffix). So the list-element check that F1 named no longer fails a shorter list or a mapping group.\n- `fillMapping` leaves a present open-map key alone whatever its shape (internal/yamlengine/fill.go:108). `buttons` itself is not an open map, so `buttons: null` still fails with a shape mismatch marked ErrInvalid (fill.go:87-88, configengine/config.go:236). That keeps the card's `buttons: null` row reachable.\n- The unit rule treats an open-map path as one whole unit (internal/yamlengine/layers.go:26-33). So `Merge` replaces a group whole, and the local-layer refusal still names `buttons.task`, as the card's rows say.\n- Reed is not HubWide, so the open maps change neither configsync's seed choice (configsync.go:914 already holds through `!m.HubWide`) nor fabriccli's hub-wide warning (fabric.go:794).\n\nThe review's own probe also showed every one of these behaviours with the open maps in place. The fix answers F1, so the hard-cap rule allows an accept.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym loom circling accept reed-status-buttons"
+  ],
+  "cause": "",
+  "attempt": 2,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/reed-status-buttons/_lym/shed/reed-status-buttons/arbiter/attempt-2",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/reed-status-buttons/_lym/shed/reed-status-buttons/arbiter/attempt-2/verdict.yaml",
+  "relaunch": "lym shed step reed-status-buttons --until-stop --arbiter-attempt 2"
+}
