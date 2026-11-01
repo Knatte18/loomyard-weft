@@ -1,6 +1,6 @@
 # A writer session can end with untracked files in the worktree, which halt Finalize
 
-`writer-leaves-stray-files` · Task · bug, shuttle, darn, loom · running · Darn-Write
+`writer-leaves-stray-files` · Task · bug, shuttle, darn, loom · running · Drift-Verify
 
 ## Seen (orch, 2026-11-01)
 
