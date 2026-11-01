@@ -12,14 +12,13 @@ After the move, dobby on Neve reported its driver strand dead, then a fresh Go d
 The run went on because `lym adopt` resumes it: step 6 of its help resumes each moved run not done as a detached first pass, so adopting is also starting.
 Bolt itself is reconciled with origin first by each of `lym fabric pull`, `lym adopt` (its step 1) and `lym beam start`, so the board was current; what was missing is a view of the runs.
 
-## Idea
+## Design (operator, 2026-11-01)
 
-One verb takes a machine over and leaves it in a known state, in place of the hand steps.
-- It pulls warp and weft, adopts the runs and beams the operator names, and starts the dobby and orch, each step idempotent.
+One verb takes a beam, or root, over onto this machine and leaves it in a known state, in place of the hand steps.
+- The unit is the beam: the operator names the beams (or root) to take over, and lym supports one beam owned and run on one machine while another beam is owned and run on another.
+- The verb does every step the move needs, each idempotent: sync Bolt, sync warp and weft of the named beams, adopt them, settle what conflicts on the way, and start each beam's dobby and orch as a pair.
+  Which steps those are is for this task to find out from the code (`lym fabric pull`, `lym adopt`, `lym beam start` and what they leave to the operator today); the operator does not list them.
+- The old machine releases nothing: it loses ownership when the new one adopts, and the operator never works one beam on two machines at once.
 - It starts no run by itself: every adopted run stays held until the operator lets it go on, so nothing runs that the operator does not expect.
+  The hold is released per beam, by a verb; a button on reed's action row in that beam's session calls the same verb once note `reed-status-buttons` is built.
 - It prints one line per run: landed, running here, held for a go-ahead, or owned by another machine, with the row it stands at.
-
-## Open
-
-- Which steps the move took on 2026-10-31 in full; the operator's account is the source.
-- Whether the old machine releases its runs first, by a verb of its own, before the new one adopts them.
