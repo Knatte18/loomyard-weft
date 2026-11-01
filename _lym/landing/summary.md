@@ -1,56 +1,43 @@
-# batten cancel: no hang behind a paused step; --remove is idempotent
+# Fix batten cancel hanging on its own pause and failing --remove
 
-Two fixes for `lym batten cancel`.
+`lym batten cancel` could deadlock with a running step, and `lym batten cancel <slug> --remove` failed on records that were already gone.
+Both are fixed.
 
-## A remote-refs lock holder passes the pause gate before the lock
+## The cancel hang
 
-The hang came from the remote-refs lock, not from a pause the cancel wrote.
-The cancel writes no pause.
-The run's traces show that the operator's HALT button (`lym tender pause plan-spec-split`) wrote the pause at 19:33:49 and CANCEL ran at 19:34:14.
-The running `lym batten step` (Open-IDE) then pushed through `gitrepo`, which takes the repository's remote-refs lock and runs git under it.
-`gitexec` waits at the pause gate inside that call, so the step waited for the pause to lift while it held the lock.
-The cancel is exempt from the gate, but its origin reconcile takes the same lock (`HoldRemoteRefs`) with no bound.
-It logged nothing until the step was killed at 19:36:02, and it finished a second later.
+The cancel pauses the run, then waits for the in-flight network operations of the run to finish.
+A step in Open-IDE held a remote-refs lock and waited at the pause gate for a git call made under that lock.
+The cancel waited on the step and the step on the cancel's pause, so only killing the step ended it.
 
-- `pauserecord.Admit(op)` passes the gate as `Network` does and marks `op` in flight.
-  It then admits the process until its release runs.
-  While an admission stands, every network call of the process passes the gate at once and is still marked in flight.
-- `gitrepo.Repo.HoldRemoteRefs`, which every fetch, pull and push method and the fabric reconcile go through, takes the admission before the lock and drops it after the release.
-  A process that waits at the gate holds no lock, and a lock holder is never held by a pause.
-  A pause that starts while a holder runs sees its calls in flight, as it sees any call already past the gate.
-- `PATTERN-remote-refs-lock` now states that the pause gate is passed before the lock is taken.
+`HoldRemoteRefs` in `internal/gitrepo` now passes the pause gate before it takes the lock.
+It stays admitted until the lock is released, so a pause never holds a process that holds the lock.
+A pause that starts meanwhile finds the holder's operation marked in flight, and the cancel waits for it as it does for any other in-flight call.
 
-With this fix the cancel's reconcile goes through, and its end of the run's registered processes reaches the paused loop and its step.
+`pauserecord.Admit` is the new primitive.
+It passes the gate as `Network` does, marks the operation in flight, and admits the process until its release runs.
+`PATTERN-remote-refs-lock` and the `gitrepo` and `pauserecord` package docs state the rule.
 
-## cancel --remove after a plain cancel succeeds
+## The remove failure
 
-`removeRunRecords` committed the run directory's removal in every case.
-After a plain cancel had already removed and committed the records, `lym batten cancel <slug> --remove` ran `git add -- _lym/shed/<slug>` on a path that was neither on disk nor tracked.
-That failed with "pathspec did not match any files" and left the cancel marker, which refuses the slug's next start, and every rerun failed the same way.
-The removal now commits only while the records HEAD holds the run's status or seed.
-A removal that already finished succeeds again with no commit, and a deleted directory the HEAD still tracks still commits, as before.
-`runRecordsTracked` is the one reader of that question, shared with the cancel's existing records probe.
+`removeRunRecords` in `internal/battencli` ran `git add -- _lym/shed/<slug>` even when the records directory was gone or empty.
+A status-lock `os.MkdirAll` recreates an empty `_lym/shed/<slug>` after the records are removed, so git failed with "pathspec did not match any files".
+Every rerun failed the same way, which left the cancel marker in place and made dobby refuse to start the task again.
+
+It now reads whether the records HEAD tracks the run's status or seed, and commits the removal only if it does.
+A run directory that is deleted on disk but still tracked still commits its removal, so a removal whose commit failed earlier finishes on a rerun.
+A run the records HEAD no longer tracks commits nothing and succeeds.
+The tracked check is shared with the cancel's own "records outstanding" probe through `runRecordsTracked`.
+A failed read of the records HEAD is returned as an error before any commit or scratch emptying.
 
 ## Design decisions
 
-- The fix sits at the lock, not in the cancel.
-  The decision record's idea was that a cancel "ends the step or does not pause before it".
-  The cancel never paused, and every process that wants the remote-refs lock had the same exposure behind a paused holder, a dobby pass or a cleanup included.
-  The cancel's refuse-before-ending order stays as it is.
-- The admission is process-wide, not per call.
-  The fabric reconcile holds two repositories' locks in turn and runs git through both `gitrepo` and `gitexec`, so a per-call flag would not reach every call under the lock.
-  While a process is admitted, its other network calls also pass, and they are marked in flight, so a pause reads that process as busy.
-- The decision record traced the `--remove` failure to `os.MkdirAll` recreating `_lym/shed/<slug>`.
-  That call creates the status lock's directory under `.lym`, not `_lym`, so it is left alone.
-  The failing `git add` is explained by the commit running on a path that was neither on disk nor tracked.
+- The admission is process-wide while it stands: a network call on another goroutine or in another repository passes the gate too.
+  This favors never holding a lock holder over pausing every concurrent call of the same process during the hold.
+  The `Admit` doc comment states it.
+- The cancel is not changed.
+  The deadlock is removed at the lock holder, so the cancel's wait for in-flight operations stays as it was.
 
-## Tests
+## To check by hand
 
-- `TestNetwork` gains a row: an admission passes a later call at once with both marked in flight, and once the admission is released a call is held again.
-- `TestHoldRemoteRefs_PassesThePauseGateBeforeTheLockAndStaysAdmittedUntilTheRelease` (tier 1, real git) checks three things.
-  The lock is free while `HoldRemoteRefs` waits at a live pause.
-  A call made while the lock is held passes a new pause.
-  A call made after the release is held again.
-- `TestRemoveRunRecords_CommitsTheRemovalOnlyWhileTheRecordsHeadTracksTheRun` covers four states of the run directory: tracked on disk, deleted but tracked, gone and untracked (the regression), and untracked on disk.
-  In each, the directory is removed and the scratch is emptied.
-- The cleanup fixture now records a committed seed for each run directory it writes, as a real run has.
+- Not run: cancel a run during Open-IDE shortly after Seed-IDE and check that `lym batten cancel <slug>` returns without killing the step.
+- Not run: `lym batten cancel <slug> --remove` after a plain cancel, and again after a completed `--remove`, and check that both succeed and leave no cancel marker.
