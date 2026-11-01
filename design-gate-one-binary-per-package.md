@@ -2,8 +2,6 @@
 
 `gate-one-binary-per-package` · Task · enhancement, gate, testkit, pattern · draft
 
-Depends on: [`board-root-p0`](design-board-root-p0.md)
-
 ## Seen (research, landed 2026-11-01)
 
 `docs/research/gate-fewer-binaries-trial-2026-11-01/report.md` measured three ways to cut the new test binaries a gate run builds, each of which costs about 10 s of scanner hold on OSL-1046.
