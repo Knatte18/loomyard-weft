@@ -28,7 +28,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Notes (34)
+### Notes (35)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -40,12 +40,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R5 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 9d<br>5d | webster |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 9d<br>4h | loom, stencil |
 
-#### Bugs (2)
+#### Bugs (3)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **A hub rename program must tolerate its own landing run and the new binary**<br>• Lesson from boltrename: the landed run pair and an early _bolt/.lym blocked it | [`boltrename-landing-order`](design-boltrename-landing-order.md) | 5m<br>4m | cwd, fabric |
 | B2 |  | **A landing commit message ends with a stray Created using block**<br>• The landing message of 229638f7 repeats body lines after Created using | [`landing-message-stray-block`](design-landing-message-stray-block.md) | 5m<br>5m | landing |
+| B3 |  | **Dobby and orch start in pairs: a batten run brought dobby up alone**<br>• ensureParentDobby spawns a lone dobby; every start goes through beam start and brings the orch too | [`dobby-orch-pair-start`](design-dobby-orch-pair-start.md) | 0m<br>0m | dobby, batten, orch |
 
 #### Enhancements (13)
 
