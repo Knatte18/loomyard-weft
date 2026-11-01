@@ -20,6 +20,12 @@ A darn with profile docs writes the plan of the same input twice, once with `Pla
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-01): Scratch worktrees for the plan replays
+
+Decision: The writer may create up to 4 scratch worktrees with lym fabric add (never --adopt-local), one per input and arm, drive the Plan producers and one Plan-Review round in each within the entry's cap, and remove every one with lym fabric remove when its numbers are taken. tapestry.plan_split is set only in each scratch worktree's own config layer, never in the hub-wide layer, since other runs read that; if the setting cannot be set per worktree, ask the orch before changing anything hub-wide. The replays get no board entry and no batten run.
+
+Rationale: The entry's study replays two landed runs at the start of Plan on scratch branches; worktrees are the only way to run them, and the cap bounds them.
+
 ## Constraints
 
 ## Auto-mode assumptions
