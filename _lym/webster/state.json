@@ -770,7 +770,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 10,
   "masterStrand": "a60f187b995579173bb137e0f792d82c",
   "masterSessionId": "182615f8-c2d3-4e66-9c5a-db5c8744d6b1",
   "masterEngine": "claude",
@@ -810,6 +810,26 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-warp-visibility/182615f8-c2d3-4e66-9c5a-db5c8744d6b1/subagents/agent-ae23d74935228bdc2.jsonl"
       ]
+    },
+    "10": {
+      "slug": "fabric-worktree-seam",
+      "cards": [
+        "10-fabric-worktree-seam",
+        "11-entrymerge-package",
+        "12-board-replay-entrymerge"
+      ],
+      "cardHashes": {
+        "10-fabric-worktree-seam": "543fae44b2ea5d39230af7bf5bc2d1d8eea0d305f516656b90a0b16c34a7d10c",
+        "11-entrymerge-package": "aa6701c00d4650af1035a122951cccb0f44097c0d78c4344f2f64ae3f0acdf77",
+        "12-board-replay-entrymerge": "ab0be1dee3fe975de2242cd6cc6c1ff562cf683cccd76c4f8fcbd69b180a9467"
+      },
+      "startSha": "5226b67aeaa51433bbc3599be71787397ab877fd",
+      "kind": "fork",
+      "spawnedAt": "2026-11-01T09:34:32Z",
+      "sessionId": "182615f8-c2d3-4e66-9c5a-db5c8744d6b1",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "3": {
       "slug": "fabric-bolt-dir-sweep",
