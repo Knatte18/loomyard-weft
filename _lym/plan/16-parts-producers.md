@@ -1,13 +1,13 @@
 # Card 16 — parts-producers
 
 **Create:**
-- `plan:internal/shedrecipe#PartSeats` -> `type PartSeats struct`
-- `plan:internal/shedrecipe#partsWriteEntry` -> `func partsWriteEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error)`
-- `plan:internal/shedrecipe#partsPlanWriteEntry` -> `func partsPlanWriteEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error)`
-- `plan:internal/shedrecipe#resolvePartGates` -> `func resolvePartGates(entry string, cfg Config, env Env) (func(part string) (shuttleengine.GateSpec, error), error)`
-- `plan:internal/shedrecipe#TestPartsWriteEntry` -> `func TestPartsWriteEntry(t *testing.T)`
-- `plan:internal/shedrecipe#TestPartsPlanWriteEntry` -> `func TestPartsPlanWriteEntry(t *testing.T)`
-- `plan:internal/loomcli#partsPlanCommitPathspec` -> `func partsPlanCommitPathspec(location *lymcwd.Location) []string`
+- `internal/shedrecipe#PartSeats`
+- `internal/shedrecipe#partsWriteEntry`
+- `internal/shedrecipe#partsPlanWriteEntry`
+- `internal/shedrecipe#resolvePartGates`
+- `internal/shedrecipe#TestPartsWriteEntry`
+- `internal/shedrecipe#TestPartsPlanWriteEntry`
+- `internal/loomcli#partsPlanCommitPathspec`
 
 **Edit:**
 - `internal/shedrecipe#registry`

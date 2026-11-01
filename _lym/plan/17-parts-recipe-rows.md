@@ -1,10 +1,10 @@
 # Card 17 — parts-recipe-rows
 
 **Create:**
-- `plan:internal/loomshed#NamePartsWrite` -> `const NamePartsWrite = "Parts-Write"`
-- `plan:internal/loomshed#NamePartsPlanWrite` -> `const NamePartsPlanWrite = "Parts-Plan-Write"`
-- `plan:internal/loomrecipe#TestPlanSplitRows` -> `func TestPlanSplitRows(t *testing.T)`
-- `plan:internal/loomrecipe#TestSequence_PlanSplitRunsThePartsRows` -> `func TestSequence_PlanSplitRunsThePartsRows(t *testing.T)`
+- `internal/loomshed#NamePartsWrite`
+- `internal/loomshed#NamePartsPlanWrite`
+- `internal/loomrecipe#TestPlanSplitRows`
+- `internal/loomrecipe#TestSequence_PlanSplitRunsThePartsRows`
 
 **Edit:**
 - `contracts/recipes/tapestry-recipe.yaml`
