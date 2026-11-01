@@ -36,6 +36,12 @@ Only 2 wide runs with a Webster record have landed (`orch-strand-cycle`, `loom-t
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-01): Recheck now and write the report
+
+Decision: Many wide runs have landed since 2026-10-24, so the recheck is due now. Rerun docs/research/batch-budget-trial-2026-10-24/compare.sh over every run since that baseline, cautious against wide, and write a new dated report under docs/research/ (batch-budget-trial-2026-11-01/) with the same tables, the number of wide runs, and the fork peak against the batcher's estimate for forks estimated above 200k. End it with a recommendation on two questions: whether wide goes into internal/batcher/template.yaml, and whether the estimator needs calibrating above 200k and roughly by how much. Change no code or config: the report is the deliverable.
+
+Rationale: Operator, 2026-11-01: many loom and tapestry runs have run at 300k budget since, so the trial can be judged now.
+
 ## Constraints
 
 ## Auto-mode assumptions
