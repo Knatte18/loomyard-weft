@@ -18,6 +18,12 @@ The deny-and-steer sentence every agent gets, `steerPythonDeny` in `internal/she
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-01): Name the harness's bypass-mode text and take sed -n out of the steer
+
+Decision: Claude Code adds a system reminder to every session launched with --dangerously-skip-permissions, which lym's Claude launches carry (claudeengine/command.go), telling the agent it may read with cat, head or sed -n and make small mechanical changes with sed, heredocs or short scripts instead of Read, Edit and Write. The instruction lym gives agents about editing states that, in lym sessions, it overrides that harness text: a file the agent changes is read with Read and changed with Edit or Write, never by a shell edit. The steering sentence (steerPythonDeny and any steer the new guard prints) no longer names sed -n or awk for reading; it names Read for reading a file, and grep for searching.
+
+Rationale: The operator and orch found the harness's bypass-mode reminder telling agents the opposite of the edit rule, the likely main reason forks reach for sed; the steer naming sed -n leads from a sed read to a sed edit (operator, 2026-11-01).
+
 ## Constraints
 
 ## Auto-mode assumptions
