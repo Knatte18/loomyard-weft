@@ -1,6 +1,6 @@
 # A card that retires a name sweeps the whole tree, tests included, first
 
-`retired-name-sweep` · Note · enhancement, webster, stencil
+`retired-name-sweep` · Task · enhancement, webster, stencil · draft
 
 ## Seen (orch, 2026-11-01)
 
