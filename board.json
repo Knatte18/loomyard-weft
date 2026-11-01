@@ -654,6 +654,25 @@
       "status": "draft",
       "created": "2026-11-01T10:20:12Z",
       "revised": "2026-11-01T10:26:27Z"
+    },
+    {
+      "id": 945,
+      "handle": "B1",
+      "slug": "boltrename-landing-order",
+      "title": "boltrename refused the hub its own landing left: a stray _bolt and the run pair",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "cwd",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The rename program could not run as shipped; migrated by hand on Neve",
+      "body": "## Seen (orch, 2026-11-01)\n\n`bolt-dir-rename` (commit `229638f7`) landed a lym binary that knows only `_bolt` while the hub was still on `_board`, and its run then stuck at Worktree-Teardown (board config under `_bolt` not found).\n`tools/boltrename` could not run as shipped:\n- lym processes started on the new binary (dobby, the reed watchdog, a reed discover signal) made an empty `_bolt/.lym` before the migration, twice; boltrename refuses a hub holding `_bolt`.\n- The landed run's own pair (`bolt-dir-rename` and its weft) was still in the hub, since teardown comes after Land; boltrename refuses any directory but the prime, its weft, `_launchers` and the Bolt checkout.\n- Every live process in the hub blocks it, including an idle tmux server reed made and a plain shell.\n\nDone by hand on Neve: the stray `_bolt` removed, the pair moved out of the hub, boltrename run, the pair moved back, `lym batten run bolt-dir-rename` finished the teardown.\n\n## For OSL-1046\n\nThe same steps apply there, unless no run pair is in its hub.\nA rename task's landing order (deploy at Land, teardown after) is worth stating in the rename program's own instructions, or the program should tolerate a landed run's pair and an empty `_bolt/.lym`.\n`boltrename` is deleted once OSL-1046 is migrated, so this may only be a note for the next such rename.\n",
+      "created": "2026-11-01T10:59:23Z",
+      "revised": "2026-11-01T10:59:23Z"
     }
   ],
   "prime_owner": "neve",
