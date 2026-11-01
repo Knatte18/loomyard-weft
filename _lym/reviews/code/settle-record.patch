@@ -1,0 +1,818 @@
+diff --git a/internal/configcli/configcli.go b/internal/configcli/configcli.go
+index 76b47b18..a920470b 100644
+--- a/internal/configcli/configcli.go
++++ b/internal/configcli/configcli.go
+@@ -478,8 +478,8 @@ func buildConfigLong() string {
+ 		"A list-valued key takes a YAML flow list and is replaced whole, e.g.\n" +
+ 		"  lym config landing --set 'deploy_branches=[]'\n" +
+ 		"A module may declare an open map, whose keys are the repo's own; --set\n" +
+-		"adds or rewrites one entry of it with a scalar value, e.g.\n" +
+-		"  lym config board --set labels.quarry=\"glyphs and the quarry index\"\n" +
++		"adds or rewrites one entry of it, or one key inside it, e.g.\n" +
++		"  lym config gate --set tiers.tier0.env.LYM_TEST_TIER=0\n" +
+ 		"A value the module's loader refuses is refused, naming the key.\n" +
+ 		"Keys the template lacks are\n" +
+ 		"preserved and reported in the JSON output's \"preserved\" field;\n" +
+diff --git a/internal/configcli/doc.go b/internal/configcli/doc.go
+index 1066e079..405155d6 100644
+--- a/internal/configcli/doc.go
++++ b/internal/configcli/doc.go
+@@ -53,6 +53,8 @@
+ // A value whose first non-blank character is `{` or `[` writes the entry as a YAML flow mapping or list instead, replacing it whole, as in `lym config gate --set 'tiers.tier0={command: "go test -json {targets} {args}", timeout_min: 60, counter: go-json}'`.
+ // It refuses when the map holds a list,
+ // and removing an entry stays an editor edit.
++// An open map whose spec declares its shape (`configengine.Spec.OpenMapShapes`) also takes a key inside an entry, as in `lym config gate --set tiers.tier0.env.LYM_TEST_TIER=0`:
++// the one value is written there, a number as a number and a string field as a string, and a key the shape lacks is refused naming it.
+ // A key that is itself a declared open map holding a scalar or a list, such as loom's model keys `reviewer_model`, `fixer_model` and each segment's `*_reviewer_model` and `*_fixer_model` (the plan segment's in tapestry), and each perch's fan keys `*_reviewer_fan` and `*_fixer_fan` in loom and tapestry, takes either shape:
+ // a value starting with `[` is written as a YAML flow list of scalars or mappings of scalars and any other value as a string, as in `lym config tapestry --set 'plan_reviewer_model=["opus[medium]", "sonnet[high]"]'`.
+ // An entry holding `[` or `]` must be quoted, and a bracketed value that is not such a list is refused, never written as a string.
+diff --git a/internal/configengine/doc.go b/internal/configengine/doc.go
+index 59b70459..1ef2b716 100644
+--- a/internal/configengine/doc.go
++++ b/internal/configengine/doc.go
+@@ -96,6 +96,8 @@
+ // [Set] takes a trailing variadic openMaps, and a [Spec] carries `OpenMaps`: the dotted paths of the module's open maps, mappings whose keys the user owns.
+ // They are passed unchanged to yamlengine, which defines what a declared path changes;
+ // with none declared, every caller behaves as before.
++// A [Spec] may also carry `OpenMapShapes`, an open-map path mapped to the shape the module decodes there, which [Set] passes to yamlengine on every layer:
++// a key inside a shaped open map, such as one entry's field or one name in that field's map, is set alone, and a path the shape does not reach is refused naming the key.
+ //
+ // # Template overlay
+ //
+diff --git a/internal/configengine/layers.go b/internal/configengine/layers.go
+index 23019f7f..00031d70 100644
+--- a/internal/configengine/layers.go
++++ b/internal/configengine/layers.go
+@@ -65,6 +65,7 @@ const (
+ 
+ // Spec describes one module to the layered loaders.
+ // OpenMaps are the dotted paths of the module's open maps;
++// OpenMapShapes maps an open-map path to the shape the module decodes there, so a set reaches one key inside it;
+ // PerNameMaps are the dotted paths of the module's per-name maps, mappings of names the operator owns, such as a lens's prose or a batcher profile, which a layer adds to or overrides by name;
+ // HubWide marks a module whose file lives at the hub only;
+ // WholeEntries makes each top-level key one unit, open to the local layer.
+@@ -79,6 +80,7 @@ type Spec struct {
+ 	Name              string
+ 	Template          []byte
+ 	OpenMaps          []string
++	OpenMapShapes     map[string]*yamlengine.Shape
+ 	PerNameMaps       []string
+ 	HubWide           bool
+ 	WholeEntries      bool
+diff --git a/internal/configengine/set.go b/internal/configengine/set.go
+index e5362403..e9c386ef 100644
+--- a/internal/configengine/set.go
++++ b/internal/configengine/set.go
+@@ -78,7 +78,7 @@ func Set(dirs Dirs, spec Spec, layer Layer, pairs []yamlengine.KV) ([]string, er
+ 		return nil, err
+ 	}
+ 
+-	result, err := yamlengine.SetValues(spec.Template, existingBytes, pairs, spec.PerNameMaps, spec.OpenMaps...)
++	result, err := yamlengine.SetValues(spec.Template, existingBytes, pairs, spec.PerNameMaps, spec.OpenMapShapes, spec.OpenMaps...)
+ 	if err != nil {
+ 		removeIfScaffolded()
+ 		return nil, err
+@@ -163,7 +163,7 @@ func setSparse(dirs Dirs, spec Spec, layer Layer, path string, pairs []yamlengin
+ 		return nil, err
+ 	}
+ 
+-	result, err := yamlengine.SetSparse(spec.Template, existing, pairs, spec.PerNameMaps, spec.OpenMaps...)
++	result, err := yamlengine.SetSparse(spec.Template, existing, pairs, spec.PerNameMaps, spec.OpenMapShapes, spec.OpenMaps...)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+diff --git a/internal/driftengine/config.go b/internal/driftengine/config.go
+index e006d8ac..d81fcca4 100644
+--- a/internal/driftengine/config.go
++++ b/internal/driftengine/config.go
+@@ -12,6 +12,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/modelspec"
++	"github.com/Knatte18/loomyard/internal/yamlengine"
+ 	"gopkg.in/yaml.v3"
+ )
+ 
+@@ -89,12 +90,17 @@ func ConfigOpenMaps() []string {
+ 
+ // ConfigSpec returns drift's layered-load spec.
+ // capture and compare run commands, so they are executable keys and closed to the local layer.
++// Both carry the shape their decode gives them, so `--set` reaches one key inside a step, such as `capture.env.NAME`, and refuses a key a step lacks.
+ func ConfigSpec() configengine.Spec {
+ 	return configengine.Spec{
+ 		Name:     configModule,
+ 		Template: []byte(ConfigTemplate()),
+ 		HubWide:  true,
+ 		OpenMaps: ConfigOpenMaps(),
++		OpenMapShapes: map[string]*yamlengine.Shape{
++			stepCapture: yamlengine.ShapeOf(stepFile{}),
++			stepCompare: yamlengine.ShapeOf(stepFile{}),
++		},
+ 		Categories: map[string]configengine.Category{
+ 			"enabled":         configengine.CategoryNone,
+ 			stepCapture:       configengine.CategoryExecutable,
+diff --git a/internal/driftengine/config_test.go b/internal/driftengine/config_test.go
+index 85cc3b28..3fc457e2 100644
+--- a/internal/driftengine/config_test.go
++++ b/internal/driftengine/config_test.go
+@@ -14,8 +14,53 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++	"github.com/Knatte18/loomyard/internal/yamlengine"
+ )
+ 
++// TestConfigSpec_SetNestedKeys pins that a --set reaches one key inside capture or compare, a number decoding as a number and an env value as a string, so the file still loads;
++// and that a key a step lacks is refused naming it, leaving the file byte for byte.
++func TestConfigSpec_SetNestedKeys(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	baseDir := t.TempDir()
++	seedDriftConfig(t, baseDir, withKey(t, "capture", `capture: {command: "profile --out {baseline_dir}", timeout_min: 30}`))
++	dirs := configengine.Dirs{Board: baseDir}
++	pairs := []yamlengine.KV{
++		{Key: "capture.timeout_min", Value: "45"},
++		{Key: "capture.env.NAME", Value: "1"},
++		{Key: "compare.command", Value: "cmp {baseline_dir}"},
++		{Key: "compare.timeout_min", Value: "5"},
++	}
++	if _, err := configengine.Set(dirs, ConfigSpec(), configengine.LayerDefault, pairs); err != nil {
++		t.Fatalf("Set() = %v; want nil", err)
++	}
++	cfg, err := LoadConfig(dirs)
++	if err != nil {
++		t.Fatalf("LoadConfig() = %v; want nil", err)
++	}
++	wantCapture := CommandStep{Command: "profile --out {baseline_dir}", Dir: ".", Env: map[string]string{"NAME": "1"}, TimeoutMin: 45}
++	if !reflect.DeepEqual(cfg.Capture, wantCapture) {
++		t.Errorf("LoadConfig() capture = %+v; want %+v", cfg.Capture, wantCapture)
++	}
++	wantCompare := CommandStep{Command: "cmp {baseline_dir}", Dir: ".", TimeoutMin: 5}
++	if !reflect.DeepEqual(cfg.Compare, wantCompare) {
++		t.Errorf("LoadConfig() compare = %+v; want %+v", cfg.Compare, wantCompare)
++	}
++
++	path := configengine.ConfigFile(baseDir, configModule)
++	before, err := os.ReadFile(path)
++	if err != nil {
++		t.Fatal(err)
++	}
++	_, err = configengine.Set(dirs, ConfigSpec(), configengine.LayerDefault, []yamlengine.KV{{Key: "capture.timeoutt", Value: "1"}})
++	if err == nil || !strings.Contains(err.Error(), "capture holds no key timeoutt") {
++		t.Errorf("Set(capture.timeoutt) = %v; want a refusal naming timeoutt", err)
++	}
++	if after, _ := os.ReadFile(path); string(after) != string(before) {
++		t.Errorf("drift file after the refusal = %q; want it unchanged %q", after, before)
++	}
++}
++
+ // seedDriftConfig creates <baseDir>/_lym/config/drift.yaml with the given contents.
+ func seedDriftConfig(t *testing.T, baseDir, contents string) {
+ 	t.Helper()
+diff --git a/internal/driftengine/doc.go b/internal/driftengine/doc.go
+index 05f45287..86152708 100644
+--- a/internal/driftengine/doc.go
++++ b/internal/driftengine/doc.go
+@@ -4,6 +4,8 @@
+ // `drift.yaml` is a hub-wide config module with these keys: `enabled`, which switches the Drift rows on through their entry gate; `capture` and `compare`, each a command step written whole as `{command, dir, env, timeout_min}`; `baseline_model` and `verify_model`, the model-specs of the two agents; and `verify_max_runs`, the run budget of one Drift-Verify agent session.
+ // A declared command holds the placeholder `{baseline_dir}`, the directory the capture writes its profile files to and the compare reads them from, and may hold `{skip_file}`, a file naming one skipped test per line.
+ // `capture` and `compare` are executable keys, so only the template and the hub's board default layer set them, with `lym config drift --set 'capture={command: ..., timeout_min: N}'`.
++// Once a step is declared, `--set` also changes one of its keys alone, as in `--set capture.env.NAME=1` or `--set compare.timeout_min=10`, and refuses a key a step lacks;
++// a step left with keys but no command fails the load check, so a first declaration sets `command` and `timeout_min` together.
+ // LoadConfig loads the file strictly and refuses a declared step without `{baseline_dir}` or with a `timeout_min` below 1, a `verify_max_runs` below 1 and a model-spec that fails its grammar, each naming the key.
+ // Config.Step returns a declared step and refuses an undeclared one, so every row and verb that runs a command goes through it.
+ //
+diff --git a/internal/driftengine/template.yaml b/internal/driftengine/template.yaml
+index 0733251f..389e1150 100644
+--- a/internal/driftengine/template.yaml
++++ b/internal/driftengine/template.yaml
+@@ -1,6 +1,6 @@
+ enabled: false  # true turns on the regression rows Drift-Baseline, Drift-Await and Drift-Verify in the tapestry and darn recipes; false leaves them out
+-capture: {}  # the command that records the regression baseline, written whole as {command, dir, env, timeout_min}; {} declares none; the command must hold {baseline_dir}, where it writes its profile files, and may hold {skip_file}, a file naming one skipped test per line; write it with lym config drift --set 'capture={command: "...", timeout_min: 30}'
+-compare: {}  # the command that compares the branch against the baseline, written whole as {command, dir, env, timeout_min}; {} declares none; the command must hold {baseline_dir}, may hold {skip_file}, and exits 0 when nothing drifted; write it with lym config drift --set 'compare={command: "...", timeout_min: 30}'
++capture: {}  # the command that records the regression baseline, written whole as {command, dir, env, timeout_min}; {} declares none; the command must hold {baseline_dir}, where it writes its profile files, and may hold {skip_file}, a file naming one skipped test per line; write it with lym config drift --set 'capture={command: "...", timeout_min: 30}'; once declared, change one key alone with lym config drift --set capture.timeout_min=45
++compare: {}  # the command that compares the branch against the baseline, written whole as {command, dir, env, timeout_min}; {} declares none; the command must hold {baseline_dir}, may hold {skip_file}, and exits 0 when nothing drifted; write it with lym config drift --set 'compare={command: "...", timeout_min: 30}'; once declared, change one key alone with lym config drift --set compare.timeout_min=45
+ baseline_model: sonnet[medium]  # model-spec for the Drift-Baseline agent, which records the task's regression scope (see contracts/specs/llm-model-spec.md)
+ verify_model: opus[high]  # model-spec for the Drift-Verify agent, which judges, accepts and fixes drift (see contracts/specs/llm-model-spec.md)
+ verify_max_runs: 8  # how many compare or side-capture runs one Drift-Verify agent session may take before it must report
+diff --git a/internal/gateslot/config.go b/internal/gateslot/config.go
+index 99444911..4945c44b 100644
+--- a/internal/gateslot/config.go
++++ b/internal/gateslot/config.go
+@@ -100,11 +100,16 @@ func ConfigPerNameMaps() []string {
+ // `slots` and `tier_parallel` take a machine override, and every key stays closed to the local layer.
+ // `tiers` and `build` run any shell command in a task worktree, so they are executable; the gate lists, the scoper, the refused commands and the inert paths switch off or hollow a guard.
+ // `cli_wait_sec`, `go_parallel` and `guard_tier` are retired, so a hub or machine file that still sets one loads and reconcile prunes it.
++// `tiers` and `build` carry the shape their decode gives them, so `--set` reaches one key inside a tier or the build step, such as `tiers.tier0.env.LYM_TEST_TIER`, and refuses a key neither holds.
+ func ConfigSpec() configengine.Spec {
+ 	return configengine.Spec{
+-		Name:        "gate",
+-		Template:    []byte(ConfigTemplate()),
+-		OpenMaps:    ConfigOpenMaps(),
++		Name:     "gate",
++		Template: []byte(ConfigTemplate()),
++		OpenMaps: ConfigOpenMaps(),
++		OpenMapShapes: map[string]*yamlengine.Shape{
++			"tiers": yamlengine.ShapeOf(map[string]tierFile{}),
++			"build": yamlengine.ShapeOf(buildFile{}),
++		},
+ 		PerNameMaps: ConfigPerNameMaps(),
+ 		HubWide:     true,
+ 		Categories: map[string]configengine.Category{
+diff --git a/internal/gateslot/config_test.go b/internal/gateslot/config_test.go
+index d5b67f57..a4cfb77d 100644
+--- a/internal/gateslot/config_test.go
++++ b/internal/gateslot/config_test.go
+@@ -18,8 +18,51 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++	"github.com/Knatte18/loomyard/internal/yamlengine"
+ )
+ 
++// TestConfigSpec_SetNestedKeys pins that a hub --set reaches one key inside a declared tier or the build step, a number decoding as a number and an env value as a string, so the hub file still loads;
++// and that a key no tier holds is refused naming it, leaving the hub file byte for byte.
++func TestConfigSpec_SetNestedKeys(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	dirs := configengine.Dirs{Board: seedGateConfig(t, baseKeys+tier0Flow)}
++	pairs := []yamlengine.KV{
++		{Key: "tiers.tier0.env.LYM_TEST_TIER", Value: "0"},
++		{Key: "tiers.tier0.timeout_min", Value: "30"},
++		{Key: "build.command", Value: "go build ./..."},
++		{Key: "build.timeout_min", Value: "5"},
++		{Key: "build.env.CGO_ENABLED", Value: "0"},
++	}
++	if _, err := configengine.Set(dirs, ConfigSpec(), configengine.LayerDefault, pairs); err != nil {
++		t.Fatalf("Set() = %v; want nil", err)
++	}
++	cfg, err := LoadConfig(dirs)
++	if err != nil {
++		t.Fatalf("LoadConfig() = %v; want nil", err)
++	}
++	tier := cfg.Tiers["tier0"]
++	if tier.Command != "go test -json {targets} {args}" || tier.TimeoutMin != 30 || !maps.Equal(tier.Env, map[string]string{"LYM_TEST_TIER": "0"}) {
++		t.Errorf("LoadConfig() tier0 = %+v; want command kept, timeout_min 30 and env LYM_TEST_TIER=0", tier)
++	}
++	if cfg.Build.Command != "go build ./..." || cfg.Build.TimeoutMin != 5 || !maps.Equal(cfg.Build.Env, map[string]string{"CGO_ENABLED": "0"}) {
++		t.Errorf("LoadConfig() build = %+v; want command go build ./..., timeout_min 5 and env CGO_ENABLED=0", cfg.Build)
++	}
++
++	path := configengine.ConfigFile(dirs.Board, "gate")
++	before, err := os.ReadFile(path)
++	if err != nil {
++		t.Fatal(err)
++	}
++	_, err = configengine.Set(dirs, ConfigSpec(), configengine.LayerDefault, []yamlengine.KV{{Key: "tiers.tier0.envv.X", Value: "1"}})
++	if err == nil || !strings.Contains(err.Error(), "tiers.tier0 holds no key envv") {
++		t.Errorf("Set(tiers.tier0.envv.X) = %v; want a refusal naming envv", err)
++	}
++	if after, _ := os.ReadFile(path); string(after) != string(before) {
++		t.Errorf("hub file after the refusal = %q; want it unchanged %q", after, before)
++	}
++}
++
+ var templateDefaults = Config{
+ 	Slots: 2, BusyQuitSec: 120,
+ 	Gates: map[string]GateKey{
+diff --git a/internal/gateslot/doc.go b/internal/gateslot/doc.go
+index d35e97e4..8ace0f17 100644
+--- a/internal/gateslot/doc.go
++++ b/internal/gateslot/doc.go
+@@ -56,7 +56,7 @@
+ // TemplateConfig decodes the template alone, for a run outside every hub.
+ //
+ // The tier keys are `tiers`, `gates`, `scoper`, `refuse_raw`, `tier_parallel`, `build` and `inert_paths`.
+-// `tiers` is an open map keyed `tier0`, `tier1`, and so on, each a Tier written whole with one `lym config gate --set 'tiers.tierN={...}'` flow mapping;
++// `tiers` is an open map keyed `tier0`, `tier1`, and so on, each a Tier written whole with one `lym config gate --set 'tiers.tierN={...}'` flow mapping, or one key at a time, as `--set tiers.tier0.env.LYM_TEST_TIER=0` or `--set build.timeout_min=10`, a key no tier or build step holds refused;
+ // `gates` is a per-name map from a gate key to a GateKey written `{tiers: [<n>...], scope: card|diff|all}`, so a hub file that sets one key keeps the template's value for every other, and `tier_parallel` an open map from a tier name to this machine's parallel for it.
+ // A GateKey may also hold `lints`, the lint steps its call runs after its tiers, each LintComments or LintPattern; the template's `card` key lists both.
+ // The keys lym reads are `card` and `batch` (scope `card`), `webster`, `parent-align`, `finalize` and `adopt` (scope `all`), and `webster-fix`, `darn-write`, `code-burler-fix`, `drift-verify` and `pr-review` (scope `diff`).
+diff --git a/internal/gateslot/template.yaml b/internal/gateslot/template.yaml
+index b5d35801..fda56e1e 100644
+--- a/internal/gateslot/template.yaml
++++ b/internal/gateslot/template.yaml
+@@ -7,6 +7,7 @@ busy_quit_sec: 120  # seconds a Go test binary under lym gate test may keep a CP
+ # It may also hold about, dir (relative to the worktree root; default the worktree's anchor), env, parallel (at least 1, default 1), covers (lower tier numbers its command runs anyway), slots (a count of at least 1, or all; default 1), prebuilt_lym and manual (true keeps a tier above tier0 out of lym gate test --upto, so it runs only when --tier names it).
+ # Three more keys: filter (the tier's own test-filter expression, allowed only when the command holds {filter}), shared_build (true runs the hub's build step first, once per call) and carry (false keeps a green run from being carried over an unchanged tree; default true).
+ # Inside the mapping a value holding a brace, comma or bracket is a double-quoted string.
++# One key of a declared tier is set alone with its dotted path: lym config gate --set tiers.tier0.env.LYM_TEST_TIER=0
+ tiers: {}
+ 
+ # Gate key to the tiers that site runs and the scope it runs them over, written {tiers: [<n>...], scope: card|diff|all}.
+diff --git a/internal/yamlengine/doc.go b/internal/yamlengine/doc.go
+index 56da7a6d..8bd7aff8 100644
+--- a/internal/yamlengine/doc.go
++++ b/internal/yamlengine/doc.go
+@@ -49,6 +49,10 @@
+ //     a value starting with [ is a YAML flow list of scalars or mappings of scalars, and any other value a string.
+ //     A bracketed value that is not such a list is refused, never written as a string.
+ //     A module declares a key that takes one value or a list, such as a per-round model list, this way.
++//   - SetValues and SetSparse also take a map from an open-map path to its [Shape], which [ShapeOf] derives from the module's decode type.
++//     A shaped P takes a dotted key at any path its shape reaches, such as P.<name>.env.<var> under a mapping of names whose entries hold a map,
++//     and sets that one value, creating every mapping on the way: a text value as a string and any other scalar under the tag its own text resolves to.
++//     A path the shape does not reach is refused naming the key, so a misspelled field never lands as a new entry; an unshaped P keeps the dotted rest as one entry name.
+ //
+ // Only declared paths change behaviour.
+ // The shape check on P belongs to the module that declares it, in its own decode.
+diff --git a/internal/yamlengine/layers.go b/internal/yamlengine/layers.go
+index 7e29f48f..b5c65424 100644
+--- a/internal/yamlengine/layers.go
++++ b/internal/yamlengine/layers.go
+@@ -153,6 +153,7 @@ func (rule unitRule) stripMapping(lower, upper *yaml.Node, path string, topLevel
+ // A key at P itself, when P holds a scalar or a list, takes either: a value starting with [ is written as a flow list of scalars or mappings of scalars, any other value as a string, and a bracketed value that is not such a list is an error.
+ // Unknown lists the requested keys that are not known, Known the sorted known set, and Merged is nil when Unknown is non-empty.
+ // A scalar leaf outside a scalar-or-list open-map path takes its template leaf's tag, except that a value spelling a null (`~`, `null`, `Null`, `NULL`), or a template leaf holding a null, gives it the tag its own text resolves to.
++// An open map that shapes maps to a shape takes a key at any path the shape reaches, as SetValues takes it, and a path it does not reach is an error naming the key.
+ // Preserved stays empty.
+ //
+ // Each perNameMaps entry is a dotted key path whose template value is a mapping of names:
+@@ -163,7 +164,7 @@ func (rule unitRule) stripMapping(lower, upper *yaml.Node, path string, topLevel
+ // A per-name map of mappings also knows P.<name>.<rest> for any name, where rest is a scalar or list path some template entry holds:
+ // the pair writes that one key into the mapping at P.<name>, creating it, under the template entry's tag or as a flow list.
+ // A value at P that is neither a mapping nor null is an error naming P and its shape, and nothing is written.
+-func SetSparse(template, existing []byte, pairs []KV, perNameMaps []string, openMaps ...string) (SetResult, error) {
++func SetSparse(template, existing []byte, pairs []KV, perNameMaps []string, shapes map[string]*Shape, openMaps ...string) (SetResult, error) {
+ 	var templateNode yaml.Node
+ 	if err := yaml.Unmarshal(template, &templateNode); err != nil {
+ 		return SetResult{}, err
+@@ -188,12 +189,21 @@ func SetSparse(template, existing []byte, pairs []KV, perNameMaps []string, open
+ 	if unknown := unknownKeys(pairs, templateLeaves, templateSequences, openMaps, perNameMaps, entryLeaves); len(unknown) > 0 {
+ 		return SetResult{Unknown: unknown, Known: known}, nil
+ 	}
++	if err := shapedKeyError(pairs, openMaps, shapes); err != nil {
++		return SetResult{}, err
++	}
+ 
+ 	if existingRoot == nil {
+ 		existingRoot = &yaml.Node{Kind: yaml.MappingNode, Tag: "!!map"}
+ 		existingDoc = &yaml.Node{Kind: yaml.DocumentNode, Content: []*yaml.Node{existingRoot}}
+ 	}
+ 	for _, pair := range pairs {
++		if shape, shaped, _ := shapedOpenMapKey(pair.Key, openMaps, shapes); shaped {
++			if err := setShapedValue(existingRoot, pair, shape); err != nil {
++				return SetResult{}, err
++			}
++			continue
++		}
+ 		if open, name, ok := splitOpenMapKey(pair.Key, openMaps); ok {
+ 			mapping, err := mappingAt(existingRoot, open)
+ 			if err != nil {
+diff --git a/internal/yamlengine/layers_test.go b/internal/yamlengine/layers_test.go
+index 415b1933..e9f0c7a2 100644
+--- a/internal/yamlengine/layers_test.go
++++ b/internal/yamlengine/layers_test.go
+@@ -92,13 +92,13 @@ func TestStrip(t *testing.T) {
+ 	}
+ }
+ 
+-const sparseTemplate = "name: tmpl\nport: 80\nnested:\n    deep: 1\nlabels: {}\nlist: [a]\nplan_max_bounces: ~\nrounds: \"\"\nnames:\n    a: default a\nlists:\n    l: [x]\nprofiles:\n    plain:\n        kind: identity\n    costed:\n        kind: cost\n        budget: 200\n"
++const sparseTemplate = "name: tmpl\nport: 80\nnested:\n    deep: 1\nlabels: {}\nlist: [a]\nplan_max_bounces: ~\nrounds: \"\"\nnames:\n    a: default a\nlists:\n    l: [x]\nprofiles:\n    plain:\n        kind: identity\n    costed:\n        kind: cost\n        budget: 200\ntiers: {}\n"
+ 
+-// TestSetSparse pins that SetSparse writes only the set keys: into empty bytes, beside an existing key, through intermediate mappings, as an open-map entry, as a per-name entry, as one key of a per-name mapping entry and as a flow list, with a template tag kept and an unknown or misshapen request refused.
++// TestSetSparse pins that SetSparse writes only the set keys: into empty bytes, beside an existing key, through intermediate mappings, as an open-map entry, as one key inside a shaped open-map entry, as a per-name entry, as one key of a per-name mapping entry and as a flow list, with a template tag kept and an unknown or misshapen request refused.
+ func TestSetSparse(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+-	openMaps := []string{"labels", "rounds"}
++	openMaps := []string{"labels", "rounds", "tiers"}
+ 	perNameMaps := []string{"lists", "names", "profiles"}
+ 	tests := []struct {
+ 		name        string
+@@ -149,11 +149,15 @@ func TestSetSparse(t *testing.T) {
+ 		{name: "per-name mapping entry key under a scalar entry is refused", existing: "profiles:\n    costed: x\n", pairs: []KV{{Key: "profiles.costed.budget", Value: "300"}}, wantErr: true, wantErrText: []string{"profiles.costed"}},
+ 		{name: "per-name mapping entry key into a per-name map that holds a list is refused", existing: "profiles: [a]\n", pairs: []KV{{Key: "profiles.costed.budget", Value: "300"}}, wantErr: true, wantErrText: []string{"profiles", "sequence"}},
+ 		{name: "per-name mapping entry key no template entry holds is unknown", pairs: []KV{{Key: "profiles.wide.nope", Value: "1"}}, wantUnknown: []string{"profiles.wide.nope"}},
++		{name: "a key inside a shaped open-map entry is written with the mappings on the way", pairs: []KV{{Key: "tiers.t0.env.NAME", Value: "0"}, {Key: "tiers.t0.timeout_min", Value: "30"}}, want: "tiers:\n    t0:\n        env:\n            NAME: \"0\"\n        timeout_min: 30\n"},
++		{name: "a key inside a shaped flow entry keeps the entry's keys", existing: "tiers:\n    t0: {command: x}\n", pairs: []KV{{Key: "tiers.t0.env.NAME", Value: "a"}}, want: "tiers:\n    t0: {command: x, env: {NAME: a}}\n"},
++		{name: "a whole shaped open-map entry is written from a flow mapping", pairs: []KV{{Key: "tiers.t0", Value: "{command: x}"}}, want: "tiers:\n    t0:\n        command: x\n"},
++		{name: "a key a shaped open-map entry lacks is refused naming it", pairs: []KV{{Key: "tiers.t0.nope", Value: "1"}}, wantErr: true, wantErrText: []string{"tiers.t0.nope", "tiers.t0 holds no key nope"}},
+ 	}
+ 	for _, tc := range tests {
+ 		t.Run(tc.name, func(t *testing.T) {
+ 			t.Parallel()
+-			got, err := SetSparse([]byte(sparseTemplate), []byte(tc.existing), tc.pairs, perNameMaps, openMaps...)
++			got, err := SetSparse([]byte(sparseTemplate), []byte(tc.existing), tc.pairs, perNameMaps, shapedOpenMaps, openMaps...)
+ 			if (err != nil) != tc.wantErr {
+ 				t.Fatalf("SetSparse error = %v, wantErr %v", err, tc.wantErr)
+ 			}
+diff --git a/internal/yamlengine/set.go b/internal/yamlengine/set.go
+index b71147b7..0e2b9bb7 100644
+--- a/internal/yamlengine/set.go
++++ b/internal/yamlengine/set.go
+@@ -7,6 +7,8 @@ package yamlengine
+ import (
+ 	"encoding/json"
+ 	"fmt"
++	"maps"
++	"reflect"
+ 	"slices"
+ 	"sort"
+ 	"strings"
+@@ -39,6 +41,61 @@ type SetResult struct {
+ 	Preserved []string
+ }
+ 
++// Shape is the shape a module's decode gives the value at a declared open-map path, which lets a set key reach below the open map's entries.
++// A shape with Fields is a mapping of fixed keys, one with Entries a mapping of names the user owns, and one with neither a single value.
++type Shape struct {
++	// Fields maps each key a mapping of fixed keys holds to its shape.
++	Fields map[string]*Shape
++	// Entries is the shape of every entry of a mapping of names.
++	Entries *Shape
++	// Text marks a single value decoded as a string, so a set writes it as a string whatever its text.
++	Text bool
++}
++
++// nodeType is the yaml.Node type, which decodes any value and so is a single value whatever it holds.
++var nodeType = reflect.TypeFor[yaml.Node]()
++
++// ShapeOf returns the shape yaml.v3 decodes value's type into:
++// a struct is a mapping of the keys its exported fields' yaml tags name, a field tagged `-` left out and an untagged one keyed by its lower-cased name;
++// a map is a mapping of names, a string a text value, and anything else, a yaml.Node included, a single value.
++// A pointer takes its element's shape.
++func ShapeOf(value any) *Shape {
++	return shapeOfType(reflect.TypeOf(value))
++}
++
++// shapeOfType returns the shape yaml.v3 decodes a value of t into.
++func shapeOfType(t reflect.Type) *Shape {
++	for t.Kind() == reflect.Pointer {
++		t = t.Elem()
++	}
++	switch {
++	case t == nodeType:
++		return &Shape{}
++	case t.Kind() == reflect.Struct:
++		fields := make(map[string]*Shape)
++		for i := range t.NumField() {
++			field := t.Field(i)
++			if !field.IsExported() {
++				continue
++			}
++			name, _, _ := strings.Cut(field.Tag.Get("yaml"), ",")
++			if name == "-" {
++				continue
++			}
++			if name == "" {
++				name = strings.ToLower(field.Name)
++			}
++			fields[name] = shapeOfType(field.Type)
++		}
++		return &Shape{Fields: fields}
++	case t.Kind() == reflect.Map:
++		return &Shape{Entries: shapeOfType(t.Elem())}
++	case t.Kind() == reflect.String:
++		return &Shape{Text: true}
++	}
++	return &Shape{}
++}
++
+ // SetValues applies pairs to a template-shaped YAML document, preserving comments and key order.
+ // If any pairs[i].Key is absent from the template's leaf-key and list-key sets, SetResult.Unknown is
+ // returned non-empty and Merged is nil.
+@@ -59,6 +116,12 @@ type SetResult struct {
+ // a bracketed value that is not such a list is an error.
+ // Known lists each open map as P.<name>.
+ //
++// An open map P that shapes maps to a shape takes a key P.<rest> for any rest the shape reaches, a name for each mapping of names on the way and a key the mapping holds for each mapping of fixed keys,
++// and the pair sets that one value in the tree at P, creating every missing mapping on the way.
++// A rest the shape does not reach, such as a key a mapping of fixed keys lacks or one below a single value, is an error naming the key, and nothing is merged.
++// A text value is written as a string, a value whose first non-blank character is { or [ as a flow mapping or list, and any other value as a scalar under the tag its own text resolves to, so a number decodes as a number.
++// A value on the way that is neither a mapping nor null is an error naming its path.
++//
+ // Each perNameMaps entry is a dotted key path whose template value is a mapping of names:
+ // P.<name> is known for any dot-free name, every name existing holds under P and the template lacks is carried onto the mapping, and the pair sets the name, appending it when absent.
+ // Once the pairs apply, every name under P holding the template's value for it is left out of Merged, a name a pair set included.
+@@ -68,7 +131,7 @@ type SetResult struct {
+ // A per-name map of mappings also knows P.<name>.<rest> for any name, where rest is a scalar or list path some template entry holds:
+ // the pair sets that one key in the name's mapping, creating it, under the template entry's tag or as a flow list.
+ // A pair under P whose existing value at P is neither a mapping nor null is an error naming P and its shape.
+-func SetValues(template, existing []byte, pairs []KV, perNameMaps []string, openMaps ...string) (SetResult, error) {
++func SetValues(template, existing []byte, pairs []KV, perNameMaps []string, shapes map[string]*Shape, openMaps ...string) (SetResult, error) {
+ 	// Parse the template into the tree we will mutate and ultimately marshal.
+ 	var templateNode yaml.Node
+ 	if err := yaml.Unmarshal(template, &templateNode); err != nil {
+@@ -135,6 +198,9 @@ func SetValues(template, existing []byte, pairs []KV, perNameMaps []string, open
+ 	if unknown := unknownKeys(pairs, templateLeaves, templateSequences, openMaps, perNameMaps, entryLeaves); len(unknown) > 0 {
+ 		return SetResult{Unknown: unknown, Known: known}, nil
+ 	}
++	if err := shapedKeyError(pairs, openMaps, shapes); err != nil {
++		return SetResult{}, err
++	}
+ 
+ 	// Every key but a per-name entry key is now guaranteed to have a real node in templateNode, since
+ 	// the working tree always contains every template leaf. Apply pairs in
+@@ -150,6 +216,12 @@ func SetValues(template, existing []byte, pairs []KV, perNameMaps []string, open
+ 			*current = *value
+ 			continue
+ 		}
++		if shape, shaped, _ := shapedOpenMapKey(pair.Key, openMaps, shapes); shaped {
++			if err := setShapedValue(documentRoot(&templateNode), pair, shape); err != nil {
++				return SetResult{}, err
++			}
++			continue
++		}
+ 		if open, name, ok := splitOpenMapKey(pair.Key, openMaps); ok {
+ 			if err := setOpenMapEntry(&templateNode, open, name, pair); err != nil {
+ 				return SetResult{}, err
+@@ -287,6 +359,77 @@ func setOpenMapEntry(root *yaml.Node, open, name string, pair KV) error {
+ 	return nil
+ }
+ 
++// shapedOpenMapKey returns the shape of the value key names under a declared open map that shapes maps to a shape, and whether key lies under such a map.
++// A key with an empty segment, a segment a mapping of fixed keys lacks or a segment below a single value is an error naming the key and where it leaves the shape.
++func shapedOpenMapKey(key string, openMaps []string, shapes map[string]*Shape) (*Shape, bool, error) {
++	open, rest, ok := splitOpenMapKey(key, openMaps)
++	if !ok {
++		return nil, false, nil
++	}
++	shape, shaped := shapes[open]
++	if !shaped {
++		return nil, false, nil
++	}
++	walked := open
++	for segment := range strings.SplitSeq(rest, ".") {
++		switch {
++		case segment == "":
++			return nil, true, fmt.Errorf("config key %s holds an empty segment after %s", key, walked)
++		case shape.Fields != nil:
++			next, ok := shape.Fields[segment]
++			if !ok {
++				return nil, true, fmt.Errorf("unknown config key %s: %s holds no key %s; it holds %s", key, walked, segment, strings.Join(slices.Sorted(maps.Keys(shape.Fields)), ", "))
++			}
++			shape = next
++		case shape.Entries != nil:
++			shape = shape.Entries
++		default:
++			return nil, true, fmt.Errorf("unknown config key %s: %s holds one value, so no key lies under it", key, walked)
++		}
++		walked += "." + segment
++	}
++	return shape, true, nil
++}
++
++// shapedKeyError returns the error shapedOpenMapKey reports for the first pair key it refuses, or nil when it refuses none.
++func shapedKeyError(pairs []KV, openMaps []string, shapes map[string]*Shape) error {
++	for _, pair := range pairs {
++		if _, _, err := shapedOpenMapKey(pair.Key, openMaps, shapes); err != nil {
++			return err
++		}
++	}
++	return nil
++}
++
++// setShapedValue writes pair's value, of shape, at pair's key in the mapping tree under root, creating every missing mapping on the way.
++// A text value is a string; a mapping, or a value whose first non-blank character is { or [, takes the node an open-map entry takes;
++// any other value is a scalar under the tag its own text resolves to.
++// A value on the way that is neither a mapping nor null is an error naming its path.
++func setShapedValue(root *yaml.Node, pair KV, shape *Shape) error {
++	var value *yaml.Node
++	trimmed := strings.TrimSpace(pair.Value)
++	switch {
++	case shape.Text:
++		value = stringNode(pair.Value)
++	case shape.Fields != nil, shape.Entries != nil, strings.HasPrefix(trimmed, "{"), strings.HasPrefix(trimmed, "["):
++		entry, err := openMapEntryNode(pair)
++		if err != nil {
++			return err
++		}
++		value = entry
++	default:
++		// A null leaf tag makes scalarSetTag resolve the tag from the value's own text.
++		value = &yaml.Node{Kind: yaml.ScalarNode, Tag: scalarSetTag("!!null", pair.Value), Value: pair.Value}
++	}
++	parentPath, name := splitLastSegment(pair.Key)
++	parent, err := mappingAt(root, parentPath)
++	if err != nil {
++		return fmt.Errorf("%w: rewrite it as a map to set %s", err, pair.Key)
++	}
++	setEntry(parent, name, value)
++	return nil
++}
++
+ // splitPerNameKey splits key into a declared per-name map path and the one dot-free name under it.
+ func splitPerNameKey(key string, perNameMaps []string) (perName, name string, ok bool) {
+ 	for _, p := range perNameMaps {
+diff --git a/internal/yamlengine/set_test.go b/internal/yamlengine/set_test.go
+index 7de1ce90..64564206 100644
+--- a/internal/yamlengine/set_test.go
++++ b/internal/yamlengine/set_test.go
+@@ -30,6 +30,27 @@ var (
+ 	perNameMappingMaps = []string{"profiles"}
+ )
+ 
++// shapedTier is a decode type a shaped open map takes the shape of.
++// It holds a text key, a number key, a list key, a map of names and a yaml.Node.
++// It also holds an untagged field, a field whose tag holds an option, a field tagged out and an unexported field.
++type shapedTier struct {
++	Command    string            `yaml:"command"`
++	TimeoutMin *int              `yaml:"timeout_min"`
++	Covers     []int             `yaml:"covers"`
++	Env        map[string]string `yaml:"env"`
++	Slots      yaml.Node         `yaml:"slots"`
++	Plain      string
++	Retries    int    `yaml:"retries,omitempty"`
++	Hidden     string `yaml:"-"`
++	secret     string
++}
++
++// An unexported field is only declared to be left out of the shape, so one write keeps it used.
++var _ = shapedTier{secret: ""}
++
++// shapedOpenMaps shapes tiers as a mapping of names to shapedTier entries and build as one shapedTier.
++var shapedOpenMaps = map[string]*Shape{"tiers": ShapeOf(map[string]shapedTier{}), "build": ShapeOf(shapedTier{})}
++
+ func intPointer(v int) *int { return &v }
+ 
+ // assertDecodesAsInts fails unless merged decodes each key of want into an *int equal to want's entry, nil included.
+@@ -64,6 +85,7 @@ func TestSetValues(t *testing.T) {
+ 		pairs         []KV
+ 		openMaps      []string
+ 		perNameMaps   []string
++		shapes        map[string]*Shape
+ 		wantValues    map[string]string
+ 		wantPreserved []string
+ 		contains      []string
+@@ -337,12 +359,73 @@ func TestSetValues(t *testing.T) {
+ 			contains:    []string{"wide:\n        kind: identity\n        budget: 5\n"},
+ 			notContains: []string{"costed", "plain"},
+ 		},
++		{
++			name:        "shaped open map takes one key inside an entry and keeps the entry's other keys",
++			template:    "tiers: {}\nbuild: {}\n",
++			existing:    "tiers:\n  t0: {command: x, timeout_min: 5}\n",
++			pairs:       []KV{{Key: "tiers.t0.env.NAME", Value: "0"}, {Key: "tiers.t0.timeout_min", Value: "30"}},
++			openMaps:    []string{"tiers", "build"},
++			shapes:      shapedOpenMaps,
++			contains:    []string{"command: x", "timeout_min: 30", `NAME: "0"`},
++			notContains: []string{"t0.env", `"30"`},
++		},
++		{
++			name:        "shaped open map of fixed keys takes a number as a number and text as a string",
++			template:    "tiers: {}\nbuild: {}\n",
++			pairs:       []KV{{Key: "build.timeout_min", Value: "5"}, {Key: "build.command", Value: "42"}, {Key: "build.slots", Value: "all"}},
++			openMaps:    []string{"tiers", "build"},
++			shapes:      shapedOpenMaps,
++			contains:    []string{"timeout_min: 5", `command: "42"`, "slots: all"},
++			notContains: []string{`"5"`},
++		},
++		{
++			name:        "shaped open map takes a whole entry from a flow mapping",
++			template:    "tiers: {}\nbuild: {}\n",
++			pairs:       []KV{{Key: "tiers.t0", Value: "{command: x}"}},
++			openMaps:    []string{"tiers", "build"},
++			shapes:      shapedOpenMaps,
++			contains:    []string{"    t0:\n        command: x\n"},
++			notContains: []string{"{command"},
++		},
++		{
++			name:     "shaped open map writes a plain value for a whole entry as a string",
++			template: "tiers: {}\nbuild: {}\n",
++			pairs:    []KV{{Key: "tiers.t0", Value: "5"}},
++			openMaps: []string{"tiers", "build"},
++			shapes:   shapedOpenMaps,
++			contains: []string{`t0: "5"`},
++		},
++		{
++			name:     "shaped open map takes a bracketed value on a single-value field as a flow list",
++			template: "tiers: {}\nbuild: {}\n",
++			pairs:    []KV{{Key: "build.covers", Value: "[0, 1]"}},
++			openMaps: []string{"tiers", "build"},
++			shapes:   shapedOpenMaps,
++			contains: []string{"covers: [0, 1]"},
++		},
++		{
++			name:        "shaped open map keys an untagged field by its lower-cased name and a tag option out of the key",
++			template:    "tiers: {}\nbuild: {}\n",
++			pairs:       []KV{{Key: "build.plain", Value: "7"}, {Key: "build.retries", Value: "3"}},
++			openMaps:    []string{"tiers", "build"},
++			shapes:      shapedOpenMaps,
++			contains:    []string{`plain: "7"`, "retries: 3"},
++			notContains: []string{`"3"`},
++		},
++		{
++			name:     "unshaped open map keeps a dotted rest as one entry name",
++			template: openMapSetTemplate,
++			pairs:    []KV{{Key: "labels.a.b", Value: "v"}},
++			openMaps: []string{"labels"},
++			shapes:   shapedOpenMaps,
++			contains: []string{"a.b: v"},
++		},
+ 	}
+ 
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			result, err := SetValues([]byte(tt.template), []byte(tt.existing), tt.pairs, tt.perNameMaps, tt.openMaps...)
++			result, err := SetValues([]byte(tt.template), []byte(tt.existing), tt.pairs, tt.perNameMaps, tt.shapes, tt.openMaps...)
+ 			if err != nil {
+ 				t.Fatalf("SetValues() unexpected error: %v", err)
+ 			}
+@@ -379,7 +462,7 @@ func TestSetValues(t *testing.T) {
+ 				previous = at
+ 			}
+ 
+-			again, err := SetValues([]byte(tt.template), result.Merged, tt.pairs, tt.perNameMaps, tt.openMaps...)
++			again, err := SetValues([]byte(tt.template), result.Merged, tt.pairs, tt.perNameMaps, tt.shapes, tt.openMaps...)
+ 			if err != nil {
+ 				t.Fatalf("SetValues() second call unexpected error: %v", err)
+ 			}
+@@ -445,7 +528,7 @@ func TestSetValues_UnknownKeys(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			result, err := SetValues([]byte(tt.template), nil, tt.pairs, tt.perNameMaps, tt.openMaps...)
++			result, err := SetValues([]byte(tt.template), nil, tt.pairs, tt.perNameMaps, nil, tt.openMaps...)
+ 			if err != nil {
+ 				t.Fatalf("SetValues() unexpected error: %v", err)
+ 			}
+@@ -477,8 +560,58 @@ func TestSetValues_Refusals(t *testing.T) {
+ 		pair        KV
+ 		openMaps    []string
+ 		perNameMaps []string
++		shapes      map[string]*Shape
+ 		want        []string
+ 	}{
++		{
++			name:     "key a shaped entry lacks",
++			template: "tiers: {}\n",
++			pair:     KV{Key: "tiers.t0.envv.X", Value: "1"},
++			openMaps: []string{"tiers"},
++			shapes:   shapedOpenMaps,
++			want:     []string{"tiers.t0.envv.X", "tiers.t0 holds no key envv", "command, covers, env, plain, retries, slots, timeout_min"},
++		},
++		{
++			name:     "unexported field of a shaped entry",
++			template: "tiers: {}\n",
++			pair:     KV{Key: "tiers.t0.secret", Value: "1"},
++			openMaps: []string{"tiers"},
++			shapes:   shapedOpenMaps,
++			want:     []string{"tiers.t0 holds no key secret"},
++		},
++		{
++			name:     "key a shaped entry tags out",
++			template: "tiers: {}\n",
++			pair:     KV{Key: "tiers.t0.hidden", Value: "1"},
++			openMaps: []string{"tiers"},
++			shapes:   shapedOpenMaps,
++			want:     []string{"tiers.t0 holds no key hidden"},
++		},
++		{
++			name:     "key below a single value of a shaped entry",
++			template: "tiers: {}\n",
++			pair:     KV{Key: "tiers.t0.command.x", Value: "1"},
++			openMaps: []string{"tiers"},
++			shapes:   shapedOpenMaps,
++			want:     []string{"tiers.t0.command.x", "tiers.t0.command holds one value"},
++		},
++		{
++			name:     "empty segment in a shaped key",
++			template: "tiers: {}\n",
++			pair:     KV{Key: "tiers.t0..command", Value: "1"},
++			openMaps: []string{"tiers"},
++			shapes:   shapedOpenMaps,
++			want:     []string{"tiers.t0..command", "empty segment"},
++		},
++		{
++			name:     "key inside a shaped entry that holds a scalar",
++			template: "tiers: {}\n",
++			existing: "tiers:\n  t0: x\n",
++			pair:     KV{Key: "tiers.t0.command", Value: "y"},
++			openMaps: []string{"tiers"},
++			shapes:   shapedOpenMaps,
++			want:     []string{"tiers.t0 holds a scalar", "rewrite it as a map to set tiers.t0.command"},
++		},
+ 		{
+ 			name:     "scalar for a list key",
+ 			template: "deploy_branches: [\"main\"]\n",
+@@ -585,7 +718,7 @@ func TestSetValues_Refusals(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			_, err := SetValues([]byte(tt.template), []byte(tt.existing), []KV{tt.pair}, tt.perNameMaps, tt.openMaps...)
++			_, err := SetValues([]byte(tt.template), []byte(tt.existing), []KV{tt.pair}, tt.perNameMaps, tt.shapes, tt.openMaps...)
+ 			if err == nil {
+ 				t.Fatal("SetValues() = nil error; want a refusal")
+ 			}
+@@ -598,6 +731,20 @@ func TestSetValues_Refusals(t *testing.T) {
+ 	}
+ }
+ 
++// TestSetValues_ShapedRefusalRejectsWholeCall pins that a misspelled shaped key after a valid pair rejects the whole call: the error names the key and no merged bytes come back.
++func TestSetValues_ShapedRefusalRejectsWholeCall(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	pairs := []KV{{Key: "build.command", Value: "go build"}, {Key: "build.nope", Value: "1"}}
++	result, err := SetValues([]byte("build: {}\n"), nil, pairs, nil, shapedOpenMaps, "build")
++	if err == nil || !strings.Contains(err.Error(), "build holds no key nope") {
++		t.Errorf("SetValues() error = %v; want a refusal naming nope", err)
++	}
++	if result.Merged != nil {
++		t.Errorf("SetValues() Merged = %q; want nil (no partial write)", result.Merged)
++	}
++}
++
+ // assertMergedKeyValue is a test helper that unmarshals result.Merged into a
+ // map and asserts the given top-level key holds want.
+ func assertMergedKeyValue(t *testing.T, result SetResult, key, want string) {
