@@ -14,3 +14,10 @@ So the remove is not idempotent and reports failure on a clean result.
 
 - A cancel never waits on a step held by its own pause: it ends the step or does not pause before it.
 - `cancel --remove` treats an already-removed records directory as done and reports success.
+
+## Cause of the remove failure (orch, 2026-11-01)
+
+`RemoveRecords` in `battencli/cancelcmd.go` runs `os.MkdirAll` for the status lock's directory, which recreates an empty `_lym/shed/<slug>` after the records are gone, and `removeRunRecords` then runs `git add -- _lym/shed/<slug>`, which fails on the empty directory.
+Every rerun fails the same way, so the cancel marker (`<weft>/.lym/shed/<slug>.cancel.json`) stays, and dobby refuses to start the task again ("a cancel of <slug> was interrupted").
+The orch cleared it by deleting the marker and its two lock files by hand, after checking that the marker's process was dead and the claim, pair and records were gone.
+The fix: the records removal treats a missing or empty records directory as done.
