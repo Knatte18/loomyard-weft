@@ -1,6 +1,6 @@
 # Agents still try the forms lym's guards refuse, at a turn each
 
-`hook-refused-turns` · Task · enhancement, process, claude · running · Code-Burler-Fix
+`hook-refused-turns` · Task · enhancement, process, claude · running · Code-Bouncer
 
 ## Seen (orch, 2026-11-01)
 
