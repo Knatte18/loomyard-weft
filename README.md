@@ -46,13 +46,19 @@ The entries under no project.
 
 Concrete and claimable; only a task can run.
 
-##### Ready (1)
+##### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Board renders root as project P0 with its own file, last in the README**<br>• Every project heading alike; root becomes P0 with project-root.md, and the README keeps every table | [`board-root-p0`](design-board-root-p0.md) | darn | Worktree-Create | neve | 8m<br>8m | board |
+
+##### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Board renders root as project P0 with its own file, last in the README**<br>• Every project heading alike; root becomes P0 with project-root.md, and the README keeps every table | [`board-root-p0`](design-board-root-p0.md) | darn |  | 8m<br>8m | board |
+_None._
 
 ##### Draft (2)
 
