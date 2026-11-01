@@ -200,6 +200,12 @@ None.
   - reed-button-groups-need-open-maps (class design, severity BLOCKING, open in rounds 2)
 <!-- /lym:carry-over Plan-Review -->
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - click-line-cd-outside-output-discard (class design, severity BLOCKING, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: a booted or attached session shows three status lines; line 2 has no `follow` button and keeps the check mark and clock; line 3 starts with `follow`, whose click still toggles the follow state; after an older binary re-pins `status-format[1]`, the newest binary's next reed op restores it.
