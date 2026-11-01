@@ -1,6 +1,6 @@
 # One project render for the board README and project files
 
-`board-project-render` · Task · enhancement, board · draft
+`board-project-render` · Task · enhancement, board
 
 ## Seen (operator, 2026-11-01)
 

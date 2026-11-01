@@ -53,11 +53,13 @@ Held by a run; its scope is locked until the run ends.
 | T6 | **A long gate run answers within the cache lifetime, so the waiting agent keeps its prompt cache warm**<br>• lym gate test caps the run wait like the slot wait, with the cap a config value beside the engine cache lifetime<br>• `profile: light` | [`gate-run-keeps-cache-warm`](design-gate-run-keeps-cache-warm.md) | tapestry | Webster | neve | 20h<br>3h | gate, shuttle, config |
 | T7 | **One verb to take work over on another machine, leaving every run in a known state**<br>• Moving to another machine is many hand steps, and afterwards run states are unclear | [`machine-switch`](design-machine-switch.md) | tapestry | Webster | neve | 1d<br>2h | fabric, dobby, batten |
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T8 | **One project render for the board README and project files**<br>• Every project, Prime included, renders through one function with its sub-projects and its own Running, Ready, Tasks, Notes and Done | [`board-project-render`](design-board-project-render.md) | darn |  | 0m<br>0m | board |
 
 #### Layer A (1)
 
@@ -66,14 +68,6 @@ Waits only on Running, Ready or Draft entries.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **A concurrent fetch of the same ref fails a batten pass and spawns a tackler**<br>• A fetch into tracking refs waits under the push lock, as fabric's writes wait under theirs<br>• `profile: solid` | [`reconcile-fetch-race`](design-reconcile-fetch-race.md) | darn | T7 | 2h<br>2h | batten, fabric |
-
-#### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T8 | `draft` **One project render for the board README and project files**<br>• Every project, Prime included, renders through one function with its sub-projects and its own Running, Ready, Tasks, Notes and Done | [`board-project-render`](design-board-project-render.md) | darn |  | 0m<br>0m | board |
 
 ### Notes (30)
 
