@@ -1,6 +1,6 @@
 # Reed loses the Parts-Plan-Write chair strand while its part writers run
 
-`reed-loses-parts-chair` · Task · bug, reed, loom · running · Describe
+`reed-loses-parts-chair` · Task · bug, reed, loom · running · PR-Review
 
 ## Seen (orch, 2026-11-01)
 
