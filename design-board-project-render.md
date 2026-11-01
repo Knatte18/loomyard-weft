@@ -1,6 +1,6 @@
 # One project render for the board README and project files
 
-`board-project-render` · Task · enhancement, board
+`board-project-render` · Task · enhancement, board · running · Worktree-Create
 
 ## Seen (operator, 2026-11-01)
 
