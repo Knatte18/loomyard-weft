@@ -1,6 +1,6 @@
 # Heddle gains an orch-prompt target, and lym orch rules stores in heddle
 
-`heddle-orch-target` · Task · enhancement, heddle, orch · running · Code-Bouncer
+`heddle-orch-target` · Task · enhancement, heddle, orch · running · Describe
 
 ## Seen (orch, 2026-11-01)
 
