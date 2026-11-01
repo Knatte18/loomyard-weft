@@ -642,6 +642,27 @@
       "body": "## Seen (operator, 2026-11-01)\n\nTwo tasks that share a module label are chained with `depends_on` today, so the later one waits for the earlier to land before it starts at all, Discussion included.\nFiner labels or file-level overlap checks after Plan were weighed and rejected: what a task touches is unknown until it is planned, two plans made at once against moving code do not match, and pausing runs before Webster by what they planned is too complex.\nOnly Discussion can usefully run alongside; planning must be done against code that does not change under it.\n\n## Idea\n\nA second kind of dependency beside `depends_on`:\n- `depends_on`, as today: the task does not start until the named entries land; for a real dependency, where Discussion needs the other's result.\n- `plan_after`: the task starts and runs Discussion at once, then waits before Plan until the named tasks have landed; for tasks that only share a module.\n- The overlap notice of `set-deps` and the upsert verbs proposes `plan_after` instead of `depends_on`.\n- For darn, which has no Discussion or Plan of its own, `plan_after` acts as `depends_on`.\n\n## Waits on\n\nNote `discussed-task-split` first: the decision record on the board, so a discussed task waiting before Plan keeps its record where the board shows it (operator, 2026-11-01).\n",
       "created": "2026-11-01T12:39:48Z",
       "revised": "2026-11-01T12:39:48Z"
+    },
+    {
+      "id": 954,
+      "handle": "F10",
+      "slug": "escalation-decider-agent",
+      "title": "A dedicated agent spawned by the run or dobby settles a review escalation, not an orch fork",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "burler",
+        "arbiter",
+        "dobby",
+        "orch"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Review escalations and decision findings go to a fresh decider agent of the run, so the orch neither forks nor carries them",
+      "body": "## Seen (operator and orch, 2026-11-01)\n\nA review escalation (a Discussion or Plan bouncer at its hard cap, or a fixer's decision findings) mails the orch, whose procedure reads the brief through a one-shot fork of its own session and then records the answer with `lym loom decision add`, `lym loom circling accept|continue` and `lym loom resume`.\nOn 2026-11-01 this ran four times in a few hours for `plan-split-producers` and `reed-status-buttons`; each fork inherited the orch's whole context, and every call sat with the orch while it also talked with the operator.\nThe calls themselves were run-level: whether a fix in the record holds, whether to accept at the hard cap, small scope rulings inside the board design.\n\n## Idea (operator, 2026-11-01)\n\nA dedicated agent settles the escalation, spawned by the run itself or by dobby, never a fork of the orch.\n- It starts fresh with the brief, the decision record, the review's findings and the board entry's design, and reads the code it needs.\n- It decides the run-level calls, records each with `lym loom decision add`, chooses accept or continue and resumes the run.\n- It passes to the operator only a question the board entry's design does not settle, through the orch or straight to the operator, as the run's other operator questions go.\n- The orch hears only the outcome, so a quiet orch, as in note `dormant-orch`, need not wake for it.\n\n## Open\n\n- Whether the run spawns it at the bouncer's escalation row, or dobby does on the escalation notice.\n- How it relates to the arbiter, which already settles some halted stops for the parent.\n- What it may decide alone: within the board entry's design and the record's decisions, or wider.\n",
+      "created": "2026-11-01T12:47:29Z",
+      "revised": "2026-11-01T12:47:29Z"
     }
   ],
   "prime_owner": "neve",
