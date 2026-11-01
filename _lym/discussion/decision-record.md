@@ -247,6 +247,12 @@ None.
   - testremove-settle-called-inside-held-lock (class design, severity MEDIUM, open in rounds 3)
 <!-- /lym:carry-over Plan-Review -->
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - fronttask-startaction-untested (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: `lym adopt <beam>` on a machine that does not own the beam reconciles origin, adds the missing pair, writes the holds, writes the owner, runs the beam steps and starts the beam's adopt check, and starts no batten pass; its help lists the new steps.
