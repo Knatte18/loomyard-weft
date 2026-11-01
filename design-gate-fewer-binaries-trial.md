@@ -18,3 +18,14 @@ Try the report's cuts in practice before any of them is made permanent (operator
 - One binary for the whole module per tier is rated high risk, since packages then share one process and Go's per-package test cache is lost; bench it only if the others fall short.
 
 Each trial reports the new binaries and scanner hold it saves and whether the test results stay the same.
+
+## Bench (operator, 2026-11-01)
+
+- Measured on Neve: the count of new test binaries a gate run links is the same on both machines, so OSL-1046's hold is that count times about 10 s; no agent runs on OSL-1046, and one check run there by the operator at the end confirms it.
+- Trials, in this order, each in this task's own worktree, none of them landed:
+  1. the five universal imports cut out of the common `TestMain` path;
+  2. one test binary per package for all tiers, tier chosen at run time, tried on a sample of the ten packages with the most tiers, the saving scaled to the whole repository from that sample;
+  3. merging small leaf test packages, only if 1 and 2 fall short.
+  One binary for the whole module is not trialled.
+- Cap: per trial, three gate runs on a warm tree before the change and three after; every run counts the new binaries linked and checks the test results are unchanged.
+- The task lands a report under `docs/research/` with its scripts and tables, never the trial changes themselves.
