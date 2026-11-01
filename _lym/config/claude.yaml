@@ -1,1 +1,1 @@
-# This file holds the hub's tuned values over lym's template.
+deny_agent_tool: false
