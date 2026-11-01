@@ -1,0 +1,9 @@
+attempt: 1
+cap: 2
+failures:
+    - id: github.com/Knatte18/loomyard/internal/shuttleengine/claudeengine.TestBuildSettings_MatchesGolden
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/shuttleengine/claudeengine
+      tail: ""
+log_path: /home/knatte/Code/loomyard-LYMHUB/gate-run-keeps-cache-warm/.lym/verify/verify-2.log
+fixer: fork
