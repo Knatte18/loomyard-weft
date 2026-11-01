@@ -1,9 +1,9 @@
 # P2 Fewer agent turns, Webster forks first
 
-Rendered 2026-11-01 16:21 UTC; every age below is as of then.
+Rendered 2026-11-01 16:22 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`agent-turns`](design-agent-turns.md) · Age 2h · Owner `neve`
+`agent-turns` · Age 2h · Owner `neve`
 
 Cut the turns agents spend on shell edits, piecemeal gate loops and sliced reads, one measured fix at a time
 
@@ -37,7 +37,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T14 | **Trial: agents settle every edit before the first, then gate once**<br>• An imperative heddle instruction: read, decide all edits, make them, gate once and fix the whole report in one round | [`plan-edits-before-gate`](design-plan-edits-before-gate.md) | darn | T13 | 1h<br>1m | heddle, stencil, claude |
+| T14 | **Trial: agents settle every edit before the first, then gate once**<br>• An imperative heddle instruction: read, decide all edits, make them, gate once and fix the whole report in one round | [`plan-edits-before-gate`](design-plan-edits-before-gate.md) | darn | T13 | 1h<br>2m | heddle, stencil, claude |
 
 ## Notes (1)
 
