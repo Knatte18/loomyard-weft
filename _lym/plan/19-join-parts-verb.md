@@ -1,13 +1,13 @@
 # Card 19 — join-parts-verb
 
 **Create:**
-- `plan:internal/loomcli#joinPartsDeps` -> `type joinPartsDeps struct`
-- `plan:internal/loomcli#joinPartsVerb` -> `func joinPartsVerb(out io.Writer, d joinPartsDeps) int`
-- `plan:internal/loomcli#loomCLI.joinPartsCmd` -> `func (c *loomCLI) joinPartsCmd() *cobra.Command`
-- `plan:internal/loomcli#TestJoinPartsVerb` -> `func TestJoinPartsVerb(t *testing.T)`
+- `internal/loomcli#joinPartsDeps`
+- `internal/loomcli#joinPartsVerb`
+- `internal/loomcli#loomCLI.joinPartsCmd`
+- `internal/loomcli#TestJoinPartsVerb`
 
 **Edit:**
-- `plan:internal/loomcli#verbRowEngines`
+- `internal/loomcli#verbRowEngines`
 - `internal/loomcli#refuseVerbOffRecipe`
 - `internal/loomcli#Command`
 - `internal/loomcli#TestArmAt_RefusesOffLoomRecipes`

@@ -1,10 +1,10 @@
 # Card 18 — validate-parts-verbs
 
 **Create:**
-- `plan:internal/loomcli#loomCLI.validatePartsCmd` -> `func (c *loomCLI) validatePartsCmd() *cobra.Command`
-- `plan:internal/loomcli#verbRowEngines` -> `var verbRowEngines map[string]string`
-- `plan:internal/loomcli#TestValidatePartsCmd` -> `func TestValidatePartsCmd(t *testing.T)`
-- `plan:internal/loomcli#TestValidatePlanCmd_Part` -> `func TestValidatePlanCmd_Part(t *testing.T)`
+- `internal/loomcli#loomCLI.validatePartsCmd`
+- `internal/loomcli#verbRowEngines`
+- `internal/loomcli#TestValidatePartsCmd`
+- `internal/loomcli#TestValidatePlanCmd_Part`
 
 **Edit:**
 - `internal/loomcli#refuseVerbOffRecipe`
