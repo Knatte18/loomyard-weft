@@ -8,7 +8,7 @@ Adding, changing or removing board entries is done today by talking to the orch,
 
 ## Idea
 
-A reed status-bar button of its own, beside the buttons of note `reed-status-buttons`, opens a short-lived agent for board work.
+A reed status-bar button of its own, added to the configurable action buttons reed now ships (`reed.yaml` `buttons`, landed 2026-11-01: one config entry per button, no build), opens a short-lived agent for board work.
 - The button opens an ordinary agent, as `lym shuttle open` does, with a skill loaded that makes it a board agent; no new role, so the same way can make other kinds of agent later (operator, 2026-10-31).
 - The agent reads the board and the code it needs, talks one or a few cases through with the operator, writes, merges or removes notes, promotes notes to tasks and releases tasks on the operator's named go-ahead (operator, 2026-10-31), and exits.
   The board holds its state, so it needs no handoff and no context cycle.
