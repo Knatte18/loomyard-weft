@@ -1,6 +1,8 @@
 # A long gate run answers within the cache lifetime, so the waiting agent keeps its prompt cache warm
 
-`gate-run-keeps-cache-warm` · Task · enhancement, gate, shuttle, config · draft
+`gate-run-keeps-cache-warm` · Task · enhancement, gate, shuttle, config
+
+Depends on: [`gate-fewer-binaries-trial`](design-gate-fewer-binaries-trial.md)
 
 ## Seen (operator, 2026-10-31)
 

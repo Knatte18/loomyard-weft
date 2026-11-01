@@ -31,14 +31,21 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Draft (2)
+#### Layer A (1)
+
+Waits only on Running, Ready or Draft entries.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T6 | **A long gate run answers within the cache lifetime, so the waiting agent keeps its prompt cache warm**<br>• lym gate test caps the run wait like the slot wait, with the cap a config value beside the engine cache lifetime<br>• `profile: light` | [`gate-run-keeps-cache-warm`](design-gate-run-keeps-cache-warm.md) | tapestry | T2 | 17h<br>0m | gate, shuttle, config |
+
+#### Draft (1)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T5 | `draft` **A window lym opens is snapped into the active desktop tiling by a configured command**<br>• After opening a window lym runs a machine-local configured command, such as the operator tiling script; lym knows nothing about KDE | [`kde-window-placement`](design-kde-window-placement.md) | darn |  | 3d<br>1m | reed, ide, config |
-| T6 | `draft` **A long gate run answers within the cache lifetime, so the waiting agent keeps its prompt cache warm**<br>• lym gate test caps the run wait like the slot wait, with the cap a config value beside the engine cache lifetime | [`gate-run-keeps-cache-warm`](design-gate-run-keeps-cache-warm.md) | tapestry |  | 17h<br>17h | gate, shuttle, config |
 
 ### Notes (28)
 
