@@ -1,0 +1,5 @@
+verdict: hand-back
+reason: >-
+  Finalize is stuck because the task worktree holds two untracked files, 200k and 250k, at the worktree root, so the merge-in refuses to start. Both were written at 12:38 today, hold single stray lines ("cautious base est" and "wide est"), and no commit references them. A plain re-launch would hit the same check. Clearing the block means deleting or committing those files on the task branch, which changes the worktree and needs the run's parent to say which, since the tackler may not change files outside this verdict.
+question: >-
+  The task worktree /home/knatte/Code/loomyard-LYMHUB/batch-budget-300k-trial has untracked files 200k ("cautious base est") and 250k ("wide est"), created 12:38 today and not in any commit. Finalize refuses the merge-in while they exist. Should they be removed, or committed on the task branch? Reply with which, and the run can be resumed at Finalize.

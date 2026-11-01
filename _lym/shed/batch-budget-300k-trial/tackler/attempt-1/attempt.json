@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Finalize",
+    "history_length": 10,
+    "state": "blocked"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "1ad37feaead1978f173aa6bbb9628a32c8fbb179",
+    "branch": "batch-budget-300k-trial",
+    "dirty": {}
+  },
+  "spawned_at": "2026-11-01T12:40:07.56786751+01:00",
+  "deadline": "2026-11-01T12:50:07.56786751+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/batch-budget-300k-trial/_lym/shed/batch-budget-300k-trial/drive-reports/drive-envelope-20261101-124007-859b.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/batch-budget-300k-trial/_lym/shed/batch-budget-300k-trial/drive-reports/drive-report-20261101-124007-3863.md",
+  "strand_guid": "95cb31c6fbf33a68ae1cb55ba61b46f1"
+}
