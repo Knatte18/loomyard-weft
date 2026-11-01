@@ -30,9 +30,9 @@
 **Uses:**
 - `plan:internal/loomengine#PartsTable`
 - `plan:internal/loomengine#PartsPlanTable`
-- `plan:internal/loomshed#NewPartsGate`
-- `plan:internal/loomshed#NewPartPlanGate`
-- `plan:internal/loomshed#NewPartAccept`
+- `internal/loomshed#NewPartsGate`
+- `internal/loomshed#NewPartPlanGate`
+- `internal/loomshed#NewPartAccept`
 - `plan:internal/loomshed#NewPartsDirRotator`
 - `plan:internal/loomshed#NewPartsPlanRotator`
 - `internal/partsparser#DirRel`

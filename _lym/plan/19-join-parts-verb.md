@@ -15,7 +15,7 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/loomshed#JoinParts`
+- `internal/loomshed#JoinParts`
 - `plan:internal/loomengine#PartsPlanRole`
 - `internal/seatengine#SeatRole`
 - `internal/loomcli#circlingStatusReader`

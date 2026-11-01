@@ -1,9 +1,9 @@
 # Card 10 — seat-writer-resume-join
 
 **Create:**
-- `plan:internal/seatengine#writerResumeNotice` -> `func writerResumeNotice(name string, outputs []string) string`
-- `plan:internal/seatengine#TestEngine_Resume_Writers` -> `func TestEngine_Resume_Writers(t *testing.T)`
-- `plan:internal/seatengine#TestEngine_Run_WriterEndDecidesTheJoin` -> `func TestEngine_Run_WriterEndDecidesTheJoin(t *testing.T)`
+- `internal/seatengine#writerResumeNotice`
+- `internal/seatengine#TestEngine_Resume_Writers`
+- `internal/seatengine#TestEngine_Run_WriterEndDecidesTheJoin`
 
 **Edit:**
 - `internal/seatengine#Engine.Resume`
@@ -14,8 +14,8 @@
 - `internal/seatengine/doc.go`
 
 **Uses:**
-- `plan:internal/seatengine#Seat.endsStep`
-- `plan:internal/seatengine#Table.hasWriters`
+- `internal/seatengine#Seat.endsStep`
+- `internal/seatengine#Table.hasWriters`
 - `internal/seatengine#fakeShuttle`
 - `internal/seatengine#engineFixture`
 

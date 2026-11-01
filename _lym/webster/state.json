@@ -1,6 +1,6 @@
 {
   "runGuid": "df0fb2990f38b09f6504b69a1a845272",
-  "planFingerprint": "24733eda8cb89719c8d2961b043c6d6a2c2c7de09d3cdd20ccf4b4ea385c019f",
+  "planFingerprint": "f81600cd5e14bcea4dd3170c4d84eb46b323557162b4595fae019b58b336281e",
   "planFileHashes": {
     "00-overview.md": "22fe792a9389687c409f0309a151ef1e4a6983a5727790eb1e3fc79dc3703a2f",
     "01-tapestry-split-keys.md": "5ffd7ce7643526c87c1e33d0c1a63e6ec1bf91a7050bbe2ca6bc570f3f5e3513",
@@ -9,19 +9,19 @@
     "04-planparser-part-scope.md": "998a7a9f0ca62d28e13ed3a94750a6c6df2f474aa33f22e9f5132b37a8f5b2ef",
     "05-planglyph-part-scope.md": "563c2abc509de85ba0aa893cc40c48734c41460c2fbcb28cf06135380a7e926e",
     "06-planparser-join.md": "599b898bd91abfeadf45f3ee7d03a5bea94909cb31a1171e1e42ae6ffe667660",
-    "07-loomshed-part-checks.md": "1b0298a4dd4cb2167fdd3730edf5dd9af558869f1dbec0395db2bd01f973c1f7",
-    "08-writer-seat-directives.md": "a18a7b104b18b04001393e4aa20ba355d520d279264d5897454ddf0e65ca3163",
-    "09-seat-writer-kind.md": "0e9d753a30f92640ef47c65d50420fdf980e6ff18a96ca82258675e0cd468121",
-    "10-seat-writer-resume-join.md": "954d39047d49126141cf48e9fdbd9f7ade03de60c7fc3aaf7999ebfa1a9f2411",
-    "11-multillm-writer-mapping.md": "7254fa39b5c1c4dbbc31213f0c63861973f3e0953bb7f155f7353f0f3c8bc918",
+    "07-loomshed-part-checks.md": "2f7e8c9cd0fb5188adb43127e4db45f5ba6829d26389bbfb259cc09f327b1e7e",
+    "08-writer-seat-directives.md": "a5c6f5d80dcc95b6968f12b0e7f23112d33272355425a5a05b0b6b3d991634e1",
+    "09-seat-writer-kind.md": "ebaed5df3eee614a0c7e0cb3dabb1ec58b537fdba2c355a838ca762dba000d28",
+    "10-seat-writer-resume-join.md": "ee08c1d68275c820eab1f481b22d4bfca4f4c728feec78933ffa5d6db717919c",
+    "11-multillm-writer-mapping.md": "f666a09db9feab13f30eb26ab8ebd0c6ca59203ad632137c6cff4b04e78bb43b",
     "12-plan-format-block.md": "b19ab4e5d87452271eef1016aea91a9e233c5d86711abcbc1ec700d26f1c1a6d",
     "13-parts-write-table.md": "154dff9071ff8c5361ff1b3b830006314d52952988932ec9c07a14555fafa051",
     "14-parts-plan-write-table.md": "c6b3b2524f81d32c6d0868d6959a3c82621e89d5f63973c229d6e00c0c4f741c",
     "15-parts-rotators.md": "76f0e9897dc19631347de27ecfb3302ebee0076f83212afc397c7569d039dce3",
-    "16-parts-producers.md": "c4d9392dd94ca402bc31222d87386828f6f9190465e163a06b5ec3efcba48f45",
+    "16-parts-producers.md": "fb786c6fe8f9931935f07c6f52065abfc65701c637b71d0ce2cedfaf8ddc256c",
     "17-parts-recipe-rows.md": "352eb4e7e9c8477a561282933e2467edddf501de8f9b1bb0c4eb19cf727525dd",
-    "18-validate-parts-verbs.md": "862dd9a203f20f7f008e828708e53b9fec8182f8bc3766ff8bf1a5f2403c39c7",
-    "19-join-parts-verb.md": "7a0093c355982a59dea3c2dff87e884a6a74c3c00780a6b91ee6290c8ffd77b5",
+    "18-validate-parts-verbs.md": "f022989156c26456630a3ae37b680d5ee349d8a78fdef98a5de3dc80114bc469",
+    "19-join-parts-verb.md": "c4ad4e8ff9b9fdf6b2c727a04c19732a0915ee099afa101577d7498f2bcc8aa2",
     "20-settled-guard-writer.md": "06567b6696b4323d7d82f3424048c8704ead674e0fdf0bdc794fee17c546194b"
   },
   "planOverviewFrameHash": "06243b9b05d1c23f82f186f734f2d53893a27c197a1f21cdd1ae0aa6d1dd0794",
@@ -455,7 +455,7 @@
       }
     }
   ],
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "26b852aa3de8205aac1ff3f3536f5ee1",
   "masterSessionId": "a7a887cd-0cc1-41a7-9a61-01bf0f126612",
   "masterEngine": "claude",
@@ -523,22 +523,46 @@
         "11-multillm-writer-mapping"
       ],
       "cardHashes": {
-        "07-loomshed-part-checks": "1b0298a4dd4cb2167fdd3730edf5dd9af558869f1dbec0395db2bd01f973c1f7",
-        "08-writer-seat-directives": "a18a7b104b18b04001393e4aa20ba355d520d279264d5897454ddf0e65ca3163",
-        "09-seat-writer-kind": "0e9d753a30f92640ef47c65d50420fdf980e6ff18a96ca82258675e0cd468121",
-        "10-seat-writer-resume-join": "954d39047d49126141cf48e9fdbd9f7ade03de60c7fc3aaf7999ebfa1a9f2411",
-        "11-multillm-writer-mapping": "7254fa39b5c1c4dbbc31213f0c63861973f3e0953bb7f155f7353f0f3c8bc918"
+        "07-loomshed-part-checks": "2f7e8c9cd0fb5188adb43127e4db45f5ba6829d26389bbfb259cc09f327b1e7e",
+        "08-writer-seat-directives": "a5c6f5d80dcc95b6968f12b0e7f23112d33272355425a5a05b0b6b3d991634e1",
+        "09-seat-writer-kind": "ebaed5df3eee614a0c7e0cb3dabb1ec58b537fdba2c355a838ca762dba000d28",
+        "10-seat-writer-resume-join": "ee08c1d68275c820eab1f481b22d4bfca4f4c728feec78933ffa5d6db717919c",
+        "11-multillm-writer-mapping": "f666a09db9feab13f30eb26ab8ebd0c6ca59203ad632137c6cff4b04e78bb43b"
       },
       "startSha": "03eed6de00902a763095f6d59e11930630b512f2",
       "kind": "fork",
       "spawnedAt": "2026-11-01T13:00:05Z",
       "sessionId": "a7a887cd-0cc1-41a7-9a61-01bf0f126612",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-loomshed-part-checks",
+        "status": "done",
+        "head_sha": "b7c717aee62f9b88551cfe0a46a958d6efcd5e3f",
+        "deviations": [
+          "internal/loomshed/partcheck.go",
+          "internal/loomshed/partcheck_test.go",
+          "internal/loomshed/seam_enforcement_test.go",
+          "internal/seatengine/engine.go",
+          "internal/seatengine/table.go",
+          "internal/seatengine/table_test.go",
+          "internal/shedadapters/multillm.go"
+        ]
+      },
+      "cardShas": [
+        "b7c717aee62f9b88551cfe0a46a958d6efcd5e3f"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-plan-split-producers/a7a887cd-0cc1-41a7-9a61-01bf0f126612/subagents/agent-a16749eee2ed5df7b.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-plan-split-producers/a7a887cd-0cc1-41a7-9a61-01bf0f126612/subagents/agent-a16749eee2ed5df7b.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-plan-split-producers/a7a887cd-0cc1-41a7-9a61-01bf0f126612/subagents/agent-aef5a85e27dd2ed38.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-plan-split-producers/a7a887cd-0cc1-41a7-9a61-01bf0f126612/subagents/agent-aef5a85e27dd2ed38.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-plan-split-producers/a7a887cd-0cc1-41a7-9a61-01bf0f126612/subagents/agent-a16749eee2ed5df7b.jsonl"
   ]
 }

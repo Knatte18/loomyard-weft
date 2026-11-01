@@ -18,8 +18,8 @@
 
 **Uses:**
 - `internal/partsparser#Validate`
-- `plan:internal/loomshed#ValidatePart`
-- `plan:internal/loomshed#ErrPartUnknown`
+- `internal/loomshed#ValidatePart`
+- `internal/loomshed#ErrPartUnknown`
 - `internal/loomcli#planVerbs`
 - `internal/loomcli#TestValidatePlanCmd`
 

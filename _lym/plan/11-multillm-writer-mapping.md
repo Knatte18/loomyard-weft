@@ -1,8 +1,8 @@
 # Card 11 — multillm-writer-mapping
 
 **Create:**
-- `plan:internal/shedadapters#MultiLLMProducer.writerExit` -> `func (p *MultiLLMProducer) writerExit(ctx context.Context, seat seatengine.SeatResult) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/shedadapters#TestMultiLLMProducer_MapsAWriterThatEndedTheStep` -> `func TestMultiLLMProducer_MapsAWriterThatEndedTheStep(t *testing.T)`
+- `internal/shedadapters#MultiLLMProducer.writerExit`
+- `internal/shedadapters#TestMultiLLMProducer_MapsAWriterThatEndedTheStep`
 
 **Edit:**
 - `internal/shedadapters#MultiLLMProducer`

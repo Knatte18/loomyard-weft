@@ -1,15 +1,15 @@
 # Card 7 — loomshed-part-checks
 
 **Create:**
-- `plan:internal/loomshed#NewPartsGate` -> `func NewPartsGate(anchorPath, recordPath string, max int) shuttleengine.Gate`
-- `plan:internal/loomshed#ErrPartUnknown` -> `var ErrPartUnknown = errors.New("loomshed: no such part")`
-- `plan:internal/loomshed#ValidatePart` -> `func ValidatePart(anchorPath, worktreeRoot, part string, index planindex.Index, pc PlanContext) ([]planindex.Finding, error)`
-- `plan:internal/loomshed#NewPartPlanGate` -> `func NewPartPlanGate(anchorPath, worktreeRoot, scratchDir, part string, index planindex.Index, pc PlanContext) shuttleengine.Gate`
-- `plan:internal/loomshed#NewPartAccept` -> `func NewPartAccept(anchorPath, worktreeRoot, part string, index planindex.Index, pc PlanContext) func(shuttleengine.Result) error`
-- `plan:internal/loomshed#JoinParts` -> `func JoinParts(anchorPath, worktreeRoot string, index planindex.Index, pc PlanContext) (*planparser.JoinResult, error)`
-- `plan:internal/loomshed#TestNewPartsGate` -> `func TestNewPartsGate(t *testing.T)`
-- `plan:internal/loomshed#TestValidatePart` -> `func TestValidatePart(t *testing.T)`
-- `plan:internal/loomshed#TestJoinParts` -> `func TestJoinParts(t *testing.T)`
+- `internal/loomshed#NewPartsGate`
+- `internal/loomshed#ErrPartUnknown`
+- `internal/loomshed#ValidatePart`
+- `internal/loomshed#NewPartPlanGate`
+- `internal/loomshed#NewPartAccept`
+- `internal/loomshed#JoinParts`
+- `internal/loomshed#TestNewPartsGate`
+- `internal/loomshed#TestValidatePart`
+- `internal/loomshed#TestJoinParts`
 
 **Edit:**
 - `internal/loomshed#planGate`

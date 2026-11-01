@@ -1,12 +1,12 @@
 # Card 9 — seat-writer-kind
 
 **Create:**
-- `plan:internal/seatengine#writerChairDirectiveBlock` -> `const writerChairDirectiveBlock = "seat-directive-writer-chair"`
-- `plan:internal/seatengine#writerDirectiveBlock` -> `const writerDirectiveBlock = "seat-directive-writer"`
-- `plan:internal/seatengine#writerDoneNotice` -> `func writerDoneNotice(name string, outputs []string) string`
-- `plan:internal/seatengine#Seat.endsStep` -> `func (s Seat) endsStep() bool`
-- `plan:internal/seatengine#Table.hasWriters` -> `func (t Table) hasWriters() bool`
-- `plan:internal/seatengine#TestEngine_Run_WriterSeat` -> `func TestEngine_Run_WriterSeat(t *testing.T)`
+- `internal/seatengine#writerChairDirectiveBlock`
+- `internal/seatengine#writerDirectiveBlock`
+- `internal/seatengine#writerDoneNotice`
+- `internal/seatengine#Seat.endsStep`
+- `internal/seatengine#Table.hasWriters`
+- `internal/seatengine#TestEngine_Run_WriterSeat`
 
 **Edit:**
 - `internal/seatengine#Seat`

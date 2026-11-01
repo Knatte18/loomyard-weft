@@ -3,8 +3,8 @@
 **Create:**
 - `contracts/stencils/seat/seat-directive-writer.md`
 - `contracts/stencils/seat/seat-directive-writer-chair.md`
-- `plan:contracts/stencils#SeatDirectiveWriter` -> `var SeatDirectiveWriter []byte`
-- `plan:contracts/stencils#SeatDirectiveWriterChair` -> `var SeatDirectiveWriterChair []byte`
+- `contracts/stencils#SeatDirectiveWriter`
+- `contracts/stencils#SeatDirectiveWriterChair`
 
 **Extends:**
 - `contracts/stencils#entries`
