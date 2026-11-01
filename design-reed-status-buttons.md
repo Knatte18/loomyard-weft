@@ -2,64 +2,49 @@
 
 `reed-status-buttons` · Note · feature, reed, config, batten
 
-## Idea
+## Seen
 
-tmux status lines support clickable ranges (`#[range=user|<name>]` with a `MouseDown1Status` binding), and reed already uses them for its window buttons.
-The same mechanism can carry action buttons that run a command when clicked.
+tmux status lines support clickable ranges (`#[range=user|<name>]` with a `MouseDown1Status` binding), and reed already uses them for its window buttons and the `follow` button, each running a command through `run-shell`.
+Those buttons are fixed in code; the operator has no quick way to run an action on a run from where they watch it.
 
-Buttons the operator named:
+## Design (operator, 2026-11-01)
 
-- HALT for a run: `lym tender pause <slug>`, which holds agent and network work and interrupts the running turns at once; `lym tender resume <slug>` lifts it.
-  `lym batten pause <slug>` waits for the next producer boundary, which can take very long, so it is no halt.
-  Today the operator has no quick way to do either from where they watch the run.
-- Open the pair in VS Code (`lym ide spawn <slug>`).
-- Open one more terminal on the same worktree, beside the one the operator watches: a desktop terminal window whose shell sits in the worktree's directory and runs `lym reed attach`, so it shows the same reed session (operator, 2026-10-31).
-  `lym reed window <worktree-dir>` already opens such a window, so the button only calls it with the session's worktree.
-- A new, empty agent in a window of its own: `lym shuttle open --role <role> --model opus[high]`, which opens an interactive session with no prompt and no run record (tried by hand on 2026-10-30).
-- `lym orch distill` and `lym orch refresh` for the orch session.
-- The follow toggle of note `viewer-off-shell`.
-- "and much else".
+The action buttons are config, not code: adding a button is one entry in reed's config, with no build.
 
-## Operator view, not a decision (2026-10-15)
+```yaml
+buttons:
+  - label: HALT
+    run: lym tender pause {slug}
+    show: run
+  - label: CANCEL
+    run: lym batten cancel {slug}
+    show: run
+    confirm: "Cancel {slug}?"
+  - label: code
+    run: lym ide spawn {slug}
+    show: run
+  - label: term
+    run: lym reed window {worktree}
+  - label: distill
+    run: lym orch distill
+    show: orch
+    confirm: "Distill the orch?"
+```
 
-The button set must be highly and easily configurable, not a fixed list in code.
+- `run` is a shell command, run in the session's worktree; lym fills the placeholders `{slug}`, `{worktree}`, `{beam}` and `{session}` at click time.
+- `show` names where the button appears: `run` (a task run's session), `orch`, `beam`, or `all`, the default.
+- `confirm` puts tmux's plain y/n `confirm-before` prompt, with the given text, in front of the command; buttons that cannot be undone carry it.
+- A failing command shows a short tmux message on the status line; its output goes to a log.
+- Layering: the hub's config holds the default set, and a machine-local override may add buttons of its own.
+- The hub's default set holds the buttons the operator named: HALT (`lym tender pause <slug>`, which holds agent and network work and interrupts the running turns at once; `lym batten pause` waits for a producer boundary, so it is no halt), CANCEL (kept apart from HALT, behind `confirm`), open the pair in VS Code, one more terminal on the same worktree (`lym reed window <worktree-dir>`), a new empty agent (`lym shuttle open --role <role> --model opus[high]`), and `lym orch distill` and `lym orch refresh` on the orch session, both behind `confirm`.
+- Later buttons are entries too, such as releasing a beam's held runs from note `machine-switch` and the board agent of note `board-agent-button`.
 
 ## Placement (operator, 2026-10-30)
 
-The action buttons go on a row of their own, and the `follow` button leaves the row that holds the session names and joins the action buttons.
-Reed's status bar has two lines today: line 0 holds the window buttons (overview, agents, shell), line 1 the session buttons, `follow` and the time.
-Since the adopt check landed (2026-10-31), line 2 also renders the prime's adopt-check mark right-aligned before the clock, set by `Engine.SetCheckMark`; the action row must make room for it.
-So the action row is a third line, never mixed with the window buttons or the session names.
-The operator worried earlier (2026-10-15) that buttons next to others invite misclicks on actions that cannot be undone, such as `lym orch distill`, `lym orch refresh` and ending a run, so the destructive ones need `confirm-before`.
+The action buttons go on a third status line of their own, never mixed with the window buttons (line 1) or the session names (line 2).
+The `follow` button leaves line 2 and joins the action row as a built-in entry.
+Line 2 also renders the prime's adopt-check mark right-aligned before the clock (`Engine.SetCheckMark`); the action row leaves it there.
 
-Ending a run for good (`lym batten cancel <slug>`) gets a CANCEL button of its own, kept apart from HALT, since a halt is reversible and an end is not (operator, 2026-10-30).
-It runs behind tmux's `confirm-before` with its plain y/n prompt naming the run, such as `Cancel <slug>? (y/n)`; no typed slug or other confirm key (operator, 2026-10-31).
+## Open
 
-## Open design points
-
-- Which role and model the new-agent button opens, and whether the role name is asked for or fixed.
-- Where the set lives: presumably reed's module config, with a hub default and per-session overrides (the orch session needs other buttons than a task pair).
-- What a button entry holds: a label, the command, and which sessions show it.
-- How a command runs: `run-shell` in the pair's worktree, with its output and failure visible somewhere.
-- Whether the follow toggle is a built-in entry in the same set.
-
-## Operator view, not a decision (2026-10-15)
-
-Prototype the placement by hand in a separate throwaway tmux server, never in a live reed session, before this becomes a task.
-
-## Prototype (folded in from note `reed-status-buttons-prototype`, 2026-10-24)
-
-Operator decision (2026-10-15): a fresh agent builds the prototype when the operator says so, not before.
-- A separate throwaway tmux server (its own `-L` socket), never reed's server and never the prime's session `loomyard`.
-- A status bar shaped like reed's two lines, with a third line of action buttons (HALT, open in VS Code, a follow toggle), the destructive ones behind `confirm-before`.
-- The sample actions only echo or display a message; none runs a real `lym` verb.
-- The agent opens the server in a Konsole window for the operator to click through, and tears it down when the operator is done.
-- The tmux config used goes into git under `docs/research/` through a docs-only commit, so the chosen layout can seed the task.
-
-## A terminal-window toggle (folded in from note `open-window-toggle`, 2026-10-24)
-
-Whether batten opens a desktop terminal window on a task worktree is decided by `batten.yaml`'s `open_window`, read from the template and the board default layer only, and `lym batten run --window` forces it on whatever that says.
-The operator has no quick way to turn the windows off, although each run is a window of the prime's reed session.
-Idea: a button in the orch tab's status bar beside `follow` that says whether runs open their terminal window automatically; when it is off, `Open-Window` opens nothing, `--window` included, and the reopen of a resumed run's window too.
-The `follow` button keeps its state in the tmux user option `@lym_follow` (`internal/reedengine/bindings.go`), which dies with the tmux server; this switch must survive a restart, so it needs a machine-local home batten can read.
-Operator wish, 2026-10-22; the design is open.
+- Which role the new-agent button opens, and whether the role name is asked for or fixed.
