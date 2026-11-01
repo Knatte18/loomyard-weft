@@ -1,6 +1,6 @@
 # A seed says only that a run starts at its start, with no producer name
 
-`seed-starts-at-start` · Task · enhancement, loom, pawl, shed · running · Code-Burler-Fix
+`seed-starts-at-start` · Task · enhancement, loom, pawl, shed · running · Code-Bouncer
 
 ## Seen (operator, 2026-10-30)
 
