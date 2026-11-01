@@ -1,35 +1,31 @@
 # Make wide the batcher template's active profile
 
-`internal/batcher/template.yaml` gains a `wide` profile and names it in `active:`, so every hub groups Webster's cards under `wide` unless it chooses another profile.
-`wide` is the `cautious` cost profile with `budget: 300000` in place of 200000: the same batchifier, `max_cards` and estimator weights.
-`cautious` and `identity` stay in the template as profiles a hub may pick; no estimator weight changes.
+`internal/batcher/template.yaml` now ships `active: "wide"`, so every hub without its own `batcher.yaml` override groups cards under the 300000-token budget instead of 200000.
+`wide` is the `cautious` cost batchifier with `budget: 300000`, the profile this hub has run since 2026-10-22.
+`docs/research/batch-budget-trial-2026-11-01/report.md` is the evidence: over 23 `wide` runs it cost no more per card than `cautious` and showed no quality loss.
 
-The evidence is `docs/research/batch-budget-trial-2026-11-01/README.md`: over 23 `wide` runs, cost per card was level with `cautious` overall, lower on runs of 10 cards or more, and no quality loss showed.
-This hub has run `wide` from its own `batcher.yaml` since 2026-10-22.
+## Changes
+
+- The template gains `wide` as its first cost profile and points `active:` at it.
+  `cautious` (budget 200000) and `identity` stay as profiles a hub may choose.
+  `cautious` repeats `wide`'s estimator weights, so the two differ only by budget.
+- No estimator weight changes.
+- Comments and docs that named `cautious` as the template default now name `wide`: `internal/batcher` (`config.go`, `registry.go`, `doc.go`), `internal/websterengine/doc.go`, `docs/overview.md` and `tools/sandbox/SANDBOX-WEBSTER-SUITE.md`.
+- `internal/configsync`: a hub whose `batcher.yaml` still carries the former template value `active: "cautious"` has it stripped on sync, as it already did for the old `profiles` value, so that hub follows the new default instead of staying pinned to the old one.
 
 ## Design decisions
 
-- **`wide` is a full profile, listed before `cautious`.**
-  Profiles have no inheritance, so `wide` carries every key.
-  The per-key comments sit on `wide`, the active profile, and `cautious` carries one comment naming how it differs.
-- **A hub file holding the old default moves to `wide`.**
-  `internal/configsync`'s former template values now list `active: "cautious"`, so a not-yet-sparse hub or worktree file that holds the old template's `active:` has it stripped as a former default during reconcile and inherits `wide`.
-  Without it, such a file would keep `active: "cautious"` as if the operator had chosen it, and the change would not reach every hub.
-- **The migration's orientation source stays `cautious`.**
-  `MigrateConfig` reads the orientation to add from the template's `cautious` profile; both profiles hold the same value, which a test now pins.
-
-## Docs
-
-The comments and docs naming `cautious` as the template default now name `wide`: the `internal/batcher` package doc, `DefaultName`'s and `Active`'s comments, the `internal/websterengine` package doc and `docs/overview.md`.
+- `cautious` is kept whole rather than defined as an override of `wide`, because profiles merge by name key by key and a hub can tune either one independently.
+- A hub that deliberately chose `cautious` and only ever matched the template value cannot be told apart from one that never set it; the strip moves both to `wide`.
+  That hub can set `active: cautious` again.
 
 ## Tests
 
-- `TestActive` asserts that the template resolves `wide`, and its error rows now break the `wide` profile.
-  The row that selects `cautious` explicitly still resolves `cautious`, so the profile stays usable.
-- `TestProfileWeights` asserts that the template's `wide` and `cautious` weights are equal and carry the measured start coefficients.
-- The configsync strip and retired-key rows and the webster CLI batcher-selection test follow the new template.
+- `internal/batcher/config_test.go` resolves `wide` from the template, an absent `batcher.yaml` and an absent `_lym/`, and pins that the template's `wide` and `cautious` share weights and differ only in budget.
+- `internal/configsync/configsync_test.go` covers the former-default strip of `active: "cautious"`.
+- `internal/webstercli/verbs_test.go` follows the new default name.
 
-## Note for the operator
+## Check by hand
 
-This hub's `_bolt/_lym/config/batcher.yaml` now repeats the template: its `wide` profile and `active: wide` equal the template's.
-Removing it is a hub config change, outside this branch.
+- The former-default strip of `active: "cautious"` in `internal/configsync/configsync.go`: confirm `configsync_test.go` pins both the strip of the former value and the keeping of a differing `active:`.
+- Run `lym loom gate test ./internal/batcher ./internal/configsync ./internal/webstercli`; no run result is recorded for this change.
