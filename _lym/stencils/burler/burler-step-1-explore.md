@@ -1,7 +1,7 @@
 <!-- This is the review half's explore step: explore the target and
      understand what it is judged against.
      It is shipped as an embedded default in the top-level stencils package (stencils/stencils.go),
-     seeded to <hub>/_board/_lym/stencils/burler/ and read from there at call time by composeReviewPrompt
+     seeded to the Bolt checkout's `_lym/stencils/burler/` and read from there at call time by composeReviewPrompt
      (prompt.go) via internal/stencil, then read by the reviewer only when its seat stencil
      (burler-template-reviewer.md) directs it here; the reviewer is its only reader. target, fasit, rubric, and tool_use_rules are top-level {{.X}} substitutions;
      stencil.Fill requires all four non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). pattern_directive is the fifth marker,
@@ -11,7 +11,7 @@
      Both stay at the top level, before the first work heading, so their optional-blank semantics hold.
      fork_reading is the seventh marker, optional, filled via stencil.FillOptional, and renders nothing in a solo round;
      it sits directly after tool_use_rules on the same line, so an empty value adds no byte.
-lym-stencil: sha256=8ae794cde3ab61488900aa52d2d72033225b41affdb607657aafbe94b71ad425 build=bf00a04359aa5980fdd8dc2b7cf76d3ee9799216 time=2026-10-28T14:12:42Z -->
+lym-stencil: sha256=888800379a24e7a547257ed1f0cb758952982e806bf6cf75ff372e69146091eb build=1834cebfde57af62a41a58438fcb466c16412d94 time=2026-11-01T16:53:16Z -->
 
 {{.pattern_directive}}
 {{.focus_directive}}
@@ -37,6 +37,6 @@ Each finding also carries one of the four classes — `design`, `scope`, `decisi
 
 ## Tool-use rules — how you gather evidence
 
-Make the reads your focus needs, or the whole target when no focus is set, in one message.
+Read what your focus needs, or the whole target when no focus is set.
 
 {{.tool_use_rules}}{{.fork_reading}}

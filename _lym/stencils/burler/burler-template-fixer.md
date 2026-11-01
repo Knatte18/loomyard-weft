@@ -1,5 +1,5 @@
 <!-- This is the burler fixer seat stencil: the only seat of the fix half's one-seat table.
-     It is shipped as an embedded default in the top-level stencils package (stencils/stencils.go), seeded to <hub>/_board/_lym/stencils/burler/ and read
+     It is shipped as an embedded default in the top-level stencils package (stencils/stencils.go), seeded to the Bolt checkout's `_lym/stencils/burler/` and read
      from there at call time, then filled by internal/seatengine from the seat's value map and handed to the
      fixer's shuttle run as the agent's entire visible instruction set — the fix step it names
      below is read only when the fixer reaches it.
@@ -9,7 +9,7 @@
      There are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go).
      It names no reviewer and no channel to one: the fix half is spawned only once the review is accepted on disk, and never waits on or messages the review half.
      This file deliberately never repeats the review-file format, which lives in the file review_format_path names, nor the fix-everything body, which lives in the fix step.
-lym-stencil: sha256=19d0ea108bd59e3fc2fca4c8d23e4123f6efc2ab379effef601394f1c07b88aa build=bf00a04359aa5980fdd8dc2b7cf76d3ee9799216 time=2026-10-28T14:12:42Z -->
+lym-stencil: sha256=e6c20de78da62f6d9cb14abe2167d5264d088c404cf223602487cd0c45a668e3 build=1834cebfde57af62a41a58438fcb466c16412d94 time=2026-11-01T16:53:16Z -->
 
 # Burler — fix
 
@@ -26,10 +26,9 @@ The review is already written and accepted on disk; you hold none of the reviewe
 2. **Validate.**
    Check each finding's premise against the code you read and, separately, the change its `fix` key proposes.
    `{{.instruction_fix_path}}` says what to do with each result.
-   Read the files the findings name together, in one message.
+   Read the files the findings name.
 3. **Fix.**
    Read and execute `{{.instruction_fix_path}}`: the fix-everything rule, your write surface and the fixer-report.
-   Apply the corrections to one file in one message.
 
 Read the fix step only when its step is reached, never early.
 

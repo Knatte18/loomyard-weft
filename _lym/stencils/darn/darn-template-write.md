@@ -9,7 +9,7 @@
      condition_stop_marker_path is a required marker, naming the second file the writer creates when it stops on a condition the task's body names.
      prior_work is never empty: DarnTable fills it with (none) when it has nothing to tell.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lym-stencil: sha256=9e149bed9aeb816419f43d90994e08dab929736b05fe125bad726d432b8bbb64 build=ac448fb917a80d38ad86018bc3879459d9cc424d time=2026-11-01T15:27:40Z -->
+lym-stencil: sha256=614e4b97560da2c99f6052f8fcf1b5f726351389db50233d254afbe298144511 build=1834cebfde57af62a41a58438fcb466c16412d94 time=2026-11-01T16:53:16Z -->
 
 # Darn — make the change a board entry asks for, in one session
 
@@ -59,8 +59,8 @@ Check whether landed work, another board entry or another run overtook or contra
 
 1. Edit the repository to make the change.
    Follow the existing patterns, and the PATTERN entries in this prompt.
-   Read every file the change touches, with the greps that find them, in one message before the first edit of each commit, and make independent edits in one message.
-2. Test with `lym gate test` once, after the last edit of each commit, never after each edit; it computes its scope from your changes, and when it answers `done: false` with exit 75 the run goes on, so run the same command again; never run a raw test command or a module-wide run.
+   Each commit is one change, with its own reads, edits and gate run.
+2. Test with `lym gate test` after the last edit of each commit; it computes its scope from your changes, and when it answers `done: false` with exit 75 the run goes on, so run the same command again; never run a raw test command or a module-wide run.
 3. Update, in the same commits as the code, the docs the change makes stale: the package doc of each package whose behavior changes, `doc.go` for a Go package;
    the repository's overview doc when a module table or execution stack it shows changes;
    and, when the repository has a `PATTERN.md`, its entry for a cross-cutting invariant the change adds or changes.

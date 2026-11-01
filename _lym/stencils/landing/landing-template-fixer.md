@@ -1,10 +1,10 @@
 <!-- This is the landing merge fixer session's entire instruction set. It is shipped as an embedded
      default in the top-level stencils package (stencils/stencils.go), seeded to
-     <hub>/_board/_lym/stencils/landing/, and read from there at call time by internal/seatengine,
+     the Bolt checkout's `_lym/stencils/landing/`, and read from there at call time by internal/seatengine,
      which fills it from the lead's value map that landingshed's FixerTable builds, then hands it to shuttle as the fixing agent's whole
      prompt. Every marker below is a top-level {{.X}} substitution; stencil.FillWith requires every
      marker non-empty except the table's Optional values (plan_dir, failure_record_path, fix_review_path and, in finalize mode, aligned_tip), parent_directive (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective) included, and there are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=9c15b610d117f4e2fe4fbe0880ad3415b4ee9fef3f35219f2a226d0563836819 build=61e42505c2de95169af0036a15fc1e3f025f81fe time=2026-11-01T07:33:14Z -->
+lym-stencil: sha256=d1467a10080fab655c29836f173b771a0e777137f54d71b65bf53a98520a29a5 build=1834cebfde57af62a41a58438fcb466c16412d94 time=2026-11-01T16:53:16Z -->
 
 # Merge fixer — fix the merge or the failing tests on the task branch
 
@@ -23,8 +23,6 @@ The task branch is `{{.task_branch}}` and it lands on `{{.parent_branch}}`.
 - The landing failure record, when this line names one: `{{.failure_record_path}}`.
   It names the gate's log, which you read as well.
 - The fix review report, when this line names one: `{{.fix_review_path}}`.
-
-Issue every search and read you can name in one message; wait for a result only to choose the next call.
 
 ## What to do in each mode
 

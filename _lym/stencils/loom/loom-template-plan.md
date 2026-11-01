@@ -10,7 +10,7 @@
      twill_directive is a fourth optional marker, rendered by internal/twilldirective through internal/loomengine;
      it sits on the line that would otherwise be blank, so an empty value leaves the blank line and the prompt's bytes unchanged.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lym-stencil: sha256=ed5a833bb8e834026a33b78dc181af9adf47fe4d6589fb72154b6277b1e20cea build=4ce42a8d6ab9bd70bec8bce9f559ee3941f94197 time=2026-11-01T14:06:50Z -->
+lym-stencil: sha256=a1752338f3eca154284f7870fbdcc74aeaacaee0747858f52d77176ae1bb4f7b build=1834cebfde57af62a41a58438fcb466c16412d94 time=2026-11-01T16:53:16Z -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -51,7 +51,6 @@ A follow-up a card files goes on the board as a note, never as a task, and no ca
 ## Step 2 — Explore the codebase
 
 Before planning, start from the code the relevant list names, then read the other relevant parts of the codebase: check recent commits, and follow existing patterns and any PATTERN entries in this prompt rather than inventing new ones.
-Issue every search and read you can name in one message; wait for a result only to choose the next call.
 
 {{template "loom-block-plan-glyphs"}}
 This is the hard rule behind the glyph spelling rules Step 3 spells out below: a bare package-qualified symbol (`pkg.Symbol`) is a hard finding precisely because it is the one spelling that cannot have come verbatim from a quarry answer.

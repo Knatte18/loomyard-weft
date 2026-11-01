@@ -4,7 +4,7 @@
      {{.reviewed_files}}, {{.rubric_path}}, {{.lens_list}}, {{.final_self_check_command}}, {{.spawn_point}}, {{.severity_rule}}, {{.lens_report_path}}, {{.lens_report_spec_path}} and {{.judge_steps}}.
      {{.judge_steps}} is filled by Directive with one of the two judge part stencils.
      It also names two optional markers, {{.writer_fork}} and {{.relaunch_rules}}, each filled by Directive with one part stencil and left empty otherwise.
-lym-stencil: sha256=d23988dc8d1e807ae77a1102926f55517135e9e2f4f4e328f2f3913edc2bff21 build=a687567d2fd87a67c9a0cf6d30c1923a4ee8b4b8 time=2026-11-01T16:14:30Z -->
+lym-stencil: sha256=a2f4139ce02974a852339f940251abc407060684f4aa71e2a7ab96ef2145e46b build=1834cebfde57af62a41a58438fcb466c16412d94 time=2026-11-01T16:53:16Z -->
 
 ## Lens review by forks
 
@@ -35,7 +35,6 @@ Copy these lines verbatim into every fork's prompt, ahead of its lens text.
   Review them through your lens as an outsider, as your context holds them, and never read them again.
 - Your context already holds the writer's exploration, the reviewed files and the rubric, so never re-read what your context shows.
   Make at most 6 further tool calls, each for something your lens needs that your context lacks.
-  Issue every such call you can name in one message; wait for a result only to choose the next call.
   End your report with one line per such call, saying what you read and why your context lacked it.
 - You are read-only: never write, edit or delete a file, run no git command, and never call the Agent tool.
 - Return your findings only as your final message, each with {{.severity_rule}}, the section or decision it concerns, a one-line summary and the evidence.

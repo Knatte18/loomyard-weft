@@ -14,7 +14,7 @@
      it sits on the line that would otherwise be blank, so an empty value leaves the blank line and the prompt's bytes unchanged.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
      The literal `{` / `}` characters around {{.slug}} in the board-read example below are ordinary JSON punctuation, not template syntax — only `{{` begins a template action.
-lym-stencil: sha256=037f7137f5819e1bf085aaa5f3f9b1781d1e1f74b6ae1b04c55713ba6d077416 build=4f7d099d1c17a09e41cd8483c4dd6725023d9484 time=2026-10-31T19:22:44Z -->
+lym-stencil: sha256=3c10550fbf261004cb52c1c8dc3d0629289acd37a40ce129b565b5286e8c5a52 build=1834cebfde57af62a41a58438fcb466c16412d94 time=2026-11-01T16:53:16Z -->
 
 # Discussion — interview, then write the decision record
 
@@ -54,7 +54,6 @@ Read each such note `lym board list` shows.
 
 Read the relevant parts of the codebase before asking the operator anything.
 Do not ask a question the codebase already answers — read the files and check recent commits.
-Issue every search and read you can name in one message; wait for a result only to choose the next call.
 Only unresolved design questions belong in the interview.
 
 This exploration is bounded, the same way Step 3's interview categories are: at a coarse level you MAY establish which module boundary the work falls under and whether the design conflicts with an existing pattern.
