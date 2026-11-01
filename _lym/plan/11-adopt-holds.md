@@ -1,18 +1,18 @@
 # Card 11 — Adopt holds the runs it takes over
 
 **Create:**
-- `plan:internal/adoptcli#holdsFileName` -> `const holdsFileName = "holds.json"`
-- `plan:internal/adoptcli#triesFileName` -> `const triesFileName = "fix-tries.json"`
-- `plan:internal/adoptcli#readHolds` -> `func readHolds(dir string) ([]string, error)`
-- `plan:internal/adoptcli#appendHolds` -> `func appendHolds(dir string, slugs []string) error`
-- `plan:internal/adoptcli#removeHolds` -> `func removeHolds(dir string, slugs []string) error`
-- `plan:internal/adoptcli#readTries` -> `func readTries(dir string) (int, error)`
-- `plan:internal/adoptcli#writeTries` -> `func writeTries(dir string, count int) error`
-- `plan:internal/adoptcli#holdEntries` -> `func holdEntries(record *pauserecord.Record, slugs []string, now time.Time) (held []string, paused map[string]string)`
-- `plan:internal/adoptcli#holdTargets` -> `func holdTargets(deps adoptDeps, here string, reconciled boardengine.Owners, tasks []boardengine.Task, runs []string, writing []string, rootGoing bool, outcomes map[string]*slugOutcome) (map[string][]string, error)`
-- `plan:internal/adoptcli#reconcileWarnings` -> `func reconcileWarnings(report fabricengine.OriginReport, adopted []string, outcomes map[string]*slugOutcome, req request) []string`
-- `plan:internal/adoptcli#TestHoldStore` -> `func TestHoldStore(t *testing.T)`
-- `plan:internal/adoptcli#TestHoldEntries` -> `func TestHoldEntries(t *testing.T)`
+- `internal/adoptcli#holdsFileName`
+- `internal/adoptcli#triesFileName`
+- `internal/adoptcli#readHolds`
+- `internal/adoptcli#appendHolds`
+- `internal/adoptcli#removeHolds`
+- `internal/adoptcli#readTries`
+- `internal/adoptcli#writeTries`
+- `internal/adoptcli#holdEntries`
+- `internal/adoptcli#holdTargets`
+- `internal/adoptcli#reconcileWarnings`
+- `internal/adoptcli#TestHoldStore`
+- `internal/adoptcli#TestHoldEntries`
 
 **Delete:**
 - `internal/adoptcli#resumeHaltedChildren`

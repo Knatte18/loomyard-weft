@@ -22,9 +22,9 @@
 - `PATTERN.md`
 
 **Uses:**
-- `plan:internal/adoptcli#readHolds`
-- `plan:internal/adoptcli#removeHolds`
-- `plan:internal/adoptcli#writeTries`
+- `internal/adoptcli#readHolds`
+- `internal/adoptcli#removeHolds`
+- `internal/adoptcli#writeTries`
 - `internal/adoptcli#subjectDir`
 - `internal/pauserecord#HoldCaller`
 - `internal/fronttask#FrontOf`

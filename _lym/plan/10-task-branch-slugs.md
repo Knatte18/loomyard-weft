@@ -1,8 +1,8 @@
 # Card 10 — Fabric lists the task branches of a slug prefix
 
 **Create:**
-- `plan:internal/fabricengine#TaskBranchSlugs` -> `func TaskBranchSlugs(prime *lymcwd.Location, prefix string) ([]string, error)`
-- `plan:internal/fabricengine_test#TestTaskBranchSlugs` -> `func TestTaskBranchSlugs(t *testing.T)`
+- `internal/fabricengine#TaskBranchSlugs`
+- `internal/fabricengine_test#TestTaskBranchSlugs`
 
 **Extends:**
 - `internal/fabricengine/doc.go`

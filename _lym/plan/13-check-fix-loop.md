@@ -22,8 +22,8 @@
 - `internal/adoptcli/doc.go`
 
 **Uses:**
-- `plan:internal/adoptcli#readTries`
-- `plan:internal/adoptcli#writeTries`
+- `internal/adoptcli#readTries`
+- `internal/adoptcli#writeTries`
 - `internal/adoptcli#subjectDir`
 - `internal/fronttask#File`
 - `internal/fronttask#Remove`
@@ -33,7 +33,7 @@
 - `internal/fronttask#Request`
 - `internal/fronttask#RemoveError`
 - `internal/fronttask#ActionAdoptCheck`
-- `plan:internal/fabricengine#TaskBranchSlugs`
+- `internal/fabricengine#TaskBranchSlugs`
 - `internal/dobbyengine#LoadConfig`
 - `internal/arbiterstop#EscalationEligible`
 - `internal/arbiterstop#NewReaders`
