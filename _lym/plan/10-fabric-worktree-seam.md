@@ -27,7 +27,7 @@
 - `internal/fabricengine/doc.go`
 
 **Uses:**
-- `plan:internal/fabricengine#SeedWarpExclude`
+- `internal/fabricengine#SeedWarpExclude`
 - `internal/fabricengine#pathsChangedBetween`
 - `internal/fabricengine#RecordsWorktreePath`
 - `internal/fabricengine#BoltDir`

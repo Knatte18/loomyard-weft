@@ -9,11 +9,11 @@
 - `internal/fabricengine_test#TestLoadConfig`
 
 **Create:**
-- `plan:internal/fabricengine#Config.WarpExcludePaths` -> `func (c Config) WarpExcludePaths() []string`
-- `plan:internal/fabricengine#seedWarpExcludeLines` -> `func seedWarpExcludeLines(rec *Mutations, worktree string, paths []string) error`
-- `plan:internal/fabricengine#SeedWarpExclude` -> `func SeedWarpExclude(l *lymcwd.Location) ([]string, error)`
-- `plan:internal/fabricengine#ExcludeWayForward` -> `func ExcludeWayForward(path string) string`
-- `plan:internal/fabricengine_test#TestSeedWarpExclude_SeedsWarpOnlyOnce` -> `func TestSeedWarpExclude_SeedsWarpOnlyOnce(t *testing.T)`
+- `internal/fabricengine#Config.WarpExcludePaths`
+- `internal/fabricengine#seedWarpExcludeLines`
+- `internal/fabricengine#SeedWarpExclude`
+- `internal/fabricengine#ExcludeWayForward`
+- `internal/fabricengine_test#TestSeedWarpExclude_SeedsWarpOnlyOnce`
 
 **Extends:**
 - `internal/fabricengine/doc.go`

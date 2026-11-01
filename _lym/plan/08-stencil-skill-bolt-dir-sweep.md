@@ -23,7 +23,7 @@
 - `//plugins/ly/skills/INDEX.md`
 
 **Create:**
-- `plan:internal/lymcwd#TestEnforcement_BoltDirNameDeclaredOnce` -> `func TestEnforcement_BoltDirNameDeclaredOnce(t *testing.T)`
+- `internal/lymcwd#TestEnforcement_BoltDirNameDeclaredOnce`
 
 **Uses:**
 - `internal/lymcwd#BoltDirName`

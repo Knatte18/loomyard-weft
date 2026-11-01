@@ -1,6 +1,6 @@
 {
   "runGuid": "804ac92368d89a2185bb3a1a370005bc",
-  "planFingerprint": "90196d3d3dd9aaa78f937c0726da89635cc65520db8ac6598e39ddb06be89ffe",
+  "planFingerprint": "4884dda0c8704df50f3e633a1f988a6bf6133b398d1ce68ccbc33ab75db29232",
   "planFileHashes": {
     "00-overview.md": "f3afa09ebed7b5239b6f251ed566ba34699e985870132e22eb3edabcfd944dcb",
     "01-pattern-entries.md": "c67f2b956f2a472d256a3c00f4f6fb7592e979d105fd2abc13125a49da730be5",
@@ -10,14 +10,14 @@
     "05-module-bolt-dir-sweep.md": "dcc9abadd65e92ed361a7bfe47320f9059995cdc3c40fe2c7cd79717a24a0d12",
     "06-module-test-bolt-dir-sweep.md": "a018154c055fe9ec4ea5bb814b3635666e21cde3f17a0c9ca4019d45535526d4",
     "07-module-bolt-dir-uses.md": "b472c5fbee58239d1cc557ec44be38e88926af6a1807096f74eb5995a57cb9c3",
-    "08-stencil-skill-bolt-dir-sweep.md": "4c97f856ae69192e3e7574a5f7b2b9c6d289a86b0cd39ae04217b67d2f79b8ef",
-    "09-fabric-exclude-list.md": "1b692545c56f7589e219e8533f8fdb779e9ae71a2b2ce2e54ab06a1aabb726d8",
-    "10-fabric-worktree-seam.md": "8e9310b88eb996e5ef3a842f40b7296fce701d21c0ecc19d2f221e051f9d4fbf",
+    "08-stencil-skill-bolt-dir-sweep.md": "51c04f9fd383756e24ca88c9b70e220da3f2fac86fbb6fe5f9dfd21354a30cdc",
+    "09-fabric-exclude-list.md": "90d235a869d0bfc0aaa4dee0a7dc257eee418e9c01f99e26d0bc41253ae2e1ef",
+    "10-fabric-worktree-seam.md": "543fae44b2ea5d39230af7bf5bc2d1d8eea0d305f516656b90a0b16c34a7d10c",
     "11-entrymerge-package.md": "aa6701c00d4650af1035a122951cccb0f44097c0d78c4344f2f64ae3f0acdf77",
     "12-board-replay-entrymerge.md": "ab0be1dee3fe975de2242cd6cc6c1ff562cf683cccd76c4f8fcbd69b180a9467",
     "13-bolt-replayer-registry.md": "6f9f16ad1659c7e037db4c06f8439780bc18b8041efa686341349f94e1ca2b4d",
     "14-heddle-store.md": "a8f5c8f8f53ae048fbe24d81bdadec1d5deaa683d938ee2f3530e5347220b0f1",
-    "15-heddle-render.md": "fec9e796effa4cf16609d122b0a11770c7a070b43036d3173d5765235a304126",
+    "15-heddle-render.md": "d8a8ca64b3c07202cd4662b36aaf32d09cef041af7fa12e3772cb4bbed6372c2",
     "16-heddle-worktree-seam.md": "178a0d52a27a3146417bbcd31da7fd6ccfcb1a452b616b12b27b6f1e6efd4add",
     "17-heddle-bolt-replayer.md": "bfda2ca9dbd26cfad49679e093b36be098d031f3e1eb37e6d3059ba14f3632db",
     "18-shuttle-prompt-seam.md": "ab8a7ff50b722c1b480066ee120d1c373df08d5737e96fb454b425f51bc169d1",
@@ -770,7 +770,7 @@
       }
     }
   ],
-  "currentBatch": 8,
+  "currentBatch": 0,
   "masterStrand": "a60f187b995579173bb137e0f792d82c",
   "masterSessionId": "182615f8-c2d3-4e66-9c5a-db5c8744d6b1",
   "masterEngine": "claude",
@@ -968,16 +968,34 @@
         "09-fabric-exclude-list"
       ],
       "cardHashes": {
-        "08-stencil-skill-bolt-dir-sweep": "4c97f856ae69192e3e7574a5f7b2b9c6d289a86b0cd39ae04217b67d2f79b8ef",
-        "09-fabric-exclude-list": "1b692545c56f7589e219e8533f8fdb779e9ae71a2b2ce2e54ab06a1aabb726d8"
+        "08-stencil-skill-bolt-dir-sweep": "51c04f9fd383756e24ca88c9b70e220da3f2fac86fbb6fe5f9dfd21354a30cdc",
+        "09-fabric-exclude-list": "90d235a869d0bfc0aaa4dee0a7dc257eee418e9c01f99e26d0bc41253ae2e1ef"
       },
       "startSha": "0d34fc19880512c23cecb4049512e22360c69ef0",
       "kind": "fork",
       "spawnedAt": "2026-11-01T09:29:13Z",
       "sessionId": "182615f8-c2d3-4e66-9c5a-db5c8744d6b1",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "08-stencil-skill-bolt-dir-sweep",
+        "status": "done",
+        "head_sha": "5226b67aeaa51433bbc3599be71787397ab877fd",
+        "deviations": [
+          "internal/boardengine/doc.go",
+          "internal/fabricengine/warpexclude_integration_test.go"
+        ]
+      },
+      "cardShas": [
+        "5226b67aeaa51433bbc3599be71787397ab877fd"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-warp-visibility/182615f8-c2d3-4e66-9c5a-db5c8744d6b1/subagents/agent-a883d68c703e2581b.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-warp-visibility/182615f8-c2d3-4e66-9c5a-db5c8744d6b1/subagents/agent-a883d68c703e2581b.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
@@ -986,6 +1004,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-warp-visibility/182615f8-c2d3-4e66-9c5a-db5c8744d6b1/subagents/agent-ade20caa7c4c99aa7.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-warp-visibility/182615f8-c2d3-4e66-9c5a-db5c8744d6b1/subagents/agent-a73c6cf38bb7c1c8f.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-warp-visibility/182615f8-c2d3-4e66-9c5a-db5c8744d6b1/subagents/agent-a9bc95a7cdda0bef8.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-warp-visibility/182615f8-c2d3-4e66-9c5a-db5c8744d6b1/subagents/agent-adaa23f850f784cd3.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-warp-visibility/182615f8-c2d3-4e66-9c5a-db5c8744d6b1/subagents/agent-adaa23f850f784cd3.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-warp-visibility/182615f8-c2d3-4e66-9c5a-db5c8744d6b1/subagents/agent-a883d68c703e2581b.jsonl"
   ]
 }
