@@ -1,6 +1,6 @@
 # A long gate run answers within the cache lifetime, so the waiting agent keeps its prompt cache warm
 
-`gate-run-keeps-cache-warm` · Task · enhancement, gate, shuttle, config · running · Webster
+`gate-run-keeps-cache-warm` · Task · enhancement, gate, shuttle, config · running · Parent-Align
 
 ## Seen (operator, 2026-10-31)
 
