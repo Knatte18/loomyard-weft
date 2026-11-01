@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-01 07:36 UTC; every age below is as of then.
+Rendered 2026-11-01 07:37 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -58,7 +58,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E4 |  | **Prove the dotnet scoper, shared build and Drift on the C# sandbox hub**<br>• Switch the sandbox gate to scoper dotnet, a build step and --no-build, then enable Drift there | [`sandbox-dotnet-gate`](design-sandbox-dotnet-gate.md) | 2d<br>2d | dotnet, gate |
 | E9 |  | **An idle interactive run saves its work and pauses, to go on another time**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 17h<br>38m | shed, shuttle, batten |
 | E10 |  | **The hibernate request is carried by dobby, not a daemon of its own**<br>• Move lym hibernate request into dobby; the past-Land test is already shared | [`hibernate-in-dobby`](design-hibernate-in-dobby.md) | 16h<br>12h | dobby |
-| E11 |  | **Merge in from parent as a task of its own in a beam, before pawl lands it**<br>• A ready-made command starts a run that brings the parent into a beam, with Drift; pawl drops its own Code-Review perch | [`parent-merge-task`](design-parent-merge-task.md) | 18h<br>8m | pawl, workspaces, drift, landing |
+| E11 |  | **Merge in from parent as a task of its own in a beam, before pawl lands it**<br>• A ready-made command starts a run that brings the parent into a beam, with Drift; pawl drops its own Code-Review perch | [`parent-merge-task`](design-parent-merge-task.md) | 18h<br>9m | pawl, workspaces, drift, landing |
 | E12 |  | **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | 15h<br>15h | fabric |
 | E13 |  | **A long gate run answers within the cache lifetime, so the waiting agent keeps its prompt cache warm**<br>• lym gate test caps the run wait like the slot wait, with the cap a config value beside the engine cache lifetime | [`gate-run-keeps-cache-warm`](design-gate-run-keeps-cache-warm.md) | 13h<br>13h | gate, shuttle, config |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 2w<br>4d | webster, fabric, loom |
@@ -85,11 +85,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F15 |  | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 2w<br>16h | reed, config, batten |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>3d | burler, shed, orch, quarry, report |
 | F20 |  | **stitch: a loom recipe that splits a large task into darn runs inside its own beam**<br>• Discussion, a pre-planner, the pieces filed as darn tasks in the task's project, and an inner pawl run that builds and lands the beam | [`loom-beam-darns`](design-loom-beam-darns.md) | 9d<br>10h | loom, shed, batten, workspaces, burler |
-
-### Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T1 | **Dobby sends a dead-driver notice for a run that has just started**<br>• Dobby reads a go-driven child as dead in the gap between loom start writing its running status and the driver taking its lock<br>• `profile: solid` | [`dead-driver-false-notice`](design-dead-driver-false-notice.md) | 1h<br>1h | dobby, loom |
