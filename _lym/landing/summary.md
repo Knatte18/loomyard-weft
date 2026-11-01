@@ -1,35 +1,34 @@
-# Rename the Bolt checkout directory _board to _bolt
+# Rename the Bolt checkout directory from _board to _bolt
 
-The hub's Bolt checkout holds the board, the hub's `_lym` config, orch rules and heddle's database, so its directory is now named after the repository it checks out: `_bolt`, not `_board`.
-lym knows only the new name; a hub made before this change is renamed once by a program shipped for that purpose.
+The hub's Bolt checkout holds far more than the board: `board.json`, its README and design files, the hub's `_lym` config and orch rules, and heddle's database.
+The directory is named after the repository it checks out, so `_board` becomes `_bolt`.
 
 ## What changes
 
-- `lymcwd.BoltDirName`, the one declaration of the name, is `"_bolt"`; every path lym builds into the checkout follows it.
-- Every other `_board` spelling in the tree is now `_bolt`: Go tests, the geometry enforcement tables, `docs/`, `tools/sandbox` suites, the overview SVG, research records and a recorded transcript in the claudeengine corpus.
-  The swap was made by script: an occurrence of `_board` with no letter or digit before it became `_bolt`.
-  Identifiers and test names that say `board` for the board itself (`custom_board`, `no_board_path_resolves_via_paths`) are unchanged; the near-miss fixture `_boardroom` became `_boltroom`, and the two enforcement case names that spelled the token follow it.
-- `tools/boltrename` is the per-hub rename program, run as `go run ./tools/boltrename -hub <hub dir>`.
-  It refuses while any process runs a `lym` binary, works in the hub, or names the hub on its command line, listing them.
-  It stops and names what it found when the hub holds anything but a prime, its weft, `_launchers`, `_board` and workspace files, or when `_board/.git` and the weft's `.git/worktrees/_board/gitdir` do not point at each other.
-  Otherwise it renames `_board` and its git admin directory, rewrites both gitdir links, moves the hub's own process records under `.lym/runproc`, and re-points `_board` paths in the hub's `*.code-workspace` files, the prime's `.vscode` files and the weft's `.lym/reed.json`.
-  It never runs git.
+- `lymcwd.BoltDirName` changes from `_board` to `_bolt`.
+  Every other reader takes the name from that constant.
+- Every remaining spelling of `_board` in docs, research notes, sandbox suites, `mill-config.yaml`, comments and tests becomes `_bolt`.
+  This includes the `_boardroom` near-miss case in `TestIsReservedHubName`, now `_boltroom`.
+- `tools/boltrename` is new: a one-shot program that renames an existing hub's checkout.
+  Run it once per hub with `go run ./tools/boltrename -hub <hub dir>`, after a lym binary that knows only `_bolt` is installed.
 
 ## Design decisions
 
-- **No compatibility in lym.** Nothing in lym looks for `_board`, falls back to it or migrates it; `tools/boltrename` is the only place the old name is spelled, and is to be deleted once the hubs on Neve and OSL-1046 are renamed.
-- **The program handles the hubs as they are, with no what-if code.** It acts on the layout and the files found on Neve, and stops on anything else, leaving that to be fixed by hand.
-  It does not walk the hub for other mentions: logs, gate run records, creel journals and the weft's tracked run records keep `_board` as history.
-  A pair still in the hub counts as unexpected, so the program also stops while any run's worktree is present.
-- **The git worktree link is fixed by file, not by `git worktree move`.** The admin directory is renamed with the checkout and both gitdir files are written directly, which is what `git worktree move` would leave, and keeps the tool outside the git boundary rules.
-- **Bolt's own contents are not in this diff.** The Bolt copies of stencils and specs take the new text through the existing stencil refresh; board entries and design files that mention `_board` in prose are not rewritten.
+- lym itself knows `_bolt` only.
+  There is no fallback to `_board`, no detection of the old name and no migration case; `boltrename` is the only place the old name appears.
+- `boltrename` handles the hubs on Neve and OSL-1046 as they are today.
+  It stops and names what it found when the hub holds anything but a prime, its weft, `_launchers`, the Bolt checkout and workspace files, or when the checkout's git worktree links are not the ones it expects.
+- It refuses while a lym process, or any process working in the hub, is alive.
+- It renames the checkout and its git worktree admin directory, rewrites the two gitdir links between them, moves the hub's own process records, and re-points every `_board` path in the hub's workspace files, the prime's `.vscode` files and the weft's `reed.json`.
+- It never runs git.
+- The two bulk data files `calls.tsv` under `docs/research` change only where they quote the old path.
+- No refactor rides along.
+- The task runs alone, with no other run in flight.
 
-Closes nothing: the board entry lists no issue.
+`boltrename` is deleted from the repository once both hubs are migrated.
 
 ## To check by hand
 
-- On each hub, with every lym process, agent and editor in it ended and the new binary installed: `go run ./tools/boltrename -hub <hub dir>` prints the rename and each re-pointed file; then `git -C <hub>/_bolt status` is clean and `lym board list` works.
-- `internal/lymcwd/anchor.go:25` declares `BoltDirName = "_bolt"`, and `TestEnforcement_BoltDirNameDeclaredOnce` and `TestEnforcement_GeometryLiterals` in `internal/lymcwd/enforcement_test.go` police `_bolt`.
-- `tools/boltrename/rename_test.go` pins a full rename of a hub laid out as Neve's, each stop on an unexpected hub, and which processes block the run.
-- `git grep -n _board` finds only `tools/boltrename` and the identifiers and test names that say board for the board.
-- Claude Code's own per-path records, such as a trusted-folder entry in `~/.claude.json` for `<hub>/_board`, are not re-pointed; none existed for the Neve hub's checkout.
+- Run `boltrename` on a copy of a real hub (Neve, then OSL-1046) and confirm lym starts and `lym board` reads the board from `_bolt`.
+- Confirm no live reed command, VS Code setting or workspace file still holds `_board` after the run.
+- Search the tree for `_board` outside `tools/boltrename`; none should remain.
