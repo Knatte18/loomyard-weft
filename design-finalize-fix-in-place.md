@@ -1,6 +1,6 @@
 # Finalize settles a rejected fixer change in place and never sends the run back
 
-`finalize-fix-in-place` · Task · enhancement, landing, shed, loom, darn · running · Drift-Verify
+`finalize-fix-in-place` · Task · enhancement, landing, shed, loom, darn · running · Code-Bouncer
 
 ## Seen (operator, 2026-10-31)
 
