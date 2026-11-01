@@ -1,0 +1,1026 @@
+diff --git a/PATTERN.md b/PATTERN.md
+index e88b46a6..554ddd20 100644
+--- a/PATTERN.md
++++ b/PATTERN.md
+@@ -27,6 +27,7 @@
+ - `PATTERN-fabric-vocabulary` — Naming the wired composite: "fabric". (test) — [background](pattern/PATTERN-fabric-vocabulary.md)
+ - `PATTERN-fabric-git` — Running git on warp or weft: only `internal/fabricengine`, in-process; destroying only in its `destroy.go`, hub writes via a hub `os.Root`, store gc only in `housekeeping.go`. — [background](pattern/PATTERN-fabric-git.md)
+ - `PATTERN-gitrepo-client-boundary` — Running git: `gitexec.Run`/`runChecked`, raw only at pinned `//gitexec:raw` sites; in `internal/gitrepo`, local reads via `readGoGit` and `dotgit`; transients via `.git/info/exclude`, never `git add -f`. (test) — [background](pattern/PATTERN-gitrepo-client-boundary.md)
++- `PATTERN-remote-refs-lock` — Writing remote-tracking refs by fetch, pull or push: under the repository's remote-refs lock via `gitrepo`, waiting while held; a tag push, a `--refmap=` fetch and a probe-clone fetch write none; a judge of origin against tracking refs holds it from reading origin to its verdict. (test)
+ - `PATTERN-push-both-sides` — Pushing run records from Go: code branch goes along; a push refused after retry leaves a failed-push record and creel notice. (test) — [background](pattern/PATTERN-push-both-sides.md)
+ - `PATTERN-pair-teardown` — Tearing down a pair: only via `internal/pairteardown`; a producer creating or destroying a task worktree never runs inside it. (test) — [background](pattern/PATTERN-pair-teardown.md)
+ - `PATTERN-parent-lock` — Moving, merging into or landing on a local parent branch, or merging a run's pull request: only in a run's Finalize, under `internal/parentlock`'s lock for that parent.
+diff --git a/cmd/lym/gitrepoboundary_test.go b/cmd/lym/gitrepoboundary_test.go
+index 60bc2a07..ce867ba1 100644
+--- a/cmd/lym/gitrepoboundary_test.go
++++ b/cmd/lym/gitrepoboundary_test.go
+@@ -68,6 +68,7 @@ var gitrepoPinnedRunBoundMethods = []string{
+ 	"StageAllAndCommit",
+ 	"Pull",
+ 	"Fetch",
++	"FetchWithArgs",
+ 	"IsAncestor",
+ 	"ResetHard",
+ 	"ResetKeep",
+diff --git a/cmd/lym/remoterefslock_test.go b/cmd/lym/remoterefslock_test.go
+new file mode 100644
+index 00000000..1dd6ee4f
+--- /dev/null
++++ b/cmd/lym/remoterefslock_test.go
+@@ -0,0 +1,90 @@
++//go:build tier0
++
++// remoterefslock_test.go enforces `PATTERN-remote-refs-lock` for internal/fabricengine: a fetch there that writes remote-tracking refs goes through gitrepo, which takes the repository's remote-refs lock.
++// The scan finds every git argument list holding "fetch" and fails on one that neither carries "--refmap=", which writes no tracking ref, nor sits in a function the allowlist names.
++
++package main
++
++import (
++	"go/ast"
++	"go/token"
++	"strconv"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/scankit"
++)
++
++// remoteRefsLockFetchAllowlist names the files, or as "<file>:<function>" the functions, of internal/fabricengine whose unlocked fetch is deliberate.
++var remoteRefsLockFetchAllowlist = []scankit.Entry{
++	{Key: "internal/fabricengine/recordsprobe.go", Why: "the file only fetches into a private probe clone, whose tracking refs no other lym call shares"},
++	{Key: "internal/fabricengine/originreconcile.go:fetchMovedHeads", Why: "runs inside judgeAgainstOrigin, whose caller holds the repository's remote-refs lock"},
++}
++
++// remoteRefsLockMinScannedFiles is the vacuous-scan floor for the walk of internal/fabricengine.
++const remoteRefsLockMinScannedFiles = 20
++
++// TestRemoteRefsLock_FabricengineFetchesWritingTrackingRefsGoThroughGitrepo fails on an argument list in internal/fabricengine's non-test source that holds "fetch" without "--refmap=", outside the allowlist.
++//
++//lym:guard
++func TestRemoteRefsLock_FabricengineFetchesWritingTrackingRefsGoThroughGitrepo(t *testing.T) {
++	allowlist := scankit.NewAllowlist(remoteRefsLockFetchAllowlist)
++
++	scanned := scankit.Walk(t, scankit.Options{Roots: []string{"internal/fabricengine"}, Shallow: true}, func(f *scankit.File) {
++		file := f.AST(t, 0)
++		for _, decl := range file.Decls {
++			fn, ok := decl.(*ast.FuncDecl)
++			if !ok || fn.Body == nil {
++				continue
++			}
++			ast.Inspect(fn.Body, func(node ast.Node) bool {
++				literal, ok := node.(*ast.CompositeLit)
++				if !ok || !holdsFetchArgument(literal) || holdsString(literal, "--refmap=") {
++					return true
++				}
++				if !allowlist.Allowed(f.Rel) && !allowlist.Allowed(f.Rel+":"+fn.Name.Name) {
++					position := f.FileSet().Position(literal.Pos())
++					t.Errorf("`PATTERN-remote-refs-lock` violated: %s:%d runs a git fetch that writes tracking refs outside gitrepo; use gitrepo's FetchWithArgs, which takes the remote-refs lock", f.Rel, position.Line)
++				}
++				return true
++			})
++		}
++	})
++
++	scankit.RequireFloor(t, scanned, remoteRefsLockMinScannedFiles, "remote-refs lock fetch guard")
++	allowlist.RequireNoStale(t)
++}
++
++// holdsFetchArgument reports whether literal is a []string with the string "fetch" among its elements.
++func holdsFetchArgument(literal *ast.CompositeLit) bool {
++	array, ok := literal.Type.(*ast.ArrayType)
++	if !ok {
++		return false
++	}
++	if element, ok := array.Elt.(*ast.Ident); !ok || element.Name != "string" {
++		return false
++	}
++	return holdsString(literal, "fetch")
++}
++
++// holdsString reports whether any element of literal is the string value want.
++func holdsString(literal *ast.CompositeLit, want string) bool {
++	for _, element := range literal.Elts {
++		if stringValue(element) == want {
++			return true
++		}
++	}
++	return false
++}
++
++// stringValue returns the value of a string literal expression, or "" for any other expression.
++func stringValue(expr ast.Expr) string {
++	basic, ok := expr.(*ast.BasicLit)
++	if !ok || basic.Kind != token.STRING {
++		return ""
++	}
++	value, err := strconv.Unquote(basic.Value)
++	if err != nil {
++		return ""
++	}
++	return value
++}
+diff --git a/internal/fabricengine/add.go b/internal/fabricengine/add.go
+index 0ae7968b..5b55c8ab 100644
+--- a/internal/fabricengine/add.go
++++ b/internal/fabricengine/add.go
+@@ -412,7 +412,7 @@ func (t *Topology) add(l *lymcwd.Location, slug string, opts AddOptions, local b
+ 	warpStart, warpRemote := "", ""
+ 	if warpAdoptTip != "" {
+ 		warpStart, warpRemote = originRemoteName+"/"+warpBranch, originRemoteName
+-		if _, err := gitexec.Run([]string{"fetch", "--no-tags", originRemoteName, "refs/heads/" + warpBranch + ":refs/remotes/" + warpStart}, l.WorktreePath()); err != nil {
++		if _, err := gitrepo.New(l.WorktreePath()).FetchWithArgs("--no-tags", originRemoteName, "refs/heads/"+warpBranch+":refs/remotes/"+warpStart); err != nil {
+ 			return AddResult{}, fmt.Errorf("fetch warp branch %q from %q: %w", warpBranch, originRemoteName, err)
+ 		}
+ 	}
+@@ -466,7 +466,7 @@ func (t *Topology) add(l *lymcwd.Location, slug string, opts AddOptions, local b
+ 	// git refuses a fetch into a branch that is not a fast-forward,
+ 	// so a branch that moved since the pre-flight is never rewound or overwritten.
+ 	if weftOld.fastForwardTo != "" {
+-		if _, err := gitexec.Run([]string{"fetch", "--no-tags", originRemoteName, "refs/heads/" + weftBranch + ":refs/heads/" + weftBranch}, weftRepoRoot); err != nil {
++		if _, err := gitrepo.New(weftRepoRoot).FetchWithArgs("--no-tags", originRemoteName, "refs/heads/"+weftBranch+":refs/heads/"+weftBranch); err != nil {
+ 			_ = t.rollbackAdd(rec, pairAt, slug, warpBranch, weftBranch, target, weftBranchAlreadyExists, warpTok, &warpPush)
+ 			return AddResult{}, fmt.Errorf("fast-forward weft branch %q to its tip on %q failed: %w", weftBranch, originRemoteName, err)
+ 		}
+diff --git a/internal/fabricengine/archive.go b/internal/fabricengine/archive.go
+index f05c2c59..9504691e 100644
+--- a/internal/fabricengine/archive.go
++++ b/internal/fabricengine/archive.go
+@@ -154,15 +154,20 @@ func resolveArchiveTip(weftRoot, weftBranch string) (string, error) {
+ 		}
+ 		return "", err
+ 	}
+-	if strings.TrimSpace(listed) == "" {
++	// ls-remote matches a pattern by its tail, so only the line naming exactly this branch is its tip.
++	tip := ""
++	for _, line := range strings.Split(listed, "\n") {
++		sha, ref, found := strings.Cut(strings.TrimSpace(line), "\t")
++		if found && ref == "refs/heads/"+weftBranch {
++			tip = sha
++		}
++	}
++	if tip == "" {
+ 		return "", nil
+ 	}
+-	if _, err := gitexec.Run([]string{"fetch", originRemoteName, "refs/heads/" + weftBranch}, weftRoot); err != nil {
++	// The tip is fetched by SHA so the answer never rests on FETCH_HEAD, which another fetch of the worktree can rewrite once the lock is released.
++	if _, err := gitrepo.New(weftRoot).FetchWithArgs(originRemoteName, tip); err != nil {
+ 		return "", fmt.Errorf("fetch weft branch %q from %q: %w", weftBranch, originRemoteName, err)
+ 	}
+-	fetched, err := gitexec.Run([]string{"rev-parse", "--verify", "FETCH_HEAD^{commit}"}, weftRoot)
+-	if err != nil {
+-		return "", fmt.Errorf("resolve fetched weft branch %q: %w", weftBranch, err)
+-	}
+-	return strings.TrimSpace(fetched), nil
++	return tip, nil
+ }
+diff --git a/internal/fabricengine/checkout.go b/internal/fabricengine/checkout.go
+index a1c30e9b..05e07558 100644
+--- a/internal/fabricengine/checkout.go
++++ b/internal/fabricengine/checkout.go
+@@ -213,7 +213,7 @@ func targetWeftTip(weftRepoRoot, weftBranch string) (string, error) {
+ 		return "", err
+ 	}
+ 	tracking := "refs/remotes/" + originRemoteName + "/" + weftBranch
+-	if _, err := gitexec.Run([]string{"fetch", "--no-tags", originRemoteName, "refs/heads/" + weftBranch + ":" + tracking}, weftRepoRoot); err != nil {
++	if _, err := gitrepo.New(weftRepoRoot).FetchWithArgs("--no-tags", originRemoteName, "refs/heads/"+weftBranch+":"+tracking); err != nil {
+ 		return "", fmt.Errorf("fetch weft branch %q from %q: %w", weftBranch, originRemoteName, err)
+ 	}
+ 	return tracking, nil
+diff --git a/internal/fabricengine/cleanupremotewarp.go b/internal/fabricengine/cleanupremotewarp.go
+index 702b8c3d..d499e6ec 100644
+--- a/internal/fabricengine/cleanupremotewarp.go
++++ b/internal/fabricengine/cleanupremotewarp.go
+@@ -96,7 +96,7 @@ func (t *Topology) cleanupRemoteWarp(l *lymcwd.Location, apply bool, openPRHeads
+ 	}
+ 
+ 	// One fetch makes every observed tip's objects local and brings the default branch's tracking ref up to date, which is the parent the landed check compares against.
+-	if _, err := gitexec.Run([]string{"fetch", "--no-tags", originRemoteName}, repoDir); err != nil {
++	if _, err := gitrepo.New(repoDir).FetchWithArgs("--no-tags", originRemoteName); err != nil {
+ 		return res, fmt.Errorf("fetch %q: %w", originRemoteName, err)
+ 	}
+ 	parent := originRemoteName + "/" + defaultBranch
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index 1797520b..9034f33e 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -67,6 +67,8 @@
+ // The network work is two `git ls-remote origin` calls, one per repository, run in parallel under `ReconcileOptions`' per-attempt deadline and retried together after a transport failure until the bound is spent.
+ // Only the heads origin moved past the local tracking ref are then fetched, one fetch per repository.
+ // A judge-only reconcile fetches their objects by SHA into no ref and writes no FETCH_HEAD, so it moves nothing.
++// The reconcile holds each repository's remote-refs lock (`gitrepo.Repo.HoldRemoteRefs`) from the ls-remote pair through the last branch verdict, the code repository's first,
++// so a push or fetch of either repository waits for the verdicts, and a push already in flight lands before origin is read and is never judged a rewind.
+ // A transport failure through the bound is `OriginReport.Unreachable`, with nothing judged and nothing moved, and a nil error.
+ // Any other failure of the ls-remote pair, or a failed fetch after both answered, is the returned error.
+ //
+@@ -294,7 +296,7 @@
+ // (`seedWeftArtifactExcludes`) and deliberately does not manage the warp repo's own git
+ // configuration.
+ // This asymmetry is now narrower than it was: the warp-via-fabric async push described above uses
+-// the lock-free, rebase-free `PushRebaseFree` for both sides (per the
++// the rebase-free `PushRebaseFree`, which takes no push-serialising lock, for both sides (per the
+ // no-warp-root-gitrepo-push-lock Shared Decision), so that path never creates a
+ // `.gitrepo-push.lock` at the pristine warp worktree root at all anymore — `Fabric.Status`'s own
+ // behavior of not suppressing a warp-side artifact is unchanged, but there is normally nothing
+@@ -1209,7 +1211,6 @@
+ // A `rev-parse` spawn survives only where git derives the answer from config or revision syntax:
+ //
+ //   - `InstallPostCheckoutHook` asks `--git-path hooks`, which honours `core.hooksPath`.
+-//   - `resolveArchiveTip` resolves `FETCH_HEAD^{commit}`, revision syntax over git's fetch output.
+ //   - websterengine's `--disambiguate` and `<commit>:<path>` probes are git's own disambiguation.
+ //
+ // # The records replay
+diff --git a/internal/fabricengine/export_test.go b/internal/fabricengine/export_test.go
+index f5175e5b..0bae4885 100644
+--- a/internal/fabricengine/export_test.go
++++ b/internal/fabricengine/export_test.go
+@@ -833,6 +833,14 @@ func SetOriginCallHookForTest(hook func(args []string)) (restore func()) {
+ 	return func() { originCallHook = previous }
+ }
+ 
++// SetOriginVerdictHookForTest installs hook to run just before each branch verdict an origin reconcile reaches and returns the function that removes it.
++// It changes process-global state, so the calling test must not be parallel.
++func SetOriginVerdictHookForTest(hook func()) (restore func()) {
++	previous := originVerdictHook
++	originVerdictHook = hook
++	return func() { originVerdictHook = previous }
++}
++
+ // HoldHubPauseForTest installs a Defer gate for slug over a temp pause record that holds one live hub entry, until the test ends.
+ // It changes process-global state, so the calling test must not be parallel.
+ func HoldHubPauseForTest(t *testing.T, slug string) {
+diff --git a/internal/fabricengine/originreconcile.go b/internal/fabricengine/originreconcile.go
+index 8e394897..2e915fee 100644
+--- a/internal/fabricengine/originreconcile.go
++++ b/internal/fabricengine/originreconcile.go
+@@ -419,6 +419,17 @@ func callOriginHook(args []string) {
+ 	}
+ }
+ 
++// originVerdictHook runs just before each branch verdict a reconcile reaches.
++// It is nil in production; a test sets it through SetOriginVerdictHookForTest.
++var originVerdictHook func()
++
++// callOriginVerdictHook runs the verdict hook, if any.
++func callOriginVerdictHook() {
++	if originVerdictHook != nil {
++		originVerdictHook()
++	}
++}
++
+ // lsRemotePair runs `git ls-remote origin` for the code repository and the records repository in parallel, each under the attempt deadline, and returns each one's branch heads by branch name.
+ // While either call fails with a transport failure and attempts remain, the pair is retried together after one interval.
+ // A failure that is not a transport failure is never retried; it is returned as soon as it is seen, naming the repository and git's error line.
+@@ -482,6 +493,7 @@ func lsRemoteHeads(side, dir string, deadline time.Duration) (map[string]string,
+ 
+ // fetchMovedHeads fetches, in one fetch, the heads of heads, which map a branch name to origin's head for it, and which a caller limits to those whose head differs from the local tracking ref.
+ // It updates each branch's tracking ref, forcing it since origin may have rewound or rewritten the branch.
++// The caller holds the repository's remote-refs lock, which this fetch does not take.
+ // With judgeOnly it fetches the objects by SHA into no ref and writes no FETCH_HEAD, so a dry run moves nothing.
+ // No head makes no call.
+ func fetchMovedHeads(dir string, heads map[string]string, judgeOnly bool) error {
+@@ -677,7 +689,7 @@ func samePath(porcelain, built string) bool {
+ }
+ 
+ // ReconcileOrigin judges this machine's local branches against origin and returns the verdict on each, and on each entry whose pair has a batten run record.
+-// It runs one ls-remote per repository and fetches only the heads origin moved.
++// It runs one ls-remote per repository and fetches only the heads origin moved, holding each repository's remote-refs lock from the ls-remote through the branch verdicts, so a push in flight is never judged a rewind.
+ // It reads the ended set, and tears down through the seam the local pair of each run origin has ended, before any branch moves; a judge-only scope reports those teardowns and runs none.
+ // It also asks the owner seam, over origin's Bolt tip, which recorded entries another machine owns, and reports those owned_elsewhere.
+ // A judge-only scope stops there.
+@@ -696,49 +708,11 @@ func ReconcileOrigin(l *lymcwd.Location, scope ReconcileScope, seams OriginSeams
+ 		return res, err
+ 	}
+ 
+-	warpHeads, recordsHeads, err := lsRemotePair(warpDir, recordsDir, opts)
+-	if gitexec.IsTransportFailure(err) {
+-		res.Unreachable = true
+-		return res, nil
+-	}
+-	if err != nil {
++	res.Branches, res.Unreachable, err = judgeAgainstOrigin(targets, warpDir, recordsDir, scope.JudgeOnly, opts)
++	if err != nil || res.Unreachable {
+ 		return res, err
+ 	}
+ 
+-	moved := map[string]map[string]string{warpDir: {}, recordsDir: {}}
+-	for _, target := range targets {
+-		heads := recordsHeads
+-		if target.side == failedPushSideCode {
+-			heads = warpHeads
+-		}
+-		if head, found := heads[target.branch]; found && head != target.tracking {
+-			moved[target.repoDir][target.branch] = head
+-		}
+-	}
+-	for _, dir := range []string{warpDir, recordsDir} {
+-		if err := fetchMovedHeads(dir, moved[dir], scope.JudgeOnly); err != nil {
+-			return res, err
+-		}
+-	}
+-
+-	for _, target := range targets {
+-		heads := recordsHeads
+-		if target.side == failedPushSideCode {
+-			heads = warpHeads
+-		}
+-		outcome, err := judgeBranch(target.repoDir, target.branch, heads[target.branch], target.side != failedPushSideCode)
+-		if err != nil {
+-			return res, err
+-		}
+-		outcome.Repo = target.side
+-		outcome.Slug = target.slug
+-		outcome.Prime = target.prime
+-		outcome.Worktree = target.worktree
+-		outcome.CodeWorktree = target.codeWorktree
+-		outcome.WayForward = outcome.stopWayForward()
+-		res.Branches = append(res.Branches, outcome)
+-	}
+-
+ 	recorded, err := recordedPairs(l, pairs)
+ 	if err != nil {
+ 		return res, err
+@@ -776,6 +750,66 @@ func ReconcileOrigin(l *lymcwd.Location, scope ReconcileScope, seams OriginSeams
+ 	return res, nil
+ }
+ 
++// judgeAgainstOrigin reads origin's heads of both repositories, fetches the heads origin moved past their tracking refs and returns the verdict on each target.
++// It holds the remote-refs lock of the code repository and then of the records repository throughout,
++// so a push or fetch of either repository finishes before origin is read, or starts after every verdict, and never lands between the read and the verdict.
++// The locks are held through the ls-remote retries and their sleeps, bounded by opts' RetryBound,
++// so an unreachable origin blocks every fetch and push of both repositories for that bound.
++// A transport failure that outlasts the retry bound returns unreachable true with no verdict and a nil error.
++func judgeAgainstOrigin(targets []originTarget, warpDir, recordsDir string, judgeOnly bool, opts ReconcileOptions) (branches []BranchOutcome, unreachable bool, err error) {
++	for _, dir := range []string{warpDir, recordsDir} {
++		release, err := gitrepo.New(dir).HoldRemoteRefs()
++		if err != nil {
++			return nil, false, err
++		}
++		defer func() { _ = release() }()
++	}
++
++	warpHeads, recordsHeads, err := lsRemotePair(warpDir, recordsDir, opts)
++	if gitexec.IsTransportFailure(err) {
++		return nil, true, nil
++	}
++	if err != nil {
++		return nil, false, err
++	}
++
++	moved := map[string]map[string]string{warpDir: {}, recordsDir: {}}
++	for _, target := range targets {
++		heads := recordsHeads
++		if target.side == failedPushSideCode {
++			heads = warpHeads
++		}
++		if head, found := heads[target.branch]; found && head != target.tracking {
++			moved[target.repoDir][target.branch] = head
++		}
++	}
++	for _, dir := range []string{warpDir, recordsDir} {
++		if err := fetchMovedHeads(dir, moved[dir], judgeOnly); err != nil {
++			return nil, false, err
++		}
++	}
++
++	for _, target := range targets {
++		heads := recordsHeads
++		if target.side == failedPushSideCode {
++			heads = warpHeads
++		}
++		callOriginVerdictHook()
++		outcome, err := judgeBranch(target.repoDir, target.branch, heads[target.branch], target.side != failedPushSideCode)
++		if err != nil {
++			return nil, false, err
++		}
++		outcome.Repo = target.side
++		outcome.Slug = target.slug
++		outcome.Prime = target.prime
++		outcome.Worktree = target.worktree
++		outcome.CodeWorktree = target.codeWorktree
++		outcome.WayForward = outcome.stopWayForward()
++		branches = append(branches, outcome)
++	}
++	return branches, false, nil
++}
++
+ // classifyEntries returns the verdict on each of the recorded pairs, from the verdicts on its branches.
+ // A stop on Bolt or on the prime's records branch stops every entry, a busy one excepted.
+ // A busy records branch of the run scope's own pair stops nothing, since the run's own driver holds it.
+diff --git a/internal/fabricengine/originreconcile_integration_test.go b/internal/fabricengine/originreconcile_integration_test.go
+index 86a25f0a..5281391b 100644
+--- a/internal/fabricengine/originreconcile_integration_test.go
++++ b/internal/fabricengine/originreconcile_integration_test.go
+@@ -19,7 +19,9 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/gitrepo"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/testkit/boardkit"
+@@ -101,6 +103,37 @@ func reconcile(t *testing.T, hub *originHub, scope fabricengine.ReconcileScope,
+ 	return report
+ }
+ 
++// remoteRefsLockPaths returns where the remote-refs locks of the hub's code and records repositories live.
++func remoteRefsLockPaths(t *testing.T, hub *originHub) []string {
++	t.Helper()
++	var paths []string
++	for _, dir := range []string{hub.PrimeWorktree(), hub.PrimeRecords()} {
++		commonDir, err := gitrepo.New(dir).CommonDir()
++		if err != nil {
++			t.Fatalf("CommonDir(%s) error = %v", dir, err)
++		}
++		paths = append(paths, filepath.Join(commonDir, gitrepo.RemoteRefsLockFileName))
++	}
++	return paths
++}
++
++// freeRemoteRefsLocks returns the lock paths it could take, releasing each at once.
++func freeRemoteRefsLocks(t *testing.T, paths []string) []string {
++	t.Helper()
++	var free []string
++	for _, path := range paths {
++		held, acquired, err := lock.TryAcquireWriteLock(path)
++		if err != nil {
++			t.Errorf("TryAcquireWriteLock(%s) error = %v", path, err)
++		}
++		if acquired {
++			_ = held.Release()
++			free = append(free, path)
++		}
++	}
++	return free
++}
++
+ // branchOf returns the outcome for the branch of repo side, failing the test when the report holds none.
+ func branchOf(t *testing.T, report fabricengine.OriginReport, repo, branch string) fabricengine.BranchOutcome {
+ 	t.Helper()
+@@ -222,6 +255,82 @@ func TestReconcileOrigin_Judge(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("A reconcile holds both repositories' remote-refs locks across its ls-remote calls, fetches and branch verdicts, and frees them once it returns", func(t *testing.T) {
++		hub := newOriginHub(t)
++		other := otherMachine(t, hub.CodeBare, hub.primeBranch)
++		gitkit.CommitFile(t, other, "moved.txt", "moved", "origin moved code")
++		gitkit.Git(t, other, "push", "origin", hub.primeBranch)
++		lockPaths := remoteRefsLockPaths(t, hub)
++
++		var calls callLog
++		var freeDuringCalls callLog
++		t.Cleanup(fabricengine.SetOriginCallHookForTest(func(args []string) {
++			calls.record(args)
++			if free := freeRemoteRefsLocks(t, lockPaths); len(free) > 0 {
++				freeDuringCalls.record(append([]string{args[0]}, free...))
++			}
++		}))
++		verdicts := 0
++		var freeDuringVerdicts [][]string
++		t.Cleanup(fabricengine.SetOriginVerdictHookForTest(func() {
++			verdicts++
++			if free := freeRemoteRefsLocks(t, lockPaths); len(free) > 0 {
++				freeDuringVerdicts = append(freeDuringVerdicts, free)
++			}
++		}))
++		report := reconcile(t, hub, fabricengine.ReconcileScope{}, fabricengine.ReconcileOptions{})
++
++		if len(calls.withVerb("ls-remote")) != 2 || len(calls.withVerb("fetch")) != 1 {
++			t.Fatalf("remote calls = %v; want two ls-remote calls and one fetch", calls.calls)
++		}
++		if len(freeDuringCalls.calls) != 0 {
++			t.Errorf("remote calls that ran with a remote-refs lock free = %v; want every lock held throughout", freeDuringCalls.calls)
++		}
++		if verdicts == 0 || verdicts < len(report.Branches) {
++			t.Errorf("branch verdicts reached = %d for %d reported branches; want one per branch", verdicts, len(report.Branches))
++		}
++		if len(freeDuringVerdicts) != 0 {
++			t.Errorf("branch verdicts that ran with a remote-refs lock free = %v; want every lock held through the last verdict", freeDuringVerdicts)
++		}
++		if free := freeRemoteRefsLocks(t, lockPaths); len(free) != len(lockPaths) {
++			t.Errorf("remote-refs locks free after the reconcile = %v; want all of %v", free, lockPaths)
++		}
++	})
++
++	t.Run("A reconcile frees both remote-refs locks on every return", func(t *testing.T) {
++		unreachableOptions := fabricengine.ReconcileOptions{
++			RetryBound:    3 * time.Second,
++			RetryInterval: time.Second,
++			Sleep:         func(time.Duration) {},
++		}
++		for _, row := range []struct {
++			name      string
++			breakURL  string
++			scope     fabricengine.ReconcileScope
++			options   fabricengine.ReconcileOptions
++			wantError bool
++		}{
++			{"a judge-only reconcile", "", fabricengine.ReconcileScope{JudgeOnly: true}, fabricengine.ReconcileOptions{}, false},
++			{"an unreachable origin", "http://127.0.0.1:1/x", fabricengine.ReconcileScope{}, unreachableOptions, false},
++			{"an origin that is no repository", filepath.Join(t.TempDir(), "no-repository"), fabricengine.ReconcileScope{}, unreachableOptions, true},
++		} {
++			hub := newOriginHub(t)
++			if row.breakURL != "" {
++				gitkit.Git(t, hub.PrimeRecords(), "remote", "set-url", "origin", row.breakURL)
++			}
++			lockPaths := remoteRefsLockPaths(t, hub)
++
++			_, err := fabricengine.ReconcileOrigin(hub.Location, row.scope, fabricengine.OriginSeams{}, row.options)
++
++			if (err != nil) != row.wantError {
++				t.Errorf("%s: ReconcileOrigin() error = %v; want error %v", row.name, err, row.wantError)
++			}
++			if free := freeRemoteRefsLocks(t, lockPaths); len(free) != len(lockPaths) {
++				t.Errorf("%s: remote-refs locks free after the reconcile = %v; want all of %v", row.name, free, lockPaths)
++			}
++		}
++	})
++
+ 	t.Run("A code branch both sides moved reads diverged and names the merge that settles it", func(t *testing.T) {
+ 		hub := newOriginHub(t)
+ 		pairCode, pairBranch := originPair(t, hub, "task")
+@@ -473,6 +582,7 @@ func TestReconcileOrigin_Judge(t *testing.T) {
+ 		gitkit.Git(t, other, "push", "origin", hub.primeRecords)
+ 		refsBefore := refsOf(t, hub.PrimeRecords())
+ 		localBefore := gitkit.RevParse(t, hub.PrimeRecords(), "HEAD")
++		lockPaths := remoteRefsLockPaths(t, hub)
+ 		t.Cleanup(fabricengine.SetOriginCallHookForTest(func(args []string) {
+ 			if args[0] == "fetch" && slices.ContainsFunc(args, func(arg string) bool { return strings.Contains(arg, hub.primeRecords) }) {
+ 				gitkit.Git(t, hub.RecordsBare, "update-ref", "-d", "refs/heads/"+hub.primeRecords)
+@@ -490,6 +600,9 @@ func TestReconcileOrigin_Judge(t *testing.T) {
+ 		if got := gitkit.RevParse(t, hub.PrimeRecords(), "HEAD"); got != localBefore {
+ 			t.Errorf("records HEAD = %q; want %q, nothing moved", got, localBefore)
+ 		}
++		if free := freeRemoteRefsLocks(t, lockPaths); len(free) != len(lockPaths) {
++			t.Errorf("remote-refs locks free after the failed fetch = %v; want all of %v", free, lockPaths)
++		}
+ 	})
+ 
+ 	t.Run("A run scope judges Bolt, the run's parent branch on both sides and the run's own pair", func(t *testing.T) {
+diff --git a/internal/fabricengine/remoteonly.go b/internal/fabricengine/remoteonly.go
+index ca48b4da..e88ccdf7 100644
+--- a/internal/fabricengine/remoteonly.go
++++ b/internal/fabricengine/remoteonly.go
+@@ -2,11 +2,7 @@
+ 
+ package fabricengine
+ 
+-import (
+-	"fmt"
+-
+-	"github.com/Knatte18/loomyard/internal/gitexec"
+-)
++import "fmt"
+ 
+ // RemoteOnlyCommits fetches the warp origin and returns the tip of the remote branch named like the warp checkout's current branch, and the commits on it that HEAD lacks, newest first.
+ // The tip and the commit list are both empty when the repository has no origin remote or the remote has no such branch;
+@@ -38,7 +34,7 @@ func (f *Fabric) RemoteOnlyCommits() (tip string, commits []string, err error) {
+ 	}
+ 
+ 	// The fetch comes after the tip is read, so a tip that advances in between still has its ancestor's objects local.
+-	if _, err := gitexec.Run([]string{"fetch", "--no-tags", originRemoteName}, f.warpPath); err != nil {
++	if _, err := f.code.FetchWithArgs("--no-tags", originRemoteName); err != nil {
+ 		return "", nil, fmt.Errorf("fabricengine: remote-only commits: fetch %q: %w", originRemoteName, err)
+ 	}
+ 
+diff --git a/internal/fabricengine/remove.go b/internal/fabricengine/remove.go
+index 6b3479a4..58e2bddd 100644
+--- a/internal/fabricengine/remove.go
++++ b/internal/fabricengine/remove.go
+@@ -703,7 +703,7 @@ func deleteTaskBranchOnOrigin(rec *Mutations, l *lymcwd.Location, warpBranch, pa
+ 	if tip == "" {
+ 		return false, ""
+ 	}
+-	if _, err := gitexec.Run([]string{"fetch", originRemoteName, "refs/heads/" + warpBranch}, repoDir); err != nil {
++	if _, err := gitrepo.New(repoDir).FetchWithArgs(originRemoteName, "refs/heads/"+warpBranch); err != nil {
+ 		return false, fmt.Sprintf("fetch task branch %s from %s: %v", warpBranch, originRemoteName, err)
+ 	}
+ 	return deleteTaskBranchAtTip(rec, l, warpBranch, parentBranch, tip)
+diff --git a/internal/fabricengine/taskbranchdiscard.go b/internal/fabricengine/taskbranchdiscard.go
+index 82260bce..beb9ef32 100644
+--- a/internal/fabricengine/taskbranchdiscard.go
++++ b/internal/fabricengine/taskbranchdiscard.go
+@@ -49,7 +49,7 @@ func (t *Topology) DiscardTaskBranch(l *lymcwd.Location, slug string) (res Disca
+ 		}
+ 	}
+ 	if originTip != "" {
+-		if _, err := gitexec.Run([]string{"fetch", originRemoteName, "refs/heads/" + warpBranch}, repoDir); err != nil {
++		if _, err := gitrepo.New(repoDir).FetchWithArgs(originRemoteName, "refs/heads/"+warpBranch); err != nil {
+ 			return DiscardResult{}, fmt.Errorf("fetch task branch %q from %q: %w", warpBranch, originRemoteName, err)
+ 		}
+ 	}
+diff --git a/internal/fabricengine/weftbranch.go b/internal/fabricengine/weftbranch.go
+index 1289d069..6141b092 100644
+--- a/internal/fabricengine/weftbranch.go
++++ b/internal/fabricengine/weftbranch.go
+@@ -45,10 +45,7 @@ func resolveWeftBranch(rec *Mutations, l *lymcwd.Location, weftBranch string, co
+ 	}
+ 
+ 	trackingRef := originRemoteName + "/" + weftBranch
+-	if _, err := gitexec.Run(
+-		[]string{"fetch", "--no-tags", originRemoteName, "refs/heads/" + weftBranch + ":refs/remotes/" + trackingRef},
+-		weftRepoRoot,
+-	); err != nil {
++	if _, err := gitrepo.New(weftRepoRoot).FetchWithArgs("--no-tags", originRemoteName, "refs/heads/"+weftBranch+":refs/remotes/"+trackingRef); err != nil {
+ 		return false, false, fmt.Errorf("fetch weft branch %q from %q: %w", weftBranch, originRemoteName, err)
+ 	}
+ 	if _, err := gitexec.Run([]string{"branch", "--track", weftBranch, trackingRef}, weftRepoRoot); err != nil {
+diff --git a/internal/gitrepo/doc.go b/internal/gitrepo/doc.go
+index 6629a262..1d554e36 100644
+--- a/internal/gitrepo/doc.go
++++ b/internal/gitrepo/doc.go
+@@ -22,7 +22,7 @@
+ // The geometry reads — GitDir and CommonDir — are the one local read beside go-git:
+ // they resolve the checkout's `.git` entry through internal/dotgit once per handle, spawning nothing.
+ // The worktree root is not among them: that query belongs to internal/lymcwd alone.
+-// Every other CLI-bound method — StageAndCommit, StageAllAndCommit, Push, PushCoalesced, ResetHard, ResetKeep, CherryPick, CherryPickAbort, IsAncestor, CommitsNotIn, BlameLines (go-git's blame walks the whole history of the file per call and has no first-parent mode), UpdateRemoteBranchLeased, HasUnpulled, and HasUnpushed (measured and reverted from a go-git ancestry walk; see HasUnpushed's own godoc in push.go for the reversal criterion) — sits on runChecked.
++// Every other CLI-bound method — StageAndCommit, StageAllAndCommit, FetchWithArgs, Push, PushCoalesced, ResetHard, ResetKeep, CherryPick, CherryPickAbort, IsAncestor, CommitsNotIn, BlameLines (go-git's blame walks the whole history of the file per call and has no first-parent mode), UpdateRemoteBranchLeased, HasUnpulled, and HasUnpushed (measured and reverted from a go-git ancestry walk; see HasUnpushed's own godoc in push.go for the reversal criterion) — sits on runChecked.
+ // See PATTERN-gitrepo-client-boundary for the enforced, exhaustive version of this split and the review obligation any new CLI call inside this package carries.
+ // gitexec itself stays a low-level package gitrepo builds on, importing no gitrepo or feature package, regardless of which side of the boundary a gitrepo method is on — it has roughly seventy non-test call sites across gitrepo, fabricengine, fabriccli, lymcwd, and websterengine,
+ // and gitrepo remains one of its many consumers, not merged into it.
+@@ -53,6 +53,10 @@
+ //   - Pull is the fast-forward-only pull surface (see below); Fetch is its
+ //     fetch-without-merge sibling, refreshing remote-tracking refs without
+ //     ever moving the local branch.
++//   - HoldRemoteRefs takes the repository's remote-refs lock, a file in the common git dir every worktree shares.
++//     Fetch, FetchWithArgs, Pull and every push method run git under it, waiting while it is held,
++//     since a fetch and a push both write the shared remote-tracking refs and two concurrent writers of one ref make the loser fail.
++//     A caller that reads origin and then judges the tracking refs holds it across both.
+ //   - IsAncestor is the ancestry/reachability primitive: it answers "is sha
+ //     an ancestor of ref" via `git merge-base --is-ancestor`, mapping git's
+ //     tri-state exit code directly rather than folding any non-zero exit
+diff --git a/internal/gitrepo/pull.go b/internal/gitrepo/pull.go
+index b90d4a2b..73177601 100644
+--- a/internal/gitrepo/pull.go
++++ b/internal/gitrepo/pull.go
+@@ -4,6 +4,7 @@
+ // Fetch sits alongside Pull as the fetch-without-merge primitive: it refreshes this checkout's
+ // remote-tracking refs without ever touching the local branch, the split fabric.Fabric.Pull needs
+ // to inspect what changed upstream before deciding how to reconcile.
++// Both run git under the repository's remote-refs lock, since both write remote-tracking refs.
+ 
+ package gitrepo
+ 
+@@ -16,8 +17,12 @@ import "fmt"
+ // (pull_test.go pins that contract), so the reproduction pointer is what keeps a nonzero exit
+ // diagnosable instead of a bare number.
+ func (r *Repo) Pull() error {
+-	//gitexec:raw — a non-zero exit here IS a failure, but folding git's stderr into the message would break pull_test.go's test-enforced no-`fatal:`-leak surface; the reproduction pointer stands in for the stderr.
+-	_, _, code, err := r.run("pull", "--ff-only")
++	var code int
++	err := r.withRemoteRefs(func() (runErr error) {
++		//gitexec:raw — a non-zero exit here IS a failure, but folding git's stderr into the message would break pull_test.go's test-enforced no-`fatal:`-leak surface; the reproduction pointer stands in for the stderr.
++		_, _, code, runErr = r.run("pull", "--ff-only")
++		return runErr
++	})
+ 	if err != nil {
+ 		return fmt.Errorf("gitrepo: pull --ff-only in %s: %w", r.path, err)
+ 	}
+@@ -31,8 +36,12 @@ func (r *Repo) Pull() error {
+ // Pull.
+ // Errors follow Pull's style: repo path, exit code, and the reproducing command, never raw stderr.
+ func (r *Repo) Fetch() error {
+-	//gitexec:raw — a non-zero exit here IS a failure, but folding git's stderr into the message would break fetch_integration_test.go's test-enforced no-`fatal:`-leak surface; the reproduction pointer stands in for the stderr.
+-	_, _, code, err := r.run("fetch")
++	var code int
++	err := r.withRemoteRefs(func() (runErr error) {
++		//gitexec:raw — a non-zero exit here IS a failure, but folding git's stderr into the message would break fetch_integration_test.go's test-enforced no-`fatal:`-leak surface; the reproduction pointer stands in for the stderr.
++		_, _, code, runErr = r.run("fetch")
++		return runErr
++	})
+ 	if err != nil {
+ 		return fmt.Errorf("gitrepo: fetch in %s: %w", r.path, err)
+ 	}
+diff --git a/internal/gitrepo/push.go b/internal/gitrepo/push.go
+index 9441a589..68ee8470 100644
+--- a/internal/gitrepo/push.go
++++ b/internal/gitrepo/push.go
+@@ -1,5 +1,5 @@
+ // push.go implements the push surface: Push (a single synchronous push with rebase-retry resilience), PushCoalesced (a single-pusher lock plus one guarded push, coalescing across processes via the lock queue rather than an internal retry loop), PushRebaseFree (a single plain push that never rebases, for callers that supply their own serialization), and DeleteRemoteBranch (a single remote branch deletion, idempotent when the ref is already absent), DeleteRemoteBranchLeased (the same deletion, only while the remote branch sits at an expected SHA), and UpdateRemoteBranchLeased (a forced move of a remote branch, only while it sits at an expected SHA).
+-// All of them are push-shaped remote calls; committing is always the caller's separate StageAndCommit or StageAllAndCommit call.
++// All of them are push-shaped remote calls, each git call run under the repository's remote-refs lock; committing is always the caller's separate StageAndCommit or StageAllAndCommit call.
+ 
+ package gitrepo
+ 
+@@ -93,7 +93,10 @@ func (r *Repo) pushWithRebaseRetry() error {
+ 		return fmt.Errorf("gitrepo: git push: %w", err)
+ 	}
+ 
+-	_, rebaseErr := r.runChecked("pull", "--rebase")
++	rebaseErr := r.withRemoteRefs(func() error {
++		_, err := r.runChecked("pull", "--rebase")
++		return err
++	})
+ 	if rebaseErr != nil {
+ 		// The pull --rebase exit branch is control flow, not a message: only a
+ 		// *GitError means git ran and rejected the rebase, which is what
+@@ -125,7 +128,7 @@ func (r *Repo) pushWithRebaseRetry() error {
+ 	return nil
+ }
+ 
+-// pushPlainWithRetry runs the plain push through PushWithRetry for the checked-out branch.
++// pushPlainWithRetry runs the plain push through PushWithRetry for the checked-out branch, each attempt under the remote-refs lock and every backoff outside it.
+ // A branch carrying the local-only mark is refused with ErrLocalBranch before git runs, and a mark that cannot be read is returned as the error.
+ // A branch that cannot be read leaves the ref empty, so nothing is retried.
+ func (r *Repo) pushPlainWithRetry() error {
+@@ -134,8 +137,10 @@ func (r *Repo) pushPlainWithRetry() error {
+ 	}
+ 	branch, _ := r.CurrentBranch()
+ 	return PushWithRetry(func() error {
+-		_, err := r.runChecked("-c", "push.autoSetupRemote=true", "push")
+-		return err
++		return r.withRemoteRefs(func() error {
++			_, err := r.runChecked("-c", "push.autoSetupRemote=true", "push")
++			return err
++		})
+ 	}, branch, PushBackoffDelays(), r.pushSleep)
+ }
+ 
+@@ -145,7 +150,7 @@ func (r *Repo) pushPlainWithRetry() error {
+ // it returns an error satisfying errors.Is(err, ErrLocalBranch) for a branch carrying the local-only mark.
+ // A remote "(failed)" or "cannot lock ref" refusal is retried a bounded number of times, and an exhausted retry wraps ErrPushRetriesExhausted rather than mapping to ErrPushRejected.
+ // A refusal for want of authentication or permission wraps ErrPushAuthRefused with git's refusal line, is never retried, and never maps to ErrPushRejected.
+-// Lock-free.
++// It takes no push-serialising lock of its own; each attempt runs under the repository's remote-refs lock.
+ func (r *Repo) PushRebaseFree() error {
+ 	err := r.pushPlainWithRetry()
+ 	if err == nil {
+@@ -185,7 +190,10 @@ func lastLineHolding(stderr string, triggers []string) (line string, found bool)
+ // deleted is returned separately from err precisely so the caller can tell "removed it" from "there
+ // was nothing there", which is what the caller's mutation record needs.
+ func (r *Repo) DeleteRemoteBranch(remote, branch string) (deleted bool, err error) {
+-	_, err = r.runChecked("push", remote, "--delete", branch)
++	err = r.withRemoteRefs(func() error {
++		_, err := r.runChecked("push", remote, "--delete", branch)
++		return err
++	})
+ 	if err == nil {
+ 		return true, nil
+ 	}
+@@ -208,7 +216,10 @@ func (r *Repo) DeleteRemoteBranchLeased(remote, branch, expectSHA string) error
+ 	}
+ 
+ 	lease := "--force-with-lease=refs/heads/" + branch + ":" + expectSHA
+-	_, err := r.runChecked("push", lease, remote, "--delete", branch)
++	err := r.withRemoteRefs(func() error {
++		_, err := r.runChecked("push", lease, remote, "--delete", branch)
++		return err
++	})
+ 	if err != nil {
+ 		return fmt.Errorf("gitrepo: git push --delete (leased at %s): %w", expectSHA, err)
+ 	}
+@@ -226,7 +237,10 @@ func (r *Repo) UpdateRemoteBranchLeased(remote, branch, sha, expectSHA string) e
+ 	}
+ 
+ 	lease := "--force-with-lease=refs/heads/" + branch + ":" + expectSHA
+-	_, err := r.runChecked("push", lease, remote, sha+":refs/heads/"+branch)
++	err := r.withRemoteRefs(func() error {
++		_, err := r.runChecked("push", lease, remote, sha+":refs/heads/"+branch)
++		return err
++	})
+ 	if err == nil {
+ 		return nil
+ 	}
+diff --git a/internal/gitrepo/remoterefslock.go b/internal/gitrepo/remoterefslock.go
+new file mode 100644
+index 00000000..5999bb5d
+--- /dev/null
++++ b/internal/gitrepo/remoterefslock.go
+@@ -0,0 +1,49 @@
++// remoterefslock.go holds the remote-refs lock: one lock per repository, in its common git dir, that every lym git call writing the repository's remote-tracking refs holds while git runs.
++
++package gitrepo
++
++import (
++	"fmt"
++	"path/filepath"
++
++	"github.com/Knatte18/loomyard/internal/lock"
++)
++
++// RemoteRefsLockFileName names the remote-refs lock file in a repository's common git dir.
++// A fetch and a push both write the remote-tracking refs every worktree of the repository shares, so two such calls racing on one ref make the loser fail with git's "incorrect old value provided" or "cannot lock ref".
++const RemoteRefsLockFileName = "lym-remote-refs.lock"
++
++// HoldRemoteRefs takes the remote-refs lock of the repository this checkout belongs to, waiting while another holder has it, and returns its release.
++// A holder that reads origin and then judges the tracking refs sees no push or fetch of the repository land in between.
++// The lock is not reentrant: a holder runs no fetch, pull or push through this package, since each takes the lock itself.
++func (r *Repo) HoldRemoteRefs() (release func() error, err error) {
++	commonDir, err := r.CommonDir()
++	if err != nil {
++		return nil, fmt.Errorf("gitrepo: hold the remote-refs lock of %s: %w", r.path, err)
++	}
++	held, err := lock.AcquireWriteLock(filepath.Join(commonDir, RemoteRefsLockFileName))
++	if err != nil {
++		return nil, fmt.Errorf("gitrepo: hold the remote-refs lock of %s: %w", r.path, err)
++	}
++	return held.Release, nil
++}
++
++// withRemoteRefs runs call under the remote-refs lock, releasing it once call returns.
++func (r *Repo) withRemoteRefs(call func() error) error {
++	release, err := r.HoldRemoteRefs()
++	if err != nil {
++		return err
++	}
++	defer func() { _ = release() }()
++	return call()
++}
++
++// FetchWithArgs runs `git fetch` with args under the remote-refs lock and returns git's stdout.
++// It is the fetch for a caller naming its own remote and refspecs; a non-zero exit returns *gitexec.GitError.
++func (r *Repo) FetchWithArgs(args ...string) (stdout string, err error) {
++	err = r.withRemoteRefs(func() error {
++		stdout, err = r.runChecked(append([]string{"fetch"}, args...)...)
++		return err
++	})
++	return stdout, err
++}
+diff --git a/internal/gitrepo/remoterefslock_integration_test.go b/internal/gitrepo/remoterefslock_integration_test.go
+new file mode 100644
+index 00000000..f6249a07
+--- /dev/null
++++ b/internal/gitrepo/remoterefslock_integration_test.go
+@@ -0,0 +1,181 @@
++//go:build tier1
++
++// remoterefslock_integration_test.go covers the remote-refs lock against real git repositories: one lock per repository, every fetch, pull and push method waiting on it, and concurrent fetches and pushes of one repository that all succeed under it.
++
++package gitrepo_test
++
++import (
++	"fmt"
++	"path/filepath"
++	"strings"
++	"sync"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/gitrepo"
++	"github.com/Knatte18/loomyard/internal/lock"
++)
++
++// remoteRefsLockPath returns where the remote-refs lock of the repository at dir lives.
++func remoteRefsLockPath(t *testing.T, dir string) string {
++	t.Helper()
++	commonDir, err := gitrepo.New(dir).CommonDir()
++	if err != nil {
++		t.Fatalf("CommonDir(%s) error = %v", dir, err)
++	}
++	return filepath.Join(commonDir, gitrepo.RemoteRefsLockFileName)
++}
++
++// publishedClone returns a clone of a bare remote whose main has one commit, with the bare remote's path.
++func publishedClone(t *testing.T) (clone, bareRemote string) {
++	t.Helper()
++	container := t.TempDir()
++	bareRemote = newBareRemote(t, container)
++	seedPath, seed := newRepoWithRemote(t, container, "seed", bareRemote)
++	writeFile(t, seedPath, "seed.txt", "seed")
++	commitAll(t, seedPath, "seed")
++	if err := seed.Push(); err != nil {
++		t.Fatalf("Push() of the seed error = %v", err)
++	}
++	clone, _ = cloneFromBare(t, container, "clone", bareRemote)
++	return clone, bareRemote
++}
++
++func TestHoldRemoteRefs_OneLockServesEveryWorktreeOfARepository(t *testing.T) {
++	t.Parallel()
++	clone, _ := publishedClone(t)
++	linked := filepath.Join(t.TempDir(), "linked")
++	gitkit.MustRun(t, clone, "git", "worktree", "add", "-b", "linked", linked)
++
++	release, err := gitrepo.New(linked).HoldRemoteRefs()
++	if err != nil {
++		t.Fatalf("HoldRemoteRefs() in the linked worktree error = %v", err)
++	}
++	path := remoteRefsLockPath(t, clone)
++	probe, acquired, err := lock.TryAcquireWriteLock(path)
++	if err != nil {
++		t.Fatalf("TryAcquireWriteLock(%s) error = %v", path, err)
++	}
++	if acquired {
++		_ = probe.Release()
++		t.Errorf("the primary worktree's remote-refs lock was free while the linked worktree held it; want one lock per repository")
++	}
++
++	if err := release(); err != nil {
++		t.Fatalf("release() error = %v", err)
++	}
++	probe, acquired, err = lock.TryAcquireWriteLock(path)
++	if err != nil || !acquired {
++		t.Fatalf("TryAcquireWriteLock(%s) after release = %v, %v; want the lock free", path, acquired, err)
++	}
++	_ = probe.Release()
++}
++
++// remoteRefsHeldWindow is how long a call must stay blocked behind a held remote-refs lock to count as waiting on it.
++// A call that ignored the lock finishes a local git operation well inside it; a blocked call can never fail the check, so the window only bounds how fast a missing lock is caught.
++const remoteRefsHeldWindow = 500 * time.Millisecond
++
++func TestRemoteRefsLock_EveryFetchPullAndPushMethodWaitsWhileTheLockIsHeld(t *testing.T) {
++	t.Parallel()
++	absentSHA := strings.Repeat("a", 40)
++	tests := []struct {
++		name string
++		call func(repo *gitrepo.Repo)
++	}{
++		{"Fetch", func(repo *gitrepo.Repo) { _ = repo.Fetch() }},
++		{"FetchWithArgs", func(repo *gitrepo.Repo) { _, _ = repo.FetchWithArgs("origin") }},
++		{"Pull", func(repo *gitrepo.Repo) { _ = repo.Pull() }},
++		{"Push", func(repo *gitrepo.Repo) { _ = repo.Push() }},
++		{"PushRebaseFree", func(repo *gitrepo.Repo) { _ = repo.PushRebaseFree() }},
++		{"DeleteRemoteBranch", func(repo *gitrepo.Repo) { _, _ = repo.DeleteRemoteBranch("origin", "absent") }},
++		{"DeleteRemoteBranchLeased", func(repo *gitrepo.Repo) { _ = repo.DeleteRemoteBranchLeased("origin", "absent", absentSHA) }},
++		{"UpdateRemoteBranchLeased", func(repo *gitrepo.Repo) { _ = repo.UpdateRemoteBranchLeased("origin", "absent", absentSHA, absentSHA) }},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			clone, _ := publishedClone(t)
++			repo := gitrepo.New(clone)
++			release, err := repo.HoldRemoteRefs()
++			if err != nil {
++				t.Fatalf("HoldRemoteRefs() error = %v", err)
++			}
++			released := false
++			t.Cleanup(func() {
++				if !released {
++					_ = release()
++				}
++			})
++
++			done := make(chan struct{})
++			go func() {
++				defer close(done)
++				tt.call(repo)
++			}()
++			select {
++			case <-done:
++				t.Fatalf("%s returned while the remote-refs lock was held; want it to wait", tt.name)
++			case <-time.After(remoteRefsHeldWindow):
++			}
++
++			released = true
++			if err := release(); err != nil {
++				t.Fatalf("release() error = %v", err)
++			}
++			<-done
++		})
++	}
++}
++
++// TestRemoteRefsLock_ConcurrentFetchesAndPushesOfOneRepositoryAllSucceed reproduces two lym processes writing one repository's tracking refs at once.
++// Without the lock, git fails the loser with "incorrect old value provided" or "cannot lock ref".
++func TestRemoteRefsLock_ConcurrentFetchesAndPushesOfOneRepositoryAllSucceed(t *testing.T) {
++	t.Parallel()
++	clone, bareRemote := publishedClone(t)
++	other := filepath.Join(t.TempDir(), "other")
++	gitkit.MustRun(t, filepath.Dir(other), "git", "clone", "-b", "main", bareRemote, other)
++
++	const writers = 4
++	var pushers []*gitrepo.Repo
++	for i := range writers {
++		worktree := filepath.Join(t.TempDir(), fmt.Sprintf("pusher%d", i))
++		gitkit.MustRun(t, clone, "git", "worktree", "add", "-b", fmt.Sprintf("branch%d", i), worktree)
++		writeFile(t, worktree, "pushed.txt", worktree)
++		commitAll(t, worktree, "pushed")
++		pushers = append(pushers, gitrepo.New(worktree))
++	}
++	writeFile(t, other, "moved.txt", "moved")
++	commitAll(t, other, "origin moved main")
++	if err := gitrepo.New(other).Push(); err != nil {
++		t.Fatalf("Push() from the other clone error = %v", err)
++	}
++
++	errs := make(chan error, 2*writers)
++	var wait sync.WaitGroup
++	for i := range writers {
++		wait.Add(2)
++		go func() {
++			defer wait.Done()
++			if err := gitrepo.New(clone).Fetch(); err != nil {
++				errs <- fmt.Errorf("Fetch(): %w", err)
++			}
++		}()
++		go func() {
++			defer wait.Done()
++			if err := pushers[i].PushRebaseFree(); err != nil {
++				errs <- fmt.Errorf("PushRebaseFree() of branch%d: %w", i, err)
++			}
++		}()
++	}
++	wait.Wait()
++	close(errs)
++	for err := range errs {
++		t.Errorf("%v; want every concurrent fetch and push of one repository to succeed", err)
++	}
++
++	originMain := gitkit.Git(t, bareRemote, "rev-parse", "main")
++	if got := gitkit.Git(t, clone, "rev-parse", "refs/remotes/origin/main"); got != originMain {
++		t.Errorf("origin/main after the fetches = %q; want origin's main %q", got, originMain)
++	}
++}
