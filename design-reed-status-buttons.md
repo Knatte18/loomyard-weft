@@ -1,6 +1,6 @@
 # Configurable action buttons on the reed status bar
 
-`reed-status-buttons` · Task · feature, reed, config, batten · running · Discussion-Burler-Review
+`reed-status-buttons` · Task · feature, reed, config, batten · running · Discussion-Burler-Fix
 
 ## Seen
 
