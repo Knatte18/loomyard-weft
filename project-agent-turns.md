@@ -1,6 +1,6 @@
 # P2 Fewer agent turns, Webster forks first
 
-Rendered 2026-11-01 17:03 UTC; every age below is as of then.
+Rendered 2026-11-01 17:08 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`agent-turns`](design-agent-turns.md) · Age 2h · Owner `neve`
