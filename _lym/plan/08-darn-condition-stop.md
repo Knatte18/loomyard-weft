@@ -1,8 +1,8 @@
 # Card 8 — The darn writer stops on a condition its task names
 
 **Create:**
-- `plan:internal/shedrun#ConditionStopMarkerFileName` -> `const ConditionStopMarkerFileName = "condition-stop-marker"`
-- `plan:internal/shedrun#ConditionStopMarker` -> `func ConditionStopMarker(l *lymcwd.Location, runID string) string`
+- `internal/shedrun#ConditionStopMarkerFileName`
+- `internal/shedrun#ConditionStopMarker`
 
 **Edit:**
 - `internal/loomshed#DarnDeps`
