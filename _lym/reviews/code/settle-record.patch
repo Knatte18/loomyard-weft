@@ -1,0 +1,1400 @@
+diff --git a/contracts/specs/loom-final-summary-spec.md b/contracts/specs/loom-final-summary-spec.md
+index 7b1f0324..4d2881f7 100644
+--- a/contracts/specs/loom-final-summary-spec.md
++++ b/contracts/specs/loom-final-summary-spec.md
+@@ -24,7 +24,7 @@ Everything after the heading line is the body, carried verbatim.
+ ## Sole declarer, sole parser
+ 
+ `internal/summaryparser` is the sole declarer of the artifact's filename and the sole parser of its format.
+-It takes a told path — a caller resolves the containing directory and hands it in — and declares no location of its own.
++It takes a told path — a caller resolves the containing directory and hands it in — or content the caller read elsewhere, such as from an archived revision, and declares no location of its own.
+ 
+ The contract names no location: the artifact's directory belongs to whichever producer writes it, and the consumer is handed the path, never a directory it derives itself.
+ 
+diff --git a/internal/summaryparser/doc.go b/internal/summaryparser/doc.go
+index 91b3564a..6864e133 100644
+--- a/internal/summaryparser/doc.go
++++ b/internal/summaryparser/doc.go
+@@ -1,7 +1,4 @@
+-// Package summaryparser is the sole declarer of the final-summary artifact's filename and the sole
+-// parser of its format.
+-// It takes told paths and declares no directory of its own -- callers resolve the containing
+-// directory themselves and pass it in.
+-// It imports the standard library only, so a second last-content producer can satisfy the same
+-// read contract without depending on any producer.
++// Package summaryparser is the sole declarer of the final-summary artifact's filename and the sole parser of its format.
++// It takes told paths, or content a caller read elsewhere, and declares no directory of its own: callers resolve the containing directory themselves and pass it in.
++// It imports the standard library only, so a second last-content producer can satisfy the same read contract without depending on any producer.
+ package summaryparser
+diff --git a/internal/summaryparser/summary.go b/internal/summaryparser/summary.go
+index 1d799528..8bf26f7f 100644
+--- a/internal/summaryparser/summary.go
++++ b/internal/summaryparser/summary.go
+@@ -1,7 +1,6 @@
+-// summary.go implements the producer-agnostic final-summary artifact's read contract: FileName and
+-// Path name the artifact, Parse reads and validates it with minimal fail-loud checks (presence,
+-// non-empty, a "# <title>" first non-blank line with a non-empty title), and CommitMessage composes
+-// the parsed Summary into a git-conventional subject/body commit message.
++// summary.go implements the producer-agnostic final-summary artifact's read contract: FileName and Path name the artifact.
++// Parse reads and validates it from a file and ParseData from content read elsewhere, with minimal fail-loud checks: non-empty, and a "# <title>" first non-blank line with a non-empty title.
++// CommitMessage composes the parsed Summary into a git-conventional subject/body commit message.
+ 
+ package summaryparser
+ 
+@@ -35,18 +34,23 @@ type Summary struct {
+ 	Body  string
+ }
+ 
+-// Parse reads and validates the final-summary artifact at path with minimal fail-loud validation:
+-// file must exist, have at least one non-blank line, and that first line must be a "# <title>"
+-// heading with a non-empty title.
+-// Every violation is its own distinct wrapped error.
++// Parse reads the final-summary artifact at path and validates it as ParseData does;
++// a file that cannot be read is an error too.
+ func Parse(path string) (*Summary, error) {
+ 	data, err := os.ReadFile(path)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("summaryparser: read summary file %s: %w", path, err)
+ 	}
++	return ParseData(data, path)
++}
+ 
++// ParseData validates final-summary content with minimal fail-loud validation:
++// it must have at least one non-blank line, and that first line must be a "# <title>" heading with a non-empty title.
++// source names the content in an error, such as the file or the archived revision it was read from.
++// Every violation is its own distinct wrapped error.
++func ParseData(data []byte, source string) (*Summary, error) {
+ 	if strings.TrimSpace(string(data)) == "" {
+-		return nil, fmt.Errorf("summaryparser: summary file %s is empty: %w", path, errEmptyFile)
++		return nil, fmt.Errorf("summaryparser: summary file %s is empty: %w", source, errEmptyFile)
+ 	}
+ 
+ 	// The non-empty check above guarantees at least one line is non-blank,
+@@ -59,11 +63,11 @@ func Parse(path string) (*Summary, error) {
+ 
+ 	heading := strings.TrimSpace(lines[headingIdx])
+ 	if !strings.HasPrefix(heading, "# ") {
+-		return nil, fmt.Errorf("summaryparser: summary file %s: first non-blank line %q is not a %q heading: %w", path, heading, "# <title>", errNoHeading)
++		return nil, fmt.Errorf("summaryparser: summary file %s: first non-blank line %q is not a %q heading: %w", source, heading, "# <title>", errNoHeading)
+ 	}
+ 	title := strings.TrimSpace(strings.TrimPrefix(heading, "# "))
+ 	if title == "" {
+-		return nil, fmt.Errorf("summaryparser: summary file %s: title heading has an empty title: %w", path, errEmptyTitle)
++		return nil, fmt.Errorf("summaryparser: summary file %s: title heading has an empty title: %w", source, errEmptyTitle)
+ 	}
+ 
+ 	body := strings.Join(lines[headingIdx+1:], "\n")
+diff --git a/internal/summaryparser/summary_test.go b/internal/summaryparser/summary_test.go
+index 78b6fae2..146ed8e9 100644
+--- a/internal/summaryparser/summary_test.go
++++ b/internal/summaryparser/summary_test.go
+@@ -1,4 +1,4 @@
+-// summary_test.go exercises Parse's accept/reject table, Path's join, and CommitMessage's
++// summary_test.go exercises Parse's and ParseData's accept/reject table, Path's join, and CommitMessage's
+ // subject/body composition -- the read-side coverage this package owns as summaryparser-leaf's
+ // external interface.
+ 
+@@ -26,7 +26,7 @@ func writeSummaryFile(t *testing.T, path, content string) {
+ 	}
+ }
+ 
+-// TestParse asserts a well-formed summary.md parses into its Title and Body, with the heading line excluded from Body and Body's leading newline preserved, and that every malformed or missing file is rejected loud -- wrapping its own sentinel where the failure has one.
++// TestParse asserts a well-formed summary.md, read from its file or given as bytes, parses into its Title and Body, with the heading line excluded from Body and Body's leading newline preserved, and that every malformed or missing file is rejected loud -- wrapping its own sentinel where the failure has one.
+ func TestParse(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -67,31 +67,41 @@ func TestParse(t *testing.T) {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 			path := filepath.Join(t.TempDir(), summaryparser.FileName)
++			// Every row with content parses the same from the file and from the bytes.
++			parses := map[string]func() (*summaryparser.Summary, error){
++				"Parse": func() (*summaryparser.Summary, error) { return summaryparser.Parse(path) },
++			}
+ 			if tt.content != missing {
+ 				writeSummaryFile(t, path, tt.content)
++				parses["ParseData"] = func() (*summaryparser.Summary, error) {
++					return summaryparser.ParseData([]byte(tt.content), "archived")
++				}
+ 			}
+ 
+-			got, err := summaryparser.Parse(path)
+-			if tt.wantAnyErr {
+-				if err == nil {
+-					t.Fatalf("Parse() error = nil; want an error")
++			for name, parse := range parses {
++				got, err := parse()
++				if tt.wantAnyErr {
++					if err == nil {
++						t.Errorf("%s() error = nil; want an error", name)
++					}
++					continue
+ 				}
+-				return
+-			}
+-			if tt.wantErr != nil {
+-				if !errors.Is(err, tt.wantErr) {
+-					t.Fatalf("Parse() error = %v; want errors.Is %v", err, tt.wantErr)
++				if tt.wantErr != nil {
++					if !errors.Is(err, tt.wantErr) {
++						t.Errorf("%s() error = %v; want errors.Is %v", name, err, tt.wantErr)
++					}
++					continue
++				}
++				if err != nil {
++					t.Errorf("%s() error = %v; want nil", name, err)
++					continue
++				}
++				if got.Title != tt.wantTitle {
++					t.Errorf("%s() Title = %q; want %q", name, got.Title, tt.wantTitle)
++				}
++				if got.Body != tt.wantBody {
++					t.Errorf("%s() Body = %q; want %q", name, got.Body, tt.wantBody)
+ 				}
+-				return
+-			}
+-			if err != nil {
+-				t.Fatalf("Parse() error = %v; want nil", err)
+-			}
+-			if got.Title != tt.wantTitle {
+-				t.Errorf("Parse() Title = %q; want %q", got.Title, tt.wantTitle)
+-			}
+-			if got.Body != tt.wantBody {
+-				t.Errorf("Parse() Body = %q; want %q", got.Body, tt.wantBody)
+ 			}
+ 		})
+ 	}
+diff --git a/tools/tokencount/cost.go b/tools/tokencount/cost.go
+index 3888c626..fd0d575f 100644
+--- a/tools/tokencount/cost.go
++++ b/tools/tokencount/cost.go
+@@ -59,3 +59,15 @@ func (c Cost) String() string {
+ 		return fmt.Sprintf("$%.2f + unpriced", c.USD)
+ 	}
+ }
++
++// precise renders the cost as String does but to a tenth of a cent, for a figure such as a cost per line that rounds to nothing at cents.
++func (c Cost) precise() string {
++	switch {
++	case len(c.Unpriced) == 0:
++		return fmt.Sprintf("$%.3f", c.USD)
++	case c.USD == 0:
++		return "unpriced"
++	default:
++		return fmt.Sprintf("$%.3f + unpriced", c.USD)
++	}
++}
+diff --git a/tools/tokencount/count.go b/tools/tokencount/count.go
+index b23b2dfe..dd41a13a 100644
+--- a/tools/tokencount/count.go
++++ b/tools/tokencount/count.go
+@@ -234,6 +234,8 @@ type RunTally struct {
+ 	Sleeps []Interval
+ 	// Shed is the shed record read from the run's archive tag, nil when no shed status was read.
+ 	Shed *ShedRecord
++	// Landing is the commit the run landed on the code repository, nil when no shed record was read.
++	Landing *Landing
+ 	// Bound is the lower bound applied to the run's transcripts, zero for none.
+ 	Bound time.Time
+ 	// LeftOut counts the main-session transcripts left out for starting before Bound or having no timestamped line.
+@@ -287,6 +289,14 @@ func (run RunTally) Cost() Cost {
+ 	return total
+ }
+ 
++// Recipe is the recipe the run's archived seed names, noRecipe when no shed record or no recipe was read.
++func (run RunTally) Recipe() string {
++	if run.Shed == nil || run.Shed.Recipe == "" {
++		return noRecipe
++	}
++	return run.Shed.Recipe
++}
++
+ // observeTime widens the run's active window to hold an entry's timestamp, an entry without one leaving it as it is.
+ func (run *RunTally) observeTime(e shuttleengine.TranscriptEntry) {
+ 	if e.At.IsZero() {
+@@ -475,11 +485,12 @@ func archivedSlugs(refs string) map[string][]ArchiveTag {
+ 	return slugs
+ }
+ 
+-// recentRuns names the full tapestry runs of the hub whose sessions changed most recently, newest first, at most last of them, and, newest first, the runs it skipped on the way because they are not full tapestry runs.
++// recentRuns names the finished runs of the hub whose sessions changed most recently, newest first, and, newest first, the runs it skipped on the way because they are not finished runs.
++// It names at most last of them when last is positive, and when since is not zero only the runs whose sessions changed at or after it.
+ // A candidate is the slug of an archive tag in finished, except the prime's own, with a session located at the worktree <hub>/<slug> through some engine;
+ // its recency is the newest modification time among those sessions.
+-// fullLoomRun decides it from the archive tags read through trees.
+-func recentRuns(reads ReadSet, hub, prime string, finished map[string][]ArchiveTag, trees ArchiveTrees, last int) (counted, skipped []string, err error) {
++// finishedRun decides it from the archive tags read through trees.
++func recentRuns(reads ReadSet, hub, prime string, finished map[string][]ArchiveTag, trees ArchiveTrees, last int, since time.Time) (counted, skipped []string, err error) {
+ 	type candidate struct {
+ 		slug    string
+ 		touched time.Time
+@@ -504,18 +515,18 @@ func recentRuns(reads ReadSet, hub, prime string, finished map[string][]ArchiveT
+ 				touched = s.session.Modified
+ 			}
+ 		}
+-		if !touched.IsZero() {
++		if !touched.IsZero() && !touched.Before(since) {
+ 			found = append(found, candidate{slug, touched})
+ 		}
+ 	}
+ 	sort.SliceStable(found, func(i, j int) bool { return found[i].touched.After(found[j].touched) })
+ 	counted = []string{}
+-	for i := 0; i < len(found) && len(counted) < last; i++ {
+-		full, err := fullLoomRun(trees, hub, found[i].slug, finished[found[i].slug])
++	for i := 0; i < len(found) && (last <= 0 || len(counted) < last); i++ {
++		done, err := finishedRun(trees, hub, found[i].slug, finished[found[i].slug])
+ 		if err != nil {
+ 			return nil, nil, err
+ 		}
+-		if full {
++		if done {
+ 			counted = append(counted, found[i].slug)
+ 		} else {
+ 			skipped = append(skipped, found[i].slug)
+@@ -678,11 +689,10 @@ type Report struct {
+ 	Detail bool
+ }
+ 
+-// WriteMarkdown writes the most expensive parts over all runs, the cost per run, the segment table summed over all runs, then the orchestrator section, then one segment table per run.
++// WriteMarkdown writes the most expensive parts over all runs, the cost per run, the recipe comparison, the segment table summed over all runs, then the orchestrator section, then one segment table per run.
+ // When the orch was counted, each segment table gains an Orch segment of the orch usage charged to its runs.
+ func (r Report) WriteMarkdown(w io.Writer) error {
+ 	perRun := make([][]Segment, len(r.Runs))
+-	slugs := make([]string, len(r.Runs))
+ 	duplicates := 0
+ 	all := segmentTable{Runs: len(r.Runs), Detail: r.Detail}
+ 	var slept time.Duration
+@@ -692,7 +702,6 @@ func (r Report) WriteMarkdown(w io.Writer) error {
+ 			charge = r.Orch.Charges[run.Slug]
+ 		}
+ 		perRun[i] = run.Segments(charge)
+-		slugs[i] = run.Slug
+ 		duplicates += run.Duplicates
+ 		all.Idle += run.Idle()
+ 		all.Span += run.AwakeSpan()
+@@ -710,7 +719,8 @@ func (r Report) WriteMarkdown(w io.Writer) error {
+ 	cost := totalCost(total)
+ 
+ 	writeMostExpensiveParts(w, total, len(r.Runs))
+-	writeCostPerRun(w, slugs, perRun)
++	writeCostPerRun(w, r.Runs, perRun)
++	writeRecipes(w, r.Runs, perRun)
+ 	fmt.Fprintf(w, "## All runs\n\n")
+ 	all.write(w, total)
+ 	fmt.Fprintf(w, "Total cost %s", cost)
+diff --git a/tools/tokencount/count_test.go b/tools/tokencount/count_test.go
+index dc2080fa..6041d3fc 100644
+--- a/tools/tokencount/count_test.go
++++ b/tools/tokencount/count_test.go
+@@ -469,7 +469,9 @@ func TestRecentRuns(t *testing.T) {
+ 		archive(slug, shedrun.RecipeTapestry, full...)
+ 	}
+ 	touch(filepath.Join(hub, "darn"), 90*time.Minute)
+-	archive("darn", "darn", "Darn-Write", "Finalize")
++	archive("darn", shedrun.RecipeDarn, "Darn-Write", "Finalize")
++	touch(filepath.Join(hub, "sampled"), 80*time.Minute)
++	archive("sampled", shedrun.RecipeSampler, "Sampler-Session", "Finalize")
+ 	touch(filepath.Join(hub, "bench"), time.Hour)
+ 	archive("bench", shedrun.RecipeTapestry, "Preflight", "Discussion-Write")
+ 	touch(filepath.Join(hub, "parked"), 0)
+@@ -478,19 +480,40 @@ func TestRecentRuns(t *testing.T) {
+ 	touch("/other/newest", 0)
+ 	archive("newest", shedrun.RecipeTapestry, full...)
+ 
+-	counted, skipped, err := recentRuns(fakeReadSet(fake), hub, "prime", finished, trees, 2)
+-	if err != nil {
+-		t.Fatal(err)
+-	}
+-	if strings.Join(counted, ",") != "new,mid" {
+-		t.Errorf("recentRuns counted = %v, want [new mid]", counted)
++	// Finished tapestry and darn runs count; a stopped run, a run of another recipe and a run in flight are skipped.
++	tests := []struct {
++		name                  string
++		last                  int
++		since                 time.Time
++		wantCounted, wantSkip string
++	}{
++		{"the last two", 2, time.Time{}, "darn,new", "bench,sampled,inflight"},
++		{"every run since a time", 0, now.Add(-150 * time.Minute), "darn", "bench,sampled,inflight"},
+ 	}
+-	if strings.Join(skipped, ",") != "bench,darn,inflight" {
+-		t.Errorf("recentRuns skipped = %v, want [bench darn inflight]", skipped)
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			counted, skipped, err := recentRuns(fakeReadSet(fake), hub, "prime", finished, trees, tt.last, tt.since)
++			if err != nil {
++				t.Fatal(err)
++			}
++			if got := strings.Join(counted, ","); got != tt.wantCounted {
++				t.Errorf("recentRuns counted = %s; want %s", got, tt.wantCounted)
++			}
++			if got := strings.Join(skipped, ","); got != tt.wantSkip {
++				t.Errorf("recentRuns skipped = %s; want %s", got, tt.wantSkip)
++			}
++		})
+ 	}
++}
+ 
++func TestRecentRunsLocatorFailure(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	fake := newFakeTranscripts()
+ 	fake.locateErr = errors.New("locator down")
+-	if _, _, err := recentRuns(fakeReadSet(fake), hub, "prime", finished, trees, 2); err == nil || !strings.Contains(err.Error(), "locator down") {
++	finished := map[string][]ArchiveTag{"s": {{Name: "archive/s/1", Commit: "s"}}}
++	if _, _, err := recentRuns(fakeReadSet(fake), t.TempDir(), "prime", finished, fakeArchiveTrees{}, 2, time.Time{}); err == nil || !strings.Contains(err.Error(), "locator down") {
+ 		t.Errorf("recentRuns with a failing locator = %v; want an error naming it", err)
+ 	}
+ }
+diff --git a/tools/tokencount/landed.go b/tools/tokencount/landed.go
+new file mode 100644
+index 00000000..6062b002
+--- /dev/null
++++ b/tools/tokencount/landed.go
+@@ -0,0 +1,114 @@
++// landed.go finds the commit a finished run landed on the code repository, by the title of the change description archived at its tag, and counts the lines that commit changed.
++
++package main
++
++import (
++	"errors"
++	"fmt"
++	"path"
++	"path/filepath"
++	"strconv"
++	"strings"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/gitexec"
++	"github.com/Knatte18/loomyard/internal/gitrepo"
++	"github.com/Knatte18/loomyard/internal/loomengine"
++	"github.com/Knatte18/loomyard/internal/summaryparser"
++)
++
++// landingSlack widens a run's span each way when matching its landed commit, so a pull request merged on GitHub, whose server clock stamps the commit, still matches.
++const landingSlack = time.Minute
++
++// Reasons a finished run has no landed commit.
++const (
++	noDescription         = "no change description at its tag"
++	noParsableDescription = "change description at its tag does not parse"
++	noTitledCommit        = "no commit with its change description's title within its span"
++	noShedRecord          = "no shed record read"
++)
++
++// summaryRel is the change description's slash-separated path in an archived tree.
++var summaryRel = path.Join(filepath.ToSlash(loomengine.LandingDirRel()), summaryparser.FileName)
++
++// landingRepo is the code repository runs land on: its commits found by subject, and the lines a commit changed.
++type landingRepo interface {
++	CommitsWithSubject(subject string) ([]gitrepo.SubjectCommit, error)
++	ChangedLines(sha string) (int, error)
++}
++
++// codeRepo reads landings from the code repository at dir.
++type codeRepo struct {
++	*gitrepo.Repo
++	dir string
++}
++
++// ChangedLines is the lines added plus the lines deleted between sha's first parent and sha, binary files left out.
++// A commit with no parent changes every line it holds.
++func (c codeRepo) ChangedLines(sha string) (int, error) {
++	out, err := gitexec.Run([]string{"show", "--numstat", "--format=", "-m", "--first-parent", sha}, c.dir)
++	if err != nil {
++		return 0, fmt.Errorf("counting the lines %s changed in %s: %w", sha, c.dir, err)
++	}
++	return numstatLines(out), nil
++}
++
++// numstatLines sums the added and deleted counts of git's --numstat output; a binary file's "-" counts add nothing.
++func numstatLines(out string) int {
++	total := 0
++	for _, line := range strings.Split(out, "\n") {
++		fields := strings.SplitN(line, "\t", 3)
++		if len(fields) != 3 {
++			continue
++		}
++		for _, count := range fields[:2] {
++			if n, err := strconv.Atoi(count); err == nil {
++				total += n
++			}
++		}
++	}
++	return total
++}
++
++// Landing is the commit a finished run landed and the lines it changed.
++type Landing struct {
++	// SHA is the landed commit, empty when none was found.
++	SHA   string
++	Lines int
++	// Missing says why no landed commit was found, empty when SHA is set.
++	Missing string
++}
++
++// findLanding finds the commit the run whose shed record is rec landed on code:
++// the newest commit whose subject is the title of the change description archived at the record's tag, committed within span widened by landingSlack each way.
++// A run with no description at its tag, a description that does not parse, or no such commit, gets a Landing naming why.
++// A read that fails is an error naming the slug.
++func findLanding(trees ArchiveTrees, code landingRepo, slug string, rec ShedRecord, span Interval) (Landing, error) {
++	data, err := trees.FileAtRevision(rec.Tag.Commit, summaryRel)
++	if errors.Is(err, gitrepo.ErrPathNotAtRevision) {
++		return Landing{Missing: noDescription}, nil
++	}
++	if err != nil {
++		return Landing{}, fmt.Errorf("change description of %s from tag %s: %w", slug, rec.Tag.Name, err)
++	}
++	summary, err := summaryparser.ParseData(data, rec.Tag.Name+":"+summaryRel)
++	if err != nil {
++		return Landing{Missing: noParsableDescription + ": " + err.Error()}, nil
++	}
++	commits, err := code.CommitsWithSubject(summary.Title)
++	if err != nil {
++		return Landing{}, fmt.Errorf("landed commit of %s: %w", slug, err)
++	}
++	from, to := span.From.Add(-landingSlack), span.To.Add(landingSlack)
++	for _, commit := range commits {
++		if commit.Committed.Before(from) || commit.Committed.After(to) {
++			continue
++		}
++		lines, err := code.ChangedLines(commit.SHA)
++		if err != nil {
++			return Landing{}, fmt.Errorf("landed commit of %s: %w", slug, err)
++		}
++		return Landing{SHA: commit.SHA, Lines: lines}, nil
++	}
++	return Landing{Missing: noTitledCommit}, nil
++}
+diff --git a/tools/tokencount/landed_test.go b/tools/tokencount/landed_test.go
+new file mode 100644
+index 00000000..65bcccdb
+--- /dev/null
++++ b/tools/tokencount/landed_test.go
+@@ -0,0 +1,138 @@
++// landed_test.go checks how a finished run's landed commit is found from its archived change description, and the Recipes section that compares runs by recipe.
++
++package main
++
++import (
++	"bytes"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/gitrepo"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// fakeLandingRepo is an in-memory landingRepo: commits by subject, newest first, and changed lines by commit.
++type fakeLandingRepo struct {
++	commits map[string][]gitrepo.SubjectCommit
++	lines   map[string]int
++}
++
++func (f fakeLandingRepo) CommitsWithSubject(subject string) ([]gitrepo.SubjectCommit, error) {
++	return f.commits[subject], nil
++}
++
++func (f fakeLandingRepo) ChangedLines(sha string) (int, error) {
++	return f.lines[sha], nil
++}
++
++func TestFindLanding(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	at := func(hms string) time.Time {
++		parsed, err := time.Parse(time.RFC3339, "2026-01-01T"+hms+"Z")
++		if err != nil {
++			t.Fatal(err)
++		}
++		return parsed
++	}
++	span := Interval{at("10:00:00"), at("11:00:00")}
++	rec := ShedRecord{Tag: ArchiveTag{Name: "archive/r/1", Commit: "c"}}
++	const title = "Land the change"
++	described := fakeArchiveTrees{{"c", summaryRel}: "# " + title + "\n\nWhat changed.\n"}
++	commits := func(times ...string) map[string][]gitrepo.SubjectCommit {
++		var found []gitrepo.SubjectCommit
++		for _, hms := range times {
++			found = append(found, gitrepo.SubjectCommit{SHA: hms, Committed: at(hms)})
++		}
++		return map[string][]gitrepo.SubjectCommit{title: found}
++	}
++	lines := map[string]int{"10:30:00": 7, "10:10:00": 3, "11:00:30": 5}
++	tests := []struct {
++		name    string
++		trees   fakeArchiveTrees
++		commits map[string][]gitrepo.SubjectCommit
++		want    Landing
++		// parseFails marks a row whose Landing names noParsableDescription and the parse error.
++		parseFails bool
++	}{
++		{"the newest commit within the span", described, commits("11:05:00", "10:30:00", "10:10:00"), Landing{SHA: "10:30:00", Lines: 7}, false},
++		{"a commit within a minute past the span", described, commits("11:00:30"), Landing{SHA: "11:00:30", Lines: 5}, false},
++		{"no titled commit within the span", described, commits("09:58:00"), Landing{Missing: noTitledCommit}, false},
++		{"no change description at the tag", fakeArchiveTrees{}, commits("10:30:00"), Landing{Missing: noDescription}, false},
++		{"a change description that does not parse", fakeArchiveTrees{{"c", summaryRel}: "no heading\n"}, commits("10:30:00"), Landing{}, true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got, err := findLanding(tt.trees, fakeLandingRepo{tt.commits, lines}, "r", rec, span)
++			if err != nil {
++				t.Fatal(err)
++			}
++			if tt.parseFails {
++				if got.SHA != "" || !strings.HasPrefix(got.Missing, noParsableDescription+": ") {
++					t.Errorf("findLanding = %+v; want no commit and a reason opening %q", got, noParsableDescription)
++				}
++				return
++			}
++			if got != tt.want {
++				t.Errorf("findLanding = %+v; want %+v", got, tt.want)
++			}
++		})
++	}
++}
++
++func TestWriteRecipes(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	start := time.Date(2026, 1, 1, 10, 0, 0, 0, time.UTC)
++	// runOf builds a run of recipe, empty for none read, costing usd over span, with landing.
++	runOf := func(slug, recipe string, usd float64, span time.Duration, landing *Landing) RunTally {
++		run := RunTally{
++			Slug:    slug,
++			Roles:   map[string]*RoleTally{"darn": {Role: "darn", Cost: Cost{USD: usd}, Models: map[string]int{}}},
++			Span:    Interval{start, start.Add(span)},
++			Landing: landing,
++		}
++		if recipe != "" {
++			run.Shed = &ShedRecord{Recipe: recipe}
++		}
++		return run
++	}
++	runs := []RunTally{
++		runOf("t1", "tapestry", 100, 2*time.Hour, &Landing{SHA: "a", Lines: 50}),
++		runOf("t2", "tapestry", 60, time.Hour, &Landing{Missing: noTitledCommit}),
++		runOf("d1", "darn", 10, 20*time.Minute, &Landing{SHA: "b", Lines: 20}),
++		runOf("d2", "darn", 14, 40*time.Minute, &Landing{SHA: "c", Lines: 30}),
++		runOf("u", "", 5, 0, nil),
++		runOf("b1", "bare", 8, 10*time.Minute, &Landing{SHA: "d", Lines: 0}),
++		runOf("o1", "odd", 4, 10*time.Minute, &Landing{SHA: "e", Lines: 10}),
++		runOf("p1", "only", 0, 10*time.Minute, &Landing{SHA: "f", Lines: 10}),
++	}
++	// A cost holding unpriced messages is partly or wholly unpriced.
++	for _, i := range []int{6, 7} {
++		runs[i].Roles["darn"].Cost.Unpriced = map[string]int{"m": 1}
++	}
++	perRun := make([][]Segment, len(runs))
++	for i, run := range runs {
++		perRun[i] = run.Segments(nil)
++	}
++	var buf bytes.Buffer
++	writeRecipes(&buf, runs, perRun)
++	report := buf.String()
++	// Recipes run by name; the cost per changed line takes only the runs that landed a commit.
++	wantRows := "| recipe | runs | cost per run | span per run | landed runs | changed lines per run | cost per changed line |\n|---|---|---|---|---|---|---|\n" +
++		"| bare | 1 | $8.00 | 10m0s | 1 | 0 | n/a |\n" +
++		"| darn | 2 | $12.00 | 30m0s | 2 | 25 | $0.480 |\n" +
++		"| odd | 1 | $4.00 + unpriced | 10m0s | 1 | 10 | $0.400 + unpriced |\n" +
++		"| only | 1 | unpriced | 10m0s | 1 | 10 | unpriced |\n" +
++		"| tapestry | 2 | $80.00 | 1h30m0s | 1 | 50 | $2.000 |\n" +
++		"| unknown | 1 | $5.00 | 0s | 0 | n/a | n/a |\n"
++	if !strings.HasPrefix(report, "## Recipes\n\n"+wantRows) {
++		t.Errorf("Recipes section lacks the rows %q:\n%s", wantRows, report)
++	}
++	wantMissing := "No landed commit: t2 (" + noTitledCommit + "), u (" + noShedRecord + ").\n"
++	if !strings.Contains(report, wantMissing) {
++		t.Errorf("Recipes section lacks %q:\n%s", wantMissing, report)
++	}
++}
+diff --git a/tools/tokencount/main.go b/tools/tokencount/main.go
+index dc23d090..4a8435bc 100644
+--- a/tools/tokencount/main.go
++++ b/tools/tokencount/main.go
+@@ -3,6 +3,7 @@
+ //
+ //	go run ./tools/tokencount
+ //	go run ./tools/tokencount -last 10
++//	go run ./tools/tokencount -since 2026-10-31
+ //	go run ./tools/tokencount -detail bugfix-sessions bugfix-webster
+ //	go run ./tools/tokencount -hub ~/Code/loomyard-LYMHUB -out .scratch/tokens.md test-suite-prune-core
+ //
+@@ -13,14 +14,15 @@
+ //
+ // Each argument is a task slug, read as the worktree <hub>/<slug>; -hub defaults to the
+ // parent of the current directory, which is the hub when run from its prime.
+-// With no slugs it counts the -last full tapestry runs whose sessions changed most recently,
+-// leaving out the prime, the current directory.
+-// A run is finished once its pair is torn down, which leaves an archive/<slug>/<sha> tag in
++// With no slugs it counts the -last finished runs whose sessions changed most recently, leaving out the prime, the current directory.
++// -last is at least 1.
++// -since <YYYY-MM-DD> counts instead every finished run whose sessions changed on or after the start of that local day, whatever -last says, so the runs of both recipes over one period stand side by side.
++// A run's pair is torn down when it ends, which leaves an archive/<slug>/<sha> tag in
+ // the prime's fabric repository (the one repository flag, -weft, default the current worktree's weft sibling).
+-// A finished run is a full tapestry run when the seed.json and status.json at its newest tag name the tapestry recipe and hold a Finalize history entry;
++// A torn-down run is finished when the seed.json and status.json at its newest tag name the tapestry or the darn recipe and hold a Finalize history entry;
+ // a run stopped partway, such as a bench pair parked after Discussion-Write, or a run of another recipe, would count as one whose later steps cost nothing.
+-// The report's header names the runs counted and, when the default skipped more recent runs that are not full tapestry runs, names those on one line.
+-// Slugs named on the command line are counted as given, full tapestry runs or not.
++// The report's header names the runs counted and, when the default skipped runs that are not finished, names those on one line.
++// Slugs named on the command line are counted as given, finished or not.
+ // Sessions are found per worktree by every registered shuttle engine that can locate them, and read through the engine that found them;
+ // a session's forks (the Webster master's sub-agents) are read with it.
+ // An engine that cannot read transcripts is named in the report's header line "Not counted, no transcript reader:".
+@@ -42,7 +44,8 @@
+ // A role ending in -chair, the role a seat table's lead carried before seats were named, counts under the role without that suffix, so burler-review-chair counts as burler-review and a report spanning the rename sums each role once.
+ // A seat named chair after the rename counts under its table's lead role too.
+ //
+-// The report groups roles into segments by prefix: Discussion, Plan, Webster, Merge and Alignment hold the role equal to their key (discussion, plan, webster, merge, alignment) and every role leading with the key and "-".
++// The report groups roles into segments by prefix: Discussion, Plan, Webster, Merge, Alignment, Darn, Drift and Code-Review hold the role equal to their key (discussion, plan, webster, merge, alignment, darn, drift, code) and every role leading with the key and "-".
++// The Landing segment holds the roles of the landing rows' sessions, describe, pr-reviewer, fixer and fix-reviewer, each a part labelled by its own name.
+ // The webster recovery strand's role is a Webster part, and every other role an Other part labelled by its own name.
+ // Within a segment a role is a part: the key role is the writer, labelled "writer", Webster's "Master" and Alignment's "session";
+ // the suffixes -burler-review, -burler-fix, -bouncer-judge and -bouncer-seed are labelled reviewer, fixer, judge and seed, and any other suffix by itself.
+@@ -51,7 +54,16 @@
+ // in "All runs" it also holds the orch usage charged to no run as its unattributed part, so it carries the whole orch cost of the counted period, and its row names that cost averaged per run.
+ //
+ // The report opens with "Most expensive parts": the ten costliest parts of "All runs", each named by segment and label ("Webster forks", "Plan reviewer"), with its cost, its share of the total cost and its cost per run.
+-// "Cost per run" follows, one row per run of its segment costs, the Orch segment's without the unattributed part, and its total, with an average row.
++// "Cost per run" follows, one row per run of its recipe, its segment costs, the Orch segment's without the unattributed part, and its total, with an average row;
++// its segment columns are the segments some counted run holds.
++//
++// "Recipes" follows, one row per recipe the counted runs ran, "unknown" for a run whose archived seed was not read, such as a run in flight.
++// A row gives the runs, their cost per run, each run's total with its orch charge, their awake span per run, the runs that landed a commit, the changed lines per landed run, and the cost per changed line: the cost of the runs that landed a commit over the lines those commits changed.
++// A finished run's landed commit is the newest commit, reachable from a branch or tag of the code repository, whose subject is the title of the change description archived at its tag, _lym/landing/summary.md, and whose committer date lies within the run's span widened by a minute each way;
++// its changed lines are the lines it added and deleted against its first parent, binary files left out.
++// The match assumes the landing default, one squashed commit titled after the change description.
++// The section names each run without a landed commit and why, among them a run whose archived change description does not parse.
++//
+ // Each segment table, "All runs" and each run's, gives a total row per segment and its parts indented below, both sorted by cost, most expensive first, then an idle row.
+ // Its columns are cost, share, time, time share and models;
+ // -detail adds the sessions, output, cache write, cache read, input and weight columns after them, and the total weight to the "All runs" total line.
+@@ -71,7 +83,7 @@
+ // its default, the current worktree's weft sibling, applies whenever the flag is empty, slugs named or not, so -calibrate needs no other flag.
+ // A -hub naming a directory other than the current worktree's parent needs -weft, because the default would read another hub's records.
+ // -config names the directory whose batcher.yaml holds the profile, default the current directory.
+-// The code repository is the current directory.
++// -code names the code repository, read for each finished run's landed commit and for the calibration's base trees, default the current directory.
+ //
+ // A fork's position is one plus the card-naming forks before it in the same Merriam session, by start time, so a resumed session restarts its positions at 1.
+ // The start table gives each fork's measured start context beside the run's computed Merriam base and the start the profile estimates for its position, base + orientation + (position - 1) x batch_growth.
+@@ -197,6 +209,18 @@ func resolveHub(hub, wd, weft string) (string, error) {
+ 	return hub, nil
+ }
+ 
++// parseSince parses the -since flag's value, a YYYY-MM-DD date, into the start of that day in local time; empty is the zero time.
++func parseSince(value string) (time.Time, error) {
++	if value == "" {
++		return time.Time{}, nil
++	}
++	day, err := time.ParseInLocation(time.DateOnly, value, time.Local)
++	if err != nil {
++		return time.Time{}, fmt.Errorf("-since %q is not a YYYY-MM-DD date: %w", value, err)
++	}
++	return day, nil
++}
++
+ func main() {
+ 	if err := run(os.Args[1:], os.Stdout, shuttleengines.RecordReaders()); err != nil {
+ 		fmt.Fprintln(os.Stderr, "tokencount:", err)
+@@ -204,12 +228,14 @@ func main() {
+ 	}
+ }
+ 
+-// run counts the runs args name, or the most recent full tapestry runs, through the engines in reads, and writes the report to stdout or to the -out file.
++// run counts the runs args name, or the most recent finished runs, through the engines in reads, and writes the report to stdout or to the -out file.
+ func run(args []string, stdout io.Writer, reads ReadSet) error {
+ 	fs := flag.NewFlagSet("tokencount", flag.ContinueOnError)
+ 	hub := fs.String("hub", "", "hub directory holding the task worktrees (default: parent of the current directory)")
+ 	out := fs.String("out", "", "write the report to this file instead of stdout")
+-	last := fs.Int("last", 6, "with no slugs named, count this many of the most recently active full tapestry runs")
++	last := fs.Int("last", 6, "with no slugs named, count this many of the most recently active finished runs")
++	since := fs.String("since", "", "with no slugs named, count every finished run whose sessions changed on or after this local date, YYYY-MM-DD, instead of the -last most recent")
++	code := fs.String("code", "", "the code repository the runs landed on (default: the current directory)")
+ 	weft := fs.String(repositoryFlag, "", "the prime's fabric repository holding the archive tags of finished runs, the runs' plan commits and webster records (default: the current worktree's weft sibling)")
+ 	calibrate := fs.String("calibrate", "", "add the calibration section for this batcher.yaml profile")
+ 	configDir := fs.String("config", "", "directory whose batcher.yaml holds the profile (default: the current directory)")
+@@ -219,10 +245,21 @@ func run(args []string, stdout io.Writer, reads ReadSet) error {
+ 	if err := fs.Parse(args); err != nil {
+ 		return err
+ 	}
++	sinceDay, err := parseSince(*since)
++	if err != nil {
++		return err
++	}
++	if len(fs.Args()) == 0 && sinceDay.IsZero() && *last < 1 {
++		return fmt.Errorf("-last %d counts no run; name at least 1, or give -since", *last)
++	}
+ 	wd, err := lymcwd.Getwd()
+ 	if err != nil {
+ 		return err
+ 	}
++	if *code == "" {
++		*code = wd
++	}
++	landings := codeRepo{Repo: gitrepo.New(*code), dir: *code}
+ 	*hub, err = resolveHub(*hub, wd, *weft)
+ 	if err != nil {
+ 		return err
+@@ -245,16 +282,23 @@ func run(args []string, stdout io.Writer, reads ReadSet) error {
+ 	var skippedNote string
+ 	if len(slugs) == 0 {
+ 		var skipped []string
+-		slugs, skipped, err = recentRuns(reads, *hub, filepath.Base(wd), finished, fabric, *last)
++		limit := *last
++		if !sinceDay.IsZero() {
++			limit = 0
++		}
++		slugs, skipped, err = recentRuns(reads, *hub, filepath.Base(wd), finished, fabric, limit, sinceDay)
+ 		if err != nil {
+ 			return err
+ 		}
+ 		if len(slugs) == 0 {
+-			return fmt.Errorf("no full tapestry runs of %s from engines %s; name the slugs to count a partial run", *hub, strings.Join(readable, ", "))
++			return fmt.Errorf("no finished %s runs of %s from engines %s; name the slugs to count a partial run", recipeList("or"), *hub, strings.Join(readable, ", "))
++		}
++		counted = fmt.Sprintf("the %d most recent finished %s runs: %s", len(slugs), recipeList("and"), strings.Join(slugs, ", "))
++		if !sinceDay.IsZero() {
++			counted = fmt.Sprintf("the %d finished %s runs active since %s: %s", len(slugs), recipeList("and"), *since, strings.Join(slugs, ", "))
+ 		}
+-		counted = fmt.Sprintf("the %d most recent full tapestry runs: %s", len(slugs), strings.Join(slugs, ", "))
+ 		if len(skipped) > 0 {
+-			skippedNote = fmt.Sprintf("Skipped %d more recent runs that are not full tapestry runs: %s.\n", len(skipped), strings.Join(skipped, ", "))
++			skippedNote = fmt.Sprintf("Skipped %d runs that are not finished %s runs: %s.\n", len(skipped), recipeList("or"), strings.Join(skipped, ", "))
+ 		}
+ 	}
+ 
+@@ -287,6 +331,11 @@ func run(args []string, stdout io.Writer, reads ReadSet) error {
+ 					record.Older = time.Time{}
+ 				}
+ 				r.useShedRecord(*record)
++				landing, err := findLanding(fabric, landings, slug, *record, r.Span)
++				if err != nil {
++					return err
++				}
++				r.Landing = &landing
+ 			}
+ 		}
+ 		r.subtractSleeps(sleeps)
+@@ -304,7 +353,7 @@ func run(args []string, stdout io.Writer, reads ReadSet) error {
+ 		if *configDir == "" {
+ 			*configDir = wd
+ 		}
+-		c, err := Calibrate(report.Runs, *calibrate, *configDir, fabric, gitrepo.New(wd), reads)
++		c, err := Calibrate(report.Runs, *calibrate, *configDir, fabric, landings.Repo, reads)
+ 		if err != nil {
+ 			return err
+ 		}
+diff --git a/tools/tokencount/main_test.go b/tools/tokencount/main_test.go
+index 6ab43e06..8722e10d 100644
+--- a/tools/tokencount/main_test.go
++++ b/tools/tokencount/main_test.go
+@@ -1,4 +1,4 @@
+-// main_test.go checks tokencount's flag set: the retired history and projects flags and a foreign hub without a records repository are refused, and the hub flag resolves against the current directory.
++// main_test.go checks tokencount's flag set: the retired history and projects flags, a foreign hub without a records repository and a -since that is no date and a -last below 1 without -since are refused, a -since date parses to the start of its local day, and the hub flag resolves against the current directory.
+ 
+ package main
+ 
+@@ -7,6 +7,7 @@ import (
+ 	"path/filepath"
+ 	"strings"
+ 	"testing"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+@@ -50,6 +51,22 @@ func TestResolveHub(t *testing.T) {
+ 	}
+ }
+ 
++func TestParseSince(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	got, err := parseSince("2026-01-02")
++	if err != nil {
++		t.Fatal(err)
++	}
++	if want := time.Date(2026, 1, 2, 0, 0, 0, 0, time.Local); !got.Equal(want) {
++		t.Errorf("parseSince(2026-01-02) = %v; want %v", got, want)
++	}
++	got, err = parseSince("")
++	if err != nil || !got.IsZero() {
++		t.Errorf("parseSince(\"\") = %v, %v; want the zero time and no error", got, err)
++	}
++}
++
+ func TestRunRefuses(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -61,6 +78,9 @@ func TestRunRefuses(t *testing.T) {
+ 		{"the retired history flag", []string{"-history", "somewhere", "-calibrate", "fit", "slug"}, "flag provided but not defined: -history"},
+ 		{"the retired projects flag", []string{"-projects", "somewhere", "slug"}, "flag provided but not defined: -projects"},
+ 		{"a foreign hub without a records", []string{"-hub", t.TempDir(), "slug"}, "-" + repositoryFlag},
++		{"a since that is no date", []string{"-since", "yesterday"}, `-since "yesterday" is not a YYYY-MM-DD date`},
++		{"a last of zero without since", []string{"-last", "0"}, "-last 0 counts no run"},
++		{"a negative last without since", []string{"-last", "-1"}, "-last -1 counts no run"},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/tools/tokencount/orch_test.go b/tools/tokencount/orch_test.go
+index f7bff228..6f67a09b 100644
+--- a/tools/tokencount/orch_test.go
++++ b/tools/tokencount/orch_test.go
+@@ -150,8 +150,9 @@ func TestCountOrch(t *testing.T) {
+ 		"Total cost $370.00;",
+ 		"## run-b\n\n| segment |",
+ 		"| **Orch** | $100.00 | 83.3% |  |  |  |\n| └ forks | $80.00 | 66.7% |  |  |  |\n| └ session | $20.00 | 16.7% |  |  |  |\n",
+-		"| run-b | $0.00 | $0.00 | $0.00 | $0.00 | $0.00 | $100.00 | $20.00 | $120.00 |\n",
+-		"| average | $0.00 | $0.00 | $0.00 | $0.00 | $0.00 | $80.00 | $20.00 | $100.00 |\n",
++		"| run | recipe | Orch | Other | Total |\n",
++		"| run-b | unknown | $100.00 | $20.00 | $120.00 |\n",
++		"| average |  | $80.00 | $20.00 | $100.00 |\n",
+ 		"| session | 2 | 4 | 6.5M | $130.00 |",
+ 		"| forks | 2 | 2 | 9.0M | $180.00 |",
+ 		"| total | 4 | 6 | 15.5M | $310.00 |",
+diff --git a/tools/tokencount/recipes.go b/tools/tokencount/recipes.go
+new file mode 100644
+index 00000000..5d66b35a
+--- /dev/null
++++ b/tools/tokencount/recipes.go
+@@ -0,0 +1,76 @@
++// recipes.go writes the Recipes section, which compares the counted runs by the recipe they ran: cost and span per run, and the cost per changed line of the commits they landed.
++
++package main
++
++import (
++	"fmt"
++	"io"
++	"maps"
++	"slices"
++	"strings"
++	"time"
++)
++
++// noRecipe is the recipe a run is listed under when no archived seed names one, such as a run in flight.
++const noRecipe = "unknown"
++
++// recipeRow sums the counted runs of one recipe.
++type recipeRow struct {
++	runs int
++	cost Cost
++	span time.Duration
++	// landed counts the runs with a landed commit, lines the lines those commits changed and landedCost those runs' cost.
++	landed     int
++	lines      int
++	landedCost Cost
++}
++
++// writeRecipes writes one row per recipe of the runs, by name, then names each run without a landed commit and why.
++// perRun holds each run's segments; a run's cost is their total, its orch charge included.
++// The cost per changed line divides the cost of the runs that landed a commit by the lines those commits changed.
++func writeRecipes(w io.Writer, runs []RunTally, perRun [][]Segment) {
++	rows := map[string]*recipeRow{}
++	var missing []string
++	for i, run := range runs {
++		row := rows[run.Recipe()]
++		if row == nil {
++			row = &recipeRow{}
++			rows[run.Recipe()] = row
++		}
++		cost := totalCost(perRun[i])
++		row.runs++
++		row.cost.add(cost)
++		row.span += run.AwakeSpan()
++		switch {
++		case run.Landing == nil:
++			missing = append(missing, run.Slug+" ("+noShedRecord+")")
++		case run.Landing.SHA == "":
++			missing = append(missing, run.Slug+" ("+run.Landing.Missing+")")
++		default:
++			row.landed++
++			row.lines += run.Landing.Lines
++			row.landedCost.add(cost)
++		}
++	}
++	fmt.Fprintf(w, "## Recipes\n\n")
++	fmt.Fprintln(w, "| recipe | runs | cost per run | span per run | landed runs | changed lines per run | cost per changed line |")
++	fmt.Fprintln(w, "|---|---|---|---|---|---|---|")
++	for _, name := range slices.Sorted(maps.Keys(rows)) {
++		row := rows[name]
++		linesPerRun, perLine := "n/a", "n/a"
++		if row.landed > 0 {
++			linesPerRun = fmt.Sprintf("%.0f", float64(row.lines)/float64(row.landed))
++		}
++		if row.lines > 0 {
++			perLine = row.landedCost.share(1 / float64(row.lines)).precise()
++		}
++		span := (row.span / time.Duration(row.runs)).Round(time.Second)
++		fmt.Fprintf(w, "| %s | %d | %s | %s | %d | %s | %s |\n", name, row.runs, row.cost.share(1/float64(row.runs)), span, row.landed, linesPerRun, perLine)
++	}
++	fmt.Fprintln(w)
++	fmt.Fprintln(w, "A run's landed commit is the newest commit titled after the change description archived at its tag and committed within its span; its changed lines are the lines it added and deleted.")
++	if len(missing) > 0 {
++		fmt.Fprintf(w, "No landed commit: %s.\n", strings.Join(missing, ", "))
++	}
++	fmt.Fprintln(w)
++}
+diff --git a/tools/tokencount/segment.go b/tools/tokencount/segment.go
+index af9a44a1..c5abbb39 100644
+--- a/tools/tokencount/segment.go
++++ b/tools/tokencount/segment.go
+@@ -17,7 +17,7 @@ import (
+ // forkSuffix ends the role a session's forks count under.
+ const forkSuffix = "+sub"
+ 
+-// segmentDef is one segment the tapestry recipe's roles fall into.
++// segmentDef is one segment a run's roles fall into by prefix.
+ type segmentDef struct {
+ 	Name string
+ 	// Key is the role of the segment's writer and, followed by "-", the prefix of its other roles.
+@@ -33,11 +33,19 @@ var segmentDefs = []segmentDef{
+ 	{Name: "Webster", Key: websterMasterRole, Writer: "Master", WriterForks: "forks"},
+ 	{Name: "Merge", Key: "merge", Writer: "writer", WriterForks: "writer forks"},
+ 	{Name: "Alignment", Key: "alignment", Writer: "session", WriterForks: "session forks"},
++	{Name: "Darn", Key: "darn", Writer: "writer", WriterForks: "writer forks"},
++	{Name: "Drift", Key: "drift", Writer: "writer", WriterForks: "writer forks"},
++	{Name: "Code-Review", Key: "code", Writer: "writer", WriterForks: "writer forks"},
+ }
+ 
++// landingRoles are the roles of the landing rows' sessions: Describe's writer, PR-Review's reviewer, and Finalize's merge fixer and its fix review.
++var landingRoles = []string{"describe", "pr-reviewer", "fixer", "fix-reviewer"}
++
+ const (
+ 	// websterSegment holds the webster recovery strand beside its prefixed roles.
+ 	websterSegment = "Webster"
++	// landingSegment holds the landing roles, each a part labelled by its own name.
++	landingSegment = "Landing"
+ 	orchSegment    = "Orch"
+ 	// otherSegment holds every role no segment's prefix places.
+ 	otherSegment = "Other"
+@@ -60,16 +68,16 @@ var roleSuffixLabels = map[string]string{
+ 
+ // segmentNames is the order of the cost per run table's segment columns.
+ func segmentNames() []string {
+-	names := make([]string, 0, len(segmentDefs)+2)
++	names := make([]string, 0, len(segmentDefs)+3)
+ 	for _, def := range segmentDefs {
+ 		names = append(names, def.Name)
+ 	}
+-	return append(names, orchSegment, otherSegment)
++	return append(names, landingSegment, orchSegment, otherSegment)
+ }
+ 
+ // partOf places a role in its segment and labels its part there.
+ // A role equal to a segment's key is its writer, a role leading with the key and "-" is labelled by the rest, and a fork role by its parent's label with " forks" appended;
+-// the webster recovery strand is a Webster part, and any other role an Other part labelled by its own name.
++// the webster recovery strand is a Webster part, a landing role a Landing part labelled by its own name, and any other role an Other part labelled by its own name.
+ func partOf(role string) (segment, label string) {
+ 	base, forked := strings.CutSuffix(role, forkSuffix)
+ 	withForks := func(label string) string {
+@@ -81,6 +89,9 @@ func partOf(role string) (segment, label string) {
+ 	if base == string(websterengine.RoleRecovery) {
+ 		return websterSegment, withForks(base)
+ 	}
++	if slices.Contains(landingRoles, base) {
++		return landingSegment, withForks(base)
++	}
+ 	for _, def := range segmentDefs {
+ 		if base == def.Key {
+ 			if forked {
+@@ -280,12 +291,21 @@ func writeMostExpensiveParts(w io.Writer, segments []Segment, runs int) {
+ 	fmt.Fprintln(w)
+ }
+ 
+-// writeCostPerRun writes one row per run of its segments' costs in segmentNames order and its total, then their average.
+-func writeCostPerRun(w io.Writer, slugs []string, perRun [][]Segment) {
+-	names := segmentNames()
++// writeCostPerRun writes one row per run of its recipe, its segments' costs and its total, then their average.
++// perRun holds each run's segments, and the segment columns are the segments some run holds, in segmentNames order.
++func writeCostPerRun(w io.Writer, runs []RunTally, perRun [][]Segment) {
++	var names []string
++	for _, name := range segmentNames() {
++		held := slices.ContainsFunc(perRun, func(segments []Segment) bool {
++			return slices.ContainsFunc(segments, func(s Segment) bool { return s.Name == name })
++		})
++		if held {
++			names = append(names, name)
++		}
++	}
+ 	fmt.Fprintf(w, "## Cost per run\n\n")
+-	fmt.Fprintf(w, "| run | %s | Total |\n", strings.Join(names, " | "))
+-	fmt.Fprintf(w, "|---|%s---|\n", strings.Repeat("---|", len(names)))
++	fmt.Fprintf(w, "| run | recipe | %s | Total |\n", strings.Join(names, " | "))
++	fmt.Fprintf(w, "|---|---|%s---|\n", strings.Repeat("---|", len(names)))
+ 	sums := make([]Cost, len(names)+1)
+ 	for i, segments := range perRun {
+ 		cells := make([]Cost, len(names)+1)
+@@ -293,7 +313,7 @@ func writeCostPerRun(w io.Writer, slugs []string, perRun [][]Segment) {
+ 			cells[slices.Index(names, s.Name)] = s.Cost()
+ 		}
+ 		cells[len(names)] = totalCost(segments)
+-		writeCostRow(w, slugs[i], cells)
++		writeCostRow(w, runs[i].Slug, runs[i].Recipe(), cells)
+ 		for j, c := range cells {
+ 			sums[j].add(c)
+ 		}
+@@ -301,17 +321,17 @@ func writeCostPerRun(w io.Writer, slugs []string, perRun [][]Segment) {
+ 	for j := range sums {
+ 		sums[j] = sums[j].share(1 / float64(len(perRun)))
+ 	}
+-	writeCostRow(w, "average", sums)
++	writeCostRow(w, "average", "", sums)
+ 	fmt.Fprintln(w)
+ }
+ 
+ // writeCostRow writes one cost per run row.
+-func writeCostRow(w io.Writer, name string, cells []Cost) {
++func writeCostRow(w io.Writer, name, recipe string, cells []Cost) {
+ 	rendered := make([]string, len(cells))
+ 	for i, c := range cells {
+ 		rendered[i] = c.String()
+ 	}
+-	fmt.Fprintf(w, "| %s | %s |\n", name, strings.Join(rendered, " | "))
++	fmt.Fprintf(w, "| %s | %s | %s |\n", name, recipe, strings.Join(rendered, " | "))
+ }
+ 
+ // segmentTable is what one segment table needs beside its segments.
+diff --git a/tools/tokencount/segment_test.go b/tools/tokencount/segment_test.go
+index 10c86456..32340084 100644
+--- a/tools/tokencount/segment_test.go
++++ b/tools/tokencount/segment_test.go
+@@ -33,8 +33,18 @@ func TestPartOf(t *testing.T) {
+ 		{"recovery+sub", "Webster", "recovery forks"},
+ 		{"merge-bouncer-seed", "Merge", "seed"},
+ 		{"alignment", "Alignment", "session"},
++		{"darn", "Darn", "writer"},
++		{"darn+sub", "Darn", "writer forks"},
++		{"drift-baseline", "Drift", "baseline"},
++		{"code-burler-review", "Code-Review", "reviewer"},
++		{"code-burler-fix+sub", "Code-Review", "fixer forks"},
++		{"code-bouncer-judge", "Code-Review", "judge"},
++		{"describe", "Landing", "describe"},
++		{"describe+sub", "Landing", "describe forks"},
++		{"pr-reviewer", "Landing", "pr-reviewer"},
++		{"fixer", "Landing", "fixer"},
++		{"fix-reviewer", "Landing", "fix-reviewer"},
+ 		{"planner", "Other", "planner"},
+-		{"describe+sub", "Other", "describe forks"},
+ 		{"untitled", "Other", "untitled"},
+ 	}
+ 	for _, tt := range tests {
+@@ -100,7 +110,7 @@ func TestSegmentReport(t *testing.T) {
+ 		t.Fatal(err)
+ 	}
+ 	report := buf.String()
+-	// The ten costliest parts of both runs, $459 in all, each with its cost per run; Webster recovery, Other describe and Webster Master fall below them.
++	// The ten costliest parts of both runs, $459 in all, each with its cost per run; Webster recovery, Landing describe and Webster Master fall below them.
+ 	wantParts := "## Most expensive parts\n\n| part | cost | share | per run |\n|---|---|---|---|\n" +
+ 		"| Webster forks | $200.00 | 43.6% | $100.00 |\n" +
+ 		"| Plan writer | $60.00 | 13.1% | $30.00 |\n" +
+@@ -112,12 +122,13 @@ func TestSegmentReport(t *testing.T) {
+ 		"| Discussion seed | $16.00 | 3.5% | $8.00 |\n" +
+ 		"| Merge judge | $14.00 | 3.1% | $7.00 |\n" +
+ 		"| Alignment session | $12.00 | 2.6% | $6.00 |\n\n"
+-	wantPerRun := "## Cost per run\n\n| run | Discussion | Plan | Webster | Merge | Alignment | Orch | Other | Total |\n|---|---|---|---|---|---|---|---|---|\n" +
+-		"| one | $54.00 | $155.00 | $116.00 | $14.00 | $12.00 | $0.00 | $8.00 | $359.00 |\n" +
+-		"| two | $0.00 | $0.00 | $100.00 | $0.00 | $0.00 | $0.00 | $0.00 | $100.00 |\n" +
+-		"| average | $27.00 | $77.50 | $108.00 | $7.00 | $6.00 | $0.00 | $4.00 | $229.50 |\n\n## All runs\n"
++	// Only the segments some run holds get a column, so no Orch or Other column shows.
++	wantPerRun := "## Cost per run\n\n| run | recipe | Discussion | Plan | Webster | Merge | Alignment | Landing | Total |\n|---|---|---|---|---|---|---|---|---|\n" +
++		"| one | unknown | $54.00 | $155.00 | $116.00 | $14.00 | $12.00 | $8.00 | $359.00 |\n" +
++		"| two | unknown | $0.00 | $0.00 | $100.00 | $0.00 | $0.00 | $0.00 | $100.00 |\n" +
++		"| average |  | $27.00 | $77.50 | $108.00 | $7.00 | $6.00 | $4.00 | $229.50 |\n\n## Recipes\n"
+ 	if !strings.HasPrefix(report, wantParts+wantPerRun) {
+-		t.Errorf("report does not open with the most expensive parts and the cost per run:\n%s", report)
++		t.Errorf("report does not open with the most expensive parts, the cost per run and the recipes:\n%s", report)
+ 	}
+ 
+ 	all, _, _ := strings.Cut(report, "## one\n")
+@@ -132,7 +143,7 @@ func TestSegmentReport(t *testing.T) {
+ 		"| **Discussion** | $54.00 | 11.8% |",
+ 		"| **Merge** | $14.00 | 3.1% |",
+ 		"| **Alignment** | $12.00 | 2.6% |",
+-		"| **Other** | $8.00 | 1.7% |",
++		"| **Landing** | $8.00 | 1.7% |",
+ 		"| idle |",
+ 	} {
+ 		i := strings.Index(rest, want)
+diff --git a/tools/tokencount/shed.go b/tools/tokencount/shed.go
+index c410ee4d..907ae905 100644
+--- a/tools/tokencount/shed.go
++++ b/tools/tokencount/shed.go
+@@ -1,5 +1,5 @@
+ // shed.go reads a finished run's archived shed seed and status from its newest archive tag.
+-// It decides from them whether the run is a full tapestry run, sets the run's span and splits that span by shed history entry into the Producers table.
++// It decides from them whether the run finished under a counted recipe, sets the run's span and splits that span by shed history entry into the Producers table.
+ 
+ package main
+ 
+@@ -12,6 +12,7 @@ import (
+ 	"path/filepath"
+ 	"slices"
+ 	"sort"
++	"strings"
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/gitrepo"
+@@ -136,16 +137,24 @@ func inFlight(hub, slug string) (bool, error) {
+ 	return err == nil, nil
+ }
+ 
+-// fullLoomRun reports whether the slug's latest run went through the whole loom lifecycle:
+-// its worktree under hub is torn down, and the shed record at its newest archive tag, tags being ordered newest first, names the tapestry recipe and holds a Finalize entry.
+-// A run stopped partway, such as a bench pair parked after Discussion-Write or an abandoned run, is not one.
+-func fullLoomRun(trees ArchiveTrees, hub, slug string, tags []ArchiveTag) (bool, error) {
++// countedRecipes are the recipes whose finished runs the default selection counts.
++var countedRecipes = []string{shedrun.RecipeTapestry, shedrun.RecipeDarn}
++
++// recipeList joins countedRecipes for a sentence, conjunction between them.
++func recipeList(conjunction string) string {
++	return strings.Join(countedRecipes, " "+conjunction+" ")
++}
++
++// finishedRun reports whether the slug's latest run went through its whole lifecycle under one of countedRecipes:
++// its worktree under hub is torn down, and the shed record at its newest archive tag, tags being ordered newest first, names that recipe and holds a Finalize entry.
++// A run stopped partway, such as a bench pair parked after Discussion-Write or an abandoned run, is not one, nor is a run of another recipe.
++func finishedRun(trees ArchiveTrees, hub, slug string, tags []ArchiveTag) (bool, error) {
+ 	running, err := inFlight(hub, slug)
+ 	if err != nil || running {
+ 		return false, err
+ 	}
+ 	record, err := readShedRecord(trees, slug, tags)
+-	if err != nil || record == nil || record.Recipe != shedrun.RecipeTapestry {
++	if err != nil || record == nil || !slices.Contains(countedRecipes, record.Recipe) {
+ 		return false, err
+ 	}
+ 	return slices.ContainsFunc(record.Entries, func(entry ShedEntry) bool { return entry.Producer == loomshed.NameFinalize }), nil
+diff --git a/tools/tokencount/time_integration_test.go b/tools/tokencount/time_integration_test.go
+index ce5b89ae..65c5f065 100644
+--- a/tools/tokencount/time_integration_test.go
++++ b/tools/tokencount/time_integration_test.go
+@@ -1,5 +1,7 @@
+-// time_integration_test.go checks that run reads each finished run's archived shed status from a real git repository's archive tags,
+-// and that with no slugs named it counts only full tapestry runs and says in the header which it counted and skipped.
++// time_integration_test.go checks that run reads each finished run's archived shed status from a real git repository's archive tags.
++// It checks that with no slugs named it counts only finished runs and says in the header which it counted and skipped.
++// It checks that the Recipes section counts the lines of the commit a run landed on a real code repository, root commits included,
++// and that -since counts every finished run active since a date.
+ // It also checks that -no-cutoff counts every located session and keeps the span from the seed's start,
+ // and that the header names an engine that has no transcript reader.
+ 
+@@ -10,6 +12,7 @@ import (
+ 	"os"
+ 	"os/exec"
+ 	"path/filepath"
++	"regexp"
+ 	"strings"
+ 	"testing"
+ 	"time"
+@@ -30,17 +33,53 @@ func burlerSessions(section string) string {
+ 	return ""
+ }
+ 
++// tapestryRow matches the Recipes row of one tapestry run that landed a commit of 3 changed lines.
++var tapestryRow = regexp.MustCompile(`(?m)^\| tapestry \| 1 \| [^|]+ \| [^|]+ \| 1 \| 3 \| [^|]+ \|$`)
++
++func TestCodeRepoChangedLines(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++	dir := t.TempDir()
++	gitkit.Git(t, dir, "init", "-b", "main")
++	write := func(content string) {
++		t.Helper()
++		if err := os.WriteFile(filepath.Join(dir, "file.txt"), []byte(content), 0o644); err != nil {
++			t.Fatal(err)
++		}
++		gitkit.Git(t, dir, "add", ".")
++		gitkit.Git(t, dir, "commit", "-m", "change")
++	}
++	write("one\ntwo\n")
++	root := gitkit.Git(t, dir, "rev-parse", "HEAD")
++	write("one\ntwo\nthree\n")
++	child := gitkit.Git(t, dir, "rev-parse", "HEAD")
++	repo := codeRepo{dir: dir}
++	for _, c := range []struct {
++		name, sha string
++		want      int
++	}{
++		{"a root commit changes every line it holds", root, 2},
++		{"a commit changes the lines against its parent", child, 1},
++	} {
++		got, err := repo.ChangedLines(c.sha)
++		if err != nil || got != c.want {
++			t.Errorf("%s: ChangedLines = %d, %v; want %d", c.name, got, err, c.want)
++		}
++	}
++}
++
+ func TestRunReadsArchivedShedStatus(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+-	records, hub := t.TempDir(), t.TempDir()
++	records, hub, code := t.TempDir(), t.TempDir(), t.TempDir()
+ 	gitkit.Git(t, records, "init", "-b", "main")
++	gitkit.Git(t, code, "init", "-b", "main")
+ 
+-	// commit writes files into the records and commits them with the given committer date, returning the commit.
+-	commit := func(date string, files map[string]string) string {
++	// commitIn writes files into the repository at dir and commits them under message with the given committer date, returning the commit.
++	commitIn := func(dir, message, date string, files map[string]string) string {
+ 		t.Helper()
+ 		for rel, content := range files {
+-			full := filepath.Join(records, filepath.FromSlash(rel))
++			full := filepath.Join(dir, filepath.FromSlash(rel))
+ 			if err := os.MkdirAll(filepath.Dir(full), 0o755); err != nil {
+ 				t.Fatal(err)
+ 			}
+@@ -48,15 +87,23 @@ func TestRunReadsArchivedShedStatus(t *testing.T) {
+ 				t.Fatal(err)
+ 			}
+ 		}
+-		gitkit.Git(t, records, "add", ".")
+-		cmd := exec.Command("git", "commit", "--allow-empty", "-m", "archive")
+-		cmd.Dir = records
++		gitkit.Git(t, dir, "add", ".")
++		cmd := exec.Command("git", "commit", "--allow-empty", "-m", message)
++		cmd.Dir = dir
+ 		cmd.Env = append(os.Environ(), "GIT_COMMITTER_DATE="+date, "GIT_AUTHOR_DATE="+date)
+ 		if out, err := cmd.CombinedOutput(); err != nil {
+ 			t.Fatalf("git commit: %v; output: %s", err, out)
+ 		}
+-		return gitkit.Git(t, records, "rev-parse", "HEAD")
++		return gitkit.Git(t, dir, "rev-parse", "HEAD")
++	}
++	commit := func(date string, files map[string]string) string {
++		t.Helper()
++		return commitIn(records, "archive", date, files)
+ 	}
++	// The full run landed one commit of three new lines inside its span, after a base commit.
++	const landedTitle = "Land the full run"
++	commitIn(code, "base", "2026-01-01T09:00:00Z", map[string]string{"base.txt": "base\n"})
++	commitIn(code, landedTitle, "2026-01-01T11:10:00Z", map[string]string{"landed.txt": "one\ntwo\nthree\n"})
+ 	paths := func(slug string) (seedRel, statusRel string) {
+ 		t.Helper()
+ 		seedRel, statusRel, err := shedrun.TreeRunFileRels(slug)
+@@ -85,6 +132,8 @@ func TestRunReadsArchivedShedStatus(t *testing.T) {
+ 		fullStatus:  `{"history":[` + entry("Plan", "2026-01-01T11:03:00Z") + `,` + entry("Finalize", "2026-01-01T11:12:00Z") + `]}`,
+ 		earlySeed:   `{"recipe":"tapestry","driver":"go","started_at":"2026-01-01T08:30:00Z"}`,
+ 		earlyStatus: `{"history":[` + entry("Plan", "2026-01-01T10:03:00Z") + `,` + entry("Publish", "2026-01-01T10:12:00Z") + `]}`,
++		// Every slug tagged at this commit shares its change description; only the full run's span holds the landed commit.
++		summaryRel: "# " + landedTitle + "\n\nWhat changed.\n",
+ 	})
+ 	// Archive tags are lightweight.
+ 	gitkit.Git(t, records, "tag", "archive/done/aaaaaaa", older)
+@@ -146,7 +195,7 @@ func TestRunReadsArchivedShedStatus(t *testing.T) {
+ 	withBlind := readsFor(false)
+ 	withBlind["blind"] = shuttleengine.RecordReads{}
+ 	// -detail shows the sessions column the counted sessions are read from.
+-	args := []string{"-hub", hub, "-" + repositoryFlag, records, "-out", reportPath, "-no-sleep", "-detail", "done", "live", "solo"}
++	args := []string{"-hub", hub, "-" + repositoryFlag, records, "-code", code, "-out", reportPath, "-no-sleep", "-detail", "done", "live", "solo"}
+ 	if err := run(args, &stdout, withBlind); err != nil {
+ 		t.Fatalf("run: %v", err)
+ 	}
+@@ -190,28 +239,47 @@ func TestRunReadsArchivedShedStatus(t *testing.T) {
+ 	if strings.Contains(report, cutoffOffLine) {
+ 		t.Errorf("report without -no-cutoff holds the cutoff-off line:\n%s", report)
+ 	}
++	// The done run's span ends before the titled commit, and the other two runs have no shed record.
++	wantMissing := "No landed commit: done (" + noTitledCommit + "), live (" + noShedRecord + "), solo (" + noShedRecord + ").\n"
++	if !strings.Contains(report, wantMissing) {
++		t.Errorf("report lacks %q:\n%s", wantMissing, report)
++	}
+ 
+-	// With no slugs named, the default walks the runs newest session first and counts only full tapestry runs:
++	// With no slugs named, the default walks the runs newest session first and counts only finished runs:
+ 	// done stopped before Finalize and live is in flight, so both are skipped ahead of full.
+ 	var defaulted bytes.Buffer
+-	if err := run([]string{"-hub", hub, "-" + repositoryFlag, records, "-no-sleep", "-last", "1"}, &defaulted, readsFor(false)); err != nil {
++	if err := run([]string{"-hub", hub, "-" + repositoryFlag, records, "-code", code, "-no-sleep", "-last", "1"}, &defaulted, readsFor(false)); err != nil {
+ 		t.Fatalf("run with no slugs: %v", err)
+ 	}
+-	wantHeader := " for the 1 most recent full tapestry runs: full.\n" + sleepOffLine + "Skipped 2 more recent runs that are not full tapestry runs: done, live.\n\n"
++	wantHeader := " for the 1 most recent finished tapestry and darn runs: full.\n" + sleepOffLine + "Skipped 2 runs that are not finished tapestry or darn runs: done, live.\n\n"
+ 	if !strings.Contains(defaulted.String(), wantHeader) {
+ 		t.Errorf("default report header lacks %q:\n%s", wantHeader, defaulted.String())
+ 	}
++	// The full run landed one commit of three changed lines.
++	if !tapestryRow.MatchString(defaulted.String()) {
++		t.Errorf("default report's Recipes section lacks the full run's landed commit of 3 lines:\n%s", defaulted.String())
++	}
++
++	// -since counts every finished run active since the day, whatever -last says, and heads the report with the date.
++	var sinceReport bytes.Buffer
++	if err := run([]string{"-hub", hub, "-" + repositoryFlag, records, "-code", code, "-no-sleep", "-last", "1", "-since", "2026-01-01"}, &sinceReport, readsFor(false)); err != nil {
++		t.Fatalf("run with -since: %v", err)
++	}
++	wantSinceHeader := " for the 1 finished tapestry and darn runs active since 2026-01-01: full.\n" + sleepOffLine + "Skipped 3 runs that are not finished tapestry or darn runs: done, live, solo.\n\n"
++	if !strings.Contains(sinceReport.String(), wantSinceHeader) {
++		t.Errorf("-since report header lacks %q:\n%s", wantSinceHeader, sinceReport.String())
++	}
+ 
+ 	emptyHub := t.TempDir()
+ 	err = run([]string{"-hub", emptyHub, "-" + repositoryFlag, records}, &defaulted, readsFor(false))
+-	wantErr := "no full tapestry runs of " + emptyHub + " from engines " + fakeEngine + "; name the slugs to count a partial run"
++	wantErr := "no finished tapestry or darn runs of " + emptyHub + " from engines " + fakeEngine + "; name the slugs to count a partial run"
+ 	if err == nil || err.Error() != wantErr {
+-		t.Errorf("run with no full tapestry run = %v; want %q", err, wantErr)
++		t.Errorf("run with no finished run = %v; want %q", err, wantErr)
+ 	}
+ 
+ 	// Under -no-cutoff the earlier sessions and the untimestamped one count, and the span keeps the seed's start instead of the older tag's date.
+ 	noCutoffPath := filepath.Join(t.TempDir(), "no-cutoff.md")
+-	args = []string{"-hub", hub, "-" + repositoryFlag, records, "-out", noCutoffPath, "-no-cutoff", "-no-sleep", "-detail", "done", "live", "early"}
++	args = []string{"-hub", hub, "-" + repositoryFlag, records, "-code", code, "-out", noCutoffPath, "-no-cutoff", "-no-sleep", "-detail", "done", "live", "early"}
+ 	if err := run(args, &stdout, readsFor(true)); err != nil {
+ 		t.Fatalf("run with -no-cutoff: %v", err)
+ 	}
+diff --git a/tools/tokencount/tokencount.cmd b/tools/tokencount/tokencount.cmd
+index fb2097f4..fc408cbe 100644
+--- a/tools/tokencount/tokencount.cmd
++++ b/tools/tokencount/tokencount.cmd
+@@ -5,14 +5,15 @@ REM One fixed path, overwritten every run rather than accumulating a timestamped
+ REM count — the run's own date and time and the counted slugs live inside the report.
+ REM cd to the repo root (%~dp0..\.., two levels up from this tools\tokencount folder) so
+ REM `go run` finds go.mod and -hub defaults to the hub; restore cwd on exit.
+-REM The report opens with the most expensive parts and the cost per run, then gives each
+-REM segment's cost, time and models split into its parts; -detail adds the sessions and token
+-REM columns.
++REM The report opens with the most expensive parts, the cost per run and the recipe comparison,
++REM then gives each segment's cost, time and models split into its parts; -detail adds the
++REM sessions and token columns.
+ REM The arguments are the task slugs to count, partial runs included, and flags such as -hub
+-REM pass through; with no slugs it counts the most recently active full tapestry runs, those that
+-REM reached Finalize (-last, default 6):
++REM pass through; with no slugs it counts the most recently active tapestry and darn runs that
++REM reached Finalize (-last, default 6), or every such run active since a date (-since):
+ REM tokencount.cmd
+ REM tokencount.cmd -last 10
++REM tokencount.cmd -since 2026-10-31
+ REM tokencount.cmd -detail bugfix-sessions bugfix-webster
+ pushd "%~dp0..\.."
+ go run ./tools/tokencount -out .scratch/token-usage-by-role.md %*
+diff --git a/tools/tokencount/tokencount.sh b/tools/tokencount/tokencount.sh
+index b8bdbfea..0ab8266c 100755
+--- a/tools/tokencount/tokencount.sh
++++ b/tools/tokencount/tokencount.sh
+@@ -6,14 +6,15 @@
+ # Runs in a subshell cd'd to the repo root (two levels up from this tools/tokencount
+ # folder, mirroring the .cmd launcher's pushd/popd) so `go run` finds go.mod and -hub
+ # defaults to the repo root's parent, the hub, without touching the caller's own cwd.
+-# The report opens with the most expensive parts and the cost per run, then gives each
+-# segment's cost, time and models split into its parts; -detail adds the sessions and token
+-# columns.
++# The report opens with the most expensive parts, the cost per run and the recipe comparison,
++# then gives each segment's cost, time and models split into its parts; -detail adds the
++# sessions and token columns.
+ # The arguments are the task slugs to count, partial runs included, and flags such as -hub
+-# pass through; with no slugs it counts the most recently active full tapestry runs, those that
+-# reached Finalize (-last, default 6):
++# pass through; with no slugs it counts the most recently active tapestry and darn runs that
++# reached Finalize (-last, default 6), or every such run active since a date (-since):
+ # tokencount.sh
+ # tokencount.sh -last 10
++# tokencount.sh -since 2026-10-31
+ # tokencount.sh -detail bugfix-sessions bugfix-webster
+ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
