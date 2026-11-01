@@ -155,26 +155,6 @@
       "revised": "2026-10-28T15:12:17Z"
     },
     {
-      "id": 646,
-      "handle": "E16",
-      "slug": "parallel-batch-parts",
-      "title": "Parallel batches: the shared pieces for Webster forks and Weaver",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "webster",
-        "fabric",
-        "loom"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree",
-      "body": "## Seen (2026-10-17)\n\nThe pieces parallel batches need are the same whether a batch starts as a Webster fork or as a cold Weaver agent (see `weaver`); only the spawn differs.\n\n1. A DAG batchifier: edges from the cards' targets and `Uses:`, cards joined into batches while the batch graph stays acyclic and under a cost budget, ready batches chosen. New.\n2. A worktree per batch, created for the batch and removed after it. New; may build on fabric.\n3. Merge-back of each batch worktree into the task branch, with a cheap model such as Haiku resolving textual conflicts. New.\n4. The verify on the merged result and its failure ladder. Exists in Webster (verify gate).\n5. The batch brackets and report: `begin-batch`, `record-batch`, the changed-files guard and the report contract. Exist in Webster.\n6. `plan-dag-view`, to see the graph and the batches. Note filed.\n\n## Operator view, not a decision (2026-10-17)\n\n- Start with these pieces, built so both Webster and Weaver can use them; Webster can run parallel forks first.\n- The hard part is getting a Webster fork to work in another worktree than its master's.\n- Claude Code's own worktree isolation for agents has given the operator only trouble before.\n\n## Open\n\nHow a fork is kept inside its batch's worktree: it inherits the master's working directory and a context full of paths into the task worktree, and `lym` commands find their anchor from the working directory.\n\n### Orch recommendation\n\nBench before build: a small proof of concept in which one fork is told to work in a worktree Go created, with absolute paths, and a PreToolUse hook refuses its Edit and Write calls outside that worktree, so a slip is refused instead of landing in the wrong tree; measure whether the fork stays inside and what `lym` commands it needs a directory flag for.\n",
-      "created": "2026-10-18T06:44:29Z",
-      "revised": "2026-10-27T10:00:26Z"
-    },
-    {
       "id": 668,
       "handle": "E19",
       "slug": "fabric-remote-async",
