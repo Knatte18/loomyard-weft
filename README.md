@@ -20,20 +20,20 @@ One fixed orch role for every repository, repository orch rules in heddle throug
 
 ## [P2 Fewer agent turns, Webster forks first](project-agent-turns.md) (8)
 
-`agent-turns` · Age 24m · Owner `neve`
+`agent-turns` · Age 25m · Owner `neve`
 
 Cut the turns agents spend on shell edits, piecemeal gate loops and sliced reads, one measured fix at a time
 
 | # | Prio | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| T1 |  | **Agents change files with the Edit tool, never shell edits**<br>• Read a file to change with Read and edit it with Edit, all its edits in one message; a guard refuses sed -i and its kin | [`edit-with-edit-tool`](design-edit-with-edit-tool.md) | 24m<br>14m | process, stencil, claude |
+| T1 |  | **Agents change files with the Edit tool, never shell edits**<br>• Read a file to change with Read and edit it with Edit, all its edits in one message; a guard refuses sed -i and its kin | [`edit-with-edit-tool`](design-edit-with-edit-tool.md) | 25m<br>14m | process, stencil, claude |
 | T5 |  | **Study: turns and context of the Discussion and Plan review sessions**<br>• Measure where reviewer, fixer and judge turns and context go on three tapestry runs, and what Sonnet fixers would cost<br>• `profile: docs` | [`review-turn-audit`](design-review-turn-audit.md) | 23m<br>14m | burler |
-| T4 |  | **The gate reports every failure at once, lint included, in one readable result**<br>• lym gate test prints a compact list of every build, test and lint failure with file:line and values, and the log path | [`gate-failure-report`](design-gate-failure-report.md) | 24m<br>14m | gate, lint |
-| E15 |  | **A card that retires a name sweeps the whole tree, tests included, first**<br>• The implementer greps every retired name across the tree and test data before its first edit, and reads and edits all hits in one message each | [`retired-name-sweep`](design-retired-name-sweep.md) | 24m<br>24m | webster, stencil |
-| E17 |  | **Agents read a file whole or all its spans in one message, not in slices**<br>• No reading one file in three to five slices over as many turns, nor re-reading it | [`read-whole-not-slices`](design-read-whole-not-slices.md) | 24m<br>24m | webster, stencil |
+| T4 |  | **The gate reports every failure at once, lint included, in one readable result**<br>• lym gate test prints a compact list of every build, test and lint failure with file:line and values, and the log path | [`gate-failure-report`](design-gate-failure-report.md) | 25m<br>14m | gate, lint |
+| E15 |  | **A card that retires a name sweeps the whole tree, tests included, first**<br>• The implementer greps every retired name across the tree and test data before its first edit, and reads and edits all hits in one message each | [`retired-name-sweep`](design-retired-name-sweep.md) | 25m<br>25m | webster, stencil |
+| E17 |  | **Agents read a file whole or all its spans in one message, not in slices**<br>• No reading one file in three to five slices over as many turns, nor re-reading it | [`read-whole-not-slices`](design-read-whole-not-slices.md) | 25m<br>25m | webster, stencil |
 | E18 |  | **Agents still try the forms lym's guards refuse, at a turn each**<br>• Python and raw go build or go vet attempts are refused and retried; find why the steering does not hold and close it | [`hook-refused-turns`](design-hook-refused-turns.md) | 23m<br>19m | process, claude |
 | E21 |  | **Trial: the batching instruction in the rendered CLAUDE.local.md through heddle**<br>• Put the batching instruction into heddle's claude-file target and measure calls per turn with forkaudit against today's 1.7 | [`batching-in-claude-local`](design-batching-in-claude-local.md) | 23m<br>23m | claude, heddle |
-| F12 |  | **A card gate failure goes to a cold, cheap fixer instead of the fork**<br>• Go spawns a fresh fixer with the gate report, the card and its diff, so the fork's large context does not run the fix loop | [`card-gate-cold-fixer`](design-card-gate-cold-fixer.md) | 24m<br>23m | webster, gate |
+| F12 |  | **A card gate failure goes to a cold, cheap fixer instead of the fork**<br>• Go spawns a fresh fixer with the gate report, the card and its diff, so the fork's large context does not run the fix loop | [`card-gate-cold-fixer`](design-card-gate-cold-fixer.md) | 25m<br>23m | webster, gate |
 
 ## Prime
 
@@ -50,8 +50,8 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T6 | **A long gate run answers within the cache lifetime, so the waiting agent keeps its prompt cache warm**<br>• lym gate test caps the run wait like the slot wait, with the cap a config value beside the engine cache lifetime<br>• `profile: light` | [`gate-run-keeps-cache-warm`](design-gate-run-keeps-cache-warm.md) | tapestry | Webster | neve | 20h<br>3h | gate, shuttle, config |
-| T7 | **One verb to take work over on another machine, leaving every run in a known state**<br>• Moving to another machine is many hand steps, and afterwards run states are unclear | [`machine-switch`](design-machine-switch.md) | tapestry | Webster | neve | 1d<br>2h | fabric, dobby, batten |
-| T8 | **One project render for the board README and project files**<br>• Every project, Prime included, renders through one function with its sub-projects and its own Running, Ready, Tasks, Notes and Done | [`board-project-render`](design-board-project-render.md) | darn | Darn-Write | neve | 5m<br>5m | board |
+| T7 | **One verb to take work over on another machine, leaving every run in a known state**<br>• Moving to another machine is many hand steps, and afterwards run states are unclear | [`machine-switch`](design-machine-switch.md) | tapestry | Webster | neve | 1d<br>3h | fabric, dobby, batten |
+| T8 | **One project render for the board README and project files**<br>• Every project, Prime included, renders through one function with its sub-projects and its own Running, Ready, Tasks, Notes and Done | [`board-project-render`](design-board-project-render.md) | darn | Darn-Write | neve | 6m<br>6m | board |
 
 #### Ready (0)
 
@@ -81,7 +81,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **A writer session can end with untracked files in the worktree, which halt Finalize**<br>• A producing session's end gate refuses to end while the worktree holds untracked files outside its outputs | [`writer-leaves-stray-files`](design-writer-leaves-stray-files.md) | 1h<br>15m | shuttle, darn, loom |
+| B1 |  | **A writer session can end with untracked files in the worktree, which halt Finalize**<br>• A producing session's end gate refuses to end while the worktree holds untracked files outside its outputs | [`writer-leaves-stray-files`](design-writer-leaves-stray-files.md) | 1h<br>16m | shuttle, darn, loom |
 | B2 |  | **Dobby reports a healthy run idle in the seconds after its agent session ends**<br>• The no-agent idle clock falls back to the row start in the gap between the session ending and the row writing its history | [`dobby-idle-notice-row-end`](design-dobby-idle-notice-row-end.md) | 2h<br>2h | dobby, shuttle |
 
 #### Enhancements (13)
