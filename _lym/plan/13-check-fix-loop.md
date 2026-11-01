@@ -1,16 +1,16 @@
 # Card 13 — A failed check files the subject's fix task
 
 **Create:**
-- `plan:internal/adoptcli#fixDeps` -> `type fixDeps struct`
-- `plan:internal/adoptcli#failedEnd` -> `func failedEnd(deps fixDeps, record CheckRecord) []string`
-- `plan:internal/adoptcli#hubFixDeps` -> `func hubFixDeps(prime *lymcwd.Location, subject string) (fixDeps, error)`
-- `plan:internal/adoptcli#fixSlugPrefix` -> `func fixSlugPrefix(subject string) string`
-- `plan:internal/adoptcli#nextFixSlug` -> `func nextFixSlug(prefix string, taken []string) string`
-- `plan:internal/adoptcli#fixBody` -> `func fixBody(subject string, record CheckRecord, suiteLog string) string`
-- `plan:internal/adoptcli#fixRunHalted` -> `func fixRunHalted(status shedengine.Status, escalationEligible bool) bool`
-- `plan:internal/adoptcli#TestFailedEnd` -> `func TestFailedEnd(t *testing.T)`
-- `plan:internal/adoptcli#TestFixSlug` -> `func TestFixSlug(t *testing.T)`
-- `plan:internal/adoptcli#TestFixBody` -> `func TestFixBody(t *testing.T)`
+- `internal/adoptcli#fixDeps`
+- `internal/adoptcli#failedEnd`
+- `internal/adoptcli#hubFixDeps`
+- `internal/adoptcli#fixSlugPrefix`
+- `internal/adoptcli#nextFixSlug`
+- `internal/adoptcli#fixBody`
+- `internal/adoptcli#fixRunHalted`
+- `internal/adoptcli#TestFailedEnd`
+- `internal/adoptcli#TestFixSlug`
+- `internal/adoptcli#TestFixBody`
 
 **Edit:**
 - `internal/adoptcli#checkDeps`

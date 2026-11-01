@@ -1,10 +1,10 @@
 # Card 14 — Adopt reports one line per run
 
 **Create:**
-- `plan:internal/adoptcli#runReport` -> `type runReport struct`
-- `plan:internal/adoptcli#runReports` -> `func runReports(deps adoptDeps, in reportInput) ([]runReport, error)`
-- `plan:internal/adoptcli#reportInput` -> `type reportInput struct`
-- `plan:internal/adoptcli#TestRunReports` -> `func TestRunReports(t *testing.T)`
+- `internal/adoptcli#runReport`
+- `internal/adoptcli#runReports`
+- `internal/adoptcli#reportInput`
+- `internal/adoptcli#TestRunReports`
 
 **Edit:**
 - `internal/adoptcli#adoptDeps`
@@ -20,7 +20,7 @@
 - `internal/adoptcli/doc.go`
 
 **Uses:**
-- `plan:internal/adoptcli#fixRunHalted`
+- `internal/adoptcli#fixRunHalted`
 - `internal/adoptcli#subjectDir`
 - `internal/fronttask#OpenFront`
 - `internal/fronttask#ActionAdoptCheck`

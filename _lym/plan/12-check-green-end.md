@@ -1,10 +1,10 @@
 # Card 12 — A green check lifts its subject's holds and starts the runs
 
 **Create:**
-- `plan:internal/adoptcli#greenDeps` -> `type greenDeps struct`
-- `plan:internal/adoptcli#greenEnd` -> `func greenEnd(deps greenDeps) []string`
-- `plan:internal/adoptcli#hubGreenDeps` -> `func hubGreenDeps(prime *lymcwd.Location, subject string) (greenDeps, error)`
-- `plan:internal/adoptcli#TestGreenEnd` -> `func TestGreenEnd(t *testing.T)`
+- `internal/adoptcli#greenDeps`
+- `internal/adoptcli#greenEnd`
+- `internal/adoptcli#hubGreenDeps`
+- `internal/adoptcli#TestGreenEnd`
 
 **Edit:**
 - `internal/adoptcli#checkDeps`
