@@ -1,6 +1,6 @@
 # P2 Fewer agent turns, Webster forks first
 
-Rendered 2026-11-01 16:53 UTC; every age below is as of then.
+Rendered 2026-11-01 16:54 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`agent-turns`](design-agent-turns.md) · Age 2h · Owner `neve`
@@ -23,11 +23,3 @@ _None._
 ## Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T14 | **Trial: agents settle every edit before the first, then gate once**<br>• An imperative heddle instruction: read, decide all edits, make them, gate once and fix the whole report in one round | [`plan-edits-before-gate`](design-plan-edits-before-gate.md) | 2h<br>29m | heddle, stencil, claude |
