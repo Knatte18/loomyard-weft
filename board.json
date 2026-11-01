@@ -631,8 +631,7 @@
       "created": "2026-11-01T14:16:30Z",
       "revised": "2026-11-01T15:05:52Z",
       "order": [
-        "card-gate-cold-fixer",
-        "read-whole-not-slices"
+        "card-gate-cold-fixer"
       ]
     },
     {
@@ -653,28 +652,6 @@
       "body": "## Seen (orch, 2026-11-01)\n\nA Webster fork fixes its own card gate's failures in its own session, at 150k to 450k tokens of context a turn; one fork spent 69 turns in that loop.\nWebster already has a cold fixer, but only for the plan-level verify gate: a fork fixer first, then `lym webster fix-verify`, a separate process at the recovery role with a full prompt (`webster-prefix-verify-fix-cold.md`) that inherits nothing.\n\n## Idea (operator, 2026-11-01)\n\nA card gate failure goes to a fresh, cold, cheap fixer instead of the fork:\n- Go spawns it in the fork's worktree with the gate report, the card and the card's diff; it reads the failing source itself and fixes every failure in one go.\n- After its fixes it reruns only the packages that failed, and the card's whole gate once those are green.\n- When it clears the gate, the fork goes on with its next card or ends.\n- When it does not, the failure goes back to the fork, or up the recovery strand's ladder as today.\n\nIt rests on the gate report of note `gate-failure-report` that lets every failure be fixed at once.\n",
       "created": "2026-11-01T14:16:30Z",
       "revised": "2026-11-01T14:18:14Z",
-      "project": "agent-turns"
-    },
-    {
-      "id": 965,
-      "handle": "T9",
-      "slug": "read-whole-not-slices",
-      "title": "Agents read a file whole or all its spans in one message, not in slices",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "webster",
-        "stencil"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "No reading one file in three to five slices over as many turns, nor re-reading it",
-      "body": "## Seen (orch, 2026-11-01)\n\nThe five heaviest Webster forks read one file in three to five slices over as many turns, such as `sed -n 200,380p`, `380,560p` and `560,760p` of `internal/loomcli/decision_test.go` in three turns, and re-read the same files in four to seven separate turns.\nAbout 80 of their 208 single-call read turns could have been issued a turn earlier, since the path or line range was already known.\n\n## Idea\n\nThe Webster implementer stencil, and the batching sentence every agent gets, ask for a file to be read whole, or for every span the agent needs from it, in one message, and for a file read once to be kept in mind rather than read again.\nNote `edit-with-edit-tool` removes part of this, since the Read tool reads whole files or large spans.\n",
-      "status": "done",
-      "created": "2026-11-01T14:16:30Z",
-      "revised": "2026-11-01T15:10:31Z",
       "project": "agent-turns"
     },
     {
