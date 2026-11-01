@@ -2,8 +2,6 @@
 
 `reed-status-buttons` · Task · feature, reed, config, batten · running · Discussion-Write
 
-Depends on: [`kde-window-placement`](design-kde-window-placement.md)
-
 ## Seen
 
 tmux status lines support clickable ranges (`#[range=user|<name>]` with a `MouseDown1Status` binding), and reed already uses them for its window buttons and the `follow` button, each running a command through `run-shell`.

@@ -143,9 +143,7 @@
         "batten"
       ],
       "issues": [],
-      "depends_on": [
-        "kde-window-placement"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more",
       "body": "## Seen\n\ntmux status lines support clickable ranges (`#[range=user|\u003cname\u003e]` with a `MouseDown1Status` binding), and reed already uses them for its window buttons and the `follow` button, each running a command through `run-shell`.\nThose buttons are fixed in code; the operator has no quick way to run an action on a run from where they watch it.\n\n## Design (operator, 2026-11-01)\n\nThe action buttons are config, not code: adding a button is one entry in reed's config, with no build.\n\n```yaml\nbuttons:\n  task:                 # every task run's reed session\n    - {label: HALT,   run: lym tender pause {slug}}\n    - {label: CANCEL, run: lym batten cancel {slug}, confirm: \"Cancel {slug}?\"}\n    - {label: code,   run: lym ide spawn {slug}}\n    - {label: term,   run: lym reed window {worktree}}\n  beam:                 # a beam's session with its orch and dobby; the prime is the root beam and uses the same set\n    - {label: distill, run: lym orch distill, confirm: \"Distill the orch?\"}\n```\n\n- The buttons are grouped by the place they belong to, so each place's whole set reads in one spot: `task` for a task run's session, `beam` for a beam's session; the prime, being the root beam, takes the `beam` set, and a `prime` group, when present, replaces it there.\n- `run` is a shell command, run in the session's worktree; lym fills the placeholders `{slug}`, `{worktree}`, `{beam}`, `{session}` and `{strand}` at click time.\n- A session shows the same row in every window (overview, agent windows, shell): the buttons act on the whole run whichever window is active.\n  A button that acts on one agent carries `window: agents` and the placeholder `{strand}`, the agent in the active pane, and shows only in the agent windows.\n- `confirm` puts tmux's plain y/n `confirm-before` prompt, with the given text, in front of the command; buttons that cannot be undone carry it.\n- A failing command shows a short tmux message on the status line; its output goes to a log.\n- Layering: the hub's config holds the default set, and a machine-local override may add buttons of its own.\n- The hub's default set holds the buttons the operator named: HALT (`lym tender pause \u003cslug\u003e`, which holds agent and network work and interrupts the running turns at once; `lym batten pause` waits for a producer boundary, so it is no halt), CANCEL (kept apart from HALT, behind `confirm`), open the pair in VS Code, one more terminal on the same worktree (`lym reed window \u003cworktree-dir\u003e`), a new empty agent (`lym shuttle open --role \u003crole\u003e --model opus[high]`), and `lym orch distill` and `lym orch refresh` on the orch session, both behind `confirm`.\n- Later buttons are entries too, such as the board agent of note `board-agent-button`.\n\n## Placement (operator, 2026-10-30)\n\nThe action buttons go on a third status line of their own, never mixed with the window buttons (line 1) or the session names (line 2).\nThe `follow` button leaves line 2 and joins the action row as a built-in entry.\nLine 2 also renders the prime's adopt-check mark right-aligned before the clock (`Engine.SetCheckMark`); the action row leaves it there.\n\n## Open\n\n- Which role the new-agent button opens, and whether the role name is asked for or fixed.\n",
@@ -274,28 +272,6 @@
       "body": "## Seen (operator, 2026-10-27)\n\nA run reads its instructions live while it runs: the `lym` binary, and the stencils, specs and hub config on Bolt (`_board/_lym/{stencils,specs,config}`).\nA landing deploys a new `lym` and can change those files, so a run started on one version can finish on another, such as a darn run that sat between its drift rows when `darn-drift-await-row` landed and its recipe changed under it (that landing wrote no transition code: such a run halts at Drift-Verify and is settled by hand with `lym drift waive`).\nLoomYard takes no special care for such a run today, and the operator wants none written per change (operator, 2026-10-27).\n\n## Idea (operator, 2026-10-27)\n\nA run keeps the version it started with, so nothing changes under it.\n- Bolt: the run records the Bolt commit at its start and reads stencils, specs and config from that commit through git, in the one place those files are read, instead of from the working files; no copy is made.\n- Binary: at the run's start the running `lym` is copied into a store under a name derived from its content, as the gate's prebuilt store does (`internal/gateslot`), and the run's driver and agents call that copy.\n- Shared state stays live: the board, locks, gate slots, creel mail and the run's own records.\n- One verb moves a run onto the newest version, for a run that needs a fix that landed after it started.\n\n## Open\n\n- Shared daemons (dobby, creel, gate) run the newest binary, so a pinned run's formats must stay readable by them, and a pinned binary must not write the board in an older format.\n- Plugins and skills are loaded by Claude Code from one shared place and are left out of the first step.\n",
       "created": "2026-10-27T15:12:04Z",
       "revised": "2026-10-27T17:50:10Z"
-    },
-    {
-      "id": 885,
-      "handle": "T5",
-      "slug": "kde-window-placement",
-      "title": "A window lym opens is snapped into the active desktop tiling by a configured command",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "reed",
-        "ide",
-        "config"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "After opening a window lym runs a machine-local configured command, such as the operator tiling script; lym knows nothing about KDE",
-      "body": "## Seen (operator, 2026-10-28)\n\nThe operator runs KDE Plasma with virtual desktops and tiling.\nThe Konsole windows lym opens on a run's worktree (`lym reed window`, batten's terminal for each run) and the VS Code windows it opens (`lym ide`) land wherever KWin puts them, untiled and on the current desktop, so the operator moves and tiles each by hand.\n\n## Design (operator, 2026-10-31)\n\nLym places no window itself: the operator's own tiling script does it.\nNeve's `~/.local/bin/arrange-to-tiles.sh` (Meta+Alt+A, run through xremap) fills the active desktop's existing Custom Tiling grid with the windows on it, without changing the grid's shape.\n- A machine-local config key names a command lym runs after it opens a window, such as `~/.local/bin/arrange-to-tiles.sh`: after a run's terminal window, `lym reed window` and `lym ide`.\n- The window lands on the active desktop, as KWin puts it today, and the command snaps it into the grid.\n- Lym knows nothing about KDE: with the key unset nothing runs, and each machine names its own script (OSL-1046 runs Plasma 5).\n- Lym runs the command only once the new window is mapped, or after a short wait, so the script sees it.\n",
-      "status": "done",
-      "created": "2026-10-28T15:26:02Z",
-      "revised": "2026-11-01T11:28:49Z"
     },
     {
       "id": 910,
