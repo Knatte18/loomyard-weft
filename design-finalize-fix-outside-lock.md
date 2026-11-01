@@ -13,6 +13,7 @@ Meanwhile four green runs queued behind it (`darn-sonnet-helpers`, `readme-profi
 - Finalize keeps taking the lock before its merge and verify, so a run that verifies green lands what it verified, with no second merge.
 - When verify fails, Finalize releases the lock before the fixer starts, so the next run in the queue can land meanwhile.
 - When the fixer is done, the run queues for the lock again, merges the parent anew, and verifies under the lock as on its first try.
+  When nothing landed on the parent while it fixed, that merge is a no-op and only the re-verify remains, which a red verify runs today too.
 - Taking the lock only at the very end was weighed and rejected: the parent moves between the run's merge and its landing, so the run would merge, verify and fix again, and could starve while much lands.
 
 ## Open
