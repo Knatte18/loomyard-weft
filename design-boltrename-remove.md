@@ -1,6 +1,6 @@
 # Delete the one-shot boltrename program
 
-`boltrename-remove` · Task · enhancement, cwd · running · Describe
+`boltrename-remove` · Task · enhancement, cwd · running · PR-Review
 
 ## Seen (operator, 2026-11-01)
 
