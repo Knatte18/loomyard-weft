@@ -1,6 +1,6 @@
 # Shorten the plan spec and split it into sub-files read by need
 
-`plan-spec-split` · Task · enhancement, loom, stencil, webster · running · Code-Bouncer
+`plan-spec-split` · Task · enhancement, loom, stencil, webster · running · Code-Burler-Review
 
 ## Seen (orch, 2026-11-01)
 
