@@ -1,6 +1,6 @@
 # A writer session can end with untracked files in the worktree, which halt Finalize
 
-`writer-leaves-stray-files` · Task · bug, shuttle, darn, loom · running · Record-Write
+`writer-leaves-stray-files` · Task · bug, shuttle, darn, loom · running · Darn-Write
 
 Depends on: [`darn-sonnet-helpers`](design-darn-sonnet-helpers.md)
 
