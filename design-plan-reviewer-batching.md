@@ -1,6 +1,6 @@
 # The round-1 Plan reviewer gathers in one call a turn
 
-`plan-reviewer-batching` · Task · enhancement, burler, stencil
+`plan-reviewer-batching` · Task · enhancement, burler, stencil · running · Worktree-Create
 
 Depends on: [`fork-results-one-wake`](design-fork-results-one-wake.md)
 
