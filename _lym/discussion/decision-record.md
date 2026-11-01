@@ -25,6 +25,12 @@ Like every stencil, the role has an editable board copy on Bolt, `_lym/stencils/
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-01): The orch role leaves the stencil registry
+
+Decision: Option A: orch-template-role is taken out of the stencil registry, so no Bolt copy is seeded, and RenderRoleFile renders the embedded shipped bytes. PATTERN-stencil-ownership gains one exception naming the orch role, as a fixed role every repository shares, whose per-repository rules live in heddle's orch-prompt target. A stale _lym/stencils/orch/orch-template-role.md left in a Bolt checkout is unread; the change removes it when it finds it, if a tidy step for stale stencil copies exists, and otherwise leaves it.
+
+Rationale: The operator's design for P1 is one fixed orch role with the repository's rules in heddle; a seeded copy a hub can edit is what that design removes, and overwriting edited copies would break the entry's other promise instead of naming one exception.
+
 ## Constraints
 
 ## Auto-mode assumptions
