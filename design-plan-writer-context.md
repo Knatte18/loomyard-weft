@@ -80,4 +80,11 @@ Plan writer plus its lens forks, means per run (API list price):
 `docs/research/turn-audit-2026-10-28/report.md` (n = 1 loom run, 213 sessions) finds the Plan writer spends 33 of its 101 turns on serial single-call reads and searches, mostly shell `grep` and `sed -n`, which a merged turn would remove.
 It recommends one stencil sentence in `loom-template-plan.md` and in the twill lens directive: issue every search and read you can name in one message.
 This is a cheaper cut than the digest, the earlier fork and the split writing above, and the audit proposes no pre-read for the writer.
-The recommendation is untested: no run measured the effect, and the Plan row rests on one session.
+The Plan row rests on one session; the recommendation was later applied and measured, see the last section.
+
+## Batching effect audit (landed 2026-11-01)
+
+The turn audit's recommendation above was applied (the batching sentences of `bf00a043`, 2026-10-28), and `docs/research/batching-effect-audit-2026-11-01/report.md` measured it on 8 runs, 7 landed (5 before, 2 after).
+It finds no batching effect, and the sample cannot show a small one: the Plan writer issued 1.14 calls per turn after against 1.29 before, its single-call turn share was 83% against 75%, and its serial read and search turns were 44% of its turns against 41%.
+The Discussion writer is level on every measure.
+The 33-of-101 serial turns the turn audit found are still there, so the ideas above keep their value.

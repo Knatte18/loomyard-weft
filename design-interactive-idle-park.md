@@ -4,7 +4,8 @@
 
 ## Seen (operator, 2026-10-31)
 
-An interactive run (task `interactive-recipe`) waits for the operator in its pane, and has dobby's quiet notice and shuttle's idle timeout off while it does.
+An interactive run (the `sampler` recipe, landed by task `interactive-recipe`) waits for the operator in its pane at the `Sampler-Session` row, and has dobby's quiet notice and the step watchdog off while it does.
+The row waits with no timeout until the agent runs `lym loom sampler-done` at the operator's word.
 Since lym runs the agent, it can watch how long the agent has waited.
 
 ## Idea
