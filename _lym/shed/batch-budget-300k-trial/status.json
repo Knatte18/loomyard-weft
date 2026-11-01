@@ -2,6 +2,7 @@
   "current_producer": "Finalize",
   "state": "blocked",
   "error": "the task worktree has uncommitted changes before the merge-in: 200k, 250k; commit or remove them on the task branch, then resume",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Finalize",
