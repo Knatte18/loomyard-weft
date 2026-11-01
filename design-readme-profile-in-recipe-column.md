@@ -1,6 +1,6 @@
 # The board README shows a task's profile in the Recipe column
 
-`readme-profile-in-recipe-column` · Task · enhancement, board · draft
+`readme-profile-in-recipe-column` · Task · enhancement, board
 
 ## Seen (operator, 2026-11-01)
 
