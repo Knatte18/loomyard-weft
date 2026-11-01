@@ -189,6 +189,24 @@ Rationale: the operator rules the merge is shared, not copied.
 
 Rationale: `bolt-dir-rename` then changes one constant's value.
 
+### Added after Discussion (parent, 2026-11-01): The replay registry fails only when no run ledger is registered
+
+Decision: D7's failure for a claimed path with no replayer is dropped: fabric learns a claim only from a registered replayer, so a path no registered replayer claims is cherry-picked. A claimed commit, the ended-set read and the owner read fail with ErrReplayerMissing when no run ledger is registered.
+
+Rationale: A claim exists only through a registered replayer, so a claimed path without one cannot occur; the only missing registration fabric can detect is the run ledger.
+
+### Added after Discussion (parent, 2026-11-01): lym heddle resolves the hub as the other hub-only CLIs do
+
+Decision: lym heddle is hub-only and resolves the hub through lymcwd (CwdFrom, Resolve, RequireDrivableWorktree), not through internal/cliwire.
+
+Rationale: internal/cliwire serves only the standalone-capable CLIs and may import neither lymcwd nor fabricengine; heddle has no standalone mode.
+
+### Added after Discussion (parent, 2026-11-01): No _board literal stays in livestate_doc_test.go
+
+Decision: The quoted error text in livestate_doc_test.go is reworded with the Bolt directory name elided, and the new guard carries no exemption for that file.
+
+Rationale: D9 allows the literal only in the one declaration and TestEnforcement_GeometryLiterals; an exemption would also be one more spelling for the later Bolt directory rename.
+
 ## Constraints
 
 - PATTERN-cwd-resolution: `lymcwd`'s import set is unchanged; heddle's engine is handed the warp root and Bolt paths and imports no `lymcwd`.
