@@ -1,0 +1,21 @@
+{
+  "current_producer": "Worktree-Create",
+  "state": "blocked",
+  "error": "battencli: claim the board entry of \"warp-visibility\": board: origin is unreachable, so the owner write was not pushed: fetching origin for the board at /home/knatte/Code/loomyard-LYMHUB/_board failed (gitrepo: fetch in /home/knatte/Code/loomyard-LYMHUB/_board: git exited 1 (run `git -C /home/knatte/Code/loomyard-LYMHUB/_board fetch` for git's own diagnosis)); re-run the command once the remote is reachable",
+  "pause_requested": false,
+  "activity": {
+    "now": "Worktree-Create",
+    "last": "Worktree-Create → stuck",
+    "wait": "battencli: claim the board entry of \"warp-visibility\": board: origin is unreachable, so the owner write was not pushed: fetching origin for the board at /home/knatte/Code/loomyard-LYMHUB/_board failed (gitrepo: fetch in /home/knatte/Code/loomyard-LYMHUB/_board: git exited 1 (run `git -C /home/knatte/Code/loomyard-LYMHUB/_board fetch` for git's own diagnosis)); re-run the command once the remote is reachable"
+  },
+  "history": [
+    {
+      "producer": "Worktree-Create",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-11-01T07:07:43Z",
+      "budget_exempt": true,
+      "machine": "neve"
+    }
+  ]
+}
