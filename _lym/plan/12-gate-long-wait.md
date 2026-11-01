@@ -1,18 +1,18 @@
 # Card 12 — gate-long-wait
 
 **Create:**
-- `plan:internal/gatecli#longWait` -> `func longWait(records []gateslot.RunRecord, key string, capWait time.Duration, maxReruns int) bool`
-- `plan:internal/gatecli#TestLongWait` -> `func TestLongWait(t *testing.T)`
-- `plan:internal/gatecli#chooseCap` -> `func chooseCap(call frontCall, readRecords func(dir string) ([]gateslot.RunRecord, error)) time.Duration`
-- `plan:internal/gatecli#TestChooseCap` -> `func TestChooseCap(t *testing.T)`
-- `plan:internal/gatecli#helperLongCapEnv` -> `const helperLongCapEnv = "GATECLI_TEST_LONG_CAP"`
-- `plan:internal/gatecli#helperMaxRerunsEnv` -> `const helperMaxRerunsEnv = "GATECLI_TEST_MAX_RERUNS"`
+- `internal/gatecli#longWait`
+- `internal/gatecli#TestLongWait`
+- `internal/gatecli#chooseCap`
+- `internal/gatecli#TestChooseCap`
+- `internal/gatecli#helperLongCapEnv`
+- `internal/gatecli#helperMaxRerunsEnv`
 
 **Edit:**
-- `plan:internal/gatecli#runFront`
-- `plan:internal/gatecli#frontCall`
+- `internal/gatecli#runFront`
+- `internal/gatecli#frontCall`
 - `internal/gatecli#runGateHelper`
-- `plan:internal/gatecli#TestGateTest_DetachedRun`
+- `internal/gatecli#TestGateTest_DetachedRun`
 - `//internal/gatecli/doc.go`
 
 **Uses:**

@@ -8,15 +8,15 @@
 - `internal/gatecli#runCardVerify` -> `func runCardVerify(ctx context.Context, out, stderr io.Writer, id string, seams detachSeams) int`
 - `internal/gatecli#newCommand`
 - `internal/gatecli#runDetached`
-- `plan:internal/gatecli#runFront`
+- `internal/gatecli#runFront`
 - `internal/gatecli#detachRun`
-- `plan:internal/gatecli#TestGateTest_DetachedRun`
+- `internal/gatecli#TestGateTest_DetachedRun`
 - `internal/gatecli#TestGateCardVerify`
 - `//internal/gatecli/doc.go`
 
 **Uses:**
-- `plan:internal/gatecli#frontDecision`
-- `plan:internal/gatecli#detachKeyDir`
+- `internal/gatecli#frontDecision`
+- `internal/gatecli#detachKeyDir`
 - `internal/gatecli#detachRequest`
 - `internal/gatecli#runPhase`
 - `internal/gatecli#detachRun.writePhase`

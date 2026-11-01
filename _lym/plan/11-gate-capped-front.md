@@ -2,27 +2,27 @@
 
 **Create:**
 - `//internal/gatecli/detachfront.go`
-- `plan:internal/gatecli#detachSeams` -> `type detachSeams struct`
-- `plan:internal/gatecli#defaultDetachSeams` -> `func defaultDetachSeams() detachSeams`
-- `plan:internal/gatecli#runnerSpawn` -> `type runnerSpawn struct`
-- `plan:internal/gatecli#launchRunner` -> `func launchRunner(spawn runnerSpawn) (int, error)`
-- `plan:internal/gatecli#frontCall` -> `type frontCall struct`
-- `plan:internal/gatecli#frontDecision` -> `func frontDecision(dir string, wait bool, seams detachSeams) (call frontCall, capped bool)`
-- `plan:internal/gatecli#detachKeyDir` -> `func detachKeyDir(anchor, verb, runDir string, words []string) string`
-- `plan:internal/gatecli#runFront` -> `func runFront(ctx context.Context, out, stderr io.Writer, call frontCall, seams detachSeams) int`
-- `plan:internal/gatecli#answerRunGoing` -> `func answerRunGoing(out io.Writer, pool *gateslot.Pool, phase runPhase, waited time.Duration) int`
-- `plan:internal/gatecli#helperCapEnv` -> `const helperCapEnv = "GATECLI_TEST_CAP"`
-- `plan:internal/gatecli#helperLockMarginEnv` -> `const helperLockMarginEnv = "GATECLI_TEST_LOCK_MARGIN"`
-- `plan:internal/gatecli#helperClaimBoundEnv` -> `const helperClaimBoundEnv = "GATECLI_TEST_CLAIM_BOUND"`
-- `plan:internal/gatecli#helperGraceEnv` -> `const helperGraceEnv = "GATECLI_TEST_GRACE"`
-- `plan:internal/gatecli#helperLaunchEnv` -> `const helperLaunchEnv = "GATECLI_TEST_LAUNCH"`
-- `plan:internal/gatecli#helperLaunch` -> `func helperLaunch(spawn runnerSpawn) (int, error)`
-- `plan:internal/gatecli#helperRoleRunGate` -> `const helperRoleRunGate = "rungate"`
-- `plan:internal/gatecli#runGateRoleHelper` -> `func runGateRoleHelper() int`
-- `plan:internal/gatecli#joinable` -> `func joinable(run joinState, now time.Time, live func(int) bool, reading func(int) (string, bool)) bool`
-- `plan:internal/gatecli#joinState` -> `type joinState struct`
-- `plan:internal/gatecli#TestJoinable` -> `func TestJoinable(t *testing.T)`
-- `plan:internal/gatecli#TestGateTest_DetachedRun` -> `func TestGateTest_DetachedRun(t *testing.T)`
+- `internal/gatecli#detachSeams`
+- `internal/gatecli#defaultDetachSeams`
+- `internal/gatecli#runnerSpawn`
+- `internal/gatecli#launchRunner`
+- `internal/gatecli#frontCall`
+- `internal/gatecli#frontDecision`
+- `internal/gatecli#detachKeyDir`
+- `internal/gatecli#runFront`
+- `internal/gatecli#answerRunGoing`
+- `internal/gatecli#helperCapEnv`
+- `internal/gatecli#helperLockMarginEnv`
+- `internal/gatecli#helperClaimBoundEnv`
+- `internal/gatecli#helperGraceEnv`
+- `internal/gatecli#helperLaunchEnv`
+- `internal/gatecli#helperLaunch`
+- `internal/gatecli#helperRoleRunGate`
+- `internal/gatecli#runGateRoleHelper`
+- `internal/gatecli#joinable`
+- `internal/gatecli#joinState`
+- `internal/gatecli#TestJoinable`
+- `internal/gatecli#TestGateTest_DetachedRun`
 
 **Edit:**
 - `internal/gatecli#newCommand` -> `func newCommand(goBinary string, samplePeriod, preTierCeiling, timeoutUnit, shortageRetryDelay time.Duration, seams detachSeams) *cobra.Command`
