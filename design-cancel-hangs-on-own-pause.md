@@ -1,6 +1,6 @@
 # batten cancel hangs on a step held by its own pause, and --remove fails on removed records
 
-`cancel-hangs-on-own-pause` · Task · bug, batten · draft
+`cancel-hangs-on-own-pause` · Task · bug, batten
 
 ## Seen (orch, 2026-11-01)
 
