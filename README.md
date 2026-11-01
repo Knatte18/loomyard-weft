@@ -102,19 +102,20 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **A concurrent fetch of the same ref fails a batten pass and spawns a tackler**<br>• A fetch into tracking refs waits under the push lock, as fabric's writes wait under theirs<br>• `profile: solid` | [`reconcile-fetch-race`](design-reconcile-fetch-race.md) | darn | Darn-Write | neve | 3h<br>52m | batten, fabric |
 
-##### Ready (0)
+##### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T1 | **A project slug on the board links to its design file**<br>• The facts line links a project slug to design-slug.md when the project has a body | [`project-design-link`](design-project-design-link.md) | darn |  | 0m<br>0m | board |
 
-##### Draft (3)
+##### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **A project slug on the board links to its design file**<br>• The facts line links a project slug to design-slug.md when the project has a body | [`project-design-link`](design-project-design-link.md) | darn |  | 0m<br>0m | board |
 | T3 | `draft` **One test binary per package, the tier chosen at run time**<br>• LYM_TEST_TIER selects the tier instead of build tags, taking a cold gate run from 532 test binaries to 182 | [`gate-one-binary-per-package`](design-gate-one-binary-per-package.md) | tapestry |  | 47m<br>47m | gate, testkit, pattern |
 | T5 | `draft` **Study: Parts-Write and Parts-Plan-Write against Plan-Write**<br>• Write the plans of two landed runs both ways and compare cost, time, gate pass and one Plan-Review round<br>• `profile: docs` | [`plan-split-bench`](design-plan-split-bench.md) | darn |  | 47m<br>47m | loom |
 
