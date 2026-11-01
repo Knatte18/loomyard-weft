@@ -1,6 +1,6 @@
 # Trial the cuts that make a gate run link fewer new test binaries
 
-`gate-fewer-binaries-trial` · Task · research, gate, testkit · running · Darn-Write
+`gate-fewer-binaries-trial` · Task · research, gate, testkit · running · Drift-Verify
 
 ## Seen
 
