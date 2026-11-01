@@ -1,6 +1,6 @@
 # One test binary per package, the tier chosen at run time
 
-`gate-one-binary-per-package` · Task · enhancement, gate, testkit, pattern · running · Code-Burler-Fix
+`gate-one-binary-per-package` · Task · enhancement, gate, testkit, pattern · running · Code-Bouncer
 
 ## Seen (research, landed 2026-11-01)
 
