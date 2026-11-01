@@ -23,7 +23,7 @@ Out:
 - A worktree or run keeping the heddle text it started with: board note `run-pins-its-version`.
 - Codex's engine; heddle stores Codex entries, and `codex-engine` reads them through the seam of D4 when it is built.
 - The rename of `_board` to `_bolt`: task `bolt-dir-rename`, which lands after this one.
-- Board paths in fabric outside the records replay, the ended set and the owner read, such as `fabricengine.BoardDir` and the write lock's file name.
+- Board names in fabric outside the records replay, the ended set and the owner read that D9 does not rename, such as the write lock's file name `board.lock`.
 
 ## Decisions
 
@@ -54,12 +54,13 @@ Verbs:
 - `set <slug>` — create or update an entry from flags for its text (from a file or stdin), order and targets; a new entry needs all three, an update changes only those given.
 - `remove <slug>` — delete an entry.
 - `show <target>` — print what that target renders to now, writing nothing.
-- `render [<worktree>]` — render every file target into the named warp worktree, the current one by default, under D3's rules.
+- `render [<worktree>]` — render every file target into the named warp worktree of the current hub, the current one by default, under D3's rules.
+  The name is a warp worktree's directory name, the last element of a path `lym fabric list` prints, and resolves through `lymcwd.NamedWorktree`; a name matching no listed worktree, or only one git marks prunable, is refused, so the verb writes files and seeds an exclude file only in an existing warp worktree of its own hub.
 
 A write follows the board's own write path: it saves `heddle.json` under the Bolt write lock the board's writes and Bolt's pull and replay take, the one `internal/lock` file `fabricengine.BoardWriteLockFile` names, and then starts the board's detached Bolt sync, which commits what is dirty under that lock and pushes.
 Heddle pulls and commits nothing in the foreground and starts no sync of its own.
 A write never touches a live worktree (D6).
-Refusals: an invalid slug, an empty text, an unknown target, a missing field on a new entry, an unknown slug on `get` or `remove`, and any verb outside a hub, each naming the way forward (the valid values, `lym heddle list`, or running inside a hub's worktree).
+Refusals: an invalid slug, an empty text, an unknown target, a missing field on a new entry, an unknown slug on `get` or `remove`, a `render` argument naming no warp worktree of the hub, and any verb outside a hub, each naming the way forward (the valid values, `lym heddle list`, `lym fabric list`, or running inside a hub's worktree).
 
 Rationale: the operator rules every write goes through `lym heddle` under the lock the board uses; the board's writes save under the lock and leave commit and push to the detached sync (`internal/boardengine/sync.go`), so heddle's writes serialize with Bolt's pull and replay the same way.
 
@@ -67,22 +68,38 @@ Rationale: the operator rules every write goes through `lym heddle` under the lo
 
 Heddle's code holds the target table; each row names its delivery and, for a file, its file at the warp worktree's root and the warp paths whose change re-renders it:
 
-- `claude-file` → `CLAUDE.local.md`: the row's entries, in order, joined by blank lines; re-rendered on a change to `CLAUDE.local.md`.
+- `claude-file` → `CLAUDE.local.md`: when the worktree's root holds no `CLAUDE.md`, there or in its `.claude` directory, one import line for each `AGENTS.md` it holds there or in its `.claude` directory, `@AGENTS.md` and `@.claude/AGENTS.md`, then the row's entries, in order, joined by blank lines; re-rendered on a change to `CLAUDE.local.md`, or to an `AGENTS.md` or a `CLAUDE.md` there or in its `.claude` directory.
 - `codex-file` → `AGENTS.override.md`: the repository's own root `AGENTS.md`, when the worktree holds one, then the row's entries in order; re-rendered on a change to `AGENTS.md` or `AGENTS.override.md`.
 - `claude-prompt` and `codex-prompt`: the system prompt of a session of that engine (D4).
 
 Each file opens with a one-line HTML comment marking it as heddle's render.
 Rendering a file target into a warp worktree:
 
-- It writes the file in place; a session reads it only when it starts, and two renders of one worktree write the same text.
+- It writes each file atomically: it writes a temporary file into a `.heddle` directory at the warp root, renames it onto the target and removes the emptied directory, so a reader sees the old file or the new one whole and the render leaves no file beside its targets.
+  The directory sits under the warp root with its targets, so the rename never crosses a filesystem, and fabric's exclude list carries it (D5), so it never shows as untracked in warp while it exists.
+  Its temporary files are named `<target>.tmp`; one a crash left is overwritten and removed by the next render.
+  When the root already holds a `.heddle` that is a file, or a directory holding anything else, the render writes no file target and warns naming the path.
+  Claude Code re-reads the project-root `CLAUDE.md` from disk after each compaction, and a `CLAUDE.local.md` is treated the same way (Claude Code memory docs, code.claude.com/docs/en/memory, sections "Instructions seem lost after `/compact`" and "Import additional files", checked on v2.1.316 on 2026-11-01), so a take-in or hand render reaches a live Claude session at its next compaction.
+- A render of a worktree holds a per-worktree lock while it reads its inputs and writes its files: an `internal/lock` file under the pair's never-tracked `.lym` tree, its directory named by `internal/lymdirs` and its path handed to heddle with the warp root.
+  Two renders of one worktree therefore serialize, and the last one's text stands whole.
+- It reads `heddle.json` holding the Bolt write lock, the file `fabricengine.BoardWriteLockFile` names in the Bolt checkout, which Bolt's pull, its replay and `reconcileRecordsBranch` hold while git replaces the file; it takes that lock only around the read and releases it before it writes, so a render sees the old entries or the new, never an absent file in mid-move.
+  Since a Bolt push holds that lock across its fetch and push retries, the render waits for it a bounded time (`lock.AcquireWriteLockWithin`); a wait that runs out fails the render, writing nothing, which a fabric move reports as a seam failure (D6) and a hand `lym heddle render` refuses with running it again as the way forward.
+  The lock order is the render lock, then the Bolt write lock, and fabric fires D6's events with no Bolt write lock held, since a second acquire of an `internal/lock` file in one process blocks.
 - It never overwrites or removes a file at the target path that lacks the marker, which covers a file the repository tracks: it skips that target and reports a warning naming the file.
 - A target with no entry gets no file, and a stale render of heddle's own, marked, is removed; a repository `AGENTS.md` with no `codex-file` entry therefore needs no override.
-- It refuses a target whose file is not on fabric's exclude list (D5), so a render never shows as an untracked file in warp.
+  Removing a stale marked render is never refused by the exclude-list check below, which guards writes only.
+- It refuses to write a target whose file, or the `.heddle` directory, is not on fabric's exclude list (D5), naming the path's return to fabric's `warp_exclude` key as the way forward.
+- Before any render writes, the list's lines are in the warp repository's `info/exclude`: fabric seeds them before it fires either event of D6, and `lym heddle render` first has fabric seed them through `fabricengine.SeedWarpExclude` (new), which takes the exclude lock as D5's seeding does.
+  Heddle runs no git, and a render never shows as an untracked file in warp, in a worktree made before this lands as in any other.
 
 Files go at the warp root, not at the anchor: Claude Code reads `CLAUDE.md` and `CLAUDE.local.md` from the session's working directory and each parent up to the filesystem root (Claude Code memory docs; `claudeengine`'s `InstructionFiles` names both), and Codex reads one instruction file per directory from the git root down to the working directory, `AGENTS.override.md` before `AGENTS.md` (OpenAI's AGENTS.md guide, checked 2026-10-31, as the board entry records).
 A root file therefore reaches a session started at any anchor, and an anchor change moves nothing heddle wrote.
 
-Rationale: the override must carry the team's `AGENTS.md`, since Codex loads only one file in that directory; the marker is what lets heddle tell its own render from a file it must not touch without running git on warp (PATTERN-fabric-git).
+Under its default Project instructions value, `claude-md-or-agents-md`, Claude Code reads `AGENTS.md` only when no `CLAUDE.md`, `CLAUDE.md` in a `.claude` directory, or `CLAUDE.local.md` sits in the working directory or above it, so a `CLAUDE.local.md` alone hides the repository's `AGENTS.md`, at the root or in its `.claude` directory, which Claude otherwise reads at session start; an `@AGENTS.md` or `@.claude/AGENTS.md` import inside a `CLAUDE.local.md` is expanded, and an `AGENTS.md` already loaded is never read twice (Claude Code memory docs, code.claude.com/docs/en/memory, sections AGENTS.md, When Claude Code reads AGENTS.md and Choose which instruction files load; behaviour from v2.1.277, checked on v2.1.316 on 2026-11-01).
+A repository with its own root `CLAUDE.md` already keeps its `AGENTS.md` from Claude, so the render adds no import there.
+
+Rationale: the override must carry the team's `AGENTS.md`, since Codex loads only one file in that directory, and `CLAUDE.local.md` must import it, since Claude otherwise skips it; the marker is what lets heddle tell its own render from a file it must not touch without running git on warp (PATTERN-fabric-git).
+The import reaches every Claude session in the worktree, where setting `instructionFiles` in shuttle's settings file would reach only sessions launched with shuttle's `--settings`.
 
 ### D4 — Prompt delivery through a shuttle seam
 
@@ -90,6 +107,8 @@ Rationale: the override must carry the team's `AGENTS.md`, since Codex loads onl
 `claudeengine`'s `Prepare` appends the `claude-prompt` entries, in order, after lym's own sentences in the run directory's append-system-prompt file, separated from them and from each other by a blank line.
 The one-line rule `claudeengine`'s init check applies stays on lym's own sentences only: the file is passed to Claude Code by `--append-system-prompt-file` and is echoed nowhere.
 A resume through the launch's own resume line reuses the file its launch wrote, so its passages stay; a resume that runs `Prepare` again, as an adopted session does, reads heddle afresh like any launch.
+That re-read is one of two bounded exceptions to an agent's rules not shifting mid-run: an adopted session's run directory holds no earlier passages, so it takes heddle as it stands at adoption.
+The other is a file render reaching a live Claude session at its next compaction (D3).
 `codex-prompt` entries are stored and shown, and are read through the same seam by `codex-engine` when it is built, into Codex's `developer_instructions`.
 A session launched outside a hub gets no passage.
 
@@ -97,10 +116,10 @@ Rationale: shuttle keeps engine specifics under `internal/shuttleengine/<engine>
 
 ### D5 — Fabric's warp exclude list
 
-`internal/fabricengine/template.yaml` gains a key, `warp_exclude`, a whitespace-separated list of paths relative to a warp worktree's root, separate from `pathspec` and its junction names; its template default is `CLAUDE.local.md AGENTS.override.md`.
-Fabric seeds an anchored line `/<path>` for every listed path into the warp repository's `.git/info/exclude`, never `.gitignore`, through the same exclude-file mutation the junction seeding uses, idempotently and under the same exclude lock, whenever it creates or re-wires a warp worktree (`Topology.Add`, `AddLocal`, `CloneHub`, `lym fabric reconcile`).
+`internal/fabricengine/template.yaml` gains a key, `warp_exclude`, a whitespace-separated list of paths relative to a warp worktree's root, separate from `pathspec` and its junction names; its template default is `CLAUDE.local.md AGENTS.override.md .heddle`.
+Fabric seeds an anchored line `/<path>` for every listed path into the warp repository's `.git/info/exclude`, never `.gitignore`, through the same exclude-file mutation the junction seeding uses, idempotently and under the same exclude lock, whenever it creates or re-wires a warp worktree (`Topology.Add`, `AddLocal`, `CloneHub`, `lym fabric reconcile`), before it fires D6's take-in event, and on `fabricengine.SeedWarpExclude` (new) (D3).
 The list is never folded into the wired junction names, so health and drift checks never ask for a junction of it.
-A listed path's line is never unseeded, since `info/exclude` is one file for every worktree of the warp repository and every lym worktree carries the files; a line left after a path leaves the list excludes a file nobody writes.
+A listed path's line is never unseeded, since `info/exclude` is one file for every worktree of the warp repository and every lym worktree may write the paths; a line left after a path leaves the list excludes a file nobody writes.
 The key is classified Cross-pair (PATTERN-config-layers): its line reaches every worktree of the repository, so the local layer cannot hold it.
 Fabric's code names no heddle file.
 
@@ -113,9 +132,10 @@ Rationale: the operator rules the excludes a list of their own in fabric's confi
 - a warp worktree was made: fired by `Topology.Add`, `AddLocal` and `CloneHub` last, once the worktree is wired, D5's lines are seeded and, for `CloneHub`, the Bolt checkout exists;
 - a warp worktree took in commits from origin: fired, with the paths that differ between the old and new HEAD, wherever fabric moves a checked-out code branch to origin's commits: the warp arm of `Fabric.Pull`, a fast-forward or a reset, and `ReconcileOrigin`'s fast-forward at its code-branch call sites, never for a records or Bolt branch.
 
-A detached sync is a lym process with the same pre-run, so it reaches the seam too.
+Every lym process, detached or not, runs the same root pre-run, so every such move reaches the seam.
 A missing seam is no event, so a test binary needs no install; a pin in `cmd/lym` checks the root pre-run installs it.
-A seam failure never fails the fabric verb and never undoes its move: it is logged as a warning and reported in the verb's result with `lym heddle render` as the way forward.
+A seam failure never fails the fabric verb and never undoes its move: it is logged as a warning naming the worktree and `lym heddle render` as the way forward, and the move's result carries it too, `Fabric.Pull`'s result and `ReconcileOrigin`'s `OriginReport`, which gains a per-branch warning its `Summary` prints.
+A process that prints no result only logs it: the stale file stays until the next take-in of one of its re-render paths or a hand `lym heddle render`.
 Heddle implements it:
 
 - on "made", it renders every file target into the worktree (D3);
@@ -136,10 +156,11 @@ Rationale: the operator rules fabric knows nothing of heddle and re-renders only
 - One replayer may also be the run ledger: it names the Bolt file that holds the runs and decodes from it each run's slug, whether it has ended and its created stamp, and names the runs a commit of its paths touches.
   Fabric keeps the ended-set rule, the set-aside tags and the owner read, and reads every one of them through the run ledger, never through a file name of its own.
 - The ended-run set-aside covers only the run ledger's part of a commit: a commit whose ledger changes all belong to ended runs is set aside whole only when it touches no other replayer's path; otherwise its ledger part is skipped, the original is tagged as today, and the other replayers still apply theirs.
-- A set-aside for a loss or refusal of a replayer that is not the run ledger is tagged under that replayer's name, never under a bare entry slug that could read as a run's.
-- The board registers one replayer for `board.json`, its overview files and its design files, and is the run ledger; heddle registers one for `heddle.json`.
+- A set-aside for a loss or refusal of a replayer that is not the run ledger is tagged `set-aside/replayer/<name>/<short sha>`, a shape no run's `set-aside/<slug>/<short sha>` takes.
+  `setAsideTag`'s empty-slug fallback no longer names the board: a run ledger set-aside with no run slug takes the run ledger's replayer tag.
+- The board registers one replayer, named `board`, for `board.json`, its overview files and its design files, and is the run ledger; heddle registers one, named `heddle`, for `heddle.json`.
 - The lym root pre-run registers both, and a test kit registers what its test needs.
-- A commit whose claimed paths have no replayer registered fails as `ErrBoardReplayMissing` fails today, naming the registration as the way forward; a read of the ended set with no run ledger fails the same way.
+- A commit whose claimed paths have no replayer registered fails as `ErrBoardReplayMissing` fails today, naming the registration as the way forward; a read of the ended set and the origin owner read with no run ledger registered fail the same way.
 
 Afterwards the replay, the ended set and the owner read in fabric hold no board file name, board status value or board-named type.
 
@@ -157,10 +178,12 @@ Rationale: the operator rules the merge is shared, not copied.
 ### D9 — The Bolt directory name in one place
 
 - The `_board` literal is declared once, as an exported constant in `internal/lymcwd`: `lymcwd` reads the hub-wide anchor marker in the Bolt checkout and imports only the standard library, `internal/dotgit` and `internal/weftname` (PATTERN-cwd-resolution), while `fabricengine` imports both `lymcwd` and `runproc`, so neither `lymcwd` nor `runproc` can take the name from `fabricengine`.
+  `runproc` takes it from `lymcwd`, which imports neither `runproc` nor any package that does, so the new edge closes no cycle; PATTERN-leaf-packages's background gains `internal/lymcwd` in `internal/runproc`'s import set, for the one Bolt directory name, and its overview line under `## PATTERN changes` stays as it is.
 - `fabricengine.BoltDirName` (new) is that constant re-exported and is the name every other package uses; `fabricengine.BoardDirName` is set from `BoltDirName`, and `runproc.HubOwner` is set from the `lymcwd` constant.
 - What lives in Bolt beside the board takes its place from `BoltDirName`, never from `BoardDirName`: `heddle.json`, the `_lym` stencils, specs and config, the `.lym` scratch tree, the Bolt write lock and the hub-reserved name.
+  `fabricengine.BoltDir` (new), built from `BoltDirName`, gives the Bolt checkout's path, and fabric's uses of `BoardDir` that mean the Bolt checkout, `BoardWriteLockPath` included, move to it; `BoardDir` is built from `BoardDirName`.
   What is the board's own, `board.json`, its overview and design files, takes it from `BoardDirName`.
-- Every message and test takes the name from the constant, and `TestEnforcement_GeometryLiterals`'s owner row for `_board` narrows to `internal/lymcwd`.
+- Every message and test takes the name from the constant, bar `TestEnforcement_GeometryLiterals`, whose policed-token list, owner-row key and planted fixture sources spell the token it polices; that test's owner row for `_board` narrows to `internal/lymcwd`.
 - A comment names "the Bolt checkout", never the path.
 - A stencil or skill names the path through what lym already resolves for it, or as "the Bolt checkout", never as a literal.
 
@@ -169,7 +192,8 @@ Rationale: `bolt-dir-rename` then changes one constant's value.
 ## Constraints
 
 - PATTERN-cwd-resolution: `lymcwd`'s import set is unchanged; heddle's engine is handed the warp root and Bolt paths and imports no `lymcwd`.
-- PATTERN-durable-vs-ephemeral-state: the rendered files are never tracked and sit outside `.lym`, which the entry forbids; see `## PATTERN changes`.
+- PATTERN-leaf-packages: its background gains `internal/lymcwd` in `internal/runproc`'s import set, for the one Bolt directory name (D9); its overview line under `## PATTERN changes` is unchanged.
+- PATTERN-durable-vs-ephemeral-state: the rendered files and their `.heddle` temporary directory are never tracked and sit outside `.lym`, which the entry forbids; see `## PATTERN changes`.
 - PATTERN-sparse-hub-base: the new key reaches a hub through the template default; no hub base file gets it written.
 - PATTERN-cli-cobra and PATTERN-cliwire-sole-wiring: `lym heddle` is one cobra subtree, wired through `internal/cliwire`.
 - PATTERN-spawn-observability and PATTERN-run-process-owner: heddle spawns nothing of its own; the Bolt sync it starts is the board's.
@@ -183,32 +207,42 @@ Rationale: `bolt-dir-rename` then changes one constant's value.
 - The fabric seam carries creation as well as take-in (D6), so every worktree fabric makes gets its files with no caller-side call.
 - A seam failure in fabric is a warning, not a verb failure (D6).
 - An adopted resume reads heddle afresh (D4); only a resume through the launch's own line keeps its passages.
+- The `claude-file` render keeps the repository's `AGENTS.md` reaching Claude by an import line, not by setting Claude Code's Project instructions value (D3).
+- The one `_board` declaration lives in `lymcwd`, re-exported by `fabricengine`, departing from the entry's wording "`lymcwd` drops its own copy", which cannot hold while `fabricengine` imports `lymcwd` (D9).
 
 ## Open risks
 
-- D9 departs from the entry's wording "`lymcwd` drops its own copy" and "`fabricengine.BoltDirName` (new)" as the one constant: the one declaration is `lymcwd`'s, re-exported by `fabricengine`, so `bolt-dir-rename` changes `lymcwd`'s value. The run's parent should confirm this reading of "lives in that one constant only".
 - A repository that tracks `AGENTS.override.md` hides lym's `codex-file` entries from Codex, since heddle skips a file without its marker; the warning names it, and no fix is designed.
-- Claude Code's support for `CLAUDE.local.md` is assumed from its docs and `claudeengine`'s instruction file list; if a later Claude Code drops it, `claude-file` entries stop reaching sessions while `claude-prompt` entries still do.
-- Worktrees that exist when this lands get no files until `lym heddle render` runs in each, or a sync takes in a change to one of D3's re-render paths.
+- The `claude-file` render judges only the warp root: an `AGENTS.md` between the root and a session's anchor is hidden from Claude while a `CLAUDE.local.md` render exists, and a root `AGENTS.md` reaches a session whose anchor holds the repository's only `CLAUDE.md`, which the team's own setup keeps it from.
+- Worktrees that exist when this lands get no files until `lym heddle render` runs in each, which has fabric seed the exclude lines first, or a sync takes in a change to one of D3's re-render paths, before whose render fabric seeds them.
+
+<!-- lym:carry-over Discussion-Review -->
+- Discussion-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/discussion/round-2-review.md; fixer report: _lym/reviews/discussion/round-2-fixer-report.md.
+  - detached-seam-failure-reaches-no-one (class consistency, severity MEDIUM, open in rounds 1, 2)
+  - heddle-json-read-no-bolt-lock (class design, severity MEDIUM, open in rounds 2)
+  - in-place-render-reread-at-compaction (class design, severity MEDIUM, open in rounds 2)
+<!-- /lym:carry-over Discussion-Review -->
 
 ## Acceptance criteria
 
 - D1: a store round-trip keeps an unknown top-level key and an unknown entry key, on an entry `set` updates and on its neighbours after an add and a remove; an absent `heddle.json` lists no entry; entries render in `order`, ties by slug.
-- D2: `set`, `remove` and their refusals each have a case, every refusal naming its way forward; a write saves under the Bolt write lock and starts the board's detached sync, with no foreground pull or commit; a verb outside a hub refuses; `show` writes nothing.
-- D3: a `claude-file` render joins its entries in order; a `codex-file` render puts the repository's `AGENTS.md` first and writes no file when there is no `codex-file` entry; a file at a target path without the marker is neither overwritten nor removed and yields a warning; a stale marked render is removed when its target has no entry; a target off the exclude list is refused.
+- D2: `set`, `remove` and their refusals each have a case, every refusal naming its way forward; a write saves under the Bolt write lock and starts the board's detached sync, with no foreground pull or commit; a verb outside a hub refuses; `render` with a name matching no listed warp worktree of the hub, or only a prunable one, refuses, naming `lym fabric list`, and writes and seeds nothing; `show` writes nothing.
+- D3: a `claude-file` render joins its entries in order; in a worktree with a root `AGENTS.md` and no `CLAUDE.md`, there or in its `.claude` directory, it opens with the `@AGENTS.md` import, in one whose only `AGENTS.md` sits in its `.claude` directory it opens with the `@.claude/AGENTS.md` import, and with a root `CLAUDE.md` it holds none; a render replaces its file by rename and leaves no `.heddle` directory and no untracked file in warp; a render concurrent with a Bolt fast-forward over a `heddle.json` change renders the old entries or the new, never none; a render whose Bolt write lock stays held past its wait writes nothing and fails naming `lym heddle render`; a root `.heddle` file, or a `.heddle` directory holding another file, yields a warning naming it and no file target written; a `codex-file` render puts the repository's `AGENTS.md` first and writes no file when there is no `codex-file` entry; a file at a target path without the marker is neither overwritten nor removed and yields a warning; a stale marked render is removed when its target has no entry, also when its path is off the exclude list; a write to a target off the exclude list is refused; a `lym heddle render` and a take-in render in a worktree whose `info/exclude` lacks the lines leave the lines seeded before the file is written; two renders of one worktree with different inputs leave one render's whole text.
 - D4: a fresh Claude launch's append-system-prompt file holds lym's sentences then the `claude-prompt` passages in order; a resume through the launch's own resume line keeps the file; a launch with no seam installed or outside a hub holds lym's sentences only.
-- D5: a made warp worktree's `info/exclude` holds `/CLAUDE.local.md` and `/AGENTS.override.md` once each after repeated seeding; weft's exclude holds neither; a removed pair leaves the lines; the wired junction names hold neither; `warp_exclude` is classified and closed to the local layer.
-- D6: `Topology.Add` and `CloneHub` fire "made" after the exclude lines and the Bolt checkout exist; a pull that fast-forwards warp over a commit changing `AGENTS.md` fires "took in" with that path and re-renders `AGENTS.override.md`, while one changing only other paths re-renders nothing; a records or Bolt fast-forward fires nothing; a `heddle.json` change alone re-renders no worktree; a failing seam leaves the pull's result intact with a warning; the root pre-run installs the seam.
-- D7: a commit touching only `heddle.json`, made on both sides, replays by entry with no conflict; a commit touching `board.json` and `heddle.json` is applied by both replayers into one commit; such a commit whose board changes belong only to an ended run keeps its heddle change on the tip and tags the original; a commit touching an unclaimed path is cherry-picked; a claimed path with no replayer fails naming the registration; the ended set and owner read work through the run ledger as before; no `board.json`, overview or design file name, `done` status or board-named replay type is left in fabric's replay, ended-set or owner-read code.
+- D5: a made warp worktree's `info/exclude` holds `/CLAUDE.local.md`, `/AGENTS.override.md` and `/.heddle` once each after repeated seeding; weft's exclude holds none of them; a removed pair leaves the lines; the wired junction names hold none of them; `warp_exclude` is classified and closed to the local layer.
+- D6: `Topology.Add` and `CloneHub` fire "made" after the exclude lines and the Bolt checkout exist; a pull that fast-forwards warp over a commit changing `AGENTS.md` fires "took in" with that path and re-renders `AGENTS.override.md`, while one changing only other paths re-renders nothing; a records or Bolt fast-forward fires nothing; a `heddle.json` change alone re-renders no worktree; a failing seam leaves the pull's result intact with a warning; a failing seam in a `ReconcileOrigin` code-branch fast-forward logs a warning naming the worktree and `lym heddle render`, puts it in the report's `Summary` and leaves the move intact; the root pre-run installs the seam.
+- D7: a commit touching only `heddle.json`, made on both sides, replays by entry with no conflict; a commit touching `board.json` and `heddle.json` is applied by both replayers into one commit; such a commit whose board changes belong only to an ended run keeps its heddle change on the tip and tags the original; a commit touching an unclaimed path is cherry-picked; a claimed path with no replayer fails naming the registration; the ended set and owner read work through the run ledger as before, and with no run ledger registered each fails naming the registration; a heddle set-aside is tagged `set-aside/replayer/heddle/<short sha>`; no `board.json`, overview or design file name, board status `done` or board-named replay type is left in fabric's replay, ended-set or owner-read code.
 - D8: the board's existing replay cases pass unchanged over the shared merge; heddle's replay keeps origin's value of a field both sides changed, reports it lost, and keeps an unknown entry key.
-- D9: the `_board` literal appears in one Go declaration; `fabricengine.BoardDirName` and `runproc.HubOwner` derive from it; stencils, specs and skills hold no `_board` literal; the geometry literal test's owner row names `internal/lymcwd` alone.
+- D9: the `_board` literal appears in one Go declaration and in `TestEnforcement_GeometryLiterals`, in its policed-token list, owner-row key and planted fixture sources; `fabricengine.BoardDirName`, `fabricengine.BoltDir` (new) and `runproc.HubOwner` derive from it; stencils, specs and skills hold no `_board` literal; the geometry literal test's owner row names `internal/lymcwd` alone.
 
 ## PATTERN changes
 
-- `PATTERN-durable-vs-ephemeral-state` — changes: Adding file: tracked under `_lym`, never-tracked under `.lym`, same subpath, bar heddle's rendered instruction files at a warp root; only `internal/lymdirs` names either, bar a `tools/` script's variable block.
-- `PATTERN-heddle-instructions` — adds: Writing a lym instruction file into a worktree or a passage into a launched session's system prompt: only `internal/heddleengine` (new), from `heddle.json` in the Bolt checkout; that file written only by `lym heddle` verbs; fabric names no heddle file.
+- `PATTERN-durable-vs-ephemeral-state` — changes: Adding file: tracked under `_lym`, never-tracked under `.lym`, same subpath, bar heddle's rendered instruction files and their `.heddle` temporary directory at a warp root; only `internal/lymdirs` names either, bar a `tools/` script's variable block.
+- `PATTERN-heddle-instructions` — adds: Rendering heddle entries into a worktree file or a session's system prompt: only from `heddle.json` in the Bolt checkout, through `internal/heddleengine` (new); that file written only by `lym heddle` verbs and heddle's Bolt replayer; fabric names no heddle file.
+- `PATTERN-leaf-packages` — changes: Importing into a leaf package: only closed import set.
 
 ## Notes for the plan writer
 
-- `fabricengine.ConfigDirs` hands configengine the board dir as its `Board` field; under D9 that value is the Bolt checkout, whatever the field is called.
+- `fabricengine.ConfigDirs` hands configengine the board dir as its `Board` field; under D9 that value is the Bolt checkout, taken from `fabricengine.BoltDir` (new), whatever the field is called.
 - The three-way field table in `boardengine`'s replay is the starting point for D8's package.
