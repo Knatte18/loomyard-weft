@@ -317,27 +317,6 @@
       "revised": "2026-10-30T09:39:39Z"
     },
     {
-      "id": 922,
-      "handle": "T7",
-      "slug": "machine-switch",
-      "title": "One verb to take work over on another machine, leaving every run in a known state",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "fabric",
-        "dobby",
-        "batten"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Moving to another machine is many hand steps, and afterwards run states are unclear",
-      "body": "## Seen (operator, 2026-10-31)\n\nMoving work from one machine to another is a string of hand steps, and afterwards the operator cannot tell what state the runs are in.\nOn 2026-10-31 the operator moved from OSL-1046 to Neve: `lym fabric pull`, `lym s`, a `lym adopt` whose tier0 check mailed the orch, and more by hand.\nTask `dobby-land-notice-needs-flag` had started on OSL-1046 on 2026-10-30 and stood at `running · Code-Bouncer`, unlanded.\nAfter the move, dobby on Neve reported its driver strand dead, then a fresh Go driver took it on, and neither the operator nor the orch could say at once whether the run was finished, should run or should not.\n\nThe run went on because `lym adopt` resumes it: step 6 of its help resumes each moved run not done as a detached first pass, so adopting is also starting.\nBolt itself is reconciled with origin first by each of `lym fabric pull`, `lym adopt` (its step 1) and `lym beam start`, so the board was current; what was missing is a view of the runs.\n\n## Design (operator, 2026-11-01)\n\nOne verb takes a beam, or root, over onto this machine and leaves it in a known state, in place of the hand steps.\n- The unit is the beam: the operator names the beams (or root) to take over, and lym supports one beam owned and run on one machine while another beam is owned and run on another.\n- The verb does every step the move needs, each idempotent: sync Bolt, sync warp and weft of the named beams, adopt them, settle what conflicts on the way, and start each beam's dobby and orch as a pair.\n  Which steps those are is for this task to find out from the code (`lym fabric pull`, `lym adopt`, `lym beam start` and what they leave to the operator today); the operator does not list them.\n- The old machine releases nothing: it loses ownership when the new one adopts, and the operator never works one beam on two machines at once.\n- It starts no run by itself: every adopted run stays held until the operator lets it go on, so nothing runs that the operator does not expect.\n  The hold is released per beam, by a verb; a button on reed's action row in that beam's session calls the same verb once note `reed-status-buttons` is built.\n- It prints one line per run: landed, running here, held for a go-ahead, or owned by another machine, with the row it stands at.\n",
-      "status": "done",
-      "created": "2026-10-31T11:40:10Z",
-      "revised": "2026-11-01T11:41:30Z"
-    },
-    {
       "id": 928,
       "handle": "E11",
       "slug": "parent-merge-task",
@@ -526,9 +505,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "machine-switch"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "A fetch into tracking refs waits under the push lock, as fabric's writes wait under theirs",
       "body": "## Seen (orch, 2026-11-01)\n\nAt 13:03:50 a `lym batten run gate-fewer-binaries-trial --continue-pass` failed its origin reconcile: `git fetch origin +refs/heads/main-weft:refs/remotes/origin/main-weft` in the prime's weft exited 1 with `error: fetching ref refs/remotes/origin/main-weft failed: incorrect old value provided`.\nThat is git's answer when another process updated the same remote-tracking ref between this fetch reading it and writing it; `kde-window-placement` was landing and `board-tidy` ran at the same moment, so another fetch of `main-weft` in the same weft is the likely cause.\nThe pass exited 1, the driver spawned a tackler (a Claude session, about 20 s), which found nothing to do, and the loop went on.\n\nAgain the same day, at 14:46, a pass of `board-project-render` after its darn writer refused to resume: \"branch board-project-render is rewound against origin; origin rewound board-project-render to 4ce42a8d, dropping 5655ca77\".\nMoments later `git ls-remote origin` showed `5655ca77`, the same as the local head and the tracking ref, so origin had dropped nothing: the reconcile read origin while the writer's push of `5655ca77` was still in flight.\nThe tackler could not tell and handed a reset-or-push question to the orch, which re-ran the pass by hand.\n\n## Cause in the code\n\nFabric serialises its writes under locks (the weft write lock, the board write lock, the push lock), but `fetchMovedHeads` in `internal/fabricengine/originreconcile.go` runs a plain forced `git fetch` into the tracking refs with no lock and no retry; only the `ls-remote` before it retries, and only on a transport failure.\nA remote-tracking ref is written by a fetch and by a push, so two lym processes fetching or pushing the same branch in one repository race on it.\n\n## Idea (operator, 2026-11-01)\n\nA fetch that writes remote-tracking refs waits its turn under a lock, as fabric's writes do, rather than retrying.\n- Every lym fetch into a repository's tracking refs, the origin reconcile's included, takes the lock that already orders that repository's pushes (the push lock), since a push writes the same refs; it waits for the lock rather than failing when it is held.\n- Find every fetch fabric and batten run into a shared repository's tracking refs and put each under the same lock.\n- The reconcile's read of origin (`ls-remote`) and its rewind verdict take the same lock, so a push in flight finishes before origin is judged rewound.\n",

@@ -2,8 +2,6 @@
 
 `reconcile-fetch-race` · Task · bug, batten, fabric
 
-Depends on: [`machine-switch`](design-machine-switch.md)
-
 ## Seen (orch, 2026-11-01)
 
 At 13:03:50 a `lym batten run gate-fewer-binaries-trial --continue-pass` failed its origin reconcile: `git fetch origin +refs/heads/main-weft:refs/remotes/origin/main-weft` in the prime's weft exited 1 with `error: fetching ref refs/remotes/origin/main-weft failed: incorrect old value provided`.
