@@ -1,6 +1,6 @@
 # P1 Orch instructions in two layers: lym's role and the repository's rules in heddle
 
-Rendered 2026-11-01 14:57 UTC; every age below is as of then.
+Rendered 2026-11-01 14:58 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 `orch-instructions` · Age 1h · Owner `neve`
@@ -14,21 +14,20 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running (1)
+### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| T9 | **lym's design invariants as PATTERN entries**<br>• doc.go as documentation only, fabric's isolation, no hard-coded names and the other code invariants become PATTERN entries | [`pattern-design-principles`](design-pattern-design-principles.md) | darn | Worktree-Create | neve | 1h<br>0m | pattern |
 | T10 | **Heddle gains an orch-prompt target, and lym orch rules stores in heddle**<br>• A heddle target for orch sessions only replaces the hub-wide and local orch rules files<br>• `profile: solid` | [`heddle-orch-target`](design-heddle-orch-target.md) | darn | Worktree-Create | neve | 1h<br>0m | heddle, orch |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T9 | **lym's design invariants as PATTERN entries**<br>• doc.go as documentation only, fabric's isolation, no hard-coded names and the other code invariants become PATTERN entries | [`pattern-design-principles`](design-pattern-design-principles.md) | darn |  | 1h<br>0m | pattern |
+_None._
 
 ### Layer A (1)
 
