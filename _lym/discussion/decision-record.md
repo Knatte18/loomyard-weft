@@ -22,6 +22,12 @@ A project file lists the projects under it only as bullet links (`projectsSectio
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-01): A project with a body links to its design file
+
+Decision: A project's body is rendered to design-<slug>.md like a task's, but no board file links to it today: the README and the project file show only the brief. Wherever a project is rendered, in the README and in its own file, the project's slug in its facts line links to design-<slug>.md when the project has a body, the way slugCell links a task's slug in its table row.
+
+Rationale: The operator could not find P2 agent-turns' body, which holds its wave order, anywhere in the rendered board (operator, 2026-11-01).
+
 ## Constraints
 
 ## Auto-mode assumptions
