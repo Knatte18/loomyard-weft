@@ -5,7 +5,7 @@
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",
-    "last": "Open-IDE → skipped",
+    "last": "Run-Shed → bounced to Run-Shed",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,24 @@
       "output": "",
       "at": "2026-11-01T11:35:45Z",
       "reason": "batten.open_ide = false",
+      "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → blocked at Finalize",
+      "at": "2026-11-01T11:40:08Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child blocked → running at Finalize",
+      "at": "2026-11-01T11:40:48Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
       "machine": "neve"
     }
   ]
