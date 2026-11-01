@@ -1,0 +1,9 @@
+attempt: 1
+cap: 2
+failures:
+    - id: github.com/Knatte18/loomyard/cmd/lym.TestCLIForm_EveryCommand
+      kind: test
+      package: github.com/Knatte18/loomyard/cmd/lym
+      tail: ""
+log_path: /home/knatte/Code/loomyard-LYMHUB/plan-split-producers/.lym/verify/verify-2.log
+fixer: fork
