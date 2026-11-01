@@ -115,3 +115,9 @@ The review-only first step never did.
 ## Model aliases (operator, 2026-10-15)
 
 `sonnet[high]` is engine `claude`, model `sonnet`, effort `high`, and Codex's models get the same form, such as `sol[medium]` for engine `codex`, model `sol`, effort `medium` (also Luna, Astra).
+
+## Built since (warp-visibility, 2026-11-01)
+
+`lym heddle` now holds lym's own instruction text in `heddle.json`.
+Its `codex-prompt` entries are stored and shown, and `codexengine` is to read them through the seam in `internal/shuttleengine` that `claudeengine.Prepare` already reads.
+Its `codex-file` entries render `AGENTS.override.md` at the warp root, so the engine writes no instruction file of its own.
