@@ -27,11 +27,11 @@
 - `plan:internal/adoptcli#writeTries`
 - `internal/adoptcli#subjectDir`
 - `internal/pauserecord#HoldCaller`
-- `plan:internal/fronttask#FrontOf`
-- `plan:internal/fronttask#Remove`
-- `plan:internal/fronttask#HubDeps`
-- `plan:internal/fronttask#RemoveError.HandRemoval`
-- `plan:internal/fronttask#ActionAdoptCheck`
+- `internal/fronttask#FrontOf`
+- `internal/fronttask#Remove`
+- `internal/fronttask#HubDeps`
+- `internal/fronttask#RemoveError.HandRemoval`
+- `internal/fronttask#ActionAdoptCheck`
 - `internal/adoptcli#resumeChild`
 - `internal/adoptcli#readStatus`
 - `internal/landingshed/doc.go`

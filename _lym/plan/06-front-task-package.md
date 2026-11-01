@@ -5,28 +5,28 @@
 - `internal/fronttask/fronttask_test.go`
 - `internal/fronttask/hub_integration_test.go`
 - `internal/fronttask/testmain_test.go`
-- `plan:internal/lymdirs#FrontTaskDirName` -> `const FrontTaskDirName = "fronttask"`
-- `plan:internal/fabricengine#FrontTaskScratchDir` -> `func FrontTaskScratchDir(hub string) string`
-- `plan:internal/fronttask#ActionAdoptCheck` -> `const ActionAdoptCheck = "adopt-check"`
-- `plan:internal/fronttask#Request` -> `type Request struct`
-- `plan:internal/fronttask#Deps` -> `type Deps struct`
-- `plan:internal/fronttask#SettleDeps` -> `type SettleDeps struct`
-- `plan:internal/fronttask#RecordEntry` -> `type RecordEntry struct`
-- `plan:internal/fronttask#RemoveError` -> `type RemoveError struct`
-- `plan:internal/fronttask#RemoveError.Error` -> `func (e *RemoveError) Error() string`
-- `plan:internal/fronttask#RemoveError.HandRemoval` -> `func (e *RemoveError) HandRemoval() string`
-- `plan:internal/fronttask#IsOpen` -> `func IsOpen(task boardengine.Task) bool`
-- `plan:internal/fronttask#OpenFront` -> `func OpenFront(tasks []boardengine.Task, project string) (boardengine.Task, bool)`
-- `plan:internal/fronttask#FrontOf` -> `func FrontOf(tasks []boardengine.Task, project, onLand string) (boardengine.Task, bool)`
-- `plan:internal/fronttask#File` -> `func File(deps Deps, req Request, between func() error) error`
-- `plan:internal/fronttask#Remove` -> `func Remove(deps Deps, slug string) error`
-- `plan:internal/fronttask#Settle` -> `func Settle(deps SettleDeps) error`
-- `plan:internal/fronttask#HubDeps` -> `func HubDeps(prime *lymcwd.Location) (Deps, error)`
-- `plan:internal/fronttask#HubSettleDeps` -> `func HubSettleDeps(prime *lymcwd.Location, beam string) (SettleDeps, error)`
-- `plan:internal/fronttask#TestFile` -> `func TestFile(t *testing.T)`
-- `plan:internal/fronttask#TestRemove` -> `func TestRemove(t *testing.T)`
-- `plan:internal/fronttask#TestSettle` -> `func TestSettle(t *testing.T)`
-- `plan:internal/fronttask_test#TestHubDeps_FilesAndRemovesOnTheHubBoard` -> `func TestHubDeps_FilesAndRemovesOnTheHubBoard(t *testing.T)`
+- `internal/lymdirs#FrontTaskDirName`
+- `internal/fabricengine#FrontTaskScratchDir`
+- `internal/fronttask#ActionAdoptCheck`
+- `internal/fronttask#Request`
+- `internal/fronttask#Deps`
+- `internal/fronttask#SettleDeps`
+- `internal/fronttask#RecordEntry`
+- `internal/fronttask#RemoveError`
+- `internal/fronttask#RemoveError.Error`
+- `internal/fronttask#RemoveError.HandRemoval`
+- `internal/fronttask#IsOpen`
+- `internal/fronttask#OpenFront`
+- `internal/fronttask#FrontOf`
+- `internal/fronttask#File`
+- `internal/fronttask#Remove`
+- `internal/fronttask#Settle`
+- `internal/fronttask#HubDeps`
+- `internal/fronttask#HubSettleDeps`
+- `internal/fronttask#TestFile`
+- `internal/fronttask#TestRemove`
+- `internal/fronttask#TestSettle`
+- `internal/fronttask_test#TestHubDeps_FilesAndRemovesOnTheHubBoard`
 
 **Extends:**
 - `internal/lymdirs/doc.go`

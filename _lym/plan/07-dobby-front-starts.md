@@ -1,7 +1,7 @@
 # Card 7 — Dobby starts a front task first and settles its action
 
 **Create:**
-- `plan:internal/dobbyengine#TestStartReady_FrontTask` -> `func TestStartReady_FrontTask(t *testing.T)`
+- `internal/dobbyengine#TestStartReady_FrontTask`
 
 **Edit:**
 - `internal/dobbyengine#TaskView`
@@ -27,9 +27,9 @@
 **Uses:**
 - `internal/dobbyengine#readyTask`
 - `internal/dobbyengine#passHarness.tick`
-- `plan:internal/fronttask#Settle`
-- `plan:internal/fronttask#HubSettleDeps`
-- `plan:internal/fronttask#IsOpen`
+- `internal/fronttask#Settle`
+- `internal/fronttask#HubSettleDeps`
+- `internal/fronttask#IsOpen`
 
 **Intent:**
 D8's start hold and land action in dobby.

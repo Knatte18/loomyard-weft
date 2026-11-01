@@ -22,8 +22,8 @@
 **Uses:**
 - `plan:internal/adoptcli#fixRunHalted`
 - `internal/adoptcli#subjectDir`
-- `plan:internal/fronttask#OpenFront`
-- `plan:internal/fronttask#ActionAdoptCheck`
+- `internal/fronttask#OpenFront`
+- `internal/fronttask#ActionAdoptCheck`
 - `internal/adoptcli#ReadCheck`
 - `internal/adoptcli#checkAlive`
 - `internal/adoptcli#newWorld`
