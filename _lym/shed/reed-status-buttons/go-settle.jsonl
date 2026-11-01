@@ -2,3 +2,4 @@
 {"stop_key":{"current_producer":"Discussion-Bouncer","history_length":9,"state":"awaiting"},"settler":"parent","action":"hand-back","outcome":"the arbiter handed the stop on","at":"2026-11-01T13:46:17.597535668+01:00"}
 {"stop_key":{"current_producer":"Plan-Bouncer","history_length":19,"state":"awaiting"},"settler":"arbiter","action":"spawn","outcome":"arbiter spawned","at":"2026-11-01T14:39:24.399897169+01:00","target":"attempt-2"}
 {"stop_key":{"current_producer":"Plan-Bouncer","history_length":19,"state":"awaiting"},"settler":"arbiter","action":"restep","outcome":"arbiter resume","at":"2026-11-01T14:39:24.400024869+01:00"}
+{"stop_key":{"current_producer":"Parent-Align","history_length":23,"state":"blocked"},"settler":"parent","action":"hand-back","outcome":"a landing halt: only the orch's resume lifts it","at":"2026-11-01T15:24:48.41796688+01:00"}
