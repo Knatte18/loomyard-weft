@@ -628,7 +628,7 @@
       "isolated": false,
       "brief": "ensureParentDobby spawns a lone dobby; every start goes through beam start and brings the orch too",
       "body": "## Seen (operator and orch, 2026-11-01)\n\nAfter the hub's tmux server was killed, `lym batten run bolt-dir-rename`, run by hand to finish a teardown, brought the prime's dobby up alone: `ensureParentDobby` in `internal/battencli/cli.go` starts the parent worktree's dobby when it is down, and nothing starts its orch.\n`lym a` then found no orch in reed while dobby ran; only `lym s` (`lym beam start`) brought the orch up.\nMeanwhile dobby's mail to the orch had no reader.\n\n## Design (operator, 2026-11-01)\n\nDobby and orch are started in pairs, by beam: every path that brings a worktree's dobby up brings its orch up with it, through `lym beam start`'s way, never dobby alone.\n- `ensureParentDobby` and any other lone dobby spawn go through that one start, or stop and name `lym s` instead of spawning.\n\n## Out of scope\n\nWhether dobby, finding its orch gone while it runs, brings it up again belongs to note `dormant-orch`, where the orch lies dormant and is woken when needed (operator, 2026-11-01).\n",
-      "status": "running · Describe",
+      "status": "running · PR-Review",
       "created": "2026-11-01T11:04:44Z",
       "revised": "2026-11-01T11:26:23Z"
     },

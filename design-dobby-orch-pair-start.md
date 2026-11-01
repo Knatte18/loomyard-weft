@@ -1,6 +1,6 @@
 # Dobby and orch start in pairs: a batten run brought dobby up alone
 
-`dobby-orch-pair-start` · Task · bug, dobby, batten, orch · running · Describe
+`dobby-orch-pair-start` · Task · bug, dobby, batten, orch · running · PR-Review
 
 ## Seen (operator and orch, 2026-11-01)
 
