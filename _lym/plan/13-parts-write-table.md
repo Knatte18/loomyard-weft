@@ -4,12 +4,12 @@
 - `contracts/stencils/loom/loom-template-parts.md`
 - `contracts/stencils/loom/loom-fragment-parts-light.md`
 - `contracts/stencils/loom/loom-fragment-parts-medium.md`
-- `plan:contracts/stencils#LoomTemplateParts` -> `var LoomTemplateParts []byte`
-- `plan:contracts/stencils#LoomFragmentPartsLight` -> `var LoomFragmentPartsLight []byte`
-- `plan:contracts/stencils#LoomFragmentPartsMedium` -> `var LoomFragmentPartsMedium []byte`
-- `plan:internal/loomengine#partsRole` -> `const partsRole = "parts"`
-- `plan:internal/loomengine#PartsTable` -> `func PartsTable(layout *lymcwd.Location, stencilsDir, specsDir string, cfg Config, reg modelspec.Registry) (seatengine.Table, error)`
-- `plan:internal/loomengine#TestPartsTable` -> `func TestPartsTable(t *testing.T)`
+- `contracts/stencils#LoomTemplateParts`
+- `contracts/stencils#LoomFragmentPartsLight`
+- `contracts/stencils#LoomFragmentPartsMedium`
+- `internal/loomengine#partsRole`
+- `internal/loomengine#PartsTable`
+- `internal/loomengine#TestPartsTable`
 
 **Extends:**
 - `contracts/stencils#entries`

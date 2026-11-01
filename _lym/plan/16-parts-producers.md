@@ -28,13 +28,13 @@
 - `internal/shedrecipe/doc.go`
 
 **Uses:**
-- `plan:internal/loomengine#PartsTable`
-- `plan:internal/loomengine#PartsPlanTable`
+- `internal/loomengine#PartsTable`
+- `internal/loomengine#PartsPlanTable`
 - `internal/loomshed#NewPartsGate`
 - `internal/loomshed#NewPartPlanGate`
 - `internal/loomshed#NewPartAccept`
-- `plan:internal/loomshed#NewPartsDirRotator`
-- `plan:internal/loomshed#NewPartsPlanRotator`
+- `internal/loomshed#NewPartsDirRotator`
+- `internal/loomshed#NewPartsPlanRotator`
 - `internal/partsparser#DirRel`
 - `internal/loomshed#NewPlanWrite`
 - `internal/shedrecipe#planContextOf`

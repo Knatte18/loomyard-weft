@@ -3,11 +3,11 @@
 **Create:**
 - `contracts/stencils/loom/loom-template-part-writer.md`
 - `contracts/stencils/loom/loom-template-parts-chair.md`
-- `plan:contracts/stencils#LoomTemplatePartWriter` -> `var LoomTemplatePartWriter []byte`
-- `plan:contracts/stencils#LoomTemplatePartsChair` -> `var LoomTemplatePartsChair []byte`
-- `plan:internal/loomengine#PartsPlanRole` -> `const PartsPlanRole = "parts-plan"`
-- `plan:internal/loomengine#PartsPlanTable` -> `func PartsPlanTable(layout *lymcwd.Location, stencilsDir, specsDir string, cfg Config, reg modelspec.Registry, gateTiers string, runTimeout time.Duration, gates func(part string) (shuttleengine.GateSpec, error), accept func(part string) func(shuttleengine.Result) error, findingsPath func(part string) string) (seatengine.Table, error)`
-- `plan:internal/loomengine#TestPartsPlanTable` -> `func TestPartsPlanTable(t *testing.T)`
+- `contracts/stencils#LoomTemplatePartWriter`
+- `contracts/stencils#LoomTemplatePartsChair`
+- `internal/loomengine#PartsPlanRole`
+- `internal/loomengine#PartsPlanTable`
+- `internal/loomengine#TestPartsPlanTable`
 
 **Extends:**
 - `contracts/stencils#entries`
@@ -23,7 +23,7 @@
 - `internal/partsparser#PartOverview`
 - `internal/partsparser#JoinRecord`
 - `internal/loomengine#Config.PartsChairTimeout`
-- `plan:internal/loomengine#TestPartsTable`
+- `internal/loomengine#TestPartsTable`
 - `internal/loomengine#PlanTable`
 
 **Intent:** Build the `Parts-Plan-Write` row's seat table from the parts file at call time (D6), and ship the part writer's and the chair's stencils (D11, D12) in full.

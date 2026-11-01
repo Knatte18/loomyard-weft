@@ -1,10 +1,10 @@
 # Card 15 — parts-rotators
 
 **Create:**
-- `plan:internal/loomshed#NewPartsDirRotator` -> `func NewPartsDirRotator(anchorPath string, now func() time.Time) func() (string, error)`
-- `plan:internal/loomshed#NewPartsPlanRotator` -> `func NewPartsPlanRotator(anchorPath, stencilsDir string, archiveWebster func(dest string) error, now func() time.Time) func() (string, error)`
-- `plan:internal/loomshed#archivePartsEntries` -> `func archivePartsEntries(anchorPath string, keep func(name string) bool, now func() time.Time) error`
-- `plan:internal/loomshed#TestPartsRotators` -> `func TestPartsRotators(t *testing.T)`
+- `internal/loomshed#NewPartsDirRotator`
+- `internal/loomshed#NewPartsPlanRotator`
+- `internal/loomshed#archivePartsEntries`
+- `internal/loomshed#TestPartsRotators`
 
 **Uses:**
 - `internal/loomshed#NewPlanDirRotator`

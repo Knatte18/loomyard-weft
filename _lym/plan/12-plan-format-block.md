@@ -5,10 +5,10 @@
 - `contracts/stencils/loom/loom-block-plan-format.md`
 - `contracts/stencils/loom/loom-block-plan-overview.md`
 - `contracts/stencils/loom/loom-block-plan-cards.md`
-- `plan:contracts/stencils#LoomBlockPlanGlyphs` -> `var LoomBlockPlanGlyphs []byte`
-- `plan:contracts/stencils#LoomBlockPlanFormat` -> `var LoomBlockPlanFormat []byte`
-- `plan:contracts/stencils#LoomBlockPlanOverview` -> `var LoomBlockPlanOverview []byte`
-- `plan:contracts/stencils#LoomBlockPlanCards` -> `var LoomBlockPlanCards []byte`
+- `contracts/stencils#LoomBlockPlanGlyphs`
+- `contracts/stencils#LoomBlockPlanFormat`
+- `contracts/stencils#LoomBlockPlanOverview`
+- `contracts/stencils#LoomBlockPlanCards`
 
 **Edit:**
 - `contracts/stencils/loom/loom-template-plan.md`

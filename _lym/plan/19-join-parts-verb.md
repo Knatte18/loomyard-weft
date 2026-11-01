@@ -16,7 +16,7 @@
 
 **Uses:**
 - `internal/loomshed#JoinParts`
-- `plan:internal/loomengine#PartsPlanRole`
+- `internal/loomengine#PartsPlanRole`
 - `internal/seatengine#SeatRole`
 - `internal/loomcli#circlingStatusReader`
 - `internal/loomcli#samplerStrandReader`
