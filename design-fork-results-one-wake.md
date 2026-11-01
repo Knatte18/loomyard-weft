@@ -1,6 +1,6 @@
 # A reviewer or fixer wakes once for all its forks, not once per fork
 
-`fork-results-one-wake` · Task · enhancement, burler, stencil · running · Drift-Verify
+`fork-results-one-wake` · Task · enhancement, burler, stencil · running · Code-Bouncer
 
 ## Seen (research, landed 2026-11-01)
 
