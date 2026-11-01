@@ -1,6 +1,6 @@
 # The board marks the own entries of a project apart from its sub-projects
 
-`board-no-project-heading` · Task · enhancement, board · running · Describe
+`board-no-project-heading` · Task · enhancement, board · running · PR-Review
 
 ## Seen (operator, 2026-11-01)
 
