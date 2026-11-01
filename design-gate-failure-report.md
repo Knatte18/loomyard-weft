@@ -1,6 +1,8 @@
 # The gate reports every failure at once, lint included, in one readable result
 
-`gate-failure-report` · Note · enhancement, gate, lint
+`gate-failure-report` · Task · enhancement, gate, lint · draft
+
+Depends on: [`gate-run-keeps-cache-warm`](design-gate-run-keeps-cache-warm.md)
 
 ## Seen (orch, 2026-11-01)
 
