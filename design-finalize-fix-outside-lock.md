@@ -16,6 +16,12 @@ Meanwhile four green runs queued behind it (`darn-sonnet-helpers`, `readme-profi
   When nothing landed on the parent while it fixed, that merge is a no-op and only the re-verify remains, which a red verify runs today too.
 - Taking the lock only at the very end was weighed and rejected: the parent moves between the run's merge and its landing, so the run would merge, verify and fix again, and could starve while much lands.
 
+## Hand-over latency (orch, 2026-11-01)
+
+A queued run polls the lock from one second, doubling to thirty seconds while the holder is unchanged (`parentlock/acquire.go`), so after a long hold the next run takes the lock about 20 to 30 seconds after the release.
+Two hand-overs on 2026-11-01 took 23 and 21 seconds (`plan-spec-split` to `darn-sonnet-helpers`, `dobby-idle-notice-row-end` to `reed-loses-parts-chair`).
+The release wakes the head of the queue at once, through a notify on the lock directory or a lower poll ceiling of a few seconds.
+
 ## Open
 
 - Whether a run that failed once goes to the back of the queue or ahead of runs queued while it fixed.
