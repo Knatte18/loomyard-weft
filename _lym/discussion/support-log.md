@@ -17,7 +17,7 @@ Facts settled:
 - `range=user|X` caps `X` at 15 bytes (tmux 3.6 manual).
 - The machine layer applies only to hub-wide modules; reed is per-worktree; `desktop.yaml` is hub-wide with machine keys.
 - `lym batten cancel` runs only from the prime or a beam (`ResolveBattenPrime`); `lym tender pause`, `lym ide spawn`, `lym orch distill|refresh` and `lym shuttle open` run from any worktree.
-- `lym tender` reads the caller from `LYM_STRAND_NAME`; reed's server env scrub strips engine keys only, so a server started from an agent pane can carry a strand name into `run-shell`.
+- `lym tender` reads the caller from `LYM_STRAND_NAME`; reed's server spawn strips `LYM_STRAND_NAME` and `LYM_PARENT` (`stripAgentNameEnv`) beside the engine-key scrub, so `run-shell` carries no strand name.
 - `lym ide spawn` accepts the prime's name.
 
 ### Turn 2 — design picks
@@ -32,8 +32,8 @@ All six forks returned a report; findings judged together, duplicates merged.
 - existing-paths 2 (display-only invariant of pane options and `@lym_follow` doc lines): fixed — D5 names the decision-bearing options and the doc lines that change.
 - bound-breaker 2, interactions 3, walkthrough 4 (confirm path carries `run` text through tmux parsing; `{strand}` mismatch): fixed — hash of the spec `run` plus a grammar-checked strand name cross `confirm-before` (D7).
 - interactions 2, walkthrough 2, bound-breaker 4 (verb needs the shell but reads no config): fixed — shell path in the spec (D5).
-- walkthrough 3, interactions 4, bound-breaker 7 (log location): fixed — `run-shell -c '#{session_path}'` (D7).
-- walkthrough 5 (`run-shell` output opens view mode): fixed — the pinned line discards the verb's output (D7).
+- walkthrough 3, interactions 4, bound-breaker 7 (log location): fixed — `run-shell -c '#{session_path}'` (D7); superseded in round 1 by the run directory `@lym_button_dir`.
+- walkthrough 5 (`run-shell` output opens view mode): fixed — the pinned line discards the verb's output (D7); round 1 added exit 0 on every path, since a non-zero exit opens view mode too.
 - interactions 1, bound-breaker 5 (attach skips validation; invalid button fails every spawn): fixed — validation at render, invalid entries skipped with a Warn for both sources (D2).
 - interactions 5 (`#` in filled `confirm` values): fixed — `#` doubled in confirm fills (D6).
 - interactions 6, existing-paths 3, bound-breaker 6 (older binaries re-pin status formats): fixed — status pins join the stale-build re-pin, remaining window bounded (D1).
@@ -64,7 +64,7 @@ All six forks returned a report; findings judged together, duplicates merged.
 - `confirm-before` running the command directly: loses output logging and failure display.
 - Escaping `#` in labels: two expansion passes make the escape fragile; refusing `#` is simpler.
 - Agent-window test by window markers: the active pane's `@strand` is exactly what `{strand}` needs.
-- `{beam}` as the beam's slug: the one default that needs it needs a directory.
+- `{beam}` as the beam's slug: a task session's run directory needs a directory.
 - Failing `lym reed up` on an invalid button: one bad entry would stop every agent spawn of the hub.
 - Carrying the filled `run` text across `confirm-before`: tmux parses and expands it, so `#`, braces and quotes break.
 - Holding the spec in reed state under `.lym`: an agent can write its worktree as easily as the socket, so it closes nothing.
@@ -72,18 +72,18 @@ All six forks returned a report; findings judged together, duplicates merged.
 
 ## Review rounds
 
-_No rounds yet._
+- Round 1: every finding fixed; see `_lym/reviews/discussion/round-1-fixer-report.md`.
 
 ## Question ledger
 
 - Q1 (auto-pick): where do machine-added buttons live? `desktop.yaml` `buttons`, `CategoryMachine` — the only hub-wide machine layer for desktop facts.
-- Q2 (auto-pick): `{beam}` value? The beam's worktree path; the prime's for a top-level task.
+- Q2 (auto-pick): `{beam}` value? The beam's anchor path; the prime's for a top-level task.
 - Q3 (auto-pick, settles the entry's Open): new-agent role? Fixed `agent`, `opus[high]`.
 - Q4 (auto-pick): click to command? A `lym reed button` verb reading a session spec option.
 - Q5 (auto-pick): confirm flow? `confirm-before` re-invoking the verb with `--confirmed`, checked against the spec.
 - Q6 (auto-pick): when is the row rendered? At the existing status pins, boot and attach pre-flight.
-- Q7 (auto-pick): label safety? Refuse `#` and control characters in `label` and `confirm`.
-- Q8 (auto-pick): caller identity of button commands? Strand-name and parent variables removed, so the click reads as the operator.
+- Q7 (auto-pick): label safety? Refuse `#`, `%` and control characters in `label` and `confirm`.
+- Q8 (auto-pick): caller identity of button commands? None set by the verb: the server spawn already strips the strand-name and parent variables, so a click reads as the operator and a direct call keeps its caller's identity.
 - Q9 (auto-pick): `follow`'s place on line 3? First.
 - Q10 (auto-pick): beam set content? `code`, `term`, `agent`, `distill`, `refresh`.
 - Q11 (auto-pick, after lens review): invalid button handling? Skip with a Warn at render for both sources, never fail a reed verb.
