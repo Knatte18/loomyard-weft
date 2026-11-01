@@ -2,8 +2,6 @@
 
 `orch-role-current` · Task · enhancement, orch, stencil · running · Darn-Write
 
-Depends on: [`heddle-orch-target`](design-heddle-orch-target.md)
-
 ## Seen (orch, 2026-11-01)
 
 The orch role, `contracts/stencils/orch/orch-template-role.md`, is lym's instruction to every orch in every repository, yet it has gone stale against the operator's later decisions:
