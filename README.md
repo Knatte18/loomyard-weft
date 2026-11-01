@@ -16,22 +16,21 @@ Token savings by cutting agent turns, above all late turns at large context
 
 Concrete and claimable; only a task can run.
 
-#### Running (2)
+#### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Agents may use subagents and forks; only headless claude -p stays refused**<br>• Remove the Agent tool deny, refuse headless claude -p launches instead, and tell writers when to hand work to Sonnet subagents | [`darn-sonnet-helpers`](design-darn-sonnet-helpers.md) | darn | Code-Burler-Review | neve | 1h<br>21m | claude, shuttle, stencil |
-| T4 | **Shorten the plan spec and split it into sub-files read by need**<br>• loom-plan-spec.md is 112 KB, half of it a catalogue of validation checks; cut it down and split it so each role reads only what it uses | [`plan-spec-split`](design-plan-spec-split.md) | darn | Darn-Write | neve | 45m<br>14m | loom, stencil, webster |
+| T4 | **Shorten the plan spec and split it into sub-files read by need**<br>• loom-plan-spec.md is 112 KB, half of it a catalogue of validation checks; cut it down and split it so each role reads only what it uses | [`plan-spec-split`](design-plan-spec-split.md) | darn | Darn-Write | neve | 46m<br>14m | loom, stencil, webster |
+| T11 | **tokencount counts darn runs and compares recipes**<br>• Count darns with their own segments, so a darn's cost stands beside a tapestry's | [`tokencount-darn-runs`](design-tokencount-darn-runs.md) | darn | Worktree-Create | neve | 4h<br>0m | tools |
 
-#### Ready (1)
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T11 | **tokencount counts darn runs and compares recipes**<br>• Count darns with their own segments, so a darn's cost stands beside a tapestry's | [`tokencount-darn-runs`](design-tokencount-darn-runs.md) | darn |  | 4h<br>0m | tools |
+_None._
 
 #### Draft (1)
 
@@ -39,7 +38,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | `draft` **One cold, cheap fixer clears a failed writer gate instead of the writer at full context**<br>• When the Darn-Write, plan, discussion or Webster card gate fails, Go spawns one shared cold fixer with the gate report, generalised from webster fix-verify<br>• `profile: light` | [`cold-gate-fixer`](design-cold-gate-fixer.md) | tapestry | T4 | 29m<br>7m | webster, loom, darn, gate |
+| T5 | `draft` **One cold, cheap fixer clears a failed writer gate instead of the writer at full context**<br>• When the Darn-Write, plan, discussion or Webster card gate fails, Go spawns one shared cold fixer with the gate report, generalised from webster fix-verify<br>• `profile: light` | [`cold-gate-fixer`](design-cold-gate-fixer.md) | tapestry | T4 | 30m<br>7m | webster, loom, darn, gate |
 
 ### Notes (3)
 
@@ -50,7 +49,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R1 |  | **Measure the effect of the agent-turns project**<br>• Turns, calls per turn and cost before and after P2 agent-turns, for darn writers, Webster forks and review roles | [`agent-turns-effect`](design-agent-turns-effect.md) | 4h<br>7m | tools |
-| R2 |  | **Plan writer hands its code lookups to fresh subagents and keeps the overview**<br>• The Plan writer pays its whole context for each late grep; research whether forks answering batched questions cut that cost without losing the plan overview | [`planner-fork-lookups`](design-planner-fork-lookups.md) | 29m<br>20m | loom |
+| R2 |  | **Plan writer hands its code lookups to fresh subagents and keeps the overview**<br>• The Plan writer pays its whole context for each late grep; research whether forks answering batched questions cut that cost without losing the plan overview | [`planner-fork-lookups`](design-planner-fork-lookups.md) | 30m<br>20m | loom |
 
 #### Enhancements (1)
 
@@ -146,7 +145,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F7 |  | **Creel mail between hubs through an inbox folder, with a verified sender**<br>• A shared inbox folder takes mail from other hubs; each file names the sender hub and agent so a reply knows where to go | [`creel-cross-hub-mail`](design-creel-cross-hub-mail.md) | 2d<br>2d | creel, orch |
 | F8 |  | **fabric: two-sided reset-to-SHA verb**<br>• The post-conclude undo the merge surface does not ship: reset to a warp SHA, resolve the paired weft SHA through the correspondence index, gate both sides | [`fabric-reset-to-sha`](design-fabric-reset-to-sha.md) | 4w<br>3w | fabric |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 2d<br>2d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
-| F10 |  | **The arbiter settles review escalations and records their decisions, so they never reach the orch**<br>• Decision escalations become eligible for the arbiter, and the arbiter may record decisions and accept or continue a review | [`arbiter-settles-escalations`](design-arbiter-settles-escalations.md) | 6h<br>5h | burler, arbiter, dobby, orch |
+| F10 |  | **The arbiter settles review escalations and records their decisions, so they never reach the orch**<br>• Decision escalations become eligible for the arbiter, and the arbiter may record decisions and accept or continue a review | [`arbiter-settles-escalations`](design-arbiter-settles-escalations.md) | 6h<br>6h | burler, arbiter, dobby, orch |
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 4w<br>44m | board, ide, orch |
 | F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 3w<br>0m | webster |
 | F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 10d<br>7h | loom, board, batten, workspaces |
