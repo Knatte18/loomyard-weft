@@ -6,7 +6,7 @@
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
      Among those markers, gate_tiers is filled by ReadRubric from the hub's gate.yaml tiers and gate lists, or none.
-lym-stencil: sha256=814c9f51d765ab5113881676b61afc6ddecae5f319dda487198e48804120c904 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+lym-stencil: sha256=dd85b7d3ee4ff1df31424ee581e2106539a6e0dfc862c688688210a970f1eb3a build=4ce42a8d6ab9bd70bec8bce9f559ee3941f94197 time=2026-11-01T14:06:50Z -->
 
 # Plan-Review rubric
 
@@ -119,7 +119,7 @@ Do not flag any of the following as a finding:
   A propagated raw I/O error, which `refusal-spec.md` exempts as transient, is exempt, and so is a fail-loud wiring guard in that file's sense, which takes no reaching test.
   A test that calls only the refusal's error constructor does not reach the refusal.
 - **The writer/reviewer symmetry note.**
-  The plan writer's own stencil is `{{.stencils_dir}}/loom/loom-template-plan.md`.
+  The plan writer's own stencil is `{{.stencils_dir}}/loom/loom-template-plan.md`, which includes the plan-format blocks `{{.stencils_dir}}/loom/loom-block-plan-format.md`, `{{.stencils_dir}}/loom/loom-block-plan-overview.md` and `{{.stencils_dir}}/loom/loom-block-plan-cards.md`.
   Whatever it says not to write, this rubric must not flag as missing.
 
 ## Proposed fixes
