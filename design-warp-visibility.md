@@ -2,7 +2,7 @@
 
 `warp-visibility` · Task · feature, fabric, board, config, claude, codex, cwd, process, stencil, shuttle · draft
 
-Depends on: [`bolt-dir-rename`](design-bolt-dir-rename.md)
+Depends on: [`interactive-recipe`](design-interactive-recipe.md), [`gate-rule-stated-once`](design-gate-rule-stated-once.md)
 
 ## Seen
 
