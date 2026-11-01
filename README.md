@@ -52,7 +52,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Board renders root as project P0 with its own file, last in the README**<br>• Every project heading alike; root becomes P0 with project-root.md, and the README keeps every table | [`board-root-p0`](design-board-root-p0.md) | darn | Record-Write | neve | 9m<br>9m | board |
+| T1 | **Board renders root as project P0 with its own file, last in the README**<br>• Every project heading alike; root becomes P0 with project-root.md, and the README keeps every table | [`board-root-p0`](design-board-root-p0.md) | darn | Darn-Write | neve | 9m<br>9m | board |
 
 ##### Ready (0)
 
