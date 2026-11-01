@@ -1,6 +1,6 @@
 # Agents read a file whole or all its spans in one message, not in slices
 
-`read-whole-not-slices` · Task · enhancement, webster, stencil · draft
+`read-whole-not-slices` · Task · enhancement, webster, stencil
 
 Depends on: [`retired-name-sweep`](design-retired-name-sweep.md)
 

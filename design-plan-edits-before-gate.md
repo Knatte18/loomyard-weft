@@ -1,6 +1,8 @@
 # Trial: agents settle every edit before the first, then gate once
 
-`plan-edits-before-gate` · Task · enhancement, heddle, stencil, claude · draft
+`plan-edits-before-gate` · Task · enhancement, heddle, stencil, claude
+
+Depends on: [`batching-in-claude-local`](design-batching-in-claude-local.md)
 
 ## Seen (orch, 2026-11-01)
 
