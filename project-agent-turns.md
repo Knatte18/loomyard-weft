@@ -1,6 +1,6 @@
 # P2 Fewer agent turns, Webster forks first
 
-Rendered 2026-11-01 15:55 UTC; every age below is as of then.
+Rendered 2026-11-01 15:56 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 `agent-turns` · Age 1h · Owner `neve`
@@ -23,7 +23,7 @@ Held by a run; its scope is locked until the run ends.
 | T4 | **The gate reports every failure at once, lint included, in one readable result**<br>• lym gate test prints a compact list of every build, test and lint failure with file:line and values, and the log path | [`gate-failure-report`](design-gate-failure-report.md) | darn | Code-Burler-Fix | neve | 1h<br>1h | gate, lint |
 | T8 | **A card that retires a name sweeps the whole tree, tests included, first**<br>• The implementer greps every retired name across the tree and test data before its first edit, and reads and edits all hits in one message each | [`retired-name-sweep`](design-retired-name-sweep.md) | darn | Finalize | neve | 1h<br>45m | webster, stencil |
 | T12 | **Agents still try the forms lym's guards refuse, at a turn each**<br>• Python and raw go build or go vet attempts are refused and retried; find why the steering does not hold and close it | [`hook-refused-turns`](design-hook-refused-turns.md) | darn | Finalize | neve | 1h<br>45m | process, claude |
-| T13 | **Trial: the batching instruction in the rendered CLAUDE.local.md through heddle**<br>• Put the batching instruction into heddle's claude-file target and measure calls per turn with forkaudit against today's 1.7 | [`batching-in-claude-local`](design-batching-in-claude-local.md) | darn | Code-Burler-Review | neve | 1h<br>45m | claude, heddle |
+| T13 | **Trial: the batching instruction in the rendered CLAUDE.local.md through heddle**<br>• Put the batching instruction into heddle's claude-file target and measure calls per turn with forkaudit against today's 1.7 | [`batching-in-claude-local`](design-batching-in-claude-local.md) | darn | Code-Burler-Fix | neve | 1h<br>45m | claude, heddle |
 | T15 | **A reviewer or fixer wakes once for all its forks, not once per fork**<br>• 79 no-call wake-up turns at full context over three runs, 8-9% of the forking review roles weight | [`fork-results-one-wake`](design-fork-results-one-wake.md) | darn | Finalize | neve | 1h<br>45m | burler, stencil |
 
 ### Ready (0)
