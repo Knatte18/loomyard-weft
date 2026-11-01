@@ -36,6 +36,12 @@ Decision: This replaces the two earlier parent decisions' channel. Heddle gains 
 
 Rationale: Operator, 2026-11-01: heddle is per repository, and lym's own instructions belong in the same rendered files; a read-only layer shipped with lym keeps them in lym's code (PATTERN-lym-instructions-in-code) and reuses heddle's targets and rendering instead of a second mechanism. internal/heddleengine is about two thousand lines with its tests, so the layer fits this task.
 
+### Added after Discussion (parent, 2026-11-01): A hub can override the shipped heddle layer for tuning
+
+Decision: A hub setting, heddle.lym_override, off by default, lets lym heddle set --layer lym store an override of a shipped entry's text in the Bolt checkout beside heddle.json, and lym heddle remove --layer lym drop it. With the setting on, rendering, show and passages use an overridden entry's text in place of the shipped one, with no build or commit; with it off, overrides are ignored and set --layer lym is refused. lym heddle list marks each overridden entry. A setting outside an override still refuses set and remove on a shipped slug. The loomyard hub turns the setting on; once a text proves itself, a task copies it into the shipped layer and the override is removed.
+
+Rationale: Operator, 2026-11-01: in loomyard lym's own instructions are tuned and benchmarked quickly, and a new binary per change is too slow; the override keeps the shipped layer read-only everywhere else.
+
 ## Constraints
 
 ## Auto-mode assumptions
