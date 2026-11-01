@@ -24,6 +24,12 @@ Decision: Option (b). claudeengine delivers the batching sentence through the CL
 
 Rationale: PATTERN-lym-instructions-in-code, landed after the entry was written, keeps lym's own instructions in lym's code and heddle for a repository's own; the trial's question, whether the CLAUDE-file frame moves agents more than the system prompt, survives the move. The effect is measured for the whole project by note agent-turns-effect.
 
+### Added after Discussion (parent, 2026-11-01): lym's instructions land in the rendered CLAUDE.local.md
+
+Decision: The channel writes lym's own agent instructions into the rendered CLAUDE.local.md at each worktree root, as a section of its own that lym's code supplies, apart from the repository's heddle entries; not into any other context. The batching sentence is its first content and plan-edits-before-gate adds the second.
+
+Rationale: Operator, 2026-11-01: CLAUDE.local.md is where these instructions belong; heddle is per repository, so lym's text comes from lym's code and only shares the rendered file.
+
 ## Constraints
 
 ## Auto-mode assumptions
