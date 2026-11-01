@@ -15,6 +15,7 @@ Operator 2026-10-04: the board needs an interactive view with filters, reachable
   Built by `board-readme-per-project` (2026-10-28): `README.md` is the root project's file and every project renders to `project-<slug>.md` beside it, research notes first; the collapsible `<details>` sections per area and per body are not built.
   Since then (`af86384e`, 2026-11-01) `README.md` is the Prime project rendered through the same `projectSection` as every other project: each open project shows its own Running, Ready, Tasks, Notes and Done.
   Since `board-no-project-heading` (`d54f5181`, 2026-11-01) a project with open sub-projects puts its own Tasks, Notes and Done under one heading after the sub-projects: `No project` for the root, `Own entries` for any other project.
+  Since `project-design-link` (`ffb53ae1`, 2026-11-01) a project's body renders to `design-<slug>.md` and the project's facts line links its slug to that file, in `README.md` and in project files alike.
   The priority column is headed `Prio` and belongs to Notes tables only.
 
 Builds on `board-model`'s kind and labels.

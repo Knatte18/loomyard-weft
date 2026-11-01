@@ -15,4 +15,5 @@ A card gate failure goes to a fresh, cold, cheap fixer instead of the fork:
 - When it clears the gate, the fork goes on with its next card or ends.
 - When it does not, the failure goes back to the fork, or up the recovery strand's ladder as today.
 
-It rests on the gate report of note `gate-failure-report` that lets every failure be fixed at once.
+It rests on the gate report of task `gate-failure-report`, now landed: a failing `lym gate test` call prints one failure report listing every failure, lint included, and the card gate is one call, so the fork already fixes every failure the report lists before re-running.
+What this note adds is moving that fixing out of the fork's expensive context into a cold fixer.

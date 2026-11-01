@@ -30,4 +30,6 @@ A member the agents do not follow goes back as a note; one they follow stands.
 The effect on turns and cost is measured once for the project, against the baseline above, by the research note `agent-turns-effect`.
 
 1. `edit-with-edit-tool` and `gate-failure-report`; `review-turn-audit` beside them (landed).
-2. Everything else at once: `retired-name-sweep`, `read-whole-not-slices`, `hook-refused-turns`, `batching-in-claude-local`, `plan-edits-before-gate`, `fork-results-one-wake`, `plan-reviewer-batching`; `card-gate-cold-fixer` once `gate-failure-report` has landed.
+2. Everything else at once: `retired-name-sweep`, `read-whole-not-slices` (landed), `hook-refused-turns`, `batching-in-claude-local` (landed), `plan-edits-before-gate`, `fork-results-one-wake`, `plan-reviewer-batching`; `card-gate-cold-fixer` once `gate-failure-report` has landed (it has).
+
+Landed members await their transcript check: `gate-failure-report` (one failure report per failing gate call, lints inside the card gate), `read-whole-not-slices` (a file read whole or all its spans in one message) and `batching-in-claude-local` (the batching sentence now a shipped heddle entry rendered into `CLAUDE.local.md`, no longer in the appended system prompt).
