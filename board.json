@@ -431,7 +431,7 @@
       "isolated": false,
       "brief": "lym gate test caps the run wait like the slot wait, with the cap a config value beside the engine cache lifetime",
       "body": "## Seen (operator, 2026-10-31)\n\nGates on OSL-1046 take more than five minutes, a Webster gate there about 11, and an agent blocked on one comes back to a cold prompt cache: the whole context is written to the cache again.\n`lym gate test` already caps its wait for a free slot and answers \"run the same command again\" (exit 75), so that wait keeps the cache warm; the run itself, once the slots are held, blocks the call to its end.\n`lym shuttle await` is the capped keep-warm wait for a file, but an agent may not start a gate in the background, so nothing writes a file it could await.\nThe cap is a constant, `shuttleengine.DefaultAwaitCap` (250 s), shared by `lym shuttle await` and the gate's slot wait, and sized for the 5-minute prompt-cache lifetime; a session may run with a 1-hour cache lifetime instead.\n\n## Idea\n\n- The gate run gets the same cap as the slot wait: when the cap passes with the tiers still running, `lym gate test` answers that the run goes on and to run the same command again, while the tiers carry on in a process of their own.\n  The same command again joins that run, waits up to the cap once more, and prints the result when the run has ended.\n  Agents learn nothing new: the gate rule already says to re-run the same command in a turn that does nothing else.\n- The cap is config, not a constant, read by every keep-warm wait: the slot wait, the run wait and `lym shuttle await`.\n  It is set by where in a run the wait happens, not in one place: a darn run may want another cap than Webster, so it can differ per recipe, row or role, with a hub-wide default beside the engine's prompt-cache lifetime (operator, 2026-10-31).\n- Keeping the cache warm pays only up to a break-even wait: each re-run costs a cache read of the whole context, about a tenth of its price, while a cold return costs one cache write, about 1.25 times its price at the 5-minute lifetime, so past roughly ten re-runs, some 45 minutes, a cold cache is cheaper.\n  A wait known to be longer than that, such as a gate that takes two hours, blocks to its end without re-runs (operator, 2026-10-31).\n  The expected length can come from the gate's own records of earlier runs of the same gate key on the machine, which `lym gate report` already totals; the break-even itself is config too.\n- Find the other waits that block an agent past the cache lifetime and give them the same capped form; the driver blocked on `lym shed step` through a long producer is the first to check.\n",
-      "status": "running · Parent-Align",
+      "status": "running · Code-Bouncer",
       "created": "2026-10-31T18:20:12Z",
       "revised": "2026-11-01T11:30:03Z",
       "profile": "light"
@@ -664,30 +664,33 @@
     },
     {
       "id": 957,
-      "handle": "E6",
+      "handle": "T10",
       "slug": "heddle-orch-target",
       "title": "Heddle gains an orch-prompt target, and lym orch rules stores in heddle",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "heddle",
         "orch"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "A heddle target for orch sessions only replaces the hub-wide and local orch rules files",
       "body": "## Seen (orch, 2026-11-01)\n\nHeddle's targets, in `internal/heddleengine/target.go`, are per engine only: `claude-file`, `codex-file`, `claude-prompt` and `codex-prompt`.\nA heddle entry aimed at `claude-prompt` reaches every Claude session in the hub, writers, perches, webster and the tackler alike, so a rule for the orch alone has no place in heddle.\nRepository rules for orchs therefore live in a mechanism of their own: `lym orch rules` replaces the hub-wide file `_lym/orch/rules.md` in the Bolt checkout, and each orch also has a local `_lym/orch/rules.md`, which is empty and unused.\nBoth are inlined into the rendered `role.md`.\n\n## Idea (operator, 2026-11-01)\n\n- Heddle gains an `orch-prompt` target, one new row in the target table, whose passages are appended only to an orch session's system prompt.\n- `lym orch rules` stays the operator's verb for the orch rules, and stores them in heddle under that target.\n- The hub-wide rules file on Bolt and the per-orch local rules file go away, together with their sections in the rendered role.\n",
+      "status": "draft",
       "created": "2026-11-01T13:15:54Z",
-      "revised": "2026-11-01T13:15:54Z",
+      "revised": "2026-11-01T14:57:55Z",
+      "profile": "solid",
       "project": "orch-instructions"
     },
     {
       "id": 958,
-      "handle": "E7",
+      "handle": "T11",
       "slug": "orch-role-current",
       "title": "One fixed orch role for every repository, brought up to date",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "orch",
@@ -698,27 +701,30 @@
       "isolated": false,
       "brief": "The rules for every orch move into the shipped role, which settles run-level calls itself and has no board copy",
       "body": "## Seen (orch, 2026-11-01)\n\nThe orch role, `contracts/stencils/orch/orch-template-role.md`, is lym's instruction to every orch in every repository, yet it has gone stale against the operator's later decisions:\n- It sends the arbiter's hand-on question, a review escalation of cause `decision` and a landing-stop halt to the operator, and says the orch never settles them; the operator decided the orch settles run-level calls itself and brings only real design questions.\n- Its run loop says to watch a run with `lym batten status`, while the operator ruled out status polling.\n\nRules meant for every orch sit instead in the loomyard hub's rules file and in the orch note: say worktree, no status polling, no `cd`, a question is never a go-ahead, no priority unless the operator names one, Codex effort at most high, agents read the source themselves, a rename runs alone, the orch note only at a cycle, no changes in the prime, release only on a named go-ahead, loom only for bundles, a board body holds the current design only, explorations run as darn docs, and others.\nThe hub rules file also holds workaround sections for #799, #849 and #885, all three closed.\nLike every stencil, the role has an editable board copy on Bolt, `_lym/stencils/orch/orch-template-role.md`, through which one hub could change it.\n\n## Idea (operator, 2026-11-01)\n\n- The orch role is one fixed file, the same for every orch in every repository, with no board copy a hub can edit.\n- The rules for every orch move into it from the loomyard hub's rules file and the orch note.\n- It states that the orch settles run-level calls itself, the arbiter's hand-on question, `decision` escalations and landing-stop halts included, and brings only design questions to the operator.\n- It drops the `lym batten status` watching that contradicts no status polling.\n- It names heddle, through `lym orch rules`, as the home of a repository's own orch rules, and says the orch note holds run state only.\n- The closed workaround sections leave the hub rules file.\n",
+      "status": "draft",
       "created": "2026-11-01T13:15:54Z",
       "revised": "2026-11-01T13:15:54Z",
       "project": "orch-instructions"
     },
     {
       "id": 959,
-      "handle": "E8",
+      "handle": "T9",
       "slug": "pattern-design-principles",
       "title": "lym's design invariants as PATTERN entries",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "pattern"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "doc.go as documentation only, fabric's isolation, no hard-coded names and the other code invariants become PATTERN entries",
       "body": "## Seen (orch, 2026-11-01)\n\nSeveral invariants of lym's code exist only as standing rules the orch carried in its own note, so no writer, perch or judge reads them, while every one of them reads `PATTERN.md` in full:\n- A package's `doc.go` is documentation, never a home for rules.\n- Fabric knows nothing about IDEs, shuttle, the board or heddle; a seam in fabric tailored to one module makes no sense.\n- lym hard-codes no language, engine or branch name.\n- A name or path that can go stale is never hard-coded: it is one named constant.\n- What every phase machine needs belongs in shed.\n- lym's own instructions to agents live in lym's code, never in heddle, which holds only repository-specific instructions.\n\n## Idea (operator, 2026-11-01)\n\nEach becomes a `PATTERN.md` entry, with a background file where the one line needs one, within the overview's headroom.\n",
+      "status": "draft",
       "created": "2026-11-01T13:15:54Z",
-      "revised": "2026-11-01T13:15:54Z",
+      "revised": "2026-11-01T14:57:55Z",
       "project": "orch-instructions"
     },
     {

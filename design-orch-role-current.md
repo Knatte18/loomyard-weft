@@ -1,6 +1,6 @@
 # One fixed orch role for every repository, brought up to date
 
-`orch-role-current` · Note · enhancement, orch, stencil
+`orch-role-current` · Task · enhancement, orch, stencil · draft
 
 ## Seen (orch, 2026-11-01)
 
