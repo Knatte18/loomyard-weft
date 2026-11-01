@@ -1,6 +1,6 @@
 # A seed says only that a run starts at its start, with no producer name
 
-`seed-starts-at-start` · Task · enhancement, loom, pawl, shed · running · Record-Write
+`seed-starts-at-start` · Task · enhancement, loom, pawl, shed · running · Darn-Write
 
 Depends on: [`interactive-recipe`](design-interactive-recipe.md)
 
