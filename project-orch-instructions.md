@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T10 | **Heddle gains an orch-prompt target, and lym orch rules stores in heddle**<br>• A heddle target for orch sessions only replaces the hub-wide and local orch rules files<br>• `profile: solid` | [`heddle-orch-target`](design-heddle-orch-target.md) | darn | Code-Burler-Review | neve | 1h<br>15m | heddle, orch |
+| T10 | **Heddle gains an orch-prompt target, and lym orch rules stores in heddle**<br>• A heddle target for orch sessions only replaces the hub-wide and local orch rules files<br>• `profile: solid` | [`heddle-orch-target`](design-heddle-orch-target.md) | darn | Code-Burler-Fix | neve | 1h<br>15m | heddle, orch |
 
 ### Ready (0)
 
