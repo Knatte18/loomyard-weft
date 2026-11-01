@@ -685,6 +685,7 @@
       "isolated": false,
       "brief": "The raw-go and refuse-raw deny notices both carry the full gate rule into every session",
       "body": "## Seen (hub orch, 2026-10-31)\n\nThe deny notices shuttle appends to every Claude session's system prompt carry the whole gate rule twice.\nThe raw go row (`raw-go` in `internal/shellguard/rows.go`) and the refuse-raw row each end in the same text, from \"Gate rule: run lym gate test in the foreground\" to \"so the prompt cache stays warm between calls\", so a session reads it twice in its system prompt.\n\n## Idea\n\nState the gate rule once in the appended notice, and let the second row's notice say only what it refuses.\nEach row's steer, the reason shown when a call is denied, keeps the full rule, since a denied call needs the way forward at hand.\n",
+      "status": "running · Worktree-Create",
       "created": "2026-10-31T17:11:47Z",
       "revised": "2026-11-01T06:13:57Z"
     },
