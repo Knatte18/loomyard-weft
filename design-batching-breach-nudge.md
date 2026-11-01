@@ -28,3 +28,12 @@ Change the wording alongside:
 - require a re-read in one message after a command rewrites files.
 
 No denies, because a deny costs the turn it is meant to save.
+
+## Two ways, to weigh when promoted (operator, 2026-11-01)
+
+- Breach hook, as above: fires at every breach, about 6 lines a session in the sample.
+  It reads the call's own arguments (`file_path`, `offset`, `limit`) from the hook input and the transcript tail for the calls before it.
+  Its cost is the breach definition: some lookups must run in sequence, so it will at times fire on a right call.
+- Threshold reminder: lym re-sends the batching rules once when a session's context passes 150k, and again at 300k.
+  It reads no calls, so it is simpler and quieter, but it does not say which call broke the rule.
+- The rule wording changes above go with either.
