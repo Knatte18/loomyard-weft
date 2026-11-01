@@ -1,0 +1,1034 @@
+diff --git a/cmd/lym/configstrictness_test.go b/cmd/lym/configstrictness_test.go
+index a967d28f..dd2ee601 100644
+--- a/cmd/lym/configstrictness_test.go
++++ b/cmd/lym/configstrictness_test.go
+@@ -56,6 +56,7 @@ var configStrictnessDegradingSet = map[string]bool{
+ 	"internal/sheddriver":                 true,
+ 	"internal/languageconfig":             true,
+ 	"internal/lenses":                     true,
++	"internal/desktophook":                true,
+ }
+ 
+ // configStrictnessStrictSet is the pinned set of module-relative, slash-separated package directories that call configengine.Load -- the strict loading policy, where an absent _lym/ directory or absent config file is an error.
+diff --git a/docs/overview.md b/docs/overview.md
+index 09d1c78a..188a20ec 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -271,6 +271,7 @@ github.com/Knatte18/loomyard/
+ ├── internal/pawlengine/          the pawl recipe's own producers, Beam-Up, Beam-Await and Beam-Down, the land request Beam-Await consumes and the beam's ready record, told their geometry and seams by their caller
+ ├── internal/failuretrace/        traces a failed Parent-Align or Finalize verify log to the plan cards, batch commit ranges and untraced locations the landing failure record carries
+ ├── internal/darnengine/          the darn recipe's hub-wide `darn.yaml` config and the verify command every darn verify reads
++├── internal/desktophook/         the hub-wide `desktop.yaml` config and the machine's window command, run after `lym reed window` and `lym ide` open a window
+ ├── internal/samplerengine/       the sampler recipe's hub-wide `sampler.yaml` config
+ ├── internal/driftengine/         regression around a task: the hub-wide `drift.yaml` config, the drift paths and records, the capture and compare runs and the Drift rows' producers
+ ├── internal/driftcli/            the `lym drift` commands (`scope`, `accept`, `withdraw`, `compare`, `capture`, `defer`, `waive`, `status` and the hidden `capture-child`) and their worktree wiring over `internal/driftengine`
+@@ -681,6 +682,8 @@ User-facing modules each get one `lym <module>` namespace:
+   Between `Seed-Child` and `Run-Shed`, three `Command` rows each run one shell command from `internal/shedadapters`' `Command` producer, each run only when its entry gate's `batten.yaml` setting, which a task's `run_settings` may set, is on: `Open-Window` (`open_window`, on by default, command `open_window_command`) opens one desktop terminal window on the task worktree, titled with the slug, through `lym reed window`;
+   `Seed-IDE` (`seed_ide`, on, command `seed_ide_command`) runs `lym ide seed`, which writes the task worktree's VS Code title, colours and `.vscode/` config and the user's key bindings as `lym ide spawn` does;
+   `Open-IDE` (`open_ide`, off, command `open_ide_command`) runs `lym ide open`, which opens VS Code on it.
++  `lym reed window`, `lym ide spawn` and `lym ide open` each run, after the window opens, the machine's `desktop.window_command` once `desktop.window_wait_ms` has passed, such as a script that snaps the new window into the desktop's tiling;
++  both are machine keys, set per machine with `lym config desktop --layer machine --set <key>=<value>` from the prime, and with the command empty, the default, nothing runs.
+   A command key is read from the template and the board default layer only; `lym config batten --layer default --set <key>=<value>` from the prime changes one, and a different value in the task worktree's own layers is ignored with a warning.
+   A failed command only warns, and the row passes on.
+   The Board task's `recipe` must be `tapestry`, `darn` or empty: `Run-Shed` starts `lym loom start` inside the task worktree, which serves both recipes, so `Seed-Child` refuses any other registered recipe before writing a seed rather than committing one the child's own bootstrap would refuse.
+diff --git a/internal/configcli/configcli.go b/internal/configcli/configcli.go
+index f5528f1d..d188e93d 100644
+--- a/internal/configcli/configcli.go
++++ b/internal/configcli/configcli.go
+@@ -481,7 +481,7 @@ func buildConfigLong() string {
+ 		"adds or rewrites one entry of it with a scalar value, e.g.\n" +
+ 		"  lym config board --set labels.quarry=\"glyphs and the quarry index\"\n" +
+ 		"A value the module's loader refuses is refused, naming the key.\n" +
+-		"Keys the current template does not recognize are\n" +
++		"Keys the template lacks are\n" +
+ 		"preserved and reported in the JSON success output's \"preserved\" field;\n" +
+ 		"run \"lym config reconcile --layer default --apply\" from the prime to remove them from the\n" +
+ 		"board dir's files, and \"lym config reconcile --apply\" to remove them from a worktree file.\n\n" +
+diff --git a/internal/configengine/doc.go b/internal/configengine/doc.go
+index 8359c899..59b70459 100644
+--- a/internal/configengine/doc.go
++++ b/internal/configengine/doc.go
+@@ -83,7 +83,7 @@
+ //
+ // # The machine rule
+ //
+-// The machine layer holds only keys classified [CategoryMachine], a key whose value is a property of the machine, bounding a resource every worktree of the hub on that machine shares.
++// The machine layer holds only keys classified [CategoryMachine], a key whose value is a property of the machine: a bound on a resource every worktree of the hub on that machine shares, or a fact of the machine's desktop.
+ // [MachineKeys] lists them, and the local layer keeps refusing them, since [CategoryMachine] is not [CategoryNone].
+ // [ValidateMachine] checks a machine document with the units, template-existence and shape checks of [ValidateLocal], and admits a unit only when the longest covering `Categories` entry, or the covering retired key, is [CategoryMachine].
+ // Every refusal is an [ErrInvalid] error naming the key and a way forward, and [Layers] wraps it with the machine file's path.
+diff --git a/internal/configengine/layers.go b/internal/configengine/layers.go
+index 100c7610..23019f7f 100644
+--- a/internal/configengine/layers.go
++++ b/internal/configengine/layers.go
+@@ -58,7 +58,7 @@ const (
+ 	CategoryCrossPair Category = "cross-pair"
+ 	// CategoryGuard is a key that switches off or hollows a guard, a review or an approval gate.
+ 	CategoryGuard Category = "guard"
+-	// CategoryMachine is a key whose value is a property of the machine, bounding a resource every worktree of the hub on that machine shares.
++	// CategoryMachine is a key whose value is a property of the machine: a bound on a resource every worktree of the hub on that machine shares, or a fact of the machine's desktop.
+ 	// The machine layer holds it and the local layer refuses it.
+ 	CategoryMachine Category = "machine"
+ )
+diff --git a/internal/configreg/configreg.go b/internal/configreg/configreg.go
+index 91887805..f8925e23 100644
+--- a/internal/configreg/configreg.go
++++ b/internal/configreg/configreg.go
+@@ -20,6 +20,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/darnengine"
++	"github.com/Knatte18/loomyard/internal/desktophook"
+ 	"github.com/Knatte18/loomyard/internal/dobbyengine"
+ 	"github.com/Knatte18/loomyard/internal/driftengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+@@ -127,6 +128,7 @@ func Modules() []Module {
+ 		{Name: "beam", Template: dobbyengine.ConfigTemplate, CheckLoad: checkLoad(dobbyengine.LoadConfig), Spec: dobbyengine.ConfigSpec},
+ 		{Name: "board", Template: boardengine.ConfigTemplate, OpenMaps: boardengine.ConfigOpenMaps(), HubWide: true, CheckLoad: checkLoadNamed(boardengine.LoadConfig, "board"), Spec: boardengine.ConfigSpec},
+ 		{Name: "darn", Template: darnengine.ConfigTemplate, OpenMaps: darnengine.ConfigOpenMaps(), HubWide: true, Migrate: darnengine.MigrateConfig, CheckLoad: checkLoadNamed(darnengine.LoadConfig, "darn"), Spec: darnengine.ConfigSpec},
++		{Name: "desktop", Template: desktophook.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(desktophook.LoadConfig), Spec: desktophook.ConfigSpec},
+ 		{Name: "drift", Template: driftengine.ConfigTemplate, OpenMaps: driftengine.ConfigOpenMaps(), HubWide: true, CheckLoad: checkLoad(driftengine.LoadConfig), Spec: driftengine.ConfigSpec},
+ 		{Name: "fabric", Template: fabricengine.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(fabricengine.LoadConfig), Spec: fabricengine.ConfigSpec},
+ 		{Name: "gate", Template: gateslot.ConfigTemplate, OpenMaps: gateslot.ConfigOpenMaps(), PerNameMaps: gateslot.ConfigPerNameMaps(), HubWide: true, Migrate: gateslot.MigrateConfig, MigrateHubBase: gateslot.SeedAdoptGate, CheckLoad: checkLoad(gateslot.LoadConfig), Spec: gateslot.ConfigSpec},
+diff --git a/internal/configreg/configreg_test.go b/internal/configreg/configreg_test.go
+index 1b100b7f..58f727d2 100644
+--- a/internal/configreg/configreg_test.go
++++ b/internal/configreg/configreg_test.go
+@@ -44,7 +44,7 @@ func TestNames(t *testing.T) {
+ 	}
+ }
+ 
+-// TestModules_SeedOnlyAndHubWideFlags pins the two flags: "models" and "profiles" carry an open-ended, operator-owned key set (model aliases and run profiles respectively), so they are the only entries with SeedOnly == true, "fabric", "board", "gate", "landing", "darn", "language", "sampler" and "profiles" describe hub-level facts, so they are the only entries with HubWide == true, and "landing", whose per-worktree copy was in effect before it moved hub-wide, is the only entry with SeedsFromPrime == true.
++// TestModules_SeedOnlyAndHubWideFlags pins the two flags: "models" and "profiles" carry an open-ended, operator-owned key set (model aliases and run profiles respectively), so they are the only entries with SeedOnly == true, "fabric", "board", "gate", "landing", "darn", "desktop", "drift", "language", "sampler" and "profiles" describe hub-level facts, so they are the only entries with HubWide == true, and "landing", whose per-worktree copy was in effect before it moved hub-wide, is the only entry with SeedsFromPrime == true.
+ //
+ //testtiming:keep pins which modules carry the SeedOnly and HubWide flags, which the covering TestFill never asserts
+ func TestModules_SeedOnlyAndHubWideFlags(t *testing.T) {
+@@ -54,7 +54,7 @@ func TestModules_SeedOnlyAndHubWideFlags(t *testing.T) {
+ 		if m.SeedOnly != wantSeedOnly {
+ 			t.Errorf("Modules(): module %q SeedOnly = %v; want %v", m.Name, m.SeedOnly, wantSeedOnly)
+ 		}
+-		wantHubWide := m.Name == "fabric" || m.Name == "board" || m.Name == "gate" || m.Name == "landing" || m.Name == "darn" || m.Name == "drift" || m.Name == "language" || m.Name == "profiles" || m.Name == "sampler"
++		wantHubWide := m.Name == "fabric" || m.Name == "board" || m.Name == "gate" || m.Name == "landing" || m.Name == "darn" || m.Name == "desktop" || m.Name == "drift" || m.Name == "language" || m.Name == "profiles" || m.Name == "sampler"
+ 		if m.HubWide != wantHubWide {
+ 			t.Errorf("Modules(): module %q HubWide = %v; want %v", m.Name, m.HubWide, wantHubWide)
+ 		}
+@@ -123,6 +123,9 @@ func TestModules_EveryTemplateKeyClassified(t *testing.T) {
+ 			if m.Name == "gate" {
+ 				wantMachineKeys = []string{"slots", "tier_parallel"}
+ 			}
++			if m.Name == "desktop" {
++				wantMachineKeys = []string{"window_command", "window_wait_ms"}
++			}
+ 			if got := configengine.MachineKeys(spec); !slices.Equal(got, wantMachineKeys) {
+ 				t.Errorf("%s MachineKeys = %v; want %v, so no stray machine file is read by a registered loader", m.Name, got, wantMachineKeys)
+ 			}
+diff --git a/internal/desktophook/config.go b/internal/desktophook/config.go
+new file mode 100644
+index 00000000..48a2bcf3
+--- /dev/null
++++ b/internal/desktophook/config.go
+@@ -0,0 +1,63 @@
++// config.go defines desktop.yaml: the Config type, the template and spec accessors, and LoadConfig.
++
++package desktophook
++
++import (
++	_ "embed"
++	"fmt"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"gopkg.in/yaml.v3"
++)
++
++//go:embed template.yaml
++var configTemplate string
++
++// ConfigTemplate returns the default YAML template for the desktop config module.
++func ConfigTemplate() string {
++	return configTemplate
++}
++
++// configModule is the config module name desktop.yaml is loaded under.
++const configModule = "desktop"
++
++// Config represents the resolved desktop.yaml configuration.
++type Config struct {
++	// WindowCommand is the shell command run after lym opens a window; empty runs nothing.
++	WindowCommand string `yaml:"window_command"`
++	// WindowWaitMs is the milliseconds lym waits after opening a window before it runs WindowCommand.
++	WindowWaitMs int `yaml:"window_wait_ms"`
++}
++
++// ConfigSpec returns the desktop module's layered-load spec.
++// Both keys describe the machine's desktop, so each machine sets them in its own machine override and the local layer refuses them.
++func ConfigSpec() configengine.Spec {
++	return configengine.Spec{
++		Name:     configModule,
++		Template: []byte(ConfigTemplate()),
++		HubWide:  true,
++		Categories: map[string]configengine.Category{
++			"window_command": configengine.CategoryMachine,
++			"window_wait_ms": configengine.CategoryMachine,
++		},
++	}
++}
++
++// LoadConfig loads and unmarshals the desktop module's configuration through the hub-wide layer stack under dirs.
++// A hub whose base file is absent resolves the template under the machine and local layers present, so opening a window never fails on a hub not yet reconciled.
++// It refuses a negative window_wait_ms, naming the key.
++func LoadConfig(dirs configengine.Dirs) (Config, error) {
++	resolved, err := configengine.LoadOrTemplate(dirs, ConfigSpec())
++	if err != nil {
++		return Config{}, err
++	}
++
++	var cfg Config
++	if err := yaml.Unmarshal(resolved, &cfg); err != nil {
++		return Config{}, configengine.MarkInvalid(fmt.Errorf("unmarshal desktop config: %w", err))
++	}
++	if cfg.WindowWaitMs < 0 {
++		return Config{}, configengine.MarkInvalid(fmt.Errorf("desktop config key %q holds %d; want an integer of at least 0", "window_wait_ms", cfg.WindowWaitMs))
++	}
++	return cfg, nil
++}
+diff --git a/internal/desktophook/config_test.go b/internal/desktophook/config_test.go
+new file mode 100644
+index 00000000..5e361f6c
+--- /dev/null
++++ b/internal/desktophook/config_test.go
+@@ -0,0 +1,68 @@
++//go:build tier0
++
++// config_test.go covers desktophook.LoadConfig over a bare board and anchor, with no hub and no spawn.
++
++package desktophook_test
++
++import (
++	"errors"
++	"os"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/desktophook"
++)
++
++// TestLoadConfig covers the template defaults, a machine override setting both keys, a refused negative wait and a local override refused for a machine key.
++func TestLoadConfig(t *testing.T) {
++	t.Parallel()
++
++	tests := []struct {
++		name    string
++		machine string
++		local   string
++		want    desktophook.Config
++		wantErr string
++	}{
++		{name: "TemplateDefaults", machine: "", want: desktophook.Config{WindowWaitMs: 1500}},
++		{
++			name:    "MachineOverrideSetsBothKeys",
++			machine: "window_command: \"~/.local/bin/arrange-to-tiles.sh\"\nwindow_wait_ms: 200\n",
++			want:    desktophook.Config{WindowCommand: "~/.local/bin/arrange-to-tiles.sh", WindowWaitMs: 200},
++		},
++		{name: "NegativeWaitRefused", machine: "window_wait_ms: -1\n", wantErr: `desktop config key "window_wait_ms" holds -1`},
++		{name: "LocalOverrideRefused", local: "window_command: \"true\"\n", wantErr: "window_command"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dirs := newDirsWithMachineConfig(t, tt.machine)
++			if tt.local != "" {
++				// The anchor gets a _lym/config/ too, since a worktree with no _lym/ stacks no local layer.
++				for _, dir := range []string{configengine.ConfigDir(dirs.Anchor), configengine.ScratchDir(dirs.Anchor)} {
++					if err := os.MkdirAll(dir, 0o755); err != nil {
++						t.Fatalf("MkdirAll(%q) = %v; want nil", dir, err)
++					}
++				}
++				if err := os.WriteFile(configengine.LocalFile(dirs.Anchor, "desktop"), []byte(tt.local), 0o644); err != nil {
++					t.Fatalf("WriteFile local override = %v; want nil", err)
++				}
++			}
++
++			got, err := desktophook.LoadConfig(dirs)
++			if tt.wantErr != "" {
++				if err == nil || !strings.Contains(err.Error(), tt.wantErr) || !errors.Is(err, configengine.ErrInvalid) {
++					t.Fatalf("LoadConfig() error = %v; want an ErrInvalid error containing %q", err, tt.wantErr)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("LoadConfig() error = %v; want nil", err)
++			}
++			if got != tt.want {
++				t.Errorf("LoadConfig() = %+v; want %+v", got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/desktophook/export_test.go b/internal/desktophook/export_test.go
+new file mode 100644
+index 00000000..6047b9d7
+--- /dev/null
++++ b/internal/desktophook/export_test.go
+@@ -0,0 +1,14 @@
++// export_test.go exposes AfterWindow under a caller-chosen wait and timeout, so the tests can pin both without real sleeps.
++
++package desktophook
++
++import (
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++)
++
++// AfterWindowWithTiming runs AfterWindow with sleep standing in for the wait and the given command timeout and output wait delay.
++func AfterWindowWithTiming(dirs configengine.Dirs, dir string, sleep func(time.Duration), commandTimeout, commandWaitDelay time.Duration) error {
++	return afterWindow(dirs, dir, timing{sleep: sleep, commandTimeout: commandTimeout, commandWaitDelay: commandWaitDelay})
++}
+diff --git a/internal/desktophook/machine_test.go b/internal/desktophook/machine_test.go
+new file mode 100644
+index 00000000..6b494d5c
+--- /dev/null
++++ b/internal/desktophook/machine_test.go
+@@ -0,0 +1,27 @@
++//go:build tier0 || tier1
++
++// machine_test.go holds the fixture helper both test tiers use: a hub's desktop machine override.
++
++package desktophook_test
++
++import (
++	"os"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++)
++
++// newDirsWithMachineConfig returns the Dirs of a fresh board and anchor whose board holds contents as its desktop machine override.
++// The board holds no hub file, as on a hub not yet reconciled.
++func newDirsWithMachineConfig(t *testing.T, contents string) configengine.Dirs {
++	t.Helper()
++	dirs := configengine.Dirs{Board: t.TempDir(), Anchor: t.TempDir()}
++	if err := os.MkdirAll(configengine.ScratchDir(dirs.Board), 0o755); err != nil {
++		t.Fatalf("MkdirAll(%q) = %v; want nil", configengine.ScratchDir(dirs.Board), err)
++	}
++	machinePath := configengine.MachineFile(dirs.Board, "desktop")
++	if err := os.WriteFile(machinePath, []byte(contents), 0o644); err != nil {
++		t.Fatalf("WriteFile(%q) = %v; want nil", machinePath, err)
++	}
++	return dirs
++}
+diff --git a/internal/desktophook/template.yaml b/internal/desktophook/template.yaml
+new file mode 100644
+index 00000000..7ae2fdab
+--- /dev/null
++++ b/internal/desktophook/template.yaml
+@@ -0,0 +1,2 @@
++window_command: ""  # shell command run after lym opens a desktop window (a run's terminal window, lym reed window, lym ide), such as a tiling script that snaps the new window into the active desktop's grid; empty runs nothing; set it per machine with `lym config desktop --layer machine --set window_command=<value>` from the prime
++window_wait_ms: 1500  # milliseconds lym waits after opening a window before it runs window_command, so the command sees the new window
+diff --git a/internal/desktophook/testmain_test.go b/internal/desktophook/testmain_test.go
+new file mode 100644
+index 00000000..b0a606ba
+--- /dev/null
++++ b/internal/desktophook/testmain_test.go
+@@ -0,0 +1,14 @@
++// testmain_test.go runs the package's tests under tmuxkit.Main, so their temp files live in the process run directory and go with it.
++
++package desktophook_test
++
++import (
++	"os"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tmuxkit"
++)
++
++func TestMain(m *testing.M) {
++	os.Exit(tmuxkit.Main(m))
++}
+diff --git a/internal/desktophook/window.go b/internal/desktophook/window.go
+new file mode 100644
+index 00000000..cc742913
+--- /dev/null
++++ b/internal/desktophook/window.go
+@@ -0,0 +1,74 @@
++// Package desktophook runs the machine's configured window command after lym opens a desktop window, so an operator's own script, such as one that snaps the new window into the active desktop's tiling grid, can place it.
++// It knows no window manager or desktop: it waits desktop.yaml's window_wait_ms for the new window to appear, then runs window_command through the platform shell in the window's directory.
++// With window_command empty, the template default, it waits for nothing and runs nothing.
++// Both keys are machine keys, read from the hub's never-tracked machine override, so each machine names its own command.
++package desktophook
++
++import (
++	"context"
++	"fmt"
++	"os/exec"
++	"runtime"
++	"strings"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/proc"
++	"github.com/Knatte18/loomyard/internal/verifyrun"
++)
++
++// timing is the waiting and bounding AfterWindow applies, held as a value so a test can shorten it.
++type timing struct {
++	// sleep waits the configured window_wait_ms before the command runs.
++	sleep func(time.Duration)
++	// commandTimeout bounds one run of the window command, so a script that hangs cannot hold up the verb that opened the window.
++	commandTimeout time.Duration
++	// commandWaitDelay bounds the read of the command's output after it exits or is killed, so a child still holding the pipe cannot hang the run.
++	commandWaitDelay time.Duration
++}
++
++// productionTiming is the timing AfterWindow runs with.
++var productionTiming = timing{sleep: time.Sleep, commandTimeout: 30 * time.Second, commandWaitDelay: 5 * time.Second}
++
++// AfterWindow runs the window command the stack under dirs configures, once a window on dir has been opened.
++// It waits window_wait_ms first, so the command sees the new window, then runs window_command through the platform shell with dir as its working directory, bounded by a timeout.
++// With window_command empty or blank it returns nil at once.
++// A config that fails to load, and a command that fails to start, exits nonzero or times out, return an error carrying the command's output;
++// the window is already open by then, so a caller only reports it.
++func AfterWindow(dirs configengine.Dirs, dir string) error {
++	return afterWindow(dirs, dir, productionTiming)
++}
++
++// afterWindow is AfterWindow under the given timing.
++func afterWindow(dirs configengine.Dirs, dir string, t timing) error {
++	cfg, err := LoadConfig(dirs)
++	if err != nil {
++		return fmt.Errorf("desktophook: load desktop config: %w", err)
++	}
++	if strings.TrimSpace(cfg.WindowCommand) == "" {
++		return nil
++	}
++	t.sleep(time.Duration(cfg.WindowWaitMs) * time.Millisecond)
++	return runWindowCommand(cfg.WindowCommand, dir, t)
++}
++
++// runWindowCommand runs command through the platform shell in dir and waits for it, within t.commandTimeout.
++func runWindowCommand(command, dir string, t timing) error {
++	ctx, cancel := context.WithTimeout(context.Background(), t.commandTimeout)
++	defer cancel()
++
++	shellName, flag := verifyrun.ShellFor(runtime.GOOS)
++	cmd := exec.CommandContext(ctx, shellName, flag, command)
++	cmd.Dir = dir
++	cmd.WaitDelay = t.commandWaitDelay
++	proc.HideWindow(cmd)
++
++	logger.Info("desktophook: spawning the window command", "command", command, "dir", dir)
++	output, err := cmd.CombinedOutput()
++	logger.Info("desktophook: the window command ended", "command", command, "dir", dir, "err", err)
++	if err != nil {
++		return fmt.Errorf("desktophook: window command %q: %w; output: %s", command, err, strings.TrimSpace(string(output)))
++	}
++	return nil
++}
+diff --git a/internal/desktophook/window_test.go b/internal/desktophook/window_test.go
+new file mode 100644
+index 00000000..de21677e
+--- /dev/null
++++ b/internal/desktophook/window_test.go
+@@ -0,0 +1,96 @@
++//go:build tier1 && !windows
++
++// window_test.go covers desktophook.AfterWindow running a real sh command; the commands are POSIX shell, so Windows is left out.
++
++package desktophook_test
++
++import (
++	"os"
++	"path/filepath"
++	"slices"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/desktophook"
++)
++
++// TestAfterWindow covers four behaviors.
++// A command that is unset or blank runs nothing and waits for nothing.
++// A set command runs in the window's directory only after the configured wait.
++// A failing command's error carries its output.
++// A hanging command is cut off at the timeout.
++func TestAfterWindow(t *testing.T) {
++	t.Parallel()
++
++	tests := []struct {
++		name    string
++		machine string
++		// timeout is the command timeout; zero means a minute, far above any row that is not testing the timeout.
++		timeout    time.Duration
++		wantMarker bool
++		wantErr    string
++		// wantSleeps is the waits the command was preceded by.
++		wantSleeps []time.Duration
++	}{
++		{name: "UnsetCommandRunsNothing", machine: "window_wait_ms: 7\n"},
++		{name: "BlankCommandRunsNothing", machine: "window_command: \"   \"\nwindow_wait_ms: 7\n"},
++		{name: "SetCommandRunsInWindowDirAfterTheWait", machine: "window_command: \"pwd > marker\"\nwindow_wait_ms: 40\n", wantMarker: true, wantSleeps: []time.Duration{40 * time.Millisecond}},
++		{name: "FailingCommandReportsOutput", machine: "window_command: \"echo boom; exit 3\"\nwindow_wait_ms: 0\n", wantErr: "boom", wantSleeps: []time.Duration{0}},
++		{name: "HangingCommandIsCutOffAtTheTimeout", machine: "window_command: \"exec sleep 60\"\nwindow_wait_ms: 0\n", timeout: 50 * time.Millisecond, wantErr: "window command", wantSleeps: []time.Duration{0}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dirs := newDirsWithMachineConfig(t, tt.machine)
++			windowDir := t.TempDir()
++			markerPath := filepath.Join(windowDir, "marker")
++			timeout := tt.timeout
++			if timeout == 0 {
++				timeout = time.Minute
++			}
++			var sleeps []time.Duration
++			markerPresentAtSleep := false
++			sleep := func(d time.Duration) {
++				sleeps = append(sleeps, d)
++				if _, err := os.Stat(markerPath); err == nil {
++					markerPresentAtSleep = true
++				}
++			}
++
++			start := time.Now()
++			err := desktophook.AfterWindowWithTiming(dirs, windowDir, sleep, timeout, 50*time.Millisecond)
++			elapsed := time.Since(start)
++
++			if !slices.Equal(sleeps, tt.wantSleeps) {
++				t.Errorf("waits = %v; want %v", sleeps, tt.wantSleeps)
++			}
++			if markerPresentAtSleep {
++				t.Errorf("the command had already run when the wait began; want it to run after the wait")
++			}
++			if elapsed > 10*time.Second {
++				t.Errorf("AfterWindow took %v; want it to return promptly", elapsed)
++			}
++			if tt.wantErr != "" {
++				if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
++					t.Fatalf("AfterWindow() error = %v; want an error containing %q", err, tt.wantErr)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("AfterWindow() error = %v; want nil", err)
++			}
++			if !tt.wantMarker {
++				return
++			}
++
++			marker, readErr := os.ReadFile(markerPath)
++			switch {
++			case readErr != nil:
++				t.Fatalf("read marker: %v; want the command to have written it", readErr)
++			case strings.TrimSpace(string(marker)) != windowDir:
++				t.Errorf("command ran in %q; want %q", strings.TrimSpace(string(marker)), windowDir)
++			}
++		})
++	}
++}
+diff --git a/internal/ideengine/spawn.go b/internal/ideengine/spawn.go
+index f3affb58..a9385e23 100644
+--- a/internal/ideengine/spawn.go
++++ b/internal/ideengine/spawn.go
+@@ -1,5 +1,6 @@
+ // spawn.go implements the ide entry point Spawn (`ide spawn`), and its two halves, Seed and OpenTask.
+ // It resolves a worktree's window title and colours from the prime, the board's beams and the worktree's parent, generates the worktree's .vscode/ config, and launches VS Code;
++// after a launch it runs the machine's desktop window command through internal/desktophook;
+ // it regenerates tasks.json on every call and keeps .vscode/ out of git through info/exclude.
+ // A task slug opens its bare folder.
+ // The prime instead opens the lym-generated hub workspace <hub>/<RepoName>.code-workspace (prime, Bolt, every task pair), regenerated on every prime spawn or seed.
+@@ -14,6 +15,7 @@ import (
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/desktophook"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+@@ -30,7 +32,7 @@ var CodeLauncher = vscode.Launch
+ // It defaults to vscode.UserKeybindingsPath and is exported so that tests in other packages can point it at a temporary file.
+ var KeybindingsPath = vscode.UserKeybindingsPath
+ 
+-// Spawn writes the window title and colours and the .vscode/ config of the worktree slug and the user's lym key bindings, then launches VS Code.
++// Spawn writes the window title and colours and the .vscode/ config of the worktree slug and the user's lym key bindings, then launches VS Code and runs the machine's desktop window command.
+ // A task slug launches its bare folder <hub>/<slug>/<its own anchor>.
+ // When slug names the prime, Spawn first regenerates the hub workspace file <hub>/<RepoName>.code-workspace and launches that file instead;
+ // every error on that path is returned, never degraded to the bare folder.
+@@ -41,7 +43,11 @@ func Spawn(l *lymcwd.Location, slug string) (vscode.KeybindingsResult, error) {
+ 	if err != nil {
+ 		return result.keybindings, err
+ 	}
+-	return result.keybindings, CodeLauncher(result.launchPath)
++	if err := CodeLauncher(result.launchPath); err != nil {
++		return result.keybindings, err
++	}
++	placeWindow(l, result.windowDir)
++	return result.keybindings, nil
+ }
+ 
+ // Seed writes the window title and colours and the .vscode/ config of the worktree slug, the prime or a pair, and launches nothing.
+@@ -56,10 +62,12 @@ func Seed(l *lymcwd.Location, slug string) (vscode.KeybindingsResult, error) {
+ 	return result.keybindings, err
+ }
+ 
+-// seedResult is what seed did: the keybindings seed's outcome and the path a launch of the worktree opens.
++// seedResult is what seed did: the keybindings seed's outcome, the path a launch of the worktree opens and the directory the opened window is on.
++// The window directory is the launch path itself unless that is the hub workspace file.
+ type seedResult struct {
+ 	keybindings vscode.KeybindingsResult
+ 	launchPath  string
++	windowDir   string
+ }
+ 
+ // seed writes slug's .vscode/ config, seeds the user's keybindings.json and, for the prime, regenerates the hub workspace file, which is then the launch path;
+@@ -75,24 +83,39 @@ func seed(l *lymcwd.Location, slug string) (seedResult, error) {
+ 		return seedResult{}, err
+ 	}
+ 
+-	result := seedResult{keybindings: seedKeybindings(), launchPath: filepath.Join(worktreeDir, own.AnchorRel)}
++	anchorPath := filepath.Join(worktreeDir, own.AnchorRel)
++	result := seedResult{keybindings: seedKeybindings(), launchPath: anchorPath, windowDir: anchorPath}
+ 	if primeResolved && slug == primeName {
+ 		workspacePath, err := fabricengine.RegenerateHubWorkspace(fabricengine.NewMutations(l.HubPath), l)
+ 		if err != nil {
+ 			return result, err
+ 		}
+ 		result.launchPath = workspacePath
++		result.windowDir = filepath.Dir(workspacePath)
+ 	}
+ 	return result, nil
+ }
+ 
+-// OpenTask launches VS Code on task slug's bare folder at the task's own anchor, as Spawn does for a task pair, and writes nothing.
++// OpenTask launches VS Code on task slug's bare folder at the task's own anchor, as Spawn does for a task pair, runs the machine's desktop window command and writes nothing.
+ func OpenTask(l *lymcwd.Location, slug string) error {
+ 	own, err := lymcwd.NamedWorktree(l.HubPath, slug)
+ 	if err != nil {
+ 		return fmt.Errorf("read the anchor of %q: %w", slug, err)
+ 	}
+-	return CodeLauncher(filepath.Join(fabricengine.WorktreePath(l, slug), own.AnchorRel))
++	launchPath := filepath.Join(fabricengine.WorktreePath(l, slug), own.AnchorRel)
++	if err := CodeLauncher(launchPath); err != nil {
++		return err
++	}
++	placeWindow(l, launchPath)
++	return nil
++}
++
++// placeWindow runs the machine's desktop window command, in the directory windowDir, for the VS Code window just launched, under l's config stack.
++// The window is open by then, so a failure of the command only warns.
++func placeWindow(l *lymcwd.Location, windowDir string) {
++	if err := desktophook.AfterWindow(fabricengine.ConfigDirs(l), windowDir); err != nil {
++		logger.Warn("ide: the window command failed; the window is open", "dir", windowDir, "cause", err)
++	}
+ }
+ 
+ // writeWorktreeConfig writes slug's .vscode/ config at own's anchor through writeVSCodeConfig, stamping in the absolute lym path.
+diff --git a/internal/ideengine/spawn_hub_integration_test.go b/internal/ideengine/spawn_hub_integration_test.go
+index 87dada4d..de0092fe 100644
+--- a/internal/ideengine/spawn_hub_integration_test.go
++++ b/internal/ideengine/spawn_hub_integration_test.go
+@@ -1,7 +1,7 @@
+ //go:build tier1
+ 
+-// spawn_hub_integration_test.go holds the Spawn checks that run against the prime and against a task pair of one hubforge hub:
+-// the prime opens the lym-generated hub workspace, a task slug still opens its bare folder.
++// spawn_hub_integration_test.go holds the Spawn and OpenTask checks that run against the prime and against a task pair of one hubforge hub:
++// the prime opens the lym-generated hub workspace, a task slug still opens its bare folder, and the window command follows a launch.
+ // Each check is a step of a scenario in spawn_scenario_integration_test.go, which names why they run serially.
+ 
+ package ideengine
+@@ -9,12 +9,14 @@ package ideengine
+ import (
+ 	"bytes"
+ 	"encoding/json"
++	"errors"
+ 	"os"
+ 	"path/filepath"
+ 	"sort"
+ 	"strings"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+@@ -68,6 +70,7 @@ func checkPrimeWritesHubWorkspace(t *testing.T, h *hubforge.Hub) {
+ 	l := h.Location
+ 	prime := primeOf(t, h)
+ 	launched := recordLauncher(t)
++	markerPath := setDesktopWindowCommand(t, h)
+ 
+ 	if _, err := Spawn(l, prime); err != nil {
+ 		t.Fatalf("Spawn: %v", err)
+@@ -77,6 +80,9 @@ func checkPrimeWritesHubWorkspace(t *testing.T, h *hubforge.Hub) {
+ 	if len(*launched) != 1 || (*launched)[0] != wsPath {
+ 		t.Fatalf("CodeLauncher calls = %v, want exactly [%s]", *launched, wsPath)
+ 	}
++	if runs := windowCommandRuns(t, markerPath); runs != 1 {
++		t.Errorf("window command runs after a prime Spawn = %d; want 1, since the command runs in the hub directory beside the workspace file", runs)
++	}
+ 	data, err := os.ReadFile(wsPath)
+ 	if err != nil {
+ 		t.Fatalf("read workspace file: %v", err)
+@@ -143,6 +149,7 @@ func readOptionalFile(t *testing.T, path string) (data []byte, exists bool) {
+ 
+ // checkTaskSlugOpensBareFolder asserts a task spawn launches its bare folder, and that a task seed and spawn leave the workspace file's bytes, or its absence, unchanged.
+ // It also asserts Seed writes the same on-demand attach task Spawn does and seeds the keybindings.json as Spawn does, each into a missing file.
++// It also asserts Spawn, and never Seed, runs the machine's desktop window command.
+ func checkTaskSlugOpensBareFolder(t *testing.T, h *hubforge.Hub, slug string) {
+ 	resetPrimeEditorState(t, h)
+ 	l := h.Location
+@@ -155,6 +162,7 @@ func checkTaskSlugOpensBareFolder(t *testing.T, h *hubforge.Hub, slug string) {
+ 	if err := os.RemoveAll(keybindingsPath); err != nil {
+ 		t.Fatalf("remove keybindings: %v", err)
+ 	}
++	markerPath := setDesktopWindowCommand(t, h)
+ 	workspaceBefore, workspaceExisted := readOptionalFile(t, fabricengine.HubWorkspacePath(l))
+ 
+ 	keybindings, err := Seed(l, slug)
+@@ -168,6 +176,9 @@ func checkTaskSlugOpensBareFolder(t *testing.T, h *hubforge.Hub, slug string) {
+ 	if _, err := os.Stat(keybindingsPath); err != nil {
+ 		t.Errorf("keybindings.json missing after Seed: %v", err)
+ 	}
++	if _, err := os.Stat(markerPath); !os.IsNotExist(err) {
++		t.Errorf("window command marker after Seed: stat error %v; want it absent, since Seed opens no window", err)
++	}
+ 	if err := os.RemoveAll(keybindingsPath); err != nil {
+ 		t.Fatalf("remove keybindings: %v", err)
+ 	}
+@@ -183,12 +194,58 @@ func checkTaskSlugOpensBareFolder(t *testing.T, h *hubforge.Hub, slug string) {
+ 	if len(*launched) != 1 || (*launched)[0] != want {
+ 		t.Fatalf("CodeLauncher calls = %v, want [%s]", *launched, want)
+ 	}
++	if marker, err := os.ReadFile(markerPath); err != nil || strings.TrimSpace(string(marker)) != "ran" {
++		t.Errorf("window command marker = %q, %v; want one run of the window command", marker, err)
++	}
+ 	workspaceAfter, workspaceExists := readOptionalFile(t, fabricengine.HubWorkspacePath(l))
+ 	if workspaceExists != workspaceExisted || !bytes.Equal(workspaceAfter, workspaceBefore) {
+ 		t.Errorf("workspace file changed by a task seed and spawn: existed %v then, %v now; bytes before %q, after %q", workspaceExisted, workspaceExists, workspaceBefore, workspaceAfter)
+ 	}
+ }
+ 
++// checkWindowCommandFollowsALaunch asserts OpenTask runs the machine's window command once after a launch,
++// and that a failing CodeLauncher makes Spawn and OpenTask return its error and run no command.
++func checkWindowCommandFollowsALaunch(t *testing.T, h *hubforge.Hub, slug string) {
++	resetPrimeEditorState(t, h)
++	l := h.Location
++	hubforge.AddPair(t, h, slug)
++	markerPath := setDesktopWindowCommand(t, h)
++
++	launched := recordLauncher(t)
++	if err := OpenTask(l, slug); err != nil {
++		t.Fatalf("OpenTask: %v", err)
++	}
++	want := filepath.Join(fabricengine.WorktreePath(l, slug), l.AnchorRel)
++	if len(*launched) != 1 || (*launched)[0] != want {
++		t.Fatalf("CodeLauncher calls = %v, want [%s]", *launched, want)
++	}
++	if runs := windowCommandRuns(t, markerPath); runs != 1 {
++		t.Fatalf("window command runs after OpenTask = %d; want 1", runs)
++	}
++
++	launchErr := errors.New("code is not installed")
++	CodeLauncher = func(string) error { return launchErr }
++	if err := OpenTask(l, slug); !errors.Is(err, launchErr) {
++		t.Errorf("OpenTask error = %v; want the launcher's error", err)
++	}
++	if _, err := Spawn(l, slug); !errors.Is(err, launchErr) {
++		t.Errorf("Spawn error = %v; want the launcher's error", err)
++	}
++	if runs := windowCommandRuns(t, markerPath); runs != 1 {
++		t.Errorf("window command runs after failed launches = %d; want still 1, since a failed launch opens no window", runs)
++	}
++}
++
++// windowCommandRuns returns how many times the window command appended to the marker at markerPath.
++func windowCommandRuns(t *testing.T, markerPath string) int {
++	t.Helper()
++	data, exists := readOptionalFile(t, markerPath)
++	if !exists {
++		return 0
++	}
++	return len(strings.Fields(string(data)))
++}
++
+ // checkPrimeSeedWritesHubWorkspace asserts a seed of the prime writes the hub workspace file with the workspace title and launches nothing.
+ func checkPrimeSeedWritesHubWorkspace(t *testing.T, h *hubforge.Hub) {
+ 	resetPrimeEditorState(t, h)
+@@ -368,3 +425,25 @@ func readPrimeLook(t *testing.T, path string) primeLook {
+ 	}
+ 	return look
+ }
++
++// setDesktopWindowCommand writes h's desktop machine override with a window command that appends "ran" to a marker file, in a form sh and cmd both run, and no wait.
++// It returns the marker's path and removes the override on cleanup.
++func setDesktopWindowCommand(t *testing.T, h *hubforge.Hub) string {
++	t.Helper()
++	markerPath := filepath.Join(t.TempDir(), "marker")
++	board := fabricengine.BoltDir(h.Location.HubPath)
++	if err := os.MkdirAll(configengine.ScratchDir(board), 0o755); err != nil {
++		t.Fatalf("MkdirAll(%q): %v", configengine.ScratchDir(board), err)
++	}
++	machinePath := configengine.MachineFile(board, "desktop")
++	contents := "window_command: 'echo ran>> \"" + markerPath + "\"'\nwindow_wait_ms: 0\n"
++	if err := os.WriteFile(machinePath, []byte(contents), 0o644); err != nil {
++		t.Fatalf("WriteFile(%q): %v", machinePath, err)
++	}
++	t.Cleanup(func() {
++		if err := os.Remove(machinePath); err != nil {
++			t.Errorf("remove %s: %v", machinePath, err)
++		}
++	})
++	return markerPath
++}
+diff --git a/internal/ideengine/spawn_scenario_integration_test.go b/internal/ideengine/spawn_scenario_integration_test.go
+index ec57c1ae..936a26e9 100644
+--- a/internal/ideengine/spawn_scenario_integration_test.go
++++ b/internal/ideengine/spawn_scenario_integration_test.go
+@@ -66,6 +66,11 @@ func TestSpawnScenario(t *testing.T) {
+ 	}) {
+ 		return
+ 	}
++	if !step("window command follows a launch and never a failed one", func(t *testing.T) {
++		checkWindowCommandFollowsALaunch(t, h, "window-command")
++	}) {
++		return
++	}
+ 	if !step("prime writes the hub workspace", func(t *testing.T) {
+ 		checkPrimeWritesHubWorkspace(t, h)
+ 	}) {
+diff --git a/internal/reedcli/cli.go b/internal/reedcli/cli.go
+index 3d3f178c..91bf1c9e 100644
+--- a/internal/reedcli/cli.go
++++ b/internal/reedcli/cli.go
+@@ -65,6 +65,9 @@ type reedCLI struct {
+ 	// openTerminal is the test seam for the window verb; nil means termwindow.Resolve then Launcher.OpenAttach.
+ 	openTerminal func(dir, title, lymPath string) error
+ 
++	// placeWindow is the test seam for the window command the window verb runs after it opens a window; nil means placeTerminalWindow.
++	placeWindow func(dir string) error
++
+ 	// watchdogTiming, when non-nil, replaces watchdogDefaultTiming() in watchdogCmd's loop so a test can shorten how long it waits on the daemon.
+ 	// Production never sets it.
+ 	watchdogTiming *watchdogTiming
+diff --git a/internal/reedcli/placewindow_integration_test.go b/internal/reedcli/placewindow_integration_test.go
+new file mode 100644
+index 00000000..094a2a1d
+--- /dev/null
++++ b/internal/reedcli/placewindow_integration_test.go
+@@ -0,0 +1,59 @@
++//go:build tier1 && !windows
++
++// placewindow_integration_test.go runs placeTerminalWindow, which the window verb's tests replace by a seam, against a real hub and a directory outside any worktree; the window command is POSIX shell, so Windows is left out.
++
++package reedcli
++
++import (
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++)
++
++// TestPlaceTerminalWindow covers a directory in no worktree running no command and a worktree directory running the hub's configured command there.
++func TestPlaceTerminalWindow(t *testing.T) {
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	board := fabricengine.BoltDir(h.Location.HubPath)
++	if err := os.MkdirAll(configengine.ScratchDir(board), 0o755); err != nil {
++		t.Fatalf("MkdirAll(%q) = %v; want nil", configengine.ScratchDir(board), err)
++	}
++	markerName := "marker"
++	machine := "window_command: \"pwd > " + markerName + "\"\nwindow_wait_ms: 0\n"
++	if err := os.WriteFile(configengine.MachineFile(board, "desktop"), []byte(machine), 0o644); err != nil {
++		t.Fatalf("WriteFile the desktop machine override = %v; want nil", err)
++	}
++
++	tests := []struct {
++		name       string
++		dir        string
++		wantMarker bool
++	}{
++		{name: "DirectoryInNoWorktreeRunsNothing", dir: t.TempDir()},
++		{name: "WorktreeDirectoryRunsTheConfiguredCommand", dir: h.PrimeWorktree(), wantMarker: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if err := placeTerminalWindow(tt.dir); err != nil {
++				t.Fatalf("placeTerminalWindow(%q) = %v; want nil", tt.dir, err)
++			}
++
++			marker, err := os.ReadFile(filepath.Join(tt.dir, markerName))
++			switch {
++			case !tt.wantMarker && !os.IsNotExist(err):
++				t.Errorf("read marker error = %v; want it absent, since the directory is in no worktree", err)
++			case tt.wantMarker && err != nil:
++				t.Fatalf("read marker: %v; want the command to have written it", err)
++			case tt.wantMarker && strings.TrimSpace(string(marker)) != tt.dir:
++				t.Errorf("command ran in %q; want %q", strings.TrimSpace(string(marker)), tt.dir)
++			}
++		})
++	}
++}
+diff --git a/internal/reedcli/window.go b/internal/reedcli/window.go
+index 83d3c267..8ddf0ad9 100644
+--- a/internal/reedcli/window.go
++++ b/internal/reedcli/window.go
+@@ -1,5 +1,6 @@
+ // window.go implements the `window` reed verb: it opens one desktop terminal window attached to a told worktree's reed session through internal/termwindow.
+-// It needs no location, config or engine, so the root pre-run skips it.
++// It then runs the machine's window command through internal/desktophook with the config of the worktree holding the told directory.
++// It needs no acting location or engine, so the root pre-run skips it.
+ 
+ package reedcli
+ 
+@@ -9,6 +10,10 @@ import (
+ 	"path/filepath"
+ 
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/desktophook"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/output"
+ 	"github.com/Knatte18/loomyard/internal/termwindow"
+ 	"github.com/spf13/cobra"
+@@ -23,6 +28,17 @@ func openTerminalWindow(dir, title, lymPath string) error {
+ 	return launcher.OpenAttach(dir, title, lymPath)
+ }
+ 
++// placeTerminalWindow runs the machine's window command for a window just opened on dir, under the config stack of the worktree holding dir.
++// A dir in no worktree has no hub config to name a command, so nothing runs.
++func placeTerminalWindow(dir string) error {
++	l, err := lymcwd.ResolveWorktree(dir)
++	if err != nil {
++		logger.Debug("reed window: the window's directory is in no worktree, running no window command", "dir", dir, "cause", err)
++		return nil
++	}
++	return desktophook.AfterWindow(fabricengine.ConfigDirs(l), dir)
++}
++
+ // windowCmd builds the `window` subcommand.
+ // It opens a window on any directory the caller names; the window runs only `lym reed attach` there, which attaches to that worktree's own reed session and nothing else.
+ func (c *reedCLI) windowCmd() *cobra.Command {
+@@ -34,7 +50,9 @@ func (c *reedCLI) windowCmd() *cobra.Command {
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `window opens one desktop terminal window whose shell runs
+ "lym reed attach" in the told worktree directory, and returns once the
+-launcher process has started, so the window outlives this command. The
++launcher process has started, so the window outlives this command. When
++the machine names a window command in desktop.yaml, it runs it next, after
++the configured wait, and a failure of that command only warns. The
+ title defaults to the directory's base name. A directory that does not
+ exist is refused before any launcher runs, and a machine with no terminal
+ launcher reports why on the envelope.
+@@ -71,6 +89,13 @@ Example:
+ 				clihelp.SetExit(cmd.Context(), output.Err(out, fmt.Sprintf("window: %v", err)))
+ 				return nil
+ 			}
++			place := c.placeWindow
++			if place == nil {
++				place = placeTerminalWindow
++			}
++			if err := place(dir); err != nil {
++				logger.Warn("reed window: the window command failed; the window is open", "dir", dir, "cause", err)
++			}
+ 			clihelp.SetExit(cmd.Context(), output.Ok(out, map[string]any{"dir": dir, "title": windowTitle}))
+ 			return nil
+ 		},
+diff --git a/internal/reedcli/window_test.go b/internal/reedcli/window_test.go
+index 9bbb57f7..f71e2ca1 100644
+--- a/internal/reedcli/window_test.go
++++ b/internal/reedcli/window_test.go
+@@ -8,6 +8,7 @@ import (
+ 	"bytes"
+ 	"errors"
+ 	"path/filepath"
++	"slices"
+ 	"strings"
+ 	"testing"
+ 
+@@ -27,7 +28,9 @@ func TestWindowCmd_OpensATerminalAttachedToTheToldWorktree(t *testing.T) {
+ 		name string
+ 		args []string
+ 		// openErr is what the launcher seam returns.
+-		openErr   error
++		openErr error
++		// placeErr is what the window-command seam returns.
++		placeErr  error
+ 		wantCode  int
+ 		wantTitle string
+ 		wantCalls int
+@@ -38,15 +41,23 @@ func TestWindowCmd_OpensATerminalAttachedToTheToldWorktree(t *testing.T) {
+ 		{name: "DefaultTitleIsTheBaseName", args: []string{existing}, wantTitle: filepath.Base(existing), wantCalls: 1},
+ 		{name: "MissingDirectoryRunsNoLauncher", args: []string{filepath.Join(existing, "absent")}, wantCode: 1, wantErr: "absent"},
+ 		{name: "LauncherErrorIsCarried", args: []string{existing}, openErr: errors.New("no terminal window launcher known here"), wantCode: 1, wantTitle: filepath.Base(existing), wantCalls: 1, wantErr: "no terminal window launcher"},
++		{name: "WindowCommandFailureOnlyWarns", args: []string{existing}, placeErr: errors.New("window command failed"), wantTitle: filepath.Base(existing), wantCalls: 1},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 			var calls []windowCall
+-			c := &reedCLI{openTerminal: func(dir, title, lymPath string) error {
+-				calls = append(calls, windowCall{dir, title, lymPath})
+-				return tt.openErr
+-			}}
++			var placed []string
++			c := &reedCLI{
++				openTerminal: func(dir, title, lymPath string) error {
++					calls = append(calls, windowCall{dir, title, lymPath})
++					return tt.openErr
++				},
++				placeWindow: func(dir string) error {
++					placed = append(placed, dir)
++					return tt.placeErr
++				},
++			}
+ 			var out bytes.Buffer
+ 
+ 			code := clihelp.Execute(c.windowCmd(), &out, tt.args)
+@@ -62,6 +73,13 @@ func TestWindowCmd_OpensATerminalAttachedToTheToldWorktree(t *testing.T) {
+ 			if len(calls) != tt.wantCalls {
+ 				t.Fatalf("launcher calls = %v; want %d", calls, tt.wantCalls)
+ 			}
++			wantPlaced := []string{}
++			if tt.wantCalls == 1 && tt.openErr == nil {
++				wantPlaced = []string{existing}
++			}
++			if !slices.Equal(placed, wantPlaced) {
++				t.Errorf("window command runs = %v; want %v, one after each window opened", placed, wantPlaced)
++			}
+ 			if tt.wantCalls == 0 {
+ 				return
+ 			}
+diff --git a/pattern/PATTERN-config-layers.md b/pattern/PATTERN-config-layers.md
+index 5339a4d7..a6444ac8 100644
+--- a/pattern/PATTERN-config-layers.md
++++ b/pattern/PATTERN-config-layers.md
+@@ -11,7 +11,7 @@ Machine alone opens a key to the machine layer.
+ - **Cross-pair**: the key reaches across pairs, including a shared process's boot option or what lands on the parent branch.
+ - **Guard**: the key switches off or hollows a guard, including a review or an approval gate, a timeout whose expiry lets that gate pass, and the prose or lens set a reviewer is given.
+   `loom.code_reviewer_fan` is the one reviewer fan key open to the local layer: its value names only a fan the guarded `lenses.yaml` defines, or `""` for a solo round, and the perch's rounds, rubric and whole-diff read are unchanged.
+-- **Machine**: the key's value is a property of the machine, bounding a resource every worktree of the hub on that machine shares.
++- **Machine**: the key's value is a property of the machine: a bound on a resource every worktree of the hub on that machine shares, or a fact of the machine's desktop, such as the command run after lym opens a window.
+   It opens the key to the machine layer and keeps it closed to the local layer.
+ 
+ The test asks what a key's value can do to a guard, not what kind of key it is.
+@@ -49,7 +49,7 @@ Reconciling a hub's config after a binary change goes only through `hubreconcile
+ 
+ `internal/configengine` offers `Load` (strict) and `LoadOrTemplate` (degrades to the embedded template); a caller adopts exactly one, except `runprofile`.
+ 
+-- Degrading callers: `{shuttleengine, claudeengine, reedengine, websterengine, batcher, orchengine, loggerconfig, battenshed, languageconfig, lenses}`.
++- Degrading callers: `{shuttleengine, claudeengine, reedengine, websterengine, batcher, orchengine, loggerconfig, battenshed, languageconfig, lenses, desktophook}`.
+ - Strict callers: `{fabricengine, boardengine, loomengine, landingshed, gateslot, configcli, configreg}`.
+   `configcli` loads strictly only to validate a hub-wide module's file before committing it.
+   `configreg` loads strictly only to answer a recipe row's setting.
