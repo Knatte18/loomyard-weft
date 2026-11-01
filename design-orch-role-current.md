@@ -1,6 +1,6 @@
 # One fixed orch role for every repository, brought up to date
 
-`orch-role-current` · Task · enhancement, orch, stencil · running · Record-Write
+`orch-role-current` · Task · enhancement, orch, stencil · running · Darn-Write
 
 Depends on: [`heddle-orch-target`](design-heddle-orch-target.md)
 
