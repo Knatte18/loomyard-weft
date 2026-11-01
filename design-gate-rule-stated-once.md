@@ -1,6 +1,6 @@
 # The appended system prompt states the gate rule once, not twice
 
-`gate-rule-stated-once` · Note · enhancement, shuttle, gate, claude
+`gate-rule-stated-once` · Task · enhancement, shuttle, gate, claude · draft
 
 ## Seen (hub orch, 2026-10-31)
 
