@@ -12,7 +12,7 @@ The root project: the entries under no other project.
 
 ### [P1 Orch instructions in two layers: lym's role and the repository's rules in heddle](project-orch-instructions.md) (0)
 
-`orch-instructions` · Age 3h · Owner `neve`
+[`orch-instructions`](design-orch-instructions.md) · Age 3h · Owner `neve`
 
 One fixed orch role for every repository, repository orch rules in heddle through lym orch rules, and the orch note for run state only
 
@@ -32,7 +32,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 ### [P2 Fewer agent turns, Webster forks first](project-agent-turns.md) (4)
 
-`agent-turns` · Age 2h · Owner `neve`
+[`agent-turns`](design-agent-turns.md) · Age 2h · Owner `neve`
 
 Cut the turns agents spend on shell edits, piecemeal gate loops and sliced reads, one measured fix at a time
 
@@ -40,22 +40,21 @@ Cut the turns agents spend on shell edits, piecemeal gate loops and sliced reads
 
 Concrete and claimable; only a task can run.
 
-##### Running (2)
+##### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T9 | **Agents read a file whole or all its spans in one message, not in slices**<br>• No reading one file in three to five slices over as many turns, nor re-reading it | [`read-whole-not-slices`](design-read-whole-not-slices.md) | darn | Finalize | neve | 2h<br>1h | webster, stencil |
+| T14 | **Trial: agents settle every edit before the first, then gate once**<br>• An imperative heddle instruction: read, decide all edits, make them, gate once and fix the whole report in one round | [`plan-edits-before-gate`](design-plan-edits-before-gate.md) | darn | Worktree-Create | neve | 1h<br>11m | heddle, stencil, claude |
 | T16 | **The round-1 Plan reviewer gathers in one call a turn**<br>• 1.05 calls a turn and 41% of its weight removable by merging, though it carries the batching sentence | [`plan-reviewer-batching`](design-plan-reviewer-batching.md) | darn | Finalize | neve | 1h<br>1h | burler, stencil |
 
-##### Ready (1)
+##### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T14 | **Trial: agents settle every edit before the first, then gate once**<br>• An imperative heddle instruction: read, decide all edits, make them, gate once and fix the whole report in one round | [`plan-edits-before-gate`](design-plan-edits-before-gate.md) | darn |  | 1h<br>11m | heddle, stencil, claude |
+_None._
 
 #### Notes (1)
 
