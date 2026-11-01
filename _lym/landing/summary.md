@@ -1,41 +1,31 @@
-# Refuse shell edits and steer every session to Read and Edit
+# Agents change files with Edit, never shell edits; a guard refuses them
 
-Agent sessions edited files with `sed -i`, `perl -i` and heredoc redirects, often through a scratch file, at about one edit a turn.
-Sessions that used the Edit tool made more than two edits a turn.
-Nothing stopped a shell edit: the edit directive permitted scripted edits, and the python row's steer only suggested Edit or Write.
-After this change, every session is told to read a file it changes with Read and change it with Edit, and a shell guard refuses the shell routes.
+Agents in lym sessions edited mostly by shell: `sed -i`, often in two steps through a scratch file, at about one edit a turn, where the Edit tool made more than two edits a turn.
+Nothing refused a shell edit, the steer sentence named `sed -n` and `awk` for reading, and Claude Code's bypass-mode reminder, which lym's launches carry, tells agents they may read with `cat`, `head` or `sed -n` and change files with `sed`, heredocs or short scripts.
+This change makes the Edit tool the way a session changes files.
 
 ## What changes
 
-- `internal/shellguard`: a new `shell-edit` row, installed for every run with no switch, the orch included.
-  It denies `sed -i` (also `--in-place` and flag clusters such as `-Ei`), and `perl -i` (also clusters such as `-pi`), in command position after any argument words.
-  It also denies a `>`, `>>` or `>|` redirect or a `tee` into a file whose extension marks a source file (Go, markdown, YAML, TOML, shell, .NET), including a redirect on a heredoc operator's line.
-  Its `Forms` list `sed -i`, `perl -i` and `perl -pi`, so the no-denied-recovery scan now flags a stencil or spec that offers them.
-- The edit rule now lives in one constant, `editToolsRule`: read a file with Read, whole or a span, change it with Edit with all edits of one file in one message, or write it whole with Write; grep, awk, cat and `sed -n` stay for files the session does not change.
-  The `shell-edit` and `python` steers both carry it in full.
-  Only the `shell-edit` notice states it in the system prompt, so the python notice is now just `lym agents never run Python.`
-- The `edit-directive` stencil now states the same rule instead of permitting scripted edits.
-  It names a rename across many files as one `replace_all` Edit per file, all in one message.
-- `contracts/stencils`: `editRulePhrases` swaps the `` `sed -i` `` phrase for `never by shell`, because the denied-recovery scan reads `stencils.go` and now treats `sed -i` there as an offered denied command.
-- The `claudeengine` settings golden file is regenerated.
-  Every settings document and notice gains the new hook and sentence, so every entry changes.
-- Docs updated: the package docs of `shellguard`, `editdirective` and `claudeengine`, and the shuttle entry of `docs/overview.md`.
+- A new `shell-edit` row in `internal/shellguard/rows.go` refuses a Bash call that runs `sed -i` (including `--in-place` and clusters such as `-Ei`), `perl -i` (including `-pi`), `tee` into a source file, or a `>`, `>>` or `>|` redirect into a source file.
+  The row is installed for every run, the orch included, with no config key.
+  A source file is one ending in `.go`, `.mod`, `.sum`, `.md`, `.yaml`, `.yml`, `.toml`, `.sh`, `.ps1`, `.cs`, `.csproj`, `.sln`, `.props` or `.targets` (`sourceFilePattern`); a `.json`, `.txt` or `.log` target passes.
+- The steer is now shared by the python and shell-edit rows through `editToolsRule`: read a file you change with Read, whole or a span through offset and limit, edit it with Edit with all edits of one file in one message, write a whole file with Write, and search with grep.
+  It no longer names `sed -n`, `awk` or `cat`.
+  The system prompt states the edit rule once, in the shell-edit row's notice; the python row's notice now only announces the python deny.
+- The edit directive (`contracts/stencils/edit/edit-directive.md`) replaces the permission to edit by script with the rule above, states that in lym sessions it overrides any harness text permitting shell reads or edits, names `replace_all` for a rename across many files, and says a scratch file with a source extension is written with Write.
+  `internal/editdirective/doc.go`, `internal/shellguard/doc.go`, the claude engine's `doc.go` and `docs/overview.md` follow.
+- The claude engine's settings golden (`testdata/settings-golden.json`) carries the new hook row; its tests and the shellguard unit and integration tests cover the new row and the changed steer.
 
 ## Design decisions
 
-- The row has no config switch, like the computed-rm and machine-sleep rows.
-  Nothing asked for a knob, and the board entry wants the refusal to cover every session.
-- "Tracked source file" is approximated by extension, because a grep over the payload cannot ask git.
-  `.json`, `.txt` and `.log` targets pass, so output captured into a scratch file, such as `lym board list > .scratch/board.json`, is not refused.
-  A redirect into a source-extension file under `.scratch/` is refused, and Write is the way forward there.
-- `tee` is refused alongside redirects, because it is the next route a session takes once a heredoc redirect is refused.
-- This brings back a refusal of scripted edits that an earlier change removed so a rename could be done by script.
-  The board entry (2026-11-01) is newer and asks for the ban explicitly, so no parent decision was sought.
-  A large rename now goes through Edit with `replace_all`.
+- The guard is a guardrail, not a barrier, as the code comment on the row says: an edit behind `bash -c`, a script, `awk`, `cp` or `mv`, after `do` or `then`, behind `find -exec` or `xargs` with a flag, a redirect into a quoted target or into an extension outside the list, and anything after a heredoc operator's line pass.
+  The aim is to remove the habit, not to sandbox the shell.
+- Captured command output into `.json`, `.txt` or `.log` stays allowed so scratch output is not blocked; a scratch file with a listed extension must be written with Write.
+- The harness override sits in the directive and in the steer wording, since the bypass-mode reminder is not under lym's control.
 
-## Limits
+## Check by hand
 
-The row is a guardrail, not a barrier.
-An edit behind `bash -c`, a script, `awk`, `cp` or `mv` passes.
-So does a redirect into a quoted target or a file of another extension, and anything after a heredoc operator's line.
-A session started before this lands keeps its old settings and directive until it is relaunched.
+- The directive overrides the harness's bypass-mode text only by stating so: confirm in a live session, such as a forked run, that an agent given the directive reads with Read and edits with Edit rather than following the harness text.
+- The steer must name Read and grep and no longer `sed -n`, `awk` or `cat`: check the denied-call text a session shows after a `sed -i` and after a Python call.
+- The guard falsely denies a matching spelling after a separator inside a quote that `commandPositionPattern` misreads; skim `internal/shellguard/rows.go` for whether that false-deny case is acceptable.
+- Run the shellguard and claude engine integration tests (`lym gate test ./internal/shellguard ./internal/shuttleengine/claudeengine` with the integration tier), which exercise the hook against real payloads.
