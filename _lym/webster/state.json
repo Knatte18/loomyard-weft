@@ -408,7 +408,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "ca8276f66e9b20d7c09da1e96efdfb2b",
   "masterSessionId": "566bb234-7446-4cad-8229-a99ff031ef6c",
   "masterEngine": "claude",
@@ -528,6 +528,24 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-switch/566bb234-7446-4cad-8229-a99ff031ef6c/subagents/agent-a3ceb1348ebe4e9b2.jsonl"
       ]
+    },
+    "8": {
+      "slug": "darn-condition-stop",
+      "cards": [
+        "08-darn-condition-stop",
+        "09-adopt-fix-tries-key"
+      ],
+      "cardHashes": {
+        "08-darn-condition-stop": "ab1fe6c65fcaada293d4b58dce7c262685a30c2cd80585205b746dbc7053e40d",
+        "09-adopt-fix-tries-key": "145b4d729c699923fdcc86470a3f8d5dcb9c7e47ea52e03e9cfebb832019496b"
+      },
+      "startSha": "50888f95c940d1578729a0e6ced863eae92e3bbb",
+      "kind": "fork",
+      "spawnedAt": "2026-11-01T14:04:01Z",
+      "sessionId": "566bb234-7446-4cad-8229-a99ff031ef6c",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
