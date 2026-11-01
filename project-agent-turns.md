@@ -10,18 +10,17 @@ Cut the turns agents spend on shell edits, piecemeal gate loops and sliced reads
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (3)
+## Tasks (2)
 
 Concrete and claimable; only a task can run.
 
-### Running (2)
+### Running (1)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Agents change files with the Edit tool, never shell edits**<br>• Read a file to change with Read and edit it with Edit, all its edits in one message; a guard refuses sed -i and its kin | [`edit-with-edit-tool`](design-edit-with-edit-tool.md) | darn | Code-Burler-Review | neve | 29m<br>19m | process, stencil, claude |
-| T5 | **Study: turns and context of the Discussion and Plan review sessions**<br>• Measure where reviewer, fixer and judge turns and context go on three tapestry runs, and what Sonnet fixers would cost<br>• `profile: docs` | [`review-turn-audit`](design-review-turn-audit.md) | darn | Finalize | neve | 27m<br>19m | burler |
 
 ### Ready (0)
 
@@ -56,3 +55,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F12 |  | **A card gate failure goes to a cold, cheap fixer instead of the fork**<br>• Go spawns a fresh fixer with the gate report, the card and its diff, so the fork's large context does not run the fix loop | [`card-gate-cold-fixer`](design-card-gate-cold-fixer.md) | 29m<br>27m | webster, gate |
+
+## Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T5 | **Study: turns and context of the Discussion and Plan review sessions**<br>• Measure where reviewer, fixer and judge turns and context go on three tapestry runs, and what Sonnet fixers would cost<br>• `profile: docs` | [`review-turn-audit`](design-review-turn-audit.md) | 27m<br>19m | burler |

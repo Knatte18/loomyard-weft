@@ -18,7 +18,7 @@ One fixed orch role for every repository, repository orch rules in heddle throug
 | E7 |  | **One fixed orch role for every repository, brought up to date**<br>• The rules for every orch move into the shipped role, which settles run-level calls itself and has no board copy | [`orch-role-current`](design-orch-role-current.md) | 1h<br>1h | orch, stencil |
 | E8 |  | **lym's design invariants as PATTERN entries**<br>• doc.go as documentation only, fabric's isolation, no hard-coded names and the other code invariants become PATTERN entries | [`pattern-design-principles`](design-pattern-design-principles.md) | 1h<br>1h | pattern |
 
-## [P2 Fewer agent turns, Webster forks first](project-agent-turns.md) (9)
+## [P2 Fewer agent turns, Webster forks first](project-agent-turns.md) (8)
 
 `agent-turns` · Age 29m · Owner `neve`
 
@@ -27,7 +27,6 @@ Cut the turns agents spend on shell edits, piecemeal gate loops and sliced reads
 | # | Prio | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | T1 |  | **Agents change files with the Edit tool, never shell edits**<br>• Read a file to change with Read and edit it with Edit, all its edits in one message; a guard refuses sed -i and its kin | [`edit-with-edit-tool`](design-edit-with-edit-tool.md) | 29m<br>19m | process, stencil, claude |
-| T5 |  | **Study: turns and context of the Discussion and Plan review sessions**<br>• Measure where reviewer, fixer and judge turns and context go on three tapestry runs, and what Sonnet fixers would cost<br>• `profile: docs` | [`review-turn-audit`](design-review-turn-audit.md) | 27m<br>19m | burler |
 | T4 |  | **The gate reports every failure at once, lint included, in one readable result**<br>• lym gate test prints a compact list of every build, test and lint failure with file:line and values, and the log path | [`gate-failure-report`](design-gate-failure-report.md) | 29m<br>19m | gate, lint |
 | E13 |  | **Trial: agents settle every edit before the first, then gate once**<br>• An imperative heddle instruction: read, decide all edits, make them, gate once and fix the whole report in one round | [`plan-edits-before-gate`](design-plan-edits-before-gate.md) | 0m<br>0m | heddle, stencil, claude |
 | E15 |  | **A card that retires a name sweeps the whole tree, tests included, first**<br>• The implementer greps every retired name across the tree and test data before its first edit, and reads and edits all hits in one message each | [`retired-name-sweep`](design-retired-name-sweep.md) | 29m<br>29m | webster, stencil |
@@ -52,7 +51,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T6 | **A long gate run answers within the cache lifetime, so the waiting agent keeps its prompt cache warm**<br>• lym gate test caps the run wait like the slot wait, with the cap a config value beside the engine cache lifetime<br>• `profile: light` | [`gate-run-keeps-cache-warm`](design-gate-run-keeps-cache-warm.md) | tapestry | Webster | neve | 20h<br>3h | gate, shuttle, config |
 | T7 | **One verb to take work over on another machine, leaving every run in a known state**<br>• Moving to another machine is many hand steps, and afterwards run states are unclear | [`machine-switch`](design-machine-switch.md) | tapestry | Webster | neve | 1d<br>3h | fabric, dobby, batten |
-| T8 | **One project render for the board README and project files**<br>• Every project, Prime included, renders through one function with its sub-projects and its own Running, Ready, Tasks, Notes and Done | [`board-project-render`](design-board-project-render.md) | darn | Drift-Verify | neve | 10m<br>10m | board |
+| T8 | **One project render for the board README and project files**<br>• Every project, Prime included, renders through one function with its sub-projects and its own Running, Ready, Tasks, Notes and Done | [`board-project-render`](design-board-project-render.md) | darn | Code-Bouncer | neve | 10m<br>10m | board |
 
 #### Ready (0)
 
