@@ -1,6 +1,6 @@
 # A window lym opens is snapped into the active desktop tiling by a configured command
 
-`kde-window-placement` · Note · feature, reed, ide, config
+`kde-window-placement` · Task · feature, reed, ide, config · draft
 
 ## Seen (operator, 2026-10-28)
 
