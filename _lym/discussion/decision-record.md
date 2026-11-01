@@ -52,6 +52,12 @@ Decision: Superseding the tag-fallback decision: the orch has set env LYM_TEST_T
 
 Rationale: The operator had the orch edit gate.yaml directly; main ignores the variable, so nothing changes for other worktrees.
 
+### Added after Discussion (parent, 2026-11-01): Sonnet subagents for failing package batches after all
+
+Decision: Superseding the no-subagents decision: the writer's session does offer the Agent tool (its tool list carries it). When the gate fails in many packages, the writer groups the failing packages into batches of a fitting size and hands each batch to an Agent subagent with model sonnet, all launched in one message, each told the packages it owns, the gate rule from the writer's own system prompt with its timeout, and to edit only its own packages; the writer then gates the whole module once. A handful of failures the writer fixes itself.
+
+Rationale: The operator asked for Sonnet subagents; the earlier decision rested on the writer's belief that it had no Agent tool, which its transcript contradicts.
+
 ## Constraints
 
 ## Auto-mode assumptions
