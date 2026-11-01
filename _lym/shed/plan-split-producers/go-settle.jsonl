@@ -1,0 +1,3 @@
+{"stop_key":{"current_producer":"Discussion-Bouncer","history_length":6,"state":"awaiting"},"settler":"parent","action":"hand-back","outcome":"an awaiting stop with a parent notice: relay it and hand back","at":"2026-11-01T12:28:52.413709438+01:00"}
+{"stop_key":{"current_producer":"Discussion-Bouncer","history_length":10,"state":"awaiting"},"settler":"arbiter","action":"spawn","outcome":"arbiter spawned","at":"2026-11-01T12:44:58.426700135+01:00","target":"attempt-1"}
+{"stop_key":{"current_producer":"Discussion-Bouncer","history_length":10,"state":"awaiting"},"settler":"parent","action":"hand-back","outcome":"the arbiter handed the stop on","at":"2026-11-01T12:44:58.426937508+01:00"}
