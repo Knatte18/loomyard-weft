@@ -46,6 +46,12 @@ Decision: The darn session has no Agent tool, so the writer fixes failing packag
 
 Rationale: The record's subagent batching cannot run in this session.
 
+### Added after Discussion (parent, 2026-11-01): The hub gate config names the tier now; no tag fallback
+
+Decision: Superseding the tag-fallback decision: the orch has set env LYM_TEST_TIER (0, 1, 2, 3) on each tier in the hub's gate.yaml, beside GOFLAGS, keeping the commands' -tags tierN. The selector reads LYM_TEST_TIER only; no per-tag fallback file is written. After landing the orch drops -tags from the commands and the per-tag go vet calls.
+
+Rationale: The operator had the orch edit gate.yaml directly; main ignores the variable, so nothing changes for other worktrees.
+
 ## Constraints
 
 ## Auto-mode assumptions
