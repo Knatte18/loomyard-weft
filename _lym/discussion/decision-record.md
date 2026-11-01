@@ -277,6 +277,12 @@ Decision: (1) Plan-Write's composed prompt stays the same line for line, in toda
 
 Rationale: Parent, 2026-11-01: Plan-Write is the baseline the bench measures the split against, so its prompt must not change at all. The parts file is Parts-Write's output and a canonical comparison makes respelling needless. Catching a missing export at the writer is cheaper than the chair finding it at the join and sending the part back.
 
+### Added after Discussion (parent, 2026-11-01): The part check leaves pattern-line-unprescribed to the joined plan
+
+Decision: D7's second difference extends to pattern-line-unprescribed: the part check runs without a decision record path, so neither pattern-changes-mismatch nor pattern-line-unprescribed runs on a part; both run on the joined plan, where the chair writes ## PATTERN changes. Card 7's Intent cites this entry as the licence for clearing DecisionRecordPath.
+
+Rationale: Parent, 2026-11-01: PATTERN changes are the chair's, written after the join, so a part cannot meet a pattern check; checking them once on the joined plan loses nothing.
+
 ## Constraints
 
 - PATTERN-shed-recipe-registry: the two rows are `Constructor` rows in `internal/shedrecipe`, each value looked up by key, switched by `entry_gate`.
