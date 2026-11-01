@@ -1,9 +1,9 @@
 # Card 9 — button-click-binding
 
 **Create:**
-- `plan:internal/reedengine#buttonCommandOption` -> `const buttonCommandOption = "@lym_button_command"`
-- `plan:internal/reedengine#composeButtonCommand` -> `func composeButtonCommand(sh shell.Shell, executablePath func() (string, error), socketPath, tmuxPath string) (string, bool)`
-- `plan:internal/reedengine#TestBindings_ButtonClickRunsTheVerbInTheRunDirectory` -> `func TestBindings_ButtonClickRunsTheVerbInTheRunDirectory(t *testing.T)`
+- `internal/reedengine#buttonCommandOption`
+- `internal/reedengine#composeButtonCommand`
+- `internal/reedengine#TestBindings_ButtonClickRunsTheVerbInTheRunDirectory`
 
 **Edit:**
 - `internal/reedengine#bindingArgvs` -> `func bindingArgvs(switchPrev, switchNext string, followJump, buttonClick bool) [][]string`
@@ -19,9 +19,9 @@
 
 **Uses:**
 - `internal/reedengine#composeFollowCommand`
-- `plan:internal/reedengine#buttonDirOption`
-- `plan:internal/reedengine#buttonRangePrefix`
-- `plan:internal/reedengine#Engine.pinButtonRowLocked`
+- `internal/reedengine#buttonDirOption`
+- `internal/reedengine#buttonRangePrefix`
+- `internal/reedengine#Engine.pinButtonRowLocked`
 - `internal/reedengine#ButtonContext`
 - `internal/reedengine#ButtonBeam`
 - `internal/reedengine#ButtonPlaceTask`

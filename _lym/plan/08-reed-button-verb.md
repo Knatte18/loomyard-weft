@@ -1,18 +1,18 @@
 # Card 8 — reed-button-verb
 
 **Create:**
-- `plan:internal/reedengine#ButtonRequest` -> `type ButtonRequest struct`
-- `plan:internal/reedengine#RunButton` -> `func RunButton(req ButtonRequest)`
-- `plan:internal/reedengine#buttonDeps` -> `type buttonDeps struct`
-- `plan:internal/reedengine#runButtonVia` -> `func runButtonVia(cmd TmuxCmd, req ButtonRequest, deps buttonDeps)`
-- `plan:internal/reedengine#runButtonScript` -> `func runButtonScript(shellPath, flag, script, dir string) (output string, exitCode int, err error)`
-- `plan:internal/reedengine#buttonRunHash` -> `func buttonRunHash(run string) string`
-- `plan:internal/reedengine#tmuxQuote` -> `func tmuxQuote(s string) string`
-- `plan:internal/reedengine#composeConfirmedButtonLine` -> `func composeConfirmedButtonLine(sh shell.Shell, exe string, req ButtonRequest, dir, hash, strand string) string`
-- `plan:internal/reedengine#TestRunButtonVia` -> `func TestRunButtonVia(t *testing.T)`
-- `plan:internal/reedengine#TestRunButton_RealTmux` -> `func TestRunButton_RealTmux(t *testing.T)`
-- `plan:internal/reedcli#reedCLI.buttonCmd` -> `func (c *reedCLI) buttonCmd() *cobra.Command`
-- `plan:internal/reedcli#validateButtonFlags` -> `func validateButtonFlags(req reedengine.ButtonRequest) error`
+- `internal/reedengine#ButtonRequest`
+- `internal/reedengine#RunButton`
+- `internal/reedengine#buttonDeps`
+- `internal/reedengine#runButtonVia`
+- `internal/reedengine#runButtonScript`
+- `internal/reedengine#buttonRunHash`
+- `internal/reedengine#tmuxQuote`
+- `internal/reedengine#composeConfirmedButtonLine`
+- `internal/reedengine#TestRunButtonVia`
+- `internal/reedengine#TestRunButton_RealTmux`
+- `internal/reedcli#reedCLI.buttonCmd`
+- `internal/reedcli#validateButtonFlags`
 
 **Edit:**
 - `internal/reedengine/doc.go`
@@ -24,11 +24,11 @@
 - `internal/reedcli/doc.go`
 
 **Uses:**
-- `plan:internal/reedengine#buttonSpec`
-- `plan:internal/reedengine#buttonSpecEntry`
-- `plan:internal/reedengine#buttonSpecOption`
-- `plan:internal/reedengine#buttonRangePrefix`
-- `plan:internal/reedengine#strandNamePaneOption`
+- `internal/reedengine#buttonSpec`
+- `internal/reedengine#buttonSpecEntry`
+- `internal/reedengine#buttonSpecOption`
+- `internal/reedengine#buttonRangePrefix`
+- `internal/reedengine#strandNamePaneOption`
 - `internal/reedengine#fillRunPlaceholders`
 - `internal/reedengine#fillConfirmPlaceholders`
 - `internal/reedengine#newTmuxCmdForSocketPath`

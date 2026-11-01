@@ -1,7 +1,7 @@
 # Card 7 — strand-name-pane-option
 
 **Create:**
-- `plan:internal/reedengine#strandNamePaneOption` -> `const strandNamePaneOption = "@lym_strand_name"`
+- `internal/reedengine#strandNamePaneOption`
 
 **Edit:**
 - `internal/reedengine#Engine.setStrandPaneOptionsLocked`

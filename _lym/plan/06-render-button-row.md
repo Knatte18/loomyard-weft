@@ -1,14 +1,14 @@
 # Card 6 — render-button-row
 
 **Create:**
-- `plan:internal/reedengine#buttonSpecOption` -> `const buttonSpecOption = "@lym_button_spec"`
-- `plan:internal/reedengine#buttonDirOption` -> `const buttonDirOption = "@lym_button_dir"`
-- `plan:internal/reedengine#buttonSpec` -> `type buttonSpec struct`
-- `plan:internal/reedengine#buttonSpecEntry` -> `type buttonSpecEntry struct`
-- `plan:internal/reedengine#buttonRangePrefix` -> `const buttonRangePrefix = "lymbtn"`
-- `plan:internal/reedengine#Engine.pinButtonRowLocked` -> `func (e *Engine) pinButtonRowLocked(target string)`
-- `plan:internal/reedengine#Engine.composeButtonRowLocked` -> `func (e *Engine) composeButtonRowLocked() (plain, agent string, spec buttonSpec)`
-- `plan:internal/reedengine#TestPinButtonRowLocked` -> `func TestPinButtonRowLocked(t *testing.T)`
+- `internal/reedengine#buttonSpecOption`
+- `internal/reedengine#buttonDirOption`
+- `internal/reedengine#buttonSpec`
+- `internal/reedengine#buttonSpecEntry`
+- `internal/reedengine#buttonRangePrefix`
+- `internal/reedengine#Engine.pinButtonRowLocked`
+- `internal/reedengine#Engine.composeButtonRowLocked`
+- `internal/reedengine#TestPinButtonRowLocked`
 
 **Edit:**
 - `internal/reedengine#Engine.pinGeometryOptionsLocked`
