@@ -1,9 +1,9 @@
 # Card 4 — An in-process batten cancel that tells nothing-left apart
 
 **Create:**
-- `plan:internal/battencli#ErrNothingLeft` -> `var ErrNothingLeft = errors.New("nothing of the slug is left to cancel")`
-- `plan:internal/battencli#Cancel` -> `func Cancel(ctx context.Context, prime *lymcwd.Location, slug string, remove bool) error`
-- `plan:internal/battencli#cancelJudgingEndOnly` -> `func cancelJudgingEndOnly(ctx context.Context, slug string, remove bool, deps cancelDeps) error`
+- `internal/battencli#ErrNothingLeft`
+- `internal/battencli#Cancel`
+- `internal/battencli#cancelJudgingEndOnly`
 
 **Edit:**
 - `internal/battencli#refuseNothingLeft`
@@ -11,7 +11,7 @@
 - `internal/battencli#TestCancelPauseEntries`
 
 **Uses:**
-- `plan:internal/pauserecord#HoldCaller`
+- `internal/pauserecord#HoldCaller`
 - `internal/battencli#newCancelFake`
 - `internal/battencli#cancelFake`
 - `internal/battencli#cancelRun`

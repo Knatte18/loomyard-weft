@@ -26,7 +26,7 @@
 - `plan:internal/adoptcli#removeHolds`
 - `plan:internal/adoptcli#writeTries`
 - `plan:internal/adoptcli#subjectDir`
-- `plan:internal/pauserecord#HoldCaller`
+- `internal/pauserecord#HoldCaller`
 - `plan:internal/fronttask#FrontOf`
 - `plan:internal/fronttask#Remove`
 - `plan:internal/fronttask#HubDeps`

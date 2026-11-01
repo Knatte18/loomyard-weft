@@ -44,7 +44,7 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/pauserecord#HoldCaller`
+- `internal/pauserecord#HoldCaller`
 - `plan:internal/adoptcli#subjectDir`
 - `internal/adoptcli#movedRuns`
 - `internal/adoptcli#projectOf`

@@ -1,10 +1,10 @@
 # Card 3 — The board's front and on_land fields
 
 **Create:**
-- `plan:internal/boardengine#checkFrontPayload` -> `func checkFrontPayload(s *Store, fields map[string]any) error`
-- `plan:internal/boardengine#Board.FileFrontTask` -> `func (b *Board) FileFrontTask(fields map[string]any, onLand string) (Task, error)`
-- `plan:internal/boardengine_test#TestFrontTask` -> `func TestFrontTask(t *testing.T)`
-- `plan:internal/boardcli_test#stepFrontTask` -> `func stepFrontTask(t *testing.T, f *cliFixture)`
+- `internal/boardengine#checkFrontPayload`
+- `internal/boardengine#Board.FileFrontTask`
+- `internal/boardengine_test#TestFrontTask`
+- `internal/boardcli_test#stepFrontTask`
 
 **Edit:**
 - `internal/boardengine#Task`

@@ -1,20 +1,20 @@
 {
   "runGuid": "22e191d5fe2bea858f8703557cb57878",
-  "planFingerprint": "b359e250e7e1db4dc8e5491e357d4fc2e3e6471292ebcadef8f0dba698179d52",
+  "planFingerprint": "8b0d4d1c535a837ff773eb0518251a3540fd7ede8dacc7d081b947b8a8f517fa",
   "planFileHashes": {
     "00-overview.md": "b99ac2f469c0c66370e36e5cc76fb106ea2a2b784160084ea9a244c44fc7a465",
-    "01-hold-caller.md": "bc20de14cc7ef2e56897f1d6dae7ccd4f2a1ebbdc5f800ae78c05fffbcc4b682",
-    "02-dobby-hold.md": "15d27d2b931a65cfb6288e0cb135947b3c4c1f9f9a03d07c80147ec856496d9b",
-    "03-board-front-fields.md": "40e1e35c52a711871354415d9cb1a5d289ec848bc0d6f10df3b84922742ae551",
-    "04-batten-cancel-export.md": "c7e85db72783e69b159fb9d8e07465d938dc2bd9df5e03d7e8c3132ce8db2ac0",
+    "01-hold-caller.md": "7d474f9b35b8b6e157ee4b106f249ddd8a606d5308de4467085e8a415a2befe2",
+    "02-dobby-hold.md": "cf56f89c2ffb50ccbadb6f0c339c063789b05c692b69c06f0c11889b60b939ee",
+    "03-board-front-fields.md": "7ec34ba27c76c7ab5e2f5a2ecb5f6e4dfa3c2f898bc71a620c8c46db8b487649",
+    "04-batten-cancel-export.md": "691f8bd029772346429e92551319985090478a827d70380d12024713cd3499f0",
     "05-adopt-check-per-subject.md": "160dfd586ff19bb46e857acfacbd0e668468386e1738229a49d29eee50158cff",
-    "06-front-task-package.md": "de863ce09d22938eb3534fb7ba19c3d98bac4fc7dae91d2add432ea031b7e814",
+    "06-front-task-package.md": "ea49c76eb78eb9a0f5bf54ed9c2557c673ecebb221a0a8d761a52fa1967fb7f6",
     "07-dobby-front-starts.md": "5a1795759752ae9aa0f3a489fbee73d3979e0193cc4d195cc4dd9bc8283c234f",
     "08-darn-condition-stop.md": "ab1fe6c65fcaada293d4b58dce7c262685a30c2cd80585205b746dbc7053e40d",
     "09-adopt-fix-tries-key.md": "145b4d729c699923fdcc86470a3f8d5dcb9c7e47ea52e03e9cfebb832019496b",
     "10-task-branch-slugs.md": "f93c23f432fefc4d1af9324465084e6652c5923b5cde69f4eee6037d9fe288ff",
-    "11-adopt-holds.md": "9a550b6e70c0e8edff8a470b92b74c67a5da3f9000d08f414625c091b34e7d49",
-    "12-check-green-end.md": "fc13ad843face553d257ecee8f1aa097c742f54d1dae847fcd1caad41ed6b3ad",
+    "11-adopt-holds.md": "26ff8483c2a9cf13e2a5dc537e1941fbbf71302c947ffb31a87891be7fa2cf5f",
+    "12-check-green-end.md": "05680cfd4bb1951a82a504d020f09c7116620c2ecfe85c6b3f52a11688d51a78",
     "13-check-fix-loop.md": "fe12f2690a0efe8b31d4057b9da65b15b4c3cd44f0d0db1e67038ef94d171135",
     "14-adopt-run-report.md": "22df22862b59b05634022a55bd73920f3bf1110e9e209d6361744726e776c886"
   },
@@ -408,7 +408,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "ca8276f66e9b20d7c09da1e96efdfb2b",
   "masterSessionId": "566bb234-7446-4cad-8229-a99ff031ef6c",
   "masterEngine": "claude",
@@ -422,18 +422,39 @@
         "04-batten-cancel-export"
       ],
       "cardHashes": {
-        "01-hold-caller": "bc20de14cc7ef2e56897f1d6dae7ccd4f2a1ebbdc5f800ae78c05fffbcc4b682",
-        "02-dobby-hold": "15d27d2b931a65cfb6288e0cb135947b3c4c1f9f9a03d07c80147ec856496d9b",
-        "03-board-front-fields": "40e1e35c52a711871354415d9cb1a5d289ec848bc0d6f10df3b84922742ae551",
-        "04-batten-cancel-export": "c7e85db72783e69b159fb9d8e07465d938dc2bd9df5e03d7e8c3132ce8db2ac0"
+        "01-hold-caller": "7d474f9b35b8b6e157ee4b106f249ddd8a606d5308de4467085e8a415a2befe2",
+        "02-dobby-hold": "cf56f89c2ffb50ccbadb6f0c339c063789b05c692b69c06f0c11889b60b939ee",
+        "03-board-front-fields": "7ec34ba27c76c7ab5e2f5a2ecb5f6e4dfa3c2f898bc71a620c8c46db8b487649",
+        "04-batten-cancel-export": "691f8bd029772346429e92551319985090478a827d70380d12024713cd3499f0"
       },
       "startSha": "2de97ce777023e667f250b0789b57fcfe63e14cf",
       "kind": "fork",
       "spawnedAt": "2026-11-01T13:39:17Z",
       "sessionId": "566bb234-7446-4cad-8229-a99ff031ef6c",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-hold-caller",
+        "status": "done",
+        "head_sha": "68bd1c53a6e6643f9350fdf0d683a838d8716c7f",
+        "deviations": [
+          "internal/battencli/cancel.go",
+          "internal/boardengine/front.go"
+        ]
+      },
+      "cardShas": [
+        "68bd1c53a6e6643f9350fdf0d683a838d8716c7f"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-switch/566bb234-7446-4cad-8229-a99ff031ef6c/subagents/agent-a8f259e8b773976df.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-switch/566bb234-7446-4cad-8229-a99ff031ef6c/subagents/agent-a8f259e8b773976df.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-switch/566bb234-7446-4cad-8229-a99ff031ef6c/subagents/agent-a8f259e8b773976df.jsonl"
+  ]
 }

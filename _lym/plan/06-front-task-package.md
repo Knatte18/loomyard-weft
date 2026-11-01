@@ -33,9 +33,9 @@
 - `internal/fabricengine/doc.go`
 
 **Uses:**
-- `plan:internal/boardengine#Board.FileFrontTask`
-- `plan:internal/battencli#Cancel`
-- `plan:internal/battencli#ErrNothingLeft`
+- `internal/boardengine#Board.FileFrontTask`
+- `internal/battencli#Cancel`
+- `internal/battencli#ErrNothingLeft`
 - `internal/fabricengine#HubScratchDir`
 - `internal/fabricengine#AdoptScratchDir`
 - `internal/hubforge#NewHub`

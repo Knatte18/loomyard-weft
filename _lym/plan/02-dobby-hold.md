@@ -11,7 +11,7 @@
 - `internal/beamcli#TestDobbyRuns_PairAtItsOwnAnchor`
 
 **Uses:**
-- `plan:internal/pauserecord#HoldCaller`
+- `internal/pauserecord#HoldCaller`
 - `internal/dobbyengine#passHarness.tick`
 - `internal/dobbyengine#passHarness.state`
 - `internal/dobbyengine#runningRun`

@@ -1,7 +1,7 @@
 # Card 1 — The pause record's hold caller
 
 **Create:**
-- `plan:internal/pauserecord#HoldCaller` -> `const HoldCaller = "adopt-hold"`
+- `internal/pauserecord#HoldCaller`
 
 **Edit:**
 - `internal/pauserecord#Coverage`
