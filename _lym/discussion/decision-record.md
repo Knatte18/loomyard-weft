@@ -173,6 +173,12 @@ Bound: a hub whose `prompt_cache_ttl_roles` leaves `webster` out puts the Master
 
 Rationale: the rule and the prompts must cover the new answer and card-verify's new 75, or a fork counts a 75 as a failed card.
 
+### Added after Discussion (parent, 2026-11-01): A tied gate line's group falls outside PATTERN-run-process-owner
+
+Decision: endStrayLine keeps ending a dead card-verify runner's line group with proc.KillTree on the group recorded in line.json, as D6 says. That group is owned by its line record, not by a run's runproc owner, so it falls outside PATTERN-run-process-owner the way the loop step trees in internal/pairteardown/loop.go and internal/shedverbs/loopenvelope.go do. The commit carrying endStrayLine gets a Pattern-Departure trailer naming PATTERN-run-process-owner and this record. No runproc registration of line groups.
+
+Rationale: The line group outlives the runner that started it and is found again only through line.json; registering it in runproc would give a gate line a run owner it does not have and widen the task. The precedent for a recorded tree killed by KillTree already exists in two places.
+
 ## Constraints
 
 - PATTERN-gate-slot: the runner holds `internal/gateslot` slots as the in-process call does; the green record, carry and verify sites are untouched.
