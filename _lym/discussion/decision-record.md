@@ -241,6 +241,12 @@ None.
   - red-check-over-live-own-fix-task (class design, severity MEDIUM, open in rounds 3)
 <!-- /lym:carry-over Discussion-Review -->
 
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 3: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/plan/round-3-review.md; fixer report: _lym/reviews/plan/round-3-fixer-report.md.
+  - testremove-settle-called-inside-held-lock (class design, severity MEDIUM, open in rounds 3)
+<!-- /lym:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - D1: `lym adopt <beam>` on a machine that does not own the beam reconciles origin, adds the missing pair, writes the holds, writes the owner, runs the beam steps and starts the beam's adopt check, and starts no batten pass; its help lists the new steps.
