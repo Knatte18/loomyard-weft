@@ -13,4 +13,9 @@ The orch re-ran `lym batten run <slug>` from the prime without touching git, and
 
 The rewind check reads origin's head from a stale ref, likely one read before the push Finalize made, or during a concurrent fetch of the same ref.
 It re-reads origin's head after a fresh fetch, and calls a branch rewound only when the local head is not an ancestor of origin's head.
-It may share its cause with `reconcile-fetch-race`; check that fix first.
+
+## Reconcile-fetch-race landed (2026-11-01)
+
+`reconcile-fetch-race` (`34ac25f2`) serialises every remote-tracking ref write under one per-repository lock, and `ReconcileOrigin` holds it from the `ls-remote` pair through the last branch verdict, so a push in flight lands before origin is read.
+Its commit names this false rewind as a cause it targets, but it reproduced no real two-process race.
+So this note stays open only as a watch: if a false rewind shows after that fix, the stale-ref reading above is wrong and the ancestor check is the next step.

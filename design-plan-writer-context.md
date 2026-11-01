@@ -50,7 +50,7 @@ Plan writer plus its lens forks, means per run (API list price):
 - The later groups are larger tasks, so the cost rise is not the fan alone; the five-lens group is too small to judge.
 - `relevant.md` use, over 32 runs with a list and a Plan-Write transcript: 85% of named files were read, but only 28% of read files were named (about 3.5 files read per file named, about 7 on large runs). Both shares are lower bounds (directory greps and quarry reads not counted).
 - So `relevant.md` works as a floor, not a boundary; most unnamed reading looks like tests and neighbouring callers, which a per-part split of the list would not remove.
-- Still open: the solo Opus high and Fable writer bench, and the split-writing variants, which need new runs.
+- Still open: the solo Opus high and Fable writer bench; the split-writing variant has since been built and benched against `Plan-Write` (see the last section).
 - Scripts, baseline tables and `results.md` are in `docs/research/plan-writer-audit-2026-10-24/`; rerun per its README.
 
 ## Discussion versus Plan: double reading (Sonnet agent, 2026-10-25)
@@ -80,7 +80,7 @@ Plan writer plus its lens forks, means per run (API list price):
 `docs/research/turn-audit-2026-10-28/report.md` (n = 1 loom run, 213 sessions) finds the Plan writer spends 33 of its 101 turns on serial single-call reads and searches, mostly shell `grep` and `sed -n`, which a merged turn would remove.
 It recommends one stencil sentence in `loom-template-plan.md` and in the twill lens directive: issue every search and read you can name in one message.
 This is a cheaper cut than the digest, the earlier fork and the split writing above, and the audit proposes no pre-read for the writer.
-The Plan row rests on one session; the recommendation was later applied and measured, see the last section.
+The Plan row rests on one session; the recommendation was later applied and measured, see the next section.
 
 ## Batching effect audit (landed 2026-11-01)
 
@@ -89,8 +89,22 @@ It finds no batching effect, and the sample cannot show a small one: the Plan wr
 The Discussion writer is level on every measure.
 The 33-of-101 serial turns the turn audit found are still there, so the ideas above keep their value.
 
-## Split writing built (landed 2026-11-01)
+## Batching moved to heddle (landed 2026-11-01)
+
+`plan-edits-before-gate` (`1834cebf`) removed the batching sentences from the stencils, `loom-template-plan.md`, `loom-template-discussion.md` and `twill-directive.md` among them.
+The one rule (read in one message, decide every edit, make them in one message, one gate run) is now the shipped heddle entry `lym-plan-edits-before-gate`, rendered after `lym-batching`.
+Its effect on agent behaviour is not measured; `agent-turns-effect` measures it.
+`plan-reviewer-batching` (`5227aeaa`) added a wave structure for the fanned Plan reviewer's pre-read in `burler-fork-reading.md`; it too is unmeasured.
+
+## Split writing built and benched (landed 2026-11-01)
 
 The second variant above exists as two opt-in producers: `Parts-Write` splits the task into parts with contracts and shared spots, and `Parts-Plan-Write` runs one fresh writer session per part under a joining chair.
 Both sit behind the tapestry flag `plan_split` (off by default; `Plan-Write` stays the default), and the joined plan passes the ordinary `plan` gate.
-Nothing is benched yet: the split-writing bench against `Plan-Write`, twill and the solo writers is still open.
+
+`plan-split-bench` (`989a8b85`, `docs/research/plan-split-bench-2026-11-01/`) benched them against `Plan-Write` on replays of `warp-visibility` and `run-verbs-shared`, one Plan-Review round each.
+- `warp-visibility`: the split cost $16.69 against $14.93 and took 15m39s against 25m07s; its largest session peaked at 245k context against 408k.
+  The split plan had 34 cards against 15 and its review found 4 blocking findings against 3.
+- `run-verbs-shared`: the plan arm cost $28.03 with a 674k peak; the split arm failed when reed lost the chair strand (note `reed-loses-parts-chair`), so there is no comparison.
+- The joined split plan passed its gate only after two hand edits to `parts.md`, both defects of `Parts-Write`; the report recommends keeping `plan_split` off.
+  Task `plan-split-tune` tunes the split writers on this.
+- Still open: the solo Opus high and Fable writer bench, and a repeat of the split bench after the tuning.

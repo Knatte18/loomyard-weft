@@ -9,6 +9,8 @@ Earlier the chair strand `ly:psb-rv-split:parts-plan` had already vanished from 
 Nobody ran a reed remove or down there.
 The worktree was made with `lym fabric add --local` from the prime and its loom run seeded by hand, so a local pair or a hand-seeded run may be a factor.
 
+The `plan-split-bench` study (landed 2026-11-01, `docs/research/plan-split-bench-2026-11-01/`) stopped its `run-verbs-shared` split arm at this failure, so that input has no split-versus-plan comparison; the other input, `warp-visibility`, ran the split to its end.
+
 ## Idea
 
 Find what removes a live chair strand from reed's table during Parts-Plan-Write, and keep the chair tracked while its part writers run.
