@@ -728,7 +728,7 @@
       "isolated": false,
       "brief": "lym gate test prints a compact list of every build, test and lint failure with file:line and values, and the log path",
       "body": "## Seen (orch, 2026-11-01)\n\nIn the five heaviest Webster forks of the three latest tapestry runs, about 10 turns went only to reading gate output: the result was too large for one tool result and was saved to a file, or a `tail` showed only passing tests.\nLint ran in turns of its own after the gate (`lym loom lint-comments`, `lint-pattern`): 14 lint-only turns, and fixed-column comment findings cost about 8 more.\nA fork fixed one failure, ran the whole gate again and read the next, rather than fixing every failure at once.\n\n## Idea (operator, 2026-11-01)\n\nThe gate's report is written so that every failure can be fixed in one go:\n- `lym gate test` prints one compact list of every failure: build errors, test failures and lint findings, the gate's own lint steps included.\n- Each failure names its package, test and `file:line`, the expected and actual values or the first lines of the panic or build error.\n- It names the files the change touches and the path of the full log, and stays small enough to read as one tool result.\n",
-      "status": "running · Worktree-Create",
+      "status": "running · Record-Write",
       "created": "2026-11-01T14:16:30Z",
       "revised": "2026-11-01T14:27:05Z",
       "project": "agent-turns"
