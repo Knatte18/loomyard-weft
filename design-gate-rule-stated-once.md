@@ -1,6 +1,6 @@
 # The appended system prompt states the gate rule once, not twice
 
-`gate-rule-stated-once` · Task · enhancement, shuttle, gate, claude · running · Record-Write
+`gate-rule-stated-once` · Task · enhancement, shuttle, gate, claude · running · Darn-Write
 
 Depends on: [`interactive-recipe`](design-interactive-recipe.md)
 
