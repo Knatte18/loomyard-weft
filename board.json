@@ -658,7 +658,6 @@
       "order": [
         "gate-failure-report",
         "card-gate-cold-fixer",
-        "retired-name-sweep",
         "read-whole-not-slices",
         "hook-refused-turns",
         "batching-in-claude-local"
@@ -707,28 +706,6 @@
       "project": "agent-turns"
     },
     {
-      "id": 964,
-      "handle": "T8",
-      "slug": "retired-name-sweep",
-      "title": "A card that retires a name sweeps the whole tree, tests included, first",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "webster",
-        "stencil"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The implementer greps every retired name across the tree and test data before its first edit, and reads and edits all hits in one message each",
-      "body": "## Seen (orch, 2026-11-01)\n\nIn `run-verbs-shared`, the fork for card `06-tapestry-config-module` removed the `loom.plan_*` keys, but its first grep left out `_test` files.\nStale fixtures carrying the old keys then failed across about ten packages, found one gate failure at a time at about three turns a file: 69 gate-loop turns of the fork's 165.\nAnother fork read and edited each file of one grep hit list one at a time over some twenty turns.\n\n## Idea\n\nThe Webster implementer stencil gains a sweep step: when a card removes or renames a name or key, the fork greps the whole tree for every retired name, test files and test data included, before its first edit, reads every hit's span in one message, and edits every hit in one message.\n",
-      "status": "done",
-      "created": "2026-11-01T14:16:30Z",
-      "revised": "2026-11-01T15:10:26Z",
-      "project": "agent-turns"
-    },
-    {
       "id": 965,
       "handle": "T9",
       "slug": "read-whole-not-slices",
@@ -741,9 +718,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "retired-name-sweep"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "No reading one file in three to five slices over as many turns, nor re-reading it",
       "body": "## Seen (orch, 2026-11-01)\n\nThe five heaviest Webster forks read one file in three to five slices over as many turns, such as `sed -n 200,380p`, `380,560p` and `560,760p` of `internal/loomcli/decision_test.go` in three turns, and re-read the same files in four to seven separate turns.\nAbout 80 of their 208 single-call read turns could have been issued a turn earlier, since the path or line range was already known.\n\n## Idea\n\nThe Webster implementer stencil, and the batching sentence every agent gets, ask for a file to be read whole, or for every span the agent needs from it, in one message, and for a file read once to be kept in mind rather than read again.\nNote `edit-with-edit-tool` removes part of this, since the Read tool reads whole files or large spans.\n",
