@@ -1,0 +1,13 @@
+---
+round: 1
+focus:
+  - "contracts/orchrole/orch-role.md against the board entry's Idea bullets: does the text state that the orch settles run-level calls itself (arbiter hand-on question, `decision` escalations, landing-stop halts) and brings only design questions to the operator, drop `lym batten status` watching, name heddle via `lym orch rules` as the home of a repository's own rules, and say the orch note holds run state only?"
+  - "The same file against the rules the entry lists as moving in from the hub rules file and orch note (worktree wording, no status polling, no cd, a question is never a go-ahead, no priority unless named, Codex effort at most high, rename runs alone, no changes in the prime, release only on a named go-ahead, loom only for bundles, board body holds current design, explorations as darn docs): which are missing or contradicted, and does any rule specific to the loomyard hub leak into a role meant for every repository?"
+  - "Registry removal in contracts/stencils/stencils.go, contracts/orchrole/orchrole.go and internal/orchengine/prompt.go: does RenderRoleFile render only the embedded bytes, is any reader of the old registry entry or Bolt path left (grep for the old stencil name and `_lym/stencils/orch/orch-template-role.md`), and is the decision record's tidy-step clause for stale Bolt copies handled or correctly skipped?"
+  - "PATTERN.md and pattern/PATTERN-stencil-ownership.md: does the single exception name the orch role as a fixed role whose per-repository rules live in heddle's orch-prompt target, and do the one-line summary and the background doc agree?"
+  - "The closed workaround sections (#799, #849, #885) in the hub rules file: the entry says they leave it, yet the diff touches no such file. Is that file inside this repository's diff scope, and is the omission a scope finding or an unrecorded parent correction?"
+  - "Test changes under contracts/stencils and internal/orchengine: any removed coverage that leaves behavior untested, and any new test that duplicates registry_test.go or prompt_test.go coverage or asserts static stencil prose."
+  - "internal/orchcli/doc.go, internal/orchengine/doc.go, watcher.go, state.go, resumecontext.go and orch-template-start.md: do the edited comments and the start stencil still match the new role path and the dropped status polling, with no stale reference to a board copy?"
+---
+
+Rationale: the diff moves one role out of the stencil registry and rewrites its text, so the main risks are text that misses the entry's bullets, a leftover reader of the old path, and a hub-rules cleanup the diff may not own.
