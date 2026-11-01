@@ -1,0 +1,21 @@
+# Relevant files — machine-switch
+
+- `internal/adoptcli/doc.go` — the adopt verb's step-by-step contract, the text the hold, the per-subject check and the report change
+- `internal/adoptcli/adopt.go` `adopt`, `adoptDeps`, `slugOutcome`, `outcome`, `request` — the takeover sequence whose resume step moves to the check's green end
+- `internal/adoptcli/check.go` — the adopt check, whose end lifts the holds or files the fix task
+- `internal/adoptcli/deps.go` — fills adopt's seams over the hub, including the reconcile call
+- `internal/beamcli/dobbydeps.go` `liftOwnerPause` — dobby's lift of owner pause entries, which must leave a hold standing
+- `internal/dobbyengine/passes.go` `planPass` — the pass rules a held run must get no pass under
+- `internal/dobbyengine/owned.go` — dobby's owner-pause recheck, which must owe no lift pass under a hold
+- `internal/dobbyengine/starts.go` — dobby's start of released tasks, which a hold and a front task hold back
+- `internal/dobbyengine/landnotice.go` — dobby's memory of `notify_on_land` past Land, the model for a front task's action
+- `internal/dobbyengine/doc.go` — dobby's pass, owner-pause and start rules
+- `internal/dobbyengine/template.yaml` — the `beam` config module's template, where `adopt_fix_tries` goes
+- `internal/pauserecord/record.go` `OwnerCaller`, `Update`, `Read` — the pause record the hold is written into
+- `internal/pauserecord/doc.go` — one live entry per scope and the caller convention
+- `internal/hubgeom/pausegeom.go` — places the pause record under the hub's machine-local scratch directory
+- `internal/tenderengine/pause.go` `Pause`, `PauseRequest` — the grace-and-interrupt pause the hold does not use
+- `internal/battencli/cli.go` `StartFirstPass` — the detached first pass the green check starts
+- `internal/fabricengine/originreconcile.go` `ReconcileOrigin`, `originTargets` — the sync adopt runs: every local warp worktree, its records sibling and Bolt
+- `internal/fabricengine/hubpull.go` `PullHub` — the hub pull adopt does not add
+- `internal/configreg/configreg.go` — registers the `beam` module with dobbyengine's template
