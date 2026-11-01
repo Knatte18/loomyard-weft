@@ -8,12 +8,12 @@
 - `//docs/overview.md`
 
 **Create:**
-- `plan:internal/shuttlecli#awaitCap` -> `func awaitCap(cwd, strand string, flagCap time.Duration, flagGiven bool, keepWarm func(configengine.Dirs, string) shuttleengines.KeepWarmAnswer, resolveWorktree func(string) (*lymcwd.Location, error)) time.Duration`
-- `plan:internal/shuttlecli#TestAwaitCap` -> `func TestAwaitCap(t *testing.T)`
+- `internal/shuttlecli#awaitCap`
+- `internal/shuttlecli#TestAwaitCap`
 
 **Uses:**
-- `plan:internal/shuttleengines#KeepWarm`
-- `plan:internal/shuttleengines#KeepWarmAnswer`
+- `internal/shuttleengines#KeepWarm`
+- `internal/shuttleengines#KeepWarmAnswer`
 - `internal/shuttlecli#TestAwaitVerb`
 
 **Intent:** `lym shuttle await`'s `--cap` default reads the resolver (D4), and the text naming a keep-warm Bash timeout says 3600000 ms (D9).

@@ -1,11 +1,11 @@
 # Card 3 — keep-warm-resolver
 
 **Create:**
-- `plan:internal/shuttleengines#KeepWarmAnswer` -> `type KeepWarmAnswer struct`
-- `plan:internal/shuttleengines#KeepWarm` -> `func KeepWarm(dirs configengine.Dirs, strand string) KeepWarmAnswer`
-- `plan:internal/shuttleengines#keepWarmWith` -> `func keepWarmWith(dirs configengine.Dirs, strand string, constructors map[string]constructor) KeepWarmAnswer`
-- `plan:internal/shuttleengines#baseRole` -> `func baseRole(role string) string`
-- `plan:internal/shuttleengines#TestKeepWarm` -> `func TestKeepWarm(t *testing.T)`
+- `internal/shuttleengines#KeepWarmAnswer`
+- `internal/shuttleengines#KeepWarm`
+- `internal/shuttleengines#keepWarmWith`
+- `internal/shuttleengines#baseRole`
+- `internal/shuttleengines#TestKeepWarm`
 
 **Edit:**
 - `internal/shuttleengines#allowedImports`

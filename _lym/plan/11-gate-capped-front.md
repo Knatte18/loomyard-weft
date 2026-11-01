@@ -62,8 +62,8 @@
 - `plan:internal/gatecli#detachRun.claim`
 - `plan:internal/gatecli#startReading`
 - `plan:internal/runproc#RoleGate`
-- `plan:internal/shuttleengines#KeepWarm`
-- `plan:internal/shuttleengines#KeepWarmAnswer`
+- `internal/shuttleengines#KeepWarm`
+- `internal/shuttleengines#KeepWarmAnswer`
 - `internal/runproc#Register`
 - `internal/runproc#ChildRecord`
 - `internal/fabricengine#RunProcDir`

@@ -18,7 +18,7 @@
 **Uses:**
 - `internal/gateslot#ReadRunRecords`
 - `internal/gatecli#runLogDirOf`
-- `plan:internal/shuttleengines#KeepWarmAnswer`
+- `internal/shuttleengines#KeepWarmAnswer`
 
 **Intent:** D5: a `--gate` key whose runs outlast the break-even waits in one long call instead of many short ones.
 

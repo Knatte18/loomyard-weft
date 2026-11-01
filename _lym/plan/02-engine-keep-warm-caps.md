@@ -17,13 +17,13 @@
 - `//internal/shuttleengines/doc.go`
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#Claude.KeepWarmCaps` -> `func (c *Claude) KeepWarmCaps(role string) (time.Duration, time.Duration, error)`
-- `plan:internal/shuttleengine/claudeengine#ValidateKeepWarm` -> `func ValidateKeepWarm(claude Config) error`
-- `plan:internal/shuttleengine/claudeengine#longKeepWarmCap` -> `const longKeepWarmCap = bashMaxTimeout - 5*time.Minute`
-- `plan:internal/testkit/shuttlefake#Engine.KeepWarmCaps` -> `func (e *Engine) KeepWarmCaps(role string) (time.Duration, time.Duration, error)`
-- `plan:internal/shuttleengine#fakeEngine.KeepWarmCaps` -> `func (e *fakeEngine) KeepWarmCaps(role string) (time.Duration, time.Duration, error)`
-- `plan:internal/shuttleengine/claudeengine#TestKeepWarmCaps` -> `func TestKeepWarmCaps(t *testing.T)`
-- `plan:internal/shuttleengines#TestConfigModules_ClaudeCheckLoad` -> `func TestConfigModules_ClaudeCheckLoad(t *testing.T)`
+- `internal/shuttleengine/claudeengine#Claude.KeepWarmCaps`
+- `internal/shuttleengine/claudeengine#ValidateKeepWarm`
+- `internal/shuttleengine/claudeengine#longKeepWarmCap`
+- `internal/testkit/shuttlefake#Engine.KeepWarmCaps`
+- `internal/shuttleengine#fakeEngine.KeepWarmCaps`
+- `internal/shuttleengine/claudeengine#TestKeepWarmCaps`
+- `internal/shuttleengines#TestConfigModules_ClaudeCheckLoad`
 
 **Uses:**
 - `internal/shuttleengine/claudeengine#bashMaxTimeout`

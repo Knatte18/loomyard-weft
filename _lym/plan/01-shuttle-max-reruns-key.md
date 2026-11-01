@@ -11,7 +11,7 @@
 - `//internal/shuttleengine/doc.go`
 
 **Create:**
-- `plan:internal/shuttleengine_test#TestLoadConfig_KeepWarmMaxReruns` -> `func TestLoadConfig_KeepWarmMaxReruns(t *testing.T)`
+- `internal/shuttleengine_test#TestLoadConfig_KeepWarmMaxReruns`
 
 **Uses:**
 - `internal/loomcli#TestWire_EverySeamFilled`

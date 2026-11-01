@@ -8,8 +8,8 @@
 - `//internal/cardverify/doc.go`
 
 **Create:**
-- `plan:internal/battencli#commandEnv` -> `func commandEnv(environ []string) []string`
-- `plan:internal/battencli#TestCommandRunners_DropTheStrand` -> `func TestCommandRunners_DropTheStrand(t *testing.T)`
+- `internal/battencli#commandEnv`
+- `internal/battencli#TestCommandRunners_DropTheStrand`
 
 **Uses:**
 - `internal/agentname#StrandNameEnv`
