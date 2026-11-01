@@ -1,6 +1,6 @@
 # Measure what the batching sentences did to the Plan and Discussion writers
 
-`batching-effect-audit` · Task · research, stencil, shuttle, loom · running · Worktree-Create
+`batching-effect-audit` · Task · research, stencil, shuttle, loom · running · Record-Write
 
 ## Goal
 
