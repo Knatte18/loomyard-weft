@@ -25,11 +25,13 @@ Held by a run; its scope is locked until the run ends.
 | T4 | **Dobby and orch start in pairs: a batten run brought dobby up alone**<br>• ensureParentDobby spawns a lone dobby; every start goes through beam start and brings the orch too | [`dobby-orch-pair-start`](design-dobby-orch-pair-start.md) | darn | Darn-Write | neve | 30m<br>9m | dobby, batten, orch |
 | T5 | **A window lym opens is snapped into the active desktop tiling by a configured command**<br>• After opening a window lym runs a machine-local configured command, such as the operator tiling script; lym knows nothing about KDE | [`kde-window-placement`](design-kde-window-placement.md) | darn | Darn-Write | neve | 3d<br>6m | reed, ide, config |
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T3 | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template<br>• `profile: docs` | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | darn |  | 9d<br>0m | webster |
 
 #### Layer A (1)
 
@@ -38,14 +40,6 @@ Waits only on Running, Ready or Draft entries.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T6 | **A long gate run answers within the cache lifetime, so the waiting agent keeps its prompt cache warm**<br>• lym gate test caps the run wait like the slot wait, with the cap a config value beside the engine cache lifetime<br>• `profile: light` | [`gate-run-keeps-cache-warm`](design-gate-run-keeps-cache-warm.md) | tapestry | T2 | 17h<br>5m | gate, shuttle, config |
-
-#### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | tapestry |  | 9d<br>5d | webster |
 
 ### Notes (27)
 
