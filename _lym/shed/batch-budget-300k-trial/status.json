@@ -1,12 +1,12 @@
 {
   "current_producer": "Finalize",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "the task worktree has uncommitted changes before the merge-in: 200k, 250k; commit or remove them on the task branch, then resume",
   "pause_requested": false,
   "activity": {
     "now": "Finalize",
-    "last": "PR-Review → done",
-    "wait": ""
+    "last": "Finalize → stuck",
+    "wait": "the task worktree has uncommitted changes before the merge-in: 200k, 250k; commit or remove them on the task branch, then resume"
   },
   "history": [
     {
@@ -81,6 +81,13 @@
       "outcome": "done",
       "output": "",
       "at": "2026-11-01T11:40:04Z"
+    },
+    {
+      "producer": "Finalize",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-11-01T11:40:07Z",
+      "budget_exempt": true
     }
   ],
   "product": {
