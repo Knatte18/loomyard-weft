@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-01 10:26 UTC; every age below is as of then.
+Rendered 2026-11-01 10:27 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -10,17 +10,9 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 The root project: the entries under no other project.
 
-### Tasks (3)
+### Tasks (2)
 
 Concrete and claimable; only a task can run.
-
-#### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **warp-visibility: heddle, a Bolt database lym renders its instruction files from, leaving no trace in warp**<br>• LoomYard puts no CLAUDE.md in a repository; lym renders its own git-excluded instruction files into each worktree from _board/heddle.json | [`warp-visibility`](design-warp-visibility.md) | tapestry | Finalize | neve | 3w<br>4h | fabric, board, config, claude, codex, cwd, process, stencil, shuttle |
 
 #### Ready (0)
 
@@ -34,8 +26,8 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Parts-Write and Parts-Plan-Write: the plan written in two steps, beside Plan-Write**<br>• A coarse splitter and a seat table of part writers joined by a chair, as an opt-in alternative to Plan-Write, built to be benched against it | [`plan-split-producers`](design-plan-split-producers.md) | tapestry | T3 | 6m<br>0m | loom, stencil, shed, profiles |
-| T3 | `draft` **Rename the Bolt checkout directory _board to _bolt, by script alone**<br>• A pure, mechanical rename of _board to _bolt everywhere, with a rename program for existing hubs | [`bolt-dir-rename`](design-bolt-dir-rename.md) | darn | T2 | 18h<br>4h | fabric, board, config, cwd, stencil |
+| T1 | `draft` **Parts-Write and Parts-Plan-Write: the plan written in two steps, beside Plan-Write**<br>• A coarse splitter and a seat table of part writers joined by a chair, as an opt-in alternative to Plan-Write, built to be benched against it | [`plan-split-producers`](design-plan-split-producers.md) | tapestry | T3 | 7m<br>0m | loom, stencil, shed, profiles |
+| T3 | `draft` **Rename the Bolt checkout directory _board to _bolt, by script alone**<br>• A pure, mechanical rename of _board to _bolt everywhere, with a rename program for existing hubs | [`bolt-dir-rename`](design-bolt-dir-rename.md) | darn |  | 18h<br>4h | fabric, board, config, cwd, stencil |
 
 ### Notes (32)
 
@@ -87,3 +79,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F15 |  | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 2w<br>19h | reed, config, batten |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>3d | burler, shed, orch, quarry, report |
 | F20 |  | **stitch: a loom recipe that splits a large task into darn runs inside its own beam**<br>• Discussion, a pre-planner, the pieces filed as darn tasks in the task's project, and an inner pawl run that builds and lands the beam | [`loom-beam-darns`](design-loom-beam-darns.md) | 9d<br>13h | loom, shed, batten, workspaces, burler |
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T2 | **warp-visibility: heddle, a Bolt database lym renders its instruction files from, leaving no trace in warp**<br>• LoomYard puts no CLAUDE.md in a repository; lym renders its own git-excluded instruction files into each worktree from _board/heddle.json | [`warp-visibility`](design-warp-visibility.md) | 3w<br>4h | fabric, board, config, claude, codex, cwd, process, stencil, shuttle |
