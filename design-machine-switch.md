@@ -1,6 +1,8 @@
 # One verb to take work over on another machine, leaving every run in a known state
 
-`machine-switch` · Note · feature, fabric, dobby, batten
+`machine-switch` · Task · feature, fabric, dobby, batten
+
+Depends on: [`dobby-orch-pair-start`](design-dobby-orch-pair-start.md)
 
 ## Seen (operator, 2026-10-31)
 
