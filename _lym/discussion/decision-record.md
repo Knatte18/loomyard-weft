@@ -30,6 +30,12 @@ Decision: The channel writes lym's own agent instructions into the rendered CLAU
 
 Rationale: Operator, 2026-11-01: CLAUDE.local.md is where these instructions belong; heddle is per repository, so lym's text comes from lym's code and only shares the rendered file.
 
+### Added after Discussion (parent, 2026-11-01): The channel is a shipped layer of heddle, replacing the claudeengine channel
+
+Decision: This replaces the two earlier parent decisions' channel. Heddle gains a second layer: a store lym ships inside its binary (embedded in internal/heddleengine, in the same entry format as heddle.json), read-only, changed only by a lym release. Rendering, show and passages read the shipped layer and the repository's heddle.json together for every target: the shipped entries render first, as a section of their own, the repository's after. lym heddle set and remove refuse a shipped slug, and lym heddle list marks each entry's layer. The batching sentence becomes the shipped layer's first entry, aimed at the claude-file target, and leaves claudeengine's appended system prompt in the same change, so a session never gets it twice. plan-edits-before-gate adds the second shipped entry. heddle-orch-target, in review now, also changes internal/heddleengine; take its target in when it lands.
+
+Rationale: Operator, 2026-11-01: heddle is per repository, and lym's own instructions belong in the same rendered files; a read-only layer shipped with lym keeps them in lym's code (PATTERN-lym-instructions-in-code) and reuses heddle's targets and rendering instead of a second mechanism. internal/heddleengine is about two thousand lines with its tests, so the layer fits this task.
+
 ## Constraints
 
 ## Auto-mode assumptions
