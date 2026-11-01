@@ -1,6 +1,6 @@
 # One verb to take work over on another machine, leaving every run in a known state
 
-`machine-switch` · Task · feature, fabric, dobby, batten · running · Code-Bouncer
+`machine-switch` · Task · feature, fabric, dobby, batten · running · Describe
 
 ## Seen (operator, 2026-10-31)
 
