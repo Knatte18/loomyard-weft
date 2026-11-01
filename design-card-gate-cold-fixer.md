@@ -11,6 +11,7 @@ Webster already has a cold fixer, but only for the plan-level verify gate: a for
 
 A card gate failure goes to a fresh, cold, cheap fixer instead of the fork:
 - Go spawns it in the fork's worktree with the gate report, the card and the card's diff; it reads the failing source itself and fixes every failure in one go.
+- After its fixes it reruns only the packages that failed, and the card's whole gate once those are green.
 - When it clears the gate, the fork goes on with its next card or ends.
 - When it does not, the failure goes back to the fork, or up the recovery strand's ladder as today.
 
