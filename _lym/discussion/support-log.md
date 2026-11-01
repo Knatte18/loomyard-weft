@@ -72,6 +72,7 @@ The record changed after the lens pass by the parent's two decisions, which no f
 - A release verb `lym beam go`: ruled out by the parent (creel #211).
 - One adopt check in the prime for every subject: a fix lands in the beam's own branch, which a check of the prime's tree never tests.
 - Storing the land action as a command on the board entry: any board edit could then make dobby run an arbitrary command; a closed action table keeps it bounded.
+- Dobby's `notify_on_land` memory as the land-action record: it never remembers a run first seen past its Land row (`internal/dobbyengine/landnotice.go`).
 - A front task that also pauses the worktree's runs already going: adopt holds its runs itself, and stopping running members is not asked by either user of the piece.
 
 ## Review rounds
@@ -83,12 +84,12 @@ _No rounds yet._
 - Q1 (auto-pick): a new verb or reshape `lym adopt`? Picked reshaping `lym adopt`; it holds every step bar the hold, the fix loop and the report.
 - Q2 (auto-pick): does the verb add a `lym fabric pull`? Picked no; the origin reconcile covers Bolt and every local pair (fact from `internal/fabricengine/originreconcile.go` at `2de97ce7`), and an unmoved code branch is a warning.
 - Q3 (auto-pick): what is the hold? Picked a slug-scoped pause entry with a new fixed caller, written before the owner write.
-- Q4 (auto-pick): which runs are held? Picked moved runs owned elsewhere per the reconciled Bolt that will be owned here after the write, bar a run live here; plus released tasks not started under the subject.
+- Q4 (auto-pick): which runs are held? Picked moved runs owned elsewhere per the reconciled Bolt that will be owned here after the write, bar a run live here; plus released tasks not started under the subject, bar front tasks.
 - Q5 (resolved by parent, creel #211): how is the hold released? By the subject's green adopt check only; no release verb or button.
 - Q6 (resolved by parent, creel #212): what happens on a failed check? A darn fix task in the subject, retried up to a configured count, through a general piece.
 - Q7 (auto-pick): one check or one per subject? Picked one per subject, in its worktree.
 - Q8 (auto-pick): where does the try limit live? Picked `adopt_fix_tries` in `beam.yaml`, default 3.
 - Q9 (auto-pick): what is the general piece? Picked front tasks: filing, a start hold in the worktree and a land action from a closed table.
 - Q10 (auto-pick): how does the darn stop on a machine failure? Picked a stop on a condition the task body names, through the existing stop marker.
-- Q11 (auto-pick): which runs count as landed? Picked runs whose board entry reads done after the reconcile among those this machine held not done before it.
+- Q11 (auto-pick): which runs count as landed? Picked runs whose board entry is absent or reads done after the reconcile among those this machine held not done before it, since Land prunes every done entry.
 - Q12 (auto-pick): a run under an operator's own pause? Picked state `paused`, naming the caller.
