@@ -15,26 +15,19 @@ The action buttons are config, not code: adding a button is one entry in reed's 
 
 ```yaml
 buttons:
-  - label: HALT
-    run: lym tender pause {slug}
-    show: run
-  - label: CANCEL
-    run: lym batten cancel {slug}
-    show: run
-    confirm: "Cancel {slug}?"
-  - label: code
-    run: lym ide spawn {slug}
-    show: run
-  - label: term
-    run: lym reed window {worktree}
-  - label: distill
-    run: lym orch distill
-    show: orch
-    confirm: "Distill the orch?"
+  task:                 # every task run's reed session
+    - {label: HALT,   run: lym tender pause {slug}}
+    - {label: CANCEL, run: lym batten cancel {slug}, confirm: "Cancel {slug}?"}
+    - {label: code,   run: lym ide spawn {slug}}
+    - {label: term,   run: lym reed window {worktree}}
+  beam:                 # a beam's session with its orch and dobby; the prime is the root beam and uses the same set
+    - {label: distill, run: lym orch distill, confirm: "Distill the orch?"}
 ```
 
-- `run` is a shell command, run in the session's worktree; lym fills the placeholders `{slug}`, `{worktree}`, `{beam}` and `{session}` at click time.
-- `show` names where the button appears: `run` (a task run's session), `orch`, `beam`, or `all`, the default.
+- The buttons are grouped by the place they belong to, so each place's whole set reads in one spot: `task` for a task run's session, `beam` for a beam's session; the prime, being the root beam, takes the `beam` set, and a `prime` group, when present, replaces it there.
+- `run` is a shell command, run in the session's worktree; lym fills the placeholders `{slug}`, `{worktree}`, `{beam}`, `{session}` and `{strand}` at click time.
+- A session shows the same row in every window (overview, agent windows, shell): the buttons act on the whole run whichever window is active.
+  A button that acts on one agent carries `window: agents` and the placeholder `{strand}`, the agent in the active pane, and shows only in the agent windows.
 - `confirm` puts tmux's plain y/n `confirm-before` prompt, with the given text, in front of the command; buttons that cannot be undone carry it.
 - A failing command shows a short tmux message on the status line; its output goes to a log.
 - Layering: the hub's config holds the default set, and a machine-local override may add buttons of its own.
