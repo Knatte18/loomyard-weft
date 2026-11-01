@@ -920,7 +920,7 @@
       "isolated": false,
       "brief": "79 no-call wake-up turns at full context over three runs, 8-9% of the forking review roles weight",
       "body": "## Seen (research, landed 2026-11-01)\n\n`docs/research/review-turn-audit-2026-11-01/report.md`: a Discussion reviewer, Discussion fixer or Plan fixer that forks its lenses wakes once per fork, since each fork's result arrives as its own message, and each wake-up is a turn with no call at the parent's full context.\nOn three tapestry runs that was 79 turns, 8% to 9% of the three roles' weight and 13% to 19% of their time.\nThe Plan reviewer works on after its spawn, so its wake-ups are mixed into its other turns.\n\n## Idea\n\nThe parent gets every fork's result in one turn: it spawns its forks in one message and is woken once they are all done, rather than once per fork.\nFirst read how the review stencils spawn the forks and how their results reach the parent, then pick the form that keeps the forks running in parallel.\nMeasured with the scripts of `docs/research/review-turn-audit-2026-11-01`: the `fork-wait` turns per session.\n",
-      "status": "running · Darn-Write",
+      "status": "running · Drift-Verify",
       "created": "2026-11-01T14:51:40Z",
       "revised": "2026-11-01T15:10:27Z",
       "project": "agent-turns"
