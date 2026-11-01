@@ -1,6 +1,6 @@
 # One fixed orch role for every repository, brought up to date
 
-`orch-role-current` · Task · enhancement, orch, stencil · running · Darn-Write
+`orch-role-current` · Task · enhancement, orch, stencil · running · Drift-Verify
 
 ## Seen (orch, 2026-11-01)
 
