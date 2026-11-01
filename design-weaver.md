@@ -206,6 +206,21 @@ Only the *executor that actually runs the width* (this entry) remains parked.
 The retired `websterv2.md` draft also had a Part B — structured impact lookup via `go/packages`/`gopls` (find-all-references as a Go verb instead of LLM-driven grep).
 That idea is superseded, not lost: it's the direct ancestor of [quarry](https://github.com/Knatte18/quarry), which generalizes it to a multi-language, daemon-based design.
 
+## Parallel batch pieces (folded from `parallel-batch-parts`, 2026-11-01)
+
+Webster stays serial (operator, 2026-11-01): a Webster fork inherits its master's working directory and a context full of paths into the task worktree, so keeping it inside another worktree needs hooks and directory flags everywhere and soon turns messy.
+Parallel batches belong to Weaver, whose cold agents start in their own worktree.
+The pieces they need:
+
+1. A DAG batchifier: edges from the cards' targets and `Uses:`, cards joined into batches while the batch graph stays acyclic and under a cost budget, ready batches chosen.
+2. A worktree per batch, created for the batch and removed after it, built on fabric (`lym fabric add --parent`).
+3. Merge-back of each batch worktree into the task branch, with a cheap model such as Haiku resolving textual conflicts.
+4. The verify on the merged result and its failure ladder, which Webster's verify gate has.
+5. The batch brackets and report: `begin-batch`, `record-batch`, the changed-files guard and the report contract, which Webster has.
+6. A view of the graph and the batches (`tools/plandag` counts card overlap today).
+
+Claude Code's own worktree isolation for agents has given the operator only trouble before, so the worktrees are lym's, not Claude Code's.
+
 ## Related
 
 - `internal/websterengine`'s package documentation — the sequential model this would extend.
