@@ -1,6 +1,6 @@
 # The batcher template makes the wide profile, budget 300k, its active default
 
-`batcher-wide-default` · Task · enhancement, webster · running · PR-Review
+`batcher-wide-default` · Task · enhancement, webster · running · Finalize
 
 ## Decision (operator, 2026-11-01)
 
