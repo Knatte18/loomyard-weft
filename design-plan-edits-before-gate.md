@@ -1,6 +1,6 @@
 # Trial: agents settle every edit before the first, then gate once
 
-`plan-edits-before-gate` · Task · enhancement, heddle, stencil, claude · running · Darn-Write
+`plan-edits-before-gate` · Task · enhancement, heddle, stencil, claude · running · Drift-Verify
 
 ## Seen (orch, 2026-11-01)
 
