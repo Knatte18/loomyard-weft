@@ -1,6 +1,6 @@
 # Shorten the plan spec and split it into sub-files read by need
 
-`plan-spec-split` · Task · enhancement, loom, stencil, webster · running · Finalize
+`plan-spec-split` · Task · enhancement, loom, stencil, webster · done
 
 ## Seen (orch, 2026-11-01)
 
