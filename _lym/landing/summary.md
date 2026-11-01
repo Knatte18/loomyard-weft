@@ -1,58 +1,51 @@
-# A reviewer, fixer or writer waits for all its forks in one call
+# Add `lym shuttle await-forks` so a forking role wakes once, not per fork
 
-A Discussion reviewer, Discussion fixer or Plan fixer that forked its lenses ended its turn to wait, and woke once per fork result, since each fork's result arrives as its own message.
-Each wake-up is a turn with no tool call at the session's full context: 79 such turns over three tapestry runs, 8% to 9% of the three roles' weight and 13% to 19% of their time, per `docs/research/review-turn-audit-2026-11-01/report.md`.
+A role that spawns forks (a Discussion reviewer, Discussion fixer, Plan fixer, or a fix self-check) used to end its turn and wake once per fork, because each fork's result arrived as its own message.
+Each wake-up was a turn with no call at the parent's full context.
+On three tapestry runs that was 79 turns, 8% to 9% of the three roles' weight and 13% to 19% of their time (`docs/research/review-turn-audit-2026-11-01/report.md`).
 
-The forks keep running in parallel.
-What changes is how the parent waits: it now waits inside one foreground tool call, `lym shuttle await-forks`, instead of ending its turn.
-Claude Code queues a fork's completion notification that arrives during a tool call and delivers every queued notification in the turn after the call returns, so the parent takes all fork results in one turn.
+After this change the parent spawns its forks in one message and then runs `lym shuttle await-forks` in the foreground.
+The forks still run in parallel.
+Every fork result reaches the parent together, in the turn after the verb answers `ready: true`.
 
-## What changed
+## What changes
 
-- **`lym shuttle await-forks [--cap]`** (`internal/shuttlecli/awaitforks.go`), a read-only role verb.
-  It resolves the calling session's run from the strand name reed puts in the pane's environment, then waits until no fork the session launched is still running.
-  It answers `ready: true` when none is running, and when `--cap` elapses first it answers `ready: false` with the forks still running.
-  `--cap` defaults to `shuttleengine.DefaultAwaitCap`, under the 5-minute cache lifetime, like `lym shuttle await`.
-  A caller outside a shuttle strand is refused with a way forward.
-- **`Runner.AwaitForks`** and the poll `awaitForks` (`internal/shuttleengine/await.go`) read the outstanding forks at most once a second until none remain or the cap elapses.
-  They read through a new optional engine capability, `OutstandingForkReader` (`internal/shuttleengine/engine.go`), so the Claude transcript format stays inside `claudeengine`.
-  An engine without the capability gets an error, never an empty answer, since an empty answer would end the wait.
-- **Claude's `OutstandingForks`** (`internal/shuttleengine/claudeengine/background.go`) reads the session's own transcript.
-  It uses the existing unmatched-launch reading, narrowed to forks: a fork launch whose task id no later `<task-notification>`, queue-operation line or queued_command attachment names is still running.
-  Claude Code writes the queue-operation line as soon as a notification is queued, so the reading turns empty while the parent is still inside the waiting call.
-  A missing or unreadable transcript is an error.
-- **Fork launches are background launches.**
-  `isBackgroundLaunch` now counts an Agent or Task call whose input names `subagent_type: "fork"`, since Claude Code runs every fork in the background and its input has no `run_in_background` flag (the `master-fork-running` corpus transcript has this shape).
-  This also corrects the Stop-payload transcript fallback, which used to miss forks.
-- **Stencils.**
-  `burler-cluster-fan.md` (the reviewer's fanned round), `burler-fix-self-check.md` (the fixer's self-check) and `twill-directive.md` (the writer's lens review) replace "ending your turn while forks are outstanding is allowed".
-  Each now says to run `lym shuttle await-forks` in the foreground with the Bash tool's `timeout` at 300000, never end the turn while a fork is outstanding, and run it again in a turn that does nothing else while it answers `ready: false`.
-  The fixer and the writer run it in the message after the spawn.
-  The reviewer runs it after its holistic review, before consolidating.
-  When the verb fails, the session ends its turn instead and takes each result as it arrives, the old behaviour.
-- `lym shuttle state` and `await-forks` share one renderer, `taskFields`, for a list of background tasks.
-- Docs: the `shuttleengine`, `claudeengine`, `burlerengine` and `twilldirective` package docs and the shuttle row of `docs/overview.md`.
+- New read-only verb `lym shuttle await-forks [--cap]` (`internal/shuttlecli/awaitforks.go`).
+  It resolves the caller's run from its strand name and polls once a second until no fork the session launched is still running, or `--cap` elapses.
+  It prints `ready: true`, or `ready: false` with the forks still running; a caller outside a shuttle strand, an unknown strand and a transcript read error exit 1.
+  `--cap` defaults to `shuttleengine.DefaultAwaitCap`, under the prompt-cache lifetime, so the caller runs it with a Bash `timeout` of 300000 and keeps its cache warm.
+- `Runner.AwaitForks` (`internal/shuttleengine/await.go`) holds the poll, over the runner's clock.
+- New optional engine capability `OutstandingForkReader` (`internal/shuttleengine/engine.go`).
+  `claudeengine` implements it by reading the session transcript: a fork launch that no later completion notification names is outstanding.
+  An engine without the capability makes the verb fail, not report an empty list.
+- The `Agent`/`Task` launch check in `claudeengine/background.go` now counts `subagent_type: "fork"` launches, which carry no `run_in_background` flag.
+  The existing Stop-payload fallback shares this check, so `lym shuttle state` and the run-wait fallback now see fork launches too.
+- The stencils `burler-cluster-fan`, `burler-fix-self-check` and `twill-directive` tell the agent to wait with the verb and never end its turn while a fork is outstanding.
+  The re-run is bounded: after five `ready: false` answers in a row, or on a failure, the agent ends its turn and takes results as they arrive, as before.
+- `docs/overview.md` and the package docs of `shuttleengine`, `claudeengine`, `burlerengine` and `twilldirective` describe the verb.
+  `state.go` shares its task rendering with the new verb through `taskFields`.
 
 ## Design decisions
 
-- **A blocking wait over the transcript, not fork-written marker files.**
-  Forks could write their own lens reports and the parent could wait on the files with `lym shuttle await`.
-  The burler round audit treats any fork write as a hard error, though, and a fork writes its file a turn before its notification, so a late notification could still wake the parent.
-  The transcript holds the notification itself, so the wait ends exactly when every result is queued for the parent.
-- **The twill directive is included.**
-  The board entry names reviewers and fixers, and the twill writer's lens review waits on its forks with the same sentence and the same cost.
-  `twill-writer-fork.md` waits on one fork and is left as it is.
-- **The Plan reviewer** already works during its forks and does not end its turn.
-  It now ends its fork wait in one call too, so its trailing wake-ups go away as well.
+- **Wait in a verb, not by ending the turn.**
+  The verb keeps the parent inside one tool call, so the harness queues every fork notification until the call returns and delivers them in one turn.
+- **Transcript, not the Stop payload.**
+  The verb runs mid-turn, so no Stop payload exists; Claude Code writes a notification that arrives during a tool call to the transcript at once, so the answer turns empty while the caller is still inside the call.
+- **Unresolved launches count as outstanding.**
+  A fork launch whose tool result is not yet in the transcript is reported with an empty ID, since its id is unknown but it is running.
+  A launch whose result is present but carries no id is skipped, since nothing would ever name it.
+- **Unreadable transcript is an error.**
+  An empty answer would end the wait early and hand the parent a partial set.
+- **Bounded re-runs.**
+  A fork that never reports would keep the verb answering `ready: false`, so the stencils cap the re-runs and fall back to per-result wake-ups.
 
-## Verification
+## To check by hand
 
-The tier0 gate is green, with two new tests:
+Not run: the effect on wake-up counts.
+Re-run the `fork-wait` measurement of `docs/research/review-turn-audit-2026-11-01` on a real run of the three roles, and confirm the forks still overlap in time.
 
-- `TestOutstandingForks` reads a temporary project directory: an unanswered fork, a fork named by a queued notification, a shell beside a fork, and a missing transcript.
-- `TestAwaitForks` runs the poll on a fake clock: ready at once, ready after the forks finish, the cap, a read error and a cancelled context.
+Findings left open on the diff, to check by hand:
 
-`TestTranscriptHasUnmatchedLaunch_BashAndAgentLaunches` gains a fork-typed launch.
-
-That every queued notification reaches the parent in one turn is Claude Code behaviour, read from transcripts, not tested here.
-It is measured by the `fork-wait` column of `docs/research/review-turn-audit-2026-11-01/where-turns-go.sh` on the next tapestry runs.
+- `await-forks-verb-untested`: the `await-forks` verb in `internal/shuttlecli/awaitforks.go`, tested through a `strandResolver` seam in `cli_test.go` — confirm it covers the not-in-a-strand, unknown-strand, error and both ready answers.
+- `runner-awaitforks-untested`: `Runner.AwaitForks` in `internal/shuttleengine/await.go`, tested in `await_test.go` — confirm it covers an unknown run, an engine without the capability and a read error.
+- `outstanding-forks-drops-unresolved-launch`: `OutstandingForks` and `unmatchedLaunches` in `internal/shuttleengine/claudeengine/background.go` — confirm a fork launch with no recorded tool result stays outstanding, and that the shared launch check changes nothing for the Stop-payload fallback beyond counting forks.
