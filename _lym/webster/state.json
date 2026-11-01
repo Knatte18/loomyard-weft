@@ -455,7 +455,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "26b852aa3de8205aac1ff3f3536f5ee1",
   "masterSessionId": "a7a887cd-0cc1-41a7-9a61-01bf0f126612",
   "masterEngine": "claude",
@@ -512,6 +512,30 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-plan-split-producers/a7a887cd-0cc1-41a7-9a61-01bf0f126612/subagents/agent-aef5a85e27dd2ed38.jsonl"
       ]
+    },
+    "7": {
+      "slug": "loomshed-part-checks",
+      "cards": [
+        "07-loomshed-part-checks",
+        "08-writer-seat-directives",
+        "09-seat-writer-kind",
+        "10-seat-writer-resume-join",
+        "11-multillm-writer-mapping"
+      ],
+      "cardHashes": {
+        "07-loomshed-part-checks": "1b0298a4dd4cb2167fdd3730edf5dd9af558869f1dbec0395db2bd01f973c1f7",
+        "08-writer-seat-directives": "a18a7b104b18b04001393e4aa20ba355d520d279264d5897454ddf0e65ca3163",
+        "09-seat-writer-kind": "0e9d753a30f92640ef47c65d50420fdf980e6ff18a96ca82258675e0cd468121",
+        "10-seat-writer-resume-join": "954d39047d49126141cf48e9fdbd9f7ade03de60c7fc3aaf7999ebfa1a9f2411",
+        "11-multillm-writer-mapping": "7254fa39b5c1c4dbbc31213f0c63861973f3e0953bb7f155f7353f0f3c8bc918"
+      },
+      "startSha": "03eed6de00902a763095f6d59e11930630b512f2",
+      "kind": "fork",
+      "spawnedAt": "2026-11-01T13:00:05Z",
+      "sessionId": "a7a887cd-0cc1-41a7-9a61-01bf0f126612",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
