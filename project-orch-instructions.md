@@ -1,9 +1,9 @@
 # P1 Orch instructions in two layers: lym's role and the repository's rules in heddle
 
-Rendered 2026-11-01 16:36 UTC; every age below is as of then.
+Rendered 2026-11-01 16:41 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`orch-instructions`](design-orch-instructions.md) · Age 3h · Owner `neve`
+`orch-instructions` · Age 3h · Owner `neve`
 
 One fixed orch role for every repository, repository orch rules in heddle through lym orch rules, and the orch note for run state only
 
