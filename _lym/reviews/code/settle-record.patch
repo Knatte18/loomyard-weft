@@ -1,0 +1,915 @@
+diff --git a/contracts/stencils/burler/burler-cluster-fan.md b/contracts/stencils/burler/burler-cluster-fan.md
+index 8f18c6a8..eb768328 100644
+--- a/contracts/stencils/burler/burler-cluster-fan.md
++++ b/contracts/stencils/burler/burler-cluster-fan.md
+@@ -18,6 +18,9 @@ Boilerplate:
+ While the forks run, YOU (the handler) do your own HOLISTIC review: what no lens owns, such as the target against its fasit and its board entry, the rubric's leanness and relocation rules, architecture and PATTERN-fit, reading further only where your review needs it.
+ Then prepare the ground truths and the severity rubric you will judge every finding against.
+ Write nothing to the review file while any fork is outstanding, whatever an early report says: consolidate only once the last fork has returned, with every finding in view.
++Then wait for the forks with `lym shuttle await-forks`, run in the foreground with the Bash tool's `timeout` at 300000, and never end your turn while a fork is outstanding: every fork result reaches you together, in the turn after it answers `ready: true`.
++While it answers `ready: false`, run it again in a turn that does nothing else, until it has answered `ready: false` five times in a row.
++When it fails, or has answered `ready: false` five times in a row, end your turn instead, and take each fork's result as it arrives.
+ 
+ Once the last fork has returned, and before you consolidate, save each fork's final message verbatim to `{{.lens_report_path}}`, with its lens name for `<lens>`, in the format `{{.lens_report_spec_path}}` defines; a fork that returned no report gets its file too.
+ These lens reports are part of your write surface, beside the review file, and are the one exception to the "nothing else" and "no other file" of the write-surface rules in your prompt.
+diff --git a/contracts/stencils/burler/burler-fix-self-check.md b/contracts/stencils/burler/burler-fix-self-check.md
+index 2656c1eb..fd3d436f 100644
+--- a/contracts/stencils/burler/burler-fix-self-check.md
++++ b/contracts/stencils/burler/burler-fix-self-check.md
+@@ -9,7 +9,9 @@ It checks the change set you just made, which no later step of this round review
+ 1. Read the fix-check rubric at `{{.rubric_path}}`, so every fork you spawn inherits it.
+ 2. Spawn the lenses below in one message through the Agent tool with `subagent_type: "fork"`, one fork per lens, and never pass a `name`.
+    Each fork's prompt is the fork boilerplate below plus its lens text and nothing else: no hint at what you think is wrong, no direction to read code.
+-3. Wait for every fork to return; ending your turn while forks are outstanding is allowed.
++3. Wait for every fork to return: in the message after the spawn, run `lym shuttle await-forks` in the foreground with the Bash tool's `timeout` at 300000, and never end your turn while a fork is outstanding, so every fork result reaches you together, in the turn after it answers `ready: true`.
++   While it answers `ready: false`, run it again in a turn that does nothing else, until it has answered `ready: false` five times in a row.
++   When it fails, or has answered `ready: false` five times in a row, end your turn instead, and take each fork's result as it arrives.
+    Edit nothing while any fork is outstanding, whatever an early report says: start judging only once the last fork has returned, judge all findings together, and only then edit.
+    Once the last fork has returned, and before you judge, save each fork's final message verbatim to `{{.lens_report_path}}`, with its lens name for `<lens>`, in the format `{{.lens_report_spec_path}}` defines; a fork that returned no report gets its file too.
+    These lens reports are part of your write surface, beside the fixer-report.
+diff --git a/contracts/stencils/twill/twill-directive.md b/contracts/stencils/twill/twill-directive.md
+index 4634b62e..d83a309e 100644
+--- a/contracts/stencils/twill/twill-directive.md
++++ b/contracts/stencils/twill/twill-directive.md
+@@ -12,7 +12,9 @@
+ {{.writer_fork}}1. Read the rubric at `{{.rubric_path}}`, so every fork you spawn inherits it.
+ 2. Spawn every lens below in one message through the Agent tool with `subagent_type: "fork"`, one fork per lens, and never pass a `name`.
+    Each fork's prompt is the fork boilerplate below plus its lens text and nothing else: no design hint, no direction to read code.
+-3. Wait for every fork to return; ending your turn while forks are outstanding is allowed.
++3. Wait for every fork to return: in the message after the spawn, run `lym shuttle await-forks` in the foreground with the Bash tool's `timeout` at 300000, and never end your turn while a fork is outstanding, so every fork result reaches you together, in the turn after it answers `ready: true`.
++   While it answers `ready: false`, run it again in a turn that does nothing else, until it has answered `ready: false` five times in a row.
++   When it fails, or has answered `ready: false` five times in a row, end your turn instead, and take each fork's result as it arrives.
+    Edit nothing while any fork is outstanding, whatever an early report says: start judging only once the last fork has returned, judge all findings together, and only then edit.
+    Once the last fork has returned, and before you judge, save each fork's final message verbatim to `{{.lens_report_path}}`, with its lens name for `<lens>`, in the format `{{.lens_report_spec_path}}` defines; a fork that returned no report gets its file too.
+ {{.judge_steps}}
+diff --git a/docs/overview.md b/docs/overview.md
+index 45fbd37b..d86b9274 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -416,7 +416,7 @@ User-facing modules each get one `lym <module>` namespace:
+   defaults to `bug`.
+   Callable from any sandbox agent context with no config. ✅ Implemented.
+ - **reed** — **the window to the world**: tmux overlay + **strand** bookkeeping + render (`internal/reedcli` + `internal/reedengine` + `internal/reedengine/render`). Hosts every managed process as a strand in a window of its own or its group's, persists to `.lym/reed.json` (`lym reed up|add|remove|status|list|attach|switch|resume|watchdog|down`); `lym reed add` places a strand `--anchor own-window` by default. Every strand carries a hierarchical full name (see the `internal/agentname` package documentation), mirrored into its pane title and Claude session name and exported to its process as `LYM_STRAND_NAME` and `LYM_PARENT`, with the watchdog repairing drift; `list` is the hub-wide name directory. Built on what its proof-of-concept, `muxpoc`, proved first (env hygiene, native `--resume`); `muxpoc` has since been deleted, its job done. `reed attach` and `reed watchdog` are this module's two registered interactive-handoff exceptions ([PATTERN-cli-cobra](../pattern/PATTERN-cli-cobra.md)): `attach` hands the operator's stdio to a `tmux attach-session` child in place, pre-flighting through checking tmux's floor version, booting the session if cold and checking server/session liveness, and `watchdog` is the detached per-hub name-repair and reap daemon that blocks for its process lifetime — in both cases every fallible step runs pre-flight, on the envelope, and only the terminal-handover/daemon tail itself is exempt from emitting JSON. `add` and `attach` boot this worktree's session when none is up, with `up`'s own semantics — a bare substrate, with no persisted strand relaunched — instead of refusing; every other reed verb still refuses on a cold worktree. ✅ Implemented. See the `internal/reedengine` package documentation.
+-- **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengines` + `internal/shuttlecli`; `lym shuttle run|open|state|await`). `lym shuttle open` starts a named session with no turn in its own window, which closes when the session exits; `--model` takes a model spec naming the engine, model and effort, `--list-models` prints the model registry's aliases with their engine, model and default effort, and the output names the engine, model and effort the session got. Every session shuttle launches, run or opened, starts in its engine's bypass mode unless the caller passes `prompt`, which an interactive session accepts. `lym shuttle await <path>... [--cap]` is the read-only capped wait on one or more files, the keep-cache-warm wait any agent can run, needing no hub or git repository. `lym shuttle state` is read-only: it lists the session state of each running run (busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with its cause, since and history), read from the run's files, in shadow mode where no stop or notice depends on it. `Stop`-hook completion is read off an events file and classified into three outcomes — `done`/`died`/`timeout`. A turn end without every output file never ends a run: `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call). An autonomous run notifies its parent once per held turn end as creel mail to the orch, and once per permission or input dialog its pane shows past 60 s, and an interactive run is answered in its pane; a line typed into a run's pane goes through `lym creel post`, `lym creel inject` or `lym creel interrupt`, never a shuttle verb. Background work is read off the Stop payload's `background_tasks` first, with the transcript as the fallback when the payload carries no list; a turn end with outstanding work is waiting, not held, unless its only outstanding work is non-awaited shells, which a gated run judges as a plain turn end and an ungated run holds once they pass the shell wait bound. `Attach` waits on a held run, and on a legacy `asking` record whose strand is still live, instead of respawning beside it. `died` is narrow: it means a strand reed STILL TRACKS has a pane that is not alive, the provider never came up inside the startup window, or the provider's process is proven gone behind a live pane shell (by the process registry, or a process-ending `SessionEnd` line past the wait's first liveness tick), with `done` instead when every output file exists. Reed's strand table losing the strand entirely — a `reed down`/`remove`, a deleted or rebuilt `reed.json`, a worktree renamed under an in-flight run — is reported as a mechanism failure carrying the run's identity, never as `died`, because reed's bookkeeping going away says nothing about the agent, whose process is often still working in its pane. `PreToolUse` guardrails deny the in-process `Agent` tool in both interactive and autonomous runs (on by default, switchable off via `claude.yaml`'s `deny_agent_tool`, and narrowed in a `ForkSubagents` run to permit fork subagents while still refusing every other subagent type), and `AskUserQuestion` too when the run is autonomous (`Interactive: false`, the default); a `PreToolUse(Bash)` guardrail denies `python`, `python3` and `python3.<minor>` in command position in every run mode (on by default, switchable off via `shuttle.yaml`'s `deny_python`), and a second `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a raw module-wide `go test`, `go build` or `go vet`, a raw `go test` over the `tmux` or `llm` tier, and any command naming the gate-slot or strand-name environment variable, steering the session to `lym gate test`, and a third `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies an `rm` on a computed path (a command substitution or a variable expansion in the command) so no permission dialog stalls the run, and a fourth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies `sed -i`, `perl -i`, and a redirect, heredoc or `tee` into a source file, steering the session to read a file with Read and change it with Edit or Write; the python deny's steer carries the same edit rule. The engine announces each deny it installs to the session's system prompt, and every Claude session it launches with a run directory also gets the creel trust sentence and a sentence asking it to request every call whose arguments it already knows in one message, through one `append-system-prompt.txt` file named by `--append-system-prompt-file` on launch and resume, so a session knows the tool is unavailable before it tries one, follows `[creel]` mail from its hooks and batches independent calls. The engine sets the prompt-cache TTL per role on launch and resume from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role). The provider is swappable behind an **engine** seam; the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, Claude being the one registered engine. Per-run `Model`/`Effort` knobs (`lym shuttle run --model`/`--effort`; effort values `low|medium|high|xhigh|max`, empty = provider default) are engine-validated, not policed by `Spec.validate`. `Spec.Version` is a programmatic engine-validated version pin (claudeengine composes the pinned model id; no CLI flag — consumers drive it via the model-spec notation's `v=` param). Starting a run returns only once its provider is past its startup gates, and a provider that never comes up is torn down (run dir and last pane capture kept) and reported as an error from `Start`, or as `died`/`timeout` from `Run`. ✅ Implemented. See the `internal/shuttleengine` package documentation.
++- **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengines` + `internal/shuttlecli`; `lym shuttle run|open|state|await|await-forks`). `lym shuttle open` starts a named session with no turn in its own window, which closes when the session exits; `--model` takes a model spec naming the engine, model and effort, `--list-models` prints the model registry's aliases with their engine, model and default effort, and the output names the engine, model and effort the session got. Every session shuttle launches, run or opened, starts in its engine's bypass mode unless the caller passes `prompt`, which an interactive session accepts. `lym shuttle await <path>... [--cap]` is the read-only capped wait on one or more files, the keep-cache-warm wait any agent can run, needing no hub or git repository. `lym shuttle await-forks [--cap]` is the same capped wait over the forks the calling agent session spawned, read from its transcript through the engine: a reviewer, fixer or writer that waits inside it takes every fork's result in one turn instead of waking once per fork. `lym shuttle state` is read-only: it lists the session state of each running run (busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with its cause, since and history), read from the run's files, in shadow mode where no stop or notice depends on it. `Stop`-hook completion is read off an events file and classified into three outcomes — `done`/`died`/`timeout`. A turn end without every output file never ends a run: `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call). An autonomous run notifies its parent once per held turn end as creel mail to the orch, and once per permission or input dialog its pane shows past 60 s, and an interactive run is answered in its pane; a line typed into a run's pane goes through `lym creel post`, `lym creel inject` or `lym creel interrupt`, never a shuttle verb. Background work is read off the Stop payload's `background_tasks` first, with the transcript as the fallback when the payload carries no list; a turn end with outstanding work is waiting, not held, unless its only outstanding work is non-awaited shells, which a gated run judges as a plain turn end and an ungated run holds once they pass the shell wait bound. `Attach` waits on a held run, and on a legacy `asking` record whose strand is still live, instead of respawning beside it. `died` is narrow: it means a strand reed STILL TRACKS has a pane that is not alive, the provider never came up inside the startup window, or the provider's process is proven gone behind a live pane shell (by the process registry, or a process-ending `SessionEnd` line past the wait's first liveness tick), with `done` instead when every output file exists. Reed's strand table losing the strand entirely — a `reed down`/`remove`, a deleted or rebuilt `reed.json`, a worktree renamed under an in-flight run — is reported as a mechanism failure carrying the run's identity, never as `died`, because reed's bookkeeping going away says nothing about the agent, whose process is often still working in its pane. `PreToolUse` guardrails deny the in-process `Agent` tool in both interactive and autonomous runs (on by default, switchable off via `claude.yaml`'s `deny_agent_tool`, and narrowed in a `ForkSubagents` run to permit fork subagents while still refusing every other subagent type), and `AskUserQuestion` too when the run is autonomous (`Interactive: false`, the default); a `PreToolUse(Bash)` guardrail denies `python`, `python3` and `python3.<minor>` in command position in every run mode (on by default, switchable off via `shuttle.yaml`'s `deny_python`), and a second `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a raw module-wide `go test`, `go build` or `go vet`, a raw `go test` over the `tmux` or `llm` tier, and any command naming the gate-slot or strand-name environment variable, steering the session to `lym gate test`, and a third `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies an `rm` on a computed path (a command substitution or a variable expansion in the command) so no permission dialog stalls the run, and a fourth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies `sed -i`, `perl -i`, and a redirect, heredoc or `tee` into a source file, steering the session to read a file with Read and change it with Edit or Write; the python deny's steer carries the same edit rule. The engine announces each deny it installs to the session's system prompt, and every Claude session it launches with a run directory also gets the creel trust sentence and a sentence asking it to request every call whose arguments it already knows in one message, through one `append-system-prompt.txt` file named by `--append-system-prompt-file` on launch and resume, so a session knows the tool is unavailable before it tries one, follows `[creel]` mail from its hooks and batches independent calls. The engine sets the prompt-cache TTL per role on launch and resume from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role). The provider is swappable behind an **engine** seam; the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, Claude being the one registered engine. Per-run `Model`/`Effort` knobs (`lym shuttle run --model`/`--effort`; effort values `low|medium|high|xhigh|max`, empty = provider default) are engine-validated, not policed by `Spec.validate`. `Spec.Version` is a programmatic engine-validated version pin (claudeengine composes the pinned model id; no CLI flag — consumers drive it via the model-spec notation's `v=` param). Starting a run returns only once its provider is past its startup gates, and a provider that never comes up is torn down (run dir and last pane capture kept) and reported as an error from `Start`, or as `died`/`timeout` from `Run`. ✅ Implemented. See the `internal/shuttleengine` package documentation.
+ - **orch** — the hub orchestrator hosted as an interactive Claude session in a reed strand of the prime worktree or of a beam, cycled before its context fills (`internal/orchcli` + `internal/orchengine`; `lym orch stop|status|refresh|distill|withdraw|rules`, in the prime and in any beam). `lym beam start` first ensures the worktree's `runs` strand, which runs `lym batten overview` as the beam's window, named `beam: prime` or `beam: <slug>`, and `stop` leaves it; the orchestrator has a window of its own, and the session's windows run the beam window, agents, shell. A detached watcher has the session write a note, then clears it and resumes it from that note (`refresh`) or compacts it in place (`distill`), never clearing or compacting without one. ✅ Implemented. See the `internal/orchengine` package documentation.
+ - **webster** — the implementer module: one long-lived Master session that reads the plan and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool), each fork reading its cards' code itself, instead of spawning a fresh reed/tmux strand per batch;
+   bracket verbs (`begin-batch`/`record-batch`) drive each in-session fork (Master ends its turn while a backgrounded fork works and records the batch on the fork's completion notification, shuttle reading that turn end as waiting rather than done), and a genuine model escalation (recovery after a stuck/report-less fork) spawns a cold strand.
+diff --git a/internal/burlerengine/doc.go b/internal/burlerengine/doc.go
+index 03333639..de5ccd41 100644
+--- a/internal/burlerengine/doc.go
++++ b/internal/burlerengine/doc.go
+@@ -79,7 +79,7 @@
+ // Profile.FixFan names a fan from the lenses.yaml lens/fan library, and validateFix resolves it into the fixer's lenses before any spawn, so an unknown fixer fan fails the half.
+ // A profile with no FixFan is the single fixer, whose files render the same bytes as before the fan existed.
+ // With a fan, the fixer is spawned with fork subagents authorized and its fix step renders the burler-fix-self-check part before the fixer-report rule:
+-// before it writes the fixer-report, the fixer reads the deployed burler-fix-check-rubric stencil and spawns one read-only fork per lens over the change set it just made, then, editing nothing until the last fork has returned, saves each fork's final message verbatim in a lens report beside the fixer-report, judges all fork findings together by the fix step's own three dispositions and records them in a `## Self-check` section of the fixer-report.
++// before it writes the fixer-report, the fixer reads the deployed burler-fix-check-rubric stencil and spawns one read-only fork per lens over the change set it just made, waits for them inside `lym shuttle await-forks` so their results reach it in one turn, then, editing nothing until the last fork has returned, saves each fork's final message verbatim in a lens report beside the fixer-report, judges all fork findings together by the fix step's own three dispositions and records them in a `## Self-check` section of the fixer-report.
+ // One fork pass per fixer session: a fixer re-prompted by its gate, or resumed after its forks were lost, spawns no further forks and names each lost fork as "no report".
+ // A forking fixer still carries its row's gates, because a turn end with a fork outstanding is a wait, so no gate runs while a fork is live.
+ //
+@@ -274,7 +274,8 @@
+ // A cluster round still runs its review as ONE shuttle session, the handler, in three phases.
+ // (1) the handler explores the target in full;
+ // (2) the handler spawns all N lens forks in a SINGLE message via Claude Code's built-in fork subagents (Agent tool, subagent_type "fork", always unnamed), and, while they run, performs its own HOLISTIC review — architecture, cross-file invariants, PATTERN-fit — the level no narrow lens covers;
+-// (3) once the last fork has returned, and never before, the handler saves each fork's final message verbatim in a lens report beside the review file, named by internal/lensreport and written in the format of the twill-lens-report-spec spec under Geometry.SpecsDir;
++// (3) the handler waits for the forks inside `lym shuttle await-forks` rather than by ending its turn, so it takes every fork's result in one turn instead of waking once per fork;
++// once the last fork has returned, and never before, the handler saves each fork's final message verbatim in a lens report beside the review file, named by internal/lensreport and written in the format of the twill-lens-report-spec spec under Geometry.SpecsDir;
+ // it then consolidates every fork's returned findings together with its own holistic findings into the ONE review file:
+ // dedup across lenses, an origin: frontmatter key on every kept finding (lens:<name> or handler), a ## Rejected prose section for false positives (judged with equal skepticism, never appearing in the parsed findings), and severity ordering.
+ // All three phases are part of the review, so review-before-fix is intact exactly as in a solo round:
+diff --git a/internal/shuttlecli/awaitforks.go b/internal/shuttlecli/awaitforks.go
+new file mode 100644
+index 00000000..bba6d5e6
+--- /dev/null
++++ b/internal/shuttlecli/awaitforks.go
+@@ -0,0 +1,79 @@
++// awaitforks.go implements the read-only `await-forks` shuttle verb: the capped wait a role agent runs after spawning forks,
++// so it takes every fork's result in one turn instead of waking once per fork.
++// It reads the calling session's own transcript through the engine and writes nothing.
++
++package shuttlecli
++
++import (
++	"fmt"
++	"os"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/agentname"
++	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/output"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/spf13/cobra"
++)
++
++// awaitForksCmd builds `lym shuttle await-forks [--cap <duration>]`.
++// It resolves the calling session's run from the strand name reed gave its pane.
++// It prints ok with ready true once none of the session's forks is still running.
++// When --cap elapses first it prints ok with ready false and the forks still running, telling the caller to run the command again.
++// A caller outside a shuttle strand, an unknown strand and a transcript read error are errors with exit 1.
++func (c *shuttleCLI) awaitForksCmd() *cobra.Command {
++	var awaitCap time.Duration
++	cmd := &cobra.Command{
++		Use:         "await-forks",
++		Short:       "wait, capped, until every fork the calling session spawned has finished",
++		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceRole},
++		Long: `await-forks waits until every fork the calling agent session spawned has
++finished, printing ok with ready true. Every fork result that arrived during
++the wait reaches the session together when the command returns, so the
++session takes all of them in one turn instead of waking once per fork.
++When --cap elapses first it prints ok with ready false and the forks still
++running, and exits 0, telling the caller to run the command again;
++a fork that never reports keeps it answering ready false, so the caller bounds its re-runs.
++
++Run it from the session that spawned the forks, in a message after the one
++that spawned them, with a Bash tool timeout above --cap (300000 ms), and
++re-run it in a turn that does nothing else, so the prompt cache stays warm
++between calls. It is read-only.
++
++Example:
++  lym shuttle await-forks`,
++		Args: cobra.NoArgs,
++		RunE: func(cmd *cobra.Command, args []string) error {
++			ctx := cmd.Context()
++			if clihelp.ShouldAbort(ctx) {
++				return nil
++			}
++			out := cmd.OutOrStdout()
++
++			name := os.Getenv(agentname.StrandNameEnv)
++			if name == "" {
++				clihelp.SetExit(ctx, output.Err(out, "await-forks: the calling session runs in no shuttle strand, so it has no forks to wait on; way forward: run it from the agent session that spawned the forks"))
++				return nil
++			}
++			guid, err := c.reed.ResolveStrandGUID(name)
++			if err != nil {
++				clihelp.SetExit(ctx, output.Err(out, fmt.Sprintf("await-forks: resolve the calling strand %q: %v", name, err)))
++				return nil
++			}
++
++			outstanding, ready, err := c.runner.AwaitForks(ctx, guid, awaitCap)
++			if err != nil {
++				clihelp.SetExit(ctx, output.Err(out, err.Error()))
++				return nil
++			}
++			if !ready {
++				output.Ok(out, map[string]any{"ready": false, "outstanding": taskFields(outstanding), "message": "forks are still running; call this command again"})
++				return nil
++			}
++			output.Ok(out, map[string]any{"ready": true})
++			return nil
++		},
++	}
++	cmd.Flags().DurationVar(&awaitCap, "cap", shuttleengine.DefaultAwaitCap, "longest time one call waits before answering ready false")
++	return cmd
++}
+diff --git a/internal/shuttlecli/cli.go b/internal/shuttlecli/cli.go
+index 3363c42d..2e30958c 100644
+--- a/internal/shuttlecli/cli.go
++++ b/internal/shuttlecli/cli.go
+@@ -6,6 +6,7 @@
+ // subcommand re-resolves geometry, config, or engine construction itself.
+ // The verbs are run, open and the read-only state, which lists the session state of each running run.
+ // The read-only await, the capped wait on one or more files, is implemented in await.go.
++// The read-only await-forks, the capped wait until the calling session's forks have finished, is implemented in awaitforks.go.
+ // await is the verb that skips the resolution, so it runs the same with no hub, git repository, config or engine.
+ 
+ package shuttlecli
+@@ -25,11 +26,18 @@ import (
+ 	"github.com/spf13/cobra"
+ )
+ 
++// strandResolver resolves a strand name to the guid of the one strand it addresses, refusing an unknown or ambiguous name.
++type strandResolver interface {
++	ResolveStrandGUID(name string) (string, error)
++}
++
+ // shuttleCLI is the receiver every shuttle verb hangs off of;
+-// runner, cfg, anchorPath and engines are populated by PersistentPreRunE.
++// runner, reed, cfg, anchorPath and engines are populated by PersistentPreRunE.
+ // The read-only verbs read through cfg, anchorPath and engines directly.
+ type shuttleCLI struct {
+-	runner     *shuttleengine.Runner
++	runner *shuttleengine.Runner
++	// reed resolves the calling strand's name to its guid for await-forks.
++	reed       strandResolver
+ 	cfg        shuttleengine.Config
+ 	anchorPath string
+ 	engines    shuttleengine.EngineSet
+@@ -113,7 +121,7 @@ provider specifics.`,
+ 				clihelp.Abort(ctx, 1)
+ 				return nil
+ 			}
+-			c.cfg, c.anchorPath, c.engines = shuttleCfg, reedGeom.AnchorPath, engines
++			c.cfg, c.anchorPath, c.engines, c.reed = shuttleCfg, reedGeom.AnchorPath, engines, reedEngine
+ 			c.runner = shuttleengine.NewRunner(reedEngine, c.engines, c.anchorPath, reedGeom.WorktreeRoot, c.cfg)
+ 			pauseGeom, err := hubgeom.PauseGeometry(layout)
+ 			if err != nil {
+@@ -127,7 +135,7 @@ provider specifics.`,
+ 		},
+ 	}
+ 
+-	parent.AddCommand(c.runCmd(), c.openCmd(), c.stateCmd(), c.awaitCmd())
++	parent.AddCommand(c.runCmd(), c.openCmd(), c.stateCmd(), c.awaitCmd(), c.awaitForksCmd())
+ 
+ 	return parent
+ }
+diff --git a/internal/shuttlecli/cli_test.go b/internal/shuttlecli/cli_test.go
+index e2997e2f..8b80d844 100644
+--- a/internal/shuttlecli/cli_test.go
++++ b/internal/shuttlecli/cli_test.go
+@@ -20,7 +20,9 @@ import (
+ 	"testing"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/agentname"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/shuttlefake"
+@@ -231,12 +233,23 @@ func TestRunCLI_PositionalArgValidation(t *testing.T) {
+ 		})
+ 	}
+ 
++	t.Run("Registers_await-forks", func(t *testing.T) {
++		found := false
++		for _, child := range Command().Commands() {
++			found = found || child.Name() == "await-forks"
++		}
++		if !found {
++			t.Errorf("Command() registers no await-forks child; want one")
++		}
++	})
++
+ 	tests := []struct {
+ 		name string
+ 		args []string
+ 	}{
+ 		{"StateStrayArgument", []string{"state", "stray"}},
+ 		{"AwaitNoArgs", []string{"await"}},
++		{"AwaitForksStrayArgument", []string{"await-forks", "stray"}},
+ 	}
+ 
+ 	for _, tt := range tests {
+@@ -367,6 +380,110 @@ func TestAwaitVerb(t *testing.T) {
+ 	}
+ }
+ 
++// fakeResolver is a strandResolver answering a fixed guid or error.
++type fakeResolver struct {
++	guid string
++	err  error
++}
++
++func (r fakeResolver) ResolveStrandGUID(string) (string, error) { return r.guid, r.err }
++
++// forkListEngine is a shuttlefake.Engine with the OutstandingForkReader capability, answering a fixed fork list.
++type forkListEngine struct {
++	shuttlefake.Engine
++
++	forks []shuttleengine.BackgroundTask
++}
++
++func (e *forkListEngine) OutstandingForks(string, string) ([]shuttleengine.BackgroundTask, error) {
++	return e.forks, nil
++}
++
++// TestAwaitForksVerb pins the await-forks error envelopes for a caller outside a shuttle strand, for a strand reed cannot resolve and for a strand with no run record.
++// It also pins the ok envelope with ready true once no fork runs.
++// It also pins the ok envelope with ready false and the forks still running when the cap elapses.
++// It is not parallel: it sets the strand-name environment variable.
++func TestAwaitForksVerb(t *testing.T) {
++	fork := shuttleengine.BackgroundTask{Kind: shuttleengine.BackgroundFork, ID: "a1", Label: "lens a"}
++
++	tests := []struct {
++		name string
++		// strand is the value of the strand-name environment variable; empty leaves it unset.
++		strand   string
++		resolver fakeResolver
++		forks    []shuttleengine.BackgroundTask
++		// recorded writes a run record for guid-1 before the verb runs.
++		recorded    bool
++		wantErr     string
++		wantReady   bool
++		wantPending []any
++	}{
++		{name: "no strand name is an error", wantErr: "no shuttle strand"},
++		{name: "unresolvable strand is an error", strand: "hub:task:driver", resolver: fakeResolver{err: errors.New("no strand named")}, wantErr: "resolve the calling strand"},
++		{name: "strand without a run record is an error", strand: "hub:task:driver", resolver: fakeResolver{guid: "guid-1"}, wantErr: "guid-1"},
++		{name: "no fork running is ready", strand: "hub:task:driver", resolver: fakeResolver{guid: "guid-1"}, recorded: true, wantReady: true},
++		{
++			name:        "forks still running at the cap are listed",
++			strand:      "hub:task:driver",
++			resolver:    fakeResolver{guid: "guid-1"},
++			forks:       []shuttleengine.BackgroundTask{fork},
++			recorded:    true,
++			wantPending: []any{map[string]any{"kind": "fork", "id": "a1", "label": "lens a"}},
++		},
++	}
++
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Setenv(agentname.StrandNameEnv, tt.strand)
++
++			anchor := t.TempDir()
++			if tt.recorded {
++				runDir := filepath.Join(anchor, lymdirs.DotLymDirName, "shuttle", "run-1")
++				if err := os.MkdirAll(runDir, 0o755); err != nil {
++					t.Fatal(err)
++				}
++				record, err := json.Marshal(shuttleengine.RunState{RunID: "run-1", StrandGUID: "guid-1", SessionID: "session-1", Outcome: "running"})
++				if err != nil {
++					t.Fatal(err)
++				}
++				if err := os.WriteFile(filepath.Join(runDir, "run.json"), record, 0o644); err != nil {
++					t.Fatal(err)
++				}
++			}
++			engine := &forkListEngine{forks: tt.forks}
++			c := &shuttleCLI{reed: tt.resolver, runner: newFakeClockRunner(nil, engine, anchor, anchor)}
++			cmd := c.awaitForksCmd()
++			var out bytes.Buffer
++			cmd.SetOut(&out)
++			cmd.SetErr(&out)
++			cmd.SetArgs([]string{"--cap", "3s"})
++			if err := cmd.Execute(); err != nil {
++				t.Fatalf("cmd.Execute() error: %v; output: %s", err, out.String())
++			}
++
++			envelope := parseSingleEnvelope(t, out.Bytes())
++			if tt.wantErr != "" {
++				if got, _ := envelope["error"].(string); envelope["ok"] != false || !strings.Contains(got, tt.wantErr) {
++					t.Errorf("envelope = %v; want ok false with an error containing %q", envelope, tt.wantErr)
++				}
++				return
++			}
++			if envelope["ok"] != true || envelope["ready"] != tt.wantReady {
++				t.Fatalf("envelope = %v; want ok true, ready %v", envelope, tt.wantReady)
++			}
++			if tt.wantReady {
++				return
++			}
++			if diff := cmp.Diff(tt.wantPending, envelope["outstanding"]); diff != "" {
++				t.Errorf("outstanding mismatch (-want +got):\n%s", diff)
++			}
++			if envelope["message"] != "forks are still running; call this command again" {
++				t.Errorf("message = %v; want the call-again message", envelope["message"])
++			}
++		})
++	}
++}
++
+ // errSpecCaptured is the sentinel the spec-capturing engine's Prepare returns,
+ // so the test can tell "Prepare ran and recorded the spec" apart from any other failure mode.
+ var errSpecCaptured = errors.New("specCapturingEngine: spec captured")
+diff --git a/internal/shuttlecli/state.go b/internal/shuttlecli/state.go
+index a4cd9906..e1ab7d71 100644
+--- a/internal/shuttlecli/state.go
++++ b/internal/shuttlecli/state.go
+@@ -78,15 +78,20 @@ func stateFields(state shuttleengine.SessionState) map[string]any {
+ 	if !state.Since.IsZero() {
+ 		since = state.Since.UTC().Format(time.RFC3339)
+ 	}
+-	outstanding := []map[string]any{}
+-	for _, task := range state.Outstanding {
+-		outstanding = append(outstanding, map[string]any{"kind": string(task.Kind), "id": task.ID, "label": task.Label})
+-	}
+ 	return map[string]any{
+ 		"state":       string(state.Name),
+ 		"cause":       state.Cause,
+ 		"detail":      state.Detail,
+-		"outstanding": outstanding,
++		"outstanding": taskFields(state.Outstanding),
+ 		"since":       since,
+ 	}
+ }
++
++// taskFields renders background tasks as the envelope's list of kind, id and label, an empty list for none.
++func taskFields(tasks []shuttleengine.BackgroundTask) []map[string]any {
++	fields := []map[string]any{}
++	for _, task := range tasks {
++		fields = append(fields, map[string]any{"kind": string(task.Kind), "id": task.ID, "label": task.Label})
++	}
++	return fields
++}
+diff --git a/internal/shuttleengine/await.go b/internal/shuttleengine/await.go
+index 7b50d9c9..f157d09e 100644
+--- a/internal/shuttleengine/await.go
++++ b/internal/shuttleengine/await.go
+@@ -1,10 +1,11 @@
+-// await.go implements the capped file poll every keep-cache-warm wait verb runs on.
++// await.go implements the capped polls the keep-cache-warm wait verbs run on: one over files, one over a run's outstanding forks.
+ 
+ package shuttleengine
+ 
+ import (
+ 	"context"
+ 	"errors"
++	"fmt"
+ 	"io/fs"
+ 	"os"
+ 	"time"
+@@ -48,3 +49,52 @@ func awaitAny(ctx context.Context, clock Clock, paths []string, cap time.Duratio
+ 		clock.Sleep(min(pollFloor, remaining))
+ 	}
+ }
++
++// AwaitForks waits, capped, until the session of the run identified by guid has no fork outstanding, polling once a second on the runner's clock.
++// A session that spawns forks and then waits in this call takes every fork's result in the one turn after it returns, instead of waking once per fork.
++// It returns true once no fork is outstanding, and the forks still outstanding with false when cap elapses first.
++// An unknown guid, an engine without the OutstandingForkReader capability, a read error and a cancelled ctx are errors.
++func (r *Runner) AwaitForks(ctx context.Context, guid string, cap time.Duration) ([]BackgroundTask, bool, error) {
++	if r.toldErr != nil {
++		return nil, false, r.toldErr
++	}
++	state, _, err := FindRun(r.cfg, r.anchorPath, guid)
++	if err != nil {
++		return nil, false, fmt.Errorf("shuttle: find the run of strand %q: %w", guid, err)
++	}
++	engine, name, err := r.engineFor(state)
++	if err != nil {
++		return nil, false, err
++	}
++	reader, ok := engine.(OutstandingForkReader)
++	if !ok {
++		return nil, false, fmt.Errorf("shuttle: engine %q does not implement the OutstandingForkReader capability, so a session cannot wait on its forks", name)
++	}
++	return awaitForks(ctx, r.clock, func() ([]BackgroundTask, error) {
++		return reader.OutstandingForks(state.SessionID, r.paneCwd)
++	}, cap)
++}
++
++// awaitForks is AwaitForks over a told clock and outstanding-fork read:
++// it reads once, then sleeps min(pollFloor, remaining) between reads, so it wakes at most once a second and never past the cap.
++func awaitForks(ctx context.Context, clock Clock, readOutstanding func() ([]BackgroundTask, error), cap time.Duration) ([]BackgroundTask, bool, error) {
++	deadline := clock.Now().Add(cap)
++	for {
++		outstanding, err := readOutstanding()
++		if err != nil {
++			return nil, false, err
++		}
++		if len(outstanding) == 0 {
++			return nil, true, nil
++		}
++
++		remaining := deadline.Sub(clock.Now())
++		if remaining <= 0 {
++			return outstanding, false, nil
++		}
++		if err := ctx.Err(); err != nil {
++			return nil, false, err
++		}
++		clock.Sleep(min(pollFloor, remaining))
++	}
++}
+diff --git a/internal/shuttleengine/await_test.go b/internal/shuttleengine/await_test.go
+index f4751dd8..67be6293 100644
+--- a/internal/shuttleengine/await_test.go
++++ b/internal/shuttleengine/await_test.go
+@@ -4,8 +4,11 @@ package shuttleengine
+ 
+ import (
+ 	"context"
++	"errors"
+ 	"os"
+ 	"path/filepath"
++	"reflect"
++	"strings"
+ 	"testing"
+ 	"time"
+ )
+@@ -25,6 +28,157 @@ func (c *awaitClock) Sleep(d time.Duration) {
+ 	}
+ }
+ 
++// TestAwaitForks pins the capped poll over a run's outstanding forks on a fake clock: when it answers ready, what it answers at the cap, what it returns on a read error or a cancelled context, and that no sleep passes one second or the remaining cap.
++func TestAwaitForks(t *testing.T) {
++	t.Parallel()
++
++	cancelled, cancel := context.WithCancel(context.Background())
++	cancel()
++	fork := BackgroundTask{Kind: BackgroundFork, ID: "a1"}
++
++	tests := []struct {
++		name string
++		ctx  context.Context
++		cap  time.Duration
++		// runningReads is how many reads report the fork still running before one reports none.
++		runningReads int
++		readErr      error
++		wantRunning  []BackgroundTask
++		wantReady    bool
++		wantErr      bool
++		wantSleeps   []time.Duration
++	}{
++		{name: "no fork running answers at once", cap: 10 * time.Second, wantReady: true},
++		{
++			name:         "the read after the last fork finishes answers ready",
++			cap:          10 * time.Second,
++			runningReads: 2,
++			wantReady:    true,
++			wantSleeps:   []time.Duration{time.Second, time.Second},
++		},
++		{
++			name:         "cap elapsing answers the forks still running and the last sleep is the remaining cap",
++			cap:          2500 * time.Millisecond,
++			runningReads: 10,
++			wantRunning:  []BackgroundTask{fork},
++			wantSleeps:   []time.Duration{time.Second, time.Second, 500 * time.Millisecond},
++		},
++		{name: "a read error is returned", cap: 10 * time.Second, readErr: errors.New("transcript unreadable"), wantErr: true},
++		{name: "a cancelled context is returned", ctx: cancelled, cap: 10 * time.Second, runningReads: 1, wantErr: true},
++	}
++
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			clock := &awaitClock{fakeClock: newFakeClock(time.Unix(0, 0))}
++			reads := 0
++			readOutstanding := func() ([]BackgroundTask, error) {
++				reads++
++				if tt.readErr != nil {
++					return nil, tt.readErr
++				}
++				if reads <= tt.runningReads {
++					return []BackgroundTask{fork}, nil
++				}
++				return nil, nil
++			}
++			ctx := tt.ctx
++			if ctx == nil {
++				ctx = context.Background()
++			}
++
++			running, ready, err := awaitForks(ctx, clock, readOutstanding, tt.cap)
++
++			if (err != nil) != tt.wantErr {
++				t.Fatalf("awaitForks() error = %v; want error %v", err, tt.wantErr)
++			}
++			if !reflect.DeepEqual(running, tt.wantRunning) || ready != tt.wantReady {
++				t.Errorf("awaitForks() = (%+v, %v); want (%+v, %v)", running, ready, tt.wantRunning, tt.wantReady)
++			}
++			if !reflect.DeepEqual(clock.sleeps, tt.wantSleeps) {
++				t.Errorf("sleeps = %v; want %v", clock.sleeps, tt.wantSleeps)
++			}
++		})
++	}
++}
++
++// forkReaderEngine is a fakeEngine with the OutstandingForkReader capability: it records the arguments of each read and answers a fixed fork list.
++type forkReaderEngine struct {
++	fakeEngine
++
++	forks    []BackgroundTask
++	sessions []string
++	workdirs []string
++}
++
++func (e *forkReaderEngine) OutstandingForks(sessionID, workdir string) ([]BackgroundTask, error) {
++	e.sessions = append(e.sessions, sessionID)
++	e.workdirs = append(e.workdirs, workdir)
++	return e.forks, nil
++}
++
++// TestRunnerAwaitForks pins the wrapper around the poll: its refusals for an unknown guid and an engine without the OutstandingForkReader capability,
++// and that the reader is handed the run's session id and the pane's cwd.
++func TestRunnerAwaitForks(t *testing.T) {
++	t.Parallel()
++
++	const guid = "strand-1"
++	fork := BackgroundTask{Kind: BackgroundFork, ID: "a1"}
++
++	tests := []struct {
++		name     string
++		capable  bool
++		askGUID  string
++		wantErr  string
++		wantFork []BackgroundTask
++	}{
++		{name: "engine without the capability is refused", askGUID: guid, wantErr: "OutstandingForkReader"},
++		{name: "unknown guid is refused", capable: true, askGUID: "no-such-strand", wantErr: "no-such-strand"},
++		{name: "capable engine is read with the session and pane cwd", capable: true, askGUID: guid, wantFork: []BackgroundTask{fork}},
++	}
++
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			root := t.TempDir()
++			anchor := filepath.Join(root, "worktree")
++			paneCwd := filepath.Join(root, "pane")
++			runDir := filepath.Join(root, "runs", "run-1")
++			if err := os.MkdirAll(runDir, 0o755); err != nil {
++				t.Fatal(err)
++			}
++			if err := saveRunState(runDir, RunState{RunID: "run-1", StrandGUID: guid, SessionID: "session-1", Outcome: runOutcomeRunning}); err != nil {
++				t.Fatal(err)
++			}
++
++			var engine Engine = &fakeEngine{}
++			reader := &forkReaderEngine{forks: []BackgroundTask{fork}}
++			if tt.capable {
++				engine = reader
++			}
++			runner := NewDetachedRunner(&fakeReed{}, singleEngineSet(engine), anchor, filepath.Join(root, "standalone-worktree"), paneCwd, Config{RunDir: filepath.Join(root, "runs")})
++			runner.SetClock(&awaitClock{fakeClock: newFakeClock(time.Unix(0, 0))})
++
++			got, ready, err := runner.AwaitForks(context.Background(), tt.askGUID, 0)
++
++			if tt.wantErr != "" {
++				if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
++					t.Fatalf("AwaitForks() error = %v; want one containing %q", err, tt.wantErr)
++				}
++				return
++			}
++			if err != nil || ready || !reflect.DeepEqual(got, tt.wantFork) {
++				t.Errorf("AwaitForks() = (%+v, %v, %v); want (%+v, false, nil)", got, ready, err, tt.wantFork)
++			}
++			if !reflect.DeepEqual(reader.sessions, []string{"session-1"}) || !reflect.DeepEqual(reader.workdirs, []string{paneCwd}) {
++				t.Errorf("reader got sessions %v and workdirs %v; want [session-1] and [%s]", reader.sessions, reader.workdirs, paneCwd)
++			}
++		})
++	}
++}
++
+ // TestAwaitAny pins the capped poll over a fake clock: which path it names, when it answers not ready, what it returns on a stat error or a cancelled context, and that no sleep passes one second or the remaining cap.
+ func TestAwaitAny(t *testing.T) {
+ 	t.Parallel()
+diff --git a/internal/shuttleengine/claudeengine/background.go b/internal/shuttleengine/claudeengine/background.go
+index ba79d06d..63466f2f 100644
+--- a/internal/shuttleengine/claudeengine/background.go
++++ b/internal/shuttleengine/claudeengine/background.go
+@@ -7,6 +7,8 @@
+ // Only when the key is absent or its value is not a list does the transcript at transcript_path decide:
+ // a background launch that no later completion notification names by the task id the launch's tool result returned is outstanding.
+ // Agent and Task launches are forks, Bash and Monitor launches are shells.
++// The same transcript reading answers which forks a session launched are still running, for a session that waits on its own forks;
++// there a fork launch whose tool result is not yet recorded also counts, with an empty ID.
+ // A completion notification is a <task-notification> user message, a queue-operation line whose content names the task id, or a queued_command attachment whose prompt names it.
+ // An unreadable or missing transcript counts as nothing outstanding:
+ // it must never keep a run waiting on a fault.
+@@ -15,7 +17,9 @@ package claudeengine
+ 
+ import (
+ 	"encoding/json"
++	"fmt"
+ 	"os"
++	"path/filepath"
+ 	"regexp"
+ 	"strings"
+ 
+@@ -25,6 +29,40 @@ import (
+ // taskNotificationMarker opens the user message Claude Code injects when a background task finishes.
+ const taskNotificationMarker = "<task-notification>"
+ 
++// forkSubagentType is the subagent_type of an Agent launch that forks the session.
++// Claude Code runs every fork in the background, so its input carries no run_in_background flag.
++const forkSubagentType = "fork"
++
++// OutstandingForks implements shuttleengine.OutstandingForkReader for Claude:
++// the forks the session's transcript launched that no later completion notification names.
++// Claude Code records a notification that arrives during a tool call as a queue-operation line at once,
++// so the answer turns empty while the session is still inside the call that waits.
++// A fork launch whose tool result never reached the transcript stays outstanding, since no notification can name it.
++// A missing or unreadable transcript is an error, since an empty answer would end the wait.
++func (c *Claude) OutstandingForks(sessionID, workdir string) ([]shuttleengine.BackgroundTask, error) {
++	projectDir, err := claudeProjectDirFor(workdir)
++	if err != nil {
++		return nil, err
++	}
++	data, err := os.ReadFile(filepath.Join(projectDir, sessionID+".jsonl"))
++	if err != nil {
++		return nil, fmt.Errorf("claudeengine: read the transcript of session %s: %w", sessionID, err)
++	}
++	return unfinishedForks(data), nil
++}
++
++// unfinishedForks returns the fork launches of transcript JSONL that no later completion notification names.
++// A fork launch whose tool result is not yet recorded counts, with an empty ID, since its id is unknown but it is running.
++func unfinishedForks(data []byte) []shuttleengine.BackgroundTask {
++	var forks []shuttleengine.BackgroundTask
++	for _, task := range unmatchedLaunches(data, true) {
++		if task.Kind == shuttleengine.BackgroundFork {
++			forks = append(forks, task)
++		}
++	}
++	return forks
++}
++
+ // resultIDKeys are the toolUseResult fields that carry a launched task's id.
+ var resultIDKeys = []string{"agentId", "backgroundTaskId", "bash_id", "shellId", "taskId", "task_id"}
+ 
+@@ -100,6 +138,13 @@ type transcriptLaunch struct {
+ // A notification is a task-notification user message, a queue-operation line whose content names the id, or a queued_command attachment whose prompt names it.
+ // A launch whose result carries no recoverable id cannot be matched and is not counted.
+ func transcriptHasUnmatchedLaunch(data []byte) []shuttleengine.BackgroundTask {
++	return unmatchedLaunches(data, false)
++}
++
++// unmatchedLaunches is transcriptHasUnmatchedLaunch with a choice for a launch whose tool result is not yet in the transcript:
++// countPending true reports it with an empty ID, false skips it like any launch without an id.
++// A launch whose result is present but carries no id is skipped either way, since nothing would ever name it.
++func unmatchedLaunches(data []byte, countPending bool) []shuttleengine.BackgroundTask {
+ 	lines := strings.Split(string(data), "\n")
+ 
+ 	var launches []*transcriptLaunch
+@@ -161,6 +206,9 @@ func transcriptHasUnmatchedLaunch(data []byte) []shuttleengine.BackgroundTask {
+ 	var unmatched []shuttleengine.BackgroundTask
+ 	for _, l := range launches {
+ 		if len(l.ids) == 0 {
++			if countPending && l.resultAt == -1 {
++				unmatched = append(unmatched, shuttleengine.BackgroundTask{Kind: l.kind, Label: l.label, Signal: shuttleengine.SignalTranscript})
++			}
+ 			continue
+ 		}
+ 		matched := false
+@@ -218,7 +266,7 @@ func launchKindAndLabel(block map[string]any) (shuttleengine.BackgroundKind, str
+ }
+ 
+ // isBackgroundLaunch reports whether a tool_use block launches background work: a Bash call with
+-// run_in_background, a Monitor call, or an Agent (or Task) call launched asynchronously.
++// run_in_background, a Monitor call, or an Agent (or Task) call launched asynchronously or as a fork.
+ func isBackgroundLaunch(block map[string]any) bool {
+ 	name, _ := block["name"].(string)
+ 	input, _ := block["input"].(map[string]any)
+@@ -226,8 +274,11 @@ func isBackgroundLaunch(block map[string]any) bool {
+ 	switch name {
+ 	case "Monitor":
+ 		return true
+-	case "Bash", "Agent", "Task":
++	case "Bash":
+ 		return background
++	case "Agent", "Task":
++		subagentType, _ := input["subagent_type"].(string)
++		return background || subagentType == forkSubagentType
+ 	}
+ 	return false
+ }
+diff --git a/internal/shuttleengine/claudeengine/background_test.go b/internal/shuttleengine/claudeengine/background_test.go
+index e3f94828..e523e9a0 100644
+--- a/internal/shuttleengine/claudeengine/background_test.go
++++ b/internal/shuttleengine/claudeengine/background_test.go
+@@ -166,6 +166,77 @@ func TestTranscriptHasUnmatchedLaunch_BashAndAgentLaunches(t *testing.T) {
+ 	if len(got) != 1 || got[0] != wantAgent {
+ 		t.Errorf("async Agent launch with no notification = %+v, want [%+v]", got, wantAgent)
+ 	}
++
++	fork := strings.Replace(agent, `"run_in_background":true`, `"subagent_type":"fork"`, 1)
++	if got := transcriptHasUnmatchedLaunch([]byte(fork)); len(got) != 1 || got[0] != wantAgent {
++		t.Errorf("fork launch with no notification = %+v, want [%+v]", got, wantAgent)
++	}
++}
++
++// forkLaunchTranscript launches one fork, as Claude Code records it: an Agent call with subagent_type fork and no run_in_background flag.
++const forkLaunchTranscript = `{"type":"assistant","message":{"content":[{"type":"tool_use","id":"toolu_f","name":"Agent","input":{"description":"lens a","subagent_type":"fork"}}]}}
++{"type":"user","message":{"content":[{"type":"tool_result","tool_use_id":"toolu_f","content":"Async agent launched"}]},"toolUseResult":{"agentId":"a5e3629456cc7489a"}}
++`
++
++// TestOutstandingForks pins which forks the session's transcript reports still running, read from the project directory of the workdir under HOME.
++// It is not parallel: it sets HOME.
++func TestOutstandingForks(t *testing.T) {
++	forkNotification := `{"type":"queue-operation","operation":"enqueue","content":"<task-notification>\n<task-id>a5e3629456cc7489a</task-id>\n</task-notification>"}` + "\n"
++	wantFork := []shuttleengine.BackgroundTask{{Kind: shuttleengine.BackgroundFork, ID: "a5e3629456cc7489a", Signal: shuttleengine.SignalTranscript}}
++
++	tests := []struct {
++		name string
++		// transcript is the session transcript's content; absent writes none.
++		transcript string
++		absent     bool
++		want       []shuttleengine.BackgroundTask
++		wantErr    bool
++	}{
++		{name: "fork with no notification is outstanding", transcript: forkLaunchTranscript, want: wantFork},
++		{name: "fork named by a queued notification has finished", transcript: forkLaunchTranscript + forkNotification},
++		{
++			name:       "fork launch with no tool result yet is outstanding",
++			transcript: strings.SplitAfter(forkLaunchTranscript, "\n")[0],
++			want:       []shuttleengine.BackgroundTask{{Kind: shuttleengine.BackgroundFork, Signal: shuttleengine.SignalTranscript}},
++		},
++		{name: "a background shell is no fork", transcript: monitorLaunchTranscript + forkLaunchTranscript + forkNotification},
++		{name: "a missing transcript is an error", absent: true, wantErr: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			home := t.TempDir()
++			t.Setenv("HOME", home)
++			workdir := "/home/op/forks"
++			sessionID := "sess-forks"
++			if !tt.absent {
++				projectDir := filepath.Join(home, ".claude", "projects", encodeForTest(workdir))
++				if err := os.MkdirAll(projectDir, 0o755); err != nil {
++					t.Fatal(err)
++				}
++				if err := os.WriteFile(filepath.Join(projectDir, sessionID+".jsonl"), []byte(tt.transcript), 0o644); err != nil {
++					t.Fatal(err)
++				}
++			}
++
++			got, err := New().OutstandingForks(sessionID, workdir)
++
++			if (err != nil) != tt.wantErr {
++				t.Fatalf("OutstandingForks() error = %v; want error %v", err, tt.wantErr)
++			}
++			if !reflect.DeepEqual(got, tt.want) {
++				t.Errorf("OutstandingForks() = %+v; want %+v", got, tt.want)
++			}
++		})
++	}
++}
++
++// TestParseEvents_StopWithoutTaskListReadsBareForkLaunchAsWaiting pins that a Stop payload with no background_tasks list reads a fork launched without run_in_background as outstanding work.
++func TestParseEvents_StopWithoutTaskListReadsBareForkLaunchAsWaiting(t *testing.T) {
++	ev := parseOneKind(t, stopLine(t, writeBgTranscript(t, forkLaunchTranscript), nil))
++	want := []shuttleengine.BackgroundTask{{Kind: shuttleengine.BackgroundFork, ID: "a5e3629456cc7489a", Signal: shuttleengine.SignalTranscript}}
++	if ev.Kind != shuttleengine.EventWaiting || !reflect.DeepEqual(ev.Outstanding, want) {
++		t.Errorf("kind = %v, Outstanding = %+v, want EventWaiting with %+v", ev.Kind, ev.Outstanding, want)
++	}
+ }
+ 
+ func TestParseEvents_RunningShellEntryYieldsShellTask(t *testing.T) {
+diff --git a/internal/shuttleengine/claudeengine/capabilities.go b/internal/shuttleengine/claudeengine/capabilities.go
+index a81e3af3..8c07a9bd 100644
+--- a/internal/shuttleengine/claudeengine/capabilities.go
++++ b/internal/shuttleengine/claudeengine/capabilities.go
+@@ -14,6 +14,7 @@ import (
+ var (
+ 	_ shuttleengine.RequirementSupporter        = (*Claude)(nil)
+ 	_ shuttleengine.ForkAuditor                 = (*Claude)(nil)
++	_ shuttleengine.OutstandingForkReader       = (*Claude)(nil)
+ 	_ shuttleengine.ResumeContextRenderer       = (*Claude)(nil)
+ 	_ shuttleengine.ToolBoundaryContextRenderer = (*Claude)(nil)
+ 	_ shuttleengine.InstructionFileLister       = (*Claude)(nil)
+diff --git a/internal/shuttleengine/claudeengine/doc.go b/internal/shuttleengine/claudeengine/doc.go
+index 24ff0f23..cc7ade3c 100644
+--- a/internal/shuttleengine/claudeengine/doc.go
++++ b/internal/shuttleengine/claudeengine/doc.go
+@@ -38,6 +38,12 @@
+ // a task-notification user message, a queue-operation line or a queued_command attachment.
+ // A payload that omits a running task, lists it under another status or changes an entry's shape counts as no outstanding work.
+ // Each task carries the signal that reported it.
++// An Agent or Task launch counts as background when its input sets `run_in_background` or names the `fork` subagent type, since Claude Code runs every fork in the background.
++//
++// The outstanding-fork reading (OutstandingForkReader) is that transcript reading over the session's own transcript, narrowed to forks.
++// Claude Code writes a queue-operation line the moment a notification arrives during a tool call,
++// so the reading turns empty while a session that waits on its forks is still inside the waiting call, and the notifications reach the session together when the call returns.
++// A missing or unreadable transcript is an error.
+ //
+ // Every Bash command an agent runs gets `/dev/null` as its default stdin through Claude Code's `CLAUDE_ENV_FILE`:
+ // Prepare writes `bash-env.sh` beside settings.json, and both the launch and the resume line lead with `CLAUDE_ENV_FILE` naming its absolute path,
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index bb4ed9fc..e8cce444 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -27,7 +27,7 @@
+ // StandingPassages returns the instruction passages a hub's Bolt checkout holds for an engine, read through the reader InstallPassageReader installs for the process;
+ // it returns none outside a hub, with no reader installed or when the reader fails, which is logged at Warn, so a launch never waits on the store.
+ // An engine appends them to the system prompt it launches with, and shuttle itself parses no store.
+-// Requirement support, fork audit, resume-context rendering, creel hook delivery (the hook-input parse, the hook output and the wake output) and instruction files are optional capabilities beside Engine, which an engine without them lacks.
++// Requirement support, fork audit, the outstanding-fork reading, resume-context rendering, creel hook delivery (the hook-input parse, the hook output and the wake output) and instruction files are optional capabilities beside Engine, which an engine without them lacks.
+ // A ForkSubagents run whose engine cannot audit forks finishes with its classified result, a nil ForkAudit and an error, and keeps its run directory.
+ // Spec.Requires lists what a run requires of its engine, and a ForkSubagents spec requires fork support without listing it.
+ // Start checks it right after resolving the spec's engine, and attach checks it against the engine the run's record names unless every output file is already on disk.
+@@ -134,6 +134,9 @@
+ //
+ // AwaitAny is the shared wait: it stats the told paths once a second until one exists or the cap elapses, and watches no directory.
+ // It is the poll every capped keep-cache-warm wait verb runs on, and DefaultAwaitCap is the cap those verbs default to and the bound of the gate's slot wait.
++// Runner.AwaitForks is the same capped poll over the forks a run's session launched, read through the engine's optional OutstandingForkReader capability:
++// it answers ready once none is still running.
++// A session that spawns forks and then waits inside that call takes every fork's result in the one turn after the call returns, instead of waking once per fork.
+ //
+ // # Pending prompt
+ //
+diff --git a/internal/shuttleengine/engine.go b/internal/shuttleengine/engine.go
+index c80b8a2a..b7d47538 100644
+--- a/internal/shuttleengine/engine.go
++++ b/internal/shuttleengine/engine.go
+@@ -206,6 +206,15 @@ type ForkAuditor interface {
+ 	AuditForksIncremental(sessionID, workdir string, seenTranscripts map[string]bool) (ForkAudit, error)
+ }
+ 
++// OutstandingForkReader is an optional capability beside Engine: the provider's read of which fork subagents a session launched are still running.
++// An engine without it cannot have a session wait on its own forks.
++type OutstandingForkReader interface {
++	// OutstandingForks lists the forks the session identified by sessionID launched whose completion the provider has not yet recorded.
++	// workdir is the pane's process cwd.
++	// An unreadable record is an error, never an empty list, since an empty list ends a wait.
++	OutstandingForks(sessionID, workdir string) ([]BackgroundTask, error)
++}
++
+ // ResumeContextRenderer is an optional capability beside Engine: the provider's rendering of resume text as its session-start hook output.
+ // An engine without it has no session-start context to render.
+ type ResumeContextRenderer interface {
+diff --git a/internal/twilldirective/doc.go b/internal/twilldirective/doc.go
+index 361dcdef..9892e37f 100644
+--- a/internal/twilldirective/doc.go
++++ b/internal/twilldirective/doc.go
+@@ -6,6 +6,7 @@
+ //
+ // Directive renders the lens review procedure, which the writer runs once its files are written and its self-check passes: it reads its rubric, spawns one fork per lens in one message and judges the findings the forks return.
+ // The writer edits nothing while any fork is outstanding and judges all findings together once the last has returned, so duplicates across lenses merge and no finding cites text an earlier fix has changed.
++// It waits for the forks inside `lym shuttle await-forks` rather than by ending its turn, so it takes every fork's result in one turn instead of waking once per fork.
+ // A host may ask for a writer-fork part through Values.WriterFork: one fork, fork0, then writes the reviewed files while the writer explores before it and reviews what it wrote after.
+ // The part replaces the relaunch paragraphs, which a host without a writer fork keeps; exactly one of the two is rendered, each from its own stencil.
+ // Exactly one judge part is rendered, each from its own stencil: the critical fixer for a host that asks for it through Values.CriticalJudge, where the writer disputes a finding on a cited ground, fixes it with its own change, or fixes it as proposed, and otherwise the judge that fixes or rejects each finding by the host's rejection rule.
