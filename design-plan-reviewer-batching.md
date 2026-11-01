@@ -2,8 +2,6 @@
 
 `plan-reviewer-batching` · Task · enhancement, burler, stencil · running · Darn-Write
 
-Depends on: [`fork-results-one-wake`](design-fork-results-one-wake.md)
-
 ## Seen (research, landed 2026-11-01)
 
 `docs/research/review-turn-audit-2026-11-01/report.md`: the round-1 Plan reviewer on Opus is the largest single cost of the review segment, $15.68 over three runs.
