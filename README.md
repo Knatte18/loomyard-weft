@@ -12,7 +12,7 @@ The root project: the entries under no other project.
 
 ### [P2 Fewer agent turns, Webster forks first](project-agent-turns.md) (3)
 
-[`agent-turns`](design-agent-turns.md) · Age 2h · Owner `neve`
+`agent-turns` · Age 2h · Owner `neve`
 
 Cut the turns agents spend on shell edits, piecemeal gate loops and sliced reads, one measured fix at a time
 
@@ -49,17 +49,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 The entries under no project.
 
-#### Tasks (4)
+#### Tasks (3)
 
 Concrete and claimable; only a task can run.
-
-##### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **A concurrent fetch of the same ref fails a batten pass and spawns a tackler**<br>• A fetch into tracking refs waits under the push lock, as fabric's writes wait under theirs<br>• `profile: solid` | [`reconcile-fetch-race`](design-reconcile-fetch-race.md) | darn | Finalize | neve | 4h<br>1h | batten, fabric |
 
 ##### Ready (0)
 
@@ -133,3 +125,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 3w<br>4d | webster |
 | F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 9d<br>5h | loom, board, batten, workspaces |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>4d | burler, shed, orch, quarry, report |
+
+#### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T2 | **A concurrent fetch of the same ref fails a batten pass and spawns a tackler**<br>• A fetch into tracking refs waits under the push lock, as fabric's writes wait under theirs<br>• `profile: solid` | [`reconcile-fetch-race`](design-reconcile-fetch-race.md) | 4h<br>1h | batten, fabric |
