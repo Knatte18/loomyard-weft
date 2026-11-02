@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-02 11:20 UTC; every age below is as of then.
+Rendered 2026-11-02 11:22 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `osl-1046`
@@ -8,7 +8,7 @@ Owner `osl-1046`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (1)
+## Tasks (2)
 
 Concrete and claimable; only a task can run.
 
@@ -18,15 +18,16 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Draft (1)
+### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Tune the plan-split writers until a split plan joins with no hand edit**<br>• Tune, replay on two inputs, tune again, at most 3 rounds, starting from the plan-split-bench report | [`plan-split-tune`](design-plan-split-tune.md) | darn |  | 17h<br>16h | loom, stencil, pattern |
+| T2 | `draft` **Reed code button reports a wrong anchor path from inside the anchor directory** | [`reed-code-wrong-anchor`](design-reed-code-wrong-anchor.md) | tapestry |  | 1h<br>1h | reed |
 
-## Notes (32)
+## Notes (31)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -36,11 +37,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 10d<br>17h | loom, stencil |
 
-### Bugs (3)
+### Bugs (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Reed code button reports a wrong anchor path from inside the anchor directory** | [`reed-code-wrong-anchor`](design-reed-code-wrong-anchor.md) | 1h<br>1h | reed |
 | B2 |  | **A beam's reed session shows pawl running with no orch and no beam overview** | [`beam-attach-no-orch`](design-beam-attach-no-orch.md) | 1h<br>1h | reed, orch, pawl, workspaces |
 | B3 |  | **A batten pass after a landed child reports a false rewind against origin**<br>• Origin equals local, yet batten stops asking which history to keep | [`false-rewind-after-finalize`](design-false-rewind-after-finalize.md) | 18h<br>17h | batten, fabric |
 
@@ -48,7 +48,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **Finalize releases the parent lock while its fixer works**<br>• A red verify in Finalize frees the parent lock before the fixer starts, then requeues, merges and verifies again, so green runs land while one run fixes | [`finalize-fix-outside-lock`](design-finalize-fix-outside-lock.md) | 15h<br>15h | landing, loom |
+| E1 |  | **Finalize releases the parent lock while its fixer works**<br>• A red verify in Finalize frees the parent lock before the fixer starts, then requeues, merges and verifies again, so green runs land while one run fixes | [`finalize-fix-outside-lock`](design-finalize-fix-outside-lock.md) | 16h<br>15h | landing, loom |
 | E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 4w<br>19h | shuttle, codex |
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 5d<br>23h | batten, stencil, config |
 | E4 |  | **Prove the dotnet scoper, shared build and Drift on the C# sandbox hub**<br>• Switch the sandbox gate to scoper dotnet, a build step and --no-build, then enable Drift there | [`sandbox-dotnet-gate`](design-sandbox-dotnet-gate.md) | 3d<br>3d | dotnet, gate |
