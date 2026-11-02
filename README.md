@@ -66,13 +66,13 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Draft (1)
+#### Layer A (1)
 
-Not released; nothing starts it until its status is cleared.
+Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Replay the landed plan-split tuning on both bench inputs and tune again** | [`plan-split-replay`](design-plan-split-replay.md) | darn | T1 | 0m<br>0m | loom, stencil |
+| T4 | **Replay the landed plan-split tuning on both bench inputs and tune again** | [`plan-split-replay`](design-plan-split-replay.md) | darn | T1 | 0m<br>0m | loom, stencil |
 
 ### Notes (34)
 

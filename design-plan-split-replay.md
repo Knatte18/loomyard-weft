@@ -1,6 +1,6 @@
 # Replay the landed plan-split tuning on both bench inputs and tune again
 
-`plan-split-replay` · Task · enhancement, loom, stencil · draft
+`plan-split-replay` · Task · enhancement, loom, stencil
 
 Depends on: [`plan-split-tune`](design-plan-split-tune.md)
 
