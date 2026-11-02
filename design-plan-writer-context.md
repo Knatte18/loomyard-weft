@@ -108,3 +108,20 @@ Both sit behind the tapestry flag `plan_split` (off by default; `Plan-Write` sta
 - The joined split plan passed its gate only after two hand edits to `parts.md`, both defects of `Parts-Write`; the report recommends keeping `plan_split` off.
   Task `plan-split-tune` tunes the split writers on this.
 - Still open: the solo Opus high and Fable writer bench, and a repeat of the split bench after the tuning.
+
+## Data point: `cold-gate-fixer` Plan-Write (orch, 2026-11-02)
+
+One loom run, read from the writer's transcript and its subagents' by a read-only agent; the numbers are the writer's own context, by last turn usage.
+
+- The writer made 45 tool calls in about 25 turns before it started `fork0`: 22 Reads (18 whole-file, 4 slices), 16 Bash calls (about 14 single lookups, 2 `cat` of whole files), 5 Agent calls and 2 skill loads.
+- The writer followed the Sonnet-subagent rule: five read-only `general-purpose` agents with `model: sonnet`, launched together at 115k context.
+  Each ended at 39k to 73k and ran 33 to 61 seconds; their answers added little to the writer.
+  The 115k they were started at had already come from the writer's own whole-file Reads and `cat`s, so the subagents did not keep the reading out of the writer's context.
+- `fork0` (Opus) started at 198k, inherited it, ran 17 minutes and ended at 338k; the writer was at 204k when it returned.
+- After `fork0` returned, the writer read all 14 plan files back in one batch, 35k tokens (205k to 240k), the largest jump of the later phase.
+  The five lens forks then started at 243k and added 2k to 20k each; the lens fixes, 8 more files and 24 edits in a row took the writer to 332k.
+- The phase took about 31 minutes: exploration about 3, `fork0` 17, lens review about 3, and about 5 idle waiting on `validate-plan` and the lens forks.
+- No compaction and no threshold event fired.
+
+Reading: the writer must read much to write a joined plan, and `fork0` gets that reading for free by inheriting it, so the cost is the 198k each fork carries, not the reading itself.
+Two cuts remain open: have the first exploration fan answer with the lines needed (sonnet reads, writer gets excerpts) instead of the writer reading whole files after it, and skip the read-back of every plan file when `fork0` has already validated them.
