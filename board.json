@@ -792,6 +792,28 @@
       "revised": "2026-11-02T11:40:37Z",
       "profile": "light",
       "project": "turn-savings"
+    },
+    {
+      "id": 997,
+      "handle": "B1",
+      "slug": "heddle-render-ignores-anchor",
+      "title": "heddle renders claude-file to the worktree root, not to the worktree's anchor",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "heddle",
+        "fabric",
+        "cwd"
+      ],
+      "issues": [
+        13
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #13](https://github.com/Knatte18/loomyard/issues/13).\n\nSeen: in a hub whose worktrees have the anchor `src/csharp/NORCE.Models` (`lym fabric anchor` prints it), `lym heddle render` writes the `claude-file` target to `\u003cworktree\u003e/CLAUDE.local.md` at the git root. The repository's own `CLAUDE.md`, the VS Code workspace folder and every lym session's working directory are the anchor, three levels down, so the operator never sees the rendered file in the workspace, and it sits apart from the `CLAUDE.md` it complements. Claude Code still loads it only because it reads CLAUDE files from every ancestor directory.\n\nHeddle has no setting for the target path (`lym config heddle --resolved` shows only `lym_override`).\n\nExpected: file targets render relative to the worktree's anchor, so `CLAUDE.local.md` lands beside the repository's `CLAUDE.md` in the working directory, or heddle offers a per-target path that defaults to the anchor.\n\nWorkaround: none applied; the hub holds its heddle migration until this is fixed.",
+      "created": "2026-11-02T12:00:13Z",
+      "revised": "2026-11-02T12:00:13Z"
     }
   ],
   "prime_owner": "osl-1046",
