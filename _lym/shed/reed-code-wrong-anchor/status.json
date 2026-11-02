@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -34,6 +34,33 @@
       "output": "",
       "at": "2026-11-02T11:22:39Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/reed-code-wrong-anchor/_lym/landing/summary.md",
+      "at": "2026-11-02T11:38:57Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-02T11:28:35.169112725Z",
+          "end": "2026-11-02T11:28:35.176875323Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-02T11:28:35.229100354Z",
+          "end": "2026-11-02T11:38:30.371157012Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-02T11:38:30.428728327Z",
+          "end": "2026-11-02T11:38:30.42885204Z"
+        }
+      ]
     }
   ],
   "product": {
