@@ -1,0 +1,404 @@
+diff --git a/internal/reedcli/button.go b/internal/reedcli/button.go
+index ae9a21be..39745355 100644
+--- a/internal/reedcli/button.go
++++ b/internal/reedcli/button.go
+@@ -8,6 +8,7 @@ import (
+ 	"errors"
+ 
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/output"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/spf13/cobra"
+@@ -32,6 +33,16 @@ func validateButtonFlags(req reedengine.ButtonRequest) error {
+ 	return nil
+ }
+ 
++// buttonRunDirectory returns the anchored directory, as recorded now, of the worktree holding dir, which a click runs its entry in.
++// It applies no cwd gate and spawns no git.
++func buttonRunDirectory(dir string) (string, error) {
++	location, err := lymcwd.ResolveWorktree(dir)
++	if err != nil {
++		return "", err
++	}
++	return location.AnchorPath(), nil
++}
++
+ // buttonCmd builds the `button` subcommand.
+ func (c *reedCLI) buttonCmd() *cobra.Command {
+ 	var req reedengine.ButtonRequest
+@@ -41,8 +52,9 @@ func (c *reedCLI) buttonCmd() *cobra.Command {
+ 		Short: "run a clicked status-bar button of a tmux session",
+ 		Long: `button runs the status-bar button that the told range names in the told
+ session: it reads the session's rendered button spec, asks the entry's
+-confirm prompt when it has one, runs the entry's command in the session's
+-run directory, logs it and shows a failure on the clicking client.
++confirm prompt when it has one, runs the entry's command in the current
++anchor of the worktree holding the session's run directory, logs it and
++shows a failure on the clicking client.
+ It reads no working directory, no config and no reed state, and prints
+ nothing: the status bar's click binding and a button's confirm prompt call
+ it through tmux's run-shell.
+@@ -62,7 +74,7 @@ Example:
+ 				clihelp.SetExit(cmd.Context(), output.Err(cmd.OutOrStdout(), err.Error()))
+ 				return nil
+ 			}
+-			reedengine.RunButton(req)
++			reedengine.RunButton(req, buttonRunDirectory)
+ 			return nil
+ 		},
+ 	}
+diff --git a/internal/reedcli/button_test.go b/internal/reedcli/button_test.go
+new file mode 100644
+index 00000000..92cb00f7
+--- /dev/null
++++ b/internal/reedcli/button_test.go
+@@ -0,0 +1,86 @@
++// button_test.go pins the run directory the `button` verb hands a click: the anchor recorded now for the worktree holding the rendered directory.
++
++package reedcli
++
++import (
++	"errors"
++	"os"
++	"path/filepath"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestButtonRunDirectory renders a run directory, records an anchor marker after it, and asks where the click runs.
++func TestButtonRunDirectory(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name string
++		// marker is the anchor recorded after the render; empty records none.
++		marker string
++		// rendered is the run directory relative to the worktree root, "" for a directory in no worktree.
++		rendered string
++		// want is the run directory relative to the worktree root.
++		want    string
++		wantErr error
++	}{
++		{name: "NoMarkerRunsAtTheWorktreeRoot", rendered: ".", want: "."},
++		{name: "SubpathMarkerRecordedAfterARootRenderRunsInTheSubpath", marker: "backend", rendered: ".", want: "backend"},
++		{name: "RootMarkerRecordedAfterASubpathRenderRunsAtTheRoot", marker: ".", rendered: "backend", want: "."},
++		{name: "RenderMatchingTheMarkerRunsWhereItWasRendered", marker: "backend", rendered: "backend", want: "backend"},
++		{name: "DirectoryInNoWorktreeIsAnError", wantErr: lymcwd.ErrNotAGitRepo},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			hub, err := filepath.EvalSymlinks(t.TempDir())
++			if err != nil {
++				t.Fatalf("resolve the hub directory: %v", err)
++			}
++			worktree := filepath.Join(hub, "task")
++			if tt.rendered == "" {
++				// A gitfile naming a missing git dir ends the walk up, so a temporary directory inside some repository still resolves to none.
++				if err := os.MkdirAll(worktree, 0o755); err != nil {
++					t.Fatalf("mkdir %s: %v", worktree, err)
++				}
++				if err := os.WriteFile(filepath.Join(worktree, ".git"), []byte("gitdir: "+filepath.Join(hub, "missing")+"\n"), 0o644); err != nil {
++					t.Fatalf("write the gitfile: %v", err)
++				}
++				if _, err := buttonRunDirectory(worktree); !errors.Is(err, tt.wantErr) {
++					t.Errorf("buttonRunDirectory(%q) error = %v; want %v", worktree, err, tt.wantErr)
++				}
++				return
++			}
++			for _, dir := range []string{
++				filepath.Join(worktree, ".git", "objects"),
++				filepath.Join(worktree, ".git", "refs"),
++				filepath.Join(worktree, "backend"),
++				filepath.Join(hub, lymcwd.BoltDirName),
++			} {
++				if err := os.MkdirAll(dir, 0o755); err != nil {
++					t.Fatalf("mkdir %s: %v", dir, err)
++				}
++			}
++			if err := os.WriteFile(filepath.Join(worktree, ".git", "HEAD"), []byte("ref: refs/heads/main\n"), 0o644); err != nil {
++				t.Fatalf("write HEAD: %v", err)
++			}
++			if tt.marker != "" {
++				marker := filepath.Join(hub, lymcwd.BoltDirName, lymcwd.AnchorFileName)
++				if err := os.WriteFile(marker, []byte(tt.marker+"\n"), 0o644); err != nil {
++					t.Fatalf("write the anchor marker: %v", err)
++				}
++			}
++
++			rendered := filepath.Join(worktree, tt.rendered)
++			got, err := buttonRunDirectory(rendered)
++			if err != nil {
++				t.Fatalf("buttonRunDirectory(%q) error = %v; want nil", rendered, err)
++			}
++			if want := filepath.Join(worktree, tt.want); got != want {
++				t.Errorf("buttonRunDirectory(%q) = %q; want %q", rendered, got, want)
++			}
++		})
++	}
++}
+diff --git a/internal/reedcli/cli.go b/internal/reedcli/cli.go
+index 1ba511d6..a10187a6 100644
+--- a/internal/reedcli/cli.go
++++ b/internal/reedcli/cli.go
+@@ -137,7 +137,7 @@ rather than booting substrate it cannot reach.`,
+ 			// Guard: skip cwd/location/config resolution entirely when the reed group command itself is invoked (bare listing or unknown-subcommand error path via GroupRunE), or when the watchdog daemon, the switch verb, the follow verb, the button verb or the window verb is invoked.
+ 			// The daemon is told its hub path on its own flags and must never be reached through c.eng.
+ 			// Letting it run the normal pre-run would make it refuse to start outside a worktree and hold a geometry it must not use.
+-			// switch is told its socket and client the same way, follow its socket and session, and button its socket, session and clicked range: the verb resolves no location and loads no config, so a reed.yaml that fails to load cannot abort a click.
++			// switch is told its socket and client the same way, follow its socket and session, and button its socket, session and clicked range: the verb resolves no location from its cwd and loads no config, so a reed.yaml that fails to load cannot abort a click.
+ 			// window is told a worktree directory that may lie outside the hub's worktrees, so resolving a location would refuse it.
+ 			if cmd.Name() == "reed" || cmd.Name() == "watchdog" || cmd.Name() == "switch" || cmd.Name() == "follow" || cmd.Name() == "button" || cmd.Name() == "window" {
+ 				return nil
+diff --git a/internal/reedcli/doc.go b/internal/reedcli/doc.go
+index 2e779b25..b9a5e879 100644
+--- a/internal/reedcli/doc.go
++++ b/internal/reedcli/doc.go
+@@ -30,6 +30,7 @@
+ //
+ // `button` runs the status-bar button that `--range` names in the session told by `--session`, on the server told by `--socket` and `--tmux`, for the client `--client`.
+ // It reads no working directory, config or state, skips the root pre-run's stencil-seed pass and the reed pre-run's location and config resolution, and prints nothing: the click binding and a button's confirm prompt run it through run-shell.
++// It runs the entry in the anchor recorded now for the worktree holding the session's rendered run directory, read through `lymcwd.ResolveWorktree` with no cwd gate, so an anchor marker changed after the render needs no reattach.
+ // A missing required flag, or `--confirmed` without `--hash`, is an error envelope with a non-zero exit; every other outcome, a failed button included, exits 0 and shows its message on the clicking client.
+ // `--confirmed`, `--hash` and `--strand` are passed by the confirm prompt's own line and are not meant for a hand call.
+ //
+diff --git a/internal/reedengine/buttonclick.go b/internal/reedengine/buttonclick.go
+index 2b3a5799..a0ed4a22 100644
+--- a/internal/reedengine/buttonclick.go
++++ b/internal/reedengine/buttonclick.go
+@@ -1,5 +1,5 @@
+ // buttonclick.go implements the engine-less click of a status-bar button: it finds the clicked entry in the session's spec option, confirms when the entry asks, runs it, logs it and shows a failure on the clicking client.
+-// It reads no config and no reed state, only the session's @lym_button_spec and, for {strand}, the clicking client's active pane.
++// It reads no config and no reed state, only the session's @lym_button_spec, through the told anchor reader the current anchor of the worktree holding its run directory, and, for {strand}, the clicking client's active pane.
+ 
+ package reedengine
+ 
+@@ -43,23 +43,28 @@ type buttonDeps struct {
+ 	run func(shellPath, flag, script, dir string) (output string, exitCode int, err error)
+ 	// executablePath resolves the running binary, which the confirmed line invokes.
+ 	executablePath func() (string, error)
++	// anchorOf returns the anchored directory, as recorded now, of the worktree holding dir.
++	anchorOf func(dir string) (string, error)
+ 	// sh is the dialect the run and confirm text and the confirmed line are quoted in.
+ 	sh shell.Shell
+ }
+ 
+ // RunButton handles one click of a status-bar button on the told server.
+ // It builds its tmux command from the told paths and reads nothing else of reed's.
++// anchorOf returns the anchored directory, as recorded now, of the worktree holding a directory;
++// the entry runs there rather than in the rendered run directory, which goes stale when an anchor marker changes after the render.
+ // It returns nothing: every failure is shown to the clicking client or logged, so the click verb always exits 0.
+-func RunButton(req ButtonRequest) {
++func RunButton(req ButtonRequest, anchorOf func(dir string) (string, error)) {
+ 	runButtonVia(newTmuxCmdForSocketPath(req.TmuxPath, req.SocketPath), req, buttonDeps{
+ 		run:            runButtonScript,
+ 		executablePath: os.Executable,
++		anchorOf:       anchorOf,
+ 		sh:             shell.ForGOOS(),
+ 	})
+ }
+ 
+ // runButtonVia is RunButton's implementation over an already-built tmux command and its process-level calls, so a test can drive it through the execHook seam.
+-// A clicked range with no entry, an unrendered spec, a gone run directory and a failed run each show one message on the clicking client and run nothing further.
++// A clicked range with no entry, an unrendered spec, a gone run directory, a run directory whose anchor does not resolve, an anchor directory that is gone and a failed run each show one message on the clicking client and run nothing further.
+ // An entry with a confirm text raises a prompt whose answer re-enters through a confirmed request, which runs the entry only when its run text still hashes to the prompt's hash.
+ func runButtonVia(cmd TmuxCmd, req ButtonRequest, deps buttonDeps) {
+ 	say := func(text string) {
+@@ -97,6 +102,21 @@ func runButtonVia(cmd TmuxCmd, req ButtonRequest, deps buttonDeps) {
+ 		say("lym: " + entry.Label + ": " + spec.Dir + " is gone; the row re-renders at the session's next attach")
+ 		return
+ 	}
++	// The rendered directory is frozen at the last attach while an anchor marker can change after it,
++	// and a lym verb refuses anywhere but its worktree's anchor, so the entry runs in the anchor read now.
++	runDir, err := deps.anchorOf(spec.Dir)
++	if err != nil {
++		logger.Warn("reed: could not read the anchor of a button's run directory", "label", entry.Label, "dir", spec.Dir, "err", err)
++		say("lym: " + entry.Label + ": the anchor of " + spec.Dir + " does not resolve: " + err.Error())
++		return
++	}
++	if info, err := os.Stat(runDir); err != nil || !info.IsDir() {
++		say("lym: " + entry.Label + ": the anchor directory " + runDir + " is gone; point the worktree's anchor at an existing directory")
++		return
++	}
++	if runDir != spec.Dir {
++		logger.Info("reed: a button runs in its worktree's current anchor, which differs from the rendered run directory", "label", entry.Label, "rendered", spec.Dir, "anchor", runDir)
++	}
+ 
+ 	hash := buttonRunHash(entry.Run)
+ 	if req.Confirmed && req.Hash != hash {
+@@ -107,17 +127,17 @@ func runButtonVia(cmd TmuxCmd, req ButtonRequest, deps buttonDeps) {
+ 		exe, err := deps.executablePath()
+ 		if err != nil {
+ 			logger.Warn("reed: could not resolve this binary, raising no button prompt", "label", entry.Label, "err", err)
+-			say("lym: " + entry.Label + " could not raise its prompt; see the lym log in " + spec.Dir + "/.lym/logs")
++			say("lym: " + entry.Label + " could not raise its prompt; see the lym log in " + runDir + "/.lym/logs")
+ 			return
+ 		}
+-		line := composeConfirmedButtonLine(deps.sh, exe, req, spec.Dir, hash, values["strand"])
++		line := composeConfirmedButtonLine(deps.sh, exe, req, runDir, hash, values["strand"])
+ 		if err := cmd.run("confirm-before", "-t", req.Client, "-p", confirm+" (y/n)", "run-shell -b "+tmuxQuote(line)); err != nil {
+ 			logger.Warn("reed: could not raise a button prompt", "label", entry.Label, "client", req.Client, "err", err)
+ 		}
+ 		return
+ 	}
+ 
+-	output, exitCode, err := deps.run(spec.Shell, spec.Flag, run, spec.Dir)
++	output, exitCode, err := deps.run(spec.Shell, spec.Flag, run, runDir)
+ 	switch {
+ 	case err != nil:
+ 		say("lym: " + entry.Label + " failed (exit " + strconv.Itoa(exitCode) + "): " + err.Error())
+diff --git a/internal/reedengine/buttonclick_integration_test.go b/internal/reedengine/buttonclick_integration_test.go
+index c37b9bb4..0d484702 100644
+--- a/internal/reedengine/buttonclick_integration_test.go
++++ b/internal/reedengine/buttonclick_integration_test.go
+@@ -53,7 +53,12 @@ func TestRunButton_RealTmux(t *testing.T) {
+ 	if err := e.tmux.run("set-option", "-t", exactSessionWindowTarget(e.SessionName()), buttonSpecOption, string(specJSON)); err != nil {
+ 		t.Fatalf("set the spec option: %v", err)
+ 	}
+-	deps := buttonDeps{run: runButtonScript, executablePath: func() (string, error) { return recorder, nil }, sh: shell.Posix()}
++	deps := buttonDeps{
++		run:            runButtonScript,
++		executablePath: func() (string, error) { return recorder, nil },
++		anchorOf:       func(dir string) (string, error) { return dir, nil },
++		sh:             shell.Posix(),
++	}
+ 	request := func(rangeName string) ButtonRequest {
+ 		return ButtonRequest{TmuxPath: e.cfg.Tmux, SocketPath: "", Session: e.SessionName(), Range: rangeName, Client: client}
+ 	}
+diff --git a/internal/reedengine/buttonclick_test.go b/internal/reedengine/buttonclick_test.go
+index ab091a94..fa6e2fd9 100644
+--- a/internal/reedengine/buttonclick_test.go
++++ b/internal/reedengine/buttonclick_test.go
+@@ -6,6 +6,7 @@ package reedengine
+ import (
+ 	"encoding/json"
+ 	"errors"
++	"os"
+ 	"path/filepath"
+ 	"slices"
+ 	"strings"
+@@ -58,6 +59,9 @@ func TestRunButtonVia(t *testing.T) {
+ 		runCode     int
+ 		runErr      error
+ 		removeDir   bool
++		anchorMoved bool
++		anchorGone  bool
++		anchorErr   error
+ 		messageErr  bool
+ 		wantRun     bool
+ 		wantRunText string
+@@ -74,7 +78,7 @@ func TestRunButtonVia(t *testing.T) {
+ 		{name: "StrandEntryWithAnEmptyReadRunsNothing", entry: stranded, wantMessage: "lym: go needs the agent's name, which this pane lacks; reattach the session with lym reed attach and click again"},
+ 		{name: "StrandEntryWithAFailedReadRunsNothing", entry: stranded, strandErr: errors.New("no client"), wantMessage: "lym: go needs the agent's name, which this pane lacks; reattach the session with lym reed attach and click again"},
+ 		{name: "ConfirmEntryRaisesThePromptAndRunsNothing", entry: confirming, wantConfirm: promptFor(confirming, "drop it? (y/n)", "")},
+-		{name: "ConfirmEntryWithAnUnresolvableExecutableRaisesNothing", entry: confirming, exeErr: errors.New("no exe"), wantMessage: "lym: go could not raise its prompt; see the lym log in DIR/.lym/logs"},
++		{name: "ConfirmEntryWithAnUnresolvableExecutableRaisesNothing", entry: confirming, exeErr: errors.New("no exe"), anchorMoved: true, wantMessage: "lym: go could not raise its prompt; see the lym log in ANCHOR/.lym/logs"},
+ 		{name: "ConfirmedCallWithTheMatchingHashRuns", entry: confirming, confirmed: true, hash: buttonRunHash(confirming.Run), wantRun: true, wantRunText: "rm x"},
+ 		{name: "ConfirmedCallWithAnotherHashRunsNothing", entry: confirming, confirmed: true, hash: "other", wantMessage: "lym: the buttons changed since go asked; click again"},
+ 		{name: "ConfirmedStrandThatIsNoNameRunsNothing", entry: strandedConfirming, confirmed: true, hash: buttonRunHash(strandedConfirming.Run), strand: "not a name", wantMessage: "lym: go: the strand name not a name is not a strand name; click the button again from the agent pane"},
+@@ -82,6 +86,10 @@ func TestRunButtonVia(t *testing.T) {
+ 		{name: "PromptDoublesHashAndPercentOfAStrandValue", entry: strandedConfirming, strandRead: "a#b%c", wantConfirm: promptFor(strandedConfirming, "kill a##b%%c? (y/n)", "a#b%c")},
+ 		{name: "RemovedDirectoryOfAPlainEntryRunsNothing", entry: plain, removeDir: true, wantMessage: "lym: go: DIR is gone; the row re-renders at the session's next attach"},
+ 		{name: "RemovedDirectoryOfAConfirmEntryRaisesNoPrompt", entry: confirming, removeDir: true, wantMessage: "lym: go: DIR is gone; the row re-renders at the session's next attach"},
++		{name: "AnchorMovedAfterTheRenderRunsInTheCurrentAnchor", entry: plain, anchorMoved: true, wantRun: true, wantRunText: "echo hi"},
++		{name: "AnchorMovedAfterTheRenderPromptsWithALineOpeningInTheCurrentAnchor", entry: confirming, anchorMoved: true, wantConfirm: promptFor(confirming, "drop it? (y/n)", "")},
++		{name: "AnchorDirectoryThatIsGoneRunsNothingAndRaisesNoPrompt", entry: confirming, anchorGone: true, wantMessage: "lym: go: the anchor directory ANCHOR is gone; point the worktree's anchor at an existing directory"},
++		{name: "UnresolvableAnchorRunsNothing", entry: plain, anchorErr: errors.New("no repository"), wantMessage: "lym: go: the anchor of DIR does not resolve: no repository"},
+ 		{name: "NonZeroExitShowsTheFirstOutputLine", entry: plain, runOut: "first\nsecond", runCode: 3, wantRun: true, wantRunText: "echo hi", wantMessage: "lym: go failed (exit 3): first"},
+ 		{name: "LabelAndOutputAreShownLiterally", entry: buttonSpecEntry{Index: 0, Label: "a#b", Run: "echo hi"}, runOut: "100% done", runCode: 1, wantRun: true, wantRunText: "echo hi", wantMessage: "lym: a##b failed (exit 1): 100%% done"},
+ 		{name: "SpawnFailureShowsItsError", entry: plain, runCode: -1, runErr: errors.New("fork failed"), wantRun: true, wantRunText: "echo hi", wantMessage: "lym: go failed (exit -1): fork failed"},
+@@ -93,6 +101,15 @@ func TestRunButtonVia(t *testing.T) {
+ 			if tt.removeDir {
+ 				dir = filepath.Join(dir, "gone")
+ 			}
++			runDir := dir
++			if tt.anchorMoved || tt.anchorGone {
++				runDir = filepath.Join(dir, "backend")
++			}
++			if tt.anchorMoved {
++				if err := os.MkdirAll(runDir, 0o755); err != nil {
++					t.Fatalf("create the moved anchor: %v", err)
++				}
++			}
+ 			spec := buttonSpec{Shell: "/bin/sh", Flag: "-c", Dir: dir, Entries: []buttonSpecEntry{tt.entry}}
+ 			specJSON, err := json.Marshal(spec)
+ 			if err != nil {
+@@ -124,7 +141,13 @@ func TestRunButtonVia(t *testing.T) {
+ 					return tt.runOut, tt.runCode, tt.runErr
+ 				},
+ 				executablePath: func() (string, error) { return exe, tt.exeErr },
+-				sh:             posix,
++				anchorOf: func(specDir string) (string, error) {
++					if specDir != dir {
++						t.Errorf("anchorOf(%q), want it asked for the rendered directory %q", specDir, dir)
++					}
++					return runDir, tt.anchorErr
++				},
++				sh: posix,
+ 			}
+ 			rangeName := tt.rangeName
+ 			if rangeName == "" {
+@@ -139,7 +162,7 @@ func TestRunButtonVia(t *testing.T) {
+ 
+ 			wantRuns := []buttonRunCall(nil)
+ 			if tt.wantRun {
+-				wantRuns = []buttonRunCall{{"/bin/sh", "-c", tt.wantRunText, dir}}
++				wantRuns = []buttonRunCall{{"/bin/sh", "-c", tt.wantRunText, runDir}}
+ 			}
+ 			if !slices.Equal(runs, wantRuns) {
+ 				t.Errorf("process runs = %+v, want %+v", runs, wantRuns)
+@@ -156,7 +179,7 @@ func TestRunButtonVia(t *testing.T) {
+ 			}
+ 			var wantMessages []string
+ 			if tt.wantMessage != "" {
+-				wantMessages = []string{strings.ReplaceAll(tt.wantMessage, "DIR", dir)}
++				wantMessages = []string{strings.NewReplacer("DIR", dir, "ANCHOR", runDir).Replace(tt.wantMessage)}
+ 			}
+ 			if !slices.Equal(messages, wantMessages) {
+ 				t.Errorf("messages shown = %q, want %q", messages, wantMessages)
+@@ -168,7 +191,7 @@ func TestRunButtonVia(t *testing.T) {
+ 					t.Errorf("confirm-before calls = %v, want none", confirms)
+ 				}
+ 			} else {
+-				want := tt.wantConfirm(dir)
++				want := tt.wantConfirm(runDir)
+ 				if len(confirms) != 1 || !slices.Equal(confirms[0], want) {
+ 					t.Errorf("confirm-before calls = %q, want exactly %q", confirms, want)
+ 				}
+diff --git a/internal/reedengine/buttonrow.go b/internal/reedengine/buttonrow.go
+index 18a5ba7b..b2678534 100644
+--- a/internal/reedengine/buttonrow.go
++++ b/internal/reedengine/buttonrow.go
+@@ -31,7 +31,7 @@ type buttonSpec struct {
+ 	Shell string `json:"shell"`
+ 	// Flag is the flag that makes Shell run its next argument as a command line.
+ 	Flag string `json:"flag"`
+-	// Dir is the run directory.
++	// Dir is the run directory as rendered; a click runs in the current anchor of the worktree holding it.
+ 	Dir string `json:"dir"`
+ 	// Entries are the drawn buttons, entry N being drawn as the range buttonRangePrefix followed by N.
+ 	Entries []buttonSpecEntry `json:"entries"`
+diff --git a/internal/reedengine/doc.go b/internal/reedengine/doc.go
+index 02548fea..fbc0b400 100644
+--- a/internal/reedengine/doc.go
++++ b/internal/reedengine/doc.go
+@@ -84,11 +84,13 @@
+ //
+ // RunButton (buttonclick.go) is the engine-less function behind `lym reed button`: it addresses a told session of a told server by socket path, reads the session's @lym_button_spec and runs the entry the clicked range `lymbtnN` names.
+ // It reads no config and no reed state, and returns nothing: a failure is shown on the clicking client with display-message, and is logged.
+-// The checks come in order: a spec that is missing, empty or not JSON, a range with no entry, a `{strand}` entry whose name cannot be read, a run directory that is gone.
++// The checks come in order: a spec that is missing, empty or not JSON, a range with no entry, a `{strand}` entry whose name cannot be read, a run directory that is gone, a run directory whose worktree's anchor does not resolve.
+ // A `{strand}` entry reads the clicking client's active pane for @lym_strand_name.
+-// An entry with a confirm text raises `confirm-before` on the clicking client, whose command is a line (composeConfirmedButtonLine) that opens in the run directory and calls the verb again with `--confirmed`, the hash of the entry's run text and the strand name, discarding the output of the directory change and of the verb and ending with status zero.
++// The entry runs in the current anchor of the worktree holding the rendered run directory, read at the click through the anchor reader RunButton is told:
++// the render is frozen until the next attach while an anchor marker can change after it, and a lym verb refuses anywhere but its worktree's anchor.
++// An entry with a confirm text raises `confirm-before` on the clicking client, whose command is a line (composeConfirmedButtonLine) that opens in that anchor and calls the verb again with `--confirmed`, the hash of the entry's run text and the strand name, discarding the output of the directory change and of the verb and ending with status zero.
+ // A confirmed call runs the entry only when its hash still matches, so no run text crosses tmux's parsing.
+-// The entry runs as `<shell> <flag> <run>` in the run directory (runButtonScript), waits with no timeout, and logs its spawn and end at Info with its exit code and combined output; it sets no caller identity and is registered in no process table.
++// The entry runs as `<shell> <flag> <run>` in that anchor (runButtonScript), waits with no timeout, and logs its spawn and end at Info with its exit code and combined output; it sets no caller identity and is registered in no process table.
+ // A non-zero exit or a failed start shows `lym: <label> failed (exit <code>): <first output line>`.
+ // The verb runs only what the session's spec holds at the clicked index; anything that can run it against the socket can run an entry as itself, adding nothing over running the command directly.
+ //
