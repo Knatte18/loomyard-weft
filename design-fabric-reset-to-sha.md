@@ -13,6 +13,8 @@ No verb does this for a reset made on this machine: `MergeAbort` covers only the
 
 A verb `lym fabric reset <warp-sha>` resets warp to a SHA visible from the current branch and re-anchors the weft the way `Pull` does for an upstream rewrite, through the destruction gate, so no uncommitted or unpushed work is lost unannounced.
 It reuses `Pull`'s re-anchor path rather than a second mechanism.
+Only the newest trailers matter (operator, 2026-11-02): older trailers naming rewritten warp commits are left as they are, and the verb only makes the weft tip name the warp commit warp now stands on.
+The same holds after a rewrite on origin, such as a change of author on every commit, which gives every later commit a new SHA.
 
 ## Open
 
