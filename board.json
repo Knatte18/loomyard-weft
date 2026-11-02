@@ -880,6 +880,26 @@
       "body": "Imported from [issue #9](https://github.com/Knatte18/loomyard/issues/9).\n\n## Seen\n\nIn the NORCE Models hub, the beam project run `loomyard-setup` stands at batten row 6, `Run-Shed`. Worktree-Create finished on 2026-10-30.\nIts task worktree, `…/Models-LYMHUB/loomyard-setup`, no longer exists, and `lym fabric pairs` lists only the prime.\nEvery dobby pass on the run now fails the same way, three times in a row so far:\n\n```\nbattencli: origin reconcile of \"loomyard-setup\" failed: fabricengine: origin reconcile of run loomyard-setup: no pair worktree /home/…/Models-LYMHUB/loomyard-setup\n```\n\nThe run's status shows `state: running` with an empty `error` and `hand_back: false`. Dobby only reports the repeated failure to the orch.\n\n## Expected\n\nA missing task worktree should not make the pass fail without end.\nBatten (or the origin reconcile) should recreate or adopt the pair from its branches when they still exist, the way `lym fabric add` adopts an existing weft branch.\nIf it cannot, it should hand the run back with a stop that names the recovery, not leave it running and retry.\n\n## Workaround\n\nThe orch recreates the worktree by hand with `lym fabric add loomyard-setup`, then runs `lym batten run loomyard-setup`.\n",
       "created": "2026-11-02T20:34:25Z",
       "revised": "2026-11-02T20:34:25Z"
+    },
+    {
+      "id": 1023,
+      "handle": "B10",
+      "slug": "heddle-stale-root-claude-file",
+      "title": "heddle render leaves the old CLAUDE.local.md at the worktree root after the anchor fix",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "heddle"
+      ],
+      "issues": [
+        16
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #16](https://github.com/Knatte18/loomyard/issues/16).\n\nSeen in hub Models (worktree anchor src/csharp/NORCE.Models), after the fix for heddle-render-ignores-anchor (issue 13).\n\n- `lym heddle render` now writes CLAUDE.local.md to the anchor, as intended.\n- The copy it wrote before the fix stays at the worktree root (loomyard-setup/CLAUDE.local.md, duplication-and-import-followups/CLAUDE.local.md, Models/CLAUDE.local.md). Render reports `removed: []`.\n- Claude Code loads CLAUDE.local.md from every ancestor of the working directory, so a session at the anchor loads both: the stale root copy and the current anchor copy, which duplicates lym's own instructions and keeps any entry removed since.\n- Existing worktrees that were not re-rendered (the prime Models, the beam duplication-and-import-followups) have only the stale root copy and no anchor copy. A worktree created after the fix (drift-baseline-harness) got the anchor copy at creation.\n\nExpected: render removes a claude-file it rendered earlier at a path that is no longer the target (it carries lym's 'rendered by lym heddle' marker), and existing worktrees get the anchor copy without a manual `lym heddle render \u003cworktree\u003e`, or the upgrade says to run it.\n\nWorkaround: none applied; the stale root files are left for the operator to delete.",
+      "created": "2026-11-02T20:34:27Z",
+      "revised": "2026-11-02T20:34:27Z"
     }
   ],
   "prime_owner": "neve",

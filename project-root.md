@@ -26,7 +26,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (39)
+## Notes (40)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -36,7 +36,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 11d<br>1h | loom, stencil |
 
-### Bugs (9)
+### Bugs (10)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -49,6 +49,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B7 |  | **loom Parent-Align halts blocked when the fixer reports verdict fixed** | [`parent-align-fixed-reads-dirty`](design-parent-align-fixed-reads-dirty.md) | 0m<br>0m | landing |
 | B8 |  | **Run ends with a background shell outstanding: its commit and gate result are lost** | [`run-done-with-background-shell`](design-run-done-with-background-shell.md) | 0m<br>0m | shuttle, webster, gate |
 | B9 |  | **batten pass fails forever when a run's task worktree is gone** | [`batten-pass-pair-gone`](design-batten-pass-pair-gone.md) | 0m<br>0m | batten, fabric |
+| B10 |  | **heddle render leaves the old CLAUDE.local.md at the worktree root after the anchor fix** | [`heddle-stale-root-claude-file`](design-heddle-stale-root-claude-file.md) | 0m<br>0m | heddle |
 
 ### Enhancements (15)
 
