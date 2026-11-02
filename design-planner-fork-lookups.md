@@ -12,7 +12,7 @@ Discussion-Write explores the code more than any other role, so the same cost ap
 
 The writers hand batches of independent lookups to fresh Sonnet subagents that return only what is relevant, with paths and line ranges, and read only what those lists name.
 The writer is encouraged to work this way by its stencil, not commanded.
-Task `explore-subagent-model` builds the guidance for the Discussion-Write stencil and makes the subagent model config; the Plan and darn stencils already carry the guidance.
+Task `explore-subagent-model` has landed (2026-11-02): the Discussion-Write stencil now carries the guidance the Plan and darn stencils already carried, and the subagent model is the `subagent_model` key of `loom.yaml` (default `sonnet`), read by all three stencils.
 A fork does not serve for lookups: it inherits the writer's whole context and saves nothing.
 
 ## Research
@@ -29,4 +29,5 @@ No run denies the Agent tool any more, so a writer may start a fresh subagent.
 
 ## Timing
 
-The bench waits on `explore-subagent-model` landing, so the guidance exists for both roles; it sets that through `depends_on` once promoted.
+The guidance now exists for both roles, so the bench no longer waits on `explore-subagent-model`.
+The "no guidance" arm needs the guidance removed from a stencil in the bench's own worktree, since the landed stencils all carry it.
