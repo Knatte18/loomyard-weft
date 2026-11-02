@@ -233,6 +233,12 @@ Rationale: the restart path of D1 and D2 needs the record on disk, and R1 measur
   - goto-does-not-stop-live-fixer (class design, severity MEDIUM, open in rounds 2)
 <!-- /lym:carry-over Discussion-Review -->
 
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/plan/round-2-review.md; fixer report: _lym/reviews/plan/round-2-fixer-report.md.
+  - card9-slug-read-error-marked-transient (class design, severity BLOCKING, open in rounds 2)
+<!-- /lym:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - D1: a fixer spawned for a failure is found done once its reply exists, dead when its turn ends without one, when the timeout passes or when its strand is gone, and is stopped on every terminal result.
