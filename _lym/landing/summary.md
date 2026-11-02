@@ -1,31 +1,35 @@
 # Let a beam's orch set profile and run_settings on its beam's entries
 
-A beam's orch, strand `<shortname>:<beam>:orch`, could file a task under its beam with `lym board upsert` but was refused when the payload named a `profile` or `run_settings`.
-The board's caller guard refused every session whose strand name carries a slug, and treated the beam orch as a task session.
-The orch role tells every orch to name a profile before the batten run starts, so the beam orch had to ask the operator or the hub orch to do it.
+A beam's orch could file tasks under its beam but not set their `profile` or `run_settings`.
+`lym board upsert` refused the write because the orch's strand name carries a slug, which the guard read as a task session.
+The orch had to create the task bare and ask the operator or the hub orch to set the profile.
+
+Closes #12
 
 ## What changes
 
-- `boardcli.prepareRunSettings` now calls `refuseRunSettingsCaller` instead of checking `agentname.TaskSlug` alone.
-  A session with no slug may still change either value.
-  A session whose role matches `orch` may change them when the entry belongs to the orch's own beam both as stored and after the write.
-  This covers a new task filed under the beam or under a grouping project inside it.
-  Every other session that carries a slug is refused: another role in the beam, the orch of a different beam, an entry outside the beam, the beam project itself, and an entry the payload moves into or out of the beam.
-- The refusal names the session and adds the orch of the entry's beam to its way forward.
-- `boardengine.Board.BeamUnder(project)` returns the beam that an entry with a given project link belongs to.
-  It returns the project itself when that project is an open beam, and otherwise what `ParentBeamOf` answers for the project.
-  The guard needs it because a new entry, or one whose project link the write changes, is not yet stored, so `ParentBeamOf(slug)` cannot answer for it.
+`prepareRunSettings` in `internal/boardcli/runsettings.go` now hands the caller check to the new `refuseRunSettingsCaller`.
+A session with no slug in its strand name, the operator or the hub orch, still passes.
+A beam's orch, a strand carrying the beam's slug and the `orch` role (the numbered `orch-2` included), passes when the entry belongs to that beam.
+Every other slugged session is refused as before, and the refusal now names the orch of the entry's beam as a way forward.
 
 ## Design decisions
 
-- An entry's beam is read before and after the write, so a beam's orch cannot change the settings of an entry that leaves or enters its beam.
-- `BeamUnder` resolves through `ParentBeamOf`, which uses the `hubgeom.ParentOf` seam when one is set, so the guard uses the hub's single parent resolver (PATTERN-pair-parent).
-- The guard still reads outside the board's write lock.
-  It stops a mistaken write, not a determined one, as before.
-- `contracts/orchrole/orch-role.md` already tells every orch to name a profile, so it is unchanged.
+- **Both ends of the move are checked.** The entry must be in the orch's beam as stored and as the payload leaves its project link.
+  An orch cannot pull an outside entry into its beam to set its profile, nor move a member out and change it on the way.
+  A new entry is checked on the project link it carries, so a new entry under no project is refused.
+- **The beam is resolved through the project link.** The new `Board.BeamUnder` in `internal/boardengine/parentbeam.go` answers the beam for a project link without persisting anything.
+  It returns the project itself when that is an open beam project, and otherwise what `ParentBeamOf` answers; an empty, unknown or closed link reads as the prime.
+  A group project nested under the beam therefore counts as inside it.
+- **The beam entry itself is not "under" its beam.** A beam's orch cannot change the profile of the beam project entry.
+- **An unparseable strand name passes.** `refuseRunSettingsCaller` treats it like a slug-less session, as the old `agentname.TaskSlug` check did.
+- The guard still reads outside the write lock and stops a mistaken write, not a determined one.
 
-## Tests
+The package docs in `internal/boardcli/doc.go` and `internal/boardengine/doc.go` describe the new rule.
+Tests cover `BeamUnder` and the accepted and refused callers in `stepRunSettings`.
 
-- `TestCLI/RunSettings` gets a subtest in which a beam's orch sets a profile on a new member, on a task under a grouping project inside the beam and on an existing member.
-  A table of refusals checks the cases listed above, and each refusal names the session and the new way forward.
-- `TestParentBeam` gets `BeamUnderAnswersFromTheProjectLink`, covering a beam, a grouping project inside a beam, a done beam, a plain project, an unknown slug and an empty project.
+## To check by hand
+
+- The issue also asks that the orch role tell every orch to name a profile before a batten run starts.
+  This diff changes only the board guard; check whether the role text already says so.
+- Nothing was run against a live beam orch session; the behavior is covered by the unit and CLI tests only.
