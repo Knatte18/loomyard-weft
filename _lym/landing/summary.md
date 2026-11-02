@@ -1,34 +1,31 @@
-# Code-writing seats load the base skills before their language skills
+# Load base skills in the landing fixer, conflict and sampler seats
 
-The landing merge fixer, spawned by Parent-Align and Finalize to fix a merge or test failure, loaded only the hub's language skills from `language.yaml`.
-It edits code and tests, yet it never loaded `scribe:prose`, `scribe:code-quality` or `scribe:testing`, unlike every other code-writing seat.
+The landing merge fixer was told to load only the hub's language skills.
+It edits code and tests, so it now loads `scribe:prose`, `scribe:code-quality` and `scribe:testing` before them, as the other code-writing seats do.
 
-## What changes
+## Changes
 
-- **Landing merge fixer** (`internal/landingshed/fixer.go`): `FixerTable` now sets the seat's skills to `fixerSkills` (`scribe:prose`, `scribe:code-quality`, `scribe:testing`) followed by `in.LanguageSkills`, merged through `languageconfig.AppendSkills` so a language skill that repeats a base skill is dropped.
-  `TestFixerTable` asserts the full list in both modes, base skills first.
-- **Conflict session** (`internal/mergeresolve/spec.go`): `conflictSkills` gains `scribe:testing`, so a session resolving a conflict in a test file loads the testing skill.
-  The package doc and the assertions in `mergeresolve_test.go` and landingshed's two conflict-session integration tests follow.
-- **Sampler agent** (`internal/samplerengine/spec.go`): the sampler writes and commits code but loaded only `scribe:prose` and `scribe:conversation`; it now loads `scribe:code-quality` and `scribe:testing` after those.
+- `internal/landingshed/fixer.go`: `FixerTable` builds the seat's `Skills` as `fixerSkills` followed by `in.LanguageSkills`, through `languageconfig.AppendSkills`.
+  `fixerSkills` holds the three base skills.
+- `internal/mergeresolve/spec.go`: `conflictSkills` gains `scribe:testing`, so a conflict session resolving a test file loads a testing skill.
+  The package doc in `internal/mergeresolve/doc.go` is updated to match.
+- `internal/samplerengine/spec.go`: the sampler session writes code and tests, so its `skills` gain `scribe:code-quality` and `scribe:testing`.
+  It keeps `scribe:conversation` because it talks with the operator.
+
+Tests assert the new skill lists in `internal/landingshed/fixer_test.go`, `internal/mergeresolve/mergeresolve_test.go`, `internal/samplerengine/spec_test.go`, and the two `internal/landingshed` integration tests that read the conflict session's skills.
 
 ## Seats checked for the same gap
 
-Seats that edit code or tests, and their skills after this change:
+Already complete, unchanged: `darnengine` (`darnSkills`), `websterengine` (`roleSkills`, on every seat that uses it), and the drift seats in `driftengine/seats.go`.
 
-- darn writer (`darnSkills`), webster master, recovery strand and verify fixer (`roleSkills`), burler fix and review seats (`burlerSkills`), drift verify (`verifySkills`): already prose, code-quality and testing, then language skills. Unchanged.
-- landing merge fixer: fixed above.
-- merge conflict session: fixed above.
-- sampler agent: fixed above.
+Not code writers, unchanged: `landingshed` PR reviewer (`prReviewerSkills`), `landingshed` change description (`describeSkills`), `landingshed` fix review (`fixreview.go`, a read-only judge that loads the language skills only), `treadleengine` judge and targeting, `orchcli` orch, `loomcli` driver, and the `sheddriver` tackler.
 
-Seats checked that write no code, left unchanged:
+## For the reviewer
 
-- landing fix review (`fixReviewTable`): reads the fixer's commits and writes a verdict report only.
-- webster plan fixer (`roleSkills`, no language skills) and the plan and parts writers (`planSkills`): edit plan documents.
-- drift baseline, describe, discussion and discussion advisor, PR reviewer, treadle judge and targeting, friction, bouncer seed and judge, orch, dobby tidy: write prose or records, not code.
-- tackler, shed arbiter and loom driver: load no skills by design, their prompt being the whole procedure.
-- MultiLLM seats and generic `seatengine` tables: take their skills from the recipe row, so no code default applies.
-
-## Design decisions
-
-- The sampler fix goes beyond the two seats the board entry names; the entry asks every writer seat to be checked in the same pass, and the sampler is the one other seat with the gap.
-  It does not gain the hub's language skills, which would need wiring the sampler's callers do not carry today.
+- Decide whether the sampler change belongs here.
+  It was not named in the task; it was found by the same-family check.
+- Confirm the `fixreview.go` fix review should stay without base skills.
+  It judges a fixer's diff and writes only a report.
+- Confirm `burlerengine` and `frictionengine`, which carry skill lists in their own specs, need no change.
+  The `grep` that found the seats above did not inspect them individually.
+- No integration or tiered gate run was recorded for this change.
