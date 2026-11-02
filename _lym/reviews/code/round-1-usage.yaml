@@ -20,6 +20,10 @@ review:
     fork_fresh_tokens: 10019
     fork_cache_read_tokens: 360471
     fork_fresh_share: 0.09834118570867688
+fix:
+    model: sonnet
+    effort: medium
+    tokens_known: false
 seed:
     - engine: claude
       model: sonnet
