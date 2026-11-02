@@ -900,6 +900,27 @@
       "body": "Imported from [issue #16](https://github.com/Knatte18/loomyard/issues/16).\n\nSeen in hub Models (worktree anchor src/csharp/NORCE.Models), after the fix for heddle-render-ignores-anchor (issue 13).\n\n- `lym heddle render` now writes CLAUDE.local.md to the anchor, as intended.\n- The copy it wrote before the fix stays at the worktree root (loomyard-setup/CLAUDE.local.md, duplication-and-import-followups/CLAUDE.local.md, Models/CLAUDE.local.md). Render reports `removed: []`.\n- Claude Code loads CLAUDE.local.md from every ancestor of the working directory, so a session at the anchor loads both: the stale root copy and the current anchor copy, which duplicates lym's own instructions and keeps any entry removed since.\n- Existing worktrees that were not re-rendered (the prime Models, the beam duplication-and-import-followups) have only the stale root copy and no anchor copy. A worktree created after the fix (drift-baseline-harness) got the anchor copy at creation.\n\nExpected: render removes a claude-file it rendered earlier at a path that is no longer the target (it carries lym's 'rendered by lym heddle' marker), and existing worktrees get the anchor copy without a manual `lym heddle render \u003cworktree\u003e`, or the upgrade says to run it.\n\nWorkaround: none applied; the stale root files are left for the operator to delete.",
       "created": "2026-11-02T20:34:27Z",
       "revised": "2026-11-02T20:34:27Z"
+    },
+    {
+      "id": 1024,
+      "handle": "B11",
+      "slug": "archive-tag-push-race",
+      "title": "Worktree-Teardown archive tag push races the weft branch push and fails with missing necessary objects",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "batten",
+        "fabric"
+      ],
+      "issues": [
+        15
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (2026-11-02, another hub, darn run)\n\nWorktree-Teardown failed: the push of the archive tag `archive/\u003cslug\u003e/\u003csha\u003e` to the hub's weft remote was rejected with \"remote rejected ... (missing necessary objects)\".\nA few minutes later `git ls-remote` showed the run's weft branch at that same commit on the remote, so the commit did reach it, apparently after the tag push ran.\nThe tackler then handed the stop back on a false premise: it read the commit as absent from the weft remote and asked the parent which remote to archive to.\n\n## Workaround\n\nA hand pass, `lym batten run \u003cslug\u003e`, redid the teardown and ended done.\n\n## Expected\n\n- The archive step waits for, or performs, the weft branch push before it pushes the archive tag, or retries the tag push on \"missing necessary objects\" once the branch is on the remote.\n- The tackler checks `git ls-remote` before concluding that a commit is missing from a remote.\n",
+      "created": "2026-11-02T20:34:52Z",
+      "revised": "2026-11-02T20:34:52Z"
     }
   ],
   "prime_owner": "neve",
