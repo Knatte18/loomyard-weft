@@ -59,7 +59,7 @@ Held by a run; its scope is locked until the run ends.
 | T1 | **Tune the plan-split writers until a split plan joins with no hand edit**<br>• Tune, replay on two inputs, tune again, at most 3 rounds, starting from the plan-split-bench report | [`plan-split-tune`](design-plan-split-tune.md) | darn | Darn-Write | neve | 1d<br>1d | loom, stencil, pattern |
 | T2 | **lym adopt root leaves the installed lym older than the adopted main** | [`adopt-root-skips-deploy`](design-adopt-root-skips-deploy.md) | darn | Darn-Write | neve | 16m<br>9m | deploy, fabric, landing |
 | T3 | **A wake from hibernate leaves the hub-wide pause live**<br>• After waking, the hibernate request read done but its hub pause stayed live and held every network call; its wake notice failed on a wrong receiver and an oversized line | [`hibernate-wake-leaves-pause`](design-hibernate-wake-leaves-pause.md) | darn | Darn-Write | neve | 26m<br>9m | hibernate, creel |
-| T6 | **Beam orch cannot set a board entry's profile: refused as a task session** | [`beam-orch-cannot-set-profile`](design-beam-orch-cannot-set-profile.md) | darn | Record-Write | neve | 6h<br>0m | board, orch, workspaces |
+| T6 | **Beam orch cannot set a board entry's profile: refused as a task session** | [`beam-orch-cannot-set-profile`](design-beam-orch-cannot-set-profile.md) | darn | Darn-Write | neve | 6h<br>0m | board, orch, workspaces |
 
 #### Ready (0)
 
