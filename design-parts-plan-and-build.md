@@ -17,6 +17,7 @@ The plan-split writer (`Parts-Write` cuts the scope into parts with contracts, p
 In the long run the parts are not joined into one plan: each part agent both plans and implements its own part, which is where time and tokens may be saved.
 
 - `Parts-Write` cuts the scope into parts with contracts, as today; then each part agent plans its part and builds it, reading only its own part and the contracts it depends on, so its context stays small; parts with no dependency between them run at the same time.
+- The aim is parts small and well bounded enough that a Sonnet `high` agent plans and writes each one; Opus stays on `Parts-Write`, whose contracts carry the design.
 - Whether a part agent can run on Sonnet is open: today `Parts-Write`, the part writers and the chair all run `opus[medium]` (`tapestry.yaml`), and a part writer on Sonnet was never tried.
   A first bench: the same two inputs with only `part_writer: sonnet[medium]`, checking that the parts still join with no hand edit, and at what cost.
 - The split writer can answer that a task does not split, and the solo planner takes it; a task whose parts form one chain gains nothing.
