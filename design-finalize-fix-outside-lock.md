@@ -1,6 +1,6 @@
 # Finalize releases the parent lock while its fixer works
 
-`finalize-fix-outside-lock` · Task · enhancement, landing, loom · running · Record-Write
+`finalize-fix-outside-lock` · Task · enhancement, landing, loom · running · Darn-Write
 
 ## Seen (orch, 2026-11-01)
 
