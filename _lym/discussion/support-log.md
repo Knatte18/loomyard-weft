@@ -71,7 +71,18 @@ Six forks returned reports; none was missing.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+Every finding fixed in the decision record; the fixer-report holds each disposition.
+
+- F1 (BLOCKING): a restart's finalize halted on Darn-Write's `clean` entry over a live fixer's edits. D2 now wraps every other entry of the row to wait on a live fixer first.
+- F2, F5: terminal records are marked and never attached to, row record sets are keyed to the row visit, and the card fixer's record moved to the key directory.
+- F3: D2's deadline overrun bound corrected to two fixer timeouts plus four inner gate runs.
+- F4: the re-run rewrites the run's recorded tree identity, with a bound on the fixer-phase join.
+- F6, F7, F9: Plan-Write's lens procedure, the lens review record and the fixer-off Webster fork text.
+- F8, F10, F11, F12: bounds for D5 and D4 grounded in what Go enforces and what rests on a prompt, and webster's runproc change named.
+- F13: the 30-minute timeout researched from the gate run records and moved to Constraints.
+- F14: `(removed)` marks added.
 
 ## Question ledger
 
@@ -84,4 +95,4 @@ _No rounds yet._
 - Q7 (auto-pick, resolved): do writers keep their validator loops? No, when the fixer is on (D7).
 - Q8 (auto-pick, resolved): how many fixers per failure? One per failed evaluation or red call (D2, D4).
 - Q9 (auto-pick, resolved): are `card-verify` lines in scope? No.
-- Q10 (auto-pick, resolved): what happens on a driver restart mid-fixer? The `Expired` probe finalizes and the finalize evaluation waits on the fixer (D2).
+- Q10 (auto-pick, resolved): what happens on a driver restart mid-fixer? The `Expired` probe finalizes on a live fixer record, and every entry of the row waits on that fixer before it runs (D2).
