@@ -1,7 +1,7 @@
 # Card 5 — gate-fixer-config
 
 **Create:**
-- `plan:internal/gateslot#Config.FixerTimeout` -> `func (c Config) FixerTimeout() time.Duration`
+- `internal/gateslot#Config.FixerTimeout`
 
 **Edit:**
 - `internal/gateslot#GateKey`

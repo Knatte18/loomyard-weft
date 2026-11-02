@@ -1,14 +1,14 @@
 # Card 7 — row-gate-wrap
 
 **Create:**
-- `plan:internal/gatefixer#Fixer` -> `type Fixer interface`
-- `plan:internal/gatefixer#NewStrandFixer` -> `func NewStrandFixer(deps Deps) Fixer`
-- `plan:internal/gatefixer#RowFixer` -> `type RowFixer struct`
-- `plan:internal/gatefixer#WrapRowGate` -> `func WrapRowGate(spec shuttleengine.GateSpec, entry string, rf RowFixer) (shuttleengine.GateSpec, error)`
-- `plan:internal/gatefixer#rowStore` -> `type rowStore struct`
-- `plan:internal/gatefixer#fakeFixer` -> `type fakeFixer struct`
-- `plan:internal/gatefixer#TestWrapRowGate` -> `func TestWrapRowGate(t *testing.T)`
-- `plan:internal/gatefixer#TestRowStore` -> `func TestRowStore(t *testing.T)`
+- `internal/gatefixer#Fixer`
+- `internal/gatefixer#NewStrandFixer`
+- `internal/gatefixer#RowFixer`
+- `internal/gatefixer#WrapRowGate`
+- `internal/gatefixer#rowStore`
+- `internal/gatefixer#fakeFixer`
+- `internal/gatefixer#TestWrapRowGate`
+- `internal/gatefixer#TestRowStore`
 
 **Extends:**
 - `internal/gatefixer/doc.go`
