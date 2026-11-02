@@ -733,6 +733,27 @@
       "body": "Imported from [issue #17](https://github.com/Knatte18/loomyard/issues/17).\n\n## What happened\n\n`lym loom` halted as `failed` (anomaly `producer-hard-failure`) at the `Darn-Write` producer, after Preflight and Record-Write were done and Drift-Baseline and Drift-Await were skipped.\nThe error from lym:\n\n```\nshedadapters: Darn-Write (seats): seat run: seatengine: seat \"\": fill stencil \"darn-template-write\": stencil: unfilled top-level marker(s): subagent_model\n```\n\n## Why it is abnormal\n\nThe seat engine filled the `darn-template-write` stencil without a value for the top-level marker `subagent_model`, so the seat could not start and the whole run failed.\nThe seat name in the error is empty (`seat \"\"`), which suggests the seat's resolved config or recipe never supplied the marker.\nA missing model value should either come from a default or be reported before the run starts, not surface as a hard failure inside the seat.\n\n## What to do\n\n- Find where `subagent_model` is supplied to the `darn-template-write` stencil fill in `shedadapters` / `seatengine`, and why it was empty for `Darn-Write`.\n- Make Preflight (or the recipe loader) reject a seat whose stencil markers cannot all be filled, with the seat name in the message.\n- Fix the empty seat name in the error.\n\nProvenance: task `landing-fixer-base-skills`; note `loom-halt.md`.\n",
       "created": "2026-11-02T20:34:08Z",
       "revised": "2026-11-02T20:34:08Z"
+    },
+    {
+      "id": 1016,
+      "handle": "B4",
+      "slug": "reconcile-strips-newer-keys",
+      "title": "Hub-wide config reconcile by an older lym binary strips keys a newer binary wrote",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "reconcile",
+        "config"
+      ],
+      "issues": [
+        2
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #2](https://github.com/Knatte18/loomyard/issues/2).\n\nSeen (loomyard hub, 2026-10-31): on OSL-1046 the operator set `pull_request: off` in the hub-wide beam config (Bolt commit 7660dc966, 2026-10-30), and `pr_reviewer: opus[medium]` was set in landing.yaml.\nAfter moving to another machine (Neve), whose installed lym was still built from 31d9ae96 (2026-10-28, before the PR-Review row and the beam `pull_request` key existed), the first lym command ran \"lym: reconcile hub-wide config for build (31d9ae96c783 production ...)\" (Bolt commit dfe254915) and removed both keys from the committed default layer, since that build's templates did not know them. The binary was updated four minutes later, but the settings were gone, and runs went through PR-Review against the operator's setting.\n\nWorkaround: restored both keys by hand with `lym config beam --layer default --set pull_request=off` and `lym config landing --layer default --set 'pr_reviewer=opus[medium]'`.\n\nExpected: an automatic reconcile never removes keys from the shared, committed default layer, at least not when the running binary is older than the build that wrote them; unknown keys are kept (as the manual path already reports them under \"preserved\") and removal stays an explicit `lym config reconcile --layer default --apply`.\n\n\n_Moved from #907 in the repository before it was recreated._\n",
+      "created": "2026-11-02T20:34:10Z",
+      "revised": "2026-11-02T20:34:10Z"
     }
   ],
   "prime_owner": "neve",
