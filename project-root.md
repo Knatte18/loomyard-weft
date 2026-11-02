@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-02 16:04 UTC; every age below is as of then.
+Rendered 2026-11-02 16:06 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `osl-1046`
@@ -49,7 +49,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **The sampler agent gets no PATTERN directive**<br>• The sampler writes and commits code but its prompt carries no PATTERN directive, unlike every other code-writing role | [`sampler-lacks-pattern-directive`](design-sampler-lacks-pattern-directive.md) | 3m<br>3m | loom, stencil, pattern |
+| B1 |  | **The sampler agent gets no PATTERN directive**<br>• The sampler writes and commits code but its prompt carries no PATTERN directive, unlike every other code-writing role | [`sampler-lacks-pattern-directive`](design-sampler-lacks-pattern-directive.md) | 5m<br>0m | loom, stencil, pattern |
 | B2 |  | **Beam orch cannot set a board entry's profile: refused as a task session** | [`beam-orch-cannot-set-profile`](design-beam-orch-cannot-set-profile.md) | 4h<br>4h | board, orch, workspaces |
 | B3 |  | **gitexec TestRun_RemoteBounds fails under machine load**<br>• The 200 ms stall bound of the never-answering remote test kills git before its ext script writes its count file when the machine is loaded | [`gitexec-remote-bounds-load-flaky`](design-gitexec-remote-bounds-load-flaky.md) | 1h<br>1h | git, gate |
 
@@ -63,7 +63,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E4 |  | **Prove the dotnet scoper, shared build and Drift on the C# sandbox hub**<br>• Switch the sandbox gate to scoper dotnet, a build step and --no-build, then enable Drift there | [`sandbox-dotnet-gate`](design-sandbox-dotnet-gate.md) | 4d<br>4d | dotnet, gate |
 | E5 |  | **A landing notice is not lost when set late, when dobby was down, or when the orch is absent**<br>• Close the known limits landing-watch left: a late notify_on_land, a Land passed while dobby was down, and a dropped line when no orch is live | [`landing-watch-limits`](design-landing-watch-limits.md) | 1d<br>1d | dobby, orch |
 | E6 |  | **A task with no recipe runs darn, not tapestry**<br>• The default recipe becomes darn, set in board.yaml, so a small task promoted without a recipe does not start a full tapestry run | [`default-recipe-darn`](design-default-recipe-darn.md) | 21h<br>21h | board, batten |
-| E8 |  | **The orch role explains how to make a project into a beam**<br>• The prime orch in the Models hub did not know beam create is the only way, and patched a plain task run by hand. | [`orch-role-making-a-beam`](design-orch-role-making-a-beam.md) | 5h<br>5h | orch, pawl |
+| E8 |  | **The orch role explains how to make a project into a beam**<br>• The prime orch in the Models hub did not know beam create is the only way, and patched a plain task run by hand. | [`orch-role-making-a-beam`](design-orch-role-making-a-beam.md) | 6h<br>5h | orch, pawl |
 | E9 |  | **An idle interactive run saves its work and pauses, to go on another time**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 2d<br>1d | shed, shuttle, batten |
 | E10 |  | **The hibernate request is carried by dobby, not a daemon of its own**<br>• Move lym hibernate request into dobby; the past-Land test is already shared | [`hibernate-in-dobby`](design-hibernate-in-dobby.md) | 2d<br>1d | dobby |
 | E11 |  | **Merge in from parent as a task of its own in a beam, before pawl lands it**<br>• A command on a beam files a merge-in-from-parent task, run as darn with its perch on | [`parent-merge-task`](design-parent-merge-task.md) | 2d<br>1d | pawl, workspaces, drift, landing |
