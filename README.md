@@ -92,7 +92,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Reed code button reports a wrong anchor path from inside the anchor directory** | [`reed-code-wrong-anchor`](design-reed-code-wrong-anchor.md) | 1m<br>0m | reed |
-| B2 |  | **A beam's reed session shows pawl running with no orch and no beam overview** | [`beam-attach-no-orch`](design-beam-attach-no-orch.md) | 1m<br>1m | reed, orch, pawl, workspaces |
+| B2 |  | **A beam's reed session shows pawl running with no orch and no beam overview** | [`beam-attach-no-orch`](design-beam-attach-no-orch.md) | 1m<br>0m | reed, orch, pawl, workspaces |
 | B3 |  | **A batten pass after a landed child reports a false rewind against origin**<br>• Origin equals local, yet batten stops asking which history to keep | [`false-rewind-after-finalize`](design-false-rewind-after-finalize.md) | 17h<br>15h | batten, fabric |
 
 #### Enhancements (13)
