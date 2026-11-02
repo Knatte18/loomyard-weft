@@ -16,9 +16,10 @@ This change stops those defects at Parts-Write, where they can still be fixed.
   The parts check runs it on every part's and shared spot's `plan:` export.
   `CheckFabricVocabularyName` and the new function share one helper, `fabricVocabularyBreak`.
 - **Parts-Write checks names against the PATTERN entries.**
-  A new step in `loom-template-parts.md` has the agent read the PATTERN entries governing each export's package or kind of name, and their background files, before naming exports.
+  A new step in `loom-template-parts.md` has the agent read the PATTERN entries governing each export's package or kind of name, and their background files, before it names exports.
   The part writer's prompt says every export is new.
 - `partsparser.Validate` and `loomshed.NewPartsGate` take the worktree root; the `parts` gate entry requires an absolute `env.WorktreeRoot`.
+- `loom-parts-spec.md` and `loom-plan-checks-spec.md` state the new rules and checks.
 - `docs/research/plan-split-tune-2026-11-02.md` maps each bench defect to its change and holds the replay table as pending.
 
 ## Design decisions
@@ -26,11 +27,18 @@ This change stops those defects at Parts-Write, where they can still be fixed.
 - The task asked the gate to refuse an export naming an existing member whose signature the part keeps.
   A parts file cannot say whether a part keeps or re-signs a member, so the gate refuses every existing member instead, and a re-sign moves to `Delivers`.
   A contract therefore no longer pins a re-sign as a checked export; the joined plan's gate and Plan-Review still see the cards.
-- `PATTERN-cli-cobra`'s `Command()` constructor has no gate check; that defect rests on the new Parts-Write step.
-- Per the parent's decision recorded after Discussion, this run lands round 1's changes with no replay: stencils are read only from the hub-wide Bolt copy and production takes only `main`.
+- The export name checks judge every `plan:` handle as a Create declaration, including one a part meets only as the New side of a Rename.
+- `PATTERN-cli-cobra`'s `Command()` constructor has no gate check; that defect rests on the new Parts-Write step alone.
+- The loop's replays are not part of this change: stencils are read only from the hub-wide Bolt copy and production takes only `main`, so no replay can run this branch's `lym` and stencils before it lands.
   The follow-up task `plan-split-replay` runs the replays on the installed `lym` and tunes further within the remaining cap.
+
+## To check by hand
+
+- Whether the new Parts-Write step is enough to stop `internal/heddlecli#NewCommand`-style names: no gate enforces it, and only the replays in `plan-split-replay` will show.
+- `internal/planparser/join_test.go` and `internal/partsparser/check_test.go`: a review finding says the refusal of an export that a card only deletes or re-signs, at the join and at `part-export-missing`, was untested; confirm the rows now pin both refusals.
 
 ## Testing
 
 `lym gate test` tier0 passes over `planparser`, `partsparser`, `loomshed`, `shedrecipe`, `loomcli` and `contracts/stencils`.
-New rows cover `CheckExportName`'s checks, `export-existing` for a member glyph, for a path the worktree holds and through `Validate`, a name-check finding on a part export, an export a card only re-signs now failing `part-export-missing`, and the `parts` gate's worktree-root requirement.
+New rows cover `CheckExportName`'s checks, `export-existing` for a member glyph, for a path the worktree holds and through `Validate`, a name-check finding on a part export, an export a card only re-signs failing `part-export-missing`, and the `parts` gate's worktree-root requirement.
+No replay was run.
