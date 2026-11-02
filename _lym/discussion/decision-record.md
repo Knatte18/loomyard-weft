@@ -30,4 +30,11 @@ Had no run landed, the operator would have had to run `update-plugins.sh` by han
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - deploy-gate-held-root-and-owned-rows-missing (class design, severity MEDIUM, open in rounds 1)
+  - read-deploy-state-untested (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
