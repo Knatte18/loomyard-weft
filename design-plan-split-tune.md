@@ -1,6 +1,6 @@
 # Tune the plan-split writers until a split plan joins with no hand edit
 
-`plan-split-tune` · Task · enhancement, loom, stencil, pattern · running · Describe
+`plan-split-tune` · Task · enhancement, loom, stencil, pattern · running · PR-Review
 
 ## Seen (orch, plan-split-bench, 2026-11-01)
 
