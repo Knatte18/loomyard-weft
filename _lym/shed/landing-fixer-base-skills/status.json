@@ -2,6 +2,7 @@
   "current_producer": "Darn-Write",
   "state": "failed",
   "error": "shedadapters: Darn-Write (seats): seat run: seatengine: seat \"\": fill stencil \"darn-template-write\": stencil: unfilled top-level marker(s): subagent_model",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Darn-Write",
