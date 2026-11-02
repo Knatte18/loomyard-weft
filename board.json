@@ -862,10 +862,10 @@
     },
     {
       "id": 1001,
-      "handle": "B1",
+      "handle": "T8",
       "slug": "landing-fixer-base-skills",
       "title": "The landing merge fixer loads no prose, code-quality or testing skill",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "landing",
@@ -876,6 +876,7 @@
       "isolated": false,
       "brief": "FixerTable sets the fixer seat's skills to the language skills alone, unlike every other code-writing seat",
       "body": "## Seen (operator, 2026-11-02)\n\nThe landing merge fixer of `beam-attach-no-orch` (strand `ly:beam-attach-no-orch:fixer`) was told to load only `scribe:golang-comments` and `scribe:golang-testing`, with the line \"Load these skills now, all in this one turn, ... Do nothing else\".\nIt writes code, so it must load `scribe:prose` and `scribe:code-quality` as well, and `scribe:testing` when it edits tests.\n\n## Cause (orch, from the source)\n\n`FixerTable` in `internal/landingshed/fixer.go` sets the fixer seat's `Skills` to `in.LanguageSkills` alone, the hub's language skills from `language.yaml`.\nEvery other code-writing role lists the base skills in its own spec before the language skills: `darnSkills`, `roleSkills` of webster, `burlerSkills` and `verifySkills` of drift each hold `scribe:prose`, `scribe:code-quality` and `scribe:testing`, and `internal/mergeresolve/spec.go` (`conflictSkills`) holds `scribe:prose` and `scribe:code-quality`.\nThe landing fixer's seat is the one that names none.\n\n## Fix\n\nThe fixer seat loads `scribe:prose`, `scribe:code-quality` and `scribe:testing`, then `in.LanguageSkills`, as the other code-writing seats do.\nAdd a test that the seat's skills start with the base skills.\n\n## Same family, not yet filed\n\n`conflictSkills` in `internal/mergeresolve/spec.go` lacks `scribe:testing`, so a conflict session resolving a test file loads no testing skill.\nCheck every other seat that spawns a writer for the same gap in the same pass, and name each seat checked in the change description.\n",
+      "status": "draft",
       "created": "2026-11-02T12:20:16Z",
       "revised": "2026-11-02T12:20:16Z"
     }
