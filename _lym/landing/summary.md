@@ -1,21 +1,27 @@
-# The sampler agent's prompt carries the PATTERN directive
+# Render the PATTERN directive into the sampler agent's prompt
 
-The sampler agent writes and commits code, yet it was the one code-writing role whose prompt carried no PATTERN directive, so an interactive sampler session never saw the repository's PATTERN rules.
+The sampler agent writes and commits code with the operator in an interactive session, yet its prompt carried no PATTERN directive.
+Every other code-writing role gets one, so a sampler session never saw the PATTERN rules, the abscissa rule among them.
 
-## What changes
-
-- `samplerengine.SessionSpec` renders `pattern.Directive` with `pattern.RoleImplementer` from the task worktree, as the darn writer and the Drift-Verify implementer seat do, and fills it into the stencil through `stencil.FillOptional`.
-- `sampler-template-agent.md` gains an optional `pattern_directive` marker, placed after the role's opening paragraph and before `## Start`, so the agent reads the rules before it touches code.
-  A worktree with no `PATTERN.md` renders an empty directive and the prompt builds as before.
-- The package doc and the stencil's banner name the new marker.
+`samplerengine.SessionSpec` now renders `pattern.Directive` with `pattern.RoleImplementer` from the task worktree's PATTERN overview.
+The `sampler-template-agent` stencil gains a `pattern_directive` marker, placed after the opening role paragraph and before `## Start`.
 
 ## Design decisions
 
-- The role is `RoleImplementer`, since the sampler writes code today.
-  Should the sampler become a read-only discussion role (note `sampler-direction`), only the role passed changes.
-- No declared PATTERN changes are passed: the sampler has no plan or record section that declares them.
+- The marker is optional.
+  The prompt is filled with `stencil.FillOptional`, so a worktree with no PATTERN overview renders an empty directive instead of failing the session.
+  The four other markers stay required.
+- The role is `pattern.RoleImplementer`, since the sampler writes code today.
+  Should the sampler become a read-only discussion role (note `sampler-direction`), only the role passed changes, to the Discussion writer's.
+- The prompt was paths-only before.
+  It now also carries the PATTERN overview inside the directive.
+  The stencil header comment, the `SessionSpec` doc and the `samplerengine` package doc say so.
 
 ## Tests
 
-`TestSessionSpec` gains a case where the task worktree holds a `PATTERN.md`: the prompt carries the implementer directive rendered from it.
-The existing valid case, whose worktree has no overview, pins that an absent `PATTERN.md` still builds the spec.
+`TestSessionSpec` gains a case that writes a PATTERN overview into a temporary worktree and checks that the spec's prompt contains the implementer directive for it.
+
+## To check by hand
+
+- Open a sampler session in a worktree that has a PATTERN overview and confirm the agent sees the directive.
+  This was not run interactively.
