@@ -12,21 +12,20 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running (1)
+### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T7 | **Measure fabricengine tier1 with the test work directory on /dev/shm against the default**<br>• Six runs in three concurrent pairs on OSL-1046: can fabricengine tier1 use /dev/shm for its temp root, and does it avoid the Cortex slowdown | [`fabricengine-shm-bench`](design-fabricengine-shm-bench.md) | darn · docs | Finalize | osl-1046 | 50m<br>44m | gate, fabric |
+| T7 | **Measure fabricengine tier1 with the test work directory on /dev/shm against the default**<br>• Six runs in three concurrent pairs on OSL-1046: can fabricengine tier1 use /dev/shm for its temp root, and does it avoid the Cortex slowdown | [`fabricengine-shm-bench`](design-fabricengine-shm-bench.md) | darn · docs | Finalize | osl-1046 | 51m<br>44m | gate, fabric |
+| T9 | **Drift-Verify with the operator in the loop** | [`drift-verify-operator-in-loop`](design-drift-verify-operator-in-loop.md) | darn · light | Worktree-Create | osl-1046 | 45m<br>36m | drift |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T9 | **Drift-Verify with the operator in the loop** | [`drift-verify-operator-in-loop`](design-drift-verify-operator-in-loop.md) | darn · light |  | 45m<br>36m | drift |
+_None._
 
 ### Draft (4)
 
