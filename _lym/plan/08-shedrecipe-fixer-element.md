@@ -1,4 +1,4 @@
-# Card 7 — shedrecipe-fixer-element
+# Card 8 — shedrecipe-fixer-element
 
 **Create:**
 - `plan:internal/shedrecipe#GateFixerRequest` -> `type GateFixerRequest struct`
@@ -14,6 +14,7 @@
 - `internal/shedrecipe#planWriteEntry`
 - `internal/shedrecipe#discussionWriteEntry`
 - `internal/shedrecipe/doc.go`
+- `contracts/specs/shed-recipe-spec.md`
 - `internal/shedrecipe#TestResolveGateSpec_Rejections`
 - `internal/shedrecipe#TestPlanWriteEntry_GateConfig`
 - `internal/shedrecipe#TestDarnWriteEntry_HappyPath`
@@ -48,8 +49,8 @@
 Let a row gate element opt into a fixer (D3) and wrap the three fixer rows' gates once each row has finished its spec (D2).
 
 - `GateFixerRequest` carries `Row`, `Entry` (the element's gate name), `Model` (the resolved model-spec), `Spec shuttleengine.GateSpec`, `Forked bool` and `SkipForked func(findings string) bool`.
-- `Env` gains `GateFixer func(GateFixerRequest) (shuttleengine.GateSpec, error)`, the wrap seam card 8 wires; nil leaves every gate as today.
-  It is nil-legal in `envkit`'s `nilLegal`, and `battencli`'s and `loomcli`'s `intentionallyNil` lists name it until card 8 removes it from `loomcli`'s.
+- `Env` gains `GateFixer func(GateFixerRequest) (shuttleengine.GateSpec, error)`, the wrap seam card 9 wires; nil leaves every gate as today.
+  It is nil-legal in `envkit`'s `nilLegal`, and `battencli`'s and `loomcli`'s `intentionallyNil` lists name it until card 9 removes it from `loomcli`'s.
 - `splitGateFixer(entry, cfg, env)` reads an optional `fixer` key on each element of the row's `gates` list and returns `cfg` with that key removed from every element, so `resolveGateEntry`'s unknown-key check stays as it is and still refuses `fixer` on every row whose constructor does not call `splitGateFixer`.
   `fixer` names a `<module>.<key>` setting, looked up through `env.Setting` at build as the `parts` gate reads `tapestry.parts_max`.
   It refuses, naming the entry, the element index and the way forward: a `fixer` that is not a `<module>.<key>` string; a setting `env.Setting` cannot find (way forward: name a key of the module's config, or remove `fixer`); a setting holding a non-string; a non-empty value `modelspec.Parse` rejects (way forward: set the key to a model-spec with `lym config <module>`, or `""` to turn the fixer off); and `fixer` on two elements of one list.
@@ -62,6 +63,7 @@ Let a row gate element opt into a fixer (D3) and wrap the three fixer rows' gate
 - The recipes opt in: Darn-Write's `verify` element gains `fixer: darn.gate_fixer`, Plan-Write's `plan` element `fixer: tapestry.plan_gate_fixer`, and Discussion-Write's `discussion` element `fixer: loom.discussion_gate_fixer`; each row's recipe comment says what `fixer` does.
   Darn-Write's `clean` and `description` elements get no fixer of their own; the wrap makes them wait on a live fixer of the row.
 - `doc.go` documents the `fixer` element key, the three rows that read it and the `GateFixer` seam.
+- `contracts/specs/shed-recipe-spec.md`'s gate-capable row paragraph names the optional `fixer` element key: a `<module>.<key>` setting holding a model-spec, or `""` to turn the fixer off, read only by the Darn-Write, Plan-Write and Discussion-Write rows and refused as an unknown key on any other row.
 
 Bound: only the three constructors read `fixer`; on any other row the key is the unknown-key refusal it is today.
 

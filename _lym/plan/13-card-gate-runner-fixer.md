@@ -1,4 +1,4 @@
-# Card 12 — card-gate-runner-fixer
+# Card 13 — card-gate-runner-fixer
 
 **Create:**
 - `contracts/stencils/gatefix/gatefix-body-card.md`
@@ -48,7 +48,7 @@
 **Intent:**
 A red `lym gate test --gate <key>` agent call hands its failure to a cold fixer when the key's `fixer` is set, then answers with the re-run's result (D4).
 
-- `handsOff(request, cfg, slug)` returns the request's `--gate` key and true only when the verb is `test`, the request's role is not in `gatefixer`'s fixer role set (`gatefixer.IsFixerRole`, numbered forms included), the call names a gate key whose `fixer` is non-empty, and `slug` is non-empty; config load allows `fixer` on the `card` key alone (card 4), so only the Webster card gate hands off.
+- `handsOff(request, cfg, slug)` returns the request's `--gate` key and true only when the verb is `test`, the request's role is not in `gatefixer`'s fixer role set (`gatefixer.IsFixerRole`, numbered forms included), the call names a gate key whose `fixer` is non-empty, and `slug` is non-empty; config load allows `fixer` on the `card` key alone (card 5), so only the Webster card gate hands off.
   Only a capped call reaches a runner at all, so an operator's call, a `--wait` call and a call inside an enclosing slot never hand off.
 - `newCardFixer(request)` resolves the request's worktree from its `Cwd`, loads the gate config with `loadGate`, reads the slug with `originSlug`, and when `handsOff` holds builds a `cardFixerKit`: a `gatefixer.NewStrandFixer` over a shuttle runner built on the worktree's reed geometry as `pairteardown`'s cancel builds one, registered through `gatefixer.Registrar` under the slug with role `gate-fixer`; the model choice resolved from the key's `fixer`; the gate config's `FixerTimeout()`; the stencils dir and the hub's language skills.
   It returns false, and the call ends as today, outside a hub, with no slug, or for a key or role `handsOff` turns down; a load or resolve error is returned, and the runner logs it and ends the call as today.
@@ -69,12 +69,12 @@ A red `lym gate test --gate <key>` agent call hands its failure to a cold fixer 
 - `joinState` gains `fixing`, read by `front.readJoinState` from the run's phase file; `joinable` skips the tree-identity comparison while `fixing` holds, so a caller's repeated call joins whatever tree the fixer is changing, during an attach wait as during its own fixer, and from the re-run's start the rewritten `tree.json` holds the rule again, so a call after the re-run's exit joins and gets its result.
   The phase is written before the spawn and before an attach wait, so no window lets the fixer change the tree while the phase still reads otherwise.
   The join stays keyed by the verb, run directory and words, so only a call with the same key joins.
-- `gatefix-body-card.md` sets the card fixer's scope: source in the worktree, reading the card and the uncommitted diff; no commit, since the fork commits the card; re-check with `{{.gate_call}}`; the shared rules and leave-list of card 8's bodies.
+- `gatefix-body-card.md` sets the card fixer's scope: source in the worktree, reading the card and the uncommitted diff; no commit, since the fork commits the card; re-check with `{{.gate_call}}`; the shared rules and leave-list of card 9's bodies.
   It is embedded and registered with its marker row.
 - `doc.go` documents the hand-off, the fixer phase and its join rule.
 
 Bound: one fixer per red call, which Go bounds; the number of red calls per card rests on the fork stencil's self-fix cap.
-A fixer's own gate call never hands off, and it is keyed apart by card 11.
+A fixer's own gate call never hands off, and it is keyed apart by card 12.
 
 Tests, tier0:
 - `TestHandsOff` rows: a `card` key with `fixer` and a slug hands off; an empty request role, as an older front writes, hands off; a `gate-fixer`, `gate-fixer-2` and `verify-fixer` role do not; no `--gate` word, a key without `fixer`, an empty slug and a `card-verify` verb do not.

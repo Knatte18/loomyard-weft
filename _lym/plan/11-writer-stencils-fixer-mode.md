@@ -1,4 +1,4 @@
-# Card 10 — writer-stencils-fixer-mode
+# Card 11 — writer-stencils-fixer-mode
 
 **Create:**
 - `contracts/stencils/twill/twill-writer-fork-gated.md`
@@ -50,7 +50,7 @@
 With the fixer on, the Plan-Write and Discussion-Write writers, the Discussion chair included, stop looping on their own validator (D7): they end their turn once their files are written and the row gate and its fixer check them; with the fixer off, or in a worktree with no pair slug, every prompt renders today's text.
 
 - `loomrecipe.GateFixerSetting(recipe, engine, gate)` returns the `fixer` value of the `gate` element of the named recipe's row whose engine is `engine`, `""` when the element carries none; an unknown recipe, or a recipe with no row of that engine, is refused naming it, as `EngineRow` refuses.
-- `writerFixerOn(recipe, engine, gate, setting, pairSlug)` is true only when the pair slug is non-empty, the element names a fixer setting and `setting` holds a non-empty value for it, the three conditions under which card 8's seam wraps the gate; a setting lookup error is returned.
+- `writerFixerOn(recipe, engine, gate, setting, pairSlug)` is true only when the pair slug is non-empty, the element names a fixer setting and `setting` holds a non-empty value for it, the three conditions under which card 9's seam wraps the gate; a setting lookup error is returned.
 - `loomCLI.wire` computes it for `PlanWrite`'s `plan` and `DiscussionWrite`'s `discussion` with `Env.Setting` and `pairSlugOf`, inside the `PlanTable` and `DiscussionTable` closures so the stencils and settings stay read at call time, and passes it to `PlanTable` and `DiscussionTable`.
 - `PlanTable` and `DiscussionTable` take `fixerOn` and fill a new `{{.self_check}}` marker in `loom-template-plan.md`'s Step 5 and `loom-template-discussion.md`'s Step 6 from `loom-fragment-self-check-plan` or `-plan-gated`, `loom-fragment-self-check-discussion` or `-discussion-gated`.
   The ungated fragments hold today's step text verbatim; the gated ones say the files are checked by the row's gate once the turn ends, whose cold fixer clears mechanical findings first, so the writer runs no validator and ends its turn once its files are written, its lens review recorded where it runs one.

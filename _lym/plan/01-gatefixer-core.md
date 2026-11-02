@@ -37,6 +37,7 @@
 
 **Edit:**
 - `PATTERN.md`
+- `internal/runproc/doc.go`
 
 **Uses:**
 - `internal/websterengine#awaitColdFixer`
@@ -62,7 +63,7 @@ It is lifted from `internal/websterengine/coldfixer.go` and the spawn half of `i
 - `SpawnOrAttach(deps, store, spec)`: when `store.Live()` returns a record, it returns it with `false` and spawns nothing.
   Otherwise it removes a stale reply file at `spec.ReplyPath`, starts the strand through `deps.Starter` with the reply file as its only output file, resolves its run with `shuttleengine.FindRun(deps.ShuttleCfg, deps.AnchorRoot, guid)`, registers it through `deps.Register` when set, builds the record with `SpawnedAt` from `deps.Clock`, and saves it through `store.Save` before it returns it with `true`.
   A start failure is returned wrapped as transient; a run that cannot be resolved, a failed registration or a failed save stops the strand through `deps.Stopper` and returns the joined error, wrapped as transient, so no unrecorded or unregistered strand outlives the call.
-  Every caller names its own way forward on these errors: webster's the transient re-run of its verb (card 3), the row wrap's a re-prompt of the writer (card 6) and the card gate's the call's red verdict (card 12).
+  Every caller names its own way forward on these errors: webster's the transient re-run of its verb (card 3), the row wrap's a re-prompt of the writer (card 7) and the card gate's the call's red verdict (card 13).
 - `Await(deps, rec, timeout, wait)` polls once a second on `deps.Clock` until a terminal classification or `wait` elapses, exactly as `awaitColdFixer` does: done once `rec.ReplyPath` exists, else dead `asking` when the strand's newest turn ended (`TurnEndedAfter` over `rec.EventsPath` from `rec.EventsOffset`, with the engine `rec.Engine` names through `deps.Engines`), dead `timeout` once `timeout` has passed since `rec.SpawnedAt`, dead `died` when `StrandLive` reports the strand gone, checked in that order.
   A wait that elapses returns `StatusRunning`.
   Every terminal result stops the strand through `deps.Stopper`; done also reads the reply into `Result.Reply` and removes `rec.ShuttleRunDir`; a failed stop, read or removal is a `Result.Warnings` line.
@@ -70,6 +71,7 @@ It is lifted from `internal/websterengine/coldfixer.go` and the spawn half of `i
   `Await` never marks the record terminal: the caller does, through its store, at the point D1 names for it.
 - `StrandLive`, `TurnEndRead` and `TurnEndedAfter` are webster's same-named members with their bodies and doc comments unchanged but their error prefix `gatefixer:`; card 3 deletes webster's copies.
 - `Registrar(reed, runProcDir, owner, role)` returns the `Deps.Register` seam, or nil for an empty `owner`, so a caller on the prime or outside a hub passes its empty pair slug and gets no registration: the seam reads reed's strand table, finds the strand by guid and registers its pane process with `runproc.Register(runProcDir, owner, runproc.ChildRecord(panePID, role, nil))`, so `runproc.End`, `EndSparing` and `EndRole` stop the fixer; a strand absent from the table or with no pane process is an error, as `sessionRegistrar` refuses it.
+- `internal/runproc/doc.go` names a record's role as one of runproc's own role constants, or a fixer strand role that `internal/gatefixer` declares, which `Registrar` registers as its runproc role.
 - `doc.go` documents the package: the fixer role set, the record and store, the spawn, wait and stop, and that a fixer never judges its gate.
 
 `internal/gatefixer/testmain_test.go` is untagged: it holds only `TestMain`, running the package under `tmuxkit.Main`.

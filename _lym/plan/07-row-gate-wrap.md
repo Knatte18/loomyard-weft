@@ -1,4 +1,4 @@
-# Card 6 — row-gate-wrap
+# Card 7 — row-gate-wrap
 
 **Create:**
 - `plan:internal/gatefixer#Fixer` -> `type Fixer interface`
@@ -19,15 +19,15 @@
 - `internal/loomshed#NewVerifyGate`
 
 **Intent:**
-The row gate wrap of D2, with the row fixer's records of D8, in `internal/gatefixer`; card 7 applies it to the three rows and card 8 wires it.
+The row gate wrap of D2, with the row fixer's records of D8, in `internal/gatefixer`; card 8 applies it to the three rows and card 9 wires it.
 
-- `Fixer` is the spawn-and-wait seam the wrap and card 12's card gate drive: `SpawnOrAttach(store Store, spec Spec) (*Record, bool, error)`, `Await(rec *Record, timeout, wait time.Duration) (*Result, error)` and `Stop(rec *Record) error`.
+- `Fixer` is the spawn-and-wait seam the wrap and card 13's card gate drive: `SpawnOrAttach(store Store, spec Spec) (*Record, bool, error)`, `Await(rec *Record, timeout, wait time.Duration) (*Result, error)` and `Stop(rec *Record) error`.
   `NewStrandFixer(deps)` returns the production one over card 1's `SpawnOrAttach` and `Await`, its `Stop` calling `deps.Stopper.StopStrand(rec.StrandGUID)`.
 - `RowFixer` carries `Fixer`, `VisitDir func() (string, error)` (the row visit's directory, D8), `Spec func(reportPath, replyPath string) (Spec, error)` (the caller's prompt and spawn values), `Timeout time.Duration` (gate.yaml's `fixer_timeout_min`), `Forked bool` (whether the row's run evaluates `Forked`, which the row decides at build) and `SkipForked func(findings string) bool` (nil skips nothing).
 - `rowStore` is a `Store` over `<visit dir>/<entry name>/records.json`, a list of `Record` written and read through `internal/state`, which keeps unknown keys; it also counts the set's records and marks a record terminal by guid with a status and dead reason.
   A row fixer's report and reply are `report-<n>.md` and `reply-<n>.md` beside it, `<n>` the record's place in the set.
 - `WrapRowGate(spec, entry, rf)` returns a copy of `spec` with every entry's other fields kept (`Name`, `Attempts`, `PassOnCap`, `Reprompt`).
-  An `entry` naming no entry of `spec` is refused, naming the entry; it is a fail-loud wiring guard, since card 7 passes the name of the element that carries `fixer`.
+  An `entry` naming no entry of `spec` is refused, naming the entry; it is a fail-loud wiring guard, since card 8 passes the name of the element that carries `fixer`.
 - Waiting on a live record, in every closure below, means calling `Fixer.Await` until it answers terminal; when `Await` returns an error, the wait stops the strand through `Fixer.Stop` and marks the record dead `died`, so a record whose engine or events can no longer be read never blocks the visit; when that stop fails too, the record stays live and the closure returns the joined error, an infrastructure fault per shuttle's gate contract.
   Every closure that waited on a record marks it terminal with the fixer's status once its own closure has returned, so no live record outlives the evaluation that waited on it.
 - The fixer entry's `Gate`, and its `Forked` when the inner one is set, are wrapped:
@@ -68,4 +68,4 @@ Tests, tier0, over `fakeFixer` (a scripted `Fixer` that records spawns and stops
 
 `TestRowStore`: records round-trip through `records.json`, an unknown key in the file survives a rewrite, `Live` returns only a record with no terminal status, and marking a guid terminal leaves the others unchanged.
 
-**ImpactSummary:** new members of `internal/gatefixer` only, with no caller until card 7 and card 8; the package doc gains the wrap.
+**ImpactSummary:** new members of `internal/gatefixer` only, with no caller until card 8 and card 9; the package doc gains the wrap.

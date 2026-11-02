@@ -27,16 +27,19 @@
 - `internal/websterengine#refuseReportHeadBatch`
 - `internal/websterengine#writerRecovery`
 - `internal/websterengine#RecoverSpawnOrAttach`
+- `internal/websterengine#ClassifyInputs`
 - `internal/websterengine/doc.go`
 - `internal/webstercli#websterCLI.fixVerifyDeps`
 - `contracts/stencils/webster/webster-body-verify-fix.md`
 - `contracts/stencils#entries`
+- `contracts/stencils#WebsterBodyVerifyFix`
 - `contracts/stencils#roleOpeningStencils`
 - `contracts/stencils#TestStencils_TopLevelMarkers`
 - `internal/websterengine_test#TestFixVerifySpawnOrAttach`
 - `internal/websterengine_test#TestRenderPrompts`
 - `internal/websterengine_test#TestRenderPrompts_FrictionDirective`
 - `internal/websterengine_test#TestRenderPrompts_ParentDirective`
+- `internal/websterengine_test#testReplyPath`
 
 **Uses:**
 - `internal/websterengine#VerifyFixerState`
@@ -64,10 +67,15 @@ Its verb, trigger, fork-first ladder, recovery-role model, `verify-fixer` role, 
 - `coldfixer.go`, `RenderVerifyFixColdPrompt`, its test helper `renderVerifyFixCold`, `verifyFixerStrandRole` and the cold prefix stencil with its embed and registry entry are deleted.
   The prefix's two webster-only orientation lines join `webster-body-verify-fix.md`, where they bind the fork too: read `_lym/plan/00-overview.md` before editing, and never run a `lym webster` command; the body's leading comment names the shared frame in place of the cold prefix.
 - `roleOpeningStencils` maps `verify-fixer` to `gatefix-frame-cold`; `TestStencils_TopLevelMarkers` drops the cold prefix's row.
-- `websterCLI.pairSlug()` returns the worktree's pair slug when the geometry is in a hub and `fabricengine.ReadOrigin` finds the worktree's fabric origin, as `originSlug` reads it, and `""` otherwise; card 13 reads it too.
+- `websterCLI.pairSlug()` returns the worktree's pair slug when the geometry is in a hub and `fabricengine.ReadOrigin` finds the worktree's fabric origin, as `originSlug` reads it, and `""` otherwise; card 14 reads it too.
 - `websterCLI.fixVerifyDeps` sets `Register` to `gatefixer.Registrar(c.reed, fabricengine.RunProcDir(hub), c.pairSlug(), gatefixer.RoleVerifyFixer)`, which is nil for an empty slug (card 1), so a standalone or prime run is unregistered as today.
 - `writerRecovery` and the contract-file refusal in `RecoverSpawnOrAttach` name the verify fixer's role through `gatefixer.RoleVerifyFixer` in place of the literal `verify-fixer`, so the moved constant is the one spelling.
 - `doc.go` names `internal/gatefixer` as the owner of the cold fixer's spawn, wait and registration, and the shared frame in place of `RenderVerifyFixColdPrompt`'s prefix.
+- These comments drop the deleted names, naming `gatefixer`'s members or the shared frame in their place; the file headers of `render.go`, `strand.go` and `recoverbatch.go` are card 4's:
+  - the `testReplyPath` doc comment, which names `RenderVerifyFixColdPrompt`'s `replyPath` parameter and becomes the placeholder reply path the cold fixer prompts are rendered with, the verify fixer's through `gatefixer.RenderPrompt` and the plan fixer's through `RenderPlanFixPrompt`;
+  - `doc.go` lines 423 and 560, which name `TurnEndedAfter` and `RenderVerifyFixColdPrompt`;
+  - the `ClassifyInputs.TurnEnded` field comment, which names `TurnEndedAfter`, moved above the field;
+  - the `WebsterBodyVerifyFix` doc comment, which names `WebsterPrefixVerifyFixCold`.
 
 Tests, tier0 as today:
 - `TestFixVerifySpawnOrAttach` gains rows: a spawn calls `Register` with the strand's guid; a `Register` failure stops the strand and returns the error, naming the transient re-run way forward, with nothing appended to `VerifyFixers`; the started spec's role is `gatefixer.RoleVerifyFixer`; the rendered prompt carries the frame's reply-file line and the body's report path.

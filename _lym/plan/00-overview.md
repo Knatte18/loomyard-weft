@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -16,16 +16,17 @@ Writers that loop on their own validator stop doing so when their row's fixer is
 1 — gatefixer-core — new `internal/gatefixer`: fixer roles, record and store, spawn-or-attach, wait, stop, runproc registrar, and the PATTERN entry
 2 — gatefixer-prompt — shared cold frame stencil and `RenderPrompt`
 3 — webster-fixer-on-core — `fix-verify` and the plan fixer's wait on `gatefixer`; cold prefix and webster wait helpers deleted; verify fixer registered with runproc
-4 — gate-fixer-config — gate.yaml `fixer` on the `card` key and `fixer_timeout_min`
-5 — module-fixer-keys — `darn.gate_fixer`, `tapestry.plan_gate_fixer`, `loom.discussion_gate_fixer`
-6 — row-gate-wrap — `gatefixer.WrapRowGate` and the row fixer's record set
-7 — shedrecipe-fixer-element — the `fixer` gate element key, the `Env.GateFixer` seam and the three rows' opt-in
-8 — loom-row-fixer-wiring — loomcli wires the row fixer seam, the row visit directory and the three body stencils
-9 — goto-ends-fixers — a goto or a relaunch ends every fixer role under the pair before it moves the run
-10 — writer-stencils-fixer-mode — Plan-Write and Discussion-Write prompts drop the validator loop when the fixer is on
-11 — card-gate-front — the front carries the strand's role and keys a fixer's own call apart
-12 — card-gate-runner-fixer — the detached runner's fixer phase, attach, re-run and join rule
-13 — webster-fork-card-fixer-text — the Webster fork and recovery prompts name the card-gate fixer when it is on
+4 — webster-file-headers — render.go, strand.go and recoverbatch.go file headers name the shared frame and gatefixer's members in place of the deleted webster ones
+5 — gate-fixer-config — gate.yaml `fixer` on the `card` key and `fixer_timeout_min`
+6 — module-fixer-keys — `darn.gate_fixer`, `tapestry.plan_gate_fixer`, `loom.discussion_gate_fixer`
+7 — row-gate-wrap — `gatefixer.WrapRowGate` and the row fixer's record set
+8 — shedrecipe-fixer-element — the `fixer` gate element key, the `Env.GateFixer` seam and the three rows' opt-in
+9 — loom-row-fixer-wiring — loomcli wires the row fixer seam, the row visit directory and the three body stencils
+10 — goto-ends-fixers — an admitted goto or targeted relaunch ends every fixer role under the pair before it writes the move
+11 — writer-stencils-fixer-mode — Plan-Write and Discussion-Write prompts drop the validator loop when the fixer is on
+12 — card-gate-front — the front carries the strand's role and keys a fixer's own call apart
+13 — card-gate-runner-fixer — the detached runner's fixer phase, attach, re-run and join rule
+14 — webster-fork-card-fixer-text — the Webster fork and recovery prompts name the card-gate fixer when it is on
 
 ## Shared Decisions
 

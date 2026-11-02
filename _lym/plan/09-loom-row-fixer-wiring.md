@@ -1,4 +1,4 @@
-# Card 8 — loom-row-fixer-wiring
+# Card 9 — loom-row-fixer-wiring
 
 **Create:**
 - `contracts/stencils/gatefix/gatefix-body-darn.md`
@@ -45,7 +45,7 @@ Wire `Env.GateFixer` for the Darn-Write, Plan-Write and Discussion-Write rows (D
   With an empty pair slug it returns the request's spec unchanged, so a row on the prime or outside a hub spawns no fixer and its gate failure reaches the writer as today (D1).
   Otherwise it resolves the request's model-spec through the registry into a `shuttleengine.NewModelChoice`, refusing an alias the registry does not hold with the setting's way forward, and returns `gatefixer.WrapRowGate(req.Spec, req.Entry, rf)` with `rf.Fixer` a `gatefixer.NewStrandFixer` whose `Register` is `gatefixer.Registrar(reed, runProcDir, slug, gatefixer.RoleGateFixer)`, `rf.VisitDir` over `rowVisitDir` for `req.Row`, `rf.Timeout` the gate config's `FixerTimeout()`, `rf.Forked` and `rf.SkipForked` from the request, and `rf.Spec` the closure `fixerSpec` returns.
 - `fixerSpec(in, req, choice)` returns the closure that renders a fixer's prompt with `gatefixer.RenderPrompt` and builds its `gatefixer.Spec` under `RoleGateFixer`, with the hub's language skills, `choice` and the gate config's timeout; it is its own member so a test reads the spec the wrap would spawn without driving a strand.
-  The body is chosen by the request's entry name from one table: `verify` takes `gatefix-body-darn` and `segmentcolor.Darn`; `plan` takes `gatefix-body-plan` and `segmentcolor.Plan`; `discussion` takes `gatefix-body-discussion` and `segmentcolor.Discussion`; an entry outside the table is refused naming it, a fail-loud wiring guard since card 7 sends only those three.
+  The body is chosen by the request's entry name from one table: `verify` takes `gatefix-body-darn` and `segmentcolor.Darn`; `plan` takes `gatefix-body-plan` and `segmentcolor.Plan`; `discussion` takes `gatefix-body-discussion` and `segmentcolor.Discussion`; an entry outside the table is refused naming it, a fail-loud wiring guard since card 8 sends only those three.
   Body values: Darn-Write's `fix_gate` is the gate config's `AgentGateCall("darn-write")`, beside `worktree_root` and `decision_record_path`; Plan-Write's `plan_dir`, `lens_review_path` and `recheck_command`, `lym loom validate-plan --lens-review` for a forked request and `lym loom validate-plan` otherwise; Discussion-Write's `decision_record_path`, `support_log_path`, `relevant_path` and `recheck_command` `lym loom validate-discussion`.
   The friction note is `gate-fixer-<row>` under the friction dir when Tier 2 is on, and the parent name is the run's.
 - `loomCLI.wire` sets `Env.GateFixer` to `gateFixerSeam` over the values it already holds, and `intentionallyNil` drops `GateFixer`.

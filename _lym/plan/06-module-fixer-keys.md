@@ -1,4 +1,4 @@
-# Card 5 — module-fixer-keys
+# Card 6 — module-fixer-keys
 
 **Edit:**
 - `internal/darnengine#ConfigSpec`
@@ -32,7 +32,7 @@ Add one model-spec key per row caller (D3), each defaulting to `sonnet[medium]`,
 Each module's spec classifies its new key as `CategoryNone`, as its sibling model-spec keys are, in `darnengine.ConfigSpec`, `loomengine.TapestryConfigSpec` and `loomengine.ConfigSpec`, since `configreg`'s template-coverage test refuses a template key no `Categories` entry covers.
 Each template line carries a comment naming the gate the fixer serves and that `""` turns it off.
 Each loader refuses a non-empty value `modelspec.Parse` rejects, in the shape its other model-spec keys refuse, naming the key and the way forward to set a model-spec with `lym config <module>` or `""` to turn the fixer off; an empty value loads as off.
-The row gates read these keys through `Env.Setting` at build (card 7), so the typed fields serve the loaders' refusal and the writers' prompt choice (card 10).
+The row gates read these keys through `Env.Setting` at build (card 8), so the typed fields serve the loaders' refusal and the writers' prompt choice (card 11).
 
 Tests, tier0:
 - `TestLoadConfig` (darn), `TestLoadTapestryConfig` and `TestLoadConfig_Loads` each gain a row asserting the template default `sonnet[medium]` and a row loading `""` as off.
