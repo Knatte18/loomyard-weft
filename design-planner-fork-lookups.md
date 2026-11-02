@@ -8,30 +8,25 @@ In a sample of 28 sessions (`.scratch/batching-breach.md` of the batching study)
 Every lookup the writer makes is paid at its whole context, so exploration late in a large session is the expensive part of planning.
 Discussion-Write explores the code more than any other role, so the same cost applies there.
 
-## Design (operator, 2026-11-01)
+## What is being benched
 
-- Plan-Write and Discussion-Write start several fresh, cold-start Sonnet explore subagents in parallel, in one message, each with its own questions.
-- Each explore agent returns only what is relevant: a list of the files, spans and facts the writer needs, with paths and line ranges, not a dump of what it read.
-- The writer reads only what those lists name, in one message, and writes the plan or discussion with the whole overview in its own session.
-- The writer is encouraged to work this way, not commanded: the stencils say when it pays, such as broad exploration up front or a batch of open questions late in a large session.
-  The writer keeps its own lookups and uses them when it judges a lookup small or when it needs to see the code itself.
-- Forks do not serve here: a fork inherits the writer's whole context and saves nothing.
+The writers hand batches of independent lookups to fresh Sonnet subagents that return only what is relevant, with paths and line ranges, and read only what those lists name.
+The writer is encouraged to work this way by its stencil, not commanded.
+Task `explore-subagent-model` builds the guidance for the Discussion-Write stencil and makes the subagent model config; the Plan and darn stencils already carry the guidance.
+A fork does not serve for lookups: it inherits the writer's whole context and saves nothing.
 
 ## Research
 
 - From the Plan-Write and Discussion-Write transcripts of landed tapestry runs, count the writers' exploration turns, their context and cost, and how many could have gone to parallel explore agents up front.
-- Bench on one or two replays (the `plan-split-bench` inputs) for both roles: the writer allowed subagents but given no stencil guidance, against the writer with the guidance above.
+- Bench on one or two replays (the `plan-split-bench` inputs) for both roles: the writer allowed subagents but given no stencil guidance, against the writer with the guidance.
   Compare whether the guidance changes what the writer does, and cost, turns, peak context and review findings.
 - Name the risk: an explore agent's list may leave out what the writer would have seen in the code, so count review findings that trace to a missed fact.
 
 ## What the bench writer did (orch, 2026-11-01)
 
 The `psb-rv-plan` writer ran on `opus[medium]`; its Agent calls were one fork writing the plan and the `twill-plan` lens reviews, none for lookups.
-Plan-Write ran in fork mode, where lym's hook (`steerAgentNonForkDeny` in `claudeengine/settings.go`) allowed only fork subagents, so a fresh explore agent was refused.
+No run denies the Agent tool any more, so a writer may start a fresh subagent.
 
-## Built since (tidy, 2026-11-01)
+## Timing
 
-Task `darn-sonnet-helpers` landed.
-No run denies the Agent tool any more: `steerAgentNonForkDeny` and `deny_agent_tool` are gone, and a Plan writer may start a fresh subagent.
-The loom plan stencil now says when to hand lookups to a fresh Sonnet subagent, so the stencil guidance exists in a first form; the Discussion-Write stencil was not named in the landing.
-The bench no longer waits on that task: run it, with the guided writer against one given no guidance.
+The bench waits on `explore-subagent-model` landing, so the guidance exists for both roles; it sets that through `depends_on` once promoted.
