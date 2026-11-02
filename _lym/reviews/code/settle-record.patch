@@ -1,0 +1,152 @@
+diff --git a/internal/landingshed/finalize_integration_test.go b/internal/landingshed/finalize_integration_test.go
+index 1a064095..476212a1 100644
+--- a/internal/landingshed/finalize_integration_test.go
++++ b/internal/landingshed/finalize_integration_test.go
+@@ -185,7 +185,7 @@ func TestFinalize_OverRealHub(t *testing.T) {
+ 		shedfake.RequireOutcome(t, fz, shedengine.Done)
+ 		if len(shuttle.Specs) != 1 {
+ 			t.Errorf("fake shuttle Run() called %d time(s); want exactly 1 (one conflict-resolution session)", len(shuttle.Specs))
+-		} else if want := []string{"scribe:prose", "scribe:code-quality", "scribe:golang-testing"}; !slices.Equal(shuttle.Specs[0].Skills, want) {
++		} else if want := []string{"scribe:prose", "scribe:code-quality", "scribe:testing", "scribe:golang-testing"}; !slices.Equal(shuttle.Specs[0].Skills, want) {
+ 			t.Errorf("conflict session Skills = %v; want %v", shuttle.Specs[0].Skills, want)
+ 		}
+ 
+diff --git a/internal/landingshed/fixer.go b/internal/landingshed/fixer.go
+index 280661f6..4a224f7e 100644
+--- a/internal/landingshed/fixer.go
++++ b/internal/landingshed/fixer.go
+@@ -7,6 +7,7 @@ import (
+ 	"fmt"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/languageconfig"
+ 	"github.com/Knatte18/loomyard/internal/modelspec"
+ 	"github.com/Knatte18/loomyard/internal/seatengine"
+ 	"github.com/Knatte18/loomyard/internal/segmentcolor"
+@@ -30,6 +31,9 @@ const fixerStencilName = "landing-template-fixer"
+ // fixerRole is the agent-name role the merge fixer's spawn carries.
+ const fixerRole = "fixer"
+ 
++// fixerSkills are the skills the merge fixer loads before the run's language skills: it edits code and tests.
++var fixerSkills = []string{"scribe:prose", "scribe:code-quality", "scribe:testing"}
++
+ // FixerInputs carries the told values one merge fixer session needs.
+ // Every field is required except PlanDir, FailureRecordPath, FixReviewPath and LanguageSkills; AlignedTip is required in parent-align mode only.
+ type FixerInputs struct {
+@@ -61,7 +65,7 @@ type FixerInputs struct {
+ 	ParentBranch string
+ 	// Slug is the task's slug.
+ 	Slug string
+-	// LanguageSkills are the run's language skills the session loads before its prompt.
++	// LanguageSkills are the run's language skills the session loads after its own, before its prompt.
+ 	LanguageSkills []string
+ }
+ 
+@@ -130,7 +134,7 @@ func FixerTable(in FixerInputs, cfg Config, reg modelspec.Registry) (seatengine.
+ 			Stencil:     fixerStencilName,
+ 			ModelChoice: shuttleengine.NewModelChoice(resolved),
+ 			Outputs:     []string{in.ReportPath},
+-			Skills:      in.LanguageSkills,
++			Skills:      languageconfig.AppendSkills(fixerSkills, in.LanguageSkills),
+ 		}},
+ 	}, nil
+ }
+diff --git a/internal/landingshed/fixer_test.go b/internal/landingshed/fixer_test.go
+index 84b101fc..93286dd4 100644
+--- a/internal/landingshed/fixer_test.go
++++ b/internal/landingshed/fixer_test.go
+@@ -71,8 +71,8 @@ func TestFixerTable(t *testing.T) {
+ 			if want := []string{in.ReportPath}; !slices.Equal(lead.Outputs, want) {
+ 				t.Errorf("lead outputs = %v; want %v", lead.Outputs, want)
+ 			}
+-			if !slices.Equal(lead.Skills, in.LanguageSkills) {
+-				t.Errorf("lead skills = %v; want %v", lead.Skills, in.LanguageSkills)
++			if want := []string{"scribe:prose", "scribe:code-quality", "scribe:testing", "scribe:golang-build"}; !slices.Equal(lead.Skills, want) {
++				t.Errorf("lead skills = %v; want %v", lead.Skills, want)
+ 			}
+ 			if table.Values["mode"] != string(mode) || table.Values["aligned_tip"] != "aligned123" || table.Values["merged_tip"] != "merged456" {
+ 				t.Errorf("table values mode/aligned_tip/merged_tip = %q/%q/%q; want %q/aligned123/merged456", table.Values["mode"], table.Values["aligned_tip"], table.Values["merged_tip"], mode)
+diff --git a/internal/landingshed/publish_integration_test.go b/internal/landingshed/publish_integration_test.go
+index 5e814f07..757b915a 100644
+--- a/internal/landingshed/publish_integration_test.go
++++ b/internal/landingshed/publish_integration_test.go
+@@ -91,7 +91,7 @@ func TestMergeIn_ConflictSessionLoadsLanguageSkills(t *testing.T) {
+ 		if len(shuttle.Specs) != 1 {
+ 			t.Fatalf("fake shuttle Run() called %d time(s); want exactly 1 conflict-resolution session", len(shuttle.Specs))
+ 		}
+-		if want := []string{"scribe:prose", "scribe:code-quality", "scribe:golang-testing"}; !slices.Equal(shuttle.Specs[0].Skills, want) {
++		if want := []string{"scribe:prose", "scribe:code-quality", "scribe:testing", "scribe:golang-testing"}; !slices.Equal(shuttle.Specs[0].Skills, want) {
+ 			t.Errorf("conflict session Skills = %v; want %v", shuttle.Specs[0].Skills, want)
+ 		}
+ 	})
+diff --git a/internal/mergeresolve/doc.go b/internal/mergeresolve/doc.go
+index 892e6746..e6702bba 100644
+--- a/internal/mergeresolve/doc.go
++++ b/internal/mergeresolve/doc.go
+@@ -30,7 +30,7 @@
+ // nor overrides it -- a human put that state there on purpose, and this package has no way to know
+ // why, so the safe move is to leave it exactly as found and let a human resolve it.
+ //
+-// The conflict session loads `scribe:prose` and `scribe:code-quality`, then the told `Deps.LanguageSkills`, before its prompt, and its stencil carries the parent directive that internal/parentdirective renders from the told Deps.ParentName.
++// The conflict session loads `scribe:prose`, `scribe:code-quality` and `scribe:testing`, then the told `Deps.LanguageSkills`, before its prompt, and its stencil carries the parent directive that internal/parentdirective renders from the told Deps.ParentName.
+ //
+ // It takes told absolute paths and has no direct production import of internal/lymcwd, per the
+ // Told-Geometry Invariant: every path this package operates on is handed to it by its caller, and it
+diff --git a/internal/mergeresolve/mergeresolve_test.go b/internal/mergeresolve/mergeresolve_test.go
+index faed1595..b3843cf5 100644
+--- a/internal/mergeresolve/mergeresolve_test.go
++++ b/internal/mergeresolve/mergeresolve_test.go
+@@ -693,9 +693,9 @@ func TestBuildConflictSpec_SkillsAndParentDirective(t *testing.T) {
+ 		language   []string
+ 		wantSkills string
+ 	}{
+-		{"with parent", "ab:cd:webster", "ab:cd:webster", nil, "scribe:prose,scribe:code-quality"},
+-		{"no parent", "", "No parent is recorded", nil, "scribe:prose,scribe:code-quality"},
+-		{"language skills follow its own", "", "No parent is recorded", []string{"scribe:golang-testing", "scribe:code-quality"}, "scribe:prose,scribe:code-quality,scribe:golang-testing"},
++		{"with parent", "ab:cd:webster", "ab:cd:webster", nil, "scribe:prose,scribe:code-quality,scribe:testing"},
++		{"no parent", "", "No parent is recorded", nil, "scribe:prose,scribe:code-quality,scribe:testing"},
++		{"language skills follow its own", "", "No parent is recorded", []string{"scribe:golang-testing", "scribe:code-quality"}, "scribe:prose,scribe:code-quality,scribe:testing,scribe:golang-testing"},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/mergeresolve/spec.go b/internal/mergeresolve/spec.go
+index dd8c63e7..8f3f4352 100644
+--- a/internal/mergeresolve/spec.go
++++ b/internal/mergeresolve/spec.go
+@@ -26,7 +26,7 @@ const conflictStencilName = "landing-template-conflict"
+ const ConflictRole = "conflict"
+ 
+ // conflictSkills are the skills the conflict-resolution session loads before its prompt.
+-var conflictSkills = []string{"scribe:prose", "scribe:code-quality"}
++var conflictSkills = []string{"scribe:prose", "scribe:code-quality", "scribe:testing"}
+ 
+ // reportNamePrefix is the filename prefix every attempt's resolution report shares, followed by the attempt number and ".md".
+ // The report path builder and Resolve's stale-report glob both use it.
+diff --git a/internal/samplerengine/spec.go b/internal/samplerengine/spec.go
+index e53a6638..3c5b0623 100644
+--- a/internal/samplerengine/spec.go
++++ b/internal/samplerengine/spec.go
+@@ -20,8 +20,8 @@ const Role = "sampler"
+ // stencilName is the registered name of the sampler agent's opening prompt.
+ const stencilName = "sampler-template-agent"
+ 
+-// skills are the skills the sampler session loads before its prompt.
+-var skills = []string{"scribe:prose", "scribe:conversation"}
++// skills are the skills the sampler session loads before its prompt: it talks with the operator and writes code and tests.
++var skills = []string{"scribe:prose", "scribe:conversation", "scribe:code-quality", "scribe:testing"}
+ 
+ // SessionInputs are the values SessionSpec is told; none is derived here.
+ type SessionInputs struct {
+diff --git a/internal/samplerengine/spec_test.go b/internal/samplerengine/spec_test.go
+index 89df96ea..74c9e902 100644
+--- a/internal/samplerengine/spec_test.go
++++ b/internal/samplerengine/spec_test.go
+@@ -42,7 +42,7 @@ func TestSessionSpec(t *testing.T) {
+ 		if spec.Role != Role || spec.Segment != segmentcolor.Darn {
+ 			t.Errorf("SessionSpec() Role, Segment = %q, %q; want %q, %q", spec.Role, spec.Segment, Role, segmentcolor.Darn)
+ 		}
+-		if want := []string{"scribe:prose", "scribe:conversation"}; !slices.Equal(spec.Skills, want) {
++		if want := []string{"scribe:prose", "scribe:conversation", "scribe:code-quality", "scribe:testing"}; !slices.Equal(spec.Skills, want) {
+ 			t.Errorf("SessionSpec() Skills = %v; want %v", spec.Skills, want)
+ 		}
+ 		directive, err := parentdirective.Directive(stencilsDir, "hub:orch", true)
