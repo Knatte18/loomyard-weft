@@ -106,8 +106,13 @@ Both sit behind the tapestry flag `plan_split` (off by default; `Plan-Write` sta
   The split plan had 34 cards against 15 and its review found 4 blocking findings against 3.
 - `run-verbs-shared`: the plan arm cost $28.03 with a 674k peak; the split arm failed when reed lost the chair strand (note `reed-loses-parts-chair`), so there is no comparison.
 - The joined split plan passed its gate only after two hand edits to `parts.md`, both defects of `Parts-Write`; the report recommends keeping `plan_split` off.
-  Task `plan-split-tune` tunes the split writers on this.
-- Still open: the solo Opus high and Fable writer bench, and a repeat of the split bench after the tuning.
+
+## Split writers tuned, round 1 (landed 2026-11-02)
+
+Task `plan-split-tune` (`fe753d40`, `docs/research/plan-split-tune-2026-11-02.md`) landed round 1 with no replay.
+The parts gate and `lym loom validate-parts` now refuse an export that is an existing member or path (`export-existing`) and run the name checks on each `plan:` export, and `Parts-Write` reads the PATTERN entries governing each export's name first.
+Task `plan-split-replay` replays both inputs on the installed `lym` and tunes further.
+- Still open: the solo Opus high and Fable writer bench, and a repeat of the split bench after the tuning, whose results `plan-split-replay` records.
 
 ## Data point: `cold-gate-fixer` Plan-Write (orch, 2026-11-02)
 
