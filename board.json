@@ -859,6 +859,27 @@
       "body": "Imported from [issue #7](https://github.com/Knatte18/loomyard/issues/7).\n\n**What happened**\n\nThe Master run finished with outcome `done` while a background shell was still running (outstanding for 39s).\nThe shell chained a `git add`, a `git commit`, `git log` and `lym gate test --wait --gate \u003cgate\u003e`.\nThe run never read the shell's result, and lym did not stop the shell.\nThe loom wrote a friction note (\"Master's run ended with a background shell outstanding\") that says shuttle removes Master's strand when the run finishes, which ends the shell only where it sits in the pane's process tree.\n\n**Why it is abnormal**\n\nA run reported as `done` can have an unfinished commit and an unread gate verdict.\nThe commit may or may not have landed, and the gate result was never checked, so `done` does not guarantee the work was committed or gated.\nWhether the shell is killed depends on process-tree placement, so the outcome is nondeterministic.\nThe `lym gate test --wait` inside the shell may also be cut off mid-run, which can leave a gate slot held or a gate run without a reader.\n\n**What to do**\n\n- Make the run refuse `done` (or downgrade it) while the payload signal reports an outstanding background shell, and tell the agent to wait for or read the shell first.\n- Alternatively, have shuttle stop outstanding background shells explicitly on run end and record the result, rather than relying on pane teardown.\n- Check that a gate run abandoned this way releases its slot.\n\nProvenance: task `gate-run-keeps-cache-warm`; notes: `webster-background-shell.md`.\n\n\n\n_Moved from #912 in the repository before it was recreated._\n",
       "created": "2026-11-02T20:34:23Z",
       "revised": "2026-11-02T20:34:23Z"
+    },
+    {
+      "id": 1022,
+      "handle": "B9",
+      "slug": "batten-pass-pair-gone",
+      "title": "batten pass fails forever when a run's task worktree is gone",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "batten",
+        "fabric"
+      ],
+      "issues": [
+        9
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #9](https://github.com/Knatte18/loomyard/issues/9).\n\n## Seen\n\nIn the NORCE Models hub, the beam project run `loomyard-setup` stands at batten row 6, `Run-Shed`. Worktree-Create finished on 2026-10-30.\nIts task worktree, `…/Models-LYMHUB/loomyard-setup`, no longer exists, and `lym fabric pairs` lists only the prime.\nEvery dobby pass on the run now fails the same way, three times in a row so far:\n\n```\nbattencli: origin reconcile of \"loomyard-setup\" failed: fabricengine: origin reconcile of run loomyard-setup: no pair worktree /home/…/Models-LYMHUB/loomyard-setup\n```\n\nThe run's status shows `state: running` with an empty `error` and `hand_back: false`. Dobby only reports the repeated failure to the orch.\n\n## Expected\n\nA missing task worktree should not make the pass fail without end.\nBatten (or the origin reconcile) should recreate or adopt the pair from its branches when they still exist, the way `lym fabric add` adopts an existing weft branch.\nIf it cannot, it should hand the run back with a stop that names the recovery, not leave it running and retry.\n\n## Workaround\n\nThe orch recreates the worktree by hand with `lym fabric add loomyard-setup`, then runs `lym batten run loomyard-setup`.\n",
+      "created": "2026-11-02T20:34:25Z",
+      "revised": "2026-11-02T20:34:25Z"
     }
   ],
   "prime_owner": "neve",
