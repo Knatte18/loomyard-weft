@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-02 12:24 UTC; every age below is as of then.
+Rendered 2026-11-02 12:25 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -22,9 +22,9 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **A hook nudges an agent back to batching the moment it breaks the rule**<br>• Above about 150k context agents drift into grep-then-slice chains and one-fix-per-turn edits, about a third of context tokens in a 28-session sample; a PostToolUse hook adds one line on a breach, with sharper rule wording | [`batching-breach-nudge`](design-batching-breach-nudge.md) | darn | Code-Burler-Fix | osl-1046 | 18h<br>56m | claude, shuttle |
+| T4 | **A hook nudges an agent back to batching the moment it breaks the rule**<br>• Above about 150k context agents drift into grep-then-slice chains and one-fix-per-turn edits, about a third of context tokens in a 28-session sample; a PostToolUse hook adds one line on a breach, with sharper rule wording | [`batching-breach-nudge`](design-batching-breach-nudge.md) | darn | Code-Burler-Fix | osl-1046 | 18h<br>57m | claude, shuttle |
 | T5 | **One cold, cheap fixer clears a failed writer gate instead of the writer at full context**<br>• When the Darn-Write, plan, discussion or Webster card gate fails, Go spawns one shared cold fixer with the gate report, generalised from webster fix-verify | [`cold-gate-fixer`](design-cold-gate-fixer.md) | tapestry · light | Plan-Write | osl-1046 | 18h<br>17h | webster, loom, darn, gate |
-| T6 | **Discussion writers hand lookups to Sonnet subagents, and the subagent model is config**<br>• Add the Plan stencil's explore-subagent guidance to the Discussion-Write stencil, and read the subagent model from a loom config key instead of a literal in each stencil | [`explore-subagent-model`](design-explore-subagent-model.md) | darn · light | Darn-Write | osl-1046 | 43m<br>43m | stencil, loom, darn, config |
+| T6 | **Discussion writers hand lookups to Sonnet subagents, and the subagent model is config**<br>• Add the Plan stencil's explore-subagent guidance to the Discussion-Write stencil, and read the subagent model from a loom config key instead of a literal in each stencil | [`explore-subagent-model`](design-explore-subagent-model.md) | darn · light | Darn-Write | osl-1046 | 44m<br>44m | stencil, loom, darn, config |
 
 #### Ready (0)
 
@@ -41,14 +41,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R1 |  | **Measure the effect of the agent-turns project**<br>• Turns, calls per turn and cost before and after P2 agent-turns, for darn writers, Webster forks and review roles | [`agent-turns-effect`](design-agent-turns-effect.md) | 22h<br>17h | tools |
-| R2 |  | **Plan and Discussion writers explore through parallel Sonnet agents that return only what is relevant**<br>• Bench the guidance that sends Plan and Discussion writers' lookups to parallel Sonnet subagents against a writer given none | [`planner-fork-lookups`](design-planner-fork-lookups.md) | 18h<br>43m | loom |
-| R3 |  | **Measure the effect of the batching breach hook**<br>• After the batching breach hook lands, compare breach turns and context tokens against the 28-session baseline and tune its thresholds | [`batching-hook-effect`](design-batching-hook-effect.md) | 56m<br>56m | claude, shuttle, tools |
+| R2 |  | **Plan and Discussion writers explore through parallel Sonnet agents that return only what is relevant**<br>• Bench the guidance that sends Plan and Discussion writers' lookups to parallel Sonnet subagents against a writer given none | [`planner-fork-lookups`](design-planner-fork-lookups.md) | 18h<br>44m | loom |
+| R3 |  | **Measure the effect of the batching breach hook**<br>• After the batching breach hook lands, compare breach turns and context tokens against the 28-session baseline and tune its thresholds | [`batching-hook-effect`](design-batching-hook-effect.md) | 57m<br>57m | claude, shuttle, tools |
 
 ## [P0 Root: entries under no project](project-root.md) (36)
 
 Owner `osl-1046`
 
-### Tasks (5)
+### Tasks (6)
 
 Concrete and claimable; only a task can run.
 
@@ -66,19 +66,20 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **heddle renders claude-file to the worktree root, not to the worktree's anchor** | [`heddle-render-ignores-anchor`](design-heddle-render-ignores-anchor.md) | darn · light |  | 24m<br>20m | heddle, fabric, cwd |
+| T2 | **heddle renders claude-file to the worktree root, not to the worktree's anchor** | [`heddle-render-ignores-anchor`](design-heddle-render-ignores-anchor.md) | darn · light |  | 25m<br>21m | heddle, fabric, cwd |
 
-#### Draft (3)
+#### Draft (4)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Tune the plan-split writers until a split plan joins with no hand edit**<br>• Tune, replay on two inputs, tune again, at most 3 rounds, starting from the plan-split-bench report | [`plan-split-tune`](design-plan-split-tune.md) | darn |  | 18h<br>17h | loom, stencil, pattern |
-| T7 | `draft` **Measure fabricengine tier1 with the test work directory on /dev/shm against the default**<br>• Six runs in three concurrent pairs on OSL-1046: can fabricengine tier1 use /dev/shm for its temp root, and does it avoid the Cortex slowdown | [`fabricengine-shm-bench`](design-fabricengine-shm-bench.md) | darn · docs |  | 13m<br>7m | gate, fabric |
-| T8 | `draft` **The landing merge fixer loads no prose, code-quality or testing skill**<br>• FixerTable sets the fixer seat's skills to the language skills alone, unlike every other code-writing seat | [`landing-fixer-base-skills`](design-landing-fixer-base-skills.md) | darn · light |  | 4m<br>0m | landing, shuttle |
+| T7 | `draft` **Measure fabricengine tier1 with the test work directory on /dev/shm against the default**<br>• Six runs in three concurrent pairs on OSL-1046: can fabricengine tier1 use /dev/shm for its temp root, and does it avoid the Cortex slowdown | [`fabricengine-shm-bench`](design-fabricengine-shm-bench.md) | darn · docs |  | 14m<br>8m | gate, fabric |
+| T8 | `draft` **The landing merge fixer loads no prose, code-quality or testing skill**<br>• FixerTable sets the fixer seat's skills to the language skills alone, unlike every other code-writing seat | [`landing-fixer-base-skills`](design-landing-fixer-base-skills.md) | darn · light |  | 5m<br>1m | landing, shuttle |
+| T9 | `draft` **Drift-Verify with the operator in the loop** | [`drift-verify-operator-in-loop`](design-drift-verify-operator-in-loop.md) | tapestry |  | 9m<br>9m | drift |
 
-### Notes (31)
+### Notes (30)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -92,7 +93,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B2 |  | **Beam orch cannot set a board entry's profile: refused as a task session** | [`beam-orch-cannot-set-profile`](design-beam-orch-cannot-set-profile.md) | 24m<br>24m | board, orch, workspaces |
+| B2 |  | **Beam orch cannot set a board entry's profile: refused as a task session** | [`beam-orch-cannot-set-profile`](design-beam-orch-cannot-set-profile.md) | 25m<br>25m | board, orch, workspaces |
 
 #### Enhancements (14)
 
@@ -113,7 +114,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 10d<br>4d | burler, claude |
 | E24 |  | **A status-bar button asks for a value, so an agent opened from it gets a name**<br>• Button entries take ask, filling {answer}; the agent button asks for the strand name, and term becomes terminal | [`button-ask-name`](design-button-ask-name.md) | 21h<br>21h | reed, config |
 
-#### Features (15)
+#### Features (14)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -128,7 +129,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 3d<br>3d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 | F10 |  | **The arbiter settles review escalations and records their decisions, so they never reach the orch**<br>• Decision escalations become eligible for the arbiter, and the arbiter may record decisions and accept or continue a review | [`arbiter-settles-escalations`](design-arbiter-settles-escalations.md) | 23h<br>23h | burler, arbiter, dobby, orch |
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 4w<br>18h | board, ide, orch |
-| F12 |  | **Drift-Verify with the operator in the loop** | [`drift-verify-operator-in-loop`](design-drift-verify-operator-in-loop.md) | 8m<br>8m | drift |
 | F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 3w<br>17h | webster |
 | F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 10d<br>1d | loom, board, batten, workspaces |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>3h | burler, shed, orch, quarry, report |
