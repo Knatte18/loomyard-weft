@@ -827,6 +827,26 @@
       "body": "## Seen (orch, 2026-11-02, from the darn writer of `tmuxkit-short-socket-path`)\n\n`gitexec` `TestRun_RemoteBounds/a_remote_that_never_answers...` sets a 200 ms stall bound.\nAt a load average of about 30, git is killed before its ext script writes its count file, and the test fails.\n`heddle-render-ignores-anchor` failed the same way (gate log `20261102T135456Z-tier1-2983004`), and a rerun at `-count=1` by the writer of `tmuxkit-short-socket-path` failed the same way, although its change touches neither package.\n\n## Idea\n\nMake the test's bound independent of git start-up time, for example wait for the count file before the stall starts counting, rather than raising the number.\nThe writer reads the test and says what its 200 ms is meant to prove.\n",
       "created": "2026-11-02T14:10:33Z",
       "revised": "2026-11-02T14:10:33Z"
+    },
+    {
+      "id": 1006,
+      "handle": "B1",
+      "slug": "sampler-lacks-pattern-directive",
+      "title": "The sampler agent gets no PATTERN directive",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "loom",
+        "stencil",
+        "pattern"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The sampler writes and commits code but its prompt carries no PATTERN directive, unlike every other code-writing role",
+      "body": "## Seen (operator, 2026-11-02)\n\nAn interactive sampler agent told the operator that PATTERN reaches only the loom agents, not an interactive session: working directly with Claude in the code, it does not see the abscissa rule.\n\n## Cause (orch, from the source)\n\n`internal/samplerengine` and `contracts/stencils/sampler/sampler-template-agent.md` name no PATTERN directive, and the stencil's markers are `slug`, `task_worktree`, `decision_record_path`, `parent_directive` and `edit_directive` only.\nEvery other code-writing role renders `pattern.Directive` into its prompt: Webster (`internal/websterengine`), darn (`internal/darnengine/spec.go`), Drift-Verify (`internal/driftengine/seats.go`), the Discussion and Plan writers (`internal/loomengine`) and the review seats (`internal/burlerengine`).\nThe sampler is the one role that writes and commits code and gets none.\n\n## Fix\n\nRender the PATTERN directive into the sampler's prompt with `pattern.Directive`, as `VerifyTable` does for its implementer seat, and add a marker for it to the stencil; the role is `pattern.RoleImplementer` while the sampler writes code.\nAdd a test that the sampler's prompt carries the directive.\nIf the sampler becomes a read-only discussion role (see note `discussed-task-split`), it needs the directive too, since what it proposes must not break PATTERN; the role then follows the Discussion writer's.\nBundle with the other small sampler changes when the operator has settled the sampler's direction; do not offer this note alone as a task.\n",
+      "created": "2026-11-02T16:00:53Z",
+      "revised": "2026-11-02T16:00:53Z"
     }
   ],
   "prime_owner": "osl-1046",
