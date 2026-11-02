@@ -780,6 +780,25 @@
       "body": "## Question\n\nDoes the sampler stay a code writer, or become a read-only discussion role as note `discussed-task-split` proposes?\n\n## What follows from the answer\n\n- Skills: task `landing-fixer-base-skills` landed (`7cffa111`) and, as a same-family fix, gave the sampler `scribe:code-quality` and `scribe:testing` beside `scribe:prose` and `scribe:conversation` in `internal/samplerengine/spec.go`, on the footing that it writes code and tests.\n  The language skills are still not listed for it, as other code-writing seats list them.\n  If the sampler becomes a read-only role, the two added skills may be more than it needs and can come out again.\n  The landing's review was asked to confirm the sampler change belongs there.\n- PATTERN role: the directive itself is note `sampler-lacks-pattern-directive`; this answer only decides whether it is rendered for the implementer or the Discussion writer.\n- Bundle with the other small sampler changes once the direction is settled.\n\n## Also read (orch, 2026-11-02)\n\n- Shell guard: the standing Bash denies of `internal/shellguard` render into every Claude session's settings through `internal/shuttleengine/claudeengine/settings.go`, the in-place edit row among them, so the sampler's session has them.\n- Heddle: the batching rules reach a session through the worktree's rendered `CLAUDE.local.md`, so the sampler in its task worktree should have them; not verified in a live sampler session.\n",
       "created": "2026-11-02T18:56:17Z",
       "revised": "2026-11-02T19:21:30Z"
+    },
+    {
+      "id": 1012,
+      "handle": "E1",
+      "slug": "hibernate-wake-resume-switch",
+      "title": "A switch decides whether a wake from hibernate lets the runs go on",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "hibernate",
+        "tender"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (operator, 2026-11-02)\n\nA wake from hibernate lifts the hub-wide pause the hibernate added, so every paused run goes on at once (task `hibernate-wake-leaves-pause` makes that lift reliable).\nThe operator often does not want runs to start again by themselves after a wake.\n\n## Idea\n\n- Whether the wake lifts the pause is a switch: a key in the hibernate config gives the default, and `lym hibernate request` takes a flag that overrides it for one request.\n- With the lift off, the hub stays paused after the wake, the wake notice to the orch says so, and `lym tender resume` lifts it.\n- The wake's other steps, its notice included, run either way.\n\n## Open\n\n- The default of the key.\n",
+      "created": "2026-11-02T19:26:01Z",
+      "revised": "2026-11-02T19:26:01Z"
     }
   ],
   "prime_owner": "neve",
