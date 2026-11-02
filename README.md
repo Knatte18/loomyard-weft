@@ -48,7 +48,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Review and fix the unreviewed default_recipe change** | [`review-default-recipe-darn`](design-review-default-recipe-darn.md) | darn · light | Drift-Verify | neve | 12m<br>12m | board, batten |
+| T3 | **Review and fix the unreviewed default_recipe change** | [`review-default-recipe-darn`](design-review-default-recipe-darn.md) | darn · light | Code-Bouncer | neve | 12m<br>12m | board, batten |
 | T5 | **Finalize releases the parent lock while its fixer works**<br>• A red verify in Finalize frees the parent lock before the fixer starts, then requeues, merges and verifies again, so green runs land while one run fixes | [`finalize-fix-outside-lock`](design-finalize-fix-outside-lock.md) | darn | Code-Burler-Fix | neve | 1d<br>45m | landing, loom |
 
 #### Ready (0)
