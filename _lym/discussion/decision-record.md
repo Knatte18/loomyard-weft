@@ -239,6 +239,13 @@ Rationale: the restart path of D1 and D2 needs the record on disk, and R1 measur
   - card9-slug-read-error-marked-transient (class design, severity BLOCKING, open in rounds 2)
 <!-- /lym:carry-over Plan-Review -->
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - card-gate-key-bare-literal (class consistency, severity BLOCKING, open in rounds 1)
+  - waitonly-marks-terminal-on-pass (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: a fixer spawned for a failure is found done once its reply exists, dead when its turn ends without one, when the timeout passes or when its strand is gone, and is stopped on every terminal result.
