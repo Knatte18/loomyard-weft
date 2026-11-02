@@ -1,11 +1,11 @@
 {
-  "current_producer": "Drift-Baseline",
+  "current_producer": "Drift-Await",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Drift-Baseline",
-    "last": "Record-Write → done",
+    "now": "Drift-Await",
+    "last": "Drift-Baseline → skipped",
     "wait": ""
   },
   "history": [
@@ -20,6 +20,13 @@
       "outcome": "done",
       "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/bench-suite-osl1046/_lym/discussion/decision-record.md",
       "at": "2026-11-02T09:22:51Z"
+    },
+    {
+      "producer": "Drift-Baseline",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-02T09:22:51Z",
+      "reason": "drift.enabled = false"
     }
   ],
   "product": {
