@@ -857,6 +857,27 @@
       "body": "## Idea (operator, 2026-11-02)\n\nSpread Claude usage over two accounts, so one account's limits are not the bottleneck: each worktree uses one of the accounts, chosen by a weight.\nThe weights are config, for example account A twice for each use of account B, so account A carries twice the load of B on average.\n\n## Seen (orch, 2026-11-02)\n\nLym cannot do this today.\n`lym config claude` has no key for an account, a config directory or an environment, and a search of `internal/` found no use of `CLAUDE_CONFIG_DIR`, so every session runs under whichever account the machine is logged in to.\n\nClaude Code is believed to keep an account's login in a config directory that the `CLAUDE_CONFIG_DIR` environment variable selects.\nThat is not verified: check it against the Claude Code documentation before anything is built.\n\n## Design questions for a Discussion\n\n- Config: a list of accounts, each with a name, a config directory and a weight, in the claude config; a machine-layer key, since the accounts belong to the machine.\n- Choice: per worktree, never per session, so all of a run's sessions (writer, reviewers, fixers, driver) share one account.\n  The pick is made once, when the worktree's first session starts, and recorded with the worktree so a resume, a re-attach and a hand pass keep it.\n  Candidates for the pick: a deterministic hash of the slug against the weights, which needs no state and never gives one slug two accounts, or a persisted counter that deals the accounts out in the weighted ratio, which keeps the ratio exact over a few runs.\n- Scope: the prime's orch and each beam's orch and dobby need a rule of their own, since they outlive a task run.\n- A session spawn sets the chosen account's environment in one place in the claude engine's launch, so no caller sets it.\n- A usage limit on one account: whether lym moves a worktree to the other account when one is limited, or only reports it; the first needs the session's history to be readable under the other account, which it is not by default.\n- Cost and quota reports (`lym report`, `tokencount`) read transcripts per config directory, and would need to read both.\n\n## Not in scope\n\nLogging the accounts in, and whether the use is within the accounts' and the organisation's terms, which is the operator's to settle.\n",
       "created": "2026-11-02T12:33:57Z",
       "revised": "2026-11-02T12:33:57Z"
+    },
+    {
+      "id": 1003,
+      "handle": "T3",
+      "slug": "tmuxkit-short-socket-path",
+      "title": "Let tmuxkit start under a short TMPDIR with a ten-digit uid",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "testkit",
+        "cwd",
+        "gate"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "checkSocketPath refuses TMPDIR=/dev/shm for a ten-digit uid (109 bytes against 107), so the fabricengine tests cannot run in memory",
+      "body": "## Seen (orch, from the `fabricengine-shm-bench` report, 2026-11-02)\n\nOn OSL-1046 the uid is ten digits (a domain account), and `TMPDIR=/dev/shm` makes `tmuxkit.Main` refuse to start any package that has a `TestMain` calling it, `internal/fabricengine` among them.\n`checkSocketPath` in `internal/testkit/tmuxkit/tmuxkit.go` computes the longest socket path as the run directory, `tmux-\u003cuid\u003e` and the longest key, and the result for `/dev/shm/lym-1856216086/r49ee2f` is 109 bytes, over the 107-byte limit (`maxSocketPath`).\n`/dev/shm` is the shortest in-memory path there is, so no `TMPDIR` on this machine puts the tests in memory.\nThe report is the section `fabricengine-shm-bench` in `docs/benchmarks/test-suite-timing.md`.\n\n## Why it matters\n\n`internal/fabricengine` takes 348.72 s of the `tier1` wall on this machine against 45.7 s on a machine without Cortex XDR, and the working guess is that Cortex scans every file the tests create on disk.\nThe guess cannot be tried until the tests can run from `/dev/shm`.\nA symlink that shortens the path was tried and fails 75 fabric tests on path identity (ownership checks compare the path a test was handed with the path git reports), so the fix has to give a real short path, not a link.\n\n## Task\n\nMake a package using `tmuxkit.Main` start with `TMPDIR=/dev/shm` for a ten-digit uid, so the longest socket path is within the limit.\nThe writer reads where the bytes go before choosing: the run directory `lym-\u003cuid\u003e/r\u003chex\u003e` comes from `internal/lymtemp`, `tmux-\u003cuid\u003e` is the directory tmux itself makes under `TMUX_TMPDIR`, and the key length is `maxKeyBytes`.\nIt picks the cut that costs least and keeps the other temp-root users working, for example a shorter run directory name, a socket directory outside the uid-long root, or a shorter key, and says why it chose it.\nA path that was valid before must stay valid.\nAdd a test for a ten-digit uid under a `/dev/shm`-length root.\n\n## After it lands\n\nThe operator reruns the `fabricengine` `tier1` measurement with `TMPDIR=/dev/shm`, paired against the default and started together, as the report's note says; that rerun is a bench of its own and no part of this task.\nThe task makes no config change and no gate change.\n",
+      "status": "draft",
+      "created": "2026-11-02T13:00:49Z",
+      "revised": "2026-11-02T13:00:49Z"
     }
   ],
   "prime_owner": "osl-1046",
