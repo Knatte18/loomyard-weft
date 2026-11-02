@@ -1,6 +1,6 @@
 # Beam orch cannot set a board entry's profile: refused as a task session
 
-`beam-orch-cannot-set-profile` · Task · bug, board, orch, workspaces · running · Finalize
+`beam-orch-cannot-set-profile` · Task · bug, board, orch, workspaces · done
 
 Imported from [issue #12](https://github.com/Knatte18/loomyard/issues/12).
 
