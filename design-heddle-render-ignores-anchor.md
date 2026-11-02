@@ -1,6 +1,6 @@
 # heddle renders claude-file to the worktree root, not to the worktree's anchor
 
-`heddle-render-ignores-anchor` · Task · bug, heddle, fabric, cwd · running · PR-Review
+`heddle-render-ignores-anchor` · Task · bug, heddle, fabric, cwd · running · Finalize
 
 Imported from [issue #13](https://github.com/Knatte18/loomyard/issues/13).
 
