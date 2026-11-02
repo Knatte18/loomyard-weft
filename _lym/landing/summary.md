@@ -1,69 +1,54 @@
-# A hook nudges a session back to batching; sharper batching rules
+# Nudge a session back to batching when its calls break the rule
 
-Above about 150k tokens of context, agents drift into grep-then-slice chains and one-fix-per-turn edits, even though the batching rules reach every session through `CLAUDE.local.md`.
-This change adds a hook that adds one line to the session's context the moment a breach shows. It never denies a call.
-It also rewords the two shipped heddle rules the hook quotes.
+Agents above about 150k context drift back into grep-then-slice chains and one-fix-per-turn edits, because both batching rules reach a session once, in the first user message.
+In a 28-session sample, chained single lookups and edits spread over consecutive turns made up about a third of the context tokens.
+This change adds an after-tool-call hook that adds one line of context on a breach, and sharpens the shipped rule wording.
 
 ## What changes
 
-**The hook.** `claude.yaml` gets a `batching_nudge` block (`internal/shuttleengine/claudeengine/template.yaml`) with these keys:
+- **Hook.** A claude run's settings gain a PostToolUse hook, matched to Read, Grep, Glob, Edit and Write, that runs the hidden `lym shuttle hook-batching claude <state file>` verb.
+  The verb needs no hub and is skipped by the shuttle group's geometry resolution.
+  The command ends in `; true`, so a missing or failing `lym` never shows the session a hook error.
+- **Judgment.** The claude engine reads a bounded tail of the transcript at the hook input's `transcript_path`, groups calls per assistant message, and answers with one `additionalContext` line that names the breach and quotes the rule.
+  It never denies.
+  Parallel calls of one message count as one message, and the hook nudges at most once per message.
+  It stays silent below the context threshold, read from the transcript's usage figures.
+- **Three breaches.**
+  - Single-lookup chain: consecutive messages that each hold exactly one Read, Grep or Glob call and nothing else.
+  - Read slice: a Read with `offset` or `limit` on a file under the line threshold, or on a file already read and unchanged since.
+  - Edit-only chain: consecutive messages that hold only Edit or Write calls.
+- **Config.** A `batching_nudge` block in `claude.yaml`, with defaults in `template.yaml`:
 
-- `enabled`
-- the breach switches `lookup_chain`, `read_slice` and `edit_chain`
-- the thresholds `context_tokens` (150000), `lookup_run` (3), `edit_run` (2), `slice_lines` (2000) and `max_nudges` (5)
+  | Key | Default |
+  | --- | --- |
+  | `enabled`, `lookup_chain`, `read_slice`, `edit_chain` | `true` |
+  | `context_tokens` | 150000 |
+  | `lookup_run` | 3 |
+  | `edit_run` | 2 |
+  | `slice_lines` | 2000 |
+  | `max_nudges` | 5 |
 
-The keys are in the `CategoryNone` category, so the hub base, a worktree file or a machine's local override can change them without a build.
-When the hook is on, `Prepare` copies the block into `batching-nudge.json` in the run directory.
-The run's `settings.json` then gets a PostToolUse entry that matches `Read|Grep|Glob|Edit|Write` and runs `lym shuttle hook-batching claude <state file>; true`.
-Other tool calls start no process.
-
-The hidden verb (`internal/shuttlecli/hookbatching.go`) reaches the engine through a new optional capability, `shuttleengine.BatchingNudger`, which `shuttleengines.BatchingNudger` looks up by engine name.
-The verb skips shuttle's hub resolution and always exits 0.
-
-The judgment lives in `claudeengine/batchingnudge.go`.
-It reads the call's own input (`file_path`, `offset`, `limit`) and a bounded tail of the transcript the input names.
-It groups the main-chain assistant lines by message id, so parallel calls in one message count as one message.
-It says nothing in these cases:
-- the call comes from a subagent
-- the latest usage reading is below `context_tokens`
-- the run has used up `max_nudges`
-- the hook already nudged this message
-
-It fires on the first of these breaches that applies:
-- **Single-lookup chain:** at least `lookup_run` messages in a row, the current one included, each with exactly one Read, Grep or Glob call.
-- **Read slice:** a Read with a `limit`, or with an `offset` past line 1, of a file under `slice_lines` lines, or of a file an earlier message read and that has not been modified since.
-- **Edit-only chain:** at least `edit_run` messages in a row with only Edit or Write calls.
-
-The judgment and the count update run under the state file's lock (`state.UpdateJSON`), so the parallel calls of one message get at most one nudge.
-`ValidateBatchingNudge` refuses a negative `context_tokens`, or any other threshold below 1, at a run start and on `lym config claude`.
-
-**The rules** (`internal/heddleengine/shipped.json`).
-`lym-batching` now:
-- overrides the Read tool's own advice to read only the part you need, by name, and forbids grep-then-slice
-- follows "wait for a result only to choose the next call" with "then send every call it unlocks and every call you know"
-- asks for every question's greps and reads in one message
-- requires re-reading, in one message, the files a command rewrote
-
-`lym-plan-edits-before-gate` now covers every round of edits: a plan, a review's findings, a fixer's report or a failed gate as well as a card or task.
+  Values are validated when a run starts and on `lym config claude`.
+  Prepare copies them into a per-run `batching-nudge.json` beside the events file, together with the nudge count, so a running session keeps the values it started with.
+  With `enabled: false` the settings carry no hook and no state file is written.
+- **Rule wording.** The shipped `lym-batching` and `lym-plan-edits-before-gate` entries (`internal/heddleengine/shipped.json`) now:
+  - override the Read tool's partial-read advice by name and forbid grep-then-slice;
+  - bind "wait for a result" to "then send every call it unlocks and every call you know";
+  - add "list every question, then send every grep and read for all of them in one message";
+  - widen the plan-edits rule to every round of edits, review fixes included;
+  - require a re-read in one message after a command rewrites files.
 
 ## Design decisions
 
-- **Config module:** the hook is Claude-specific (tool names, transcript format), so its keys live in `claude.yaml` with the engine. This follows the provider seam.
-- **Settings at the start of a run:** the state file holds the settings the run started with. The hook process therefore loads no config and needs no hub, and a running session keeps its values, the same way it keeps its `refuse_raw` list.
-- **The current message as the transcript shows it:** the current message counts toward a chain as far as the transcript shows it. If it already shows a second call or a non-lookup call, the chain is broken and the hook stays silent.
-- **One-line ordering:** when more than one breach applies, the line names only the first, in the order the design lists them.
-- **Change test for a re-read:** "unchanged since" compares the file's modification time with the earlier reading message's timestamp. The session's own Edit therefore counts as a change, which errs toward silence.
+- The shuttle engine layer gains an optional `BatchingNudger` capability and the `BatchingHookVerb` constant, so an engine without the capability installs no hook and the verb stays provider-neutral.
+- The hook is a heuristic, since some lookups must run in sequence and it will at times fire on a right call.
+  That is why it only adds a line and why every number and switch is config.
+- `max_nudges` caps the nagging of a session that ignores the line.
 
-## Bounds
+## To check by hand
 
-- The hook is a heuristic: some lookups must run in sequence, so it will sometimes fire on a correct call. That is why it only adds a line and why every threshold is config.
-- The hook for an early call can run before the message's later calls are in the transcript. In that case a batched message that follows a chain can read as one more single lookup.
-- An earlier read outside the transcript-tail window, `batchingTailBytes`, is not seen.
-- A call whose tool fails fires no PostToolUse hook, so it is not judged.
-- `batching-hook-effect` (R3) measures the effect once this lands.
+- `hook-batching` has not been run against a live session; check that a session above the context threshold gets the line on a chain and none on a single right call.
+- The nudge's transcript fixtures do not include one assistant message split across several transcript lines; check that a split message is still counted as one message.
+- `docs/overview.md` and the package docs of `claudeengine` and `shuttleengines` were updated; skim them for accuracy.
 
-## Tests
-
-- `TestBatchingNudge` covers each breach firing and every case that holds a nudge back, plus the count the state file keeps.
-- `TestPrepare_BatchingNudgeHook` covers the hook entry and the seeded state file, the off switch, and the refusal before any artifact is written.
-- The template's values, the `CheckLoad` refusal, the registry lookup and the pinned `lym-batching` text are rows in their existing tests.
+`batching-hook-effect` measures the effect once this has landed.
