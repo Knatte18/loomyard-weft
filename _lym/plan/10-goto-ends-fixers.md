@@ -1,11 +1,11 @@
 # Card 10 — goto-ends-fixers
 
 **Create:**
-- `plan:internal/loomcli#endGateFixers` -> `func endGateFixers(runProcDir string, slug func() (string, error), end func(dir, owner, role string, callerPID int) ([]runproc.Ended, error)) error`
-- `plan:internal/loomcli#fixerEndingGuard` -> `func fixerEndingGuard(inner shedengine.GotoGuard, endFixers func() error) shedengine.GotoGuard`
-- `plan:internal/loomcli#loomCLI.endRunFixers` -> `func (c *loomCLI) endRunFixers() error`
-- `plan:internal/loomcli#TestEndGateFixers` -> `func TestEndGateFixers(t *testing.T)`
-- `plan:internal/loomcli#TestFixerEndingGuard` -> `func TestFixerEndingGuard(t *testing.T)`
+- `internal/loomcli#endGateFixers`
+- `internal/loomcli#fixerEndingGuard`
+- `internal/loomcli#loomCLI.endRunFixers`
+- `internal/loomcli#TestEndGateFixers`
+- `internal/loomcli#TestFixerEndingGuard`
 
 **Edit:**
 - `internal/loomcli#loomCLI.specFor`

@@ -2,20 +2,20 @@
 
 **Create:**
 - `contracts/stencils/twill/twill-writer-fork-gated.md`
-- `plan:contracts/stencils#TwillWriterForkGated` -> `var TwillWriterForkGated []byte`
+- `contracts/stencils#TwillWriterForkGated`
 - `contracts/stencils/loom/loom-fragment-self-check-plan.md`
 - `contracts/stencils/loom/loom-fragment-self-check-plan-gated.md`
 - `contracts/stencils/loom/loom-fragment-self-check-discussion.md`
 - `contracts/stencils/loom/loom-fragment-self-check-discussion-gated.md`
-- `plan:contracts/stencils#LoomFragmentSelfCheckPlan` -> `var LoomFragmentSelfCheckPlan []byte`
-- `plan:contracts/stencils#LoomFragmentSelfCheckPlanGated` -> `var LoomFragmentSelfCheckPlanGated []byte`
-- `plan:contracts/stencils#LoomFragmentSelfCheckDiscussion` -> `var LoomFragmentSelfCheckDiscussion []byte`
-- `plan:contracts/stencils#LoomFragmentSelfCheckDiscussionGated` -> `var LoomFragmentSelfCheckDiscussionGated []byte`
-- `plan:internal/loomengine#planTwillSpawnPointGated` -> `const planTwillSpawnPointGated = ""`
-- `plan:internal/loomrecipe#GateFixerSetting` -> `func GateFixerSetting(recipe, engine, gate string) (string, error)`
-- `plan:internal/loomrecipe#TestGateFixerSetting` -> `func TestGateFixerSetting(t *testing.T)`
-- `plan:internal/loomcli#writerFixerOn` -> `func writerFixerOn(recipe, engine, gate string, setting func(module, key string) (any, error), pairSlug string) (bool, error)`
-- `plan:internal/loomcli#TestWriterFixerOn` -> `func TestWriterFixerOn(t *testing.T)`
+- `contracts/stencils#LoomFragmentSelfCheckPlan`
+- `contracts/stencils#LoomFragmentSelfCheckPlanGated`
+- `contracts/stencils#LoomFragmentSelfCheckDiscussion`
+- `contracts/stencils#LoomFragmentSelfCheckDiscussionGated`
+- `internal/loomengine#planTwillSpawnPointGated`
+- `internal/loomrecipe#GateFixerSetting`
+- `internal/loomrecipe#TestGateFixerSetting`
+- `internal/loomcli#writerFixerOn`
+- `internal/loomcli#TestWriterFixerOn`
 
 **Edit:**
 - `internal/twilldirective#Values`
