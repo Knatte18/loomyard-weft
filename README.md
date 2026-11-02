@@ -58,7 +58,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Reed code button reports a wrong anchor path from inside the anchor directory** | [`reed-code-wrong-anchor`](design-reed-code-wrong-anchor.md) | darn | Code-Burler-Review | osl-1046 | 1h<br>17m | reed |
-| T3 | **A beam's reed session shows pawl running with no orch and no beam overview** | [`beam-attach-no-orch`](design-beam-attach-no-orch.md) | darn | Drift-Verify | osl-1046 | 1h<br>17m | reed, orch, pawl, workspaces |
+| T3 | **A beam's reed session shows pawl running with no orch and no beam overview** | [`beam-attach-no-orch`](design-beam-attach-no-orch.md) | darn | Code-Bouncer | osl-1046 | 1h<br>17m | reed, orch, pawl, workspaces |
 
 #### Ready (0)
 

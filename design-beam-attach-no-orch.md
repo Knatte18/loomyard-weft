@@ -1,6 +1,6 @@
 # A beam's reed session shows pawl running with no orch and no beam overview
 
-`beam-attach-no-orch` · Task · bug, reed, orch, pawl, workspaces · running · Drift-Verify
+`beam-attach-no-orch` · Task · bug, reed, orch, pawl, workspaces · running · Code-Bouncer
 
 Imported from [issue #11](https://github.com/Knatte18/loomyard/issues/11).
 
