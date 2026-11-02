@@ -1,6 +1,6 @@
 # Let tmuxkit start under /dev/shm with a ten-digit uid, then measure fabricengine tier1 there
 
-`tmuxkit-short-socket-path` · Task · enhancement, testkit, cwd, gate, fabric · running · Finalize
+`tmuxkit-short-socket-path` · Task · enhancement, testkit, cwd, gate, fabric · done
 
 ## Seen (orch, from the `fabricengine-shm-bench` report, 2026-11-02)
 
