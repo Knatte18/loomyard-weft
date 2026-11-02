@@ -735,7 +735,7 @@
       "isolated": false,
       "brief": "After waking, the hibernate request read done but its hub pause stayed live and held every network call; its wake notice failed on a wrong receiver and an oversized line",
       "body": "## Seen (orch, 2026-11-02)\n\nNeve hibernated through `lym hibernate request` on 2026-11-01 at 21:03 and woke on 2026-11-02 at 19:02.\nAfter the wake the request read phase `done`, yet `_bolt/.lym/pause/record.json` still held the hub-wide `hibernate` pause as live.\n`lym hibernate cancel` did nothing, since the request was done, and `lym adopt root` sat with every network call held (\"held by a hub-wide pause since 2026-11-01T21:03:00\"), which looked like a hang to the operator.\nThe watcher's wake notice failed twice (`_bolt/.lym/hibernate/watch.log`): first the receiver `ly:orch` does not exist, then the notice line was 105 KB, over creel's 8 KB limit for one hook delivery.\n\n## Workaround\n\nThe orch ran `lym tender resume`, which lifted the pause, and adopt went on.\n\n## Expected\n\n- The wake lifts the pause it added before anything else, and a failed notice never keeps it.\n- The wake notice reaches the orch by its real creel name and stays a short line, with any long detail in a file it names.\n- `lym hibernate cancel` on a done request still lifts a pause the hibernate left live.\n",
-      "status": "running · Code-Burler-Fix",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-02T18:26:15Z",
       "revised": "2026-11-02T18:42:54Z"
     },
