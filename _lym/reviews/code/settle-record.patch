@@ -1,0 +1,190 @@
+diff --git a/docs/benchmarks/test-suite-timing.md b/docs/benchmarks/test-suite-timing.md
+index 3a026718..fad37124 100644
+--- a/docs/benchmarks/test-suite-timing.md
++++ b/docs/benchmarks/test-suite-timing.md
+@@ -765,3 +765,59 @@ The default run's package wall, 351.85 s, matches the 348.72 s of `test-time-aud
+ 
+ A permanent setting is not worth a task of its own yet.
+ What stands in the way is the socket directory name in `tmuxkit` (the 107-byte limit against `lym-<uid>/r<hex>` and the socket name), which a task would shorten, for example by naming the socket directory outside the uid-long root, before `TMPDIR=/dev/shm` can be tried again.
++
++## tmuxkit-short-socket-path: `internal/fabricengine` `tier1` on `/dev/shm`, measured
++
++A measurement report on OSL-1046: it records one set of runs and is not meant to stay true.
++It answers the two questions `fabricengine-shm-bench` could not: can `internal/fabricengine` `tier1` run with its temp root on `/dev/shm`, and does that avoid the Cortex XDR scan.
++
++### Setup
++
++```yaml
++machine: Intel Core Ultra 7 366H, 16 cores, 30 GB, /dev/shm 16 GB, OSL-1046
++security: Cortex XDR installed
++go: go1.26.9 linux/amd64
++revision: e1770b2a
++uid: 1856216086
++command: lym gate test --wait --tier 1 ./internal/fabricengine -- -count=1
++shm setting: TMPDIR=/dev/shm for the run only, no symlink, no config change
++gate slots: 3 in the hub, shared with other worktrees' runs
++```
++
++The fix shortens the run directory name of `internal/lymtemp` from `r` plus six hex digits to `r` plus four lower-case letters or digits.
++For this uid the longest socket path under `/dev/shm` is now 107 bytes, at the limit, and `tmuxkit.Main` starts.
++Each pair's two runs were started by one command that backgrounded both, and that command sampled `df` of `/dev/shm`, `du` and `find -type f` of `/dev/shm/lym-<uid>` every two seconds.
++
++### Runs
++
++| Pair | Run | Started first | Gate wall | Package wall | Result | Load at start | Load at end | `/dev/shm` use before, peak, after |
++|---|---|---|---|---|---|---|---|---|
++| 1 | default | yes | 537.7 s | 522.40 s | passed, 1600 of 1759 | 5.92 10.88 17.89 | 54.66 38.74 28.01 | 291, 509, 282 MB |
++| 1 | shm | no | 528.1 s | 512.88 s | passed, 1600 of 1759 | 5.92 10.88 17.89 | 57.38 38.71 27.88 | 291, 509, 282 MB |
++| 2 | shm | yes | 454.9 s | 447.53 s | passed, 1600 of 1759 | 46.05 37.62 27.82 | 41.40 36.37 30.00 | 282, 494, 280 MB |
++| 2 | default | no | 350.2 s | 343.22 s | passed, 1600 of 1759 | 46.05 37.62 27.82 | 45.49 36.15 30.93 | 282, 494, 280 MB |
++| 3 | default | yes | 504.3 s | 498.01 s | passed, 1600 of 1759 | 36.94 34.72 30.54 | 55.79 39.05 32.81 | 280, 431, 280 MB |
++| 3 | shm | no | 470.6 s | 464.23 s | passed, 1600 of 1759 | 36.94 34.72 30.54 | 53.13 36.66 31.84 | 280, 431, 280 MB |
++
++The `/dev/shm` columns are the machine's whole use, shared by the two runs of a pair.
++The temp root under `/dev/shm` held at most 8704 files and 35 MB in every shm run, and went back to empty after it; both figures are the largest of the two-second `find -type f` and `du` samples of `/dev/shm/lym-<uid>`.
++
++| Pair | shm package wall / default package wall | Concurrent |
++|---|---|---|
++| 1 | 0.982 | yes |
++| 2 | 1.304 | no |
++| 3 | 0.932 | yes |
++
++Pair 2 measured nothing.
++Another worktree held one of the hub's three gate slots, so its default run waited for a slot and the two runs did not run side by side for their whole length; the table records no clock times, so the overlap is not checkable from this report, and the default run's 343.22 s is not a pair partner's wall.
++Pairs 1 and 3 ran side by side for their whole length.
++
++### Answer
++
++- **Can `/dev/shm` be the work directory?** Yes. With `TMPDIR=/dev/shm` all three shm runs passed the same 1600 tests as the default runs, and memory is no obstacle: the package's files took 35 MB, and the machine's `/dev/shm` peaked at 509 MB of 16 GB.
++- **Does it avoid the Cortex slowdown?** No. In the two concurrent pairs the shm run was 2% and 7% faster than the default run, far short of the gap to the 45.7 s of the machine without Cortex XDR. Either Cortex XDR scans `tmpfs` as well, or the slowdown does not come from the files the tests create; these runs cannot tell which.
++
++### Note for the operator
++
++A permanent `/dev/shm` setting is not worth a task: it gains a few percent at most.
++A lead worth testing is the cost of the processes the tests start, such as each `git` and `tmux` exec Cortex XDR may inspect, rather than the files they write.
+diff --git a/internal/lymtemp/doc.go b/internal/lymtemp/doc.go
+index 5a311000..87f98d3b 100644
+--- a/internal/lymtemp/doc.go
++++ b/internal/lymtemp/doc.go
+@@ -4,9 +4,9 @@
+ // It is created with mode 0700 and refused unless it is a real directory, which off Windows also means mode exactly 0700 and an owner equal to the user.
+ // Nothing falls back to the bare system temp directory: a refused root is an error, and an error path creates nothing.
+ //
+-// A run directory is `r` plus six random hex digits, created 0700 with `os.Mkdir`; a taken name is retried up to a bound and then refused naming the root.
++// A run directory is `r` plus four random lower-case letters or digits, created 0700 with `os.Mkdir`; a taken name is retried up to a bound and then refused naming the root.
+ // It holds a lock file `run.lock`, which its process holds until it removes the directory.
+-// The names stay short so a tmux socket path below a run directory stays under the `sun_path` limit.
++// The names stay short so a tmux socket path below a run directory stays under the `sun_path` limit, down to a root of `/dev/shm` for a ten-digit uid.
+ // A process whose system temp directory is itself a run directory under a lym root takes that root as its own, so a child works beside its parent and never inside it.
+ //
+ // Dir, MkdirTemp, CreateTemp and Remove are the process API: Dir creates the process's run directory on first use, MkdirTemp and CreateTemp create under it, and Remove deletes it.
+diff --git a/internal/lymtemp/run.go b/internal/lymtemp/run.go
+index 495178b4..cd767fee 100644
+--- a/internal/lymtemp/run.go
++++ b/internal/lymtemp/run.go
+@@ -9,6 +9,7 @@ import (
+ 	"math/rand/v2"
+ 	"os"
+ 	"path/filepath"
++	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ )
+@@ -17,6 +18,13 @@ const (
+ 	// runPrefix starts every run directory's name; the sweep considers no other entry.
+ 	runPrefix = "r"
+ 
++	// runNameAlphabet holds the characters a run directory name draws after runPrefix.
++	runNameAlphabet = "0123456789abcdefghijklmnopqrstuvwxyz"
++
++	// runNameLength is how many characters a run directory name draws after runPrefix.
++	// Four keeps a tmux socket path under `/dev/shm` with a ten-digit uid at the 107-byte sun_path limit.
++	runNameLength = 4
++
+ 	// runNameAttempts bounds how many names newRun draws before it gives up on a root full of taken ones.
+ 	runNameAttempts = 16
+ 
+@@ -58,10 +66,15 @@ func (r *Root) newRun() (*run, error) {
+ 	return &run{dir: dir, lock: held}, nil
+ }
+ 
+-// randomRunName returns runPrefix followed by six random lower-case hex digits.
++// randomRunName returns runPrefix followed by runNameLength random lower-case letters and digits.
+ // The short name keeps a tmux socket path below a run directory under the sun_path limit.
+ func randomRunName() string {
+-	return fmt.Sprintf("%s%06x", runPrefix, rand.Uint32N(1<<24))
++	var name strings.Builder
++	name.WriteString(runPrefix)
++	for range runNameLength {
++		name.WriteByte(runNameAlphabet[rand.IntN(len(runNameAlphabet))])
++	}
++	return name.String()
+ }
+ 
+ // remove releases the lock, then deletes the directory, since Windows cannot delete a locked file.
+diff --git a/internal/lymtemp/run_test.go b/internal/lymtemp/run_test.go
+index 4527d4bb..0c8997f5 100644
+--- a/internal/lymtemp/run_test.go
++++ b/internal/lymtemp/run_test.go
+@@ -29,8 +29,8 @@ func TestNewRun_HoldsItsLockUntilRemoved(t *testing.T) {
+ 	if filepath.Dir(created.dir) != root.Path() || !strings.HasPrefix(filepath.Base(created.dir), runPrefix) {
+ 		t.Fatalf("run directory = %q, want a %q-prefixed child of %q", created.dir, runPrefix, root.Path())
+ 	}
+-	if !regexp.MustCompile(`^r[0-9a-f]{6}$`).MatchString(filepath.Base(created.dir)) {
+-		t.Errorf("run directory name %q does not match r plus six hex digits", filepath.Base(created.dir))
++	if !regexp.MustCompile(`^r[0-9a-z]{4}$`).MatchString(filepath.Base(created.dir)) {
++		t.Errorf("run directory name %q does not match r plus four lower-case letters or digits", filepath.Base(created.dir))
+ 	}
+ 	info, err := os.Stat(created.dir)
+ 	if err != nil {
+diff --git a/internal/testkit/tmuxkit/tmuxkit_test.go b/internal/testkit/tmuxkit/tmuxkit_test.go
+index 7698de70..db07c1ac 100644
+--- a/internal/testkit/tmuxkit/tmuxkit_test.go
++++ b/internal/testkit/tmuxkit/tmuxkit_test.go
+@@ -5,16 +5,23 @@ import (
+ 	"errors"
+ 	"os"
+ 	"path/filepath"
++	"strconv"
+ 	"strings"
+ 	"testing"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/lymtemp"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+ func TestCheckSocketPath(t *testing.T) {
+ 	tiergate.Require(t, 0)
++	runDir, err := lymtemp.Dir()
++	if err != nil {
++		t.Fatal(err)
++	}
++	const tenDigitUID = 1856216086
+ 	tests := []struct {
+ 		name    string
+ 		dir     string
+@@ -24,7 +31,8 @@ func TestCheckSocketPath(t *testing.T) {
+ 		{"short directory", "/tmp/lym123", 1000, false},
+ 		{"directory at the limit", "/tmp/" + strings.Repeat("d", 107-len("/tmp/")-len("/tmux-1000/")-maxKeyBytes), 1000, false},
+ 		{"directory one byte over", "/tmp/" + strings.Repeat("d", 107-len("/tmp/")-len("/tmux-1000/")-maxKeyBytes+1), 1000, true},
+-		{"run directory of the widest uid", "/tmp/lym-4294967295/r0a1b2c", 4294967295, false},
++		{"run directory of the widest uid", "/tmp/lym-4294967295/r0a1b", 4294967295, false},
++		{"run directory of a ten-digit uid under /dev/shm", filepath.Join("/dev/shm", "lym-"+strconv.Itoa(tenDigitUID), filepath.Base(runDir)), tenDigitUID, false},
+ 		{"longer uid widens the path", "/tmp/" + strings.Repeat("d", 107-len("/tmp/")-len("/tmux-1000/")-maxKeyBytes), 1000000, true},
+ 	}
+ 	for _, tt := range tests {
+diff --git a/pattern/PATTERN-lym-temp-root.md b/pattern/PATTERN-lym-temp-root.md
+index a182aaa8..34ba9716 100644
+--- a/pattern/PATTERN-lym-temp-root.md
++++ b/pattern/PATTERN-lym-temp-root.md
+@@ -4,7 +4,7 @@ A temp file or directory lym or its tests create lives in the process run direct
+ 
+ - The root is `<system temp>/lym-<uid>` off Windows and `<system temp>\lym` on Windows, where the system temp directory is already per user.
+   It is created 0700 and refused unless it is a real directory owned by the user; a refused root creates nothing.
+-- Each process has one run directory below the root, `r` plus six random hex digits, created 0700 with `os.Mkdir`, a taken name retried up to a bound and then refused naming the root, holding a lock file its process holds until it removes the directory.
++- Each process has one run directory below the root, `r` plus four random lower-case letters or digits, created 0700 with `os.Mkdir`, a taken name retried up to a bound and then refused naming the root, holding a lock file its process holds until it removes the directory.
+   `lymtemp.MkdirTemp` and `lymtemp.CreateTemp` create below it.
+ - A process whose system temp directory is already a run directory under a lym root takes that root as its own and makes its run directory beside the parent's, so nesting never pushes a tmux socket path past the `sun_path` limit.
+   No code hands a child a `TMPDIR` that is not a run directory.
