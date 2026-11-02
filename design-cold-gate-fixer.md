@@ -1,6 +1,6 @@
 # One cold, cheap fixer clears a failed writer gate instead of the writer at full context
 
-`cold-gate-fixer` · Task · enhancement, webster, loom, darn, gate · running · Discussion-Bouncer
+`cold-gate-fixer` · Task · enhancement, webster, loom, darn, gate · running · Drift-Baseline
 
 ## Seen (orch, 2026-11-01)
 
