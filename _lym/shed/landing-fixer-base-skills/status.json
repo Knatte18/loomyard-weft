@@ -1,13 +1,13 @@
 {
   "current_producer": "Darn-Write",
-  "state": "failed",
-  "error": "shedadapters: Darn-Write (seats): seat run: seatengine: seat \"\": fill stencil \"darn-template-write\": stencil: unfilled top-level marker(s): subagent_model",
+  "state": "running",
+  "error": "",
   "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Darn-Write",
     "last": "Drift-Await → skipped",
-    "wait": "shedadapters: Darn-Write (seats): seat run: seatengine: seat \"\": fill stencil \"darn-template-write\": stencil: unfilled top-level marker(s): subagent_model"
+    "wait": ""
   },
   "history": [
     {
