@@ -750,13 +750,14 @@
         "cli"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "lym adopt root and other verbs the operator types print a long JSON envelope; print a short summary with each stop and its way forward by default, JSON behind a flag",
       "body": "## Seen (operator, 2026-11-02)\n\nOperator-facing verbs such as `lym adopt root` print one long JSON envelope: on a stop it carries every commit hash of a divergence and every run's record, so the operator cannot see what happened or what to do next.\n\n## Idea\n\n- A verb the operator types prints a short human summary by default: what it did, what stopped, and the way forward for each stop, one line each.\n- The full JSON envelope stays available behind a flag, for agents and scripts.\n- Long lists, such as a divergence's commit hashes, collapse to a count with a pointer to where the full list is.\n- Which verbs count as operator-facing follows the command index's operator audience.\n\n## Open\n\n- Whether agents call these verbs too, and so need the flag added to their stencils and skills.\n",
-      "status": "draft",
       "created": "2026-11-02T18:26:26Z",
-      "revised": "2026-11-02T18:26:26Z"
+      "revised": "2026-11-02T19:14:24Z",
+      "profile": "light"
     },
     {
       "id": 1009,
