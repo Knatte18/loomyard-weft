@@ -39,24 +39,6 @@
       "revised": "2026-11-01T16:16:50Z"
     },
     {
-      "id": 69,
-      "handle": "F5",
-      "slug": "fabric-monorepo-verbs",
-      "title": "Fabric's ordinary-monorepo verb surface",
-      "kind": "note",
-      "labels": [
-        "feature",
-        "fabric"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Against plain git, fabric still lacks log, show, branch, tag, stash, revert, restore, rm/mv, rebase, cherry-pick and blame",
-      "body": "From `manifest/roadmap.md` Someday, kept by the operator on 2026-10-03.\nAgainst plain git, `fabric` is still missing `log`, `show`, `branch` (create/list/delete), `tag`, `stash`, non-hard `reset`, `revert`, `restore`, `rm`/`mv`, `rebase`, `cherry-pick` and `blame`.",
-      "created": "2026-10-03T17:27:16Z",
-      "revised": "2026-10-05T18:09:48Z"
-    },
-    {
       "id": 70,
       "handle": "F6",
       "slug": "reed-slack-relay",
