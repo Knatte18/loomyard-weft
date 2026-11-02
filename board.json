@@ -533,25 +533,6 @@
       "project": "turn-savings"
     },
     {
-      "id": 978,
-      "handle": "B3",
-      "slug": "false-rewind-after-finalize",
-      "title": "A batten pass after a landed child reports a false rewind against origin",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "batten",
-        "fabric"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Origin equals local, yet batten stops asking which history to keep",
-      "body": "## Seen (orch, 2026-11-01)\n\nTwice today a batten pass after a done child stopped with \"branch \u003cslug\u003e is rewound against origin\", first `heddle-orch-target`, then `batching-in-claude-local`.\nBoth times origin's task branch equalled the local one (`batching-in-claude-local` at 792a340a), and the commit the stop called origin's rewound head (31119e4e) was an ancestor of it.\nThe dropped list held commits of main that Finalize had merged into the task branch.\nThe orch re-ran `lym batten run \u003cslug\u003e` from the prime without touching git, and both runs landed.\n\n## Idea\n\nThe rewind check reads origin's head from a stale ref, likely one read before the push Finalize made, or during a concurrent fetch of the same ref.\nIt re-reads origin's head after a fresh fetch, and calls a branch rewound only when the local head is not an ancestor of origin's head.\n\n## Reconcile-fetch-race landed (2026-11-01)\n\n`reconcile-fetch-race` (`34ac25f2`) serialises every remote-tracking ref write under one per-repository lock, and `ReconcileOrigin` holds it from the `ls-remote` pair through the last branch verdict, so a push in flight lands before origin is read.\nIts commit names this false rewind as a cause it targets, but it reproduced no real two-process race.\nSo this note stays open only as a watch: if a false rewind shows after that fix, the stale-ref reading above is wrong and the ancestor check is the next step.\n",
-      "created": "2026-11-01T16:36:44Z",
-      "revised": "2026-11-01T18:08:10Z"
-    },
-    {
       "id": 981,
       "handle": "T1",
       "slug": "plan-split-tune",
