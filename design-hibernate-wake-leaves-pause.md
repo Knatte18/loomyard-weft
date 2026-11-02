@@ -1,6 +1,6 @@
 # A wake from hibernate leaves the hub-wide pause live
 
-`hibernate-wake-leaves-pause` · Task · bug, hibernate, creel · running · Drift-Verify
+`hibernate-wake-leaves-pause` · Task · bug, hibernate, creel · running · Code-Bouncer
 
 ## Seen (orch, 2026-11-02)
 
