@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Burler-Review",
+  "current_producer": "Discussion-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Burler-Review",
-    "last": "Discussion-Bouncer → bounced to Discussion-Burler-Review",
+    "now": "Discussion-Burler-Fix",
+    "last": "Discussion-Burler-Review → bounced to Discussion-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -78,6 +78,35 @@
       "at": "2026-11-02T11:54:27Z",
       "budget_exempt": true,
       "routed_to": "Discussion-Burler-Review"
+    },
+    {
+      "producer": "Discussion-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/cold-gate-fixer/_lym/reviews/discussion/round-2-review.md",
+      "at": "2026-11-02T12:02:33Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-02T12:02:17.245992569Z",
+          "end": "2026-11-02T12:02:17.24636507Z"
+        },
+        {
+          "gate": "review",
+          "kind": "rework",
+          "start": "2026-11-02T12:02:17.715200719Z",
+          "end": "2026-11-02T12:02:31.854868976Z"
+        },
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-02T12:02:32.063408549Z",
+          "end": "2026-11-02T12:02:32.064558195Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Discussion-Burler-Fix"
     }
   ],
   "product": {
