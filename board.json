@@ -776,6 +776,27 @@
       "body": "Imported from [issue #3](https://github.com/Knatte18/loomyard/issues/3).\n\n## What happened\n\nDuring a plan review round, a finding asked to cut a test's static-prose assertions under the rubric's test-economy rule.\n`_lym/plan/lens-review.md` already recorded the Plan-Write lens pass disputing the same cut, because the decision record's acceptance criteria call for those checks (\"the rendered stencil names X\").\nThe review's claim that the stencil-wide scans cover the wording was false for all but one item; two self-check lenses caught it.\nThe fixing agent resolved it by stating in the card that the criteria are met by review of the stencil text.\n\n## Why it is abnormal\n\nThe rubric and the decision-record acceptance criteria pull in opposite directions.\nA criterion phrased as \"the rendered stencil names X\" can be planned either as a test or as a review check, and nothing in lym says which.\nThe same dispute is re-litigated each review round, and the review's coverage claim can be wrong without any check noticing.\n\n## What to do\n\nSettle once, in the plan rubric or the decision-record template, whether a criterion phrased as \"the rendered text names X\" is planned as a test or as a review check.\nHave the review verify claims that stencil-wide scans cover a given wording before it relies on them.\n\nProvenance: task `interactive-recipe`; note `burler-plan-r1.md`.\n\n\n\n_Moved from #908 in the repository before it was recreated._\n",
       "created": "2026-11-02T20:34:12Z",
       "revised": "2026-11-02T20:34:12Z"
+    },
+    {
+      "id": 1018,
+      "handle": "B5",
+      "slug": "edit-test-file-no-glyphs",
+      "title": "validate-plan edit-test-file rule cannot target a test file with no glyphs",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "loom",
+        "quarry"
+      ],
+      "issues": [
+        4
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #4](https://github.com/Knatte18/loomyard/issues/4).\n\n## What happened\n\nA plan card needed to edit a Go test file that pins symbols only through blank-identifier package-level vars.\n`lym quarry toc` reports no symbols for such a file.\n`lym loom` `validate-plan`'s `edit-test-file` rule refuses the file as an Edit target and asks for member glyphs, which the file does not have.\nThe card could not plan the edit, and the plan-review finding asking for it had to be deferred.\n\n## Why it is abnormal\n\nA file that exists and is a legitimate edit target becomes unplannable because the toc cannot produce a glyph for it.\nThe rule's demand cannot be satisfied by the planner.\n\n## What to do\n\nLet `edit-test-file` accept a file with no toc symbols (for example by targeting the file or a line range), or make `lym quarry toc` surface blank-identifier vars as targetable members.\n\nProvenance: task `warp-visibility`, note `burler-plan-r1.md`.\n\n\n\n_Moved from #909 in the repository before it was recreated._\n",
+      "created": "2026-11-02T20:34:15Z",
+      "revised": "2026-11-02T20:34:15Z"
     }
   ],
   "prime_owner": "neve",
