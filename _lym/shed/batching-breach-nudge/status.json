@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -34,6 +34,51 @@
       "output": "",
       "at": "2026-11-02T11:28:37Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/batching-breach-nudge/_lym/landing/summary.md",
+      "at": "2026-11-02T11:59:23Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-02T11:42:35.193496035Z",
+          "end": "2026-11-02T11:42:35.201673787Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-02T11:43:37.991970995Z",
+          "end": "2026-11-02T11:43:38.012499397Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-02T11:42:35.292006974Z",
+          "end": "2026-11-02T11:42:35.56981616Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-02T11:42:36.069481827Z",
+          "end": "2026-11-02T11:43:37.368087072Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-02T11:43:39.059483826Z",
+          "end": "2026-11-02T11:58:55.35224917Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-02T11:58:55.411182058Z",
+          "end": "2026-11-02T11:58:55.411348424Z"
+        }
+      ]
     }
   ],
   "product": {
