@@ -674,6 +674,25 @@
       "body": "## Seen (operator, 2026-11-02)\n\nA wake from hibernate lifts the hub-wide pause the hibernate added, so every paused run goes on at once.\nTask `hibernate-wake-leaves-pause` (`44ca77de`) made that lift reliable: the daemon lifts its own pause on every path, before the notice.\nThe operator often does not want runs to start again by themselves after a wake.\n\n## Idea\n\n- Whether the wake lifts the pause is a switch: a key in the hibernate config gives the default, and `lym hibernate request` takes a flag that overrides it for one request.\n- With the lift off, the hub stays paused after the wake, the wake notice to the orch says so, and `lym tender resume` lifts it.\n  This changes the lift-always rule `44ca77de` set, and the switch's off path must keep the pause entry live while the request still reads `done`; `lym hibernate cancel` already lifts a pause a finished request left behind.\n- The wake's other steps, its notice included, run either way.\n- The default is off (operator, 2026-11-02): the operator often works on another machine while this one sleeps, and when origin or a run's owner moved meanwhile, going on is wrong.\n- The wake detects remote change by itself, whatever the switch says:\n  - At the hibernate, lym records the tips of the prime's code and weft branches on origin and the owner of root, of each beam and of each run.\n  - At the wake, it fetches both repositories and compares origin's tips and the owners with that record.\n  - The wake notice lists what moved: the branches whose tip changed, with the commit count, and each owner that changed, with its new machine.\n    A notice stays one short line since `44ca77de`: a longer list is written whole to `notice.txt` in the hibernate directory, and the queued line names that file.\n- Even with the switch on, the wake keeps the pause when anything moved, and its notice says so and names `lym adopt` when an owner moved away.\n",
       "created": "2026-11-02T19:26:01Z",
       "revised": "2026-11-02T19:57:25Z"
+    },
+    {
+      "id": 1013,
+      "handle": "B1",
+      "slug": "shuttle-autocompact-picker-stall",
+      "title": "Claude Code autocompact picker in a shuttle session stalls a gate re-prompt forever",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shuttle",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (2026-11-02)\n\nIn run `finalize-fix-outside-lock`, the Code-Burler-Fix fixer finished its turn.\nClaude Code then showed its \"We recommend compacting earlier / autocompact at 400k?\" picker in the shuttle session, where it replaced the input box.\nThe Code-Burler-Fix verify gate found one fixed-column comment wrap and tried to re-prompt the fixer.\nThe trace logged \"re-prompt not delivered, retrying on a later tick without spending an attempt … no input box is on screen; a menu or picker\" once a minute for over 30 minutes.\nThe re-prompt spends no attempt and never escalates, so the run waits forever; only dobby's quiet notice surfaced it.\n\n## Workaround\n\nA single Escape key in the fixer's pane closes the picker (\"esc not now\"); the gate's next tick then delivers the re-prompt.\n\n## Expected\n\n- lym keeps Claude Code's autocompact picker out of shuttle sessions, for example by setting the autocompact choice in the session's settings at launch.\n- A re-prompt that cannot be delivered because a picker holds the pane escalates after a bounded number of ticks, or dismisses a known picker itself, instead of retrying without end.\n",
+      "created": "2026-11-02T20:18:06Z",
+      "revised": "2026-11-02T20:18:06Z"
     }
   ],
   "prime_owner": "neve",
