@@ -698,6 +698,27 @@
       "body": "## Seen (orch, 2026-11-01)\n\nFinalize takes the parent lock (`landingshed/parentguard.go`) before it merges the parent in and verifies, and holds it through the whole row: verify, and on a red verify the fixer session and the re-verify.\n`plan-spec-split` held the lock on `main` for 12 minutes: its first verify failed tier0, a fixer worked about 5 minutes, then the re-verify ran every tier.\nMeanwhile four green runs queued behind it (`darn-sonnet-helpers`, `readme-profile-in-recipe-column`, `dobby-idle-notice-row-end`, `reed-loses-parts-chair`), each to verify under the lock in turn.\n\n## Design (operator, 2026-11-01)\n\n- Finalize keeps taking the lock before its merge and verify, so a run that verifies green lands what it verified, with no second merge.\n- When verify fails, Finalize releases the lock before the fixer starts, so the next run in the queue can land meanwhile.\n- When the fixer is done, the run queues for the lock again, merges the parent anew, and verifies under the lock as on its first try.\n  When nothing landed on the parent while it fixed, that merge is a no-op and only the re-verify remains, which a red verify runs today too.\n- Taking the lock only at the very end was weighed and rejected: the parent moves between the run's merge and its landing, so the run would merge, verify and fix again, and could starve while much lands.\n\n## Hand-over latency (orch, 2026-11-01)\n\nA queued run polls the lock from one second, doubling to thirty seconds while the holder is unchanged (`parentlock/acquire.go`), so after a long hold the next run takes the lock about 20 to 30 seconds after the release.\nTwo hand-overs on 2026-11-01 took 23 and 21 seconds (`plan-spec-split` to `darn-sonnet-helpers`, `dobby-idle-notice-row-end` to `reed-loses-parts-chair`).\nThe release wakes the head of the queue at once, through a notify on the lock directory or a lower poll ceiling of a few seconds.\n\n## Open\n\n- Whether a run that failed once goes to the back of the queue or ahead of runs queued while it fixed.\n- How the wait mark and `lym loom status` show a run fixing outside the lock, and how the recovery ladder counts a second failed verify.\n",
       "created": "2026-11-01T19:20:29Z",
       "revised": "2026-11-01T19:37:51Z"
+    },
+    {
+      "id": 991,
+      "handle": "T2",
+      "slug": "bench-suite-osl1046",
+      "title": "Bench the full suite on OSL-1046 after the binary cuts",
+      "kind": "task",
+      "labels": [
+        "research",
+        "gate"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Measure tier0, tier1 and tier2 on this machine and record the numbers in docs/benchmarks/test-suite-timing.md.",
+      "body": "## Goal\n\nThe test-suite setup was rewritten to cut the number of test binaries, to get better times on OSL-1046 (this machine, Intel Core Ultra 7 366H, bare-metal Ubuntu, Cortex XDR).\nMeasure the full suite and add the result to `docs/benchmarks/test-suite-timing.md` as a new measurement report section.\n\n## Cap on runs\n\n- One machine: OSL-1046.\n- Three tiers: `tier0`, `tier1`, `tier2`.\n- Per tier one cold run, discarded, and three warm runs, the median of the three taken: twelve runs in all, no repeats beyond them.\n- No other run, gate use or test suite on the machine during the measurement.\n\n## Method\n\nFollow the method of the latest audit section in the file (`test-time-audit-2`): the gate's summary-line wall for `lym gate test --tier N --all -- -count=1`, with one untracked file in the worktree for the length of the measurement so the gate reads no green record, removed afterwards.\nRecord machine state (`lym tender status`, `lym gate status`, load average), the per-tier test counts and the packages with the longest `ok` time per tier, as the earlier audits do.\nCompare against the earlier audits where the numbers compare, and say plainly where the new gate setup makes them not comparable.\nUpdate the pointer to `gate-test-xdr.md` in the file if the new section changes what it says about OSL-1046.\n\n## Out of scope\n\nNo code change, no prune leads filed, no board tasks.\n",
+      "status": "draft",
+      "created": "2026-11-02T09:20:31Z",
+      "revised": "2026-11-02T09:20:31Z",
+      "profile": "docs"
     }
   ],
   "prime_owner": "osl-1046",
