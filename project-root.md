@@ -12,13 +12,19 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (1)
+### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T2 | **Bench the full suite on OSL-1046 after the binary cuts**<br>• Measure tier0, tier1 and tier2 on this machine and record the numbers in docs/benchmarks/test-suite-timing.md. | [`bench-suite-osl1046`](design-bench-suite-osl1046.md) | darn · docs | Worktree-Create | osl-1046 | 2m<br>2m | gate |
+
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Bench the full suite on OSL-1046 after the binary cuts**<br>• Measure tier0, tier1 and tier2 on this machine and record the numbers in docs/benchmarks/test-suite-timing.md. | [`bench-suite-osl1046`](design-bench-suite-osl1046.md) | darn · docs |  | 1m<br>1m | gate |
+_None._
 
 ### Draft (1)
 
