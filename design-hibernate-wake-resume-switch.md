@@ -1,6 +1,6 @@
-# A switch decides whether a wake from hibernate lets the runs go on
+# A wake from hibernate checks what moved on origin and lets runs go on only when nothing did and a switch allows it
 
-`hibernate-wake-resume-switch` · Note · enhancement, hibernate, tender
+`hibernate-wake-resume-switch` · Note · enhancement, hibernate, tender, fabric
 
 ## Seen (operator, 2026-11-02)
 
@@ -13,4 +13,8 @@ The operator often does not want runs to start again by themselves after a wake.
 - With the lift off, the hub stays paused after the wake, the wake notice to the orch says so, and `lym tender resume` lifts it.
 - The wake's other steps, its notice included, run either way.
 - The default is off (operator, 2026-11-02): the operator often works on another machine while this one sleeps, and when origin or a run's owner moved meanwhile, going on is wrong.
-- Even with the switch on, the wake keeps the pause when origin moved on the prime's branches or an owner changed since the hibernate, and its notice names what moved.
+- The wake detects remote change by itself, whatever the switch says:
+  - At the hibernate, lym records the tips of the prime's code and weft branches on origin and the owner of root, of each beam and of each run.
+  - At the wake, it fetches both repositories and compares origin's tips and the owners with that record.
+  - The wake notice lists what moved: the branches whose tip changed, with the commit count, and each owner that changed, with its new machine.
+- Even with the switch on, the wake keeps the pause when anything moved, and its notice says so and names `lym adopt` when an owner moved away.
