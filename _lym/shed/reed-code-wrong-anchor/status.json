@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Code-Bouncer → done",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -121,6 +121,21 @@
       "outcome": "done",
       "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/reed-code-wrong-anchor/_lym/reviews/code/round-1-bouncer-ledger.md",
       "at": "2026-11-02T11:59:22Z"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/reed-code-wrong-anchor/_lym/landing/summary.md",
+      "at": "2026-11-02T11:59:44Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-02T11:59:43.978767307Z",
+          "end": "2026-11-02T11:59:43.978803672Z"
+        }
+      ]
     }
   ],
   "product": {
