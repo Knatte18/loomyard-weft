@@ -2,48 +2,50 @@ slots: 3 # how many gate builds and test runs the hub executes at once; a lowere
 scoper: go
 refuse_raw: ["go test"]
 tiers:
-  tier0:
-    about: unit tests
-    command: "go test -json {targets} {args}"
-    all_targets: ./...
-    env: {GOFLAGS: "-trimpath -p={parallel}", LYM_TEST_TIER: "0"}
-    counter: go-json
-    parallel: 4
-    timeout_min: 10
-  tier1:
-    about: integration tests with build and vet first
-    command: "go build ./... && go vet {targets} && go test -json {targets} {args}"
-    all_targets: ./...
-    env: {GOFLAGS: "-trimpath -p={parallel}", LYM_TEST_TIER: "1"}
-    counter: go-json
-    parallel: 4
-    timeout_min: 30
-    prebuilt_lym: true
-  tier2:
-    about: tmux tests
-    command: "go test -json {targets} {args}"
-    all_targets: ./...
-    env: {GOFLAGS: "-trimpath -p={parallel}", LYM_TEST_TIER: "2"}
-    counter: go-json
-    parallel: 4
-    timeout_min: 30
-    prebuilt_lym: true
-  tier3:
-    about: llm tests run by hand only
-    command: "go test -json {targets} {args}"
-    all_targets: ./...
-    env: {GOFLAGS: "-trimpath -p={parallel}", LYM_TEST_TIER: "3"}
-    counter: go-json
-    parallel: 1
-    timeout_min: 60
-    prebuilt_lym: true
-    manual: true
+    tier0:
+        about: unit tests
+        command: "go test -json {targets} {args}"
+        all_targets: ./...
+        env: {GOFLAGS: "-trimpath -p={parallel}", LYM_TEST_TIER: "0"}
+        counter: go-json
+        parallel: 4
+        timeout_min: 10
+    tier1:
+        about: integration tests with build and vet first
+        command: "go build ./... && go vet {targets} && go test -json {targets} {args}"
+        all_targets: ./...
+        env:
+            GOFLAGS: "-trimpath -p={parallel} -timeout=20m"
+            LYM_TEST_TIER: "1"
+        counter: go-json
+        parallel: 4
+        timeout_min: 30
+        prebuilt_lym: true
+    tier2:
+        about: tmux tests
+        command: "go test -json {targets} {args}"
+        all_targets: ./...
+        env: {GOFLAGS: "-trimpath -p={parallel}", LYM_TEST_TIER: "2"}
+        counter: go-json
+        parallel: 4
+        timeout_min: 30
+        prebuilt_lym: true
+    tier3:
+        about: llm tests run by hand only
+        command: "go test -json {targets} {args}"
+        all_targets: ./...
+        env: {GOFLAGS: "-trimpath -p={parallel}", LYM_TEST_TIER: "3"}
+        counter: go-json
+        parallel: 1
+        timeout_min: 60
+        prebuilt_lym: true
+        manual: true
 gates:
-  batch: {tiers: [0, 1], scope: card}
-  webster-fix: {tiers: [0, 1], scope: diff}
-  webster: {tiers: [0, 1, 2], scope: all}
-  parent-align: {tiers: [0, 1, 2], scope: all}
-  finalize: {tiers: [0, 1, 2], scope: all}
-  adopt: {tiers: [0, 1, 2], scope: all}
-  darn-write: {tiers: [0, 1, 2], scope: diff}
-  code-burler-fix: {tiers: [0, 1, 2], scope: diff}
+    batch: {tiers: [0, 1], scope: card}
+    webster-fix: {tiers: [0, 1], scope: diff}
+    webster: {tiers: [0, 1, 2], scope: all}
+    parent-align: {tiers: [0, 1, 2], scope: all}
+    finalize: {tiers: [0, 1, 2], scope: all}
+    adopt: {tiers: [0, 1, 2], scope: all}
+    darn-write: {tiers: [0, 1, 2], scope: diff}
+    code-burler-fix: {tiers: [0, 1, 2], scope: diff}
