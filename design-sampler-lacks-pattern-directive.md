@@ -1,6 +1,6 @@
 # The sampler agent gets no PATTERN directive
 
-`sampler-lacks-pattern-directive` · Task · bug, loom, stencil, pattern
+`sampler-lacks-pattern-directive` · Task · bug, loom, stencil, pattern · running · Worktree-Create
 
 ## Seen (operator, 2026-11-02)
 
