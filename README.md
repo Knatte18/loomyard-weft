@@ -56,7 +56,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Let tmuxkit start under /dev/shm with a ten-digit uid, then measure fabricengine tier1 there**<br>• Fix checkSocketPath so TMPDIR=/dev/shm works for a ten-digit uid (109 bytes against 107), then run the paired fabricengine tier1 measurement the shm bench could not | [`tmuxkit-short-socket-path`](design-tmuxkit-short-socket-path.md) | darn · light | Worktree-Create | osl-1046 | 4m<br>0m | testkit, cwd, gate, fabric |
+| T3 | **Let tmuxkit start under /dev/shm with a ten-digit uid, then measure fabricengine tier1 there**<br>• Fix checkSocketPath so TMPDIR=/dev/shm works for a ten-digit uid (109 bytes against 107), then run the paired fabricengine tier1 measurement the shm bench could not | [`tmuxkit-short-socket-path`](design-tmuxkit-short-socket-path.md) | darn · light | Record-Write | osl-1046 | 4m<br>0m | testkit, cwd, gate, fabric |
 | T9 | **Drift-Verify with the operator in the loop** | [`drift-verify-operator-in-loop`](design-drift-verify-operator-in-loop.md) | darn · light | Darn-Write | osl-1046 | 49m<br>39m | drift |
 
 #### Ready (0)
@@ -73,7 +73,7 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Tune the plan-split writers until a split plan joins with no hand edit**<br>• Tune, replay on two inputs, tune again, at most 3 rounds, starting from the plan-split-bench report | [`plan-split-tune`](design-plan-split-tune.md) | darn |  | 19h<br>18h | loom, stencil, pattern |
 | T2 | `draft` **heddle renders claude-file to the worktree root, not to the worktree's anchor** | [`heddle-render-ignores-anchor`](design-heddle-render-ignores-anchor.md) | darn · light |  | 1h<br>1h | heddle, fabric, cwd |
-| T8 | `draft` **The landing merge fixer loads no prose, code-quality or testing skill**<br>• FixerTable sets the fixer seat's skills to the language skills alone, unlike every other code-writing seat | [`landing-fixer-base-skills`](design-landing-fixer-base-skills.md) | darn · light |  | 44m<br>40m | landing, shuttle |
+| T8 | `draft` **The landing merge fixer loads no prose, code-quality or testing skill**<br>• FixerTable sets the fixer seat's skills to the language skills alone, unlike every other code-writing seat | [`landing-fixer-base-skills`](design-landing-fixer-base-skills.md) | darn · light |  | 45m<br>41m | landing, shuttle |
 
 ### Notes (31)
 
@@ -83,7 +83,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 10d<br>13m | loom, stencil |
+| R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 10d<br>14m | loom, stencil |
 
 #### Bugs (1)
 
@@ -101,7 +101,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E4 |  | **Prove the dotnet scoper, shared build and Drift on the C# sandbox hub**<br>• Switch the sandbox gate to scoper dotnet, a build step and --no-build, then enable Drift there | [`sandbox-dotnet-gate`](design-sandbox-dotnet-gate.md) | 3d<br>3d | dotnet, gate |
 | E5 |  | **A landing notice is not lost when set late, when dobby was down, or when the orch is absent**<br>• Close the known limits landing-watch left: a late notify_on_land, a Land passed while dobby was down, and a dropped line when no orch is live | [`landing-watch-limits`](design-landing-watch-limits.md) | 1d<br>1d | dobby, orch |
 | E6 |  | **A task with no recipe runs darn, not tapestry**<br>• The default recipe becomes darn, set in board.yaml, so a small task promoted without a recipe does not start a full tapestry run | [`default-recipe-darn`](design-default-recipe-darn.md) | 18h<br>18h | board, batten |
-| E8 |  | **The orch role explains how to make a project into a beam**<br>• The prime orch in the Models hub did not know beam create is the only way, and patched a plain task run by hand. | [`orch-role-making-a-beam`](design-orch-role-making-a-beam.md) | 2h<br>2h | orch, pawl |
+| E8 |  | **The orch role explains how to make a project into a beam**<br>• The prime orch in the Models hub did not know beam create is the only way, and patched a plain task run by hand. | [`orch-role-making-a-beam`](design-orch-role-making-a-beam.md) | 3h<br>2h | orch, pawl |
 | E9 |  | **An idle interactive run saves its work and pauses, to go on another time**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 1d<br>1d | shed, shuttle, batten |
 | E10 |  | **The hibernate request is carried by dobby, not a daemon of its own**<br>• Move lym hibernate request into dobby; the past-Land test is already shared | [`hibernate-in-dobby`](design-hibernate-in-dobby.md) | 1d<br>1d | dobby |
 | E11 |  | **Merge in from parent as a task of its own in a beam, before pawl lands it**<br>• A command on a beam files a merge-in-from-parent task, run as darn with its perch on | [`parent-merge-task`](design-parent-merge-task.md) | 2d<br>1d | pawl, workspaces, drift, landing |
