@@ -1,6 +1,6 @@
 # Reed code button reports a wrong anchor path from inside the anchor directory
 
-`reed-code-wrong-anchor` · Task · bug, reed · running · Code-Bouncer
+`reed-code-wrong-anchor` · Task · bug, reed · running · Code-Burler-Review
 
 Imported from [issue #10](https://github.com/Knatte18/loomyard/issues/10).
 
