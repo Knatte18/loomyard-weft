@@ -1,32 +1,38 @@
-# gitexec's stall test fires its check when the remote is ready
+# gitexec: stall test waits on remote readiness, not wall-clock
 
-`TestRun_RemoteBounds`' row "a remote that never answers is killed at the stall bound and run once more" set a 200 ms stall bound under a 1 s deadline.
-At a load average of about 30, starting git and its `ext::` script took longer than 200 ms, so the stall check killed git before the script wrote its count file, and the row failed in packages the change under test never touched.
+`TestRun_RemoteBounds` no longer fails when a loaded machine spends the 200 ms stall bound starting git.
+Before, the silent-remote row killed git at the bound, and at a load average near 30 that came before the ext script wrote its count file.
+The same row failed in the `heddle-render-ignores-anchor` gate run and in a `-count=1` rerun on an unrelated change.
 
-## What the 200 ms is meant to prove
+## What changes
 
-The bound's value carries no timing claim.
-A stall bound under the deadline arms the stall check, and the check kills an attempt whose packet trace is still empty, so the row proves three things: a silent remote gets the stall error with the stall bound as its `Timeout`, the call runs once more, and the second stall ends the call.
-None of those depends on how long git takes to start, so the test no longer lets start-up time race the check.
+`gitexec` starts its stall check through a new package variable, `startStallTimer`, in `internal/gitexec/gitexec.go`.
+Production behaviour is unchanged: it is `time.AfterFunc(bound, check).Stop`.
+The variable exists only so a test can run the check on its own signal.
 
-## The change
+`internal/gitexec/export_test.go` gains `SetStallCheckForTest`, which runs each armed check once a `ready` callback reports true, instead of once the bound passes.
+It also returns the bounds the checks were armed with, one per attempt.
+`StartDefaultStallTimerForTest` reaches the production timer while the seam is replaced.
 
-- `internal/gitexec/gitexec.go`: the stall timer is started through a package variable, `startStallTimer(bound, tracePath, check)`, which in production is `time.AfterFunc(bound, check).Stop`.
-  It takes the attempt's trace path, which production ignores, so a test can wait on the trace.
-  Production behavior is unchanged.
-- `internal/gitexec/export_test.go`: `SetStallCheckForTest(t, ready)` replaces the timer with one that polls `ready(attempt, tracePath)` and runs the check once it reports true, or stops when the attempt ends.
-  It returns the bounds the checks were armed with.
-- `internal/gitexec/gitexec_unix_test.go`:
-  - The silent row runs each attempt's check once the `ext::` script has counted that attempt's run, and asserts the check was armed twice with the stall bound.
-    It also raises its own remote deadline to 10 s, so a slow start-up cannot reach the deadline first.
-    The row still ends at the stall check, so it runs no longer.
-  - The answering row had the same race the other way round: if the check fired before git traced the remote's packet, the row would see a stall.
-    It now runs the check once the trace is non-empty, which proves the check spares a remote that answered, and asserts the check was armed once with the stall bound.
-  - The unarmed row, where the stall bound equals the deadline, now asserts the check was never armed, rather than only inferring that from the error.
+In `gitexec_unix_test.go`:
+
+- The silent-remote row runs its check once the ext script has counted a new run, and uses a long remote deadline so git start-up has room.
+  It also asserts a check was armed with the stall bound for each of the two attempts.
+- The answering-remote row runs its check once git has traced the remote's first packet, so it proves the check does not kill a remote that answered.
+  It asserts the check ran and was armed once.
+- The row where the deadline is at or under the stall bound installs an always-ready check, so an armed check would fire and fail the row's assertions.
+- A new row covers the production timer: it runs its check once the bound passes, and `stop` cancels a pending one.
 
 ## Design decisions
 
-- The fix moves the trigger rather than raising the bound, as the board entry asks: a higher bound only lowers the chance of failing under load.
-- The remaining wall-clock bound is the 1 s package deadline in the hung, `RunWithin`, unarmed and answering rows.
-  Those rows assert a kill at the deadline, so they still need git and its script to start within it.
-  That leaves five times the headroom the 200 ms bound had, and lifting it would make each row wait out a longer deadline.
+- The bound is not raised.
+  The 200 ms was a stand-in for "the remote has been silent", so the test now waits for the readiness that bound approximated, and the 200 ms stays only as the value the check is armed with.
+- The seam replaces the timer, not the check body, so the production check that stats the trace file and cancels the attempt still runs in every row.
+- `SetStallCheckForTest` changes process-global state, so the rows stay serial, as the test's doc comment states.
+
+## To check by hand
+
+- `stall-timer-default-untested` (design, medium): the production `startStallTimer` is covered only by the new row in `gitexec_unix_test.go`.
+  Confirm that row proves what the test seam bypasses, that the check runs after the bound and that `stop` cancels it.
+- Not run here: `lym gate test ./internal/gitexec` under heavy load, the condition that caused the flake.
+  Run it with the machine loaded to confirm the row now passes.
