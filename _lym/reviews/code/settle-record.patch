@@ -1,0 +1,180 @@
+diff --git a/README.md b/README.md
+index 67649edc..eef09472 100644
+--- a/README.md
++++ b/README.md
+@@ -55,7 +55,7 @@ A project groups entries, and a project can become a beam, described below.
+ A task carries a title, a body that says what is wanted, labels and a **recipe**.
+ The recipe names the kind of run the task gets:
+ 
+-- `darn`, the default, for a change that one writer can make, test and commit.
++- `darn`, for a change that one writer can make, test and commit.
+ - `tapestry`, for a task big enough to need a discussion and a plan.
+ 
+ A task with no recipe runs the recipe `default_recipe` names in the hub's `board.yaml`, which is `darn` unless the hub changed it.
+diff --git a/internal/battenshed/deps.go b/internal/battenshed/deps.go
+index c9875e28..bb18a0b5 100644
+--- a/internal/battenshed/deps.go
++++ b/internal/battenshed/deps.go
+@@ -316,8 +316,8 @@ const (
+ // substitutes with a stub closure, per the seed-encoding-stays-behind-a-seam-in-battenshed Shared
+ // Decision -- this type never imports internal/shedrun itself.
+ type SeedChildDeps struct {
+-	// ReadBoardType returns the Board task's own "recipe" field, evaluated fresh on every Call -- never captured at wiring time -- so a recipe corrected after prime was seeded is still honoured.
+-	// A task with no recipe field is already resolved to the board's default_recipe, so the value is never empty.
++	// ReadBoardType returns the recipe the Board task runs, its own "recipe" field or else the board's default_recipe, so the value is never empty.
++	// It is evaluated fresh on every Call -- never captured at wiring time -- so a recipe corrected after prime was seeded is still honoured.
+ 	ReadBoardType func(ctx context.Context) (string, error)
+ 	// ChildDriver returns the child's driver for the recipe SeedChild resolved: the prime seed's typed child_driver, else the child recipe's driver_kind, else shed.yaml's.
+ 	// SeedChild calls it after the local overrides are written, so the recipe's driver_kind is read from the layer just written.
+diff --git a/internal/boardengine/board.go b/internal/boardengine/board.go
+index c65edd5a..a4ea20a0 100644
+--- a/internal/boardengine/board.go
++++ b/internal/boardengine/board.go
+@@ -52,10 +52,7 @@ func New(cfg Config) *Board {
+ 
+ // RecipeOf returns the recipe task runs: its own recipe field, or the board's default_recipe when the field is empty.
+ func (b *Board) RecipeOf(task Task) string {
+-	if task.Recipe != "" {
+-		return task.Recipe
+-	}
+-	return b.out.DefaultRecipe
++	return b.out.recipeOf(task)
+ }
+ 
+ // noWrite is returned as a mutation's result to end boardCriticalSection without a save, render or sync;
+diff --git a/internal/boardengine/config.go b/internal/boardengine/config.go
+index d3e3bf3a..0cd13c1b 100644
+--- a/internal/boardengine/config.go
++++ b/internal/boardengine/config.go
+@@ -29,8 +29,7 @@ type Config struct {
+ 	Path         string `yaml:"-"`
+ 	Readme       string `yaml:"readme"`
+ 	DesignPrefix string `yaml:"design_prefix"`
+-	// DefaultRecipe is the recipe a task with no recipe field runs: tapestry, darn or sampler.
+-	// The template names darn.
++	// DefaultRecipe is the recipe a task with no recipe field runs.
+ 	DefaultRecipe string `yaml:"default_recipe"`
+ 	// Types are the type labels;
+ 	// Labels are every other configured label, both in board.yaml order.
+@@ -83,7 +82,7 @@ func labelNames(labels []Label) []string {
+ type Outputs struct {
+ 	Readme       string
+ 	DesignPrefix string
+-	// DefaultRecipe is the recipe the Recipe cell shows for a task with no recipe field.
++	// DefaultRecipe is the recipe a task with no recipe field runs.
+ 	DefaultRecipe string
+ 	// Types is the configured type-label order, which the renderer sorts Notes sections by.
+ 	Types []string
+@@ -99,6 +98,15 @@ func (c Config) Outputs() Outputs {
+ 	}
+ }
+ 
++// recipeOf returns the recipe task runs: its own recipe field, or DefaultRecipe when the field is empty.
++// It is the one place an empty recipe field is resolved, so the README and the run's seeding agree.
++func (o Outputs) recipeOf(task Task) string {
++	if task.Recipe != "" {
++		return task.Recipe
++	}
++	return o.DefaultRecipe
++}
++
+ // Vocabulary is the one answer to "is this a type label" and "is this label configured".
+ // The zero value, a path-only Config's vocabulary, knows no label.
+ type Vocabulary struct {
+diff --git a/internal/boardengine/config_test.go b/internal/boardengine/config_test.go
+index f917c388..4fb0e0f2 100644
+--- a/internal/boardengine/config_test.go
++++ b/internal/boardengine/config_test.go
+@@ -123,6 +123,7 @@ func writeBoardConfig(t *testing.T, content string) string {
+ // TestLoadConfig_DefaultRecipe asserts default_recipe resolves to the template's darn when absent and to the hub's own value when set.
+ func TestLoadConfig_DefaultRecipe(t *testing.T) {
+ 	tiergate.Require(t, 0)
++	t.Parallel()
+ 	tests := []struct {
+ 		name    string
+ 		content string
+@@ -133,6 +134,7 @@ func TestLoadConfig_DefaultRecipe(t *testing.T) {
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
+ 			cfg, err := boardengine.LoadConfig(configengine.Dirs{Board: writeBoardConfig(t, tt.content)}, "board")
+ 			if err != nil {
+ 				t.Fatalf("LoadConfig: %v", err)
+diff --git a/internal/boardengine/render.go b/internal/boardengine/render.go
+index d0640752..a4f206c9 100644
+--- a/internal/boardengine/render.go
++++ b/internal/boardengine/render.go
+@@ -465,7 +465,7 @@ func (b boardView) entrySections(project Task, level int) []string {
+ 	}
+ 	types := b.out.Types
+ 	waitTable := readmeTable{columns: []string{columnTask, columnRecipe, columnAfter}, cells: func(t Task) []string {
+-		return []string{entryCell(t), recipeCell(t, b.out.DefaultRecipe), b.afterCell(t)}
++		return []string{entryCell(t), recipeCell(t, b.out), b.afterCell(t)}
+ 	}}
+ 
+ 	var tasks []TaskWithLayer
+@@ -487,7 +487,7 @@ func (b boardView) entrySections(project Task, level int) []string {
+ 	if running := byLayer(runningLayer); len(running) > 0 {
+ 		lines = append(lines, countedHeading(sublevel, runningSection.name, len(running)), "", runningSection.meaning, "")
+ 		lines = append(lines, b.table(running, readmeTable{columns: []string{columnTask, columnRecipe, columnAt, columnOwner}, cells: func(t Task) []string {
+-			return []string{entryCell(t), recipeCell(t, b.out.DefaultRecipe), atCell(*t.Status), cellText(b.ownerOf(t.Slug))}
++			return []string{entryCell(t), recipeCell(t, b.out), atCell(*t.Status), cellText(b.ownerOf(t.Slug))}
+ 		}})...)
+ 	}
+ 	ready := byLayer(readyLayer)
+@@ -738,13 +738,10 @@ func codeSpan(s string) string {
+ 	return fence + s + fence
+ }
+ 
+-// recipeCell is the recipe the task runs, defaultRecipe when its recipe field is empty, followed by the run profile it names, if any.
++// recipeCell is the recipe the task runs, the default recipe of out when its recipe field is empty, followed by the run profile it names, if any.
+ // A task naming no profile takes its recipe's default profile, so the cell shows the recipe alone.
+-func recipeCell(t Task, defaultRecipe string) string {
+-	recipe := cellText(defaultRecipe)
+-	if t.Recipe != "" {
+-		recipe = cellText(t.Recipe)
+-	}
++func recipeCell(t Task, out Outputs) string {
++	recipe := cellText(out.recipeOf(t))
+ 	if t.Profile == "" {
+ 		return recipe
+ 	}
+diff --git a/internal/boardengine/render_test.go b/internal/boardengine/render_test.go
+index ca715562..4a2030a4 100644
+--- a/internal/boardengine/render_test.go
++++ b/internal/boardengine/render_test.go
+@@ -264,7 +264,7 @@ func readmeFixture() []boardengine.Task {
+ // It pins that among the root's tables only the Notes tables carry the priority column, headed Prio, H for high, L for low and blank for normal.
+ // It pins that a pipe in a title is escaped and a line break in a brief becomes a space, so each row stays one table row.
+ // The same row pins that each run setting stacks as a code-span bullet in the entry cell after any brief, sorted, a nested key as its dotted path, a non-string value as JSON and a pipe escaped, adding no column.
+-// Every Tasks table pins a Recipe column after the slug, tapestry for an empty recipe and the stored name otherwise, followed by ` · ` and the profile, pipe escaped, when the task names one, and the Notes and Done tables pin its absence.
++// Every Tasks table pins a Recipe column after the slug, the fixture's default recipe for an empty recipe and the stored name otherwise, followed by ` · ` and the profile, pipe escaped, when the task names one, and the Notes and Done tables pin its absence.
+ // Every README pins the root's own sections under the root project's heading, P0 linked to project-root.md and counting its open entries, then its facts line naming only the prime owner, one heading level below a project file's.
+ // Every README pins the render time at its top and the prime owner under it, the machine in a code span and none recorded when the board records none;
+ // every table pins the one column before Labels holding the age above the time since revision, as of that time and blank for unknown dates.
+diff --git a/internal/boardengine/template.yaml b/internal/boardengine/template.yaml
+index a9a87dd7..a5bd1f07 100644
+--- a/internal/boardengine/template.yaml
++++ b/internal/boardengine/template.yaml
+@@ -1,6 +1,6 @@
+ readme: ${env:LYM_README:-README.md}   # readme page file name; relative to board dir
+ design_prefix: ${env:LYM_DESIGN_PREFIX:-design-}   # prefix for design-doc files
+-default_recipe: darn   # recipe a task with no recipe field runs: darn, tapestry or sampler
++default_recipe: darn   # recipe a task with no recipe field runs
+ types:   # type labels with their descriptions: a note carries exactly one, a task one or more
+   bug: Something is broken or behaves wrongly
+   enhancement: A new capability or an improvement to an existing one
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 056bcf24..26cb8c39 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -299,7 +299,7 @@
+ //
+ // The peer set is every board task whose status is a run status, whatever the run's state, with the caller's own slug left out.
+ // Each peer line carries `slug`, `title`, `status`, `row` (the 1-based position of the status's producer in the peer's own recipe, 0 when it names no row), `parent_branch`, `changed_paths` (the committed paths between the peer's merge base with its parent branch and its head), `decision_record` and `plan` (whether the peer holds them) and `unreadable`.
+-// A peer's own recipe is the one its worktree's self-run seed records when the worktree is on this machine, and otherwise the one the board entry seeds: pawl for a project entry, else its `recipe` field, empty meaning tapestry; a recipe that names no embedded recipe gives row 0.
++// A peer's own recipe is the one its worktree's self-run seed records when the worktree is on this machine, and otherwise the one the board entry seeds: pawl for a project entry, else its `recipe` field or, when that is empty, the board's `default_recipe`; a recipe that names no embedded recipe gives row 0.
+ // A peer whose pair, origin record, branch or records cannot be read is listed with that reason in `unreadable`, never dropped and never an error.
+ // From a task pair the list also carries `own_row`, the caller's own position by the same rule, 0 when the caller has no board task, and `parent_commits`, the commits on the pair's parent branch since the pair forked, as short SHA and subject, newest first; the prime has none.
+ // Both verbs refuse in a hub with no board, and `show` refuses an unknown slug, a task holding no run status, the caller's own slug, an unknown record name and a record the peer lacks, each naming its way forward.
