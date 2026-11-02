@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-02 14:14 UTC; every age below is as of then.
+Rendered 2026-11-02 14:15 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -58,7 +58,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **heddle renders claude-file to the worktree root, not to the worktree's anchor** | [`heddle-render-ignores-anchor`](design-heddle-render-ignores-anchor.md) | darn · light | Code-Burler-Fix | osl-1046 | 2h<br>2h | heddle, fabric, cwd |
 | T3 | **Let tmuxkit start under /dev/shm with a ten-digit uid, then measure fabricengine tier1 there**<br>• Fix checkSocketPath so TMPDIR=/dev/shm works for a ten-digit uid (109 bytes against 107), then run the paired fabricengine tier1 measurement the shm bench could not | [`tmuxkit-short-socket-path`](design-tmuxkit-short-socket-path.md) | darn · light | Darn-Write | osl-1046 | 1h<br>1h | testkit, cwd, gate, fabric |
-| T9 | **Drift-Verify with the operator in the loop** | [`drift-verify-operator-in-loop`](design-drift-verify-operator-in-loop.md) | darn · light | Code-Bouncer | osl-1046 | 1h<br>1h | drift |
+| T9 | **Drift-Verify with the operator in the loop** | [`drift-verify-operator-in-loop`](design-drift-verify-operator-in-loop.md) | darn · light | Describe | osl-1046 | 1h<br>1h | drift |
 
 #### Ready (2)
 
