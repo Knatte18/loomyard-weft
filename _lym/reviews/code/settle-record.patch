@@ -1,0 +1,866 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 0b99f893..fe051cd5 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -445,7 +445,9 @@ User-facing modules each get one `lym <module>` namespace:
+   A failing segment never stops the later ones.
+   ✅ Implemented. See the `internal/cleanupcli` package documentation.
+ - **adopt** — the takeover of beam projects, or of root, and of the runs under them from another machine of the operator, as one verb (`internal/adoptcli`; `lym adopt <beam>...`, `lym adopt root` and `lym adopt --all`, with `--keep-local` and `--drop-local`, from the prime and from any beam).
+-  It reconciles the hub against origin, stops a beam or a run under it whose pair holds local commits origin lacks or is live, adds the missing pairs, holds each moved run, and each unstarted released task of an adopted subject bar a front task, with a pause-record hold entry, then records this machine as the owner of the beams and of the prime in one pushed owner write; the subject's green adopt check lifts the holds.
++  It reconciles the hub against origin, stops a beam or a run under it whose pair holds local commits origin lacks or is live, adds the missing pairs, holds each moved run, and each unstarted released task of an adopted subject bar a front task, with a pause-record hold entry.
++  When the call records the prime's owner, the landing config deploys into the prime's branch and the prime's head is ahead of the running lym's build, the hub's landing deploy runs next, and a failed deploy refuses the verb with the holds standing.
++  It then records this machine as the owner of the beams and of the prime in one pushed owner write; the subject's green adopt check lifts the holds.
+   A call then starts one adopt check per adopted subject and per named subject that still holds a run, detached, in that subject's worktree, which runs the hub's `adopt` gate there, reports each tier to the subject's orch, shows its tier in flight, time, tiers done and result on the prime's reed status bar, and shows in `lym beam status`, so a break this machine brings to the landed code shows at adopt time.
+   It calls each owning module's function in-process and has no engine package of its own.
+   ✅ Implemented. See the `internal/adoptcli` package documentation.
+diff --git a/internal/adoptcli/adopt.go b/internal/adoptcli/adopt.go
+index 038c7731..3eb327ad 100644
+--- a/internal/adoptcli/adopt.go
++++ b/internal/adoptcli/adopt.go
+@@ -1,4 +1,4 @@
+-// adopt.go is the takeover sequence of "lym adopt": it validates the request, reconciles the hub against origin, then per adopted beam project and per run under it or under root drops or keeps local commits and adds the missing pair, holds the runs and released tasks it takes over, records this machine as owner of the projects, runs the beam steps of each adopted beam and starts one adopt check per subject; a subject's green check lifts its holds and starts its runs.
++// adopt.go is the takeover sequence of "lym adopt": it validates the request, reconciles the hub against origin, then per adopted beam project and per run under it or under root drops or keeps local commits and adds the missing pair, holds the runs and released tasks it takes over, deploys when root comes here under a lym older than the prime's head, records this machine as owner of the projects, runs the beam steps of each adopted beam and starts one adopt check per subject; a subject's green check lifts its holds and starts its runs.
+ 
+ package adoptcli
+ 
+@@ -106,11 +106,12 @@ type suiteStart struct {
+ 	AlreadyRunning bool `json:"already_running,omitempty"`
+ }
+ 
+-// outcome is the verb's envelope: the reconcile's report, the mutation record of every step, whether that record is non-empty, the prime's owner write, each entry's slugOutcome, the warnings on branches the reconcile left unmoved, the beam steps of the prime and the warning of a prime start that failed, and the adopt checks started, root's first, with their plain message, the warning of each start that failed, and the report of each run under the named subjects.
++// outcome is the verb's envelope: the reconcile's report, the mutation record of every step, whether that record is non-empty, the deploy run when root came here under an older lym, the prime's owner write, each entry's slugOutcome, the warnings on branches the reconcile left unmoved and on a deploy state that did not read, the beam steps of the prime and the warning of a prime start that failed, and the adopt checks started, root's first, with their plain message, the warning of each start that failed, and the report of each run under the named subjects.
+ type outcome struct {
+ 	Reconcile        fabricengine.OriginReport
+ 	Mutations        []fabricengine.Mutation
+ 	Partial          bool
++	Deploy           *deployOutcome
+ 	PrimeRecorded    bool
+ 	PrimeLost        string
+ 	Slugs            []slugOutcome
+@@ -146,6 +147,8 @@ type holdStore struct {
+ // StartSuite starts the adopt check of a subject, a beam slug or `root`, in the subject's worktree as a detached process, or finds the one already running, and returns at once, so a break this machine brings to the landed code shows at adopt time; it runs last, once for root when the prime's owner was recorded, once for each adopted beam whose owner write stood and once for each named subject that still holds a run.
+ // CheckState reads the state of a subject's adopt check record: running, green, failed, ended without a verdict (a running record whose process is gone) or none.
+ // EscalationEligible reports whether the run of a slug that is awaiting stands at a producer whose escalation the arbiter admits.
++// DeployState reads the landing deploy command for the prime's branch, the running lym's build and whether the prime's head is ahead of it; nil reads as nothing to deploy.
++// RunDeploy runs the deploy command in the prime and returns its log's path, an error for a deploy that did not end with exit code 0.
+ // HubPath roots the mutation record.
+ type adoptDeps struct {
+ 	Machine            func() (string, error)
+@@ -171,6 +174,8 @@ type adoptDeps struct {
+ 	PrimeName          string
+ 	CheckState         func(subject string) (string, error)
+ 	EscalationEligible func(slug string) bool
++	DeployState        func() (deployState, error)
++	RunDeploy          func(command string) (logPath string, err error)
+ 	HubPath            string
+ }
+ 
+@@ -323,6 +328,16 @@ func adopt(deps adoptDeps, req request) (outcome, error) {
+ 		return finish(), fmt.Errorf("lym adopt: %w; %s", err, reentry)
+ 	}
+ 
++	// The deploy runs after the hold and before the owner write, so a failed one leaves the runs held and the beam steps and checks below start the new lym.
++	var deployWarning string
++	if rootGoing {
++		result.Deploy, deployWarning, err = deployStale(deps)
++		if err != nil {
++			result.Slugs = collect(slugs, outcomes)
++			return finish(), err
++		}
++	}
++
+ 	var adopted []string
+ 	if len(adoptable) > 0 || rootGoing {
+ 		write, err := deps.SetOwners(boardengine.OwnerRequest{Machine: here, Slugs: adoptable, Prime: rootGoing, Takeover: true, ParentOf: deps.ParentOf})
+@@ -368,6 +383,9 @@ func adopt(deps adoptDeps, req request) (outcome, error) {
+ 	}
+ 
+ 	result.Warnings = reconcileWarnings(report, adopted, outcomes, req)
++	if deployWarning != "" {
++		result.Warnings = append(result.Warnings, deployWarning)
++	}
+ 
+ 	if len(adopted) > 0 || result.PrimeRecorded || len(heldSubjects) > 0 {
+ 		for _, subject := range checkSubjects(result.PrimeRecorded, adopted, heldSubjects) {
+diff --git a/internal/adoptcli/adopt_test.go b/internal/adoptcli/adopt_test.go
+index f1dd5335..7ac8e9bc 100644
+--- a/internal/adoptcli/adopt_test.go
++++ b/internal/adoptcli/adopt_test.go
+@@ -69,6 +69,11 @@ type world struct {
+ 	afterReconcile func(*boardengine.Owners)
+ 	// race, when set, runs on the owners right after the owner write lands, as another machine's write does.
+ 	race func(*boardengine.Owners)
++	// deploy is what the deploy-state read answers and deployStateErr what it fails with; deployErr is what the deploy fails with, and deployed the commands it ran, each also appended to order as deploy.
++	deploy         deployState
++	deployStateErr error
++	deployErr      error
++	deployed       []string
+ }
+ 
+ // newWorld returns a hub this machine owns the prime of, with two beam projects owned by another machine, each with a pair and a running pawl run, an idle task, a done task and a note.
+@@ -229,6 +234,12 @@ func (w *world) deps() adoptDeps {
+ 			return checkStateNone, nil
+ 		},
+ 		EscalationEligible: func(slug string) bool { return w.escalation[slug] },
++		DeployState:        func() (deployState, error) { return w.deploy, w.deployStateErr },
++		RunDeploy: func(command string) (string, error) {
++			w.order = append(w.order, "deploy")
++			w.deployed = append(w.deployed, command)
++			return deployLogName, w.deployErr
++		},
+ 		StartSuite: func(subject string) (suiteStart, error) {
+ 			w.order = append(w.order, "suite:"+subject)
+ 			if err := w.suiteErr[subject]; err != nil {
+@@ -294,6 +305,17 @@ func TestAdopt(t *testing.T) {
+ 		delete(w.runs, "beta")
+ 	}
+ 
++	// staleBuild is a deploy state whose prime head is ahead of the running lym's build, with a deploy command set.
++	staleBuild := deployState{Command: "go run ./tools/deploy", Installed: "87553450ec14", Head: "2d319fe5", Behind: true}
++
++	// requireNoDeploy fails the test when the deploy ran or the envelope names one.
++	requireNoDeploy := func(t *testing.T, w *world, got outcome) {
++		t.Helper()
++		if len(w.deployed) != 0 || got.Deploy != nil {
++			t.Errorf("deployed %v, envelope deploy %+v; want no deploy", w.deployed, got.Deploy)
++		}
++	}
++
+ 	// requireNothingRan fails the test when a step ran, which a refusal ahead of the origin reconcile leaves undone.
+ 	requireNothingRan := func(t *testing.T, w *world) {
+ 		t.Helper()
+@@ -879,6 +901,66 @@ func TestAdopt(t *testing.T) {
+ 				t.Errorf("alpha = %+v, want it adopted and held beside the failed check start", alpha)
+ 			}
+ 		}},
++		{name: "RootDeploysALymOlderThanThePrimesHeadBeforeTheOwnerWriteWhenThisMachineAlreadyOwnsThePrime", req: request{Root: true}, setup: func(w *world) { w.deploy = staleBuild }, check: func(t *testing.T, w *world, got outcome) {
++			if !slices.Equal(w.deployed, []string{staleBuild.Command}) {
++				t.Errorf("deployed %v; want %q once", w.deployed, staleBuild.Command)
++			}
++			deploy, owners := slices.Index(w.order, "deploy"), slices.Index(w.order, "owners")
++			if deploy < 0 || owners < deploy {
++				t.Errorf("steps = %v; want the deploy before the owner write", w.order)
++			}
++			want := deployOutcome{Installed: staleBuild.Installed, Head: staleBuild.Head, Log: deployLogName}
++			if got.Deploy == nil || *got.Deploy != want || !got.PrimeRecorded {
++				t.Errorf("deploy = %+v, prime recorded = %v; want %+v and the prime recorded", got.Deploy, got.PrimeRecorded, want)
++			}
++		}},
++		{name: "AFailedDeployRefusesBeforeTheOwnerWriteWithTheHoldsStanding", req: request{Slugs: []string{"alpha"}, Root: true}, setup: func(w *world) {
++			w.deploy = staleBuild
++			w.deployErr = errors.New("exit code 1")
++			w.report.Mutations.AppendRef(fabricengine.KindRemoteBranchUpdated, "main", "")
++		}, wantErr: "the landing deploy failed: exit code 1; log: deploy.log", check: func(t *testing.T, w *world, got outcome) {
++			if wantMutations := []fabricengine.Mutation{{Kind: fabricengine.KindRemoteBranchUpdated, Target: "main"}}; !got.Partial || !reflect.DeepEqual(got.Mutations, wantMutations) {
++				t.Errorf("partial = %v, mutations = %+v; want partial and the reconcile's %+v on the refusal", got.Partial, got.Mutations, wantMutations)
++			}
++			if w.ownerReq.Machine != "" || slices.ContainsFunc(w.order, func(step string) bool { return strings.HasPrefix(step, "suite:") || strings.HasPrefix(step, "beamup:") }) {
++				t.Errorf("owner request = %+v, steps = %v; want no owner write, beam steps or check after a failed deploy", w.ownerReq, w.order)
++			}
++			if !slices.Equal(w.holds["alpha"], []string{"alpha"}) || got.Deploy == nil {
++				t.Errorf("holds = %v, deploy = %+v; want alpha's run still held and the deploy named", w.holds, got.Deploy)
++			}
++		}},
++		{name: "AStopHoldingRootBackDeploysNothingAndWritesNoOwner", req: request{Root: true}, setup: func(w *world) {
++			withoutAlphaAndBeta(w)
++			w.owners.Prime = there
++			w.owners.Entries["kid1"] = boardengine.OwnerEntry{IsTask: true, RunHeld: true}
++			w.runs["kid1"] = running
++			w.pairs["kid1"] = true
++			w.report.Entries = append(w.report.Entries, fabricengine.EntryOutcome{Slug: "kid1", State: fabricengine.EntryOwnedElsewhere, Owner: there})
++			w.stopBranch("kid1", fabricengine.BranchDiverged)
++			w.deploy = staleBuild
++		}, check: func(t *testing.T, w *world, got outcome) {
++			requireNoDeploy(t, w, got)
++			if kid1 := slugOf(t, got, "kid1"); !kid1.Stopped || w.ownerReq.Machine != "" || got.PrimeRecorded {
++				t.Errorf("kid1 = %+v, owner request = %+v, prime recorded = %v; want kid1 stopped under root, no owner write and the prime left", kid1, w.ownerReq, got.PrimeRecorded)
++			}
++		}},
++		{name: "ALymBuiltFromThePrimesHeadIsNotDeployed", req: request{Root: true}, setup: func(w *world) {
++			w.deploy = staleBuild
++			w.deploy.Behind = false
++		}, check: requireNoDeploy},
++		{name: "NoDeployCommandForThePrimesBranchDeploysNothing", req: request{Root: true}, setup: func(w *world) {
++			w.deploy = staleBuild
++			w.deploy.Command = ""
++		}, check: requireNoDeploy},
++		{name: "ABeamAdoptUnderAPrimeOwnedHereDeploysNothing", req: request{Slugs: []string{"alpha"}}, setup: func(w *world) { w.deploy = staleBuild }, check: requireNoDeploy},
++		{name: "AnUnreadableDeployStateIsAWarningAndTheAdoptGoesOn", req: request{Root: true}, setup: func(w *world) { w.deployStateErr = errors.New("the installed lym carries no VCS stamp") }, check: func(t *testing.T, w *world, got outcome) {
++			requireNoDeploy(t, w, got)
++			if !got.PrimeRecorded || !slices.ContainsFunc(got.Warnings, func(line string) bool {
++				return strings.Contains(line, "could not be read (the installed lym carries no VCS stamp)") && strings.Contains(line, "run the hub's landing deploy")
++			}) {
++				t.Errorf("prime recorded = %v, warnings = %q; want the prime recorded and a warning naming the hand deploy", got.PrimeRecorded, got.Warnings)
++			}
++		}},
+ 	}
+ 
+ 	for _, tt := range tests {
+diff --git a/internal/adoptcli/cli.go b/internal/adoptcli/cli.go
+index e4e47222..559692d3 100644
+--- a/internal/adoptcli/cli.go
++++ b/internal/adoptcli/cli.go
+@@ -37,16 +37,16 @@ Steps, in order:
+   3. the pair of a beam or run this machine lacks is added
+   4. each run this call takes over, and each unstarted released task of an adopted subject
+      bar a front task, is held until its subject's adopt check is green
+-  5. one owner write for every beam not stopped, and for the prime with root
+-  6. the beam steps of the prime with root and of each adopted beam: its dobby and orch
+-  7. one adopt check per subject, root first, starts detached in that subject's worktree;
+-     a green check lifts the subject's holds and starts its runs, and a red one files a
+-     fix task, up to adopt_fix_tries
++  5. with root, when the prime's head is ahead of the running lym's build, the landing
++     deploy runs; a failed one refuses with the holds standing
++  6. one owner write for every beam not stopped, and for the prime with root
++  7. the beam steps of the prime with root and of each adopted beam: its dobby and orch
++  8. one adopt check per subject, root first, starts detached in that subject's worktree;
++     a green check lifts its holds and starts its runs, a red one files a fix task
+ 
+-The envelope carries reconcile, mutations, partial, per slug what happened and its
+-beam_steps, prime_beam_steps, warnings, and checks with message, or check_warnings. A
+-slug's error never stops the others. runs holds one item per run under the named
+-subjects, sorted by slug, with its state and a plain line.
++The envelope carries per slug what happened, the deploy, the beam steps, the checks
++and one runs item per run under the named subjects; the package doc lists every field.
++A slug's error never stops the others.
+ 
+ Example:
+   lym adopt payments
+@@ -113,6 +113,9 @@ func adoptFields(result outcome) map[string]any {
+ 		"prime_recorded": result.PrimeRecorded,
+ 		"runs":           runs,
+ 	}
++	if result.Deploy != nil {
++		fields["deploy"] = result.Deploy
++	}
+ 	if result.PrimeLost != "" {
+ 		fields["prime_lost_to"] = result.PrimeLost
+ 	}
+diff --git a/internal/adoptcli/cli_test.go b/internal/adoptcli/cli_test.go
+index 78303724..c0877300 100644
+--- a/internal/adoptcli/cli_test.go
++++ b/internal/adoptcli/cli_test.go
+@@ -1,4 +1,4 @@
+-// cli_test.go pins the fields of the adopt envelope that depend on the outcome of the adopt checks' start and on the reconcile's warnings.
++// cli_test.go pins the fields of the adopt envelope that depend on the outcome of the adopt checks' start, on the reconcile's warnings and on the deploy.
+ 
+ package adoptcli
+ 
+@@ -44,6 +44,10 @@ func TestAdoptFields(t *testing.T) {
+ 			result:   outcome{Runs: []runReport{{Slug: "t1", State: runStateWaitingForCheck, Line: "t1: waiting for the adopt check"}}},
+ 			wantRuns: []runReport{{Slug: "t1", State: runStateWaitingForCheck, Line: "t1: waiting for the adopt check"}},
+ 		},
++		{
++			name:   "ARunDeployIsTheDeployField",
++			result: outcome{Deploy: &deployOutcome{Installed: "87553450ec14", Head: "2d319fe5", Log: "deploy.log"}},
++		},
+ 		{name: "NoCheckCarriesNoneAndAnEmptyRunsArray"},
+ 	}
+ 	for _, tt := range tests {
+@@ -74,6 +78,9 @@ func TestAdoptFields(t *testing.T) {
+ 			if runs, hasRuns := fields["runs"]; !hasRuns || !reflect.DeepEqual(runs, wantRuns) {
+ 				t.Errorf("adoptFields()[runs] = %v, present %v; want %v", runs, hasRuns, wantRuns)
+ 			}
++			if deploy, hasDeploy := fields["deploy"]; hasDeploy != (tt.result.Deploy != nil) || (hasDeploy && deploy != tt.result.Deploy) {
++				t.Errorf("adoptFields()[deploy] = %v, present %v; want %v", deploy, hasDeploy, tt.result.Deploy)
++			}
+ 			for _, retired := range []string{"suite", "suite_warning"} {
+ 				if _, present := fields[retired]; present {
+ 					t.Errorf("adoptFields() holds the retired field %q", retired)
+diff --git a/internal/adoptcli/deploy.go b/internal/adoptcli/deploy.go
+new file mode 100644
+index 00000000..2841cd47
+--- /dev/null
++++ b/internal/adoptcli/deploy.go
+@@ -0,0 +1,151 @@
++// deploy.go is adopt's deploy step: before the owner write that gives this machine the prime, it runs the hub's landing deploy when the running lym was built from a commit the prime's head is ahead of, so no run goes on under a lym older than the code it lands.
++
++package adoptcli
++
++import (
++	"context"
++	"errors"
++	"fmt"
++	"os"
++	"path/filepath"
++	"slices"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/battencli"
++	"github.com/Knatte18/loomyard/internal/battenshed"
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/buildvcs"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/landingshed"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++)
++
++// deployLogName is the file the deploy step's command writes its output to, in root's adopt scratch directory.
++const deployLogName = "deploy.log"
++
++// deployState is what the deploy step reads before it decides.
++// Command is the landing config's deploy command, empty when the config deploys nothing into the prime's branch.
++// Installed labels the build of the running lym, Head is the prime's head commit, and Behind reports that Head is ahead of the commit the running lym was built from.
++type deployState struct {
++	Command   string
++	Installed string
++	Head      string
++	Behind    bool
++}
++
++// deployOutcome is a deploy the step ran: the build it replaced, the prime's head it deployed and the log of its command.
++type deployOutcome struct {
++	Installed string `json:"installed"`
++	Head      string `json:"prime_head"`
++	Log       string `json:"log"`
++}
++
++// deployStale runs the landing deploy when the state deps.DeployState reads has a command and the prime's head ahead of the running lym's build, and returns what it ran.
++// A state that does not read is a warning naming the hand deploy, and nothing runs.
++// A deploy that fails is the verb's refusal, naming its log and the re-run, since a run let go under the old lym fails on code that lym does not know.
++func deployStale(deps adoptDeps) (ran *deployOutcome, warning string, err error) {
++	if deps.DeployState == nil {
++		return nil, "", nil
++	}
++	state, err := deps.DeployState()
++	if err != nil {
++		return nil, fmt.Sprintf("whether the installed lym predates the prime's head could not be read (%v), so no deploy ran; way forward: if it does, run the hub's landing deploy in the prime before any run goes on", err), nil
++	}
++	if state.Command == "" || !state.Behind {
++		return nil, "", nil
++	}
++	logPath, err := deps.RunDeploy(state.Command)
++	ran = &deployOutcome{Installed: state.Installed, Head: state.Head, Log: logPath}
++	if err != nil {
++		return ran, "", fmt.Errorf("lym adopt: the installed lym was built from %s, which the prime's head %s is ahead of, and the landing deploy failed: %w; log: %s; no owner was recorded and the holds stay, so no run goes on under the old lym: fix the cause, %s", state.Installed, state.Head, err, logPath, reentry)
++	}
++	return ran, "", nil
++}
++
++// runningLymBuild reads the VCS stamp of the lym executable that is running.
++func runningLymBuild() (buildvcs.Identity, error) {
++	executable, err := os.Executable()
++	if err != nil {
++		return buildvcs.Identity{}, fmt.Errorf("locate the lym executable: %w", err)
++	}
++	return buildvcs.OfFile(executable)
++}
++
++// readDeployState reads the deploy step's state over the prime: the landing config's deploy command when its deploy_branches list the branch the prime is on, the running lym's build as readInstalled answers it, and the prime's head.
++// When the config has no deploy command or deploys nothing into the prime's branch the state is empty, and readInstalled is not called.
++func readDeployState(prime *lymcwd.Location, readInstalled func() (buildvcs.Identity, error)) (deployState, error) {
++	cfg, err := landingshed.LoadConfig(fabricengine.ConfigDirs(prime), "landing")
++	if err != nil {
++		return deployState{}, fmt.Errorf("read the landing config: %w", err)
++	}
++	if cfg.Deploy == "" {
++		return deployState{}, nil
++	}
++	fab, err := fabricengine.Open(prime)
++	if err != nil {
++		return deployState{}, err
++	}
++	branch, err := fab.CurrentBranch()
++	if err != nil {
++		return deployState{}, err
++	}
++	if !slices.Contains(cfg.DeployBranches, branch) {
++		return deployState{}, nil
++	}
++	installed, err := readInstalled()
++	if err != nil {
++		return deployState{}, err
++	}
++	head, err := fab.HeadSHA()
++	if err != nil {
++		return deployState{}, err
++	}
++	behind, err := installedBehind(installed, head, fab.CommitExists, fab.IsAncestor)
++	if err != nil {
++		return deployState{}, err
++	}
++	return deployState{Command: cfg.Deploy, Installed: installed.Label(), Head: head, Behind: behind}, nil
++}
++
++// installedBehind reports whether head is ahead of the commit the installed build was stamped with, judged through exists and ancestor over the prime's repository.
++// A build with no VCS stamp is an error, since nothing can judge it.
++// A build of head itself, of a commit the repository lacks, as a build of unpushed local work, or of a commit that is not an ancestor of head is not behind.
++func installedBehind(installed buildvcs.Identity, head string, exists func(sha string) bool, ancestor func(sha, ref string) (bool, error)) (bool, error) {
++	if installed.Revision == "" {
++		return false, errors.New("the installed lym carries no VCS stamp")
++	}
++	if installed.Revision == head || !exists(installed.Revision) {
++		return false, nil
++	}
++	return ancestor(installed.Revision, head)
++}
++
++// runAdoptDeploy runs command in the prime's worktree with its output in deployLogName in root's adopt scratch directory, ending it after the Land row's deploy timeout, and returns the log's path.
++// A shell that could not start, a timeout and a non-zero exit are errors.
++// It runs nothing and returns an error in a test binary, where the hub's shell command must not run.
++func runAdoptDeploy(prime *lymcwd.Location, command string) (string, error) {
++	if testing.Testing() {
++		return "", errors.New("the deploy runs the hub's shell command, which a test binary must not")
++	}
++	dir := subjectDir(prime.HubPath, boardengine.RootSubject)
++	if err := os.MkdirAll(dir, 0o755); err != nil {
++		return "", fmt.Errorf("create the adopt scratch directory: %w", err)
++	}
++	logPath := filepath.Join(dir, deployLogName)
++	result, err := battencli.RunDeploy(context.Background(), prime.WorktreePath(), command, logPath, battenshed.DeployTimeout)
++	return logPath, deployFailure(result, err)
++}
++
++// deployFailure maps how a deploy command ended to an error: err when the shell could not start, then a timeout, then a non-zero exit code.
++// A command that ran and exited zero is nil.
++func deployFailure(result battenshed.DeployResult, err error) error {
++	switch {
++	case err != nil:
++		return fmt.Errorf("the shell could not start: %w", err)
++	case result.TimedOut:
++		return fmt.Errorf("timed out after %s", battenshed.DeployTimeout)
++	case result.ExitCode != 0:
++		return fmt.Errorf("exit code %d", result.ExitCode)
++	}
++	return nil
++}
+diff --git a/internal/adoptcli/deploy_integration_test.go b/internal/adoptcli/deploy_integration_test.go
+new file mode 100644
+index 00000000..291a10a1
+--- /dev/null
++++ b/internal/adoptcli/deploy_integration_test.go
+@@ -0,0 +1,106 @@
++// deploy_integration_test.go reads the deploy step's state over a hubforge hub whose landing config and prime history decide it.
++
++package adoptcli_test
++
++import (
++	"errors"
++	"os"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/adoptcli"
++	"github.com/Knatte18/loomyard/internal/buildvcs"
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// seedLandingConfig writes yaml as the hub-wide landing config in h's Bolt checkout and commits it, since the deploy keys are barred from the worktree layer.
++func seedLandingConfig(t *testing.T, h *hubforge.Hub, yaml string) {
++	t.Helper()
++	boltDir := fabricengine.BoltDir(h.Path)
++	if err := os.MkdirAll(configengine.ConfigDir(boltDir), 0o755); err != nil {
++		t.Fatalf("create the Bolt config directory: %v", err)
++	}
++	if err := os.WriteFile(configengine.ConfigFile(boltDir, "landing"), []byte(yaml), 0o644); err != nil {
++		t.Fatalf("write the landing config: %v", err)
++	}
++	if _, _, err := fabricengine.NewBolt(boltDir).Commit("test: seed landing config", fabricengine.SyncOptions{}); err != nil {
++		t.Fatalf("commit the landing config: %v", err)
++	}
++}
++
++func TestReadDeployState(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	const (
++		deployCommand = "go run ./tools/deploy"
++		missingCommit = "1111111111111111111111111111111111111111"
++	)
++	listing := func(branch string) string {
++		return "deploy: " + deployCommand + "\ndeploy_branches:\n  - " + branch + "\n"
++	}
++	errBuildRead := errors.New("not a Go binary")
++	tests := []struct {
++		name    string
++		landing func(branch string) string
++		// installed answers the running lym's build given the prime's commit before and at its head; nil fails the test when the build is read.
++		installed  func(old, head string) (buildvcs.Identity, error)
++		wantEmpty  bool
++		wantBehind bool
++		wantErr    error
++	}{
++		{name: "NoDeployCommandIsAnEmptyStateAndReadsNoBuild", landing: func(string) string { return "deploy: \"\"\n" }, wantEmpty: true},
++		{name: "ADeployBranchListWithoutThePrimesBranchIsAnEmptyStateAndReadsNoBuild", landing: func(string) string {
++			return "deploy: " + deployCommand + "\ndeploy_branches:\n  - elsewhere\n"
++		}, wantEmpty: true},
++		{name: "ABuildOfAnAncestorOfTheHeadIsBehind", landing: listing, installed: func(old, _ string) (buildvcs.Identity, error) {
++			return buildvcs.Identity{Revision: old}, nil
++		}, wantBehind: true},
++		{name: "ABuildOfTheHeadIsNotBehind", landing: listing, installed: func(_, head string) (buildvcs.Identity, error) {
++			return buildvcs.Identity{Revision: head}, nil
++		}},
++		{name: "ABuildOfACommitThePrimeLacksIsNotBehind", landing: listing, installed: func(string, string) (buildvcs.Identity, error) {
++			return buildvcs.Identity{Revision: missingCommit}, nil
++		}},
++		{name: "ABuildReadErrorIsReturned", landing: listing, installed: func(string, string) (buildvcs.Identity, error) {
++			return buildvcs.Identity{}, errBuildRead
++		}, wantErr: errBuildRead},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			h := hubforge.NewHub(t, ".")
++			prime := h.PrimeWorktree()
++			branch := gitkit.CurrentBranch(t, prime)
++			old := gitkit.RevParse(t, prime, "HEAD")
++			head := gitkit.CommitFile(t, prime, "ahead.txt", "ahead", "ahead of the build")
++			seedLandingConfig(t, h, tt.landing(branch))
++
++			readInstalled := func() (buildvcs.Identity, error) {
++				if tt.installed == nil {
++					t.Errorf("the running lym's build was read for a config that deploys nothing into %s", branch)
++					return buildvcs.Identity{}, errors.New("build read")
++				}
++				return tt.installed(old, head)
++			}
++			got, err := adoptcli.ReadDeployState(h.Location, readInstalled)
++			if !errors.Is(err, tt.wantErr) {
++				t.Fatalf("ReadDeployState error = %v; want %v", err, tt.wantErr)
++			}
++			if tt.wantErr != nil {
++				return
++			}
++			want := adoptcli.DeployState{}
++			if !tt.wantEmpty {
++				installed, _ := tt.installed(old, head)
++				want = adoptcli.DeployState{Command: deployCommand, Installed: installed.Label(), Head: head, Behind: tt.wantBehind}
++			}
++			if got != want {
++				t.Errorf("ReadDeployState = %+v; want %+v", got, want)
++			}
++		})
++	}
++}
+diff --git a/internal/adoptcli/deploy_test.go b/internal/adoptcli/deploy_test.go
+new file mode 100644
+index 00000000..3c74a2f7
+--- /dev/null
++++ b/internal/adoptcli/deploy_test.go
+@@ -0,0 +1,87 @@
++// deploy_test.go pins how the deploy step judges the running lym's build against the prime's head and how it reports a deploy command that failed.
++
++package adoptcli
++
++import (
++	"errors"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/battenshed"
++	"github.com/Knatte18/loomyard/internal/buildvcs"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestDeployFailure(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	errStart := errors.New("no shell")
++	tests := []struct {
++		name    string
++		result  battenshed.DeployResult
++		err     error
++		wantErr string
++	}{
++		{name: "AShellThatCouldNotStartIsAnErrorWrappingTheCause", err: errStart, wantErr: "the shell could not start: no shell"},
++		{name: "ATimeoutNamesTheDeployTimeout", result: battenshed.DeployResult{TimedOut: true}, wantErr: "timed out after " + battenshed.DeployTimeout.String()},
++		{name: "ANonZeroExitCodeIsNamed", result: battenshed.DeployResult{ExitCode: 2}, wantErr: "exit code 2"},
++		{name: "AZeroExitCodeIsNoError"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got := deployFailure(tt.result, tt.err)
++			switch {
++			case tt.wantErr == "" && got != nil:
++				t.Fatalf("deployFailure(%+v, %v) = %v; want nil", tt.result, tt.err, got)
++			case tt.wantErr != "" && (got == nil || got.Error() != tt.wantErr):
++				t.Fatalf("deployFailure(%+v, %v) = %v; want %q", tt.result, tt.err, got, tt.wantErr)
++			}
++			if tt.err != nil && !errors.Is(got, tt.err) {
++				t.Errorf("deployFailure(%+v, %v) = %v; want it to wrap the start error", tt.result, tt.err, got)
++			}
++		})
++	}
++}
++
++func TestInstalledBehind(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const (
++		head = "2d319fe5aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
++		old  = "87553450ec14bbbbbbbbbbbbbbbbbbbbbbbbbbbb"
++	)
++	errAncestry := errors.New("merge-base broke")
++	tests := []struct {
++		name        string
++		installed   buildvcs.Identity
++		present     bool
++		isAncestor  bool
++		ancestorErr error
++		want        bool
++		wantErr     bool
++	}{
++		{name: "AnAncestorOfTheHeadIsBehind", installed: buildvcs.Identity{Revision: old}, present: true, isAncestor: true, want: true},
++		{name: "AModifiedBuildOfAnAncestorIsBehind", installed: buildvcs.Identity{Revision: old, Modified: true}, present: true, isAncestor: true, want: true},
++		{name: "ABuildOfTheHeadIsNotBehind", installed: buildvcs.Identity{Revision: head}, present: true, isAncestor: true},
++		{name: "ACommitTheRepositoryLacksIsNotBehind", installed: buildvcs.Identity{Revision: old}, isAncestor: true},
++		{name: "ACommitOffTheHeadsHistoryIsNotBehind", installed: buildvcs.Identity{Revision: old}, present: true},
++		{name: "ABuildWithNoStampIsAnError", wantErr: true},
++		{name: "AnAncestryReadErrorIsReturned", installed: buildvcs.Identity{Revision: old}, present: true, ancestorErr: errAncestry, wantErr: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			exists := func(string) bool { return tt.present }
++			ancestor := func(string, string) (bool, error) { return tt.isAncestor, tt.ancestorErr }
++			got, err := installedBehind(tt.installed, head, exists, ancestor)
++			if (err != nil) != tt.wantErr {
++				t.Fatalf("installedBehind(%+v) error = %v; want error %v", tt.installed, err, tt.wantErr)
++			}
++			if got != tt.want {
++				t.Errorf("installedBehind(%+v) = %v; want %v", tt.installed, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/adoptcli/deps.go b/internal/adoptcli/deps.go
+index 6bc3997b..3dd32f4e 100644
+--- a/internal/adoptcli/deps.go
++++ b/internal/adoptcli/deps.go
+@@ -1,4 +1,4 @@
+-// deps.go fills adoptDeps over a real hub: the origin reconcile with the live-pair reading adopt needs, the pair add, the owner write, the pause lift and hold, the holds and tries files, the beam steps, the landing-hold read, the adopt check start and the reads behind the run reports.
++// deps.go fills adoptDeps over a real hub: the origin reconcile with the live-pair reading adopt needs, the pair add, the owner write, the pause lift and hold, the holds and tries files, the deploy, the beam steps, the landing-hold read, the adopt check start and the reads behind the run reports.
+ 
+ package adoptcli
+ 
+@@ -159,6 +159,8 @@ func hubDepsAs(prime *lymcwd.Location, machine func() (string, error)) (adoptDep
+ 			return record.State, nil
+ 		},
+ 		EscalationEligible: hubEscalationEligible(prime),
++		DeployState:        func() (deployState, error) { return readDeployState(prime, runningLymBuild) },
++		RunDeploy:          func(command string) (string, error) { return runAdoptDeploy(prime, command) },
+ 		StartSuite: func(subject string) (suiteStart, error) {
+ 			dir := subjectDir(prime.HubPath, subject)
+ 			resolve := func() error {
+diff --git a/internal/adoptcli/doc.go b/internal/adoptcli/doc.go
+index ff34dd91..c58be725 100644
+--- a/internal/adoptcli/doc.go
++++ b/internal/adoptcli/doc.go
+@@ -56,6 +56,18 @@
+ // A held slug's outcome reads `run` `held` with `held` true and a `pause_standing` line saying it starts by itself once the subject's check is green and that a re-run of `lym adopt <subject>` checks again.
+ // A re-run reports each slug its subject's `holds.json` lists and a live `HoldCaller` entry of its own scope still covers as held, whether or not this call held it.
+ //
++// # The deploy
++//
++// The reconcile may move the prime past the commit the running lym was built from, and a run let go under that lym fails on code it does not know, such as a stencil marker it never fills.
++// So when the owner write below records the prime, `deployStale` runs between the hold and the owner write.
++// `readDeployState` reads the hub's `landing` config: with an empty `deploy`, or `deploy_branches` not listing the branch the prime is on, nothing more is read and nothing runs, as at the Land row.
++// Otherwise it reads the VCS stamp of the running lym through `buildvcs.OfFile` and the prime's head, and `installedBehind` reads the build as behind when its revision is a commit the prime holds, is not the head and is an ancestor of it; a build of a commit the prime lacks, as of unpushed local work, is not behind.
++// A behind build runs the `deploy` command in the prime through `battencli.RunDeploy` under `battenshed.DeployTimeout`, with its output in `deploy.log` in root's adopt scratch directory; the envelope's `deploy` names the build it replaced, the prime's head and the log.
++// A deploy that fails, times out or cannot start refuses the verb before the owner write, naming the log and the re-run: the holds stay, so no run goes on under the old lym, and the re-run judges the build again.
++// A state that does not read, as of a lym with no VCS stamp, is a line in `warnings` naming the hand deploy, and the adopt goes on.
++// The deploy runs before the beam steps and the adopt checks, so the dobby, the orch and the check this call starts run the new lym.
++// Bound: the deploy takes no land lock, so it can run beside a landing's own deploy; the deploy command is expected to install by rename, as the hub's own does.
++//
+ // # Step 4: the owner write
+ //
+ // One `boardengine.SetOwners` call with `Takeover` records this machine as the owner of every adopted beam the earlier steps did not stop, and of the prime when `root` is adopted or when the board records no prime owner, and not while a stop holds root back.
+@@ -184,7 +196,7 @@
+ //
+ // # The envelope
+ //
+-// It carries `reconcile`, `mutations` and `partial`, `warnings` for branches the reconcile left unmoved, `prime_beam_steps` and `prime_beam_warning` for the prime's beam steps, `checks` and `message`, or `check_warnings`, for the adopt checks, and per slug what happened: a stop with its branches, pair added, owner recorded, pause lifted or standing, run held for its subject's check, none, running here or owned elsewhere by `owned_by`, the `beam_steps` run, the error, and a warning when this machine does not own the slug's parent, since that run halts at Finalize here; the warning names `lym adopt <project of the parent>`, `lym adopt root` for the prime.
++// It carries `reconcile`, `mutations` and `partial`, `deploy` for a deploy the call ran, `warnings` for branches the reconcile left unmoved and a deploy state that did not read, `prime_beam_steps` and `prime_beam_warning` for the prime's beam steps, `checks` and `message`, or `check_warnings`, for the adopt checks, and per slug what happened: a stop with its branches, pair added, owner recorded, pause lifted or standing, run held for its subject's check, none, running here or owned elsewhere by `owned_by`, the `beam_steps` run, the error, and a warning when this machine does not own the slug's parent, since that run halts at Finalize here; the warning names `lym adopt <project of the parent>`, `lym adopt root` for the prime.
+ //
+ // `runs` is always present, an empty array for none, and holds one `runReport` for each run under the named subjects, sorted by slug, beside the per-slug outcomes:
+ // its `slug`, `state`, `row` (the batten run record's current producer, omitted for an entry with no record), `owned_by` when owned elsewhere, `caller` for `paused`, and a plain `line`.
+diff --git a/internal/adoptcli/export_test.go b/internal/adoptcli/export_test.go
+index b13971da..2c66040d 100644
+--- a/internal/adoptcli/export_test.go
++++ b/internal/adoptcli/export_test.go
+@@ -2,14 +2,23 @@
+ 
+ package adoptcli
+ 
+-import "github.com/Knatte18/loomyard/internal/lymcwd"
++import (
++	"github.com/Knatte18/loomyard/internal/buildvcs"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++)
+ 
+-// Outcome and SlugOutcome name the verb's result types for the external test package.
++// Outcome, SlugOutcome and DeployState name the verb's result types for the external test package.
+ type (
+ 	Outcome     = outcome
+ 	SlugOutcome = slugOutcome
++	DeployState = deployState
+ )
+ 
++// ReadDeployState reads the deploy step's state over prime, taking the running lym's build from readInstalled.
++func ReadDeployState(prime *lymcwd.Location, readInstalled func() (buildvcs.Identity, error)) (DeployState, error) {
++	return readDeployState(prime, readInstalled)
++}
++
+ // AdoptAs runs the takeover of the beam projects slugs name, and of root when the word `root` is among them, over the hub prime belongs to, reading this machine's name as machine, so two clones of one host stand for two machines.
+ func AdoptAs(prime *lymcwd.Location, machine string, slugs []string, keepLocal, dropLocal bool) (Outcome, error) {
+ 	deps, err := hubDepsAs(prime, func() (string, error) { return machine, nil })
+diff --git a/internal/battencli/deploy_integration_test.go b/internal/battencli/deploy_integration_test.go
+index abc5a856..6f0d00d5 100644
+--- a/internal/battencli/deploy_integration_test.go
++++ b/internal/battencli/deploy_integration_test.go
+@@ -1,6 +1,6 @@
+ //go:build !windows
+ 
+-// deploy_integration_test.go covers runDeploy against a real shell, which is why it sits in the integration tier.
++// deploy_integration_test.go covers RunDeploy against a real shell, which is why it sits in the integration tier.
+ 
+ package battencli
+ 
+@@ -16,7 +16,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// TestRunDeploy_WritesTheLogAndReportsExitCodeAndTimeout asserts runDeploy writes the command's output to the log, reports a non-zero exit code, and reports TimedOut for a command that outlives a short timeout.
++// TestRunDeploy_WritesTheLogAndReportsExitCodeAndTimeout asserts RunDeploy writes the command's output to the log, reports a non-zero exit code, and reports TimedOut for a command that outlives a short timeout.
+ func TestRunDeploy_WritesTheLogAndReportsExitCodeAndTimeout(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+@@ -40,12 +40,12 @@ func TestRunDeploy_WritesTheLogAndReportsExitCodeAndTimeout(t *testing.T) {
+ 			dir := t.TempDir()
+ 			logPath := filepath.Join(dir, "deploy.log")
+ 
+-			result, err := runDeploy(context.Background(), dir, tt.command, logPath, tt.timeout)
++			result, err := RunDeploy(context.Background(), dir, tt.command, logPath, tt.timeout)
+ 			if err != nil {
+-				t.Fatalf("runDeploy() error = %v; want nil", err)
++				t.Fatalf("RunDeploy() error = %v; want nil", err)
+ 			}
+ 			if result.ExitCode != tt.wantExitCode || result.TimedOut != tt.wantTimedOut {
+-				t.Errorf("runDeploy() = %+v; want exit code %d, timed out %v", result, tt.wantExitCode, tt.wantTimedOut)
++				t.Errorf("RunDeploy() = %+v; want exit code %d, timed out %v", result, tt.wantExitCode, tt.wantTimedOut)
+ 			}
+ 			logged, err := os.ReadFile(logPath)
+ 			if err != nil {
+@@ -58,7 +58,7 @@ func TestRunDeploy_WritesTheLogAndReportsExitCodeAndTimeout(t *testing.T) {
+ 	}
+ }
+ 
+-// TestCommandRunners_DropTheStrand asserts runDeploy and runRowCommand run their command without the strand-name variable and with the rest of the environment.
++// TestCommandRunners_DropTheStrand asserts RunDeploy and runRowCommand run their command without the strand-name variable and with the rest of the environment.
+ // It does not run in parallel: it sets the process environment.
+ func TestCommandRunners_DropTheStrand(t *testing.T) {
+ 	tiergate.Require(t, 1)
+@@ -67,9 +67,9 @@ func TestCommandRunners_DropTheStrand(t *testing.T) {
+ 	const command = `test -z "$LYM_STRAND_NAME" && test "$LYM_STRAND_KEPT" = kept`
+ 
+ 	dir := t.TempDir()
+-	deploy, err := runDeploy(context.Background(), dir, command, filepath.Join(dir, "deploy.log"), time.Minute)
++	deploy, err := RunDeploy(context.Background(), dir, command, filepath.Join(dir, "deploy.log"), time.Minute)
+ 	if err != nil || deploy.ExitCode != 0 {
+-		t.Errorf("runDeploy() = %+v, %v; want exit code 0", deploy, err)
++		t.Errorf("RunDeploy() = %+v, %v; want exit code 0", deploy, err)
+ 	}
+ 	row, err := runRowCommand(context.Background(), dir, command, filepath.Join(dir, "row.log"), time.Minute)
+ 	if err != nil || row.ExitCode != 0 {
+diff --git a/internal/battencli/land.go b/internal/battencli/land.go
+index d62e9fed..1a54ce49 100644
+--- a/internal/battencli/land.go
++++ b/internal/battencli/land.go
+@@ -100,7 +100,7 @@ func landDeps(location *lymcwd.Location, slug string, locateTask func() (*lymcwd
+ 			return battenshed.LandingSettings{Deploy: cfg.Deploy, DeployBranches: cfg.DeployBranches}, nil
+ 		},
+ 		RunDeploy: func(ctx context.Context, command, logPath string, timeout time.Duration) (battenshed.DeployResult, error) {
+-			return runDeploy(ctx, location.WorktreePath(), command, logPath, timeout)
++			return RunDeploy(ctx, location.WorktreePath(), command, logPath, timeout)
+ 		},
+ 		PruneBoard: func() error {
+ 			board, err := boardengine.OpenHub(location.HubPath)
+@@ -142,9 +142,9 @@ func pullStopOutcome(err error) (recordsStop string, pullErr error) {
+ 	return "", err
+ }
+ 
+-// runDeploy runs command through the platform shell in primeDir with its output in the file logPath, ending it after timeout.
++// RunDeploy runs command through the platform shell in primeDir with its output in the file logPath, ending it after timeout.
+ // A command that outlives the timeout reports TimedOut; a shell that could not start, or a cancelled ctx, is the returned error.
+-func runDeploy(ctx context.Context, primeDir, command, logPath string, timeout time.Duration) (battenshed.DeployResult, error) {
++func RunDeploy(ctx context.Context, primeDir, command, logPath string, timeout time.Duration) (battenshed.DeployResult, error) {
+ 	logFile, err := os.Create(logPath)
+ 	if err != nil {
+ 		return battenshed.DeployResult{}, err
+diff --git a/internal/battenshed/land.go b/internal/battenshed/land.go
+index e307281a..1b56d873 100644
+--- a/internal/battenshed/land.go
++++ b/internal/battenshed/land.go
+@@ -27,8 +27,8 @@ const (
+ 	primeDirtyWaitBound = 10 * time.Minute
+ 	// primeDirtyPollInterval is the pause between two reads of the prime's uncommitted tracked paths.
+ 	primeDirtyPollInterval = 5 * time.Second
+-	// deployTimeout is how long the deploy command may run.
+-	deployTimeout = 30 * time.Minute
++	// DeployTimeout is how long the deploy command may run.
++	DeployTimeout = 30 * time.Minute
+ 	// recordsStopMarkerLine is the row-notice marker line recording that the records-stop notice was posted.
+ 	recordsStopMarkerLine = "records-stop"
+ )
+@@ -258,12 +258,12 @@ func (p *landProducer) pullAndDeploy(ctx context.Context, parent string) (reason
+ 		return "deploy failed: " + err.Error(), recordsStop, nil
+ 	}
+ 	wayForward := fmt.Sprintf("log: %s; way forward: fix the cause, then run \"lym batten run %s\" from the prime", logPath, p.slug)
+-	result, err := p.deps.RunDeploy(ctx, settings.Deploy, logPath, deployTimeout)
++	result, err := p.deps.RunDeploy(ctx, settings.Deploy, logPath, DeployTimeout)
+ 	switch {
+ 	case err != nil:
+ 		return fmt.Sprintf("deploy failed: the shell could not start (%s); %s", err.Error(), wayForward), recordsStop, nil
+ 	case result.TimedOut:
+-		return fmt.Sprintf("deploy failed: timed out after %s; %s", deployTimeout, wayForward), recordsStop, nil
++		return fmt.Sprintf("deploy failed: timed out after %s; %s", DeployTimeout, wayForward), recordsStop, nil
+ 	case result.ExitCode != 0:
+ 		return fmt.Sprintf("deploy failed: exit code %d; %s", result.ExitCode, wayForward), recordsStop, nil
+ 	}
+diff --git a/internal/battenshed/land_test.go b/internal/battenshed/land_test.go
+index 2569662f..fdfd8088 100644
+--- a/internal/battenshed/land_test.go
++++ b/internal/battenshed/land_test.go
+@@ -93,7 +93,7 @@ func (f *landFixture) deps() LandDeps {
+ 			f.calls = append(f.calls, "deploy")
+ 			f.deployedCommands = append(f.deployedCommands, command)
+ 			f.deployWithPrime = f.deployWithPrime || f.primeHeld
+-			if !strings.HasPrefix(logPath, f.scratchDir) || timeout != deployTimeout {
++			if !strings.HasPrefix(logPath, f.scratchDir) || timeout != DeployTimeout {
+ 				return DeployResult{}, errors.New("deploy told the wrong log path or timeout")
+ 			}
+ 			return f.deployResult, f.deployErr
+diff --git a/internal/fabricengine/warpforward.go b/internal/fabricengine/warpforward.go
+index 54a4c788..5366b200 100644
+--- a/internal/fabricengine/warpforward.go
++++ b/internal/fabricengine/warpforward.go
+@@ -36,6 +36,12 @@ func (f *Fabric) IsAncestor(sha, ref string) (bool, error) {
+ 	return f.code.IsAncestor(sha, ref)
+ }
+ 
++// CommitExists reports whether the warp checkout holds the commit sha.
++// It is a thin, read-only delegation to gitrepo.Repo.SHAExists on f.code, so an invalid SHA and a read error read as absent.
++func (f *Fabric) CommitExists(sha string) bool {
++	return f.code.SHAExists(sha)
++}
++
+ // MergeBase returns the SHA of the best common ancestor of the warp checkout's HEAD and ref, where ref is a branch, a remote-tracking ref or a SHA.
+ // It is a read-only delegation to gitrepo.Repo.MergeBase on f.code, so a caller reads the task branch's fork point without naming a fabric side.
+ func (f *Fabric) MergeBase(ref string) (string, error) {
+diff --git a/pattern/PATTERN-cli-cobra.md b/pattern/PATTERN-cli-cobra.md
+index fe06cfe1..db534a20 100644
+--- a/pattern/PATTERN-cli-cobra.md
++++ b/pattern/PATTERN-cli-cobra.md
+@@ -33,5 +33,5 @@ Deviations:
+ - `tendercli` uses `tenderengine`, and mounts one root command, `tender`.
+ - `shortcutcli` mounts one root command per shortcut from its embedded file, with no `Command()` or `RunCLI`; a shortcut is an alias stretched to a sequence of argvs, so the module guards skip its group.
+ - `cleanupcli` calls the cleanup functions of `battencli`, `boardengine`, `orchengine`, `logger` and `lymtemp`, with no engine package of its own.
+-- `adoptcli` calls the takeover functions of `fabricengine`, `pairteardown`, `boardengine`, `tenderengine`, `tendercli`, `battencli` and `landingshed`, with no engine package of its own.
++- `adoptcli` calls the functions of `fabricengine`, `pairteardown`, `boardengine`, `tenderengine`, `tendercli`, `battencli`, `battenshed`, `buildvcs` and `landingshed`, with no engine package of its own.
+ - `beamcli` calls the functions of `fabricengine`, `boardengine`, `hubgeom` and `battencli`, with no engine package of its own.
