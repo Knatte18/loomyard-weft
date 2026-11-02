@@ -1,6 +1,6 @@
 # Operator verbs print a short readable summary, not a JSON dump
 
-`operator-verbs-readable-output` · Task · enhancement, cli · running · Describe
+`operator-verbs-readable-output` · Task · enhancement, cli · running · PR-Review
 
 ## Seen (operator, 2026-11-02)
 
