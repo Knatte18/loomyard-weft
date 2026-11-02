@@ -29,13 +29,9 @@ Several notes circled the same question (where the decision record lives, how a 
    It is tried first as a hand-run test project with the projects and beams that exist, measured against tapestry runs of the same size (`docs/research/token-audit-2026-10-22`), and built only if it saves tokens.
    The risk: tapestry's build is cheap because Webster runs on Sonnet following an Opus plan, while parts under a coarse pre-plan likely need Opus writers.
 
-## Evidence from the plan-split benches (2026-11-01 and 2026-11-02)
+## Open
 
-The plan-split writer (`Parts-Write` cuts the scope into parts with contracts, part writers plan each part, a chair joins them) is the planning half of `stitch` (`docs/research/plan-split-tune-2026-11-02.md`).
-The operator's aim (2026-11-02): parts are not joined into one plan in the long run but implemented separately, which is where time and tokens may be saved.
-
-- Both inputs split into 6 parts; the joined plans had 36 and 37 cards against 20 in the solo plans that landed, for the same code locations.
-  About 85% of the extra cards were changes the solo plan had bundled into too-large cards; the rest were per-part overhead (PATTERN and doc cards per part, a card for one registry line), and about 9 cards were too small to be worth a card.
-- Planning cost and wall time were close to the solo planner's after the tuning ($18.69 against $14.93, 24 against 25 minutes; $29.36 against $28.03, 29 against 32 minutes), from one run each.
-- How well a task splits decides the gain: `warp-visibility` had a critical path of 8 of 36 cards and 15 cards on its widest level, while `run-verbs-shared` had a path of 20 of 37 cards and 119 dependencies, so its parts are one chain and gain nothing from separate implementation.
-  The split writer should be able to answer that a task does not split, and leave it to the solo planner.
+- Where the records live: in `board.json`, or in a file of their own in the Bolt checkout beside it with the same entry-level replay, since a record is often 10–30 KB.
+- A split record's format: each part must still pass the discussion check.
+- Whether the old run's commits, if any, are kept when a run is cancelled for a split.
+- `stitch`: contract precision, how large the whole-task review's fixes may be, and how often the choice between `stitch` and tapestry before the run is right.
