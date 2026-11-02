@@ -1,0 +1,421 @@
+{
+  "runGuid": "0972a4da04a9d3872b740ba33d17a154",
+  "planFingerprint": "03a1631954fcf224df73db6ca98aad1714643b21ba899e65b0cccc0545c1e5c3",
+  "planFileHashes": {
+    "00-overview.md": "ef2441aa1e498e9bf4fab07538527bb4a3011abfb8851d0ac79c92d869c7f786",
+    "01-gatefixer-core.md": "3777c1c79606c80b36f309698c3e86a8c7556688ca5a5ad0b6ca4c84e841bffd",
+    "02-gatefixer-prompt.md": "fb58e585cb578756a28600771601c8a8bee165023c9252e2e34c29480ccb7e83",
+    "03-webster-fixer-on-core.md": "99e5aadf00e697d5594664598bd5b817f2eb0cae6210b606c6ef3bb6a117144b",
+    "04-webster-file-headers.md": "ac87ac1e7700543a63aafd1f9da1abf77ec70e22606e6ac5837c5cc756977b8c",
+    "05-gate-fixer-config.md": "73415125ab5dd187d3b68e6270ea3d18ee2754f8c8452ee2f367bda637d90e97",
+    "06-module-fixer-keys.md": "09b2fb82ce1d17dcad46c5f8b4a7b23524abaaf203e267fc2cb75fc596048fb0",
+    "07-row-gate-wrap.md": "791b7f6d45c8137d235453ecf0542f78f1f7c0454275ba7aef99e1998e827fd0",
+    "08-shedrecipe-fixer-element.md": "93e81d0b15675042e468d03a706bd7e4a2e77639385f7fb4a84965cb2b58c58e",
+    "09-loom-row-fixer-wiring.md": "7c5ace7552fa39e6a7ffe0d8f43924b8ad1c390d6c15357fef607c786bfab548",
+    "10-goto-ends-fixers.md": "62328224c57439c466c35329df84dfda33faf0cd37a8176986af8c4ba0fb84d4",
+    "11-writer-stencils-fixer-mode.md": "b2409b17d66a618edb7a452bf0884c67ffa1a4f5bef7154fc521d9b5aeec8990",
+    "12-card-gate-front.md": "2ee2c191dbcf12d4814d20732015f19226a465a9fd00522214834746c290722b",
+    "13-card-gate-runner-fixer.md": "78ace384bb4e21a6feab9977595b81d7b17c3358e7651bed54edc3a8f171a90f",
+    "14-webster-fork-card-fixer-text.md": "760034c33fb6eb0761679a51ae2f7e360619cd47d94c03dd39d465a12dbe5581"
+  },
+  "planOverviewFrameHash": "d8a5af946b46063853d35c214e5c210a2fe06f098c203e06f5923ee99ea1646f",
+  "partition": [
+    {
+      "cards": [
+        "01-gatefixer-core",
+        "02-gatefixer-prompt",
+        "03-webster-fixer-on-core"
+      ],
+      "profile": "wide",
+      "estimate": 277662,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54196,
+        "read_union": 50012,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 1104,
+            "reads": {
+              "file:PATTERN.md": 984,
+              "file:internal/runproc/doc.go": 348,
+              "package:.": 2000,
+              "package:internal/gatefixer": 2000,
+              "package:internal/runproc": 2000,
+              "tests:.": 2000,
+              "tests:internal/gatefixer": 2000,
+              "tests:internal/runproc": 2000
+            },
+            "messages": 224,
+            "written": 68304
+          },
+          {
+            "card": 2,
+            "card_text": 468,
+            "reads": {
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/gatefix": 2000,
+              "package:internal/gatefixer": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/gatefix": 2000,
+              "tests:internal/gatefixer": 2000
+            },
+            "messages": 72,
+            "written": 22068
+          },
+          {
+            "card": 3,
+            "card_text": 1032,
+            "reads": {
+              "file:contracts/stencils/webster/webster-body-verify-fix.md": 432,
+              "file:contracts/stencils/webster/webster-prefix-verify-fix-cold.md": 432,
+              "file:internal/webstercli/doc.go": 792,
+              "file:internal/websterengine/coldfixer.go": 1296,
+              "file:internal/websterengine/doc.go": 9300,
+              "file:internal/websterengine/strand_test.go": 1824,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 273.5,
+            "written": 83082
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-webster-file-headers",
+        "05-gate-fixer-config",
+        "06-module-fixer-keys",
+        "07-row-gate-wrap"
+      ],
+      "profile": "wide",
+      "estimate": 196978,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61196,
+        "read_union": 45968,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 252,
+            "reads": {
+              "file:internal/websterengine/recoverbatch.go": 10752,
+              "file:internal/websterengine/render.go": 7668,
+              "file:internal/websterengine/strand.go": 2016,
+              "package:internal/websterengine": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 59,
+            "written": 17952
+          },
+          {
+            "card": 5,
+            "card_text": 456,
+            "reads": {
+              "file:internal/gateslot/doc.go": 1728,
+              "file:internal/gateslot/template.yaml": 564,
+              "package:internal/gateslot": 2000,
+              "tests:internal/gateslot": 2000
+            },
+            "messages": 63,
+            "written": 19356
+          },
+          {
+            "card": 6,
+            "card_text": 504,
+            "reads": {
+              "file:internal/darnengine/doc.go": 456,
+              "file:internal/darnengine/template.yaml": 48,
+              "file:internal/loomengine/tapestry.yaml": 240,
+              "file:internal/loomengine/template.yaml": 432,
+              "package:internal/darnengine": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:internal/darnengine": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 110.5,
+            "written": 33654
+          },
+          {
+            "card": 7,
+            "card_text": 852,
+            "reads": {
+              "package:internal/gatefixer": 2000,
+              "tests:internal/gatefixer": 2000
+            },
+            "messages": 60,
+            "written": 18852
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "08-shedrecipe-fixer-element",
+        "09-loom-row-fixer-wiring"
+      ],
+      "profile": "wide",
+      "estimate": 260298,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68196,
+        "read_union": 57012,
+        "cards": [
+          {
+            "card": 8,
+            "card_text": 948,
+            "reads": {
+              "file:contracts/recipes/darn-recipe.yaml": 3000,
+              "file:contracts/recipes/tapestry-recipe.yaml": 7236,
+              "file:contracts/specs/shed-recipe-spec.md": 1668,
+              "file:internal/loomshed/doc.go": 1596,
+              "file:internal/shedrecipe/doc.go": 1476,
+              "package:contracts/recipes": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 264.5,
+            "written": 80298
+          },
+          {
+            "card": 9,
+            "card_text": 792,
+            "reads": {
+              "file:internal/loomcli/doc.go": 4296,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/gatefix": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/gatefix": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 180,
+            "written": 54792
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "10-goto-ends-fixers",
+        "11-writer-stencils-fixer-mode"
+      ],
+      "profile": "wide",
+      "estimate": 249180,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75196,
+        "read_union": 44828,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 744,
+            "reads": {
+              "file:internal/loomcli/doc.go": 4296,
+              "file:internal/shedengine/doc.go": 2472,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedengine": 2000
+            },
+            "messages": 139.5,
+            "written": 42594
+          },
+          {
+            "card": 11,
+            "card_text": 912,
+            "reads": {
+              "file:contracts/stencils/loom/loom-template-discussion.md": 1812,
+              "file:contracts/stencils/loom/loom-template-plan.md": 1128,
+              "file:contracts/stencils/twill/twill-directive.md": 492,
+              "file:internal/loomcli/doc.go": 4296,
+              "file:internal/loomrecipe/doc.go": 648,
+              "file:internal/twilldirective/doc.go": 324,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:contracts/stencils/twill": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/loomrecipe": 2000,
+              "package:internal/twilldirective": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:contracts/stencils/twill": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/loomrecipe": 2000,
+              "tests:internal/twilldirective": 2000
+            },
+            "messages": 285.5,
+            "written": 86562
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "12-card-gate-front",
+        "13-card-gate-runner-fixer",
+        "14-webster-fork-card-fixer-text"
+      ],
+      "profile": "wide",
+      "estimate": 261662,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82196,
+        "read_union": 43368,
+        "cards": [
+          {
+            "card": 12,
+            "card_text": 420,
+            "reads": {
+              "file:internal/gatecli/doc.go": 5052,
+              "package:internal/gatecli": 2000,
+              "tests:internal/gatecli": 2000
+            },
+            "messages": 68.5,
+            "written": 20970
+          },
+          {
+            "card": 13,
+            "card_text": 1128,
+            "reads": {
+              "file:internal/gatecli/doc.go": 5052,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/gatefix": 2000,
+              "package:internal/gatecli": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/gatefix": 2000,
+              "tests:internal/gatecli": 2000
+            },
+            "messages": 200.5,
+            "written": 61278
+          },
+          {
+            "card": 14,
+            "card_text": 600,
+            "reads": {
+              "file:contracts/stencils/webster/webster-body-implementer.md": 2076,
+              "file:internal/webstercli/doc.go": 792,
+              "file:internal/websterengine/doc.go": 9300,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 177.5,
+            "written": 53850
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "f559ee7ffd4c7918e1dad04120be5860",
+  "masterSessionId": "6ad5e611-5f44-4601-b787-6d5bd0839a41",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "gatefixer-core",
+      "cards": [
+        "01-gatefixer-core",
+        "02-gatefixer-prompt",
+        "03-webster-fixer-on-core"
+      ],
+      "cardHashes": {
+        "01-gatefixer-core": "3777c1c79606c80b36f309698c3e86a8c7556688ca5a5ad0b6ca4c84e841bffd",
+        "02-gatefixer-prompt": "fb58e585cb578756a28600771601c8a8bee165023c9252e2e34c29480ccb7e83",
+        "03-webster-fixer-on-core": "99e5aadf00e697d5594664598bd5b817f2eb0cae6210b606c6ef3bb6a117144b"
+      },
+      "startSha": "b39bee57da2546ad5824f543f5d999c74251473e",
+      "kind": "fork",
+      "spawnedAt": "2026-11-02T13:17:32Z",
+      "sessionId": "6ad5e611-5f44-4601-b787-6d5bd0839a41",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
