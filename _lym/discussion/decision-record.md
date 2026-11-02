@@ -25,6 +25,12 @@ The cause of the package's slowness is not part of this task.
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-02): The hub gate command switches to the placeholder after landing
+
+Decision: The change lands with the {test_timeout} mechanism only; the hub's tier1 gate.yaml keeps its GOFLAGS -timeout=20m stopgap, and the parent edits tiers.tier1.command to carry -timeout {test_timeout} and drops the GOFLAGS flag once the landing's deploy has installed the lym binary that knows the placeholder.
+
+Rationale: The current binary would pass the placeholder through literally, and the hub's gate.yaml lies outside the task's write surface; the stopgap keeps verify green meanwhile.
+
 ## Constraints
 
 ## Auto-mode assumptions
