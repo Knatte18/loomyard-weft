@@ -700,31 +700,6 @@
       "project": "turn-savings"
     },
     {
-      "id": 996,
-      "handle": "T6",
-      "slug": "explore-subagent-model",
-      "title": "Discussion writers hand lookups to Sonnet subagents, and the subagent model is config",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "stencil",
-        "loom",
-        "darn",
-        "config"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Add the Plan stencil's explore-subagent guidance to the Discussion-Write stencil, and read the subagent model from a loom config key instead of a literal in each stencil",
-      "body": "## Seen (orch, 2026-11-01)\n\nEvery lookup a Plan or Discussion writer makes is paid at its whole context, so exploration late in a large session is the expensive part of planning.\nDiscussion-Write explores the code more than any other role.\nTask `darn-sonnet-helpers` landed the guidance for the Plan writer and the darn writer to hand batches of independent lookups to fresh Sonnet subagents (`contracts/stencils/loom/loom-template-plan.md`, `contracts/stencils/darn/darn-template-write.md`).\nThe Discussion-Write stencil has no such guidance, and each stencil that has it hardcodes `model: \"sonnet\"`.\n\n## Design (operator, 2026-11-02)\n\n1. The Discussion-Write stencil gets the same guidance as the Plan stencil, in the same form:\n   - the writer hands a batch of independent lookups to fresh subagents, launched together in one message, each prompt carrying its whole question and asking for a short answer naming files and spans;\n   - the writer is encouraged, not commanded: it keeps its own lookups when it judges them small or needs to see the code itself;\n   - a fork does not serve here, since it inherits the writer's whole context.\n2. The subagent model is config, not a literal in the stencils: one new key beside the writer-model keys of the loom config, with `sonnet` as the template default so behaviour is unchanged.\n   The Plan, Discussion-Write and darn-write stencils take the model from it, in place of the hardcoded `model: \"sonnet\"`.\n   The writer picks the key's name and its module from the repository's config conventions, and says in the key's template comment which stencils read it.\n\nThe bench of the guidance, against a writer given none, is `planner-fork-lookups`'s and is no part of this task.\n",
-      "status": "done",
-      "created": "2026-11-02T11:40:37Z",
-      "revised": "2026-11-02T11:40:37Z",
-      "profile": "light",
-      "project": "turn-savings"
-    },
-    {
       "id": 997,
       "handle": "T2",
       "slug": "heddle-render-ignores-anchor",
@@ -770,28 +745,6 @@
       "body": "Imported from [issue #12](https://github.com/Knatte18/loomyard/issues/12).\n\nSeen: in a beam's orch (strand mo:loomyard-setup:orch), `lym board upsert` with `\"profile\":\"docs\"` on a new task under the beam's project was refused: \"a run_settings or profile change is refused from the task session mo:loomyard-setup:orch; way forward: the operator or the hub orch makes the change\". The same upsert without `profile` succeeded, so the beam orch may create tasks but not set their profile.\n\nExpected: the orch role tells every orch, a beam's included, to name a profile in the board entry's `profile` field before the batten run starts. A beam's orch (role `orch` under a beam slug) should be treated as an orch, not as a task session, for profile and run_settings writes on entries whose parent_beam is its own beam.\n\nWorkaround: created the task without a profile and asked the operator or the prime orch to set it.",
       "created": "2026-11-02T12:00:15Z",
       "revised": "2026-11-02T12:00:15Z"
-    },
-    {
-      "id": 999,
-      "handle": "T7",
-      "slug": "fabricengine-shm-bench",
-      "title": "Measure fabricengine tier1 with the test work directory on /dev/shm against the default",
-      "kind": "task",
-      "labels": [
-        "research",
-        "gate",
-        "fabric"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Six runs in three concurrent pairs on OSL-1046: can fabricengine tier1 use /dev/shm for its temp root, and does it avoid the Cortex slowdown",
-      "body": "## Seen (orch, 2026-11-02)\n\n`test-time-audit-3` in `docs/benchmarks/test-suite-timing.md` measured the full suite on OSL-1046, an Intel Core Ultra 7 366H with Cortex XDR.\n`internal/fabricengine` took 348.72 s of the 388.6 s `tier1` wall, against 45.7 s on the Ryzen machine without endpoint security.\nThe operator's reading is that Cortex scans every file the `fabricengine` tests create on disk.\n\n## Question\n\nTwo things, and only these:\n\n1. Can the test work directory be `/dev/shm`, in memory, for the `fabricengine` `tier1` run on this machine: do the tests pass there, and does memory hold?\n2. Does it avoid Cortex's scan, shown by the package's wall under `/dev/shm` against the default under the same machine load?\n\nHow near it comes to the Ryzen machine's absolute time is no part of the question.\n\n## Method\n\n- Run only the `internal/fabricengine` package in `tier1`, with the test binary cache bypassed (`-count=1`), through `lym gate test` as the gate rule in the system prompt says.\n- Two settings: the default temp root, and the temp root on `/dev/shm`.\n  The writer reads how lym and the tests choose their temp root (`internal/lymtemp`, `TMPDIR`) and uses the setting that moves every file the tests create; it says in the report which setting it used and what it checked to see that the files really landed in `/dev/shm`.\n- Run the settings in three pairs, the two runs of a pair started together, so both meet the same load from the rest of the machine, other runs of the hub included.\n  Each pair needs two gate slots at once: when the gate holds two free slots at once the pair starts; otherwise the writer waits for them, and never runs the two of a pair one after the other.\n- Alternate which setting starts first in each pair, since the faster run ends first and leaves the other a lighter machine.\n- Read each run's package wall from the test output, and `/dev/shm`'s use before and after each shm run, since memory is the cost.\n  The machine holds 30 GB and `/dev/shm` is 16 GB, shared with the other runs of the hub: when `/dev/shm`'s use passes 6 GB during a run, the writer stops the runs of the pair, reports the peak it saw, and goes on to the report with the runs it has.\n- Record the machine's load average at each run, and the revision and the Go version.\n- The two runs of a pair slow each other, so the absolute walls are no measure of a lone run: only the ratio of the two walls of a pair counts.\n\n## Bounds\n\nAt most six runs: three with the default temp root and three with `/dev/shm`, no more and no cold run outside them.\nOne package, one tier, one machine.\nNo code change and no config change: the setting is made for the run only, and the report says whether a permanent setting is worth a task of its own, as a note.\n\n## Report\n\nA section in `docs/benchmarks/test-suite-timing.md` after `test-time-audit-3`, with the six walls by pair, the ratio of each pair, the memory use, the load averages, whether every run passed, and a plain statement of whether `/dev/shm` can be used and whether it avoids the Cortex slowdown.\nIt lands as a commit, so the run's worktree is the only change.\n\n## Timing\n\nNo pause of the hub is needed: the pairs run beside the other runs, and the pairing cancels their load.\nThe writer makes no pause of its own.\n",
-      "status": "done",
-      "created": "2026-11-02T12:10:44Z",
-      "revised": "2026-11-02T12:17:18Z",
-      "profile": "docs"
     },
     {
       "id": 1000,
