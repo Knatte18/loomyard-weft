@@ -1,33 +1,37 @@
-# Run a reed status-bar button in its worktree's current anchor
+# Reed buttons run in the worktree's current anchor
 
-Fixes [issue #10](https://github.com/Knatte18/loomyard/issues/10): the "code" button reported a wrong anchor path although the operator stood in the anchor directory.
+A Reed status-bar button, the "code" button for one, failed with a wrong-anchor-path error when its worktree's anchor was not `.` and the anchor marker had changed after the session last rendered.
+The click ran the button's command in `spec.Dir`, the directory frozen into the session's `@lym_button_spec` option at boot or attach.
+`lym ide spawn` and the other lym verbs gate their cwd on `<worktree>/<anchor>`, so a directory that still existed but was no longer the anchor was refused.
+The click checked only that `spec.Dir` existed.
 
-## Cause
+Now a click reads the anchor afresh and runs the entry there.
+No reattach is needed after an anchor marker changes.
 
-The click runs the entry, `lym ide spawn {slug}`, as a child process whose cwd is the `dir` frozen into `@lym_button_spec` at the session's last boot or attach.
-`lym ide spawn` resolves its cwd through `lymcwd.Resolve`, whose gate requires the cwd to equal `<worktree>/<anchor>` exactly.
-Nothing re-renders the spec when an anchor marker changes, and the click checked only that the stored directory still existed.
-So a marker recorded or changed after the render left the click running in the old directory, which exists but is no longer the anchor, and the child refused it.
-`lym fabric anchor --set` refuses while the worktree's own reed holds a session, but it does not cover a task session, whose button runs in its beam's or the prime's anchor, nor a marker a reconcile writes.
-The operator's own terminal plays no part: the message comes from the button's child.
+Closes #10
 
-The second candidate from the issue, a parent whose recorded anchor differs from a fresh resolve, has no producing code path, so it is not addressed separately; the fix covers it anyway, since the click now always resolves afresh.
+## What changes
 
-## Change
+- `lym reed button` resolves the worktree holding the rendered `spec.Dir` through `lymcwd.ResolveWorktree` and takes its `AnchorPath()` as the run directory (`buttonRunDirectory` in `internal/reedcli/button.go`).
+  The resolve applies no cwd gate and spawns no git.
+- `reedengine.RunButton` now takes that reader as a second argument.
+  The entry runs in the anchor directory, and the confirm prompt's confirmed line opens in it too.
+- A click shows one message on the clicking client and runs nothing when the anchor does not resolve, or when the anchor directory is gone.
+  The gone-anchor message tells the operator to point the worktree's anchor at an existing directory.
+- When the current anchor differs from the rendered directory, the click logs that at Info with both paths.
+- Docs and comments in `reedcli` and `reedengine` describe the new run directory.
 
-- `reedengine.RunButton` takes an anchor reader, and the click runs the entry, and composes the confirmed prompt's line, in the anchor that reader returns for the rendered directory instead of the rendered directory itself.
-  A reader error shows `lym: <label>: the anchor of <dir> does not resolve: <err>` and runs nothing.
-  A rendered directory that differs from the fresh anchor is logged at Info with both paths.
-- `reedcli`'s `button` verb supplies the reader, `buttonRunDirectory`, through `lymcwd.ResolveWorktree(dir).AnchorPath()`: no cwd gate, no git spawn, the worktree found from any directory inside it.
-  reedengine still never imports lymcwd.
-- The render, the `@lym_button_dir` cd in the click line, and the gone-directory check are unchanged.
+## Design decisions
+
+- This is the fix for candidate cause 1 of the issue, a stale spec.
+  The cause was confirmed by a unit test that records an anchor marker after the render and then asks where the click runs; the parent-anchor candidate was not touched.
+- The anchor is read at click time instead of treating a failing `spec.Dir` as stale and asking for `lym reed attach`.
+  The operator's click works at once, and the rendered `spec.Dir` is still the key that finds the worktree.
+- The button verb still reads no cwd, config or reed state, so a `reed.yaml` that fails to load cannot abort a click.
 
 ## Tests
 
-- `TestRunButtonVia` gains rows for a moved anchor (the plain run and the confirm prompt's line both use the fresh anchor) and an unresolvable anchor.
-- `TestButtonRunDirectory` (new, reedcli, tier 0) records an anchor marker after a render at the root and at a subpath and checks where the click runs, plus a directory in no worktree.
-  It records the hub-wide Bolt marker, since the fabric-vocabulary guard keeps `weftname` out of reedcli; both markers go through the same reader.
-
-## Docs
-
-The reedengine and reedcli package docs, the verb's help text and the `buttonSpec.Dir` comment now say the click runs in the current anchor.
+- `TestButtonRunDirectory` in `internal/reedcli/button_test.go` covers a root render with a subpath marker recorded later, a subpath render with a root marker recorded later, a render that matches the marker, no marker, and a directory in no worktree.
+- `TestRunButtonVia` gains rows for a moved anchor (plain run and confirm prompt), a gone anchor directory and an unresolvable anchor.
+- Not run by hand: a click in a real tmux session whose anchor was changed after attach.
+  Check that the "code" button opens the IDE after `lym fabric anchor --set`, with no reattach.
