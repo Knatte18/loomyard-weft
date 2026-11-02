@@ -48,7 +48,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **A task with no recipe runs darn, not tapestry**<br>• The default recipe becomes darn, set in board.yaml, so a small task promoted without a recipe does not start a full tapestry run | [`default-recipe-darn`](design-default-recipe-darn.md) | darn · docs | Drift-Verify | neve | 1d<br>19m | board, batten |
+| T2 | **A task with no recipe runs darn, not tapestry**<br>• The default recipe becomes darn, set in board.yaml, so a small task promoted without a recipe does not start a full tapestry run | [`default-recipe-darn`](design-default-recipe-darn.md) | darn · docs | Finalize | neve | 1d<br>19m | board, batten |
 | T4 | **Replay the landed plan-split tuning on both bench inputs and tune again** | [`plan-split-replay`](design-plan-split-replay.md) | darn · docs | Darn-Write | neve | 1h<br>1h | loom, stencil |
 | T5 | **Finalize releases the parent lock while its fixer works**<br>• A red verify in Finalize frees the parent lock before the fixer starts, then requeues, merges and verifies again, so green runs land while one run fixes | [`finalize-fix-outside-lock`](design-finalize-fix-outside-lock.md) | darn | Code-Burler-Fix | neve | 1d<br>35m | landing, loom |
 
