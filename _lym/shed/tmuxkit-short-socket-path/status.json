@@ -1,11 +1,11 @@
 {
-  "current_producer": "Record-Write",
+  "current_producer": "Drift-Baseline",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Record-Write",
-    "last": "Preflight → done",
+    "now": "Drift-Baseline",
+    "last": "Record-Write → done",
     "wait": ""
   },
   "history": [
@@ -13,6 +13,12 @@
       "producer": "Preflight",
       "outcome": "done",
       "output": "",
+      "at": "2026-11-02T13:05:30Z"
+    },
+    {
+      "producer": "Record-Write",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/tmuxkit-short-socket-path/_lym/discussion/decision-record.md",
       "at": "2026-11-02T13:05:30Z"
     }
   ],
