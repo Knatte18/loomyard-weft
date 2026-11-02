@@ -674,7 +674,7 @@
       "isolated": false,
       "brief": "lym adopt root and other verbs the operator types print a long JSON envelope; print a short summary with each stop and its way forward by default, JSON behind a flag",
       "body": "## Seen (operator, 2026-11-02)\n\nOperator-facing verbs such as `lym adopt root` print one long JSON envelope: on a stop it carries every commit hash of a divergence and every run's record, so the operator cannot see what happened or what to do next.\n\n## Idea\n\n- A verb the operator types prints a short human summary by default: what it did, what stopped, and the way forward for each stop, one line each.\n- The full JSON envelope stays available behind a flag, for agents and scripts.\n- Long lists, such as a divergence's commit hashes, collapse to a count with a pointer to where the full list is.\n- Which verbs count as operator-facing follows the command index's operator audience.\n\n## Open\n\n- Whether agents call these verbs too, and so need the flag added to their stencils and skills.\n",
-      "status": "running · Finalize",
+      "status": "done",
       "created": "2026-11-02T18:26:26Z",
       "revised": "2026-11-02T19:14:24Z",
       "profile": "light"
@@ -759,7 +759,6 @@
       "isolated": false,
       "brief": "",
       "body": "## Why\n\nTask `default-recipe-darn` ran darn with profile `docs`: a Sonnet writer and no Code-Review.\nIt changed code in five packages (`battenshed`, `battencli`, `boardengine`, `boardcli`, `loomcli`) to add the hub setting `default_recipe` in `board.yaml` and resolve a task's recipe through `Board.RecipeOf`, so the change landed with no review.\n\n## Goal\n\nReview the commit `default-recipe-darn` landed on `main` as a Code-Review would, and fix what it finds.\n\n- Find the commit by its subject, \"A task with no recipe runs the board's default_recipe\", and read its whole diff and the code around it.\n- Judge it against the PATTERN entries, the repository's agent instructions and the code-quality and testing rules: one resolution point for an empty recipe with no literal left elsewhere, error handling where the board is opened, tests that pin the default and the override, and docs that state the setting once.\n- Fix each finding on this task's branch; the Code-Review perch then reviews those fixes.\n- A finding outside that commit's change becomes a board note, not a fix here.\n- When the review finds nothing to fix, make no code change: record the review and its verdict in the change description and land.\n",
-      "status": "draft",
       "created": "2026-11-02T19:49:53Z",
       "revised": "2026-11-02T19:49:53Z",
       "profile": "light"

@@ -1,6 +1,6 @@
 # Review and fix the unreviewed default_recipe change
 
-`review-default-recipe-darn` · Task · enhancement, board, batten · draft
+`review-default-recipe-darn` · Task · enhancement, board, batten
 
 Depends on: [`default-recipe-darn`](design-default-recipe-darn.md)
 
