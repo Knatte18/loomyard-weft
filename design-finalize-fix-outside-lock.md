@@ -1,6 +1,6 @@
 # Finalize releases the parent lock while its fixer works
 
-`finalize-fix-outside-lock` · Task · enhancement, landing, loom · running · Code-Burler-Review
+`finalize-fix-outside-lock` · Task · enhancement, landing, loom · running · Code-Burler-Fix
 
 ## Seen (orch, 2026-11-01)
 
