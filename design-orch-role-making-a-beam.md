@@ -18,7 +18,9 @@ The role lists `lym beam create <slug>` in its command list and says a beam is "
 Add a "Making a beam" section to `contracts/orchrole/orch-role.md`:
 
 1. A beam is a board project entry that `lym beam create <slug>` turns into a beam: `lym board upsert` with `"kind":"project"` first, then `lym beam create <slug>`, run only from the prime or a parent beam, never from a task worktree.
-2. The verb starts a pawl run whose Beam-Up row starts the beam's own dobby and orch; the orch appears only after Beam-Up, so the operator attaches to a beam later than the create.
+2. The verb starts a batten run for the project whose Worktree-Create row makes the worktree, unmarked, and whose Seed-Child row seeds the inner pawl run in it; the pawl run's Beam-Up row marks the worktree a beam and starts the beam's own dobby and orch.
+   The orch appears only after Beam-Up, so the operator attaches to a beam later than the create.
+   A task run has the same batten rows but an inner tapestry or darn run, which has no Beam-Up, so it never becomes a beam.
 3. `--anchor <dir>` gives the beam its own anchor; without it the beam inherits its parent's.
 4. `lym beam start <slug>` brings an existing beam back up; it refuses a task pair, and never makes a beam.
 5. A project that already runs as a task run is not a beam: `lym batten status <slug>` shows the rows, and the way forward is `lym batten cancel <slug>` with the operator's word, then `lym beam create`.
