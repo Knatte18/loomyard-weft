@@ -1,6 +1,6 @@
 # The sampler agent gets no PATTERN directive
 
-`sampler-lacks-pattern-directive` · Task · bug, loom, stencil, pattern · running · PR-Review
+`sampler-lacks-pattern-directive` · Task · bug, loom, stencil, pattern · running · Finalize
 
 ## Seen (operator, 2026-11-02)
 
