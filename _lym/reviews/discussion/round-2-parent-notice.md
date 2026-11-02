@@ -1,0 +1,1 @@
+Review segment of task `cold-gate-fixer` needs a decision: review the brief at `/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/cold-gate-fixer/_lym/reviews/discussion/round-2-escalation.md` with a one-shot fork.
