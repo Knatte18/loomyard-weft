@@ -1,6 +1,6 @@
 # The landing merge fixer loads no prose, code-quality or testing skill
 
-`landing-fixer-base-skills` · Task · bug, landing, shuttle · running · Worktree-Create
+`landing-fixer-base-skills` · Task · bug, landing, shuttle · running · Record-Write
 
 ## Seen (operator, 2026-11-02)
 
