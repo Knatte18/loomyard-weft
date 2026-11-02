@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -34,6 +34,33 @@
       "output": "",
       "at": "2026-11-02T19:14:51Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/operator-verbs-readable-output/_lym/landing/summary.md",
+      "at": "2026-11-02T19:35:03Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-02T19:23:00.189184998Z",
+          "end": "2026-11-02T19:23:00.208182434Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-02T19:23:00.362742984Z",
+          "end": "2026-11-02T19:34:41.323880269Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-02T19:34:41.397659653Z",
+          "end": "2026-11-02T19:34:41.398016832Z"
+        }
+      ]
     }
   ],
   "product": {
