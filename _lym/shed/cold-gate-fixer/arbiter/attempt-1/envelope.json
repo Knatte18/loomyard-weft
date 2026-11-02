@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Hard-cap escalation at Discussion-Bouncer round 2. The open design-wrong findings are F1, F2, F3 and F5. The round-2 fix in the decision record answers each one, checked against the code.\nF1: D2 now spawns a fixer only at the idle-boundary evaluation. The wrap sets the entry's Final with MayHold. shuttleengine lets a MayHold must-pass entry set Final (gate.go GateEntry.MayHold, wait.go:1625). Only finalize calls evaluateGate(true) (wait.go:1784, against wait.go:516), and there Final replaces Gate and Forked (wait.go:1654). So the deadline or liveness finalize waits on a live fixer and spawns none, and no shuttleengine change is needed.\nF2: D8 keys a row visit by the row's name, the length of History and the newest entry's Repeats. A finished call appends or folds (shedengine/run.go:352 and appendOrFold), and a goto appends (shedengine/goto.go:135 and 249). A cancelled step and a failed stop append nothing (run.go:350, 383 and 401). So a crash re-step keeps the set, as D8 says.\nF3: D8 now has goto end each fixer role under the pair slug through runproc.EndRole(dir, owner, role, pid), which exists (runproc/end.go:69). D1 drops the false claim about cancel, goto and reset.\nF5: D3 refuses the fixer field on every gate key but card, and Scope Out agrees.\nThe mechanical findings F4 and F6 to F8 are fixed as proposed. No open finding stands against the code, so the segment is accepted.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym loom circling accept cold-gate-fixer"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/cold-gate-fixer/_lym/shed/cold-gate-fixer/arbiter/attempt-1",
+  "verdict_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/cold-gate-fixer/_lym/shed/cold-gate-fixer/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lym shed step cold-gate-fixer --until-stop --arbiter-attempt 1"
+}

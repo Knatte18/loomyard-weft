@@ -1,0 +1,15 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Discussion-Bouncer",
+    "history_length": 9,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-11-02T13:11:07.885468813+01:00",
+  "deadline": "2026-11-02T13:41:07.885468813+01:00",
+  "strand_guid": "23a8aa08c6acf7d83c4d4ed6fd41dab6",
+  "envelope_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/cold-gate-fixer/_lym/shed/cold-gate-fixer/drive-reports/drive-envelope-20261102-131107-54d6.json",
+  "report_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/cold-gate-fixer/_lym/shed/cold-gate-fixer/drive-reports/drive-report-20261102-131107-dffb.md"
+}
