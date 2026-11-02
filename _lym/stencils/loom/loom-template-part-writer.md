@@ -2,7 +2,7 @@
      part_name, plan_dir (the part's own directory) and overview_path (its 00-overview.md) are seat values; decision_record_path, relevant_path, parts_path and specs_dir are table values;
      parent_directive and edit_directive are rendered by the seat engine, and pattern_directive and friction_directive are optional.
      It includes seat-directive-writer and the plan-format blocks loom-block-plan-glyphs, loom-block-plan-format, loom-block-plan-overview and loom-block-plan-cards, each rendered from the same map; the blocks' gate_tiers and specs_dir come from the table.
-lym-stencil: sha256=151c2eedb6ce7a04584134dd36ab4a9b1da36a9c10cc9c2191472e60788c3364 build=4ce42a8d6ab9bd70bec8bce9f559ee3941f94197 time=2026-11-01T14:06:50Z -->
+lym-stencil: sha256=335ec4c4f75499e634a3a3ee224d6c68ec9c44b6944a64e34727fcef13a750a6 build=fe753d409cad46ac575d6ca5c96b51058567644d time=2026-11-02T19:09:15Z -->
 
 # Part writer — turn one part's contract into plan cards
 
@@ -41,6 +41,7 @@ Create `{{.plan_dir}}` if it does not exist, and write your part there as a plan
 
 - Write cards for your own part only, and only into `{{.plan_dir}}`: never edit another part's cards, the parts file or the joined plan.
 - Create every export your contract names, spelled exactly as the parts file spells it; a `plan:` export is declared on a `**Create:**` bullet with that same handle.
+  Every export is new: an existing member your cards re-sign or delete is in your contract's `Delivers`, never its exports, and a later part uses it by the spelling `lym quarry` gives it.
 - Use another part's or a shared spot's export by the name the parts file gives it, and only an export of a part you depend on or of a shared spot that names your part; the part check counts those as declared.
 - Leave every shared spot to the chair: no card of yours targets a shared spot's path, and a card that needs something from one says what in its `**Intent:**`.
 - Leave `## PATTERN changes` out of your overview, since the chair writes it into the joined plan.
@@ -57,7 +58,7 @@ Create `{{.plan_dir}}` if it does not exist, and write your part there as a plan
 
 Write `{{.overview_path}}` only after every card file of your part exists.
 Then run `lym loom validate-plan --part {{.part_name}}` and fix every finding until it passes.
-It checks your part as the plan gate checks a plan, counts the exports of the parts you depend on and of the shared spots that name your part as declared, refuses a card that targets a shared spot, and refuses an export of your contract that no card of yours creates, re-signs or deletes.
+It checks your part as the plan gate checks a plan, counts the exports of the parts you depend on and of the shared spots that name your part as declared, refuses a card that targets a shared spot, and refuses an export of your contract that no card of yours creates.
 Your output existing with that check passed is what tells the chair your part is ready.
 
 One finding is not yours to fix in your cards: a refusal saying the parts file is gone or malformed.

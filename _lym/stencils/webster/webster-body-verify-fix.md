@@ -1,9 +1,9 @@
 <!-- This is the shared job body of webster's two verify-gate fixers: the fixer fork Merriam spawns in its own session, and the cold fixer strand `lym webster fix-verify` spawns at the recovery role.
-     RenderVerifyFixPrompt joins it behind webster-prefix-verify-fix-fork, and RenderVerifyFixColdPrompt behind webster-prefix-verify-fix-cold (render.go), then fills it via internal/stencil.
+     RenderVerifyFixPrompt joins it behind webster-prefix-verify-fix-fork (render.go), and internal/gatefixer's RenderPrompt behind the shared cold frame gatefix-frame-cold, then fills it via internal/stencil.
      Its six markers are required top-level {{.X}} substitutions ({{.report_path}}, {{.plan_dir}}, {{.worktree_root}}, {{.outcome_path}}, {{.summary_path}}, {{.fix_gate}});
      stencil.FillOptional requires all of them non-empty.
      There are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=8328ae14958b87d9c4def340fa73d0d4649bf9b9b7af684c4cdd0eb35741089c build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+lym-stencil: sha256=f1452e40dd63b86670809f1d8e78b5c3a755b43be6439a13df84b26afe0bbfb6 build=fe753d409cad46ac575d6ca5c96b51058567644d time=2026-11-02T19:09:15Z -->
 
 ## The findings — read them first
 
@@ -22,6 +22,8 @@ Your session's working directory already is the worktree root, `{{.worktree_root
 Paths you pass to the Read, Write and Edit tools stay absolute.
 You never run a Bash call in the background, and you end your turn only after your final action.
 
+- Read `_lym/plan/00-overview.md` before you edit anything: the task framing and `## Shared Decisions` say what the plan intends, which is what a test must assert.
+- Never run a `lym webster` command: those are Merriam's verbs, driven by a session you are not part of, and you write no batch report.
 - Fix the cause in source.
 - A decision notice in your context, the one your parent directive admits, is your parent's call for this run: where it touches your fix, follow it over the plan.
 - Never delete, skip or weaken a test to make it pass: no `t.Skip`, no loosened assertion, no removed case.

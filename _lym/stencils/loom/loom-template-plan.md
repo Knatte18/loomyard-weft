@@ -10,8 +10,9 @@
      twill_directive is a fourth optional marker, rendered by internal/twilldirective through internal/loomengine;
      it sits on the line that would otherwise be blank, so an empty value leaves the blank line and the prompt's bytes unchanged.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
+     self_check is a required marker, the body of Step 5, filled by internal/loomengine's PlanTable with the fragment that has the writer run the validator or, when the row's gate has a cold fixer, the one that has it run none.
      subagent_model is a required marker, filled from loom.yaml's subagent_model.
-lym-stencil: sha256=d7134f9c71be18867c4f970001b109f9a7019fa9b466aa6cd68f67555aae521b build=c536908eddc57a3fa167bdb283b832976160f0a9 time=2026-11-02T13:03:26Z -->
+lym-stencil: sha256=20e8ef6b07bdc91526e086adddc4008db69174843502a2886f827f2d0cbcf3bf build=fe753d409cad46ac575d6ca5c96b51058567644d time=2026-11-02T19:09:15Z -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -80,15 +81,7 @@ Write `{{.overview_path}}` only after every `NN-<card-slug>.md` card file alread
 
 ## Step 5 — Self-check before ending your turn
 
-Before ending your turn, run the mechanical gate standalone against what you just wrote:
-
-```bash
-lym loom validate-plan
-```
-
-The verb takes no arguments.
-It exits 0 on a clean gate and 1 otherwise, and puts its findings under the failure envelope's `findings` key.
-Fix whatever it reports, then re-run it until it exits 0 before ending your turn.
+{{.self_check}}
 
 ## Never use `AskUserQuestion`
 
