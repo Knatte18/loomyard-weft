@@ -31,6 +31,12 @@ How the wait mark and `lym loom status` show a run fixing outside the lock, and 
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-02): A pause holds a Finalize fixer that works outside the lock
+
+Decision: Keep the lock-holder exemption in loomcli/landingdeps.go as it is: a run fixing outside the lock holds no lock, so a pause covering it holds its fixer's gate calls and its requeue wait like any other run's. Add one sentence after the lock-freeing paragraph in landingshed/doc.go saying so (finding F6).
+
+Rationale: The exemption exists so a paused hub never strands a held parent lock; once the lock is freed nothing is stranded, and a pause should stop work.
+
 ## Constraints
 
 ## Auto-mode assumptions
