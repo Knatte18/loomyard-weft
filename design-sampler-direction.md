@@ -8,9 +8,10 @@ Does the sampler stay a code writer, or become a read-only discussion role as no
 
 ## What follows from the answer
 
-- Skills: `internal/samplerengine/spec.go` gives the sampler `scribe:prose` and `scribe:conversation` only.
-  As a code writer it needs `scribe:code-quality`, `scribe:testing` and the language skills, as every other code-writing seat lists, the same gap as task `landing-fixer-base-skills` closes for the landing fixer.
-  As a read-only role, `scribe:prose` and `scribe:conversation` may be enough.
+- Skills: task `landing-fixer-base-skills` landed (`7cffa111`) and, as a same-family fix, gave the sampler `scribe:code-quality` and `scribe:testing` beside `scribe:prose` and `scribe:conversation` in `internal/samplerengine/spec.go`, on the footing that it writes code and tests.
+  The language skills are still not listed for it, as other code-writing seats list them.
+  If the sampler becomes a read-only role, the two added skills may be more than it needs and can come out again.
+  The landing's review was asked to confirm the sampler change belongs there.
 - PATTERN role: the directive itself is note `sampler-lacks-pattern-directive`; this answer only decides whether it is rendered for the implementer or the Discussion writer.
 - Bundle with the other small sampler changes once the direction is settled.
 
