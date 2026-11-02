@@ -2,7 +2,7 @@
 
 `orchestrator-survey-ideas` · Note · feature, burler, shed, orch, quarry, report
 
-Imported from [issue #671](https://github.com/Knatte18/loomyard/issues/671).
+Originally imported from issue #671, which no longer exists because the repository was recreated. This entry holds the full text.
 
 This issue collects features from comparable open-source agent orchestrators that LoomYard could borrow later.
 I surveyed each project's README, docs and some source through the GitHub API, plus a few vendor docs pages and fresh web searches, in October 2026.
