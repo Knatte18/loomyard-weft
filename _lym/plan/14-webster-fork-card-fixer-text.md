@@ -2,9 +2,9 @@
 
 **Create:**
 - `contracts/stencils/webster/webster-fragment-card-fixer.md`
-- `plan:internal/webstercli#cardFixerOn` -> `func cardFixerOn(gate gateslot.Config, slug string) bool`
-- `plan:internal/webstercli#TestCardFixerOn` -> `func TestCardFixerOn(t *testing.T)`
-- `plan:contracts/stencils#WebsterFragmentCardFixer` -> `var WebsterFragmentCardFixer []byte`
+- `internal/webstercli#cardFixerOn`
+- `internal/webstercli#TestCardFixerOn`
+- `contracts/stencils#WebsterFragmentCardFixer`
 
 **Edit:**
 - `contracts/stencils/webster/webster-body-implementer.md`

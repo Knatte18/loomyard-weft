@@ -1,6 +1,6 @@
 {
   "runGuid": "0972a4da04a9d3872b740ba33d17a154",
-  "planFingerprint": "e4ee36c223bc327ca19949af84325e639b03351159d6ff569d921f17a1957996",
+  "planFingerprint": "d3074c681b22ce7a47f3939c8b7bb30134b81ad8a58854e2d5fa0a0f8e976568",
   "planFileHashes": {
     "00-overview.md": "ef2441aa1e498e9bf4fab07538527bb4a3011abfb8851d0ac79c92d869c7f786",
     "01-gatefixer-core.md": "5da768c20013137cef816800cc4467faa6fb32964f3751c59f021a08ca7b5a66",
@@ -14,9 +14,9 @@
     "09-loom-row-fixer-wiring.md": "114872a65da8cd7eecdbda8cd2bf52f90f8d7cb951bfbae217d4b804e7ac597c",
     "10-goto-ends-fixers.md": "e1d334225e779424455f13c35d1398d7626fcd38f97ec328c635e6ff27d6ba34",
     "11-writer-stencils-fixer-mode.md": "b1e4e623c2955049c8ee816e8dc755b5760a7ac9c467e23368e457da299e6ee6",
-    "12-card-gate-front.md": "2ee2c191dbcf12d4814d20732015f19226a465a9fd00522214834746c290722b",
-    "13-card-gate-runner-fixer.md": "78ace384bb4e21a6feab9977595b81d7b17c3358e7651bed54edc3a8f171a90f",
-    "14-webster-fork-card-fixer-text.md": "6463a954f2b99a631c5d727b493a521d31f109dc76d2da5903dfe80e8c473f0d"
+    "12-card-gate-front.md": "f85152dfd724767baaa6bd69e788ddf3097a75865414aa4e1ed4ba3c291d2efa",
+    "13-card-gate-runner-fixer.md": "4dd9955cfdc7ff37840a6f40d32d4438eb9f3b388a93a4ce53ee8d526c6d7fea",
+    "14-webster-fork-card-fixer-text.md": "e23916bf6f5eaa2379ee26f4daea2e4e2b98aeae96df11ec88dcbd7a12197100"
   },
   "planOverviewFrameHash": "d8a5af946b46063853d35c214e5c210a2fe06f098c203e06f5923ee99ea1646f",
   "partition": [
@@ -392,7 +392,7 @@
       }
     }
   ],
-  "currentBatch": 12,
+  "currentBatch": 0,
   "masterStrand": "f559ee7ffd4c7918e1dad04120be5860",
   "masterSessionId": "6ad5e611-5f44-4601-b787-6d5bd0839a41",
   "masterEngine": "claude",
@@ -498,17 +498,40 @@
         "14-webster-fork-card-fixer-text"
       ],
       "cardHashes": {
-        "12-card-gate-front": "2ee2c191dbcf12d4814d20732015f19226a465a9fd00522214834746c290722b",
-        "13-card-gate-runner-fixer": "78ace384bb4e21a6feab9977595b81d7b17c3358e7651bed54edc3a8f171a90f",
-        "14-webster-fork-card-fixer-text": "6463a954f2b99a631c5d727b493a521d31f109dc76d2da5903dfe80e8c473f0d"
+        "12-card-gate-front": "f85152dfd724767baaa6bd69e788ddf3097a75865414aa4e1ed4ba3c291d2efa",
+        "13-card-gate-runner-fixer": "4dd9955cfdc7ff37840a6f40d32d4438eb9f3b388a93a4ce53ee8d526c6d7fea",
+        "14-webster-fork-card-fixer-text": "e23916bf6f5eaa2379ee26f4daea2e4e2b98aeae96df11ec88dcbd7a12197100"
       },
       "startSha": "ed1e74471cc6147fe5d65f640d7ee8b833dccbc6",
       "kind": "fork",
       "spawnedAt": "2026-11-02T14:43:22Z",
       "sessionId": "6ad5e611-5f44-4601-b787-6d5bd0839a41",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "12-card-gate-front",
+        "status": "done",
+        "head_sha": "36db7af37923b54ce7c82e70111e47e147432581",
+        "deviations": [
+          "internal/gatecli/cardfixer.go",
+          "internal/gatecli/cardfixer_test.go",
+          "internal/gatecli/detachfixer.go",
+          "internal/gatecli/detachfront_test.go",
+          "internal/gatecli/detachrun.go",
+          "internal/websterengine/render.go",
+          "internal/websterengine/template_test.go"
+        ]
+      },
+      "cardShas": [
+        "36db7af37923b54ce7c82e70111e47e147432581"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-cold-gate-fixer/6ad5e611-5f44-4601-b787-6d5bd0839a41/subagents/agent-ae517d29a8c1adb6f.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-cold-gate-fixer/6ad5e611-5f44-4601-b787-6d5bd0839a41/subagents/agent-ae517d29a8c1adb6f.jsonl"
+      ]
     },
     "4": {
       "slug": "webster-file-headers",
@@ -603,6 +626,7 @@
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-cold-gate-fixer/6ad5e611-5f44-4601-b787-6d5bd0839a41/subagents/agent-a6dcf81c32eff788e.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-cold-gate-fixer/6ad5e611-5f44-4601-b787-6d5bd0839a41/subagents/agent-ae6d6400d63bbfe6c.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-cold-gate-fixer/6ad5e611-5f44-4601-b787-6d5bd0839a41/subagents/agent-a2010ec8f7d872650.jsonl",
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-cold-gate-fixer/6ad5e611-5f44-4601-b787-6d5bd0839a41/subagents/agent-a07104967eb98b22f.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-cold-gate-fixer/6ad5e611-5f44-4601-b787-6d5bd0839a41/subagents/agent-a07104967eb98b22f.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-cold-gate-fixer/6ad5e611-5f44-4601-b787-6d5bd0839a41/subagents/agent-ae517d29a8c1adb6f.jsonl"
   ]
 }

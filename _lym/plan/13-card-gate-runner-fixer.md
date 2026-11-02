@@ -2,19 +2,19 @@
 
 **Create:**
 - `contracts/stencils/gatefix/gatefix-body-card.md`
-- `plan:contracts/stencils#GatefixBodyCard` -> `var GatefixBodyCard []byte`
-- `plan:internal/gatecli#phaseFixing` -> `const phaseFixing = "fixing"`
-- `plan:internal/gatecli#cardFixerKit` -> `type cardFixerKit struct`
-- `plan:internal/gatecli#handsOff` -> `func handsOff(request detachRequest, cfg gateslot.Config, slug string) (string, bool)`
-- `plan:internal/gatecli#newCardFixer` -> `func newCardFixer(request detachRequest) (cardFixerKit, bool, error)`
-- `plan:internal/gatecli#newFixerStopper` -> `func newFixerStopper(request detachRequest) (func(guid string) error, error)`
-- `plan:internal/gatecli#keyFixerStore` -> `type keyFixerStore struct`
-- `plan:internal/gatecli#treeIdentityAt` -> `func treeIdentityAt(dir string) treeRecord`
-- `plan:internal/gatecli#detachRun.runWithFixer` -> `func (d detachRun) runWithFixer(ctx context.Context, request detachRequest, gateTree func() *cobra.Command, seams detachSeams) detachExit`
-- `plan:internal/gatecli#detachRun.watchPhase` -> `func (d detachRun) watchPhase(ctx context.Context) (context.Context, func() (detachExit, bool))`
-- `plan:internal/gatecli#fakeCardFixer` -> `type fakeCardFixer struct`
-- `plan:internal/gatecli#TestHandsOff` -> `func TestHandsOff(t *testing.T)`
-- `plan:internal/gatecli#TestRunWithFixer` -> `func TestRunWithFixer(t *testing.T)`
+- `contracts/stencils#GatefixBodyCard`
+- `internal/gatecli#phaseFixing`
+- `internal/gatecli#cardFixerKit`
+- `internal/gatecli#handsOff`
+- `internal/gatecli#newCardFixer`
+- `internal/gatecli#newFixerStopper`
+- `internal/gatecli#keyFixerStore`
+- `internal/gatecli#treeIdentityAt`
+- `internal/gatecli#detachRun.runWithFixer`
+- `internal/gatecli#detachRun.watchPhase`
+- `internal/gatecli#fakeCardFixer`
+- `internal/gatecli#TestHandsOff`
+- `internal/gatecli#TestRunWithFixer`
 
 **Edit:**
 - `internal/gatecli#detachSeams`

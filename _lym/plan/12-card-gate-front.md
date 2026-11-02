@@ -1,9 +1,9 @@
 # Card 12 — card-gate-front
 
 **Create:**
-- `plan:internal/gatecli#strandRole` -> `func strandRole(strand string) string`
-- `plan:internal/gatecli#callKeyDir` -> `func callKeyDir(call frontCall) string`
-- `plan:internal/gatecli#TestCallKeyDir` -> `func TestCallKeyDir(t *testing.T)`
+- `internal/gatecli#strandRole`
+- `internal/gatecli#callKeyDir`
+- `internal/gatecli#TestCallKeyDir`
 
 **Edit:**
 - `internal/gatecli#detachRequest`
