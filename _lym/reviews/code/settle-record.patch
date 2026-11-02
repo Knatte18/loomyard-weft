@@ -1,0 +1,1510 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 0b99f893..63521ceb 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -601,6 +601,7 @@ User-facing modules each get one `lym <module>` namespace:
+   `PR-Review` lands the task through a GitHub pull request when the resolver says so: it pushes the task branch, opens or finds the pull request, sets its title and body from the change description, records it and waits on it, and otherwise passes.
+   The wait takes no parent lock: it gates and pushes the agent's commits through the `pr-review` gate key, never onto a merged pull request, and mails a failure to the agent, reads the pull request at most once a minute and before each gate, and ends Done when the pull request is merged or approved at the gated head, or when the operator's `lym loom pr-continue` makes the row close it, and Stuck on any other ending; a pause that covers the run holds it, and the driver strand's mark reads `PR #<n>`.
+   `Finalize` takes the parent lock first, merges the parent into the task in place, resolving a conflict with the conflict session under the lock; it runs the `finalize` gate key and the merge fixer in finalize mode, lands on the parent with the credit block and releases the lock on every exit.
++  It frees the lock while its fixer or fix review works, then takes it again at the front of the queue, merges the parent anew and verifies under the lock before it lands.
+   Finalize never reroutes: a fixer change over the caps goes to its fix review, which reads only the fixer's commits, and a rejection hands the findings back to the fixer to fix in place, for up to `finalize_fix_review_rounds` reviews; an approval lands it, and the last review that does not approve halts for the operator, whose `lym loom circling accept` lands the change with the open findings in the change description.
+   A halt at `Parent-Align` or `Finalize` (a spent or over-cap fixer, fix reviews out of rounds) is handed back to the orch through every driver, and the status marks it `hand_back`.
+   On a loom run, tapestry, darn, pawl or sampler, a fixer's escalate halts with `EscalateStopPrefix` instead, is not marked `hand_back` and goes to the arbiter first, reaching the orch only as the arbiter's hand-on.
+diff --git a/internal/landingshed/doc.go b/internal/landingshed/doc.go
+index c808c9ca..c8e00ad3 100644
+--- a/internal/landingshed/doc.go
++++ b/internal/landingshed/doc.go
+@@ -46,6 +46,15 @@
+ // Finalize's constructor refuses a nil Deps.Lock.Store, a nil Deps.Lock.Owner and a nil Deps.ReadParentTips, and a row built without its guard, as a struct-literal test builds it, takes no lock.
+ // Finalize takes the lock first, after parsing the change description and committing the status file and before anything reads or moves the parent, and releases it on every way out of its Call: Done, a Stuck and an error.
+ // A lock a dead Finalize left is taken over at the next acquire, since the lock store grants a record whose owner process no longer lives.
++// Finalize frees the lock before its merge fixer or a fix review starts, since neither touches the parent, so other runs land on the parent meanwhile; a Finalize with no lock store frees nothing.
++// Once their change is let through, Finalize takes the lock again at the front of the queue, ahead of runs that queued while it fixed, and runs every step under the lock again from the pull-request step on:
++// it merges the parent anew and verifies under the lock as on its first try, a no-op merge and a skipped verify when nothing landed meanwhile.
++// A failed verify on such a pass spawns the fixer on the attempts the entry has left, never a fresh cap.
++// A Finalize resumed with an attempt record that shows a fixer's change let through queues at the front as well, whatever halted it, since the record keeps that change until a Done.
++// The attempt record keeps the HEAD at which the fixer's change was last let through, and a pass whose merge brings parent commits onto that HEAD moves the entry's Baseline to the merged head, so the parent's commits never count as the fixer's change.
++// Bound: a fixer change let through before such a merge and one made after it are each judged against the caps alone.
++// While the fixer works `lym loom status` shows its session, and while the run queues again it shows the parent lock wait.
++// A hub pause that covers the run holds the fixer's gate calls and the requeue wait like any other run's, since the run holds no lock then.
+ // Under that lock it runs the same run-scope origin reconcile and maps its ended and stopped verdicts as Parent-Align does, then the owner checks.
+ // It then opens the parent pair and syncs it before any merge: a pair that is missing, mid-merge or holding tracked dirt in its code checkout is Stuck with its way forward, whether the parent is behind, equal, without an upstream or under the push skip.
+ // With no push skip a parent behind its upstream is fast-forwarded in its own pair, which moves it to the upstream tip and touches no local commit, and one ahead of, diverged from or no longer a fast-forward of its upstream is Stuck, since Finalize never pushes or rewrites the parent here.
+@@ -92,7 +101,7 @@
+ // a session that ends without a verdict runs again;
+ // each review spends one of `finalize_fix_review_rounds`, and a review that does not approve on the last round halts with LandingStopPrefix, noting `review-capped` and the open findings in the record, with `lym loom circling accept` or a fix on the task branch as the way forward;
+ // a session that dirties the tree or moves the task head halts with LandingStopPrefix, and one that fails to start is a transient error.
+-// Bound: the fix review lets an over-cap fixer change land behind one reviewer's explicit approval of the fixer's own commits instead of the run's full Code review, under the parent lock, for at most `finalize_fix_review_rounds` review sessions of `fixer_timeout_min` each, with the fixer's turns between them.
++// Bound: the fix review lets an over-cap fixer change land behind one reviewer's explicit approval of the fixer's own commits instead of the run's full Code review, with the parent lock freed, for at most `finalize_fix_review_rounds` review sessions of `fixer_timeout_min` each, with the fixer's turns between them.
+ // AcceptFixReview is the operator's acceptance after that halt: it appends the open findings to the change description under `## Unresolved fix review findings` and records the task HEAD it accepted at, and the resume lands the change as it stands at that HEAD.
+ // A resume with no acceptance clears the note and the rounds and runs the fix reviews afresh over the change as it then stands.
+ // A spent cap keeps the fixer's commits and halts with LandingStopPrefix, naming the commits and noting `spent` in the record's Halt.
+diff --git a/internal/landingshed/finalize.go b/internal/landingshed/finalize.go
+index 023074ff..f9a70f44 100644
+--- a/internal/landingshed/finalize.go
++++ b/internal/landingshed/finalize.go
+@@ -77,6 +77,8 @@ type Finalize struct {
+ 	// guard holds the parent lock and tests whether the parent moved.
+ 	// A zero value takes no lock and reads no tips, so struct-literal tests run without it.
+ 	guard parentGuard
++	// lockFreed reports that the current locked pass freed the parent lock for an agent session, so Call runs the pass again.
++	lockFreed bool
+ }
+ 
+ var _ shedengine.ShedProducer = (*Finalize)(nil)
+@@ -157,6 +159,8 @@ func NewFinalize(deps Deps) (*Finalize, error) {
+ // It then opens the parent pair and syncs it: a pair that is missing, dirty or mid-merge, or a parent that cannot be fast-forwarded to its upstream, is Stuck with a way forward before any merge.
+ // It then merges the parent branch into the task worktree through its resolver, which resolves a conflict with the conflict session under the lock, and gates the merged tree, whether the merge conflicted or was large.
+ // The `landing` gate judges the merged tree, and a failing gate runs the merge fixer in finalize mode; a fixer change over the caps is settled in place by the fix review and the fixer, and Finalize never sends the run back to an earlier row.
++// The lock is freed before the fixer or a fix review starts, and once their change is let through Finalize takes it again at the front of the queue and runs every step under the lock again, from the pull-request step on.
++// A Finalize resumed with such a change already let through starts at the front too.
+ // After a merge-in-required error from the parent-side merge it re-runs the merge and its gate once under the same lock, so a code-side parent commit that arrived in between is merged, gated and landed.
+ //
+ // Immediately before each landing attempt it re-reads the parent lock record, so a lock something released lands nothing and is a halting Stuck.
+@@ -208,45 +212,81 @@ func (fz *Finalize) Call(ctx context.Context) (shedengine.Outcome, shedengine.Ou
+ 		}
+ 	}
+ 
+-	// Step 1b2: take the parent lock first, before anything reads or moves the parent, and release it on every way out of this Call.
++	// Steps 1b2 to 7 run under the parent lock: once, and again each time a fixer or fix review ran with the lock freed, queued then at the front, as a run resumed after its fixer is.
++	front, err := fz.returningFromFixer()
++	if err != nil {
++		return "", shedengine.OutputPointer{}, err
++	}
++	for ; ; front = true {
++		outcome, out, err, again := fz.landUnderLock(ctx, front, summary.Title, bodyWithCredit(summary.Body, credit), landingMessage)
++		if !again {
++			return outcome, out, err
++		}
++	}
++}
++
++// returningFromFixer reports whether the row's attempt record shows a fixer's change already let through, which is a run coming back from its fixer and queues at the front.
++// A record that does not decode reads as no, and the gate then halts naming it.
++func (fz *Finalize) returningFromFixer() (bool, error) {
++	rec, reason, err := fz.readAttempts(FixerAttemptsPath(fz.deps.ScratchDir, finalizeName))
++	if err != nil {
++		return false, err
++	}
++	return reason == "" && rec.Judged != "", nil
++}
++
++// landUnderLock runs one pass of Call's steps from the parent lock to the landing: it takes the lock, at the front of the queue when front is set, and releases it on every way out.
++// title, body and landingMessage are the GitHub merge's title and message and the landing commit's message.
++// again is true when the pass freed the lock for a fixer or fix review whose change was let through, so Call runs the pass again;
++// otherwise the other values are what Call returns.
++func (fz *Finalize) landUnderLock(ctx context.Context, front bool, title, body, landingMessage string) (shedengine.Outcome, shedengine.OutputPointer, error, bool) {
++	fz.lockFreed = false
++	end := func(outcome shedengine.Outcome, out shedengine.OutputPointer, err error) (shedengine.Outcome, shedengine.OutputPointer, error, bool) {
++		return outcome, out, err, false
++	}
++	requeue := func() (shedengine.Outcome, shedengine.OutputPointer, error, bool) {
++		return "", shedengine.OutputPointer{}, nil, true
++	}
++
++	// Step 1b2: take the parent lock first, before anything reads or moves the parent, and release it on every way out of this pass.
+ 	// A lock a dead Finalize left is taken over by the acquire, since the lock store grants a record whose owner process no longer lives.
+-	lockReason, err := fz.guard.ensure(ctx, finalizeName)
++	lockReason, err := fz.guard.ensure(ctx, finalizeName, front)
+ 	if err != nil {
+ 		if cerr := cancelErr(ctx, finalizeName); cerr != nil {
+-			return "", shedengine.OutputPointer{}, cerr
++			return end("", shedengine.OutputPointer{}, cerr)
+ 		}
+-		return "", shedengine.OutputPointer{}, err
++		return end("", shedengine.OutputPointer{}, err)
+ 	}
+ 	if lockReason != "" {
+-		return stuckVerdict(ctx, finalizeName, lockReason, true)
++		return end(stuckVerdict(ctx, finalizeName, lockReason, true))
+ 	}
+ 	defer fz.guard.release(finalizeName)
+ 
+ 	// Step 1b2b: under the lock, decide how the landing relates to the run's pull request, following the resolver PR-Review follows.
+ 	landing, outcome, out, err, stop := fz.pullRequestLanding(ctx)
+ 	if stop {
+-		return outcome, out, err
++		return end(outcome, out, err)
+ 	}
+ 
+ 	// Step 1b3: judge the run against origin under the lock, and halt unless this machine owns the run and its parent.
+ 	// A run whose Finalize already merged into the local parent here is never read as ended or owned elsewhere, so a Finalize re-entered after its done mark proceeds.
+ 	if outcome, out, err, stop := fz.ownerChecks(ctx); stop {
+-		return outcome, out, err
++		return end(outcome, out, err)
+ 	}
+ 
+ 	// Step 1b3b: under the same lock, halt a beam's landing while a member or a forked pair remains under it.
+ 	if outcome, out, err, stop := fz.landCheck(ctx); stop {
+-		return outcome, out, err
++		return end(outcome, out, err)
+ 	}
+ 
+ 	// Step 1b4: open the parent pair, which this producer never creates, and sync it before any merge.
+ 	parentHandle, err := fz.parentOpener()
+ 	if err != nil {
+-		return fz.stuckOrCancelled(ctx, fmt.Sprintf("no live pair for parent branch %q: %v; way forward: re-create the parent pair, then run \"lym loom resume\"", fz.deps.ParentBranch, err), "error", err)
++		return end(fz.stuckOrCancelled(ctx, fmt.Sprintf("no live pair for parent branch %q: %v; way forward: re-create the parent pair, then run \"lym loom resume\"", fz.deps.ParentBranch, err), "error", err))
+ 	}
+ 	syncReason, err := fz.syncParent(ctx, parentHandle)
+ 	if outcome, out, err, stop := fz.gateStop(ctx, syncReason, err); stop {
+-		return outcome, out, err
++		return end(outcome, out, err)
+ 	}
+ 
+ 	// Step 1c: read the task's per-worktree config changes before any parent-side mutation,
+@@ -256,25 +296,28 @@ func (fz *Finalize) Call(ctx context.Context) (shedengine.Outcome, shedengine.Ou
+ 
+ 	// Steps 2 and 3: merge the parent branch into the task worktree and judge the merge, then gate the merged tree.
+ 	if outcome, out, err, done := fz.mergeAndGate(ctx); done {
+-		return outcome, out, err
++		return end(outcome, out, err)
++	}
++	if fz.lockFreed {
++		return requeue()
+ 	}
+ 
+ 	// Step 2b: commit the parent pair's own run records,
+ 	// so a sibling run's uncommitted status record does not trip the parent-side merge guard.
+ 	if outcome, out, err, done := fz.commitParentRecords(ctx); done {
+-		return outcome, out, err
++		return end(outcome, out, err)
+ 	}
+ 
+ 	// Step 5: re-check the lock immediately before the landing, so a release since the acquire lands nothing.
+ 	if outcome, out, err, stop := fz.recheckLock(ctx); stop {
+-		return outcome, out, err
++		return end(outcome, out, err)
+ 	}
+ 
+ 	// Step 5b: a landing through an open pull request merges it on GitHub first, once, so the parent-side merge below finds the parent holding the task's work.
+ 	// The retry after a merge-in-required error never comes back here, since the GitHub merge is done.
+ 	if landing.merge {
+-		if outcome, out, err, stop := fz.mergeOnGitHub(ctx, parentHandle, landing, summary.Title, bodyWithCredit(summary.Body, credit)); stop {
+-			return outcome, out, err
++		if outcome, out, err, stop := fz.mergeOnGitHub(ctx, parentHandle, landing, title, body); stop {
++			return end(outcome, out, err)
+ 		}
+ 	}
+ 
+@@ -286,7 +329,7 @@ func (fz *Finalize) Call(ctx context.Context) (shedengine.Outcome, shedengine.Ou
+ 	if mergeErr == nil {
+ 		fz.markTaskDone()
+ 		fz.recordLanding(parentHandle)
+-		return fz.pushParent(ctx, parentHandle, notice)
++		return end(fz.pushParent(ctx, parentHandle, notice))
+ 	}
+ 
+ 	// Retry: on the merge-in-required error, re-run steps 2 to 5 under the same lock and retry the parent-side merge exactly once.
+@@ -294,19 +337,22 @@ func (fz *Finalize) Call(ctx context.Context) (shedengine.Outcome, shedengine.Ou
+ 	var mergeInRequired *fabricengine.ErrMergeInRequired
+ 	if errors.As(mergeErr, &mergeInRequired) {
+ 		if outcome, out, err, done := fz.mergeAndGate(ctx); done {
+-			return outcome, out, err
++			return end(outcome, out, err)
++		}
++		if fz.lockFreed {
++			return requeue()
+ 		}
+ 		if outcome, out, err, done := fz.commitParentRecords(ctx); done {
+-			return outcome, out, err
++			return end(outcome, out, err)
+ 		}
+ 		if outcome, out, err, stop := fz.recheckLock(ctx); stop {
+-			return outcome, out, err
++			return end(outcome, out, err)
+ 		}
+ 		_, retryErr := parentHandle.Merge(fz.deps.TaskBranch, mergeOpts)
+ 		if retryErr == nil {
+ 			fz.markTaskDone()
+ 			fz.recordLanding(parentHandle)
+-			return fz.pushParent(ctx, parentHandle, notice)
++			return end(fz.pushParent(ctx, parentHandle, notice))
+ 		}
+ 		mergeErr = retryErr
+ 	}
+@@ -316,9 +362,21 @@ func (fz *Finalize) Call(ctx context.Context) (shedengine.Outcome, shedengine.Ou
+ 	// never retry. Any other merge error is stuck with the error surfaced.
+ 	var guardErr *fabricengine.MergeGuardError
+ 	if errors.As(mergeErr, &guardErr) && guardErr.WorktreeDirty() {
+-		return fz.stuckOrCancelled(ctx, fz.dirtyParentReason(parentHandle, guardErr))
++		return end(fz.stuckOrCancelled(ctx, fz.dirtyParentReason(parentHandle, guardErr)))
+ 	}
+-	return fz.stuckOrCancelled(ctx, fmt.Sprintf("parent-side merge failed: %v", mergeErr), "error", mergeErr)
++	return end(fz.stuckOrCancelled(ctx, fmt.Sprintf("parent-side merge failed: %v", mergeErr), "error", mergeErr))
++}
++
++// freeLock frees the parent lock before an agent session that works on the task worktree alone, so other runs land on the parent meanwhile.
++// Call then takes the lock again at the front of the queue and runs its locked pass again, merging the parent anew.
++// A Finalize with no lock store frees nothing and goes on in the same pass.
++func (fz *Finalize) freeLock() {
++	if fz.lockFreed || fz.guard.lock.Store == nil {
++		return
++	}
++	fz.guard.release(finalizeName)
++	fz.lockFreed = true
++	logger.Info("landingshed: freed the parent lock for an agent session; the run takes it again after", "producer", finalizeName, "branch", fz.deps.ParentBranch)
+ }
+ 
+ // syncParent probes the opened parent pair and, with a push, brings its local branch level with its upstream; it returns a Stuck reason, or "" when Finalize may go on.
+@@ -611,8 +669,10 @@ func (fz *Finalize) mergeAndGate(ctx context.Context) (shedengine.Outcome, shede
+ // gateAndFix runs the `landing` gate over the merged tree and, on a failure, the merge fixer in finalize mode, which is Finalize's step 4.
+ // The gate skips a tree it already verified, so a run that went right holds the lock for one merge, a skipped gate and the landing.
+ // A passing gate removes the landing failure record and a failing one writes it.
++// The fixer and the fix review run with the parent lock freed.
+ //
+ // A failing gate spawns the fixer on the attempts landing.yaml's finalize_fix_attempts leaves the entry, read from the attempt record under the row's entry.
++// A pass after the lock was taken again spends from the same attempts, so a second failed verify never grants a fresh cap.
+ // The fixer's whole change is judged against the size and kind caps from the entry's Baseline, the HEAD before its first turn, so turns that each stay under the cap but sum past it are over it.
+ // An entry has no attempts left when its Spent reaches the cap, whatever the record's Halt notes, and such an entry spawns no fixer: over a failing gate it ends as a spent cap, and over a passing one its change since Baseline is judged.
+ // A passing gate with a fix review's findings pending, and a turn left, spawns the fixer on those findings.
+@@ -639,6 +699,9 @@ func (fz *Finalize) gateAndFix(ctx context.Context) (shedengine.Outcome, shedeng
+ 			return fz.errorStop(ctx, err)
+ 		}
+ 	}
++	if rec, err = fz.rebaseAfterParentMerge(rec); err != nil {
++		return fz.errorStop(ctx, err)
++	}
+ 
+ 	gateReason, err := fz.gate.check(ctx, finalizeName, fz.deps.ParentBranch)
+ 	if outcome, out, err, stop := fz.gateStop(ctx, "", err); stop {
+@@ -663,6 +726,28 @@ func (fz *Finalize) gateAndFix(ctx context.Context) (shedengine.Outcome, shedeng
+ 	return fz.runFixer(ctx, rec)
+ }
+ 
++// rebaseAfterParentMerge moves the entry's Baseline to the task head when this pass's merge brought parent commits onto the head the fixer's change was last let through at,
++// so the parent's commits never count as the fixer's change and a fixer change after the merge is judged from it.
++// Any other record comes back as it is.
++func (fz *Finalize) rebaseAfterParentMerge(rec FixerAttempts) (FixerAttempts, error) {
++	if rec.Judged == "" {
++		return rec, nil
++	}
++	merge, found, err := ReadMergeRecord(fz.deps.MergeRecordPath)
++	if err != nil {
++		return rec, fmt.Errorf("landingshed: %s: read the merge record: %w", finalizeName, err)
++	}
++	if !found || merge.UpToDate || merge.TaskHead != rec.Judged {
++		return rec, nil
++	}
++	head, err := fz.deps.TaskHead()
++	if err != nil {
++		return rec, fmt.Errorf("landingshed: %s: read the task head: %w", finalizeName, err)
++	}
++	rec.Baseline, rec.Judged = head, head
++	return rec, WriteFixerAttempts(FixerAttemptsPath(fz.deps.ScratchDir, finalizeName), rec)
++}
++
+ // readAttempts reads the fixer attempt record of the row's current entry.
+ // A record that does not decode comes back as a halting reason naming the file and how to remove it.
+ // A Finalize built with no row-entry read reads entry 0.
+@@ -687,6 +772,7 @@ func (fz *Finalize) readAttempts(path string) (FixerAttempts, string, error) {
+ // A fixer spawned on a fix review's findings reads that review's report, which the record names.
+ // A fixed end clears the pending findings and is judged against the caps, a spent end ends as a spent cap, and every other end halts with its reason.
+ func (fz *Finalize) runFixer(ctx context.Context, rec FixerAttempts) (shedengine.Outcome, shedengine.OutputPointer, error, bool) {
++	fz.freeLock()
+ 	mergeRecord, _, err := ReadMergeRecord(fz.deps.MergeRecordPath)
+ 	if err != nil {
+ 		return fz.errorStop(ctx, fmt.Errorf("landingshed: %s: read the merge record the fixer reads: %w", finalizeName, err))
+@@ -728,7 +814,8 @@ func (fz *Finalize) failedGateLog(gateReason string) string {
+ 
+ // judgeFixerChange judges the entry's fixer change, from its Baseline to HEAD, against the size and kind caps, and settles a change over them in place.
+ // An entry whose fixer never ran has no Baseline and no change.
+-// A change within the caps, one a fix review approved at this HEAD, and one the operator accepted at this HEAD let Finalize go on.
++// An entry whose Baseline is HEAD has no change.
++// That entry, a change within the caps, one a fix review approved at this HEAD, and one the operator accepted at this HEAD let Finalize go on, and the record keeps HEAD as Judged.
+ // A change over them goes to the fix review, which reads only the fixer's commits, and each review spends one of landing.yaml's finalize_fix_review_rounds:
+ // an approval lets Finalize go on and is kept in the attempt record as the HEAD it approved, so a later pass at that HEAD lands without a second review;
+ // a rejection hands its findings to the fixer, on a fresh turn cap, and the fixer's fixed change is judged again;
+@@ -746,20 +833,31 @@ func (fz *Finalize) judgeFixerChange(ctx context.Context, rec FixerAttempts) (sh
+ 	if err != nil {
+ 		return fz.errorStop(ctx, fmt.Errorf("landingshed: %s: read the task head: %w", finalizeName, err))
+ 	}
++	attemptsPath := FixerAttemptsPath(fz.deps.ScratchDir, finalizeName)
++	letThrough := func(rec FixerAttempts) (shedengine.Outcome, shedengine.OutputPointer, error, bool) {
++		rec.Judged = head
++		if err := WriteFixerAttempts(attemptsPath, rec); err != nil {
++			return fz.errorStop(ctx, err)
++		}
++		return proceed()
++	}
++	if rec.Baseline == head {
++		return letThrough(rec)
++	}
+ 	change, err := fz.deps.LineChange(rec.Baseline, head)
+ 	if err != nil {
+ 		return fz.errorStop(ctx, fmt.Errorf("landingshed: %s: read the fixer's change: %w", finalizeName, err))
+ 	}
+ 	capReason := FixCap{MaxLines: fz.deps.Config.FinalizeFixMaxLines, IsTestFile: fz.deps.IsTestFile}.Exceeded(change)
+ 	if capReason == "" || rec.Reviewed == head || rec.AcceptedHead == head {
+-		return proceed()
++		return letThrough(rec)
+ 	}
+ 	// An acceptance covers only the HEAD it was given at, so a change past it starts the fix reviews afresh.
+ 	if rec.AcceptedHead != "" {
+ 		rec.AcceptedHead, rec.ReviewRounds, rec.Findings = "", 0, nil
+ 	}
+ 
+-	attemptsPath := FixerAttemptsPath(fz.deps.ScratchDir, finalizeName)
++	fz.freeLock()
+ 	for {
+ 		review, err := runFixReview(fz.deps, fz.gate, finalizeName, rec.Baseline, head, capReason)
+ 		if err != nil {
+@@ -770,10 +868,7 @@ func (fz *Finalize) judgeFixerChange(ctx context.Context, rec FixerAttempts) (sh
+ 		switch review.end {
+ 		case fixReviewEndApproved:
+ 			rec.Reviewed = head
+-			if err := WriteFixerAttempts(attemptsPath, rec); err != nil {
+-				return fz.errorStop(ctx, err)
+-			}
+-			return proceed()
++			return letThrough(rec)
+ 		case fixReviewEndChanged:
+ 			if err := WriteFixerAttempts(attemptsPath, rec); err != nil {
+ 				return fz.errorStop(ctx, err)
+diff --git a/internal/landingshed/finalize_gate_test.go b/internal/landingshed/finalize_gate_test.go
+index d4fb72c4..e557334b 100644
+--- a/internal/landingshed/finalize_gate_test.go
++++ b/internal/landingshed/finalize_gate_test.go
+@@ -13,7 +13,9 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/mergeresolve"
+ 	"github.com/Knatte18/loomyard/internal/modelspec"
++	"github.com/Knatte18/loomyard/internal/parentlock"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/stencilkit"
+@@ -200,6 +202,18 @@ func (fx *finalizeGateFixture) requireLanded(t *testing.T, outcome shedengine.Ou
+ 	}
+ }
+ 
++// countingResolver counts the merges of the parent and answers each as merged.
++type countingResolver struct {
++	calls int
++	// onMerge, when set, runs on every merge with its 1-based number and answers whether the merge found the task already holding the parent's tip.
++	onMerge func(call int) (alreadyUpToDate bool)
++}
++
++func (r *countingResolver) Resolve(context.Context, string, string) (mergeresolve.Result, error) {
++	r.calls++
++	return resolved(r.onMerge != nil && r.onMerge(r.calls)), nil
++}
++
+ // TestFinalize_GateAndFixer pins Finalize's landing gate and its finalize-mode fixer:
+ // when the fixer spawns, how its attempts and its Baseline are kept across resumes, and where a spent cap, an over-cap change and an escalate report lead.
+ func TestFinalize_GateAndFixer(t *testing.T) {
+@@ -208,6 +222,294 @@ func TestFinalize_GateAndFixer(t *testing.T) {
+ 	passing := verifytree.Result{Status: verifytree.StatusPassed}
+ 	small := fabricengine.LineChange{Lines: 3, Paths: []string{"a/a.go"}}
+ 
++	t.Run("a failing gate frees the parent lock for the fixer, and the run takes it again to merge and verify before it lands", func(t *testing.T) {
++		tests := []struct {
++			name  string
++			gates []verifytree.Result
++			// wantMerges is how many times the parent is merged into the task: once per pass under the lock.
++			wantMerges int
++			// wantAttempts is the gate attempts each fixer session gets.
++			wantAttempts []int
++			// wantLineChanges are the ranges the fixer's change is measured over, which never span a merge of the parent.
++			wantLineChanges string
++		}{
++			{
++				name:            "a fix that verifies green after the second merge lands",
++				gates:           []verifytree.Result{failing, passing},
++				wantMerges:      2,
++				wantAttempts:    []int{2},
++				wantLineChanges: "t2..f1",
++			},
++			{
++				name:            "a second failed verify spawns the fixer on the attempts left, measured from the merge",
++				gates:           []verifytree.Result{failing, passing, failing, passing},
++				wantMerges:      3,
++				wantAttempts:    []int{2, 1},
++				wantLineChanges: "t2..f1,f1..f2",
++			},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				fx := newFinalizeGateFixture(t)
++				g, store, _ := newGuardFixture(t)
++				fx.fz.guard = g
++				resolver := &countingResolver{}
++				fx.fz.resolver = resolver
++				fx.lineChange = small
++				fx.scriptGate(tt.gates...)
++				sessions := 0
++				var heldDuringFix []bool
++				fx.seats.turns = []func(){func() {
++					_, found, err := store.Read("main")
++					if err != nil {
++						t.Errorf("read the lock record during the fixer's turn: %v", err)
++					}
++					heldDuringFix = append(heldDuringFix, found)
++					sessions++
++					fx.turn(t, fixedReport, fmt.Sprintf("f%d", sessions))()
++				}}
++
++				outcome, ptr := fx.call(t)
++
++				fx.requireLanded(t, outcome, ptr)
++				for i, held := range heldDuringFix {
++					if held {
++						t.Errorf("fixer session %d ran under the parent lock; want it freed", i+1)
++					}
++				}
++				var attempts []int
++				for _, table := range fx.seats.tables {
++					attempts = append(attempts, table.Gate[0].Attempts)
++				}
++				if fmt.Sprint(attempts) != fmt.Sprint(tt.wantAttempts) {
++					t.Errorf("fixer gate attempts = %v; want %v", attempts, tt.wantAttempts)
++				}
++				if resolver.calls != tt.wantMerges {
++					t.Errorf("merges of the parent = %d; want %d", resolver.calls, tt.wantMerges)
++				}
++				if got := strings.Join(fx.lineChangeCalls, ","); got != tt.wantLineChanges {
++					t.Errorf("LineChange calls = %q; want %q", got, tt.wantLineChanges)
++				}
++				if _, found, _ := store.Read("main"); found {
++					t.Error("the parent lock outlived the landing")
++				}
++			})
++		}
++	})
++
++	t.Run("a pass after the lock was taken again judges the fixer's change from the right baseline", func(t *testing.T) {
++		tests := []struct {
++			name string
++			// fixerHead is the task head the fixer's turn leaves.
++			fixerHead string
++			// secondMergeHead is the task head the second merge of the parent leaves, as a merge that brings parent commits does.
++			secondMergeHead string
++			// secondMergeUpToDate makes the second merge find the task already holding the parent's tip.
++			secondMergeUpToDate bool
++			// headBeforeSecondMerge is a task head that appears between the two passes, as a commit made while the run queued.
++			headBeforeSecondMerge string
++			// wantLineChanges are the ranges the fixer's change is measured over.
++			wantLineChanges string
++		}{
++			{
++				name:            "a fixer turn that commits nothing is not charged with the commits the next merge brings",
++				fixerHead:       "t2",
++				secondMergeHead: "m1",
++			},
++			{
++				name:                "a no-op merge leaves the baseline where it was",
++				fixerHead:           "f1",
++				secondMergeUpToDate: true,
++				wantLineChanges:     "t2..f1,t2..f1",
++			},
++			{
++				name:                  "a head that moved since the change was let through leaves the baseline where it was",
++				fixerHead:             "f1",
++				headBeforeSecondMerge: "x1",
++				wantLineChanges:       "t2..f1,t2..x1",
++			},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				fx := newFinalizeGateFixture(t)
++				g, _, _ := newGuardFixture(t)
++				fx.fz.guard = g
++				fx.fz.resolver = &countingResolver{onMerge: func(call int) bool {
++					if call != 2 {
++						return false
++					}
++					if tt.secondMergeHead != "" {
++						fx.head = tt.secondMergeHead
++					}
++					return tt.secondMergeUpToDate
++				}}
++				if tt.headBeforeSecondMerge != "" {
++					fetches := 0
++					readTips := fx.fz.deps.ReadParentTips
++					fx.fz.deps.ReadParentTips = func(fetch bool) (fabricengine.ParentTips, error) {
++						if fetch {
++							fetches++
++							if fetches == 2 {
++								fx.head = tt.headBeforeSecondMerge
++							}
++						}
++						return readTips(fetch)
++					}
++				}
++				fx.lineChange = small
++				fx.scriptGate(failing, passing)
++				fx.seats.turns = []func(){fx.turn(t, fixedReport, tt.fixerHead)}
++
++				outcome, ptr := fx.call(t)
++
++				fx.requireLanded(t, outcome, ptr)
++				if got := strings.Join(fx.lineChangeCalls, ","); got != tt.wantLineChanges {
++					t.Errorf("LineChange calls = %q; want %q", got, tt.wantLineChanges)
++				}
++			})
++		}
++	})
++
++	t.Run("a fix review over a passing gate runs with the parent lock freed, and its approval moves the baseline at the next merge", func(t *testing.T) {
++		fx := newFinalizeGateFixture(t)
++		g, store, _ := newGuardFixture(t)
++		fx.fz.guard = g
++		fx.head = "f1"
++		fx.lineChange = fabricengine.LineChange{Lines: 500, Paths: []string{"a/a.go"}}
++		fx.merger.pushErr = errors.New("push refused")
++		fx.seed(t, FixerAttempts{Entry: 1, Spent: 1, Baseline: "t2"})
++		fx.scriptGate(passing)
++		var heldDuringReview []bool
++		fx.seats.reviewTurns = []func(){func() {
++			_, found, err := store.Read("main")
++			if err != nil {
++				t.Errorf("read the lock record during the fix review: %v", err)
++			}
++			heldDuringReview = append(heldDuringReview, found)
++			fx.review(t, approvedReview)()
++		}}
++
++		// The refused push stops the landing after the merge, which keeps the record the landing would otherwise remove.
++		fx.call(t)
++
++		if len(heldDuringReview) != 1 || heldDuringReview[0] {
++			t.Errorf("lock held during each fix review session = %v; want one session with the lock freed", heldDuringReview)
++		}
++		rec, found := fx.attempts(t)
++		if !found || rec.Reviewed != "f1" || rec.Judged != "f1" || rec.Baseline != "f1" {
++			t.Errorf("attempt record = %+v, %v; want Reviewed and Judged f1 and the baseline moved to f1 by the next merge", rec, found)
++		}
++	})
++
++	t.Run("an operator's acceptance is kept as the change let through, so a later merge moves the baseline past it", func(t *testing.T) {
++		fx := newFinalizeGateFixture(t)
++		fx.fz.resolver = &countingResolver{onMerge: func(call int) bool {
++			if call == 2 {
++				fx.head = "m1"
++			}
++			return false
++		}}
++		fx.head = "f1"
++		fx.lineChange = fabricengine.LineChange{Lines: 500, Paths: []string{"a/a.go"}}
++		fx.merger.pushErr = errors.New("push refused")
++		fx.seed(t, FixerAttempts{Entry: 1, Spent: 1, Baseline: "t2", Halt: fixerHaltReviewCapped, ReviewRounds: 2, Findings: []string{"f1 loosens the assertion"}, AcceptedHead: "f1"})
++		fx.scriptGate(passing)
++
++		// The refused push stops the first Call after the merge, which keeps the record for the second.
++		fx.call(t)
++		if rec, found := fx.attempts(t); !found || rec.Judged != "f1" {
++			t.Fatalf("attempt record = %+v, %v; want Judged f1, the HEAD the operator accepted", rec, found)
++		}
++		fx.merger.pushErr = nil
++		outcome, ptr := fx.call(t)
++
++		if outcome != shedengine.Done {
++			t.Fatalf("second Call() = %q, %+v; want Done", outcome, ptr)
++		}
++		if got := strings.Join(fx.lineChangeCalls, ","); got != "t2..f1" {
++			t.Errorf("LineChange calls = %q; want only the first Call's t2..f1, the second measuring from the merged head", got)
++		}
++		if len(fx.seats.tables) != 0 {
++			t.Errorf("sessions = %q; want none after the acceptance", fx.sessionRoles())
++		}
++	})
++
++	t.Run("a fixer that runs in the retry after a merge-in-required error frees the lock, and the run takes it again before it lands", func(t *testing.T) {
++		fx := newFinalizeGateFixture(t)
++		g, store, _ := newGuardFixture(t)
++		fx.fz.guard = g
++		resolver := &countingResolver{}
++		fx.fz.resolver = resolver
++		fx.merger.results = []mergeCallResult{
++			{err: &fabricengine.ErrMergeInRequired{Source: "main"}},
++			{result: fabricengine.MergeResult{Committed: true}},
++		}
++		var heldAtRecordsCommit []bool
++		fx.fz.deps.CommitParentRecords = func() error {
++			_, found, _ := store.Read("main")
++			heldAtRecordsCommit = append(heldAtRecordsCommit, found)
++			return nil
++		}
++		fx.lineChange = small
++		fx.scriptGate(passing, failing, passing)
++		var heldDuringFix []bool
++		fx.seats.turns = []func(){func() {
++			_, found, err := store.Read("main")
++			if err != nil {
++				t.Errorf("read the lock record during the fixer's turn: %v", err)
++			}
++			heldDuringFix = append(heldDuringFix, found)
++			fx.turn(t, fixedReport, "f1")()
++		}}
++
++		outcome, ptr := fx.call(t)
++
++		if outcome != shedengine.Done || len(fx.merger.calls) != 2 {
++			t.Fatalf("Call() = %q, %+v with %d parent-side merge(s); want Done after the refused one and the landing", outcome, ptr, len(fx.merger.calls))
++		}
++		if len(heldDuringFix) != 1 || heldDuringFix[0] {
++			t.Errorf("lock held during each fixer session = %v; want one session with the lock freed", heldDuringFix)
++		}
++		if resolver.calls != 3 {
++			t.Errorf("merges of the parent = %d; want 3: the first pass, its retry and the pass after the fixer", resolver.calls)
++		}
++		if fmt.Sprint(heldAtRecordsCommit) != "[true true]" {
++			t.Errorf("lock held at each parent-records commit = %v; want it held in the first pass and again in the pass after the fixer", heldAtRecordsCommit)
++		}
++	})
++
++	t.Run("a resumed Finalize whose attempt record shows a fixer's change let through queues at the front", func(t *testing.T) {
++		fx := newFinalizeGateFixture(t)
++		g, store, _ := newGuardFixture(t)
++		older := parentlock.Owner{Slug: "older", Pair: "/p/older", RunID: "r5", PID: 333, StartTime: "t3"}
++		for _, owner := range []parentlock.Owner{guardOwnerOther, older} {
++			if _, err := store.TryAcquire("main", owner); err != nil {
++				t.Fatal(err)
++			}
++		}
++		sleeps := 0
++		g.sleep = func(context.Context, time.Duration) error {
++			sleeps++
++			if sleeps > 1 {
++				return errors.New("queued behind the older ticket")
++			}
++			_, err := store.Release("main", guardOwnerOther)
++			return err
++		}
++		fx.fz.guard = g
++		fx.head = "f1"
++		fx.lineChange = small
++		fx.seed(t, FixerAttempts{Entry: 1, Spent: 1, Baseline: "t2", Judged: "f1"})
++		fx.scriptGate(passing)
++
++		outcome, ptr := fx.call(t)
++
++		fx.requireLanded(t, outcome, ptr)
++		if sleeps != 1 {
++			t.Errorf("queue waits = %d; want 1: granted ahead of the older ticket when the holder released", sleeps)
++		}
++	})
++
+ 	t.Run("a darn Finalize gates through the command its verify source answers", func(t *testing.T) {
+ 		const treeScoped = "lym gate test --wait --tier 0 --tree-scoped"
+ 		fx := newFinalizeGateFixture(t)
+diff --git a/internal/landingshed/finalize_recheck_test.go b/internal/landingshed/finalize_recheck_test.go
+index ea8db5a6..18aa3716 100644
+--- a/internal/landingshed/finalize_recheck_test.go
++++ b/internal/landingshed/finalize_recheck_test.go
+@@ -1,4 +1,4 @@
+-// finalize_recheck_test.go drives Finalize's lock re-check before the landing over a real parentlock.Store, with the fixer's turn standing in for whatever releases the record between the acquire and the re-check.
++// finalize_recheck_test.go drives Finalize's lock re-check before the landing over a real parentlock.Store, with the parent-records commit standing in for whatever releases the record between the acquire and the re-check.
+ 
+ package landingshed
+ 
+@@ -12,28 +12,27 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+-	"github.com/Knatte18/loomyard/internal/verifytree"
+ )
+ 
+ // TestFinalize_LockRecheckAndLanding pins what Finalize does when the parent lock record no longer names the run just before the landing:
+ // it lands nothing, halts with LandingStopPrefix and takes no lock, and its resume re-runs from step 1 under a lock taken afresh.
+-// The fixer's turn releases the record, so the release happens between the guard's acquire and the re-check within one Call.
++// The parent-records commit runs release, so the release happens between the guard's acquire and the re-check within one Call.
+ func TestFinalize_LockRecheckAndLanding(t *testing.T) {
+ 	tiergate.Require(t, 0)
+-	failing := verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 1}
+-	passing := verifytree.Result{Status: verifytree.StatusPassed}
+ 
+-	// newFixture builds a Finalize whose first gate fails, so the fixer runs, and whose fixer's turn runs release after it commits its fix.
+-	newFixture := func(t *testing.T, release func(fx *finalizeGateFixture)) *finalizeGateFixture {
++	// newFixture builds a Finalize over a passing gate whose parent-records commit runs release at its call numbered at, counted from one, and at no other.
++	newFixture := func(t *testing.T, at int, release func(fx *finalizeGateFixture)) *finalizeGateFixture {
+ 		t.Helper()
+ 		fx := newFinalizeGateFixture(t)
+-		fx.lineChange = fabricengine.LineChange{Lines: 3, Paths: []string{"a/a.go"}}
+ 		fx.fz.guard = newParentGuard(fx.deps)
+-		fixed := fx.turn(t, fixedReport, "f1")
+-		fx.seats.turns = []func(){func() {
+-			fixed()
+-			release(fx)
+-		}}
++		calls := 0
++		fx.fz.deps.CommitParentRecords = func() error {
++			calls++
++			if calls == at {
++				release(fx)
++			}
++			return nil
++		}
+ 		return fx
+ 	}
+ 	releaseOwn := func(fx *finalizeGateFixture) {
+@@ -64,9 +63,8 @@ func TestFinalize_LockRecheckAndLanding(t *testing.T) {
+ 		}},
+ 	}
+ 	for _, tt := range releases {
+-		t.Run("a record "+tt.name+" while the fixer waited halts before the landing, and the resume lands under a fresh lock", func(t *testing.T) {
+-			fx := newFixture(t, tt.release)
+-			fx.scriptGate(failing, passing)
++		t.Run("a record "+tt.name+" before the landing halts it, and the resume lands under a fresh lock", func(t *testing.T) {
++			fx := newFixture(t, 1, tt.release)
+ 
+ 			outcome, ptr := fx.call(t)
+ 
+@@ -78,7 +76,6 @@ func TestFinalize_LockRecheckAndLanding(t *testing.T) {
+ 				t.Error("the halted Finalize holds the parent lock; want it to have taken none")
+ 			}
+ 
+-			fx.scriptGate(passing)
+ 			outcome, ptr = fx.call(t)
+ 
+ 			fx.requireLanded(t, outcome, ptr)
+@@ -92,15 +89,13 @@ func TestFinalize_LockRecheckAndLanding(t *testing.T) {
+ 	}
+ 
+ 	t.Run("a run owned by another machine on the resume stops at the owner check without landing", func(t *testing.T) {
+-		fx := newFixture(t, releaseOwn)
+-		fx.scriptGate(failing, passing)
++		fx := newFixture(t, 1, releaseOwn)
+ 		outcome, ptr := fx.call(t)
+ 		requireHalt(t, outcome, ptr, haltFragments...)
+ 
+ 		fx.fz.deps.Reconcile = func() (fabricengine.OriginReport, error) {
+ 			return fabricengine.OriginReport{Entries: []fabricengine.EntryOutcome{{Slug: "me", State: fabricengine.EntryOwnedElsewhere, Owner: "other-box"}}}, nil
+ 		}
+-		fx.scriptGate(passing)
+ 		outcome, ptr = fx.call(t)
+ 
+ 		if outcome != shedengine.Stuck || !ptr.Halt || !strings.HasPrefix(ptr.Reason, OwnerHaltPrefix) || !strings.Contains(ptr.Reason, `"other-box"`) {
+@@ -112,16 +107,8 @@ func TestFinalize_LockRecheckAndLanding(t *testing.T) {
+ 	})
+ 
+ 	t.Run("a release during the retry after a merge-in-required error halts before the retry's landing", func(t *testing.T) {
+-		fx := newFinalizeGateFixture(t)
+-		fx.lineChange = fabricengine.LineChange{Lines: 3, Paths: []string{"a/a.go"}}
+-		fx.fz.guard = newParentGuard(fx.deps)
++		fx := newFixture(t, 2, releaseOwn)
+ 		fx.merger.results = []mergeCallResult{{err: &fabricengine.ErrMergeInRequired{Source: fx.deps.TaskBranch}}, {result: fabricengine.MergeResult{Committed: true}}}
+-		fixed := fx.turn(t, fixedReport, "f1")
+-		fx.seats.turns = []func(){func() {
+-			fixed()
+-			releaseOwn(fx)
+-		}}
+-		fx.scriptGate(passing, failing, passing)
+ 
+ 		outcome, ptr := fx.call(t)
+ 
+@@ -132,13 +119,12 @@ func TestFinalize_LockRecheckAndLanding(t *testing.T) {
+ 	})
+ 
+ 	t.Run("an unreadable record halts naming the release verb", func(t *testing.T) {
+-		fx := newFixture(t, func(fx *finalizeGateFixture) {
++		fx := newFixture(t, 1, func(fx *finalizeGateFixture) {
+ 			recordFile := filepath.Join(fx.deps.Lock.Store.Dir, hex.EncodeToString([]byte("main"))+".json")
+ 			if err := os.WriteFile(recordFile, []byte("{nope"), 0o644); err != nil {
+ 				t.Error(err)
+ 			}
+ 		})
+-		fx.scriptGate(failing, passing)
+ 
+ 		outcome, ptr := fx.call(t)
+ 
+diff --git a/internal/landingshed/fixerattempts.go b/internal/landingshed/fixerattempts.go
+index accac355..78fe4901 100644
+--- a/internal/landingshed/fixerattempts.go
++++ b/internal/landingshed/fixerattempts.go
+@@ -35,6 +35,9 @@ type FixerAttempts struct {
+ 	// AcceptedHead is the HEAD the operator accepted the entry's change at after that halt, so the entry lands that change with Findings open; empty when none was accepted.
+ 	// A change at any other HEAD is not covered by the acceptance.
+ 	AcceptedHead string `json:"accepted_head,omitempty"`
++	// Judged is the HEAD at which the entry's fixer change was last let through, within the caps, approved or accepted; empty when none was.
++	// A later merge of the parent onto it moves Baseline past the parent's commits.
++	Judged string `json:"judged,omitempty"`
+ }
+ 
+ // FixerAttemptsPath is the attempt record's path for row under scratchDir: one file per row.
+diff --git a/internal/landingshed/parentalign.go b/internal/landingshed/parentalign.go
+index 48f9a3ec..880d8b64 100644
+--- a/internal/landingshed/parentalign.go
++++ b/internal/landingshed/parentalign.go
+@@ -242,7 +242,7 @@ func (m *ParentAlign) mergeTip(ctx context.Context) (string, string, error) {
+ 		}
+ 	}
+ 
+-	reason, err := m.guard.ensure(ctx, parentAlignName)
++	reason, err := m.guard.ensure(ctx, parentAlignName, false)
+ 	if err != nil || reason != "" {
+ 		return "", reason, err
+ 	}
+diff --git a/internal/landingshed/parentguard.go b/internal/landingshed/parentguard.go
+index 1f10fbda..6f43d4f3 100644
+--- a/internal/landingshed/parentguard.go
++++ b/internal/landingshed/parentguard.go
+@@ -30,14 +30,14 @@ func newParentGuard(deps Deps) parentGuard {
+ 	}
+ }
+ 
+-// ensure takes the parent lock for the run, waiting in the queue while another run holds it.
++// ensure takes the parent lock for the run, waiting in the queue while another run holds it, at the front of the queue when front is set.
+ // While it waits it keeps the run's wait record and the driver strand's pane mark, and removes both on every way out.
+ //
+ // It returns "" once the lock is held, and a non-empty Stuck reason when the operator halted the wait or the lock record is unreadable;
+ // a caller returns either reason as a Stuck with Halt set.
+ // A cancellation and every other failure are returned as an error.
+ // A guard with no lock store takes no lock.
+-func (g parentGuard) ensure(ctx context.Context, producer string) (string, error) {
++func (g parentGuard) ensure(ctx context.Context, producer string, front bool) (string, error) {
+ 	if g.lock.Store == nil {
+ 		return "", nil
+ 	}
+@@ -61,6 +61,7 @@ func (g parentGuard) ensure(ctx context.Context, producer string) (string, error
+ 		},
+ 		Paused: func() bool { return g.pauseRequested(&pauseFailures) },
+ 		Sleep:  g.sleep,
++		Front:  front,
+ 	}
+ 	_, err = g.lock.Store.Acquire(ctx, g.parentBranch, owner, waiter)
+ 	if waiting {
+diff --git a/internal/landingshed/parentguard_test.go b/internal/landingshed/parentguard_test.go
+index 88d5c628..2c91710e 100644
+--- a/internal/landingshed/parentguard_test.go
++++ b/internal/landingshed/parentguard_test.go
+@@ -60,7 +60,7 @@ func TestParentGuard_EnsureTakesFreeLockAndWaitsBehindAnother(t *testing.T) {
+ 		t.Parallel()
+ 		g, store, marks := newGuardFixture(t)
+ 
+-		reason, err := g.ensure(context.Background(), "Publish")
++		reason, err := g.ensure(context.Background(), "Publish", false)
+ 		if reason != "" || err != nil {
+ 			t.Fatalf("ensure() = %q, %v; want held", reason, err)
+ 		}
+@@ -93,7 +93,7 @@ func TestParentGuard_EnsureTakesFreeLockAndWaitsBehindAnother(t *testing.T) {
+ 		}
+ 		done := make(chan outcome, 1)
+ 		go func() {
+-			reason, err := g.ensure(context.Background(), "Publish")
++			reason, err := g.ensure(context.Background(), "Publish", false)
+ 			done <- outcome{reason, err}
+ 		}()
+ 
+@@ -118,6 +118,31 @@ func TestParentGuard_EnsureTakesFreeLockAndWaitsBehindAnother(t *testing.T) {
+ 			t.Errorf("marks = %q; want set then cleared %q", *marks, want)
+ 		}
+ 	})
++
++	t.Run("a wait at the front is granted ahead of a ticket queued before it", func(t *testing.T) {
++		t.Parallel()
++		g, store, _ := newGuardFixture(t)
++		queued := parentlock.Owner{Slug: "queued", Pair: "/p/queued", RunID: "r5", PID: 333, StartTime: "t3"}
++		if _, err := store.TryAcquire("main", guardOwnerOther); err != nil {
++			t.Fatal(err)
++		}
++		if attempt, err := store.TryAcquire("main", queued); err != nil || attempt.Granted {
++			t.Fatalf("TryAcquire(queued) = %+v, %v; want a queued ticket", attempt, err)
++		}
++		g.sleep = func(context.Context, time.Duration) error {
++			_, err := store.Release("main", guardOwnerOther)
++			return err
++		}
++
++		reason, err := g.ensure(context.Background(), "Finalize", true)
++
++		if reason != "" || err != nil {
++			t.Fatalf("ensure() = %q, %v; want held", reason, err)
++		}
++		if rec, found, _ := store.Read("main"); !found || !rec.Owner.SameProcess(guardOwnerMe) {
++			t.Errorf("record = %+v, %v; want it owned by the run waiting at the front", rec, found)
++		}
++	})
+ }
+ 
+ func TestParentGuard_EnsureReasonsAndErrors(t *testing.T) {
+@@ -172,7 +197,7 @@ func TestParentGuard_EnsureReasonsAndErrors(t *testing.T) {
+ 			g, store, _ := newGuardFixture(t)
+ 			ctx := tt.arrange(t, &g, store)
+ 
+-			reason, err := g.ensure(ctx, "Publish")
++			reason, err := g.ensure(ctx, "Publish", false)
+ 			if !errors.Is(err, tt.wantErr) {
+ 				t.Fatalf("ensure() error = %v; want %v", err, tt.wantErr)
+ 			}
+diff --git a/internal/parentlock/acquire.go b/internal/parentlock/acquire.go
+index 43425ae4..ed4be8ae 100644
+--- a/internal/parentlock/acquire.go
++++ b/internal/parentlock/acquire.go
+@@ -1,4 +1,4 @@
+-// acquire.go — the unbounded queue wait for a parent lock: attempts until granted, polling with backoff.
++// acquire.go — the unbounded queue wait for a parent lock: attempts until granted, polling with backoff and waking early on a change to the lock record.
+ 
+ package parentlock
+ 
+@@ -9,10 +9,13 @@ import (
+ 	"io/fs"
+ 	"os"
+ 	"time"
++
++	"github.com/Knatte18/loomyard/internal/fswatch"
++	"github.com/Knatte18/loomyard/internal/logger"
+ )
+ 
+ const (
+-	// acquireWakeFloor is the first poll delay and the delay the wait returns to when the holder changes.
++	// acquireWakeFloor is the first poll delay, the delay the wait returns to when the holder changes, and the least time between two wakes.
+ 	acquireWakeFloor = time.Second
+ 	// acquireWakeCeiling is the longest poll delay while the holder is unchanged.
+ 	acquireWakeCeiling = 30 * time.Second
+@@ -21,7 +24,7 @@ const (
+ // ErrPaused is returned by Acquire when the waiter's Paused seam reports a pause.
+ var ErrPaused = errors.New("parent lock wait paused")
+ 
+-// Waiter carries the seams a caller tells Acquire; each is optional.
++// Waiter carries what a caller tells Acquire; each field is optional.
+ type Waiter struct {
+ 	// OnWait is called once when the wait starts and again whenever the holder changes, so the caller can record the wait.
+ 	OnWait func(holder Record)
+@@ -29,6 +32,12 @@ type Waiter struct {
+ 	Paused func() bool
+ 	// Sleep replaces the timer wait; it returns the context's error when ctx ends first.
+ 	Sleep func(ctx context.Context, d time.Duration) error
++	// Now replaces the clock the least time between two wakes is measured on.
++	Now func() time.Time
++	// Front queues the caller ahead of every ticket not itself at the front, for a run taking back a lock it freed to work outside it.
++	Front bool
++	// Watch replaces fswatch.Watch, which opens the watch on the lock record.
++	Watch func(dir string, names ...string) (*fswatch.Watcher, error)
+ }
+ 
+ func (w Waiter) sleep(ctx context.Context, d time.Duration) error {
+@@ -45,18 +54,73 @@ func (w Waiter) sleep(ctx context.Context, d time.Duration) error {
+ 	}
+ }
+ 
++func (w Waiter) now() time.Time {
++	if w.Now != nil {
++		return w.Now()
++	}
++	return time.Now()
++}
++
++// pause sleeps d, or until changes delivers a change to the lock record.
++// A change still waits out the rest of acquireWakeFloor since wokeAt, so no wake follows another by less than the floor.
++// A nil changes sleeps d.
++// changesClosed reports that changes is closed, which the caller then replaces with nil.
++// A closed channel would end every later pause at once and lose the backoff.
++func (w Waiter) pause(ctx context.Context, d time.Duration, wokeAt time.Time, changes <-chan fswatch.Event) (changesClosed bool, err error) {
++	if changes == nil {
++		return false, w.sleep(ctx, d)
++	}
++	sleepCtx, cancel := context.WithCancel(ctx)
++	defer cancel()
++	slept := make(chan error, 1)
++	go func() { slept <- w.sleep(sleepCtx, d) }()
++	select {
++	case err := <-slept:
++		return channelClosed(changes), err
++	case _, open := <-changes:
++		if !open {
++			return true, <-slept
++		}
++		cancel()
++		if err := <-slept; err == nil {
++			return false, nil
++		}
++		if err := ctx.Err(); err != nil {
++			return false, err
++		}
++		if rest := acquireWakeFloor - w.now().Sub(wokeAt); rest > 0 {
++			return false, w.sleep(ctx, rest)
++		}
++		return false, nil
++	}
++}
++
++// channelClosed reports whether changes is closed, without waiting for an event.
++func channelClosed(changes <-chan fswatch.Event) bool {
++	select {
++	case _, open := <-changes:
++		return !open
++	default:
++		return false
++	}
++}
++
+ // Acquire attempts branch's lock for owner until it is granted, waiting in the queue with no time limit, and returns the granted record.
+ // It polls from one second, doubling to thirty seconds while the holder is unchanged and returning to one second when it changes.
++// A change to the lock record, such as its holder's release, ends the poll delay early, still a second after the last attempt began;
++// a watch that cannot open, or that closes mid-wait, leaves the wait on its poll alone.
+ // A cancelled context, a pause and an attempt error each return with owner's ticket removed.
+ // It only waits and takes: it never frees another owner's live record.
+ func (s *Store) Acquire(ctx context.Context, branch string, owner Owner, w Waiter) (Record, error) {
+ 	var lastHolder Owner
+ 	var delay time.Duration
++	var changes <-chan fswatch.Event
+ 	for first := true; ; first = false {
++		wokeAt := w.now()
+ 		if err := ctx.Err(); err != nil {
+ 			return Record{}, s.abandonTicket(branch, owner, err)
+ 		}
+-		attempt, err := s.TryAcquire(branch, owner)
++		attempt, err := s.tryAcquire(branch, owner, w.Front)
+ 		if err != nil {
+ 			return Record{}, s.abandonTicket(branch, owner, err)
+ 		}
+@@ -64,6 +128,19 @@ func (s *Store) Acquire(ctx context.Context, branch string, owner Owner, w Waite
+ 			record, _, err := s.Read(branch)
+ 			return record, err
+ 		}
++		if first {
++			watch := w.Watch
++			if watch == nil {
++				watch = fswatch.Watch
++			}
++			watcher, err := watch(s.Dir, s.recordName(branch))
++			if err != nil {
++				logger.Warn("parentlock: could not watch the lock record, polling only", "branch", branch, "cause", err)
++			} else {
++				defer watcher.Close()
++				changes = watcher.Events()
++			}
++		}
+ 		if first || attempt.Holder.Owner != lastHolder {
+ 			lastHolder = attempt.Holder.Owner
+ 			delay = acquireWakeFloor
+@@ -76,7 +153,11 @@ func (s *Store) Acquire(ctx context.Context, branch string, owner Owner, w Waite
+ 		if w.Paused != nil && w.Paused() {
+ 			return Record{}, s.abandonTicket(branch, owner, ErrPaused)
+ 		}
+-		if err := w.sleep(ctx, delay); err != nil {
++		changesClosed, err := w.pause(ctx, delay, wokeAt, changes)
++		if changesClosed {
++			changes = nil
++		}
++		if err != nil {
+ 			return Record{}, s.abandonTicket(branch, owner, err)
+ 		}
+ 	}
+diff --git a/internal/parentlock/acquire_test.go b/internal/parentlock/acquire_test.go
+index 305c3c19..fe5d759c 100644
+--- a/internal/parentlock/acquire_test.go
++++ b/internal/parentlock/acquire_test.go
+@@ -8,9 +8,12 @@ import (
+ 	"os"
+ 	"path/filepath"
+ 	"slices"
++	"strings"
+ 	"testing"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/fswatch"
++	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -50,6 +53,228 @@ func TestAcquire_WaitsForHolderWithDoublingPollThenIsGranted(t *testing.T) {
+ 	}
+ }
+ 
++func TestAcquire_ReleaseEndsThePollDelayAfterTheFloor(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	store, processes := newTestStore(t)
++	holder := liveOwner(processes, "holder", 1)
++	waiter := liveOwner(processes, "waiter", 2)
++	mustTryAcquire(t, store, "main", holder)
++	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
++	defer cancel()
++
++	wokeAt := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
++	var delays []time.Duration
++	var released bool
++	record, err := store.Acquire(ctx, "main", waiter, Waiter{
++		Now: func() time.Time { return wokeAt },
++		Sleep: func(sleepCtx context.Context, d time.Duration) error {
++			delays = append(delays, d)
++			if released {
++				return nil
++			}
++			released = true
++			if ok, err := store.Release("main", holder); err != nil || !ok {
++				t.Errorf("Release(holder) = (%v, %v); want released", ok, err)
++			}
++			<-sleepCtx.Done()
++			return sleepCtx.Err()
++		},
++	})
++
++	if err != nil || !record.Owner.SameProcess(waiter) {
++		t.Fatalf("Acquire = (%+v, %v); want the waiter's record", record, err)
++	}
++	if want := []time.Duration{time.Second, time.Second}; !slices.Equal(delays, want) {
++		t.Errorf("sleeps = %v; want %v: the poll delay ended by the release, then the rest of the floor", delays, want)
++	}
++}
++
++func TestAcquire_FrontWaiterIsGrantedAheadOfAnOlderTicket(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	store, processes := newTestStore(t)
++	holder := liveOwner(processes, "holder", 1)
++	older := liveOwner(processes, "older", 2)
++	returning := liveOwner(processes, "returning", 3)
++	mustTryAcquire(t, store, "main", holder)
++	if mustTryAcquire(t, store, "main", older).Granted {
++		t.Fatal("the older waiter was granted a held lock")
++	}
++
++	record, err := store.Acquire(context.Background(), "main", returning, Waiter{
++		Front: true,
++		Sleep: func(context.Context, time.Duration) error {
++			if _, err := store.Release("main", holder); err != nil {
++				t.Errorf("Release(holder) error = %v", err)
++			}
++			return nil
++		},
++	})
++
++	if err != nil || !record.Owner.SameProcess(returning) {
++		t.Fatalf("Acquire = (%+v, %v); want the front waiter's record", record, err)
++	}
++	tickets, err := store.liveTickets("main", false)
++	if err != nil || len(tickets) != 1 || !tickets[0].Owner.SameProcess(older) {
++		t.Errorf("tickets = %+v, %v; want only the older waiter's, still queued", tickets, err)
++	}
++}
++
++func TestTryAcquire_FrontTicketsAreGrantedOldestFirstAheadOfOrdinaryOnes(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	store, processes := newTestStore(t)
++	holder := liveOwner(processes, "holder", 1)
++	ordinary := liveOwner(processes, "ordinary", 2)
++	firstFront := liveOwner(processes, "first-front", 3)
++	secondFront := liveOwner(processes, "second-front", 4)
++	mustTryAcquire(t, store, "main", holder)
++	for _, queued := range []struct {
++		owner Owner
++		front bool
++	}{{ordinary, false}, {firstFront, true}, {secondFront, true}} {
++		if attempt, err := store.tryAcquire("main", queued.owner, queued.front); err != nil || attempt.Granted {
++			t.Fatalf("tryAcquire(%s) = (%+v, %v); want queued behind the holder", queued.owner.Slug, attempt, err)
++		}
++	}
++	if _, err := store.Release("main", holder); err != nil {
++		t.Fatalf("Release(holder) error = %v", err)
++	}
++
++	steps := []struct {
++		owner       Owner
++		front       bool
++		wantGranted bool
++	}{
++		{secondFront, true, false},
++		{ordinary, false, false},
++		{firstFront, true, true},
++		{ordinary, false, false},
++		{secondFront, true, true},
++		{ordinary, false, true},
++	}
++	for i, step := range steps {
++		attempt, err := store.tryAcquire("main", step.owner, step.front)
++		if err != nil || attempt.Granted != step.wantGranted {
++			t.Fatalf("step %d: tryAcquire(%s) = (%+v, %v); want granted = %v", i+1, step.owner.Slug, attempt, err, step.wantGranted)
++		}
++		if attempt.Granted {
++			if _, err := store.Release("main", step.owner); err != nil {
++				t.Fatalf("step %d: Release(%s) error = %v", i+1, step.owner.Slug, err)
++			}
++		}
++	}
++}
++
++func TestPause_ClosedChangesChannelIsReportedAfterTheFullDelay(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	changes := make(chan fswatch.Event)
++	close(changes)
++	var delays []time.Duration
++	waiter := Waiter{Sleep: func(_ context.Context, d time.Duration) error {
++		delays = append(delays, d)
++		return nil
++	}}
++
++	closed, err := waiter.pause(context.Background(), 4*time.Second, time.Time{}, changes)
++
++	if err != nil || !closed {
++		t.Fatalf("pause = (%v, %v); want the closed channel reported", closed, err)
++	}
++	if want := []time.Duration{4 * time.Second}; !slices.Equal(delays, want) {
++		t.Errorf("sleeps = %v; want %v: no extra sleep for the rest of the floor", delays, want)
++	}
++}
++
++func TestAcquire_WatchThatClosesLeavesTheWaitOnItsPollBackoff(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	store, processes := newTestStore(t)
++	holder := liveOwner(processes, "holder", 1)
++	waiter := liveOwner(processes, "waiter", 2)
++	mustTryAcquire(t, store, "main", holder)
++
++	callerCtx, cancel := context.WithCancel(context.Background())
++	defer cancel()
++	var delays []time.Duration
++	// A pause that watches sleeps on a context of its own, and one that does not sleeps on the caller's.
++	var sleptOnCallerCtx []bool
++	record, err := store.Acquire(callerCtx, "main", waiter, Waiter{
++		Watch: func(dir string, names ...string) (*fswatch.Watcher, error) {
++			watcher, err := fswatch.Watch(dir, names...)
++			if err != nil {
++				return nil, err
++			}
++			if err := watcher.Close(); err != nil {
++				return nil, err
++			}
++			return watcher, nil
++		},
++		Sleep: func(ctx context.Context, d time.Duration) error {
++			delays = append(delays, d)
++			sleptOnCallerCtx = append(sleptOnCallerCtx, ctx == callerCtx)
++			if len(delays) == 4 {
++				if released, err := store.Release("main", holder); err != nil || !released {
++					t.Errorf("Release(holder) = (%v, %v); want released", released, err)
++				}
++			}
++			return nil
++		},
++	})
++
++	if err != nil || !record.Owner.SameProcess(waiter) {
++		t.Fatalf("Acquire = (%+v, %v); want the waiter's record", record, err)
++	}
++	if want := []time.Duration{time.Second, 2 * time.Second, 4 * time.Second, 8 * time.Second}; !slices.Equal(delays, want) {
++		t.Errorf("poll delays = %v; want %v", delays, want)
++	}
++	if want := []bool{false, true, true, true}; !slices.Equal(sleptOnCallerCtx, want) {
++		t.Errorf("sleeps on the caller's context = %v; want %v: the closed watch dropped after the first pause", sleptOnCallerCtx, want)
++	}
++}
++
++// TestAcquire_WatchThatCannotOpenPollsAndWarnsOnce is not parallel: it captures the process-global log.
++func TestAcquire_WatchThatCannotOpenPollsAndWarnsOnce(t *testing.T) {
++	tiergate.Require(t, 0)
++	logs := logcapture.Capture(t)
++
++	store, processes := newTestStore(t)
++	holder := liveOwner(processes, "holder", 1)
++	waiter := liveOwner(processes, "waiter", 2)
++	mustTryAcquire(t, store, "main", holder)
++
++	var delays []time.Duration
++	record, err := store.Acquire(context.Background(), "main", waiter, Waiter{
++		Watch: func(string, ...string) (*fswatch.Watcher, error) { return nil, errors.New("no watch available") },
++		Sleep: func(_ context.Context, d time.Duration) error {
++			delays = append(delays, d)
++			if len(delays) == 3 {
++				if released, err := store.Release("main", holder); err != nil || !released {
++					t.Errorf("Release(holder) = (%v, %v); want released", released, err)
++				}
++			}
++			return nil
++		},
++	})
++
++	if err != nil || !record.Owner.SameProcess(waiter) {
++		t.Fatalf("Acquire = (%+v, %v); want the waiter's record granted on the poll", record, err)
++	}
++	if want := []time.Duration{time.Second, 2 * time.Second, 4 * time.Second}; !slices.Equal(delays, want) {
++		t.Errorf("poll delays = %v; want %v", delays, want)
++	}
++	if got := strings.Count(logs.String(), "could not watch the lock record"); got != 1 {
++		t.Errorf("watch-open warnings = %d; want 1", got)
++	}
++}
++
+ func TestAcquire_EndsWaitWithTicketRemoved(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/parentlock/doc.go b/internal/parentlock/doc.go
+index 906962b1..2b1fe4d8 100644
+--- a/internal/parentlock/doc.go
++++ b/internal/parentlock/doc.go
+@@ -21,15 +21,18 @@
+ //
+ // Every read-modify-write runs under a file lock on `<Dir>/<hex(branch)>.lock`, so two acquirers never both win.
+ // TryAcquire takes a free record, a record whose owner is not alive and a record naming the acquirer's own run, which rewrites the owner process.
+-// A free or stale record goes to the oldest live ticket, kept at `<Dir>/<hex(branch)>.tickets/<pid>-<start>.json`.
+-// An acquirer that is not first in the queue keeps its ticket and is not granted; a dead waiter's ticket is removed in the attempt that finds it, and a granted acquirer's own ticket is removed.
+-// A run a pause covers, as Store.Covered tells, yields the queue: it keeps its ticket and place and is not granted, unless the record already names its own run, and the queue head is the oldest live ticket of an uncovered run.
++// A free or stale record goes to the head of the queue, the live tickets kept at `<Dir>/<hex(branch)>.tickets/<pid>-<start>.json`:
++// tickets at the front first, then the rest, each part oldest first.
++// An acquirer that is not the head keeps its ticket and is not granted; a dead waiter's ticket is removed in the attempt that finds it, and a granted acquirer's own ticket is removed.
++// A run a pause covers, as Store.Covered tells, yields the queue: it keeps its ticket and place and is not granted, unless the record already names its own run, and the queue head is the first live ticket of an uncovered run.
+ // A covered waiter still first in the queue at the resume is granted next.
+ //
+ // # Waiting
+ //
+-// Acquire loops TryAcquire until granted, with no time limit, polling from one second and doubling to thirty seconds while the holder is unchanged.
+-// A Waiter tells it three optional seams: OnWait when the wait starts and the holder changes, Paused before every sleep, and Sleep in place of the timer.
++// Acquire loops attempts until granted, with no time limit, polling from one second and doubling to thirty seconds while the holder is unchanged.
++// It watches the branch's record file through internal/fswatch, so a release or any other change to the record ends the poll delay early, still a second after the last attempt began; a watch that cannot open leaves the poll alone.
++// A Waiter tells it optional seams: OnWait when the wait starts and the holder changes, Paused before every sleep, Sleep in place of the timer and Now in place of the clock.
++// Its Front queues the caller at the front, for a run taking back a lock it freed to work outside it, so runs that queued meanwhile wait behind it.
+ // A pause, a cancelled context and an attempt error each return with the caller's ticket removed.
+ // The wait only waits and takes; it never frees another owner's live record.
+ // A caller keeps its wait on disk as a Wait record at WaitRecordPath, which ReadWait ignores once its writing process is dead.
+diff --git a/internal/parentlock/seam_enforcement_test.go b/internal/parentlock/seam_enforcement_test.go
+index 92bf5385..a574ab80 100644
+--- a/internal/parentlock/seam_enforcement_test.go
++++ b/internal/parentlock/seam_enforcement_test.go
+@@ -12,6 +12,7 @@ import (
+ 
+ // parentlockAllowedImports are the only non-stdlib import paths production code in this package may use.
+ var parentlockAllowedImports = []string{
++	"github.com/Knatte18/loomyard/internal/fswatch",
+ 	"github.com/Knatte18/loomyard/internal/lock",
+ 	"github.com/Knatte18/loomyard/internal/proc",
+ 	"github.com/Knatte18/loomyard/internal/lymdirs",
+diff --git a/internal/parentlock/store.go b/internal/parentlock/store.go
+index cef3efb5..a57d42c5 100644
+--- a/internal/parentlock/store.go
++++ b/internal/parentlock/store.go
+@@ -63,9 +63,11 @@ type Record struct {
+ }
+ 
+ // Ticket is one waiter's place in a branch's queue.
++// A ticket at the Front queues ahead of every ticket that is not.
+ type Ticket struct {
+ 	Owner    Owner     `json:"owner"`
+ 	QueuedAt time.Time `json:"queued_at"`
++	Front    bool      `json:"front,omitempty"`
+ }
+ 
+ // Entry is one lock record as List reports it.
+@@ -102,7 +104,7 @@ type Store struct {
+ 	// Now stamps AcquiredAt and ticket times; nil selects time.Now.
+ 	Now func() time.Time
+ 	// Covered reports whether a pause covers the run of slug; nil covers nothing.
+-	// A covered run keeps its ticket and place but is never granted, and the queue head is the oldest live ticket of an uncovered run.
++	// A covered run keeps its ticket and place but is never granted, and the queue head is the first live ticket of an uncovered run.
+ 	Covered func(slug string) bool
+ }
+ 
+@@ -124,8 +126,13 @@ func (s *Store) now() time.Time {
+ 	return time.Now()
+ }
+ 
++// recordName is the base name of branch's record file.
++func (s *Store) recordName(branch string) string {
++	return hex.EncodeToString([]byte(branch)) + recordSuffix
++}
++
+ func (s *Store) recordPath(branch string) string {
+-	return filepath.Join(s.Dir, hex.EncodeToString([]byte(branch))+recordSuffix)
++	return filepath.Join(s.Dir, s.recordName(branch))
+ }
+ 
+ func (s *Store) lockPath(branch string) string {
+@@ -200,7 +207,7 @@ func (s *Store) Read(branch string) (Record, bool, error) {
+ 	return readRecordFile(s.recordPath(branch))
+ }
+ 
+-// liveTickets returns branch's tickets oldest first.
++// liveTickets returns branch's tickets in queue order: those at the front first, and oldest first within each part.
+ // A ticket whose owner is not alive, or that cannot be decoded, is dropped from the result and removed from disk when prune is set.
+ func (s *Store) liveTickets(branch string, prune bool) ([]Ticket, error) {
+ 	dir := s.ticketsDir(branch)
+@@ -230,15 +237,26 @@ func (s *Store) liveTickets(branch string, prune bool) ([]Ticket, error) {
+ 		}
+ 		tickets = append(tickets, ticket)
+ 	}
+-	sort.SliceStable(tickets, func(i, j int) bool { return tickets[i].QueuedAt.Before(tickets[j].QueuedAt) })
++	sort.SliceStable(tickets, func(i, j int) bool {
++		if tickets[i].Front != tickets[j].Front {
++			return tickets[i].Front
++		}
++		return tickets[i].QueuedAt.Before(tickets[j].QueuedAt)
++	})
+ 	return tickets, nil
+ }
+ 
+ // TryAcquire makes one attempt to take branch's lock for owner.
+-// A free record, a record whose owner process is not alive and a record naming owner's run are each taken; a free or stale record goes to the oldest live ticket, so an acquirer that is not first in the queue keeps its ticket and is not granted.
+-// An acquirer whose run is covered keeps its ticket and is not granted, unless the record already names its own run; the queue head is then the oldest live ticket of an uncovered run, so a covered waiter is passed over and keeps its place.
++// A free record, a record whose owner process is not alive and a record naming owner's run are each taken; a free or stale record goes to the head of the queue, so an acquirer that is not the head keeps its ticket and is not granted.
++// An acquirer whose run is covered keeps its ticket and is not granted, unless the record already names its own run; the queue head is then the first live ticket of an uncovered run, so a covered waiter is passed over and keeps its place.
+ // A record that cannot be read returns an error wrapping ErrUnreadable and changes nothing.
+ func (s *Store) TryAcquire(branch string, owner Owner) (Attempt, error) {
++	return s.tryAcquire(branch, owner, false)
++}
++
++// tryAcquire is TryAcquire for an acquirer that queues at the front when front is set:
++// it passes every ticket not at the front, and waits only behind an older front ticket of an uncovered run.
++func (s *Store) tryAcquire(branch string, owner Owner, front bool) (Attempt, error) {
+ 	var attempt Attempt
+ 	err := s.withLock(branch, func() error {
+ 		record, found, err := s.Read(branch)
+@@ -248,11 +266,11 @@ func (s *Store) TryAcquire(branch string, owner Owner) (Attempt, error) {
+ 		ownRecord := found && record.Owner.SameRun(owner)
+ 		if found && !ownRecord && s.alive(record.Owner) {
+ 			attempt.Holder = record
+-			return s.keepTicket(branch, owner)
++			return s.keepTicket(branch, owner, front)
+ 		}
+ 		if !ownRecord {
+ 			if s.covered(owner.Slug) {
+-				return s.keepTicket(branch, owner)
++				return s.keepTicket(branch, owner, front)
+ 			}
+ 			tickets, err := s.liveTickets(branch, true)
+ 			if err != nil {
+@@ -262,8 +280,11 @@ func (s *Store) TryAcquire(branch string, owner Owner) (Attempt, error) {
+ 				if s.covered(ticket.Owner.Slug) {
+ 					continue
+ 				}
++				if front && !ticket.Front {
++					break
++				}
+ 				if !ticket.Owner.SameProcess(owner) {
+-					return s.keepTicket(branch, owner)
++					return s.keepTicket(branch, owner, front)
+ 				}
+ 				break
+ 			}
+@@ -280,8 +301,8 @@ func (s *Store) TryAcquire(branch string, owner Owner) (Attempt, error) {
+ 	return attempt, err
+ }
+ 
+-// keepTicket writes owner's ticket unless it already holds one, so a waiter keeps its place in the queue.
+-func (s *Store) keepTicket(branch string, owner Owner) error {
++// keepTicket writes owner's ticket, at the front when front is set, unless it already holds one, so a waiter keeps its place in the queue.
++func (s *Store) keepTicket(branch string, owner Owner, front bool) error {
+ 	path := s.ticketPath(branch, owner)
+ 	if _, err := os.Stat(path); err == nil {
+ 		return nil
+@@ -289,7 +310,7 @@ func (s *Store) keepTicket(branch string, owner Owner) error {
+ 	if err := os.MkdirAll(s.ticketsDir(branch), 0o755); err != nil {
+ 		return fmt.Errorf("create parent lock ticket directory: %w", err)
+ 	}
+-	if err := writeJSONAtomic(path, Ticket{Owner: owner, QueuedAt: s.now()}); err != nil {
++	if err := writeJSONAtomic(path, Ticket{Owner: owner, QueuedAt: s.now(), Front: front}); err != nil {
+ 		return fmt.Errorf("write parent lock ticket: %w", err)
+ 	}
+ 	return nil
+diff --git a/pattern/PATTERN-daemon-wakeups.md b/pattern/PATTERN-daemon-wakeups.md
+index 93bcf67a..f6af0e8b 100644
+--- a/pattern/PATTERN-daemon-wakeups.md
++++ b/pattern/PATTERN-daemon-wakeups.md
+@@ -10,7 +10,7 @@ An unbounded wait is a loop that lives as long as a run or a session and has no
+ - the resize watch loop's poll mode in `internal/reedengine/watchloop.go`, whose timer starts at a two-second base and backs off to a minute while nothing changes,
+ - dobby's loop in `internal/dobbyengine/loop.go`, which wakes on a file event or its timer, at most one tick a second, and doubles the timer from batten's probe interval to a minute while no run is in flight,
+ - batten's Land row land-lock wait in `internal/battenshed/land.go`, which polls from one second and doubles to thirty seconds,
+-- the parent lock wait in `internal/parentlock/acquire.go`, which polls from one second and doubles to thirty seconds,
++- the parent lock wait in `internal/parentlock/acquire.go`, which polls from one second and doubles to thirty seconds, and on an `internal/fswatch` event on the branch's lock record, still a second after its last attempt began,
+ - the hibernate daemon's trigger wait in `internal/hibernateengine/watch.go`, which polls from one second and doubles to thirty seconds while its reading is unchanged,
+ - the capture wait in `internal/driftengine/wait.go`, which polls the capture lock from one second and doubles to thirty seconds while the lock stays held,
+ - the pause hold in `internal/pauserecord/hold.go`, which polls from one second and doubles to five seconds while the covering entry is unchanged,
