@@ -745,6 +745,27 @@
       "body": "Seen in the Models hub: its prime orch could not make project P1 into a beam, because the orch role it follows never says how.\n\nThe role lists `lym beam create \u003cslug\u003e` in its command list and says a beam is \"a project entry made a beam\", but it holds no procedure, so the agent read a missing worktree as the fault and patched it by hand.\n\n## What went wrong\n\n- P1 was started as an ordinary task run (rows Worktree-Create, Seed-Child, …, Run-Shed) instead of a pawl run (Worktree-Create, Beam-Up), and the agent read only that the worktree was missing.\n- It used `lym fabric add`, which only gave the wrong run a worktree back; a beam never comes of it.\n- When lym refused, it tried `rm` on the directory itself instead of stopping to ask.\n- The way out was `lym batten cancel` on the wrong run, then `lym beam create` from the prime.\n\n## Design\n\nAdd a \"Making a beam\" section to `contracts/orchrole/orch-role.md`:\n\n1. A beam is a board project entry that `lym beam create \u003cslug\u003e` turns into a beam: `lym board upsert` with `\"kind\":\"project\"` first, then `lym beam create \u003cslug\u003e`, run only from the prime or a parent beam, never from a task worktree.\n2. The verb starts a batten run for the project whose Worktree-Create row makes the worktree, unmarked, and whose Seed-Child row seeds the inner pawl run in it; the pawl run's Beam-Up row marks the worktree a beam and starts the beam's own dobby and orch.\n   The orch appears only after Beam-Up, so the operator attaches to a beam later than the create.\n   A task run has the same batten rows but an inner tapestry or darn run, which has no Beam-Up, so it never becomes a beam.\n3. `--anchor \u003cdir\u003e` gives the beam its own anchor; without it the beam inherits its parent's.\n4. `lym beam start \u003cslug\u003e` brings an existing beam back up; it refuses a task pair, and never makes a beam.\n5. A project that already runs as a task run is not a beam: `lym batten status \u003cslug\u003e` shows the rows, and the way forward is `lym batten cancel \u003cslug\u003e` with the operator's word, then `lym beam create`.\n6. Never `lym fabric add`, and never delete a worktree directory by hand, to repair a run; when lym refuses, stop and tell the operator.\n\nFold the weakness behind issue #9 (a batten pass that fails forever when the worktree is gone) in only as a separate finding: its premise in the Models case was the wrong run kind, not the missing worktree.\n",
       "created": "2026-11-02T10:05:28Z",
       "revised": "2026-11-02T10:08:50Z"
+    },
+    {
+      "id": 995,
+      "handle": "R3",
+      "slug": "batching-hook-effect",
+      "title": "Measure the effect of the batching breach hook",
+      "kind": "note",
+      "labels": [
+        "research",
+        "claude",
+        "shuttle",
+        "tools"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "After the batching breach hook lands, compare breach turns and context tokens against the 28-session baseline and tune its thresholds",
+      "body": "## Idea (operator, 2026-11-02)\n\nOnce the batching breach hook (`batching-breach-nudge`) has landed, measure over time whether it cuts the drift it targets, and tune its config thresholds from what is seen.\n\n## Measurement\n\nThe baseline is the 28-session sample behind `batching-breach-nudge`: single-lookup turns that follow another single lookup above 150k context, 128 turns and 34.7M context tokens, and edits spread over consecutive turns, 39 turns and 15M, about a third of the sample's 147M.\nMeasure the same two figures, and the context tokens of every session, over a later sample of sessions with the hook on, with the transcript tooling under `tools/` (`tokencount`) extended where it lacks the breach counts.\nCompare the two samples by recipe and role, since a darn writer and a plan writer drift differently.\nAlso read how often the hook fired and how often the next message after a firing batched, from the hook's own log, and how many firings were on a lookup that had to be sequential.\n\n## Bounds\n\nNo new agent run is made: the work reads the transcripts and hook logs of sessions that already ran.\nThe later sample is taken at least two weeks after the hook lands, with the hook's thresholds unchanged over that window.\nIt runs as darn with profile `docs` in its own worktree, so the report lands as a commit, and its report names any threshold change it recommends as a note of its own.\n\n## Timing\n\nNot before `batching-breach-nudge` has landed and the later sample exists; it waits on that landing through `depends_on` once promoted.\n",
+      "created": "2026-11-02T11:28:09Z",
+      "revised": "2026-11-02T11:28:09Z",
+      "project": "turn-savings"
     }
   ],
   "prime_owner": "osl-1046",

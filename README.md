@@ -1,12 +1,12 @@
 # Board
 
-Rendered 2026-11-02 11:23 UTC; every age below is as of then.
+Rendered 2026-11-02 11:28 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## [P1 Fewer agent turns, fewer tokens](project-turn-savings.md) (4)
+## [P1 Fewer agent turns, fewer tokens](project-turn-savings.md) (5)
 
 `turn-savings` · Age 17h · Owner `osl-1046`
 
@@ -30,16 +30,17 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Notes (3)
+### Notes (4)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-#### Research (2)
+#### Research (3)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R1 |  | **Measure the effect of the agent-turns project**<br>• Turns, calls per turn and cost before and after P2 agent-turns, for darn writers, Webster forks and review roles | [`agent-turns-effect`](design-agent-turns-effect.md) | 21h<br>16h | tools |
 | R2 |  | **Plan and Discussion writers explore through parallel Sonnet agents that return only what is relevant**<br>• Plan-Write and Discussion-Write start parallel cold-start explore agents that return a list of relevant files and facts; the writer reads only those and writes; encouraged, not commanded; bench guidance against none | [`planner-fork-lookups`](design-planner-fork-lookups.md) | 17h<br>15h | loom |
+| R3 |  | **Measure the effect of the batching breach hook**<br>• After the batching breach hook lands, compare breach turns and context tokens against the 28-session baseline and tune its thresholds | [`batching-hook-effect`](design-batching-hook-effect.md) | 0m<br>0m | claude, shuttle, tools |
 
 #### Enhancements (1)
 
@@ -61,8 +62,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Reed code button reports a wrong anchor path from inside the anchor directory** | [`reed-code-wrong-anchor`](design-reed-code-wrong-anchor.md) | darn | Darn-Write | osl-1046 | 1h<br>1m | reed |
-| T3 | **A beam's reed session shows pawl running with no orch and no beam overview** | [`beam-attach-no-orch`](design-beam-attach-no-orch.md) | darn | Darn-Write | osl-1046 | 1h<br>1m | reed, orch, pawl, workspaces |
+| T2 | **Reed code button reports a wrong anchor path from inside the anchor directory** | [`reed-code-wrong-anchor`](design-reed-code-wrong-anchor.md) | darn | Darn-Write | osl-1046 | 1h<br>6m | reed |
+| T3 | **A beam's reed session shows pawl running with no orch and no beam overview** | [`beam-attach-no-orch`](design-beam-attach-no-orch.md) | darn | Darn-Write | osl-1046 | 1h<br>6m | reed, orch, pawl, workspaces |
 
 #### Ready (0)
 
