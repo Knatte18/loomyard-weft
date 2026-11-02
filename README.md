@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-02 14:50 UTC; every age below is as of then.
+Rendered 2026-11-02 15:02 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -56,9 +56,9 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **heddle renders claude-file to the worktree root, not to the worktree's anchor** | [`heddle-render-ignores-anchor`](design-heddle-render-ignores-anchor.md) | darn · light | Finalize | osl-1046 | 2h<br>2h | heddle, fabric, cwd |
-| T3 | **Let tmuxkit start under /dev/shm with a ten-digit uid, then measure fabricengine tier1 there**<br>• Fix checkSocketPath so TMPDIR=/dev/shm works for a ten-digit uid (109 bytes against 107), then run the paired fabricengine tier1 measurement the shm bench could not | [`tmuxkit-short-socket-path`](design-tmuxkit-short-socket-path.md) | darn · light | Code-Burler-Fix | osl-1046 | 1h<br>1h | testkit, cwd, gate, fabric |
-| T4 | **fabricengine tier1 hits the 10m go test timeout under load**<br>• internal/fabricengine tier1 panics with test timed out after 10m when the machine load is about 30 | [`fabricengine-tier1-timeout-load`](design-fabricengine-tier1-timeout-load.md) | darn · light | Darn-Write | osl-1046 | 40m<br>11m | gate, fabric |
+| T2 | **heddle renders claude-file to the worktree root, not to the worktree's anchor** | [`heddle-render-ignores-anchor`](design-heddle-render-ignores-anchor.md) | darn · light | Finalize | osl-1046 | 3h<br>2h | heddle, fabric, cwd |
+| T3 | **Let tmuxkit start under /dev/shm with a ten-digit uid, then measure fabricengine tier1 there**<br>• Fix checkSocketPath so TMPDIR=/dev/shm works for a ten-digit uid (109 bytes against 107), then run the paired fabricengine tier1 measurement the shm bench could not | [`tmuxkit-short-socket-path`](design-tmuxkit-short-socket-path.md) | darn · light | Code-Bouncer | osl-1046 | 2h<br>1h | testkit, cwd, gate, fabric |
+| T4 | **fabricengine tier1 hits the 10m go test timeout under load**<br>• internal/fabricengine tier1 panics with test timed out after 10m when the machine load is about 30 | [`fabricengine-tier1-timeout-load`](design-fabricengine-tier1-timeout-load.md) | darn · light | Darn-Write | osl-1046 | 51m<br>22m | gate, fabric |
 
 #### Ready (0)
 
@@ -83,14 +83,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 10d<br>1h | loom, stencil |
+| R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 10d<br>2h | loom, stencil |
 
 #### Bugs (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B2 |  | **Beam orch cannot set a board entry's profile: refused as a task session** | [`beam-orch-cannot-set-profile`](design-beam-orch-cannot-set-profile.md) | 2h<br>2h | board, orch, workspaces |
-| B3 |  | **gitexec TestRun_RemoteBounds fails under machine load**<br>• The 200 ms stall bound of the never-answering remote test kills git before its ext script writes its count file when the machine is loaded | [`gitexec-remote-bounds-load-flaky`](design-gitexec-remote-bounds-load-flaky.md) | 40m<br>40m | git, gate |
+| B2 |  | **Beam orch cannot set a board entry's profile: refused as a task session** | [`beam-orch-cannot-set-profile`](design-beam-orch-cannot-set-profile.md) | 3h<br>3h | board, orch, workspaces |
+| B3 |  | **gitexec TestRun_RemoteBounds fails under machine load**<br>• The 200 ms stall bound of the never-answering remote test kills git before its ext script writes its count file when the machine is loaded | [`gitexec-remote-bounds-load-flaky`](design-gitexec-remote-bounds-load-flaky.md) | 51m<br>51m | git, gate |
 
 #### Enhancements (14)
 
@@ -109,7 +109,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E12 |  | **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | 1d<br>1d | fabric |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 2w<br>6d | fabric, batten |
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 10d<br>5d | burler, claude |
-| E24 |  | **A status-bar button asks for a value, so an agent opened from it gets a name**<br>• Button entries take ask, filling {answer}; the agent button asks for the strand name, and term becomes terminal | [`button-ask-name`](design-button-ask-name.md) | 23h<br>23h | reed, config |
+| E24 |  | **A status-bar button asks for a value, so an agent opened from it gets a name**<br>• Button entries take ask, filling {answer}; the agent button asks for the strand name, and term becomes terminal | [`button-ask-name`](design-button-ask-name.md) | 1d<br>1d | reed, config |
 
 #### Features (15)
 
@@ -127,6 +127,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F10 |  | **The arbiter settles review escalations and records their decisions, so they never reach the orch**<br>• Decision escalations become eligible for the arbiter, and the arbiter may record decisions and accept or continue a review | [`arbiter-settles-escalations`](design-arbiter-settles-escalations.md) | 1d<br>1d | burler, arbiter, dobby, orch |
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 4w<br>20h | board, ide, orch |
 | F12 |  | **Two Claude accounts, each worktree on one of them by a configured weight**<br>• A claude config lists accounts with a config directory and a weight; a worktree picks one when its first session starts, so account A can carry twice the load of B | [`claude-account-weights`](design-claude-account-weights.md) | 2h<br>2h | claude, shuttle, config |
-| F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 3w<br>19h | webster |
+| F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 3w<br>20h | webster |
 | F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 10d<br>1d | loom, board, batten, workspaces |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>6h | burler, shed, orch, quarry, report |
