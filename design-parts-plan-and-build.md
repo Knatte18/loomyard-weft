@@ -14,6 +14,12 @@ The plan-split writer (`Parts-Write` cuts the scope into parts with contracts, p
 
 ## Idea (operator, 2026-11-02)
 
+Whatever is built here sits beside today's tapestry, as a new recipe or a new plan format a task chooses, and leaves today's Plan-Write and Webster unchanged: what runs today works well.
+It is benched against today's course on the same inputs before it is used for real work.
+
+- The same question can be asked of today's course: how coarse a plan Sonnet can still build from.
+  A coarser plan format, with larger cards that each state the boundary they keep, moves the code reading and the choice of code locations from the Opus planner to the Sonnet implementer, which is what a part agent does.
+
 In the long run the parts are not joined into one plan: each part agent both plans and implements its own part, which is where time and tokens may be saved.
 
 - `Parts-Write` cuts the scope into parts with contracts, as today; then each part agent plans its part and builds it, reading only its own part and the contracts it depends on, so its context stays small; parts with no dependency between them run at the same time.
