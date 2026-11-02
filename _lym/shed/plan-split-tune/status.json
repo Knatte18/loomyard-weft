@@ -1,12 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -35,6 +34,52 @@
       "output": "",
       "at": "2026-11-02T18:34:07Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/plan-split-tune/_lym/landing/summary.md",
+      "at": "2026-11-02T18:54:08Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-02T18:48:18.0460266Z",
+          "end": "2026-11-02T18:48:18.058568159Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-02T18:48:41.965915571Z",
+          "end": "2026-11-02T18:48:41.973652834Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-02T18:48:18.143966411Z",
+          "end": "2026-11-02T18:48:18.312400434Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-02T18:48:18.855401232Z",
+          "end": "2026-11-02T18:48:41.929980183Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-02T18:48:42.066246826Z",
+          "end": "2026-11-02T18:53:32.646700482Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-02T18:53:32.71404317Z",
+          "end": "2026-11-02T18:53:32.714249446Z"
+        }
+      ],
+      "by": "shed"
     }
   ],
   "product": {
