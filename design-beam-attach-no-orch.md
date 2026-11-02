@@ -34,3 +34,9 @@ Settling observation: attach to a live beam session mid-run and read `lym reed l
 
 1. Give `loom-status` and the `runs` strand one shared rule for the overview slot in a beam's session: the `runs` strand takes it and `loom-status` goes elsewhere, or `ensureRunsStrand` replaces a `loom-status` holder.
 2. Beam-Up surfaces the warnings in `BeamUp`'s report, a refused overview add included, instead of dropping them.
+
+## Run instructions
+
+The cause is unconfirmed, so the writer first confirms from the code whether the pawl run runs `lym loom start` in the beam's own session, and so whether candidate 2 can happen.
+Fix 2 holds whichever candidate is confirmed, since it surfaces what Beam-Up drops today; fix 1 follows only if candidate 2 is confirmed.
+When it cannot confirm candidate 2, it does fix 2 alone and reports that fix 1 is unproven.

@@ -34,3 +34,8 @@ Settling observation: the click logs `reed: running a status-bar button` with `d
 
 At click time do not trust the stored `spec.Dir`: run the button's command from the anchor path read afresh through `lymcwd.NamedWorktree(hub, name).AnchorPath()`, or treat a `spec.Dir` that fails the anchor check as stale and say to reattach with `lym reed attach`.
 Add a test that sets the anchor marker after the render and then clicks.
+
+## Run instructions
+
+The cause is unconfirmed, so the writer first confirms it from the code, for example by a test that sets the anchor marker after the render and then clicks, and writes the fix for the cause it confirms.
+When it cannot confirm either candidate, it stops and reports that rather than guessing a fix.
