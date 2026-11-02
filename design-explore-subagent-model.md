@@ -1,6 +1,6 @@
 # Discussion writers hand lookups to Sonnet subagents, and the subagent model is config
 
-`explore-subagent-model` · Task · enhancement, stencil, loom, darn, config · running · Code-Bouncer
+`explore-subagent-model` · Task · enhancement, stencil, loom, darn, config · running · Code-Burler-Review
 
 ## Seen (orch, 2026-11-01)
 
