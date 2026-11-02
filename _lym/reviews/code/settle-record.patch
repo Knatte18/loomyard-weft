@@ -1,0 +1,151 @@
+diff --git a/contracts/stencils/sampler/sampler-template-agent.md b/contracts/stencils/sampler/sampler-template-agent.md
+index 25891281..1497badd 100644
+--- a/contracts/stencils/sampler/sampler-template-agent.md
++++ b/contracts/stencils/sampler/sampler-template-agent.md
+@@ -1,10 +1,11 @@
+ <!-- This is the sampler agent's entire instruction set. It is shipped as an embedded default in the
+      top-level stencils package (stencils/stencils.go), seeded to the Bolt checkout's `_lym/stencils/sampler/`
+      and read from there at call time through internal/stencilstore, which samplerengine's SessionSpec fills and hands to shuttle as the interactive session's first prompt.
+-     Every marker below is a top-level {{.X}} substitution and stencil.Fill requires every marker non-empty:
++     Every marker below is a top-level {{.X}} substitution and stencil.FillOptional requires every marker but pattern_directive non-empty:
+      slug, task_worktree, decision_record_path,
+      parent_directive (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective).
+-     The prompt carries paths only, never file content.
++     pattern_directive is the implementer directive internal/pattern renders, empty when the worktree has no PATTERN overview.
++     The prompt carries paths only, never file content, bar the PATTERN overview inside pattern_directive.
+      There are no {{if}}/{{range}} conditionals anywhere in this file. -->
+ 
+ # Sampler — work out a change with the operator
+@@ -16,6 +17,8 @@ You are the sampler agent for task `{{.slug}}`, working in the task branch's own
+ The operator works with you in this pane.
+ You make the result together with the operator; you never write a plan or a decision record of your own.
+ 
++{{.pattern_directive}}
++
+ ## Start
+ 
+ Read the decision record at `{{.decision_record_path}}`; it is the task's brief.
+diff --git a/internal/samplerengine/doc.go b/internal/samplerengine/doc.go
+index b5c1fc1d..e2869046 100644
+--- a/internal/samplerengine/doc.go
++++ b/internal/samplerengine/doc.go
+@@ -11,8 +11,8 @@
+ // ReadRecord and UpdateRecord read and write the file under its lock and keep any key they do not declare.
+ //
+ // SessionSpec builds the spec the sampler agent's interactive session starts under, from a SessionInputs the caller tells it, the resolved Config and a model registry.
+-// The session is unawaited, publishes nothing, and opens on the `sampler-template-agent` stencil, which carries paths only: the agent reads the decision record as the task's brief and works with the operator in the task worktree.
+-// It renders the interactive parent directive and the edit directive, and refuses an empty required field by name and an agent model-spec the registry cannot resolve.
++// The session is unawaited, publishes nothing, and opens on the `sampler-template-agent` stencil, which carries paths and, in the PATTERN directive, the PATTERN overview: the agent reads the decision record as the task's brief and works with the operator in the task worktree.
++// It renders the interactive parent directive, the edit directive and, from the task worktree's PATTERN overview, the implementer PATTERN directive, because the agent writes and commits code; it refuses an empty required field by name and an agent model-spec the registry cannot resolve.
+ //
+ // The package is told every path it reads and imports no resolver.
+ package samplerengine
+diff --git a/internal/samplerengine/spec.go b/internal/samplerengine/spec.go
+index 3c5b0623..8369b977 100644
+--- a/internal/samplerengine/spec.go
++++ b/internal/samplerengine/spec.go
+@@ -8,6 +8,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/editdirective"
+ 	"github.com/Knatte18/loomyard/internal/modelspec"
+ 	"github.com/Knatte18/loomyard/internal/parentdirective"
++	"github.com/Knatte18/loomyard/internal/pattern"
+ 	"github.com/Knatte18/loomyard/internal/segmentcolor"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/stencil"
+@@ -20,6 +21,9 @@ const Role = "sampler"
+ // stencilName is the registered name of the sampler agent's opening prompt.
+ const stencilName = "sampler-template-agent"
+ 
++// patternDirectiveMarker is the stencil's one optional marker, filled with the PATTERN directive and left empty when the worktree has no PATTERN overview.
++const patternDirectiveMarker = "pattern_directive"
++
+ // skills are the skills the sampler session loads before its prompt: it talks with the operator and writes code and tests.
+ var skills = []string{"scribe:prose", "scribe:conversation", "scribe:code-quality", "scribe:testing"}
+ 
+@@ -39,7 +43,7 @@ type SessionInputs struct {
+ 
+ // SessionSpec builds the spec the sampler agent's interactive session starts under.
+ // It refuses an empty StencilsDir, Slug, WorktreeRoot or DecisionRecordPath by name, and an agent model-spec that does not resolve against reg.
+-// The prompt carries paths only, never file content.
++// The prompt carries paths only, never file content, bar the PATTERN overview the implementer directive renders from WorktreeRoot, since the agent writes and commits code.
+ func SessionSpec(in SessionInputs, cfg Config, reg modelspec.Registry) (shuttleengine.Spec, error) {
+ 	required := []struct{ field, value string }{
+ 		{"StencilsDir", in.StencilsDir},
+@@ -74,13 +78,18 @@ func SessionSpec(in SessionInputs, cfg Config, reg modelspec.Registry) (shuttlee
+ 	if err != nil {
+ 		return shuttleengine.Spec{}, fmt.Errorf("sampler: SessionSpec: %w", err)
+ 	}
+-	prompt, err := stencil.Fill(template, map[string]string{
++	patternDirective, err := pattern.Directive(in.WorktreeRoot, in.StencilsDir, pattern.RoleImplementer, nil)
++	if err != nil {
++		return shuttleengine.Spec{}, fmt.Errorf("sampler: SessionSpec: %w", err)
++	}
++	prompt, err := stencil.FillOptional(template, map[string]string{
+ 		"slug":                     in.Slug,
+ 		"task_worktree":            in.WorktreeRoot,
+ 		"decision_record_path":     in.DecisionRecordPath,
+ 		parentdirective.MarkerName: parentDirective,
+ 		editdirective.MarkerName:   editDirective,
+-	})
++		patternDirectiveMarker:     patternDirective,
++	}, []string{patternDirectiveMarker})
+ 	if err != nil {
+ 		return shuttleengine.Spec{}, fmt.Errorf("sampler: SessionSpec: fill the sampler prompt: %w", err)
+ 	}
+diff --git a/internal/samplerengine/spec_test.go b/internal/samplerengine/spec_test.go
+index 74c9e902..6ae5d242 100644
+--- a/internal/samplerengine/spec_test.go
++++ b/internal/samplerengine/spec_test.go
+@@ -3,18 +3,20 @@
+ package samplerengine
+ 
+ import (
++	"os"
+ 	"slices"
+ 	"strings"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/modelspec"
+ 	"github.com/Knatte18/loomyard/internal/parentdirective"
++	"github.com/Knatte18/loomyard/internal/pattern"
+ 	"github.com/Knatte18/loomyard/internal/segmentcolor"
+ 	"github.com/Knatte18/loomyard/internal/testkit/stencilkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// TestSessionSpec covers the spec a valid call builds, the required inputs it refuses by name, and an agent the registry cannot resolve.
++// TestSessionSpec covers the spec a valid call builds, with and without a PATTERN overview in the worktree, the required inputs it refuses by name, and an agent the registry cannot resolve.
+ func TestSessionSpec(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -56,6 +58,30 @@ func TestSessionSpec(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("a worktree with a PATTERN overview carries the implementer directive", func(t *testing.T) {
++		t.Parallel()
++		in := valid
++		in.WorktreeRoot = t.TempDir()
++		const overview = "# PATTERN\n\n- `PATTERN-example` — an entry the sampler agent must follow.\n"
++		if err := os.WriteFile(pattern.File(in.WorktreeRoot), []byte(overview), 0o644); err != nil {
++			t.Fatal(err)
++		}
++		spec, err := SessionSpec(in, cfg, registry)
++		if err != nil {
++			t.Fatalf("SessionSpec() = _, %v; want nil error", err)
++		}
++		directive, err := pattern.Directive(in.WorktreeRoot, stencilsDir, pattern.RoleImplementer, nil)
++		if err != nil {
++			t.Fatalf("pattern.Directive() = _, %v; want nil error", err)
++		}
++		if !strings.Contains(directive, "PATTERN-example") {
++			t.Fatalf("pattern.Directive() = %q; want the overview's entry", directive)
++		}
++		if !strings.Contains(spec.Prompt, directive) {
++			t.Errorf("SessionSpec() prompt lacks the implementer PATTERN directive %q", directive)
++		}
++	})
++
+ 	refusals := []struct {
+ 		name    string
+ 		mutate  func(*SessionInputs, *Config)
