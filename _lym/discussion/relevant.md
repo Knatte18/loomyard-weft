@@ -1,0 +1,25 @@
+# Relevant files
+
+- `internal/websterengine/coldfixer.go` `awaitColdFixer`, `coldFixerStrand` — the shared cold-fixer wait that moves into the new package
+- `internal/websterengine/verifyfixer.go` `FixVerifySpawnOrAttach`, `FixVerifyAwait`, `RecordVerifyFixerTerminal` — the spawn-or-attach the shared core generalises
+- `internal/webstercli/fixverify.go` `fixVerifyCmd`, `persistFixVerifyTerminal` — the fix-verify verb that becomes a caller of the shared core
+- `contracts/stencils/webster/webster-prefix-verify-fix-cold.md` — the cold prompt frame that becomes the shared one
+- `contracts/stencils/webster/webster-body-verify-fix.md` — the webster caller's body, shared with the fork prefix
+- `internal/websterengine/verifygatereport.go` `verifyGateReprompt`, `verifyGateWayForward` — how Merriam's verify gate routes to the cold fixer today
+- `internal/shuttleengine/gate.go` `GateEntry`, `GateResult`, `GateSpec` — the gate contract the row wrap returns through
+- `internal/shuttleengine/wait.go` `evaluateGate` — re-evaluation runs every entry from the first, which rules out a pending hold
+- `internal/shedrecipe/entries_gate.go` `resolveRowGateSpec`, `resolveGateEntry`, `resolvePlainGateClosure` — where a gate element is read and where the fixer key joins it
+- `internal/shedrecipe/entries_darnwrite.go` `darnWriteEntry` — Darn-Write's gate and its own re-prompt line
+- `internal/loomshed/darnwrite.go` `DarnGateReprompt`, `darnWrite.Call` — Darn-Write's producer around its gated session
+- `internal/websterengine/cardgate.go` `cardGateCommand`, `renderCardGates` — the card gate is the `card` gate key's agent call
+- `internal/gatecli/detachrun.go` — the detached runner that hosts an agent's long gate call and would host the card fixer
+- `internal/gatecli/detachfront.go` `detachKeyDir`, `joinable` — the detach key and join rule the card fixer's own call and the caller's re-calls meet
+- `internal/gatecli/cardverify.go` — card-verify lines, out of scope
+- `internal/gateslot/template.yaml` — the gate keys' template, where the card key's fixer field goes
+- `internal/darnengine/template.yaml` — darn's keys, where gate_fixer goes
+- `internal/loomengine/tapestry.yaml` — tapestry's keys, where plan_gate_fixer goes
+- `internal/loomengine/template.yaml` — loom's keys, where discussion_gate_fixer goes
+- `contracts/recipes/darn-recipe.yaml` — Darn-Write's gates list
+- `contracts/recipes/tapestry-recipe.yaml` — Discussion-Write's and Plan-Write's gates lists
+- `contracts/stencils/loom/loom-template-discussion.md` — the Discussion writer's self-check and lens review order
+- `internal/configengine/doc.go` — template map entries merge key by key with a hub's
