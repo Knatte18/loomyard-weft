@@ -1,0 +1,892 @@
+diff --git a/contracts/stencils/drift/drift-template-verify.md b/contracts/stencils/drift/drift-template-verify.md
+index ce09bbf2..27c0e4a3 100644
+--- a/contracts/stencils/drift/drift-template-verify.md
++++ b/contracts/stencils/drift/drift-template-verify.md
+@@ -3,14 +3,15 @@
+      and read from there at call time by internal/seatengine, which fills it from the lead's value map that driftengine's VerifyTable builds, then hands it to
+      shuttle as the agent's whole prompt.
+      Every marker below is a top-level substitution;
+-     the engine fills the parent and edit directives, and VerifyTable fills the rest.
++     the engine fills the parent and edit directives, and VerifyTable fills the rest,
++     mode_rules and judging_rules with the autonomous or the operator text by drift.yaml's verify_interactive.
+      pattern_directive is the only optional marker.
+      There are no conditionals anywhere in this file. -->
+ 
+ # Drift verify — judge, accept and fix the drift of this task
+ 
+-You are the drift verify agent: one autonomous session that judges the drift between the task's code and the baseline captured on the task's branch point, accepts the drift that is intended and fixes the rest.
+-No operator is present, so make best-judgment calls and never block on a dialog.
++You are the drift verify agent: one session that judges the drift between the task's code and the baseline captured on the task's branch point, accepts the drift that is intended and fixes the rest.
++{{.mode_rules}}
+ 
+ {{.parent_directive}}
+ {{.edit_directive}}
+@@ -29,8 +30,7 @@ Judge each drifted test against the task and the baseline report's expectation.
+ Drift the task intends is acceptable; drift it does not intend is a defect of the task's code.
+ Drift traced to a commit merged from the parent branch after the baseline's commit is acceptable too, and the report names that commit.
+ 
+-Accept a drifted test with `lym drift accept <test> --reason <text>`, giving the reason the drift is intended.
+-The run's parent can withdraw an acceptance; a withdrawn test is refused to you, so fix its drift or report it in the report.
++{{.judging_rules}}
+ 
+ ## Step 3 — Fix the rest
+ 
+diff --git a/contracts/stencils/markers_test.go b/contracts/stencils/markers_test.go
+index d166b91a..22c62000 100644
+--- a/contracts/stencils/markers_test.go
++++ b/contracts/stencils/markers_test.go
+@@ -53,7 +53,7 @@ func TestStencils_TopLevelMarkers(t *testing.T) {
+ 		{"twill-writer-fork", TwillWriterFork, []string{"disposition_place", "explore_step", "files_dir", "format_step", "input_record", "last_file", "reviewed_files", "self_check_command", "self_check_step"}},
+ 		{"twill-relaunch", TwillRelaunch, []string{"disposition_place", "format_step", "relaunch_files", "self_check_command", "self_check_step"}},
+ 		{"drift-template-baseline", DriftTemplateBaseline, []string{"baseline_path", "edit_directive", "parent_directive", "scope_note", "subject_reading"}},
+-		{"drift-template-verify", DriftTemplateVerify, []string{"baseline_head", "baseline_path", "compare_log", "edit_directive", "max_runs", "parent_directive", "pattern_directive", "report_path", "scope_path", "subject_reading"}},
++		{"drift-template-verify", DriftTemplateVerify, []string{"baseline_head", "baseline_path", "compare_log", "edit_directive", "judging_rules", "max_runs", "mode_rules", "parent_directive", "pattern_directive", "report_path", "scope_path", "subject_reading"}},
+ 		{"loom-template-discussion-chair", LoomTemplateDiscussionChair, nil},
+ 		{"loom-template-discussion-advisor", LoomTemplateDiscussionAdvisor, []string{"decision_record_path", "edit_directive", "output_files", "parent_directive", "pattern_directive", "slug", "support_log_path"}},
+ 		{"webster-body-verify-fix", WebsterBodyVerifyFix, []string{"fix_gate", "outcome_path", "plan_dir", "report_path", "summary_path", "worktree_root"}},
+diff --git a/contracts/stencils/parentdirective_test.go b/contracts/stencils/parentdirective_test.go
+index 7ef9b788..afe1b4f2 100644
+--- a/contracts/stencils/parentdirective_test.go
++++ b/contracts/stencils/parentdirective_test.go
+@@ -2,7 +2,7 @@
+ // renders the parent directive, and no stencil outside the orch family tells an agent to ask the
+ // operator in its pane.
+ // It also pins the entry's edit-directive clause: every opening stencil renders the edit directive, and no other stencil restates the rule.
+-// The scans read stencil text only; the discussion role's interactive questions come from the
++// The scans read stencil text only; an interactive role's questions, the Discussion chair's and the Drift-Verify seat's under verify_interactive, come from the
+ // `{{.mode_rules}}` marker, whose text is Go, never from a stencil.
+ 
+ package stencils
+diff --git a/internal/configreg/configreg_test.go b/internal/configreg/configreg_test.go
+index 71a6e42b..d11a8127 100644
+--- a/internal/configreg/configreg_test.go
++++ b/internal/configreg/configreg_test.go
+@@ -77,7 +77,7 @@ func TestModules_EveryTemplateKeyClassified(t *testing.T) {
+ 	t.Parallel()
+ 	wantLocalKeys := map[string][]string{
+ 		"darn":    {"verify_attempts", "writer", "writer_timeout_min"},
+-		"drift":   {"baseline_model", "enabled", "verify_max_runs", "verify_model"},
++		"drift":   {"baseline_model", "enabled", "verify_interactive", "verify_max_runs", "verify_model"},
+ 		"landing": {"conflict", "conflict_timeout_min", "describe", "describe_timeout_min", "fixer", "fixer_timeout_min", "pr_reviewer"},
+ 		"sampler": {"agent", "code_review"},
+ 	}
+diff --git a/internal/driftcli/capture_integration_test.go b/internal/driftcli/capture_integration_test.go
+index ceae9eab..388d3405 100644
+--- a/internal/driftcli/capture_integration_test.go
++++ b/internal/driftcli/capture_integration_test.go
+@@ -218,7 +218,7 @@ func TestCapture_OutlivesCaller(t *testing.T) {
+ 		}
+ 
+ 		writeDrift("true {baseline_dir}")
+-		if err := driftengine.ResetRuns(paths, "head"); err != nil {
++		if err := driftengine.ResetRuns(paths, "head", false); err != nil {
+ 			t.Fatal(err)
+ 		}
+ 		for range 2 {
+diff --git a/internal/driftcli/cli.go b/internal/driftcli/cli.go
+index 00ae657b..b5d31783 100644
+--- a/internal/driftcli/cli.go
++++ b/internal/driftcli/cli.go
+@@ -116,7 +116,10 @@ compare skips the test from then on. The Drift-Verify agent accepts while its
+ session runs; under scope full its acceptances stay unruled until the run's
+ parent rules at a decision halt. The parent uses accept at a halt, where it is
+ the only way to re-accept a test it withdrew. A halt that is no decision halt
+-refuses the parent's accept of a withdrawn test or under scope full.
++refuses the parent's accept of a withdrawn test or under scope full. With
++drift.yaml's verify_interactive set, the agent's session has the operator in
++its pane, and each acceptance it records is the operator's decision: ruled
++under scope full, and admitted for a withdrawn test.
+ 
+ Example:
+   lym drift accept parser_roundtrip --reason "the format changed on purpose"`,
+@@ -148,8 +151,9 @@ func withdrawCmd() *cobra.Command {
+ 		Long: `withdraw moves an accepted test back to the compare, so its drift is judged
+ again. The run's parent uses it at a Drift-Verify halt to overrule an
+ acceptance; the agent then fixes the drift or reports it in verify-report.md,
+-and only the parent re-accepts the test at a decision halt. A test that is not
+-accepted is refused; lym drift status lists the accepted tests.
++and only the parent at a decision halt, or the operator in a verify_interactive
++session, re-accepts the test. A test that is not accepted is refused; lym drift
++status lists the accepted tests.
+ 
+ Example:
+   lym drift withdraw parser_roundtrip`,
+diff --git a/internal/driftcli/wiring.go b/internal/driftcli/wiring.go
+index 3275d3a3..eac29304 100644
+--- a/internal/driftcli/wiring.go
++++ b/internal/driftcli/wiring.go
+@@ -49,7 +49,7 @@ func (w *worktree) config() (driftengine.Config, error) {
+ 	return driftengine.LoadConfig(fabricengine.ConfigDirs(w.location))
+ }
+ 
+-// verbStatus reads the run status under its lock, the capture lock and the agent-session mark.
++// verbStatus reads the run status under its lock, the capture lock, the agent-session mark and whether the session is the operator's.
+ func (w *worktree) verbStatus() (driftengine.VerbStatus, error) {
+ 	status, found, err := state.ReadJSON[shedengine.Status](shedrun.StatusFile(w.location, shedrun.SelfRunID), shedrun.StatusLock(w.location, shedrun.SelfRunID))
+ 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+@@ -66,10 +66,15 @@ func (w *worktree) verbStatus() (driftengine.VerbStatus, error) {
+ 	if err != nil {
+ 		return driftengine.VerbStatus{}, err
+ 	}
++	operatorSession, err := driftengine.OperatorSessionOpen(w.paths)
++	if err != nil {
++		return driftengine.VerbStatus{}, err
++	}
+ 	return driftengine.VerbStatus{
+-		Status:       status,
+-		CaptureHeld:  captureHeld,
+-		AgentSession: agentSession,
++		Status:          status,
++		CaptureHeld:     captureHeld,
++		AgentSession:    agentSession,
++		OperatorSession: operatorSession,
+ 	}, nil
+ }
+ 
+diff --git a/internal/driftcli/wiring_test.go b/internal/driftcli/wiring_test.go
+new file mode 100644
+index 00000000..3df84e19
+--- /dev/null
++++ b/internal/driftcli/wiring_test.go
+@@ -0,0 +1,62 @@
++// wiring_test.go checks that verbStatus carries the run counter's operator mark into the status a drift verb is decided on.
++
++package driftcli
++
++import (
++	"os"
++	"path/filepath"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/driftengine"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/state"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestVerbStatus_OperatorSession covers the operator mark of an open agent session reaching VerbStatus, for an operator session and an autonomous one.
++func TestVerbStatus_OperatorSession(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	rows := []struct {
++		name     string
++		operator bool
++	}{
++		{"OperatorSession", true},
++		{"AutonomousSession", false},
++	}
++	for _, tt := range rows {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: ".", Pairs: []string{hubforge.TemplatePairSlug}})
++			loc, err := lymcwd.Resolve(h.PairCodeWorktree(hubforge.TemplatePairSlug))
++			if err != nil {
++				t.Fatal(err)
++			}
++			wt := &worktree{location: loc, paths: driftengine.NewPaths(loc.AnchorPath())}
++
++			lockPath := shedrun.StatusLock(loc, shedrun.SelfRunID)
++			if err := os.MkdirAll(filepath.Dir(lockPath), 0o755); err != nil {
++				t.Fatal(err)
++			}
++			running := shedengine.Status{CurrentProducer: "Drift-Verify", State: shedengine.StateRunning}
++			if err := state.WriteJSON(shedrun.StatusFile(loc, shedrun.SelfRunID), lockPath, running); err != nil {
++				t.Fatal(err)
++			}
++			if err := driftengine.ResetRuns(wt.paths, "head", tt.operator); err != nil {
++				t.Fatal(err)
++			}
++
++			got, err := wt.verbStatus()
++			if err != nil {
++				t.Fatalf("verbStatus() = %v; want nil", err)
++			}
++			if got.OperatorSession != tt.operator || got.AtOperatorSession() != tt.operator {
++				t.Errorf("verbStatus() OperatorSession = %v, AtOperatorSession() = %v; want both %v", got.OperatorSession, got.AtOperatorSession(), tt.operator)
++			}
++		})
++	}
++}
+diff --git a/internal/driftengine/config.go b/internal/driftengine/config.go
+index d81fcca4..61bf519d 100644
+--- a/internal/driftengine/config.go
++++ b/internal/driftengine/config.go
+@@ -61,18 +61,21 @@ type Config struct {
+ 	BaselineModel string
+ 	// VerifyModel is the model-spec of the Drift-Verify agent.
+ 	VerifyModel string
++	// VerifyInteractive makes the Drift-Verify agent a session with the operator in its pane, who decides each acceptance and fix.
++	VerifyInteractive bool
+ 	// VerifyMaxRuns is how many compare or side-capture runs one Drift-Verify agent session may take.
+ 	VerifyMaxRuns int
+ }
+ 
+ // configFile is drift.yaml as it is spelled, before defaults and validation.
+ type configFile struct {
+-	Enabled       bool     `yaml:"enabled"`
+-	Capture       stepFile `yaml:"capture"`
+-	Compare       stepFile `yaml:"compare"`
+-	BaselineModel string   `yaml:"baseline_model"`
+-	VerifyModel   string   `yaml:"verify_model"`
+-	VerifyMaxRuns int      `yaml:"verify_max_runs"`
++	Enabled           bool     `yaml:"enabled"`
++	Capture           stepFile `yaml:"capture"`
++	Compare           stepFile `yaml:"compare"`
++	BaselineModel     string   `yaml:"baseline_model"`
++	VerifyModel       string   `yaml:"verify_model"`
++	VerifyInteractive bool     `yaml:"verify_interactive"`
++	VerifyMaxRuns     int      `yaml:"verify_max_runs"`
+ }
+ 
+ // stepFile is a command step as drift.yaml spells it; TimeoutMin is a pointer so a missing key reads apart from a zero.
+@@ -102,12 +105,13 @@ func ConfigSpec() configengine.Spec {
+ 			stepCompare: yamlengine.ShapeOf(stepFile{}),
+ 		},
+ 		Categories: map[string]configengine.Category{
+-			"enabled":         configengine.CategoryNone,
+-			stepCapture:       configengine.CategoryExecutable,
+-			stepCompare:       configengine.CategoryExecutable,
+-			"baseline_model":  configengine.CategoryNone,
+-			"verify_model":    configengine.CategoryNone,
+-			"verify_max_runs": configengine.CategoryNone,
++			"enabled":            configengine.CategoryNone,
++			stepCapture:          configengine.CategoryExecutable,
++			stepCompare:          configengine.CategoryExecutable,
++			"baseline_model":     configengine.CategoryNone,
++			"verify_model":       configengine.CategoryNone,
++			"verify_interactive": configengine.CategoryNone,
++			"verify_max_runs":    configengine.CategoryNone,
+ 		},
+ 	}
+ }
+@@ -147,12 +151,13 @@ func LoadConfig(dirs configengine.Dirs) (Config, error) {
+ 		}
+ 	}
+ 	return Config{
+-		Enabled:       file.Enabled,
+-		Capture:       capture,
+-		Compare:       compare,
+-		BaselineModel: file.BaselineModel,
+-		VerifyModel:   file.VerifyModel,
+-		VerifyMaxRuns: file.VerifyMaxRuns,
++		Enabled:           file.Enabled,
++		Capture:           capture,
++		Compare:           compare,
++		BaselineModel:     file.BaselineModel,
++		VerifyModel:       file.VerifyModel,
++		VerifyInteractive: file.VerifyInteractive,
++		VerifyMaxRuns:     file.VerifyMaxRuns,
+ 	}, nil
+ }
+ 
+diff --git a/internal/driftengine/config_test.go b/internal/driftengine/config_test.go
+index 3fc457e2..6c9fa2d7 100644
+--- a/internal/driftengine/config_test.go
++++ b/internal/driftengine/config_test.go
+@@ -132,6 +132,11 @@ func TestLoadConfig(t *testing.T) {
+ 			contents: withKey(t, "enabled", "enabled: true"),
+ 			want:     templateConfig(func(c *Config) { c.Enabled = true }),
+ 		},
++		{
++			name: "verify_interactive loads", seed: true,
++			contents: withKey(t, "verify_interactive", "verify_interactive: true"),
++			want:     templateConfig(func(c *Config) { c.VerifyInteractive = true }),
++		},
+ 		{
+ 			name: "a capture without the baseline placeholder", seed: true,
+ 			contents: withKey(t, "capture", "capture: {command: profile, timeout_min: 30}"),
+diff --git a/internal/driftengine/doc.go b/internal/driftengine/doc.go
+index 86152708..aa327165 100644
+--- a/internal/driftengine/doc.go
++++ b/internal/driftengine/doc.go
+@@ -1,7 +1,7 @@
+ // Package driftengine owns regression around a task: the hub-wide `drift` config module, the drift paths, and the records and runs the Drift rows read and write.
+ // Regression is no test tier: it records a profile of the suite's behavior on the task's branch point and compares the task's code against it, and `lym gate test` never runs it.
+ //
+-// `drift.yaml` is a hub-wide config module with these keys: `enabled`, which switches the Drift rows on through their entry gate; `capture` and `compare`, each a command step written whole as `{command, dir, env, timeout_min}`; `baseline_model` and `verify_model`, the model-specs of the two agents; and `verify_max_runs`, the run budget of one Drift-Verify agent session.
++// `drift.yaml` is a hub-wide config module with these keys: `enabled`, which switches the Drift rows on through their entry gate; `capture` and `compare`, each a command step written whole as `{command, dir, env, timeout_min}`; `baseline_model` and `verify_model`, the model-specs of the two agents; `verify_interactive`, which makes the Drift-Verify agent a session with the operator in its pane; and `verify_max_runs`, the run budget of one Drift-Verify agent session.
+ // A declared command holds the placeholder `{baseline_dir}`, the directory the capture writes its profile files to and the compare reads them from, and may hold `{skip_file}`, a file naming one skipped test per line.
+ // `capture` and `compare` are executable keys, so only the template and the hub's board default layer set them, with `lym config drift --set 'capture={command: ..., timeout_min: N}'`.
+ // Once a step is declared, `--set` also changes one of its keys alone, as in `--set capture.env.NAME=1` or `--set compare.timeout_min=10`, and refuses a key a step lacks;
+@@ -16,9 +16,9 @@
+ // The scope record (`scope.json`) holds the recorded scope (`off`, `partial` or `full`) and its skipped tests, when the baseline was awaited or deferred, a waiver, the accepted and withdrawn tests, the unruled tests the last decision halt named and the time of the last gate halt.
+ // The capture record (`capture.json`) holds the state of the latest main capture (`running`, `passed` or `failed`) with its pid, HEAD, times, exit code, reason and log.
+ // CountedCapture decides whether a capture counts as the baseline: a passed record with an `awaited_at` in the scope record.
+-// The run counter (`runs.json`) holds how many compare or side-capture runs the current Drift-Verify agent session took, the commit its attempt started at and whether the agent-session mark is open.
++// The run counter (`runs.json`) holds how many compare or side-capture runs the current Drift-Verify agent session took, the commit its attempt started at, whether the agent-session mark is open and whether the session has the operator in its pane.
+ // TakeRun refuses once the budget is spent, ResetRuns starts a fresh attempt with the whole budget, and CloseAgentSession closes the mark while keeping the count and the attempt's head.
+-// A verb reads the mark with AgentSessionOpen to tell the agent session from the row's own mechanical work.
++// A verb reads the mark with AgentSessionOpen to tell the agent session from the row's own mechanical work, and with OperatorSessionOpen to tell the operator's session from an autonomous one.
+ //
+ // # Capture
+ //
+@@ -48,7 +48,8 @@
+ // A verb run at a row it does not admit refuses naming that row and `lym loom status`, and a refused verb writes nothing.
+ // RecordScope writes the scope record once, at Drift-Baseline, and refuses a skip list outside scope partial and a partial scope without one.
+ // Accept admits the agent session and a caller at a halt; a running status with the mark closed is the row's own work and refuses, and any other state refuses naming `lym loom resume`.
+-// Under scope full the agent's acceptances are unruled and a caller's are ruled; a withdrawn test, and under scope full any test, is accepted by a caller only at a decision halt, and never by the agent session.
++// Under scope full the agent's acceptances are unruled and a caller's are ruled; a withdrawn test, and under scope full any test, is accepted by a caller only at a decision halt, and never by an autonomous agent session.
++// An acceptance in a session with the operator in its pane is the operator's decision: it is ruled under scope full and may accept a withdrawn test again.
+ // Withdraw moves an accepted test to the withdrawn list, and RunCount reads the agent session's run count.
+ // Defer sets awaited_at with deferred while blocked at Drift-Await or at a Drift-Baseline capture halt, and refuses while the capture lock is held.
+ // Waive records a waiver at a blocked Drift-Verify only when no counted capture exists.
+@@ -56,7 +57,9 @@
+ //
+ // # Agents
+ //
+-// The Drift-Baseline and Drift-Verify agents are each one non-interactive lead seat, built by BaselineTable and VerifyTable over the stencils `drift-template-baseline` and `drift-template-verify`, which the seat engine reads at call time and renders with the parent and edit directives.
++// The Drift-Baseline and Drift-Verify agents are each one lead seat, built by BaselineTable and VerifyTable over the stencils `drift-template-baseline` and `drift-template-verify`, which the seat engine reads at call time and renders with the parent and edit directives.
++// The baseline seat is never interactive.
++// The verify seat is interactive under `verify_interactive`, and its stencil's mode and judging text then has it present the drift per test and per quantity, with the baseline agent's expectation, to the operator, and record each acceptance or fix the operator decides.
+ // The baseline seat's only output is `baseline.md` and the verify seat's `verify-report.md`: the scope record is Go-written, and a fresh spawn archives its outputs.
+ // The task's subject is read from the decision record in a tapestry run (SubjectDecisionRecord) and from the board entry in a darn run (SubjectBoardEntry), the record's `Added after Discussion` entries winning in both.
+ // The seats take the `plan` and `review` segment colors, their models from `baseline_model` and `verify_model`, and session timeouts that are package constants, since drift.yaml declares no timeout key.
+@@ -97,7 +100,7 @@
+ // an undeclared compare is a Stuck naming `lym config drift`;
+ // a dirty tracked tree is a Stuck, and a resume from a gate halt runs the told verify entry once over the agent's commits;
+ // then the compare runs, and a pass is Done.
+-// A failing compare resets the run counter at the current HEAD and spawns one agent whose table gates, in order, on a clean tree, on the verify entry, which runs only once the session committed code, and on a final compare that ends the session when drift remains.
++// A failing compare resets the run counter at the current HEAD, recording whether `verify_interactive` puts the operator in the session, and spawns one agent whose table gates, in order, on a clean tree, on the verify entry, which runs only once the session committed code, and on a final compare that ends the session when drift remains.
+ // The agent's end closes the mark; a Done under scope full is checked again for unruled acceptances.
+ //
+ // A Stuck opens with shedadapters.DecisionHaltPrefix, so the stop chain hands it to the parent, under scope full, for the missing counted capture, and under scope partial for a failing final compare while a test is withdrawn.
+diff --git a/internal/driftengine/records.go b/internal/driftengine/records.go
+index 7869ede8..cbdb45d5 100644
+--- a/internal/driftengine/records.go
++++ b/internal/driftengine/records.go
+@@ -29,13 +29,15 @@ const (
+ 	AcceptedByAgent = "agent"
+ 	// AcceptedByCaller marks an acceptance a caller at a halt made.
+ 	AcceptedByCaller = "caller"
++	// AcceptedByOperator marks an acceptance the operator decided in an interactive Drift-Verify session.
++	AcceptedByOperator = "operator"
+ )
+ 
+ // Whether an acceptance under scope full was ruled on by the run's parent.
+ const (
+ 	// RulingUnruled marks an acceptance the Drift-Verify agent session made that the run's parent has not yet ruled on.
+ 	RulingUnruled = "unruled"
+-	// RulingRuled marks an acceptance the run's parent has ruled on or made itself.
++	// RulingRuled marks an acceptance the run's parent has ruled on or made itself, or the operator decided.
+ 	RulingRuled = "ruled"
+ )
+ 
+@@ -55,7 +57,7 @@ type Acceptance struct {
+ 	Test string `json:"test"`
+ 	// Reason is why the drift is intended.
+ 	Reason string `json:"reason"`
+-	// By is AcceptedByAgent or AcceptedByCaller.
++	// By is AcceptedByAgent, AcceptedByOperator or AcceptedByCaller.
+ 	By string `json:"by"`
+ 	// Ruling is RulingUnruled or RulingRuled under scope full, and empty otherwise.
+ 	Ruling string `json:"ruling"`
+@@ -130,6 +132,8 @@ type runsRecord struct {
+ 	Count       int    `json:"count"`
+ 	Head        string `json:"head"`
+ 	SessionOpen bool   `json:"session_open"`
++	// Operator is true for a session spawned interactive, with the operator in its pane.
++	Operator bool `json:"operator"`
+ }
+ 
+ // ErrRunsSpent marks a run refused because the agent session's run budget is spent.
+@@ -226,11 +230,11 @@ func TakeRun(p Paths, max int) (int, error) {
+ 	return taken, nil
+ }
+ 
+-// ResetRuns zeroes the run count, records head as the attempt's start and opens the agent-session mark.
++// ResetRuns zeroes the run count, records head as the attempt's start and opens the agent-session mark, recording whether the session is the operator's.
+ // Drift-Verify calls it at each fresh spawn of its agent.
+-func ResetRuns(p Paths, head string) error {
++func ResetRuns(p Paths, head string, operator bool) error {
+ 	return updateRuns(p, func(runsRecord, bool) (runsRecord, error) {
+-		return runsRecord{Head: head, SessionOpen: true}, nil
++		return runsRecord{Head: head, SessionOpen: true, Operator: operator}, nil
+ 	})
+ }
+ 
+@@ -261,3 +265,9 @@ func AgentSessionOpen(p Paths) (bool, error) {
+ 	rec, _, err := readRuns(p)
+ 	return rec.SessionOpen, err
+ }
++
++// OperatorSessionOpen reports whether the agent-session mark is open on a session spawned with the operator in its pane, and false when no attempt was recorded.
++func OperatorSessionOpen(p Paths) (bool, error) {
++	rec, _, err := readRuns(p)
++	return rec.SessionOpen && rec.Operator, err
++}
+diff --git a/internal/driftengine/records_test.go b/internal/driftengine/records_test.go
+index 6112eb13..d1059e3e 100644
+--- a/internal/driftengine/records_test.go
++++ b/internal/driftengine/records_test.go
+@@ -42,7 +42,7 @@ func TestCountedCapture(t *testing.T) {
+ 	}
+ }
+ 
+-// TestTakeRun covers taking runs up to the budget, the refusal wrapping ErrRunsSpent leaving the count, ResetRuns admitting again, AttemptHead and the agent-session mark.
++// TestTakeRun covers taking runs up to the budget, the refusal wrapping ErrRunsSpent leaving the count, ResetRuns admitting again, AttemptHead, the agent-session mark and the operator's session.
+ func TestTakeRun(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -61,9 +61,12 @@ func TestTakeRun(t *testing.T) {
+ 		t.Fatalf("CloseAgentSession() with no record wrote one")
+ 	}
+ 
+-	if err := ResetRuns(p, "abc"); err != nil {
++	if err := ResetRuns(p, "abc", false); err != nil {
+ 		t.Fatalf("ResetRuns() = %v; want nil", err)
+ 	}
++	if operator, err := OperatorSessionOpen(p); err != nil || operator {
++		t.Errorf("OperatorSessionOpen() after an autonomous ResetRuns = %v, %v; want false", operator, err)
++	}
+ 	for want := 1; want <= 2; want++ {
+ 		if got, err := TakeRun(p, 2); err != nil || got != want {
+ 			t.Fatalf("TakeRun() = %d, %v; want %d, nil", got, err, want)
+@@ -89,9 +92,12 @@ func TestTakeRun(t *testing.T) {
+ 		t.Errorf("TakeRun() after CloseAgentSession = %v; want the count kept, refusing at 3", err)
+ 	}
+ 
+-	if err := ResetRuns(p, "def"); err != nil {
++	if err := ResetRuns(p, "def", true); err != nil {
+ 		t.Fatalf("ResetRuns() = %v; want nil", err)
+ 	}
++	if operator, err := OperatorSessionOpen(p); err != nil || !operator {
++		t.Errorf("OperatorSessionOpen() after an operator ResetRuns = %v, %v; want true", operator, err)
++	}
+ 	if got, err := TakeRun(p, 3); err != nil || got != 1 {
+ 		t.Errorf("TakeRun() after ResetRuns = %d, %v; want 1, nil", got, err)
+ 	}
+@@ -101,4 +107,10 @@ func TestTakeRun(t *testing.T) {
+ 	if open, _ := AgentSessionOpen(p); !open {
+ 		t.Errorf("AgentSessionOpen() after ResetRuns = false; want true")
+ 	}
++	if err := CloseAgentSession(p); err != nil {
++		t.Fatalf("CloseAgentSession() = %v; want nil", err)
++	}
++	if operator, _ := OperatorSessionOpen(p); operator {
++		t.Errorf("OperatorSessionOpen() after CloseAgentSession = true; want false")
++	}
+ }
+diff --git a/internal/driftengine/seats.go b/internal/driftengine/seats.go
+index 812203f3..bc92b12f 100644
+--- a/internal/driftengine/seats.go
++++ b/internal/driftengine/seats.go
+@@ -1,6 +1,6 @@
+ // seats.go — the seat tables of the two drift agents, the baseline agent and the verify agent, and the told inputs they are built from.
+ //
+-// Each agent is one non-interactive lead seat whose one output is its report.
++// Each agent is one lead seat whose one output is its report, interactive for the verify seat when drift.yaml sets verify_interactive.
+ // The builders are pure: they stat nothing they were not told to read, and spawn nothing.
+ 
+ package driftengine
+@@ -46,6 +46,19 @@ var (
+ 	verifySkills   = []string{"scribe:prose", "scribe:code-quality", "scribe:testing"}
+ )
+ 
++// The verify stencil's mode and judging text, autonomous and with the operator in the pane.
++const (
++	autonomousVerifyMode = "No operator is present, so make best-judgment calls and never block on a dialog."
++	operatorVerifyMode   = "The operator is present at your pane and decides each drift: you present it, discuss it and record what the operator decides.\n" +
++		"Ask in plain text in the pane and wait for the operator's typed reply; never call the `AskUserQuestion` tool, whose modal dialog the run cannot drive."
++	autonomousVerifyJudging = "Accept a drifted test with `lym drift accept <test> --reason <text>`, giving the reason the drift is intended.\n" +
++		"The run's parent can withdraw an acceptance; a withdrawn test is refused to you, so fix its drift or report it in the report."
++	operatorVerifyJudging = "Present the drift to the operator one test at a time: for each quantity that drifted, its baseline value, its current value and the size of the deviation, then the baseline report's expectation for the test and your own judgment with its reason.\n" +
++		"Discuss it with the operator, who decides whether the test's drift is accepted or fixed, and go on to the next test only once the operator has decided.\n" +
++		"Record each acceptance the operator decides with `lym drift accept <test> --reason <text>`, giving the operator's reason, and never accept a test the operator has not decided on.\n" +
++		"Each test the operator decides to fix, you fix in Step 3."
++)
++
+ // subjectFields are the told values the task's subject is read from.
+ type subjectFields struct {
+ 	// Subject is SubjectDecisionRecord or SubjectBoardEntry.
+@@ -184,6 +197,7 @@ type VerifyInputs struct {
+ 
+ // VerifyTable builds the seatengine.Table of one Drift-Verify spawn: one lead whose only output is verify-report.md.
+ // An empty required field of in is refused by name, and cfg.VerifyModel is resolved against reg.
++// With cfg.VerifyInteractive the lead is interactive, and its prompt has it present the drift to the operator and record the operator's decisions instead of judging alone.
+ // The agent changes code, so the table also renders the PATTERN implementer directive.
+ // The table carries no gate; the producer sets it.
+ func VerifyTable(in VerifyInputs, cfg Config, reg modelspec.Registry) (seatengine.Table, error) {
+@@ -212,12 +226,19 @@ func VerifyTable(in VerifyInputs, cfg Config, reg modelspec.Registry) (seatengin
+ 	if err != nil {
+ 		return seatengine.Table{}, fmt.Errorf("drift: VerifyTable: %w", err)
+ 	}
++	mode, judging := autonomousVerifyMode, autonomousVerifyJudging
++	if cfg.VerifyInteractive {
++		mode, judging = operatorVerifyMode, operatorVerifyJudging
++	}
+ 
+ 	return seatengine.Table{
+-		RolePrefix: verifyRole,
+-		Segment:    segmentcolor.Review,
+-		Timeout:    verifyTimeout,
++		RolePrefix:  verifyRole,
++		Segment:     segmentcolor.Review,
++		Timeout:     verifyTimeout,
++		Interactive: cfg.VerifyInteractive,
+ 		Values: map[string]string{
++			"mode_rules":        mode,
++			"judging_rules":     judging,
+ 			"subject_reading":   reading,
+ 			"compare_log":       in.CompareLog,
+ 			"scope_path":        in.ScopePath,
+diff --git a/internal/driftengine/seats_test.go b/internal/driftengine/seats_test.go
+index 6cf60700..335e70ff 100644
+--- a/internal/driftengine/seats_test.go
++++ b/internal/driftengine/seats_test.go
+@@ -231,4 +231,41 @@ func TestSeatTables(t *testing.T) {
+ 			}
+ 		}
+ 	})
++
++	t.Run("verify_interactive makes the verify lead the operator's session", func(t *testing.T) {
++		t.Parallel()
++		in := verify(t)
++		operatorCfg := cfg
++		operatorCfg.VerifyInteractive = true
++		rows := []struct {
++			name        string
++			cfg         Config
++			interactive bool
++			want        []string
++			absent      []string
++		}{
++			{"autonomous", cfg, false, []string{autonomousVerifyMode, "giving the reason the drift is intended"}, []string{"Present the drift to the operator"}},
++			{"with the operator", operatorCfg, true, []string{"Present the drift to the operator", "for each quantity that drifted", "the baseline report's expectation", "giving the operator's reason", "`AskUserQuestion`"}, []string{autonomousVerifyMode}},
++		}
++		for _, row := range rows {
++			table, err := VerifyTable(in, row.cfg, seatRegistry(t))
++			if err != nil {
++				t.Fatalf("%s: VerifyTable() = _, %v; want nil error", row.name, err)
++			}
++			if table.Interactive != row.interactive {
++				t.Errorf("%s: table.Interactive = %v; want %v", row.name, table.Interactive, row.interactive)
++			}
++			prompt := seatPrompt(t, in.StencilsDir, in.WorktreeRoot, in.Slug, table)
++			for _, want := range row.want {
++				if !strings.Contains(prompt, want) {
++					t.Errorf("%s: verify prompt lacks %q", row.name, want)
++				}
++			}
++			for _, absent := range row.absent {
++				if strings.Contains(prompt, absent) {
++					t.Errorf("%s: verify prompt holds %q", row.name, absent)
++				}
++			}
++		}
++	})
+ }
+diff --git a/internal/driftengine/template.yaml b/internal/driftengine/template.yaml
+index 389e1150..dc893303 100644
+--- a/internal/driftengine/template.yaml
++++ b/internal/driftengine/template.yaml
+@@ -3,4 +3,5 @@ capture: {}  # the command that records the regression baseline, written whole a
+ compare: {}  # the command that compares the branch against the baseline, written whole as {command, dir, env, timeout_min}; {} declares none; the command must hold {baseline_dir}, may hold {skip_file}, and exits 0 when nothing drifted; write it with lym config drift --set 'compare={command: "...", timeout_min: 30}'; once declared, change one key alone with lym config drift --set compare.timeout_min=45
+ baseline_model: sonnet[medium]  # model-spec for the Drift-Baseline agent, which records the task's regression scope (see contracts/specs/llm-model-spec.md)
+ verify_model: opus[high]  # model-spec for the Drift-Verify agent, which judges, accepts and fixes drift (see contracts/specs/llm-model-spec.md)
++verify_interactive: false  # true runs the Drift-Verify agent as a session with the operator in its pane: it presents the drift per test and per quantity with the baseline agent's expectation, and records each acceptance or fix the operator decides, so an operator must be present; false, the default, runs it autonomously, judging and accepting drift itself
+ verify_max_runs: 8  # how many compare or side-capture runs one Drift-Verify agent session may take before it must report
+diff --git a/internal/driftengine/verbs.go b/internal/driftengine/verbs.go
+index 652c55b8..66a4b35a 100644
+--- a/internal/driftengine/verbs.go
++++ b/internal/driftengine/verbs.go
+@@ -28,6 +28,8 @@ type VerbStatus struct {
+ 	CaptureHeld bool
+ 	// AgentSession is true when the agent-session mark reads open.
+ 	AgentSession bool
++	// OperatorSession is true when the open agent session was spawned with the operator in its pane.
++	OperatorSession bool
+ }
+ 
+ // AtAgentSession reports whether the caller is the Drift-Verify row's live agent session: the status is running at Drift-Verify and the mark is open.
+@@ -35,6 +37,11 @@ func (s VerbStatus) AtAgentSession() bool {
+ 	return s.Status.CurrentProducer == verifyRow && s.Status.State == shedengine.StateRunning && s.AgentSession
+ }
+ 
++// AtOperatorSession reports whether the caller is the Drift-Verify row's live agent session and that session has the operator in its pane.
++func (s VerbStatus) AtOperatorSession() bool {
++	return s.AtAgentSession() && s.OperatorSession
++}
++
+ // AtDecisionHalt reports whether the run is blocked on a Drift-Verify decision halt.
+ func (s VerbStatus) AtDecisionHalt() bool {
+ 	return s.Status.CurrentProducer == verifyRow && s.Status.State == shedengine.StateBlocked && strings.HasPrefix(s.Status.Error, shedadapters.DecisionHaltPrefix)
+@@ -73,13 +80,16 @@ func RecordScope(p Paths, st VerbStatus, scope string, skip []string) error {
+ // Accept records one drifted test as intended, on behalf of the Drift-Verify agent session or of a caller at a halt.
+ // It is admitted only at Drift-Verify, from a running status with the agent-session mark open or a blocked status;
+ // a running status with the mark closed is the row's own work, and any other state is an error or a transient stop that only lym loom resume settles.
+-// A withdrawn test is accepted again only by a caller at a decision halt, and under scope full so is every test a caller accepts.
++// A session with the operator in its pane records the operator's decision, which is ruled under scope full and may accept a withdrawn test again.
++// Otherwise a withdrawn test is accepted again only by a caller at a decision halt, and under scope full so is every test a caller accepts.
+ func Accept(p Paths, st VerbStatus, test, reason string) error {
+ 	if st.Status.CurrentProducer != verifyRow {
+ 		return wrongRow("accept", verifyRow, st)
+ 	}
+ 	by := AcceptedByCaller
+ 	switch {
++	case st.AtOperatorSession():
++		by = AcceptedByOperator
+ 	case st.AtAgentSession():
+ 		by = AcceptedByAgent
+ 	case st.Status.State == shedengine.StateBlocked:
+@@ -104,9 +114,9 @@ func Accept(p Paths, st VerbStatus, test, reason string) error {
+ 
+ 		acceptance := Acceptance{Test: test, Reason: reason, By: by, At: stamp(time.Now())}
+ 		if cur.Scope == ScopeFull {
+-			acceptance.Ruling = RulingUnruled
+-			if by == AcceptedByCaller {
+-				acceptance.Ruling = RulingRuled
++			acceptance.Ruling = RulingRuled
++			if by == AcceptedByAgent {
++				acceptance.Ruling = RulingUnruled
+ 			}
+ 		}
+ 		kept := slices.DeleteFunc(slices.Clone(cur.Accepted), func(existing Acceptance) bool { return existing.Test == test })
+diff --git a/internal/driftengine/verbs_test.go b/internal/driftengine/verbs_test.go
+index a1b22364..122f6d0e 100644
+--- a/internal/driftengine/verbs_test.go
++++ b/internal/driftengine/verbs_test.go
+@@ -120,6 +120,7 @@ func TestAcceptWithdraw(t *testing.T) {
+ 	decisionHalt := shedadapters.DecisionHaltPrefix + "bouncer Drift-Verify: round 2"
+ 	scoped := func(scope string) *ScopeRecord { return &ScopeRecord{Scope: scope} }
+ 	withdrawn := func(scope string) *ScopeRecord { return &ScopeRecord{Scope: scope, Withdrawn: []string{"t1"}} }
++	operator := func(st VerbStatus) VerbStatus { st.OperatorSession = true; return st }
+ 
+ 	t.Run("Accept", func(t *testing.T) {
+ 		t.Parallel()
+@@ -134,6 +135,10 @@ func TestAcceptWithdraw(t *testing.T) {
+ 		}{
+ 			{name: "agent under partial", st: statusAt("Drift-Verify", shedengine.StateRunning, "", true), before: scoped(ScopePartial), wantBy: AcceptedByAgent},
+ 			{name: "agent under full is unruled", st: statusAt("Drift-Verify", shedengine.StateRunning, "", true), before: scoped(ScopeFull), wantBy: AcceptedByAgent, wantRuling: RulingUnruled},
++			{name: "operator session under partial", st: operator(statusAt("Drift-Verify", shedengine.StateRunning, "", true)), before: scoped(ScopePartial), wantBy: AcceptedByOperator},
++			{name: "operator session under full is ruled", st: operator(statusAt("Drift-Verify", shedengine.StateRunning, "", true)), before: scoped(ScopeFull), wantBy: AcceptedByOperator, wantRuling: RulingRuled},
++			{name: "operator session takes a test off withdrawn", st: operator(statusAt("Drift-Verify", shedengine.StateRunning, "", true)), before: withdrawn(ScopePartial), wantBy: AcceptedByOperator, wantNoWd: true},
++			{name: "operator mark with the session closed is the row's own work", st: operator(statusAt("Drift-Verify", shedengine.StateRunning, "", false)), before: scoped(ScopePartial), wantErr: []string{"wait for the row's halt"}},
+ 			{name: "caller at a halt under partial", st: statusAt("Drift-Verify", shedengine.StateBlocked, "stuck", false), before: scoped(ScopePartial), wantBy: AcceptedByCaller},
+ 			{name: "caller at a decision halt under full is ruled", st: statusAt("Drift-Verify", shedengine.StateBlocked, decisionHalt, false), before: scoped(ScopeFull), wantBy: AcceptedByCaller, wantRuling: RulingRuled},
+ 			{name: "caller at a decision halt takes a test off withdrawn", st: statusAt("Drift-Verify", shedengine.StateBlocked, decisionHalt, false), before: withdrawn(ScopePartial), wantBy: AcceptedByCaller, wantNoWd: true},
+diff --git a/internal/driftengine/verify.go b/internal/driftengine/verify.go
+index 262ded39..901a189c 100644
+--- a/internal/driftengine/verify.go
++++ b/internal/driftengine/verify.go
+@@ -66,7 +66,7 @@ func NewDriftVerify(name string, row Row, verify shuttleengine.GateEntry, deps D
+ // Otherwise it settles the agent session an interrupted entry left and rules the acceptances the parent stood by.
+ // It halts for the parent on an unruled acceptance under scope full and on a missing baseline.
+ // It checks that the tree is clean and that the agent's commits pass the verify gate, then runs the compare.
+-// A passing compare is Done; a failing one spawns one agent whose table gates on a clean tree, on the verify entry and on a final compare.
++// A passing compare is Done; a failing one spawns one agent, with the operator in its pane under verify_interactive, whose table gates on a clean tree, on the verify entry and on a final compare.
+ // Every Stuck under scope full, and under scope partial the missing-baseline halt and a failing final compare while a test is withdrawn, opens with shedadapters.DecisionHaltPrefix.
+ func (p *DriftVerify) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error) {
+ 	d := p.deps
+@@ -494,13 +494,19 @@ func (p *DriftVerify) compareEntry(ctx context.Context) shuttleengine.GateEntry
+ func (p *DriftVerify) runAgent(ctx context.Context, told VerifyTold) (shedengine.Outcome, shedengine.OutputPointer, error) {
+ 	d := p.deps
+ 	seats := &recordingSeats{inner: d.Seats}
+-	tables := func() (seatengine.Table, error) { return p.tableFor(ctx, told) }
++	// The mode recorded at a fresh spawn is the mode of the table that spawns, so the two never disagree.
++	interactive := false
++	tables := func() (seatengine.Table, error) {
++		table, err := p.tableFor(ctx, told)
++		interactive = table.Interactive
++		return table, err
++	}
+ 	prepare := func() (string, error) {
+ 		head, err := d.Head()
+ 		if err != nil {
+ 			return "", err
+ 		}
+-		return "", ResetRuns(d.Paths, head)
++		return "", ResetRuns(d.Paths, head, interactive)
+ 	}
+ 	agent := shedadapters.NewMultiLLMProducerSourced(p.name, tables, seats, d.Now, prepare).KeepGateFindings(d.GateFindingsFile)
+ 	outcome, pointer, err := agent.Call(ctx)
+diff --git a/internal/driftengine/verify_test.go b/internal/driftengine/verify_test.go
+index e3a75f02..dd5bae2b 100644
+--- a/internal/driftengine/verify_test.go
++++ b/internal/driftengine/verify_test.go
+@@ -160,7 +160,11 @@ func newVerifyFixture(t *testing.T, scope ScopeRecord, actions []func()) *verify
+ 	}
+ 	d.VerifyTable = func(told VerifyTold) (seatengine.Table, error) {
+ 		f.told = append(f.told, told)
+-		return seatengine.Table{Seats: []seatengine.Seat{{Outputs: []string{f.paths.VerifyReport}}}}, nil
++		cfg, err := f.deps.Config()
++		if err != nil {
++			return seatengine.Table{}, err
++		}
++		return seatengine.Table{Interactive: cfg.VerifyInteractive, Seats: []seatengine.Seat{{Outputs: []string{f.paths.VerifyReport}}}}, nil
+ 	}
+ 	d.Compare = func(context.Context) (CompareResult, error) {
+ 		f.events = append(f.events, "compare")
+@@ -202,6 +206,25 @@ func (f *verifyFixture) agentAccept() func() {
+ 	}
+ }
+ 
++// sessionAccept is the action of the agent session accepting test t1, with the session read from the run counter as `lym drift accept` reads it.
++func (f *verifyFixture) sessionAccept() func() {
++	return func() {
++		open, err := AgentSessionOpen(f.paths)
++		if err != nil {
++			f.t.Fatal(err)
++		}
++		operator, err := OperatorSessionOpen(f.paths)
++		if err != nil {
++			f.t.Fatal(err)
++		}
++		st := statusAt("Drift-Verify", shedengine.StateRunning, "", open)
++		st.OperatorSession = operator
++		if err := Accept(f.paths, st, "t1", "intended"); err != nil {
++			f.t.Fatal(err)
++		}
++	}
++}
++
+ // commit is the action of the agent committing a fix.
+ func (f *verifyFixture) commit() func() { return func() { f.head = "bbb" } }
+ 
+@@ -318,7 +341,7 @@ func TestDriftVerify(t *testing.T) {
+ 		t.Parallel()
+ 		f := newVerifyFixture(t, partial, nil)
+ 		f.compares = []CompareResult{failingCompare, passingCompare}
+-		if err := ResetRuns(f.paths, "old"); err != nil {
++		if err := ResetRuns(f.paths, "old", false); err != nil {
+ 			t.Fatal(err)
+ 		}
+ 		if _, err := TakeRun(f.paths, 8); err != nil {
+@@ -459,7 +482,7 @@ func TestDriftVerify(t *testing.T) {
+ 		seed := func(f *verifyFixture, attemptHead string, headNow string) {
+ 			f.t.Helper()
+ 			f.head = headNow
+-			if err := ResetRuns(f.paths, attemptHead); err != nil {
++			if err := ResetRuns(f.paths, attemptHead, false); err != nil {
+ 				f.t.Fatal(err)
+ 			}
+ 			if err := CloseAgentSession(f.paths); err != nil {
+@@ -528,7 +551,7 @@ func TestDriftVerify(t *testing.T) {
+ 			if _, _, err := f.call(); err != nil {
+ 				t.Fatal(err)
+ 			}
+-			if err := ResetRuns(f.paths, "aaa"); err != nil {
++			if err := ResetRuns(f.paths, "aaa", false); err != nil {
+ 				t.Fatal(err)
+ 			}
+ 			if err := CloseAgentSession(f.paths); err != nil {
+@@ -593,7 +616,7 @@ func TestDriftVerify(t *testing.T) {
+ 		t.Parallel()
+ 		arrange := func(f *verifyFixture) {
+ 			f.t.Helper()
+-			if err := ResetRuns(f.paths, "aaa"); err != nil {
++			if err := ResetRuns(f.paths, "aaa", false); err != nil {
+ 				f.t.Fatal(err)
+ 			}
+ 			if err := os.MkdirAll(f.paths.LogsDir, 0o755); err != nil {
+@@ -606,25 +629,52 @@ func TestDriftVerify(t *testing.T) {
+ 			}
+ 		}
+ 
+-		t.Run("a live chair is resumed before any check", func(t *testing.T) {
+-			t.Parallel()
+-			f := newVerifyFixture(t, partial, nil)
+-			arrange(f)
+-			f.liveChair = true
+-			requireDone(f)
+-			if want := []string{"probe", "probe", "resume"}; !slices.Equal(f.events[:3], want) {
+-				t.Errorf("events = %v; want the two probes and the resume first, before any dirty check, verify gate or compare", f.events)
+-			}
+-			if f.seats.Calls != 0 || f.seats.ResumeCalls != 1 {
+-				t.Errorf("runs %d, resumes %d; want the live chair resumed and none started", f.seats.Calls, f.seats.ResumeCalls)
+-			}
+-			if want := filepath.Join(f.paths.LogsDir, "compare-20260102T000000.000Z.log"); len(f.told) == 0 || f.told[0].CompareLog != want {
+-				t.Errorf("told = %v; want the newest compare log %s", f.told, want)
+-			}
+-			if open, _ := AgentSessionOpen(f.paths); open {
+-				t.Errorf("the agent-session mark reads open after the agent's end")
+-			}
+-		})
++		resumeRows := []struct {
++			name     string
++			operator bool
++		}{
++			{"a live chair is resumed before any check", false},
++			{"a live operator chair is resumed keeping its mode while the config no longer asks for it", true},
++		}
++		for _, tt := range resumeRows {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				f := newVerifyFixture(t, partial, nil)
++				arrange(f)
++				if err := ResetRuns(f.paths, "aaa", tt.operator); err != nil {
++					t.Fatal(err)
++				}
++				if _, err := TakeRun(f.paths, 8); err != nil {
++					t.Fatal(err)
++				}
++				f.liveChair = true
++				operatorAtResume := false
++				resume := f.seats.ResumeFn
++				f.seats.ResumeFn = func(table seatengine.Table, live seatengine.LiveTable) (seatengine.Result, error) {
++					operatorAtResume, _ = OperatorSessionOpen(f.paths)
++					return resume(table, live)
++				}
++				requireDone(f)
++				if want := []string{"probe", "probe", "resume"}; !slices.Equal(f.events[:3], want) {
++					t.Errorf("events = %v; want the two probes and the resume first, before any dirty check, verify gate or compare", f.events)
++				}
++				if f.seats.Calls != 0 || f.seats.ResumeCalls != 1 {
++					t.Errorf("runs %d, resumes %d; want the live chair resumed and none started", f.seats.Calls, f.seats.ResumeCalls)
++				}
++				if operatorAtResume != tt.operator {
++					t.Errorf("OperatorSessionOpen() at the resume = %v; want the spawned mode %v kept", operatorAtResume, tt.operator)
++				}
++				if count, err := RunCount(f.paths); err != nil || count != 1 {
++					t.Errorf("RunCount() = %d, %v; want the run counter left as it was", count, err)
++				}
++				if want := filepath.Join(f.paths.LogsDir, "compare-20260102T000000.000Z.log"); len(f.told) == 0 || f.told[0].CompareLog != want {
++					t.Errorf("told = %v; want the newest compare log %s", f.told, want)
++				}
++				if open, _ := AgentSessionOpen(f.paths); open {
++					t.Errorf("the agent-session mark reads open after the agent's end")
++				}
++			})
++		}
+ 
+ 		t.Run("no live chair closes the mark and goes on to the compare", func(t *testing.T) {
+ 			t.Parallel()
+@@ -749,5 +799,21 @@ func TestDriftVerify(t *testing.T) {
+ 				t.Errorf("the resumed entry ran %d more compares; want it to halt before any compare", f.compareCalls-compares)
+ 			}
+ 		})
++
++		t.Run("an operator session's acceptances are ruled, so its end is Done with no halt", func(t *testing.T) {
++			t.Parallel()
++			f := newVerifyFixture(t, full, nil)
++			f.compares = []CompareResult{failingCompare, passingCompare}
++			f.deps.Config = func() (Config, error) {
++				return Config{Compare: CommandStep{Command: "compare {baseline_dir}", Dir: ".", TimeoutMin: 1}, VerifyInteractive: true}, nil
++			}
++			f.seats = gateLoopSeats(t, []func(){f.sessionAccept()})
++			f.deps.Seats = f.seats
++			requireDone(f)
++			scope := f.scope()
++			if len(scope.Accepted) != 1 || scope.Accepted[0].By != AcceptedByOperator || scope.Accepted[0].Ruling != RulingRuled {
++				t.Errorf("accepted = %+v; want t1 accepted by the operator and ruled", scope.Accepted)
++			}
++		})
+ 	})
+ }
+diff --git a/pattern/PATTERN-parent-directive.md b/pattern/PATTERN-parent-directive.md
+index 82c055cb..03d62ce4 100644
+--- a/pattern/PATTERN-parent-directive.md
++++ b/pattern/PATTERN-parent-directive.md
+@@ -2,7 +2,8 @@
+ 
+ A spawned role's top-level stencil renders the parent directive, and no stencil tells an agent to ask the operator; the agent asks its parent.
+ 
+-- The discussion role's interactive questions are the one place a question reaches a person, and they come from the `{{.mode_rules}}` marker, not from stencil text.
++- An interactive role's questions are the one place a question reaches a person, and they come from the `{{.mode_rules}}` marker Go fills, not from stencil text.
++  The Discussion chair is one such role, and the Drift-Verify seat is another when drift.yaml sets `verify_interactive`.
+ - The orch stencils are exempt: the orch session is the operator's own delegate and has no parent to ask.
+ - Enforced by a test over the stencils.
+ 
