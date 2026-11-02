@@ -25,19 +25,13 @@ Held by a run; its scope is locked until the run ends.
 | T4 | **A hook nudges an agent back to batching the moment it breaks the rule**<br>• Above about 150k context agents drift into grep-then-slice chains and one-fix-per-turn edits, about a third of context tokens in a 28-session sample; a PostToolUse hook adds one line on a breach, with sharper rule wording | [`batching-breach-nudge`](design-batching-breach-nudge.md) | darn | Darn-Write | osl-1046 | 17h<br>12m | claude, shuttle |
 | T5 | **One cold, cheap fixer clears a failed writer gate instead of the writer at full context**<br>• When the Darn-Write, plan, discussion or Webster card gate fails, Go spawns one shared cold fixer with the gate report, generalised from webster fix-verify | [`cold-gate-fixer`](design-cold-gate-fixer.md) | tapestry · light | Discussion-Burler-Review | osl-1046 | 17h<br>16h | webster, loom, darn, gate |
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
-
-#### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6 | `draft` **Discussion writers hand lookups to Sonnet subagents, and the subagent model is config**<br>• Add the Plan stencil's explore-subagent guidance to the Discussion-Write stencil, and read the subagent model from a loom config key instead of a literal in each stencil | [`explore-subagent-model`](design-explore-subagent-model.md) | darn · light |  | 0m<br>0m | stencil, loom, darn, config |
+| T6 | **Discussion writers hand lookups to Sonnet subagents, and the subagent model is config**<br>• Add the Plan stencil's explore-subagent guidance to the Discussion-Write stencil, and read the subagent model from a loom config key instead of a literal in each stencil | [`explore-subagent-model`](design-explore-subagent-model.md) | darn · light |  | 0m<br>0m | stencil, loom, darn, config |
 
 ### Notes (3)
 
