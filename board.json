@@ -739,6 +739,29 @@
       "body": "Imported from [issue #10](https://github.com/Knatte18/loomyard/issues/10).\n\nSeen in the Models hub, reported by the operator.\n\nA worktree has an anchor path other than \".\".\nA terminal runs in the anchor directory, and the operator presses the \"code\" button in Reed.\nReed answers that the terminal is in the wrong anchor path, though it is in the anchor directory.\n\nExpected: the button accepts a terminal whose directory is the worktree's anchor, and refuses only a directory outside it.\nNot yet diagnosed: whether the check compares against the worktree root instead of the anchor.",
       "created": "2026-11-02T09:54:34Z",
       "revised": "2026-11-02T09:54:34Z"
+    },
+    {
+      "id": 993,
+      "handle": "B2",
+      "slug": "beam-attach-no-orch",
+      "title": "A beam's reed session shows pawl running with no orch and no beam overview",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "reed",
+        "orch",
+        "pawl",
+        "workspaces"
+      ],
+      "issues": [
+        11
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #11](https://github.com/Knatte18/loomyard/issues/11).\n\nSeen in the Models hub, reported by the operator.\n\nA beam is started for a project, and the operator runs reed attach in the beam's directory.\nThe session shows pawl running and no orch strand.\n\nExpected: the orch and the beam overview, as lym beam start brings up the beam's dobby and its orch.\nNot yet diagnosed: whether the orch was never started, died, or runs in another session.",
+      "created": "2026-11-02T09:54:37Z",
+      "revised": "2026-11-02T09:54:37Z"
     }
   ],
   "prime_owner": "osl-1046",

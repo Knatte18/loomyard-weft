@@ -47,7 +47,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | E7 |  | **A hook nudges an agent back to batching the moment it breaks the rule**<br>• Above about 150k context agents drift into grep-then-slice chains and one-fix-per-turn edits, about a third of context tokens in a 28-session sample; a PostToolUse hook adds one line on a breach, with sharper rule wording | [`batching-breach-nudge`](design-batching-breach-nudge.md) | 15h<br>15h | claude, shuttle |
 
-## [P0 Root: entries under no project](project-root.md) (32)
+## [P0 Root: entries under no project](project-root.md) (33)
 
 Owner `osl-1046`
 
@@ -77,7 +77,7 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Tune the plan-split writers until a split plan joins with no hand edit**<br>• Tune, replay on two inputs, tune again, at most 3 rounds, starting from the plan-split-bench report | [`plan-split-tune`](design-plan-split-tune.md) | darn |  | 16h<br>15h | loom, stencil, pattern |
 
-### Notes (30)
+### Notes (31)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -87,11 +87,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 10d<br>15h | loom, stencil |
 
-#### Bugs (2)
+#### Bugs (3)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Reed code button reports a wrong anchor path from inside the anchor directory** | [`reed-code-wrong-anchor`](design-reed-code-wrong-anchor.md) | 0m<br>0m | reed |
+| B2 |  | **A beam's reed session shows pawl running with no orch and no beam overview** | [`beam-attach-no-orch`](design-beam-attach-no-orch.md) | 0m<br>0m | reed, orch, pawl, workspaces |
 | B3 |  | **A batten pass after a landed child reports a false rewind against origin**<br>• Origin equals local, yet batten stops asking which history to keep | [`false-rewind-after-finalize`](design-false-rewind-after-finalize.md) | 17h<br>15h | batten, fabric |
 
 #### Enhancements (13)
