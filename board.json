@@ -884,6 +884,26 @@
       "created": "2026-11-02T12:20:16Z",
       "revised": "2026-11-02T12:24:20Z",
       "profile": "light"
+    },
+    {
+      "id": 1002,
+      "handle": "F12",
+      "slug": "claude-account-weights",
+      "title": "Two Claude accounts, each worktree on one of them by a configured weight",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "claude",
+        "shuttle",
+        "config"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A claude config lists accounts with a config directory and a weight; a worktree picks one when its first session starts, so account A can carry twice the load of B",
+      "body": "## Idea (operator, 2026-11-02)\n\nSpread Claude usage over two accounts, so one account's limits are not the bottleneck: each worktree uses one of the accounts, chosen by a weight.\nThe weights are config, for example account A twice for each use of account B, so account A carries twice the load of B on average.\n\n## Seen (orch, 2026-11-02)\n\nLym cannot do this today.\n`lym config claude` has no key for an account, a config directory or an environment, and a search of `internal/` found no use of `CLAUDE_CONFIG_DIR`, so every session runs under whichever account the machine is logged in to.\n\nClaude Code is believed to keep an account's login in a config directory that the `CLAUDE_CONFIG_DIR` environment variable selects.\nThat is not verified: check it against the Claude Code documentation before anything is built.\n\n## Design questions for a Discussion\n\n- Config: a list of accounts, each with a name, a config directory and a weight, in the claude config; a machine-layer key, since the accounts belong to the machine.\n- Choice: per worktree, never per session, so all of a run's sessions (writer, reviewers, fixers, driver) share one account.\n  The pick is made once, when the worktree's first session starts, and recorded with the worktree so a resume, a re-attach and a hand pass keep it.\n  Candidates for the pick: a deterministic hash of the slug against the weights, which needs no state and never gives one slug two accounts, or a persisted counter that deals the accounts out in the weighted ratio, which keeps the ratio exact over a few runs.\n- Scope: the prime's orch and each beam's orch and dobby need a rule of their own, since they outlive a task run.\n- A session spawn sets the chosen account's environment in one place in the claude engine's launch, so no caller sets it.\n- A usage limit on one account: whether lym moves a worktree to the other account when one is limited, or only reports it; the first needs the session's history to be readable under the other account, which it is not by default.\n- Cost and quota reports (`lym report`, `tokencount`) read transcripts per config directory, and would need to read both.\n\n## Not in scope\n\nLogging the accounts in, and whether the use is within the accounts' and the organisation's terms, which is the operator's to settle.\n",
+      "created": "2026-11-02T12:33:57Z",
+      "revised": "2026-11-02T12:33:57Z"
     }
   ],
   "prime_owner": "osl-1046",
