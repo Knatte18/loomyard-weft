@@ -1,38 +1,28 @@
-# Review default_recipe: resolve an empty recipe once, fix stale docs
+# Resolve an empty task recipe in one place and fix stale docs
 
-Commit 8876e319, "A task with no recipe runs the board's default_recipe, darn by default", landed with no Code-Review.
+The commit "A task with no recipe runs the board's default_recipe" landed without a review.
 This change reviews it and fixes what the review found.
+The behaviour is unchanged: a task with no `recipe` field runs the recipe `default_recipe` names in `board.yaml`, `darn` by default.
 
-## Verdict
+## What changes
 
-The change is sound in design.
-`default_recipe` is a cross-pair key in `board.yaml`, the template names `darn`, and Seed-Child, the README and `lym loom peers` all take a task's recipe from the board.
-`ReadBoardType` now opens the board with `boardengine.OpenHub`, and an error there or from `GetTask` becomes a Stuck verdict whose reason names it, as before.
-The tests pin the template default, a hub's own value, the default against a named recipe in the README cell and Seed-Child's recipe for a project, a named recipe and an empty one.
+- `internal/boardengine`: the empty-recipe rule had two copies, `Board.RecipeOf` and the Recipe-cell code in `render.go`.
+  Both now call `Outputs.recipeOf` in `config.go`, the one place an empty recipe field is resolved.
+  `recipeCell` takes the `Outputs` instead of a bare default string.
+- Docs and comments no longer list recipe names where the setting is described, so the setting is stated once, at `Config.DefaultRecipe`:
+  - the `template.yaml` comment and the `Config` and `Outputs` field comments;
+  - the `README.md` recipe list, which no longer calls `darn` "the default" beside the paragraph that explains `default_recipe`.
+- `internal/battenshed/deps.go`: the `ReadBoardType` comment says the value is the task's recipe or else the board's `default_recipe`.
+- `internal/loomcli/doc.go`: the peer-recipe paragraph said an empty recipe means `tapestry`; it now says the board's `default_recipe`.
+- `render_test.go`: the `readmeFixture` comment names the fixture's default recipe instead of `tapestry`.
+- `config_test.go`: `TestLoadConfig_DefaultRecipe` and its subtests run in parallel.
 
-## Findings fixed
+## Review verdict
 
-- **Two resolution points for an empty recipe.**
-  `Board.RecipeOf` and the README's `recipeCell` each tested `task.Recipe != ""` and fell back to the default on their own.
-  Both now call one unexported `Outputs.recipeOf`, so the README and Seed-Child cannot drift apart.
-- **Stale package doc in `loomcli`.**
-  The `lym loom peers` paragraph in `internal/loomcli/doc.go` still said an empty board recipe means tapestry; it now names the board's `default_recipe`.
-- **`ReadBoardType`'s field doc in `battenshed/deps.go`** said the seam returns the task's own recipe field, then that the value is already resolved.
-  It now says the value is the task's field or else the board's `default_recipe`.
-- **The README stated the default twice**, as "`darn`, the default" in the recipe list and again in the sentence after it.
-  The sentence naming `default_recipe` is now the one place.
-- **`boardengine.Config.DefaultRecipe`'s comment** listed the recipe names and the template's value, which go stale apart from the field; both are dropped.
-- **`TestLoadConfig_DefaultRecipe`** now calls `t.Parallel`, as the test-speed rule asks.
-- **`TestRenderReadmeGolden`'s doc** said an empty recipe renders as tapestry; it now says the fixture's default recipe.
+The rest of the commit holds: `battencli`, `boardcli` and `loomcli` carry no remaining literal fallback, tests pin both the default and the override, and the template documents the setting.
+Nothing outside the commit's change needed a board note.
 
-## Design decisions
+## To check by hand
 
-- `lym loom peers` still writes the resolved recipe back into each task's `Recipe` field inside its board closure, and `peerRecipe` keeps its fallback that reads an empty name as tapestry.
-  That fallback now serves only an empty self-run seed recipe, which `lym loom` reads as tapestry everywhere, so it is left as it is.
-- A `default_recipe` value is still not checked at load.
-  A bad name reaches the seeding site, which refuses it with a Stuck reason naming it, the same way it refuses a bad per-task recipe.
-
-## Tests
-
-The `TestLoadConfig_DefaultRecipe`, `TestRenderRecipeCellTakesTheDefaultRecipe`, `TestRenderReadmeGolden` and `TestBoardRecipe` tests pin the behaviour the refactor keeps.
-No test was added: the refactor changes no behaviour.
+- The `loomcli/doc.go` sentence about a peer's recipe describes behaviour this change does not touch; confirm it matches the code that seeds a peer's recipe from its board entry.
+- This description was written from the diff alone; no tests were run while writing it.
