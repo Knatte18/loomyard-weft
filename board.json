@@ -712,6 +712,27 @@
       "body": "## Seen (2026-11-02)\n\nRun `cold-gate-fixer` ran on osl-1046 and its work reached `main` (`a9536680`), but its batten run never finished Land and Worktree-Teardown there.\nAfter `lym adopt root` took the hub over to this machine, the run stood `paused` at Run-Shed with pause reason \"pause requested\", with its task worktree and its loom-status terminal still up, for hours.\nNo notice reached the orch, and dobby does not resume a paused run, so nothing finished it; the operator noticed the open terminal.\n`lym batten cancel cold-gate-fixer --remove` refused, saying the work had reached its parent, and named `lym batten run cold-gate-fixer`, which then finished Land and Worktree-Teardown at once.\n\nWhether the pause came from the adopt hold or from the orch pausing the adopted runs is not known.\n\n## Idea\n\n- A run whose work already reached its parent has nothing left to decide: its remaining rows are Land and Worktree-Teardown.\n  Dobby finishes such a run even when it is paused, or at least sends the orch a notice naming it.\n- `lym adopt` lists the adopted runs whose work already landed and finishes them as part of the takeover.\n",
       "created": "2026-11-02T20:33:58Z",
       "revised": "2026-11-02T20:33:58Z"
+    },
+    {
+      "id": 1015,
+      "handle": "B3",
+      "slug": "seat-stencil-marker-unfilled",
+      "title": "Darn-Write seat halts: stencil darn-template-write has unfilled marker subagent_model",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "stencil",
+        "shed"
+      ],
+      "issues": [
+        17
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #17](https://github.com/Knatte18/loomyard/issues/17).\n\n## What happened\n\n`lym loom` halted as `failed` (anomaly `producer-hard-failure`) at the `Darn-Write` producer, after Preflight and Record-Write were done and Drift-Baseline and Drift-Await were skipped.\nThe error from lym:\n\n```\nshedadapters: Darn-Write (seats): seat run: seatengine: seat \"\": fill stencil \"darn-template-write\": stencil: unfilled top-level marker(s): subagent_model\n```\n\n## Why it is abnormal\n\nThe seat engine filled the `darn-template-write` stencil without a value for the top-level marker `subagent_model`, so the seat could not start and the whole run failed.\nThe seat name in the error is empty (`seat \"\"`), which suggests the seat's resolved config or recipe never supplied the marker.\nA missing model value should either come from a default or be reported before the run starts, not surface as a hard failure inside the seat.\n\n## What to do\n\n- Find where `subagent_model` is supplied to the `darn-template-write` stencil fill in `shedadapters` / `seatengine`, and why it was empty for `Darn-Write`.\n- Make Preflight (or the recipe loader) reject a seat whose stencil markers cannot all be filled, with the seat name in the message.\n- Fix the empty seat name in the error.\n\nProvenance: task `landing-fixer-base-skills`; note `loom-halt.md`.\n",
+      "created": "2026-11-02T20:34:08Z",
+      "revised": "2026-11-02T20:34:08Z"
     }
   ],
   "prime_owner": "neve",

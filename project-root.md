@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-02 20:33 UTC; every age below is as of then.
+Rendered 2026-11-02 20:34 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -26,7 +26,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (31)
+## Notes (32)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -36,12 +36,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 11d<br>1h | loom, stencil |
 
-### Bugs (2)
+### Bugs (3)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Claude Code autocompact picker in a shuttle session stalls a gate re-prompt forever** | [`shuttle-autocompact-picker-stall`](design-shuttle-autocompact-picker-stall.md) | 15m<br>15m | shuttle, loom |
+| B1 |  | **Claude Code autocompact picker in a shuttle session stalls a gate re-prompt forever** | [`shuttle-autocompact-picker-stall`](design-shuttle-autocompact-picker-stall.md) | 16m<br>16m | shuttle, loom |
 | B2 |  | **A paused run whose work already landed is never finished and keeps its worktree and terminal** | [`landed-run-left-paused`](design-landed-run-left-paused.md) | 0m<br>0m | dobby, batten |
+| B3 |  | **Darn-Write seat halts: stencil darn-template-write has unfilled marker subagent_model** | [`seat-stencil-marker-unfilled`](design-seat-stencil-marker-unfilled.md) | 0m<br>0m | stencil, shed |
 
 ### Enhancements (14)
 
