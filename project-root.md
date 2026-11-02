@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-02 12:12 UTC; every age below is as of then.
+Rendered 2026-11-02 12:14 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `osl-1046`
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **A beam's reed session shows pawl running with no orch and no beam overview** | [`beam-attach-no-orch`](design-beam-attach-no-orch.md) | darn | Finalize | osl-1046 | 2h<br>50m | reed, orch, pawl, workspaces |
+| T3 | **A beam's reed session shows pawl running with no orch and no beam overview** | [`beam-attach-no-orch`](design-beam-attach-no-orch.md) | darn | Finalize | osl-1046 | 2h<br>52m | reed, orch, pawl, workspaces |
 
 ### Ready (1)
 
@@ -26,7 +26,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **heddle renders claude-file to the worktree root, not to the worktree's anchor** | [`heddle-render-ignores-anchor`](design-heddle-render-ignores-anchor.md) | darn · light |  | 12m<br>8m | heddle, fabric, cwd |
+| T2 | **heddle renders claude-file to the worktree root, not to the worktree's anchor** | [`heddle-render-ignores-anchor`](design-heddle-render-ignores-anchor.md) | darn · light |  | 14m<br>10m | heddle, fabric, cwd |
 
 ### Draft (2)
 
@@ -35,7 +35,7 @@ Not released; nothing starts it until its status is cleared.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Tune the plan-split writers until a split plan joins with no hand edit**<br>• Tune, replay on two inputs, tune again, at most 3 rounds, starting from the plan-split-bench report | [`plan-split-tune`](design-plan-split-tune.md) | darn |  | 18h<br>17h | loom, stencil, pattern |
-| T7 | `draft` **Measure fabricengine tier1 with the test work directory on /dev/shm against the default**<br>• Six runs at most on OSL-1046: does moving the temp root to memory cut fabricengine tier1 from about 349 s toward the Ryzen machine's 46 s | [`fabricengine-shm-bench`](design-fabricengine-shm-bench.md) | darn · docs |  | 1m<br>1m | gate, fabric |
+| T7 | `draft` **Measure fabricengine tier1 with the test work directory on /dev/shm against the default**<br>• Six runs in three concurrent pairs on OSL-1046: can fabricengine tier1 use /dev/shm for its temp root, and does it avoid the Cortex slowdown | [`fabricengine-shm-bench`](design-fabricengine-shm-bench.md) | darn · docs |  | 4m<br>0m | gate, fabric |
 
 ## Notes (30)
 
@@ -51,7 +51,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B2 |  | **Beam orch cannot set a board entry's profile: refused as a task session** | [`beam-orch-cannot-set-profile`](design-beam-orch-cannot-set-profile.md) | 12m<br>12m | board, orch, workspaces |
+| B2 |  | **Beam orch cannot set a board entry's profile: refused as a task session** | [`beam-orch-cannot-set-profile`](design-beam-orch-cannot-set-profile.md) | 14m<br>14m | board, orch, workspaces |
 
 ### Enhancements (14)
 
