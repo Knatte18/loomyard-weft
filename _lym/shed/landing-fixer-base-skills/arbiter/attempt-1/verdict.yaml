@@ -1,0 +1,17 @@
+verdict: hand-on
+reason: |-
+  This is an error stop, so no repair verb applies, and a plain re-launch would fail the same way.
+  The `subagent_model` value is not missing from the code: the installed binary is too old to send it.
+  The driver ran /home/knatte/go/bin/lym (envelope trace, exe=/home/knatte/go/bin/lym).
+  That binary's build info is `mod github.com/Knatte18/loomyard v0.0.0-20261101200149-87553450ec14`, built from a commit dated 2026-11-01 20:01 UTC, and `strings` finds no `subagent_model` anywhere in it.
+  Commit 2d319fe5 (2026-11-02 14:02 +0100), which this branch contains, added the `subagent_model` value to `DarnTable` (internal/darnengine/spec.go:116) and the `{{.subagent_model}}` marker to the stencil.
+  The live board stencil _bolt/_lym/stencils/darn/darn-template-write.md already has that marker.
+  So the old binary fills the new stencil without the value, and the stencil check (internal/stencil/stencil.go:62) refuses it every time.
+  The case brief's guess of a stencil-engine key mismatch is wrong: the source and the stencil agree.
+  The fix is to install a lym binary built from a commit at or after 2d319fe5.
+  That is outside the verbs this run allows me, so the parent must do it.
+verbs: []
+question: |-
+  The Darn-Write seat fails because /home/knatte/go/bin/lym was built from 87553450ec14 (2026-11-01), before commit 2d319fe5 added `subagent_model`.
+  The live board stencil darn-template-write.md now needs that value, and the old binary never sets it.
+  Will you install a lym built from main (70956a7c or later, which contains 2d319fe5) and then re-launch run landing-fixer-base-skills from Darn-Write?

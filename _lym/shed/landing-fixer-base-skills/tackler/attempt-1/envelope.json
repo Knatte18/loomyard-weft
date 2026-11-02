@@ -1,0 +1,11 @@
+{
+  "verdict": "escalate",
+  "reason": "The producer error is deterministic: the Darn-Write seat fill of stencil darn-template-write refuses on the unfilled top-level marker subagent_model, although DarnTable sets that value (internal/darnengine/spec.go:116) and LoadConfig refuses an empty one (internal/loomengine/config.go:1126). No config key is missing (dry-run reconcile reports nothing to add), the failure is not transient, and the stderr log is empty. The cause sits in the seat-engine fill or stencil marker check, which I did not read, so a plain re-launch or a goto will not settle it and the case needs code read and judged. Case brief: _lym/shed/landing-fixer-base-skills/tackler/attempt-1/case-brief.md.",
+  "question": "",
+  "goto": "",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/landing-fixer-base-skills/_lym/shed/landing-fixer-base-skills/tackler/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/landing-fixer-base-skills/_lym/shed/landing-fixer-base-skills/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": "/home/knatte/Code/loomyard-LYMHUB/landing-fixer-base-skills/_lym/shed/landing-fixer-base-skills/tackler/attempt-1/case-brief.md"
+}
