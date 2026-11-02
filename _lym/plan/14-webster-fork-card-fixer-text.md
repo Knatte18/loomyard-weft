@@ -28,7 +28,7 @@
 - `internal/websterengine/doc.go`
 
 **Uses:**
-- `plan:internal/webstercli#websterCLI.pairSlug`
+- `internal/webstercli#websterCLI.pairSlug`
 - `internal/gateslot#GateKey`
 - `internal/webstercli/doc.go`
 

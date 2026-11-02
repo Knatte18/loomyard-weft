@@ -1,9 +1,9 @@
 # Card 3 — webster-fixer-on-core
 
 **Create:**
-- `plan:internal/websterengine#verifyFixerStore` -> `type verifyFixerStore struct`
-- `plan:internal/webstercli#websterCLI.pairSlug` -> `func (c *websterCLI) pairSlug() string`
-- `plan:internal/webstercli#TestWebsterCLI_PairSlug` -> `func TestWebsterCLI_PairSlug(t *testing.T)`
+- `internal/websterengine#verifyFixerStore`
+- `internal/webstercli#websterCLI.pairSlug`
+- `internal/webstercli#TestWebsterCLI_PairSlug`
 
 **Delete:**
 - `internal/websterengine/coldfixer.go`

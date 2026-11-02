@@ -2,11 +2,11 @@
 
 **Create:**
 - `contracts/stencils/gatefix/gatefix-frame-cold.md`
-- `plan:contracts/stencils#GatefixFrameCold` -> `var GatefixFrameCold []byte`
-- `plan:internal/gatefixer#FrameStencil` -> `const FrameStencil = "gatefix-frame-cold"`
-- `plan:internal/gatefixer#PromptInputs` -> `type PromptInputs struct`
-- `plan:internal/gatefixer#RenderPrompt` -> `func RenderPrompt(in PromptInputs) ([]byte, error)`
-- `plan:internal/gatefixer#TestRenderPrompt` -> `func TestRenderPrompt(t *testing.T)`
+- `contracts/stencils#GatefixFrameCold`
+- `internal/gatefixer#FrameStencil`
+- `internal/gatefixer#PromptInputs`
+- `internal/gatefixer#RenderPrompt`
+- `internal/gatefixer#TestRenderPrompt`
 
 **Extends:**
 - `contracts/stencils#entries`

@@ -3,37 +3,37 @@
 **Create:**
 - `internal/gatefixer/doc.go`
 - `internal/gatefixer/testmain_test.go`
-- `plan:internal/gatefixer#RoleGateFixer` -> `const RoleGateFixer = "gate-fixer"`
-- `plan:internal/gatefixer#RoleVerifyFixer` -> `const RoleVerifyFixer = "verify-fixer"`
-- `plan:internal/gatefixer#Roles` -> `func Roles() []string`
-- `plan:internal/gatefixer#IsFixerRole` -> `func IsFixerRole(role string) bool`
-- `plan:internal/gatefixer#StatusRunning` -> `const StatusRunning = "running"`
-- `plan:internal/gatefixer#StatusDone` -> `const StatusDone = "done"`
-- `plan:internal/gatefixer#StatusDead` -> `const StatusDead = "dead"`
-- `plan:internal/gatefixer#DeadReasonAsking` -> `const DeadReasonAsking = "asking"`
-- `plan:internal/gatefixer#DeadReasonTimeout` -> `const DeadReasonTimeout = "timeout"`
-- `plan:internal/gatefixer#DeadReasonDied` -> `const DeadReasonDied = "died"`
-- `plan:internal/gatefixer#Record` -> `type Record struct`
-- `plan:internal/gatefixer#Store` -> `type Store interface`
-- `plan:internal/gatefixer#Starter` -> `type Starter interface`
-- `plan:internal/gatefixer#Stopper` -> `type Stopper interface`
-- `plan:internal/gatefixer#Engines` -> `type Engines interface`
-- `plan:internal/gatefixer#Clock` -> `type Clock interface`
-- `plan:internal/gatefixer#Deps` -> `type Deps struct`
-- `plan:internal/gatefixer#Spec` -> `type Spec struct`
-- `plan:internal/gatefixer#Result` -> `type Result struct`
-- `plan:internal/gatefixer#SpawnOrAttach` -> `func SpawnOrAttach(deps Deps, store Store, spec Spec) (*Record, bool, error)`
-- `plan:internal/gatefixer#Await` -> `func Await(deps Deps, rec *Record, timeout, wait time.Duration) (*Result, error)`
-- `plan:internal/gatefixer#StrandLive` -> `func StrandLive(reed shuttleengine.ReedOps, guid string) (bool, error)`
-- `plan:internal/gatefixer#TurnEndRead` -> `type TurnEndRead struct`
-- `plan:internal/gatefixer#TurnEndedAfter` -> `func TurnEndedAfter(eventsPath string, offset int64, engine shuttleengine.Engine, read TurnEndRead) (bool, error)`
-- `plan:internal/gatefixer#Registrar` -> `func Registrar(reed shuttleengine.ReedOps, runProcDir, owner, role string) func(guid string) error`
-- `plan:internal/gatefixer#TestIsFixerRole` -> `func TestIsFixerRole(t *testing.T)`
-- `plan:internal/gatefixer#TestSpawnOrAttach` -> `func TestSpawnOrAttach(t *testing.T)`
-- `plan:internal/gatefixer#TestAwait` -> `func TestAwait(t *testing.T)`
-- `plan:internal/gatefixer#TestStrandLive` -> `func TestStrandLive(t *testing.T)`
-- `plan:internal/gatefixer#TestTurnEndedAfter` -> `func TestTurnEndedAfter(t *testing.T)`
-- `plan:internal/gatefixer#TestRegistrar` -> `func TestRegistrar(t *testing.T)`
+- `internal/gatefixer#RoleGateFixer`
+- `internal/gatefixer#RoleVerifyFixer`
+- `internal/gatefixer#Roles`
+- `internal/gatefixer#IsFixerRole`
+- `internal/gatefixer#StatusRunning`
+- `internal/gatefixer#StatusDone`
+- `internal/gatefixer#StatusDead`
+- `internal/gatefixer#DeadReasonAsking`
+- `internal/gatefixer#DeadReasonTimeout`
+- `internal/gatefixer#DeadReasonDied`
+- `internal/gatefixer#Record`
+- `internal/gatefixer#Store`
+- `internal/gatefixer#Starter`
+- `internal/gatefixer#Stopper`
+- `internal/gatefixer#Engines`
+- `internal/gatefixer#Clock`
+- `internal/gatefixer#Deps`
+- `internal/gatefixer#Spec`
+- `internal/gatefixer#Result`
+- `internal/gatefixer#SpawnOrAttach`
+- `internal/gatefixer#Await`
+- `internal/gatefixer#StrandLive`
+- `internal/gatefixer#TurnEndRead`
+- `internal/gatefixer#TurnEndedAfter`
+- `internal/gatefixer#Registrar`
+- `internal/gatefixer#TestIsFixerRole`
+- `internal/gatefixer#TestSpawnOrAttach`
+- `internal/gatefixer#TestAwait`
+- `internal/gatefixer#TestStrandLive`
+- `internal/gatefixer#TestTurnEndedAfter`
+- `internal/gatefixer#TestRegistrar`
 
 **Edit:**
 - `PATTERN.md`

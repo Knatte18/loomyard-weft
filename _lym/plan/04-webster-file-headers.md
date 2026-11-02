@@ -6,9 +6,9 @@
 - `internal/websterengine/recoverbatch.go#`
 
 **Uses:**
-- `plan:internal/gatefixer#RenderPrompt`
-- `plan:internal/gatefixer#StrandLive`
-- `plan:internal/gatefixer#TurnEndedAfter`
+- `internal/gatefixer#RenderPrompt`
+- `internal/gatefixer#StrandLive`
+- `internal/gatefixer#TurnEndedAfter`
 - `internal/websterengine#RecoverSpawnOrAttach`
 
 **Intent:**
