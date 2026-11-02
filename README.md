@@ -48,7 +48,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 Owner `osl-1046`
 
-### Tasks (2)
+### Tasks (3)
 
 Concrete and claimable; only a task can run.
 
@@ -60,11 +60,13 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **A beam's reed session shows pawl running with no orch and no beam overview** | [`beam-attach-no-orch`](design-beam-attach-no-orch.md) | darn | Finalize | osl-1046 | 2h<br>41m | reed, orch, pawl, workspaces |
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T2 | **heddle renders claude-file to the worktree root, not to the worktree's anchor** | [`heddle-render-ignores-anchor`](design-heddle-render-ignores-anchor.md) | darn · light |  | 3m<br>0m | heddle, fabric, cwd |
 
 #### Draft (1)
 
@@ -74,7 +76,7 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Tune the plan-split writers until a split plan joins with no hand edit**<br>• Tune, replay on two inputs, tune again, at most 3 rounds, starting from the plan-split-bench report | [`plan-split-tune`](design-plan-split-tune.md) | darn |  | 18h<br>17h | loom, stencil, pattern |
 
-### Notes (31)
+### Notes (30)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -84,11 +86,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 10d<br>17h | loom, stencil |
 
-#### Bugs (2)
+#### Bugs (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 | H | **heddle renders claude-file to the worktree root, not to the worktree's anchor** | [`heddle-render-ignores-anchor`](design-heddle-render-ignores-anchor.md) | 3m<br>0m | heddle, fabric, cwd |
 | B2 |  | **Beam orch cannot set a board entry's profile: refused as a task session** | [`beam-orch-cannot-set-profile`](design-beam-orch-cannot-set-profile.md) | 3m<br>3m | board, orch, workspaces |
 
 #### Enhancements (14)
