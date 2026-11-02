@@ -672,7 +672,7 @@
       "isolated": false,
       "brief": "The 200 ms stall bound of the never-answering remote test kills git before its ext script writes its count file when the machine is loaded",
       "body": "## Seen (orch, 2026-11-02, from the darn writer of `tmuxkit-short-socket-path`)\n\n`gitexec` `TestRun_RemoteBounds/a_remote_that_never_answers...` sets a 200 ms stall bound.\nAt a load average of about 30, git is killed before its ext script writes its count file, and the test fails.\n`heddle-render-ignores-anchor` failed the same way (gate log `20261102T135456Z-tier1-2983004`), and a rerun at `-count=1` by the writer of `tmuxkit-short-socket-path` failed the same way, although its change touches neither package.\n\n## Idea\n\nMake the test's bound independent of git start-up time, for example wait for the count file before the stall starts counting, rather than raising the number.\nThe writer reads the test and says what its 200 ms is meant to prove.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Code-Burler-Review",
       "created": "2026-11-02T14:10:33Z",
       "revised": "2026-11-02T19:19:25Z"
     },
