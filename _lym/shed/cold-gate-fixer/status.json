@@ -1,12 +1,11 @@
 {
-  "current_producer": "Discussion-Bouncer",
+  "current_producer": "Drift-Baseline",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Bouncer",
-    "last": "Discussion-Bouncer → awaiting",
+    "now": "Drift-Baseline",
+    "last": "Discussion-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -143,6 +142,13 @@
       "outcome": "awaiting",
       "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/cold-gate-fixer/_lym/reviews/discussion/round-2-bouncer-ledger.md",
       "at": "2026-11-02T12:11:07Z"
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/cold-gate-fixer/_lym/reviews/discussion/round-2-bouncer-ledger.md",
+      "at": "2026-11-02T12:12:27Z",
+      "by": "shed"
     }
   ],
   "product": {
