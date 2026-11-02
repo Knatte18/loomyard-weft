@@ -859,6 +859,25 @@
       "body": "Imported from [issue #14](https://github.com/Knatte18/loomyard/issues/14).\n\nRequest from a hub operator (NORCE Models, a numerical simulation repository).\n\nToday Drift-Verify is one autonomous agent: it reads the compare log and the Drift-Baseline report, accepts drift it judges intended with `lym drift accept`, fixes the rest, and when unsure stops for the run's parent. In a numerical code base, whether a drift is acceptable is a judgment the operator wants to make: how large a deviation is acceptable, in which quantities, and whether a change in solver output is a fix or a regression. An autonomous accept can bless a regression.\n\nWanted: a mode, in the hub's drift config (as `discussion_interactive` is for Discussion), where the last drift step is an interactive session with the operator in the task's worktree. The agent presents the drift per test and per quantity, together with the baseline agent's expectation, discusses it with the operator, and records each acceptance or fix the operator decides, before the run goes on. Drift-Baseline stays autonomous.\n\nThe hub's drift config shows no such key today (`enabled`, `capture`, `compare`, `baseline_model`, `verify_model`, `verify_max_runs`).",
       "created": "2026-11-02T12:15:59Z",
       "revised": "2026-11-02T12:15:59Z"
+    },
+    {
+      "id": 1001,
+      "handle": "B1",
+      "slug": "landing-fixer-base-skills",
+      "title": "The landing merge fixer loads no prose, code-quality or testing skill",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "landing",
+        "shuttle"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "FixerTable sets the fixer seat's skills to the language skills alone, unlike every other code-writing seat",
+      "body": "## Seen (operator, 2026-11-02)\n\nThe landing merge fixer of `beam-attach-no-orch` (strand `ly:beam-attach-no-orch:fixer`) was told to load only `scribe:golang-comments` and `scribe:golang-testing`, with the line \"Load these skills now, all in this one turn, ... Do nothing else\".\nIt writes code, so it must load `scribe:prose` and `scribe:code-quality` as well, and `scribe:testing` when it edits tests.\n\n## Cause (orch, from the source)\n\n`FixerTable` in `internal/landingshed/fixer.go` sets the fixer seat's `Skills` to `in.LanguageSkills` alone, the hub's language skills from `language.yaml`.\nEvery other code-writing role lists the base skills in its own spec before the language skills: `darnSkills`, `roleSkills` of webster, `burlerSkills` and `verifySkills` of drift each hold `scribe:prose`, `scribe:code-quality` and `scribe:testing`, and `internal/mergeresolve/spec.go` (`conflictSkills`) holds `scribe:prose` and `scribe:code-quality`.\nThe landing fixer's seat is the one that names none.\n\n## Fix\n\nThe fixer seat loads `scribe:prose`, `scribe:code-quality` and `scribe:testing`, then `in.LanguageSkills`, as the other code-writing seats do.\nAdd a test that the seat's skills start with the base skills.\n\n## Same family, not yet filed\n\n`conflictSkills` in `internal/mergeresolve/spec.go` lacks `scribe:testing`, so a conflict session resolving a test file loads no testing skill.\nCheck every other seat that spawns a writer for the same gap in the same pass, and name each seat checked in the change description.\n",
+      "created": "2026-11-02T12:20:16Z",
+      "revised": "2026-11-02T12:20:16Z"
     }
   ],
   "prime_owner": "osl-1046",
