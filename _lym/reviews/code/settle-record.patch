@@ -1,0 +1,915 @@
+diff --git a/cmd/lym/main.go b/cmd/lym/main.go
+index 8ede3d1f..eabe59b8 100644
+--- a/cmd/lym/main.go
++++ b/cmd/lym/main.go
+@@ -131,6 +131,11 @@ all modules are discoverable via "lym --help" and every subcommand carries
+ its own --help and --json help output; --json prints the help as JSON and
+ never runs the command.
+ 
++On a terminal, an operator verb prints a short readable summary of its JSON
++envelope: what it did, each error and warning, and each way forward, with long
++lists collapsed to a count. --envelope prints the full envelope instead; any
++output that is no terminal, as an agent's or a script's, gets the envelope.
++
+ Available modules: board, config, ide, reed, fabric, selfreport, shuttle, burler, webster, stencil, loom, quarry, batten, shed, orch, cleanup, adopt, beam, report, tender, hibernate, drift, gate, creel, heddle, help.
+ Shortcuts, declared in internal/shortcutcli's embedded file, are listed under their own heading in lym --help.`,
+ 		SilenceUsage:  true,
+@@ -162,11 +167,13 @@ Shortcuts, declared in internal/shortcutcli's embedded file, are listed under th
+ 			}
+ 			// Seeding must never block a command from running, regardless of its outcome.
+ 			seedStencils(cmd)
++			clihelp.UseReadableOutput(cmd, clihelp.WriterIsTerminal)
+ 			return nil
+ 		},
+ 	}
+ 
+ 	clihelp.InstallJSONHelp(root)
++	clihelp.InstallReadableOutput(root)
+ 
+ 	root.PersistentFlags().CountVarP(&verbosity, "verbose", "v", "increase log verbosity (-v info, -vv debug)")
+ 
+diff --git a/docs/overview.md b/docs/overview.md
+index 0b99f893..2d21d9d2 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -351,6 +351,8 @@ Every module but one also exposes `RunCLIIn(cwd string, out io.Writer, args []st
+ `cmd/lym/main.go` uses `RunRoot` unchanged.
+ 
+ All commands print JSON: `{"ok":true, ...}` on success, `{"ok":false,"error":"..."}` on failure (exit code 1).
++On a terminal, a command carrying the `operator` audience prints each envelope line as a short readable summary instead, rendered by `output.Summary`: the outcome, the fields, and every error, warning and way forward one line each, with long lists collapsed to a count.
++The global `--envelope` flag keeps the JSON there, and any output that is no terminal, as an agent's or a script's, always gets it; `clihelp.UseReadableOutput` makes the choice in the root's pre-run.
+ 
+ ## Modules
+ 
+diff --git a/internal/clihelp/exec.go b/internal/clihelp/exec.go
+index c33ccf78..10815bfa 100644
+--- a/internal/clihelp/exec.go
++++ b/internal/clihelp/exec.go
+@@ -14,6 +14,9 @@
+ // It also owns the global --json flag (InstallJSONHelp): under it every command, leaf or group, prints its help as structured JSON and exits 0, and no command runs;
+ // a command that declares its own local --json flag shadows the global one and keeps its own meaning.
+ //
++// It owns the readable summary of operator verbs (UseReadableOutput): a command carrying the operator audience whose output is a terminal prints each JSON envelope line as a short summary, and the global --envelope flag keeps the envelope there.
++// An output that is no terminal, as an agent's or a script's, always gets the envelope.
++//
+ // The command index appends a command's index note (IndexNoteAnnotation) only when rendering the audience its IndexNoteAudienceAnnotation names, and never prints a note that lacks one.
+ package clihelp
+ 
+@@ -44,12 +47,23 @@ type ctxKey struct{}
+ // exitKey is the context key under which an *exitState is stored.
+ var exitKey = ctxKey{}
+ 
+-// exitState records the exit code and abort flag for a single CLI invocation.
++// exitState records the exit code, the abort flag and the steps to run once execution ends for a single CLI invocation.
+ // It is allocated fresh per invocation by NewExitContext and is never shared
+ // across invocations, making it safe for concurrent use across parallel tests.
+ type exitState struct {
+-	code  int
+-	abort bool
++	code   int
++	abort  bool
++	finish []func()
++}
++
++// onFinish registers step to run, in registration order, once the invocation carried by ctx ends execution, before any cobra error envelope is written.
++// It is a no-op when ctx carries no exit state.
++func onFinish(ctx context.Context, step func()) {
++	es := exitStateFromCtx(ctx)
++	if es == nil {
++		return
++	}
++	es.finish = append(es.finish, step)
+ }
+ 
+ // Code returns the recorded exit code, which is 0 if SetExit was never called with a non-zero
+@@ -177,7 +191,11 @@ func RunRootCtx(ctx context.Context, cmd *cobra.Command, out io.Writer) int {
+ 	cmd.SilenceUsage = true
+ 
+ 	execCtx, es := NewExitContext(ctx)
+-	if err := cmd.ExecuteContext(execCtx); err != nil {
++	err := cmd.ExecuteContext(execCtx)
++	for _, step := range es.finish {
++		step()
++	}
++	if err != nil {
+ 		// Wrap the cobra error in the standard JSON envelope so all error paths
+ 		// (unknown command, bad flag, arg validation) have the same shape as domain
+ 		// errors. TrimSpace strips any newline cobra appends to its error strings.
+diff --git a/internal/clihelp/readable.go b/internal/clihelp/readable.go
+new file mode 100644
+index 00000000..ff7c4443
+--- /dev/null
++++ b/internal/clihelp/readable.go
+@@ -0,0 +1,54 @@
++// readable.go implements the readable summary of operator verbs: the global --envelope flag, the choice of whether a command prints the summary, and the writer that renders it.
++
++package clihelp
++
++import (
++	"io"
++	"os"
++
++	"github.com/spf13/cobra"
++	"golang.org/x/term"
++
++	"github.com/Knatte18/loomyard/internal/output"
++)
++
++// EnvelopeFlagUsage is the help text of the global --envelope flag InstallReadableOutput declares.
++const EnvelopeFlagUsage = "print the full JSON envelope where an operator verb on a terminal prints its readable summary"
++
++// InstallReadableOutput declares the global --envelope flag as a persistent flag on root.
++// A command that declares its own envelope flag shadows it, and its own flag, when set, keeps the envelope too.
++// Call InstallReadableOutput once during root command construction.
++func InstallReadableOutput(root *cobra.Command) {
++	root.PersistentFlags().Bool(output.EnvelopeFlag, false, EnvelopeFlagUsage)
++}
++
++// WriterIsTerminal reports whether w is an *os.File whose descriptor is a terminal.
++func WriterIsTerminal(w io.Writer) bool {
++	file, ok := w.(*os.File)
++	return ok && term.IsTerminal(int(file.Fd()))
++}
++
++// UseReadableOutput points cmd's output at an output.SummaryWriter when cmd prints the readable summary, and flushes that writer when the invocation ends.
++// cmd prints it when it carries the operator audience, its output writer is a terminal by isTerminal, no envelope flag is set on it,
++// and it declares no json flag of its own, since such a command renders its own view for a terminal.
++// A person at a terminal so reads each envelope line as its summary, while an agent or script, whose output is never a terminal, reads the envelope.
++func UseReadableOutput(cmd *cobra.Command, isTerminal func(io.Writer) bool) {
++	if cmd.Annotations[AudienceAnnotation] != AudienceOperator {
++		return
++	}
++	if flag := cmd.Flags().Lookup(output.EnvelopeFlag); flag != nil && flag.Changed {
++		return
++	}
++	if flag := cmd.Flags().Lookup("json"); flag != nil {
++		if _, global := flag.Value.(*jsonHelpValue); !global {
++			return
++		}
++	}
++	out := cmd.OutOrStdout()
++	if !isTerminal(out) {
++		return
++	}
++	summary := output.NewSummaryWriter(out)
++	cmd.SetOut(summary)
++	onFinish(cmd.Context(), func() { _ = summary.Flush() })
++}
+diff --git a/internal/clihelp/readable_test.go b/internal/clihelp/readable_test.go
+new file mode 100644
+index 00000000..3f4ab835
+--- /dev/null
++++ b/internal/clihelp/readable_test.go
+@@ -0,0 +1,96 @@
++package clihelp_test
++
++import (
++	"bytes"
++	"errors"
++	"fmt"
++	"io"
++	"testing"
++
++	"github.com/spf13/cobra"
++
++	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/output"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// readableRoot builds a root wired as cmd/lym wires it, whose output reads as a terminal when terminal is set.
++// Its verbs print the envelope {"ok":true,"slug":"x"}: `operator` and `role` by their audience, `own` an operator verb with a json flag of its own, and `unterminated` an operator verb whose envelope has no line break.
++func readableRoot(terminal bool) *cobra.Command {
++	root := &cobra.Command{
++		Use: "lym",
++		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
++			clihelp.UseReadableOutput(cmd, func(io.Writer) bool { return terminal })
++			return nil
++		},
++	}
++	clihelp.InstallJSONHelp(root)
++	clihelp.InstallReadableOutput(root)
++	verb := func(name, audience string) *cobra.Command {
++		return &cobra.Command{
++			Use:         name,
++			Annotations: map[string]string{clihelp.AudienceAnnotation: audience},
++			RunE: func(cmd *cobra.Command, args []string) error {
++				output.Ok(cmd.OutOrStdout(), map[string]any{"slug": "x"})
++				return nil
++			},
++		}
++	}
++	own := verb("own", clihelp.AudienceOperator)
++	own.Flags().Bool("json", false, "")
++	unterminated := &cobra.Command{
++		Use:         "unterminated",
++		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
++		RunE: func(cmd *cobra.Command, args []string) error {
++			fmt.Fprint(cmd.OutOrStdout(), `{"ok":true}`)
++			return nil
++		},
++	}
++	localEnvelope := verb("localenvelope", clihelp.AudienceOperator)
++	localEnvelope.Flags().Bool(output.EnvelopeFlag, false, "")
++	failing := &cobra.Command{
++		Use:         "failing",
++		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
++		RunE: func(cmd *cobra.Command, args []string) error {
++			fmt.Fprint(cmd.OutOrStdout(), `{"ok":true}`)
++			return errors.New("boom")
++		},
++	}
++	root.AddCommand(verb("operator", clihelp.AudienceOperator), verb("role", clihelp.AudienceRole), own, unterminated, localEnvelope, failing)
++	return root
++}
++
++// TestUseReadableOutput pins which invocations print the readable summary and which keep the envelope.
++func TestUseReadableOutput(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	const envelope = "{\"ok\":true,\"slug\":\"x\"}\n"
++	tests := []struct {
++		name     string
++		terminal bool
++		args     []string
++		want     string
++		wantCode int
++	}{
++		{"OperatorOnTerminal_Summary", true, []string{"operator"}, "ok\nslug: x\n", 0},
++		{"EnvelopeFlag_Envelope", true, []string{"operator", "--envelope"}, envelope, 0},
++		{"RoleAudience_Envelope", true, []string{"role"}, envelope, 0},
++		{"NoTerminal_Envelope", false, []string{"operator"}, envelope, 0},
++		{"OwnJSONFlag_Envelope", true, []string{"own"}, envelope, 0},
++		{"OwnEnvelopeFlag_Envelope", true, []string{"localenvelope", "--envelope"}, envelope, 0},
++		{"UnterminatedEnvelope_SummaryAtEnd", true, []string{"unterminated"}, "ok\n", 0},
++		{"UnterminatedEnvelopeThenError_SummaryBeforeErrorEnvelope", true, []string{"failing"}, "ok\n{\"error\":\"boom\",\"ok\":false}\n", 1},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			var out bytes.Buffer
++			if code := clihelp.Execute(readableRoot(tt.terminal), &out, tt.args); code != tt.wantCode {
++				t.Fatalf("Execute(%v) = %d; want %d, output %q", tt.args, code, tt.wantCode, out.String())
++			}
++			if got := out.String(); got != tt.want {
++				t.Errorf("Execute(%v) output = %q; want %q", tt.args, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/output/summary.go b/internal/output/summary.go
+new file mode 100644
+index 00000000..59a31123
+--- /dev/null
++++ b/internal/output/summary.go
+@@ -0,0 +1,338 @@
++// summary.go renders a JSON envelope as a short readable summary for a person at a terminal:
++// the outcome, what the verb did, and every error, warning and way forward, one line each, with long lists collapsed to a count.
++
++package output
++
++import (
++	"bytes"
++	"encoding/json"
++	"fmt"
++	"sort"
++	"strings"
++)
++
++// EnvelopeFlag is the name of the global flag that keeps the full JSON envelope where the readable summary would print.
++const EnvelopeFlag = "envelope"
++
++// Envelope keys the summary reads by meaning.
++const (
++	okKey         = "ok"
++	errorKey      = "error"
++	wayForwardKey = "way_forward"
++)
++
++// Bounds of the summary: a list of plain values longer than summaryListLimit collapses to a count,
++// and an object nested deeper than summaryMaxDepth collapses to its field count and the notes inside it.
++// A list of objects never collapses, since its one line per item is what a listing verb shows.
++// A list of plain values under an error, warning or way-forward key never collapses either.
++const (
++	summaryListLimit = 5
++	summaryMaxDepth  = 2
++)
++
++// labelKeys name, in order of preference, the field that identifies an object in a list.
++var labelKeys = []string{"slug", "subject", "name", "branch", "id"}
++
++// lineKeys name, in order of preference, the field that says in one line what happened to an object in a list.
++var lineKeys = []string{"line", "message", "title", "state", "status", "outcome"}
++
++// summaryFooter closes a summary that left anything out, naming where the full envelope is.
++const summaryFooter = "full envelope: rerun with --" + EnvelopeFlag
++
++// Summary renders line as the readable summary when it holds one JSON envelope: an object with a boolean ok key.
++// It reports false for any other line, which the caller then prints as it stands.
++//
++// The summary opens with `ok`, or `failed: ` and the error.
++// Every other field follows in key order, an empty or false one left out:
++// a plain value on one line;
++// a list of plain values joined on one line, or its count when it is longer than the list limit;
++// a list of plain values under an error, warning or way-forward key one line per value;
++// an object as its fields, indented, or its field count when it lies deeper than the depth limit;
++// and a list of objects one line per item, naming the item's label and its line field.
++// Whatever a count or a one-line item hides still shows its errors, warnings and ways forward, one line each, by their path.
++// A summary that hid anything ends naming the flag that prints the full envelope.
++func Summary(line []byte) (string, bool) {
++	decoder := json.NewDecoder(bytes.NewReader(line))
++	decoder.UseNumber()
++	var envelope map[string]any
++	if err := decoder.Decode(&envelope); err != nil || decoder.More() {
++		return "", false
++	}
++	ok, isBool := envelope[okKey].(bool)
++	if !isBool {
++		return "", false
++	}
++
++	r := &summaryRenderer{}
++	if ok {
++		r.line(0, "ok")
++	} else {
++		message, _ := envelope[errorKey].(string)
++		r.text(0, "failed", message)
++	}
++	for _, key := range sortedKeys(envelope) {
++		if key == okKey || key == errorKey {
++			continue
++		}
++		r.field(0, key, envelope[key])
++	}
++	if r.hid {
++		r.line(0, summaryFooter)
++	}
++	return r.out.String(), true
++}
++
++// summaryRenderer accumulates the summary's lines and whether any part of the envelope was left out.
++type summaryRenderer struct {
++	out strings.Builder
++	hid bool
++}
++
++// line writes text as one line at indent levels of two spaces.
++func (r *summaryRenderer) line(indent int, text string) {
++	r.out.WriteString(strings.Repeat("  ", indent))
++	r.out.WriteString(text)
++	r.out.WriteString("\n")
++}
++
++// text writes `key: value`, a multi-line value's further lines indented one level below the key.
++func (r *summaryRenderer) text(indent int, key, value string) {
++	lines := strings.Split(strings.TrimSpace(value), "\n")
++	r.line(indent, key+": "+lines[0])
++	for _, rest := range lines[1:] {
++		r.line(indent+1, rest)
++	}
++}
++
++// field writes key and value at indent and depth, leaving out an empty value.
++func (r *summaryRenderer) field(depth int, key string, value any) {
++	if isEmpty(value) {
++		return
++	}
++	switch typed := value.(type) {
++	case map[string]any:
++		if depth >= summaryMaxDepth {
++			r.hid = true
++			r.line(depth, fmt.Sprintf("%s: %d fields", key, len(typed)))
++			r.notes(depth+1, "", typed)
++			return
++		}
++		r.line(depth, key+":")
++		for _, child := range sortedKeys(typed) {
++			r.field(depth+1, child, typed[child])
++		}
++	case []any:
++		r.list(depth, key, typed)
++	default:
++		r.text(depth, key, plain(value))
++	}
++}
++
++// list writes a list of plain values on one line, or its count past the list limit, and a list holding an object one line per item.
++// A list of plain values under a note key is never collapsed: each of its non-empty values is one line.
++func (r *summaryRenderer) list(depth int, key string, items []any) {
++	if !holdsObject(items) {
++		if isNoteKey(key) {
++			r.noteLines(depth, key, items)
++			return
++		}
++		if len(items) > summaryListLimit {
++			r.hid = true
++			r.line(depth, fmt.Sprintf("%s: %d items", key, len(items)))
++			return
++		}
++		values := make([]string, len(items))
++		for i, item := range items {
++			values[i] = plain(item)
++		}
++		r.line(depth, key+": "+strings.Join(values, ", "))
++		return
++	}
++	r.line(depth, key+":")
++	for _, item := range items {
++		r.item(depth+1, item)
++	}
++}
++
++// item writes one list item on one line, then the notes the line does not show.
++// An object's line names its label and its line field, or its plain fields when it has neither.
++func (r *summaryRenderer) item(depth int, item any) {
++	object, isObject := item.(map[string]any)
++	if !isObject {
++		r.line(depth, "- "+plain(item))
++		return
++	}
++	label := firstString(object, labelKeys)
++	summary := firstString(object, lineKeys)
++	shown := map[string]bool{label.key: true, summary.key: true}
++	var text string
++	switch {
++	case label.value != "" && summary.value != "":
++		text = label.value + ": " + summary.value
++	case label.value != "" || summary.value != "":
++		text = label.value + summary.value
++	default:
++		text, shown = plainFields(object)
++	}
++	r.line(depth, "- "+firstLine(text))
++	for _, key := range sortedKeys(object) {
++		if !shown[key] && !isEmpty(object[key]) && !isNoteKey(key) {
++			r.hid = true
++		}
++	}
++	r.notes(depth+1, "", object)
++}
++
++// notes writes every error, warning and way forward value holds at any depth, one line each, named by its path below the written context.
++func (r *summaryRenderer) notes(indent int, path string, value any) {
++	switch typed := value.(type) {
++	case map[string]any:
++		for _, key := range sortedKeys(typed) {
++			child := typed[key]
++			childPath := joinPath(path, key)
++			if isNoteKey(key) && !isEmpty(child) {
++				r.noteLines(indent, childPath, child)
++				continue
++			}
++			r.notes(indent, childPath, child)
++		}
++	case []any:
++		for _, item := range typed {
++			object, isObject := item.(map[string]any)
++			if !isObject {
++				continue
++			}
++			itemPath := path
++			if label := firstString(object, labelKeys); label.value != "" {
++				itemPath = joinPath(path, label.value)
++			}
++			r.notes(indent, itemPath, object)
++		}
++	}
++}
++
++// noteLines writes a note's value, one line per string it holds.
++func (r *summaryRenderer) noteLines(indent int, path string, value any) {
++	items, isList := value.([]any)
++	if !isList {
++		r.text(indent, path, plain(value))
++		return
++	}
++	for _, item := range items {
++		if !isEmpty(item) {
++			r.text(indent, path, plain(item))
++		}
++	}
++}
++
++// keyValue is one field of an object, both empty when the object has none of the keys asked for.
++type keyValue struct {
++	key   string
++	value string
++}
++
++// firstString returns the first of keys whose value in object is a non-empty plain value.
++func firstString(object map[string]any, keys []string) keyValue {
++	for _, key := range keys {
++		value, present := object[key]
++		if !present || isEmpty(value) {
++			continue
++		}
++		switch value.(type) {
++		case map[string]any, []any:
++			continue
++		}
++		return keyValue{key: key, value: plain(value)}
++	}
++	return keyValue{}
++}
++
++// plainFields joins object's non-empty plain fields that are not notes as `key=value` in key order, and returns the keys it showed.
++func plainFields(object map[string]any) (string, map[string]bool) {
++	shown := map[string]bool{}
++	var parts []string
++	for _, key := range sortedKeys(object) {
++		value := object[key]
++		if isEmpty(value) || isNoteKey(key) {
++			continue
++		}
++		switch value.(type) {
++		case map[string]any, []any:
++			continue
++		}
++		shown[key] = true
++		parts = append(parts, key+"="+plain(value))
++	}
++	return strings.Join(parts, ", "), shown
++}
++
++// isNoteKey reports whether key names an error, a warning or a way forward.
++func isNoteKey(key string) bool {
++	return key == errorKey || key == wayForwardKey ||
++		strings.HasSuffix(key, "_"+errorKey) ||
++		strings.HasSuffix(key, "warning") || strings.HasSuffix(key, "warnings")
++}
++
++// isEmpty reports whether value says nothing: null, false, an empty string, an empty list or an empty object.
++func isEmpty(value any) bool {
++	switch typed := value.(type) {
++	case nil:
++		return true
++	case bool:
++		return !typed
++	case string:
++		return strings.TrimSpace(typed) == ""
++	case []any:
++		return len(typed) == 0
++	case map[string]any:
++		return len(typed) == 0
++	}
++	return false
++}
++
++// holdsObject reports whether any of items is an object.
++func holdsObject(items []any) bool {
++	for _, item := range items {
++		if _, isObject := item.(map[string]any); isObject {
++			return true
++		}
++	}
++	return false
++}
++
++// plain formats a plain JSON value as text; a nested value it cannot show on one line reads as its kind and size.
++func plain(value any) string {
++	switch typed := value.(type) {
++	case string:
++		return typed
++	case map[string]any:
++		return fmt.Sprintf("%d fields", len(typed))
++	case []any:
++		return fmt.Sprintf("%d items", len(typed))
++	}
++	return fmt.Sprint(value)
++}
++
++// firstLine returns text up to its first line break.
++func firstLine(text string) string {
++	first, _, _ := strings.Cut(text, "\n")
++	return first
++}
++
++// joinPath joins a parent path and a child name with a dot, the child alone when the parent is empty.
++func joinPath(parent, child string) string {
++	if parent == "" {
++		return child
++	}
++	return parent + "." + child
++}
++
++// sortedKeys returns object's keys in byte order.
++func sortedKeys(object map[string]any) []string {
++	keys := make([]string, 0, len(object))
++	for key := range object {
++		keys = append(keys, key)
++	}
++	sort.Strings(keys)
++	return keys
++}
+diff --git a/internal/output/summary_test.go b/internal/output/summary_test.go
+new file mode 100644
+index 00000000..a334ecf1
+--- /dev/null
++++ b/internal/output/summary_test.go
+@@ -0,0 +1,106 @@
++package output_test
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/output"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestSummary pins how an envelope line reads as its summary, and that any other line is no envelope.
++func TestSummary(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name   string
++		line   string
++		want   string
++		wantOK bool
++	}{
++		{
++			name:   "OkScalars_EmptyLeftOut",
++			line:   `{"ok":true,"slug":"x","count":3,"partial":false,"note":""}`,
++			want:   "ok\ncount: 3\nslug: x\n",
++			wantOK: true,
++		},
++		{
++			name:   "Failed_MultiLineErrorIndented",
++			line:   `{"ok":false,"error":"refused: x\nway forward: y"}`,
++			want:   "failed: refused: x\n  way forward: y\n",
++			wantOK: true,
++		},
++		{
++			name:   "LongPlainList_CollapsesToCount",
++			line:   `{"ok":true,"tips":["a","b","c","d","e","f"],"tags":["a","b"]}`,
++			want:   "ok\ntags: a, b\ntips: 6 items\nfull envelope: rerun with --envelope\n",
++			wantOK: true,
++		},
++		{
++			name:   "FivePlainItems_JoinedWithoutFooter",
++			line:   `{"ok":true,"tips":["a","b","c","d","e"]}`,
++			want:   "ok\ntips: a, b, c, d, e\n",
++			wantOK: true,
++		},
++		{
++			name:   "LongNoteList_OneLinePerWarning",
++			line:   `{"ok":true,"warnings":["w1","w2","w3","w4","w5","w6"]}`,
++			want:   "ok\nwarnings: w1\nwarnings: w2\nwarnings: w3\nwarnings: w4\nwarnings: w5\nwarnings: w6\n",
++			wantOK: true,
++		},
++		{
++			name:   "ShortNoteList_OneLinePerWarning",
++			line:   `{"ok":true,"warnings":["a","b"]}`,
++			want:   "ok\nwarnings: a\nwarnings: b\n",
++			wantOK: true,
++		},
++		{
++			name:   "NotesOutsideCollapsedObject_EachOnOwnLine",
++			line:   `{"ok":false,"error":"boom","fetch_error":"nope","detail":{"size":2,"way_forward":"lym fix","x_warning":"careful"}}`,
++			want:   "failed: boom\ndetail:\n  size: 2\n  way_forward: lym fix\n  x_warning: careful\nfetch_error: nope\n",
++			wantOK: true,
++		},
++		{
++			name: "ObjectList_OneLinePerItemWithNotes",
++			line: `{"ok":true,"runs":[{"slug":"a","state":"held","line":"waits for check"},{"slug":"b","line":"running here","way_forward":"lym adopt b"}]}`,
++			want: "ok\nruns:\n" +
++				"  - a: waits for check\n" +
++				"  - b: running here\n" +
++				"    way_forward: lym adopt b\n" +
++				"full envelope: rerun with --envelope\n",
++			wantOK: true,
++		},
++		{
++			name:   "ObjectListWithoutLabel_PlainFields",
++			line:   `{"ok":true,"checks":[{"pid":12,"log":"suite.log"}]}`,
++			want:   "ok\nchecks:\n  - log=suite.log, pid=12\n",
++			wantOK: true,
++		},
++		{
++			name: "DeepObject_CollapsesKeepingLabelledNotes",
++			line: `{"ok":true,"reconcile":{"pairs":{"p1":{"branch":"x","warnings":["diverged","ahead"],"tips":[{"slug":"t","error":"boom"}]}}}}`,
++			want: "ok\nreconcile:\n  pairs:\n    p1: 3 fields\n" +
++				"      tips.t.error: boom\n" +
++				"      warnings: diverged\n" +
++				"      warnings: ahead\n" +
++				"full envelope: rerun with --envelope\n",
++			wantOK: true,
++		},
++		{name: "PlainText", line: "plain text"},
++		{name: "ObjectWithoutOk", line: `{"slug":"x"}`},
++		{name: "Array", line: `[1]`},
++		{name: "TwoEnvelopes", line: `{"ok":true} {"ok":true}`},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got, ok := output.Summary([]byte(tt.line))
++			if ok != tt.wantOK {
++				t.Fatalf("Summary(%q) ok = %v; want %v", tt.line, ok, tt.wantOK)
++			}
++			if got != tt.want {
++				t.Errorf("Summary(%q) = %q; want %q", tt.line, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/output/summarywriter.go b/internal/output/summarywriter.go
+new file mode 100644
+index 00000000..df357344
+--- /dev/null
++++ b/internal/output/summarywriter.go
+@@ -0,0 +1,78 @@
++// summarywriter.go implements SummaryWriter, the stream filter that prints a verb's JSON envelope line as its readable summary and passes every other byte through as written.
++
++package output
++
++import (
++	"bytes"
++	"io"
++)
++
++// SummaryWriter writes everything written to it through to an underlying writer, except a line that opens with '{' and holds one envelope, which it writes as Summary renders it.
++// Text that does not open a line with '{', such as a prompt with no line break, reaches the underlying writer at once.
++// A line that opens with '{' is held until its line break or Flush.
++// A SummaryWriter is not safe for concurrent use.
++type SummaryWriter struct {
++	out         io.Writer
++	atLineStart bool
++	holding     bool
++	held        []byte
++}
++
++// NewSummaryWriter returns a SummaryWriter over out, at the start of a line.
++func NewSummaryWriter(out io.Writer) *SummaryWriter {
++	return &SummaryWriter{out: out, atLineStart: true}
++}
++
++// Write implements io.Writer, holding a line that opens with '{' and passing any other text through.
++func (s *SummaryWriter) Write(p []byte) (int, error) {
++	total := len(p)
++	for len(p) > 0 {
++		if !s.holding && s.atLineStart && p[0] == '{' {
++			s.holding = true
++		}
++		end := bytes.IndexByte(p, '\n')
++		chunk := p
++		if end >= 0 {
++			chunk = p[:end+1]
++		}
++		if s.holding {
++			s.held = append(s.held, chunk...)
++			p = p[len(chunk):]
++			if end < 0 {
++				return total, nil
++			}
++			if err := s.writeHeld(); err != nil {
++				return total - len(p), err
++			}
++			continue
++		}
++		if _, err := s.out.Write(chunk); err != nil {
++			return total - len(p), err
++		}
++		s.atLineStart = end >= 0
++		p = p[len(chunk):]
++	}
++	return total, nil
++}
++
++// Flush writes a held line that never got its line break, as its summary when it holds an envelope and as written otherwise.
++func (s *SummaryWriter) Flush() error {
++	if !s.holding {
++		return nil
++	}
++	return s.writeHeld()
++}
++
++// writeHeld writes the held line as its summary, or as it was written when it holds no envelope, and starts a new line.
++func (s *SummaryWriter) writeHeld() error {
++	held := s.held
++	s.held = nil
++	s.holding = false
++	s.atLineStart = true
++	if summary, ok := Summary(bytes.TrimSpace(held)); ok {
++		_, err := io.WriteString(s.out, summary)
++		return err
++	}
++	_, err := s.out.Write(held)
++	return err
++}
+diff --git a/internal/output/summarywriter_test.go b/internal/output/summarywriter_test.go
+new file mode 100644
+index 00000000..035d111f
+--- /dev/null
++++ b/internal/output/summarywriter_test.go
+@@ -0,0 +1,61 @@
++package output_test
++
++import (
++	"bytes"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/output"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestSummaryWriter pins that an envelope line reaches the writer as its summary, however the writes split it, and that every other byte passes through as written.
++func TestSummaryWriter(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name        string
++		writes      []string
++		wantBefore  string
++		wantFlushed string
++	}{
++		{
++			name:        "EnvelopeSplitAcrossWrites_TextAround",
++			writes:      []string{"prompt: ", "answer\n{\"ok\":", "true,\"slug\":\"x\"}\n", "tail\n"},
++			wantBefore:  "prompt: answer\nok\nslug: x\ntail\n",
++			wantFlushed: "prompt: answer\nok\nslug: x\ntail\n",
++		},
++		{
++			name:        "BraceLineNoEnvelope_AsWritten",
++			writes:      []string{"{not json\n", "a {\"ok\":true}\n"},
++			wantBefore:  "{not json\na {\"ok\":true}\n",
++			wantFlushed: "{not json\na {\"ok\":true}\n",
++		},
++		{
++			name:        "UnterminatedEnvelope_HeldUntilFlush",
++			writes:      []string{`{"ok":true}`},
++			wantBefore:  "",
++			wantFlushed: "ok\n",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			var out bytes.Buffer
++			writer := output.NewSummaryWriter(&out)
++			for _, write := range tt.writes {
++				if n, err := writer.Write([]byte(write)); err != nil || n != len(write) {
++					t.Fatalf("Write(%q) = %d, %v; want %d, nil", write, n, err, len(write))
++				}
++			}
++			if got := out.String(); got != tt.wantBefore {
++				t.Errorf("before Flush = %q; want %q", got, tt.wantBefore)
++			}
++			if err := writer.Flush(); err != nil {
++				t.Fatalf("Flush() = %v; want nil", err)
++			}
++			if got := out.String(); got != tt.wantFlushed {
++				t.Errorf("after Flush = %q; want %q", got, tt.wantFlushed)
++			}
++		})
++	}
++}
+diff --git a/internal/shedverbs/human.go b/internal/shedverbs/human.go
+index a781643f..094c71ce 100644
+--- a/internal/shedverbs/human.go
++++ b/internal/shedverbs/human.go
+@@ -6,27 +6,16 @@ package shedverbs
+ 
+ import (
+ 	"fmt"
+-	"io"
+-	"os"
+ 	"strings"
+ 
++	"github.com/Knatte18/loomyard/internal/clihelp"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ )
+ 
+-// writerIsTerminal reports whether w is a terminal: an *os.File whose Stat mode has
+-// os.ModeCharDevice. It is a package-level function value so a Tier 1 test can drive the terminal
++// writerIsTerminal reports whether w is a terminal by the check every operator verb shares.
++// It is a package-level function value so a Tier 1 test can drive the terminal
+ // branch without a pseudo-terminal.
+-var writerIsTerminal = func(w io.Writer) bool {
+-	f, ok := w.(*os.File)
+-	if !ok {
+-		return false
+-	}
+-	info, err := f.Stat()
+-	if err != nil {
+-		return false
+-	}
+-	return info.Mode()&os.ModeCharDevice != 0
+-}
++var writerIsTerminal = clihelp.WriterIsTerminal
+ 
+ // RenderStatusHuman composes the human status view, one trailing newline included.
+ //
+diff --git a/pattern/PATTERN-cli-cobra.md b/pattern/PATTERN-cli-cobra.md
+index fe06cfe1..3293e128 100644
+--- a/pattern/PATTERN-cli-cobra.md
++++ b/pattern/PATTERN-cli-cobra.md
+@@ -17,6 +17,8 @@ Every lym CLI module is a cobra subtree assembled under one root in `cmd/lym/mai
+ - Errors are JSON via `internal/output`, one object per line, and every `RunE` checks `clihelp.ShouldAbort` first.
+ - The global `--json` flag, declared by `clihelp.InstallJSONHelp`, prints a command's help as JSON and never runs the command, so an agent can walk the tree with `lym <path> --json`.
+   A command whose own local `--json` flag means something else, such as `lym shed status --json`, shadows the global one and runs.
++- The global `--envelope` flag, declared by `clihelp.InstallReadableOutput`, keeps the full JSON envelope where an operator verb on a terminal prints its readable summary.
++  A command's own local `--envelope` flag, such as `lym creel read`, shadows it.
+ 
+ ## Interactive-handoff exception
+ 
