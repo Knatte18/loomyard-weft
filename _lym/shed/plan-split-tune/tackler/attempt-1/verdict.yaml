@@ -1,0 +1,12 @@
+verdict: hand-back
+reason: >-
+  The Darn-Write stop is a stale lym binary, not a config or stencil fault.
+  The stencil on disk (_bolt/_lym/stencils/darn/darn-template-write.md, 19:22) carries the subagent_model marker added by commit 2d319fe5 (Nov 2, 14:02).
+  The installed binary /home/knatte/go/bin/lym is dated Nov 1 21:02, predates that commit, and contains no "subagent_model" string.
+  Its DarnTable therefore never fills the marker, and internal/stencil/stencil.go:62 refuses the template.
+  A plain re-launch reruns the same stale binary and fails the same way, so resume does not settle it.
+  loom.yaml's subagent_model is not the cause: LoadConfig refuses an empty value, so the value is set.
+question: >-
+  The lym binary at /home/knatte/go/bin/lym predates commit 2d319fe5, which the darn stencil requires.
+  Rebuild and install lym from the current HEAD (70956a7c or later), then resume the run at Darn-Write.
+  Shall the operator do that install, or should this run proceed another way?
