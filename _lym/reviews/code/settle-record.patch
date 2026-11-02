@@ -1,0 +1,354 @@
+diff --git a/contracts/stencils/darn/darn-template-write.md b/contracts/stencils/darn/darn-template-write.md
+index 1e469085..4eb23644 100644
+--- a/contracts/stencils/darn/darn-template-write.md
++++ b/contracts/stencils/darn/darn-template-write.md
+@@ -8,7 +8,8 @@
+      decision_record_path is a required marker, naming the decision record the writer reads as its scope; stop_marker_path is a required marker, naming the file the writer creates when it stops;
+      condition_stop_marker_path is a required marker, naming the second file the writer creates when it stops on a condition the task's body names.
+      prior_work is never empty: DarnTable fills it with (none) when it has nothing to tell.
+-     edit_directive is a required marker, rendered unconditionally by internal/editdirective. -->
++     edit_directive is a required marker, rendered unconditionally by internal/editdirective.
++     subagent_model is a required marker, filled from loom.yaml's subagent_model. -->
+ 
+ # Darn — make the change a board entry asks for, in one session
+ 
+@@ -59,7 +60,7 @@ Check whether landed work, another board entry or another run overtook or contra
+ 1. Edit the repository to make the change.
+    Follow the existing patterns, and the PATTERN entries in this prompt.
+    Each commit is one change, with its own reads, edits and gate run.
+-2. Hand work that needs no overview of the change to fresh subagents through the Agent tool, each with `subagent_type: "general-purpose"` and `model: "sonnet"`: a batch of lookups, and per-package work whose edits you have already decided, one subagent per package, each owning its own files.
++2. Hand work that needs no overview of the change to fresh subagents through the Agent tool, each with `subagent_type: "general-purpose"` and `model: "{{.subagent_model}}"`: a batch of lookups, and per-package work whose edits you have already decided, one subagent per package, each owning its own files.
+    Launch every subagent of a batch together in one message.
+    A fresh subagent sees none of this session, so each prompt names the files the subagent owns, the edits to make, and the gate rule from your system prompt with its Bash tool timeout, for the subagent to run on its own package.
+    Keep in this session the work that needs the overview: the design, a change that spans packages, the commits and the change description.
+diff --git a/contracts/stencils/loom/loom-template-discussion.md b/contracts/stencils/loom/loom-template-discussion.md
+index 901123ed..15b1d4bc 100644
+--- a/contracts/stencils/loom/loom-template-discussion.md
++++ b/contracts/stencils/loom/loom-template-discussion.md
+@@ -13,6 +13,7 @@
+      twill_directive is a fourth optional marker, rendered by internal/twilldirective through internal/loomengine;
+      it sits on the line that would otherwise be blank, so an empty value leaves the blank line and the prompt's bytes unchanged.
+      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
++     subagent_model is a required marker, filled from loom.yaml's subagent_model.
+      The literal `{` / `}` characters around {{.slug}} in the board-read example below are ordinary JSON punctuation, not template syntax — only `{{` begins a template action. -->
+ 
+ # Discussion — interview, then write the decision record
+@@ -58,6 +59,11 @@ Only unresolved design questions belong in the interview.
+ This exploration is bounded, the same way Step 3's interview categories are: at a coarse level you MAY establish which module boundary the work falls under and whether the design conflicts with an existing pattern.
+ You MUST NOT gather exact signatures, `file:line` citations, interface shapes, or dependency lists, and you MUST NOT do exhaustive existing-pattern research — that class of fact is computed fresh at Plan time.
+ 
++You may hand a batch of independent lookups, such as where a symbol is used or which module owns a concern, to fresh subagents through the Agent tool, each with `subagent_type: "general-purpose"` and `model: "{{.subagent_model}}"`, all launched together in one message.
++Whether to is your call: it pays off for a broad search where you need only the conclusion, while a lookup you judge small, or code you need to see yourself, stays in this session.
++A fresh subagent sees none of this session, so each prompt carries its whole question and asks for a short answer naming files and spans.
++A fork does not serve here: it inherits this session's whole context.
++
+ A factual question the design rests on is settled here, never deferred.
+ Such a question asks a fact, not a choice: which version of a tool or dependency has a feature, how an upstream project behaves, what the code does today.
+ Research it now, from the code and from upstream changelogs, manuals and docs at the versions that matter, and record its answer in the decision record's Decisions or Constraints with the evidence it rests on, named by source and version.
+diff --git a/contracts/stencils/loom/loom-template-plan.md b/contracts/stencils/loom/loom-template-plan.md
+index e0425f81..121e5068 100644
+--- a/contracts/stencils/loom/loom-template-plan.md
++++ b/contracts/stencils/loom/loom-template-plan.md
+@@ -9,7 +9,8 @@
+      parent_directive is a third optional marker, rendered by internal/parentdirective.
+      twill_directive is a fourth optional marker, rendered by internal/twilldirective through internal/loomengine;
+      it sits on the line that would otherwise be blank, so an empty value leaves the blank line and the prompt's bytes unchanged.
+-     edit_directive is a required marker, rendered unconditionally by internal/editdirective. -->
++     edit_directive is a required marker, rendered unconditionally by internal/editdirective.
++     subagent_model is a required marker, filled from loom.yaml's subagent_model. -->
+ 
+ # Plan — read the decision record, write a plan-format flat-card plan
+ 
+@@ -51,7 +52,7 @@ A follow-up a card files goes on the board as a note, never as a task, and no ca
+ 
+ Before planning, start from the code the relevant list names, then read the other relevant parts of the codebase: check recent commits, and follow existing patterns and any PATTERN entries in this prompt rather than inventing new ones.
+ 
+-Hand a batch of independent lookups, such as where a symbol is used or which files follow a pattern, to fresh subagents through the Agent tool, each with `subagent_type: "general-purpose"` and `model: "sonnet"`, all launched together in one message.
++Hand a batch of independent lookups, such as where a symbol is used or which files follow a pattern, to fresh subagents through the Agent tool, each with `subagent_type: "general-purpose"` and `model: "{{.subagent_model}}"`, all launched together in one message.
+ A fresh subagent sees none of this session, so each prompt carries its whole question and asks for a short answer naming files and members.
+ Keep in this session the reading the plan's design needs: the decision record, the relevant list and the code your cards change.
+ 
+diff --git a/docs/overview.md b/docs/overview.md
+index 6df0d68a..0ab964f0 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -613,7 +613,7 @@ User-facing modules each get one `lym <module>` namespace:
+   `landing.yaml` also holds the `fixer` model-spec and `fixer_timeout_min` (those of the merge fixer and of the fix review session Finalize runs over an over-cap fixer change), `parent_align_fix_attempts`, `finalize_fix_attempts`, `finalize_fix_max_lines` and `finalize_fix_review_rounds`, and `deploy_branches`, the base branches whose landing runs `deploy`, which `lym config reconcile` renames from the retired `require_pr_to_base`; reconcile also renames the retired `merge_fix_attempts` key to `parent_align_fix_attempts` and `gate.yaml`'s `merge-in` gate key to `parent-align`.
+   `landing.yaml` gains `describe` (the row's model), `describe_timeout_min` and the `credit` keys; an existing hub takes their template defaults until `lym config reconcile --apply` writes them, pruning the retired `co_authored_by`, `trailer_text` and `engine_trailers` keys, and an in-flight run parked past `Webster-Bouncer` is restarted rather than migrated.
+   `lym loom status --watch` is this module's registered interactive-handoff exception ([PATTERN-cli-cobra](../pattern/PATTERN-cli-cobra.md)): it self-displays the polled status line then blocks forever as its own keepalive tail, with every fallible step running pre-flight, on the envelope, and only that tail exempt from emitting JSON.
+-  ✅ Implemented. loom's config module (`loom.yaml`, holding what every loom recipe shares: the `discussion`/`judge` role model-specs and the shared `reviewer_model`/`fixer_model`, where `seed` names the Bouncer seed pass model, `discussion_judge`/`code_judge` and `discussion_seed`/`code_seed` override the judge and seed per review segment, an empty one taking its fallback, and `reviewer_model` and `fixer_model` each take one model-spec or a per-round list, and `<segment>_reviewer_model`/`<segment>_fixer_model` for Discussion and Code override them per review segment, `discussion_reviewer_fan`/`code_reviewer_fan`, which name a `lenses.yaml` fan, or list one per round, to cluster-review Discussion-Review or Code-Review, `discussion_fixer_fan`/`code_fixer_fan`, which do the same for the fixer, an empty entry running the single fixer, `code_reviewer_fan` open to the local layer and the other three closed to it, `discussion_timeout_min`/`review_timeout_min`, `discussion_interactive`, `discussion_advisors`, the Discussion-Write advisors, one `{name, model}` entry each, where an empty list runs the lead alone, deciding each question itself, `discussion_lenses`, which names the `lenses.yaml` fan whose lenses the Discussion-Write lead forks itself for, empty turning the forks off, closed to the local layer, `review_circling_checkpoint`, `review_max_bounces`, `review_amend_max_bounces`, the amendment allowance a review segment re-entered over a changed subject runs under, the per-perch `discussion_max_bounces`/`code_max_bounces`, where null takes `review_max_bounces` and 0 runs no review round, `review_hard_max_bounces` and the per-perch `discussion_hard_max_bounces`/`code_hard_max_bounces`, where 0 takes `review_hard_max_bounces` and a hard cap below its perch's budget is refused at load, and `discussion_auto_accept`/`code_auto_accept`, which make a perch accept a harvested round at a spent budget instead of running the soft-cap rule) and the tapestry recipe's module (`tapestry.yaml`, per-worktree, holding the plan perch's own keys: the `plan` model-spec, `plan_timeout_min`, `implementer`, `plan_lenses`, `plan_reviewer_model`/`plan_fixer_model`, `plan_reviewer_fan`/`plan_fixer_fan`, `plan_judge`/`plan_seed`, `plan_max_bounces`, `plan_hard_max_bounces` and `plan_auto_accept`, where an unset model list, judge or seed, a null budget and a hard cap of 0 take `loom.yaml`'s value) exist and reconcile via `lym config reconcile --apply` (the bare verb is a dry run that only reports added and removed keys and writes nothing).
++  ✅ Implemented. loom's config module (`loom.yaml`, holding what every loom recipe shares: the `discussion`/`judge` role model-specs and the shared `reviewer_model`/`fixer_model`, where `seed` names the Bouncer seed pass model, `discussion_judge`/`code_judge` and `discussion_seed`/`code_seed` override the judge and seed per review segment, an empty one taking its fallback, and `reviewer_model` and `fixer_model` each take one model-spec or a per-round list, and `<segment>_reviewer_model`/`<segment>_fixer_model` for Discussion and Code override them per review segment, `discussion_reviewer_fan`/`code_reviewer_fan`, which name a `lenses.yaml` fan, or list one per round, to cluster-review Discussion-Review or Code-Review, `discussion_fixer_fan`/`code_fixer_fan`, which do the same for the fixer, an empty entry running the single fixer, `code_reviewer_fan` open to the local layer and the other three closed to it, `discussion_timeout_min`/`review_timeout_min`, `discussion_interactive`, `discussion_advisors`, the Discussion-Write advisors, one `{name, model}` entry each, where an empty list runs the lead alone, deciding each question itself, `discussion_lenses`, which names the `lenses.yaml` fan whose lenses the Discussion-Write lead forks itself for, empty turning the forks off, closed to the local layer, `subagent_model`, the model name the Plan, Discussion-Write and darn writers give the fresh subagents they hand lookups to, `review_circling_checkpoint`, `review_max_bounces`, `review_amend_max_bounces`, the amendment allowance a review segment re-entered over a changed subject runs under, the per-perch `discussion_max_bounces`/`code_max_bounces`, where null takes `review_max_bounces` and 0 runs no review round, `review_hard_max_bounces` and the per-perch `discussion_hard_max_bounces`/`code_hard_max_bounces`, where 0 takes `review_hard_max_bounces` and a hard cap below its perch's budget is refused at load, and `discussion_auto_accept`/`code_auto_accept`, which make a perch accept a harvested round at a spent budget instead of running the soft-cap rule) and the tapestry recipe's module (`tapestry.yaml`, per-worktree, holding the plan perch's own keys: the `plan` model-spec, `plan_timeout_min`, `implementer`, `plan_lenses`, `plan_reviewer_model`/`plan_fixer_model`, `plan_reviewer_fan`/`plan_fixer_fan`, `plan_judge`/`plan_seed`, `plan_max_bounces`, `plan_hard_max_bounces` and `plan_auto_accept`, where an unset model list, judge or seed, a null budget and a hard cap of 0 take `loom.yaml`'s value) exist and reconcile via `lym config reconcile --apply` (the bare verb is a dry run that only reports added and removed keys and writes nothing).
+   Reconcile renames the retired `review`, `fix`, `<segment>_review`, `<segment>_fix`, `<segment>_fan` and `<segment>_fix_fan` keys of `loom.yaml` to their new names, and the retired `webster_*` perch keys to `code_*`; it moves a value `loom.yaml` tuned for a plan perch key, or for `implementer`, into `tapestry.yaml`; `darn.yaml`'s perch keys, `review_fan` and `review_fix_fan` among them, move to `loom.yaml`'s `code_*` keys; the retired `merge_*` perch keys, `rework`, `alignment_pr_approve`, `alignment`, `alignment_timeout_min`, `skip_alignment` and `parent_review_wait_min` are dropped.
+   The driver, tackler and arbiter keys live in `shed.yaml` alone; a loom recipe that needs other values sets them in its profile block's `shed` object, which lands in the pair's local `shed.yaml` layer like any run setting.
+   The reviewer and fixer model keys and `review_timeout_min` are the review segments' own models and timeout, and live here rather than in the recipe because the recipe is embedded in the binary and a recipe-literal model would be untunable without a rebuild.
+diff --git a/internal/darnengine/spec.go b/internal/darnengine/spec.go
+index aa610758..1c75b478 100644
+--- a/internal/darnengine/spec.go
++++ b/internal/darnengine/spec.go
+@@ -54,6 +54,8 @@ type DarnInputs struct {
+ 	PriorWork string
+ 	// LanguageSkills are the hub's language skills the writer loads after its own; empty for none.
+ 	LanguageSkills []string
++	// SubagentModel is the model name the writer passes to the Agent tool for the fresh subagents it hands work to.
++	SubagentModel string
+ }
+ 
+ // DarnTable builds the seatengine.Table of one darn writer spawn: one lead that writes the change description.
+@@ -72,6 +74,7 @@ func DarnTable(in DarnInputs, cfg Config, reg modelspec.Registry) (seatengine.Ta
+ 		{"DecisionRecordPath", in.DecisionRecordPath},
+ 		{"StopMarkerPath", in.StopMarkerPath},
+ 		{"ConditionStopMarkerPath", in.ConditionStopMarkerPath},
++		{"SubagentModel", in.SubagentModel},
+ 	}
+ 	for _, r := range required {
+ 		if r.value == "" {
+@@ -110,6 +113,7 @@ func DarnTable(in DarnInputs, cfg Config, reg modelspec.Registry) (seatengine.Ta
+ 			"condition_stop_marker_path": in.ConditionStopMarkerPath,
+ 			"specs_dir":                  in.SpecsDir,
+ 			"prior_work":                 orNone(in.PriorWork),
++			"subagent_model":             in.SubagentModel,
+ 			"pattern_directive":          patternDirective,
+ 			friction.MarkerName:          frictionDirective,
+ 		},
+diff --git a/internal/darnengine/spec_test.go b/internal/darnengine/spec_test.go
+index 6b3c409a..efe5dde9 100644
+--- a/internal/darnengine/spec_test.go
++++ b/internal/darnengine/spec_test.go
+@@ -33,6 +33,7 @@ func newSpecInputs(t *testing.T) DarnInputs {
+ 		StopMarkerPath:     filepath.Join(t.TempDir(), "stop-marker"),
+ 
+ 		ConditionStopMarkerPath: filepath.Join(t.TempDir(), "condition-stop-marker"),
++		SubagentModel:           "haiku",
+ 	}
+ }
+ 
+@@ -83,7 +84,7 @@ func TestDarnSpec(t *testing.T) {
+ 			configure:  func(in *DarnInputs) {},
+ 			wantSkills: []string{"scribe:prose", "scribe:code-quality", "scribe:testing"},
+ 			wantInPrompt: func(in DarnInputs) []string {
+-				return []string{"fix-the-thing", in.DescriptionPath, filepath.ToSlash(in.SpecsDir), in.DecisionRecordPath, in.StopMarkerPath, in.ConditionStopMarkerPath}
++				return []string{"fix-the-thing", in.DescriptionPath, filepath.ToSlash(in.SpecsDir), in.DecisionRecordPath, in.StopMarkerPath, in.ConditionStopMarkerPath, `model: "haiku"`}
+ 			},
+ 			wantNone:     1,
+ 			wantNoParent: true,
+@@ -195,6 +196,7 @@ func TestDarnSpec_Refusals(t *testing.T) {
+ 		{"empty DecisionRecordPath", func(t *testing.T, in *DarnInputs, cfg *Config) { in.DecisionRecordPath = "" }, "DecisionRecordPath"},
+ 		{"empty StopMarkerPath", func(t *testing.T, in *DarnInputs, cfg *Config) { in.StopMarkerPath = "" }, "StopMarkerPath"},
+ 		{"empty ConditionStopMarkerPath", func(t *testing.T, in *DarnInputs, cfg *Config) { in.ConditionStopMarkerPath = "" }, "ConditionStopMarkerPath"},
++		{"empty SubagentModel", func(t *testing.T, in *DarnInputs, cfg *Config) { in.SubagentModel = "" }, "SubagentModel"},
+ 		{"malformed writer spec", func(t *testing.T, in *DarnInputs, cfg *Config) { cfg.Writer = "opus[effort=high" }, "writer model-spec"},
+ 		{"missing stencil", func(t *testing.T, in *DarnInputs, cfg *Config) { stencilkit.Remove(t, in.StencilsDir, darnStencilName) }, darnStencilName},
+ 	}
+diff --git a/internal/loomcli/darnwiring.go b/internal/loomcli/darnwiring.go
+index 7a5d229c..94ea485c 100644
+--- a/internal/loomcli/darnwiring.go
++++ b/internal/loomcli/darnwiring.go
+@@ -223,7 +223,8 @@ func (c *loomCLI) wireTreeScope(location *lymcwd.Location) error {
+ // wireDarn fills the Env fields a recipe with a Darn-Write row reads beyond the ones wire and wireTreeScope fill: the writer's seams and its table.
+ // It loads the hub-wide darn.yaml strictly, so start, run, step and resume refuse an absent or malformed file before any row builds.
+ // A malformed tree_scope key is refused with the editor way forward instead of the hub reconcile one, since --set cannot remove a key the hub file holds.
+-func (c *loomCLI) wireDarn(location *lymcwd.Location, stencilsDir, specsDir, frictionDir string, registry modelspec.Registry) error {
++// subagentModel is loom.yaml's subagent_model, the model the writer's prompt names for the subagents it hands work to.
++func (c *loomCLI) wireDarn(location *lymcwd.Location, stencilsDir, specsDir, frictionDir, subagentModel string, registry modelspec.Registry) error {
+ 	dirs := fabricengine.ConfigDirs(location)
+ 	cfg, err := darnengine.LoadConfig(dirs, "darn")
+ 	if err != nil {
+@@ -246,6 +247,7 @@ func (c *loomCLI) wireDarn(location *lymcwd.Location, stencilsDir, specsDir, fri
+ 			StopMarkerPath:     shedrun.StopMarker(location, c.runID),
+ 			PriorWork:          told.PriorWork,
+ 			LanguageSkills:     c.languageSkills,
++			SubagentModel:      subagentModel,
+ 
+ 			ConditionStopMarkerPath: shedrun.ConditionStopMarker(location, c.runID),
+ 		}, cfg, registry)
+diff --git a/internal/loomcli/wiring.go b/internal/loomcli/wiring.go
+index 4d2b2d58..4d3a4603 100644
+--- a/internal/loomcli/wiring.go
++++ b/internal/loomcli/wiring.go
+@@ -913,7 +913,7 @@ func (c *loomCLI) wire(location *lymcwd.Location, cwd string) error {
+ 		return err
+ 	}
+ 	if hasDarnWrite {
+-		if err := c.wireDarn(location, websterGeom.StencilsDir, websterGeom.SpecsDir, frictionDir, registry); err != nil {
++		if err := c.wireDarn(location, websterGeom.StencilsDir, websterGeom.SpecsDir, frictionDir, loomCfg.SubagentModel, registry); err != nil {
+ 			return err
+ 		}
+ 	}
+diff --git a/internal/loomengine/config.go b/internal/loomengine/config.go
+index 58afd46c..c9a19628 100644
+--- a/internal/loomengine/config.go
++++ b/internal/loomengine/config.go
+@@ -21,6 +21,7 @@
+ // discussion_lenses names the lenses.yaml fan whose lenses the Discussion-Write lead forks itself for once its output is written and self-checked; empty, the default, turns the forks off.
+ // It is not the discussion_reviewer_fan of a review perch, and the key is closed to the local layer.
+ // The retired discussion_producer and plan_producer keys are rewritten by MigrateConfig into discussion_lenses and plan_lenses.
++// subagent_model is the model name the Plan, Discussion-Write and darn writers pass to the Agent tool for the fresh subagents they hand lookups to; an empty value is refused.
+ // seed, discussion_judge, code_judge, discussion_seed and code_seed are role model-specs validated only when non-empty, an empty value meaning the fallback:
+ // a per-segment judge takes judge, a per-segment seed takes seed, and seed takes that segment's resolved judge.
+ // The retired driver_kind, tackler and arbiter keys are refused here, since shed.yaml holds them.
+@@ -443,6 +444,9 @@ type Config struct {
+ 	// It names the writer's lens fan, not the Discussion-Review perch's DiscussionReviewerFan.
+ 	DiscussionLenses string `yaml:"discussion_lenses"`
+ 
++	// SubagentModel is the model name the Plan, Discussion-Write and darn writers pass to the Agent tool for the fresh subagents they hand lookups to.
++	SubagentModel string `yaml:"subagent_model"`
++
+ 	// PlanLenses names the lenses.yaml fan whose lenses the Plan-Write lead forks itself for once its plan is written and self-checked; empty turns the forks off.
+ 	// It names the writer's lens fan, not the Plan-Review perch's PlanReviewerFan.
+ 	PlanLenses string `yaml:"-"`
+@@ -547,6 +551,7 @@ func ConfigSpec() configengine.Spec {
+ 			"discussion_interactive":     none,
+ 			"discussion_advisors":        guard,
+ 			"discussion_lenses":          guard,
++			subagentModelKey:             none,
+ 			"reviewer_model":             none,
+ 			"fixer_model":                none,
+ 			"discussion_reviewer_model":  none,
+@@ -620,6 +625,8 @@ const (
+ 	discussionAdvisorsKey = "discussion_advisors"
+ 	// discussionLensesKey is the loom.yaml key naming the fan the Discussion-Write lead forks its lenses from.
+ 	discussionLensesKey = "discussion_lenses"
++	// subagentModelKey is the loom.yaml key naming the model of the writers' lookup subagents, and the stencil marker its value fills.
++	subagentModelKey = "subagent_model"
+ 	// planLensesKey is the tapestry.yaml key naming the fan the Plan-Write lead forks its lenses from.
+ 	// MigrateConfig still writes it into a loom.yaml document, which the reconcile then moves to tapestry.yaml.
+ 	planLensesKey = "plan_lenses"
+@@ -1116,6 +1123,10 @@ func LoadConfig(dirs configengine.Dirs, module string) (Config, error) {
+ 		return Config{}, fmt.Errorf("loom config key %q: %w", "discussion", err)
+ 	}
+ 
++	if cfg.SubagentModel == "" {
++		return Config{}, fmt.Errorf("loom config key %q must not be empty: it names the model of the writers' lookup subagents; set it with lym config loom --set %s=sonnet", subagentModelKey, subagentModelKey)
++	}
++
+ 	if err := burlerengine.ValidateModelSpecList(loomModule, "reviewer_model", cfg.ReviewerModel); err != nil {
+ 		return Config{}, err
+ 	}
+diff --git a/internal/loomengine/config_test.go b/internal/loomengine/config_test.go
+index 54412004..32b563a0 100644
+--- a/internal/loomengine/config_test.go
++++ b/internal/loomengine/config_test.go
+@@ -99,6 +99,7 @@ func templateConfig() Config {
+ 		ReviewerModel:            burlerengine.ModelSpecList{"opus[medium]"},
+ 		FixerModel:               burlerengine.ModelSpecList{"opus[medium]"},
+ 		DiscussionLenses:         "twill-discussion",
++		SubagentModel:            "sonnet",
+ 		DiscussionReviewerModel:  burlerengine.ModelSpecList{"opus[medium]", "opus[medium]", "sonnet[high]"},
+ 		DiscussionFixerModel:     burlerengine.ModelSpecList{""},
+ 		CodeReviewerModel:        burlerengine.ModelSpecList{"sonnet[medium]"},
+@@ -547,6 +548,7 @@ func TestLoadConfig_Refuses(t *testing.T) {
+ 		lensesYAML string
+ 	}{
+ 		{"malformed discussion spec", "discussion", `"opus[effort"`, nil, ""},
++		{"empty subagent_model", "subagent_model", `""`, []string{"must not be empty", "lym config loom --set subagent_model=sonnet"}, ""},
+ 		{"malformed reviewer_model spec", "reviewer_model", `"opus[effort"`, []string{"entry 1", "a non-empty list of model-specs"}, ""},
+ 		{"malformed fixer_model spec", "fixer_model", `"opus[effort"`, []string{"entry 1", "a non-empty list of model-specs"}, ""},
+ 		{"malformed later reviewer_model entry", "reviewer_model", "\n  - sonnet[low]\n  - \"opus[effort\"", []string{"entry 2", "a non-empty list of model-specs"}, ""},
+diff --git a/internal/loomengine/discussion_test.go b/internal/loomengine/discussion_test.go
+index 0b7fb3b8..07bc9912 100644
+--- a/internal/loomengine/discussion_test.go
++++ b/internal/loomengine/discussion_test.go
+@@ -49,7 +49,7 @@ func TestProducerSpecs_SkillsAndParentDirective(t *testing.T) {
+ 
+ 	worktreeRoot := filepath.Join("home", "user", "repo")
+ 	layout := &lymcwd.Location{HubPath: filepath.Dir(worktreeRoot), WorktreeName: filepath.Base(worktreeRoot)}
+-	cfg := Config{Discussion: "opus[effort=high]", Plan: "opus[effort=high]"}
++	cfg := Config{Discussion: "opus[effort=high]", Plan: "opus[effort=high]", SubagentModel: "sonnet"}
+ 	reg, err := modelspec.LoadRegistry(configengine.Dirs{Anchor: t.TempDir()})
+ 	if err != nil {
+ 		t.Fatalf("modelspec.LoadRegistry(t.TempDir()) = _, %v; want nil error", err)
+diff --git a/internal/loomengine/discussiontable.go b/internal/loomengine/discussiontable.go
+index 6e275e73..4e6b313d 100644
+--- a/internal/loomengine/discussiontable.go
++++ b/internal/loomengine/discussiontable.go
+@@ -64,6 +64,7 @@ func resolveModelChoice(raw string, reg modelspec.Registry) (shuttleengine.Model
+ // DiscussionTable builds the seatengine.Table of one Discussion-Write run: a lead that writes the decision record, the support log and the relevant list, and one advisor per entry of cfg.DiscussionAdvisors, named by the entry, that writes its notes file for the lead to read.
+ // When cfg.DiscussionLenses is set the lead alone is authorized to spawn fork subagents and carries the twill lens review directive, whose fan is resolved through lenses.yaml under dirs; the advisors never fork.
+ // The seats' opening stencils are read at call time from stencilsDir, the lead's prompt points at the format spec under specsDir, and every seat's parent directive is rendered by the seat engine from its geometry.
++// cfg.SubagentModel names the model of the fresh subagents the lead's prompt tells it to hand lookups to.
+ // The table carries no gate; the producer entry sets it.
+ // A lead with no advisors decides each question itself, as its prompt says.
+ // The PATTERN directive renders the PATTERN changes the decision record declares; a malformed section fails the table, naming the way forward.
+@@ -152,6 +153,7 @@ func DiscussionTable(layout *lymcwd.Location, dirs configengine.Dirs, stencilsDi
+ 			"decision_record_path": DiscussionDecisionRecord(layout),
+ 			"support_log_path":     DiscussionSupportLog(layout),
+ 			"relevant_path":        DiscussionRelevant(layout),
++			subagentModelKey:       cfg.SubagentModel,
+ 			"mode_rules":           discussionModeRules(!cfg.DiscussionInteractive, len(cfg.DiscussionAdvisors) > 0),
+ 			"pattern_directive":    patternDirective,
+ 			friction.MarkerName:    frictionDirective,
+diff --git a/internal/loomengine/discussiontable_test.go b/internal/loomengine/discussiontable_test.go
+index 8ed9ab15..3217019c 100644
+--- a/internal/loomengine/discussiontable_test.go
++++ b/internal/loomengine/discussiontable_test.go
+@@ -71,6 +71,7 @@ func discussionTableConfig(advisors int, interactive bool) Config {
+ 		DiscussionTimeoutMin:  480,
+ 		DiscussionInteractive: interactive,
+ 		DiscussionAdvisors:    discussionTableAdvisors[:advisors],
++		SubagentModel:         "haiku",
+ 	}
+ }
+ 
+@@ -184,7 +185,7 @@ func TestDiscussionTable(t *testing.T) {
+ 					t.Fatalf("seatengine.Prompts() = _, %v; want nil error", err)
+ 				}
+ 
+-				chairWants := []string{"`ly:orch`", discussionTableSlug, DiscussionDecisionRecord(layout), DiscussionSupportLog(layout), discussionTableSpecsDir, modeRules(!interactive)}
++				chairWants := []string{"`ly:orch`", discussionTableSlug, DiscussionDecisionRecord(layout), DiscussionSupportLog(layout), discussionTableSpecsDir, modeRules(!interactive), `model: "haiku"`}
+ 				for n, notes := range wantNotes {
+ 					chairWants = append(chairWants, "ly:"+discussionTableSlug+":discussion-"+discussionTableAdvisors[n].Name, notes)
+ 				}
+diff --git a/internal/loomengine/plan.go b/internal/loomengine/plan.go
+index 61305368..233ffef0 100644
+--- a/internal/loomengine/plan.go
++++ b/internal/loomengine/plan.go
+@@ -60,6 +60,7 @@ const planStencil = "loom-template-plan"
+ // specsDir is told, never derived: this package is bound by the Told-Geometry Invariant.
+ // The seat's opening stencil is read at call time from stencilsDir, and the seat engine renders the parent and edit directives from its geometry.
+ // gateTiers is the hub's rendered tier and gate-list lines, or "none" when no tier is declared; it fills the prompt's gate_tiers marker verbatim.
++// cfg.SubagentModel names the model of the fresh subagents the lead's prompt tells it to hand lookups to.
+ // The table carries no gate; the producer entry sets it.
+ // A PATTERN directive that cannot be rendered fails the table; a friction directive that cannot be rendered is left empty, the failure logged.
+ func PlanTable(layout *lymcwd.Location, dirs configengine.Dirs, stencilsDir, specsDir string, cfg Config, reg modelspec.Registry, gateTiers string) (seatengine.Table, error) {
+@@ -124,6 +125,7 @@ func PlanTable(layout *lymcwd.Location, dirs configengine.Dirs, stencilsDir, spe
+ 			"overview_path":        overviewPath,
+ 			"specs_dir":            specsDir,
+ 			"gate_tiers":           gateTiers,
++			subagentModelKey:       cfg.SubagentModel,
+ 			"pattern_directive":    patternDirective,
+ 			friction.MarkerName:    frictionDirective,
+ 		},
+diff --git a/internal/loomengine/plan_test.go b/internal/loomengine/plan_test.go
+index b403b86d..5dc59b0e 100644
+--- a/internal/loomengine/plan_test.go
++++ b/internal/loomengine/plan_test.go
+@@ -39,7 +39,7 @@ func planTableLayout(t *testing.T, anchorRel string) *lymcwd.Location {
+ 
+ // planTableConfig returns a config whose plan_lenses key is lenses.
+ func planTableConfig(lenses string) Config {
+-	return Config{Plan: "opus[effort=high]", PlanTimeoutMin: 120, PlanLenses: lenses}
++	return Config{Plan: "opus[effort=high]", PlanTimeoutMin: 120, PlanLenses: lenses, SubagentModel: "haiku"}
+ }
+ 
+ // templatePlanFan is the fan the embedded lenses template defines for the Plan-Write lead's lens forks.
+@@ -136,7 +136,7 @@ func TestPlanTable(t *testing.T) {
+ 			prompt := prompts[""]
+ 
+ 			wantPlanDir := filepath.Join(layout.AnchorPath(), lymdirs.LymDirName, planparser.PlanDirName)
+-			for _, want := range []string{"`ly:orch`", DiscussionDecisionRecord(layout), planparser.PlanDir(layout.AnchorPath()), planparser.PlanOverview(layout.AnchorPath()), wantPlanDir, specsDir} {
++			for _, want := range []string{"`ly:orch`", DiscussionDecisionRecord(layout), planparser.PlanDir(layout.AnchorPath()), planparser.PlanOverview(layout.AnchorPath()), wantPlanDir, specsDir, `model: "haiku"`} {
+ 				if !strings.Contains(prompt, want) {
+ 					t.Errorf("lead prompt does not contain %q", want)
+ 				}
+diff --git a/internal/loomengine/template.yaml b/internal/loomengine/template.yaml
+index ee4cdb99..5156ed5d 100644
+--- a/internal/loomengine/template.yaml
++++ b/internal/loomengine/template.yaml
+@@ -3,6 +3,7 @@ discussion_timeout_min: 480  # minutes the discussion agent's shuttle run is all
+ discussion_interactive: false  # true runs the discussion-phase agent as an interview in its pane and requires an operator to be present; false, the default, is today's autonomous behaviour, because a task spawned unattended must not silently wait for a human
+ discussion_advisors: []  # the Discussion-Write advisors, each entry a {name, model} pair: name is the advisor's seat name (a lowercase letter first, then lowercase letters, digits and hyphens) and model its model-spec; an empty list, the default, runs the lead alone, deciding each question itself
+ discussion_lenses: twill-discussion  # fan name from lenses.yaml that has the Discussion-Write lead fork itself once per lens to review its record before it finishes; twill-discussion is the default, and empty turns the forks off; this names the writer's lens fan, not the discussion_reviewer_fan of the Discussion-Review perch
++subagent_model: sonnet  # model the Plan, Discussion-Write and darn writers pass as the Agent tool's model when they hand lookups to fresh subagents; the loom-template-plan, loom-template-discussion and darn-template-write stencils read it; a bare model name the Agent tool takes, such as sonnet, never a bracketed model-spec; sonnet is the default
+ reviewer_model: opus[medium]  # model-spec for the reviewer of every review segment round whose own <segment>_reviewer_model is empty (see contracts/specs/llm-model-spec.md); a YAML list sets one model per round, with the last entry for every later round
+ fixer_model: opus[medium]  # model-spec for the fixer of every review segment round whose own <segment>_fixer_model is empty (see contracts/specs/llm-model-spec.md); a YAML list sets one model per round, with the last entry for every later round
+ discussion_reviewer_model: ["opus[medium]", "opus[medium]", "sonnet[high]"]  # model-spec for the Discussion-Review reviewer, one model per round with the last entry serving every later round; the default runs the first two rounds on opus[medium] and later rounds on sonnet[high]; empty takes reviewer_model
