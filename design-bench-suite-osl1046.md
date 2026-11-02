@@ -1,6 +1,6 @@
 # Bench the full suite on OSL-1046 after the binary cuts
 
-`bench-suite-osl1046` · Task · research, gate · running · Drift-Verify
+`bench-suite-osl1046` · Task · research, gate · running · Finalize
 
 ## Goal
 

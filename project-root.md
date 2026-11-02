@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Bench the full suite on OSL-1046 after the binary cuts**<br>• Measure tier0, tier1 and tier2 on this machine and record the numbers in docs/benchmarks/test-suite-timing.md. | [`bench-suite-osl1046`](design-bench-suite-osl1046.md) | darn · docs | Drift-Verify | osl-1046 | 42m<br>42m | gate |
+| T2 | **Bench the full suite on OSL-1046 after the binary cuts**<br>• Measure tier0, tier1 and tier2 on this machine and record the numbers in docs/benchmarks/test-suite-timing.md. | [`bench-suite-osl1046`](design-bench-suite-osl1046.md) | darn · docs | Finalize | osl-1046 | 42m<br>42m | gate |
 
 ### Ready (0)
 
