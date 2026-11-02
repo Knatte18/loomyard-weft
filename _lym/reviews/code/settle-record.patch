@@ -1,0 +1,1560 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 6df0d68a..1f9c5eb3 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -417,7 +417,7 @@ User-facing modules each get one `lym <module>` namespace:
+   defaults to `bug`.
+   Callable from any sandbox agent context with no config. ✅ Implemented.
+ - **reed** — **the window to the world**: tmux overlay + **strand** bookkeeping + render (`internal/reedcli` + `internal/reedengine` + `internal/reedengine/render`). Hosts every managed process as a strand in a window of its own or its group's, persists to `.lym/reed.json` (`lym reed up|add|remove|status|list|attach|switch|resume|watchdog|down`); `lym reed add` places a strand `--anchor own-window` by default. Every strand carries a hierarchical full name (see the `internal/agentname` package documentation), mirrored into its pane title and Claude session name and exported to its process as `LYM_STRAND_NAME` and `LYM_PARENT`, with the watchdog repairing drift; `list` is the hub-wide name directory. Built on what its proof-of-concept, `muxpoc`, proved first (env hygiene, native `--resume`); `muxpoc` has since been deleted, its job done. `reed attach` and `reed watchdog` are this module's two registered interactive-handoff exceptions ([PATTERN-cli-cobra](../pattern/PATTERN-cli-cobra.md)): `attach` hands the operator's stdio to a `tmux attach-session` child in place, pre-flighting through checking tmux's floor version, booting the session if cold and checking server/session liveness, and `watchdog` is the detached per-hub name-repair and reap daemon that blocks for its process lifetime — in both cases every fallible step runs pre-flight, on the envelope, and only the terminal-handover/daemon tail itself is exempt from emitting JSON. `add` and `attach` boot this worktree's session when none is up, with `up`'s own semantics — a bare substrate, with no persisted strand relaunched — instead of refusing; every other reed verb still refuses on a cold worktree. ✅ Implemented. See the `internal/reedengine` package documentation.
+-- **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengines` + `internal/shuttlecli`; `lym shuttle run|open|state|await|await-forks`). `lym shuttle open` starts a named session with no turn in its own window, which closes when the session exits; `--model` takes a model spec naming the engine, model and effort, `--list-models` prints the model registry's aliases with their engine, model and default effort, and the output names the engine, model and effort the session got. Every session shuttle launches, run or opened, starts in its engine's bypass mode unless the caller passes `prompt`, which an interactive session accepts. `lym shuttle await <path>... [--cap]` is the read-only capped wait on one or more files, the keep-cache-warm wait any agent can run, needing no hub or git repository; its cap defaults to the caller role's keep-warm cap from `claude.yaml`. `lym shuttle await-forks [--cap]` is the same capped wait over the forks the calling agent session spawned, read from its transcript through the engine: a reviewer, fixer or writer that waits inside it takes every fork's result in one turn instead of waking once per fork. `lym shuttle state` is read-only: it lists the session state of each running run (busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with its cause, since and history), read from the run's files, in shadow mode where no stop or notice depends on it. `Stop`-hook completion is read off an events file and classified into three outcomes — `done`/`died`/`timeout`. A turn end without every output file never ends a run: `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call). An autonomous run notifies its parent once per held turn end as creel mail to the orch, and once per permission or input dialog its pane shows past 60 s, and an interactive run is answered in its pane; a line typed into a run's pane goes through `lym creel post`, `lym creel inject` or `lym creel interrupt`, never a shuttle verb. Background work is read off the Stop payload's `background_tasks` first, with the transcript as the fallback when the payload carries no list; a turn end with outstanding work is waiting, not held, unless its only outstanding work is non-awaited shells, which a gated run judges as a plain turn end and an ungated run holds once they pass the shell wait bound. `Attach` waits on a held run, and on a legacy `asking` record whose strand is still live, instead of respawning beside it. `died` is narrow: it means a strand reed STILL TRACKS has a pane that is not alive, the provider never came up inside the startup window, or the provider's process is proven gone behind a live pane shell (by the process registry, or a process-ending `SessionEnd` line past the wait's first liveness tick), with `done` instead when every output file exists. Reed's strand table losing the strand entirely — a `reed down`/`remove`, a deleted or rebuilt `reed.json`, a worktree renamed under an in-flight run — is reported as a mechanism failure carrying the run's identity, never as `died`, because reed's bookkeeping going away says nothing about the agent, whose process is often still working in its pane; the exception is a handle whose own `Stop` removed the strand, which ends `died` and is recorded as stopped unless the files show the run done. No guardrail denies the in-process `Agent` tool: a subagent or fork shows in the session's own pane and lym reads its transcript under the session's `subagents` directory. A `PreToolUse` guardrail denies `AskUserQuestion` when the run is autonomous (`Interactive: false`, the default); a `PreToolUse(Bash)` guardrail denies `python`, `python3` and `python3.<minor>` in command position in every run mode, a version check included (on by default, switchable off via `shuttle.yaml`'s `deny_python`), and a second `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a raw module-wide `go test`, `go build` or `go vet`, a raw `go test` over the `tmux` or `llm` tier, and any command naming the gate-slot or strand-name environment variable, steering the session to `lym gate test`, and to a package-scoped compile check the hub's `refuse_raw` does not refuse, and a third `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies an `rm` on a computed path (a command substitution or a variable expansion in the command) so no permission dialog stalls the run, and a fourth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies `sed -i`, `perl -i`, and a redirect, heredoc or `tee` into a source file, steering the session to read a file with Read and change it with Edit or Write, and a fifth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a headless `claude` launch with `-p` or `--print`, whose work shows in no pane, steering the session to a subagent through the `Agent` tool; the python deny's steer carries the same edit rule. The engine announces each deny it installs to the session's system prompt, and every Claude session it launches with a run directory also gets the creel trust sentence, through one `append-system-prompt.txt` file named by `--append-system-prompt-file` on launch and resume, so a session knows the tool is unavailable before it tries one and follows `[creel]` mail from its hooks. The engine sets the prompt-cache TTL per role on launch and resume from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role). `claude.yaml`'s `keep_warm_cap` (template 250s) and `keep_warm_cap_roles` set the per-role keep-warm cap beside them. The provider is swappable behind an **engine** seam; the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, Claude being the one registered engine. Per-run `Model`/`Effort` knobs (`lym shuttle run --model`/`--effort`; effort values `low|medium|high|xhigh|max`, empty = provider default) are engine-validated, not policed by `Spec.validate`. `Spec.Version` is a programmatic engine-validated version pin (claudeengine composes the pinned model id; no CLI flag — consumers drive it via the model-spec notation's `v=` param). Starting a run returns only once its provider is past its startup gates, and a provider that never comes up is torn down (run dir and last pane capture kept) and reported as an error from `Start`, or as `died`/`timeout` from `Run`. ✅ Implemented. See the `internal/shuttleengine` package documentation.
++- **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengines` + `internal/shuttlecli`; `lym shuttle run|open|state|await|await-forks`). `lym shuttle open` starts a named session with no turn in its own window, which closes when the session exits; `--model` takes a model spec naming the engine, model and effort, `--list-models` prints the model registry's aliases with their engine, model and default effort, and the output names the engine, model and effort the session got. Every session shuttle launches, run or opened, starts in its engine's bypass mode unless the caller passes `prompt`, which an interactive session accepts. `lym shuttle await <path>... [--cap]` is the read-only capped wait on one or more files, the keep-cache-warm wait any agent can run, needing no hub or git repository; its cap defaults to the caller role's keep-warm cap from `claude.yaml`. `lym shuttle await-forks [--cap]` is the same capped wait over the forks the calling agent session spawned, read from its transcript through the engine: a reviewer, fixer or writer that waits inside it takes every fork's result in one turn instead of waking once per fork. `lym shuttle state` is read-only: it lists the session state of each running run (busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with its cause, since and history), read from the run's files, in shadow mode where no stop or notice depends on it. `Stop`-hook completion is read off an events file and classified into three outcomes — `done`/`died`/`timeout`. A turn end without every output file never ends a run: `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call). An autonomous run notifies its parent once per held turn end as creel mail to the orch, and once per permission or input dialog its pane shows past 60 s, and an interactive run is answered in its pane; a line typed into a run's pane goes through `lym creel post`, `lym creel inject` or `lym creel interrupt`, never a shuttle verb. Background work is read off the Stop payload's `background_tasks` first, with the transcript as the fallback when the payload carries no list; a turn end with outstanding work is waiting, not held, unless its only outstanding work is non-awaited shells, which a gated run judges as a plain turn end and an ungated run holds once they pass the shell wait bound. `Attach` waits on a held run, and on a legacy `asking` record whose strand is still live, instead of respawning beside it. `died` is narrow: it means a strand reed STILL TRACKS has a pane that is not alive, the provider never came up inside the startup window, or the provider's process is proven gone behind a live pane shell (by the process registry, or a process-ending `SessionEnd` line past the wait's first liveness tick), with `done` instead when every output file exists. Reed's strand table losing the strand entirely — a `reed down`/`remove`, a deleted or rebuilt `reed.json`, a worktree renamed under an in-flight run — is reported as a mechanism failure carrying the run's identity, never as `died`, because reed's bookkeeping going away says nothing about the agent, whose process is often still working in its pane; the exception is a handle whose own `Stop` removed the strand, which ends `died` and is recorded as stopped unless the files show the run done. No guardrail denies the in-process `Agent` tool: a subagent or fork shows in the session's own pane and lym reads its transcript under the session's `subagents` directory. A `PreToolUse` guardrail denies `AskUserQuestion` when the run is autonomous (`Interactive: false`, the default); a `PreToolUse(Bash)` guardrail denies `python`, `python3` and `python3.<minor>` in command position in every run mode, a version check included (on by default, switchable off via `shuttle.yaml`'s `deny_python`), and a second `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a raw module-wide `go test`, `go build` or `go vet`, a raw `go test` over the `tmux` or `llm` tier, and any command naming the gate-slot or strand-name environment variable, steering the session to `lym gate test`, and to a package-scoped compile check the hub's `refuse_raw` does not refuse, and a third `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies an `rm` on a computed path (a command substitution or a variable expansion in the command) so no permission dialog stalls the run, and a fourth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies `sed -i`, `perl -i`, and a redirect, heredoc or `tee` into a source file, steering the session to read a file with Read and change it with Edit or Write, and a fifth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a headless `claude` launch with `-p` or `--print`, whose work shows in no pane, steering the session to a subagent through the `Agent` tool; the python deny's steer carries the same edit rule. The engine announces each deny it installs to the session's system prompt, and every Claude session it launches with a run directory also gets the creel trust sentence, through one `append-system-prompt.txt` file named by `--append-system-prompt-file` on launch and resume, so a session knows the tool is unavailable before it tries one and follows `[creel]` mail from its hooks. The engine sets the prompt-cache TTL per role on launch and resume from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role). `claude.yaml`'s `keep_warm_cap` (template 250s) and `keep_warm_cap_roles` set the per-role keep-warm cap beside them. While `claude.yaml`'s `batching_nudge` block is on, a `PostToolUse` hook after each `Read`, `Grep`, `Glob`, `Edit` or `Write` call runs the hidden `lym shuttle hook-batching`, which adds one line naming the breach and quoting the rule to a session above the block's context threshold whose recent messages make a chain of single lookups, a sliced read of a short or already-read file, or a chain of edit-only messages; it never denies a call, and the block's switches and thresholds are config. The provider is swappable behind an **engine** seam; the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, Claude being the one registered engine. Per-run `Model`/`Effort` knobs (`lym shuttle run --model`/`--effort`; effort values `low|medium|high|xhigh|max`, empty = provider default) are engine-validated, not policed by `Spec.validate`. `Spec.Version` is a programmatic engine-validated version pin (claudeengine composes the pinned model id; no CLI flag — consumers drive it via the model-spec notation's `v=` param). Starting a run returns only once its provider is past its startup gates, and a provider that never comes up is torn down (run dir and last pane capture kept) and reported as an error from `Start`, or as `died`/`timeout` from `Run`. ✅ Implemented. See the `internal/shuttleengine` package documentation.
+ - **orch** — the hub orchestrator hosted as an interactive Claude session in a reed strand of the prime worktree or of a beam, cycled before its context fills (`internal/orchcli` + `internal/orchengine`; `lym orch stop|status|refresh|distill|withdraw|rules`, in the prime and in any beam). `lym beam start` first ensures the worktree's `runs` strand, which runs `lym batten overview` as the beam's window, named `beam: prime` or `beam: <slug>`, and `stop` leaves it; the orchestrator has a window of its own, and the session's windows run the beam window, agents, shell. A detached watcher has the session write a note, then clears it and resumes it from that note (`refresh`) or compacts it in place (`distill`), never clearing or compacting without one. ✅ Implemented. See the `internal/orchengine` package documentation.
+ - **webster** — the implementer module: one long-lived Master session that reads the plan and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool), each fork reading its cards' code itself, instead of spawning a fresh reed/tmux strand per batch;
+   bracket verbs (`begin-batch`/`record-batch`) drive each in-session fork (Master ends its turn while a backgrounded fork works and records the batch on the fork's completion notification, shuttle reading that turn end as waiting rather than done), and a genuine model escalation (recovery after a stuck/report-less fork) spawns a cold strand.
+diff --git a/internal/heddleengine/shipped.json b/internal/heddleengine/shipped.json
+index adc5d151..481f2f5f 100644
+--- a/internal/heddleengine/shipped.json
++++ b/internal/heddleengine/shipped.json
+@@ -2,7 +2,7 @@
+   "entries": [
+     {
+       "slug": "lym-batching",
+-      "text": "Request every call whose arguments you already know in one message, and read what you need before you edit: a file whole, or every span you need from it, in one message, and keep a file you have read in mind rather than reading it again unless something other than your own edit has changed it; wait for a result only to choose the next call.",
++      "text": "Request every call whose arguments you already know in one message. Before you look anything up, list every question the step raises, then send every grep and read for all of them in one message; wait for a result only to choose the next call, then send every call it unlocks and every call you know in one message. Read what you need before you edit: a file whole, or every span you need from it, in one message. This overrides the Read tool's own advice to read only the part you need: never grep for a line number and then read a slice around it, and never read one file in slices over several turns. Keep a file you have read in mind rather than reading it again unless something other than your own edit has changed it; after a command rewrites files, such as a formatter, a generator or a script, read every file it changed again in one message before you edit any of them.",
+       "order": 10,
+       "targets": [
+         "claude-file"
+@@ -10,7 +10,7 @@
+     },
+     {
+       "slug": "lym-plan-edits-before-gate",
+-      "text": "Make every change in this order, and do not deviate from it.\n\n1. Read everything the change needs in one message: every Read and grep call together, a file whole when it fits and every span of it you need otherwise. Make a second round of reads only for files the first round named.\n2. Decide every edit across every file the card or task touches before you make any of them.\n3. Make all of those edits in one message, every Edit and Write call together in one turn.\n4. Run the gate once. Fix everything its report shows the same way: read what the fixes need in one message, decide every fix, make all of them in one message, then run the gate again.\n\nNever read one file per turn. Never read one file in slices over several turns. Never spread an edit, a read and another edit over turns. Never run the gate between the edits of one change.",
++      "text": "Make every round of edits in this order, and do not deviate from it. A round is any set of edits, whatever starts it: a card, a task, a plan, a review's findings, a fixer's report or a failed gate.\n\n1. Read everything the round needs in one message: every Read and grep call together, a file whole when it fits and every span of it you need otherwise. Make a second round of reads only for files the first round named.\n2. Decide every edit across every file the round touches before you make any of them.\n3. Make all of those edits in one message, every Edit and Write call together in one turn.\n4. Run the round's gate once, or its validator when it has no gate. Fix everything its report shows the same way: read what the fixes need in one message, decide every fix, make all of them in one message, then run it again.\n\nNever read one file per turn. Never read one file in slices over several turns. Never spread an edit, a read and another edit over turns. Never run the gate between the edits of one round.",
+       "order": 20,
+       "targets": [
+         "claude-file"
+diff --git a/internal/heddleengine/store_test.go b/internal/heddleengine/store_test.go
+index d1140577..8905e14f 100644
+--- a/internal/heddleengine/store_test.go
++++ b/internal/heddleengine/store_test.go
+@@ -169,7 +169,7 @@ func TestStore(t *testing.T) {
+ 
+ 	t.Run("ShippedEntriesArePinned", func(t *testing.T) {
+ 		t.Parallel()
+-		const batchingSentence = "Request every call whose arguments you already know in one message, and read what you need before you edit: a file whole, or every span you need from it, in one message, and keep a file you have read in mind rather than reading it again unless something other than your own edit has changed it; wait for a result only to choose the next call."
++		const batchingSentence = "Request every call whose arguments you already know in one message. Before you look anything up, list every question the step raises, then send every grep and read for all of them in one message; wait for a result only to choose the next call, then send every call it unlocks and every call you know in one message. Read what you need before you edit: a file whole, or every span you need from it, in one message. This overrides the Read tool's own advice to read only the part you need: never grep for a line number and then read a slice around it, and never read one file in slices over several turns. Keep a file you have read in mind rather than reading it again unless something other than your own edit has changed it; after a command rewrites files, such as a formatter, a generator or a script, read every file it changed again in one message before you edit any of them."
+ 		// The rows are the shipped layer in render order; wantText is empty for an entry whose text is not pinned.
+ 		tests := []struct {
+ 			slug     string
+diff --git a/internal/shuttlecli/cli.go b/internal/shuttlecli/cli.go
+index 6073c839..6d7d311b 100644
+--- a/internal/shuttlecli/cli.go
++++ b/internal/shuttlecli/cli.go
+@@ -8,6 +8,7 @@
+ // The read-only await, the capped wait on one or more files, is implemented in await.go.
+ // The read-only await-forks, the capped wait until the calling session's forks have finished, is implemented in awaitforks.go.
+ // await is the verb that skips the resolution and needs no hub; it reads only the keep-warm config, and only inside a git worktree.
++// The hidden hook-batching, which a session's after-tool-call hook runs, is implemented in hookbatching.go; it skips the resolution too and reads only its hook input and the state file it is told.
+ 
+ package shuttlecli
+ 
+@@ -48,7 +49,7 @@ type shuttleCLI struct {
+ // Command returns the cobra command tree for the shuttle module.
+ // The parent command carries a PersistentPreRunE that resolves geometry and engines, skipping
+ // resolution when the group command itself is invoked (no git repo required).
+-// The await verb skips it too and needs no hub, reading only the keep-warm config inside a git worktree.
++// The await verb skips it too and needs no hub, reading only the keep-warm config inside a git worktree, and so does the hidden hook-batching verb.
+ func Command() *cobra.Command {
+ 	c := &shuttleCLI{}
+ 
+@@ -67,7 +68,7 @@ provider specifics.`,
+ 			// listing or unknown-subcommand error path via GroupRunE), skip
+ 			// cwd/layout/config/engine resolution so that neither path
+ 			// requires a git repository to be present.
+-			if cmd.Name() == "shuttle" || cmd.Name() == awaitVerb {
++			if cmd.Name() == "shuttle" || cmd.Name() == awaitVerb || cmd.Name() == shuttleengine.BatchingHookVerb {
+ 				return nil
+ 			}
+ 
+@@ -135,7 +136,7 @@ provider specifics.`,
+ 		},
+ 	}
+ 
+-	parent.AddCommand(c.runCmd(), c.openCmd(), c.stateCmd(), c.awaitCmd(), c.awaitForksCmd())
++	parent.AddCommand(c.runCmd(), c.openCmd(), c.stateCmd(), c.awaitCmd(), c.awaitForksCmd(), hookBatchingCmd())
+ 
+ 	return parent
+ }
+diff --git a/internal/shuttlecli/hookbatching.go b/internal/shuttlecli/hookbatching.go
+new file mode 100644
+index 00000000..18927221
+--- /dev/null
++++ b/internal/shuttlecli/hookbatching.go
+@@ -0,0 +1,63 @@
++// hookbatching.go implements the hidden hook-batching verb, which a session's after-tool-call hook runs to nudge the session back to batching its calls.
++
++package shuttlecli
++
++import (
++	"fmt"
++	"io"
++	"strings"
++
++	"github.com/spf13/cobra"
++
++	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/shuttleengines"
++)
++
++// hookBatchingCmd builds the hidden hook-batching verb, run only by a session's after-tool-call hook.
++// Its standard output is the engine's hook output carrying a nudge, or nothing;
++// a failure goes to standard error and the exit code is 0 either way, so the hook never disturbs the session.
++func hookBatchingCmd() *cobra.Command {
++	return &cobra.Command{
++		Use:         shuttleengine.BatchingHookVerb + " <engine> <state-file>",
++		Short:       "print the engine's batching nudge for the tool call on standard input (run by the hook)",
++		Hidden:      true,
++		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceInternal},
++		Long: `hook-batching reads the engine's after-tool-call hook input from standard
++input, judges the call and the session's recent messages against the run's
++batching nudge state file, and prints the engine's hook output that adds one
++line naming the breach and the rule to the session's context. With no breach,
++below the state file's context threshold or past its nudge cap it prints
++nothing. It needs no hub and reads no config: the state file carries the
++settings the run started with. A failure goes to standard error, and the exit
++code is always 0.`,
++		Args: cobra.ExactArgs(2),
++		RunE: func(cmd *cobra.Command, args []string) error {
++			if clihelp.ShouldAbort(cmd.Context()) {
++				return nil
++			}
++			if err := hookBatching(cmd, args[0], args[1]); err != nil {
++				fmt.Fprintln(cmd.ErrOrStderr(), "shuttle: "+err.Error())
++			}
++			return nil
++		},
++	}
++}
++
++// hookBatching judges the hook input on the command's standard input through the named engine's batching nudge and writes its output, when there is one, to standard output.
++func hookBatching(cmd *cobra.Command, engine, statePath string) error {
++	nudger, ok := shuttleengines.BatchingNudger(engine)
++	if !ok {
++		return fmt.Errorf("the engine %q has no batching nudge; the registered engines: %s", engine, strings.Join(shuttleengines.Names(), ", "))
++	}
++	payload, err := io.ReadAll(cmd.InOrStdin())
++	if err != nil {
++		return fmt.Errorf("could not read the hook input: %w", err)
++	}
++	output, err := nudger.BatchingNudge(statePath, payload)
++	if err != nil || len(output) == 0 {
++		return err
++	}
++	_, err = cmd.OutOrStdout().Write(append(output, '\n'))
++	return err
++}
+diff --git a/internal/shuttlecli/hookbatching_test.go b/internal/shuttlecli/hookbatching_test.go
+new file mode 100644
+index 00000000..f10c159b
+--- /dev/null
++++ b/internal/shuttlecli/hookbatching_test.go
+@@ -0,0 +1,143 @@
++// hookbatching_test.go pins the hidden hook-batching verb: the one line of hook output it prints for a breach, the silence of every other call,
++// and the exit code 0 it keeps on every failure.
++
++package shuttlecli
++
++import (
++	"bytes"
++	"encoding/json"
++	"fmt"
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// writeHookTranscript writes a transcript into dir holding one main-chain assistant message per tool name in calls, call i having the id call-i, and returns its path.
++func writeHookTranscript(t *testing.T, dir string, calls []string) string {
++	t.Helper()
++	var lines []string
++	for i, name := range calls {
++		assistant := map[string]any{
++			"type": "assistant",
++			"message": map[string]any{
++				"id":      fmt.Sprintf("msg-%d", i),
++				"content": []map[string]any{{"type": "tool_use", "id": fmt.Sprintf("call-%d", i), "name": name, "input": map[string]any{}}},
++				"usage":   map[string]any{"input_tokens": 1000},
++			},
++		}
++		data, err := json.Marshal(assistant)
++		if err != nil {
++			t.Fatalf("marshal transcript line: %v", err)
++		}
++		lines = append(lines, string(data))
++	}
++	transcript := filepath.Join(dir, "transcript.jsonl")
++	if err := os.WriteFile(transcript, []byte(strings.Join(lines, "\n")+"\n"), 0o644); err != nil {
++		t.Fatalf("write transcript: %v", err)
++	}
++	return transcript
++}
++
++// TestHookBatchingVerb_RunsOutsideAHub pins that the verb, run through the shuttle command tree outside a git repository, skips the hub resolution:
++// it exits 0 and prints the verb's own report, not the error envelope hub resolution would give.
++func TestHookBatchingVerb_RunsOutsideAHub(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	var out bytes.Buffer
++	code := RunCLIIn(t.TempDir(), &out, []string{"hook-batching", "no-such-engine", "unused-state-file"})
++	if code != 0 || !strings.HasPrefix(out.String(), "shuttle: the engine") {
++		t.Errorf("RunCLIIn(hook-batching) = exit %d, output %q; want exit 0 and the verb's own report", code, out.String())
++	}
++}
++
++// TestHookBatchingVerb pins the verb's output and exit code: a nudge prints the engine's hook output and a newline, any other outcome prints nothing,
++// and an unknown engine or a malformed input is reported on standard error while the verb still returns no error.
++func TestHookBatchingVerb(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name   string
++		engine string
++		calls  []string
++		// input is the hook input on standard input; empty builds a PostToolUse input for the last call of calls.
++		input string
++		// state is the state file's content; empty seeds a valid one.
++		state string
++		// wantContext is the start of the nudge line the output carries; empty wants no output.
++		wantContext string
++		// wantStderr is a text the standard error names; empty wants it empty.
++		wantStderr string
++	}{
++		{name: "BreachPrintsTheHookOutputAndANewline", engine: "claude", calls: []string{"Grep", "Glob", "Grep"}, wantContext: "[lym batching] Your last 3 messages"},
++		{name: "NoBreachPrintsNothing", engine: "claude", calls: []string{"Bash", "Grep"}},
++		{name: "UnknownEngineIsReportedAndExitsZero", engine: "no-such-engine", calls: []string{"Grep"}, input: "{}", wantStderr: `the engine "no-such-engine" has no batching nudge`},
++		{name: "MalformedInputIsReportedAndExitsZero", engine: "claude", calls: []string{"Grep"}, input: "{not json", wantStderr: "parse the batching hook input"},
++		{name: "CorruptStateIsReportedAndExitsZero", engine: "claude", calls: []string{"Grep"}, state: "{not json", wantStderr: "update the batching nudge state"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dir := t.TempDir()
++			transcript := writeHookTranscript(t, dir, tt.calls)
++			statePath := filepath.Join(dir, "batching-nudge.json")
++			seeded := `{"settings":{"enabled":true,"lookup_chain":true,"lookup_run":3,"edit_run":2,"slice_lines":20,"max_nudges":5},"nudges":0,"nudged_message":""}`
++			if tt.state != "" {
++				seeded = tt.state
++			}
++			if err := os.WriteFile(statePath, []byte(seeded), 0o644); err != nil {
++				t.Fatalf("seed state: %v", err)
++			}
++			input := tt.input
++			if input == "" {
++				last := len(tt.calls) - 1
++				data, err := json.Marshal(map[string]any{"transcript_path": transcript, "tool_name": tt.calls[last], "tool_use_id": fmt.Sprintf("call-%d", last), "tool_input": map[string]any{}})
++				if err != nil {
++					t.Fatalf("marshal hook input: %v", err)
++				}
++				input = string(data)
++			}
++
++			cmd := hookBatchingCmd()
++			var stdout, stderr bytes.Buffer
++			cmd.SetIn(strings.NewReader(input))
++			cmd.SetOut(&stdout)
++			cmd.SetErr(&stderr)
++			cmd.SetArgs([]string{tt.engine, statePath})
++			if err := cmd.Execute(); err != nil {
++				t.Fatalf("Execute() error: %v; want nil on every path", err)
++			}
++
++			if tt.wantStderr == "" && stderr.Len() != 0 {
++				t.Errorf("standard error = %q; want empty", stderr.String())
++			}
++			if tt.wantStderr != "" && !strings.Contains(stderr.String(), tt.wantStderr) {
++				t.Errorf("standard error = %q; want it to name %q", stderr.String(), tt.wantStderr)
++			}
++			if tt.wantContext == "" {
++				if stdout.Len() != 0 {
++					t.Errorf("standard output = %q; want empty", stdout.String())
++				}
++				return
++			}
++			line, ok := strings.CutSuffix(stdout.String(), "\n")
++			if !ok || strings.Contains(line, "\n") {
++				t.Fatalf("standard output = %q; want one line ending in a newline", stdout.String())
++			}
++			var output struct {
++				HookSpecificOutput struct {
++					HookEventName     string `json:"hookEventName"`
++					AdditionalContext string `json:"additionalContext"`
++				} `json:"hookSpecificOutput"`
++			}
++			if err := json.Unmarshal([]byte(line), &output); err != nil {
++				t.Fatalf("standard output %q is not hook output: %v", line, err)
++			}
++			if output.HookSpecificOutput.HookEventName != "PostToolUse" || !strings.HasPrefix(output.HookSpecificOutput.AdditionalContext, tt.wantContext) {
++				t.Errorf("hook output = %+v; want a PostToolUse context starting %q", output.HookSpecificOutput, tt.wantContext)
++			}
++		})
++	}
++}
+diff --git a/internal/shuttleengine/claudeengine/batchingnudge.go b/internal/shuttleengine/claudeengine/batchingnudge.go
+new file mode 100644
+index 00000000..9696433d
+--- /dev/null
++++ b/internal/shuttleengine/claudeengine/batchingnudge.go
+@@ -0,0 +1,435 @@
++// batchingnudge.go implements the batching nudge: claude.yaml's batching_nudge block, the PostToolUse hook command that runs it, the per-run state file Prepare seeds,
++// and the judgment that reads the session's transcript tail for a breach of lym's batching rules and answers with one line of additional context.
++
++package claudeengine
++
++import (
++	"bytes"
++	"encoding/json"
++	"errors"
++	"fmt"
++	"io"
++	"os"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/state"
++)
++
++var _ shuttleengine.BatchingNudger = (*Claude)(nil)
++
++// BatchingNudgeConfig is claude.yaml's batching_nudge block: the switches and thresholds of the after-tool-call hook that nudges a session back to batching its calls.
++// Prepare copies it into the run's state file, so a running session keeps the values it started with.
++type BatchingNudgeConfig struct {
++	// Enabled installs the hook; off, a run's settings carry no batching hook and Prepare writes no state file.
++	Enabled bool `yaml:"enabled" json:"enabled"`
++	// LookupChain switches the single-lookup chain breach.
++	LookupChain bool `yaml:"lookup_chain" json:"lookup_chain"`
++	// ReadSlice switches the read-slice breach.
++	ReadSlice bool `yaml:"read_slice" json:"read_slice"`
++	// EditChain switches the edit-only chain breach.
++	EditChain bool `yaml:"edit_chain" json:"edit_chain"`
++	// ContextTokens is the context size, in tokens, below which the hook stays silent.
++	ContextTokens int `yaml:"context_tokens" json:"context_tokens"`
++	// LookupRun is the number of consecutive single-lookup messages that fires the single-lookup chain breach.
++	LookupRun int `yaml:"lookup_run" json:"lookup_run"`
++	// EditRun is the number of consecutive edit-only messages that fires the edit-only chain breach.
++	EditRun int `yaml:"edit_run" json:"edit_run"`
++	// SliceLines is the line count under which a sliced Read of a file is a breach.
++	SliceLines int `yaml:"slice_lines" json:"slice_lines"`
++	// MaxNudges is the most nudges one run's session gets, so a session that ignores the line is not nagged on every turn.
++	MaxNudges int `yaml:"max_nudges" json:"max_nudges"`
++}
++
++// batchingNudgeKey is claude.yaml's key of the batching_nudge block.
++const batchingNudgeKey = "batching_nudge"
++
++// ValidateBatchingNudge refuses a batching_nudge block a run could not use while the hook is on:
++// a negative context_tokens, or a lookup_run, edit_run, slice_lines or max_nudges below 1.
++// The refusal names the key and the way forward, lym config claude.
++func ValidateBatchingNudge(cfg Config) error {
++	nudge := cfg.BatchingNudge
++	if !nudge.Enabled {
++		return nil
++	}
++	bounds := []struct {
++		key          string
++		value, least int
++	}{
++		{"context_tokens", nudge.ContextTokens, 0},
++		{"lookup_run", nudge.LookupRun, 1},
++		{"edit_run", nudge.EditRun, 1},
++		{"slice_lines", nudge.SliceLines, 1},
++		{"max_nudges", nudge.MaxNudges, 1},
++	}
++	for _, bound := range bounds {
++		if bound.value < bound.least {
++			return fmt.Errorf("claudeengine: claude.yaml's %s.%s is %d, below its least value %d; way forward: lym config claude --set %s.%s=<n>",
++				batchingNudgeKey, bound.key, bound.value, bound.least, batchingNudgeKey, bound.key)
++		}
++	}
++	return nil
++}
++
++// Claude Code's names of the tools a batching breach is made of.
++const (
++	toolRead  = "Read"
++	toolGrep  = "Grep"
++	toolGlob  = "Glob"
++	toolEdit  = "Edit"
++	toolWrite = "Write"
++)
++
++// batchingNudgeMatcher is the PostToolUse matcher of the batching hook: the tools a breach is made of, so no other tool call starts a process.
++const batchingNudgeMatcher = toolRead + "|" + toolGrep + "|" + toolGlob + "|" + toolEdit + "|" + toolWrite
++
++// batchingNudgeStateFileName is the file in a run directory that holds the run's nudge settings and count.
++const batchingNudgeStateFileName = "batching-nudge.json"
++
++// batchingNudgeHookCommand returns the PostToolUse command of the batching hook: the shuttle verb, told this engine's registry name and the run's state file at quotedStatePath.
++// It ends in `; true`, so a missing or failing lym never shows the session a hook error.
++func batchingNudgeHookCommand(quotedStatePath string) string {
++	return "lym shuttle " + shuttleengine.BatchingHookVerb + " claude " + quotedStatePath + "; true"
++}
++
++// batchingTailBytes bounds the transcript tail the judgment reads, so a call at a large context costs one bounded read.
++const batchingTailBytes = 4 << 20
++
++// The nudge lines, one per breach; each names the breach and quotes the rule it breaks.
++const (
++	lookupChainNudge = "[lym batching] Your last %d messages each made one lookup and nothing else. The rule: list every question, then send every grep and read for all of them in one message; wait for a result only to choose the next call, then send every call it unlocks and every call you know in one message."
++	readSliceNudge   = "[lym batching] You read a slice of %s, %s. The rule: read a file whole, or every span you need from it, in one message; this overrides the Read tool's advice to read only the part you need, and never grep for a line and then read a slice around it."
++	editChainNudge   = "[lym batching] Your last %d messages each held only edits. The rule: decide every edit before you make any, then make all of them in one message, every Edit and Write call together."
++)
++
++// The reasons a sliced Read breaks the rule, each filling readSliceNudge.
++const (
++	sliceShortReason = "a file under %d lines"
++	sliceReadReason  = "a file you already read that has not changed since"
++)
++
++// errNoNudge ends a state update that nudges nothing, so the state file is left unwritten.
++var errNoNudge = errors.New("no nudge")
++
++// batchingNudgeState is a run's nudge state file: the settings Prepare copied from claude.yaml, the nudges given and the message last nudged.
++type batchingNudgeState struct {
++	Settings BatchingNudgeConfig `json:"settings"`
++	Nudges   int                 `json:"nudges"`
++	// NudgedMessage is the id of the assistant message the latest nudge answered, so the parallel calls of one message nudge at most once.
++	NudgedMessage string `json:"nudged_message"`
++}
++
++// batchingNudgeLockPath returns the lock file guarding the state file at statePath.
++func batchingNudgeLockPath(statePath string) string {
++	return statePath + ".lock"
++}
++
++// writeBatchingNudgeState seeds the state file at statePath with settings and no nudges.
++func writeBatchingNudgeState(statePath string, settings BatchingNudgeConfig) error {
++	return state.WriteJSON(statePath, batchingNudgeLockPath(statePath), batchingNudgeState{Settings: settings})
++}
++
++// batchingHookInput is the part of Claude Code's PostToolUse input the judgment reads.
++type batchingHookInput struct {
++	TranscriptPath string `json:"transcript_path"`
++	AgentID        string `json:"agent_id"`
++	ToolName       string `json:"tool_name"`
++	ToolUseID      string `json:"tool_use_id"`
++	ToolInput      struct {
++		FilePath string `json:"file_path"`
++		Offset   *int   `json:"offset"`
++		Limit    *int   `json:"limit"`
++	} `json:"tool_input"`
++}
++
++// sliced reports whether the call reads part of a file: a Read with a limit, or with an offset past the first line.
++func (in batchingHookInput) sliced() bool {
++	if in.ToolName != toolRead {
++		return false
++	}
++	return in.ToolInput.Limit != nil || (in.ToolInput.Offset != nil && *in.ToolInput.Offset > 1)
++}
++
++// BatchingNudge judges the tool call a PostToolUse input describes and returns the hook output that adds one nudge line to the session's context, or nil when no nudge is due.
++// A call from a subagent or fork, a run with no state file, a session below the context threshold, a run past its nudge cap and a message already nudged get none.
++// The judgment and the count update hold the state file's lock, so the parallel calls of one message nudge at most once.
++// A transcript that cannot be read gets no nudge and no error, since its format is a Claude Code internal; a malformed input or state file is an error.
++func (c *Claude) BatchingNudge(statePath string, payload []byte) ([]byte, error) {
++	var input batchingHookInput
++	if err := json.Unmarshal(payload, &input); err != nil {
++		return nil, fmt.Errorf("claudeengine: parse the batching hook input: %w", err)
++	}
++	if input.AgentID != "" || input.TranscriptPath == "" || input.ToolUseID == "" {
++		return nil, nil
++	}
++	if _, err := os.Stat(statePath); err != nil {
++		if os.IsNotExist(err) {
++			return nil, nil
++		}
++		return nil, fmt.Errorf("claudeengine: stat the batching nudge state %s: %w", statePath, err)
++	}
++
++	var line string
++	err := state.UpdateJSON(statePath, batchingNudgeLockPath(statePath), func(cur batchingNudgeState, found bool) (batchingNudgeState, error) {
++		if !found || cur.Nudges >= cur.Settings.MaxNudges {
++			return cur, errNoNudge
++		}
++		tail, err := readTranscriptTail(input.TranscriptPath, batchingTailBytes)
++		if err != nil {
++			return cur, errNoNudge
++		}
++		reading, _ := latestReading(tail)
++		if !reading.Known || reading.Tokens < cur.Settings.ContextTokens {
++			return cur, errNoNudge
++		}
++		messages := tailMessages(tail)
++		current := messageHolding(messages, input.ToolUseID)
++		if current < 0 || messages[current].id == cur.NudgedMessage {
++			return cur, errNoNudge
++		}
++		line = judgeBatching(cur.Settings, messages, current, input)
++		if line == "" {
++			return cur, errNoNudge
++		}
++		cur.Nudges++
++		cur.NudgedMessage = messages[current].id
++		return cur, nil
++	})
++	if errors.Is(err, errNoNudge) {
++		return nil, nil
++	}
++	if err != nil {
++		return nil, fmt.Errorf("claudeengine: update the batching nudge state %s: %w", statePath, err)
++	}
++	return hookContext(hookEventPostToolUse, line)
++}
++
++// readTranscriptTail returns the complete lines of the last budget bytes of the transcript at transcriptPath, the whole file when it is smaller.
++// The window's first line is dropped unless the window starts the file, since it may be cut.
++func readTranscriptTail(transcriptPath string, budget int64) ([]byte, error) {
++	f, err := os.Open(transcriptPath)
++	if err != nil {
++		return nil, err
++	}
++	defer f.Close()
++	info, err := f.Stat()
++	if err != nil {
++		return nil, err
++	}
++	start := info.Size() - budget
++	if start < 0 {
++		start = 0
++	}
++	tail := make([]byte, info.Size()-start)
++	if _, err := f.ReadAt(tail, start); err != nil && err != io.EOF {
++		return nil, err
++	}
++	if start > 0 {
++		nl := bytes.IndexByte(tail, '\n')
++		if nl < 0 {
++			return nil, nil
++		}
++		tail = tail[nl+1:]
++	}
++	return tail, nil
++}
++
++// tailMessage is one main-chain assistant message of a transcript tail: its id, the time of its first line and its tool calls in order.
++type tailMessage struct {
++	id    string
++	at    time.Time
++	calls []tailCall
++}
++
++// tailCall is one tool call of a tail message.
++type tailCall struct {
++	id       string
++	name     string
++	filePath string
++}
++
++// tailMessages groups the main-chain assistant lines of tail by message id, in the order each message first appears.
++// A line that does not parse, a sidechain line and a line with no message id are skipped.
++func tailMessages(tail []byte) []tailMessage {
++	var messages []tailMessage
++	index := map[string]int{}
++	for _, line := range bytes.Split(tail, []byte("\n")) {
++		if !bytes.Contains(line, []byte(`"assistant"`)) {
++			continue
++		}
++		var record struct {
++			Type        string `json:"type"`
++			IsSidechain bool   `json:"isSidechain"`
++			Timestamp   string `json:"timestamp"`
++			Message     struct {
++				ID      string          `json:"id"`
++				Content json.RawMessage `json:"content"`
++			} `json:"message"`
++		}
++		if json.Unmarshal(line, &record) != nil || record.Type != "assistant" || record.IsSidechain || record.Message.ID == "" {
++			continue
++		}
++		i, seen := index[record.Message.ID]
++		if !seen {
++			at, _ := time.Parse(time.RFC3339Nano, record.Timestamp)
++			i = len(messages)
++			index[record.Message.ID] = i
++			messages = append(messages, tailMessage{id: record.Message.ID, at: at})
++		}
++		messages[i].calls = append(messages[i].calls, contentToolCalls(record.Message.Content)...)
++	}
++	return messages
++}
++
++// contentToolCalls returns the tool calls of an assistant line's content, with the file path a call's input names.
++func contentToolCalls(content json.RawMessage) []tailCall {
++	var blocks []struct {
++		Type  string `json:"type"`
++		ID    string `json:"id"`
++		Name  string `json:"name"`
++		Input struct {
++			FilePath string `json:"file_path"`
++		} `json:"input"`
++	}
++	if json.Unmarshal(content, &blocks) != nil {
++		return nil
++	}
++	var calls []tailCall
++	for _, block := range blocks {
++		if block.Type == "tool_use" {
++			calls = append(calls, tailCall{id: block.ID, name: block.Name, filePath: block.Input.FilePath})
++		}
++	}
++	return calls
++}
++
++// messageHolding returns the index of the message holding the call toolUseID, or -1 when no message holds it.
++func messageHolding(messages []tailMessage, toolUseID string) int {
++	for i := len(messages) - 1; i >= 0; i-- {
++		for _, call := range messages[i].calls {
++			if call.id == toolUseID {
++				return i
++			}
++		}
++	}
++	return -1
++}
++
++// messageKind classes a message by the calls a batching breach is made of.
++type messageKind int
++
++const (
++	// kindOther is a message that holds no call, or calls that make no chain.
++	kindOther messageKind = iota
++	// kindLookup is a message that holds exactly one Read, Grep or Glob call and nothing else.
++	kindLookup
++	// kindEdits is a message that holds only Edit or Write calls.
++	kindEdits
++)
++
++// kindOf classes message m.
++func kindOf(m tailMessage) messageKind {
++	if len(m.calls) == 0 {
++		return kindOther
++	}
++	if len(m.calls) == 1 {
++		switch m.calls[0].name {
++		case toolRead, toolGrep, toolGlob:
++			return kindLookup
++		}
++	}
++	for _, call := range m.calls {
++		if call.name != toolEdit && call.name != toolWrite {
++			return kindOther
++		}
++	}
++	return kindEdits
++}
++
++// runEndingAt counts the consecutive messages of kind that end at index last.
++func runEndingAt(messages []tailMessage, last int, kind messageKind) int {
++	run := 0
++	for i := last; i >= 0 && kindOf(messages[i]) == kind; i-- {
++		run++
++	}
++	return run
++}
++
++// judgeBatching returns the nudge line for the first breach the call in message current makes, or "" for none:
++// a single-lookup chain, then a read slice, then an edit-only chain, each only while its switch is on.
++func judgeBatching(settings BatchingNudgeConfig, messages []tailMessage, current int, input batchingHookInput) string {
++	kind := kindOf(messages[current])
++	if settings.LookupChain && kind == kindLookup {
++		if run := runEndingAt(messages, current, kindLookup); run >= settings.LookupRun {
++			return fmt.Sprintf(lookupChainNudge, run)
++		}
++	}
++	if settings.ReadSlice && input.sliced() {
++		if reason := sliceBreach(settings, messages, current, input.ToolInput.FilePath); reason != "" {
++			return fmt.Sprintf(readSliceNudge, input.ToolInput.FilePath, reason)
++		}
++	}
++	if settings.EditChain && kind == kindEdits {
++		if run := runEndingAt(messages, current, kindEdits); run >= settings.EditRun {
++			return fmt.Sprintf(editChainNudge, run)
++		}
++	}
++	return ""
++}
++
++// sliceBreach returns why a sliced Read of filePath in message current breaks the rule, or "" when it does not:
++// the file holds fewer than the settings' slice lines, or the latest earlier message that read it is not older than the file's last modification.
++// A file that cannot be read or statted is no breach.
++func sliceBreach(settings BatchingNudgeConfig, messages []tailMessage, current int, filePath string) string {
++	lines, err := countLinesUpTo(filePath, settings.SliceLines)
++	if err != nil {
++		return ""
++	}
++	if lines < settings.SliceLines {
++		return fmt.Sprintf(sliceShortReason, settings.SliceLines)
++	}
++	info, err := os.Stat(filePath)
++	if err != nil {
++		return ""
++	}
++	for i := current - 1; i >= 0; i-- {
++		for _, call := range messages[i].calls {
++			if call.name != toolRead || call.filePath != filePath {
++				continue
++			}
++			if !messages[i].at.IsZero() && !info.ModTime().After(messages[i].at) {
++				return sliceReadReason
++			}
++			return ""
++		}
++	}
++	return ""
++}
++
++// countLinesUpTo counts the lines of the file at filePath, stopping once the count reaches limit; a last line without its newline counts.
++func countLinesUpTo(filePath string, limit int) (int, error) {
++	f, err := os.Open(filePath)
++	if err != nil {
++		return 0, err
++	}
++	defer f.Close()
++	buf := make([]byte, 32*1024)
++	lines, unterminated := 0, false
++	for lines < limit {
++		n, err := f.Read(buf)
++		lines += bytes.Count(buf[:n], []byte{'\n'})
++		if n > 0 {
++			unterminated = buf[n-1] != '\n'
++		}
++		if err == io.EOF {
++			if unterminated {
++				lines++
++			}
++			return lines, nil
++		}
++		if err != nil {
++			return 0, err
++		}
++	}
++	return lines, nil
++}
+diff --git a/internal/shuttleengine/claudeengine/batchingnudge_test.go b/internal/shuttleengine/claudeengine/batchingnudge_test.go
+new file mode 100644
+index 00000000..334e4737
+--- /dev/null
++++ b/internal/shuttleengine/claudeengine/batchingnudge_test.go
+@@ -0,0 +1,481 @@
++// batchingnudge_test.go pins the batching nudge.
++// It covers which breach a transcript tail fires and what holds it back, and the count its state file keeps.
++// It also covers the transcript tail read, the bounds of claude.yaml's batching_nudge block, and the hook and state file Prepare installs from it.
++
++package claudeengine
++
++import (
++	"encoding/json"
++	"fmt"
++	"os"
++	"path/filepath"
++	"runtime"
++	"slices"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/state"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// nudgeFixtureBase is the time the fixture transcripts and files are dated from.
++var nudgeFixtureBase = time.Date(2026, 11, 2, 12, 0, 0, 0, time.UTC)
++
++// The entries of a fixture message that are not a call, and the one-entry messages that stand for a line the nudge must skip.
++const (
++	// nudgeLineBreak starts a new transcript line of the same message, as Claude Code writes one line per content block.
++	nudgeLineBreak = "~"
++	// nudgeTextBlock adds a text block, which holds no call.
++	nudgeTextBlock = "text"
++	// nudgeSidechain is a message written as a sidechain line holding one Read.
++	nudgeSidechain = "!sidechain"
++	// nudgeNoID is a message written as a line holding one Read and no message id.
++	nudgeNoID = "!noid"
++)
++
++// nudgeCallID names call j of fixture message i, the calls counted without the non-call entries.
++func nudgeCallID(message, call int) string {
++	return fmt.Sprintf("call-%d-%d", message, call)
++}
++
++// firstNudgeCall returns the first entry of message that is a call.
++func firstNudgeCall(message []string) string {
++	for _, entry := range message {
++		if entry != nudgeLineBreak && entry != nudgeTextBlock {
++			return entry
++		}
++	}
++	return ""
++}
++
++// writeNudgeTranscript writes a transcript into dir holding the main-chain assistant lines of each message, each message followed by a user line answering its first call, and returns its path.
++// A call is written "Tool" or "Tool:file", the file named relative to dir; message i is dated i+1 minutes after nudgeFixtureBase and reports tokens of context.
++// A message is one line unless it holds nudgeLineBreak entries, and the one-entry messages nudgeSidechain and nudgeNoID are written as the lines their names say.
++func writeNudgeTranscript(t *testing.T, dir string, tokens int, messages [][]string) string {
++	t.Helper()
++	var lines []string
++	appendRecord := func(record map[string]any) {
++		data, err := json.Marshal(record)
++		if err != nil {
++			t.Fatalf("marshal transcript line: %v", err)
++		}
++		lines = append(lines, string(data))
++	}
++	for i, message := range messages {
++		id, sidechain := fmt.Sprintf("msg-%d", i), false
++		switch {
++		case slices.Equal(message, []string{nudgeSidechain}):
++			message, sidechain = []string{"Read:short.go"}, true
++		case slices.Equal(message, []string{nudgeNoID}):
++			message, id = []string{"Read:short.go"}, ""
++		}
++		lineBlocks := [][]map[string]any{nil}
++		calls := 0
++		for _, entry := range message {
++			var block map[string]any
++			switch entry {
++			case nudgeLineBreak:
++				lineBlocks = append(lineBlocks, nil)
++				continue
++			case nudgeTextBlock:
++				block = map[string]any{"type": "text", "text": "thinking aloud"}
++			default:
++				name, file, _ := strings.Cut(entry, ":")
++				input := map[string]any{}
++				if file != "" {
++					input["file_path"] = filepath.Join(dir, file)
++				}
++				block = map[string]any{"type": "tool_use", "id": nudgeCallID(i, calls), "name": name, "input": input}
++				calls++
++			}
++			lineBlocks[len(lineBlocks)-1] = append(lineBlocks[len(lineBlocks)-1], block)
++		}
++		for _, blocks := range lineBlocks {
++			content := map[string]any{"content": blocks, "usage": map[string]any{"input_tokens": tokens}}
++			if id != "" {
++				content["id"] = id
++			}
++			appendRecord(map[string]any{
++				"type":        "assistant",
++				"isSidechain": sidechain,
++				"timestamp":   nudgeFixtureBase.Add(time.Duration(i+1) * time.Minute).Format(time.RFC3339Nano),
++				"message":     content,
++			})
++		}
++		appendRecord(map[string]any{
++			"type":    "user",
++			"message": map[string]any{"content": []map[string]any{{"type": "tool_result", "tool_use_id": nudgeCallID(i, 0), "content": "an assistant result"}}},
++		})
++	}
++	transcript := filepath.Join(dir, "transcript.jsonl")
++	if err := os.WriteFile(transcript, []byte(strings.Join(lines, "\n")+"\n"), 0o644); err != nil {
++		t.Fatalf("write transcript: %v", err)
++	}
++	return transcript
++}
++
++// writeNudgeFile writes a file of lines lines named name into dir, last modified at modified.
++func writeNudgeFile(t *testing.T, dir, name string, lines int, modified time.Time) {
++	t.Helper()
++	filePath := filepath.Join(dir, name)
++	if err := os.WriteFile(filePath, []byte(strings.Repeat("line\n", lines)), 0o644); err != nil {
++		t.Fatalf("write %s: %v", name, err)
++	}
++	if err := os.Chtimes(filePath, modified, modified); err != nil {
++		t.Fatalf("date %s: %v", name, err)
++	}
++}
++
++// TestBatchingNudge pins which breach a call fires, from the call's own input and the transcript tail, and what holds a nudge back.
++// A fired nudge counts in the state file and records its message; a silent call leaves the state file as it was.
++func TestBatchingNudge(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	settings := BatchingNudgeConfig{Enabled: true, LookupChain: true, ReadSlice: true, EditChain: true, ContextTokens: 150000, LookupRun: 3, EditRun: 2, SliceLines: 20, MaxNudges: 2}
++	lookupChain := [][]string{{"Read:short.go"}, {"Grep"}, {"Glob"}}
++	readLongAgain := [][]string{{"Read:long.go"}, {"Bash"}, {"Read:long.go"}}
++	shortRead := [][]string{{"Bash"}, {"Read:short.go"}}
++	offsetTen, limitFive, offsetOne := 10, 5, 1
++	shortSliceNudge := func(dir string) string {
++		return fmt.Sprintf(readSliceNudge, filepath.Join(dir, "short.go"), fmt.Sprintf(sliceShortReason, 20))
++	}
++	lookupNudge := func(string) string { return fmt.Sprintf(lookupChainNudge, 3) }
++	tests := []struct {
++		name     string
++		tokens   int
++		messages [][]string
++		// offset and limit are the current call's Read arguments, the last message's first call; nil leaves one out.
++		offset, limit *int
++		// longModified is how long after nudgeFixtureBase long.go was last modified.
++		longModified time.Duration
++		subagent     bool
++		noState      bool
++		// corruptState seeds a state file that is not JSON.
++		corruptState bool
++		before       func(*batchingNudgeState)
++		// input changes the hook input before it is sent; dir is the fixture directory.
++		input func(dir string, hookInput map[string]any)
++		// payload replaces the hook input outright.
++		payload []byte
++		wantErr bool
++		// want returns the nudge line for the fixture directory; nil wants no nudge.
++		want func(dir string) string
++	}{
++		{name: "LookupChainFires", tokens: 200000, messages: lookupChain, want: lookupNudge},
++		{name: "LookupChainShorterThanTheRunIsSilent", tokens: 200000, messages: [][]string{{"Bash"}, {"Read:short.go"}, {"Grep"}}},
++		{name: "BatchedCurrentMessageIsSilent", tokens: 200000, messages: [][]string{{"Read:short.go"}, {"Grep"}, {"Read:short.go", "Read:long.go"}}},
++		{name: "BelowTheContextThresholdIsSilent", tokens: 100000, messages: lookupChain},
++		{name: "LookupChainSplitAcrossLinesStillCountsAsOneMessage", tokens: 200000, messages: [][]string{{"Read:short.go"}, {"Grep"}, {nudgeTextBlock, nudgeLineBreak, "Glob"}}, want: lookupNudge},
++		{name: "SidechainLineDoesNotBreakTheChain", tokens: 200000, messages: [][]string{{"Read:short.go"}, {nudgeSidechain}, {"Grep"}, {"Glob"}}, want: lookupNudge},
++		{name: "SidechainLineIsNotCountedInTheChain", tokens: 200000, messages: [][]string{{"Read:short.go"}, {nudgeSidechain}, {"Grep"}}},
++		{name: "LineWithoutAMessageIDIsNotCountedInTheChain", tokens: 200000, messages: [][]string{{"Read:short.go"}, {nudgeNoID}, {"Grep"}}},
++		{name: "SlicedReadOfAShortFileFires", tokens: 200000, messages: shortRead, offset: &offsetTen, limit: &limitFive, want: shortSliceNudge},
++		{name: "SlicedReadByLimitAloneFires", tokens: 200000, messages: shortRead, limit: &limitFive, want: shortSliceNudge},
++		{name: "SlicedReadByOffsetPastTheFirstLineAloneFires", tokens: 200000, messages: shortRead, offset: &offsetTen, want: shortSliceNudge},
++		{name: "ReadFromTheFirstLineAloneIsSilent", tokens: 200000, messages: shortRead, offset: &offsetOne},
++		{name: "WholeReadOfAShortFileIsSilent", tokens: 200000, messages: shortRead},
++		{name: "SlicedReadOfAFileAtExactlyTheSliceLinesIsSilent", tokens: 200000, messages: [][]string{{"Bash"}, {"Read:exact.go"}}, offset: &offsetTen, limit: &limitFive},
++		{name: "LastLineWithoutANewlineCounts", tokens: 200000, messages: [][]string{{"Bash"}, {"Read:unterminated.go"}}, offset: &offsetTen, limit: &limitFive},
++		{name: "SlicedReadOfAnUnreadLongFileIsSilent", tokens: 200000, messages: [][]string{{"Bash"}, {"Read:long.go"}}, offset: &offsetTen, limit: &limitFive},
++		{
++			name: "SlicedReadOfAnUnchangedFileReadBeforeFires", tokens: 200000, messages: readLongAgain, offset: &offsetTen, limit: &limitFive,
++			want: func(dir string) string {
++				return fmt.Sprintf(readSliceNudge, filepath.Join(dir, "long.go"), sliceReadReason)
++			},
++		},
++		{name: "SlicedReadOfAFileChangedSinceIsSilent", tokens: 200000, messages: readLongAgain, offset: &offsetTen, limit: &limitFive, longModified: 30 * time.Minute},
++		{
++			name: "ReadSliceSwitchedOffIsSilent", tokens: 200000, messages: shortRead, offset: &offsetTen, limit: &limitFive,
++			before: func(s *batchingNudgeState) { s.Settings.ReadSlice = false },
++		},
++		{name: "LookupChainOutranksReadSlice", tokens: 200000, messages: [][]string{{"Read:short.go"}, {"Grep"}, {"Read:short.go"}}, offset: &offsetTen, limit: &limitFive, want: lookupNudge},
++		{name: "EditChainFires", tokens: 200000, messages: [][]string{{"Edit:short.go"}, {"Write:long.go"}}, want: func(string) string { return fmt.Sprintf(editChainNudge, 2) }},
++		{name: "MessageOfSeveralEditsCountsAsOneEditMessage", tokens: 200000, messages: [][]string{{"Edit:short.go"}, {"Edit:short.go", "Edit:long.go"}}, want: func(string) string { return fmt.Sprintf(editChainNudge, 2) }},
++		{name: "EditMessageAlsoHoldingAReadIsSilent", tokens: 200000, messages: [][]string{{"Edit:short.go"}, {"Edit:short.go", "Read:long.go"}}},
++		{name: "EditAfterALookupIsSilent", tokens: 200000, messages: [][]string{{"Read:short.go"}, {"Edit:short.go"}}},
++		{
++			name: "EditChainSwitchedOffIsSilent", tokens: 200000, messages: [][]string{{"Edit:short.go"}, {"Write:long.go"}},
++			before: func(s *batchingNudgeState) { s.Settings.EditChain = false },
++		},
++		{name: "SubagentCallIsSilent", tokens: 200000, messages: lookupChain, subagent: true},
++		{name: "NudgeCapReachedIsSilent", tokens: 200000, messages: lookupChain, before: func(s *batchingNudgeState) { s.Nudges = 2 }},
++		{name: "MessageAlreadyNudgedIsSilent", tokens: 200000, messages: lookupChain, before: func(s *batchingNudgeState) { s.Nudges, s.NudgedMessage = 1, "msg-2" }},
++		{name: "SwitchedOffBreachIsSilent", tokens: 200000, messages: lookupChain, before: func(s *batchingNudgeState) { s.Settings.LookupChain = false }},
++		{name: "NoStateFileIsSilent", tokens: 200000, messages: lookupChain, noState: true},
++		{name: "MalformedPayloadIsAnError", tokens: 200000, messages: lookupChain, payload: []byte("{not json"), wantErr: true},
++		{name: "EmptyTranscriptPathIsSilent", tokens: 200000, messages: lookupChain, input: func(_ string, in map[string]any) { in["transcript_path"] = "" }},
++		{name: "EmptyToolUseIDIsSilent", tokens: 200000, messages: lookupChain, input: func(_ string, in map[string]any) { in["tool_use_id"] = "" }},
++		{
++			name: "UnreadableTranscriptIsSilent", tokens: 200000, messages: lookupChain,
++			input: func(dir string, in map[string]any) { in["transcript_path"] = filepath.Join(dir, "missing.jsonl") },
++		},
++		{name: "ToolUseIDAbsentFromTheTailIsSilent", tokens: 200000, messages: lookupChain, input: func(_ string, in map[string]any) { in["tool_use_id"] = "call-absent" }},
++		{name: "CorruptStateFileIsAnError", tokens: 200000, messages: lookupChain, corruptState: true, wantErr: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dir := t.TempDir()
++			writeNudgeFile(t, dir, "short.go", 5, nudgeFixtureBase)
++			writeNudgeFile(t, dir, "long.go", 40, nudgeFixtureBase.Add(tt.longModified))
++			writeNudgeFile(t, dir, "exact.go", 20, nudgeFixtureBase)
++			if err := os.WriteFile(filepath.Join(dir, "unterminated.go"), []byte(strings.Repeat("line\n", 19)+"line"), 0o644); err != nil {
++				t.Fatalf("write unterminated.go: %v", err)
++			}
++			transcript := writeNudgeTranscript(t, dir, tt.tokens, tt.messages)
++			statePath := filepath.Join(dir, batchingNudgeStateFileName)
++			before := batchingNudgeState{Settings: settings}
++			if tt.before != nil {
++				tt.before(&before)
++			}
++			switch {
++			case tt.corruptState:
++				if err := os.WriteFile(statePath, []byte("{not json"), 0o644); err != nil {
++					t.Fatalf("seed corrupt state: %v", err)
++				}
++			case !tt.noState:
++				if err := state.WriteJSON(statePath, batchingNudgeLockPath(statePath), before); err != nil {
++					t.Fatalf("seed state: %v", err)
++				}
++			}
++
++			last := len(tt.messages) - 1
++			name, file, _ := strings.Cut(firstNudgeCall(tt.messages[last]), ":")
++			toolInput := map[string]any{}
++			if file != "" {
++				toolInput["file_path"] = filepath.Join(dir, file)
++			}
++			if tt.offset != nil {
++				toolInput["offset"] = *tt.offset
++			}
++			if tt.limit != nil {
++				toolInput["limit"] = *tt.limit
++			}
++			hookInput := map[string]any{"hook_event_name": "PostToolUse", "transcript_path": transcript, "tool_name": name, "tool_use_id": nudgeCallID(last, 0), "tool_input": toolInput}
++			if tt.subagent {
++				hookInput["agent_id"] = "fork-1"
++			}
++			if tt.input != nil {
++				tt.input(dir, hookInput)
++			}
++			payload := tt.payload
++			if payload == nil {
++				var err error
++				if payload, err = json.Marshal(hookInput); err != nil {
++					t.Fatalf("marshal hook input: %v", err)
++				}
++			}
++
++			got, err := New().BatchingNudge(statePath, payload)
++			if tt.wantErr {
++				if err == nil {
++					t.Errorf("BatchingNudge() error = nil; want an error")
++				}
++				if got != nil {
++					t.Errorf("BatchingNudge() = %s; want no output with the error", got)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("BatchingNudge() error: %v", err)
++			}
++			wantAfter := before
++			if tt.want == nil {
++				if got != nil {
++					t.Errorf("BatchingNudge() = %s; want no output", got)
++				}
++			} else {
++				want, err := hookContext(hookEventPostToolUse, tt.want(dir))
++				if err != nil {
++					t.Fatalf("hookContext: %v", err)
++				}
++				if string(got) != string(want) {
++					t.Errorf("BatchingNudge() = %s; want %s", got, want)
++				}
++				wantAfter.Nudges++
++				wantAfter.NudgedMessage = fmt.Sprintf("msg-%d", last)
++			}
++
++			after, found, err := state.ReadJSON[batchingNudgeState](statePath, batchingNudgeLockPath(statePath))
++			if err != nil {
++				t.Fatalf("read state: %v", err)
++			}
++			if tt.noState {
++				if found {
++					t.Errorf("state file = %+v; want none written", after)
++				}
++				return
++			}
++			if after != wantAfter {
++				t.Errorf("state after = %+v; want %+v", after, wantAfter)
++			}
++		})
++	}
++}
++
++// TestReadTranscriptTail pins the window of the transcript the nudge reads: a file under the budget whole, a larger one cut to its complete lines, and nothing when the window holds no line end.
++func TestReadTranscriptTail(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name    string
++		content string
++		budget  int64
++		want    string
++		wantNil bool
++	}{
++		{name: "FileUnderTheBudgetIsReadWhole", content: "aaa\nbbb\nccc\n", budget: 100, want: "aaa\nbbb\nccc\n"},
++		{name: "FileOverTheBudgetDropsTheCutFirstLine", content: "aaa\nbbb\nccc\n", budget: 6, want: "ccc\n"},
++		{name: "WindowWithoutALineEndIsNil", content: "aaa\nbbb", budget: 2, wantNil: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			transcript := filepath.Join(t.TempDir(), "transcript.jsonl")
++			if err := os.WriteFile(transcript, []byte(tt.content), 0o644); err != nil {
++				t.Fatalf("write transcript: %v", err)
++			}
++			got, err := readTranscriptTail(transcript, tt.budget)
++			if err != nil {
++				t.Fatalf("readTranscriptTail() error: %v", err)
++			}
++			if tt.wantNil {
++				if got != nil {
++					t.Errorf("readTranscriptTail(%q, %d) = %q; want nil", tt.content, tt.budget, got)
++				}
++				return
++			}
++			if string(got) != tt.want {
++				t.Errorf("readTranscriptTail(%q, %d) = %q; want %q", tt.content, tt.budget, got, tt.want)
++			}
++		})
++	}
++}
++
++// TestValidateBatchingNudge pins the bounds of the batching_nudge block: context_tokens may be 0, the other numbers must be at least 1, and a block that is off is not checked.
++func TestValidateBatchingNudge(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name   string
++		mutate func(*BatchingNudgeConfig)
++		// wantKey is the key the refusal names; empty wants the block accepted.
++		wantKey string
++	}{
++		{name: "ValidBlockIsAccepted"},
++		{name: "ZeroContextTokensIsAccepted", mutate: func(n *BatchingNudgeConfig) { n.ContextTokens = 0 }},
++		{name: "NegativeContextTokensIsRefused", mutate: func(n *BatchingNudgeConfig) { n.ContextTokens = -1 }, wantKey: "batching_nudge.context_tokens"},
++		{name: "ZeroLookupRunIsRefused", mutate: func(n *BatchingNudgeConfig) { n.LookupRun = 0 }, wantKey: "batching_nudge.lookup_run"},
++		{name: "ZeroEditRunIsRefused", mutate: func(n *BatchingNudgeConfig) { n.EditRun = 0 }, wantKey: "batching_nudge.edit_run"},
++		{name: "ZeroSliceLinesIsRefused", mutate: func(n *BatchingNudgeConfig) { n.SliceLines = 0 }, wantKey: "batching_nudge.slice_lines"},
++		{name: "ZeroMaxNudgesIsRefused", mutate: func(n *BatchingNudgeConfig) { n.MaxNudges = 0 }, wantKey: "batching_nudge.max_nudges"},
++		{name: "DisabledBlockWithBadValuesIsAccepted", mutate: func(n *BatchingNudgeConfig) { *n = BatchingNudgeConfig{ContextTokens: -1} }},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			nudge := BatchingNudgeConfig{Enabled: true, ContextTokens: 150000, LookupRun: 3, EditRun: 2, SliceLines: 20, MaxNudges: 2}
++			if tt.mutate != nil {
++				tt.mutate(&nudge)
++			}
++			err := ValidateBatchingNudge(Config{BatchingNudge: nudge})
++			if tt.wantKey == "" {
++				if err != nil {
++					t.Errorf("ValidateBatchingNudge() error = %v; want the block accepted", err)
++				}
++				return
++			}
++			if err == nil || !strings.Contains(err.Error(), tt.wantKey) || !strings.Contains(err.Error(), "lym config claude") {
++				t.Errorf("ValidateBatchingNudge() error = %v; want a refusal naming %s and lym config claude", err, tt.wantKey)
++			}
++		})
++	}
++}
++
++// TestPrepare_BatchingNudgeHook pins that the template's batching_nudge installs the hook naming the run's state file and seeds that file with the block.
++// An off switch installs neither, and a threshold below its least value refuses the run before any artifact.
++func TestPrepare_BatchingNudgeHook(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	template, err := LoadConfig(configengine.Dirs{Anchor: t.TempDir()})
++	if err != nil {
++		t.Fatalf("load the shipped claude template: %v", err)
++	}
++	tests := []struct {
++		name     string
++		mutate   func(*BatchingNudgeConfig)
++		wantHook bool
++		// wantErr is a text the refusal names; empty wants no refusal.
++		wantErr string
++	}{
++		{name: "OnInstallsTheHookAndSeedsTheState", wantHook: true},
++		{name: "OffInstallsNeither", mutate: func(n *BatchingNudgeConfig) { n.Enabled = false }},
++		{name: "AThresholdBelowItsLeastRefusesBeforeArtifacts", mutate: func(n *BatchingNudgeConfig) { n.LookupRun = 0 }, wantErr: "batching_nudge.lookup_run"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			claude := templateConfig(t)
++			claude.BatchingNudge = template.BatchingNudge
++			if tt.mutate != nil {
++				tt.mutate(&claude.BatchingNudge)
++			}
++			runDir := t.TempDir()
++			_, err := engineWith(t, claude).Prepare(runDir, shuttleengine.Spec{Prompt: "do the thing"}, shuttleengine.Config{})
++			if tt.wantErr != "" {
++				if err == nil || !strings.Contains(err.Error(), tt.wantErr) || !strings.Contains(err.Error(), "lym config claude") {
++					t.Errorf("Prepare() error = %v; want a refusal naming %s and lym config claude", err, tt.wantErr)
++				}
++				if entries, readErr := os.ReadDir(runDir); readErr != nil || len(entries) != 0 {
++					t.Errorf("ReadDir(%s) = %d entries, err=%v; want no artifacts after a refused Prepare", runDir, len(entries), readErr)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("Prepare() error: %v", err)
++			}
++
++			statePath := filepath.Join(runDir, batchingNudgeStateFileName)
++			hookStatePath := statePath
++			if runtime.GOOS == "windows" {
++				if hookStatePath, err = shuttleengine.PosixPath(statePath); err != nil {
++					t.Fatal(err)
++				}
++			}
++			settingsBytes, err := os.ReadFile(filepath.Join(runDir, "settings.json"))
++			if err != nil {
++				t.Fatalf("read settings.json: %v", err)
++			}
++			var got []string
++			for _, raw := range hooksFor(parseSettings(t, settingsBytes), "PostToolUse") {
++				entry, _ := raw.(map[string]any)
++				if entry["matcher"] != batchingNudgeMatcher {
++					continue
++				}
++				hooks, _ := entry["hooks"].([]any)
++				for _, hook := range hooks {
++					command, _ := hook.(map[string]any)["command"].(string)
++					got = append(got, command)
++				}
++			}
++			var want []string
++			if tt.wantHook {
++				want = []string{batchingNudgeHookCommand(shQuote(hookStatePath))}
++			}
++			if !slices.Equal(got, want) {
++				t.Errorf("batching hook commands = %q; want %q", got, want)
++			}
++
++			seeded, found, err := state.ReadJSON[batchingNudgeState](statePath, batchingNudgeLockPath(statePath))
++			if err != nil {
++				t.Fatalf("read state: %v", err)
++			}
++			if found != tt.wantHook || (found && seeded != (batchingNudgeState{Settings: claude.BatchingNudge})) {
++				t.Errorf("state file = %+v, found=%t; want found=%t holding the block %+v", seeded, found, tt.wantHook, claude.BatchingNudge)
++			}
++		})
++	}
++}
+diff --git a/internal/shuttleengine/claudeengine/claudeengine.go b/internal/shuttleengine/claudeengine/claudeengine.go
+index c5f4d4c9..72b49671 100644
+--- a/internal/shuttleengine/claudeengine/claudeengine.go
++++ b/internal/shuttleengine/claudeengine/claudeengine.go
+@@ -104,7 +104,8 @@ func validateSessionID(id string) error {
+ // Prepare writes prompt.md, settings.json and the Bash env file bash-env.sh into runDir and returns the Launch command strings.
+ // The launch line carries a pointer to prompt.md rather than the prompt, so a prompt of any size launches.
+ // A spec that names skills carries the skill-load message on the launch line instead and returns the pointer as Launch.PromptLine, for shuttle to send after the skills load.
+-// It loads claude.yaml and the hub's gate config, whose refuse_raw list the run's shell guard installs and whose failure to load refuses the spawn, then validates spec.Effort, spec.Model, spec.PermissionMode, spec.ResumeSessionID, the prompt-cache TTL config and the keep-warm caps before writing any artifacts.
++// It loads claude.yaml and the hub's gate config, whose refuse_raw list the run's shell guard installs and whose failure to load refuses the spawn, then validates spec.Effort, spec.Model, spec.PermissionMode, spec.ResumeSessionID, the prompt-cache TTL config, the keep-warm caps and the batching nudge before writing any artifacts.
++// With the batching nudge on it also seeds the nudge's state file beside the settings.
+ func (c *Claude) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengine.Config) (shuttleengine.Launch, error) {
+ 	claude, err := loadConfigOrRefuse(c.dirs)
+ 	if err != nil {
+@@ -144,6 +145,9 @@ func (c *Claude) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengi
+ 	if err := ValidateKeepWarm(claude); err != nil {
+ 		return shuttleengine.Launch{}, err
+ 	}
++	if err := ValidateBatchingNudge(claude); err != nil {
++		return shuttleengine.Launch{}, err
++	}
+ 
+ 	// An adopted run takes over an existing session; reject a malformed id before any artifact is written.
+ 	resume := spec.ResumeSessionID != ""
+@@ -216,6 +220,11 @@ func (c *Claude) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengi
+ 	if err := os.WriteFile(settingsPath, settingsJSON, 0o644); err != nil {
+ 		return shuttleengine.Launch{}, fmt.Errorf("write settings: %w", err)
+ 	}
++	if claude.BatchingNudge.Enabled {
++		if err := writeBatchingNudgeState(filepath.Join(runDir, batchingNudgeStateFileName), claude.BatchingNudge); err != nil {
++			return shuttleengine.Launch{}, fmt.Errorf("write batching nudge state: %w", err)
++		}
++	}
+ 
+ 	// The env file path stays the native absolute path on every OS: Claude Code reads the file itself and runs its content in the Bash tool's shell.
+ 	envFilePath, err := filepath.Abs(filepath.Join(runDir, envFileName))
+diff --git a/internal/shuttleengine/claudeengine/config.go b/internal/shuttleengine/claudeengine/config.go
+index 0d718026..e5a9bba1 100644
+--- a/internal/shuttleengine/claudeengine/config.go
++++ b/internal/shuttleengine/claudeengine/config.go
+@@ -19,7 +19,7 @@ func ConfigTemplate() string {
+ 	return configTemplate
+ }
+ 
+-// Config is the resolved claude.yaml: the Claude binary, the tool denies and the prompt-cache lifetimes.
++// Config is the resolved claude.yaml: the Claude binary, the tool denies, the prompt-cache lifetimes, the keep-warm caps and the batching nudge.
+ type Config struct {
+ 	// Binary is the path to the claude executable; empty falls back to "claude" on PATH.
+ 	Binary string `yaml:"binary"`
+@@ -33,6 +33,8 @@ type Config struct {
+ 	KeepWarmCap string `yaml:"keep_warm_cap"`
+ 	// KeepWarmCapRoles maps a strand's role segment to its keep-warm cap, replacing KeepWarmCap for that role; ValidateKeepWarm checks it, not LoadConfig.
+ 	KeepWarmCapRoles map[string]string `yaml:"keep_warm_cap_roles"`
++	// BatchingNudge switches and tunes the after-tool-call hook that nudges a session back to batching its calls; ValidateBatchingNudge checks it, not LoadConfig.
++	BatchingNudge BatchingNudgeConfig `yaml:"batching_nudge"`
+ }
+ 
+ // ConfigOpenMaps returns the claude.yaml keys whose entries are the operator's own, which configengine carries whole through reconcile and --set.
+@@ -59,6 +61,7 @@ func ConfigSpec() configengine.Spec {
+ 			"prompt_cache_ttl_roles": configengine.CategoryNone,
+ 			"keep_warm_cap":          configengine.CategoryNone,
+ 			"keep_warm_cap_roles":    configengine.CategoryNone,
++			batchingNudgeKey:         configengine.CategoryNone,
+ 		},
+ 		RetiredKeys:       map[string]configengine.Category{retiredAgentDenyKey: configengine.CategoryGuard},
+ 		RetiredWayForward: map[string]string{retiredAgentDenyKey: retiredAgentDenyWayForward},
+diff --git a/internal/shuttleengine/claudeengine/config_test.go b/internal/shuttleengine/claudeengine/config_test.go
+index 177ba611..5792a5bb 100644
+--- a/internal/shuttleengine/claudeengine/config_test.go
++++ b/internal/shuttleengine/claudeengine/config_test.go
+@@ -47,6 +47,17 @@ func TestLoadConfig(t *testing.T) {
+ 			PromptCacheTTLRoles: map[string]string{"driver": "5m", "webster": "1h", "orch": "1h"},
+ 			KeepWarmCap:         "250s",
+ 			KeepWarmCapRoles:    map[string]string{},
++			BatchingNudge: BatchingNudgeConfig{
++				Enabled:       true,
++				LookupChain:   true,
++				ReadSlice:     true,
++				EditChain:     true,
++				ContextTokens: 150000,
++				LookupRun:     3,
++				EditRun:       2,
++				SliceLines:    2000,
++				MaxNudges:     5,
++			},
+ 		}
+ 		if !reflect.DeepEqual(cfg, want) {
+ 			t.Errorf("LoadConfig() = %+v; want %+v", cfg, want)
+diff --git a/internal/shuttleengine/claudeengine/doc.go b/internal/shuttleengine/claudeengine/doc.go
+index 8abc9b67..5da94112 100644
+--- a/internal/shuttleengine/claudeengine/doc.go
++++ b/internal/shuttleengine/claudeengine/doc.go
+@@ -62,10 +62,10 @@
+ // A color outside the palette answers no inputs.
+ //
+ // The engine owns a layered config module, `claude.yaml`, declared in config.go:
+-// `binary`, `deny_ask_user_question`, `prompt_cache_ttl`, `prompt_cache_ttl_roles`, `keep_warm_cap` and `keep_warm_cap_roles`.
++// `binary`, `deny_ask_user_question`, `prompt_cache_ttl`, `prompt_cache_ttl_roles`, `keep_warm_cap`, `keep_warm_cap_roles` and the `batching_nudge` block.
+ // The retired `deny_agent_tool` key is read out of every layer, and a local override setting it is refused with the way forward of deleting it.
+ // LoadConfig resolves it through the degrading loader, stacking the template, the repo default, the worktree file and the local override,
+-// and a local override may set only the cache lifetimes.
++// and a local override may set every key but the binary and the tool denies.
+ // It is told its directories and derives none.
+ // NewFromConfig takes them, and Prepare, OpenLaunch, PromptCacheLifetime and KeepWarmCaps each load claude.yaml through them before anything else,
+ // so an invalid file refuses a run start, a resume and an open with the file, the key and the way forward, `lym config claude`.
+@@ -157,6 +157,22 @@
+ // Prepare marks the launch CreelHooks exactly when it passes the board directory's flag directory, so a strand is marked only when its settings carry the PostToolUse, Stop and waiter hooks.
+ // On Windows the flag directory takes the same git-bash POSIX conversion as the events path.
+ //
++// The batching nudge (BatchingNudger) is a PostToolUse hook that adds one line to the session's context when its recent calls break lym's batching rules; it never denies a call.
++// `claude.yaml`'s `batching_nudge` block holds `enabled`, the breach switches `lookup_chain`, `read_slice` and `edit_chain`, and the thresholds `context_tokens`, `lookup_run`, `edit_run`, `slice_lines` and `max_nudges`.
++// ValidateBatchingNudge refuses a negative `context_tokens`, or any other threshold below 1, while the hook is on, in Prepare and on a config write.
++// With `enabled` on, Prepare copies the block into `batching-nudge.json` beside the events file, and the settings carry a PostToolUse entry matching `Read|Grep|Glob|Edit|Write` that runs `lym shuttle hook-batching claude <state file>; true`, so no other tool call starts a process and a running session keeps the values its Prepare wrote.
++// On Windows the state file takes the git-bash POSIX path of the events file's directory, which git-bash converts back for the native lym.
++// The judgment reads the call's own input and the transcript tail `batchingTailBytes` bounds, whose main-chain assistant lines it groups by message id, so the parallel calls of one message count as one message.
++// It is silent for a subagent's call, below `context_tokens` by the tail's latest usage reading, past `max_nudges` nudges, and for a message it already nudged;
++// the judgment holds the state file's lock, so the parallel calls of one message get at most one nudge.
++// A single-lookup chain is a run of at least `lookup_run` consecutive messages, the current one as far as the transcript shows it included, that each hold exactly one Read, Grep or Glob call;
++// an edit-only chain is a run of at least `edit_run` consecutive messages that hold only Edit or Write calls.
++// A read slice is a Read with a `limit`, or an `offset` past the first line, of a file under `slice_lines` lines, or of a file that the latest earlier message reading it in the tail read no earlier than the file's last modification.
++// The line names one breach, the single-lookup chain before the read slice before the edit-only chain, and quotes the rule it breaks.
++// Bound: the hook is a heuristic, since some lookups must run in sequence, so it fires at times on a right call;
++// a later call of the current message may not be in the transcript yet when an early call's hook runs, so a batched message after a chain can read as one more single lookup;
++// an earlier read before the tail window is not seen, and the session's own edit counts as a change.
++//
+ // Prepare declares the launch as recording session starts, so startup waits for the `startup` line beside the ready pane.
+ // Two accepted races follow from the append order.
+ // Hooks that fire at once can interleave their stamps ahead of both payloads, which the pairing by hook name absorbs;
+diff --git a/internal/shuttleengine/claudeengine/settings.go b/internal/shuttleengine/claudeengine/settings.go
+index 6f18c7fa..6ba7b759 100644
+--- a/internal/shuttleengine/claudeengine/settings.go
++++ b/internal/shuttleengine/claudeengine/settings.go
+@@ -5,6 +5,7 @@
+ // the SessionStart hook of a run whose spec sets a context-after-compaction command runs that command on the compaction source, so its output joins the session's context.
+ // Every recording hook writes a stamp line with the hook-side time before its payload, which ParseEvents skips.
+ // The PostToolUse, PreCompact and PostCompact hooks of every session touch the run's activity stamp beside the events file, so a tool call, a fork's included, and a compaction read as activity.
++// With claude.yaml's batching nudge on, PostToolUse also runs the batching hook after each call of a tool a breach is made of.
+ // The document also carries the PreToolUse guardrails:
+ // refusing `lym webster` verbs from inside a fork in a fork-mode run (the fork-context deadlock guard),
+ // denying AskUserQuestion in autonomous runs (where there is no operator present to answer it),
+@@ -64,7 +65,7 @@ type hookEntry struct {
+ 
+ // settingsHooks is the "hooks" object of a Claude Code settings.json document.
+ // Every event but PreToolUse and PostToolUse is a recording hook installed for every session.
+-// PostToolUse, PreCompact and PostCompact touch the activity stamp, and PostToolUse also carries the creel mail hook in a hub.
++// PostToolUse, PreCompact and PostCompact touch the activity stamp, and PostToolUse also carries the batching hook while it is on and the creel mail hook in a hub.
+ // In a hub, Stop carries two entries: the recording merged with creel's turn-end delivery, and creel's idle waiter; in no hub it carries the recording alone.
+ // PreToolUse is omitted when an autonomous run has every deny off; interactive runs always carry at least the AskUserQuestion marker.
+ type settingsHooks struct {
+@@ -323,8 +324,9 @@ func activityStampHook(eventsPathPosix string) []hookEntry {
+ // A non-empty contextAfterCompaction splits the SessionStart hook in two: one entry records every source but compaction, and the compaction entry records the event and then runs that command verbatim, so its standard output reaches the session's context.
+ // Empty gives a single recording entry with no matcher.
+ // The recordings print nothing and exit 0, so the PermissionRequest recording answers no request and the SessionStart recording adds nothing to the session's context.
++// claude's batching nudge, when on, adds the batching hook's PostToolUse entry after the stamp, matched to the tools a breach is made of and naming the state file beside the events file.
+ // A non-empty creelFlagDirPosix is a git-bash POSIX path like eventsPathPosix.
+-// It adds the PostToolUse creel mail hook, after the stamp, testing the strand's flag in that directory, replaces the Stop recording with the command that merges it with creel's turn-end delivery, and adds creel's idle waiter as a second Stop entry.
++// It adds the PostToolUse creel mail hook, after the stamp and the batching hook, testing the strand's flag in that directory, replaces the Stop recording with the command that merges it with creel's turn-end delivery, and adds creel's idle waiter as a second Stop entry.
+ // Empty adds none of them and keeps the plain Stop recording.
+ func buildSettings(eventsPathPosix string, interactive bool, cfg shuttleengine.Config, claude Config, forkSubagents, denyPublish bool, contextAfterCompaction, creelFlagDirPosix string) ([]byte, error) {
+ 	quotedEventsPath := shQuote(eventsPathPosix)
+@@ -376,6 +378,13 @@ func buildSettings(eventsPathPosix string, interactive bool, cfg shuttleengine.C
+ 			Hooks:   recordingHook(hookEventPreToolUse, false)[0].Hooks,
+ 		})
+ 	}
++	if claude.BatchingNudge.Enabled {
++		statePath := path.Join(path.Dir(eventsPathPosix), batchingNudgeStateFileName)
++		doc.Hooks.PostToolUse = append(doc.Hooks.PostToolUse, hookEntry{
++			Matcher: batchingNudgeMatcher,
++			Hooks:   []hookCommand{{Type: "command", Command: batchingNudgeHookCommand(shQuote(statePath))}},
++		})
++	}
+ 	if creelFlagDirPosix != "" {
+ 		quotedFlagDir := shQuote(creelFlagDirPosix)
+ 		doc.Hooks.PostToolUse = append(doc.Hooks.PostToolUse, hookEntry{Hooks: []hookCommand{{Type: "command", Command: creelMailHookCommand(quotedFlagDir)}}})
+diff --git a/internal/shuttleengine/claudeengine/template.yaml b/internal/shuttleengine/claudeengine/template.yaml
+index c258d4b8..4e90f169 100644
+--- a/internal/shuttleengine/claudeengine/template.yaml
++++ b/internal/shuttleengine/claudeengine/template.yaml
+@@ -7,3 +7,13 @@ prompt_cache_ttl_roles:  # prompt-cache TTL per role, keyed by a strand's role s
+   orch: 1h
+ keep_warm_cap: 250s  # the keep-warm cap for every role without an entry in keep_warm_cap_roles: the longest one wait an agent of the role blocks on; a Go duration, at least 60s, below the role's prompt-cache lifetime and at most 55m; validated when a run starts and on lym config claude; a cap above five minutes leaves that role's forks' caches cold, since forks run at Claude Code's 5-minute subagent lifetime
+ keep_warm_cap_roles: {}  # keep-warm cap per role, keyed by a strand's role segment (Spec.Role), replacing keep_warm_cap for that role; the operator's own map, replacing the template's whole when present; values follow the same rules as keep_warm_cap and are validated when a run starts and on lym config claude
++batching_nudge:  # the after-tool-call hook that adds one line to a session's context when its recent calls break the batching rules, and never denies a call; read when a run starts, so a running session keeps the values it started with; validated when a run starts and on lym config claude
++  enabled: true  # install the hook in every run's settings; false installs none
++  lookup_chain: true  # nudge a run of consecutive messages that each hold exactly one Read, Grep or Glob call and nothing else
++  read_slice: true  # nudge a Read with an offset or limit of a file under slice_lines lines, or of a file an earlier message read and that has not changed since
++  edit_chain: true  # nudge a run of consecutive messages that hold only Edit or Write calls
++  context_tokens: 150000  # the context size, in tokens, below which the hook stays silent; at least 0
++  lookup_run: 3  # the number of consecutive single-lookup messages that fires; at least 1
++  edit_run: 2  # the number of consecutive edit-only messages that fires; at least 1
++  slice_lines: 2000  # the line count under which a sliced Read of a file fires; at least 1
++  max_nudges: 5  # the most nudges one run's session gets, so a session that ignores the line is not nagged on every turn; at least 1
+diff --git a/internal/shuttleengine/engine.go b/internal/shuttleengine/engine.go
+index 553b3991..d5e8d6bc 100644
+--- a/internal/shuttleengine/engine.go
++++ b/internal/shuttleengine/engine.go
+@@ -261,6 +261,17 @@ type ToolBoundaryContextRenderer interface {
+ 	RewakeOutput(text string) (stderr []byte, exitCode int)
+ }
+ 
++// BatchingHookVerb is the name of the hidden `lym shuttle` verb an engine's after-tool-call hook runs to nudge its session back to batching its calls.
++const BatchingHookVerb = "hook-batching"
++
++// BatchingNudger is an optional capability beside Engine: the after-tool-call hook that adds one line to a session's context when its recent calls break lym's batching rules.
++// An engine without it installs no such hook.
++type BatchingNudger interface {
++	// BatchingNudge judges the tool call the provider's hook input payload describes against the run's nudge state file at statePath.
++	// It returns the provider's hook output carrying the nudge, or nil when no nudge is due.
++	BatchingNudge(statePath string, payload []byte) ([]byte, error)
++}
++
+ // InstructionFileLister is an optional capability beside Engine: the names of the files the provider loads as project instructions.
+ // An engine without it has no project instruction files.
+ type InstructionFileLister interface {
+diff --git a/internal/shuttleengines/doc.go b/internal/shuttleengines/doc.go
+index 96f7d2ed..dcc12a4f 100644
+--- a/internal/shuttleengines/doc.go
++++ b/internal/shuttleengines/doc.go
+@@ -9,7 +9,7 @@
+ //
+ // Each registry entry carries its engine's config module as plain data, and ConfigModules lists them sorted by name for the config registry,
+ // so an engine's config module reaches that registry through this package alone.
+-// The claude module's load check also validates the keep-warm caps, so a config write refuses a cap a run start would refuse.
++// The claude module's load check also validates the keep-warm caps and the batching nudge, so a config write refuses a value a run start would refuse.
+ //
+ // Each entry also declares the environment keys its engine's process injects, and EnvScrub returns their union for reed's server spawn,
+ // so an engine's scrub keys reach reed through this package alone.
+@@ -20,6 +20,7 @@
+ // A capability is set only when the engine implements it, and each set one is its own adapter, one per capability rather than one per engine:
+ // a reader of finished session records gets reading alone, and no type assertion on a value in the set recovers an engine that can start, open, send to or stop a run.
+ // ToolBoundaryRenderer returns one registered engine's creel hook-delivery capability by name, built the same way: the hook-input parse, the hook output and the wake output the creel hook verbs render.
++// BatchingNudger returns one registered engine's batching-nudge capability by name, built the same way, for the shuttle hook verb that judges a session's tool call.
+ // KeepWarm is the one keep-warm resolver: it answers a strand's keep-warm cap, the long cap and shuttle.yaml's break-even through the default engine's KeepWarmCaps.
+ // A numbered role such as implementer-2 resolves as its base role, implementer.
+ // When the strand does not parse or the shuttle config, the engine set or the engine's caps cannot be resolved, it answers the fallback: shuttleengine.DefaultAwaitCap for both caps, no break-even and the cause.
+diff --git a/internal/shuttleengines/shuttleengines.go b/internal/shuttleengines/shuttleengines.go
+index f159824b..255f35b4 100644
+--- a/internal/shuttleengines/shuttleengines.go
++++ b/internal/shuttleengines/shuttleengines.go
+@@ -62,7 +62,10 @@ var registry = map[string]entry{
+ 				if err != nil {
+ 					return err
+ 				}
+-				return claudeengine.ValidateKeepWarm(claude)
++				if err := claudeengine.ValidateKeepWarm(claude); err != nil {
++					return err
++				}
++				return claudeengine.ValidateBatchingNudge(claude)
+ 			},
+ 		},
+ 	},
+@@ -262,3 +265,14 @@ func ToolBoundaryRenderer(name string) (shuttleengine.ToolBoundaryContextRendere
+ 	renderer, ok := registered.constructor(shuttleengine.Config{}, configengine.Dirs{}).(shuttleengine.ToolBoundaryContextRenderer)
+ 	return renderer, ok
+ }
++
++// BatchingNudger returns the batching-nudge capability of the registered engine named name, and false when no engine of that name is registered or the engine has none.
++// The engine is built with a zero shuttle config and no config directories, as ToolBoundaryRenderer builds it, since the nudge reads its settings from the run's state file.
++func BatchingNudger(name string) (shuttleengine.BatchingNudger, bool) {
++	registered, ok := registry[name]
++	if !ok {
++		return nil, false
++	}
++	nudger, ok := registered.constructor(shuttleengine.Config{}, configengine.Dirs{}).(shuttleengine.BatchingNudger)
++	return nudger, ok
++}
+diff --git a/internal/shuttleengines/shuttleengines_test.go b/internal/shuttleengines/shuttleengines_test.go
+index 406f29b2..0c4a3213 100644
+--- a/internal/shuttleengines/shuttleengines_test.go
++++ b/internal/shuttleengines/shuttleengines_test.go
+@@ -356,7 +356,26 @@ func TestToolBoundaryRenderer(t *testing.T) {
+ 	}
+ }
+ 
+-// TestConfigModules_ClaudeCheckLoad pins that the claude module's load check passes the template and refuses a keep-warm cap a run start would refuse.
++// TestBatchingNudger pins that the claude entry has the batching nudge, silent for a run with no state file, and that an unknown name has none.
++func TestBatchingNudger(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	nudger, ok := BatchingNudger("claude")
++	if !ok {
++		t.Fatal("BatchingNudger(claude) found none")
++	}
++	statePath := t.TempDir() + "/absent.json"
++	got, err := nudger.BatchingNudge(statePath, []byte(`{"transcript_path":"/absent.jsonl","tool_use_id":"call-1"}`))
++	if err != nil || got != nil {
++		t.Errorf("BatchingNudge(no state file) = %s, %v; want no output and no error", got, err)
++	}
++	if _, ok := BatchingNudger("nope"); ok {
++		t.Error("BatchingNudger(nope) found one; want none")
++	}
++}
++
++// TestConfigModules_ClaudeCheckLoad pins that the claude module's load check passes the template and refuses a keep-warm cap or a batching threshold a run start would refuse.
+ func TestConfigModules_ClaudeCheckLoad(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -375,10 +394,23 @@ func TestConfigModules_ClaudeCheckLoad(t *testing.T) {
+ 		t.Errorf("CheckLoad over the template = %v; want nil", err)
+ 	}
+ 
+-	anchor := t.TempDir()
+-	writeLocalLayer(t, anchor, "claude", "keep_warm_cap: 10s\n")
+-	err := checkLoad(configengine.Dirs{Anchor: anchor})
+-	if err == nil || !strings.Contains(err.Error(), "keep_warm_cap") || !strings.Contains(err.Error(), "lym config claude") {
+-		t.Errorf("CheckLoad over keep_warm_cap: 10s = %v; want a refusal naming keep_warm_cap and lym config claude", err)
++	refusals := []struct {
++		name  string
++		local string
++		key   string
++	}{
++		{"KeepWarmCapTooShort", "keep_warm_cap: 10s\n", "keep_warm_cap"},
++		{"BatchingRunBelowOne", "batching_nudge: {enabled: true, lookup_chain: true, read_slice: true, edit_chain: true, context_tokens: 150000, lookup_run: 0, edit_run: 2, slice_lines: 2000, max_nudges: 5}\n", "batching_nudge.lookup_run"},
++	}
++	for _, tt := range refusals {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			anchor := t.TempDir()
++			writeLocalLayer(t, anchor, "claude", tt.local)
++			err := checkLoad(configengine.Dirs{Anchor: anchor})
++			if err == nil || !strings.Contains(err.Error(), tt.key) || !strings.Contains(err.Error(), "lym config claude") {
++				t.Errorf("CheckLoad over %q = %v; want a refusal naming %s and lym config claude", tt.local, err, tt.key)
++			}
++		})
+ 	}
+ }
