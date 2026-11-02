@@ -576,16 +576,17 @@
     },
     {
       "id": 990,
-      "handle": "E1",
+      "handle": "T5",
       "slug": "finalize-fix-outside-lock",
       "title": "Finalize releases the parent lock while its fixer works",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "landing",
         "loom"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "A red verify in Finalize frees the parent lock before the fixer starts, then requeues, merges and verifies again, so green runs land while one run fixes",
