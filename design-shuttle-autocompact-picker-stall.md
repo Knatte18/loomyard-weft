@@ -16,5 +16,7 @@ A single Escape key in the fixer's pane closes the picker ("esc not now"); the g
 
 ## Expected
 
-- lym keeps Claude Code's autocompact picker out of shuttle sessions, for example by setting the autocompact choice in the session's settings at launch.
-- A re-prompt that cannot be delivered because a picker holds the pane escalates after a bounded number of ticks, or dismisses a known picker itself, instead of retrying without end.
+- Shuttle dismisses known mid-session pickers the way `claudeengine`'s startup dismisses the one-time trust gate: when readiness holds a pane with no input box, it matches the picker by its wording (here "We recommend compacting earlier" and "esc not now") and presses Escape, which keeps the current setting.
+  Today the trust gate is handled only at startup, and readiness only reports "no input box is on screen; a menu or picker may be open".
+- A picker shuttle does not recognise still ends the wait: the re-prompt escalates after a bounded number of ticks instead of retrying without end.
+- No Claude Code setting is documented to suppress this picker (operator, 2026-11-02: it is rare, so shuttle handles it rather than a settings change).
