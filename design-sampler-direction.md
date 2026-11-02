@@ -12,7 +12,9 @@ Does the sampler stay a code writer, or become a read-only discussion role as no
   The language skills are still not listed for it, as other code-writing seats list them.
   If the sampler becomes a read-only role, the two added skills may be more than it needs and can come out again.
   The landing's review was asked to confirm the sampler change belongs there.
-- PATTERN role: the directive itself is note `sampler-lacks-pattern-directive`; this answer only decides whether it is rendered for the implementer or the Discussion writer.
+- PATTERN role: built by task `sampler-lacks-pattern-directive` (`9557b4fa`).
+  `samplerengine.SessionSpec` renders `pattern.Directive` with `pattern.RoleImplementer`, since the sampler writes code today.
+  If the sampler becomes a read-only role, only the role passed changes, to the Discussion writer's.
 - Bundle with the other small sampler changes once the direction is settled.
 
 ## Also read (orch, 2026-11-02)
