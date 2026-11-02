@@ -1,0 +1,15 @@
+---
+round: 1
+focus:
+  - "internal/driftengine/verbs.go `Accept`: with the operator case added to the switch, does the code after it (withdrawn-test refusal, scope-full refusal for non-callers) still refuse an autonomous agent session and admit an operator session, including for a withdrawn test? Read the whole function, not only the diff hunks, and settle whether every path that sets `by` agrees with the ruling assignment."
+  - "internal/driftengine/records.go and verify.go: `ResetRuns` now records the mode at each fresh spawn. Settle whether a resumed live agent, an interrupted entry that settles the session, and `CloseAgentSession` keep `Operator` and `SessionOpen` consistent, so `OperatorSessionOpen` is never true for a closed or autonomous session. Check every other `ResetRuns` and `runsRecord` writer for the new field."
+  - "Scope-full Done check in internal/driftengine/verify.go: operator acceptances are written ruled. Settle whether the Done-time unruled check and the decision-halt path still treat agent acceptances as before, and whether an operator-ruled acceptance can bypass the parent's decision halt in a case the board entry does not license."
+  - "internal/driftengine/seats.go `VerifyTable`: settle whether `Interactive: cfg.VerifyInteractive` makes the seat engine drop the parent directive's operator-ban line and drive an interactive pane as the board entry asks, and whether the operator text delivers what the entry lists: per test and per quantity, the baseline agent's expectation, discussion, and recording each acceptance or fix before the run goes on."
+  - "Scope against the board entry: Drift-Baseline must stay autonomous, and the key must sit in the hub's drift config like `discussion_interactive`. Settle whether the diff changes only what that licenses, including the `accept` and `withdraw` help text in internal/driftcli/cli.go."
+  - "Repository rules and docs: settle whether a docs or spec file outside internal/driftengine/doc.go that documents drift.yaml's keys or the Drift-Verify agent exists and needs the new key in this diff, and whether the stencil change in contracts/stencils/drift/drift-template-verify.md keeps the autonomous text rendering as before."
+  - "Test economy in the changed tests (seats_test, verbs_test, verify_test, records_test, config_test, configreg_test, markers_test): settle whether each new test covers a distinct behavior, and name any existing test that already covers one. Settle whether a behavior the diff adds, such as the operator-session withdrawn re-accept or the stale mark after a closed session, lacks coverage."
+  - "The change description `_lym/landing/summary.md`: check its claims against the diff, notably that the parent directive drops its operator-ban line, that a resumed live agent keeps its spawn mode, and the test list it gives."
+---
+
+Seed focus from the board entry (the decision record holds only the Goal) and the committed diff over `eea96fe2..HEAD`.
+No plan exists, so the measuring stick is the entry itself.
