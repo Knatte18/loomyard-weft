@@ -1,6 +1,6 @@
 # fabricengine tier1 hits the 10m go test timeout under load
 
-`fabricengine-tier1-timeout-load` · Task · bug, gate, fabric
+`fabricengine-tier1-timeout-load` · Task · bug, gate, fabric · running · Worktree-Create
 
 ## Seen (orch, 2026-11-02, from the darn writer of `tmuxkit-short-socket-path`)
 
