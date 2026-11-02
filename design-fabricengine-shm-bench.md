@@ -1,6 +1,6 @@
 # Measure fabricengine tier1 with the test work directory on /dev/shm against the default
 
-`fabricengine-shm-bench` · Task · research, gate, fabric · running · Worktree-Create
+`fabricengine-shm-bench` · Task · research, gate, fabric · running · Record-Write
 
 ## Seen (orch, 2026-11-02)
 
