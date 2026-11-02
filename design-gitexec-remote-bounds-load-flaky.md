@@ -1,6 +1,6 @@
 # gitexec TestRun_RemoteBounds fails under machine load
 
-`gitexec-remote-bounds-load-flaky` · Task · bug, git, gate · running · PR-Review
+`gitexec-remote-bounds-load-flaky` · Task · bug, git, gate · running · Finalize
 
 ## Seen (orch, 2026-11-02, from the darn writer of `tmuxkit-short-socket-path`)
 
