@@ -1,0 +1,1166 @@
+diff --git a/PATTERN.md b/PATTERN.md
+index 1aa53d32..b0a455e2 100644
+--- a/PATTERN.md
++++ b/PATTERN.md
+@@ -10,7 +10,7 @@
+ 
+ - `PATTERN-cwd-resolution` — Resolving a cwd, worktree root or anchor: only `internal/lymcwd`, from the worktree's own weft-root `.lym-anchor`; only `fabricengine` writes or git-reads it; engines get absolute paths, never import lymcwd; hub containers and workspace files stay hub-reachable only. (test) — [background](pattern/PATTERN-cwd-resolution.md)
+ - `PATTERN-lym-temp-root` — Creating temp file or dir: under `internal/lymtemp`'s run dir, never `os.TempDir()`. (test) — [background](pattern/PATTERN-lym-temp-root.md)
+-- `PATTERN-durable-vs-ephemeral-state` — Adding file: tracked under `_lym`, never-tracked under `.lym`, same subpath, bar heddle's rendered instruction files and their `.heddle` temporary directory at a warp root; only `internal/lymdirs` names either, bar a `tools/` script's variable block. — [background](pattern/PATTERN-durable-vs-ephemeral-state.md)
++- `PATTERN-durable-vs-ephemeral-state` — Adding file: tracked under `_lym`, never-tracked under `.lym`, same subpath, bar heddle's rendered instruction files and their `.heddle` temporary directory at a warp worktree's anchor; only `internal/lymdirs` names either, bar a `tools/` script's variable block. — [background](pattern/PATTERN-durable-vs-ephemeral-state.md)
+ - `PATTERN-leaf-packages` — Importing into a leaf package: only closed import set. — [background](pattern/PATTERN-leaf-packages.md)
+ - `PATTERN-fs-links` — Creating a filesystem link: only `internal/fslink`'s `CreateDirLink`; no `os.Symlink` or `os.Link` outside `internal/fslink`. (test) — [background](pattern/PATTERN-fs-links.md)
+ 
+diff --git a/internal/fabricengine/config.go b/internal/fabricengine/config.go
+index 3c88425d..8c739ab3 100644
+--- a/internal/fabricengine/config.go
++++ b/internal/fabricengine/config.go
+@@ -29,7 +29,7 @@ func (c Config) Dirs() []string {
+ 	return strings.Fields(c.Pathspec)
+ }
+ 
+-// WarpExcludePaths returns the warp exclude list as a slice of paths relative to a warp worktree's root, split on whitespace.
++// WarpExcludePaths returns the warp exclude list as a slice of paths relative to a warp worktree's anchor, split on whitespace.
+ // They are excluded through the warp repository's info/exclude and are never wired as junctions.
+ func (c Config) WarpExcludePaths() []string {
+ 	return strings.Fields(c.WarpExclude)
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index 9034f33e..5bafc4cc 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -465,8 +465,8 @@
+ // repo-wide flock across read, rewrite and write and replaces the file by same-directory rename, so
+ // a concurrent reader sees either the whole old file or the whole new one.
+ //
+-// The warp exclude list, fabric.yaml's `warp_exclude` key, names paths at a warp worktree's root that lym's instruction files occupy.
+-// Wiring seeds each as an anchored `/<path>` line into the same `info/exclude` and never removes one, since the file is shared by every worktree;
++// The warp exclude list, fabric.yaml's `warp_exclude` key, names paths under a warp worktree's anchor that lym's instruction files occupy.
++// Wiring seeds each as a root-anchored `/<anchor>/<path>` line, `/<path>` for anchor `.`, into the same `info/exclude` and never removes one, since the file is shared by every worktree;
+ // `SeedWarpExclude` seeds it on demand, and `ExcludeWayForward` is the refusal text for a path off the list.
+ // The list is separate from `pathspec` and is never folded into the wired junction names, so health and drift checks never ask for a junction of it.
+ //
+diff --git a/internal/fabricengine/junction.go b/internal/fabricengine/junction.go
+index ff37cda1..2d4acff9 100644
+--- a/internal/fabricengine/junction.go
++++ b/internal/fabricengine/junction.go
+@@ -145,7 +145,7 @@ func wireJunctionSet(rec *Mutations, l *lymcwd.Location, slug string, names []st
+ 		return err
+ 	}
+ 
+-	return seedWarpExcludeLines(rec, WorktreePath(l, slug), cfg.WarpExcludePaths())
++	return seedWarpExcludeLines(rec, WorktreePath(l, slug), l.AnchorRel, cfg.WarpExcludePaths())
+ }
+ 
+ // WireJunctions is WireJunctionsWith's nil-recorder delegation, kept only because roughly fifty
+diff --git a/internal/fabricengine/template.yaml b/internal/fabricengine/template.yaml
+index 0a1af3a1..3ca2d621 100644
+--- a/internal/fabricengine/template.yaml
++++ b/internal/fabricengine/template.yaml
+@@ -1,3 +1,3 @@
+ branch_prefix: ${env:LYM_BRANCH_PREFIX:-}  # prefix prepended to the slug to form the branch name (e.g. "hanf/"); empty = branch == slug
+ pathspec: ""  # OPTIONAL per-repo directory path(s) relative to worktree root, whitespace-separated; _lym and .lym are structural and injected in code by internal/fabricengine, never read from here
+-warp_exclude: CLAUDE.local.md AGENTS.override.md .heddle  # OPTIONAL warp-worktree-root paths, whitespace-separated, excluded through the warp repository's info/exclude; separate from pathspec and never wired as a junction
++warp_exclude: CLAUDE.local.md AGENTS.override.md .heddle  # OPTIONAL paths relative to a warp worktree's anchor, whitespace-separated, excluded through the warp repository's info/exclude; separate from pathspec and never wired as a junction
+diff --git a/internal/fabricengine/warpexclude.go b/internal/fabricengine/warpexclude.go
+index c4f36405..1249d873 100644
+--- a/internal/fabricengine/warpexclude.go
++++ b/internal/fabricengine/warpexclude.go
+@@ -1,30 +1,33 @@
+-// warpexclude.go seeds the warp exclude list: the paths fabric keeps out of git in every warp worktree through the repository's `info/exclude`.
++// warpexclude.go seeds the warp exclude list: the paths under a warp worktree's anchor that fabric keeps out of git in every warp worktree through the repository's `info/exclude`.
+ // The list is the `warp_exclude` key of fabric's config, separate from the junction name-set and never wired as a junction.
+ 
+ package fabricengine
+ 
+ import (
+ 	"fmt"
++	"path"
++	"path/filepath"
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ )
+ 
+-// seedWarpExcludeLines appends an anchored `/<path>` line for each path to the `info/exclude` of the repository checked out at worktree.
+-// The lines are anchored at the repository root, not at the anchor subpath, because the files the list names sit at a worktree's root.
++// seedWarpExcludeLines appends a `/<anchorRel>/<path>` line for each path to the `info/exclude` of the repository checked out at worktree, a `/<path>` line when anchorRel is ".".
++// The lines are anchored at the repository root, since a slash-free pattern matches at every depth, and name the anchor subpath because the files the list names sit at a worktree's anchor.
+ // A line already present is skipped, and no line is ever removed: `info/exclude` is one file for every worktree of the repository.
+ // rec records KindFileWritten on the exclude file only when it changed.
+-func seedWarpExcludeLines(rec *Mutations, worktree string, paths []string) error {
++func seedWarpExcludeLines(rec *Mutations, worktree, anchorRel string, paths []string) error {
+ 	if len(paths) == 0 {
+ 		return nil
+ 	}
++	anchorPrefix := filepath.ToSlash(anchorRel)
+ 	excludePath, changed, err := mutateGitExclude(worktree, func(content string) (string, error) {
+ 		present := make(map[string]bool)
+ 		for _, line := range strings.Split(content, "\n") {
+ 			present[strings.TrimSpace(line)] = true
+ 		}
+-		for _, path := range paths {
+-			line := "/" + path
++		for _, listed := range paths {
++			line := "/" + path.Join(anchorPrefix, listed)
+ 			if present[line] {
+ 				continue
+ 			}
+@@ -45,8 +48,8 @@ func seedWarpExcludeLines(rec *Mutations, worktree string, paths []string) error
+ 	return nil
+ }
+ 
+-// SeedWarpExclude loads fabric's config and seeds its warp exclude list into the exclude file of the repository l's warp worktree belongs to.
+-// It returns the listed paths, and records no mutation: it is no fabric verb.
++// SeedWarpExclude loads fabric's config and seeds its warp exclude list, under l's anchor, into the exclude file of the repository l's warp worktree belongs to.
++// It returns the listed paths, relative to the anchor, and records no mutation: it is no fabric verb.
+ // Nothing on the list is written in the weft, so the weft is never seeded.
+ func SeedWarpExclude(l *lymcwd.Location) ([]string, error) {
+ 	cfg, err := LoadConfig(ConfigDirs(l))
+@@ -54,7 +57,7 @@ func SeedWarpExclude(l *lymcwd.Location) ([]string, error) {
+ 		return nil, err
+ 	}
+ 	paths := cfg.WarpExcludePaths()
+-	if err := seedWarpExcludeLines(nil, l.WorktreePath(), paths); err != nil {
++	if err := seedWarpExcludeLines(nil, l.WorktreePath(), l.AnchorRel, paths); err != nil {
+ 		return nil, err
+ 	}
+ 	return paths, nil
+diff --git a/internal/fabricengine/warpexclude_integration_test.go b/internal/fabricengine/warpexclude_integration_test.go
+index 5df347f3..348ce5eb 100644
+--- a/internal/fabricengine/warpexclude_integration_test.go
++++ b/internal/fabricengine/warpexclude_integration_test.go
+@@ -1,5 +1,5 @@
+ // warpexclude_integration_test.go covers the warp exclude list.
+-// Wiring and SeedWarpExclude seed its anchored lines into the shared info/exclude exactly once, never into the weft or the wired junction names, and removing a pair keeps them.
++// Wiring and SeedWarpExclude seed its lines, under the worktree's anchor, into the shared info/exclude exactly once, never into the weft or the wired junction names, and removing a pair keeps them.
+ 
+ package fabricengine_test
+ 
+@@ -44,6 +44,7 @@ func requireWarpExcludeOnce(t *testing.T, dir string) {
+ // A pair's warp exclude holds each listed path once however often wiring and SeedWarpExclude run.
+ // The weft exclude and the wired names hold none, and removing the pair keeps the lines.
+ // A re-wired pair gets stripped lines back, AddLocal seeds them, and an unparseable fabric config fails the wiring before it seeds anything.
++// In a hub with an anchor every line names the anchor and none names the root.
+ //
+ //testtiming:keep the warp exclude lines seeded once into the warp only, outside the wired names and surviving Remove, re-seeded by Reconcile's re-wire and AddLocal, and an unparseable config failing wiring; coverage of its blocks by other tests does not show an assertion of this
+ func TestSeedWarpExclude_SeedsWarpOnlyOnce(t *testing.T) {
+@@ -136,6 +137,49 @@ func TestSeedWarpExclude_SeedsWarpOnlyOnce(t *testing.T) {
+ 		requireWarpExcludeOnce(t, fabricengine.WorktreePath(h.Location, slug))
+ 	})
+ 
++	t.Run("anchored_hub_seeds_the_lines_under_the_anchor", func(t *testing.T) {
++		t.Parallel()
++		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "backend"})
++		if _, err := fabricengine.SeedWarpExclude(h.Location); err != nil {
++			t.Fatalf("SeedWarpExclude: %v", err)
++		}
++		lines := gitkit.ExcludeLines(t, h.PrimeWorktree())
++		for _, rootLine := range warpExcludeLines {
++			if got := countLine(lines, "/backend"+rootLine); got != 1 {
++				t.Errorf("exclude holds %q %d times; want 1 (lines: %v)", "/backend"+rootLine, got, lines)
++			}
++			if got := countLine(lines, rootLine); got != 0 {
++				t.Errorf("exclude holds the root line %q %d times; want 0 (lines: %v)", rootLine, got, lines)
++			}
++		}
++	})
++
++	t.Run("anchored_hub_wiring_seeds_the_lines_under_the_anchor", func(t *testing.T) {
++		t.Parallel()
++		const slug = "anchoredwirepair"
++		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "backend"})
++		hubforge.AddPair(t, h, slug)
++		l := h.Location
++
++		names, err := fabricengine.WiredNames(fabricengine.ConfigDirs(l))
++		if err != nil {
++			t.Fatalf("WiredNames: %v", err)
++		}
++		if err := fabricengine.WireJunctions(l, slug, names); err != nil {
++			t.Fatalf("WireJunctions: %v", err)
++		}
++
++		lines := gitkit.ExcludeLines(t, fabricengine.WorktreePath(l, slug))
++		for _, rootLine := range warpExcludeLines {
++			if got := countLine(lines, "/backend"+rootLine); got != 1 {
++				t.Errorf("exclude holds %q %d times; want 1 (lines: %v)", "/backend"+rootLine, got, lines)
++			}
++			if got := countLine(lines, rootLine); got != 0 {
++				t.Errorf("exclude holds the root line %q %d times; want 0 (lines: %v)", rootLine, got, lines)
++			}
++		}
++	})
++
+ 	t.Run("unparseable_config_fails_wiring_and_seeds_nothing", func(t *testing.T) {
+ 		t.Parallel()
+ 		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+diff --git a/internal/fabricengine/worktreeseam.go b/internal/fabricengine/worktreeseam.go
+index ed6704c5..b5d42950 100644
+--- a/internal/fabricengine/worktreeseam.go
++++ b/internal/fabricengine/worktreeseam.go
+@@ -14,11 +14,12 @@ import (
+ )
+ 
+ // WorktreeEvent is what the worktree seam is told about one worktree.
+-// Root is the worktree's root, and ScratchDir is the pair's never-tracked `.lym` directory.
+-// BoltDir is the hub's Bolt checkout, and Excluded the paths the warp exclude list names, already seeded into the repository's exclude file.
+-// Paths are the paths that differ between the old and the new head, empty for "made".
++// Root is the worktree's root, Anchor its anchor directory, where the repository's own files sit and equal to Root in a worktree with no anchor, and ScratchDir the pair's never-tracked `.lym` directory.
++// BoltDir is the hub's Bolt checkout, and Excluded the anchor-relative paths the warp exclude list names, already seeded into the repository's exclude file.
++// Paths are the root-relative paths that differ between the old and the new head, empty for "made".
+ type WorktreeEvent struct {
+ 	Root       string
++	Anchor     string
+ 	ScratchDir string
+ 	BoltDir    string
+ 	Excluded   []string
+@@ -55,6 +56,7 @@ func EventFor(l *lymcwd.Location, paths []string) (WorktreeEvent, error) {
+ 	}
+ 	return WorktreeEvent{
+ 		Root:       l.WorktreePath(),
++		Anchor:     l.AnchorPath(),
+ 		ScratchDir: filepath.Join(RecordsWorktreePath(l, l.WorktreeName), l.AnchorRel, lymdirs.DotLymDirName),
+ 		BoltDir:    BoltDir(l.HubPath),
+ 		Excluded:   excluded,
+diff --git a/internal/heddlecli/cli.go b/internal/heddlecli/cli.go
+index 34524408..13255582 100644
+--- a/internal/heddlecli/cli.go
++++ b/internal/heddlecli/cli.go
+@@ -49,7 +49,7 @@ func commandOf(c *heddleCLI) *cobra.Command {
+ 		Long: `heddle delivers the instruction text agents get from two layers: the entries
+ lym ships in its binary, read-only, and the repository's own in heddle.json in
+ the hub's Bolt checkout. It renders file targets into git-excluded files at a
+-worktree's root, the shipped entries first, and it appends prompt targets to
++worktree's anchor directory, the shipped entries first, and it appends prompt targets to
+ the system prompt of the Claude sessions launched in the hub: claude-prompt to
+ every one, orch-prompt to an orch session alone. A hub whose heddle.yaml sets
+ lym_override may override a shipped entry's text with set --layer lym.
+diff --git a/internal/heddlecli/cli_integration_test.go b/internal/heddlecli/cli_integration_test.go
+index 8b59d475..3de8662c 100644
+--- a/internal/heddlecli/cli_integration_test.go
++++ b/internal/heddlecli/cli_integration_test.go
+@@ -582,6 +582,32 @@ func TestHeddleCLI(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("RenderWritesFileTargetsAtTheAnchor", func(t *testing.T) {
++		t.Parallel()
++		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "backend"})
++		cwd := primeCwd(h)
++		seedStore(t, h, map[string][]string{"rules": {"claude-file", "codex-file"}})
++		c := (&recorder{}).cli()
++
++		requireOK(t, runVerb(c, cwd, "", "render"))
++
++		for _, name := range []string{"CLAUDE.local.md", "AGENTS.override.md"} {
++			data, err := os.ReadFile(filepath.Join(h.Location.AnchorPath(), name))
++			if err != nil || !strings.HasPrefix(string(data), heddleengine.Marker) {
++				t.Errorf("%s at the anchor = %q, %v; want a rendered file", name, data, err)
++			}
++			if _, err := os.Stat(filepath.Join(h.PrimeWorktree(), name)); !errors.Is(err, os.ErrNotExist) {
++				t.Errorf("stat %s at the worktree root: %v; want no file written", name, err)
++			}
++		}
++
++		writeFile(t, filepath.Join(h.Location.AnchorPath(), "AGENTS.md"), "agents text at the anchor\n")
++		run := runVerb(c, cwd, "", "show", "codex-file")
++		if run.code != 0 || !strings.Contains(run.out, "agents text at the anchor") {
++			t.Errorf("show codex-file: exit %d, output %q; want the AGENTS.md at the anchor in the rendered text", run.code, run.out)
++		}
++	})
++
+ 	t.Run("RenderWarnsOfAnUnmarkedFile", func(t *testing.T) {
+ 		t.Parallel()
+ 		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+diff --git a/internal/heddlecli/doc.go b/internal/heddlecli/doc.go
+index a8ac7285..18d5ff8e 100644
+--- a/internal/heddlecli/doc.go
++++ b/internal/heddlecli/doc.go
+@@ -25,7 +25,7 @@
+ //
+ // # Who may write
+ //
+-// The operator audience annotation is help text and denies nothing, so any lym caller in the hub can change the text later launches append to a session's system prompt and later renders write into a worktree's root.
++// The operator audience annotation is help text and denies nothing, so any lym caller in the hub can change the text later launches append to a session's system prompt and later renders write into a worktree's anchor directory.
+ // A write lands only through the store's validation under the Bolt write lock, and the board's sync commits it to Bolt's history, where it can be read and reverted.
+ //
+ // # Wiring
+diff --git a/internal/heddlecli/verbs.go b/internal/heddlecli/verbs.go
+index a000dfe5..cb363cf1 100644
+--- a/internal/heddlecli/verbs.go
++++ b/internal/heddlecli/verbs.go
+@@ -292,7 +292,7 @@ Example:
+ 			if clihelp.ShouldAbort(cmd.Context()) {
+ 				return nil
+ 			}
+-			text, err := c.renderer.Show(c.boltDir, args[0], c.location.WorktreePath())
++			text, err := c.renderer.Show(c.boltDir, args[0], c.location.AnchorPath())
+ 			if err != nil {
+ 				return c.fail(cmd, fmt.Errorf("heddle: %w", err))
+ 			}
+@@ -308,8 +308,8 @@ func (c *heddleCLI) renderCmd() *cobra.Command {
+ 		Use:         "render [<worktree>]",
+ 		Short:       "render every file target into a worktree of the hub",
+ 		Annotations: operatorAnnotation,
+-		Long: `Renders every file target into the named worktree of the current hub, the
+-current one by default. The name is the last element of a path lym fabric list
++		Long: `Renders every file target into the anchor directory of the named worktree of
++the current hub, the current one by default. The name is the last element of a path lym fabric list
+ prints. The worktree's exclude lines are seeded first, and the files written
+ and removed and the render's warnings are printed.
+ 
+@@ -333,7 +333,7 @@ Example:
+ 				return c.fail(cmd, fmt.Errorf("heddle: seed the exclude lines of %s: %w", location.WorktreeName, err))
+ 			}
+ 			report, err := c.renderer.Render(heddleengine.RenderRequest{
+-				Root:       event.Root,
++				Anchor:     event.Anchor,
+ 				ScratchDir: event.ScratchDir,
+ 				BoltDir:    event.BoltDir,
+ 				Excluded:   event.Excluded,
+diff --git a/internal/heddleengine/doc.go b/internal/heddleengine/doc.go
+index 121be365..d4e17228 100644
+--- a/internal/heddleengine/doc.go
++++ b/internal/heddleengine/doc.go
+@@ -2,7 +2,7 @@
+ // Two layers hold entries of instruction text, each aimed at targets of a table that is this package's code.
+ // The shipped layer is lym's own: shipped.json, embedded in the binary, read-only and changed only by a lym release.
+ // The repository layer is heddle.json at the Bolt checkout's root, which the `lym heddle` verbs write.
+-// A file target is rendered into a git-excluded file at a worktree's root, the shipped entries first under a heading of their own and the repository's after under theirs;
++// A file target is rendered into a git-excluded file at a worktree's anchor, beside the repository's own CLAUDE and AGENTS files, the shipped entries first under a heading of their own and the repository's after under theirs;
+ // a prompt target is read as passages appended to a session's system prompt, the shipped ones first.
+ // A prompt target reaches the sessions its row names by engine, by strand role, or both: `claude-prompt` reaches every Claude session and `orch-prompt` every orch session, and an engine whose launch appends no passages delivers neither.
+ // A hub whose heddle.yaml sets lym_override renders a shipped entry with the text of its override in heddle-lym-override.json beside heddle.json, so lym's own text is tuned there with no build;
+diff --git a/internal/heddleengine/render.go b/internal/heddleengine/render.go
+index 22d4623b..719a6d3b 100644
+--- a/internal/heddleengine/render.go
++++ b/internal/heddleengine/render.go
+@@ -1,4 +1,4 @@
+-// render.go renders heddle's file targets into a worktree's root and reads the prompt passages of a prompt target.
++// render.go renders heddle's file targets into a worktree's anchor directory and reads the prompt passages of a prompt target.
+ 
+ package heddleengine
+ 
+@@ -23,7 +23,7 @@ const Marker = "<!-- rendered by lym heddle: change it with lym heddle set, neve
+ const DefaultBoltLockWait = 30 * time.Second
+ 
+ const (
+-	// tempDirName is the directory at a worktree's root a render writes its files into before renaming them onto their targets.
++	// tempDirName is the directory at a worktree's anchor a render writes its files into before renaming them onto their targets.
+ 	tempDirName = ".heddle"
+ 	// tempSuffix ends the name of a file inside tempDirName.
+ 	tempSuffix = ".tmp"
+@@ -34,17 +34,18 @@ const (
+ )
+ 
+ // RenderRequest is one worktree to render.
+-// Root is the worktree's root and ScratchDir the pair's never-tracked directory, BoltDir the Bolt checkout holding the store, and Excluded the paths fabric's exclude list names.
++// Anchor is the worktree's anchor directory, where the file targets render and the repository's own CLAUDE and AGENTS files are read; it is the worktree's root in a worktree with no anchor.
++// ScratchDir is the pair's never-tracked directory, BoltDir the Bolt checkout holding the store, and Excluded the anchor-relative paths fabric's exclude list names.
+ // Only names the file targets to render, all of them when empty.
+ type RenderRequest struct {
+-	Root       string
++	Anchor     string
+ 	ScratchDir string
+ 	BoltDir    string
+ 	Excluded   []string
+ 	Only       []string
+ }
+ 
+-// Report lists the files a render wrote and removed, as root-relative paths, and the warnings it raised.
++// Report lists the files a render wrote and removed, as anchor-relative paths, and the warnings it raised.
+ type Report struct {
+ 	Written  []string
+ 	Removed  []string
+@@ -57,7 +58,7 @@ type Renderer struct {
+ 	BoltLockWait time.Duration
+ }
+ 
+-// Render writes the file targets of req into its root from the entries of the shipped layer and the store.
++// Render writes the file targets of req into its anchor from the entries of the shipped layer and the store.
+ // It holds the worktree's render lock for the whole read and write, so two renders of one worktree serialize and the last one's text stands whole.
+ // A target with no entry loses its marked file; a target the exclude list does not cover, or whose file lacks the marker, is left alone with a warning.
+ // The lock wait running out fails the render before it writes anything.
+@@ -82,7 +83,7 @@ func (r Renderer) Render(req RenderRequest) (Report, error) {
+ 	}
+ 	entries := layers.Ordered()
+ 
+-	tempDir := filepath.Join(req.Root, tempDirName)
++	tempDir := filepath.Join(req.Anchor, tempDirName)
+ 	blocked, err := tempDirBlocked(tempDir)
+ 	if err != nil {
+ 		return report, err
+@@ -95,11 +96,11 @@ func (r Renderer) Render(req RenderRequest) (Report, error) {
+ 		if target.Delivery != DeliveryFile || (len(req.Only) > 0 && !slices.Contains(req.Only, target.Name)) {
+ 			continue
+ 		}
+-		text, held, err := fileText(target, req.Root, entries)
++		text, held, err := fileText(target, req.Anchor, entries)
+ 		if err != nil {
+ 			return report, err
+ 		}
+-		path := filepath.Join(req.Root, target.File)
++		path := filepath.Join(req.Anchor, target.File)
+ 		existing, err := os.ReadFile(path)
+ 		if err != nil && !errors.Is(err, os.ErrNotExist) {
+ 			return report, fmt.Errorf("read %s: %w", path, err)
+@@ -221,11 +222,11 @@ func removeTempDir(dir string) error {
+ 	return nil
+ }
+ 
+-// fileText builds the text a file target renders to at root from the layered entries that name it, and reports false when none does.
++// fileText builds the text a file target renders to at anchor from the layered entries that name it, and reports false when none does.
+ // It opens with Marker.
+ // The shipped layer's texts follow under their own heading, then the repository's, under a heading of their own only when shipped texts precede them.
+-// The claude-file target imports the AGENTS.md files the root holds when the root holds no CLAUDE.md, and the codex-file target opens with the root's AGENTS.md.
+-func fileText(target Target, root string, entries []LayeredEntry) (string, bool, error) {
++// The claude-file target imports the AGENTS.md files the anchor holds when the anchor holds no CLAUDE.md, and the codex-file target opens with the anchor's AGENTS.md.
++func fileText(target Target, anchor string, entries []LayeredEntry) (string, bool, error) {
+ 	var shipped, repository []string
+ 	for _, entry := range entries {
+ 		if !slices.Contains(entry.Targets, target.Name) {
+@@ -252,10 +253,10 @@ func fileText(target Target, root string, entries []LayeredEntry) (string, bool,
+ 	parts := []string{Marker}
+ 	switch target.Name {
+ 	case "claude-file":
+-		if !fileExists(filepath.Join(root, "CLAUDE.md")) && !fileExists(filepath.Join(root, ".claude", "CLAUDE.md")) {
++		if !fileExists(filepath.Join(anchor, "CLAUDE.md")) && !fileExists(filepath.Join(anchor, ".claude", "CLAUDE.md")) {
+ 			var imports []string
+ 			for _, agents := range []string{"AGENTS.md", ".claude/AGENTS.md"} {
+-				if fileExists(filepath.Join(root, filepath.FromSlash(agents))) {
++				if fileExists(filepath.Join(anchor, filepath.FromSlash(agents))) {
+ 					imports = append(imports, "@"+agents)
+ 				}
+ 			}
+@@ -264,7 +265,7 @@ func fileText(target Target, root string, entries []LayeredEntry) (string, bool,
+ 			}
+ 		}
+ 	case "codex-file":
+-		content, err := os.ReadFile(filepath.Join(root, "AGENTS.md"))
++		content, err := os.ReadFile(filepath.Join(anchor, "AGENTS.md"))
+ 		if err != nil && !errors.Is(err, os.ErrNotExist) {
+ 			return "", false, fmt.Errorf("read AGENTS.md: %w", err)
+ 		}
+@@ -281,9 +282,9 @@ func fileExists(path string) bool {
+ 	return err == nil
+ }
+ 
+-// Show returns the text the named target renders to now for root, from the shipped layer and the store, and writes nothing.
++// Show returns the text the named target renders to now for the worktree anchor, from the shipped layer and the store, and writes nothing.
+ // A prompt target gives its passages joined by blank lines, and a target with no entry gives no text.
+-func (r Renderer) Show(boltDir, target, root string) (string, error) {
++func (r Renderer) Show(boltDir, target, anchor string) (string, error) {
+ 	named, ok := LookupTarget(target)
+ 	if !ok {
+ 		return "", fmt.Errorf("unknown target %q; way forward: use one of %s", target, strings.Join(TargetNames(), ", "))
+@@ -295,7 +296,7 @@ func (r Renderer) Show(boltDir, target, root string) (string, error) {
+ 	if named.Delivery == DeliveryPrompt {
+ 		return strings.Join(passagesOf(layers, named.Name), "\n\n"), nil
+ 	}
+-	text, _, err := fileText(named, root, layers.Ordered())
++	text, _, err := fileText(named, anchor, layers.Ordered())
+ 	return text, err
+ }
+ 
+diff --git a/internal/heddleengine/render_integration_test.go b/internal/heddleengine/render_integration_test.go
+index e980c678..d809a42a 100644
+--- a/internal/heddleengine/render_integration_test.go
++++ b/internal/heddleengine/render_integration_test.go
+@@ -1,10 +1,11 @@
+-// render_integration_test.go proves a render leaves a hub's prime free of untracked files.
++// render_integration_test.go proves a render writes the file targets at a hub prime's anchor, with an anchor and without one, and leaves no untracked file.
+ 
+ package heddleengine_test
+ 
+ import (
+ 	"os"
+ 	"path/filepath"
++	"slices"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+@@ -14,38 +15,56 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// TestRender_LeavesNoUntrackedFile renders both file targets into a hub's prime from the event fabric builds, and expects git to see nothing untracked.
+-func TestRender_LeavesNoUntrackedFile(t *testing.T) {
++// TestRender_WritesAtTheAnchorAndLeavesNoUntrackedFile renders both file targets into a hub's prime from the event fabric builds.
++// It expects both files at the prime's anchor, none at its root when the two differ, and git to see nothing untracked.
++func TestRender_WritesAtTheAnchorAndLeavesNoUntrackedFile(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+-	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	store := heddleengine.Store{Entries: []heddleengine.Entry{
+-		{Slug: "claude", Text: "claude text", Order: 1, Targets: []string{"claude-file"}},
+-		{Slug: "codex", Text: "codex text", Order: 2, Targets: []string{"codex-file"}},
+-	}}
+-	if err := heddleengine.Save(hub.BoardDir(), store); err != nil {
+-		t.Fatal(err)
++	tests := []struct {
++		name   string
++		anchor string
++	}{
++		{"NoAnchor", "."},
++		{"Anchored", "backend"},
+ 	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: tt.anchor})
++			store := heddleengine.Store{Entries: []heddleengine.Entry{
++				{Slug: "claude", Text: "claude text", Order: 1, Targets: []string{"claude-file"}},
++				{Slug: "codex", Text: "codex text", Order: 2, Targets: []string{"codex-file"}},
++			}}
++			if err := heddleengine.Save(hub.BoardDir(), store); err != nil {
++				t.Fatal(err)
++			}
+ 
+-	event, err := fabricengine.EventFor(hub.Location, nil)
+-	if err != nil {
+-		t.Fatalf("EventFor() = %v", err)
+-	}
+-	report, err := heddleengine.Renderer{}.Render(heddleengine.RenderRequest{
+-		Root: event.Root, ScratchDir: event.ScratchDir, BoltDir: event.BoltDir, Excluded: event.Excluded,
+-	})
+-	if err != nil {
+-		t.Fatalf("Render() = %v", err)
+-	}
+-	if len(report.Warnings) != 0 {
+-		t.Errorf("Render() warnings = %v; want none", report.Warnings)
+-	}
+-	for _, name := range []string{"CLAUDE.local.md", "AGENTS.override.md"} {
+-		if _, err := os.Stat(filepath.Join(hub.PrimeWorktree(), name)); err != nil {
+-			t.Errorf("%s was not rendered: %v", name, err)
+-		}
+-	}
+-	if status := gitkit.Git(t, hub.PrimeWorktree(), "status", "--porcelain", "--untracked-files=all"); status != "" {
+-		t.Errorf("git status in the prime = %q; want it empty", status)
++			event, err := fabricengine.EventFor(hub.Location, nil)
++			if err != nil {
++				t.Fatalf("EventFor() = %v", err)
++			}
++			report, err := heddleengine.Renderer{}.Render(heddleengine.RenderRequest{
++				Anchor: event.Anchor, ScratchDir: event.ScratchDir, BoltDir: event.BoltDir, Excluded: event.Excluded,
++			})
++			if err != nil {
++				t.Fatalf("Render() = %v", err)
++			}
++			if want := []string{"CLAUDE.local.md", "AGENTS.override.md"}; !slices.Equal(report.Written, want) || len(report.Warnings) != 0 {
++				t.Errorf("Render() report = %+v; want %v written and no warnings", report, want)
++			}
++			for _, name := range []string{"CLAUDE.local.md", "AGENTS.override.md"} {
++				if _, err := os.Stat(filepath.Join(hub.Location.AnchorPath(), name)); err != nil {
++					t.Errorf("%s was not rendered at the anchor: %v", name, err)
++				}
++				if tt.anchor != "." {
++					if _, err := os.Stat(filepath.Join(hub.PrimeWorktree(), name)); err == nil {
++						t.Errorf("%s was rendered at the worktree's root", name)
++					}
++				}
++			}
++			if status := gitkit.Git(t, hub.PrimeWorktree(), "status", "--porcelain", "--untracked-files=all"); status != "" {
++				t.Errorf("git status in the prime = %q; want it empty", status)
++			}
++		})
+ 	}
+ }
+diff --git a/internal/heddleengine/render_test.go b/internal/heddleengine/render_test.go
+index 085ba489..5a8f6809 100644
+--- a/internal/heddleengine/render_test.go
++++ b/internal/heddleengine/render_test.go
+@@ -1,4 +1,4 @@
+-// render_test.go drives Render, Show and Passages over temporary directories standing in for a worktree's root, its scratch directory and the Bolt checkout.
++// render_test.go drives Render, Show and Passages over temporary directories standing in for a worktree's anchor, its scratch directory and the Bolt checkout.
+ 
+ package heddleengine
+ 
+@@ -22,7 +22,7 @@ const observeWindow = 50 * time.Millisecond
+ 
+ // renderFixture is the three directories a render works over, with the exclude list a seeded worktree holds.
+ type renderFixture struct {
+-	root     string
++	anchor   string
+ 	scratch  string
+ 	bolt     string
+ 	excluded []string
+@@ -31,7 +31,7 @@ type renderFixture struct {
+ func newRenderFixture(t *testing.T, store Store) renderFixture {
+ 	t.Helper()
+ 	fixture := renderFixture{
+-		root:     t.TempDir(),
++		anchor:   t.TempDir(),
+ 		scratch:  t.TempDir(),
+ 		bolt:     t.TempDir(),
+ 		excluded: []string{"CLAUDE.local.md", "AGENTS.override.md", ".heddle"},
+@@ -41,12 +41,12 @@ func newRenderFixture(t *testing.T, store Store) renderFixture {
+ }
+ 
+ func (f renderFixture) request(only ...string) RenderRequest {
+-	return RenderRequest{Root: f.root, ScratchDir: f.scratch, BoltDir: f.bolt, Excluded: f.excluded, Only: only}
++	return RenderRequest{Anchor: f.anchor, ScratchDir: f.scratch, BoltDir: f.bolt, Excluded: f.excluded, Only: only}
+ }
+ 
+-func (f renderFixture) writeRoot(t *testing.T, rel, content string) {
++func (f renderFixture) writeAnchor(t *testing.T, rel, content string) {
+ 	t.Helper()
+-	path := filepath.Join(f.root, filepath.FromSlash(rel))
++	path := filepath.Join(f.anchor, filepath.FromSlash(rel))
+ 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+ 		t.Fatal(err)
+ 	}
+@@ -55,17 +55,17 @@ func (f renderFixture) writeRoot(t *testing.T, rel, content string) {
+ 	}
+ }
+ 
+-func (f renderFixture) readRoot(t *testing.T, rel string) string {
++func (f renderFixture) readAnchor(t *testing.T, rel string) string {
+ 	t.Helper()
+-	data, err := os.ReadFile(filepath.Join(f.root, filepath.FromSlash(rel)))
++	data, err := os.ReadFile(filepath.Join(f.anchor, filepath.FromSlash(rel)))
+ 	if err != nil {
+ 		t.Fatalf("read %s: %v", rel, err)
+ 	}
+ 	return string(data)
+ }
+ 
+-func (f renderFixture) rootHas(rel string) bool {
+-	_, err := os.Lstat(filepath.Join(f.root, filepath.FromSlash(rel)))
++func (f renderFixture) anchorHas(rel string) bool {
++	_, err := os.Lstat(filepath.Join(f.anchor, filepath.FromSlash(rel)))
+ 	return err == nil
+ }
+ 
+@@ -202,7 +202,7 @@ func TestShowAndPassagesReadTheShippedLayerFirst(t *testing.T) {
+ 			}
+ 			r := Renderer{}
+ 
+-			shown, err := r.Show(f.bolt, "claude-prompt", f.root)
++			shown, err := r.Show(f.bolt, "claude-prompt", f.anchor)
+ 			if err != nil || shown != tt.wantPrompt {
+ 				t.Errorf("Show(claude-prompt) = %q, %v; want %q", shown, err, tt.wantPrompt)
+ 			}
+@@ -210,7 +210,7 @@ func TestShowAndPassagesReadTheShippedLayerFirst(t *testing.T) {
+ 			if want := strings.Split(tt.wantPrompt, "\n\n"); err != nil || !slices.Equal(passages, want) {
+ 				t.Errorf("Passages(claude) = %q, %v; want %q", passages, err, want)
+ 			}
+-			shown, err = r.Show(f.bolt, "claude-file", f.root)
++			shown, err = r.Show(f.bolt, "claude-file", f.anchor)
+ 			if want := strings.Join([]string{Marker, shippedHeading, tt.wantFileText}, "\n\n") + "\n"; err != nil || shown != want {
+ 				t.Errorf("Show(claude-file) = %q, %v; want %q", shown, err, want)
+ 			}
+@@ -231,13 +231,13 @@ func TestRender(t *testing.T) {
+ 		t.Parallel()
+ 		f := newRenderFixture(t, claudeStore)
+ 		report := mustRender(t, f)
+-		if want := claudeFileWant("", "one", "two"); f.readRoot(t, "CLAUDE.local.md") != want {
+-			t.Errorf("CLAUDE.local.md = %q; want %q", f.readRoot(t, "CLAUDE.local.md"), want)
++		if want := claudeFileWant("", "one", "two"); f.readAnchor(t, "CLAUDE.local.md") != want {
++			t.Errorf("CLAUDE.local.md = %q; want %q", f.readAnchor(t, "CLAUDE.local.md"), want)
+ 		}
+ 		if !slices.Equal(report.Written, []string{"CLAUDE.local.md"}) || len(report.Warnings) != 0 {
+ 			t.Errorf("report = %+v; want only CLAUDE.local.md written", report)
+ 		}
+-		if f.rootHas(".heddle") {
++		if f.anchorHas(".heddle") {
+ 			t.Error(".heddle left behind")
+ 		}
+ 	})
+@@ -260,11 +260,11 @@ func TestRender(t *testing.T) {
+ 				t.Parallel()
+ 				f := newRenderFixture(t, Store{Entries: []Entry{entryFor("only", "text", 1, "claude-file")}})
+ 				for _, rel := range tt.files {
+-					f.writeRoot(t, rel, "base\n")
++					f.writeAnchor(t, rel, "base\n")
+ 				}
+ 				mustRender(t, f)
+-				if want := claudeFileWant(tt.want, "text"); f.readRoot(t, "CLAUDE.local.md") != want {
+-					t.Errorf("CLAUDE.local.md = %q; want %q", f.readRoot(t, "CLAUDE.local.md"), want)
++				if want := claudeFileWant(tt.want, "text"); f.readAnchor(t, "CLAUDE.local.md") != want {
++					t.Errorf("CLAUDE.local.md = %q; want %q", f.readAnchor(t, "CLAUDE.local.md"), want)
+ 				}
+ 			})
+ 		}
+@@ -273,10 +273,10 @@ func TestRender(t *testing.T) {
+ 	t.Run("CodexFileOpensWithRootAgents", func(t *testing.T) {
+ 		t.Parallel()
+ 		f := newRenderFixture(t, Store{Entries: []Entry{entryFor("c", "codex text", 1, "codex-file")}})
+-		f.writeRoot(t, "AGENTS.md", "repository rules\n")
++		f.writeAnchor(t, "AGENTS.md", "repository rules\n")
+ 		mustRender(t, f)
+-		if want := Marker + "\n\nrepository rules\n\ncodex text\n"; f.readRoot(t, "AGENTS.override.md") != want {
+-			t.Errorf("AGENTS.override.md = %q; want %q", f.readRoot(t, "AGENTS.override.md"), want)
++		if want := Marker + "\n\nrepository rules\n\ncodex text\n"; f.readAnchor(t, "AGENTS.override.md") != want {
++			t.Errorf("AGENTS.override.md = %q; want %q", f.readAnchor(t, "AGENTS.override.md"), want)
+ 		}
+ 	})
+ 
+@@ -284,10 +284,10 @@ func TestRender(t *testing.T) {
+ 		t.Parallel()
+ 		f := newRenderFixture(t, Store{})
+ 		report := mustRender(t, f)
+-		if want := claudeFileWant(""); f.readRoot(t, "CLAUDE.local.md") != want {
+-			t.Errorf("CLAUDE.local.md = %q; want %q", f.readRoot(t, "CLAUDE.local.md"), want)
++		if want := claudeFileWant(""); f.readAnchor(t, "CLAUDE.local.md") != want {
++			t.Errorf("CLAUDE.local.md = %q; want %q", f.readAnchor(t, "CLAUDE.local.md"), want)
+ 		}
+-		if !slices.Equal(report.Written, []string{"CLAUDE.local.md"}) || f.rootHas("AGENTS.override.md") {
++		if !slices.Equal(report.Written, []string{"CLAUDE.local.md"}) || f.anchorHas("AGENTS.override.md") {
+ 			t.Errorf("report = %+v; want only CLAUDE.local.md written", report)
+ 		}
+ 	})
+@@ -296,8 +296,8 @@ func TestRender(t *testing.T) {
+ 		t.Parallel()
+ 		f := newRenderFixture(t, Store{Entries: []Entry{entryFor(shippedStore.Ordered()[0].Slug, "mine", 1, "claude-file")}})
+ 		mustRender(t, f)
+-		if want := claudeFileWant("", "mine"); f.readRoot(t, "CLAUDE.local.md") != want {
+-			t.Errorf("CLAUDE.local.md = %q; want %q", f.readRoot(t, "CLAUDE.local.md"), want)
++		if want := claudeFileWant("", "mine"); f.readAnchor(t, "CLAUDE.local.md") != want {
++			t.Errorf("CLAUDE.local.md = %q; want %q", f.readAnchor(t, "CLAUDE.local.md"), want)
+ 		}
+ 	})
+ 
+@@ -329,7 +329,7 @@ func TestRender(t *testing.T) {
+ 				if tt.wantOverride {
+ 					want = strings.Replace(want, shipped.Text, "tuned text", 1)
+ 				}
+-				if got := f.readRoot(t, "CLAUDE.local.md"); got != want {
++				if got := f.readAnchor(t, "CLAUDE.local.md"); got != want {
+ 					t.Errorf("CLAUDE.local.md = %q; want %q", got, want)
+ 				}
+ 			})
+@@ -357,8 +357,8 @@ func TestRender(t *testing.T) {
+ 					t.Fatal(err)
+ 				}
+ 				report := mustRender(t, f)
+-				if want := claudeFileWant(""); f.readRoot(t, "CLAUDE.local.md") != want {
+-					t.Errorf("CLAUDE.local.md = %q; want %q", f.readRoot(t, "CLAUDE.local.md"), want)
++				if want := claudeFileWant(""); f.readAnchor(t, "CLAUDE.local.md") != want {
++					t.Errorf("CLAUDE.local.md = %q; want %q", f.readAnchor(t, "CLAUDE.local.md"), want)
+ 				}
+ 				if len(report.Warnings) != 0 {
+ 					t.Errorf("warnings = %v; want none", report.Warnings)
+@@ -387,8 +387,8 @@ func TestRender(t *testing.T) {
+ 					t.Fatal(err)
+ 				}
+ 				report := mustRender(t, f)
+-				if want := claudeFileWant("", "one", "two"); f.readRoot(t, "CLAUDE.local.md") != want {
+-					t.Errorf("CLAUDE.local.md = %q; want %q", f.readRoot(t, "CLAUDE.local.md"), want)
++				if want := claudeFileWant("", "one", "two"); f.readAnchor(t, "CLAUDE.local.md") != want {
++					t.Errorf("CLAUDE.local.md = %q; want %q", f.readAnchor(t, "CLAUDE.local.md"), want)
+ 				}
+ 				if tt.wantWarning {
+ 					if len(report.Warnings) != 1 || !strings.Contains(report.Warnings[0], OverrideFileName) {
+@@ -405,9 +405,9 @@ func TestRender(t *testing.T) {
+ 		t.Parallel()
+ 		f := newRenderFixture(t, Store{})
+ 		f.excluded = nil
+-		f.writeRoot(t, "AGENTS.override.md", Marker+"\n\nold\n")
++		f.writeAnchor(t, "AGENTS.override.md", Marker+"\n\nold\n")
+ 		report := mustRender(t, f)
+-		if f.rootHas("AGENTS.override.md") || !slices.Equal(report.Removed, []string{"AGENTS.override.md"}) {
++		if f.anchorHas("AGENTS.override.md") || !slices.Equal(report.Removed, []string{"AGENTS.override.md"}) {
+ 			t.Errorf("stale render kept or not reported: removed %v", report.Removed)
+ 		}
+ 	})
+@@ -415,9 +415,9 @@ func TestRender(t *testing.T) {
+ 	t.Run("UnmarkedFileIsLeftAlone", func(t *testing.T) {
+ 		t.Parallel()
+ 		f := newRenderFixture(t, claudeStore)
+-		f.writeRoot(t, "CLAUDE.local.md", "mine\n")
++		f.writeAnchor(t, "CLAUDE.local.md", "mine\n")
+ 		report := mustRender(t, f)
+-		if f.readRoot(t, "CLAUDE.local.md") != "mine\n" {
++		if f.readAnchor(t, "CLAUDE.local.md") != "mine\n" {
+ 			t.Error("unmarked CLAUDE.local.md was overwritten")
+ 		}
+ 		if len(report.Warnings) != 1 || !strings.Contains(report.Warnings[0], "CLAUDE.local.md") {
+@@ -425,9 +425,9 @@ func TestRender(t *testing.T) {
+ 		}
+ 
+ 		f = newRenderFixture(t, Store{Entries: []Entry{entryFor("c", "codex", 1, "codex-file")}})
+-		f.writeRoot(t, "CLAUDE.local.md", "mine\n")
++		f.writeAnchor(t, "CLAUDE.local.md", "mine\n")
+ 		mustRender(t, f)
+-		if f.readRoot(t, "CLAUDE.local.md") != "mine\n" {
++		if f.readAnchor(t, "CLAUDE.local.md") != "mine\n" {
+ 			t.Error("unmarked CLAUDE.local.md was removed")
+ 		}
+ 	})
+@@ -448,7 +448,7 @@ func TestRender(t *testing.T) {
+ 				f := newRenderFixture(t, claudeStore)
+ 				f.excluded = tt.excluded
+ 				report := mustRender(t, f)
+-				if f.rootHas("CLAUDE.local.md") || f.rootHas(".heddle") {
++				if f.anchorHas("CLAUDE.local.md") || f.anchorHas(".heddle") {
+ 					t.Error("a file was written although the exclude list lacks a path")
+ 				}
+ 				if !slices.Contains(report.Warnings, tt.want) {
+@@ -464,8 +464,8 @@ func TestRender(t *testing.T) {
+ 			name  string
+ 			setup func(f renderFixture, t *testing.T)
+ 		}{
+-			{"File", func(f renderFixture, t *testing.T) { f.writeRoot(t, ".heddle", "x") }},
+-			{"DirWithOtherFile", func(f renderFixture, t *testing.T) { f.writeRoot(t, ".heddle/notes.txt", "x") }},
++			{"File", func(f renderFixture, t *testing.T) { f.writeAnchor(t, ".heddle", "x") }},
++			{"DirWithOtherFile", func(f renderFixture, t *testing.T) { f.writeAnchor(t, ".heddle/notes.txt", "x") }},
+ 		}
+ 		for _, tt := range tests {
+ 			t.Run(tt.name, func(t *testing.T) {
+@@ -473,7 +473,7 @@ func TestRender(t *testing.T) {
+ 				f := newRenderFixture(t, claudeStore)
+ 				tt.setup(f, t)
+ 				report := mustRender(t, f)
+-				if f.rootHas("CLAUDE.local.md") {
++				if f.anchorHas("CLAUDE.local.md") {
+ 					t.Error("CLAUDE.local.md written although .heddle is blocked")
+ 				}
+ 				if len(report.Warnings) != 1 || !strings.Contains(report.Warnings[0], ".heddle") || !strings.Contains(report.Warnings[0], "lym heddle render") {
+@@ -486,9 +486,9 @@ func TestRender(t *testing.T) {
+ 	t.Run("LeftoverTempFileIsOverwritten", func(t *testing.T) {
+ 		t.Parallel()
+ 		f := newRenderFixture(t, claudeStore)
+-		f.writeRoot(t, ".heddle/CLAUDE.local.md.tmp", "half a render")
++		f.writeAnchor(t, ".heddle/CLAUDE.local.md.tmp", "half a render")
+ 		mustRender(t, f)
+-		if !strings.HasPrefix(f.readRoot(t, "CLAUDE.local.md"), Marker) || f.rootHas(".heddle") {
++		if !strings.HasPrefix(f.readAnchor(t, "CLAUDE.local.md"), Marker) || f.anchorHas(".heddle") {
+ 			t.Error("leftover temp file not overwritten, or .heddle left behind")
+ 		}
+ 	})
+@@ -497,7 +497,7 @@ func TestRender(t *testing.T) {
+ 		t.Parallel()
+ 		f := newRenderFixture(t, Store{Entries: []Entry{entryFor("both", "t", 1, "claude-file", "codex-file")}})
+ 		mustRender(t, f, "codex-file")
+-		if f.rootHas("CLAUDE.local.md") || !f.rootHas("AGENTS.override.md") {
++		if f.anchorHas("CLAUDE.local.md") || !f.anchorHas("AGENTS.override.md") {
+ 			t.Error("Only codex-file did not leave CLAUDE.local.md unwritten and AGENTS.override.md written")
+ 		}
+ 	})
+@@ -514,7 +514,7 @@ func TestRender(t *testing.T) {
+ 		if err == nil || !strings.Contains(err.Error(), "lym heddle render") {
+ 			t.Errorf("Render() = %v; want an error naming lym heddle render", err)
+ 		}
+-		if f.rootHas("CLAUDE.local.md") || f.rootHas(".heddle") {
++		if f.anchorHas("CLAUDE.local.md") || f.anchorHas(".heddle") {
+ 			t.Error("a failed render wrote something")
+ 		}
+ 	})
+@@ -531,7 +531,7 @@ func TestRender(t *testing.T) {
+ 		}
+ 		done := renderInBackground(Renderer{BoltLockWait: 30 * time.Second}, f.request())
+ 		requireStillBlocked(t, done)
+-		if f.rootHas("CLAUDE.local.md") {
++		if f.anchorHas("CLAUDE.local.md") {
+ 			t.Error("a file was written while the Bolt lock was held")
+ 		}
+ 		saveStore(t, f.bolt, claudeStore)
+@@ -539,8 +539,8 @@ func TestRender(t *testing.T) {
+ 			t.Fatal(err)
+ 		}
+ 		requireFinished(t, done)
+-		if want := claudeFileWant("", "one", "two"); f.readRoot(t, "CLAUDE.local.md") != want {
+-			t.Errorf("CLAUDE.local.md = %q; want the new store's text", f.readRoot(t, "CLAUDE.local.md"))
++		if want := claudeFileWant("", "one", "two"); f.readAnchor(t, "CLAUDE.local.md") != want {
++			t.Errorf("CLAUDE.local.md = %q; want the new store's text", f.readAnchor(t, "CLAUDE.local.md"))
+ 		}
+ 	})
+ 
+@@ -557,14 +557,14 @@ func TestRender(t *testing.T) {
+ 		}
+ 		done := renderInBackground(Renderer{}, f.request())
+ 		requireStillBlocked(t, done)
+-		if f.rootHas("CLAUDE.local.md") || f.rootHas(".heddle") {
++		if f.anchorHas("CLAUDE.local.md") || f.anchorHas(".heddle") {
+ 			t.Error("a render wrote while another held the render lock")
+ 		}
+ 		if err := held.Release(); err != nil {
+ 			t.Fatal(err)
+ 		}
+ 		requireFinished(t, done)
+-		if !f.rootHas("CLAUDE.local.md") {
++		if !f.anchorHas("CLAUDE.local.md") {
+ 			t.Error("the render did not complete after the render lock was released")
+ 		}
+ 	})
+@@ -577,15 +577,15 @@ func TestRender(t *testing.T) {
+ 			entryFor("c", "file text", 3, "claude-file"),
+ 		}})
+ 		r := Renderer{}
+-		shown, err := r.Show(f.bolt, "claude-file", f.root)
++		shown, err := r.Show(f.bolt, "claude-file", f.anchor)
+ 		if err != nil || shown != claudeFileWant("", "file text") {
+ 			t.Errorf("Show(claude-file) = %q, %v", shown, err)
+ 		}
+-		shown, err = r.Show(f.bolt, "claude-prompt", f.root)
++		shown, err = r.Show(f.bolt, "claude-prompt", f.anchor)
+ 		if err != nil || shown != "prompt one\n\nprompt two" {
+ 			t.Errorf("Show(claude-prompt) = %q, %v", shown, err)
+ 		}
+-		if _, err := r.Show(f.bolt, "nope", f.root); err == nil || !strings.Contains(err.Error(), "claude-file") {
++		if _, err := r.Show(f.bolt, "nope", f.anchor); err == nil || !strings.Contains(err.Error(), "claude-file") {
+ 			t.Errorf("Show(nope) = %v; want an error naming the valid targets", err)
+ 		}
+ 		claude, err := r.Passages(f.bolt, "claude", "")
+@@ -596,7 +596,7 @@ func TestRender(t *testing.T) {
+ 		if err != nil || len(codex) != 0 {
+ 			t.Errorf("Passages(codex) = %v, %v; want none", codex, err)
+ 		}
+-		if f.rootHas("CLAUDE.local.md") || f.rootHas(".heddle") {
++		if f.anchorHas("CLAUDE.local.md") || f.anchorHas(".heddle") {
+ 			t.Error("Show or Passages wrote a file")
+ 		}
+ 	})
+@@ -628,7 +628,7 @@ func TestRender(t *testing.T) {
+ 				t.Errorf("%s: Passages(%q, %q) = %v, %v; want %v", tt.name, tt.engine, tt.role, got, err, tt.want)
+ 			}
+ 		}
+-		shown, err := r.Show(f.bolt, "orch-prompt", f.root)
++		shown, err := r.Show(f.bolt, "orch-prompt", f.anchor)
+ 		if err != nil || shown != "orch rule\n\nshared rule" {
+ 			t.Errorf("Show(orch-prompt) = %q, %v; want the two orch passages", shown, err)
+ 		}
+diff --git a/internal/heddleengine/seam.go b/internal/heddleengine/seam.go
+index fa5e2c83..bfef7f85 100644
+--- a/internal/heddleengine/seam.go
++++ b/internal/heddleengine/seam.go
+@@ -3,6 +3,9 @@
+ package heddleengine
+ 
+ import (
++	"fmt"
++	"path"
++	"path/filepath"
+ 	"slices"
+ 
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+@@ -17,20 +20,25 @@ type Seam struct {
+ 
+ var _ fabricengine.WorktreeSeam = Seam{}
+ 
+-// Made renders every file target into the event's root.
++// Made renders every file target into the event's anchor.
+ func (s Seam) Made(ev fabricengine.WorktreeEvent) error {
+ 	return s.render(requestOf(ev, nil))
+ }
+ 
+-// TookIn renders the file targets whose re-render paths include one of the event's paths.
++// TookIn renders the file targets whose re-render paths, taken under the event's anchor, include one of the event's root-relative paths.
+ // With none selected it renders nothing and takes no lock.
+ func (s Seam) TookIn(ev fabricengine.WorktreeEvent) error {
++	anchorRel, err := filepath.Rel(ev.Root, ev.Anchor)
++	if err != nil {
++		return fmt.Errorf("place the anchor %s within the worktree %s: %w", ev.Anchor, ev.Root, err)
++	}
++	anchorPrefix := filepath.ToSlash(anchorRel)
+ 	var selected []string
+ 	for _, target := range targetTable {
+ 		if target.Delivery != DeliveryFile {
+ 			continue
+ 		}
+-		if slices.ContainsFunc(ev.Paths, func(path string) bool { return slices.Contains(target.ReRender, path) }) {
++		if slices.ContainsFunc(target.ReRender, func(rel string) bool { return slices.Contains(ev.Paths, path.Join(anchorPrefix, rel)) }) {
+ 			selected = append(selected, target.Name)
+ 		}
+ 	}
+@@ -40,16 +48,16 @@ func (s Seam) TookIn(ev fabricengine.WorktreeEvent) error {
+ 	return s.render(requestOf(ev, selected))
+ }
+ 
+-// render runs the render and logs each of its warnings at Warn, naming the worktree.
++// render runs the render and logs each of its warnings at Warn, naming the anchor.
+ func (s Seam) render(req RenderRequest) error {
+ 	report, err := s.Renderer.Render(req)
+ 	for _, warning := range report.Warnings {
+-		logger.Warn("heddleengine: render warning (non-fatal)", "worktree", req.Root, "warning", warning)
++		logger.Warn("heddleengine: render warning (non-fatal)", "anchor", req.Anchor, "warning", warning)
+ 	}
+ 	return err
+ }
+ 
+-// requestOf copies the event's root, scratch directory, Bolt checkout and exclude list into a render request for the targets only names.
++// requestOf copies the event's anchor, scratch directory, Bolt checkout and exclude list into a render request for the targets only names.
+ func requestOf(ev fabricengine.WorktreeEvent, only []string) RenderRequest {
+-	return RenderRequest{Root: ev.Root, ScratchDir: ev.ScratchDir, BoltDir: ev.BoltDir, Excluded: ev.Excluded, Only: only}
++	return RenderRequest{Anchor: ev.Anchor, ScratchDir: ev.ScratchDir, BoltDir: ev.BoltDir, Excluded: ev.Excluded, Only: only}
+ }
+diff --git a/internal/heddleengine/seam_test.go b/internal/heddleengine/seam_test.go
+index 509ed985..404ca01d 100644
+--- a/internal/heddleengine/seam_test.go
++++ b/internal/heddleengine/seam_test.go
+@@ -1,4 +1,4 @@
+-// seam_test.go drives the worktree seam over temporary directories, without git.
++// seam_test.go drives the worktree seam over temporary directories, without git, for a worktree with an anchor and for one without.
+ 
+ package heddleengine
+ 
+@@ -12,21 +12,28 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// seamFixture is a seam over a store holding a claude-file and a codex-file entry.
++// seamFixture is a seam over a store holding a claude-file and a codex-file entry, in a worktree whose anchor lies anchorRel below its root.
+ type seamFixture struct {
+ 	renderFixture
++	root  string
+ 	event fabricengine.WorktreeEvent
+ }
+ 
+-func newSeamFixture(t *testing.T) seamFixture {
++func newSeamFixture(t *testing.T, anchorRel string) seamFixture {
+ 	t.Helper()
+ 	f := newRenderFixture(t, Store{Entries: []Entry{
+ 		entryFor("claude", "claude text", 1, "claude-file"),
+ 		entryFor("codex", "codex text", 2, "codex-file"),
+ 	}})
++	root := t.TempDir()
++	f.anchor = filepath.Join(root, filepath.FromSlash(anchorRel))
++	if err := os.MkdirAll(f.anchor, 0o755); err != nil {
++		t.Fatal(err)
++	}
+ 	return seamFixture{
+ 		renderFixture: f,
+-		event:         fabricengine.WorktreeEvent{Root: f.root, ScratchDir: f.scratch, BoltDir: f.bolt, Excluded: f.excluded},
++		root:          root,
++		event:         fabricengine.WorktreeEvent{Root: root, Anchor: f.anchor, ScratchDir: f.scratch, BoltDir: f.bolt, Excluded: f.excluded},
+ 	}
+ }
+ 
+@@ -34,7 +41,7 @@ func newSeamFixture(t *testing.T) seamFixture {
+ func (f seamFixture) tookInAfterClearing(t *testing.T, paths ...string) {
+ 	t.Helper()
+ 	for _, name := range []string{"CLAUDE.local.md", "AGENTS.override.md"} {
+-		if err := os.Remove(filepath.Join(f.root, name)); err != nil && !os.IsNotExist(err) {
++		if err := os.Remove(filepath.Join(f.anchor, name)); err != nil && !os.IsNotExist(err) {
+ 			t.Fatal(err)
+ 		}
+ 	}
+@@ -49,14 +56,31 @@ func TestSeam(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+-	t.Run("MadeWritesBothFileTargets", func(t *testing.T) {
++	t.Run("MadeWritesBothFileTargetsAtTheAnchor", func(t *testing.T) {
+ 		t.Parallel()
+-		f := newSeamFixture(t)
+-		if err := (Seam{}).Made(f.event); err != nil {
+-			t.Fatalf("Made() = %v", err)
++		tests := []struct {
++			name      string
++			anchorRel string
++		}{
++			{"NoAnchor", "."},
++			{"Anchored", "src/app"},
+ 		}
+-		if !f.rootHas("CLAUDE.local.md") || !f.rootHas("AGENTS.override.md") {
+-			t.Error("Made did not write both file targets")
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				f := newSeamFixture(t, tt.anchorRel)
++				if err := (Seam{}).Made(f.event); err != nil {
++					t.Fatalf("Made() = %v", err)
++				}
++				if !f.anchorHas("CLAUDE.local.md") || !f.anchorHas("AGENTS.override.md") {
++					t.Error("Made did not write both file targets at the anchor")
++				}
++				if tt.anchorRel != "." {
++					if _, err := os.Lstat(filepath.Join(f.root, "CLAUDE.local.md")); err == nil {
++						t.Error("Made wrote CLAUDE.local.md at the worktree's root")
++					}
++				}
++			})
+ 		}
+ 	})
+ 
+@@ -64,26 +88,30 @@ func TestSeam(t *testing.T) {
+ 		t.Parallel()
+ 		tests := []struct {
+ 			name         string
++			anchorRel    string
+ 			paths        []string
+ 			wantClaude   bool
+ 			wantOverride bool
+ 		}{
+-			{"AgentsMd", []string{"AGENTS.md"}, true, true},
+-			{"UnrelatedPath", []string{"src/x.go"}, false, false},
+-			{"ClaudeDirClaudeMd", []string{".claude/CLAUDE.md"}, true, false},
++			{"AgentsMd", ".", []string{"AGENTS.md"}, true, true},
++			{"UnrelatedPath", ".", []string{"src/x.go"}, false, false},
++			{"ClaudeDirClaudeMd", ".", []string{".claude/CLAUDE.md"}, true, false},
++			{"AnchoredAgentsMd", "src/app", []string{"src/app/AGENTS.md"}, true, true},
++			{"AnchoredClaudeMd", "src/app", []string{"src/app/CLAUDE.md"}, true, false},
++			{"AgentsMdAboveTheAnchor", "src/app", []string{"AGENTS.md"}, false, false},
+ 		}
+ 		for _, tt := range tests {
+ 			t.Run(tt.name, func(t *testing.T) {
+ 				t.Parallel()
+-				f := newSeamFixture(t)
+-				f.writeRoot(t, "AGENTS.md", "new rules\n")
++				f := newSeamFixture(t, tt.anchorRel)
++				f.writeAnchor(t, "AGENTS.md", "new rules\n")
+ 				f.tookInAfterClearing(t, tt.paths...)
+-				if f.rootHas("CLAUDE.local.md") != tt.wantClaude || f.rootHas("AGENTS.override.md") != tt.wantOverride {
++				if f.anchorHas("CLAUDE.local.md") != tt.wantClaude || f.anchorHas("AGENTS.override.md") != tt.wantOverride {
+ 					t.Errorf("after TookIn(%v): CLAUDE.local.md present = %v, AGENTS.override.md present = %v; want %v and %v",
+-						tt.paths, f.rootHas("CLAUDE.local.md"), f.rootHas("AGENTS.override.md"), tt.wantClaude, tt.wantOverride)
++						tt.paths, f.anchorHas("CLAUDE.local.md"), f.anchorHas("AGENTS.override.md"), tt.wantClaude, tt.wantOverride)
+ 				}
+-				if tt.wantOverride && !strings.Contains(f.readRoot(t, "AGENTS.override.md"), "new rules") {
+-					t.Errorf("AGENTS.override.md = %q; want it built from the changed AGENTS.md", f.readRoot(t, "AGENTS.override.md"))
++				if tt.wantOverride && !strings.Contains(f.readAnchor(t, "AGENTS.override.md"), "new rules") {
++					t.Errorf("AGENTS.override.md = %q; want it built from the changed AGENTS.md", f.readAnchor(t, "AGENTS.override.md"))
+ 				}
+ 			})
+ 		}
+diff --git a/internal/heddleengine/target.go b/internal/heddleengine/target.go
+index 8896062f..063596e4 100644
+--- a/internal/heddleengine/target.go
++++ b/internal/heddleengine/target.go
+@@ -10,7 +10,7 @@ import (
+ 
+ // The deliveries a target has.
+ const (
+-	// DeliveryFile renders the target into a file at a worktree's root.
++	// DeliveryFile renders the target into a file at a worktree's anchor.
+ 	DeliveryFile = "file"
+ 	// DeliveryPrompt appends the target's passages to a session's system prompt.
+ 	DeliveryPrompt = "prompt"
+@@ -20,8 +20,8 @@ const (
+ const OrchPromptTarget = "orch-prompt"
+ 
+ // Target is one place an entry's text is delivered to.
+-// File is the root-relative path of a file target and empty for a prompt target.
+-// ReRender lists the root-relative paths whose change re-renders a file target.
++// File is the anchor-relative path of a file target and empty for a prompt target.
++// ReRender lists the anchor-relative paths whose change re-renders a file target.
+ // Engine and Role narrow the sessions a prompt target reaches: a session of that engine, and a session of that role or a numbered sibling of it; an empty field narrows nothing.
+ type Target struct {
+ 	Name     string
+diff --git a/pattern/PATTERN-durable-vs-ephemeral-state.md b/pattern/PATTERN-durable-vs-ephemeral-state.md
+index 6dc09b3e..f567c189 100644
+--- a/pattern/PATTERN-durable-vs-ephemeral-state.md
++++ b/pattern/PATTERN-durable-vs-ephemeral-state.md
+@@ -12,8 +12,8 @@ Every never-tracked file lives under `.lym`, at the mirrored subpath of the `_ly
+ - Weft content is per-branch and is never a merge participant in either direction.
+ - `internal/logger`'s durable trace sink arms its cwd-anchored fallback only inside a worktree lym owns (`_lym` present at the anchor).
+   A plain checkout gets no sink rather than a `.lym` lym does not own.
+-- Heddle's rendered instruction files (`CLAUDE.local.md`, `AGENTS.override.md`) and the `.heddle` temporary directory sit at a warp worktree's root, outside `.lym`, untracked through the warp repository's `info/exclude` lines fabric seeds from its exclude-list key.
+-  The agents' instruction loaders read only the worktree's root, and a rename onto the root must not cross a filesystem.
++- Heddle's rendered instruction files (`CLAUDE.local.md`, `AGENTS.override.md`) and the `.heddle` temporary directory sit at a warp worktree's anchor, outside `.lym`, untracked through the warp repository's `info/exclude` lines fabric seeds from its exclude-list key under the anchor.
++  The files sit beside the repository's own instruction files in the sessions' working directory, and the temporary directory beside them, so a rename onto them never crosses a filesystem.
+ 
+ ## Single declarer
+ 
+diff --git a/pattern/PATTERN-heddle-instructions.md b/pattern/PATTERN-heddle-instructions.md
+index b6cc6da3..69fdd5d8 100644
+--- a/pattern/PATTERN-heddle-instructions.md
++++ b/pattern/PATTERN-heddle-instructions.md
+@@ -9,6 +9,6 @@ Heddle's instruction text is stored once per layer and rendered from those store
+ - The verbs alone write `heddle-lym-override.json`, which the replayer leaves unclaimed, so fabric replays a commit of it as a plain cherry-pick.
+ - No verb writes a shipped entry.
+ - `internal/heddleengine` is the only package that reads the layers and renders them.
+-- It renders file targets at a worktree's root, through fabric's worktree seam or `lym heddle render`.
++- It renders file targets at a worktree's anchor, beside the repository's own CLAUDE and AGENTS files, through fabric's worktree seam or `lym heddle render`.
+ - It renders a session's appended system prompt through shuttle's prompt seam.
+ - Fabric hands heddle paths and events and names no heddle file.
