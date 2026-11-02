@@ -1,6 +1,6 @@
 # Drift-Verify with the operator in the loop
 
-`drift-verify-operator-in-loop` · Task · feature, drift · running · PR-Review
+`drift-verify-operator-in-loop` · Task · feature, drift · running · Finalize
 
 Imported from [issue #14](https://github.com/Knatte18/loomyard/issues/14).
 
