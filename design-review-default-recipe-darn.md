@@ -1,6 +1,6 @@
 # Review and fix the unreviewed default_recipe change
 
-`review-default-recipe-darn` · Task · enhancement, board, batten · running · Worktree-Create
+`review-default-recipe-darn` · Task · enhancement, board, batten · running · Record-Write
 
 Depends on: [`default-recipe-darn`](design-default-recipe-darn.md)
 
