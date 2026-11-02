@@ -26,6 +26,7 @@ How near it comes to the Ryzen machine's absolute time is no part of the questio
   Each pair needs two gate slots at once: when the gate holds two free slots at once the pair starts; otherwise the writer waits for them, and never runs the two of a pair one after the other.
 - Alternate which setting starts first in each pair, since the faster run ends first and leaves the other a lighter machine.
 - Read each run's package wall from the test output, and `/dev/shm`'s use before and after each shm run, since memory is the cost.
+  The machine holds 30 GB and `/dev/shm` is 16 GB, shared with the other runs of the hub: when `/dev/shm`'s use passes 6 GB during a run, the writer stops the runs of the pair, reports the peak it saw, and goes on to the report with the runs it has.
 - Record the machine's load average at each run, and the revision and the Go version.
 - The two runs of a pair slow each other, so the absolute walls are no measure of a lone run: only the ratio of the two walls of a pair counts.
 
