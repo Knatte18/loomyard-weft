@@ -125,3 +125,9 @@ One loom run, read from the writer's transcript and its subagents' by a read-onl
 
 Reading: the writer must read much to write a joined plan, and `fork0` gets that reading for free by inheriting it, so the cost is the 198k each fork carries, not the reading itself.
 Two cuts remain open: have the first exploration fan answer with the lines needed (sonnet reads, writer gets excerpts) instead of the writer reading whole files after it, and skip the read-back of every plan file when `fork0` has already validated them.
+
+### Correction (operator, 2026-11-02)
+
+The second cut above, skipping the read-back of the plan files after `fork0`, is rejected.
+The read-back is needed: the writer gets the plan from `fork0` without `fork0`'s reasoning, so it must read the plan to judge it, and the lens forks then review a plan whose reasoning nobody carries, which makes them the more critical check.
+Only the first cut (excerpts from the exploration fan instead of whole-file Reads by the writer) stays open.
