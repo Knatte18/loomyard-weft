@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-02 14:39 UTC; every age below is as of then.
+Rendered 2026-11-02 14:40 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `osl-1046`
@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **heddle renders claude-file to the worktree root, not to the worktree's anchor** | [`heddle-render-ignores-anchor`](design-heddle-render-ignores-anchor.md) | darn · light | Finalize | osl-1046 | 2h<br>2h | heddle, fabric, cwd |
-| T3 | **Let tmuxkit start under /dev/shm with a ten-digit uid, then measure fabricengine tier1 there**<br>• Fix checkSocketPath so TMPDIR=/dev/shm works for a ten-digit uid (109 bytes against 107), then run the paired fabricengine tier1 measurement the shm bench could not | [`tmuxkit-short-socket-path`](design-tmuxkit-short-socket-path.md) | darn · light | Darn-Write | osl-1046 | 1h<br>1h | testkit, cwd, gate, fabric |
+| T3 | **Let tmuxkit start under /dev/shm with a ten-digit uid, then measure fabricengine tier1 there**<br>• Fix checkSocketPath so TMPDIR=/dev/shm works for a ten-digit uid (109 bytes against 107), then run the paired fabricengine tier1 measurement the shm bench could not | [`tmuxkit-short-socket-path`](design-tmuxkit-short-socket-path.md) | darn · light | Drift-Verify | osl-1046 | 1h<br>1h | testkit, cwd, gate, fabric |
 | T9 | **Drift-Verify with the operator in the loop** | [`drift-verify-operator-in-loop`](design-drift-verify-operator-in-loop.md) | darn · light | Finalize | osl-1046 | 2h<br>2h | drift |
 
 ### Ready (1)
@@ -28,7 +28,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **fabricengine tier1 hits the 10m go test timeout under load**<br>• internal/fabricengine tier1 panics with test timed out after 10m when the machine load is about 30 | [`fabricengine-tier1-timeout-load`](design-fabricengine-tier1-timeout-load.md) | darn · light |  | 29m<br>0m | gate, fabric |
+| T4 | **fabricengine tier1 hits the 10m go test timeout under load**<br>• internal/fabricengine tier1 panics with test timed out after 10m when the machine load is about 30 | [`fabricengine-tier1-timeout-load`](design-fabricengine-tier1-timeout-load.md) | darn · light |  | 30m<br>0m | gate, fabric |
 
 ### Draft (2)
 
@@ -54,7 +54,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B2 |  | **Beam orch cannot set a board entry's profile: refused as a task session** | [`beam-orch-cannot-set-profile`](design-beam-orch-cannot-set-profile.md) | 2h<br>2h | board, orch, workspaces |
-| B3 |  | **gitexec TestRun_RemoteBounds fails under machine load**<br>• The 200 ms stall bound of the never-answering remote test kills git before its ext script writes its count file when the machine is loaded | [`gitexec-remote-bounds-load-flaky`](design-gitexec-remote-bounds-load-flaky.md) | 29m<br>29m | git, gate |
+| B3 |  | **gitexec TestRun_RemoteBounds fails under machine load**<br>• The 200 ms stall bound of the never-answering remote test kills git before its ext script writes its count file when the machine is loaded | [`gitexec-remote-bounds-load-flaky`](design-gitexec-remote-bounds-load-flaky.md) | 30m<br>30m | git, gate |
 
 ### Enhancements (14)
 
@@ -68,7 +68,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E6 |  | **A task with no recipe runs darn, not tapestry**<br>• The default recipe becomes darn, set in board.yaml, so a small task promoted without a recipe does not start a full tapestry run | [`default-recipe-darn`](design-default-recipe-darn.md) | 20h<br>20h | board, batten |
 | E8 |  | **The orch role explains how to make a project into a beam**<br>• The prime orch in the Models hub did not know beam create is the only way, and patched a plain task run by hand. | [`orch-role-making-a-beam`](design-orch-role-making-a-beam.md) | 4h<br>4h | orch, pawl |
 | E9 |  | **An idle interactive run saves its work and pauses, to go on another time**<br>• lym asks an idle interactive agent to commit what it has and end, and the run resumes later | [`interactive-idle-park`](design-interactive-idle-park.md) | 2d<br>1d | shed, shuttle, batten |
-| E10 |  | **The hibernate request is carried by dobby, not a daemon of its own**<br>• Move lym hibernate request into dobby; the past-Land test is already shared | [`hibernate-in-dobby`](design-hibernate-in-dobby.md) | 1d<br>1d | dobby |
+| E10 |  | **The hibernate request is carried by dobby, not a daemon of its own**<br>• Move lym hibernate request into dobby; the past-Land test is already shared | [`hibernate-in-dobby`](design-hibernate-in-dobby.md) | 2d<br>1d | dobby |
 | E11 |  | **Merge in from parent as a task of its own in a beam, before pawl lands it**<br>• A command on a beam files a merge-in-from-parent task, run as darn with its perch on | [`parent-merge-task`](design-parent-merge-task.md) | 2d<br>1d | pawl, workspaces, drift, landing |
 | E12 |  | **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | 1d<br>1d | fabric |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 2w<br>6d | fabric, batten |
