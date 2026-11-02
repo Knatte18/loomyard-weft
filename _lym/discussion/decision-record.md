@@ -36,6 +36,16 @@ Start from the `plan-split-bench` report's findings, which this task reads first
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-02): Land round 1 without replay; replays move to plan-split-replay
+
+Decision: Stencils live only in the hub-wide Bolt copy and production takes only `main`, so no replay can run this branch's lym and stencils before they land.
+Split the loop at the landing: this run ends after round 1's tuning, with no replay and no scratch worktree.
+Land the round-1 instruction and gate changes as they stand, once the gate passes.
+Write the `docs/research/` report with the round-1 changes and their reasons, and mark the replay results as pending a follow-up task.
+The follow-up task `plan-split-replay` runs the replays on the installed lym after this lands, and tunes further within the cap left over.
+
+Rationale: Stencils are read only from the hub-wide Bolt copy and production deploys only main, so no replay can run this branch's lym and stencils before it lands.
+
 ## Constraints
 
 ## Auto-mode assumptions
