@@ -1,6 +1,6 @@
 # A hook nudges an agent back to batching the moment it breaks the rule
 
-`batching-breach-nudge` · Task · enhancement, claude, shuttle · running · Code-Burler-Fix
+`batching-breach-nudge` · Task · enhancement, claude, shuttle · running · Code-Bouncer
 
 ## Seen (orch, 2026-11-01)
 
