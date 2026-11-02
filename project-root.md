@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-02 19:03 UTC; every age below is as of then.
+Rendered 2026-11-02 19:04 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,9 +18,9 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Tune the plan-split writers until a split plan joins with no hand edit**<br>• Tune, replay on two inputs, tune again, at most 3 rounds, starting from the plan-split-bench report | [`plan-split-tune`](design-plan-split-tune.md) | darn | Code-Burler-Fix | neve | 1d<br>1d | loom, stencil, pattern |
-| T2 | **lym adopt root leaves the installed lym older than the adopted main** | [`adopt-root-skips-deploy`](design-adopt-root-skips-deploy.md) | darn | Code-Burler-Fix | neve | 27m<br>20m | deploy, fabric, landing |
-| T3 | **A wake from hibernate leaves the hub-wide pause live**<br>• After waking, the hibernate request read done but its hub pause stayed live and held every network call; its wake notice failed on a wrong receiver and an oversized line | [`hibernate-wake-leaves-pause`](design-hibernate-wake-leaves-pause.md) | darn | Darn-Write | neve | 37m<br>20m | hibernate, creel |
+| T1 | **Tune the plan-split writers until a split plan joins with no hand edit**<br>• Tune, replay on two inputs, tune again, at most 3 rounds, starting from the plan-split-bench report | [`plan-split-tune`](design-plan-split-tune.md) | darn | Code-Bouncer | neve | 1d<br>1d | loom, stencil, pattern |
+| T2 | **lym adopt root leaves the installed lym older than the adopted main** | [`adopt-root-skips-deploy`](design-adopt-root-skips-deploy.md) | darn | Code-Burler-Fix | neve | 27m<br>21m | deploy, fabric, landing |
+| T3 | **A wake from hibernate leaves the hub-wide pause live**<br>• After waking, the hibernate request read done but its hub pause stayed live and held every network call; its wake notice failed on a wrong receiver and an oversized line | [`hibernate-wake-leaves-pause`](design-hibernate-wake-leaves-pause.md) | darn | Darn-Write | neve | 37m<br>21m | hibernate, creel |
 | T6 | **Beam orch cannot set a board entry's profile: refused as a task session** | [`beam-orch-cannot-set-profile`](design-beam-orch-cannot-set-profile.md) | darn | Code-Bouncer | neve | 7h<br>11m | board, orch, workspaces |
 | T7 | **The sampler agent gets no PATTERN directive**<br>• The sampler writes and commits code but its prompt carries no PATTERN directive, unlike every other code-writing role | [`sampler-lacks-pattern-directive`](design-sampler-lacks-pattern-directive.md) | darn | Darn-Write | neve | 3h<br>6m | loom, stencil, pattern |
 
