@@ -48,7 +48,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Operator verbs print a short readable summary, not a JSON dump**<br>• lym adopt root and other verbs the operator types print a long JSON envelope; print a short summary with each stop and its way forward by default, JSON behind a flag | [`operator-verbs-readable-output`](design-operator-verbs-readable-output.md) | darn · light | Record-Write | neve | 48m<br>0m | cli |
+| T1 | **Operator verbs print a short readable summary, not a JSON dump**<br>• lym adopt root and other verbs the operator types print a long JSON envelope; print a short summary with each stop and its way forward by default, JSON behind a flag | [`operator-verbs-readable-output`](design-operator-verbs-readable-output.md) | darn · light | Darn-Write | neve | 48m<br>0m | cli |
 | T2 | **lym adopt root leaves the installed lym older than the adopted main** | [`adopt-root-skips-deploy`](design-adopt-root-skips-deploy.md) | darn | Finalize | neve | 38m<br>31m | deploy, fabric, landing |
 | T3 | **A wake from hibernate leaves the hub-wide pause live**<br>• After waking, the hibernate request read done but its hub pause stayed live and held every network call; its wake notice failed on a wrong receiver and an oversized line | [`hibernate-wake-leaves-pause`](design-hibernate-wake-leaves-pause.md) | darn | Code-Burler-Fix | neve | 48m<br>31m | hibernate, creel |
 | T4 | **Replay the landed plan-split tuning on both bench inputs and tune again** | [`plan-split-replay`](design-plan-split-replay.md) | darn · docs | Darn-Write | neve | 27m<br>27m | loom, stencil |
