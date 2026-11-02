@@ -1,30 +1,29 @@
 # Discussion writers hand lookups to subagents; subagent model is config
 
-The Discussion-Write stencil now offers the writer the option to hand a batch of independent lookups to fresh subagents, guidance the Plan stencil also carries.
-The model those subagents run on, hardcoded as `model: "sonnet"` in the Plan and darn-write stencils until now, is read from a new loom config key, `subagent_model`.
+The Discussion-Write stencil gains the explore-subagent guidance the Plan and darn-write stencils already carry, and the subagent model stops being a literal in each stencil.
+Lookups made late in a large writer session are paid at its whole context, and Discussion-Write explores the code more than any other role.
 
 ## What changes
 
-- `contracts/stencils/loom/loom-template-discussion.md`, Step 2: the writer may launch a batch of independent lookups together in one message, each subagent with `subagent_type: "general-purpose"` and the configured model, each prompt carrying its whole question and asking for a short answer naming files and spans.
-  The stencil leaves the choice to the writer: subagents pay off for a broad search whose conclusion alone it needs, while a small lookup, or code it needs to see itself, stays in its own session.
-  A fork does not serve, since it inherits the whole context.
-- `loom.yaml` gains `subagent_model`, defaulting to `sonnet`, so behaviour is unchanged.
+- `loom-template-discussion.md` tells the writer it may hand a batch of independent lookups to fresh `general-purpose` subagents, launched together in one message.
+  The writer keeps a lookup it judges small, or code it needs to see itself.
+  Each prompt carries its whole question and asks for a short answer naming files and spans.
+  A fork does not serve, since it inherits the writer's whole context.
+- `loom.yaml` gets a `subagent_model` key, defaulting to `sonnet` in `internal/loomengine/template.yaml`, so behaviour is unchanged.
   Its template comment names the three stencils that read it.
-  It is open to the local layer, and `LoadConfig` refuses an empty value, naming `lym config loom --set subagent_model=sonnet` as the way forward.
-- The Plan, Discussion-Write and darn-write stencils render `model: "{{.subagent_model}}"` where they hardcoded `model: "sonnet"`.
-  `PlanTable` and `DiscussionTable` fill the marker from `Config.SubagentModel`.
-  `DarnInputs` gains a required `SubagentModel`, which `wireDarn` fills from the loaded loom config.
-- `docs/overview.md` lists the new key with the other `loom.yaml` keys.
+- `loom-template-plan.md`, `loom-template-discussion.md` and `darn-template-write.md` render `model: "{{.subagent_model}}"` in place of the hardcoded `sonnet`.
+- `docs/overview.md` lists the key among loom's config keys.
 
 ## Design decisions
 
-- **Key name and module.** The key is `subagent_model` in `loom.yaml`, next to the writer keys `discussion` and `discussion_lenses`.
-  The darn writer reads it too, even though darn has its own `darn.yaml`, because the decision record puts all three stencils on one key.
-- **A bare model name, not a model-spec.** The value goes straight into the Agent tool's `model` field, which takes a name such as `sonnet` and no effort, so it is not parsed or resolved through `models.yaml`.
-  Only an empty value is refused.
+- The key lives in `loom.yaml` beside the writer-model keys, since all three writers belong to loom recipes.
+  It is a bare model name the Agent tool takes, not a bracketed model-spec.
+- `LoadConfig` refuses an empty value, naming `lym config loom --set subagent_model=sonnet` as the repair, because an empty `model:` in a stencil would silently change the subagents' model.
+  An existing hub whose `loom.yaml` lacks the key takes the template default only after `lym config reconcile --apply`; until then the load refuses.
+- The darn writer receives the value through `wireDarn`'s new `subagentModel` parameter and `darnengine`'s spec, rather than loading `loom.yaml` itself.
+- The key is not closed to the local layer.
 
-## Tests
+## To check by hand
 
-- `TestPlanTable`, `TestDiscussionTable` and `TestDarnSpec` set the key to `haiku` and assert that the rendered prompt carries `model: "haiku"`, which shows the model comes from config and not from a literal.
-- `TestLoadConfig_Refuses` has a new row for an empty `subagent_model`, and `templateConfig` expects the template's `sonnet`.
-- `TestDarnSpec_Refusals` has a new row for an empty `SubagentModel`.
+- Run `lym config reconcile --apply` on an existing hub and confirm `subagent_model: sonnet` is written, then start a Discussion-Write run and confirm the rendered prompt names `model: "sonnet"`.
+- The benchmark of the guidance against a writer given none belongs to `planner-fork-lookups` and was not run here.
