@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-02 09:54 UTC; every age below is as of then.
+Rendered 2026-11-02 09:56 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -61,7 +61,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Bench the full suite on OSL-1046 after the binary cuts**<br>• Measure tier0, tier1 and tier2 on this machine and record the numbers in docs/benchmarks/test-suite-timing.md. | [`bench-suite-osl1046`](design-bench-suite-osl1046.md) | darn · docs | Darn-Write | osl-1046 | 34m<br>34m | gate |
+| T2 | **Bench the full suite on OSL-1046 after the binary cuts**<br>• Measure tier0, tier1 and tier2 on this machine and record the numbers in docs/benchmarks/test-suite-timing.md. | [`bench-suite-osl1046`](design-bench-suite-osl1046.md) | darn · docs | Darn-Write | osl-1046 | 35m<br>35m | gate |
 
 #### Ready (0)
 
@@ -91,8 +91,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Reed code button reports a wrong anchor path from inside the anchor directory** | [`reed-code-wrong-anchor`](design-reed-code-wrong-anchor.md) | 0m<br>0m | reed |
-| B2 |  | **A beam's reed session shows pawl running with no orch and no beam overview** | [`beam-attach-no-orch`](design-beam-attach-no-orch.md) | 0m<br>0m | reed, orch, pawl, workspaces |
+| B1 |  | **Reed code button reports a wrong anchor path from inside the anchor directory** | [`reed-code-wrong-anchor`](design-reed-code-wrong-anchor.md) | 1m<br>0m | reed |
+| B2 |  | **A beam's reed session shows pawl running with no orch and no beam overview** | [`beam-attach-no-orch`](design-beam-attach-no-orch.md) | 1m<br>1m | reed, orch, pawl, workspaces |
 | B3 |  | **A batten pass after a landed child reports a false rewind against origin**<br>• Origin equals local, yet batten stops asking which history to keep | [`false-rewind-after-finalize`](design-false-rewind-after-finalize.md) | 17h<br>15h | batten, fabric |
 
 #### Enhancements (13)
