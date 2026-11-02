@@ -1,6 +1,6 @@
 # A task with no recipe runs darn, not tapestry
 
-`default-recipe-darn` · Task · enhancement, board, batten · draft
+`default-recipe-darn` · Task · enhancement, board, batten
 
 ## Seen (orch, 2026-11-01)
 
