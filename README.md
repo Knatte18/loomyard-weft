@@ -57,7 +57,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Tune the plan-split writers until a split plan joins with no hand edit**<br>• Tune, replay on two inputs, tune again, at most 3 rounds, starting from the plan-split-bench report | [`plan-split-tune`](design-plan-split-tune.md) | darn | Darn-Write | neve | 1d<br>23h | loom, stencil, pattern |
-| T8 | **The landing merge fixer loads no prose, code-quality or testing skill**<br>• FixerTable sets the fixer seat's skills to the language skills alone, unlike every other code-writing seat | [`landing-fixer-base-skills`](design-landing-fixer-base-skills.md) | darn · light | Drift-Verify | neve | 6h<br>6h | landing, shuttle |
+| T8 | **The landing merge fixer loads no prose, code-quality or testing skill**<br>• FixerTable sets the fixer seat's skills to the language skills alone, unlike every other code-writing seat | [`landing-fixer-base-skills`](design-landing-fixer-base-skills.md) | darn · light | Code-Bouncer | neve | 6h<br>6h | landing, shuttle |
 
 #### Ready (0)
 
