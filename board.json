@@ -754,6 +754,28 @@
       "body": "Imported from [issue #2](https://github.com/Knatte18/loomyard/issues/2).\n\nSeen (loomyard hub, 2026-10-31): on OSL-1046 the operator set `pull_request: off` in the hub-wide beam config (Bolt commit 7660dc966, 2026-10-30), and `pr_reviewer: opus[medium]` was set in landing.yaml.\nAfter moving to another machine (Neve), whose installed lym was still built from 31d9ae96 (2026-10-28, before the PR-Review row and the beam `pull_request` key existed), the first lym command ran \"lym: reconcile hub-wide config for build (31d9ae96c783 production ...)\" (Bolt commit dfe254915) and removed both keys from the committed default layer, since that build's templates did not know them. The binary was updated four minutes later, but the settings were gone, and runs went through PR-Review against the operator's setting.\n\nWorkaround: restored both keys by hand with `lym config beam --layer default --set pull_request=off` and `lym config landing --layer default --set 'pr_reviewer=opus[medium]'`.\n\nExpected: an automatic reconcile never removes keys from the shared, committed default layer, at least not when the running binary is older than the build that wrote them; unknown keys are kept (as the manual path already reports them under \"preserved\") and removal stays an explicit `lym config reconcile --layer default --apply`.\n\n\n_Moved from #907 in the repository before it was recreated._\n",
       "created": "2026-11-02T20:34:10Z",
       "revised": "2026-11-02T20:34:10Z"
+    },
+    {
+      "id": 1017,
+      "handle": "E6",
+      "slug": "rubric-test-economy-vs-criteria",
+      "title": "Plan rubric's test-economy rule conflicts with decision-record acceptance criteria phrased as rendered-output checks",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "burler",
+        "loom",
+        "stencil"
+      ],
+      "issues": [
+        3
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #3](https://github.com/Knatte18/loomyard/issues/3).\n\n## What happened\n\nDuring a plan review round, a finding asked to cut a test's static-prose assertions under the rubric's test-economy rule.\n`_lym/plan/lens-review.md` already recorded the Plan-Write lens pass disputing the same cut, because the decision record's acceptance criteria call for those checks (\"the rendered stencil names X\").\nThe review's claim that the stencil-wide scans cover the wording was false for all but one item; two self-check lenses caught it.\nThe fixing agent resolved it by stating in the card that the criteria are met by review of the stencil text.\n\n## Why it is abnormal\n\nThe rubric and the decision-record acceptance criteria pull in opposite directions.\nA criterion phrased as \"the rendered stencil names X\" can be planned either as a test or as a review check, and nothing in lym says which.\nThe same dispute is re-litigated each review round, and the review's coverage claim can be wrong without any check noticing.\n\n## What to do\n\nSettle once, in the plan rubric or the decision-record template, whether a criterion phrased as \"the rendered text names X\" is planned as a test or as a review check.\nHave the review verify claims that stencil-wide scans cover a given wording before it relies on them.\n\nProvenance: task `interactive-recipe`; note `burler-plan-r1.md`.\n\n\n\n_Moved from #908 in the repository before it was recreated._\n",
+      "created": "2026-11-02T20:34:12Z",
+      "revised": "2026-11-02T20:34:12Z"
     }
   ],
   "prime_owner": "neve",
