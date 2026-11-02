@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-02 15:50 UTC; every age below is as of then.
+Rendered 2026-11-02 15:51 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `osl-1046`
@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Let tmuxkit start under /dev/shm with a ten-digit uid, then measure fabricengine tier1 there**<br>• Fix checkSocketPath so TMPDIR=/dev/shm works for a ten-digit uid (109 bytes against 107), then run the paired fabricengine tier1 measurement the shm bench could not | [`tmuxkit-short-socket-path`](design-tmuxkit-short-socket-path.md) | darn · light | Finalize | osl-1046 | 2h<br>2h | testkit, cwd, gate, fabric |
-| T4 | **fabricengine tier1 hits the 10m go test timeout under load**<br>• internal/fabricengine tier1 panics with test timed out after 10m when the machine load is about 30 | [`fabricengine-tier1-timeout-load`](design-fabricengine-tier1-timeout-load.md) | darn · light | Code-Burler-Review | osl-1046 | 1h<br>1h | gate, fabric |
+| T4 | **fabricengine tier1 hits the 10m go test timeout under load**<br>• internal/fabricengine tier1 panics with test timed out after 10m when the machine load is about 30 | [`fabricengine-tier1-timeout-load`](design-fabricengine-tier1-timeout-load.md) | darn · light | Code-Burler-Fix | osl-1046 | 1h<br>1h | gate, fabric |
 
 ### Ready (0)
 
@@ -44,7 +44,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 10d<br>2h | loom, stencil |
+| R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 10d<br>3h | loom, stencil |
 
 ### Bugs (2)
 
