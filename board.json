@@ -515,28 +515,6 @@
       "project": "turn-savings"
     },
     {
-      "id": 981,
-      "handle": "T1",
-      "slug": "plan-split-tune",
-      "title": "Tune the plan-split writers until a split plan joins with no hand edit",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "loom",
-        "stencil",
-        "pattern"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Tune, replay on two inputs, tune again, at most 3 rounds, starting from the plan-split-bench report",
-      "body": "## Seen (orch, plan-split-bench, 2026-11-01)\n\nIn the `plan-split-bench` replays, Parts-Write fixed export names in `parts.md` that the repository's PATTERN entries forbid, and the part writers, who may not change `parts.md`, could not correct them:\n- `internal/heddlecli#NewCommand`, where `PATTERN-cli-cobra` gives every CLI package `Command()`;\n- names spelling `warp` in `heddleengine`, `fabricengine` and `cmd/lym`, which `PATTERN-fabric-vocabulary` bars and `validate-plan --part` refuses as `fabric-vocabulary-name`;\n- two members that keep their signatures listed as exports, which `part-export-missing` cannot accept.\n\nEach needed a hand edit of `parts.md` before the parts could join.\nParts-Write's prompt (`loom-template-parts.md`) carries the PATTERN directive, but nothing has it read the PATTERN entries that govern the names it fixes, and its own gate does not run the name checks the part gate runs.\n\n## Goal (operator, 2026-11-01)\n\nTune the instructions of the plan-split writers, Parts-Write, the part writers and the joining chair, test them, and tune again, until a split plan joins and passes its gates with no hand edit.\nStart from the `plan-split-bench` report's findings, which this task reads first.\n\n## Changes to try first\n\n- Parts-Write reads the PATTERN entries for every package a part exports from before it names an export, as the Plan writer does in its longer session.\n- Parts-Write's gate runs the name checks `validate-plan --part` runs on export names, `fabric-vocabulary-name` included, and refuses an export naming an existing member whose signature the part keeps, so such a defect stops at Parts-Write, where it can still be fixed.\n- Whatever else the bench report names as a cause of a hand edit or a failed join.\n\n## Loop and cap\n\n- Inputs: the two replays `plan-split-bench` used (`warp-visibility` and `run-verbs-shared`), at the same base commits.\n- One round: tune the instructions, then replay Parts-Write and Parts-Plan-Write on both inputs with `plan_split` on, and record per input whether the parts joined, which gates refused, and every hand edit needed.\n- At most 3 rounds, so at most 6 split writings; one Plan-Review round per input on the last round's plans only, 2 in all.\n- The loop ends early at the first round where both inputs join and pass their gates with no hand edit.\n- The orch creates and removes the scratch worktrees on the writer's request, since `lym fabric add` is refused from a task session.\n- The instruction changes land in the stencils and gates; a report in `docs/research/` gives each round's results and the cost.\n",
-      "status": "done",
-      "created": "2026-11-01T17:30:40Z",
-      "revised": "2026-11-01T18:47:04Z"
-    },
-    {
       "id": 985,
       "handle": "P1",
       "slug": "turn-savings",
@@ -554,7 +532,6 @@
       "created": "2026-11-01T18:17:27Z",
       "revised": "2026-11-01T18:52:40Z",
       "order": [
-        "cold-gate-fixer",
         "planner-fork-lookups",
         "agent-turns-effect"
       ]
@@ -576,31 +553,6 @@
       "body": "## Seen (orch, 2026-11-01)\n\nIn a sample of 28 sessions (`.scratch/batching-breach.md` of the batching study), the single largest cost was the Plan writer of `run-verbs-shared` in `plan-split-bench`: 31 chained grep turns at 390k to 530k context and 15 one-file-per-turn fix turns at 630k to 668k.\nEvery lookup the writer makes is paid at its whole context, so exploration late in a large session is the expensive part of planning.\nDiscussion-Write explores the code more than any other role, so the same cost applies there.\n\n## What is being benched\n\nThe writers hand batches of independent lookups to fresh Sonnet subagents that return only what is relevant, with paths and line ranges, and read only what those lists name.\nThe writer is encouraged to work this way by its stencil, not commanded.\nTask `explore-subagent-model` has landed (2026-11-02): the Discussion-Write stencil now carries the guidance the Plan and darn stencils already carried, and the subagent model is the `subagent_model` key of `loom.yaml` (default `sonnet`), read by all three stencils.\nA fork does not serve for lookups: it inherits the writer's whole context and saves nothing.\n\n## Research\n\n- From the Plan-Write and Discussion-Write transcripts of landed tapestry runs, count the writers' exploration turns, their context and cost, and how many could have gone to parallel explore agents up front.\n- Bench on one or two replays (the `plan-split-bench` inputs) for both roles: the writer allowed subagents but given no stencil guidance, against the writer with the guidance.\n  Compare whether the guidance changes what the writer does, and cost, turns, peak context and review findings.\n- Name the risk: an explore agent's list may leave out what the writer would have seen in the code, so count review findings that trace to a missed fact.\n\n## What the bench writer did (orch, 2026-11-01)\n\nThe `psb-rv-plan` writer ran on `opus[medium]`; its Agent calls were one fork writing the plan and the `twill-plan` lens reviews, none for lookups.\nNo run denies the Agent tool any more, so a writer may start a fresh subagent.\n\n## Timing\n\nThe guidance now exists for both roles, so the bench no longer waits on `explore-subagent-model`.\nThe \"no guidance\" arm needs the guidance removed from a stencil in the bench's own worktree, since the landed stencils all carry it.\n",
       "created": "2026-11-01T18:22:44Z",
       "revised": "2026-11-02T13:04:32Z",
-      "project": "turn-savings"
-    },
-    {
-      "id": 987,
-      "handle": "T5",
-      "slug": "cold-gate-fixer",
-      "title": "One cold, cheap fixer clears a failed writer gate instead of the writer at full context",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "webster",
-        "loom",
-        "darn",
-        "gate"
-      ],
-      "issues": [],
-      "recipe": "tapestry",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "When the Darn-Write, plan, discussion or Webster card gate fails, Go spawns one shared cold fixer with the gate report, generalised from webster fix-verify",
-      "body": "## Seen (orch, 2026-11-01)\n\nA writer that fails its own gate fixes the failures in its own session, at its full context per turn.\nBefore project `agent-turns`, one Webster fork spent 69 turns at 150k to 450k fixing its card gate.\nThe Plan writer runs `validate-plan` through its gate at 400k to 670k context in large runs, and the Discussion writer runs `validate-discussion` the same way.\nThe darn writer of `gate-one-binary-per-package` fixed its own `darn-write` gate failures at about 274k context, and darn is the recipe that runs most.\nThe gate reports name each failing check and its place, so most fixes are mechanical.\n\n## Design (operator, 2026-11-01)\n\n- One shared cold gate fixer, not four: when a writer's gate fails, Go spawns a fresh, cheap fixer with the gate report and the files it names, instead of the writer fixing in its large session.\n  The fixer reads the failing source itself, fixes every failure in one go and reruns the gate, the failed packages first and then the whole gate; when it clears the gate the run goes on, and when it does not the failure goes back to the writer, or up the recovery ladder, as today.\n- Webster's `lym webster fix-verify` (`webster-prefix-verify-fix-cold.md`), the cold fixer of the plan-level verify gate, is generalised into the shared one rather than built beside.\n- Four callers:\n  - the Darn-Write gate (`darn-write`);\n  - the Plan writer's plan gate;\n  - the Discussion writer's gate;\n  - the Webster card gate, where Go spawns the fixer in the fork's worktree with the gate report, the card and the card's diff.\n- Which failures the fixer takes: the failures a gate reports as machine checks go to it; a failure whose fix changes a design choice goes back to the writer. The Discussion settles the line from what the gate reports contain.\n- The fixer's model and effort are config, one key per caller, with a cheap default; the Discussion picks the default.\n- R1 (`agent-turns-effect`) measures the card gate loop after this lands.\n",
-      "status": "done",
-      "created": "2026-11-01T18:22:44Z",
-      "revised": "2026-11-01T18:45:33Z",
-      "profile": "light",
       "project": "turn-savings"
     },
     {
@@ -840,9 +792,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "plan-split-tune"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## Why\n\n`plan-split-tune` landed the first round of tuning of the plan-split writers (Parts-Write, the part writers and the joining chair) without replaying it.\nA replay must run the tuned lym and stencils, and stencils live only in the hub's shared Bolt copy, which takes only what lands on `main`, so the replays run here, after that landing, on the installed lym.\n\n## Goal\n\nReplay the landed tuning, then tune and replay again, until a split plan joins and passes its gates with no hand edit.\nStart from the `plan-split-tune` report in `docs/research/` and the `plan-split-bench` report it builds on.\n\n## Loop and cap\n\n- Inputs: the two replays `plan-split-bench` used, `warp-visibility` (code at `d407ef69`, `_lym/discussion` and `_lym/reviews/discussion` from weft `576c4b3a31`) and `run-verbs-shared` (code at `52b69848`, the same directories from weft `b8a86e5c59`), each worktree with `plan_split: true` in its own `_lym/config/tapestry.yaml`.\n- The first round replays the landed tuning with no further change.\n- A later round tunes the instructions or gates, then replays Parts-Write and Parts-Plan-Write on both inputs.\n- A tuning made in a later round reaches the replays only after it lands, so a later round that needs it ends this task with its change landed, and the report names what the next replay should check.\n- Record per input and round whether the parts joined, which gates refused, and every hand edit needed.\n- At most 2 rounds, so at most 4 split writings, and one Plan-Review round per input on the last round's plans only, 2 in all.\n- The loop ends early at the first round where both inputs join and pass their gates with no hand edit.\n- The orch creates and removes the scratch worktrees on the writer's request, since `lym fabric add` is refused from a task session.\n- The results go into the same `docs/research/` report, round by round, with the cost.\n",

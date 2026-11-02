@@ -2,8 +2,6 @@
 
 `plan-split-replay` · Task · enhancement, loom, stencil
 
-Depends on: [`plan-split-tune`](design-plan-split-tune.md)
-
 ## Why
 
 `plan-split-tune` landed the first round of tuning of the plan-split writers (Parts-Write, the part writers and the joining chair) without replaying it.
