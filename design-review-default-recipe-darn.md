@@ -2,8 +2,6 @@
 
 `review-default-recipe-darn` · Task · enhancement, board, batten · running · Darn-Write
 
-Depends on: [`default-recipe-darn`](design-default-recipe-darn.md)
-
 ## Why
 
 Task `default-recipe-darn` ran darn with profile `docs`: a Sonnet writer and no Code-Review.
