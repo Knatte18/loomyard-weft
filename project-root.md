@@ -22,21 +22,20 @@ Held by a run; its scope is locked until the run ends.
 | T3 | **Let tmuxkit start under /dev/shm with a ten-digit uid, then measure fabricengine tier1 there**<br>• Fix checkSocketPath so TMPDIR=/dev/shm works for a ten-digit uid (109 bytes against 107), then run the paired fabricengine tier1 measurement the shm bench could not | [`tmuxkit-short-socket-path`](design-tmuxkit-short-socket-path.md) | darn · light | Darn-Write | osl-1046 | 1h<br>1h | testkit, cwd, gate, fabric |
 | T9 | **Drift-Verify with the operator in the loop** | [`drift-verify-operator-in-loop`](design-drift-verify-operator-in-loop.md) | darn · light | Finalize | osl-1046 | 2h<br>2h | drift |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T8 | **The landing merge fixer loads no prose, code-quality or testing skill**<br>• FixerTable sets the fixer seat's skills to the language skills alone, unlike every other code-writing seat | [`landing-fixer-base-skills`](design-landing-fixer-base-skills.md) | darn · light |  | 2h<br>2h | landing, shuttle |
+_None._
 
-### Draft (1)
+### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Tune the plan-split writers until a split plan joins with no hand edit**<br>• Tune, replay on two inputs, tune again, at most 3 rounds, starting from the plan-split-bench report | [`plan-split-tune`](design-plan-split-tune.md) | darn |  | 21h<br>19h | loom, stencil, pattern |
+| T8 | `draft` **The landing merge fixer loads no prose, code-quality or testing skill**<br>• FixerTable sets the fixer seat's skills to the language skills alone, unlike every other code-writing seat | [`landing-fixer-base-skills`](design-landing-fixer-base-skills.md) | darn · light |  | 2h<br>2h | landing, shuttle |
 
 ## Notes (33)
 
