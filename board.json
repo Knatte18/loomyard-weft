@@ -814,6 +814,28 @@
       "body": "Imported from [issue #13](https://github.com/Knatte18/loomyard/issues/13).\n\nSeen: in a hub whose worktrees have the anchor `src/csharp/NORCE.Models` (`lym fabric anchor` prints it), `lym heddle render` writes the `claude-file` target to `\u003cworktree\u003e/CLAUDE.local.md` at the git root. The repository's own `CLAUDE.md`, the VS Code workspace folder and every lym session's working directory are the anchor, three levels down, so the operator never sees the rendered file in the workspace, and it sits apart from the `CLAUDE.md` it complements. Claude Code still loads it only because it reads CLAUDE files from every ancestor directory.\n\nHeddle has no setting for the target path (`lym config heddle --resolved` shows only `lym_override`).\n\nExpected: file targets render relative to the worktree's anchor, so `CLAUDE.local.md` lands beside the repository's `CLAUDE.md` in the working directory, or heddle offers a per-target path that defaults to the anchor.\n\nWorkaround: none applied; the hub holds its heddle migration until this is fixed.",
       "created": "2026-11-02T12:00:13Z",
       "revised": "2026-11-02T12:00:13Z"
+    },
+    {
+      "id": 998,
+      "handle": "B2",
+      "slug": "beam-orch-cannot-set-profile",
+      "title": "Beam orch cannot set a board entry's profile: refused as a task session",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "board",
+        "orch",
+        "workspaces"
+      ],
+      "issues": [
+        12
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #12](https://github.com/Knatte18/loomyard/issues/12).\n\nSeen: in a beam's orch (strand mo:loomyard-setup:orch), `lym board upsert` with `\"profile\":\"docs\"` on a new task under the beam's project was refused: \"a run_settings or profile change is refused from the task session mo:loomyard-setup:orch; way forward: the operator or the hub orch makes the change\". The same upsert without `profile` succeeded, so the beam orch may create tasks but not set their profile.\n\nExpected: the orch role tells every orch, a beam's included, to name a profile in the board entry's `profile` field before the batten run starts. A beam's orch (role `orch` under a beam slug) should be treated as an orch, not as a task session, for profile and run_settings writes on entries whose parent_beam is its own beam.\n\nWorkaround: created the task without a profile and asked the operator or the prime orch to set it.",
+      "created": "2026-11-02T12:00:15Z",
+      "revised": "2026-11-02T12:00:15Z"
     }
   ],
   "prime_owner": "osl-1046",

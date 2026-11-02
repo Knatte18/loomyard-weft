@@ -35,7 +35,7 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Tune the plan-split writers until a split plan joins with no hand edit**<br>• Tune, replay on two inputs, tune again, at most 3 rounds, starting from the plan-split-bench report | [`plan-split-tune`](design-plan-split-tune.md) | darn |  | 18h<br>17h | loom, stencil, pattern |
 
-## Notes (30)
+## Notes (31)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -45,11 +45,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 10d<br>17h | loom, stencil |
 
-### Bugs (1)
+### Bugs (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **heddle renders claude-file to the worktree root, not to the worktree's anchor** | [`heddle-render-ignores-anchor`](design-heddle-render-ignores-anchor.md) | 0m<br>0m | heddle, fabric, cwd |
+| B2 |  | **Beam orch cannot set a board entry's profile: refused as a task session** | [`beam-orch-cannot-set-profile`](design-beam-orch-cannot-set-profile.md) | 0m<br>0m | board, orch, workspaces |
 
 ### Enhancements (14)
 

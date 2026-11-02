@@ -45,7 +45,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R2 |  | **Plan and Discussion writers explore through parallel Sonnet agents that return only what is relevant**<br>• Bench the guidance that sends Plan and Discussion writers' lookups to parallel Sonnet subagents against a writer given none | [`planner-fork-lookups`](design-planner-fork-lookups.md) | 17h<br>19m | loom |
 | R3 |  | **Measure the effect of the batching breach hook**<br>• After the batching breach hook lands, compare breach turns and context tokens against the 28-session baseline and tune its thresholds | [`batching-hook-effect`](design-batching-hook-effect.md) | 32m<br>32m | claude, shuttle, tools |
 
-## [P0 Root: entries under no project](project-root.md) (33)
+## [P0 Root: entries under no project](project-root.md) (34)
 
 Owner `osl-1046`
 
@@ -76,7 +76,7 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Tune the plan-split writers until a split plan joins with no hand edit**<br>• Tune, replay on two inputs, tune again, at most 3 rounds, starting from the plan-split-bench report | [`plan-split-tune`](design-plan-split-tune.md) | darn |  | 18h<br>17h | loom, stencil, pattern |
 
-### Notes (30)
+### Notes (31)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -86,11 +86,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 10d<br>17h | loom, stencil |
 
-#### Bugs (1)
+#### Bugs (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **heddle renders claude-file to the worktree root, not to the worktree's anchor** | [`heddle-render-ignores-anchor`](design-heddle-render-ignores-anchor.md) | 0m<br>0m | heddle, fabric, cwd |
+| B2 |  | **Beam orch cannot set a board entry's profile: refused as a task session** | [`beam-orch-cannot-set-profile`](design-beam-orch-cannot-set-profile.md) | 0m<br>0m | board, orch, workspaces |
 
 #### Enhancements (14)
 
