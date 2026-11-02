@@ -775,7 +775,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (orch, 2026-11-02)\n\nRoot moved back to Neve after a day of landings on OSL-1046.\nThe orch brought Neve's `loomyard` `main` level with origin and ran `lym adopt root`; neither step deploys, so `/home/knatte/go/bin/lym` stayed the binary built on 2026-11-01 from `87553450ec14`.\nThe weft and Bolt checkouts carry the new board stencils, while the binary is the old one.\nThe two darn runs released next, `plan-split-tune` and `landing-fixer-base-skills`, both failed at Darn-Write: the board stencil `darn-template-write` needs the `subagent_model` marker that `2d319fe5` added, and the old binary never fills it (\"stencil: unfilled top-level marker(s): subagent_model\").\nThe adopt check went green on the new tree, since it builds its own test binaries, so nothing flagged the stale install.\n\n## Workaround\n\nA run that landed on Neve right after the adopt ran the hub's deploy at its Land row, which installed a binary from the new `main`; the orch then resumed both darn runs at Darn-Write.\nHad no run landed, the operator would have had to run `update-plugins.sh` by hand.\n\n## Expected\n\n- `lym adopt root` deploys when the adopted prime's `main` is ahead of the commit the installed binary was built from, running the hub's landing `deploy` command, the one `landing.yaml` names, before it lets any run go on.\n- Short of that, adopt refuses to finish, or at least warns in its summary, when the installed binary predates the prime's `main`.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Describe",
       "created": "2026-11-02T18:36:35Z",
       "revised": "2026-11-02T18:42:53Z"
     },
