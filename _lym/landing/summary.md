@@ -1,49 +1,42 @@
 # Finalize frees the parent lock while its fixer works
 
-Finalize held the parent lock from its merge of the parent through the verify, and on a red verify through the whole fixer session and the re-verify.
-One run whose verify failed could hold the lock on `main` for many minutes while green runs queued behind it.
+Finalize used to hold the parent lock through its whole row: verify, and on a red verify the fixer session and the re-verify.
+One run held `main` for 12 minutes that way while four green runs queued behind it.
+Finalize now frees the lock before its merge fixer or a fix review starts, since neither touches the parent, so queued runs land meanwhile.
 
 ## What changes
 
-**Finalize (`internal/landingshed`).**
-Finalize still takes the lock before it merges the parent and verifies, so a run that verifies green lands what it verified with no second merge.
-When the verify fails, Finalize frees the lock before the merge fixer starts, and before any fix review session, since neither touches the parent.
-Once the fixer's change is let through, Finalize takes the lock again and runs every step under the lock again, from the pull-request step on: it merges the parent anew and verifies under the lock as on its first try.
-When nothing landed on the parent meanwhile, that merge is a no-op and the verify is skipped over the tree the fixer already verified.
-`Call` now loops over `landUnderLock`, one locked pass, which reports when it freed the lock and wants another pass.
-A Finalize with no lock store frees nothing and goes on in the same pass, as before.
-
-**Head of the queue (`internal/parentlock`).**
-A run taking the lock back queues at the front, ahead of runs that queued while it fixed.
-A `Waiter` with `Front` set writes a ticket marked front; the queue orders front tickets first, then the rest, each oldest first.
-`parentGuard.ensure` takes the front flag; Parent-Align passes false.
-
-**Hand-over latency (`internal/parentlock`).**
-`Acquire` watches the branch's lock record through `internal/fswatch`, so a release ends the poll delay at once, still a second after the last attempt began, instead of up to thirty seconds later.
-A watch that cannot open logs a Warn and leaves the wait on its poll.
-
-**Recovery ladder.**
-A failed verify on a pass after the lock was taken again spawns the fixer on the attempts `finalize_fix_attempts` leaves the entry, never a fresh cap, so the passes end within that cap.
-
-**Measuring the fixer's change across a merge.**
-The fixer's change was measured as `LineChange(Baseline, HEAD)`, which counts a merge of the parent made after the fixer as the fixer's own lines; the old merge-in-required retry already had this flaw, and with the lock freed the parent now often moves during the fix.
-The attempt record gains `judged`, the HEAD at which the fixer's change was last let through (within the caps, approved or accepted).
-A pass whose merge brings parent commits onto that HEAD moves the entry's `Baseline` to the merged head, so the parent's commits never count as the fixer's change.
-`judgeFixerChange` treats a Baseline equal to HEAD as no change.
+- Finalize still takes the lock before its merge and verify, so a run that verifies green lands what it verified with no second merge.
+- On a red verify, or a fix review over a passing gate, `Finalize` frees the lock before the agent session starts.
+  Once the fixer's change is let through, it takes the lock again, merges the parent anew and verifies under the lock before it lands.
+  The merge is a no-op and the verify is skipped when nothing landed meanwhile.
+- The returning run queues at the front, ahead of runs that queued while it fixed.
+  `parentlock` tickets carry a `Front` flag, and the queue order is front tickets first, then the rest, each oldest first.
+  A `Finalize` resumed with an attempt record showing a fixer change let through queues at the front too.
+- A queued run no longer waits out the poll delay after a release.
+  `parentlock.Acquire` watches the branch's lock record through `internal/fswatch`, and a change ends the delay early, still a second after the last attempt began.
+  A watch that cannot open or closes mid-wait leaves the wait on its poll backoff, and logs one warning on open failure.
+  This addresses the 21 to 23 second hand-overs seen on 2026-11-01.
+- `lym loom status` shows the fixer's session while it works and the parent lock wait while the run queues again.
+- A hub pause that covers the run holds its fixer's gate calls and its requeue wait like any other run's, since the run holds no lock then.
+  The lock-holder exemption in `loomcli/landingdeps.go` stays as it is.
 
 ## Design decisions
 
-- **Wait mark and `lym loom status` while fixing outside the lock.** No new mark: while the fixer works, status shows its session as it does today, and while the run queues again it shows the existing parent lock wait (`Finalize: waiting for the parent lock on <branch> held by <slug>`). An Info log line records each freeing of the lock.
-- **Fix reviews also run with the lock freed.** The record names only the fixer, but a fix review is an agent session on the task worktree alone, just as long, so it frees the lock too.
-- **Wake by file event rather than a lower poll ceiling.** PATTERN-daemon-wakeups asks for a file event wherever the substrate offers one, and the PR-Review wait already wakes this way. The thirty-second ceiling stays for the case where the watch cannot open.
-- **Bound.** A fixer change let through before a merge of parent commits and one made after it are each judged against the caps alone, not summed.
+- The lock is not taken only at the very end: the parent moves between the run's merge and its landing, so the run would merge, verify and fix again and could starve while much lands.
+- `Finalize.Call` runs `landUnderLock` in a loop, once per locked pass, and a pass that freed the lock returns to Call to run again.
+  A Finalize with no lock store frees nothing and goes on in the same pass.
+- A pass after the lock is retaken spends from the same fixer attempts, so a second failed verify never grants a fresh cap.
+- The attempt record gains `Judged`, the HEAD at which the fixer's change was last let through.
+  When a later merge brings parent commits onto that HEAD, the entry's Baseline moves to the merged head, so the parent's commits never count as the fixer's change.
+  A fixer change let through before such a merge and one made after it are each judged against the caps alone, so their sum can pass the cap unseen.
+- Finalize's retry after a merge-in-required error also frees the lock if a fixer runs there, and retakes it before it lands.
+- `parentguard.ensure` takes a `front` argument; `ParentAlign` passes false.
 
-## Tests
+## To check by hand
 
-- `internal/parentlock`: a release ends the poll delay after the floor; a front waiter is granted ahead of an older ticket, which stays queued.
-- `internal/landingshed`: the fixer runs with the lock freed and the run merges and verifies again before it lands, with a second failed verify spending the remaining attempt and its change measured from the merge; `ensure` at the front is granted ahead of an earlier ticket.
-- The lock re-check tests released the lock in the fixer's turn, which now runs outside the lock; they release it in the parent-records commit instead, which still sits between the acquire and the re-check.
-
-## Docs
-
-`internal/landingshed` and `internal/parentlock` package docs, `docs/overview.md`'s Finalize line, and PATTERN-daemon-wakeups' entry for the parent lock wait.
+- Not run: a real hub with a red verify, to see the lock freed during the fixer and a queued run landing meanwhile.
+  The tests drive the lock store and the fixer's turn with fakes.
+- Finding: the fix review running with the lock freed is pinned only through the approval path, in `internal/landingshed/finalize_gate_test.go`; check that a rejection and the fixer's turn after it also run with the lock freed.
+- Finding: a fixer turn that ends with no commit leaves `Judged` empty or set in `judgeFixerChange` in `internal/landingshed/finalize.go`; check that the run never reads the next parent merge as the fixer's change.
+- Finding: the rebase of Baseline after a parent merge in `rebaseAfterParentMerge` in `internal/landingshed/finalize.go` is pinned for a no-op merge and a moved head; check the case where the merge brings commits and the fixer then commits again.
