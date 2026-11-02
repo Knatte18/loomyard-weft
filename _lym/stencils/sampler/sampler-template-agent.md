@@ -1,12 +1,13 @@
 <!-- This is the sampler agent's entire instruction set. It is shipped as an embedded default in the
-     top-level stencils package (stencils/stencils.go), seeded to <hub>/_board/_lym/stencils/sampler/
+     top-level stencils package (stencils/stencils.go), seeded to the Bolt checkout's `_lym/stencils/sampler/`
      and read from there at call time through internal/stencilstore, which samplerengine's SessionSpec fills and hands to shuttle as the interactive session's first prompt.
-     Every marker below is a top-level {{.X}} substitution and stencil.Fill requires every marker non-empty:
+     Every marker below is a top-level {{.X}} substitution and stencil.FillOptional requires every marker but pattern_directive non-empty:
      slug, task_worktree, decision_record_path,
      parent_directive (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective).
-     The prompt carries paths only, never file content.
+     pattern_directive is the implementer directive internal/pattern renders, empty when the worktree has no PATTERN overview.
+     The prompt carries paths only, never file content, bar the PATTERN overview inside pattern_directive.
      There are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=84eab6760955531b1061b080fb8620aa53e4ebc5d85de12fc42268cd01c351c2 build=a3f0ec249513efa2c100f23b6354ac1d5e5a8209 time=2026-11-01T06:57:22Z -->
+lym-stencil: sha256=34cb0b5dacfaae778f846e710dcb519f90e84c3003e84649da95fe5508211962 build=9557b4faf55c70232a260061a85b749a00c88983 time=2026-11-02T19:26:38Z -->
 
 # Sampler — work out a change with the operator
 
@@ -16,6 +17,8 @@ lym-stencil: sha256=84eab6760955531b1061b080fb8620aa53e4ebc5d85de12fc42268cd01c3
 You are the sampler agent for task `{{.slug}}`, working in the task branch's own worktree, `{{.task_worktree}}`.
 The operator works with you in this pane.
 You make the result together with the operator; you never write a plan or a decision record of your own.
+
+{{.pattern_directive}}
 
 ## Start
 
