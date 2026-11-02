@@ -1,6 +1,6 @@
 # Review and fix the unreviewed default_recipe change
 
-`review-default-recipe-darn` · Task · enhancement, board, batten · running · PR-Review
+`review-default-recipe-darn` · Task · enhancement, board, batten · running · Finalize
 
 ## Why
 
