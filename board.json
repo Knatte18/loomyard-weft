@@ -804,22 +804,23 @@
     },
     {
       "id": 1007,
-      "handle": "B4",
+      "handle": "T3",
       "slug": "hibernate-wake-leaves-pause",
       "title": "A wake from hibernate leaves the hub-wide pause live",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "hibernate",
         "creel"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "After waking, the hibernate request read done but its hub pause stayed live and held every network call; its wake notice failed on a wrong receiver and an oversized line",
       "body": "## Seen (orch, 2026-11-02)\n\nNeve hibernated through `lym hibernate request` on 2026-11-01 at 21:03 and woke on 2026-11-02 at 19:02.\nAfter the wake the request read phase `done`, yet `_bolt/.lym/pause/record.json` still held the hub-wide `hibernate` pause as live.\n`lym hibernate cancel` did nothing, since the request was done, and `lym adopt root` sat with every network call held (\"held by a hub-wide pause since 2026-11-01T21:03:00\"), which looked like a hang to the operator.\nThe watcher's wake notice failed twice (`_bolt/.lym/hibernate/watch.log`): first the receiver `ly:orch` does not exist, then the notice line was 105 KB, over creel's 8 KB limit for one hook delivery.\n\n## Workaround\n\nThe orch ran `lym tender resume`, which lifted the pause, and adopt went on.\n\n## Expected\n\n- The wake lifts the pause it added before anything else, and a failed notice never keeps it.\n- The wake notice reaches the orch by its real creel name and stays a short line, with any long detail in a file it names.\n- `lym hibernate cancel` on a done request still lifts a pause the hibernate left live.\n",
       "created": "2026-11-02T18:26:15Z",
-      "revised": "2026-11-02T18:26:15Z"
+      "revised": "2026-11-02T18:42:54Z"
     },
     {
       "id": 1008,
@@ -852,13 +853,13 @@
         "landing"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## Seen (orch, 2026-11-02)\n\nRoot moved back to Neve after a day of landings on OSL-1046.\nThe orch brought Neve's `loomyard` `main` level with origin and ran `lym adopt root`; neither step deploys, so `/home/knatte/go/bin/lym` stayed the binary built on 2026-11-01 from `87553450ec14`.\nThe weft and Bolt checkouts carry the new board stencils, while the binary is the old one.\nThe two darn runs released next, `plan-split-tune` and `landing-fixer-base-skills`, both failed at Darn-Write: the board stencil `darn-template-write` needs the `subagent_model` marker that `2d319fe5` added, and the old binary never fills it (\"stencil: unfilled top-level marker(s): subagent_model\").\nThe adopt check went green on the new tree, since it builds its own test binaries, so nothing flagged the stale install.\n\n## Workaround\n\nA run that landed on Neve right after the adopt ran the hub's deploy at its Land row, which installed a binary from the new `main`; the orch then resumed both darn runs at Darn-Write.\nHad no run landed, the operator would have had to run `update-plugins.sh` by hand.\n\n## Expected\n\n- `lym adopt root` deploys when the adopted prime's `main` is ahead of the commit the installed binary was built from, running the hub's landing `deploy` command, the one `landing.yaml` names, before it lets any run go on.\n- Short of that, adopt refuses to finish, or at least warns in its summary, when the installed binary predates the prime's `main`.\n",
-      "status": "draft",
       "created": "2026-11-02T18:36:35Z",
-      "revised": "2026-11-02T18:36:35Z"
+      "revised": "2026-11-02T18:42:53Z"
     }
   ],
   "prime_owner": "neve",

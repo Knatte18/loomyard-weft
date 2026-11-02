@@ -1,6 +1,6 @@
 # lym adopt root leaves the installed lym older than the adopted main
 
-`adopt-root-skips-deploy` · Task · bug, deploy, fabric, landing · draft
+`adopt-root-skips-deploy` · Task · bug, deploy, fabric, landing
 
 ## Seen (orch, 2026-11-02)
 
