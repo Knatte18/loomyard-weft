@@ -1,0 +1,893 @@
+diff --git a/contracts/specs/loom-parts-spec.md b/contracts/specs/loom-parts-spec.md
+index c011f071..ab77b14e 100644
+--- a/contracts/specs/loom-parts-spec.md
++++ b/contracts/specs/loom-parts-spec.md
+@@ -55,6 +55,8 @@ A field is a top-level bullet `- <Label>: <value>`.
+ `Decisions`, `Needed by` and `Depends on` hold comma-separated values.
+ `Takes in`, `Delivers` and `Needs` hold prose that may continue on indented lines.
+ `Exports`, `Area` and `Uses` hold indented sub-bullets of one backticked ref each.
++`Exports` holds only what the cards create: a `plan:` handle or a file path the worktree does not hold yet.
++An existing member or file is never an export, whether the cards keep, re-sign or delete it.
+ A part requires `Decisions`, `Takes in`, `Delivers` and `Area`; a shared spot requires `Needed by` and `Needs`.
+ Every other field is optional and is left out when empty, never written as `none`.
+ Lines inside fenced blocks are read as text.
+@@ -89,10 +91,13 @@ Each finding names the part, or the shared spot's path, and ends in its way forw
+ | `spot-export-order` | a spot whose `Uses` holds an export of a part that comes after the first part its `Needed by` names, since no card position satisfies both; an export of that first part itself, or of an earlier part, passes | reorder the parts or move the dependency into a part |
+ | `export-claimed-twice` | a ref two parts, two spots, or a part and a spot both export | keep it on one of them |
+ | `spot-in-area` | a spot path a part's `Area` lists as a file entry of its own; a spot inside a package directory an area names passes | drop it from the area |
++| `export-existing` | a part's or spot's export that is no `plan:` handle and names a member (it holds `#`) or a path the worktree already holds | spell a new member as a `plan:` handle, and drop an existing member or file, saying in `Delivers` when the cards re-sign or delete it |
++| `handle-malformed` | a `plan:` export with no unit, or with a file as its unit, judged as a part's Create declaration under the plan format's default language | spell it `plan:<package directory>#<Name>` |
++| `fabric-vocabulary-name` | a `plan:` export whose member `loom-plan-checks-spec.md`'s check of that name refuses | rename the member |
+ | `decision-unnamed` | a decision id of the record no part or spot names | name it in the part or spot that carries it |
+ | `decision-unknown` | a named id the record does not hold | drop or correct it |
+ 
+-`Validate` reads the parts file, parses it, reads the decision record and runs the checks over the record's decision ids.
++`Validate` reads the parts file, parses it, reads the decision record and runs the checks over the record's decision ids and the worktree's files.
+ An absent record is not a finding: it is Discussion-Write's committed output, which the `Parts-Write` agent cannot write, so the gate ends at once with an error naming `lym loom validate-discussion` for the parent.
+ 
+ ## Part plans
+@@ -107,7 +112,7 @@ An ordinary plan has no scope.
+ - `path-missing` counts a listed path as satisfied, as a `Create` target is, and `glyph-not-found` leaves out a target path the part's external exports hold.
+ - `caller-uncovered` is not reported, since its verdict rests on cards outside the part; the joined plan's gate checks it.
+ - `part-spot-target` refuses a card's target, never a `Uses` entry, that is a shared spot's path, since the chair writes the spots' cards.
+-- `part-export-missing` refuses an export of the part's contract that no card of the part creates, re-signs or deletes.
++- `part-export-missing` refuses an export of the part's contract that no card of the part creates.
+ 
+ ### Joining the parts' plans
+ 
+@@ -116,8 +121,8 @@ It parses each part's plan in the parts file's order and refuses, before writing
+ 
+ - a part's plan does not parse;
+ - two parts' overviews differ in `language:` or `root:`;
+-- a part's export is not met: no card creates it (a `Create` target or `Rename` destination), re-signs it or deletes it.
+-  A path export is met by its disk path, a glyph exactly, and a `plan:` handle exactly or by a declared handle that reads to the same unit and name;
++- a part's export is not met: no card creates it (a `Create` target or `Rename` destination).
++  A path export is met by its disk path, and a `plan:` handle exactly or by a declared handle that reads to the same unit and name;
+ - a `plan:` handle or a new file path is created by cards of two parts, exported or not.
+ 
+ Otherwise it numbers the cards from 1 in part order.
+diff --git a/contracts/specs/loom-plan-checks-spec.md b/contracts/specs/loom-plan-checks-spec.md
+index 44143d57..e35f166f 100644
+--- a/contracts/specs/loom-plan-checks-spec.md
++++ b/contracts/specs/loom-plan-checks-spec.md
+@@ -181,7 +181,7 @@ The other PATTERN checks are *loomshed*'s, and run only in a worktree with a `PA
+   Way forward: restore the card file; a fix to its work is a follow-up card after the last begun batch, with its Card Index line.
+ - `part-spot-target` — under a part scope: a card's target is a shared spot's path.
+   Way forward: drop the target and say in the card's `**Intent:**` what it needs from the spot.
+-- `part-export-missing` *(loomshed, `--part` only)* — an export of the part's contract that no card of the part creates, re-signs or deletes.
+-  Way forward: create the export on a card of the part, a `plan:` export declared on a `**Create:**` bullet with the parts file's spelling, or re-sign or delete it; when the part's area cannot meet it, message the chair naming the contract line.
++- `part-export-missing` *(loomshed, `--part` only)* — an export of the part's contract that no card of the part creates.
++  Way forward: create the export on a card of the part, a `plan:` export declared on a `**Create:**` bullet with the parts file's spelling; when the part's area cannot meet it, message the chair naming the contract line.
+ 
+ `loom-parts-spec.md` defines the part scope and the join.
+diff --git a/contracts/stencils/loom/loom-template-part-writer.md b/contracts/stencils/loom/loom-template-part-writer.md
+index 6a105b7d..dc5664b3 100644
+--- a/contracts/stencils/loom/loom-template-part-writer.md
++++ b/contracts/stencils/loom/loom-template-part-writer.md
+@@ -40,6 +40,7 @@ Create `{{.plan_dir}}` if it does not exist, and write your part there as a plan
+ 
+ - Write cards for your own part only, and only into `{{.plan_dir}}`: never edit another part's cards, the parts file or the joined plan.
+ - Create every export your contract names, spelled exactly as the parts file spells it; a `plan:` export is declared on a `**Create:**` bullet with that same handle.
++  Every export is new: an existing member your cards re-sign or delete is in your contract's `Delivers`, never its exports, and a later part uses it by the spelling `lym quarry` gives it.
+ - Use another part's or a shared spot's export by the name the parts file gives it, and only an export of a part you depend on or of a shared spot that names your part; the part check counts those as declared.
+ - Leave every shared spot to the chair: no card of yours targets a shared spot's path, and a card that needs something from one says what in its `**Intent:**`.
+ - Leave `## PATTERN changes` out of your overview, since the chair writes it into the joined plan.
+@@ -56,7 +57,7 @@ Create `{{.plan_dir}}` if it does not exist, and write your part there as a plan
+ 
+ Write `{{.overview_path}}` only after every card file of your part exists.
+ Then run `lym loom validate-plan --part {{.part_name}}` and fix every finding until it passes.
+-It checks your part as the plan gate checks a plan, counts the exports of the parts you depend on and of the shared spots that name your part as declared, refuses a card that targets a shared spot, and refuses an export of your contract that no card of yours creates, re-signs or deletes.
++It checks your part as the plan gate checks a plan, counts the exports of the parts you depend on and of the shared spots that name your part as declared, refuses a card that targets a shared spot, and refuses an export of your contract that no card of yours creates.
+ Your output existing with that check passed is what tells the chair your part is ready.
+ 
+ One finding is not yours to fix in your cards: a refusal saying the parts file is gone or malformed.
+diff --git a/contracts/stencils/loom/loom-template-parts.md b/contracts/stencils/loom/loom-template-parts.md
+index cae17bde..321d1822 100644
+--- a/contracts/stencils/loom/loom-template-parts.md
++++ b/contracts/stencils/loom/loom-template-parts.md
+@@ -39,7 +39,18 @@ When you cannot split the task without reading more, read no further: write a pa
+ - Name every decision id of the record (`D1`, `D2`, …) in some part or shared spot, and no id the record does not hold.
+ - A file no single part owns, such as a registry, a config template, `PATTERN.md` or a shared doc, is a shared spot: no part's cards touch it, and the chair writes its cards.
+ 
+-## Step 4 — Write the parts file
++## Step 4 — Name each export by the rules that govern it
++
++A part's writer must create every export exactly as you spell it and can never change the parts file, so a name a rule of this repository forbids leaves the part unable to pass its check.
++Before you write the exports, settle each name this way:
++
++- Find the PATTERN entries in this prompt that govern the package the export sits in or the kind of name it is, such as the constructor a CLI package must expose or a word the fabric vocabulary bars from a package, and read the background file each of those entries links to.
++  Spell the export as those entries require.
++- Follow the names the package already uses, from the `lym quarry glyphs --text <dir>` output your depth gave you.
++- Export only what the part's cards create: a new member as a `plan:` handle, a new file as its path.
++  An existing member or file is never an export, whether the part keeps it, re-signs it or deletes it: a later part uses it by the spelling `lym quarry` gives it, and the part's `Delivers` says when its cards re-sign or delete it.
++
++## Step 5 — Write the parts file
+ 
+ Create `{{.parts_dir}}` if it does not exist, and write `{{.parts_path}}`, and nothing else under `{{.parts_dir}}`.
+ `{{.specs_dir}}/loom/loom-parts-spec.md` is the format's full contract; the subset below is what you write.
+@@ -55,7 +66,7 @@ Create `{{.parts_dir}}` if it does not exist, and write `{{.parts_path}}`, and n
+ 
+ - Decisions: D1, D4
+ - Takes in: <what the part reads from the decision record, and from each earlier part it depends on>
+-- Delivers: <the behaviour the part's cards deliver>
++- Delivers: <the behaviour the part's cards deliver, naming each existing member they re-sign or delete>
+ - Exports:
+   - `plan:internal/x#NewThing`
+   - `internal/x/newfile.go`
+@@ -79,7 +90,7 @@ Create `{{.parts_dir}}` if it does not exist, and write `{{.parts_path}}`, and n
+ - One `## Part: <name>` section per part, each after every part it depends on, then one `## Shared spot: `<path>`` section per shared spot.
+ - A part name is lower case, starts with a letter and holds only letters, digits and `-`; it names the part's directory and its writer, so it never begins with `archive-`, and no two parts share one.
+ - A part needs `Decisions`, `Takes in`, `Delivers` and `Area`; leave `Exports` and `Depends on` out when the part has none, never writing `none`.
+-- `Exports` lists, one backticked ref per line, what another part or a shared spot uses from this part: each `plan:` handle and new file path the part's cards create, and each existing member they re-sign or delete, spelled as `lym quarry` gives it.
++- `Exports` lists, one backticked ref per line, what another part or a shared spot uses from what this part's cards create: each `plan:` handle and new file path, named as Step 4 settled.
+   A `plan:` handle is `plan:<package directory>#<Name>`, and the part's writer declares it with exactly that spelling.
+ - `Area` lists the packages, as directory paths, and the files the part's writer may read and change.
+   A shared spot's path is never a file entry of a part's area, though it may sit inside a package an area names.
+@@ -87,9 +98,10 @@ Create `{{.parts_dir}}` if it does not exist, and write `{{.parts_path}}`, and n
+   `Uses` lists the part exports the spot's cards use, each from the first part `Needed by` names or an earlier one.
+ - No ref is exported twice, by two parts, two shared spots or one of each.
+ 
+-## Step 5 — Self-check before ending your turn
++## Step 6 — Self-check before ending your turn
+ 
+ Run `lym loom validate-parts`, which takes no arguments, and fix every finding it reports; run it again until it passes.
++Besides the format, it refuses an export that already exists and runs on each `plan:` export the name checks its writer's card will face.
+ Your turn ends once the parts file passes.
+ 
+ ## Never use `AskUserQuestion`
+diff --git a/docs/research/plan-split-tune-2026-11-02.md b/docs/research/plan-split-tune-2026-11-02.md
+new file mode 100644
+index 00000000..79cffe53
+--- /dev/null
++++ b/docs/research/plan-split-tune-2026-11-02.md
+@@ -0,0 +1,49 @@
++# Plan split tune: round 1 changes, replays pending
++
++2026-11-02, hub `loomyard-LYMHUB`, task `plan-split-tune`.
++The report records the round-1 changes to the plan-split writers and why each was made.
++It holds no replay results: those are pending the follow-up task `plan-split-replay`.
++
++## Question
++
++Can the instructions and gates of the plan-split writers (Parts-Write, the part writers and the joining chair) be tuned so a split plan joins and passes its gates with no hand edit of `parts.md`?
++The starting point is the defects `plan-split-bench-2026-11-01/README.md` lists.
++
++## Why the loop stopped after the changes
++
++Stencils are read only from the hub-wide Bolt copy, and the production install takes only `main`.
++So no replay can run this branch's `lym` and stencils before the branch lands.
++The parent recorded the split in the decision record: this run lands round 1's changes with no replay and no scratch worktree, and `plan-split-replay` runs the replays on the installed `lym` afterwards, tuning further within the cap left over.
++
++## Defects and the change for each
++
++| bench defect | cause | round-1 change |
++|---|---|---|
++| `wv` hand edit 1: `heddlecli#NewCommand` exported where `PATTERN-cli-cobra` requires `Command()` | Parts-Write had the PATTERN index in its prompt, but no step had it check an export's name against the entries for that package | A new Parts-Write step: before writing exports, read the PATTERN entries that govern each export's package or kind of name, read their background files, and spell the export as they require |
++| `wv` hand edit 2: `WarpSeam`, `SeedWarpExclude`, `InstallWarpSeam` exported, refused later by `validate-plan --part` as `fabric-vocabulary-name` | The parts gate ran no name check, so the defect surfaced only at the part gate, where the writer cannot change `parts.md` | The parts gate runs `fabric-vocabulary-name` and `handle-malformed` on every `plan:` export, as a part's card declaring it would face them |
++| `rv` part gate: `part-export-missing` on `landingshed#DescribeTable`, an export whose signature the part keeps, through three attempts | `Exports` admitted existing members ("each existing member they re-sign or delete"), and nothing at Parts-Write could tell a kept member from a re-signed one | An export is only what the cards create, a `plan:` handle or a new file path; the parts gate refuses `export-existing` for any other ref that names a member or a path the worktree holds, and `ExportMet` counts only a Create target or Rename destination |
++| `wv` review F3: a side token in a heddle signature | a card-level naming defect no gate refuses | No change: the name checks above apply to declared names, not signature bodies |
++| `rv` chair: wait failed on "reed did not track strand" | reed strand loss, not a writer result | No change: out of this task's scope |
++
++## Design notes
++
++- An existing member a part re-signs or deletes is now named in its `Delivers`, not its `Exports`.
++  A later part uses it by the spelling `lym quarry` gives it, which the part check already resolves from the code.
++  The cost is that a contract no longer pins a re-sign as a checked export; the joined plan's gate and Plan-Review still see the cards.
++- The export name checks judge a `plan:` handle under the plan format's default language, which a part's plan keeps unless it names another, since a parts file carries no language.
++- No gate check enforces `PATTERN-cli-cobra`'s constructor name; that defect rests on the new Parts-Write step alone.
++  The replays are what will show whether the step is enough.
++
++## Pending: replays
++
++`plan-split-replay` runs the loop this task planned, on the installed `lym` once this lands:
++
++- Inputs: `warp-visibility` (code `d407ef69`, record weft `576c4b3a31`) and `run-verbs-shared` (code `52b69848`, record weft `b8a86e5c59`), as in the bench.
++- One round: replay Parts-Write and Parts-Plan-Write on both inputs with `plan_split` on, and record per input whether the parts joined, which gates refused, and every hand edit needed.
++- At most 3 rounds, so at most 6 split writings, and one Plan-Review round per input on the last round's plans only.
++- The loop ends early at the first round where both inputs join and pass their gates with no hand edit.
++
++| round | input | joined | gates that refused | hand edits | cost |
++|---|---|---|---|---|---|
++| 1 | `warp-visibility` | pending | pending | pending | pending |
++| 1 | `run-verbs-shared` | pending | pending | pending | pending |
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 0d476e05..6300c6a5 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -158,7 +158,7 @@
+ // It runs alone: combined with any other mode flag it is refused before the parts file is read.
+ // It is refused on a recipe with no Parts-Plan-Write row, read from the recipe's rows.
+ //
+-// `lym loom validate-parts` runs `partsparser.Validate`, the check the parts gate runs, over the parts file with the most parts `parts_max` allows; it runs on the lightweight wiring, reads the decision record, and changes nothing.
++// `lym loom validate-parts` runs `partsparser.Validate`, the check the parts gate runs, over the parts file with the most parts `parts_max` allows; it runs on the lightweight wiring, reads the decision record and the worktree, and changes nothing.
+ //
+ // `lym loom join-parts` is the chair's one call that joins the parts' plans into the plan directory: it re-checks every part with `loomshed.ValidatePart` and writes the joined plan through `loomshed.JoinParts`.
+ // It runs on the full wiring and refuses unless the run's status is at the running Parts-Plan-Write row and the caller's `LYM_STRAND_NAME` is the strand name the seat engine gives that row's chair, so a halted or later run, a part writer, a Plan-Burler-Fix fixer and Webster cannot reach it.
+diff --git a/internal/loomcli/validate.go b/internal/loomcli/validate.go
+index 4726eed0..0ce0a875 100644
+--- a/internal/loomcli/validate.go
++++ b/internal/loomcli/validate.go
+@@ -402,7 +402,9 @@ func (c *loomCLI) validatePartsCmd() *cobra.Command {
+ 		Long: `validate-parts runs partsparser.Validate against the current worktree's
+ parts file -- the identical check the Parts-Write row's own gate runs: the
+ file's format, the part and shared-spot rules, the decision ids each part
+-names against the decision record, and the most parts parts_max allows -- and
++names against the decision record, the most parts parts_max allows, and that
++each export is new to the worktree, a plan: handle passing the name checks a
++part's plan runs on it -- and
+ reports the result as one JSON envelope. It takes no arguments and no flags,
+ and it changes nothing. It sits beside validate-plan, whose --part checks one
+ part's plan.
+@@ -421,7 +423,7 @@ Example:
+ 				clihelp.SetExit(cmd.Context(), output.Err(out, "loom: validate-parts: "+err.Error()))
+ 				return nil
+ 			}
+-			findings, err := partsparser.Validate(c.env.AnchorPath, c.env.DecisionRecordPath, tapestry.PartsMax)
++			findings, err := partsparser.Validate(c.env.AnchorPath, c.env.WorktreeRoot, c.env.DecisionRecordPath, tapestry.PartsMax)
+ 			if err != nil {
+ 				clihelp.SetExit(cmd.Context(), output.Err(out, "loom: validate-parts: "+err.Error()))
+ 				return nil
+diff --git a/internal/loomcli/validateparts_test.go b/internal/loomcli/validateparts_test.go
+index 26b6469f..f4ea9f14 100644
+--- a/internal/loomcli/validateparts_test.go
++++ b/internal/loomcli/validateparts_test.go
+@@ -119,6 +119,11 @@ func TestValidatePartsCmd(t *testing.T) {
+ 	}{
+ 		{name: "AValidPartsFilePasses", partsText: splitPartsText, partsMax: "6", wantExit: 0, wantInBody: "parts_path"},
+ 		{name: "ACheckFindingFails", partsText: splitPartsText, partsMax: "1", wantExit: 1, wantErrMsg: "loom: parts file is not yet valid", wantInBody: "parts-over-max: "},
++		{
++			name:      "AnExportTheWorktreeHoldsFails",
++			partsText: strings.Replace(splitPartsText, "  - `plan:internal/x#NewThing`\n", "  - `plan:internal/x#NewThing`\n  - `internal/x/x.go`\n", 1),
++			partsMax:  "6", wantExit: 1, wantErrMsg: "loom: parts file is not yet valid", wantInBody: "export-existing",
++		},
+ 		{name: "AnInvalidPartsMaxIsTheConfigError", partsText: splitPartsText, partsMax: "0", wantExit: 1, wantErrMsg: "parts_max"},
+ 	}
+ 	for _, tt := range tests {
+diff --git a/internal/loomshed/partcheck.go b/internal/loomshed/partcheck.go
+index 2ba29bf8..dba596b5 100644
+--- a/internal/loomshed/partcheck.go
++++ b/internal/loomshed/partcheck.go
+@@ -23,11 +23,11 @@ var ErrPartUnknown = errors.New("loomshed: no such part")
+ const partExportMissingCheck = "part-export-missing"
+ 
+ // NewPartsGate returns the Parts-Write row's `parts` gate closure.
+-// It runs partsparser.Validate over the parts file under anchorPath, the decision record at recordPath and the most parts max allows, and maps no finding to a pass and findings to a failed gate carrying one `check[/part]: detail` line each.
++// It runs partsparser.Validate over the parts file under anchorPath, the files under worktreeRoot, the decision record at recordPath and the most parts max allows, and maps no finding to a pass and findings to a failed gate carrying one `check[/part]: detail` line each.
+ // A returned error is the gate's error.
+-func NewPartsGate(anchorPath, recordPath string, max int) shuttleengine.Gate {
++func NewPartsGate(anchorPath, worktreeRoot, recordPath string, max int) shuttleengine.Gate {
+ 	return func() (shuttleengine.GateResult, error) {
+-		findings, err := partsparser.Validate(anchorPath, recordPath, max)
++		findings, err := partsparser.Validate(anchorPath, worktreeRoot, recordPath, max)
+ 		if err != nil {
+ 			return shuttleengine.GateResult{}, err
+ 		}
+@@ -90,7 +90,7 @@ func partScope(parts *partsparser.Parts, part string) *planparser.PartScope {
+ 	return scope
+ }
+ 
+-// checkPartPlan returns the findings of one part's parsed plan: the index's format findings under the part scope, the context checks without the decision record, and one blocking part-export-missing per contract export no card meets.
++// checkPartPlan returns the findings of one part's parsed plan: the index's format findings under the part scope, the context checks without the decision record, and one blocking part-export-missing per contract export no card creates.
+ // The decision record is left out because pattern-changes-mismatch and pattern-line-unprescribed rest on the joined overview, which the part has none of; the joined plan's gate runs them.
+ func checkPartPlan(plan *planparser.Plan, parts *partsparser.Parts, contract partsparser.Part, worktreeRoot string, index planindex.Index, pc PlanContext) ([]planindex.Finding, error) {
+ 	plan.Part = partScope(parts, contract.Name)
+@@ -110,7 +110,7 @@ func checkPartPlan(plan *planparser.Plan, parts *partsparser.Parts, contract par
+ 		}
+ 		findings = append(findings, planindex.Finding{
+ 			Check:    partExportMissingCheck,
+-			Detail:   fmt.Sprintf("part %q's contract exports %q, and no card of the part creates, re-signs or deletes it; way forward: create the export on a card of the part, declaring a `plan:` export on a **Create:** bullet with the parts file's spelling, or re-sign or delete it on a card; when the part's area cannot meet it, message the chair naming the contract line", contract.Name, export),
++			Detail:   fmt.Sprintf("part %q's contract exports %q, and no card of the part creates it; way forward: create the export on a card of the part, declaring a `plan:` export on a **Create:** bullet with the parts file's spelling; when the part's area cannot meet it, message the chair naming the contract line", contract.Name, export),
+ 			Severity: planindex.SeverityBlocking,
+ 		})
+ 	}
+@@ -118,7 +118,7 @@ func checkPartPlan(plan *planparser.Plan, parts *partsparser.Parts, contract par
+ }
+ 
+ // ValidatePart is the part check shared by `lym loom validate-plan --part`, the part plan gate and a part writer's Accept.
+-// It reads the part's contract from the parts file under anchorPath, parses the part's plan directory with a part scope and returns the findings of the format check over worktreeRoot, the context checks without the decision record, and a blocking part-export-missing finding for each export of the contract the plan does not meet.
++// It reads the part's contract from the parts file under anchorPath, parses the part's plan directory with a part scope and returns the findings of the format check over worktreeRoot, the context checks without the decision record, and a blocking part-export-missing finding for each export of the contract no card creates.
+ // An absent or malformed parts file, a part the file does not hold (an error wrapping ErrPartUnknown) and a part directory that cannot be read as a plan are errors, each naming its way forward.
+ func ValidatePart(anchorPath, worktreeRoot, part string, index planindex.Index, pc PlanContext) ([]planindex.Finding, error) {
+ 	parts, err := readParts(anchorPath)
+diff --git a/internal/loomshed/partcheck_test.go b/internal/loomshed/partcheck_test.go
+index ab8bb686..3f0158d1 100644
+--- a/internal/loomshed/partcheck_test.go
++++ b/internal/loomshed/partcheck_test.go
+@@ -144,7 +144,7 @@ func TestNewPartsGate(t *testing.T) {
+ 		t.Parallel()
+ 		anchorPath := t.TempDir()
+ 		writeSplit(t, anchorPath, splitPartsFile("plan:internal/x#NewThing"))
+-		result, err := NewPartsGate(anchorPath, recordPath, 6)()
++		result, err := NewPartsGate(anchorPath, t.TempDir(), recordPath, 6)()
+ 		if err != nil || !result.Passed {
+ 			t.Errorf("gate() = %+v, %v; want a pass", result, err)
+ 		}
+@@ -154,7 +154,7 @@ func TestNewPartsGate(t *testing.T) {
+ 		t.Parallel()
+ 		anchorPath := t.TempDir()
+ 		writeSplit(t, anchorPath, splitPartsFile("plan:internal/x#NewThing"))
+-		result, err := NewPartsGate(anchorPath, recordPath, 1)()
++		result, err := NewPartsGate(anchorPath, t.TempDir(), recordPath, 1)()
+ 		if err != nil || result.Passed {
+ 			t.Fatalf("gate() = %+v, %v; want a failed gate", result, err)
+ 		}
+@@ -163,11 +163,27 @@ func TestNewPartsGate(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("an export the worktree root holds fails the gate", func(t *testing.T) {
++		t.Parallel()
++		anchorPath, worktreeRoot := t.TempDir(), t.TempDir()
++		if err := os.MkdirAll(filepath.Join(worktreeRoot, "internal", "x"), 0o755); err != nil {
++			t.Fatalf("MkdirAll() = %v; want nil", err)
++		}
++		if err := os.WriteFile(filepath.Join(worktreeRoot, "internal", "x", "newfile.go"), []byte("package x\n"), 0o644); err != nil {
++			t.Fatalf("WriteFile() = %v; want nil", err)
++		}
++		writeSplit(t, anchorPath, splitPartsFile("plan:internal/x#NewThing", "internal/x/newfile.go"))
++		result, err := NewPartsGate(anchorPath, worktreeRoot, recordPath, 6)()
++		if err != nil || result.Passed || !strings.Contains(result.Findings, "export-existing") {
++			t.Errorf("gate() = %+v, %v; want a failed gate with an export-existing finding", result, err)
++		}
++	})
++
+ 	t.Run("an unreadable record is the gate's error", func(t *testing.T) {
+ 		t.Parallel()
+ 		anchorPath := t.TempDir()
+ 		writeSplit(t, anchorPath, splitPartsFile())
+-		if _, err := NewPartsGate(anchorPath, filepath.Join(t.TempDir(), "absent.md"), 6)(); err == nil {
++		if _, err := NewPartsGate(anchorPath, t.TempDir(), filepath.Join(t.TempDir(), "absent.md"), 6)(); err == nil {
+ 			t.Errorf("gate() error = nil; want the record's read error")
+ 		}
+ 	})
+@@ -207,9 +223,13 @@ func TestValidatePart(t *testing.T) {
+ 			cards: map[string][]plankit.Card{"core": {splitCard(1, "core", "Create", "plan:internal/x#NewThing` -> `func NewThing()")}},
+ 		},
+ 		{
+-			name: "export a card re-signs", parts: splitPartsFile("internal/x#Existing"), part: "core",
++			name: "export a card only re-signs", parts: splitPartsFile("internal/x#Existing"), part: "core", wantCheck: "part-export-missing",
+ 			cards: map[string][]plankit.Card{"core": {splitCard(1, "core", "Edit", "internal/x#Existing` -> `func Existing(a int)")}},
+ 		},
++		{
++			name: "export a card only deletes", parts: splitPartsFile("internal/x/x.go"), part: "core", wantCheck: "part-export-missing",
++			cards: map[string][]plankit.Card{"core": {splitCard(1, "core", "Delete", "internal/x/x.go")}},
++		},
+ 		{
+ 			name: "handle export spelled without the owner chain a card declares with it", parts: splitPartsFile("plan:internal/d#Foo"), part: "core",
+ 			cards: map[string][]plankit.Card{"core": {splitCard(1, "core", "Create", "plan:internal/d#T.Foo` -> `func (t *T) Foo()")}},
+diff --git a/internal/partsparser/check.go b/internal/partsparser/check.go
+index 02469cda..56387829 100644
+--- a/internal/partsparser/check.go
++++ b/internal/partsparser/check.go
+@@ -7,10 +7,12 @@ import (
+ 	"fmt"
+ 	"io/fs"
+ 	"os"
++	"path/filepath"
+ 	"slices"
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/discussionparser"
++	"github.com/Knatte18/loomyard/internal/planparser"
+ 	"github.com/Knatte18/loomyard/internal/seatengine"
+ )
+ 
+@@ -35,6 +37,7 @@ const (
+ 	checkSpotExportOrder     = "spot-export-order"
+ 	checkExportClaimedTwice  = "export-claimed-twice"
+ 	checkSpotInArea          = "spot-in-area"
++	checkExportExisting      = "export-existing"
+ 	checkDecisionUnnamed     = "decision-unnamed"
+ 	checkDecisionUnknown     = "decision-unknown"
+ )
+@@ -46,7 +49,8 @@ type decisionHolder struct {
+ }
+ 
+ // Check judges parts against the record's decision ids and the most parts max allows, and returns one Finding per violation.
+-func Check(parts *Parts, decisionIDs []string, max int) []Finding {
++// exists reports whether a repository-relative path names a file or directory in the worktree, so an export of an existing file is refused.
++func Check(parts *Parts, decisionIDs []string, max int, exists func(path string) bool) []Finding {
+ 	var findings []Finding
+ 	add := func(check, part, detail string) {
+ 		findings = append(findings, Finding{Check: check, Part: part, Detail: detail})
+@@ -145,6 +149,13 @@ func Check(parts *Parts, decisionIDs []string, max int) []Finding {
+ 		}
+ 	}
+ 
++	for _, part := range parts.Parts {
++		findings = append(findings, checkExports(fmt.Sprintf("part %q", part.Name), part.Name, part.Exports, exists)...)
++	}
++	for _, spot := range parts.Spots {
++		findings = append(findings, checkExports(fmt.Sprintf("shared spot %q", spot.Path), spot.Path, spot.Exports, exists)...)
++	}
++
+ 	named := map[string]bool{}
+ 	var holders []decisionHolder
+ 	for _, part := range parts.Parts {
+@@ -173,10 +184,34 @@ func Check(parts *Parts, decisionIDs []string, max int) []Finding {
+ 	return findings
+ }
+ 
+-// Validate is the one parts check the parts gate and `lym loom validate-parts` run: it reads the parts file under anchorPath, parses it, reads the decision record at recordPath and checks the parts against its decision ids and the most parts max allows.
++// checkExports returns the findings on the exports of one part or shared spot, owner naming it in a Detail and label in a Finding's Part.
++// An export is what the cards create, so one that is no `plan:` handle must be a file path that does not exist yet.
++// A `plan:` handle must pass the name checks its declaring card will face.
++func checkExports(owner, label string, exports []string, exists func(string) bool) []Finding {
++	var findings []Finding
++	for _, export := range exports {
++		if planparser.IsHandleRef(export) {
++			for _, finding := range planparser.CheckExportName(export) {
++				findings = append(findings, Finding{Check: finding.Check, Part: label, Detail: owner + ": " + finding.Detail})
++			}
++			continue
++		}
++		if strings.Contains(export, "#") || exists(export) {
++			findings = append(findings, Finding{
++				Check: checkExportExisting,
++				Part:  label,
++				Detail: fmt.Sprintf("%s exports %q, which is no `plan:` handle and names an existing member or file, and Exports lists only what the cards create, a `plan:` handle or a new file path; "+
++					"way forward: spell a new member as a `plan:` handle, and drop an existing member or file, which a later part uses by the spelling lym quarry gives it, saying in Delivers when the cards re-sign or delete it", owner, export),
++			})
++		}
++	}
++	return findings
++}
++
++// Validate is the one parts check the parts gate and `lym loom validate-parts` run: it reads the parts file under anchorPath, parses it, reads the decision record at recordPath and checks the parts against its decision ids, the most parts max allows and the files under worktreeRoot.
+ // An absent parts file is a parts-missing finding and a file Parse refuses is a parts-malformed finding.
+ // Any read error, an absent record included, is returned: the record is Discussion-Write's committed output, which the Parts-Write agent cannot write.
+-func Validate(anchorPath, recordPath string, max int) ([]Finding, error) {
++func Validate(anchorPath, worktreeRoot, recordPath string, max int) ([]Finding, error) {
+ 	record, err := os.ReadFile(recordPath)
+ 	if err != nil {
+ 		if errors.Is(err, fs.ErrNotExist) {
+@@ -195,5 +230,9 @@ func Validate(anchorPath, recordPath string, max int) ([]Finding, error) {
+ 	if err != nil {
+ 		return []Finding{{Check: checkPartsMalformed, Detail: err.Error()}}, nil
+ 	}
+-	return Check(parts, discussionparser.DecisionIDs(record), max), nil
++	exists := func(path string) bool {
++		_, err := os.Stat(filepath.Join(worktreeRoot, filepath.FromSlash(path)))
++		return err == nil
++	}
++	return Check(parts, discussionparser.DecisionIDs(record), max, exists), nil
+ }
+diff --git a/internal/partsparser/check_test.go b/internal/partsparser/check_test.go
+index 278bfd57..a528aa0e 100644
+--- a/internal/partsparser/check_test.go
++++ b/internal/partsparser/check_test.go
+@@ -9,11 +9,15 @@ import (
+ 	"strings"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/fabricvocab"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+ var validDecisionIDs = []string{"D1", "D2", "D3"}
+ 
++// existingFile is the one path TestCheck's worktree holds.
++const existingFile = "internal/x/existing.go"
++
+ func checkNames(findings []Finding) []string {
+ 	names := make([]string, len(findings))
+ 	for i, finding := range findings {
+@@ -26,6 +30,7 @@ func TestCheck(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
++	side := fabricvocab.SideTokens()[0]
+ 	tests := []struct {
+ 		name    string
+ 		mutate  func(*Parts)
+@@ -55,6 +60,9 @@ func TestCheck(t *testing.T) {
+ 		{name: "export-claimed-twice, by two parts", mutate: func(p *Parts) { p.Parts[1].Exports = []string{"internal/x/newfile.go"} }, ids: validDecisionIDs, max: 6, want: []string{"export-claimed-twice"}, wantIn: "keep the export on one of them"},
+ 		{name: "export-claimed-twice, by a part and a spot", mutate: func(p *Parts) { p.Spots[0].Exports = append(p.Spots[0].Exports, "plan:internal/x#NewThing") }, ids: validDecisionIDs, max: 6, want: []string{"export-claimed-twice"}},
+ 		{name: "spot-in-area", mutate: func(p *Parts) { p.Parts[1].Area = append(p.Parts[1].Area, "cmd/main.go") }, ids: validDecisionIDs, max: 6, want: []string{"spot-in-area"}, wantIn: "drop it from the area", wantFor: "wiring"},
++		{name: "export-existing, a member glyph", mutate: func(p *Parts) { p.Parts[0].Exports = append(p.Parts[0].Exports, "internal/x#Existing") }, ids: validDecisionIDs, max: 6, want: []string{"export-existing"}, wantIn: "drop an existing member or file", wantFor: "core"},
++		{name: "export-existing, a file the worktree holds", mutate: func(p *Parts) { p.Spots[0].Exports = append(p.Spots[0].Exports, existingFile) }, ids: validDecisionIDs, max: 6, want: []string{"export-existing"}, wantFor: "internal/reg/reg.go"},
++		{name: "a handle export's name check", mutate: func(p *Parts) { p.Parts[0].Exports = append(p.Parts[0].Exports, "plan:internal/x#"+side+"Thing") }, ids: validDecisionIDs, max: 6, want: []string{"fabric-vocabulary-name"}, wantIn: `part "core": `, wantFor: "core"},
+ 		{name: "decision-unnamed", ids: append([]string{"D4"}, validDecisionIDs...), max: 6, want: []string{"decision-unnamed"}, wantIn: "D4"},
+ 		{name: "decision-unknown", mutate: func(p *Parts) { p.Parts[0].Decisions = []string{"D1", "D9"} }, ids: validDecisionIDs, max: 6, want: []string{"decision-unknown"}, wantIn: "drop or correct the id", wantFor: "core"},
+ 	}
+@@ -65,7 +73,7 @@ func TestCheck(t *testing.T) {
+ 			if tt.mutate != nil {
+ 				tt.mutate(parts)
+ 			}
+-			got := Check(parts, tt.ids, tt.max)
++			got := Check(parts, tt.ids, tt.max, func(path string) bool { return path == existingFile })
+ 			if names := checkNames(got); !slices.Equal(names, tt.want) {
+ 				t.Fatalf("Check() findings = %v; want %v", names, tt.want)
+ 			}
+@@ -118,18 +126,31 @@ func TestValidate(t *testing.T) {
+ 		name       string
+ 		recordText string
+ 		partsText  string
+-		want       []string
++		// worktreeFile is a repository-relative file the worktree holds, or empty for none.
++		worktreeFile string
++		want         []string
+ 	}{
+ 		{name: "a valid file and record", recordText: record, partsText: validParts},
+ 		{name: "an absent parts file", recordText: record, want: []string{"parts-missing"}},
+ 		{name: "a malformed parts file", recordText: record, partsText: "not a parts file\n", want: []string{"parts-malformed"}},
+ 		{name: "a check finding passes through", recordText: record + "\n### D4 — d\n\nw.\n", partsText: validParts, want: []string{"decision-unnamed"}},
++		{name: "an exported path the worktree already holds", recordText: record, partsText: validParts, worktreeFile: "internal/x/newfile.go", want: []string{"export-existing"}},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 			anchor, recordPath := seed(t, tt.recordText, tt.partsText)
+-			got, err := Validate(anchor, recordPath, 6)
++			worktree := t.TempDir()
++			if tt.worktreeFile != "" {
++				path := filepath.Join(worktree, filepath.FromSlash(tt.worktreeFile))
++				if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++					t.Fatalf("MkdirAll() = %v; want nil", err)
++				}
++				if err := os.WriteFile(path, []byte("package x\n"), 0o644); err != nil {
++					t.Fatalf("WriteFile(%q) = %v; want nil", path, err)
++				}
++			}
++			got, err := Validate(anchor, worktree, recordPath, 6)
+ 			if err != nil {
+ 				t.Fatalf("Validate() = _, %v; want nil error", err)
+ 			}
+@@ -142,7 +163,7 @@ func TestValidate(t *testing.T) {
+ 	t.Run("an absent record is an error naming validate-discussion", func(t *testing.T) {
+ 		t.Parallel()
+ 		anchor, recordPath := seed(t, "", validParts)
+-		findings, err := Validate(anchor, recordPath, 6)
++		findings, err := Validate(anchor, t.TempDir(), recordPath, 6)
+ 		if err == nil || !strings.Contains(err.Error(), "lym loom validate-discussion") {
+ 			t.Errorf("Validate() = %v, %v; want an error naming lym loom validate-discussion", findings, err)
+ 		}
+diff --git a/internal/partsparser/doc.go b/internal/partsparser/doc.go
+index 9ec08a28..12e51c02 100644
+--- a/internal/partsparser/doc.go
++++ b/internal/partsparser/doc.go
+@@ -1,6 +1,7 @@
+ // Package partsparser is the SOLE parser of the parts file, `_lym/parts/parts.md`, and the SOLE declarer of the parts directory's paths.
+ // The file splits a task into parts, each with a contract of the decisions it covers, what it takes in, what it delivers and the exports other parts may use, plus the shared spots no single part owns.
+-// Parse reads the file into a Parts model, Check judges the model against the decision record's ids, and Validate runs both over the files on disk for the parts gate and `lym loom validate-parts`.
++// Parse reads the file into a Parts model, Check judges the model against the decision record's ids and judges each export as something the cards create, and Validate runs both over the files on disk for the parts gate and `lym loom validate-parts`.
++// An export is a `plan:` handle, held to the plan's own name checks through internal/planparser, or a file path the worktree does not hold yet.
+ // Dir, File, PartDir, PartOverview and JoinRecord name the paths under the parts directory, joined from lymdirs.LymDirName and DirName; ArchivePrefix starts the name of every archive directory under it.
+ // A part directory holds a plan in the plan format, which only internal/planparser reads and writes.
+ // The record's decision ids are read only through internal/discussionparser.
+diff --git a/internal/partsparser/parse.go b/internal/partsparser/parse.go
+index b1787acc..46ed0074 100644
+--- a/internal/partsparser/parse.go
++++ b/internal/partsparser/parse.go
+@@ -17,7 +17,7 @@ type Parts struct {
+ }
+ 
+ // Part is one part of the split: the contract its writer works to.
+-// Exports are the refs the part's cards create, re-sign or delete for other parts to use, and Area the packages and files the part's cards touch.
++// Exports are the refs the part's cards create for other parts to use, and Area the packages and files the part's cards touch.
+ type Part struct {
+ 	Name      string
+ 	Decisions []string
+diff --git a/internal/planparser/exportname.go b/internal/planparser/exportname.go
+new file mode 100644
+index 00000000..174d67f4
+--- /dev/null
++++ b/internal/planparser/exportname.go
+@@ -0,0 +1,46 @@
++// exportname.go holds CheckExportName, the plan's name checks run on one `plan:` handle a parts file exports.
++
++package planparser
++
++import (
++	"fmt"
++	"path/filepath"
++	"strings"
++)
++
++// handleMalformedCheck is the Check ID of a handle whose spelling cannot name a declared member.
++const handleMalformedCheck = "handle-malformed"
++
++// CheckExportName returns the findings the plan's name checks would raise on handle once a part's card declared it.
++// It lets the parts check refuse a name before a part writer must create it.
++// handle is a `plan:` handle a parts file exports, judged as a Create declaration under the plan format's default language, which a part's plan keeps unless it names another.
++// The file-unit rule is applied to every handle, as for a Create declaration, whose unit half is the one a resolver reads; a handle a part meets only as a Rename New side is judged the same way.
++// The findings are handle-malformed, for a handle with no unit or with a file as its unit, and fabric-vocabulary-name.
++// Each carries handle as its Ref, no Card, and a Detail that ends in its way forward.
++func CheckExportName(handle string) []ValidationError {
++	plan := &Plan{}
++	unit, ok := handleUnit(handle)
++	if !ok {
++		return []ValidationError{{
++			Check:  handleMalformedCheck,
++			Ref:    handle,
++			Detail: fmt.Sprintf("the export %q carries no \"#\" after %q and so names no unit; way forward: spell it `plan:<package directory>#<Name>`", handle, HandlePrefix),
++		}}
++	}
++	var findings []ValidationError
++	if plan.GoToolchain() && strings.HasSuffix(unit, ".go") {
++		findings = append(findings, ValidationError{
++			Check:  handleMalformedCheck,
++			Ref:    handle,
++			Detail: fmt.Sprintf("the export %q names the file %q as its unit, and a file-unit member spelling can never resolve; way forward: name its package directory %q as the unit", handle, unit, filepath.ToSlash(filepath.Dir(unit))),
++		})
++	}
++	if member, broken := fabricVocabularyBreak(plan, handle); broken != "" {
++		findings = append(findings, ValidationError{
++			Check:  fabricVocabularyNameCheck,
++			Ref:    handle,
++			Detail: fmt.Sprintf("the export %q declares the member %q, which breaks PATTERN-fabric-vocabulary: it is %s; way forward: rename the member", handle, member, broken),
++		})
++	}
++	return findings
++}
+diff --git a/internal/planparser/exportname_test.go b/internal/planparser/exportname_test.go
+new file mode 100644
+index 00000000..817bb1cd
+--- /dev/null
++++ b/internal/planparser/exportname_test.go
+@@ -0,0 +1,46 @@
++// exportname_test.go covers CheckExportName over the handles a parts file exports.
++
++package planparser_test
++
++import (
++	"slices"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/fabricvocab"
++	"github.com/Knatte18/loomyard/internal/planparser"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestCheckExportName(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	side := fabricvocab.SideTokens()[0]
++	tests := []struct {
++		name   string
++		handle string
++		want   []string
++	}{
++		{name: "a package-unit handle passes", handle: "plan:internal/x#NewThing"},
++		{name: "a handle with no unit", handle: "plan:internal/x", want: []string{"handle-malformed"}},
++		{name: "a handle with a file as its unit", handle: "plan:internal/x/x.go#NewThing", want: []string{"handle-malformed"}},
++		{name: "a member carrying a fabric side token", handle: "plan:internal/x#" + side + "Thing", want: []string{"fabric-vocabulary-name"}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			findings := planparser.CheckExportName(tt.handle)
++			checks := make([]string, len(findings))
++			for i, finding := range findings {
++				checks[i] = finding.Check
++				if finding.Ref != tt.handle || finding.Card != "" || !strings.Contains(finding.Detail, "way forward:") {
++					t.Errorf("CheckExportName(%q) finding = %+v; want Ref %q, no Card and a way forward", tt.handle, finding, tt.handle)
++				}
++			}
++			if !slices.Equal(checks, tt.want) {
++				t.Errorf("CheckExportName(%q) checks = %v; want %v", tt.handle, checks, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/planparser/join.go b/internal/planparser/join.go
+index 10dceb43..7cb1d5ee 100644
+--- a/internal/planparser/join.go
++++ b/internal/planparser/join.go
+@@ -116,7 +116,7 @@ func checkJoinable(parts []JoinPart, plans []*Plan) error {
+ 	for i, part := range parts {
+ 		for _, export := range part.Exports {
+ 			if !ExportMet(plans[i], export) {
+-				return refuseJoin("part %q: no card creates, re-signs or deletes its export %q; way forward: add the card to part %q's plan, then run lym loom join-parts again", part.Name, export, part.Name)
++				return refuseJoin("part %q: no card creates its export %q; way forward: add the card to part %q's plan, then run lym loom join-parts again", part.Name, export, part.Name)
+ 			}
+ 		}
+ 	}
+@@ -159,14 +159,15 @@ func createdRefs(plan *Plan) []string {
+ 	return refs
+ }
+ 
+-// ExportMet reports whether a card of the plan creates the export (a Create target or Rename New side), re-signs it (an Edit arrow target) or deletes it (a Delete target).
++// ExportMet reports whether a card of the plan creates the export: a Create target or a Rename New side.
++// An existing member a card re-signs or deletes is never an export, since the parts check refuses an export that already exists.
+ // A path export is met by its disk path, a glyph exactly, and a `plan:` handle exactly or by the declaration it names: a handle whose body ParseRef reads with the same Unit and Name as the export's.
+ // The resolve pass canonicalizes a declared handle by spelling its owner chain from the declaration head, so the canonical spelling on disk still meets an export written as drafted.
+ func ExportMet(plan *Plan, export string) bool {
+ 	for _, card := range plan.Cards {
+ 		for _, group := range card.TargetGroups {
+ 			switch group.Type {
+-			case CardTypeCreate, CardTypeDelete:
++			case CardTypeCreate:
+ 				for _, ref := range group.Refs {
+ 					if refsMatch(plan, ref, export) {
+ 						return true
+@@ -178,12 +179,6 @@ func ExportMet(plan *Plan, export string) bool {
+ 						return true
+ 					}
+ 				}
+-			case CardTypeEdit:
+-				for _, resign := range group.Resigns {
+-					if resign.Target == export {
+-						return true
+-					}
+-				}
+ 			}
+ 		}
+ 	}
+diff --git a/internal/planparser/join_test.go b/internal/planparser/join_test.go
+index 2de66520..b85de6f4 100644
+--- a/internal/planparser/join_test.go
++++ b/internal/planparser/join_test.go
+@@ -60,8 +60,8 @@ func TestJoinParts(t *testing.T) {
+ 					}(),
+ 				},
+ 			}), Exports: []string{"internal/a/one.go"}},
+-			{Name: "beta", Dir: writePart(t, root, "beta", plankit.Plan{Cards: []plankit.Card{partCard(1, "resign", "Edit", resignArrow)}}), Exports: []string{"internal/b#Member"}},
+-			{Name: "gamma", Dir: writePart(t, root, "gamma", plankit.Plan{Cards: []plankit.Card{partCard(1, "remove", "Delete", "internal/c/gone.go")}}), Exports: []string{"internal/c/gone.go"}},
++			{Name: "beta", Dir: writePart(t, root, "beta", plankit.Plan{Cards: []plankit.Card{partCard(1, "resign", "Edit", resignArrow)}})},
++			{Name: "gamma", Dir: writePart(t, root, "gamma", plankit.Plan{Cards: []plankit.Card{partCard(1, "remove", "Delete", "internal/c/gone.go")}})},
+ 			{Name: "delta", Dir: writePart(t, root, "delta", plankit.Plan{Cards: []plankit.Card{partCard(1, "declare", "Create", declaration)}}), Exports: []string{"plan:internal/d#Foo"}},
+ 			{Name: "epsilon", Dir: writePart(t, root, "epsilon", plankit.Plan{
+ 				Sections: []plankit.Section{{Heading: "Rename mechanic", Body: "this part's own text"}},
+@@ -164,7 +164,25 @@ func TestJoinParts(t *testing.T) {
+ 					{Name: "alpha", Dir: writePart(t, root, "alpha", plankit.Plan{Cards: []plankit.Card{partCard(1, "a", "Create", "internal/a/a.go")}}), Exports: []string{"internal/a/missing.go"}},
+ 				}
+ 			},
+-			wantIn: []string{`"alpha"`, `"internal/a/missing.go"`},
++			wantIn: []string{`"alpha"`, `"internal/a/missing.go"`, "no card creates its export"},
++		},
++		{
++			name: "an export its only card deletes",
++			parts: func(t *testing.T, root string) []planparser.JoinPart {
++				return []planparser.JoinPart{
++					{Name: "alpha", Dir: writePart(t, root, "alpha", plankit.Plan{Cards: []plankit.Card{partCard(1, "a", "Delete", "internal/a/gone.go")}}), Exports: []string{"internal/a/gone.go"}},
++				}
++			},
++			wantIn: []string{`"alpha"`, `"internal/a/gone.go"`, "no card creates its export"},
++		},
++		{
++			name: "an export its only card re-signs",
++			parts: func(t *testing.T, root string) []planparser.JoinPart {
++				return []planparser.JoinPart{
++					{Name: "alpha", Dir: writePart(t, root, "alpha", plankit.Plan{Cards: []plankit.Card{partCard(1, "a", "Edit", resignArrow)}}), Exports: []string{"internal/b#Member"}},
++				}
++			},
++			wantIn: []string{`"alpha"`, `"internal/b#Member"`, "no card creates its export"},
+ 		},
+ 		{
+ 			name: "a new file path two parts create",
+diff --git a/internal/planparser/validate.go b/internal/planparser/validate.go
+index 0c147cc1..7aef1bd7 100644
+--- a/internal/planparser/validate.go
++++ b/internal/planparser/validate.go
+@@ -686,7 +686,7 @@ func checkHandleMalformed(plan *Plan) []ValidationError {
+ 	for _, c := range plan.Cards {
+ 		for _, raw := range c.CreateRaw {
+ 			findings = append(findings, ValidationError{
+-				Check: "handle-malformed",
++				Check: handleMalformedCheck,
+ 				Card:  cardID(c),
+ 				Detail: fmt.Sprintf(
+ 					"card %d Create: entry %q does not match the required `plan:<handle>` -> `<declaration head>` grammar",
+@@ -703,7 +703,7 @@ func checkHandleMalformed(plan *Plan) []ValidationError {
+ 				unit, ok := handleUnit(r)
+ 				if !ok {
+ 					findings = append(findings, ValidationError{
+-						Check: "handle-malformed",
++						Check: handleMalformedCheck,
+ 						Card:  cardID(c),
+ 						Detail: fmt.Sprintf(
+ 							"card %d handle %q carries no \"#\" after %q and therefore names no unit",
+@@ -714,7 +714,7 @@ func checkHandleMalformed(plan *Plan) []ValidationError {
+ 				}
+ 				if goToolchain && strings.HasSuffix(unit, ".go") && fileUnitRuleApplies(claims[r]) {
+ 					findings = append(findings, ValidationError{
+-						Check: "handle-malformed",
++						Check: handleMalformedCheck,
+ 						Card:  cardID(c),
+ 						Detail: fmt.Sprintf(
+ 							"card %d handle %q names the file %q as its unit; a symbol's unit is its package directory (e.g. %q) — a file-unit member spelling can never resolve",
+diff --git a/internal/planparser/vocabname.go b/internal/planparser/vocabname.go
+index e087c3d9..cfb4c407 100644
+--- a/internal/planparser/vocabname.go
++++ b/internal/planparser/vocabname.go
+@@ -24,18 +24,7 @@ func CheckFabricVocabularyName(plan *Plan) []ValidationError {
+ 	var findings []ValidationError
+ 	for _, card := range plan.Cards {
+ 		for _, handle := range OwnedHandles(card) {
+-			unit, unitOK := HandleUnit(handle)
+-			member, memberOK := HandleMember(handle)
+-			last, lastOK := HandleIdentifier(handle)
+-			if !unitOK || !memberOK || !lastOK || unit == "" {
+-				continue
+-			}
+-			if body, _ := HandleBody(handle); body != "" {
+-				if parsed, err := ParseRef(plan, body); err == nil && parsed.Name != "" {
+-					last, _, _ = strings.Cut(parsed.Name, "<")
+-				}
+-			}
+-			broken := brokenFabricVocabularyRule(unit, member, last, plan.GoToolchain())
++			member, broken := fabricVocabularyBreak(plan, handle)
+ 			if broken == "" {
+ 				continue
+ 			}
+@@ -52,6 +41,23 @@ func CheckFabricVocabularyName(plan *Plan) []ValidationError {
+ 	return findings
+ }
+ 
++// fabricVocabularyBreak returns handle's member half and the rule that member breaks as a phrase, read under plan's language.
++// broken is "" when the member breaks no rule or the handle does not split into a unit and a member.
++func fabricVocabularyBreak(plan *Plan, handle string) (member, broken string) {
++	unit, unitOK := HandleUnit(handle)
++	member, memberOK := HandleMember(handle)
++	last, lastOK := HandleIdentifier(handle)
++	if !unitOK || !memberOK || !lastOK || unit == "" {
++		return member, ""
++	}
++	if body, _ := HandleBody(handle); body != "" {
++		if parsed, err := ParseRef(plan, body); err == nil && parsed.Name != "" {
++			last, _, _ = strings.Cut(parsed.Name, "<")
++		}
++	}
++	return member, brokenFabricVocabularyRule(unit, member, last, plan.GoToolchain())
++}
++
+ // brokenFabricVocabularyRule names the rule a declared member breaks as a phrase, or returns "" when it breaks none.
+ // unit is the handle's package half, member its whole member half and last the member's last dot-segment.
+ // goToolchain says whether the plan's language is Go, the only alphabet whose unit string carries the external-test pseudo-unit.
+diff --git a/internal/shedrecipe/entries_gate.go b/internal/shedrecipe/entries_gate.go
+index d0336007..a3656aef 100644
+--- a/internal/shedrecipe/entries_gate.go
++++ b/internal/shedrecipe/entries_gate.go
+@@ -30,7 +30,7 @@ var gateEntryKeys = []string{"name", "attempts", "pass_on_cap"}
+ // "discussion" requires env.DecisionRecordPath and env.SupportLogPath to pass requireAbsRoot and a non-nil env.DiscussionHistory, and returns loomshed.NewDiscussionGate over them;
+ // when env.RecordEngine is DiscussionWrite, "discussion" also requires env.RelevantPath and env.WorktreeRoot to pass requireAbsRoot and a non-nil env.PlanIndex, and passes them to the gate with the citation checks on, which read the worktree and the index;
+ // "plan" requires env.AnchorPath, env.WorktreeRoot and a non-nil env.PlanIndex and returns loomshed.NewPlanGate over them;
+-// "parts" requires env.AnchorPath, env.DecisionRecordPath and a non-nil env.Setting and returns loomshed.NewPartsGate over them, capped by the tapestry.parts_max setting;
++// "parts" requires env.AnchorPath, env.WorktreeRoot, env.DecisionRecordPath and a non-nil env.Setting and returns loomshed.NewPartsGate over them, capped by the tapestry.parts_max setting;
+ // "description" requires env.DescriptionPath to pass requireAbsRoot and returns landingshed.NewDescriptionGate over it;
+ // "verify" requires the absolute env.WorktreeRoot and env.VerifyDir and a non-nil env.VerifyCommand, takes the optional env.VerifyMergeBase and env.VerifyTreeScope, and returns loomshed.NewVerifyGate over them, with the site label "<row name> gate";
+ // the gate's told command is env.VerifyCommand read for the row's gate key, and its tree scope is env.VerifyTreeScope read for that key, so the row runs its own key of the hub's gate.yaml;
+@@ -192,6 +192,9 @@ func resolvePlainGateClosure(entry, row, gateKey string, index int, name string,
+ 		if err := requireAbsRoot(entry, "AnchorPath", env.AnchorPath); err != nil {
+ 			return nil, err
+ 		}
++		if err := requireAbsRoot(entry, "WorktreeRoot", env.WorktreeRoot); err != nil {
++			return nil, err
++		}
+ 		if err := requireAbsRoot(entry, "DecisionRecordPath", env.DecisionRecordPath); err != nil {
+ 			return nil, err
+ 		}
+@@ -206,7 +209,7 @@ func resolvePlainGateClosure(entry, row, gateKey string, index int, name string,
+ 		if !ok || max < 1 {
+ 			return nil, fmt.Errorf("shedrecipe: %s: config key %q element %d: setting tapestry.parts_max holds %v, want an integer of 1 or more; way forward: set tapestry.parts_max in tapestry.yaml to the most parts a parts file may hold", entry, "gates", index, value)
+ 		}
+-		return loomshed.NewPartsGate(env.AnchorPath, env.DecisionRecordPath, max), nil
++		return loomshed.NewPartsGate(env.AnchorPath, env.WorktreeRoot, env.DecisionRecordPath, max), nil
+ 	case "description":
+ 		if err := requireAbsRoot(entry, "DescriptionPath", env.DescriptionPath); err != nil {
+ 			return nil, err
+diff --git a/internal/shedrecipe/entries_gate_test.go b/internal/shedrecipe/entries_gate_test.go
+index bc460aef..0fdce46e 100644
+--- a/internal/shedrecipe/entries_gate_test.go
++++ b/internal/shedrecipe/entries_gate_test.go
+@@ -260,6 +260,7 @@ func TestResolveGateSpec_Rejections(t *testing.T) {
+ 		{"LoomDiscussionRelativeWorktreeRoot", gatesCfg("discussion", 1), "WorktreeRoot"},
+ 		{"PartsEmptyAnchorPath", gatesCfg("parts", 1), "AnchorPath"},
+ 		{"PartsEmptyDecisionRecordPath", gatesCfg("parts", 1), "DecisionRecordPath"},
++		{"PartsRelativeWorktreeRoot", gatesCfg("parts", 1), "WorktreeRoot"},
+ 		{"PartsNilSetting", gatesCfg("parts", 1), "Setting"},
+ 		{"PartsMaxBelowOne", gatesCfg("parts", 1), "tapestry.parts_max"},
+ 	}
+@@ -279,6 +280,9 @@ func TestResolveGateSpec_Rejections(t *testing.T) {
+ 			case "PartsEmptyDecisionRecordPath":
+ 				env.Setting = partsMaxSetting(6)
+ 				env.DecisionRecordPath = ""
++			case "PartsRelativeWorktreeRoot":
++				env.Setting = partsMaxSetting(6)
++				env.WorktreeRoot = "relative/worktree"
+ 			case "PartsMaxBelowOne":
+ 				env.Setting = partsMaxSetting(0)
+ 			}
