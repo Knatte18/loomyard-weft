@@ -1,6 +1,6 @@
 # A wake from hibernate leaves the hub-wide pause live
 
-`hibernate-wake-leaves-pause` · Task · bug, hibernate, creel · running · Worktree-Create
+`hibernate-wake-leaves-pause` · Task · bug, hibernate, creel · running · Record-Write
 
 ## Seen (orch, 2026-11-02)
 
