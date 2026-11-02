@@ -41,7 +41,7 @@
 - `internal/loomrecipe/doc.go`
 
 **Uses:**
-- `plan:internal/loomcli#pairSlugOf`
+- `internal/loomcli#pairSlugOf`
 - `internal/loomcli/doc.go`
 - `internal/twilldirective#filledValues`
 - `contracts/stencils#TestTwillStencils_HostNeutral`

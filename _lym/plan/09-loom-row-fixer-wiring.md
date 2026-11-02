@@ -4,18 +4,18 @@
 - `contracts/stencils/gatefix/gatefix-body-darn.md`
 - `contracts/stencils/gatefix/gatefix-body-plan.md`
 - `contracts/stencils/gatefix/gatefix-body-discussion.md`
-- `plan:contracts/stencils#GatefixBodyDarn` -> `var GatefixBodyDarn []byte`
-- `plan:contracts/stencils#GatefixBodyPlan` -> `var GatefixBodyPlan []byte`
-- `plan:contracts/stencils#GatefixBodyDiscussion` -> `var GatefixBodyDiscussion []byte`
-- `plan:internal/loomcli#pairSlugOf` -> `func pairSlugOf(location *lymcwd.Location) (string, error)`
-- `plan:internal/loomcli#rowVisitDir` -> `func rowVisitDir(scratchDir, statusPath, statusLockPath, row string) (string, error)`
-- `plan:internal/loomcli#gateFixerInputs` -> `type gateFixerInputs struct`
-- `plan:internal/loomcli#gateFixerSeam` -> `func gateFixerSeam(in gateFixerInputs) func(shedrecipe.GateFixerRequest) (shuttleengine.GateSpec, error)`
-- `plan:internal/loomcli#fixerSpec` -> `func fixerSpec(in gateFixerInputs, req shedrecipe.GateFixerRequest, choice shuttleengine.ModelChoice) (func(reportPath, replyPath string) (gatefixer.Spec, error), error)`
-- `plan:internal/loomcli#TestRowVisitDir` -> `func TestRowVisitDir(t *testing.T)`
-- `plan:internal/loomcli#TestGateFixerSeam` -> `func TestGateFixerSeam(t *testing.T)`
-- `plan:internal/loomcli#TestFixerSpec` -> `func TestFixerSpec(t *testing.T)`
-- `plan:internal/loomcli#TestPairSlugOf` -> `func TestPairSlugOf(t *testing.T)`
+- `contracts/stencils#GatefixBodyDarn`
+- `contracts/stencils#GatefixBodyPlan`
+- `contracts/stencils#GatefixBodyDiscussion`
+- `internal/loomcli#pairSlugOf`
+- `internal/loomcli#rowVisitDir`
+- `internal/loomcli#gateFixerInputs`
+- `internal/loomcli#gateFixerSeam`
+- `internal/loomcli#fixerSpec`
+- `internal/loomcli#TestRowVisitDir`
+- `internal/loomcli#TestGateFixerSeam`
+- `internal/loomcli#TestFixerSpec`
+- `internal/loomcli#TestPairSlugOf`
 
 **Edit:**
 - `internal/loomcli#loomCLI.wire`

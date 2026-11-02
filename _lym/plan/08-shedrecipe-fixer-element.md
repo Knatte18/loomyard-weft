@@ -1,12 +1,12 @@
 # Card 8 — shedrecipe-fixer-element
 
 **Create:**
-- `plan:internal/shedrecipe#GateFixerRequest` -> `type GateFixerRequest struct`
-- `plan:internal/shedrecipe#splitGateFixer` -> `func splitGateFixer(entry string, cfg Config, env Env) (Config, *GateFixerRequest, error)`
-- `plan:internal/shedrecipe#applyGateFixer` -> `func applyGateFixer(row string, spec shuttleengine.GateSpec, req *GateFixerRequest, env Env) (shuttleengine.GateSpec, error)`
-- `plan:internal/shedrecipe#TestGateFixerElement` -> `func TestGateFixerElement(t *testing.T)`
-- `plan:internal/loomshed#LensReviewOnly` -> `func LensReviewOnly(findings string) bool`
-- `plan:internal/loomshed#TestLensReviewOnly` -> `func TestLensReviewOnly(t *testing.T)`
+- `internal/shedrecipe#GateFixerRequest`
+- `internal/shedrecipe#splitGateFixer`
+- `internal/shedrecipe#applyGateFixer`
+- `internal/shedrecipe#TestGateFixerElement`
+- `internal/loomshed#LensReviewOnly`
+- `internal/loomshed#TestLensReviewOnly`
 
 **Edit:**
 - `internal/shedrecipe#Env`

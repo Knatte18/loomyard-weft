@@ -17,7 +17,7 @@
 - `internal/loomcli/doc.go`
 
 **Uses:**
-- `plan:internal/loomcli#pairSlugOf`
+- `internal/loomcli#pairSlugOf`
 - `internal/loomcli#loomCLI.settledGuard`
 - `internal/loomcli#loomCLI.driverGoto`
 - `internal/loomcli#TestSpecFor_WaitingHookNilWithoutLocation`
