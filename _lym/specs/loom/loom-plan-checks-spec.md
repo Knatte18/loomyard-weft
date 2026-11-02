@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=1d343497381d1cd617f5d332d2a455fb868ac3975d00c0bf5fc9bb2bf0acdccf build=7999007f5d7f20b4b81bff698790313feaa68d25 time=2026-11-01T19:18:14Z -->
+<!-- lym-stencil: sha256=1158c506da997af28f3a619f010c0eefcc798e2c83197905a9945210037883c6 build=fe753d409cad46ac575d6ca5c96b51058567644d time=2026-11-02T19:09:15Z -->
 
 # Loom plan-checks spec — the plan gate's validation checks
 
@@ -183,7 +183,7 @@ The other PATTERN checks are *loomshed*'s, and run only in a worktree with a `PA
   Way forward: restore the card file; a fix to its work is a follow-up card after the last begun batch, with its Card Index line.
 - `part-spot-target` — under a part scope: a card's target is a shared spot's path.
   Way forward: drop the target and say in the card's `**Intent:**` what it needs from the spot.
-- `part-export-missing` *(loomshed, `--part` only)* — an export of the part's contract that no card of the part creates, re-signs or deletes.
-  Way forward: create the export on a card of the part, a `plan:` export declared on a `**Create:**` bullet with the parts file's spelling, or re-sign or delete it; when the part's area cannot meet it, message the chair naming the contract line.
+- `part-export-missing` *(loomshed, `--part` only)* — an export of the part's contract that no card of the part creates.
+  Way forward: create the export on a card of the part, a `plan:` export declared on a `**Create:**` bullet with the parts file's spelling; when the part's area cannot meet it, message the chair naming the contract line.
 
 `loom-parts-spec.md` defines the part scope and the join.
