@@ -1,0 +1,776 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index ff4d5c19..e93ad664 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -421,7 +421,7 @@ User-facing modules each get one `lym <module>` namespace:
+   Callable from any sandbox agent context with no config. ✅ Implemented.
+ - **reed** — **the window to the world**: tmux overlay + **strand** bookkeeping + render (`internal/reedcli` + `internal/reedengine` + `internal/reedengine/render`). Hosts every managed process as a strand in a window of its own or its group's, persists to `.lym/reed.json` (`lym reed up|add|remove|status|list|attach|switch|resume|watchdog|down`); `lym reed add` places a strand `--anchor own-window` by default. Every strand carries a hierarchical full name (see the `internal/agentname` package documentation), mirrored into its pane title and Claude session name and exported to its process as `LYM_STRAND_NAME` and `LYM_PARENT`, with the watchdog repairing drift; `list` is the hub-wide name directory. Built on what its proof-of-concept, `muxpoc`, proved first (env hygiene, native `--resume`); `muxpoc` has since been deleted, its job done. `reed attach` and `reed watchdog` are this module's two registered interactive-handoff exceptions ([PATTERN-cli-cobra](../pattern/PATTERN-cli-cobra.md)): `attach` hands the operator's stdio to a `tmux attach-session` child in place, pre-flighting through checking tmux's floor version, booting the session if cold and checking server/session liveness, and `watchdog` is the detached per-hub name-repair and reap daemon that blocks for its process lifetime — in both cases every fallible step runs pre-flight, on the envelope, and only the terminal-handover/daemon tail itself is exempt from emitting JSON. `add` and `attach` boot this worktree's session when none is up, with `up`'s own semantics — a bare substrate, with no persisted strand relaunched — instead of refusing; every other reed verb still refuses on a cold worktree. ✅ Implemented. See the `internal/reedengine` package documentation.
+ - **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengines` + `internal/shuttlecli`; `lym shuttle run|open|state|await|await-forks`). `lym shuttle open` starts a named session with no turn in its own window, which closes when the session exits; `--model` takes a model spec naming the engine, model and effort, `--list-models` prints the model registry's aliases with their engine, model and default effort, and the output names the engine, model and effort the session got. Every session shuttle launches, run or opened, starts in its engine's bypass mode unless the caller passes `prompt`, which an interactive session accepts. `lym shuttle await <path>... [--cap]` is the read-only capped wait on one or more files, the keep-cache-warm wait any agent can run, needing no hub or git repository; its cap defaults to the caller role's keep-warm cap from `claude.yaml`. `lym shuttle await-forks [--cap]` is the same capped wait over the forks the calling agent session spawned, read from its transcript through the engine: a reviewer, fixer or writer that waits inside it takes every fork's result in one turn instead of waking once per fork. `lym shuttle state` is read-only: it lists the session state of each running run (busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with its cause, since and history), read from the run's files, in shadow mode where no stop or notice depends on it. `Stop`-hook completion is read off an events file and classified into three outcomes — `done`/`died`/`timeout`. A turn end without every output file never ends a run: `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call). An autonomous run notifies its parent once per held turn end as creel mail to the orch, and once per permission or input dialog its pane shows past 60 s, and an interactive run is answered in its pane; a line typed into a run's pane goes through `lym creel post`, `lym creel inject` or `lym creel interrupt`, never a shuttle verb. Background work is read off the Stop payload's `background_tasks` first, with the transcript as the fallback when the payload carries no list; a turn end with outstanding work is waiting, not held, unless its only outstanding work is non-awaited shells, which a gated run holds at once with an output file missing, a gated run with every output file present counts done once they pass the shell wait bound after telling the agent to read them, and an ungated run holds once they pass the shell wait bound. `Attach` waits on a held run, and on a legacy `asking` record whose strand is still live, instead of respawning beside it. `died` is narrow: it means a strand reed STILL TRACKS has a pane that is not alive, the provider never came up inside the startup window, or the provider's process is proven gone behind a live pane shell (by the process registry, or a process-ending `SessionEnd` line past the wait's first liveness tick), with `done` instead when every output file exists. Reed's strand table losing the strand entirely — a `reed down`/`remove`, a deleted or rebuilt `reed.json`, a worktree renamed under an in-flight run — is reported as a mechanism failure carrying the run's identity, never as `died`, because reed's bookkeeping going away says nothing about the agent, whose process is often still working in its pane; the exception is a handle whose own `Stop` removed the strand, which ends `died` and is recorded as stopped unless the files show the run done. No guardrail denies the in-process `Agent` tool: a subagent or fork shows in the session's own pane and lym reads its transcript under the session's `subagents` directory. A `PreToolUse` guardrail denies `AskUserQuestion` when the run is autonomous (`Interactive: false`, the default); a `PreToolUse(Bash)` guardrail denies `python`, `python3` and `python3.<minor>` in command position in every run mode, a version check included (on by default, switchable off via `shuttle.yaml`'s `deny_python`), and a second `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a raw module-wide `go test`, `go build` or `go vet`, a raw `go test` over the `tmux` or `llm` tier, and any command naming the gate-slot or strand-name environment variable, steering the session to `lym gate test`, and to a package-scoped compile check the hub's `refuse_raw` does not refuse, and a third `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies an `rm` on a computed path (a command substitution or a variable expansion in the command) so no permission dialog stalls the run, and a fourth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies `sed -i`, `perl -i`, and a redirect, heredoc or `tee` into a source file, steering the session to read a file with Read and change it with Edit or Write, and a fifth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a headless `claude` launch with `-p` or `--print`, whose work shows in no pane, steering the session to a subagent through the `Agent` tool; the python deny's steer carries the same edit rule. The engine announces each deny it installs to the session's system prompt, and every Claude session it launches with a run directory also gets the creel trust sentence, through one `append-system-prompt.txt` file named by `--append-system-prompt-file` on launch and resume, so a session knows the tool is unavailable before it tries one and follows `[creel]` mail from its hooks. The engine sets the prompt-cache TTL per role on launch and resume from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role). `claude.yaml`'s `keep_warm_cap` (template 250s) and `keep_warm_cap_roles` set the per-role keep-warm cap beside them. While `claude.yaml`'s `batching_nudge` block is on, a `PostToolUse` hook after each `Read`, `Grep`, `Glob`, `Edit` or `Write` call runs the hidden `lym shuttle hook-batching`, which adds one line naming the breach and quoting the rule to a session above the block's context threshold whose recent messages make a chain of single lookups, a sliced read of a short or already-read file, or a chain of edit-only messages; it never denies a call, and the block's switches and thresholds are config. The provider is swappable behind an **engine** seam; the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, Claude being the one registered engine. Per-run `Model`/`Effort` knobs (`lym shuttle run --model`/`--effort`; effort values `low|medium|high|xhigh|max`, empty = provider default) are engine-validated, not policed by `Spec.validate`. `Spec.Version` is a programmatic engine-validated version pin (claudeengine composes the pinned model id; no CLI flag — consumers drive it via the model-spec notation's `v=` param). Starting a run returns only once its provider is past its startup gates, and a provider that never comes up is torn down (run dir and last pane capture kept) and reported as an error from `Start`, or as `died`/`timeout` from `Run`. ✅ Implemented. See the `internal/shuttleengine` package documentation.
+-- **orch** — the hub orchestrator hosted as an interactive Claude session in a reed strand of the prime worktree or of a beam, cycled before its context fills (`internal/orchcli` + `internal/orchengine`; `lym orch stop|status|refresh|distill|withdraw|rules`, in the prime and in any beam). `lym beam start` first ensures the worktree's `runs` strand, which runs `lym batten overview` as the beam's window, named `beam: prime` or `beam: <slug>`, and `stop` leaves it; ensuring it adds the runs strand beside a `loom-status` strand a pawl run's `lym loom start` put in an overview window first, as the session's first overview window, and a failure to add, replace or record it is a warning on the bring-up report naming `lym beam start`, never a stop; the orchestrator has a window of its own, and the session's windows run the beam window, agents, shell. A detached watcher has the session write a note, then clears it and resumes it from that note (`refresh`) or compacts it in place (`distill`), never clearing or compacting without one. ✅ Implemented. See the `internal/orchengine` package documentation.- **webster** — the implementer module: one long-lived Master session that reads the plan and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool), each fork reading its cards' code itself, instead of spawning a fresh reed/tmux strand per batch;
++- **orch** — the hub orchestrator hosted as an interactive Claude session in a reed strand of the prime worktree or of a beam, cycled before its context fills (`internal/orchcli` + `internal/orchengine`; `lym orch stop|status|refresh|distill|withdraw|rules`, in the prime and in any beam). `lym beam start` first ensures the worktree's `runs` strand, which runs `lym batten overview` as the beam's window, named `beam: prime` or `beam: <slug>` opened with the beam's board handle as in `P1: beam: <slug>`, and `stop` leaves it; ensuring it adds the runs strand beside a `loom-status` strand a pawl run's `lym loom start` put in an overview window first, as the session's first overview window, and a failure to add, replace or record it is a warning on the bring-up report naming `lym beam start`, never a stop; the orchestrator has a window of its own, and the session's windows run the beam window, agents, shell. A detached watcher has the session write a note, then clears it and resumes it from that note (`refresh`) or compacts it in place (`distill`), never clearing or compacting without one. ✅ Implemented. See the `internal/orchengine` package documentation.- **webster** — the implementer module: one long-lived Master session that reads the plan and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool), each fork reading its cards' code itself, instead of spawning a fresh reed/tmux strand per batch;
+   bracket verbs (`begin-batch`/`record-batch`) drive each in-session fork (Master ends its turn while a backgrounded fork works and records the batch on the fork's completion notification, shuttle reading that turn end as waiting rather than done), and a genuine model escalation (recovery after a stuck/report-less fork) spawns a cold strand.
+   Consumes the flat card-list plan (pinned in the plan-format blocks `contracts/stencils/loom/loom-block-plan-*.md`, which `contracts/stencils/loom/loom-template-plan.md`, the Plan producer's own stencil, includes) via its own sole parser, `internal/planparser`, groups cards into execution batches via `internal/batcher`, a separate config-selected registry module webster consumes (profiles in `batcher.yaml`, the `wide` cost profile by default), then runs those batches in card order, refusing a backward dependency derived from the cards' own `Targets`/`Uses` refs, records the partition in `state.json` at first init, and carries the plan's `## verify:` command as a must-pass gate on Merriam's strand: a failure is rerun once (a pass on the rerun records the identities as flaky;
+   a run that exceeds the verify timeout is not rerun, since a hang is not flakiness, and fails the gate at once with the timeout, the log path and the log tail as findings),
+@@ -540,7 +540,7 @@ User-facing modules each get one `lym <module>` namespace:
+   the darn gates run the diff's impacted set or their row key over the touched trees' targets, and `tree_scope` in `darn.yaml` scopes a non-production diff at every verify site, Finalize included.
+   `lym loom resume` re-spawns `Darn-Write`, `lym loom goto --to Darn-Write` re-enters it and keeps the spent review budget and any settled review verdict.
+   A darn run whose status file still names the writer row's former name, `Darn`, is renamed onto `Darn-Write` when a `lym loom` verb arms it.
+-  `start` is the session bootstrap, performing four steps in order: resolve the recorded parent branch and seed+commit the status file with the records when it is absent; ensure the worktree's tmux session is up, keep or add the status strand, which runs the hidden `lym loom checklist` verb in an overview window named for the run's recipe, right after the `runs` strand's in a beam's session, on either driver, then spawn the per-hub watchdog daemon, best-effort; read this run's seed and, unless a driver is already alive, spawn the driver its recorded choice selects — the detached Go driver, `internal/sheddriver` mounted by `lym loom drive`, whose driver lock the handshake waits for, or a Claude strand running the loom driver in this worktree's own reed session, in a window of its own after the overview and before the shell; and print the success envelope, never attaching a tmux client (`lym reed attach` shows the session) — the operator's terminal is Selvage, not a strand. `step` brings the tmux session up and never adds or removes the status strand.
++  `start` is the session bootstrap, performing four steps in order: resolve the recorded parent branch and seed+commit the status file with the records when it is absent; ensure the worktree's tmux session is up, keep or add the status strand, which runs the hidden `lym loom checklist` verb in an overview window named for the run's recipe, opened with the run's board handle as in `T4: tapestry`, right after the `runs` strand's in a beam's session, on either driver, then spawn the per-hub watchdog daemon, best-effort; read this run's seed and, unless a driver is already alive, spawn the driver its recorded choice selects — the detached Go driver, `internal/sheddriver` mounted by `lym loom drive`, whose driver lock the handshake waits for, or a Claude strand running the loom driver in this worktree's own reed session, in a window of its own after the overview and before the shell; and print the success envelope, never attaching a tmux client (`lym reed attach` shows the session) — the operator's terminal is Selvage, not a strand. `step` brings the tmux session up and never adds or removes the status strand.
+   `start` and `resume` are the sites that read a recorded seed's driver value, per the `internal/loomcli` package documentation.
+   `start` resumes a parked loom driver by typing one line into its pane (returning once the line's delivery is verified), and refuses after a bounded wait when the pane is not ready, since the driver may have resumed on its own.
+   A live driver over a run halted at a hand-back with no park marker yet is still writing its stop report, and a Go driver holding its driver lock is still settling the stop, so `start` refuses with the retryable kind `driver_not_parked`;
+@@ -683,7 +683,7 @@ User-facing modules each get one `lym <module>` namespace:
+   See the board's `hardener` note.
+ - **batten** — drives one task worktree's whole lifecycle — create, seed the child's own inner run from the Board task's own `recipe` (`tapestry`, `arras` for an arras child, `darn` for a darn child or `sampler` for a sampler child, empty meaning `board.yaml`'s `default_recipe`), run it to a terminal state, land it into the prime, and tear down — as a single Shed run from the hub's prime worktree (`internal/battenshed` + `internal/battenrecipe` + `internal/battencli`; `lym batten run|step|status|pause|goto|cancel <run-id>`, `lym batten lock list|release` for the hub's parent locks, and `lym batten cleanup [--apply]`).
+   `lym batten cancel <slug> [--remove]` ends a run for good from the prime, whatever its state, leaving its claim `draft` and removing its records, and with `--remove` its pair and task branches.
+-  The hidden `lym batten overview` is the pane process of the `runs` strand of the prime and of each beam, which `lym beam start` ensures, in the beam's window named `beam: prime` or `beam: <slug>`.
++  The hidden `lym batten overview` is the pane process of the `runs` strand of the prime and of each beam, which `lym beam start` ensures, in the beam's window named `beam: prime` or `<handle>: beam: <slug>`.
+   Ensuring it adds the runs strand beside a `loom-status` strand a pawl run's `lym loom start` put in an overview window first, as the session's first overview window, and a failure to add, replace or record it is a warning on the bring-up report, never a stop.
+   It draws the dobby of its own worktree first: alive or not, each run it drives once, with its state, stage, time in stage and last pass, and each released task it has not started with what the task waits on, the lines `lym beam status` prints.
+   The stage cell carries the stage's entry number (`7. Land`, `6.5 Plan-Write` for a child stage under Run-Shed), and a run a live pause covers shows `paused <minutes>` in its state cell.
+@@ -699,7 +699,7 @@ User-facing modules each get one `lym <module>` namespace:
+   The tackler is set by `batten.yaml`'s `tackler`, `tackler_timeout_min` and `tackler_max_spawns`, overrides of `shed.yaml`'s keys of the same names.
+   A stop the tackler escalates meets the arbiter next, wired in batten's driver after the tackler and set by `batten.yaml`'s `arbiter`, `arbiter_timeout_min` and `arbiter_max_spawns`, overrides of `shed.yaml`'s keys of the same names; its goto is held to the halted row.
+   The process holds the run's driver lock for its life, so a second `lym batten run` for the slug is refused.
+-  Between `Seed-Child` and `Run-Shed`, three `Command` rows each run one shell command from `internal/shedadapters`' `Command` producer, each run only when its entry gate's `batten.yaml` setting, which a task's `run_settings` may set, is on: `Open-Window` (`open_window`, on by default, command `open_window_command`) opens one desktop terminal window on the task worktree, titled with the slug, through `lym reed window`;
++  Between `Seed-Child` and `Run-Shed`, three `Command` rows each run one shell command from `internal/shedadapters`' `Command` producer, each run only when its entry gate's `batten.yaml` setting, which a task's `run_settings` may set, is on: `Open-Window` (`open_window`, on by default, command `open_window_command`) opens one desktop terminal window on the task worktree, titled `<handle>: <slug>` through the command's `{title}` placeholder, or the slug alone when the board names no handle, through `lym reed window`;
+   `Seed-IDE` (`seed_ide`, on, command `seed_ide_command`) runs `lym ide seed`, which writes the task worktree's VS Code title, colours and `.vscode/` config and the user's key bindings as `lym ide spawn` does;
+   `Open-IDE` (`open_ide`, off, command `open_ide_command`) runs `lym ide open`, which opens VS Code on it.
+   `lym reed window`, `lym ide spawn` and `lym ide open` each run, after the window opens, the machine's `desktop.window_command` once `desktop.window_wait_ms` has passed, such as a script that snaps the new window into the desktop's tiling;
+@@ -818,7 +818,7 @@ See [PATTERN-cwd-resolution](../pattern/PATTERN-cwd-resolution.md) for the rule.
+ - **provider-invariant** — `shuttle` runs Claude today through an **engine**;
+   the verdict/output contract is provider-invariant, so a different model can be swapped in without touching the review machinery.
+   Non-Claude is not a current priority.
+-- **the bootstrap** — `lym loom start` brings up the worktree's tmux session, on either driver keeps or adds the `lym loom checklist` status strand, in an overview window named for the run's recipe, right after the `runs` strand's in a beam's session, one frame of the recipe's rows in order with their visit lines under them and then the state and wait lines (replaced in its slot when the live one was launched from a different `lym` build), spawns the per-hub watchdog daemon (best-effort), and spawns the driver the run's own seed selects: the Go driver **detached** (via `proc`, no TTY), or a Claude strand running the loom driver in this same reed session for the `llm` driver.
++- **the bootstrap** — `lym loom start` brings up the worktree's tmux session, on either driver keeps or adds the `lym loom checklist` status strand, in an overview window named for the run's recipe opened with the run's board handle, right after the `runs` strand's in a beam's session, one frame of the recipe's rows in order with their visit lines under them and then the state and wait lines (replaced in its slot when the live one was launched from a different `lym` build), spawns the per-hub watchdog daemon (best-effort), and spawns the driver the run's own seed selects: the Go driver **detached** (via `proc`, no TTY), or a Claude strand running the loom driver in this same reed session for the `llm` driver.
+   When the `llm` driver is live and parked at a hand-back, it spawns nothing and instead types one resume line into that driver's pane.
+   It then returns the success envelope and never attaches or switches a tmux client; `lym reed attach` shows the session.
+   Selvage is the operator's terminal, not a strand.
+diff --git a/internal/battencli/cli.go b/internal/battencli/cli.go
+index 2d33638a..4a1ad668 100644
+--- a/internal/battencli/cli.go
++++ b/internal/battencli/cli.go
+@@ -20,7 +20,7 @@
+ // The cancel of a beam project first runs the hub's origin reconcile and refuses while the beam has members, naming each to land or cancel first, or, once the beam's pawl run holds its entry, to cancel and move off the beam; with origin unreachable it refuses naming the reconcile's way forward.
+ // A beam with no members is ended like a task, its dobby with its run, and its orch and watcher are then stopped, a failure there only a warning on the report; `lym beam create <slug>` starts the run again.
+ //
+-// "lym batten overview" (overview.go) is the hidden pane verb `lym beam start` runs in the runs strand of the prime and of each beam, whose window reed names `beam: prime` or `beam: <slug>`.
++// "lym batten overview" (overview.go) is the hidden pane verb `lym beam start` runs in the runs strand of the prime and of each beam, whose window reed names `beam: prime` or `<handle>: beam: <slug>`.
+ // It draws the window's dobby section, then a blank line and its orch section; each run shows once, in the dobby section.
+ // The dobby section is the lines of the dobby of the worktree the pane runs in (overviewdobby.go), rendered by `DobbyLines` from the `dobbyengine.View` a `DobbyViewReader` reads:
+ // a header saying whether the dobby is alive, with its `max_runs` and `land_notice`, or not running with `lym beam start` as the way forward;
+diff --git a/internal/battencli/commanddeps_test.go b/internal/battencli/commanddeps_test.go
+new file mode 100644
+index 00000000..fcf322f8
+--- /dev/null
++++ b/internal/battencli/commanddeps_test.go
+@@ -0,0 +1,47 @@
++// commanddeps_test.go pins the window title commandDeps hands the Open-Window row: the slug opened with the task's board handle.
++
++package battencli
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/testkit/boardkit"
++	"github.com/Knatte18/loomyard/internal/testkit/locationkit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestCommandDeps_TitleOpensTheSlugWithTheTasksHandle pins that Title reads the hub's board for the task's handle, and falls back to the bare slug when the board names none.
++func TestCommandDeps_TitleOpensTheSlugWithTheTasksHandle(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name string
++		// entry is the one board entry the hub's board holds; empty means the hub has no board.
++		entry string
++		want  string
++	}{
++		{"TheTasksHandleOpensTheSlug", `{"id":1,"slug":"run","kind":"task","labels":["bug"],"handle":"T4"}`, "T4: run"},
++		{"AnEntryOfAnotherSlugKeepsTheSlug", `{"id":1,"slug":"other","kind":"task","labels":["bug"],"handle":"T4"}`, "run"},
++		{"NoBoardKeepsTheSlug", "", "run"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			location := locationkit.Location(t.TempDir(), "main", "")
++			if tt.entry != "" {
++				boardkit.WriteBoard(t, fabricengine.BoardDir(location.HubPath), tt.entry)
++			}
++			c := &battenCLI{}
++
++			deps := c.commandDeps(location, "run", "lym", nil)
++
++			if deps.Title == nil {
++				t.Fatal("commandDeps().Title = nil; want a title func")
++			}
++			if got := deps.Title(); got != tt.want {
++				t.Errorf("commandDeps().Title() = %q; want %q", got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/battencli/wire.go b/internal/battencli/wire.go
+index 3e73870f..557a80af 100644
+--- a/internal/battencli/wire.go
++++ b/internal/battencli/wire.go
+@@ -824,6 +824,7 @@ func dirtyPathsOutsideRunRecords(taskLocation *lymcwd.Location) ([]string, error
+ 
+ // commandDeps returns the Env.Command facts and runner of the Open-Window, Seed-IDE and Open-IDE rows.
+ // The commands run in the prime, and {task_dir} is the task worktree's anchor path, located when a command holds it.
++// {title} is the slug opened with the task's board handle, `T4: <slug>`, read from the board when a command holds it, or the slug alone when the board names no handle.
+ // Each command's output goes to a command-<row>.log under the run's scratch directory.
+ func (c *battenCLI) commandDeps(location *lymcwd.Location, slug, executable string, locateTask func() (*lymcwd.Location, error)) shedadapters.CommandDeps {
+ 	return shedadapters.CommandDeps{
+@@ -836,6 +837,9 @@ func (c *battenCLI) commandDeps(location *lymcwd.Location, slug, executable stri
+ 			}
+ 			return taskLocation.AnchorPath(), nil
+ 		},
++		Title: func() string {
++			return boardengine.TitleWithHandle(fabricengine.BoardDir(location.HubPath), slug, slug)
++		},
+ 		Dir: location.WorktreePath(),
+ 		LogPath: func(row string) string {
+ 			return filepath.Join(shedrun.ScratchDir(location, slug), "command-"+row+".log")
+diff --git a/internal/battenshed/config_test.go b/internal/battenshed/config_test.go
+index d0774acb..c896d77f 100644
+--- a/internal/battenshed/config_test.go
++++ b/internal/battenshed/config_test.go
+@@ -51,7 +51,7 @@ func TestLoadConfig(t *testing.T) {
+ 			t.Fatalf("yaml.Unmarshal(template) = %v; want nil", err)
+ 		}
+ 		wantCommands := map[string]string{
+-			"open_window_command": "{lym} reed window {task_dir} --title {slug}",
++			"open_window_command": "{lym} reed window {task_dir} --title {title}",
+ 			"seed_ide_command":    "{lym} ide seed {slug}",
+ 			"open_ide_command":    "{lym} ide open {slug}",
+ 		}
+diff --git a/internal/battenshed/doc.go b/internal/battenshed/doc.go
+index 292c32ec..1c93e455 100644
+--- a/internal/battenshed/doc.go
++++ b/internal/battenshed/doc.go
+@@ -71,7 +71,8 @@
+ // The settings are read from the pair's own config stack when the row is entered, after Seed-Child has written the task's run settings into the pair's local layer, so a task's run_settings sets them per task.
+ // The commands are the open_window_command, seed_ide_command and open_ide_command keys, read from the template and the board default layer only, so a task's run settings and a worktree's own batten.yaml cannot change them;
+ // `lym config batten --layer default --set <key>=<value>` from the prime changes one, and a different value in another layer is ignored with a warning.
+-// A command may hold the placeholders {lym}, {slug} and {task_dir}.
++// A command may hold the placeholders {lym}, {slug}, {task_dir} and {title}, the slug opened with the task's board handle, `T4: <slug>`, or the slug alone when the board names none;
++// Open-Window's default command titles the window with {title}.
+ // A run resumed past Open-Window runs that command again when batten.open_window is on and no client is attached to the pair's reed session, so a window closed or left on another machine opens afresh; a resume with a client attached opens none.
+ //
+ // The InnerRun row checks its child once per Call and never waits inside one: a Call is one pass, which the scheduling dobby runs again and again.
+diff --git a/internal/battenshed/template.yaml b/internal/battenshed/template.yaml
+index 6fd8a773..fd83dfbd 100644
+--- a/internal/battenshed/template.yaml
++++ b/internal/battenshed/template.yaml
+@@ -1,9 +1,9 @@
+ open_window: true  # the Open-Window row's entry gate: the row runs open_window_command when this is on
+-open_window_command: "{lym} reed window {task_dir} --title {slug}"  # the Open-Window row's command, opening a terminal window attached to the task worktree's reed session; placeholders {lym}, {slug} and {task_dir}; change it with `lym config batten --layer default --set open_window_command=<value>` from the prime
++open_window_command: "{lym} reed window {task_dir} --title {title}"  # the Open-Window row's command, opening a terminal window attached to the task worktree's reed session; placeholders {lym}, {slug}, {task_dir} and {title}, the slug opened with the task's board handle such as `T4: <slug>`; change it with `lym config batten --layer default --set open_window_command=<value>` from the prime
+ seed_ide: true  # the Seed-IDE row's entry gate: the row runs seed_ide_command when this is on
+-seed_ide_command: "{lym} ide seed {slug}"  # the Seed-IDE row's command, writing the task worktree's VS Code title, colours and .vscode/ config and the user's key bindings; placeholders {lym}, {slug} and {task_dir}; change it with `lym config batten --layer default --set seed_ide_command=<value>` from the prime
++seed_ide_command: "{lym} ide seed {slug}"  # the Seed-IDE row's command, writing the task worktree's VS Code title, colours and .vscode/ config and the user's key bindings; placeholders {lym}, {slug}, {task_dir} and {title}; change it with `lym config batten --layer default --set seed_ide_command=<value>` from the prime
+ open_ide: false  # the Open-IDE row's entry gate: the row runs open_ide_command when this is on
+-open_ide_command: "{lym} ide open {slug}"  # the Open-IDE row's command, opening VS Code on the task worktree; placeholders {lym}, {slug} and {task_dir}; change it with `lym config batten --layer default --set open_ide_command=<value>` from the prime
++open_ide_command: "{lym} ide open {slug}"  # the Open-IDE row's command, opening VS Code on the task worktree; placeholders {lym}, {slug}, {task_dir} and {title}; change it with `lym config batten --layer default --set open_ide_command=<value>` from the prime
+ tackler: ""  # overrides shed.yaml's tackler model-spec for a batten run (see contracts/specs/llm-model-spec.md); empty inherits shed.yaml
+ tackler_timeout_min: 0  # overrides shed.yaml's tackler_timeout_min for a batten run; 0 inherits shed.yaml
+ tackler_max_spawns: ~  # overrides shed.yaml's tackler_max_spawns for a batten run; null inherits shed.yaml, and a set 0 turns the tackler off for batten
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index 271d674a..573cc9d0 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -70,6 +70,7 @@
+ // So a handle stays while its entry lives, a removed entry's number is given out again, a promote or a type change moves the entry to the lowest free number of its new letter, and a board.json written before handles gets them in id order on load, persisted by the next write.
+ // A note whose letter cannot be decided, its type label no longer configured or the board path-only, keeps its stored handle unless an entry of lower id holds it, which clears it.
+ // A handle is not scope: the run lock and the revised date ignore it.
++// `TitleWithHandle` opens a window's name with its run's handle, `T4: <name>`, reading the local board file, and leaves the name alone when the board names no handle for the slug or cannot be read.
+ // Every Board and Store method that takes a selector takes a Handle beside a slug string and a numeric id, matching the letter case-insensitively.
+ //
+ // # Priority
+diff --git a/internal/boardengine/handles.go b/internal/boardengine/handles.go
+index d239b924..6bf1a327 100644
+--- a/internal/boardengine/handles.go
++++ b/internal/boardengine/handles.go
+@@ -1,4 +1,4 @@
+-// handles.go — an entry's short handle, such as T4 or B2: its letter, its parse and its assignment over the whole entry list.
++// handles.go — an entry's short handle, such as T4 or B2: its letter, its parse, its assignment over the whole entry list and the window title it opens.
+ 
+ package boardengine
+ 
+@@ -9,6 +9,8 @@ import (
+ 	"strings"
+ 	"unicode"
+ 	"unicode/utf8"
++
++	"github.com/Knatte18/loomyard/internal/logger"
+ )
+ 
+ // Handle selects an entry by its handle, beside a slug string and a numeric id, wherever a Board or Store method takes a selector.
+@@ -126,6 +128,25 @@ func assignHandles(tasks []Task, vocab *Vocabulary) {
+ 	}
+ }
+ 
++// handleTitleSeparator joins an entry's handle to the name it opens in a title.
++const handleTitleSeparator = ": "
++
++// TitleWithHandle returns name opened with the handle of the entry slug on the board under boardDir, as `<handle>: <name>`, so a window named for a run shows the handle the operator calls the run by.
++// It returns name alone when the board holds no entry slug, the entry carries no handle, or the board cannot be read, which it logs at Warn: a title never fails its caller.
++func TitleWithHandle(boardDir, slug, name string) string {
++	tasks, err := ReadTasks(boardDir)
++	if err != nil {
++		logger.Warn("board: could not read the board for a title's handle; titling with the name alone", "slug", slug, "name", name, "cause", err)
++		return name
++	}
++	for _, task := range tasks {
++		if task.Slug == slug && task.Handle != "" {
++			return task.Handle + handleTitleSeparator + name
++		}
++	}
++	return name
++}
++
+ // compareHandles orders two handles by letter, then by number, with an unparsable or empty handle after every parsable one.
+ func compareHandles(a, b string) int {
+ 	letterA, numberA, okA := ParseHandle(a)
+diff --git a/internal/boardengine/handles_test.go b/internal/boardengine/handles_test.go
+index d3861dbb..9ddaf9b6 100644
+--- a/internal/boardengine/handles_test.go
++++ b/internal/boardengine/handles_test.go
+@@ -1,4 +1,4 @@
+-// handles_test.go — tests of entry handles: their assignment on write and load, and the Handle selector.
++// handles_test.go — tests of entry handles: their assignment on write and load, the Handle selector and the title a handle opens.
+ 
+ package boardengine_test
+ 
+@@ -186,3 +186,36 @@ func TestHandles_UndecidedLetterKeepsNoDuplicate(t *testing.T) {
+ 		t.Errorf("handles = %v; want %v", got, want)
+ 	}
+ }
++
++// TestTitleWithHandle pins that a name opens with its entry's handle, and that it stands alone when the board cannot give one.
++func TestTitleWithHandle(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name string
++		// board is the board.json the board directory holds; empty means none.
++		board string
++		slug  string
++		want  string
++	}{
++		{"AnEntryWithAHandleOpensTheName", `{"version":1,"entries":[{"id":1,"slug":"run","kind":"task","labels":["bug"],"handle":"T4"}]}`, "run", "T4: window"},
++		{"ABoardWithoutTheEntryKeepsTheName", `{"version":1,"entries":[{"id":1,"slug":"other","kind":"task","labels":["bug"],"handle":"T4"}]}`, "run", "window"},
++		{"AnEntryWithNoHandleKeepsTheName", `{"version":1,"entries":[{"id":1,"slug":"run","kind":"note","labels":["removed-type"]}]}`, "run", "window"},
++		{"AnUnreadableBoardKeepsTheName", `{"version":1,"entries":[`, "run", "window"},
++		{"NoBoardKeepsTheName", "", "run", "window"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			boardPath := t.TempDir()
++			if tt.board != "" {
++				if err := os.WriteFile(filepath.Join(boardPath, "board.json"), []byte(tt.board), 0o644); err != nil {
++					t.Fatalf("write board.json: %v", err)
++				}
++			}
++			if got := boardengine.TitleWithHandle(boardPath, tt.slug, "window"); got != tt.want {
++				t.Errorf("TitleWithHandle(%q, %q) = %q; want %q", tt.slug, "window", got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/loomcli/bootstrap.go b/internal/loomcli/bootstrap.go
+index eccaeb82..4452cf0b 100644
+--- a/internal/loomcli/bootstrap.go
++++ b/internal/loomcli/bootstrap.go
+@@ -26,15 +26,15 @@ const statusStrandDisplayName = loomengine.LoomStatusStrandName
+ // statusStrandOrder is the status strand's overview order key, one place after the runs strand's, so the checklist window sits right after the beam overview.
+ const statusStrandOrder = orchcli.RunsStrandOrder + 1
+ 
+-// statusStrandAddSpec builds the status strand's reedengine.AddSpec for the given pane command and the run's recipe name.
+-// It always takes an overview window titled with the recipe, ordered after the runs strand's window when the session has one.
++// statusStrandAddSpec builds the status strand's reedengine.AddSpec for the given pane command and window title.
++// It always takes an overview window titled title, ordered after the runs strand's window when the session has one.
+ // It has no size and no segment, so its window button takes the plain style.
+ // IfAbsent stays false because ensureStatusStrand does its own keep/replace/add dance.
+-func statusStrandAddSpec(cmd, recipe string) reedengine.AddSpec {
++func statusStrandAddSpec(cmd, title string) reedengine.AddSpec {
+ 	return reedengine.AddSpec{
+ 		NameOverride: statusStrandDisplayName,
+ 		Cmd:          cmd,
+-		Display:      render.Display{Anchor: render.AnchorOverview, Order: statusStrandOrder, Title: recipe},
++		Display:      render.Display{Anchor: render.AnchorOverview, Order: statusStrandOrder, Title: title},
+ 	}
+ }
+ 
+diff --git a/internal/loomcli/bootstrap_test.go b/internal/loomcli/bootstrap_test.go
+index cb57f9a4..7d0793c2 100644
+--- a/internal/loomcli/bootstrap_test.go
++++ b/internal/loomcli/bootstrap_test.go
+@@ -14,12 +14,15 @@ import (
+ 
+ 	"github.com/google/go-cmp/cmp"
+ 
++	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/orchcli"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/reedengine/render"
+ 	"github.com/Knatte18/loomyard/internal/shell"
+ 	"github.com/Knatte18/loomyard/internal/statuspane"
++	"github.com/Knatte18/loomyard/internal/testkit/boardkit"
++	"github.com/Knatte18/loomyard/internal/testkit/locationkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/scankit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+@@ -669,16 +672,16 @@ func TestStatusStrandAddSpec(t *testing.T) {
+ 	t.Parallel()
+ 	tests := []struct {
+ 		name        string
+-		recipe      string
++		title       string
+ 		wantDisplay render.Display
+ 	}{
+-		{"PawlRecipeTitlesTheWindowPawl", "pawl", render.Display{Anchor: render.AnchorOverview, Order: statusStrandOrder, Title: "pawl"}},
+-		{"TapestryRecipeTitlesTheWindowTapestry", "tapestry", render.Display{Anchor: render.AnchorOverview, Order: statusStrandOrder, Title: "tapestry"}},
++		{"ABareRecipeTitlesTheWindow", "pawl", render.Display{Anchor: render.AnchorOverview, Order: statusStrandOrder, Title: "pawl"}},
++		{"AHandleTitledRecipeTitlesTheWindow", "T4: tapestry", render.Display{Anchor: render.AnchorOverview, Order: statusStrandOrder, Title: "T4: tapestry"}},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			got := statusStrandAddSpec("watch-cmd", tt.recipe)
++			got := statusStrandAddSpec("watch-cmd", tt.title)
+ 			if got.Display.Order <= orchcli.RunsStrandOrder {
+ 				t.Errorf("Display.Order = %d; want it after the runs strand's %d", got.Display.Order, orchcli.RunsStrandOrder)
+ 			}
+@@ -697,3 +700,49 @@ func TestStatusStrandAddSpec(t *testing.T) {
+ 		})
+ 	}
+ }
++
++// TestStatusStrandSpec_TitlesTheWindowWithTheRunsHandleAndRecipe pins that the spec ensureStatusStrand hands to reed carries the handle-opened recipe title and the checklist command.
++func TestStatusStrandSpec_TitlesTheWindowWithTheRunsHandleAndRecipe(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	location := locationkit.Location(t.TempDir(), "run", "")
++	boardkit.WriteBoard(t, fabricengine.BoardDir(location.HubPath), `{"id":1,"slug":"run","kind":"task","labels":["bug"],"handle":"T4"}`)
++	c := &loomCLI{location: location, recipe: "darn"}
++
++	got := c.statusStrandSpec("/fixed/lym")
++
++	if want := "T4: darn"; got.Display.Title != want {
++		t.Errorf("statusStrandSpec().Display.Title = %q; want %q", got.Display.Title, want)
++	}
++	if want := statusStrandCmd(shell.ForGOOS(), "/fixed/lym"); got.Cmd != want {
++		t.Errorf("statusStrandSpec().Cmd = %q; want %q", got.Cmd, want)
++	}
++}
++
++// TestStatusWindowTitle pins that the status window opens its recipe with the run's board handle, and keeps the bare recipe when the board names none.
++func TestStatusWindowTitle(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name string
++		// entry is the one board entry the hub's board holds; empty means the hub has no board.
++		entry string
++		want  string
++	}{
++		{"TheRunsHandleOpensTheRecipe", `{"id":1,"slug":"run","kind":"task","labels":["bug"],"handle":"T4"}`, "T4: tapestry"},
++		{"AnEntryOfAnotherSlugKeepsTheRecipe", `{"id":1,"slug":"other","kind":"task","labels":["bug"],"handle":"T4"}`, "tapestry"},
++		{"NoBoardKeepsTheRecipe", "", "tapestry"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			location := locationkit.Location(t.TempDir(), "run", "")
++			if tt.entry != "" {
++				boardkit.WriteBoard(t, fabricengine.BoardDir(location.HubPath), tt.entry)
++			}
++			if got := statusWindowTitle(location, "tapestry"); got != tt.want {
++				t.Errorf("statusWindowTitle(run, tapestry) = %q; want %q", got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 5150aa11..451ba05f 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -59,7 +59,8 @@
+ // a seeded run keeps its recorded driver whatever the key says later.
+ // It brings up the worktree's tmux session;
+ // it ensures the status strand on either driver, and the per-hub watchdog daemon is spawned best-effort.
+-// The status strand runs the hidden `lym loom checklist` verb in an overview window named for the run's recipe, placed right after the runs strand's overview window in a beam's session, drawing the checklist frame: the recipe's rows in order, each entry numbered after its box and a review segment taking one number, each with its box, a row the run passed on a false entry gate and never visited boxed `[-]` apart from one not reached, the time spent in it, its visit count and its visit lines under it, each carrying no output path, a gate line per gate entry under a visit that recorded gate spans, opening with the UTC clock time its gate entry started, the visit after a gate row's refusal marked as rework for it and its time added to the gate row's line, a review segment's rounds each carrying their total, every closed time drawn to the second and every time that includes the open visit in whole minutes, then the run's state line, with the note of what a running run waits on (the same note `lym loom status` reports), and the wait line.
++// The status strand runs the hidden `lym loom checklist` verb in an overview window named for the run's recipe, opened with the run's board handle as in `T4: tapestry` when the board names one, placed right after the runs strand's overview window in a beam's session, drawing the checklist frame: the recipe's rows in order, each entry numbered after its box and a review segment taking one number, each with its box, a row the run passed on a false entry gate and never visited boxed `[-]` apart from one not reached, the time spent in it, its visit count and its visit lines under it, each carrying no output path, a gate line per gate entry under a visit that recorded gate spans, opening with the UTC clock time its gate entry started, the visit after a gate row's refusal marked as rework for it and its time added to the gate row's line, a review segment's rounds each carrying their total, every closed time drawn to the second and every time that includes the open visit in whole minutes, then the run's state line, with the note of what a running run waits on (the same note `lym loom status` reports), and the wait line.
++// The window's title is read when the strand is added or replaced, so a live strand of the running build keeps its title and a handle the board assigns later shows from the strand's next replacement.
+ // A Stuck visit whose status entry records where Shed routed it reads `bounced` and an awaiting one reads `escalated`, in this window only.
+ // A block row's Done visit reads `entered`, and a row inlined from a block is named `<row> in <block path>` on its line and its visit lines.
+ // The verb reads the status file and the seed without arming a run, and reports no content size to reed.
+diff --git a/internal/loomcli/sharedbootstrap.go b/internal/loomcli/sharedbootstrap.go
+index d1568691..cff8c718 100644
+--- a/internal/loomcli/sharedbootstrap.go
++++ b/internal/loomcli/sharedbootstrap.go
+@@ -14,6 +14,7 @@ import (
+ 	"fmt"
+ 	"os"
+ 
++	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/friction"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+@@ -297,7 +298,7 @@ func (c *loomCLI) ensureStatusStrand() error {
+ 	if err != nil {
+ 		return err
+ 	}
+-	addSpec := statusStrandAddSpec(statusStrandCmd(shell.ForGOOS(), exe), c.recipe)
++	addSpec := c.statusStrandSpec(exe)
+ 	var strand reedengine.Strand
+ 	if strandAction == statusStrandReplace {
+ 		// A replace goes through ReplaceStrand so the status strand keeps its top slot. A failure is
+@@ -322,6 +323,17 @@ func (c *loomCLI) ensureStatusStrand() error {
+ 	return nil
+ }
+ 
++// statusStrandSpec builds the spec the status strand is added or replaced with: the checklist pane command of the lym binary at exe, in a window titled for this run's recipe and board handle.
++func (c *loomCLI) statusStrandSpec(exe string) reedengine.AddSpec {
++	return statusStrandAddSpec(statusStrandCmd(shell.ForGOOS(), exe), statusWindowTitle(c.location, c.recipe))
++}
++
++// statusWindowTitle returns the name of the status strand's window for a run of recipe in the worktree at location, read from the board at the call:
++// the recipe opened with the run's board handle, such as `T4: tapestry`, or the recipe alone when the board names no handle for the worktree's slug or cannot be read.
++func statusWindowTitle(location *lymcwd.Location, recipe string) string {
++	return boardengine.TitleWithHandle(fabricengine.BoardDir(location.HubPath), location.WorktreeName, recipe)
++}
++
+ // wireLanding assembles Env.Landing: it opens the fabric, reads the landing branches and tells landingDeps the hub's language skills.
+ // It then sets the fixer's seat runner to the seat engine wire built.
+ func (c *loomCLI) wireLanding() error {
+diff --git a/internal/loomcli/wiring_seams_test.go b/internal/loomcli/wiring_seams_test.go
+index 68a7683e..1167c83e 100644
+--- a/internal/loomcli/wiring_seams_test.go
++++ b/internal/loomcli/wiring_seams_test.go
+@@ -57,6 +57,7 @@ var intentionallyNil = map[string]string{
+ 	"CreateWorktree":                      "batten-only seam, filled by battencli",
+ 	"ExecutableSetting":                   "no tapestry or darn row is a Command row; battencli alone fills it",
+ 	"Command.TaskDir":                     "no tapestry or darn row is a Command row; battencli alone fills it",
++	"Command.Title":                       "no tapestry or darn row is a Command row; battencli alone fills it",
+ 	"Command.LogPath":                     "no tapestry or darn row is a Command row; battencli alone fills it",
+ 	"Command.Run":                         "no tapestry or darn row is a Command row; battencli alone fills it",
+ 	"InnerRun.Spawn":                      "batten-only seam, filled by battencli",
+diff --git a/internal/orchcli/cli.go b/internal/orchcli/cli.go
+index c8e8d6dc..ddf676c0 100644
+--- a/internal/orchcli/cli.go
++++ b/internal/orchcli/cli.go
+@@ -99,8 +99,9 @@ type orchCLI struct {
+ 	executable func() (string, error)
+ 	// currentBuild identifies the running lym build, which tells a runs strand of this build from an older one.
+ 	currentBuild func() (statuspane.BuildIdentity, error)
+-	// runsWindowTitle names the runs strand's window: `beam: prime` in the prime, `beam: <slug>` in a beam.
+-	runsWindowTitle string
++	// runsWindowTitle names the runs strand's window when the strand is added or replaced: `beam: prime` in the prime, `beam: <slug>` in a beam, opened with the beam's board handle when the board names one.
++	// A live strand of the running build is kept as it is, so a handle the board assigns after the window opened shows from the strand's next replacement.
++	runsWindowTitle func() string
+ 	// reconcile judges and moves the hub's branches against origin, which a bring-up with Prepare runs before it decides anything about the strand.
+ 	reconcile func() (fabricengine.OriginReport, error)
+ 	// readBeamFacts reads the owner, standing anchor change and landing hold the bring-up's refusals judge; nil, as in a hand-built harness, refuses nothing.
+@@ -207,7 +208,7 @@ func wireCLI(c *orchCLI, location *lymcwd.Location) error {
+ 	reed := reedengine.New(reedCfg, reedGeom, shuttleengines.EnvScrub())
+ 
+ 	c.location = location
+-	c.runsWindowTitle = runsWindowTitleOf(location.WorktreeName, beam)
++	c.runsWindowTitle = func() string { return runsWindowTitleIn(location, beam) }
+ 	c.cfg = orchCfg
+ 	c.shuttleCfg = shuttleCfg
+ 	engines, err := shuttleengines.New(shuttleCfg, fabricengine.ConfigDirs(location))
+diff --git a/internal/orchcli/runs.go b/internal/orchcli/runs.go
+index 0c0e1067..66e4f055 100644
+--- a/internal/orchcli/runs.go
++++ b/internal/orchcli/runs.go
+@@ -1,4 +1,4 @@
+-// runs.go ensures the `runs` strand of the prime or a beam: the session's first overview window, named `beam: <slug>`, running `lym batten overview`, which `start` brings up before the orchestrator strand.
++// runs.go ensures the `runs` strand of the prime or a beam: the session's first overview window, named `beam: prime` or `<handle>: beam: <slug>`, running `lym batten overview`, which `start` brings up before the orchestrator strand.
+ 
+ package orchcli
+ 
+@@ -7,7 +7,10 @@ import (
+ 	"path/filepath"
+ 
+ 	"github.com/Knatte18/loomyard/internal/agentname"
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/reedengine/render"
+ 	"github.com/Knatte18/loomyard/internal/shell"
+@@ -37,6 +40,16 @@ func runsWindowTitleOf(worktree string, beam bool) string {
+ 	return runsWindowPrefix + runsWindowPrimeLabel
+ }
+ 
++// runsWindowTitleIn returns the name of the runs strand's window in the worktree at location, read from the board at the call:
++// `beam: prime` in the prime, and in a beam `beam: <slug>` opened with the beam project's board handle, such as `P1: beam: <slug>`, or bare when the board names no handle or cannot be read.
++func runsWindowTitleIn(location *lymcwd.Location, beam bool) string {
++	title := runsWindowTitleOf(location.WorktreeName, beam)
++	if !beam {
++		return title
++	}
++	return boardengine.TitleWithHandle(fabricengine.BoardDir(location.HubPath), location.WorktreeName, title)
++}
++
+ // runsStrandAddSpec builds the runs strand's reedengine.AddSpec for the given pane command and window title: the session's first overview window, with no size, no segment and no color.
+ func runsStrandAddSpec(cmd, title string) reedengine.AddSpec {
+ 	return reedengine.AddSpec{
+@@ -64,7 +77,7 @@ func (c *orchCLI) ensureRunsStrand() string {
+ 	}
+ 
+ 	sidecarPath := filepath.Join(c.paths.Dir, runsSidecarFile)
+-	spec := runsStrandAddSpec(runsStrandCmd(shell.ForGOOS(), exe), c.runsWindowTitle)
++	spec := runsStrandAddSpec(runsStrandCmd(shell.ForGOOS(), exe), c.runsWindowTitle())
+ 
+ 	var runs *reedengine.StrandStatus
+ 	for i := range strands {
+diff --git a/internal/orchcli/runstitle_integration_test.go b/internal/orchcli/runstitle_integration_test.go
+index c9e7f3e2..c454480a 100644
+--- a/internal/orchcli/runstitle_integration_test.go
++++ b/internal/orchcli/runstitle_integration_test.go
+@@ -1,15 +1,17 @@
+-// runstitle_integration_test.go proves the pre-run wiring names the runs strand's window after the worktree the verb runs in: the prime reads `beam: prime` and a beam reads `beam: <slug>`.
++// runstitle_integration_test.go proves the pre-run wiring names the runs strand's window after the worktree the verb runs in: the prime reads `beam: prime`, and a beam reads `beam: <slug>`, opened with its board handle once the board names one.
+ 
+ package orchcli
+ 
+ import (
+ 	"bytes"
++	"fmt"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/testkit/boardkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -28,26 +30,37 @@ func TestRunsWindowTitle_WiredFromTheWorktreeTheVerbRunsIn(t *testing.T) {
+ 		t.Fatalf("ResolveWorktree(%q): %v", slug, err)
+ 	}
+ 
+-	tests := []struct {
+-		name string
+-		cwd  string
+-		want string
+-	}{
+-		{"PrimeReadsPrime", h.Location.AnchorPath(), "beam: prime"},
+-		{"BeamReadsItsSlug", beam.AnchorPath(), "beam: " + slug},
++	// wired runs status, which runs the pre-run in full and only then talks to reed, whose answer this test ignores.
++	wired := func(cwd string) *orchCLI {
++		c := &orchCLI{}
++		var out bytes.Buffer
++		clihelp.ExecuteIn(commandOf(c), cwd, &out, []string{"status"})
++		if c.runsWindowTitle == nil {
++			t.Fatalf("status in %s wired no runs window title; output: %s", cwd, out.String())
++		}
++		return c
+ 	}
+-	for _, tt := range tests {
+-		t.Run(tt.name, func(t *testing.T) {
+-			t.Parallel()
+-
+-			// status runs the pre-run in full and only then talks to reed, whose answer this test ignores.
+-			c := &orchCLI{}
+-			var out bytes.Buffer
+-			clihelp.ExecuteIn(commandOf(c), tt.cwd, &out, []string{"status"})
++	prime, beamCLI := wired(h.Location.AnchorPath()), wired(beam.AnchorPath())
+ 
+-			if c.runsWindowTitle != tt.want {
+-				t.Errorf("runsWindowTitle after status in %s = %q; want %q; output: %s", tt.cwd, c.runsWindowTitle, tt.want, out.String())
+-			}
+-		})
++	// The steps run in order, not in parallel: the title is read from the board at each call, and the second step writes the board.
++	steps := []struct {
++		name       string
++		writeBoard bool
++		wantPrime  string
++		wantBeam   string
++	}{
++		{"BeforeTheBoardNamesTheBeamItReadsItsSlug", false, "beam: prime", "beam: " + slug},
++		{"OnceTheBoardNamesTheBeamItOpensWithItsHandle", true, "beam: prime", "P1: beam: " + slug},
++	}
++	for _, step := range steps {
++		if step.writeBoard {
++			boardkit.WriteBoard(t, h.BoardDir(), fmt.Sprintf(`{"id":1,"slug":%q,"kind":"project","labels":["bug"],"beam":true,"handle":"P1"}`, slug))
++		}
++		if got := prime.runsWindowTitle(); got != step.wantPrime {
++			t.Errorf("%s: prime runsWindowTitle() = %q; want %q", step.name, got, step.wantPrime)
++		}
++		if got := beamCLI.runsWindowTitle(); got != step.wantBeam {
++			t.Errorf("%s: beam runsWindowTitle() = %q; want %q", step.name, got, step.wantBeam)
++		}
+ 	}
+ }
+diff --git a/internal/orchcli/start_test.go b/internal/orchcli/start_test.go
+index 37c7e0ed..07fcdbfa 100644
+--- a/internal/orchcli/start_test.go
++++ b/internal/orchcli/start_test.go
+@@ -165,7 +165,7 @@ func newStartHarness(t *testing.T, strands ...reedengine.StrandStatus) *startHar
+ 	c.cfg.Model, c.cfg.Effort = "opus", "high"
+ 	c.stencilsDir = stencilkit.Seed(t)
+ 	c.location = locationkit.Location(t.TempDir(), "main", "")
+-	c.runsWindowTitle = "beam: prime"
++	c.runsWindowTitle = func() string { return harnessRunsWindowTitle }
+ 	boardDir := fabricengine.BoardDir(c.location.HubPath)
+ 	if err := os.MkdirAll(boardDir, 0o755); err != nil {
+ 		t.Fatal(err)
+@@ -200,6 +200,9 @@ func newStartHarness(t *testing.T, strands ...reedengine.StrandStatus) *startHar
+ 	return h
+ }
+ 
++// harnessRunsWindowTitle is the title the harness's runsWindowTitle answers, distinct from every title the production func computes so a spec carrying it proves the func's answer reached the spec.
++const harnessRunsWindowTitle = "harness-runs-window"
++
+ // startTestIndex is the operator index the harness hands the bring-up.
+ const startTestIndex = "- start-test-command: from the harness\n"
+ 
+@@ -280,7 +283,7 @@ func TestStart_EnsuresTheRunsStrandBeforeTheOrch(t *testing.T) {
+ 	t.Parallel()
+ 
+ 	otherBuild := statuspane.BuildIdentity{Path: "/older/lym", Size: 9, ModTime: 9}
+-	wantDisplay := render.Display{Anchor: render.AnchorOverview, Order: RunsStrandOrder, Title: "beam: prime"}
++	wantDisplay := render.Display{Anchor: render.AnchorOverview, Order: RunsStrandOrder, Title: harnessRunsWindowTitle}
+ 	tests := []struct {
+ 		name    string
+ 		strands []reedengine.StrandStatus
+diff --git a/internal/orchengine/doc.go b/internal/orchengine/doc.go
+index dda72d48..a10162ca 100644
+--- a/internal/orchengine/doc.go
++++ b/internal/orchengine/doc.go
+@@ -11,7 +11,7 @@
+ //
+ // The orch is brought up by `orchcli.BeamUp`, which `lym beam start` calls, and stopped by `orchcli.BeamDown`, which `lym beam stop` calls; no orch verb starts it.
+ // A bring-up is idempotent.
+-// It first ensures the `runs` strand, the session's first overview window named `beam: prime`, or `beam: <slug>` in a beam, running `lym batten overview`, which shows the worktree's dobby with each run it drives above the orch context lines, so on a fresh session the beam's window is the first window and the orchestrator has a window of its own; a failure there only warns.
++// It first ensures the `runs` strand, the session's first overview window named `beam: prime`, or in a beam `beam: <slug>` opened with the beam's board handle as in `P1: beam: <slug>`, running `lym batten overview`, which shows the worktree's dobby with each run it drives above the orch context lines, so on a fresh session the beam's window is the first window and the orchestrator has a window of its own; a failure there only warns.
+ // It leaves one live orchestrator strand and one watcher bound to it, then reports.
+ // It never attaches or switches a tmux client;
+ // `lym reed attach` is the only way into the session.
+diff --git a/internal/shedadapters/command.go b/internal/shedadapters/command.go
+index 3acdef24..c7341a20 100644
+--- a/internal/shedadapters/command.go
++++ b/internal/shedadapters/command.go
+@@ -44,6 +44,8 @@ type CommandDeps struct {
+ 	Lym, Slug string
+ 	// TaskDir returns the value of the {task_dir} placeholder; it is called only when the command holds that placeholder.
+ 	TaskDir func() (string, error)
++	// Title returns the value of the {title} placeholder, the title of the run's window; it is called only when the command holds that placeholder.
++	Title func() string
+ 	// Dir is the directory the command runs in.
+ 	Dir string
+ 	// LogPath returns the log file of row's command.
+@@ -115,6 +117,9 @@ func (p *CommandProducer) Call(ctx context.Context) (shedengine.Outcome, shedeng
+ 		}
+ 		values["task_dir"] = taskDir
+ 	}
++	if strings.Contains(command, "{title}") {
++		values["title"] = p.deps.Title()
++	}
+ 	goos := p.deps.GOOS
+ 	if goos == "" {
+ 		goos = runtime.GOOS
+diff --git a/internal/shedadapters/command_test.go b/internal/shedadapters/command_test.go
+index da01e41a..f2fd0189 100644
+--- a/internal/shedadapters/command_test.go
++++ b/internal/shedadapters/command_test.go
+@@ -73,6 +73,13 @@ func TestCommandProducer(t *testing.T) {
+ 			wantRuns:    1,
+ 			wantCommand: "open " + quote("linux", "/bin/lym") + " " + quote("linux", "slug-one") + " " + quote("linux", awkward),
+ 		},
++		{
++			name:        "the title placeholder reaches sh as one quoted word",
++			command:     "open --title {title}",
++			goos:        "linux",
++			wantRuns:    1,
++			wantCommand: "open --title " + quote("linux", "T4: slug-one"),
++		},
+ 		{
+ 			name:     "a percent in task dir under cmd runs nothing and warns",
+ 			command:  "open {task_dir}",
+@@ -122,6 +129,7 @@ func TestCommandProducer(t *testing.T) {
+ 				Lym:               "/bin/lym",
+ 				Slug:              "slug-one",
+ 				TaskDir:           func() (string, error) { return tt.taskDir, tt.taskDirErr },
++				Title:             func() string { return "T4: slug-one" },
+ 				Dir:               "/hub/prime",
+ 				LogPath:           func(string) string { return logPath },
+ 				Run: func(_ context.Context, dir, command, gotLog string, timeout time.Duration) (CommandResult, error) {
+diff --git a/internal/shedadapters/doc.go b/internal/shedadapters/doc.go
+index 2a5ca293..cc991439 100644
+--- a/internal/shedadapters/doc.go
++++ b/internal/shedadapters/doc.go
+@@ -384,8 +384,8 @@
+ //  2. The command is read through ExecutableSetting, which the owner builds over the template and the board default layer only; an unreadable or non-string command is an error naming the key and the `lym config <module> --layer default --set <key>=<value>` correction.
+ //     When Setting answers a different non-empty command for the key, the row warns that value is ignored.
+ //  3. An empty command is Done with no process.
+-//  4. The placeholders {lym}, {slug} and {task_dir} are replaced, each value quoted by verifyrun.QuoteArg for the shell the command runs under;
+-//     any other brace text, ${HOME} included, passes through literally, and TaskDir is called only when {task_dir} appears.
++//  4. The placeholders {lym}, {slug}, {task_dir} and {title} are replaced, each value quoted by verifyrun.QuoteArg for the shell the command runs under;
++//     any other brace text, ${HOME} included, passes through literally, and TaskDir and Title are each called only when their placeholder appears.
+ //     A value cmd cannot quote, one holding a percent sign, makes the row Done with no process and a warning naming the placeholder and its way forward.
+ //  5. The command runs once through Run, in Dir with the row's log path and timeout.
+ //     An exit of 0 is Done; a non-zero exit, a timeout and a runner error are each Done with a warning naming the log path.
+diff --git a/internal/testkit/boardkit/boardkit.go b/internal/testkit/boardkit/boardkit.go
+index c564610b..a642f658 100644
+--- a/internal/testkit/boardkit/boardkit.go
++++ b/internal/testkit/boardkit/boardkit.go
+@@ -1,12 +1,14 @@
+-// Package boardkit builds a hub fixture whose board directory holds only the board config.
++// Package boardkit builds board fixtures: a hub whose board directory holds only the board config, and a board file holding given entries.
+ //
+ // It gives tests that open the hub's board through boardengine.OpenHub a hub with no git and no other fixture.
++// It gives tests that read the board's entries a board file without a Board.
+ // The kit imports only boardengine, configengine, fabricengine and the standard library.
+ package boardkit
+ 
+ import (
+ 	"os"
+ 	"path/filepath"
++	"strings"
+ 	"sync"
+ 	"testing"
+ 
+@@ -41,3 +43,17 @@ func HubWithBoardConfig(t *testing.T) string {
+ 	}
+ 	return hub
+ }
++
++// WriteBoard writes the board file under boardDir holding entries, each one entry's JSON object, creating boardDir when it is absent and replacing any board file there.
++// It fails the test on a setup error.
++func WriteBoard(t *testing.T, boardDir string, entries ...string) {
++	t.Helper()
++	if err := os.MkdirAll(boardDir, 0o755); err != nil {
++		t.Fatalf("MkdirAll(%q) = %v; want nil", boardDir, err)
++	}
++	path := filepath.Join(boardDir, boardengine.BoardFileRel())
++	content := `{"version":1,"entries":[` + strings.Join(entries, ",") + `]}`
++	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
++		t.Fatalf("WriteFile(%q) = %v; want nil", path, err)
++	}
++}
+diff --git a/internal/testkit/envkit/envkit.go b/internal/testkit/envkit/envkit.go
+index ac36f425..c63bc086 100644
+--- a/internal/testkit/envkit/envkit.go
++++ b/internal/testkit/envkit/envkit.go
+@@ -566,6 +566,7 @@ func FullEnv(t testing.TB) shedrecipe.Env {
+ 			Lym:     "lym",
+ 			Slug:    "fullenv-slug",
+ 			TaskDir: func() (string, error) { return "", nil },
++			Title:   func() string { return "fullenv-slug" },
+ 			Dir:     dir,
+ 			LogPath: func(string) string { return "" },
+ 			Run: func(context.Context, string, string, string, time.Duration) (shedadapters.CommandResult, error) {
