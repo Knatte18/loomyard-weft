@@ -217,6 +217,14 @@ None.
   - d8-local-warp-stale-tracking-ref (class design, severity MEDIUM, open in rounds 2)
 <!-- /lym:carry-over Discussion-Review -->
 
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/plan/round-2-review.md; fixer report: _lym/reviews/plan/round-2-fixer-report.md.
+  - archive-test-reads-unexported-field (class consistency, severity MEDIUM, open in rounds 2)
+  - cleanup-live-pair-reread-unreached (class consistency, severity MEDIUM, open in rounds 2)
+  - d3-follow-up-sites-enumerated-by-hand (class design, severity MEDIUM, open in rounds 2)
+<!-- /lym:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - D1: a resume at Run-Shed whose task worktree is gone and whose weft branch is on origin with no archive tag covering it re-creates the pair, spawns its push and resumes on the second reconcile's verdict; the status stays `running`.
