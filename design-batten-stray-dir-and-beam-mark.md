@@ -1,6 +1,6 @@
 # Batten treats a stray non-worktree directory as a gone pair, and a beam landing accepts its own beam mark
 
-`batten-stray-dir-and-beam-mark` · Task · bug, batten, pawl · running · Code-Burler-Review
+`batten-stray-dir-and-beam-mark` · Task · bug, batten, pawl · running · Code-Burler-Fix
 
 From [issue #21](https://github.com/Knatte18/loomyard/issues/21), the batten half of its three faults; the `fabric remove` half is task `fabric-remove-ignored-files`.
 
