@@ -2,8 +2,6 @@
 
 `push-lock-busy-blocks` · Task · bug, fabric, landing · running · Darn-Write
 
-Depends on: [`cancel-remove-leftover-dir`](design-cancel-remove-leftover-dir.md)
-
 Imported from [issue #37](https://github.com/Knatte18/loomyard/issues/37).
 
 What happened: the PR-Review row halted the loom run as blocked with 'pushing the task branch failed: fabricengine: push lock busy: <weft>/.weft/fabric.push.lock still held after 30s; neither side was pushed'. The way forward named was to run lym fabric push in the task worktree, then lym loom resume. The run had been through 17 history entries and had just finished Describe.

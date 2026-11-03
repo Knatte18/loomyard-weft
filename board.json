@@ -135,28 +135,6 @@
       "revised": "2026-11-03T07:40:20Z"
     },
     {
-      "id": 764,
-      "handle": "T5",
-      "slug": "fixers-on-sonnet",
-      "title": "Bench Plan and Discussion fixers on Sonnet against Opus",
-      "kind": "task",
-      "labels": [
-        "research",
-        "burler",
-        "claude"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Twelve fixer runs: Opus against Sonnet, and Sonnet on concrete findings",
-      "body": "## Seen\n\n`docs/research/token-audit-2026-10-22`: Opus and Sonnet read cache at the same price, so a swap saves about half a role's non-cache-read cost.\nOver the audit window the Plan and Discussion fixers cost about $162 on Opus.\nThe Webster and Merge fixers already run on Sonnet (`webster_fixer_model` and `merge_fixer_model` set to `sonnet[medium]`).\n`discussion_fixer_model` and `plan_fixer_model` are empty and fall back to `fixer_model`, `opus[medium]`.\nA Sonnet fixer needs findings concrete enough to carry out: each names the place and the change, not only the problem (operator, 2026-10-22).\n`docs/research/review-setup-audit-2026-10-28/report.md` found the late Plan-round defects to be the writer's misses rather than a sloppy fixer's, and `validator-checks` now catches the recurring machine-visible ones; fixer quality on a swap is still unmeasured.\n\n## Bench (operator, 2026-11-03)\n\nRuns as darn with profile `docs`, after bench `concrete-review-findings` has landed, since its third arm takes that bench's concrete findings as input.\n\n- Inputs: two review rounds from past runs with their findings, one Plan round and one Discussion round.\n- Arms, each on both inputs:\n  1. `opus[medium]` fixer on the findings as written today, the baseline.\n  2. `sonnet[medium]` fixer on the findings as written today.\n  3. `sonnet[medium]` fixer on the same rounds' findings written in the concrete form.\n- Repeats: two per arm and input, so twelve fixer runs.\n- Scoring: a fresh review round of each fixed artifact counts the findings fixed correctly, left open and newly made; the cost of each fixer run is recorded.\n- Report under `docs/research/`, with a recommendation for `plan_fixer_model` and `discussion_fixer_model`.\n",
-      "status": "done",
-      "created": "2026-10-22T16:08:23Z",
-      "revised": "2026-11-03T18:21:54Z",
-      "profile": "docs"
-    },
-    {
       "id": 849,
       "handle": "E3",
       "slug": "run-pins-its-version",
@@ -276,7 +254,6 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "cancel-remove-leftover-dir",
         "push-lock-busy-blocks"
       ],
       "isolated": false,
@@ -630,30 +607,6 @@
       "revised": "2026-11-03T16:36:11Z"
     },
     {
-      "id": 1061,
-      "handle": "T8",
-      "slug": "cancel-remove-leftover-dir",
-      "title": "batten cancel --remove leaves a non-git directory that blocks Worktree-Create",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "batten",
-        "fabric"
-      ],
-      "issues": [
-        39
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #39](https://github.com/Knatte18/loomyard/issues/39).\n\n## What happened\n\nIn the Models hub (anchor `src/csharp/NORCE.Models`), `lym batten cancel production-model-duplicates --remove` stopped a tapestry run in Discussion-Write and answered `pair_removed: true`.\nThe task worktree directory `\u003chub\u003e/production-model-duplicates/` stayed behind, no longer a git worktree, holding only `src/csharp/NORCE.Models/*/obj/` build output and `.lym/reed.lock` (52 files, all timestamped at the cancel).\nA later `lym batten run production-model-duplicates` failed at Worktree-Create with `{\"error\":\"not a git repository\"}`, and the drive report handed back as an interrupted step.\n`lym fabric prune` listed nothing, since the directory is not a worktree.\nRemoving the directory by hand let the run start.\n\n`lym board rename` of the same slug after the cancel also refused with \"has a pair, and its slug names that pair: end the pair first with `lym batten cancel ... --remove`\", although that cancel had already run.\n\n## Expected\n\n- `batten cancel --remove` leaves no directory at the pair's path, or waits for the processes it ends (a dotnet build server or the reed session likely wrote `obj/` and `reed.lock` after the removal) before removing it.\n- Worktree-Create meets a leftover non-git directory at its path with a clear refusal naming the path and the way forward, or clears one holding only ignored build output.\n- `fabric prune` reports such an orphan directory.\n- `board rename` does not see a pair once cancel has removed it.\n",
-      "status": "done",
-      "created": "2026-11-03T16:44:17Z",
-      "revised": "2026-11-03T16:51:56Z",
-      "profile": "light"
-    },
-    {
       "id": 1062,
       "handle": "T9",
       "slug": "push-lock-busy-blocks",
@@ -668,9 +621,7 @@
         37
       ],
       "recipe": "darn",
-      "depends_on": [
-        "cancel-remove-leftover-dir"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #37](https://github.com/Knatte18/loomyard/issues/37).\n\nWhat happened: the PR-Review row halted the loom run as blocked with 'pushing the task branch failed: fabricengine: push lock busy: \u003cweft\u003e/.weft/fabric.push.lock still held after 30s; neither side was pushed'. The way forward named was to run lym fabric push in the task worktree, then lym loom resume. The run had been through 17 history entries and had just finished Describe.\n\nWhy it is abnormal: the push lock sits in a weft directory shared across worktrees, so another session's push or a stale lock holder can stall a push; a 30s wait then ends the whole run as an escalation to a human, though contention is transient and a push is idempotent. Nothing in the note says which process held the lock, or whether it was stale.\n\nWhat to do: retry the push with backoff for longer, or re-step the row automatically before blocking; when the lock is still busy, report the holder (pid, age) and clear a lock whose holder is dead.\n\nProvenance: task pinned-solvers-everywhere; notes loom-halt-2.md",

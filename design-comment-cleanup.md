@@ -2,7 +2,7 @@
 
 `comment-cleanup` · Task · enhancement, fabric
 
-Depends on: [`cancel-remove-leftover-dir`](design-cancel-remove-leftover-dir.md), [`push-lock-busy-blocks`](design-push-lock-busy-blocks.md)
+Depends on: [`push-lock-busy-blocks`](design-push-lock-busy-blocks.md)
 
 ## Seen (operator and hub orch, 2026-10-31)
 
