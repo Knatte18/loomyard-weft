@@ -1,11 +1,11 @@
 {
-  "current_producer": "Drift-Recheck",
+  "current_producer": "Describe",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Drift-Recheck",
-    "last": "Code-Bouncer → done",
+    "now": "Describe",
+    "last": "Drift-Recheck → skipped",
     "wait": ""
   },
   "history": [
@@ -139,6 +139,13 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYMHUB/cancel-remove-leftover-dir/_lym/reviews/code/round-1-bouncer-ledger.md",
       "at": "2026-11-03T18:46:19Z"
+    },
+    {
+      "producer": "Drift-Recheck",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-03T18:46:28Z",
+      "reason": "drift.enabled = false"
     }
   ],
   "product": {
