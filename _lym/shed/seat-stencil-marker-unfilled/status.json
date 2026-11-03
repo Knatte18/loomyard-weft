@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Burler-Review",
+  "current_producer": "Code-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Burler-Review",
-    "last": "Code-Bouncer → bounced to Code-Burler-Review",
+    "now": "Code-Burler-Fix",
+    "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -75,6 +75,35 @@
       "output": "",
       "at": "2026-11-03T10:15:13Z",
       "routed_to": "Code-Burler-Review"
+    },
+    {
+      "producer": "Code-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/seat-stencil-marker-unfilled/_lym/reviews/code/round-1-review.md",
+      "at": "2026-11-03T10:18:22Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-03T10:17:46.008334256Z",
+          "end": "2026-11-03T10:17:46.008661438Z"
+        },
+        {
+          "gate": "review",
+          "kind": "rework",
+          "start": "2026-11-03T10:17:46.456433308Z",
+          "end": "2026-11-03T10:18:21.548623689Z"
+        },
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-03T10:18:21.584211934Z",
+          "end": "2026-11-03T10:18:21.584781589Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Code-Burler-Fix"
     }
   ],
   "product": {
