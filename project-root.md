@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-03 16:39 UTC; every age below is as of then.
+Rendered 2026-11-03 16:40 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -22,7 +22,7 @@ Held by a run; its scope is locked until the run ends.
 | T2 | **Every remote operation runs async, and local-only fabric pairs go**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | darn · solid | Darn-Write | neve | 2w<br>49m | fabric, batten |
 | T3 | **The Drift-Baseline stencil skips the tests an intended change drifts**<br>• Intended drift is skipped instead of compared and accepted with a reason, which hides regressions in the same tests | [`drift-baseline-skips-intended`](design-drift-baseline-skips-intended.md) | darn · light | Worktree-Create | neve | 6m<br>0m | drift, stencil |
 | T5 | **depends_on accepts a project or any entry that lands, and dobby holds the task until it does** | [`depends-on-any-entry`](design-depends-on-any-entry.md) | darn · light | Darn-Write | neve | 21m<br>18m | board, dobby |
-| T7 | **An arbiter whose turn ends on an API error holds the stop silently until its deadline**<br>• A StopFailure leaves the settler idle, the parent's resume is refused as driver_not_parked, and no one is told | [`arbiter-api-error-stall`](design-arbiter-api-error-stall.md) | darn · light | Worktree-Create | neve | 3m<br>0m | arbiter, shuttle, claude |
+| T7 | **An arbiter whose turn ends on an API error holds the stop silently until its deadline**<br>• A StopFailure leaves the settler idle, the parent's resume is refused as driver_not_parked, and no one is told | [`arbiter-api-error-stall`](design-arbiter-api-error-stall.md) | darn · light | Record-Write | neve | 3m<br>0m | arbiter, shuttle, claude |
 
 ### Ready (0)
 
