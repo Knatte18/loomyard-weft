@@ -1,6 +1,6 @@
 # A project page shows the project body under its brief
 
-`project-body-in-render` · Task · enhancement, board
+`project-body-in-render` · Task · enhancement, board · running · Worktree-Create
 
 ## Seen (operator, 2026-11-03)
 
