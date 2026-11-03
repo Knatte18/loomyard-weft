@@ -24,7 +24,7 @@ Held by a run; its scope is locked until the run ends.
 | T5 | **Darn-Write seat halts: stencil darn-template-write has unfilled marker subagent_model** | [`seat-stencil-marker-unfilled`](design-seat-stencil-marker-unfilled.md) | darn · solid | Code-Burler-Review | neve | 13h<br>24m | stencil, shed |
 | T9 | **Run ends with a background shell outstanding: its commit and gate result are lost** | [`run-done-with-background-shell`](design-run-done-with-background-shell.md) | darn · solid | Code-Bouncer | neve | 13h<br>24m | shuttle, webster, gate |
 | T10 | **lym config drift refuses the whole-map capture and compare form its own key description prescribes** | [`drift-config-whole-map-set`](design-drift-config-whole-map-set.md) | darn · light | Code-Burler-Fix | neve | 3h<br>24m | drift, config |
-| T11 | **Plan verbs: validate-plan cannot target a glyphless test file, insert-card leaves bare card N mentions stale**<br>• Let edit-test-file target a test file with no toc symbols, and make insert-card rewrite or report bare card N mentions | [`plan-verbs-glyphless-and-refs`](design-plan-verbs-glyphless-and-refs.md) | darn · solid | Drift-Verify | neve | 13h<br>24m | loom, quarry |
+| T11 | **Plan verbs: validate-plan cannot target a glyphless test file, insert-card leaves bare card N mentions stale**<br>• Let edit-test-file target a test file with no toc symbols, and make insert-card rewrite or report bare card N mentions | [`plan-verbs-glyphless-and-refs`](design-plan-verbs-glyphless-and-refs.md) | darn · solid | Code-Bouncer | neve | 13h<br>24m | loom, quarry |
 
 ### Ready (0)
 
