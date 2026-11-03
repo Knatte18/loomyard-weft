@@ -1,6 +1,6 @@
 # A partial scope that skips every test ends in a capture that wrote no file, with no cause named
 
-`drift-skip-all-capture` · Task · bug, drift · running · Record-Write
+`drift-skip-all-capture` · Task · bug, drift · running · Drift-Baseline
 
 Depends on: [`drift-baseline-skips-intended`](design-drift-baseline-skips-intended.md)
 
