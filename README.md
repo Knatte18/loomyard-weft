@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-03 11:05 UTC; every age below is as of then.
+Rendered 2026-11-03 11:06 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -34,11 +34,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R2 |  | **Plan and Discussion writers explore through parallel Sonnet agents that return only what is relevant**<br>• Bench the guidance that sends Plan and Discussion writers' lookups to parallel Sonnet subagents against a writer given none | [`planner-fork-lookups`](design-planner-fork-lookups.md) | 1d<br>22h | loom |
 | R3 |  | **Measure the effect of the batching breach hook**<br>• After the batching breach hook lands, compare breach turns and context tokens against the 28-session baseline and tune its thresholds | [`batching-hook-effect`](design-batching-hook-effect.md) | 23h<br>22h | claude, shuttle, tools |
 
-## [P0 Root: entries under no project](project-root.md) (43)
+## [P0 Root: entries under no project](project-root.md) (44)
 
 Owner `neve`
 
-### Tasks (9)
+### Tasks (10)
 
 Concrete and claimable; only a task can run.
 
@@ -70,6 +70,14 @@ Waits only on Running, Ready or Draft entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T7 | **fabric remove deletes the whole worktree directory, ignored files included** | [`fabric-remove-ignored-files`](design-fabric-remove-ignored-files.md) | darn · solid | T3 | 3h<br>3h | fabric |
 | T8 | **Batten treats a stray non-worktree directory as a gone pair, and a beam landing accepts its own beam mark** | [`batten-stray-dir-and-beam-mark`](design-batten-stray-dir-and-beam-mark.md) | darn · light | T3 | 3h<br>3h | batten, pawl |
+
+#### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T5 | `draft` **Run windows show the board handle in their titles**<br>• Konsole window titled T4: <slug>, tmux overview window T4: overview, beam overview P1: beam: <slug> | [`window-titles-show-handle`](design-window-titles-show-handle.md) | darn · light |  | 0m<br>0m | reed, batten, termwindow |
 
 ### Notes (34)
 

@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-03 11:05 UTC; every age below is as of then.
+Rendered 2026-11-03 11:06 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (9)
+## Tasks (10)
 
 Concrete and claimable; only a task can run.
 
@@ -40,6 +40,14 @@ Waits only on Running, Ready or Draft entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T7 | **fabric remove deletes the whole worktree directory, ignored files included** | [`fabric-remove-ignored-files`](design-fabric-remove-ignored-files.md) | darn · solid | T3 | 3h<br>3h | fabric |
 | T8 | **Batten treats a stray non-worktree directory as a gone pair, and a beam landing accepts its own beam mark** | [`batten-stray-dir-and-beam-mark`](design-batten-stray-dir-and-beam-mark.md) | darn · light | T3 | 3h<br>3h | batten, pawl |
+
+### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T5 | `draft` **Run windows show the board handle in their titles**<br>• Konsole window titled T4: <slug>, tmux overview window T4: overview, beam overview P1: beam: <slug> | [`window-titles-show-handle`](design-window-titles-show-handle.md) | darn · light |  | 0m<br>0m | reed, batten, termwindow |
 
 ## Notes (34)
 
