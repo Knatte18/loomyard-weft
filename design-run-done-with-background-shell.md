@@ -1,6 +1,6 @@
 # Run ends with a background shell outstanding: its commit and gate result are lost
 
-`run-done-with-background-shell` · Task · bug, shuttle, webster, gate · running · Darn-Write
+`run-done-with-background-shell` · Task · bug, shuttle, webster, gate · running · Drift-Verify
 
 Imported from [issue #7](https://github.com/Knatte18/loomyard/issues/7).
 
