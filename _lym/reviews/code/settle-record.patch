@@ -1,0 +1,247 @@
+diff --git a/internal/adoptcli/doc.go b/internal/adoptcli/doc.go
+index c58be725..6444959b 100644
+--- a/internal/adoptcli/doc.go
++++ b/internal/adoptcli/doc.go
+@@ -175,7 +175,7 @@
+ // `fixDeps` holds the try limit, `adopt_fix_tries` of the subject worktree's `beam.yaml`, and the board's vocabulary read through `boardengine.LoadConfig`.
+ // `failedEnd` takes the first case that applies, each returning the lines of its notice:
+ //
+-//  1. The subject's own fix task, `fronttask.FrontOf` over the subject's project and the `adopt-check` action, stands open and healthy: released with the empty status, a run status with no readable batten run record (starting), a run record `running` or `paused`, or `awaiting` with an admitted escalation. Nothing is filed or removed; the notice names the task, its state, that its landing starts the next check, and the hand steps: `lym batten run <slug>` from the prime for a paused one, and `lym batten cancel <slug> --remove` then `lym board remove <slug>` to drop it.
++//  1. The subject's own fix task, `fronttask.FrontOf` over the subject's project and the `adopt-check` action, stands open and healthy: released with the empty status, a run status with no readable batten run record (starting), a run record `running` or `paused`, or `awaiting` with an admitted escalation. Nothing is filed or removed; the notice names the task, its state, that its landing starts the next check, and the hand steps: `lym batten run <slug>` from the prime for a paused one, and `lym batten cancel <slug> --remove` then `lym board remove '{"slug":"<slug>"}'` to drop it.
+ //  2. Another open front task, `fronttask.OpenFront` over the board without the own fix task, stands in the subject's worktree. Nothing is filed or removed; the notice names it and the re-run of `lym adopt <subject>` once it lands.
+ //  3. The try count in `fix-tries.json` is at the limit. Nothing is filed or removed; the notice names the failing tiers and tests, `suite.log`, a halted own fix task when one stands, and the re-run of `lym adopt <subject>`, whose check removes that task.
+ //  4. The own fix task is a draft or halted, `fixRunHalted` reading the run record's state `blocked`, `failed`, or `awaiting` with no admitted escalation. It is removed through `fronttask.Remove` right before the filing; a failed removal files nothing, and its line carries the step's error and hand removal, adding the re-run only when the entry's removal failed.
+diff --git a/internal/adoptcli/fixloop.go b/internal/adoptcli/fixloop.go
+index 0622abed..ce83ee66 100644
+--- a/internal/adoptcli/fixloop.go
++++ b/internal/adoptcli/fixloop.go
+@@ -265,7 +265,7 @@ func failedEnd(deps fixDeps, record CheckRecord) []string {
+ // halted is true for a task to remove: a draft or other closed status, or a run the batten run record reads halted.
+ // Otherwise state words the open task and handStep names what the operator takes to move or drop it.
+ func judgeOwnFix(deps fixDeps, own boardengine.Task) (state, handStep string, halted bool, err error) {
+-	drop := fmt.Sprintf("to drop it run `lym batten cancel %s --remove`, then `lym board remove %s`, whose removal runs its adopt-check action", own.Slug, own.Slug)
++	drop := fmt.Sprintf("to drop it run `lym batten cancel %s --remove`, then `%s`, whose removal runs its adopt-check action", own.Slug, boardengine.RemoveCommand(own.Slug))
+ 	if boardengine.IsEmptyStatus(own.Status) {
+ 		return "released and waits for its dobby to start it", drop, false, nil
+ 	}
+diff --git a/internal/adoptcli/fixloop_test.go b/internal/adoptcli/fixloop_test.go
+index 8345af69..a977a64d 100644
+--- a/internal/adoptcli/fixloop_test.go
++++ b/internal/adoptcli/fixloop_test.go
+@@ -254,7 +254,7 @@ func TestFailedEnd(t *testing.T) {
+ 				if len(f.created) != 0 || len(f.removed) != 0 || len(f.cancelled) != 0 {
+ 					t.Errorf("created = %v, removed = %q, cancelled = %q; want none", f.created, f.removed, f.cancelled)
+ 				}
+-				if len(lines) != 1 || !mentions(lines, "adopt-fix-alpha-t1", tt.wantState, "its landing starts the next check", tt.wantHand, "`lym batten cancel adopt-fix-alpha-t1 --remove`, then `lym board remove adopt-fix-alpha-t1`") {
++				if len(lines) != 1 || !mentions(lines, "adopt-fix-alpha-t1", tt.wantState, "its landing starts the next check", tt.wantHand, "`lym batten cancel adopt-fix-alpha-t1 --remove`, then `lym board remove '{\"slug\":\"adopt-fix-alpha-t1\"}'`") {
+ 					t.Errorf("lines = %q; want the task, its state %q and the hand steps", lines, tt.wantState)
+ 				}
+ 			})
+@@ -359,7 +359,7 @@ func TestFailedEnd(t *testing.T) {
+ 		if !mentions(cancelLines, "driver alive", "`lym batten cancel adopt-fix-alpha-t1 --remove`") || mentions(cancelLines, "re-run lym adopt") {
+ 			t.Errorf("cancel lines = %q; want the hand cancel first and no re-run", cancelLines)
+ 		}
+-		if !mentions(entryLines, "board locked", "`lym board remove adopt-fix-alpha-t1`", "re-run lym adopt alpha") {
++		if !mentions(entryLines, "board locked", "`lym board remove '{\"slug\":\"adopt-fix-alpha-t1\"}'`", "re-run lym adopt alpha") {
+ 			t.Errorf("entry lines = %q; want the hand removal and the re-run", entryLines)
+ 		}
+ 	})
+diff --git a/internal/adoptcli/green.go b/internal/adoptcli/green.go
+index 744363c5..32fa3c53 100644
+--- a/internal/adoptcli/green.go
++++ b/internal/adoptcli/green.go
+@@ -196,11 +196,8 @@ func removeFixTask(deps greenDeps) []string {
+ 		return nil
+ 	}
+ 	if err := fronttask.Remove(deps.FrontDeps, task.Slug); err != nil {
+-		var removal *fronttask.RemoveError
+-		if errors.As(err, &removal) {
+-			return []string{fmt.Sprintf("the fix task %s of %s was not removed: the %s step failed (%v); way forward: %s", task.Slug, deps.Subject, removal.Step, removal.Err, removal.HandRemoval())}
+-		}
+-		return []string{fmt.Sprintf("the fix task %s of %s was not removed (%v); way forward: run `lym batten cancel %s --remove`, then `lym board remove %s`", task.Slug, deps.Subject, err, task.Slug, task.Slug)}
++		removal := err.(*fronttask.RemoveError)
++		return []string{fmt.Sprintf("the fix task %s of %s was not removed: the %s step failed (%v); way forward: %s", task.Slug, deps.Subject, removal.Step, removal.Err, removal.HandRemoval())}
+ 	}
+ 	return nil
+ }
+diff --git a/internal/adoptcli/green_test.go b/internal/adoptcli/green_test.go
+index 04391540..01abcfbf 100644
+--- a/internal/adoptcli/green_test.go
++++ b/internal/adoptcli/green_test.go
+@@ -387,7 +387,7 @@ func TestGreenEnd(t *testing.T) {
+ 			f.tasks = []boardengine.Task{fixTask("adopt-fix-alpha-t1", nil)}
+ 			f.removeEntryErr = errors.New("board locked")
+ 
+-			if lines := greenEnd(f.deps); !mentions(lines, "adopt-fix-alpha-t1", "board locked", "`lym board remove adopt-fix-alpha-t1`") {
++			if lines := greenEnd(f.deps); !mentions(lines, "adopt-fix-alpha-t1", "board locked", "`lym board remove '{\"slug\":\"adopt-fix-alpha-t1\"}'`") {
+ 				t.Errorf("greenEnd() = %q; want a line with the step's error and its hand removal", lines)
+ 			}
+ 		})
+diff --git a/internal/boardcli/cli_test.go b/internal/boardcli/cli_test.go
+index b14362dc..25f245a3 100644
+--- a/internal/boardcli/cli_test.go
++++ b/internal/boardcli/cli_test.go
+@@ -122,6 +122,7 @@ func TestCLI(t *testing.T) {
+ 		{"GetAndRemoveByID", stepGetAndRemoveByID},
+ 		{"Owners", stepOwners},
+ 		{"FrontTask", stepFrontTask},
++		{"RemoveCommandParses", stepRemoveCommandParses},
+ 		{"UpsertBodyFile", stepUpsertBodyFile},
+ 		{"MergeBodyFile", stepMergeBodyFile},
+ 		{"GetBody", stepGetBody},
+diff --git a/internal/boardcli/verbs_test.go b/internal/boardcli/verbs_test.go
+index a420e87c..1def6721 100644
+--- a/internal/boardcli/verbs_test.go
++++ b/internal/boardcli/verbs_test.go
+@@ -391,8 +391,9 @@ func stepOwners(t *testing.T, f *cliFixture) {
+ 	}
+ }
+ 
+-// stepFrontTask drives the front and on_land guards through a seeded released front task:
+-// every payload verb refuses a value other than the stored one, accepts the stored one unchanged, and refuses a change of the front task's project, kind or slug.
++// stepFrontTask drives the front and on_land guards through a seeded released front task.
++// Every payload verb refuses a value other than the stored one and accepts the stored one unchanged.
++// A change of the front task's project, kind or slug is refused with a removal command the remove verb accepts.
+ func stepFrontTask(t *testing.T, f *cliFixture) {
+ 	seedBoardFile(t, f.cwd, `{"version":1,"draft_status":true,"entries":[`+
+ 		`{"id":0,"slug":"fix","title":"Fix","kind":"task","labels":["bug"],"front":true,"on_land":"adopt-check"}]}`)
+@@ -423,17 +424,42 @@ func stepFrontTask(t *testing.T, f *cliFixture) {
+ 	}
+ 	runJSON(t, 0, "upsert", `{"slug":"fix","title":"Fix again"}`)
+ 
+-	const fixed = `lym board remove`
++	// The refusal's way forward is the removal below, so the payload it names is the one the remove verb is run with.
++	const removePayload = `{"slug":"fix"}`
++	const fixed = `lym board remove '` + removePayload + `'`
+ 	refuse(t, fixed, "upsert", `{"slug":"fix","project":"other"}`)
+ 	refuse(t, fixed, "upsert", `{"slug":"fix","kind":"note"}`)
+ 	refuse(t, fixed, "rename", `{"slug":"fix","to":"moved"}`)
+ 
+-	runJSON(t, 0, "remove", `{"slug":"fix"}`)
++	runJSON(t, 0, "remove", removePayload)
+ 	if got := runJSON(t, 0, "get", `{"slug":"fix"}`)["task"]; got != nil {
+ 		t.Errorf("get after remove: task = %v; want none", got)
+ 	}
+ }
+ 
++// stepRemoveCommandParses runs the remove verb with the payload of each command boardengine.RemoveCommand renders, and expects it to remove the entry the slug names.
++func stepRemoveCommandParses(t *testing.T, f *cliFixture) {
++	slugs := []string{"fix", "adopt-fix-alpha-t1", "a-b-c-d"}
++	entries := make([]string, len(slugs))
++	for i, slug := range slugs {
++		entries[i] = fmt.Sprintf(`{"id":%d,"slug":%q,"title":"T","kind":"task","labels":["bug"]}`, i, slug)
++	}
++	seedBoardFile(t, f.cwd, `{"version":1,"draft_status":true,"entries":[`+strings.Join(entries, ",")+`]}`)
++
++	const prefix = "lym board remove '"
++	for _, slug := range slugs {
++		command := boardengine.RemoveCommand(slug)
++		if !strings.HasPrefix(command, prefix) || !strings.HasSuffix(command, "'") {
++			t.Fatalf("RemoveCommand(%q) = %q; want %s<payload>'", slug, command, prefix)
++		}
++		payload := strings.TrimSuffix(strings.TrimPrefix(command, prefix), "'")
++		runJSON(t, 0, "remove", payload)
++		if got := runJSON(t, 0, "get", fmt.Sprintf(`{"slug":%q}`, slug))["task"]; got != nil {
++			t.Errorf("get %s after running %s: task = %v; want none", slug, command, got)
++		}
++	}
++}
++
+ // stepProjects drives the project kind through a seeded hub:
+ // list and get carry parent_beam, empty under a grouping project and the beam once the project is hand-marked a beam.
+ // A task slug ending in the records suffix and one equal to a configured junction name are refused with fabric's reason.
+diff --git a/internal/boardengine/board.go b/internal/boardengine/board.go
+index 8f1899a1..3dce7981 100644
+--- a/internal/boardengine/board.go
++++ b/internal/boardengine/board.go
+@@ -3,6 +3,7 @@
+ package boardengine
+ 
+ import (
++	"encoding/json"
+ 	"fmt"
+ 	"os"
+ 	"path/filepath"
+@@ -221,6 +222,13 @@ func (b *Board) RemoveTask(idOrSlug any) error {
+ 	return err
+ }
+ 
++// RemoveCommand returns the `lym board remove` command line that removes the entry slug names, its JSON payload single-quoted for a shell.
++// A way forward names it, since the verb takes a JSON payload or a bare handle and never a bare slug.
++func RemoveCommand(slug string) string {
++	payload, _ := json.Marshal(map[string]string{"slug": slug})
++	return "lym board remove '" + string(payload) + "'"
++}
++
+ // MergeTasks atomically removes slugs, upserts one task, and optionally applies a status update.
+ // setStatus carries the pre-resolved task selector and status value;
+ // pass nil to skip the status step.
+diff --git a/internal/boardengine/front.go b/internal/boardengine/front.go
+index 5a67c163..b4f05f3b 100644
+--- a/internal/boardengine/front.go
++++ b/internal/boardengine/front.go
+@@ -13,7 +13,7 @@ func frontPayloadRefusal(slug string) error {
+ 
+ // frontFixedRefusal is the refusal of a change to a front task's project, kind or slug.
+ func frontFixedRefusal(slug string) error {
+-	return fmt.Errorf("entry %q is a front task, and a front task's project, kind and slug are fixed; way forward: remove it with \"lym board remove %s\", preceded by \"lym batten cancel %s --remove\" while a run holds the entry", slug, slug, slug)
++	return fmt.Errorf("entry %q is a front task, and a front task's project, kind and slug are fixed; way forward: remove it with `%s`, preceded by `lym batten cancel %s --remove` while a run holds the entry", slug, RemoveCommand(slug), slug)
+ }
+ 
+ // checkFrontPayload judges the front and on_land keys of an upsert payload against the entry fields["slug"] names, the entry being new when the store holds none.
+diff --git a/internal/fronttask/fronttask.go b/internal/fronttask/fronttask.go
+index 150fc742..70158ca7 100644
+--- a/internal/fronttask/fronttask.go
++++ b/internal/fronttask/fronttask.go
+@@ -127,9 +127,9 @@ func (e *RemoveError) Unwrap() error { return e.Err }
+ // HandRemoval names the commands that finish the removal by hand: the cancel and the board removal after a failed cancel, the board removal alone after a later step.
+ func (e *RemoveError) HandRemoval() string {
+ 	if e.Step == "cancel" {
+-		return fmt.Sprintf("run `lym batten cancel %s --remove`, then `lym board remove %s`", e.Slug, e.Slug)
++		return fmt.Sprintf("run `lym batten cancel %s --remove`, then `%s`", e.Slug, boardengine.RemoveCommand(e.Slug))
+ 	}
+-	return fmt.Sprintf("run `lym board remove %s`", e.Slug)
++	return fmt.Sprintf("run `%s`", boardengine.RemoveCommand(e.Slug))
+ }
+ 
+ // IsOpen reports whether task is an open front task: a task entry with Front set whose status is empty or a run status.
+@@ -177,7 +177,7 @@ func File(deps Deps, req Request, between func() error) error {
+ 		return fmt.Errorf("front task %s: read the board: %w", req.Slug, err)
+ 	}
+ 	if open, found := OpenFront(tasks, req.Project); found {
+-		return fmt.Errorf("front task %s: the front task %s stands open in this worktree, and one front task stands open per worktree; way forward: let %s land, or remove it with `lym batten cancel %s --remove` then `lym board remove %s`, which runs its action", req.Slug, open.Slug, open.Slug, open.Slug, open.Slug)
++		return fmt.Errorf("front task %s: the front task %s stands open in this worktree, and one front task stands open per worktree; way forward: let %s land, or remove it with `lym batten cancel %s --remove` then `%s`, which runs its action", req.Slug, open.Slug, open.Slug, open.Slug, boardengine.RemoveCommand(open.Slug))
+ 	}
+ 
+ 	fields := map[string]any{"slug": req.Slug, "title": req.Title, "kind": boardengine.KindTask, "body": req.Body, "labels": req.Labels}
+diff --git a/internal/fronttask/fronttask_test.go b/internal/fronttask/fronttask_test.go
+index da1bbc89..89fe92a1 100644
+--- a/internal/fronttask/fronttask_test.go
++++ b/internal/fronttask/fronttask_test.go
+@@ -149,7 +149,7 @@ func TestFile(t *testing.T) {
+ 			name:      "OpenFrontInProjectRefusesBeforeAnyWrite",
+ 			existing:  []boardengine.Task{frontTask("older", "beam", ActionAdoptCheck, nil)},
+ 			onLand:    ActionAdoptCheck,
+-			wantErr:   []string{"older", "one front task stands open per worktree", "lym batten cancel older --remove", "lym board remove older"},
++			wantErr:   []string{"older", "one front task stands open per worktree", "lym batten cancel older --remove", `lym board remove '{"slug":"older"}'`},
+ 			wantCalls: nil,
+ 		},
+ 		{
+@@ -273,7 +273,7 @@ func TestRemove(t *testing.T) {
+ 			hasRun:        true,
+ 			cancelErr:     errors.New("the cancel could not reach origin"),
+ 			wantStep:      "cancel",
+-			wantHand:      "`lym batten cancel fix --remove`, then `lym board remove fix`",
++			wantHand:      "`lym batten cancel fix --remove`, then `lym board remove '{\"slug\":\"fix\"}'`",
+ 			wantCalls:     []string{"cancel"},
+ 			wantRecord:    true,
+ 			wantEntryKept: true,
+@@ -282,7 +282,7 @@ func TestRemove(t *testing.T) {
+ 			name:          "EntryErrorNamesTheBoardRemovalAlone",
+ 			removeErr:     errors.New("the board refused"),
+ 			wantStep:      "entry",
+-			wantHand:      "`lym board remove fix`",
++			wantHand:      "`lym board remove '{\"slug\":\"fix\"}'`",
+ 			wantCalls:     []string{"remove-entry"},
+ 			wantEntryKept: true,
+ 		},
