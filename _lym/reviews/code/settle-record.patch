@@ -1,0 +1,535 @@
+diff --git a/internal/battencli/beamland_integration_test.go b/internal/battencli/beamland_integration_test.go
+index 42a60170..e9c092a0 100644
+--- a/internal/battencli/beamland_integration_test.go
++++ b/internal/battencli/beamland_integration_test.go
+@@ -1,4 +1,4 @@
+-// beamland_integration_test.go drives a beam's landing prerequisites over a hubforge hub: the start guard and Worktree-Create's skip for beams made the two ways, the unreadable-pair refusal, a sub-beam under an open beam, and the landing refusal over a beam with members.
++// beamland_integration_test.go drives a beam's landing prerequisites over a hubforge hub: the start guard and Worktree-Create's skip for beams made the two ways, the unreadable-pair refusal, the promote refusal judged from the board, a sub-beam under an open beam, and the landing refusal over a beam with members.
+ 
+ package battencli
+ 
+@@ -9,6 +9,7 @@ import (
+ 	"strings"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/battenrecipe"
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+@@ -33,7 +34,8 @@ func TestBeamLanding_ReachesWorktreeCreateSkip(t *testing.T) {
+ 	// made stands for a beam made by create's steps.
+ 	// gone stands for a beam whose origin record is lost.
+ 	// c stands for a sub-beam of the beam outer, which holds the grouping project g and its task t.
+-	for _, slug := range []string{"made", "outer", "gone"} {
++	// landed stands for a beam whose own Land pruned its entry, and promoted for a task a stopped promote marked.
++	for _, slug := range []string{"made", "outer", "gone", "landed", "promoted"} {
+ 		hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{SkipPush: true, Beam: true})
+ 	}
+ 	hubforge.AddPairWith(t, h, "c", fabricengine.AddOptions{SkipPush: true, Beam: true, Parent: "outer"})
+@@ -54,6 +56,7 @@ func TestBeamLanding_ReachesWorktreeCreateSkip(t *testing.T) {
+ 		{"slug": "c", "kind": "project", "project": "outer"},
+ 		{"slug": "g", "kind": "project", "project": "outer"},
+ 		{"slug": "t", "kind": "task", "project": "g"},
++		{"slug": "promoted", "kind": "task"},
+ 	}
+ 	for _, entry := range entries {
+ 		entry["title"] = entry["slug"]
+@@ -101,6 +104,27 @@ func TestBeamLanding_ReachesWorktreeCreateSkip(t *testing.T) {
+ 		}
+ 	})
+ 
++	runShed := shedengine.Status{CurrentProducer: battenrecipe.NameRunShed}
++	t.Run("MarkedPairTheBoardNoLongerHoldsResumes", func(t *testing.T) {
++		if err := hubStartGuard(h.Location, "landed").refuse("landed", "run", runShed, true, true); err != nil {
++			t.Errorf("start guard for landed = %v; want it passed", err)
++		}
++	})
++
++	t.Run("MarkedPairOfATaskIsRefusedNamingTheCancel", func(t *testing.T) {
++		err := hubStartGuard(h.Location, "promoted").refuse("promoted", "run", runShed, true, true)
++		if err == nil || !strings.Contains(err.Error(), "carries the beam mark") || !strings.Contains(err.Error(), "lym batten cancel promoted --remove") {
++			t.Errorf("start guard for promoted = %v; want the promote refusal naming the cancel", err)
++		}
++	})
++
++	t.Run("MarkedPairOfATaskWhoseWorkReachedItsParentPasses", func(t *testing.T) {
++		atTeardown := shedengine.Status{CurrentProducer: battenrecipe.NameWorktreeTeardown}
++		if err := hubStartGuard(h.Location, "promoted").refuse("promoted", "run", atTeardown, true, true); err != nil {
++			t.Errorf("start guard for promoted at Worktree-Teardown = %v; want it passed", err)
++		}
++	})
++
+ 	t.Run("BeamWithMembersIsRefusedNamingEachOpenEntry", func(t *testing.T) {
+ 		err := BeamLandRefusal(h.Location, "outer")
+ 		if err == nil {
+diff --git a/internal/battencli/cancelcmd.go b/internal/battencli/cancelcmd.go
+index 5e0a381e..82027458 100644
+--- a/internal/battencli/cancelcmd.go
++++ b/internal/battencli/cancelcmd.go
+@@ -189,7 +189,6 @@ func hubCancelDeps(location *lymcwd.Location, slug string) (cancelDeps, error) {
+ 	driverLock, runLock := shedrun.DriverLock(location, slug), shedrun.RunLock(location, slug)
+ 	runProcDir := fabricengine.RunProcDir(location.HubPath)
+ 	board := func() (*boardengine.Board, error) { return boardengine.OpenHub(location.HubPath) }
+-	reader := &battenCLI{location: location, slug: slug}
+ 
+ 	return cancelDeps{
+ 		HubPaused: func() (bool, error) {
+@@ -243,19 +242,8 @@ func hubCancelDeps(location *lymcwd.Location, slug string) (cancelDeps, error) {
+ 				return fabricengine.CommittedAnchoredFile(location, rel)
+ 			})
+ 		},
+-		ChildReachedParent: func(batten shedengine.Status, battenFound bool) (bool, error) {
+-			child, childFound := reader.readChildStatus()
+-			pastMerge := false
+-			if childFound {
+-				var err error
+-				pastMerge, err = battenshed.FinalizePastMerge(child, childRestepped(location, slug), childParentHolds(location, slug))
+-				if err != nil {
+-					return false, err
+-				}
+-			}
+-			return childReachedParent(batten, battenFound, child, childFound, pastMerge), nil
+-		},
+-		ReadMarker: func() (cancelMarkerReading, error) { return readCancelMarker(location, slug) },
++		ChildReachedParent: hubChildReachedParent(location, slug),
++		ReadMarker:         func() (cancelMarkerReading, error) { return readCancelMarker(location, slug) },
+ 		TakeMarker: func() (func(bool) error, bool, error) {
+ 			held, err := takeCancelMarker(location, slug, pairteardown.CancelLockWait)
+ 			if err != nil {
+@@ -384,6 +372,24 @@ func readBattenStatus(location *lymcwd.Location, slug string) (shedengine.Status
+ 	return status, found, err
+ }
+ 
++// hubChildReachedParent returns the reader of whether the work of slug's run reached its parent, given batten's status, from the child's status in the task worktree.
++// A run that reached it is one only `lym batten run` finishes, so a cancel refuses it.
++func hubChildReachedParent(location *lymcwd.Location, slug string) func(batten shedengine.Status, battenFound bool) (bool, error) {
++	reader := &battenCLI{location: location, slug: slug}
++	return func(batten shedengine.Status, battenFound bool) (bool, error) {
++		child, childFound := reader.readChildStatus()
++		pastMerge := false
++		if childFound {
++			var err error
++			pastMerge, err = battenshed.FinalizePastMerge(child, childRestepped(location, slug), childParentHolds(location, slug))
++			if err != nil {
++				return false, err
++			}
++		}
++		return childReachedParent(batten, battenFound, child, childFound, pastMerge), nil
++	}
++}
++
+ // childRestepped returns the reader of the task worktree's settle records for a re-step of the stop a status names.
+ func childRestepped(location *lymcwd.Location, slug string) func(shedengine.Status) (bool, error) {
+ 	return func(status shedengine.Status) (bool, error) {
+diff --git a/internal/battencli/cli.go b/internal/battencli/cli.go
+index f43bca86..5c0490f4 100644
+--- a/internal/battencli/cli.go
++++ b/internal/battencli/cli.go
+@@ -50,6 +50,9 @@
+ // A beam project runs as a task does, with the pawl recipe's own rows past Worktree-Create.
+ // The start guard lets a beam project start or resume: a fresh start with no marked pair here gets a task's dirty-source and left-parts checks, the dirty-source check only when it forks from the prime;
+ // a marked beam pair, a legacy beam's or a resumed run's, passes them, and a beam project skips the draft check, since a beam's cancel leaves its entry draft and `lym beam create` starts its run again.
++// The guard reads a marked pair as the leftover of a stopped promote only while the board holds the slug as a task and the run's work has not reached its parent.
++// A beam's own landing run, whose entry its Land pruned, so resumes its Worktree-Teardown over the mark its Beam-Up wrote.
++// The promote refusal never names a cancel that refuses back.
+ //
+ // The Worktree-Create row opens by claiming the slug's board entry with "running · Worktree-Create", before the pair exists, so the board's run lock starts at the claim.
+ // The claim is one Bolt commit that also records this machine as the entry's owner, and an absent or done entry is skipped.
+@@ -63,6 +66,7 @@
+ // A start (no status file, or one still at Worktree-Create whose pair this machine does not hold) pulls the board, which needs origin, claims the hub's prime when none is recorded, and refuses a task another machine owns.
+ // A resume refuses a task the origin reconcile or, with origin unreachable, the local board shows owned elsewhere; with origin answering it records this machine as the owner of a run-held entry with none.
+ // A resume at Worktree-Teardown whose task worktree is gone runs no origin reconcile, since nothing of the pair is left to judge, and judges the owner on the local board alone, so the teardown retries what is left of the pair, such as its remote branch deletion, on any machine that owns the run.
++// A task worktree is gone when nothing stands at its path or the path does not resolve as a worktree, such as a directory a removal left holding ignored files; the verbs that gate on the task worktree or resolve it read it so, while the overview and the beam-land member listing only look for the directory.
+ // Every such refusal names the owner and "lym adopt <slug>" as the way forward.
+ // "lym batten status" reports the slug's effective owner as owner_machine and whether this machine holds it as owned_here.
+ //
+diff --git a/internal/battencli/readopt.go b/internal/battencli/readopt.go
+index 3806e2df..1e2af92d 100644
+--- a/internal/battencli/readopt.go
++++ b/internal/battencli/readopt.go
+@@ -4,7 +4,6 @@ package battencli
+ 
+ import (
+ 	"fmt"
+-	"os"
+ 
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gitrepo"
+@@ -59,7 +58,10 @@ func hubTaskBranch(location *lymcwd.Location, slug string) (string, fabricengine
+ // hubReadoptSeams builds the re-adoption seams over the prime location of a hub.
+ func hubReadoptSeams(location *lymcwd.Location) readoptSeams {
+ 	return readoptSeams{
+-		Gone: func(slug string) (bool, error) { return taskWorktreeGone(location, slug) },
++		Gone: func(slug string) (bool, error) {
++			present, err := taskWorktreePresent(location, slug)
++			return !present, err
++		},
+ 		Reconcile: func(slug string) (fabricengine.OriginReport, error) {
+ 			return reconcileGoneRun(location, slug)
+ 		},
+@@ -137,23 +139,6 @@ func reconcileGoneRun(location *lymcwd.Location, slug string) (fabricengine.Orig
+ 	return report, err
+ }
+ 
+-// taskWorktreeGone reports whether the task worktree for slug is gone from this machine.
+-// It is gone when nothing stands at its path or the path does not resolve as a worktree, so a stray path reaches the re-adoption's own refusal instead of failing every pass.
+-// A stat error other than not-exist is returned.
+-func taskWorktreeGone(prime *lymcwd.Location, slug string) (bool, error) {
+-	worktreePath := fabricengine.WorktreePath(prime, slug)
+-	if _, err := os.Stat(worktreePath); err != nil {
+-		if os.IsNotExist(err) {
+-			return true, nil
+-		}
+-		return false, err
+-	}
+-	if _, err := lymcwd.ResolveWorktree(worktreePath); err != nil {
+-		return true, nil
+-	}
+-	return false, nil
+-}
+-
+ // readoptGonePair resumes a run whose task worktree is gone: it judges origin, prunes the stale registrations, re-makes the pair over its live branches, spawns the pair's push, and then runs the resume reconcile over the re-made pair.
+ // An origin that ended, stopped or gave the run to another machine refuses, as any resume does, before the pair is touched.
+ // An unreachable origin refuses without writing the origin-owed marker, since a pair is never re-made unjudged.
+diff --git a/internal/battencli/readopt_integration_test.go b/internal/battencli/readopt_integration_test.go
+index 6b2ba613..9d464410 100644
+--- a/internal/battencli/readopt_integration_test.go
++++ b/internal/battencli/readopt_integration_test.go
+@@ -82,10 +82,20 @@ func removePairDirectories(t *testing.T, h *hubforge.Hub, slug string) {
+ 	}
+ }
+ 
++// plantIgnoredOutput makes path a directory holding only build output, as a removal that kept git-ignored files leaves it.
++func plantIgnoredOutput(path string) error {
++	output := filepath.Join(path, "bin", "app.dll")
++	if err := os.MkdirAll(filepath.Dir(output), 0o755); err != nil {
++		return err
++	}
++	return os.WriteFile(output, []byte("build output"), 0o644)
++}
++
+ // TestBattenIntegration_GoneTaskWorktree drives ownerPreflight over a hub whose pair lost both worktree directories.
+ // A pair whose branches are live is re-made, and the resume reconcile reads none of its branches stopped.
+ // A local branch origin lacks has its stale tracking ref dropped, so the pair's push creates it on origin again.
+-// taskWorktreeGone reads a plain file and an empty directory at the task path as gone, and a resolving worktree as present.
++// taskWorktreePresent reads a plain file, an empty directory and a directory holding only ignored output at the task path as absent, and a resolving worktree as present.
++// A resume at Worktree-Teardown over such a stray directory judges the owner on the local board instead of failing on the path.
+ func TestBattenIntegration_GoneTaskWorktree(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+@@ -127,9 +137,9 @@ func TestBattenIntegration_GoneTaskWorktree(t *testing.T) {
+ 				t.Fatalf("ownerPreflight() = %v; want nil", err)
+ 			}
+ 
+-			gone, err := taskWorktreeGone(h.Location, slug)
+-			if err != nil || gone {
+-				t.Errorf("taskWorktreeGone() = %v, %v after the re-adoption; want false, nil", gone, err)
++			present, err := taskWorktreePresent(h.Location, slug)
++			if err != nil || !present {
++				t.Errorf("taskWorktreePresent() = %v, %v after the re-adoption; want true, nil", present, err)
+ 			}
+ 			for _, entry := range second.Entries {
+ 				if entry.Slug == slug && entry.State == fabricengine.EntryStopped {
+@@ -258,7 +268,7 @@ func TestBattenIntegration_GoneTaskWorktree(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("TaskWorktreeGoneReadsStrayPathsAsGone", func(t *testing.T) {
++	t.Run("TaskWorktreePresentReadsStrayPathsAsAbsent", func(t *testing.T) {
+ 		t.Parallel()
+ 
+ 		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+@@ -266,18 +276,37 @@ func TestBattenIntegration_GoneTaskWorktree(t *testing.T) {
+ 		for name, setup := range map[string]func(path string) error{
+ 			"plain-file":      func(path string) error { return os.WriteFile(path, []byte("stray"), 0o644) },
+ 			"empty-directory": func(path string) error { return os.MkdirAll(path, 0o755) },
++			"ignored-output":  plantIgnoredOutput,
+ 		} {
+ 			if err := setup(fabricengine.WorktreePath(h.Location, name)); err != nil {
+ 				t.Fatalf("plant %s: %v", name, err)
+ 			}
+-			gone, err := taskWorktreeGone(h.Location, name)
+-			if err != nil || !gone {
+-				t.Errorf("taskWorktreeGone(%q) = %v, %v; want true, nil", name, gone, err)
++			present, err := taskWorktreePresent(h.Location, name)
++			if err != nil || present {
++				t.Errorf("taskWorktreePresent(%q) = %v, %v; want false, nil", name, present, err)
+ 			}
+ 		}
+-		gone, err := taskWorktreeGone(h.Location, "present-pair")
+-		if err != nil || gone {
+-			t.Errorf("taskWorktreeGone(\"present-pair\") = %v, %v; want false, nil", gone, err)
++		present, err := taskWorktreePresent(h.Location, "present-pair")
++		if err != nil || !present {
++			t.Errorf("taskWorktreePresent(\"present-pair\") = %v, %v; want true, nil", present, err)
++		}
++	})
++
++	t.Run("TeardownResumeOverAStrayDirectoryJudgesTheLocalBoard", func(t *testing.T) {
++		t.Parallel()
++
++		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++		const slug = "stray-pair"
++		hubforge.AddPair(t, h, slug)
++		removePairDirectories(t, h, slug)
++		if err := plantIgnoredOutput(fabricengine.WorktreePath(h.Location, slug)); err != nil {
++			t.Fatalf("plant the stray directory: %v", err)
++		}
++		c, _ := readoptReceiver(h, slug)
++
++		teardown := shedengine.Status{CurrentProducer: battenrecipe.NameWorktreeTeardown, State: shedengine.StateFailed}
++		if err := c.ownerPreflight(true, teardown); err != nil {
++			t.Errorf("ownerPreflight() at Worktree-Teardown over a stray directory = %v; want nil", err)
+ 		}
+ 	})
+ }
+diff --git a/internal/battencli/startguard.go b/internal/battencli/startguard.go
+index 98cc2883..8b7da32f 100644
+--- a/internal/battencli/startguard.go
++++ b/internal/battencli/startguard.go
+@@ -29,9 +29,12 @@ type startGuard struct {
+ 	// ParentBeam reads the beam the slug's pair forks from over the local board, "" meaning the prime.
+ 	// A nil ParentBeam reads every task as forked from the prime.
+ 	ParentBeam func() (string, error)
+-	// Promoted reports whether the slug is a task whose local pair carries the beam mark, which only a promote stopped before its board write leaves.
+-	// A project entry reads false, since a beam project is judged on its own.
++	// Promoted reports whether the board holds the slug as a task whose local pair carries the beam mark, which only a promote stopped before its board write leaves.
++	// A project entry reads false, since a beam project is judged on its own, and so does a slug the board no longer holds, such as a beam project its own Land pruned.
+ 	Promoted func() (bool, error)
++	// ReachedParent reports whether the run's work reached its parent, given batten's status, as a cancel judges it.
++	// A nil ReachedParent reads every run as not reached.
++	ReachedParent func(status shedengine.Status, found bool) (bool, error)
+ 	// Project reads whether the slug's board entry is a project, and whether its beam flag is set.
+ 	// A nil Project reads every entry as a task.
+ 	Project func() (project, beam bool, err error)
+@@ -58,7 +61,7 @@ func hubStartGuard(location *lymcwd.Location, slug string) startGuard {
+ 			if err != nil {
+ 				return false, err
+ 			}
+-			if entry, held := owners.Entries[slug]; held && entry.IsProject {
++			if entry, held := owners.Entries[slug]; !held || !entry.IsTask {
+ 				return false, nil
+ 			}
+ 			origin, found, err := fabricengine.ReadOriginFor(location, slug)
+@@ -82,6 +85,7 @@ func hubStartGuard(location *lymcwd.Location, slug string) startGuard {
+ 			}
+ 			return origin.Beam, found, nil
+ 		},
++		ReachedParent: hubChildReachedParent(location, slug),
+ 		Draft: func() (bool, error) {
+ 			tasks, err := boardengine.ReadTasks(fabricengine.BoardDir(location.HubPath))
+ 			if err != nil {
+@@ -106,7 +110,8 @@ func hubStartGuard(location *lymcwd.Location, slug string) startGuard {
+ 
+ // refuse judges verb's start or resume of slug, in order.
+ // A present cancel marker refuses run, step and goto.
+-// A run or step of a task whose pair carries the beam mark refuses, with or without a status file, since only a stopped promote leaves one.
++// A run or step of a task whose pair carries the beam mark refuses, with or without a status file, since only a stopped promote leaves one;
++// a run whose work reached its parent passes that check, since a cancel refuses it and only the run finishes it.
+ // A run or step with no status file, or one whose status is at Worktree-Create while the task worktree is absent, refuses on tracked dirty paths of the source worktree, unless the task forks from a beam, whose pair forks from the beam's last commit and not from the source worktree.
+ // A run or step of a project entry is judged by refuseProject, which refuses a grouping project, passes a marked beam pair over the dirty-source and left-pair checks and a resume past Worktree-Create over all of them, and leaves a beam project with no marked pair here to the checks of a task.
+ // A run or step with no status file of a task whose board status is draft refuses, naming the release that makes it startable; a beam project skips that check, since a beam's cancel leaves its entry draft and `lym beam create` starts its run again from there.
+@@ -134,6 +139,13 @@ func (g startGuard) refuse(slug, verb string, status shedengine.Status, found, t
+ 		if err != nil {
+ 			return probeRefusal("the pair's origin record", slug, rerun, err)
+ 		}
++		if promoted && g.ReachedParent != nil {
++			reached, err := g.ReachedParent(status, found)
++			if err != nil {
++				return probeRefusal("whether the work reached its parent", slug, rerun, err)
++			}
++			promoted = !reached
++		}
+ 		if promoted {
+ 			return fmt.Errorf("the pair of %s carries the beam mark, so an interrupted promote of an older build left it and a run would restart the ended run inside a beam; way forward: run \"lym batten cancel %s --remove\" from the prime, then the release and the run again", slug, slug)
+ 		}
+diff --git a/internal/battencli/startguard_test.go b/internal/battencli/startguard_test.go
+index 18c5ff51..94370391 100644
+--- a/internal/battencli/startguard_test.go
++++ b/internal/battencli/startguard_test.go
+@@ -44,6 +44,9 @@ func TestStartGuard_Refuse(t *testing.T) {
+ 		// promoted is what the Promoted seam reads: a task whose pair carries the beam mark.
+ 		promoted    bool
+ 		promotedErr error
++		// reached is what the ReachedParent seam reads: the run's work reached its parent.
++		reached    bool
++		reachedErr error
+ 		// project and beam are what the Project seam reads; marked and unreadable describe the PairMark seam.
+ 		project, beam, marked, unreadable bool
+ 		projectErr                        error
+@@ -227,6 +230,23 @@ func TestStartGuard_Refuse(t *testing.T) {
+ 			producer:   battenrecipe.NameRunShed,
+ 			wantErrors: []string{"carries the beam mark", `run "lym batten cancel some-slug --remove" from the prime`},
+ 		},
++		{
++			name:     "MarkedPairTaskWhoseWorkReachedItsParentPasses",
++			verbs:    []string{"run", "step"},
++			promoted: true,
++			reached:  true,
++			found:    true,
++			producer: battenrecipe.NameWorktreeTeardown,
++		},
++		{
++			name:       "ReachedParentProbeErrorRefusesNamingTheProbeAndTheRerun",
++			verbs:      []string{"run", "step"},
++			promoted:   true,
++			reachedErr: errors.New("child status unreadable"),
++			found:      true,
++			producer:   battenrecipe.NameLand,
++			wantErrors: []string{"whether the work reached its parent", "child status unreadable", `run "lym batten {verb} some-slug" again`},
++		},
+ 		{
+ 			name:     "MarkedPairPassesTheVerbsThatDoNotStartARun",
+ 			verbs:    []string{"goto"},
+@@ -346,9 +366,12 @@ func TestStartGuard_Refuse(t *testing.T) {
+ 						PairParts:   func() (fabricengine.PairParts, error) { return tt.parts, tt.partsErr },
+ 						ParentBeam:  func() (string, error) { return tt.parentBeam, tt.beamErr },
+ 						Promoted:    func() (bool, error) { return tt.promoted, tt.promotedErr },
+-						Project:     func() (bool, bool, error) { return tt.project, tt.beam, tt.projectErr },
+-						PairMark:    func() (bool, bool, error) { return tt.marked, !tt.unreadable, nil },
+-						Draft:       func() (bool, error) { return tt.draft, tt.draftErr },
++						ReachedParent: func(shedengine.Status, bool) (bool, error) {
++							return tt.reached, tt.reachedErr
++						},
++						Project:  func() (bool, bool, error) { return tt.project, tt.beam, tt.projectErr },
++						PairMark: func() (bool, bool, error) { return tt.marked, !tt.unreadable, nil },
++						Draft:    func() (bool, error) { return tt.draft, tt.draftErr },
+ 					}
+ 				}
+ 
+diff --git a/internal/battencli/wire.go b/internal/battencli/wire.go
+index 0d3a5e2a..a95be32a 100644
+--- a/internal/battencli/wire.go
++++ b/internal/battencli/wire.go
+@@ -197,9 +197,8 @@ func runLockHeld(lockPath string) (bool, error) {
+ // cwd gate: the caller here holds a worktree root, not an acting cwd, so the gate would spuriously
+ // fire.
+ //
+-// An absent pair is refused by name rather than left to the resolver's generic "not a git
+-// repository": batten's status is durable, so a run resumed on another machine reaches every row
+-// past Worktree-Create with no pair here.
++// An absent pair, or a directory that does not resolve as a worktree, is refused by name rather than left to the resolver's generic "not a git repository".
++// Batten's status is durable, so a run resumed on another machine reaches every row past Worktree-Create with no pair here.
+ // This function re-makes nothing.
+ // The refusal names the resume, "lym batten run", whose pre-run re-adopts a pair that is still live and otherwise stops naming the restore of each branch.
+ // It names no fabric command as a substitute.
+@@ -216,21 +215,27 @@ func taskWorktreeLocation(prime *lymcwd.Location, slug string) (*lymcwd.Location
+ // The refusal reaches a worktree that disappears mid-run, and the cancel and goto verbs, which resolve the task worktree without a resume.
+ func presentTaskWorktreePath(prime *lymcwd.Location, slug string) (string, error) {
+ 	worktreePath := fabricengine.WorktreePath(prime, slug)
+-	if _, err := os.Stat(worktreePath); err != nil {
+-		if os.IsNotExist(err) {
+-			return "", fmt.Errorf(
+-				"battencli: the task worktree for %q is not present at %s; this run's durable status says it was already created, so it is either on another machine or was removed by hand; way forward: run \"lym batten run %s\" from the prime, whose resume re-adopts the pair when its branches are still live and otherwise stops naming the restore of each branch, and then repeating the refused command",
+-				slug, worktreePath, slug,
+-			)
+-		}
++	present, err := taskWorktreePresent(prime, slug)
++	if err != nil {
+ 		return "", err
+ 	}
++	if !present {
++		return "", absentTaskWorktreeRefusal(slug, worktreePath)
++	}
+ 	return worktreePath, nil
+ }
+ 
++// absentTaskWorktreeRefusal is the by-name refusal of an absent task worktree for slug, whose root would be worktreePath.
++func absentTaskWorktreeRefusal(slug, worktreePath string) error {
++	return fmt.Errorf(
++		"battencli: the task worktree for %q is not present at %s; this run's durable status says it was already created, so it is either on another machine or was removed by hand; way forward: run \"lym batten run %s\" from the prime, whose resume re-adopts the pair when its branches are still live and otherwise stops naming the restore of each branch, and then repeating the refused command",
++		slug, worktreePath, slug,
++	)
++}
++
+ // taskWorktreeLocator returns a taskWorktreeLocation for slug that spawns git only until a resolution succeeds.
+ // Run-Shed's wait reads the task worktree's files every poll check, and resolving the location runs git;
+-// a present pair's location never changes, so the first success is kept, while every call still stats the pair and refuses an absent one by name.
++// a present pair's location never changes, so the first success is kept, while every later call still stats the pair, without spawning git, and refuses an absent one by name.
+ func taskWorktreeLocator(prime *lymcwd.Location, slug string) func() (*lymcwd.Location, error) {
+ 	var resolved *lymcwd.Location
+ 	return func() (*lymcwd.Location, error) {
+@@ -242,27 +247,22 @@ func taskWorktreeLocator(prime *lymcwd.Location, slug string) func() (*lymcwd.Lo
+ 			resolved = taskLocation
+ 			return resolved, nil
+ 		}
+-		if _, err := presentTaskWorktreePath(prime, slug); err != nil {
++		worktreePath := fabricengine.WorktreePath(prime, slug)
++		if _, err := os.Stat(worktreePath); err != nil {
++			if os.IsNotExist(err) {
++				return nil, absentTaskWorktreeRefusal(slug, worktreePath)
++			}
+ 			return nil, err
+ 		}
+ 		return resolved, nil
+ 	}
+ }
+ 
+-// taskWorktreePresent reports whether the task worktree for slug is already on disk under prime's
+-// hub and resolvable as a worktree of its own.
+-//
+-// DriverAlive and taskWorktreeComplete use it;
+-// Worktree-Teardown does not, since the pair-teardown composite decides for itself whether the task worktree is gone.
+-//
+-// Worktree-Create uses the stronger taskWorktreeComplete instead, not this function: a bare
+-// directory check cannot tell a pair Add finished from one a SIGKILL interrupted partway through
+-// (see taskWorktreeComplete's own doc comment).
+-//
+-// It answers false rather than an error when the worktree is absent, so a genuinely absent one
+-// still reaches Topology.Add or Topology.Remove and every real failure keeps its Stuck disposition.
+-// A stat error that is not "absent", and a path that is there but does not resolve as a worktree,
+-// are both returned: neither is an answer to the question asked.
++// taskWorktreePresent reports whether the task worktree for slug stands on disk under prime's hub and resolves as a worktree of its own.
++// It is the answer the verbs that gate on or resolve the task worktree read, the re-adoption's gone check included.
++// A path that stands there but does not resolve as a worktree, such as a directory a removal left holding ignored build output, reads as absent, as a missing path does,
++// so those verbs meet it as a gone pair instead of failing on it, and fabric's own add refuses the stray path by name.
++// A stat error other than not-exist is returned.
+ func taskWorktreePresent(prime *lymcwd.Location, slug string) (bool, error) {
+ 	worktreePath := fabricengine.WorktreePath(prime, slug)
+ 	if _, err := os.Stat(worktreePath); err != nil {
+@@ -272,7 +272,7 @@ func taskWorktreePresent(prime *lymcwd.Location, slug string) (bool, error) {
+ 		return false, err
+ 	}
+ 	if _, err := lymcwd.ResolveWorktree(worktreePath); err != nil {
+-		return false, err
++		return false, nil
+ 	}
+ 	return true, nil
+ }
+@@ -288,10 +288,8 @@ func taskWorktreePresent(prime *lymcwd.Location, slug string) (bool, error) {
+ // itself observes an error, never when the process running it is killed instead -- a bare "the
+ // worktree directory resolves" check is satisfied by that transaction's very first step alone.
+ //
+-// present is false only when the worktree does not exist at all -- the genuinely-absent case, which
+-// still reaches Topology.Add. incompleteReason is non-empty only when the worktree exists but is not
+-// yet a complete pair, worded for this package's own refusal text rather than repeating
+-// PairComplete's fabric-vocabulary reason verbatim.
++// present is false only when the worktree does not exist or does not resolve as one, the absent case, which still reaches Topology.Add.
++// incompleteReason is non-empty only when the worktree exists but is not yet a complete pair, worded for this package's own refusal text rather than repeating PairComplete's fabric-vocabulary reason verbatim.
+ func taskWorktreeComplete(prime *lymcwd.Location, slug string) (present, complete bool, incompleteReason string, err error) {
+ 	present, err = taskWorktreePresent(prime, slug)
+ 	if err != nil || !present {
+diff --git a/internal/battencli/wire_test.go b/internal/battencli/wire_test.go
+index dee18c8a..9c1b2dca 100644
+--- a/internal/battencli/wire_test.go
++++ b/internal/battencli/wire_test.go
+@@ -683,7 +683,6 @@ func TestChildSpawnError(t *testing.T) {
+ 
+ // TestTaskWorktree_AbsentPairIsAnAnswerAndANamedRefusal asserts an unmaterialized task worktree is reported on its own terms.
+ // taskWorktreePresent, the create row's idempotency probe, answers false with no error, so a genuinely absent worktree still reaches fabric's own create rather than short-circuiting the row.
+-// taskWorktreeGone reads an absent path as gone by a stat alone.
+ // taskWorktreeLocation names the run and the expected path and points at the resume, never a fabric command that would actually mutate prime itself, rather than the resolver's generic "not a git repository" failure.
+ //
+ // The present case needs a real git worktree and so lives at the integration tier (TestBattenIntegration_Rows); this suite stays untagged and never spawns git.
+@@ -703,11 +702,6 @@ func TestTaskWorktree_AbsentPairIsAnAnswerAndANamedRefusal(t *testing.T) {
+ 		t.Error("taskWorktreePresent(prime, \"never-created\") = true; want false")
+ 	}
+ 
+-	gone, err := taskWorktreeGone(prime, "never-created")
+-	if err != nil || !gone {
+-		t.Errorf("taskWorktreeGone(prime, \"never-created\") = %v, %v; want true, nil", gone, err)
+-	}
+-
+ 	_, err = taskWorktreeLocation(prime, "never-created")
+ 	if err == nil {
+ 		t.Fatal("taskWorktreeLocation(prime, \"never-created\") = nil error; want a named refusal")
