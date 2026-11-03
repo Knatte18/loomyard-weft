@@ -1,6 +1,6 @@
 # Preflight worktree-clean halts on lym's own _lym state files
 
-`preflight-own-state-dirty` · Task · bug, preflight, loom · running · Drift-Baseline
+`preflight-own-state-dirty` · Task · bug, preflight, loom · running · Drift-Await
 
 Imported from [issue #33](https://github.com/Knatte18/loomyard/issues/33).
 
