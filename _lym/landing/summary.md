@@ -1,54 +1,51 @@
-# hibernate: the prime's dobby carries the request, not its own daemon
+# The hibernate request is carried by the prime's dobby
 
-`lym hibernate request` no longer spawns a detached daemon to carry out the request.
-It records the request and returns; the prime's dobby takes the request up and runs the same sequence as before: trigger wait, hub pause, confirmation, hibernate, wake, reconcile and notice.
-Dobby already drives every run of its worktree, so the request no longer needs a daemon of its own polling the runs.
+`lym hibernate request` no longer spawns a daemon of its own.
+It records the hub's one request on disk and returns; the prime's dobby takes the request up and carries it out.
+The sequence is the one the daemon ran: wait for the trigger, pause the hub through tender's engine, confirm every session paused, hibernate the machine, detect the wake, reconcile with origin, and post creel mail to the orch.
+The hidden `lym hibernate watch` verb, the detached spawn and the kill of the daemon are gone.
+
+The change makes dobby the one place that already reads the runs of every beam and drives them to their end, so the request is watched and cancelled there and `battenrecipe.PastLand` stays the one shared past-Land test.
 
 ## What changes
 
-- New `hibernateengine.Carrier` (`internal/hibernateengine/carrier.go`).
-  On each `Tick` with no sequence of its own in flight, it takes up the pending request under the request lock and runs the sequence in a goroutine of its own, so the dobby's ticks never wait on it.
-  It takes up two kinds of request: one no live process carries, and one that names the running process itself, which a re-exec leaves behind.
-  It leaves alone no request, a terminal one, and one another live process carries.
-- `beamcli` wires the Carrier into the prime's dobby only, through the engine's existing `Deps.Tick` hook, so the request is watched and cancelled in one place.
-  No beam's dobby carries it or votes on it.
-  The prime's file watch also covers the request file, so a written request wakes the tick that takes it up.
-- The request stays on disk and keeps its `daemon_pid` and `daemon_start` keys, which now name the dobby that carries it.
-  A dobby that was down or died takes the request up when it next ticks:
-  - a waiting request goes on as it was;
-  - one cut in pausing or confirming has its owned pause entry lifted and goes back to waiting;
-  - one cut in hibernating or resuming ends failed with one notice, its entry lifted only when the request resumes on wake.
-- `Submit` writes the request with no carrier, refuses any pending request whether or not a live process carries it, and reports `dobby_live`.
-  When the prime's dobby does not run, the envelope names `lym beam start root`.
+- `internal/hibernateengine` gains `Carrier` (`carrier.go`).
+  `Tick` takes up a pending request that no live process carries, or that names the running process after a re-exec, and runs its sequence in a goroutine, so dobby's ticks never wait on it.
+  Taking up a request left in the pausing or confirming phase lifts the pause entry it owns and returns it to waiting.
+  A request left in the hibernating or resuming phase ends failed, since its wake can no longer be seen; the resuming reason says the wake reconcile may not have run and that `lym cleanup --apply` runs it.
+- `Submit` returns a `SubmitReport`: the request and whether the prime's dobby runs.
+  When it does not, the report carries the way forward `lym beam start root`; the request stays on disk and is taken up once that dobby starts.
+  A pending request is refused whether or not a process carries it.
 - `Cancel` no longer kills a process.
-  The sequence sees the cancel at its next read of the request and ends.
-  It then lifts by identity the entry its pause added, which covers an entry recorded after `Cancel` read the request.
-- While a sequence is past its trigger wait, the prime's dobby skips its binary re-exec (`holdReexec` over `Carrier.HoldsReexec`), so a re-exec never cuts a pause, a confirmation, a hibernate or a wake.
-  A sequence still in its trigger wait holds nothing, since the re-exec takes it up again at the same wait.
+  It ends the request and lifts the entry the request records.
+  The sequence sees the cancel at its next step and lifts, by identity, any entry its pause added after the cancel read the request.
+  A request a live carrier holds in the hibernating phase is still refused.
+- `internal/beamcli` wires the carrier into the prime's dobby only, never a beam's.
+  It sets the dobby's `Tick` hook, adds the request file to the dobby's file watch, and creates the hibernate directory first so that watch can open it before the first request exists.
+- `internal/hibernatecli`, `internal/fabriccli` and `internal/cleanupcli` follow: `status` and `lym fabric anchor` report on the prime's dobby, and the anchor move for the prime is refused while a request is pending.
+- `resume_on_wake`, from the hub-wide `hibernate.yaml` or `--resume-on-wake`, is kept on the request and honoured at the wake unchanged.
 - The wait for every session to pause moves over unchanged, the fork rule included.
-- Removed: the hidden `lym hibernate watch` verb, the daemon spawn and kill, and the `watch.log` file.
-- `lym fabric anchor --set` for the prime is refused while a request is pending in a running prime's dobby; an ended request no longer blocks it.
-- Docs updated: the package docs of `hibernateengine`, `hibernatecli` and `beamcli`, `docs/overview.md`, `pattern/PATTERN-daemon-wakeups.md`, and the `fabriccli`, `cleanupcli` and `lymdirs` wording that named the daemon.
+- `docs/overview.md` and the package docs describe the new carrier.
+
+Closes nothing: the board entry names no issue.
 
 ## Design decisions
 
-- The sequence runs in its own goroutine rather than being spread over dobby ticks.
-  This keeps the sequence, its timings and its tests unchanged.
-  It also keeps a slow confirmation, up to sixty minutes with forks, from stalling the dobby's passes.
-- The JSON keys stay `daemon_pid` and `daemon_start`.
-  An old-binary daemon still running when the new binary deploys reads as a live carrier, so the prime's dobby waits for it to exit instead of carrying the same request twice, with no compatibility code.
-- A hub pause leaves the dobby that carries the request outside it.
-  The dobby is no session, so tender's pause interrupts nothing in it.
-  The sequence runs apart from the tick steps that a pause holds back.
-  The only network calls it makes are the wake reconcile's, which pass the gate under the existing exemption of the request's own entry.
-  So the pause the request adds never stops the wait.
-- Taking over a request cut mid-pause starts it again from the trigger rather than resuming the confirmation, as `Submit` did before for a dead daemon's request.
+- The prime's dobby carries the request, so a request with `--after-all` sees every beam's runs.
+  No beam's dobby carries or votes on it.
+- The request file is the only state.
+  A dobby that is down or dies mid-wait loses nothing; the next prime dobby to start takes the request up again.
+- A re-exec of the dobby is held off while a sequence is in flight past its trigger wait, until the sequence has lifted its entry and sent its notice (`Carrier.HoldsReexec`, applied through `holdReexec` in `internal/beamcli/dobbydeps.go`).
+  A sequence still waiting for its trigger holds nothing, since the re-exec takes it up again from the same wait.
+- When a sequence ends, it rewrites the request file as it stands so the file watch runs the next tick.
+  A request written while a cancelled sequence was still ending would otherwise find no tick to take it up.
 
 ## To check by hand
 
-- Not run: a real `lym hibernate request` on a Linux machine with the prime's dobby running.
-  Check that the dobby takes the request up within a second of the write, that the hibernate and wake run, and that the notice reaches the orch.
-- Not run: `lym beam stop root` while a request waits, then `lym beam start root`.
-  Check that the restarted dobby takes the request up and fires it.
-- Bound to judge: `Deps.Tick` runs after the dobby tick's other steps.
-  While an earlier step fails every tick, a new request is not taken up; a sequence already in flight runs on.
+- The re-exec hold ends when the sequence returns, which is after the notice is sent.
+  Check that the hold cannot end before the notice in the paths where the notice is retried or written to the notice file; the blocked-notify test in `internal/hibernateengine/carrier_test.go` pins the main path.
+- Run a real `lym hibernate request` on a Linux machine with a running prime dobby: the request is taken up, the hub pauses, the machine hibernates and the wake reconciles.
+  This was not run; the tests drive the sequence through seams.
+- Restart the prime's dobby while a request waits for its trigger, and again after the pause is added, and check the request is taken up as described above.
+- Check that a hub pause, which the request adds itself, never stops the dobby that waits on the request.
+- Request with the prime's dobby stopped, and check the envelope names `lym beam start root` and that starting it takes the request up.
