@@ -1,27 +1,33 @@
-# drift: capture child spawns at the worktree root, ignoring a subdirectory fabric anchor
+# Drift runs in an anchored hub, can be skipped for one run, and its baseline agent picks scope off when the suite cannot reach the change
 
 `drift-anchor-and-skip` · Note · bug, drift, stencil
 
-Imported from [issue #23](https://github.com/Knatte18/loomyard/issues/23).
+Three drift faults from one darn run (`testsupport-rule-and-helpers`) in hub NORCE-DrillingAndWells/Models, whose fabric is anchored at `src/csharp/NORCE.Models` by `.lym-anchor`; issues #23, #24 and #25.
 
-Seen in hub NORCE-DrillingAndWells/Models, whose fabric is anchored at src/csharp/NORCE.Models by .lym-anchor. A darn run (testsupport-rule-and-helpers) failed Drift-Baseline three times with 'the capture child ended before it recorded its start'. The capture-child log holds only: cwd is outside the recorded fabric anchor subtree: cwd <worktree root> does not equal the anchored directory <worktree root>/src/csharp/NORCE.Models (recorded by .lym-anchor). The drift producer starts its capture child with cwd at the worktree root whatever directory the run is resumed from, so every re-launch fails identically and drift cannot run in any hub with a subdirectory anchor.
+## 1. The capture child starts at the worktree root, ignoring the anchor (#23)
 
-Workaround: the parent runs lym drift defer and lym loom resume in the task worktree, then lym drift waive at Drift-Verify, so the run goes on with no baseline.
+Drift-Baseline failed three times with "the capture child ended before it recorded its start".
+The capture-child log holds only: "cwd is outside the recorded fabric anchor subtree: cwd <worktree root> does not equal the anchored directory <worktree root>/src/csharp/NORCE.Models (recorded by .lym-anchor)".
+The drift producer starts its capture child at the worktree root whatever directory the run is resumed from, so every re-launch fails the same way and drift cannot run in any hub with a subdirectory anchor.
 
-Expected: the capture child (and the compare child) start in the anchored directory, the same directory every other lym verb requires.
+Expected: the capture child, and the compare child, start in the anchored directory, as every other lym verb requires.
 
-## From issue #24
+Workaround today: `lym drift defer` and `lym loom resume` in the task worktree, then `lym drift waive` at Drift-Verify.
 
-Imported from [issue #24](https://github.com/Knatte18/loomyard/issues/24).
+## 2. No way to take one run past drift once Drift-Baseline failed (#24)
 
-Hub NORCE-DrillingAndWells/Models, darn run testsupport-rule-and-helpers, halted at Drift-Baseline by Knatte18/loomyard#23. To skip drift for this one run, the parent ran lym config drift --layer local --set enabled=false in the task worktree; lym config --resolved drift shows enabled: false # local. lym loom resume then ran Drift-Baseline again and spawned the capture child anyway, failing the same way. lym drift defer is refused at a failed or paused Drift-Baseline, and goto cannot move past it, so there is no way to take one run past drift.
+To skip drift for the one run, the parent ran `lym config drift --layer local --set enabled=false` in the task worktree; `lym config --resolved drift` showed `enabled: false # local`.
+`lym loom resume` ran Drift-Baseline again and spawned the capture child anyway, failing the same way.
+`lym drift defer` is refused at a failed or paused Drift-Baseline, and goto cannot move past it.
 
-Expected: either the local layer's enabled=false makes Drift-Baseline and Drift-Verify pass through on the next resume, or lym drift defer is admitted at a failed Drift-Baseline, as its halt's way forward.
+Expected: the local layer's `enabled=false` makes Drift-Baseline and Drift-Verify pass through on the next resume, or `lym drift defer` is admitted at a failed Drift-Baseline and named in its halt's way forward.
 
-## From issue #25
+## 3. Drift-Baseline picks scope full for a change the suite cannot reach (#25)
 
-Imported from [issue #25](https://github.com/Knatte18/loomyard/issues/25).
+The task added a PATTERN.md entry and moved three test helpers between test projects.
+The agent's own `baseline.md` says it touches no production code and expects no drift, yet it recorded scope full.
+The capture suite, `NORCE.Models.NumericalBaseline`, references only `NORCE.Models.WellboreSimulation`, so nothing the task changes reaches it; scope off was right and would have spared the run the capture.
 
-Hub NORCE-DrillingAndWells/Models, darn run testsupport-rule-and-helpers. The task adds a PATTERN.md entry and moves three test helpers between test projects. The agent's own baseline.md says it touches no production code and expects no drift, yet it recorded scope full. The capture suite, NORCE.Models.NumericalBaseline, references only NORCE.Models.WellboreSimulation, so nothing the task changes can reach it; scope off was the right call, and would have spared the run the capture (which then failed on Knatte18/loomyard#23).
-
-Expected: the Drift-Baseline stencil tells the agent to check whether the capture command's projects can reach the changed files, through their project references, and to record scope off when they cannot or when the change touches no code the suite runs. A scope recorded wrongly cannot be re-recorded today (a second lym drift scope is refused), so a way for the parent to reset it would help too.
+Expected:
+- The Drift-Baseline stencil tells the agent to check whether the capture command's projects reach the changed files through their project references, and to record scope off when they cannot or when the change touches no code the suite runs.
+- The parent can reset a wrongly recorded scope: today a second `lym drift scope` is refused.
