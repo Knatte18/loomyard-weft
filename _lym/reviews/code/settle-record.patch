@@ -1,0 +1,648 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 5e9666da..5ae7d73a 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -420,7 +420,7 @@ User-facing modules each get one `lym <module>` namespace:
+   defaults to `bug`.
+   Callable from any sandbox agent context with no config. ✅ Implemented.
+ - **reed** — **the window to the world**: tmux overlay + **strand** bookkeeping + render (`internal/reedcli` + `internal/reedengine` + `internal/reedengine/render`). Hosts every managed process as a strand in a window of its own or its group's, persists to `.lym/reed.json` (`lym reed up|add|remove|status|list|attach|switch|resume|watchdog|down`); `lym reed add` places a strand `--anchor own-window` by default. Every strand carries a hierarchical full name (see the `internal/agentname` package documentation), mirrored into its pane title and Claude session name and exported to its process as `LYM_STRAND_NAME` and `LYM_PARENT`, with the watchdog repairing drift; `list` is the hub-wide name directory. Built on what its proof-of-concept, `muxpoc`, proved first (env hygiene, native `--resume`); `muxpoc` has since been deleted, its job done. `reed attach` and `reed watchdog` are this module's two registered interactive-handoff exceptions ([PATTERN-cli-cobra](../pattern/PATTERN-cli-cobra.md)): `attach` hands the operator's stdio to a `tmux attach-session` child in place, pre-flighting through checking tmux's floor version, booting the session if cold and checking server/session liveness, and `watchdog` is the detached per-hub name-repair and reap daemon that blocks for its process lifetime — in both cases every fallible step runs pre-flight, on the envelope, and only the terminal-handover/daemon tail itself is exempt from emitting JSON. `add` and `attach` boot this worktree's session when none is up, with `up`'s own semantics — a bare substrate, with no persisted strand relaunched — instead of refusing; every other reed verb still refuses on a cold worktree. ✅ Implemented. See the `internal/reedengine` package documentation.
+-- **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengines` + `internal/shuttlecli`; `lym shuttle run|open|state|await|await-forks`). `lym shuttle open` starts a named session with no turn in its own window, which closes when the session exits; `--model` takes a model spec naming the engine, model and effort, `--list-models` prints the model registry's aliases with their engine, model and default effort, and the output names the engine, model and effort the session got. Every session shuttle launches, run or opened, starts in its engine's bypass mode unless the caller passes `prompt`, which an interactive session accepts. `lym shuttle await <path>... [--cap]` is the read-only capped wait on one or more files, the keep-cache-warm wait any agent can run, needing no hub or git repository; its cap defaults to the caller role's keep-warm cap from `claude.yaml`. `lym shuttle await-forks [--cap]` is the same capped wait over the forks the calling agent session spawned, read from its transcript through the engine: a reviewer, fixer or writer that waits inside it takes every fork's result in one turn instead of waking once per fork. `lym shuttle state` is read-only: it lists the session state of each running run (busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with its cause, since and history), read from the run's files, in shadow mode where no stop or notice depends on it. `Stop`-hook completion is read off an events file and classified into three outcomes — `done`/`died`/`timeout`. A turn end without every output file never ends a run: `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call). An autonomous run notifies its parent once per held turn end as creel mail to the orch, and once per permission or input dialog its pane shows past 60 s, and an interactive run is answered in its pane; a line typed into a run's pane goes through `lym creel post`, `lym creel inject` or `lym creel interrupt`, never a shuttle verb. Background work is read off the Stop payload's `background_tasks` first, with the transcript as the fallback when the payload carries no list; a turn end with outstanding work is waiting, not held, unless its only outstanding work is non-awaited shells, which a gated run judges as a plain turn end and an ungated run holds once they pass the shell wait bound. `Attach` waits on a held run, and on a legacy `asking` record whose strand is still live, instead of respawning beside it. `died` is narrow: it means a strand reed STILL TRACKS has a pane that is not alive, the provider never came up inside the startup window, or the provider's process is proven gone behind a live pane shell (by the process registry, or a process-ending `SessionEnd` line past the wait's first liveness tick), with `done` instead when every output file exists. Reed's strand table losing the strand entirely — a `reed down`/`remove`, a deleted or rebuilt `reed.json`, a worktree renamed under an in-flight run — is reported as a mechanism failure carrying the run's identity, never as `died`, because reed's bookkeeping going away says nothing about the agent, whose process is often still working in its pane; the exception is a handle whose own `Stop` removed the strand, which ends `died` and is recorded as stopped unless the files show the run done. No guardrail denies the in-process `Agent` tool: a subagent or fork shows in the session's own pane and lym reads its transcript under the session's `subagents` directory. A `PreToolUse` guardrail denies `AskUserQuestion` when the run is autonomous (`Interactive: false`, the default); a `PreToolUse(Bash)` guardrail denies `python`, `python3` and `python3.<minor>` in command position in every run mode, a version check included (on by default, switchable off via `shuttle.yaml`'s `deny_python`), and a second `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a raw module-wide `go test`, `go build` or `go vet`, a raw `go test` over the `tmux` or `llm` tier, and any command naming the gate-slot or strand-name environment variable, steering the session to `lym gate test`, and to a package-scoped compile check the hub's `refuse_raw` does not refuse, and a third `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies an `rm` on a computed path (a command substitution or a variable expansion in the command) so no permission dialog stalls the run, and a fourth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies `sed -i`, `perl -i`, and a redirect, heredoc or `tee` into a source file, steering the session to read a file with Read and change it with Edit or Write, and a fifth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a headless `claude` launch with `-p` or `--print`, whose work shows in no pane, steering the session to a subagent through the `Agent` tool; the python deny's steer carries the same edit rule. The engine announces each deny it installs to the session's system prompt, and every Claude session it launches with a run directory also gets the creel trust sentence, through one `append-system-prompt.txt` file named by `--append-system-prompt-file` on launch and resume, so a session knows the tool is unavailable before it tries one and follows `[creel]` mail from its hooks. The engine sets the prompt-cache TTL per role on launch and resume from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role). `claude.yaml`'s `keep_warm_cap` (template 250s) and `keep_warm_cap_roles` set the per-role keep-warm cap beside them. While `claude.yaml`'s `batching_nudge` block is on, a `PostToolUse` hook after each `Read`, `Grep`, `Glob`, `Edit` or `Write` call runs the hidden `lym shuttle hook-batching`, which adds one line naming the breach and quoting the rule to a session above the block's context threshold whose recent messages make a chain of single lookups, a sliced read of a short or already-read file, or a chain of edit-only messages; it never denies a call, and the block's switches and thresholds are config. The provider is swappable behind an **engine** seam; the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, Claude being the one registered engine. Per-run `Model`/`Effort` knobs (`lym shuttle run --model`/`--effort`; effort values `low|medium|high|xhigh|max`, empty = provider default) are engine-validated, not policed by `Spec.validate`. `Spec.Version` is a programmatic engine-validated version pin (claudeengine composes the pinned model id; no CLI flag — consumers drive it via the model-spec notation's `v=` param). Starting a run returns only once its provider is past its startup gates, and a provider that never comes up is torn down (run dir and last pane capture kept) and reported as an error from `Start`, or as `died`/`timeout` from `Run`. ✅ Implemented. See the `internal/shuttleengine` package documentation.
++- **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengines` + `internal/shuttlecli`; `lym shuttle run|open|state|await|await-forks`). `lym shuttle open` starts a named session with no turn in its own window, which closes when the session exits; `--model` takes a model spec naming the engine, model and effort, `--list-models` prints the model registry's aliases with their engine, model and default effort, and the output names the engine, model and effort the session got. Every session shuttle launches, run or opened, starts in its engine's bypass mode unless the caller passes `prompt`, which an interactive session accepts. `lym shuttle await <path>... [--cap]` is the read-only capped wait on one or more files, the keep-cache-warm wait any agent can run, needing no hub or git repository; its cap defaults to the caller role's keep-warm cap from `claude.yaml`. `lym shuttle await-forks [--cap]` is the same capped wait over the forks the calling agent session spawned, read from its transcript through the engine: a reviewer, fixer or writer that waits inside it takes every fork's result in one turn instead of waking once per fork. `lym shuttle state` is read-only: it lists the session state of each running run (busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with its cause, since and history), read from the run's files, in shadow mode where no stop or notice depends on it. `Stop`-hook completion is read off an events file and classified into three outcomes — `done`/`died`/`timeout`. A turn end without every output file never ends a run: `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call). An autonomous run notifies its parent once per held turn end as creel mail to the orch, and once per permission or input dialog its pane shows past 60 s, and an interactive run is answered in its pane; a line typed into a run's pane goes through `lym creel post`, `lym creel inject` or `lym creel interrupt`, never a shuttle verb. Background work is read off the Stop payload's `background_tasks` first, with the transcript as the fallback when the payload carries no list; a turn end with outstanding work is waiting, not held, unless its only outstanding work is non-awaited shells, which a gated run holds at once with an output file missing, a gated run with every output file present counts done once they pass the shell wait bound after telling the agent to read them, and an ungated run holds once they pass the shell wait bound. `Attach` waits on a held run, and on a legacy `asking` record whose strand is still live, instead of respawning beside it. `died` is narrow: it means a strand reed STILL TRACKS has a pane that is not alive, the provider never came up inside the startup window, or the provider's process is proven gone behind a live pane shell (by the process registry, or a process-ending `SessionEnd` line past the wait's first liveness tick), with `done` instead when every output file exists. Reed's strand table losing the strand entirely — a `reed down`/`remove`, a deleted or rebuilt `reed.json`, a worktree renamed under an in-flight run — is reported as a mechanism failure carrying the run's identity, never as `died`, because reed's bookkeeping going away says nothing about the agent, whose process is often still working in its pane; the exception is a handle whose own `Stop` removed the strand, which ends `died` and is recorded as stopped unless the files show the run done. No guardrail denies the in-process `Agent` tool: a subagent or fork shows in the session's own pane and lym reads its transcript under the session's `subagents` directory. A `PreToolUse` guardrail denies `AskUserQuestion` when the run is autonomous (`Interactive: false`, the default); a `PreToolUse(Bash)` guardrail denies `python`, `python3` and `python3.<minor>` in command position in every run mode, a version check included (on by default, switchable off via `shuttle.yaml`'s `deny_python`), and a second `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a raw module-wide `go test`, `go build` or `go vet`, a raw `go test` over the `tmux` or `llm` tier, and any command naming the gate-slot or strand-name environment variable, steering the session to `lym gate test`, and to a package-scoped compile check the hub's `refuse_raw` does not refuse, and a third `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies an `rm` on a computed path (a command substitution or a variable expansion in the command) so no permission dialog stalls the run, and a fourth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies `sed -i`, `perl -i`, and a redirect, heredoc or `tee` into a source file, steering the session to read a file with Read and change it with Edit or Write, and a fifth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a headless `claude` launch with `-p` or `--print`, whose work shows in no pane, steering the session to a subagent through the `Agent` tool; the python deny's steer carries the same edit rule. The engine announces each deny it installs to the session's system prompt, and every Claude session it launches with a run directory also gets the creel trust sentence, through one `append-system-prompt.txt` file named by `--append-system-prompt-file` on launch and resume, so a session knows the tool is unavailable before it tries one and follows `[creel]` mail from its hooks. The engine sets the prompt-cache TTL per role on launch and resume from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role). `claude.yaml`'s `keep_warm_cap` (template 250s) and `keep_warm_cap_roles` set the per-role keep-warm cap beside them. While `claude.yaml`'s `batching_nudge` block is on, a `PostToolUse` hook after each `Read`, `Grep`, `Glob`, `Edit` or `Write` call runs the hidden `lym shuttle hook-batching`, which adds one line naming the breach and quoting the rule to a session above the block's context threshold whose recent messages make a chain of single lookups, a sliced read of a short or already-read file, or a chain of edit-only messages; it never denies a call, and the block's switches and thresholds are config. The provider is swappable behind an **engine** seam; the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, Claude being the one registered engine. Per-run `Model`/`Effort` knobs (`lym shuttle run --model`/`--effort`; effort values `low|medium|high|xhigh|max`, empty = provider default) are engine-validated, not policed by `Spec.validate`. `Spec.Version` is a programmatic engine-validated version pin (claudeengine composes the pinned model id; no CLI flag — consumers drive it via the model-spec notation's `v=` param). Starting a run returns only once its provider is past its startup gates, and a provider that never comes up is torn down (run dir and last pane capture kept) and reported as an error from `Start`, or as `died`/`timeout` from `Run`. ✅ Implemented. See the `internal/shuttleengine` package documentation.
+ - **orch** — the hub orchestrator hosted as an interactive Claude session in a reed strand of the prime worktree or of a beam, cycled before its context fills (`internal/orchcli` + `internal/orchengine`; `lym orch stop|status|refresh|distill|withdraw|rules`, in the prime and in any beam). `lym beam start` first ensures the worktree's `runs` strand, which runs `lym batten overview` as the beam's window, named `beam: prime` or `beam: <slug>`, and `stop` leaves it; ensuring it replaces a `loom-status` strand a pawl run's `lym loom start` put in the overview window first, and a failure to add, replace or record it is a warning on the bring-up report naming `lym beam start`, never a stop; the orchestrator has a window of its own, and the session's windows run the beam window, agents, shell. A detached watcher has the session write a note, then clears it and resumes it from that note (`refresh`) or compacts it in place (`distill`), never clearing or compacting without one. ✅ Implemented. See the `internal/orchengine` package documentation.
+ - **webster** — the implementer module: one long-lived Master session that reads the plan and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool), each fork reading its cards' code itself, instead of spawning a fresh reed/tmux strand per batch;
+   bracket verbs (`begin-batch`/`record-batch`) drive each in-session fork (Master ends its turn while a backgrounded fork works and records the batch on the fork's completion notification, shuttle reading that turn end as waiting rather than done), and a genuine model escalation (recovery after a stuck/report-less fork) spawns a cold strand.
+diff --git a/internal/shuttleengine/completionsignal_enforcement_test.go b/internal/shuttleengine/completionsignal_enforcement_test.go
+index b7ee5dfe..f521e68b 100644
+--- a/internal/shuttleengine/completionsignal_enforcement_test.go
++++ b/internal/shuttleengine/completionsignal_enforcement_test.go
+@@ -186,7 +186,7 @@ var auditedNegativeVerdictReturns = map[string]int{
+ // blocking call),
+ // plus expiredTurnEnd, whose waiting turn end counts as a Done only after consulting the files, and otherwise keeps waiting.
+ // pollEventsTick's second site counts an ungated waiting turn end with nothing outstanding as a Done only after consulting the files,
+-// and its third judges a gated waiting turn end on non-awaited shells as a plain turn end, Done only after consulting the files.
++// and its third holds a gated waiting turn end on non-awaited shells when an output file is missing, and otherwise leaves the Done to expiredTurnEnd, which consults the files.
+ // The last site is stopOutcome, whose stopped answer consults the files first.
+ // checkLivenessTick holds a third site, its gone-session branch, which consults the files before answering died.
+ // attach holds a site that skips the requirements check for a run whose files are all on disk, since harvesting it drives no further turn.
+diff --git a/internal/shuttleengine/config.go b/internal/shuttleengine/config.go
+index 62cc1667..48295f2c 100644
+--- a/internal/shuttleengine/config.go
++++ b/internal/shuttleengine/config.go
+@@ -35,7 +35,7 @@ type Config struct {
+ 	// KeepWarmMaxReruns is how many keep-warm re-runs one long gate wait is worth, the break-even against a single cache write; 0 turns the long wait off, and LoadConfig refuses negative.
+ 	KeepWarmMaxReruns int `yaml:"keep_warm_max_reruns"`
+ 
+-	BackgroundShellWaitMin int `yaml:"background_shell_wait_min"` // Minutes an outstanding background shell of either signal may run before the wait logs it and shows it in the wait marker; it also expires an ungated waiting turn end whose every outstanding task is a non-awaited shell into a held turn end. LoadConfig refuses non-positive.
++	BackgroundShellWaitMin int `yaml:"background_shell_wait_min"` // Minutes an outstanding background shell of either signal may run before the wait logs it and shows it in the wait marker; it also expires a waiting turn end whose every outstanding task is a non-awaited shell, an ungated one with an output file missing into a held turn end and a gated one with every output file present into a Done. LoadConfig refuses non-positive.
+ 
+ 	SubmitSettleMS int `yaml:"submit_settle_ms"` // Interval between the two input-box reads that must agree before a verified send's Enter; 0 reads back to back, LoadConfig refuses negative.
+ 
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index 5bd8d203..b77fd3f7 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -426,16 +426,21 @@
+ //
+ // A turn end that leaves background work outstanding (EventWaiting) is judged by the output files and by what is outstanding, in two rules.
+ // A turn end whose outstanding tasks are all shells the session does not await, a shell of either signal that no Spec.AwaitedShellPrefixes entry names, is no work product's wait.
+-// A gated run judges it as a plain turn end at once: Done through the gate when every output file exists, and held when one is missing.
++// A gated run with an output file missing judges it as a plain turn end and holds it at once.
++// A gated run with every output file present does not count it Done while such a shell runs, since the shell may hold a commit or a gate run whose result the session never read.
++// It types one line into the pane naming each such shell no sent line of the wait named, telling the agent to wait for each, read its result and act on it before it ends its turn;
++// a send that fails is logged and not retried in place, since the shell's completion starts the session's next turn anyway,
++// and a line dropped under a pause or lost to a failed send is queued again by the next waiting turn end over the shell.
++// It counts the turn end Done through the gate once every such shell has been outstanding for Config.BackgroundShellWaitMin.
+ // An ungated run with every output file present finishes Done at that turn end, whatever is outstanding;
+ // with an output file missing it keeps waiting until every such shell has been outstanding for Config.BackgroundShellWaitMin, then holds the turn end once and notifies the parent once.
+ // A turn end with a fork or an awaited shell outstanding keeps waiting on every outstanding task with an output file missing, never held and never notified, bounded only by the run's own Timeout and the liveness check, and lym reaps no shell.
+ // A gated run's waiting turn end on a fork or an awaited shell is never an arrival, because the output files may predate the session's background work;
+ // it waits until the task's completion starts the next turn, bounded by the run deadline and the liveness check.
+ // At the deadline classifyDeadlineExpiry ends the run OutcomeDone when the output files exist, finalize evaluates the gate once more over the tree as it stands, and the shell lands in Result.EndedShells with its result never read by the run.
+-// Spec.AwaitedShellPrefixes keeps a shell out of the background-shell wait marker, out of the plain-turn-end judgment and out of the ungated expiry;
++// Spec.AwaitedShellPrefixes keeps a shell out of the background-shell wait marker, out of the gated nudge and expiry and out of the ungated expiry;
+ // the prefixes are caller data, which Spec.validate does not inspect.
+-// Config.BackgroundShellWaitMin is the expiry of that ungated wait and the threshold at which a shell outstanding that long is logged once at Warn and shown in the wait marker, which shows only while non-awaited shells are outstanding at staggered first-seen times.
++// Config.BackgroundShellWaitMin is the expiry of the gated Done's wait and of that ungated wait, and the threshold at which a shell outstanding that long is logged once at Warn and shown in the wait marker, which shows only while non-awaited shells are outstanding at staggered first-seen times.
+ // Result.EndedShells records each shell outstanding when the run ends, whatever ends it, whose result the run never read, with its label, id, signal and how long it was outstanding, and finalize logs the record at Info.
+ // lym kills no shell, since the provider reports no pid: strand removal ends the shells it can, and a shell detached from the pane's process tree survives it.
+ // ShellWaitBound exports the threshold.
+diff --git a/internal/shuttleengine/run.go b/internal/shuttleengine/run.go
+index b5e2b084..9940b260 100644
+--- a/internal/shuttleengine/run.go
++++ b/internal/shuttleengine/run.go
+@@ -380,6 +380,12 @@ type Run struct {
+ 	shellFirstSeen map[string]time.Time
+ 	// payloadShellLogged holds the shell ids, of either signal, already logged as outstanding past background_shell_wait_min, so each is logged once.
+ 	payloadShellLogged map[string]bool
++	// shellNudge is the queued line telling the agent to wait for and read the shells its waiting turn end left running, empty when none is queued.
++	shellNudge string
++	// shellNudgeIDs holds the shell ids the queued shell nudge names, empty when none is queued.
++	shellNudgeIDs []string
++	// nudgedShells holds the shell ids a sent shell nudge named, so each shell is named once.
++	nudgedShells map[string]bool
+ 	// wait is the wait marker and pane mark this run has on show, display only.
+ 	wait waitState
+ 	// eventsRead is true when the latest pollEventsTick parsed at least one event, which ends a held wait.
+diff --git a/internal/shuttleengine/spec.go b/internal/shuttleengine/spec.go
+index 24bd3eaa..f57c79db 100644
+--- a/internal/shuttleengine/spec.go
++++ b/internal/shuttleengine/spec.go
+@@ -121,7 +121,7 @@ type Spec struct {
+ 	KeepPane bool
+ 	// AwaitedShellPrefixes names the background shells the run waits on like a fork:
+ 	// a shell whose label starts with one of them stays out of the background-shell wait marker.
+-	// Such a shell also keeps a gated waiting turn end from being judged as a plain turn end and keeps an ungated wait from expiring.
++	// Such a shell also keeps a gated waiting turn end waiting with no nudge and no expiry, and keeps an ungated wait from expiring.
+ 	// It is caller data, not provider knowledge, and validate does not inspect it.
+ 	AwaitedShellPrefixes []string
+ 	// Skills names the provider-neutral skills shuttle loads into the fresh session, all in one turn, before it delivers the prompt.
+diff --git a/internal/shuttleengine/template.yaml b/internal/shuttleengine/template.yaml
+index d4eb65e0..468c1ef7 100644
+--- a/internal/shuttleengine/template.yaml
++++ b/internal/shuttleengine/template.yaml
+@@ -5,7 +5,7 @@ run_timeout_min: 30  # minutes before an in-progress run is classified as timed
+ startup_timeout_s: 90  # seconds allowed for the claude process to start and reach a live pane; 0 is NOT "unlimited" or "disabled" — it fast-fails startup as died immediately AND zeroes the orphan-sweep age guard (minAge = 2x this value)
+ start_retries: 1  # extra launches of a start whose provider died before it took its first input and whose strand the teardown removed, each in a fresh run directory; a timed-out start and one whose strand could not be removed are never retried; 0 turns the retry off, negative is a config error
+ keep_warm_max_reruns: 10  # the number of keep-warm re-runs one long gate wait is worth: a re-run costs a cache read at about a tenth of the context's price, against one cache write at about 1.25 times it; 0 turns the long wait off, negative is a config error
+-background_shell_wait_min: 10  # minutes an outstanding background shell of either signal may run before the wait logs it once and shows it in the wait marker; it also expires an ungated waiting turn end with an output file missing, whose every outstanding task is a non-awaited shell, into a held turn end, while a fork or an awaited shell never expires; 0 or negative is a config error, not "unlimited"
++background_shell_wait_min: 10  # minutes an outstanding background shell of either signal may run before the wait logs it once and shows it in the wait marker; it also expires a waiting turn end whose every outstanding task is a non-awaited shell, an ungated one with an output file missing into a held turn end and a gated one with every output file present into a done, while a fork or an awaited shell never expires; 0 or negative is a config error, not "unlimited"
+ send_ready_timeout_s: 60  # seconds a verified send (the start prompt, a skill-load message and every injected prompt) waits for an idle session before it fails as busy, ending at the run's deadline for a gate send; binds only an engine that reads session idleness, any other keeps a ready-pane check with no wait; 0 or negative is a config error
+ submit_confirm_timeout_s: 30  # seconds from the moment a verified send begins typing within which it must be seen to land before it fails as not landed, ending at the run's deadline for a gate send; binds only an engine that reads its input box, any other has no window; 0 or negative is a config error
+ submit_settle_ms: 300  # milliseconds between the two input-box reads that must agree before a verified send's Enter, so typed text has finished arriving and Claude Code does not swallow the Enter as part of a paste; it paces the two box reads before the Enter of the no-Enter paste variant and of a typing engine; 0 reads back to back, negative is a config error
+diff --git a/internal/shuttleengine/wait.go b/internal/shuttleengine/wait.go
+index 7d6fcce2..b0d15f1d 100644
+--- a/internal/shuttleengine/wait.go
++++ b/internal/shuttleengine/wait.go
+@@ -14,7 +14,11 @@
+ // A hold never extends run.deadline: a held run is bounded by its caller's own Spec.Timeout (run_timeout_min only where that is zero), and by the liveness check, which still classifies a dead pane.
+ // A turn end that leaves a fork or an awaited shell outstanding while an output file is missing is a wait, never a held stop, and expires into no hold or notice.
+ // It is bounded only by the run's own deadline and the liveness check, so a shell that never ends ends the run OutcomeTimeout, and lym reaps no shell.
+-// A turn end whose only outstanding work is shells the session does not await is no work product's wait: a gated run judges it as a plain turn end at once, and an ungated run with an output file missing holds it once every such shell has been outstanding for the shell wait bound, which notifies the parent once.
++// A turn end whose only outstanding work is shells the session does not await is no work product's wait.
++// A gated run with an output file missing holds it at once.
++// A gated run with every output file present does not count it Done while such a shell runs, since the shell may hold a commit or a gate run whose result the session never read:
++// it tells the agent once per shell to wait for the shell and read its result, and counts the turn end Done through the gate once every such shell has been outstanding for the shell wait bound.
++// An ungated run with an output file missing holds it once every such shell has been outstanding for the shell wait bound, which notifies the parent once.
+ // A gated run's waiting turn end on a fork or an awaited shell is never an arrival: it waits until the task's completion starts the next turn, bounded by the run deadline and the liveness check.
+ // At the deadline classifyDeadlineExpiry ends the run OutcomeDone when the output files exist, and finalize evaluates the gate once more over the tree as it stands.
+ // Every shell outstanding when the run ends, by whatever exit, is recorded in Result.EndedShells.
+@@ -387,6 +391,7 @@ func (run *Run) Wait() (Result, error) {
+ 			}
+ 		}
+ 
++		run.sendShellNudge()
+ 		run.settleDeferredHold()
+ 		run.watchDialog()
+ 		run.logSessionState("", tick%livenessEvery == 0)
+@@ -858,8 +863,11 @@ func startupCaptureExcerpt(capture string) string {
+ // An EventWaiting is the one Kind that is not held at once: the session is waiting on its own background work,
+ // so the tick returns what expiredTurnEnd answers, which is nothing while the work is outstanding and the files are missing;
+ // an ungated one with an empty outstanding list and every output file present is done at once.
+-// A gated run whose outstanding list holds only shells the session does not await is judged as a plain turn end instead:
+-// done when every output file exists, so the gate runs as at any turn end, and held at once when one is missing.
++// A gated run whose outstanding list holds only shells the session does not await is held at once when an output file is missing.
++// With every output file present it keeps waiting when a turn start past the waiting turn end is already read, since the next turn is under way;
++// otherwise it returns what expiredTurnEnd answers, queueing the shell nudge only while that is nothing:
++// nothing while a shell is inside the bound, and done once every shell has been outstanding for it, so the gate runs as at any turn end.
++// A turn start read past a recorded waiting turn end clears it, so no expiry counts the run done in a turn already under way.
+ // A fork and an awaited shell keep the turn waiting however long they run.
+ // A hold never extends run.deadline, so a held run is bounded by its caller's own deadline and by the liveness check.
+ // A waiting turn end on a fork or an awaited shell is bounded only by the run's own deadline and the liveness check, and lym reaps no shell.
+@@ -892,6 +900,14 @@ func (run *Run) pollEventsTick() (Outcome, *heldTurnEnd, error) {
+ 	}
+ 	// The reference is the held turn end on show; a held turn end this tick returns replaces it below.
+ 	run.turnStartRead = run.wait.heldOffset > 0 && turnStartAfter(turnStarts, run.wait.heldOffset)
++	if run.waitingTurnEnd != nil && turnStartAfter(turnStarts, run.waitingTurnEnd.offset) {
++		// The next turn is under way, so the recorded waiting turn end no longer expires.
++		// Its tasks stay in countedTasks for the run's record.
++		if len(run.waitingTasks) > 0 {
++			run.countedTasks = run.waitingTasks
++		}
++		run.waitingTasks, run.waitingTurnEnd = nil, nil
++	}
+ 	if len(events) == 0 {
+ 		return run.expiredTurnEnd()
+ 	}
+@@ -906,12 +922,23 @@ func (run *Run) pollEventsTick() (Outcome, *heldTurnEnd, error) {
+ 			return OutcomeDone, nil, nil
+ 		}
+ 		if len(run.gate) != 0 && run.unawaitedShellsOnly(run.waitingTasks) {
+-			// A shell the session does not await is no work product, so the turn end is judged as a plain one.
+ 			held := run.waitingTurnEnd
+-			run.countedTasks, run.waitingTasks = run.waitingTasks, nil
+ 			if allOutputFilesExist(run.spec.OutputFiles) {
+-				return OutcomeDone, nil, nil
++				if turnStartAfter(turnStarts, held.offset) {
++					// The next turn is already under way, so the shell is neither named nor waited on.
++					run.countedTasks, run.waitingTasks, run.waitingTurnEnd = run.waitingTasks, nil, nil
++					return "", nil, nil
++				}
++				// The shell may hold a commit or a gate run whose result the session never read, so Done waits on it up to the bound.
++				// A turn end that counts Done here is not nudged: the line would claim the run is not done.
++				outcome, _, err := run.expiredTurnEnd()
++				if outcome == "" {
++					run.queueShellNudge()
++				}
++				return outcome, nil, err
+ 			}
++			// A shell the session does not await is no work product, so the turn end is held as a plain one.
++			run.countedTasks, run.waitingTasks = run.waitingTasks, nil
+ 			run.turnStartRead = turnStartAfter(turnStarts, held.offset)
+ 			return "", held, nil
+ 		}
+@@ -1061,7 +1088,8 @@ func (run *Run) shellWaitBound() time.Duration {
+ }
+ 
+ // ShellWaitBound returns how long a background shell of either signal stays outstanding before the wait logs it and shows it in the wait marker, cfg.BackgroundShellWaitMin, flooring a non-positive hand-built value to the template default as pollInterval does.
+-// It is also the bound after which an ungated waiting turn end whose every outstanding task is a non-awaited shell, with an output file missing, expires into a held turn end.
++// It is also the bound after which a waiting turn end whose every outstanding task is a non-awaited shell expires:
++// an ungated one with an output file missing into a held turn end, and a gated one with every output file present into a Done.
+ func ShellWaitBound(cfg Config) time.Duration {
+ 	minutes := cfg.BackgroundShellWaitMin
+ 	if minutes <= 0 {
+@@ -1088,14 +1116,16 @@ func awaitedLabel(label string, prefixes []string) bool {
+ 	return false
+ }
+ 
+-// expiredTurnEnd decides the recorded waiting turn end: it counts it as a Done at once, expires it into a held turn end, or keeps it waiting.
++// expiredTurnEnd decides the recorded waiting turn end: it counts it as a Done at once, expires it into a held turn end or a Done, or keeps it waiting.
+ // An ungated run counts it at once whenever every output file exists, whatever is outstanding.
+ // An ungated run with an output file missing expires it into the held turn end of that waiting turn end once every outstanding task is a non-awaited shell and each has been outstanding for the bound;
+ // a fork or an awaited shell outstanding keeps it waiting however long it runs.
+-// A gated run's waiting turn end here holds a fork or an awaited shell, and is never an arrival, because the output files may be left over from an earlier arrival while the session works on in the background;
++// A gated run with every output file present expires it into a Done once every outstanding task is a non-awaited shell and each has been outstanding for the bound.
++// Any other gated waiting turn end here is never an arrival, because the output files may be left over from an earlier arrival while the session works on in the background;
+ // it waits until the task's completion starts the next turn, the run's deadline or the liveness check.
+ // A shell outstanding past the bound is logged once per shell.
+-// Counting or expiring a turn end clears the waiting list and keeps its tasks in countedTasks for the run's record.
++// Counting or expiring a turn end clears the waiting list and keeps its tasks in countedTasks for the run's record;
++// a turn start read past the recorded turn end clears it the same way before this runs.
+ // Returns outcome == "" and a nil held turn end while the turn keeps waiting.
+ func (run *Run) expiredTurnEnd() (Outcome, *heldTurnEnd, error) {
+ 	if len(run.waitingTasks) == 0 {
+@@ -1108,17 +1138,17 @@ func (run *Run) expiredTurnEnd() (Outcome, *heldTurnEnd, error) {
+ 			run.logPayloadShellPastBound(task, now.Sub(run.shellFirstSeen[task.ID]), bound)
+ 		}
+ 	}
++	filesExist := allOutputFilesExist(run.spec.OutputFiles)
+ 	if len(run.gate) != 0 {
+-		return "", nil, nil
+-	}
+-	if !allOutputFilesExist(run.spec.OutputFiles) {
+-		if !run.unawaitedShellsOnly(run.waitingTasks) || run.waitingTurnEnd == nil {
++		if !filesExist || !run.unawaitedShellsPastBound(now) {
+ 			return "", nil, nil
+ 		}
+-		for _, task := range run.waitingTasks {
+-			if now.Sub(run.shellFirstSeen[task.ID]) < bound {
+-				return "", nil, nil
+-			}
++		run.countedTasks, run.waitingTasks = run.waitingTasks, nil
++		return OutcomeDone, nil, nil
++	}
++	if !filesExist {
++		if run.waitingTurnEnd == nil || !run.unawaitedShellsPastBound(now) {
++			return "", nil, nil
+ 		}
+ 		held := run.waitingTurnEnd
+ 		run.countedTasks, run.waitingTasks = run.waitingTasks, nil
+@@ -1129,6 +1159,70 @@ func (run *Run) expiredTurnEnd() (Outcome, *heldTurnEnd, error) {
+ 	return OutcomeDone, nil, nil
+ }
+ 
++// unawaitedShellsPastBound reports whether every outstanding task of the recorded waiting turn end is a non-awaited shell outstanding for at least the shell wait bound at now.
++func (run *Run) unawaitedShellsPastBound(now time.Time) bool {
++	if !run.unawaitedShellsOnly(run.waitingTasks) {
++		return false
++	}
++	bound := run.shellWaitBound()
++	for _, task := range run.waitingTasks {
++		if now.Sub(run.shellFirstSeen[task.ID]) < bound {
++			return false
++		}
++	}
++	return true
++}
++
++// queueShellNudge queues the line naming each shell of the recorded waiting turn end that no sent line of this Wait named.
++// It queues nothing when every shell was named before, so an agent that ends its turn again over the same shell is not told twice.
++// The shells count as named only once sendShellNudge has sent the line.
++func (run *Run) queueShellNudge() {
++	var ids, labels []string
++	for _, task := range run.waitingTasks {
++		if run.nudgedShells[task.ID] {
++			continue
++		}
++		ids = append(ids, task.ID)
++		labels = append(labels, delimitedAgentText(task.Label))
++	}
++	if len(labels) > 0 {
++		run.shellNudge, run.shellNudgeIDs = shellNudgeText(labels), ids
++	}
++}
++
++// shellNudgeText returns the one line that tells an agent its turn ended while background shells whose results it never read still run, naming each by its delimited label.
++func shellNudgeText(labels []string) string {
++	return "[lym] Your turn ended while these background shells still run: " + strings.Join(labels, ", ") +
++		". The run does not count as done while one runs: wait for each to finish, read its result and act on it before you end your turn."
++}
++
++// sendShellNudge types the queued shell nudge into the run's pane through the gated send and clears it, marking the shells it named as named once the send succeeds.
++// While a pause covers the run it drops the line unsent.
++// A failed send is logged at Info and not retried in place, since the shell's completion still starts the session's next turn.
++// A dropped or failed line leaves its shells unnamed, so the next waiting turn end over them queues it again.
++func (run *Run) sendShellNudge() {
++	text, ids := run.shellNudge, run.shellNudgeIDs
++	if text == "" {
++		return
++	}
++	run.shellNudge, run.shellNudgeIDs = "", nil
++	if run.covered {
++		logger.Info("shuttle: shell nudge dropped under a pause", "strandGUID", run.state.StrandGUID)
++		return
++	}
++	if err := run.sendWithin(text); err != nil {
++		logger.Info("shuttle: shell nudge not sent", "strandGUID", run.state.StrandGUID, "error", err)
++		return
++	}
++	if run.nudgedShells == nil {
++		run.nudgedShells = map[string]bool{}
++	}
++	for _, id := range ids {
++		run.nudgedShells[id] = true
++	}
++	logger.Info("shuttle: told the agent to read the background shells its turn end left running", "strandGUID", run.state.StrandGUID)
++}
++
+ // unawaitedShellsOnly reports whether tasks is non-empty and holds no fork and no shell the spec's AwaitedShellPrefixes names.
+ func (run *Run) unawaitedShellsOnly(tasks []BackgroundTask) bool {
+ 	if len(tasks) == 0 {
+diff --git a/internal/shuttleengine/waiting_test.go b/internal/shuttleengine/waiting_test.go
+index c0d1eaa8..2e276c31 100644
+--- a/internal/shuttleengine/waiting_test.go
++++ b/internal/shuttleengine/waiting_test.go
+@@ -1,6 +1,7 @@
+ package shuttleengine
+ 
+ import (
++	"errors"
+ 	"os"
+ 	"path/filepath"
+ 	"reflect"
+@@ -202,12 +203,14 @@ var (
+ )
+ 
+ // TestPollEventsTick_OutstandingBackgroundWork covers a waiting turn end whose outstanding list is background work, one rule for a shell of either signal:
+-// with an output file missing a fork or an awaited shell keeps the turn waiting however long it runs, and is never held;
+-// a non-awaited shell alone expires an ungated wait into the held turn end once every shell has been outstanding for the bound, and a gated run judges the turn end as a plain one at once, held when an output file is missing;
+-// with every output file present an ungated run finishes done at once whatever is outstanding,
+-// and a gated run finishes done through the gate unless a fork or an awaited shell is outstanding, which it waits on until the next real turn end.
++// with an output file missing a fork or an awaited shell keeps the turn waiting however long it runs, and is never held.
++// With an output file missing, a non-awaited shell alone expires an ungated wait into the held turn end once every shell has been outstanding for the bound.
++// With an output file missing, a gated run holds the turn end at once.
++// With every output file present an ungated run finishes done at once whatever is outstanding.
++// With every output file present, a gated run waiting on non-awaited shells alone finishes done only once every shell has been outstanding for the bound.
++// With every output file present, a gated run waiting on a fork or an awaited shell waits until the next real turn end.
+ //
+-//testtiming:keep pins that a fork or an awaited shell never expires at a waiting turn end, and that a non-awaited shell alone expires the ungated wait at the bound and leaves a gated waiting turn end judged as a plain turn end
++//testtiming:keep pins that a fork or an awaited shell never expires at a waiting turn end, that a non-awaited shell alone expires the ungated wait at the bound, and that a gated run is not done while a non-awaited shell is inside the bound
+ func TestPollEventsTick_OutstandingBackgroundWork(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	const waitLine = "WAIT:background work\n"
+@@ -230,6 +233,8 @@ func TestPollEventsTick_OutstandingBackgroundWork(t *testing.T) {
+ 		wantHeldAtOnce bool
+ 		// wantHeldPastBound expects nothing until every shell has been outstanding for the bound, then the held turn end, then nothing on a further idle tick.
+ 		wantHeldPastBound bool
++		// wantDonePastBound expects nothing until every shell has been outstanding for the bound, then done with the tasks counted and the waiting list cleared.
++		wantDonePastBound bool
+ 	}{
+ 		{name: "a transcript-reported shell expires into the held turn end at the bound while an output file is missing", tasks: []BackgroundTask{transcriptShellTask}, wantHeldPastBound: true},
+ 		{name: "a payload-reported shell expires into the held turn end at the bound while an output file is missing", tasks: []BackgroundTask{payloadShellTask}, wantHeldPastBound: true},
+@@ -239,8 +244,9 @@ func TestPollEventsTick_OutstandingBackgroundWork(t *testing.T) {
+ 		{name: "an ungated run with outputs and a transcript-reported shell finishes done", tasks: []BackgroundTask{transcriptShellTask}, touchOutput: true, wantDone: true},
+ 		{name: "an ungated run with outputs and a fork finishes done", tasks: []BackgroundTask{fork}, touchOutput: true, wantDone: true},
+ 		{name: "an ungated run with outputs and nothing outstanding finishes done", touchOutput: true, wantDone: true},
+-		{name: "a gated run with outputs and a transcript-reported shell finishes done", tasks: []BackgroundTask{transcriptShellTask}, gated: true, touchOutput: true, wantDone: true},
+-		{name: "a gated run with outputs and a payload-reported shell finishes done", tasks: []BackgroundTask{payloadShellTask}, gated: true, touchOutput: true, wantDone: true},
++		{name: "a gated run with outputs and a transcript-reported shell finishes done at the bound", tasks: []BackgroundTask{transcriptShellTask}, gated: true, touchOutput: true, wantDonePastBound: true},
++		{name: "a gated run with outputs and a payload-reported shell finishes done at the bound", tasks: []BackgroundTask{payloadShellTask}, gated: true, touchOutput: true, wantDonePastBound: true},
++		{name: "a gated run with outputs and two shells finishes done only once the later one passes the bound", tasks: []BackgroundTask{transcriptShellTask, secondShell}, gated: true, touchOutput: true, staggered: true, wantDonePastBound: true},
+ 		{name: "a gated run with an output file missing and a shell is held at once", tasks: []BackgroundTask{transcriptShellTask}, gated: true, wantHeldAtOnce: true},
+ 		{name: "a fork beside a shell keeps the gated run waiting", tasks: []BackgroundTask{payloadShellTask, fork}, gated: true, touchOutput: true},
+ 		{name: "an awaited shell beside a shell keeps the gated run waiting", tasks: []BackgroundTask{payloadShellTask, awaitedShell}, spec: awaitedSpec, gated: true, touchOutput: true},
+@@ -288,6 +294,18 @@ func TestPollEventsTick_OutstandingBackgroundWork(t *testing.T) {
+ 				if outcome, held, err := run.pollEventsTick(); err != nil || outcome != "" || held != nil {
+ 					t.Errorf("idle tick after the hold = (%q, %+v, %v), want nothing: the held wait is not restarted", outcome, held, err)
+ 				}
++			case tt.wantDonePastBound:
++				if err != nil || outcome != "" || held != nil {
++					t.Fatalf("first tick = (%q, %+v, %v), want still waiting", outcome, held, err)
++				}
++				fc.Sleep(bound - time.Second)
++				if outcome, held, err := run.pollEventsTick(); err != nil || outcome != "" || held != nil {
++					t.Fatalf("tick inside the bound = (%q, %+v, %v), want still waiting", outcome, held, err)
++				}
++				fc.Sleep(time.Second)
++				if outcome, held, err := run.pollEventsTick(); err != nil || outcome != OutcomeDone || held != nil || !slices.Equal(run.countedTasks, tt.tasks) || len(run.waitingTasks) != 0 {
++					t.Fatalf("tick at the bound = (%q, %+v, %v) with counted %v and waiting %v, want done with the tasks counted and the waiting list cleared", outcome, held, err, run.countedTasks, run.waitingTasks)
++				}
+ 			default:
+ 				if err != nil || outcome != "" || held != nil {
+ 					t.Fatalf("first tick = (%q, %+v, %v), want still waiting", outcome, held, err)
+@@ -301,6 +319,40 @@ func TestPollEventsTick_OutstandingBackgroundWork(t *testing.T) {
+ 	}
+ }
+ 
++// TestPollEventsTick_TurnStartEndsTheGatedShellWait pins that a gated run whose waiting turn end lists an unawaited shell does not count Done once the bound passes in a turn already under way:
++// a turn start read after the waiting turn end clears the wait, and the next turn end finishes done.
++//
++//testtiming:keep pins that a turn start past a gated shell wait clears it before the bound can count the run done
++func TestPollEventsTick_TurnStartEndsTheGatedShellWait(t *testing.T) {
++	tiergate.Require(t, 0)
++	outputFile := filepath.Join(t.TempDir(), "out.md")
++	touchOutputFile(t, outputFile)
++	fx := newFixture(t, &fakeReed{StatusQueue: liveStrandStatus(true)}, &sessionFakeEngine{waitingEngine: waitingEngine{outstanding: []BackgroundTask{transcriptShellTask}}}, withConfig(gateConfig))
++	fc := newFakeClock(time.Now())
++	run := fx.newRun(Spec{OutputFiles: []string{outputFile}, Timeout: time.Hour},
++		withRunState(RunState{StrandGUID: "strand-1", SessionID: "session-1"}),
++		withRunEvents("WAIT:background work\n"),
++		withRunClock(fc, fc.Now().Add(time.Hour)),
++		withRunGate(GateSpec{{Gate: func() (GateResult, error) { return GateResult{Passed: true}, nil }, Attempts: 1}}))
++
++	if outcome, held, err := run.pollEventsTick(); err != nil || outcome != "" || held != nil {
++		t.Fatalf("first tick = (%q, %+v, %v), want still waiting", outcome, held, err)
++	}
++	appendEventsLine(t, run.state.EventsPath, "START")
++	fc.Sleep(run.shellWaitBound() + time.Second)
++	if outcome, held, err := run.pollEventsTick(); err != nil || outcome != "" || held != nil || len(run.waitingTasks) != 0 {
++		t.Fatalf("tick past the bound after a turn start = (%q, %+v, %v) with waiting %v, want nothing and the waiting list cleared", outcome, held, err, run.waitingTasks)
++	}
++	fc.Sleep(time.Minute)
++	if outcome, held, err := run.pollEventsTick(); err != nil || outcome != "" || held != nil {
++		t.Fatalf("idle tick mid-turn = (%q, %+v, %v), want nothing", outcome, held, err)
++	}
++	appendEventsLine(t, run.state.EventsPath, "STOP:done")
++	if outcome, _, err := run.pollEventsTick(); err != nil || outcome != OutcomeDone {
++		t.Errorf("tick at the turn end = (%q, %v), want %q", outcome, err, OutcomeDone)
++	}
++}
++
+ // jumpClock is a fake clock whose Sleep advances a fixed jump, so Wait reaches a deadline in a few ticks.
+ type jumpClock struct {
+ 	*fakeClock
+@@ -312,7 +364,7 @@ func (c *jumpClock) Sleep(time.Duration) { c.fakeClock.Sleep(c.jump) }
+ // TestWait_RecordsEndedShells pins that every end of a run with a shell outstanding records it in Result.EndedShells with its time outstanding:
+ // an ungated at-once finish logs that the strand removal ended the shell,
+ // and a run deadline and a liveness end log that the run ended with the shell outstanding and the strand left to its caller.
+-// An ungated at-once finish records every outstanding shell with its own signal, a gated run ends done at a waiting turn end whose only shell is unawaited and records it,
++// An ungated at-once finish records every outstanding shell with its own signal, a gated run ends done once its waiting turn end's only unawaited shell outlasts the bound and records it,
+ // and an awaited shell the wait holds never lands there once the next turn ends, and lands there when the deadline ends the run.
+ // It captures the process-global logger, so it does not run in parallel.
+ //
+@@ -371,10 +423,10 @@ func TestWait_RecordsEndedShells(t *testing.T) {
+ 			wantNoLog: []string{removed, left},
+ 		},
+ 		{
+-			name: "a gated run with its outputs present ends done at the waiting turn end through the gate and records the unawaited shell", cfg: gateConfig, touchOutput: true, status: liveStrandStatus(true),
+-			tasks: []BackgroundTask{transcriptShellTask}, gated: true, wantGateCalls: 1,
+-			wantOutcome: OutcomeDone,
+-			wantLog:     []string{removed}, wantNoLog: []string{left},
++			name: "a gated run with its outputs present ends done through the gate once the unawaited shell outlasts the bound and records it", cfg: gateConfig, touchOutput: true, status: liveStrandStatus(true),
++			tasks: []BackgroundTask{transcriptShellTask}, gated: true, wantGateCalls: 1, jump: 6 * time.Minute,
++			wantOutcome: OutcomeDone, wantOutstanding: 12 * time.Minute,
++			wantLog: []string{removed}, wantNoLog: []string{left},
+ 		},
+ 		{
+ 			name: "a gated run with its outputs present holds an awaited shell to the deadline and records it", cfg: gateConfig, touchOutput: true, status: liveStrandStatus(true),
+@@ -461,6 +513,143 @@ func TestWait_RecordsEndedShells(t *testing.T) {
+ 	}
+ }
+ 
++// TestWait_GatedShellNudge drives a gated run whose output files exist and whose turn ends over an unawaited shell before a plain turn end.
++// A waiting turn end types one line naming the shell into the pane, and a later waiting turn end over the same shell types nothing once that line was sent.
++// A turn start past the waiting turn end types nothing, and a line dropped under a pause or lost to a failed send is not retried in place but queued again by the next waiting turn end.
++// A waiting turn end over a shell already past the bound counts done and types no nudge, even after the failed gate's re-prompt.
++// Every other row finishes done through the gate at the plain turn end with no shell left over.
++// It stubs the package-level input sleep, so it does not run in parallel.
++func TestWait_GatedShellNudge(t *testing.T) {
++	tiergate.Require(t, 0)
++	type step = func(t *testing.T, eventsPath string, resume func())
++	appendLine := func(line string) step {
++		return func(t *testing.T, eventsPath string, _ func()) { appendEventsLine(t, eventsPath, line) }
++	}
++	resumePause := step(func(_ *testing.T, _ string, resume func()) { resume() })
++	idle := step(func(*testing.T, string, func()) {})
++	// ageShellThen ages the clock past the shell wait bound, then runs next.
++	// shellAger, set per subtest, advances that subtest's clock.
++	var shellAger func()
++	ageShellThen := func(next step) step {
++		return func(t *testing.T, eventsPath string, resume func()) {
++			shellAger()
++			next(t, eventsPath, resume)
++		}
++	}
++	tests := []struct {
++		name string
++		// events seeds the events file.
++		events string
++		// covered has a hub-wide pause cover the run until a step resumes it.
++		covered bool
++		// sendErr fails every send into the pane.
++		sendErr error
++		// steps run one per clock tick, after the tick's sleep.
++		steps []step
++		// gateFailsOnce makes the gate's first evaluation fail with attempts left, so the run re-prompts.
++		gateFailsOnce bool
++		// wantSent is how many shell nudges the run types into the pane.
++		wantSent int
++		// wantDoneOverShell expects the run to count done at a waiting turn end with the shell still outstanding.
++		wantDoneOverShell bool
++	}{
++		{
++			name: "a shell is named once across two waiting turn ends", events: "WAIT:background work\n",
++			steps: []step{appendLine("WAIT:background work"), appendLine("STOP:done")}, wantSent: 1,
++		},
++		{
++			name: "a turn start past the waiting turn end types nothing", events: "WAIT:background work\nSTART\n",
++			steps: []step{appendLine("STOP:done")}, wantSent: 0,
++		},
++		{
++			name: "a pause covering the run drops the line and the next waiting turn end queues it again", events: "WAIT:background work\n", covered: true,
++			steps: []step{resumePause, appendLine("WAIT:background work"), appendLine("STOP:done")}, wantSent: 1,
++		},
++		{
++			name: "a failed send is not retried in place and the next waiting turn end sends again", events: "WAIT:background work\n", sendErr: errors.New("pane swallowed input"),
++			steps: []step{idle, appendLine("WAIT:background work"), appendLine("STOP:done")}, wantSent: 2,
++		},
++		{
++			name: "a waiting turn end over a shell already past the bound counts done and types no nudge after the failed gate's re-prompt", events: "WAIT:background work\nSTART\n",
++			steps:         []step{ageShellThen(appendLine("WAIT:background work")), appendLine("STOP:done")},
++			gateFailsOnce: true, wantSent: 0, wantDoneOverShell: true,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			runDir := t.TempDir()
++			eventsPath := filepath.Join(runDir, eventsFileName)
++			outputFile := filepath.Join(runDir, "out.md")
++			touchOutputFile(t, outputFile)
++			if err := os.WriteFile(eventsPath, []byte(tt.events), 0o644); err != nil {
++				t.Fatalf("seed events: %v", err)
++			}
++			wantText := shellNudgeText([]string{delimitedAgentText(transcriptShellTask.Label)})
++			reed := &fakeReed{
++				StatusQueue:  liveStrandStatus(true),
++				CaptureQueue: []string{"idle pane", "idle pane", wantText},
++				SendTextErr:  tt.sendErr,
++			}
++			engine := &sessionFakeEngine{waitingEngine: waitingEngine{fakeEngine: fakeEngine{StartupScript: []StartupState{StartupReady}}, outstanding: []BackgroundTask{transcriptShellTask}}}
++			fx := newFixture(t, reed, engine, withConfig(gateConfig))
++			stubInputSleep(t)
++			gateCalls := 0
++			gate := GateSpec{{Gate: func() (GateResult, error) {
++				gateCalls++
++				if tt.gateFailsOnce && gateCalls == 1 {
++					return GateResult{Passed: false, Findings: "bad"}, nil
++				}
++				return GateResult{Passed: true}, nil
++			}, Attempts: 2}}
++			fc := newFakeClock(time.Now())
++			shellAger = func() { fc.asleep(ShellWaitBound(gateConfig)) }
++			resume := func() {}
++			if tt.covered {
++				geometry, resumeCoverage := coverHub(t, fc.Now())
++				fx.Runner.SetPause(geometry)
++				resume = func() { resumeCoverage(fc.Now()) }
++			}
++			clockSteps := make([]func(), len(tt.steps))
++			for i, step := range tt.steps {
++				clockSteps[i] = func() { step(t, eventsPath, resume) }
++			}
++			mc := &multiStepClock{fakeClock: fc, steps: clockSteps}
++			run := fx.newRun(Spec{OutputFiles: []string{outputFile}, Timeout: time.Hour, KeepPane: true},
++				withRunDir(runDir),
++				withRunState(RunState{StrandGUID: "strand-1", SessionID: "session-1", EventsPath: eventsPath}),
++				withRunClock(mc, fc.Now().Add(time.Hour)),
++				withRunGate(gate))
++
++			result, err := run.Wait()
++			if err != nil {
++				t.Fatalf("Wait() error: %v", err)
++			}
++			if result.Outcome != OutcomeDone {
++				t.Errorf("Outcome = %q, want %q at the plain turn end", result.Outcome, OutcomeDone)
++			}
++			wantGateCalls := 1
++			if tt.gateFailsOnce {
++				wantGateCalls = 2
++			}
++			if gateCalls != wantGateCalls {
++				t.Errorf("gate evaluated %d times, want %d: only the plain turn end and a shell past the bound are arrivals", gateCalls, wantGateCalls)
++			}
++			if !tt.wantDoneOverShell && len(result.EndedShells) != 0 {
++				t.Errorf("EndedShells = %+v, want none: the plain turn end left nothing outstanding", result.EndedShells)
++			}
++			nudges := 0
++			for _, call := range reed.SendTextCalls {
++				if call.Text == wantText {
++					nudges++
++				}
++			}
++			if nudges != tt.wantSent {
++				t.Fatalf("SendText calls = %+v, want %d nudges", reed.SendTextCalls, tt.wantSent)
++			}
++		})
++	}
++}
++
+ // jumpStepClock is a fake clock whose Sleep advances a fixed jump and runs the next scripted step.
+ type jumpStepClock struct {
+ 	*multiStepClock
+diff --git a/internal/shuttleengine/waitmark.go b/internal/shuttleengine/waitmark.go
+index 64eab34c..6eb66c38 100644
+--- a/internal/shuttleengine/waitmark.go
++++ b/internal/shuttleengine/waitmark.go
+@@ -174,7 +174,8 @@ func (run *Run) syncShellWait() {
+ 
+ // shellWaitActive reports whether the recorded waiting turn end holds only non-awaited background shells of either signal, at least one outstanding for the bound by its first-seen stamp.
+ // It shows only while shells are outstanding at staggered first-seen times, one past the bound and another not:
+-// a lone shell crossing the bound expires an ungated wait in the same tick, and a gated run's shell-only waiting turn end is judged at once, so neither leaves a list to show.
++// a lone shell crossing the bound expires an ungated wait in the same tick,
++// and a gated run with every output file present counts Done in the tick the last shell crosses the bound, so neither leaves a list to show.
+ func (run *Run) shellWaitActive() bool {
+ 	if len(run.waitingTasks) == 0 {
+ 		return false
+diff --git a/internal/websterengine/doc.go b/internal/websterengine/doc.go
+index 2f458a28..2eac0b6c 100644
+--- a/internal/websterengine/doc.go
++++ b/internal/websterengine/doc.go
+@@ -637,11 +637,13 @@
+ //
+ // Master's spawn declares its awaited shell prefixes, `masterAwaitedShellPrefixes`: the backgrounded recovery verb of the failure ladder, the backgrounded cold fixer verb of the gate-failure section and the backgrounded plan fixer verb of the plan-conflict rung;
+ // recovery_timeout_min already bounds each verb, so the prefixes keep them out of the background-shell wait marker and are what keeps them holding a gated turn end.
+-// A gated turn end waiting only on non-awaited shells is judged as a plain turn end: done when Master's output files exist, held when one is missing.
++// A gated turn end waiting only on non-awaited shells is held when one of Master's output files is missing.
++// With every output file present it is not done while such a shell runs, since the shell may hold a commit or a gate run whose result Master never read:
++// shuttle tells Master once per shell to wait for it and read its result, and counts the turn end done once every such shell has been outstanding for `background_shell_wait_min`.
+ // A gated turn end waiting on an awaited verb or on a fork is never an arrival, and neither expires.
+ // The run ends on the next turn end with nothing outstanding, the run deadline, the liveness check or a stop;
+ // a deadline still ends it done through shuttle's satisfied file contract with the gate run once at finalize, and the shell's result is then never read.
+-// `background_shell_wait_min` sets when a long-running shell is logged and shown in the wait marker, and expires an ungated wait on non-awaited shells into a held turn end.
++// `background_shell_wait_min` sets when a long-running shell is logged and shown in the wait marker.
+ // Every shell outstanding when the run ends comes back on shuttle's `Result.EndedShells`, whatever ends the run.
+ // lym does not stop such a shell.
+ // What ends the shell follows the run's final outcome.
+diff --git a/internal/websterengine/runlevel.go b/internal/websterengine/runlevel.go
+index b7def6f2..05de5f40 100644
+--- a/internal/websterengine/runlevel.go
++++ b/internal/websterengine/runlevel.go
+@@ -36,7 +36,8 @@ const runLockName = "run.lock"
+ 
+ // masterAwaitedShellPrefixes are Master's backgrounded, blocking verbs: the failure ladder's recovery verb, the verify gate's cold fixer verb and the plan-conflict rung's plan fixer verb.
+ // A prefix keeps its verb out of the background-shell wait marker;
+-// it is also what keeps the verb holding a gated turn end, which one waiting only on non-awaited shells is judged as a plain turn end.
++// it is also what keeps the verb holding a gated turn end, which one waiting only on non-awaited shells does not:
++// that one is held when an output file is missing and is not counted done inside background_shell_wait_min.
+ var masterAwaitedShellPrefixes = []string{"lym webster recover-batch", fixVerifyCommand, fixPlanCommand}
+ 
+ // ErrRunBusy marks Run's fail-fast refusal when another invocation already holds scratchDir's
