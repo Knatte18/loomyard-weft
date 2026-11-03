@@ -1,6 +1,6 @@
 # Codex CLI as a second shuttle engine: codexengine
 
-`codex-engine` · Task · feature, shuttle, codex · running · Discussion-Burler-Review
+`codex-engine` · Task · feature, shuttle, codex · running · Discussion-Burler-Fix
 
 Codex CLI is the candidate second engine for shuttle, to offload Claude token use: Loomyard spawns hundreds of agents a day (operator, 2026-10-13), and Codex is more relevant to support than Gemini (operator, 2026-10-03).
 The hands-on spike is done: `docs/research/codex-spike-2026-10-24/report.md` holds every finding, a proposed launch line, a pane classifier table and a send sequence.
