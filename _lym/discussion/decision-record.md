@@ -53,6 +53,12 @@ drift: the baseline capture ended failed (drift: start the drift capture command
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-03): A missing dir is refused at the config write, not at every load
+
+Decision: lym config --set and the hub-wide write check the resolved dir exists (CheckDirs); LoadConfig keeps accepting a missing dir, and the step's own pre-spawn check names it at run time.
+
+Rationale: A load runs in every worktree and on every machine, where a dir may legitimately not exist yet; refusing there would break unrelated commands, while the write check catches the operator's typo and the pre-spawn check catches the rest with the resolved path.
+
 ## Constraints
 
 ## Auto-mode assumptions
