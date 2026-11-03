@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-03 11:10 UTC; every age below is as of then.
+Rendered 2026-11-03 11:11 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -12,7 +12,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running (6)
+### Running (7)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -24,14 +24,13 @@ Held by a run; its scope is locked until the run ends.
 | T4 | **Webster treats the anchor as the git worktree in a subpath-anchored hub**<br>• Webster opens git and resolves plan paths at the worktree root, not the anchor, so a subpath-anchored hub reaches code | [`webster-subpath-anchor`](design-webster-subpath-anchor.md) | darn · solid | Code-Burler-Fix | neve | 52m<br>52m | webster, cwd, parsers |
 | T6 | **The orch role explains how to make a project into a beam**<br>• The prime orch in the Models hub did not know beam create is the only way, and patched a plain task run by hand. | [`orch-role-making-a-beam`](design-orch-role-making-a-beam.md) | darn · light | Finalize | neve | 1d<br>25m | orch, pawl |
 | T10 | **Darn-Write writer runs no gate itself when the cold fixer is on**<br>• The darn writer prompt still has the writer run and fix lym gate test; with the gate fixer on it should run none | [`darn-writer-runs-no-gate`](design-darn-writer-runs-no-gate.md) | darn · light | Drift-Verify | neve | 12m<br>12m | darn, stencil, gate |
+| T11 | **Map where fabricengine test time goes and propose cuts**<br>• Docs-only survey: time, git processes and files per fixture on neve, what hubforge templates already cover, ranked proposals<br>• `darn: writer fable[high]` | [`fabric-test-speed-survey`](design-fabric-test-speed-survey.md) | darn · docs | Worktree-Create | neve | 0m<br>0m | fabric, testkit, docs |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T11 | **Map where fabricengine test time goes and propose cuts**<br>• Docs-only survey: time, git processes and files per fixture on neve, what hubforge templates already cover, ranked proposals<br>• `darn: writer fable[high]` | [`fabric-test-speed-survey`](design-fabric-test-speed-survey.md) | darn · docs |  | 0m<br>0m | fabric, testkit, docs |
+_None._
 
 ### Layer A (3)
 
