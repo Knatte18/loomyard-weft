@@ -1,6 +1,6 @@
 # Webster treats the anchor as the git worktree in a subpath-anchored hub
 
-`webster-subpath-anchor` · Task · bug, webster, cwd, parsers · running · Finalize
+`webster-subpath-anchor` · Task · bug, webster, cwd, parsers · done
 
 Two Webster faults in a hub whose fabric is anchored in a subdirectory by `.lym-anchor`, from [issue #32](https://github.com/Knatte18/loomyard/issues/32) and [issue #31](https://github.com/Knatte18/loomyard/issues/31).
 Both block every tapestry run in the NORCE Models hub (anchor `src/csharp/NORCE.Models`) from reaching code; #32 is urgent (operator, 2026-11-03).
