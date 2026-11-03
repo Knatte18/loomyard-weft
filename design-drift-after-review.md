@@ -1,6 +1,6 @@
 # Code changed after Drift-Verify lands with no compare
 
-`drift-after-review` · Task · bug, drift, loom · running · Record-Write
+`drift-after-review` · Task · bug, drift, loom · running · Drift-Baseline
 
 Depends on: [`drift-verdict-in-pr`](design-drift-verdict-in-pr.md)
 
