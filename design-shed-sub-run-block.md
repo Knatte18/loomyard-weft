@@ -1,6 +1,6 @@
 # A shed block runs a whole sub-recipe inline as one producer, so recipes reuse one another
 
-`shed-sub-run-block` · Task · enhancement, shed, loom · running · Drift-Verify
+`shed-sub-run-block` · Task · enhancement, shed, loom · running · Code-Bouncer
 
 ## Seen
 
