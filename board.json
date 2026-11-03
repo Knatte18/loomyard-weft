@@ -860,29 +860,6 @@
       "notify_on_land": true
     },
     {
-      "id": 1046,
-      "handle": "T10",
-      "slug": "darn-writer-runs-no-gate",
-      "title": "Darn-Write writer runs no gate itself when the cold fixer is on",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "darn",
-        "stencil",
-        "gate"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The darn writer prompt still has the writer run and fix lym gate test; with the gate fixer on it should run none",
-      "body": "The Darn-Write writer still runs `lym gate test` and fixes its failures in its own session, at full context, though the cold gate fixer was meant to take that work off it.\n\n## What is wrong\n\nThe cold gate fixer (`internal/gatefixer`, landed in `a9536680`) clears a failed Darn-Write `verify` gate after the writer hands off, and the writer hears only what the fixer leaves.\nThat commit switched the Plan-Write and Discussion-Write prompts to a \"gated\" self-check fragment that runs no validator when the row's gate has a cold fixer (`LoomFragmentSelfCheckPlanGated`, `LoomFragmentSelfCheckDiscussionGated` in `contracts/stencils/stencils.go`).\nDarn-Write's prompt was left out: `contracts/stencils/darn/darn-template-write.md` Step 4 still tells the writer to run `lym gate test` after each commit, rerun it, and leave each commit green, and tells its subagents to run the gate on their packages.\nSeen in task `webster-subpath-anchor`: the writer ran the gate and fixed failures itself before and after the fixer.\n\n## Expected\n\n- When `darn.gate_fixer` is set and the worktree has a pair slug, the Darn-Write prompt has the writer and its subagents run no `lym gate test`; the row's `verify` gate and its fixer take the failures, and the writer acts only on what the fixer leaves.\n- With the fixer off, or with no pair slug, the prompt text stays as it is today.\n- Follow the Plan-Write pattern: a marker in `darn-template-write.md` filled by the darn engine with one of two fragments, chosen on the same condition the row gate uses to attach a fixer.\n- A test pins both renderings.\n",
-      "status": "done",
-      "created": "2026-11-03T10:58:17Z",
-      "revised": "2026-11-03T10:58:17Z",
-      "profile": "light"
-    },
-    {
       "id": 1047,
       "handle": "T5",
       "slug": "window-titles-show-handle",
