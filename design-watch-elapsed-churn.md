@@ -1,6 +1,6 @@
 # loom status --watch prints every poll while a verify runs
 
-`watch-elapsed-churn` · Note · bug, loom, cli
+`watch-elapsed-churn` · Task · bug, loom, cli · draft
 
 `lym loom status --watch` prints a line every poll while a verify runs, because the composed activity carries the verify's elapsed seconds.
 
