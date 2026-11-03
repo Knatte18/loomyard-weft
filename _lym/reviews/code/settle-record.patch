@@ -1,0 +1,71 @@
+diff --git a/internal/landingshed/doc.go b/internal/landingshed/doc.go
+index c8e00ad3..0d518007 100644
+--- a/internal/landingshed/doc.go
++++ b/internal/landingshed/doc.go
+@@ -156,7 +156,7 @@
+ // Parent commits brought in, or a failing gate, run the merge fixer in parent-align mode on the attempts `parent_align_fix_attempts` leaves the entry; a `fixed` report over a passing gate advances the aligned tip and is Done.
+ // The entry's fork point is kept in its attempt record before the merge, so a resumed entry whose merge is already up to date still reads what the first merge brought in.
+ // With the Code-Review perch's budget 0, or told nothing, a fixer change over `finalize_fix_max_lines` or touching a test, testdata or gate configuration file, or adding a test skip or a build constraint, halts over-cap; with a budget above 0 the change goes to the Code-Perch unjudged.
+-// A spent cap, a turn that ended without a usable result and an over-cap change each halt with a reason opening with LandingStopPrefix and a way forward; the resume after an over-cap halt reads the operator's review as the alignment.
++// A spent cap, a turn that ended without a usable result, a tree left dirty after the last turn, whose reason names the paths, and an over-cap change each halt with a reason opening with LandingStopPrefix and a way forward; the resume after an over-cap halt reads the operator's review as the alignment.
+ // Every Done clears the entry's attempt record, and an entry reached again from another row starts at zero attempts.
+ // A run halted on the row under its name before the rename, Merge-In, resumes with its spent attempts: the row reads the old name's attempt record when its own is absent, and every Done removes both.
+ // Last it writes the merge record: the tip merged, the task head before the merge, the parent tip last merged into the task, the aligned tip, the merge commit and where the parent's changes since the aligned tip meet the task's changes since its last merge base.
+diff --git a/internal/landingshed/fixerrun.go b/internal/landingshed/fixerrun.go
+index a55dcd04..87e6ce2b 100644
+--- a/internal/landingshed/fixerrun.go
++++ b/internal/landingshed/fixerrun.go
+@@ -70,6 +70,8 @@ type fixerOutcome struct {
+ 	conflict string
+ 	// pushedRef is the remote ref that moved, with its new tip; set for a pushed end.
+ 	pushedRef string
++	// dirty lists the uncommitted or untracked paths the last turn left; set for a dirty end.
++	dirty []string
+ }
+ 
+ // fixerRun runs the merge fixer for one row.
+@@ -256,6 +258,7 @@ func (s *fixerSession) judge() (shuttleengine.GateResult, error) {
+ 	}
+ 	if len(dirty) > 0 {
+ 		if s.rec.Spent >= s.cap {
++			s.outcome.dirty = dirty
+ 			return s.halt(fixerEndDirty, dirtyReason(point, dirty))
+ 		}
+ 		if err := s.chargeTurn(); err != nil {
+@@ -324,9 +327,12 @@ func (o fixerOutcome) haltReason(row string, escalateJudgedFirst bool) string {
+ 		} else {
+ 			wayForward = "settle the conflict on the task branch, then `lym loom resume`"
+ 		}
+-	case fixerEndTimeout, fixerEndNoReport, fixerEndDirty:
++	case fixerEndTimeout, fixerEndNoReport:
+ 		cause = fmt.Sprintf("the fixer session of %s ended without a usable turn (%s); session log: %s; report: %s", row, o.end, o.sessionLog, o.reportPath)
+ 		wayForward = "fix or clean the task branch, then `lym loom resume`"
++	case fixerEndDirty:
++		cause = fmt.Sprintf("the fixer session of %s left uncommitted or untracked paths in the task worktree after its last turn: %s; session log: %s; report: %s", row, listShown(o.dirty), o.sessionLog, o.reportPath)
++		wayForward = "commit or remove them on the task branch, then `lym loom resume`"
+ 	case fixerEndPushed:
+ 		cause = fmt.Sprintf("the fixer session of %s pushed %s; session log: %s", row, o.pushedRef, o.sessionLog)
+ 		wayForward = "check the pushed commits are the task's, then `lym loom resume`"
+diff --git a/internal/landingshed/fixerrun_test.go b/internal/landingshed/fixerrun_test.go
+index d1b8d4e1..76a0f07b 100644
+--- a/internal/landingshed/fixerrun_test.go
++++ b/internal/landingshed/fixerrun_test.go
+@@ -289,7 +289,8 @@ func TestFixerRun_Outcomes(t *testing.T) {
+ 				fx.seats.turns = []func(){func() { fx.writeReport(t, fixedReport) }}
+ 			},
+ 			wantEnd: fixerEndDirty, wantSpent: fixerTestCap, wantTurns: 1,
+-			wantReason: []string{LandingStopPrefix, "(dirty)", "`lym loom resume`"},
++			wantReason:  []string{LandingStopPrefix, "after its last turn: a.go;", fakeFixerRunDir, "commit or remove them on the task branch", "`lym loom resume`"},
++			avoidReason: []string{"without a usable turn"},
+ 		},
+ 		{
+ 			name: "a remote tip that moved during the session is the pushed end",
+@@ -406,7 +407,7 @@ func TestFixerRun_Outcomes(t *testing.T) {
+ 		if err == nil || shedengine.TransientOf(err) != shedengine.TransientAgentStart {
+ 			t.Fatalf("run() error = %v; want one the transient mark classifies as %q", err, shedengine.TransientAgentStart)
+ 		}
+-		if !reflect.DeepEqual(rec, start) || outcome != (fixerOutcome{}) {
++		if !reflect.DeepEqual(rec, start) || !reflect.DeepEqual(outcome, fixerOutcome{}) {
+ 			t.Errorf("run() = %+v, %+v; want the record as it was and no outcome", outcome, rec)
+ 		}
+ 		onDisk, readErr := ReadFixerAttempts(FixerAttemptsPath(fx.deps.ScratchDir, fixerTestRow), 1)
