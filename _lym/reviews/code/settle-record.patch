@@ -1,0 +1,652 @@
+diff --git a/internal/battencli/cancel.go b/internal/battencli/cancel.go
+index 375e9d72..4dd013cd 100644
+--- a/internal/battencli/cancel.go
++++ b/internal/battencli/cancel.go
+@@ -659,6 +659,7 @@ func nothingLeft(slug string) error {
+ 
+ // removePairAndBranch removes the pair, snapshotting its uncommitted paths first, then archives and deletes the task branch while one is left.
+ // A pair with nothing left reads as removed.
++// A directory the removal left at the pair's path, which is no worktree, is named in a warning with the way to clear it, since it blocks the slug's next run.
+ func removePairAndBranch(slug, rerun string, report *cancelReport, deps cancelDeps) error {
+ 	result, err := deps.RemovePair(pairteardown.Request{Slug: slug, Force: true, Snapshot: true, Remote: true, LeaveClaim: true})
+ 	report.SnapshotTag = result.SnapshotTag
+@@ -666,6 +667,9 @@ func removePairAndBranch(slug, rerun string, report *cancelReport, deps cancelDe
+ 		return fmt.Errorf("battencli: removing the pair of %s refused: %w; way forward: fix the cause it names, then run \"lym batten cancel %s --remove\" again", slug, err, slug)
+ 	}
+ 	report.PairRemoved = true
++	if result.StrayPath != "" {
++		report.Warnings = append(report.Warnings, fmt.Sprintf("the directory %s stays at the pair's path and is not a worktree; save anything worth keeping from it, then delete it before %s runs again", result.StrayPath, slug))
++	}
+ 
+ 	parts, err := deps.PairParts()
+ 	if err != nil {
+diff --git a/internal/battencli/cancel_test.go b/internal/battencli/cancel_test.go
+index 454781cc..9b91348d 100644
+--- a/internal/battencli/cancel_test.go
++++ b/internal/battencli/cancel_test.go
+@@ -675,6 +675,22 @@ func TestCancelRun(t *testing.T) {
+ 			noCalls: []string{"RemoveRecords", "ClearClaim", "LiftPauses"},
+ 			marker:  "left",
+ 		},
++		{
++			name:   "RemoveLeavingAStrayDirectoryWarnsOfIt",
++			remove: true,
++			setup: func(f *cancelFake) {
++				f.parts = fabricengine.PairParts{TaskWorktree: true}
++				f.removeResult = fabricengine.RemoveResult{StrayPath: "/hub/some-slug"}
++			},
++			wantCalls: []string{"RemovePair", "RemoveRecords", "ClearClaim"},
++			marker:    "removed",
++			check: func(t *testing.T, r cancelReport, _ *cancelFake) {
++				want := "the directory /hub/some-slug stays at the pair's path and is not a worktree; save anything worth keeping from it, then delete it before some-slug runs again"
++				if !r.PairRemoved || !slices.Contains(r.Warnings, want) {
++					t.Errorf("report pair removed, warnings = %v, %q; want true and a warning %q", r.PairRemoved, r.Warnings, want)
++				}
++			},
++		},
+ 		{
+ 			name:   "RemoveWithNoLocalPartLeftReadsPairNotFoundAsDone",
+ 			remove: true,
+diff --git a/internal/battencli/wire.go b/internal/battencli/wire.go
+index 82974ae9..afc6d9ab 100644
+--- a/internal/battencli/wire.go
++++ b/internal/battencli/wire.go
+@@ -333,7 +333,9 @@ func reconcileTaskPair(prime *lymcwd.Location, slug string) error {
+ // A task branch left from an earlier pair of the slug, locally or on origin, is settled by the cancel verb, which archives and deletes it.
+ // fabric words that leftover refusal for a caller inside a pair ("lym fabric checkout"), which from prime would switch prime's own pair onto the task's branches, so its text is replaced.
+ // A remote leftover on any other branch, the records side included, passes through.
+-func createRefusal(err error, slug, taskBranch string) error {
++// A directory at the task worktree's path is reached only when it does not resolve as a worktree, such as one a cancel's late writer refilled, so it is settled by deleting it.
++// taskPathStands reports whether that path holds a registered worktree, and is asked only for that refusal: such a path is settled by removing the pair, not by deleting a plain directory.
++func createRefusal(err error, slug, taskBranch string, taskPathStands func() bool) error {
+ 	leftoverWayForward := fmt.Sprintf(`run "lym batten cancel %s --remove" from the prime, which archives and deletes it, then "lym batten run %s"`, slug, slug)
+ 
+ 	var sourceDirty *fabricengine.ErrSourceDirty
+@@ -360,6 +362,21 @@ func createRefusal(err error, slug, taskBranch string) error {
+ 			Err:        err,
+ 		}
+ 	}
++	var pathTaken *fabricengine.ErrTaskPathTaken
++	if errors.As(err, &pathTaken) {
++		if taskPathStands() {
++			return &battenshed.PreconditionError{
++				Unmet:      fmt.Sprintf("the task worktree %s is registered but does not resolve as a worktree", pathTaken.Path),
++				WayForward: incompletePairRemedy(slug, taskBranch) + ", then resume this run to create it fresh",
++				Err:        err,
++			}
++		}
++		return &battenshed.PreconditionError{
++			Unmet:      fmt.Sprintf("the directory %s stands where the task worktree goes and is not a worktree", pathTaken.Path),
++			WayForward: fmt.Sprintf(`save anything worth keeping from it, then delete it, and run "lym batten run %s" again`, slug),
++			Err:        err,
++		}
++	}
+ 	return err
+ }
+ 
+@@ -974,7 +991,7 @@ func (c *battenCLI) wire(location *lymcwd.Location, slug string) error {
+ 			_, err = top.Add(location, slug, fabricengine.AddOptions{Parent: parent, Anchor: anchor})
+ 			logger.Info("battencli: create worktree", "slug", slug)
+ 			if err != nil {
+-				return createRefusal(err, slug, cfg.BranchPrefix+slug)
++				return createRefusal(err, slug, cfg.BranchPrefix+slug, func() bool { return fabricengine.PairWorktreeStands(location, slug) })
+ 			}
+ 			// The beam's accept may have written its hold while the pair was being made, so the member's beam is read again before anything more is done to the pair.
+ 			if err := c.refuseHeldMember(ctx, location, slug); err != nil {
+diff --git a/internal/battencli/wire_test.go b/internal/battencli/wire_test.go
+index 9c1b2dca..0c8d71fb 100644
+--- a/internal/battencli/wire_test.go
++++ b/internal/battencli/wire_test.go
+@@ -722,7 +722,7 @@ func TestTaskWorktree_AbsentPairIsAnAnswerAndANamedRefusal(t *testing.T) {
+ 	}
+ }
+ 
+-// TestCreateRefusal_LeftoverBranchRemedyNeverNamesCheckout asserts the create closure maps a dirty source, a task branch left locally and one left on origin to a precondition error naming their way forward -- the cancel verb for a leftover branch, never "lym fabric checkout", which from prime switches prime itself -- while every other create error, a remote leftover on another branch included, passes through unchanged.
++// TestCreateRefusal_LeftoverBranchRemedyNeverNamesCheckout asserts the create closure maps a dirty source, a task branch left locally and one left on origin, a non-worktree directory at the task worktree's path, and a registered worktree there that does not resolve, to a precondition error naming their way forward -- the cancel verb for a leftover branch, never "lym fabric checkout", which from prime switches prime itself -- while every other create error, a remote leftover on another branch included, passes through unchanged.
+ func TestCreateRefusal_LeftoverBranchRemedyNeverNamesCheckout(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	const taskBranch = "lym-some-slug"
+@@ -738,19 +738,23 @@ func TestCreateRefusal_LeftoverBranchRemedyNeverNamesCheckout(t *testing.T) {
+ 		err         error
+ 		wantContain []string
+ 		wantSame    bool
++		// taskPathStands is whether the task worktree's path holds a registered worktree.
++		taskPathStands bool
+ 	}{
+-		{"LeftoverBranch", leftover, append([]string{"task branch " + taskBranch + " is left from an earlier pair of this slug"}, leftoverWayForward...), false},
+-		{"WrappedLeftoverBranch", fmt.Errorf("create: %w", leftover), leftoverWayForward, false},
+-		{"BareSourceDirty", dirty, []string{"uncommitted tracked changes: a.go, dir/b.go", "commit or revert", `"lym batten run some-slug" again`}, false},
+-		{"WrappedSourceDirty", fmt.Errorf("create: %w", dirty), []string{"a.go, dir/b.go", "commit or revert"}, false},
+-		{"RemoteLeftoverOnTheTaskBranch", remoteOnTask, append([]string{"task branch " + taskBranch + " is left on origin"}, leftoverWayForward...), false},
+-		{"RemoteLeftoverOnAnotherBranch", remoteOnRecords, nil, true},
+-		{"OtherError", other, nil, true},
+-		{"NilError", nil, nil, true},
++		{"LeftoverBranch", leftover, append([]string{"task branch " + taskBranch + " is left from an earlier pair of this slug"}, leftoverWayForward...), false, false},
++		{"WrappedLeftoverBranch", fmt.Errorf("create: %w", leftover), leftoverWayForward, false, false},
++		{"BareSourceDirty", dirty, []string{"uncommitted tracked changes: a.go, dir/b.go", "commit or revert", `"lym batten run some-slug" again`}, false, false},
++		{"WrappedSourceDirty", fmt.Errorf("create: %w", dirty), []string{"a.go, dir/b.go", "commit or revert"}, false, false},
++		{"RemoteLeftoverOnTheTaskBranch", remoteOnTask, append([]string{"task branch " + taskBranch + " is left on origin"}, leftoverWayForward...), false, false},
++		{"TaskPathTaken", &fabricengine.ErrTaskPathTaken{Path: "/hub/some-slug"}, []string{"the directory /hub/some-slug stands where the task worktree goes and is not a worktree", "delete it", `"lym batten run some-slug" again`}, false, false},
++		{"TaskPathTakenByARegisteredWorktree", &fabricengine.ErrTaskPathTaken{Path: "/hub/some-slug"}, []string{"the task worktree /hub/some-slug is registered but does not resolve as a worktree", `"lym fabric remove --force some-slug"`, "then resume this run to create it fresh"}, false, true},
++		{"RemoteLeftoverOnAnotherBranch", remoteOnRecords, nil, true, false},
++		{"OtherError", other, nil, true, false},
++		{"NilError", nil, nil, true, false},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+-			got := createRefusal(tt.err, "some-slug", taskBranch)
++			got := createRefusal(tt.err, "some-slug", taskBranch, func() bool { return tt.taskPathStands })
+ 			if tt.wantSame {
+ 				if got != tt.err {
+ 					t.Fatalf("createRefusal(%v) = %v; want the same error passed through", tt.err, got)
+diff --git a/internal/boardcli/cli.go b/internal/boardcli/cli.go
+index 32313ab0..08ec3b1f 100644
+--- a/internal/boardcli/cli.go
++++ b/internal/boardcli/cli.go
+@@ -145,10 +145,7 @@ available subcommands without requiring a git repo.
+ 			}
+ 			cfg.Path = boardDir
+ 			cfg.ParentOf = func(slug string) (string, error) { return hubgeom.ParentOf(layout, slug) }
+-			cfg.PairExists = func(slug string) bool {
+-				info, err := os.Stat(fabricengine.WorktreePath(layout, slug))
+-				return err == nil && info.IsDir()
+-			}
++			cfg.PairExists = func(slug string) bool { return fabricengine.PairWorktreeStands(layout, slug) }
+ 			cfg.ValidateSlug = func(slug string) error {
+ 				fabricConfig, err := fabricengine.LoadConfig(fabricengine.ConfigDirs(layout))
+ 				if err != nil {
+diff --git a/internal/boardcli/doc.go b/internal/boardcli/doc.go
+index fd41d1d7..025d2734 100644
+--- a/internal/boardcli/doc.go
++++ b/internal/boardcli/doc.go
+@@ -23,7 +23,7 @@
+ // The addressing verbs, `set-deps` and merge's `set_status` included, take exactly one of a `slug`, a numeric `id` or a `handle` such as `B4`, the selector group `entrySelector` declares.
+ // The pre-run fills three seams of the board's config from the resolved location, none of them on the `--board-path` path:
+ // `ValidateSlug` applies fabric's pair slug rule, with the hub's configured junction names, to every task or project slug a write makes, a promote and a rename included;
+-// `PairExists` reports whether a directory stands at the slug's pair worktree path, for the refusal of a project change or rename on an entry with a pair;
++// `PairExists` reports whether the slug's task worktree stands as a registered worktree, so a leftover directory that is no worktree reads as no pair, for the refusal of a project change or rename on an entry with a pair;
+ // `ParentOf` is `hubgeom.ParentOf`, the one parent resolver.
+ // `get` emits a beam's `beam_color`, which only the owner setter writes, so `upsert` refuses a payload naming it as an unknown field.
+ // `upsert` takes `front`, `on_land` and `discussed` only as the entry's stored values, since only lym writes them.
+diff --git a/internal/boardcli/verbs_test.go b/internal/boardcli/verbs_test.go
+index 1def6721..07352fcc 100644
+--- a/internal/boardcli/verbs_test.go
++++ b/internal/boardcli/verbs_test.go
+@@ -7,6 +7,7 @@ import (
+ 	"encoding/json"
+ 	"fmt"
+ 	"os"
++	"os/exec"
+ 	"path/filepath"
+ 	"reflect"
+ 	"slices"
+@@ -463,7 +464,8 @@ func stepRemoveCommandParses(t *testing.T, f *cliFixture) {
+ // stepProjects drives the project kind through a seeded hub:
+ // list and get carry parent_beam, empty under a grouping project and the beam once the project is hand-marked a beam.
+ // A task slug ending in the records suffix and one equal to a configured junction name are refused with fabric's reason.
+-// A member's project change is refused naming `lym batten cancel <slug> --remove` while a directory stands at its pair worktree path.
++// A member's project change is refused naming `lym batten cancel <slug> --remove` while a worktree stands at its pair path;
++// a plain directory at another entry's pair path is no pair, so its project change and rename go through.
+ func stepProjects(t *testing.T, f *cliFixture) {
+ 	mustUpsert(t, `{"slug":"proj","title":"Proj","kind":"project","labels":["bug"]}`)
+ 	mustUpsert(t, `{"slug":"member","title":"Member","kind":"task","labels":["bug"],"project":"proj"}`)
+@@ -515,13 +517,31 @@ func stepProjects(t *testing.T, f *cliFixture) {
+ 		}
+ 	}
+ 
+-	if err := os.Mkdir(filepath.Join(filepath.Dir(f.cwd), "member"), 0o755); err != nil {
+-		t.Fatalf("create the pair worktree directory: %v", err)
++	pairDir := filepath.Join(filepath.Dir(f.cwd), "member")
++	for _, args := range [][]string{
++		{"-c", "user.name=t", "-c", "user.email=t@example.invalid", "commit", "--allow-empty", "-m", "init"},
++		{"worktree", "add", "--detach", pairDir},
++	} {
++		if out, err := exec.Command("git", append([]string{"-C", f.cwd}, args...)...).CombinedOutput(); err != nil {
++			t.Fatalf("git %v: %v\n%s", args, err, out)
++		}
+ 	}
+ 	result := runJSON(t, 1, "upsert", `{"slug":"member","project":"other"}`)
+ 	if msg, _ := result["error"].(string); !strings.Contains(msg, "lym batten cancel member --remove") {
+ 		t.Errorf("upsert a project change on an entry with a pair: error = %q, want it to name `lym batten cancel member --remove`", msg)
+ 	}
++
++	strayDir := filepath.Join(filepath.Dir(f.cwd), "strayed", "obj")
++	if err := os.MkdirAll(strayDir, 0o755); err != nil {
++		t.Fatalf("create a plain directory at a pair's path: %v", err)
++	}
++	mustUpsert(t, `{"slug":"strayed","title":"Strayed","kind":"task","labels":["bug"]}`)
++	if task, _ := runJSON(t, 0, "upsert", `{"slug":"strayed","project":"other"}`)["task"].(map[string]any); task["project"] != "other" {
++		t.Errorf("upsert a project change on an entry whose pair path holds a plain directory: task = %v, want project other", task)
++	}
++	if task, _ := runJSON(t, 0, "rename", `{"slug":"strayed","to":"strayed-again"}`)["task"].(map[string]any); task["slug"] != "strayed-again" {
++		t.Errorf("rename an entry whose pair path holds a plain directory: task = %v, want slug strayed-again", task)
++	}
+ }
+ 
+ // formatNumber renders a decoded JSON integer without a fractional part.
+diff --git a/internal/fabricengine/add_branch_exists_test.go b/internal/fabricengine/add_branch_exists_test.go
+index 2fa6fcf7..c3db7d5f 100644
+--- a/internal/fabricengine/add_branch_exists_test.go
++++ b/internal/fabricengine/add_branch_exists_test.go
+@@ -66,7 +66,7 @@ func TestAdd_LeftoverWorktreeDirErrorNamesRemedy(t *testing.T) {
+ 	if err == nil {
+ 		t.Fatalf("Add(%q) error = nil; want worktree-directory-already-exists rejection", slug)
+ 	}
+-	for _, want := range []string{"already exists", "leftover", "remove the directory and retry"} {
++	for _, want := range []string{"already exists", "leftover", "lym fabric prune", "delete it and retry"} {
+ 		if !strings.Contains(err.Error(), want) {
+ 			t.Errorf("Add(%q) error = %q; want substring %q", slug, err.Error(), want)
+ 		}
+diff --git a/internal/fabricengine/addadoptonly.go b/internal/fabricengine/addadoptonly.go
+index f4f9f7e1..dc247616 100644
+--- a/internal/fabricengine/addadoptonly.go
++++ b/internal/fabricengine/addadoptonly.go
+@@ -75,10 +75,10 @@ type ErrTaskPathTaken struct {
+ // Error implements the error interface, naming the directory and the ways out.
+ func (e *ErrTaskPathTaken) Error() string {
+ 	// Name the recovery path, since a directory here is not always a live pair.
+-	// An empty leftover stranded by an interrupted remove/reconcile is invisible to `lym fabric list`/`prune` (they enumerate only git-registered worktrees), so an operator hitting one otherwise has no clue why the slug is blocked.
++	// A leftover, such as a directory a late writer refilled after a remove, is invisible to `lym fabric list`, which enumerates only git-registered worktrees, so the message names `lym fabric prune`, which reports it.
+ 	// If it IS a live pair, a different slug is the answer.
+ 	return fmt.Sprintf(
+-		"worktree directory %q already exists; if it is a live pair, use a different slug; if it is a leftover directory from an interrupted remove/reconcile (which `lym fabric list` and `prune` cannot see, as they list only git-registered worktrees), remove the directory and retry",
++		"worktree directory %q already exists; if it is a live pair, use a different slug; if it is a leftover directory that is not a worktree, which `lym fabric prune` reports, save anything worth keeping from it, delete it and retry",
+ 		e.Path)
+ }
+ 
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index 7dca1d23..324e50a0 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -609,6 +609,9 @@
+ // `Topology.DiscardTaskBranch` archives and deletes the task branch locally and on origin whether or not its work is landed: it tags the local tip `archive/<slug>/<first 12 hex>` and deletes the local branch under that tag, and its teardown child pushes the tags, archiving only the containing tip when one tip holds the other, and deletes the branch on origin under them.
+ // A failed local tag deletes nothing and wraps `ErrArchiveFailed`, and a refused gate is returned as an error naming the branch.
+ // A pair already half removed is finished rather than refused: `Remove` does whatever teardown remains, reports its `Steps` and any `StrayPath`, and returns `ErrPairNotFound` when nothing is left.
++// After the sibling's teardown `Remove` looks at the task worktree's path once more and removes a directory a late writer refilled there since its removal; one it cannot remove is reported in `StrayPath`.
++// `PairWorktreeStands` reports whether a slug's task worktree stands as a registered linked worktree, so a caller never reads such a leftover directory as a pair.
++// `Prune` reports every hub directory named as a pair slug that no registration covers as `Unowned`, naming the way to clear it, and never removes one.
+ // With `remote`, `Remove`'s teardown child also deletes the landed task branch on origin, leased to the observed tip and gated on the branch being landed; a refusal or lost lease is logged as kept and is no failure.
+ // The result names the code branch's fate in `CodeBranchDeleted` and `CodeBranchKeptReason` (JSON `code_branch_deleted`, `code_branch_kept_reason`, `remote_code_branch_deleted`, `remote_code_branch_kept_reason`).
+ // `PairStatus`, `PruneEntry` and `ReconcilePairResult` carry the pair's paths as `CodeWorktree` and `RecordsWorktree` (JSON `code_worktree`, `records_worktree`).
+diff --git a/internal/fabricengine/prune.go b/internal/fabricengine/prune.go
+index d59a2954..5c8c7492 100644
+--- a/internal/fabricengine/prune.go
++++ b/internal/fabricengine/prune.go
+@@ -19,6 +19,10 @@
+ // This is the same rule removeWarpWorktreeDir applies on the warp side, and it exists for the same
+ // reason: `git worktree remove` refusing a path is not licence to delete it.
+ //
++// A third pass reports every hub directory whose name is a valid pair slug and that no worktree registration covers.
++// Such a directory is, for example, a task worktree path a late writer refilled after a removal.
++// It blocks a new pair of its slug and nothing proves it fabric's, so it is reported Unowned in both modes and never removed.
++//
+ // Prune removes weft worktrees only and deletes no weft branch — orphaned branches are left for Cleanup — so it needs no archiveWeftTip step; the archive belongs to the verbs that delete a branch.
+ //
+ // The verdict is computed identically in both modes, so a dry run's Protected and Unowned flags
+@@ -52,11 +56,11 @@ type PruneEntry struct {
+ 	// that force was not given to discard.
+ 	// It is computed in both modes, so a dry run answers the question --apply would act on.
+ 	Protected bool `json:"protected,omitempty"`
+-	// Unowned reports that the enumerated path is not a linked worktree of this hub's weft repo,
+-	// so fabric will not remove it in any mode — force included.
++	// Unowned reports that the enumerated path is not a linked worktree of this hub's repositories.
++	// Fabric will not remove it in any mode, force included.
+ 	// The orphan pass enumerates on directory NAME alone, so an ordinary user directory or an
+ 	// unrelated git clone whose name happens to end in the weft suffix is reported here rather
+-	// than deleted.
++	// than deleted, and so is a directory at a pair's task worktree path that no registration covers.
+ 	// Like Protected, it is computed in both modes.
+ 	Unowned bool `json:"unowned,omitempty"`
+ 	// Error is non-empty when this entry was not removed and the operator needs to know why:
+@@ -83,6 +87,7 @@ type PruneResult struct {
+ // A weft worktree carrying uncommitted tracked changes is protected unless force is true, since the
+ // removal is a forced one that would discard them without a trace.
+ // Per-entry removal errors and protection reasons are recorded in PruneEntry.Error.
++// A hub directory named as a pair slug that is not a registered worktree is reported Unowned, with the way to clear it in PruneEntry.Error, and never removed.
+ func (t *Topology) Prune(l *lymcwd.Location, apply, force bool) (res PruneResult, err error) {
+ 	rec := NewMutations(l.HubPath)
+ 	defer func() { res.Mutations = rec.Snapshot() }()
+@@ -175,6 +180,27 @@ func (t *Topology) Prune(l *lymcwd.Location, apply, force bool) (res PruneResult
+ 		result.Entries = append(result.Entries, pe)
+ 	}
+ 
++	// No pair slug starts with a dot, and a hidden hub directory is tooling's, not a pair's.
++	for _, dirEntry := range hubEntries {
++		name := dirEntry.Name()
++		if !dirEntry.IsDir() || liveWarpSlugs[name] || strings.HasPrefix(name, ".") {
++			continue
++		}
++		if validateWorktreeSlug(name, t.cfg.Dirs()) != nil {
++			continue
++		}
++		strayPath := filepath.Join(l.HubPath, name)
++		result.Entries = append(result.Entries, PruneEntry{
++			CodeWorktree:    filepath.ToSlash(strayPath),
++			RecordsWorktree: filepath.ToSlash(RecordsWorktreePath(l, name)),
++			Reason:          "directory at a pair's task worktree path is not a worktree",
++			Unowned:         true,
++			Error: fmt.Sprintf(
++				"%q is not a worktree of this hub's repository, so fabric will not remove it, and it blocks a new pair of %q: save anything worth keeping from it, then delete it",
++				strayPath, name),
++		})
++	}
++
+ 	return result, nil
+ }
+ 
+diff --git a/internal/fabricengine/prune_unowned_integration_test.go b/internal/fabricengine/prune_unowned_integration_test.go
+index 2c55ffaa..251878ff 100644
+--- a/internal/fabricengine/prune_unowned_integration_test.go
++++ b/internal/fabricengine/prune_unowned_integration_test.go
+@@ -126,6 +126,93 @@ func TestPrune_RefusesUnrelatedGitCloneInHub(t *testing.T) {
+ 	}
+ }
+ 
++// TestPrune_ReportsANonWorktreeDirectoryAtAPairPath parks a directory of build output at a pair slug's path, as a late writer leaves one after a removal.
++// It asserts every mode reports the directory Unowned with the way to clear it and never deletes it.
++func TestPrune_ReportsANonWorktreeDirectoryAtAPairPath(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	l := h.Location
++	stray := fabricengine.WorktreePath(l, "leftover-task")
++	buildOutput := filepath.Join(stray, "src", "App", "obj", "project.assets.json")
++	if err := os.MkdirAll(filepath.Dir(buildOutput), 0o755); err != nil {
++		t.Fatalf("create %s: %v", stray, err)
++	}
++	if err := os.WriteFile(buildOutput, []byte("{}\n"), 0o644); err != nil {
++		t.Fatalf("write %s: %v", buildOutput, err)
++	}
++
++	for _, mode := range []struct {
++		name         string
++		apply, force bool
++	}{
++		{name: "dry-run", apply: false, force: false},
++		{name: "apply", apply: true, force: false},
++		{name: "apply+force", apply: true, force: true},
++	} {
++		result, err := h.Topology.Prune(l, mode.apply, mode.force)
++		if err != nil {
++			t.Fatalf("%s: Prune error = %v", mode.name, err)
++		}
++
++		var entry *fabricengine.PruneEntry
++		for i := range result.Entries {
++			if filepath.Clean(filepath.FromSlash(result.Entries[i].CodeWorktree)) == filepath.Clean(stray) {
++				entry = &result.Entries[i]
++			}
++		}
++		if entry == nil {
++			t.Fatalf("%s: Prune entries = %+v; want one for %s", mode.name, result.Entries, stray)
++		}
++		if !entry.Unowned || entry.Removed {
++			t.Errorf("%s: Unowned, Removed = %v, %v for %s; want true, false", mode.name, entry.Unowned, entry.Removed, stray)
++		}
++		if !strings.Contains(entry.Error, "save anything worth keeping from it, then delete it") {
++			t.Errorf("%s: Error = %q; want it to name the way to clear the directory", mode.name, entry.Error)
++		}
++		if _, statErr := os.Stat(buildOutput); statErr != nil {
++			t.Fatalf("%s: prune deleted a directory it does not own: %v", mode.name, statErr)
++		}
++	}
++}
++
++// TestPrune_IgnoresDirectoriesThatAreNoPairPath asserts the pass over pair paths reports no entry for a live pair's directory, a hidden directory, a weft-suffixed directory and a reserved hub name.
++func TestPrune_IgnoresDirectoriesThatAreNoPairPath(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	l := h.Location
++	hubforge.AddPairWith(t, h, "live-pair", fabricengine.AddOptions{SkipPush: true})
++
++	livePair := fabricengine.WorktreePath(l, "live-pair")
++	parked := []string{
++		filepath.Join(l.HubPath, ".hidden"),
++		filepath.Join(l.HubPath, "notes-weft"),
++		filepath.Join(l.HubPath, "_portals"),
++	}
++	for _, path := range parked {
++		if err := os.MkdirAll(path, 0o755); err != nil {
++			t.Fatalf("create %s: %v", path, err)
++		}
++	}
++	notReported := append([]string{livePair}, parked...)
++
++	result, err := h.Topology.Prune(l, false, false)
++	if err != nil {
++		t.Fatalf("Prune error = %v", err)
++	}
++	for _, entry := range result.Entries {
++		got := filepath.Clean(filepath.FromSlash(entry.CodeWorktree))
++		for _, path := range notReported {
++			if got == filepath.Clean(path) {
++				t.Errorf("Prune reported %+v; want no entry for %s", entry, path)
++			}
++		}
++	}
++}
++
+ // TestPrune_StillRemovesAStaleWeftWorktreeItOwns is the ownership gate's counter-test: a genuine
+ // stale pair — a weft worktree the hub's weft repo really does register — must still be removed by
+ // --apply, so the gate refuses only what fabric does not own rather than disabling prune outright.
+diff --git a/internal/fabricengine/remove.go b/internal/fabricengine/remove.go
+index bfa219ae..ceee0c27 100644
+--- a/internal/fabricengine/remove.go
++++ b/internal/fabricengine/remove.go
+@@ -79,7 +79,8 @@ type RemoveResult struct {
+ 	Steps []string `json:"steps"`
+ 	// Finished is true when the task worktree was already gone at entry, so the call completed a half-removed pair.
+ 	Finished bool `json:"finished"`
+-	// StrayPath names a path at the task worktree's location that is not a registered linked worktree; Remove reports it and never deletes it.
++	// StrayPath names a path at the task worktree's location that is not a registered linked worktree:
++	// one found there at entry, which Remove never deletes, or a directory a late writer refilled after the task worktree's removal and that a last removal could not delete.
+ 	StrayPath string `json:"stray_path,omitempty"`
+ 	// RemoteBranchDeleted reports whether the pair's weft branch was observably removed from the
+ 	// remote. It is true only when the remote deletion was attempted and actually removed a ref.
+@@ -156,6 +157,8 @@ type RemoveResult struct {
+ // With nothing of the pair left it returns an error wrapping ErrPairNotFound.
+ // A sibling branch present only on origin is archived from there by the child and, with remote, deleted there; without remote it stays.
+ // A path at the task worktree's location that is not a registered linked worktree is reported in StrayPath and never deleted.
++// A directory a late writer, such as a build server or a session's exit hooks, refills at the task worktree's path after its removal is removed once more after the sibling's teardown;
++// one that cannot be is logged and reported in StrayPath, and Remove still succeeds, since the pair is gone.
+ // After the refusals and the pair inspection, and before its first mutation, Remove has the teardown child take the pair's teardown lock exclusive, waiting at most the topology's teardown wait for a push of the pair to let go of it;
+ // when the wait runs out it returns, before any mutation, an error wrapping ErrPairPushRunning.
+ // The child holds the lock past the remote steps, and a failure after taking it that leaves a worktree of the pair in place releases the lock and respawns the pair's push.
+@@ -321,6 +324,16 @@ func (t *Topology) removePair(l *lymcwd.Location, slug string, force, remote, lo
+ 		removeAfterTeardownHook()
+ 	}
+ 
++	// A late writer can refill the task worktree's directory after its removal finished, and a directory left there blocks the slug's next pair.
++	// This call's own removal of the registered worktree is the ownership proof, as it is for the finish right after git.
++	refilledKept := false
++	if pair.taskWorktree && pathPresent(target) && !isRegisteredLinkedWorktree(l, target) {
++		if leftoverErr := removeWorktreeLeftover(rec, l.HubPath, target, t.leftover); leftoverErr != nil {
++			logger.Warn("fabricengine: a directory refilled at a removed task worktree's path was not deleted", "slug", slug, "path", target, "error", leftoverErr)
++			refilledKept = true
++		}
++	}
++
+ 	warpDeleted, warpKeptReason := deleteWarpBranch(rec, l, warpBranch, parentBranch)
+ 	if warpDeleted {
+ 		steps = append(steps, RemoveStepTaskBranch)
+@@ -342,7 +355,7 @@ func (t *Topology) removePair(l *lymcwd.Location, slug string, force, remote, lo
+ 	}
+ 
+ 	strayPath := ""
+-	if pair.strayPath {
++	if pair.strayPath || refilledKept {
+ 		strayPath = target
+ 	}
+ 	res = RemoveResult{
+@@ -983,6 +996,21 @@ func isRegisteredLinkedWorktree(l *lymcwd.Location, target string) bool {
+ 	return isRegisteredLinkedWorktreeIn(l.WorktreePath(), target)
+ }
+ 
++// PairWorktreeStands reports whether the task worktree of slug stands on disk as a registered linked worktree of l's repository.
++// A directory at its path that git does not register, such as one a removal left holding build output, reads false, as do an absent path and a registration whose directory is gone.
++// A path that is present while the repository's worktrees cannot be listed reads true, since the answer guards refusals and an unlistable repository must keep refusing.
++func PairWorktreeStands(l *lymcwd.Location, slug string) bool {
++	target := WorktreePath(l, slug)
++	if !pathPresent(target) {
++		return false
++	}
++	entries, err := List(l.WorktreePath())
++	if err != nil {
++		return true
++	}
++	return listsLinkedWorktree(entries, target)
++}
++
+ // isRegisteredLinkedWorktreeIn is the repo-agnostic form of isRegisteredLinkedWorktree: it asks the
+ // repo at repoDir whether target is one of its registered LINKED worktrees.
+ //
+diff --git a/internal/fabricengine/remove_leftoverdir_integration_test.go b/internal/fabricengine/remove_leftoverdir_integration_test.go
+index 7fd828d8..07da7231 100644
+--- a/internal/fabricengine/remove_leftoverdir_integration_test.go
++++ b/internal/fabricengine/remove_leftoverdir_integration_test.go
+@@ -1,4 +1,5 @@
+-// remove_leftoverdir_integration_test.go covers Remove finishing a pair worktree directory that `git worktree remove` deregistered but left on disk, on either side of the pair.
++// remove_leftoverdir_integration_test.go covers Remove finishing a pair worktree directory that `git worktree remove` deregistered but left on disk, on either side of the pair,
++// or that a late writer refilled after the removal, and PairWorktreeStands never reading such a directory as a pair.
+ //
+ // Package fabricengine_test; shares the single TestMain in testmain_test.go.
+ 
+@@ -13,6 +14,7 @@ import (
+ 	"slices"
+ 	"strings"
+ 	"testing"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+@@ -161,3 +163,127 @@ func TestRemove_FinishesWorktreeDirGitLeftOnDisk(t *testing.T) {
+ 		})
+ 	}
+ }
++
++// TestRemove_DeletesTaskWorktreeDirRefilledAfterItsRemoval asserts Remove deletes a directory a late writer refills at the task worktree's path once the task worktree's removal is over, and reports no StrayPath.
++// It sets the process-global teardown hook, so it is not parallel.
++func TestRemove_DeletesTaskWorktreeDirRefilledAfterItsRemoval(t *testing.T) {
++	tiergate.Require(t, 1)
++
++	const slug = "refilled-late"
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{})
++	l := h.Location
++	dir := fabricengine.WorktreePath(l, slug)
++	refilled := false
++	fabricengine.SetTeardownHooksForTest(t, nil, func() { refilled = refillWithLockFile(t, dir) })
++
++	res, err := h.Topology.Remove(l, slug, false, false)
++	if err != nil {
++		t.Fatalf("Remove error = %v; want the refilled directory deleted", err)
++	}
++	if !refilled {
++		t.Fatalf("no late writer refilled %s; want the refill after the teardown", dir)
++	}
++	if _, statErr := os.Lstat(dir); !os.IsNotExist(statErr) {
++		t.Errorf("%s still on disk after Remove (stat error = %v)", dir, statErr)
++	}
++	if res.StrayPath != "" {
++		t.Errorf("StrayPath = %q; want empty once the refilled directory is deleted", res.StrayPath)
++	}
++	rel, relErr := filepath.Rel(l.HubPath, dir)
++	if relErr != nil {
++		t.Fatalf("relate %s to the hub: %v", dir, relErr)
++	}
++	want := fabricengine.Mutation{Kind: fabricengine.KindPathRemoved, Target: filepath.ToSlash(rel), Detail: "recursive"}
++	if !slices.Contains(res.Mutations.Entries(), want) {
++		t.Errorf("mutation record = %+v; want it to hold %+v", res.Mutations.Entries(), want)
++	}
++}
++
++// TestRemove_KeepsAndReportsTaskWorktreeDirRefilledAfterItsRemovalWhenItCannotBeDeleted asserts Remove still succeeds when the directory a late writer refilled at the task worktree's path cannot be deleted, leaves it on disk and reports its path in StrayPath.
++// It sets the process-global teardown hook, so it is not parallel.
++func TestRemove_KeepsAndReportsTaskWorktreeDirRefilledAfterItsRemovalWhenItCannotBeDeleted(t *testing.T) {
++	tiergate.Require(t, 1)
++
++	const slug = "refilled-late-kept"
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{})
++	l := h.Location
++	dir := fabricengine.WorktreePath(l, slug)
++	refilled := false
++	fabricengine.SetTeardownHooksForTest(t, nil, func() { refilled = refillWithLockFile(t, dir) })
++	fabricengine.SetLeftoverSeamForTest(h.Topology,
++		func(container, target string) (bool, bool, error) {
++			return false, false, &os.PathError{Op: "unlinkat", Path: target, Err: fs.ErrPermission}
++		},
++		func(time.Duration) {})
++
++	res, err := h.Topology.Remove(l, slug, false, false)
++	if err != nil {
++		t.Fatalf("Remove error = %v; want success, since the pair is gone", err)
++	}
++	if !refilled {
++		t.Fatalf("no late writer refilled %s; want the refill after the teardown", dir)
++	}
++	if res.StrayPath != dir {
++		t.Errorf("StrayPath = %q; want %q", res.StrayPath, dir)
++	}
++	if _, statErr := os.Lstat(dir); statErr != nil {
++		t.Errorf("%s is gone after a failed delete (stat error = %v); want it on disk", dir, statErr)
++	}
++	rel, relErr := filepath.Rel(l.HubPath, dir)
++	if relErr != nil {
++		t.Fatalf("relate %s to the hub: %v", dir, relErr)
++	}
++	removed := fabricengine.Mutation{Kind: fabricengine.KindPathRemoved, Target: filepath.ToSlash(rel), Detail: "recursive"}
++	if slices.Contains(res.Mutations.Entries(), removed) {
++		t.Errorf("mutation record = %+v; want no removal of %s", res.Mutations.Entries(), dir)
++	}
++}
++
++// refillWithLockFile plays a late writer: it writes a lock file under dir, recreating dir, and reports whether it did.
++func refillWithLockFile(t *testing.T, dir string) bool {
++	t.Helper()
++
++	lockFile := filepath.Join(dir, ".lym", "reed.lock")
++	if err := os.MkdirAll(filepath.Dir(lockFile), 0o755); err != nil {
++		t.Errorf("refill %s: %v", dir, err)
++		return false
++	}
++	if err := os.WriteFile(lockFile, nil, 0o644); err != nil {
++		t.Errorf("refill %s: %v", dir, err)
++		return false
++	}
++	return true
++}
++
++// TestPairWorktreeStands_ReadsOnlyARegisteredWorktree asserts a registered task worktree reads as standing, while a plain directory at a pair's path and an absent path do not.
++func TestPairWorktreeStands_ReadsOnlyARegisteredWorktree(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hubforge.AddPairWith(t, h, "standing", fabricengine.AddOptions{})
++	l := h.Location
++	if err := os.MkdirAll(filepath.Join(fabricengine.WorktreePath(l, "stray"), "obj"), 0o755); err != nil {
++		t.Fatalf("create a plain directory at a pair's path: %v", err)
++	}
++
++	tests := []struct {
++		name string
++		slug string
++		want bool
++	}{
++		{"RegisteredWorktree", "standing", true},
++		{"PlainDirectory", "stray", false},
++		{"AbsentPath", "absent", false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := fabricengine.PairWorktreeStands(l, tt.slug); got != tt.want {
++				t.Errorf("PairWorktreeStands(%q) = %v; want %v", tt.slug, got, tt.want)
++			}
++		})
++	}
++}
