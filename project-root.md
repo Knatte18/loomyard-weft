@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-03 14:27 UTC; every age below is as of then.
+Rendered 2026-11-03 14:29 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -24,9 +24,9 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Drive the C# sandbox hub through a Drift and subdirectory-anchor trial and report what breaks**<br>• Switch the sandbox gate to scoper dotnet, a build step and --no-build, then enable Drift there | [`sandbox-dotnet-gate`](design-sandbox-dotnet-gate.md) | darn · docs |  | 5d<br>6m | dotnet, gate, drift |
+| T1 | `draft` **Drive the C# sandbox hub through a Drift and subdirectory-anchor trial and report what breaks**<br>• Switch the sandbox gate to scoper dotnet, a build step and --no-build, then enable Drift there | [`sandbox-dotnet-gate`](design-sandbox-dotnet-gate.md) | darn · docs |  | 5d<br>8m | dotnet, gate, drift |
 
-## Notes (33)
+## Notes (34)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -36,13 +36,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 11d<br>6h | loom, stencil |
 
-### Bugs (3)
+### Bugs (4)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **A beam cannot be made from a project whose slug already ran a motif run** | [`beam-after-motif`](design-beam-after-motif.md) | 1h<br>1h | batten, pawl |
-| B2 |  | **A gate tier whose shell exits while a grandchild holds its pipe hangs forever**<br>• No WaitDelay on tier and build children: an orphaned MSBuild node keeps lym gate test, and the adopt check, running past every timeout | [`gate-orphan-pipe-hang`](design-gate-orphan-pipe-hang.md) | 1m<br>1m | gate, process |
-| B3 |  | **Way-forward texts name lym board remove <slug>, which the verb refuses**<br>• adoptcli, fronttask and boardengine tell the reader to run lym board remove with a bare slug; the verb takes JSON or a bare handle | [`board-remove-slug-form`](design-board-remove-slug-form.md) | 0m<br>0m | board |
+| B2 |  | **A gate tier whose shell exits while a grandchild holds its pipe hangs forever**<br>• No WaitDelay on tier and build children: an orphaned MSBuild node keeps lym gate test, and the adopt check, running past every timeout | [`gate-orphan-pipe-hang`](design-gate-orphan-pipe-hang.md) | 3m<br>3m | gate, process |
+| B3 |  | **Way-forward texts name lym board remove <slug>, which the verb refuses**<br>• adoptcli, fronttask and boardengine tell the reader to run lym board remove with a bare slug; the verb takes JSON or a bare handle | [`board-remove-slug-form`](design-board-remove-slug-form.md) | 2m<br>2m | board |
+| B4 |  | **drift.yaml joins dir onto the anchor, gate.yaml onto the worktree root**<br>• The same dir: dotnet runs the gate in dotnet/ and the Drift capture in dotnet/dotnet on a hub anchored at dotnet | [`drift-dir-base`](design-drift-dir-base.md) | 0m<br>0m | drift, gate, config |
 
 ### Enhancements (12)
 
