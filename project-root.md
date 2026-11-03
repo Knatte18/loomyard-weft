@@ -18,12 +18,12 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **A shed block runs a whole sub-recipe inline as one producer, so recipes reuse one another** | [`shed-sub-run-block`](design-shed-sub-run-block.md) | tapestry | Discussion-Burler-Review | neve | 1h<br>29m | shed, loom |
+| T1 | **A shed block runs a whole sub-recipe inline as one producer, so recipes reuse one another** | [`shed-sub-run-block`](design-shed-sub-run-block.md) | tapestry | Discussion-Burler-Review | neve | 1h<br>30m | shed, loom |
 | T2 | **An approved Discussion stores its decision record on the board entry and flags it discussed** | [`decision-record-on-board`](design-decision-record-on-board.md) | tapestry · light | Discussion-Burler-Fix | neve | 23m<br>18m | board, loom |
 | T3 | **Batten recovers a run whose pair is gone and orders its remote pushes, so no pass fails forever and no push races another** | [`batten-remote-order`](design-batten-remote-order.md) | tapestry · light | Discussion-Write | neve | 11h<br>9m | batten, fabric |
-| T4 | **Claude Code autocompact picker in a shuttle session stalls a gate re-prompt forever** | [`shuttle-autocompact-picker-stall`](design-shuttle-autocompact-picker-stall.md) | darn | Darn-Write | neve | 11h<br>8m | shuttle, loom |
-| T5 | **Hub-wide config reconcile by an older lym binary strips keys a newer binary wrote** | [`reconcile-strips-newer-keys`](design-reconcile-strips-newer-keys.md) | darn | Darn-Write | neve | 11h<br>8m | reconcile, config |
-| T6 | **loom Parent-Align halts blocked when the fixer reports verdict fixed** | [`parent-align-fixed-reads-dirty`](design-parent-align-fixed-reads-dirty.md) | darn | Describe | neve | 11h<br>8m | landing |
+| T4 | **Claude Code autocompact picker in a shuttle session stalls a gate re-prompt forever** | [`shuttle-autocompact-picker-stall`](design-shuttle-autocompact-picker-stall.md) | darn | Darn-Write | neve | 11h<br>9m | shuttle, loom |
+| T5 | **Hub-wide config reconcile by an older lym binary strips keys a newer binary wrote** | [`reconcile-strips-newer-keys`](design-reconcile-strips-newer-keys.md) | darn | Darn-Write | neve | 11h<br>9m | reconcile, config |
+| T6 | **loom Parent-Align halts blocked when the fixer reports verdict fixed** | [`parent-align-fixed-reads-dirty`](design-parent-align-fixed-reads-dirty.md) | darn | Describe | neve | 11h<br>9m | landing |
 
 ### Ready (0)
 
@@ -31,7 +31,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (41)
+## Notes (40)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -41,7 +41,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 11d<br>12h | loom, stencil |
 
-### Bugs (7)
+### Bugs (6)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -50,7 +50,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B5 |  | **validate-plan edit-test-file rule cannot target a test file with no glyphs** | [`edit-test-file-no-glyphs`](design-edit-test-file-no-glyphs.md) | 11h<br>11h | loom, quarry |
 | B6 |  | **insert-card renumbers only <N>-<slug> ids, leaving bare 'card N' mentions stale** | [`insert-card-bare-mentions`](design-insert-card-bare-mentions.md) | 11h<br>11h | loom |
 | B8 |  | **Run ends with a background shell outstanding: its commit and gate result are lost** | [`run-done-with-background-shell`](design-run-done-with-background-shell.md) | 11h<br>11h | shuttle, webster, gate |
-| B10 |  | **heddle render leaves the old CLAUDE.local.md at the worktree root after the anchor fix** | [`heddle-stale-root-claude-file`](design-heddle-stale-root-claude-file.md) | 11h<br>11h | heddle |
 | B12 |  | **lym config drift refuses the whole-map capture and compare form its own key description prescribes** | [`drift-config-whole-map-set`](design-drift-config-whole-map-set.md) | 23m<br>23m | drift, config |
 
 ### Enhancements (17)
