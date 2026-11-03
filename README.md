@@ -58,13 +58,13 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Draft (1)
+#### Layer A (1)
 
-Not released; nothing starts it until its status is cleared.
+Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **A paused run whose work already landed is never finished and keeps its worktree and terminal** | [`landed-run-left-paused`](design-landed-run-left-paused.md) | darn |  | 15h<br>15h | dobby, batten |
+| T2 | **A paused run whose work already landed is never finished and keeps its worktree and terminal** | [`landed-run-left-paused`](design-landed-run-left-paused.md) | darn · light | T8 | 15h<br>0m | dobby, batten |
 
 ### Notes (31)
 

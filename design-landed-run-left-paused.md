@@ -1,6 +1,8 @@
 # A paused run whose work already landed is never finished and keeps its worktree and terminal
 
-`landed-run-left-paused` · Task · bug, dobby, batten · draft
+`landed-run-left-paused` · Task · bug, dobby, batten
+
+Depends on: [`batten-stray-dir-and-beam-mark`](design-batten-stray-dir-and-beam-mark.md)
 
 ## Seen (2026-11-02)
 
