@@ -1,6 +1,6 @@
 # Drift-Baseline pre-accepts drift that contradicts the task
 
-`drift-baseline-preaccepts` · Task · bug, drift, stencil · running · Record-Write
+`drift-baseline-preaccepts` · Task · bug, drift, stencil · running · Drift-Baseline
 
 ## Seen
 
