@@ -1,6 +1,6 @@
 # The Drift-Baseline stencil skips the tests an intended change drifts
 
-`drift-baseline-skips-intended` · Task · bug, drift, stencil
+`drift-baseline-skips-intended` · Task · bug, drift, stencil · running · Worktree-Create
 
 The Drift-Baseline stencil tells the agent to skip, or scope off, every test an intended change drifts, so an intended change is never compared, never accepted with a reason, and hides any regression in the same tests.
 
