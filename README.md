@@ -51,9 +51,9 @@ Held by a run; its scope is locked until the run ends.
 | T1 | **A shed block runs a whole sub-recipe inline as one producer, so recipes reuse one another** | [`shed-sub-run-block`](design-shed-sub-run-block.md) | tapestry | Parent-Align | neve | 2h<br>2h | shed, loom |
 | T2 | **An approved Discussion stores its decision record on the board entry and flags it discussed** | [`decision-record-on-board`](design-decision-record-on-board.md) | tapestry · light | Code-Burler-Fix | neve | 2h<br>2h | board, loom |
 | T3 | **Batten recovers a run whose pair is gone and orders its remote pushes, so no pass fails forever and no push races another** | [`batten-remote-order`](design-batten-remote-order.md) | tapestry · light | Plan-Bouncer | neve | 12h<br>1h | batten, fabric |
-| T4 | **Drift-Baseline halt shows the capture child error**<br>• Carry the capture child log error into the halt, and drop resume as a way forward when it cannot help | [`drift-child-error-in-halt`](design-drift-child-error-in-halt.md) | darn · solid | Describe | neve | 19m<br>19m | drift |
+| T4 | **Drift-Baseline halt shows the capture child error**<br>• Carry the capture child log error into the halt, and drop resume as a way forward when it cannot help | [`drift-child-error-in-halt`](design-drift-child-error-in-halt.md) | darn · solid | PR-Review | neve | 19m<br>19m | drift |
 | T5 | **Preflight refuses lym own state files under _lym**<br>• Commit or exempt every file lym writes under _lym on a stop path, such as go-settle.jsonl | [`preflight-clean-skips-lym-state`](design-preflight-clean-skips-lym-state.md) | darn · solid | Darn-Write | neve | 19m<br>19m | preflight, shed |
-| T6 | **config reconcile never migrates profiles.yaml, so a hub seeded before the loom-to-tapestry rename stops tapestry runs at Seed-Child** | [`reconcile-migrates-profiles`](design-reconcile-migrates-profiles.md) | darn · solid | Darn-Write | neve | 4m<br>3m | reconcile, profiles, config |
+| T6 | **config reconcile never migrates profiles.yaml, so a hub seeded before the loom-to-tapestry rename stops tapestry runs at Seed-Child** | [`reconcile-migrates-profiles`](design-reconcile-migrates-profiles.md) | darn · solid | Darn-Write | neve | 4m<br>4m | reconcile, profiles, config |
 
 #### Ready (0)
 
