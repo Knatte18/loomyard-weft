@@ -23,6 +23,12 @@ The hibernate request moves into dobby, so no daemon of its own waits on the run
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-03): The request moved into dobby keeps resume_on_wake
+
+Decision: hibernate-wake-resume-switch landed before this run: internal/hibernateconfig, the --resume-on-wake flag and the resume_on_wake field on the request. The request dobby carries keeps that field and honours it at the wake, unchanged.
+
+Rationale: The switch is an operator decision of 2026-11-03 and must survive the move.
+
 ## Constraints
 
 ## Auto-mode assumptions
