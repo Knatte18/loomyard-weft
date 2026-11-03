@@ -1,6 +1,6 @@
 # Run windows show the board handle in their titles
 
-`window-titles-show-handle` · Task · enhancement, reed, batten, termwindow
+`window-titles-show-handle` · Task · enhancement, reed, batten, termwindow · running · Worktree-Create
 
 Depends on: [`pawl-checklist-hidden-in-beam`](design-pawl-checklist-hidden-in-beam.md)
 
