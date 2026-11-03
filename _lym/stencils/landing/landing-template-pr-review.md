@@ -1,12 +1,12 @@
 <!-- This is the PR-Review session's entire instruction set. It is shipped as an embedded
      default in the top-level stencils package (stencils/stencils.go), seeded to
-     <hub>/_board/_lym/stencils/landing/, and read from there at call time through internal/stencilstore,
-     which landingshed's PR-Review row fills and hands to shuttle as the session's first prompt, for the loom, darn and pawl recipes alike.
+     the Bolt checkout's `_lym/stencils/landing/`, and read from there at call time through internal/stencilstore,
+     which landingshed's PR-Review row fills and hands to shuttle as the session's first prompt, for the tapestry, darn, pawl and sampler recipes alike.
      Every marker below is a top-level {{.X}} substitution and stencil.FillWith requires every marker non-empty:
-     slug, pr_url, task_worktree, task_branch, parent_branch, description_path, run_material (the paths the run has among the decision record, the plan directory and the board entry snapshot, one per line),
+     slug, pr_url, task_worktree, task_branch, parent_branch, description_path, run_material (the paths the run has among the decision record and the plan directory, one per line),
      parent_directive (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective).
      There are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=a350b560a6f261465d80bacf6d52e229988312eae5338d65e2b771566d173226 build=9c23208ec377f1796c24e175335ee28b700bb0de time=2026-10-30T08:48:44Z -->
+lym-stencil: sha256=99bb5910cd0ebf4a2612a829397cfbfce856127bd4d3114cff5d4662bcf1e9f4 build=ec46eaf418c12bafe8f118af61e1d91676ebfb3c time=2026-11-03T08:35:34Z -->
 
 # PR-Review — discuss the pull request with the operator
 
@@ -40,4 +40,4 @@ When the operator says they are satisfied and asks you to continue:
 
 1. Commit or discard your work so the worktree is clean.
 2. Run `lym loom pr-continue`.
-   It closes the pull request and lands the task through the ordinary landing, with its gate.
+   It ends the review, and the ordinary landing then merges the pull request on GitHub, after its gate.
