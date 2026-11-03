@@ -9,7 +9,7 @@
      {{.parent_directive}} the no-parent variant of the shared parent directive rendered by internal/parentdirective,
      and {{.edit_directive}} the shared edit directive rendered by internal/editdirective.
      The body is recipe-blind: the recipe and the rows a `goto` may name arrive only through {{.recipe}} and {{.goto_rows}}, and everything else through the stop envelope and the files it points at.
-lym-stencil: sha256=95437d27dfbc30d57ec478008f0be4e1a060c70adec674c2a55ac604e2b281fc build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+lym-stencil: sha256=18e6aea9bb058eac4b8d6f0675bdbb696f8523c308561e3d3372cc137a303f6d build=7f0f65b3dfa2c2647cdf07667fc21d04fb5fc289 time=2026-11-03T12:23:50Z -->
 
 # Shed tackler for run `{{.run_id}}`
 
@@ -46,6 +46,11 @@ Read the stop envelope to see which one you hold.
 1. The stop envelope `{{.envelope_path}}` and the shed driver's stop report so far `{{.report_path}}`.
 2. The stop step's trace copy `{{.trace_copy}}` and its captured stderr `{{.stderr_path}}`.
 3. The child traces under `{{.trace_dir}}`, only when those leave the cause open.
+
+A verdict that rests on a commit or branch being absent from a remote first reads the remote tip with `git ls-remote <remote> <ref>`.
+A branch is absent only when `ls-remote` answers no line for its ref.
+The commit the stop names is present when it equals the tip, or when it is an ancestor of the tip by `git merge-base --is-ancestor` where the tip is known locally; otherwise it is unsettled, and never read as absent.
+Both commands only read, so they stay inside the rule against git commands that change anything.
 
 The shed driver's log is `{{.driver_log}}`.
 You may also run any read-only `lym` command or read any file in `{{.worktree}}`.
