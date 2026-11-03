@@ -42,7 +42,7 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Running (6)
+#### Running (7)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -54,14 +54,13 @@ Held by a run; its scope is locked until the run ends.
 | T4 | **Claude Code autocompact picker in a shuttle session stalls a gate re-prompt forever** | [`shuttle-autocompact-picker-stall`](design-shuttle-autocompact-picker-stall.md) | darn | Code-Burler-Fix | neve | 11h<br>44m | shuttle, loom |
 | T5 | **Drift runs in an anchored hub, can be skipped for one run, and its baseline agent picks scope off when the suite cannot reach the change** | [`drift-anchor-and-skip`](design-drift-anchor-and-skip.md) | darn · solid | Worktree-Create | neve | 0m<br>0m | drift, stencil |
 | T6 | **Ending the PR review closes the pull request and lands by direct push, which a PR-only branch refuses** | [`pr-review-end-direct-push`](design-pr-review-end-direct-push.md) | darn · solid | Darn-Write | neve | 33m<br>30m | landing, git |
+| T9 | **New task worktrees in a beam inherit the beam's committed loom-halt.md and block at Preflight** | [`inherited-halt-blocks-preflight`](design-inherited-halt-blocks-preflight.md) | darn · solid | Worktree-Create | neve | 0m<br>0m | loom, friction, pawl |
 
-#### Ready (1)
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T9 | **New task worktrees in a beam inherit the beam's committed loom-halt.md and block at Preflight** | [`inherited-halt-blocks-preflight`](design-inherited-halt-blocks-preflight.md) | darn · solid |  | 0m<br>0m | loom, friction, pawl |
+_None._
 
 #### Layer A (2)
 
@@ -70,7 +69,7 @@ Waits only on Running, Ready or Draft entries.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T7 | **fabric remove deletes the whole worktree directory, ignored files included** | [`fabric-remove-ignored-files`](design-fabric-remove-ignored-files.md) | darn · solid | T3 | 25m<br>12m | fabric |
-| T8 | **Batten treats a stray non-worktree directory as a gone pair, and a beam landing accepts its own beam mark** | [`batten-stray-dir-and-beam-mark`](design-batten-stray-dir-and-beam-mark.md) | darn · solid | T3 | 23m<br>23m | batten, pawl |
+| T8 | **Batten treats a stray non-worktree directory as a gone pair, and a beam landing accepts its own beam mark** | [`batten-stray-dir-and-beam-mark`](design-batten-stray-dir-and-beam-mark.md) | darn · solid | T3 | 24m<br>24m | batten, pawl |
 
 ### Notes (40)
 
