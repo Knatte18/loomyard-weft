@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Burler-Review",
+  "current_producer": "Plan-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Burler-Review",
-    "last": "Plan-Bouncer → bounced to Plan-Burler-Review",
+    "now": "Plan-Burler-Fix",
+    "last": "Plan-Burler-Review → bounced to Plan-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -126,6 +126,35 @@
       "output": "",
       "at": "2026-11-03T08:11:44Z",
       "routed_to": "Plan-Burler-Review"
+    },
+    {
+      "producer": "Plan-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/shed-sub-run-block/_lym/reviews/plan/round-1-review.md",
+      "at": "2026-11-03T08:20:07Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-03T08:19:52.902005758Z",
+          "end": "2026-11-03T08:19:52.902466461Z"
+        },
+        {
+          "gate": "review",
+          "kind": "rework",
+          "start": "2026-11-03T08:19:53.315559522Z",
+          "end": "2026-11-03T08:20:06.363674092Z"
+        },
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-03T08:20:06.407671814Z",
+          "end": "2026-11-03T08:20:06.408769209Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Plan-Burler-Fix"
     }
   ],
   "product": {
