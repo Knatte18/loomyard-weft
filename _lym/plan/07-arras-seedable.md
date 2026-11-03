@@ -58,9 +58,9 @@
 - `tools/tokencount#TestRecentRuns`
 
 **Uses:**
-- `plan:internal/shedrun#RecipeArras`
-- `plan:internal/shedrun#RecipeMotif`
-- `plan:internal/loomshed#NameMotif`
+- `internal/shedrun#RecipeArras`
+- `internal/shedrun#RecipeMotif`
+- `internal/loomshed#NameMotif`
 - `internal/reportengine#loomPhases`
 - `internal/boardcli/doc.go`
 - `internal/boardengine/doc.go`

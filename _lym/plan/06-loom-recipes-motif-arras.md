@@ -3,13 +3,13 @@
 **Create:**
 - `//contracts/recipes/motif-recipe.yaml`
 - `//contracts/recipes/arras-recipe.yaml`
-- `plan:contracts/recipes#MotifRecipe` -> `var MotifRecipe []byte`
-- `plan:contracts/recipes#ArrasRecipe` -> `var ArrasRecipe []byte`
-- `plan:internal/shedrun#RecipeMotif` -> `const RecipeMotif = "motif"`
-- `plan:internal/shedrun#RecipeArras` -> `const RecipeArras = "arras"`
-- `plan:internal/loomshed#NameMotif` -> `const NameMotif = "Motif"`
-- `plan:internal/loomrecipe#embeddedRecipes` -> `var embeddedRecipes map[string][]byte`
-- `plan:internal/loomrecipe#TestBlockRecipes` -> `func TestBlockRecipes(t *testing.T)`
+- `contracts/recipes#MotifRecipe`
+- `contracts/recipes#ArrasRecipe`
+- `internal/shedrun#RecipeMotif`
+- `internal/shedrun#RecipeArras`
+- `internal/loomshed#NameMotif`
+- `internal/loomrecipe#embeddedRecipes`
+- `internal/loomrecipe#TestBlockRecipes`
 
 **Edit:**
 - `internal/loomrecipe#embeddedRecipeSource`
@@ -37,7 +37,7 @@
 
 **Uses:**
 - `internal/shedbuild#Expand`
-- `plan:internal/shedbuild#RoutingFrom`
+- `internal/shedbuild#RoutingFrom`
 - `internal/loomrecipe#testEnv`
 - `internal/loomshed/doc.go`
 - `//contracts/recipes/tapestry-recipe.yaml`

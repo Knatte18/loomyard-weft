@@ -1,15 +1,15 @@
 {
   "runGuid": "bfe7c641c821482c9c91b52ee816b27f",
-  "planFingerprint": "098cb9ccd5364a69b3a38667d042355e8b82ce78393f373a702aff1a5f06e516",
+  "planFingerprint": "129fba1696d0d82ee36d8c6b0cdf17db703f724ec1f90f956db7aeaad2c00541",
   "planFileHashes": {
     "00-overview.md": "29f5786077f9682da5f7bba077ce534a47b466e5801dd72ab7da559ae4dad29b",
     "01-shedengine-block-routing.md": "c3ca99ee68422156ee2612ba68aac2e7140e9680c4e58c4a27f40175749e61fd",
     "02-shedrecipe-block-registry.md": "39e2858ad47adaa7f4f6be399482548e34859f55428b6ea5aef112ff1abf283c",
     "03-shedbuild-block-row-parse.md": "229ebdf68ceef99ca6cb354a6986dd0ffe87ccfe1feaa58d63f868bd04127d4b",
     "04-shedbuild-expand.md": "6389e6410e4322a203fe8bf62537b2cecadf9ebe6a24618592035b0ff6f4af25",
-    "05-shedbuild-block-build.md": "b254e2456867c37ecb5ee4ae658052c85c5819d99ab1ff62dd8666b4537a2909",
-    "06-loom-recipes-motif-arras.md": "380232c4fea86a8ee733339c2b2d49a0cf515eb1dcdde2a23bba92d39e83a4fe",
-    "07-arras-seedable.md": "705a0932472c707762a10b645452f7cdbc59ff7ad871f2bcda1b95404fb9e266",
+    "05-shedbuild-block-build.md": "1a38db180ab301c91e3d540217e7591baefa68e4d0082c9240aa43d49265079a",
+    "06-loom-recipes-motif-arras.md": "0515ea0feec04e40b44194d830703f541cad090c176198030d0d48d9f2603b66",
+    "07-arras-seedable.md": "3a8e1507206e61170b8db01604fe62e375b20a63d467d9441ac62797dc53a791",
     "08-profile-recipe.md": "54a360f5c245a071d07db78769b736093da74c521708a6fab35f73f144f5eb90",
     "09-checklist-block-marks.md": "4eea8f7cf13277b9fddf2742696a9889482db680cd927f0c0fc138e3b80a65d0"
   },
@@ -326,7 +326,7 @@
       }
     }
   ],
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "e72ba4dee163127ae0ab79eb29b70a06",
   "masterSessionId": "8965312c-1965-41e5-bab9-4e7de716ebbb",
   "masterEngine": "claude",
@@ -383,19 +383,38 @@
         "06-loom-recipes-motif-arras"
       ],
       "cardHashes": {
-        "05-shedbuild-block-build": "b254e2456867c37ecb5ee4ae658052c85c5819d99ab1ff62dd8666b4537a2909",
-        "06-loom-recipes-motif-arras": "380232c4fea86a8ee733339c2b2d49a0cf515eb1dcdde2a23bba92d39e83a4fe"
+        "05-shedbuild-block-build": "1a38db180ab301c91e3d540217e7591baefa68e4d0082c9240aa43d49265079a",
+        "06-loom-recipes-motif-arras": "0515ea0feec04e40b44194d830703f541cad090c176198030d0d48d9f2603b66"
       },
       "startSha": "38ce2996eb98830efab5a016c9ff21523e38f0e7",
       "kind": "fork",
       "spawnedAt": "2026-11-03T08:41:49Z",
       "sessionId": "8965312c-1965-41e5-bab9-4e7de716ebbb",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-shedbuild-block-build",
+        "status": "done",
+        "head_sha": "01922415abe2f73e8e891e599281ce1d04365902",
+        "deviations": [
+          "internal/loomrecipe/loomrecipe.go",
+          "internal/shedbuild/build.go"
+        ]
+      },
+      "cardShas": [
+        "01922415abe2f73e8e891e599281ce1d04365902"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-shed-sub-run-block/8965312c-1965-41e5-bab9-4e7de716ebbb/subagents/agent-ac5e3542af19b37ab.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-shed-sub-run-block/8965312c-1965-41e5-bab9-4e7de716ebbb/subagents/agent-ac5e3542af19b37ab.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-shed-sub-run-block/8965312c-1965-41e5-bab9-4e7de716ebbb/subagents/agent-a8af52b2352667b10.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-shed-sub-run-block/8965312c-1965-41e5-bab9-4e7de716ebbb/subagents/agent-a8af52b2352667b10.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-shed-sub-run-block/8965312c-1965-41e5-bab9-4e7de716ebbb/subagents/agent-ac5e3542af19b37ab.jsonl"
   ]
 }

@@ -14,7 +14,7 @@
 - `internal/shedbuild#TestRoutingOf_ParseErrorSurfaces`
 
 **Create:**
-- `plan:internal/shedbuild#RoutingFrom` -> `func RoutingFrom(r Recipe) shedengine.Routing`
+- `internal/shedbuild#RoutingFrom`
 
 **Uses:**
 - `internal/shedrecipe#LookupBlockGate`
