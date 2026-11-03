@@ -1,6 +1,6 @@
 # depends_on accepts a project or any entry that lands, and dobby holds the task until it does
 
-`depends-on-any-entry` · Task · enhancement, board, dobby · running · Describe
+`depends-on-any-entry` · Task · enhancement, board, dobby · running · PR-Review
 
 ## Seen (operator, 2026-11-03)
 
