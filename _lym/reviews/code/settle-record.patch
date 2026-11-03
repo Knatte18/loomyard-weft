@@ -1,0 +1,283 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 273ca391..675da157 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -399,7 +399,8 @@ User-facing modules each get one `lym <module>` namespace:
+   ✅ Implemented; see the `internal/fabricengine` package documentation for rationale.
+ - **ide** — one-shot VS Code launcher with interactive menu.
+   `lym ide spawn <prime>` opens the hub workspace `<hub>/<RepoName>.code-workspace` (the prime, `Bolt` and every task pair) whose `settings` carry the prime's `.vscode/settings.json`.
+-  The file is lym-owned and regenerated on each prime spawn, overwriting any edit made in it;
++  `lym ide spawn <beam>` opens the beam's workspace `<hub>/<RepoName>-<beam>.code-workspace` (the beam, its parent, `Bolt` and the beam's pairs) the same way.
++  The files are lym-owned and regenerated on each prime or beam spawn, overwriting any edit made in them;
+   a task slug still opens its bare folder.
+   The generated `tasks.json` holds one on-demand `reed attach` task, with the `lym` path stamped absolute at generation time, reached through "Tasks: Run Task" or the seeded `ctrl+alt+a` key binding;
+   no task runs on folder open, so opening a worktree in VS Code starts no session and no `claude`.
+diff --git a/internal/idecli/cli.go b/internal/idecli/cli.go
+index ada36fb0..a1434da8 100644
+--- a/internal/idecli/cli.go
++++ b/internal/idecli/cli.go
+@@ -2,7 +2,7 @@
+ //
+ // Command() returns the root "ide" command with four subcommands — spawn, menu, seed and open.
+ // spawn and menu wrap the existing handler bodies;
+-// seed writes an existing worktree's .vscode/ config, window title and colours, the hub workspace file for the prime, and the user's lym key bindings, and launches nothing;
++// seed writes an existing worktree's .vscode/ config, window title and colours, the workspace files for the prime or a beam, and the user's lym key bindings, and launches nothing;
+ // with no slug it seeds the worktree it runs in, the prime included.
+ // open starts VS Code on a pair's folder and takes a slug.
+ // Layout resolution happens once in a PersistentPreRunE so that the no-arg "lym ide" listing never
+diff --git a/internal/ideengine/spawn.go b/internal/ideengine/spawn.go
+index a9385e23..54726593 100644
+--- a/internal/ideengine/spawn.go
++++ b/internal/ideengine/spawn.go
+@@ -3,7 +3,8 @@
+ // after a launch it runs the machine's desktop window command through internal/desktophook;
+ // it regenerates tasks.json on every call and keeps .vscode/ out of git through info/exclude.
+ // A task slug opens its bare folder.
+-// The prime instead opens the lym-generated hub workspace <hub>/<RepoName>.code-workspace (prime, Bolt, every task pair), regenerated on every prime spawn or seed.
++// The prime instead opens the lym-generated hub workspace <hub>/<RepoName>.code-workspace (prime, Bolt, every task pair), regenerated on every prime spawn or seed,
++// and a beam opens its own lym-generated workspace <hub>/<RepoName>-<beam>.code-workspace, regenerated on every beam spawn or seed.
+ 
+ package ideengine
+ 
+@@ -35,8 +36,9 @@ var KeybindingsPath = vscode.UserKeybindingsPath
+ // Spawn writes the window title and colours and the .vscode/ config of the worktree slug and the user's lym key bindings, then launches VS Code and runs the machine's desktop window command.
+ // A task slug launches its bare folder <hub>/<slug>/<its own anchor>.
+ // When slug names the prime, Spawn first regenerates the hub workspace file <hub>/<RepoName>.code-workspace and launches that file instead;
+-// every error on that path is returned, never degraded to the bare folder.
+-// A failure to resolve the prime's name is logged and degrades to the bare-folder path.
++// when slug names a beam, one whose origin record carries the beam mark, it regenerates the same way and launches the beam's workspace file <hub>/<RepoName>-<beam>.code-workspace.
++// Every error on either path is returned, never degraded to the bare folder.
++// A failure to resolve the prime's name, or to read a pair's origin record, is logged and degrades to the bare-folder path.
+ // It returns the keybindings seed's outcome beside the error; a skipped keybindings seed never fails the spawn.
+ func Spawn(l *lymcwd.Location, slug string) (vscode.KeybindingsResult, error) {
+ 	result, err := seed(l, slug)
+@@ -53,8 +55,8 @@ func Spawn(l *lymcwd.Location, slug string) (vscode.KeybindingsResult, error) {
+ // Seed writes the window title and colours and the .vscode/ config of the worktree slug, the prime or a pair, and launches nothing.
+ // It keeps .vscode/ out of git through info/exclude and never writes a .gitignore;
+ // a tracked .vscode/tasks.json is left alone with a warning.
+-// When slug names the prime, Seed then regenerates the hub workspace file, whose settings carry the prime's with the workspace look, and returns any error on that path;
+-// a task slug leaves the workspace file as it is.
++// When slug names the prime or a beam, Seed then regenerates the hub workspace file and every beam's, whose settings carry the prime's or the beam's with the workspace look, and returns any error on that path;
++// a task slug leaves the workspace files as they are.
+ // It seeds the lym block of key bindings, the Alt-arrow keys the integrated terminal passes to reed, into the user's VS Code keybindings.json and returns the outcome beside the error;
+ // a skipped keybindings seed never fails the seed.
+ func Seed(l *lymcwd.Location, slug string) (vscode.KeybindingsResult, error) {
+@@ -63,15 +65,17 @@ func Seed(l *lymcwd.Location, slug string) (vscode.KeybindingsResult, error) {
+ }
+ 
+ // seedResult is what seed did: the keybindings seed's outcome, the path a launch of the worktree opens and the directory the opened window is on.
+-// The window directory is the launch path itself unless that is the hub workspace file.
++// The window directory is the launch path itself unless that is a workspace file.
+ type seedResult struct {
+ 	keybindings vscode.KeybindingsResult
+ 	launchPath  string
+ 	windowDir   string
+ }
+ 
+-// seed writes slug's .vscode/ config, seeds the user's keybindings.json and, for the prime, regenerates the hub workspace file, which is then the launch path;
+-// a task's launch path is its bare folder at its own anchor.
++// seed writes slug's .vscode/ config, seeds the user's keybindings.json and, for the prime or a beam, regenerates the workspace files;
++// the launch path is then the hub workspace file for the prime and the beam's own for a beam.
++// A task's launch path is its bare folder at its own anchor.
++// The config is written before the regeneration, so a beam's file splices the settings just written.
+ func seed(l *lymcwd.Location, slug string) (seedResult, error) {
+ 	own, err := lymcwd.NamedWorktree(l.HubPath, slug)
+ 	if err != nil {
+@@ -85,17 +89,36 @@ func seed(l *lymcwd.Location, slug string) (seedResult, error) {
+ 
+ 	anchorPath := filepath.Join(worktreeDir, own.AnchorRel)
+ 	result := seedResult{keybindings: seedKeybindings(), launchPath: anchorPath, windowDir: anchorPath}
+-	if primeResolved && slug == primeName {
+-		workspacePath, err := fabricengine.RegenerateHubWorkspace(fabricengine.NewMutations(l.HubPath), l)
+-		if err != nil {
+-			return result, err
+-		}
+-		result.launchPath = workspacePath
+-		result.windowDir = filepath.Dir(workspacePath)
++	if !primeResolved {
++		return result, nil
++	}
++	isPrime := slug == primeName
++	if !isPrime && !isBeam(l, slug) {
++		return result, nil
++	}
++	hubWorkspacePath, err := fabricengine.RegenerateHubWorkspace(fabricengine.NewMutations(l.HubPath), l)
++	if err != nil {
++		return result, err
++	}
++	result.launchPath = hubWorkspacePath
++	if !isPrime {
++		result.launchPath = fabricengine.BeamWorkspacePath(l, slug)
+ 	}
++	result.windowDir = filepath.Dir(result.launchPath)
+ 	return result, nil
+ }
+ 
++// isBeam reports whether the origin record of slug's pair carries the beam mark, the mark the workspace regeneration writes a beam's file by.
++// An unreadable record is logged at Warn and reads as a task, so the spawn degrades to the bare folder.
++func isBeam(l *lymcwd.Location, slug string) bool {
++	origin, found, err := fabricengine.ReadOriginFor(l, slug)
++	if err != nil {
++		logger.Warn("ide: read the origin record; opening the bare folder", "slug", slug, "error", err)
++		return false
++	}
++	return found && origin.Beam
++}
++
+ // OpenTask launches VS Code on task slug's bare folder at the task's own anchor, as Spawn does for a task pair, runs the machine's desktop window command and writes nothing.
+ func OpenTask(l *lymcwd.Location, slug string) error {
+ 	own, err := lymcwd.NamedWorktree(l.HubPath, slug)
+diff --git a/internal/ideengine/spawn_hub_integration_test.go b/internal/ideengine/spawn_hub_integration_test.go
+index f8b8ee53..98bd548a 100644
+--- a/internal/ideengine/spawn_hub_integration_test.go
++++ b/internal/ideengine/spawn_hub_integration_test.go
+@@ -1,5 +1,5 @@
+ // spawn_hub_integration_test.go holds the Spawn and OpenTask checks that run against the prime and against a task pair of one hubforge hub:
+-// the prime opens the lym-generated hub workspace, a task slug still opens its bare folder, and the window command follows a launch.
++// the prime opens the lym-generated hub workspace, a beam its own workspace, a task slug and a beam with no readable origin record open their bare folder, and the window command follows a launch.
+ // Each check is a step of a scenario in spawn_scenario_integration_test.go, which names why they run serially.
+ 
+ package ideengine
+@@ -10,6 +10,7 @@ import (
+ 	"errors"
+ 	"os"
+ 	"path/filepath"
++	"slices"
+ 	"sort"
+ 	"strings"
+ 	"testing"
+@@ -18,6 +19,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/vscode"
+ )
+ 
+@@ -201,6 +203,105 @@ func checkTaskSlugOpensBareFolder(t *testing.T, h *hubforge.Hub, slug string) {
+ 	}
+ }
+ 
++// checkBeamOpensBeamWorkspace asserts a beam seed regenerates the beam's workspace file with its workspace title and launches nothing,
++// and a beam spawn regenerates that file, launches it with the beam as its first folder and runs the window command once.
++func checkBeamOpensBeamWorkspace(t *testing.T, h *hubforge.Hub, slug string) {
++	resetPrimeEditorState(t, h)
++	l := h.Location
++	launched := recordLauncher(t)
++	hubforge.AddPair(t, h, slug)
++	if marked, err := fabricengine.MarkBeam(fabricengine.NewMutations(h.Path), l, slug); err != nil || !marked {
++		t.Fatalf("MarkBeam(%q) = (%v, %v); want (true, nil)", slug, marked, err)
++	}
++	markerPath := setDesktopWindowCommand(t, h)
++	beamPath := fabricengine.BeamWorkspacePath(l, slug)
++
++	if _, err := Seed(l, slug); err != nil {
++		t.Fatalf("Seed: %v", err)
++	}
++	if len(*launched) != 0 {
++		t.Errorf("CodeLauncher calls after Seed = %v, want none", *launched)
++	}
++	if want, got := "TST: "+slug+" workspace", readWorkspaceLook(t, beamPath).Title; got != want {
++		t.Errorf("beam workspace window.title = %q, want %q", got, want)
++	}
++	if err := os.Remove(beamPath); err != nil {
++		t.Fatalf("remove beam workspace: %v", err)
++	}
++
++	if _, err := Spawn(l, slug); err != nil {
++		t.Fatalf("Spawn: %v", err)
++	}
++	if len(*launched) != 1 || (*launched)[0] != beamPath {
++		t.Fatalf("CodeLauncher calls = %v, want exactly [%s]", *launched, beamPath)
++	}
++	if runs := windowCommandRuns(t, markerPath); runs != 1 {
++		t.Errorf("window command runs after a beam Spawn = %d; want 1", runs)
++	}
++	data, err := os.ReadFile(beamPath)
++	if err != nil {
++		t.Fatalf("read beam workspace: %v", err)
++	}
++	var ws struct {
++		Folders []struct {
++			Name string `json:"name"`
++		} `json:"folders"`
++	}
++	if err := json.Unmarshal(data, &ws); err != nil {
++		t.Fatalf("beam workspace is not valid JSON: %v\n%s", err, data)
++	}
++	if len(ws.Folders) == 0 || ws.Folders[0].Name != slug {
++		t.Errorf("beam workspace folders = %+v, want %q first", ws.Folders, slug)
++	}
++}
++
++// checkBeamWithoutReadableOriginOpensBareFolder asserts Spawn returns no error and launches the pair's bare anchor folder, never a workspace file.
++// It covers a marked beam whose origin record cannot be read because its records worktree's lock directory is missing, and one whose record is absent.
++// It restores the lock directory before returning, so later steps regenerate the hub workspace over a readable pair.
++func checkBeamWithoutReadableOriginOpensBareFolder(t *testing.T, h *hubforge.Hub, slug string) {
++	resetPrimeEditorState(t, h)
++	l := h.Location
++	launched := recordLauncher(t)
++	hubforge.AddPair(t, h, slug)
++	if marked, err := fabricengine.MarkBeam(fabricengine.NewMutations(h.Path), l, slug); err != nil || !marked {
++		t.Fatalf("MarkBeam(%q) = (%v, %v); want (true, nil)", slug, marked, err)
++	}
++	setDesktopWindowCommand(t, h)
++	pair, err := lymcwd.NamedWorktree(l.HubPath, slug)
++	if err != nil {
++		t.Fatalf("NamedWorktree(%q): %v", slug, err)
++	}
++	lockDir := fabricengine.RecordsLockDirPath(fabricengine.RecordsWorktreePath(pair, slug))
++	bareFolder := filepath.Join(fabricengine.WorktreePath(l, slug), l.AnchorRel)
++
++	if _, err := os.Stat(lockDir); err != nil {
++		t.Fatalf("records lock directory %s missing before the check removes it: %v", lockDir, err)
++	}
++	if err := os.RemoveAll(lockDir); err != nil {
++		t.Fatalf("remove records lock directory: %v", err)
++	}
++	if _, err := Spawn(l, slug); err != nil {
++		t.Fatalf("Spawn with a missing records lock directory: %v", err)
++	}
++	if err := os.MkdirAll(lockDir, 0o755); err != nil {
++		t.Fatalf("restore records lock directory: %v", err)
++	}
++
++	if err := os.Remove(fabricengine.OriginRecordPathFor(pair, slug)); err != nil {
++		t.Fatalf("remove origin record: %v", err)
++	}
++	if _, err := Spawn(l, slug); err != nil {
++		t.Fatalf("Spawn with an absent origin record: %v", err)
++	}
++
++	if want := []string{bareFolder, bareFolder}; !slices.Equal(*launched, want) {
++		t.Errorf("CodeLauncher calls = %v, want %v", *launched, want)
++	}
++	if _, err := os.Stat(fabricengine.BeamWorkspacePath(l, slug)); !os.IsNotExist(err) {
++		t.Errorf("beam workspace file written for a beam with no readable origin record (stat err = %v)", err)
++	}
++}
++
+ // checkWindowCommandFollowsALaunch asserts OpenTask runs the machine's window command once after a launch,
+ // and that a failing CodeLauncher makes Spawn and OpenTask return its error and run no command.
+ func checkWindowCommandFollowsALaunch(t *testing.T, h *hubforge.Hub, slug string) {
+diff --git a/internal/ideengine/spawn_scenario_integration_test.go b/internal/ideengine/spawn_scenario_integration_test.go
+index 1c57f956..cb05bfb5 100644
+--- a/internal/ideengine/spawn_scenario_integration_test.go
++++ b/internal/ideengine/spawn_scenario_integration_test.go
+@@ -71,6 +71,16 @@ func TestSpawnScenario(t *testing.T) {
+ 	}) {
+ 		return
+ 	}
++	if !step("beam opens the beam workspace", func(t *testing.T) {
++		checkBeamOpensBeamWorkspace(t, h, "beam-workspace")
++	}) {
++		return
++	}
++	if !step("beam without a readable origin record opens the bare folder", func(t *testing.T) {
++		checkBeamWithoutReadableOriginOpensBareFolder(t, h, "beam-no-origin")
++	}) {
++		return
++	}
+ 	if !step("prime writes the hub workspace", func(t *testing.T) {
+ 		checkPrimeWritesHubWorkspace(t, h)
+ 	}) {
