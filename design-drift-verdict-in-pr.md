@@ -1,6 +1,6 @@
 # Drift-Verify's verdict never reaches the summary or the pull request
 
-`drift-verdict-in-pr` · Task · bug, drift, loom, landing · running · Code-Burler-Review
+`drift-verdict-in-pr` · Task · bug, drift, loom, landing · running · Code-Burler-Fix
 
 Drift-Verify's verdict reaches neither the change summary nor the pull request, so the PR asks the operator to run by hand the compare Drift already ran.
 
