@@ -35,4 +35,10 @@ Rationale: The switch is an operator decision of 2026-11-03 and must survive the
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/code/round-2-review.md; fixer report: _lym/reviews/code/round-2-fixer-report.md.
+  - reexec-hold-ends-before-notice (class design, severity MEDIUM, open in rounds 2)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
