@@ -1,6 +1,6 @@
 # An arbiter whose turn ends on an API error holds the stop silently until its deadline
 
-`arbiter-api-error-stall` · Task · bug, arbiter, shuttle, claude · running · Describe
+`arbiter-api-error-stall` · Task · bug, arbiter, shuttle, claude · running · PR-Review
 
 An arbiter session whose turn ends on an API error sits idle until its deadline, so the stop it holds reaches no one for half an hour.
 
