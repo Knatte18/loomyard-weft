@@ -609,21 +609,20 @@
       "id": 1012,
       "handle": "E1",
       "slug": "hibernate-wake-resume-switch",
-      "title": "A wake from hibernate checks what moved on origin and lets runs go on only when nothing did and a switch allows it",
+      "title": "A wake from a lym hibernate lifts the pause only when a switch allows it",
       "kind": "note",
       "labels": [
         "enhancement",
         "hibernate",
-        "tender",
-        "fabric"
+        "tender"
       ],
       "issues": [],
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "## Seen (operator, 2026-11-02)\n\nA wake from hibernate lifts the hub-wide pause the hibernate added, so every paused run goes on at once.\nTask `hibernate-wake-leaves-pause` (`44ca77de`) made that lift reliable: the daemon lifts its own pause on every path, before the notice.\nThe operator often does not want runs to start again by themselves after a wake.\n\n## Idea\n\n- Whether the wake lifts the pause is a switch: a key in the hibernate config gives the default, and `lym hibernate request` takes a flag that overrides it for one request.\n- With the lift off, the hub stays paused after the wake, the wake notice to the orch says so, and `lym tender resume` lifts it.\n  This changes the lift-always rule `44ca77de` set, and the switch's off path must keep the pause entry live while the request still reads `done`; `lym hibernate cancel` already lifts a pause a finished request left behind.\n- The wake's other steps, its notice included, run either way.\n- The default is off (operator, 2026-11-02): the operator often works on another machine while this one sleeps, and when origin or a run's owner moved meanwhile, going on is wrong.\n- The wake detects remote change by itself, whatever the switch says:\n  - At the hibernate, lym records the tips of the prime's code and weft branches on origin and the owner of root, of each beam and of each run.\n  - At the wake, it fetches both repositories and compares origin's tips and the owners with that record.\n  - The wake notice lists what moved: the branches whose tip changed, with the commit count, and each owner that changed, with its new machine.\n    A notice stays one short line since `44ca77de`: a longer list is written whole to `notice.txt` in the hibernate directory, and the queued line names that file.\n- Even with the switch on, the wake keeps the pause when anything moved, and its notice says so and names `lym adopt` when an owner moved away.\n",
+      "body": "## Seen (operator, 2026-11-02)\n\nA wake from a hibernate that `lym hibernate request` put the machine into lifts the hub-wide pause that hibernate added, so every paused run goes on at once.\nTask `hibernate-wake-leaves-pause` (`44ca77de`) made that lift reliable: the daemon lifts its own pause on every path, before the notice.\nThe operator often does not want runs to start again by themselves after a wake.\n\n## Scope (operator, 2026-11-03)\n\nThis entry covers only a hibernate lym started through `lym hibernate request`.\nA sleep the machine starts by itself adds no pause and needs none: when nothing moved meanwhile, runs go on as they were.\nWork that moved on another machine meanwhile is caught where it matters, when a run commits, pushes or lands; that check is a note of its own, not part of the wake.\n\n## Idea\n\n- Whether the wake lifts the pause is a switch: a key in the hibernate config gives the default, and `lym hibernate request` takes a flag that overrides it for one request.\n- The default is off (operator, 2026-11-02): the operator often works on another machine while this one sleeps.\n- With the lift off, the hub stays paused after the wake, the wake notice to the orch says so, and `lym tender resume` lifts it.\n  This changes the lift-always rule `44ca77de` set, and the switch's off path must keep the pause entry live while the request still reads `done`; `lym hibernate cancel` already lifts a pause a finished request left behind.\n- The wake's other steps, its notice included, run either way.\n",
       "created": "2026-11-02T19:26:01Z",
-      "revised": "2026-11-02T19:57:25Z"
+      "revised": "2026-11-03T14:52:24Z"
     },
     {
       "id": 1025,
