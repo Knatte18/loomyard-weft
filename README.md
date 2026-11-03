@@ -53,11 +53,13 @@ Held by a run; its scope is locked until the run ends.
 | T3 | **Batten recovers a run whose pair is gone and orders its remote pushes, so no pass fails forever and no push races another** | [`batten-remote-order`](design-batten-remote-order.md) | tapestry · light | Webster | neve | 15h<br>4h | batten, fabric |
 | T11 | **Map where fabricengine test time goes and propose cuts**<br>• Docs-only survey: time, git processes and files per fixture on neve, what hubforge templates already cover, ranked proposals<br>• `darn: writer fable[high]` | [`fabric-test-speed-survey`](design-fabric-test-speed-survey.md) | darn · docs | Darn-Write | neve | 38m<br>38m | fabric, testkit, docs |
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T4 | **Board README marks a discussed entry and links its Sketch**<br>• Each entry flagged discussed shows a mark linking decision-<slug>.md in the README | [`readme-shows-discussed`](design-readme-shows-discussed.md) | darn · light |  | 0m<br>0m | board |
 
 #### Layer A (2)
 
@@ -67,14 +69,6 @@ Waits only on Running, Ready or Draft entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T7 | **fabric remove deletes the whole worktree directory, ignored files included** | [`fabric-remove-ignored-files`](design-fabric-remove-ignored-files.md) | darn · solid | T3 | 4h<br>3h | fabric |
 | T8 | **Batten treats a stray non-worktree directory as a gone pair, and a beam landing accepts its own beam mark** | [`batten-stray-dir-and-beam-mark`](design-batten-stray-dir-and-beam-mark.md) | darn · light | T3 | 4h<br>4h | batten, pawl |
-
-#### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Board README marks a discussed entry and links its Sketch**<br>• Each entry flagged discussed shows a mark linking decision-<slug>.md in the README | [`readme-shows-discussed`](design-readme-shows-discussed.md) | darn · light |  | 0m<br>0m | board |
 
 ### Notes (33)
 
