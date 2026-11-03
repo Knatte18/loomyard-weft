@@ -1,0 +1,28 @@
+# Relevant files
+
+- `contracts/recipes/tapestry-recipe.yaml` — the rows `cartoon` copies and `arras` composes; stays unchanged
+- `contracts/recipes/recipes.go` — embeds each recipe file; `cartoon` and `arras` join it
+- `internal/shedbuild/recipe.go` `Recipe`, `Row`, `EntryChecks` — the recipe format the block row and `profile_recipe` extend
+- `internal/shedbuild/parse.go` `Parse`, `checkRecipeShape`, `checkRowShape` — the sole parser and its row shape checks, where a block row's keys are checked
+- `internal/shedbuild/build.go` `Build` — builds rows into producer definitions; the block row's producer, gate and skip target are built here
+- `internal/shedbuild/entrygate.go` `RowEntryGate`, `entryGateOf` — today's setting-expression entry gate, distinct from the block gate checks
+- `internal/shedbuild/newshed.go` `NewShed`, `NewShedFrom` — the build entry points the expanded recipe flows through
+- `internal/shedbuild/routing.go` `RoutingOf` — routing projection from bytes; needs a form over an expanded recipe
+- `internal/shedbuild/loomcontract.go` `checkLoomContract`, `onDonePath` — the loom contract `arras` must pass on its expanded rows
+- `internal/shedengine/producer.go` `ProducerDef`, `EntryGate`, `OutcomeSkipped` — gains the block path and the skip target
+- `internal/shedengine/entry.go` `enter` — the skip routing by OnDone that the block's skip target changes
+- `internal/shedengine/status.go` `HistoryEntry`, `Status` — gains the block mark
+- `internal/shedengine/run.go` `appendOrFold` — where history entries are appended and would be stamped
+- `internal/shedengine/progress.go` `Routing.mainLine`, `Routing.ProgressAt`, `Routing.Bounces` — the progress count over the expanded rows
+- `internal/shedengine/shed.go` `Shed` — the engine struct, unchanged in shape
+- `internal/shedrecipe/recipe.go` `Constructor`, `Env` — the registry package the block gate table joins
+- `internal/loomrecipe/loomrecipe.go` `New`, `Routing` — loom build and routing; both must read the expanded recipe
+- `internal/loomrecipe/names.go` `RecipeEngines`, `Rows`, `embeddedRecipeSource`, `parseEmbeddedRecipe`, `EntryNumbers` — the name-to-recipe table and the status numbering
+- `internal/loomrecipe/recipekeys.go` `IsLoom`, `HasEngine`, `RecordEngine`, `RetiredRows` — accessors keyed on rows that see `arras` through the expansion
+- `internal/loomcli/wiring.go` `recipeHoldsPlanReview`, `loomSegmentPerches` — segment-keyed perch settings a block's segments reuse
+- `internal/loomcli/arm.go` `recipeHasEngine`, `recipeIsLoom` — wiring decided by rows, not by name
+- `internal/runprofile/template.yaml` — profile blocks keyed by recipe name; why `arras` takes tapestry's through `profile_recipe`
+- `internal/shedrun/seed.go` `RecipeNames` — the seedable recipe vocabulary `arras` joins and `cartoon` stays out of
+- `internal/battencli/wire.go` — the child recipes batten seeds by name
+- `internal/loomengine/tapestry.go` `TapestryConfig` — the tapestry.yaml module the Plan rows read, unchanged under `arras`
+- `pattern/PATTERN-shed-recipe-registry.md` — the registry rule the block gate table changes
