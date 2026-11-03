@@ -1,6 +1,6 @@
 # Batten recovers a run whose pair is gone and orders its remote pushes, so no pass fails forever and no push races another
 
-`batten-remote-order` · Task · bug, batten, fabric · running · Drift-Verify
+`batten-remote-order` · Task · bug, batten, fabric · running · Code-Bouncer
 
 Three batten bugs in how a run's pair and its remote branches are ordered and recovered, joined into one task (notes `batten-pass-pair-gone`, `archive-tag-push-race`, `cancel-push-deletes-new-weft`; issue #9).
 
