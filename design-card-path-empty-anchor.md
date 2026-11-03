@@ -2,8 +2,6 @@
 
 `card-path-empty-anchor` · Task · bug, webster, parsers
 
-Depends on: [`webster-subdir-gitopen`](design-webster-subdir-gitopen.md)
-
 Imported from [issue #34](https://github.com/Knatte18/loomyard/issues/34).
 
 What happened: `lym webster run` failed the run (producer-hard-failure) with two blocking findings on one card: `path-missing` and `glyph-not-found`. The card path was a markdown file followed by a bare `#` (an empty heading anchor), e.g. `<dir>/README.md#`. The same refusal recurred in a later run, once with a repo-relative path and once with a path relative to the module directory.
