@@ -1,0 +1,15 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Discussion-Bouncer",
+    "history_length": 9,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-11-03T09:23:39.460100297+01:00",
+  "deadline": "2026-11-03T09:53:39.460100297+01:00",
+  "strand_guid": "c7b6e85eac557de6e42ed9ed5b94d97e",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/shed/batten-remote-order/drive-reports/drive-envelope-20261103-092339-98d6.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/shed/batten-remote-order/drive-reports/drive-report-20261103-092339-1cd3.md"
+}

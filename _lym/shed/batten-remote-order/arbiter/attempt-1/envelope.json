@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Hard-cap stop at Discussion-Bouncer round 2. Each open design-wrong finding is answered by the fix in place in the decision record, and the code claims the fixes rest on hold.\nF1 (d8-drop-leaves-upstream-config): D8 now unsets branch.\u003cname\u003e.remote and branch.\u003cname\u003e.merge with the tracking-ref drop, D2's ErrRemoteLeftover way forward ends with `branch --unset-upstream`, and a D8 criterion covers the pair push. The code confirms the defect it fixes: UpstreamSHA (internal/gitrepo/blobread.go) wraps a resolve error when the config stands and the ref is gone, and checkOrigin (internal/fabricengine/pushclassified.go) passes through only ErrNoUpstream.\nF2 (d2-permanent-transient-split-by-exclusion): D1 step 3 lists the fork-point checks the adopt-only option skips. D2's closed set gains both refuseAdoptLocalCheckedOut refusals (internal/fabricengine/addadopt.go) and the stray-path refusal, which Add has today (the existing-directory refusal in add.go). The anchor-move stop leaves the transient list, and D1's absent test reads a non-worktree path as absent.\nF3 (d6-bound-rests-on-lock-sync-push-skips): D7 makes every pair push outside a removal, commit-records included, take the teardown lock shared, the PATTERN-slug-remote-order text says so, and a D7 criterion covers it.\nF4 (d8-cause-asserted-not-shown): the support log's Round 2 section shows the ref predates run B's push and that run A's 08:14:59 push is the only earlier weft push, and it records why the reflog cannot show more. D8 drops a stale ref whatever left it.\nF5 (d8-local-warp-stale-tracking-ref): D8 covers an adopted local warp branch through the warp probe under adopt-only, with a criterion.\nF7 (d1-task-worktree-alone-gone-failed): Add reuses a records worktree registered on the pair's weft branch and makes only the task worktree, with a D1 criterion.\nF8 (d2-newest-archive-tag-order-undefined): the pick is defined by candidates, a by-SHA fetch, the done filter and the latest committer date.\nF9 (d2-sweep-undoes-land-restore): the not-live bullet names the re-run right after the restore and states the cleanup window.\nThe remaining open findings are mechanical, and the fixer applied them as proposed. The round is at the hard cap, so accept is its only option.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym loom circling accept batten-remote-order"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/shed/batten-remote-order/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/shed/batten-remote-order/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lym shed step batten-remote-order --until-stop --arbiter-attempt 1"
+}
