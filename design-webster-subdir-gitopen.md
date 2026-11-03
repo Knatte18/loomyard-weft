@@ -1,6 +1,6 @@
 # lym webster begin-batch fails: go-git cannot open a worktree root that is a subdirectory of the repository
 
-`webster-subdir-gitopen` · Task · bug, webster, git · running · Drift-Baseline
+`webster-subdir-gitopen` · Task · bug, webster, git · running · Drift-Await
 
 Imported from [issue #35](https://github.com/Knatte18/loomyard/issues/35).
 
