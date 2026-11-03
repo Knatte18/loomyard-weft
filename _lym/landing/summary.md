@@ -1,0 +1,41 @@
+# Preflight skips lym's own run records under _lym
+
+A run no longer blocks at Preflight on state lym wrote itself while handling a stop.
+Preflight's worktree-clean check now ignores uncommitted files under the run-records root, `_lym/shed`, on the state side of the pair.
+Every other path under `_lym`, and the whole code side, still counts.
+
+Before, the Go driver appended its settle log, `_lym/shed/<run>/go-settle.jsonl`, after the halt's status commit.
+The status commit stages the drive reports, arbiter and tackler directories but not that file, so it stayed untracked until a later commit.
+Preflight's re-step then refused the run on that file every time until the operator ran `lym fabric commit`.
+
+Closes #27
+
+## Design decisions
+
+- The fix exempts the whole run-records root, not each file it holds.
+  Everything under it is lym's own run state: seed, status, settle records, drive reports, arbiter and tackler attempts, the notice marker and the writer's stop markers.
+  The run's next status commit, or the landing's records commit, carries those files, so an uncommitted one is bookkeeping in flight, never work a run could lose.
+  A file lym adds to a run's directory later is covered without a change here.
+- The exemption is decided in one place: `runStateExemptRels` in `internal/preflight/preflight.go`, which names `shedrun.RunsRootRel()`.
+- `fabricengine.Clean` takes the exempt paths as a variadic `weftExempt` argument, anchor-relative, and joins `AnchorRel` itself.
+  Fabric names no shed path, so it learns nothing of shed (PATTERN-fabric-isolation).
+  Existing callers of `Clean` pass nothing and keep the unscoped check.
+- The state-side probe runs `git status --porcelain -- . ':(exclude)<anchor>/_lym/shed'`, through a new optional pathspec on `worktreeDirty`.
+- Committing the settle log when written was the other option the issue named.
+  It would fix this one file, and leave the next file a stop path writes to the same failure, which the issue asks to avoid.
+- The friction directory, `_lym/loom/friction`, is not exempt.
+  It holds agent-written notes as well as lym's halt notes, and the status commit stages it on every transition.
+- The review bouncer's own settle record sits in a review row's directory under `_lym/loom/reviews`, written inside a row whose transition commits it, so it is outside this change.
+
+## Tests
+
+- `TestCheckResolved_RunStateUnderLymIsExempt` in `internal/preflight` covers a hub anchored at the root and one anchored at a subdirectory.
+  It writes, untracked, every file the stop and settle paths write into a run's directory, through the `shedrun` path constructors.
+  It asserts that the unscoped `fabricengine.Clean` sees them, so the pass is not a gitignore's doing, and that `CheckResolved` passes.
+  A file then written under `_lym` outside the run-records root makes `CheckResolved` refuse with `worktree-clean`.
+- The existing `DirtyPairedSide` row still pins a refusal for an untracked file at the state side's root.
+- Tiers 0 and 1 of `./internal/preflight` and `./internal/fabricengine` pass under `lym gate test`.
+
+## Check by hand
+
+- Optionally reproduce the issue: halt a run at a stop the tackler handles, leave `go-settle.jsonl` untracked, and confirm the re-step passes Preflight.
