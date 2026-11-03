@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-03 09:52 UTC; every age below is as of then.
+Rendered 2026-11-03 09:53 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,11 +18,11 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Tapestry runs Discussion through a motif block and skips it for a discussed entry; motif runs alone; arras goes**<br>• Tapestry uses the motif block, skips it when the entry is flagged discussed, motif becomes a runnable recipe, and arras is removed | [`tapestry-motif-block`](design-tapestry-motif-block.md) | darn · solid | Darn-Write | neve | 9m<br>9m | shed, loom |
+| T1 | **Tapestry runs Discussion through a motif block and skips it for a discussed entry; motif runs alone; arras goes**<br>• Tapestry uses the motif block, skips it when the entry is flagged discussed, motif becomes a runnable recipe, and arras is removed | [`tapestry-motif-block`](design-tapestry-motif-block.md) | darn · solid | Darn-Write | neve | 10m<br>10m | shed, loom |
 | T2 | **A beam session shows the pawl run checklist in a second overview window beside the beam overview** | [`pawl-checklist-hidden-in-beam`](design-pawl-checklist-hidden-in-beam.md) | arras · light | Discussion-Write | neve | 2h<br>6m | pawl, orch, reed |
-| T3 | **Batten recovers a run whose pair is gone and orders its remote pushes, so no pass fails forever and no push races another** | [`batten-remote-order`](design-batten-remote-order.md) | tapestry · light | Plan-Bouncer | neve | 13h<br>2h | batten, fabric |
-| T4 | **Drift scope settable in a task's run_settings; Drift-Baseline agent only when unset** | [`drift-scope-in-run-settings`](design-drift-scope-in-run-settings.md) | darn · solid | Finalize | neve | 23m<br>23m | drift, config |
-| T6 | **config reconcile never migrates profiles.yaml, so a hub seeded before the loom-to-tapestry rename stops tapestry runs at Seed-Child** | [`reconcile-migrates-profiles`](design-reconcile-migrates-profiles.md) | darn · solid | Code-Burler-Fix | neve | 36m<br>35m | reconcile, profiles, config |
+| T3 | **Batten recovers a run whose pair is gone and orders its remote pushes, so no pass fails forever and no push races another** | [`batten-remote-order`](design-batten-remote-order.md) | tapestry · light | Drift-Await | neve | 13h<br>2h | batten, fabric |
+| T4 | **Drift scope settable in a task's run_settings; Drift-Baseline agent only when unset** | [`drift-scope-in-run-settings`](design-drift-scope-in-run-settings.md) | darn · solid | Finalize | neve | 24m<br>24m | drift, config |
+| T6 | **config reconcile never migrates profiles.yaml, so a hub seeded before the loom-to-tapestry rename stops tapestry runs at Seed-Child** | [`reconcile-migrates-profiles`](design-reconcile-migrates-profiles.md) | darn · solid | Code-Burler-Fix | neve | 36m<br>36m | reconcile, profiles, config |
 
 ### Ready (0)
 
@@ -101,4 +101,4 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 2h<br>2h | shuttle, codex, loom |
 | F16 |  | **Drift cannot be trialed in a sampler: every lym drift verb refuses outside drift stages** | [`sampler-drift-trial`](design-sampler-drift-trial.md) | 36m<br>36m | drift, shed |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>1d | burler, shed, orch, quarry, report |
-| F18 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 4w<br>17m | shuttle, codex |
+| F18 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 4w<br>18m | shuttle, codex |
