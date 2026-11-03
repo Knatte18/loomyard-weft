@@ -32,7 +32,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R1 |  | **Measure the effect of the agent-turns project**<br>• Turns, calls per turn and cost before and after P2 agent-turns, for darn writers, Webster forks and review roles | [`agent-turns-effect`](design-agent-turns-effect.md) | 1d<br>1d | tools |
 | R2 |  | **Plan and Discussion writers explore through parallel Sonnet agents that return only what is relevant**<br>• Bench the guidance that sends Plan and Discussion writers' lookups to parallel Sonnet subagents against a writer given none | [`planner-fork-lookups`](design-planner-fork-lookups.md) | 1d<br>18h | loom |
-| R3 |  | **Measure the effect of the batching breach hook**<br>• After the batching breach hook lands, compare breach turns and context tokens against the 28-session baseline and tune its thresholds | [`batching-hook-effect`](design-batching-hook-effect.md) | 19h<br>18h | claude, shuttle, tools |
+| R3 |  | **Measure the effect of the batching breach hook**<br>• After the batching breach hook lands, compare breach turns and context tokens against the 28-session baseline and tune its thresholds | [`batching-hook-effect`](design-batching-hook-effect.md) | 20h<br>18h | claude, shuttle, tools |
 
 ## [P0 Root: entries under no project](project-root.md) (45)
 
@@ -42,23 +42,23 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Running (2)
+#### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **A shed block runs a whole sub-recipe inline as one producer, so recipes reuse one another** | [`shed-sub-run-block`](design-shed-sub-run-block.md) | tapestry | Discussion-Write | neve | 58m<br>21m | shed, loom |
-| T2 | **An approved Discussion stores its decision record on the board entry and flags it discussed** | [`decision-record-on-board`](design-decision-record-on-board.md) | tapestry · light | Discussion-Write | neve | 14m<br>9m | board, loom |
+| T2 | **An approved Discussion stores its decision record on the board entry and flags it discussed** | [`decision-record-on-board`](design-decision-record-on-board.md) | tapestry · light | Discussion-Write | neve | 15m<br>9m | board, loom |
+| T4 | **Claude Code autocompact picker in a shuttle session stalls a gate re-prompt forever** | [`shuttle-autocompact-picker-stall`](design-shuttle-autocompact-picker-stall.md) | darn | Worktree-Create | neve | 11h<br>0m | shuttle, loom |
 
-#### Ready (4)
+#### Ready (3)
 
 Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Batten recovers a run whose pair is gone and orders its remote pushes, so no pass fails forever and no push races another** | [`batten-remote-order`](design-batten-remote-order.md) | tapestry · light |  | 10h<br>0m | batten, fabric |
-| T4 | **Claude Code autocompact picker in a shuttle session stalls a gate re-prompt forever** | [`shuttle-autocompact-picker-stall`](design-shuttle-autocompact-picker-stall.md) | darn |  | 11h<br>0m | shuttle, loom |
 | T5 | **Hub-wide config reconcile by an older lym binary strips keys a newer binary wrote** | [`reconcile-strips-newer-keys`](design-reconcile-strips-newer-keys.md) | darn |  | 10h<br>0m | reconcile, config |
 | T6 | **loom Parent-Align halts blocked when the fixer reports verdict fixed** | [`parent-align-fixed-reads-dirty`](design-parent-align-fixed-reads-dirty.md) | darn |  | 10h<br>0m | landing |
 
