@@ -1,26 +1,37 @@
 # Drift-Baseline states expected drift, never acceptance policy
 
-The Drift-Baseline stencil told the agent to name the drift it expects "so the agent that judges the compare later accepts the intended drift with a reason".
-It had no rule for a task whose stated invariant ("every result stays unchanged") and specified design disagree,
-so a baseline agent could resolve the contradiction in the design's favour and write acceptance policy: a reason to accept the drift and a tolerance under which it passes.
-Drift-Verify judges against that report, so the report steered it to accept drift the task said must not happen.
+The Drift-Baseline stencil let the baseline agent write acceptance policy into its report.
+Drift-Verify judges against that report, so a baseline that pre-authorizes drift steers it to accept drift the task says must not happen.
 
-## What changes
+On the `cs` hub, task `cached-friction-factor` stated that every calculated result stays unchanged, while its design evaluated the friction factor at a rounded Reynolds number.
+The baseline agent resolved the contradiction in the design's favour and wrote "any drift in these cases is accepted with the reason …".
+That run's compare came out clean, so nothing was wrongly accepted, but the next run that drifts would have been.
+
+Closes the board entry `drift-baseline-preaccepts`.
+
+## Changes
 
 `contracts/stencils/drift/drift-template-baseline.md`:
 
-- Step 1: a stated output invariant (results unchanged, behavior-preserving, pure refactoring) wins over any part of the design that would move output.
-  The agent expects no drift from that design and names the contradiction as a risk instead of resolving it.
-- Step 2: the `full` scope bullet says the verify agent judges each drifted test against the task and the expectation, instead of saying it accepts the drift the baseline expects.
-- Step 4: the report states what the agent expects and why, never what will be accepted: no acceptance reason and no tolerance under which drift passes.
-  Judging and accepting drift belong to Drift-Verify and the run's parent.
-  Under a stated invariant the report says no drift is expected and names each contradiction as a risk.
+- Step 1 gains a rule: a stated output invariant ("results stay unchanged", "preserves behavior", "pure refactoring") wins over any part of the design that would move output.
+  The agent expects no drift and never resolves the contradiction itself; it names it as a risk.
+- Step 2 no longer says the verify agent "accepts each test that drifts as you expect with a reason"; it says the agent judges each drifted test against the task and the expectation.
+- Step 4 asks the report to state what the agent expects and why, never what will be accepted: no acceptance reason and no tolerance under which drift passes.
+  Under an invariant the report says no drift is expected and names each contradiction between invariant and design, what the design would move, and that the invariant forbids it.
 
-`contracts/stencils/drift/drift-template-verify.md`, Step 2: the baseline report is expectation, never permission to accept.
-A task that states its output stays unchanged intends no drift, so any drift in it is a defect, even where the baseline report names the contradicting design as a risk.
+`contracts/stencils/drift/drift-template-verify.md`:
+
+- States that the baseline report records what its agent expected, never what Drift-Verify may accept.
+- A task with a stated output invariant intends no drift, so any drift in it is a defect, even where the baseline report names a part of the design as a risk.
 
 ## Design decisions
 
-- The verify stencil changes too, not only the baseline stencil.
-  Hubs keep running with baseline reports written under the old text, and the verify side's rule keeps those from steering an acceptance.
-- No marker or Go change: both stencils keep their substitution markers, so `BaselineTable` and `VerifyTable` render them unchanged.
+- The invariant wins in both stencils, not only in the baseline.
+  Fixing the baseline alone would leave Drift-Verify trusting any older or hand-written report that still carries acceptance language.
+- Acceptance stays with Drift-Verify and, under scope `full`, the parent's ruling; the baseline agent has no say in it.
+
+## To check by hand
+
+Only the stencil text changed, with no Go code and no tests.
+No regression check ran and none of this was run against a live task.
+Check that the new wording reads unambiguously to an agent, ideally on a run whose task states an invariant that its design contradicts.
