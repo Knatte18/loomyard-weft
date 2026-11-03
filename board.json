@@ -877,7 +877,7 @@
       "isolated": false,
       "brief": "Konsole window titled T4: \u003cslug\u003e, tmux overview window T4: overview, beam overview P1: beam: \u003cslug\u003e",
       "body": "The operator names runs by board handle (`T4`, `P1`), but no window shows it: a run's Konsole window is titled with the worktree directory's base name, the slug, and its tmux overview window is named `overview` (operator, 2026-11-03).\n\n## Expected\n\n- The desktop terminal window batten's Open-Window row opens for a task run is titled `\u003chandle\u003e: \u003cslug\u003e`, for example `T4: webster-subpath-anchor`.\n  The title reaches `internal/termwindow` through `lym reed window --title`, or the call Open-Window makes, as today.\n- A loom run's `loom-status` overview window is named `\u003chandle\u003e: overview`, for example `T4: overview`, in place of the bare `overview` default (`internal/reedengine/windoworder.go`).\n- A beam's runs strand overview window, named `beam: \u003cslug\u003e` today, gains the beam project's handle the same way: `P1: beam: \u003cslug\u003e`.\n- The handle is read from the board when the window opens.\n  When the board cannot be read, or the entry carries no handle, each title falls back to today's name and the run goes on; a missing handle never fails a row.\n- A window opened by hand with `lym reed window` and no `--title` keeps the directory's base name.\n- Tests pin the titled and the fallback names of both windows.\n",
-      "status": "running · Code-Burler-Review",
+      "status": "running · Code-Burler-Fix",
       "created": "2026-11-03T11:06:12Z",
       "revised": "2026-11-03T11:06:12Z",
       "profile": "light"
