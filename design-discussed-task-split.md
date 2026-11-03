@@ -8,6 +8,11 @@ A task's decision record lived only in its run's weft (`_lym/discussion/decision
 So when Discussion finds a task too large, or the operator decides a tapestry run should rather be split, what Discussion found is lost or must be copied out by hand.
 Several notes circled the same question (where the decision record lives, how a task is split); this note joins them.
 
+## Names (operator, 2026-11-03)
+
+A board idea is a note; the decision record that Discussion, or the recipe `motif`, makes is a Sketch, written with a capital S as a proper name, so it does not read as a loose draft; a finished plan may later be a cartoon.
+Code still says "decision record": nothing in code is renamed to Sketch.
+
 ## Core: the decision record on the board (operator, 2026-11-01)
 
 - When Discussion is approved, after its review, the decision record is copied into the task's board entry, and the entry is flagged as discussed.
