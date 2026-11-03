@@ -1,0 +1,12 @@
+---
+round: 1
+focus:
+  - "internal/configsync/configsync.go `pruneSparse`: does `removed` minus `preserved` leave exactly the keys a retired key covers, for nested keys, per-name maps and open maps, where `yamlengine.Prune` may report a parent path on one pass and child paths on the other? Does the `len(removed) == 0` early return and the `withoutRetired` result drop or keep the right bytes, comments included?"
+  - "Every caller of `configsync.Options`, `HubWideOptions` and `reconcileSparseFile`: is there an automatic path (start-verb hub walk, clone, `lym fabric reconcile`, run-settings preparation through `configreg`) that still prunes a key the template lacks, or a path other than `lym config reconcile` that now sets `PruneUnknown`? Check `internal/hubreconcile`, `internal/fabriccli` and `internal/configcli` against the Goal's expectation that removal stays an explicit `lym config reconcile --layer default --apply`."
+  - "ReconcileHubWideAt: with `PruneUnknown` unset, does `changed` and the board-marker or build-stamp write still behave correctly when every removal is preserved, so a rerun by the same older binary neither rewrites the file nor reports a pending change forever? Is `Preserved` carried into every `Result` the hub-wide path builds, dry run included?"
+  - "Behavior the Goal asks for versus the diff: the Goal names the committed default layer, while the diff also changes worktree files and keeps the local layer pruned. Does the local-layer prune and the standalone base file (`reconcileBaseWorktreeFile`) match what the Goal allows, and does the exported `configengine.DropRetired` widen the package surface only as far as needed?"
+  - "Test coverage for the new behavior: the hub-wide test, the `ReconcileAll` sparse-layer cases, and `internal/hubreconcile/ensure_integration_test.go`, `internal/fabriccli/cli_test.go`. Is any added case a duplicate of an existing one, and is any new behavior (the `Preserved` logging in `hubreconcile/walk.go`, the `lym config reconcile` help text) left uncovered?"
+  - "Repository rules: the `PATTERN-config-layers` entry in `PATTERN.md` and `pattern/PATTERN-config-layers.md` against the new rule, the `hubreconcile/doc.go` addition, and the doc comments the diff changes in `configsync.go` against the repository's constraints document. Check the claims in the commit message against the diff."
+---
+
+Seed focus only; the reviewer still reads the whole committed diff.
