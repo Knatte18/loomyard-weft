@@ -1,11 +1,11 @@
 {
-  "current_producer": "Drift-Baseline",
+  "current_producer": "Parts-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Drift-Baseline",
-    "last": "Discussion-Bouncer → done",
+    "now": "Parts-Write",
+    "last": "Drift-Baseline → skipped",
     "wait": ""
   },
   "history": [
@@ -87,6 +87,13 @@
       "output": "/home/knatte/Code/loomyard-LYMHUB/pawl-checklist-hidden-in-beam/_lym/reviews/discussion/round-1-bouncer-ledger.md",
       "at": "2026-11-03T10:03:37Z",
       "block": "Motif"
+    },
+    {
+      "producer": "Drift-Baseline",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-03T10:03:38Z",
+      "reason": "drift.enabled = false"
     }
   ],
   "product": {
