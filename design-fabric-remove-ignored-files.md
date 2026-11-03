@@ -2,8 +2,6 @@
 
 `fabric-remove-ignored-files` · Task · bug, fabric · running · Darn-Write
 
-Depends on: [`batten-remote-order`](design-batten-remote-order.md)
-
 From [issue #21](https://github.com/Knatte18/loomyard/issues/21), first of its three faults; the batten half is task `batten-stray-dir-and-beam-mark`.
 
 ## What happened

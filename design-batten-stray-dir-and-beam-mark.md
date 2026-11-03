@@ -2,8 +2,6 @@
 
 `batten-stray-dir-and-beam-mark` · Task · bug, batten, pawl · running · Darn-Write
 
-Depends on: [`batten-remote-order`](design-batten-remote-order.md)
-
 From [issue #21](https://github.com/Knatte18/loomyard/issues/21), the batten half of its three faults; the `fabric remove` half is task `fabric-remove-ignored-files`.
 
 ## What happened
