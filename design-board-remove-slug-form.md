@@ -1,6 +1,6 @@
 # Way-forward texts name lym board remove <slug>, which the verb refuses
 
-`board-remove-slug-form` · Task · bug, board · draft
+`board-remove-slug-form` · Task · bug, board
 
 Several way-forward texts tell the reader to run `lym board remove <slug>`, a form the verb refuses.
 
