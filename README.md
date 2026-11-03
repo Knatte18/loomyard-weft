@@ -50,8 +50,8 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | motif · solid | Discussion-Burler-Fix | neve | 4w<br>41m | shuttle, codex |
 | T3 | **Batten recovers a run whose pair is gone and orders its remote pushes, so no pass fails forever and no push races another** | [`batten-remote-order`](design-batten-remote-order.md) | tapestry · light | Code-Burler-Fix | neve | 15h<br>4h | batten, fabric |
-| T4 | **Board README marks a discussed entry and links its Sketch**<br>• Each entry flagged discussed shows a mark linking decision-<slug>.md in the README | [`readme-shows-discussed`](design-readme-shows-discussed.md) | darn · light | Finalize | neve | 19m<br>19m | board |
-| T5 | **Plan rubric's test-economy rule conflicts with decision-record acceptance criteria phrased as rendered-output checks**<br>• A wording criterion is checked by review, never by a prose test; rubric, Discussion prompt and spec say so | [`rubric-test-economy-vs-criteria`](design-rubric-test-economy-vs-criteria.md) | darn · light | Code-Bouncer | neve | 15h<br>9m | burler, loom, stencil |
+| T4 | **Board README marks a discussed entry and links its Sketch**<br>• Each entry flagged discussed shows a mark linking decision-<slug>.md in the README | [`readme-shows-discussed`](design-readme-shows-discussed.md) | darn · light | Finalize | neve | 20m<br>20m | board |
+| T5 | **Plan rubric's test-economy rule conflicts with decision-record acceptance criteria phrased as rendered-output checks**<br>• A wording criterion is checked by review, never by a prose test; rubric, Discussion prompt and spec say so | [`rubric-test-economy-vs-criteria`](design-rubric-test-economy-vs-criteria.md) | darn · light | Describe | neve | 15h<br>9m | burler, loom, stencil |
 
 #### Ready (0)
 
