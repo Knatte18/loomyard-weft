@@ -1,0 +1,143 @@
+diff --git a/contracts/specs/loom-plan-checks-spec.md b/contracts/specs/loom-plan-checks-spec.md
+index 9732b93f..a7b8a37c 100644
+--- a/contracts/specs/loom-plan-checks-spec.md
++++ b/contracts/specs/loom-plan-checks-spec.md
+@@ -61,6 +61,7 @@ Under `language: none` the glyph checks are skipped: `bare-symbol-target`, `dire
+ - `path-missing` — a path or self glyph absent from disk and not created by any card's `Create` target or `Rename` `New` side.
+   It reads every `Uses:` entry, the targets of `Edit`, `Extends`, `Delete`, `Move` and `Prosa` groups, and a `Rename` pair's `Old` side; `Custom` targets and member glyphs are exempt.
+   A later card naming a file at the destination an earlier `Move` gave it is a false finding: reorder the cards, or name the pre-move path.
++  A self glyph spelled relative to a `root:` other than `.` whose `root:`-joined path is present on disk or created by a card gets the way forward of its worktree-relative self glyph, or of the plain path `root:` joins.
+ - `glyph-not-found`, `glyph-ambiguous`, `glyph-rejected` *(planglyph)* — a glyph target that does not resolve, resolves to several declarations, or that quarry's grammar rejects.
+   A `Create` target and a `Rename` `New` side are not resolved.
+   A member declared once per mutually exclusive build-constraint set resolves as one member.
+diff --git a/contracts/specs/loom-plan-spec.md b/contracts/specs/loom-plan-spec.md
+index d83c734a..26a6e241 100644
+--- a/contracts/specs/loom-plan-spec.md
++++ b/contracts/specs/loom-plan-spec.md
+@@ -158,6 +158,7 @@ Write it as a glyph, or `//`-escape it when it is a path.
+ The overview's optional `root: <worktree-relative-dir>` prefixes every path-shaped entry as `<root>/<path>`, unless the path starts with `//`, which is always worktree-root-relative: `//cmd/lym/main.go`.
+ `root: "."` leaves a path unchanged.
+ Glyphs, handles and bare symbols are never `root:`-joined.
++A file self glyph is therefore worktree-relative under any `root:`: under `root: docs`, `docs/README.md#` names the file and `README.md#` names one at the worktree root, while the path `README.md` resolves to `docs/README.md`.
+ 
+ The parser normalizes each path once at parse time to a clean, worktree-relative, forward-slash path.
+ Then, under `go` or `csharp`, it canonicalizes a path that carries an extension or holds no `/` into its self glyph (`list.go` → `internal/boardcli/list.go#`, `LICENSE` → `LICENSE#`); a slashed extensionless path stays a path, for `directory-target` to judge.
+diff --git a/internal/planparser/validate.go b/internal/planparser/validate.go
+index 7aef1bd7..961fef6b 100644
+--- a/internal/planparser/validate.go
++++ b/internal/planparser/validate.go
+@@ -1312,26 +1312,22 @@ func checkPathMissing(plan *Plan, worktreeRoot string) []ValidationError {
+ 		return pathExistsOnDisk(worktreeRoot, p) || creates[p] || renames[p] || (plan.Part != nil && slices.Contains(plan.Part.Paths, p))
+ 	}
+ 
+-	report := func(c Card, raw string) {
++	checkRef := func(c Card, raw string) {
++		mapped, ok := diskPathForRef(plan, raw)
++		if !ok || satisfied(mapped) {
++			return
++		}
+ 		findings = append(findings, ValidationError{
+ 			Check: "path-missing",
+ 			Card:  cardID(c),
+ 			Detail: fmt.Sprintf(
+-				"card %d path %q does not exist on disk and is not a Create target or Rename destination of any card",
+-				c.Number, raw,
++				"card %d path %q does not exist on disk and is not a Create target or Rename destination of any card%s",
++				c.Number, raw, rootRelativeGlyphRemedy(plan, raw, mapped, satisfied),
+ 			),
+ 			Ref: raw,
+ 		})
+ 	}
+ 
+-	checkRef := func(c Card, raw string) {
+-		mapped, ok := diskPathForRef(plan, raw)
+-		if !ok || satisfied(mapped) {
+-			return
+-		}
+-		report(c, raw)
+-	}
+-
+ 	for _, c := range plan.Cards {
+ 		for _, u := range c.Uses {
+ 			checkRef(c, u)
+@@ -1357,6 +1353,33 @@ func checkPathMissing(plan *Plan, worktreeRoot string) []ValidationError {
+ 	return findings
+ }
+ 
++// rootRelativeGlyphRemedy returns the way forward path-missing appends for raw, a self glyph whose unit path mapped is missing, when the plan's root: joined to mapped names a path satisfied reports present.
++// A glyph is never root:-joined, so a self glyph spelled relative to root:, such as `README.md#` under `root: docs`, names a file at the worktree root instead;
++// the remedy names the worktree-relative self glyph and the plain path root: does join.
++// It returns "" when raw is no glyph, root: is absent or ".", or the joined path is not satisfied either.
++func rootRelativeGlyphRemedy(plan *Plan, raw, mapped string, satisfied func(string) bool) string {
++	root := cleanPosixPath(plan.Root)
++	if root == "" || root == "." {
++		return ""
++	}
++	parsed, err := ParseRef(plan, raw)
++	if err != nil {
++		return ""
++	}
++	joined := path.Join(root, mapped)
++	if !satisfied(joined) {
++		return ""
++	}
++	remedy, err := glyph.Self(parsed.Lang, joined)
++	if err != nil {
++		return ""
++	}
++	return fmt.Sprintf(
++		"; root: is never joined to a glyph or a //-escaped path, so this names the worktree-root file %q; to name the file root: joins instead, spell it as %q, or drop the // escape or the trailing \"#\" so root: joins the path %q",
++		mapped, remedy.String(), mapped,
++	)
++}
++
+ // partHoldsHandle reports whether the plan's part scope lists handle among the handles other parts and shared spots export to it.
+ func partHoldsHandle(plan *Plan, handle string) bool {
+ 	return plan.Part != nil && slices.Contains(plan.Part.Handles, handle)
+diff --git a/internal/planparser/validate_test.go b/internal/planparser/validate_test.go
+index a296475c..1dc9a1fb 100644
+--- a/internal/planparser/validate_test.go
++++ b/internal/planparser/validate_test.go
+@@ -1514,6 +1514,42 @@ func TestValidate_PathMissing(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("self glyph spelled relative to root: names the worktree-relative remedy", func(t *testing.T) {
++		t.Parallel()
++		remedy := `spell it as "`
++		tests := []struct {
++			name       string
++			ref        string
++			present    []string
++			wantRemedy bool
++		}{
++			{"JoinedPathExists", "guide.md#", []string{"docs/guide.md"}, true},
++			{"JoinedPathMissing", "guide.md#", nil, false},
++			{"PathShapedRefGetsNoRemedy", "sub/dir", []string{"docs/sub/dir"}, false},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				root := t.TempDir()
++				materializeFiles(t, root, tt.present...)
++				card := cardOfType(1, "a", planparser.CardTypeEdit, []string{tt.ref})
++				plan := &planparser.Plan{Format: 5, Approved: true, Root: "docs", Cards: []planparser.Card{card}}
++				var details []string
++				for _, f := range planparser.Validate(plan, root) {
++					if f.Check == "path-missing" {
++						details = append(details, f.Detail)
++					}
++				}
++				if len(details) != 1 {
++					t.Fatalf("path-missing details = %q; want exactly one", details)
++				}
++				if got := strings.Contains(details[0], remedy); got != tt.wantRemedy {
++					t.Errorf("path-missing detail %q names %q = %v; want %v", details[0], remedy, got, tt.wantRemedy)
++				}
++			})
++		}
++	})
++
+ 	t.Run("Create card absent target produces none", func(t *testing.T) {
+ 		t.Parallel()
+ 		card := cardOfType(1, "a", planparser.CardTypeCreate, []string{"missing.go"})
