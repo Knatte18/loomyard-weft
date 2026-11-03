@@ -899,7 +899,7 @@
       "isolated": false,
       "brief": "Rewrite the lym-batching and lym-plan-edits-before-gate shipped entries from prose walls into headed imperative bullet lists",
       "body": "The shipped heddle entries `lym-batching` and `lym-plan-edits-before-gate` (`internal/heddleengine/shipped.json`) render into every worktree's `CLAUDE.local.md` as walls of prose; the operator judges that agents do not take such text seriously and asks for short imperative bullet points (operator, 2026-11-03).\n\n## Expected\n\n- Each shipped entry opens with a `##` heading of its own under the `# LoomYard's own instructions` section heading, and its text is a list of short imperative bullets, one instruction per bullet.\n  A numbered list stays numbered where order is the point, as in the round of edits.\n- Every instruction the entries give today survives the rewrite with its meaning unchanged, including the override of the Read tool's advice to read only a part, the reread after a command rewrites files, and the four steps of a round.\n- Repeated statements are said once: the rule against reading one file in slices appears in both entries today.\n- The rendered file has no heading-level skip: the shipped entries' `##` headings sit under the `#` section heading, as a repository entry's `##` heading sits under `# This repository's instructions`.\n- Tests that pin the shipped text or its render follow the new text; any stencil or doc that quotes the old sentences is updated in the same change.\n",
-      "status": "running · Drift-Verify",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-03T11:40:14Z",
       "revised": "2026-11-03T11:40:14Z",
       "profile": "light"
