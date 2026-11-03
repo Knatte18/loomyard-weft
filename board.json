@@ -886,28 +886,6 @@
       "profile": "light"
     },
     {
-      "id": 1066,
-      "handle": "T13",
-      "slug": "codex-engine-merge-main-2",
-      "title": "Merge main into the codex-engine beam again and resolve every conflict",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "codex",
-        "shuttle"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Bring main into the beam before it lands, so its landing merges cleanly",
-      "body": "## Build\n\n- Merge `origin/main` into the `codex-engine` beam branch.\n- Resolve every conflict so that both main's changes and the beam's Codex work stand.\n- Fix whatever the merged tree breaks in the build and the gate, including code that main changed under the beam's new code.\n\n## Bounds\n\n- No new behaviour: the task only reconciles the two sides.\n- The project's Sketch (`lym board get P2 --record`) is the authority on what the beam's code must keep doing.",
-      "status": "done",
-      "created": "2026-11-03T16:55:32Z",
-      "revised": "2026-11-03T16:55:32Z",
-      "project": "codex-engine"
-    },
-    {
       "id": 1067,
       "handle": "T10",
       "slug": "drift-after-review",
