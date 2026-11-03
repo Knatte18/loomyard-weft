@@ -24,7 +24,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Prove Drift, an anchor other than ".", the dotnet scoper and the shared build on the C# sandbox hub**<br>• Switch the sandbox gate to scoper dotnet, a build step and --no-build, then enable Drift there | [`sandbox-dotnet-gate`](design-sandbox-dotnet-gate.md) | darn |  | 5d<br>1h | dotnet, gate, drift |
+| T1 | `draft` **Drive the C# sandbox hub through a Drift and subdirectory-anchor trial and report what breaks**<br>• Switch the sandbox gate to scoper dotnet, a build step and --no-build, then enable Drift there | [`sandbox-dotnet-gate`](design-sandbox-dotnet-gate.md) | darn · docs |  | 5d<br>0m | dotnet, gate, drift |
 
 ## Notes (31)
 
