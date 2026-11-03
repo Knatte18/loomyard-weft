@@ -190,6 +190,13 @@ Rationale: The accept settles before the store seam, and the store row sits insi
   - rename-move-point-in-write (class design, severity MEDIUM, open in rounds 1)
 <!-- /lym:carry-over Discussion-Review -->
 
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/plan/round-2-review.md; fixer report: _lym/reviews/plan/round-2-fixer-report.md.
+  - boardcli-storeverbs-wrong-symbol (class scope, severity BLOCKING, open in rounds 2)
+  - card2-post-save-removal-error (class decision, severity MEDIUM, open in rounds 1, 2)
+<!-- /lym:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - D1: a stored record lands in `decision-<slug>.md` at the board root, byte for byte, `board.json` holds `discussed: true` and no record text, and a later render leaves the file in place; a `design_prefix` equal to the record prefix, an empty one, a proper prefix of it such as `dec` and one starting with `decision-` are each refused with the way forward.
