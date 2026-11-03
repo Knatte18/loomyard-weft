@@ -1,6 +1,6 @@
 # A status-bar button asks for a value, so an agent opened from it gets a name
 
-`button-ask-name` · Task · enhancement, reed, config · running · Finalize
+`button-ask-name` · Task · enhancement, reed, config · done
 
 ## Seen (operator, 2026-11-01)
 
