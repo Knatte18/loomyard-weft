@@ -707,7 +707,7 @@
       "isolated": false,
       "brief": "",
       "body": "Part 4 of project `codex-engine`.\nIts Sketch is the project's stored decision record: read it with `lym board get P2 --record`.\n\n## Build\n\n- Decisions D1, D2 and D3 of the Sketch.\n- The parent decision added after Discussion, \"Opt-in Codex subagent fan allowed before Step 4\".\n- The assistant's report path as the parent decision \"Weft checkout as a Codex writable root\" leaves it.\n\n## Bounds\n\n- The Sketch's Scope, Constraints, Open risks and Acceptance criteria bind this part as far as they concern these decisions.\n- The other decisions belong to the project's other parts, landed before this one: build on them.\n",
-      "status": "running · Code-Burler-Fix",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-03T12:38:40Z",
       "revised": "2026-11-03T12:38:40Z",
       "profile": "solid",
