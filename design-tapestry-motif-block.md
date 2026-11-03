@@ -1,6 +1,6 @@
 # Tapestry runs Discussion through a motif block and skips it for a discussed entry; motif runs alone; arras goes
 
-`tapestry-motif-block` · Task · enhancement, shed, loom · running · Finalize
+`tapestry-motif-block` · Task · enhancement, shed, loom · done
 
 ## Seen (2026-11-03)
 
