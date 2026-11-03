@@ -2,7 +2,7 @@
      loom-template-plan, loom-template-part-writer and loom-template-parts-chair pull it in with the bare {{template "loom-block-plan-cards"}}, with no pipeline.
      The fill hands it the including seat's value map, so it declares two required markers: {{.specs_dir}} and {{.gate_tiers}}.
      It names no step of the stencil around it; each including stencil states its own rule for the lines this block leaves out.
-lym-stencil: sha256=385a1b52ebfb80ddb81174b7f88653980c7eb655d97fab5b09e80b37da2ffb19 build=7999007f5d7f20b4b81bff698790313feaa68d25 time=2026-11-01T19:18:14Z -->
+lym-stencil: sha256=2aa4549f255119de224152fb9006045205e711337d8d5259478495cb2fc3703f build=bd41b02393cc89f1aeed62df89399a68cda8fc18 time=2026-11-03T10:48:20Z -->
 
 A symbol `Rename` needs the hub's `rename_tools` in `language.yaml`; the plan gate refuses one when the list is empty.
 
@@ -18,8 +18,8 @@ optionally `**Commit:**` (must start `N: `) and `**Verify:**`.
 An implementation card lists the implementation's member glyphs under `**Edit:**`, beside the test members it changes or the `**Create:**` handles of the tests it adds.
 A new test file is a `**Create:**` path, written only for a surface no existing test file covers.
 
-`**Edit:**` lists the member glyphs the card changes, and a file path only for a file with no symbol to name: a non-Go file, or a whole file the card creates or deletes.
-A `_test.go` path under `**Edit:**` is refused by `edit-test-file` in `{{.specs_dir}}/loom/loom-plan-checks-spec.md`, which holds the way forward.
+`**Edit:**` lists the member glyphs the card changes, and a file path only for a file with no symbol to name: a non-Go file, a file `lym quarry toc` lists with no symbol, or a whole file the card creates or deletes.
+A `_test.go` path with a symbol to name under `**Edit:**` is refused by `edit-test-file` in `{{.specs_dir}}/loom/loom-plan-checks-spec.md`, which holds the way forward.
 A card names an existing test function, fake or helper it changes as a member glyph, for example `internal/x#TestFoo` or `internal/x#fakeClock`.
 A new test function is a `**Create:**` declaration with a `plan:` handle whose unit is the package directory, or `<dir>_test` for an external test package, never a file, so the plan does not pin the file a new test goes in.
 A card whose new tests reuse an existing test's setup, or call existing test helpers or fakes, names those members as glyphs under `**Uses:**`.
