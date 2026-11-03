@@ -1,0 +1,1695 @@
+diff --git a/contracts/stencils/drift/drift-template-baseline.md b/contracts/stencils/drift/drift-template-baseline.md
+index c3298cc9..a6976d1e 100644
+--- a/contracts/stencils/drift/drift-template-baseline.md
++++ b/contracts/stencils/drift/drift-template-baseline.md
+@@ -24,9 +24,15 @@ Also read the repository's README and its test setup, which name how the reposit
+ ## Step 2 — Decide the scope
+ 
+ The regression suite records a profile of the code's behavior on the task's branch point, and a later compare checks the task's code against it.
+-Choose the scope that fits what the task changes:
+ 
+-- `off` for a task that changes the model's behavior on purpose, so a comparison against the old behavior would only report the intended change.
++First check whether the suite can see the change at all.
++The capture command is {{.capture_command}}.
++Find the projects or packages that command builds and runs, follow their project references, imports or build dependencies, and check whether any of them reaches a file the task changes.
++When none does, or the task touches no code the suite runs, such as documentation, rule files or test code outside the suite, the scope is `off`: a capture would spend its time on a suite the change cannot move.
++
++Otherwise choose the scope that fits what the task changes:
++
++- `off` for a task the suite cannot reach, as above, or one that changes the model's behavior on purpose, so a comparison against the old behavior would only report the intended change.
+ - `partial` for a task that changes some behavior on purpose; name each test that will drift totally with `--skip <test>`, and leave the rest in the compare.
+ - `full` for a pure refactoring, where nothing may drift.
+ 
+diff --git a/contracts/stencils/markers_test.go b/contracts/stencils/markers_test.go
+index 08ba7b18..747baeb5 100644
+--- a/contracts/stencils/markers_test.go
++++ b/contracts/stencils/markers_test.go
+@@ -57,7 +57,7 @@ func TestStencils_TopLevelMarkers(t *testing.T) {
+ 		{"twill-judge-plain", TwillJudgePlain, []string{"disposition_place", "rejection_rule"}},
+ 		{"twill-writer-fork", TwillWriterFork, []string{"disposition_place", "explore_step", "files_dir", "format_step", "input_record", "last_file", "reviewed_files", "self_check_command", "self_check_step"}},
+ 		{"twill-relaunch", TwillRelaunch, []string{"disposition_place", "format_step", "relaunch_files", "self_check_command", "self_check_step"}},
+-		{"drift-template-baseline", DriftTemplateBaseline, []string{"baseline_path", "edit_directive", "parent_directive", "scope_note", "subject_reading"}},
++		{"drift-template-baseline", DriftTemplateBaseline, []string{"baseline_path", "capture_command", "edit_directive", "parent_directive", "scope_note", "subject_reading"}},
+ 		{"drift-template-verify", DriftTemplateVerify, []string{"baseline_head", "baseline_path", "compare_log", "edit_directive", "judging_rules", "max_runs", "mode_rules", "parent_directive", "pattern_directive", "report_path", "scope_path", "subject_reading"}},
+ 		{"loom-template-discussion-chair", LoomTemplateDiscussionChair, nil},
+ 		{"loom-template-discussion-advisor", LoomTemplateDiscussionAdvisor, []string{"decision_record_path", "edit_directive", "output_files", "parent_directive", "pattern_directive", "slug", "support_log_path"}},
+diff --git a/docs/overview.md b/docs/overview.md
+index d73cfe7e..0c6f3753 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -602,6 +602,7 @@ User-facing modules each get one `lym <module>` namespace:
+   A tapestry run's tail is `Webster → Parent-Align → Drift-Verify → Code-Review → Describe → PR-Review → Finalize`, where `Code-Review` is the Code-Perch of `Code-Bouncer`, `Code-Burler-Review` and `Code-Burler-Fix`;
+   a darn run's tail is `Darn-Write → Drift-Verify → Code-Review → Describe → PR-Review → Finalize`, with no `Parent-Align`.
+   The three regression rows, `Drift-Baseline` before `Parts-Write` in loom and before `Drift-Await` in darn, `Drift-Await` before `Webster` in loom and before `Darn-Write` in darn, and `Drift-Verify` as above, each carry the entry gate `drift.enabled` of the hub-wide `drift.yaml`, so a hub that leaves it off records each of them skipped and spawns or runs nothing for them.
++  Each Drift producer also reads `drift.enabled` at every pass, so switching it off, in the hub or in one task's local layer, lets a resume pass a Drift row the run already entered.
+   `Parent-Align` merges the parent's upstream tip into the task with no parent lock, verifies the merged tree through the `parent-align` gate key and runs the merge fixer in parent-align mode, which settles a conflict or a failing tree and aligns the task to what the parent brought in; it writes the merge record with the aligned tip, and the Code-Perch then reviews the task's code against that.
+   `PR-Review` lands the task through a GitHub pull request when the resolver says so: it pushes the task branch, opens or finds the pull request, sets its title and body from the change description, records it and waits on it, and otherwise passes.
+   The wait takes no parent lock: it gates and pushes the agent's commits through the `pr-review` gate key, never onto a merged pull request, and mails a failure to the agent, reads the pull request at most once a minute and before each gate, and ends Done when the pull request is merged or approved at the gated head, or when the operator's `lym loom pr-continue` makes the row close it, and Stuck on any other ending; a pause that covers the run holds it, and the driver strand's mark reads `PR #<n>`.
+diff --git a/internal/driftcli/anchor_integration_test.go b/internal/driftcli/anchor_integration_test.go
+new file mode 100644
+index 00000000..b3f45167
+--- /dev/null
++++ b/internal/driftcli/anchor_integration_test.go
+@@ -0,0 +1,106 @@
++//go:build !windows
++
++// anchor_integration_test.go drives the built `lym drift` verbs in a hub whose anchor is a subdirectory, and checks that the detached capture child and every drift command run in the anchored directory, not the worktree root.
++
++package driftcli_test
++
++import (
++	"fmt"
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/driftengine"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/state"
++	"github.com/Knatte18/loomyard/internal/testkit/lymbin"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestDrift_RunsInTheAnchoredDirectory covers the main capture's child, the compare and the side capture of a hub anchored at a subdirectory:
++// each declared command records its working directory, and every one must be the anchored directory.
++// A capture child started anywhere but the anchored directory cannot resolve its worktree and never records its start.
++func TestDrift_RunsInTheAnchoredDirectory(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	bin := lymbin.Build(t)
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "backend", Pairs: []string{pairSlug}})
++	pair := h.PairCodeWorktree(pairSlug)
++	anchor := filepath.Join(pair, "backend")
++	loc, err := lymcwd.Resolve(anchor)
++	if err != nil {
++		t.Fatal(err)
++	}
++	if loc.AnchorPath() != anchor || loc.AnchorPath() == loc.WorktreePath() {
++		t.Fatalf("anchored path = %q, worktree = %q; want an anchor below the worktree root", loc.AnchorPath(), loc.WorktreePath())
++	}
++
++	cwds := filepath.Join(t.TempDir(), "cwds")
++	driftYAML := fmt.Sprintf(`capture:
++  command: |
++    pwd >> %q
++    mkdir -p {baseline_dir} && echo ok > {baseline_dir}/profile.txt
++  timeout_min: 1
++compare:
++  command: 'pwd >> %q; : {baseline_dir}'
++  timeout_min: 1
++verify_max_runs: 3
++`, cwds, cwds)
++	driftFile := configengine.ConfigFile(h.BoardDir(), "drift")
++	if err := os.MkdirAll(filepath.Dir(driftFile), 0o755); err != nil {
++		t.Fatal(err)
++	}
++	if err := os.WriteFile(driftFile, []byte(driftYAML), 0o644); err != nil {
++		t.Fatal(err)
++	}
++	if err := shedrun.WriteSeed(loc, shedrun.SelfRunID, shedrun.Seed{Recipe: shedrun.RecipeTapestry, Driver: shedrun.DriverGo}); err != nil {
++		t.Fatal(err)
++	}
++	writeStatus := func(row string, status shedengine.State) {
++		t.Helper()
++		lockPath := shedrun.StatusLock(loc, shedrun.SelfRunID)
++		if err := os.MkdirAll(filepath.Dir(lockPath), 0o755); err != nil {
++			t.Fatal(err)
++		}
++		if err := state.WriteJSON(shedrun.StatusFile(loc, shedrun.SelfRunID), lockPath, shedengine.Status{CurrentProducer: row, State: status}); err != nil {
++			t.Fatal(err)
++		}
++	}
++
++	writeStatus("Drift-Await", shedengine.StateBlocked)
++	if env := lymRun(t, bin, anchor, "capture"); !env.OK {
++		t.Fatalf("lym drift capture: %s", env.Error)
++	}
++	waitFor(t, "the capture record to read passed", func() bool { return captureState(statusBody(t, bin, anchor)) == driftengine.CapturePassed })
++
++	writeStatus("Drift-Verify", shedengine.StateRunning)
++	for _, args := range [][]string{{"compare"}, {"capture", "--side"}} {
++		if env := lymRun(t, bin, anchor, args...); !env.OK {
++			t.Fatalf("lym drift %v: %s", args, env.Error)
++		}
++	}
++
++	want, err := filepath.EvalSymlinks(anchor)
++	if err != nil {
++		t.Fatal(err)
++	}
++	data, err := os.ReadFile(cwds)
++	if err != nil {
++		t.Fatal(err)
++	}
++	got := strings.Split(strings.TrimSpace(string(data)), "\n")
++	if len(got) != 3 {
++		t.Fatalf("recorded working directories = %q; want one each from the main capture, the compare and the side capture", got)
++	}
++	for i, dir := range got {
++		if dir != want {
++			t.Errorf("command %d ran in %q; want the anchored directory %q", i, dir, want)
++		}
++	}
++}
+diff --git a/internal/driftcli/cli.go b/internal/driftcli/cli.go
+index b5d31783..4879acfe 100644
+--- a/internal/driftcli/cli.go
++++ b/internal/driftcli/cli.go
+@@ -79,8 +79,12 @@ func scopeCmd() *cobra.Command {
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceRole},
+ 		Long: `scope records how much of the regression suite covers the task: off checks
+ nothing, full checks everything, and partial checks all but the tests --skip
+-names, which it requires. It runs once, at Drift-Baseline; a second call is
+-refused, and the agent then writes baseline.md alone and ends its turn.
++names, which it requires. The baseline agent runs it once, at a running
++Drift-Baseline; its second call is refused, and it then writes baseline.md
++alone and ends its turn. The run's parent records or replaces the scope at a
++blocked Drift-Baseline or Drift-Await, while no capture runs and before the
++baseline wait is settled; a replacement that compares a test the capture
++skipped drops that capture. Run lym loom resume after it.
+ 
+ Example:
+   lym drift scope --scope partial --skip slow_test --skip flaky_test`,
+@@ -234,15 +238,15 @@ Example:
+ 				}
+ 				pool, waitDir := w.slots()
+ 				result, err := driftengine.RunCompare(cmd.Context(), driftengine.CompareRequest{
+-					Paths:        w.paths,
+-					WorktreeRoot: w.root(),
+-					Step:         step,
+-					Pool:         pool,
+-					WaitDir:      waitDir,
+-					Skip:         driftengine.SkipList(scope),
+-					Timeout:      stepTimeout(step),
+-					Now:          time.Now,
+-					LockRetry:    compareLockRetry,
++					Paths:     w.paths,
++					AnchorDir: w.anchor(),
++					Step:      step,
++					Pool:      pool,
++					WaitDir:   waitDir,
++					Skip:      driftengine.SkipList(scope),
++					Timeout:   stepTimeout(step),
++					Now:       time.Now,
++					LockRetry: compareLockRetry,
+ 				})
+ 				if err != nil {
+ 					return nil, err
+@@ -296,14 +300,14 @@ func runSideCapture(cmd *cobra.Command, w *worktree) (any, error) {
+ 	}
+ 	pool, waitDir := w.slots()
+ 	result, err := driftengine.RunSideCapture(cmd.Context(), driftengine.CaptureRequest{
+-		Paths:        w.paths,
+-		WorktreeRoot: w.root(),
+-		Step:         step,
+-		Pool:         pool,
+-		WaitDir:      waitDir,
+-		Skip:         driftengine.SkipList(scope),
+-		Timeout:      stepTimeout(step),
+-		Now:          time.Now,
++		Paths:     w.paths,
++		AnchorDir: w.anchor(),
++		Step:      step,
++		Pool:      pool,
++		WaitDir:   waitDir,
++		Skip:      driftengine.SkipList(scope),
++		Timeout:   stepTimeout(step),
++		Now:       time.Now,
+ 	})
+ 	if err != nil {
+ 		return nil, err
+@@ -340,7 +344,7 @@ func startMainCapture(w *worktree) (any, error) {
+ 	}
+ 	pid, err := driftengine.StartCapture(driftengine.SpawnRequest{
+ 		Executable:     executable,
+-		WorktreeRoot:   w.root(),
++		AnchorDir:      w.anchor(),
+ 		Paths:          w.paths,
+ 		RunProcDir:     fabricengine.RunProcDir(w.location.HubPath),
+ 		Owner:          w.location.WorktreeName,
+@@ -410,12 +414,12 @@ func runCaptureChild(cmd *cobra.Command) {
+ 
+ 	pool, waitDir := w.slots()
+ 	_, runErr := driftengine.RunCapture(ctx, driftengine.CaptureRequest{
+-		Paths:        w.paths,
+-		WorktreeRoot: w.root(),
+-		Step:         step,
+-		Pool:         pool,
+-		WaitDir:      waitDir,
+-		Skip:         scope.Skip,
++		Paths:     w.paths,
++		AnchorDir: w.anchor(),
++		Step:      step,
++		Pool:      pool,
++		WaitDir:   waitDir,
++		Skip:      scope.Skip,
+ 		Check: func() (string, error) {
+ 			head, err := checkMainCapture(w)
+ 			if err != nil {
+diff --git a/internal/driftcli/doc.go b/internal/driftcli/doc.go
+index e48725cb..352247ce 100644
+--- a/internal/driftcli/doc.go
++++ b/internal/driftcli/doc.go
+@@ -11,10 +11,11 @@
+ // The run status is read under its lock from the self run, and the agent-session mark from the run counter; together they tell the Drift-Verify agent session from a caller at a halt.
+ // HEAD, the branch point and the tracked dirty paths come from the worktree's fabric: the branch point is the merge base of HEAD with the parent branch the origin record names.
+ // The gate slots come from hubgeom.GateSlots, and the capture child is registered under the run-process directory with the worktree name as owner.
++// The engine is told the anchored directory lymcwd resolves, where the capture child starts and a command step's relative dir is joined on.
+ //
+ // # Capture
+ //
+-// `capture` checks the main capture's precondition, then starts `<this binary> drift capture-child` detached with breakaway, falling back to a plain detached start where Windows refuses breakaway, and returns once the child's capture record reads running.
++// `capture` checks the main capture's precondition, then starts `<this binary> drift capture-child` detached in the worktree's anchored directory with breakaway, falling back to a plain detached start where Windows refuses breakaway, and returns once the child's capture record reads running.
+ // The child holds the capture's named job, runs the capture under the capture lock, re-checks the precondition under that lock and releases the job as its last act.
+ // It writes nothing to its log once the capture has returned, because the Drift-Await row may commit the log once the lock is free.
+ // Under go test the start returns an error and spawns nothing.
+diff --git a/internal/driftcli/wiring.go b/internal/driftcli/wiring.go
+index eac29304..bde9e09e 100644
+--- a/internal/driftcli/wiring.go
++++ b/internal/driftcli/wiring.go
+@@ -39,11 +39,16 @@ func openWorktree(cmd *cobra.Command) (*worktree, error) {
+ 	return &worktree{location: location, paths: driftengine.NewPaths(location.AnchorPath())}, nil
+ }
+ 
+-// root returns the worktree root a drift command's relative dir is joined onto.
++// root returns the worktree root, which names the capture's job.
+ func (w *worktree) root() string {
+ 	return w.location.WorktreePath()
+ }
+ 
++// anchor returns the anchored directory the capture child starts in and a drift command's relative dir is joined onto.
++func (w *worktree) anchor() string {
++	return w.location.AnchorPath()
++}
++
+ // config loads the hub's drift config strictly.
+ func (w *worktree) config() (driftengine.Config, error) {
+ 	return driftengine.LoadConfig(fabricengine.ConfigDirs(w.location))
+diff --git a/internal/driftengine/await.go b/internal/driftengine/await.go
+index 1bea7158..3003fb97 100644
+--- a/internal/driftengine/await.go
++++ b/internal/driftengine/await.go
+@@ -23,13 +23,14 @@ func NewDriftAwait(name string, deps Deps) *DriftAwait {
+ 	return &DriftAwait{name: name, deps: deps}
+ }
+ 
+-// Call runs one Drift-Await pass and commits the durable drift directory, the capture log included, on every way out.
++// Call runs one Drift-Await pass and commits the durable drift directory, the capture log included, on every way out but one: with drift switched off it is Done at once, committing nothing.
+ // It is Done with no scope record, with scope off, with awaited_at set whatever HEAD is, and when a passed capture was taken at HEAD, which it records as awaited_at.
+ // A capture holding the lock is waited on without a bound of its own, and the capture record is read only after the lock reads free.
+ // A missing, failed or unfinished capture, and a passed one taken at another commit than HEAD, are a Stuck naming its ways forward.
+ func (p *DriftAwait) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error) {
+ 	d := p.deps
+ 	err := requireSeams(p.name,
++		seam{"Config", d.Config != nil},
+ 		seam{"Head", d.Head != nil},
+ 		seam{"BranchPoint", d.BranchPoint != nil},
+ 		seam{"Commit", d.Commit != nil},
+@@ -38,6 +39,9 @@ func (p *DriftAwait) Call(ctx context.Context) (shedengine.Outcome, shedengine.O
+ 	if err != nil {
+ 		return "", shedengine.OutputPointer{}, err
+ 	}
++	if outcome, pointer, stop := passWhenSwitchedOff(d.Config); stop {
++		return outcome, pointer, nil
++	}
+ 	outcome, pointer, err := p.await(ctx)
+ 	return commitOnExit(p.name, d.Commit, []string{DirRel()}, outcome, pointer, err)
+ }
+diff --git a/internal/driftengine/await_test.go b/internal/driftengine/await_test.go
+index d716a130..16d7beb9 100644
+--- a/internal/driftengine/await_test.go
++++ b/internal/driftengine/await_test.go
+@@ -12,7 +12,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// TestDriftAwait covers each Done and Stuck way out of the row, the wait on a held capture lock, awaited_at written on a passed capture, a deferral and the commit of the durable directory on every pass.
++// TestDriftAwait covers each Done and Stuck way out of the row, the pass with drift switched off, the wait on a held capture lock, awaited_at written on a passed capture, a deferral and the commit of the durable directory on every pass.
+ func TestDriftAwait(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -29,9 +29,22 @@ func TestDriftAwait(t *testing.T) {
+ 		wantReason  []string
+ 		wantNoWays  []string
+ 		wantAwaited bool
+-		check       func(t *testing.T, f *baselineFixture)
++		// wantNoCommit is true for a pass that commits nothing.
++		wantNoCommit bool
++		check        func(t *testing.T, f *baselineFixture)
+ 	}{
+ 		{name: "no scope record is Done", want: shedengine.Done},
++		{
++			name: "drift switched off is Done with no commit, whatever the capture",
++			setup: func(f *baselineFixture) {
++				f.seedScopeRecord(ScopeRecord{Scope: ScopeFull}, false)
++				f.writeCapture(CaptureRecord{State: CaptureFailed, Reason: "exit 1"})
++				f.disabled = true
++			},
++			want:         shedengine.Done,
++			wantReason:   []string{"drift.enabled = false"},
++			wantNoCommit: true,
++		},
+ 		{
+ 			name:  "scope off is Done",
+ 			setup: func(f *baselineFixture) { f.seedScopeRecord(ScopeRecord{Scope: ScopeOff}, false) },
+@@ -187,7 +200,11 @@ func TestDriftAwait(t *testing.T) {
+ 			if after, _, _ := ReadScope(f.paths); (after.AwaitedAt != "" && after.AwaitedAt != before.AwaitedAt) != tt.wantAwaited {
+ 				t.Errorf("awaited_at %q after %q; want written = %v", after.AwaitedAt, before.AwaitedAt, tt.wantAwaited)
+ 			}
+-			if len(f.commits) == 0 || !slices.Equal(f.commits[0], []string{DirRel()}) {
++			if tt.wantNoCommit {
++				if len(f.commits) != 0 {
++					t.Errorf("commits = %v; want none", f.commits)
++				}
++			} else if len(f.commits) == 0 || !slices.Equal(f.commits[0], []string{DirRel()}) {
+ 				t.Errorf("commits = %v; want the whole durable directory", f.commits)
+ 			}
+ 			if tt.check != nil {
+diff --git a/internal/driftengine/baseline.go b/internal/driftengine/baseline.go
+index ece10d3f..2846eaea 100644
+--- a/internal/driftengine/baseline.go
++++ b/internal/driftengine/baseline.go
+@@ -29,12 +29,13 @@ func NewDriftBaseline(name string, row Row, deps Deps) *DriftBaseline {
+ 	return &DriftBaseline{name: name, row: row, deps: deps}
+ }
+ 
+-// Call runs one Drift-Baseline pass and commits the drift records on every way out.
++// Call runs one Drift-Baseline pass and commits the drift records on every way out but one: with drift switched off it is Done at once, spawning, starting and committing nothing.
+ // It has the baseline agent record the scope and write baseline.md when either is missing, then, by the recorded scope, takes the baseline capture:
+ // scope off, a set awaited_at and a passed capture take none, and a capture that holds the lock is left running.
+ // Otherwise the capture is a detached child and the pass returns once the child's record exists;
+ // when a detached start is refused breakaway, the capture runs in this process.
+-// A failed or refused capture is a Stuck whose reason opens with CaptureHaltPrefix and names its ways forward.
++// A failed or refused capture, or a capture child that ended or stalled before it recorded its start, is a Stuck whose reason opens with CaptureHaltPrefix and names its ways forward, `lym drift defer` among them.
++// A start that fails for another reason, such as an unresolvable binary, an unwritable child log or a held capture lock, is an error.
+ // Only the scope record and baseline.md are committed while a detached capture may still write its logs; all of the durable drift directory is committed once a capture has ended in this process.
+ func (p *DriftBaseline) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error) {
+ 	d := p.deps
+@@ -53,6 +54,9 @@ func (p *DriftBaseline) Call(ctx context.Context) (shedengine.Outcome, shedengin
+ 	if err != nil {
+ 		return "", shedengine.OutputPointer{}, err
+ 	}
++	if outcome, pointer, stop := passWhenSwitchedOff(d.Config); stop {
++		return outcome, pointer, nil
++	}
+ 
+ 	var commitAll bool
+ 	outcome, pointer, err := p.drive(ctx, &commitAll)
+@@ -137,9 +141,13 @@ func (p *DriftBaseline) captureAgain(ctx context.Context, commitAll *bool) (shed
+ 	}
+ 
+ 	startErr := d.StartCapture()
++	var noRecord childNoRecordError
+ 	switch {
+ 	case startErr == nil:
+ 		return shedengine.Done, done, nil
++	case errors.As(startErr, &noRecord):
++		reason := fmt.Sprintf("%sthe baseline capture did not start: %v; way forward: lym loom resume to capture again, or lym drift defer followed by lym loom resume to go on with regression deferred", CaptureHaltPrefix, startErr)
++		return shedengine.Stuck, shedengine.OutputPointer{Reason: reason}, nil
+ 	case !errors.Is(startErr, ErrBreakawayRefused):
+ 		return "", shedengine.OutputPointer{}, fmt.Errorf("drift: %s: start the baseline capture: %w", p.name, startErr)
+ 	}
+diff --git a/internal/driftengine/baseline_test.go b/internal/driftengine/baseline_test.go
+index f0478561..4b4ef3ec 100644
+--- a/internal/driftengine/baseline_test.go
++++ b/internal/driftengine/baseline_test.go
+@@ -35,6 +35,9 @@ type baselineFixture struct {
+ 	dirty             []string
+ 	// declared is whether drift.yaml declares a capture command.
+ 	declared bool
++	// disabled switches drift off, and configErr fails the config load.
++	disabled  bool
++	configErr error
+ 	// startErr is what StartCapture answers, and runRecord what RunCapture answers.
+ 	startErr  error
+ 	runRecord CaptureRecord
+@@ -75,10 +78,14 @@ func newBaselineFixture(t *testing.T) *baselineFixture {
+ 		Paths:        f.paths,
+ 		WorktreeRoot: t.TempDir(),
+ 		Config: func() (Config, error) {
+-			if !f.declared {
+-				return Config{}, nil
++			if f.configErr != nil {
++				return Config{}, f.configErr
+ 			}
+-			return Config{Capture: CommandStep{Command: "capture {baseline_dir}", Dir: ".", TimeoutMin: 1}}, nil
++			cfg := Config{Enabled: !f.disabled}
++			if f.declared {
++				cfg.Capture = CommandStep{Command: "capture {baseline_dir}", Dir: ".", TimeoutMin: 1}
++			}
++			return cfg, nil
+ 		},
+ 		Status: func() (shedengine.Status, error) {
+ 			return shedengine.Status{CurrentProducer: "Drift-Baseline", State: shedengine.StateRunning}, nil
+@@ -156,7 +163,7 @@ func (f *baselineFixture) holdCaptureLock() (release func()) {
+ 	return release
+ }
+ 
+-// TestDriftBaseline covers the producer's way through each scope, capture start and refusal, and the paths it commits on every way out.
++// TestDriftBaseline covers the producer's way through each scope, capture start and refusal, the pass with drift switched off, and the paths it commits on every way out.
+ func TestDriftBaseline(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -174,8 +181,11 @@ func TestDriftBaseline(t *testing.T) {
+ 		wantAgents int
+ 		wantStarts int
+ 		wantRuns   int
++		// wantCommit nil wants no commit at all.
+ 		wantCommit []string
+-		check      func(t *testing.T, f *baselineFixture)
++		// wantDeferrable is true for a Stuck that lym drift defer settles.
++		wantDeferrable bool
++		check          func(t *testing.T, f *baselineFixture)
+ 	}{
+ 		{
+ 			name:       "scope off starts no capture",
+@@ -312,13 +322,49 @@ func TestDriftBaseline(t *testing.T) {
+ 			wantCommit: whole,
+ 		},
+ 		{
+-			name:       "another start error is returned naming the child's log",
+-			setup:      func(f *baselineFixture) { f.startErr = errors.New("the child ended before its record; read child.log") },
+-			wantErr:    "child.log",
++			name: "a child that did not record its start is a capture halt naming the child's log, which lym drift defer settles",
++			setup: func(f *baselineFixture) {
++				f.startErr = startFailure(SpawnRequest{}, "child.log", "ended before it recorded its start")
++			},
++			want:           shedengine.Stuck,
++			wantReason:     []string{CaptureHaltPrefix, "child.log", "lym loom resume", "lym drift defer"},
++			wantAgents:     1,
++			wantStarts:     1,
++			wantCommit:     scopeAndReport,
++			wantDeferrable: true,
++		},
++		{
++			name:       "an environment fault starting the capture is an error that offers no defer",
++			setup:      func(f *baselineFixture) { f.startErr = errors.New("drift: resolve this binary: no such file") },
++			wantErr:    "resolve this binary",
+ 			wantAgents: 1,
+ 			wantStarts: 1,
+ 			wantCommit: scopeAndReport,
+ 		},
++		{
++			name:       "a held capture lock at the start keeps its own refusal",
++			setup:      func(f *baselineFixture) { f.startErr = lockHeldRefusal("capture.lock") },
++			wantErr:    "a capture already holds capture.lock",
++			wantAgents: 1,
++			wantStarts: 1,
++			wantCommit: scopeAndReport,
++		},
++		{
++			name: "drift switched off passes a run halted on a failed capture, with no agent, capture or commit",
++			setup: func(f *baselineFixture) {
++				f.seedScopeRecord(ScopeRecord{Scope: ScopeFull}, true)
++				f.writeCapture(CaptureRecord{State: CaptureFailed})
++				f.disabled = true
++			},
++			want:       shedengine.Done,
++			wantReason: []string{"drift.enabled = false"},
++		},
++		{
++			name:       "a drift config that fails to load is Stuck naming lym loom resume",
++			setup:      func(f *baselineFixture) { f.configErr = errors.New(`drift config key "capture.timeout_min": missing`) },
++			want:       shedengine.Stuck,
++			wantReason: []string{"capture.timeout_min", "lym loom resume"},
++		},
+ 		{
+ 			name:       "an undeclared capture names lym config drift",
+ 			setup:      func(f *baselineFixture) { f.declared = false },
+@@ -368,9 +414,18 @@ func TestDriftBaseline(t *testing.T) {
+ 			if f.seats.Calls != tt.wantAgents || f.starts != tt.wantStarts || f.runs != tt.wantRuns {
+ 				t.Errorf("agents/starts/runs = %d/%d/%d; want %d/%d/%d", f.seats.Calls, f.starts, f.runs, tt.wantAgents, tt.wantStarts, tt.wantRuns)
+ 			}
+-			if len(f.commits) != 1 || !slices.Equal(f.commits[0], tt.wantCommit) {
++			if tt.wantCommit == nil {
++				if len(f.commits) != 0 {
++					t.Errorf("commits = %v; want none", f.commits)
++				}
++			} else if len(f.commits) != 1 || !slices.Equal(f.commits[0], tt.wantCommit) {
+ 				t.Errorf("commits = %v; want one commit of %v", f.commits, tt.wantCommit)
+ 			}
++			if tt.wantDeferrable {
++				if err := Defer(f.paths, statusAt("Drift-Baseline", shedengine.StateBlocked, pointer.Reason, false)); err != nil {
++					t.Errorf("Defer() at the halt = %v; want it admitted", err)
++				}
++			}
+ 			if tt.check != nil {
+ 				tt.check(t, f)
+ 			}
+diff --git a/internal/driftengine/capture.go b/internal/driftengine/capture.go
+index 32fc77a9..0345fe76 100644
+--- a/internal/driftengine/capture.go
++++ b/internal/driftengine/capture.go
+@@ -25,8 +25,8 @@ const CaptureHaltPrefix = "drift capture halt: "
+ type CaptureRequest struct {
+ 	// Paths are the drift paths of the task's anchor root.
+ 	Paths Paths
+-	// WorktreeRoot is the task worktree the command's relative dir is joined onto.
+-	WorktreeRoot string
++	// AnchorDir is the absolute anchored directory the command's relative dir is joined onto.
++	AnchorDir string
+ 	// Step is the declared capture command.
+ 	Step CommandStep
+ 	// Pool is the gate-slot pool the capture takes one slot of.
+@@ -74,7 +74,7 @@ func RunCapture(ctx context.Context, req CaptureRequest) (CaptureRecord, error)
+ 		return CaptureRecord{}, err
+ 	}
+ 
+-	rec := CaptureRecord{State: CaptureRunning, Pid: os.Getpid(), Head: head}
++	rec := CaptureRecord{State: CaptureRunning, Pid: os.Getpid(), Head: head, Skip: req.Skip}
+ 	if err := WriteCapture(p, rec); err != nil {
+ 		return CaptureRecord{}, err
+ 	}
+@@ -87,16 +87,16 @@ func RunCapture(ctx context.Context, req CaptureRequest) (CaptureRecord, error)
+ 
+ 	rec.Log = logPathFor(p.LogsDir, "capture", req.Now())
+ 	outcome, err := runStep(ctx, stepRun{
+-		WorktreeRoot: req.WorktreeRoot,
+-		Step:         req.Step,
+-		Pool:         req.Pool,
+-		WaitDir:      req.WaitDir,
+-		Site:         "drift capture",
+-		BaselineDir:  p.BaselineDir,
+-		SkipFile:     p.SkipFile,
+-		LogPath:      rec.Log,
+-		Timeout:      req.Timeout,
+-		Now:          req.Now,
++		AnchorDir:   req.AnchorDir,
++		Step:        req.Step,
++		Pool:        req.Pool,
++		WaitDir:     req.WaitDir,
++		Site:        "drift capture",
++		BaselineDir: p.BaselineDir,
++		SkipFile:    p.SkipFile,
++		LogPath:     rec.Log,
++		Timeout:     req.Timeout,
++		Now:         req.Now,
+ 		OnSlot: func(at time.Time) {
+ 			rec.SlotAcquiredAt = stamp(at)
+ 			_ = WriteCapture(p, rec)
+@@ -224,18 +224,18 @@ func RunSideCapture(ctx context.Context, req CaptureRequest) (SideResult, error)
+ 
+ 	result := SideResult{Dir: dir, Log: logPathFor(p.LogsDir, "side-capture", req.Now())}
+ 	outcome, err := runStep(ctx, stepRun{
+-		WorktreeRoot: req.WorktreeRoot,
+-		Step:         req.Step,
+-		Pool:         req.Pool,
+-		WaitDir:      req.WaitDir,
+-		Site:         "drift side capture",
+-		BaselineDir:  dir,
+-		SkipFile:     p.SkipFile,
+-		LogPath:      result.Log,
+-		Timeout:      req.Timeout,
+-		Now:          req.Now,
+-		OnSlot:       func(time.Time) {},
+-		OnStart:      func(int, time.Time) {},
++		AnchorDir:   req.AnchorDir,
++		Step:        req.Step,
++		Pool:        req.Pool,
++		WaitDir:     req.WaitDir,
++		Site:        "drift side capture",
++		BaselineDir: dir,
++		SkipFile:    p.SkipFile,
++		LogPath:     result.Log,
++		Timeout:     req.Timeout,
++		Now:         req.Now,
++		OnSlot:      func(time.Time) {},
++		OnStart:     func(int, time.Time) {},
+ 	})
+ 	if err != nil {
+ 		return result, err
+diff --git a/internal/driftengine/capture_test.go b/internal/driftengine/capture_test.go
+index 105853e5..583f9294 100644
+--- a/internal/driftengine/capture_test.go
++++ b/internal/driftengine/capture_test.go
+@@ -9,6 +9,8 @@ import (
+ 	"errors"
+ 	"os"
+ 	"path/filepath"
++	"reflect"
++	"slices"
+ 	"strconv"
+ 	"strings"
+ 	"testing"
+@@ -38,15 +40,15 @@ func newCaptureFixture(t *testing.T, command string) *captureFixture {
+ 	return &captureFixture{
+ 		pool: pool,
+ 		req: CaptureRequest{
+-			Paths:        NewPaths(root),
+-			WorktreeRoot: root,
+-			Step:         CommandStep{Command: command, Dir: ".", TimeoutMin: 1},
+-			Pool:         pool,
+-			WaitDir:      t.TempDir(),
+-			Check:        func() (string, error) { return "head1", nil },
+-			Timeout:      time.Minute,
+-			Now:          time.Now,
+-			LockRetry:    time.Second,
++			Paths:     NewPaths(root),
++			AnchorDir: root,
++			Step:      CommandStep{Command: command, Dir: ".", TimeoutMin: 1},
++			Pool:      pool,
++			WaitDir:   t.TempDir(),
++			Check:     func() (string, error) { return "head1", nil },
++			Timeout:   time.Minute,
++			Now:       time.Now,
++			LockRetry: time.Second,
+ 		},
+ 	}
+ }
+@@ -122,12 +124,15 @@ func TestRunCapture(t *testing.T) {
+ 				}
+ 			}
+ 			stored, found, err := ReadCapture(f.req.Paths)
+-			if err != nil || !found || stored != rec {
++			if err != nil || !found || !reflect.DeepEqual(stored, rec) {
+ 				t.Errorf("ReadCapture() = %+v, %v, %v; want the returned record", stored, found, err)
+ 			}
+ 			if rec.Pid != os.Getpid() || rec.Head != "head1" || rec.SlotAcquiredAt == "" || rec.CommandStartedAt == "" || rec.EndedAt == "" {
+ 				t.Errorf("record = %+v; want the pid, head and the slot, start and end times", rec)
+ 			}
++			if !slices.Equal(rec.Skip, tt.skip) {
++				t.Errorf("record skip = %v; want the skipped tests %v the capture ran under", rec.Skip, tt.skip)
++			}
+ 			if _, err := os.Stat(rec.Log); err != nil {
+ 				t.Errorf("record log %q: %v; want the log file", rec.Log, err)
+ 			}
+@@ -208,7 +213,7 @@ func TestRunCapture(t *testing.T) {
+ 	t.Run("with the only slot held the record stays running without a slot time", func(t *testing.T) {
+ 		t.Parallel()
+ 		f := newCaptureFixture(t, "echo x > {baseline_dir}/p.json")
+-		lease, err := f.pool.Acquire(context.Background(), gateslot.Holder{Worktree: f.req.WorktreeRoot, Site: "test"})
++		lease, err := f.pool.Acquire(context.Background(), gateslot.Holder{Worktree: f.req.AnchorDir, Site: "test"})
+ 		if err != nil {
+ 			t.Fatalf("Acquire() = %v; want nil", err)
+ 		}
+diff --git a/internal/driftengine/compare.go b/internal/driftengine/compare.go
+index 1fd8ad39..4769534c 100644
+--- a/internal/driftengine/compare.go
++++ b/internal/driftengine/compare.go
+@@ -21,8 +21,8 @@ import (
+ type CompareRequest struct {
+ 	// Paths are the drift paths of the task's anchor root.
+ 	Paths Paths
+-	// WorktreeRoot is the task worktree the command's relative dir is joined onto.
+-	WorktreeRoot string
++	// AnchorDir is the absolute anchored directory the command's relative dir is joined onto.
++	AnchorDir string
+ 	// Step is the declared compare command.
+ 	Step CommandStep
+ 	// Pool is the gate-slot pool the compare takes one slot of.
+@@ -75,18 +75,18 @@ func RunCompare(ctx context.Context, req CompareRequest) (CompareResult, error)
+ 	}
+ 	result := CompareResult{Log: logPathFor(p.LogsDir, "compare", req.Now())}
+ 	outcome, err := runStep(ctx, stepRun{
+-		WorktreeRoot: req.WorktreeRoot,
+-		Step:         req.Step,
+-		Pool:         req.Pool,
+-		WaitDir:      req.WaitDir,
+-		Site:         "drift compare",
+-		BaselineDir:  p.BaselineDir,
+-		SkipFile:     p.SkipFile,
+-		LogPath:      result.Log,
+-		Timeout:      req.Timeout,
+-		Now:          req.Now,
+-		OnSlot:       func(time.Time) {},
+-		OnStart:      func(int, time.Time) {},
++		AnchorDir:   req.AnchorDir,
++		Step:        req.Step,
++		Pool:        req.Pool,
++		WaitDir:     req.WaitDir,
++		Site:        "drift compare",
++		BaselineDir: p.BaselineDir,
++		SkipFile:    p.SkipFile,
++		LogPath:     result.Log,
++		Timeout:     req.Timeout,
++		Now:         req.Now,
++		OnSlot:      func(time.Time) {},
++		OnStart:     func(int, time.Time) {},
+ 	})
+ 	if err != nil {
+ 		return result, err
+diff --git a/internal/driftengine/compare_test.go b/internal/driftengine/compare_test.go
+index 7c6e0361..02270bd1 100644
+--- a/internal/driftengine/compare_test.go
++++ b/internal/driftengine/compare_test.go
+@@ -22,14 +22,14 @@ func newCompareFixture(t *testing.T, command string) (CompareRequest, *gateslot.
+ 	t.Helper()
+ 	f := newCaptureFixture(t, command)
+ 	return CompareRequest{
+-		Paths:        f.req.Paths,
+-		WorktreeRoot: f.req.WorktreeRoot,
+-		Step:         f.req.Step,
+-		Pool:         f.pool,
+-		WaitDir:      f.req.WaitDir,
+-		Timeout:      time.Minute,
+-		Now:          time.Now,
+-		LockRetry:    time.Second,
++		Paths:     f.req.Paths,
++		AnchorDir: f.req.AnchorDir,
++		Step:      f.req.Step,
++		Pool:      f.pool,
++		WaitDir:   f.req.WaitDir,
++		Timeout:   time.Minute,
++		Now:       time.Now,
++		LockRetry: time.Second,
+ 	}, f.pool
+ }
+ 
+@@ -70,7 +70,7 @@ func TestRunCompare(t *testing.T) {
+ 			t.Fatalf("RunCompare() = %+v, %v; want a pass", got, err)
+ 		}
+ 		want := "TestA\nTestB\n" + req.Paths.BaselineDir + "\n"
+-		if text := readFile(t, filepath.Join(req.WorktreeRoot, "seen.txt")); text != want {
++		if text := readFile(t, filepath.Join(req.AnchorDir, "seen.txt")); text != want {
+ 			t.Errorf("seen.txt = %q; want %q", text, want)
+ 		}
+ 	})
+@@ -78,7 +78,7 @@ func TestRunCompare(t *testing.T) {
+ 	t.Run("the marker reads held while the run waits for a slot and free once it ends", func(t *testing.T) {
+ 		t.Parallel()
+ 		req, pool := newCompareFixture(t, "true")
+-		lease, err := pool.Acquire(context.Background(), gateslot.Holder{Worktree: req.WorktreeRoot, Site: "test"})
++		lease, err := pool.Acquire(context.Background(), gateslot.Holder{Worktree: req.AnchorDir, Site: "test"})
+ 		if err != nil {
+ 			t.Fatalf("Acquire() = %v; want nil", err)
+ 		}
+diff --git a/internal/driftengine/config.go b/internal/driftengine/config.go
+index 61bf519d..f42fe3e0 100644
+--- a/internal/driftengine/config.go
++++ b/internal/driftengine/config.go
+@@ -41,7 +41,7 @@ const (
+ type CommandStep struct {
+ 	// Command is the shell command the step runs, holding the {baseline_dir} placeholder.
+ 	Command string `yaml:"command"`
+-	// Dir is the run directory, absolute or relative to the worktree root.
++	// Dir is the run directory, absolute or relative to the anchored directory.
+ 	Dir string `yaml:"dir"`
+ 	// Env is the environment the command runs with, over the process environment.
+ 	Env map[string]string `yaml:"env"`
+diff --git a/internal/driftengine/deps.go b/internal/driftengine/deps.go
+index 746abf1a..18166b15 100644
+--- a/internal/driftengine/deps.go
++++ b/internal/driftengine/deps.go
+@@ -65,6 +65,20 @@ func commitOnExit(name string, commit func([]string) error, relPaths []string, o
+ 	return outcome, pointer, err
+ }
+ 
++// passWhenSwitchedOff returns a Done naming the switch, and stop true, when the hub's drift config has enabled off.
++// The entry gate reads drift.enabled only when the run first enters a row, so this check lets a resume pass a row the run already entered once the switch went off, in any layer.
++// A config that fails to load is a Stuck naming its error and lym loom resume.
++func passWhenSwitchedOff(config func() (Config, error)) (outcome shedengine.Outcome, pointer shedengine.OutputPointer, stop bool) {
++	cfg, err := config()
++	if err != nil {
++		return shedengine.Stuck, shedengine.OutputPointer{Reason: fmt.Sprintf("%v; then lym loom resume", err)}, true
++	}
++	if !cfg.Enabled {
++		return shedengine.Done, shedengine.OutputPointer{Reason: "drift is switched off (drift.enabled = false), so the row passes"}, true
++	}
++	return "", shedengine.OutputPointer{}, false
++}
++
+ // seam names one Deps field and whether the producer was told it.
+ type seam struct {
+ 	name string
+diff --git a/internal/driftengine/doc.go b/internal/driftengine/doc.go
+index aa327165..e9570b89 100644
+--- a/internal/driftengine/doc.go
++++ b/internal/driftengine/doc.go
+@@ -3,6 +3,7 @@
+ //
+ // `drift.yaml` is a hub-wide config module with these keys: `enabled`, which switches the Drift rows on through their entry gate; `capture` and `compare`, each a command step written whole as `{command, dir, env, timeout_min}`; `baseline_model` and `verify_model`, the model-specs of the two agents; `verify_interactive`, which makes the Drift-Verify agent a session with the operator in its pane; and `verify_max_runs`, the run budget of one Drift-Verify agent session.
+ // A declared command holds the placeholder `{baseline_dir}`, the directory the capture writes its profile files to and the compare reads them from, and may hold `{skip_file}`, a file naming one skipped test per line.
++// A step's relative `dir` is joined onto the worktree's anchored directory, the one every drift run is told.
+ // `capture` and `compare` are executable keys, so only the template and the hub's board default layer set them, with `lym config drift --set 'capture={command: ..., timeout_min: N}'`.
+ // Once a step is declared, `--set` also changes one of its keys alone, as in `--set capture.env.NAME=1` or `--set compare.timeout_min=10`, and refuses a key a step lacks;
+ // a step left with keys but no command fails the load check, so a first declaration sets `command` and `timeout_min` together.
+@@ -14,7 +15,7 @@
+ //
+ // Every record is JSON written through `internal/state`, so an unknown key survives a rewrite.
+ // The scope record (`scope.json`) holds the recorded scope (`off`, `partial` or `full`) and its skipped tests, when the baseline was awaited or deferred, a waiver, the accepted and withdrawn tests, the unruled tests the last decision halt named and the time of the last gate halt.
+-// The capture record (`capture.json`) holds the state of the latest main capture (`running`, `passed` or `failed`) with its pid, HEAD, times, exit code, reason and log.
++// The capture record (`capture.json`) holds the state of the latest main capture (`running`, `passed` or `failed`) with its pid, HEAD, the tests it skipped, times, exit code, reason and log.
+ // CountedCapture decides whether a capture counts as the baseline: a passed record with an `awaited_at` in the scope record.
+ // The run counter (`runs.json`) holds how many compare or side-capture runs the current Drift-Verify agent session took, the commit its attempt started at, whether the agent-session mark is open and whether the session has the operator in its pane.
+ // TakeRun refuses once the budget is spent, ResetRuns starts a fresh attempt with the whole budget, and CloseAgentSession closes the mark while keeping the count and the attempt's head.
+@@ -29,7 +30,7 @@
+ // RunCapture holds no job object of its own, since it also runs in a row's step process; the detached child holds the capture's named job (CaptureJobName) around it.
+ // RunSideCapture takes no lock and writes no record: it runs the same command into the next free numbered directory under the side directory.
+ // CheckMainCapture is the main capture's precondition: the run is at Drift-Baseline, or blocked at Drift-Await, HEAD equals the branch point and the tracked tree is clean; each refusal names its way forward.
+-// StartCapture spawns `drift capture-child` detached with breakaway, registers it under the run's processes with role `capture` and returns its pid only once the capture record carries that pid, in any state, since a capture can fail between two reads.
++// StartCapture spawns `drift capture-child` detached in the anchored directory, where a lym verb's cwd must be, with breakaway, registers it under the run's processes with role `capture` and returns its pid only once the capture record carries that pid, in any state, since a capture can fail between two reads.
+ // A start Windows refuses for breakaway is retried plain-detached when the caller sets FallbackDetach, and is ErrBreakawayRefused otherwise.
+ // ProbeLock reads whether an OS lock is held without creating a directory, and Active reads the capture lock and the compare marker.
+ //
+@@ -46,7 +47,9 @@
+ // The `lym drift` verbs' rules are functions over a VerbStatus: the run status's row, state and error, whether the capture lock is held and whether the agent-session mark is open.
+ // The agent session is a running status at Drift-Verify with the mark open; a caller at a halt is a blocked status, and a decision halt is one whose error opens with shedadapters.DecisionHaltPrefix.
+ // A verb run at a row it does not admit refuses naming that row and `lym loom status`, and a refused verb writes nothing.
+-// RecordScope writes the scope record once, at Drift-Baseline, and refuses a skip list outside scope partial and a partial scope without one.
++// RecordScope refuses a skip list outside scope partial and a partial scope without one.
++// The baseline agent writes the record once, at a running Drift-Baseline; the run's parent writes or replaces it at a blocked Drift-Baseline or Drift-Await, while the capture lock is free and before awaited_at is set.
++// A replacement keeps the record's other fields and removes the capture record when the new scope compares a test the capture skipped, before it writes the scope.
+ // Accept admits the agent session and a caller at a halt; a running status with the mark closed is the row's own work and refuses, and any other state refuses naming `lym loom resume`.
+ // Under scope full the agent's acceptances are unruled and a caller's are ruled; a withdrawn test, and under scope full any test, is accepted by a caller only at a decision halt, and never by an autonomous agent session.
+ // An acceptance in a session with the operator in its pane is the operator's decision: it is ruled under scope full and may accept a withdrawn test again.
+@@ -62,6 +65,7 @@
+ // The verify seat is interactive under `verify_interactive`, and its stencil's mode and judging text then has it present the drift per test and per quantity, with the baseline agent's expectation, to the operator, and record each acceptance or fix the operator decides.
+ // The baseline seat's only output is `baseline.md` and the verify seat's `verify-report.md`: the scope record is Go-written, and a fresh spawn archives its outputs.
+ // The task's subject is read from the decision record in a tapestry run (SubjectDecisionRecord) and from the board entry in a darn run (SubjectBoardEntry), the record's `Added after Discussion` entries winning in both.
++// The baseline prompt names the declared capture command, and has the agent record scope off when the command's projects cannot reach the task's change.
+ // The seats take the `plan` and `review` segment colors, their models from `baseline_model` and `verify_model`, and session timeouts that are package constants, since drift.yaml declares no timeout key.
+ // The verify seat also carries the hub's language skills and the PATTERN implementer directive, since its agent changes code.
+ // Neither table carries a gate; the Drift-Verify row sets it.
+@@ -70,10 +74,13 @@
+ //
+ // Deps holds the seams the three Drift producers share, and a producer fails loudly naming the field when a seam it reads is nil.
+ // Row holds a row's portable config: the subject its agent reads the task from.
++// Each of the three producers reads `drift.enabled` at every pass and is Done at once, committing nothing, when it is off: the entry gate reads the switch only when the run first enters a row, so this lets a resume pass a row already entered once the switch goes off, in the hub or in the task's local layer.
++// A drift config that fails to load there is a Stuck naming `lym loom resume`.
+ // DriftBaseline has the baseline agent record the scope and write baseline.md when either is missing, the agent spawned with a note that the scope is already recorded when it is, and a Done agent with no scope record is a Stuck.
+ // Scope off, a set awaited_at and a passed capture take no capture; a capture holding the lock is left running.
+ // Otherwise it captures again: an undeclared capture command is a Stuck naming `lym config drift`, and a refusal of the capture's precondition is a Stuck whose reason opens with CaptureHaltPrefix and names `lym drift defer` with `lym loom resume`, and on a dirty tree restoring or stashing the listed paths.
+ // The capture is the detached child: the pass returns Done once the child's record exists, and the recipe's Drift-Await row waits for the capture to end;
++// a child that does not start is a Stuck opening with CaptureHaltPrefix and naming `lym loom resume` and `lym drift defer` with `lym loom resume`;
+ // when Windows refuses the detached start breakaway, the capture runs in the step's own process, so its command dies with the step.
+ // A failed capture is a Stuck opening with CaptureHaltPrefix and naming the log, `lym drift capture` with `lym loom resume`, and `lym drift defer` with `lym loom resume`; the row carries no on_stuck, so each Stuck halts the run.
+ // Every pass commits through Deps.Commit on its way out: the scope record and baseline.md while a detached capture may still write its logs, and all of the durable drift directory once a capture has ended in this process.
+diff --git a/internal/driftengine/records.go b/internal/driftengine/records.go
+index cbdb45d5..60b47179 100644
+--- a/internal/driftengine/records.go
++++ b/internal/driftengine/records.go
+@@ -113,6 +113,8 @@ type CaptureRecord struct {
+ 	Pid int `json:"pid"`
+ 	// Head is the commit the capture ran on.
+ 	Head string `json:"head"`
++	// Skip is the tests the capture left out, which a scope replacement checks to tell whether the capture holds a profile of each test.
++	Skip []string `json:"skip"`
+ 	// SlotAcquiredAt is the RFC 3339 time the capture got its gate slot.
+ 	SlotAcquiredAt string `json:"slot_acquired_at"`
+ 	// CommandStartedAt is the RFC 3339 time the capture command started.
+diff --git a/internal/driftengine/seats.go b/internal/driftengine/seats.go
+index bc92b12f..19f489dd 100644
+--- a/internal/driftengine/seats.go
++++ b/internal/driftengine/seats.go
+@@ -128,8 +128,17 @@ type BaselineInputs struct {
+ 	ScopeNote string
+ }
+ 
++// captureReading returns the sentence part naming the declared capture command and its run directory, which the baseline agent judges the suite's reach from.
++func captureReading(step CommandStep) string {
++	if step.Command == "" {
++		return "not declared yet, so judge the suite's reach from the repository's test setup alone"
++	}
++	return fmt.Sprintf("`%s`, run in `%s` under the anchored directory", step.Command, step.Dir)
++}
++
+ // BaselineTable builds the seatengine.Table of one Drift-Baseline spawn: one lead whose only output is baseline.md.
+ // An empty required field of in is refused by name, and cfg.BaselineModel is resolved against reg.
++// The prompt names cfg.Capture's command, so the agent can check whether the suite reaches the task's change.
+ // The table carries no gate and no scope record output, since Go writes the record and a fresh spawn archives its outputs.
+ func BaselineTable(in BaselineInputs, cfg Config, reg modelspec.Registry) (seatengine.Table, error) {
+ 	err := requireTold("BaselineTable", []struct{ field, value string }{
+@@ -156,6 +165,7 @@ func BaselineTable(in BaselineInputs, cfg Config, reg modelspec.Registry) (seate
+ 		Timeout:    baselineTimeout,
+ 		Values: map[string]string{
+ 			"subject_reading": reading,
++			"capture_command": captureReading(cfg.Capture),
+ 			"baseline_path":   in.BaselineReportPath,
+ 			"scope_note":      in.ScopeNote,
+ 		},
+diff --git a/internal/driftengine/seats_test.go b/internal/driftengine/seats_test.go
+index 335e70ff..448a2503 100644
+--- a/internal/driftengine/seats_test.go
++++ b/internal/driftengine/seats_test.go
+@@ -150,7 +150,9 @@ func TestSeatTables(t *testing.T) {
+ 		t.Parallel()
+ 		in := baseline(t)
+ 		in.ScopeNote = "A scope is already recorded; write baseline.md alone against it."
+-		table, err := BaselineTable(in, cfg, seatRegistry(t))
++		captured := cfg
++		captured.Capture = CommandStep{Command: "dotnet test Suite {baseline_dir}", Dir: "."}
++		table, err := BaselineTable(in, captured, seatRegistry(t))
+ 		if err != nil {
+ 			t.Fatalf("BaselineTable() = _, %v; want nil error", err)
+ 		}
+@@ -169,7 +171,7 @@ func TestSeatTables(t *testing.T) {
+ 		}
+ 
+ 		prompt := seatPrompt(t, in.StencilsDir, in.WorktreeRoot, in.Slug, table)
+-		for _, want := range []string{in.BaselineReportPath, in.DecisionRecordPath, in.ScopeNote, "the-parent"} {
++		for _, want := range []string{in.BaselineReportPath, in.DecisionRecordPath, in.ScopeNote, "the-parent", "`dotnet test Suite {baseline_dir}`, run in `.`", "project references"} {
+ 			if !strings.Contains(prompt, want) {
+ 				t.Errorf("baseline prompt lacks %q", want)
+ 			}
+@@ -185,6 +187,9 @@ func TestSeatTables(t *testing.T) {
+ 		if !strings.Contains(entryPrompt, `lym board get '{"slug":"fix-the-thing"}'`) {
+ 			t.Errorf("board-entry prompt lacks the board reading")
+ 		}
++		if !strings.Contains(entryPrompt, "The capture command is not declared yet") {
++			t.Errorf("a prompt with no capture declared does not say so")
++		}
+ 		if strings.Contains(entryPrompt, "the decision record at `"+entry.DecisionRecordPath+"`, in which") || strings.Contains(prompt, "lym board get") {
+ 			t.Errorf("the two subjects render alike; want the decision-record and board-entry readings distinct")
+ 		}
+diff --git a/internal/driftengine/spawn.go b/internal/driftengine/spawn.go
+index 6c492048..771c8beb 100644
+--- a/internal/driftengine/spawn.go
++++ b/internal/driftengine/spawn.go
+@@ -41,8 +41,8 @@ type spawnedChild struct {
+ type SpawnRequest struct {
+ 	// Executable is the lym binary the child runs.
+ 	Executable string
+-	// WorktreeRoot is the directory the child runs in.
+-	WorktreeRoot string
++	// AnchorDir is the absolute anchored directory the child runs in, since every lym verb resolves its worktree from a cwd equal to it.
++	AnchorDir string
+ 	// Paths are the drift paths of the task's anchor root.
+ 	Paths Paths
+ 	// RunProcDir and Owner locate the run's process records, where the child is registered.
+@@ -62,7 +62,7 @@ type SpawnRequest struct {
+ 	breakawayRefused func(error) bool
+ }
+ 
+-// StartCapture starts `<executable> drift capture-child` detached in the worktree root and returns its pid once the capture record carries that pid, in any state.
++// StartCapture starts `<executable> drift capture-child` detached in the anchored directory and returns its pid once the capture record carries that pid, in any state.
+ // The child writes that record after its precondition held under the capture lock, so the caller moves the run on only after the precondition held.
+ // It refuses while the capture lock reads held, and returns an error naming the child's log when the child ends, or the bound runs out, before the record.
+ func StartCapture(req SpawnRequest) (int, error) {
+@@ -85,13 +85,13 @@ func StartCapture(req SpawnRequest) (int, error) {
+ 	defer logFile.Close()
+ 
+ 	argv := []string{req.Executable, "drift", "capture-child"}
+-	child, err := req.startChild(childSpawn{argv: argv, dir: req.WorktreeRoot, log: logFile, breakaway: true})
++	child, err := req.startChild(childSpawn{argv: argv, dir: req.AnchorDir, log: logFile, breakaway: true})
+ 	if err != nil && req.refusedBreakaway(err) {
+ 		if !req.FallbackDetach {
+ 			return 0, fmt.Errorf("%w: %v", ErrBreakawayRefused, err)
+ 		}
+ 		logger.Warn("drift: the capture child was refused breakaway, so it lives only as long as the shell's job", "error", err.Error())
+-		child, err = req.startChild(childSpawn{argv: argv, dir: req.WorktreeRoot, log: logFile})
++		child, err = req.startChild(childSpawn{argv: argv, dir: req.AnchorDir, log: logFile})
+ 	}
+ 	if err != nil {
+ 		return 0, fmt.Errorf("drift: start the capture child: %w", err)
+@@ -106,7 +106,7 @@ func StartCapture(req SpawnRequest) (int, error) {
+ 
+ // awaitRunningRecord polls the capture record until it carries the child's pid.
+ // A capture that failed between two polls still carries it, so any state counts as the start.
+-// It fails when the child ends first or RecordWait runs out, naming the child's log and the caller's way forward.
++// It fails when the child ends first or RecordWait runs out, naming the child's log.
+ func awaitRunningRecord(req SpawnRequest, child spawnedChild, childLog string) error {
+ 	reads := func() bool {
+ 		rec, found, err := ReadCapture(req.Paths)
+@@ -135,15 +135,21 @@ func awaitRunningRecord(req SpawnRequest, child spawnedChild, childLog string) e
+ 	}
+ }
+ 
+-// startFailure builds the error of a capture child that did not record its start, with its caller's way forward.
++// startFailure builds the error of a capture child that did not record its start.
++// Under FallbackDetach, the CLI's form, it names the way forward; otherwise the calling row words its own halt around it, so it names the child's log alone.
+ func startFailure(req SpawnRequest, childLog, what string) error {
+-	wayForward := "read " + childLog + ", then lym loom resume, whose entry captures again"
+ 	if req.FallbackDetach {
+-		wayForward = "read " + childLog + ", then, once lym drift status shows the capture lock free, run lym drift capture again, or lym drift defer followed by lym loom resume"
++		return childNoRecordError{fmt.Sprintf("drift: the capture child %s; way forward: read %s, then, once lym drift status shows the capture lock free, run lym drift capture again, or lym drift defer followed by lym loom resume", what, childLog)}
+ 	}
+-	return fmt.Errorf("drift: the capture child %s; way forward: %s", what, wayForward)
++	return childNoRecordError{fmt.Sprintf("drift: the capture child %s; its log is %s", what, childLog)}
+ }
+ 
++// childNoRecordError is a started capture child that did not record its start.
++// A calling row tells it from an environment fault that kept the child from starting, since only a child that ran and failed is a capture halt.
++type childNoRecordError struct{ text string }
++
++func (e childNoRecordError) Error() string { return e.text }
++
+ // startChild starts the child through the spawn seam, or as the real command when none is set.
+ func (r SpawnRequest) startChild(spec childSpawn) (spawnedChild, error) {
+ 	if r.spawn != nil {
+diff --git a/internal/driftengine/spawn_test.go b/internal/driftengine/spawn_test.go
+index b03d90e0..e389c3e5 100644
+--- a/internal/driftengine/spawn_test.go
++++ b/internal/driftengine/spawn_test.go
+@@ -29,7 +29,7 @@ func newSpawnFixture(t *testing.T, onSpawn func(f *spawnFixture, spec childSpawn
+ 	root := t.TempDir()
+ 	f.req = SpawnRequest{
+ 		Executable:       "lym",
+-		WorktreeRoot:     root,
++		AnchorDir:        root,
+ 		Paths:            NewPaths(root),
+ 		RunProcDir:       t.TempDir(),
+ 		Owner:            "slug",
+@@ -93,8 +93,8 @@ func TestStartCapture(t *testing.T) {
+ 		if got.err != nil || got.pid != os.Getpid() {
+ 			t.Fatalf("StartCapture() = %d, %v; want %d, nil", got.pid, got.err, os.Getpid())
+ 		}
+-		if want := []string{"lym", "drift", "capture-child"}; len(f.spawns) != 1 || strings.Join(f.spawns[0].argv, " ") != strings.Join(want, " ") || !f.spawns[0].breakaway {
+-			t.Errorf("spawns = %+v; want one breakaway start of %v", f.spawns, want)
++		if want := []string{"lym", "drift", "capture-child"}; len(f.spawns) != 1 || strings.Join(f.spawns[0].argv, " ") != strings.Join(want, " ") || !f.spawns[0].breakaway || f.spawns[0].dir != f.req.AnchorDir {
++			t.Errorf("spawns = %+v; want one breakaway start of %v in the anchored directory %s", f.spawns, want, f.req.AnchorDir)
+ 		}
+ 		records, err := runproc.List(f.req.RunProcDir, f.req.Owner)
+ 		if err != nil || len(records) != 1 || records[0].Role != runproc.RoleCapture || records[0].PID != os.Getpid() {
+@@ -108,9 +108,9 @@ func TestStartCapture(t *testing.T) {
+ 		exits    bool
+ 		want     []string
+ 	}{
+-		{"a child that exits without its record, no fallback", false, true, []string{"ended before it recorded its start", "capture-child-", "lym loom resume, whose entry captures again"}},
++		{"a child that exits without its record, no fallback", false, true, []string{"ended before it recorded its start", "its log is", "capture-child-"}},
+ 		{"a child that exits without its record, with fallback", true, true, []string{"ended before it recorded its start", "capture-child-", "lym drift capture again", "lym drift defer followed by lym loom resume"}},
+-		{"a child that stalls past the record bound, no fallback", false, false, []string{"did not record its start within", "lym loom resume, whose entry captures again"}},
++		{"a child that stalls past the record bound, no fallback", false, false, []string{"did not record its start within", "its log is"}},
+ 		{"a child that stalls past the record bound, with fallback", true, false, []string{"did not record its start within", "lym drift capture again"}},
+ 	}
+ 	for _, tt := range failures {
+diff --git a/internal/driftengine/steprun.go b/internal/driftengine/steprun.go
+index ac8ac2fc..2ebac4d7 100644
+--- a/internal/driftengine/steprun.go
++++ b/internal/driftengine/steprun.go
+@@ -28,8 +28,8 @@ const stampLayout = "20060102T150405.000Z"
+ 
+ // stepRun is one drift command to run.
+ type stepRun struct {
+-	// WorktreeRoot is the task worktree a relative step dir is joined onto.
+-	WorktreeRoot string
++	// AnchorDir is the absolute anchored directory a relative step dir is joined onto.
++	AnchorDir string
+ 	// Step is the declared command.
+ 	Step CommandStep
+ 	// Pool is the gate-slot pool the run takes one slot of.
+@@ -96,7 +96,7 @@ func runStep(ctx context.Context, run stepRun) (stepOutcome, error) {
+ 	cmd := exec.Command(shellName, shellFlag, command)
+ 	cmd.Dir = run.Step.Dir
+ 	if !filepath.IsAbs(cmd.Dir) {
+-		cmd.Dir = filepath.Join(run.WorktreeRoot, cmd.Dir)
++		cmd.Dir = filepath.Join(run.AnchorDir, cmd.Dir)
+ 	}
+ 	cmd.Env = gateslot.HolderEnv(slices.Concat(os.Environ(), renderEnv(run.Step.Env)), lease, limits.Tier0Parallel)
+ 	cmd.Stdout, cmd.Stderr = logFile, logFile
+@@ -146,7 +146,7 @@ func acquireSlot(ctx context.Context, run stepRun) (*gateslot.Lease, gateslot.Li
+ 	if err != nil {
+ 		return nil, gateslot.Limits{}, err
+ 	}
+-	lease, err := run.Pool.Acquire(ctx, gateslot.Holder{Worktree: run.WorktreeRoot, Site: run.Site})
++	lease, err := run.Pool.Acquire(ctx, gateslot.Holder{Worktree: run.AnchorDir, Site: run.Site})
+ 	if removeErr := os.Remove(waitPath); removeErr != nil && !errors.Is(removeErr, os.ErrNotExist) {
+ 		logger.Warn("drift: removing the gate wait record failed", "path", waitPath, "error", removeErr.Error())
+ 	}
+diff --git a/internal/driftengine/verbs.go b/internal/driftengine/verbs.go
+index 66a4b35a..3e75eb9d 100644
+--- a/internal/driftengine/verbs.go
++++ b/internal/driftengine/verbs.go
+@@ -8,6 +8,7 @@ package driftengine
+ import (
+ 	"errors"
+ 	"fmt"
++	"os"
+ 	"slices"
+ 	"strings"
+ 	"time"
+@@ -55,11 +56,17 @@ func wrongRow(verb, row string, st VerbStatus) error {
+ // errNoScope is the refusal of a verb that needs a recorded scope.
+ var errNoScope = errors.New("drift: no scope is recorded yet; way forward: lym loom status shows the row the run is at")
+ 
+-// RecordScope records the task's regression scope, the baseline agent's one write of it.
+-// It is admitted only at Drift-Baseline, once, for scope off, partial or full, with skip given only under partial and required there.
++// RecordScope records the task's regression scope off, partial or full, with skip given only under partial and required there.
++// The baseline agent records it once, at a running Drift-Baseline.
++// The run's parent records or replaces it at a blocked Drift-Baseline or Drift-Await, while no capture runs and before the baseline wait is settled.
++// A replacement keeps the record's other fields, and drops the capture record when the new scope compares a test the capture skipped, since that capture holds no profile of it.
++// The capture record is dropped before the scope is written, so a failed drop leaves the old scope and the call can be repeated.
+ func RecordScope(p Paths, st VerbStatus, scope string, skip []string) error {
+-	if st.Status.CurrentProducer != captureRowBaseline {
+-		return wrongRow("scope", captureRowBaseline, st)
++	row := st.Status.CurrentProducer
++	agent := row == captureRowBaseline && st.Status.State == shedengine.StateRunning
++	parent := (row == captureRowBaseline || row == captureRowAwait) && st.Status.State == shedengine.StateBlocked
++	if !agent && !parent {
++		return fmt.Errorf("drift scope refused: the run is at %s (%s); the baseline agent records the scope at a running %s, and the run's parent records or replaces it at a blocked %s or %s; way forward: lym loom status shows where the run is", orNone(row), st.Status.State, captureRowBaseline, captureRowBaseline, captureRowAwait)
+ 	}
+ 	switch {
+ 	case scope != ScopeOff && scope != ScopePartial && scope != ScopeFull:
+@@ -68,15 +75,45 @@ func RecordScope(p Paths, st VerbStatus, scope string, skip []string) error {
+ 		return fmt.Errorf("drift scope refused: --skip is given with scope %s; way forward: pass --skip only with --scope %s", scope, ScopePartial)
+ 	case len(skip) == 0 && scope == ScopePartial:
+ 		return fmt.Errorf("drift scope refused: scope %s names no test to skip; way forward: pass --skip <test> for each skipped test, or --scope %s", ScopePartial, ScopeFull)
++	case parent && st.CaptureHeld:
++		return errors.New("drift scope refused: a capture is running; way forward: wait for it to end (lym drift status shows it), then record the scope again")
+ 	}
++
+ 	return UpdateScope(p, func(cur ScopeRecord, found bool) (ScopeRecord, error) {
+-		if found {
++		switch {
++		case !found:
++			return ScopeRecord{Scope: scope, Skip: skip, RecordedAt: stamp(time.Now())}, nil
++		case agent:
+ 			return cur, fmt.Errorf("drift: the scope is already recorded as %s; way forward: write baseline.md alone and end your turn", cur.Scope)
++		case cur.AwaitedAt != "":
++			return cur, fmt.Errorf("drift scope refused: the baseline wait is already settled, so the scope no longer changes; way forward: settle the drift at the %s halt, whose ways forward lym loom status shows", verifyRow)
++		}
++		if scope != ScopeOff {
++			if err := dropCaptureSkipping(p, skip); err != nil {
++				return cur, err
++			}
+ 		}
+-		return ScopeRecord{Scope: scope, Skip: skip, RecordedAt: stamp(time.Now())}, nil
++		cur.Scope, cur.Skip, cur.RecordedAt = scope, skip, stamp(time.Now())
++		return cur, nil
+ 	})
+ }
+ 
++// dropCaptureSkipping removes the capture record when the capture left out a test that skip does not, since that capture holds no profile of the test.
++// An absent record is no error.
++func dropCaptureSkipping(p Paths, skip []string) error {
++	capture, found, err := ReadCapture(p)
++	if err != nil || !found {
++		return err
++	}
++	if !slices.ContainsFunc(capture.Skip, func(test string) bool { return !slices.Contains(skip, test) }) {
++		return nil
++	}
++	if err := os.Remove(p.Capture); err != nil && !errors.Is(err, os.ErrNotExist) {
++		return fmt.Errorf("drift: drop the capture taken under the old scope: %w", err)
++	}
++	return nil
++}
++
+ // Accept records one drifted test as intended, on behalf of the Drift-Verify agent session or of a caller at a halt.
+ // It is admitted only at Drift-Verify, from a running status with the agent-session mark open or a blocked status;
+ // a running status with the mark closed is the row's own work, and any other state is an error or a transient stop that only lym loom resume settles.
+diff --git a/internal/driftengine/verbs_test.go b/internal/driftengine/verbs_test.go
+index 122f6d0e..9e1bbbbe 100644
+--- a/internal/driftengine/verbs_test.go
++++ b/internal/driftengine/verbs_test.go
+@@ -3,6 +3,8 @@
+ package driftengine
+ 
+ import (
++	"os"
++	"path/filepath"
+ 	"reflect"
+ 	"slices"
+ 	"strings"
+@@ -68,26 +70,45 @@ func requireRefusal(t *testing.T, err error, want []string, p Paths, before *Sco
+ 	}
+ }
+ 
+-// TestRecordScope covers the admitted scopes and every refusal, each refusal naming its way forward and leaving the record as it was.
++// TestRecordScope covers the agent's one record, the parent's record and replacement at a halt with the capture it drops or keeps, and every refusal, each refusal naming its way forward and leaving the record as it was.
+ func TestRecordScope(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+ 	recorded := &ScopeRecord{Scope: ScopeFull, RecordedAt: "2026-01-01T00:00:00Z"}
++	partialA := &ScopeRecord{Scope: ScopePartial, Skip: []string{"a"}, RecordedAt: "2026-01-01T00:00:00Z"}
++	settled := &ScopeRecord{Scope: ScopeFull, RecordedAt: "2026-01-01T00:00:00Z", AwaitedAt: "2026-01-01T00:00:00Z", Deferred: true}
++	passed := &CaptureRecord{State: CapturePassed, Head: "aaa"}
++	passedSkippingA := &CaptureRecord{State: CapturePassed, Head: "aaa", Skip: []string{"a"}}
++	blocked := shedengine.StateBlocked
+ 	tests := []struct {
+-		name     string
+-		row      string
+-		before   *ScopeRecord
+-		scope    string
+-		skip     []string
+-		wantErr  []string
+-		wantSkip []string
++		name   string
++		row    string
++		state  shedengine.State
++		held   bool
++		before *ScopeRecord
++		// capture is the capture record seeded before the call; wantCaptureGone wants it removed.
++		capture         *CaptureRecord
++		scope           string
++		skip            []string
++		wantErr         []string
++		wantSkip        []string
++		wantCaptureGone bool
+ 	}{
+ 		{name: "off", row: "Drift-Baseline", scope: ScopeOff},
+ 		{name: "full", row: "Drift-Baseline", scope: ScopeFull},
+ 		{name: "partial with skips", row: "Drift-Baseline", scope: ScopePartial, skip: []string{"a", "b"}, wantSkip: []string{"a", "b"}},
++		{name: "the parent replaces full with off at a Drift-Baseline halt", row: "Drift-Baseline", state: blocked, before: recorded, scope: ScopeOff},
++		{name: "the parent records a scope at a Drift-Await halt", row: "Drift-Await", state: blocked, scope: ScopeFull},
++		{name: "a replacement comparing a test the capture skipped drops the capture", row: "Drift-Await", state: blocked, before: partialA, capture: passedSkippingA, scope: ScopeFull, wantCaptureGone: true},
++		{name: "a replacement skipping the same test keeps the capture", row: "Drift-Await", state: blocked, before: partialA, capture: passedSkippingA, scope: ScopePartial, skip: []string{"a"}, wantSkip: []string{"a"}},
++		{name: "a replacement skipping more keeps the capture", row: "Drift-Await", state: blocked, before: recorded, capture: passed, scope: ScopePartial, skip: []string{"a"}, wantSkip: []string{"a"}},
++		{name: "a replacement to off keeps the capture", row: "Drift-Baseline", state: blocked, before: partialA, capture: passedSkippingA, scope: ScopeOff},
+ 		{name: "wrong row", row: "Drift-Await", scope: ScopeFull, wantErr: []string{"Drift-Baseline", "lym loom status"}},
++		{name: "a halt at another row", row: "Drift-Verify", state: blocked, before: recorded, scope: ScopeOff, wantErr: []string{"Drift-Await", "lym loom status"}},
+ 		{name: "already recorded", row: "Drift-Baseline", before: recorded, scope: ScopeOff, wantErr: []string{"already recorded as full", "write baseline.md alone and end your turn"}},
++		{name: "a replacement while a capture runs", row: "Drift-Await", state: blocked, held: true, before: recorded, scope: ScopeOff, wantErr: []string{"a capture is running", "lym drift status"}},
++		{name: "a replacement after the baseline wait settled", row: "Drift-Await", state: blocked, before: settled, scope: ScopeOff, wantErr: []string{"already settled", "lym loom status"}},
+ 		{name: "skip with full", row: "Drift-Baseline", scope: ScopeFull, skip: []string{"a"}, wantErr: []string{"--skip", "partial"}},
+ 		{name: "partial without skip", row: "Drift-Baseline", scope: ScopePartial, wantErr: []string{"partial", "--skip <test>"}},
+ 		{name: "unknown scope", row: "Drift-Baseline", scope: "some", wantErr: []string{`"some" is not a scope`, "--scope off, partial or full"}},
+@@ -96,7 +117,18 @@ func TestRecordScope(t *testing.T) {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 			p := seedScope(t, tt.before)
+-			err := RecordScope(p, statusAt(tt.row, shedengine.StateRunning, "", false), tt.scope, tt.skip)
++			if tt.capture != nil {
++				if err := WriteCapture(p, *tt.capture); err != nil {
++					t.Fatalf("seed the capture record: %v", err)
++				}
++			}
++			state := tt.state
++			if state == "" {
++				state = shedengine.StateRunning
++			}
++			st := statusAt(tt.row, state, "", false)
++			st.CaptureHeld = tt.held
++			err := RecordScope(p, st, tt.scope, tt.skip)
+ 			if tt.wantErr != nil {
+ 				requireRefusal(t, err, tt.wantErr, p, tt.before)
+ 				return
+@@ -108,8 +140,46 @@ func TestRecordScope(t *testing.T) {
+ 			if !found || got.Scope != tt.scope || !slices.Equal(got.Skip, tt.wantSkip) || got.RecordedAt == "" {
+ 				t.Errorf("record = %+v, %v; want scope %s, skip %v and recorded_at set", got, found, tt.scope, tt.wantSkip)
+ 			}
++			if tt.capture != nil {
++				if _, captureFound, err := ReadCapture(p); err != nil || captureFound == tt.wantCaptureGone {
++					t.Errorf("ReadCapture() found = %v, %v; want the capture removed = %v", captureFound, err, tt.wantCaptureGone)
++				}
++			}
+ 		})
+ 	}
++
++	t.Run("a chain of replacements compares against the skip list the capture was taken under", func(t *testing.T) {
++		t.Parallel()
++		p := seedScope(t, partialA)
++		if err := WriteCapture(p, *passedSkippingA); err != nil {
++			t.Fatalf("seed the capture record: %v", err)
++		}
++		st := statusAt("Drift-Await", blocked, "", false)
++		for _, scope := range []string{ScopeOff, ScopeFull} {
++			if err := RecordScope(p, st, scope, nil); err != nil {
++				t.Fatalf("RecordScope(%s) = %v; want nil", scope, err)
++			}
++		}
++		if _, found, err := ReadCapture(p); err != nil || found {
++			t.Errorf("ReadCapture() found = %v, %v after off then full; want the capture removed", found, err)
++		}
++	})
++
++	t.Run("a capture record that cannot be dropped leaves the scope as it was", func(t *testing.T) {
++		t.Parallel()
++		p := seedScope(t, partialA)
++		if err := os.MkdirAll(filepath.Join(p.Capture, "held"), 0o755); err != nil {
++			t.Fatalf("make the capture path a non-empty directory: %v", err)
++		}
++		err := RecordScope(p, statusAt("Drift-Await", blocked, "", false), ScopeFull, nil)
++		if err == nil {
++			t.Fatalf("RecordScope() = nil; want an error")
++		}
++		got, found := mustReadScope(t, p)
++		if !found || !reflect.DeepEqual(got, *partialA) {
++			t.Errorf("scope record = %+v, %v after the failed replacement; want %+v", got, found, *partialA)
++		}
++	})
+ }
+ 
+ // TestAcceptWithdraw covers Accept's callers and rulings, Withdraw, and CheckVerifyRow's admissions.
+diff --git a/internal/driftengine/verify.go b/internal/driftengine/verify.go
+index 901a189c..72ee8969 100644
+--- a/internal/driftengine/verify.go
++++ b/internal/driftengine/verify.go
+@@ -61,7 +61,7 @@ func NewDriftVerify(name string, row Row, verify shuttleengine.GateEntry, deps D
+ 	return &DriftVerify{name: name, row: row, verify: verify, deps: deps}
+ }
+ 
+-// Call runs one Drift-Verify pass and commits the durable drift directory on every way out.
++// Call runs one Drift-Verify pass and commits the durable drift directory on every way out but one: with drift switched off it is Done at once, committing nothing.
+ // A pass with no scope record, scope off or a waiver is Done with no compare.
+ // Otherwise it settles the agent session an interrupted entry left and rules the acceptances the parent stood by.
+ // It halts for the parent on an unruled acceptance under scope full and on a missing baseline.
+@@ -86,6 +86,9 @@ func (p *DriftVerify) Call(ctx context.Context) (shedengine.Outcome, shedengine.
+ 	if err != nil {
+ 		return "", shedengine.OutputPointer{}, err
+ 	}
++	if outcome, pointer, stop := passWhenSwitchedOff(d.Config); stop {
++		return outcome, pointer, nil
++	}
+ 	outcome, pointer, err := p.pass(ctx)
+ 	return commitOnExit(p.name, d.Commit, []string{DirRel()}, outcome, pointer, err)
+ }
+diff --git a/internal/driftengine/verify_test.go b/internal/driftengine/verify_test.go
+index dd5bae2b..14b3556f 100644
+--- a/internal/driftengine/verify_test.go
++++ b/internal/driftengine/verify_test.go
+@@ -145,7 +145,7 @@ func newVerifyFixture(t *testing.T, scope ScopeRecord, actions []func()) *verify
+ 
+ 	d := &f.deps
+ 	d.Config = func() (Config, error) {
+-		return Config{Compare: CommandStep{Command: "compare {baseline_dir}", Dir: ".", TimeoutMin: 1}}, nil
++		return Config{Enabled: true, Compare: CommandStep{Command: "compare {baseline_dir}", Dir: ".", TimeoutMin: 1}}, nil
+ 	}
+ 	d.Seats = f.seats
+ 	d.Now = func() time.Time { return time.Date(2026, 1, 2, 3, 4, 5, 700_000_000, time.UTC) }
+@@ -285,6 +285,20 @@ func TestDriftVerify(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("drift switched off passes a run with no counted capture, with no compare and no commit", func(t *testing.T) {
++		t.Parallel()
++		f := newVerifyFixture(t, full, nil)
++		f.seedScopeRecord(ScopeRecord{Scope: ScopeFull}, false)
++		f.deps.Config = func() (Config, error) { return Config{}, nil }
++		outcome, pointer, err := f.call()
++		if err != nil || outcome != shedengine.Done || !strings.Contains(pointer.Reason, "drift.enabled = false") {
++			t.Fatalf("Call() = %q, %v (%s); want Done naming the switch", outcome, err, pointer.Reason)
++		}
++		if len(f.events) != 0 || len(f.commits) != 0 {
++			t.Errorf("events %v, commits %v; want no compare, agent or commit", f.events, f.commits)
++		}
++	})
++
+ 	t.Run("no counted capture is a decision halt naming the waiver under every scope", func(t *testing.T) {
+ 		t.Parallel()
+ 		rows := []struct {
+@@ -322,7 +336,7 @@ func TestDriftVerify(t *testing.T) {
+ 		t.Parallel()
+ 		for _, scope := range []ScopeRecord{partial, full} {
+ 			f := newVerifyFixture(t, scope, nil)
+-			f.deps.Config = func() (Config, error) { return Config{}, nil }
++			f.deps.Config = func() (Config, error) { return Config{Enabled: true}, nil }
+ 			outcome, pointer, err := f.call()
+ 			requireStuck(t, outcome, pointer, err, scope.Scope == ScopeFull, "lym config drift", "lym loom resume")
+ 		}
+@@ -805,7 +819,7 @@ func TestDriftVerify(t *testing.T) {
+ 			f := newVerifyFixture(t, full, nil)
+ 			f.compares = []CompareResult{failingCompare, passingCompare}
+ 			f.deps.Config = func() (Config, error) {
+-				return Config{Compare: CommandStep{Command: "compare {baseline_dir}", Dir: ".", TimeoutMin: 1}, VerifyInteractive: true}, nil
++				return Config{Enabled: true, Compare: CommandStep{Command: "compare {baseline_dir}", Dir: ".", TimeoutMin: 1}, VerifyInteractive: true}, nil
+ 			}
+ 			f.seats = gateLoopSeats(t, []func(){f.sessionAccept()})
+ 			f.deps.Seats = f.seats
+diff --git a/internal/gateslot/pool.go b/internal/gateslot/pool.go
+index efb4ee5e..c59bf5ea 100644
+--- a/internal/gateslot/pool.go
++++ b/internal/gateslot/pool.go
+@@ -66,7 +66,7 @@ type Limits struct {
+ 
+ // Holder is the record written beside a held slot's lock.
+ type Holder struct {
+-	// Worktree is the worktree the holding run works in.
++	// Worktree is the directory the holding run works in: its worktree root, or the anchored directory inside it.
+ 	Worktree string `yaml:"worktree"`
+ 	// Site is the command or Go-side site label that holds the slot.
+ 	Site string `yaml:"site"`
+diff --git a/internal/loomcli/driftwiring.go b/internal/loomcli/driftwiring.go
+index fc4c307d..90af0c2d 100644
+--- a/internal/loomcli/driftwiring.go
++++ b/internal/loomcli/driftwiring.go
+@@ -138,15 +138,7 @@ func driftDeps(location *lymcwd.Location, statusPath, statusLockPath string, tab
+ 			if err != nil {
+ 				return fmt.Errorf("drift: resolve this binary: %w", err)
+ 			}
+-			_, err = driftengine.StartCapture(driftengine.SpawnRequest{
+-				Executable:   executable,
+-				WorktreeRoot: location.WorktreePath(),
+-				Paths:        paths,
+-				RunProcDir:   fabricengine.RunProcDir(location.HubPath),
+-				Owner:        location.WorktreeName,
+-				RecordWait:   driftCaptureRecordWait,
+-				Poll:         driftCaptureRecordPoll,
+-			})
++			_, err = driftengine.StartCapture(captureSpawnRequest(location, paths, executable))
+ 			return err
+ 		},
+ 		RunCapture: func(ctx context.Context) (driftengine.CaptureRecord, error) {
+@@ -159,16 +151,16 @@ func driftDeps(location *lymcwd.Location, statusPath, statusLockPath string, tab
+ 				return driftengine.CaptureRecord{}, err
+ 			}
+ 			return driftengine.RunCapture(ctx, driftengine.CaptureRequest{
+-				Paths:        paths,
+-				WorktreeRoot: location.WorktreePath(),
+-				Step:         step,
+-				Pool:         pool,
+-				WaitDir:      waitDir,
+-				Skip:         scope.Skip,
+-				Check:        checkMain,
+-				Timeout:      time.Duration(step.TimeoutMin) * time.Minute,
+-				Now:          time.Now,
+-				LockRetry:    driftCaptureLockRetry,
++				Paths:     paths,
++				AnchorDir: location.AnchorPath(),
++				Step:      step,
++				Pool:      pool,
++				WaitDir:   waitDir,
++				Skip:      scope.Skip,
++				Check:     checkMain,
++				Timeout:   time.Duration(step.TimeoutMin) * time.Minute,
++				Now:       time.Now,
++				LockRetry: driftCaptureLockRetry,
+ 			})
+ 		},
+ 		Sleep: sleepContext,
+@@ -201,20 +193,34 @@ func driftDeps(location *lymcwd.Location, statusPath, statusLockPath string, tab
+ 				return driftengine.CompareResult{}, err
+ 			}
+ 			return driftengine.RunCompare(ctx, driftengine.CompareRequest{
+-				Paths:        paths,
+-				WorktreeRoot: location.WorktreePath(),
+-				Step:         step,
+-				Pool:         pool,
+-				WaitDir:      waitDir,
+-				Skip:         driftengine.SkipList(scope),
+-				Timeout:      time.Duration(step.TimeoutMin) * time.Minute,
+-				Now:          time.Now,
+-				LockRetry:    driftCompareLockRetry,
++				Paths:     paths,
++				AnchorDir: location.AnchorPath(),
++				Step:      step,
++				Pool:      pool,
++				WaitDir:   waitDir,
++				Skip:      driftengine.SkipList(scope),
++				Timeout:   time.Duration(step.TimeoutMin) * time.Minute,
++				Now:       time.Now,
++				LockRetry: driftCompareLockRetry,
+ 			})
+ 		},
+ 	}
+ }
+ 
++// captureSpawnRequest describes the start of the detached capture child of executable over location.
++// The child runs in the anchored directory, since every lym verb resolves its worktree from a cwd equal to it.
++func captureSpawnRequest(location *lymcwd.Location, paths driftengine.Paths, executable string) driftengine.SpawnRequest {
++	return driftengine.SpawnRequest{
++		Executable: executable,
++		AnchorDir:  location.AnchorPath(),
++		Paths:      paths,
++		RunProcDir: fabricengine.RunProcDir(location.HubPath),
++		Owner:      location.WorktreeName,
++		RecordWait: driftCaptureRecordWait,
++		Poll:       driftCaptureRecordPoll,
++	}
++}
++
+ // sleepContext waits d, or returns the context's error once ctx ends first.
+ func sleepContext(ctx context.Context, d time.Duration) error {
+ 	timer := time.NewTimer(d)
+diff --git a/internal/loomcli/driftwiring_integration_test.go b/internal/loomcli/driftwiring_integration_test.go
+new file mode 100644
+index 00000000..f13d3c26
+--- /dev/null
++++ b/internal/loomcli/driftwiring_integration_test.go
+@@ -0,0 +1,94 @@
++// driftwiring_integration_test.go checks that the Drift seams loomcli builds run the capture and the compare in the anchored directory of a hub anchored at a subdirectory, not the worktree root.
++
++package loomcli_test
++
++import (
++	"context"
++	"fmt"
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/driftengine"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/loomcli"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/state"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestDriftDeps_RunInTheAnchoredDirectory covers the capture and the compare seams over a hub anchored at a subdirectory:
++// each declared command records its working directory, and both must be the anchored directory.
++func TestDriftDeps_RunInTheAnchoredDirectory(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "backend", Pairs: []string{hubforge.TemplatePairSlug}})
++	anchor := filepath.Join(h.PairCodeWorktree(hubforge.TemplatePairSlug), "backend")
++	loc, err := lymcwd.Resolve(anchor)
++	if err != nil {
++		t.Fatal(err)
++	}
++	if loc.AnchorPath() != anchor || loc.AnchorPath() == loc.WorktreePath() {
++		t.Fatalf("anchored path = %q, worktree = %q; want an anchor below the worktree root", loc.AnchorPath(), loc.WorktreePath())
++	}
++
++	cwds := filepath.Join(t.TempDir(), "cwds")
++	driftYAML := fmt.Sprintf(`capture:
++  command: |
++    pwd >> %q
++    mkdir -p {baseline_dir} && echo ok > {baseline_dir}/profile.txt
++  timeout_min: 1
++compare:
++  command: 'pwd >> %q; : {baseline_dir}'
++  timeout_min: 1
++`, cwds, cwds)
++	driftFile := configengine.ConfigFile(h.BoardDir(), "drift")
++	if err := os.MkdirAll(filepath.Dir(driftFile), 0o755); err != nil {
++		t.Fatal(err)
++	}
++	if err := os.WriteFile(driftFile, []byte(driftYAML), 0o644); err != nil {
++		t.Fatal(err)
++	}
++
++	statusPath, statusLockPath := shedrun.StatusFile(loc, shedrun.SelfRunID), shedrun.StatusLock(loc, shedrun.SelfRunID)
++	if err := os.MkdirAll(filepath.Dir(statusLockPath), 0o755); err != nil {
++		t.Fatal(err)
++	}
++	baseline := shedengine.Status{CurrentProducer: "Drift-Baseline", State: shedengine.StateRunning}
++	if err := state.WriteJSON(statusPath, statusLockPath, baseline); err != nil {
++		t.Fatal(err)
++	}
++
++	deps := loomcli.DriftDepsAt(loc, statusPath, statusLockPath)
++	record, err := deps.RunCapture(context.Background())
++	if err != nil || record.State != driftengine.CapturePassed {
++		t.Fatalf("RunCapture() = %+v, %v; want a passed capture", record, err)
++	}
++	result, err := deps.Compare(context.Background())
++	if err != nil || !result.Passed {
++		t.Fatalf("Compare() = %+v, %v; want a passed compare", result, err)
++	}
++
++	want, err := filepath.EvalSymlinks(anchor)
++	if err != nil {
++		t.Fatal(err)
++	}
++	data, err := os.ReadFile(cwds)
++	if err != nil {
++		t.Fatal(err)
++	}
++	got := strings.Split(strings.TrimSpace(string(data)), "\n")
++	if len(got) != 2 {
++		t.Fatalf("recorded working directories = %q; want one each from the capture and the compare", got)
++	}
++	for i, dir := range got {
++		if dir != want {
++			t.Errorf("command %d ran in %q; want the anchored directory %q", i, dir, want)
++		}
++	}
++}
+diff --git a/internal/loomcli/driftwiring_test.go b/internal/loomcli/driftwiring_test.go
+new file mode 100644
+index 00000000..92011e9e
+--- /dev/null
++++ b/internal/loomcli/driftwiring_test.go
+@@ -0,0 +1,29 @@
++// driftwiring_test.go checks the request the loomcli Drift seams hand the detached capture child's start.
++
++package loomcli_test
++
++import (
++	"path/filepath"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/driftengine"
++	"github.com/Knatte18/loomyard/internal/loomcli"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestCaptureSpawnRequest_StartsInTheAnchoredDirectory covers the directory the capture child is started in for a hub anchored at a subdirectory.
++func TestCaptureSpawnRequest_StartsInTheAnchoredDirectory(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	location := &lymcwd.Location{HubPath: filepath.Join(t.TempDir(), "hub"), WorktreeName: "pair", AnchorRel: "backend"}
++	request := loomcli.CaptureSpawnRequest(location, driftengine.NewPaths(location.AnchorPath()), "lym")
++
++	if want := filepath.Join(location.HubPath, "pair", "backend"); request.AnchorDir != want {
++		t.Errorf("CaptureSpawnRequest() AnchorDir = %q; want the anchored directory %q", request.AnchorDir, want)
++	}
++	if request.Owner != "pair" || request.Executable != "lym" {
++		t.Errorf("CaptureSpawnRequest() = %+v; want owner pair and executable lym", request)
++	}
++}
+diff --git a/internal/loomcli/export_test.go b/internal/loomcli/export_test.go
+index a58904e6..f95d431a 100644
+--- a/internal/loomcli/export_test.go
++++ b/internal/loomcli/export_test.go
+@@ -2,6 +2,19 @@
+ 
+ package loomcli
+ 
++import (
++	"github.com/Knatte18/loomyard/internal/driftengine"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++)
++
++// DriftDepsAt builds the Drift seams over location with no agent tables.
++func DriftDepsAt(location *lymcwd.Location, statusPath, statusLockPath string) driftengine.Deps {
++	return driftDeps(location, statusPath, statusLockPath, driftTables{})
++}
++
++// CaptureSpawnRequest re-exports the request that starts the detached capture child.
++var CaptureSpawnRequest = captureSpawnRequest
++
+ // OwnerVerdict is the verdict RunOwnerVerdict returns.
+ type OwnerVerdict = ownerVerdict
+ 
+diff --git a/internal/shedrecipe/doc.go b/internal/shedrecipe/doc.go
+index 29940f00..284c2a61 100644
+--- a/internal/shedrecipe/doc.go
++++ b/internal/shedrecipe/doc.go
+@@ -95,7 +95,7 @@
+ // The DriftBaseline, DriftAwait and DriftVerify entries build the three regression rows of the tapestry and darn recipes.
+ // Each reads Env.Drift, a whole-struct passthrough to the producers, and fills its Seats and Now from Env.Seats and Env.Now, and DriftVerify its GateFindingsFile from Env.GateFindingsFile for the row, so a caller leaves those three unset.
+ // Each checks the Env.Drift seams its producer reads, and Env.Seats for the two agent rows, and refuses a nil one naming the field.
+-// None has a switch of its own: the recipe leaves a row out through its `entry_gate: drift.enabled`.
++// None has a switch of its own: the recipe leaves a row out through its `entry_gate: drift.enabled`, and each producer reads `drift.enabled` again at every pass, so a resume passes a row already entered once the switch went off.
+ // DriftBaseline takes a required "subject", `decision-record` or `board-entry`.
+ // DriftAwait takes no key.
+ // DriftVerify takes a required "subject", the optional "gate_key" and a "gates" list of exactly one entry, named `verify`, which the agent's table runs once the session committed code.
+diff --git a/internal/shedrecipe/entries_drift.go b/internal/shedrecipe/entries_drift.go
+index d2c9c2cc..3815c5c1 100644
+--- a/internal/shedrecipe/entries_drift.go
++++ b/internal/shedrecipe/entries_drift.go
+@@ -93,6 +93,7 @@ func driftAwaitEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProdu
+ 	}
+ 	d := env.Drift
+ 	err := requireDriftSeams(entry, driftSeams{
++		{"Drift.Config", d.Config},
+ 		{"Drift.Head", d.Head},
+ 		{"Drift.BranchPoint", d.BranchPoint},
+ 		{"Drift.Commit", d.Commit},
+diff --git a/internal/shedrecipe/entries_drift_test.go b/internal/shedrecipe/entries_drift_test.go
+index 21718c01..73a205e3 100644
+--- a/internal/shedrecipe/entries_drift_test.go
++++ b/internal/shedrecipe/entries_drift_test.go
+@@ -69,6 +69,7 @@ func TestDriftEntries(t *testing.T) {
+ 		{"AwaitBuilds", driftAwaitEntry, Config{}, nil, reflect.TypeOf(&driftengine.DriftAwait{}), ""},
+ 		{"AwaitUnknownKey", driftAwaitEntry, Config{"subject": "decision-record"}, nil, nil, "entry_gate"},
+ 		{"AwaitNilSleep", driftAwaitEntry, Config{}, func(e *Env) { e.Drift.Sleep = nil }, nil, "Drift.Sleep"},
++		{"AwaitNilConfig", driftAwaitEntry, Config{}, func(e *Env) { e.Drift.Config = nil }, nil, "Drift.Config"},
+ 		{"VerifyBuilds", driftVerifyEntry, verifyCfg(verifyGate), nil, reflect.TypeOf(&driftengine.DriftVerify{}), ""},
+ 		{"VerifyUnknownKey", driftVerifyEntry, Config{"subject": "decision-record", "gates": []any{verifyGate}, "enabled": true}, nil, nil, "entry_gate"},
+ 		{"VerifyMissingSubject", driftVerifyEntry, Config{"gates": []any{verifyGate}}, nil, nil, "way forward: set subject"},
