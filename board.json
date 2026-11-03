@@ -871,6 +871,26 @@
       "body": "A Drift capture whose `dir` does not exist fails as `fork/exec /usr/bin/sh: no such file or directory`, and its way forward repeats the same failure.\n\n## Seen\n\nOn the `cs` hub (2026-11-03), the baseline capture of `pipeflow-reynolds-helper` ran with a `dir` that resolved to a missing directory (see the note on Drift's `dir` base).\nThe capture record and the Drift-Await stop read:\n\n```\ndrift: the baseline capture ended failed (drift: start the drift capture command in /home/knatte/Code/lym-csharp-LYMHUB/pipeflow-reynolds-helper/dotnet/dotnet: fork/exec /usr/bin/sh: no such file or directory), log …/capture-20261103T142802.258Z.log; way forward: lym drift capture followed by lym loom resume, … or lym drift defer followed by lym loom resume\n```\n\n- The text blames `/usr/bin/sh`, which exists; Go reports a failed `chdir` in the child as a failed exec of the shell.\n- `lym drift capture` again runs the same config and fails the same way; the way forward names neither the config nor where it lives.\n  The capture log is empty.\n- The batten notice to the orch shortened the directory to `in dotnet`, hiding the doubled path.\n- The run's agent asked the orch where the capture directory is configured, \"since I could not find it in the repo\": `drift.yaml` sits in the hub's `_bolt/_lym/config`, outside the task worktree.\n\n`internal/gatecli` refuses the same case by name: \"could not start the shell for … in \u003cdir\u003e …; way forward: make the tier's dir an existing directory\".\n\n## Expected\n\n- Before it spawns, Drift checks that the step's resolved `dir` exists, and a missing one fails with the resolved path, the `drift.yaml` key that set it, and the way forward `lym config drift --set \u003cstep\u003e.dir=\u003cdir\u003e` from the prime, then `lym drift capture` and `lym loom resume`.\n- The batten notice keeps the full resolved path.\n",
       "created": "2026-11-03T14:29:24Z",
       "revised": "2026-11-03T14:29:24Z"
+    },
+    {
+      "id": 1051,
+      "handle": "B6",
+      "slug": "watch-elapsed-churn",
+      "title": "loom status --watch prints every poll while a verify runs",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "loom",
+        "cli"
+      ],
+      "issues": [],
+      "priority": "low",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The verify wait text carries its elapsed seconds, so the watch sees a change on every poll",
+      "body": "`lym loom status --watch` prints a line every poll while a verify runs, because the composed activity carries the verify's elapsed seconds.\n\n## Seen\n\nOn the `cs` hub (2026-11-03), watching `pipeflow-reynolds-helper` at Darn-Write printed one line per second:\n\n```\nloom running | now Darn-Write | last Drift-Await → done | waiting Darn-Write: verify running 0s (attempt 1; lym gate test --wait --gate darn-write)\nloom running | now Darn-Write | last Drift-Await → done | waiting Darn-Write: verify running 1s (attempt 1; lym gate test --wait --gate darn-write)\n…\nloom running | now Darn-Write | last Drift-Await → done | waiting Darn-Write: verify running 6s (attempt 1; lym gate test --wait --gate darn-write)\n```\n\nThe verb's help promises \"a line only when the composed activity actually CHANGES rather than once per poll\", but `internal/loomcli/reviewstatus.go` puts `formatElapsed(elapsed)` into the wait text (`\u003cproducer\u003e: verify running \u003celapsed\u003e (\u003cdetail\u003e)`, and the gate-slot wait form), so the activity changes on every poll.\nAn agent or Monitor that watches a run gets one event per second for the length of each gate, which floods its context; the same text feeds `lym batten status --watch`.\n\n## Expected\n\nThe watch's change test ignores the elapsed counter: it prints when the row, the state, the wait's kind or its detail changes, not when only the elapsed time grows.\nThe one-shot status keeps showing the elapsed time.\n",
+      "created": "2026-11-03T14:30:27Z",
+      "revised": "2026-11-03T14:30:27Z"
     }
   ],
   "prime_owner": "neve",
