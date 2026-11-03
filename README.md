@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-03 11:03 UTC; every age below is as of then.
+Rendered 2026-11-03 11:04 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -49,7 +49,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Tapestry runs Discussion through a motif block and skips it for a discussed entry; motif runs alone; arras goes**<br>• Tapestry uses the motif block, skips it when the entry is flagged discussed, motif becomes a runnable recipe, and arras is removed | [`tapestry-motif-block`](design-tapestry-motif-block.md) | darn · solid | Code-Burler-Fix | neve | 1h<br>1h | shed, loom |
-| T2 | **A beam session shows the pawl run checklist in a second overview window beside the beam overview** | [`pawl-checklist-hidden-in-beam`](design-pawl-checklist-hidden-in-beam.md) | arras · light | Code-Bouncer | neve | 3h<br>1h | pawl, orch, reed |
+| T2 | **A beam session shows the pawl run checklist in a second overview window beside the beam overview** | [`pawl-checklist-hidden-in-beam`](design-pawl-checklist-hidden-in-beam.md) | arras · light | Describe | neve | 3h<br>1h | pawl, orch, reed |
 | T3 | **Batten recovers a run whose pair is gone and orders its remote pushes, so no pass fails forever and no push races another** | [`batten-remote-order`](design-batten-remote-order.md) | tapestry · light | Webster | neve | 14h<br>3h | batten, fabric |
 | T4 | **Webster treats the anchor as the git worktree in a subpath-anchored hub**<br>• Webster opens git and resolves plan paths at the worktree root, not the anchor, so a subpath-anchored hub reaches code | [`webster-subpath-anchor`](design-webster-subpath-anchor.md) | darn · solid | Code-Burler-Fix | neve | 45m<br>45m | webster, cwd, parsers |
 | T6 | **The orch role explains how to make a project into a beam**<br>• The prime orch in the Models hub did not know beam create is the only way, and patched a plain task run by hand. | [`orch-role-making-a-beam`](design-orch-role-making-a-beam.md) | darn · light | Finalize | neve | 1d<br>18m | orch, pawl |
