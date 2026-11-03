@@ -1,9 +1,8 @@
 {
   "current_producer": "Worktree-Create",
-  "state": "paused",
+  "state": "running",
   "error": "",
   "pause_requested": false,
-  "pause_reason": "pause requested",
   "activity": {
     "now": "Worktree-Create",
     "last": "",
