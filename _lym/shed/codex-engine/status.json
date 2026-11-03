@@ -1,11 +1,11 @@
 {
-  "current_producer": "Finalize",
+  "current_producer": "Beam-Down",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Finalize",
-    "last": "PR-Review → done",
+    "now": "Beam-Down",
+    "last": "Finalize → done",
     "wait": ""
   },
   "history": [
@@ -50,6 +50,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-11-03T17:29:14Z"
+    },
+    {
+      "producer": "Finalize",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-03T17:43:29Z"
     }
   ],
   "product": {
