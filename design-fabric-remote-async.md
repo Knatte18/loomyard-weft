@@ -17,7 +17,14 @@ The time it saves is small: in the sandbox hub `lym fabric add` took about 1.1 s
 - One exception may stay synchronous: the check whether a pair's branches already exist on origin, since a branch found there is fetched and the work continued on, and that is worth waiting for.
   Today that is `fabric add`'s `git ls-remote` probes; they may run in parallel to cut the wait.
 
+## Since the landing of `batten-remote-order` (2026-11-03)
+
+`fabric remove` now pushes the weft tip alone before the archive tag, retries an archive-tag push refused with "missing necessary objects", and deletes the weft branch on origin under a lease on the tip it archived.
+`Add` and the task-branch discard take a per-slug teardown lock exclusive, and every pair push takes it shared, so a hand `lym fabric add` that meets a running removal is refused.
+So a removal waits on one more network push than before, and an async version must keep this order: weft tip, then archive tag, then the leased delete, all under the teardown lock (`PATTERN-slug-remote-order`).
+
 ## Open
 
 - Which remote operations are synchronous today besides `fabric remove`'s (force-with-lease push, archive-tag push, weft branch delete); an audit of the call sites belongs to the task that builds this.
 - How an async remote failure reaches the operator or the orch.
+- How an async removal keeps the teardown lock, and so the order above, while `fabric remove` returns before it ends.
