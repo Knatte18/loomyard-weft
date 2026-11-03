@@ -1,0 +1,826 @@
+diff --git a/PATTERN.md b/PATTERN.md
+index a8f2d49a..f767d46e 100644
+--- a/PATTERN.md
++++ b/PATTERN.md
+@@ -18,7 +18,7 @@
+ 
+ - `PATTERN-cli-cobra` — Adding CLI module: a cobra subtree under one root in `cmd/lym/main.go`. (test) — [background](pattern/PATTERN-cli-cobra.md)
+ - `PATTERN-cliwire-sole-wiring` — Wiring standalone CLI: `internal/cliwire` alone resolves target dir, repo root and state. (test) — [background](pattern/PATTERN-cliwire-sole-wiring.md)
+-- `PATTERN-config-layers` — Loading config: only `configengine` reads, stacks, locates and judges layers against the template; a caller adopts one of strict `Load` or `LoadOrTemplate`, bar `runprofile`; after a binary change, only `hubreconcile.Ensure` reconciles. — [background](pattern/PATTERN-config-layers.md)
++- `PATTERN-config-layers` — Loading config: only `configengine` reads, stacks, locates and judges layers against the template; a caller adopts one of strict `Load` or `LoadOrTemplate`, bar `runprofile`; after a binary change, only `hubreconcile.Ensure` reconciles; only `lym config reconcile` removes a hub base or worktree key the template lacks and no retired key covers. — [background](pattern/PATTERN-config-layers.md)
+ - `PATTERN-sparse-hub-base` — Writing a hub base file, from any package: only the units the hub tuned, never a template fill; only `internal/hubreconcile`'s one-time strip drops a template-equal unit.
+ - `PATTERN-refusal-way-forward` — Adding webster, shed or loom refusal: message names the way forward and a test reaches it; no refusal, stencil or spec names a step agents' settings deny. (test) — [background](pattern/PATTERN-refusal-way-forward.md)
+ 
+diff --git a/internal/configcli/configcli.go b/internal/configcli/configcli.go
+index a920470b..e611467d 100644
+--- a/internal/configcli/configcli.go
++++ b/internal/configcli/configcli.go
+@@ -557,7 +557,7 @@ func runReconcile(ctx context.Context, out io.Writer, apply bool, layer string)
+ 	baseDir := baseDirOf(l)
+ 
+ 	// Reconcile all modules; apply controls whether changes are written to disk.
+-	results, err := configsync.ReconcileAll(baseDir, boltDir, configsync.Options{Apply: apply})
++	results, err := configsync.ReconcileAll(baseDir, boltDir, configsync.Options{Apply: apply, PruneUnknown: true})
+ 	if err != nil {
+ 		return output.Err(out, fmt.Sprintf("reconcile: %v", err))
+ 	}
+@@ -721,7 +721,11 @@ hub-wide modules' files and each per-worktree module's repo default, seeding
+ an absent one from the prime. Renamed keys are migrated and keys the template
+ lacks are removed. --apply with it runs only from the hub's prime worktree,
+ outside a task session, and commits the files in ` + fabricengine.BoltDirName + ` and pushes.
+-Reconcile is refused in the board dir itself.`,
++Reconcile is refused in the board dir itself.
++
++This verb is the one way to remove a key the template lacks: the reconcile a
++start verb, a clone or fabric reconcile runs keeps such a key, unless the
++module retired it, since a newer lym binary may have written it.`,
+ 	}
+ 	apply := reconcileCmd.Flags().Bool("apply", false, "apply changes to disk (default: dry-run)")
+ 	reconcileLayer := reconcileCmd.Flags().String("layer", "", "default reconciles the files under the hub's board dir (default: this worktree's own and local files)")
+diff --git a/internal/configcli/configcli_integration_test.go b/internal/configcli/configcli_integration_test.go
+index cabb04ce..f15d68e6 100644
+--- a/internal/configcli/configcli_integration_test.go
++++ b/internal/configcli/configcli_integration_test.go
+@@ -506,7 +506,22 @@ func TestConfigOverRealHub(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("reconcile --layer default --apply prunes every retired loom, landing and gate key and leaves the profiles file as written", func(t *testing.T) {
++	t.Run("reconcile --apply removes a key the template lacks from a hub worktree file", func(t *testing.T) {
++		t.Setenv(agentname.StrandNameEnv, "")
++		loomFile := configengine.ConfigFile(codeWorktreePath, "loom")
++		if err := os.WriteFile(loomFile, []byte("discussion_timeout_min: 60\nnewer_key: 1\n"), 0o644); err != nil {
++			t.Fatalf("plant a key the template lacks in the worktree loom.yaml: %v", err)
++		}
++
++		if code, result := runReconcileCLI(t, codeWorktreePath, "--apply"); code != 0 {
++			t.Fatalf("reconcile --apply = %d; want 0; result: %v", code, result)
++		}
++		if after, err := os.ReadFile(loomFile); err != nil || string(after) != "discussion_timeout_min: 60\n" {
++			t.Errorf("worktree loom.yaml = %q, %v after the apply; want the unknown key removed and the tuned one kept", after, err)
++		}
++	})
++
++	t.Run("reconcile --layer default --apply prunes every retired loom, landing and gate key and every key the template lacks, and leaves the profiles file as written", func(t *testing.T) {
+ 		t.Setenv(agentname.StrandNameEnv, "")
+ 		appendPlanted := func(module, planted string) {
+ 			t.Helper()
+@@ -523,8 +538,8 @@ func TestConfigOverRealHub(t *testing.T) {
+ 				t.Fatalf("plant retired keys in the board %s.yaml: %v", module, err)
+ 			}
+ 		}
+-		appendPlanted("loom", "webster_max_bounces: 2\nmerge_max_bounces: 1\nalignment_pr_approve: true\nrework: true\n")
+-		appendPlanted("landing", "require_pr_to_base: []\n")
++		appendPlanted("loom", "webster_max_bounces: 2\nmerge_max_bounces: 1\nalignment_pr_approve: true\nrework: true\nnewer_loom_key: 1\n")
++		appendPlanted("landing", "require_pr_to_base: []\nnewer_landing_key: 1\n")
+ 		gateFile := configengine.ConfigFile(boardDir, "gate")
+ 		if err := os.WriteFile(gateFile, []byte("gates:\n  round: [0, 1]\n  publish: [0]\n"), 0o644); err != nil {
+ 			t.Fatalf("plant a publish gate in the board gate.yaml: %v", err)
+@@ -552,13 +567,13 @@ func TestConfigOverRealHub(t *testing.T) {
+ 		if !strings.Contains(loom, "\ncode_max_bounces: 2 ") {
+ 			t.Errorf("applied board loom.yaml lacks code_max_bounces: 2; got %q", loom)
+ 		}
+-		for _, gone := range []string{"webster_max_bounces", "merge_max_bounces", "alignment_pr_approve", "rework"} {
++		for _, gone := range []string{"webster_max_bounces", "merge_max_bounces", "alignment_pr_approve", "rework", "newer_loom_key"} {
+ 			if strings.Contains(loom, gone) {
+ 				t.Errorf("applied board loom.yaml still holds %q; got %q", gone, loom)
+ 			}
+ 		}
+-		if landing := read("landing"); !strings.Contains(landing, "\ndeploy_branches: []") || strings.Contains(landing, "require_pr_to_base") {
+-			t.Errorf("applied board landing.yaml = %q; want an empty deploy_branches and no require_pr_to_base", landing)
++		if landing := read("landing"); !strings.Contains(landing, "\ndeploy_branches: []") || strings.Contains(landing, "require_pr_to_base") || strings.Contains(landing, "newer_landing_key") {
++			t.Errorf("applied board landing.yaml = %q; want an empty deploy_branches and neither require_pr_to_base nor newer_landing_key", landing)
+ 		}
+ 		if gate := read("gate"); !strings.Contains(gate, "webster-fix: {tiers: [0, 1], scope: diff}") || strings.Contains(gate, "round") || strings.Contains(gate, "publish") {
+ 			t.Errorf("applied board gate.yaml = %q; want the round list migrated to webster-fix and no publish", gate)
+diff --git a/internal/configcli/hubwide.go b/internal/configcli/hubwide.go
+index 90148d4a..184272f5 100644
+--- a/internal/configcli/hubwide.go
++++ b/internal/configcli/hubwide.go
+@@ -181,7 +181,7 @@ func reconcileDefaultLayer(l *lymcwd.Location, out io.Writer, apply bool, guard
+ 			primeAnchor = w.Anchor
+ 		}
+ 	}
+-	opts := configsync.HubWideOptions{SeedDefaults: true}
++	opts := configsync.HubWideOptions{SeedDefaults: true, PruneUnknown: true}
+ 
+ 	if !apply {
+ 		results, err := configsync.ReconcileHubWideAt(board, primeAnchor, opts)
+diff --git a/internal/configengine/config.go b/internal/configengine/config.go
+index cef92aca..6dfd4369 100644
+--- a/internal/configengine/config.go
++++ b/internal/configengine/config.go
+@@ -227,7 +227,7 @@ func load(dirs Dirs, spec Spec, fallbackOnAbsent bool) ([]byte, error) {
+ 	}
+ 
+ 	label := stack.Layers[len(stack.Layers)-1].Path
+-	stackDoc, err := dropRetired(stack.Doc, spec)
++	stackDoc, err := DropRetired(stack.Doc, spec)
+ 	if err != nil {
+ 		return nil, MarkInvalid(fmt.Errorf("config file %s: %w", label, err))
+ 	}
+diff --git a/internal/configengine/layers.go b/internal/configengine/layers.go
+index 00031d70..ac488e3c 100644
+--- a/internal/configengine/layers.go
++++ b/internal/configengine/layers.go
+@@ -202,9 +202,10 @@ func retiredCovering(spec Spec, path string) (string, Category, bool) {
+ 	return best, category, found
+ }
+ 
+-// dropRetired removes from doc every retired key of the spec, at its dotted path, keeping every other key and comment.
++// DropRetired removes from doc every retired key of the spec, at its dotted path, keeping every other key and comment.
++// A mapping the removal leaves empty is removed with its key.
+ // A document that holds none is returned byte for byte.
+-func dropRetired(doc []byte, spec Spec) ([]byte, error) {
++func DropRetired(doc []byte, spec Spec) ([]byte, error) {
+ 	if len(spec.RetiredKeys) == 0 || len(strings.TrimSpace(string(doc))) == 0 {
+ 		return doc, nil
+ 	}
+@@ -236,7 +237,7 @@ func dropRetired(doc []byte, spec Spec) ([]byte, error) {
+ 	return out.Bytes(), nil
+ }
+ 
+-// removeKey deletes the mapping entry at the key path under node and reports whether one was removed.
++// removeKey deletes the mapping entry at the key path under node, and a mapping on the path that the deletion empties, and reports whether an entry was removed.
+ func removeKey(node *yaml.Node, path []string) bool {
+ 	if node.Kind != yaml.MappingNode {
+ 		return false
+@@ -249,7 +250,13 @@ func removeKey(node *yaml.Node, path []string) bool {
+ 			node.Content = append(node.Content[:i], node.Content[i+2:]...)
+ 			return true
+ 		}
+-		return removeKey(node.Content[i+1], path[1:])
++		if !removeKey(node.Content[i+1], path[1:]) {
++			return false
++		}
++		if child := node.Content[i+1]; child.Kind == yaml.MappingNode && len(child.Content) == 0 {
++			node.Content = append(node.Content[:i], node.Content[i+2:]...)
++		}
++		return true
+ 	}
+ 	return false
+ }
+diff --git a/internal/configengine/layers_test.go b/internal/configengine/layers_test.go
+index 23a2b068..c207d956 100644
+--- a/internal/configengine/layers_test.go
++++ b/internal/configengine/layers_test.go
+@@ -1119,3 +1119,35 @@ func TestProvenance(t *testing.T) {
+ 		})
+ 	}
+ }
++
++// TestDropRetired pins that a retired key leaves the document and a mapping it empties leaves with it, while a sibling key, an unknown key and a document holding no retired key stay as written.
++func TestDropRetired(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	spec := configengine.Spec{
++		Name:        layerModule,
++		RetiredKeys: map[string]configengine.Category{"gone": configengine.CategoryNone, "old.inner": configengine.CategoryNone},
++	}
++	tests := []struct {
++		name string
++		doc  string
++		want string
++	}{
++		{name: "top-level retired key", doc: "gone: 1\nkeep: 2\n", want: "keep: 2\n"},
++		{name: "nested retired key beside a sibling keeps the parent", doc: "old:\n  inner: 1\n  other: 2\n", want: "old:\n  other: 2\n"},
++		{name: "nested retired key that was the only child drops the emptied parent", doc: "old:\n  inner: 1\nnewer_key: 3\n", want: "newer_key: 3\n"},
++		{name: "document holding no retired key is returned byte for byte", doc: "newer_key:   3\n", want: "newer_key:   3\n"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got, err := configengine.DropRetired([]byte(tt.doc), spec)
++			if err != nil {
++				t.Fatalf("DropRetired(%q): %v", tt.doc, err)
++			}
++			if string(got) != tt.want {
++				t.Errorf("DropRetired(%q) = %q; want %q", tt.doc, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/configsync/configsync.go b/internal/configsync/configsync.go
+index e2ad09f9..cf0c9553 100644
+--- a/internal/configsync/configsync.go
++++ b/internal/configsync/configsync.go
+@@ -6,6 +6,8 @@
+ // only a standalone worktree base and a seed-only file stay full, and every layer above a base is sparse.
+ // ReconcileHubWideAt covers every module's file at the board dir, hub files and per-worktree repo defaults;
+ // ReconcileAll covers a worktree's sparse and local layers.
++// A key the template lacks and no retired key of its module covers leaves a hub base or worktree file only under the options' PruneUnknown;
++// any other run keeps it and reports it as Preserved, so a binary older than the one that wrote a key never strips it.
+ // Every strip, prune, reconcile and template-equal drop judges a file against the effective template its base layer picks, the module's template with the overlay its selector names laid over it;
+ // key-move scaffolds and the seed-only paths use the base template.
+ // Every reconcile entry point, and run-settings preparation through configreg, applies the key-move table to each layer as its first step, before any module of the layer is seeded or reconciled.
+@@ -195,6 +197,9 @@ type Result struct {
+ 	// Dropped lists, sorted, each "<path>.<name>" a per-name map of a base-layer file held with the template's value, left out of the file because the load resolves it from the template.
+ 	// Set on a dry run too.
+ 	Dropped []string
++	// Preserved lists, sorted, the dotted keys a sparse file holds that the template lacks and no retired key covers, left in place because the run did not prune unknown keys.
++	// Set on a dry run too.
++	Preserved []string
+ }
+ 
+ // Options configures ReconcileAll.
+@@ -203,12 +208,19 @@ type Options struct {
+ 	Apply bool
+ 	// Migrate lets an Apply run strip a worktree's full files to sparse overrides and write the sparse marker; without it Stripped and Inherited are only reported as pending.
+ 	Migrate bool
++	// PruneUnknown removes from a hub worktree file each key the template lacks that no retired key of the module covers.
++	// Without it such a key stays and is reported in Preserved, so a binary older than the one that wrote the key never removes it.
++	// A local file is pruned of every such key either way, since its load refuses one.
++	PruneUnknown bool
+ }
+ 
+ // HubWideOptions configures ReconcileHubWideAt.
+ type HubWideOptions struct {
+ 	// Apply writes and removes files; false reports what would change.
+ 	Apply bool
++	// PruneUnknown removes from a present file each key the template lacks that no retired key of the module covers.
++	// Without it such a key stays and is reported in Preserved, so a binary older than the one that wrote the key never removes it from the committed board.
++	PruneUnknown bool
+ 	// SeedDefaults seeds a per-worktree module's absent repo default; false leaves an absent default absent.
+ 	SeedDefaults bool
+ 	// StripBase lets an Apply run strip a present base file of the units equal to the template or a former template value, and write the board marker after the files.
+@@ -392,9 +404,9 @@ func retireHubWideCopy(module, baseDir, boardDir string, apply bool) (Result, er
+ 
+ // ReconcileAll reconciles a worktree's layers under baseDir against the module templates,
+ // returning the slice of results and any I/O or YAML parsing error.
+-// Standalone (boardDir empty) the worktree file is the base layer and is fully reconciled;
+-// in a hub it is sparse: a present file is migrated and its retired keys pruned, nothing is added, and an absent one stays absent.
+-// The local file of every module is a sparse layer reconciled the same way, and is reported with layer local only when present.
++// Standalone (boardDir empty) the worktree file is the base layer and is fully reconciled, whatever opts.PruneUnknown says;
++// in a hub it is sparse: a present file is migrated and pruned of its retired keys, and of every other key the template lacks only under opts.PruneUnknown, nothing is added, and an absent one stays absent.
++// The local file of every module is a sparse layer reconciled the same way, bar that every key the template lacks is pruned from it, and is reported with layer local only when present.
+ // A seed-only module's worktree and local files are never rewritten; standalone, an absent worktree file materializes the template verbatim.
+ // A hub-wide module is never reconciled or written as a worktree file.
+ // Its result reports whether a leftover per-worktree copy is Retired (the hub file at boardDir holds everything the copy holds, and apply deletes it)
+@@ -430,14 +442,14 @@ func ReconcileAll(baseDir, boardDir string, opts Options) ([]Result, error) {
+ 		case boardDir == "":
+ 			result, err = reconcileBaseWorktreeFile(m, baseDir, opts.Apply)
+ 		default:
+-			result, _, err = reconcileSparseFile(m, dirs, configengine.ConfigFile(baseDir, m.Name), configengine.LayerWorktree, opts.Apply, pending)
++			result, _, err = reconcileSparseFile(m, dirs, configengine.ConfigFile(baseDir, m.Name), configengine.LayerWorktree, opts.Apply, opts.PruneUnknown, pending)
+ 		}
+ 		if err != nil {
+ 			return nil, err
+ 		}
+ 		results = append(results, result)
+ 
+-		localResult, present, err := reconcileSparseFile(m, dirs, configengine.LocalFile(baseDir, m.Name), configengine.LayerLocal, opts.Apply, nil)
++		localResult, present, err := reconcileSparseFile(m, dirs, configengine.LocalFile(baseDir, m.Name), configengine.LayerLocal, opts.Apply, true, nil)
+ 		if err != nil {
+ 			return nil, err
+ 		}
+@@ -554,13 +566,13 @@ func reconcileBaseWorktreeFile(m configreg.Module, baseDir string, apply bool) (
+ 	return result, nil
+ }
+ 
+-// reconcileSparseFile reconciles one sparse layer file of a module: its Migrate hook runs over it and its retired keys are pruned, and nothing is ever added.
++// reconcileSparseFile reconciles one sparse layer file of a module: its Migrate hook runs over it, it is pruned of its retired keys, and of every other key the template lacks with pruneUnknown, and nothing is ever added.
+ // An absent file stays absent and reports present false;
+ // a seed-only module's present file is otherwise untouched.
+ // With a non-nil strip, the file's keys that equal what the layers below it resolve to are reported as Stripped, and removed when strip.write is set;
+ // a seed-only module takes the strip as well.
+ // A file emptied by a prune or a strip is deleted and reported applied.
+-func reconcileSparseFile(m configreg.Module, dirs configengine.Dirs, path string, layer configengine.Layer, apply bool, strip *migration) (result Result, present bool, err error) {
++func reconcileSparseFile(m configreg.Module, dirs configengine.Dirs, path string, layer configengine.Layer, apply, pruneUnknown bool, strip *migration) (result Result, present bool, err error) {
+ 	result = Result{Module: m.Name, Layer: layer}
+ 	original, err := os.ReadFile(path)
+ 	if os.IsNotExist(err) {
+@@ -585,7 +597,7 @@ func reconcileSparseFile(m configreg.Module, dirs configengine.Dirs, path string
+ 		if err != nil {
+ 			return Result{}, true, err
+ 		}
+-		current, result.Removed, result.KeptExtra, err = yamlengine.Prune(template, current, m.PerNameMaps, m.OpenMaps...)
++		current, result.Removed, result.KeptExtra, result.Preserved, err = pruneSparse(m, template, current, pruneUnknown)
+ 		if err != nil {
+ 			return fail("reconcile", err)
+ 		}
+@@ -618,6 +630,29 @@ func reconcileSparseFile(m configreg.Module, dirs configengine.Dirs, path string
+ 	return result, true, nil
+ }
+ 
++// pruneSparse prunes current, a sparse file of m, of the units template lacks, and returns the pruned bytes with the removed and kept paths as yamlengine.Prune reports them.
++// Without pruneUnknown only the units a retired key of m covers are removed;
++// the others stay and come back as preserved, so a key a newer binary wrote survives a reconcile by an older one.
++func pruneSparse(m configreg.Module, template, current []byte, pruneUnknown bool) (pruned []byte, removed, kept, preserved []string, err error) {
++	pruned, removed, kept, err = yamlengine.Prune(template, current, m.PerNameMaps, m.OpenMaps...)
++	if err != nil || pruneUnknown || len(removed) == 0 {
++		return pruned, removed, kept, nil, err
++	}
++	withoutRetired, err := configengine.DropRetired(current, m.Spec())
++	if err != nil {
++		return nil, nil, nil, nil, err
++	}
++	_, preserved, _, err = yamlengine.Prune(template, withoutRetired, m.PerNameMaps, m.OpenMaps...)
++	if err != nil {
++		return nil, nil, nil, nil, err
++	}
++	if len(preserved) == 0 {
++		return pruned, removed, kept, nil, nil
++	}
++	removed = slices.DeleteFunc(removed, func(key string) bool { return slices.Contains(preserved, key) })
++	return withoutRetired, removed, kept, preserved, nil
++}
++
+ // stripToSparse strips current, a worktree file of m, of every key that equals what the layers below the worktree layer resolve to or equals a former template value of m, and returns the stripped bytes with the removed keys.
+ // inherited lists the keys the repo default holds that original, the file as read, lacked and whose value differs from the template's or that the template lacks.
+ func stripToSparse(m configreg.Module, dirs configengine.Dirs, original, current []byte) (stripped []byte, strippedKeys, inherited []string, err error) {
+@@ -846,7 +881,8 @@ func primeConfig(primeBaseDir, module string) []byte {
+ // primeBaseDir is the prime worktree's anchor dir; empty means no prime is resolvable.
+ //
+ // A seed-only module is reconciled as a full file: a present one is never rewritten, and an absent one is seeded whole.
+-// Every other module's file is a sparse base over the template: a present file runs the module's Migrate hook and is pruned of keys the template lacks, and nothing is ever added.
++// Every other module's file is a sparse base over the template: a present file runs the module's Migrate hook and is pruned of its retired keys, and nothing is ever added.
++// Under opts.PruneUnknown it is pruned of every other key the template lacks as well; without it such a key stays and is reported as Preserved.
+ // A module's MigrateHubBase hook runs right after Migrate on a present hub file, and over the bytes of a prime or legacy seed on an absent one, so a hub file seeded in a pass holds what the hook adds at once, since the build stamp gates the next reconcile; no other reconcile path runs it.
+ // Its per-name entries equal to the template's are dropped on every pass.
+ // An absent file of a module with open maps, or one marked SeedsFromPrime, is seeded from the prime's copy when that copy exists and parses;
+@@ -929,7 +965,7 @@ func ReconcileHubWideAt(boardDir, primeBaseDir string, opts HubWideOptions) ([]R
+ 			}
+ 		}
+ 
+-		var added, removed, keptExtra, dropped, stripped []string
++		var added, removed, keptExtra, dropped, stripped, preserved []string
+ 		var mergedBytes []byte
+ 		var reconcileErr error
+ 		changed := fileAbsent
+@@ -978,7 +1014,7 @@ func ReconcileHubWideAt(boardDir, primeBaseDir string, opts HubWideOptions) ([]R
+ 			var template []byte
+ 			template, reconcileErr = effectiveTemplateOf(m, mergedBytes, true, cfgPath)
+ 			if reconcileErr == nil {
+-				mergedBytes, removed, keptExtra, reconcileErr = yamlengine.Prune(template, mergedBytes, m.PerNameMaps, m.OpenMaps...)
++				mergedBytes, removed, keptExtra, preserved, reconcileErr = pruneSparse(m, template, mergedBytes, opts.PruneUnknown)
+ 			}
+ 			changed = len(removed)+len(migrated) > 0
+ 			// The strip runs before the per-name drop, so a per-name map the strip empties leaves no empty mapping behind.
+@@ -1015,6 +1051,7 @@ func ReconcileHubWideAt(boardDir, primeBaseDir string, opts HubWideOptions) ([]R
+ 			KeptExtra:    keptExtra,
+ 			Dropped:      dropped,
+ 			Stripped:     stripped,
++			Preserved:    preserved,
+ 			MigratedFrom: migratedFrom,
+ 			Migrated:     migrated,
+ 			Seed:         seed,
+diff --git a/internal/configsync/configsync_test.go b/internal/configsync/configsync_test.go
+index 3e9f5544..835126ac 100644
+--- a/internal/configsync/configsync_test.go
++++ b/internal/configsync/configsync_test.go
+@@ -629,31 +629,31 @@ func TestReconcileHubWideAt_SeedsFromHubPrimeLegacyOrTemplate(t *testing.T) {
+ 			wantAbsent:   []string{"review_max_bounces:"},
+ 		},
+ 		{
+-			name:         "loom default present is pruned in place and gains no template key",
++			name:         "loom default present is pruned of a retired key in place and gains no template key",
+ 			module:       "loom",
+-			hubFile:      "discussion_timeout_min: 7\nstale_key: old\n",
++			hubFile:      "discussion_timeout_min: 7\npr_review: old\n",
+ 			primeFile:    "discussion_timeout_min: 480\n",
+ 			seedDefaults: true,
+ 			wantSeed:     SeedHub,
+ 			wantContains: []string{"discussion_timeout_min: 7"},
+-			wantAbsent:   []string{"stale_key", "480", "review_max_bounces:"},
++			wantAbsent:   []string{"pr_review", "480", "review_max_bounces:"},
+ 			wantAdded:    []string{},
+ 		},
+ 		{
+-			name:         "loom default present is pruned without SeedDefaults",
++			name:         "loom default present is pruned of a retired key without SeedDefaults",
+ 			module:       "loom",
+-			hubFile:      "discussion_timeout_min: 7\nstale_key: old\n",
++			hubFile:      "discussion_timeout_min: 7\npr_review: old\n",
+ 			wantSeed:     SeedHub,
+ 			wantContains: []string{"discussion_timeout_min: 7"},
+-			wantAbsent:   []string{"stale_key", "review_max_bounces:"},
++			wantAbsent:   []string{"pr_review", "review_max_bounces:"},
+ 		},
+ 		{
+ 			name:         "loom default left with no unit is written as the header-only base",
+ 			module:       "loom",
+-			hubFile:      "stale_key: old\n",
++			hubFile:      "pr_review: old\n",
+ 			wantSeed:     SeedHub,
+ 			wantContains: []string{configengine.SparseBaseHeader},
+-			wantAbsent:   []string{"stale_key"},
++			wantAbsent:   []string{"pr_review"},
+ 		},
+ 		{
+ 			name:       "loom default absent stays absent without SeedDefaults",
+@@ -1359,6 +1359,7 @@ func TestReconcileAll_HubWideCopy(t *testing.T) {
+ }
+ 
+ // TestReconcileAll_SparseLayers pins that in a hub a worktree file and a local file are sparse layers: retired keys are pruned and a below-floor value is migrated, but nothing is ever added, an absent file stays absent, a seed-only module's files are untouched, and a file emptied by a prune is deleted.
++// A worktree file keeps a key the template lacks and no retired key covers, reported preserved, unless PruneUnknown is set; a local file loses it either way.
+ func TestReconcileAll_SparseLayers(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -1377,6 +1378,8 @@ func TestReconcileAll_SparseLayers(t *testing.T) {
+ 		// wantResult is false when the layer is absent and no result is reported.
+ 		wantResult    bool
+ 		wantKeptExtra []string
++		pruneUnknown  bool
++		wantPreserved []string
+ 	}{
+ 		{
+ 			name: "worktree file keeps a hub-only lens and stays byte-identical", module: "lenses", layer: configengine.LayerWorktree,
+@@ -1384,9 +1387,19 @@ func TestReconcileAll_SparseLayers(t *testing.T) {
+ 			wantKeptExtra: []string{"lenses.hub-lens"}, wantResult: true,
+ 		},
+ 		{
+-			name: "worktree file loses a retired key and gains no template key", module: "loom", layer: configengine.LayerWorktree,
++			name: "worktree file loses a key the template lacks under PruneUnknown and gains no template key", module: "loom", layer: configengine.LayerWorktree,
+ 			content: "discussion_timeout_min: 480\nstale_key: old\n", wantFile: ptr("discussion_timeout_min: 480\n"),
+-			wantApplied: true, wantRemoved: []string{"stale_key"}, wantResult: true,
++			wantApplied: true, wantRemoved: []string{"stale_key"}, wantResult: true, pruneUnknown: true,
++		},
++		{
++			name: "worktree file keeps a key the template lacks without PruneUnknown and reports it preserved", module: "loom", layer: configengine.LayerWorktree,
++			content: "discussion_timeout_min: 480\nnewer_key: x\n", wantFile: ptr("discussion_timeout_min: 480\nnewer_key: x\n"),
++			wantResult: true, wantPreserved: []string{"newer_key"},
++		},
++		{
++			name: "worktree file loses a retired key without PruneUnknown and keeps a key the template lacks", module: "loom", layer: configengine.LayerWorktree,
++			content: "discussion_timeout_min: 480\npr_review: x\nnewer_key: x\n", wantFile: ptr("discussion_timeout_min: 480\nnewer_key: x\n"),
++			wantApplied: true, wantRemoved: []string{"pr_review"}, wantResult: true, wantPreserved: []string{"newer_key"},
+ 		},
+ 		{
+ 			name: "below-floor loom value is raised by Migrate", module: "loom", layer: configengine.LayerWorktree,
+@@ -1398,7 +1411,7 @@ func TestReconcileAll_SparseLayers(t *testing.T) {
+ 			wantResult: true,
+ 		},
+ 		{
+-			name: "local file is pruned and reported with layer local", module: "loom", layer: configengine.LayerLocal,
++			name: "local file is pruned without PruneUnknown and reported with layer local", module: "loom", layer: configengine.LayerLocal,
+ 			content: "review_max_bounces: 2\nstale_key: old\n", wantFile: ptr("review_max_bounces: 2\n"),
+ 			wantApplied: true, wantRemoved: []string{"stale_key"}, wantResult: true,
+ 		},
+@@ -1412,7 +1425,7 @@ func TestReconcileAll_SparseLayers(t *testing.T) {
+ 		},
+ 		{
+ 			name: "file emptied by a prune is deleted", module: "loom", layer: configengine.LayerWorktree,
+-			content: "stale_key: old\n", wantApplied: true, wantRemoved: []string{"stale_key"}, wantResult: true,
++			content: "stale_key: old\n", wantApplied: true, wantRemoved: []string{"stale_key"}, wantResult: true, pruneUnknown: true,
+ 		},
+ 		{
+ 			name: "absent local file reports nothing", module: "loom", layer: configengine.LayerLocal,
+@@ -1439,7 +1452,7 @@ func TestReconcileAll_SparseLayers(t *testing.T) {
+ 				}
+ 			}
+ 
+-			dry, err := ReconcileAll(anchor, boardDir, Options{})
++			dry, err := ReconcileAll(anchor, boardDir, Options{PruneUnknown: tt.pruneUnknown})
+ 			if err != nil {
+ 				t.Fatalf("ReconcileAll(dry): %v", err)
+ 			}
+@@ -1452,7 +1465,7 @@ func TestReconcileAll_SparseLayers(t *testing.T) {
+ 				t.Errorf("dry run result = %+v; want Applied false", dryResult)
+ 			}
+ 
+-			results, err := ReconcileAll(anchor, boardDir, Options{Apply: true})
++			results, err := ReconcileAll(anchor, boardDir, Options{Apply: true, PruneUnknown: tt.pruneUnknown})
+ 			if err != nil {
+ 				t.Fatalf("ReconcileAll(apply): %v", err)
+ 			}
+@@ -1467,6 +1480,9 @@ func TestReconcileAll_SparseLayers(t *testing.T) {
+ 				if !slices.Equal(result.KeptExtra, tt.wantKeptExtra) {
+ 					t.Errorf("KeptExtra = %v; want %v", result.KeptExtra, tt.wantKeptExtra)
+ 				}
++				if !slices.Equal(result.Preserved, tt.wantPreserved) {
++					t.Errorf("Preserved = %v; want %v", result.Preserved, tt.wantPreserved)
++				}
+ 			}
+ 			got, readErr := os.ReadFile(path)
+ 			if tt.wantFile == nil {
+@@ -1482,6 +1498,68 @@ func TestReconcileAll_SparseLayers(t *testing.T) {
+ 	}
+ }
+ 
++// TestReconcileHubWideAt_PrunesUnknownKeysOnlyWhenAsked pins two behaviors.
++// A present board file loses a retired key on every run.
++// A key the template lacks and no retired key covers stays and is reported preserved unless PruneUnknown is set.
++func TestReconcileHubWideAt_PrunesUnknownKeysOnlyWhenAsked(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name          string
++		content       string
++		pruneUnknown  bool
++		wantFile      string
++		wantApplied   bool
++		wantRemoved   []string
++		wantPreserved []string
++	}{
++		{
++			name: "a key the template lacks stays and is reported preserved", content: "newer_key: 1\n",
++			wantFile: "newer_key: 1\n", wantPreserved: []string{"newer_key"},
++		},
++		{
++			name: "a retired key is pruned beside a preserved key", content: "newer_key: 1\npublish_verify: x\n",
++			wantFile: "newer_key: 1\n", wantApplied: true, wantRemoved: []string{"publish_verify"}, wantPreserved: []string{"newer_key"},
++		},
++		{
++			name: "PruneUnknown prunes the key the template lacks as well", content: "newer_key: 1\npublish_verify: x\n", pruneUnknown: true,
++			wantFile: configengine.SparseBaseHeader, wantApplied: true, wantRemoved: []string{"newer_key", "publish_verify"},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			boardDir := t.TempDir()
++			writeModuleFile(t, boardDir, "landing", tt.content)
++			if err := WriteBaseSparseMarker(boardDir); err != nil {
++				t.Fatalf("WriteBaseSparseMarker: %v", err)
++			}
++			path := configengine.ConfigFile(boardDir, "landing")
++			for _, apply := range []bool{false, true} {
++				results, err := ReconcileHubWideAt(boardDir, "", HubWideOptions{Apply: apply, PruneUnknown: tt.pruneUnknown})
++				if err != nil {
++					t.Fatalf("ReconcileHubWideAt(apply %v): %v", apply, err)
++				}
++				result := findResult(results, "landing")
++				if result == nil {
++					t.Fatalf("ReconcileHubWideAt(apply %v) returned no landing result", apply)
++				}
++				if result.Applied != (apply && tt.wantApplied) || !slices.Equal(result.Removed, tt.wantRemoved) || !slices.Equal(result.Preserved, tt.wantPreserved) {
++					t.Errorf("apply %v: result = %+v; want Applied %v, Removed %v, Preserved %v", apply, result, apply && tt.wantApplied, tt.wantRemoved, tt.wantPreserved)
++				}
++				if !apply {
++					if got, _ := os.ReadFile(path); string(got) != tt.content {
++						t.Errorf("dry run changed %s to %q; want %q", path, got, tt.content)
++					}
++				}
++			}
++			if got, err := os.ReadFile(path); err != nil || string(got) != tt.wantFile {
++				t.Errorf("%s = %q, %v; want %q", path, got, err, tt.wantFile)
++			}
++		})
++	}
++}
++
+ // TestReconcileAll_MigratesToSparse pins the one-time strip of a worktree's full files to sparse overrides:
+ // the keys equal to what the layers below resolve to are stripped and reported, an emptied file is deleted, and every key the file held resolves unchanged.
+ // The keys the repo default adds are reported as inherited.
+diff --git a/internal/fabriccli/cli_test.go b/internal/fabriccli/cli_test.go
+index b09fc04a..835c65ae 100644
+--- a/internal/fabriccli/cli_test.go
++++ b/internal/fabriccli/cli_test.go
+@@ -507,7 +507,7 @@ func TestRunCLI_ReconcileBoardFailureFailsTheVerb(t *testing.T) {
+ 
+ 	tests := []struct {
+ 		name string
+-		// staleHubConfig commits a retired key into the board's fabric config, so the heal rewrites it.
++		// staleHubConfig commits a retired key into the board's landing config, so the heal rewrites it.
+ 		staleHubConfig bool
+ 		// unbind commits the warp-binding record's removal, so reconcile records it again.
+ 		unbind               bool
+@@ -571,13 +571,13 @@ func TestRunCLI_ReconcileBoardFailureFailsTheVerb(t *testing.T) {
+ 
+ 			boardDir := fabricengine.BoardDir(hubPath)
+ 			if tt.staleHubConfig {
+-				fabricConfig := configengine.ConfigFile(boardDir, "fabric")
+-				current, err := os.ReadFile(fabricConfig)
++				landingConfig := configengine.ConfigFile(boardDir, "landing")
++				current, err := os.ReadFile(landingConfig)
+ 				if err != nil {
+-					t.Fatalf("read %s: %v", fabricConfig, err)
++					t.Fatalf("read %s: %v", landingConfig, err)
+ 				}
+-				if err := os.WriteFile(fabricConfig, append(current, []byte("retired_fixture_key: 1\n")...), 0o644); err != nil {
+-					t.Fatalf("write %s: %v", fabricConfig, err)
++				if err := os.WriteFile(landingConfig, append(current, []byte("publish_verify: x\n")...), 0o644); err != nil {
++					t.Fatalf("write %s: %v", landingConfig, err)
+ 				}
+ 				gitkit.MustRun(t, boardDir, "git", "commit", "-am", "test fixture: stale hub-wide config")
+ 			}
+diff --git a/internal/fabriccli/fabric.go b/internal/fabriccli/fabric.go
+index 14cd54e4..b89e1bc2 100644
+--- a/internal/fabriccli/fabric.go
++++ b/internal/fabriccli/fabric.go
+@@ -723,7 +723,7 @@ func runReconcile(ctx context.Context, out io.Writer, _ []string) int {
+ 
+ 	// Reconcile is the repair verb, so a missing hub-wide config is healed here rather than reported:
+ 	// without this, the "run \"lym fabric reconcile\"" remedy of a strict config loader was circular when reconcile itself emitted it.
+-	// ReconcileHubWideAt seeds absent hub files sparse, prunes keys the template lacks and never rewrites a recorded pathspec; it strips no present base file.
++	// ReconcileHubWideAt seeds absent hub files sparse, prunes retired keys while keeping any other key the template lacks, and never rewrites a recorded pathspec; it strips no present base file.
+ 	// A PrimeName failure means no prime is resolvable, not an error: the seed falls back to the template.
+ 	boltDir := fabricengine.BoltDir(l.HubPath)
+ 	primeBaseDir := ""
+diff --git a/internal/fabriccli/hubmutation_integration_test.go b/internal/fabriccli/hubmutation_integration_test.go
+index de46e661..d1fb842b 100644
+--- a/internal/fabriccli/hubmutation_integration_test.go
++++ b/internal/fabriccli/hubmutation_integration_test.go
+@@ -305,6 +305,24 @@ func TestRunCLI_HubMutationScenario(t *testing.T) {
+ 				t.Fatalf("restore the base-sparse marker: %v", err)
+ 			}
+ 		}},
++		{"ReconcileKeepsAKeyTheTemplateLacks", func(t *testing.T) {
++			boardPath := configengine.ConfigFile(h.BoardDir(), "board")
++			sparseBoard, err := os.ReadFile(boardPath)
++			if err != nil {
++				t.Fatalf("read board.yaml: %v", err)
++			}
++			const newerKey = "newer_board_key: 1\n"
++			// The key is committed, since a dirty board makes the hub-wide heal skip and keep it whatever the reconcile prunes.
++			boardRel := configengine.ConfigFileRel("board")
++			gitkit.CommitFile(t, h.BoardDir(), boardRel, string(sparseBoard)+newerKey, "fixture: a key the template lacks")
++			defer gitkit.CommitFile(t, h.BoardDir(), boardRel, string(sparseBoard), "fixture: restore the sparse board.yaml")
++			if code, output := runFabric(t, h.PrimeWorktree(), "reconcile"); code != 0 {
++				t.Fatalf("RunCLI(reconcile) over a board.yaml holding a newer key = %d; want 0\noutput: %s", code, output)
++			}
++			if kept, err := os.ReadFile(boardPath); err != nil || !strings.Contains(string(kept), newerKey) {
++				t.Errorf("board.yaml = %q, %v after reconcile; want the key the template lacks kept", kept, err)
++			}
++		}},
+ 		{"ReconcileDoesNotFailOnAPairThatVanishedMidWalk", func(t *testing.T) {
+ 			// The counter-assertion to the unrepairable-pair step below; the two must be read together.
+ 			// Once a per-pair error drives reconcile's exit code, the verb becomes sensitive to a race it cannot avoid: `git worktree list` is read once, before the per-pair loop, so a concurrent `lym fabric remove`/`prune` can delete a pair between the enumeration and the iteration that reaches it.
+diff --git a/internal/hubreconcile/doc.go b/internal/hubreconcile/doc.go
+index 268da662..40380f8f 100644
+--- a/internal/hubreconcile/doc.go
++++ b/internal/hubreconcile/doc.go
+@@ -22,6 +22,14 @@
+ // Each worktree's applied files are committed in that worktree, and the board's push goes to the detached `lym board sync` every board write spawns, which carries the board commit and any an earlier run left unpushed.
+ // The walk spawns it and returns at once, so no start verb waits on a push to GitHub, and the build stamp never waits on one either.
+ //
++// # Keys the template lacks
++//
++// The walk removes no key the running binary's template lacks unless a retired key of its module covers it.
++// Such a key, as a newer binary writes, stays in the board's base files and in each worktree file, and is carried in the result as preserved and logged when the walk writes the file,
++// so a start verb run by an older binary never strips a newer one's settings from the hub.
++// `lym config reconcile --apply`, with `--layer default` for a board file, is the one way to remove it.
++// A local override file is pruned of every such key, since its load refuses one.
++//
+ // # The base strip
+ //
+ // Every non-seed-only base file on the board is sparse over the template.
+diff --git a/internal/hubreconcile/ensure_integration_test.go b/internal/hubreconcile/ensure_integration_test.go
+index c8ba5551..61d905da 100644
+--- a/internal/hubreconcile/ensure_integration_test.go
++++ b/internal/hubreconcile/ensure_integration_test.go
+@@ -368,8 +368,17 @@ func newStaleHub(t *testing.T, slug string) *hubforge.Hub {
+ 	return h
+ }
+ 
+-// staleHubWideConfig is a fabric config carrying a key the registry no longer knows, so the hub-wide reconcile rewrites it.
+-const staleHubWideConfig = "branch_prefix: \"\"\nretired_fixture_key: 1\n"
++// newerHubWideKey is a fabric key the running template lacks and no retired key covers, as a newer binary writes.
++const newerHubWideKey = "newer_fixture_key: 1"
++
++// newerWorktreeKey is a logger key the running template lacks and no retired key covers, planted in the pair's worktree file.
++const newerWorktreeKey = "newer_worktree_key: 1"
++
++// seedRetiredHubWideKey commits on the board a landing.yaml holding only a key landing retired, so the hub-wide reconcile rewrites it.
++func seedRetiredHubWideKey(t *testing.T, h *hubforge.Hub) {
++	t.Helper()
++	gitkit.CommitFile(t, h.BoardDir(), configengine.ConfigFileRel("landing"), "publish_verify: x\n", "fixture: retired landing key")
++}
+ 
+ // pushBoardFromSecondClone pushes the board's current branch to its origin, then lands a commit on that origin from a second clone, and returns the board's branch name.
+ // The board is left behind its upstream by exactly that commit.
+@@ -445,6 +454,7 @@ fans:
+ `
+ 
+ // runStaleBuildReconcile walks a stale hub and asserts every worktree and the board got one reconcile commit, with the board's pulled from upstream when boardBehind.
++// The walk keeps a key the template lacks in the board's fabric.yaml and in the pair's logger.yaml.
+ // With loomDefaultGone the stamp names the running build but loom's committed repo default is deleted, and the walk reseeds and commits it on the board; batcher's default stays intact so retiredKeyPresent keeps reading it.
+ func runStaleBuildReconcile(t *testing.T, run staleRun) {
+ 	t.Helper()
+@@ -453,7 +463,6 @@ func runStaleBuildReconcile(t *testing.T, run staleRun) {
+ 	h := newStaleHub(t, "pair-a")
+ 	geom := geometryOf(h)
+ 	pair := h.PairCodeWorktree("pair-a")
+-	hubforge.SeedFabricConfig(t, h, staleHubWideConfig)
+ 	var modelsBefore []byte
+ 	if run.unmigratedBoard {
+ 		var err error
+@@ -465,6 +474,13 @@ func runStaleBuildReconcile(t *testing.T, run staleRun) {
+ 			commitRetiredKeys(t, h.BoardDir())
+ 		}
+ 	}
++	hubforge.SeedFabricConfig(t, h, newerHubWideKey+"\n")
++	pairRecords := h.PairRecordsSibling("pair-a")
++	pairLogger, err := os.ReadFile(configengine.ConfigFile(pairRecords, "logger"))
++	if err != nil {
++		t.Fatalf("read the pair's logger.yaml: %v", err)
++	}
++	gitkit.CommitFile(t, pairRecords, configengine.ConfigFileRel("logger"), string(pairLogger)+newerWorktreeKey+"\n", "fixture: a key the template lacks")
+ 	loomDefault := configengine.ConfigFileRel("loom")
+ 	lensesDefault := configengine.ConfigFileRel("lenses")
+ 	burlerDefault := configengine.ConfigFileRel("burler")
+@@ -506,6 +522,12 @@ func runStaleBuildReconcile(t *testing.T, run staleRun) {
+ 	if got, err := os.ReadFile(machineFile); err != nil || string(got) != machineBytes {
+ 		t.Errorf("machine gate file = %q, %v after Ensure; want it unchanged", got, err)
+ 	}
++	if got, err := os.ReadFile(configengine.ConfigFile(h.BoardDir(), "fabric")); err != nil || !strings.Contains(string(got), newerHubWideKey) {
++		t.Errorf("board fabric.yaml = %q, %v after Ensure; want the newer binary's %q kept", got, err, newerHubWideKey)
++	}
++	if got, err := os.ReadFile(configengine.ConfigFile(pairRecords, "logger")); err != nil || !strings.Contains(string(got), newerWorktreeKey) {
++		t.Errorf("pair logger.yaml =%q, %v after Ensure; want the newer binary's %q kept", got, err, newerWorktreeKey)
++	}
+ 
+ 	if want := []string{h.BoardDir()}; !slices.Equal(*spawned, want) {
+ 		t.Errorf("detached board syncs = %v; want one for the board %v after the hub-wide commit", *spawned, want)
+@@ -638,7 +660,7 @@ func runStaleBuildReconcile(t *testing.T, run staleRun) {
+ 	}
+ }
+ 
+-// assertBoardStrippedOnce checks the board a walk stripped once: every non-seed-only base file other than lenses holds only the sparse header, bar darn's, which keeps the hub's tuned verify_attempts;
++// assertBoardStrippedOnce checks the board a walk stripped once: every non-seed-only base file other than lenses holds only the sparse header, bar darn's, which keeps the hub's tuned verify_attempts, and fabric's, which keeps the newer binary's key;
+ // the seed-only models.yaml is byte for byte as seeded, the marker is tracked in the walk's board commit, and the board's loom base resolves the template's lens fan and its one webster bounce.
+ // lenses.yaml is skipped because the declared key move from burler.yaml gives it the hub's tuned lens.
+ func assertBoardStrippedOnce(t *testing.T, h *hubforge.Hub, modelsBefore []byte) {
+@@ -659,6 +681,12 @@ func assertBoardStrippedOnce(t *testing.T, h *hubforge.Hub, modelsBefore []byte)
+ 			}
+ 			continue
+ 		}
++		if module.Name == "fabric" {
++			if string(got) != newerHubWideKey+"\n" {
++				t.Errorf("board fabric.yaml = %q; want only the newer binary's %q", got, newerHubWideKey)
++			}
++			continue
++		}
+ 		if string(got) != configengine.SparseBaseHeader {
+ 			t.Errorf("board %s.yaml = %q; want only the sparse header", module.Name, got)
+ 		}
+@@ -901,9 +929,9 @@ func TestEnsure_FailedWalkNamesTheFileAndLeavesTheTreeAsItWas(t *testing.T) {
+ 		{
+ 			name: "unparseable hub-wide config",
+ 			breakConfig: func(t *testing.T, h *hubforge.Hub) (string, string, string) {
+-				// A stale board.yaml, which precedes fabric.yaml in the registry, is written before the fabric failure.
+-				board, _ := configreg.Lookup("board")
+-				gitkit.CommitFile(t, h.BoardDir(), configengine.ConfigFileRel("board"), board.Template()+"retired_fixture_key: 1\n", "fixture: stale board.yaml")
++				// A darn.yaml holding a retired key, which precedes fabric.yaml in the registry, is written before the fabric failure.
++				darn, _ := configreg.Lookup("darn")
++				gitkit.CommitFile(t, h.BoardDir(), configengine.ConfigFileRel("darn"), darn.Template()+"verify: make verify\n", "fixture: stale darn.yaml")
+ 				hubforge.SeedFabricConfig(t, h, "a: [unclosed\n")
+ 				return h.BoardDir(), h.BoardDir(), configengine.ConfigFile(h.BoardDir(), "fabric")
+ 			},
+@@ -1218,7 +1246,7 @@ func TestEnsure_UnreachableBoardRemoteSkipsHubWideConfigAndLeavesStampAbsent(t *
+ 
+ 	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 	geom := geometryOf(h)
+-	hubforge.SeedFabricConfig(t, h, staleHubWideConfig)
++	seedRetiredHubWideKey(t, h)
+ 	gitkit.Git(t, h.BoardDir(), "remote", "set-url", "origin", filepath.Join(t.TempDir(), "missing.git"))
+ 	before := commitCount(t, h.BoardDir())
+ 
+@@ -1243,7 +1271,7 @@ func TestEnsure_BoardWithNoRemoteCommitsHubWideConfigAndWritesStamp(t *testing.T
+ 	tiergate.Require(t, 1)
+ 	h := hubforge.NewHub(t, ".")
+ 	geom := geometryOf(h)
+-	hubforge.SeedFabricConfig(t, h, staleHubWideConfig)
++	seedRetiredHubWideKey(t, h)
+ 	gitkit.Git(t, h.BoardDir(), "remote", "remove", "origin")
+ 	before := commitCount(t, h.BoardDir())
+ 	spawned := recordBoardSyncs(t)
+@@ -1285,7 +1313,7 @@ func arrangeUnpushedHubWide(t *testing.T) *unpushedHubWide {
+ 	h := hubforge.NewHub(t, ".")
+ 	geom := geometryOf(h)
+ 	board := h.BoardDir()
+-	hubforge.SeedFabricConfig(t, h, staleHubWideConfig)
++	seedRetiredHubWideKey(t, h)
+ 	branch := gitkit.CurrentBranch(t, board)
+ 	gitkit.Git(t, board, "push", "-u", "origin", branch)
+ 	origin := gitkit.Git(t, board, "remote", "get-url", "origin")
+@@ -1359,7 +1387,7 @@ func TestEnsure_UnpushedHubWideCommitOverMovedUpstreamLeavesStampAbsent(t *testi
+ 	t.Run("an upstream that changed the same config file skips with the stamp absent", func(t *testing.T) {
+ 		logs := logcapture.Capture(t)
+ 		u := arrangeUnpushedHubWide(t)
+-		u.moveUpstream(t, u.hubWidePath, "branch_prefix: \"upstream\"\n")
++		u.moveUpstream(t, u.hubWidePath, "fixer_timeout_min: 7\n")
+ 
+ 		if err := hubreconcile.Ensure(u.geom, hubreconcile.Options{}); err != nil {
+ 			t.Fatalf("second Ensure: %v", err)
+diff --git a/internal/hubreconcile/walk.go b/internal/hubreconcile/walk.go
+index 95ae7a23..2c11a810 100644
+--- a/internal/hubreconcile/walk.go
++++ b/internal/hubreconcile/walk.go
+@@ -379,7 +379,7 @@ func boardErrorFor(boardDir string, err error) *WorktreeError {
+ func logResult(worktree string, result configsync.Result) {
+ 	logger.Info("hubreconcile: config changed", "worktree", worktree, "module", result.Module,
+ 		"added", result.Added, "removed", result.Removed, "migrated", result.Migrated,
+-		"stripped", result.Stripped, "inherited", result.Inherited,
++		"stripped", result.Stripped, "inherited", result.Inherited, "preserved", result.Preserved,
+ 		"moved", result.Moved, "keptTarget", result.KeptTarget, "keptExtra", result.KeptExtra, "dropped", result.Dropped, "overwritten", result.Overwritten, "copied", result.Copied)
+ }
+ 
+diff --git a/pattern/PATTERN-config-layers.md b/pattern/PATTERN-config-layers.md
+index 81d50f46..a84fba81 100644
+--- a/pattern/PATTERN-config-layers.md
++++ b/pattern/PATTERN-config-layers.md
+@@ -45,6 +45,13 @@ Judging a config document against its template goes only through `configengine`'
+ 
+ Reconciling a hub's config after a binary change goes only through `hubreconcile.Ensure`.
+ 
++## Keys the template lacks
++
++Only the operator's `lym config reconcile` removes, from a hub base or worktree file, a key the running template lacks and no retired key of the module covers: it alone sets `configsync`'s `PruneUnknown`.
++Every other reconcile, the binary-change walk, a clone and `lym fabric reconcile` included, keeps such a key and carries it in `configsync`'s `Result.Preserved`; the walk logs it when it writes the file.
++A binary older than the one that wrote a key cannot tell a key it never knew from one the template dropped, so an automatic removal would strip a newer binary's settings from the committed board.
++A local override file is pruned of every such key on any reconcile, since its load refuses one.
++
+ ## Strictness
+ 
+ `internal/configengine` offers `Load` (strict) and `LoadOrTemplate` (degrades to the embedded template); a caller adopts exactly one, except `runprofile`.
