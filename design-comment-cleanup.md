@@ -2,7 +2,7 @@
 
 `comment-cleanup` · Task · enhancement, fabric
 
-Depends on: [`cancel-remove-leftover-dir`](design-cancel-remove-leftover-dir.md), [`push-lock-busy-blocks`](design-push-lock-busy-blocks.md), [`drift-after-review`](design-drift-after-review.md), [`machine-env-vars`](design-machine-env-vars.md)
+Depends on: [`cancel-remove-leftover-dir`](design-cancel-remove-leftover-dir.md), [`push-lock-busy-blocks`](design-push-lock-busy-blocks.md), [`machine-env-vars`](design-machine-env-vars.md)
 
 ## Seen (operator and hub orch, 2026-10-31)
 
