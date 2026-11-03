@@ -41,7 +41,6 @@
       "revised": "2026-11-03T12:38:40Z",
       "owner_machine": "neve",
       "order": [
-        "codex-skills-guards",
         "codex-assist-seat"
       ],
       "beam": true,
@@ -731,29 +730,6 @@
       "revised": "2026-11-03T09:16:18Z"
     },
     {
-      "id": 1043,
-      "handle": "T3",
-      "slug": "codex-skills-guards",
-      "title": "Skills and every shell guard row on Codex",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "shuttle",
-        "codex"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Part 2 of project `codex-engine`.\nIts Sketch is the project's stored decision record: read it with `lym board get P2 --record`.\n\n## Build\n\n- Decisions D9 and D10 of the Sketch.\n\n## Bounds\n\n- The Sketch's Scope, Constraints, Open risks and Acceptance criteria bind this part as far as they concern these decisions.\n- The other decisions belong to the project's other parts: leave them out.\n",
-      "status": "done",
-      "created": "2026-11-03T12:38:40Z",
-      "revised": "2026-11-03T12:38:40Z",
-      "profile": "light",
-      "project": "codex-engine"
-    },
-    {
       "id": 1045,
       "handle": "T5",
       "slug": "codex-assist-seat",
@@ -767,9 +743,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "codex-skills-guards"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Part 4 of project `codex-engine`.\nIts Sketch is the project's stored decision record: read it with `lym board get P2 --record`.\n\n## Build\n\n- Decisions D1, D2 and D3 of the Sketch.\n- The parent decision added after Discussion, \"Opt-in Codex subagent fan allowed before Step 4\".\n- The assistant's report path as the parent decision \"Weft checkout as a Codex writable root\" leaves it.\n\n## Bounds\n\n- The Sketch's Scope, Constraints, Open risks and Acceptance criteria bind this part as far as they concern these decisions.\n- The other decisions belong to the project's other parts, landed before this one: build on them.\n",

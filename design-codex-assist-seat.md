@@ -2,8 +2,6 @@
 
 `codex-assist-seat` · Task · feature, burler, shuttle, codex · running · Darn-Write
 
-Depends on: [`codex-skills-guards`](design-codex-skills-guards.md)
-
 Part 4 of project `codex-engine`.
 Its Sketch is the project's stored decision record: read it with `lym board get P2 --record`.
 

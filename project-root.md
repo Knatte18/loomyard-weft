@@ -45,7 +45,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B3 |  | **Way-forward texts name lym board remove <slug>, which the verb refuses**<br>• adoptcli, fronttask and boardengine tell the reader to run lym board remove with a bare slug; the verb takes JSON or a bare handle | [`board-remove-slug-form`](design-board-remove-slug-form.md) | 7m<br>7m | board |
 | B4 |  | **drift.yaml joins dir onto the anchor, gate.yaml onto the worktree root**<br>• The same dir: dotnet runs the gate in dotnet/ and the Drift capture in dotnet/dotnet on a hub anchored at dotnet | [`drift-dir-base`](design-drift-dir-base.md) | 5m<br>5m | drift, gate, config |
 | B5 |  | **A Drift step in a missing dir fails as fork/exec /usr/bin/sh, with a way forward that repeats it**<br>• Drift spawns without checking its dir, blames the shell, and names no config key or location | [`drift-missing-dir-error`](design-drift-missing-dir-error.md) | 5m<br>5m | drift |
-| B6 | L | **loom status --watch prints every poll while a verify runs**<br>• The verify wait text carries its elapsed seconds, so the watch sees a change on every poll | [`watch-elapsed-churn`](design-watch-elapsed-churn.md) | 3m<br>3m | loom, cli |
+| B6 | L | **loom status --watch prints every poll while a verify runs**<br>• The verify wait text carries its elapsed seconds, so the watch sees a change on every poll | [`watch-elapsed-churn`](design-watch-elapsed-churn.md) | 4m<br>4m | loom, cli |
 
 ### Enhancements (12)
 
