@@ -36,7 +36,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 ## [P2 Stress test of codexengine: every designed capability, hooks above all](project-codex-engine-trial.md) (3)
 
-[`codex-engine-trial`](design-codex-engine-trial.md) · Age 16m · Owner `neve`
+[`codex-engine-trial`](design-codex-engine-trial.md) · Age 17m · Owner `neve`
 
 Real Codex launches through lym shuttle check home, sandbox, hooks, guards, pane, skills and load
 
@@ -78,7 +78,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **A project page shows the project body under its brief**<br>• The project page links the body only through the slug; render it in the page itself | [`project-body-in-render`](design-project-body-in-render.md) | darn · speed | PR-Review | neve | 15m<br>15m | board |
+| T1 | **A project page shows the project body under its brief**<br>• The project page links the body only through the slug; render it in the page itself | [`project-body-in-render`](design-project-body-in-render.md) | darn · speed | Finalize | neve | 15m<br>15m | board |
 | T9 | **lym fabric push lock held past 30s blocks the loom run at PR-Review as escalation-to-human** | [`push-lock-busy-blocks`](design-push-lock-busy-blocks.md) | darn · light | Describe | neve | 2h<br>2h | fabric, landing |
 
 #### Ready (0)
