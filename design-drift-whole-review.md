@@ -1,6 +1,6 @@
 # Review Drift as a whole and redesign it from the trials
 
-`drift-whole-review` · Note · research, drift, stencil, loom
+`drift-whole-review` · Task · research, drift, stencil, loom · draft
 
 ## Seen (operator and hub orch, 2026-11-03)
 
