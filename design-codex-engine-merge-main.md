@@ -1,6 +1,6 @@
 # Merge main into the codex-engine beam and resolve every conflict
 
-`codex-engine-merge-main` · Task · feature, codex, shuttle · running · Drift-Baseline
+`codex-engine-merge-main` · Task · feature, codex, shuttle · running · Drift-Await
 
 ## Build
 
