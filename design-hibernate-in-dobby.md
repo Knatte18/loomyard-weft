@@ -1,6 +1,6 @@
 # The hibernate request is carried by dobby, not a daemon of its own
 
-`hibernate-in-dobby` · Note · enhancement, dobby
+`hibernate-in-dobby` · Task · enhancement, dobby · draft
 
 ## Seen (operator, 2026-10-31)
 
