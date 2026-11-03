@@ -1,4 +1,4 @@
-# Every remote operation runs async, and local-only fabric pairs stay an explicit choice only
+# Every remote operation runs async, and local-only fabric pairs go
 
 `fabric-remote-async` · Task · enhancement, fabric, batten
 
