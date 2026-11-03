@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Parent-Align",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Drift-Await → skipped",
+    "now": "Parent-Align",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -177,6 +177,21 @@
       "output": "",
       "at": "2026-11-03T10:29:27Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/pawl-checklist-hidden-in-beam/_lym/webster/summary.md",
+      "at": "2026-11-03T10:51:48Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-03T10:43:52.707181088Z",
+          "end": "2026-11-03T10:51:47.459263177Z"
+        }
+      ]
     }
   ],
   "product": {
