@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Burler-Fix",
+  "current_producer": "Discussion-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Burler-Fix",
-    "last": "Discussion-Burler-Review → bounced to Discussion-Burler-Fix",
+    "now": "Discussion-Bouncer",
+    "last": "Discussion-Burler-Fix → bounced to Discussion-Bouncer",
     "wait": ""
   },
   "history": [
@@ -53,6 +53,35 @@
       ],
       "budget_exempt": true,
       "routed_to": "Discussion-Burler-Fix"
+    },
+    {
+      "producer": "Discussion-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/batten-remote-order/_lym/reviews/discussion/round-1-review.md",
+      "at": "2026-11-03T08:04:28Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-11-03T08:03:53.437163896Z",
+          "end": "2026-11-03T08:03:54.24330016Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "rework",
+          "start": "2026-11-03T08:03:54.652621129Z",
+          "end": "2026-11-03T08:04:11.681624928Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-11-03T08:04:11.710766533Z",
+          "end": "2026-11-03T08:04:27.87951366Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Discussion-Bouncer"
     }
   ],
   "product": {
