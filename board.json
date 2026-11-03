@@ -39,7 +39,8 @@
       "status": "running · Discussion-Bouncer",
       "created": "2026-10-03T17:27:16Z",
       "revised": "2026-11-03T11:27:55Z",
-      "profile": "solid"
+      "profile": "solid",
+      "discussed": true
     },
     {
       "id": 70,
