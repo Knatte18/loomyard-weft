@@ -1,11 +1,11 @@
 {
-  "current_producer": "Motif",
+  "current_producer": "Discussion-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Motif",
-    "last": "Preflight → done",
+    "now": "Discussion-Write",
+    "last": "Motif → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-11-03T09:46:42Z"
+    },
+    {
+      "producer": "Motif",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-03T09:46:43Z"
     }
   ],
   "product": {
