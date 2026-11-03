@@ -1,0 +1,1262 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index bbee5d69..a6848d37 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -421,7 +421,7 @@ User-facing modules each get one `lym <module>` namespace:
+   Callable from any sandbox agent context with no config. ✅ Implemented.
+ - **reed** — **the window to the world**: tmux overlay + **strand** bookkeeping + render (`internal/reedcli` + `internal/reedengine` + `internal/reedengine/render`). Hosts every managed process as a strand in a window of its own or its group's, persists to `.lym/reed.json` (`lym reed up|add|remove|status|list|attach|switch|resume|watchdog|down`); `lym reed add` places a strand `--anchor own-window` by default. Every strand carries a hierarchical full name (see the `internal/agentname` package documentation), mirrored into its pane title and Claude session name and exported to its process as `LYM_STRAND_NAME` and `LYM_PARENT`, with the watchdog repairing drift; `list` is the hub-wide name directory. Built on what its proof-of-concept, `muxpoc`, proved first (env hygiene, native `--resume`); `muxpoc` has since been deleted, its job done. `reed attach` and `reed watchdog` are this module's two registered interactive-handoff exceptions ([PATTERN-cli-cobra](../pattern/PATTERN-cli-cobra.md)): `attach` hands the operator's stdio to a `tmux attach-session` child in place, pre-flighting through checking tmux's floor version, booting the session if cold and checking server/session liveness, and `watchdog` is the detached per-hub name-repair and reap daemon that blocks for its process lifetime — in both cases every fallible step runs pre-flight, on the envelope, and only the terminal-handover/daemon tail itself is exempt from emitting JSON. `add` and `attach` boot this worktree's session when none is up, with `up`'s own semantics — a bare substrate, with no persisted strand relaunched — instead of refusing; every other reed verb still refuses on a cold worktree. ✅ Implemented. See the `internal/reedengine` package documentation.
+ - **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengines` + `internal/shuttlecli`; `lym shuttle run|open|state|await|await-forks`). `lym shuttle open` starts a named session with no turn in its own window, which closes when the session exits; `--model` takes a model spec naming the engine, model and effort, `--list-models` prints the model registry's aliases with their engine, model and default effort, and the output names the engine, model and effort the session got. Every session shuttle launches, run or opened, starts in its engine's bypass mode unless the caller passes `prompt`, which an interactive session accepts. `lym shuttle await <path>... [--cap]` is the read-only capped wait on one or more files, the keep-cache-warm wait any agent can run, needing no hub or git repository; its cap defaults to the caller role's keep-warm cap from `claude.yaml`. `lym shuttle await-forks [--cap]` is the same capped wait over the forks the calling agent session spawned, read from its transcript through the engine: a reviewer, fixer or writer that waits inside it takes every fork's result in one turn instead of waking once per fork. `lym shuttle state` is read-only: it lists the session state of each running run (busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with its cause, since and history), read from the run's files, in shadow mode where no stop or notice depends on it. `Stop`-hook completion is read off an events file and classified into three outcomes — `done`/`died`/`timeout`. A turn end without every output file never ends a run: `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call). An autonomous run notifies its parent once per held turn end as creel mail to the orch, and once per permission or input dialog its pane shows past 60 s, and an interactive run is answered in its pane; a line typed into a run's pane goes through `lym creel post`, `lym creel inject` or `lym creel interrupt`, never a shuttle verb. Background work is read off the Stop payload's `background_tasks` first, with the transcript as the fallback when the payload carries no list; a turn end with outstanding work is waiting, not held, unless its only outstanding work is non-awaited shells, which a gated run judges as a plain turn end and an ungated run holds once they pass the shell wait bound. `Attach` waits on a held run, and on a legacy `asking` record whose strand is still live, instead of respawning beside it. `died` is narrow: it means a strand reed STILL TRACKS has a pane that is not alive, the provider never came up inside the startup window, or the provider's process is proven gone behind a live pane shell (by the process registry, or a process-ending `SessionEnd` line past the wait's first liveness tick), with `done` instead when every output file exists. Reed's strand table losing the strand entirely — a `reed down`/`remove`, a deleted or rebuilt `reed.json`, a worktree renamed under an in-flight run — is reported as a mechanism failure carrying the run's identity, never as `died`, because reed's bookkeeping going away says nothing about the agent, whose process is often still working in its pane; the exception is a handle whose own `Stop` removed the strand, which ends `died` and is recorded as stopped unless the files show the run done. No guardrail denies the in-process `Agent` tool: a subagent or fork shows in the session's own pane and lym reads its transcript under the session's `subagents` directory. A `PreToolUse` guardrail denies `AskUserQuestion` when the run is autonomous (`Interactive: false`, the default); a `PreToolUse(Bash)` guardrail denies `python`, `python3` and `python3.<minor>` in command position in every run mode, a version check included (on by default, switchable off via `shuttle.yaml`'s `deny_python`), and a second `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a raw module-wide `go test`, `go build` or `go vet`, a raw `go test` over the `tmux` or `llm` tier, and any command naming the gate-slot or strand-name environment variable, steering the session to `lym gate test`, and to a package-scoped compile check the hub's `refuse_raw` does not refuse, and a third `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies an `rm` on a computed path (a command substitution or a variable expansion in the command) so no permission dialog stalls the run, and a fourth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies `sed -i`, `perl -i`, and a redirect, heredoc or `tee` into a source file, steering the session to read a file with Read and change it with Edit or Write, and a fifth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a headless `claude` launch with `-p` or `--print`, whose work shows in no pane, steering the session to a subagent through the `Agent` tool; the python deny's steer carries the same edit rule. The engine announces each deny it installs to the session's system prompt, and every Claude session it launches with a run directory also gets the creel trust sentence, through one `append-system-prompt.txt` file named by `--append-system-prompt-file` on launch and resume, so a session knows the tool is unavailable before it tries one and follows `[creel]` mail from its hooks. The engine sets the prompt-cache TTL per role on launch and resume from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role). `claude.yaml`'s `keep_warm_cap` (template 250s) and `keep_warm_cap_roles` set the per-role keep-warm cap beside them. While `claude.yaml`'s `batching_nudge` block is on, a `PostToolUse` hook after each `Read`, `Grep`, `Glob`, `Edit` or `Write` call runs the hidden `lym shuttle hook-batching`, which adds one line naming the breach and quoting the rule to a session above the block's context threshold whose recent messages make a chain of single lookups, a sliced read of a short or already-read file, or a chain of edit-only messages; it never denies a call, and the block's switches and thresholds are config. The provider is swappable behind an **engine** seam; the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, Claude being the one registered engine. Per-run `Model`/`Effort` knobs (`lym shuttle run --model`/`--effort`; effort values `low|medium|high|xhigh|max`, empty = provider default) are engine-validated, not policed by `Spec.validate`. `Spec.Version` is a programmatic engine-validated version pin (claudeengine composes the pinned model id; no CLI flag — consumers drive it via the model-spec notation's `v=` param). Starting a run returns only once its provider is past its startup gates, and a provider that never comes up is torn down (run dir and last pane capture kept) and reported as an error from `Start`, or as `died`/`timeout` from `Run`. ✅ Implemented. See the `internal/shuttleengine` package documentation.
+-- **orch** — the hub orchestrator hosted as an interactive Claude session in a reed strand of the prime worktree or of a beam, cycled before its context fills (`internal/orchcli` + `internal/orchengine`; `lym orch stop|status|refresh|distill|withdraw|rules`, in the prime and in any beam). `lym beam start` first ensures the worktree's `runs` strand, which runs `lym batten overview` as the beam's window, named `beam: prime` or `beam: <slug>`, and `stop` leaves it; ensuring it replaces a `loom-status` strand a pawl run's `lym loom start` put in the overview window first, and a failure to add, replace or record it is a warning on the bring-up report naming `lym beam start`, never a stop; the orchestrator has a window of its own, and the session's windows run the beam window, agents, shell. A detached watcher has the session write a note, then clears it and resumes it from that note (`refresh`) or compacts it in place (`distill`), never clearing or compacting without one. ✅ Implemented. See the `internal/orchengine` package documentation.
++- **orch** — the hub orchestrator hosted as an interactive Claude session in a reed strand of the prime worktree or of a beam, cycled before its context fills (`internal/orchcli` + `internal/orchengine`; `lym orch stop|status|refresh|distill|withdraw|rules`, in the prime and in any beam). `lym beam start` first ensures the worktree's `runs` strand, which runs `lym batten overview` as the beam's window, named `beam: prime` or `beam: <slug>`, and `stop` leaves it; ensuring it adds the runs strand beside a `loom-status` strand a pawl run's `lym loom start` put in an overview window first, as the session's first overview window, and a failure to add, replace or record it is a warning on the bring-up report naming `lym beam start`, never a stop; the orchestrator has a window of its own, and the session's windows run the beam window, agents, shell. A detached watcher has the session write a note, then clears it and resumes it from that note (`refresh`) or compacts it in place (`distill`), never clearing or compacting without one. ✅ Implemented. See the `internal/orchengine` package documentation.
+ - **webster** — the implementer module: one long-lived Master session that reads the plan and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool), each fork reading its cards' code itself, instead of spawning a fresh reed/tmux strand per batch;
+   bracket verbs (`begin-batch`/`record-batch`) drive each in-session fork (Master ends its turn while a backgrounded fork works and records the batch on the fork's completion notification, shuttle reading that turn end as waiting rather than done), and a genuine model escalation (recovery after a stuck/report-less fork) spawns a cold strand.
+   Consumes the flat card-list plan (pinned in the plan-format blocks `contracts/stencils/loom/loom-block-plan-*.md`, which `contracts/stencils/loom/loom-template-plan.md`, the Plan producer's own stencil, includes) via its own sole parser, `internal/planparser`, groups cards into execution batches via `internal/batcher`, a separate config-selected registry module webster consumes (profiles in `batcher.yaml`, the `wide` cost profile by default), then runs those batches in card order, refusing a backward dependency derived from the cards' own `Targets`/`Uses` refs, records the partition in `state.json` at first init, and carries the plan's `## verify:` command as a must-pass gate on Merriam's strand: a failure is rerun once (a pass on the rerun records the identities as flaky;
+@@ -541,7 +541,7 @@ User-facing modules each get one `lym <module>` namespace:
+   the darn gates run the diff's impacted set or their row key over the touched trees' targets, and `tree_scope` in `darn.yaml` scopes a non-production diff at every verify site, Finalize included.
+   `lym loom resume` re-spawns `Darn-Write`, `lym loom goto --to Darn-Write` re-enters it and keeps the spent review budget and any settled review verdict.
+   A darn run whose status file still names the writer row's former name, `Darn`, is renamed onto `Darn-Write` when a `lym loom` verb arms it.
+-  `start` is the session bootstrap, performing four steps in order: resolve the recorded parent branch and seed+commit the status file with the records when it is absent; ensure the worktree's tmux session is up, keep or add the status strand, which runs the hidden `lym loom checklist` verb as the session's overview window, or in a window of its own that never takes the viewer when a beam's `runs` strand holds the overview, on either driver, then spawn the per-hub watchdog daemon, best-effort; read this run's seed and, unless a driver is already alive, spawn the driver its recorded choice selects — the detached Go driver, `internal/sheddriver` mounted by `lym loom drive`, whose driver lock the handshake waits for, or a Claude strand running the loom driver in this worktree's own reed session, in a window of its own after the overview and before the shell; and print the success envelope, never attaching a tmux client (`lym reed attach` shows the session) — the operator's terminal is Selvage, not a strand. `step` brings the tmux session up and never adds or removes the status strand.
++  `start` is the session bootstrap, performing four steps in order: resolve the recorded parent branch and seed+commit the status file with the records when it is absent; ensure the worktree's tmux session is up, keep or add the status strand, which runs the hidden `lym loom checklist` verb in an overview window named for the run's recipe, right after the `runs` strand's in a beam's session, on either driver, then spawn the per-hub watchdog daemon, best-effort; read this run's seed and, unless a driver is already alive, spawn the driver its recorded choice selects — the detached Go driver, `internal/sheddriver` mounted by `lym loom drive`, whose driver lock the handshake waits for, or a Claude strand running the loom driver in this worktree's own reed session, in a window of its own after the overview and before the shell; and print the success envelope, never attaching a tmux client (`lym reed attach` shows the session) — the operator's terminal is Selvage, not a strand. `step` brings the tmux session up and never adds or removes the status strand.
+   `start` and `resume` are the sites that read a recorded seed's driver value, per the `internal/loomcli` package documentation.
+   `start` resumes a parked loom driver by typing one line into its pane (returning once the line's delivery is verified), and refuses after a bounded wait when the pane is not ready, since the driver may have resumed on its own.
+   A live driver over a run halted at a hand-back with no park marker yet is still writing its stop report, and a Go driver holding its driver lock is still settling the stop, so `start` refuses with the retryable kind `driver_not_parked`;
+@@ -685,7 +685,7 @@ User-facing modules each get one `lym <module>` namespace:
+ - **batten** — drives one task worktree's whole lifecycle — create, seed the child's own inner run from the Board task's own `recipe` (`tapestry`, `arras` for an arras child, `darn` for a darn child or `sampler` for a sampler child, empty meaning `board.yaml`'s `default_recipe`), run it to a terminal state, land it into the prime, and tear down — as a single Shed run from the hub's prime worktree (`internal/battenshed` + `internal/battenrecipe` + `internal/battencli`; `lym batten run|step|status|pause|goto|cancel <run-id>`, `lym batten lock list|release` for the hub's parent locks, and `lym batten cleanup [--apply]`).
+   `lym batten cancel <slug> [--remove]` ends a run for good from the prime, whatever its state, leaving its claim `draft` and removing its records, and with `--remove` its pair and task branches.
+   The hidden `lym batten overview` is the pane process of the `runs` strand of the prime and of each beam, which `lym beam start` ensures, in the beam's window named `beam: prime` or `beam: <slug>`.
+-  Ensuring it replaces a `loom-status` strand a pawl run's `lym loom start` put in the overview window first, and a failure to add, replace or record it is a warning on the bring-up report, never a stop.
++  Ensuring it adds the runs strand beside a `loom-status` strand a pawl run's `lym loom start` put in an overview window first, as the session's first overview window, and a failure to add, replace or record it is a warning on the bring-up report, never a stop.
+   It draws the dobby of its own worktree first: alive or not, each run it drives once, with its state, stage, time in stage and last pass, and each released task it has not started with what the task waits on, the lines `lym beam status` prints.
+   The stage cell carries the stage's entry number (`7. Land`, `6.5 Plan-Write` for a child stage under Run-Shed), and a run a live pause covers shows `paused <minutes>` in its state cell.
+   Below the dobby come the orch lines of the worktree's own orch and of every beam below it, every orch in the prime's window.
+@@ -819,7 +819,7 @@ See [PATTERN-cwd-resolution](../pattern/PATTERN-cwd-resolution.md) for the rule.
+ - **provider-invariant** — `shuttle` runs Claude today through an **engine**;
+   the verdict/output contract is provider-invariant, so a different model can be swapped in without touching the review machinery.
+   Non-Claude is not a current priority.
+-- **the bootstrap** — `lym loom start` brings up the worktree's tmux session, on either driver keeps or adds the `lym loom checklist` status strand, the session's overview window, or a window of its own that never takes the viewer when a beam's `runs` strand holds the overview, one frame of the recipe's rows in order with their visit lines under them and then the state and wait lines (replaced in its slot when the live one was launched from a different `lym` build), spawns the per-hub watchdog daemon (best-effort), and spawns the driver the run's own seed selects: the Go driver **detached** (via `proc`, no TTY), or a Claude strand running the loom driver in this same reed session for the `llm` driver.
++- **the bootstrap** — `lym loom start` brings up the worktree's tmux session, on either driver keeps or adds the `lym loom checklist` status strand, in an overview window named for the run's recipe, right after the `runs` strand's in a beam's session, one frame of the recipe's rows in order with their visit lines under them and then the state and wait lines (replaced in its slot when the live one was launched from a different `lym` build), spawns the per-hub watchdog daemon (best-effort), and spawns the driver the run's own seed selects: the Go driver **detached** (via `proc`, no TTY), or a Claude strand running the loom driver in this same reed session for the `llm` driver.
+   When the `llm` driver is live and parked at a hand-back, it spawns nothing and instead types one resume line into that driver's pane.
+   It then returns the success envelope and never attaches or switches a tmux client; `lym reed attach` shows the session.
+   Selvage is the operator's terminal, not a strand.
+diff --git a/internal/loomcli/bootstrap.go b/internal/loomcli/bootstrap.go
+index 991b3718..eccaeb82 100644
+--- a/internal/loomcli/bootstrap.go
++++ b/internal/loomcli/bootstrap.go
+@@ -23,23 +23,18 @@ import (
+ // so the bootstrap's re-entrant call finds the pane it created on an earlier invocation instead of having its add refused.
+ const statusStrandDisplayName = loomengine.LoomStatusStrandName
+ 
+-// statusStrandAddSpec builds the status strand's reedengine.AddSpec for the given pane command, placed by the session's strands.
+-// It takes the session's overview window, unless strands hold a beam's runs strand, which holds that window in a beam's session.
+-// There it takes a window of its own that never takes the viewer, since reed refuses a second overview strand.
+-// Either way it has no size and no segment, so its window button takes the plain style.
++// statusStrandOrder is the status strand's overview order key, one place after the runs strand's, so the checklist window sits right after the beam overview.
++const statusStrandOrder = orchcli.RunsStrandOrder + 1
++
++// statusStrandAddSpec builds the status strand's reedengine.AddSpec for the given pane command and the run's recipe name.
++// It always takes an overview window titled with the recipe, ordered after the runs strand's window when the session has one.
++// It has no size and no segment, so its window button takes the plain style.
+ // IfAbsent stays false because ensureStatusStrand does its own keep/replace/add dance.
+-func statusStrandAddSpec(cmd string, strands []reedengine.StrandStatus) reedengine.AddSpec {
+-	display := render.Display{Anchor: render.AnchorOverview}
+-	for _, s := range strands {
+-		if agentname.Matches(s.Name, orchcli.RunsStrandName) {
+-			display = render.Display{Anchor: render.AnchorOwnWindow, KeepViewer: true}
+-			break
+-		}
+-	}
++func statusStrandAddSpec(cmd, recipe string) reedengine.AddSpec {
+ 	return reedengine.AddSpec{
+ 		NameOverride: statusStrandDisplayName,
+ 		Cmd:          cmd,
+-		Display:      display,
++		Display:      render.Display{Anchor: render.AnchorOverview, Order: statusStrandOrder, Title: recipe},
+ 	}
+ }
+ 
+diff --git a/internal/loomcli/bootstrap_test.go b/internal/loomcli/bootstrap_test.go
+index 23f4e3ce..cb57f9a4 100644
+--- a/internal/loomcli/bootstrap_test.go
++++ b/internal/loomcli/bootstrap_test.go
+@@ -15,6 +15,7 @@ import (
+ 	"github.com/google/go-cmp/cmp"
+ 
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
++	"github.com/Knatte18/loomyard/internal/orchcli"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/reedengine/render"
+ 	"github.com/Knatte18/loomyard/internal/shell"
+@@ -668,17 +669,19 @@ func TestStatusStrandAddSpec(t *testing.T) {
+ 	t.Parallel()
+ 	tests := []struct {
+ 		name        string
+-		strands     []reedengine.StrandStatus
++		recipe      string
+ 		wantDisplay render.Display
+ 	}{
+-		{"NoStrandsTakesTheOverview", nil, render.Display{Anchor: render.AnchorOverview}},
+-		{"OtherStrandsLeaveItTheOverview", []reedengine.StrandStatus{{GUID: "o", Name: "tst:main:orch", Live: true}}, render.Display{Anchor: render.AnchorOverview}},
+-		{"ABeamRunsStrandSendsItToAWindowOfItsOwn", []reedengine.StrandStatus{{GUID: "r", Name: "runs", Live: true}}, render.Display{Anchor: render.AnchorOwnWindow, KeepViewer: true}},
++		{"PawlRecipeTitlesTheWindowPawl", "pawl", render.Display{Anchor: render.AnchorOverview, Order: statusStrandOrder, Title: "pawl"}},
++		{"TapestryRecipeTitlesTheWindowTapestry", "tapestry", render.Display{Anchor: render.AnchorOverview, Order: statusStrandOrder, Title: "tapestry"}},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			got := statusStrandAddSpec("watch-cmd", tt.strands)
++			got := statusStrandAddSpec("watch-cmd", tt.recipe)
++			if got.Display.Order <= orchcli.RunsStrandOrder {
++				t.Errorf("Display.Order = %d; want it after the runs strand's %d", got.Display.Order, orchcli.RunsStrandOrder)
++			}
+ 			if got.NameOverride != statusStrandDisplayName {
+ 				t.Errorf("NameOverride = %q; want %q", got.NameOverride, statusStrandDisplayName)
+ 			}
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index b49fedc1..5150aa11 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -59,7 +59,7 @@
+ // a seeded run keeps its recorded driver whatever the key says later.
+ // It brings up the worktree's tmux session;
+ // it ensures the status strand on either driver, and the per-hub watchdog daemon is spawned best-effort.
+-// The status strand runs the hidden `lym loom checklist` verb in the session's overview window, or, in a beam's session where the beam's `runs` strand holds that window, in a window of its own that never takes the viewer, drawing the checklist frame: the recipe's rows in order, each entry numbered after its box and a review segment taking one number, each with its box, a row the run passed on a false entry gate and never visited boxed `[-]` apart from one not reached, the time spent in it, its visit count and its visit lines under it, each carrying no output path, a gate line per gate entry under a visit that recorded gate spans, opening with the UTC clock time its gate entry started, the visit after a gate row's refusal marked as rework for it and its time added to the gate row's line, a review segment's rounds each carrying their total, every closed time drawn to the second and every time that includes the open visit in whole minutes, then the run's state line, with the note of what a running run waits on (the same note `lym loom status` reports), and the wait line.
++// The status strand runs the hidden `lym loom checklist` verb in an overview window named for the run's recipe, placed right after the runs strand's overview window in a beam's session, drawing the checklist frame: the recipe's rows in order, each entry numbered after its box and a review segment taking one number, each with its box, a row the run passed on a false entry gate and never visited boxed `[-]` apart from one not reached, the time spent in it, its visit count and its visit lines under it, each carrying no output path, a gate line per gate entry under a visit that recorded gate spans, opening with the UTC clock time its gate entry started, the visit after a gate row's refusal marked as rework for it and its time added to the gate row's line, a review segment's rounds each carrying their total, every closed time drawn to the second and every time that includes the open visit in whole minutes, then the run's state line, with the note of what a running run waits on (the same note `lym loom status` reports), and the wait line.
+ // A Stuck visit whose status entry records where Shed routed it reads `bounced` and an awaiting one reads `escalated`, in this window only.
+ // A block row's Done visit reads `entered`, and a row inlined from a block is named `<row> in <block path>` on its line and its visit lines.
+ // The verb reads the status file and the seed without arming a run, and reports no content size to reed.
+diff --git a/internal/loomcli/sharedbootstrap.go b/internal/loomcli/sharedbootstrap.go
+index 282310f6..d1568691 100644
+--- a/internal/loomcli/sharedbootstrap.go
++++ b/internal/loomcli/sharedbootstrap.go
+@@ -297,7 +297,7 @@ func (c *loomCLI) ensureStatusStrand() error {
+ 	if err != nil {
+ 		return err
+ 	}
+-	addSpec := statusStrandAddSpec(statusStrandCmd(shell.ForGOOS(), exe), statusResult.Strands)
++	addSpec := statusStrandAddSpec(statusStrandCmd(shell.ForGOOS(), exe), c.recipe)
+ 	var strand reedengine.Strand
+ 	if strandAction == statusStrandReplace {
+ 		// A replace goes through ReplaceStrand so the status strand keeps its top slot. A failure is
+diff --git a/internal/loomcli/smoke_drivingsurface_test.go b/internal/loomcli/smoke_drivingsurface_test.go
+index 69b14db0..789ce304 100644
+--- a/internal/loomcli/smoke_drivingsurface_test.go
++++ b/internal/loomcli/smoke_drivingsurface_test.go
+@@ -2,7 +2,7 @@
+ // On the start side, an llm-seeded start keeps exactly one status strand.
+ // On the step side, "lym loom step" and "lym shed step" bring reed up and never add, replace or remove a status strand, whatever driver the run was seeded with.
+ // A start re-arms the session's follow state and selects the run's relevant window, and a resume leaves a follow-off session off.
+-// A start in a session whose overview window a runs strand holds adds the status strand in a window of its own.
++// A start puts the status strand in the overview window after the runs strand, replacing an own-window one an older build left.
+ // ensureStatusStrand's branches are pinned at Tier 1 through resolveStatusStrandAction;
+ // what only a real tmux server can show is that a step leaves reed's strand table without a status strand, and leaves a pre-existing one alone.
+ //
+@@ -13,6 +13,7 @@ package loomcli
+ 
+ import (
+ 	"os/exec"
++	"strconv"
+ 	"strings"
+ 	"testing"
+ 	"time"
+@@ -22,6 +23,8 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/orchcli"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/reedengine/render"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/statuspane"
+ 	"github.com/Knatte18/loomyard/internal/testkit/lymbin"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+@@ -123,7 +126,7 @@ func TestSmokeStatusStrandAcrossDriverSeeds(t *testing.T) {
+ 			if _, err := eng.Up(); err != nil {
+ 				t.Fatalf("reed up: %v", err)
+ 			}
+-			added, err := eng.AddStrand(statusStrandAddSpec("sleep 3600", nil))
++			added, err := eng.AddStrand(statusStrandAddSpec("sleep 3600", shedrun.RecipeTapestry))
+ 			if err != nil {
+ 				t.Fatalf("add status strand: %v", err)
+ 			}
+@@ -172,8 +175,8 @@ func TestSmokeStatusStrandAcrossDriverSeeds(t *testing.T) {
+ 		})
+ 	})
+ 
+-	// A beam's session holds a runs strand in the overview window, so a start there adds the status strand in a window of its own.
+-	t.Run("start beside a runs strand adds the status strand in its own window", func(t *testing.T) {
++	// A beam's session holds a runs strand in its first overview window, and an older build left the status strand in a window of its own with a sidecar naming another build, so a start puts the status strand into the overview window after the runs strand's.
++	t.Run("start beside a runs strand puts an own-window status strand into the overview window after it", func(t *testing.T) {
+ 		_, loc, worktree, _ := newWiredPairFixture(t)
+ 		registerBootstrapTeardown(t, loc, worktree)
+ 		seedLLMDriver(t, loc)
+@@ -185,11 +188,23 @@ func TestSmokeStatusStrandAcrossDriverSeeds(t *testing.T) {
+ 		runsSpec := reedengine.AddSpec{
+ 			NameOverride: orchcli.RunsStrandName,
+ 			Cmd:          "sleep 3600",
+-			Display:      render.Display{Anchor: render.AnchorOverview},
++			Display:      render.Display{Anchor: render.AnchorOverview, Order: orchcli.RunsStrandOrder, Title: "beam: smoke"},
+ 		}
+ 		if _, err := eng.AddStrand(runsSpec); err != nil {
+ 			t.Fatalf("add runs strand: %v", err)
+ 		}
++		older, err := eng.AddStrand(reedengine.AddSpec{
++			NameOverride: statusStrandDisplayName,
++			Cmd:          "sleep 3600",
++			Display:      render.Display{Anchor: render.AnchorOwnWindow, KeepViewer: true},
++		})
++		if err != nil {
++			t.Fatalf("add the older status strand: %v", err)
++		}
++		olderBuild := statuspane.BuildIdentity{Path: "/older/lym", Size: 9, ModTime: 9}
++		if err := statuspane.WriteSidecar(statusSidecarPath(loc), older.GUID, olderBuild); err != nil {
++			t.Fatalf("write the status sidecar: %v", err)
++		}
+ 
+ 		out, _, err := runLoomCLIWithEnvNoFatal(exe, worktree, skipWalkPush, verbSmokeTimeout, "loom", "start", "--no-attach")
+ 		if err != nil {
+@@ -199,11 +214,46 @@ func TestSmokeStatusStrandAcrossDriverSeeds(t *testing.T) {
+ 		if count := statusStrandCount(t, eng, statusStrandDisplayName); count != 1 {
+ 			t.Fatalf("status strands after the start = %d; want 1; output: %s", count, out)
+ 		}
+-		statusWindow := windowID(t, eng, statusStrandPane(t, eng))
+-		runsWindow := windowID(t, eng, strandPane(t, eng, orchcli.RunsStrandName))
+-		if statusWindow == runsWindow {
++		status, err := eng.Status()
++		if err != nil {
++			t.Fatalf("reed status: %v", err)
++		}
++		for _, s := range status.Strands {
++			if agentname.Matches(s.Name, statusStrandDisplayName) && s.GUID == older.GUID {
++				t.Errorf("status strand guid = %s, the older strand's; want it replaced; output: %s", s.GUID, out)
++			}
++		}
++		statusPane := statusStrandPane(t, eng)
++		statusWindow := windowID(t, eng, statusPane)
++		runsPane := strandPane(t, eng, orchcli.RunsStrandName)
++		if statusWindow == windowID(t, eng, runsPane) {
+ 			t.Errorf("status strand window = %s, the runs strand's window; want a window of its own; output: %s", statusWindow, out)
+ 		}
++		display := func(pane, format string) string {
++			t.Helper()
++			shown, err := exec.Command(tmuxBinaryPath(t), "-L", eng.Socket(), "display-message", "-p", "-t", pane, format).Output()
++			if err != nil {
++				t.Fatalf("read %s of %s: %v", format, pane, err)
++			}
++			return strings.TrimSpace(string(shown))
++		}
++		if got := display(statusPane, "#{@lym_overview}"); got != "1" {
++			t.Errorf("status window @lym_overview = %q; want 1; output: %s", got, out)
++		}
++		if got := display(statusPane, "#{window_name}"); got != shedrun.RecipeTapestry {
++			t.Errorf("status window name = %q; want %q, the seeded recipe; output: %s", got, shedrun.RecipeTapestry, out)
++		}
++		statusIndex, err := strconv.Atoi(display(statusPane, "#{window_index}"))
++		if err != nil {
++			t.Fatalf("status window index: %v", err)
++		}
++		runsIndex, err := strconv.Atoi(display(runsPane, "#{window_index}"))
++		if err != nil {
++			t.Fatalf("runs window index: %v", err)
++		}
++		if statusIndex != runsIndex+1 {
++			t.Errorf("status window index = %d; want %d, one above the runs window; output: %s", statusIndex, runsIndex+1, out)
++		}
+ 	})
+ 
+ 	t.Run("llm driver", func(t *testing.T) {
+@@ -226,7 +276,7 @@ func TestSmokeStatusStrandAcrossDriverSeeds(t *testing.T) {
+ 			if _, err := eng.Up(); err != nil {
+ 				t.Fatalf("reed up: %v", err)
+ 			}
+-			if _, err := eng.AddStrand(statusStrandAddSpec("sleep 3600", nil)); err != nil {
++			if _, err := eng.AddStrand(statusStrandAddSpec("sleep 3600", shedrun.RecipeTapestry)); err != nil {
+ 				t.Fatalf("add status strand: %v", err)
+ 			}
+ 			if count := statusStrandCount(t, eng, statusStrandDisplayName); count != 1 {
+diff --git a/internal/loomengine/driver.go b/internal/loomengine/driver.go
+index ebe8db0c..92bf51ae 100644
+--- a/internal/loomengine/driver.go
++++ b/internal/loomengine/driver.go
+@@ -23,8 +23,7 @@ import (
+ const LoomDriverStrandName = agentname.RoleDriver
+ 
+ // LoomStatusStrandName is the role of the strand `lym loom start` adds to draw a run's gate checklist.
+-// It is pinned because reed's add refuses an add whose explicit role another strand already holds, so every add and lookup must use it,
+-// and a beam's orch bring-up reads it to take the session's overview window from that strand.
++// It is pinned because reed's add refuses an add whose explicit role another strand already holds, so every add and lookup must use it.
+ const LoomStatusStrandName = "loom-status"
+ 
+ // LegacyLoomDriverStrandName names a driver strand recorded before agent names existed.
+diff --git a/internal/orchcli/doc.go b/internal/orchcli/doc.go
+index 27697a06..2d2cac3d 100644
+--- a/internal/orchcli/doc.go
++++ b/internal/orchcli/doc.go
+@@ -10,7 +10,7 @@
+ // The hub-scope origin reconcile runs from the prime whichever orch is brought up.
+ // After the refusals `BeamUp` starts this worktree's dobby through `dobbyengine.EnsureLive`, only when it is not live, as the first step of the pair it brings up with the runs strand, the orch and its watcher.
+ // A dobby that does not start never stops the bring-up: it becomes a warning naming the cause and `lym beam start`.
+-// The runs strand holds the session's one overview window: it replaces a `loom-status` strand a pawl run's `lym loom start` put there first, and a runs strand it could not add, replace or record is a warning on the report naming the cause and `lym beam start`, never a stop.
++// The runs strand holds the session's first overview window, beside a `loom-status` strand a pawl run's `lym loom start` added, and a runs strand it could not add, replace or record is a warning on the report naming the cause and `lym beam start`, never a stop.
+ // `BeamUpWorktree` is the bring-up for any other verb that needs a worktree's dobby live: it names the worktree from the prime, runs `BeamUp` without `Prepare`, and returns a dobby that was refused or failed as an error, so no verb starts a dobby without its orch.
+ // `BeamDown` removes the orch strand, after which the watcher exits on its own, and ends the worktree's dobby through `runproc.EndRole`, so no other process of the beam is signalled; each part stops only when live.
+ // `OrchLive` is the liveness predicate other modules call: the worktree's orch state records a strand that reed tracks and reports live.
+diff --git a/internal/orchcli/runs.go b/internal/orchcli/runs.go
+index e01768e1..0c0e1067 100644
+--- a/internal/orchcli/runs.go
++++ b/internal/orchcli/runs.go
+@@ -1,4 +1,4 @@
+-// runs.go ensures the `runs` strand of the prime or a beam: the session's overview window, named `beam: <slug>`, running `lym batten overview`, which `start` brings up before the orchestrator strand.
++// runs.go ensures the `runs` strand of the prime or a beam: the session's first overview window, named `beam: <slug>`, running `lym batten overview`, which `start` brings up before the orchestrator strand.
+ 
+ package orchcli
+ 
+@@ -8,7 +8,6 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/agentname"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+-	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/reedengine/render"
+ 	"github.com/Knatte18/loomyard/internal/shell"
+@@ -16,9 +15,11 @@ import (
+ )
+ 
+ // RunsStrandName is the role the runs strand is added and addressed by in the reed session of the prime or a beam.
+-// A loom bootstrap in a beam's session reads it to leave the session's one overview window to this strand.
+ const RunsStrandName = "runs"
+ 
++// RunsStrandOrder is the runs strand's overview order key, zero, so the beam overview is the session's first window.
++const RunsStrandOrder = 0
++
+ // runsSidecarFile is the filename, under the orch directory, of the sidecar recording the runs strand's guid and the lym build that launched it.
+ const runsSidecarFile = "runs-strand.json"
+ 
+@@ -36,18 +37,16 @@ func runsWindowTitleOf(worktree string, beam bool) string {
+ 	return runsWindowPrefix + runsWindowPrimeLabel
+ }
+ 
+-// runsStrandAddSpec builds the runs strand's reedengine.AddSpec for the given pane command and window title: the session's overview window, with no size, no segment and no color.
++// runsStrandAddSpec builds the runs strand's reedengine.AddSpec for the given pane command and window title: the session's first overview window, with no size, no segment and no color.
+ func runsStrandAddSpec(cmd, title string) reedengine.AddSpec {
+ 	return reedengine.AddSpec{
+ 		NameOverride: RunsStrandName,
+ 		Cmd:          cmd,
+-		Display:      render.Display{Anchor: render.AnchorOverview, Title: title},
++		Display:      render.Display{Anchor: render.AnchorOverview, Order: RunsStrandOrder, Title: title},
+ 	}
+ }
+ 
+ // ensureRunsStrand adds the runs strand when the session has none, keeps a live one that the sidecar records as launched by this build, and replaces any other, then records the strand and the build in the sidecar.
+-// With no runs strand it replaces a loom status strand instead of adding beside it.
+-// A pawl run's loom bootstrap may have put that strand in the session's one overview window first, and reed refuses a second overview strand.
+ // It touches no other strand.
+ // It returns the warning naming a failure, empty when there is none, and never fails `start`: the overview is the operator's view, not the orchestrator's bookkeeping.
+ func (c *orchCLI) ensureRunsStrand() string {
+@@ -67,13 +66,11 @@ func (c *orchCLI) ensureRunsStrand() string {
+ 	sidecarPath := filepath.Join(c.paths.Dir, runsSidecarFile)
+ 	spec := runsStrandAddSpec(runsStrandCmd(shell.ForGOOS(), exe), c.runsWindowTitle)
+ 
+-	var runs, loomStatus *reedengine.StrandStatus
++	var runs *reedengine.StrandStatus
+ 	for i := range strands {
+-		switch {
+-		case runs == nil && agentname.Matches(strands[i].Name, RunsStrandName):
++		if agentname.Matches(strands[i].Name, RunsStrandName) {
+ 			runs = &strands[i]
+-		case loomStatus == nil && agentname.Matches(strands[i].Name, loomengine.LoomStatusStrandName):
+-			loomStatus = &strands[i]
++			break
+ 		}
+ 	}
+ 
+@@ -85,10 +82,6 @@ func (c *orchCLI) ensureRunsStrand() string {
+ 		if strand, err = c.strands.ReplaceStrand(runs.GUID, spec); err != nil {
+ 			return runsStrandWarning("could not replace the runs strand, so the beam overview is missing or stale", err)
+ 		}
+-	case loomStatus != nil:
+-		if strand, err = c.strands.ReplaceStrand(loomStatus.GUID, spec); err != nil {
+-			return runsStrandWarning("could not take the overview window from the loom status strand, so the beam overview is missing", err)
+-		}
+ 	default:
+ 		if strand, err = c.strands.AddStrand(spec); err != nil {
+ 			return runsStrandWarning("could not add the runs strand, so the beam overview is missing", err)
+diff --git a/internal/orchcli/start_test.go b/internal/orchcli/start_test.go
+index 3d82901d..37c7e0ed 100644
+--- a/internal/orchcli/start_test.go
++++ b/internal/orchcli/start_test.go
+@@ -280,7 +280,7 @@ func TestStart_EnsuresTheRunsStrandBeforeTheOrch(t *testing.T) {
+ 	t.Parallel()
+ 
+ 	otherBuild := statuspane.BuildIdentity{Path: "/older/lym", Size: 9, ModTime: 9}
+-	wantDisplay := render.Display{Anchor: render.AnchorOverview, Title: "beam: prime"}
++	wantDisplay := render.Display{Anchor: render.AnchorOverview, Order: RunsStrandOrder, Title: "beam: prime"}
+ 	tests := []struct {
+ 		name    string
+ 		strands []reedengine.StrandStatus
+@@ -322,10 +322,10 @@ func TestStart_EnsuresTheRunsStrandBeforeTheOrch(t *testing.T) {
+ 			wantSidecarGUID: "replaced-runs",
+ 		},
+ 		{
+-			name:            "a loom status strand holding the overview is replaced by the runs strand",
+-			strands:         []reedengine.StrandStatus{{GUID: "r1", Name: "loom-status", Live: true}},
+-			wantCalls:       []string{"replace", withdrawOrch, "start", withdrawOrch, releaseOrch},
+-			wantSidecarGUID: "replaced-runs",
++			name:            "a loom status strand gets the runs strand added beside it, untouched",
++			strands:         []reedengine.StrandStatus{{GUID: "s1", Name: "loom-status", Live: true}},
++			wantCalls:       []string{"add", withdrawOrch, "start", withdrawOrch, releaseOrch},
++			wantSidecarGUID: "added-runs",
+ 		},
+ 		{
+ 			name:            "a stale runs strand is replaced when a loom status strand precedes it",
+@@ -377,6 +377,9 @@ func TestStart_EnsuresTheRunsStrandBeforeTheOrch(t *testing.T) {
+ 			if !slices.Equal(h.calls, tt.wantCalls) {
+ 				t.Errorf("calls = %v; want %v", h.calls, tt.wantCalls)
+ 			}
++			if !slices.Contains(tt.wantCalls, "replace") && (len(h.strands.replaced) != 0 || len(h.strands.removed) != 0) {
++				t.Errorf("replaced = %v, removed = %v; want no strand replaced or removed", h.strands.replaced, h.strands.removed)
++			}
+ 			var specs []reedengine.AddSpec
+ 			for _, added := range h.strands.added {
+ 				specs = append(specs, added.spec)
+diff --git a/internal/orchengine/doc.go b/internal/orchengine/doc.go
+index 84b1b0d2..dda72d48 100644
+--- a/internal/orchengine/doc.go
++++ b/internal/orchengine/doc.go
+@@ -11,7 +11,7 @@
+ //
+ // The orch is brought up by `orchcli.BeamUp`, which `lym beam start` calls, and stopped by `orchcli.BeamDown`, which `lym beam stop` calls; no orch verb starts it.
+ // A bring-up is idempotent.
+-// It first ensures the `runs` strand, the session's overview window named `beam: prime`, or `beam: <slug>` in a beam, running `lym batten overview`, which shows the worktree's dobby with each run it drives above the orch context lines, so on a fresh session the beam's window is the first window and the orchestrator has a window of its own; a failure there only warns.
++// It first ensures the `runs` strand, the session's first overview window named `beam: prime`, or `beam: <slug>` in a beam, running `lym batten overview`, which shows the worktree's dobby with each run it drives above the orch context lines, so on a fresh session the beam's window is the first window and the orchestrator has a window of its own; a failure there only warns.
+ // It leaves one live orchestrator strand and one watcher bound to it, then reports.
+ // It never attaches or switches a tmux client;
+ // `lym reed attach` is the only way into the session.
+diff --git a/internal/reedcli/follow.go b/internal/reedcli/follow.go
+index 623e5bd7..c8865f49 100644
+--- a/internal/reedcli/follow.go
++++ b/internal/reedcli/follow.go
+@@ -35,7 +35,8 @@ func (c *reedCLI) followCmd() *cobra.Command {
+ 		Use:   "follow",
+ 		Short: "turn follow on for a tmux session and select its relevant window",
+ 		Long: `follow turns the follow state of the told session on and selects the
+-session's relevant window: the newest live agent window, else the overview.
++session's relevant window: the newest live agent window, else the
++lowest-index overview window.
+ It reads no working directory, no config and no state, and prints nothing
+ on success: the status bar's follow button calls it through tmux's
+ run-shell.
+diff --git a/internal/reedengine/attach.go b/internal/reedengine/attach.go
+index a928c95f..521ca537 100644
+--- a/internal/reedengine/attach.go
++++ b/internal/reedengine/attach.go
+@@ -40,7 +40,7 @@ func bareAttachArgv(socket, session string) []string {
+ // cols and rows are the attaching client's own terminal size, in columns and rows; the pre-flight compares them with every other attached client's size and warns on a mismatch.
+ // A non-positive value means no client size is known, and no mismatch is warned about.
+ //
+-// Right after the shell window check, the pre-flight resolves the attach's window selection: a trailing `; select-window -t <relevant window>`, the newest live agent window, else the overview, never the shell.
++// Right after the shell window check, the pre-flight resolves the attach's window selection: a trailing `; select-window -t <relevant window>`, the newest live agent window, else the lowest-index overview, never the shell.
+ // The selection is appended to every argv this returns past the state read.
+ // When another client is attached, or the client listing fails, the selection is kept only while the session's follow state reads on, and dropped while it reads off or its read fails; it is dropped too when no window is relevant.
+ // Failing to take the lock, read the session or the state still drops it, each logged at Warn.
+diff --git a/internal/reedengine/attach_test.go b/internal/reedengine/attach_test.go
+index d63ee8c5..4e7d60df 100644
+--- a/internal/reedengine/attach_test.go
++++ b/internal/reedengine/attach_test.go
+@@ -331,7 +331,8 @@ func assertStrandOptionsReasserted(t *testing.T, fake *fakeTmux, wantShellPins i
+ 	}
+ }
+ 
+-// relevantWindowFixture returns the state and the scripted window listings of a session with the shell window @0, the overview @3 at index 0 and two agent windows, alpha @1 and beta @2 in start order.
++// relevantWindowFixture returns the state and the scripted window listings of a session with the shell window @0, the overviews runs @4 at index 0 and status @3 at index 1, and two agent windows, alpha @1 and beta @2 in start order.
++// The pane listing lists status's pane after runs's, so a rule that keeps the last-listed overview answers status.
+ // alphaDead and betaDead mark that agent's pane dead.
+ // The strands also hold the strand of goodAttachStrands, whose pane is not listed.
+ func relevantWindowFixture(alphaDead, betaDead bool) (strands []Strand, windows, panes string) {
+@@ -345,18 +346,20 @@ func relevantWindowFixture(alphaDead, betaDead bool) (strands []Strand, windows,
+ 	strands = append(goodAttachStrands(),
+ 		Strand{GUID: "alpha", Name: "alpha", PaneID: "%10", Display: own},
+ 		Strand{GUID: "beta", Name: "beta", PaneID: "%11", Display: own},
+-		Strand{GUID: "status", Name: "status", PaneID: "%12", Display: render.Display{Anchor: render.AnchorOverview}},
++		Strand{GUID: "runs", Name: "runs", PaneID: "%13", Display: render.Display{Anchor: render.AnchorOverview}},
++		Strand{GUID: "status", Name: "status", PaneID: "%12", Display: render.Display{Anchor: render.AnchorOverview, Order: 1}},
+ 	)
+-	windows = "@3 0 0 0 overview\n@1 1 0 0 alpha\n@2 2 0 0 beta\n@0 3 0 0 shell\n"
++	windows = "@4 0 0 0 runs\n@3 1 0 0 overview\n@1 2 0 0 alpha\n@2 3 0 0 beta\n@0 4 0 0 shell\n"
+ 	panes = "@0 0 - %1 0 4321 a\n" +
+ 		"@1 1 - %10 " + flag(alphaDead) + " 5001 alpha\n" +
+ 		"@2 1 - %11 " + flag(betaDead) + " 5002 beta\n" +
++		"@4 1 - %13 0 5004 runs\n" +
+ 		"@3 1 - %12 0 5003 status\n"
+ 	return strands, windows, panes
+ }
+ 
+ // TestAttachArgv_SelectsTheRelevantWindow pins the window selection AttachArgv appends to the bare argv:
+-// `; select-window -t <window>` for the newest live agent window, else the overview, else nothing.
++// `; select-window -t <window>` for the newest live agent window, else the lowest-index overview, else nothing.
+ // Beside another attached client, or a failed client listing, the selection is kept only while the follow state reads on, an unset option included, and dropped while it reads off or its read fails.
+ // Attach reads the follow state only then and never writes it.
+ func TestAttachArgv_SelectsTheRelevantWindow(t *testing.T) {
+@@ -376,7 +379,7 @@ func TestAttachArgv_SelectsTheRelevantWindow(t *testing.T) {
+ 	}{
+ 		{name: "NewestLiveAgent", cols: cols, rows: rows, wantWindow: "@2"},
+ 		{name: "NewestAgentDeadFallsBackToTheOlderLiveAgent", betaDead: true, cols: cols, rows: rows, wantWindow: "@1"},
+-		{name: "NoLiveAgentFallsBackToTheOverview", alphaDead: true, betaDead: true, cols: cols, rows: rows, wantWindow: "@3"},
++		{name: "NoLiveAgentFallsBackToTheLowestIndexOverview", alphaDead: true, betaDead: true, cols: cols, rows: rows, wantWindow: "@4"},
+ 		{name: "NeitherAgentNorOverviewAppendsNothing", noOwn: true, cols: cols, rows: rows},
+ 		{name: "AnotherClientWithFollowOffAppendsNothing", clients: "tty0 80 24", follow: "off", cols: cols, rows: rows},
+ 		{name: "AnotherClientWithFollowUnsetSelectsTheRelevantWindow", clients: "tty0 80 24", follow: "", cols: cols, rows: rows, wantWindow: "@2"},
+diff --git a/internal/reedengine/bar.go b/internal/reedengine/bar.go
+index e17d13fb..9120611b 100644
+--- a/internal/reedengine/bar.go
++++ b/internal/reedengine/bar.go
+@@ -1,8 +1,8 @@
+ // bar.go declares the tmux format strings of reed's three-line status bar.
+ // The strings are built from tmux 3.6's own default status-format shape (list mode, the #{W:}, #{P:} and #{S:} loops, the < and > markers).
+ // They read strands through the pane user options @strand and @strand_color and the window user option @lym_strands, never through the current window.
+-// They read own windows, the overview window among them, through the window user options @lym_own, @strand_color and @lym_unseen.
+-// Line 1 follows window index order: the overview, the agents in start order, then the shell button.
++// They read own windows, the overview windows among them, through the window user options @lym_own, @strand_color and @lym_unseen.
++// Line 1 follows window index order: the overview windows first, then the agents in start order, then the shell button.
+ // A window carrying the window user option @lym_hidden still gets no button.
+ // Line 2 lists the session carrying the session user option @lym_prime_session first, then every other session in the #{S:} loop's own order.
+ // Line 2 ends with the current session's check mark, the session user options @lym_check, @lym_check_state and @lym_check_start, before the clock.
+diff --git a/internal/reedengine/bindings.go b/internal/reedengine/bindings.go
+index e5ab497a..63095400 100644
+--- a/internal/reedengine/bindings.go
++++ b/internal/reedengine/bindings.go
+@@ -107,7 +107,7 @@ func followClickCommand(followJump bool) string {
+ // followJump reports that the follow button's jump line is pinned in followCommandOption, so a click that turns follow on runs it.
+ // M-Down and M-Up write follow off, then step to the next and previous window with tmux's own wrap, in every window, and the step then goes on if it landed on a window carrying @lym_hidden.
+ // The write comes first so it lands also when the step wraps onto the current window.
+-// Hidden windows sit after the shell window, so one conditional step reaches a visible window: forward onto the session's first window, the overview, and back onto the strands' window, the shell.
++// Hidden windows sit after the shell window, so one conditional step reaches a visible window: forward onto the session's first window, the lowest-index overview, and back onto the strands' window, the shell.
+ // The status click and each step are dispatched by chained commands, joined by tmux's escaped `\;` separator argument, since only one range type matches a click.
+ // The click dispatch ends in the follow button's branch, then, when buttonClick holds, the button branch:
+ // a click on a range named by buttonRangePrefix runs the line pinned in buttonCommandOption, resolved through the session's own options.
+diff --git a/internal/reedengine/doc.go b/internal/reedengine/doc.go
+index fbc0b400..b769ecde 100644
+--- a/internal/reedengine/doc.go
++++ b/internal/reedengine/doc.go
+@@ -78,7 +78,7 @@
+ // It is the only reed code that issues switch-client.
+ //
+ // FollowSession (follow.go) is the engine-less function behind `lym reed follow`: it addresses a told session of a told server by socket path and issues list-panes, set-option @lym_follow on and, when a window is relevant, select-window, and nothing else.
+-// It reads no working directory, config or state, so it picks the window from tmux facts alone: the highest-index window carrying @lym_own and not @lym_overview that holds a pane that is not dead, else the window carrying @lym_overview, else none.
++// It reads no working directory, config or state, so it picks the window from tmux facts alone: the highest-index window carrying @lym_own and not @lym_overview that holds a pane that is not dead, else the lowest-index window carrying @lym_overview, else none.
+ // openOwnWindowLocked sets the window option @lym_overview beside @lym_own on an overview window, so that rule can tell the overview from an agent window; an overview window opened by an older lym carries no marker and counts as an agent window, which it can win only when no other agent is live, the same outcome as the overview fallback.
+ // A failed listing, which is how an unknown session answers, returns an error before any write, a failed option write returns before any select, and a failed select returns an error naming the window.
+ //
+@@ -106,7 +106,7 @@
+ // The button is lit while the window is current, and otherwise that color on dark grey, underscored while the window carries @lym_unseen.
+ // Outside Windows, the geometry pins also pin the session hook `session-window-changed` with `set-option -w -u @lym_unseen`, so selecting the window clears the mark; boot and every attach pre-flight run the pin.
+ // On Windows no hook is pinned and the mark is never set.
+-// The shell button is a range=user|shell button labelled shell, lit while the shell window is active; line 1 follows window index order, so the overview's button is first, the agents' follow in start order and the shell button comes last.
++// The shell button is a range=user|shell button labelled shell, lit while the shell window is active; line 1 follows window index order, so the overview windows' buttons are first, the agents' follow in start order and the shell button comes last.
+ // An overview window's button is an own-window button with no @strand_color, which renders as the plain window-button style.
+ // A window carrying @lym_hidden still gets no button, and no Go decision reads @strand_color or @lym_unseen.
+ // Line 2 lists the sessions, then, right-aligned, the check mark and the time.
+@@ -119,7 +119,7 @@
+ // The name-repair loop never re-pins, and the global status-bar options refresh at boot and attach and with the bindings' stale-build re-pin, which pins the status formats and the bar style before the bindings.
+ // Bound: between an older binary's boot or attach and the newest binary's next op, follow can show on lines 2 and 3; a session an older binary boots or attaches keeps status 2, without line 3, until the newest binary next attaches it, since the re-pin restores only the global options.
+ // The pin starts with `unbind-key -n M-z`, which removes the Alt+z an older build bound, since a `bind-key` re-pin never removes a binding; reed binds no zoom key.
+-// Alt+Up and Alt+Down step to the previous or next window in index order, in every window and wrapping with tmux's own window wrap: a step that lands on a window carrying @lym_hidden goes on, forward to the session's first window, the overview, and back to the strands' window, the shell, which is one conditional step since hidden windows sit after the shell (on psmux, where the order is best-effort, a step may land on a hidden window);
++// Alt+Up and Alt+Down step to the previous or next window in index order, in every window and wrapping with tmux's own window wrap: a step that lands on a window carrying @lym_hidden goes on, forward to the session's first window, the lowest-index overview, and back to the strands' window, the shell, which is one conditional step since hidden windows sit after the shell (on psmux, where the order is best-effort, a step may land on a hidden window);
+ // Alt+Left and Alt+Right run `lym reed switch --prev|--next` in the background through run-shell, naming the absolute path of the `lym` that pinned them (panebin.go's composeSwitchCommand), never PATH's;
+ // and a left click on the status bar dispatches on its range: the shell button selects the strands' window, a window button selects that window, a session button switches the client to that session, the follow button toggles the follow state, and a button range named by buttonRangePrefix runs `lym reed button`.
+ // The button line (panebin.go's composeButtonCommand) rides the server-global option @lym_button_command, set when it resolves and unset otherwise, and the one global binding resolves it through `#{E:...}` with the session's own options.
+@@ -364,10 +364,10 @@
+ // Bound: a pane id reused after a server restart can name a sibling worktree's pane until the binding goes.
+ // The pane-generation read (generation.go) stays session-scoped and outside the seam: it reads session fields only, so it keeps the "=<session>:" form, which expands them, where the bare "=<session>" form expands every session field to empty (verified live, tmux 3.6).
+ //
+-// Window order (windoworder.go): a session's windows read, in index order, the overview window, the agents' own windows in start order, then the window named shell, then the hidden windows.
++// Window order (windoworder.go): a session's windows read, in index order, the overview windows in ascending order key, the agents' own windows in start order, then the window named shell, then the hidden windows.
+ // Every window is created through newWindowLocked (spawn.go) as `new-window -d` plus placement arguments, listed from `list-windows` in index order under the op lock:
+ // an own window opens `-a -t <previous window>` for a relaunch, which keeps its window's place and ends the old one behind it, else `-b -t <shell window>`, else `-a -t <highest-index non-hidden window>`;
+-// the overview window opens `-b -t <lowest-index window>`, hidden windows included; a hidden window opens `-a -t <highest-index window>`; with nothing to place against the plain form `-t '=<session>:'` is used.
++// an overview window opens `-a -t <highest-index overview window whose order key is not higher than its own>`, else `-b -t <lowest-index window>`, hidden windows included; a hidden window opens `-a -t <highest-index window>`; with nothing to place against the plain form `-t '=<session>:'` is used.
+ // A placed new-window the multiplexer refuses on Windows (psmux) logs at Debug and is retried once in the plain form, so the order is best-effort there and nothing fails.
+ // The shell window is the window of the recorded console pane (Selvage), named shell with automatic-rename off, which is how a fresh boot names its one window.
+ // A session booted by an older lym is brought into that order by ensureShellWindowLocked, which runs wherever a window opens, once the boot marks the strands' window and at the head of every attach pre-flight, also when no client size is known:
+@@ -410,26 +410,26 @@
+ // followingLocked reads it, and a failed read counts as off for that one decision and is logged at Warn, so a broken read never moves a viewer.
+ // Only @lym_follow, @lym_button_spec and @lym_button_dir are decision-bearing session options.
+ // An automatic window switch happens only at three points, each deciding from reed state, window ids, strand roles, pane liveness and the follow state alone, never from @lym_unseen, @lym_hidden or a wait mark.
+-// relevantWindow is the target of two of them: among the listed windows not about to end, the highest-index agent window holding a pane that is not dead, else the overview strand's window, else none.
++// relevantWindow is the target of two of them: among the listed windows not about to end, the highest-index agent window holding a pane that is not dead, else the lowest-index overview window, else none.
+ // Attach (attachWindowSelectionLocked, resolved by AttachArgv right after the shell check) appends `; select-window -t <relevant window>` to every argv it returns, and appends nothing when a listing fails or no window is relevant.
+ // Beside another attached client, or when the client listing fails, it appends the selection only while follow reads on, reading the follow state only then and never writing it, so with follow on an attach moves every client of the session to the relevant window, including one on a window it reached outside reed's bindings, and a failed follow read counts as off.
+ // A new agent window is selected by openOwnWindowLocked, for an own-window strand and never the overview, when newAgentWindowSelected holds: always for a Focus strand, never for one whose display sets only KeepViewer, otherwise exactly when the follow state reads on; it then carries no @lym_unseen.
+ // With follow on, a new agent window takes the viewer wherever it is, the shell included; with follow off, it leaves the viewer where it is.
+ // Opening a window never changes the follow state.
+-// FollowRun is the one engine operation that turns follow on, beside the engine-less FollowSession: under the operation lock it sets the option on and selects the relevant window, the newest live agent window, else the overview, else nothing, for whichever client views the session.
++// FollowRun is the one engine operation that turns follow on, beside the engine-less FollowSession: under the operation lock it sets the option on and selects the relevant window, the newest live agent window, else the lowest-index overview window, else nothing, for whichever client views the session.
+ // It persists no state, a failed option write is logged and the select still runs, and AddStrand, ReplaceStrand, Resume and Up never call it.
+ // Every client of a session shares its current window, so the one select-window moves each attached client.
+ // A viewed window ending, by RemoveStrand, by ReplaceStrand and by reconcile ending an orphan own window (selectRelevantWindowIfCurrentLocked), moves a viewer on it to the relevant window among those left, never the shell, and with none left to tmux; this move neither reads nor changes the follow state.
+ // A viewer elsewhere is never moved, and a strand leaving a shared window that stays open ends no window and switches nothing.
+ // An automatic switch races an operator's own window change by at most one switch.
+ //
+-// Overview anchor: the overview anchor places one strand per session, alone in a window of its own that opens at the lowest index and never joins a group.
++// Overview anchor: the overview anchor places any number of strands, each alone in a window of its own at the session's lowest indexes in ascending order key (render.Display.Order, an absent key reading as zero), and never joins a group.
++// A new, relaunched or replacement overview window opens after the last overview window whose key is not higher than its own, else before the lowest-index window, so equal keys sit in the order they last opened.
+ // The window takes the display's Title as its name, overview when the display carries none; the orch's runs strand names it after its beam.
+-// Everything that reads a window of its own, reconcile, presentPanes, the strands' window resolver and the relaunch's old-pane kill, treats an overview pane as an own-window one (isOwnWindow); only the placement, the name, the unseen mark, the one-per-session refusal and the focus rules ask isOverview.
++// Everything that reads a window of its own, reconcile, presentPanes, the strands' window resolver and the relaunch's old-pane kill, treats an overview pane as an own-window one (isOwnWindow); only the placement, the name, the unseen mark and the focus rules ask isOverview.
+ // The window carries @lym_own like an own window and sets neither @lym_unseen nor @strand_color, so its button takes the plain window-button style.
+-// An overview display takes no window group, and UpdateStrand refuses a move between the overview and own-window anchors.
+-// AddStrand refuses a second overview strand while another strand, live or dormant, holds the anchor, naming that strand and lym reed remove.
+-// ReplaceStrand removes the old strand before its add, so replacing the overview strand itself is never refused; replacing another strand with an overview strand is refused only while a third strand holds the anchor.
++// An overview display takes no window group, and UpdateStrand refuses a move between the overview and own-window anchors and a change of an overview strand's order.
++// ReplaceStrand removes the old strand before its add, so the replacement takes its place among the overview windows by its own key.
+ // A replacement overview strand that ends the window the operator is viewing selects its own new window once the launch succeeded; a replacement whose old strand shared a window that stays open ends no window and switches nothing.
+ //
+ // Session targeting: every -t argument that names a SESSION is passed in
+diff --git a/internal/reedengine/follow.go b/internal/reedengine/follow.go
+index 7cbde924..de71d057 100644
+--- a/internal/reedengine/follow.go
++++ b/internal/reedengine/follow.go
+@@ -27,7 +27,7 @@ func (e *Engine) followingLocked() bool {
+ 	return strings.TrimSpace(out) != "off"
+ }
+ 
+-// FollowRun turns the session's follow state on and selects the relevant window: the newest live agent window, else the overview, else nothing.
++// FollowRun turns the session's follow state on and selects the relevant window: the newest live agent window, else the lowest-index overview window, else nothing.
+ // It returns the no-session and state-load errors; a failed option write is logged at Warn and the select still runs, and a failed listing or select is logged and never fails the call.
+ // It sets one session option and selects one window of the engine's own session, and persists no state.
+ func (e *Engine) FollowRun() error {
+@@ -56,11 +56,12 @@ const followTargetFormat = "#{window_id} #{window_index} #{?#{@lym_own},1,0} #{?
+ 
+ // followTargetWindow returns the window a follow jump lands on, read from a followTargetFormat listing.
+ // It is the same rule as relevantWindow, read from window options instead of reed state:
+-// among the windows carrying the own option and not the overview one, the highest-index window holding a pane that is not dead, else the window carrying the overview option, else the empty string.
++// among the windows carrying the own option and not the overview one, the highest-index window holding a pane that is not dead, else the lowest-index window carrying the overview option, else the empty string.
+ // An overview window opened by an older lym carries no overview marker and so counts as an agent window, which it can win only when no other agent is live, the same outcome as the overview fallback.
+ // A line it cannot parse is skipped.
+ func followTargetWindow(listing string) string {
+-	best, bestIndex, overview := "", -1, ""
++	best, bestIndex := "", -1
++	overview, overviewIndex := "", -1
+ 	for _, line := range strings.Split(listing, "\n") {
+ 		fields := strings.Fields(line)
+ 		if len(fields) != 5 {
+@@ -73,7 +74,9 @@ func followTargetWindow(listing string) string {
+ 		own, isOverview, dead := fields[2] == "1", fields[3] == "1", fields[4] == "1"
+ 		switch {
+ 		case isOverview:
+-			overview = fields[0]
++			if overview == "" || index < overviewIndex {
++				overview, overviewIndex = fields[0], index
++			}
+ 		case own && !dead && index > bestIndex:
+ 			best, bestIndex = fields[0], index
+ 		}
+diff --git a/internal/reedengine/follow_test.go b/internal/reedengine/follow_test.go
+index a72ac2ac..3fc0935e 100644
+--- a/internal/reedengine/follow_test.go
++++ b/internal/reedengine/follow_test.go
+@@ -50,6 +50,14 @@ func TestFollowSessionVia(t *testing.T) {
+ 				return [][]string{list(s), setOn(s), selectWindow("@3")}
+ 			},
+ 		},
++		{
++			name:    "NoLiveAgentSelectsTheLowestIndexOverviewOfTwo",
++			session: session,
++			listing: "@0 5 0 0 0\n@3 0 1 1 0\n@5 1 1 1 0\n",
++			wantCalls: func(s string) [][]string {
++				return [][]string{list(s), setOn(s), selectWindow("@3")}
++			},
++		},
+ 		{
+ 			name:    "NeitherAgentNorOverviewSetsTheOptionAndSelectsNothing",
+ 			session: session,
+diff --git a/internal/reedengine/ownwindow.go b/internal/reedengine/ownwindow.go
+index c9025a48..a5bebd3f 100644
+--- a/internal/reedengine/ownwindow.go
++++ b/internal/reedengine/ownwindow.go
+@@ -167,7 +167,7 @@ func isOwnWindow(d render.Display) bool {
+ 	return d.Anchor == render.AnchorOwnWindow || isOverview(d)
+ }
+ 
+-// isOverview reports whether d places a strand in the session's overview window.
++// isOverview reports whether d places a strand in an overview window, one of the session's first windows.
+ func isOverview(d render.Display) bool {
+ 	return d.Anchor == render.AnchorOverview
+ }
+@@ -421,16 +421,16 @@ func (e *Engine) moveShellWindowStrandsLocked(st *ReedState, shellWindow string,
+ 	return moved
+ }
+ 
+-// agentWindowPanes sorts the listed panes bound to strands of st by window: live holds each window with a bound own-window pane that is not dead, bound each window with any such pane, and overview the window of the overview strand's pane.
++// agentWindowPanes sorts the listed panes bound to strands of st by window: live holds each window with a bound own-window pane that is not dead, bound each window with any such pane, and overview each window with a pane bound to an overview strand.
+ // Panes in a window of skip are left out.
+-func agentWindowPanes(st *ReedState, panes []windowPane, skip map[string]bool) (live, bound map[string]bool, overview string) {
++func agentWindowPanes(st *ReedState, panes []windowPane, skip map[string]bool) (live, bound, overview map[string]bool) {
+ 	displayByPane := make(map[string]render.Display, len(st.Strands))
+ 	for _, s := range st.Strands {
+ 		if s.PaneID != "" {
+ 			displayByPane[s.PaneID] = s.Display
+ 		}
+ 	}
+-	live, bound = make(map[string]bool), make(map[string]bool)
++	live, bound, overview = make(map[string]bool), make(map[string]bool), make(map[string]bool)
+ 	for _, p := range panes {
+ 		display, held := displayByPane[p.PaneID]
+ 		if !held || skip[p.WindowID] {
+@@ -438,7 +438,7 @@ func agentWindowPanes(st *ReedState, panes []windowPane, skip map[string]bool) (
+ 		}
+ 		switch {
+ 		case isOverview(display):
+-			overview = p.WindowID
++			overview[p.WindowID] = true
+ 		case display.Anchor == render.AnchorOwnWindow:
+ 			bound[p.WindowID] = true
+ 			if !p.Dead {
+@@ -450,24 +450,25 @@ func agentWindowPanes(st *ReedState, panes []windowPane, skip map[string]bool) (
+ }
+ 
+ // relevantWindow returns the window an automatic switch lands on, among the listed windows not in ending.
+-// That is the highest-index agent window holding a pane that is not dead, else the overview strand's window, else the empty string.
++// That is the highest-index agent window holding a pane that is not dead, else the lowest-index window holding an overview strand's pane, else the empty string.
+ // An agent window is a window holding a pane bound to an own-window strand, so the overview, the shell and hidden windows are never one.
+ // By start order the highest index is the newest live agent.
+ func relevantWindow(st *ReedState, windows []sessionWindow, panes []windowPane, ending map[string]bool) string {
+ 	live, _, overview := agentWindowPanes(st, panes, ending)
+ 	best, bestIndex := "", -1
++	lowestOverview, lowestOverviewIndex := "", -1
+ 	for _, w := range windows {
+ 		if live[w.ID] && w.Index > bestIndex {
+ 			best, bestIndex = w.ID, w.Index
+ 		}
++		if overview[w.ID] && (lowestOverview == "" || w.Index < lowestOverviewIndex) {
++			lowestOverview, lowestOverviewIndex = w.ID, w.Index
++		}
+ 	}
+ 	if best != "" {
+ 		return best
+ 	}
+-	if _, listed := findSessionWindow(windows, overview); listed {
+-		return overview
+-	}
+-	return ""
++	return lowestOverview
+ }
+ 
+ // newAgentWindowSelected reports whether a new agent window takes the viewer, given the follow state.
+@@ -511,7 +512,7 @@ func (e *Engine) currentWindowIsAmongLocked(windows []string) bool {
+ 	return slices.Contains(windows, current)
+ }
+ 
+-// selectRelevantWindowIfCurrentLocked selects relevantWindow among the windows left when the session's current window is one of ending, so a viewer on a window about to end lands on the newest live agent or the overview, never the shell.
++// selectRelevantWindowIfCurrentLocked selects relevantWindow among the windows left when the session's current window is one of ending, so a viewer on a window about to end lands on the newest live agent or the lowest-index overview, never the shell.
+ // A viewer elsewhere is never moved, and with no window left to select it selects nothing and leaves the choice to tmux.
+ // Every failure is logged and never fails the step.
+ func (e *Engine) selectRelevantWindowIfCurrentLocked(st *ReedState, ending []string) {
+diff --git a/internal/reedengine/reconcile.go b/internal/reedengine/reconcile.go
+index fbea82ea..ed4bc7be 100644
+--- a/internal/reedengine/reconcile.go
++++ b/internal/reedengine/reconcile.go
+@@ -215,7 +215,7 @@ func clearConflictingPaneBindings(st *ReedState) []string {
+ 
+ // reconcileLocked reconciles the persisted table against live panes.
+ // Kills panes per planReconcile's schedule; clears bindings for gone panes.
+-// It also ends the own windows no strand holds, moving a viewer on one to the relevant window first (the newest live agent, else the overview, never the shell); those windows are not in killed, since no window 0 pane went.
++// It also ends the own windows no strand holds, moving a viewer on one to the relevant window first (the newest live agent, else the lowest-index overview, never the shell); those windows are not in killed, since no window 0 pane went.
+ // A viewer on any other window is never moved.
+ func (e *Engine) reconcileLocked(st *ReedState, live []LivePane, windows []windowPane) (killed []string, err error) {
+ 	plan := planReconcile(st.Strands, live, windows, newReapPolicy(st, live), e.strandsElsewhereLocked(st.Strands, windows))
+diff --git a/internal/reedengine/render/types.go b/internal/reedengine/render/types.go
+index a7984a3f..b686eb15 100644
+--- a/internal/reedengine/render/types.go
++++ b/internal/reedengine/render/types.go
+@@ -21,7 +21,7 @@ type Anchor string
+ const (
+ 	// AnchorOwnWindow gives a strand a tmux window of its own, or its group's shared window, apart from the shell window.
+ 	AnchorOwnWindow Anchor = "own-window"
+-	// AnchorOverview gives the session's one overview strand a window of its own that is always the session's first window.
++	// AnchorOverview gives a strand a window of its own among the session's first windows, in ascending Display.Order.
+ 	AnchorOverview Anchor = "overview"
+ 	// AnchorHidden places a strand in no window.
+ 	// A hidden strand never owns a pane.
+@@ -65,4 +65,7 @@ type Display struct {
+ 	// Title names the overview window; empty names it overview.
+ 	// It is read only for an overview strand.
+ 	Title string `json:"title,omitempty"`
++	// Order is the overview strand's place among the session's overview windows, lowest first.
++	// It is read only for an overview strand, and its zero value is the first place.
++	Order int `json:"order,omitempty"`
+ }
+diff --git a/internal/reedengine/render/types_test.go b/internal/reedengine/render/types_test.go
+index 8845038f..85377db6 100644
+--- a/internal/reedengine/render/types_test.go
++++ b/internal/reedengine/render/types_test.go
+@@ -26,6 +26,7 @@ func TestDisplayDecodesRetiredKeysIgnored(t *testing.T) {
+ 		{"SharingSize", `{"anchor":"below-parent","focus":true,"size":{"kind":"sharing"}}`, Display{Anchor: AnchorOwnWindow, Focus: true}, false},
+ 		{"RetiredTopReadsAsOwnWindow", `{"anchor":"top","focus":true}`, Display{Anchor: AnchorOwnWindow, Focus: true}, false},
+ 		{"HiddenIsKeptAsWritten", `{"anchor":"hidden","focus":false}`, Display{Anchor: AnchorHidden}, false},
++		{"OverviewWithNoOrderKeyReadsKeyZero", `{"anchor":"overview","focus":false,"title":"beam: x"}`, Display{Anchor: AnchorOverview, Title: "beam: x"}, false},
+ 		{"NonStringAnchorIsADecodeError", `{"anchor":1,"focus":true}`, Display{}, true},
+ 	}
+ 	for _, tt := range tests {
+@@ -66,16 +67,24 @@ func TestDisplayMarshalsWithoutRetiredKeys(t *testing.T) {
+ 		t.Errorf("marshalled Display %s carries a keepViewer key for a false KeepViewer", raw)
+ 	}
+ 
+-	want := Display{Anchor: AnchorOwnWindow, KeepViewer: true}
+-	raw, err = json.Marshal(want)
+-	if err != nil {
+-		t.Fatalf("Marshal keep-viewer Display: %v", err)
+-	}
+-	var got Display
+-	if err := json.Unmarshal(raw, &got); err != nil {
+-		t.Fatalf("Unmarshal %s: %v", raw, err)
++	if strings.Contains(string(raw), `"order"`) {
++		t.Errorf("marshalled Display %s carries an order key for a zero Order", raw)
+ 	}
+-	if got != want {
+-		t.Errorf("Display round-tripped through %s as %+v, want %+v", raw, got, want)
++
++	for _, want := range []Display{
++		{Anchor: AnchorOwnWindow, KeepViewer: true},
++		{Anchor: AnchorOverview, Title: "pawl", Order: 1},
++	} {
++		raw, err = json.Marshal(want)
++		if err != nil {
++			t.Fatalf("Marshal Display %+v: %v", want, err)
++		}
++		var got Display
++		if err := json.Unmarshal(raw, &got); err != nil {
++			t.Fatalf("Unmarshal %s: %v", raw, err)
++		}
++		if got != want {
++			t.Errorf("Display round-tripped through %s as %+v, want %+v", raw, got, want)
++		}
+ 	}
+ }
+diff --git a/internal/reedengine/replace.go b/internal/reedengine/replace.go
+index 3c0dd2a2..5abb82d6 100644
+--- a/internal/reedengine/replace.go
++++ b/internal/reedengine/replace.go
+@@ -38,7 +38,6 @@ func moveStrandTo(strands []Strand, guid string, idx int) []Strand {
+ // An overview replacement that ends the window the operator is viewing selects the new overview window once the launch succeeded;
+ // any other replacement moves such a viewer to the strands' window as RemoveStrand does.
+ // A replacement whose old strand shared a window that stays open ends no window and switches nothing.
+-// The overview anchor admits one strand per session: replacing the overview strand itself is never refused, and replacing another strand with an overview strand is refused only while a third strand holds the overview.
+ func (e *Engine) ReplaceStrand(guid string, spec AddSpec) (Strand, error) {
+ 	var result Strand
+ 	err := e.withOpLock(func() error {
+diff --git a/internal/reedengine/spawn.go b/internal/reedengine/spawn.go
+index 09e87b28..5b47bb01 100644
+--- a/internal/reedengine/spawn.go
++++ b/internal/reedengine/spawn.go
+@@ -255,7 +255,7 @@ func (e *Engine) newWindowLocked(placement []string, argv []string) (string, err
+ // An overview window is never selected here.
+ // It is placed behind every earlier agent window and before the shell window, and a relaunch keeps the place of the window its old pane was in.
+ // It carries no command, so the pane is the default login shell like every strand pane.
+-// An overview strand's window is named by its display's Title, overviewWindowName when that is empty, and opens before the lowest-index window, hidden ones included, so it holds the lowest index; it carries the own marker and the overview marker but neither @strand_color nor @lym_unseen.
++// An overview strand's window is named by its display's Title, overviewWindowName when that is empty, and opens after the last overview window whose order key is not higher than its own, else before the lowest-index window, hidden ones included; it carries the own marker and the overview marker but neither @strand_color nor @lym_unseen.
+ // A non-empty group is recorded on the window, which is how a group's shared window is found later.
+ // A window option that fails to set is logged and never fails the open; a window missing the own marker is only never ended by reconcile.
+ func (e *Engine) openOwnWindowLocked(st *ReedState, s *Strand, name, group string) (string, error) {
+@@ -280,7 +280,7 @@ func (e *Engine) openOwnWindowLocked(st *ReedState, s *Strand, name, group strin
+ 	selectNew := false
+ 	if overview {
+ 		name = overviewWindowTitle(s.Display)
+-		placement = overviewWindowInsertArgs(windows)
++		placement = overviewWindowInsertArgs(windows, overviewWindowKeys(st.Strands, windowByPane), s.Display.Order)
+ 	} else {
+ 		selectNew = e.newAgentWindowTakesViewerLocked(s.Display)
+ 	}
+diff --git a/internal/reedengine/strand.go b/internal/reedengine/strand.go
+index 4a43375b..831d9e85 100644
+--- a/internal/reedengine/strand.go
++++ b/internal/reedengine/strand.go
+@@ -81,13 +81,16 @@ func validateDisplay(display render.Display) error {
+ 	}
+ }
+ 
+-// refuseWindowMove refuses an update that moves a strand into or out of the own-window or overview anchor, between those two, or changes an own-window strand's window group.
++// refuseWindowMove refuses an update that moves a strand into or out of the own-window or overview anchor, between those two, changes an overview strand's order, or changes an own-window strand's window group.
+ // A strand's pane lives in a window of its own from launch on, so such a move would strand the pane where the new display does not expect it.
+ // The error names the way forward: remove the strand and add it again.
+ func refuseWindowMove(name string, current, next render.Display) error {
+ 	if isOwnWindow(current) != isOwnWindow(next) || isOverview(current) != isOverview(next) {
+ 		return fmt.Errorf("strand %q cannot move between own-window, overview and another anchor; way forward: lym reed remove --name %s, then add it again with the new anchor", name, name)
+ 	}
++	if isOverview(current) && current.Order != next.Order {
++		return fmt.Errorf("strand %q cannot change its overview order; way forward: lym reed remove --name %s, then have its spawner add it again with the new order", name, name)
++	}
+ 	if isOwnWindow(current) && (current.Window != next.Window || current.WindowSize != next.WindowSize) {
+ 		return fmt.Errorf("strand %q cannot change its window group; way forward: lym reed remove --name %s, then add it again with the new group", name, name)
+ 	}
+@@ -401,14 +404,6 @@ func (e *Engine) addStrandLocked(st *ReedState, spec AddSpec) (Strand, error) {
+ 		}
+ 	}
+ 
+-	if isOverview(spec.Display) {
+-		for _, held := range st.Strands {
+-			if isOverview(held.Display) {
+-				return Strand{}, fmt.Errorf("strand %q already holds the overview window; way forward: lym reed remove --name %s, then add this strand again", held.Name, held.Name)
+-			}
+-		}
+-	}
+-
+ 	st.Strands = append(st.Strands, Strand{
+ 		GUID:       guid,
+ 		Name:       name,
+@@ -832,7 +827,7 @@ func sessionReapRoots(live []LivePane) []int {
+ //
+ // Before any kill, an own window whose every listed pane is being killed is about to end.
+ // The session's current window is read once, and only when a window ends; endedCurrent reports that it was among the ending windows.
+-// With selectOnEnd set, such a viewer is moved first to the relevant window among those left (the newest live agent, else the overview, never the shell), and with none left to tmux; a viewer on any other window is never moved, and a strand leaving a shared window that stays open ends no window and switches nothing.
++// With selectOnEnd set, such a viewer is moved first to the relevant window among those left (the newest live agent, else the lowest-index overview, never the shell), and with none left to tmux; a viewer on any other window is never moved, and a strand leaving a shared window that stays open ends no window and switches nothing.
+ // leftWindows names the own windows that lose a pane but keep at least one, for the caller to lay out again.
+ func (e *Engine) killStrandPanes(st *ReedState, paneIDs []string, selectOnEnd bool) (reapPIDs []int, leftWindows []string, endedCurrent bool) {
+ 	var killPaneIDs []string
+diff --git a/internal/reedengine/strand_test.go b/internal/reedengine/strand_test.go
+index a9597a1c..235ac342 100644
+--- a/internal/reedengine/strand_test.go
++++ b/internal/reedengine/strand_test.go
+@@ -117,25 +117,6 @@ func TestAddStrandLocked(t *testing.T) {
+ 		})
+ 	}
+ 
+-	t.Run("SecondOverviewUnderAnotherNameRefused", func(t *testing.T) {
+-		e := newTestEngine(t)
+-		overview := render.Display{Anchor: render.AnchorOverview}
+-		seeded := &ReedState{Strands: []Strand{{GUID: "keeper-guid", Name: "keeper", Display: overview}}}
+-
+-		_, err := e.addStrandLocked(seeded, AddSpec{Cmd: "x", NameOverride: "second", Display: overview})
+-		if err == nil {
+-			t.Fatal("addStrandLocked = nil error, want the second overview refused")
+-		}
+-		for _, want := range []string{"keeper", "lym reed remove"} {
+-			if !strings.Contains(err.Error(), want) {
+-				t.Errorf("error = %q, want it to contain %q", err, want)
+-			}
+-		}
+-		if len(seeded.Strands) != 1 {
+-			t.Errorf("st.Strands = %+v, want no record registered on a rejected add", seeded.Strands)
+-		}
+-	})
+-
+ 	t.Run("OverviewDisplayValidation", func(t *testing.T) {
+ 		tests := []struct {
+ 			name    string
+@@ -254,6 +235,7 @@ func TestNeedsLaunchOnSurface(t *testing.T) {
+ // A visible->hidden update, a mistyped anchor, an unknown guid and a move into or out of the own-window anchor or between window groups are rejected with the strand's display unchanged.
+ // A persisted display the pane does not match would poison every later apply.
+ // A hidden->hidden update and a focus-only change of an own-window strand are accepted and launch nothing.
++// An overview strand's order change is rejected too, while a focus-only change of an overview strand is accepted.
+ // A window-move refusal names the way forward, lym reed remove.
+ func TestUpdateStrandLocked(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -276,6 +258,8 @@ func TestUpdateStrandLocked(t *testing.T) {
+ 		{"GroupedToUngroupedOwnWindowRejected", Strand{GUID: "g1", PaneID: "%1", Display: own}, "g1", visible, moveWayForward},
+ 		{"OverviewToOwnWindowRejected", Strand{GUID: "g1", PaneID: "%1", Display: overview}, "g1", render.Display{Anchor: render.AnchorOwnWindow}, moveWayForward},
+ 		{"OwnWindowToOverviewRejected", Strand{GUID: "g1", PaneID: "%1", Display: render.Display{Anchor: render.AnchorOwnWindow}}, "g1", overview, moveWayForward},
++		{"OverviewOrderChangeRejected", Strand{GUID: "g1", Name: "status", PaneID: "%1", Display: overview}, "g1", render.Display{Anchor: render.AnchorOverview, Order: 1}, moveWayForward + " --name status, then have its spawner add it again with the new order"},
++		{"OverviewFocusOnlyChangeAccepted", Strand{GUID: "g1", PaneID: "%1", Display: overview}, "g1", render.Display{Anchor: render.AnchorOverview, Focus: true}, ""},
+ 		{"HiddenToOwnWindowRejected", Strand{GUID: "g1", Display: hidden, Cmd: "claude"}, "g1", own, moveWayForward},
+ 		{"OwnWindowGroupChangeRejected", Strand{GUID: "g1", PaneID: "%1", Display: own}, "g1", render.Display{Anchor: render.AnchorOwnWindow, Window: "other", WindowSize: 2}, moveWayForward},
+ 		{"OwnWindowSizeChangeRejected", Strand{GUID: "g1", PaneID: "%1", Display: own}, "g1", render.Display{Anchor: render.AnchorOwnWindow, Window: "pair", WindowSize: 3}, moveWayForward},
+diff --git a/internal/reedengine/windoworder.go b/internal/reedengine/windoworder.go
+index ed8f2023..8ead62d0 100644
+--- a/internal/reedengine/windoworder.go
++++ b/internal/reedengine/windoworder.go
+@@ -1,4 +1,4 @@
+-// windoworder.go fixes the order of a session's windows: the overview window, agent windows in start order, then the window named shell, then the hidden windows.
++// windoworder.go fixes the order of a session's windows: the overview windows in ascending order key, agent windows in start order, then the window named shell, then the hidden windows.
+ // It lists the session's windows, computes where a new window goes and repairs a session booted by an older lym.
+ 
+ package reedengine
+@@ -129,20 +129,45 @@ func ownWindowInsertArgs(windows []sessionWindow, shellWindow, previousWindow st
+ 	return nil
+ }
+ 
+-// overviewWindowInsertArgs returns the placement arguments for the overview window: before the lowest-index window, hidden ones included, so the overview holds the lowest index.
++// overviewWindowKeys maps the window id of each overview strand's bound pane to that strand's Display.Order, reading windowByPane, a session-wide pane-to-window listing.
++// A non-overview strand, a strand with no pane and a pane the listing lacks are left out.
++func overviewWindowKeys(strands []Strand, windowByPane map[string]string) map[string]int {
++	keys := make(map[string]int)
++	for _, s := range strands {
++		if !isOverview(s.Display) || s.PaneID == "" {
++			continue
++		}
++		if window, ok := windowByPane[s.PaneID]; ok {
++			keys[window] = s.Display.Order
++		}
++	}
++	return keys
++}
++
++// overviewWindowInsertArgs returns the placement arguments for an overview window whose order key is order.
++// keys maps the overview windows to their order keys.
++// The window goes after the highest-index listed overview window whose key is not higher than order, so equal keys sit in the order they last opened;
++// with none it goes before the lowest-index window, hidden ones included, so it holds the lowest index.
+ // With no window listed it returns nothing, which opens the plain form.
+-func overviewWindowInsertArgs(windows []sessionWindow) []string {
+-	var lowest sessionWindow
+-	found := false
++func overviewWindowInsertArgs(windows []sessionWindow, keys map[string]int, order int) []string {
++	var lowest, after sessionWindow
++	foundLowest, foundAfter := false, false
+ 	for _, w := range windows {
+-		if !found || w.Index < lowest.Index {
+-			lowest, found = w, true
++		if !foundLowest || w.Index < lowest.Index {
++			lowest, foundLowest = w, true
++		}
++		if key, ok := keys[w.ID]; ok && key <= order && (!foundAfter || w.Index > after.Index) {
++			after, foundAfter = w, true
+ 		}
+ 	}
+-	if !found {
++	switch {
++	case foundAfter:
++		return []string{"-a", "-t", after.ID}
++	case foundLowest:
++		return []string{"-b", "-t", lowest.ID}
++	default:
+ 		return nil
+ 	}
+-	return []string{"-b", "-t", lowest.ID}
+ }
+ 
+ // hiddenWindowInsertArgs returns the placement arguments for a new hidden window: after the highest-index window, hidden ones included.
+diff --git a/internal/reedengine/windoworder_integration_test.go b/internal/reedengine/windoworder_integration_test.go
+index c8beb1d8..c2026712 100644
+--- a/internal/reedengine/windoworder_integration_test.go
++++ b/internal/reedengine/windoworder_integration_test.go
+@@ -507,4 +507,133 @@ func TestWindowOrder_RealTmux(t *testing.T) {
+ 		}
+ 		assertFollow("off")
+ 	})
++
++	const primeTitle = "beam: prime"
++	primeDisplay := render.Display{Anchor: render.AnchorOverview, Title: primeTitle}
++	pawlDisplay := render.Display{Anchor: render.AnchorOverview, Title: "pawl", Order: 1}
++	// wantOverviewTitlesFirst asserts the overview windows named by titles come first in that order, then every other visible window but the shell in listing order, then the shell, then the hidden windows.
++	wantOverviewTitlesFirst := func(titles ...string) {
++		t.Helper()
++		want := slices.Clone(titles)
++		var hidden []string
++		for _, w := range windows() {
++			switch {
++			case slices.Contains(titles, w.Name) || w.Name == shellWindowName:
++			case w.Hidden:
++				hidden = append(hidden, w.Name)
++			default:
++				want = append(want, w.Name)
++			}
++		}
++		wantNames(append(append(want, shellWindowName), hidden...)...)
++	}
++	var pawl, afterBoth, third Strand
++
++	t.Run("AnOverviewWithAHigherKeyOpensAfterTheFirstThenAnAgentAfterBoth", func(t *testing.T) {
++		shellWindow := shellWindowID()
++		selectWindow(shellWindow)
++		var err error
++		pawl, err = e.AddStrand(AddSpec{NameOverride: "pawl", Cmd: "exit", Display: pawlDisplay})
++		if err != nil {
++			t.Fatalf("AddStrand(pawl): %v", err)
++		}
++		wantOverviewTitlesFirst(primeTitle, "pawl")
++		marks, err := e.tmux.output("display-message", "-p", "-t", windowOfPane(t, e, pawl.PaneID), "[#{@lym_own}][#{@lym_unseen}][#{@strand_color}][#{@lym_overview}]")
++		if err != nil {
++			t.Fatalf("read the pawl window marks: %v", err)
++		}
++		if got := strings.TrimSpace(marks); got != "[1][][][1]" {
++			t.Errorf("pawl window marks = %q, want the own and overview markers alone", got)
++		}
++		if got := currentWindow(); got != shellWindow {
++			t.Errorf("current window = %s, want the viewer left on the shell window %s", got, shellWindow)
++		}
++
++		afterBoth = add("after-both", "sleep 300")
++		indexOf := func(window string) int {
++			t.Helper()
++			listed, ok := findSessionWindow(windows(), window)
++			if !ok {
++				t.Fatalf("window %s is not listed", window)
++			}
++			return listed.Index
++		}
++		agentIndex := indexOf(windowOfPane(t, e, afterBoth.PaneID))
++		if pawlIndex := indexOf(windowOfPane(t, e, pawl.PaneID)); agentIndex <= pawlIndex {
++			t.Errorf("agent window index = %d, want it after the pawl window at %d", agentIndex, pawlIndex)
++		}
++		if shellIndex := indexOf(shellWindow); agentIndex >= shellIndex {
++			t.Errorf("agent window index = %d, want it before the shell window at %d", agentIndex, shellIndex)
++		}
++		wantOverviewTitlesFirst(primeTitle, "pawl")
++	})
++
++	t.Run("RelaunchingOrReplacingEitherOverviewKeepsTheOrder", func(t *testing.T) {
++		waitUntil(t, 10*time.Second, "pawl's pane never died", func() bool { return paneDead(pawl.PaneID) })
++		var err error
++		pawl, err = e.AddStrand(AddSpec{NameOverride: "pawl", IfAbsent: true, Cmd: "exit", Display: pawlDisplay})
++		if err != nil {
++			t.Fatalf("AddStrand(pawl, IfAbsent): %v", err)
++		}
++		wantOverviewTitlesFirst(primeTitle, "pawl")
++
++		pawl, err = e.ReplaceStrand(pawl.GUID, AddSpec{NameOverride: "pawl", Cmd: "exit", Display: pawlDisplay})
++		if err != nil {
++			t.Fatalf("ReplaceStrand(pawl): %v", err)
++		}
++		wantOverviewTitlesFirst(primeTitle, "pawl")
++
++		selectWindow(windowOfPane(t, e, overview.PaneID))
++		overview, err = e.ReplaceStrand(overview.GUID, AddSpec{NameOverride: "status", Cmd: "sleep 300", Display: primeDisplay})
++		if err != nil {
++			t.Fatalf("ReplaceStrand(overview): %v", err)
++		}
++		wantOverviewTitlesFirst(primeTitle, "pawl")
++		if got, want := currentWindow(), windowOfPane(t, e, overview.PaneID); got != want {
++			t.Errorf("current window = %s, want the new %s window %s", got, primeTitle, want)
++		}
++	})
++
++	t.Run("AddedInTheOtherOrderTheOverviewsEndInTheSameOrder", func(t *testing.T) {
++		if _, err := e.RemoveStrand(overview.GUID, false); err != nil {
++			t.Fatalf("RemoveStrand(overview): %v", err)
++		}
++		var err error
++		overview, err = e.AddStrand(AddSpec{NameOverride: "status", Cmd: "sleep 300", Display: primeDisplay})
++		if err != nil {
++			t.Fatalf("AddStrand(overview): %v", err)
++		}
++		wantOverviewTitlesFirst(primeTitle, "pawl")
++	})
++
++	t.Run("EqualKeysSitInTheOrderTheyLastOpened", func(t *testing.T) {
++		thirdDisplay := render.Display{Anchor: render.AnchorOverview, Title: "third", Order: 1}
++		var err error
++		third, err = e.AddStrand(AddSpec{NameOverride: "third", Cmd: "sleep 300", Display: thirdDisplay})
++		if err != nil {
++			t.Fatalf("AddStrand(third): %v", err)
++		}
++		wantOverviewTitlesFirst(primeTitle, "pawl", "third")
++
++		if pawl, err = e.ReplaceStrand(pawl.GUID, AddSpec{NameOverride: "pawl", Cmd: "exit", Display: pawlDisplay}); err != nil {
++			t.Fatalf("ReplaceStrand(pawl): %v", err)
++		}
++		wantOverviewTitlesFirst(primeTitle, "third", "pawl")
++	})
++
++	t.Run("WithNoLiveAgentEndingTheViewedLowestOverviewSelectsTheNextLowest", func(t *testing.T) {
++		if _, err := e.RemoveStrand(afterBoth.GUID, false); err != nil {
++			t.Fatalf("RemoveStrand(after-both): %v", err)
++		}
++		thirdWindow := windowOfPane(t, e, third.PaneID)
++		selectWindow(windowOfPane(t, e, overview.PaneID))
++
++		if _, err := e.RemoveStrand(overview.GUID, false); err != nil {
++			t.Fatalf("RemoveStrand(overview): %v", err)
++		}
++
++		if got := currentWindow(); got != thirdWindow {
++			t.Errorf("current window = %s, want the lowest remaining overview window %s, never pawl's or the shell's", got, thirdWindow)
++		}
++	})
+ }
+diff --git a/internal/reedengine/windoworder_test.go b/internal/reedengine/windoworder_test.go
+index 689c6879..cf47e156 100644
+--- a/internal/reedengine/windoworder_test.go
++++ b/internal/reedengine/windoworder_test.go
+@@ -5,15 +5,17 @@ package reedengine
+ 
+ import (
+ 	"errors"
++	"maps"
+ 	"slices"
+ 	"strings"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/reedengine/render"
+ 	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// TestWindowOrder pins the fallback placements of an own window, over listings that parseSessionWindows reads.
++// TestWindowOrder pins the fallback placements of an own window and the overview placement by order key, over listings that parseSessionWindows reads.
+ // The relaunch and shell placements are pinned by TestWindowOrder_RealTmux alone.
+ func TestWindowOrder(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -24,8 +26,10 @@ func TestWindowOrder(t *testing.T) {
+ 		listing  string
+ 		shell    string
+ 		previous string
+-		// overview selects overviewWindowInsertArgs, which reads the listing alone.
++		// overview selects overviewWindowInsertArgs, which reads the listing, the overview windows' keys and the new window's order.
+ 		overview bool
++		keys     map[string]int
++		order    int
+ 		want     []string
+ 	}{
+ 		{
+@@ -38,6 +42,30 @@ func TestWindowOrder(t *testing.T) {
+ 			name:     "the overview with no window gives the plain form",
+ 			overview: true,
+ 		},
++		{
++			name:     "an overview with a lower key than the listed one goes before the lowest window",
++			listing:  "@4 0 0 0 pawl\n@2 1 0 0 shell\n",
++			overview: true,
++			keys:     map[string]int{"@4": 1},
++			order:    0,
++			want:     []string{"-b", "-t", "@4"},
++		},
++		{
++			name:     "an overview with a key equal to the last listed one goes after it",
++			listing:  "@0 0 0 0 beam: prime\n@1 1 0 0 pawl\n@2 2 0 0 shell\n",
++			overview: true,
++			keys:     map[string]int{"@0": 0, "@1": 1},
++			order:    1,
++			want:     []string{"-a", "-t", "@1"},
++		},
++		{
++			name:     "an overview between two keys goes after the lower one",
++			listing:  "@0 0 0 0 beam: prime\n@1 1 0 0 pawl\n@2 2 0 0 shell\n",
++			overview: true,
++			keys:     map[string]int{"@0": 0, "@1": 1},
++			order:    0,
++			want:     []string{"-a", "-t", "@0"},
++		},
+ 		{
+ 			name:    "no shell window goes after the highest non-hidden window",
+ 			listing: "@0 0 0 0 explore\n@3 2 0 0 review\n@5 4 1 0 batten:one\n@1 1 0 0 plan\n",
+@@ -63,7 +91,7 @@ func TestWindowOrder(t *testing.T) {
+ 			t.Parallel()
+ 			windows := parseSessionWindows(tt.listing)
+ 			if tt.overview {
+-				if got := overviewWindowInsertArgs(windows); !slices.Equal(got, tt.want) {
++				if got := overviewWindowInsertArgs(windows, tt.keys, tt.order); !slices.Equal(got, tt.want) {
+ 					t.Errorf("overviewWindowInsertArgs() = %v, want %v", got, tt.want)
+ 				}
+ 				return
+@@ -74,6 +102,25 @@ func TestWindowOrder(t *testing.T) {
+ 			}
+ 		})
+ 	}
++
++	t.Run("overviewWindowKeys maps an overview strand's pane to its window and order", func(t *testing.T) {
++		t.Parallel()
++		overview := func(order int) render.Display {
++			return render.Display{Anchor: render.AnchorOverview, Order: order}
++		}
++		strands := []Strand{
++			{GUID: "a", PaneID: "%1", Display: overview(0)},
++			{GUID: "b", PaneID: "%2", Display: overview(1)},
++			{GUID: "agent", PaneID: "%3", Display: render.Display{Anchor: render.AnchorOwnWindow}},
++			{GUID: "unlaunched", Display: overview(2)},
++			{GUID: "unlisted", PaneID: "%9", Display: overview(3)},
++		}
++		windowByPane := map[string]string{"%1": "@1", "%2": "@2", "%3": "@3"}
++		want := map[string]int{"@1": 0, "@2": 1}
++		if got := overviewWindowKeys(strands, windowByPane); !maps.Equal(got, want) {
++			t.Errorf("overviewWindowKeys() = %v, want %v", got, want)
++		}
++	})
+ }
+ 
+ // TestEnsureShellWindow drives the shell window check through its callers, OpenWindow and AttachArgv.
