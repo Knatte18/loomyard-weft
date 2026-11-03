@@ -1,6 +1,6 @@
 # Board README marks a discussed entry and links its Sketch
 
-`readme-shows-discussed` · Task · enhancement, board · running · PR-Review
+`readme-shows-discussed` · Task · enhancement, board · running · Finalize
 
 The board README does not show which entries carry an approved decision record (their Sketch), so the operator cannot see that a `motif` run has finished an entry's Discussion (operator, 2026-11-03).
 
