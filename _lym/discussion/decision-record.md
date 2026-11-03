@@ -16,6 +16,12 @@ Provenance: task pinned-solvers-everywhere; notes loom-halt-2.md
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-03): No clearing of a dead holder's push lock
+
+Decision: Keep the omission: the run clears no push lock whose holder is dead. A stale holder record is reported as stale, as the diff does.
+
+Rationale: The push lock is an OS lock that its holder's exit frees, so a dead process cannot hold it; only the holder record can go stale, and the next holder overwrites it. The Goal's clearing step has nothing to clear.
+
 ## Constraints
 
 ## Auto-mode assumptions
