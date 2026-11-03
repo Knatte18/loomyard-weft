@@ -824,6 +824,27 @@
       "body": "Imported from [issue #39](https://github.com/Knatte18/loomyard/issues/39).\n\n## What happened\n\nIn the Models hub (anchor `src/csharp/NORCE.Models`), `lym batten cancel production-model-duplicates --remove` stopped a tapestry run in Discussion-Write and answered `pair_removed: true`.\nThe task worktree directory `\u003chub\u003e/production-model-duplicates/` stayed behind, no longer a git worktree, holding only `src/csharp/NORCE.Models/*/obj/` build output and `.lym/reed.lock` (52 files, all timestamped at the cancel).\nA later `lym batten run production-model-duplicates` failed at Worktree-Create with `{\"error\":\"not a git repository\"}`, and the drive report handed back as an interrupted step.\n`lym fabric prune` listed nothing, since the directory is not a worktree.\nRemoving the directory by hand let the run start.\n\n`lym board rename` of the same slug after the cancel also refused with \"has a pair, and its slug names that pair: end the pair first with `lym batten cancel ... --remove`\", although that cancel had already run.\n\n## Expected\n\n- `batten cancel --remove` leaves no directory at the pair's path, or waits for the processes it ends (a dotnet build server or the reed session likely wrote `obj/` and `reed.lock` after the removal) before removing it.\n- Worktree-Create meets a leftover non-git directory at its path with a clear refusal naming the path and the way forward, or clears one holding only ignored build output.\n- `fabric prune` reports such an orphan directory.\n- `board rename` does not see a pair once cancel has removed it.\n",
       "created": "2026-11-03T16:44:17Z",
       "revised": "2026-11-03T16:44:17Z"
+    },
+    {
+      "id": 1062,
+      "handle": "B2",
+      "slug": "push-lock-busy-blocks",
+      "title": "lym fabric push lock held past 30s blocks the loom run at PR-Review as escalation-to-human",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "fabric",
+        "landing"
+      ],
+      "issues": [
+        37
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #37](https://github.com/Knatte18/loomyard/issues/37).\n\nWhat happened: the PR-Review row halted the loom run as blocked with 'pushing the task branch failed: fabricengine: push lock busy: \u003cweft\u003e/.weft/fabric.push.lock still held after 30s; neither side was pushed'. The way forward named was to run lym fabric push in the task worktree, then lym loom resume. The run had been through 17 history entries and had just finished Describe.\n\nWhy it is abnormal: the push lock sits in a weft directory shared across worktrees, so another session's push or a stale lock holder can stall a push; a 30s wait then ends the whole run as an escalation to a human, though contention is transient and a push is idempotent. Nothing in the note says which process held the lock, or whether it was stale.\n\nWhat to do: retry the push with backoff for longer, or re-step the row automatically before blocking; when the lock is still busy, report the holder (pid, age) and clear a lock whose holder is dead.\n\nProvenance: task pinned-solvers-everywhere; notes loom-halt-2.md",
+      "created": "2026-11-03T16:44:20Z",
+      "revised": "2026-11-03T16:44:20Z"
     }
   ],
   "prime_owner": "neve",
