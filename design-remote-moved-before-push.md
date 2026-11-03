@@ -1,6 +1,6 @@
 # A run checks what moved on origin and its owners before it pushes or lands
 
-`remote-moved-before-push` · Task · enhancement, fabric, batten · running · Record-Write
+`remote-moved-before-push` · Task · enhancement, fabric, batten · running · Darn-Write
 
 ## Seen (operator, 2026-11-03)
 
