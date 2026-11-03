@@ -1,6 +1,6 @@
 # Darn-Write seat halts: stencil darn-template-write has unfilled marker subagent_model
 
-`seat-stencil-marker-unfilled` · Task · bug, stencil, shed · running · Drift-Verify
+`seat-stencil-marker-unfilled` · Task · bug, stencil, shed · running · Code-Bouncer
 
 Imported from [issue #17](https://github.com/Knatte18/loomyard/issues/17).
 
