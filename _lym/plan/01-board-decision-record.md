@@ -19,9 +19,10 @@
 - `internal/boardengine#Store.UpsertTasksBatch`
 - `internal/boardengine#Store.MergeTasks`
 - `internal/boardengine/doc.go`
-- `internal/boardcli#Command`
+- `internal/boardcli#storeVerbs`
 
 **Uses:**
+- `internal/boardcli#TestPayloadUse_MatchesDeclaredKeys`
 - `internal/boardengine#Board.SetRunStatus`
 - `internal/boardengine#checkFrontPayload`
 - `internal/boardengine#designFilePrefix`
@@ -59,7 +60,7 @@ Its callers are the Discussion-Bouncer approve seam, `lym loom decision add` and
 - A payload `discussed` that is a bool equal to the stored entry's value is deleted from the fields as a no-op. The stored value is false for a new entry.
 - Any other value is refused: `entry %q: the discussed flag is never set by hand: lym sets it when a Discussion is approved, and `lym loom decision store` re-copies the record of a run past its approval; drop the discussed key from the payload`.
 - `Store.UpsertTask`, `Store.UpsertTasksBatch` and `Store.MergeTasks` call it beside `checkFrontPayload`, and `UpsertPayloadKeys` lists `discussed` among the optional keys, with a doc-comment line saying it is accepted only as the stored value.
-- The `lym board upsert` help in `internal/boardcli#Command`, which lists every accepted payload key with `beam`, `front` and `on_land` among them, gains a `"discussed"` line: a bool lym sets, accepted only as the entry's stored value.
+- The `upsert` command in `internal/boardcli#storeVerbs` names the key twice. Its `Use` token gains `discussed?` after `on_land?`, since `TestPayloadUse_MatchesDeclaredKeys` fails while that token and `UpsertPayloadKeys` disagree. Its `Long` field list, which names every accepted payload key with `beam`, `front` and `on_land` among them, gains a `"discussed"` line: a bool lym sets, accepted only as the entry's stored value.
 - In a merge the check runs before the removals, so a merge that upserts a slug it removes is judged against the removed entry's stored value.
 
 `Store.MergeTasks` remembers the `Discussed` value of a removed entry whose slug the merge upserts again.

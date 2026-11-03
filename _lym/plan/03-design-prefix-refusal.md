@@ -18,7 +18,7 @@ Keep the render from ever owning a record file (D1).
 `LoadConfig` calls `checkDesignPrefix(cfg.DesignPrefix)` after the label checks.
 It refuses a prefix that is a prefix of `decisionFilePrefix`, the empty prefix included, and a prefix that starts with `decisionFilePrefix`, since either renders a design file onto a `decision-<slug>.md` name.
 The refusal reads: `board.yaml: design_prefix %q would name a design file decision-<slug>.md, the name of an entry's decision record: set design_prefix in board.yaml to another value, such as "design-", with "lym config board --set design_prefix=design-"`.
-`lym config board` edits the file without `LoadConfig`, so the named verb still runs while the board refuses.
+A `lym config board --set` is checked by loading the config after the write, and passes when the new value loads, so the named step clears the refusal.
 The template's default `design-` and every fixture prefix in the tree (`proposal-`, `d-`, `design-`) pass.
 
 `doc.go`'s `# Decision record` section adds the refusal in one sentence.

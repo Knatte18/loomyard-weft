@@ -30,29 +30,29 @@ Make `lym loom decision add` refresh the board copy of the record (D8).
 
 **New deps.**
 `decisionDeps` gains two fields:
-- `pastApproval func(currentRow string) (bool, error)`, which reports whether the run has passed its Discussion approval as `loomrecipe.PastDiscussionApproval` judges it.
+- `pastApproval func(currentRow string) bool`, which reports whether the run has passed its Discussion approval as `loomrecipe.PastDiscussionApproval` judges it.
 - `storeRecord func(record []byte) error`, which copies bytes onto the run's board entry.
 Both are always filled: `preRun` fills them for every call, and `decisionFake.deps` fills them for every test, so no nil meaning is defined.
 
 `decisionState.preRun` fills them.
-- `pastApproval` calls `PastDiscussionApproval(recipe, currentRow)` and returns `past`. A recipe with no approval row (darn, sampler) answers false, and so does pawl, whose `runRecordOf` gives the beam's project record. So none of those runs is copied; card 6's rows pin that rule over the recipes' rows.
+- `pastApproval` calls `PastDiscussionApproval(recipe, currentRow)`, returns `past` and drops the error, with one comment naming the reason: `resolveReviewTarget`'s `recipeUnknown` refusal, which `preRun` runs before it builds any dep, refuses every recipe the accessor cannot parse. A recipe with no approval row (darn, sampler) answers false, and so does pawl, whose `runRecordOf` gives the beam's project record. So none of those runs is copied; card 6's rows pin that rule over the recipes' rows.
 - `storeRecord` calls `storeDecisionRecord(target, seedSlug(target.WorktreeName), record)`.
 
 **The copy.**
 `copyRecordToBoard(deps, currentRow)` asks `pastApproval(currentRow)`.
 - False: it returns "".
-- An error: it returns `judge whether the run passed its Discussion approval: <error>; ` followed by `decisionWayStore`.
 - True: it reads `deps.committed()` and passes the whole committed record to `storeRecord`.
+A not-found answer from `committed()` likewise has no text of its own and is reported as a read error: the copy runs only after `deps.commit()` succeeded or `afterFailedCommit` found every entry at HEAD, so HEAD holds the record.
 It never fails the verb, since the entry is already committed. It returns the text the success envelope reports as `record_store_error`, and logs each failure at Warn:
 - an error matching `boardengine.ErrRecordEntryDone` gives `the entry has landed and keeps the record it last stored`, with no pointer at the store verb;
-- a committed record HEAD does not hold, a read error or any other store error gives the error followed by `; ` and `decisionWayStore`, whose "once the cause above is cleared" defers to a way forward the error itself names, such as the board's restore-the-entry step.
+- any other error, from the read or the store, gives the error followed by `; ` and `decisionWayStore`, whose "once the cause above is cleared" defers to a way forward the error itself names, such as the board's restore-the-entry step.
 
 **Where it runs.**
 `decisionVerb` calls it after the existing post-commit `committedLacksEntry` check and before `notifyLiveRuns`, with `st.CurrentProducer` from the status it read (empty when no status file).
 It sets `result["record_store_error"]` when the text is non-empty.
 The path where `afterFailedCommit` finds the commit landed falls through to the same call, so it copies as a successful commit does.
 
-On a run past its approval, every failed-commit refusal that sends the caller to `lym fabric commit` also names the store: `decisionVerb` computes the way once, `decisionWayFabricCommit` followed by `, then "lym loom decision store" once "lym fabric commit" has landed the record` when `pastApproval(currentRow)` is true, and `decisionWayFabricCommit` alone otherwise or when it errs.
+On a run past its approval, every failed-commit refusal that sends the caller to `lym fabric commit` also names the store: `decisionVerb` computes the way once, `decisionWayFabricCommit` followed by `, then "lym loom decision store" once "lym fabric commit" has landed the record` when `pastApproval(currentRow)` is true, and `decisionWayFabricCommit` alone otherwise.
 It uses that way in the no-amendment refusal and passes it to `afterFailedCommit`, whose three refusals that today end in `decisionWayFabricCommit` end in `wayCommit` instead; `decisionVerb` is its one caller.
 `rollBackAppend` keeps `decisionWayFabricCommit`: its commit lands only the restored amendment record, never an entry to copy.
 
@@ -63,7 +63,7 @@ It also says a run a `lym loom goto` moved past Discussion-Bouncer counts as pas
 `loomcli/doc.go` gains one sentence.
 
 **Tests.**
-`decisionFake` gains `pastRows map[string]bool`, `pastErr error`, `storeErr error` and the recorded `askedRows []string` and `stored [][]byte`, filled into `deps()`: its `pastApproval` records the row it is asked about and answers `pastRows[row]`, or `pastErr`.
+`decisionFake` gains `pastRows map[string]bool`, `storeErr error` and the recorded `askedRows []string` and `stored [][]byte`, filled into `deps()`: its `pastApproval` records the row it is asked about and answers `pastRows[row]`.
 Rows set the run's row through the fake's existing `status.CurrentProducer`, so a row that passed the wrong row to `pastApproval` fails.
 
 `TestDecisionVerb_CopiesRecordToBoard` (tier 0) is a table over `newDecisionFake` with the committed copy seeded:
@@ -71,8 +71,6 @@ Rows set the run's row through the fake's existing `status.CurrentProducer`, so 
 - At `Discussion-Burler-Fix`, a row not in `pastRows`, nothing is stored.
 - A failing store exits 0 with `record_store_error` naming `lym loom decision store`.
 - A store failing with `ErrRecordEntryDone` exits 0 with `record_store_error` that does not name `lym loom decision store`.
-- A committed record HEAD does not hold exits 0 with `record_store_error` naming `lym loom decision store`, and nothing is stored.
-- A `pastApproval` error exits 0 with `record_store_error` naming the error and `lym loom decision store`, and nothing is stored.
 
 `TestDecisionVerb_CommitFailureNamesWayForward` gains rows: a failed commit at a past row is refused naming `lym fabric commit` and then `lym loom decision store`, and at a row not past names no store verb.
 

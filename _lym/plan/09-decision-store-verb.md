@@ -45,11 +45,12 @@ A refused session gets, as `add`'s refusals are shaped:
 
 **Refusals.**
 It reads the run status through `deps.readStatus`.
-A new `decisionDeps` field, `approvalRow func() (bool, error)`, filled in `preRun` from `loomrecipe.DiscussionApprovalRow(recipe)` for every call, reports whether the recipe has a discussion approval row.
+A new `decisionDeps` field, `approvalRow func() bool`, filled in `preRun` from `loomrecipe.DiscussionApprovalRow(recipe)` for every call, reports whether the recipe has a discussion approval row.
+It drops the accessor's error under the same comment as card 8's `pastApproval`: `resolveReviewTarget`'s `recipeUnknown` refusal has already refused every recipe the accessor cannot parse.
 `deps.pastApproval(currentRow)` from card 8 judges whether the run has passed it.
 - No approval row: `the run's recipe has no Discussion approval, so its record is never stored on the board; way forward: read the record in the run's worktree at <recordPath>`.
 - Not past (`pastApproval` false): `the run has not passed its Discussion approval, which stores the record itself; way forward: let the run settle Discussion-Review, by "lym loom resume" or, when it waits on an escalation, by answering it with the "lym loom circling" verb its escalation names, then re-run this verb if "lym loom status" shows it past Discussion-Bouncer without a stored record`.
-- A status read, recipe read or `pastApproval` error is refused with the error and `way forward: re-run "lym loom decision store"`.
+- A status read error is refused with the error and `way forward: re-run "lym loom decision store"`.
 
 **The copy.**
 Past the approval, it copies the committed record onto the board entry.
@@ -65,14 +66,14 @@ Bound: it stores only the run's own committed record, and only past the approval
 `loomcli/doc.go` gains the verb in one sentence.
 
 **Tests.**
-`TestDecisionStoreVerb` (tier 0) is a table over `newDecisionFake` and `newDarnDecisionFake`, with `decisionFake` gaining `hasApprovalRow bool` and `approvalErr error`, filled into `deps()` as `approvalRow`, and using card 8's `pastRows`, `pastErr`, `storeErr` and `stored`.
+`TestDecisionStoreVerb` (tier 0) is a table over `newDecisionFake` and `newDarnDecisionFake`, with `decisionFake` gaining `hasApprovalRow bool`, filled into `deps()` as `approvalRow`, and using card 8's `pastRows`, `storeErr` and `stored`.
 Rows that reach the copy seed `committedFound` and `committedCopy`, which `newDecisionFake` leaves unset.
 - Past the approval, the committed record is stored and the verb exits 0.
 - A darn run is refused naming the record path.
 - A run at `Discussion-Burler-Fix`, inside Discussion-Review, is refused naming `lym loom resume` and `lym loom circling`.
 - A done entry is refused, naming that it keeps its last stored record.
 - A committed record HEAD does not hold is refused naming `lym fabric commit`.
-- A status read error, an `approvalRow` error and a `pastApproval` error are each refused naming the re-run.
+- A status read error is refused naming the re-run.
 - A named task session that is neither parent nor arbiter is refused naming the parent; with an empty parent name it names only the unnamed shell; with a parent error it names the error.
 - The arbiter strand passes.
 - The parent passes.
