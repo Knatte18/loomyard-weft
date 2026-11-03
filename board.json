@@ -1037,6 +1037,27 @@
       "body": "Imported from [issue #26](https://github.com/Knatte18/loomyard/issues/26).\n\n## What happened\n\n`lym loom` halted as `failed` at the `Drift-Baseline` producer (anomaly `producer-hard-failure`) four times in one task, on each entry and each `lym loom resume`.\nEvery halt carried the message \"drift: the capture child ended before it recorded its start\".\nThe capture child logs under `_lym/drift/logs/` each hold the same single line, an error of the form:\n\n`cwd is outside the recorded fabric anchor subtree: cwd \u003cworktree root\u003e does not equal the anchored directory \u003cworktree root\u003e/src/csharp/NORCE.Models (recorded by .lym-anchor)`\n\nThe fabric anchor (`.lym-anchor`) records a subdirectory of the worktree, but the capture child was started with the worktree root as its cwd, so its anchor check rejected it.\nThe driver's resume advice, \"read the log, then `lym loom resume`, whose entry captures again\", cannot succeed because the cwd does not change between attempts.\nThe run only got past the producer once it was skipped (`Drift-Baseline / skipped` in the history).\n\n## Why it is abnormal\n\nThe anchor is lym's own record, and the capture child is lym's own process.\nThey disagree about the working directory, so a task whose anchor is not the worktree root can never capture a drift baseline.\nThe halt message also points at a log whose one line is the real cause, so the operator learns it only after opening the log.\n\n## What to do\n\n- Start the capture child with its cwd set to the anchored directory, or have the anchor check accept the worktree root when the anchor lies beneath it.\n- Surface the child's error text in the halt message instead of only naming the log.\n- Fail the producer once with a non-retry hint when the child's cwd error repeats, rather than advising a resume that cannot change the outcome.\n\nProvenance: task `testsupport-rule-and-helpers`; notes `loom-halt.md`, `loom-halt-2.md`, `loom-halt-3.md`, `loom-halt-4.md`.\n",
       "created": "2026-11-03T09:00:51Z",
       "revised": "2026-11-03T09:00:51Z"
+    },
+    {
+      "id": 1039,
+      "handle": "B1",
+      "slug": "preflight-clean-skips-lym-state",
+      "title": "Preflight blocks on lym's own untracked go-settle.jsonl under _lym (same pattern as #22)",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "preflight",
+        "shed"
+      ],
+      "issues": [
+        27
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #27](https://github.com/Knatte18/loomyard/issues/27).\n\n## What happened\n\nRun `commonlib-fluid-report-selection` (tapestry, beam `duplication-and-import-followups`, Models hub) blocked at Preflight with:\n\n```\npreconditions not met: worktree-clean: uncommitted state changes under `_lym`: ?? src/csharp/NORCE.Models/_lym/shed/commonlib-fluid-report-selection/go-settle.jsonl\n```\n\n`go-settle.jsonl` is lym's own settle log.\nThe tackler spawned on the Preflight stop wrote it, left it untracked in the weft, then handed the stop back; Preflight's worktree-clean check then refuses that same file on every re-step.\nThe worktree had no code changes.\n\nLog content at the stop:\n\n```\n{\"stop_key\":{\"current_producer\":\"Preflight\",\"history_length\":1,\"state\":\"blocked\"},\"settler\":\"tackler\",\"action\":\"spawn\",\"outcome\":\"tackler spawned\",...}\n{\"stop_key\":{\"current_producer\":\"Preflight\",\"history_length\":1,\"state\":\"blocked\"},\"settler\":\"tackler\",\"action\":\"restep\",\"outcome\":\"tackler resume\",...}\n{\"stop_key\":{\"current_producer\":\"Preflight\",\"history_length\":3,\"state\":\"blocked\"},\"settler\":\"tackler\",\"action\":\"spawn\",\"outcome\":\"tackler spawned\",...}\n{\"stop_key\":{\"current_producer\":\"Preflight\",\"history_length\":3,\"state\":\"blocked\"},\"settler\":\"parent\",\"action\":\"hand-back\",\"outcome\":\"the tackler handed the stop back\",...}\n```\n\nThe run had stopped once before at Seed-Child (hub profiles.yaml lacked tapestry blocks) and was re-run with `lym batten run`.\n\n## Same pattern as #22\n\n#22 is the halt marker left uncommitted under `_lym`, which Preflight then refuses.\nThis is a second file of the same kind: state lym writes into `_lym` while handling a stop is neither committed nor exempt from worktree-clean, so lym blocks on its own bookkeeping.\nA fix for one file name leaves the pattern open; every file lym writes under `_lym` on a stop path needs to be committed when written, or excluded from the clean check.\n\n## Workaround\n\nFrom the task worktree: `lym fabric commit`, then `lym loom resume` (run by the orch).\nThe run then went on to Discussion-Write.",
+      "created": "2026-11-03T09:00:54Z",
+      "revised": "2026-11-03T09:00:54Z"
     }
   ],
   "prime_owner": "neve",
