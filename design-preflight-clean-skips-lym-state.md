@@ -1,6 +1,6 @@
 # Preflight refuses lym own state files under _lym
 
-`preflight-clean-skips-lym-state` · Task · bug, preflight, shed
+`preflight-clean-skips-lym-state` · Task · bug, preflight, shed · running · Worktree-Create
 
 Depends on: [`inherited-halt-blocks-preflight`](design-inherited-halt-blocks-preflight.md)
 
