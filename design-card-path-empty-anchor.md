@@ -1,6 +1,8 @@
 # Webster plan validation refuses a card path with a trailing '#' anchor that Plan-Bouncer accepted
 
-`card-path-empty-anchor` · Note · bug, webster, parsers
+`card-path-empty-anchor` · Task · bug, webster, parsers
+
+Depends on: [`webster-subdir-gitopen`](design-webster-subdir-gitopen.md)
 
 Imported from [issue #34](https://github.com/Knatte18/loomyard/issues/34).
 
