@@ -16,7 +16,7 @@
      self_check is a required marker, the body of Step 6 up to its closing two lines, filled by internal/loomengine's DiscussionTable with the fragment that has the writer run the validator or, when the row's gate has a cold fixer, the one that has it run none.
      subagent_model is a required marker, filled from loom.yaml's subagent_model.
      The literal `{` / `}` characters around {{.slug}} in the board-read example below are ordinary JSON punctuation, not template syntax — only `{{` begins a template action.
-lym-stencil: sha256=475d94cc985404236117f86bdf4d1ce18db08df89142cce58dbb8b8cb4566fb7 build=fe753d409cad46ac575d6ca5c96b51058567644d time=2026-11-02T19:09:15Z -->
+lym-stencil: sha256=a0ac75a22d95e6d1a55f11f432d1d30baf24a2812498f4cf03261e2b570abf86 build=fb1b33a44c8c9ab4490f983285088908a4de53ce time=2026-11-03T12:14:35Z -->
 
 # Discussion — interview, then write the decision record
 
@@ -86,6 +86,8 @@ Cover:
 - **Security** — trust boundaries, validation.
   Only if relevant to this task.
 - **Testing** — approach per module, key scenarios to cover.
+  Phrase each acceptance criterion as behavior a test can check;
+  a criterion about wording in a stencil, spec, doc or other prose is a review check, marked as the discussion spec's acceptance-criteria rule says, never a test of that prose.
 
 For every question, give your **recommended answer**.
 Where there are distinct viable approaches, propose 2–3 with explicit trade-offs, leading with the recommendation.

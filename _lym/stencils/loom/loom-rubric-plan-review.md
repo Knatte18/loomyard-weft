@@ -6,7 +6,7 @@
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
      Among those markers, gate_tiers is filled by ReadRubric from the hub's gate.yaml tiers and gate lists, or none.
-lym-stencil: sha256=0732c9dbcd19458ebb5f75c09572e03620c5c79147e56384ee086bd92cee9f5b build=7999007f5d7f20b4b81bff698790313feaa68d25 time=2026-11-01T19:18:14Z -->
+lym-stencil: sha256=056fb2ce3ae6c1d63d3978ce7fda4f0ad8bab26ee5890c83c0e1573337198bc5 build=fb1b33a44c8c9ab4490f983285088908a4de53ce time=2026-11-03T12:14:35Z -->
 
 # Plan-Review rubric
 
@@ -57,9 +57,13 @@ Do not flag any of the following as a finding:
   A private supporting type, or a constructor inseparable from its type, belongs in the other symbol's card;
   a symbol that is part of a module's public surface, or reused across packages, gets its own card even when one card is its only consumer, and a helper serving one surface is bundled into that surface's card.
 - **Test economy.**
-  A card that plans a new test function or file for behavior an existing test already covers, or one test per symbol, is a finding; so is a card that plans an assertion on a stencil's static prose.
+  A card that plans a new test function or file for behavior an existing test already covers, or one test per symbol, is a finding; so is a card that plans a test asserting the static prose of a stencil, spec, doc or other text.
   The finding names the existing test that covers the behavior, or, for a per-symbol test, the public-surface test that covers the symbol;
   a vague "seems redundant" is not a finding.
+  An acceptance criterion about wording in such text, whether or not its bullet opens with `Review:`, is met by the code review reading the text:
+  a card plans no test for it, a card that does is a finding whose fix cuts the test, and a criterion of that kind with no planned test is never a finding.
+  Before a finding relies on a claim, the plan's or the reviewer's own, that an existing scan or test already covers a wording, the reviewer reads that scan or test in the code and confirms it checks that wording;
+  an unconfirmed claim grounds no finding that cuts a test.
 - **Member glyphs on an `Edit` card.**
   An `Edit` card whose targets are only source file paths (`.go` or `.cs`) of non-test files while its `Intent` names specific symbols is a finding; the finding names the member glyphs to list instead.
 - **The re-sign arrow.**
