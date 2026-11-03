@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-03 16:28 UTC; every age below is as of then.
+Rendered 2026-11-03 16:29 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -34,23 +34,15 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R2 |  | **Plan and Discussion writers explore through parallel Sonnet agents that return only what is relevant**<br>• Bench the guidance that sends Plan and Discussion writers' lookups to parallel Sonnet subagents against a writer given none | [`planner-fork-lookups`](design-planner-fork-lookups.md) | 1d<br>1d | loom |
 | R3 |  | **Measure the effect of the batching breach hook**<br>• After the batching breach hook lands, compare breach turns and context tokens against the 28-session baseline and tune its thresholds | [`batching-hook-effect`](design-batching-hook-effect.md) | 1d<br>1d | claude, shuttle, tools |
 
-## [P2 Codex CLI as a second shuttle engine: codexengine](project-codex-engine.md) (1)
+## [P2 Codex CLI as a second shuttle engine: codexengine](project-codex-engine.md) (0)
 
 [`codex-engine`](design-codex-engine.md) · Age 4w · Owner `neve`
 
 codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs
 
-### Tasks (1)
+### Tasks (0)
 
 Concrete and claimable; only a task can run.
-
-#### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Merge main into the codex-engine beam and resolve every conflict**<br>• Bring main into the beam before it lands, so its landing merges cleanly | [`codex-engine-merge-main`](design-codex-engine-merge-main.md) | darn | Finalize | neve | 15m<br>15m | codex, shuttle |
 
 #### Ready (0)
 
@@ -61,6 +53,14 @@ _None._
 ### Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T3 | **Merge main into the codex-engine beam and resolve every conflict**<br>• Bring main into the beam before it lands, so its landing merges cleanly | [`codex-engine-merge-main`](design-codex-engine-merge-main.md) | 15m<br>15m | codex, shuttle |
 
 ## [P0 Root: entries under no project](project-root.md) (31)
 
@@ -77,7 +77,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Every remote operation runs async, and local-only fabric pairs go**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | darn · solid | Darn-Write | neve | 2w<br>38m | fabric, batten |
-| T5 | **depends_on accepts a project or any entry that lands, and dobby holds the task until it does** | [`depends-on-any-entry`](design-depends-on-any-entry.md) | darn · light | Darn-Write | neve | 9m<br>7m | board, dobby |
+| T5 | **depends_on accepts a project or any entry that lands, and dobby holds the task until it does** | [`depends-on-any-entry`](design-depends-on-any-entry.md) | darn · light | Darn-Write | neve | 10m<br>7m | board, dobby |
 | T9 | **The hibernate request is carried by dobby, not a daemon of its own**<br>• Move lym hibernate request into dobby; the past-Land test is already shared | [`hibernate-in-dobby`](design-hibernate-in-dobby.md) | darn · solid | Describe | neve | 3d<br>1h | dobby |
 
 #### Ready (0)
@@ -92,7 +92,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T2<br>T9<br>T3 | 2d<br>12m | fabric |
+| T4 | `draft` **Comment cleanup: parallel agents fix stale comments across the repository**<br>• An orchestrating agent hands each package to a worker, possibly Haiku 5.5, that fixes comments no longer true or pinning perishable specifics | [`comment-cleanup`](design-comment-cleanup.md) | darn · light | T2<br>T9 | 2d<br>13m | fabric |
 
 ### Notes (27)
 
