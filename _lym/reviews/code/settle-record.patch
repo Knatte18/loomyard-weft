@@ -1,0 +1,1128 @@
+diff --git a/contracts/specs/loom-final-summary-spec.md b/contracts/specs/loom-final-summary-spec.md
+index 4d2881f7..e51bfd40 100644
+--- a/contracts/specs/loom-final-summary-spec.md
++++ b/contracts/specs/loom-final-summary-spec.md
+@@ -36,6 +36,9 @@ The artifact has two consumers today, both in `internal/landingshed`:
+ - **`Finalize`** uses `LandingMessage` — the title, a blank line, the body with its leading whitespace trimmed, then, after a blank line, the credit block Go composes from `landing.yaml`'s `credit_*` keys and the engines that ran a session in the task — as the landing merge commit's message.
+   The pull request's body carries the same body and credit block.
+ 
++Both consumers append the task's regression check after the body and before the credit block, a `## Regression check` section `internal/driftengine` renders from the task's Drift records, when the task has one.
++The artifact never holds that section itself, so it reaches the pull request and the landing commit whichever producer wrote the artifact last.
++
+ `Finalize`'s read is unconditional: a missing or malformed artifact there is a hard error.
+ `Publish`'s read is reached only when the parent branch requires a pull request: it opens one from the artifact, or refreshes an open one's title and body, so a re-run Publish carries a rewritten description onto the pull request.
+ 
+diff --git a/contracts/stencils/landing/landing-template-describe.md b/contracts/stencils/landing/landing-template-describe.md
+index 133f82d5..9b25250a 100644
+--- a/contracts/stencils/landing/landing-template-describe.md
++++ b/contracts/stencils/landing/landing-template-describe.md
+@@ -32,6 +32,14 @@ Read only these sources, and use read-only git for the diff:
+   When a record carries an `## Integration suite triage` section, carry it into your description as an item for the reviewer to check too, naming the flaky and pre-existing identities it lists.
+   When a record carries an `## Integration suite fix` section, carry it into your description as an item for the reviewer to check, naming the fix commits and the identities they cleared.
+ 
++## The regression check
++
++The regression check below has already run.
++lym appends it after your description in the pull request and the landing commit, so write no regression section of your own.
++Never list as an item to check or run by hand a regression compare this check settled: drop such an item that an earlier description or a run record names, or rewrite it from the check when it asks for more than the check did.
++
++{{.drift_verdict}}
++
+ ## What to write
+ 
+ Write exactly one file, `{{.description_path}}`, in the format of the final-summary spec (`loom-final-summary-spec.md`):
+diff --git a/contracts/stencils/landing/landing-template-pr-review.md b/contracts/stencils/landing/landing-template-pr-review.md
+index e9d02dc4..ba16a1f9 100644
+--- a/contracts/stencils/landing/landing-template-pr-review.md
++++ b/contracts/stencils/landing/landing-template-pr-review.md
+@@ -4,6 +4,7 @@
+      which landingshed's PR-Review row fills and hands to shuttle as the session's first prompt, for the tapestry, darn, pawl and sampler recipes alike.
+      Every marker below is a top-level {{.X}} substitution and stencil.FillWith requires every marker non-empty:
+      slug, pr_url, task_worktree, task_branch, parent_branch, description_path, run_material (the paths the run has among the decision record and the plan directory, one per line),
++     drift_verdict (the regression check's section, or a line saying none ran),
+      parent_directive (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective).
+      There are no {{if}}/{{range}} conditionals anywhere in this file. -->
+ 
+@@ -24,6 +25,13 @@ The operator discusses pull request {{.pr_url}} with you in this pane.
+ 
+ {{.run_material}}
+ 
++## The regression check
++
++The regression check below has already run, and the pull request's body carries it after the change description.
++Answer from it, and never ask the operator to run a regression compare it settled, even where the change description asks for one.
++
++{{.drift_verdict}}
++
+ ## What you may do
+ 
+ - Answer the operator's questions about the change, and change it when the operator asks.
+diff --git a/internal/battencli/wire_seams_test.go b/internal/battencli/wire_seams_test.go
+index 87a2dcc4..cbcdcc8e 100644
+--- a/internal/battencli/wire_seams_test.go
++++ b/internal/battencli/wire_seams_test.go
+@@ -78,6 +78,7 @@ var intentionallyNil = map[string]string{
+ 	"Landing.OpenParentFabric":            "loom-only seam, batten lands no branch",
+ 	"Landing.TaskHead":                    "loom-only seam, batten lands no branch",
+ 	"Landing.Shuttle":                     "loom-only seam, batten lands no branch",
++	"Landing.DriftVerdict":                "loom-only seam, batten lands no branch",
+ 	"Landing.EnginesRun":                  "loom-only seam, batten lands no branch",
+ 	"Landing.Lock.Store":                  "loom-only seam, batten lands no branch",
+ 	"Landing.Lock.Owner":                  "loom-only seam, batten lands no branch",
+diff --git a/internal/driftengine/doc.go b/internal/driftengine/doc.go
+index 04ba6797..02bf031b 100644
+--- a/internal/driftengine/doc.go
++++ b/internal/driftengine/doc.go
+@@ -18,7 +18,8 @@
+ // The durable directory `_lym/drift/` holds the scope record, the two agents' reports and the logs of every run; the ephemeral directory `.lym/drift/` holds the capture record, the capture lock, the compare marker, the baseline and side-capture directories, the skip file and the run counter.
+ //
+ // Every record is JSON written through `internal/state`, so an unknown key survives a rewrite.
+-// The scope record (`scope.json`) holds the recorded scope (`off`, `partial` or `full`) and its skipped tests, when the baseline was awaited or deferred, a waiver, the accepted and withdrawn tests, the unruled tests the last decision halt named and the time of the last gate halt.
++// The scope record (`scope.json`) holds the recorded scope (`off`, `partial` or `full`) and its skipped tests, when the baseline was awaited or deferred, a waiver, the accepted and withdrawn tests, the unruled tests the last decision halt named, the time of the last gate halt, and the last compare Drift-Verify ran: the baseline's commit, the commit compared, its time and whether it passed.
++// Verdict renders that record as the `## Regression check` section a landing carries: the scope and its skipped tests, the baseline's commit, the last compare's result or the waiver, and each accepted test with who accepted it and why; with no scope record it renders nothing and creates no directory.
+ // The capture record (`capture.json`) holds the state of the latest main capture (`running`, `passed` or `failed`) with its pid, HEAD, the tests it skipped, times, exit code, reason and log.
+ // CountedCapture decides whether a capture counts as the baseline: a passed record with an `awaited_at` in the scope record.
+ // The run counter (`runs.json`) holds how many compare or side-capture runs the current Drift-Verify agent session took, the commit its attempt started at, whether the agent-session mark is open and whether the session has the operator in its pane.
+@@ -112,9 +113,9 @@
+ // under scope full the acceptances the parent stood by are ruled, an unruled acceptance is a decision halt, and a missing counted capture is a decision halt under every scope that names `lym drift waive`;
+ // an undeclared compare is a Stuck naming `lym config drift`;
+ // a dirty tracked tree is a Stuck, and a resume from a gate halt runs the told verify entry once over the agent's commits;
+-// then the compare runs, and a pass is Done.
++// then the compare runs, its result goes into the scope record, and a pass is Done.
+ // A failing compare resets the run counter at the current HEAD, recording whether `verify_interactive` puts the operator in the session, and spawns one agent whose table gates, in order, on a clean tree, on the verify entry, which runs only once the session committed code, and on a final compare that ends the session when drift remains.
+-// The agent's end closes the mark; a Done under scope full is checked again for unruled acceptances.
++// The agent's end closes the mark; a Done records a passed compare at the agent's HEAD and, under scope full, is checked again for unruled acceptances.
+ //
+ // A Stuck opens with shedadapters.DecisionHaltPrefix, so the stop chain hands it to the parent, under scope full, for the missing counted capture, and under scope partial for a failing final compare while a test is withdrawn.
+ // Under scope full a decision halt names the unruled acceptances and the parent's ways forward for them, `lym loom resume` to stand by them or `lym drift withdraw <test>` to reject one, and records the names and the time in the scope record; the parent's resume then rules them.
+diff --git a/internal/driftengine/records.go b/internal/driftengine/records.go
+index 60b47179..4618479d 100644
+--- a/internal/driftengine/records.go
++++ b/internal/driftengine/records.go
+@@ -92,6 +92,14 @@ type ScopeRecord struct {
+ 	HaltNamedAt string `json:"halt_named_at"`
+ 	// GateHaltAt is the time of the dirty-tree or test-gate Stuck Drift-Verify last returned, formatted as time.RFC3339 in UTC.
+ 	GateHaltAt string `json:"gate_halt_at"`
++	// BaselineHead is the commit of the baseline the last compare read, the task's branch point.
++	BaselineHead string `json:"baseline_head"`
++	// ComparedHead is the commit the last compare ran on.
++	ComparedHead string `json:"compared_head"`
++	// ComparedAt is the time of the last compare, formatted as time.RFC3339 in UTC, and empty before the first.
++	ComparedAt string `json:"compared_at"`
++	// ComparePassed reports whether the last compare showed no drift.
++	ComparePassed bool `json:"compare_passed"`
+ }
+ 
+ // Unruled returns the accepted entries whose ruling is RulingUnruled.
+diff --git a/internal/driftengine/verdict.go b/internal/driftengine/verdict.go
+new file mode 100644
+index 00000000..a586a75e
+--- /dev/null
++++ b/internal/driftengine/verdict.go
+@@ -0,0 +1,90 @@
++// verdict.go renders a task's regression check from its scope record, as the markdown section a landing carries in its pull request and landing commit.
++
++package driftengine
++
++import (
++	"errors"
++	"fmt"
++	"io/fs"
++	"os"
++	"strings"
++)
++
++// verdictHeading opens the section Verdict renders.
++const verdictHeading = "## Regression check"
++
++// acceptedByText names who made an acceptance, keyed by Acceptance.By.
++var acceptedByText = map[string]string{
++	AcceptedByAgent:    "the Drift-Verify agent",
++	AcceptedByCaller:   "the run's parent",
++	AcceptedByOperator: "the operator",
++}
++
++// Verdict renders the task's regression check as a markdown section:
++// the scope with its skipped tests, the commit the baseline was captured at, the last compare's result or the waiver, and each accepted drifted test with who accepted it and why.
++// It returns "" when no scope record exists, so a task no Drift row recorded a scope for carries no section.
++func Verdict(p Paths) (string, error) {
++	// The file is stat'ed first because ReadScope creates the ephemeral drift directory for its lock, which a run of a recipe with no Drift rows never needs.
++	if _, err := os.Stat(p.Scope); errors.Is(err, fs.ErrNotExist) {
++		return "", nil
++	} else if err != nil {
++		return "", fmt.Errorf("drift: stat the scope record %s: %w", p.Scope, err)
++	}
++	scope, found, err := ReadScope(p)
++	if err != nil || !found {
++		return "", err
++	}
++	return renderVerdict(scope), nil
++}
++
++// renderVerdict renders scope as Verdict's section.
++func renderVerdict(scope ScopeRecord) string {
++	lines := []string{verdictHeading, "", "- Scope: " + scopeText(scope)}
++	if scope.Scope == ScopeOff {
++		return strings.Join(lines, "\n")
++	}
++	if scope.BaselineHead != "" {
++		lines = append(lines, fmt.Sprintf("- Baseline: captured at `%s`, the task's branch point.", scope.BaselineHead))
++	}
++	lines = append(lines, "- Compare: "+compareText(scope))
++	if len(scope.Accepted) == 0 {
++		return strings.Join(append(lines, "- Accepted drift: none."), "\n")
++	}
++	lines = append(lines, "- Accepted drift:")
++	for _, acceptance := range scope.Accepted {
++		line := fmt.Sprintf("  - `%s`, accepted by %s: %s", acceptance.Test, acceptedByText[acceptance.By], acceptance.Reason)
++		if acceptance.Ruling == RulingUnruled {
++			line += " (not yet ruled on by the run's parent)"
++		}
++		lines = append(lines, line)
++	}
++	return strings.Join(lines, "\n")
++}
++
++// scopeText renders the scope line's value.
++func scopeText(scope ScopeRecord) string {
++	switch scope.Scope {
++	case ScopeOff:
++		return "off; the task is not regression-checked."
++	case ScopePartial:
++		quoted := make([]string, len(scope.Skip))
++		for i, test := range scope.Skip {
++			quoted[i] = "`" + test + "`"
++		}
++		return "partial, skipping " + strings.Join(quoted, ", ") + "."
++	}
++	return "full."
++}
++
++// compareText renders the compare line's value.
++func compareText(scope ScopeRecord) string {
++	switch {
++	case scope.WaivedAt != "":
++		return "waived: " + scope.WaivedReason
++	case scope.ComparedAt == "":
++		return "not run."
++	case scope.ComparePassed:
++		return fmt.Sprintf("passed at `%s`.", scope.ComparedHead)
++	}
++	return fmt.Sprintf("showed drift at `%s`.", scope.ComparedHead)
++}
+diff --git a/internal/driftengine/verdict_test.go b/internal/driftengine/verdict_test.go
+new file mode 100644
+index 00000000..b98fa52f
+--- /dev/null
++++ b/internal/driftengine/verdict_test.go
+@@ -0,0 +1,88 @@
++// verdict_test.go — tier 0 tests for the regression check's section rendered from the scope record.
++
++package driftengine
++
++import (
++	"os"
++	"path/filepath"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestVerdict covers no record, scope off, a waiver, a compare not yet run, a passing and a drifted compare, and accepted drift by each acceptor.
++func TestVerdict(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	compared := func(passed bool) ScopeRecord {
++		return ScopeRecord{Scope: ScopeFull, BaselineHead: "base1", ComparedHead: "head2", ComparedAt: "2026-01-02T03:04:05Z", ComparePassed: passed}
++	}
++	tests := []struct {
++		name  string
++		scope *ScopeRecord
++		want  string
++	}{
++		{"NoRecordCarriesNoSection", nil, ""},
++		{"ScopeOffNamesOnlyTheScope", &ScopeRecord{Scope: ScopeOff}, "## Regression check\n\n- Scope: off; the task is not regression-checked."},
++		{
++			"WaivedNamesTheReason",
++			&ScopeRecord{Scope: ScopePartial, Skip: []string{"slow", "flaky"}, WaivedAt: "2026-01-02T03:04:05Z", WaivedReason: "no baseline possible"},
++			"## Regression check\n\n- Scope: partial, skipping `slow`, `flaky`.\n- Compare: waived: no baseline possible\n- Accepted drift: none.",
++		},
++		{"NotComparedSaysSo", &ScopeRecord{Scope: ScopeFull}, "## Regression check\n\n- Scope: full.\n- Compare: not run.\n- Accepted drift: none."},
++		{
++			"PassedNamesTheBaselineAndTheComparedHead",
++			func() *ScopeRecord { s := compared(true); return &s }(),
++			"## Regression check\n\n- Scope: full.\n- Baseline: captured at `base1`, the task's branch point.\n- Compare: passed at `head2`.\n- Accepted drift: none.",
++		},
++		{
++			"DriftedSaysSo",
++			func() *ScopeRecord { s := compared(false); return &s }(),
++			"## Regression check\n\n- Scope: full.\n- Baseline: captured at `base1`, the task's branch point.\n- Compare: showed drift at `head2`.\n- Accepted drift: none.",
++		},
++		{
++			"AcceptedDriftNamesEachTestWithItsAcceptorAndReason",
++			func() *ScopeRecord {
++				s := compared(true)
++				s.Accepted = []Acceptance{
++					{Test: "t1", Reason: "the model changed", By: AcceptedByCaller, Ruling: RulingRuled},
++					{Test: "t2", Reason: "new rounding", By: AcceptedByOperator, Ruling: RulingRuled},
++					{Test: "t3", Reason: "intended", By: AcceptedByAgent, Ruling: RulingUnruled},
++				}
++				return &s
++			}(),
++			"## Regression check\n\n- Scope: full.\n- Baseline: captured at `base1`, the task's branch point.\n- Compare: passed at `head2`.\n- Accepted drift:\n" +
++				"  - `t1`, accepted by the run's parent: the model changed\n" +
++				"  - `t2`, accepted by the operator: new rounding\n" +
++				"  - `t3`, accepted by the Drift-Verify agent: intended (not yet ruled on by the run's parent)",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			p := NewPaths(t.TempDir())
++			if tt.scope != nil {
++				err := UpdateScope(p, func(ScopeRecord, bool) (ScopeRecord, error) { return *tt.scope, nil })
++				if err != nil {
++					t.Fatal(err)
++				}
++			}
++			got, err := Verdict(p)
++			if err != nil || got != tt.want {
++				t.Errorf("Verdict() = %q, %v; want %q, nil", got, err, tt.want)
++			}
++		})
++	}
++
++	t.Run("NoRecordCreatesNoDirectory", func(t *testing.T) {
++		t.Parallel()
++		p := NewPaths(t.TempDir())
++		if _, err := Verdict(p); err != nil {
++			t.Fatalf("Verdict() = _, %v; want nil", err)
++		}
++		if _, err := os.Stat(filepath.Dir(p.Capture)); err == nil {
++			t.Errorf("Verdict() with no scope record created the ephemeral drift directory")
++		}
++	})
++}
+diff --git a/internal/driftengine/verify.go b/internal/driftengine/verify.go
+index 72ee8969..b8cd26d4 100644
+--- a/internal/driftengine/verify.go
++++ b/internal/driftengine/verify.go
+@@ -184,6 +184,9 @@ func (p *DriftVerify) pass(ctx context.Context) (shedengine.Outcome, shedengine.
+ 	if err != nil {
+ 		return "", shedengine.OutputPointer{}, err
+ 	}
++	if err := p.recordCompare(capture.Head, result.Passed); err != nil {
++		return "", shedengine.OutputPointer{}, err
++	}
+ 	if result.Passed {
+ 		return doneBecause("the compare passed")
+ 	}
+@@ -272,6 +275,18 @@ func (p *DriftVerify) now() time.Time {
+ 	return p.deps.Now()
+ }
+ 
++// recordCompare records in the scope record a compare of the current HEAD against the baseline captured at baselineHead, and whether it passed.
++func (p *DriftVerify) recordCompare(baselineHead string, passed bool) error {
++	head, err := p.deps.Head()
++	if err != nil {
++		return err
++	}
++	_, err = p.updateScope(func(cur *ScopeRecord) {
++		cur.BaselineHead, cur.ComparedHead, cur.ComparedAt, cur.ComparePassed = baselineHead, head, stamp(p.now()), passed
++	})
++	return err
++}
++
+ // markGateHalt records gate_halt_at when it is unset, so a resume's halt keeps the time it read.
+ func (p *DriftVerify) markGateHalt() error {
+ 	return UpdateScope(p.deps.Paths, func(cur ScopeRecord, _ bool) (ScopeRecord, error) {
+@@ -526,6 +541,10 @@ func (p *DriftVerify) runAgent(ctx context.Context, told VerifyTold) (shedengine
+ 	}
+ 	switch outcome {
+ 	case shedengine.Done:
++		// The agent ends Done only once its table's final compare passed.
++		if err := p.recordCompare(told.BaselineHead, true); err != nil {
++			return "", shedengine.OutputPointer{}, err
++		}
+ 		if scope.Scope == ScopeFull && len(scope.Unruled()) > 0 {
+ 			return p.haltFrom(pointer, false, generalHaltOpening, "the Drift-Verify agent accepted drift that only the run's parent may rule on")
+ 		}
+diff --git a/internal/driftengine/verify_test.go b/internal/driftengine/verify_test.go
+index 14b3556f..b704fb1b 100644
+--- a/internal/driftengine/verify_test.go
++++ b/internal/driftengine/verify_test.go
+@@ -244,6 +244,22 @@ func requireStuck(t *testing.T, outcome shedengine.Outcome, pointer shedengine.O
+ 	}
+ }
+ 
++// earlierCaptureHead is the commit a row's capture is taken at when the row tells the baseline's commit from the fixture's HEAD, which is aaa.
++const earlierCaptureHead = "base"
++
++// captureAt rewrites the fixture's counted capture to be taken at head.
++func (f *verifyFixture) captureAt(head string) {
++	f.writeCapture(CaptureRecord{State: CapturePassed, Head: head})
++}
++
++// requireCompareRecorded checks scope records a compare of comparedHead against the capture taken at baselineHead, at the fixture's clock, passed or not.
++func requireCompareRecorded(t *testing.T, scope ScopeRecord, baselineHead, comparedHead string, passed bool) {
++	t.Helper()
++	if scope.BaselineHead != baselineHead || scope.ComparedHead != comparedHead || scope.ComparedAt != "2026-01-02T03:04:05Z" || scope.ComparePassed != passed {
++		t.Errorf("scope compare fields = %q, %q, %q, %v; want %s, %s, 2026-01-02T03:04:05Z, %v", scope.BaselineHead, scope.ComparedHead, scope.ComparedAt, scope.ComparePassed, baselineHead, comparedHead, passed)
++	}
++}
++
+ // requireDone runs one pass of f and checks it is Done.
+ func requireDone(f *verifyFixture) {
+ 	f.t.Helper()
+@@ -345,15 +361,18 @@ func TestDriftVerify(t *testing.T) {
+ 	t.Run("a passing compare is Done with no agent", func(t *testing.T) {
+ 		t.Parallel()
+ 		f := newVerifyFixture(t, partial, nil)
++		f.captureAt(earlierCaptureHead)
+ 		requireDone(f)
+ 		if f.seats.Calls != 0 || f.compareCalls != 1 {
+ 			t.Errorf("agents %d, compares %d; want no agent and one compare", f.seats.Calls, f.compareCalls)
+ 		}
++		requireCompareRecorded(t, f.scope(), earlierCaptureHead, "aaa", true)
+ 	})
+ 
+ 	t.Run("a failing compare spawns one agent and resets the run count", func(t *testing.T) {
+ 		t.Parallel()
+ 		f := newVerifyFixture(t, partial, nil)
++		f.captureAt(earlierCaptureHead)
+ 		f.compares = []CompareResult{failingCompare, passingCompare}
+ 		if err := ResetRuns(f.paths, "old", false); err != nil {
+ 			t.Fatal(err)
+@@ -375,12 +394,13 @@ func TestDriftVerify(t *testing.T) {
+ 		if count, err := RunCount(f.paths); err != nil || count != 0 {
+ 			t.Errorf("RunCount() = %d, %v; want the count reset", count, err)
+ 		}
+-		if want := (VerifyTold{CompareLog: "compare-1.log", BaselineHead: "aaa"}); len(f.told) == 0 || f.told[0] != want {
++		if want := (VerifyTold{CompareLog: "compare-1.log", BaselineHead: earlierCaptureHead}); len(f.told) == 0 || f.told[0] != want {
+ 			t.Errorf("told = %v; want %v", f.told, want)
+ 		}
+ 		if open, _ := AgentSessionOpen(f.paths); open {
+ 			t.Errorf("the agent-session mark reads open after the agent's end")
+ 		}
++		requireCompareRecorded(t, f.scope(), earlierCaptureHead, "aaa", true)
+ 	})
+ 
+ 	t.Run("a final compare still failing is Stuck naming accept, with the prefix by scope", func(t *testing.T) {
+@@ -396,9 +416,11 @@ func TestDriftVerify(t *testing.T) {
+ 		}
+ 		for _, row := range rows {
+ 			f := newVerifyFixture(t, row.scope, nil)
++			f.captureAt(earlierCaptureHead)
+ 			f.compares = []CompareResult{failingCompare, failingCompare}
+ 			outcome, pointer, err := f.call()
+ 			requireStuck(t, outcome, pointer, err, row.prefixed, "lym drift accept", "verify-report.md", "lym loom resume")
++			requireCompareRecorded(t, f.scope(), earlierCaptureHead, "aaa", false)
+ 		}
+ 	})
+ 
+diff --git a/internal/landingshed/deps.go b/internal/landingshed/deps.go
+index 098011d6..809550bf 100644
+--- a/internal/landingshed/deps.go
++++ b/internal/landingshed/deps.go
+@@ -288,6 +288,13 @@ type Deps struct {
+ 	// Nil means "no engine ran", so the credit block carries no engine line.
+ 	EnginesRun func() ([]string, error)
+ 
++	// DriftVerdict returns the task's regression check as a markdown section, which PR-Review and Finalize append to the change description's body in the pull request and the landing commit, and which the PR-Review session's prompt shows.
++	// An empty answer carries no section, and a returned error is returned from Call.
++	//
++	// Nil means "no regression check", following CommitStatus's nil-is-absent convention.
++	// internal/loomcli's landingDeps fills it, and its drift guard keeps it filled.
++	DriftVerdict func() (string, error)
++
+ 	// Registry is the resolved model-spec registry both producers' resolver constructions read the
+ 	// conflict spec's alias against.
+ 	Registry modelspec.Registry
+diff --git a/internal/landingshed/describe.go b/internal/landingshed/describe.go
+index a8e6a98f..fbf42c07 100644
+--- a/internal/landingshed/describe.go
++++ b/internal/landingshed/describe.go
+@@ -78,6 +78,9 @@ type DescribeInputs struct {
+ 	MergeBase string
+ 	// Slug is the task's slug, the key for `lym board get`.
+ 	Slug string
++	// DriftVerdict is the task's regression check as a markdown section, which the landing appends to the description.
++	// Optional: empty when no regression check ran.
++	DriftVerdict string
+ }
+ 
+ // runRecordBullets renders one bullet per run record that exists on disk: every prior generation oldest first, then the live record.
+@@ -104,8 +107,9 @@ func runRecordBullets(in DescribeInputs) (string, error) {
+ }
+ 
+ // DescribeTable builds the seatengine.Table of the Describe session: one lead that writes the change description.
+-// An empty input field other than RunRecordPath and PriorRunRecordPaths is an error naming the field, and so is a stencil missing from in.StencilsDir, so a mis-wired closure fails before the row runs rather than rendering a blank path into the prompt.
++// An empty input field other than RunRecordPath, PriorRunRecordPaths and DriftVerdict is an error naming the field, and so is a stencil missing from in.StencilsDir, so a mis-wired closure fails before the row runs rather than rendering a blank path into the prompt.
+ // A run record that does not exist is left out of the prompt, and a stat error on one is returned.
++// An empty DriftVerdict renders as a line saying no regression check ran.
+ // The table's values are the stencil's markers; the seat engine renders the parent and edit directives from its geometry.
+ // The table carries no gate; the producer entry sets it.
+ // Segment is the describe segment, because the session writes the pull request description.
+@@ -133,7 +137,12 @@ func DescribeTable(in DescribeInputs, cfg Config, reg modelspec.Registry) (seate
+ 		return seatengine.Table{}, fmt.Errorf("landingshed: DescribeTable: %w", err)
+ 	}
+ 
++	verdict := in.DriftVerdict
++	if verdict == "" {
++		verdict = noDriftVerdict
++	}
+ 	table, err := describeSessionTable(describeStencilName, in.DescriptionPath, map[string]string{
++		"drift_verdict":        verdict,
+ 		"slug":                 in.Slug,
+ 		"decision_record_path": in.DecisionRecordPath,
+ 		"run_record_paths":     runRecords,
+diff --git a/internal/landingshed/describe_test.go b/internal/landingshed/describe_test.go
+index 62e64b7c..5e8c2c42 100644
+--- a/internal/landingshed/describe_test.go
++++ b/internal/landingshed/describe_test.go
+@@ -21,7 +21,7 @@ import (
+ )
+ 
+ const describeStencilFixture = "{{.parent_directive}}\n{{.edit_directive}}\nslug={{.slug}}\ndecision={{.decision_record_path}}\nrun={{.run_record_paths}}\n" +
+-	"out={{.description_path}}\ntask={{.task_branch}}\nparent={{.parent_branch}}\nbase={{.merge_base}}\n"
++	"out={{.description_path}}\ntask={{.task_branch}}\nparent={{.parent_branch}}\nbase={{.merge_base}}\ndrift={{.drift_verdict}}\n"
+ 
+ // writeRunRecord writes a run record file at <dir>/<name>/webster/summary.md and returns its path.
+ func writeRunRecord(t *testing.T, dir, name string) string {
+@@ -234,6 +234,34 @@ func TestDescribeSpec_RunRecordsOldestFirstLiveLast(t *testing.T) {
+ 	})
+ }
+ 
++// TestDescribeSpec_DriftVerdict asserts the prompt shows the told regression check, and a line saying none ran when none is told.
++func TestDescribeSpec_DriftVerdict(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name    string
++		verdict string
++		want    string
++	}{
++		{"TheToldCheck", testVerdict, testVerdict},
++		{"NoneRan", "", noDriftVerdict},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			in := newDescribeInputs(t)
++			in.DriftVerdict = tt.verdict
++			table, err := DescribeTable(in, Config{Describe: "claude:sonnet"}, modelspec.Registry{})
++			if err != nil {
++				t.Fatalf("DescribeTable = _, %v; want nil error", err)
++			}
++			if prompt := describeLeadPrompt(t, in.StencilsDir, "", table); !strings.Contains(prompt, "drift="+tt.want+"\n") {
++				t.Errorf("prompt %q does not show %q as the regression check", prompt, tt.want)
++			}
++		})
++	}
++}
++
+ func TestDescribeSpec_EmptyFieldIsError(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	fields := map[string]func(*DescribeInputs){
+diff --git a/internal/landingshed/doc.go b/internal/landingshed/doc.go
+index 159f0bcf..597f57a1 100644
+--- a/internal/landingshed/doc.go
++++ b/internal/landingshed/doc.go
+@@ -4,7 +4,7 @@
+ // It reads the receiving branch's beam.yaml `pull_request`, the landing entry's field, the origin and whether the task branch has commits beyond its parent through Deps.PullRequest, and takes no parent lock.
+ // A beam.yaml it cannot read is Stuck with Halt naming the worktree and `lym config beam`, and a resolver Halt is Stuck with Halt.
+ // A no logs the reason, closes a recorded pull request GitHub reports open with the comment `lym closed this pull request: <reason>`, drops the record and ends Done.
+-// A yes pushes the task branch, then finds the pull request the record names or the open one on the task branch, else opens one, sets its title from the change description and its body from the description's body and the credit block, and records its number, URL, base and head, and then waits on it in process.
++// A yes pushes the task branch, then finds the pull request the record names or the open one on the task branch, else opens one, sets its title from the change description and its body from the description's body, the regression check and the credit block, and records its number, URL, base and head, and then waits on it in process.
+ // The record's gated head is set to the task head on the first entry only, so a re-entry keeps it, and a record carrying the operator's ending keeps the run's ending when the task head is still the gated one and starts a new review when it is not.
+ //
+ // The wait has no timeout and wakes at least a second apart, doubling to a minute while nothing changes and back to a second when the task head moves.
+@@ -22,7 +22,7 @@
+ // The row keeps one interactive agent session per run, in a window of its own in the task worktree, for the operator to discuss the pull request in; the row never waits on its output.
+ // After it records the pull request, and before it waits, it reuses the recorded strand when that is live, resumes the recorded session id when the strand is not, and otherwise starts a new session.
+ // A review whose record carries the operator's ending gets no session.
+-// The session starts from the `landing-template-pr-review` stencil filled with paths only, under the `pr_reviewer` model, with the publish shell guard installed and the pane process registered under the run.
++// The session starts from the `landing-template-pr-review` stencil filled with paths and the regression check, under the `pr_reviewer` model, with the publish shell guard installed and the pane process registered under the run.
+ // A start that fails transiently is an error the driver re-steps, and any other start failure is Stuck with Halt naming `lym loom resume`.
+ // The row stops the session before each read that may end the review, which is a merged pull request, an approval of the gated head and the continue flag, and resumes it when that read keeps waiting.
+ // It stops it at the first wake a pause covers and resumes it at the first uncovered wake, and on every verdict, Stuck and error, and it leaves it running when the context is cancelled.
+@@ -218,11 +218,13 @@
+ // and a dirty tree is Stuck with the parent branch untouched, while a failing gate runs the merge fixer.
+ // After each merge of the parent and before the parent-side merge, Finalize commits the parent pair's own run records through the told Deps.CommitParentRecords, so a sibling run's uncommitted status record does not trip the merge guard;
+ // a clean subtree is a no-op, an absent seam skips the step, and a commit failure is Stuck naming the parent pair and its run records, with nothing merged.
+-// The landing commit carries the change description, then a blank line and the credit block, written as plain lines, never as git trailers.
++// The landing commit carries the change description, then a blank line and the regression check, then a blank line and the credit block, written as plain lines, never as git trailers.
++// The regression check is the section the told Deps.DriftVerdict renders from the task's Drift records, so a check the Drift rows ran reaches the pull request and the landing commit whether or not Describe rewrote the description after it; an empty section, and a nil seam, add nothing.
++// Finalize reads it before any parent-side mutation, and PR-Review each time it sets the pull request's body; a read failure is an error.
+ // With landing.yaml's credit on, the block is credit_heading, then one ` - <item>` line for credit_loomyard and for the credit_engines text of each engine the task's sessions ran under, in engine-name order.
+ // Finalize reads those engines through the told Deps.EnginesRun before any parent-side mutation, and a read failure is an error with nothing merged.
+ // An empty text adds no line, and a block left with no item line, or with credit off, is empty, so the message ends at the body.
+-// PR-Review sets the pull request's body to the same body and block, so the commit and its pull request carry one credit.
++// PR-Review sets the pull request's body to the same body, regression check and block, so the commit and its pull request carry one credit.
+ // The retired co_authored_by, trailer_text and engine_trailers keys load and lym config reconcile prunes them, carrying no value over.
+ // Before the merge of the parent, Finalize reads the per-worktree config files the task changed away from both its fork point and the parent's current tip, so a parent-side change never reads as a task edit, and, at Done, queues one notice about them naming the base, task tip and parent tip for the hub's orchestrator;
+ // it never carries those files to the parent,
+@@ -268,6 +270,7 @@
+ // Its stencil, like the conflict session's, carries the parent directive that internal/parentdirective renders from the told name:
+ // the seat engine's geometry for Describe, and Deps.ParentName passed through to the resolver for Parent-Align and Finalize.
+ // DescribeTable builds every loom recipe's session from one stencil, which reads the decision record, the board entry, the diff and the run records that exist, rendering an absent record as `(none)`.
++// The stencil also shows the regression check the landing appends, so the session writes no section of its own for it and lists no check it settled as one to run by hand.
+ // NewBeamDescribe is the beam recipe's Describe row and starts no agent: it writes the description from the beam's board entry, the subjects of the commits the beam adds and the entries `lym loom decision add` added to the beam's project record, validates it with the check the Describe gate runs, and commits it.
+ // A finding is an error naming the finding and the way out, which is to end the landing with `lym batten cancel <slug>`, fix the entry with `lym board upsert` and run `lym beam land <slug>` again, since the landing's claim holds the entry under the run lock.
+ //
+diff --git a/internal/landingshed/finalize.go b/internal/landingshed/finalize.go
+index d9684b28..9ea3453f 100644
+--- a/internal/landingshed/finalize.go
++++ b/internal/landingshed/finalize.go
+@@ -197,6 +197,12 @@ func (fz *Finalize) Call(ctx context.Context) (shedengine.Outcome, shedengine.Ou
+ 	if err != nil {
+ 		return "", shedengine.OutputPointer{}, fmt.Errorf("landingshed: %s: %w", finalizeName, err)
+ 	}
++	// The regression check is read here for the same reason, and follows the body in both messages.
++	verdict, err := fz.deps.driftVerdict()
++	if err != nil {
++		return "", shedengine.OutputPointer{}, fmt.Errorf("landingshed: %s: %w", finalizeName, err)
++	}
++	summary.Body = withSection(summary.Body, verdict)
+ 	landingMessage := summary.LandingMessage(credit)
+ 
+ 	// Step 1b: commit the product's own status file, so the pair carries no tracked modification
+diff --git a/internal/landingshed/finalize_pr.go b/internal/landingshed/finalize_pr.go
+index 2cceff01..8c6bca10 100644
+--- a/internal/landingshed/finalize_pr.go
++++ b/internal/landingshed/finalize_pr.go
+@@ -75,6 +75,33 @@ func (d Deps) creditBlock() (string, error) {
+ 	return d.Config.CreditBlock(enginesRun), nil
+ }
+ 
++// noDriftVerdict stands in a prompt for the regression check when none ran for the task.
++const noDriftVerdict = "No regression check ran for this task."
++
++// driftVerdict reads the task's regression check section, "" when none ran or no seam is told.
++func (d Deps) driftVerdict() (string, error) {
++	if d.DriftVerdict == nil {
++		return "", nil
++	}
++	verdict, err := d.DriftVerdict()
++	if err != nil {
++		return "", fmt.Errorf("read the regression check: %w", err)
++	}
++	return verdict, nil
++}
++
++// withSection returns body with section after a blank line, and body unchanged when section is empty.
++func withSection(body, section string) string {
++	if section == "" {
++		return body
++	}
++	body = strings.TrimRight(body, " \t\r\n")
++	if strings.TrimSpace(body) == "" {
++		return section
++	}
++	return body + "\n\n" + section
++}
++
+ // bodyWithCredit composes a pull request's body and its merge's commit message alike: the change description's trimmed body, then a blank line and the credit block when the block is not empty.
+ // The title travels separately.
+ func bodyWithCredit(body, credit string) string {
+diff --git a/internal/landingshed/finalize_pr_test.go b/internal/landingshed/finalize_pr_test.go
+index 589ac216..6329dc32 100644
+--- a/internal/landingshed/finalize_pr_test.go
++++ b/internal/landingshed/finalize_pr_test.go
+@@ -32,6 +32,7 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 	const recordedURL = "https://github.com/acme/widgets/pull/7"
+ 	const wantCredit = "Created using\n - LoomYard\n - Test Author <test@example.com>"
+ 	const wantGitHubMerge = "Merge 7|task-head|true|A landing title|A landing body.\n\n" + wantCredit
++	const wantGitHubMergeWithVerdict = "Merge 7|task-head|true|A landing title|A landing body.\n\n" + testVerdict + "\n\n" + wantCredit
+ 	statusScript := func(calls ...scriptedCall) map[string][]scriptedCall {
+ 		return map[string][]scriptedCall{"Status": calls}
+ 	}
+@@ -62,9 +63,11 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 		record     *pullrequest.Record
+ 		scripts    map[string][]scriptedCall
+ 		squashOff  bool
+-		pushErr    error
+-		merges     []mergeCallResult
+-		ffErr      error
++		// verdict is what Deps.DriftVerdict answers; empty leaves the seam nil.
++		verdict string
++		pushErr error
++		merges  []mergeCallResult
++		ffErr   error
+ 		// taskEmpty makes the task branch hold no commit beyond its parent.
+ 		taskEmpty bool
+ 		// taskErr makes the TaskHasCommits seam fail.
+@@ -157,6 +160,10 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 			wantOutcome: shedengine.Done, wantMerges: 1, wantOrder: "task-push,fast-forward,merge,mark,push",
+ 			wantCalls: []string{"Status 7", strings.Replace(wantGitHubMerge, "|true|", "|false|", 1)},
+ 		},
++		{
++			name: "TheGitHubMergeMessageCarriesTheBodyThenTheRegressionCheckThenTheCredit", parentMode: "on", record: recorded(), scripts: mergeScript(open, scriptedCall{}), verdict: testVerdict,
++			wantOutcome: shedengine.Done, wantMerges: 1, wantOrder: "task-push,fast-forward,merge,mark,push", wantCalls: []string{"Status 7", wantGitHubMergeWithVerdict},
++		},
+ 		{
+ 			name: "AMergeInRequiredErrorAfterTheGitHubMergeRetriesTheLocalMergeWithNoSecondGitHubMerge", parentMode: "on", record: recorded(), scripts: mergeScript(open, scriptedCall{}),
+ 			merges:      []mergeCallResult{{err: &fabricengine.ErrMergeInRequired{}}, {result: fabricengine.MergeResult{Committed: true}}},
+@@ -236,6 +243,9 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 			deps := newTestDeps(t)
+ 			deps.Slug = "me"
+ 			deps.Config.Squash = !tt.squashOff
++			if tt.verdict != "" {
++				deps.DriftVerdict = func() (string, error) { return tt.verdict, nil }
++			}
+ 			deps.MarkTaskDone = func() error {
+ 				order = append(order, "mark")
+ 				return nil
+@@ -329,3 +339,28 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 		})
+ 	}
+ }
++
++// TestWithSection asserts a section follows the trimmed body after a blank line, stands alone after a body of whitespace, and leaves the body as it is when empty.
++func TestWithSection(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name    string
++		body    string
++		section string
++		want    string
++	}{
++		{"EmptySectionLeavesTheBodyUnchanged", "Body\n", "", "Body\n"},
++		{"SectionFollowsTheTrimmedBodyAfterABlankLine", "Body\n\n", testVerdict, "Body\n\n" + testVerdict},
++		{"WhitespaceOnlyBodyIsTheSectionAlone", " \n\t\n", testVerdict, testVerdict},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := withSection(tt.body, tt.section); got != tt.want {
++				t.Errorf("withSection(%q, %q) = %q; want %q", tt.body, tt.section, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/landingshed/finalize_test.go b/internal/landingshed/finalize_test.go
+index 66d07ee4..edc8e8f3 100644
+--- a/internal/landingshed/finalize_test.go
++++ b/internal/landingshed/finalize_test.go
+@@ -272,10 +272,13 @@ func TestFinalize_MergeOptionsCarriesComposedMessage(t *testing.T) {
+ 		squash bool
+ 		// nilEnginesRun leaves the Deps.EnginesRun seam nil, so no engine ran and the message carries no engine line.
+ 		nilEnginesRun bool
++		// verdict is what Deps.DriftVerdict answers, which follows the body; empty leaves the seam nil.
++		verdict string
+ 	}{
+-		{"Squash", true, false},
+-		{"NoSquash", false, false},
+-		{"NilEnginesRun", true, true},
++		{"Squash", true, false, ""},
++		{"NoSquash", false, false, ""},
++		{"NilEnginesRun", true, true, ""},
++		{"RegressionCheckFollowsTheBody", true, false, testVerdict},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -287,6 +290,9 @@ func TestFinalize_MergeOptionsCarriesComposedMessage(t *testing.T) {
+ 				deps.EnginesRun = nil
+ 				enginesRun = nil
+ 			}
++			if tt.verdict != "" {
++				deps.DriftVerdict = func() (string, error) { return tt.verdict, nil }
++			}
+ 			summary, err := summaryparser.Parse(deps.DescriptionPath)
+ 			if err != nil {
+ 				t.Fatalf("summaryparser.Parse() error = %v; want nil", err)
+@@ -307,6 +313,9 @@ func TestFinalize_MergeOptionsCarriesComposedMessage(t *testing.T) {
+ 			}
+ 			got := merger.calls[0].opts
+ 			want := summary.LandingMessage(deps.Config.CreditBlock(enginesRun))
++			if tt.verdict != "" {
++				want = strings.TrimRight(summary.CommitMessage(), "\n") + "\n\n" + tt.verdict + "\n\n" + deps.Config.CreditBlock(enginesRun)
++			}
+ 			if got.Message != want {
+ 				t.Errorf("MergeOptions.Message = %q; want %q", got.Message, want)
+ 			}
+@@ -345,6 +354,9 @@ func TestFinalize_UnusableMessageInput_ErrorBeforeMergeOrCommit(t *testing.T) {
+ 		{"engines_unreadable", func(t *testing.T, deps *Deps) {
+ 			deps.EnginesRun = func() ([]string, error) { return nil, errors.New("engine ledger unreadable") }
+ 		}},
++		{"regression_check_unreadable", func(t *testing.T, deps *Deps) {
++			deps.DriftVerdict = func() (string, error) { return "", errors.New("scope record unreadable") }
++		}},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/landingshed/prreview.go b/internal/landingshed/prreview.go
+index 29f004f5..c7d91d4b 100644
+--- a/internal/landingshed/prreview.go
++++ b/internal/landingshed/prreview.go
+@@ -25,7 +25,7 @@ const (
+ )
+ 
+ // PRReview is the ShedProducer that lands a run through a GitHub pull request when ResolvePullRequest says so.
+-// A no closes any pull request the run recorded and passes, except that a failed read of GitHub's rules with a pull request recorded is Stuck and closes nothing; a yes pushes the task branch, finds or opens the pull request, sets its title from the change description and its body from the description's body and the credit block, records it, keeps one interactive session for the operator to discuss it in, and waits on it.
++// A no closes any pull request the run recorded and passes, except that a failed read of GitHub's rules with a pull request recorded is Stuck and closes nothing; a yes pushes the task branch, finds or opens the pull request, sets its title from the change description and its body from the description's body, the regression check and the credit block, records it, keeps one interactive session for the operator to discuss it in, and waits on it.
+ // The wait gates and pushes the agent's commits, and ends when the pull request is merged or approved, or closed or continued by the operator.
+ // It takes no parent lock.
+ type PRReview struct {
+@@ -237,7 +237,11 @@ func (p *PRReview) openPullRequest(ctx context.Context, origin Origin) (shedengi
+ 	if err != nil {
+ 		return "", shedengine.OutputPointer{}, fmt.Errorf("landingshed: %s: %w", p.name, err)
+ 	}
+-	body := bodyWithCredit(summary.Body, credit)
++	verdict, err := p.deps.driftVerdict()
++	if err != nil {
++		return "", shedengine.OutputPointer{}, fmt.Errorf("landingshed: %s: %w", p.name, err)
++	}
++	body := bodyWithCredit(withSection(summary.Body, verdict), credit)
+ 
+ 	// A recorded pull request GitHub no longer reports open is left as it is, for the wait to judge.
+ 	var ref pullrequest.Ref
+diff --git a/internal/landingshed/prreview_session_test.go b/internal/landingshed/prreview_session_test.go
+index b835ac72..aabc7cb0 100644
+--- a/internal/landingshed/prreview_session_test.go
++++ b/internal/landingshed/prreview_session_test.go
+@@ -155,7 +155,7 @@ func TestPRReview_Session(t *testing.T) {
+ 				if want := []string{"scribe:prose", "scribe:conversation"}; !slices.Equal(spec.Skills, want) {
+ 					t.Errorf("spec skills = %q; want %q", spec.Skills, want)
+ 				}
+-				for _, want := range []string{"the-slug", recordedURL, "/wt/task", "`task`", "`main`", fx.deps.DescriptionPath, "parent-session"} {
++				for _, want := range []string{"the-slug", recordedURL, "/wt/task", "`task`", "`main`", fx.deps.DescriptionPath, "parent-session", noDriftVerdict} {
+ 					if !strings.Contains(spec.Prompt, want) {
+ 						t.Errorf("prompt lacks %q:\n%s", want, spec.Prompt)
+ 					}
+@@ -175,6 +175,34 @@ func TestPRReview_Session(t *testing.T) {
+ 				}
+ 			},
+ 		},
++		{
++			name: "PromptCarriesTheRegressionCheck", scripts: map[string][]scriptedCall{"Create": {created}, "Status": {mergedAtHead}},
++			setup: func(_ *testing.T, fx *prReviewFixture, _ *fakePRSessions) {
++				fx.deps.DriftVerdict = func() (string, error) { return testVerdict, nil }
++			},
++			wantOutcome: shedengine.Done, wantStarts: 1, wantStops: 1,
++			check: func(t *testing.T, _ *prReviewFixture, s *fakePRSessions) {
++				prompt := s.starts[0].Prompt
++				if !strings.Contains(prompt, testVerdict) || strings.Contains(prompt, noDriftVerdict) {
++					t.Errorf("prompt lacks the regression check %q, or says none ran:\n%s", testVerdict, prompt)
++				}
++			},
++		},
++		{
++			name: "AFailingRegressionCheckReadWhileBuildingTheSpecIsAnErrorWithNoSessionStart", record: recordedAtHead(), scripts: map[string][]scriptedCall{"Status": {open}},
++			setup: func(_ *testing.T, fx *prReviewFixture, _ *fakePRSessions) {
++				// The first read is the pull request body's, which passes, and the second is the session spec's.
++				reads := 0
++				fx.deps.DriftVerdict = func() (string, error) {
++					reads++
++					if reads > 1 {
++						return "", errors.New("scope record unreadable")
++					}
++					return "", nil
++				}
++			},
++			wantErr: true,
++		},
+ 		{
+ 			name: "RunMaterialListsTheDecisionRecordThatExistsAndLeavesOutAMissingPlanDirectory", scripts: map[string][]scriptedCall{"Create": {created}, "Status": {mergedAtHead}},
+ 			setup: func(t *testing.T, fx *prReviewFixture, _ *fakePRSessions) {
+diff --git a/internal/landingshed/prreview_test.go b/internal/landingshed/prreview_test.go
+index 19be1318..2b2d807f 100644
+--- a/internal/landingshed/prreview_test.go
++++ b/internal/landingshed/prreview_test.go
+@@ -137,6 +137,8 @@ func TestPRReview_Call(t *testing.T) {
+ 		taskEmpty bool
+ 		// taskErr makes the TaskHasCommits seam fail.
+ 		taskErr error
++		// verdict is what Deps.DriftVerdict answers; empty leaves the seam nil.
++		verdict string
+ 
+ 		wantOutcome shedengine.Outcome
+ 		wantHalt    bool
+@@ -240,6 +242,15 @@ func TestPRReview_Call(t *testing.T) {
+ 			wantCalls:  []string{"Status 7", wantEditSeven, "Status 7"},
+ 			wantRecord: &pullrequest.Record{Number: 7, URL: recordedURLSeen, Base: "main", Head: "task", GatedHead: recordedGated, Continue: true},
+ 		},
++		{
++			name: "ReentryRefreshesTheBodyWithTheRegressionCheckOnce", parentMode: "on", origin: githubOrigin, verdict: testVerdict,
++			record:      &pullrequest.Record{Number: 7, URL: recordedURLSeen, GatedHead: recordedGated},
++			dirty:       []string{"wip.go"},
++			scripts:     map[string][]scriptedCall{"Status": {open, {status: pullrequest.Status{State: pullrequest.StateMerged, HeadSHA: recordedGated}}}},
++			wantOutcome: shedengine.Stuck, wantHalt: true, wantPushes: 1,
++			wantReason: []string{"uncommitted changes: wip.go"},
++			wantCalls:  []string{"Status 7", "Edit 7|Change title|" + wantPRBodyWithVerdict, "Status 7"},
++		},
+ 		{
+ 			name: "YesWithNoneRecordedButOneOpenReusesIt", parentMode: "on", origin: githubOrigin,
+ 			scripts:     map[string][]scriptedCall{"FindOpen": {{ref: pullrequest.Ref{Number: 9, URL: "u9"}, found: true}}, "Status": {mergedAtHead}},
+@@ -347,6 +358,9 @@ func TestPRReview_Call(t *testing.T) {
+ 			fx := newPRReviewFixture(t, tt.parentMode, tt.parentErr, tt.field, tt.origin, tt.record, tt.scripts, tt.pushErr)
+ 			fx.dirty = tt.dirty
+ 			fx.deps.PullRequest.TaskHasCommits = func() (bool, error) { return !tt.taskEmpty, tt.taskErr }
++			if tt.verdict != "" {
++				fx.deps.DriftVerdict = func() (string, error) { return tt.verdict, nil }
++			}
+ 
+ 			outcome, pointer, err := NewPRReview("PR-Review", fx.deps).Call(context.Background())
+ 
+@@ -447,19 +461,40 @@ func TestPRReview_Call(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("FailingEnginesRunReadIsAnErrorWithNoPullRequestCall", func(t *testing.T) {
++	t.Run("RegressionCheckFollowsTheDescriptionBodyBeforeTheCredit", func(t *testing.T) {
+ 		t.Parallel()
+-		fx := newPRReviewFixture(t, "on", nil, "", githubOrigin, nil, nil, nil)
+-		readErr := errors.New("engines run unreadable")
+-		fx.deps.EnginesRun = func() ([]string, error) { return nil, readErr }
++		fx := newPRReviewFixture(t, "on", nil, "", githubOrigin, nil, map[string][]scriptedCall{"Create": {created}, "Status": {mergedAtHead}}, nil)
++		fx.deps.DriftVerdict = func() (string, error) { return testVerdict, nil }
++
++		if _, _, err := NewPRReview("PR-Review", fx.deps).Call(context.Background()); err != nil {
++			t.Fatalf("Call() error = %v", err)
++		}
+ 
+-		_, _, err := NewPRReview("PR-Review", fx.deps).Call(context.Background())
++		want := []string{"FindOpen task main", "Create task main|Change title|Change body\n\n" + testVerdict + "\n\nCreated using\n - LoomYard\n - Claude <c@x>", "Status 7"}
++		if diff := cmp.Diff(want, fx.api.calls); diff != "" {
++			t.Errorf("GitHub calls mismatch (-want +got):\n%s", diff)
++		}
++	})
+ 
+-		if !errors.Is(err, readErr) {
+-			t.Errorf("Call() error = %v; want one wrapping %v", err, readErr)
++	t.Run("FailingCreditOrRegressionReadIsAnErrorWithNoPullRequestCall", func(t *testing.T) {
++		t.Parallel()
++		readErr := errors.New("unreadable")
++		breaks := map[string]func(d *Deps){
++			"EnginesRun":   func(d *Deps) { d.EnginesRun = func() ([]string, error) { return nil, readErr } },
++			"DriftVerdict": func(d *Deps) { d.DriftVerdict = func() (string, error) { return "", readErr } },
+ 		}
+-		if len(fx.api.calls) != 0 {
+-			t.Errorf("Call() made GitHub calls %v; want none", fx.api.calls)
++		for seam, breakSeam := range breaks {
++			fx := newPRReviewFixture(t, "on", nil, "", githubOrigin, nil, nil, nil)
++			breakSeam(&fx.deps)
++
++			_, _, err := NewPRReview("PR-Review", fx.deps).Call(context.Background())
++
++			if !errors.Is(err, readErr) {
++				t.Errorf("Call() with %s failing: error = %v; want one wrapping %v", seam, err, readErr)
++			}
++			if len(fx.api.calls) != 0 {
++				t.Errorf("Call() with %s failing made GitHub calls %v; want none", seam, fx.api.calls)
++			}
+ 		}
+ 	})
+ 
+@@ -519,6 +554,12 @@ var prReviewFixtureNow = time.Date(2026, 10, 30, 12, 0, 0, 0, time.UTC)
+ // wantPRBody is the pull request body prReviewTestDeps yields: the description's trimmed body, a blank line and the credit block of the one engine that ran.
+ const wantPRBody = "Change body\n\nCreated using\n - LoomYard\n - Claude <c@x>"
+ 
++// wantPRBodyWithVerdict is wantPRBody with testVerdict between the description's body and the credit block.
++const wantPRBodyWithVerdict = "Change body\n\n" + testVerdict + "\n\nCreated using\n - LoomYard\n - Claude <c@x>"
++
++// testVerdict is a regression check section a test tells through Deps.DriftVerdict or DescribeInputs.DriftVerdict.
++const testVerdict = "## Regression check\n\n- Scope: full.\n- Compare: passed at `abc`.\n- Accepted drift: none."
++
+ // prReviewTestDeps builds a Deps over a temp record path and a change description titled "Change title" whose body, as summaryparser reads it, is "\nChange body\n", with the credit on and claude the one engine that ran.
+ // Every PullRequest seam is filled: the origin is a GitHub one, the parent's mode is on, the task head is "head-new", the worktree is clean, no pause covers the run, and the clock moves only when the wait sleeps.
+ // A test replaces the seams it scripts.
+diff --git a/internal/landingshed/prsession.go b/internal/landingshed/prsession.go
+index 366a5b50..8149cae0 100644
+--- a/internal/landingshed/prsession.go
++++ b/internal/landingshed/prsession.go
+@@ -101,7 +101,7 @@ func (p *PRReview) ensureSession(ctx context.Context, rec pullrequest.Record) (p
+ }
+ 
+ // sessionSpec builds the spec the PR-Review session starts under for the pull request rec records.
+-// The prompt carries paths only, never file content.
++// The prompt carries paths only, never file content, bar the regression check's section, which no file holds.
+ func (p *PRReview) sessionSpec(rec pullrequest.Record) (shuttleengine.Spec, error) {
+ 	parsed, err := modelspec.Parse(p.deps.Config.PRReviewer)
+ 	if err != nil {
+@@ -124,7 +124,15 @@ func (p *PRReview) sessionSpec(rec pullrequest.Record) (shuttleengine.Spec, erro
+ 	if err != nil {
+ 		return shuttleengine.Spec{}, fmt.Errorf("landingshed: %s: %w", p.name, err)
+ 	}
++	verdict, err := p.deps.driftVerdict()
++	if err != nil {
++		return shuttleengine.Spec{}, fmt.Errorf("landingshed: %s: %w", p.name, err)
++	}
++	if verdict == "" {
++		verdict = noDriftVerdict
++	}
+ 	prompt, err := stencil.Fill(template, map[string]string{
++		"drift_verdict":            verdict,
+ 		"slug":                     p.deps.Slug,
+ 		"pr_url":                   rec.URL,
+ 		"task_worktree":            p.deps.WorktreeRoot,
+diff --git a/internal/loomcli/landingdeps.go b/internal/loomcli/landingdeps.go
+index afd1b738..9828b201 100644
+--- a/internal/loomcli/landingdeps.go
++++ b/internal/loomcli/landingdeps.go
+@@ -19,6 +19,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/configreg"
+ 	"github.com/Knatte18/loomyard/internal/creelcli"
+ 	"github.com/Knatte18/loomyard/internal/dobbyengine"
++	"github.com/Knatte18/loomyard/internal/driftengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/failuretrace"
+ 	"github.com/Knatte18/loomyard/internal/fswatch"
+@@ -232,9 +233,11 @@ func landingDeps(
+ 		VerifyHold:     verifytree.NewPauseHold(runner.PauseGeometry(), holdsParentLock(lock.Store, l.WorktreeName)),
+ 		Shuttle:        runner,
+ 		EnginesRun:     runner.EnginesRun,
+-		Registry:       registry,
+-		Config:         cfg,
+-		Lock:           lock,
++		// DriftVerdict reads the scope record at call time, so it renders the compare a Drift-Verify after bootstrap recorded.
++		DriftVerdict: func() (string, error) { return driftengine.Verdict(driftengine.NewPaths(l.AnchorPath())) },
++		Registry:     registry,
++		Config:       cfg,
++		Lock:         lock,
+ 		// The parent reads run over the task pair, opened at call time like the other fabric seams.
+ 		ReadParentTips: parentTipsReader(l, parentBranch),
+ 		HoldsWork: func(base, source string) (bool, error) {
+diff --git a/internal/loomcli/landingdeps_test.go b/internal/loomcli/landingdeps_test.go
+index 901658c7..3401fb68 100644
+--- a/internal/loomcli/landingdeps_test.go
++++ b/internal/loomcli/landingdeps_test.go
+@@ -16,6 +16,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/driftengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/landingshed"
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
+@@ -159,6 +160,31 @@ func TestLandingDeps_EveryFieldPopulated(t *testing.T) {
+ 	}
+ }
+ 
++// TestLandingDeps_DriftVerdict_RendersTheScopeRecord asserts the DriftVerdict seam answers no section while the run has recorded no scope, and renders the scope record under the run's anchor once one exists, read at call time.
++func TestLandingDeps_DriftVerdict_RendersTheScopeRecord(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	loc := &lymcwd.Location{HubPath: t.TempDir(), WorktreeName: "pair", AnchorRel: "."}
++	deps := landingDeps(loc, shedrun.RecipeTapestry, websterengine.Geometry{}, "task", "main",
++		true, modelspec.Registry{}, &shuttleengine.Runner{}, landingshed.Config{}, "", nil, nil, nil, planVerifySource(loc), parentLockDeps(loc, shedrun.SelfRunID, "", ""))
++
++	if got, err := deps.DriftVerdict(); err != nil || got != "" {
++		t.Fatalf("DriftVerdict() with no scope record = %q, %v; want an empty section and nil", got, err)
++	}
++
++	err := driftengine.UpdateScope(driftengine.NewPaths(loc.AnchorPath()), func(driftengine.ScopeRecord, bool) (driftengine.ScopeRecord, error) {
++		return driftengine.ScopeRecord{Scope: driftengine.ScopeFull}, nil
++	})
++	if err != nil {
++		t.Fatalf("UpdateScope() error = %v; want nil", err)
++	}
++	const want = "## Regression check\n\n- Scope: full.\n- Compare: not run.\n- Accepted drift: none."
++	if got, err := deps.DriftVerdict(); err != nil || got != want {
++		t.Errorf("DriftVerdict() with a scope record = %q, %v; want %q, nil", got, err, want)
++	}
++}
++
+ // TestRowEntry asserts rowEntry answers the history index just after the last entry another producer made.
+ func TestRowEntry(t *testing.T) {
+ 	tiergate.Require(t, 0)
+diff --git a/internal/loomcli/wiring.go b/internal/loomcli/wiring.go
+index 388d8b60..d7cdf2d7 100644
+--- a/internal/loomcli/wiring.go
++++ b/internal/loomcli/wiring.go
+@@ -813,7 +813,12 @@ func (c *loomCLI) wire(location *lymcwd.Location, cwd string) error {
+ 			for i, dir := range priorDirs {
+ 				priorRecords[i] = summaryparser.Path(dir)
+ 			}
++			verdict, err := driftengine.Verdict(driftengine.NewPaths(location.AnchorPath()))
++			if err != nil {
++				return seatengine.Table{}, err
++			}
+ 			return landingshed.DescribeTable(landingshed.DescribeInputs{
++				DriftVerdict:        verdict,
+ 				StencilsDir:         websterGeom.StencilsDir,
+ 				DecisionRecordPath:  loomengine.DiscussionDecisionRecord(location),
+ 				RunRecordPath:       summaryparser.Path(websterGeom.WebsterDir),
+diff --git a/internal/loomcli/wiring_publish_integration_test.go b/internal/loomcli/wiring_publish_integration_test.go
+index 9b1f25d0..43c755d7 100644
+--- a/internal/loomcli/wiring_publish_integration_test.go
++++ b/internal/loomcli/wiring_publish_integration_test.go
+@@ -9,11 +9,13 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/darnengine"
++	"github.com/Knatte18/loomyard/internal/driftengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/samplerengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/testkit/stencilkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -95,3 +97,36 @@ func TestWireLanding_FillsSamplerSessionSeams(t *testing.T) {
+ 		})
+ 	}
+ }
++
++// TestWire_DescribeTableCarriesTheDriftVerdict asserts the Describe table wire builds holds the regression check rendered from the run's scope record as its drift_verdict value, over a real hub and pair.
++func TestWire_DescribeTableCarriesTheDriftVerdict(t *testing.T) {
++	tiergate.Require(t, 1)
++	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	const slug = "describeverdict"
++	hubforge.AddPair(t, hub, slug)
++	location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(slug))
++	if err != nil {
++		t.Fatalf("ResolveWorktree error = %v; want nil", err)
++	}
++	stencilkit.SeedInto(t, fabricengine.StencilsDir(location.HubPath))
++	err = driftengine.UpdateScope(driftengine.NewPaths(location.AnchorPath()), func(driftengine.ScopeRecord, bool) (driftengine.ScopeRecord, error) {
++		return driftengine.ScopeRecord{Scope: driftengine.ScopeFull}, nil
++	})
++	if err != nil {
++		t.Fatalf("UpdateScope() error = %v; want nil", err)
++	}
++
++	c := &loomCLI{runID: shedrun.SelfRunID}
++	if err := c.wire(location, location.AnchorPath()); err != nil {
++		t.Fatalf("wire() = %v; want nil", err)
++	}
++	table, err := c.env.DescribeTable()
++	if err != nil {
++		t.Fatalf("DescribeTable() error = %v; want nil", err)
++	}
++
++	const want = "## Regression check\n\n- Scope: full.\n- Compare: not run.\n- Accepted drift: none."
++	if got := table.Values["drift_verdict"]; got != want {
++		t.Errorf("DescribeTable() drift_verdict = %q; want %q", got, want)
++	}
++}
+diff --git a/internal/loomcli/wiring_seams_test.go b/internal/loomcli/wiring_seams_test.go
+index d36cdea1..8ec0ce54 100644
+--- a/internal/loomcli/wiring_seams_test.go
++++ b/internal/loomcli/wiring_seams_test.go
+@@ -19,6 +19,7 @@ var intentionallyNil = map[string]string{
+ 	"Landing.OpenParentFabric":            "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+ 	"Landing.TaskHead":                    "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+ 	"Landing.Shuttle":                     "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.DriftVerdict":                "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+ 	"Landing.EnginesRun":                  "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+ 	"Landing.Lock.Store":                  "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+ 	"Landing.Lock.Owner":                  "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+diff --git a/internal/testkit/envkit/envkit.go b/internal/testkit/envkit/envkit.go
+index a168f006..7f8acc46 100644
+--- a/internal/testkit/envkit/envkit.go
++++ b/internal/testkit/envkit/envkit.go
+@@ -181,6 +181,7 @@ func LandingDeps(dir string) landingshed.Deps {
+ 		OpenParentFabric: nilFabricOpener,
+ 		Shuttle:          &shedfake.MergeShuttle{},
+ 		EnginesRun:       func() ([]string, error) { return nil, nil },
++		DriftVerdict:     func() (string, error) { return "", nil },
+ 		TaskHead:         func() (string, error) { return "head", nil },
+ 		BaseCommand:      func() (string, error) { return "lym gate test --wait --tier 0 --all", nil },
+ 		GateTiers:        fixedGateTiers,
