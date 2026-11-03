@@ -1,12 +1,12 @@
 {
   "current_producer": "Land",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "deploy failed: exit code 1; log: /home/knatte/Code/loomyard-LYMHUB/loomyard/.lym/shed/drift-baseline-skips-intended/Land-deploy.log; way forward: fix the cause, then run \"lym batten run drift-baseline-skips-intended\" from the prime",
   "pause_requested": false,
   "activity": {
     "now": "Land",
-    "last": "Run-Shed → done",
-    "wait": ""
+    "last": "Land → stuck",
+    "wait": "deploy failed: exit code 1; log: /home/knatte/Code/loomyard-LYMHUB/loomyard/.lym/shed/drift-baseline-skips-intended/Land-deploy.log; way forward: fix the cause, then run \"lym batten run drift-baseline-skips-intended\" from the prime"
   },
   "history": [
     {
@@ -59,6 +59,14 @@
       "outcome": "done",
       "output": "",
       "at": "2026-11-03T17:08:39Z",
+      "machine": "neve"
+    },
+    {
+      "producer": "Land",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-11-03T17:09:20Z",
+      "budget_exempt": true,
       "machine": "neve"
     }
   ]
