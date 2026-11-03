@@ -1,11 +1,11 @@
 {
-  "current_producer": "Land",
+  "current_producer": "Worktree-Teardown",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Land",
-    "last": "Run-Shed → done",
+    "now": "Worktree-Teardown",
+    "last": "Land → done",
     "wait": ""
   },
   "history": [
@@ -92,6 +92,13 @@
     },
     {
       "producer": "Run-Shed",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-03T12:28:32Z",
+      "machine": "neve"
+    },
+    {
+      "producer": "Land",
       "outcome": "done",
       "output": "",
       "at": "2026-11-03T12:28:32Z",
