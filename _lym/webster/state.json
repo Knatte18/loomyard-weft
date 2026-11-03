@@ -1,0 +1,132 @@
+{
+  "runGuid": "dab56e60f12162893cf606081b477817",
+  "planFingerprint": "a33b30bf806cf53051e1765c4c7c9fd576542d95c16a1b9310d06e3e72b89097",
+  "planFileHashes": {
+    "00-overview.md": "1aafe293095c8782a0db2c6cfa51f33acd299758f044e7b49750c03a9b9dc344",
+    "01-reed-overview-order-key.md": "36e34773fae0e0d8b7423f72392a7d5b66e2f051692948880a653b9ec2dd40d9",
+    "02-reed-overview-focus-fallback.md": "d3d294ab15cbf7bc1f5533b4c4dc1c3791618c52c76ac3c40bc6699a15d13439",
+    "03-runs-strand-beside-status.md": "30fb14fbfe29392fae68e189a415b01dae7f4e93e16c7a6fa37537f02d247231",
+    "04-status-strand-second-overview.md": "fe6953ceb76bca58529c727a4703a534643fb1a42091c3d9a9eca00c6c3ee6b9"
+  },
+  "planOverviewFrameHash": "b87198baa30cbc41f8da85d85453564c79f164a89013e81f9c07fed72347b909",
+  "partition": [
+    {
+      "cards": [
+        "01-reed-overview-order-key",
+        "02-reed-overview-focus-fallback",
+        "03-runs-strand-beside-status",
+        "04-status-strand-second-overview"
+      ],
+      "profile": "wide",
+      "estimate": 273912,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 53884,
+        "read_union": 68300,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 972,
+            "reads": {
+              "file:internal/reedengine/bar.go": 1200,
+              "file:internal/reedengine/doc.go": 8784,
+              "package:internal/reedengine": 2000,
+              "package:internal/reedengine/render": 2000,
+              "tests:internal/reedengine": 2000,
+              "tests:internal/reedengine/render": 2000
+            },
+            "messages": 157.5,
+            "written": 48222
+          },
+          {
+            "card": 2,
+            "card_text": 612,
+            "reads": {
+              "file:internal/reedcli/doc.go": 564,
+              "file:internal/reedengine/doc.go": 8784,
+              "package:internal/reedcli": 2000,
+              "package:internal/reedengine": 2000,
+              "tests:internal/reedcli": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 148,
+            "written": 45012
+          },
+          {
+            "card": 3,
+            "card_text": 528,
+            "reads": {
+              "file:docs/overview.md": 10848,
+              "file:internal/orchcli/doc.go": 1872,
+              "file:internal/orchengine/doc.go": 5904,
+              "package:docs": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/orchengine": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/orchengine": 2000
+            },
+            "messages": 84.5,
+            "written": 25878
+          },
+          {
+            "card": 4,
+            "card_text": 516,
+            "reads": {
+              "file:docs/overview.md": 10848,
+              "file:internal/loomcli/doc.go": 4500,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 107,
+            "written": 32616
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "b40abfade4b74978358913b901dc52fb",
+  "masterSessionId": "597fb64c-2242-4bda-a111-7db9c145b802",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "reed-overview-order-key",
+      "cards": [
+        "01-reed-overview-order-key",
+        "02-reed-overview-focus-fallback",
+        "03-runs-strand-beside-status",
+        "04-status-strand-second-overview"
+      ],
+      "cardHashes": {
+        "01-reed-overview-order-key": "36e34773fae0e0d8b7423f72392a7d5b66e2f051692948880a653b9ec2dd40d9",
+        "02-reed-overview-focus-fallback": "d3d294ab15cbf7bc1f5533b4c4dc1c3791618c52c76ac3c40bc6699a15d13439",
+        "03-runs-strand-beside-status": "30fb14fbfe29392fae68e189a415b01dae7f4e93e16c7a6fa37537f02d247231",
+        "04-status-strand-second-overview": "fe6953ceb76bca58529c727a4703a534643fb1a42091c3d9a9eca00c6c3ee6b9"
+      },
+      "startSha": "f98a1ba016ebcd88c934a1264d6726812787464c",
+      "kind": "fork",
+      "spawnedAt": "2026-11-03T10:29:55Z",
+      "sessionId": "597fb64c-2242-4bda-a111-7db9c145b802",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
