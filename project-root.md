@@ -12,7 +12,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running (4)
+### Running (5)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -20,16 +20,15 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **A status-bar button asks for a value, so an agent opened from it gets a name**<br>• Button entries take ask, filling {answer}; the agent button asks for the strand name, and term becomes terminal | [`button-ask-name`](design-button-ask-name.md) | darn · light | Describe | neve | 2d<br>31m | reed, config |
 | T2 | **lym ide spawn on a beam opens the beam workspace**<br>• The beam code button opens the beam worktree folder; it should open the beam workspace file lym already writes | [`beam-code-opens-workspace`](design-beam-code-opens-workspace.md) | darn · light | Code-Bouncer | neve | 6m<br>5m | ide |
-| T3 | **Drift-Baseline pre-accepts drift that contradicts the task**<br>• A baseline report that writes acceptance policy for drift the task says must not happen, steering Drift-Verify to accept it | [`drift-baseline-preaccepts`](design-drift-baseline-preaccepts.md) | darn · light | Darn-Write | neve | 4m<br>3m | drift, stencil |
+| T3 | **Drift-Baseline pre-accepts drift that contradicts the task**<br>• A baseline report that writes acceptance policy for drift the task says must not happen, steering Drift-Verify to accept it | [`drift-baseline-preaccepts`](design-drift-baseline-preaccepts.md) | darn · light | Darn-Write | neve | 4m<br>4m | drift, stencil |
 | T5 | **Bench Plan and Discussion fixers on Sonnet against Opus**<br>• Twelve fixer runs: Opus against Sonnet, and Sonnet on concrete findings | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | darn · docs | Finalize | neve | 12d<br>31m | burler, claude |
+| T9 | **lym fabric push lock held past 30s blocks the loom run at PR-Review as escalation-to-human** | [`push-lock-busy-blocks`](design-push-lock-busy-blocks.md) | darn · light | Worktree-Create | neve | 2h<br>2h | fabric, landing |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T9 | **lym fabric push lock held past 30s blocks the loom run at PR-Review as escalation-to-human** | [`push-lock-busy-blocks`](design-push-lock-busy-blocks.md) | darn · light |  | 2h<br>2h | fabric, landing |
+_None._
 
 ### Layer A (1)
 
@@ -47,7 +46,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R4 |  | **Review Drift as a whole and redesign it from the trials**<br>• Two C# trials found many Drift faults, mostly in agent judgment and gaps in the flow; map the whole and propose one design | [`drift-whole-review`](design-drift-whole-review.md) | 0m<br>0m | drift, stencil, loom |
+| R4 |  | **Review Drift as a whole and redesign it from the trials**<br>• Two C# trials found many Drift faults, mostly in agent judgment and gaps in the flow; map the whole and propose one design | [`drift-whole-review`](design-drift-whole-review.md) | 1m<br>1m | drift, stencil, loom |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 12d<br>11h | loom, stencil |
 
 ### Bugs (1)
@@ -75,7 +74,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F2 |  | **A status-bar button opens a short-lived board agent, so board talks need no orch**<br>• An ordinary agent with a board-policy skill loaded, for discussing and filing notes and releasing tasks on go-ahead | [`board-agent-button`](design-board-agent-button.md) | 2d<br>2d | reed, board, shuttle, orch |
 | F3 | L | **A module overlap lets a task run Discussion at once and wait only before Plan**<br>• A second kind of dependency, plan_after: the task starts and discusses, then waits before Plan until the named tasks have landed | [`plan-after-dependency`](design-plan-after-dependency.md) | 2d<br>2d | board, batten, loom |
 | F4 |  | **The orch lies dormant and wakes only when a run needs help**<br>• Dobby takes the mechanics and a spawned agent the doubtful cases; one orch per beam lives on, dormant, woken when needed | [`dormant-orch`](design-dormant-orch.md) | 2d<br>2d | orch, dobby, arbiter |
-| F5 |  | **A run lands on a parent the hub may not push to by merging on the remote**<br>• Branch protection refuses a direct push to main, so no task or beam can land on such a repository | [`protected-parent-landing`](design-protected-parent-landing.md) | 45m<br>38m | landing, git |
+| F5 |  | **A run lands on a parent the hub may not push to by merging on the remote**<br>• Branch protection refuses a direct push to main, so no task or beam can land on such a repository | [`protected-parent-landing`](design-protected-parent-landing.md) | 45m<br>39m | landing, git |
 | F6 |  | **Talk to the orch through Slack**<br>• A Slack relay so the operator can reach the orch from a phone where Claude's own app is not allowed | [`reed-slack-relay`](design-reed-slack-relay.md) | 4w<br> | reed |
 | F7 |  | **Creel mail between hubs through an inbox folder, with a verified sender**<br>• A shared inbox folder takes mail from other hubs; each file names the sender hub and agent so a reply knows where to go | [`creel-cross-hub-mail`](design-creel-cross-hub-mail.md) | 4d<br>4d | creel, orch |
 | F8 |  | **fabric reset: reset warp to a SHA and re-anchor the weft trailers**<br>• The post-conclude undo the merge surface does not ship: reset to a warp SHA, resolve the paired weft SHA through the correspondence index, gate both sides | [`fabric-reset-to-sha`](design-fabric-reset-to-sha.md) | 4w<br>23h | fabric |
