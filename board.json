@@ -839,6 +839,25 @@
       "created": "2026-11-03T14:29:24Z",
       "revised": "2026-11-03T14:47:38Z",
       "profile": "solid"
+    },
+    {
+      "id": 1053,
+      "handle": "E2",
+      "slug": "remote-moved-before-push",
+      "title": "A run checks what moved on origin and its owners before it pushes or lands",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "batten"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (operator, 2026-11-03)\n\nThe operator often works on another machine while this one sleeps, whether the sleep came from `lym hibernate request` or from the machine itself.\nWhen origin or a run's owner moved meanwhile, a run that goes on after the wake works on a stale base, and nothing tells it until a push is refused or a landing conflicts.\n\n## Idea\n\nThe check belongs where the stale base does harm, not at the wake (operator, 2026-11-03):\n\n- Before a run commits for a push, pushes, or lands, lym fetches and compares the run's base and parent branch, and the owner of the run, its beam and root, with what the run last saw.\n- When an owner moved to another machine, the run stops before it pushes, and the stop names `lym adopt`.\n- When only origin's tips moved, the run takes the new base the way a landing already does, or stops naming what moved when it cannot.\n- The orch hears what moved in one short notice line.\n",
+      "created": "2026-11-03T14:52:24Z",
+      "revised": "2026-11-03T14:52:24Z"
     }
   ],
   "prime_owner": "neve",

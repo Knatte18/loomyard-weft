@@ -37,7 +37,7 @@ Waits only on Running, Ready or Draft entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **One base for a command dir; a missing Drift dir fails by name**<br>• gate.yaml and drift.yaml resolve a relative dir against the same base, and a Drift step whose dir is missing fails naming the path and the config key | [`drift-dir-base`](design-drift-dir-base.md) | darn · solid | T3 | 23m<br>4m | drift, gate, config |
 
-## Notes (30)
+## Notes (31)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -47,11 +47,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 11d<br>7h | loom, stencil |
 
-### Enhancements (12)
+### Enhancements (13)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **A wake from a lym hibernate lifts the pause only when a switch allows it** | [`hibernate-wake-resume-switch`](design-hibernate-wake-resume-switch.md) | 19h<br>0m | hibernate, tender |
+| E2 |  | **A run checks what moved on origin and its owners before it pushes or lands** | [`remote-moved-before-push`](design-remote-moved-before-push.md) | 0m<br>0m | fabric, batten |
 | E3 |  | **A run keeps the lym binary and Bolt instructions it started with** | [`run-pins-its-version`](design-run-pins-its-version.md) | 6d<br>2d | batten, stencil, config |
 | E5 |  | **A landing notice is not lost when set late, when dobby was down, or when the orch is absent**<br>• Close the known limits landing-watch left: a late notify_on_land, a Land passed while dobby was down, and a dropped line when no orch is live | [`landing-watch-limits`](design-landing-watch-limits.md) | 2d<br>2d | dobby, orch |
 | E7 |  | **Each part agent plans and builds its own part, instead of joining the parts into one plan** | [`parts-plan-and-build`](design-parts-plan-and-build.md) | 18h<br>17h | loom |
