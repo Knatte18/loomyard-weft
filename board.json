@@ -818,6 +818,27 @@
       "body": "## Seen\n\nOn the `cs` hub, task `transitional-report-note` (Drift trial 2, 2026-11-03) ran its Finalize gate at 20:36:40.\n`dotnet test LymCsharp.sln --no-build --filter 'Category!=Slow'` died in 10.7 s with `Fatal error. Internal CLR error. (0x80131506)` and `Aborted (core dumped)`; the gate record `_bolt/.lym/gate/runs/20261103T193653Z-tier0-*.json` shows `outcome: failed`, `passed: 0`, `failed: 0`, and the verify command exited 134.\nFinalize read that as a failing gate: it freed the parent lock and spawned an agent fixer (`landingshed: fixer run ended … end=fixed spent=1 cap=2`).\nThe fixer changed no code; the gate ran again at 20:37:24, passed (138 tests), and the run landed.\n\nThe first trial saw the same CLR error in the adopt check of `root` and called it a one-off of the .NET runtime; it has now hit a second run.\n\nA runner that crashes with no test result says nothing about the code under test.\nTreating it as a code failure spends an agent session (and one of the fixer's two attempts) on a green tree, and a second crash in the same run would spend the other and stop the landing.\n\n## Expected\n\n- A tier that ends with no test result and a signal exit (exit 134, 139, `Aborted`) is reported as a runner crash, apart from a failing test.\n- The gate runs a crashed tier again once before it reports a failure, and records both runs.\n- Only a tier that reported failing tests goes to a fixer; a crash that repeats stops the run with the crash named, not a fixer.\n",
       "created": "2026-11-03T19:41:30Z",
       "revised": "2026-11-03T19:41:30Z"
+    },
+    {
+      "id": 1082,
+      "handle": "B3",
+      "slug": "dobby-zombie-children",
+      "title": "Dobby and the orch watcher leave their child processes as zombies",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "dobby",
+        "orch",
+        "tender",
+        "process"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Hundreds of defunct lym children pile up under dobby and orch watch, and tender lists them as live",
+      "body": "## Seen (hub orch, 2026-11-03 ~20:50)\n\n`lym tender status` listed about 170 `batten` processes as `owned`, `orphan: false`, under slugs that landed hours or a day ago.\n`ps` shows every one as `[lym] \u003cdefunct\u003e`: zombies whose parent never reaped them.\n\nZombies per parent at that time:\n\n- 170 under the loomyard prime's `lym beam dobby` (up 25 h).\n- 31 under the loomyard `lym orch watch` (up 25 h).\n- 14 under the `cs` hub's `lym beam dobby` and 15 under its `lym orch watch` (up 5.5 h).\n\nSo both dobby and the orch watcher start child `lym` processes and never `Wait` on them, and the tender registry reads a zombie as a live owned process.\n\n## Idea\n\n- Dobby and `lym orch watch` reap every child they start (wait on it, or detach it so init reaps it).\n- The process registry treats a zombie (state `Z`) as gone, so `lym tender status` and `lym tender reap` stop listing landed runs as live.\n",
+      "created": "2026-11-03T19:45:16Z",
+      "revised": "2026-11-03T19:45:16Z"
     }
   ],
   "prime_owner": "neve",
