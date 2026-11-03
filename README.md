@@ -52,7 +52,7 @@ Held by a run; its scope is locked until the run ends.
 | T2 | **Shipped heddle instructions as short imperative bullets**<br>• Rewrite the lym-batching and lym-plan-edits-before-gate shipped entries from prose walls into headed imperative bullet lists | [`heddle-shipped-bullets`](design-heddle-shipped-bullets.md) | darn · light | Finalize | neve | 18m<br>18m | heddle |
 | T3 | **Batten recovers a run whose pair is gone and orders its remote pushes, so no pass fails forever and no push races another** | [`batten-remote-order`](design-batten-remote-order.md) | tapestry · light | Parent-Align | neve | 15h<br>4h | batten, fabric |
 | T4 | **Board README marks a discussed entry and links its Sketch**<br>• Each entry flagged discussed shows a mark linking decision-<slug>.md in the README | [`readme-shows-discussed`](design-readme-shows-discussed.md) | darn · light | Code-Burler-Fix | neve | 9m<br>9m | board |
-| T11 | **Map where fabricengine test time goes and propose cuts**<br>• Docs-only survey: time, git processes and files per fixture on neve, what hubforge templates already cover, ranked proposals<br>• `darn: writer fable[high]` | [`fabric-test-speed-survey`](design-fabric-test-speed-survey.md) | darn · docs | Drift-Verify | neve | 48m<br>48m | fabric, testkit, docs |
+| T11 | **Map where fabricengine test time goes and propose cuts**<br>• Docs-only survey: time, git processes and files per fixture on neve, what hubforge templates already cover, ranked proposals<br>• `darn: writer fable[high]` | [`fabric-test-speed-survey`](design-fabric-test-speed-survey.md) | darn · docs | Finalize | neve | 48m<br>48m | fabric, testkit, docs |
 
 #### Ready (0)
 
