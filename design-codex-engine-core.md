@@ -1,6 +1,6 @@
 # codexengine: the Codex CLI shuttle engine, its home and its launch
 
-`codex-engine-core` · Task · feature, shuttle, codex · running · Finalize
+`codex-engine-core` · Task · feature, shuttle, codex · done
 
 Part 1 of project `codex-engine`.
 Its Sketch is the project's stored decision record: read it with `lym board get P2 --record`.
