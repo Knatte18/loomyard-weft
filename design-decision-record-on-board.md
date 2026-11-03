@@ -1,6 +1,6 @@
 # An approved Discussion stores its decision record on the board entry and flags it discussed
 
-`decision-record-on-board` · Task · feature, board, loom · running · Drift-Verify
+`decision-record-on-board` · Task · feature, board, loom · running · Code-Bouncer
 
 ## Seen
 
