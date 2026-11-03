@@ -1,0 +1,3453 @@
+diff --git a/PATTERN.md b/PATTERN.md
+index 636f388b..9805cf92 100644
+--- a/PATTERN.md
++++ b/PATTERN.md
+@@ -12,7 +12,7 @@
+ - `PATTERN-lym-temp-root` — Creating temp file or dir: under `internal/lymtemp`'s run dir, never `os.TempDir()`. (test) — [background](pattern/PATTERN-lym-temp-root.md)
+ - `PATTERN-durable-vs-ephemeral-state` — Adding file: tracked under `_lym`, never-tracked under `.lym`, same subpath, bar heddle's rendered instruction files and their `.heddle` temporary directory at a warp worktree's anchor; only `internal/lymdirs` names either, bar a `tools/` script's variable block. — [background](pattern/PATTERN-durable-vs-ephemeral-state.md)
+ - `PATTERN-leaf-packages` — Importing into a leaf package: only closed import set. — [background](pattern/PATTERN-leaf-packages.md)
+-- `PATTERN-fs-links` — Creating a filesystem link: only `internal/fslink`'s `CreateDirLink`; no `os.Symlink` or `os.Link` outside `internal/fslink`. (test) — [background](pattern/PATTERN-fs-links.md)
++- `PATTERN-fs-links` — Creating a filesystem link: only `internal/fslink`'s `CreateDirLink` or `CreateFileLink`; no `os.Symlink` or `os.Link` outside `internal/fslink`. (test) — [background](pattern/PATTERN-fs-links.md)
+ 
+ ## CLI and config
+ 
+diff --git a/cmd/lym/configstrictness_test.go b/cmd/lym/configstrictness_test.go
+index b72ef5f4..8cda3b12 100644
+--- a/cmd/lym/configstrictness_test.go
++++ b/cmd/lym/configstrictness_test.go
+@@ -46,6 +46,7 @@ import (
+ var configStrictnessDegradingSet = map[string]bool{
+ 	"internal/shuttleengine":              true,
+ 	"internal/shuttleengine/claudeengine": true,
++	"internal/shuttleengine/codexengine":  true,
+ 	"internal/reedengine":                 true,
+ 	"internal/websterengine":              true,
+ 	"internal/batcher":                    true,
+diff --git a/cmd/lym/fslinkonly_test.go b/cmd/lym/fslinkonly_test.go
+index 0d4d69aa..9bca3e71 100644
+--- a/cmd/lym/fslinkonly_test.go
++++ b/cmd/lym/fslinkonly_test.go
+@@ -20,7 +20,7 @@ import (
+ // allowedLinkCalls is the `PATTERN-fs-links` allowlist, keyed `<file>:<call>`, for example `internal/x/y.go:os.Symlink`.
+ // An entry admits one link call in one file, and its reason names the obstacle to creating the link through fslink.
+ var allowedLinkCalls = []scankit.Entry{
+-	{Key: "tools/deploy/main.go:os.Symlink", Why: "copies a plugin-tree symlink verbatim, and it may point at a file, which fslink has no primitive for"},
++	{Key: "tools/deploy/main.go:os.Symlink", Why: "copies a plugin-tree symlink verbatim, keeping its raw target without reading whether it names a file or a directory, which fslink's primitives each need to know"},
+ }
+ 
+ // fslinkDir is the link package's own directory, whose files make the raw link calls.
+diff --git a/contracts/specs/llm-model-spec.md b/contracts/specs/llm-model-spec.md
+index fd1159cf..2c4b0050 100644
+--- a/contracts/specs/llm-model-spec.md
++++ b/contracts/specs/llm-model-spec.md
+@@ -53,8 +53,9 @@ opus:
+     effort: high
+ ```
+ 
+-**Built-in fallback:** Go ships a small built-in default set (`sonnet` / `opus` / `haiku` / `fable` → claude engine) so everything works with **no file present**;
+-built-ins carry **no parameter defaults** — operator defaults (e.g. `effort`) live only in the seeded `models.yaml`, never in Go. `models.yaml` overrides and extends the built-in set when it exists.
++**Built-in fallback:** Go ships a small built-in default set (`sonnet` / `opus` / `haiku` / `fable` → claude engine, `sol` / `astra` / `luna` → codex engine) so everything works with **no file present**, and a hub whose operator-owned `models.yaml` predates an alias still resolves it.
++The Claude built-ins carry **no parameter defaults** — operator defaults (e.g. `effort`) live only in the seeded `models.yaml`.
++The Codex built-ins carry `effort: medium`, so a Codex spec that names no effort never launches at the provider's own default. `models.yaml` overrides and extends the built-in set when it exists.
+ 
+ ## Newest by default; pinning is deliberate
+ 
+diff --git a/docs/overview.md b/docs/overview.md
+index 88c60803..6db67832 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -420,7 +420,7 @@ User-facing modules each get one `lym <module>` namespace:
+   defaults to `bug`.
+   Callable from any sandbox agent context with no config. ✅ Implemented.
+ - **reed** — **the window to the world**: tmux overlay + **strand** bookkeeping + render (`internal/reedcli` + `internal/reedengine` + `internal/reedengine/render`). Hosts every managed process as a strand in a window of its own or its group's, persists to `.lym/reed.json` (`lym reed up|add|remove|status|list|attach|switch|resume|watchdog|down`); `lym reed add` places a strand `--anchor own-window` by default. Every strand carries a hierarchical full name (see the `internal/agentname` package documentation), mirrored into its pane title and Claude session name and exported to its process as `LYM_STRAND_NAME` and `LYM_PARENT`, with the watchdog repairing drift; `list` is the hub-wide name directory. Built on what its proof-of-concept, `muxpoc`, proved first (env hygiene, native `--resume`); `muxpoc` has since been deleted, its job done. `reed attach` and `reed watchdog` are this module's two registered interactive-handoff exceptions ([PATTERN-cli-cobra](../pattern/PATTERN-cli-cobra.md)): `attach` hands the operator's stdio to a `tmux attach-session` child in place, pre-flighting through checking tmux's floor version, booting the session if cold and checking server/session liveness, and `watchdog` is the detached per-hub name-repair and reap daemon that blocks for its process lifetime — in both cases every fallible step runs pre-flight, on the envelope, and only the terminal-handover/daemon tail itself is exempt from emitting JSON. `add` and `attach` boot this worktree's session when none is up, with `up`'s own semantics — a bare substrate, with no persisted strand relaunched — instead of refusing; every other reed verb still refuses on a cold worktree. ✅ Implemented. See the `internal/reedengine` package documentation.
+-- **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengines` + `internal/shuttlecli`; `lym shuttle run|open|state|await|await-forks`). `lym shuttle open` starts a named session with no turn in its own window, which closes when the session exits; `--model` takes a model spec naming the engine, model and effort, `--list-models` prints the model registry's aliases with their engine, model and default effort, and the output names the engine, model and effort the session got. Every session shuttle launches, run or opened, starts in its engine's bypass mode unless the caller passes `prompt`, which an interactive session accepts. `lym shuttle await <path>... [--cap]` is the read-only capped wait on one or more files, the keep-cache-warm wait any agent can run, needing no hub or git repository; its cap defaults to the caller role's keep-warm cap from `claude.yaml`. `lym shuttle await-forks [--cap]` is the same capped wait over the forks the calling agent session spawned, read from its transcript through the engine: a reviewer, fixer or writer that waits inside it takes every fork's result in one turn instead of waking once per fork. `lym shuttle state` is read-only: it lists the session state of each running run (busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with its cause, since and history), read from the run's files, in shadow mode where no stop or notice depends on it. `Stop`-hook completion is read off an events file and classified into three outcomes — `done`/`died`/`timeout`. A turn end without every output file never ends a run: `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call). An autonomous run notifies its parent once per held turn end as creel mail to the orch, and once per permission or input dialog its pane shows past 60 s, and an interactive run is answered in its pane; a line typed into a run's pane goes through `lym creel post`, `lym creel inject` or `lym creel interrupt`, never a shuttle verb. Background work is read off the Stop payload's `background_tasks` first, with the transcript as the fallback when the payload carries no list; a turn end with outstanding work is waiting, not held, unless its only outstanding work is non-awaited shells, which a gated run holds at once with an output file missing, a gated run with every output file present counts done once they pass the shell wait bound after telling the agent to read them, and an ungated run holds once they pass the shell wait bound. `Attach` waits on a held run, and on a legacy `asking` record whose strand is still live, instead of respawning beside it. `died` is narrow: it means a strand reed STILL TRACKS has a pane that is not alive, the provider never came up inside the startup window, or the provider's process is proven gone behind a live pane shell (by the process registry, or a process-ending `SessionEnd` line past the wait's first liveness tick), with `done` instead when every output file exists. Reed's strand table losing the strand entirely — a `reed down`/`remove`, a deleted or rebuilt `reed.json`, a worktree renamed under an in-flight run — is reported as a mechanism failure carrying the run's identity, never as `died`, because reed's bookkeeping going away says nothing about the agent, whose process is often still working in its pane; the exception is a handle whose own `Stop` removed the strand, which ends `died` and is recorded as stopped unless the files show the run done. No guardrail denies the in-process `Agent` tool: a subagent or fork shows in the session's own pane and lym reads its transcript under the session's `subagents` directory. A `PreToolUse` guardrail denies `AskUserQuestion` when the run is autonomous (`Interactive: false`, the default); a `PreToolUse(Bash)` guardrail denies `python`, `python3` and `python3.<minor>` in command position in every run mode, a version check included (on by default, switchable off via `shuttle.yaml`'s `deny_python`), and a second `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a raw module-wide `go test`, `go build` or `go vet`, a raw `go test` over the `tmux` or `llm` tier, and any command naming the gate-slot or strand-name environment variable, steering the session to `lym gate test`, and to a package-scoped compile check the hub's `refuse_raw` does not refuse, and a third `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies an `rm` on a computed path (a command substitution or a variable expansion in the command) so no permission dialog stalls the run, and a fourth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies `sed -i`, `perl -i`, and a redirect, heredoc or `tee` into a source file, steering the session to read a file with Read and change it with Edit or Write, and a fifth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a headless `claude` launch with `-p` or `--print`, whose work shows in no pane, steering the session to a subagent through the `Agent` tool; the python deny's steer carries the same edit rule. The engine announces each deny it installs to the session's system prompt, and every Claude session it launches with a run directory also gets the creel trust sentence, through one `append-system-prompt.txt` file named by `--append-system-prompt-file` on launch and resume, so a session knows the tool is unavailable before it tries one and follows `[creel]` mail from its hooks. The engine sets the prompt-cache TTL per role on launch and resume from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role). `claude.yaml`'s `keep_warm_cap` (template 250s) and `keep_warm_cap_roles` set the per-role keep-warm cap beside them. While `claude.yaml`'s `batching_nudge` block is on, a `PostToolUse` hook after each `Read`, `Grep`, `Glob`, `Edit` or `Write` call runs the hidden `lym shuttle hook-batching`, which adds one line naming the breach and quoting the rule to a session above the block's context threshold whose recent messages make a chain of single lookups, a sliced read of a short or already-read file, or a chain of edit-only messages; it never denies a call, and the block's switches and thresholds are config. The provider is swappable behind an **engine** seam; the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, Claude being the one registered engine. Per-run `Model`/`Effort` knobs (`lym shuttle run --model`/`--effort`; effort values `low|medium|high|xhigh|max`, empty = provider default) are engine-validated, not policed by `Spec.validate`. `Spec.Version` is a programmatic engine-validated version pin (claudeengine composes the pinned model id; no CLI flag — consumers drive it via the model-spec notation's `v=` param). Starting a run returns only once its provider is past its startup gates, and a provider that never comes up is torn down (run dir and last pane capture kept) and reported as an error from `Start`, or as `died`/`timeout` from `Run`. ✅ Implemented. See the `internal/shuttleengine` package documentation.
++- **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengine/codexengine` + `internal/shuttleengines` + `internal/shuttlecli`; `lym shuttle run|open|state|await|await-forks`). `lym shuttle open` starts a named session with no turn in its own window, which closes when the session exits; `--model` takes a model spec naming the engine, model and effort, `--list-models` prints the model registry's aliases with their engine, model and default effort, and the output names the engine, model and effort the session got. Every session shuttle launches, run or opened, starts in its engine's bypass mode unless the caller passes `prompt`, which an interactive session accepts. `lym shuttle await <path>... [--cap]` is the read-only capped wait on one or more files, the keep-cache-warm wait any agent can run, needing no hub or git repository; its cap defaults to the caller role's keep-warm cap from `claude.yaml`. `lym shuttle await-forks [--cap]` is the same capped wait over the forks the calling agent session spawned, read from its transcript through the engine: a reviewer, fixer or writer that waits inside it takes every fork's result in one turn instead of waking once per fork. `lym shuttle state` is read-only: it lists the session state of each running run (busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with its cause, since and history), read from the run's files, in shadow mode where no stop or notice depends on it. `Stop`-hook completion is read off an events file and classified into three outcomes — `done`/`died`/`timeout`. A turn end without every output file never ends a run: `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call). An autonomous run notifies its parent once per held turn end as creel mail to the orch, and once per permission or input dialog its pane shows past 60 s, and an interactive run is answered in its pane; a line typed into a run's pane goes through `lym creel post`, `lym creel inject` or `lym creel interrupt`, never a shuttle verb. Background work is read off the Stop payload's `background_tasks` first, with the transcript as the fallback when the payload carries no list; a turn end with outstanding work is waiting, not held, unless its only outstanding work is non-awaited shells, which a gated run holds at once with an output file missing, a gated run with every output file present counts done once they pass the shell wait bound after telling the agent to read them, and an ungated run holds once they pass the shell wait bound. `Attach` waits on a held run, and on a legacy `asking` record whose strand is still live, instead of respawning beside it. `died` is narrow: it means a strand reed STILL TRACKS has a pane that is not alive, the provider never came up inside the startup window, or the provider's process is proven gone behind a live pane shell (by the process registry, or a process-ending `SessionEnd` line past the wait's first liveness tick), with `done` instead when every output file exists. Reed's strand table losing the strand entirely — a `reed down`/`remove`, a deleted or rebuilt `reed.json`, a worktree renamed under an in-flight run — is reported as a mechanism failure carrying the run's identity, never as `died`, because reed's bookkeeping going away says nothing about the agent, whose process is often still working in its pane; the exception is a handle whose own `Stop` removed the strand, which ends `died` and is recorded as stopped unless the files show the run done. No guardrail denies the in-process `Agent` tool: a subagent or fork shows in the session's own pane and lym reads its transcript under the session's `subagents` directory. A `PreToolUse` guardrail denies `AskUserQuestion` when the run is autonomous (`Interactive: false`, the default); a `PreToolUse(Bash)` guardrail denies `python`, `python3` and `python3.<minor>` in command position in every run mode, a version check included (on by default, switchable off via `shuttle.yaml`'s `deny_python`), and a second `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a raw module-wide `go test`, `go build` or `go vet`, a raw `go test` over the `tmux` or `llm` tier, and any command naming the gate-slot or strand-name environment variable, steering the session to `lym gate test`, and to a package-scoped compile check the hub's `refuse_raw` does not refuse, and a third `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies an `rm` on a computed path (a command substitution or a variable expansion in the command) so no permission dialog stalls the run, and a fourth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies `sed -i`, `perl -i`, and a redirect, heredoc or `tee` into a source file, steering the session to read a file with Read and change it with Edit or Write, and a fifth `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a headless `claude` launch with `-p` or `--print`, whose work shows in no pane, steering the session to a subagent through the `Agent` tool; the python deny's steer carries the same edit rule. The engine announces each deny it installs to the session's system prompt, and every Claude session it launches with a run directory also gets the creel trust sentence, through one `append-system-prompt.txt` file named by `--append-system-prompt-file` on launch and resume, so a session knows the tool is unavailable before it tries one and follows `[creel]` mail from its hooks. The engine sets the prompt-cache TTL per role on launch and resume from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role). `claude.yaml`'s `keep_warm_cap` (template 250s) and `keep_warm_cap_roles` set the per-role keep-warm cap beside them. While `claude.yaml`'s `batching_nudge` block is on, a `PostToolUse` hook after each `Read`, `Grep`, `Glob`, `Edit` or `Write` call runs the hidden `lym shuttle hook-batching`, which adds one line naming the breach and quoting the rule to a session above the block's context threshold whose recent messages make a chain of single lookups, a sliced read of a short or already-read file, or a chain of edit-only messages; it never denies a call, and the block's switches and thresholds are config. The provider is swappable behind an **engine** seam; the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, or per run by a model-spec naming it. Two engines are registered: `claude`, and `codex`, which drives the Codex CLI's TUI under one shared lym Codex home (`codex.yaml`'s `home`, linked to the operator's own login and sessions, its folder trust rendered by lym), with `-a never -s workspace-write` and the records checkout it is told through its config dirs as a writable root, none outside a hub; it has no skill loading, shell guards, fork audit or creel hooks yet, and the model registry's `sol`, `astra` and `luna` aliases name it. Per-run `Model`/`Effort` knobs (`lym shuttle run --model`/`--effort`; effort values `low|medium|high|xhigh|max`, empty = provider default) are engine-validated, not policed by `Spec.validate`. `Spec.Version` is a programmatic engine-validated version pin (claudeengine composes the pinned model id; no CLI flag — consumers drive it via the model-spec notation's `v=` param). Starting a run returns only once its provider is past its startup gates, and a provider that never comes up is torn down (run dir and last pane capture kept) and reported as an error from `Start`, or as `died`/`timeout` from `Run`. ✅ Implemented. See the `internal/shuttleengine` package documentation.
+ - **orch** — the hub orchestrator hosted as an interactive Claude session in a reed strand of the prime worktree or of a beam, cycled before its context fills (`internal/orchcli` + `internal/orchengine`; `lym orch stop|status|refresh|distill|withdraw|rules`, in the prime and in any beam). `lym beam start` first ensures the worktree's `runs` strand, which runs `lym batten overview` as the beam's window, named `beam: prime` or `beam: <slug>` opened with the beam's board handle as in `P1: beam: <slug>`, and `stop` leaves it; ensuring it adds the runs strand beside a `loom-status` strand a pawl run's `lym loom start` put in an overview window first, as the session's first overview window, and a failure to add, replace or record it is a warning on the bring-up report naming `lym beam start`, never a stop; the orchestrator has a window of its own, and the session's windows run the beam window, agents, shell. A detached watcher has the session write a note, then clears it and resumes it from that note (`refresh`) or compacts it in place (`distill`), never clearing or compacting without one. ✅ Implemented. See the `internal/orchengine` package documentation.- **webster** — the implementer module: one long-lived Master session that reads the plan and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool), each fork reading its cards' code itself, instead of spawning a fresh reed/tmux strand per batch;
+   bracket verbs (`begin-batch`/`record-batch`) drive each in-session fork (Master ends its turn while a backgrounded fork works and records the batch on the fork's completion notification, shuttle reading that turn end as waiting rather than done), and a genuine model escalation (recovery after a stuck/report-less fork) spawns a cold strand.
+   Consumes the flat card-list plan (pinned in the plan-format blocks `contracts/stencils/loom/loom-block-plan-*.md`, which `contracts/stencils/loom/loom-template-plan.md`, the Plan producer's own stencil, includes) via its own sole parser, `internal/planparser`, groups cards into execution batches via `internal/batcher`, a separate config-selected registry module webster consumes (profiles in `batcher.yaml`, the `wide` cost profile by default), then runs those batches in card order, refusing a backward dependency derived from the cards' own `Targets`/`Uses` refs, records the partition in `state.json` at first init, and carries the plan's `## verify:` command as a must-pass gate on Merriam's strand: a failure is rerun once (a pass on the rerun records the identities as flaky;
+diff --git a/internal/configengine/layers.go b/internal/configengine/layers.go
+index d60e8cf7..5d56777e 100644
+--- a/internal/configengine/layers.go
++++ b/internal/configengine/layers.go
+@@ -19,10 +19,13 @@ import (
+ 
+ // Dirs is the told geometry of a layered load.
+ // Anchor is the reading worktree's anchor and Board the hub's board dir, empty standalone.
+-// Neither is derived: the caller hands both in.
++// Records is the absolute path of the records checkout paired with the anchor's worktree, empty outside a hub or when that checkout does not exist;
++// no layer reads it, and an engine whose session writes into the checkout takes it from here.
++// None is derived: the caller hands each in.
+ type Dirs struct {
+-	Anchor string
+-	Board  string
++	Anchor  string
++	Board   string
++	Records string
+ }
+ 
+ // Layer names one layer of the stack, for provenance and for choosing a layer to write.
+diff --git a/internal/configreg/configreg_test.go b/internal/configreg/configreg_test.go
+index f627773e..b0a38600 100644
+--- a/internal/configreg/configreg_test.go
++++ b/internal/configreg/configreg_test.go
+@@ -85,6 +85,7 @@ func TestModules_EveryTemplateKeyClassified(t *testing.T) {
+ 		"batten":   {"open_ide_command", "open_window_command", "seed_ide_command"},
+ 		"beam":     {"pull_request"},
+ 		"claude":   {"binary", "deny_ask_user_question"},
++		"codex":    {"binary"},
+ 		"reed":     {"buttons", "debug_log", "mouse", "shell", "tmux", "tmux_conf"},
+ 		"shuttle":  {"deny_python", "run_dir"},
+ 		"loom":     {"code_auto_accept", "code_fixer_fan", "discussion_advisors", "discussion_auto_accept", "discussion_fixer_fan", "discussion_lenses", "discussion_reviewer_fan"},
+diff --git a/internal/configsync/configsync_test.go b/internal/configsync/configsync_test.go
+index 6f0a8d95..95b1ccc9 100644
+--- a/internal/configsync/configsync_test.go
++++ b/internal/configsync/configsync_test.go
+@@ -1724,7 +1724,7 @@ func TestReconcileAll_MigratesToSparse(t *testing.T) {
+ 		{
+ 			name: "a seed-only key the default holds and the file lacks is reported inherited", module: "models", opts: migrate,
+ 			defaultFile: modelsTemplate + defaultAlias, worktreeFile: modelsTemplate,
+-			wantStripped: []string{"fable", "haiku", "opus", "sonnet"}, wantInherited: []string{"zephyr"}, wantDeleted: true, wantMarker: true,
++			wantStripped: []string{"astra", "fable", "haiku", "luna", "opus", "sol", "sonnet"}, wantInherited: []string{"zephyr"}, wantDeleted: true, wantMarker: true,
+ 		},
+ 		{
+ 			name: "a marked worktree is left alone", module: "loom", opts: migrate, marked: true,
+diff --git a/internal/fabricengine/junctionnames.go b/internal/fabricengine/junctionnames.go
+index 98d64e37..02009bd7 100644
+--- a/internal/fabricengine/junctionnames.go
++++ b/internal/fabricengine/junctionnames.go
+@@ -121,20 +121,28 @@ func BoardDir(hub string) string {
+ }
+ 
+ // ConfigDirs returns the told geometry of a layered config load for the location:
+-// its anchor, and the hub's Bolt checkout when that exists as a directory.
+-// A git checkout that is not a hub has no Bolt checkout, so it gets Board empty and loads the standalone stack.
+-// A stat failure other than absence is treated as absence and logged, since a loader then degrades or refuses on its own base-layer rule.
++// its anchor, the hub's Bolt checkout when that exists as a directory, and the paired weft checkout when that exists as a directory.
++// A git checkout that is not a hub has no Bolt checkout, so it gets Board empty and loads the standalone stack, and it has no weft checkout either.
++// A stat failure other than absence is treated as absence and logged for either checkout, since a loader then degrades or refuses on its own base-layer rule.
+ func ConfigDirs(l *lymcwd.Location) configengine.Dirs {
+-	dirs := configengine.Dirs{Anchor: l.AnchorPath()}
+-	board := BoltDir(l.HubPath)
+-	info, err := os.Stat(board)
++	return configengine.Dirs{
++		Anchor:  l.AnchorPath(),
++		Board:   existingDirOrLog(BoltDir(l.HubPath), "fabricengine: Bolt checkout not statable, loading the standalone config stack"),
++		Records: existingDirOrLog(RecordsWorktree(l), "fabricengine: weft checkout not statable, telling no records checkout"),
++	}
++}
++
++// existingDirOrLog returns path when it exists as a directory and the empty string otherwise.
++// A stat failure other than absence is logged with warning, the path and the error.
++func existingDirOrLog(path, warning string) string {
++	info, err := os.Stat(path)
+ 	switch {
+ 	case err == nil && info.IsDir():
+-		dirs.Board = board
++		return path
+ 	case err != nil && !os.IsNotExist(err):
+-		logger.Warn("fabricengine: Bolt checkout not statable, loading the standalone config stack", "path", board, "error", err)
++		logger.Warn(warning, "path", path, "error", err)
+ 	}
+-	return dirs
++	return ""
+ }
+ 
+ // stencilsDirName is the name of the stencils directory nested under the Bolt checkout's `_lym` component.
+diff --git a/internal/fabricengine/junctionnames_test.go b/internal/fabricengine/junctionnames_test.go
+index a4df65fc..622e4793 100644
+--- a/internal/fabricengine/junctionnames_test.go
++++ b/internal/fabricengine/junctionnames_test.go
+@@ -302,7 +302,7 @@ func TestIsReservedHubName(t *testing.T) {
+ 	})
+ }
+ 
+-// TestConfigDirs pins the geometry a location tells a layered load: the anchor always, and the board dir only when it exists as a directory.
++// TestConfigDirs pins the geometry a location tells a layered load: the anchor always, and the board dir and the weft checkout only when each exists as a directory.
+ func TestConfigDirs(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -311,7 +311,19 @@ func TestConfigDirs(t *testing.T) {
+ 		name      string
+ 		makeBoard func(t *testing.T, board string)
+ 		wantBoard bool
++		// makeWeft creates the weft checkout the location pairs with.
++		makeWeft bool
+ 	}{
++		{
++			name: "hub holding a board dir and a weft checkout",
++			makeBoard: func(t *testing.T, board string) {
++				if err := os.Mkdir(board, 0o755); err != nil {
++					t.Fatalf("mkdir board: %v", err)
++				}
++			},
++			wantBoard: true,
++			makeWeft:  true,
++		},
+ 		{
+ 			name: "hub holding a board dir",
+ 			makeBoard: func(t *testing.T, board string) {
+@@ -341,6 +353,13 @@ func TestConfigDirs(t *testing.T) {
+ 			hub := t.TempDir()
+ 			tt.makeBoard(t, BoardDir(hub))
+ 			loc := &lymcwd.Location{RepoName: "repo", HubPath: hub, WorktreeName: "main", AnchorRel: "."}
++			wantWeft := ""
++			if tt.makeWeft {
++				wantWeft = RecordsWorktree(loc)
++				if err := os.MkdirAll(wantWeft, 0o755); err != nil {
++					t.Fatalf("mkdir weft: %v", err)
++				}
++			}
+ 
+ 			got := ConfigDirs(loc)
+ 
+@@ -348,8 +367,8 @@ func TestConfigDirs(t *testing.T) {
+ 			if tt.wantBoard {
+ 				wantBoard = BoardDir(hub)
+ 			}
+-			if got.Anchor != loc.AnchorPath() || got.Board != wantBoard {
+-				t.Errorf("ConfigDirs = %+v; want Anchor %q, Board %q", got, loc.AnchorPath(), wantBoard)
++			if got.Anchor != loc.AnchorPath() || got.Board != wantBoard || got.Records != wantWeft {
++				t.Errorf("ConfigDirs = %+v; want Anchor %q, Board %q, Records %q", got, loc.AnchorPath(), wantBoard, wantWeft)
+ 			}
+ 		})
+ 	}
+diff --git a/internal/fslink/fslink.go b/internal/fslink/fslink.go
+index 8c6f03ba..db8ac6b6 100644
+--- a/internal/fslink/fslink.go
++++ b/internal/fslink/fslink.go
+@@ -7,9 +7,10 @@
+ // Public API:
+ //   - CreateDirLink(link, target string) error: Create a directory link pointing to
+ //     target (a junction on Windows, a symlink elsewhere). Refuses to clobber existing
+-//     paths and creates missing parent directories. File links are not yet supported;
+-//     a future CreateFileLink is reserved for that (Windows file symlinks need elevated
+-//     privileges, which junctions do not).
++//     paths and creates missing parent directories.
++//   - CreateFileLink(link, target string) error: Create a symlink to the file target, with
++//     the same guards. On Windows it refuses before touching the filesystem, since a file
++//     symlink there needs elevated privileges and a junction links only a directory.
+ //   - Remove(link string) error: Idempotent removal of a link; returns nil if the link
+ //     does not exist, otherwise returns wrapped errors.
+ //   - IsLink(path string) (bool, error): Reports whether path is a link. Returns
+diff --git a/internal/fslink/fslink_linux.go b/internal/fslink/fslink_linux.go
+index 0220118e..e9e2bccd 100644
+--- a/internal/fslink/fslink_linux.go
++++ b/internal/fslink/fslink_linux.go
+@@ -20,6 +20,20 @@ func CreateDirLink(link, target string) error {
+ 	return nil
+ }
+ 
++// CreateFileLink establishes a symlink from link to the file target, refusing to clobber and creating parent directories.
++// A program that writes the file in place through the link writes target, and one that removes the file by name removes the link alone.
++func CreateFileLink(link, target string) error {
++	if err := prepareLink(link); err != nil {
++		return err
++	}
++
++	if err := os.Symlink(target, link); err != nil {
++		return fmt.Errorf("symlink %s -> %s: %w", link, target, err)
++	}
++
++	return nil
++}
++
+ // IsLink reports whether path is a symlink, returning (false, nil) if absent.
+ func IsLink(path string) (bool, error) {
+ 	info, err := os.Lstat(path)
+diff --git a/internal/fslink/fslink_test.go b/internal/fslink/fslink_test.go
+index b489967b..e4ccb6cb 100644
+--- a/internal/fslink/fslink_test.go
++++ b/internal/fslink/fslink_test.go
+@@ -3,6 +3,8 @@ package fslink
+ import (
+ 	"os"
+ 	"path/filepath"
++	"runtime"
++	"strings"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+@@ -128,6 +130,42 @@ func TestCreate(t *testing.T) {
+ 	}
+ }
+ 
++// TestCreateFileLink pins the file link.
++// On Windows it refuses, names its way forward, and leaves the link's parent uncreated.
++// Elsewhere it makes a link whose in-place write reaches the target, and it refuses to clobber an existing path.
++func TestCreateFileLink(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	dir := t.TempDir()
++	target := filepath.Join(dir, "auth.json")
++	writeFile(t, target, "old")
++	link := filepath.Join(dir, "home", "auth.json")
++
++	err := CreateFileLink(link, target)
++	if runtime.GOOS == "windows" {
++		if err == nil || !strings.Contains(err.Error(), "way forward") {
++			t.Fatalf("CreateFileLink() error = %v; want a refusal naming the way forward", err)
++		}
++		if _, statErr := os.Lstat(filepath.Dir(link)); !os.IsNotExist(statErr) {
++			t.Errorf("Lstat(%s) error = %v; want the parent left uncreated", filepath.Dir(link), statErr)
++		}
++		return
++	}
++	if err != nil {
++		t.Fatalf("CreateFileLink() error = %v; want nil", err)
++	}
++	if err := os.WriteFile(link, []byte("new"), 0o644); err != nil {
++		t.Fatalf("write through the link: %v", err)
++	}
++	if got, err := os.ReadFile(target); err != nil || string(got) != "new" {
++		t.Errorf("target content = %q, %v; want %q written through the link", got, err, "new")
++	}
++	if err := CreateFileLink(link, target); err == nil {
++		t.Error("CreateFileLink() over an existing link error = nil; want a clobber refusal")
++	}
++}
++
+ // TestIsLink exercises link detection across created links, regular files, directories, and missing
+ // paths.
+ func TestIsLink(t *testing.T) {
+diff --git a/internal/fslink/fslink_windows.go b/internal/fslink/fslink_windows.go
+index f779d0ad..837bde23 100644
+--- a/internal/fslink/fslink_windows.go
++++ b/internal/fslink/fslink_windows.go
+@@ -97,6 +97,11 @@ func CreateDirLink(link, target string) error {
+ 	return nil
+ }
+ 
++// CreateFileLink refuses on Windows before touching the filesystem: a file symlink there needs elevated privileges, and a junction links only a directory.
++func CreateFileLink(link, target string) error {
++	return fmt.Errorf("create file link %s -> %s: Windows makes a file link only with elevated privileges; way forward: run a session that needs one on a Linux or macOS machine", link, target)
++}
++
+ // readReparseData opens path with reparse-point semantics and returns the
+ // reparse data buffer truncated to the bytes Windows wrote.
+ func readReparseData(path string) ([]byte, error) {
+diff --git a/internal/modelspec/load.go b/internal/modelspec/load.go
+index 5969194a..d7e6473f 100644
+--- a/internal/modelspec/load.go
++++ b/internal/modelspec/load.go
+@@ -16,7 +16,7 @@ import (
+ )
+ 
+ // ConfigSpec returns models's layered-load spec.
+-// Each top-level key is one alias, carried whole through the stack, and the four template aliases are classified as meeting no category, so the local layer may hold them and any alias of its own.
++// Each top-level key is one alias, carried whole through the stack, and the template's aliases are classified as meeting no category, so the local layer may hold them and any alias of its own.
+ func ConfigSpec() configengine.Spec {
+ 	return configengine.Spec{
+ 		Name:         "models",
+@@ -28,6 +28,9 @@ func ConfigSpec() configengine.Spec {
+ 			"opus":   configengine.CategoryNone,
+ 			"haiku":  configengine.CategoryNone,
+ 			"fable":  configengine.CategoryNone,
++			"sol":    configengine.CategoryNone,
++			"astra":  configengine.CategoryNone,
++			"luna":   configengine.CategoryNone,
+ 		},
+ 	}
+ }
+diff --git a/internal/modelspec/load_test.go b/internal/modelspec/load_test.go
+index 98c0d836..6b740c91 100644
+--- a/internal/modelspec/load_test.go
++++ b/internal/modelspec/load_test.go
+@@ -26,7 +26,23 @@ func writeModelsYAML(t *testing.T, baseDir, contents string) {
+ 	}
+ }
+ 
+-// TestLoadRegistry_YieldsBuiltins asserts a missing models.yaml and a comments-only one both yield exactly the four built-in aliases, each with its own name as model and no defaults.
++// builtinWant is one built-in alias as LoadRegistry yields it with no models.yaml entry over it.
++type builtinWant struct {
++	engine, model, effort string
++}
++
++// wantBuiltins are the built-in aliases: the Claude ones with their own name as model and no defaults, the Codex ones with their model slug and effort medium.
++var wantBuiltins = map[string]builtinWant{
++	"sonnet": {"claude", "sonnet", ""},
++	"opus":   {"claude", "opus", ""},
++	"haiku":  {"claude", "haiku", ""},
++	"fable":  {"claude", "fable", ""},
++	"sol":    {"codex", "gpt-6.1-sol", "medium"},
++	"astra":  {"codex", "gpt-6-astra", "medium"},
++	"luna":   {"codex", "gpt-6-luna", "medium"},
++}
++
++// TestLoadRegistry_YieldsBuiltins asserts a missing models.yaml and a comments-only one both yield exactly the built-in aliases.
+ func TestLoadRegistry_YieldsBuiltins(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -50,18 +66,21 @@ func TestLoadRegistry_YieldsBuiltins(t *testing.T) {
+ 				t.Fatalf("LoadRegistry(%s) returned unexpected error: %v", tt.name, err)
+ 			}
+ 
+-			aliases := []string{"sonnet", "opus", "haiku", "fable"}
+-			if len(got) != len(aliases) {
+-				t.Fatalf("LoadRegistry(%s) has %d entries; want %d", tt.name, len(got), len(aliases))
++			if len(got) != len(wantBuiltins) {
++				t.Fatalf("LoadRegistry(%s) has %d entries; want %d", tt.name, len(got), len(wantBuiltins))
+ 			}
+-			for _, alias := range aliases {
++			for alias, want := range wantBuiltins {
+ 				gotEntry, ok := got[alias]
+ 				if !ok {
+ 					t.Errorf("LoadRegistry(%s) missing alias %q", tt.name, alias)
+ 					continue
+ 				}
+-				if gotEntry.Engine != "claude" || gotEntry.Model != alias || len(gotEntry.Defaults) != 0 {
+-					t.Errorf("LoadRegistry(%s)[%q] = %+v; want engine claude, model %q, no defaults", tt.name, alias, gotEntry, alias)
++				wantDefaults := 0
++				if want.effort != "" {
++					wantDefaults = 1
++				}
++				if gotEntry.Engine != want.engine || gotEntry.Model != want.model || gotEntry.Defaults["effort"] != want.effort || len(gotEntry.Defaults) != wantDefaults {
++					t.Errorf("LoadRegistry(%s)[%q] = %+v; want engine %s, model %q, effort default %q", tt.name, alias, gotEntry, want.engine, want.model, want.effort)
+ 				}
+ 			}
+ 		})
+@@ -85,8 +104,8 @@ zephyr:
+ 		t.Fatalf("LoadRegistry(extends) returned unexpected error: %v", err)
+ 	}
+ 
+-	// The four built-ins are still present alongside the new alias.
+-	for _, alias := range []string{"sonnet", "opus", "haiku", "fable"} {
++	// The built-ins are still present alongside the new alias.
++	for alias := range wantBuiltins {
+ 		if _, ok := got[alias]; !ok {
+ 			t.Errorf("LoadRegistry(extends) missing built-in alias %q", alias)
+ 		}
+diff --git a/internal/modelspec/modelspec.go b/internal/modelspec/modelspec.go
+index 5d880e1a..44365b26 100644
+--- a/internal/modelspec/modelspec.go
++++ b/internal/modelspec/modelspec.go
+@@ -140,6 +140,7 @@ var bracketKeys = map[string]string{
+ // already-known engine (e.g. a new Claude model) needs no change here.
+ var knownEngines = map[string]bool{
+ 	"claude": true,
++	"codex":  true,
+ }
+ 
+ // EngineNames returns the closed set of provider engine names, sorted.
+diff --git a/internal/modelspec/registry.go b/internal/modelspec/registry.go
+index 4003805b..48836d05 100644
+--- a/internal/modelspec/registry.go
++++ b/internal/modelspec/registry.go
+@@ -9,14 +9,19 @@ import (
+ 	"sort"
+ )
+ 
+-// builtins returns the pinned, default-free fallback registry: sonnet, opus,
+-// haiku, and fable (operator effort defaults live only in models.yaml, not here).
++// builtins returns the pinned fallback registry.
++// It holds the Claude aliases sonnet, opus, haiku and fable with no defaults, since the operator's Claude effort defaults live only in models.yaml.
++// It also holds the Codex aliases sol, astra and luna at effort medium, so a Codex spec naming no effort never launches at the provider's own default.
+ func builtins() Registry {
++	codexDefaults := func() map[string]string { return map[string]string{"effort": "medium"} }
+ 	return Registry{
+ 		"sonnet": {Engine: "claude", Model: "sonnet"},
+ 		"opus":   {Engine: "claude", Model: "opus"},
+ 		"haiku":  {Engine: "claude", Model: "haiku"},
+ 		"fable":  {Engine: "claude", Model: "fable"},
++		"sol":    {Engine: "codex", Model: "gpt-6.1-sol", Defaults: codexDefaults()},
++		"astra":  {Engine: "codex", Model: "gpt-6-astra", Defaults: codexDefaults()},
++		"luna":   {Engine: "codex", Model: "gpt-6-luna", Defaults: codexDefaults()},
+ 	}
+ }
+ 
+diff --git a/internal/modelspec/registry_test.go b/internal/modelspec/registry_test.go
+index 59f2b17a..2da3169b 100644
+--- a/internal/modelspec/registry_test.go
++++ b/internal/modelspec/registry_test.go
+@@ -69,6 +69,14 @@ func TestRegistry_Resolve(t *testing.T) {
+ 			wantModel:  "haiku",
+ 			wantParams: map[string]string{},
+ 		},
++		{
++			name:       "built-in Codex alias resolves to engine codex at effort medium",
++			registry:   builtins(),
++			spec:       Spec{Alias: "astra"},
++			wantEngine: "codex",
++			wantModel:  "gpt-6-astra",
++			wantParams: map[string]string{"effort": "medium"},
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/modelspec/template.go b/internal/modelspec/template.go
+index d7da60b2..392a16af 100644
+--- a/internal/modelspec/template.go
++++ b/internal/modelspec/template.go
+@@ -10,9 +10,8 @@ import _ "embed"
+ //go:embed template.yaml
+ var configTemplate string
+ 
+-// ConfigTemplate returns the seed content for models.yaml: the live-keys registry
+-// (sonnet/opus/haiku/fable with effort defaults) that configreg materializes when models.yaml is
+-// absent.
++// ConfigTemplate returns the seed content for models.yaml.
++// It is the live-keys registry with its effort defaults, which configreg materializes when models.yaml is absent.
+ func ConfigTemplate() string {
+ 	return configTemplate
+ }
+diff --git a/internal/modelspec/template.yaml b/internal/modelspec/template.yaml
+index eebde53a..a91335d9 100644
+--- a/internal/modelspec/template.yaml
++++ b/internal/modelspec/template.yaml
+@@ -31,3 +31,18 @@ fable:
+   model: fable
+   defaults:
+     effort: high
++sol:
++  engine: codex
++  model: gpt-6.1-sol
++  defaults:
++    effort: medium
++astra:
++  engine: codex
++  model: gpt-6-astra
++  defaults:
++    effort: medium
++luna:
++  engine: codex
++  model: gpt-6-luna
++  defaults:
++    effort: medium
+diff --git a/internal/modelspec/template_test.go b/internal/modelspec/template_test.go
+index 688d6420..dd099ba4 100644
+--- a/internal/modelspec/template_test.go
++++ b/internal/modelspec/template_test.go
+@@ -1,6 +1,5 @@
+-// template_test.go proves the embedded seed template always passes the loader's own validation:
+-// writing ConfigTemplate() verbatim to a fresh models.yaml must load with exactly the four
+-// documented live entries.
++// template_test.go proves the embedded seed template always passes the loader's own validation.
++// Writing ConfigTemplate() verbatim to a fresh models.yaml must load with exactly the documented live entries.
+ 
+ package modelspec
+ 
+@@ -31,12 +30,17 @@ func TestConfigTemplate_LoadsWithLiveEntries(t *testing.T) {
+ 
+ 	tests := []struct {
+ 		alias      string
++		wantEngine string
++		wantModel  string
+ 		wantEffort string
+ 	}{
+-		{alias: "sonnet", wantEffort: "medium"},
+-		{alias: "opus", wantEffort: "medium"},
+-		{alias: "haiku", wantEffort: "medium"},
+-		{alias: "fable", wantEffort: "high"},
++		{alias: "sonnet", wantEngine: "claude", wantModel: "sonnet", wantEffort: "medium"},
++		{alias: "opus", wantEngine: "claude", wantModel: "opus", wantEffort: "medium"},
++		{alias: "haiku", wantEngine: "claude", wantModel: "haiku", wantEffort: "medium"},
++		{alias: "fable", wantEngine: "claude", wantModel: "fable", wantEffort: "high"},
++		{alias: "sol", wantEngine: "codex", wantModel: "gpt-6.1-sol", wantEffort: "medium"},
++		{alias: "astra", wantEngine: "codex", wantModel: "gpt-6-astra", wantEffort: "medium"},
++		{alias: "luna", wantEngine: "codex", wantModel: "gpt-6-luna", wantEffort: "medium"},
+ 	}
+ 	if len(got) != len(tests) {
+ 		t.Fatalf("LoadRegistry(seeded template) has %d entries; want %d", len(got), len(tests))
+@@ -47,8 +51,8 @@ func TestConfigTemplate_LoadsWithLiveEntries(t *testing.T) {
+ 			t.Errorf("LoadRegistry(seeded template) missing alias %q", tt.alias)
+ 			continue
+ 		}
+-		if entry.Engine != "claude" || entry.Model != tt.alias {
+-			t.Errorf("LoadRegistry(seeded template)[%q] = %+v; want engine claude, model %q", tt.alias, entry, tt.alias)
++		if entry.Engine != tt.wantEngine || entry.Model != tt.wantModel {
++			t.Errorf("LoadRegistry(seeded template)[%q] = %+v; want engine %s, model %q", tt.alias, entry, tt.wantEngine, tt.wantModel)
+ 		}
+ 		if entry.Defaults["effort"] != tt.wantEffort {
+ 			t.Errorf("LoadRegistry(seeded template)[%q].Defaults[\"effort\"] = %q; want %q", tt.alias, entry.Defaults["effort"], tt.wantEffort)
+diff --git a/internal/shuttleengine/codexengine/codexengine.go b/internal/shuttleengine/codexengine/codexengine.go
+new file mode 100644
+index 00000000..dbd2d6ae
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/codexengine.go
+@@ -0,0 +1,155 @@
++// codexengine.go defines the Codex type, its constructors and Prepare, which readies the lym Codex home and writes the run's prompt file before returning the launch.
++
++package codexengine
++
++import (
++	"fmt"
++	"os"
++	"path/filepath"
++	"slices"
++	"strings"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/shell"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++)
++
++// engineName is the name the engine registers under, which the standing passages are keyed by.
++const engineName = "codex"
++
++// defaultSubmitRedrawSettleMS is the redraw settle New uses, matching the shipped shuttle template.
++const defaultSubmitRedrawSettleMS = 300
++
++// Codex implements shuttleengine.Engine for the Codex CLI's interactive TUI.
++// Prepare and CheckAfterStartup read codex.yaml through the Dirs fixed at construction, and every other method is a pure function of its arguments, its settle and the files it is pointed at,
++// so a Codex is safe to share across concurrent runs.
++type Codex struct {
++	// dirs locate the layered codex.yaml, the anchor a launch starts in and the records checkout the session may write; the zero value makes Prepare refuse, so an engine built by New serves reading uses only.
++	dirs configengine.Dirs
++	// submitRedrawSettleMS is the wait after an Enter before the composer is read, so Codex has redrawn it.
++	submitRedrawSettleMS int
++	// warn logs what a launch goes on despite; tests replace it to read the warnings of one engine.
++	warn func(msg string, args ...any)
++}
++
++var (
++	_ shuttleengine.Engine         = (*Codex)(nil)
++	_ shuttleengine.StartupChecker = (*Codex)(nil)
++)
++
++// New returns a Codex engine with the default redraw settle and no Dirs.
++func New() *Codex {
++	return &Codex{submitRedrawSettleMS: defaultSubmitRedrawSettleMS, warn: logger.Warn}
++}
++
++// NewFromConfig returns a Codex engine whose redraw settle is cfg.SubmitRedrawSettleMS and which reads codex.yaml and its anchor from dirs.
++func NewFromConfig(cfg shuttleengine.Config, dirs configengine.Dirs) *Codex {
++	return &Codex{dirs: dirs, submitRedrawSettleMS: cfg.SubmitRedrawSettleMS, warn: logger.Warn}
++}
++
++// Legal Spec.PermissionMode values: empty and bypass, the mode every launch runs in.
++const permissionModeBypass = "bypass"
++
++// validateSpec refuses what a Codex launch cannot realize, before anything is written: a version pin, a permission mode other than bypass, a resumed session, the publish guard, and an effort codex.yaml does not list.
++func validateSpec(spec shuttleengine.Spec, codex Config) error {
++	if spec.Version != "" {
++		return fmt.Errorf("codexengine: version %q given, but Codex takes a model slug and no version pin; way forward: name the slug as the model-spec's model", spec.Version)
++	}
++	if spec.PermissionMode != "" && spec.PermissionMode != permissionModeBypass {
++		return fmt.Errorf("codexengine: permission mode %q is not realizable; every Codex launch runs -a never, the bypass mode; way forward: leave it empty or set %q", spec.PermissionMode, permissionModeBypass)
++	}
++	if spec.ResumeSessionID != "" {
++		return fmt.Errorf("codexengine: Codex sessions cannot be resumed by a new run; way forward: start a fresh session")
++	}
++	if spec.DenyPublish {
++		return fmt.Errorf("codexengine: the publish guard is not installed on Codex yet; way forward: run the role on the claude engine")
++	}
++	return validateEffort(spec.Effort, codex)
++}
++
++// Prepare readies a Codex launch and returns its lines.
++// It validates the spec, reads the checkout the anchor sits in and refuses under committed Codex rules before anything is written;
++// it then readies the lym home, trusting the worktree root and a linked worktree's main checkout root, and writes prompt.md into runDir.
++// The prompt file opens with the standing passages heddle holds for engine codex and the spec's role, then the spec's prompt.
++// The launch line's writable root is the records checkout the engine is told through its Dirs, symlink-resolved and kept as told with a Warn when it cannot be resolved, so the session writes its report through the anchor's `.lym` and `_lym` links; outside a hub it is empty and the line adds none.
++// The launch records session starts, carries no creel hooks and names no session id, since Codex mints its own at the first turn.
++func (c *Codex) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengine.Config) (shuttleengine.Launch, error) {
++	codex, err := loadConfigOrRefuse(c.dirs)
++	if err != nil {
++		return shuttleengine.Launch{}, err
++	}
++	if err := validateSpec(spec, codex); err != nil {
++		return shuttleengine.Launch{}, err
++	}
++	homes, err := resolveHomes(codex)
++	if err != nil {
++		return shuttleengine.Launch{}, err
++	}
++	anchor := c.dirs.Anchor
++	if anchor == "" || !filepath.IsAbs(anchor) {
++		return shuttleengine.Launch{}, fmt.Errorf("codexengine: the engine was told no absolute anchor (%q), so it cannot locate the checkout a launch starts in", anchor)
++	}
++	found, err := readCheckout(anchor)
++	if err != nil {
++		return shuttleengine.Launch{}, err
++	}
++	if err := c.checkCodexFolders(found, anchor); err != nil {
++		return shuttleengine.Launch{}, err
++	}
++	if err := c.prepareHome(homes, found.trustRoots()); err != nil {
++		return shuttleengine.Launch{}, err
++	}
++
++	absRunDir, err := filepath.Abs(runDir)
++	if err != nil {
++		return shuttleengine.Launch{}, fmt.Errorf("codexengine: resolve run directory %s: %w", runDir, err)
++	}
++	promptPath := filepath.Join(absRunDir, "prompt.md")
++	// The told Board dir is the hub's Bolt checkout, empty outside a hub.
++	passages := shuttleengine.StandingPassages(c.dirs.Board, engineName, spec.Role)
++	if err := os.WriteFile(promptPath, []byte(promptText(passages, spec.Prompt)), 0o644); err != nil {
++		return shuttleengine.Launch{}, fmt.Errorf("codexengine: write prompt: %w", err)
++	}
++
++	var writableRoots []string
++	if c.dirs.Records != "" {
++		// Codex keys a linked path by its resolved target, as it does the trust roots.
++		records, err := filepath.EvalSymlinks(c.dirs.Records)
++		if err != nil {
++			c.warn("codexengine: records checkout not resolvable, using the told path as the writable root", "path", c.dirs.Records, "error", err)
++			records = c.dirs.Records
++		}
++		writableRoots = []string{records}
++	}
++	sh := shell.ForGOOS()
++	return shuttleengine.Launch{
++		Cmd: buildLaunchCmd(sh, launchLine{
++			bin:           codexBinary(codex),
++			home:          homes.lym,
++			writableRoots: writableRoots,
++			model:         spec.Model,
++			effort:        spec.Effort,
++			hooks:         hookSettings(filepath.Join(absRunDir, "events.jsonl")),
++			firstTurn:     launchPointer(promptPath),
++		}),
++		ResumeCmd:            buildResumeCmd(sh),
++		RecordsSessionStarts: true,
++	}, nil
++}
++
++// promptText returns the prompt file's text: each passage, then prompt, separated by blank lines.
++func promptText(passages []string, prompt string) string {
++	return strings.Join(append(slices.Clone(passages), prompt), "\n\n")
++}
++
++// PromptCacheLifetime returns zero: Codex states no warm lifetime for its prompt cache, so a caller keeps nothing warm.
++func (c *Codex) PromptCacheLifetime(shuttleengine.Spec, shuttleengine.Config) (time.Duration, error) {
++	return 0, nil
++}
++
++// KeepWarmCaps returns zero caps: with no warm lifetime to keep, a Codex session blocks to the end of a wait.
++func (c *Codex) KeepWarmCaps(string) (time.Duration, time.Duration, error) {
++	return 0, 0, nil
++}
+diff --git a/internal/shuttleengine/codexengine/command.go b/internal/shuttleengine/codexengine/command.go
+new file mode 100644
+index 00000000..6dff171a
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/command.go
+@@ -0,0 +1,173 @@
++// command.go composes the pane-shell lines Prepare hands back as a Launch, and the `-c` hook settings the launch line carries.
++// The launch line starts the Codex TUI under the lym home with its first turn as the positional argument, then exits the pane's shell, so a Codex exit leaves a dead pane.
++// The resume line exits the pane's shell alone and starts no Codex.
++// Every hook is a plain POSIX sh command that appends a stamp line and its payload to the run's events file, or touches the run's activity stamp.
++// Argument quoting and statement chaining are pane-shell mechanics owned by internal/shell.
++
++package codexengine
++
++import (
++	"path"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/shell"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++)
++
++// codexHomeEnvKey is the variable Codex reads its home directory from.
++// It rides the pane line because reed's server environment is scrubbed of every CODEX_ key.
++const codexHomeEnvKey = "CODEX_HOME"
++
++// instructionFallbackFile is the file Codex loads as project instructions in a directory with no AGENTS.md.
++const instructionFallbackFile = "CLAUDE.md"
++
++// launchPointer returns the first turn of a session that loads no skills: a pointer to the prompt file at promptPath.
++func launchPointer(promptPath string) string {
++	return "Read " + promptPath + " in full first; it is your complete, authoritative instructions."
++}
++
++// launchLine is what buildLaunchCmd composes a launch line from.
++type launchLine struct {
++	// bin is the Codex executable.
++	bin string
++	// home is the lym Codex home the session runs under.
++	home string
++	// writableRoots are the folders outside the workspace the sandbox lets the session write.
++	writableRoots []string
++	// model is the model slug; empty takes Codex's default.
++	model string
++	// effort is the reasoning effort; empty takes Codex's default.
++	effort string
++	// hooks are the `-c` hook settings, each one `hooks.<Event>=[…]` value.
++	hooks []string
++	// firstTurn is the session's first turn, typed as the positional prompt.
++	firstTurn string
++}
++
++// buildLaunchCmd composes the pane-shell line that starts a Codex session and exits the pane's shell when Codex exits.
++// The line runs `-a never -s workspace-write`, so no approval prompt shows and the sandbox bounds writes to the workspace, the writable roots and the temporary folders.
++// It passes every hook setting with `--dangerously-bypass-hook-trust`, since a hook given by `-c` otherwise waits on a review prompt,
++// and it loads CLAUDE.md as the project instructions of a directory with no AGENTS.md.
++// CODEX_HOME names the lym home as a command-scoped assignment.
++func buildLaunchCmd(sh shell.Shell, line launchLine) string {
++	cmd := sh.Invoke(line.bin) + " --no-alt-screen -a never -s workspace-write"
++	if len(line.writableRoots) > 0 {
++		cmd += " -c " + sh.Quote("sandbox_workspace_write.writable_roots="+tomlArray(line.writableRoots))
++	}
++	if line.model != "" {
++		cmd += " -m " + sh.Quote(line.model)
++	}
++	if line.effort != "" {
++		cmd += " -c " + sh.Quote("model_reasoning_effort="+tomlString(line.effort))
++	}
++	cmd += " -c " + sh.Quote("project_doc_fallback_filenames="+tomlArray([]string{instructionFallbackFile}))
++	for _, hook := range line.hooks {
++		cmd += " -c " + sh.Quote(hook)
++	}
++	cmd += " --dangerously-bypass-hook-trust " + sh.Quote(line.firstTurn)
++	return sh.Chain(sh.WithEnv(codexHomeEnvKey, line.home, cmd), sh.Exit())
++}
++
++// buildResumeCmd composes the line reed replays to revive the strand: an exit of the pane's shell and no Codex.
++// Codex mints its session id at the first turn, which a line written before the launch cannot name, so a revive ends the run as died instead of starting a second session.
++func buildResumeCmd(sh shell.Shell) string {
++	return sh.Exit()
++}
++
++// Stamp line keys: a stamp line is {"lym_stamp":"<hook event name>","lym_at":"<RFC 3339 UTC>"}, written by a recording hook before its payload.
++const (
++	stampHookKey = "lym_stamp"
++	stampAtKey   = "lym_at"
++)
++
++// Hook event names, as Codex's hook settings key them and its payloads carry them in hook_event_name.
++const (
++	hookEventSessionStart      = "SessionStart"
++	hookEventUserPromptSubmit  = "UserPromptSubmit"
++	hookEventStop              = "Stop"
++	hookEventPermissionRequest = "PermissionRequest"
++	hookEventPostToolUse       = "PostToolUse"
++)
++
++// recordedHookEvents are the hooks whose payloads the events file records, in the order their settings ride the launch line.
++var recordedHookEvents = []string{hookEventSessionStart, hookEventUserPromptSubmit, hookEventStop, hookEventPermissionRequest}
++
++// emptyHookOutput is what every hook prints: an empty decision, which leaves the session's behaviour unchanged.
++const emptyHookOutput = "printf '{}\\n'"
++
++// recordingCommand returns the hook command that appends one hook event to the events file at eventsPath:
++// a stamp line naming hookEventName with the hook-side time, then the payload on standard input and a newline, then the empty hook output.
++// A failed `date` leaves the stamp's time empty, which the parser reads as no time.
++func recordingCommand(hookEventName, eventsPath string) string {
++	quoted := shell.Posix().Quote(eventsPath)
++	stamp := `printf '{"` + stampHookKey + `":"` + hookEventName + `","` + stampAtKey + `":"%s"}\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> ` + quoted
++	payload := "cat >> " + quoted + " && printf '\\n' >> " + quoted
++	return stamp + "; " + payload + "; " + emptyHookOutput
++}
++
++// activityCommand returns the hook command that touches the activity stamp beside the events file at eventsPath and prints the empty hook output, so a failed touch never blocks the session.
++func activityCommand(eventsPath string) string {
++	stampPath := path.Join(path.Dir(eventsPath), shuttleengine.ActivityStampFileName)
++	return "touch " + shell.Posix().Quote(stampPath) + "; " + emptyHookOutput
++}
++
++// toolMatcherAll is the matcher a tool hook takes to run on every tool.
++const toolMatcherAll = "*"
++
++// hookSettings returns the `-c` hook settings of a run whose events file is eventsPath: a recording hook per recorded event, then the activity hook after every tool call.
++func hookSettings(eventsPath string) []string {
++	settings := make([]string, 0, len(recordedHookEvents)+1)
++	for _, event := range recordedHookEvents {
++		settings = append(settings, hookSetting(event, "", recordingCommand(event, eventsPath)))
++	}
++	return append(settings, hookSetting(hookEventPostToolUse, toolMatcherAll, activityCommand(eventsPath)))
++}
++
++// hookSetting returns one `hooks.<event>=[…]` setting running command, with matcher when non-empty.
++func hookSetting(event, matcher, command string) string {
++	entry := "{"
++	if matcher != "" {
++		entry += "matcher=" + tomlString(matcher) + ","
++	}
++	entry += `hooks=[{type="command",command=` + tomlString(command) + "}]}"
++	return "hooks." + event + "=[" + entry + "]"
++}
++
++// tomlString returns s as a TOML basic string.
++func tomlString(s string) string {
++	var b strings.Builder
++	b.WriteByte('"')
++	for _, r := range s {
++		switch {
++		case r == '"':
++			b.WriteString(`\"`)
++		case r == '\\':
++			b.WriteString(`\\`)
++		case r == '\n':
++			b.WriteString(`\n`)
++		case r == '\t':
++			b.WriteString(`\t`)
++		case r < 0x20 || r == 0x7f:
++			b.WriteString(`\u00` + hexByte(byte(r)))
++		default:
++			b.WriteRune(r)
++		}
++	}
++	b.WriteByte('"')
++	return b.String()
++}
++
++// hexByte returns b as two uppercase hex digits.
++func hexByte(b byte) string {
++	const digits = "0123456789ABCDEF"
++	return string([]byte{digits[b>>4], digits[b&0x0f]})
++}
++
++// tomlArray returns values as a TOML array of basic strings.
++func tomlArray(values []string) string {
++	quoted := make([]string, len(values))
++	for i, value := range values {
++		quoted[i] = tomlString(value)
++	}
++	return "[" + strings.Join(quoted, ",") + "]"
++}
+diff --git a/internal/shuttleengine/codexengine/command_test.go b/internal/shuttleengine/codexengine/command_test.go
+new file mode 100644
+index 00000000..a51b1b4f
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/command_test.go
+@@ -0,0 +1,96 @@
++// command_test.go pins the launch and resume lines, the `-c` hook settings and the TOML quoting they carry.
++
++package codexengine
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/shell"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestBuildLaunchCmd pins the POSIX launch line: CODEX_HOME leading, every flag of the spike's line with the writable root, model and effort when set, each hook setting, the bypass flag, the first turn, and the shell exit.
++func TestBuildLaunchCmd(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		line launchLine
++		want string
++	}{
++		{
++			name: "EveryInput",
++			line: launchLine{bin: "codex", home: "/h", writableRoots: []string{"/links"}, model: "gpt-6-luna", effort: "low", hooks: []string{`hooks.Stop=[{hooks=[]}]`}, firstTurn: "Read it"},
++			want: `CODEX_HOME='/h' 'codex' --no-alt-screen -a never -s workspace-write -c 'sandbox_workspace_write.writable_roots=["/links"]' -m 'gpt-6-luna' -c 'model_reasoning_effort="low"' -c 'project_doc_fallback_filenames=["CLAUDE.md"]' -c 'hooks.Stop=[{hooks=[]}]' --dangerously-bypass-hook-trust 'Read it'; exit`,
++		},
++		{
++			name: "NoWritableRootModelOrEffort",
++			line: launchLine{bin: "codex", home: "/h", firstTurn: "it's"},
++			want: `CODEX_HOME='/h' 'codex' --no-alt-screen -a never -s workspace-write -c 'project_doc_fallback_filenames=["CLAUDE.md"]' --dangerously-bypass-hook-trust 'it'\''s'; exit`,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := buildLaunchCmd(shell.Posix(), tt.line); got != tt.want {
++				t.Errorf("buildLaunchCmd() = %s; want %s", got, tt.want)
++			}
++		})
++	}
++	if got := buildResumeCmd(shell.Posix()); got != "exit" {
++		t.Errorf("buildResumeCmd() = %q; want exit", got)
++	}
++}
++
++// TestHookSettings pins one setting per recorded hook in order, then the activity hook on every tool, each running the command for the run's events file.
++func TestHookSettings(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	events := "/run/events.jsonl"
++	got := hookSettings(events)
++	want := []string{
++		hookSetting(hookEventSessionStart, "", recordingCommand(hookEventSessionStart, events)),
++		hookSetting(hookEventUserPromptSubmit, "", recordingCommand(hookEventUserPromptSubmit, events)),
++		hookSetting(hookEventStop, "", recordingCommand(hookEventStop, events)),
++		hookSetting(hookEventPermissionRequest, "", recordingCommand(hookEventPermissionRequest, events)),
++		hookSetting(hookEventPostToolUse, "*", activityCommand(events)),
++	}
++	if len(got) != len(want) {
++		t.Fatalf("hookSettings() = %d settings; want %d", len(got), len(want))
++	}
++	for i := range want {
++		if got[i] != want[i] {
++			t.Errorf("hookSettings()[%d] = %s; want %s", i, got[i], want[i])
++		}
++	}
++	if got, want := hookSetting("PostToolUse", "*", `touch '/a'; printf '{}\n'`), `hooks.PostToolUse=[{matcher="*",hooks=[{type="command",command="touch '/a'; printf '{}\\n'"}]}]`; got != want {
++		t.Errorf("hookSetting() = %s; want %s", got, want)
++	}
++	if got, want := activityCommand(events), `touch '/run/activity-stamp'; printf '{}\n'`; got != want {
++		t.Errorf("activityCommand() = %s; want %s", got, want)
++	}
++}
++
++// TestTOMLString pins the basic-string escapes: quote, backslash, newline, tab and other control characters.
++func TestTOMLString(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		in, want string
++	}{
++		{`plain`, `"plain"`},
++		{`a "b" c\d`, `"a \"b\" c\\d"`},
++		{"line\nnext\ttab\x01", `"line\nnext\ttab\u0001"`},
++	}
++	for _, tt := range tests {
++		if got := tomlString(tt.in); got != tt.want {
++			t.Errorf("tomlString(%q) = %s; want %s", tt.in, got, tt.want)
++		}
++	}
++	if got, want := tomlArray([]string{"/a", "/b"}), `["/a","/b"]`; got != want {
++		t.Errorf("tomlArray() = %s; want %s", got, want)
++	}
++}
+diff --git a/internal/shuttleengine/codexengine/config.go b/internal/shuttleengine/codexengine/config.go
+new file mode 100644
+index 00000000..bcc7b2e9
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/config.go
+@@ -0,0 +1,130 @@
++// config.go declares the codex engine's config module, codex.yaml: its template, its layered-load spec, LoadConfig and the resolution of its home paths.
++
++package codexengine
++
++import (
++	_ "embed"
++	"fmt"
++	"os"
++	"path/filepath"
++	"slices"
++	"strings"
++
++	"gopkg.in/yaml.v3"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++)
++
++//go:embed template.yaml
++var configTemplate string
++
++// ConfigTemplate returns codex.yaml's default YAML template.
++func ConfigTemplate() string {
++	return configTemplate
++}
++
++// Config is the resolved codex.yaml: the Codex binary, the shared lym Codex home and the operator's own, the efforts a launch may take and the skill roots.
++type Config struct {
++	// Binary is the path to the codex executable; empty falls back to "codex" on PATH.
++	Binary string `yaml:"binary"`
++	// Home is the shared lym Codex home every launch runs under; a leading "~/" names the user's home directory.
++	Home string `yaml:"home"`
++	// OperatorHome is the operator's own Codex home, which lym never writes; a leading "~/" names the user's home directory.
++	OperatorHome string `yaml:"operator_home"`
++	// Efforts are the reasoning efforts a launch may take.
++	Efforts []string `yaml:"efforts"`
++	// SkillRoots are the directories a skill is looked up under when a session loads skills.
++	SkillRoots []string `yaml:"skill_roots"`
++}
++
++// ConfigSpec returns codex.yaml's layered-load spec: a per-worktree module whose binary a local override may not set.
++func ConfigSpec() configengine.Spec {
++	return configengine.Spec{
++		Name:     "codex",
++		Template: []byte(ConfigTemplate()),
++		Categories: map[string]configengine.Category{
++			"binary":        configengine.CategoryExecutable,
++			"home":          configengine.CategoryNone,
++			"operator_home": configengine.CategoryNone,
++			"efforts":       configengine.CategoryNone,
++			"skill_roots":   configengine.CategoryNone,
++		},
++	}
++}
++
++// LoadConfig resolves codex.yaml from the layer stack under dirs.
++// An absent file in every layer resolves the template; a layer file that exists but is invalid is an error.
++func LoadConfig(dirs configengine.Dirs) (Config, error) {
++	resolved, err := configengine.LoadOrTemplate(dirs, ConfigSpec())
++	if err != nil {
++		return Config{}, err
++	}
++	var cfg Config
++	if err := yaml.Unmarshal(resolved, &cfg); err != nil {
++		return Config{}, configengine.MarkInvalid(fmt.Errorf("unmarshal codex config: %w", err))
++	}
++	return cfg, nil
++}
++
++// loadConfigOrRefuse loads codex.yaml from dirs.
++// A load error keeps configengine's text naming the file and key and its invalid mark, and gains the way forward.
++func loadConfigOrRefuse(dirs configengine.Dirs) (Config, error) {
++	codex, err := LoadConfig(dirs)
++	if err != nil {
++		return Config{}, fmt.Errorf("codexengine: %w; way forward: correct or remove the key in the file the error names, with lym config codex --layer <default|worktree|local> (or --set for a value)", err)
++	}
++	return codex, nil
++}
++
++// codexBinary returns codex.Binary if set, otherwise "codex".
++func codexBinary(codex Config) string {
++	if codex.Binary != "" {
++		return codex.Binary
++	}
++	return "codex"
++}
++
++// homeDirs is the pair of Codex homes a launch uses, both absolute.
++type homeDirs struct {
++	// lym is the shared lym Codex home the launch runs under.
++	lym string
++	// operator is the operator's own Codex home the lym home links into.
++	operator string
++}
++
++// resolveHomes resolves codex.yaml's home and operator_home keys into absolute paths, refusing an empty or relative value by its key.
++func resolveHomes(codex Config) (homeDirs, error) {
++	lym, err := expandHomePath("home", codex.Home)
++	if err != nil {
++		return homeDirs{}, err
++	}
++	operator, err := expandHomePath("operator_home", codex.OperatorHome)
++	if err != nil {
++		return homeDirs{}, err
++	}
++	return homeDirs{lym: lym, operator: operator}, nil
++}
++
++// expandHomePath returns value with a leading "~/" replaced by the user's home directory, refusing a value that is then empty or relative.
++// key names the codex.yaml entry the value came from, so the refusal points at what to fix.
++func expandHomePath(key, value string) (string, error) {
++	if rest, ok := strings.CutPrefix(value, "~/"); ok {
++		userHome, err := os.UserHomeDir()
++		if err != nil {
++			return "", fmt.Errorf("codexengine: resolve codex.yaml's %s %q: %w", key, value, err)
++		}
++		value = filepath.Join(userHome, rest)
++	}
++	if value == "" || !filepath.IsAbs(value) {
++		return "", fmt.Errorf("codexengine: codex.yaml's %s %q is not an absolute path or one under ~/; way forward: set it with lym config codex", key, value)
++	}
++	return filepath.Clean(value), nil
++}
++
++// validateEffort refuses a non-empty effort that codex.yaml's efforts does not list, naming the key.
++func validateEffort(effort string, codex Config) error {
++	if effort == "" || slices.Contains(codex.Efforts, effort) {
++		return nil
++	}
++	return fmt.Errorf("codexengine: effort %q is not in codex.yaml's efforts %v; way forward: name one of them in the model-spec, or add it to efforts with lym config codex", effort, codex.Efforts)
++}
+diff --git a/internal/shuttleengine/codexengine/doc.go b/internal/shuttleengine/codexengine/doc.go
+new file mode 100644
+index 00000000..92fd6ec1
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/doc.go
+@@ -0,0 +1,26 @@
++// Package codexengine implements shuttleengine.Engine for the Codex CLI, driving its interactive TUI in a reed pane.
++// Only internal/shuttleengines constructs it; it registers there as codex, with its config module codex.yaml.
++//
++// Every launch runs under one shared lym Codex home, codex.yaml's home, set as CODEX_HOME on the launch line; the operator's own Codex home is never written.
++// The lym home links auth.json and sessions to the operator home's, so one login and its token refresh serve both and rollouts land where the operator's tools read them.
++// lym keeps the home's trusted roots in a record of its own and renders config.toml whole from it on every launch, under a file lock: Codex keys folder trust on a git root, and a `-c` flag cannot set it.
++// Prepare trusts the worktree root and a linked worktree's main checkout root, read from the `.git` entries, and drops recorded roots whose folder is gone, so no teardown step is needed.
++// A login made in the lym home leaves a regular auth.json, which Prepare names in a Warn rather than replaces.
++// After startup the engine reads config.toml back and warns about a root Codex's own write dropped; the trust prompt's accept is the backstop.
++//
++// The launch line runs `-a never -s workspace-write`, so no approval prompt shows, and adds the records checkout it is told through its Dirs as a writable root, symlink-resolved as the trusted roots are and kept as told, with a Warn, when it cannot be resolved,
++// so the session writes under the anchor's `.lym` as a Claude seat does; outside a hub it is told none and adds none.
++// A committed `.codex/rules` folder refuses the launch, since an allow rule there lifts the sandbox; a committed `.codex/config.toml` is named in a Warn, since its hooks run unreviewed.
++// The first turn is the positional prompt pointer, and the pane's shell exits after Codex, so a Codex exit reads as a dead pane;
++// the resume line starts no Codex, since Codex mints its session id at the first turn.
++//
++// Hooks given by `-c` append a stamp line and the payload of SessionStart, UserPromptSubmit, Stop and PermissionRequest to the run's events file, and PostToolUse touches the activity stamp.
++// A Stop is the turn end and carries the reply; an interrupt fires no Stop, so a newest turn_aborted in the rollout the payloads name marks the turn interrupted.
++// The rollout's newest token_count gives the context size.
++// Codex keeps no session registry, so liveness reads unproven.
++//
++// The pane readings follow the spike's table: the `›` composer, the `Working (… esc to interrupt)` busy line and the folder-trust prompt, whose accept presses nothing unless the option sits by the caret.
++// A send pastes the text and leaves the Enter to shuttle's guarded send, since Codex drops an Enter typed inside a burst of characters.
++//
++// The engine has no skill loading, no shell guard, no fork audit, no transcript reading and no creel hooks, and refuses a spec that needs the publish guard.
++package codexengine
+diff --git a/internal/shuttleengine/codexengine/events.go b/internal/shuttleengine/codexengine/events.go
+new file mode 100644
+index 00000000..e0cae0e4
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/events.go
+@@ -0,0 +1,160 @@
++// events.go reads a run's events file, where the launch's hooks append a stamp line and a payload line per hook event.
++// ParseEvents yields the turn ends the run loop classifies outcomes from, and ParseSessionSignals the session signals a session state folds.
++// All Codex payload-shape knowledge the events file needs lives in this file, per PATTERN-shuttle-provider-seam.
++
++package codexengine
++
++import (
++	"bytes"
++	"encoding/json"
++	"strings"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++)
++
++var _ shuttleengine.SessionSignalParser = (*Codex)(nil)
++
++// ParseEvents parses the events file into Events: each Stop payload becomes an EventStop carrying its last_assistant_message.
++// Codex fires no Stop for an interrupted turn, so an interrupt yields no event.
++// It is lenient: stamp lines, malformed lines and other hooks yield nothing, since the file may still be growing.
++func (c *Codex) ParseEvents(data []byte) ([]shuttleengine.Event, error) {
++	var events []shuttleengine.Event
++	for _, line := range strings.Split(string(data), "\n") {
++		trimmed := strings.TrimSpace(line)
++		if trimmed == "" {
++			continue
++		}
++		var payload struct {
++			HookEventName        string `json:"hook_event_name"`
++			LastAssistantMessage string `json:"last_assistant_message"`
++		}
++		if err := json.Unmarshal([]byte(trimmed), &payload); err != nil || payload.HookEventName != hookEventStop {
++			continue
++		}
++		events = append(events, shuttleengine.Event{
++			Kind:    shuttleengine.EventStop,
++			Message: payload.LastAssistantMessage,
++			Raw:     []byte(line),
++		})
++	}
++	return events, nil
++}
++
++// pendingStamp is a stamp line not yet taken by a payload line.
++type pendingStamp struct {
++	hook string
++	at   time.Time
++}
++
++// ParseSessionSignals parses events file bytes into session signals, in file order.
++// SessionStart reads as a session start, UserPromptSubmit as a turn start, Stop as a turn end and PermissionRequest as an ask.
++// A payload line takes its time from the nearest preceding untaken stamp naming its hook, and reads a zero time when there is none or the stamp's time is empty or malformed.
++// consumed ends at the last newline-terminated line, except that it stops before the earliest line of the trailing run of stamp lines, which have no payload line after them yet.
++// It is lenient: malformed lines, stamp lines and unknown hooks yield no signal.
++func (c *Codex) ParseSessionSignals(data []byte) ([]shuttleengine.SessionSignal, int) {
++	var signals []shuttleengine.SessionSignal
++	var pending []pendingStamp
++	holdFrom := -1
++	offset := 0
++
++	for offset < len(data) {
++		newline := bytes.IndexByte(data[offset:], '\n')
++		if newline < 0 {
++			break
++		}
++		lineStart := offset
++		line := data[offset : offset+newline]
++		offset += newline + 1
++
++		trimmed := bytes.TrimSpace(line)
++		if len(trimmed) == 0 {
++			continue
++		}
++		var fields map[string]any
++		if err := json.Unmarshal(trimmed, &fields); err != nil {
++			holdFrom = -1
++			continue
++		}
++		if hook, ok := fields[stampHookKey].(string); ok {
++			pending = append(pending, pendingStamp{hook: hook, at: parseStampTime(fields)})
++			if holdFrom < 0 {
++				holdFrom = lineStart
++			}
++			continue
++		}
++		holdFrom = -1
++
++		hookName, ok := fields["hook_event_name"].(string)
++		if !ok {
++			continue
++		}
++		var at time.Time
++		for i := len(pending) - 1; i >= 0; i-- {
++			if pending[i].hook == hookName {
++				at = pending[i].at
++				pending = append(pending[:i], pending[i+1:]...)
++				break
++			}
++		}
++		if signal, ok := signalFromPayload(hookName, fields); ok {
++			signal.At = at
++			signal.SessionID, _ = fields["session_id"].(string)
++			signal.Raw = append([]byte(nil), line...)
++			signals = append(signals, signal)
++		}
++	}
++
++	if holdFrom >= 0 {
++		return signals, holdFrom
++	}
++	return signals, offset
++}
++
++// parseStampTime reads a stamp line's RFC 3339 time, or the zero time when it is empty or malformed.
++func parseStampTime(fields map[string]any) time.Time {
++	text, _ := fields[stampAtKey].(string)
++	at, err := time.Parse(time.RFC3339, text)
++	if err != nil {
++		return time.Time{}
++	}
++	return at.UTC()
++}
++
++// signalFromPayload reads the signal a payload line of the named hook carries, or false when the hook yields none.
++func signalFromPayload(hookName string, fields map[string]any) (shuttleengine.SessionSignal, bool) {
++	switch hookName {
++	case hookEventStop:
++		return shuttleengine.SessionSignal{Kind: shuttleengine.SessionSignalTurnEnd, Event: true}, true
++	case hookEventUserPromptSubmit:
++		prompt, _ := fields["prompt"].(string)
++		return shuttleengine.SessionSignal{Kind: shuttleengine.SessionSignalTurnStart, Instruction: typedInstruction(prompt)}, true
++	case hookEventPermissionRequest:
++		return shuttleengine.SessionSignal{Kind: shuttleengine.SessionSignalAsk}, true
++	case hookEventSessionStart:
++		source, _ := fields["source"].(string)
++		return shuttleengine.SessionSignal{Kind: shuttleengine.SessionSignalSessionStart, Source: sessionStartSource(source)}, true
++	}
++	return shuttleengine.SessionSignal{}, false
++}
++
++// typedInstruction returns a UserPromptSubmit prompt as a typed instruction, or "" for a slash command, which is a command to Codex's own interface.
++// A prompt is a slash command when its first word starts with "/" and holds no further "/", so one that opens with a multi-segment path is an instruction.
++func typedInstruction(prompt string) string {
++	trimmed := strings.TrimSpace(prompt)
++	if words := strings.Fields(trimmed); len(words) > 0 && strings.HasPrefix(words[0], "/") && !strings.Contains(words[0][1:], "/") {
++		return ""
++	}
++	return trimmed
++}
++
++// sessionStartSource maps a SessionStart payload's source to the provider-neutral source: startup and resume map to their own, and any other source, a fork's included, to the empty source.
++func sessionStartSource(source string) shuttleengine.SessionStartSource {
++	switch source {
++	case "startup":
++		return shuttleengine.SessionStartStartup
++	case "resume":
++		return shuttleengine.SessionStartResume
++	}
++	return ""
++}
+diff --git a/internal/shuttleengine/codexengine/events_test.go b/internal/shuttleengine/codexengine/events_test.go
+new file mode 100644
+index 00000000..5b4116b7
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/events_test.go
+@@ -0,0 +1,88 @@
++// events_test.go parses events files built from the spike's recorded hook payloads into events and session signals.
++
++package codexengine
++
++import (
++	"reflect"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// Hook payloads as the spike recorded them (docs/research/codex-spike-2026-10-24/report.md, Hook payloads), with the transcript path made absolute.
++const (
++	sessionStartPayload      = `{"session_id":"01a16d56","transcript_path":"/s/rollout.jsonl","cwd":"/w","hook_event_name":"SessionStart","model":"gpt-6-luna","permission_mode":"bypassPermissions","source":"startup"}`
++	userPromptSubmitPayload  = `{"session_id":"01a16d56","turn_id":"t1","transcript_path":"/s/rollout.jsonl","cwd":"/w","hook_event_name":"UserPromptSubmit","model":"gpt-6-luna","permission_mode":"bypassPermissions","prompt":"Reply with the single word ok."}`
++	stopPayload              = `{"session_id":"01a16d56","turn_id":"t1","transcript_path":"/s/rollout.jsonl","cwd":"/w","hook_event_name":"Stop","model":"gpt-6-luna","permission_mode":"bypassPermissions","stop_hook_active":false,"last_assistant_message":"ok"}`
++	permissionRequestPayload = `{"session_id":"01a16d5d","turn_id":"t2","transcript_path":"/s/rollout.jsonl","cwd":"/w","hook_event_name":"PermissionRequest","model":"gpt-6-luna","permission_mode":"default","tool_name":"Bash","tool_input":{"command":"touch /x"}}`
++	preToolUsePayload        = `{"session_id":"01a16d5e","turn_id":"t3","transcript_path":"/s/rollout.jsonl","cwd":"/w","hook_event_name":"PreToolUse","tool_name":"Bash","tool_input":{"command":"echo hi"}}`
++)
++
++// stampLine returns the stamp line a recording hook writes before the payload of hook at at.
++func stampLine(hook, at string) string {
++	return `{"` + stampHookKey + `":"` + hook + `","` + stampAtKey + `":"` + at + `"}`
++}
++
++// TestParseEvents pins that each Stop payload becomes a turn end carrying its message and that stamp lines, other hooks and malformed lines yield nothing.
++func TestParseEvents(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	data := stampLine(hookEventStop, "2026-10-24T11:55:31Z") + "\n" + sessionStartPayload + "\n" + "not json\n" + preToolUsePayload + "\n" + stopPayload + "\n"
++	got, err := New().ParseEvents([]byte(data))
++	if err != nil {
++		t.Fatalf("ParseEvents() error: %v", err)
++	}
++	want := []shuttleengine.Event{{Kind: shuttleengine.EventStop, Message: "ok", Raw: []byte(stopPayload)}}
++	if !reflect.DeepEqual(got, want) {
++		t.Errorf("ParseEvents() = %+v; want %+v", got, want)
++	}
++}
++
++// TestParseSessionSignals pins the four hooks' signals with each payload's stamp time and session id.
++// It also pins a slash command read as no instruction and a fork's source read as none.
++// It pins consumed stopping before a trailing stamp with no payload yet.
++func TestParseSessionSignals(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	at := func(text string) time.Time {
++		parsed, err := time.Parse(time.RFC3339, text)
++		if err != nil {
++			t.Fatalf("parse %s: %v", text, err)
++		}
++		return parsed
++	}
++	slashPrompt := `{"session_id":"s","hook_event_name":"UserPromptSubmit","prompt":"/status"}`
++	forkStart := `{"session_id":"s","hook_event_name":"SessionStart","source":"fork"}`
++	lines := []string{
++		stampLine(hookEventSessionStart, "2026-10-24T11:55:30Z"), sessionStartPayload,
++		stampLine(hookEventUserPromptSubmit, "2026-10-24T11:55:30Z"), userPromptSubmitPayload,
++		stampLine(hookEventStop, "2026-10-24T11:55:31Z"), stopPayload,
++		stampLine(hookEventPermissionRequest, ""), permissionRequestPayload,
++		preToolUsePayload, slashPrompt, forkStart,
++	}
++	complete := ""
++	for _, line := range lines {
++		complete += line + "\n"
++	}
++	trailing := stampLine(hookEventStop, "2026-10-24T11:56:00Z") + "\n"
++
++	got, consumed := New().ParseSessionSignals([]byte(complete + trailing))
++	if consumed != len(complete) {
++		t.Errorf("consumed = %d; want %d, before the trailing stamp", consumed, len(complete))
++	}
++	want := []shuttleengine.SessionSignal{
++		{Kind: shuttleengine.SessionSignalSessionStart, Source: shuttleengine.SessionStartStartup, At: at("2026-10-24T11:55:30Z"), SessionID: "01a16d56", Raw: []byte(sessionStartPayload)},
++		{Kind: shuttleengine.SessionSignalTurnStart, Instruction: "Reply with the single word ok.", At: at("2026-10-24T11:55:30Z"), SessionID: "01a16d56", Raw: []byte(userPromptSubmitPayload)},
++		{Kind: shuttleengine.SessionSignalTurnEnd, Event: true, At: at("2026-10-24T11:55:31Z"), SessionID: "01a16d56", Raw: []byte(stopPayload)},
++		{Kind: shuttleengine.SessionSignalAsk, SessionID: "01a16d5d", Raw: []byte(permissionRequestPayload)},
++		{Kind: shuttleengine.SessionSignalTurnStart, SessionID: "s", Raw: []byte(slashPrompt)},
++		{Kind: shuttleengine.SessionSignalSessionStart, SessionID: "s", Raw: []byte(forkStart)},
++	}
++	if !reflect.DeepEqual(got, want) {
++		t.Errorf("ParseSessionSignals() =\n%+v\nwant\n%+v", got, want)
++	}
++}
+diff --git a/internal/shuttleengine/codexengine/fixture_test.go b/internal/shuttleengine/codexengine/fixture_test.go
+new file mode 100644
+index 00000000..c6dc3da4
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/fixture_test.go
+@@ -0,0 +1,125 @@
++// fixture_test.go builds the on-disk fixtures the engine's tests run against: a fake repository with linked worktrees and plain clones, a records checkout beside each worktree, an operator Codex home, and the codex.yaml local layer that points the engine at them.
++// No git process runs: the `.git` entries are written as git writes them.
++
++package codexengine
++
++import (
++	"fmt"
++	"os"
++	"path/filepath"
++	"strings"
++	"sync"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++)
++
++// repoFixture is a fake repository's main checkout and the two Codex homes, all under one resolved temp dir.
++type repoFixture struct {
++	base         string
++	mainRoot     string
++	lymHome      string
++	operatorHome string
++}
++
++// newRepoFixture writes a main checkout with a `.git` directory, and an operator home holding auth.json and sessions; the lym home is left unmade.
++func newRepoFixture(t *testing.T) repoFixture {
++	t.Helper()
++	base, err := filepath.EvalSymlinks(t.TempDir())
++	if err != nil {
++		t.Fatalf("resolve temp dir: %v", err)
++	}
++	repo := repoFixture{
++		base:         base,
++		mainRoot:     filepath.Join(base, "main"),
++		lymHome:      filepath.Join(base, "lym-home"),
++		operatorHome: filepath.Join(base, "operator-home"),
++	}
++	gitDir := filepath.Join(repo.mainRoot, ".git")
++	mkdirAll(t, filepath.Join(gitDir, "objects"), filepath.Join(gitDir, "refs"), filepath.Join(repo.operatorHome, sessionsDirName))
++	writeFile(t, filepath.Join(gitDir, "HEAD"), "ref: refs/heads/main\n")
++	writeFile(t, filepath.Join(repo.operatorHome, authFileName), "{}")
++	return repo
++}
++
++// addWorktree writes a linked worktree named name with a records checkout beside it.
++// It also writes a codex.yaml local layer pointing at the fixture's homes, and returns the worktree's root and the records checkout.
++func (r repoFixture) addWorktree(t *testing.T, name string) (anchor, records string) {
++	t.Helper()
++	anchor = filepath.Join(r.base, name)
++	records = filepath.Join(r.base, name+"-records")
++	gitDir := filepath.Join(r.mainRoot, ".git", "worktrees", name)
++	mkdirAll(t, gitDir, anchor, records)
++	writeFile(t, filepath.Join(gitDir, "HEAD"), "ref: refs/heads/"+name+"\n")
++	writeFile(t, filepath.Join(gitDir, "commondir"), "../..\n")
++	writeFile(t, filepath.Join(anchor, ".git"), "gitdir: "+gitDir+"\n")
++	r.writeCodexLayer(t, anchor, "")
++	return anchor, records
++}
++
++// addClone writes a plain clone named name, whose `.git` is a directory of its own and which has no main checkout,
++// and a codex.yaml local layer pointing at the fixture's homes, and returns the clone's root.
++func (r repoFixture) addClone(t *testing.T, name string) string {
++	t.Helper()
++	anchor := filepath.Join(r.base, name)
++	gitDir := filepath.Join(anchor, ".git")
++	mkdirAll(t, filepath.Join(gitDir, "objects"), filepath.Join(gitDir, "refs"))
++	writeFile(t, filepath.Join(gitDir, "HEAD"), "ref: refs/heads/main\n")
++	r.writeCodexLayer(t, anchor, "")
++	return anchor
++}
++
++// writeCodexLayer writes anchor's codex.yaml local layer: the fixture's homes, then extra.
++func (r repoFixture) writeCodexLayer(t *testing.T, anchor, extra string) {
++	t.Helper()
++	path := configengine.LocalFile(anchor, "codex")
++	mkdirAll(t, filepath.Dir(path))
++	writeFile(t, path, fmt.Sprintf("home: %s\noperator_home: %s\n%s", r.lymHome, r.operatorHome, extra))
++}
++
++// warnLog collects the warnings of one engine.
++type warnLog struct {
++	mu    sync.Mutex
++	lines []string
++}
++
++// warn records msg and its arguments as one line.
++func (w *warnLog) warn(msg string, args ...any) {
++	w.mu.Lock()
++	defer w.mu.Unlock()
++	w.lines = append(w.lines, strings.TrimSpace(fmt.Sprintln(append([]any{msg}, args...)...)))
++}
++
++// String returns every warning, one per line.
++func (w *warnLog) String() string {
++	w.mu.Lock()
++	defer w.mu.Unlock()
++	return strings.Join(w.lines, "\n")
++}
++
++// newEngine returns an engine anchored at anchor whose warnings the returned log collects.
++func newEngine(anchor string) (*Codex, *warnLog) {
++	log := &warnLog{}
++	engine := NewFromConfig(shuttleengine.Config{SubmitRedrawSettleMS: defaultSubmitRedrawSettleMS}, configengine.Dirs{Anchor: anchor})
++	engine.warn = log.warn
++	return engine, log
++}
++
++// mkdirAll creates every directory of dirs.
++func mkdirAll(t *testing.T, dirs ...string) {
++	t.Helper()
++	for _, dir := range dirs {
++		if err := os.MkdirAll(dir, 0o755); err != nil {
++			t.Fatalf("mkdir %s: %v", dir, err)
++		}
++	}
++}
++
++// writeFile writes content to path.
++func writeFile(t *testing.T, path, content string) {
++	t.Helper()
++	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
++		t.Fatalf("write %s: %v", path, err)
++	}
++}
+diff --git a/internal/shuttleengine/codexengine/home.go b/internal/shuttleengine/codexengine/home.go
+new file mode 100644
+index 00000000..4990a037
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/home.go
+@@ -0,0 +1,234 @@
++// home.go prepares the shared lym Codex home a launch runs under and reads the checkout the launch starts in.
++// The home holds links to the operator home's login and sessions, lym's record of the roots it trusts, and the config.toml rendered whole from that record.
++// The checkout gives the roots Codex keys folder trust on and the committed `.codex` folders a launch warns about or refuses.
++
++package codexengine
++
++import (
++	"errors"
++	"fmt"
++	"os"
++	"path/filepath"
++	"slices"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/dotgit"
++	"github.com/Knatte18/loomyard/internal/fslink"
++	"github.com/Knatte18/loomyard/internal/fsx"
++	"github.com/Knatte18/loomyard/internal/state"
++)
++
++// Names of the entries in a Codex home and a repository's Codex folder.
++const (
++	authFileName        = "auth.json"
++	sessionsDirName     = "sessions"
++	configFileName      = "config.toml"
++	trustRecordFileName = "lym-trust.json"
++	homeLockFileName    = "lym-home.lock"
++	codexFolderName     = ".codex"
++	rulesDirName        = "rules"
++)
++
++// trustRecord is lym's record of the roots its Codex home trusts, from which config.toml is rendered.
++type trustRecord struct {
++	// Roots are the absolute, symlink-resolved folders the home trusts, sorted.
++	Roots []string `json:"roots"`
++}
++
++// checkout is the git checkout a launch starts in.
++type checkout struct {
++	// root is the worktree root, symlinks resolved as Codex resolves them.
++	root string
++	// mainRoot is the repository's main checkout root for a linked worktree, symlinks resolved; empty for a plain clone.
++	mainRoot string
++}
++
++// trustRoots returns the roots Codex keys folder trust on for a session in c: the worktree root, then the main checkout root of a linked worktree.
++func (c checkout) trustRoots() []string {
++	if c.mainRoot == "" {
++		return []string{c.root}
++	}
++	return []string{c.root, c.mainRoot}
++}
++
++// readCheckout reads the checkout the directory anchor sits in from its `.git` entries, without running git.
++// A linked worktree's main checkout root is the directory holding its common git dir.
++func readCheckout(anchor string) (checkout, error) {
++	root, geometry, err := dotgit.FindRoot(anchor)
++	if err != nil {
++		return checkout{}, fmt.Errorf("codexengine: Codex keys folder trust on a git repository root, and %s is in none: %w", anchor, err)
++	}
++	resolvedRoot, err := filepath.EvalSymlinks(root)
++	if err != nil {
++		return checkout{}, fmt.Errorf("codexengine: resolve the worktree root %s: %w", root, err)
++	}
++	found := checkout{root: resolvedRoot}
++	if geometry.GitDir != geometry.CommonDir && filepath.Base(geometry.CommonDir) == ".git" {
++		mainRoot, err := filepath.EvalSymlinks(filepath.Dir(geometry.CommonDir))
++		if err != nil {
++			return checkout{}, fmt.Errorf("codexengine: resolve the main checkout root of %s: %w", root, err)
++		}
++		if mainRoot != resolvedRoot {
++			found.mainRoot = mainRoot
++		}
++	}
++	return found, nil
++}
++
++// checkCodexFolders warns about the committed Codex settings a launch in found and anchor runs, and refuses a launch under committed Codex rules.
++// A `.codex/config.toml` in the worktree is named in a Warn.
++// For a linked worktree whose root holds a `.codex` folder, the main checkout's `.codex/config.toml` is named too, since Codex then takes its hooks from that file.
++// A `.codex/rules` directory in the worktree root or the anchor refuses the launch, since an allow rule there lifts the sandbox for its command, and the refusal is also logged.
++func (c *Codex) checkCodexFolders(found checkout, anchor string) error {
++	folders := []string{filepath.Join(found.root, codexFolderName)}
++	if resolvedAnchor, err := filepath.EvalSymlinks(anchor); err == nil && resolvedAnchor != found.root {
++		folders = append(folders, filepath.Join(resolvedAnchor, codexFolderName))
++	}
++	for _, folder := range folders {
++		if rules := filepath.Join(folder, rulesDirName); isDir(rules) {
++			refusal := fmt.Errorf("codexengine: %s holds committed Codex rules, and an allow rule there lifts the sandbox for its command; way forward: remove the directory from the repository, or clear the round's assist model key so later rounds run no Codex seat", rules)
++			c.warn("codexengine: refused a Codex launch under committed Codex rules", "path", rules)
++			return refusal
++		}
++		if config := filepath.Join(folder, configFileName); isFile(config) {
++			c.warn("codexengine: the worktree commits a Codex config, whose hooks and settings the session runs without review", "path", config)
++		}
++	}
++	if found.mainRoot != "" && isDir(filepath.Join(found.root, codexFolderName)) {
++		if config := filepath.Join(found.mainRoot, codexFolderName, configFileName); isFile(config) {
++			c.warn("codexengine: the main checkout holds a Codex config, whose hooks Codex runs in place of the linked worktree's", "path", config)
++		}
++	}
++	return nil
++}
++
++// prepareHome readies the lym Codex home for a launch that trusts roots.
++// It first links the home's auth.json and sessions to the operator home's, so a platform that cannot link a file refuses before anything is written.
++// Then, under the home's file lock, it adds roots to the trust record, drops recorded roots whose folder no longer exists, and renders config.toml from the result before the record is written.
++func (c *Codex) prepareHome(homes homeDirs, roots []string) error {
++	if err := c.ensureLink(filepath.Join(homes.lym, authFileName), filepath.Join(homes.operator, authFileName), fslink.CreateFileLink); err != nil {
++		return err
++	}
++	if err := c.ensureLink(filepath.Join(homes.lym, sessionsDirName), filepath.Join(homes.operator, sessionsDirName), fslink.CreateDirLink); err != nil {
++		return err
++	}
++	recordPath := filepath.Join(homes.lym, trustRecordFileName)
++	err := state.UpdateJSON(recordPath, filepath.Join(homes.lym, homeLockFileName), func(current trustRecord, _ bool) (trustRecord, error) {
++		next := trustRecord{Roots: mergeRoots(current.Roots, roots)}
++		if err := fsx.AtomicWriteBytes(filepath.Join(homes.lym, configFileName), []byte(renderConfigTOML(next.Roots))); err != nil {
++			return trustRecord{}, fmt.Errorf("write %s: %w", configFileName, err)
++		}
++		return next, nil
++	})
++	if err != nil {
++		return fmt.Errorf("codexengine: prepare the lym Codex home %s: %w", homes.lym, err)
++	}
++	return nil
++}
++
++// ensureLink makes link a link to target with create when nothing sits at link.
++// A link that already points at target is kept.
++// A regular file, or a link elsewhere, is kept and named in a Warn with the way forward, since it may hold a login made in the lym home.
++// A create that fails because a concurrent launch made the same link meanwhile counts as made.
++func (c *Codex) ensureLink(link, target string, create func(link, target string) error) error {
++	info, err := os.Lstat(link)
++	switch {
++	case err == nil:
++		if info.Mode()&os.ModeSymlink != 0 {
++			if raw, rawErr := fslink.RawTarget(link); rawErr == nil && raw == target {
++				return nil
++			}
++		}
++		c.warn("codexengine: the lym Codex home's entry is not a link to the operator home's; way forward: remove it, and the next Codex launch links it again", "path", link, "want", target)
++		return nil
++	case !errors.Is(err, os.ErrNotExist):
++		return fmt.Errorf("codexengine: read %s: %w", link, err)
++	}
++	if err := create(link, target); err != nil {
++		if raw, rawErr := fslink.RawTarget(link); rawErr == nil && raw == target {
++			return nil
++		}
++		return fmt.Errorf("codexengine: link %s to %s: %w", link, target, err)
++	}
++	return nil
++}
++
++// mergeRoots returns the union of recorded and added, sorted, without the recorded roots whose folder no longer exists.
++func mergeRoots(recorded, added []string) []string {
++	var merged []string
++	for _, root := range recorded {
++		if isDir(root) && !slices.Contains(merged, root) {
++			merged = append(merged, root)
++		}
++	}
++	for _, root := range added {
++		if !slices.Contains(merged, root) {
++			merged = append(merged, root)
++		}
++	}
++	slices.Sort(merged)
++	return merged
++}
++
++// configHeader opens the rendered config.toml, telling a reader whose file it is.
++const configHeader = "# Rendered by lym from " + trustRecordFileName + " at every Codex launch; an edit here is lost at the next launch.\n" +
++	"# Put your own Codex settings in the operator home's config.toml.\n"
++
++// renderConfigTOML renders the lym home's config.toml: the `[tui]` settings Codex otherwise writes on its first start, then one trusted project table per root.
++func renderConfigTOML(roots []string) string {
++	var b strings.Builder
++	b.WriteString(configHeader)
++	b.WriteString("\n[tui]\nscreen_reader_detection_done = true\n\n[tui.model_availability_nux]\n")
++	for _, root := range roots {
++		b.WriteString("\n" + projectTableHeader(root) + "\ntrust_level = \"trusted\"\n")
++	}
++	return b.String()
++}
++
++// projectTableHeader returns the config.toml table header of root's project settings.
++func projectTableHeader(root string) string {
++	return "[projects." + tomlString(root) + "]"
++}
++
++// CheckAfterStartup reads the lym home's config.toml back once a launch is past its startup gates and logs at Warn each trust root it no longer holds, since Codex writes the file itself and ignores lym's lock.
++// It checks the roots of the checkout this engine's anchor sits in, and reads at Warn whatever stops it from checking.
++func (c *Codex) CheckAfterStartup() {
++	codex, err := loadConfigOrRefuse(c.dirs)
++	if err != nil {
++		c.warn("codexengine: could not check the lym Codex home's trust roots after startup", "error", err)
++		return
++	}
++	homes, err := resolveHomes(codex)
++	if err != nil {
++		c.warn("codexengine: could not check the lym Codex home's trust roots after startup", "error", err)
++		return
++	}
++	found, err := readCheckout(c.dirs.Anchor)
++	if err != nil {
++		c.warn("codexengine: could not check the lym Codex home's trust roots after startup", "error", err)
++		return
++	}
++	configPath := filepath.Join(homes.lym, configFileName)
++	content, err := os.ReadFile(configPath)
++	if err != nil {
++		c.warn("codexengine: could not read the lym Codex home's config after startup", "path", configPath, "error", err)
++		return
++	}
++	for _, root := range found.trustRoots() {
++		if !strings.Contains(string(content), projectTableHeader(root)) {
++			c.warn("codexengine: the lym Codex home's config lost a trusted root after startup, so a later launch there shows Codex's trust prompt, which the startup classifier accepts", "path", configPath, "root", root)
++		}
++	}
++}
++
++// isDir reports whether path is a directory, following links.
++func isDir(path string) bool {
++	info, err := os.Stat(path)
++	return err == nil && info.IsDir()
++}
++
++// isFile reports whether path is a regular file, following links.
++func isFile(path string) bool {
++	info, err := os.Stat(path)
++	return err == nil && info.Mode().IsRegular()
++}
+diff --git a/internal/shuttleengine/codexengine/hookrun_test.go b/internal/shuttleengine/codexengine/hookrun_test.go
+new file mode 100644
+index 00000000..09b85124
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/hookrun_test.go
+@@ -0,0 +1,73 @@
++// hookrun_test.go runs the hook commands the launch line carries under sh, as Codex runs them, and reads what they write back through the parsers.
++
++package codexengine
++
++import (
++	"os"
++	"os/exec"
++	"path/filepath"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// runHook runs command under sh with payload on standard input and returns what it prints.
++func runHook(t *testing.T, command, payload string) string {
++	t.Helper()
++	cmd := exec.Command("sh", "-c", command)
++	cmd.Stdin = strings.NewReader(payload)
++	out, err := cmd.Output()
++	if err != nil {
++		t.Fatalf("run hook %q: %v", command, err)
++	}
++	return string(out)
++}
++
++// TestHookCommands_RecordAndStamp pins that each recording hook appends a stamped payload the parsers read back with its time and prints the empty decision,
++// and that the activity hook touches the stamp beside the events file.
++func TestHookCommands_RecordAndStamp(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	events := filepath.Join(t.TempDir(), "run dir's", "events.jsonl")
++	mkdirAll(t, filepath.Dir(events))
++	for _, step := range []struct{ hook, payload string }{
++		{hookEventSessionStart, sessionStartPayload},
++		{hookEventUserPromptSubmit, userPromptSubmitPayload},
++		{hookEventStop, stopPayload},
++	} {
++		if out := runHook(t, recordingCommand(step.hook, events), step.payload); out != "{}\n" {
++			t.Errorf("%s hook printed %q; want the empty decision", step.hook, out)
++		}
++	}
++
++	data, err := os.ReadFile(events)
++	if err != nil {
++		t.Fatalf("read events: %v", err)
++	}
++	signals, consumed := New().ParseSessionSignals(data)
++	if consumed != len(data) {
++		t.Errorf("consumed = %d; want the whole file, %d", consumed, len(data))
++	}
++	wantKinds := []shuttleengine.SessionSignalKind{shuttleengine.SessionSignalSessionStart, shuttleengine.SessionSignalTurnStart, shuttleengine.SessionSignalTurnEnd}
++	if len(signals) != len(wantKinds) {
++		t.Fatalf("signals = %+v; want %d", signals, len(wantKinds))
++	}
++	for i, want := range wantKinds {
++		if signals[i].Kind != want || signals[i].At.IsZero() {
++			t.Errorf("signal %d = %+v; want kind %s with its stamp time", i, signals[i], want)
++		}
++	}
++	if parsed, _ := New().ParseEvents(data); len(parsed) != 1 || parsed[0].Message != "ok" {
++		t.Errorf("ParseEvents() = %+v; want the one Stop with message ok", parsed)
++	}
++
++	if out := runHook(t, activityCommand(events), "{}"); out != "{}\n" {
++		t.Errorf("activity hook printed %q; want the empty decision", out)
++	}
++	if _, err := os.Stat(filepath.Join(filepath.Dir(events), shuttleengine.ActivityStampFileName)); err != nil {
++		t.Errorf("activity stamp: %v; want it touched", err)
++	}
++}
+diff --git a/internal/shuttleengine/codexengine/pane.go b/internal/shuttleengine/codexengine/pane.go
+new file mode 100644
+index 00000000..8c661e32
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/pane.go
+@@ -0,0 +1,272 @@
++// pane.go reads Codex's TUI from a plain pane capture and holds the key choreography sent into it.
++// The readings come from the pane table of docs/research/codex-spike-2026-10-24/report.md: the `›` composer, the `Working (… esc to interrupt)` busy line, the folder-trust prompt and the collapsed-paste placeholder.
++// Every reading is pure over a capture string, and all Codex TUI shape knowledge stays in this package, per PATTERN-shuttle-provider-seam.
++
++package codexengine
++
++import (
++	"regexp"
++	"strconv"
++	"strings"
++	"time"
++	"unicode"
++	"unicode/utf8"
++
++	"github.com/Knatte18/loomyard/internal/segmentcolor"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++)
++
++var (
++	_ shuttleengine.SessionCycler  = (*Codex)(nil)
++	_ shuttleengine.InputBoxReader = (*Codex)(nil)
++	_ shuttleengine.TextPaster     = (*Codex)(nil)
++	_ shuttleengine.InterruptGuard = (*Codex)(nil)
++)
++
++// composerMarker opens the composer line, and the lines of the transcript that echo a submitted prompt.
++const composerMarker = "›"
++
++// composerPlaceholder is the text an empty composer shows.
++const composerPlaceholder = "Ask Codex to do anything"
++
++// Needles in normalizeCapture form.
++const (
++	// busyNeedle and busyLineNeedle together mark the line a running turn shows.
++	busyNeedle     = "esctointerrupt"
++	busyLineNeedle = "working("
++	// trustPromptNeedle is the folder-trust prompt's question.
++	trustPromptNeedle = "trustthisfolder?"
++	// trustAcceptNeedle is the trust prompt's accepting option.
++	trustAcceptNeedle = "trustandcontinue"
++	// trustFooterNeedle is the footer the trust prompt draws under its options.
++	trustFooterNeedle = "entercontinue·escquit"
++	// hookReviewNeedle is the hook-review prompt the launch's bypass flag keeps away.
++	hookReviewNeedle = "hooksneedreview"
++)
++
++// trustOptionAdjacencyLines bounds how far the accepting option may sit from the last composer-marker line and still count as the prompt's own option: the prompt's caret sits on one of its two adjacent option lines.
++const trustOptionAdjacencyLines = 1
++
++// optionDecoration is what Codex draws before an option's label: the caret, the numbering and the space between.
++const optionDecoration = " \t›0123456789."
++
++// interruptSettle is how long after Escape the pane is left alone before it is read again.
++const interruptSettle = 2 * time.Second
++
++// composeSubmitSettleMS is the pause between typed text and its Enter: Codex reads a fast burst of characters as a paste and drops an Enter inside it.
++const composeSubmitSettleMS = 1000
++
++// optionMoveSettleMS is the pause after each caret-moving key, so a burst of arrow keys is not read as one escape sequence and dropped.
++const optionMoveSettleMS = 150
++
++// paneMinRows is the fewest rows that draw the composer with the status line under it.
++const paneMinRows = 3
++
++// pastePlaceholderShape matches the composer reading of a collapsed paste, its character count captured.
++var pastePlaceholderShape = regexp.MustCompile(`^\[Pasted Content (\d+) chars\]$`)
++
++// normalizeCapture lowercases capture and strips its whitespace, the form every needle is written in.
++func normalizeCapture(capture string) string {
++	return strings.Map(func(r rune) rune {
++		if unicode.IsSpace(r) {
++			return -1
++		}
++		return unicode.ToLower(r)
++	}, capture)
++}
++
++// isComposerLine reports whether line opens with the composer marker.
++func isComposerLine(line string) bool {
++	return strings.HasPrefix(strings.TrimSpace(line), composerMarker)
++}
++
++// isTrustAcceptLine reports whether line is the trust prompt's accepting option: its label, once the caret and numbering are stripped, begins with the option's words.
++func isTrustAcceptLine(line string) bool {
++	return strings.HasPrefix(normalizeCapture(strings.TrimLeft(line, optionDecoration)), trustAcceptNeedle)
++}
++
++// locateTrustLines returns the indices of the last composer-marker line and the last accepting-option line in capture, each -1 when absent.
++func locateTrustLines(capture string) (caretLine, acceptLine int) {
++	caretLine, acceptLine = -1, -1
++	for i, line := range strings.Split(capture, "\n") {
++		if isComposerLine(line) {
++			caretLine = i
++		}
++		if isTrustAcceptLine(line) {
++			acceptLine = i
++		}
++	}
++	return caretLine, acceptLine
++}
++
++// trustOptionAdjacent reports whether the accepting option sits on or next to the caret line, as a rendered prompt draws it.
++func trustOptionAdjacent(caretLine, acceptLine int) bool {
++	if caretLine == -1 || acceptLine == -1 {
++		return false
++	}
++	distance := acceptLine - caretLine
++	if distance < 0 {
++		distance = -distance
++	}
++	return distance <= trustOptionAdjacencyLines
++}
++
++// trustPromptShown reports whether capture shows the folder-trust prompt: its question, and either its accepting option next to the caret or its footer.
++// A transcript that only quotes the question carries neither, so it is not the prompt.
++func trustPromptShown(capture string) bool {
++	normalized := normalizeCapture(capture)
++	if !strings.Contains(normalized, trustPromptNeedle) {
++		return false
++	}
++	return trustOptionAdjacent(locateTrustLines(capture)) || strings.Contains(normalized, trustFooterNeedle)
++}
++
++// Startup classifies a pane capture during launch.
++// It reports the folder-trust prompt first, since its caret draws the composer marker.
++// It then reports the hook-review prompt as still booting, since its options draw the marker too and the launch never answers it.
++// It reports ready on any composer-marker line, and still booting otherwise.
++func (c *Codex) Startup(capture string) shuttleengine.StartupState {
++	if trustPromptShown(capture) {
++		return shuttleengine.StartupTrustPrompt
++	}
++	if strings.Contains(normalizeCapture(capture), hookReviewNeedle) {
++		return shuttleengine.StartupPending
++	}
++	for _, line := range strings.Split(capture, "\n") {
++		if isComposerLine(line) {
++			return shuttleengine.StartupReady
++		}
++	}
++	return shuttleengine.StartupPending
++}
++
++// TrustDismissSequence returns the keys that accept the folder-trust prompt capture shows: Up or Down until the caret sits on "Trust and continue", then Enter.
++// It returns no keys when capture shows no caret, no accepting option, or an option that is not next to the caret, so nothing is ever pressed blind.
++func (c *Codex) TrustDismissSequence(capture string) []shuttleengine.PaneInput {
++	caretLine, acceptLine := locateTrustLines(capture)
++	if !trustOptionAdjacent(caretLine, acceptLine) {
++		return nil
++	}
++	steps, key := acceptLine-caretLine, "Down"
++	if steps < 0 {
++		steps, key = -steps, "Up"
++	}
++	inputs := make([]shuttleengine.PaneInput, 0, steps+1)
++	for range steps {
++		inputs = append(inputs, shuttleengine.PaneInput{Key: key, SettleMS: optionMoveSettleMS})
++	}
++	return append(inputs, shuttleengine.PaneInput{Key: "Enter"})
++}
++
++// InterruptSequence returns one Escape, which interrupts Codex's turn.
++func (c *Codex) InterruptSequence() []shuttleengine.PaneInput {
++	return []shuttleengine.PaneInput{{Key: "Escape"}}
++}
++
++// ComposeSend returns the text and, after a settle that moves it out of Codex's paste burst, its Enter.
++func (c *Codex) ComposeSend(text string) []shuttleengine.PaneInput {
++	return []shuttleengine.PaneInput{{Text: text, SettleMS: composeSubmitSettleMS}, {Key: "Enter"}}
++}
++
++// TypeSequence returns the text step alone: the caller sends the Enter once the composer has settled.
++func (c *Codex) TypeSequence(text string) []shuttleengine.PaneInput {
++	return []shuttleengine.PaneInput{{Text: text}}
++}
++
++// ColorSequence returns no keys: Codex has no command that colors its session.
++func (c *Codex) ColorSequence(segmentcolor.Color) []shuttleengine.PaneInput {
++	return nil
++}
++
++// RunningTurn reports whether capture shows a turn in progress: a line carrying both "Working (" and "esc to interrupt".
++// Bound: a transcript line quoting both reads as a running turn.
++func (c *Codex) RunningTurn(capture string) bool {
++	for _, line := range strings.Split(capture, "\n") {
++		normalized := normalizeCapture(line)
++		if strings.Contains(normalized, busyLineNeedle) && strings.Contains(normalized, busyNeedle) {
++			return true
++		}
++	}
++	return false
++}
++
++// InterruptSettle returns how long after Escape the pane is left alone before it is read again.
++func (c *Codex) InterruptSettle() time.Duration {
++	return interruptSettle
++}
++
++// InputBoxText returns the text the composer holds in capture: the last composer-marker line's text with the marker stripped, joined by single spaces to the non-blank lines under it.
++// The placeholder reads as empty text; ok is false when capture shows no composer.
++// Bound: a plain capture carries no styling, so a placeholder Codex rewords reads as a draft, which holds a send instead of merging with it.
++func (c *Codex) InputBoxText(capture string) (string, bool) {
++	lines := strings.Split(capture, "\n")
++	composer := -1
++	for i, line := range lines {
++		if isComposerLine(line) {
++			composer = i
++		}
++	}
++	if composer == -1 {
++		return "", false
++	}
++	first := strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(lines[composer]), composerMarker))
++	if first == composerPlaceholder {
++		return "", true
++	}
++	parts := []string{}
++	if first != "" {
++		parts = append(parts, first)
++	}
++	for _, line := range lines[composer+1:] {
++		trimmed := strings.TrimSpace(line)
++		if trimmed == "" {
++			break
++		}
++		parts = append(parts, trimmed)
++	}
++	return strings.Join(parts, " "), true
++}
++
++// SubmitSettle returns how long after an Enter the composer needs to be redrawn before it is read.
++func (c *Codex) SubmitSettle() time.Duration {
++	return time.Duration(c.submitRedrawSettleMS) * time.Millisecond
++}
++
++// IdleSession reports whether capture shows Codex idle: no running turn, and the composer on screen and empty.
++func (c *Codex) IdleSession(capture string) bool {
++	if c.RunningTurn(capture) {
++		return false
++	}
++	text, ok := c.InputBoxText(capture)
++	return ok && text == ""
++}
++
++// PaneTooShort reports whether capture shows a pane too short to draw the composer: no composer-marker line, and fewer rows than the composer and its status line take.
++func (c *Codex) PaneTooShort(capture string) bool {
++	if _, ok := c.InputBoxText(capture); ok {
++		return false
++	}
++	return len(strings.Split(strings.TrimSuffix(capture, "\n"), "\n")) < paneMinRows
++}
++
++// ClearSessionSequence returns no keys: no clear command of Codex's has been tried.
++func (c *Codex) ClearSessionSequence() []shuttleengine.PaneInput { return nil }
++
++// CompactSessionSequence returns no keys: no compact command of Codex's has been tried.
++func (c *Codex) CompactSessionSequence(string) []shuttleengine.PaneInput { return nil }
++
++// ReloadPluginsSequence returns no keys: Codex has no command that reloads skills.
++func (c *Codex) ReloadPluginsSequence() []shuttleengine.PaneInput { return nil }
++
++// PasteSubmits reports false: shuttle pastes without the Enter and sends its own guarded Enter once the composer settles, which Codex submits.
++func (c *Codex) PasteSubmits() bool { return false }
++
++// OwnPastePlaceholder reports whether boxText, trimmed, is the whole collapsed-paste placeholder a paste of text produces: `[Pasted Content N chars]` with N the characters of text.
++func (c *Codex) OwnPastePlaceholder(boxText, text string) bool {
++	match := pastePlaceholderShape.FindStringSubmatch(strings.TrimSpace(boxText))
++	if match == nil {
++		return false
++	}
++	count, err := strconv.Atoi(match[1])
++	return err == nil && count == utf8.RuneCountInString(text)
++}
+diff --git a/internal/shuttleengine/codexengine/pane_test.go b/internal/shuttleengine/codexengine/pane_test.go
+new file mode 100644
+index 00000000..12e6b3b8
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/pane_test.go
+@@ -0,0 +1,244 @@
++// pane_test.go classifies the pane captures the spike recorded and pins the key choreography sent into the pane.
++
++package codexengine
++
++import (
++	"reflect"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// Pane captures as the spike recorded them (docs/research/codex-spike-2026-10-24/report.md).
++const (
++	readyCapture = `  >_ OpenAI Codex (v0.164.0)
++     /w
++
++  Tip: Use the desktop app.
++
++› Ask Codex to do anything
++
++  GPT-6-Luna low · /w · Workspace · Context 0% used · 5h 97% left · weekly 100%`
++
++	busyCapture = `› Reply with the single word ok.
++
++Working (0s • esc to interrupt)
++
++› Ask Codex to do anything
++
++  GPT-6-Luna low · /w · Workspace · Context 0% used · 5h 97% left · weekly 100…`
++
++	idleAfterTurnCapture = `› Reply with the single word ok.
++
++• ok
++
++  Worked for 1s • 11:56 AM
++
++› Ask Codex to do anything
++
++  GPT-6-Luna low · /w · Reply with ok · Workspace · Context 1% used · 5h 97% l…`
++
++	draftCapture = `› Ask Codex to do anything
++
++• done
++
++› first line of a draft
++  second line
++
++  GPT-6-Luna low · /w · Workspace · Context 1% used`
++
++	trustCapture = `  Folder access
++  /w
++
++  Trust this folder? Codex can read, edit, and run files here, subject to your permission settings. Folder settings can run code
++  automatically, even without a model request. Continue only if you trust these files. Your trust decision will be saved.
++
++› 1. Trust and continue
++  2. Quit
++
++  enter continue · esc quit`
++
++	hookReviewCapture = `  Hooks need review
++  4 hooks are new or changed.
++  Hooks can run outside the sandbox after you trust them.
++
++› 1. Review hooks
++  2. Trust all and continue
++  3. Continue without trusting (hooks won't run)
++
++  enter confirm · esc skip`
++
++	quotedTrustCapture = `› Does Codex ask "Trust this folder?" here?
++
++• It does, once per folder.
++
++› Ask Codex to do anything
++
++  GPT-6-Luna low · /w · Workspace`
++)
++
++// TestStartup pins the startup classification of each capture.
++func TestStartup(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name    string
++		capture string
++		want    shuttleengine.StartupState
++	}{
++		{"Ready", readyCapture, shuttleengine.StartupReady},
++		{"Busy", busyCapture, shuttleengine.StartupReady},
++		{"TrustPrompt", trustCapture, shuttleengine.StartupTrustPrompt},
++		{"TrustPromptWithoutItsFooter", strings.TrimSuffix(trustCapture, "  enter continue · esc quit"), shuttleengine.StartupTrustPrompt},
++		{"QuotedTrustQuestion", quotedTrustCapture, shuttleengine.StartupReady},
++		{"HookReviewPrompt", hookReviewCapture, shuttleengine.StartupPending},
++		{"Booting", "", shuttleengine.StartupPending},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := New().Startup(tt.capture); got != tt.want {
++				t.Errorf("Startup(%s) = %v; want %v", tt.name, got, tt.want)
++			}
++		})
++	}
++}
++
++// TestTrustDismissSequence pins the accept: Enter alone with the caret on the option, a move first when the caret sits on the other option, and nothing when the option is missing or far from the caret.
++func TestTrustDismissSequence(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	caretOnQuit := strings.Replace(strings.Replace(trustCapture, "› 1. Trust", "  1. Trust", 1), "  2. Quit", "› 2. Quit", 1)
++	tests := []struct {
++		name    string
++		capture string
++		want    []shuttleengine.PaneInput
++	}{
++		{"CaretOnAccept", trustCapture, []shuttleengine.PaneInput{{Key: "Enter"}}},
++		{"CaretOnQuit", caretOnQuit, []shuttleengine.PaneInput{{Key: "Up", SettleMS: optionMoveSettleMS}, {Key: "Enter"}}},
++		{"NoAcceptOption", strings.Replace(trustCapture, "Trust and continue", "Continue", 1), nil},
++		{"NoCaret", strings.ReplaceAll(trustCapture, "›", " "), nil},
++		{"QuotedOptionFarFromCaret", "  1. Trust and continue, it said\n\n\n\n› Ask Codex to do anything", nil},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := New().TrustDismissSequence(tt.capture); !reflect.DeepEqual(got, tt.want) {
++				t.Errorf("TrustDismissSequence(%s) = %+v; want %+v", tt.name, got, tt.want)
++			}
++		})
++	}
++}
++
++// TestComposerReadings pins the composer text, the running turn and the idle reading of each capture.
++func TestComposerReadings(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name        string
++		capture     string
++		wantText    string
++		wantBox     bool
++		wantRunning bool
++		wantIdle    bool
++	}{
++		{name: "Ready", capture: readyCapture, wantBox: true, wantIdle: true},
++		{name: "IdleAfterTurn", capture: idleAfterTurnCapture, wantBox: true, wantIdle: true},
++		{name: "Busy", capture: busyCapture, wantBox: true, wantRunning: true},
++		{name: "Draft", capture: draftCapture, wantText: "first line of a draft second line", wantBox: true},
++		{name: "PastePlaceholder", capture: "› [Pasted Content 1686 chars]\n\n  GPT-6-Luna low", wantText: "[Pasted Content 1686 chars]", wantBox: true},
++		{name: "NoComposer", capture: "loading"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			engine := New()
++			text, box := engine.InputBoxText(tt.capture)
++			if text != tt.wantText || box != tt.wantBox {
++				t.Errorf("InputBoxText() = %q, %v; want %q, %v", text, box, tt.wantText, tt.wantBox)
++			}
++			if got := engine.RunningTurn(tt.capture); got != tt.wantRunning {
++				t.Errorf("RunningTurn() = %v; want %v", got, tt.wantRunning)
++			}
++			if got := engine.IdleSession(tt.capture); got != tt.wantIdle {
++				t.Errorf("IdleSession() = %v; want %v", got, tt.wantIdle)
++			}
++		})
++	}
++}
++
++// TestPaneTooShort pins that only a capture with no composer and fewer rows than the composer and status line take reads too short.
++func TestPaneTooShort(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		capture string
++		want    bool
++	}{
++		{"› Ask Codex to do anything", false},
++		{"Working (3s • esc to interrupt)\n", true},
++		{"a\nb\nc", false},
++	}
++	for _, tt := range tests {
++		if got := New().PaneTooShort(tt.capture); got != tt.want {
++			t.Errorf("PaneTooShort(%q) = %v; want %v", tt.capture, got, tt.want)
++		}
++	}
++}
++
++// TestOwnPastePlaceholder pins that the placeholder is a paste's own only when its count is the text's characters and it is the whole reading.
++func TestOwnPastePlaceholder(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	text := strings.Repeat("é", 1686)
++	tests := []struct {
++		boxText string
++		want    bool
++	}{
++		{"[Pasted Content 1686 chars]", true},
++		{" [Pasted Content 1686 chars] ", true},
++		{"[Pasted Content 1687 chars]", false},
++		{"see [Pasted Content 1686 chars]", false},
++	}
++	for _, tt := range tests {
++		if got := New().OwnPastePlaceholder(tt.boxText, text); got != tt.want {
++			t.Errorf("OwnPastePlaceholder(%q) = %v; want %v", tt.boxText, got, tt.want)
++		}
++	}
++	if New().PasteSubmits() {
++		t.Error("PasteSubmits() = true; want false, so shuttle sends its own guarded Enter")
++	}
++}
++
++// TestKeySequences pins the interrupt, the typed send with its Enter after the paste-burst settle, the typing alone, and the engine's empty color and session commands.
++func TestKeySequences(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	engine := New()
++	checks := []struct {
++		name string
++		got  []shuttleengine.PaneInput
++		want []shuttleengine.PaneInput
++	}{
++		{"InterruptSequence", engine.InterruptSequence(), []shuttleengine.PaneInput{{Key: "Escape"}}},
++		{"ComposeSend", engine.ComposeSend("hi"), []shuttleengine.PaneInput{{Text: "hi", SettleMS: composeSubmitSettleMS}, {Key: "Enter"}}},
++		{"TypeSequence", engine.TypeSequence("hi"), []shuttleengine.PaneInput{{Text: "hi"}}},
++		{"ColorSequence", engine.ColorSequence("red"), nil},
++		{"ClearSessionSequence", engine.ClearSessionSequence(), nil},
++		{"CompactSessionSequence", engine.CompactSessionSequence("focus"), nil},
++		{"ReloadPluginsSequence", engine.ReloadPluginsSequence(), nil},
++	}
++	for _, check := range checks {
++		if !reflect.DeepEqual(check.got, check.want) {
++			t.Errorf("%s = %+v; want %+v", check.name, check.got, check.want)
++		}
++	}
++}
+diff --git a/internal/shuttleengine/codexengine/prepare_test.go b/internal/shuttleengine/codexengine/prepare_test.go
+new file mode 100644
+index 00000000..5a3e1f6d
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/prepare_test.go
+@@ -0,0 +1,484 @@
++// prepare_test.go covers Prepare and the lym Codex home.
++// It covers the launch Prepare returns, the trust record and config.toml it renders, and the links it makes.
++// It also covers the refusals that write nothing, the warnings about a committed Codex folder or a home entry that is not lym's link, and the check after startup.
++
++package codexengine
++
++import (
++	"encoding/json"
++	"errors"
++	"fmt"
++	"os"
++	"path/filepath"
++	"reflect"
++	"strings"
++	"sync"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/shell"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// readRecord reads the trust record of the lym home at home.
++func readRecord(t *testing.T, home string) trustRecord {
++	t.Helper()
++	data, err := os.ReadFile(filepath.Join(home, trustRecordFileName))
++	if err != nil {
++		t.Fatalf("read trust record: %v", err)
++	}
++	var record trustRecord
++	if err := json.Unmarshal(data, &record); err != nil {
++		t.Fatalf("decode trust record: %v", err)
++	}
++	return record
++}
++
++// TestPrepare_Launch pins the launch a valid spec gets: the line built from the lym home, the told records writable root (none when the engine is told none), the model and effort, the run's hooks and the prompt pointer;
++// the resume line that exits; recorded session starts, no creel hooks and no session id; and the prompt file holding the spec's prompt.
++func TestPrepare_Launch(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		// toldRecords reports whether the engine is told the records checkout.
++		toldRecords bool
++		// toldThroughLink reports whether the told records checkout is a symlink to the real one.
++		toldThroughLink bool
++	}{
++		{name: "RecordsTold", toldRecords: true},
++		{name: "RecordsToldThroughLink", toldRecords: true, toldThroughLink: true},
++		{name: "RecordsNotTold"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			repo := newRepoFixture(t)
++			anchor, records := repo.addWorktree(t, "wt")
++			engine, warnings := newEngine(anchor)
++			var wantRoots []string
++			if tt.toldRecords {
++				engine.dirs.Records = records
++				wantRoots = []string{records}
++			}
++			if tt.toldThroughLink {
++				link := filepath.Join(t.TempDir(), "records-link")
++				if err := os.Symlink(records, link); err != nil {
++					t.Fatalf("symlink: %v", err)
++				}
++				engine.dirs.Records = link
++			}
++			runDir := t.TempDir()
++
++			launch, err := engine.Prepare(runDir, shuttleengine.Spec{Prompt: "review the plan", ModelChoice: shuttleengine.ModelChoice{Engine: "codex", Model: "gpt-6-astra", Effort: "medium"}}, shuttleengine.Config{})
++			if err != nil {
++				t.Fatalf("Prepare() error: %v", err)
++			}
++
++			promptPath := filepath.Join(runDir, "prompt.md")
++			sh := shell.ForGOOS()
++			want := shuttleengine.Launch{
++				Cmd: buildLaunchCmd(sh, launchLine{
++					bin:           "codex",
++					home:          repo.lymHome,
++					writableRoots: wantRoots,
++					model:         "gpt-6-astra",
++					effort:        "medium",
++					hooks:         hookSettings(filepath.Join(runDir, "events.jsonl")),
++					firstTurn:     launchPointer(promptPath),
++				}),
++				ResumeCmd:            sh.Exit(),
++				RecordsSessionStarts: true,
++			}
++			if !reflect.DeepEqual(launch, want) {
++				t.Errorf("Prepare() launch = %+v; want %+v", launch, want)
++			}
++			if tt.toldRecords != strings.Contains(launch.Cmd, "sandbox_workspace_write.writable_roots") {
++				t.Errorf("Prepare() launch line = %q; want the writable-roots setting only when the records checkout is told", launch.Cmd)
++			}
++			if got, err := os.ReadFile(promptPath); err != nil || string(got) != "review the plan" {
++				t.Errorf("prompt.md = %q, %v; want the spec's prompt", got, err)
++			}
++			if warnings.String() != "" {
++				t.Errorf("warnings = %q; want none", warnings)
++			}
++		})
++	}
++}
++
++// TestPrepare_AppendsStandingPassages pins that the prompt file opens with the passages the reader finds for engine codex and the spec's role, each before a blank line.
++// It installs the process-wide passage reader, so it does not run in parallel.
++func TestPrepare_AppendsStandingPassages(t *testing.T) {
++	tiergate.Require(t, 0)
++
++	repo := newRepoFixture(t)
++	anchor, _ := repo.addWorktree(t, "wt")
++	engine, _ := newEngine(anchor)
++	engine.dirs.Board = t.TempDir()
++	var asked []string
++	restore := shuttleengine.InstallPassageReader(func(boltDir, engine, role string) ([]string, error) {
++		asked = append(asked, engine, role)
++		return []string{"first passage", "second passage"}, nil
++	})
++	t.Cleanup(restore)
++
++	runDir := t.TempDir()
++	if _, err := engine.Prepare(runDir, shuttleengine.Spec{Prompt: "the prompt", Role: "code-review-assist"}, shuttleengine.Config{}); err != nil {
++		t.Fatalf("Prepare() error: %v", err)
++	}
++	got, err := os.ReadFile(filepath.Join(runDir, "prompt.md"))
++	if want := "first passage\n\nsecond passage\n\nthe prompt"; err != nil || string(got) != want {
++		t.Errorf("prompt.md = %q, %v; want %q", got, err, want)
++	}
++	if want := []string{"codex", "code-review-assist"}; !reflect.DeepEqual(asked, want) {
++		t.Errorf("passage reader asked for %v; want %v", asked, want)
++	}
++}
++
++// TestPrepare_ReadiesHome pins the lym home a launch leaves.
++// It has auth.json and sessions linked to the operator home's, and the worktree root trusted, with the main checkout root too for a linked worktree and alone for a plain clone.
++// It drops a vanished root, and it renders config.toml from the record with both [tui] settings.
++func TestPrepare_ReadiesHome(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		// build adds the checkout to the fixture and returns its root and the roots the home must trust.
++		build func(t *testing.T, repo repoFixture) (anchor string, wantRoots []string)
++	}{
++		{
++			name: "LinkedWorktree",
++			build: func(t *testing.T, repo repoFixture) (string, []string) {
++				anchor, _ := repo.addWorktree(t, "wt")
++				return anchor, []string{repo.mainRoot, anchor}
++			},
++		},
++		{
++			name: "PlainClone",
++			build: func(t *testing.T, repo repoFixture) (string, []string) {
++				anchor := repo.addClone(t, "clone")
++				return anchor, []string{anchor}
++			},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			repo := newRepoFixture(t)
++			anchor, wantRoots := tt.build(t, repo)
++			vanished := filepath.Join(repo.base, "gone")
++			mkdirAll(t, repo.lymHome)
++			writeFile(t, filepath.Join(repo.lymHome, trustRecordFileName), `{"roots":["`+vanished+`"],"kept_key":1}`)
++			engine, _ := newEngine(anchor)
++
++			if _, err := engine.Prepare(t.TempDir(), shuttleengine.Spec{Prompt: "p"}, shuttleengine.Config{}); err != nil {
++				t.Fatalf("Prepare() error: %v", err)
++			}
++
++			for name, target := range map[string]string{authFileName: filepath.Join(repo.operatorHome, authFileName), sessionsDirName: filepath.Join(repo.operatorHome, sessionsDirName)} {
++				if got, err := os.Readlink(filepath.Join(repo.lymHome, name)); err != nil || got != target {
++					t.Errorf("Readlink(%s) = %q, %v; want %q", name, got, err, target)
++				}
++			}
++			if got := readRecord(t, repo.lymHome).Roots; !reflect.DeepEqual(got, wantRoots) {
++				t.Errorf("trust record roots = %v; want %v", got, wantRoots)
++			}
++			if raw, _ := os.ReadFile(filepath.Join(repo.lymHome, trustRecordFileName)); !strings.Contains(string(raw), "kept_key") {
++				t.Errorf("trust record = %s; want the unknown key kept", raw)
++			}
++			got, err := os.ReadFile(filepath.Join(repo.lymHome, configFileName))
++			if err != nil {
++				t.Fatalf("read config.toml: %v", err)
++			}
++			if want := renderConfigTOML(wantRoots); string(got) != want {
++				t.Errorf("config.toml = %q; want %q", got, want)
++			}
++		})
++	}
++}
++
++// TestRenderConfigTOML pins the rendered config.toml: the header, both [tui] settings, then one trusted table per root with the path TOML-quoted.
++func TestRenderConfigTOML(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	got := renderConfigTOML([]string{`/a/b`, `/c/"d"`})
++	want := configHeader + "\n[tui]\nscreen_reader_detection_done = true\n\n[tui.model_availability_nux]\n" +
++		"\n[projects.\"/a/b\"]\ntrust_level = \"trusted\"\n" +
++		"\n[projects.\"/c/\\\"d\\\"\"]\ntrust_level = \"trusted\"\n"
++	if got != want {
++		t.Errorf("renderConfigTOML() = %q; want %q", got, want)
++	}
++}
++
++// TestPrepare_ConcurrentLaunchesLoseNoRoot pins that worktrees preparing at once into one lym home all end in its record and config.toml.
++func TestPrepare_ConcurrentLaunchesLoseNoRoot(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	repo := newRepoFixture(t)
++	var anchors []string
++	for i := range 6 {
++		anchor, _ := repo.addWorktree(t, fmt.Sprintf("wt%d", i))
++		anchors = append(anchors, anchor)
++	}
++	var wg sync.WaitGroup
++	errs := make(chan error, len(anchors))
++	for _, anchor := range anchors {
++		wg.Add(1)
++		go func() {
++			defer wg.Done()
++			engine, _ := newEngine(anchor)
++			_, err := engine.Prepare(t.TempDir(), shuttleengine.Spec{Prompt: "p"}, shuttleengine.Config{})
++			errs <- err
++		}()
++	}
++	wg.Wait()
++	close(errs)
++	for err := range errs {
++		if err != nil {
++			t.Fatalf("Prepare() error: %v", err)
++		}
++	}
++	record := readRecord(t, repo.lymHome)
++	config, err := os.ReadFile(filepath.Join(repo.lymHome, configFileName))
++	if err != nil {
++		t.Fatalf("read config.toml: %v", err)
++	}
++	for _, root := range append(anchors, repo.mainRoot) {
++		if !strings.Contains(strings.Join(record.Roots, "\n"), root) || !strings.Contains(string(config), projectTableHeader(root)) {
++			t.Errorf("root %s missing: record %v, config %q", root, record.Roots, config)
++		}
++	}
++}
++
++// TestPrepare_RefusesBeforeWriting pins each refusal and that a refused spec writes neither the prompt file nor anything in the lym home.
++func TestPrepare_RefusesBeforeWriting(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		spec shuttleengine.Spec
++		// anchorRel is the folder of the worktree the engine is anchored at; empty means the worktree root.
++		anchorRel string
++		// setup changes the worktree before Prepare.
++		setup   func(t *testing.T, anchor string)
++		wantErr []string
++		// wantWarn is a text the warnings must hold; empty means none.
++		wantWarn string
++	}{
++		{name: "VersionPin", spec: shuttleengine.Spec{ModelChoice: shuttleengine.ModelChoice{Model: "astra", Version: "6"}}, wantErr: []string{`version "6"`, "way forward"}},
++		{name: "PromptPermissionMode", spec: shuttleengine.Spec{PermissionMode: "prompt"}, wantErr: []string{`permission mode "prompt"`, "way forward"}},
++		{name: "ResumedSession", spec: shuttleengine.Spec{ResumeSessionID: "abc"}, wantErr: []string{"cannot be resumed", "way forward"}},
++		{name: "PublishGuard", spec: shuttleengine.Spec{DenyPublish: true}, wantErr: []string{"publish guard", "way forward"}},
++		{name: "EffortOutsideEfforts", spec: shuttleengine.Spec{ModelChoice: shuttleengine.ModelChoice{Effort: "xhigh"}}, wantErr: []string{`effort "xhigh"`, "codex.yaml's efforts", "way forward"}},
++		{
++			name: "CommittedRules",
++			setup: func(t *testing.T, anchor string) {
++				mkdirAll(t, filepath.Join(anchor, codexFolderName, rulesDirName))
++			},
++			wantErr:  []string{filepath.Join(codexFolderName, rulesDirName), "way forward", "remove the directory"},
++			wantWarn: filepath.Join(codexFolderName, rulesDirName),
++		},
++		{
++			name:      "CommittedRulesUnderSubfolderAnchor",
++			anchorRel: "sub",
++			setup: func(t *testing.T, anchor string) {
++				mkdirAll(t, filepath.Join(anchor, "sub", codexFolderName, rulesDirName))
++			},
++			wantErr:  []string{filepath.Join("sub", codexFolderName, rulesDirName), "way forward", "remove the directory"},
++			wantWarn: filepath.Join("sub", codexFolderName, rulesDirName),
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			repo := newRepoFixture(t)
++			anchor, _ := repo.addWorktree(t, "wt")
++			if tt.setup != nil {
++				tt.setup(t, anchor)
++			}
++			engineAnchor := filepath.Join(anchor, tt.anchorRel)
++			mkdirAll(t, engineAnchor)
++			repo.writeCodexLayer(t, engineAnchor, "")
++			engine, warnings := newEngine(engineAnchor)
++			runDir := t.TempDir()
++			spec := tt.spec
++			spec.Prompt = "p"
++
++			_, err := engine.Prepare(runDir, spec, shuttleengine.Config{})
++			if err == nil {
++				t.Fatal("Prepare() error = nil; want a refusal")
++			}
++			for _, want := range tt.wantErr {
++				if !strings.Contains(err.Error(), want) {
++					t.Errorf("Prepare() error %q does not contain %q", err, want)
++				}
++			}
++			if _, statErr := os.Stat(filepath.Join(runDir, "prompt.md")); !errors.Is(statErr, os.ErrNotExist) {
++				t.Errorf("prompt.md stat error = %v; want no prompt file", statErr)
++			}
++			if _, statErr := os.Lstat(repo.lymHome); !errors.Is(statErr, os.ErrNotExist) {
++				t.Errorf("lym home stat error = %v; want the home unmade", statErr)
++			}
++			if got := warnings.String(); tt.wantWarn == "" && got != "" || !strings.Contains(got, tt.wantWarn) {
++				t.Errorf("warnings = %q; want %q", got, tt.wantWarn)
++			}
++		})
++	}
++}
++
++// TestPrepare_Warnings pins the warnings a launch goes on despite: a committed worktree config, the main checkout's config behind a worktree's `.codex` folder,
++// and a home auth.json or sessions that is a regular file or a link elsewhere, which Prepare keeps.
++func TestPrepare_Warnings(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		// setup changes the fixture before Prepare and returns the texts the warnings must hold.
++		setup func(t *testing.T, repo repoFixture, anchor string) []string
++	}{
++		{
++			name: "WorktreeConfig",
++			setup: func(t *testing.T, _ repoFixture, anchor string) []string {
++				path := filepath.Join(anchor, codexFolderName, configFileName)
++				mkdirAll(t, filepath.Dir(path))
++				writeFile(t, path, "")
++				return []string{path}
++			},
++		},
++		{
++			name: "MainCheckoutConfigBehindWorktreeFolder",
++			setup: func(t *testing.T, repo repoFixture, anchor string) []string {
++				mkdirAll(t, filepath.Join(anchor, codexFolderName))
++				path := filepath.Join(repo.mainRoot, codexFolderName, configFileName)
++				mkdirAll(t, filepath.Dir(path))
++				writeFile(t, path, "")
++				return []string{path}
++			},
++		},
++		{
++			name: "RegularAuthFile",
++			setup: func(t *testing.T, repo repoFixture, _ string) []string {
++				path := filepath.Join(repo.lymHome, authFileName)
++				mkdirAll(t, repo.lymHome)
++				writeFile(t, path, "{}")
++				return []string{path, "way forward: remove it"}
++			},
++		},
++		{
++			name: "SessionsLinkedElsewhere",
++			setup: func(t *testing.T, repo repoFixture, _ string) []string {
++				path := filepath.Join(repo.lymHome, sessionsDirName)
++				mkdirAll(t, repo.lymHome)
++				if err := os.Symlink(repo.base, path); err != nil {
++					t.Fatalf("symlink: %v", err)
++				}
++				return []string{path, "way forward: remove it"}
++			},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			repo := newRepoFixture(t)
++			anchor, _ := repo.addWorktree(t, "wt")
++			wants := tt.setup(t, repo, anchor)
++			engine, warnings := newEngine(anchor)
++
++			if _, err := engine.Prepare(t.TempDir(), shuttleengine.Spec{Prompt: "p"}, shuttleengine.Config{}); err != nil {
++				t.Fatalf("Prepare() error: %v", err)
++			}
++			for _, want := range wants {
++				if !strings.Contains(warnings.String(), want) {
++					t.Errorf("warnings = %q; want them to hold %q", warnings, want)
++				}
++			}
++		})
++	}
++}
++
++// TestCheckAfterStartup pins that the check warns about each trust root config.toml lost, naming it, and stays silent while every root is there.
++func TestCheckAfterStartup(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	repo := newRepoFixture(t)
++	anchor, _ := repo.addWorktree(t, "wt")
++	engine, warnings := newEngine(anchor)
++	if _, err := engine.Prepare(t.TempDir(), shuttleengine.Spec{Prompt: "p"}, shuttleengine.Config{}); err != nil {
++		t.Fatalf("Prepare() error: %v", err)
++	}
++
++	engine.CheckAfterStartup()
++	if got := warnings.String(); got != "" {
++		t.Errorf("warnings with every root kept = %q; want none", got)
++	}
++
++	writeFile(t, filepath.Join(repo.lymHome, configFileName), renderConfigTOML([]string{repo.mainRoot}))
++	engine.CheckAfterStartup()
++	if got := warnings.String(); !strings.Contains(got, "root "+anchor) || strings.Contains(got, "root "+repo.mainRoot) {
++		t.Errorf("warnings after the worktree root was dropped = %q; want one naming %s alone", got, anchor)
++	}
++}
++
++// TestLoadConfig_Template pins codex.yaml's template: the codex binary on PATH, the homes under ~/, the efforts low to high and the Claude plugin cache as the skill root.
++func TestLoadConfig_Template(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	got, err := LoadConfig(configengine.Dirs{Anchor: t.TempDir()})
++	if err != nil {
++		t.Fatalf("LoadConfig() error: %v", err)
++	}
++	want := Config{Home: "~/.lym/codex", OperatorHome: "~/.codex", Efforts: []string{"low", "medium", "high"}, SkillRoots: []string{"~/.claude/plugins/cache"}}
++	if !reflect.DeepEqual(got, want) {
++		t.Errorf("LoadConfig() = %+v; want %+v", got, want)
++	}
++	if bin := codexBinary(got); bin != "codex" {
++		t.Errorf("codexBinary() = %q; want codex", bin)
++	}
++}
++
++// TestExpandHomePath pins the home keys' resolution: a leading ~/ under the user's home, an absolute path kept, and an empty or relative value refused by its key.
++func TestExpandHomePath(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	userHome, err := os.UserHomeDir()
++	if err != nil {
++		t.Fatalf("UserHomeDir: %v", err)
++	}
++	absolute := filepath.Join(t.TempDir(), "home")
++	tests := []struct {
++		name    string
++		value   string
++		want    string
++		wantErr bool
++	}{
++		{name: "UnderUserHome", value: "~/.lym/codex", want: filepath.Join(userHome, ".lym", "codex")},
++		{name: "Absolute", value: absolute, want: absolute},
++		{name: "Empty", value: "", wantErr: true},
++		{name: "Relative", value: "codex-home", wantErr: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got, err := expandHomePath("home", tt.value)
++			if tt.wantErr {
++				if err == nil || !strings.Contains(err.Error(), "codex.yaml's home") {
++					t.Errorf("expandHomePath(%q) error = %v; want a refusal naming the key", tt.value, err)
++				}
++				return
++			}
++			if err != nil || got != tt.want {
++				t.Errorf("expandHomePath(%q) = %q, %v; want %q", tt.value, got, err, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/shuttleengine/codexengine/rollout.go b/internal/shuttleengine/codexengine/rollout.go
+new file mode 100644
+index 00000000..3b4e7b4f
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/rollout.go
+@@ -0,0 +1,137 @@
++// rollout.go reads the rollout file a Codex session records its turns in, which every hook payload names in transcript_path.
++// It answers whether a turn was interrupted, which ends a turn with no Stop hook, and how many tokens the session's context holds.
++
++package codexengine
++
++import (
++	"encoding/json"
++	"os"
++	"strings"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++)
++
++var _ shuttleengine.SessionProber = (*Codex)(nil)
++
++// Rollout event types this file reads.
++const (
++	rolloutEventMessage   = "event_msg"
++	eventTaskComplete     = "task_complete"
++	eventTurnAborted      = "turn_aborted"
++	eventTokenCount       = "token_count"
++	payloadTranscriptPath = "transcript_path"
++)
++
++// rolloutEvent is one event_msg line of a rollout.
++type rolloutEvent struct {
++	at      time.Time
++	kind    string
++	turnID  string
++	context int
++	// hasContext is true for a token_count event that carries the latest model call's usage.
++	hasContext bool
++}
++
++// readRolloutEvents reads the event_msg lines of the rollout at path, in file order, skipping lines it cannot parse.
++func readRolloutEvents(path string) ([]rolloutEvent, error) {
++	data, err := os.ReadFile(path)
++	if err != nil {
++		return nil, err
++	}
++	var events []rolloutEvent
++	for _, line := range strings.Split(string(data), "\n") {
++		var parsed struct {
++			Timestamp string `json:"timestamp"`
++			Type      string `json:"type"`
++			Payload   struct {
++				Type   string `json:"type"`
++				TurnID string `json:"turn_id"`
++				Info   *struct {
++					LastTokenUsage struct {
++						TotalTokens int `json:"total_tokens"`
++					} `json:"last_token_usage"`
++				} `json:"info"`
++			} `json:"payload"`
++		}
++		if json.Unmarshal([]byte(strings.TrimSpace(line)), &parsed) != nil || parsed.Type != rolloutEventMessage {
++			continue
++		}
++		event := rolloutEvent{kind: parsed.Payload.Type, turnID: parsed.Payload.TurnID}
++		if at, err := time.Parse(time.RFC3339Nano, parsed.Timestamp); err == nil {
++			event.at = at.UTC()
++		}
++		if parsed.Payload.Info != nil {
++			event.context = parsed.Payload.Info.LastTokenUsage.TotalTokens
++			event.hasContext = true
++		}
++		events = append(events, event)
++	}
++	return events, nil
++}
++
++// payloadField returns the string field key of the hook payload raw, or "" when raw does not parse or holds none.
++func payloadField(raw []byte, key string) string {
++	var fields map[string]any
++	if json.Unmarshal(raw, &fields) != nil {
++		return ""
++	}
++	value, _ := fields[key].(string)
++	return value
++}
++
++// ProcessLiveness reads every session unproven: Codex keeps no registry of its live sessions, so a Codex exit is caught as the dead pane the launch line leaves.
++func (c *Codex) ProcessLiveness(string) shuttleengine.Liveness {
++	return shuttleengine.LivenessUnproven
++}
++
++// TurnStartInterrupt reports whether the turn that turnStart began was interrupted, with the interrupt's own time.
++// It reads the rollout turnStart's payload names: the turn is interrupted when the newest of its turn-ending events is turn_aborted.
++// An event belongs to the turn when both carry a turn id and the ids are equal, or, when either has none, when the event is not older than turnStart.
++// Any failure to read reads as not interrupted.
++func (c *Codex) TurnStartInterrupt(turnStart shuttleengine.SessionSignal) (time.Time, bool) {
++	events, err := readRolloutEvents(payloadField(turnStart.Raw, payloadTranscriptPath))
++	if err != nil {
++		return time.Time{}, false
++	}
++	turnID := payloadField(turnStart.Raw, "turn_id")
++	var last *rolloutEvent
++	for i := range events {
++		event := &events[i]
++		if event.kind != eventTaskComplete && event.kind != eventTurnAborted {
++			continue
++		}
++		if turnID != "" && event.turnID != "" {
++			if event.turnID != turnID {
++				continue
++			}
++		} else if !turnStart.At.IsZero() && !event.at.IsZero() && event.at.Before(turnStart.At) {
++			continue
++		}
++		last = event
++	}
++	if last == nil || last.kind != eventTurnAborted {
++		return time.Time{}, false
++	}
++	return last.at, true
++}
++
++// ContextTokens returns the context size the newest token_count event of the rollout turnEnd's payload names records: the latest model call's total tokens.
++// A rollout that cannot be read or holds no such event reads unknown.
++func (c *Codex) ContextTokens(turnEnd shuttleengine.Event) shuttleengine.ContextReading {
++	events, err := readRolloutEvents(payloadField(turnEnd.Raw, payloadTranscriptPath))
++	if err != nil {
++		return shuttleengine.ContextReading{}
++	}
++	for i := len(events) - 1; i >= 0; i-- {
++		if events[i].kind == eventTokenCount && events[i].hasContext {
++			return shuttleengine.ContextReading{Tokens: events[i].context, Known: true}
++		}
++	}
++	return shuttleengine.ContextReading{}
++}
++
++// CompactedSince finds no compaction boundary: no Codex compaction has been read from a rollout yet.
++func (c *Codex) CompactedSince(shuttleengine.Event, time.Time) (shuttleengine.CompactionBoundary, bool) {
++	return shuttleengine.CompactionBoundary{}, false
++}
+diff --git a/internal/shuttleengine/codexengine/rollout_test.go b/internal/shuttleengine/codexengine/rollout_test.go
+new file mode 100644
+index 00000000..cb15ce5d
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/rollout_test.go
+@@ -0,0 +1,130 @@
++// rollout_test.go reads rollout fixtures shaped as the spike recorded them: the interrupt reading of a turn start and the context size of a turn end.
++
++package codexengine
++
++import (
++	"path/filepath"
++	"strconv"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// rolloutLine returns one event_msg line of a rollout at timestamp, its payload the JSON object body payload.
++func rolloutLine(timestamp, payload string) string {
++	return `{"timestamp":"` + timestamp + `","type":"event_msg","payload":{` + payload + `}}`
++}
++
++// tokenCountLine returns a token_count line whose latest call totals total tokens.
++func tokenCountLine(timestamp string, total int) string {
++	return rolloutLine(timestamp, `"type":"token_count","info":{"total_token_usage":{"input_tokens":99999,"total_tokens":99999},"last_token_usage":{"input_tokens":13866,"cached_input_tokens":11392,"output_tokens":5,"total_tokens":`+strconv.Itoa(total)+`},"model_context_window":258400},"rate_limits":{"limit_id":"codex"}`)
++}
++
++// writeRollout writes lines as a rollout file and returns its path.
++func writeRollout(t *testing.T, lines ...string) string {
++	t.Helper()
++	path := filepath.Join(t.TempDir(), "rollout.jsonl")
++	writeFile(t, path, strings.Join(lines, "\n")+"\n")
++	return path
++}
++
++// TestTurnStartInterrupt pins the interrupt reading.
++// A newest turn_aborted of the turn reads interrupted at its time.
++// A task_complete after it or a turn_aborted of another turn does not.
++// An event older than an id-less turn start is not the turn's, and an unreadable rollout reads not interrupted.
++func TestTurnStartInterrupt(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	abortedAt := time.Date(2026, 10, 24, 11, 58, 2, 500_000_000, time.UTC)
++	tests := []struct {
++		name    string
++		lines   []string
++		turnID  string
++		startAt time.Time
++		want    bool
++	}{
++		{
++			name:   "AbortedTurn",
++			lines:  []string{rolloutLine("2026-10-24T11:58:00Z", `"type":"task_started","turn_id":"t1"`), rolloutLine("2026-10-24T11:58:02.5Z", `"type":"turn_aborted","turn_id":"t1","reason":"interrupted"`)},
++			turnID: "t1",
++			want:   true,
++		},
++		{
++			name:   "CompletedAfterAbort",
++			lines:  []string{rolloutLine("2026-10-24T11:58:02.5Z", `"type":"turn_aborted","turn_id":"t1"`), rolloutLine("2026-10-24T11:58:05Z", `"type":"task_complete","turn_id":"t1"`)},
++			turnID: "t1",
++		},
++		{
++			name:   "AbortOfAnotherTurn",
++			lines:  []string{rolloutLine("2026-10-24T11:58:02.5Z", `"type":"turn_aborted","turn_id":"t0"`)},
++			turnID: "t1",
++		},
++		{
++			name:    "IdlessAbortBeforeTheTurnStart",
++			lines:   []string{rolloutLine("2026-10-24T11:58:02.5Z", `"type":"turn_aborted"`)},
++			startAt: time.Date(2026, 10, 24, 11, 59, 0, 0, time.UTC),
++		},
++		{
++			name:    "IdlessAbortAfterTheTurnStart",
++			lines:   []string{rolloutLine("2026-10-24T11:58:02.5Z", `"type":"turn_aborted"`)},
++			startAt: time.Date(2026, 10, 24, 11, 58, 0, 0, time.UTC),
++			want:    true,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			path := writeRollout(t, tt.lines...)
++			raw := `{"hook_event_name":"UserPromptSubmit","transcript_path":"` + path + `","turn_id":"` + tt.turnID + `"}`
++			at, interrupted := New().TurnStartInterrupt(shuttleengine.SessionSignal{Kind: shuttleengine.SessionSignalTurnStart, At: tt.startAt, Raw: []byte(raw)})
++			if interrupted != tt.want {
++				t.Fatalf("TurnStartInterrupt() interrupted = %v; want %v", interrupted, tt.want)
++			}
++			if tt.want && !at.Equal(abortedAt) {
++				t.Errorf("TurnStartInterrupt() at = %v; want %v", at, abortedAt)
++			}
++		})
++	}
++	if _, interrupted := New().TurnStartInterrupt(shuttleengine.SessionSignal{Raw: []byte(`{"transcript_path":"/absent/rollout.jsonl"}`)}); interrupted {
++		t.Error("TurnStartInterrupt() over an absent rollout = interrupted; want not")
++	}
++}
++
++// TestContextTokens pins that the context size is the newest token_count's latest call total, and that a rollout without one, or none at all, reads unknown.
++func TestContextTokens(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name  string
++		lines []string
++		want  shuttleengine.ContextReading
++	}{
++		{
++			name:  "NewestTokenCount",
++			lines: []string{tokenCountLine("2026-10-24T11:55:31Z", 13871), rolloutLine("2026-10-24T11:55:32Z", `"type":"token_count","info":null`), tokenCountLine("2026-10-24T11:56:00Z", 20000), rolloutLine("2026-10-24T11:56:01Z", `"type":"task_complete"`)},
++			want:  shuttleengine.ContextReading{Tokens: 20000, Known: true},
++		},
++		{
++			name:  "NoTokenCount",
++			lines: []string{rolloutLine("2026-10-24T11:56:01Z", `"type":"task_complete"`)},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			path := writeRollout(t, tt.lines...)
++			got := New().ContextTokens(shuttleengine.Event{Raw: []byte(`{"hook_event_name":"Stop","transcript_path":"` + path + `"}`)})
++			if got != tt.want {
++				t.Errorf("ContextTokens() = %+v; want %+v", got, tt.want)
++			}
++		})
++	}
++	if got := New().ContextTokens(shuttleengine.Event{Raw: []byte(`{"transcript_path":"/absent/rollout.jsonl"}`)}); got.Known {
++		t.Errorf("ContextTokens() over an absent rollout = %+v; want unknown", got)
++	}
++}
+diff --git a/internal/shuttleengine/codexengine/scrub.go b/internal/shuttleengine/codexengine/scrub.go
+new file mode 100644
+index 00000000..ae5b09aa
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/scrub.go
+@@ -0,0 +1,9 @@
++// scrub.go declares the environment keys a process spawned beside a Codex session must not inherit.
++
++package codexengine
++
++// ScrubbedEnv returns the environment keys Codex reads or injects: the CODEX_ prefix.
++// A server spawned from a shell that set one, such as CODEX_HOME, would hand it to every session, so each Codex launch sets its own on its line.
++func ScrubbedEnv() (names []string, prefixes []string) {
++	return nil, []string{"CODEX_"}
++}
+diff --git a/internal/shuttleengine/codexengine/template.yaml b/internal/shuttleengine/codexengine/template.yaml
+new file mode 100644
+index 00000000..7e36f56d
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/template.yaml
+@@ -0,0 +1,5 @@
++binary: ""  # path to the codex executable; empty falls back to "codex" on PATH; the binary must be Codex or exec it, since a wrapper that does not exec leaves its shell in the foreground and reed reads the strand dead
++home: ~/.lym/codex  # the shared lym Codex home every Codex launch runs under as CODEX_HOME: lym renders its config.toml whole on each launch and links its auth.json and sessions to operator_home's; a leading ~/ is the user's home directory
++operator_home: ~/.codex  # the operator's own Codex home, which lym never writes; the lym home links its auth.json and sessions here, so one login and its token refresh serve both
++efforts: [low, medium, high]  # the reasoning efforts a Codex launch may take; a run whose model-spec names another effort is refused when it starts
++skill_roots: [~/.claude/plugins/cache]  # the directories a skill <plugin>:<name> is looked up under, newest version first, when a Codex session loads skills; a leading ~/ is the user's home directory
+diff --git a/internal/shuttleengine/codexengine/testmain_test.go b/internal/shuttleengine/codexengine/testmain_test.go
+new file mode 100644
+index 00000000..eb6bc226
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/testmain_test.go
+@@ -0,0 +1,18 @@
++// testmain_test.go gives the package's test binary the hermetic git environment, because a test spawns `sh`.
++// It also runs the tests under tmuxkit.Main, so their temp files live in the process run directory and go with it.
++
++package codexengine
++
++import (
++	"os"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/testkit/tmuxkit"
++)
++
++// TestMain runs gitkit.HermeticGitEnv() before any test spawns a process, then runs the tests under tmuxkit.Main.
++func TestMain(m *testing.M) {
++	gitkit.HermeticGitEnv()
++	os.Exit(tmuxkit.Main(m))
++}
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index b77fd3f7..e915bc45 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -27,7 +27,7 @@
+ // StandingPassages returns the instruction passages heddle's layers hold for a session of an engine and a strand role, read through the reader InstallPassageReader installs for the process;
+ // it returns none outside a hub, with no reader installed or when the reader fails, which is logged at Warn, so a launch never waits on the store.
+ // An engine appends them to the system prompt it launches with, and shuttle itself parses no store.
+-// Requirement support, fork audit, the outstanding-fork reading, resume-context rendering, creel hook delivery (the hook-input parse, the hook output and the wake output) and instruction files are optional capabilities beside Engine, which an engine without them lacks.
++// Requirement support, fork audit, the outstanding-fork reading, resume-context rendering, creel hook delivery (the hook-input parse, the hook output and the wake output), instruction files and the check after startup are optional capabilities beside Engine, which an engine without them lacks.
+ // A ForkSubagents run whose engine cannot audit forks finishes with its classified result, a nil ForkAudit and an error, and keeps its run directory.
+ // Spec.Requires lists what a run requires of its engine, and a ForkSubagents spec requires fork support without listing it.
+ // Start checks it right after resolving the spec's engine, and attach checks it against the engine the run's record names unless every output file is already on disk.
+diff --git a/internal/shuttleengine/engine.go b/internal/shuttleengine/engine.go
+index 34b52e7f..aa79771a 100644
+--- a/internal/shuttleengine/engine.go
++++ b/internal/shuttleengine/engine.go
+@@ -279,6 +279,14 @@ type InstructionFileLister interface {
+ 	InstructionFiles() []string
+ }
+ 
++// StartupChecker is an optional capability beside Engine: a check the provider runs once a launch is past its startup gates, for a provider whose own start may rewrite what Prepare wrote.
++// It reports through the log and never fails the launch.
++// An engine without it is checked by nothing after startup.
++type StartupChecker interface {
++	// CheckAfterStartup checks what the provider's start may have changed of what Prepare wrote.
++	CheckAfterStartup()
++}
++
+ // SessionResumer is an optional capability beside Engine: the provider's check that an existing session may be resumed by a new run.
+ // Runner.start requires it of an Engine whenever a spec carries a ResumeSessionID, so no run resumes a session unchecked.
+ // It is separate from Engine for the same reason SessionCycler is: most implementers and test fakes never resume a session.
+diff --git a/internal/shuttleengine/run.go b/internal/shuttleengine/run.go
+index 9940b260..b03f5194 100644
+--- a/internal/shuttleengine/run.go
++++ b/internal/shuttleengine/run.go
+@@ -743,6 +743,9 @@ func (r *Runner) launch(spec Spec, gate GateSpec, engine Engine, engineName, res
+ 	if err != nil {
+ 		return run, result, err
+ 	}
++	if checker, ok := engine.(StartupChecker); ok {
++		checker.CheckAfterStartup()
++	}
+ 	var color segmentcolor.Color
+ 	if !spec.ColorByCaller {
+ 		color = strand.Color
+diff --git a/internal/shuttleengine/startup_test.go b/internal/shuttleengine/startup_test.go
+index 62010824..265418a7 100644
+--- a/internal/shuttleengine/startup_test.go
++++ b/internal/shuttleengine/startup_test.go
+@@ -11,6 +11,7 @@ import (
+ 	"path/filepath"
+ 	"reflect"
+ 	"strings"
++	"sync/atomic"
+ 	"testing"
+ 	"time"
+ 
+@@ -819,6 +820,35 @@ func TestStartup_HandleReturned(t *testing.T) {
+ 	}
+ }
+ 
++// startupCheckEngine is a fakeEngine that counts its checks after startup.
++type startupCheckEngine struct {
++	*fakeEngine
++	checks atomic.Int32
++}
++
++// CheckAfterStartup counts one check.
++func (e *startupCheckEngine) CheckAfterStartup() {
++	e.checks.Add(1)
++}
++
++// TestStartup_ChecksAfterStartup pins that a start whose provider came up runs the engine's check after startup once, before the handle is returned.
++func TestStartup_ChecksAfterStartup(t *testing.T) {
++	tiergate.Require(t, 0)
++	reed := &fakeReed{
++		StatusQueue:     []reedengine.StatusResult{{Strands: []reedengine.StrandStatus{{GUID: "strand-1", PaneID: "%1", Live: true}}}},
++		AddStrandResult: reedengine.Strand{GUID: "strand-1"},
++	}
++	engine := &startupCheckEngine{fakeEngine: &fakeEngine{StartupScript: []StartupState{StartupReady}, PrepareLaunch: Launch{Cmd: "cmd", SessionID: "session-1"}}}
++	runner := newFixture(t, reed, engine, withConfig(fastConfig), withClock(newFakeClock(time.Now()))).Runner
++
++	if _, err := runner.StartGated(Spec{Prompt: "x", OutputFiles: []string{filepath.Join(t.TempDir(), "out.md")}}, GateSpec{}); err != nil {
++		t.Fatalf("StartGated() error = %v; want nil", err)
++	}
++	if got := engine.checks.Load(); got != 1 {
++		t.Errorf("CheckAfterStartup calls = %d; want 1", got)
++	}
++}
++
+ // TestRunner_StartSession covers the unawaited start.
+ // A ready start returns the strand, session id and engine with a run record reading running.
+ // A spec without Unawaited is refused before any strand is added, and a ResumeSessionID reaches the engine's launch.
+diff --git a/internal/shuttleengines/doc.go b/internal/shuttleengines/doc.go
+index dcc12a4f..2a442267 100644
+--- a/internal/shuttleengines/doc.go
++++ b/internal/shuttleengines/doc.go
+@@ -1,4 +1,4 @@
+-// Package shuttleengines is the registry of named shuttle engines.
++// Package shuttleengines is the registry of named shuttle engines: claude, for Claude Code, and codex, for the Codex CLI.
+ // It is the only production package that imports a concrete engine package.
+ // shuttleengine and its callers therefore stay blind to which providers exist.
+ //
+diff --git a/internal/shuttleengines/seam_enforcement_test.go b/internal/shuttleengines/seam_enforcement_test.go
+index da29e66c..770d9ccf 100644
+--- a/internal/shuttleengines/seam_enforcement_test.go
++++ b/internal/shuttleengines/seam_enforcement_test.go
+@@ -15,6 +15,7 @@ var allowedImports = []string{
+ 	"github.com/Knatte18/loomyard/internal/configengine",
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine",
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine/claudeengine",
++	"github.com/Knatte18/loomyard/internal/shuttleengine/codexengine",
+ 	"github.com/Knatte18/loomyard/internal/reedengine",
+ }
+ 
+diff --git a/internal/shuttleengines/shuttleengines.go b/internal/shuttleengines/shuttleengines.go
+index 255f35b4..e55d73f7 100644
+--- a/internal/shuttleengines/shuttleengines.go
++++ b/internal/shuttleengines/shuttleengines.go
+@@ -11,6 +11,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine/claudeengine"
++	"github.com/Knatte18/loomyard/internal/shuttleengine/codexengine"
+ )
+ 
+ // constructor builds one engine from the shuttle config and the Dirs of the location the engine serves.
+@@ -45,6 +46,12 @@ func claudeScrub() reedengine.EnvScrub {
+ 	return reedengine.EnvScrub{Names: names, Prefixes: prefixes}
+ }
+ 
++// codexScrub is the codex engine's declared scrub.
++func codexScrub() reedengine.EnvScrub {
++	names, prefixes := codexengine.ScrubbedEnv()
++	return reedengine.EnvScrub{Names: names, Prefixes: prefixes}
++}
++
+ // registry maps each registered engine name to its entry.
+ var registry = map[string]entry{
+ 	"claude": {
+@@ -69,6 +76,21 @@ var registry = map[string]entry{
+ 			},
+ 		},
+ 	},
++	"codex": {
++		scrub: codexScrub(),
++		constructor: func(cfg shuttleengine.Config, dirs configengine.Dirs) shuttleengine.Engine {
++			return codexengine.NewFromConfig(cfg, dirs)
++		},
++		config: ConfigModule{
++			Name:     "codex",
++			Template: codexengine.ConfigTemplate,
++			Spec:     codexengine.ConfigSpec,
++			CheckLoad: func(dirs configengine.Dirs) error {
++				_, err := codexengine.LoadConfig(dirs)
++				return err
++			},
++		},
++	},
+ }
+ 
+ // New builds the set of every registered engine from cfg, with cfg.Engine as the default.
+diff --git a/internal/shuttleengines/shuttleengines_test.go b/internal/shuttleengines/shuttleengines_test.go
+index 0c4a3213..7ee06e96 100644
+--- a/internal/shuttleengines/shuttleengines_test.go
++++ b/internal/shuttleengines/shuttleengines_test.go
+@@ -182,7 +182,7 @@ func TestNew(t *testing.T) {
+ 			if _, ok := engine.(*claudeengine.Claude); !ok {
+ 				t.Errorf("default engine = %T; want *claudeengine.Claude", engine)
+ 			}
+-			if got, want := set.Names(), []string{"claude"}; !reflect.DeepEqual(got, want) {
++			if got, want := set.Names(), []string{"claude", "codex"}; !reflect.DeepEqual(got, want) {
+ 				t.Errorf("Names() = %v; want %v", got, want)
+ 			}
+ 			if tt.after != nil {
+@@ -214,7 +214,7 @@ func TestEnvScrub_MatchesTmuxkitServerEnviron(t *testing.T) {
+ 	t.Parallel()
+ 
+ 	environ := []string{
+-		"HOME=/home/x", "CLAUDECODE=1", "CLAUDE_CODE_ENTRYPOINT=cli", "CLAUDE_CODEX=keep",
++		"HOME=/home/x", "CLAUDECODE=1", "CLAUDE_CODE_ENTRYPOINT=cli", "CLAUDE_CODEX=keep", "CODEX_HOME=/home/x/.lym/codex",
+ 		logger.TraceIDEnv + "=abc", "LYM_STRAND_NAME=ab:orch", "LYM_PARENT=ab:driver", "LYM_OTHER=keep", "PATH=/bin",
+ 	}
+ 
+diff --git a/internal/testkit/tmuxkit/tmuxkit.go b/internal/testkit/tmuxkit/tmuxkit.go
+index 9c65cda3..977c521f 100644
+--- a/internal/testkit/tmuxkit/tmuxkit.go
++++ b/internal/testkit/tmuxkit/tmuxkit.go
+@@ -391,14 +391,14 @@ func startServer(tmux, key string) error {
+ 	return nil
+ }
+ 
+-// ServerEnviron returns environ without the variables no pane may inherit from the process that starts the server: Claude's own, and the trace id and agent names of the enclosing strand.
+-// The Claude filter is a copy of the engines' declared scrub, which this package cannot import because reedengine's own tests import the kit; a test outside the kit pins the two together.
++// ServerEnviron returns environ without the variables no pane may inherit from the process that starts the server: the engines' own, and the trace id and agent names of the enclosing strand.
++// The engine filter is a copy of the engines' declared scrub, which this package cannot import because reedengine's own tests import the kit; a test outside the kit pins the two together.
+ func ServerEnviron(environ []string) []string {
+ 	clean := make([]string, 0, len(environ))
+ 	for _, entry := range environ {
+ 		key, _, _ := strings.Cut(entry, "=")
+ 		switch {
+-		case key == "CLAUDECODE", strings.HasPrefix(key, "CLAUDE_CODE_"):
++		case key == "CLAUDECODE", strings.HasPrefix(key, "CLAUDE_CODE_"), strings.HasPrefix(key, "CODEX_"):
+ 		case key == "LYM_TRACE_ID", key == agentname.StrandNameEnv, key == agentname.ParentEnv:
+ 		default:
+ 			clean = append(clean, entry)
+diff --git a/pattern/PATTERN-fs-links.md b/pattern/PATTERN-fs-links.md
+index 1abe6fee..7286235b 100644
+--- a/pattern/PATTERN-fs-links.md
++++ b/pattern/PATTERN-fs-links.md
+@@ -1,9 +1,11 @@
+ # PATTERN-fs-links
+ 
+-Every filesystem link lym creates goes through `internal/fslink`'s `CreateDirLink`, which owns the platform difference between link kinds.
++Every filesystem link lym creates goes through `internal/fslink`'s `CreateDirLink` or `CreateFileLink`, which own the platform difference between link kinds.
+ 
++- `CreateDirLink` links a directory, a junction on Windows and a symlink elsewhere.
++- `CreateFileLink` links a file as a symlink, and refuses on Windows, where a file symlink needs elevated privileges.
+ - The scan in `cmd/lym/fslinkonly_test.go` parses every production Go file of the module, `tools/` included, and reports each `os.Symlink` or `os.Link` call, through whatever name the file binds `os` to, outside `internal/fslink`; a dot import of `os` binds no name, so the scan reports the import line itself.
+ - The scan's allowlist is keyed `<file>:<call>` and admits one call with a reason naming the obstacle to going through fslink.
+-  `tools/deploy/main.go` is admitted for `os.Symlink`: it copies a plugin-tree symlink verbatim, the link may point at a file, and fslink has no file-link primitive.
++  `tools/deploy/main.go` is admitted for `os.Symlink`: it copies a plugin-tree symlink verbatim, keeping its raw target without reading whether it names a file or a directory.
+ - Bound: test files are not scanned, because tests plant links as hostile or foreign fixtures that fslink's refusals would block.
+ - The entry claims nothing about how a link behaves on Windows: fslink's Windows path has never been executed, and `internal/fabricengine`'s package documentation records what settling it takes.
