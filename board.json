@@ -719,47 +719,6 @@
       "revised": "2026-11-02T20:34:12Z"
     },
     {
-      "id": 1018,
-      "handle": "B5",
-      "slug": "edit-test-file-no-glyphs",
-      "title": "validate-plan edit-test-file rule cannot target a test file with no glyphs",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "loom",
-        "quarry"
-      ],
-      "issues": [
-        4
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #4](https://github.com/Knatte18/loomyard/issues/4).\n\n## What happened\n\nA plan card needed to edit a Go test file that pins symbols only through blank-identifier package-level vars.\n`lym quarry toc` reports no symbols for such a file.\n`lym loom` `validate-plan`'s `edit-test-file` rule refuses the file as an Edit target and asks for member glyphs, which the file does not have.\nThe card could not plan the edit, and the plan-review finding asking for it had to be deferred.\n\n## Why it is abnormal\n\nA file that exists and is a legitimate edit target becomes unplannable because the toc cannot produce a glyph for it.\nThe rule's demand cannot be satisfied by the planner.\n\n## What to do\n\nLet `edit-test-file` accept a file with no toc symbols (for example by targeting the file or a line range), or make `lym quarry toc` surface blank-identifier vars as targetable members.\n\nProvenance: task `warp-visibility`, note `burler-plan-r1.md`.\n\n\n\n_Moved from #909 in the repository before it was recreated._\n",
-      "created": "2026-11-02T20:34:15Z",
-      "revised": "2026-11-02T20:34:15Z"
-    },
-    {
-      "id": 1019,
-      "handle": "B6",
-      "slug": "insert-card-bare-mentions",
-      "title": "insert-card renumbers only \u003cN\u003e-\u003cslug\u003e ids, leaving bare 'card N' mentions stale",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "loom"
-      ],
-      "issues": [
-        5
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #5](https://github.com/Knatte18/loomyard/issues/5).\n\n## What happened\n\nInserting a card into a plan renumbered every following card, but `insert-card` rewrote only the `\u003cN\u003e-\u003cslug\u003e` ids.\nBare \"card N\" mentions in plan prose (about twenty) stayed at the old numbers and had to be renumbered by hand.\n\n## Why it is abnormal\n\nThe renumber is partial, so the plan is left internally inconsistent: references by number now point at the wrong cards, with no warning from the verb.\n\n## What to do\n\nHave `insert-card` also rewrite bare \"card N\" references, or report each one it leaves unrewritten so the planner can fix them.\n\nProvenance: task `warp-visibility`, note `burler-plan-r1.md`.\n\n\n\n_Moved from #910 in the repository before it was recreated._\n",
-      "created": "2026-11-02T20:34:18Z",
-      "revised": "2026-11-02T20:34:18Z"
-    },
-    {
       "id": 1021,
       "handle": "T9",
       "slug": "run-done-with-background-shell",
@@ -1052,6 +1011,31 @@
       "status": "running · Darn-Write",
       "created": "2026-11-03T09:42:38Z",
       "revised": "2026-11-03T09:42:38Z",
+      "profile": "solid"
+    },
+    {
+      "id": 1044,
+      "handle": "T11",
+      "slug": "plan-verbs-glyphless-and-refs",
+      "title": "Plan verbs: validate-plan cannot target a glyphless test file, insert-card leaves bare card N mentions stale",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "loom",
+        "quarry"
+      ],
+      "issues": [
+        4,
+        5
+      ],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Let edit-test-file target a test file with no toc symbols, and make insert-card rewrite or report bare card N mentions",
+      "body": "Two faults in the loom plan verbs, from [issue #4](https://github.com/Knatte18/loomyard/issues/4) and [issue #5](https://github.com/Knatte18/loomyard/issues/5), both seen in task `warp-visibility`.\n\n## 1. `validate-plan` cannot target a test file with no glyphs (#4)\n\nA plan card needed to edit a Go test file that pins symbols only through blank-identifier package-level vars.\n`lym quarry toc` reports no symbols for such a file, and `validate-plan`'s `edit-test-file` rule refuses it as an Edit target and asks for member glyphs the file does not have.\nThe card could not plan the edit, and the plan-review finding asking for it had to be deferred.\n\nExpected: `edit-test-file` accepts a file with no toc symbols, for example by targeting the file or a line range, or `lym quarry toc` surfaces blank-identifier vars as targetable members.\n\n## 2. `insert-card` leaves bare \"card N\" mentions stale (#5)\n\nInserting a card renumbered every following card, but `insert-card` rewrote only the `\u003cN\u003e-\u003cslug\u003e` ids.\nAbout twenty bare \"card N\" mentions in plan prose stayed at the old numbers and had to be renumbered by hand, with no warning from the verb.\n\nExpected: `insert-card` also rewrites bare \"card N\" references, or reports each one it leaves unrewritten so the planner can fix them.\n",
+      "status": "draft",
+      "created": "2026-11-02T20:34:15Z",
+      "revised": "2026-11-03T09:53:25Z",
       "profile": "solid"
     }
   ],
