@@ -1,6 +1,6 @@
 # Drift scope settable in a task's run_settings; Drift-Baseline agent only when unset
 
-`drift-scope-in-run-settings` · Task · feature, drift, config · running · Record-Write
+`drift-scope-in-run-settings` · Task · feature, drift, config · running · Darn-Write
 
 Imported from [issue #30](https://github.com/Knatte18/loomyard/issues/30).
 
