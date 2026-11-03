@@ -1,6 +1,6 @@
 # The assistant seat and the Burler review round with a Codex assistant
 
-`codex-assist-seat` · Task · feature, burler, shuttle, codex · running · PR-Review
+`codex-assist-seat` · Task · feature, burler, shuttle, codex · running · Finalize
 
 Part 4 of project `codex-engine`.
 Its Sketch is the project's stored decision record: read it with `lym board get P2 --record`.
