@@ -19,6 +19,12 @@ The operator names runs by board handle (`T4`, `P1`), but no window shows it: a 
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-03): Status window titled <handle>: <recipe>
+
+Decision: The loom status window is titled <handle>: <recipe>, such as T4: darn, not <handle>: overview.
+
+Rationale: 7c23591e already titles the status window by its recipe, so a beam session can tell a pawl checklist window from a run's own; the operator's 'T1: overview' was an example of putting the handle first, which the recipe title keeps.
+
 ## Constraints
 
 ## Auto-mode assumptions
