@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-03 07:18 UTC; every age below is as of then.
+Rendered 2026-11-03 07:19 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -49,7 +49,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **A shed block runs a whole sub-recipe inline as one producer, so recipes reuse one another** | [`shed-sub-run-block`](design-shed-sub-run-block.md) | tapestry | Worktree-Create | neve | 49m<br>11m | shed, loom |
-| T2 | **An approved Discussion stores its decision record on the board entry and flags it discussed** | [`decision-record-on-board`](design-decision-record-on-board.md) | tapestry · light | Worktree-Create | neve | 5m<br>0m | board, loom |
+| T2 | **An approved Discussion stores its decision record on the board entry and flags it discussed** | [`decision-record-on-board`](design-decision-record-on-board.md) | tapestry · light | Discussion-Write | neve | 5m<br>0m | board, loom |
 
 #### Ready (0)
 
