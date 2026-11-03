@@ -225,6 +225,12 @@ None.
   - d3-follow-up-sites-enumerated-by-hand (class design, severity MEDIUM, open in rounds 2)
 <!-- /lym:carry-over Plan-Review -->
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - prunable-registration-skips-absent-pair-judgment (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: a resume at Run-Shed whose task worktree is gone and whose weft branch is on origin with no archive tag covering it re-creates the pair, spawns its push and resumes on the second reconcile's verdict; the status stays `running`.
