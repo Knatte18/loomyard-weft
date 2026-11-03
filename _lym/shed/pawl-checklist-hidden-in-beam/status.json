@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Write",
+  "current_producer": "Plan-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Write",
-    "last": "Parts-Plan-Write → skipped",
+    "now": "Plan-Bouncer",
+    "last": "Plan-Write → done",
     "wait": ""
   },
   "history": [
@@ -108,6 +108,21 @@
       "output": "",
       "at": "2026-11-03T10:03:38Z",
       "reason": "tapestry.plan_split = false"
+    },
+    {
+      "producer": "Plan-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/pawl-checklist-hidden-in-beam/_lym/plan/00-overview.md",
+      "at": "2026-11-03T10:16:38Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "plan",
+          "kind": "gate",
+          "start": "2026-11-03T10:13:23.047771893Z",
+          "end": "2026-11-03T10:16:37.349445264Z"
+        }
+      ]
     }
   ],
   "product": {
