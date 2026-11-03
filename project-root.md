@@ -31,7 +31,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (39)
+## Notes (40)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -41,10 +41,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 11d<br>12h | loom, stencil |
 
-### Bugs (7)
+### Bugs (8)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
+| B1 |  | **A beam session loses the pawl run checklist when the beam overview takes the overview window** | [`pawl-checklist-hidden-in-beam`](design-pawl-checklist-hidden-in-beam.md) | 0m<br>0m | pawl, orch, reed |
 | B2 |  | **A paused run whose work already landed is never finished and keeps its worktree and terminal** | [`landed-run-left-paused`](design-landed-run-left-paused.md) | 10h<br>10h | dobby, batten |
 | B3 |  | **Darn-Write seat halts: stencil darn-template-write has unfilled marker subagent_model** | [`seat-stencil-marker-unfilled`](design-seat-stencil-marker-unfilled.md) | 10h<br>10h | stencil, shed |
 | B5 |  | **validate-plan edit-test-file rule cannot target a test file with no glyphs** | [`edit-test-file-no-glyphs`](design-edit-test-file-no-glyphs.md) | 10h<br>10h | loom, quarry |
