@@ -1,6 +1,6 @@
 # Map where fabricengine test time goes and propose cuts
 
-`fabric-test-speed-survey` · Task · research, fabric, testkit, docs · running · Darn-Write
+`fabric-test-speed-survey` · Task · research, fabric, testkit, docs · running · Drift-Verify
 
 A report that maps where `internal/fabricengine`'s test time goes and proposes how to cut it, on both machines (operator, 2026-11-03).
 
