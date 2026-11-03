@@ -1,30 +1,26 @@
 # Heddle: shipped instructions as headed imperative bullets
 
-The two shipped heddle entries, `lym-batching` and `lym-plan-edits-before-gate` in `internal/heddleengine/shipped.json`, used to render into every worktree's `CLAUDE.local.md` as solid paragraphs of prose.
-They are now short imperative bullet lists, one instruction per bullet, so agents read them as rules.
+The shipped heddle entries `lym-batching` and `lym-plan-edits-before-gate` rendered into every worktree's `CLAUDE.local.md` as walls of prose.
+The operator judges that agents do not take such text seriously, so both entries in `internal/heddleengine/shipped.json` are now short imperative bullets, one instruction per bullet.
 
 ## What changes
 
-- Each entry opens with a `##` heading of its own: `## Batch your calls` and `## Make every round of edits in this order`.
-  The headings sit under `# LoomYard's own instructions`, so the rendered file skips no heading level, the same way a repository entry's `##` heading sits under `# This repository's instructions`.
-- `lym-batching` gives each of its instructions as its own bullet: batch the calls you know, list the questions first, wait only to choose the next call, read a file whole or in all its spans in one message over the Read tool's advice, never grep for a line and then read a slice, keep read files in mind, and read again every file a command rewrote.
-- `lym-plan-edits-before-gate` keeps the round's four steps as a numbered list.
-  Step 1's second-round rule and step 4's fix cycle become sub-bullets.
-  The closing prohibitions stay as bullets.
-- "Never read one file in slices over several turns" now appears only in `lym-batching`, where it already stood.
-  The round entry no longer repeats it.
+- Each entry opens with a `## ` heading of its own: "Batch your calls" and "Make every round of edits in this order".
+  The rendered file now steps from the `# LoomYard's own instructions` section heading to these headings with no level skipped, as a repository entry's `##` heading sits under `# This repository's instructions`.
+- The round of edits stays a numbered list because order is the point.
+  Step 4's fix sequence is now four numbered sub-steps, and step 1's second-round-of-reads rule is a sub-bullet.
+- The rule against reading one file in slices over several turns was stated in both entries.
+  It now appears once, in `lym-batching`; `lym-plan-edits-before-gate` keeps its other prohibitions.
+- `internal/heddleengine/doc.go` describes the level-one section heading and the level-two entry headings.
 
 ## Design decisions
 
-- The heading goes in each entry's text, not in the renderer.
-  A repository entry carries its own `##` heading in the same way, and a lym override replaces the whole text, heading included.
-  The renderer in `render.go` is unchanged.
-- The `ShippedEntriesArePinned` subtest in `internal/heddleengine/store_test.go` no longer pins the whole `lym-batching` text, which only duplicated `shipped.json`.
-  It now pins each entry's opening heading line, which is the structural contract that keeps the rendered file free of heading-level skips.
-  The render tests build their expected file from the shipped layer itself, so they follow the new text unchanged.
-- `docs/research/turn-audit-2026-10-28/report.md` quotes an older form of the batching sentence.
-  It is a measurement report of a past run and is left as written.
+- Every instruction in the old text is kept with its meaning unchanged, including the override of the Read tool's advice to read only a part, the reread after a command rewrites files, and the four steps of a round.
+  Only the wording was split and rephrased to fit one instruction per bullet.
+- `ShippedEntriesArePinned` in `internal/heddleengine/store_test.go` used to pin the whole batching sentence.
+  It now pins each entry's opening heading line, so the test guards the no-heading-skip property without breaking on every wording edit.
 
-## Docs
+## To check by hand
 
-The `heddleengine` package doc now says that each shipped entry opens with a level-two heading under the shipped section's level-one heading.
+- Read the rendered `CLAUDE.local.md` of a fresh worktree and confirm the two entries read as intended and the heading levels descend without a skip.
+- Compare the new bullets with the old prose for any instruction whose meaning shifted; the rewrite was not checked against an agent's behavior.
