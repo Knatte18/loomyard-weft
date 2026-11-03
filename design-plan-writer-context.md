@@ -111,8 +111,15 @@ Both sit behind the tapestry flag `plan_split` (off by default; `Plan-Write` sta
 
 Task `plan-split-tune` (`fe753d40`, `docs/research/plan-split-tune-2026-11-02.md`) landed round 1 with no replay.
 The parts gate and `lym loom validate-parts` now refuse an export that is an existing member or path (`export-existing`) and run the name checks on each `plan:` export, and `Parts-Write` reads the PATTERN entries governing each export's name first.
-Task `plan-split-replay` replays both inputs on the installed `lym` and tunes further.
-- Still open: the solo Opus high and Fable writer bench, and a repeat of the split bench after the tuning, whose results `plan-split-replay` records.
+
+## Split writers replayed (landed 2026-11-03)
+
+Task `plan-split-replay` (`e9b4c949`, same report, which now covers both tasks) replayed both inputs on the installed `lym`, built after the tuning landed.
+- Both inputs joined their parts into a plan in round 1 and passed their gates with no hand edit of `parts.md` or the part plans, so the loop ended after round 1 of its cap of 2 and no further tuning was made.
+- `warp-visibility`: $18.69 writing cost, 36 cards, one `plan-part` refusal cleared on the gate's re-prompt. `run-verbs-shared`: $29.36, 37 cards, no refusal.
+- Plan-Review found no blocking finding on either plan (8 and 12 findings); the fixer was not run, so those findings stand unresolved.
+- One run per input is a direction, not an effect.
+- Still open: the solo Opus high and Fable writer bench.
 
 ## Data point: `cold-gate-fixer` Plan-Write (orch, 2026-11-02)
 
