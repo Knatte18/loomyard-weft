@@ -1,6 +1,6 @@
 # A beam session shows the pawl run checklist in a second overview window beside the beam overview
 
-`pawl-checklist-hidden-in-beam` · Task · enhancement, pawl, orch, reed · running · Describe
+`pawl-checklist-hidden-in-beam` · Task · enhancement, pawl, orch, reed · running · PR-Review
 
 ## Seen (operator, 2026-11-03)
 

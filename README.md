@@ -31,8 +31,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R1 |  | **Measure the effect of the agent-turns project**<br>• Turns, calls per turn and cost before and after P2 agent-turns, for darn writers, Webster forks and review roles | [`agent-turns-effect`](design-agent-turns-effect.md) | 1d<br>1d | tools |
-| R2 |  | **Plan and Discussion writers explore through parallel Sonnet agents that return only what is relevant**<br>• Bench the guidance that sends Plan and Discussion writers' lookups to parallel Sonnet subagents against a writer given none | [`planner-fork-lookups`](design-planner-fork-lookups.md) | 1d<br>21h | loom |
-| R3 |  | **Measure the effect of the batching breach hook**<br>• After the batching breach hook lands, compare breach turns and context tokens against the 28-session baseline and tune its thresholds | [`batching-hook-effect`](design-batching-hook-effect.md) | 23h<br>21h | claude, shuttle, tools |
+| R2 |  | **Plan and Discussion writers explore through parallel Sonnet agents that return only what is relevant**<br>• Bench the guidance that sends Plan and Discussion writers' lookups to parallel Sonnet subagents against a writer given none | [`planner-fork-lookups`](design-planner-fork-lookups.md) | 1d<br>22h | loom |
+| R3 |  | **Measure the effect of the batching breach hook**<br>• After the batching breach hook lands, compare breach turns and context tokens against the 28-session baseline and tune its thresholds | [`batching-hook-effect`](design-batching-hook-effect.md) | 23h<br>22h | claude, shuttle, tools |
 
 ## [P0 Root: entries under no project](project-root.md) (43)
 
@@ -49,12 +49,12 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Tapestry runs Discussion through a motif block and skips it for a discussed entry; motif runs alone; arras goes**<br>• Tapestry uses the motif block, skips it when the entry is flagged discussed, motif becomes a runnable recipe, and arras is removed | [`tapestry-motif-block`](design-tapestry-motif-block.md) | darn · solid | Code-Burler-Fix | neve | 1h<br>1h | shed, loom |
-| T2 | **A beam session shows the pawl run checklist in a second overview window beside the beam overview** | [`pawl-checklist-hidden-in-beam`](design-pawl-checklist-hidden-in-beam.md) | arras · light | Describe | neve | 3h<br>1h | pawl, orch, reed |
+| T2 | **A beam session shows the pawl run checklist in a second overview window beside the beam overview** | [`pawl-checklist-hidden-in-beam`](design-pawl-checklist-hidden-in-beam.md) | arras · light | PR-Review | neve | 3h<br>1h | pawl, orch, reed |
 | T3 | **Batten recovers a run whose pair is gone and orders its remote pushes, so no pass fails forever and no push races another** | [`batten-remote-order`](design-batten-remote-order.md) | tapestry · light | Webster | neve | 14h<br>3h | batten, fabric |
-| T4 | **Webster treats the anchor as the git worktree in a subpath-anchored hub**<br>• Webster opens git and resolves plan paths at the worktree root, not the anchor, so a subpath-anchored hub reaches code | [`webster-subpath-anchor`](design-webster-subpath-anchor.md) | darn · solid | Code-Burler-Fix | neve | 45m<br>45m | webster, cwd, parsers |
-| T6 | **The orch role explains how to make a project into a beam**<br>• The prime orch in the Models hub did not know beam create is the only way, and patched a plain task run by hand. | [`orch-role-making-a-beam`](design-orch-role-making-a-beam.md) | darn · light | Finalize | neve | 1d<br>18m | orch, pawl |
+| T4 | **Webster treats the anchor as the git worktree in a subpath-anchored hub**<br>• Webster opens git and resolves plan paths at the worktree root, not the anchor, so a subpath-anchored hub reaches code | [`webster-subpath-anchor`](design-webster-subpath-anchor.md) | darn · solid | Code-Burler-Fix | neve | 46m<br>46m | webster, cwd, parsers |
+| T6 | **The orch role explains how to make a project into a beam**<br>• The prime orch in the Models hub did not know beam create is the only way, and patched a plain task run by hand. | [`orch-role-making-a-beam`](design-orch-role-making-a-beam.md) | darn · light | Finalize | neve | 1d<br>19m | orch, pawl |
 | T9 | **Run ends with a background shell outstanding: its commit and gate result are lost** | [`run-done-with-background-shell`](design-run-done-with-background-shell.md) | darn · solid | Finalize | neve | 14h<br>1h | shuttle, webster, gate |
-| T10 | **Darn-Write writer runs no gate itself when the cold fixer is on**<br>• The darn writer prompt still has the writer run and fix lym gate test; with the gate fixer on it should run none | [`darn-writer-runs-no-gate`](design-darn-writer-runs-no-gate.md) | darn · light | Darn-Write | neve | 5m<br>5m | darn, stencil, gate |
+| T10 | **Darn-Write writer runs no gate itself when the cold fixer is on**<br>• The darn writer prompt still has the writer run and fix lym gate test; with the gate fixer on it should run none | [`darn-writer-runs-no-gate`](design-darn-writer-runs-no-gate.md) | darn · light | Darn-Write | neve | 6m<br>6m | darn, stencil, gate |
 
 #### Ready (0)
 
