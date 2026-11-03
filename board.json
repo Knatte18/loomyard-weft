@@ -643,7 +643,7 @@
       "isolated": false,
       "brief": "The beam code button opens the beam worktree folder; it should open the beam workspace file lym already writes",
       "body": "## Seen (operator, 2026-11-03)\n\nThe reed `code` button in the `beam` group runs `lym ide spawn {slug}`.\n`ideengine.Spawn` opens the hub workspace file only for the prime; for any other slug, a beam included, it opens the worktree folder.\nlym already writes a workspace file per beam, `fabricengine.BeamWorkspacePath` (`\u003chub\u003e/\u003cRepoName\u003e-\u003cbeam\u003e.code-workspace`), listing the beam, its parent, Bolt and the beam's pairs.\n\n## Expected\n\n`lym ide spawn \u003cbeam\u003e` regenerates and opens the beam's workspace file, as the prime opens the hub workspace; a task slug still opens its folder.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Drift-Recheck",
       "created": "2026-11-03T18:46:53Z",
       "revised": "2026-11-03T18:47:49Z",
       "profile": "light"
