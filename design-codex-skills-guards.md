@@ -1,6 +1,6 @@
 # Skills and every shell guard row on Codex
 
-`codex-skills-guards` · Task · feature, shuttle, codex · running · Describe
+`codex-skills-guards` · Task · feature, shuttle, codex · running · PR-Review
 
 Part 2 of project `codex-engine`.
 Its Sketch is the project's stored decision record: read it with `lym board get P2 --record`.

@@ -50,7 +50,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Skills and every shell guard row on Codex** | [`codex-skills-guards`](design-codex-skills-guards.md) | darn · light | Describe | neve | 1h<br>1h | shuttle, codex |
+| T3 | **Skills and every shell guard row on Codex** | [`codex-skills-guards`](design-codex-skills-guards.md) | darn · light | PR-Review | neve | 1h<br>1h | shuttle, codex |
 
 #### Ready (0)
 
@@ -90,7 +90,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Drive the C# sandbox hub through a Drift and subdirectory-anchor trial and report what breaks**<br>• Switch the sandbox gate to scoper dotnet, a build step and --no-build, then enable Drift there | [`sandbox-dotnet-gate`](design-sandbox-dotnet-gate.md) | darn · docs |  | 5d<br>11m | dotnet, gate, drift |
+| T1 | `draft` **Drive the C# sandbox hub through a Drift and subdirectory-anchor trial and report what breaks**<br>• Switch the sandbox gate to scoper dotnet, a build step and --no-build, then enable Drift there | [`sandbox-dotnet-gate`](design-sandbox-dotnet-gate.md) | darn · docs |  | 5d<br>12m | dotnet, gate, drift |
 
 ### Notes (36)
 
@@ -107,11 +107,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **A beam cannot be made from a project whose slug already ran a motif run** | [`beam-after-motif`](design-beam-after-motif.md) | 1h<br>1h | batten, pawl |
-| B2 |  | **A gate tier whose shell exits while a grandchild holds its pipe hangs forever**<br>• No WaitDelay on tier and build children: an orphaned MSBuild node keeps lym gate test, and the adopt check, running past every timeout | [`gate-orphan-pipe-hang`](design-gate-orphan-pipe-hang.md) | 6m<br>6m | gate, process |
+| B2 |  | **A gate tier whose shell exits while a grandchild holds its pipe hangs forever**<br>• No WaitDelay on tier and build children: an orphaned MSBuild node keeps lym gate test, and the adopt check, running past every timeout | [`gate-orphan-pipe-hang`](design-gate-orphan-pipe-hang.md) | 7m<br>7m | gate, process |
 | B3 |  | **Way-forward texts name lym board remove <slug>, which the verb refuses**<br>• adoptcli, fronttask and boardengine tell the reader to run lym board remove with a bare slug; the verb takes JSON or a bare handle | [`board-remove-slug-form`](design-board-remove-slug-form.md) | 5m<br>5m | board |
-| B4 |  | **drift.yaml joins dir onto the anchor, gate.yaml onto the worktree root**<br>• The same dir: dotnet runs the gate in dotnet/ and the Drift capture in dotnet/dotnet on a hub anchored at dotnet | [`drift-dir-base`](design-drift-dir-base.md) | 2m<br>2m | drift, gate, config |
-| B5 |  | **A Drift step in a missing dir fails as fork/exec /usr/bin/sh, with a way forward that repeats it**<br>• Drift spawns without checking its dir, blames the shell, and names no config key or location | [`drift-missing-dir-error`](design-drift-missing-dir-error.md) | 2m<br>2m | drift |
-| B6 | L | **loom status --watch prints every poll while a verify runs**<br>• The verify wait text carries its elapsed seconds, so the watch sees a change on every poll | [`watch-elapsed-churn`](design-watch-elapsed-churn.md) | 1m<br>1m | loom, cli |
+| B4 |  | **drift.yaml joins dir onto the anchor, gate.yaml onto the worktree root**<br>• The same dir: dotnet runs the gate in dotnet/ and the Drift capture in dotnet/dotnet on a hub anchored at dotnet | [`drift-dir-base`](design-drift-dir-base.md) | 3m<br>3m | drift, gate, config |
+| B5 |  | **A Drift step in a missing dir fails as fork/exec /usr/bin/sh, with a way forward that repeats it**<br>• Drift spawns without checking its dir, blames the shell, and names no config key or location | [`drift-missing-dir-error`](design-drift-missing-dir-error.md) | 3m<br>3m | drift |
+| B6 | L | **loom status --watch prints every poll while a verify runs**<br>• The verify wait text carries its elapsed seconds, so the watch sees a change on every poll | [`watch-elapsed-churn`](design-watch-elapsed-churn.md) | 2m<br>2m | loom, cli |
 
 #### Enhancements (12)
 
@@ -148,6 +148,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F12 |  | **Two Claude accounts, each worktree on one of them by a configured weight**<br>• A claude config lists accounts with a config directory, a weight and their limit windows; a worktree picks one at its first session by weight and current headroom | [`claude-account-weights`](design-claude-account-weights.md) | 1d<br>5h | claude, shuttle, config |
 | F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 3w<br>1d | webster |
 | F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 11d<br>1h | loom, board, batten, workspaces |
-| F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 6h<br>6h | shuttle, codex, loom |
+| F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 7h<br>7h | shuttle, codex, loom |
 | F16 |  | **Drift cannot be trialed in a sampler: every lym drift verb refuses outside drift stages** | [`sampler-drift-trial`](design-sampler-drift-trial.md) | 5h<br>5h | drift, shed |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>1d | burler, shed, orch, quarry, report |
