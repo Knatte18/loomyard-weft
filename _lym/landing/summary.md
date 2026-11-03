@@ -1,51 +1,39 @@
-# Per-machine environment variables: the `env` config module
+# Add `lym config env`: per-machine variables for every lym process
 
-A hub could set an environment variable for a run only through a gate tier's `tiers.<n>.env`, in the hub file committed in _bolt.
-The machine layer refuses `tiers`, since it is executable, so a per-machine value such as `COMMONLIB_REPO`, a path to a sibling checkout, had to be committed hub-wide, where it is wrong on every other machine.
+A hub could not hold an environment variable whose value differs per machine, such as a path to a sibling checkout.
+The only place lym set a variable was a gate tier's `tiers.<n>.env`, and the machine layer refuses `tiers` as an executable key.
+A per-machine value had to be committed into the shared hub file, where it is wrong on every other machine.
 
-## What changes
+This adds an `env` config module, `lym config env`, that holds a `vars` map from variable name to value.
+The hub file in the board dir holds the shared values, and the never-tracked machine file overrides them name by name.
+`vars` is classified as a machine key, so the machine layer accepts it and the local layer refuses it.
 
-- **New hub-wide config module `env`** (`internal/envconfig`).
-  Its one key, `vars`, maps a variable name to a value.
-  It is a per-name map classified `machine`, so:
-  - the hub file holds values shared by every machine: `lym config env --set vars.NAME=value` from the prime;
-  - the never-tracked machine file holds this machine's own: `lym config env --layer machine --set vars.NAME=value`;
-  - the machine value wins name by name, and the hub's other names stay;
-  - the local layer refuses the key.
+lym exports the variables to every process it starts for the hub:
 
-  `LoadConfig` degrades to the template, which sets nothing, when the hub holds no `env.yaml`.
-  It refuses a name that is not a valid environment variable name, and one starting `LYM_`, so the module never overrides lym's own variables.
-- **Exported to every process lym starts for the hub**, with precedence, most specific first: a tier's, build's or Drift step's own `env`, then the `env` module, then the inherited environment.
-  - Gate (`internal/gatecli/run.go`): the variables are appended to the base environment after the build-server switches, so they replace inherited values, and the tier's or build's `env`, appended later, replaces them.
-    Outside every hub the worktree's own `env.yaml` applies, as the gate config does.
-  - Drift: the new `driftengine.Config.StepWithHubEnv` lays the variables beneath a step's own `env`.
-    Every drift verb (`driftcli`) and Drift row (`loomcli/driftwiring.go`) that runs a command now takes its step through it.
-  - Agent sessions: `reedengine.Geometry` gains `PaneEnv`, a lazy closure that `hubgeom` fills with the env module loaded under the hub's dirs.
-    `launchStrandLocked` exports the variables, in name order, ahead of the strand's launch command at every launch and relaunch, so an agent that runs tests by hand sees the same values.
-    A failed read logs a warning and launches the pane without them.
-- **configengine**: under a per-name map with no template entry, the local and machine layers now judge a name as a scalar, the shape yamlengine's set already writes there.
-  Before, every name under such a map was refused as "not in the template", which would have refused every machine write to `vars`.
-  Each existing per-name map has template entries, so their behavior is unchanged.
-- **yamlengine**: `Strip` now reports an empty mapping that equals the template's empty mapping as a removed unit.
-  Before, it dropped that mapping silently, and with nothing reported a hub's one-time base strip left an untuned `env.yaml` holding the whole template.
-  Every other module's empty template mapping is an open map, which `Strip` already compares whole.
+- gate tiers and the shared build (`internal/gatecli`);
+- Drift capture and compare steps (`driftengine.Config.StepWithHubEnv`, wired in `internal/driftcli` and `internal/loomcli`);
+- agent session panes, through a lazy `PaneEnv` closure on the reed geometry (`internal/hubgeom`, `internal/reedengine`), exported ahead of the strand's launch command and read afresh at each launch.
+
+Precedence, most specific first: a gate tier's or build's own `env` (or a Drift step's), then the `env` module, then the inherited environment.
+
+Closes #19
 
 ## Design decisions
 
-- `vars` is a per-name map, not an open map, because an open map from a higher layer replaces the lower one whole: a machine file setting one variable would have dropped every hub variable.
-- The gate adds the module's variables to the base environment, not to each tier's `env`, so they stay out of the tier fingerprint, as inherited variables do.
-- Reed puts the exports ahead of the launch command, after its own `LYM_STRAND_NAME` and `LYM_PARENT` exports.
-  Refusing `LYM_` names keeps the module from overriding them.
-- The `machine` category's definition widens from "a fact of the machine's desktop" to "a fact of the machine, such as its desktop or a path on its disk", in `configengine` and `pattern/PATTERN-config-layers.md`.
-  `envconfig` joins that background file's list of degrading callers.
+- `envconfig.LoadConfig` refuses a name that is no shell-exportable variable name, `PATH`, and any name starting `LYM_`, in any letter case.
+  `PATH` carries the directory a strand pane's prelude puts first so `lym` resolves to its spawning binary, and `LYM_` names are lym's own.
+- The .NET build-server switches in `proc.BuildServerOffEnv` stay lym's own: they are appended after the module's entries in gate runs, and dropped from the module's exports in strand panes.
+- A hub with no `env.yaml` resolves the template, which sets nothing, so an unreconciled hub is unaffected.
+- A failed env read in a strand launch logs a warning and exports nothing, so the strand still launches.
+  A failed read in `gate test` is a refusal.
+- `configengine` judges a name under a per-name map that has no template entry as a scalar, so `--set vars.NAME=value` validates in the machine layer.
+- `yamlengine.Strip` treats an empty mapping over an empty lower mapping as a removed unit, so a machine file that restates an empty `vars: {}` is stripped.
+- `PATTERN-config-layers.md` and `docs/overview.md` list the new module.
 
-## Tests
+## To check by hand
 
-- `internal/envconfig/config_test.go`: the hub-plus-machine stack merged name by name, number values read as text, refused names (`-`, a leading digit, `LYM_`), a refused local layer, and a refused mapping value.
-  It also pins the issue's refused write: `Set` on the machine layer for `vars.COMMONLIB_REPO` succeeds, and the same write on the local layer is refused and leaves no file.
-- `internal/driftengine/config_test.go`: `StepWithHubEnv` keeps the step's own value over the module's and leaves the config's step unchanged.
-- `internal/reedengine/panebin_test.go`: `paneEnvExports` per shell dialect, for no seam, an empty answer, sorted exports, and a failed read.
-- `internal/gatecli/test_integration_test.go` (tier 1): a tier sees the module's `BUILD_MARK` over an inherited one, and keeps its own `GOFLAGS` over the module's.
-- `internal/configreg/configreg_test.go`: `env` added to the hub-wide modules, with `vars` as its machine key.
-- `internal/yamlengine/layers_test.go`: a `Strip` row for an empty mapping equal to an empty lower.
-- `cmd/lym/configstrictness_test.go`: `internal/envconfig` added to the pinned callers that fall back to the template.
+- `drift-wiring-sites-unpinned`: the Drift wiring sites in `internal/driftcli` and `internal/loomcli` that pass the hub env layers are only partly pinned by tests.
+- `gate-hub-config-dirs-untested`: the hub config directories `internal/gatecli` hands the env module, `configDirs` in `run.go`, are only partly covered by tests.
+- `reed-launch-export-order-untested`: the order of the env exports ahead of the launch command in `internal/reedengine/spawn.go` is only partly covered by tests.
+- `shared-build-env-untested`: the shared build's receipt of the module's variables in `internal/gatecli` is only partly covered by tests.
+- Set a variable with `lym config env --layer machine --set vars.NAME=value` and confirm it reaches a gate tier, a Drift step and an agent pane.
