@@ -24,6 +24,12 @@ Keep the file one table per group, with semantic line breaks outside the tables.
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-03): Taken terms say what they are in LoomYard (operator, 2026-11-03)
+
+Decision: For every term already taken in LoomYard, the glossary says what holds it today in one or two sentences in English, such as 'creel: the internal hook-based mail system every agent, program and operator uses to reach an agent'. Take the description from the package doc, the board's label descriptions (lym board labels) or the command's help, not from memory. A term close enough to a taken one to confuse names the taken term and what it is the same way.
+
+Rationale: The operator wants the glossary to show at a glance what each taken name already means in LoomYard.
+
 ## Constraints
 
 ## Auto-mode assumptions
