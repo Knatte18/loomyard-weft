@@ -13,3 +13,9 @@ The first `tier1` gate run on Neve died with "Internal CLR error (0x80131506)" a
 
 Switch the sandbox gate to `scoper: dotnet`, a `build` step and `--no-build`, so the scoper and the shared build are proved there, then turn on `drift.enabled` there to prove Drift, before any C# hub that holds proprietary code relies on them.
 The hub's setup is in `docs/dotnet-hub.md`; the sandbox stays the place to reproduce a lym fault another C# hub shows.
+
+## Built since (drift-anchor-and-skip, 2026-11-03)
+
+Drift's capture and compare now start in the directory `.lym-anchor` names, which this hub anchors in a subdirectory.
+That landing was tested with fakes and integration tests, not against a real subdirectory-anchored hub, so this note's proof on the sandbox still stands.
+`drift.enabled = false` now also passes a Drift row the run has already entered.
