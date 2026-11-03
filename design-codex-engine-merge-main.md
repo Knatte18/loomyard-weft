@@ -1,6 +1,6 @@
 # Merge main into the codex-engine beam and resolve every conflict
 
-`codex-engine-merge-main` · Task · feature, codex, shuttle · draft
+`codex-engine-merge-main` · Task · feature, codex, shuttle
 
 ## Build
 
