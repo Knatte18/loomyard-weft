@@ -1,0 +1,602 @@
+diff --git a/docs/research/fixers-on-sonnet-2026-11-03/data/discussion-opus-1/fixer-report.md b/docs/research/fixers-on-sonnet-2026-11-03/data/discussion-opus-1/fixer-report.md
+new file mode 100644
+index 00000000..e28fd72a
+--- /dev/null
++++ b/docs/research/fixers-on-sonnet-2026-11-03/data/discussion-opus-1/fixer-report.md
+@@ -0,0 +1,42 @@
++# Fixer report — discussion-opus-1
++
++I checked every finding's premise against the code at b194fbc4. Every premise held, and every finding is fixed in `artifact/decision-record.md`. The support log's Rejected alternatives and Question ledger (Q11–Q13) and `artifact/relevant.md` were updated to match.
++
++## Changes
++
++- F1 (fixed as proposed): D1 step 3 now passes no anchor. Under the adopt-only option, `Add` skips the source-dirt check, citing add.go:239-246 and 397-401. Added D1 criteria for a beam project's run and for a prime with tracked dirt.
++- F2 (fixed as proposed): D2's Land way forward is now set by refusal class:
++  - Not-live with archive tags: a new `lym fabric add <slug> --adopt-local --from-archive <tag>` option, with its refusals and bound stated. It makes the pair over the weft restored from the tag, which keeps the child's records.
++  - Not-live with no archive tag: the error says no copy remains and names the hand finish.
++  - Records-worktree-present: remove that worktree, then re-run.
++  - `ErrRemoteLeftover`: its own way forward, then re-run.
++  - D2 now states that `lym batten run` resumes a `failed` status at its persisted row (arm.go `checkRunStatus`). The Land criterion now requires that following the steps resumes Land with the child's records present.
++- F4 (fixed as proposed): D1's first paragraph rewritten. The tolerance is now a `ReconcileScope` option that only batten's resume sets. Under it the entry is classified from its origin record and the Bolt. `DropLocal` and loom's reconciles keep today's error. Added a criterion for a caller without the option.
++- F5 (fixed as proposed): D2 lists `Add`'s refusal classes, sorted by sentinel or type with `errors.Is` and `errors.As`.
++  - Permanent: not-live, records-worktree-present, `ErrRemoteLeftover`.
++  - Transient: a probe or transport failure wrapped in a new sentinel, the D7 lock wait, a worktree-add failure, the anchor-move stop, and any other refusal.
++  - Added a criterion that a worktree-add failure leaves the status `running`.
++- F6 (fixed as proposed): D3's rationale corrected: `childReachedParent` returns true only at Worktree-Teardown or past the merge. D3's appended cancel and fabric remove's warning are limited to a record before Land. At Land they name D2's Land way forward. Added the Land criterion.
++- F7 (fixed with the review's first option): the cancel is dropped from Finalize's stop, which keeps leaving the owner pause standing. The record is left to the `lym adopt` that clears the pause. When an owner pause stands, fabric remove's warning names `lym adopt` instead of cancel. Criteria were added for both. The other option is recorded under Rejected alternatives.
++- F8 (fixed as proposed): D4 and D6 name the lease as origin's weft tip after D4's branch push: the local tip when the push landed, else the step-1 tip. D4 archives exactly that tip. Added the D6 criterion.
++- F9 (fixed as proposed): D6's cleanup sweep reads origin's tip under the lock, archives it when it diverges (fetching by SHA), and leases the delete on it. Added the sweep criterion.
++- F10 (fixed as proposed): I researched both risks and recorded the answers in Constraints, then dropped both Open risks lines (the section now reads "None.").
++  - 2026-11-03:
++    - The hub's trace logs show the 08:14:57 pause at Seed-Child and the 08:18:44 gone refusal for `shed-sub-run-block`, with nothing logged about the weft branch in between.
++    - From the code, a gone verdict has two routes: a deletion on origin, which D6, D7 and step 11's lease cover, and a stale tracking ref. A stale ref arises because `DeleteRemoteBranch` treats an absent remote ref as success and leaves the local ref behind.
++    - A new D8 makes `Add` drop a stale tracking ref of a branch it forks that origin lacks, with a bound and two criteria.
++  - "missing necessary objects": cited git-receive-pack(1) and git-push(1) at git 2.53. The rejection needs a concurrent deletion of a ref the server advertised. Constraints now says D4's retry and D7 cover it and the branch push first does not.
++- F11 (fixed as proposed): under the adopt-only option, a local weft branch whose tip an archive tag covers now answers not-live. The bound and a criterion were updated.
++- F12 (fixed as proposed): D4 step 3 fetches the diverged origin tip by SHA before tagging, as `resolveArchiveTip` does. The D4 criterion was extended.
++- F13 (fixed as proposed): D5 now counts a commit as present when it equals the remote tip or is an ancestor of it (`merge-base --is-ancestor`), and as unsettled otherwise, never absent. The criterion was extended.
++- F14 (fixed as proposed): D7's Bound compares the hold D4 can reach (a branch push plus 62 s of tag-retry delays) with the 30 s `StatusPushLockWait`. It states that a hand add or discard refused this way names the running removal and the re-run, and that D1 reads the refusal as transient.
++- F15 (fixed as proposed): the first D7 criterion was replaced. `Add` now waits while `Remove`, the discard or the sweep holds the lock exclusive.
++- F16 (fixed as proposed): D1's Bound states that it ends the rule that only the `--adopt-local` flag sets `AdoptLocal`, and gives the rule that replaces it.
++
++## Disputed
++
++None.
++
++## Deferred
++
++None.
+diff --git a/docs/research/fixers-on-sonnet-2026-11-03/data/discussion-opus-1/score.md b/docs/research/fixers-on-sonnet-2026-11-03/data/discussion-opus-1/score.md
+new file mode 100644
+index 00000000..be994621
+--- /dev/null
++++ b/docs/research/fixers-on-sonnet-2026-11-03/data/discussion-opus-1/score.md
+@@ -0,0 +1,27 @@
++| finding | verdict | evidence |
++|---|---|---|
++| F1 | fixed | D1 step 3 now passes no anchor and skips the `ErrSourceDirty` check under the adopt-only option (add.go:239-246, 397-401); beam-anchor and prime-dirt criteria added. |
++| F2 | partial | The `--from-archive` option, the per-refusal Land ways forward, the `checkRunStatus` resume (arm.go:575, failed resumes) and the criterion are all added. But the records-worktree route says D1 "re-adopts the surviving local weft branch", while Remove archives the local tip before any teardown (remove.go:267-269), so D1's new local-cover rule answers not-live. That not-live way forward's `--from-archive` then refuses because the local weft branch exists, a dead end. |
++| F4 | fixed | D1 now makes the tolerance a `ReconcileScope` option set only by the resume, classifies the entry without a pair worktree, and keeps the error for `DropLocal`, loomcli/ownercheck.go and loomcli/landingdeps.go, with a criterion added. |
++| F5 | fixed | D2 lists the permanent sentinels and the transient sentinels and classes, with new sentinels where Add returns plain wraps; a worktree-add-failure criterion is added. |
++| F6 | fixed | The rationale now matches `childReachedParent` (cancel.go:691-708). The cancel is restricted to before Land, Land names D2's way forward, and the Land criterion is added. |
++| F7 | fixed | D3 drops the cancel from Finalize's stop (finalize_owner.go:160 is kept as is), citing `liftSlugPauses` and the owned-elsewhere refusal; criterion added. |
++| F8 | fixed | D4 and D6 now name the lease as origin's tip after the branch push (the local tip when it landed, else the step-1 tip); the D6 push-then-delete criterion is added. |
++| F9 | fixed | D6 now has the sweep read the origin tip under the lock, fetch and archive a diverged tip, and lease on it (cleanup.go:243-258 archived only the local tip); sweep criterion added. |
++| F10 | fixed | Open risks is now `None.`. Constraints record the trace-log evidence (the 08:18:44 gone refusal is present in the hub's loomyard/.lym/logs), the two code routes (`originTargets`/`judgeBranch`, `checkOrigin`/`ErrBranchGone`, the step-11 lease at add.go:628-643), new D8, and the receive-pack analysis. |
++| F11 | fixed | The adopt-only option now reads a local weft branch covered by an archive tag as not live; the bound says "locally or on origin"; criterion added. |
++| F12 | fixed | D4 step 3 fetches the diverged origin tip by SHA, as `resolveArchiveTip` does (archive.go:140-175). |
++| F13 | fixed | D5 reads the tip with ls-remote, accepts equal or `merge-base --is-ancestor`, and calls anything else unsettled, never absent; criterion extended. |
++| F14 | fixed | D7's Bound states the 30 s wait (`StatusPushLockWait`, pushanchored.go:20) against 62 s of retry delays (archive.go:22) and that a refused hand add or discard names the re-run. |
++| F15 | fixed | The D7 criterion now has Add wait on Remove, the discard or the sweep holding the lock exclusive. |
++| F16 | fixed | D1's Bound now names the ended flag-only rule (fabriccli/doc.go:35, add.go:50) and the rule that replaces it. |
++
++## New defects
++
++- MEDIUM, D1 step 3 / D2 Land ways forward: these contradict each other, leaving a dead end. D1 now reads a surviving local weft branch whose tip an archive tag covers as not live. The records-worktree-present way forward claims D1 re-adopts such a branch, which Remove has always archived before teardown. The not-live way forward's `--from-archive` refuses an existing local weft branch, so a landed run whose local weft branch survived has no way forward that works.
++- LOW, Constraints "missing necessary objects": the claimed sole cause, a concurrent deletion of the advertised weft branch, is unsupported. Deleting a ref does not remove its objects from the server's store before gc, so receive-pack's connectivity walk would still find them.
++- LOW, D3 `lym fabric remove` warning: the cases cover only "before Land" and "at Land". A record standing at Worktree-Teardown, which the original rule covered as "not done", now gets no stated warning.
++- NIT, D2 Land acceptance criterion: it names "the slug's last archive tag", while the Decision names the tag whose target descends from every other tag's target and has the operator pick among non-linear tags.
++- NIT, D8: it says Add deletes the stale tracking ref "before its first mutation", but that deletion is itself Add's first mutation.
++
++TALLY fixed=14 partial=1 open=0 new=5
+diff --git a/docs/research/fixers-on-sonnet-2026-11-03/data/discussion-opus-2/fixer-report.md b/docs/research/fixers-on-sonnet-2026-11-03/data/discussion-opus-2/fixer-report.md
+new file mode 100644
+index 00000000..ca70a24b
+--- /dev/null
++++ b/docs/research/fixers-on-sonnet-2026-11-03/data/discussion-opus-2/fixer-report.md
+@@ -0,0 +1,44 @@
++# Fixer report — discussion-opus-2
++
++All 15 findings were fixed in `artifact/decision-record.md`. `artifact/support-log.md` (Q8) and `artifact/relevant.md` got consistency edits. Every premise held against the code at b194fbc.
++
++## Changes
++
++- F1 (fixed as proposed): D1 step 3 now passes no `Anchor`, and the adopt-only option skips the source-dirt check. Added a D1 criterion: a beam-project resume and a resume with tracked dirt in the prime both re-adopt.
++- F2 (fixed as proposed): D2's Land way forward now names a step for each permanent refusal class:
++  - Not-live, local weft branch gone: restore it with `git branch <weft branch> <tag>`, then `lym fabric add --adopt-local`. A plain add reads a local weft branch as live and keeps its records.
++  - Not-live, local weft branch present: the add alone.
++  - Not-live with nothing left: no step; the entry goes to the board note `landed-run-left-paused`.
++  - Records worktree present: `git worktree remove`.
++  - `ErrRemoteLeftover`: archive origin's tip, then the delete its own text names.
++
++  D2 now states that `lym batten run` resumes a failed status at the row it failed on (`haltedOverDoneChild`, `internal/battencli/arm.go`). The Land criterion now requires that following the steps resumes Land with the child's records present.
++- F4 (fixed as proposed): D1's first paragraph now makes the tolerance a run-scope option that only batten's resume sets. Every other caller keeps the `originTargets` error. Step 1 drops "stopped", since no branch is judged. The absent-pair criterion now covers both with and without the option.
++- F5 (fixed as proposed): D2 lists the permanent classes: the not-live sentinel, the records-worktree-present refusal (which gains a sentinel) and `ErrRemoteLeftover`. It lists the transient ones: probe and transport failures (wrapped in a new probe sentinel), the D7 lock wait, worktree-add failures, the anchor-move stop, and any other refusal. Added a criterion: a worktree-add failure leaves the status `running`.
++- F6 (fixed as proposed): D3's rationale is corrected: `childReachedParent` is true only at Worktree-Teardown or past the parent-side merge. The appended cancel and the `fabric remove` warning now apply only before Land; at Land they name D2's Land way forward. Added a D3 criterion for Land.
++- F7 (fixed as proposed, first option): Finalize's stop names no cancel and keeps the owner pause standing. The record is left to the adopt that clears the pause, after which D1/D2 apply. The D3 Finalize criterion was changed to match.
++- F8 (fixed as proposed): D6's removal lease is origin's tip after D4's push: the local tip when the push landed, else the step-1 tip. One deviation: the record says D4 archives that tip "by a tag at it or at the local tip it is an ancestor of" instead of "exactly". When the branch push fails and the origin tip is an ancestor of the local tip, D4 tags only the local tip, and Add's coverage rule (`remoteleftover.go`) counts that as covering. Added a D6 criterion.
++- F9 (fixed as proposed): D6 now has the sweep read origin's tip under the lock, fetch and archive it when it diverges, and lease the delete on it. Added a sweep criterion.
++- F10 (fixed as proposed): both Open risks lines are gone; the section reads "None." Two Constraints bullets record the research:
++  - **2026-11-03 trace:** a weft branch reads gone only when it has a tracking ref or upstream and origin lacks the branch (`originTargets`, `judgeBranch`, `checkOrigin`). A fresh weft has neither until its push lands, and `git push --delete` drops the tracking ref under the records repo's default `+refs/heads/*:refs/remotes/origin/*` refspec. So the trigger is a delete of origin's branch after the push. The only deleters are the removal, its origin-only path, the sweep and Add's step 11; D6 and D7 cover all of them. A grep of the hub's `.lym/logs` found no gone or `ErrBranchGone` line.
++  - **Missing objects:** pinned to receive-pack's connectivity check and the quarantine environment (`git help receive-pack`, git 2.53.0). The record states which cause the branch-first push and the retry cover, and that a remote store fault is not covered.
++
++  Support-log Q8 now points at Constraints.
++- F11 (fixed as proposed): under the adopt-only option, a local weft branch whose tip an archive tag covers answers not-live. The D1 bound now says "locally or on origin". Added a D1 criterion.
++- F12 (fixed as proposed): D4 step 3 fetches the diverged origin tip by SHA before tagging it.
++- F13 (fixed as proposed): D5's rule now reads the remote tip with `git ls-remote`. A commit equal to the tip, or an ancestor of it by `git merge-base --is-ancestor`, counts as present; when the tip is not known locally the answer is unsettled, never absent. The D5 criterion was extended.
++- F14 (fixed as proposed, second option): D7's bound states that the hold can reach one branch push plus the archive-tag retries, about a minute (`archiveTagPushDelays`), which is past the teardown wait. A hand add or a discard refused this way names the re-run, and D2 reads a batten pass's refusal as transient.
++- F15 (fixed as proposed): the first D7 criterion was replaced with Add waiting while Remove, the discard or the sweep holds the lock exclusive.
++- F16 (fixed as proposed): D1's bound now names the end of the flag-only `AdoptLocal` rule (`add.go`, `fabricengine/doc.go`, `fabriccli/doc.go`) and the rule that replaces it.
++
++`relevant.md` gained `arm.go` `haltedOverDoneChild`, `pushclassified.go` `checkOrigin`, and the `liftSlugPauses` member on `cancelcmd.go`.
++
++No gate or validator was run: `lym` commands are out of scope for this round.
++
++## Disputed
++
++None.
++
++## Deferred
++
++None.
+diff --git a/docs/research/fixers-on-sonnet-2026-11-03/data/discussion-opus-2/score.md b/docs/research/fixers-on-sonnet-2026-11-03/data/discussion-opus-2/score.md
+new file mode 100644
+index 00000000..ebfb60ce
+--- /dev/null
++++ b/docs/research/fixers-on-sonnet-2026-11-03/data/discussion-opus-2/score.md
+@@ -0,0 +1,24 @@
++| finding | verdict | evidence |
++|---|---|---|
++| F1 | fixed | D1 step 3 passes no `Anchor` and the adopt-only option skips the source-dirt check (add.go:239-246, 397-401); the beam/dirt acceptance criterion is added. |
++| F2 | partial | Land way forward now goes by refusal class, and the criterion requires that the records are back. But the main post-removal case (origin weft branch deleted, only `archive/<slug>/*` tags left, which `probeWeftLeftover` never reads when tip=="") is described as "an archive tag covering its tip on origin". With a reused slug's several tags, nothing says which tag `git branch` restores from. |
++| F4 | fixed | D1 para 1 makes the tolerance an option that only the resume sets; `originTargets` (originreconcile.go:633), `DropLocal` and loom's reconciles keep the error, and the criterion covers both cases. |
++| F5 | fixed | D2 lists the three permanent classes (not-live sentinel, records-dir sentinel, `ErrRemoteLeftover`) and the transient ones, wraps probes in a probe sentinel, and adds a worktree-add-failure criterion. |
++| F6 | fixed | The rationale now matches `childReachedParent` (cancel.go:691-708, false with !childFound at Land); the cancel and the warning are limited to before Land, and a Land criterion is added. |
++| F7 | fixed | The Finalize stop names no cancel and keeps the owner pause, citing `liftSlugPauses` and `cancelOwnedElsewhere`; the criterion is changed to match. |
++| F8 | fixed | The D6 lease is origin's tip after D4's push (local tip if it landed, else the step-1 tip); "or at the local tip it is an ancestor of" matches Add's descend-cover rule. A D6 criterion is added. |
++| F9 | fixed | The sweep reads origin's tip under the lock, fetches and archives a diverged tip, and leases the delete on it; a sweep criterion is added (cleanup.go:243-258 archives only via `archiveWeftTip` today). |
++| F10 | fixed | Both risks are researched into Constraints and Open risks reads None. Claims checked: originTargets/judgeBranch gone rule, checkOrigin upstream-only, Add step 11 leased (add.go:628-641), git 2.53.0, no gone lines in hub logs. |
++| F11 | fixed | Under the option, a local weft branch whose tip an archive tag covers answers not-live; the bound says "locally or on origin" and a criterion is added. |
++| F12 | fixed | D4 step 3 fetches the diverged origin tip by SHA before tagging it (`tagAndPushArchiveTip` runs `git tag` locally, archive.go:120). |
++| F13 | fixed | D5 uses ls-remote tip plus `merge-base --is-ancestor`, and an unknown tip reads as unsettled, never absent; the criterion is extended. |
++| F14 | fixed | D7's bound states the hold of about a minute (`archiveTagPushDelays` 2+4+8+16+32 s plus the branch push) past the teardown wait, and that a refused hand add or discard names the re-run. |
++| F15 | fixed | The first D7 criterion now has Add wait on an exclusive hold by Remove, the discard or the sweep. |
++| F16 | fixed | D1's bound names the end of the flag-only `AdoptLocal` rule (add.go:50, both doc.go files) and the rule that replaces it. |
++
++## New defects
++
++- LOW — decision-record.md D2, the line after the Land way forward: the record cites `haltedOverDoneChild` in `internal/battencli/arm.go` as evidence that `lym batten run` resumes a failed status at its row. That function only builds a status-envelope flag when the child's status is read as done. With the task worktree gone, `readChildStatus` returns found=false and no flag is built. The resume behaviour lives in shedengine's run loop (run.go step 3b), so the citation is wrong evidence.
++- LOW — decision-record.md D2, Land way forward, the "Not-live with no weft branch and no archive tag" bullet: the failed stop names no way forward (against `PATTERN-refusal-way-forward`, which F2 invoked). It hands the run to the board note `landed-run-left-paused`, but that note covers paused landed runs, not a `failed` batten status.
++
++TALLY fixed=14 partial=1 open=0 new=2
+diff --git a/docs/research/fixers-on-sonnet-2026-11-03/data/discussion-sonnet-1/fixer-report.md b/docs/research/fixers-on-sonnet-2026-11-03/data/discussion-sonnet-1/fixer-report.md
+new file mode 100644
+index 00000000..65581993
+--- /dev/null
++++ b/docs/research/fixers-on-sonnet-2026-11-03/data/discussion-sonnet-1/fixer-report.md
+@@ -0,0 +1,33 @@
++# Fixer report
++
++All edits are in `artifact/decision-record.md`, plus a round line in `artifact/support-log.md`. Findings were checked against the code at b194fbc4.
++
++## Changes
++
++- F1: D1 step 3 now says the adopt-only Add passes no Anchor and no Parent and skips the source-dirt check. Added a D1 criterion for a beam project's re-adoption and one for tracked dirt in the prime.
++- F2: D2's Land way forward is rewritten by cause. For not-live, it restores the weft branch from its archive tag, then runs `lym fabric add --adopt-local`. For a records worktree still standing and for ErrRemoteLeftover, it names the step that clears the refusal. It states that `lym batten run` re-enters a failed row. The D2 Land criterion now requires the child's records to be present after the steps.
++- F4: D1's first paragraph now makes the tolerance a run-scope option that only batten's resume sets, with the entry classified from its origin record and the Bolt. Every other caller keeps today's error. Added a D1 criterion for both sides.
++- F5: D2 now lists a closed permanent set (not-live sentinel, records-worktree-present, ErrRemoteLeftover). Every other refusal is transient, and `ErrOriginUnreadable` (new) wraps the probe and transport failures. Added a transient-local-refusal criterion.
++- F6: D3's rationale is corrected to say `childReachedParent` is true only at Worktree-Teardown or past the merge. The warning and appended cancel are restricted to rows before Land, and D3 refers to D2's way forward at Land. Added a criterion.
++- F7: I dropped the appended cancel from Finalize's stop and left that stop unchanged. D3's fabric-remove warning is also not given when the owner pause stands. Added criteria.
++- F8, F9: D6's lease is now origin's weft tip after D4's push, and D4 archives that tip. The cleanup sweep archives a diverged origin tip and leases on it. Added D6 criteria for both.
++- F10: Both Open risks are replaced by researched entries in Constraints, and Open risks now reads "None.". The Constraints entries trace every weft-branch origin-delete path and conclude D6 and D7 cover the 2026-11-03 trigger. They also state which causes of the "missing necessary objects" rejection D4 and D7 cover.
++- F11: Under the adopt-only option, a local weft branch whose tip an archive tag covers also answers not-live. Added a criterion.
++- F12: D4 step 3 fetches the diverged origin tip by its SHA before tagging. Added a criterion.
++- F13: D5 treats the named commit as present when it equals the remote tip or is its ancestor, and as unsettled otherwise, never absent. The D5 criterion is extended.
++- F14: D7's Bound states the roughly one-minute hold against the 30 s wait. A refused hand add or discard names the re-run, and the wait is not lengthened.
++- F15: The first D7 criterion now has Add waiting while Remove, the discard or the sweep holds the lock exclusive.
++- F16: D1's Bound names the rule it ends: only the `--adopt-local` flag setting AdoptLocal. The replacement rule is that the flag and the adopt-only resume are the only setters.
++
++## Fixed differently
++
++- F7: the review offered either dropping the cancel from the stop or dropping "leaving the owner pause standing". I took the first option.
++- F2: the review left the not-live step open ("restore the weft from its archive tag, or a new adopt-only add option over an archived weft"). I chose the tag restore, which adds no new Add option.
++
++## Disputed
++
++None.
++
++## Deferred
++
++- F10, part of the research: I could not read this hub's run logs for 2026-11-03, because they are outside my read surface. The trigger trace and the receive-pack cause are from code, and from my own knowledge of git's connectivity check rather than the docs at the version in use. Constraints says the trace was not reproduced.
+diff --git a/docs/research/fixers-on-sonnet-2026-11-03/data/discussion-sonnet-1/score.md b/docs/research/fixers-on-sonnet-2026-11-03/data/discussion-sonnet-1/score.md
+new file mode 100644
+index 00000000..d8419bd3
+--- /dev/null
++++ b/docs/research/fixers-on-sonnet-2026-11-03/data/discussion-sonnet-1/score.md
+@@ -0,0 +1,26 @@
++| finding | verdict | evidence |
++|---|---|---|
++| F1 | fixed | D1 step 3 passes no `Anchor` and skips the dirt check under the adopt-only option (add.go refusals at the `opts.Anchor != "" && weftOld.live` check and the `ErrSourceDirty` branch); the beam-anchor and dirty-prime criterion is added. |
++| F2 | partial | The not-live step (restore the weft from its archive tag, then `--adopt-local`) works, since a local weft branch makes `probeWeftLeftover` answer live. But the `ErrRemoteLeftover` step only says "take the remedy its text names", and that text offers "use a different slug" or deleting origin's diverged weft, neither of which recovers the run's records. A not-live weft that has no archive tag gets no step at all. |
++| F4 | fixed | D1's first paragraph now makes the tolerance a run-scope option that only the resume sets, classifies the entry from its origin record and the Bolt, and keeps today's error for `DropLocal` and loom's reconciles. The criterion covers both sides. |
++| F5 | fixed | D2 gives a closed permanent list (not-live, records worktree present, `ErrRemoteLeftover`) and names the transient classes, `ErrOriginUnreadable` (new) tested with `errors.Is`, and a worktree-add transient criterion. |
++| F6 | fixed | The rationale matches `childReachedParent` (cancel.go): with the child status gone, only Worktree-Teardown or pastMerge returns true. The warning is limited to rows before Land, and a no-warning-at-Land criterion is added. |
++| F7 | fixed | D3 drops the appended cancel from Finalize's stop and leaves the record to the adopt. Fabric remove does not warn when an owner pause stands, and a criterion pins this. |
++| F8 | fixed | D6 leases on the local tip when D4's push landed, else on the step-1 tip, and adds a criterion for a pushed-then-deleted removal. |
++| F9 | fixed | D6 has the sweep read the origin tip under the lock, archive a diverged tip and lease on it. A diverged-orphan sweep criterion is added. |
++| F10 | partial | Both risks are moved to Constraints with a code trace: step 11 is leased (add.go), and `checkOrigin` passes a branch with no upstream (pushclassified.go). But the record says the hub's run logs were not read, and it cites no git documentation or git version for the receive-pack claim, although the fix asked for both. |
++| F11 | fixed | D1 step 3 adds that under adopt-only a local weft branch covered by an archive tag answers not-live, and a criterion covers it. |
++| F12 | fixed | D4 step 3 fetches a diverged origin tip by SHA before tagging it, which matches `resolveArchiveTip`'s fetch by SHA (archive.go). A criterion is added. |
++| F13 | fixed | D5 reads the tip and treats a commit as present when it equals the tip or `merge-base --is-ancestor` holds. An unknown tip is unsettled, and the criterion is extended. |
++| F14 | fixed | D7's Bound states the 30 s wait (`StatusPushLockWait`) against about a minute of hold (archive delays 2+4+8+16+32 s), and says a refused hand add or discard names the re-run. |
++| F15 | fixed | The first D7 criterion now has `Add` wait on an exclusive hold by `Remove`, the discard or the sweep. |
++| F16 | fixed | D1's Bound names the end of the flag-only `AdoptLocal` rule (add.go `AddOptions.AdoptLocal` comment and the docs of both packages) and the rule that replaces it. |
++
++## New defects
++
++- LOW — D1 step 3: "passes no `Parent`" is new and its justification, "no fork point is read when nothing is forked", is false. With an empty `Parent`, `Add` still reads the acting worktree (the prime) as its fork point for the empty-marker and anchor-move checks. A live pair whose warp branch is on neither side would also fork that branch from the prime's HEAD, not from the run's parent.
++- LOW — `## PATTERN changes`, `PATTERN-slug-remote-order`: the entry still says the delete "is leased on the origin tip read". That no longer matches D6's new lease, origin's tip after D4's branch push, which the Scope bullet was updated to.
++- LOW — D3 heading and the second Scope bullet: both still say a way forward naming `lym fabric remove` on a batten slug names `lym batten cancel` before Land. But D3's body dropped the general rule and leaves Finalize's stop (reached before batten's Land) without the cancel.
++- NIT — support-log.md Question ledger Q8 and Q5: Q8 still says the trigger is "recorded under Open risks", which is now `None.`, and Q5 still names cancel in the way forward, which D3 no longer does.
++
++TALLY fixed=13 partial=2 open=0 new=4
+diff --git a/docs/research/fixers-on-sonnet-2026-11-03/data/discussion-sonnet-2/fixer-report.md b/docs/research/fixers-on-sonnet-2026-11-03/data/discussion-sonnet-2/fixer-report.md
+new file mode 100644
+index 00000000..39bd387f
+--- /dev/null
++++ b/docs/research/fixers-on-sonnet-2026-11-03/data/discussion-sonnet-2/fixer-report.md
+@@ -0,0 +1,35 @@
++# Fixer report
++
++All edits are in `artifact/decision-record.md`, plus three line edits in `artifact/support-log.md` that keep it consistent with the record.
++I ran no gate or validator.
++
++## Changed
++
++- F1: D1 step 3 passes no Anchor and states that the adopt-only option skips the source-dirt check. Added two D1 criteria: a beam project's resume re-adopts at its recorded anchor, and so does one with prime dirt.
++- F2: D2's Land way forward now names a step per cause, then `lym batten run`. A not-live answer restores the weft branch from the archive tag with `git branch`. A records-worktree-present refusal removes the records worktree directory. ErrRemoteLeftover follows the step the refusal names. It also says a failed status resumes from its persisted producer, which `internal/battencli/run_test.go` (case "failed") confirms. The D2 Land criterion now requires that following the steps resumes Land with the child's records present.
++- F4: D1's first paragraph makes the tolerance a run-scope option that only batten's resume sets. Every other run-scope caller keeps today's error. Reworded the absent-pair criterion and added an "error stands without the option" clause.
++- F5: D2 lists the permanent and transient classes. It adds a transport sentinel (new) that `Add` wraps probe and transport failures in, tested with `errors.Is`. Any unlisted refusal is transient. Added a criterion for a transient local refusal leaving the status `running`.
++- F6: D3 is restricted to a record standing before Land. The rationale is corrected for `childReachedParent`. Added a criterion that a record at Land gets no cancel from `fabric remove`'s warning.
++- F7: Took the first option of the finding's fix. Finalize's stop is left unchanged, with the reason in D3. Criterion replaced.
++- F8: D6's lease is origin's weft tip after D4's branch push, and D4 archives exactly that tip. Added a criterion for a removal whose weft tip origin lacked.
++- F9: D6 extends D4's archive rule to the cleanup sweep, with a leased delete on the origin tip. Added a sweep criterion for a diverged origin tip.
++- F10: Researched both from the code and moved the results to Constraints, and Open risks now reads "None." For 2026-11-03, the push check and the reconcile read a branch with an upstream that origin lacks as gone. Only two deletes can remove that branch, and D6 and D7 cover both. For "missing necessary objects", I recorded receive-pack's connectivity check and the cause D4 covers. Updated two support-log lines that pointed at Open risks.
++- F11: D1's bound now says a local weft branch a removal left behind reads live and is re-adopted. Added a criterion.
++- F12: D4 step 3 fetches the diverged origin tip by SHA before tagging it.
++- F13: D5's rule reads the remote tip and treats an equal or ancestor commit as present and an unsettled one as never absent. Extended the criterion, marked Review.
++- F14: D7's Bound states the hold, about a minute, and that a refused hand add or discard names the re-run.
++- F15: Replaced the first D7 criterion with an Add that waits while Remove, the discard or the sweep holds the lock.
++- F16: D1's Bound names the rule it ends, with the three doc paths, and its replacement.
++
++## Fixed differently
++
++- F7: the finding offered two options and I chose the first. Finalize's stop drops the appended cancel instead of keeping it and dropping the "leaving the owner pause standing" text.
++- F2: its "new adopt-only add option over an archived weft" alternative was not taken. The restore through a local weft branch needs no new code, and F11's bound covers it.
++
++## Disputed
++
++None.
++
++## Deferred
++
++None. One gap in F10: I could not read this hub's run logs, so the 2026-11-03 trigger is a code-derived trace and no log confirms it. I also did not check the git version in use, so the receive-pack account is stated from behaviour and not cited to a version.
+diff --git a/docs/research/fixers-on-sonnet-2026-11-03/data/discussion-sonnet-2/score.md b/docs/research/fixers-on-sonnet-2026-11-03/data/discussion-sonnet-2/score.md
+new file mode 100644
+index 00000000..06544f5b
+--- /dev/null
++++ b/docs/research/fixers-on-sonnet-2026-11-03/data/discussion-sonnet-2/score.md
+@@ -0,0 +1,24 @@
++| finding | verdict | evidence |
++|---|---|---|
++| F1 | fixed | D1 step 3 now passes no Anchor and skips the source-dirt check under the adopt-only option (matches add.go's anchor-on-live-weft and ErrSourceDirty refusals); the beam/dirty-prime criterion is added. |
++| F2 | partial | The Land way forward drops `--adopt-local` and names a per-refusal step, the failed-status resume and the records-present criterion. The restore step needs "the archive tag the stop names", but after a normal teardown origin's weft is deleted, so probeWeftLeftover returns the zero answer with no tag. The record never says how the stop finds the tag, or which of a reused slug's several archive/<slug>/* tags to pick. |
++| F4 | fixed | D1 now makes the absence tolerance a resume-only run-scope option that classifies the entry from its origin record and the Bolt; DropLocal and loom's reconciles keep originTargets' error, and a criterion covers both cases. |
++| F5 | fixed | D2 lists the permanent and transient classes, adds a transport sentinel (new) tested with errors.Is, and adds a transient-local-refusal criterion. |
++| F6 | fixed | The rationale now matches childReachedParent (true only at Worktree-Teardown or pastMerge when the child status is gone). The cancel and the warning are restricted to records before Land, Land points at D2, and a criterion is added. |
++| F7 | fixed | The Finalize stop keeps its text, with no cancel (finalize_owner.go still says to leave the owner pause standing). The reason is stated, and the criterion is changed. |
++| F8 | partial | The lease is now "the local tip when that push landed or origin already held it". When origin is ahead of the local tip, origin already holds it but origin's tip is not the local tip, so the remover's own lease fails and the branch is kept. Also, "D4 archives exactly that tip" is false when the push fails and origin is behind: D4 then tags only the local tip. |
++| F9 | fixed | D6 has the sweep read origin's tip under the lock, archive it when diverged (fetched by SHA) and lease on it; the sweep criterion is added. |
++| F10 | partial | Both Open risks lines are dropped and the traces moved to Constraints, but no evidence is cited: no git docs or version for receive-pack's connectivity check, and no run logs. "So the new pair's weft branch was deleted on origin after its first push" is stated as a traced fact. |
++| F11 | fixed | The D1 bound now says a leftover local weft branch is re-adopted whatever tag covers it (matches probeWeftLeftover reading tags only with no local branch), and a criterion is added. |
++| F12 | fixed | D4 step 3 now fetches the diverged origin tip by SHA first, as resolveArchiveTip does. |
++| F13 | fixed | D5 reads the remote tip, treats equal or ancestor (merge-base --is-ancestor) as present and anything else as unsettled, never absent; the criterion is extended and opens with `Review:`. |
++| F14 | fixed | D7 Bound states about a minute of hold against the teardown wait, and that a hand add or discard refused this way names the re-run. |
++| F15 | fixed | The first D7 criterion now has Add wait on Remove, the discard or the sweep holding the lock exclusive. |
++| F16 | fixed | D1 now names the end of the flag-only AdoptLocal rule in add.go, fabricengine/doc.go and fabriccli/doc.go (all exist at b194fbc4) and the rule that replaces it. |
++
++## New defects
++
++- LOW — decision-record.md D3, first two sentences: the rule that every stop naming `lym fabric remove` for a record standing before Land also names the cancel conflicts with the next sentence. That sentence keeps Finalize's stop, which names `lym fabric remove` while batten stands at Run-Shed, before Land, free of the cancel, and the rule names no exception for it.
++- NIT — support-log.md Rejected alternatives: "Leasing the weft delete on the local tip" is still listed as rejected, while the new D6 leases on the local tip after D4's push.
++
++TALLY fixed=12 partial=3 open=0 new=2
+diff --git a/docs/research/fixers-on-sonnet-2026-11-03/data/plan-opus-1/fixer-report.md b/docs/research/fixers-on-sonnet-2026-11-03/data/plan-opus-1/fixer-report.md
+new file mode 100644
+index 00000000..ad2cc6d5
+--- /dev/null
++++ b/docs/research/fixers-on-sonnet-2026-11-03/data/plan-opus-1/fixer-report.md
+@@ -0,0 +1,26 @@
++# Fixer report
++
++All nine findings were checked against the code at c7cde044 (`internal/state/state.go:148` UpdateJSON, `internal/gatecli/cli_test.go:14,59-66`, `internal/shuttlecli/await.go:1-2,17-18`, `internal/loomshed/plancontext.go:141-147`, `contracts/specs/loom-plan-spec.md:320,594-596`, `internal/gatecli/cardverify.go:95-97`, `PATTERN.md:43`). Every premise held, and every finding is fixed.
++
++## Changes
++
++- **F1** (fixed as proposed). `artifact/10-gate-detached-runner.md`: the Run directory paragraph says that `writeLease` and `expireLease` update `lease.json` through `state.UpdateJSON(<lease path>, <lease path>.lock, mutate)`. `writeLease`'s mutate keeps the later deadline, and `expireLease`'s writes now less a second. The paragraph cites PATTERN-tolerant-records. `internal/state#UpdateJSON` is added under **Uses:**. `artifact/11-gate-capped-front.md`: the Front paragraph says the key directory names the current run id in a JSON record, `current.json`, written through `state.WriteJSON` (PATTERN-tolerant-records). `internal/state#WriteJSON` is added under **Uses:**.
++- **F2** (fixed differently). `artifact/11-gate-capped-front.md`: the **Edit:** list gains `//internal/gatecli/cli_test.go`. The proposed member target `internal/gatecli#TestGateTest_RefusesBeforeResolvingTheHub` was not used. The change also removes the file's `internal/shuttleengine` import, and the file header ("the slot wait its help text names", cli_test.go:3) becomes false. Both of those are file-level text that a member target does not cover. Card 4 uses a file target for the same reason under F8. The Tests paragraph says that the subtest "help names the shared keep-cache-warm cap as the slot wait" is removed, along with the unused import and the header's slot-wait clause.
++- **F3** (fixed as proposed). `artifact/10-gate-detached-runner.md`: `TestDetachStore` and `TestStartReading` are dropped from **Create:**, and so are their two Tests bullets. `artifact/11-gate-capped-front.md`: `TestJoinable`'s reused-pid row now drives `joinable` with a reader built from `startReading("windows", ...)` over injected creation times. The row pins three things: the Unix-nanosecond reading, the false answer when `CreationTime` fails, and two creation times telling a reused pid apart.
++- **F4** (fixed as proposed). `artifact/14-agent-gate-calls.md`: `internal/loomshed#verifyLineFindings` is added under **Edit:** and `//internal/loomshed/doc.go` under **Uses:**. The Intent now rewrites three texts:
++  - the spec's gate-keys sentence: a Go site runs `--wait`, and agent card, batch and `webster-fix` calls carry none;
++  - the spec's `verify-gate-no-wait` reason;
++  - the Detail of the plan check's finding, which now gives the reason that holds: Go re-runs the line outside an agent hook, and a call without `--wait` is a slot-held line under the card-verify runner's timeout.
++- **F5** (fixed as proposed). `artifact/11-gate-capped-front.md` Choice (D2) gains a Bound sentence. An in-process slot wait has no cap and ends when a holder releases its slots. Each holder is bounded by its tier's `timeout_min`, and the caller's interrupt cancels the wait and exits 1.
++- **F6** (fixed as proposed). `artifact/13-card-verify-capped.md`: in the runner paragraph, a matched card with no `**Verify:**` line makes the runner write the in-process ok envelope (`card <id> has no **Verify:** line; nothing to run`) to `stdout` and an unmarked `{Code: 0}`.
++- **F7** (fixed as proposed). `artifact/11-gate-capped-front.md`: under `none`, `helperLaunch` writes `gate helper: the runner was never started` to `runner.log` before it returns the ended pid. The `none` row of `TestGateTest_DetachedRun` asserts that line on stderr.
++- **F8** (fixed as proposed). `artifact/04-await-resolved-cap.md`: **Edit:** replaces `internal/shuttlecli#shuttleCLI.awaitCmd` with `//internal/shuttlecli/await.go`. The Intent rewrites the file header, which now says the verb reads the keep-warm config inside a worktree. It also rewrites `awaitVerb`'s comment, which now says resolution is still skipped because the verb resolves only its own config dirs in a worktree and needs no hub.
++- **F9** (fixed as proposed). `artifact/08-runproc-gate-role.md`: the label over `//internal/runproc/doc.go` is changed from **Extends:** to **Edit:**. `artifact/09-run-records-call-id.md`: `//internal/gateslot/doc.go` moves to **Edit:**, and the empty Extends group is dropped.
++
++## Disputed
++
++None.
++
++## Deferred
++
++None.
+diff --git a/docs/research/fixers-on-sonnet-2026-11-03/data/plan-opus-1/score.md b/docs/research/fixers-on-sonnet-2026-11-03/data/plan-opus-1/score.md
+new file mode 100644
+index 00000000..2c4ea24e
+--- /dev/null
++++ b/docs/research/fixers-on-sonnet-2026-11-03/data/plan-opus-1/score.md
+@@ -0,0 +1,17 @@
++| finding | verdict | evidence |
++|---|---|---|
++| F1 | fixed | Card 10's Run directory paragraph routes writeLease/expireLease through `state.UpdateJSON(<lease path>, <lease path>.lock, mutate)` citing PATTERN-tolerant-records, with `internal/state#UpdateJSON` under Uses; card 11 names `current.json` written through `state.WriteJSON` and lists `internal/state#WriteJSON` (both exist at state.go:30 and :148). |
++| F2 | fixed | Card 11 adds `//internal/gatecli/cli_test.go` under Edit (a test file, no other member of that file on the card) and its Tests paragraph removes the subtest, the then-unused `shuttleengine` import (used only at cli_test.go:62) and the header's slot-wait clause. |
++| F3 | fixed | Card 10's Create list and Tests drop TestDetachStore and TestStartReading; card 11's TestJoinable reused-pid row now drives `startReading("windows", ...)` covering the Unix-nanosecond reading, the false answer and two creation times. |
++| F4 | fixed | Card 14 adds `internal/loomshed#verifyLineFindings` (the function holding the Detail at plancontext.go:147) under Edit and `//internal/loomshed/doc.go` under Uses, and its Intent rewrites the spec's gate-keys sentence and the `verify-gate-no-wait` reason and Detail to the reason that holds. |
++| F5 | fixed | Card 11's Choice (D2) gains the Bound sentence naming the holders' release, each tier's `timeout_min` (gateslot config.go:67) and the caller's interrupt. |
++| F6 | fixed | Card 13's runner paragraph adds the no-Verify-line case writing the in-process ok message (matches cardverify.go:95-97) to `stdout` with an unmarked `{Code: 0}`. |
++| F7 | fixed | Card 11's helperLaunch `none` now writes `gate helper: the runner was never started` to `runner.log`, and the `none` row asserts that line on stderr. |
++| F8 | fixed | Card 4's Edit replaces the `awaitCmd` member with `//internal/shuttlecli/await.go`, and its Intent rewrites the file header (await.go:1-2) and the `awaitVerb` comment (await.go:17-18). |
++| F9 | fixed | Card 8 relabels Extends to Edit over the runproc doc; card 9 moves the gateslot doc into Edit and drops the empty Extends group. |
++
++## New defects
++
++- NIT — `10-gate-detached-runner.md`, Run directory paragraph: `detachRun` "names its files" but the list leaves out the new `lease.json.lock` that the `state.UpdateJSON` call adds to the run directory.
++
++TALLY fixed=9 partial=0 open=0 new=1
+diff --git a/docs/research/fixers-on-sonnet-2026-11-03/data/plan-opus-2/fixer-report.md b/docs/research/fixers-on-sonnet-2026-11-03/data/plan-opus-2/fixer-report.md
+new file mode 100644
+index 00000000..6b1ff335
+--- /dev/null
++++ b/docs/research/fixers-on-sonnet-2026-11-03/data/plan-opus-2/fixer-report.md
+@@ -0,0 +1,21 @@
++# Fixer report — plan-opus-2
++
++## Changes
++
++- F1 (fixed as proposed): `10-gate-detached-runner.md`'s Run directory paragraph now has `writeLease` and `expireLease` update `lease.json` through `state.UpdateJSON(<lease path>, <lease path>.lock, mutate)`. `writeLease`'s mutate keeps the later deadline and `expireLease`'s writes now less a second. The paragraph cites PATTERN-tolerant-records, and `internal/state#UpdateJSON` is added under **Uses:**. `11-gate-capped-front.md`'s Front paragraph now says the key directory names the current run id in `current.json`, written through `state.WriteJSON` with its own lock file `current.json.lock`, which is not the key directory's held `lock`, since `UpdateJSON`'s doc warns that nesting on a held lock hangs. It cites PATTERN-tolerant-records, and `internal/state#WriteJSON` is added under **Uses:**.
++- F2 (fixed as proposed): `11-gate-capped-front.md` adds `internal/gatecli#TestGateTest_RefusesBeforeResolvingTheHub` to **Edit:**. Its Tests paragraph removes the subtest "help names the shared keep-cache-warm cap as the slot wait" and the then unused `internal/shuttleengine` import, which line 62 of `cli_test.go` at c7cde04 shows is the import's only use.
++- F3 (fixed as proposed): `10-gate-detached-runner.md` drops `TestDetachStore` and `TestStartReading` from **Create:** and drops their Tests bullets. In `11-gate-capped-front.md`, `TestJoinable`'s reused-pid row now drives `joinable` with a reader built from `startReading("windows", ...)` over injected creation times. That one row pins the Unix-nanosecond reading, the false answer when `CreationTime` fails, and two creation times telling a reused pid apart.
++- F4 (fixed as proposed): `14-agent-gate-calls.md` adds `internal/loomshed#verifyLineFindings` under **Edit:** and `//internal/loomshed/doc.go` under **Uses:**. Its Intent now rewrites three texts: loom-plan-spec.md's gate-keys sentence (a Go site runs `--wait`; agent card, batch and `webster-fix` calls do not), the `verify-gate-no-wait` reason, and the `verifyGateNoWaitCheck` Detail. The last two now give the reason that still holds.
++- F5 (fixed as proposed): `11-gate-capped-front.md`'s Choice (D2) paragraph gains a Bound sentence. An uncapped in-process slot wait ends only when a holder releases its slots, each holder's run bounded by its tier's `timeout_min`, or when the caller interrupts.
++- F6 (fixed as proposed): `13-card-verify-capped.md`'s runner paragraph now says that a matched card with no `**Verify:**` line in the runner's read gets the in-process ok envelope on `stdout` and an unmarked exit `{Code: 0}`.
++- F7 (fixed as proposed): `11-gate-capped-front.md`'s helper description now has `helperLaunch` under `none` write `gate helper: the runner was never started` to `runner.log`, and the `none` row asserts that line on the front's stderr.
++- F8 (fixed as proposed): `04-await-resolved-cap.md` replaces `internal/shuttlecli#shuttleCLI.awaitCmd` under **Edit:** with `//internal/shuttlecli/await.go`. Its Intent now rewrites the file header and `awaitVerb`'s comment.
++- F9 (fixed as proposed): in `08-runproc-gate-role.md` the label over `//internal/runproc/doc.go` changes from **Extends:** to **Edit:**. In `09-run-records-call-id.md`, `//internal/gateslot/doc.go` moves into **Edit:** and the now empty **Extends:** group is removed.
++
++## Disputed
++
++None.
++
++## Deferred
++
++None.
+diff --git a/docs/research/fixers-on-sonnet-2026-11-03/data/plan-opus-2/score.md b/docs/research/fixers-on-sonnet-2026-11-03/data/plan-opus-2/score.md
+new file mode 100644
+index 00000000..e96732a6
+--- /dev/null
++++ b/docs/research/fixers-on-sonnet-2026-11-03/data/plan-opus-2/score.md
+@@ -0,0 +1,18 @@
++| finding | verdict | evidence |
++|---|---|---|
++| F1 | fixed | Card 10 now updates `lease.json` through `state.UpdateJSON(<lease path>, <lease path>.lock, mutate)` with both mutates as specified and `internal/state#UpdateJSON` under Uses. Card 11 adds a `current.json` pointer through `state.WriteJSON` with `internal/state#WriteJSON` under Uses. Both cite PATTERN-tolerant-records, and the signatures match state.go:30 and :148. |
++| F2 | fixed | `internal/gatecli#TestGateTest_RefusesBeforeResolvingTheHub` is now in card 11's Edit list. The Tests paragraph removes the subtest "help names the shared keep-cache-warm cap as the slot wait" (cli_test.go:58-62) and the then-unused `internal/shuttleengine` import (cli_test.go:14). |
++| F3 | fixed | Card 10 drops both Create glyphs and both Tests bullets, and no reference to either test is left anywhere. Card 11's TestJoinable reused-pid row now uses `startReading("windows", ...)` and covers the nanosecond reading, a failed `CreationTime` and a reused pid. Card 11 already lists `plan:internal/gatecli#startReading` under Uses. |
++| F4 | fixed | Card 14 adds `internal/loomshed#verifyLineFindings` under Edit (it encloses plancontext.go:147) and `//internal/loomshed/doc.go` under Uses. Its Intent rewrites the spec's gate-keys sentence, the `verify-gate-no-wait` reason and the finding's Detail. |
++| F5 | fixed | Card 11's Choice (D2) paragraph gains a Bound sentence: the wait ends on a holder's release, which is bounded by its tier's `timeout_min` (gateslot/config.go:67), or on the caller's interrupt, which exits 1. |
++| F6 | fixed | Card 13's runner paragraph now says a matched card with no `**Verify:**` line makes the runner write the in-process ok envelope, whose text matches cardverify.go:94, and an unmarked `{Code: 0}`. |
++| F7 | fixed | Under `none`, `helperLaunch` now writes `gate helper: the runner was never started` to `runner.log`, and the `none` row asserts that line on stderr. |
++| F8 | fixed | Card 4's Edit target `internal/shuttlecli#shuttleCLI.awaitCmd` becomes `//internal/shuttlecli/await.go`. Its Intent now rewrites the file header (await.go:1-2) and `awaitVerb`'s comment (await.go:17-18) as proposed. |
++| F9 | fixed | Card 8's label is now **Edit:**. Card 9 moves `//internal/gateslot/doc.go` under **Edit:** and drops the empty Extends group. |
++
++## New defects
++
++- LOW, `14-agent-gate-calls.md` ImpactSummary: it still names only the four webster render sites and says the card Verify rule stays. It leaves out the card's new edit of `loomshed#verifyLineFindings`'s finding Detail and the spec's gate-keys sentence, so the blast-radius line no longer matches the card's targets.
++- NIT, `04-await-resolved-cap.md` ImpactSummary: it still reads "one verb's default cap and help text, and one constant's doc comment". The card's target is now the whole `await.go`, whose file header and `awaitVerb` comment it also rewrites.
++
++TALLY fixed=9 partial=0 open=0 new=2
+diff --git a/docs/research/fixers-on-sonnet-2026-11-03/data/plan-sonnet-1/fixer-report.md b/docs/research/fixers-on-sonnet-2026-11-03/data/plan-sonnet-1/fixer-report.md
+new file mode 100644
+index 00000000..879f5221
+--- /dev/null
++++ b/docs/research/fixers-on-sonnet-2026-11-03/data/plan-sonnet-1/fixer-report.md
+@@ -0,0 +1,20 @@
++# Fixer report
++
++All nine findings fixed as proposed.
++
++## Changes
++- F1: card 10 routes writeLease/expireLease through `state.UpdateJSON` (Uses added); card 11 writes the key directory's current-run pointer through `state.WriteJSON` (Uses added); both cite PATTERN-tolerant-records.
++- F2: card 11 adds `TestGateTest_RefusesBeforeResolvingTheHub` to Edit and states removal of the help subtest and the unused `shuttleengine` import.
++- F3: card 10 drops `TestDetachStore` and `TestStartReading` (Create entries and Tests bullets); card 11's TestJoinable reused-pid row takes the Windows `startReading` cases.
++- F4: card 14 adds `internal/loomshed#verifyLineFindings` (Edit) and `//internal/loomshed/doc.go` (Uses), and rewrites the gate-keys sentence, the `verify-gate-no-wait` reason and the finding Detail.
++- F5: card 11 Choice (D2) gains the Bound sentence for the uncapped in-process wait.
++- F6: card 13 runner paragraph specifies the no-Verify-line answer (ok envelope, `{Code: 0}`).
++- F7: card 11's `none` row asserts a fixed line that `helperLaunch` writes to `runner.log`.
++- F8: card 4 targets `//internal/shuttlecli/await.go` in place of `awaitCmd`, with the header and `awaitVerb` comment changes in the Intent.
++- F9: card 8 Extends relabelled Edit; card 9 gateslot doc moved to Edit, empty Extends group dropped.
++
++## Disputed
++None.
++
++## Deferred
++None.
+diff --git a/docs/research/fixers-on-sonnet-2026-11-03/data/plan-sonnet-1/score.md b/docs/research/fixers-on-sonnet-2026-11-03/data/plan-sonnet-1/score.md
+new file mode 100644
+index 00000000..f4dc945d
+--- /dev/null
++++ b/docs/research/fixers-on-sonnet-2026-11-03/data/plan-sonnet-1/score.md
+@@ -0,0 +1,18 @@
++| finding | verdict | evidence |
++|---|---|---|
++| F1 | fixed | Card 10 now has writeLease/expireLease going through `state.UpdateJSON(<lease path>, <lease path>.lock, mutate)` with the later-deadline and now-less-a-second mutates, and `internal/state#UpdateJSON` under Uses. Card 11's pointer is a JSON record written through `state.WriteJSON` with `internal/state#WriteJSON` under Uses. Both cite PATTERN-tolerant-records, and both signatures exist at state.go:30 and :148. |
++| F2 | fixed | `internal/gatecli#TestGateTest_RefusesBeforeResolvingTheHub` is under card 11's Edit, and the Tests paragraph removes the subtest at cli_test.go:59-66 together with the `shuttleengine` import. That import's only use is line 62. |
++| F3 | fixed | Card 10's Create entries and Tests bullets for `TestDetachStore` and `TestStartReading` are gone, and no reference to them is left. Card 11's TestJoinable reused-pid row now drives `startReading("windows", ...)` and covers the nanosecond reading, the false answer when CreationTime fails, and the reused-pid case. |
++| F4 | fixed | Card 14 lists `internal/loomshed#verifyLineFindings` under Edit (plancontext.go:123/147) and `//internal/loomshed/doc.go` under Uses. Its Intent rewrites spec line 320's every-site-runs-`--wait` sentence, the reason at line 595 and the Detail of the verifyGateNoWaitCheck finding. |
++| F5 | fixed | Card 11's Choice (D2) gains a Bound sentence: the uncapped in-process wait ends when a holder releases its slots, each holder is bounded by its tier's timeout_min, and the caller's interrupt exits 1. |
++| F6 | fixed | Card 13's runner paragraph now says that when the matched card has no Verify line, the runner writes the ok envelope (`card <id> has no **Verify:** line; nothing to run`) to stdout with an unmarked `{Code: 0}`. |
++| F7 | fixed | Card 11's `none` row now asserts the fixed line `gate helper: the runner was never started`, which `helperLaunch` under `none` writes to runner.log, in place of an empty log. |
++| F8 | fixed | Card 4's Edit now names `//internal/shuttlecli/await.go` in place of the awaitCmd member, and its Intent rewrites the file header (await.go:1-2) and the awaitVerb comment (await.go:17-18) as the fix asked. |
++| F9 | fixed | Card 8's label is now **Edit:** over runproc/doc.go. In card 9, the gateslot doc moved into the Edit list and the empty Extends group was dropped. |
++
++## New defects
++
++- LOW, `11-gate-capped-front.md`, Front paragraph (the key-directory pointer): "written through `state.WriteJSON` under the key directory's lock" does not say which lockPath WriteJSON gets. WriteJSON takes its own `lock.AcquireWriteLock(lockPath)`, so passing the key directory's `lock` file, which the front already holds through TryAcquireWriteLock, would make the front block on its own lock. The card never names a separate pointer lock path, as card 10 does with `<lease path>.lock`.
++- NIT, `11-gate-capped-front.md`, Tests (`TestGateTest_RefusesBeforeResolvingTheHub`): the card removes the help subtest but leaves cli_test.go's file header, which still says the file covers "the slot wait its help text names" and becomes false once the subtest is gone. The header is not among the card's targets.
++
++TALLY fixed=9 partial=0 open=0 new=2
+diff --git a/docs/research/fixers-on-sonnet-2026-11-03/data/plan-sonnet-2/fixer-report.md b/docs/research/fixers-on-sonnet-2026-11-03/data/plan-sonnet-2/fixer-report.md
+new file mode 100644
+index 00000000..ecf1e492
+--- /dev/null
++++ b/docs/research/fixers-on-sonnet-2026-11-03/data/plan-sonnet-2/fixer-report.md
+@@ -0,0 +1,23 @@
++# Fixer report
++
++All nine findings fixed as proposed in the artifact. Nothing disputed, nothing deferred.
++
++## Changes
++
++- F1: card 10 Run directory paragraph now routes `writeLease` and `expireLease` through `state.UpdateJSON` with the stated mutates, and `internal/state#UpdateJSON` is under Uses. Card 11's key-directory pointer is a JSON record written through `state.WriteJSON`, which is under Uses. Both cite PATTERN-tolerant-records.
++- F2: card 11 lists `TestGateTest_RefusesBeforeResolvingTheHub` under Edit, and its Tests paragraph removes the help subtest and the unused `internal/shuttleengine` import.
++- F3: card 10 drops `TestDetachStore` and `TestStartReading` from Create and Tests, with a sentence naming the surface rows that cover them. Card 11's `TestJoinable` reused-pid row now drives `startReading("windows", ...)`.
++- F4: card 14 adds `internal/loomshed#verifyLineFindings` under Edit and `//internal/loomshed/doc.go` under Uses. Its Intent rewrites the spec's gate-keys sentence, the `verify-gate-no-wait` reason and the finding's Detail.
++- F5: card 11 Choice (D2) gains the Bound sentence for the uncapped in-process wait.
++- F6: card 13's runner paragraph specifies the ok envelope and `{Code: 0}` for a matched card with no Verify line.
++- F7: card 11's `helperLaunch` under `none` writes a fixed line to `runner.log`, and the none row asserts that line on stderr.
++- F8: card 4 targets `//internal/shuttlecli/await.go` instead of `awaitCmd`, and its Intent rewrites the header and the `awaitVerb` comment.
++- F9: card 8's label is now Edit, and card 9's gateslot doc moved to Edit with the empty Extends group dropped.
++
++## Disputed
++
++None.
++
++## Deferred
++
++None.
+diff --git a/docs/research/fixers-on-sonnet-2026-11-03/data/plan-sonnet-2/score.md b/docs/research/fixers-on-sonnet-2026-11-03/data/plan-sonnet-2/score.md
+new file mode 100644
+index 00000000..f5d676c5
+--- /dev/null
++++ b/docs/research/fixers-on-sonnet-2026-11-03/data/plan-sonnet-2/score.md
+@@ -0,0 +1,17 @@
++| finding | verdict | evidence |
++|---|---|---|
++| F1 | fixed | Card 10's Run directory paragraph now routes writeLease/expireLease through `state.UpdateJSON(path, lockPath, mutate)` (matches state.go:148) with `internal/state#UpdateJSON` under Uses; card 11 names the run-id pointer a `state.WriteJSON` record (state.go:30) with `internal/state#WriteJSON` under Uses; both cite PATTERN-tolerant-records. |
++| F2 | fixed | Card 11 Edit lists `internal/gatecli#TestGateTest_RefusesBeforeResolvingTheHub`, and Tests removes the subtest at cli_test.go:58 and the `shuttleengine` import, whose only other use is that subtest's line 62. |
++| F3 | fixed | TestDetachStore/TestStartReading are gone from card 10's Create and Tests, which now map each helper to a covering surface row; card 11's TestJoinable reused-pid row drives `startReading("windows", ...)` over injected creation times. |
++| F4 | fixed | Card 14 adds `internal/loomshed#verifyLineFindings` (plancontext.go:123) under Edit and `//internal/loomshed/doc.go` under Uses, and its Intent rewrites spec line 320 (the every-site sentence), line 595 (the 75 rationale) and the Detail at plancontext.go:147; no loomshed test asserts that Detail text. |
++| F5 | fixed | Card 11 Choice (D2) gains the Bound sentence: the wait ends when a holder releases its slots, each run being bounded by its tier's `timeout_min`, or on the caller's interrupt, which exits 1. |
++| F6 | fixed | Card 13 adds the no-Verify-line branch, which writes the ok envelope to `stdout` with the exact text from cardverify.go:94, plus an unmarked `{Code: 0}`. |
++| F7 | fixed | Card 11 helperLaunch `none` writes `gate helper: the runner was never started` to `runner.log`, and the `none` row asserts that line on stderr. |
++| F8 | fixed | Card 4 Edit swaps `awaitCmd` for `//internal/shuttlecli/await.go`, and its Intent rewrites the header (await.go:1-2) and the awaitVerb comment (await.go:17-18) as prescribed; Create `plan:` awaitCap resolves not_found, so redundant-file-target skips it. |
++| F9 | fixed | Card 8's label is now `**Edit:**`; card 9 moves `//internal/gateslot/doc.go` into Edit and drops the empty Extends group. |
++
++## New defects
++
++none
++
++TALLY fixed=9 partial=0 open=0 new=0
+diff --git a/docs/research/fixers-on-sonnet-2026-11-03/report.md b/docs/research/fixers-on-sonnet-2026-11-03/report.md
+new file mode 100644
+index 00000000..9eec6e2c
+--- /dev/null
++++ b/docs/research/fixers-on-sonnet-2026-11-03/report.md
+@@ -0,0 +1,85 @@
++# Plan and Discussion fixers: Sonnet against Opus
++
++2026-11-03, board task `fixers-on-sonnet`.
++Eight fixer runs on two kept review rounds, `opus[medium]` against `sonnet[medium]`, two repeats per arm and input, each fixed artifact scored by one solo reviewer.
++
++## Conclusion
++
++- **`plan_fixer_model`: set `sonnet[medium]`.**
++  All four Plan runs fixed all 9 findings, and the fixed plans carried 3 new defects under Opus and 2 under Sonnet, none above LOW.
++- **`discussion_fixer_model`: keep it empty, falling back to `fixer_model` (`opus[medium]`), until a larger bench.**
++  Opus fixed 28 of 30 findings and left 2 partial, Sonnet fixed 25 and left 5 partial, with 7 and 6 new defects.
++  The gap is three findings on two runs per arm, inside the spread within an arm, so this is a lean and not a result.
++  The three partials Sonnet has beyond Opus's are on F10, which asks for research and cited evidence, and F8, a lease rule that fails in one case.
++- Sonnet ran at a lower token count on Discussion (mean 88k against 145k) and about level on Plan (mean 75k against 72k).
++  The session had no prices, so no dollar cost is recorded.
++  `docs/research/token-audit-2026-10-22` estimates that a swap saves about half a role's non-cache-read cost.
++
++## Method
++
++- **Arms:** `opus[medium]` and `sonnet[medium]` fixers on the findings as written.
++  The entry's third arm, Sonnet on findings "in the concrete form", was dropped by the parent's recorded decision: `docs/research/concrete-review-findings-2026-11-03/report.md` found every finding already names its place and change, so the arm has no input distinct from the second.
++- **Inputs:** the two rounds that report keeps in `data/fixers-input.tsv`.
++  - Plan: weft `bb7bba83fe`, code `c7cde044af`, 9 findings (1 `BLOCKING`, 2 `MEDIUM`, 5 `LOW`, 1 `NIT`).
++  - Discussion: weft `4e79893bf6`, code `b194fbc4c2`, 15 findings, the round's F3 left out because it offers two alternatives.
++  - Each run got the artifact as it stood at the weft commit (without the `lens-review.*` and `support-log.lens-*` files) and the round's review file.
++- **Fixer:** an in-session subagent following `burler-template-fixer.md` and `burler-step-fix.md`, with its write surface set to a scratch copy of the artifact and its report.
++  It read the code only through `git show` and `git grep` at the round's code commit, and ran no `lym` command.
++- **Scorer:** one solo reviewer per fixed artifact, `opus[medium]`, the same prompt for every run.
++  It judged each original finding `fixed`, `partial` or `open` against the code and the plan or discussion rubric, and listed the defects the fixer's edits introduced.
++  It saw the original artifact for the diff and read the fixer's report only after its verdicts.
++- **Cost:** the subagent's reported tokens, tool uses and wall time.
++
++## Results
++
++| Run | Model | Findings | Fixed | Partial | Open | New defects | Fixer tokens | Fixer time | Reviewer tokens |
++|---|---|---|---|---|---|---|---|---|---|
++| plan 1 | opus | 9 | 9 | 0 | 0 | 1 (NIT) | 71,768 | 87 s | 72,461 |
++| plan 2 | opus | 9 | 9 | 0 | 0 | 2 (LOW, NIT) | 71,490 | 77 s | 67,625 |
++| plan 1 | sonnet | 9 | 9 | 0 | 0 | 2 (LOW, NIT) | 85,323 | 68 s | 61,397 |
++| plan 2 | sonnet | 9 | 9 | 0 | 0 | 0 | 64,149 | 51 s | 75,149 |
++| discussion 1 | opus | 15 | 14 | 1 | 0 | 5 (MEDIUM, 2 LOW, 2 NIT) | 169,776 | 452 s | 107,250 |
++| discussion 2 | opus | 15 | 14 | 1 | 0 | 2 (LOW, LOW) | 119,313 | 321 s | 92,568 |
++| discussion 1 | sonnet | 15 | 13 | 2 | 0 | 4 (3 LOW, NIT) | 88,935 | 158 s | 96,510 |
++| discussion 2 | sonnet | 15 | 12 | 3 | 0 | 2 (LOW, NIT) | 87,194 | 166 s | 81,575 |
++
++| Input | Model | Fixed | Partial | Open | New defects | Mean fixer tokens |
++|---|---|---|---|---|---|---|
++| plan | opus | 18 of 18 | 0 | 0 | 3 | 71,629 |
++| plan | sonnet | 18 of 18 | 0 | 0 | 2 | 74,736 |
++| discussion | opus | 28 of 30 | 2 | 0 | 7 | 144,545 |
++| discussion | sonnet | 25 of 30 | 5 | 0 | 6 | 88,065 |
++
++No run left a finding `open`, and no fixer disputed a finding.
++The only deferral is part of F10 in the first Sonnet Discussion run.
++
++## Findings
++
++- **Plan:** the findings were concrete edits, and both models applied them.
++  The new defects are stale summary lines and one unnamed lock path, each small.
++  One Opus run fixed F2 differently, targeting the whole file instead of a test function, and the scorer judged it fixed.
++- **Discussion F2 is partial in all four runs.**
++  Each left a way forward that does not recover a landed run whose archive tag cannot be found or chosen; the finding asks the fixer to design that way forward, not to copy a stated edit.
++  A stronger fixer did not close it.
++- **Where Sonnet fell short:** F10 (research both open risks and cite evidence) was partial in both Sonnet runs and fixed in both Opus runs, and Sonnet's second run was also partial on F8 (a lease that fails when origin is ahead of the local tip).
++  Both Sonnet runs said they could not read the hub's run logs, and the scorer found no cited evidence for the git claim in either; the Opus runs' fixes were judged to hold.
++- **New defects:** the largest was a `MEDIUM` in Opus discussion 1, where D1's new local-archive rule and a Land way forward contradict each other and leave a dead end.
++  The Sonnet runs' new defects were `LOW` or `NIT`, mostly sentences elsewhere in the record that the edit left stale.
++
++## What eight runs support
++
++- **Supported:** on findings that state their edit, as the Plan round's do, Sonnet at medium fixes as many as Opus, with no more new defects.
++- **Not shown:** that Sonnet matches Opus on findings that ask for research or design.
++  The Discussion gap is three findings, all on F8 and F10 in the Sonnet runs, with two repeats per arm.
++- **Not shown:** the dollar cost.
++  Tokens are the subagent totals; prices and the cache split were not available.
++- **Caveats:**
++  - One reviewer scored every run and was not blind to the arm, since the run directories name the model.
++  - The reviewer saw the original findings, so it measures "fixed as asked" and may anchor on them.
++  - The fixers ran as in-session subagents rather than through the repository's reed launch path, with `lym` commands barred, so no run could run the discussion or plan check the production fixer can.
++  - The artifacts were not re-reviewed by the hub's fork-fan reviewer; the parent's decision accepted a solo reviewer.
++
++## Files
++
++- `data/<input>-<model>-<n>/score.md`: the reviewer's verdict table and new-defect list for each run.
++- `data/<input>-<model>-<n>/fixer-report.md`: each fixer's own report.
