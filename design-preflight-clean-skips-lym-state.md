@@ -2,8 +2,6 @@
 
 `preflight-clean-skips-lym-state` · Task · bug, preflight, shed · running · Darn-Write
 
-Depends on: [`inherited-halt-blocks-preflight`](design-inherited-halt-blocks-preflight.md)
-
 From [issue #27](https://github.com/Knatte18/loomyard/issues/27).
 
 ## Seen
