@@ -16,7 +16,7 @@ loom running | now Darn-Write | last Drift-Await → done | waiting Darn-Write: 
 ```
 
 The verb's help promises "a line only when the composed activity actually CHANGES rather than once per poll", but `internal/loomcli/reviewstatus.go` puts `formatElapsed(elapsed)` into the wait text (`<producer>: verify running <elapsed> (<detail>)`, and the gate-slot wait form), so the activity changes on every poll.
-An agent or Monitor that watches a run gets one event per second for the length of each gate, which floods its context; the same text feeds `lym batten status --watch`.
+An agent or Monitor that watches a run gets one event per second for the length of each gate, which floods its context.
 
 ## Expected
 
