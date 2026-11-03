@@ -1,49 +1,44 @@
-# Webster reads git and card paths at the worktree root, not the anchor
+# Webster: use the worktree root, not the anchor, in a subpath hub
 
-In a hub whose `.lym-anchor` names a subdirectory, Webster treated the anchor as the git worktree.
-This blocked every tapestry run in such a hub before it reached code ([#32](https://github.com/Knatte18/loomyard/issues/32), [#31](https://github.com/Knatte18/loomyard/issues/31)):
+In a hub whose fabric is anchored in a subdirectory by `.lym-anchor`, Webster treated the anchor as the git worktree.
+`begin-batch` then refused before any fork, because go-git was opened at `<worktree>/<anchor>` where no `.git` exists.
+Plan validation looked each card path up under `<anchor>/<root:>/<path>`, a doubled prefix, so committed files reported `path-missing` and `glyph-not-found`.
+Both faults blocked every tapestry run in such a hub, such as the NORCE Models hub.
 
-- `begin-batch` refused before any fork with `gitrepo: open go-git handle at <worktree>/<anchor>: repository does not exist`, because go-git opens only a directory that holds `.git` itself.
-- Plan checks joined `root:`-prefixed card paths onto the anchor, so the prefix appeared twice and committed files read as `path-missing` and `glyph-not-found`.
+Closes #32
+Closes #31
 
 ## What changes
 
-`websterengine.Geometry` now carries two roots, each with one meaning:
+`hubgeom.WebsterGeometry` now sets `WorktreeRoot` to `l.WorktreePath()`, the directory holding `.git`.
+Every git call and every plan-path resolution (`root:`, `//` and plain card paths, in `path-missing` and `planglyph.Resolve`) reads it, so they resolve against the worktree root as `loom-plan-spec.md` and the plan overview stencil already say.
+Neither document changes.
 
-- `WorktreeRoot` is the git worktree root, the directory holding `.git`, `PATTERN.md` and `go.mod`.
-  Every git call opens the repository here, and `planglyph`/`planindex` resolve card paths (`root:`, `//` and plain) against it, as `loom-plan-spec.md` defines.
-  `hubgeom.WebsterGeometry` sets it to `l.WorktreePath()`.
-- `PaneCwd` is new: the directory Webster's sessions run in, `l.AnchorPath()` in a hub and the target in standalone mode.
-  It is used where that directory is meant:
-  - resolving transcript-relative write paths, and so as the fork-audit workdir;
-  - the working directory of card-verify reruns and the verify gate;
-  - rendering `{{.worktree_root}}` and the prompts' plan-directory spelling;
-  - reading Merriam's instruction files;
-  - locating the session's `_lym` and `.lym`.
+`websterengine.Geometry` gains `PaneCwd`, the directory Webster's sessions run in, and drops `RepoRoot`, which `WorktreeRoot` now covers.
+Hub mode sets `PaneCwd` to `l.AnchorPath()`; standalone mode sets it to the target, as it does `WorktreeRoot`.
+Code that meant the session's directory moved from `WorktreeRoot` to `PaneCwd`:
 
-`RepoRoot` is removed. It was always equal to the new `WorktreeRoot`, and its one use, the PATTERN directive, now reads `WorktreeRoot`.
+- the fork audit workdir and the `CheckParent`/`CheckFork` write-policy checks;
+- the suspect-path resolution and the `_lym` exclusion in `suspect.go`;
+- the card-verify and `lym webster verify` working directory;
+- the `{{.worktree_root}}` token and plan directory spelling in the fork, Master and verify-fixer prompts.
 
-Some helpers took one directory for two jobs: resolving a recorded path, and then checking it against the git tree and asking git about it.
-`trackedRel`, `suspectBlobs`, `writtenWorktreePaths` and `failBatchInput` now take both roots.
-A relative path resolves against `PaneCwd`.
-The within-tree check, the repository-relative path and every git probe use `WorktreeRoot`, so the paths they give to `git rev-parse <commit>:<path>` and similar calls are relative to the repository root.
-
-Both roots come from the resolved `lymcwd.Location`, and no Webster code joins or strips the anchor by hand (`PATTERN-cwd-resolution`).
-An unanchored hub and standalone mode behave as before, since there the two roots are the same directory.
-
-## Tests
-
-- The `webstercli` verbs fixture already ran at a `backend` anchor but wrote a `.git` link file into the anchor to work around #32.
-  The link is gone, so every begin-batch, record-batch, recover-batch, fix-plan and accept-audit test now opens git from a subpath anchor with no `.git`.
-- `TestPersistentPreRunE_PlanDirAnchoredAtSubpath` now validates a plan with `root: backend` that edits `backend/README.md`, and asserts no `path-missing` or `glyph-not-found` finding.
-- With `hubgeom.WebsterGeometry` set back to the anchor, `TestBeginBatchCmd_HappyPath` fails with #32's error and the validate test fails with #31's `path-missing`.
-- The `hubgeom` and `webstercli` wiring tests pin `WorktreeRoot` to the worktree path and `PaneCwd` to the anchor.
-  Engine test fixtures that relied on `WorktreeRoot` doubling as the pane's cwd now set `PaneCwd` too.
+Webster's own state under `_lym` stays under the anchor.
 
 ## Design decisions
 
-- `WorktreeRoot` was redefined to the git root and a separate `PaneCwd` was added.
-  Moving the git and plan uses to `RepoRoot` would have avoided the new field, but `WorktreeRoot` would then keep meaning the anchor in a hub.
-  The redefinition matches `reedengine.Geometry`, whose `WorktreeRoot` and `PaneCwd` have the same meanings.
-- Gate runs (card-verify reruns and the verify gate) keep running in the pane's cwd, the anchor, as before: the hub's gate commands and `lym` itself are run from there.
-- The tackler's hand-back on #31 proposed a fix for a `#` the card did not contain. It is out of scope, as the record says.
+- The roots come from the resolved `lymcwd.Location` (`PATTERN-cwd-resolution`); no Webster code joins or strips the anchor by hand.
+- `trackedRel` and `suspectBlobs` take both roots: a relative path is resolved against `PaneCwd`, then tested for membership in the tracked tree of `WorktreeRoot`.
+- In an unanchored hub the two roots are equal, so behaviour there does not change.
+
+## Tests
+
+The `webstercli` verbs fixture and the `websterengine` helpers now build a hub with a non-`.` anchor and a `root:` plan.
+They pin `begin-batch`, record-batch, the plan path checks, the two-root suspect helpers with a subdirectory pane cwd, and the batcher size source.
+
+## To check
+
+- The batcher's disk-size source takes its worktree-root base from `WorktreeRoot`; the last review left this open as `disksizes-worktree-root-base-unpinned`.
+  Confirm every size-source construction in `Run`, `rebaseline` and the batcher uses the worktree root in a subpath-anchored hub.
+- Run a real `lym webster` batch in a subpath-anchored hub; the tests use fixtures, not a live session.
+- Out of scope: the tackler's hand-back on #31 named a fix for a `#` the card did not contain.
