@@ -71,7 +71,7 @@ Held by a run; its scope is locked until the run ends.
 | T1 | **Drift-Verify's verdict never reaches the summary or the pull request**<br>• A clean compare leaves the PR asking the operator to run the regression compare by hand | [`drift-verdict-in-pr`](design-drift-verdict-in-pr.md) | darn · light | Darn-Write | neve | 1h<br>5m | drift, loom, landing |
 | T2 | **Every remote operation runs async, and local-only fabric pairs go**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | darn · solid | Darn-Write | neve | 2w<br>55m | fabric, batten |
 | T3 | **The Drift-Baseline stencil skips the tests an intended change drifts**<br>• Intended drift is skipped instead of compared and accepted with a reason, which hides regressions in the same tests | [`drift-baseline-skips-intended`](design-drift-baseline-skips-intended.md) | darn · light | Darn-Write | neve | 11m<br>5m | drift, stencil |
-| T5 | **depends_on accepts a project or any entry that lands, and dobby holds the task until it does** | [`depends-on-any-entry`](design-depends-on-any-entry.md) | darn · light | Drift-Verify | neve | 26m<br>23m | board, dobby |
+| T5 | **depends_on accepts a project or any entry that lands, and dobby holds the task until it does** | [`depends-on-any-entry`](design-depends-on-any-entry.md) | darn · light | Code-Bouncer | neve | 26m<br>23m | board, dobby |
 | T7 | **An arbiter whose turn ends on an API error holds the stop silently until its deadline**<br>• A StopFailure leaves the settler idle, the parent's resume is refused as driver_not_parked, and no one is told | [`arbiter-api-error-stall`](design-arbiter-api-error-stall.md) | darn · light | Darn-Write | neve | 9m<br>5m | arbiter, shuttle, claude |
 
 #### Ready (0)
@@ -111,8 +111,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **batten cancel --remove leaves a non-git directory that blocks Worktree-Create** | [`cancel-remove-leftover-dir`](design-cancel-remove-leftover-dir.md) | 1m<br>1m | batten, fabric |
-| B2 |  | **lym fabric push lock held past 30s blocks the loom run at PR-Review as escalation-to-human** | [`push-lock-busy-blocks`](design-push-lock-busy-blocks.md) | 0m<br>0m | fabric, landing |
-| B3 |  | **lym webster begin-batch fails: go-git cannot open a worktree root that is a subdirectory of the repository** | [`webster-subdir-gitopen`](design-webster-subdir-gitopen.md) | 0m<br>0m | webster, git |
+| B2 |  | **lym fabric push lock held past 30s blocks the loom run at PR-Review as escalation-to-human** | [`push-lock-busy-blocks`](design-push-lock-busy-blocks.md) | 1m<br>1m | fabric, landing |
+| B3 |  | **lym webster begin-batch fails: go-git cannot open a worktree root that is a subdirectory of the repository** | [`webster-subdir-gitopen`](design-webster-subdir-gitopen.md) | 1m<br>1m | webster, git |
 | B4 |  | **Webster plan validation refuses a card path with a trailing '#' anchor that Plan-Bouncer accepted** | [`card-path-empty-anchor`](design-card-path-empty-anchor.md) | 0m<br>0m | webster, parsers |
 | B5 |  | **Moving Drift's dir base reinterpreted existing drift.yaml files with no migration**<br>• cs drift.yaml dir . moved from the anchor to the worktree root at deploy and the capture failed exit 1 | [`drift-dir-base-migration`](design-drift-dir-base-migration.md) | 9m<br>9m | drift, reconcile |
 | B6 |  | **Preflight worktree-clean halts on lym's own _lym state files** | [`preflight-own-state-dirty`](design-preflight-own-state-dirty.md) | 0m<br>0m | preflight, loom |
