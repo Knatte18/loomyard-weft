@@ -90,6 +90,12 @@ Rationale: the status strand's own keep, replace or add already runs at every lo
 
 None.
 
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/plan/round-1-review.md; fixer report: _lym/reviews/plan/round-1-fixer-report.md.
+  - orch-entry-overview-doc-stale (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - D1: a session holding an overview strand with key 1 accepts the add of a second overview strand with key 0, and its window opens before the first; added in the other order, the windows end in the same order.
