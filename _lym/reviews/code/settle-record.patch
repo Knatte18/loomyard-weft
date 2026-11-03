@@ -1,0 +1,914 @@
+diff --git a/internal/battencli/dobbyreading_test.go b/internal/battencli/dobbyreading_test.go
+index efb03001..931fe73b 100644
+--- a/internal/battencli/dobbyreading_test.go
++++ b/internal/battencli/dobbyreading_test.go
+@@ -88,9 +88,11 @@ func TestDobbyTasks_ReadsDependenciesParentAndNotifyOnLand(t *testing.T) {
+ 	t.Parallel()
+ 	boardDir := t.TempDir()
+ 	entries := strings.Join([]string{
+-		`{"id":0,"slug":"released","title":"R","kind":"task","labels":["bug"],"depends_on":["open-dep","done-dep","pruned-dep"],"notify_on_land":true}`,
++		`{"id":0,"slug":"released","title":"R","kind":"task","labels":["bug"],"depends_on":["open-dep","done-dep","pruned-dep","beam-dep"],"notify_on_land":true}`,
+ 		`{"id":1,"slug":"open-dep","title":"O","kind":"task","labels":["bug"],"status":"draft"}`,
+ 		`{"id":2,"slug":"done-dep","title":"D","kind":"task","labels":["bug"],"status":"done"}`,
++		`{"id":3,"slug":"beam-dep","title":"B","kind":"project","labels":["bug"],"beam":true,"status":"running · Beam-Await"}`,
++		`{"id":4,"slug":"beam-member","title":"M","kind":"task","labels":["bug"],"project":"beam-dep","status":"done"}`,
+ 	}, ",")
+ 	content := `{"version":1,"entries":[` + entries + `]}`
+ 	if err := os.WriteFile(filepath.Join(boardDir, "board.json"), []byte(content), 0o644); err != nil {
+@@ -109,7 +111,7 @@ func TestDobbyTasks_ReadsDependenciesParentAndNotifyOnLand(t *testing.T) {
+ 		bySlug[view.Slug] = view
+ 	}
+ 	released := bySlug["released"]
+-	if want := []string{"open-dep"}; !slices.Equal(released.PendingDependencies, want) {
++	if want := []string{"open-dep", "beam-dep"}; !slices.Equal(released.PendingDependencies, want) {
+ 		t.Errorf("DobbyTasks() released PendingDependencies = %v; want %v", released.PendingDependencies, want)
+ 	}
+ 	if released.Parent != "beam-a" {
+diff --git a/internal/battencli/dobbyreads.go b/internal/battencli/dobbyreads.go
+index 5cadba39..e392fdc6 100644
+--- a/internal/battencli/dobbyreads.go
++++ b/internal/battencli/dobbyreads.go
+@@ -265,7 +265,7 @@ func DobbyLandings(prime *lymcwd.Location, geom dobbyengine.Geometry, parents *D
+ // DobbyTasks reads the local board under boardDir as TaskViews.
+ // Only a released task, one with an empty status, gets its parent worktree and owner read; the others carry neither.
+ // A released task whose slug has a finished run record under the prime carries the refusal every start of that slug gets; a run status that does not read holds nothing.
+-// A dependency no longer on the board was pruned as done.
++// A dependency is pending until its entry is done, whatever its kind, a plain project also once every landing member of it is done, and a dependency no longer on the board was pruned as done.
+ func DobbyTasks(prime *lymcwd.Location, boardDir string, parents *DobbyParents) ([]dobbyengine.TaskView, error) {
+ 	tasks, err := boardengine.ReadTasks(boardDir)
+ 	if err != nil {
+@@ -279,18 +279,11 @@ func DobbyTasks(prime *lymcwd.Location, boardDir string, parents *DobbyParents)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	statusOf := make(map[string]*string, len(tasks))
+-	for _, task := range tasks {
+-		statusOf[task.Slug] = task.Status
+-	}
++	dependencies := boardengine.NewDependencies(tasks)
+ 	views := make([]dobbyengine.TaskView, 0, len(tasks))
+ 	for _, task := range tasks {
+ 		view := dobbyengine.TaskView{Slug: task.Slug, Kind: task.Kind, Status: task.Status, NotifyOnLand: task.NotifyOnLand, Front: task.Front, Project: task.Project}
+-		for _, dep := range task.DependsOn {
+-			if status, present := statusOf[dep]; present && (status == nil || *status != "done") {
+-				view.PendingDependencies = append(view.PendingDependencies, dep)
+-			}
+-		}
++		view.PendingDependencies = dependencies.Pending(task)
+ 		if task.Kind == boardengine.KindTask && boardengine.IsEmptyStatus(task.Status) {
+ 			parent, err := parents.Of(task.Slug)
+ 			if err != nil {
+diff --git a/internal/boardengine/dependency.go b/internal/boardengine/dependency.go
+new file mode 100644
+index 00000000..2b089bc6
+--- /dev/null
++++ b/internal/boardengine/dependency.go
+@@ -0,0 +1,96 @@
++// dependency.go — when a depends_on dependency is met, for every kind of entry that lands, and what a dependency on a project stands for.
++
++package boardengine
++
++import "slices"
++
++// Dependencies judges depends_on dependencies over one set of board entries.
++// A dependency is met once its entry is done, and a slug the entries do not hold was pruned as done.
++// A task is done when its status is done, and so is a beam, whose landing into its parent sets that status.
++// A plain project is done when its status is done, or when it has a landing member and every landing member is done.
++// A landing member is a task or a project whose project key names the project; a note never lands, so it holds no project open.
++type Dependencies struct {
++	bySlug  map[string]Task
++	members map[string][]string
++}
++
++// NewDependencies indexes entries for judging the dependencies among them.
++func NewDependencies(entries []Task) Dependencies {
++	dependencies := Dependencies{bySlug: make(map[string]Task, len(entries)), members: map[string][]string{}}
++	for _, entry := range entries {
++		dependencies.bySlug[entry.Slug] = entry
++		if entry.Project != "" && (entry.Kind == KindTask || entry.Kind == KindProject) {
++			dependencies.members[entry.Project] = append(dependencies.members[entry.Project], entry.Slug)
++		}
++	}
++	return dependencies
++}
++
++// Pending returns the dependencies of task that are not met, in depends_on order, nil when every one is.
++func (d Dependencies) Pending(task Task) []string {
++	var pending []string
++	for _, dep := range task.DependsOn {
++		if !d.met(dep) {
++			pending = append(pending, dep)
++		}
++	}
++	return pending
++}
++
++// met reports whether a dependency on slug is met.
++// A project that is its own landing member, directly or through other projects, is not met.
++func (d Dependencies) met(slug string) bool {
++	return d.metBelow(slug, map[string]bool{})
++}
++
++// metBelow reports whether a dependency on slug is met, given the projects already being judged on the path to it.
++// A hand edit can store a membership loop, which reads as not met instead of recursing without end.
++func (d Dependencies) metBelow(slug string, judging map[string]bool) bool {
++	entry, found := d.bySlug[slug]
++	switch {
++	case !found || isDone(entry):
++		return true
++	case entry.Kind != KindProject || entry.Beam || judging[slug]:
++		return false
++	}
++	judging[slug] = true
++	defer delete(judging, slug)
++	members := d.members[slug]
++	return len(members) > 0 && !slices.ContainsFunc(members, func(member string) bool { return !d.metBelow(member, judging) })
++}
++
++// waitsOn returns the slugs entry waits on: a project's landing members, and every other entry's depends_on.
++func (d Dependencies) waitsOn(entry Task) []string {
++	if entry.Kind == KindProject {
++		return d.members[entry.Slug]
++	}
++	return entry.DependsOn
++}
++
++// standsFor returns the entries a dependency on slug waits for: slug itself and, under a project, each landing member not yet done, at any depth.
++func (d Dependencies) standsFor(slug string) []string {
++	return d.standsForBelow(slug, map[string]bool{})
++}
++
++// standsForBelow returns the entries a dependency on slug waits for, given the projects already listed on the path to it.
++// A project already on that path adds nothing, so a stored membership loop ends the walk.
++func (d Dependencies) standsForBelow(slug string, listing map[string]bool) []string {
++	if listing[slug] {
++		return nil
++	}
++	listing[slug] = true
++	defer delete(listing, slug)
++	entries := []string{slug}
++	for _, member := range d.members[slug] {
++		if !d.met(member) {
++			entries = append(entries, d.standsForBelow(member, listing)...)
++		}
++	}
++	return entries
++}
++
++// overlap reports whether dependencies on a and b wait for a common entry.
++func (d Dependencies) overlap(a, b string) bool {
++	waitedForByB := d.standsFor(b)
++	return slices.ContainsFunc(d.standsFor(a), func(slug string) bool { return slices.Contains(waitedForByB, slug) })
++}
+diff --git a/internal/boardengine/dependency_test.go b/internal/boardengine/dependency_test.go
+new file mode 100644
+index 00000000..e71338cf
+--- /dev/null
++++ b/internal/boardengine/dependency_test.go
+@@ -0,0 +1,72 @@
++// dependency_test.go — when a depends_on dependency is met (dependency.go), for every kind of entry that lands.
++
++package boardengine_test
++
++import (
++	"slices"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestDependenciesPending pins which dependencies hold a task back: an entry not yet done, a beam until it landed, and a plain project until it is marked done or every landing member is done.
++// A stored membership loop, two projects each naming the other or one naming itself, holds a task back and ends the walk.
++func TestDependenciesPending(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	done := stringPtr("done")
++	entries := []boardengine.Task{
++		{Slug: "open-task", Kind: boardengine.KindTask},
++		{Slug: "done-task", Kind: boardengine.KindTask, Status: done},
++		{Slug: "beam", Kind: boardengine.KindProject, Beam: true, Status: stringPtr(boardengine.RunStatus("running", "Beam-Await"))},
++		{Slug: "beam-member", Kind: boardengine.KindTask, Project: "beam", Status: done},
++		{Slug: "landed-beam", Kind: boardengine.KindProject, Beam: true, Status: done},
++		{Slug: "finished", Kind: boardengine.KindProject},
++		{Slug: "finished-member", Kind: boardengine.KindTask, Project: "finished", Status: done},
++		{Slug: "finished-note", Kind: boardengine.KindNote, Project: "finished"},
++		{Slug: "unfinished", Kind: boardengine.KindProject},
++		{Slug: "unfinished-done", Kind: boardengine.KindTask, Project: "unfinished", Status: done},
++		{Slug: "unfinished-open", Kind: boardengine.KindTask, Project: "unfinished"},
++		{Slug: "empty", Kind: boardengine.KindProject},
++		{Slug: "marked", Kind: boardengine.KindProject, Status: done},
++		{Slug: "outer", Kind: boardengine.KindProject},
++		{Slug: "inner-beam", Kind: boardengine.KindProject, Beam: true, Project: "outer"},
++		{Slug: "inner-beam-member", Kind: boardengine.KindTask, Project: "inner-beam", Status: done},
++		{Slug: "loop-a", Kind: boardengine.KindProject, Project: "loop-b"},
++		{Slug: "loop-b", Kind: boardengine.KindProject, Project: "loop-a"},
++		{Slug: "self-member", Kind: boardengine.KindProject, Project: "self-member"},
++	}
++	tests := []struct {
++		name        string
++		dep         string
++		wantPending bool
++	}{
++		{"OpenTask", "open-task", true},
++		{"DoneTask", "done-task", false},
++		{"PrunedEntry", "pruned", false},
++		{"BeamWhoseMembersLandedWhileItHasNot", "beam", true},
++		{"LandedBeam", "landed-beam", false},
++		{"PlainProjectWhoseEveryLandingMemberIsDone", "finished", false},
++		{"PlainProjectWithAnOpenMember", "unfinished", true},
++		{"PlainProjectWithNoMember", "empty", true},
++		{"PlainProjectMarkedDone", "marked", false},
++		{"PlainProjectHoldingABeamThatHasNotLanded", "outer", true},
++		{"ProjectsNamingEachOtherAsTheirProject", "loop-a", true},
++		{"ProjectNamingItself", "self-member", true},
++	}
++	dependencies := boardengine.NewDependencies(entries)
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			var want []string
++			if tt.wantPending {
++				want = []string{tt.dep}
++			}
++			waiter := boardengine.Task{Slug: "waiter", Kind: boardengine.KindTask, DependsOn: []string{tt.dep}}
++			if got := dependencies.Pending(waiter); !slices.Equal(got, want) {
++				t.Errorf("Pending(waiter on %s) = %v; want %v", tt.dep, got, want)
++			}
++		})
++	}
++}
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index ea468214..a55a7bc0 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -12,8 +12,10 @@
+ // A project groups entries.
+ // It carries a type label as a task does, and carries no depends_on, profile, run_settings or priority, and no recipe but `pawl`: a write giving it one is refused naming the entry and the field to drop.
+ // Its project, order and beam keys are the membership and the beam flag: a project carries order and beam, no task or note does, and an older binary keeps all three as unknown keys.
+-// No task depends on a project: a write that sets or changes an entry's depends_on to name one is refused, naming the project's task members as what to depend on, or `lym board set-deps` to drop the dependency.
+-// A dependency on a project that a write leaves unchanged is never judged, so a done task naming a promoted project takes a later write.
++// A task may depend on any entry that lands, a project included, and Dependencies judges the dependency met once that entry is done:
++// a task or a beam when its status is done, which a beam's landing into its parent sets, and a plain project when its status is done or every landing member of it is done.
++// A landing member is a task or project under the project; a note never lands and holds no project open.
++// A dependency on a project waits on the project and its landing members not yet done: the write's cycle check follows a project to its members, so a member cannot wait on a task that waits on its own project, and the layers and the siblings check read it the same way.
+ //
+ // Membership is the project key on a task or note and the order key on a project, both accepted by an upsert.
+ // A write that sets or changes one, an entry new to the board counting as set, is judged.
+@@ -200,13 +202,14 @@
+ // Draft follows Independent and is omitted when no task is draft, and a draft title cell opens with a `draft` code span before the bold title.
+ // Ready holds the open, released tasks with no open dependency, and is always written, as `_None._` when empty.
+ // A dependency on a done task does not count, and one on a running task does, so a task waiting on a run is not Ready.
++// A dependency on a project that is not done counts too, and weighs as one on its deepest open landing member, so a task waiting on a project sits one layer below that member, in Layer A when the project's open members are all running, ready or draft, or it has none.
+ // Layer A holds the tasks that wait only on Running, Ready or Draft entries, Layer B those that wait on something in Layer A, and so on; ComputeLayers names each task's subsection, and the same name is the layer field of `lym board list`.
+ // Each subsection, Done included, is one markdown table in RenderOrder's order: a task subsection and a Notes type subsection by handle, and Done its tasks before its notes, each by handle, so `lym board list` and `find` follow the same order.
+ // A row opens with the entry's handle, and a Notes row adds the Prio column after it, H for a high priority, L for a low one and blank for normal.
+ // The row then holds the bold title, with the brief as a `• ` bullet under it in the same cell, and then one `• ` bullet per run setting, a code span such as `loom: code_max_bounces 1` with a nested key as its dotted path, sorted, so the settings stack in height and add no column, the slug linked to its design doc when the entry has a body, with a `Sketch` link to its decision record file under it, in the same cell, when the entry carries the discussed flag, the one `Age<br>Revised` cell, the entry's age above the time since its last revision, blank for an unknown date, and the labels that are not type labels.
+ // The Running, Ready, layer and Draft tables add a Recipe column after the slug, the recipe the task runs, the board's `default_recipe` (`darn` in the template) when its recipe field is empty, followed by ` · ` and the run profile when the task names one, such as `tapestry · light`; a task naming no profile takes its recipe's default profile and shows the recipe alone.
+ // The Notes and Done tables have no Recipe column.
+-// Running adds an At column, the run status without the state when the state is `running`, and an Owner column, the entry's effective owner machine, blank when none is recorded, and Ready, the layers and Draft add an After column, the handles of the open entries named in depends_on, one per line, an entry with no handle or no longer on the board named by its slug.
++// Running adds an At column, the run status without the state when the state is `running`, and an Owner column, the entry's effective owner machine, blank when none is recorded, and Ready, the layers and Draft add an After column, the handles of the entries named in depends_on that are not done, a project as Dependencies judges it, one per line, an entry with no handle or no longer on the board named by its slug.
+ // A pipe in a cell is escaped and a line break becomes a space, so an entry is always one row.
+ //
+ // # Intake
+@@ -302,9 +305,10 @@
+ // # Siblings
+ //
+ // A write that gives an open task a depends_on entry it did not have reports its siblings: the other open tasks that wait on that same entry while sharing a module label with the written task.
++// A dependency on a project waits on the project and each of its landing members not yet done, so a task waiting on a project and one waiting on a member of it wait on the same entry.
+ // A module label is a label the vocabulary does not report as a type label, and SharedModuleLabels answers the overlap, in the written task's label order.
+ // The written task's baseline is its own depends_on as loaded, together with the depends_on of every entry the write removed, so a merge warns only on dependencies none of the merged entries had.
+-// A dependency listed twice counts once, a dependency that is done is not added, a done written task is skipped, and a sibling that is done or abandoned is not one; a running sibling is.
++// A dependency listed twice counts once, a dependency that is met is not added, a done written task is skipped, and a sibling that is done or abandoned is not one; a running sibling is.
+ // A pair reached from both sides, as in a batch, is reported once with the dependencies of both sides.
+ // SetDeps, UpsertTaskSiblings, UpsertTasksBatch and MergeTasks return the siblings, computed under the write lock from the entries as loaded and as the mutation left them.
+ // The check never refuses, never changes a stored record and returns no siblings for a refused write.
+diff --git a/internal/boardengine/layer.go b/internal/boardengine/layer.go
+index 75a4cc1b..49c2611c 100644
+--- a/internal/boardengine/layer.go
++++ b/internal/boardengine/layer.go
+@@ -23,13 +23,16 @@ const (
+ 
+ // ComputeLayers assigns each task a bucket based on topological depth.
+ // A task a run holds is runningLayer, by RunHolds as the run lock decides it.
+-// An open project a run does not hold, a beam whose pawl run has not reached Parent-Align included, is projectLayer, never Ready or a letter, and counts as no entry's dependency depth.
++// An open project a run does not hold, a beam whose pawl run has not reached Parent-Align included, is projectLayer, never Ready or a letter.
+ // An open draft task a run does not hold is draftLayer, whatever its dependencies or isolation, since nothing starts it until it is released;
+ // a dependency on it weighs as one on a ready task.
+ // An open task that is not a draft and has no open dependency is readyLayer, and every other task is the letter of its depth:
+ // A waits only on running, ready or draft tasks, B on something in A, and so on.
+-// A dependency on a done task adds no depth, while one on a running task counts as one on a ready task, and cycle detection still follows running tasks.
++// A met dependency adds no depth, while one on a running task counts as one on a ready task, and cycle detection still follows running tasks.
++// A dependency on a project that is not done weighs as one on its deepest open landing member, and as one on a ready task when it has none;
++// cycle detection follows a project to its landing members.
+ func ComputeLayers(tasks []Task) (map[string]string, error) {
++	dependencies := NewDependencies(tasks)
+ 	layerMap := make(map[string]string)
+ 
+ 	for _, t := range tasks {
+@@ -67,13 +70,8 @@ func ComputeLayers(tasks []Task) (map[string]string, error) {
+ 
+ 		color[slug] = "gray"
+ 		t := taskMap[slug]
+-		for _, dep := range t.DependsOn {
+-			depTask, ok := taskMap[dep]
+-			if !ok {
+-				continue // Skip missing deps.
+-			}
+-			// Skip done tasks in cycle detection.
+-			if isDone(*depTask) {
++		for _, dep := range dependencies.waitsOn(*t) {
++			if _, ok := taskMap[dep]; !ok || dependencies.met(dep) {
+ 				continue
+ 			}
+ 			if err := detectCycleDFS(dep); err != nil {
+@@ -105,6 +103,22 @@ func ComputeLayers(tasks []Task) (map[string]string, error) {
+ 			return 0, nil
+ 		}
+ 
++		if t.Kind == KindProject {
++			projectDepth := 0
++			for _, member := range dependencies.waitsOn(*t) {
++				if dependencies.met(member) {
++					continue
++				}
++				d, err := getDepth(member)
++				if err != nil {
++					return 0, err
++				}
++				projectDepth = max(projectDepth, d)
++			}
++			depth[slug] = projectDepth
++			return projectDepth, nil
++		}
++
+ 		if layerMap[slug] != "" {
+ 			depth[slug] = 0 // Special tasks don't contribute to depth.
+ 			return 0, nil
+@@ -112,12 +126,8 @@ func ComputeLayers(tasks []Task) (map[string]string, error) {
+ 
+ 		maxDepth := -1
+ 		for _, dep := range t.DependsOn {
+-			depTask, ok := taskMap[dep]
+-			if !ok {
+-				continue
+-			}
+-			// A done dependency adds no depth; a running one weighs as a ready one, at depth 0; a project adds none.
+-			if isDone(*depTask) || depTask.Kind == KindProject {
++			// A met dependency adds no depth; a running one weighs as a ready one, at depth 0.
++			if _, ok := taskMap[dep]; !ok || dependencies.met(dep) {
+ 				continue
+ 			}
+ 			d, err := getDepth(dep)
+diff --git a/internal/boardengine/layer_test.go b/internal/boardengine/layer_test.go
+index 171ad0fa..d12eaab5 100644
+--- a/internal/boardengine/layer_test.go
++++ b/internal/boardengine/layer_test.go
+@@ -56,15 +56,52 @@ func TestComputeLayers(t *testing.T) {
+ 			want: map[string]string{"run": "Running", "x": "A", "y": "B", "free": "Ready", "word": "Ready"},
+ 		},
+ 		{
+-			name: "an open project is neither ready nor a letter and weighs on no dependent",
++			name: "an open project is neither ready nor a letter and weighs on a dependent as its deepest open member",
+ 			tasks: []boardengine.Task{
+ 				{ID: 1, Slug: "open", Title: "Open", Kind: boardengine.KindProject},
+ 				{ID: 2, Slug: "held", Title: "Held", Kind: boardengine.KindProject, Beam: true, Status: stringPtr(boardengine.RunStatus("running", "Webster"))},
+ 				{ID: 3, Slug: "finished", Title: "Finished", Kind: boardengine.KindProject, Status: stringPtr("done")},
+ 				{ID: 4, Slug: "task", Title: "Task", Kind: boardengine.KindTask, DependsOn: []string{"open"}},
+ 				{ID: 5, Slug: "awaiting", Title: "Awaiting", Kind: boardengine.KindProject, Beam: true, Status: stringPtr(boardengine.RunStatus("running", "Beam-Await"))},
++				{ID: 6, Slug: "landed-member", Title: "Landed member", Kind: boardengine.KindTask, Project: "awaiting", Status: stringPtr("done")},
++				{ID: 7, Slug: "after-beam", Title: "After beam", Kind: boardengine.KindTask, DependsOn: []string{"awaiting"}},
++				{ID: 8, Slug: "complete", Title: "Complete", Kind: boardengine.KindProject},
++				{ID: 9, Slug: "complete-member", Title: "Complete member", Kind: boardengine.KindTask, Project: "complete", Status: stringPtr("done")},
++				{ID: 10, Slug: "after-complete", Title: "After complete", Kind: boardengine.KindTask, DependsOn: []string{"complete"}},
++				{ID: 11, Slug: "base", Title: "Base", Kind: boardengine.KindTask},
++				{ID: 12, Slug: "deep", Title: "Deep", Kind: boardengine.KindProject},
++				{ID: 13, Slug: "deep-member", Title: "Deep member", Kind: boardengine.KindTask, Project: "deep", DependsOn: []string{"base"}},
++				{ID: 14, Slug: "after-deep", Title: "After deep", Kind: boardengine.KindTask, DependsOn: []string{"deep"}},
+ 			},
+-			want: map[string]string{"open": "Project", "held": "Running", "finished": "__done__", "task": "Ready", "awaiting": "Project"},
++			want: map[string]string{
++				"open": "Project", "held": "Running", "finished": "__done__", "task": "A", "awaiting": "Project",
++				"landed-member": "__done__", "after-beam": "A", "complete": "Project", "complete-member": "__done__", "after-complete": "Ready",
++				"base": "Ready", "deep": "Project", "deep-member": "A", "after-deep": "B",
++			},
++		},
++		{
++			name: "cycle through a project and its member",
++			tasks: []boardengine.Task{
++				{ID: 1, Slug: "proj", Title: "Proj", Kind: boardengine.KindProject},
++				{ID: 2, Slug: "member", Title: "Member", Kind: boardengine.KindTask, Project: "proj", DependsOn: []string{"outsider"}},
++				{ID: 3, Slug: "outsider", Title: "Outsider", Kind: boardengine.KindTask, DependsOn: []string{"proj"}},
++			},
++			wantError: true,
++		},
++		{
++			name: "two projects each naming the other as their project are a cycle, not a crash",
++			tasks: []boardengine.Task{
++				{ID: 1, Slug: "loop-a", Title: "Loop A", Kind: boardengine.KindProject, Project: "loop-b"},
++				{ID: 2, Slug: "loop-b", Title: "Loop B", Kind: boardengine.KindProject, Project: "loop-a"},
++			},
++			wantError: true,
++		},
++		{
++			name: "a project naming itself as its project is a cycle, not a crash",
++			tasks: []boardengine.Task{
++				{ID: 1, Slug: "self", Title: "Self", Kind: boardengine.KindProject, Project: "self"},
++			},
++			wantError: true,
+ 		},
+ 		{
+ 			name: "a draft task is Draft whatever its dependencies or isolation, and weighs as a ready one",
+diff --git a/internal/boardengine/project.go b/internal/boardengine/project.go
+index 6ffa5adf..5004911c 100644
+--- a/internal/boardengine/project.go
++++ b/internal/boardengine/project.go
+@@ -1,4 +1,4 @@
+-// project.go — the write rules that keep a project's membership and its dependents consistent.
++// project.go — the write rules that keep a project's membership consistent.
+ //
+ // checkProjectRules judges the entries a write leaves against the entries as loaded, inside the write critical section.
+ 
+@@ -7,7 +7,6 @@ package boardengine
+ import (
+ 	"fmt"
+ 	"slices"
+-	"strings"
+ )
+ 
+ // checkProjectRules refuses a write that leaves a project in a state its rules forbid.
+@@ -27,13 +26,6 @@ func checkProjectRules(loaded, after []Task, pairExists func(slug string) bool)
+ 
+ 	for _, task := range after {
+ 		before, existed := loadedBySlug[task.Slug]
+-		if !existed || !slices.Equal(before.DependsOn, task.DependsOn) {
+-			for _, dep := range task.DependsOn {
+-				if afterBySlug[dep].Kind == KindProject {
+-					return dependsOnProjectError(task.Slug, dep, after)
+-				}
+-			}
+-		}
+ 		if (!existed || before.Project != task.Project) && task.Project != "" {
+ 			if err := checkProjectField(task, afterBySlug); err != nil {
+ 				return err
+@@ -126,17 +118,3 @@ func checkOrderField(project Task, afterBySlug map[string]Task) error {
+ 	}
+ 	return nil
+ }
+-
+-// dependsOnProjectError refuses entry's dependency on project, naming the project's task members as what to depend on and set-deps as the way to drop it.
+-func dependsOnProjectError(entry, project string, entries []Task) error {
+-	var members []string
+-	for _, task := range entries {
+-		if task.Project == project && task.Kind == KindTask {
+-			members = append(members, task.Slug)
+-		}
+-	}
+-	if len(members) == 0 {
+-		return fmt.Errorf("entry %q depends on project %q, and nothing depends on a project, which has no task member yet: drop the dependency with `lym board set-deps`", entry, project)
+-	}
+-	return fmt.Errorf("entry %q depends on project %q, and nothing depends on a project: depend on its members (%s) instead, or drop the dependency with `lym board set-deps`", entry, project, strings.Join(members, ", "))
+-}
+diff --git a/internal/boardengine/project_test.go b/internal/boardengine/project_test.go
+index aecd5bed..5e4feb1e 100644
+--- a/internal/boardengine/project_test.go
++++ b/internal/boardengine/project_test.go
+@@ -42,50 +42,74 @@ func seedBoardJSON(t *testing.T, boardPath string, entries ...string) {
+ 	}
+ }
+ 
+-// TestProjectRules pins that a write setting or changing a task's depends_on to a project is refused naming the project's task members,
+-// and that a stored dependency on a project takes any write that leaves it unchanged.
+-func TestProjectRules(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	t.Parallel()
++// newDependencyBoard returns a board holding proj, an open project with the member task member, and outsider, a task under no project.
++func newDependencyBoard(t *testing.T) *boardengine.Board {
++	t.Helper()
+ 	var boardPath string
+ 	b := newProjectBoard(t, func(cfg *boardengine.Config) { boardPath = cfg.Path })
+ 	seedBoardJSON(t, boardPath,
+ 		`{"id":0,"slug":"proj","title":"Proj","kind":"project","labels":["bug"]}`,
+ 		`{"id":1,"slug":"member","title":"Member","kind":"task","labels":["bug"],"project":"proj"}`,
+-		`{"id":2,"slug":"stale","title":"Stale","kind":"task","labels":["bug"],"depends_on":["proj"],"status":"done"}`,
++		`{"id":2,"slug":"outsider","title":"Outsider","kind":"task","labels":["bug"]}`,
+ 	)
++	return b
++}
+ 
++// TestProjectDependencies pins that every write path may make a task depend on a project,
++// and that a dependency leading from a project's member back to the project is refused as a cycle.
++func TestProjectDependencies(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
+ 	writes := []struct {
+-		name  string
+-		write func() error
++		name    string
++		written string
++		write   func(b *boardengine.Board) error
+ 	}{
+-		{"an upsert of a new task", func() error {
++		{"AnUpsertOfANewTask", "fresh", func(b *boardengine.Board) error {
+ 			_, err := b.UpsertTask(map[string]any{"slug": "fresh", "kind": "task", "labels": bugLabels, "depends_on": []string{"proj"}})
+ 			return err
+ 		}},
+-		{"set-deps", func() error {
+-			_, err := b.SetDeps("member", []string{"proj"})
++		{"SetDeps", "outsider", func(b *boardengine.Board) error {
++			_, err := b.SetDeps("outsider", []string{"proj"})
+ 			return err
+ 		}},
+-		{"a batch", func() error {
++		{"ABatch", "fresh", func(b *boardengine.Board) error {
+ 			_, err := b.UpsertTasksBatch([]map[string]any{{"slug": "fresh", "kind": "task", "labels": bugLabels, "depends_on": []string{"proj"}}})
+ 			return err
+ 		}},
+ 	}
+ 	for _, tt := range writes {
+-		err := tt.write()
+-		if err == nil || !strings.Contains(err.Error(), `"proj"`) || !strings.Contains(err.Error(), "member") || !strings.Contains(err.Error(), "set-deps") {
+-			t.Errorf("%s: error = %v; want a refusal naming proj, its member and set-deps", tt.name, err)
+-		}
+-	}
+-	if got, _, err := b.GetTask("fresh"); err != nil || got.Slug != "" {
+-		t.Errorf("GetTask(fresh) = %+v, %v; want no entry, since every refused write left the board as it was", got, err)
++		t.Run("Accepted_"+tt.name, func(t *testing.T) {
++			t.Parallel()
++			b := newDependencyBoard(t)
++			if err := tt.write(b); err != nil {
++				t.Fatalf("write error = %v; want nil", err)
++			}
++			got, _, err := b.GetTask(tt.written)
++			if err != nil || !slices.Equal(got.DependsOn, []string{"proj"}) {
++				t.Errorf("GetTask(%s) depends_on = %v, %v; want [proj]", tt.written, got.DependsOn, err)
++			}
++		})
+ 	}
+ 
+-	edited, err := b.UpsertTask(map[string]any{"slug": "stale", "body": "a later edit"})
+-	if err != nil || edited.Body != "a later edit" {
+-		t.Errorf("UpsertTask(stale) = %+v, %v; want the body edit to land, since its depends_on on proj is unchanged", edited, err)
+-	}
++	t.Run("Refused_AMemberDependingOnItsOwnProject", func(t *testing.T) {
++		t.Parallel()
++		b := newDependencyBoard(t)
++		if _, err := b.SetDeps("member", []string{"proj"}); err == nil || !strings.Contains(err.Error(), "cycle") {
++			t.Errorf("SetDeps(member, [proj]) error = %v; want a cycle refusal", err)
++		}
++	})
++
++	t.Run("Refused_AMemberWaitingOnATaskThatWaitsOnItsProject", func(t *testing.T) {
++		t.Parallel()
++		b := newDependencyBoard(t)
++		if _, err := b.SetDeps("outsider", []string{"proj"}); err != nil {
++			t.Fatalf("SetDeps(outsider, [proj]) error = %v; want nil", err)
++		}
++		if _, err := b.SetDeps("member", []string{"outsider"}); err == nil || !strings.Contains(err.Error(), "cycle") {
++			t.Errorf("SetDeps(member, [outsider]) error = %v; want a cycle refusal", err)
++		}
++	})
+ }
+ 
+ // newMembershipBoard returns a board holding p1, an open project with the member m and a project member p2.
+diff --git a/internal/boardengine/render.go b/internal/boardengine/render.go
+index 087ea396..4f79d067 100644
+--- a/internal/boardengine/render.go
++++ b/internal/boardengine/render.go
+@@ -10,7 +10,7 @@
+ // README.md opens with the time it was rendered and the machine that owns the hub's prime, and a project file with the time, a link up to its parent's file and the project's brief and, for a beam, its owner;
+ // the rows show the bold title with the brief, the run profile and each run setting as a bullet under it, the linked slug with a Sketch link to the decision record under it for a discussed entry, the entry's age above its time since its last revision as of that time, and the labels that are not type labels;
+ // every Tasks table adds the recipe after the slug, the configured default recipe for an empty one;
+-// Running adds where its run stands and the entry's recorded owner machine, and Ready and the layers add the handles of the open entries each waits on.
++// Running adds where its run stands and the entry's recorded owner machine, and Ready and the layers add the handles of the entries each waits on that are not done, a project judged by its landing members.
+ // The section names, their meaning lines and the table columns are declared here alone;
+ // the data holds only the kind and the labels.
+ // No I/O — the caller writes the files.
+@@ -300,27 +300,31 @@ func readmeOwners(ordered []TaskWithLayer, primeOwner string) func(slug string)
+ 
+ // boardView is the whole board as every board file reads it: the entries in RenderOrder's order, with the facts each file looks up across projects.
+ type boardView struct {
+-	ordered    []TaskWithLayer
+-	bySlug     map[string]TaskWithLayer
+-	primeOwner string
+-	ownerOf    func(slug string) string
+-	out        Outputs
+-	now        time.Time
++	ordered      []TaskWithLayer
++	bySlug       map[string]TaskWithLayer
++	dependencies Dependencies
++	primeOwner   string
++	ownerOf      func(slug string) string
++	out          Outputs
++	now          time.Time
+ }
+ 
+ // newBoardView indexes ordered for rendering the board files with the given prime owner and outputs, every age as of now.
+ func newBoardView(ordered []TaskWithLayer, primeOwner string, out Outputs, now time.Time) boardView {
+ 	bySlug := make(map[string]TaskWithLayer, len(ordered))
++	entries := make([]Task, 0, len(ordered))
+ 	for _, twl := range ordered {
+ 		bySlug[twl.Slug] = twl
++		entries = append(entries, twl.Task)
+ 	}
+ 	return boardView{
+-		ordered:    ordered,
+-		bySlug:     bySlug,
+-		primeOwner: primeOwner,
+-		ownerOf:    readmeOwners(ordered, primeOwner),
+-		out:        out,
+-		now:        now,
++		ordered:      ordered,
++		bySlug:       bySlug,
++		dependencies: NewDependencies(entries),
++		primeOwner:   primeOwner,
++		ownerOf:      readmeOwners(ordered, primeOwner),
++		out:          out,
++		now:          now,
+ 	}
+ }
+ 
+@@ -583,14 +587,14 @@ func (b boardView) childProjects(project Task) []TaskWithLayer {
+ 	return children
+ }
+ 
+-// afterCell is the handles of the open entries t depends on, one per line in depends_on order, a dependency the board holds no handle for shown by its slug.
++// afterCell is the handles of the entries t depends on that are not done, a project judged by its landing members too, one per line in depends_on order, a dependency the board holds no handle for shown by its slug.
+ func (b boardView) afterCell(t Task) string {
+ 	var after []string
+ 	for _, dep := range t.DependsOn {
+ 		entry, found := b.bySlug[dep]
+ 		switch {
+-		case found && isDone(entry.Task):
+-			// A done dependency no longer holds t back.
++		case found && b.dependencies.met(dep):
++			// A met dependency no longer holds t back.
+ 		case found && entry.Handle != "":
+ 			after = append(after, cellText(entry.Handle))
+ 		default:
+diff --git a/internal/boardengine/render_test.go b/internal/boardengine/render_test.go
+index 74fdd172..496cfbc4 100644
+--- a/internal/boardengine/render_test.go
++++ b/internal/boardengine/render_test.go
+@@ -280,6 +280,7 @@ func readmeFixture() []boardengine.Task {
+ // A dependency naming no board entry shows in the After cell as a code span of its slug, and a draft task in a project file stands in its own Draft subsection after Ready.
+ // A fifth row pins that a beam with a recorded owner on a board with no prime owner shows that owner in its own file.
+ // A sixth row pins that a chain of nested projects stops deepening its headings at level six.
++// A seventh row pins that a task depending on an open project shows the project's handle under After, and one depending on a plain project whose every landing member is done leaves After empty and stands in Ready.
+ func TestRenderReadmeGolden(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -857,6 +858,80 @@ func TestRenderReadmeGolden(t *testing.T) {
+ 				rootProjectHeading(2, 0, "none recorded") +
+ 				emptyProjectEntries(3),
+ 		},
++		{
++			name: "a project dependency shows by handle while the project is open and drops once every landing member is done",
++			tasks: []boardengine.Task{
++				{ID: 1, Handle: "P1", Slug: "open", Title: "Open", Kind: boardengine.KindProject},
++				{ID: 2, Handle: "P2", Slug: "finished", Title: "Finished", Kind: boardengine.KindProject},
++				{ID: 3, Handle: "T1", Slug: "member", Title: "Member", Kind: boardengine.KindTask, Project: "finished", Status: stringPtr("done")},
++				{ID: 4, Handle: "T2", Slug: "after-open", Title: "After open", Kind: boardengine.KindTask, DependsOn: []string{"open"}},
++				{ID: 5, Handle: "T3", Slug: "after-finished", Title: "After finished", Kind: boardengine.KindTask, DependsOn: []string{"finished"}},
++			},
++			want: "# Board\n" +
++				"\n" +
++				"Rendered 2026-10-12 09:30 UTC; every age below is as of then.\n" +
++				"Prime owner: none recorded.\n" +
++				"\n" +
++				"Tasks are grouped by dependency layer and notes by type.\n" +
++				"An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.\n" +
++				"\n" +
++				"## [P1 Open](project-open.md) (0)\n" +
++				"\n" +
++				"`open` · Owner none recorded\n" +
++				"\n" +
++				emptyProjectEntries(3) +
++				"\n" +
++				"## [P2 Finished](project-finished.md) (0)\n" +
++				"\n" +
++				"`finished` · Owner none recorded\n" +
++				"\n" +
++				"### Tasks (0)\n" +
++				"\n" +
++				"Concrete and claimable; only a task can run.\n" +
++				"\n" +
++				"#### Ready (0)\n" +
++				"\n" +
++				"Waits on nothing open; can start now.\n" +
++				"\n" +
++				"_None._\n" +
++				"\n" +
++				"### Notes (0)\n" +
++				"\n" +
++				"Not tasks: ideas and observations, merged into a task when one is promoted.\n" +
++				"\n" +
++				"### Done (1)\n" +
++				"\n" +
++				"Finished, awaiting `lym board prune --apply`.\n" +
++				"\n" +
++				"| # | Entry | Slug | Age<br>Revised | Labels |\n" +
++				"| --- | --- | --- | --- | --- |\n" +
++				"| T1 | **Member** | `member` |  |  |\n" +
++				"\n" +
++				rootProjectHeading(2, 2, "none recorded") +
++				"### Tasks (2)\n" +
++				"\n" +
++				"Concrete and claimable; only a task can run.\n" +
++				"\n" +
++				"#### Ready (1)\n" +
++				"\n" +
++				"Waits on nothing open; can start now.\n" +
++				"\n" +
++				"| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |\n" +
++				"| --- | --- | --- | --- | --- | --- | --- |\n" +
++				"| T3 | **After finished** | `after-finished` | tapestry |  |  |  |\n" +
++				"\n" +
++				"#### Layer A (1)\n" +
++				"\n" +
++				"Waits only on Running, Ready or Draft entries.\n" +
++				"\n" +
++				"| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |\n" +
++				"| --- | --- | --- | --- | --- | --- | --- |\n" +
++				"| T2 | **After open** | `after-open` | tapestry | P1 |  |  |\n" +
++				"\n" +
++				"### Notes (0)\n" +
++				"\n" +
++				"Not tasks: ideas and observations, merged into a task when one is promoted.\n",
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/boardengine/siblings.go b/internal/boardengine/siblings.go
+index 494a2166..2c45dc95 100644
+--- a/internal/boardengine/siblings.go
++++ b/internal/boardengine/siblings.go
+@@ -28,12 +28,14 @@ func SharedModuleLabels(a, b Task, v Vocabulary) []string {
+ }
+ 
+ // addedSiblings returns the siblings of one write from the entries as loaded (before) and as the mutation left them (after).
+-// A task X in after that is not done has the dependencies its depends_on gained over its baseline, minus any that are done;
++// A task X in after that is not done has the dependencies its depends_on gained over its baseline, minus any that are met;
+ // X's baseline is its own depends_on in before together with the depends_on of every before entry absent from after, so a merge warns only on dependencies none of the merged entries had.
+-// Every other entry in after that is neither done nor abandoned, waits on an added dependency and shares a module label with X is a sibling of X.
++// Every other entry in after that is neither done nor abandoned, waits on an entry an added dependency waits on and shares a module label with X is a sibling of X;
++// a dependency on a project waits on the project and on each of its landing members not yet done.
+ // A pair found from both sides is reported once, in the first orientation in after order, with both sides' dependencies.
+ // A write that adds no dependency returns nil.
+ func addedSiblings(before, after []Task, v Vocabulary) []Sibling {
++	dependencies := NewDependencies(after)
+ 	afterSlugs := make(map[string]Task, len(after))
+ 	for _, task := range after {
+ 		afterSlugs[task.Slug] = task
+@@ -58,7 +60,7 @@ func addedSiblings(before, after []Task, v Vocabulary) []Sibling {
+ 			if slices.Contains(added, dep) || slices.Contains(beforeDeps[x.Slug], dep) || slices.Contains(removedDeps, dep) {
+ 				continue
+ 			}
+-			if target, found := afterSlugs[dep]; found && isDone(target) {
++			if _, found := afterSlugs[dep]; found && dependencies.met(dep) {
+ 				continue
+ 			}
+ 			added = append(added, dep)
+@@ -73,7 +75,9 @@ func addedSiblings(before, after []Task, v Vocabulary) []Sibling {
+ 			}
+ 			var shared []string
+ 			for _, dep := range added {
+-				if slices.Contains(y.DependsOn, dep) {
++				if slices.ContainsFunc(y.DependsOn, func(yDep string) bool {
++					return yDep == dep || (!dependencies.met(yDep) && dependencies.overlap(dep, yDep))
++				}) {
+ 					shared = append(shared, dep)
+ 				}
+ 			}
+diff --git a/internal/boardengine/siblings_test.go b/internal/boardengine/siblings_test.go
+index e4d1c5ff..9c4db8e0 100644
+--- a/internal/boardengine/siblings_test.go
++++ b/internal/boardengine/siblings_test.go
+@@ -176,6 +176,26 @@ func TestWriteSiblings(t *testing.T) {
+ 			seed: []map[string]any{siblingEntry("D", nil, nil), siblingEntry("X", board, nil), siblingEntry("Y", board, waitsOnD)},
+ 			act:  setDeps("X", "D", "D"), want: []boardengine.Sibling{pair},
+ 		},
++		{
++			name: "a dependency on a project whose member an open sibling waits on",
++			seed: []map[string]any{siblingEntry("P", nil, map[string]any{"kind": "project"}), siblingEntry("M", nil, map[string]any{"project": "P"}), siblingEntry("X", board, nil), siblingEntry("Y", board, map[string]any{"depends_on": []string{"M"}})},
++			act:  setDeps("X", "P"), want: []boardengine.Sibling{{Task: "X", Sibling: "Y", Deps: []string{"P"}, Labels: board}},
++		},
++		{
++			name: "a dependency on a member of a project an open sibling waits on",
++			seed: []map[string]any{siblingEntry("P", nil, map[string]any{"kind": "project"}), siblingEntry("M", nil, map[string]any{"project": "P"}), siblingEntry("X", board, nil), siblingEntry("Y", board, map[string]any{"depends_on": []string{"P"}})},
++			act:  setDeps("X", "M"), want: []boardengine.Sibling{{Task: "X", Sibling: "Y", Deps: []string{"M"}, Labels: board}},
++		},
++		{
++			name: "a dependency on a project whose member a sibling waits on is done",
++			seed: []map[string]any{siblingEntry("P", nil, map[string]any{"kind": "project"}), siblingEntry("M", nil, map[string]any{"project": "P", "status": "done"}), siblingEntry("O", nil, map[string]any{"project": "P"}), siblingEntry("X", board, nil), siblingEntry("Y", board, map[string]any{"depends_on": []string{"M"}})},
++			act:  setDeps("X", "P"),
++		},
++		{
++			name: "a dependency on a project whose every member is done is met and not added",
++			seed: []map[string]any{siblingEntry("P", nil, map[string]any{"kind": "project"}), siblingEntry("M", nil, map[string]any{"project": "P", "status": "done"}), siblingEntry("X", board, nil), siblingEntry("Y", board, map[string]any{"depends_on": []string{"P"}})},
++			act:  setDeps("X", "P"),
++		},
+ 		{
+ 			name: "note refused a dependency",
+ 			seed: []map[string]any{siblingEntry("D", nil, nil), siblingEntry("Y", board, waitsOnD), siblingEntry("N", nil, map[string]any{"kind": "note"})},
+diff --git a/internal/boardengine/store.go b/internal/boardengine/store.go
+index 405322ac..86650b6b 100644
+--- a/internal/boardengine/store.go
++++ b/internal/boardengine/store.go
+@@ -383,44 +383,28 @@ func (s *Store) validateWrite(snapshot []Task, incoming Task) error {
+ 		}
+ 	}
+ 
+-	adjacency := make(map[string][]string)
+-	for _, t := range snapshot {
+-		if t.Slug == incoming.Slug {
+-			adjacency[t.Slug] = incoming.DependsOn
+-		} else {
+-			adjacency[t.Slug] = t.DependsOn
+-		}
+-	}
+-	if _, exists := adjacency[incoming.Slug]; !exists {
+-		adjacency[incoming.Slug] = incoming.DependsOn
+-	}
+-
+-	color := make(map[string]string) // "white", "gray", "black"
+-	for slug := range adjacency {
+-		color[slug] = "white"
++	projected := slices.Clone(snapshot)
++	if index := slices.IndexFunc(projected, func(t Task) bool { return t.Slug == incoming.Slug }); index >= 0 {
++		projected[index] = incoming
++	} else {
++		projected = append(projected, incoming)
+ 	}
+-
+-	var dfs func(slug string) error
+-	dfs = func(slug string) error {
+-		if color[slug] == "black" {
+-			return nil
+-		}
+-		if color[slug] == "gray" {
+-			return fmt.Errorf("cycle detected: %q -> %q", incoming.Slug, slug)
+-		}
+-
+-		color[slug] = "gray"
+-		for _, dep := range adjacency[slug] {
+-			if err := dfs(dep); err != nil {
+-				return err
+-			}
++	// A project waits on its landing members, so a dependency on a project that one of them leads back to is a cycle.
++	dependencies := NewDependencies(projected)
++	adjacency := make(map[string][]string, len(projected))
++	membership := make(map[string][]string, len(projected))
++	for _, t := range projected {
++		adjacency[t.Slug] = dependencies.waitsOn(t)
++		if t.Kind == KindProject {
++			membership[t.Slug] = dependencies.members[t.Slug]
+ 		}
+-		color[slug] = "black"
+-		return nil
+ 	}
+ 
+-	if err := dfs(incoming.Slug); err != nil {
+-		return err
++	// A cycle made of project membership alone is left to checkProjectRules, whose refusal names the project field to correct.
++	if hit, cyclic := findCycle(adjacency, incoming.Slug); cyclic {
++		if _, membershipOnly := findCycle(membership, incoming.Slug); !membershipOnly {
++			return fmt.Errorf("cycle detected: %q -> %q", incoming.Slug, hit)
++		}
+ 	}
+ 
+ 	if incoming.Isolated {
+@@ -439,6 +423,33 @@ func (s *Store) validateWrite(snapshot []Task, incoming Task) error {
+ 	return nil
+ }
+ 
++// findCycle walks adjacency depth-first from start and reports the first slug it meets again on its own path.
++func findCycle(adjacency map[string][]string, start string) (string, bool) {
++	const (
++		onPath   = 1
++		finished = 2
++	)
++	state := make(map[string]int, len(adjacency))
++	var walk func(slug string) (string, bool)
++	walk = func(slug string) (string, bool) {
++		switch state[slug] {
++		case finished:
++			return "", false
++		case onPath:
++			return slug, true
++		}
++		state[slug] = onPath
++		for _, next := range adjacency[slug] {
++			if hit, cyclic := walk(next); cyclic {
++				return hit, true
++			}
++		}
++		state[slug] = finished
++		return "", false
++	}
++	return walk(start)
++}
++
+ func isDone(t Task) bool {
+ 	return t.Status != nil && *t.Status == "done"
+ }
