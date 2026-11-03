@@ -1,38 +1,41 @@
-# Run windows show the board handle in their titles
+# Show the board handle in run window titles
 
-The operator names runs by board handle (`T4`, `P1`), but no run window showed one.
-Each run window now opens its name with the handle, read from the board when the window opens:
+The operator names runs by board handle (`T4`, `P1`), but no window showed it.
+A task run's desktop terminal window was titled with the slug, and its tmux overview windows carried the recipe or `beam: <slug>` alone.
+Each of these windows now opens with the run's handle, read from the board when the window opens:
 
-- **Task run terminal window.** The Open-Window row's default command is now `{lym} reed window {task_dir} --title {title}`.
-  `{title}` is a new placeholder of the `Command` producer (`internal/shedadapters`), filled lazily through `CommandDeps.Title`.
-  batten fills it with `<handle>: <slug>`, for example `T4: webster-subpath-anchor`.
-  The other Command rows may use it too.
-- **Loom status window.** `lym loom start` titles the `loom-status` overview window `<handle>: <recipe>`, for example `T4: tapestry`.
-- **Beam runs window.** A beam's runs strand window is `P1: beam: <slug>`.
-  The prime's stays `beam: prime`, since the prime has no board entry.
+- Batten's Open-Window row titles the desktop terminal window `<handle>: <slug>`, such as `T4: webster-subpath-anchor`.
+- The loom status strand's overview window is titled `<handle>: <recipe>`, such as `T4: darn`.
+- A beam's runs strand overview window is titled `<handle>: beam: <slug>`, such as `P1: beam: <slug>`.
+  The prime's `beam: prime` is unchanged.
 
-`boardengine.TitleWithHandle(boardDir, slug, name)` builds all three titles.
-It reads the local board file and returns `name` alone when the board holds no entry for the slug, the entry has no handle, or the board cannot be read.
-An unreadable board is logged at Warn, so a missing handle never fails a row or a bring-up.
-`lym reed window` with no `--title` is unchanged and still uses the directory's base name.
+When the board cannot be read, or has no handle for the slug, each title falls back to today's name and the run goes on.
+A window opened by hand with `lym reed window` and no `--title` keeps the directory's base name.
 
 ## Design decisions
 
-- **The status window opens the recipe, not `overview`.** The board entry asked for `<handle>: overview` in place of the bare `overview` default.
-  Since the entry was written, the landed pawl-checklist change (`7c23591e`) titles that window with the run's recipe.
-  So the handle opens the recipe name, giving `T4: tapestry`, and the window keeps telling a pawl checklist apart from a task run's.
-  The bare `overview` default in `internal/reedengine/windoworder.go` remains for an overview strand with no title.
-- **The orch reads the runs title lazily.** `orchCLI.runsWindowTitle` is now a function that `ensureRunsStrand` calls, so the board is read only when the strand is added or replaced and not on every `lym orch` verb.
-- **A hub override keeps its own command.** A hub whose board default layer sets its own `open_window_command` keeps that command.
-  To get the handle in the title, it needs `{title}` in place of `{slug}`.
-- **The status-bar `term` button is unchanged.** It still runs `lym reed window {worktree} --title {slug}` from reed's button template, because the entry covers only the window Open-Window opens.
+- `boardengine.TitleWithHandle(boardDir, slug, name)` is the one place a title gets its handle.
+  It reads the local board file, logs a read failure at Warn, and returns `name` unchanged on any failure, so a title never fails its caller.
+- The status window is titled `<handle>: <recipe>`, not `<handle>: overview`.
+  The window was already titled by its recipe, which lets a beam session tell a pawl checklist window from a run's own, so the handle is put in front of the recipe.
+  This departs from the task body's `T4: overview` example.
+- `shedadapters.CommandDeps` gains `Title`, behind a new `{title}` placeholder for `open_window_command`, `seed_ide_command` and `open_ide_command`.
+  It is called only when a command holds the placeholder.
+  The slug is the fallback, so `{title}` is `<handle>: <slug>` or the slug alone.
+- The default `open_window_command` in the batten template now passes `--title {title}` in place of `--title {slug}`.
+  A command already set in the board default layer keeps its own `{slug}`, so that window stays titled with the slug until the value is changed.
+- `orchCLI.runsWindowTitle` is now a `func() string`, so the beam's handle is read when the runs strand is added or replaced.
+- A live strand of the running build is kept as it is, so a handle the board assigns after a window opened shows from the strand's next replacement.
+  The package docs of `loomcli` and `orchcli` say so.
+- `boardkit.WriteBoard` is a new test helper that writes a board file holding given entries without a Board.
 
-## Tests
+Tests pin the titled and the fallback names of the Open-Window title, the status window and the runs window, and `TitleWithHandle` itself.
+The package docs and `docs/overview.md` describe the new titles.
 
-- `TestTitleWithHandle` (boardengine) covers the titled name and each fallback: no entry for the slug, an entry with no handle, an unreadable board and no board.
-- `TestStatusWindowTitle` (loomcli) covers `T4: tapestry` and the bare recipe for an entry of another slug and for no board.
-  `TestStatusStrandAddSpec` covers a handle-titled window name.
-- `TestRunsWindowTitle_WiredFromTheWorktreeTheVerbRunsIn` (orchcli, tier 1) covers the wired title before and after the board names the beam: `beam: b`, then `P1: beam: b`, with the prime staying `beam: prime`.
-- `TestCommandProducer` gains a row showing that `{title}` reaches the shell as one quoted word.
-  The batten template test expects the new default command.
-- `boardkit.WriteBoard` is a new shared test helper that writes a board file holding given entries.
+## To check by hand
+
+- `battencli-title-wiring-untested`: the `Title` closure that `commandDeps` in `internal/battencli/wire.go` wires into `shedadapters.CommandDeps` has a unit test (`internal/battencli/commanddeps_test.go`), but no test runs it through a real Open-Window row to `lym reed window --title`.
+  Open a task run and confirm the Konsole window reads `<handle>: <slug>`.
+- `status-title-departs-unrecorded`: the status window is titled `<handle>: <recipe>`, not the `<handle>: overview` the task body names.
+  Confirm that is the intended title.
+- The `reed`/`tmux` window names and the Konsole title were not checked in a live session: start a loom run and a beam and read the window names.
