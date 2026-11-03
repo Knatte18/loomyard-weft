@@ -1,0 +1,585 @@
+diff --git a/cmd/lym/destructiveguard_test.go b/cmd/lym/destructiveguard_test.go
+index 141c22bc..f55108ed 100644
+--- a/cmd/lym/destructiveguard_test.go
++++ b/cmd/lym/destructiveguard_test.go
+@@ -92,6 +92,8 @@ var destructiveGuardAllowlist = []scankit.Entry{
+ 		"under a repo-wide flock, never operator content"},
+ 	{Key: "internal/fabricengine/pendingflags.go", Why: "takePending's os.Remove(taken) deletes the pending-push flag file it renamed to a name private to the call one line earlier, " +
+ 		"a fabric-internal marker in the records worktree's untracked lock directory, never operator content"},
++	{Key: "internal/fabricengine/pushlockholder.go", Why: "holdPushLock's release os.Remove(path) deletes the holder record the same function wrote beside fabric.push.lock, " +
++		"a fabric-internal marker in the records worktree's untracked lock directory, never operator content"},
+ 	{Key: "internal/fabricengine/recordsprobe.go", Why: "the binding probe's os.RemoveAll(probeDir) removes the throwaway probe clone directory the " +
+ 		"same function created moments earlier"},
+ 	{Key: "internal/fabricengine/index.go", Why: "refreshCorrIndexAfterSwitch's os.Remove(path) deliberately deletes the correspondence-index " +
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index 324e50a0..f31cea32 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -773,6 +773,10 @@
+ // The last holder to release therefore always sees a flag set after its last push, and no committed transition is left unpushed.
+ // A synchronous pusher returns `ErrPushLockBusy` only when its first acquire misses its wait; a missed re-acquire after its own push landed returns nil.
+ // A holder that hangs delays every later push of that records worktree until it exits.
++// Every holder of `fabric.push.lock` writes a holder record, `fabric.push.holder` beside the lock, with its pid and the time it took the lock, and removes it before it releases the lock.
++// The error wrapping `ErrPushLockBusy` names that holder, how long it has held the lock and whether it still runs, so an operator can tell a slow push from a hung one.
++// The lock is an OS lock its holder's exit frees, so a dead holder never keeps it and nothing clears it by hand;
++// a record naming a pid with no running process may be stale, left by a holder that died, and the next holder overwrites it.
+ //
+ // The hub-wide scratch tree also holds `AdoptScratchDir(hub)`, the adopt check's files, and `FrontTaskScratchDir(hub)`, the front-task record and its action output, as sibling directories.
+ //
+diff --git a/internal/fabricengine/originreconcilemoves.go b/internal/fabricengine/originreconcilemoves.go
+index ca4a26d2..965d3191 100644
+--- a/internal/fabricengine/originreconcilemoves.go
++++ b/internal/fabricengine/originreconcilemoves.go
+@@ -58,6 +58,8 @@ func tryRecordsLocks(worktree string, bolt bool) (release func(), busy string, p
+ 	pushPath := ""
+ 	writeName := busyWeftWriteLock
+ 	pushName := busyWeftPushLock
++	// weftLockDir is the weft's lock directory, whose push lock gets a holder record; it stays empty on Bolt.
++	weftLockDir := ""
+ 	if bolt {
+ 		writePath = filepath.Join(worktree, BoardWriteLockFile)
+ 		pushPath = filepath.Join(worktree, gitrepo.PushLockFileName)
+@@ -68,6 +70,7 @@ func tryRecordsLocks(worktree string, bolt bool) (release func(), busy string, p
+ 		if err != nil {
+ 			return nil, "", false, err
+ 		}
++		weftLockDir = lockDir
+ 		writePath = filepath.Join(lockDir, weftWriteLockFile)
+ 		pushPath = filepath.Join(lockDir, weftPushLockFile)
+ 	}
+@@ -88,8 +91,12 @@ func tryRecordsLocks(worktree string, bolt bool) (release func(), busy string, p
+ 		_ = writeLock.Release()
+ 		return nil, pushName, true, nil
+ 	}
++	releasePush := pushLock.Release
++	if weftLockDir != "" {
++		releasePush = holdPushLock(pushLock, weftLockDir, time.Now())
++	}
+ 	return func() {
+-		_ = pushLock.Release()
++		_ = releasePush()
+ 		_ = writeLock.Release()
+ 	}, "", false, nil
+ }
+diff --git a/internal/fabricengine/pendingflags.go b/internal/fabricengine/pendingflags.go
+index 86a487f2..c8e38ebd 100644
+--- a/internal/fabricengine/pendingflags.go
++++ b/internal/fabricengine/pendingflags.go
+@@ -13,6 +13,7 @@ import (
+ 	"sort"
+ 	"strings"
+ 	"sync/atomic"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/fsx"
+ 	"github.com/Knatte18/loomyard/internal/lock"
+@@ -114,7 +115,7 @@ func takePending(lockDir, side string) (req PushSpawn, found bool, err error) {
+ }
+ 
+ // coalesceFlagged is the holder loop of fabric.push.lock under lockDir.
+-// It marks the owed sides pending, acquires the lock and runs step with the owed flags taken before each run, looping while step reports progress.
++// It marks the owed sides pending, acquires the lock, writes its holder record and runs step with the owed flags taken before each run, looping while step reports progress.
+ // After the last run it releases the lock and re-reads the flags:
+ // a flag of an owed side set again sends it back to acquiring, and a flag of a side it does not push is respawned as a detached push of that side.
+ // acquired is false only when the first acquire missed, which leaves the commits and the flags to the current holder;
+@@ -135,7 +136,7 @@ func coalesceFlagged(lockDir string, owed map[string]PushSpawn, acquire func(loc
+ 			return acquired, nil
+ 		}
+ 		acquired = true
+-		if err := runHeld(held, lockDir, owed, step); err != nil {
++		if err := runHeld(holdPushLock(held, lockDir, time.Now()), lockDir, owed, step); err != nil {
+ 			return true, err
+ 		}
+ 
+@@ -147,10 +148,10 @@ func coalesceFlagged(lockDir string, owed map[string]PushSpawn, acquire func(loc
+ 	}
+ }
+ 
+-// runHeld runs step under held, taking the owed flags before each run, and releases held before returning.
+-func runHeld(held *lock.FileLock, lockDir string, owed map[string]PushSpawn, step func() (bool, error)) (err error) {
++// runHeld runs step under the held push lock, taking the owed flags before each run, and calls release, the lock's release, before returning.
++func runHeld(release func() error, lockDir string, owed map[string]PushSpawn, step func() (bool, error)) (err error) {
+ 	defer func() {
+-		if releaseErr := held.Release(); err == nil {
++		if releaseErr := release(); err == nil {
+ 			err = releaseErr
+ 		}
+ 	}()
+diff --git a/internal/fabricengine/pull.go b/internal/fabricengine/pull.go
+index 11404d46..4e77ae65 100644
+--- a/internal/fabricengine/pull.go
++++ b/internal/fabricengine/pull.go
+@@ -497,8 +497,9 @@ func (f *Fabric) lockWeftForReplay() (release func(), err error) {
+ 		_ = writeLock.Release()
+ 		return nil, fmt.Errorf("fabricengine: acquire push lock: %w", err)
+ 	}
++	releasePush := holdPushLock(pushLock, lockDir, time.Now())
+ 	return func() {
+-		_ = pushLock.Release()
++		_ = releasePush()
+ 		_ = writeLock.Release()
+ 	}, nil
+ }
+diff --git a/internal/fabricengine/pushanchored.go b/internal/fabricengine/pushanchored.go
+index 320f5691..9a32818c 100644
+--- a/internal/fabricengine/pushanchored.go
++++ b/internal/fabricengine/pushanchored.go
+@@ -13,6 +13,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/gitrepo"
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/proc"
+ )
+ 
+ // StatusPushLockWait is the bounded push-lock wait `commit-records` passes, and the default of the wait Remove gives a push of the pair for the pair's teardown lock.
+@@ -23,7 +24,7 @@ const StatusPushLockWait = 30 * time.Second
+ const LockWaitUnbounded time.Duration = 0
+ 
+ // ErrPushLockBusy is wrapped by the error a bounded push returns when the push lock is still held once its wait ran out.
+-// Nothing was pushed.
++// Nothing was pushed, and the error names the lock's holder, its pid and how long it has held the lock, when the holder recorded them.
+ var ErrPushLockBusy = errors.New("fabricengine: push lock busy")
+ 
+ // IsPushRejected reports whether err carries a remote's non-fast-forward rejection of a push.
+@@ -54,8 +55,10 @@ func acquirePushLock(lockWait time.Duration) func(lockPath string) (*lock.FileLo
+ }
+ 
+ // pushLockBusyError is the error of a synchronous push whose first acquire of the push lock under lockDir missed its wait.
++// It names the lock's holder as its holder record gives it.
+ func pushLockBusyError(lockDir string, lockWait time.Duration) error {
+-	return fmt.Errorf("%w: %s still held after %s; neither side was pushed", ErrPushLockBusy, filepath.Join(lockDir, weftPushLockFile), lockWait)
++	holder := describePushLockHolder(lockDir, time.Now(), proc.IsAlive)
++	return fmt.Errorf("%w: %s still held after %s, %s; neither side was pushed", ErrPushLockBusy, filepath.Join(lockDir, weftPushLockFile), lockWait, holder)
+ }
+ 
+ // PushAnchored pushes unpushed commits in l's weft sibling worktree rebase-free.
+diff --git a/internal/fabricengine/pushlockholder.go b/internal/fabricengine/pushlockholder.go
+new file mode 100644
+index 00000000..5443844c
+--- /dev/null
++++ b/internal/fabricengine/pushlockholder.go
+@@ -0,0 +1,79 @@
++// pushlockholder.go holds the holder record of fabric's records push lock, fabric.push.lock:
++// the process that holds the lock writes its pid and the time it took the lock beside it, and a bounded push that gives up on the lock names that holder.
++
++package fabricengine
++
++import (
++	"encoding/json"
++	"errors"
++	"fmt"
++	"os"
++	"path/filepath"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/fsx"
++	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/logger"
++)
++
++// pushLockHolderFile names the holder record beside weftPushLockFile in the records worktree's lock directory.
++const pushLockHolderFile = "fabric.push.holder"
++
++// pushLockHolder is the record a process writes beside fabric.push.lock while it holds the lock.
++type pushLockHolder struct {
++	// PID is the holding process's id.
++	PID int `json:"pid"`
++	// Since is when the process took the lock.
++	Since time.Time `json:"since"`
++}
++
++// pushLockHolderPath returns the path of the holder record in lockDir, the lock directory that holds fabric.push.lock.
++func pushLockHolderPath(lockDir string) string {
++	return filepath.Join(lockDir, pushLockHolderFile)
++}
++
++// holdPushLock writes this process's holder record, taken at now, beside the push lock in lockDir that held guards, and returns the release of both.
++// The release removes the record before it releases the lock, so a holder never removes the record of the holder after it.
++// A record that cannot be written or removed is logged at Warn and the lock is still held and released, since the record only feeds a busy report.
++func holdPushLock(held *lock.FileLock, lockDir string, now time.Time) func() error {
++	path := pushLockHolderPath(lockDir)
++	content, err := json.Marshal(pushLockHolder{PID: os.Getpid(), Since: now.UTC()})
++	if err == nil {
++		err = fsx.AtomicWriteBytes(path, content)
++	}
++	if err != nil {
++		logger.Warn("fabricengine: push lock holder record not written; a busy report cannot name this holder", "path", path, "error", err)
++	}
++	return func() error {
++		if err := os.Remove(path); err != nil && !errors.Is(err, os.ErrNotExist) {
++			logger.Warn("fabricengine: push lock holder record not removed; the next holder overwrites it", "path", path, "error", err)
++		}
++		return held.Release()
++	}
++}
++
++// describePushLockHolder returns the clause of a busy report that names the holder of the push lock in lockDir, read from its holder record at now.
++// alive reports whether a pid names a running process.
++// A record that decodes with no pid or no time it was taken is reported as unreadable.
++// The push lock is an OS lock its holder's exit frees, so a record naming a pid for which no running process is found may be stale.
++func describePushLockHolder(lockDir string, now time.Time, alive func(pid int) bool) string {
++	content, err := os.ReadFile(pushLockHolderPath(lockDir))
++	if errors.Is(err, os.ErrNotExist) {
++		return "no holder record names the process that holds it"
++	}
++	var holder pushLockHolder
++	if err == nil {
++		err = json.Unmarshal(content, &holder)
++	}
++	if err == nil && (holder.PID <= 0 || holder.Since.IsZero()) {
++		err = errors.New("it names no pid or no time the lock was taken")
++	}
++	if err != nil {
++		return fmt.Sprintf("its holder record is unreadable: %v", err)
++	}
++	age := now.Sub(holder.Since).Round(time.Second)
++	if !alive(holder.PID) {
++		return fmt.Sprintf("its holder record names pid %d from %s ago, no running process by that pid was found, and the record may be stale", holder.PID, age)
++	}
++	return fmt.Sprintf("held by pid %d for %s", holder.PID, age)
++}
+diff --git a/internal/fabricengine/pushlockholder_integration_test.go b/internal/fabricengine/pushlockholder_integration_test.go
+new file mode 100644
+index 00000000..cd158cd0
+--- /dev/null
++++ b/internal/fabricengine/pushlockholder_integration_test.go
+@@ -0,0 +1,92 @@
++// pushlockholder_integration_test.go covers the holder record at the lock sites that need a git-backed weft:
++// the origin reconcile's try-acquire of a records branch's locks and the weft pull's replay lock.
++
++package fabricengine
++
++import (
++	"encoding/json"
++	"os"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// holderRecordPID reads the holder record in lockDir and returns its pid, or fails the test when none is readable.
++func holderRecordPID(t *testing.T, lockDir string) int {
++	t.Helper()
++	content, err := os.ReadFile(pushLockHolderPath(lockDir))
++	if err != nil {
++		t.Fatalf("holder record: %v; want it written while the lock is held", err)
++	}
++	var holder pushLockHolder
++	if err := json.Unmarshal(content, &holder); err != nil {
++		t.Fatalf("holder record %q: %v", content, err)
++	}
++	return holder.PID
++}
++
++// TestTryRecordsLocks_HolderRecord covers the record a records branch's try-acquire writes:
++// on a weft it names this process while the locks are held and is gone after the release, and on Bolt none is written.
++func TestTryRecordsLocks_HolderRecord(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++	tests := []struct {
++		name       string
++		bolt       bool
++		wantRecord bool
++	}{
++		{"Weft", false, true},
++		{"Bolt", true, false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			worktree := t.TempDir()
++			if !tt.bolt {
++				worktree = newPlainWeftRepo(t)
++			}
++			release, busy, _, err := tryRecordsLocks(worktree, tt.bolt)
++			if err != nil || busy != "" {
++				t.Fatalf("tryRecordsLocks() = (busy %q, %v); want the locks held", busy, err)
++			}
++			lockDir := RecordsLockDirPath(worktree)
++			if tt.wantRecord {
++				if got := holderRecordPID(t, lockDir); got != os.Getpid() {
++					t.Errorf("holder record pid = %d; want %d", got, os.Getpid())
++				}
++			} else {
++				// Bolt's locks sit at the worktree root, so a record could appear there or in the weft lock directory.
++				for _, dir := range []string{worktree, lockDir} {
++					if _, err := os.Stat(pushLockHolderPath(dir)); !os.IsNotExist(err) {
++						t.Errorf("holder record in %s while held on Bolt: %v; want none", dir, err)
++					}
++				}
++			}
++			release()
++			if _, err := os.Stat(pushLockHolderPath(lockDir)); !os.IsNotExist(err) {
++				t.Errorf("holder record after the release: %v; want it gone", err)
++			}
++		})
++	}
++}
++
++// TestLockWeftForReplay_HolderRecord covers the record the weft replay lock writes:
++// it names this process while the locks are held and is gone after the release.
++func TestLockWeftForReplay_HolderRecord(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++	weft := newPlainWeftRepo(t)
++	f := &Fabric{weftPath: weft}
++	release, err := f.lockWeftForReplay()
++	if err != nil {
++		t.Fatalf("lockWeftForReplay() = %v; want nil", err)
++	}
++	lockDir := RecordsLockDirPath(weft)
++	if got := holderRecordPID(t, lockDir); got != os.Getpid() {
++		t.Errorf("holder record pid = %d; want %d", got, os.Getpid())
++	}
++	release()
++	if _, err := os.Stat(pushLockHolderPath(lockDir)); !os.IsNotExist(err) {
++		t.Errorf("holder record after the release: %v; want it gone", err)
++	}
++}
+diff --git a/internal/fabricengine/pushlockholder_test.go b/internal/fabricengine/pushlockholder_test.go
+new file mode 100644
+index 00000000..7a12d084
+--- /dev/null
++++ b/internal/fabricengine/pushlockholder_test.go
+@@ -0,0 +1,139 @@
++// pushlockholder_test.go covers the push lock's holder record over a temp lock directory: what a busy report says of the holder, and that the coalescing holder loop writes the record while it holds the lock and removes it on release.
++
++package fabricengine
++
++import (
++	"errors"
++	"fmt"
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestDescribePushLockHolder covers each state the holder record can be in when a bounded push gives up on the lock.
++func TestDescribePushLockHolder(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	since := time.Date(2026, 11, 3, 12, 0, 0, 0, time.UTC)
++	now := since.Add(95 * time.Second)
++	tests := []struct {
++		name string
++		// record is the holder record's content, nil for no record on disk.
++		record []byte
++		alive  bool
++		want   string
++	}{
++		{"NoRecord", nil, true, "no holder record names the process that holds it"},
++		{"LiveHolder", fmt.Appendf(nil, `{"pid":4242,"since":%q}`, since.Format(time.RFC3339)), true, "held by pid 4242 for 1m35s"},
++		{"DeadHolder", fmt.Appendf(nil, `{"pid":4242,"since":%q,"unknown":1}`, since.Format(time.RFC3339)), false, "its holder record names pid 4242 from 1m35s ago, no running process by that pid was found, and the record may be stale"},
++		{"Corrupt", []byte("{not json"), true, "its holder record is unreadable: invalid character 'n' looking for beginning of object key string"},
++		{"EmptyObject", []byte("{}"), true, "its holder record is unreadable: it names no pid or no time the lock was taken"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			lockDir := t.TempDir()
++			if tt.record != nil {
++				if err := os.WriteFile(pushLockHolderPath(lockDir), tt.record, 0o644); err != nil {
++					t.Fatalf("WriteFile: %v", err)
++				}
++			}
++			alive := func(int) bool { return tt.alive }
++			if got := describePushLockHolder(lockDir, now, alive); got != tt.want {
++				t.Errorf("describePushLockHolder() = %q; want %q", got, tt.want)
++			}
++		})
++	}
++}
++
++// TestHoldPushLock_ReleasesTheLockWhenTheRecordFails covers a holder record that cannot be written or removed:
++// the release still returns nil and frees the lock.
++func TestHoldPushLock_ReleasesTheLockWhenTheRecordFails(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name string
++		// prepare returns the lock directory whose holder record fails.
++		prepare func(t *testing.T) string
++	}{
++		{"RecordPathIsNonEmptyDirectory", func(t *testing.T) string {
++			dir := t.TempDir()
++			occupied := pushLockHolderPath(dir)
++			if err := os.MkdirAll(occupied, 0o755); err != nil {
++				t.Fatalf("MkdirAll: %v", err)
++			}
++			if err := os.WriteFile(filepath.Join(occupied, "entry"), []byte("x"), 0o644); err != nil {
++				t.Fatalf("WriteFile: %v", err)
++			}
++			return dir
++		}},
++		{"LockDirIsAFile", func(t *testing.T) string {
++			file := filepath.Join(t.TempDir(), "file")
++			if err := os.WriteFile(file, []byte("x"), 0o644); err != nil {
++				t.Fatalf("WriteFile: %v", err)
++			}
++			return filepath.Join(file, "locks")
++		}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			lockDir := tt.prepare(t)
++			lockPath := filepath.Join(t.TempDir(), "push.lock")
++			held, acquired, err := lock.TryAcquireWriteLock(lockPath)
++			if err != nil || !acquired {
++				t.Fatalf("TryAcquireWriteLock() = (%v, %v); want it to succeed", acquired, err)
++			}
++			release := holdPushLock(held, lockDir, time.Now())
++			if err := release(); err != nil {
++				t.Fatalf("release() = %v; want nil", err)
++			}
++			again, acquired, err := lock.TryAcquireWriteLock(lockPath)
++			if err != nil || !acquired {
++				t.Fatalf("TryAcquireWriteLock() after release = (%v, %v); want it to succeed", acquired, err)
++			}
++			_ = again.Release()
++		})
++	}
++}
++
++// TestCoalesceFlagged_HolderRecordLivesWhileTheLockIsHeld covers the holder loop's record:
++// during the step it names this process.
++// The busy error of a waiter names that process as live.
++// After the loop the record is gone and the lock free.
++func TestCoalesceFlagged_HolderRecordLivesWhileTheLockIsHeld(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	f := newPendingFlagFixture(t)
++	wantClause := fmt.Sprintf("held by pid %d for", os.Getpid())
++
++	steps := 0
++	step := func() (bool, error) {
++		steps++
++		busy := pushLockBusyError(f.lockDir, time.Second)
++		if !errors.Is(busy, ErrPushLockBusy) || !strings.Contains(busy.Error(), wantClause) {
++			t.Errorf("pushLockBusyError() during the step = %v; want it to wrap ErrPushLockBusy and name %q", busy, wantClause)
++		}
++		return false, nil
++	}
++	acquired, err := coalesceFlagged(f.lockDir, map[string]PushSpawn{pushSideRecords: {WeftPath: f.records}}, lock.TryAcquireWriteLock, step)
++	if !acquired || err != nil {
++		t.Fatalf("coalesceFlagged() = (%v, %v); want (true, nil)", acquired, err)
++	}
++	if steps != 1 {
++		t.Errorf("step ran %d times; want 1", steps)
++	}
++	if _, err := os.Stat(pushLockHolderPath(f.lockDir)); !errors.Is(err, os.ErrNotExist) {
++		t.Errorf("holder record after the loop: %v; want it gone", err)
++	}
++	again, ok, err := lock.TryAcquireWriteLock(f.lockPath)
++	if err != nil || !ok {
++		t.Fatalf("try-acquire after the loop = (%v, %v); want it to succeed", ok, err)
++	}
++	_ = again.Release()
++}
+diff --git a/internal/loomcli/landingdeps.go b/internal/loomcli/landingdeps.go
+index 9828b201..9ba02b5a 100644
+--- a/internal/loomcli/landingdeps.go
++++ b/internal/loomcli/landingdeps.go
+@@ -344,8 +344,10 @@ func pullRequestDepsGuardedBy(check prePushCheck, l *lymcwd.Location, parentBran
+ 		},
+ 		// PushTask passes the run's pre-push check first, whose stop is returned as the push's error.
+ 		PushTask: check.guardedPush(func() error {
+-			_, err := fabricengine.PushPairAnchored(l, fabricengine.EnvSyncOptions(), fabricengine.StatusPushLockWait)
+-			return err
++			return pushRidingOutBusyLock(func() error {
++				_, err := fabricengine.PushPairAnchored(l, fabricengine.EnvSyncOptions(), fabricengine.StatusPushLockWait)
++				return err
++			}, landingPushRetryPauses, time.Sleep)
+ 		}),
+ 		// CommitsMissing reads over the task pair, whose repository holds the merged head once the pair has fetched it.
+ 		CommitsMissing: func(merged, task string) ([]string, error) {
+@@ -382,6 +384,25 @@ func pullRequestDepsGuardedBy(check prePushCheck, l *lymcwd.Location, parentBran
+ 	}
+ }
+ 
++// landingPushRetryPauses are the growing pauses between the attempts of a landing push whose push lock stays held.
++// Another session's push holds the lock only while git runs, so the attempts ride out such contention for minutes before the row halts.
++var landingPushRetryPauses = []time.Duration{30 * time.Second, time.Minute, 2 * time.Minute}
++
++// pushRidingOutBusyLock runs push, and while its error wraps fabricengine.ErrPushLockBusy, logs it, sleeps the next of pauses and runs push again.
++// It returns nil once a push lands, the first error that is no busy lock, and the last busy error once pauses run out.
++func pushRidingOutBusyLock(push func() error, pauses []time.Duration, sleep func(time.Duration)) error {
++	err := push()
++	for _, pause := range pauses {
++		if !errors.Is(err, fabricengine.ErrPushLockBusy) {
++			return err
++		}
++		logger.Info("loomcli: the task branch push found the push lock held; retrying after a pause", "pause", pause, "cause", err)
++		sleep(pause)
++		err = push()
++	}
++	return err
++}
++
+ // watchFileChanges returns a channel that delivers a value whenever the file at path is created, written, renamed or removed, with the function that ends the watch.
+ // A change that lands while an earlier one is still undelivered is merged into it.
+ // When no watch can be opened it logs a Warn naming waiter and returns a nil channel, which leaves waiter on its timer.
+diff --git a/internal/loomcli/landingdeps_test.go b/internal/loomcli/landingdeps_test.go
+index 3401fb68..070ae220 100644
+--- a/internal/loomcli/landingdeps_test.go
++++ b/internal/loomcli/landingdeps_test.go
+@@ -7,6 +7,7 @@ package loomcli
+ 
+ import (
+ 	"errors"
++	"fmt"
+ 	"os"
+ 	"path/filepath"
+ 	"reflect"
+@@ -522,6 +523,46 @@ func TestReportOfRunKeepsOnlyTheRunsOwnEntry(t *testing.T) {
+ 	}
+ }
+ 
++// TestPushRidingOutBusyLock covers the landing push's retry: a busy push lock is retried after each pause in turn, and any other outcome ends the retry at once.
++func TestPushRidingOutBusyLock(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	busy := fmt.Errorf("push: %w", fabricengine.ErrPushLockBusy)
++	other := errors.New("boom")
++	pauses := []time.Duration{time.Second, 2 * time.Second}
++	tests := []struct {
++		name string
++		// results are the errors the push returns, one per call.
++		results    []error
++		wantErr    error
++		wantSleeps []time.Duration
++	}{
++		{"LandsAtOnce", []error{nil}, nil, nil},
++		{"LandsAfterABusyLock", []error{busy, nil}, nil, pauses[:1]},
++		{"OtherFailureEndsAtOnce", []error{other}, other, nil},
++		{"OtherFailureAfterABusyLock", []error{busy, other}, other, pauses[:1]},
++		{"BusyThroughEveryPause", []error{busy, busy, busy}, busy, pauses},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			calls := 0
++			push := func() error { calls++; return tt.results[calls-1] }
++			var slept []time.Duration
++			err := pushRidingOutBusyLock(push, pauses, func(d time.Duration) { slept = append(slept, d) })
++			if !errors.Is(err, tt.wantErr) || (tt.wantErr == nil && err != nil) {
++				t.Errorf("pushRidingOutBusyLock() = %v; want %v", err, tt.wantErr)
++			}
++			if calls != len(tt.results) {
++				t.Errorf("push ran %d times; want %d", calls, len(tt.results))
++			}
++			if !slices.Equal(slept, tt.wantSleeps) {
++				t.Errorf("slept %v; want %v", slept, tt.wantSleeps)
++			}
++		})
++	}
++}
++
+ func TestMergeableTips(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
