@@ -55,7 +55,7 @@ Held by a run; its scope is locked until the run ends.
 | T5 | **Darn-Write seat halts: stencil darn-template-write has unfilled marker subagent_model** | [`seat-stencil-marker-unfilled`](design-seat-stencil-marker-unfilled.md) | darn · solid | Finalize | neve | 14h<br>1h | stencil, shed |
 | T6 | **The orch role explains how to make a project into a beam**<br>• The prime orch in the Models hub did not know beam create is the only way, and patched a plain task run by hand. | [`orch-role-making-a-beam`](design-orch-role-making-a-beam.md) | darn · light | Code-Burler-Fix | neve | 1d<br>13m | orch, pawl |
 | T9 | **Run ends with a background shell outstanding: its commit and gate result are lost** | [`run-done-with-background-shell`](design-run-done-with-background-shell.md) | darn · solid | Code-Burler-Fix | neve | 14h<br>1h | shuttle, webster, gate |
-| T10 | **Darn-Write writer runs no gate itself when the cold fixer is on**<br>• The darn writer prompt still has the writer run and fix lym gate test; with the gate fixer on it should run none | [`darn-writer-runs-no-gate`](design-darn-writer-runs-no-gate.md) | darn · light | Record-Write | neve | 0m<br>0m | darn, stencil, gate |
+| T10 | **Darn-Write writer runs no gate itself when the cold fixer is on**<br>• The darn writer prompt still has the writer run and fix lym gate test; with the gate fixer on it should run none | [`darn-writer-runs-no-gate`](design-darn-writer-runs-no-gate.md) | darn · light | Darn-Write | neve | 0m<br>0m | darn, stencil, gate |
 
 #### Ready (0)
 
