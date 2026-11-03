@@ -1,6 +1,6 @@
 # Plan rubric's test-economy rule conflicts with decision-record acceptance criteria phrased as rendered-output checks
 
-`rubric-test-economy-vs-criteria` · Task · enhancement, burler, loom, stencil
+`rubric-test-economy-vs-criteria` · Task · enhancement, burler, loom, stencil · running · Worktree-Create
 
 The plan rubric's test-economy rule and a decision record's acceptance criteria pull opposite ways when a criterion is phrased as a rendered-text check ("the rendered stencil names X"): the planner plans a test for it, the plan review asks to cut that test, and the dispute repeats every round ([issue #3](https://github.com/Knatte18/loomyard/issues/3), seen in task `interactive-recipe`).
 

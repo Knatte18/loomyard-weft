@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-03 11:59 UTC; every age below is as of then.
+Rendered 2026-11-03 12:00 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -12,23 +12,22 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running (3)
+### Running (4)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | motif · solid | Discussion-Burler-Fix | neve | 4w<br>31m | shuttle, codex |
+| T1 | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | motif · solid | Discussion-Burler-Fix | neve | 4w<br>32m | shuttle, codex |
 | T3 | **Batten recovers a run whose pair is gone and orders its remote pushes, so no pass fails forever and no push races another** | [`batten-remote-order`](design-batten-remote-order.md) | tapestry · light | Parent-Align | neve | 15h<br>4h | batten, fabric |
 | T4 | **Board README marks a discussed entry and links its Sketch**<br>• Each entry flagged discussed shows a mark linking decision-<slug>.md in the README | [`readme-shows-discussed`](design-readme-shows-discussed.md) | darn · light | Code-Burler-Fix | neve | 10m<br>10m | board |
+| T5 | **Plan rubric's test-economy rule conflicts with decision-record acceptance criteria phrased as rendered-output checks**<br>• A wording criterion is checked by review, never by a prose test; rubric, Discussion prompt and spec say so | [`rubric-test-economy-vs-criteria`](design-rubric-test-economy-vs-criteria.md) | darn · light | Worktree-Create | neve | 15h<br>0m | burler, loom, stencil |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Plan rubric's test-economy rule conflicts with decision-record acceptance criteria phrased as rendered-output checks**<br>• A wording criterion is checked by review, never by a prose test; rubric, Discussion prompt and spec say so | [`rubric-test-economy-vs-criteria`](design-rubric-test-economy-vs-criteria.md) | darn · light |  | 15h<br>0m | burler, loom, stencil |
+_None._
 
 ### Layer A (2)
 
