@@ -1050,14 +1050,15 @@
         "stencil"
       ],
       "issues": [
-        23
+        23,
+        24
       ],
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "Imported from [issue #23](https://github.com/Knatte18/loomyard/issues/23).\n\nSeen in hub NORCE-DrillingAndWells/Models, whose fabric is anchored at src/csharp/NORCE.Models by .lym-anchor. A darn run (testsupport-rule-and-helpers) failed Drift-Baseline three times with 'the capture child ended before it recorded its start'. The capture-child log holds only: cwd is outside the recorded fabric anchor subtree: cwd \u003cworktree root\u003e does not equal the anchored directory \u003cworktree root\u003e/src/csharp/NORCE.Models (recorded by .lym-anchor). The drift producer starts its capture child with cwd at the worktree root whatever directory the run is resumed from, so every re-launch fails identically and drift cannot run in any hub with a subdirectory anchor.\n\nWorkaround: the parent runs lym drift defer and lym loom resume in the task worktree, then lym drift waive at Drift-Verify, so the run goes on with no baseline.\n\nExpected: the capture child (and the compare child) start in the anchored directory, the same directory every other lym verb requires.",
+      "body": "Imported from [issue #23](https://github.com/Knatte18/loomyard/issues/23).\n\nSeen in hub NORCE-DrillingAndWells/Models, whose fabric is anchored at src/csharp/NORCE.Models by .lym-anchor. A darn run (testsupport-rule-and-helpers) failed Drift-Baseline three times with 'the capture child ended before it recorded its start'. The capture-child log holds only: cwd is outside the recorded fabric anchor subtree: cwd \u003cworktree root\u003e does not equal the anchored directory \u003cworktree root\u003e/src/csharp/NORCE.Models (recorded by .lym-anchor). The drift producer starts its capture child with cwd at the worktree root whatever directory the run is resumed from, so every re-launch fails identically and drift cannot run in any hub with a subdirectory anchor.\n\nWorkaround: the parent runs lym drift defer and lym loom resume in the task worktree, then lym drift waive at Drift-Verify, so the run goes on with no baseline.\n\nExpected: the capture child (and the compare child) start in the anchored directory, the same directory every other lym verb requires.\n\n## From issue #24\n\nImported from [issue #24](https://github.com/Knatte18/loomyard/issues/24).\n\nHub NORCE-DrillingAndWells/Models, darn run testsupport-rule-and-helpers, halted at Drift-Baseline by Knatte18/loomyard#23. To skip drift for this one run, the parent ran lym config drift --layer local --set enabled=false in the task worktree; lym config --resolved drift shows enabled: false # local. lym loom resume then ran Drift-Baseline again and spawned the capture child anyway, failing the same way. lym drift defer is refused at a failed or paused Drift-Baseline, and goto cannot move past it, so there is no way to take one run past drift.\n\nExpected: either the local layer's enabled=false makes Drift-Baseline and Drift-Verify pass through on the next resume, or lym drift defer is admitted at a failed Drift-Baseline, as its halt's way forward.",
       "created": "2026-11-03T08:11:54Z",
-      "revised": "2026-11-03T08:11:54Z"
+      "revised": "2026-11-03T08:11:56Z"
     }
   ],
   "prime_owner": "neve",
