@@ -159,6 +159,12 @@ Decision: The operator decided the names on 2026-11-03. The Discussion-only reci
 
 Rationale: The operator approved arras and asked for weaving names on recipes, and judged cartoon to describe the plan rather than the Discussion.
 
+### Added after Discussion (parent, 2026-11-03): Names of the artifacts: note, sketch, cartoon (operator, 2026-11-03)
+
+Decision: The operator named the artifacts on 2026-11-03: a board idea is a note; the decision record a Discussion writes and its review approves is a sketch; a finished plan may later be called a cartoon. The recipe motif is the run that makes a sketch from a task. This corrects the earlier entry's wording 'the motif is the design decided before the weaving': motif names the recipe, sketch names what it produces. This task renames nothing in code: the decision record keeps its file name, verbs and type names; docs and help text this task writes for motif and arras say the recipe produces a sketch, the decision record.
+
+Rationale: The operator chose sketch to sit with cartoon as something drawn before the weaving; a code-wide rename of the decision record is outside this task.
+
 ## Constraints
 
 - `PATTERN-sole-parsers`: the recipe is parsed only by `shedbuild.Parse`; `shedbuild.Expand` (new) works on its output and parses a sub-recipe through it.
