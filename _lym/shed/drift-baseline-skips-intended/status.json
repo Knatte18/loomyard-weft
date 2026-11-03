@@ -1,12 +1,13 @@
 {
   "current_producer": "Land",
-  "state": "blocked",
-  "error": "deploy failed: exit code 1; log: /home/knatte/Code/loomyard-LYMHUB/loomyard/.lym/shed/drift-baseline-skips-intended/Land-deploy.log; way forward: fix the cause, then run \"lym batten run drift-baseline-skips-intended\" from the prime",
+  "state": "running",
+  "error": "",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Land",
     "last": "Land → stuck",
-    "wait": "deploy failed: exit code 1; log: /home/knatte/Code/loomyard-LYMHUB/loomyard/.lym/shed/drift-baseline-skips-intended/Land-deploy.log; way forward: fix the cause, then run \"lym batten run drift-baseline-skips-intended\" from the prime"
+    "wait": ""
   },
   "history": [
     {
