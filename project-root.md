@@ -8,11 +8,11 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (6)
+## Tasks (5)
 
 Concrete and claimable; only a task can run.
 
-### Running (4)
+### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -20,8 +20,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | motif · solid | Discussion-Burler-Fix | neve | 4w<br>31m | shuttle, codex |
 | T3 | **Batten recovers a run whose pair is gone and orders its remote pushes, so no pass fails forever and no push races another** | [`batten-remote-order`](design-batten-remote-order.md) | tapestry · light | Parent-Align | neve | 15h<br>4h | batten, fabric |
-| T4 | **Board README marks a discussed entry and links its Sketch**<br>• Each entry flagged discussed shows a mark linking decision-<slug>.md in the README | [`readme-shows-discussed`](design-readme-shows-discussed.md) | darn · light | Code-Burler-Fix | neve | 9m<br>9m | board |
-| T11 | **Map where fabricengine test time goes and propose cuts**<br>• Docs-only survey: time, git processes and files per fixture on neve, what hubforge templates already cover, ranked proposals<br>• `darn: writer fable[high]` | [`fabric-test-speed-survey`](design-fabric-test-speed-survey.md) | darn · docs | Finalize | neve | 48m<br>48m | fabric, testkit, docs |
+| T4 | **Board README marks a discussed entry and links its Sketch**<br>• Each entry flagged discussed shows a mark linking decision-<slug>.md in the README | [`readme-shows-discussed`](design-readme-shows-discussed.md) | darn · light | Code-Burler-Fix | neve | 10m<br>10m | board |
 
 ### Ready (0)
 
@@ -95,10 +94,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F16 |  | **Drift cannot be trialed in a sampler: every lym drift verb refuses outside drift stages** | [`sampler-drift-trial`](design-sampler-drift-trial.md) | 2h<br>2h | drift, shed |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2w<br>1d | burler, shed, orch, quarry, report |
 
-## Done (1)
+## Done (2)
 
 Finished, awaiting `lym board prune --apply`.
 
 | # | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- |
 | T2 | **Shipped heddle instructions as short imperative bullets**<br>• Rewrite the lym-batching and lym-plan-edits-before-gate shipped entries from prose walls into headed imperative bullet lists | [`heddle-shipped-bullets`](design-heddle-shipped-bullets.md) | 19m<br>19m | heddle |
+| T11 | **Map where fabricengine test time goes and propose cuts**<br>• Docs-only survey: time, git processes and files per fixture on neve, what hubforge templates already cover, ranked proposals<br>• `darn: writer fable[high]` | [`fabric-test-speed-survey`](design-fabric-test-speed-survey.md) | 48m<br>48m | fabric, testkit, docs |
