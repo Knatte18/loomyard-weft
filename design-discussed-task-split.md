@@ -23,6 +23,8 @@ Code still says "decision record": nothing in code is renamed to Sketch.
 - Built (2026-11-03): task `decision-record-on-board` stores the record and the flag.
   The record is the file `decision-<slug>.md` at the Bolt root beside `board.json`, which carries only a `discussed` boolean; `lym board get` shows the flag and `--record` prints the record; `lym loom decision store` re-copies it by hand.
   Runs already past Discussion are not backfilled.
+- Built (2026-11-03): task `readme-shows-discussed` (`1bbcc3b1`).
+  The board README and every project file link a discussed entry's record as `Sketch` under its slug, Done entries included.
 - Built (2026-11-03): task `shed-sub-run-block` adds the block row and the recipe `motif` (tapestry's Discussion rows).
 - Built (2026-11-03): task `tapestry-motif-block`.
   Tapestry defines Discussion once, in `motif-recipe.yaml`, and runs it through a block row named `Motif`.
