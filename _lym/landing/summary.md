@@ -1,41 +1,41 @@
-# Preflight skips lym's own run records under _lym
+# Preflight: stop refusing lym's own run records under _lym
 
-A run no longer blocks at Preflight on state lym wrote itself while handling a stop.
-Preflight's worktree-clean check now ignores uncommitted files under the run-records root, `_lym/shed`, on the state side of the pair.
-Every other path under `_lym`, and the whole code side, still counts.
-
-Before, the Go driver appended its settle log, `_lym/shed/<run>/go-settle.jsonl`, after the halt's status commit.
-The status commit stages the drive reports, arbiter and tackler directories but not that file, so it stayed untracked until a later commit.
-Preflight's re-step then refused the run on that file every time until the operator ran `lym fabric commit`.
+Preflight's worktree-clean check refused a run over files lym itself had written under `_lym` while handling a stop.
+In the reported case the tackler left `go-settle.jsonl` untracked in the weft, and every re-step stopped on that file until the tackler handed the stop back.
+This change decides the pattern once, so no further file of that kind blocks Preflight.
 
 Closes #27
 
+## What changes
+
+- `preflight.CheckResolved` passes the run-records root (`shedrun.RunsRootRel()`) to `fabricengine.Clean` as an exemption.
+  The weft-side check ignores uncommitted content anywhere beneath it.
+  Everything else under `_lym`, and the whole warp side, still counts.
+  `runStateExemptRels` in `internal/preflight/preflight.go` is the one place that names the exempt paths.
+- The settle records are now committed with the run's status.
+  `battenRunCommitPaths` and `statusCommitPathspec` add the new `shedrun.SettleRecordsRel` when the file exists, so the file no longer waits for a later records commit.
+- `fabricengine.Clean` takes variadic anchor-relative `weftExempt` paths and builds an `:(exclude)` pathspec scoped under the anchor.
+  `worktreeDirty` and `dirtyReason` take an optional pathspec to carry it.
+  With no exemption the probe runs unscoped, as before.
+
 ## Design decisions
 
-- The fix exempts the whole run-records root, not each file it holds.
-  Everything under it is lym's own run state: seed, status, settle records, drive reports, arbiter and tackler attempts, the notice marker and the writer's stop markers.
-  The run's next status commit, or the landing's records commit, carries those files, so an uncommitted one is bookkeeping in flight, never work a run could lose.
-  A file lym adds to a run's directory later is covered without a change here.
-- The exemption is decided in one place: `runStateExemptRels` in `internal/preflight/preflight.go`, which names `shedrun.RunsRootRel()`.
-- `fabricengine.Clean` takes the exempt paths as a variadic `weftExempt` argument, anchor-relative, and joins `AnchorRel` itself.
-  Fabric names no shed path, so it learns nothing of shed (PATTERN-fabric-isolation).
-  Existing callers of `Clean` pass nothing and keep the unscoped check.
-- The state-side probe runs `git status --porcelain -- . ':(exclude)<anchor>/_lym/shed'`, through a new optional pathspec on `worktreeDirty`.
-- Committing the settle log when written was the other option the issue named.
-  It would fix this one file, and leave the next file a stop path writes to the same failure, which the issue asks to avoid.
-- The friction directory, `_lym/loom/friction`, is not exempt.
-  It holds agent-written notes as well as lym's halt notes, and the status commit stages it on every transition.
-- The review bouncer's own settle record sits in a review row's directory under `_lym/loom/reviews`, written inside a row whose transition commits it, so it is outside this change.
+- The exemption covers the whole run-records root, not a list of file names.
+  A new file lym writes there on a stop or settle path is exempt without a further change.
+- Settle records are committed as well as exempt, because they are durable state a resumed machine may need.
+  The other run-record files, the stop and condition-stop markers among them, stay uncommitted until a later records commit or the run's removal.
+  They are exempt only so lym does not block on them.
+- The exemption applies to the weft side only.
+  A hub anchored at a subpath is handled by scoping the exclude pathspec under the anchor.
 
 ## Tests
 
-- `TestCheckResolved_RunStateUnderLymIsExempt` in `internal/preflight` covers a hub anchored at the root and one anchored at a subdirectory.
-  It writes, untracked, every file the stop and settle paths write into a run's directory, through the `shedrun` path constructors.
-  It asserts that the unscoped `fabricengine.Clean` sees them, so the pass is not a gitignore's doing, and that `CheckResolved` passes.
-  A file then written under `_lym` outside the run-records root makes `CheckResolved` refuse with `worktree-clean`.
-- The existing `DirtyPairedSide` row still pins a refusal for an untracked file at the state side's root.
-- Tiers 0 and 1 of `./internal/preflight` and `./internal/fabricengine` pass under `lym gate test`.
+- `TestCheckResolved_RunStateUnderLymIsExempt` (preflight integration, tier 1) writes the run-directory files lym's stop and settle paths produce, untracked, for a root anchor and a `backend` anchor.
+  It asserts that unscoped `fabricengine.Clean` sees them dirty, that `CheckResolved` passes, and that a file under `_lym/plan` outside the root still fails worktree-clean.
+- Unit tests cover the settle-records path in `battenRunCommitPaths`, `statusCommitPathspec` and `SettleRecordsRel`.
 
-## Check by hand
+## To check by hand
 
-- Optionally reproduce the issue: halt a run at a stop the tackler handles, leave `go-settle.jsonl` untracked, and confirm the re-step passes Preflight.
+- The tier-1 integration test was not run as part of writing this description; run `lym gate test ./internal/preflight` before landing.
+- Open finding `exempt-files-not-carried-by-named-commit` (consistency, medium): run-record files other than the settle records are exempt from the check but not carried by any named status commit.
+  Check that leaving them uncommitted until the records commit or run removal is acceptable.
