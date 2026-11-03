@@ -21,6 +21,12 @@ Whether the pause came from the adopt hold or from the orch pausing the adopted 
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-03): A landed paused run under a pause entry waits for the lift; adopt needs no step of its own
+
+Decision: Keep the writer's scope. A paused run whose work reached its parent and that a tender pause entry covers gets no pass and no notice while the entry stands: the full pass at the lift finishes it, as planPass already gives. lym adopt gains no step: after a takeover, the adopting machine's dobby finishes such a run by the same paused-and-reached-parent pass once no pause covers it, which is what the Goal's second idea asked for.
+
+Rationale: A pause entry is the operator's or hibernate's hold on all work, and Land pushes and tears down, so finishing under it would break the hold. The incident's run stood paused with no covering entry, which the new pass now finishes; making adopt finish runs itself would duplicate dobby's pass.
+
 ## Constraints
 
 ## Auto-mode assumptions
