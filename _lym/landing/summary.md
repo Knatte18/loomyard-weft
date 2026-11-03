@@ -1,57 +1,45 @@
-# Settlers re-send API-error turns, then hand the stop on naming the error
+# Re-send a judge's turn after an API error, then hand the stop on
 
-When the provider's API ends a Claude turn on an error, Claude fires `StopFailure` instead of `Stop`.
-claudeengine already reads that line as an API-error turn-end signal, but `ParseEvents` yields no event for it, so shuttle's wait loop never saw a turn end.
-An arbiter or tackler whose turn died this way sat idle until its deadline.
-It wrote no verdict and the parent was never told.
-The run's Go driver kept its lock all that time, so the parent's `lym loom resume` was refused as `driver_not_parked`.
-On the `cs` hub this held `report-significant-digits` at Drift-Await for 26 minutes.
+A judge session (arbiter or tackler) whose turn ends on a provider API error used to sit idle until its deadline.
+The stop it held reached no one, and the parent's `lym loom resume` was refused with `driver_not_parked` while the driver waited on the dead session.
 
-## What changes
+Now `shuttleengine` reads that turn end, re-sends the turn after a back-off, and ends the run `OutcomeAPIError` once the re-sends are spent.
+The arbiter and tackler calls turn that outcome into a hand-on or hand-back with cause `api-error`, and the question to the parent names the error text.
 
-**Shuttle** (`internal/shuttleengine`)
+## Changes
 
-- `Spec.APIErrorRetries` sets how many times a run re-sends a turn the provider's API ended while an output file is still missing.
-  The new `apierrorretry.go` reads the session signals each tick from the prompt offset.
-  An API-error turn end stays pending until a turn start, turn end or session start follows it.
-  The n-th one is re-sent with one `[lym]` line through the gated send, after `30s × 2^(n-1)`.
-- The API-error turn end after the last re-send ends the run with the new `OutcomeAPIError`, and `Result.APIError` holds the provider's error text.
-  This exit goes through `classifyDeadlineExpiry`, so a run whose output files are all on disk still ends done (Completion Signal Invariant).
-  A pending API error that finds every output file present ends the run done at once.
-- `api-error` counts as a terminal record outcome for attach, and the session-state shadow pairs it with `idle-stalled`.
-- With `APIErrorRetries` at zero, nothing changes: every other spec still waits such a turn end out to its deadline.
-
-**Settlers** (`internal/sheddriver`, `internal/shedarbiter`)
-
-- The arbiter and tackler specs set `APIErrorRetries` to `sheddriver.SettlerAPIErrorRetries` (3).
-- When a run ends `OutcomeAPIError`, the call stops its strand and hands on (arbiter) or hands back (tackler) with the new cause `api-error`.
-  The reason names the error, and so does the question: `HandBackQuestionCause` puts the error after the cause.
-  The driver's hand-back then parks the run and sends the parent the question notice.
-  That notice names the run, its stop report, the settler and the error, so a dead settler no longer holds a stop silently, and the parent's resume finds the run parked.
+- `shuttleengine`: new `Spec.APIErrorRetries`.
+  `Run.retryAPIError` (`apierrorretry.go`) runs on each `Wait` tick and reads the session signals itself, since an API-error turn end is no event the run loop classifies.
+  It re-sends one line once `apiErrorRetryBackoff` (30 s) times 2^(n-1) has passed since the n-th API-error turn end was read.
+  The turn end past the last re-send ends the run `OutcomeAPIError`, and `Result.APIError` carries the error text.
+- A turn start, turn end or session start read after an API-error turn end clears it, so a recovered session is not re-sent again.
+  A pause that covers the run holds the re-send.
+- Done wins: when every output file exists, the run ends done through `classifyDeadlineExpiry`, as the completion signal invariant requires.
+  `attach` and the session-state shadow count API errors from the prompt offset.
+- `sheddriver`: `CauseAPIError` (`api-error`) and `SettlerAPIErrorRetries` (3).
+  `HandBackQuestionCause` puts the error text into the hand-back question.
+- `shedarbiter` and the tackler call map `OutcomeAPIError` to a hand-on or hand-back with that cause, and stop the run.
+- Prompts, `contracts/orchrole/orch-role.md`, `docs/overview.md` and `pattern/PATTERN-shuttle-provider-seam.md` name the new cause among the fault cases the orch investigates.
 
 ## Design decisions
 
-- **Detection reads session signals, not a new event kind.**
-  Making `StopFailure` an `Event` would have changed every `ParseEvents` consumer: the orch watcher, gatefixer, activity and session reads.
-  The retry instead keeps its own signal cursor, which is provider-neutral through `SessionSignalParser`, and only runs for a spec that opts in.
-- **A new outcome, not `died` or `timeout`.**
-  The session is alive and its deadline has not passed, so both existing outcomes would misreport it.
-  `OutcomeAPIError` lets each caller name the cause.
-  Callers that only test for `OutcomeDone` treat it as one more failure.
-- **The retry budget counts API-error turn ends since the prompt offset**, not re-sends made by this process.
-  A re-attach therefore resumes the count from the run's own events file, not from zero.
-- **Only the two settlers opt in.**
-  These are the roles that hold a stop alone under a deadline.
-  Other autonomous roles keep their current behaviour.
-- The Completion Signal tripwire now also scans `apierrorretry.go`, with `OutcomeAPIError` added as a negative marker and its one return site audited.
+- Only the arbiter and tackler opt in.
+  Any other role's caller reads every outcome but done as one more failure, so a re-send there would only delay it.
+  A role that wants the behaviour sets `APIErrorRetries` and handles `OutcomeAPIError`.
+- The back-off doubles per API-error turn end, so a passing server error has time to clear and a settler keeps most of its deadline.
+- A provider usage-limit stop is re-sent and handed on like any other API error.
+- A failed re-send is logged once per episode and tried again on a later tick, bounded by the run deadline.
+- An engine without `SessionSignalParser` and an unreadable events file change nothing.
 
-## Tests
+## To check by hand
 
-- `TestWait_APIErrorRetry` drives Wait over a fake session with these rows:
-  - a re-send after the back-off lets the agent finish;
-  - repeated API errors end the run `api-error` naming the error, with the back-off doubling between re-sends;
-  - a spec with no retries waits to its deadline;
-  - an API error with the output file on disk ends the run done with no re-send.
-- New rows in `TestCall_VerdictOutcomes` and `TestTacklerCall_SpawnPath` cover the `api-error` hand-on and hand-back.
-  The arbiter row also checks that the question names the error.
-- `TestSpec` and `TestTacklerSpec` check the retries on both settler specs.
+- No run against a live provider error was made.
+  Trigger a `StopFailure` in a real arbiter session and confirm the re-send, then the hand-on naming the error, then a `lym loom resume` that is not refused.
+- The parent is told through the existing hand-on and hand-back path only.
+  There is no separate creel notice, so confirm the orch's stop report names the failed settler and the stop.
+- Findings left open on the change:
+  - `api-error-roles-under-deadline-not-opted-in`: roles other than the arbiter and tackler that run under a deadline do not set `APIErrorRetries`, in `internal/sheddriver/agentshuttle.go`.
+  - `orch-role-contract-omits-api-error-cause`: check that `contracts/orchrole/orch-role.md` names `api-error` wherever it lists the hand-on causes.
+  - `pending-clear-unpinned`: no test pins that a turn start, turn end or session start clears a pending API error, in `internal/shuttleengine/apierrorretry.go`.
+  - `tackler-api-error-question-unasserted`: no test asserts that the tackler's hand-back question names the API error, in `internal/sheddriver/tackler_test.go`.
+  - `unfinished-omits-api-error`: check whether the unfinished-run listing and classification in `internal/shuttleengine` should include `OutcomeAPIError`.
