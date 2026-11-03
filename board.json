@@ -765,7 +765,7 @@
       "isolated": false,
       "brief": "Eight review runs: the current review stencil against one that demands concrete findings",
       "body": "## Seen\n\nA cheaper fixer model needs findings concrete enough to carry out: each names the place and the change, not only the problem (operator, 2026-10-22).\nPlan and Discussion reviewers do not write findings that way today.\nAsking them to costs the reviewer more output and may change what it finds.\n\n## Bench (operator, 2026-11-03)\n\nRuns as darn with profile `docs`, before bench `fixers-on-sonnet`, which takes its concrete findings as input.\n\n- Inputs: the same two artifacts `fixers-on-sonnet` uses, one plan and one discussion from past runs, each at the state its review round saw.\n- Arms, each on both inputs, with the reviewer model the hub uses today:\n  1. The review stencil as it is, the baseline.\n  2. The review stencil with a rule that every finding names its place and the change to make.\n- Repeats: two per arm and input, so eight review runs.\n- Scoring: findings per run, the share that name place and change, the findings one arm raises that the other misses, and the cost of each run.\n- Report under `docs/research/`, keeping the arm-2 findings as `fixers-on-sonnet`'s input, with a recommendation on whether the rule goes into the stencils.\n",
-      "status": "running · Drift-Verify",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-03T18:21:21Z",
       "revised": "2026-11-03T18:21:53Z",
       "profile": "docs"
