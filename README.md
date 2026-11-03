@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-03 14:46 UTC; every age below is as of then.
+Rendered 2026-11-03 14:47 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -62,11 +62,11 @@ _None._
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-## [P0 Root: entries under no project](project-root.md) (36)
+## [P0 Root: entries under no project](project-root.md) (35)
 
 Owner `neve`
 
-### Tasks (0)
+### Tasks (1)
 
 Concrete and claimable; only a task can run.
 
@@ -76,7 +76,15 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Notes (36)
+#### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T1 | `draft` **One base for a command dir; a missing Drift dir fails by name**<br>• gate.yaml and drift.yaml resolve a relative dir against the same base, and a Drift step whose dir is missing fails naming the path and the config key | [`drift-dir-base`](design-drift-dir-base.md) | darn · solid |  | 18m<br> | drift, gate, config |
+
+### Notes (34)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -86,16 +94,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 11d<br>7h | loom, stencil |
 
-#### Bugs (6)
+#### Bugs (4)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **A beam cannot be made from a project whose slug already ran a motif run** | [`beam-after-motif`](design-beam-after-motif.md) | 2h<br>2h | batten, pawl |
-| B2 |  | **A gate tier whose shell exits while a grandchild holds its pipe hangs forever**<br>• No WaitDelay on tier and build children: an orphaned MSBuild node keeps lym gate test, and the adopt check, running past every timeout | [`gate-orphan-pipe-hang`](design-gate-orphan-pipe-hang.md) | 20m<br>20m | gate, process |
-| B3 |  | **Way-forward texts name lym board remove <slug>, which the verb refuses**<br>• adoptcli, fronttask and boardengine tell the reader to run lym board remove with a bare slug; the verb takes JSON or a bare handle | [`board-remove-slug-form`](design-board-remove-slug-form.md) | 19m<br>19m | board |
-| B4 |  | **drift.yaml joins dir onto the anchor, gate.yaml onto the worktree root**<br>• The same dir: dotnet runs the gate in dotnet/ and the Drift capture in dotnet/dotnet on a hub anchored at dotnet | [`drift-dir-base`](design-drift-dir-base.md) | 16m<br>16m | drift, gate, config |
-| B5 |  | **A Drift step in a missing dir fails as fork/exec /usr/bin/sh, with a way forward that repeats it**<br>• Drift spawns without checking its dir, blames the shell, and names no config key or location | [`drift-missing-dir-error`](design-drift-missing-dir-error.md) | 16m<br>16m | drift |
-| B6 | L | **loom status --watch prints every poll while a verify runs**<br>• The verify wait text carries its elapsed seconds, so the watch sees a change on every poll | [`watch-elapsed-churn`](design-watch-elapsed-churn.md) | 15m<br>15m | loom, cli |
+| B2 |  | **A gate tier whose shell exits while a grandchild holds its pipe hangs forever**<br>• No WaitDelay on tier and build children: an orphaned MSBuild node keeps lym gate test, and the adopt check, running past every timeout | [`gate-orphan-pipe-hang`](design-gate-orphan-pipe-hang.md) | 21m<br>21m | gate, process |
+| B3 |  | **Way-forward texts name lym board remove <slug>, which the verb refuses**<br>• adoptcli, fronttask and boardengine tell the reader to run lym board remove with a bare slug; the verb takes JSON or a bare handle | [`board-remove-slug-form`](design-board-remove-slug-form.md) | 20m<br>20m | board |
+| B6 | L | **loom status --watch prints every poll while a verify runs**<br>• The verify wait text carries its elapsed seconds, so the watch sees a change on every poll | [`watch-elapsed-churn`](design-watch-elapsed-churn.md) | 17m<br>17m | loom, cli |
 
 #### Enhancements (12)
 
