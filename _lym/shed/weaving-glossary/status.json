@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Await → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -34,6 +34,33 @@
       "output": "",
       "at": "2026-11-03T07:59:45Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/weaving-glossary/_lym/landing/summary.md",
+      "at": "2026-11-03T08:05:22Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-03T08:05:06.23652103Z",
+          "end": "2026-11-03T08:05:06.244435132Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-03T08:05:06.305481437Z",
+          "end": "2026-11-03T08:05:06.475004555Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-03T08:05:06.537247707Z",
+          "end": "2026-11-03T08:05:06.537383711Z"
+        }
+      ]
     }
   ],
   "product": {
