@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-03 19:00 UTC; every age below is as of then.
+Rendered 2026-11-03 19:01 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -48,7 +48,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **lym ide spawn on a beam opens the beam workspace**<br>• The beam code button opens the beam worktree folder; it should open the beam workspace file lym already writes | [`beam-code-opens-workspace`](design-beam-code-opens-workspace.md) | darn · light | Drift-Recheck | neve | 14m<br>13m | ide |
+| T2 | **lym ide spawn on a beam opens the beam workspace**<br>• The beam code button opens the beam worktree folder; it should open the beam workspace file lym already writes | [`beam-code-opens-workspace`](design-beam-code-opens-workspace.md) | darn · light | Describe | neve | 14m<br>13m | ide |
 | T3 | **Drift-Baseline pre-accepts drift that contradicts the task**<br>• A baseline report that writes acceptance policy for drift the task says must not happen, steering Drift-Verify to accept it | [`drift-baseline-preaccepts`](design-drift-baseline-preaccepts.md) | darn · light | Finalize | neve | 12m<br>11m | drift, stencil |
 | T9 | **lym fabric push lock held past 30s blocks the loom run at PR-Review as escalation-to-human** | [`push-lock-busy-blocks`](design-push-lock-busy-blocks.md) | darn · light | Darn-Write | neve | 2h<br>2h | fabric, landing |
 
