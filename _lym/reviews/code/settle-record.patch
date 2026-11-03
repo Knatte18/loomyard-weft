@@ -1,0 +1,379 @@
+diff --git a/internal/driftcli/anchor_integration_test.go b/internal/driftcli/anchor_integration_test.go
+index b3f45167..20e587da 100644
+--- a/internal/driftcli/anchor_integration_test.go
++++ b/internal/driftcli/anchor_integration_test.go
+@@ -24,7 +24,7 @@ import (
+ 
+ // TestDrift_RunsInTheAnchoredDirectory covers the main capture's child, the compare and the side capture of a hub anchored at a subdirectory:
+ // each declared command records its working directory, and every one must be the anchored directory.
+-// A capture child started anywhere but the anchored directory cannot resolve its worktree and never records its start.
++// A capture child started anywhere but the anchored directory cannot resolve its worktree, never records its start, and marks its error as lasting.
+ func TestDrift_RunsInTheAnchoredDirectory(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+@@ -74,6 +74,9 @@ verify_max_runs: 3
+ 	}
+ 
+ 	writeStatus("Drift-Await", shedengine.StateBlocked)
++	if env := lymRun(t, bin, pair, "capture-child"); env.OK || !strings.Contains(env.Error, "does not equal the anchored directory") || env.Raw[driftengine.LastingFaultKey] != true {
++		t.Errorf("lym drift capture-child at the worktree root = %+v; want its cwd refused and marked %s", env, driftengine.LastingFaultKey)
++	}
+ 	if env := lymRun(t, bin, anchor, "capture"); !env.OK {
+ 		t.Fatalf("lym drift capture: %s", env.Error)
+ 	}
+diff --git a/internal/driftcli/cli.go b/internal/driftcli/cli.go
+index 4879acfe..d7d7eb3f 100644
+--- a/internal/driftcli/cli.go
++++ b/internal/driftcli/cli.go
+@@ -16,6 +16,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/driftengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/output"
+ 	"github.com/Knatte18/loomyard/internal/proc"
+ )
+@@ -388,6 +389,11 @@ func runCaptureChild(cmd *cobra.Command) {
+ 
+ 	w, err := openWorktree(cmd)
+ 	if err != nil {
++		// Only a refusal fixed by the directory is lasting; a read error on the anchor marker may pass on a fresh start.
++		if errors.Is(err, lymcwd.ErrNotAGitRepo) || errors.Is(err, lymcwd.ErrCwdOutsideAnchor) {
++			clihelp.SetExit(ctx, output.ErrFields(out, err.Error(), map[string]any{driftengine.LastingFaultKey: true}))
++			return
++		}
+ 		fail(err)
+ 		return
+ 	}
+diff --git a/internal/driftcli/doc.go b/internal/driftcli/doc.go
+index 352247ce..0c7d6c12 100644
+--- a/internal/driftcli/doc.go
++++ b/internal/driftcli/doc.go
+@@ -17,6 +17,7 @@
+ //
+ // `capture` checks the main capture's precondition, then starts `<this binary> drift capture-child` detached in the worktree's anchored directory with breakaway, falling back to a plain detached start where Windows refuses breakaway, and returns once the child's capture record reads running.
+ // The child holds the capture's named job, runs the capture under the capture lock, re-checks the precondition under that lock and releases the job as its last act.
++// A child whose cwd is outside a git repository or is not the anchored directory marks its error envelope with driftengine.LastingFaultKey, since a fresh start runs in the same directory and fails the same way.
+ // It writes nothing to its log once the capture has returned, because the Drift-Await row may commit the log once the lock is free.
+ // Under go test the start returns an error and spawns nothing.
+ //
+diff --git a/internal/driftengine/baseline.go b/internal/driftengine/baseline.go
+index 2846eaea..162e5bd6 100644
+--- a/internal/driftengine/baseline.go
++++ b/internal/driftengine/baseline.go
+@@ -35,6 +35,7 @@ func NewDriftBaseline(name string, row Row, deps Deps) *DriftBaseline {
+ // Otherwise the capture is a detached child and the pass returns once the child's record exists;
+ // when a detached start is refused breakaway, the capture runs in this process.
+ // A failed or refused capture, or a capture child that ended or stalled before it recorded its start, is a Stuck whose reason opens with CaptureHaltPrefix and names its ways forward, `lym drift defer` among them.
++// A child's halt carries the error its log ends on, and for an error the child marked lasting it drops the resume that captures again, naming only `lym drift defer` and a fix of the cause.
+ // A start that fails for another reason, such as an unresolvable binary, an unwritable child log or a held capture lock, is an error.
+ // Only the scope record and baseline.md are committed while a detached capture may still write its logs; all of the durable drift directory is committed once a capture has ended in this process.
+ func (p *DriftBaseline) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error) {
+@@ -145,6 +146,9 @@ func (p *DriftBaseline) captureAgain(ctx context.Context, commitAll *bool) (shed
+ 	switch {
+ 	case startErr == nil:
+ 		return shedengine.Done, done, nil
++	case errors.As(startErr, &noRecord) && noRecord.lasting:
++		reason := fmt.Sprintf("%sthe baseline capture did not start: %v; lym loom resume cannot change this error, since it starts the capture child the same way; way forward: lym drift defer followed by lym loom resume to go on with regression deferred, or a fix of the error's cause", CaptureHaltPrefix, startErr)
++		return shedengine.Stuck, shedengine.OutputPointer{Reason: reason}, nil
+ 	case errors.As(startErr, &noRecord):
+ 		reason := fmt.Sprintf("%sthe baseline capture did not start: %v; way forward: lym loom resume to capture again, or lym drift defer followed by lym loom resume to go on with regression deferred", CaptureHaltPrefix, startErr)
+ 		return shedengine.Stuck, shedengine.OutputPointer{Reason: reason}, nil
+diff --git a/internal/driftengine/baseline_test.go b/internal/driftengine/baseline_test.go
+index 4b4ef3ec..31120ea4 100644
+--- a/internal/driftengine/baseline_test.go
++++ b/internal/driftengine/baseline_test.go
+@@ -178,9 +178,11 @@ func TestDriftBaseline(t *testing.T) {
+ 		want       shedengine.Outcome
+ 		wantErr    string
+ 		wantReason []string
+-		wantAgents int
+-		wantStarts int
+-		wantRuns   int
++		// wantNoReason lists text the reason must not hold.
++		wantNoReason []string
++		wantAgents   int
++		wantStarts   int
++		wantRuns     int
+ 		// wantCommit nil wants no commit at all.
+ 		wantCommit []string
+ 		// wantDeferrable is true for a Stuck that lym drift defer settles.
+@@ -333,6 +335,19 @@ func TestDriftBaseline(t *testing.T) {
+ 			wantCommit:     scopeAndReport,
+ 			wantDeferrable: true,
+ 		},
++		{
++			name: "a child that ended on an error a resume cannot change is a capture halt offering only defer and a fix",
++			setup: func(f *baselineFixture) {
++				f.startErr = childNoRecordError{text: "drift: the capture child ended before it recorded its start: cwd /w does not equal the anchored directory /w/backend; its log is child.log", lasting: true}
++			},
++			want:           shedengine.Stuck,
++			wantReason:     []string{CaptureHaltPrefix, "does not equal the anchored directory", "child.log", "lym loom resume cannot change this error", "lym drift defer followed by lym loom resume", "fix of the error's cause"},
++			wantNoReason:   []string{"lym loom resume to capture again"},
++			wantAgents:     1,
++			wantStarts:     1,
++			wantCommit:     scopeAndReport,
++			wantDeferrable: true,
++		},
+ 		{
+ 			name:       "an environment fault starting the capture is an error that offers no defer",
+ 			setup:      func(f *baselineFixture) { f.startErr = errors.New("drift: resolve this binary: no such file") },
+@@ -408,6 +423,11 @@ func TestDriftBaseline(t *testing.T) {
+ 					t.Errorf("Call() reason = %q; want it to name %q", pointer.Reason, want)
+ 				}
+ 			}
++			for _, unwanted := range tt.wantNoReason {
++				if strings.Contains(pointer.Reason, unwanted) {
++					t.Errorf("Call() reason = %q; want it without %q", pointer.Reason, unwanted)
++				}
++			}
+ 			if strings.Contains(pointer.Reason, "remov") {
+ 				t.Errorf("Call() reason = %q; want no removing offered as a way forward", pointer.Reason)
+ 			}
+diff --git a/internal/driftengine/doc.go b/internal/driftengine/doc.go
+index e9570b89..9e2a574f 100644
+--- a/internal/driftengine/doc.go
++++ b/internal/driftengine/doc.go
+@@ -31,6 +31,7 @@
+ // RunSideCapture takes no lock and writes no record: it runs the same command into the next free numbered directory under the side directory.
+ // CheckMainCapture is the main capture's precondition: the run is at Drift-Baseline, or blocked at Drift-Await, HEAD equals the branch point and the tracked tree is clean; each refusal names its way forward.
+ // StartCapture spawns `drift capture-child` detached in the anchored directory, where a lym verb's cwd must be, with breakaway, registers it under the run's processes with role `capture` and returns its pid only once the capture record carries that pid, in any state, since a capture can fail between two reads.
++// A child that ends or stalls before that record is an error carrying the last JSON error envelope's error from the child's log, folded onto one bounded line, and whether the child marked it with LastingFaultKey as one a fresh start in the same directory cannot change.
+ // A start Windows refuses for breakaway is retried plain-detached when the caller sets FallbackDetach, and is ErrBreakawayRefused otherwise.
+ // ProbeLock reads whether an OS lock is held without creating a directory, and Active reads the capture lock and the compare marker.
+ //
+@@ -80,7 +81,7 @@
+ // Scope off, a set awaited_at and a passed capture take no capture; a capture holding the lock is left running.
+ // Otherwise it captures again: an undeclared capture command is a Stuck naming `lym config drift`, and a refusal of the capture's precondition is a Stuck whose reason opens with CaptureHaltPrefix and names `lym drift defer` with `lym loom resume`, and on a dirty tree restoring or stashing the listed paths.
+ // The capture is the detached child: the pass returns Done once the child's record exists, and the recipe's Drift-Await row waits for the capture to end;
+-// a child that does not start is a Stuck opening with CaptureHaltPrefix and naming `lym loom resume` and `lym drift defer` with `lym loom resume`;
++// a child that does not start is a Stuck opening with CaptureHaltPrefix and carrying the child's error, naming `lym loom resume` and `lym drift defer` with `lym loom resume`, or, for an error the child marked lasting, saying a resume cannot change it and naming only `lym drift defer` with `lym loom resume` and a fix of the cause;
+ // when Windows refuses the detached start breakaway, the capture runs in the step's own process, so its command dies with the step.
+ // A failed capture is a Stuck opening with CaptureHaltPrefix and naming the log, `lym drift capture` with `lym loom resume`, and `lym drift defer` with `lym loom resume`; the row carries no on_stuck, so each Stuck halts the run.
+ // Every pass commits through Deps.Commit on its way out: the scope record and baseline.md while a detached capture may still write its logs, and all of the durable drift directory once a capture has ended in this process.
+diff --git a/internal/driftengine/spawn.go b/internal/driftengine/spawn.go
+index 771c8beb..35e94ced 100644
+--- a/internal/driftengine/spawn.go
++++ b/internal/driftengine/spawn.go
+@@ -5,11 +5,13 @@ package driftengine
+ import (
+ 	"crypto/sha256"
+ 	"encoding/hex"
++	"encoding/json"
+ 	"errors"
+ 	"fmt"
+ 	"os"
+ 	"os/exec"
+ 	"path/filepath"
++	"strings"
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/lock"
+@@ -21,6 +23,12 @@ import (
+ // ErrBreakawayRefused marks a capture start Windows refused for breakaway when the caller admits no detached fallback.
+ var ErrBreakawayRefused = errors.New("drift: the capture start was refused breakaway")
+ 
++// LastingFaultKey is the key the capture child sets true in its JSON error envelope when its error is one a fresh start in the same directory cannot change, such as a cwd its worktree does not resolve from.
++const LastingFaultKey = "lasting_fault"
++
++// childErrorMaxRunes bounds the child's error text a start failure carries, so a halt stays one readable line.
++const childErrorMaxRunes = 400
++
+ // childSpawn describes one start of the capture child, told to the spawn seam.
+ type childSpawn struct {
+ 	argv []string
+@@ -64,7 +72,7 @@ type SpawnRequest struct {
+ 
+ // StartCapture starts `<executable> drift capture-child` detached in the anchored directory and returns its pid once the capture record carries that pid, in any state.
+ // The child writes that record after its precondition held under the capture lock, so the caller moves the run on only after the precondition held.
+-// It refuses while the capture lock reads held, and returns an error naming the child's log when the child ends, or the bound runs out, before the record.
++// It refuses while the capture lock reads held, and returns an error naming the child's log and the error the log ends on when the child ends, or the bound runs out, before the record.
+ func StartCapture(req SpawnRequest) (int, error) {
+ 	held, err := ProbeLock(req.Paths.CaptureLock)
+ 	if err != nil {
+@@ -135,18 +143,68 @@ func awaitRunningRecord(req SpawnRequest, child spawnedChild, childLog string) e
+ 	}
+ }
+ 
+-// startFailure builds the error of a capture child that did not record its start.
+-// Under FallbackDetach, the CLI's form, it names the way forward; otherwise the calling row words its own halt around it, so it names the child's log alone.
++// startFailure builds the error of a capture child that did not record its start, carrying the error the child's log ends on.
++// Under FallbackDetach, the CLI's form, it names the way forward, and for an error the child marked lasting it offers no fresh capture, which would end the same way;
++// otherwise the calling row words its own halt around it, so it names the child's log alone.
+ func startFailure(req SpawnRequest, childLog, what string) error {
+-	if req.FallbackDetach {
+-		return childNoRecordError{fmt.Sprintf("drift: the capture child %s; way forward: read %s, then, once lym drift status shows the capture lock free, run lym drift capture again, or lym drift defer followed by lym loom resume", what, childLog)}
++	report := readChildReport(childLog)
++	event := "drift: the capture child " + what
++	if report.text != "" {
++		event += ": " + report.text
++	}
++	switch {
++	case !req.FallbackDetach:
++		return childNoRecordError{text: fmt.Sprintf("%s; its log is %s", event, childLog), lasting: report.lasting}
++	case report.lasting:
++		return childNoRecordError{text: fmt.Sprintf("%s; lym drift capture again starts the child the same way and cannot change this error; way forward: lym drift defer followed by lym loom resume, or a fix of the error's cause; its log is %s", event, childLog), lasting: true}
++	}
++	return childNoRecordError{text: fmt.Sprintf("%s; way forward: read %s, then, once lym drift status shows the capture lock free, run lym drift capture again, or lym drift defer followed by lym loom resume", event, childLog)}
++}
++
++// childReport is the failure the capture child's log records.
++type childReport struct {
++	// text is the child's error on one line, bounded by childErrorMaxRunes; empty when the log holds no error envelope.
++	text string
++	// lasting is true when the child marked its error with LastingFaultKey.
++	lasting bool
++}
++
++// readChildReport reads the last JSON error envelope of the capture child's log.
++// A child that wrote none, such as one that crashed, and a log that cannot be read report nothing, so the error names the log alone.
++func readChildReport(childLog string) childReport {
++	data, err := os.ReadFile(childLog)
++	if err != nil {
++		return childReport{}
++	}
++	var report childReport
++	for _, line := range strings.Split(string(data), "\n") {
++		var envelope map[string]any
++		if json.Unmarshal([]byte(strings.TrimSpace(line)), &envelope) != nil || envelope["ok"] != false {
++			continue
++		}
++		if text, ok := envelope["error"].(string); ok {
++			report = childReport{text: boundChildError(text), lasting: envelope[LastingFaultKey] == true}
++		}
+ 	}
+-	return childNoRecordError{fmt.Sprintf("drift: the capture child %s; its log is %s", what, childLog)}
++	return report
++}
++
++// boundChildError folds text onto one line and cuts it to childErrorMaxRunes, marking a cut with an ellipsis.
++func boundChildError(text string) string {
++	runes := []rune(strings.Join(strings.Fields(text), " "))
++	if len(runes) <= childErrorMaxRunes {
++		return string(runes)
++	}
++	return string(runes[:childErrorMaxRunes-1]) + "…"
+ }
+ 
+ // childNoRecordError is a started capture child that did not record its start.
+ // A calling row tells it from an environment fault that kept the child from starting, since only a child that ran and failed is a capture halt.
+-type childNoRecordError struct{ text string }
++type childNoRecordError struct {
++	text string
++	// lasting is true when the child marked its error as one a fresh start cannot change.
++	lasting bool
++}
+ 
+ func (e childNoRecordError) Error() string { return e.text }
+ 
+diff --git a/internal/driftengine/spawn_test.go b/internal/driftengine/spawn_test.go
+index e389c3e5..062f83ef 100644
+--- a/internal/driftengine/spawn_test.go
++++ b/internal/driftengine/spawn_test.go
+@@ -4,6 +4,7 @@ package driftengine
+ 
+ import (
+ 	"errors"
++	"fmt"
+ 	"os"
+ 	"path/filepath"
+ 	"strings"
+@@ -53,7 +54,7 @@ func writeRunning(t *testing.T, p Paths, pid int) {
+ 	}
+ }
+ 
+-// TestStartCapture covers the child's argv and run-process record, the wait for the child's own running record, a child that ends or stalls before it, a lock held before the start, and both breakaway branches.
++// TestStartCapture covers the child's argv and run-process record, the wait for the child's own running record, a child that ends or stalls before it with the error its log ends on, a lock held before the start, and both breakaway branches.
+ func TestStartCapture(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -102,21 +103,67 @@ func TestStartCapture(t *testing.T) {
+ 		}
+ 	})
+ 
++	lastingEnvelope := fmt.Sprintf(`{"error":"cwd /w does not equal the anchored directory /w/backend","%s":true,"ok":false}`, LastingFaultKey)
+ 	failures := []struct {
+ 		name     string
+ 		fallback bool
+ 		exits    bool
+-		want     []string
++		// log is what the child writes to its log before it ends.
++		log         string
++		want        []string
++		wantNot     []string
++		wantLasting bool
+ 	}{
+-		{"a child that exits without its record, no fallback", false, true, []string{"ended before it recorded its start", "its log is", "capture-child-"}},
+-		{"a child that exits without its record, with fallback", true, true, []string{"ended before it recorded its start", "capture-child-", "lym drift capture again", "lym drift defer followed by lym loom resume"}},
+-		{"a child that stalls past the record bound, no fallback", false, false, []string{"did not record its start within", "its log is"}},
+-		{"a child that stalls past the record bound, with fallback", true, false, []string{"did not record its start within", "lym drift capture again"}},
++		{name: "a child that exits without its record, no fallback", exits: true, want: []string{"ended before it recorded its start", "its log is", "capture-child-"}},
++		{name: "a child that exits without its record, with fallback", fallback: true, exits: true, want: []string{"ended before it recorded its start", "capture-child-", "run lym drift capture again", "lym drift defer followed by lym loom resume"}},
++		{name: "a child that stalls past the record bound, no fallback", want: []string{"did not record its start within", "its log is"}},
++		{name: "a child that stalls past the record bound, with fallback", fallback: true, want: []string{"did not record its start within", "lym drift capture again"}},
++		{
++			name:  "a child that ends on an error envelope carries its error on one line",
++			exits: true,
++			log:   "time=t level=INFO msg=start\n" + `{"error":"drift config key \"capture\":\n  missing","ok":false}` + "\n",
++			want:  []string{`ended before it recorded its start: drift config key "capture": missing; its log is`},
++		},
++		{
++			name:        "a lasting error offers no fresh capture, with fallback",
++			fallback:    true,
++			exits:       true,
++			log:         lastingEnvelope + "\n",
++			want:        []string{"does not equal the anchored directory", "cannot change this error", "lym drift defer followed by lym loom resume", "fix of the error's cause"},
++			wantNot:     []string{"run lym drift capture again"},
++			wantLasting: true,
++		},
++		{
++			name:        "a lasting error is marked for the calling row, no fallback",
++			exits:       true,
++			log:         lastingEnvelope + "\n",
++			want:        []string{"does not equal the anchored directory", "its log is"},
++			wantLasting: true,
++		},
++		{
++			name:  "the last error envelope wins and an ok envelope is skipped",
++			exits: true,
++			log: fmt.Sprintf(`{"error":"first error","%s":true,"ok":false}`, LastingFaultKey) + "\n" +
++				`{"error":"second error","ok":false}` + "\n" +
++				`{"error":"not an error","ok":true}` + "\n",
++			want:    []string{"ended before it recorded its start: second error;"},
++			wantNot: []string{"first error", "not an error"},
++		},
++		{
++			name:    "an overlong error is cut to the bound on a rune",
++			exits:   true,
++			log:     `{"error":"` + strings.Repeat("å", 2*childErrorMaxRunes) + `","ok":false}`,
++			want:    []string{strings.Repeat("å", childErrorMaxRunes-1) + "…"},
++			wantNot: []string{strings.Repeat("å", childErrorMaxRunes)},
++		},
+ 	}
+ 	for _, tt := range failures {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			f := newSpawnFixture(t, func(*spawnFixture, childSpawn) (<-chan struct{}, error) {
++			f := newSpawnFixture(t, func(_ *spawnFixture, spec childSpawn) (<-chan struct{}, error) {
++				if _, err := spec.log.WriteString(tt.log); err != nil {
++					t.Errorf("write the child log: %v", err)
++				}
+ 				exited := make(chan struct{})
+ 				if tt.exits {
+ 					close(exited)
+@@ -135,6 +182,15 @@ func TestStartCapture(t *testing.T) {
+ 					t.Errorf("StartCapture() error = %q; want it to contain %q", err.Error(), want)
+ 				}
+ 			}
++			for _, unwanted := range tt.wantNot {
++				if strings.Contains(err.Error(), unwanted) {
++					t.Errorf("StartCapture() error = %q; want it without %q", err.Error(), unwanted)
++				}
++			}
++			var noRecord childNoRecordError
++			if !errors.As(err, &noRecord) || noRecord.lasting != tt.wantLasting {
++				t.Errorf("StartCapture() error = %#v; want a childNoRecordError with lasting = %v", err, tt.wantLasting)
++			}
+ 		})
+ 	}
+ 
