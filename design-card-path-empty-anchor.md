@@ -1,6 +1,6 @@
 # Webster plan validation refuses a card path with a trailing '#' anchor that Plan-Bouncer accepted
 
-`card-path-empty-anchor` · Task · bug, webster, parsers · running · Drift-Baseline
+`card-path-empty-anchor` · Task · bug, webster, parsers · running · Drift-Await
 
 Imported from [issue #34](https://github.com/Knatte18/loomyard/issues/34).
 
