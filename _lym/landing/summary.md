@@ -1,36 +1,37 @@
-# A landing push rides out a busy push lock, and the lock names its holder
+# Retry a busy landing push and name the push lock's holder
 
-A loom run halted at PR-Review with `fabricengine: push lock busy: <weft>/.weft/fabric.push.lock still held after 30s; neither side was pushed` (issue #37).
-`fabric.push.lock` is shared by every pusher of a records worktree, so another session's push can hold it past the 30-second wait, and one wait ended the whole run as a halt for the operator.
-The error also gave no clue to which process held the lock or for how long.
+A landing push that finds the records push lock held no longer halts the run after one 30s wait.
+`pullRequestDepsGuardedBy` in `internal/loomcli/landingdeps.go` now retries the push after pauses of 30s, 1m and 2m, and halts only when the lock is still busy after the last one.
+Another session's push holds the lock only while git runs, so the retries ride out that contention.
+Any error that is not `ErrPushLockBusy` ends the retry at once.
 
-## What changes
+When the lock is still busy, the error now says who holds it.
+Every holder of `fabric.push.lock` writes a holder record, `fabric.push.holder`, beside the lock, with its pid and the time it took the lock.
+The busy error reads the record and reports one of:
 
-- **The landing push retries.**
-  `PushTask`, which PR-Review and Finalize call to push the task branch, now runs the push again while it fails with `ErrPushLockBusy`, after pauses of 30 seconds, 1 minute and 2 minutes.
-  Each attempt still waits `StatusPushLockWait` for the lock, so the landing rides out about five and a half minutes of contention before the row halts with the same way forward as before.
-  Each retry is logged at Info with the busy error.
-  Any other push failure ends the retry at once, so rejections and transport failures keep their current handling.
-- **The busy error names the holder.**
-  Every holder of `fabric.push.lock` now writes `fabric.push.holder` beside it, with its pid and the time it took the lock, and removes it before it releases the lock.
-  That covers the coalescing holder loop behind `PushAnchored`, `PushPairAnchored` and the detached push child, the weft replay's lock, and origin reconcile's try-lock of a weft.
-  The `ErrPushLockBusy` error now ends with `held by pid N for 1m35s`, or says the record names a pid that no longer runs, or that no record names a holder.
-  A record that cannot be written is logged at Warn and never blocks the push.
+- `held by pid N for D`
+- that the record names a pid with no running process, so it may be stale
+- that the record is unreadable
+- that no record exists
+
+Closes #37
 
 ## Design decisions
 
-- **No lock to clear for a dead holder.**
-  The issue asked to clear a lock whose holder is dead.
-  `fabric.push.lock` is an OS file lock (flock, or `LockFileEx` on Windows), which the kernel frees when its holder exits, so a dead process never keeps it.
-  A held lock therefore always has a live holder, and the busy report says so; a record naming a dead pid is stale, and the next holder overwrites it.
-- **Retry in the landing push, not a driver re-step.**
-  Marking `ErrPushLockBusy` transient would make the driver re-step the row once, but `shedtransient` may not import `fabricengine`, and one re-step after 30 seconds rides out less than the retry does.
-  The retry also pauses without polling: a single long `AcquireWriteLockWithin` wait would poll the lock every 10 ms for minutes.
-- **`commit-records` keeps its 30-second wait.**
-  An agent blocks on that verb, and its busy refusal is already a transient way forward the agent acts on, so only the landing push gets the longer retry.
+- **The record sits at every holder site**: the coalescing push loop (`coalesceFlagged`), the origin reconcile's `tryRecordsLocks` on a weft, and the weft replay lock in `lockWeftForReplay`.
+  Bolt's locks get no record, since the busy error reports the weft lock.
+- **The release removes the record before it frees the lock**, so a holder never deletes the record of the next holder.
+- **A record that cannot be written or removed is logged at Warn and the lock is still held and released.**
+  The record only feeds a busy report.
+- **No lock is cleared for a dead holder.**
+  The push lock is an OS lock that its holder's exit frees, so a dead process cannot hold it; only the record can go stale, and the next holder overwrites it.
+  The issue's "clear a lock whose holder is dead" has nothing to clear, so the diff reports a stale record as stale and does nothing more.
+- `internal/fabricengine/doc.go` documents the record, and `cmd/lym/destructiveguard_test.go` allowlists the record's `os.Remove` in `pushlockholder.go`.
 
-## Tests
+## To check by hand
 
-- `TestDescribePushLockHolder` pins the busy clause for no record, a live holder, a dead holder and a corrupt record.
-- `TestCoalesceFlagged_HolderRecordLivesWhileTheLockIsHeld` pins that the holder loop's record names this process while it holds the lock, that a busy error then names it, and that the record is gone and the lock free afterwards.
-- `TestPushRidingOutBusyLock` pins the retry: a busy lock is retried after each pause in turn, and a landed push or any other failure ends it at once.
+- The issue asked to clear a lock whose holder is dead, and `internal/fabricengine/pushlockholder.go` does not do so, for the reason above.
+  Confirm the omission is acceptable.
+- The retry pauses in `landingPushRetryPauses` are a judgment call: about 3.5 minutes of waiting on top of the 30s per attempt.
+  Check they suit real push contention.
+- No regression check and no live run against a held lock were done; the tests cover the retry loop, the busy-report wording and the record's lifecycle at each lock site.
