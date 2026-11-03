@@ -17,6 +17,12 @@ A motif run is the planned first step of a project split, so its done batten rec
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-03): No backfill for motif runs done before this change
+
+Decision: A done motif run seeded before this change, with no child-recipe record, keeps the old refusal; no legacy path reads the seed or board type to clear it.
+
+Rationale: The one such run, codex-engine, was already cleared by hand with lym batten cleanup --apply and its beam is running; no other done motif record exists, and lym batten cleanup --apply stays the way forward for any stray one.
+
 ## Constraints
 
 ## Auto-mode assumptions
