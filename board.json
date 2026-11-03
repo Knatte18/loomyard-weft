@@ -39,12 +39,15 @@
       "status": "draft",
       "created": "2026-10-03T17:27:16Z",
       "revised": "2026-11-03T12:38:40Z",
+      "owner_machine": "neve",
       "order": [
         "codex-engine-core",
         "codex-stencil-blocks",
         "codex-skills-guards",
         "codex-assist-seat"
       ],
+      "beam": true,
+      "beam_color": "#7d2d6b",
       "discussed": true
     },
     {
